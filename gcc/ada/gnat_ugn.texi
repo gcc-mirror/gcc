@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , November 18, 2015
+GNAT User's Guide for Native Platforms , April 21, 2016
 
 AdaCore
 
@@ -4828,6 +4828,27 @@ optional, and can be replaced by the use of the @emph{-D} switch.
 @subsubsection Switches for @cite{gnatprep}
 
 
+@geindex --version (gnatprep)
+
+
+@table @asis
+
+@item @code{--version}
+
+Display Copyright and version, then exit disregarding all other options.
+@end table
+
+@geindex --help (gnatprep)
+
+
+@table @asis
+
+@item @code{--help}
+
+If @emph{--version} was not used, display usage, then exit disregarding
+all other options.
+@end table
+
 @geindex -b (gnatprep)
 
 
@@ -4915,6 +4936,17 @@ Causes a sorted list of symbol names and values to be
 listed on the standard output file.
 @end table
 
+@geindex -T (gnatprep)
+
+
+@table @asis
+
+@item @code{-T}
+
+Use LF as line terminators when writing files. By default the line terminator
+of the host (LF under unix, CR/LF under Windows) is used.
+@end table
+
 @geindex -u (gnatprep)
 
 
@@ -4925,6 +4957,16 @@ listed on the standard output file.
 Causes undefined symbols to be treated as having the value FALSE in the context
 of a preprocessor test. In the absence of this option, an undefined symbol in
 a @cite{#if} or @cite{#elsif} test will be treated as an error.
+@end table
+
+@geindex -v (gnatprep)
+
+
+@table @asis
+
+@item @code{-v}
+
+Verbose mode: generates more output about work done.
 @end table
 
 Note: if neither @emph{-b} nor @emph{-c} is present,
@@ -5138,10 +5180,18 @@ preprocessing is triggered and parameterized.
 
 This switch indicates to the compiler the file name (without directory
 information) of the preprocessor data file to use. The preprocessor data file
-should be found in the source directories. Note that when the compiler is
-called by a builder such as (@emph{gnatmake} with a project
-file, if the object directory is not also a source directory, the builder needs
-to be called with @emph{-x}.
+should be found in the source directories. Alternatively when using project
+files, you can reference to the project file's directory via the
+@code{project name'Project_Dir} project attribute, e.g:
+
+@example
+project Prj is
+   package Compiler is
+      for Switches ("Ada") use
+        ("-gnatep=" & Prj'Project_Dir & "prep.def");
+   end Compiler;
+end Prj;
+@end example
 
 A preprocessing data file is a text file with significant lines indicating
 how should be preprocessed either a specific source or all sources not
@@ -11287,11 +11337,10 @@ but more warnings may be added in the future without advanced notice.
 
 @geindex Hiding of Declarations
 
-This switch activates warnings on hiding declarations.
-A declaration is considered hiding
-if it is for a non-overloadable entity, and it declares an entity with the
-same name as some other entity that is directly or use-visible. The default
-is that such warnings are not generated.
+This switch activates warnings on hiding declarations that are considered
+potentially confusing. Not all cases of hiding cause warnings; for example an
+overriding declaration hides an implicit declaration, which is just normal
+code. The default is that warnings on hiding are not generated.
 @end table
 
 @geindex -gnatwH (gcc)
@@ -21645,9 +21694,9 @@ source file name of the executable to be built or its language name.
 @strong{Global_Compilation_Switches}: list, optional index, indexed,
 case-insensitive index
 
-Index is either a language name or a source file name. Value is the list of
-compilation switches to be used when building an executable. Index is either
-the source file name of the executable to be built or its language name.
+Index is a language name. Value is the list of compilation switches to be
+used when building an executable. Index is either the source file name of
+the executable to be built or its language name.
 
 @item 
 @strong{Executable}: single, indexed, case-insensitive index

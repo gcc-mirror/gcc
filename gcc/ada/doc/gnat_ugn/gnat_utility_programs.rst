@@ -4962,6 +4962,7 @@ Alternatively, you may run the script using the following command line:
     not supported;
   * tests for protected subprograms and entries are not supported;
   * pragma *No_Run_Time* is not supported;
+  * pragma *No_Secondary_Stack* is not supported;
   * if pragmas for interfacing with foreign languages are used, manual
     adjustments might be necessary to make the test harness compilable;
   * use of elaboration control pragmas may result in elaboration circularities

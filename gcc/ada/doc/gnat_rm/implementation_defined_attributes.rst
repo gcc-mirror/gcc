@@ -670,6 +670,8 @@ passed for a record or other composite object passed by reference.
 There is no way of indicating this without the `Null_Parameter`
 attribute.
 
+.. _Attribute-Object_Size:
+
 Attribute Object_Size
 =====================
 .. index:: Size, used for objects
@@ -900,6 +902,8 @@ Attribute Safe_Small
 The `Safe_Small` attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
+
+.. _Attribute-Scalar_Storage_Order:
 
 Attribute Scalar_Storage_Order
 ==============================
@@ -1555,6 +1559,8 @@ Object_Size (for example, `Natural'Size` is 32 rather than 31 on
 typical machines).  In addition `'VADS_Size` applied to an object
 gives the result that would be obtained by applying the attribute to
 the corresponding type.
+
+.. _Attribute-Value_Size:
 
 Attribute Value_Size
 ====================

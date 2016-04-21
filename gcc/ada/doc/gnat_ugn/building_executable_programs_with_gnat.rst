@@ -3055,11 +3055,10 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   .. index:: Hiding of Declarations
 
-  This switch activates warnings on hiding declarations.
-  A declaration is considered hiding
-  if it is for a non-overloadable entity, and it declares an entity with the
-  same name as some other entity that is directly or use-visible. The default
-  is that such warnings are not generated.
+  This switch activates warnings on hiding declarations that are considered
+  potentially confusing. Not all cases of hiding cause warnings; for example an
+  overriding declaration hides an implicit declaration, which is just normal
+  code. The default is that warnings on hiding are not generated.
 
 
 .. index:: -gnatwH  (gcc)
