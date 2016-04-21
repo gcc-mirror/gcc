@@ -1,3 +1,8 @@
+2016-04-21  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/70715
+	* gcc.dg/tree-ssa/scev-13.c: New test.
+
 2016-04-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/minmax-2.c: New testcase.
