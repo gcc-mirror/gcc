@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,8 +155,9 @@ package body Lib.Writ is
         OA_Setting        => 'O',
         SPARK_Mode_Pragma => Empty);
 
-      --  Parse system.ads so that the checksum is set right
-      --  Style checks are not applied.
+      --  Parse system.ads so that the checksum is set right,
+      --  Style checks are not applied. The Ekind is set to ensure
+      --  that this reference is always present in the ali file.
 
       declare
          Save_Mindex : constant Nat := Multiple_Unit_Index;
@@ -166,6 +167,7 @@ package body Lib.Writ is
          Style_Check := False;
          Initialize_Scanner (Units.Last, System_Source_File_Index);
          Discard_List (Par (Configuration_Pragmas => False));
+         Set_Ekind (Cunit_Entity (Units.Last),  E_Package);
          Style_Check := Save_Style;
          Multiple_Unit_Index := Save_Mindex;
       end;
@@ -1429,6 +1431,17 @@ package body Lib.Writ is
             Units.Table (Unum).Dependency_Num := J;
             Sind := Units.Table (Unum).Source_Index;
 
+            --  The dependency table also contains units that appear in the
+            --  context of a unit loaded through a limited_with clause. These
+            --  units are never analyzed, and thus the main unit does not
+            --  really have a dependency on them.
+
+            if Present (Cunit_Entity (Unum))
+              and then Ekind (Cunit_Entity (Unum)) = E_Void
+            then
+               goto Next_Unit;
+            end if;
+
             Write_Info_Initiate ('D');
             Write_Info_Char (' ');
 
@@ -1451,6 +1464,18 @@ package body Lib.Writ is
                Write_Info_Str (String (Time_Stamp (Sind)));
                Write_Info_Char (' ');
                Write_Info_Str (Get_Hex_String (Source_Checksum (Sind)));
+
+               --  If the dependency comes from a limited_with clause,
+               --  record limited_checksum.
+               --  Disable for now, until full checksum changes are checked.
+
+               --  if Present (Cunit_Entity (Unum))
+               --    and then From_Limited_With (Cunit_Entity (Unum))
+               --  then
+               --     Write_Info_Char (' ');
+               --     Write_Info_Char ('Y');
+               --     Write_Info_Str (Get_Hex_String (Limited_Chk_Sum (Sind)));
+               --  end if;
 
                --  If subunit, add unit name, omitting the %b at the end
 
@@ -1492,6 +1517,9 @@ package body Lib.Writ is
             end if;
 
             Write_Info_EOL;
+
+         <<Next_Unit>>
+            null;
          end loop;
       end;
 

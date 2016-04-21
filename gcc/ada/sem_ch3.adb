@@ -5066,16 +5066,23 @@ package body Sem_Ch3 is
       --  If this is a subtype declaration for an actual in an instance,
       --  inherit static and dynamic predicates if any.
 
-      if In_Instance
-        and then not Comes_From_Source (N)
-        and then Has_Predicates (T)
-        and then Present (Predicate_Function (T))
-      then
-         --  ??? This is dangerous, it may clobber the invariant procedure
+      --  If declaration has no aspect specifications, inherit predicate
+      --  info as well.  Unclear how to handle the case of both specified
+      --  and inherited predicates ??? Other inherited aspects, such as
+      --  invariants, should be OK, but the combination with later pragmas
+      --  may also require special merging.
 
+      if Has_Predicates (T)
+        and then Present (Predicate_Function (T))
+
+         and then
+           ((In_Instance and then not Comes_From_Source (N))
+              or else No (Aspect_Specifications (N)))
+      then
          Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
 
          if Has_Static_Predicate (T) then
+            Set_Has_Static_Predicate (Id);
             Set_Static_Discrete_Predicate (Id, Static_Discrete_Predicate (T));
          end if;
       end if;

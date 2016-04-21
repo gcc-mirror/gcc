@@ -1,3 +1,35 @@
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): A subtype
+	declaration with no aspects, whose subtype_mark is a subtype
+	with predicates, inherits the list of subprograms for the type.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Has_Per_Object_Constraint): Refine previous
+	change.
+
+2016-04-21  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Raise_Host_Error): Include additional Name parameter.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Do not record in ali file units
+	that are present in the files table but not analyzed. These
+	units are present because they appear in the context of units
+	named in limited_with clauses, and the unit being compiled does
+	not depend semantically on them.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Simplify code to
+	create the procedure body for an function returning an array type,
+	when generating C code. Reuse the subprogram body rather than
+	creating a new one, both as an efficiency measure and because
+	in an instance the body may contain global references that must
+	be preserved.
+
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, exp_attr.adb, exp_ch6.adb, exp_aggr.adb: Minor

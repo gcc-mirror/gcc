@@ -6092,7 +6092,10 @@ package body Exp_Aggr is
          N : Node_Id := First (L);
       begin
          while Present (N) loop
-            if Has_Per_Object_Constraint (Associated_Node (N)) then
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Has_Per_Object_Constraint (Entity (N))
+            then
                return True;
             end if;
 
