@@ -1,3 +1,9 @@
+2016-04-21  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/70715
+	* tree-ssa-loop-niter.c (loop_exits_before_overflow): Check equality
+	after expanding BASE using expand_simple_operations.
+
 2016-04-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (min(-x, -y), max(-x, -y), min(~x, ~y), max(~x, ~y)):

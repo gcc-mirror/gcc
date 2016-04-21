@@ -4141,7 +4141,11 @@ loop_exits_before_overflow (tree base, tree step,
 	    continue;
 
 	  /* Done proving if this is a no-overflow control IV.  */
-	  if (operand_equal_p (base, civ->base, 0))
+	  if (operand_equal_p (base, civ->base, 0)
+	      /* Control IV is recorded after expanding simple operations,
+		 Here we compare it against expanded base too.  */
+	      || operand_equal_p (expand_simple_operations (base),
+				  civ->base, 0))
 	    return true;
 
 	  /* If this is a before stepping control IV, in other words, we have
