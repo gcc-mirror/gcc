@@ -313,9 +313,9 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 
   bool inlinable = true;
   enum availability avail;
-  cgraph_node *callee = e->callee->ultimate_alias_target (&avail);
   cgraph_node *caller = e->caller->global.inlined_to
 		        ? e->caller->global.inlined_to : e->caller;
+  cgraph_node *callee = e->callee->ultimate_alias_target (&avail, caller);
   tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
   tree callee_tree
     = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
@@ -1382,7 +1382,7 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	   growth chould have just increased and consequentely badness metric
            don't need updating.  */
 	if (e->inline_failed
-	    && (callee = e->callee->ultimate_alias_target (&avail))
+	    && (callee = e->callee->ultimate_alias_target (&avail, e->caller))
 	    && inline_summaries->get (callee)->inlinable
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
@@ -1425,7 +1425,7 @@ lookup_recursive_calls (struct cgraph_node *node, struct cgraph_node *where,
 
   for (e = where->callees; e; e = e->next_callee)
     if (e->callee == node
-	|| (e->callee->ultimate_alias_target (&avail) == node
+	|| (e->callee->ultimate_alias_target (&avail, e->caller) == node
 	    && avail > AVAIL_INTERPOSABLE))
       {
 	/* When profile feedback is available, prioritize by expected number
@@ -1624,7 +1624,8 @@ bool
 speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
 {
   enum availability avail;
-  struct cgraph_node *target = e->callee->ultimate_alias_target (&avail);
+  struct cgraph_node *target = e->callee->ultimate_alias_target (&avail,
+								 e->caller);
   struct cgraph_edge *direct, *indirect;
   struct ipa_ref *ref;
 
