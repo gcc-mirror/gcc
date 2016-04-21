@@ -25522,7 +25522,7 @@ package body Sem_Prag is
                   --  a visible state or lacks a Part_Of indicator.
 
                   if Ekind (Constit_Id) = E_Constant then
-                     null;
+                     Collect_Constituent;
 
                   --  If we get here, then the constituent is not a hidden
                   --  state of the related package and may not be used in a

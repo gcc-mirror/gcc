@@ -1,5 +1,21 @@
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Match_Constituent): Treat a constant as a legal
+	constituent even if it is not to prevent spurious errors.
+
+2016-04-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb: Minor typo fixes and reformatting.
+
+2016-04-21  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* g-calend.ads (No_Time): The same value in any timezone.
+	* g-socket.adb (Raise_Host_Error): Remove ending
+	dot from original error message before append colon delimited
+	host name.
+
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch3.adb: Code cleanup.
 	* sem_ch6.adb: Code cleanup.
 	(Is_Matching_Limited_View): New routine.

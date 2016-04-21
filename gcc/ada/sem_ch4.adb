@@ -7569,8 +7569,8 @@ package body Sem_Ch4 is
                while Present (It.Nam) loop
                   Add_One_Interp (N, It.Nam, It.Typ);
 
-                  --  Add dereference interpretation if the result type type
-                  --  has implicit reference discriminants.
+                  --  Add dereference interpretation if the result type has
+                  --  implicit reference discriminants.
 
                   if Has_Discriminants (Etype (It.Nam)) then
                      Check_Implicit_Dereference (N, Etype (It.Nam));
