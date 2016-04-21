@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,9 +185,10 @@ package body GNAT.Sockets is
    --  Raise Socket_Error with an exception message describing the error code
    --  from errno.
 
-   procedure Raise_Host_Error (H_Error : Integer);
+   procedure Raise_Host_Error (H_Error : Integer; Name : String);
    --  Raise Host_Error exception with message describing error code (note
-   --  hstrerror seems to be obsolete) from h_errno.
+   --  hstrerror seems to be obsolete) from h_errno. Name is the name
+   --  or address that was being looked up.
 
    procedure Narrow (Item : in out Socket_Set_Type);
    --  Update Last as it may be greater than the real last socket
@@ -973,7 +974,7 @@ package body GNAT.Sockets is
                              Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
          Netdb_Unlock;
-         Raise_Host_Error (Integer (Err));
+         Raise_Host_Error (Integer (Err), Image (Address));
       end if;
 
       begin
@@ -1015,7 +1016,7 @@ package body GNAT.Sockets is
            (HN, Res'Access, Buf'Address, Buflen, Err'Access) /= 0
          then
             Netdb_Unlock;
-            Raise_Host_Error (Integer (Err));
+            Raise_Host_Error (Integer (Err), Name);
          end if;
 
          return H : constant Host_Entry_Type :=
@@ -1700,11 +1701,12 @@ package body GNAT.Sockets is
    -- Raise_Host_Error --
    ----------------------
 
-   procedure Raise_Host_Error (H_Error : Integer) is
+   procedure Raise_Host_Error (H_Error : Integer; Name : String) is
    begin
       raise Host_Error with
         Err_Code_Image (H_Error)
-          & Host_Error_Messages.Host_Error_Message (H_Error);
+          & Host_Error_Messages.Host_Error_Message (H_Error)
+          & ": " & Name;
    end Raise_Host_Error;
 
    ------------------------

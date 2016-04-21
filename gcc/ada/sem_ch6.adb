@@ -3064,7 +3064,6 @@ package body Sem_Ch6 is
       --  Local variables
 
       Save_Ghost_Mode   : constant Ghost_Mode_Type := Ghost_Mode;
-      Cloned_Body_For_C : Node_Id := Empty;
 
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
@@ -3299,6 +3298,33 @@ package body Sem_Ch6 is
         and then Is_Protected_Type (Current_Scope)
       then
          Spec_Id := Build_Private_Protected_Declaration (N);
+      end if;
+
+      --  If we are generating C and this is a function returning a constrained
+      --  array type for which we must create a procedure with an extra out
+      --  parameter, build and analyze the body now.  The procedure declaration
+      --  has already been created. We reuse the source body of the function,
+      --  because in an instance it may contain global references that cannot
+      --  be reanalyzed. The source function itself is not used any further,
+      --  so we mark it as having a completion.
+
+      if Expander_Active
+        and then Modify_Tree_For_C
+        and then Present (Spec_Id)
+        and then Ekind (Spec_Id) = E_Function
+        and then Rewritten_For_C (Spec_Id)
+      then
+         Set_Has_Completion (Spec_Id);
+
+         Rewrite (N, Build_Procedure_Body_Form (Spec_Id, N));
+         Analyze (N);
+
+         --  The entity for the created procedure must remain invisible,
+         --  so it does not participate in resolution of subsequent
+         --  references to the function.
+
+         Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
+         return;
       end if;
 
       --  If a separate spec is present, then deal with freezing issues
@@ -3675,21 +3701,6 @@ package body Sem_Ch6 is
 
          Ghost_Mode := Save_Ghost_Mode;
          return;
-      end if;
-
-      --  If we are generating C and this is a function returning a constrained
-      --  array type for which we must create a procedure with an extra out
-      --  parameter then clone the body before it is analyzed. Needed to ensure
-      --  that the body of the built procedure does not have any reference to
-      --  the body of the function.
-
-      if Expander_Active
-        and then Modify_Tree_For_C
-        and then Present (Spec_Id)
-        and then Ekind (Spec_Id) = E_Function
-        and then Rewritten_For_C (Spec_Id)
-      then
-         Cloned_Body_For_C := Copy_Separate_Tree (N);
       end if;
 
       --  Handle frontend inlining
@@ -4132,21 +4143,6 @@ package body Sem_Ch6 is
             Set_Has_Nested_Subprogram (Ent);
          end if;
       end;
-
-      --  When generating C code, transform a function that returns a
-      --  constrained array type into a procedure with an out parameter
-      --  that carries the return value.
-
-      if Present (Cloned_Body_For_C) then
-         Rewrite (N, Build_Procedure_Body_Form (Spec_Id, Cloned_Body_For_C));
-         Analyze (N);
-
-         --  The entity for the created procedure must remain invisible, so it
-         --  does not participate in resolution of subsequent references to the
-         --  function.
-
-         Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
-      end if;
 
       Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Subprogram_Body_Helper;
