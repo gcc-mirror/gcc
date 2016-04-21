@@ -1,3 +1,43 @@
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+
+2016-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch2.adb (Expand_Current_Value): Make an appropriate
+	character literal if the entity is of a character type.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Backend_Processing_Possible): Return False
+	when generating C and aggregate contains function calls.
+
+2016-04-21  Tristan Gingold  <gingold@adacore.com>
+
+	* krunch.adb (Krunch): Only partially krunch children of
+	Interfaces that aren't known.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Make_Inline): Handle properly the instantiation
+	of a generic subpprogram that carries an Inline aspect. Place
+	inline info on the anonymous subprogram that is constructed in
+	the wrapper package.
+	(Analyze_Pragma, case Pure): Do not check placement if pragma
+	appears within an instantiation, which can be nested at any level.
+	* sem_ch12.adb (Analyze_Instance_And_Renamings): Do not copy Freeze
+	node from anonymous subprogram to its visible renaming. The
+	freeze node will be constructed if the subprogram carries
+	delayed aspects.
+	(Set_Global): Preserve dimension information if present (from
+	code reading).
+
+2016-04-21  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnatlink.adb: Change wording of the warning message on
+	problematic filenames to be more neutral. Add a new substring
+	"patch" introduced on Windows 10.
+
 2016-04-21  Philippe Gil  <gil@adacore.com>
 
 	* tracebak.c (__gnat_backtrace): handle bad RIP values (win64 only)

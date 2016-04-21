@@ -547,14 +547,16 @@ package body Exp_Aggr is
 
    --   11. When generating C code, N must be part of a N_Object_Declaration
 
+   --   12. When generating C code, N must not include function calls
+
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
 
       function Component_Check (N : Node_Id; Index : Node_Id) return Boolean;
       --  This routine checks components of aggregate N, enforcing checks
-      --  1, 7, 8, and 9. In the multi-dimensional case, these checks are
-      --  performed on subaggregates. The Index value is the current index
+      --  1, 7, 8, 9, 11 and 12. In the multi-dimensional case, these checks
+      --  are performed on subaggregates. The Index value is the current index
       --  being checked in the multi-dimensional case.
 
       ---------------------
@@ -573,7 +575,7 @@ package body Exp_Aggr is
 
          --  Checks 11: (part of an object declaration)
 
-         if Generate_C_Code
+         if Modify_Tree_For_C
            and then Nkind (Parent (N)) /= N_Object_Declaration
            and then
              (Nkind (Parent (N)) /= N_Qualified_Expression
@@ -610,6 +612,12 @@ package body Exp_Aggr is
             --  Checks 7. Component must not be bit aligned component
 
             if Possible_Bit_Aligned_Component (Expr) then
+               return False;
+            end if;
+
+            --  Checks 12: (no function call)
+
+            if Modify_Tree_For_C and then Nkind (Expr) = N_Function_Call then
                return False;
             end if;
 
@@ -4106,7 +4114,7 @@ package body Exp_Aggr is
          Analyze_And_Resolve (N, Typ);
       end if;
 
-      --  Is Static_Eaboration_Desired has been specified, diagnose aggregates
+      --  If Static_Eaboration_Desired has been specified, diagnose aggregates
       --  that will still require initialization code.
 
       if (Ekind (Current_Scope) = E_Package

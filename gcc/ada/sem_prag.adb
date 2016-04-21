@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8610,9 +8610,16 @@ package body Sem_Prag is
             --  Processing for procedure, operator or function. If subprogram
             --  is aliased (as for an instance) indicate that the renamed
             --  entity (if declared in the same unit) is inlined.
+            --  If this is the anonymous subprogram created for a subprogram
+            --  instance, the inlining applies to it directly. Otherwise we
+            --  retrieve it as the alias of the visible subprogram instance.
 
             if Is_Subprogram (Subp) then
-               Inner_Subp := Ultimate_Alias (Inner_Subp);
+               if Is_Wrapper_Package (Scope (Subp)) then
+                  Inner_Subp := Subp;
+               else
+                  Inner_Subp := Ultimate_Alias (Inner_Subp);
+               end if;
 
                if In_Same_Source_Unit (Subp, Inner_Subp) then
                   Set_Inline_Flags (Inner_Subp);
@@ -8624,18 +8631,20 @@ package body Sem_Prag is
                   then
                      Set_Inline_Flags (Corresponding_Body (Decl));
 
-                  elsif Is_Generic_Instance (Subp) then
-
+                  elsif Is_Generic_Instance (Subp)
+                    and then Comes_From_Source (Subp)
+                  then
                      --  Indicate that the body needs to be created for
                      --  inlining subsequent calls. The instantiation node
                      --  follows the declaration of the wrapper package
-                     --  created for it.
+                     --  created for it. The subprogram that requires the
+                     --  body is the anonymous one in the wrapper package.
 
                      if Scope (Subp) /= Standard_Standard
                        and then
                          Need_Subprogram_Instance_Body
-                          (Next (Unit_Declaration_Node (Scope (Alias (Subp)))),
-                              Subp)
+                           (Next (Unit_Declaration_Node
+                             (Scope (Alias (Subp)))), Subp)
                      then
                         null;
                      end if;
@@ -19397,7 +19406,15 @@ package body Sem_Prag is
 
          begin
             Check_Ada_83_Warning;
-            Check_Valid_Library_Unit_Pragma;
+
+            --  If the pragma comes from a subprogram instantiation, nothing to
+            --  check, this can happen at any level of nesting.
+
+            if Is_Wrapper_Package (Current_Scope) then
+               return;
+            else
+               Check_Valid_Library_Unit_Pragma;
+            end if;
 
             if Nkind (N) = N_Null_Statement then
                return;

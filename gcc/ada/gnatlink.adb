@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1680,10 +1680,10 @@ begin
 
    --  Special warnings for worrisome file names on windows
 
-   --  Windows-7 will not allow an executable file whose name contains any
-   --  of the substrings "install", "setup", or "update" to load without
-   --  special administration privileges. This rather incredible behavior
-   --  is Microsoft's idea of a useful security precaution.
+   --  Recent versions of Windows by default cause privilege escalation if an
+   --  executable file name contains substrings "install", "setup", "update"
+   --  or "patch". A console application will typically fail to load as a
+   --  result, so we should warn the user.
 
    Bad_File_Names_On_Windows : declare
       FN : String := Output_File_Name.all;
@@ -1696,13 +1696,10 @@ begin
          for J in 1 .. FN'Length - (S'Length - 1) loop
             if FN (J .. J + (S'Length - 1)) = S then
                Error_Msg
-                 ("warning: possible problem with executable name """
-                  & Output_File_Name.all & '"');
+                 ("warning: executable file name """ & Output_File_Name.all
+                  & """ contains substring """ & S & '"');
                Error_Msg
-                 ("file name contains substring """ & S & '"');
-               Error_Msg
-                 ("admin privileges may be required on Windows 7 "
-                  & "to load this file");
+                 ("admin privileges may be required to run this file");
             end if;
          end loop;
       end Check_File_Name;
@@ -1723,6 +1720,7 @@ begin
          Check_File_Name ("install");
          Check_File_Name ("setup");
          Check_File_Name ("update");
+         Check_File_Name ("patch");
       end if;
    end Bad_File_Names_On_Windows;
 

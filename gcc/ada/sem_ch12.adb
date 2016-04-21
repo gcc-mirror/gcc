@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4947,9 +4947,13 @@ package body Sem_Ch12 is
             Set_Cunit_Entity (Current_Sem_Unit, Pack_Id);
          end if;
 
-         --  The instance is not a freezing point for the new subprogram
+         --  The instance is not a freezing point for the new subprogram.
+         --  The anonymous subprogram may have a freeze node, created for
+         --  some delayed aspects. This freeze node must not be inherited
+         --  by the visible subprogram entity.
 
-         Set_Is_Frozen (Act_Decl_Id, False);
+         Set_Is_Frozen   (Act_Decl_Id, False);
+         Set_Freeze_Node (Act_Decl_Id, Empty);
 
          if Nkind (Defining_Entity (N)) = N_Defining_Operator_Symbol then
             Valid_Operator_Definition (Act_Decl_Id);
@@ -7688,6 +7692,18 @@ package body Sem_Ch12 is
 
             --  Should preserve Corresponding_Spec??? (12.3(14))
          end if;
+      end if;
+
+      --  Propagate dimensions if present, so that they are reflected in the
+      --  instance.
+
+      if Nkind (N) in N_Has_Etype
+        and then (Nkind (N) in N_Op or else Is_Entity_Name (N))
+        and then Present (Etype (N))
+        and then Is_Floating_Point_Type (Etype (N))
+        and then Has_Dimension_System (Etype (N))
+      then
+         Copy_Dimensions (N, New_N);
       end if;
 
       return New_N;
@@ -14140,6 +14156,13 @@ package body Sem_Ch12 is
                   Set_Etype (N2, Full_View (Typ));
                end if;
             end if;
+
+            if Is_Floating_Point_Type (Typ)
+              and then Has_Dimension_System (Typ)
+            then
+               Copy_Dimensions (N2, N);
+            end if;
+
          end Set_Global_Type;
 
          ------------------

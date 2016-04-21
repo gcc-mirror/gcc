@@ -2201,9 +2201,11 @@ package body Sem_Ch5 is
                         Error_Msg_N ("variable container expected", N);
                      end if;
 
-                     --  It could be a function, which
-                     --  Is_Dependent_Component_Of_Mutable_Object doesn't like,
-                     --  so check that it's a component.
+                     --  Detect a case where the iterator denotes a component
+                     --  of a mutable object which depends on a discriminant.
+                     --  Note that the iterator may denote a function call in
+                     --  qualified form, in which case this check should not
+                     --  be performed.
 
                      if Nkind (Orig_Iter_Name) = N_Selected_Component
                        and then Ekind_In
