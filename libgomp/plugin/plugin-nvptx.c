@@ -134,7 +134,7 @@ map_fini (struct ptx_stream *s)
 
   r = cuMemFreeHost (s->h);
   if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemFreeHost error: %s", cuda_error (r));
+    GOMP_PLUGIN_error ("cuMemFreeHost error: %s", cuda_error (r));
 }
 
 static void
