@@ -1,3 +1,20 @@
+2016-04-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Suppress
+	expansion of Attribute_Machine and Attribute_Model for AAMP.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: Disable previous change for now.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): If prefix has an
+	access type and designated type is a limited view, introduce
+	an explicit dereference before continuing the analysis, and
+	set its type to the non-limited view of the designated type,
+	if we are in context where it is available.
+
 2016-04-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb: Freeze profile in ASIS mode.
