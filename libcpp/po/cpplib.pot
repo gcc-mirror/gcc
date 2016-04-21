@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2016-04-08 20:55+0000\n"
+"POT-Creation-Date: 2016-04-21 15:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -277,148 +277,148 @@ msgstr ""
 msgid "\"%s\" after # is not a positive integer"
 msgstr ""
 
-#: directives.c:1058
+#: directives.c:1061
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr ""
 
-#: directives.c:1116
-#: directives.c:1118
 #: directives.c:1120
-#: directives.c:1706
+#: directives.c:1122
+#: directives.c:1124
+#: directives.c:1710
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: directives.c:1144
+#: directives.c:1148
 #, c-format
 msgid "invalid #%s directive"
 msgstr ""
 
-#: directives.c:1207
+#: directives.c:1211
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr ""
 
-#: directives.c:1216
+#: directives.c:1220
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr ""
 
-#: directives.c:1234
+#: directives.c:1238
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.c:1237
+#: directives.c:1241
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr ""
 
-#: directives.c:1240
+#: directives.c:1244
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr ""
 
-#: directives.c:1270
+#: directives.c:1274
 msgid "registering pragma with NULL handler"
 msgstr ""
 
-#: directives.c:1487
+#: directives.c:1491
 msgid "#pragma once in main file"
 msgstr ""
 
-#: directives.c:1510
+#: directives.c:1514
 msgid "invalid #pragma push_macro directive"
 msgstr ""
 
-#: directives.c:1565
+#: directives.c:1569
 msgid "invalid #pragma pop_macro directive"
 msgstr ""
 
-#: directives.c:1620
+#: directives.c:1624
 msgid "invalid #pragma GCC poison directive"
 msgstr ""
 
-#: directives.c:1629
+#: directives.c:1633
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr ""
 
-#: directives.c:1648
+#: directives.c:1652
 msgid "#pragma system_header ignored outside include file"
-msgstr ""
-
-#: directives.c:1673
-#, c-format
-msgid "cannot find source file %s"
 msgstr ""
 
 #: directives.c:1677
 #, c-format
+msgid "cannot find source file %s"
+msgstr ""
+
+#: directives.c:1681
+#, c-format
 msgid "current file is older than %s"
 msgstr ""
 
-#: directives.c:1701
+#: directives.c:1705
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr ""
 
-#: directives.c:1902
+#: directives.c:1906
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:2023
+#: directives.c:2027
 msgid "#else without #if"
 msgstr ""
 
-#: directives.c:2028
+#: directives.c:2032
 msgid "#else after #else"
 msgstr ""
 
-#: directives.c:2030
-#: directives.c:2063
+#: directives.c:2034
+#: directives.c:2067
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.c:2056
+#: directives.c:2060
 msgid "#elif without #if"
 msgstr ""
 
-#: directives.c:2061
+#: directives.c:2065
 msgid "#elif after #else"
 msgstr ""
 
-#: directives.c:2092
+#: directives.c:2096
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.c:2172
+#: directives.c:2176
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.c:2187
+#: directives.c:2191
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.c:2207
+#: directives.c:2211
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.c:2234
+#: directives.c:2238
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:2237
+#: directives.c:2241
 msgid "predicate must be an identifier"
 msgstr ""
 
-#: directives.c:2323
+#: directives.c:2327
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2615
+#: directives.c:2619
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
