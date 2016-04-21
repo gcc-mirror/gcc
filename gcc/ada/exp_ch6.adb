@@ -692,6 +692,38 @@ package body Exp_Ch6 is
                   end loop;
                end;
 
+            elsif Nkind (Stmt) = N_Extended_Return_Statement then
+               declare
+                  Ret_Obj : constant Entity_Id :=
+                              Defining_Entity
+                                (First (Return_Object_Declarations (Stmt)));
+                  Assign  : constant Node_Id :=
+                              Make_Assignment_Statement (Sloc (Stmt),
+                                Name       =>
+                                  New_Occurrence_Of (Param_Id, Loc),
+                                Expression =>
+                                  New_Occurrence_Of (Ret_Obj, Sloc (Stmt)));
+                  Stmts   : constant List_Id :=
+                              Statements (Handled_Statement_Sequence (Stmt));
+
+               begin
+                  Set_Assignment_OK (Name (Assign));
+
+                  Rewrite (Stmt,
+                    Make_Block_Statement (Sloc (Stmt),
+                      Declarations               =>
+                        Return_Object_Declarations (Stmt),
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements =>
+                            Statements (Handled_Statement_Sequence (Stmt)))));
+
+                  Replace_Returns (Param_Id, Stmts);
+
+                  Append_To (Stmts, Assign);
+                  Append_To (Stmts, Make_Simple_Return_Statement (Loc));
+               end;
+
             elsif Nkind (Stmt) = N_If_Statement then
                Replace_Returns (Param_Id, Then_Statements (Stmt));
                Replace_Returns (Param_Id, Else_Statements (Stmt));

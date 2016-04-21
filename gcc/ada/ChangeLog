@@ -1,3 +1,15 @@
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): If the body is
+	created for SPARK_To_C, the entity must remain invisible so it
+	does not overload subsequent references to the original function.
+	* exp_ch6.adb (Build_Procedure_Body_Form, Replace_Returns):
+	Handle Extended_Return_Statements by replacing it with a block
+	with assignments and a simple return statement.
+	* exp_util.adb (Build_Procedure_Form): Make procedure entity
+	invisible after analyzing declaration, to prevent improper
+	overloading.
+
 2016-04-21  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Build_Subprogram_Declaration): Propagate the
