@@ -1,3 +1,8 @@
+2016-04-21  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/70624
+	* asan/asan_mac.cc: Cherry pick upstream r266868.
+
 2016-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/68824
