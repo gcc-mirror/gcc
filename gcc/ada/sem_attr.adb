@@ -10165,7 +10165,7 @@ package body Sem_Attr is
                   --  the subprogram is not frozen at this point.
 
                   if not In_Spec_Expression then
-                     Freeze_Before (N, Entity (P), False);
+                     Freeze_Before (N, Entity (P), Do_Freeze_Profile => False);
                   end if;
 
                --  If it is a type, there is nothing to resolve.
@@ -10174,7 +10174,7 @@ package body Sem_Attr is
 
                elsif Is_Overloadable (Entity (P)) then
                   if not In_Spec_Expression then
-                     Freeze_Before (N, Entity (P), False);
+                     Freeze_Before (N, Entity (P), Do_Freeze_Profile => False);
                   end if;
 
                --  Nothing to do if prefix is a type name
