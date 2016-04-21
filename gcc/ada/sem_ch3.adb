@@ -11826,8 +11826,9 @@ package body Sem_Ch3 is
 
       if Has_Predicates (Priv) then
          Set_Has_Predicates (Full);
+
          if Present (Predicate_Function (Priv))
-            and then No (Predicate_Function (Full))
+           and then No (Predicate_Function (Full))
          then
             Set_Predicate_Function (Full, Predicate_Function (Priv));
          end if;

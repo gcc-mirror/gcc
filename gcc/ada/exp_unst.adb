@@ -1721,7 +1721,6 @@ package body Exp_Unst is
    ------------------------
 
    procedure Unnest_Subprograms (N : Node_Id) is
-
       function Search_Subprograms (N : Node_Id) return Traverse_Result;
       --  Tree visitor that search for outer level procedures with nested
       --  subprograms and invokes Unnest_Subprogram()
@@ -1732,9 +1731,7 @@ package body Exp_Unst is
 
       function Search_Subprograms (N : Node_Id) return Traverse_Result is
       begin
-         if Nkind_In (N, N_Subprogram_Body,
-                         N_Subprogram_Body_Stub)
-         then
+         if Nkind_In (N, N_Subprogram_Body, N_Subprogram_Body_Stub) then
             declare
                Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
 

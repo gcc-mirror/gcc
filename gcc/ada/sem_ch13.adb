@@ -8438,11 +8438,11 @@ package body Sem_Ch13 is
       --  Entity for argument of separate Predicate procedure when exceptions
       --  are present in expression.
 
-      FDecl         : Node_Id;
-      --  The function declaration.
+      FDecl : Node_Id;
+      --  The function declaration
 
-      SId            : Entity_Id;
-      --  Its entity.
+      SId : Entity_Id;
+      --  Its entity
 
       Raise_Expression_Present : Boolean := False;
       --  Set True if Expr has at least one Raise_Expression
@@ -8725,6 +8725,7 @@ package body Sem_Ch13 is
             Add_Call (Atyp);
          end if;
       end;
+
       --  Add Predicates for the current type
 
       Add_Predicates;
@@ -8842,7 +8843,7 @@ package body Sem_Ch13 is
                Insert_Before_And_Analyze (N, FDecl);
             end if;
 
-            Insert_After_And_Analyze  (N, FBody);
+            Insert_After_And_Analyze (N, FBody);
 
             --  Static predicate functions are always side-effect free, and
             --  in most cases dynamic predicate functions are as well. Mark
@@ -9065,7 +9066,8 @@ package body Sem_Ch13 is
       Loc : constant Source_Ptr := Sloc (Typ);
 
       Object_Entity : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('I'));
+                        Make_Defining_Identifier (Loc,
+                          Chars => New_Internal_Name ('I'));
 
       --  The formal parameter of the function
 
@@ -12613,9 +12615,10 @@ package body Sem_Ch13 is
             then
                Find_Selected_Component (Parent (N));
             end if;
+
             return Skip;
 
-         elsif Nkind (N) = N_Identifier and then  Chars (N) /= Chars (E) then
+         elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
             Set_Entity (N, Empty);
          end if;
@@ -12624,6 +12627,8 @@ package body Sem_Ch13 is
       end Resolve_Name;
 
       procedure Resolve_Aspect_Expression is new Traverse_Proc (Resolve_Name);
+
+   --  Start of processing for Resolve_Aspect_Expressions
 
    begin
       ASN := First_Rep_Item (E);
@@ -12637,7 +12642,7 @@ package body Sem_Ch13 is
                --  subprograms, or that may mention current instances of
                --  types. These will require special handling (???TBD).
 
-               when Aspect_Predicate |
+               when Aspect_Predicate         |
                     Aspect_Predicate_Failure |
                     Aspect_Invariant =>
                   null;
@@ -12645,13 +12650,13 @@ package body Sem_Ch13 is
                when Aspect_Static_Predicate |
                     Aspect_Dynamic_Predicate =>
 
-                  --  build predicate function specification and preanalyze
+                  --  Build predicate function specification and preanalyze
                   --  expression after type replacement.
 
                   if No (Predicate_Function (E)) then
                      declare
                         FDecl : constant Node_Id :=
-                           Build_Predicate_Function_Declaration (E);
+                                  Build_Predicate_Function_Declaration (E);
                         pragma Unreferenced (FDecl);
                      begin
                         Resolve_Aspect_Expression (Expr);

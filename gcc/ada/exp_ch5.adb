@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3605,24 +3605,30 @@ package body Exp_Ch5 is
       Container     : Node_Id;
       Container_Typ : Entity_Id)
    is
-      Id  : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Loc : constant Source_Ptr := Sloc (N);
+      Id       : constant Entity_Id   := Defining_Identifier (I_Spec);
+      Elem_Typ : constant Entity_Id   := Etype (Id);
+      Id_Kind  : constant Entity_Kind := Ekind (Id);
+      Loc      : constant Source_Ptr  := Sloc (N);
+      Stats    : constant List_Id     := Statements (N);
 
-      I_Kind   : constant Entity_Kind := Ekind (Id);
-      Cursor   : Entity_Id;
-      Iterator : Entity_Id;
-      New_Loop : Node_Id;
-      Stats    : constant List_Id := Statements (N);
+      Cursor    : Entity_Id;
+      Decl      : Node_Id;
+      Iter_Type : Entity_Id;
+      Iterator  : Entity_Id;
+      Name_Init : Name_Id;
+      Name_Step : Name_Id;
+      New_Loop  : Node_Id;
 
-      Element_Type : constant Entity_Id := Etype (Id);
-      Iter_Type    : Entity_Id;
-      Pack         : Entity_Id;
-      Decl         : Node_Id;
-      Name_Init    : Name_Id;
-      Name_Step    : Name_Id;
-
-      Fast_Element_Access_Op, Fast_Step_Op : Entity_Id := Empty;
+      Fast_Element_Access_Op : Entity_Id := Empty;
+      Fast_Step_Op           : Entity_Id := Empty;
       --  Only for optimized version of "for ... of"
+
+      Iter_Pack : Entity_Id;
+      --  The package in which the iterator interface is instantiated. This is
+      --  typically an instance within the container package.
+
+      Pack : Entity_Id;
+      --  The package in which the container type is declared
 
    begin
       --  Determine the advancement and initialization steps for the cursor.
@@ -3657,8 +3663,6 @@ package body Exp_Ch5 is
       else
          Pack := Scope (Container_Typ);
       end if;
-
-      Iter_Type := Etype (Name (I_Spec));
 
       if Of_Present (I_Spec) then
          Handle_Of : declare
@@ -3734,6 +3738,8 @@ package body Exp_Ch5 is
                end if;
             end Get_Default_Iterator;
 
+            --  Local variables
+
             Default_Iter : Entity_Id;
             Ent          : Entity_Id;
 
@@ -3759,6 +3765,12 @@ package body Exp_Ch5 is
             --  are Cursor and Has_Element.
 
             Iter_Type := Etype (Default_Iter);
+
+            --  The iterator type, which is a class-wide type, may itself be
+            --  derived locally, so the desired instantiation is the scope of
+            --  the root type of the iterator type.
+
+            Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
 
             --  Find declarations needed for "for ... of" optimization
 
@@ -3798,28 +3810,35 @@ package body Exp_Ch5 is
                          New_List (New_Copy_Tree (Container_Arg)))));
             end if;
 
-            --  The iterator type, which is a class-wide type, may itself be
-            --  derived locally, so the desired instantiation is the scope of
-            --  the root type of the iterator type. Currently, Pack is the
-            --  container instance; this overwrites it with the iterator
-            --  package.
-
-            Pack := Scope (Root_Type (Etype (Iter_Type)));
-
             --  Rewrite domain of iteration as a call to the default iterator
-            --  for the container type.
+            --  for the container type. The formal may be an access parameter
+            --  in which case we must build a reference to the container.
 
-            Rewrite (Name (I_Spec),
-              Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (Default_Iter, Loc),
-                Parameter_Associations => New_List (Container_Arg)));
+            declare
+               Arg : Node_Id;
+            begin
+               if Is_Access_Type (Etype (First_Entity (Default_Iter))) then
+                  Arg :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => Container_Arg,
+                      Attribute_Name => Name_Unrestricted_Access);
+               else
+                  Arg := Container_Arg;
+               end if;
+
+               Rewrite (Name (I_Spec),
+                 Make_Function_Call (Loc,
+                   Name                   =>
+                     New_Occurrence_Of (Default_Iter, Loc),
+                   Parameter_Associations => New_List (Arg)));
+            end;
+
             Analyze_And_Resolve (Name (I_Spec));
 
             --  Find cursor type in proper iterator package, which is an
             --  instantiation of Iterator_Interfaces.
 
-            Ent := First_Entity (Pack);
+            Ent := First_Entity (Iter_Pack);
             while Present (Ent) loop
                if Chars (Ent) = Name_Cursor then
                   Set_Etype (Cursor, Etype (Ent));
@@ -3834,7 +3853,7 @@ package body Exp_Ch5 is
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark        =>
-                     New_Occurrence_Of (Element_Type, Loc),
+                     New_Occurrence_Of (Elem_Typ, Loc),
                    Name                =>
                      Make_Explicit_Dereference (Loc,
                        Prefix =>
@@ -3849,7 +3868,7 @@ package body Exp_Ch5 is
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark        =>
-                     New_Occurrence_Of (Element_Type, Loc),
+                     New_Occurrence_Of (Elem_Typ, Loc),
                    Name                =>
                      Make_Indexed_Component (Loc,
                        Prefix      => Relocate_Node (Container_Arg),
@@ -3857,8 +3876,8 @@ package body Exp_Ch5 is
                          New_List (New_Occurrence_Of (Cursor, Loc))));
             end if;
 
-            --  The defining identifier in the iterator is user-visible
-            --  and must be visible in the debugger.
+            --  The defining identifier in the iterator is user-visible and
+            --  must be visible in the debugger.
 
             Set_Debug_Info_Needed (Id);
 
@@ -3878,18 +3897,25 @@ package body Exp_Ch5 is
             Prepend_To (Stats, Decl);
          end Handle_Of;
 
-      --  X in Iterate (S) : type of iterator is type of explicitly
-      --  given Iterate function, and the loop variable is the cursor.
-      --  It will be assigned in the loop and must be a variable.
+      --  X in Iterate (S) : type of iterator is type of explicitly given
+      --  Iterate function, and the loop variable is the cursor. It will be
+      --  assigned in the loop and must be a variable.
 
       else
+         Iter_Type := Etype (Name (I_Spec));
+
+         --  The iterator type, which is a class-wide type, may itself be
+         --  derived locally, so the desired instantiation is the scope of
+         --  the root type of the iterator type, as in the "of" case.
+
+         Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
          Cursor := Id;
       end if;
 
       Iterator := Make_Temporary (Loc, 'I');
 
-      --  For both iterator forms, add a call to the step operation to
-      --  advance the cursor. Generate:
+      --  For both iterator forms, add a call to the step operation to advance
+      --  the cursor. Generate:
 
       --     Cursor := Iterator.Next (Cursor);
 
@@ -3899,8 +3925,9 @@ package body Exp_Ch5 is
 
       if Present (Fast_Element_Access_Op) and then Present (Fast_Step_Op) then
          declare
-            Step_Call : Node_Id;
             Curs_Name : constant Node_Id := New_Occurrence_Of (Cursor, Loc);
+            Step_Call : Node_Id;
+
          begin
             Step_Call :=
               Make_Procedure_Call_Statement (Loc,
@@ -3948,16 +3975,16 @@ package body Exp_Ch5 is
               Condition =>
                 Make_Function_Call (Loc,
                   Name                   =>
-                    New_Occurrence_Of (
-                     Next_Entity (First_Entity (Pack)), Loc),
-                  Parameter_Associations =>
-                    New_List (New_Occurrence_Of (Cursor, Loc)))),
+                    New_Occurrence_Of
+                      (Next_Entity (First_Entity (Iter_Pack)), Loc),
+                  Parameter_Associations => New_List (
+                    New_Occurrence_Of (Cursor, Loc)))),
 
           Statements => Stats,
           End_Label  => Empty);
 
-      --  If present, preserve identifier of loop, which can be used in
-      --  an exit statement in the body.
+      --  If present, preserve identifier of loop, which can be used in an exit
+      --  statement in the body.
 
       if Present (Identifier (N)) then
          Set_Identifier (New_Loop, Relocate_Node (Identifier (N)));
@@ -3971,22 +3998,23 @@ package body Exp_Ch5 is
       Insert_Action (N,
         Make_Object_Renaming_Declaration (Loc,
           Defining_Identifier => Iterator,
-          Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
-          Name          => Relocate_Node (Name (I_Spec))));
+          Subtype_Mark        => New_Occurrence_Of (Iter_Type, Loc),
+          Name                => Relocate_Node (Name (I_Spec))));
 
       --  Create declaration for cursor
 
       declare
          Cursor_Decl : constant Node_Id :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Cursor,
-             Object_Definition   =>
-               New_Occurrence_Of (Etype (Cursor), Loc),
-             Expression          =>
-               Make_Selected_Component (Loc,
-                 Prefix        => New_Occurrence_Of (Iterator, Loc),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Init)));
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier => Cursor,
+                           Object_Definition   =>
+                             New_Occurrence_Of (Etype (Cursor), Loc),
+                           Expression          =>
+                             Make_Selected_Component (Loc,
+                               Prefix        =>
+                                 New_Occurrence_Of (Iterator, Loc),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_Init)));
 
       begin
          --  The cursor is only modified in expanded code, so it appears
@@ -3999,7 +4027,7 @@ package body Exp_Ch5 is
          Set_Assignment_OK (Cursor_Decl);
 
          Insert_Action (N, Cursor_Decl);
-         Set_Ekind (Cursor, I_Kind);
+         Set_Ekind (Cursor, Id_Kind);
       end;
 
       --  If the range of iteration is given by a function call that returns
