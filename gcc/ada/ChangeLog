@@ -1,5 +1,15 @@
 2016-04-21  Javier Miranda  <miranda@adacore.com>
 
+	* frontend.adb: Update call to Unnest_Subprograms.
+	* exp_ch6.ads, exp_ch6.adb, exp_unst.ads, exp_unst.adb
+	(Unnest_Subprograms): Moved to package exp_unst.
+	* exp_unst.ads (Unnest_Subprogram): Moved to the body of the
+	package.
+	* exp_dbug.adb (Qualify_Entity_Name): Enable qualification of
+	enumeration literals when generating C code.
+
+2016-04-21  Javier Miranda  <miranda@adacore.com>
+
 	* frontend.adb: Remove call to initialize Exp_Ch6.
 	* exp_ch6.ads, exp_ch6.adb (Initialize): removed.
 	(Unest_Entry/Unest_Bodies): Removed.

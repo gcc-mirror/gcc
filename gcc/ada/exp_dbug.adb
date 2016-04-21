@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1436,6 +1436,17 @@ package body Exp_Dbug is
       elsif Is_Subprogram (Ent)
         or else Ekind (Ent) = E_Subprogram_Body
         or else Is_Type (Ent)
+      then
+         Fully_Qualify_Name (Ent);
+         Name_Len := Full_Qualify_Len;
+         Name_Buffer (1 .. Name_Len) := Full_Qualify_Name (1 .. Name_Len);
+
+      --  Qualification needed for enumeration literals when generating C code
+      --  (to simplify their management in the backend).
+
+      elsif Generate_C_Code
+        and then Ekind (Ent) = E_Enumeration_Literal
+        and then Scope (Ultimate_Alias (Ent)) /= Standard_Standard
       then
          Fully_Qualify_Name (Ent);
          Name_Len := Full_Qualify_Len;
