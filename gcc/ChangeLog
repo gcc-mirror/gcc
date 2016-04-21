@@ -1,3 +1,16 @@
+2016-04-20  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/70018
+	* cgraph.c (cgraph_set_nothrow_flag_1): Rename to ...
+	(set_nothrow_flag_1): ... this; handle interposition correctly;
+	recurse on aliases and thunks.
+	(cgraph_node::set_nothrow_flag): New.
+	* ipa-pure-const.c (ignore_edge_for_nothrow): Ignore calls to
+	functions compiled with non-call exceptions that binds to current
+	def.
+	(propagate_nothrow): Be safe WRT interposition.
+	* cgraph.h (set_nothrow_flag): Update prototype.
+
 2016-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Use also

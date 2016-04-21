@@ -2358,27 +2358,65 @@ cgraph_node::make_local (void)
 
 /* Worker to set nothrow flag.  */
 
-static bool
-cgraph_set_nothrow_flag_1 (cgraph_node *node, void *data)
+static void
+set_nothrow_flag_1 (cgraph_node *node, bool nothrow, bool non_call,
+		    bool *changed)
 {
   cgraph_edge *e;
 
-  TREE_NOTHROW (node->decl) = data != NULL;
-
-  if (data != NULL)
-    for (e = node->callers; e; e = e->next_caller)
-      e->can_throw_external = false;
-  return false;
+  if (nothrow && !TREE_NOTHROW (node->decl))
+    {
+      /* With non-call exceptions we can't say for sure if other function body
+	 was not possibly optimized to stil throw.  */
+      if (!non_call || node->binds_to_current_def_p ())
+	{
+	  TREE_NOTHROW (node->decl) = true;
+	  *changed = true;
+	  for (e = node->callers; e; e = e->next_caller)
+	    e->can_throw_external = false;
+	}
+    }
+  else if (!nothrow && TREE_NOTHROW (node->decl))
+    {
+      TREE_NOTHROW (node->decl) = false;
+      *changed = true;
+    }
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if (!nothrow || alias->get_availability () > AVAIL_INTERPOSABLE)
+	set_nothrow_flag_1 (alias, nothrow, non_call, changed);
+    }
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk.thunk_p
+	&& (!nothrow || e->caller->get_availability () > AVAIL_INTERPOSABLE))
+      set_nothrow_flag_1 (e->caller, nothrow, non_call, changed);
 }
 
 /* Set TREE_NOTHROW on NODE's decl and on aliases of NODE
    if any to NOTHROW.  */
 
-void
+bool
 cgraph_node::set_nothrow_flag (bool nothrow)
 {
-  call_for_symbol_thunks_and_aliases (cgraph_set_nothrow_flag_1,
-				      (void *)(size_t)nothrow, nothrow == true);
+  bool changed = false;
+  bool non_call = opt_for_fn (decl, flag_non_call_exceptions);
+
+  if (!nothrow || get_availability () > AVAIL_INTERPOSABLE)
+    set_nothrow_flag_1 (this, nothrow, non_call, &changed);
+  else
+    {
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	{
+	  cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+	  if (!nothrow || alias->get_availability () > AVAIL_INTERPOSABLE)
+	    set_nothrow_flag_1 (alias, nothrow, non_call, &changed);
+	}
+    }
+  return changed;
 }
 
 /* Worker to set_const_flag.  */
@@ -2517,8 +2555,7 @@ cgraph_node::set_const_flag (bool set_const, bool looping)
 
 /* Info used by set_pure_flag_1.  */
 
-struct
-set_pure_flag_info
+struct set_pure_flag_info
 {
   bool pure;
   bool looping;
