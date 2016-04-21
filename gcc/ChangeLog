@@ -1,3 +1,11 @@
+2016-04-21  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* tree-vrp.c (register_edge_assert_for_2): Remove redundant
+	has_single_use() tests.
+	(register_edge_assert_for_1): Likewise.
+	(find_assert_locations_1): Check the liveness bitmap instead of
+	checking has_single_use().
+
 2016-04-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70728
