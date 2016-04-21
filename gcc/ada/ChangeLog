@@ -1,3 +1,7 @@
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: Freeze profile in ASIS mode.
+
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_aux.ads, sem_aux.adb (Has_Rep_Item): New variant.

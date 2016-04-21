@@ -1909,15 +1909,16 @@ package body Freeze is
    -------------------
 
    procedure Freeze_Before
-     (N   : Node_Id;
-      T   : Entity_Id;
-      F_P : Boolean := True)
+     (N                 : Node_Id;
+      T                 : Entity_Id;
+      Do_Freeze_Profile : Boolean := True)
    is
-   --  Freeze T, then insert the generated Freeze nodes before the node N.
-   --  The flag F_P is used when T is an overloadable entity, and indicates
-   --  whether its profile should be frozen at the same time.
+      --  Freeze T, then insert the generated Freeze nodes before the node N.
+      --  Flag Freeze_Profile is used when T is an overloadable entity, and
+      --  indicates whether its profile should be frozen at the same time.
 
-      Freeze_Nodes : constant List_Id := Freeze_Entity (T, N, F_P);
+      Freeze_Nodes : constant List_Id :=
+                       Freeze_Entity (T, N, Do_Freeze_Profile);
 
    begin
       if Ekind (T) = E_Function then
@@ -1934,9 +1935,9 @@ package body Freeze is
    -------------------
 
    function Freeze_Entity
-     (E : Entity_Id;
-      N : Node_Id;
-      F_P : Boolean := True) return List_Id
+     (E                 : Entity_Id;
+      N                 : Node_Id;
+      Do_Freeze_Profile : Boolean := True) return List_Id
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Atype  : Entity_Id;
@@ -5000,15 +5001,19 @@ package body Freeze is
             --  any extra formal parameters are created since we now know
             --  whether the subprogram will use a foreign convention.
 
-            --  In Ada 2012, freezing a subprogram does not always freeze
-            --  the corresponding profile (see AI05-019). An attribute
-            --  reference is not a freezing point of the profile. The boolean
-            --  Flag F_P indicates whether the profile should be frozen now.
+            --  In Ada 2012, freezing a subprogram does not always freeze the
+            --  corresponding profile (see AI05-019). An attribute reference
+            --  is not a freezing point of the profile. Flag Do_Freeze_Profile
+            --  indicates whether the profile should be frozen now.
             --  Other constructs that should not freeze ???
 
             --  This processing doesn't apply to internal entities (see below)
+            --  In ASIS mode the profile is frozen unconditionally, to prevent
+            --  backend anomalies.
 
-            if not Is_Internal (E) and then F_P then
+            if not Is_Internal (E)
+              and then (Do_Freeze_Profile or ASIS_Mode)
+            then
                if not Freeze_Profile (E) then
                   Ghost_Mode := Save_Ghost_Mode;
                   return Result;
