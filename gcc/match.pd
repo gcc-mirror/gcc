@@ -1232,6 +1232,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (FMAX @0 @1)
   (max @0 @1)))
+/* min (-A, -B) -> -max (A, B)  */
+(for minmax (min max FMIN FMAX)
+     maxmin (max min FMAX FMIN)
+ (simplify
+  (minmax (negate:s@2 @0) (negate:s@3 @1))
+  (if (FLOAT_TYPE_P (TREE_TYPE (@0))
+       || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+           && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
+   (negate (maxmin @0 @1)))))
+/* MIN (~X, ~Y) -> ~MAX (X, Y)
+   MAX (~X, ~Y) -> ~MIN (X, Y)  */
+(for minmax (min max)
+ maxmin (max min)
+ (simplify
+  (minmax (bit_not:s@2 @0) (bit_not:s@3 @1))
+  (bit_not (maxmin @0 @1))))
 
 /* Simplifications of shift and rotates.  */
 
