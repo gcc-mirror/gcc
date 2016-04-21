@@ -1,3 +1,17 @@
+2016-04-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Build_Procedure_Form): No action needed for
+	subprogram renamings since the backend can generate the call
+	using the renamed subprogram. This leaves the tree more clean
+	to the backend.
+	* exp_ch6.adb (Expand_Call): Extend previous patch for
+	rewritten-for-c entities to handle subprogram renamings.
+	(Rewrite_Function_Call_For_C): Handle subprogram renamings.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Code cleanup.
+
 2016-04-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): If the body is

@@ -703,10 +703,18 @@ package body Exp_Ch6 is
                                   New_Occurrence_Of (Param_Id, Loc),
                                 Expression =>
                                   New_Occurrence_Of (Ret_Obj, Sloc (Stmt)));
-                  Stmts   : constant List_Id :=
-                              Statements (Handled_Statement_Sequence (Stmt));
+                  Stmts   : List_Id;
 
                begin
+                  --  The extended return may just contain the declaration.
+
+                  if Present (Handled_Statement_Sequence (Stmt)) then
+                     Stmts :=  Statements (Handled_Statement_Sequence (Stmt));
+
+                  else
+                     Stmts := New_List;
+                  end if;
+
                   Set_Assignment_OK (Name (Assign));
 
                   Rewrite (Stmt,
@@ -715,8 +723,7 @@ package body Exp_Ch6 is
                         Return_Object_Declarations (Stmt),
                       Handled_Statement_Sequence =>
                         Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements =>
-                            Statements (Handled_Statement_Sequence (Stmt)))));
+                          Statements => Stmts)));
 
                   Replace_Returns (Param_Id, Stmts);
 
@@ -2682,7 +2689,7 @@ package body Exp_Ch6 is
       if Modify_Tree_For_C
         and then Nkind (Call_Node) = N_Function_Call
         and then Is_Entity_Name (Name (Call_Node))
-        and then Rewritten_For_C (Entity (Name (Call_Node)))
+        and then Rewritten_For_C (Ultimate_Alias (Entity (Name (Call_Node))))
       then
          --  For internally generated calls ensure that they reference the
          --  entity of the spec of the called function (needed since the
@@ -2690,11 +2697,14 @@ package body Exp_Ch6 is
          --  See for example Expand_Boolean_Operator().
 
          if not (Comes_From_Source (Call_Node))
-           and then Nkind (Unit_Declaration_Node (Entity (Name (Call_Node))))
+           and then Nkind
+                      (Unit_Declaration_Node
+                        (Ultimate_Alias (Entity (Name (Call_Node)))))
                       = N_Subprogram_Body
          then
             Set_Entity (Name (Call_Node),
-              Rewritten_For_C_Func_Id (Entity (Name (Call_Node))));
+              Rewritten_For_C_Func_Id
+                (Ultimate_Alias (Entity (Name (Call_Node)))));
          end if;
 
          Rewrite_Function_Call_For_C (Call_Node);
@@ -8419,7 +8429,7 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Func_Id     : constant Entity_Id  := Entity (Name (N));
+      Func_Id     : constant Entity_Id  := Ultimate_Alias (Entity (Name (N)));
       Par         : constant Node_Id    := Parent (N);
       Proc_Id     : constant Entity_Id  := Rewritten_For_C_Proc_Id (Func_Id);
       Loc         : constant Source_Ptr := Sloc (Par);

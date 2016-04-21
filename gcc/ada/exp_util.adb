@@ -932,9 +932,12 @@ package body Exp_Util is
       Proc_Decl    : Node_Id;
 
    begin
-      --  No action needed if this transformation was already done
+      --  No action needed if this transformation was already done or in case
+      --  of subprogram renaming declarations
 
-      if Nkind (Specification (N)) = N_Procedure_Specification then
+      if Nkind (Specification (N)) = N_Procedure_Specification
+        or else Nkind (N) = N_Subprogram_Renaming_Declaration
+      then
          return;
       end if;
 

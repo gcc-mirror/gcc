@@ -12613,7 +12613,7 @@ package body Sem_Ch13 is
             if Nkind (Prefix (N)) = N_Identifier
               and then Chars (Prefix (N)) /= Chars (E)
             then
-               Find_Selected_Component (Parent (N));
+               Find_Selected_Component (N);
             end if;
 
             return Skip;
