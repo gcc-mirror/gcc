@@ -8432,11 +8432,13 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Func_Id     : constant Entity_Id  := Ultimate_Alias (Entity (Name (N)));
+      Orig_Func   : constant Entity_Id  := Entity (Name (N));
+      Func_Id     : constant Entity_Id  := Ultimate_Alias (Orig_Func);
       Par         : constant Node_Id    := Parent (N);
       Proc_Id     : constant Entity_Id  := Rewritten_For_C_Proc_Id (Func_Id);
       Loc         : constant Source_Ptr := Sloc (Par);
       Actuals     : List_Id;
+      Last_Actual : Node_Id;
       Last_Formal : Entity_Id;
 
    --  Start of processing for Rewrite_Function_Call_For_C
@@ -8467,12 +8469,23 @@ package body Exp_Ch6 is
 
       --    Proc_Call (..., LHS);
 
+      --  If function is inherited, a conversion may be necessary.
+
       if Nkind (Par) = N_Assignment_Statement then
+         Last_Actual :=  Name (Par);
+
+         if not Comes_From_Source (Orig_Func)
+           and then Etype (Orig_Func) /= Etype (Func_Id)
+         then
+            Last_Actual :=
+               Unchecked_Convert_To (Etype (Func_Id), Last_Actual);
+         end if;
+
          Append_To (Actuals,
            Make_Parameter_Association (Loc,
              Selector_Name             =>
                Make_Identifier (Loc, Chars (Last_Formal)),
-             Explicit_Actual_Parameter => Name (Par)));
+             Explicit_Actual_Parameter => Last_Actual));
 
          Rewrite (Par,
            Make_Procedure_Call_Statement (Loc,

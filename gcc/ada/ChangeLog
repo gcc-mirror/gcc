@@ -1,3 +1,32 @@
+2016-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Robustify detection of Windows target.
+	* alloc.ads: Minor comment fixes.
+	* einfo.ads: Fix typo.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Component_Not_OK_For_Backend): Redo previous
+	changes to handle all cases of components depending on the
+	discriminant, not just string literals.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): If the subtype
+	declaration is the generated declaration for a generic actual,
+	inherit predicates from the actual if it is a predicated subtype.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Rewrite_Function_Call_For_C): If the function is
+	inherited and its result is controlling,  introduce a conversion
+	on the actual for the corresponding procedure call, to avoid
+	spurious type errors.
+
+2016-04-21  Jerome Lambourg  <lambourg@adacore.com>
+
+	* krunch.adb (Krunch): Fix krunching of i-vxworks.
+
 2016-04-21  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_aggr.adb: Minor reformatting and code cleanup.

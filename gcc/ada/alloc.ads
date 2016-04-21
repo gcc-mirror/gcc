@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,14 +30,14 @@
 ------------------------------------------------------------------------------
 
 --  This package contains definitions for initial sizes and growth increments
---  for the various dynamic arrays used for principle compiler data strcutures.
+--  for the various dynamic arrays used for the main compiler data structures.
 --  The indicated initial size is allocated for the start of each file, and
 --  the increment factor is a percentage used to increase the table size when
 --  it needs expanding (e.g. a value of 100 = 100% increase = double)
 
---  Note: the initial values here are multiplied by Table_Factor, as set
---  by the -gnatTnn switch. This variable is defined in Opt, as is the
---  default value for the table factor.
+--  Note: the initial values here are multiplied by Table_Factor as set by the
+--  -gnatTnn switch. This variable is defined in Opt, as is the default value
+--  for the table factor.
 
 package Alloc is
 

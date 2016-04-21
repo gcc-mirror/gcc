@@ -5918,6 +5918,10 @@ package body Exp_Aggr is
       --  semantics of Ada complicate the analysis and lead to anomalies in
       --  the gcc back-end if the aggregate is not expanded into assignments.
 
+      function Has_Per_Object_Constraint (L : List_Id) return Boolean;
+      --  Return True if any element of L has Has_Per_Object_Constraint set.
+      --  L should be the Choices component of an N_Component_Association.
+
       function Has_Visible_Private_Ancestor (Id : E) return Boolean;
       --  If any ancestor of the current type is private, the aggregate
       --  cannot be built in place. We cannot rely on Has_Private_Ancestor,
@@ -6024,7 +6028,8 @@ package body Exp_Aggr is
                return True;
 
             elsif Modify_Tree_For_C
-              and then Ekind (Etype (Expr_Q)) = E_String_Literal_Subtype
+              and then Nkind (C) = N_Component_Association
+              and then Has_Per_Object_Constraint (Choices (C))
             then
                Static_Components := False;
                return True;
@@ -6050,6 +6055,24 @@ package body Exp_Aggr is
 
          return False;
       end Component_Not_OK_For_Backend;
+
+      -------------------------------
+      -- Has_Per_Object_Constraint --
+      -------------------------------
+
+      function Has_Per_Object_Constraint (L : List_Id) return Boolean is
+         N : Node_Id := First (L);
+      begin
+         while Present (N) loop
+            if Has_Per_Object_Constraint (Associated_Node (N)) then
+               return True;
+            end if;
+
+            Next (N);
+         end loop;
+
+         return False;
+      end Has_Per_Object_Constraint;
 
       -----------------------------------
       --  Has_Visible_Private_Ancestor --
