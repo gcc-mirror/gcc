@@ -1,3 +1,13 @@
+2016-04-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting and code cleanup.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Resolve_Name): Omit quantified expressions from
+	resolution, because they introduce local names. Full resolution
+	will take place when predicate function is constructed.
+
 2016-04-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_aggr.adb (Component_Not_OK_For_Backend): Refine previous

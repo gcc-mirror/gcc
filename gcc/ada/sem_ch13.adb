@@ -12602,7 +12602,9 @@ package body Sem_Ch13 is
       --  of references to the current entity, denote visible entities. This
       --  is done only to detect visibility errors, as the expression will be
       --  properly analyzed/expanded during analysis of the predicate function
-      --  body.
+      --  body. We omit quantified expressions from this test, given that they
+      --  introduce a local identifier that would require proper expansion to
+      --  handle properly.
 
       ------------------
       -- Resolve_Name --
@@ -12622,6 +12624,9 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
             Set_Entity (N, Empty);
+
+         elsif Nkind (N) = N_Quantified_Expression then
+            return Skip;
          end if;
 
          return OK;

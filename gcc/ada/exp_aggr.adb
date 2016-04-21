@@ -202,7 +202,7 @@ package body Exp_Aggr is
    --    N is the (sub-)aggregate node to be expanded into code. This node has
    --    been fully analyzed, and its Etype is properly set.
    --
-   --    Index is the index node corresponding to the array sub-aggregate N
+   --    Index is the index node corresponding to the array subaggregate N
    --
    --    Into is the target expression into which we are copying the aggregate.
    --    Note that this node may not have been analyzed yet, and so the Etype
@@ -555,9 +555,9 @@ package body Exp_Aggr is
 
       function Component_Check (N : Node_Id; Index : Node_Id) return Boolean;
       --  This routine checks components of aggregate N, enforcing checks
-      --  1, 7, 8, 9, 11 and 12. In the multi-dimensional case, these checks
+      --  1, 7, 8, 9, 11, and 12. In the multidimensional case, these checks
       --  are performed on subaggregates. The Index value is the current index
-      --  being checked in the multi-dimensional case.
+      --  being checked in the multidimensional case.
 
       ---------------------
       -- Component_Check --
@@ -653,7 +653,7 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      --  Checks 4 (array must not be multi-dimensional Fortran case)
+      --  Checks 4 (array must not be multidimensional Fortran case)
 
       if Convention (Typ) = Convention_Fortran
         and then Number_Dimensions (Typ) > 1
@@ -705,7 +705,7 @@ package body Exp_Aggr is
 
    --  The code that we generate from a one dimensional aggregate is
 
-   --  1. If the sub-aggregate contains discrete choices we
+   --  1. If the subaggregate contains discrete choices we
 
    --     (a) Sort the discrete choices
 
@@ -767,9 +767,9 @@ package body Exp_Aggr is
       --  Returns a new reference to the index type name
 
       function Gen_Assign (Ind : Node_Id; Expr : Node_Id) return List_Id;
-      --  Ind must be a side-effect free expression. If the input aggregate
-      --  N to Build_Loop contains no sub-aggregates, then this function
-      --  returns the assignment statement:
+      --  Ind must be a side-effect-free expression. If the input aggregate N
+      --  to Build_Loop contains no subaggregates, then this function returns
+      --  the assignment statement:
       --
       --     Into (Indexes, Ind) := Expr;
       --
@@ -779,22 +779,22 @@ package body Exp_Aggr is
       --  is empty and we generate a call to the corresponding IP subprogram.
 
       function Gen_Loop (L, H : Node_Id; Expr : Node_Id) return List_Id;
-      --  Nodes L and H must be side-effect free expressions.
-      --  If the input aggregate N to Build_Loop contains no sub-aggregates,
-      --  This routine returns the for loop statement
+      --  Nodes L and H must be side-effect-free expressions. If the input
+      --  aggregate N to Build_Loop contains no subaggregates, this routine
+      --  returns the for loop statement:
       --
       --     for J in Index_Base'(L) .. Index_Base'(H) loop
       --        Into (Indexes, J) := Expr;
       --     end loop;
       --
       --  Otherwise we call Build_Code recursively.
-      --  As an optimization if the loop covers 3 or less scalar elements we
+      --  As an optimization if the loop covers 3 or fewer scalar elements we
       --  generate a sequence of assignments.
 
       function Gen_While (L, H : Node_Id; Expr : Node_Id) return List_Id;
-      --  Nodes L and H must be side-effect free expressions.
-      --  If the input aggregate N to Build_Loop contains no sub-aggregates,
-      --  This routine returns the while loop statement
+      --  Nodes L and H must be side-effect-free expressions. If the input
+      --  aggregate N to Build_Loop contains no subaggregates, this routine
+      --  returns the while loop statement:
       --
       --     J : Index_Base := L;
       --     while J < H loop
@@ -1223,7 +1223,7 @@ package body Exp_Aggr is
             Set_No_Ctrl_Actions (A);
 
             --  If this is an aggregate for an array of arrays, each
-            --  sub-aggregate will be expanded as well, and even with
+            --  subaggregate will be expanded as well, and even with
             --  No_Ctrl_Actions the assignments of inner components will
             --  require attachment in their assignments to temporaries. These
             --  temporaries must be finalized for each subaggregate, to prevent
@@ -1282,7 +1282,7 @@ package body Exp_Aggr is
             --  list associated with the scope.
 
             --  If the component is itself an array of controlled types, whose
-            --  value is given by a sub-aggregate, then the attach calls have
+            --  value is given by a subaggregate, then the attach calls have
             --  been generated when individual subcomponent are assigned, and
             --  must not be done again to prevent malformed finalization chains
             --  (see comments above, concerning the creation of a block to hold
@@ -1632,9 +1632,9 @@ package body Exp_Aggr is
 
       Aggr_L : constant Node_Id := Low_Bound (Aggregate_Bounds (N));
       Aggr_H : constant Node_Id := High_Bound (Aggregate_Bounds (N));
-      --  The aggregate bounds of this specific sub-aggregate. Note that if
-      --  the code generated by Build_Array_Aggr_Code is executed then these
-      --  bounds are OK. Otherwise a Constraint_Error would have been raised.
+      --  The aggregate bounds of this specific subaggregate. Note that if the
+      --  code generated by Build_Array_Aggr_Code is executed then these bounds
+      --  are OK. Otherwise a Constraint_Error would have been raised.
 
       Aggr_Low  : constant Node_Id := Duplicate_Subexpr_No_Checks (Aggr_L);
       Aggr_High : constant Node_Id := Duplicate_Subexpr_No_Checks (Aggr_H);
@@ -4114,7 +4114,7 @@ package body Exp_Aggr is
          Analyze_And_Resolve (N, Typ);
       end if;
 
-      --  If Static_Eaboration_Desired has been specified, diagnose aggregates
+      --  If Static_Elaboration_Desired has been specified, diagnose aggregates
       --  that will still require initialization code.
 
       if (Ekind (Current_Scope) = E_Package
@@ -4213,8 +4213,8 @@ package body Exp_Aggr is
 
       Others_Present : array (1 .. Aggr_Dimension) of Boolean :=
         (others => False);
-      --  If Others_Present (J) is True, then there is an others choice
-      --  in one of the sub-aggregates of N at dimension J.
+      --  If Others_Present (J) is True, then there is an others choice in one
+      --  of the subaggregates of N at dimension J.
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean;
       --  Returns true if an aggregate assignment can be done by the back end
@@ -4229,15 +4229,15 @@ package body Exp_Aggr is
       --  by Index_Bounds.
 
       procedure Check_Same_Aggr_Bounds (Sub_Aggr : Node_Id; Dim : Pos);
-      --  Checks that in a multi-dimensional array aggregate all subaggregates
-      --  corresponding to the same dimension have the same bounds.
-      --  Sub_Aggr is an array sub-aggregate. Dim is the dimension
-      --  corresponding to the sub-aggregate.
+      --  Checks that in a multidimensional array aggregate all subaggregates
+      --  corresponding to the same dimension have the same bounds. Sub_Aggr is
+      --  an array subaggregate. Dim is the dimension corresponding to the
+      --  subaggregate.
 
       procedure Compute_Others_Present (Sub_Aggr : Node_Id; Dim : Pos);
-      --  Computes the values of array Others_Present. Sub_Aggr is the
-      --  array sub-aggregate we start the computation from. Dim is the
-      --  dimension corresponding to the sub-aggregate.
+      --  Computes the values of array Others_Present. Sub_Aggr is the array
+      --  subaggregate we start the computation from. Dim is the dimension
+      --  corresponding to the subaggregate.
 
       function In_Place_Assign_OK return Boolean;
       --  Simple predicate to determine whether an aggregate assignment can
@@ -4245,15 +4245,15 @@ package body Exp_Aggr is
       --  components of the target of the assignment.
 
       procedure Others_Check (Sub_Aggr : Node_Id; Dim : Pos);
-      --  Checks that if an others choice is present in any sub-aggregate no
+      --  Checks that if an others choice is present in any subaggregate, no
       --  aggregate index is outside the bounds of the index constraint.
-      --  Sub_Aggr is an array sub-aggregate. Dim is the dimension
-      --  corresponding to the sub-aggregate.
+      --  Sub_Aggr is an array subaggregate. Dim is the dimension corresponding
+      --  to the subaggregate.
 
       function Safe_Left_Hand_Side (N : Node_Id) return Boolean;
       --  In addition to Maybe_In_Place_OK, in order for an aggregate to be
       --  built directly into the target of the assignment it must be free
-      --  of side-effects.
+      --  of side effects.
 
       ------------------------------------
       -- Aggr_Assignment_OK_For_Backend --
@@ -4542,7 +4542,7 @@ package body Exp_Aggr is
       procedure Check_Same_Aggr_Bounds (Sub_Aggr : Node_Id; Dim : Pos) is
          Sub_Lo : constant Node_Id := Low_Bound (Aggregate_Bounds (Sub_Aggr));
          Sub_Hi : constant Node_Id := High_Bound (Aggregate_Bounds (Sub_Aggr));
-         --  The bounds of this specific sub-aggregate
+         --  The bounds of this specific subaggregate
 
          Aggr_Lo : constant Node_Id := Aggr_Low (Dim);
          Aggr_Hi : constant Node_Id := Aggr_High (Dim);
@@ -4606,7 +4606,7 @@ package body Exp_Aggr is
                 Reason    => CE_Length_Check_Failed));
          end if;
 
-         --  Now look inside the sub-aggregate to see if there is more work
+         --  Now look inside the subaggregate to see if there is more work
 
          if Dim < Aggr_Dimension then
 
@@ -4650,7 +4650,7 @@ package body Exp_Aggr is
             end if;
          end if;
 
-         --  Now look inside the sub-aggregate to see if there is more work
+         --  Now look inside the subaggregate to see if there is more work
 
          if Dim < Aggr_Dimension then
 
@@ -4690,8 +4690,8 @@ package body Exp_Aggr is
          Obj_Hi  : Node_Id;
 
          function Safe_Aggregate (Aggr : Node_Id) return Boolean;
-         --  Check recursively that each component of a (sub)aggregate does
-         --  not depend on the variable being assigned to.
+         --  Check recursively that each component of a (sub)aggregate does not
+         --  depend on the variable being assigned to.
 
          function Safe_Component (Expr : Node_Id) return Boolean;
          --  Verify that an expression cannot depend on the variable being
@@ -4900,10 +4900,10 @@ package body Exp_Aggr is
 
          Choices_Lo : Node_Id := Empty;
          Choices_Hi : Node_Id := Empty;
-         --  The lowest and highest discrete choices for a named sub-aggregate
+         --  The lowest and highest discrete choices for a named subaggregate
 
          Nb_Choices : Int := -1;
-         --  The number of discrete non-others choices in this sub-aggregate
+         --  The number of discrete non-others choices in this subaggregate
 
          Nb_Elements : Uint := Uint_0;
          --  The number of elements in a positional aggregate
@@ -4916,7 +4916,7 @@ package body Exp_Aggr is
 
       begin
          --  Check if we have an others choice. If we do make sure that this
-         --  sub-aggregate contains at least one element in addition to the
+         --  subaggregate contains at least one element in addition to the
          --  others choice.
 
          if Range_Checks_Suppressed (Ind_Typ) then
@@ -4960,7 +4960,7 @@ package body Exp_Aggr is
             Need_To_Check := False;
          end if;
 
-         --  If we are dealing with a positional sub-aggregate with an others
+         --  If we are dealing with a positional subaggregate with an others
          --  choice then compute the number or positional elements.
 
          if Need_To_Check and then Present (Expressions (Sub_Aggr)) then
@@ -5013,7 +5013,7 @@ package body Exp_Aggr is
             end Compute_Choices_Lo_And_Choices_Hi;
          end if;
 
-         --  If no others choice in this sub-aggregate, or the aggregate
+         --  If no others choice in this subaggregate, or the aggregate
          --  comprises only an others choice, nothing to do.
 
          if not Need_To_Check then
@@ -5078,7 +5078,7 @@ package body Exp_Aggr is
             --  CE_Range_Check_Failed ???
          end if;
 
-         --  Now look inside the sub-aggregate to see if there is more work
+         --  Now look inside the subaggregate to see if there is more work
 
          if Dim < Aggr_Dimension then
 
@@ -5112,7 +5112,7 @@ package body Exp_Aggr is
       function Safe_Left_Hand_Side (N : Node_Id) return Boolean is
          function Is_Safe_Index (Indx : Node_Id) return Boolean;
          --  If the left-hand side includes an indexed component, check that
-         --  the indexes are free of side-effect.
+         --  the indexes are free of side effects.
 
          -------------------
          -- Is_Safe_Index --
@@ -5238,17 +5238,17 @@ package body Exp_Aggr is
          for J in 1 .. Aggr_Dimension loop
             --  There is no need to emit a check if an others choice is present
             --  for this array aggregate dimension since in this case one of
-            --  N's sub-aggregates has taken its bounds from the context and
+            --  N's subaggregates has taken its bounds from the context and
             --  these bounds must have been checked already. In addition all
-            --  sub-aggregates corresponding to the same dimension must all
-            --  have the same bounds (checked in (c) below).
+            --  subaggregates corresponding to the same dimension must all have
+            --  the same bounds (checked in (c) below).
 
             if not Range_Checks_Suppressed (Etype (Index_Constraint))
               and then not Others_Present (J)
             then
                --  We don't use Checks.Apply_Range_Check here because it emits
                --  a spurious check. Namely it checks that the range defined by
-               --  the aggregate bounds is non empty. But we know this already
+               --  the aggregate bounds is nonempty. But we know this already
                --  if we get here.
 
                Check_Bounds (Aggr_Index_Range, Index_Constraint);
@@ -6024,8 +6024,7 @@ package body Exp_Aggr is
                return True;
 
             elsif Modify_Tree_For_C
-              and then Nkind (C) in N_Entity
-              and then Has_Per_Object_Constraint (C)
+              and then Ekind (Etype (Expr_Q)) = E_String_Literal_Subtype
             then
                Static_Components := False;
                return True;
