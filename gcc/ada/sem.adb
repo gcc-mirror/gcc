@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -999,7 +999,7 @@ package body Sem is
       if Present (M) then
 
          --  If we are not at the end of the list, then the easiest
-         --  coding is simply to insert before our successor
+         --  coding is simply to insert before our successor.
 
          if Present (Next (N)) then
             Insert_Before_And_Analyze (Next (N), M);

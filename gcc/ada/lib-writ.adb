@@ -43,6 +43,7 @@ with Par;
 with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
+with Stand;    use Stand;
 with Scn;      use Scn;
 with Sem_Eval; use Sem_Eval;
 with Sinfo;    use Sinfo;
@@ -155,9 +156,9 @@ package body Lib.Writ is
         OA_Setting        => 'O',
         SPARK_Mode_Pragma => Empty);
 
-      --  Parse system.ads so that the checksum is set right,
-      --  Style checks are not applied. The Ekind is set to ensure
-      --  that this reference is always present in the ali file.
+      --  Parse system.ads so that the checksum is set right. Style checks are
+      --  not applied. The Ekind is set to ensure that this reference is always
+      --  present in the ali file.
 
       declare
          Save_Mindex : constant Nat := Multiple_Unit_Index;
@@ -167,7 +168,8 @@ package body Lib.Writ is
          Style_Check := False;
          Initialize_Scanner (Units.Last, System_Source_File_Index);
          Discard_List (Par (Configuration_Pragmas => False));
-         Set_Ekind (Cunit_Entity (Units.Last),  E_Package);
+         Set_Ekind (Cunit_Entity (Units.Last), E_Package);
+         Set_Scope (Cunit_Entity (Units.Last), Standard_Standard);
          Style_Check := Save_Style;
          Multiple_Unit_Index := Save_Mindex;
       end;
@@ -1435,9 +1437,13 @@ package body Lib.Writ is
             --  context of a unit loaded through a limited_with clause. These
             --  units are never analyzed, and thus the main unit does not
             --  really have a dependency on them.
+            --  Subunits are always compiled in the context of the parent,
+            --  and their file table entries are not properly decorated, they
+            --  are recognized syntactically.
 
             if Present (Cunit_Entity (Unum))
               and then Ekind (Cunit_Entity (Unum)) = E_Void
+              and then Nkind (Unit (Cunit (Unum))) /= N_Subunit
             then
                goto Next_Unit;
             end if;
@@ -1465,9 +1471,9 @@ package body Lib.Writ is
                Write_Info_Char (' ');
                Write_Info_Str (Get_Hex_String (Source_Checksum (Sind)));
 
-               --  If the dependency comes from a limited_with clause,
-               --  record limited_checksum.
-               --  Disable for now, until full checksum changes are checked.
+               --  If the dependency comes from a limited_with clause, record
+               --  limited_checksum. This is disabled until full checksum
+               --  changes are checked.
 
                --  if Present (Cunit_Entity (Unum))
                --    and then From_Limited_With (Cunit_Entity (Unum))
