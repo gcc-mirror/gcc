@@ -1,5 +1,12 @@
 2016-04-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/70725
+	* tree-if-conv.c (if_convertible_phi_p): Adjust guard
+	for phi_convertible_by_degenerating_args.
+	(predicate_all_scalar_phis): Handle single-argument PHIs.
+
+2016-04-21  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/70747
 	* fold-const.c (fold_comparison): Return properly typed
 	constant boolean.

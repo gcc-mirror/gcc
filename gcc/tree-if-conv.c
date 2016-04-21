@@ -659,7 +659,7 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
 
   if (bb != loop->header)
     {
-      if (gimple_phi_num_args (phi) != 2
+      if (gimple_phi_num_args (phi) > 2
 	  && !aggressive_if_conv
 	  && !phi_convertible_by_degenerating_args (phi))
 	{
@@ -1911,20 +1911,31 @@ predicate_all_scalar_phis (struct loop *loop)
       if (bb == loop->header)
 	continue;
 
-      if (EDGE_COUNT (bb->preds) == 1)
-	continue;
-
       phi_gsi = gsi_start_phis (bb);
       if (gsi_end_p (phi_gsi))
 	continue;
 
-      gsi = gsi_after_labels (bb);
-      while (!gsi_end_p (phi_gsi))
+      if (EDGE_COUNT (bb->preds) == 1)
 	{
-	  phi = phi_gsi.phi ();
-	  predicate_scalar_phi (phi, &gsi);
-	  release_phi_node (phi);
-	  gsi_next (&phi_gsi);
+	  /* Propagate degenerate PHIs.  */
+	  for (phi_gsi = gsi_start_phis (bb); !gsi_end_p (phi_gsi);
+	       gsi_next (&phi_gsi))
+	    {
+	      gphi *phi = phi_gsi.phi ();
+	      replace_uses_by (gimple_phi_result (phi),
+			       gimple_phi_arg_def (phi, 0));
+	    }
+	}
+      else
+	{
+	  gsi = gsi_after_labels (bb);
+	  while (!gsi_end_p (phi_gsi))
+	    {
+	      phi = phi_gsi.phi ();
+	      predicate_scalar_phi (phi, &gsi);
+	      release_phi_node (phi);
+	      gsi_next (&phi_gsi);
+	    }
 	}
 
       set_phi_nodes (bb, NULL);
