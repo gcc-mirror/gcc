@@ -564,7 +564,6 @@ package body Exp_Aggr is
       ---------------------
 
       function Component_Check (N : Node_Id; Index : Node_Id) return Boolean is
-
          function Ultimate_Original_Expression (N : Node_Id) return Node_Id;
          --  Given a type conversion or an unchecked type conversion N, return
          --  its innermost original expression.
@@ -589,6 +588,8 @@ package body Exp_Aggr is
          --  Local variables
 
          Expr : Node_Id;
+
+      --  Start of processing for Component_Check
 
       begin
          --  Checks 1: (no component associations)

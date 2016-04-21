@@ -1,3 +1,8 @@
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, exp_attr.adb, exp_ch6.adb, exp_aggr.adb: Minor
+	reformatting.
+
 2016-04-21  Javier Miranda  <miranda@adacore.com>
 
 	* exp_aggr.adb (Component_Check): Extend

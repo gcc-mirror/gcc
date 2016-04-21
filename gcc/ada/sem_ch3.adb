@@ -5071,11 +5071,12 @@ package body Sem_Ch3 is
         and then Has_Predicates (T)
         and then Present (Predicate_Function (T))
       then
+         --  ??? This is dangerous, it may clobber the invariant procedure
+
          Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
 
          if Has_Static_Predicate (T) then
-            Set_Static_Discrete_Predicate (Id,
-              Static_Discrete_Predicate (T));
+            Set_Static_Discrete_Predicate (Id, Static_Discrete_Predicate (T));
          end if;
       end if;
 
