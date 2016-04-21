@@ -4170,9 +4170,9 @@ package Einfo is
 --       of the predicate function. This is the original expression given as
 --       the predicate except that occurrences of the type are replaced by
 --       occurrences of the formal parameter of the predicate function (note
---       that the spec of this function including this formal parameter name)
---       is available from the Subprograms_For_Type field (it can be accessed
---       as Predicate_Function (typ). Also, in the case where a predicate is
+--       that the spec of this function including this formal parameter name
+--       is available from the Subprograms_For_Type field; it can be accessed
+--       as Predicate_Function (typ)). Also, in the case where a predicate is
 --       inherited, the expression is of the form:
 --
 --         xxxPredicate (typ2 (ent)) AND THEN expression

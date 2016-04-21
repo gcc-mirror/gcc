@@ -154,6 +154,8 @@ procedure Gnatlink is
 
    Base_Command_Name    : String_Access;
 
+   Target_Debuggable_Suffix : String_Access;
+
    Tname    : Temp_File_Name;
    Tname_FD : File_Descriptor := Invalid_FD;
    --  Temporary file used by linker to pass list of object files on
@@ -1646,12 +1648,14 @@ begin
 
    Write_Header;
 
+   Target_Debuggable_Suffix := Get_Target_Debuggable_Suffix;
+
    --  If no output name specified, then use the base name of .ali file name
 
    if Output_File_Name = null then
       Output_File_Name :=
         new String'(Base_Name (Ali_File_Name.all)
-                      & Get_Target_Debuggable_Suffix.all);
+                      & Target_Debuggable_Suffix.all);
    end if;
 
    Linker_Options.Increment_Last;
@@ -1711,12 +1715,9 @@ begin
             FN (J) := Csets.Fold_Lower (FN (J));
       end loop;
 
-      --  For now we detect windows by an output executable name ending with
-      --  the suffix .exe.
+      --  For now we detect Windows by its executable suffix of .exe
 
-      if FN'Length > 5
-        and then FN (FN'Last - 3 .. FN'Last) = ".exe"
-      then
+      if Target_Debuggable_Suffix.all = ".exe" then
          Check_File_Name ("install");
          Check_File_Name ("setup");
          Check_File_Name ("update");
