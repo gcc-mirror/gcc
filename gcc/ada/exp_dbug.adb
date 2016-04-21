@@ -1458,6 +1458,35 @@ package body Exp_Dbug is
 
       else
          Set_Has_Qualified_Name (Ent);
+
+         --  If a variable is hidden by a subsequent loop variable, qualify
+         --  the name of that loop variable to prevent visibility issues when
+         --  translating to C. Note that gdb probably never handled properly
+         --  this accidental hiding, given that loops are not scopes at
+         --  runtime. We also qualify a name if it hides an outer homonym,
+         --  and both are declared in blocks.
+
+         if Modify_Tree_For_C and then Ekind (Ent) =  E_Variable then
+            if Present (Hiding_Loop_Variable (Ent)) then
+               declare
+                  Var : constant Entity_Id := Hiding_Loop_Variable (Ent);
+
+               begin
+                  Set_Entity_Name (Var);
+                  Add_Str_To_Name_Buffer ("L");
+                  Set_Chars (Var, Name_Enter);
+               end;
+
+            elsif Present (Homonym (Ent))
+              and then Ekind (Scope (Ent)) = E_Block
+              and then Ekind (Scope (Homonym (Ent))) = E_Block
+            then
+               Set_Entity_Name (Ent);
+               Add_Str_To_Name_Buffer ("B");
+               Set_Chars (Ent, Name_Enter);
+            end if;
+         end if;
+
          return;
       end if;
 

@@ -8646,8 +8646,8 @@ package body Sem_Ch13 is
             --  function at this point.
 
             elsif Nkind (Ritem) = N_Aspect_Specification
-               and then Present (Aspect_Rep_Item (Ritem))
-               and then Scope (Typ) /= Current_Scope
+              and then Present (Aspect_Rep_Item (Ritem))
+              and then Scope (Typ) /= Current_Scope
             then
                declare
                   Prag : constant Node_Id := Aspect_Rep_Item (Ritem);

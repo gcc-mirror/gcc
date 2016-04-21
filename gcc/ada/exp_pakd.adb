@@ -81,12 +81,6 @@ package body Exp_Pakd is
    -- Local Subprograms --
    -----------------------
 
-   function Compute_Number_Components
-      (N   : Node_Id;
-       Typ : Entity_Id) return Node_Id;
-   --  Build an expression that multiplies the length of the dimensions of the
-   --  array, used to control array equality checks.
-
    procedure Compute_Linear_Subscript
      (Atyp   : Entity_Id;
       N      : Node_Id;
@@ -95,6 +89,12 @@ package body Exp_Pakd is
    --  referencing an array object of this type, build an expression of type
    --  Standard.Integer representing the zero-based linear subscript value.
    --  This expression includes any required range checks.
+
+   function Compute_Number_Components
+      (N   : Node_Id;
+       Typ : Entity_Id) return Node_Id;
+   --  Build an expression that multiplies the length of the dimensions of the
+   --  array, used to control array equality checks.
 
    procedure Convert_To_PAT_Type (Aexp : Node_Id);
    --  Given an expression of a packed array type, builds a corresponding
@@ -266,38 +266,6 @@ package body Exp_Pakd is
       return Adjusted;
    end Revert_Storage_Order;
 
-   -------------------------------
-   -- Compute_Number_Components --
-   -------------------------------
-
-   function Compute_Number_Components
-      (N   : Node_Id;
-       Typ : Entity_Id) return Node_Id
-   is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Len_Expr : Node_Id;
-
-   begin
-      Len_Expr :=
-        Make_Attribute_Reference (Loc,
-          Attribute_Name => Name_Length,
-          Prefix         => New_Occurrence_Of (Typ, Loc),
-          Expressions    => New_List (Make_Integer_Literal (Loc, 1)));
-
-      for J in 2 .. Number_Dimensions (Typ) loop
-         Len_Expr :=
-           Make_Op_Multiply (Loc,
-             Left_Opnd  => Len_Expr,
-             Right_Opnd =>
-               Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Length,
-                Prefix         => New_Occurrence_Of (Typ, Loc),
-                Expressions    => New_List (Make_Integer_Literal (Loc, J))));
-      end loop;
-
-      return Len_Expr;
-   end Compute_Number_Components;
-
    ------------------------------
    -- Compute_Linear_Subscript --
    ------------------------------
@@ -433,6 +401,38 @@ package body Exp_Pakd is
          Next (Oldsub);
       end loop;
    end Compute_Linear_Subscript;
+
+   -------------------------------
+   -- Compute_Number_Components --
+   -------------------------------
+
+   function Compute_Number_Components
+      (N   : Node_Id;
+       Typ : Entity_Id) return Node_Id
+   is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Len_Expr : Node_Id;
+
+   begin
+      Len_Expr :=
+        Make_Attribute_Reference (Loc,
+          Attribute_Name => Name_Length,
+          Prefix         => New_Occurrence_Of (Typ, Loc),
+          Expressions    => New_List (Make_Integer_Literal (Loc, 1)));
+
+      for J in 2 .. Number_Dimensions (Typ) loop
+         Len_Expr :=
+           Make_Op_Multiply (Loc,
+             Left_Opnd  => Len_Expr,
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Length,
+                Prefix         => New_Occurrence_Of (Typ, Loc),
+                Expressions    => New_List (Make_Integer_Literal (Loc, J))));
+      end loop;
+
+      return Len_Expr;
+   end Compute_Number_Components;
 
    -------------------------
    -- Convert_To_PAT_Type --
@@ -1882,14 +1882,13 @@ package body Exp_Pakd is
 
       LLexpr :=
         Make_Op_Multiply (Loc,
-          Left_Opnd => Compute_Number_Components (N, Ltyp),
+          Left_Opnd  => Compute_Number_Components (N, Ltyp),
           Right_Opnd => Make_Integer_Literal (Loc, Component_Size (Ltyp)));
 
       RLexpr :=
         Make_Op_Multiply (Loc,
-          Left_Opnd => Compute_Number_Components (N, Rtyp),
-          Right_Opnd =>
-            Make_Integer_Literal (Loc, Component_Size (Rtyp)));
+          Left_Opnd  => Compute_Number_Components (N, Rtyp),
+          Right_Opnd => Make_Integer_Literal (Loc, Component_Size (Rtyp)));
 
       --  For the modular case, we transform the comparison to:
 

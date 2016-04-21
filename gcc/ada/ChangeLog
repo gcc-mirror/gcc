@@ -1,3 +1,13 @@
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_pakd.adb, sem_ch13.adb: Minor reformatting.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.adb, exp_dbug.ads (Qualify_Entity_Name): Add suffixes to
+	disambiguate local variables that may be hidden from inner visibility
+	by nested block declarations or loop variables.
+
 2016-04-21  Jerome Lambourg  <lambourg@adacore.com>
 
 	* s-soflin.adb: Initialize the Stack_Limit global variable.
