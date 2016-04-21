@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2248,17 +2248,25 @@ package body Sem_Res is
                      end loop;
 
                   else
-                     --  Before we issue an ambiguity complaint, check for
-                     --  the case of a subprogram call where at least one
-                     --  of the arguments is Any_Type, and if so, suppress
-                     --  the message, since it is a cascaded error.
+                     --  Before we issue an ambiguity complaint, check for the
+                     --  case of a subprogram call where at least one of the
+                     --  arguments is Any_Type, and if so suppress the message,
+                     --  since it is a cascaded error. This can also happen for
+                     --  a generalized indexing operation.
 
-                     if Nkind (N) in N_Subprogram_Call then
+                     if Nkind (N) in N_Subprogram_Call
+                       or else (Nkind (N) = N_Indexed_Component
+                                 and then Present (Generalized_Indexing (N)))
+                     then
                         declare
                            A : Node_Id;
                            E : Node_Id;
 
                         begin
+                           if Nkind (N) = N_Indexed_Component then
+                              Rewrite (N, Generalized_Indexing (N));
+                           end if;
+
                            A := First_Actual (N);
                            while Present (A) loop
                               E := A;
@@ -2292,17 +2300,17 @@ package body Sem_Res is
                         exit Interp_Loop;
                      end if;
 
-                     --  Not that special case, so issue message using the
-                     --  flag Ambiguous to control printing of the header
-                     --  message only at the start of an ambiguous set.
+                     --  Not that special case, so issue message using the flag
+                     --  Ambiguous to control printing of the header message
+                     --  only at the start of an ambiguous set.
 
                      if not Ambiguous then
                         if Nkind (N) = N_Function_Call
                           and then Nkind (Name (N)) = N_Explicit_Dereference
                         then
                            Error_Msg_N
-                             ("ambiguous expression "
-                               & "(cannot resolve indirect call)!", N);
+                             ("ambiguous expression (cannot resolve indirect "
+                              & "call)!", N);
                         else
                            Error_Msg_NE -- CODEFIX
                              ("ambiguous expression (cannot resolve&)!",
@@ -11836,9 +11844,11 @@ package body Sem_Res is
                 "downward conversion of tagged objects not allowed");
 
          --  Ada 2005 (AI-251): The conversion to/from interface types is
-         --  always valid
+         --  always valid. The types involved may be class-wide (sub)types.
 
-         elsif Is_Interface (Target_Type) or else Is_Interface (Opnd_Type) then
+         elsif Is_Interface (Etype (Base_Type (Target_Type)))
+           or else Is_Interface (Etype (Base_Type (Opnd_Type)))
+         then
             return True;
 
          --  If the operand is a class-wide type obtained through a limited_
