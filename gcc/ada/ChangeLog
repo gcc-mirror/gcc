@@ -1,3 +1,12 @@
+2016-04-21  Philippe Gil  <gil@adacore.com>
+
+	* krunch.adb (Krunch): Fix krunching of i-java.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch8.adb (Evaluation_Required): Always return
+	True when Modify_Tree_For_C.
+
 2016-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatlink.adb (Gnatlink): Robustify detection of Windows target.
