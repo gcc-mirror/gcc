@@ -6135,6 +6135,10 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
+/* A chain of saved_scope structures awaiting reuse.  */
+
+static GTY((deletable)) struct saved_scope *free_saved_scope;
+
 void
 push_to_top_level (void)
 {
@@ -6145,7 +6149,21 @@ push_to_top_level (void)
   bool need_pop;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  s = ggc_cleared_alloc<saved_scope> ();
+
+  /* Reuse or create a new structure for this saved scope.  */
+  if (free_saved_scope != NULL)
+    {
+      s = free_saved_scope;
+      free_saved_scope = s->prev;
+
+      vec<cxx_saved_binding, va_gc> *old_bindings = s->old_bindings;
+      memset (s, 0, sizeof (*s));
+      /* Also reuse the structure's old_bindings vector.  */
+      vec_safe_truncate (old_bindings, 0);
+      s->old_bindings = old_bindings;
+    }
+  else
+    s = ggc_cleared_alloc<saved_scope> ();
 
   b = scope_chain ? current_binding_level : 0;
 
@@ -6238,6 +6256,11 @@ pop_from_top_level_1 (void)
   current_function_decl = s->function_decl;
   cp_unevaluated_operand = s->unevaluated_operand;
   c_inhibit_evaluation_warnings = s->inhibit_evaluation_warnings;
+
+  /* Make this saved_scope structure available for reuse by
+     push_to_top_level.  */
+  s->prev = free_saved_scope;
+  free_saved_scope = s;
 }
 
 /* Wrapper for pop_from_top_level_1.  */
