@@ -10733,57 +10733,143 @@ package body Sem_Util is
    ----------------------------
 
    procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id) is
-      From_Item : constant Node_Id := First_Rep_Item (From_Typ);
-      Item      : Node_Id := Empty;
-      Last_Item : Node_Id := Empty;
+      Item      : Node_Id;
+      Next_Item : Node_Id;
 
    begin
-      --  Reach the end of the destination type's chain (if any) and capture
-      --  the last item.
+      --  There are several inheritance scenarios to consider depending on
+      --  whether both types have rep item chains and whether the destination
+      --  type already inherits part of the source type's rep item chain.
 
-      Item := First_Rep_Item (Typ);
-      while Present (Item) loop
+      --  1) The source type lacks a rep item chain
+      --     From_Typ ---> Empty
+      --
+      --     Typ --------> Item (or Empty)
 
-         --  Do not inherit a chain that has been inherited already
+      --  In this case inheritance cannot take place because there are no items
+      --  to inherit.
 
-         if Item = From_Item then
-            return;
-         end if;
+      --  2) The destination type lacks a rep item chain
+      --     From_Typ ---> Item ---> ...
+      --
+      --     Typ --------> Empty
 
-         Last_Item := Item;
-         Item := Next_Rep_Item (Item);
-      end loop;
+      --  Inheritance takes place by setting the First_Rep_Item of the
+      --  destination type to the First_Rep_Item of the source type.
+      --     From_Typ ---> Item ---> ...
+      --                    ^
+      --     Typ -----------+
 
-      Item := First_Rep_Item (From_Typ);
+      --  3.1) Both source and destination types have at least one rep item.
+      --  The destination type does NOT inherit a rep item from the source
+      --  type.
+      --     From_Typ ---> Item ---> Item
+      --
+      --     Typ --------> Item ---> Item
 
-      --  Additional check when both parent and current type have rep.
-      --  items, to prevent circularities when the derivation completes
-      --  a private declaration and inherits from both views of the parent.
-      --  There may be a remaining problem with the proper ordering of
-      --  attribute specifications and aspects on the chains of the four
-      --  entities involved. ???
+      --  Inheritance takes place by setting the Next_Rep_Item of the last item
+      --  of the destination type to the First_Rep_Item of the source type.
+      --     From_Typ -------------------> Item ---> Item
+      --                                    ^
+      --     Typ --------> Item ---> Item --+
 
-      if Present (Item) and then Present (From_Item) then
-         while Present (Item) loop
-            if Item = First_Rep_Item (Typ) then
-               return;
-            end if;
+      --  3.2) Both source and destination types have at least one rep item.
+      --  The destination type DOES inherit part of the rep item chain of the
+      --  source type.
+      --     From_Typ ---> Item ---> Item ---> Item
+      --                              ^
+      --     Typ --------> Item ------+
 
-            Item := Next_Rep_Item (Item);
-         end loop;
-      end if;
+      --  This rare case arises when the full view of a private extension must
+      --  inherit the rep item chain from the full view of its parent type and
+      --  the full view of the parent type contains extra rep items. Currently
+      --  only invariants may lead to such form of inheritance.
 
-      --  When the destination type has a rep item chain, the chain of the
-      --  source type is appended to it.
+      --     type From_Typ is tagged private
+      --       with Type_Invariant'Class => Item_2;
 
-      if Present (Last_Item) then
-         Set_Next_Rep_Item (Last_Item, From_Item);
+      --     type Typ is new From_Typ with private
+      --       with Type_Invariant => Item_4;
 
-      --  Otherwise the destination type directly inherits the rep item chain
-      --  of the source type (if any).
+      --  At this point the rep item chains contain the following items
+
+      --     From_Typ -----------> Item_2 ---> Item_3
+      --                            ^
+      --     Typ --------> Item_4 --+
+
+      --  The full views of both types may introduce extra invariants
+
+      --     type From_Typ is tagged null record
+      --       with Type_Invariant => Item_1;
+
+      --     type Typ is new From_Typ with null record;
+
+      --  The full view of Typ would have to inherit any new rep items added to
+      --  the full view of From_Typ.
+
+      --     From_Typ -----------> Item_1 ---> Item_2 ---> Item_3
+      --                            ^
+      --     Typ --------> Item_4 --+
+
+      --  To achieve this form of inheritance, the destination type must first
+      --  sever the link between its own rep chain and that of the source type,
+      --  then inheritance 3.1 takes place.
+
+      --  Case 1: The source type lacks a rep item chain
+
+      if No (First_Rep_Item (From_Typ)) then
+         return;
+
+      --  Case 2: The destination type lacks a rep item chain
+
+      elsif No (First_Rep_Item (Typ)) then
+         Set_First_Rep_Item (Typ, First_Rep_Item (From_Typ));
+
+      --  Case 3: Both the source and destination types have at least one rep
+      --  item. Traverse the rep item chain of the destination type to find the
+      --  last rep item.
 
       else
-         Set_First_Rep_Item (Typ, From_Item);
+         Item      := Empty;
+         Next_Item := First_Rep_Item (Typ);
+         while Present (Next_Item) loop
+
+            --  Detect a link between the destination type's rep chain and that
+            --  of the source type. There are two possibilities:
+
+            --    Variant 1
+            --                  Next_Item
+            --                      V
+            --       From_Typ ---> Item_1 --->
+            --                      ^
+            --       Typ -----------+
+            --
+            --       Item is Empty
+
+            --    Variant 2
+            --                              Next_Item
+            --                                  V
+            --       From_Typ ---> Item_1 ---> Item_2 --->
+            --                                  ^
+            --       Typ --------> Item_3 ------+
+            --                      ^
+            --                     Item
+
+            if Has_Rep_Item (From_Typ, Next_Item) then
+               exit;
+            end if;
+
+            Item      := Next_Item;
+            Next_Item := Next_Rep_Item (Next_Item);
+         end loop;
+
+         --  Inherit the source type's rep item chain
+
+         if Present (Item) then
+            Set_Next_Rep_Item (Item, First_Rep_Item (From_Typ));
+         else
+            Set_First_Rep_Item (Typ, First_Rep_Item (From_Typ));
+         end if;
       end if;
    end Inherit_Rep_Item_Chain;
 

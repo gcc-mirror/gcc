@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -706,6 +706,29 @@ package body Sem_Aux is
    is
    begin
       return Present (Get_Rep_Item (E, Nam1, Nam2, Check_Parents));
+   end Has_Rep_Item;
+
+   function Has_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean is
+      Item : Node_Id;
+
+   begin
+      pragma Assert
+        (Nkind_In (N, N_Aspect_Specification,
+                      N_Attribute_Definition_Clause,
+                      N_Enumeration_Representation_Clause,
+                      N_Pragma,
+                      N_Record_Representation_Clause));
+
+      Item := First_Rep_Item (E);
+      while Present (Item) loop
+         if Item = N then
+            return True;
+         end if;
+
+         Item := Next_Rep_Item (Item);
+      end loop;
+
+      return False;
    end Has_Rep_Item;
 
    --------------------

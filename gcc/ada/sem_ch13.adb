@@ -3926,7 +3926,8 @@ package body Sem_Ch13 is
                return;
 
             --  A stream subprogram for an interface type must be a null
-            --  procedure (RM 13.13.2 (38/3)).
+            --  procedure (RM 13.13.2 (38/3)). Note that the class-wide type
+            --  of an interface is not an interface type (3.9.4 (6.b/2)).
 
             elsif Is_Interface (U_Ent)
               and then not Is_Class_Wide_Type (U_Ent)

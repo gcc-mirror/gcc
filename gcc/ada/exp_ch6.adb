@@ -706,11 +706,10 @@ package body Exp_Ch6 is
                   Stmts   : List_Id;
 
                begin
-                  --  The extended return may just contain the declaration.
+                  --  The extended return may just contain the declaration
 
                   if Present (Handled_Statement_Sequence (Stmt)) then
-                     Stmts :=  Statements (Handled_Statement_Sequence (Stmt));
-
+                     Stmts := Statements (Handled_Statement_Sequence (Stmt));
                   else
                      Stmts := New_List;
                   end if;
@@ -2697,10 +2696,9 @@ package body Exp_Ch6 is
          --  See for example Expand_Boolean_Operator().
 
          if not (Comes_From_Source (Call_Node))
-           and then Nkind
-                      (Unit_Declaration_Node
-                        (Ultimate_Alias (Entity (Name (Call_Node)))))
-                      = N_Subprogram_Body
+           and then Nkind (Unit_Declaration_Node
+                            (Ultimate_Alias (Entity (Name (Call_Node))))) =
+                              N_Subprogram_Body
          then
             Set_Entity (Name (Call_Node),
               Rewritten_For_C_Func_Id

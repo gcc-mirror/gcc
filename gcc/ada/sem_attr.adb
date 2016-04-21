@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -10161,18 +10161,20 @@ package body Sem_Attr is
                   end loop;
 
                   --  If Prefix is a subprogram name, this reference freezes,
-                  --  but not if within spec expression mode
+                  --  but not if within spec expression mode. The profile of
+                  --  the subprogram is not frozen at this point.
 
                   if not In_Spec_Expression then
-                     Freeze_Before (N, Entity (P));
+                     Freeze_Before (N, Entity (P), False);
                   end if;
 
-               --  If it is a type, there is nothing to resolve. If it is an
-               --  object, complete its resolution.
+               --  If it is a type, there is nothing to resolve.
+               --  If it is a subprogram, do not freeze its profile.
+               --  If it is an object, complete its resolution.
 
                elsif Is_Overloadable (Entity (P)) then
                   if not In_Spec_Expression then
-                     Freeze_Before (N, Entity (P));
+                     Freeze_Before (N, Entity (P), False);
                   end if;
 
                --  Nothing to do if prefix is a type name

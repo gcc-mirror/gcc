@@ -1,3 +1,27 @@
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aux.ads, sem_aux.adb (Has_Rep_Item): New variant.
+	* sem_util.adb (Inherit_Rep_Item_Chain): Reimplemented.
+
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Minor comment update.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.ads, freeze.adb (Freeze_Entity, Freeze_Before): Add
+	boolean parameter to determine whether freezing an overloadable
+	entity freezes its profile as well. This is required by
+	AI05-019. The call to Freeze_Profile within Freeze_Entity is
+	conditioned by the value of this flag, whose default is True.
+	* sem_attr.adb (Resolve_Attribute, case 'Access): The attribute
+	reference freezes the prefix, but it the prefix is a subprogram
+	it does not freeze its profile.
+
 2016-04-21  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb (Build_Procedure_Form): No action needed for

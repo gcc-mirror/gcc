@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1908,8 +1908,16 @@ package body Freeze is
    -- Freeze_Before --
    -------------------
 
-   procedure Freeze_Before (N : Node_Id; T : Entity_Id) is
-      Freeze_Nodes : constant List_Id := Freeze_Entity (T, N);
+   procedure Freeze_Before
+     (N   : Node_Id;
+      T   : Entity_Id;
+      F_P : Boolean := True)
+   is
+   --  Freeze T, then insert the generated Freeze nodes before the node N.
+   --  The flag F_P is used when T is an overloadable entity, and indicates
+   --  whether its profile should be frozen at the same time.
+
+      Freeze_Nodes : constant List_Id := Freeze_Entity (T, N, F_P);
 
    begin
       if Ekind (T) = E_Function then
@@ -1925,7 +1933,11 @@ package body Freeze is
    -- Freeze_Entity --
    -------------------
 
-   function Freeze_Entity (E : Entity_Id; N : Node_Id) return List_Id is
+   function Freeze_Entity
+     (E : Entity_Id;
+      N : Node_Id;
+      F_P : Boolean := True) return List_Id
+   is
       Loc    : constant Source_Ptr := Sloc (N);
       Atype  : Entity_Id;
       Comp   : Entity_Id;
@@ -4990,12 +5002,13 @@ package body Freeze is
 
             --  In Ada 2012, freezing a subprogram does not always freeze
             --  the corresponding profile (see AI05-019). An attribute
-            --  reference is not a freezing point of the profile.
+            --  reference is not a freezing point of the profile. The boolean
+            --  Flag F_P indicates whether the profile should be frozen now.
             --  Other constructs that should not freeze ???
 
             --  This processing doesn't apply to internal entities (see below)
 
-            if not Is_Internal (E) then
+            if not Is_Internal (E) and then F_P then
                if not Freeze_Profile (E) then
                   Ghost_Mode := Save_Ghost_Mode;
                   return Result;
