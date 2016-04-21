@@ -929,6 +929,7 @@ package body Exp_Util is
 
       Func_Formal  : Entity_Id;
       Proc_Formals : List_Id;
+      Proc_Decl    : Node_Id;
 
    begin
       --  No action needed if this transformation was already done
@@ -969,13 +970,20 @@ package body Exp_Util is
       --  function declaration. The processing in Build_Procedure_Body_Form
       --  relies on this order.
 
-      Insert_After_And_Analyze (Unit_Declaration_Node (Subp),
+      Proc_Decl :=
         Make_Subprogram_Declaration (Loc,
           Specification =>
             Make_Procedure_Specification (Loc,
               Defining_Unit_Name       =>
                 Make_Defining_Identifier (Loc, Chars (Subp)),
-              Parameter_Specifications => Proc_Formals)));
+              Parameter_Specifications => Proc_Formals));
+
+      Insert_After_And_Analyze (Unit_Declaration_Node (Subp), Proc_Decl);
+
+      --  Entity of procedure must remain invisible so that it does not
+      --  overload subsequent references to the original function.
+
+      Set_Is_Immediately_Visible (Defining_Entity (Proc_Decl), False);
 
       --  Mark the function as having a procedure form
 

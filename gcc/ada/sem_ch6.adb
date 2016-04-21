@@ -4138,9 +4138,14 @@ package body Sem_Ch6 is
       --  that carries the return value.
 
       if Present (Cloned_Body_For_C) then
-         Rewrite (N,
-           Build_Procedure_Body_Form (Spec_Id, Cloned_Body_For_C));
+         Rewrite (N, Build_Procedure_Body_Form (Spec_Id, Cloned_Body_For_C));
          Analyze (N);
+
+         --  The entity for the created procedure must remain invisible, so it
+         --  does not participate in resolution of subsequent references to the
+         --  function.
+
+         Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
       end if;
 
       Ghost_Mode := Save_Ghost_Mode;
