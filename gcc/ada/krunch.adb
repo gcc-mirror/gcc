@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,7 +95,23 @@ begin
       Startloc := 3;
       Buffer (2 .. Len - 9) := Buffer (11 .. Len);
       Curlen := Len - 9;
-      Krlen  := 8;
+
+      --  Only fully krunch historical units. For new units, simply use
+      --  the 'i-' prefix instead of 'interfaces-'. Packages Interfaces.C
+      --  and Interfaces.Cobol are already in the right form. Package
+      --  Interfaces.Definitions is krunched for backward compatibility.
+
+      if        (Curlen >  3 and then Buffer (3 ..  4) = "c-")
+        or else (Curlen >  3 and then Buffer (3 ..  4) = "c_")
+        or else (Curlen = 13 and then Buffer (3 .. 13) = "definitions")
+        or else (Curlen =  9 and then Buffer (3 ..  9) = "fortran")
+        or else (Curlen = 16 and then Buffer (3 .. 16) = "packed_decimal")
+        or else (Curlen >  9 and then Buffer (3 ..  9) = "vxworks")
+      then
+         Krlen := 8;
+      else
+         Krlen := Maxlen;
+      end if;
 
    --  For the renamings in the obsolescent section, we also force krunching
    --  to 8 characters, but no other special processing is required here.
