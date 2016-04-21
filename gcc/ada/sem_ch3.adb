@@ -3423,7 +3423,7 @@ package body Sem_Ch3 is
 
          if Error_Posted (N) then
 
-            --  Type mismatch or illegal redeclaration, Do not analyze
+            --  Type mismatch or illegal redeclaration; do not analyze
             --  expression to avoid cascaded errors.
 
             T := Find_Type_Of_Object (Object_Definition (N), N);
@@ -3460,7 +3460,7 @@ package body Sem_Ch3 is
       end if;
 
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
-      --  out some static checks
+      --  out some static checks.
 
       if Ada_Version >= Ada_2005 and then Can_Never_Be_Null (T) then
 

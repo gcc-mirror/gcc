@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2014, Free Software Foundation, Inc.            --
+--            Copyright (C) 2014-2016, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,6 +93,11 @@ package body Ada.Task_Attributes is
    function To_Attribute is new
      Ada.Unchecked_Conversion (Atomic_Address, Attribute);
 
+   function To_Address is new
+     Ada.Unchecked_Conversion (Attribute, System.Address);
+   function To_Int is new
+     Ada.Unchecked_Conversion (Attribute, Integer);
+
    pragma Warnings (On);
 
    function To_Address is new
@@ -114,9 +119,12 @@ package body Ada.Task_Attributes is
      Ada.Unchecked_Deallocation (Real_Attribute, Real_Attribute_Access);
 
    Fast_Path : constant Boolean :=
-                 Attribute'Size <= Atomic_Address'Size
+                 (Attribute'Size = Integer'Size
                    and then Attribute'Alignment <= Atomic_Address'Alignment
-                   and then To_Address (Initial_Value) = 0;
+                   and then To_Int (Initial_Value) = 0)
+                 or else (Attribute'Size = System.Address'Size
+                   and then Attribute'Alignment <= Atomic_Address'Alignment
+                   and then To_Address (Initial_Value) = System.Null_Address);
    --  If the attribute fits in an Atomic_Address (both size and alignment)
    --  and Initial_Value is 0 (or null), then we will map the attribute
    --  directly into ATCB.Attributes (Index), otherwise we will create

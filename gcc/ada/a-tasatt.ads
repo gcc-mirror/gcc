@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2014, Free Software Foundation, Inc.            --
+--            Copyright (C) 2014-2016, Free Software Foundation, Inc.       --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,8 +42,9 @@ generic
 package Ada.Task_Attributes is
 
    --  Note that this package will use an efficient implementation with no
-   --  locks and no extra dynamic memory allocation if Attribute can fit in a
-   --  System.Address type, and Initial_Value is 0 (null for an access type).
+   --  locks and no extra dynamic memory allocation if Attribute is the size
+   --  of either Integer or System.Address, and Initial_Value is 0 (null for
+   --  an access type).
 
    --  Other types and initial values are supported, but will require
    --  the use of locking and a level of indirection (meaning extra dynamic
