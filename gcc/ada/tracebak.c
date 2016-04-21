@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2015, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2016, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -99,6 +99,8 @@ extern void (*Unlock_Task) (void);
 
 #include <windows.h>
 
+#define IS_BAD_PTR(ptr) (IsBadCodePtr((FARPROC)ptr))
+
 int
 __gnat_backtrace (void **array,
                   int size,
@@ -137,6 +139,10 @@ __gnat_backtrace (void **array,
 	}
       else
 	{
+	  /* If the last unwinding step failed somehow, stop here.  */
+	  if (IS_BAD_PTR(context.Rip))
+	    break;
+
 	  /* Unwind.  */
 	  memset (&NvContext, 0, sizeof (KNONVOLATILE_CONTEXT_POINTERS));
 	  RtlVirtualUnwind (0, ImageBase, context.Rip, RuntimeFunction,

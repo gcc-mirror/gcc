@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -772,12 +772,8 @@ package body Sem_Eval is
       Assume_Valid : Boolean;
       Rec          : Boolean := False) return Compare_Result
    is
-      Ltyp : Entity_Id := Underlying_Type (Etype (L));
-      Rtyp : Entity_Id := Underlying_Type (Etype (R));
-      --  These get reset to the base type for the case of entities where
-      --  Is_Known_Valid is not set. This takes care of handling possible
-      --  invalid representations using the value of the base type, in
-      --  accordance with RM 13.9.1(10).
+      Ltyp : Entity_Id := Etype (L);
+      Rtyp : Entity_Id := Etype (R);
 
       Discard : aliased Uint;
 
@@ -1100,19 +1096,35 @@ package body Sem_Eval is
 
       if L = R then
          return EQ;
+      end if;
 
       --  If expressions have no types, then do not attempt to determine if
       --  they are the same, since something funny is going on. One case in
       --  which this happens is during generic template analysis, when bounds
       --  are not fully analyzed.
 
-      elsif No (Ltyp) or else No (Rtyp) then
+      if No (Ltyp) or else No (Rtyp) then
          return Unknown;
+      end if;
 
-      --  We do not attempt comparisons for packed arrays represented as
+      --  These get reset to the base type for the case of entities where
+      --  Is_Known_Valid is not set. This takes care of handling possible
+      --  invalid representations using the value of the base type, in
+      --  accordance with RM 13.9.1(10).
+
+      Ltyp := Underlying_Type (Ltyp);
+      Rtyp := Underlying_Type (Rtyp);
+
+      --  Same rationale as above, but for Underlying_Type instead of Etype
+
+      if No (Ltyp) or else No (Rtyp) then
+         return Unknown;
+      end if;
+
+      --  We do not attempt comparisons for packed arrays arrays represented as
       --  modular types, where the semantics of comparison is quite different.
 
-      elsif Is_Packed_Array_Impl_Type (Ltyp)
+      if Is_Packed_Array_Impl_Type (Ltyp)
         and then Is_Modular_Integer_Type (Ltyp)
       then
          return Unknown;

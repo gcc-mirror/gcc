@@ -18267,35 +18267,7 @@ package body Sem_Util is
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean
    is
-      function Mode_Is_Off (Prag : Node_Id) return Boolean;
-      --  Given pragma SPARK_Mode, determine whether the mode is Off
-
-      -----------------
-      -- Mode_Is_Off --
-      -----------------
-
-      function Mode_Is_Off (Prag : Node_Id) return Boolean is
-         Mode : Node_Id;
-
-      begin
-         --  The default SPARK mode is On
-
-         if No (Prag) then
-            return False;
-         end if;
-
-         Mode := Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
-
-         --  Then the pragma lacks an argument, the default mode is On
-
-         if No (Mode) then
-            return False;
-         else
-            return Chars (Mode) = Name_Off;
-         end if;
-      end Mode_Is_Off;
-
-   --  Start of processing for Requires_State_Refinement
+      Prag : constant Node_Id := SPARK_Pragma (Body_Id);
 
    begin
       --  A package that does not define at least one abstract state cannot
@@ -18314,15 +18286,8 @@ package body Sem_Util is
       --  it is and the mode is Off, the package body is considered to be in
       --  regular Ada and does not require refinement.
 
-      elsif Mode_Is_Off (SPARK_Pragma (Body_Id)) then
-         return False;
-
-      --  The body's SPARK_Mode may be inherited from a similar pragma that
-      --  appears in the private declarations of the spec. The pragma we are
-      --  interested appears as the second entry in SPARK_Pragma.
-
-      elsif Present (SPARK_Pragma (Spec_Id))
-        and then Mode_Is_Off (Next_Pragma (SPARK_Pragma (Spec_Id)))
+      elsif Present (Prag)
+        and then Get_SPARK_Mode_From_Annotation (Prag) = Off
       then
          return False;
 

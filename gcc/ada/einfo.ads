@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1760,6 +1760,10 @@ package Einfo is
 --       Defined in E_Incomplete_Type, E_Incomplete_Subtype, E_Class_Wide_Type,
 --       E_Abstract_State entities. True if their Non_Limited_View attribute
 --       is present.
+
+--    Has_Non_Null_Abstract_State (synth)
+--       Defined in package entities. True if the package is subject to a non-
+--       null Abstract_State aspect/pragma.
 
 --    Has_Non_Null_Visible_Refinement (synth)
 --       Defined in E_Abstract_State entities. True if the state has a visible
@@ -6133,6 +6137,7 @@ package Einfo is
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Static_Elaboration_Desired          (Flag77)   (non-generic case only)
+   --    Has_Non_Null_Abstract_State         (synth)
    --    Has_Null_Abstract_State             (synth)
    --    Is_Wrapper_Package                  (synth)    (non-generic case only)
    --    Scope_Depth                         (synth)
@@ -7270,6 +7275,7 @@ package Einfo is
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
    function Has_Non_Limited_View                (Id : E) return B;
+   function Has_Non_Null_Abstract_State         (Id : E) return B;
    function Has_Non_Null_Visible_Refinement     (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
    function Has_Null_Visible_Refinement         (Id : E) return B;

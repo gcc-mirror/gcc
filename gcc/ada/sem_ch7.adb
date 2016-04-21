@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2454,7 +2454,7 @@ package body Sem_Ch7 is
 
       elsif Ekind (Id) = E_Package
         and then Nkind (Original_Node (Unit_Declaration_Node (Id))) =
-                                                   N_Formal_Package_Declaration
+                   N_Formal_Package_Declaration
       then
          return False;
 
@@ -2464,8 +2464,7 @@ package body Sem_Ch7 is
       --  implicit completion at some point.
 
       elsif (Is_Overloadable (Id)
-              and then Ekind (Id) /= E_Enumeration_Literal
-              and then Ekind (Id) /= E_Operator
+              and then not Ekind_In (Id, E_Enumeration_Literal, E_Operator)
               and then not Is_Abstract_Subprogram (Id)
               and then not Has_Completion (Id)
               and then Comes_From_Source (Parent (Id)))
@@ -2494,7 +2493,6 @@ package body Sem_Ch7 is
         or else
           (Is_Generic_Subprogram (Id)
             and then not Has_Completion (Id))
-
       then
          return True;
 
@@ -2962,6 +2960,10 @@ package body Sem_Ch7 is
    is
       E : Entity_Id;
 
+      Requires_Body : Boolean := False;
+      --  Flag set when the unit has at least one construct that requries
+      --  completion in a body.
+
    begin
       --  Imported entity never requires body. Right now, only subprograms can
       --  be imported, but perhaps in the future we will allow import of
@@ -2996,35 +2998,42 @@ package body Sem_Ch7 is
                return True;
             end if;
          end;
-
-      --  A [generic] package that introduces at least one non-null abstract
-      --  state requires completion. However, there is a separate rule that
-      --  requires that such a package have a reason other than this for a
-      --  body being required (if necessary a pragma Elaborate_Body must be
-      --  provided). If Ignore_Abstract_State is True, we don't do this check
-      --  (so we can use Unit_Requires_Body to check for some other reason).
-
-      elsif Ekind_In (Pack_Id, E_Generic_Package, E_Package)
-        and then not Ignore_Abstract_State
-        and then Present (Abstract_States (Pack_Id))
-        and then not Is_Null_State
-                       (Node (First_Elmt (Abstract_States (Pack_Id))))
-      then
-         return True;
       end if;
 
-      --  Otherwise search entity chain for entity requiring completion
+      --  Traverse the entity chain of the package and look for constructs that
+      --  require a completion in a body.
 
       E := First_Entity (Pack_Id);
       while Present (E) loop
-         if Requires_Completion_In_Body (E, Pack_Id) then
-            return True;
+
+         --  Skip abstract states because their completion depends on several
+         --  criteria (see below).
+
+         if Ekind (E) = E_Abstract_State then
+            null;
+
+         elsif Requires_Completion_In_Body (E, Pack_Id) then
+            Requires_Body := True;
+            exit;
          end if;
 
          Next_Entity (E);
       end loop;
 
-      return False;
+      --  A [generic] package that defines at least one non-null abstract state
+      --  requires a completion only when at least one other construct requires
+      --  a completion in a body (SPARK RM 7.1.4(4) and (6)). This check is not
+      --  performed if the caller requests this behavior.
+
+      if not Ignore_Abstract_State
+        and then Ekind_In (Pack_Id, E_Generic_Package, E_Package)
+        and then Has_Non_Null_Abstract_State (Pack_Id)
+        and then Requires_Body
+      then
+         return True;
+      end if;
+
+      return Requires_Body;
    end Unit_Requires_Body;
 
    -----------------------------

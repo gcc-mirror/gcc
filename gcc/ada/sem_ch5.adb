@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2139,11 +2139,15 @@ package body Sem_Ch5 is
 
             else
                declare
-                  Element     : constant Entity_Id :=
-                    Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
-                  Iterator    : constant Entity_Id :=
-                    Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
-                  Cursor_Type : Entity_Id;
+                  Element        : constant Entity_Id :=
+                                     Find_Value_Of_Aspect
+                                       (Typ, Aspect_Iterator_Element);
+                  Iterator       : constant Entity_Id :=
+                                     Find_Value_Of_Aspect
+                                       (Typ, Aspect_Default_Iterator);
+                  Orig_Iter_Name : constant Node_Id :=
+                                     Original_Node (Iter_Name);
+                  Cursor_Type    : Entity_Id;
 
                begin
                   if No (Element) then
@@ -2181,8 +2185,9 @@ package body Sem_Ch5 is
                      if not Is_Variable (Iter_Name)
                        and then not Has_Aspect (Typ, Aspect_Constant_Indexing)
                      then
-                        Error_Msg_N ("iteration over constant container "
-                          & "require constant_indexing aspect", N);
+                        Error_Msg_N
+                          ("iteration over constant container require "
+                           & "constant_indexing aspect", N);
 
                      --  The Iterate function may have an in_out parameter,
                      --  and a constant container is thus illegal.
@@ -2193,15 +2198,20 @@ package body Sem_Ch5 is
                                   E_In_Parameter
                        and then not Is_Variable (Iter_Name)
                      then
-                        Error_Msg_N
-                          ("variable container expected", N);
+                        Error_Msg_N ("variable container expected", N);
                      end if;
 
-                     if Nkind (Original_Node (Iter_Name))
-                        = N_Selected_Component
-                       and then
-                         Is_Dependent_Component_Of_Mutable_Object
-                           (Original_Node (Iter_Name))
+                     --  It could be a function, which
+                     --  Is_Dependent_Component_Of_Mutable_Object doesn't like,
+                     --  so check that it's a component.
+
+                     if Nkind (Orig_Iter_Name) = N_Selected_Component
+                       and then Ekind_In
+                                  (Entity (Selector_Name (Orig_Iter_Name)),
+                                   E_Component,
+                                   E_Discriminant)
+                       and then Is_Dependent_Component_Of_Mutable_Object
+                                  (Orig_Iter_Name)
                      then
                         Error_Msg_N
                           ("container cannot be a discriminant-dependent "

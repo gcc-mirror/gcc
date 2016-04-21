@@ -7332,6 +7332,20 @@ package body Einfo is
         and then Present (Non_Limited_View (Id));
    end Has_Non_Limited_View;
 
+   ---------------------------------
+   -- Has_Non_Null_Abstract_State --
+   ---------------------------------
+
+   function Has_Non_Null_Abstract_State (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
+
+      return
+        Present (Abstract_States (Id))
+          and then
+            not Is_Null_State (Node (First_Elmt (Abstract_States (Id))));
+   end Has_Non_Null_Abstract_State;
+
    -------------------------------------
    -- Has_Non_Null_Visible_Refinement --
    -------------------------------------

@@ -1,3 +1,48 @@
+2016-04-21  Philippe Gil  <gil@adacore.com>
+
+	* tracebak.c (__gnat_backtrace): handle bad RIP values (win64 only)
+
+2016-04-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Component_Not_OK_For_Backend): Return true for string
+	literals.
+
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Has_Non_Null_Abstract_State): New routine.
+	* einfo.ads New synthesized attribute
+	Has_Non_Null_Abstract_State along with occurrences in entities.
+	(Has_Non_Null_Abstract_State): New routine.
+	* sem_ch7.adb (Unit_Requires_Body): Add local variable
+	Requires_Body. A package declaring an abstract state requires
+	a body only when the state is non-null and the package contains
+	at least one other construct that requires completion in a body.
+	* sem_util.adb (Mode_Is_Off): Removed.
+	(Requires_State_Refinement): Remove an obsolete check. Code
+	cleanup.
+
+2016-04-21  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): In processing
+	the 'Old attribute, a warning is given for infinite recursion. Fix
+	the code to not crash when the prefix of 'Old denotes a protected
+	function.
+	* sem_ch5.adb (Analyze_Iterator_Specification):
+	Avoid calling Is_Dependent_Component_Of_Mutable_Object in cases
+	where the parameter would not be an object.
+
+2016-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Compare): Be prepared for an empty
+	Etype or Underlying_Type of the operands.
+
+2016-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.adb (Print_Statistics): Protect against overflows and
+	print the memory consumption in bytes.
+	* table.adb (Reallocate): Do the intermediate calculation of the new
+	size using the Memory.size_t type.
+
 2016-04-21  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Suppress
