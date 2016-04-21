@@ -1,5 +1,11 @@
 2016-04-21  Arnaud Charlet  <charlet@adacore.com>
 
+	* a-tasatt.adb, a-tasatt.ads (Fast_Path): Rewritten to avoid reading
+	potentially uninitialized memory.
+	* sem_ch3.adb: Minor style fix in comment.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
 	* gnat_rm.texi, gnat_ugn.texi,
 	doc/gnat_ugn/gnat_project_manager.rst,
 	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
