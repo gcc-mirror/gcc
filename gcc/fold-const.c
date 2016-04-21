@@ -8676,11 +8676,11 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    case EQ_EXPR:
 	    case LE_EXPR:
 	    case LT_EXPR:
-	      return boolean_false_node;
+	      return constant_boolean_node (false, type);
 	    case GE_EXPR:
 	    case GT_EXPR:
 	    case NE_EXPR:
-	      return boolean_true_node;
+	      return constant_boolean_node (true, type);
 	    default:
 	      gcc_unreachable ();
 	    }
