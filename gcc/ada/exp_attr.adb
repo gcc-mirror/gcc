@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7993,13 +7993,13 @@ package body Exp_Attr is
            and then not Generate_C_Code;
       end Is_GCC_Target;
 
-   --  Start of processing for Exp_Attr
+   --  Start of processing for Is_Inline_Floating_Point_Attribute
 
    begin
-      --  Machine and Model can be expanded by the GCC backend only
+      --  Machine and Model can be expanded by the GCC and AAMP back ends only
 
       if Id = Attribute_Machine or else Id = Attribute_Model then
-         return Is_GCC_Target;
+         return Is_GCC_Target or else AAMP_On_Target;
 
       --  Remaining cases handled by all back ends are Rounding and Truncation
       --  when appearing as the operand of a conversion to some integer type.
