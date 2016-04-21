@@ -1,3 +1,8 @@
+2016-04-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* plugin/plugin-nvptx.c (map_fini): Make cuMemFreeHost error
+	non-fatal.
+
 2016-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70680
