@@ -42,7 +42,6 @@ with Exp_Dist;  use Exp_Dist;
 with Exp_Intr;  use Exp_Intr;
 with Exp_Pakd;  use Exp_Pakd;
 with Exp_Tss;   use Exp_Tss;
-with Exp_Unst;  use Exp_Unst;
 with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
@@ -8433,60 +8432,5 @@ package body Exp_Ch6 is
          P := Parent (P);
       end loop;
    end Set_Enclosing_Sec_Stack_Return;
-
-   ------------------------
-   -- Unnest_Subprograms --
-   ------------------------
-
-   procedure Unnest_Subprograms (N : Node_Id) is
-
-      function Search_Subprograms (N : Node_Id) return Traverse_Result;
-      --  Tree visitor that search for outer level procedures with nested
-      --  subprograms and invokes Unnest_Subprogram()
-
-      ------------------------
-      -- Search_Subprograms --
-      ------------------------
-
-      function Search_Subprograms (N : Node_Id) return Traverse_Result is
-      begin
-         if Nkind_In (N, N_Subprogram_Body,
-                         N_Subprogram_Body_Stub)
-         then
-            declare
-               Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
-
-            begin
-               --  We are only interested in subprograms (not generic
-               --  subprograms), that have nested subprograms.
-
-               if Is_Subprogram (Spec_Id)
-                 and then Has_Nested_Subprogram (Spec_Id)
-                 and then Is_Library_Level_Entity (Spec_Id)
-               then
-                  Unnest_Subprogram (Spec_Id, N);
-               end if;
-            end;
-         end if;
-
-         return OK;
-      end Search_Subprograms;
-
-      ---------------
-      -- Do_Search --
-      ---------------
-
-      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
-      --  Subtree visitor instantiation
-
-   --  Start of processing for Unnest_Subprograms
-
-   begin
-      if not Opt.Unnest_Subprogram_Mode then
-         return;
-      end if;
-
-      Do_Search (N);
-   end Unnest_Subprograms;
 
 end Exp_Ch6;

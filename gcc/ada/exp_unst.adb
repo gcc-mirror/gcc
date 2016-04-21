@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,18 @@ with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
 package body Exp_Unst is
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id);
+   --  Subp is a library-level subprogram which has nested subprograms, and
+   --  Subp_Body is the corresponding N_Subprogram_Body node. This procedure
+   --  declares the AREC types and objects, adds assignments to the AREC record
+   --  as required, defines the xxxPTR types for uplevel referenced objects,
+   --  adds the ARECP parameter to all nested subprograms which need it, and
+   --  modifies all uplevel references appropriately.
 
    -----------
    -- Calls --
@@ -1703,5 +1715,60 @@ package body Exp_Unst is
 
       return;
    end Unnest_Subprogram;
+
+   ------------------------
+   -- Unnest_Subprograms --
+   ------------------------
+
+   procedure Unnest_Subprograms (N : Node_Id) is
+
+      function Search_Subprograms (N : Node_Id) return Traverse_Result;
+      --  Tree visitor that search for outer level procedures with nested
+      --  subprograms and invokes Unnest_Subprogram()
+
+      ------------------------
+      -- Search_Subprograms --
+      ------------------------
+
+      function Search_Subprograms (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind_In (N, N_Subprogram_Body,
+                         N_Subprogram_Body_Stub)
+         then
+            declare
+               Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
+
+            begin
+               --  We are only interested in subprograms (not generic
+               --  subprograms), that have nested subprograms.
+
+               if Is_Subprogram (Spec_Id)
+                 and then Has_Nested_Subprogram (Spec_Id)
+                 and then Is_Library_Level_Entity (Spec_Id)
+               then
+                  Unnest_Subprogram (Spec_Id, N);
+               end if;
+            end;
+         end if;
+
+         return OK;
+      end Search_Subprograms;
+
+      ---------------
+      -- Do_Search --
+      ---------------
+
+      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
+      --  Subtree visitor instantiation
+
+   --  Start of processing for Unnest_Subprograms
+
+   begin
+      if not Opt.Unnest_Subprogram_Mode then
+         return;
+      end if;
+
+      Do_Search (N);
+   end Unnest_Subprograms;
 
 end Exp_Unst;

@@ -209,9 +209,4 @@ package Exp_Ch6 is
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
 
-   procedure Unnest_Subprograms (N : Node_Id);
-   --  Called to unnest subprograms. If we are in unnest subprogram mode, this
-   --  is the call that traverses the tree N and locates all the library level
-   --  subprograms with nested subprograms to process them.
-
 end Exp_Ch6;
