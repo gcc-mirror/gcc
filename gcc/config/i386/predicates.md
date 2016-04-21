@@ -637,7 +637,7 @@
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "call_register_no_elim_operand")
        (ior (and (not (match_test "TARGET_X32"))
-		 (match_operand 0 "sibcall_memory_operand"))
+		 (match_operand 0 "memory_operand"))
 	    (and (match_test "TARGET_X32 && Pmode == DImode")
 		 (match_operand 0 "GOT_memory_operand")))))
 

@@ -1,3 +1,9 @@
+2016-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70750
+	* config/i386/predicates.md (call_insn_operand): Replace
+	sibcall_memory_operand with memory_operand.
+
 2016-04-21  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-vrp.c (register_edge_assert_for_2): Remove redundant
