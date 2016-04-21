@@ -1436,10 +1436,9 @@ package body Lib.Writ is
             --  The dependency table also contains units that appear in the
             --  context of a unit loaded through a limited_with clause. These
             --  units are never analyzed, and thus the main unit does not
-            --  really have a dependency on them.
-            --  Subunits are always compiled in the context of the parent,
-            --  and their file table entries are not properly decorated, they
-            --  are recognized syntactically.
+            --  really have a dependency on them. Subunits are always compiled
+            --  in the context of the parent, and their file table entries are
+            --  not properly decorated, they are recognized syntactically.
 
             if Present (Cunit_Entity (Unum))
               and then Ekind (Cunit_Entity (Unum)) = E_Void

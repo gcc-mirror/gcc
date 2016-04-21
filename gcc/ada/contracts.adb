@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2015, Free Software Foundation, Inc.            --
+--          Copyright (C) 2015-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -949,15 +949,6 @@ package body Contracts is
 
       if Present (Ref_State) then
          Analyze_Refined_State_In_Decl_Part (Ref_State, Freeze_Id);
-
-      --  State refinement is required when the package declaration defines at
-      --  least one abstract state. Null states are not considered. Refinement
-      --  is not enforced when SPARK checks are turned off.
-
-      elsif SPARK_Mode /= Off
-        and then Requires_State_Refinement (Spec_Id, Body_Id)
-      then
-         Error_Msg_N ("package & requires state refinement", Spec_Id);
       end if;
 
       --  Restore the SPARK_Mode of the enclosing context after all delayed

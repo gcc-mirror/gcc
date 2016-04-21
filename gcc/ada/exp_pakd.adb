@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,6 +80,12 @@ package body Exp_Pakd is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   function Compute_Number_Components
+      (N   : Node_Id;
+       Typ : Entity_Id) return Node_Id;
+   --  Build an expression that multiplies the length of the dimensions of the
+   --  array, used to control array equality checks.
 
    procedure Compute_Linear_Subscript
      (Atyp   : Entity_Id;
@@ -259,6 +265,38 @@ package body Exp_Pakd is
       Set_Etype (Adjusted, Swap_T);
       return Adjusted;
    end Revert_Storage_Order;
+
+   -------------------------------
+   -- Compute_Number_Components --
+   -------------------------------
+
+   function Compute_Number_Components
+      (N   : Node_Id;
+       Typ : Entity_Id) return Node_Id
+   is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Len_Expr : Node_Id;
+
+   begin
+      Len_Expr :=
+        Make_Attribute_Reference (Loc,
+          Attribute_Name => Name_Length,
+          Prefix         => New_Occurrence_Of (Typ, Loc),
+          Expressions    => New_List (Make_Integer_Literal (Loc, 1)));
+
+      for J in 2 .. Number_Dimensions (Typ) loop
+         Len_Expr :=
+           Make_Op_Multiply (Loc,
+             Left_Opnd  => Len_Expr,
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Length,
+                Prefix         => New_Occurrence_Of (Typ, Loc),
+                Expressions    => New_List (Make_Integer_Literal (Loc, J))));
+      end loop;
+
+      return Len_Expr;
+   end Compute_Number_Components;
 
    ------------------------------
    -- Compute_Linear_Subscript --
@@ -451,7 +489,6 @@ package body Exp_Pakd is
       PASize   : Uint;
       Decl     : Node_Id;
       PAT      : Entity_Id;
-      Len_Dim  : Node_Id;
       Len_Expr : Node_Id;
       Len_Bits : Uint;
       Bits_U1  : Node_Id;
@@ -811,34 +848,7 @@ package body Exp_Pakd is
          --  Build an expression for the length of the array in bits.
          --  This is the product of the length of each of the dimensions
 
-         declare
-            J : Nat := 1;
-
-         begin
-            Len_Expr := Empty; -- suppress junk warning
-
-            loop
-               Len_Dim :=
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Length,
-                   Prefix         => New_Occurrence_Of (Typ, Loc),
-                   Expressions    => New_List (
-                     Make_Integer_Literal (Loc, J)));
-
-               if J = 1 then
-                  Len_Expr := Len_Dim;
-
-               else
-                  Len_Expr :=
-                    Make_Op_Multiply (Loc,
-                      Left_Opnd  => Len_Expr,
-                      Right_Opnd => Len_Dim);
-               end if;
-
-               J := J + 1;
-               exit when J > Number_Dimensions (Typ);
-            end loop;
-         end;
+         Len_Expr := Compute_Number_Components (Typ, Typ);
 
          --  Temporarily attach the length expression to the tree and analyze
          --  and resolve it, so that we can test its value. We assume that the
@@ -1872,19 +1882,12 @@ package body Exp_Pakd is
 
       LLexpr :=
         Make_Op_Multiply (Loc,
-          Left_Opnd =>
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Occurrence_Of (Ltyp, Loc),
-              Attribute_Name => Name_Length),
-          Right_Opnd =>
-            Make_Integer_Literal (Loc, Component_Size (Ltyp)));
+          Left_Opnd => Compute_Number_Components (N, Ltyp),
+          Right_Opnd => Make_Integer_Literal (Loc, Component_Size (Ltyp)));
 
       RLexpr :=
         Make_Op_Multiply (Loc,
-          Left_Opnd =>
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Occurrence_Of (Rtyp, Loc),
-              Attribute_Name => Name_Length),
+          Left_Opnd => Compute_Number_Components (N, Rtyp),
           Right_Opnd =>
             Make_Integer_Literal (Loc, Component_Size (Rtyp)));
 

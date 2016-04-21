@@ -3342,6 +3342,7 @@ package body Sem_Prag is
       Errors   : constant Nat       := Serious_Errors_Detected;
       Var_Decl : constant Node_Id   := Find_Related_Context (N);
       Var_Id   : constant Entity_Id := Defining_Entity (Var_Decl);
+      Constits : Elist_Id;
       Encap_Id : Entity_Id;
       Legal    : Boolean;
 
@@ -3362,8 +3363,14 @@ package body Sem_Prag is
 
       if Legal then
          pragma Assert (Present (Encap_Id));
+         Constits := Part_Of_Constituents (Encap_Id);
 
-         Append_Elmt (Var_Id, Part_Of_Constituents (Encap_Id));
+         if No (Constits) then
+            Constits := New_Elmt_List;
+            Set_Part_Of_Constituents (Encap_Id, Constits);
+         end if;
+
+         Append_Elmt (Var_Id, Constits);
          Set_Encapsulating_State (Var_Id, Encap_Id);
       end if;
 
@@ -10568,6 +10575,7 @@ package body Sem_Prag is
 
                procedure Analyze_Part_Of_Option (Opt : Node_Id) is
                   Encap    : constant Node_Id := Expression (Opt);
+                  Constits : Elist_Id;
                   Encap_Id : Entity_Id;
                   Legal    : Boolean;
 
@@ -10587,8 +10595,14 @@ package body Sem_Prag is
 
                   if Legal then
                      pragma Assert (Present (Encap_Id));
+                     Constits := Part_Of_Constituents (Encap_Id);
 
-                     Append_Elmt (State_Id, Part_Of_Constituents (Encap_Id));
+                     if No (Constits) then
+                        Constits := New_Elmt_List;
+                        Set_Part_Of_Constituents (Encap_Id, Constits);
+                     end if;
+
+                     Append_Elmt (State_Id, Constits);
                      Set_Encapsulating_State (State_Id, Encap_Id);
                   end if;
                end Analyze_Part_Of_Option;
@@ -10670,13 +10684,11 @@ package body Sem_Prag is
 
                   --  Null states never come from source
 
-                  Set_Comes_From_Source       (State_Id, not Is_Null);
-                  Set_Parent                  (State_Id, State);
-                  Set_Ekind                   (State_Id, E_Abstract_State);
-                  Set_Etype                   (State_Id, Standard_Void_Type);
-                  Set_Encapsulating_State     (State_Id, Empty);
-                  Set_Refinement_Constituents (State_Id, New_Elmt_List);
-                  Set_Part_Of_Constituents    (State_Id, New_Elmt_List);
+                  Set_Comes_From_Source   (State_Id, not Is_Null);
+                  Set_Parent              (State_Id, State);
+                  Set_Ekind               (State_Id, E_Abstract_State);
+                  Set_Etype               (State_Id, Standard_Void_Type);
+                  Set_Encapsulating_State (State_Id, Empty);
 
                   --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
@@ -18193,7 +18205,8 @@ package body Sem_Prag is
                -----------------------
 
                procedure Propagate_Part_Of (Pack_Id : Entity_Id) is
-                  Item_Id : Entity_Id;
+                  Constits : Elist_Id;
+                  Item_Id  : Entity_Id;
 
                begin
                   --  Traverse the entity chain of the package and set relevant
@@ -18217,8 +18230,14 @@ package body Sem_Prag is
                                               E_Variable)
                      then
                         Has_Item := True;
+                        Constits := Part_Of_Constituents (State_Id);
 
-                        Append_Elmt (Item_Id, Part_Of_Constituents (State_Id));
+                        if No (Constits) then
+                           Constits := New_Elmt_List;
+                           Set_Part_Of_Constituents (State_Id, Constits);
+                        end if;
+
+                        Append_Elmt (Item_Id, Constits);
                         Set_Encapsulating_State (Item_Id, State_Id);
 
                      --  Recursively handle nested packages and instantiations
@@ -18248,6 +18267,7 @@ package body Sem_Prag is
 
             --  Local variables
 
+            Constits : Elist_Id;
             Encap    : Node_Id;
             Encap_Id : Entity_Id;
             Item_Id  : Entity_Id;
@@ -18334,7 +18354,14 @@ package body Sem_Prag is
                   pragma Assert (Present (Encap_Id));
 
                   if Ekind (Item_Id) = E_Constant then
-                     Append_Elmt (Item_Id, Part_Of_Constituents (Encap_Id));
+                     Constits := Part_Of_Constituents (Encap_Id);
+
+                     if No (Constits) then
+                        Constits := New_Elmt_List;
+                        Set_Part_Of_Constituents (Encap_Id, Constits);
+                     end if;
+
+                     Append_Elmt (Item_Id, Constits);
                      Set_Encapsulating_State (Item_Id, Encap_Id);
 
                   --  Propagate the Part_Of indicator to the visible state
@@ -23657,7 +23684,7 @@ package body Sem_Prag is
             --  the pool of candidates. The seach continues because a single
             --  dependence clause may have multiple matching refinements.
 
-            if Inputs_Match and then Outputs_Match then
+            if Inputs_Match and Outputs_Match then
                Clause_Matched := True;
                Remove (Ref_Clause);
             end if;
@@ -23769,45 +23796,49 @@ package body Sem_Prag is
          -----------------------------
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constits     : constant Elist_Id :=
+                             Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
 
          begin
-            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
-            while Present (Constit_Elmt) loop
-               Constit_Id := Node (Constit_Elmt);
+            if Present (Constits) then
+               Constit_Elmt := First_Elmt (Constits);
+               while Present (Constit_Elmt) loop
+                  Constit_Id := Node (Constit_Elmt);
 
-               --  The constituent acts as an input (SPARK RM 7.2.5(3))
+                  --  The constituent acts as an input (SPARK RM 7.2.5(3))
 
-               if Present (Body_Inputs)
-                 and then Appears_In (Body_Inputs, Constit_Id)
-               then
-                  Error_Msg_Name_1 := Chars (State_Id);
-                  SPARK_Msg_NE
-                    ("constituent & of state % must act as output in "
-                     & "dependence refinement", N, Constit_Id);
-
-               --  The constituent is altogether missing (SPARK RM 7.2.5(3))
-
-               elsif No (Body_Outputs)
-                 or else not Appears_In (Body_Outputs, Constit_Id)
-               then
-                  if not Posted then
-                     Posted := True;
+                  if Present (Body_Inputs)
+                    and then Appears_In (Body_Inputs, Constit_Id)
+                  then
+                     Error_Msg_Name_1 := Chars (State_Id);
                      SPARK_Msg_NE
-                       ("output state & must be replaced by all its "
-                        & "constituents in dependence refinement",
-                        N, State_Id);
+                       ("constituent & of state % must act as output in "
+                        & "dependence refinement", N, Constit_Id);
+
+                  --  The constituent is altogether missing (SPARK RM 7.2.5(3))
+
+                  elsif No (Body_Outputs)
+                    or else not Appears_In (Body_Outputs, Constit_Id)
+                  then
+                     if not Posted then
+                        Posted := True;
+                        SPARK_Msg_NE
+                          ("output state & must be replaced by all its "
+                           & "constituents in dependence refinement",
+                           N, State_Id);
+                     end if;
+
+                     SPARK_Msg_NE
+                       ("\constituent & is missing in output list",
+                        N, Constit_Id);
                   end if;
 
-                  SPARK_Msg_NE
-                    ("\constituent & is missing in output list",
-                     N, Constit_Id);
-               end if;
-
-               Next_Elmt (Constit_Elmt);
-            end loop;
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
          end Check_Constituent_Usage;
 
          --  Local variables
@@ -24328,6 +24359,8 @@ package body Sem_Prag is
          -----------------------------
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constits      : constant Elist_Id :=
+                              Refinement_Constituents (State_Id);
             Constit_Elmt  : Elmt_Id;
             Constit_Id    : Entity_Id;
             Has_Missing   : Boolean := False;
@@ -24340,28 +24373,31 @@ package body Sem_Prag is
             --  Process all the constituents of the state and note their modes
             --  within the global refinement.
 
-            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
-            while Present (Constit_Elmt) loop
-               Constit_Id := Node (Constit_Elmt);
+            if Present (Constits) then
+               Constit_Elmt := First_Elmt (Constits);
+               while Present (Constit_Elmt) loop
+                  Constit_Id := Node (Constit_Elmt);
 
-               if Present_Then_Remove (In_Constits, Constit_Id) then
-                  Input_Seen := True;
+                  if Present_Then_Remove (In_Constits, Constit_Id) then
+                     Input_Seen := True;
 
-               elsif Present_Then_Remove (In_Out_Constits, Constit_Id) then
-                  In_Out_Seen := True;
+                  elsif Present_Then_Remove (In_Out_Constits, Constit_Id) then
+                     In_Out_Seen := True;
 
-               elsif Present_Then_Remove (Out_Constits, Constit_Id) then
-                  Output_Seen := True;
+                  elsif Present_Then_Remove (Out_Constits, Constit_Id) then
+                     Output_Seen := True;
 
-               elsif Present_Then_Remove (Proof_In_Constits, Constit_Id) then
-                  Proof_In_Seen := True;
+                  elsif Present_Then_Remove (Proof_In_Constits, Constit_Id)
+                  then
+                     Proof_In_Seen := True;
 
-               else
-                  Has_Missing := True;
-               end if;
+                  else
+                     Has_Missing := True;
+                  end if;
 
-               Next_Elmt (Constit_Elmt);
-            end loop;
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
 
             --  An In_Out constituent is a valid completion
 
@@ -24462,40 +24498,45 @@ package body Sem_Prag is
          -----------------------------
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constits     : constant Elist_Id :=
+                             Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             In_Seen      : Boolean := False;
 
          begin
-            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
-            while Present (Constit_Elmt) loop
-               Constit_Id := Node (Constit_Elmt);
+            if Present (Constits) then
+               Constit_Elmt := First_Elmt (Constits);
+               while Present (Constit_Elmt) loop
+                  Constit_Id := Node (Constit_Elmt);
 
-               --  At least one of the constituents appears as an Input
+                  --  At least one of the constituents appears as an Input
 
-               if Present_Then_Remove (In_Constits, Constit_Id) then
-                  In_Seen := True;
+                  if Present_Then_Remove (In_Constits, Constit_Id) then
+                     In_Seen := True;
 
-               --  A Proof_In constituent can refine an Input state as long as
-               --  there is at least one Input constituent present.
+                  --  A Proof_In constituent can refine an Input state as long
+                  --  as there is at least one Input constituent present.
 
-               elsif Present_Then_Remove (Proof_In_Constits, Constit_Id) then
-                  null;
+                  elsif Present_Then_Remove (Proof_In_Constits, Constit_Id)
+                  then
+                     null;
 
-               --  The constituent appears in the global refinement, but has
-               --  mode In_Out or Output (SPARK RM 7.2.4(5)).
+                  --  The constituent appears in the global refinement, but has
+                  --  mode In_Out or Output (SPARK RM 7.2.4(5)).
 
-               elsif Present_Then_Remove (In_Out_Constits, Constit_Id)
-                 or else Present_Then_Remove (Out_Constits, Constit_Id)
-               then
-                  Error_Msg_Name_1 := Chars (State_Id);
-                  SPARK_Msg_NE
-                    ("constituent & of state % must have mode `Input` in "
-                     & "global refinement", N, Constit_Id);
-               end if;
+                  elsif Present_Then_Remove (In_Out_Constits, Constit_Id)
+                    or else Present_Then_Remove (Out_Constits, Constit_Id)
+                  then
+                     Error_Msg_Name_1 := Chars (State_Id);
+                     SPARK_Msg_NE
+                       ("constituent & of state % must have mode `Input` in "
+                        & "global refinement", N, Constit_Id);
+                  end if;
 
-               Next_Elmt (Constit_Elmt);
-            end loop;
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
 
             --  Not one of the constituents appeared as Input
 
@@ -24557,47 +24598,51 @@ package body Sem_Prag is
          -----------------------------
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constits     : constant Elist_Id :=
+                             Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
 
          begin
-            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
-            while Present (Constit_Elmt) loop
-               Constit_Id := Node (Constit_Elmt);
+            if Present (Constits) then
+               Constit_Elmt := First_Elmt (Constits);
+               while Present (Constit_Elmt) loop
+                  Constit_Id := Node (Constit_Elmt);
 
-               if Present_Then_Remove (Out_Constits, Constit_Id) then
-                  null;
+                  if Present_Then_Remove (Out_Constits, Constit_Id) then
+                     null;
 
-               --  The constituent appears in the global refinement, but has
-               --  mode Input, In_Out or Proof_In (SPARK RM 7.2.4(5)).
+                  --  The constituent appears in the global refinement, but has
+                  --  mode Input, In_Out or Proof_In (SPARK RM 7.2.4(5)).
 
-               elsif Present_Then_Remove (In_Constits, Constit_Id)
-                 or else Present_Then_Remove (In_Out_Constits, Constit_Id)
-                 or else Present_Then_Remove (Proof_In_Constits, Constit_Id)
-               then
-                  Error_Msg_Name_1 := Chars (State_Id);
-                  SPARK_Msg_NE
-                    ("constituent & of state % must have mode `Output` in "
-                     & "global refinement", N, Constit_Id);
-
-               --  The constituent is altogether missing (SPARK RM 7.2.5(3))
-
-               else
-                  if not Posted then
-                     Posted := True;
+                  elsif Present_Then_Remove (In_Constits, Constit_Id)
+                    or else Present_Then_Remove (In_Out_Constits, Constit_Id)
+                    or else Present_Then_Remove (Proof_In_Constits, Constit_Id)
+                  then
+                     Error_Msg_Name_1 := Chars (State_Id);
                      SPARK_Msg_NE
-                       ("`Output` state & must be replaced by all its "
-                        & "constituents in global refinement", N, State_Id);
+                       ("constituent & of state % must have mode `Output` in "
+                        & "global refinement", N, Constit_Id);
+
+                  --  The constituent is altogether missing (SPARK RM 7.2.5(3))
+
+                  else
+                     if not Posted then
+                        Posted := True;
+                        SPARK_Msg_NE
+                          ("`Output` state & must be replaced by all its "
+                           & "constituents in global refinement", N, State_Id);
+                     end if;
+
+                     SPARK_Msg_NE
+                       ("\constituent & is missing in output list",
+                        N, Constit_Id);
                   end if;
 
-                  SPARK_Msg_NE
-                    ("\constituent & is missing in output list",
-                     N, Constit_Id);
-               end if;
-
-               Next_Elmt (Constit_Elmt);
-            end loop;
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
          end Check_Constituent_Usage;
 
          --  Local variables
@@ -24652,35 +24697,39 @@ package body Sem_Prag is
          -----------------------------
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
+            Constits      : constant Elist_Id :=
+                              Refinement_Constituents (State_Id);
             Constit_Elmt  : Elmt_Id;
             Constit_Id    : Entity_Id;
             Proof_In_Seen : Boolean := False;
 
          begin
-            Constit_Elmt := First_Elmt (Refinement_Constituents (State_Id));
-            while Present (Constit_Elmt) loop
-               Constit_Id := Node (Constit_Elmt);
+            if Present (Constits) then
+               Constit_Elmt := First_Elmt (Constits);
+               while Present (Constit_Elmt) loop
+                  Constit_Id := Node (Constit_Elmt);
 
-               --  At least one of the constituents appears as Proof_In
+                  --  At least one of the constituents appears as Proof_In
 
-               if Present_Then_Remove (Proof_In_Constits, Constit_Id) then
-                  Proof_In_Seen := True;
+                  if Present_Then_Remove (Proof_In_Constits, Constit_Id) then
+                     Proof_In_Seen := True;
 
-               --  The constituent appears in the global refinement, but has
-               --  mode Input, In_Out or Output (SPARK RM 7.2.4(5)).
+                  --  The constituent appears in the global refinement, but has
+                  --  mode Input, In_Out or Output (SPARK RM 7.2.4(5)).
 
-               elsif Present_Then_Remove (In_Constits, Constit_Id)
-                 or else Present_Then_Remove (In_Out_Constits, Constit_Id)
-                 or else Present_Then_Remove (Out_Constits, Constit_Id)
-               then
-                  Error_Msg_Name_1 := Chars (State_Id);
-                  SPARK_Msg_NE
-                    ("constituent & of state % must have mode `Proof_In` in "
-                     & "global refinement", N, Constit_Id);
-               end if;
+                  elsif Present_Then_Remove (In_Constits, Constit_Id)
+                    or else Present_Then_Remove (In_Out_Constits, Constit_Id)
+                    or else Present_Then_Remove (Out_Constits, Constit_Id)
+                  then
+                     Error_Msg_Name_1 := Chars (State_Id);
+                     SPARK_Msg_NE
+                       ("constituent & of state % must have mode `Proof_In` "
+                        & "in global refinement", N, Constit_Id);
+                  end if;
 
-               Next_Elmt (Constit_Elmt);
-            end loop;
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
 
             --  Not one of the constituents appeared as Proof_In
 
@@ -25340,6 +25389,8 @@ package body Sem_Prag is
                -------------------------
 
                procedure Collect_Constituent is
+                  Constits : Elist_Id;
+
                begin
                   --  The Ghost policy in effect at the point of abstract state
                   --  declaration and constituent must match (SPARK RM 6.9(15))
@@ -25368,7 +25419,14 @@ package body Sem_Prag is
                   --  and establish a relation between the refined state and
                   --  the item.
 
-                  Append_Elmt (Constit_Id, Refinement_Constituents (State_Id));
+                  Constits := Refinement_Constituents (State_Id);
+
+                  if No (Constits) then
+                     Constits := New_Elmt_List;
+                     Set_Refinement_Constituents (State_Id, Constits);
+                  end if;
+
+                  Append_Elmt (Constit_Id, Constits);
                   Set_Encapsulating_State (Constit_Id, State_Id);
 
                   --  The state has at least one legal constituent, mark the
@@ -25482,6 +25540,7 @@ package body Sem_Prag is
             --  Local variables
 
             Constit_Id : Entity_Id;
+            Constits   : Elist_Id;
 
          --  Start of processing for Analyze_Constituent
 
@@ -25503,7 +25562,14 @@ package body Sem_Prag is
 
                   --  Collect the constituent in the list of refinement items
 
-                  Append_Elmt (Constit, Refinement_Constituents (State_Id));
+                  Constits := Refinement_Constituents (State_Id);
+
+                  if No (Constits) then
+                     Constits := New_Elmt_List;
+                     Set_Refinement_Constituents (State_Id, Constits);
+                  end if;
+
+                  Append_Elmt (Constit, Constits);
 
                   --  The state has at least one legal constituent, mark the
                   --  start of the refinement region. The region ends when the

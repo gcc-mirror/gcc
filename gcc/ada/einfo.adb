@@ -7351,22 +7351,21 @@ package body Einfo is
    -------------------------------------
 
    function Has_Non_Null_Visible_Refinement (Id : E) return B is
+      Constits : Elist_Id;
+
    begin
       --  "Refinement" is a concept applicable only to abstract states
 
       pragma Assert (Ekind (Id) = E_Abstract_State);
+      Constits := Refinement_Constituents (Id);
 
-      if Has_Visible_Refinement (Id) then
-         pragma Assert (Present (Refinement_Constituents (Id)));
+      --  For a refinement to be non-null, the first constituent must be
+      --  anything other than null.
 
-         --  For a refinement to be non-null, the first constituent must be
-         --  anything other than null.
-
-         return
-           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) /= N_Null;
-      end if;
-
-      return False;
+      return
+        Has_Visible_Refinement (Id)
+          and then Present (Constits)
+          and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
    end Has_Non_Null_Visible_Refinement;
 
    -----------------------------
@@ -7387,22 +7386,21 @@ package body Einfo is
    ---------------------------------
 
    function Has_Null_Visible_Refinement (Id : E) return B is
+      Constits : Elist_Id;
+
    begin
       --  "Refinement" is a concept applicable only to abstract states
 
       pragma Assert (Ekind (Id) = E_Abstract_State);
+      Constits := Refinement_Constituents (Id);
 
-      if Has_Visible_Refinement (Id) then
-         pragma Assert (Present (Refinement_Constituents (Id)));
+      --  For a refinement to be null, the state's sole constituent must be a
+      --  null.
 
-         --  For a refinement to be null, the state's sole constituent must be
-         --  a null.
-
-         return
-           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) = N_Null;
-      end if;
-
-      return False;
+      return
+        Has_Visible_Refinement (Id)
+          and then Present (Constits)
+          and then Nkind (Node (First_Elmt (Constits))) = N_Null;
    end Has_Null_Visible_Refinement;
 
    --------------------
