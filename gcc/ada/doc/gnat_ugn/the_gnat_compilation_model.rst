@@ -2865,6 +2865,17 @@ where
 Switches for `gnatprep`
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: --version (gnatprep)
+
+:samp:`--version`
+  Display Copyright and version, then exit disregarding all other options.
+
+.. index:: --help (gnatprep)
+
+:samp:`--help`
+  If *--version* was not used, display usage, then exit disregarding
+  all other options.
+
 .. index:: -b (gnatprep)
 
 :samp:`-b`
@@ -2922,12 +2933,23 @@ Switches for `gnatprep`
   Causes a sorted list of symbol names and values to be
   listed on the standard output file.
 
+.. index:: -T (gnatprep)
+
+:samp:`-T`
+  Use LF as line terminators when writing files. By default the line terminator
+  of the host (LF under unix, CR/LF under Windows) is used.
+
 .. index:: -u (gnatprep)
 
 :samp:`-u`
   Causes undefined symbols to be treated as having the value FALSE in the context
   of a preprocessor test. In the absence of this option, an undefined symbol in
   a `#if` or `#elsif` test will be treated as an error.
+
+.. index:: -v (gnatprep)
+
+:samp:`-v`
+  Verbose mode: generates more output about work done.
 
 
 Note: if neither *-b* nor *-c* is present,
@@ -3126,10 +3148,18 @@ preprocessing is triggered and parameterized.
 :samp:`-gnatep={file}`
   This switch indicates to the compiler the file name (without directory
   information) of the preprocessor data file to use. The preprocessor data file
-  should be found in the source directories. Note that when the compiler is
-  called by a builder such as (*gnatmake* with a project
-  file, if the object directory is not also a source directory, the builder needs
-  to be called with *-x*.
+  should be found in the source directories. Alternatively when using project
+  files, you can reference to the project file's directory via the
+  ``project name'Project_Dir`` project attribute, e.g:
+
+  .. code-block:: gpr
+
+      project Prj is
+         package Compiler is
+            for Switches ("Ada") use
+              ("-gnatep=" & Prj'Project_Dir & "prep.def");
+         end Compiler;
+      end Prj;
 
   A preprocessing data file is a text file with significant lines indicating
   how should be preprocessed either a specific source or all sources not

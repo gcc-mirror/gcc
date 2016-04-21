@@ -2790,8 +2790,6 @@ appropriate options.
     indicate that the analysed set of sources is incomplete to make up a
     partition and that some subprogram bodies are missing are not generated.
 
-  Note: to invoke *gnatelim* with a project file, use the `gnat`
-  driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
 
 
   .. _Processing_Precompiled_Libraries:

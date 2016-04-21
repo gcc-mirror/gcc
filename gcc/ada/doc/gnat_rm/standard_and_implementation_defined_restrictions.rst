@@ -525,7 +525,7 @@ No_Multiple_Elaboration
 .. index:: No_Multiple_Elaboration
 
 [GNAT] When this restriction is active, we are not requesting control-flow
-preservation with -fpreserve-control-flow and the static elaboration model is
+preservation with -fpreserve-control-flow, and the static elaboration model is
 used, the compiler is allowed to suppress the elaboration counter normally
 associated with the unit, even if the unit has elaboration code. This counter
 is typically used to check for access before elaboration and to control
@@ -877,10 +877,10 @@ code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
 
 When this restriction is active, we are not requesting control-flow
-preservation with -fpreserve-control-flow and the static elaboration model is
+preservation with -fpreserve-control-flow, and the static elaboration model is
 used, the compiler is allowed to suppress the elaboration counter normally
-associated with the unit, used to check for access before elaboration and to
-control.
+associated with the unit. This counter is typically used to check for access
+before elaboration and to control multiple elaboration attempts.
 
 No_Dynamic_Sized_Objects
 ------------------------
