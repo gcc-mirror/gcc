@@ -1,5 +1,9 @@
 2016-04-21  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.dg/tree-ssa/minmax-2.c: New testcase.
+
+2016-04-21  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/minmax-1.c: New testcase.
 
 2016-04-20  Jan Hubicka  <jh@suse.cz>
