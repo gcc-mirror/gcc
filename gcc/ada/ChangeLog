@@ -1,3 +1,18 @@
+2016-04-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Build_Subprogram_Declaration): Propagate the
+	attribute Rewritten_For_C to the body since since the expander
+	may generate calls using that entity.
+	* exp_ch6.adb (Expand_Call): For internally generated
+	calls ensure that they reference the entity of the spec
+	of the called function.
+	(Rewritten_For_C_Func_Id): New subprogram.
+	(Rewritten_For_C_Proc_Id): New subprogram.
+	(Rewrite_Function_Call_For_C): Invoke the new subprogram to
+	ensure that we skip freezing entities.
+	* exp_util.adb (Build_Procedure_Form): No action needed if the
+	procedure was already built.
+
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, exp_util.adb, sem_ch13.adb, exp_unst.adb: Minor

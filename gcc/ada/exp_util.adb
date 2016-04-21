@@ -931,6 +931,12 @@ package body Exp_Util is
       Proc_Formals : List_Id;
 
    begin
+      --  No action needed if this transformation was already done
+
+      if Nkind (Specification (N)) = N_Procedure_Specification then
+         return;
+      end if;
+
       Proc_Formals := New_List;
 
       --  Create a list of formal parameters with the same types as the

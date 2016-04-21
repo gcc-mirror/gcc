@@ -2459,6 +2459,44 @@ package body Exp_Ch6 is
          end if;
       end New_Value;
 
+      function Rewritten_For_C_Func_Id (Proc_Id : Entity_Id) return Entity_Id;
+      --  Given the Id of the procedure with an extra out parameter internally
+      --  built to handle functions that return a constrained array type return
+      --  the Id of the corresponding function.
+
+      -----------------------------
+      -- Rewritten_For_C_Func_Id --
+      -----------------------------
+
+      function Rewritten_For_C_Func_Id (Proc_Id : Entity_Id) return Entity_Id
+      is
+         Decl      : constant Node_Id := Unit_Declaration_Node (Proc_Id);
+         Func_Decl : Node_Id;
+         Func_Id   : Entity_Id;
+
+      begin
+         pragma Assert (Rewritten_For_C (Proc_Id));
+         pragma Assert (Nkind (Decl) = N_Subprogram_Body);
+
+         Func_Decl := Nlists.Prev (Decl);
+
+         while Present (Func_Decl)
+           and then
+             (Nkind (Func_Decl) = N_Freeze_Entity
+                or else
+              Nkind (Func_Decl) /= N_Subprogram_Declaration
+                or else
+              Nkind (Specification (Func_Decl)) /= N_Function_Specification)
+         loop
+            Func_Decl := Nlists.Prev (Func_Decl);
+         end loop;
+
+         pragma Assert (Present (Func_Decl));
+         Func_Id := Defining_Entity (Specification (Func_Decl));
+         pragma Assert (Chars (Proc_Id) = Chars (Func_Id));
+         return Func_Id;
+      end Rewritten_For_C_Func_Id;
+
       --  Local variables
 
       Remote        : constant Boolean   := Is_Remote_Call (Call_Node);
@@ -2614,6 +2652,19 @@ package body Exp_Ch6 is
         and then Is_Entity_Name (Name (Call_Node))
         and then Rewritten_For_C (Entity (Name (Call_Node)))
       then
+         --  For internally generated calls ensure that they reference the
+         --  entity of the spec of the called function (needed since the
+         --  expander may generate calls using the entity of their body).
+         --  See for example Expand_Boolean_Operator().
+
+         if not (Comes_From_Source (Call_Node))
+           and then Nkind (Unit_Declaration_Node (Entity (Name (Call_Node))))
+                      = N_Subprogram_Body
+         then
+            Set_Entity (Name (Call_Node),
+              Rewritten_For_C_Func_Id (Entity (Name (Call_Node))));
+         end if;
+
          Rewrite_Function_Call_For_C (Call_Node);
          return;
       end if;
@@ -8301,13 +8352,49 @@ package body Exp_Ch6 is
    ---------------------------------
 
    procedure Rewrite_Function_Call_For_C (N : Node_Id) is
+      function Rewritten_For_C_Proc_Id (Func_Id : Entity_Id) return Entity_Id;
+      --  Given the Id of the function that returns a constrained array type
+      --  return the Id of its internally built procedure with an extra out
+      --  parameter.
+
+      -----------------------------
+      -- Rewritten_For_C_Proc_Id --
+      -----------------------------
+
+      function Rewritten_For_C_Proc_Id (Func_Id : Entity_Id) return Entity_Id
+      is
+         Func_Decl : constant Node_Id := Unit_Declaration_Node (Func_Id);
+         Proc_Decl : Node_Id;
+         Proc_Id   : Entity_Id;
+
+      begin
+         Proc_Decl := Next (Func_Decl);
+
+         while Present (Proc_Decl)
+           and then
+             (Nkind (Proc_Decl) = N_Freeze_Entity
+                or else
+              Nkind (Proc_Decl) /= N_Subprogram_Declaration)
+         loop
+            Proc_Decl := Next (Proc_Decl);
+         end loop;
+
+         pragma Assert (Present (Proc_Decl));
+         Proc_Id := Defining_Entity (Proc_Decl);
+         pragma Assert (Chars (Proc_Id) = Chars (Func_Id));
+         return Proc_Id;
+      end Rewritten_For_C_Proc_Id;
+
+      --  Local variables
+
       Func_Id     : constant Entity_Id  := Entity (Name (N));
-      Func_Decl   : constant Node_Id    := Unit_Declaration_Node (Func_Id);
       Par         : constant Node_Id    := Parent (N);
-      Proc_Id     : constant Entity_Id  := Defining_Entity (Next (Func_Decl));
+      Proc_Id     : constant Entity_Id  := Rewritten_For_C_Proc_Id (Func_Id);
       Loc         : constant Source_Ptr := Sloc (Par);
       Actuals     : List_Id;
       Last_Formal : Entity_Id;
+
+   --  Start of processing for Rewrite_Function_Call_For_C
 
    begin
       --  The actuals may be given by named associations, so the added actual

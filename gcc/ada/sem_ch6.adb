@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2404,6 +2404,16 @@ package body Sem_Ch6 is
          Move_Pragmas (N, To => Subp_Decl);
 
          Analyze (Subp_Decl);
+
+         --  Propagate the attribute Rewritten_For_C to the body since the
+         --  expander may generate calls using that entity. Required to ensure
+         --  that Expand_Call rewrites calls to this function by calls to the
+         --  built procedure.
+
+         if Nkind (Body_Spec) = N_Function_Specification then
+            Set_Rewritten_For_C (Defining_Entity (Body_Spec),
+              Rewritten_For_C (Defining_Entity (Specification (Subp_Decl))));
+         end if;
 
          --  Analyze any relocated source pragmas or pragmas created for aspect
          --  specifications.
