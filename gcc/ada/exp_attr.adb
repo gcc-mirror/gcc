@@ -583,12 +583,14 @@ package body Exp_Attr is
          end if;
       end Make_VS_If;
 
-      --  Local Declarations
+      --  Local variables
 
       Def    : constant Node_Id := Parent (R_Type);
       Comps  : constant Node_Id := Component_List (Type_Definition (Def));
       Stmts  : constant List_Id := New_List;
       Pspecs : constant List_Id := New_List;
+
+   --  Start of processing for Build_Record_VS_Func
 
    begin
       Append_To (Pspecs,
