@@ -1,3 +1,9 @@
+2016-04-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70728
+	* gcc/config/i386/sse.md (define_insn "<shift_insn><mode>3<mask_name>"):
+	Extract AVX-512BW constraint from AVX.
+
 2016-04-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70725
