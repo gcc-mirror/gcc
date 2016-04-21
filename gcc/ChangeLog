@@ -1,3 +1,9 @@
+2016-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70747
+	* fold-const.c (fold_comparison): Return properly typed
+	constant boolean.
+
 2016-04-21  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/70715
