@@ -564,6 +564,30 @@ package body Exp_Aggr is
       ---------------------
 
       function Component_Check (N : Node_Id; Index : Node_Id) return Boolean is
+
+         function Ultimate_Original_Expression (N : Node_Id) return Node_Id;
+         --  Given a type conversion or an unchecked type conversion N, return
+         --  its innermost original expression.
+
+         ----------------------------------
+         -- Ultimate_Original_Expression --
+         ----------------------------------
+
+         function Ultimate_Original_Expression (N : Node_Id) return Node_Id is
+            Expr : Node_Id := Original_Node (N);
+
+         begin
+            while Nkind_In (Expr, N_Type_Conversion,
+                                  N_Unchecked_Type_Conversion)
+            loop
+               Expr := Original_Node (Expression (Expr));
+            end loop;
+
+            return Expr;
+         end Ultimate_Original_Expression;
+
+         --  Local variables
+
          Expr : Node_Id;
 
       begin
@@ -617,7 +641,10 @@ package body Exp_Aggr is
 
             --  Checks 12: (no function call)
 
-            if Modify_Tree_For_C and then Nkind (Expr) = N_Function_Call then
+            if Modify_Tree_For_C
+              and then
+                Nkind (Ultimate_Original_Expression (Expr)) = N_Function_Call
+            then
                return False;
             end if;
 

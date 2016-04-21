@@ -1,3 +1,10 @@
+2016-04-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Component_Check): Extend
+	the check that verifies that the aggregate has no function
+	calls to handle transformations performed by the frontend.
+	(Ultimate_Original_Expression): New subprogram.
+
 2016-04-21  Philippe Gil  <gil@adacore.com>
 
 	* krunch.adb (Krunch): Fix krunching of i-java.
