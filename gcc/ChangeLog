@@ -1,5 +1,13 @@
 2016-04-20  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (can_inline_edge_p): Pass caller info to
+	ultiimate_alias_target.
+	(update_callee_keys): Likewise.
+	(lookup_recursive_calls): Likewise.
+	(speculation_useful_p): Likewise.
+
+2016-04-20  Jan Hubicka  <jh@suse.cz>
+
 	PR ipa/70018
 	* cgraph.c (cgraph_set_nothrow_flag_1): Rename to ...
 	(set_nothrow_flag_1): ... this; handle interposition correctly;
