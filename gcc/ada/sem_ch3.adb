@@ -2513,6 +2513,13 @@ package body Sem_Ch3 is
 
             Remove_Visible_Refinements (Corresponding_Spec (Context));
          end if;
+
+         --  Verify that all abstract states found in any package declared in
+         --  the input declarative list have proper refinements. The check is
+         --  performed only when the context denotes a block, entry, package,
+         --  protected, subprogram, or task body (SPARK RM 7.2.2(3)).
+
+         Check_State_Refinements (Context);
       end if;
    end Analyze_Declarations;
 

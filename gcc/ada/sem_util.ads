@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -257,10 +257,6 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
-   procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id);
-   --  Verify the legality of reference Ref to variable Var_Id when the
-   --  variable is a constituent of a single protected/task type.
-
    procedure Check_Dynamically_Tagged_Expression
      (Expr        : Node_Id;
       Typ         : Entity_Id;
@@ -322,6 +318,10 @@ package Sem_Util is
    --  Verify that the profile of nonvolatile function Func_Id does not contain
    --  effectively volatile parameters or return type.
 
+   procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id);
+   --  Verify the legality of reference Ref to variable Var_Id when the
+   --  variable is a constituent of a single protected/task type.
+
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
@@ -330,6 +330,15 @@ package Sem_Util is
    --  Determine whether the contract of subprogram Subp_Id mentions attribute
    --  'Result and it contains an expression that evaluates differently in pre-
    --  and post-state.
+
+   procedure Check_State_Refinements
+     (Context      : Node_Id;
+      Is_Main_Unit : Boolean := False);
+   --  Verify that all abstract states declared in a block statement, entry
+   --  body, package body, protected body, subprogram body, task body, or a
+   --  package declaration denoted by Context have proper refinement. Emit an
+   --  error if this is not the case. Flag Is_Main_Unit should be set when
+   --  Context denotes the main compilation unit.
 
    procedure Check_Unused_Body_States (Body_Id : Entity_Id);
    --  Verify that all abstract states and objects declared in the state space
@@ -2006,12 +2015,6 @@ package Sem_Util is
    --  in with Any_Id and ignore. Otherwise signal a program error exception.
    --  This is used as a defense mechanism against ill-formed trees caused by
    --  previous errors (particularly in -gnatq mode).
-
-   function Requires_State_Refinement
-     (Spec_Id : Entity_Id;
-      Body_Id : Entity_Id) return Boolean;
-   --  Determine whether a package denoted by its spec and body entities
-   --  requires refinement of abstract states.
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean;
    --  Id is a type entity. The result is True when temporaries of this type

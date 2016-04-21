@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2014, AdaCore                     --
+--                     Copyright (C) 1999-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,14 +58,15 @@
 --  This capability is currently supported on the following targets:
 
 --     AiX PowerPC
---     HP-UX
 --     GNU/Linux x86
+--     GNU/Linux PowerPC
 --     LynxOS x86
+--     LynxOS 178 xcoff PowerPC
 --     Solaris x86
 --     Solaris sparc
 --     VxWorks PowerPC
 --     VxWorks x86
---     Windows NT/XP
+--     Windows XP
 
 --  Note: see also GNAT.Traceback.Symbolic, a child unit in file g-trasym.ads
 --  providing symbolic trace back capability for a subset of the above targets.

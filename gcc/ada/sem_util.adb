@@ -3621,6 +3621,172 @@ package body Sem_Util is
       end if;
    end Check_Result_And_Post_State;
 
+   -----------------------------
+   -- Check_State_Refinements --
+   -----------------------------
+
+   procedure Check_State_Refinements
+     (Context      : Node_Id;
+      Is_Main_Unit : Boolean := False)
+   is
+      procedure Check_Package (Pack : Node_Id);
+      --  Verify that all abstract states of a [generic] package denoted by its
+      --  declarative node Pack have proper refinement. Recursively verify the
+      --  visible and private declarations of the [generic] package for other
+      --  nested packages.
+
+      procedure Check_Packages_In (Decls : List_Id);
+      --  Seek out [generic] package declarations within declarative list Decls
+      --  and verify the status of their abstract state refinement.
+
+      function SPARK_Mode_Is_Off (N : Node_Id) return Boolean;
+      --  Determine whether construct N is subject to pragma SPARK_Mode Off
+
+      -------------------
+      -- Check_Package --
+      -------------------
+
+      procedure Check_Package (Pack : Node_Id) is
+         Body_Id : constant Entity_Id := Corresponding_Body (Pack);
+         Spec    : constant Node_Id   := Specification (Pack);
+         States  : constant Elist_Id  :=
+                     Abstract_States (Defining_Entity (Pack));
+
+         State_Elmt : Elmt_Id;
+         State_Id   : Entity_Id;
+
+      begin
+         --  Do not verify proper state refinement when the package is subject
+         --  to pragma SPARK_Mode Off because this disables the requirement for
+         --  state refinement.
+
+         if SPARK_Mode_Is_Off (Pack) then
+            null;
+
+         --  State refinement can only occur in a completing packge body. Do
+         --  not verify proper state refinement when the body is subject to
+         --  pragma SPARK_Mode Off because this disables the requirement for
+         --  state refinement.
+
+         elsif Present (Body_Id)
+           and then SPARK_Mode_Is_Off (Unit_Declaration_Node (Body_Id))
+         then
+            null;
+
+         --  Do not verify proper state refinement when the package is an
+         --  instance as this check was already performed in the generic.
+
+         elsif Present (Generic_Parent (Spec)) then
+            null;
+
+         --  Otherwise examine the contents of the package
+
+         else
+            if Present (States) then
+               State_Elmt := First_Elmt (States);
+               while Present (State_Elmt) loop
+                  State_Id := Node (State_Elmt);
+
+                  --  Emit an error when a non-null state lacks any form of
+                  --  refinement.
+
+                  if not Is_Null_State (State_Id)
+                    and then not Has_Null_Refinement (State_Id)
+                    and then not Has_Non_Null_Refinement (State_Id)
+                  then
+                     Error_Msg_N ("state & requires refinement", State_Id);
+                  end if;
+
+                  Next_Elmt (State_Elmt);
+               end loop;
+            end if;
+
+            Check_Packages_In (Visible_Declarations (Spec));
+            Check_Packages_In (Private_Declarations (Spec));
+         end if;
+      end Check_Package;
+
+      -----------------------
+      -- Check_Packages_In --
+      -----------------------
+
+      procedure Check_Packages_In (Decls : List_Id) is
+         Decl : Node_Id;
+
+      begin
+         if Present (Decls) then
+            Decl := First (Decls);
+            while Present (Decl) loop
+               if Nkind_In (Decl, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+               then
+                  Check_Package (Decl);
+               end if;
+
+               Next (Decl);
+            end loop;
+         end if;
+      end Check_Packages_In;
+
+      -----------------------
+      -- SPARK_Mode_Is_Off --
+      -----------------------
+
+      function SPARK_Mode_Is_Off (N : Node_Id) return Boolean is
+         Prag : constant Node_Id := SPARK_Pragma (Defining_Entity (N));
+
+      begin
+         return
+           Present (Prag) and then Get_SPARK_Mode_From_Annotation (Prag) = Off;
+      end SPARK_Mode_Is_Off;
+
+   --  Start of processing for Check_State_Refinements
+
+   begin
+      --  A block may declare a nested package
+
+      if Nkind (Context) = N_Block_Statement then
+         Check_Packages_In (Declarations (Context));
+
+      --  An entry, protected, subprogram, or task body may declare a nested
+      --  package.
+
+      elsif Nkind_In (Context, N_Entry_Body,
+                               N_Protected_Body,
+                               N_Subprogram_Body,
+                               N_Task_Body)
+      then
+         --  Do not verify proper state refinement when the body is subject to
+         --  pragma SPARK_Mode Off because this disables the requirement for
+         --  state refinement.
+
+         if not SPARK_Mode_Is_Off (Context) then
+            Check_Packages_In (Declarations (Context));
+         end if;
+
+      --  A package body may declare a nested package
+
+      elsif Nkind (Context) = N_Package_Body then
+         Check_Package (Unit_Declaration_Node (Corresponding_Spec (Context)));
+
+         --  Do not verify proper state refinement when the body is subject to
+         --  pragma SPARK_Mode Off because this disables the requirement for
+         --  state refinement.
+
+         if not SPARK_Mode_Is_Off (Context) then
+            Check_Packages_In (Declarations (Context));
+         end if;
+
+      --  A library level [generic] package may declare a nested package
+
+      elsif Nkind_In (Context, N_Generic_Package_Declaration,
+                               N_Package_Declaration)
+        and then Is_Main_Unit
+      then
+         Check_Package (Context);
+      end if;
+   end Check_State_Refinements;
+
    ------------------------------
    -- Check_Unprotected_Access --
    ------------------------------
@@ -6294,9 +6460,9 @@ package body Sem_Util is
            or else Is_Internal (E)
          then
             declare
+               Decl     : constant Node_Id := Parent (E);
                Prev     : Entity_Id;
                Prev_Vis : Entity_Id;
-               Decl     : constant Node_Id := Parent (E);
 
             begin
                --  If E is an implicit declaration, it cannot be the first
@@ -9329,18 +9495,18 @@ package body Sem_Util is
    -----------------------------
 
    function Has_Non_Null_Refinement (Id : Entity_Id) return Boolean is
+      Constits : Elist_Id;
+
    begin
       pragma Assert (Ekind (Id) = E_Abstract_State);
+      Constits := Refinement_Constituents (Id);
 
       --  For a refinement to be non-null, the first constituent must be
       --  anything other than null.
 
-      if Present (Refinement_Constituents (Id)) then
-         return
-           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) /= N_Null;
-      end if;
-
-      return False;
+      return
+        Present (Constits)
+          and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
    end Has_Non_Null_Refinement;
 
    ------------------------
@@ -9438,18 +9604,18 @@ package body Sem_Util is
    -------------------------
 
    function Has_Null_Refinement (Id : Entity_Id) return Boolean is
+      Constits : Elist_Id;
+
    begin
       pragma Assert (Ekind (Id) = E_Abstract_State);
+      Constits := Refinement_Constituents (Id);
 
       --  For a refinement to be null, the state's sole constituent must be a
       --  null.
 
-      if Present (Refinement_Constituents (Id)) then
-         return
-           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) = N_Null;
-      end if;
-
-      return False;
+      return
+        Present (Constits)
+          and then Nkind (Node (First_Elmt (Constits))) = N_Null;
    end Has_Null_Refinement;
 
    -------------------------------
@@ -18258,46 +18424,6 @@ package body Sem_Util is
          end if;
       end if;
    end Require_Entity;
-
-   -------------------------------
-   -- Requires_State_Refinement --
-   -------------------------------
-
-   function Requires_State_Refinement
-     (Spec_Id : Entity_Id;
-      Body_Id : Entity_Id) return Boolean
-   is
-      Prag : constant Node_Id := SPARK_Pragma (Body_Id);
-
-   begin
-      --  A package that does not define at least one abstract state cannot
-      --  possibly require refinement.
-
-      if No (Abstract_States (Spec_Id)) then
-         return False;
-
-      --  The package instroduces a single null state which does not merit
-      --  refinement.
-
-      elsif Has_Null_Abstract_State (Spec_Id) then
-         return False;
-
-      --  Check whether the package body is subject to pragma SPARK_Mode. If
-      --  it is and the mode is Off, the package body is considered to be in
-      --  regular Ada and does not require refinement.
-
-      elsif Present (Prag)
-        and then Get_SPARK_Mode_From_Annotation (Prag) = Off
-      then
-         return False;
-
-      --  The spec defines at least one abstract state and the body has no way
-      --  of circumventing the refinement.
-
-      else
-         return True;
-      end if;
-   end Requires_State_Refinement;
 
    ------------------------------
    -- Requires_Transient_Scope --

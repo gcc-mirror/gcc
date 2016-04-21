@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2685,7 +2685,6 @@ package body Sem_Ch9 is
       Enter_Name (Obj_Id);
       Set_Ekind                  (Obj_Id, E_Variable);
       Set_Etype                  (Obj_Id, Typ);
-      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
 
@@ -2772,7 +2771,6 @@ package body Sem_Ch9 is
       Enter_Name (Obj_Id);
       Set_Ekind                  (Obj_Id, E_Variable);
       Set_Etype                  (Obj_Id, Typ);
-      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
 

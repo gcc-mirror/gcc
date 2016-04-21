@@ -8639,6 +8639,26 @@ package body Sem_Ch13 is
               and then Pragma_Name (Ritem) = Name_Predicate
             then
                Add_Predicate (Ritem);
+
+            --  If the type is declared in an inner package it may be frozen
+            --  outside of the package, and the generated pragma has not been
+            --  analyzed yet, so capture the expression for the predicate
+            --  function at this point.
+
+            elsif Nkind (Ritem) = N_Aspect_Specification
+               and then Present (Aspect_Rep_Item (Ritem))
+               and then Scope (Typ) /= Current_Scope
+            then
+               declare
+                  Prag : constant Node_Id := Aspect_Rep_Item (Ritem);
+
+               begin
+                  if Nkind (Prag) = N_Pragma
+                    and then Pragma_Name (Prag) = Name_Predicate
+                  then
+                     Add_Predicate (Prag);
+                  end if;
+               end;
             end if;
 
             Next_Rep_Item (Ritem);

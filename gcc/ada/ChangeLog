@@ -1,3 +1,85 @@
+2016-04-21  Jerome Lambourg  <lambourg@adacore.com>
+
+	* s-soflin.adb: Initialize the Stack_Limit global variable.
+
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-writ.adb: Minor reformatting.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Compute_Number_Components): New function to
+	build an expression that computes the number of a components of
+	an array that may be multidimensional.
+	(Expan_Packed_Eq): Use it.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-traceb.ads: Update list of supported platforms.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Add_Predicates): if the type is declared in
+	an inner package it may be frozen outside of the package, and
+	the generated pragma has not been analyzed yet, the expression
+	for the predicate must be captured and added to the predicate
+	function at this point.
+
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Package_Body_Contract): Do not check
+	for a missing package refinement because 1) packages do not have
+	"refinement" and 2) the check for proper state refinement is
+	performed in a different place.
+	* einfo.adb (Has_Non_Null_Visible_Refinement): Reimplemented.
+	(Has_Null_Visible_Refinement): Reimplemented.
+	* sem_ch3.adb (Analyze_Declarations): Determine whether all
+	abstract states have received a refinement and if not, emit
+	errors.
+	* sem_ch7.adb (Analyze_Package_Declaration): Code
+	cleanup. Determine whether all abstract states of the
+	package and any nested packages have received a refinement
+	and if not, emit errors.
+	(Requires_Completion_In_Body): Add new formal parameter
+	Do_Abstract_States. Update the comment on usage. Propagate the
+	Do_Abstract_States flag to all Unit_Requires_Body calls.
+	(Unit_Requires_Body): Remove formal
+	parameter Ignore_Abstract_States. Add new formal paramter
+	Do_Abstract_States. Propagate the Do_Abstract_States flag to
+	all Requires_Completion_In calls.
+	* sem_ch7.ads (Unit_Requires_Body): Remove formal
+	parameter Ignore_Abstract_States. Add new formal paramter
+	Do_Abstract_States. Update the comment on usage.
+	* sem_ch9.adb (Analyze_Single_Protected_Declaration): Do
+	not initialize the constituent list as this is now done on a
+	need-to-add-element basis.
+	(Analyze_Single_Task_Declaration):
+	Do not initialize the constituent list as this is now done on
+	a need-to-add-element basis.
+	* sem_ch10.adb (Decorate_State): Do not initialize the constituent
+	lists as this is now done on a need-to-add-element basis.
+	* sem_prag.adb (Analyze_Constituent): Set the
+	refinement constituents when adding a new element.
+	(Analyze_Part_Of_In_Decl_Part): Set the Part_Of constituents when
+	adding a new element.
+	(Analyze_Part_Of_Option): Set the Part_Of
+	constituents when adding a new element.
+	(Analyze_Pragma): Set the Part_Of constituents when adding a new
+	element.
+	(Check_Constituent_Usage (all versions)): Reimplemented.
+	(Collect_Constituent): Set the refinement constituents when adding
+	a new element.
+	(Create_Abstract_State): Do not initialize the
+	constituent lists as this is now done on a need-to-add-element basis.
+	(Propagate_Part_Of): Set the Part_Of constituents when
+	adding a new element.
+	* sem_util.adb (Check_State_Refinements): New routine.
+	(Has_Non_Null_Refinement): Reimplemented.
+	(Has_Null_Refinement): Reimplemented.
+	(Requires_State_Refinement): Removed.
+	* sem_util.ads (Check_State_Refinements): New routine.
+	(Requires_State_Refinement): Removed.
+
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-writ.adb, sem_ch6.adb: Minor reformatting and code cleanup.
