@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1728,11 +1728,7 @@ package body Exp_Util is
    ----------------------------------------
 
    function Containing_Package_With_Ext_Axioms
-     (E : Entity_Id) return Entity_Id
-   is
-      Decl                  : Node_Id;
-      First_Ax_Parent_Scope : Entity_Id;
-
+     (E : Entity_Id) return Entity_Id is
    begin
       --  E is the package or generic package which is externally axiomatized
 
@@ -1745,29 +1741,35 @@ package body Exp_Util is
       --  If E's scope is axiomatized, E is axiomatized
 
       if Present (Scope (E)) then
-         First_Ax_Parent_Scope :=
-           Containing_Package_With_Ext_Axioms (Scope (E));
-
-         if Present (First_Ax_Parent_Scope) then
-            return First_Ax_Parent_Scope;
-         end if;
-
+         declare
+            First_Ax_Parent_Scope : constant Entity_Id :=
+              Containing_Package_With_Ext_Axioms (Scope (E));
+         begin
+            if Present (First_Ax_Parent_Scope) then
+               return First_Ax_Parent_Scope;
+            end if;
+         end;
       end if;
 
       --  Otherwise, if E is a package instance, it is axiomatized if the
       --  corresponding generic package is axiomatized.
 
       if Ekind (E) = E_Package then
-         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Parent (E));
-         else
-            Decl := Parent (E);
-         end if;
+         declare
+            Par  : constant Node_Id := Parent (E);
+            Decl : Node_Id;
+         begin
+            if Nkind (Par) = N_Defining_Program_Unit_Name then
+               Decl := Parent (Par);
+            else
+               Decl := Par;
+            end if;
 
-         if Present (Generic_Parent (Decl)) then
-            return
-              Containing_Package_With_Ext_Axioms (Generic_Parent (Decl));
-         end if;
+            if Present (Generic_Parent (Decl)) then
+               return
+                 Containing_Package_With_Ext_Axioms (Generic_Parent (Decl));
+            end if;
+         end;
       end if;
 
       return Empty;

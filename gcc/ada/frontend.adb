@@ -90,7 +90,6 @@ begin
    Checks.Initialize;
    Sem_Warn.Initialize;
    Prep.Initialize;
-   Exp_Ch6.Initialize;
 
    if Generate_SCIL then
       SCIL_LL.Initialize;

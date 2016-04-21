@@ -1,3 +1,21 @@
+2016-04-21  Javier Miranda  <miranda@adacore.com>
+
+	* frontend.adb: Remove call to initialize Exp_Ch6.
+	* exp_ch6.ads, exp_ch6.adb (Initialize): removed.
+	(Unest_Entry/Unest_Bodies): Removed.
+	(Unnest_Subprograms): Code cleanup.
+
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* set_targ.adb (Read_Target_Dependent_Values):
+	close target description file once its contents is read.
+	* s-os_lib.adb (Non_Blocking_Spawn, version with Stdout_File
+	and Stderr_File): Close local file descriptors before spawning
+	child process.
+	* exp_util.adb (Containing_Package_With_Ext_Axioms): Limit scope of
+	local variables to make the code easier to understand and avoid
+	duplicated calls to Parent and Generic_Parent.
+
 2016-04-20  Bob Duff  <duff@adacore.com>
 
 	* s-os_lib.ads: Minor comment fix.
