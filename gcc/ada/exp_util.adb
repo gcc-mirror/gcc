@@ -1728,11 +1728,12 @@ package body Exp_Util is
    ----------------------------------------
 
    function Containing_Package_With_Ext_Axioms
-     (E : Entity_Id) return Entity_Id is
+     (E : Entity_Id) return Entity_Id
+   is
    begin
       --  E is the package or generic package which is externally axiomatized
 
-      if Ekind_In (E, E_Package, E_Generic_Package)
+      if Ekind_In (E, E_Generic_Package, E_Package)
         and then Has_Annotate_Pragma_For_External_Axiomatization (E)
       then
          return E;
@@ -1758,6 +1759,7 @@ package body Exp_Util is
          declare
             Par  : constant Node_Id := Parent (E);
             Decl : Node_Id;
+
          begin
             if Nkind (Par) = N_Defining_Program_Unit_Name then
                Decl := Parent (Par);

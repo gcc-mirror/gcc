@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -12650,11 +12650,14 @@ package body Sem_Util is
 
       function Denotes_Iterator (Iter_Typ : Entity_Id) return Boolean is
       begin
+         --  Check that the name matches, and that the ultimate ancestor is in
+         --  a predefined unit, i.e the one that declares iterator interfaces.
+
          return
            Nam_In (Chars (Iter_Typ), Name_Forward_Iterator,
                                      Name_Reversible_Iterator)
              and then Is_Predefined_File_Name
-                        (Unit_File_Name (Get_Source_Unit (Iter_Typ)));
+                     (Unit_File_Name (Get_Source_Unit (Root_Type (Iter_Typ))));
       end Denotes_Iterator;
 
       --  Local variables

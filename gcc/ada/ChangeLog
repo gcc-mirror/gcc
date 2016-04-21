@@ -1,3 +1,23 @@
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, exp_util.adb, sem_ch13.adb, exp_unst.adb: Minor
+	reformatting.
+
+2016-04-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Denotes_Iterator): Use root type to determine
+	whether the ultimate ancestor is the predefined iterator
+	interface pakage.
+	* exp_ch5.adb (Expand_Iterator_Over_Container): simplify code
+	and avoid reuse of Pack local variable.
+
+2016-04-21  Olivier Hainque  <hainque@adacore.com>
+
+	* system-vxworks-arm.ads, system-vxworks-sparcv9.ads,
+	system-vxworks-ppc.ads, system-vxworks-m68k.ads,
+	system-vxworks-mips.ads, system-vxworks-x86.ads: Define
+	Executable_Extension to ".out".
+
 2016-04-21  Javier Miranda  <miranda@adacore.com>
 
 	* frontend.adb: Update call to Unnest_Subprograms.

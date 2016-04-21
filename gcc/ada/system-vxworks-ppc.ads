@@ -164,4 +164,6 @@ private
    Frontend_Exceptions       : constant Boolean := True;
    ZCX_By_Default            : constant Boolean := False;
 
+   Executable_Extension : constant String := ".out";
+
 end System;
