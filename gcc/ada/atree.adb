@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1970,13 +1970,6 @@ package body Atree is
       E_Count : Natural := 0;
 
    begin
-      Write_Str ("Maximum number of nodes per entity: ");
-      Write_Int (Int (Num_Extension_Nodes + 1));
-      Write_Eol;
-      Write_Str ("Number of allocated nodes: ");
-      Write_Int (Int (N_Count));
-      Write_Eol;
-
       Write_Str ("Number of entities: ");
       Write_Eol;
 
@@ -2051,9 +2044,28 @@ package body Atree is
       Write_Str ("Total number of entities: ");
       Write_Int (Int (E_Count));
       Write_Eol;
+
+      Write_Str ("Maximum number of nodes per entity: ");
+      Write_Int (Int (Num_Extension_Nodes + 1));
+      Write_Eol;
+
+      Write_Str ("Number of allocated nodes: ");
+      Write_Int (Int (N_Count));
+      Write_Eol;
+
       Write_Str ("Ratio allocated nodes/entities: ");
-      Write_Int (Int (N_Count * 100 / E_Count));
+      Write_Int (Int (Long_Long_Integer (N_Count) * 100 /
+                                                 Long_Long_Integer (E_Count)));
       Write_Str ("/100");
+      Write_Eol;
+
+      Write_Str ("Size of a node in bytes: ");
+      Write_Int (Int (Node_Record'Size) / Storage_Unit);
+      Write_Eol;
+
+      Write_Str ("Memory consumption in bytes: ");
+      Write_Int (Int (Long_Long_Integer (N_Count) *
+                                           (Node_Record'Size / Storage_Unit)));
       Write_Eol;
    end Print_Statistics;
 

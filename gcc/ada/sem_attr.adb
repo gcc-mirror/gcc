@@ -4940,7 +4940,13 @@ package body Sem_Attr is
             --    function Func (...) return ...
             --      with Post => Func'Old ...;
 
-            elsif Nkind (P) = N_Function_Call then
+            --  The function may be specified in qualified form X.Y where X is
+            --  a protected object and Y is a protected function. In that case
+            --  ensure that the qualified form has an entity.
+
+            elsif Nkind (P) = N_Function_Call
+              and then Nkind (Name (P)) in N_Has_Entity
+            then
                Pref_Id := Entity (Name (P));
 
                if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
