@@ -87,8 +87,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "xcoffout.h"		/* Needed for external data declarations. */
 #endif
 
-#include <new>
-
 static void general_init (const char *, bool);
 static void do_compile ();
 static void process_options (void);

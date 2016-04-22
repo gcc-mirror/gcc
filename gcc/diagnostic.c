@@ -40,8 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 # include <sys/ioctl.h>
 #endif
 
-#include <new>                     // For placement new.
-
 #define pedantic_warning_kind(DC)			\
   ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
 #define permissive_error_kind(DC) ((DC)->permissive ? DK_WARNING : DK_ERROR)
