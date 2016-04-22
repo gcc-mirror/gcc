@@ -93,6 +93,7 @@ along with GCC; see the file COPYING3.  If not see
    block for each merged equivalence list.  */
 
 #include "config.h"
+#define INCLUDE_MAP
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -100,9 +101,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "trans.h"
 #include "stringpool.h"
-
-#include <map>
-
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
