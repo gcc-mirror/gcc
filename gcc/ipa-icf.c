@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #include "config.h"
+#define INCLUDE_LIST
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -66,7 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "gimple-pretty-print.h"
 #include "data-streamer.h"
-#include <list>
 #include "fold-const.h"
 #include "calls.h"
 #include "varasm.h"

@@ -19,6 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MAP
+#define INCLUDE_SET
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -31,10 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "gcov-io.h"
 #include "diagnostic-core.h"
-
-#include <map>
-#include <set>
-
 #include "profile.h"
 #include "langhooks.h"
 #include "cfgloop.h"
