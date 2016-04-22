@@ -31,8 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "internal-fn.h"
 
-#include <new>                    // For placement-new.
-
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
 
