@@ -1,5 +1,18 @@
 2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	* system.h (list, map, set, vector): Include conditionally.
+	* auto-profile.c (INCLUDE_MAP, INCLUDE_SET): Define.
+	* graphite-isl-ast-to-gimple.c (INCLUDE_MAP): Define.
+	* ipa-icf.c (INCLUDE_LIST): Define.
+	* config/aarch64/cortex-a57-fma-steering.c (INCLUDE_LIST): Define.
+	* config/sh/sh.c (INCLUDE_VECTOR): Define.
+	* config/sh/sh_treg_combine.cc (INCLUDE_ALGORITHM): Define.
+	(INCLUDE_LIST, INCLUDE_VECTOR): Define.
+	* cp/logic.cc (INCLUDE_LIST): Define.
+	* fortran/trans-common.c (INCLUDE_MAP): Define.
+
+2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
 	* auto-profile.c: Remove <string.h> include.
 	* ipa-icf-gimple.c: Remove <list> include.
 	* diagnostic.c: Remove <new> include.
