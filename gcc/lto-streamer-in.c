@@ -881,10 +881,13 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
 
       is_default_def = (streamer_read_uchar (ib) != 0);
       name = stream_read_tree (ib, data_in);
-      ssa_name = make_ssa_name_fn (fn, name, gimple_build_nop ());
+      ssa_name = make_ssa_name_fn (fn, name, NULL);
 
       if (is_default_def)
-	set_ssa_default_def (cfun, SSA_NAME_VAR (ssa_name), ssa_name);
+	{
+	  set_ssa_default_def (cfun, SSA_NAME_VAR (ssa_name), ssa_name);
+	  SSA_NAME_DEF_STMT (ssa_name) = gimple_build_nop ();
+	}
 
       i = streamer_read_uhwi (ib);
     }
