@@ -1,3 +1,7 @@
+2016-04-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS (rs6000/powerpc port): Add myself.
+
 2016-04-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR bootstrap/70173
