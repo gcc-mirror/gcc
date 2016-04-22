@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_isl
 
+#define INCLUDE_MAP
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -54,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "value-prof.h"
 #include "graphite.h"
-#include <map>
 
 /* We always try to use signed 128 bit types, but fall back to smaller types
    in case a platform does not provide types of these sizes. In the future we
