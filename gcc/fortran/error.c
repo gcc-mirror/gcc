@@ -34,8 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "tree-diagnostic.h" /* tree_diagnostics_defaults */
 
-#include <new> /* For placement-new */
-
 static int suppress_errors = 0;
 
 static bool warnings_not_errors = false;
