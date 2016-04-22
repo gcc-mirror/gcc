@@ -11413,12 +11413,12 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
   if (TREE_CODE (TREE_TYPE (range)) == ARRAY_TYPE)
     {
       /* If RANGE is an array, we will use pointer arithmetic.  */
-      *begin = range;
+      *begin = decay_conversion (range, tf_warning_or_error);
       *end = build_binary_op (input_location, PLUS_EXPR,
 			      range,
 			      array_type_nelts_top (TREE_TYPE (range)),
 			      0);
-      return build_pointer_type (TREE_TYPE (TREE_TYPE (range)));
+      return TREE_TYPE (*begin);
     }
   else
     {
