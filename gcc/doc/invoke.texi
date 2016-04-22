@@ -24157,7 +24157,7 @@ useful together with @option{-mrecord-mcount}.
 @itemx -mno-skip-rax-setup
 @opindex mskip-rax-setup
 When generating code for the x86-64 architecture with SSE extensions
-disabled, @option{-skip-rax-setup} can be used to skip setting up RAX
+disabled, @option{-mskip-rax-setup} can be used to skip setting up RAX
 register when there are no variable arguments passed in vector registers.
 
 @strong{Warning:} Since RAX register is used to avoid unnecessarily

@@ -1,3 +1,10 @@
+2016-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Replace -skip-rax-setup with -mskip-rax-setup.
+
 2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* system.h (list, map, set, vector): Include conditionally.
