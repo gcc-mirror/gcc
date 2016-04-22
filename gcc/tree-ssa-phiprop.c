@@ -327,13 +327,15 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	continue;
 
       /* Check if we can move the loads.  The def stmt of the virtual use
-	 needs to be in a different basic block dominating bb.  */
+	 needs to be in a different basic block dominating bb.  When the
+	 def is an edge-inserted one we know it dominates us.  */
       vuse = gimple_vuse (use_stmt);
       def_stmt = SSA_NAME_DEF_STMT (vuse);
       if (!SSA_NAME_IS_DEFAULT_DEF (vuse)
 	  && (gimple_bb (def_stmt) == bb
-	      || !dominated_by_p (CDI_DOMINATORS,
-				  bb, gimple_bb (def_stmt))))
+	      || (gimple_bb (def_stmt)
+		  && !dominated_by_p (CDI_DOMINATORS,
+				      bb, gimple_bb (def_stmt)))))
 	goto next;
 
       /* Found a proper dereference with an aggregate copy.  Just
