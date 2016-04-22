@@ -1,3 +1,7 @@
+2016-04-21  Waldemar Brodkorb  <wbx@openadk.org>
+
+	* config/m68k/linux-atomic.c: Do not include unistd.h
+
 2016-04-20  Martin Galvan  <martin.galvan@tallertechnologies.com>
 
 	* config/arm/ieee754-df.S: Fix typos in comments.

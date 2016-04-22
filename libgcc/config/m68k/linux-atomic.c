@@ -33,7 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    using the kernel helper defined below.  There is no support for
    64-bit operations yet.  */
 
-#include <asm/unistd.h>
 #include <stdbool.h>
 
 #ifndef __NR_atomic_cmpxchg_32
