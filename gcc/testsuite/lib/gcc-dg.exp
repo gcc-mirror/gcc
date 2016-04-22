@@ -403,6 +403,7 @@ if { [info procs ${tool}_load] != [list] \
 	    switch [lindex $result 0] {
 		"pass" { set status "fail" }
 		"fail" { set status "pass" }
+		default { set status [lindex $result 0] }
 	    }
 	    set result [list $status [lindex $result 1]]
 	}

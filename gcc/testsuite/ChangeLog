@@ -1,3 +1,7 @@
+2016-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/gcc-dg.exp (${tool}_load): Add default return value handler.
+
 2016-04-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/submodule_14.f08: Add cleanup-submodules.
