@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcov-io.h"
 #include "diagnostic-core.h"
 
-#include <string.h>
 #include <map>
 #include <set>
 

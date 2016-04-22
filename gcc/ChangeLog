@@ -1,3 +1,15 @@
+2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* auto-profile.c: Remove <string.h> include.
+	* ipa-icf-gimple.c: Remove <list> include.
+	* diagnostic.c: Remove <new> include.
+	* genmatch.c: Likewise.
+	* pretty-print.c: Likewise.
+	* toplev.c: Likewise
+	* c/c-objc-common.c: Likewise.
+	* cp/error.c: Likewise.
+	* fortran/error.c: Likewise.
+
 2016-04-22  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer-in.c (input_ssa_names): Do not allocate

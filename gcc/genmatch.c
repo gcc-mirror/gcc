@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "bconfig.h"
-#include <new>
 #include "system.h"
 #include "coretypes.h"
 #include <cpplib.h>
