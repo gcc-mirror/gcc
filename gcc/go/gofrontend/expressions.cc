@@ -1141,7 +1141,13 @@ Expression*
 Expression::make_func_reference(Named_object* function, Expression* closure,
 				Location location)
 {
-  return new Func_expression(function, closure, location);
+  Func_expression* fe = new Func_expression(function, closure, location);
+
+  // Detect references to builtin functions and set the runtime code if
+  // appropriate.
+  if (function->is_function_declaration())
+    fe->set_runtime_code(Runtime::name_to_code(function->name()));
+  return fe;
 }
 
 // Class Func_descriptor_expression.
