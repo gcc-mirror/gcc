@@ -1,3 +1,8 @@
+2016-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/70712
+	* cfgexpand.c (expand_stack_vars): Fix typo.
+
 2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* system.h (list, map, set, vector): Include conditionally.
