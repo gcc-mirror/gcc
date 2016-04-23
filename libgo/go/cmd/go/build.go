@@ -2647,9 +2647,18 @@ func (tools gccgoToolchain) ld(b *builder, root *action, out string, allactions 
 		if err != nil {
 			return err
 		}
+		const ldflagsPrefix = "_CGO_LDFLAGS="
 		for _, line := range strings.Split(string(flags), "\n") {
-			if strings.HasPrefix(line, "_CGO_LDFLAGS=") {
-				cgoldflags = append(cgoldflags, strings.Fields(line[13:])...)
+			if strings.HasPrefix(line, ldflagsPrefix) {
+				newFlags := strings.Fields(line[len(ldflagsPrefix):])
+				for _, flag := range newFlags {
+					// Every _cgo_flags file has -g and -O2 in _CGO_LDFLAGS
+					// but they don't mean anything to the linker so filter
+					// them out.
+					if flag != "-g" && !strings.HasPrefix(flag, "-O") {
+						cgoldflags = append(cgoldflags, flag)
+					}
+				}
 			}
 		}
 		return nil
