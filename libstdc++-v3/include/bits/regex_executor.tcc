@@ -413,6 +413,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_word_boundary() const
     {
+      if (_M_current == _M_begin && (_M_flags & regex_constants::match_not_bow))
+	return false;
+      if (_M_current == _M_end && (_M_flags & regex_constants::match_not_eow))
+	return false;
+
       bool __left_is_word = false;
       if (_M_current != _M_begin
 	  || (_M_flags & regex_constants::match_prev_avail))
@@ -424,13 +429,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __right_is_word =
         _M_current != _M_end && _M_is_word(*_M_current);
 
-      if (__left_is_word == __right_is_word)
-	return false;
-      if (__left_is_word && !(_M_flags & regex_constants::match_not_eow))
-	return true;
-      if (__right_is_word && !(_M_flags & regex_constants::match_not_bow))
-	return true;
-      return false;
+      return __left_is_word != __right_is_word;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
