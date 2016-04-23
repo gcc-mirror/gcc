@@ -1,3 +1,11 @@
+2016-04-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	backport from trunk:
+	2016-04-20  Ben Elliston  <bje@gnu.org>
+
+	* testsuite/lib/libjava.exp (libjava_arguments): Use 'file
+	normalize' rather than the defunct DejaGnu 'absolute' proc.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.
