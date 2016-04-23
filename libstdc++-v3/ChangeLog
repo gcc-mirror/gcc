@@ -1,3 +1,10 @@
+2016-04-22  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/70745
+	* include/bits/regex_executor.tcc (_Executor<>::_M_word_boundary):
+	Fix the match_not_bow and match_not_eow behavior.
+	* testsuite/28_regex/regression.cc: Add testcase.
+
 2016-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69703
