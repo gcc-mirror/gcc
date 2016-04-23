@@ -11,6 +11,7 @@
 #include <mpc.h>
 
 #include "operator.h"
+#include "runtime.h"
 
 class Gogo;
 class Translate_context;
@@ -2149,7 +2150,8 @@ class Func_expression : public Expression
   Func_expression(Named_object* function, Expression* closure,
 		  Location location)
     : Expression(EXPRESSION_FUNC_REFERENCE, location),
-      function_(function), closure_(closure)
+      function_(function), closure_(closure),
+      runtime_code_(Runtime::NUMBER_OF_FUNCTIONS)
   { }
 
   // Return the object associated with the function.
@@ -2162,6 +2164,23 @@ class Func_expression : public Expression
   Expression*
   closure()
   { return this->closure_; }
+
+  // Return whether this is a reference to a runtime function.
+  bool
+  is_runtime_function() const
+  { return this->runtime_code_ != Runtime::NUMBER_OF_FUNCTIONS; }
+
+  // Return the runtime code for this function expression.
+  // Returns Runtime::NUMBER_OF_FUNCTIONS if this is not a reference to a
+  // runtime function.
+  Runtime::Function
+  runtime_code() const
+  { return this->runtime_code_; }
+
+  // Set the runtime code for this function expression.
+  void
+  set_runtime_code(Runtime::Function code)
+  { this->runtime_code_ = code; }
 
   // Return a backend expression for the code of a function.
   static Bexpression*
@@ -2204,6 +2223,8 @@ class Func_expression : public Expression
   // be a struct holding pointers to all the variables referenced by
   // this function and defined in enclosing functions.
   Expression* closure_;
+  // The runtime code for the referenced function.
+  Runtime::Function runtime_code_;
 };
 
 // A function descriptor.  A function descriptor is a struct with a

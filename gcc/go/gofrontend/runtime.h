@@ -43,6 +43,10 @@ class Runtime
   static Type*
   map_iteration_type();
 
+  // Return the runtime code for a named builtin function.
+  static Function
+  name_to_code(const std::string&);
+
  private:
   static Named_object*
   runtime_declaration(Function);
