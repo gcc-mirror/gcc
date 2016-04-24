@@ -197,7 +197,7 @@ check_buffers (st_parameter_dt *dtp)
     }
 
 done:
-  dtp->u.p.at_eol = (c == '\n' || c == EOF);
+  dtp->u.p.at_eol = (c == '\n' || c == '\r' || c == EOF);
   return c;
 }
 
