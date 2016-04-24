@@ -1,3 +1,10 @@
+2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* vec.h (vec_safe_contains): New function.
+	(vec::contains): Likewise.
+	(vec::begin): Likewise.
+	(vec::end): Likewise.
+
 2016-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/70712
