@@ -1,5 +1,9 @@
 2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* reorg.c (try_merge_delay_insns): Make merged_insns a vector.
+
+2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* vec.h (vec_safe_contains): New function.
 	(vec::contains): Likewise.
 	(vec::begin): Likewise.

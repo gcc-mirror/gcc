@@ -1259,7 +1259,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
   int num_slots = XVECLEN (PATTERN (insn), 0);
   rtx next_to_match = XVECEXP (PATTERN (insn), 0, slot_number);
   struct resources set, needed, modified;
-  rtx_insn_list *merged_insns = 0;
+  auto_vec<std::pair<rtx_insn *, bool>, 10> merged_insns;
   int i, j;
   int flags;
 
@@ -1319,7 +1319,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 	      INSN_FROM_TARGET_P (next_to_match) = 0;
 	    }
 	  else
-	    merged_insns = gen_rtx_INSN_LIST (VOIDmode, trial, merged_insns);
+	    merged_insns.safe_push (std::pair<rtx_insn *, bool> (trial, false));
 
 	  if (++slot_number == num_slots)
 	    break;
@@ -1384,8 +1384,8 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 		  INSN_FROM_TARGET_P (next_to_match) = 0;
 		}
 	      else
-		merged_insns = gen_rtx_INSN_LIST (SImode, dtrial,
-						  merged_insns);
+		merged_insns.safe_push (std::pair<rtx_insn *, bool> (dtrial,
+								     true));
 
 	      if (++slot_number == num_slots)
 		break;
@@ -1409,21 +1409,20 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
      target.  */
   if (slot_number == num_slots && annul_p)
     {
-      for (; merged_insns; merged_insns = merged_insns->next ())
+      unsigned int len = merged_insns.length ();
+      for (unsigned int i = len - 1; i < len; i--)
 	{
-	  if (GET_MODE (merged_insns) == SImode)
+	  if (merged_insns[i].second)
 	    {
-	      rtx_insn *new_rtx;
-
-	      update_block (merged_insns->insn (), thread);
-	      new_rtx = delete_from_delay_slot (merged_insns->insn ());
+	      update_block (merged_insns[i].first, thread);
+	      rtx_insn *new_rtx = delete_from_delay_slot (merged_insns[i].first);
 	      if (thread->deleted ())
 		thread = new_rtx;
 	    }
 	  else
 	    {
-	      update_block (merged_insns->insn (), thread);
-	      delete_related_insns (merged_insns->insn ());
+	      update_block (merged_insns[i].first, thread);
+	      delete_related_insns (merged_insns[i].first);
 	    }
 	}
 
