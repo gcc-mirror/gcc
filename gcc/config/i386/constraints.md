@@ -186,7 +186,10 @@
 
 (define_constraint "BC"
   "@internal SSE constant operand."
-  (match_test "standard_sse_constant_p (op)"))
+  (and (match_test "TARGET_SSE")
+       (ior (match_test "op == const0_rtx || op == constm1_rtx")
+	    (match_operand 0 "const0_operand")
+	    (match_operand 0 "vector_all_ones_operand"))))
 
 ;; Integer constant constraints.
 (define_constraint "I"
@@ -239,7 +242,9 @@
 ;; This can theoretically be any mode's CONST0_RTX.
 (define_constraint "C"
   "SSE constant zero operand."
-  (match_test "standard_sse_constant_p (op) == 1"))
+  (and (match_test "TARGET_SSE")
+       (ior (match_test "op == const0_rtx")
+	    (match_operand 0 "const0_operand"))))
 
 ;; Constant-or-symbol-reference constraints.
 
