@@ -1,3 +1,37 @@
+2016-04-24  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (standard_sse_constant_p): Add
+	machine_mode argument.
+	* config/i386/i386.c (standard_sse_constant_p): Return 2 for
+	constm1_rtx operands.  For VOIDmode constants, get mode from
+	pred_mode.  Check mode size if the mode is supported by ABI.
+	(standard_sse_constant_opcode): Do not use standard_constant_p.
+	Strictly check ABI support for all-ones operands.
+	(ix86_legitimate_constant_p): Handle TImode, OImode and XImode
+	immediates. Update calls to standard_sse_constant_p.
+	(ix86_expand_vector_move): Update calls to standard_sse_constant_p.
+	(ix86_rtx_costs): Ditto.
+	* config/i386/i386.md (*movxi_internal_avx512f): Use
+	nonimmediate_or_sse_const_operand instead of vector_move_operand.
+	Use (v,BC) alternative instead of (v,C). Use register_operand
+	checks instead of MEM_P.
+	(*movoi_internal_avx): Use nonimmediate_or_sse_const_operand instead
+	of vector_move_operand.  Add (v,BC) alternative and corresponding avx2
+	isa attribute.  Use register_operand checks instead of MEM_P.
+	(*movti_internal): Use nonimmediate_or_sse_const_operand for
+	TARGET_SSE.  Improve TARGET_SSE insn constraint.  Add (v,BC)
+	alternative and corresponding sse2 isa attribute.
+	(*movtf_internal, *movdf_internal, *movsf_interal): Update calls
+	to standard_sse_constant_p.
+	(FP constant splitters): Ditto.
+	* config/i386/constraints.md (BC): Do not use standard_sse_constant_p.
+	(C): Ditto.
+	* config/i386/predicates.md (constm1_operand): Remove.
+	(nonimmediate_or_sse_const_operand): Rewrite using RTX.
+	* config/i386/sse.md (*<avx512>_cvtmask2<ssemodesuffix><mode>): Use
+	vector_all_ones_operand instead of constm1_operand.
+
 2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* print-rtl.c (print_rtx_insn_vec): New function.
