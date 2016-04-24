@@ -1,3 +1,8 @@
+2016-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/70684
+	* gfortran.dg/list_read_14.f90: New test.
+
 2016-04-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70747
