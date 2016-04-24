@@ -1,5 +1,18 @@
 2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* print-rtl.c (print_rtx_insn_vec): New function.
+	* print-rtl.h: New prototype.
+	* store-motion.c (struct st_expr): Make avail_stores a vector.
+	(st_expr_entry): Adjust.
+	(free_st_expr_entry): Likewise.
+	(print_store_motion_mems): Likewise.
+	(find_moveable_store): Likewise.
+	(compute_store_table): Likewise.
+	(delete_store): Likewise.
+	(build_store_vectors): Likewise.
+
+2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* reorg.c (try_merge_delay_insns): Make merged_insns a vector.
 
 2016-04-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

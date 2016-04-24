@@ -870,6 +870,24 @@ print_simple_rtl (FILE *outf, const_rtx x)
   flag_simple = 0;
 }
 
+/* Print the elements of VEC to FILE.  */
+
+void
+print_rtx_insn_vec (FILE *file, const vec<rtx_insn *> &vec)
+{
+  fputc('{', file);
+
+  unsigned int len = vec.length ();
+  for (unsigned int i = 0; i < len; i++)
+    {
+      print_rtl (file, vec[i]);
+      if (i < len - 1)
+	fputs (", ", file);
+    }
+
+  fputc ('}', file);
+}
+
 #ifndef GENERATOR_FILE
 /* The functions below  try to print RTL in a form resembling assembler
    mnemonics.  Because this form is more concise than the "traditional" form

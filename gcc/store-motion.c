@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "print-rtl.h"
 
 /* This pass implements downward store motion.
    As of May 1, 2009, the pass is not enabled by default on any target,
@@ -67,7 +68,7 @@ struct st_expr
   /* INSN list of stores that are locally anticipatable.  */
   rtx_insn_list *antic_stores;
   /* INSN list of stores that are locally available.  */
-  rtx_insn_list *avail_stores;
+  vec<rtx_insn *> avail_stores;
   /* Next in the list.  */
   struct st_expr * next;
   /* Store ID in the dataflow bitmaps.  */
@@ -148,7 +149,7 @@ st_expr_entry (rtx x)
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
   ptr->antic_stores = NULL;
-  ptr->avail_stores = NULL;
+  ptr->avail_stores.create (0);
   ptr->reaching_reg = NULL_RTX;
   ptr->index        = 0;
   ptr->hash_index   = hash;
@@ -164,7 +165,7 @@ static void
 free_st_expr_entry (struct st_expr * ptr)
 {
   free_INSN_LIST_list (& ptr->antic_stores);
-  free_INSN_LIST_list (& ptr->avail_stores);
+   ptr->avail_stores.release ();
 
   free (ptr);
 }
@@ -240,10 +241,7 @@ print_store_motion_mems (FILE * file)
 
       fprintf (file, "\n	 AVAIL stores : ");
 
-      if (ptr->avail_stores)
-	print_rtl (file, ptr->avail_stores);
-      else
-	fprintf (file, "(nil)");
+	print_rtx_insn_vec (file, ptr->avail_stores);
 
       fprintf (file, "\n\n");
     }
@@ -591,11 +589,11 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
      it successfully before; if we failed before, do not bother to check
      until we reach the insn that caused us to fail.  */
   check_available = 0;
-  if (!ptr->avail_stores)
+  if (ptr->avail_stores.is_empty ())
     check_available = 1;
   else
     {
-      rtx_insn *tmp = ptr->avail_stores->insn ();
+      rtx_insn *tmp = ptr->avail_stores.last ();
       if (BLOCK_FOR_INSN (tmp) != bb)
 	check_available = 1;
     }
@@ -619,7 +617,7 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
 					      &LAST_AVAIL_CHECK_FAILURE (ptr));
     }
   if (!check_available)
-    ptr->avail_stores = alloc_INSN_LIST (insn, ptr->avail_stores);
+    ptr->avail_stores.safe_push (insn);
 }
 
 /* Find available and anticipatable stores.  */
@@ -697,7 +695,7 @@ compute_store_table (void)
        ptr != NULL;
        ptr = *prev_next_ptr_ptr)
     {
-      if (! ptr->avail_stores)
+      if (ptr->avail_stores.is_empty ())
 	{
 	  *prev_next_ptr_ptr = ptr->next;
 	  store_motion_mems_table->remove_elt_with_hash (ptr, ptr->hash_index);
@@ -981,9 +979,10 @@ delete_store (struct st_expr * expr, basic_block bb)
 
   reg = expr->reaching_reg;
 
-  for (rtx_insn_list *i = expr->avail_stores; i; i = i->next ())
+  unsigned int len = expr->avail_stores.length ();
+  for (unsigned int i = len - 1; i < len; i--)
     {
-      rtx_insn *del = i->insn ();
+      rtx_insn *del = expr->avail_stores[i];
       if (BLOCK_FOR_INSN (del) == bb)
 	{
 	  /* We know there is only one since we deleted redundant
@@ -1018,9 +1017,10 @@ build_store_vectors (void)
 
   for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
-      for (st = ptr->avail_stores; st != NULL; st = st->next ())
+      unsigned int len = ptr->avail_stores.length ();
+      for (unsigned int i = len - 1; i < len; i--)
 	{
-	  insn = st->insn ();
+	  insn = ptr->avail_stores[i];
 	  bb = BLOCK_FOR_INSN (insn);
 
 	  /* If we've already seen an available expression in this block,
@@ -1032,7 +1032,7 @@ build_store_vectors (void)
 	      rtx r = gen_reg_rtx_and_attrs (ptr->pattern);
 	      if (dump_file)
 		fprintf (dump_file, "Removing redundant store:\n");
-	      replace_store_insn (r, st->insn (), bb, ptr);
+	      replace_store_insn (r, insn, bb, ptr);
 	      continue;
 	    }
 	  bitmap_set_bit (st_avloc[bb->index], ptr->index);
