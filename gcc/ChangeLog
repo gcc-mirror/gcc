@@ -1,3 +1,8 @@
+2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*lea<mode>_general_4): Use const_0_to_3_operand
+	predicate for operand 2.
+
 2016-04-24  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
