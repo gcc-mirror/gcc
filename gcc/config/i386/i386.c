@@ -10868,30 +10868,24 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
 	case MODE_V8DF:
 	case MODE_V16SF:
 	  gcc_assert (TARGET_AVX512F);
-	  break;
+	  return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
+
 	case MODE_OI:
 	case MODE_V4DF:
 	case MODE_V8SF:
 	  gcc_assert (TARGET_AVX2);
-	  break;
+	  /* FALLTHRU */
 	case MODE_TI:
 	case MODE_V2DF:
 	case MODE_V4SF:
 	  gcc_assert (TARGET_SSE2);
-	  break;
+	  return (TARGET_AVX
+		  ? "vpcmpeqd\t%0, %0, %0"
+		  : "pcmpeqd\t%0, %0");
+
 	default:
 	  gcc_unreachable ();
 	}
-
-      if (TARGET_AVX512VL
-	  || insn_mode == MODE_XI
-	  || insn_mode == MODE_V8DF
-	  || insn_mode == MODE_V16SF)
-	return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
-      else if (TARGET_AVX)
-	return "vpcmpeqd\t%0, %0, %0";
-      else
-	return "pcmpeqd\t%0, %0";
    }
 
   gcc_unreachable ();
