@@ -1,5 +1,12 @@
 2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*movxi_internal_avx512f): Use insn type
+	attribute instead of which_alternative.
+	* config/i386/sse.md (*mov<mode>_internal): Ditto.
+	Use EXT_REX_SSE_REG_P where appropriate.
+
+2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/predicates.md (const0_operand): Do not match
 	const_wide_int code.
 	(const1_operand): Ditto.

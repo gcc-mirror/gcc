@@ -839,19 +839,18 @@
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
 {
-  int mode = get_attr_mode (insn);
-  switch (which_alternative)
+  switch (get_attr_type (insn))
     {
-    case 0:
+    case TYPE_SSELOG1:
       return standard_sse_constant_opcode (insn, operands[1]);
-    case 1:
-    case 2:
+
+    case TYPE_SSEMOV:
       /* There is no evex-encoded vmov* for sizes smaller than 64-bytes
 	 in avx512f, so we need to use workarounds, to access sse registers
 	 16-31, which are evex-only. In avx512vl we don't need workarounds.  */
       if (TARGET_AVX512F && <MODE_SIZE> < 64 && !TARGET_AVX512VL
-	  && ((REG_P (operands[0]) && EXT_REX_SSE_REGNO_P (REGNO (operands[0])))
-	      || (REG_P (operands[1]) && EXT_REX_SSE_REGNO_P (REGNO (operands[1])))))
+	  && (EXT_REX_SSE_REG_P (operands[0])
+	      || EXT_REX_SSE_REG_P (operands[1])))
 	{
 	  if (memory_operand (operands[0], <MODE>mode))
 	    {
@@ -873,7 +872,7 @@
 	    }
 	  else
 	    /* Reg -> reg move is always aligned.  Just use wider move.  */
-	    switch (mode)
+	    switch (get_attr_mode (insn))
 	      {
 	      case MODE_V8SF:
 	      case MODE_V4SF:
@@ -888,7 +887,8 @@
 		gcc_unreachable ();
 	      }
 	}
-      switch (mode)
+
+      switch (get_attr_mode (insn))
 	{
 	case MODE_V16SF:
 	case MODE_V8SF:
@@ -931,6 +931,7 @@
 	default:
 	  gcc_unreachable ();
 	}
+
     default:
       gcc_unreachable ();
     }
