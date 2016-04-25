@@ -3548,6 +3548,16 @@ const struct attribute_spec cxx_attribute_table[] =
   { NULL,	      0, 0, false, false, false, NULL, false }
 };
 
+/* Table of C++ standard attributes.  */
+const struct attribute_spec std_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "maybe_unused", 0, 0, false, false, false,
+    handle_unused_attribute, false },
+  { NULL,	      0, 0, false, false, false, NULL, false }
+};
+
 /* Handle a "java_interface" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
@@ -4026,6 +4036,7 @@ void
 init_tree (void)
 {
   list_hash_table = hash_table<list_hasher>::create_ggc (61);
+  register_scoped_attributes (std_attribute_table, NULL);
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)

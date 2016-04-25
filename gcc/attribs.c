@@ -130,7 +130,7 @@ register_scoped_attributes (const struct attribute_spec * attributes,
       /* We don't have any namespace NS yet.  Create one.  */
       scoped_attributes sa;
 
-      if (!attributes_table.is_empty ())
+      if (attributes_table.is_empty ())
 	attributes_table.create (64);
 
       memset (&sa, 0, sizeof (sa));

@@ -1,3 +1,8 @@
+2016-04-25  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (std_attribute_table): New.
+	(init_tree): Register it.
+
 2016-04-22  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_perform_range_for_lookup): Decay the array.

@@ -1,3 +1,10 @@
+2016-04-25  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (handle_unused_attribute): Accept CONST_DECL.
+	No longer static.
+	* c-common.h: Declare it.
+	* c-lex.c (c_common_has_attribute): Add maybe_unused.
+
 2016-04-22  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Fix __cpp_range_based_for.

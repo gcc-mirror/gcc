@@ -340,22 +340,25 @@ c_common_has_attribute (cpp_reader *pfile)
 		  attr_name = NULL_TREE;
 		}
 	    }
+	  else
+	    {
+	      /* Some standard attributes need special handling.  */
+	      if (is_attribute_p ("noreturn", attr_name))
+		result = 200809;
+	      else if (is_attribute_p ("deprecated", attr_name))
+		result = 201309;
+	      else if (is_attribute_p ("maybe_unused", attr_name))
+		result = 201603;
+	      if (result)
+		attr_name = NULL_TREE;
+	    }
 	}
       if (attr_name)
 	{
 	  init_attributes ();
 	  const struct attribute_spec *attr = lookup_attribute_spec (attr_name);
 	  if (attr)
-	    {
-	      if (TREE_CODE (attr_name) == TREE_LIST)
-		attr_name = TREE_VALUE (attr_name);
-	      if (is_attribute_p ("noreturn", attr_name))
-		result = 200809;
-	      else if (is_attribute_p ("deprecated", attr_name))
-		result = 201309;
-	      else
-		result = 1;
-	    }
+	    result = 1;
 	}
     }
   else
