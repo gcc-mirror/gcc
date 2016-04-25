@@ -1,4 +1,13 @@
+2016-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70780
+	* tree-ssa-pre.c (compute_antic_aux): Also return true if the block
+	wasn't visited yet.
+	(compute_antic): Mark blocks with abnormal preds as visited as
+	they have a final empty antic-in solution already.
+
 2016-04-25  Michael Collison  <michael.collison@linaro.org>
+
 	* ChangeLog(2016-04-25): Fix ChangeLog formatting.
 
 2016-04-25  Michael Collison  <michael.collison@linaro.org>

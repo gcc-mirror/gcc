@@ -2077,6 +2077,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   unsigned int bii;
   edge e;
   edge_iterator ei;
+  bool was_visited = BB_VISITED (block);
 
   old = ANTIC_OUT = S = NULL;
   BB_VISITED (block) = 1;
@@ -2167,7 +2168,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
   clean (ANTIC_IN (block));
 
-  if (!bitmap_set_equal (old, ANTIC_IN (block)))
+  if (!was_visited || !bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
 
  maybe_dump_sets:

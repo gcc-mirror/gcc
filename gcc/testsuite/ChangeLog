@@ -1,3 +1,8 @@
+2016-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70780
+	* gcc.dg/torture/pr70780.c: New testcase.
+
 2016-04-25  Michael Collison <michael.collison@arm.com>
 
 	* testsuite/gcc.target/arm/neon-vaddws16.c: New test.
