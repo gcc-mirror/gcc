@@ -1,3 +1,25 @@
+2016-04-25  Michael Collison  <michael.collison@linaro.org>
+
+    * config/arm/neon.md (widen_<us>sum<mode>): New patterns where
+    mode is VQI to improve mixed mode vectorization.
+    * config/arm/neon.md (vec_sel_widen_ssum_lo<VQI:mode><VW:mode>3): New
+    define_insn to match low half of signed vaddw.
+    * config/arm/neon.md (vec_sel_widen_ssum_hi<VQI:mode><VW:mode>3): New
+    define_insn to match high half of signed vaddw.
+    * config/arm/neon.md (vec_sel_widen_usum_lo<VQI:mode><VW:mode>3): New
+    define_insn to match low half of unsigned vaddw.
+    * config/arm/neon.md (vec_sel_widen_usum_hi<VQI:mode><VW:mode>3): New
+    define_insn to match high half of unsigned vaddw.
+    * config/arm/arm.c (arm_simd_vect_par_cnst_half): New function.
+    (arm_simd_check_vect_par_cnst_half_p): Likewise.
+    * config/arm/arm-protos.h (arm_simd_vect_par_cnst_half): Prototype
+    for new function.
+    (arm_simd_check_vect_par_cnst_half_p): Likewise.
+    * config/arm/predicates.md (vect_par_constant_high): Support
+    big endian and simplify by calling
+    arm_simd_check_vect_par_cnst_half
+    (vect_par_constant_low): Likewise.
+	
 2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*lea<mode>_general_4): Use const_0_to_3_operand

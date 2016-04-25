@@ -30302,4 +30302,80 @@ arm_sched_fusion_priority (rtx_insn *insn, int max_pri,
   return;
 }
 
+
+/* Construct and return a PARALLEL RTX vector with elements numbering the
+   lanes of either the high (HIGH == TRUE) or low (HIGH == FALSE) half of
+   the vector - from the perspective of the architecture.  This does not
+   line up with GCC's perspective on lane numbers, so we end up with
+   different masks depending on our target endian-ness.  The diagram
+   below may help.  We must draw the distinction when building masks
+   which select one half of the vector.  An instruction selecting
+   architectural low-lanes for a big-endian target, must be described using
+   a mask selecting GCC high-lanes.
+
+                 Big-Endian             Little-Endian
+
+GCC             0   1   2   3           3   2   1   0
+              | x | x | x | x |       | x | x | x | x |
+Architecture    3   2   1   0           3   2   1   0
+
+Low Mask:         { 2, 3 }                { 0, 1 }
+High Mask:        { 0, 1 }                { 2, 3 }
+*/
+
+rtx
+arm_simd_vect_par_cnst_half (machine_mode mode, bool high)
+{
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits / 2);
+  int high_base = nunits / 2;
+  int low_base = 0;
+  int base;
+  rtx t1;
+  int i;
+
+  if (BYTES_BIG_ENDIAN)
+    base = high ? low_base : high_base;
+  else
+    base = high ? high_base : low_base;
+
+  for (i = 0; i < nunits / 2; i++)
+    RTVEC_ELT (v, i) = GEN_INT (base + i);
+
+  t1 = gen_rtx_PARALLEL (mode, v);
+  return t1;
+}
+
+/* Check OP for validity as a PARALLEL RTX vector with elements
+   numbering the lanes of either the high (HIGH == TRUE) or low lanes,
+   from the perspective of the architecture.  See the diagram above
+   arm_simd_vect_par_cnst_half_p for more details.  */
+
+bool
+arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
+				       bool high)
+{
+  rtx ideal = arm_simd_vect_par_cnst_half (mode, high);
+  HOST_WIDE_INT count_op = XVECLEN (op, 0);
+  HOST_WIDE_INT count_ideal = XVECLEN (ideal, 0);
+  int i = 0;
+
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  if (count_op != count_ideal)
+    return false;
+
+  for (i = 0; i < count_ideal; i++)
+    {
+      rtx elt_op = XVECEXP (op, 0, i);
+      rtx elt_ideal = XVECEXP (ideal, 0, i);
+
+      if (!CONST_INT_P (elt_op)
+	  || INTVAL (elt_ideal) != INTVAL (elt_op))
+	return false;
+    }
+  return true;
+}
+
 #include "gt-arm.h"

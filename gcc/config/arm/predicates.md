@@ -612,59 +612,13 @@
 (define_special_predicate "vect_par_constant_high" 
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  int i;
-  int base = GET_MODE_NUNITS (mode);
-
-  if ((count < 1)
-      || (count != base/2))
-    return false;
-    
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  for (i = 0; i < count; i++)
-   {
-     rtx elt = XVECEXP (op, 0, i);
-     int val;
-
-     if (!CONST_INT_P (elt))
-       return false;
-
-     val = INTVAL (elt);
-     if (val != (base/2) + i)
-       return false;
-   }
-  return true; 
+  return arm_simd_check_vect_par_cnst_half_p (op, mode, true);
 })
 
 (define_special_predicate "vect_par_constant_low"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  int i;
-  int base = GET_MODE_NUNITS (mode);
-
-  if ((count < 1)
-      || (count != base/2))
-    return false;
-    
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  for (i = 0; i < count; i++)
-   {
-     rtx elt = XVECEXP (op, 0, i);
-     int val;
-
-     if (!CONST_INT_P (elt))
-       return false;
-
-     val = INTVAL (elt);
-     if (val != i)
-       return false;
-   } 
-  return true; 
+  return arm_simd_check_vect_par_cnst_half_p (op, mode, false);
 })
 
 (define_predicate "const_double_vcvt_power_of_two_reciprocal"
