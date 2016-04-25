@@ -1,4 +1,7 @@
 /* Public domain.  */
+
+int __mspabi_cmpf (float, float);
+
 int
 __mspabi_cmpf (float x, float y)
 {
@@ -8,6 +11,9 @@ __mspabi_cmpf (float x, float y)
     return 1;
   return 0;
 }
+
+int __mspabi_cmpd (double, double);
+
 int
 __mspabi_cmpd (double x, double y)
 {
