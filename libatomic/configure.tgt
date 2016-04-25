@@ -81,8 +81,14 @@ case "${target_cpu}" in
 	try_ifunc=yes
 	;;
   x86_64)
-	# x86_64 compiler passes -march=x86_64 by default when building
-	# 32bit target libraries.
+	case " ${CC} ${CFLAGS} " in
+	  *" -m32 "*)
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
+	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	    ;;
+	  *)
+	    ;;
+	esac
 	ARCH=x86
 	# ??? Detect when -mcx16 is already enabled.
 	try_ifunc=yes
