@@ -2081,6 +2081,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   unsigned int bii;
   edge e;
   edge_iterator ei;
+  bool was_visited = BB_VISITED (block);
 
   old = ANTIC_OUT = S = NULL;
   BB_VISITED (block) = 1;
@@ -2171,7 +2172,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
   clean (ANTIC_IN (block));
 
-  if (!bitmap_set_equal (old, ANTIC_IN (block)))
+  if (!was_visited || !bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
 
  maybe_dump_sets:
@@ -2349,14 +2350,17 @@ compute_antic (void)
 
   FOR_ALL_BB_FN (block, cfun)
     {
+      BB_VISITED (block) = 0;
+
       FOR_EACH_EDGE (e, ei, block->preds)
 	if (e->flags & EDGE_ABNORMAL)
 	  {
 	    bitmap_set_bit (has_abnormal_preds, block->index);
+
+	    /* We also anticipate nothing.  */
+	    BB_VISITED (block) = 1;
 	    break;
 	  }
-
-      BB_VISITED (block) = 0;
 
       /* While we are here, give empty ANTIC_IN sets to each block.  */
       ANTIC_IN (block) = bitmap_set_new ();
