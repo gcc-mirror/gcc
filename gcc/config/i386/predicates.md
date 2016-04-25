@@ -659,7 +659,7 @@
 
 ;; Match exactly zero.
 (define_predicate "const0_operand"
-  (match_code "const_int,const_wide_int,const_double,const_vector")
+  (match_code "const_int,const_double,const_vector")
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -668,7 +668,7 @@
 
 ;; Match one or a vector with all elements equal to one.
 (define_predicate "const1_operand"
-  (match_code "const_int,const_wide_int,const_double,const_vector")
+  (match_code "const_int,const_double,const_vector")
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);

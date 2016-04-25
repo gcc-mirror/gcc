@@ -1,5 +1,11 @@
 2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/predicates.md (const0_operand): Do not match
+	const_wide_int code.
+	(const1_operand): Ditto.
+
+2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*movoi_internal_avx): Set mode attribute to XI
 	for SSE constm1 operands and TARGET_AVX512VL.
 	(*movti_internal): Ditto.
