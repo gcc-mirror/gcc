@@ -1,5 +1,7 @@
 2016-04-25  Jason Merrill  <jason@redhat.com>
 
+	* gdbinit.in: Skip is-a.h.
+
 	* attribs.c (register_scoped_attributes): Fix logic.
 	* attribs.h: Declare register_scoped_attributes.
 
