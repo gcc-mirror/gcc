@@ -1,7 +1,7 @@
 2016-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* rs6000-builtin.def: Correct pasto error for stxvd2x and stxvw4x
-	built-in functions.
+	* config/rs6000/rs6000-builtin.def: Correct pasto error for
+	stxvd2x and stxvw4x built-in functions.
 
 2016-04-25  DJ Delorie  <dj@redhat.com>
 
