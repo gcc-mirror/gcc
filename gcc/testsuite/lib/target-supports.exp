@@ -4348,6 +4348,8 @@ proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
         set et_vect_widen_sum_hi_to_si_pattern_saved 0
         if { [istarget powerpc*-*-*]
              || [istarget aarch64*-*-*]
+	     || ([istarget arm*-*-*] &&
+		 [check_effective_target_arm_neon_ok])
              || [istarget ia64-*-*] } {
             set et_vect_widen_sum_hi_to_si_pattern_saved 1
         }

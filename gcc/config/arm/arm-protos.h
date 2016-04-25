@@ -50,7 +50,9 @@ extern tree arm_builtin_decl (unsigned code, bool initialize_p
 			      ATTRIBUTE_UNUSED);
 extern void arm_init_builtins (void);
 extern void arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update);
-
+extern rtx arm_simd_vect_par_cnst_half (machine_mode mode, bool high);
+extern bool arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
+						 bool high);
 #ifdef RTX_CODE
 extern bool arm_vector_mode_supported_p (machine_mode);
 extern bool arm_small_register_classes_for_mode_p (machine_mode);

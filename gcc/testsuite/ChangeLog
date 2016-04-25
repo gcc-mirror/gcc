@@ -1,3 +1,14 @@
+2016-04-25  Michael Collison <michael.collison@arm.com>
+
+	* testsuite/gcc.target/arm/neon-vaddws16.c: New test.
+	* testsuite/gcc.target/arm/neon-vaddws32.c: New test.
+	* testsuite/gcc.target/arm/neon-vaddwu16.c: New test.
+	* testsuite/gcc.target/arm/neon-vaddwu32.c: New test.
+	* testsuite/gcc.target/arm/neon-vaddwu8.c: New test.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern): Indicate
+	that arm neon support vector widen sum of HImode TO SImode.
+
 2016-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/70712
