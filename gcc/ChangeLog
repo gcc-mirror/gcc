@@ -1,3 +1,8 @@
+2016-04-25  Jason Merrill  <jason@redhat.com>
+
+	* attribs.c (register_scoped_attributes): Fix logic.
+	* attribs.h: Declare register_scoped_attributes.
+
 2016-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Correct pasto error for

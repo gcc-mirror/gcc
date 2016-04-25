@@ -343,3 +343,13 @@
 #elif __cpp_hex_float != 201603
 #  error "__cpp_hex_float != 201603"
 #endif
+
+#ifdef __has_cpp_attribute
+#  if ! __has_cpp_attribute(maybe_unused)
+#    error "__has_cpp_attribute(maybe_unused)"
+#  elif __has_cpp_attribute(maybe_unused) != 201603
+#    error "__has_cpp_attribute(maybe_unused) != 201603"
+#  endif
+#else
+#  error "__has_cpp_attribute"
+#endif
