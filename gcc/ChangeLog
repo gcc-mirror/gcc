@@ -1,3 +1,15 @@
+2016-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movoi_internal_avx): Set mode attribute to XI
+	for SSE constm1 operands and TARGET_AVX512VL.
+	(*movti_internal): Ditto.
+	(*mov<mode>_or): Use constm1_operand predicate.
+	* config/i386/sse.md (*mov<mode>_internal): Set mode attribute to XI
+	for SSE vector_all_ones operands and TARGET_AVX512VL.
+	* config/i386/predicates.md (constm1_operand): New predicate.
+	* config/i386/i386.c (standard_sse_constant_opcode): Simplify
+	emission of constant -1 load.
+
 2016-04-25  Jason Merrill  <jason@redhat.com>
 
 	* gdbinit.in: Skip is-a.h.
