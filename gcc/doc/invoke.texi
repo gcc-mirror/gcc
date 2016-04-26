@@ -501,7 +501,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fchecking -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
+-fchecking -fchecking=@var{n} -fdbg-cnt-list @gol
+-fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -12368,10 +12369,12 @@ Here are some examples showing uses of these options.
 @end smallexample
 
 @item -fchecking
+@itemx -fchecking=@var{n}
 @opindex fchecking
 @opindex fno-checking
 Enable internal consistency checking.  The default depends on
-the compiler configuration.
+the compiler configuration.  @option{-fchecking=2} enables further
+internal consistency checking that might affect code generation.
 
 @item -frandom-seed=@var{string}
 @opindex frandom-seed

@@ -1708,7 +1708,7 @@ When you specify this option, the compiler is built to perform internal
 consistency checks of the requested complexity.  This does not change the
 generated code, but adds error checking within the compiler.  This will
 slow down the compiler and may only work properly if you are building
-the compiler with GCC@.  This is @samp{yes} by default when building
+the compiler with GCC@.  This is @samp{yes,extra} by default when building
 from SVN or snapshots, but @samp{release} for releases.  The default
 for building the stage1 compiler is @samp{yes}.  More control
 over the checks may be had by specifying @var{list}.  The categories of
@@ -1717,8 +1717,11 @@ checks available are @samp{yes} (most common checks
 all), @samp{all} (all but @samp{valgrind}), @samp{release} (cheapest
 checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
 Individual checks can be enabled with these flags @samp{assert},
-@samp{df}, @samp{fold}, @samp{gc}, @samp{gcac} @samp{misc}, @samp{rtl},
-@samp{rtlflag}, @samp{runtime}, @samp{tree}, and @samp{valgrind}.
+@samp{df}, @samp{fold}, @samp{gc}, @samp{gcac}, @samp{misc}, @samp{rtl},
+@samp{rtlflag}, @samp{runtime}, @samp{tree}, @samp{extra} and @samp{valgrind}.
+@samp{extra} adds for @samp{misc} checking extra checks that might affect
+code generation and should therefore not differ between stage1 and later
+stages.
 
 The @samp{valgrind} check requires the external @command{valgrind}
 simulator, available from @uref{http://valgrind.org/}.  The

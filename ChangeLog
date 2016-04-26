@@ -1,3 +1,11 @@
+2016-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/70704
+	* configure.ac (--enable-stage1-checking): For --disable-checking or
+	implicit --enable-checking, make sure extra flag matches in between
+	stage1 and later checking.
+	* configure: Regenerated.
+
 2016-04-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* .gitattributes: New file.
