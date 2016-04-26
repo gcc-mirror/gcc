@@ -1,3 +1,18 @@
+2016-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59407
+	* config/i386/i386.c (SECTION_LARGE): Define.
+	(x86_64_elf_select_section): Set it for large data/bss sections.
+	Only clear SECTION_WRITE for .lrodata.
+	(x86_64_elf_section_type_flags): Set SECTION_LARGE for large
+	data/bss sections.
+	* config/i386/sol2.h (MACH_DEP_SECTION_ASM_FLAG): Define.
+	* varasm.c (default_elf_asm_named_section): Grow flagchars.
+	[MACH_DEP_SECTION_ASM_FLAG] Emit MACH_DEP_SECTION_ASM_FLAG for
+	SECTION_MACH_DEP.
+	* doc/tm.texi.in (Sections, MACH_DEP_SECTION_ASM_FLAG): Describe.
+	* doc/tm.texi: Regenerate.
+
 2016-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/70704

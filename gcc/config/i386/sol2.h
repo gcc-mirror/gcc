@@ -209,6 +209,14 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
 
+/* Sun as requires "h" flag for large sections, GNU as can do without, but
+   accepts "l".  */
+#ifdef USE_GAS
+#define MACH_DEP_SECTION_ASM_FLAG 'l'
+#else
+#define MACH_DEP_SECTION_ASM_FLAG 'h'
+#endif
+
 #ifndef USE_GAS
 /* Emit COMDAT group signature symbols for Sun as.  */
 #undef TARGET_ASM_FILE_END
