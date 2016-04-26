@@ -184,15 +184,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* As in sparc/sol2.h, override the default from i386/x86-64.h to work
    around Sun as TLS bug.  */
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+#undef  ASM_OUTPUT_ALIGNED_DECL_COMMON
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
   do									\
     {									\
       if (TARGET_SUN_TLS						\
 	  && in_section							\
 	  && ((in_section->common.flags & SECTION_TLS) == SECTION_TLS))	\
 	switch_to_section (bss_section);				\
-      x86_elf_aligned_common (FILE, NAME, SIZE, ALIGN);			\
+      x86_elf_aligned_decl_common (FILE, DECL, NAME, SIZE, ALIGN);	\
     }									\
   while  (0)
 
@@ -228,6 +228,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef USE_GLD
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors, \"aw\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors, \"aw\""
+#endif
+
+#ifndef USE_GAS
+#define LARGECOMM_SECTION_ASM_OP "\t.lbcomm\t"
 #endif
 
 #define USE_IX86_FRAME_POINTER 1

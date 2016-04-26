@@ -6648,19 +6648,27 @@ x86_64_elf_unique_section (tree decl, int reloc)
 }
 
 #ifdef COMMON_ASM_OP
+
+#ifndef LARGECOMM_SECTION_ASM_OP
+#define LARGECOMM_SECTION_ASM_OP "\t.largecomm\t"
+#endif
+
 /* This says how to output assembler code to declare an
    uninitialized external linkage data object.
 
-   For medium model x86-64 we need to use .largecomm opcode for
+   For medium model x86-64 we need to use LARGECOMM_SECTION_ASM_OP opcode for
    large objects.  */
 void
-x86_elf_aligned_common (FILE *file,
+x86_elf_aligned_decl_common (FILE *file, tree decl,
 			const char *name, unsigned HOST_WIDE_INT size,
 			int align)
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
       && size > (unsigned int)ix86_section_threshold)
-    fputs ("\t.largecomm\t", file);
+    {
+      switch_to_section (get_named_section (decl, ".lbss", 0));
+      fputs (LARGECOMM_SECTION_ASM_OP, file);
+    }
   else
     fputs (COMMON_ASM_OP, file);
   assemble_name (file, name);
