@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 int __attribute__ ((noinline))
 foo (void)
 {

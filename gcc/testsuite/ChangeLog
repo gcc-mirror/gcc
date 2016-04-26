@@ -1,3 +1,14 @@
+2016-04-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.c-torture/compile/pr69102.c: Require scheduling support.
+	* gcc.c-torture/compile/pr37669.c: Require >=32 bit integers.
+	* gcc.c-torture/execute/bitfld-6.c: Likewise.
+	* gcc.c-torture/execute/bitfld-7.c: Likewise.
+	* gcc.c-torture/execute/pr38151.c: Likewise.
+	* gcc.c-torture/execute/pr66556.c: Likewise.
+	* gcc.c-torture/execute/pr67781.c: Likewise.
+	* gcc.c-torture/execute/pr68648.c: Likewise.
+
 2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/overflow-1.c: New testcase.
