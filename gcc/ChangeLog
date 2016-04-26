@@ -1,5 +1,9 @@
 2016-04-26  Bernd Schmidt  <bschmidt@redhat.com>
 
+	* config/i386/i386.md (operation on memory peephole): Duplicate an
+	existing peephole and adapt it to match lea rather than an operation
+	that clobbers CC.
+
 	PR rtl-optimization/57193
 	* opts.c (default_options_table): Add OPT_frename_registers at -O2
 	and above.
