@@ -3414,6 +3414,30 @@ verify_gimple_call (gcall *stmt)
       return true;
     }
 
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_UNREACHABLE:
+	case BUILT_IN_TRAP:
+	  if (gimple_call_num_args (stmt) > 0)
+	    {
+	      /* Built-in unreachable with parameters might not be caught by
+		 undefined behavior sanitizer.  Front-ends do check users do not
+		 call them that way but we also produce calls to
+		 __builtin_unreachable internally, for example when IPA figures
+		 out a call cannot happen in a legal program.  In such cases,
+		 we must make sure arguments are stripped off.  */
+	      error ("__builtin_unreachable or __builtin_trap call with "
+		     "arguments");
+	      return true;
+	    }
+	  break;
+	default:
+	  break;
+	}
+    }
+
   /* ???  The C frontend passes unpromoted arguments in case it
      didn't see a function declaration before the call.  So for now
      leave the call arguments mostly unverified.  Once we gimplify
