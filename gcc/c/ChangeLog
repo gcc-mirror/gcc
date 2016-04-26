@@ -8,6 +8,9 @@
 	(c_parser_switch_statement): Use it.
 	(c_parser_while_statement): Use it.
 
+	PR c/70791
+	* c-decl.c (pushdecl): Pass LOCUS down to warning.
+
 2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR c++/69363
