@@ -1,3 +1,16 @@
+2016-04-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70744
+	* call.c (build_conditional_expr_1): Call cp_stabilize_reference
+	instead of stabilize_reference.
+	(build_over_call): Likewise.
+	* cp-tree.h (cp_stabilize_reference): Declare.
+	* tree.c (cp_stabilize_reference): New function.
+	* typeck.c (cp_build_unary_op): Call cp_stabilize_reference instead of
+	stabilize_reference.
+	(unary_complex_lvalue): Likewise.
+	(cp_build_modify_expr): Likewise.
+
 2016-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/70704

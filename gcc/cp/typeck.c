@@ -5912,7 +5912,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	{
 	  tree real, imag;
 
-	  arg = stabilize_reference (arg);
+	  arg = cp_stabilize_reference (arg);
 	  real = cp_build_unary_op (REALPART_EXPR, arg, 1, complain);
 	  imag = cp_build_unary_op (IMAGPART_EXPR, arg, 1, complain);
 	  real = cp_build_unary_op (code, real, 1, complain);
@@ -6112,7 +6112,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
       tree lvalue = TREE_OPERAND (arg, 0);
       if (TREE_SIDE_EFFECTS (lvalue))
 	{
-	  lvalue = stabilize_reference (lvalue);
+	  lvalue = cp_stabilize_reference (lvalue);
 	  arg = build2 (TREE_CODE (arg), TREE_TYPE (arg),
 			lvalue, TREE_OPERAND (arg, 1));
 	}
@@ -7496,7 +7496,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     case PREINCREMENT_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
 	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
-		      stabilize_reference (TREE_OPERAND (lhs, 0)),
+		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
 		      TREE_OPERAND (lhs, 1));
       newrhs = cp_build_modify_expr (TREE_OPERAND (lhs, 0),
 				     modifycode, rhs, complain);
@@ -7516,7 +7516,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     case MODIFY_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
 	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
-		      stabilize_reference (TREE_OPERAND (lhs, 0)),
+		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
 		      TREE_OPERAND (lhs, 1));
       newrhs = cp_build_modify_expr (TREE_OPERAND (lhs, 0), modifycode, rhs,
 				     complain);
@@ -7665,7 +7665,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	     not intervene between the lvalue-to-rvalue conversion and the
 	     side effect associated with any single compound assignment
 	     operator. -- end note ]  */
-	  lhs = stabilize_reference (lhs);
+	  lhs = cp_stabilize_reference (lhs);
 	  rhs = rvalue (rhs);
 	  rhs = stabilize_expr (rhs, &init);
 	  newrhs = cp_build_binary_op (input_location,
