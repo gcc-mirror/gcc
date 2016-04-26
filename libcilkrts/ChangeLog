@@ -1,3 +1,9 @@
+2016-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/60290
+	* Makefile.am (GENERAL_FLAGS): Add -funwind-tables.
+	* Makefile.in: Regenerate.
+
 2015-11-09  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR target/66326
