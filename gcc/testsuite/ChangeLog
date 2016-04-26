@@ -1,3 +1,7 @@
+2016-04-26  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* gcc.target/i386/lzcnt-1.c: Allow a different lzcntw output register.
+
 2016-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70780
