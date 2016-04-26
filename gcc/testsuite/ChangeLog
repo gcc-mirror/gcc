@@ -1,3 +1,8 @@
+2016-04-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/66639
+	* g++.dg/cpp1y/func_constexpr.C: New test.
+
 2016-04-26  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70241
