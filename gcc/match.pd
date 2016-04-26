@@ -1628,11 +1628,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (!TREE_OVERFLOW (tem) || !flag_trapping_math)
     (minus @0 { tem; })))))
 
-/* Convert x+x into x*2.0.  */
+/* Convert x+x into x*2.  */
 (simplify
  (plus @0 @0)
  (if (SCALAR_FLOAT_TYPE_P (type))
-  (mult @0 { build_real (type, dconst2); })))
+  (mult @0 { build_real (type, dconst2); })
+  (if (INTEGRAL_TYPE_P (type))
+   (mult @0 { build_int_cst (type, 2); }))))
 
 (simplify
  (minus integer_zerop @1)

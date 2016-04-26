@@ -11,4 +11,4 @@ int test2 (int a)
   return (a + a)*2;
 }
 
-/* { dg-final { scan-tree-dump-times "<a> \\\* 4" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "a \\\* 4" 2 "original" } } */

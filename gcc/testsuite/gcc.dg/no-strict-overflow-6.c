@@ -14,7 +14,7 @@ foo ()
   int i, bits;
   for (i = 1, bits = 1; i > 0; i += i)
     ++bits;
-  return bits;
+  return bits - sizeof(int) * __CHAR_BIT__;
 }
 
-/* { dg-final { scan-tree-dump "return bits" "optimized" } } */
+/* { dg-final { scan-tree-dump "return 0" "optimized" } } */

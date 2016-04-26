@@ -1,3 +1,10 @@
+2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	* genmatch.c (write_predicate): Add ATTRIBUTE_UNUSED.
+	* fold-const.c (fold_binary_loc): Remove 2 transformations
+	superseded by match.pd.
+	* match.pd (x+x -> x*2): Generalize to integers.
+
 2016-04-26  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* config/i386/i386.md (operation on memory peephole): Duplicate an

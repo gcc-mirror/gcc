@@ -44,14 +44,14 @@ f1 (int x)
   #pragma omp for
   for (i = 5; i <= i; i++) /* { dg-error "invalid controlling predicate|condition expression refers to iteration variable" } */
     ;
-  #pragma omp for /* { dg-error "increment expression refers to iteration variable" } */
-  for (i = 5; i < 16; i += i)
+  #pragma omp for /* { dg-error "increment expression refers to iteration variable" "" { xfail *-*-* } } */
+  for (i = 5; i < 16; i += i) /* { dg-bogus "invalid increment expression" "" { xfail *-*-* } } */
     ;
   #pragma omp for
   for (i = 5; i < 16; i = i + 2 * i) /* { dg-error "invalid increment expression|increment expression refers to iteration variable" } */
     ;
-  #pragma omp for /* { dg-error "increment expression refers to iteration variable" } */
-  for (i = 5; i < 16; i = i + i)
+  #pragma omp for /* { dg-error "increment expression refers to iteration variable" "" { xfail *-*-* } } */
+  for (i = 5; i < 16; i = i + i) /* { dg-bogus "invalid increment expression" "" { xfail *-*-* } } */
     ;
   #pragma omp for
   for (i = 5; i < 16; i = i + bar (i)) /* { dg-error "increment expression refers to iteration variable" } */
@@ -181,14 +181,14 @@ f2 (int x)
   #pragma omp for
   for (int i = 5; i <= i; i++) /* { dg-error "invalid controlling predicate|condition expression refers to iteration variable" } */
     ;
-  #pragma omp for /* { dg-error "increment expression refers to iteration variable" } */
-  for (int i = 5; i < 16; i += i)
+  #pragma omp for /* { dg-error "increment expression refers to iteration variable" "" { xfail *-*-* } } */
+  for (int i = 5; i < 16; i += i) /* { dg-bogus "invalid increment expression" "" { xfail *-*-* } } */
     ;
   #pragma omp for
   for (int i = 5; i < 16; i = i + 2 * i) /* { dg-error "invalid increment expression|increment expression refers to iteration variable" } */
     ;
-  #pragma omp for /* { dg-error "increment expression refers to iteration variable" } */
-  for (int i = 5; i < 16; i = i + i)
+  #pragma omp for /* { dg-error "increment expression refers to iteration variable" "" { xfail *-*-* } } */
+  for (int i = 5; i < 16; i = i + i) /* { dg-bogus "invalid increment expression" "" { xfail *-*-* } } */
     ;
   #pragma omp for
   for (int i = 5; i < 16; i = i + bar (i)) /* { dg-error "increment expression refers to iteration variable" } */
