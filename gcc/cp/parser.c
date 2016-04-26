@@ -27238,13 +27238,15 @@ cp_parser_check_class_key (enum tag_types class_key, tree type)
 
 /* Issue an error message if DECL is redeclared with different
    access than its original declaration [class.access.spec/3].
-   This applies to nested classes and nested class templates.
-   [class.mem/1].  */
+   This applies to nested classes, nested class templates and
+   enumerations [class.mem/1].  */
 
 static void
 cp_parser_check_access_in_redeclaration (tree decl, location_t location)
 {
-  if (!decl || !CLASS_TYPE_P (TREE_TYPE (decl)))
+  if (!decl
+      || (!CLASS_TYPE_P (TREE_TYPE (decl))
+	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE))
     return;
 
   if ((TREE_PRIVATE (decl)
