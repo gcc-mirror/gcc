@@ -1,3 +1,10 @@
+2016-04-26  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/57193
+	* opts.c (default_options_table): Add OPT_frename_registers at -O2
+	and above.
+	* doc/invoke.texi (-frename-registers, -O2): Update documentation.
+
 2016-04-26  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-if-conv.c (any_pred_load_store): New static variable.
