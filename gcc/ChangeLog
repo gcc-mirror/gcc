@@ -1,3 +1,8 @@
+2016-04-26  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
+
+	* toplev.c (backend_init_target): Avoid calling init_reload when using
+	LRA.
+
 2016-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* reorg.c (try_merge_delay_insns): Declare i and j inside the
