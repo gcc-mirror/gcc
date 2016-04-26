@@ -23623,8 +23623,10 @@ build_non_dependent_expr (tree expr)
 
   /* When checking, try to get a constant value for all non-dependent
      expressions in order to expose bugs in *_dependent_expression_p
-     and constexpr.  */
-  if (flag_checking && cxx_dialect >= cxx11
+     and constexpr.  This can affect code generation, see PR70704, so
+     only do this for -fchecking=2.  */
+  if (flag_checking > 1
+      && cxx_dialect >= cxx11
       /* Don't do this during nsdmi parsing as it can lead to
 	 unexpected recursive instantiations.  */
       && !parsing_nsdmi ())

@@ -1029,6 +1029,10 @@ fchecking
 Common Var(flag_checking) Init(CHECKING_P)
 Perform internal consistency checkings.
 
+fchecking=
+Common Joined RejectNegative UInteger Var(flag_checking)
+Perform internal consistency checkings.
+
 fcombine-stack-adjustments
 Common Report Var(flag_combine_stack_adjustments) Optimization
 Looks for opportunities to reduce stack adjustments and stack references.
