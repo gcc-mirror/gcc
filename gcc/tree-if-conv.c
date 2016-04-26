@@ -113,6 +113,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "builtins.h"
 #include "params.h"
+ 
+/* Indicate if new load/store that needs to be predicated is introduced
+   during if conversion.  */
+static bool any_pred_load_store;
 
 /* Hash for struct innermost_loop_behavior.  It depends on the user to
    free the memory.  */
@@ -867,8 +871,7 @@ ifcvt_can_use_mask_load_store (gimple *stmt)
 
 static bool
 if_convertible_gimple_assign_stmt_p (gimple *stmt,
-				     vec<data_reference_p> refs,
-				     bool *any_mask_load_store)
+				     vec<data_reference_p> refs)
 {
   tree lhs = gimple_assign_lhs (stmt);
 
@@ -906,7 +909,7 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
       if (ifcvt_can_use_mask_load_store (stmt))
 	{
 	  gimple_set_plf (stmt, GF_PLF_2, true);
-	  *any_mask_load_store = true;
+	  any_pred_load_store = true;
 	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -917,7 +920,7 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
   /* When if-converting stores force versioning, likewise if we
      ended up generating store data races.  */
   if (gimple_vdef (stmt))
-    *any_mask_load_store = true;
+    any_pred_load_store = true;
 
   return true;
 }
@@ -930,8 +933,7 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
    - it is builtins call.  */
 
 static bool
-if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs,
-		       bool *any_mask_load_store)
+if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 {
   switch (gimple_code (stmt))
     {
@@ -941,8 +943,7 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs,
       return true;
 
     case GIMPLE_ASSIGN:
-      return if_convertible_gimple_assign_stmt_p (stmt, refs,
-						  any_mask_load_store);
+      return if_convertible_gimple_assign_stmt_p (stmt, refs);
 
     case GIMPLE_CALL:
       {
@@ -1248,9 +1249,7 @@ predicate_bbs (loop_p loop)
    in if_convertible_loop_p.  */
 
 static bool
-if_convertible_loop_p_1 (struct loop *loop,
-			 vec<data_reference_p> *refs,
-			 bool *any_mask_load_store)
+if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 {
   unsigned int i;
   basic_block exit_bb = NULL;
@@ -1354,8 +1353,7 @@ if_convertible_loop_p_1 (struct loop *loop,
       /* Check the if-convertibility of statements in predicated BBs.  */
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 	for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
-	  if (!if_convertible_stmt_p (gsi_stmt (itr), *refs,
-				      any_mask_load_store))
+	  if (!if_convertible_stmt_p (gsi_stmt (itr), *refs))
 	    return false;
     }
 
@@ -1389,7 +1387,7 @@ if_convertible_loop_p_1 (struct loop *loop,
    - if its basic blocks and phi nodes are if convertible.  */
 
 static bool
-if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
+if_convertible_loop_p (struct loop *loop)
 {
   edge e;
   edge_iterator ei;
@@ -1427,7 +1425,7 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
       return false;
 
   refs.create (5);
-  res = if_convertible_loop_p_1 (loop, &refs, any_mask_load_store);
+  res = if_convertible_loop_p_1 (loop, &refs);
 
   data_reference_p dr;
   unsigned int i;
@@ -1896,7 +1894,7 @@ predicate_all_scalar_phis (struct loop *loop)
    gimplification of the predicates.  */
 
 static void
-insert_gimplified_predicates (loop_p loop, bool any_mask_load_store)
+insert_gimplified_predicates (loop_p loop)
 {
   unsigned int i;
 
@@ -1918,7 +1916,7 @@ insert_gimplified_predicates (loop_p loop, bool any_mask_load_store)
       stmts = bb_predicate_gimplified_stmts (bb);
       if (stmts)
 	{
-	  if (any_mask_load_store)
+	  if (any_pred_load_store)
 	    {
 	      /* Insert the predicate of the BB just after the label,
 		 as the if-conversion of memory writes will use this
@@ -2228,7 +2226,7 @@ remove_conditions_and_labels (loop_p loop)
    blocks.  Replace PHI nodes with conditional modify expressions.  */
 
 static void
-combine_blocks (struct loop *loop, bool any_mask_load_store)
+combine_blocks (struct loop *loop)
 {
   basic_block bb, exit_bb, merge_target_bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -2238,10 +2236,10 @@ combine_blocks (struct loop *loop, bool any_mask_load_store)
 
   predicate_bbs (loop);
   remove_conditions_and_labels (loop);
-  insert_gimplified_predicates (loop, any_mask_load_store);
+  insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop);
 
-  if (any_mask_load_store)
+  if (any_pred_load_store)
     predicate_mem_writes (loop);
 
   /* Merge basic blocks: first remove all the edges in the loop,
@@ -2716,7 +2714,7 @@ tree_if_conversion (struct loop *loop)
 {
   unsigned int todo = 0;
   ifc_bbs = NULL;
-  bool any_mask_load_store = false;
+  any_pred_load_store = false;
 
   /* Set up aggressive if-conversion for loops marked with simd pragma.  */
   aggressive_if_conv = loop->force_vectorize;
@@ -2732,22 +2730,22 @@ tree_if_conversion (struct loop *loop)
     if (!ifcvt_split_critical_edges (loop))
       goto cleanup;
 
-  if (!if_convertible_loop_p (loop, &any_mask_load_store)
+  if (!if_convertible_loop_p (loop)
       || !dbg_cnt (if_conversion_tree))
     goto cleanup;
 
-  if (any_mask_load_store
+  if (any_pred_load_store
       && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
 	  || loop->dont_vectorize))
     goto cleanup;
 
-  if (any_mask_load_store && !version_loop_for_if_conversion (loop))
+  if (any_pred_load_store && !version_loop_for_if_conversion (loop))
     goto cleanup;
 
   /* Now all statements are if-convertible.  Combine all the basic
      blocks into one huge basic block doing the if-conversion
      on-the-fly.  */
-  combine_blocks (loop, any_mask_load_store);
+  combine_blocks (loop);
 
   /* Delete dead predicate computations and repair tree correspondent
      to bool pattern to delete multiple uses of predicates.  */
