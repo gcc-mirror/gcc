@@ -1,4 +1,5 @@
 /* { dg-options "-Wno-psabi" } */
+/* { dg-require-effective-target int32plus } */
 void abort (void);
 
 struct S2848
