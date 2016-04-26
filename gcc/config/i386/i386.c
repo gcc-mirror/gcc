@@ -6490,6 +6490,9 @@ ix86_in_large_data_p (tree exp)
   return false;
 }
 
+/* i386-specific section flag to mark large sections.  */
+#define SECTION_LARGE SECTION_MACH_DEP
+
 /* Switch to the appropriate section for output of DECL.
    DECL is either a `VAR_DECL' node or a constant of some sort.
    RELOC indicates whether forming the initial value of DECL requires
@@ -6502,7 +6505,7 @@ x86_64_elf_select_section (tree decl, int reloc,
   if (ix86_in_large_data_p (decl))
     {
       const char *sname = NULL;
-      unsigned int flags = SECTION_WRITE;
+      unsigned int flags = SECTION_WRITE | SECTION_LARGE;
       switch (categorize_decl_for_section (decl, reloc))
 	{
 	case SECCAT_DATA:
@@ -6529,7 +6532,7 @@ x86_64_elf_select_section (tree decl, int reloc,
 	case SECCAT_RODATA_MERGE_STR_INIT:
 	case SECCAT_RODATA_MERGE_CONST:
 	  sname = ".lrodata";
-	  flags = 0;
+	  flags &= ~SECTION_WRITE;
 	  break;
 	case SECCAT_SRODATA:
 	case SECCAT_SDATA:
@@ -6563,6 +6566,9 @@ static unsigned int ATTRIBUTE_UNUSED
 x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
 {
   unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (ix86_in_large_data_p (decl))
+    flags |= SECTION_LARGE;
 
   if (decl == NULL_TREE
       && (strcmp (name, ".ldata.rel.ro") == 0

@@ -7097,6 +7097,12 @@ defined, GCC will assume such a section does not exist.  Do not define
 both this macro and @code{FINI_SECTION_ASM_OP}.
 @end defmac
 
+@defmac MACH_DEP_SECTION_ASM_FLAG
+If defined, a C expression whose value is a character constant
+containing the flag used to mark a machine-dependent section.  This
+corresponds to the @code{SECTION_MACH_DEP} section flag.
+@end defmac
+
 @defmac CRT_CALL_STATIC_FUNCTION (@var{section_op}, @var{function})
 If defined, an ASM statement that switches to a different section
 via @var{section_op}, calls @var{function}, and switches back to

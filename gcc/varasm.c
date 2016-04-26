@@ -6238,7 +6238,7 @@ void
 default_elf_asm_named_section (const char *name, unsigned int flags,
 			       tree decl)
 {
-  char flagchars[10], *f = flagchars;
+  char flagchars[11], *f = flagchars;
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
@@ -6271,6 +6271,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
     *f++ = TLS_SECTION_ASM_FLAG;
   if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
     *f++ = 'G';
+#ifdef MACH_DEP_SECTION_ASM_FLAG
+  if (flags & SECTION_MACH_DEP)
+    *f++ = MACH_DEP_SECTION_ASM_FLAG;
+#endif
   *f = '\0';
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"", name, flagchars);
