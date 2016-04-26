@@ -2658,7 +2658,7 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
 						   ins.first->index(),
 						   location);
   e = Expression::make_unary(OPERATOR_MULT, e, location);
-  return e;
+  return Expression::make_enclosing_var_reference(e, var, location);
 }
 
 // CompositeLit  = LiteralType LiteralValue .
@@ -5791,24 +5791,10 @@ Parse::verify_not_sink(Expression* expr)
 
   // If this can not be a sink, and it is a variable, then we are
   // using the variable, not just assigning to it.
-  Var_expression* ve = expr->var_expression();
-  if (ve != NULL)
-    this->mark_var_used(ve->named_object());
-  else if (expr->deref()->field_reference_expression() != NULL
-	   && this->gogo_->current_function() != NULL)
-    {
-      // We could be looking at a variable referenced from a closure.
-      // If so, we need to get the enclosed variable and mark it as used.
-      Function* this_function = this->gogo_->current_function()->func_value();
-      Named_object* closure = this_function->closure_var();
-      if (closure != NULL)
-	{
-	  unsigned int var_index =
-	    expr->deref()->field_reference_expression()->field_index();
-	  this->mark_var_used(this_function->enclosing_var(var_index - 1));
-	}
-    }
-
+  if (expr->var_expression() != NULL)
+    this->mark_var_used(expr->var_expression()->named_object());
+  else if (expr->enclosed_var_expression() != NULL)
+    this->mark_var_used(expr->enclosed_var_expression()->variable());
   return expr;
 }
 

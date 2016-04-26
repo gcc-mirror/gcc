@@ -782,6 +782,74 @@ Expression::make_var_reference(Named_object* var, Location location)
   return new Var_expression(var, location);
 }
 
+// Class Enclosed_var_expression.
+
+int
+Enclosed_var_expression::do_traverse(Traverse*)
+{
+  return TRAVERSE_CONTINUE;
+}
+
+// Lower the reference to the enclosed variable.
+
+Expression*
+Enclosed_var_expression::do_lower(Gogo* gogo, Named_object* function,
+				  Statement_inserter* inserter, int)
+{
+  gogo->lower_expression(function, inserter, &this->reference_);
+  return this;
+}
+
+// Flatten the reference to the enclosed variable.
+
+Expression*
+Enclosed_var_expression::do_flatten(Gogo* gogo, Named_object* function,
+				    Statement_inserter* inserter)
+{
+  gogo->flatten_expression(function, inserter, &this->reference_);
+  return this;
+}
+
+void
+Enclosed_var_expression::do_address_taken(bool escapes)
+{
+  if (!escapes)
+    {
+      if (this->variable_->is_variable())
+	this->variable_->var_value()->set_non_escaping_address_taken();
+      else if (this->variable_->is_result_variable())
+	this->variable_->result_var_value()->set_non_escaping_address_taken();
+      else
+	go_unreachable();
+    }
+  else
+    {
+      if (this->variable_->is_variable())
+	this->variable_->var_value()->set_address_taken();
+      else if (this->variable_->is_result_variable())
+	this->variable_->result_var_value()->set_address_taken();
+      else
+	go_unreachable();
+    }
+}
+
+// Ast dump for enclosed variable expression.
+
+void
+Enclosed_var_expression::do_dump_expression(Ast_dump_context* adc) const
+{
+  adc->ostream() << this->variable_->name();
+}
+
+// Make a reference to a variable within an enclosing function.
+
+Expression*
+Expression::make_enclosing_var_reference(Expression* reference,
+					 Named_object* var, Location location)
+{
+  return new Enclosed_var_expression(reference, var, location);
+}
+
 // Class Temporary_reference_expression.
 
 // The type.
@@ -12814,53 +12882,12 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	  no = name_expr->var_expression()->named_object();
 	  break;
 
-	case EXPRESSION_FUNC_REFERENCE:
-	  no = name_expr->func_expression()->named_object();
+	case EXPRESSION_ENCLOSED_VAR_REFERENCE:
+	  no = name_expr->enclosed_var_expression()->variable();
 	  break;
 
-	case EXPRESSION_UNARY:
-	  // If there is a local variable around with the same name as
-	  // the field, and this occurs in the closure, then the
-	  // parser may turn the field reference into an indirection
-	  // through the closure.  FIXME: This is a mess.
-	  {
-	    bad_key = true;
-	    Unary_expression* ue = static_cast<Unary_expression*>(name_expr);
-	    if (ue->op() == OPERATOR_MULT)
-	      {
-		Field_reference_expression* fre =
-		  ue->operand()->field_reference_expression();
-		if (fre != NULL)
-		  {
-		    Struct_type* st =
-		      fre->expr()->type()->deref()->struct_type();
-		    if (st != NULL)
-		      {
-			const Struct_field* sf = st->field(fre->field_index());
-			name = sf->field_name();
-
-			// See below.  FIXME.
-			if (!Gogo::is_hidden_name(name)
-			    && name[0] >= 'a'
-			    && name[0] <= 'z')
-			  {
-			    if (gogo->lookup_global(name.c_str()) != NULL)
-			      name = gogo->pack_hidden_name(name, false);
-			  }
-
-			char buf[20];
-			snprintf(buf, sizeof buf, "%u", fre->field_index());
-			size_t buflen = strlen(buf);
-			if (name.compare(name.length() - buflen, buflen, buf)
-			    == 0)
-			  {
-			    name = name.substr(0, name.length() - buflen);
-			    bad_key = false;
-			  }
-		      }
-		  }
-	      }
-	  }
+	case EXPRESSION_FUNC_REFERENCE:
+	  no = name_expr->func_expression()->named_object();
 	  break;
 
 	default:
@@ -13301,6 +13328,7 @@ Expression::is_variable() const
     case EXPRESSION_VAR_REFERENCE:
     case EXPRESSION_TEMPORARY_REFERENCE:
     case EXPRESSION_SET_AND_USE_TEMPORARY:
+    case EXPRESSION_ENCLOSED_VAR_REFERENCE:
       return true;
     default:
       return false;
