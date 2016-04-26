@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fstrict-overflow -fdump-tree-optimized" } */
+/* { dg-add-options c99_runtime } */
+/* { dg-require-effective-target c99_runtime } */
 
 static int max(int a,int b){return (a<b)?b:a;}
 int f(int x,int y){return max(-x,-y);}
