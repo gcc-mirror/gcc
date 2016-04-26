@@ -4634,7 +4634,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
       if (real_lvalue_p (arg1))
-	arg2 = arg1 = stabilize_reference (arg1);
+	arg2 = arg1 = cp_stabilize_reference (arg1);
       else
 	arg2 = arg1 = save_expr (arg1);
     }
@@ -7644,8 +7644,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	       || (TREE_CODE (arg) == TARGET_EXPR
 		   && !unsafe_copy_elision_p (fa, arg)))
 	{
-	  tree to = stabilize_reference (cp_build_indirect_ref (fa, RO_NULL,
-								complain));
+	  tree to = cp_stabilize_reference (cp_build_indirect_ref (fa,
+								   RO_NULL,
+								   complain));
 
 	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  return val;
@@ -7655,7 +7656,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	   && trivial_fn_p (fn)
 	   && !DECL_DELETED_FN (fn))
     {
-      tree to = stabilize_reference
+      tree to = cp_stabilize_reference
 	(cp_build_indirect_ref (argarray[0], RO_NULL, complain));
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);

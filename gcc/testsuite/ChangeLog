@@ -1,3 +1,8 @@
+2016-04-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70744
+	* g++.dg/ext/cond2.C: New test.
+
 2016-04-26  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/70771

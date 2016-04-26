@@ -296,6 +296,45 @@ xvalue_p (const_tree ref)
   return (lvalue_kind (ref) == clk_rvalueref);
 }
 
+/* C++-specific version of stabilize_reference.  */
+
+tree
+cp_stabilize_reference (tree ref)
+{
+  switch (TREE_CODE (ref))
+    {
+    /* We need to treat specially anything stabilize_reference doesn't
+       handle specifically.  */
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+    CASE_CONVERT:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+    case INDIRECT_REF:
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case ERROR_MARK:
+      break;
+    default:
+      cp_lvalue_kind kind = lvalue_kind (ref);
+      if ((kind & ~clk_class) != clk_none)
+	{
+	  tree type = unlowered_expr_type (ref);
+	  bool rval = !!(kind & clk_rvalueref);
+	  type = cp_build_reference_type (type, rval);
+	  /* This inhibits warnings in, eg, cxx_mark_addressable
+	     (c++/60955).  */
+	  warning_sentinel s (extra_warnings);
+	  ref = build_static_cast (type, ref, tf_error);
+	}
+    }
+
+  return stabilize_reference (ref);
+}
+
 /* Test whether DECL is a builtin that may appear in a
    constant-expression. */
 
