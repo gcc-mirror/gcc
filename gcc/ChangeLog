@@ -1,3 +1,14 @@
+2016-04-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/70771
+	PR tree-optimization/70775
+	* tree-if-conv.c (if_convertible_phi_p): Remove check on special
+	virtual PHI nodes.  Delete parameter.
+	(if_convertible_loop_p_1): Delete argument to above function.
+	(predicate_all_scalar_phis): Delete code handling single-argument
+	PHIs.
+	(tree_if_conversion): Mark and update virtual SSA.
+
 2016-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/61821

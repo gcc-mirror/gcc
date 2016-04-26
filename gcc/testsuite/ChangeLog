@@ -1,3 +1,10 @@
+2016-04-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/70771
+	PR tree-optimization/70775
+	* gcc.dg/pr70771.c: New test.
+	* gcc.dg/pr70771.c: New test.
+
 2016-04-26  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* gcc.target/i386/lzcnt-1.c: Allow a different lzcntw output register.
