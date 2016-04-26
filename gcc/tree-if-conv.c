@@ -640,16 +640,11 @@ phi_convertible_by_degenerating_args (gphi *phi)
    PHI is not if-convertible if:
    - it has more than 2 arguments.
 
-   When we didn't see if-convertible stores, PHI is not
-   if-convertible if:
-   - a virtual PHI is immediately used in another PHI node,
-   - there is a virtual PHI in a BB other than the loop->header.
    When the aggressive_if_conv is set, PHI can have more than
    two arguments.  */
 
 static bool
-if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
-		      bool any_mask_load_store)
+if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -667,36 +662,6 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
 	    fprintf (dump_file, "Phi can't be predicated by single cond.\n");
 	  return false;
         }
-    }
-
-  if (any_mask_load_store)
-    return true;
-
-  /* When there were no if-convertible stores, check
-     that there are no memory writes in the branches of the loop to be
-     if-converted.  */
-  if (virtual_operand_p (gimple_phi_result (phi)))
-    {
-      imm_use_iterator imm_iter;
-      use_operand_p use_p;
-
-      if (bb != loop->header)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Virtual phi not on loop->header.\n");
-	  return false;
-	}
-
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (phi))
-	{
-	  if (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI
-	      && USE_STMT (use_p) != phi)
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "Difficult to handle this virtual phi.\n");
-	      return false;
-	    }
-	}
     }
 
   return true;
@@ -1405,8 +1370,7 @@ if_convertible_loop_p_1 (struct loop *loop,
       gphi_iterator itr;
 
       for (itr = gsi_start_phis (bb); !gsi_end_p (itr); gsi_next (&itr))
-	if (!if_convertible_phi_p (loop, bb, itr.phi (),
-				   *any_mask_load_store))
+	if (!if_convertible_phi_p (loop, bb, itr.phi ()))
 	  return false;
     }
 
@@ -1915,27 +1879,13 @@ predicate_all_scalar_phis (struct loop *loop)
       if (gsi_end_p (phi_gsi))
 	continue;
 
-      if (EDGE_COUNT (bb->preds) == 1)
+      gsi = gsi_after_labels (bb);
+      while (!gsi_end_p (phi_gsi))
 	{
-	  /* Propagate degenerate PHIs.  */
-	  for (phi_gsi = gsi_start_phis (bb); !gsi_end_p (phi_gsi);
-	       gsi_next (&phi_gsi))
-	    {
-	      gphi *phi = phi_gsi.phi ();
-	      replace_uses_by (gimple_phi_result (phi),
-			       gimple_phi_arg_def (phi, 0));
-	    }
-	}
-      else
-	{
-	  gsi = gsi_after_labels (bb);
-	  while (!gsi_end_p (phi_gsi))
-	    {
-	      phi = phi_gsi.phi ();
-	      predicate_scalar_phi (phi, &gsi);
-	      release_phi_node (phi);
-	      gsi_next (&phi_gsi);
-	    }
+	  phi = phi_gsi.phi ();
+	  predicate_scalar_phi (phi, &gsi);
+	  release_phi_node (phi);
+	  gsi_next (&phi_gsi);
 	}
 
       set_phi_nodes (bb, NULL);
@@ -2808,11 +2758,8 @@ tree_if_conversion (struct loop *loop)
     }
 
   todo |= TODO_cleanup_cfg;
-  if (any_mask_load_store)
-    {
-      mark_virtual_operands_for_renaming (cfun);
-      todo |= TODO_update_ssa_only_virtuals;
-    }
+  mark_virtual_operands_for_renaming (cfun);
+  todo |= TODO_update_ssa_only_virtuals;
 
  cleanup:
   if (ifc_bbs)
