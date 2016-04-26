@@ -1,3 +1,34 @@
+2016-04-26  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* gcc.target/i386/avx512bw-vptestmb-1.c: Correct [xyz]mm register
+	number scans.
+	* gcc.target/i386/avx512bw-vptestmw-1.c: Likewise.
+	* gcc.target/i386/avx512bw-vptestnmb-1.c: Likewise.
+	* gcc.target/i386/avx512bw-vptestnmw-1.c: Likewise.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-1.c: Likewise.
+	* gcc.target/i386/avx512cd-vpbroadcastmw2d-1.c: Likewise.
+	* gcc.target/i386/avx512dq-vfpclasspd-1.c: Likewise.
+	* gcc.target/i386/avx512dq-vfpclassps-1.c: Likewise.
+	* gcc.target/i386/avx512dq-vinsertf64x2-1.c: Likewise.
+	* gcc.target/i386/avx512dq-vinserti64x2-1.c: Likewise.
+	* gcc.target/i386/avx512f-gather-5.c: Likewise.
+	* gcc.target/i386/avx512f-vptestmd-1.c: Likewise.
+	* gcc.target/i386/avx512f-vptestmq-1.c: Likewise.
+	* gcc.target/i386/avx512f-vptestnmd-1.c: Likewise.
+	* gcc.target/i386/avx512f-vptestnmq-1.c: Likewise.
+	* gcc.target/i386/avx512f-vrndscaleps-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpbroadcastmb2q-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpbroadcastmw2d-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vptestmd-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vptestmq-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vptestnmd-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vptestnmq-1.c: Likewise.
+	* gcc.target/i386/pr32219-2.c: Allow registers other than %eax in
+	scans.
+	* gcc.target/i386/pr32219-4.c: Likewise.
+	* gcc.target/i386/pr32219-6.c: Likewise.
+	* gcc.target/i386/pr32219-8.c: Likewise.
+
 2016-04-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/tree-ssa/minmax-2.c: Require c99_runtime and add the
