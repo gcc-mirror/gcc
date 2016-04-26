@@ -5,6 +5,9 @@
 	* gcc.dg/pr67784-4.c: New test.
 	* gcc.dg/pr67784-5.c: New test.
 
+	PR c/70791
+	* gcc.dg/Wnested-externs-2.c: New test.
+
 2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/fold-plusmult.c: Adjust.
