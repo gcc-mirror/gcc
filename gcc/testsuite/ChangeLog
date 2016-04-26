@@ -1,3 +1,8 @@
+2016-04-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/tree-ssa/minmax-2.c: Require c99_runtime and add the
+	associated options.
+
 2016-04-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70744
