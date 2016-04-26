@@ -1,4 +1,10 @@
-2016-04-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+2016-04-26  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70241
+	* g++.dg/cpp0x/enum32.C: New test.
+	* g++.dg/cpp0x/enum33.C: New test.
+
+2016-04-26  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.c-torture/compile/pr69102.c: Require scheduling support.
 	* gcc.c-torture/compile/pr37669.c: Require >=32 bit integers.
