@@ -1,5 +1,21 @@
 2016-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR target/61821
+	* config/i386/i386.c (LARGECOMM_SECTION_ASM_OP): Define default.
+	(x86_elf_aligned_common): Rename to ...
+	(x86_elf_aligned_decl_common): ... this.
+	Add decl arg.  Switch to .lbss for largecomm object.  Use
+	LARGECOMM_SECTION_ASM_OP.
+	* config/i386/i386-protos.h (x86_elf_aligned_common): Reflect
+	renaming.
+	* config/i386/x86-64.h (ASM_OUTPUT_ALIGNED_COMMON): Rename to ...
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): ... this.
+	Pass new decl arg.
+	* config/i386/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	[!USE_GAS] (LARGECOMM_SECTION_ASM_OP): Define.
+
+2016-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR target/59407
 	* config/i386/i386.c (SECTION_LARGE): Define.
 	(x86_64_elf_select_section): Set it for large data/bss sections.
