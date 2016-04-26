@@ -2482,6 +2482,32 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    replace if (x == 0) with tem = ~x; if (tem != 0) which is
    clearly less optimal and which we'll transform again in forwprop.  */
 
+/* When one argument is a constant, overflow detection can be simplified.
+   Currently restricted to single use so as not to interfere too much with
+   ADD_OVERFLOW detection in tree-ssa-math-opts.c.
+   A + CST CMP A  ->  A CMP' CST' */
+(for cmp (lt le ge gt)
+     out (gt gt le le)
+ (simplify
+  (cmp (plus@2 @0 INTEGER_CST@1) @0)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+       && wi::ne_p (@1, 0)
+       && single_use (@2))
+   (out @0 { wide_int_to_tree (TREE_TYPE (@0), wi::max_value
+	       (TYPE_PRECISION (TREE_TYPE (@0)), UNSIGNED) - @1); }))))
+/* A CMP A + CST  ->  A CMP' CST' */
+(for cmp (gt ge le lt)
+     out (gt gt le le)
+ (simplify
+  (cmp @0 (plus@2 @0 INTEGER_CST@1))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+       && wi::ne_p (@1, 0)
+       && single_use (@2))
+   (out @0 { wide_int_to_tree (TREE_TYPE (@0), wi::max_value
+	       (TYPE_PRECISION (TREE_TYPE (@0)), UNSIGNED) - @1); }))))
+
 
 /* Simplification of math builtins.  These rules must all be optimizations
    as well as IL simplifications.  If there is a possibility that the new
