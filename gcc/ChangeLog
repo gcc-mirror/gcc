@@ -1,5 +1,9 @@
 2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd (X + CST CMP X): New transformation.
+
+2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
+
 	* genmatch.c (write_predicate): Add ATTRIBUTE_UNUSED.
 	* fold-const.c (fold_binary_loc): Remove 2 transformations
 	superseded by match.pd.
