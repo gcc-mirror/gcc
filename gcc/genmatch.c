@@ -3556,7 +3556,7 @@ write_predicate (FILE *f, predicate_id *p, decision_tree &dt, bool gimple)
 	   "%s%s (tree t%s%s)\n"
 	   "{\n", gimple ? "gimple_" : "tree_", p->id,
 	   p->nargs > 0 ? ", tree *res_ops" : "",
-	   gimple ? ", tree (*valueize)(tree)" : "");
+	   gimple ? ", tree (*valueize)(tree) ATTRIBUTE_UNUSED" : "");
   /* Conveniently make 'type' available.  */
   fprintf_indent (f, 2, "tree type = TREE_TYPE (t);\n");
 
