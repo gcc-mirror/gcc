@@ -1260,7 +1260,6 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
   rtx next_to_match = XVECEXP (PATTERN (insn), 0, slot_number);
   struct resources set, needed, modified;
   auto_vec<std::pair<rtx_insn *, bool>, 10> merged_insns;
-  int i, j;
   int flags;
 
   flags = get_jump_flags (delay_insn, JUMP_LABEL (delay_insn));
@@ -1275,7 +1274,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
      will essentially disable this optimization.  This method is somewhat of
      a kludge, but I don't see a better way.)  */
   if (! annul_p)
-    for (i = 1 ; i < num_slots; i++)
+    for (int i = 1; i < num_slots; i++)
       if (XVECEXP (PATTERN (insn), 0, i))
 	mark_referenced_resources (XVECEXP (PATTERN (insn), 0, i), &needed,
 				   true);
@@ -1346,19 +1345,19 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
       mark_set_resources (filled_insn, &set, 0, MARK_SRC_DEST_CALL);
       mark_referenced_resources (filled_insn, &needed, true);
 
-      for (i = 1; i < pat->len (); i++)
+      for (int i = 1; i < pat->len (); i++)
 	{
 	  rtx_insn *dtrial = pat->insn (i);
 
 	  CLEAR_RESOURCE (&modified);
 	  /* Account for resources set by the insn following NEXT_TO_MATCH
 	     inside INSN's delay list. */
-	  for (j = 1; slot_number + j < num_slots; j++)
+	  for (int j = 1; slot_number + j < num_slots; j++)
 	    mark_set_resources (XVECEXP (PATTERN (insn), 0, slot_number + j),
 				&modified, 0, MARK_SRC_DEST_CALL);
 	  /* Account for resources set by the insn before DTRIAL and inside
 	     TRIAL's delay list. */
-	  for (j = 1; j < i; j++)
+	  for (int j = 1; j < i; j++)
 	    mark_set_resources (XVECEXP (pat, 0, j),
 				&modified, 0, MARK_SRC_DEST_CALL); 
 	  if (! insn_references_resource_p (dtrial, &set, true)
@@ -1411,24 +1410,22 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
     {
       unsigned int len = merged_insns.length ();
       for (unsigned int i = len - 1; i < len; i--)
-	{
-	  if (merged_insns[i].second)
-	    {
-	      update_block (merged_insns[i].first, thread);
-	      rtx_insn *new_rtx = delete_from_delay_slot (merged_insns[i].first);
-	      if (thread->deleted ())
-		thread = new_rtx;
-	    }
-	  else
-	    {
-	      update_block (merged_insns[i].first, thread);
-	      delete_related_insns (merged_insns[i].first);
-	    }
-	}
+	if (merged_insns[i].second)
+	  {
+	    update_block (merged_insns[i].first, thread);
+	    rtx_insn *new_rtx = delete_from_delay_slot (merged_insns[i].first);
+	    if (thread->deleted ())
+	      thread = new_rtx;
+	  }
+	else
+	  {
+	    update_block (merged_insns[i].first, thread);
+	    delete_related_insns (merged_insns[i].first);
+	  }
 
       INSN_ANNULLED_BRANCH_P (delay_insn) = 0;
 
-      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+      for (int i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i)) = 0;
     }
 }

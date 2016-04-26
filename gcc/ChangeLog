@@ -1,3 +1,8 @@
+2016-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* reorg.c (try_merge_delay_insns): Declare i and j inside the
+	for loops rather than one for the whole function.
+
 2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (X + CST CMP X): New transformation.
