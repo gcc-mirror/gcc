@@ -1,5 +1,14 @@
 2016-04-26  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-if-conv.c (any_pred_load_store): New static variable.
+	(if_convertible_gimple_assign_stmt_p): Remove parameter.  Use
+	any_pred_load_store instead of and_mask_load_store.
+	(if_convertible_stmt_p, if_convertible_loop_p_1): Ditto.
+	(if_convertible_loop_p, insert_gimplified_predicates): Ditto.
+	(combine_blocks, tree_if_conversion): Ditto.
+
+2016-04-26  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/70771
 	PR tree-optimization/70775
 	* tree-if-conv.c (if_convertible_phi_p): Remove check on special
