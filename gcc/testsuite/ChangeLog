@@ -1,3 +1,10 @@
+2016-04-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67784
+	* gcc.dg/pr67784-3.c: New test.
+	* gcc.dg/pr67784-4.c: New test.
+	* gcc.dg/pr67784-5.c: New test.
+
 2016-04-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/fold-plusmult.c: Adjust.

@@ -1,3 +1,13 @@
+2016-04-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67784
+	* c-parser.c (c_parser_maybe_reclassify_token): New function factored
+	out of ...
+	(c_parser_for_statement): ... here.
+	(c_parser_if_statement): Use it.
+	(c_parser_switch_statement): Use it.
+	(c_parser_while_statement): Use it.
+
 2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR c++/69363
