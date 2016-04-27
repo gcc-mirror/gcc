@@ -13111,6 +13111,20 @@ package body Sem_Util is
    end Is_Nontrivial_Default_Init_Cond_Procedure;
 
    -------------------------
+   -- Is_Null_Record_Type --
+   -------------------------
+
+   function Is_Null_Record_Type (T : Entity_Id) return Boolean is
+      Decl : constant Node_Id := Parent (T);
+   begin
+      return Nkind (Decl) = N_Full_Type_Declaration
+        and then Nkind (Type_Definition (Decl)) = N_Record_Definition
+        and then
+          (No (Component_List (Type_Definition (Decl)))
+            or else Null_Present (Component_List (Type_Definition (Decl))));
+   end Is_Null_Record_Type;
+
+   -------------------------
    -- Is_Object_Reference --
    -------------------------
 

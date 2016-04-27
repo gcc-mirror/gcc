@@ -3835,8 +3835,16 @@ package body Sem_Ch3 is
             Check_Expression_Against_Static_Predicate (E, T);
          end if;
 
-         Insert_After (N,
-           Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc)));
+         --  If the type is a null record and there is no explicit initial
+         --  expression, no predicate check applies.
+
+         if No (E) and then Is_Null_Record_Type (T) then
+            null;
+
+         else
+            Insert_After (N,
+              Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc)));
+         end if;
       end if;
 
       --  Case of unconstrained type
@@ -13039,7 +13047,7 @@ package body Sem_Ch3 is
       procedure Fixup_Bad_Constraint;
       --  Called after finding a bad constraint, and after having posted an
       --  appropriate error message. The goal is to leave type Def_Id in as
-      --  reasonable state as possiblet.
+      --  reasonable state as possible.
 
       --------------------------
       -- Fixup_Bad_Constraint --
@@ -13112,7 +13120,7 @@ package body Sem_Ch3 is
         and then Nkind (Parent (S)) = N_Subtype_Declaration
         and then not Is_Itype (Def_Id)
       then
-         --  A little sanity check, emit an error message if the type has
+         --  A little sanity check: emit an error message if the type has
          --  discriminants to begin with. Type T may be a regular incomplete
          --  type or imported via a limited with clause.
 
