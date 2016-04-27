@@ -1,3 +1,12 @@
+2016-04-27  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Rewrite an object
+	declaration of the form "X : T := Func (...);", where T is
+	controlled, as a renaming.
+	* a-strunb-shared.adb (Finalize): Set the Unbounded_String Object
+	to be an empty string, instead of null-ing out the Reference.
+	* exp_util.adb (Needs_Finalization): Remove redundant code.
+
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.ads Aspects Export and Import do not require delay. They
