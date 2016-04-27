@@ -1,3 +1,9 @@
+2016-04-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_spill_class): Enable for TARGET_SSE2 when
+	inter-unit moves to/from vector registers are enabled.  Do not disable
+	for TARGET_MMX.
+
 2016-04-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* df.h (DF_SCAN, DF_LR, DF_LIVE, DF_RD, DF_CHAIN, DF_WORD_LR,
@@ -15,14 +21,19 @@
 
 2016-04-27  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_spill_class): Enable for TARGET_SSE2 when
+	inter-unit moves to/from vector registers are enabled.  Do not disable
+	for TARGET_MMX.
+
+2016-04-27  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md
 	(lea arith with mem operand + setcc peephole2): Set operator mode.
 
 2016-04-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/70155
-	* config/i386/i386.c (scalar_to_vector_candidate_p): Renamed
-	to ...
+	* config/i386/i386.c (scalar_to_vector_candidate_p): Renamed to ...
 	(dimode_scalar_to_vector_candidate_p): This.
 	(timode_scalar_to_vector_candidate_p): New function.
 	(scalar_to_vector_candidate_p): Likewise.
@@ -652,7 +663,7 @@
 	directly without checking mode class.
 
 2016-04-20  Andrew Pinski  <apinski@cavium.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/64971
 	* config/aarch64/aarch64.md (sibcall): Force call
@@ -1078,7 +1089,7 @@
 
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
-        PR middle-end/37870
+	PR middle-end/37870
 	* expmed.c (extract_bit_field_1): Remove broken case
 	using a wider MODE_INT mode.
 
