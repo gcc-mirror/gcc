@@ -1,5 +1,37 @@
 2016-04-27  Arnaud Charlet  <charlet@adacore.com>
 
+	* aa_util.adb, aa_util.ads: Removed, no longer used.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): An object
+	renaming declaration resulting from the expansion of an object
+	declaration is a suitable context for pragma Ghost.
+
+2016-04-27  Doug Rupp  <rupp@adacore.com>
+
+	* init.c: Refine last checkin so the only requirement is the
+	signaling compilation unit is compiled with the same mode as
+	the compilation unit containing the initial landing pad.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Valid_Default_Iterator): Better filter of illegal
+	specifications for Default_Iterator, including overloaded cases
+	where no interpretations are legal, and return types that are
+	not iterator types.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not install
+	an accessibility check when the left hand side of the assignment
+	denotes a container cursor.
+	* exp_util.ads, exp_util.adb (Find_Primitive_Operations): Removed.
+	* sem_ch4.adb (Find_Indexing_Operations): New routine.
+	(Try_Container_Indexing): Code cleanup.
+
+2016-04-27  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_ch10.adb, sem_case.adb: Mark messages udner -gnatwr when needed.
 
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
