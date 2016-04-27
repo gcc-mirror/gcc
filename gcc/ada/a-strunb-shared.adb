@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -795,7 +795,10 @@ package body Ada.Strings.Unbounded is
          --  so we need to add a guard for the case of finalizing the same
          --  object twice.
 
-         Object.Reference := null;
+         --  We set the Object to the empty string so there will be no ill
+         --  effects if a program references an already-finalized object.
+
+         Object.Reference := Null_Unbounded_String.Reference;
          Unreference (SR);
       end if;
    end Finalize;

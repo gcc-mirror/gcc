@@ -6995,11 +6995,10 @@ package body Exp_Util is
 
                return False;
 
-            elsif Is_Array_Type (Rec) then
-               return Needs_Finalization (Component_Type (Rec));
-
             else
-               return Has_Controlled_Component (Rec);
+               return
+                 Is_Array_Type (Rec)
+                   and then Needs_Finalization (Component_Type (Rec));
             end if;
          else
             return False;
@@ -7032,7 +7031,6 @@ package body Exp_Util is
 
          return Is_Class_Wide_Type (T)
              or else Is_Controlled (T)
-             or else Has_Controlled_Component (T)
              or else Has_Some_Controlled_Component (T)
              or else
                (Is_Concurrent_Type (T)
