@@ -447,7 +447,7 @@ add_sorted_nodes (vec<symtab_node *> &next_nodes, ltrans_partition partition)
    and in-partition calls was reached.  */
 
 void
-lto_balanced_map (int n_lto_partitions)
+lto_balanced_map (int n_lto_partitions, int max_partition_size)
 {
   int n_nodes = 0;
   int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
@@ -511,6 +511,9 @@ lto_balanced_map (int n_lto_partitions)
   varpool_order.qsort (varpool_node_cmp);
 
   /* Compute partition size and create the first partition.  */
+  if (PARAM_VALUE (MIN_PARTITION_SIZE) > max_partition_size)
+    fatal_error (input_location, "min partition size cannot be greater than max partition size");
+
   partition_size = total_size / n_lto_partitions;
   if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
     partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
@@ -719,7 +722,8 @@ lto_balanced_map (int n_lto_partitions)
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
 	 start new partition.  */
-      if (partition->insns > 2 * partition_size)
+      if (partition->insns > 2 * partition_size
+	  || partition->insns > max_partition_size)
 	{
 	  if (best_i != i)
 	    {

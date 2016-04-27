@@ -3117,9 +3117,10 @@ do_whole_program_analysis (void)
   else if (flag_lto_partition == LTO_PARTITION_MAX)
     lto_max_map ();
   else if (flag_lto_partition == LTO_PARTITION_ONE)
-    lto_balanced_map (1);
+    lto_balanced_map (1, INT_MAX);
   else if (flag_lto_partition == LTO_PARTITION_BALANCED)
-    lto_balanced_map (PARAM_VALUE (PARAM_LTO_PARTITIONS));
+    lto_balanced_map (PARAM_VALUE (PARAM_LTO_PARTITIONS),
+		      PARAM_VALUE (MAX_PARTITION_SIZE));
   else
     gcc_unreachable ();
 

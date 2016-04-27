@@ -1,3 +1,12 @@
+2016-04-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* lto-partition.h (lto_balanced_map): New parameter.
+	* lto-partition.c (lto_balanced_map): New parameter
+	max_partition_size.
+	Check if partition size is greater than max_partition_size.
+	* lto.c (do_whole_program_analysis): Adjust calls to
+	lto_balanced_map() to pass 2nd argument.
+
 2016-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/70258
