@@ -1,3 +1,10 @@
+2016-04-27  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* genattrtab.c (write_test_expr): New parameter EMIT_PARENS
+	which defaults to true.  Emit an outer pair of parentheses only if
+	EMIT_PARENS.  When continuing a chain of && or || (or & or |),
+	don't emit parentheses for the right-hand operand.
+
 2016-04-27  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_temporary_equivalences): Fix typo in comment.
