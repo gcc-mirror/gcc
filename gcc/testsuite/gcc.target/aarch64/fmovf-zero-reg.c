@@ -8,4 +8,4 @@ foo (void)
   bar (0.0);
 }
 
-/* { dg-final { scan-assembler "fmov\\ts0, wzr" } } */
+/* { dg-final { scan-assembler "movi\\tv0\.2s, #0" } } */
