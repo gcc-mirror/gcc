@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -337,10 +337,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
            Result_Matrix => Real_Matrix,
            Operation     => "abs");
 
-      function Solve is
-         new Matrix_Vector_Solution (Real'Base, Real_Vector, Real_Matrix);
+      function Solve is new
+        Matrix_Vector_Solution (Real'Base, 0.0, Real_Vector, Real_Matrix);
 
-      function Solve is new Matrix_Matrix_Solution (Real'Base, Real_Matrix);
+      function Solve is new
+        Matrix_Matrix_Solution (Real'Base, 0.0, Real_Matrix);
 
       function Unit_Matrix is new
         Generic_Array_Operations.Unit_Matrix

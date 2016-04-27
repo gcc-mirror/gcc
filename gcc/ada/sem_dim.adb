@@ -1120,9 +1120,15 @@ package body Sem_Dim is
    procedure Analyze_Dimension (N : Node_Id) is
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for nodes that don't come from source.
+      --  dimensions for nodes that don't come from source, except for subtype
+      --  declarations where the dimensions are inherited from the base type.
 
-      if Ada_Version < Ada_2012 or else not Comes_From_Source (N) then
+      if Ada_Version < Ada_2012 then
+         return;
+
+      elsif not Comes_From_Source (N)
+        and then Nkind (N) /= N_Subtype_Declaration
+      then
          return;
       end if;
 
@@ -2232,10 +2238,10 @@ package body Sem_Dim is
 
          if Exists (Dims_Of_Etyp) then
 
-            --  If subtype already has a dimension (from Aspect_Dimension),
-            --  it cannot inherit a dimension from its subtype.
+            --  If subtype already has a dimension (from Aspect_Dimension), it
+            --  cannot inherit different dimensions from its subtype.
 
-            if Exists (Dims_Of_Id) then
+            if Exists (Dims_Of_Id) and then Dims_Of_Etyp /= Dims_Of_Id then
                Error_Msg_NE
                  ("subtype& already " & Dimensions_Msg_Of (Id, True), N, Id);
             else

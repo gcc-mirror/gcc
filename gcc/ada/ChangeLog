@@ -1,3 +1,36 @@
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Null_Record_Type): New predicate
+	to determine whether a record type is a null record.
+	* sem_ch3.adb (Analyze_Object_Declaration): If the type is a
+	null record and there is no expression in the declaration,
+	no predicate check applies to the object.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Body_Helper): The body of an
+	instantiated package should not cause freezing of previous contracts.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension): Handle subtype declarations
+	that do not come from source.
+	(Analyze_Dimension_Subtype_Declaration): Allow confirming
+	dimensions on subtype entity, either inherited from base type
+	or provided by aspect specification.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* s-gearop.ads (Matrix_Vector_Solution, Matrix_Matrix_Solution):
+	Add scalar formal object Zero, to allow detection and report
+	when the matrix is singular.
+	* s-gearop.adb (Matrix_Vector_Solution, Matrix_Matrix_Solution):
+	Raise Constraint_Error if the Forward_Eliminate pass has
+	determined that determinant is Zero.o
+	* s-ngrear.adb (Solve): Add actual for Zero in corresponding
+	instantiations.
+	* s-ngcoar.adb (Solve): Ditto.
+
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting.

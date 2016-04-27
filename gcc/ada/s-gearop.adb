@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2006-2012, Free Software Foundation, Inc.          --
+--         Copyright (C) 2006-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Numerics; use Ada.Numerics;
-
 package body System.Generic_Array_Operations is
-
    function Check_Unit_Last
      (Index : Integer;
       Order : Positive;
@@ -696,6 +694,11 @@ package body System.Generic_Array_Operations is
       end loop;
 
       Forward_Eliminate (MA, MX, Det);
+
+      if Det = Zero then
+         raise Constraint_Error with "matrix is singular";
+      end if;
+
       Back_Substitute (MA, MX);
 
       for J in 0 .. R'Length - 1 loop
@@ -735,6 +738,11 @@ package body System.Generic_Array_Operations is
       end loop;
 
       Forward_Eliminate (MA, MB, Det);
+
+      if Det = Zero then
+         raise Constraint_Error with "matrix is singular";
+      end if;
+
       Back_Substitute (MA, MB);
 
       return MB;

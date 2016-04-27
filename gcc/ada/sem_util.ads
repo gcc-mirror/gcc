@@ -1481,6 +1481,10 @@ package Sem_Util is
    --  assertion expression of pragma Default_Initial_Condition and if it does,
    --  the encapsulated expression is nontrivial.
 
+   function Is_Null_Record_Type (T : Entity_Id) return Boolean;
+   --  Determine whether T is declared with a null record definition or a
+   --  null component list.
+
    function Is_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object. Both
    --  variable and constant objects return True (compare Is_Variable).
