@@ -1,3 +1,29 @@
+2016-04-27  Bob Duff  <duff@adacore.com>
+
+	* a-chtgop.adb (Adjust): Zero the tampering counts on assignment,
+	as is done for the other containers.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ghost.adb (In_Subprogram_Body_Profile): New routine.
+	(Is_OK_Declaration): Treat an unanalyzed expression
+	function as an OK context.  Treat a reference to a Ghost entity
+	as OK when it appears within the profile of a subprogram body.
+
+2016-04-27  Bob Duff  <duff@adacore.com>
+
+	* errout.ads: Document the fact that informational messages
+	don't have to be warnings.
+	* errout.adb (Error_Msg_Internal): In statistics counts, deal
+	correctly with informational messages that are not warnings.
+	(Error_Msg_NEL): Remove useless 'if' aroung Set_Posted, because
+	Set_Posted already checks for errors and ignores others.
+	* erroutc.adb (Prescan_Message): Set Is_Serious_Error to False
+	if Is_Info_Msg; the previous code was assuming that Is_Info_Msg
+	implies Is_Warning_Msg.
+	* errutil.adb (Error_Msg): In statistics counts, deal correctly
+	with informational messages that are not warnings.
+
 2016-04-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Is_Null_Record_Type): New predicate
