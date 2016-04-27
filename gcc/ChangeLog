@@ -1,3 +1,20 @@
+2016-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/70683
+	* tree.h (inchash::add_expr): Add FLAGS argument.
+	* tree.c (inchash::add_expr): Likewise.  If not OEP_ADDRESS_OF,
+	use STRIP_NOPS first.  For INTEGER_CST assert not OEP_ADDRESS_OF.
+	For REAL_CST and !HONOR_SIGNED_ZEROS (t) hash +/- 0 the same.
+	Formatting fix.  Adjust recursive calls.  For tcc_comparison,
+	if swap_tree_comparison (code) is smaller than code, hash that
+	and arguments in the other order.  Hash CONVERT_EXPR the same
+	as NOP_EXPR.  For OEP_ADDRESS_OF hash MEM_REF with 0 offset
+	of ADDR_EXPR of decl as the decl itself.  Add or remove
+	OEP_ADDRESS_OF from recursive flags as needed.  For
+	FMA_EXPR, WIDEN_MULT_{PLUS,MINUS}_EXPR hash the first two
+	operands commutatively and only the third one normally.
+	For internal CALL_EXPR hash in CALL_EXPR_IFN.
+
 2016-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems.h (LIB_SPEC): Add -latomic.

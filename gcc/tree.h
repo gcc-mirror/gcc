@@ -4759,7 +4759,7 @@ extern int simple_cst_equal (const_tree, const_tree);
 namespace inchash
 {
 
-extern void add_expr (const_tree, hash &);
+extern void add_expr (const_tree, hash &, unsigned int = 0);
 
 }
 
