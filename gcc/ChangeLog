@@ -1,3 +1,12 @@
+2016-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/70760
+	* tree-ssa-structalias.c (find_func_aliases_for_call): Use
+	aggregate_value_p to determine if a function result is
+	returned by reference.
+	(ipa_pta_execute): Functions having their address taken are
+	not automatically nonlocal.
+
 2016-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/70683
