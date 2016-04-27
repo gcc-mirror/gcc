@@ -1,3 +1,9 @@
+2016-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/70760
+	* g++.dg/ipa/ipa-pta-2.C: New testcase.
+	* gcc.dg/ipa/ipa-pta-1.c: Adjust.
+
 2016-04-27  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp0x/constexpr-recursion3.C: New.
