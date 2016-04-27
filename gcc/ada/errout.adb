@@ -3082,6 +3082,7 @@ package body Errout is
 
    begin
       if Is_Serious_Error then
+
          --  We always set Error_Posted on the node itself
 
          Set_Error_Posted (N);

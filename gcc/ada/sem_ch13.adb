@@ -3129,6 +3129,24 @@ package body Sem_Ch13 is
                      Pname := Name_Postcondition;
                   end if;
 
+                  --  Check that the class-wide predicate cannot be applied to
+                  --  an operation of a synchronized type that is not a tagged
+                  --  type. Other legality checks are performed when analyzing
+                  --  the contract of the operation.
+
+                  if Class_Present (Aspect)
+                    and then Is_Concurrent_Type (Current_Scope)
+                    and then not Is_Tagged_Type (Current_Scope)
+                    and then Ekind_In (E, E_Entry, E_Function, E_Procedure)
+                  then
+                     Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Aspect);
+                     Error_Msg_N
+                       ("aspect % can only be specified for a primitive "
+                        & "operation of a tagged type", Aspect);
+
+                     goto Continue;
+                  end if;
+
                   --  If the expressions is of the form A and then B, then
                   --  we generate separate Pre/Post aspects for the separate
                   --  clauses. Since we allow multiple pragmas, there is no

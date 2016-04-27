@@ -1,3 +1,17 @@
+2016-04-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch10.adb, sem_case.adb: Mark messages udner -gnatwr when needed.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* errout.adb, errutil.adb: Minor reformatting.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case Pre/Post):
+	Check that the classwide version is illegal when the prefix is
+	an operation of an untagged synchronized type.
+
 2016-04-27  Arnaud Charlet  <charleT@adacore.com>
 
 	* sinput-l.ads, sem_ch13.adb: Minor editing.

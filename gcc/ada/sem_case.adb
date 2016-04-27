@@ -1128,10 +1128,7 @@ package body Sem_Case is
    procedure No_OP (C : Node_Id) is
    begin
       if Nkind (C) = N_Range and then Warn_On_Redundant_Constructs then
-         Error_Msg_N ("choice is an empty range?", C);
-
-      else
-         null;
+         Error_Msg_N ("choice is an empty range?r?", C);
       end if;
    end No_OP;
 
