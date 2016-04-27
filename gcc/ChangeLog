@@ -1,3 +1,8 @@
+2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (sign_extend to memory peephole2s): Use
+	general_reg_operand instead of register_operand predicate.
+
 2016-04-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* params.def (MIN_PARTITION_SIZE): Set default value to 10000.
