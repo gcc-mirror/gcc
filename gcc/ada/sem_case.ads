@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,9 +86,10 @@ with Types; use Types;
 package Sem_Case is
 
    procedure No_OP (C : Node_Id);
-   --  The no-operation routine. Does absolutely nothing. Can be used
+   --  The no-operation routine. Does mostly nothing. Can be used
    --  in the following generics for the parameters Process_Empty_Choice,
-   --  or Process_Associated_Node.
+   --  or Process_Associated_Node. In the case of an empty range choice,
+   --  routine emits a warning when Warn_On_Redundant_Constructs is enabled.
 
    generic
       with procedure Process_Associated_Node (A : Node_Id);

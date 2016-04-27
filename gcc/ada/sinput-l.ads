@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,7 +119,7 @@ private
       --  be applied, used to ensure that no incorrect adjustments are
       --  made. Really it is a bug if anyone ever tries to adjust outside
       --  this range, but since we are only doing this anyway for getting
-      --  better error messages, it is not critical
+      --  better error messages, it is not critical.
 
    end record;
 

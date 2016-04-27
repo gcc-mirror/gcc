@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1126,9 +1126,13 @@ package body Sem_Case is
    -----------
 
    procedure No_OP (C : Node_Id) is
-      pragma Warnings (Off, C);
    begin
-      null;
+      if Nkind (C) = N_Range and then Warn_On_Redundant_Constructs then
+         Error_Msg_N ("choice is an empty range?", C);
+
+      else
+         null;
+      end if;
    end No_OP;
 
    -----------------------------

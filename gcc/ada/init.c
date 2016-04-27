@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -503,6 +503,11 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 #elif defined (__ARMEL__)
   /* ARM Bump has to be an even number because of odd/even architecture.  */
   mcontext->arm_pc+=2;
+#ifdef __thumb2__
+  /* For thumb, the return address much have the low order bit set, otherwise
+     the unwwinder will reset to "arm" mode upon return.  It's a feature.  */
+  mcontext->arm_pc+=1;
+#endif
 #endif
 }
 

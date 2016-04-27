@@ -1,3 +1,17 @@
+2016-04-27  Arnaud Charlet  <charleT@adacore.com>
+
+	* sinput-l.ads, sem_ch13.adb: Minor editing.
+
+2016-04-27  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (__gnat_adjust_context_for_raise) [arm-linux thumb]:
+	Bump the pc so the lower order bit is set.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb, sem_case.ads (NO_Op): If appropriate warning is
+	enabled, report an empty range in a case construct.
+
 2016-04-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* sinput.ads, a-cfdlli.adb, a-crbtgo.adb, a-chtgop.adb, a-cbhama.adb,
