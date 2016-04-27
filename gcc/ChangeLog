@@ -1,3 +1,9 @@
+2016-04-27  Nick Clifton  <nickc@redhat.com>
+
+	PR middle-end/49889
+	* varasm.c (merge_weak): Generate an error if an attempt is made
+	to convert a non-weak static function into a weak, public function.
+
 2016-04-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* params.def (MAX_PARTITION_SIZE): New param.

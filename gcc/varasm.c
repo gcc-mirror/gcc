@@ -5371,6 +5371,11 @@ merge_weak (tree newdecl, tree olddecl)
       gcc_assert (!TREE_USED (olddecl)
 	          || !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)));
 
+      /* PR 49899: You cannot convert a static function into a weak, public function.  */
+      if (! TREE_PUBLIC (olddecl) && TREE_PUBLIC (newdecl))
+	error ("weak declaration of %q+D being applied to a already "
+	       "existing, static definition", newdecl);
+
       if (TARGET_SUPPORTS_WEAK)
 	{
 	  /* We put the NEWDECL on the weak_decls list at some point.
