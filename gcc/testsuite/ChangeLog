@@ -1,3 +1,8 @@
+2016-04-27  Nick Clifton  <nickc@redhat.com>
+
+	PR middle-end/49889
+	* gcc.dg/pr49889.c: New test.
+
 2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* c-c++-common/memset-array.c: New test.
