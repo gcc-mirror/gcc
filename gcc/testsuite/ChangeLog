@@ -1,3 +1,8 @@
+2016-04-27  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/constexpr-recursion3.C: New.
+	* g++.dg/ubsan/pr63956.C: Adjust error location.
+
 2016-04-27  Nick Clifton  <nickc@redhat.com>
 
 	PR middle-end/49889

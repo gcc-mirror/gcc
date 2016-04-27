@@ -1,3 +1,9 @@
+2016-04-27  Nathan Sidwell  <nathan@acm.org>
+
+	* constexpr.c (get_fundef_copy): Use the original function for
+	non-recursive evaluations.
+	(save_fundef_copy): Always expect a slot to be available.
+
 2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* parser.c (cp_parser_postfix_expression): Call
