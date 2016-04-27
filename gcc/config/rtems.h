@@ -45,6 +45,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIB_SPEC "%{!qrtems: " STD_LIB_SPEC "} " \
 "%{!nostdlib: %{qrtems: --start-group \
  -lrtemsbsp -lrtemscpu \
- -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
+ -latomic -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
 
 #define TARGET_POSIX_IO
