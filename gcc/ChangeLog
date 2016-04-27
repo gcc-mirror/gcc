@@ -1,3 +1,7 @@
+2016-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (A - B > A, A + B < A): New transformations.
+
 2016-04-27  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* genattrtab.c (write_test_expr): New parameter EMIT_PARENS
