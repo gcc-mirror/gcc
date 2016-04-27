@@ -1,5 +1,33 @@
 2016-04-27  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/70155
+	* gcc.target/i386/pr55247-2.c: Updated to check movti_internal
+	and movv1ti_internal patterns
+	* gcc.target/i386/pr70155-1.c: New test.
+	* gcc.target/i386/pr70155-2.c: Likewise.
+	* gcc.target/i386/pr70155-3.c: Likewise.
+	* gcc.target/i386/pr70155-4.c: Likewise.
+	* gcc.target/i386/pr70155-5.c: Likewise.
+	* gcc.target/i386/pr70155-6.c: Likewise.
+	* gcc.target/i386/pr70155-7.c: Likewise.
+	* gcc.target/i386/pr70155-8.c: Likewise.
+	* gcc.target/i386/pr70155-9.c: Likewise.
+	* gcc.target/i386/pr70155-10.c: Likewise.
+	* gcc.target/i386/pr70155-11.c: Likewise.
+	* gcc.target/i386/pr70155-12.c: Likewise.
+	* gcc.target/i386/pr70155-13.c: Likewise.
+	* gcc.target/i386/pr70155-14.c: Likewise.
+	* gcc.target/i386/pr70155-15.c: Likewise.
+	* gcc.target/i386/pr70155-16.c: Likewise.
+	* gcc.target/i386/pr70155-17.c: Likewise.
+	* gcc.target/i386/pr70155-18.c: Likewise.
+	* gcc.target/i386/pr70155-19.c: Likewise.
+	* gcc.target/i386/pr70155-20.c: Likewise.
+	* gcc.target/i386/pr70155-21.c: Likewise.
+	* gcc.target/i386/pr70155-22.c: Likewise.
+
+2016-04-27  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Replace ".{5}" with
 	".{5,6}".
 
