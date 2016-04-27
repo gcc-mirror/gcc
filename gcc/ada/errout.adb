@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1153,14 +1153,21 @@ package body Errout is
          end if;
       end if;
 
-      --  Bump appropriate statistics count
+      --  Bump appropriate statistics counts
 
-      if Errors.Table (Cur_Msg).Warn or else Errors.Table (Cur_Msg).Style then
-         Warnings_Detected := Warnings_Detected + 1;
+      if Errors.Table (Cur_Msg).Info then
+         Info_Messages := Info_Messages + 1;
 
-         if Errors.Table (Cur_Msg).Info then
-            Info_Messages := Info_Messages + 1;
+         --  Could be (usually is) both "info" and "warning"
+
+         if Errors.Table (Cur_Msg).Warn then
+            Warnings_Detected := Warnings_Detected + 1;
          end if;
+
+      elsif Errors.Table (Cur_Msg).Warn
+        or else Errors.Table (Cur_Msg).Style
+      then
+         Warnings_Detected := Warnings_Detected + 1;
 
       elsif Errors.Table (Cur_Msg).Check then
          Check_Messages := Check_Messages + 1;
@@ -1298,9 +1305,7 @@ package body Errout is
          Last_Killed := True;
       end if;
 
-      if not (Is_Warning_Msg or Is_Style_Msg) then
-         Set_Posted (N);
-      end if;
+      Set_Posted (N);
    end Error_Msg_NEL;
 
    ------------------
@@ -3077,7 +3082,6 @@ package body Errout is
 
    begin
       if Is_Serious_Error then
-
          --  We always set Error_Posted on the node itself
 
          Set_Error_Posted (N);

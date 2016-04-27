@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,6 +53,12 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       Dst_Prev    : Node_Access;
 
    begin
+      --  If the counts are nonzero, execution is technically erroneous, but
+      --  it seems friendly to allow things like concurrent "=" on shared
+      --  constants.
+
+      Zero_Counts (HT.TC);
+
       HT.Buckets := null;
       HT.Length := 0;
 

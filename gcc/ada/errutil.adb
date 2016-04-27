@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,17 +302,22 @@ package body Errutil is
 
       Errors.Table (Cur_Msg).Next := Next_Msg;
 
-      --  Bump appropriate statistics count
+      --  Bump appropriate statistics counts
 
-      if Errors.Table (Cur_Msg).Warn
+      if Errors.Table (Cur_Msg).Info then
+         Info_Messages := Info_Messages + 1;
+
+         --  Could be (usually is) both "info" and "warning"
+
+         if Errors.Table (Cur_Msg).Warn then
+            Warnings_Detected := Warnings_Detected + 1;
+         end if;
+
+      elsif Errors.Table (Cur_Msg).Warn
            or else
          Errors.Table (Cur_Msg).Style
       then
          Warnings_Detected := Warnings_Detected + 1;
-
-         if Errors.Table (Cur_Msg).Info then
-            Info_Messages := Info_Messages + 1;
-         end if;
 
       elsif Errors.Table (Cur_Msg).Check then
          Check_Messages := Check_Messages + 1;
