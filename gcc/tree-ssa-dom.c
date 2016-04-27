@@ -921,7 +921,7 @@ record_temporary_equivalences (edge e,
       /* We already recorded that LHS = RHS, with canonicalization,
 	 value chain following, etc.
 
-	 We also want to return RHS = LHS, but without any canonicalization
+	 We also want to record RHS = LHS, but without any canonicalization
 	 or value chain following.  */
       if (TREE_CODE (rhs) == SSA_NAME)
 	const_and_copies->record_const_or_copy_raw (rhs, lhs,
