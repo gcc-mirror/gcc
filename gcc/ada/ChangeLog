@@ -1,3 +1,41 @@
+2016-04-27  Bob Duff  <duff@adacore.com>
+
+	* a-coinve.adb, a-comutr.adb, a-conhel.adb, a-convec.adb,
+	exp_util.adb: Remove assertions that can fail in obscure cases when
+	assertions are turned on but tampering checks are turned off.
+
+2016-04-27  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Add_Call_By_Copy_Code,
+	Add_Simple_Call_By_Copy_Code, Expand_Actuals): Handle formals
+	whose type comes from the limited view.
+
+2016-04-27  Yannick Moy  <moy@adacore.com>
+
+	* a-textio.adb: Complete previous patch.
+
+2016-04-27  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Use Cannot_Inline instead of
+	Error_Msg_N to issue message about impossibility to inline call,
+	with slight change of message.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_spark.adb (Expand_Potential_Renaming): Removed.
+	(Expand_SPARK): Update the call to expand a potential renaming.
+	(Expand_SPARK_Potential_Renaming): New routine.
+	* exp_spark.ads (Expand_SPARK_Potential_Renaming): New routine.
+	* sem.adb Add with and use clauses for Exp_SPARK.
+	(Analyze): Expand a non-overloaded potential renaming for SPARK.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Constrain_Discriminated_Type): In an instance,
+	check full view for the presence of defaulted discriminants,
+	even when the partial view of a private type has no visible and
+	no unknown discriminants.
+
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-xref.adb, exp_ch3.adb: Minor reformatting.

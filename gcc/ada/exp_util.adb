@@ -7028,6 +7028,9 @@ package body Exp_Util is
       elsif Disable_Controlled (T) then
          return False;
 
+      elsif Is_Class_Wide_Type (T) and then Disable_Controlled (Etype (T)) then
+         return False;
+
       else
          --  Class-wide types are treated as controlled because derivations
          --  from the root type can introduce controlled components.

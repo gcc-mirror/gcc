@@ -714,11 +714,12 @@ package body Ada.Text_IO is
 
       function Get_Rest (S : String) return String is
 
-         --  Each time we allocate a buffer the same size as what we have
-         --  read so far. This limits us to a logarithmic number of calls
-         --  to Get_Rest and also ensures only a linear use of stack space.
+         --  The first time we allocate a buffer of size 500. Each following
+         --  time we allocate a buffer the same size as what we have read so
+         --  far. This limits us to a logarithmic number of calls to Get_Rest
+         --  and also ensures only a linear use of stack space.
 
-         Buffer : String (1 .. S'Length);
+         Buffer : String (1 .. Integer'Max (500, S'Length));
          Last   : Natural;
 
       begin
@@ -731,43 +732,26 @@ package body Ada.Text_IO is
                return R;
 
             else
-               return Get_Rest (R);
+               pragma Assert (Last = Buffer'Last);
+
+               --  If the String has the same length as the buffer, and there
+               --  is no end of line, check whether we are at the end of file,
+               --  in which case we have the full String in the buffer.
+
+               if End_Of_File (File) then
+                  return R;
+
+               else
+                  return Get_Rest (R);
+               end if;
             end if;
          end;
       end Get_Rest;
 
-      --  Local variables
-
-      Buffer : String (1 .. 500);
-      ch     : int;
-      Last   : Natural;
-
    --  Start of processing for Get_Line
 
    begin
-      Get_Line (File, Buffer, Last);
-
-      if Last < Buffer'Last then
-         return Buffer (1 .. Last);
-
-      --  If the String has the same length as the buffer, and there is no end
-      --  of line, check whether we are at the end of file, in which case we
-      --  have the full String in the buffer.
-
-      elsif Last = Buffer'Last then
-         ch := Getc (File);
-
-         if ch = EOF then
-            return Buffer;
-
-         else
-            Ungetc (ch, File);
-            return Get_Rest (Buffer (1 .. Last));
-         end if;
-
-      else
-         return Get_Rest (Buffer (1 .. Last));
-      end if;
+      return Get_Rest ("");
    end Get_Line;
 
    function Get_Line return String is

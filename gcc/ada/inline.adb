@@ -2761,17 +2761,9 @@ package body Inline is
       --  subprograms this must be done explicitly.
 
       if In_Open_Scopes (Subp) then
-         Error_Msg_N ("call to recursive subprogram cannot be inlined??", N);
+         Cannot_Inline
+           ("cannot inline call to recursive subprogram?", N, Subp);
          Set_Is_Inlined (Subp, False);
-
-         --  In GNATprove mode, issue a warning, and indicate that the
-         --  subprogram is not always inlined by setting flag Is_Inlined_Always
-         --  to False.
-
-         if GNATprove_Mode then
-            Set_Is_Inlined_Always (Subp, False);
-         end if;
-
          return;
 
       --  Skip inlining if this is not a true inlining since the attribute
@@ -2787,8 +2779,8 @@ package body Inline is
 
       elsif Is_Unc
         and then
-          Nkind (First (Statements (Handled_Statement_Sequence (Orig_Bod))))
-            = N_Extended_Return_Statement
+          Nkind (First (Statements (Handled_Statement_Sequence (Orig_Bod)))) =
+            N_Extended_Return_Statement
         and then not Back_End_Inlining
       then
          return;

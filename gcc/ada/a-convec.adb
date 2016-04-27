@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -617,9 +617,6 @@ package body Ada.Containers.Vectors is
    end Finalize;
 
    procedure Finalize (Object : in out Iterator) is
-      pragma Warnings (Off);
-      pragma Assert (T_Check); -- not called if check suppressed
-      pragma Warnings (On);
    begin
       Unbusy (Object.Container.TC);
    end Finalize;

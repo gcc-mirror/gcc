@@ -13033,7 +13033,7 @@ package body Sem_Ch3 is
       Related_Nod : Node_Id;
       For_Access  : Boolean := False)
    is
-      E     : constant Entity_Id := Entity (Subtype_Mark (S));
+      E     : Entity_Id := Entity (Subtype_Mark (S));
       T     : Entity_Id;
       C     : Node_Id;
       Elist : Elist_Id := New_Elmt_List;
@@ -13083,15 +13083,22 @@ package body Sem_Ch3 is
       end if;
 
       --  In an instance it may be necessary to retrieve the full view of a
-      --  type with unknown discriminants. In other contexts the constraint
-      --  is illegal.
+      --  type with unknown discriminants, or a full view with defaulted
+      --  discriminants. In other contexts the constraint is illegal.
 
       if In_Instance
         and then Is_Private_Type (T)
-        and then Has_Unknown_Discriminants (T)
         and then Present (Full_View (T))
+        and then
+          (Has_Unknown_Discriminants (T)
+             or else (not Has_Discriminants (T)
+               and then Has_Discriminants (Full_View (T))
+               and then Present
+                 (Discriminant_Default_Value
+                    (First_Discriminant (Full_View (T))))))
       then
          T := Full_View (T);
+         E := Full_View (E);
       end if;
 
       --  Ada 2005 (AI-412): Constrained incomplete subtypes are illegal.
@@ -20522,14 +20529,14 @@ package body Sem_Ch3 is
 
       May_Have_Null_Exclusion : Boolean;
 
-      procedure Check_Incomplete (T : Entity_Id);
+      procedure Check_Incomplete (T : Node_Id);
       --  Called to verify that an incomplete type is not used prematurely
 
       ----------------------
       -- Check_Incomplete --
       ----------------------
 
-      procedure Check_Incomplete (T : Entity_Id) is
+      procedure Check_Incomplete (T : Node_Id) is
       begin
          --  Ada 2005 (AI-412): Incomplete subtypes are legal
 
