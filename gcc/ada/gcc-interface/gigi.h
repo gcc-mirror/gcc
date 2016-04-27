@@ -34,14 +34,12 @@
    initial value (in GCC tree form). This is optional for variables.
    For renamed entities, GNU_EXPR gives the object being renamed.
 
-   DEFINITION is nonzero if this call is intended for a definition.  This is
-   used for separate compilation where it necessary to know whether an
-   external declaration or a definition should be created if the GCC equivalent
-   was not created previously.  The value of 1 is normally used for a nonzero
-   DEFINITION, but a value of 2 is used in special circumstances, defined in
-   the code.  */
+   DEFINITION is true if this call is intended for a definition.  This is used
+   for separate compilation where it is necessary to know whether an external
+   declaration or a definition must be created if the GCC equivalent was not
+   created previously.  */
 extern tree gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr,
-                                int definition);
+                                bool definition);
 
 /* Similar, but if the returned value is a COMPONENT_REF, return the
    FIELD_DECL.  */
@@ -148,7 +146,8 @@ extern tree make_type_from_size (tree type, tree size_tree, bool for_biased);
    IS_COMPONENT_TYPE is true if this is being done for the component type of
    an array.  IS_USER_TYPE is true if the original type needs to be completed.
    DEFINITION is true if this type is being defined.  SET_RM_SIZE is true if
-   the RM size of the resulting type is to be set to SIZE too.  */
+   the RM size of the resulting type is to be set to SIZE too; in this case,
+   the padded type is canonicalized before being returned.  */
 extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    Entity_Id gnat_entity, bool is_component_type,
 			    bool is_user_type, bool definition,
@@ -620,14 +619,13 @@ extern void finish_fat_pointer_type (tree record_type, tree field_list);
    laid out already; only set the sizes and alignment.  If REP_LEVEL is two,
    this record is derived from a parent record and thus inherits its layout;
    only make a pass on the fields to finalize them.  DEBUG_INFO_P is true if
-   we need to write debug information about this type.  */
+   additional debug info needs to be output for this type.  */
 extern void finish_record_type (tree record_type, tree field_list,
 				int rep_level, bool debug_info_p);
 
-/* Wrap up compilation of RECORD_TYPE, i.e. output all the debug information
-   associated with it.  It need not be invoked directly in most cases since
-   finish_record_type takes care of doing so, but this can be necessary if
-   a parallel type is to be attached to the record type.  */
+/* Wrap up compilation of RECORD_TYPE, i.e. output additional debug info
+   associated with it.  It need not be invoked directly in most cases as
+   finish_record_type takes care of doing so.  */
 extern void rest_of_record_type_compilation (tree record_type);
 
 /* Append PARALLEL_TYPE on the chain of parallel types for TYPE.  */
