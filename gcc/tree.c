@@ -7769,7 +7769,7 @@ namespace inchash
    This function is intended to produce the same hash for expressions which
    would compare equal using operand_equal_p.  */
 void
-add_expr (const_tree t, inchash::hash &hstate)
+add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 {
   int i;
   enum tree_code code;
@@ -7781,6 +7781,9 @@ add_expr (const_tree t, inchash::hash &hstate)
       return;
     }
 
+  if (!(flags & OEP_ADDRESS_OF))
+    STRIP_NOPS (t);
+
   code = TREE_CODE (t);
 
   switch (code)
@@ -7791,12 +7794,17 @@ add_expr (const_tree t, inchash::hash &hstate)
       hstate.merge_hash (0);
       return;
     case INTEGER_CST:
-      for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
+      for (i = 0; i < TREE_INT_CST_EXT_NUNITS (t); i++)
 	hstate.add_wide_int (TREE_INT_CST_ELT (t, i));
       return;
     case REAL_CST:
       {
-	unsigned int val2 = real_hash (TREE_REAL_CST_PTR (t));
+	unsigned int val2;
+	if (!HONOR_SIGNED_ZEROS (t) && real_zerop (t))
+	  val2 = rvc_zero;
+	else
+	  val2 = real_hash (TREE_REAL_CST_PTR (t));
 	hstate.merge_hash (val2);
 	return;
       }
@@ -7807,17 +7815,18 @@ add_expr (const_tree t, inchash::hash &hstate)
 	return;
       }
     case STRING_CST:
-      hstate.add ((const void *) TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
+      hstate.add ((const void *) TREE_STRING_POINTER (t),
+		  TREE_STRING_LENGTH (t));
       return;
     case COMPLEX_CST:
-      inchash::add_expr (TREE_REALPART (t), hstate);
-      inchash::add_expr (TREE_IMAGPART (t), hstate);
+      inchash::add_expr (TREE_REALPART (t), hstate, flags);
+      inchash::add_expr (TREE_IMAGPART (t), hstate, flags);
       return;
     case VECTOR_CST:
       {
 	unsigned i;
 	for (i = 0; i < VECTOR_CST_NELTS (t); ++i)
-	  inchash::add_expr (VECTOR_CST_ELT (t, i), hstate);
+	  inchash::add_expr (VECTOR_CST_ELT (t, i), hstate, flags);
 	return;
       }
     case SSA_NAME:
@@ -7831,16 +7840,17 @@ add_expr (const_tree t, inchash::hash &hstate)
       /* A list of expressions, for a CALL_EXPR or as the elements of a
 	 VECTOR_CST.  */
       for (; t; t = TREE_CHAIN (t))
-	inchash::add_expr (TREE_VALUE (t), hstate);
+	inchash::add_expr (TREE_VALUE (t), hstate, flags);
       return;
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT idx;
 	tree field, value;
+	flags &= ~OEP_ADDRESS_OF;
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
 	  {
-	    inchash::add_expr (field, hstate);
-	    inchash::add_expr (value, hstate);
+	    inchash::add_expr (field, hstate, flags);
+	    inchash::add_expr (value, hstate, flags);
 	  }
 	return;
       }
@@ -7865,21 +7875,102 @@ add_expr (const_tree t, inchash::hash &hstate)
 	  /* DECL's have a unique ID */
 	  hstate.add_wide_int (DECL_UID (t));
 	}
+      else if (tclass == tcc_comparison && !commutative_tree_code (code))
+	{
+	  /* For comparisons that can be swapped, use the lower
+	     tree code.  */
+	  enum tree_code ccode = swap_tree_comparison (code);
+	  if (code < ccode)
+	    ccode = code;
+	  hstate.add_object (ccode);
+	  inchash::add_expr (TREE_OPERAND (t, ccode != code), hstate, flags);
+	  inchash::add_expr (TREE_OPERAND (t, ccode == code), hstate, flags);
+	}
+      else if (CONVERT_EXPR_CODE_P (code))
+	{
+	  /* NOP_EXPR and CONVERT_EXPR are considered equal by
+	     operand_equal_p.  */
+	  enum tree_code ccode = NOP_EXPR;
+	  hstate.add_object (ccode);
+
+	  /* Don't hash the type, that can lead to having nodes which
+	     compare equal according to operand_equal_p, but which
+	     have different hash codes.  Make sure to include signedness
+	     in the hash computation.  */
+	  hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
+	  inchash::add_expr (TREE_OPERAND (t, 0), hstate, flags);
+	}
+      /* For OEP_ADDRESS_OF, hash MEM_EXPR[&decl, 0] the same as decl.  */
+      else if (code == MEM_REF
+	       && (flags & OEP_ADDRESS_OF) != 0
+	       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	       && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
+	       && integer_zerop (TREE_OPERAND (t, 1)))
+	inchash::add_expr (TREE_OPERAND (TREE_OPERAND (t, 0), 0),
+			   hstate, flags);
       else
 	{
 	  gcc_assert (IS_EXPR_CODE_CLASS (tclass));
+	  unsigned int sflags = flags;
 
 	  hstate.add_object (code);
+
+	  switch (code)
+	    {
+	    case ADDR_EXPR:
+	      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
+	      flags |= OEP_ADDRESS_OF;
+	      sflags = flags;
+	      break;
+
+	    case INDIRECT_REF:
+	    case MEM_REF:
+	    case TARGET_MEM_REF:
+	      flags &= ~OEP_ADDRESS_OF;
+	      sflags = flags;
+	      break;
+
+	    case ARRAY_REF:
+	    case ARRAY_RANGE_REF:
+	    case COMPONENT_REF:
+	    case BIT_FIELD_REF:
+	      sflags &= ~OEP_ADDRESS_OF;
+	      break;
+
+	    case COND_EXPR:
+	      flags &= ~OEP_ADDRESS_OF;
+	      break;
+
+	    case FMA_EXPR:
+	    case WIDEN_MULT_PLUS_EXPR:
+	    case WIDEN_MULT_MINUS_EXPR:
+	      {
+		/* The multiplication operands are commutative.  */
+		inchash::hash one, two;
+		inchash::add_expr (TREE_OPERAND (t, 0), one, flags);
+		inchash::add_expr (TREE_OPERAND (t, 1), two, flags);
+		hstate.add_commutative (one, two);
+		inchash::add_expr (TREE_OPERAND (t, 2), two, flags);
+		return;
+	      }
+
+	    case CALL_EXPR:
+	      if (CALL_EXPR_FN (t) == NULL_TREE)
+		hstate.add_int (CALL_EXPR_IFN (t));
+	      break;
+
+	    default:
+	      break;
+	    }
 
 	  /* Don't hash the type, that can lead to having nodes which
 	     compare equal according to operand_equal_p, but which
 	     have different hash codes.  */
-	  if (CONVERT_EXPR_CODE_P (code)
-	      || code == NON_LVALUE_EXPR)
+	  if (code == NON_LVALUE_EXPR)
 	    {
 	      /* Make sure to include signness in the hash computation.  */
 	      hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
-	      inchash::add_expr (TREE_OPERAND (t, 0), hstate);
+	      inchash::add_expr (TREE_OPERAND (t, 0), hstate, flags);
 	    }
 
 	  else if (commutative_tree_code (code))
@@ -7889,13 +7980,14 @@ add_expr (const_tree t, inchash::hash &hstate)
 		 and then rehashing based on the order of their independent
 		 hashes.  */
 	      inchash::hash one, two;
-	      inchash::add_expr (TREE_OPERAND (t, 0), one);
-	      inchash::add_expr (TREE_OPERAND (t, 1), two);
+	      inchash::add_expr (TREE_OPERAND (t, 0), one, flags);
+	      inchash::add_expr (TREE_OPERAND (t, 1), two, flags);
 	      hstate.add_commutative (one, two);
 	    }
 	  else
 	    for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
-	      inchash::add_expr (TREE_OPERAND (t, i), hstate);
+	      inchash::add_expr (TREE_OPERAND (t, i), hstate,
+				 i == 0 ? flags : sflags);
 	}
       return;
     }
