@@ -557,7 +557,7 @@ package body Sem_Ch10 is
                                   or else Used_In_Spec)
                      then
                         Error_Msg_N -- CODEFIX
-                          ("redundant with clause in body??", Clause);
+                          ("redundant with clause in body?r?", Clause);
                      end if;
 
                      Used_In_Body := False;
@@ -586,7 +586,7 @@ package body Sem_Ch10 is
 
                      if Withed then
                         Error_Msg_N -- CODEFIX
-                          ("redundant with clause??", Clause);
+                          ("redundant with clause?r?", Clause);
                      end if;
                   end;
                end if;

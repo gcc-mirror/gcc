@@ -314,8 +314,7 @@ package body Errutil is
          end if;
 
       elsif Errors.Table (Cur_Msg).Warn
-           or else
-         Errors.Table (Cur_Msg).Style
+        or else Errors.Table (Cur_Msg).Style
       then
          Warnings_Detected := Warnings_Detected + 1;
 
