@@ -344,8 +344,9 @@ package System.OS_Interface is
    --  returns the stack base of the specified thread. Only call this function
    --  when Stack_Base_Available is True.
 
-   --  From: /usr/include/unistd.h __getpagesize or getpagesize??
-   function Get_Page_Size return int;
+   --  From: /usr/include/i386-gnu/bits/shm.h __getpagesize or getpagesize??
+   function Get_Page_Size return size_t;
+   function Get_Page_Size return Address;
    pragma Import (C, Get_Page_Size, "__getpagesize");
    --  Returns the size of a page
 
@@ -498,7 +499,11 @@ package System.OS_Interface is
    PTHREAD_PRIO_PROTECT : constant := 2;
    PTHREAD_PRIO_INHERIT : constant := 1;
 
+   --  GNU/Hurd does not support Thread Priority Protection or Thread
+   --  Priority Inheritance and lacks some pthread_mutexattr_* functions.
+   --  Replace them with dummy versions.
    --  From: /usr/include/pthread/pthread.h
+
    function pthread_mutexattr_setprotocol
      (attr     : access pthread_mutexattr_t;
       protocol : int) return int;
@@ -514,14 +519,10 @@ package System.OS_Interface is
    function pthread_mutexattr_setprioceiling
      (attr     : access pthread_mutexattr_t;
       prioceiling : int) return int;
-   pragma Import (C, pthread_mutexattr_setprioceiling,
-     "pthread_mutexattr_setprioceiling");
 
    function pthread_mutexattr_getprioceiling
      (attr     : access pthread_mutexattr_t;
       prioceiling : access int) return int;
-   pragma Import (C, pthread_mutexattr_getprioceiling,
-     "pthread_mutexattr_getprioceiling");
 
    type struct_sched_param is record
       sched_priority : int;  --  scheduling priority
@@ -532,7 +533,6 @@ package System.OS_Interface is
      (thread : pthread_t;
       policy : int;
       param  : access struct_sched_param) return int;
-   pragma Import (C, pthread_setschedparam, "pthread_setschedparam");
 
    function pthread_attr_setscope
      (attr            : access pthread_attr_t;
