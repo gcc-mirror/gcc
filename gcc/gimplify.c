@@ -8785,7 +8785,10 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 						  decl, false))
 		    ;
 		  else if (outer->region_type != ORT_COMBINED_PARALLEL)
-		    outer = NULL;
+		    {
+		      omp_notice_variable (outer, decl, true);
+		      outer = NULL;
+		    }
 		  if (outer)
 		    {
 		      n = splay_tree_lookup (outer->variables,
@@ -8868,7 +8871,10 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 						  decl, false))
 		    ;
 		  else if (outer->region_type != ORT_COMBINED_PARALLEL)
-		    outer = NULL;
+		    {
+		      omp_notice_variable (outer, decl, true);
+		      outer = NULL;
+		    }
 		  if (outer)
 		    {
 		      n = splay_tree_lookup (outer->variables,
