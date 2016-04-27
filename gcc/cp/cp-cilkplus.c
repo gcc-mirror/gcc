@@ -26,6 +26,110 @@
 #include "cp-tree.h"
 #include "tree-iterator.h"
 #include "cilk.h"
+#include "c-family/c-common.h"
+
+/* Return TRUE if T is a FUNCTION_DECL for a type-conversion operator.  */
+
+static bool
+is_conversion_operator_function_decl_p (tree t)
+{
+  if (TREE_CODE (t) != FUNCTION_DECL)
+    return false;
+
+  return DECL_NAME (t) && IDENTIFIER_TYPENAME_P (DECL_NAME (t));
+}
+
+/* Recursively traverse EXP to search for a CILK_SPAWN_STMT subtree.
+   Return the CILK_SPAWN_STMT subtree if found; otherwise, the last subtree
+   searched.  */
+
+static tree
+find_spawn (tree exp)
+{
+  /* Happens with C++ TARGET_EXPR.  */
+  if (exp == NULL_TREE)
+    return exp;
+
+  if (cilk_ignorable_spawn_rhs_op (exp))
+    return find_spawn (TREE_OPERAND (exp, 0));
+
+  switch (TREE_CODE (exp))
+    {
+    case AGGR_INIT_EXPR:
+      {
+	/* Check for initialization via a constructor call that represents
+	   implicit conversion.  */
+	if (AGGR_INIT_VIA_CTOR_P (exp) && aggr_init_expr_nargs (exp) == 2)
+	  return find_spawn (AGGR_INIT_EXPR_ARG (exp, 1));
+
+	/* Check for initialization via a call to a type-conversion
+	   operator.  */
+	tree fn = AGGR_INIT_EXPR_FN (exp);
+	if (TREE_CODE (fn) == ADDR_EXPR
+	    && is_conversion_operator_function_decl_p (TREE_OPERAND (fn, 0))
+	    && aggr_init_expr_nargs (exp) == 1)
+	  return find_spawn (AGGR_INIT_EXPR_ARG (exp, 0));
+      }
+      break;
+
+    case CALL_EXPR:
+      {
+	/* Check for a call to a type-conversion operator.  */
+	tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+	if (is_conversion_operator_function_decl_p (fndecl)
+	    && call_expr_nargs (exp) == 1)
+	  return find_spawn (CALL_EXPR_ARG (exp, 0));
+      }
+      break;
+
+    case TARGET_EXPR:
+      return find_spawn (TARGET_EXPR_INITIAL (exp));
+
+    case CLEANUP_POINT_EXPR:
+    case COMPOUND_EXPR:
+    case EXPR_STMT:
+      return find_spawn (TREE_OPERAND (exp, 0));
+
+    default:
+      break;
+    }
+
+    return exp;
+}
+
+/* Return true if *EXP0 is a recognized form of spawn.  Recognized forms
+   are, after conversion to void, a call expression at outer level or an
+   assignment at outer level with the right hand side being a spawned call.
+   In addition to this, it also unwraps the CILK_SPAWN_STMT cover from the
+   CALL_EXPR that is being spawned.
+
+   Note that `=' in C++ may turn into a CALL_EXPR rather than a
+   MODIFY_EXPR.  */
+
+bool
+cilk_cp_detect_spawn_and_unwrap (tree *exp0)
+{
+  tree exp = *exp0;
+
+  if (!TREE_SIDE_EFFECTS (exp))
+    return false;
+
+  /* Strip off any conversion to void.  It does not affect whether spawn
+     is supported here.  */
+  if (TREE_CODE (exp) == CONVERT_EXPR && VOID_TYPE_P (TREE_TYPE (exp)))
+    exp = TREE_OPERAND (exp, 0);
+
+  if (TREE_CODE (exp) == MODIFY_EXPR || TREE_CODE (exp) == INIT_EXPR)
+    exp = TREE_OPERAND (exp, 1);
+
+  exp = find_spawn (exp);
+  if (exp == NULL_TREE)
+    return false;
+
+  /* Now we should have a CALL_EXPR with a CILK_SPAWN_STMT wrapper around
+     it, or return false.  */
+  return cilk_recognize_spawn (exp, exp0);
+}
 
 /* Callback for cp_walk_tree to validate the body of a pragma simd loop
    or _cilk_for loop.

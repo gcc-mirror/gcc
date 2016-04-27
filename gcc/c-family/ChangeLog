@@ -1,3 +1,16 @@
+2015-04-27  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/69024
+	PR c++/68997
+	* cilk.c (cilk_ignorable_spawn_rhs_op): Change to external linkage.
+	(cilk_recognize_spawn): Renamed from recognize_spawn and change to
+	external linkage.
+	(cilk_detect_and_unwrap): Corresponding changes.
+	(extract_free_variables): Don't extract free variables from
+	AGGR_INIT_EXPR slot.
+	* c-common.h (cilk_ignorable_spawn_rhs_op): Prototype.
+	(cilk_recognize_spawn): Likewise.
+
 2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* c.opt (Wmemset-elt-size): New option.

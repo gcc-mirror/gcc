@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
+#include "cp-cilkplus.h"
 
 /* Forward declarations.  */
 
@@ -615,7 +616,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case INIT_EXPR:
       if (fn_contains_cilk_spawn_p (cfun))
 	{
-	  if (cilk_detect_spawn_and_unwrap (expr_p))
+	  if (cilk_cp_detect_spawn_and_unwrap (expr_p))
 	    {
 	      cilk_cp_gimplify_call_params_in_spawned_fn (expr_p,
 							  pre_p, post_p);
@@ -633,7 +634,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     modify_expr_case:
       {
 	if (fn_contains_cilk_spawn_p (cfun)
-	    && cilk_detect_spawn_and_unwrap (expr_p)
+	    && cilk_cp_detect_spawn_and_unwrap (expr_p)
 	    && !seen_error ())
 	  {
 	    cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
@@ -734,7 +735,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
     case CILK_SPAWN_STMT:
       gcc_assert(fn_contains_cilk_spawn_p (cfun)
-		 && cilk_detect_spawn_and_unwrap (expr_p));
+		 && cilk_cp_detect_spawn_and_unwrap (expr_p));
 
       if (!seen_error ())
 	{
@@ -745,7 +746,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
     case CALL_EXPR:
       if (fn_contains_cilk_spawn_p (cfun)
-	  && cilk_detect_spawn_and_unwrap (expr_p)
+	  && cilk_cp_detect_spawn_and_unwrap (expr_p)
 	  && !seen_error ())
 	{
 	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);

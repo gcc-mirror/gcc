@@ -1,3 +1,18 @@
+2015-04-27  Ryan Burn  <contact@rnburn.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR c++/69024
+	PR c++/68997
+	* cp-gimplify.c (cp_gimplify_expr): Call cilk_cp_detect_spawn_and_unwrap
+	instead of cilk_detect_spawn_and_unwrap.
+	* cp-cilkplus.c (is_conversion_operator_function_decl_p): New.
+	(find_spawn): New.
+	(cilk_cp_detect_spawn_and_unwrap): New.
+	* lambda.c: Include cp-cilkplus.h.
+	* parser.c: Include cp-cilkplus.h.
+	* cp-tree.h (cpp_validate_cilk_plus_loop): Move prototype into...
+	* cp-cilkpus.h: New file.
+
 2016-04-27  Nathan Sidwell  <nathan@acm.org>
 
 	* constexpr.c (get_fundef_copy): Use the original function for

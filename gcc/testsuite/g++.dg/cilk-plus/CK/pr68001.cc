@@ -11,7 +11,7 @@ std::vector<double> f() {
 
 int main()
 {
-  std::vector<double> x = _Cilk_spawn f(); /* { dg-error "invalid use of" } */
+  std::vector<double> x = _Cilk_spawn f ();
   std::vector<double> y = f();
   _Cilk_sync;
   return 0;

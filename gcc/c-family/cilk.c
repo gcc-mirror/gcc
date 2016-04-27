@@ -185,7 +185,7 @@ call_graph_add_fn (tree fndecl)
    A comparison to constant is simple enough to allow, and
    is used to convert to bool.  */
 
-static bool
+bool
 cilk_ignorable_spawn_rhs_op (tree exp)
 {
   enum tree_code code = TREE_CODE (exp);
@@ -223,8 +223,8 @@ unwrap_cilk_spawn_stmt (tree *tp, int *walk_subtrees, void *)
 /* Returns true when EXP is a CALL_EXPR with _Cilk_spawn in front.  Unwraps
    CILK_SPAWN_STMT wrapper from the CALL_EXPR in *EXP0 statement.  */
 
-static bool
-recognize_spawn (tree exp, tree *exp0)
+bool
+cilk_recognize_spawn (tree exp, tree *exp0)
 {
   bool spawn_found = false;
   if (TREE_CODE (exp) == CILK_SPAWN_STMT)
@@ -292,7 +292,7 @@ cilk_detect_spawn_and_unwrap (tree *exp0)
   
   /* Now we should have a CALL_EXPR with a CILK_SPAWN_STMT wrapper around 
      it, or return false.  */
-  if (recognize_spawn (exp, exp0))
+  if (cilk_recognize_spawn (exp, exp0))
     return true;
   return false;
 }
@@ -1250,6 +1250,21 @@ extract_free_variables (tree t, struct wrapper_data *wd,
       return;
 
     case AGGR_INIT_EXPR:
+      {
+	int len = 0;
+	int ii = 0;
+	extract_free_variables (TREE_OPERAND (t, 1), wd, ADD_READ);
+	if (TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST)
+	  {
+	    len = TREE_INT_CST_LOW (TREE_OPERAND (t, 0));
+
+	    for (ii = 3; ii < len; ii++)
+	      extract_free_variables (TREE_OPERAND (t, ii), wd, ADD_READ);
+	    extract_free_variables (TREE_TYPE (t), wd, ADD_READ);
+	  }
+	break;
+      }
+
     case CALL_EXPR:
       {
 	int len = 0;
