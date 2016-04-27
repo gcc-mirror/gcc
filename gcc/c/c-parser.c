@@ -8291,18 +8291,15 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      expr.value, exprlist,
 					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
-	  if (warn_memset_transposed_args
-	      && TREE_CODE (expr.value) == FUNCTION_DECL
+	  if (TREE_CODE (expr.value) == FUNCTION_DECL
 	      && DECL_BUILT_IN_CLASS (expr.value) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (expr.value) == BUILT_IN_MEMSET
-	      && vec_safe_length (exprlist) == 3
-	      && integer_zerop ((*exprlist)[2])
-	      && (literal_zero_mask & (1 << 2)) != 0
-	      && (!integer_zerop ((*exprlist)[1])
-		  || (literal_zero_mask & (1 << 1)) == 0))
-	    warning_at (expr_loc, OPT_Wmemset_transposed_args,
-			"%<memset%> used with constant zero length parameter; "
-			"this could be due to transposed parameters");
+	      && vec_safe_length (exprlist) == 3)
+	    {
+	      tree arg0 = (*exprlist)[0];
+	      tree arg2 = (*exprlist)[2];
+	      warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
+	    }
 
 	  start = expr.get_start ();
 	  finish = parser->tokens_buf[0].get_finish ();

@@ -1,3 +1,9 @@
+2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* c.opt (Wmemset-elt-size): New option.
+	* c-common.c (warn_for_memset): New function.
+	* c-common.h (warn_for_memset): Declare.
+
 2016-04-25  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (handle_unused_attribute): Accept CONST_DECL.

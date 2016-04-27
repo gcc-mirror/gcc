@@ -11767,6 +11767,49 @@ warn_for_div_by_zero (location_t loc, tree divisor)
     warning_at (loc, OPT_Wdiv_by_zero, "division by zero");
 }
 
+/* Warn for patterns where memset appears to be used incorrectly.  The
+   warning location should be LOC.  ARG0, and ARG2 are the first and
+   last arguments to the call, while LITERAL_ZERO_MASK has a 1 bit for
+   each argument that was a literal zero.  */
+
+void
+warn_for_memset (location_t loc, tree arg0, tree arg2,
+		 int literal_zero_mask)
+{
+  if (warn_memset_transposed_args
+      && integer_zerop (arg2)
+      && (literal_zero_mask & (1 << 2)) != 0
+      && (literal_zero_mask & (1 << 1)) == 0)
+    warning_at (loc, OPT_Wmemset_transposed_args,
+		"%<memset%> used with constant zero length "
+		"parameter; this could be due to transposed "
+		"parameters");
+
+  if (warn_memset_elt_size && TREE_CODE (arg2) == INTEGER_CST)
+    {
+      STRIP_NOPS (arg0);
+      if (TREE_CODE (arg0) == ADDR_EXPR)
+	arg0 = TREE_OPERAND (arg0, 0);
+      tree type = TREE_TYPE (arg0);
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree elt_type = TREE_TYPE (type);
+	  tree domain = TYPE_DOMAIN (type);
+	  if (!integer_onep (TYPE_SIZE_UNIT (elt_type))
+	      && TYPE_MAXVAL (domain)
+	      && TYPE_MINVAL (domain)
+	      && integer_zerop (TYPE_MINVAL (domain))
+	      && integer_onep (fold_build2 (MINUS_EXPR, domain,
+					    arg2,
+					    TYPE_MAXVAL (domain))))
+	    warning_at (loc, OPT_Wmemset_elt_size,
+			"%<memset%> used with length equal to "
+			"number of elements without multiplication "
+			"by element size");
+	}
+    }
+}
+
 /* Subroutine of build_binary_op. Give warnings for comparisons
    between signed and unsigned quantities that may fail. Do the
    checking based on the original operand trees ORIG_OP0 and ORIG_OP1,
