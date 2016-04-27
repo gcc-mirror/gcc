@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -982,6 +982,14 @@ begin
                      end if;
 
                      Remove_Switch (Arg_Num);
+
+                  --  --unchecked-shared-lib-imports
+
+                  elsif Argv.all = "--unchecked-shared-lib-imports" then
+                     Opt.Unchecked_Shared_Lib_Imports := True;
+                     Remove_Switch (Arg_Num);
+
+                  --  gnat list -U
 
                   elsif
                     The_Command = List
