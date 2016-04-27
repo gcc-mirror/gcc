@@ -1,3 +1,72 @@
+2016-04-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (struct iv): Use pointer to struct iv_use
+	instead of redundant use_id and boolean have_use_for.
+	(struct iv_use): Change sub_id into group_id.  Remove field next.
+	Move fields: related_cands, n_map_members, cost_map and selected
+	to ...
+	(struct iv_group): ... here.  New structure.
+	(struct iv_common_cand): Use structure declaration directly.
+	(struct ivopts_data, iv_ca, iv_ca_delta): Rename fields.
+	(MAX_CONSIDERED_USES): Rename macro to ...
+	(MAX_CONSIDERED_GROUPS): ... here.
+	(n_iv_uses, iv_use, n_iv_cands, iv_cand): Delete.
+	(dump_iv, dump_use, dump_cand): Refactor format of dump information.
+	(dump_uses): Rename to ...
+	(dump_groups): ... here.  Update all uses.
+	(tree_ssa_iv_optimize_init, alloc_iv): Update all uses.
+	(find_induction_variables): Refactor format of dump information.
+	(record_sub_use): Delete.
+	(record_use): Update all uses.
+	(record_group): New function.
+	(record_group_use, find_interesting_uses_op): Call above functions.
+	Update all uses.
+	(find_interesting_uses_cond): Ditto.
+	(group_compare_offset): New function.
+	(split_all_small_groups): Rename to ...
+	(split_small_address_groups_p): ... here.  Update all uses.
+	(split_address_groups):  Update all uses.
+	(find_interesting_uses): Refactor format of dump information.
+	(add_candidate_1): Update all uses.  Remove redundant check on iv,
+	base and step.
+	(add_candidate, record_common_cand): Remove redundant assert.
+	(add_iv_candidate_for_biv): Update use.
+	(add_iv_candidate_derived_from_uses): Update all uses.
+	(add_iv_candidate_for_groups, record_important_candidates): Ditto.
+	(alloc_use_cost_map): Ditto.
+	(set_use_iv_cost, get_use_iv_cost): Rename to ...
+	(set_group_iv_cost, get_group_iv_cost): ... here.  Update all uses.
+	(determine_use_iv_cost_generic): Ditto.
+	(determine_group_iv_cost_generic): Ditto.
+	(determine_use_iv_cost_address): Ditto.
+	(determine_group_iv_cost_address): Ditto.
+	(determine_use_iv_cost_condition): Ditto.
+	(determine_group_iv_cost_cond): Ditto.
+	(determine_use_iv_cost): Ditto.
+	(determine_group_iv_cost): Ditto.
+	(set_autoinc_for_original_candidates): Update all uses.
+	(find_iv_candidates): Update all uses.  Refactor dump information.
+	(determine_use_iv_costs): Ditto.
+	(determine_iv_costs): Ditto.
+	(iv_ca_cand_for_use): Rename to ...
+	(iv_ca_cand_for_group): ... here.  Update all uses.
+	(iv_ca_add_use, iv_ca_add_group): Ditto.
+	(iv_ca_set_cp, iv_ca_cost, iv_ca_delta_add): Update all uses.
+	(iv_ca_delta_join, iv_ca_delta_reverse, iv_ca_delta_free): Ditto.
+	(iv_ca_new, iv_ca_dump, iv_ca_extend, iv_ca_narrow): Ditto.
+	(iv_ca_prune, cheaper_cost_with_cand, iv_ca_replace): Ditto.
+	(try_add_cand_for, try_improve_iv_set, find_optimal_iv_set): Ditto.
+	(create_new_iv, adjust_iv_update_pos): Ditto.
+	(rewrite_use_address): Delete.
+	(rewrite_use_address_1): Rename to ...
+	(rewrite_use_address): ... here.
+	(rewrite_use_compare): Update all uses.
+	(rewrite_use): Delete.
+	(rewrite_uses): Rename to ...
+	(rewrite_groups): ... here.  Update all uses.
+	(remove_unused_ivs, free_loop_data): Update all uses.
+	(tree_ssa_iv_optimize_finalize, tree_ssa_iv_optimize_loop): Ditto.
+
 2016-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* rtlanal.c (nonzero_bits1): Convert preprocessor check
