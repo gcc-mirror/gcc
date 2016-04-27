@@ -369,9 +369,6 @@ gnat_init (void)
   sbitsize_one_node = sbitsize_int (1);
   sbitsize_unit_node = sbitsize_int (BITS_PER_UNIT);
 
-  /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
-  internal_reference_types ();
-
   /* Register our internal error function.  */
   global_dc->internal_error = &internal_error_function;
 

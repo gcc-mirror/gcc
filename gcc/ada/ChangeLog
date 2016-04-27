@@ -1,3 +1,8 @@
+2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init): Do not call
+	internal_reference_types.
+
 2016-04-27  Svante Signell  <svante.signell@gmail.com>
 
 	* gcc-interface/Makefile.in (x86 GNU/Hurd): Use s-osinte-gnu.adb.
