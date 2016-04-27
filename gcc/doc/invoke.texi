@@ -8574,7 +8574,7 @@ make debugging impossible, since variables no longer stay in
 a ``home register''.
 
 Enabled by default with @option{-funroll-loops} and @option{-fpeel-loops},
-and also enabled at levels @option{-O2} and @option{-O3}.
+and also enabled at levels @option{-O2}, @option{-O3} and @option{-Os}.
 
 @item -fschedule-fusion
 @opindex fschedule-fusion
