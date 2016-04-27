@@ -1,3 +1,15 @@
+2016-04-26  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/aarch64/aarch64.md
+	(*movhf_aarch64): Add "movi %0, #0" to zero up register and
+	remove the "fp" attributes.
+	(*movsf_aarch64): Add "movi %0, #0" to zero up register and
+	add the "simd" attributes.
+	(*movdf_aarch64): Likewise.
+	(*movtf_aarch64): Remove the "fp" attributes.
+	* testsuite/gcc.target/aarch64/fmovf-zero-reg.c: Update accordingly.
+	* testsuite/gcc.target/aarch64/fmovd-zero-reg.c: Likewise.
+
 2016-04-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* emit-rtl.c (maybe_set_first_label_num): Strengthen param from

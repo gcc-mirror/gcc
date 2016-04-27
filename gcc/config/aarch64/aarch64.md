@@ -1178,11 +1178,12 @@
 )
 
 (define_insn "*movhf_aarch64"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=w, ?r,w,w,m,r,m ,r")
-	(match_operand:HF 1 "general_operand"      "?rY, w,w,m,w,m,rY,r"))]
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  ,?r,w,w,m,r,m ,r")
+	(match_operand:HF 1 "general_operand"      "Y ,?rY, w,w,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
     || aarch64_reg_or_fp_zero (operands[1], HFmode))"
   "@
+   movi\\t%0.4h, #0
    mov\\t%0.h[0], %w1
    umov\\t%w0, %1.h[0]
    mov\\t%0.h[0], %1.h[0]
@@ -1191,18 +1192,18 @@
    ldrh\\t%w0, %1
    strh\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "type" "neon_from_gp,neon_to_gp,neon_move,\
+  [(set_attr "type" "neon_move,neon_from_gp,neon_to_gp,neon_move,\
                      f_loads,f_stores,load1,store1,mov_reg")
-   (set_attr "simd" "yes,yes,yes,*,*,*,*,*")
-   (set_attr "fp"   "*,*,*,yes,yes,*,*,*")]
+   (set_attr "simd" "yes,yes,yes,yes,*,*,*,*,*")]
 )
 
 (define_insn "*movsf_aarch64"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=w, ?r,w,w  ,w,m,r,m ,r")
-	(match_operand:SF 1 "general_operand"      "?rY, w,w,Ufc,m,w,m,rY,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w,m,r,m ,r")
+	(match_operand:SF 1 "general_operand"      "Y ,?rY, w,w,Ufc,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], SFmode)
     || aarch64_reg_or_fp_zero (operands[1], SFmode))"
   "@
+   movi\\t%0.2s, #0
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1
@@ -1212,16 +1213,18 @@
    ldr\\t%w0, %1
    str\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "type" "f_mcr,f_mrc,fmov,fconsts,\
-                     f_loads,f_stores,load1,store1,mov_reg")]
+  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconsts,\
+                     f_loads,f_stores,load1,store1,mov_reg")
+   (set_attr "simd" "yes,*,*,*,*,*,*,*,*,*")]
 )
 
 (define_insn "*movdf_aarch64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=w, ?r,w,w  ,w,m,r,m ,r")
-	(match_operand:DF 1 "general_operand"      "?rY, w,w,Ufc,m,w,m,rY,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w,m,r,m ,r")
+	(match_operand:DF 1 "general_operand"      "Y ,?rY, w,w,Ufc,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], DFmode)
     || aarch64_reg_or_fp_zero (operands[1], DFmode))"
   "@
+   movi\\t%d0, #0
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
@@ -1231,8 +1234,9 @@
    ldr\\t%x0, %1
    str\\t%x1, %0
    mov\\t%x0, %x1"
-  [(set_attr "type" "f_mcr,f_mrc,fmov,fconstd,\
-                     f_loadd,f_stored,load1,store1,mov_reg")]
+  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconstd,\
+                     f_loadd,f_stored,load1,store1,mov_reg")
+   (set_attr "simd" "yes,*,*,*,*,*,*,*,*,*")]
 )
 
 (define_insn "*movtf_aarch64"
@@ -1257,7 +1261,6 @@
   [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,f_mcr,\
                      f_loadd,f_stored,load2,store2,store2")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4,4")
-   (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*,*")
    (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*,*")]
 )
 
