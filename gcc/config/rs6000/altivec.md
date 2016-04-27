@@ -2514,20 +2514,9 @@
   "lvxl %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_expand "altivec_lvx_<mode>"
-  [(parallel
-    [(set (match_operand:VM2 0 "register_operand" "=v")
-	  (match_operand:VM2 1 "memory_operand" "Z"))
-     (unspec [(const_int 0)] UNSPEC_LVX)])]
-  "TARGET_ALTIVEC"
-{
-  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-    {
-      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_LVX);
-      DONE;
-    }
-})
-
+; This version of lvx is used only in cases where we need to force an lvx
+; over any other load, and we don't care about losing CSE opportunities.
+; Its primary use is for prologue register saves.
 (define_insn "altivec_lvx_<mode>_internal"
   [(parallel
     [(set (match_operand:VM2 0 "register_operand" "=v")
@@ -2537,20 +2526,45 @@
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_expand "altivec_stvx_<mode>"
-  [(parallel
-    [(set (match_operand:VM2 0 "memory_operand" "=Z")
-	  (match_operand:VM2 1 "register_operand" "v"))
-     (unspec [(const_int 0)] UNSPEC_STVX)])]
-  "TARGET_ALTIVEC"
-{
-  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-    {
-      altivec_expand_stvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVX);
-      DONE;
-    }
-})
+; The next two patterns embody what lvx should usually look like.
+(define_insn "altivec_lvx_<mode>_2op"
+  [(set (match_operand:VM2 0 "register_operand" "=v")
+        (mem:VM2 (and:DI (plus:DI (match_operand:DI 1 "register_operand" "b")
+                                  (match_operand:DI 2 "register_operand" "r"))
+		         (const_int -16))))]
+  "TARGET_ALTIVEC && TARGET_64BIT"
+  "lvx %0,%1,%2"
+  [(set_attr "type" "vecload")])
 
+(define_insn "altivec_lvx_<mode>_1op"
+  [(set (match_operand:VM2 0 "register_operand" "=v")
+        (mem:VM2 (and:DI (match_operand:DI 1 "register_operand" "r")
+			 (const_int -16))))]
+  "TARGET_ALTIVEC && TARGET_64BIT"
+  "lvx %0,0,%1"
+  [(set_attr "type" "vecload")])
+
+; 32-bit versions of the above.
+(define_insn "altivec_lvx_<mode>_2op_si"
+  [(set (match_operand:VM2 0 "register_operand" "=v")
+        (mem:VM2 (and:SI (plus:SI (match_operand:SI 1 "register_operand" "b")
+                                  (match_operand:SI 2 "register_operand" "r"))
+		         (const_int -16))))]
+  "TARGET_ALTIVEC && TARGET_32BIT"
+  "lvx %0,%1,%2"
+  [(set_attr "type" "vecload")])
+
+(define_insn "altivec_lvx_<mode>_1op_si"
+  [(set (match_operand:VM2 0 "register_operand" "=v")
+        (mem:VM2 (and:SI (match_operand:SI 1 "register_operand" "r")
+			 (const_int -16))))]
+  "TARGET_ALTIVEC && TARGET_32BIT"
+  "lvx %0,0,%1"
+  [(set_attr "type" "vecload")])
+
+; This version of stvx is used only in cases where we need to force an stvx
+; over any other store, and we don't care about losing CSE opportunities.
+; Its primary use is for epilogue register restores.
 (define_insn "altivec_stvx_<mode>_internal"
   [(parallel
     [(set (match_operand:VM2 0 "memory_operand" "=Z")
@@ -2558,6 +2572,42 @@
      (unspec [(const_int 0)] UNSPEC_STVX)])]
   "TARGET_ALTIVEC"
   "stvx %1,%y0"
+  [(set_attr "type" "vecstore")])
+
+; The next two patterns embody what stvx should usually look like.
+(define_insn "altivec_stvx_<mode>_2op"
+  [(set (mem:VM2 (and:DI (plus:DI (match_operand:DI 1 "register_operand" "b")
+  	                          (match_operand:DI 2 "register_operand" "r"))
+	                 (const_int -16)))
+        (match_operand:VM2 0 "register_operand" "v"))]
+  "TARGET_ALTIVEC && TARGET_64BIT"
+  "stvx %0,%1,%2"
+  [(set_attr "type" "vecstore")])
+
+(define_insn "altivec_stvx_<mode>_1op"
+  [(set (mem:VM2 (and:DI (match_operand:DI 1 "register_operand" "r")
+	                 (const_int -16)))
+        (match_operand:VM2 0 "register_operand" "v"))]
+  "TARGET_ALTIVEC && TARGET_64BIT"
+  "stvx %0,0,%1"
+  [(set_attr "type" "vecstore")])
+
+; 32-bit versions of the above.
+(define_insn "altivec_stvx_<mode>_2op_si"
+  [(set (mem:VM2 (and:SI (plus:SI (match_operand:SI 1 "register_operand" "b")
+  	                          (match_operand:SI 2 "register_operand" "r"))
+	                 (const_int -16)))
+        (match_operand:VM2 0 "register_operand" "v"))]
+  "TARGET_ALTIVEC && TARGET_32BIT"
+  "stvx %0,%1,%2"
+  [(set_attr "type" "vecstore")])
+
+(define_insn "altivec_stvx_<mode>_1op_si"
+  [(set (mem:VM2 (and:SI (match_operand:SI 1 "register_operand" "r")
+	                 (const_int -16)))
+        (match_operand:VM2 0 "register_operand" "v"))]
+  "TARGET_ALTIVEC && TARGET_32BIT"
+  "stvx %0,0,%1"
   [(set_attr "type" "vecstore")])
 
 (define_expand "altivec_stvxl_<mode>"

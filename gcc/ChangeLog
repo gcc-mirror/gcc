@@ -1,3 +1,42 @@
+2016-04-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_lvx_<mode>): Remove.
+	(altivec_lvx_<mode>_internal): Document.
+	(altivec_lvx_<mode>_2op): New define_insn.
+	(altivec_lvx_<mode>_1op): Likewise.
+	(altivec_lvx_<mode>_2op_si): Likewise.
+	(altivec_lvx_<mode>_1op_si): Likewise.
+	(altivec_stvx_<mode>): Remove.
+	(altivec_stvx_<mode>_internal): Document.
+	(altivec_stvx_<mode>_2op): New define_insn.
+	(altivec_stvx_<mode>_1op): Likewise.
+	(altivec_stvx_<mode>_2op_si): Likewise.
+	(altivec_stvx_<mode>_1op_si): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Expand vec_ld and vec_st during parsing.
+	* config/rs6000/rs6000.c (altivec_expand_lvx_be): Commentary
+	changes.
+	(altivec_expand_stvx_be): Likewise.
+	(altivec_expand_lv_builtin): Expand lvx built-ins to expose the
+	address-masking behavior in RTL.
+	(altivec_expand_stv_builtin): Expand stvx built-ins to expose the
+	address-masking behavior in RTL.
+	(altivec_expand_builtin): Change builtin code arguments for calls
+	to altivec_expand_stv_builtin and altivec_expand_lv_builtin.
+	(insn_is_swappable_p): Avoid incorrect swap optimization in the
+	presence of lvx/stvx patterns.
+	(alignment_with_canonical_addr): New function.
+	(alignment_mask): Likewise.
+	(find_alignment_op): Likewise.
+	(recombine_lvx_pattern): Likewise.
+	(recombine_stvx_pattern): Likewise.
+	(recombine_lvx_stvx_patterns): Likewise.
+	(rs6000_analyze_swaps): Perform a pre-pass to recognize lvx and
+	stvx patterns from expand.
+	* config/rs6000/vector.md (vector_altivec_load_<mode>): Use new
+	expansions.
+	(vector_altivec_store_<mode>): Likewise.
+
 2016-04-26  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64.md
