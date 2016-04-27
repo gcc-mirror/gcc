@@ -92,7 +92,7 @@ constexpr int
 fn6 (const int &a, int b)
 {
   if (b != 2)
-    b = a;
+    b = a;  // { dg-error "is not a constant expression" }
   return b;
 }
 
@@ -106,7 +106,7 @@ fn7 (const int *a, int b)
 
 constexpr int n1 = 7;
 constexpr int n2 = fn7 (&n1, 5);
-constexpr int n3 = fn7 ((const int *) 0, 8); // { dg-error "is not a constant expression" }
+constexpr int n3 = fn7 ((const int *) 0, 8);
 
 constexpr int
 fn8 (int i)

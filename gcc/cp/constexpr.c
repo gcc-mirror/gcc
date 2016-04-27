@@ -989,7 +989,8 @@ maybe_initialize_fundef_copies_table ()
 }
 
 /* Reuse a copy or create a new unshared copy of the function FUN.
-   Return this copy.  */
+   Return this copy.  We use a TREE_LIST whose PURPOSE is body, VALUE
+   is parms, TYPE is result.  */
 
 static tree
 get_fundef_copy (tree fun)
@@ -997,15 +998,26 @@ get_fundef_copy (tree fun)
   maybe_initialize_fundef_copies_table ();
 
   tree copy;
-  tree *slot = fundef_copies_table->get (fun);
-  if (slot == NULL || *slot == NULL_TREE)
+  bool existed;
+  tree *slot = &fundef_copies_table->get_or_insert (fun, &existed);
+
+  if (!existed)
     {
+      /* There is no cached function available, or in use.  We can use
+	 the function directly.  That the slot is now created records
+	 that this function is now in use.  */
+      copy = build_tree_list (DECL_SAVED_TREE (fun), DECL_ARGUMENTS (fun));
+      TREE_TYPE (copy) = DECL_RESULT (fun);
+    }
+  else if (*slot == NULL_TREE)
+    {
+      /* We've already used the function itself, so make a copy.  */
       copy = build_tree_list (NULL, NULL);
-      /* PURPOSE is body, VALUE is parms, TYPE is result.  */
       TREE_PURPOSE (copy) = copy_fn (fun, TREE_VALUE (copy), TREE_TYPE (copy));
     }
   else
     {
+      /* We have a cached function available.  */
       copy = *slot;
       *slot = TREE_CHAIN (copy);
     }
@@ -1013,12 +1025,14 @@ get_fundef_copy (tree fun)
   return copy;
 }
 
-/* Save the copy COPY of function FUN for later reuse by get_fundef_copy().  */
+/* Save the copy COPY of function FUN for later reuse by
+   get_fundef_copy().  By construction, there will always be an entry
+   to find.  */
 
 static void
 save_fundef_copy (tree fun, tree copy)
 {
-  tree *slot = &fundef_copies_table->get_or_insert (fun, NULL);
+  tree *slot = fundef_copies_table->get (fun);
   TREE_CHAIN (copy) = *slot;
   *slot = copy;
 }
