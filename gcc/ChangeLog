@@ -1,3 +1,11 @@
+2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/70759
+	* stor-layout.h (internal_reference_types): Delete.
+	* stor-layout.c (reference_types_internal): Likewise.
+	(internal_reference_types): Likewise.
+	(layout_type) <REFERENCE_TYPE>: Adjust.
+
 2016-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/70683
