@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2016-04-27  Svante Signell  <svante.signell@gmail.com>
 
 	* gcc-interface/Makefile.in (x86 GNU/Hurd): Use s-osinte-gnu.adb.

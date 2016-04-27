@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2015-12-02  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Move AM_ENABLE_MULTILIB before

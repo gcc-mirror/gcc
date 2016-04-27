@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2016-04-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR bootstrap/70173

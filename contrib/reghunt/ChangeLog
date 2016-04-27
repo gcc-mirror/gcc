@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* bin/gcc-svn-ids: Fix unportable shell quoting.
