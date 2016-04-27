@@ -167,7 +167,14 @@
   if (VECTOR_MEM_VSX_P (<MODE>mode))
     {
       operands[1] = rs6000_address_for_altivec (operands[1]);
-      emit_insn (gen_altivec_lvx_<mode> (operands[0], operands[1]));
+      rtx and_op = XEXP (operands[1], 0);
+      gcc_assert (GET_CODE (and_op) == AND);
+      rtx addr = XEXP (and_op, 0);
+      if (GET_CODE (addr) == PLUS)
+        emit_insn (gen_altivec_lvx_<mode>_2op (operands[0], XEXP (addr, 0),
+	                                       XEXP (addr, 1)));
+      else
+        emit_insn (gen_altivec_lvx_<mode>_1op (operands[0], operands[1]));
       DONE;
     }
 }")
@@ -183,7 +190,14 @@
   if (VECTOR_MEM_VSX_P (<MODE>mode))
     {
       operands[0] = rs6000_address_for_altivec (operands[0]);
-      emit_insn (gen_altivec_stvx_<mode> (operands[0], operands[1]));
+      rtx and_op = XEXP (operands[0], 0);
+      gcc_assert (GET_CODE (and_op) == AND);
+      rtx addr = XEXP (and_op, 0);
+      if (GET_CODE (addr) == PLUS)
+        emit_insn (gen_altivec_stvx_<mode>_2op (operands[1], XEXP (addr, 0),
+	                                        XEXP (addr, 1)));
+      else
+        emit_insn (gen_altivec_stvx_<mode>_1op (operands[1], operands[0]));
       DONE;
     }
 }")

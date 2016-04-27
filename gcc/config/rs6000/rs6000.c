@@ -13025,9 +13025,9 @@ swap_selector_for_mode (machine_mode mode)
   return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm)));
 }
 
-/* Generate code for an "lvx", "lvxl", or "lve*x" built-in for a little endian target
-   with -maltivec=be specified.  Issue the load followed by an element-reversing
-   permute.  */
+/* Generate code for an "lvxl", or "lve*x" built-in for a little endian target
+   with -maltivec=be specified.  Issue the load followed by an element-
+   reversing permute.  */
 void
 altivec_expand_lvx_be (rtx op0, rtx op1, machine_mode mode, unsigned unspec)
 {
@@ -13043,8 +13043,8 @@ altivec_expand_lvx_be (rtx op0, rtx op1, machine_mode mode, unsigned unspec)
   emit_insn (gen_rtx_SET (op0, vperm));
 }
 
-/* Generate code for a "stvx" or "stvxl" built-in for a little endian target
-   with -maltivec=be specified.  Issue the store preceded by an element-reversing
+/* Generate code for a "stvxl" built-in for a little endian target with
+   -maltivec=be specified.  Issue the store preceded by an element-reversing
    permute.  */
 void
 altivec_expand_stvx_be (rtx op0, rtx op1, machine_mode mode, unsigned unspec)
@@ -13106,22 +13106,65 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
 
   op1 = copy_to_mode_reg (mode1, op1);
 
-  if (op0 == const0_rtx)
+  /* For LVX, express the RTL accurately by ANDing the address with -16.
+     LVXL and LVE*X expand to use UNSPECs to hide their special behavior,
+     so the raw address is fine.  */
+  switch (icode)
     {
-      addr = gen_rtx_MEM (blk ? BLKmode : tmode, op1);
+    case CODE_FOR_altivec_lvx_v2df_2op:
+    case CODE_FOR_altivec_lvx_v2di_2op:
+    case CODE_FOR_altivec_lvx_v4sf_2op:
+    case CODE_FOR_altivec_lvx_v4si_2op:
+    case CODE_FOR_altivec_lvx_v8hi_2op:
+    case CODE_FOR_altivec_lvx_v16qi_2op:
+      {
+	rtx rawaddr;
+	if (op0 == const0_rtx)
+	  rawaddr = op1;
+	else
+	  {
+	    op0 = copy_to_mode_reg (mode0, op0);
+	    rawaddr = gen_rtx_PLUS (Pmode, op1, op0);
+	  }
+	addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
+	addr = gen_rtx_MEM (blk ? BLKmode : tmode, addr);
+
+	/* For -maltivec=be, emit the load and follow it up with a
+	   permute to swap the elements.  */
+	if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+	  {
+	    rtx temp = gen_reg_rtx (tmode);
+	    emit_insn (gen_rtx_SET (temp, addr));
+
+	    rtx sel = swap_selector_for_mode (tmode);
+	    rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, temp, temp, sel),
+					UNSPEC_VPERM);
+	    emit_insn (gen_rtx_SET (target, vperm));
+	  }
+	else
+	  emit_insn (gen_rtx_SET (target, addr));
+
+	break;
+      }
+
+    default:
+      if (op0 == const0_rtx)
+	addr = gen_rtx_MEM (blk ? BLKmode : tmode, op1);
+      else
+	{
+	  op0 = copy_to_mode_reg (mode0, op0);
+	  addr = gen_rtx_MEM (blk ? BLKmode : tmode,
+			      gen_rtx_PLUS (Pmode, op1, op0));
+	}
+
+      pat = GEN_FCN (icode) (target, addr);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+
+      break;
     }
-  else
-    {
-      op0 = copy_to_mode_reg (mode0, op0);
-      addr = gen_rtx_MEM (blk ? BLKmode : tmode, gen_rtx_PLUS (Pmode, op0, op1));
-    }
-
-  pat = GEN_FCN (icode) (target, addr);
-
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-
+  
   return target;
 }
 
@@ -13208,7 +13251,7 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   rtx op2 = expand_normal (arg2);
-  rtx pat, addr;
+  rtx pat, addr, rawaddr;
   machine_mode tmode = insn_data[icode].operand[0].mode;
   machine_mode smode = insn_data[icode].operand[1].mode;
   machine_mode mode1 = Pmode;
@@ -13220,24 +13263,69 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
       || arg2 == error_mark_node)
     return const0_rtx;
 
-  if (! (*insn_data[icode].operand[1].predicate) (op0, smode))
-    op0 = copy_to_mode_reg (smode, op0);
-
   op2 = copy_to_mode_reg (mode2, op2);
 
-  if (op1 == const0_rtx)
+  /* For STVX, express the RTL accurately by ANDing the address with -16.
+     STVXL and STVE*X expand to use UNSPECs to hide their special behavior,
+     so the raw address is fine.  */
+  switch (icode)
     {
-      addr = gen_rtx_MEM (tmode, op2);
-    }
-  else
-    {
-      op1 = copy_to_mode_reg (mode1, op1);
-      addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op1, op2));
-    }
+    case CODE_FOR_altivec_stvx_v2df_2op:
+    case CODE_FOR_altivec_stvx_v2di_2op:
+    case CODE_FOR_altivec_stvx_v4sf_2op:
+    case CODE_FOR_altivec_stvx_v4si_2op:
+    case CODE_FOR_altivec_stvx_v8hi_2op:
+    case CODE_FOR_altivec_stvx_v16qi_2op:
+      {
+	if (op1 == const0_rtx)
+	  rawaddr = op2;
+	else
+	  {
+	    op1 = copy_to_mode_reg (mode1, op1);
+	    rawaddr = gen_rtx_PLUS (Pmode, op2, op1);
+	  }
 
-  pat = GEN_FCN (icode) (addr, op0);
-  if (pat)
-    emit_insn (pat);
+	addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
+	addr = gen_rtx_MEM (tmode, addr);
+
+	op0 = copy_to_mode_reg (tmode, op0);
+
+	/* For -maltivec=be, emit a permute to swap the elements, followed
+	   by the store.  */
+	if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+	  {
+	    rtx temp = gen_reg_rtx (tmode);
+	    rtx sel = swap_selector_for_mode (tmode);
+	    rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, op0, op0, sel),
+					UNSPEC_VPERM);
+	    emit_insn (gen_rtx_SET (temp, vperm));
+	    emit_insn (gen_rtx_SET (addr, temp));
+	  }
+	else
+	  emit_insn (gen_rtx_SET (addr, op0));
+
+	break;
+      }
+
+    default:
+      {
+	if (! (*insn_data[icode].operand[1].predicate) (op0, smode))
+	  op0 = copy_to_mode_reg (smode, op0);
+
+	if (op1 == const0_rtx)
+	  addr = gen_rtx_MEM (tmode, op2);
+	else
+	  {
+	    op1 = copy_to_mode_reg (mode1, op1);
+	    addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op2, op1));
+	  }
+
+	pat = GEN_FCN (icode) (addr, op0);
+	if (pat)
+	  emit_insn (pat);
+      }
+    }      
+
   return NULL_RTX;
 }
 
@@ -14073,18 +14161,18 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
   switch (fcode)
     {
     case ALTIVEC_BUILTIN_STVX_V2DF:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v2df, exp);
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v2df_2op, exp);
     case ALTIVEC_BUILTIN_STVX_V2DI:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v2di, exp);
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v2di_2op, exp);
     case ALTIVEC_BUILTIN_STVX_V4SF:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v4sf, exp);
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v4sf_2op, exp);
     case ALTIVEC_BUILTIN_STVX:
     case ALTIVEC_BUILTIN_STVX_V4SI:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v4si, exp);
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v4si_2op, exp);
     case ALTIVEC_BUILTIN_STVX_V8HI:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v8hi, exp);
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v8hi_2op, exp);
     case ALTIVEC_BUILTIN_STVX_V16QI:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v16qi, exp);
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v16qi_2op, exp);
     case ALTIVEC_BUILTIN_STVEBX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvebx, exp);
     case ALTIVEC_BUILTIN_STVEHX:
@@ -14272,23 +14360,23 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v16qi,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX_V2DF:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2df,
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2df_2op,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX_V2DI:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2di,
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2di_2op,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX_V4SF:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v4sf,
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v4sf_2op,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX:
     case ALTIVEC_BUILTIN_LVX_V4SI:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v4si,
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v4si_2op,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX_V8HI:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v8hi,
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v8hi_2op,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX_V16QI:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v16qi,
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v16qi_2op,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVLX:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvlx,
@@ -37139,7 +37227,9 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
      fix them up by converting them to permuting ones.  Exceptions:
      UNSPEC_LVE, UNSPEC_LVX, and UNSPEC_STVX, which have a PARALLEL
      body instead of a SET; and UNSPEC_STVE, which has an UNSPEC
-     for the SET source.  */
+     for the SET source.  Also we must now make an exception for lvx
+     and stvx when they are not in the UNSPEC_LVX/STVX form (with the
+     explicit "& -16") since this leads to unrecognizable insns.  */
   rtx body = PATTERN (insn);
   int i = INSN_UID (insn);
 
@@ -37147,6 +37237,11 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
     {
       if (GET_CODE (body) == SET)
 	{
+	  rtx rhs = SET_SRC (body);
+	  gcc_assert (GET_CODE (rhs) == MEM);
+	  if (GET_CODE (XEXP (rhs, 0)) == AND)
+	    return 0;
+
 	  *special = SH_NOSWAP_LD;
 	  return 1;
 	}
@@ -37156,8 +37251,14 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 
   if (insn_entry[i].is_store)
     {
-      if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) != UNSPEC)
+      if (GET_CODE (body) == SET
+	  && GET_CODE (SET_SRC (body)) != UNSPEC)
 	{
+	  rtx lhs = SET_DEST (body);
+	  gcc_assert (GET_CODE (lhs) == MEM);
+	  if (GET_CODE (XEXP (lhs, 0)) == AND)
+	    return 0;
+	  
 	  *special = SH_NOSWAP_ST;
 	  return 1;
 	}
@@ -37827,13 +37928,274 @@ dump_swap_insn_table (swap_web_entry *insn_entry)
   fputs ("\n", dump_file);
 }
 
+/* Return RTX with its address canonicalized to (reg) or (+ reg reg).
+   Here RTX is an (& addr (const_int -16)).  Always return a new copy
+   to avoid problems with combine.  */
+static rtx
+alignment_with_canonical_addr (rtx align)
+{
+  rtx canon;
+  rtx addr = XEXP (align, 0);
+
+  if (REG_P (addr))
+    canon = addr;
+
+  else if (GET_CODE (addr) == PLUS)
+    {
+      rtx addrop0 = XEXP (addr, 0);
+      rtx addrop1 = XEXP (addr, 1);
+
+      if (!REG_P (addrop0))
+	addrop0 = force_reg (GET_MODE (addrop0), addrop0);
+
+      if (!REG_P (addrop1))
+	addrop1 = force_reg (GET_MODE (addrop1), addrop1);
+
+      canon = gen_rtx_PLUS (GET_MODE (addr), addrop0, addrop1);
+    }
+
+  else
+    canon = force_reg (GET_MODE (addr), addr);
+
+  return gen_rtx_AND (GET_MODE (align), canon, GEN_INT (-16));
+}
+
+/* Check whether an rtx is an alignment mask, and if so, return 
+   a fully-expanded rtx for the masking operation.  */
+static rtx
+alignment_mask (rtx_insn *insn)
+{
+  rtx body = PATTERN (insn);
+
+  if (GET_CODE (body) != SET
+      || GET_CODE (SET_SRC (body)) != AND
+      || !REG_P (XEXP (SET_SRC (body), 0)))
+    return 0;
+
+  rtx mask = XEXP (SET_SRC (body), 1);
+
+  if (GET_CODE (mask) == CONST_INT)
+    {
+      if (INTVAL (mask) == -16)
+	return alignment_with_canonical_addr (SET_SRC (body));
+      else
+	return 0;
+    }
+
+  if (!REG_P (mask))
+    return 0;
+
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref use;
+  rtx real_mask = 0;
+
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      if (!rtx_equal_p (DF_REF_REG (use), mask))
+	continue;
+
+      struct df_link *def_link = DF_REF_CHAIN (use);
+      if (!def_link || def_link->next)
+	return 0;
+
+      rtx_insn *const_insn = DF_REF_INSN (def_link->ref);
+      rtx const_body = PATTERN (const_insn);
+      if (GET_CODE (const_body) != SET)
+	return 0;
+
+      real_mask = SET_SRC (const_body);
+
+      if (GET_CODE (real_mask) != CONST_INT
+	  || INTVAL (real_mask) != -16)
+	return 0;
+    }
+
+  if (real_mask == 0)
+    return 0;
+
+  return alignment_with_canonical_addr (SET_SRC (body));
+}
+
+/* Given INSN that's a load or store based at BASE_REG, look for a
+   feeding computation that aligns its address on a 16-byte boundary.  */
+static rtx
+find_alignment_op (rtx_insn *insn, rtx base_reg)
+{
+  df_ref base_use;
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  rtx and_operation = 0;
+
+  FOR_EACH_INSN_INFO_USE (base_use, insn_info)
+    {
+      if (!rtx_equal_p (DF_REF_REG (base_use), base_reg))
+	continue;
+
+      struct df_link *base_def_link = DF_REF_CHAIN (base_use);
+      if (!base_def_link || base_def_link->next)
+	break;
+
+      rtx_insn *and_insn = DF_REF_INSN (base_def_link->ref);
+      and_operation = alignment_mask (and_insn);
+      if (and_operation != 0)
+	break;
+    }
+
+  return and_operation;
+}
+
+struct del_info { bool replace; rtx_insn *replace_insn; };
+
+/* If INSN is the load for an lvx pattern, put it in canonical form.  */
+static void
+recombine_lvx_pattern (rtx_insn *insn, del_info *to_delete)
+{
+  rtx body = PATTERN (insn);
+  gcc_assert (GET_CODE (body) == SET
+	      && GET_CODE (SET_SRC (body)) == VEC_SELECT
+	      && GET_CODE (XEXP (SET_SRC (body), 0)) == MEM);
+
+  rtx mem = XEXP (SET_SRC (body), 0);
+  rtx base_reg = XEXP (mem, 0);
+
+  rtx and_operation = find_alignment_op (insn, base_reg);
+
+  if (and_operation != 0)
+    {
+      df_ref def;
+      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+      FOR_EACH_INSN_INFO_DEF (def, insn_info)
+	{
+	  struct df_link *link = DF_REF_CHAIN (def);
+	  if (!link || link->next)
+	    break;
+
+	  rtx_insn *swap_insn = DF_REF_INSN (link->ref);
+	  if (!insn_is_swap_p (swap_insn)
+	      || insn_is_load_p (swap_insn)
+	      || insn_is_store_p (swap_insn))
+	    break;
+
+	  /* Expected lvx pattern found.  Change the swap to
+	     a copy, and propagate the AND operation into the
+	     load.  */
+	  to_delete[INSN_UID (swap_insn)].replace = true;
+	  to_delete[INSN_UID (swap_insn)].replace_insn = swap_insn;
+
+	  XEXP (mem, 0) = and_operation;
+	  SET_SRC (body) = mem;
+	  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+	  df_insn_rescan (insn);
+		  
+	  if (dump_file)
+	    fprintf (dump_file, "lvx opportunity found at %d\n",
+		     INSN_UID (insn));
+	}
+    }
+}
+
+/* If INSN is the store for an stvx pattern, put it in canonical form.  */
+static void
+recombine_stvx_pattern (rtx_insn *insn, del_info *to_delete)
+{
+  rtx body = PATTERN (insn);
+  gcc_assert (GET_CODE (body) == SET
+	      && GET_CODE (SET_DEST (body)) == MEM
+	      && GET_CODE (SET_SRC (body)) == VEC_SELECT);
+  rtx mem = SET_DEST (body);
+  rtx base_reg = XEXP (mem, 0);
+
+  rtx and_operation = find_alignment_op (insn, base_reg);
+
+  if (and_operation != 0)
+    {
+      rtx src_reg = XEXP (SET_SRC (body), 0);
+      df_ref src_use;
+      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+      FOR_EACH_INSN_INFO_USE (src_use, insn_info)
+	{
+	  if (!rtx_equal_p (DF_REF_REG (src_use), src_reg))
+	    continue;
+
+	  struct df_link *link = DF_REF_CHAIN (src_use);
+	  if (!link || link->next)
+	    break;
+
+	  rtx_insn *swap_insn = DF_REF_INSN (link->ref);
+	  if (!insn_is_swap_p (swap_insn)
+	      || insn_is_load_p (swap_insn)
+	      || insn_is_store_p (swap_insn))
+	    break;
+
+	  /* Expected stvx pattern found.  Change the swap to
+	     a copy, and propagate the AND operation into the
+	     store.  */
+	  to_delete[INSN_UID (swap_insn)].replace = true;
+	  to_delete[INSN_UID (swap_insn)].replace_insn = swap_insn;
+
+	  XEXP (mem, 0) = and_operation;
+	  SET_SRC (body) = src_reg;
+	  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+	  df_insn_rescan (insn);
+		  
+	  if (dump_file)
+	    fprintf (dump_file, "stvx opportunity found at %d\n",
+		     INSN_UID (insn));
+	}
+    }
+}
+
+/* Look for patterns created from builtin lvx and stvx calls, and
+   canonicalize them to be properly recognized as such.  */
+static void
+recombine_lvx_stvx_patterns (function *fun)
+{
+  int i;
+  basic_block bb;
+  rtx_insn *insn;
+
+  int num_insns = get_max_uid ();
+  del_info *to_delete = XCNEWVEC (del_info, num_insns);
+
+  FOR_ALL_BB_FN (bb, fun)
+    FOR_BB_INSNS (bb, insn)
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      if (insn_is_load_p (insn) && insn_is_swap_p (insn))
+	recombine_lvx_pattern (insn, to_delete);
+      else if (insn_is_store_p (insn) && insn_is_swap_p (insn))
+	recombine_stvx_pattern (insn, to_delete);
+    }
+
+  /* Turning swaps into copies is delayed until now, to avoid problems
+     with deleting instructions during the insn walk.  */
+  for (i = 0; i < num_insns; i++)
+    if (to_delete[i].replace)
+      {
+	rtx swap_body = PATTERN (to_delete[i].replace_insn);
+	rtx src_reg = XEXP (SET_SRC (swap_body), 0);
+	rtx copy = gen_rtx_SET (SET_DEST (swap_body), src_reg);
+	rtx_insn *new_insn = emit_insn_before (copy,
+					       to_delete[i].replace_insn);
+	set_block_for_insn (new_insn,
+			    BLOCK_FOR_INSN (to_delete[i].replace_insn));
+	df_insn_rescan (new_insn);
+	df_insn_delete (to_delete[i].replace_insn);
+	remove_insn (to_delete[i].replace_insn);
+	to_delete[i].replace_insn->set_deleted ();
+      }
+  
+  free (to_delete);
+}
+
 /* Main entry point for this pass.  */
 unsigned int
 rs6000_analyze_swaps (function *fun)
 {
   swap_web_entry *insn_entry;
   basic_block bb;
-  rtx_insn *insn;
+  rtx_insn *insn, *curr_insn = 0;
 
   /* Dataflow analysis for use-def chains.  */
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
@@ -37841,12 +38203,15 @@ rs6000_analyze_swaps (function *fun)
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
+  /* Pre-pass to recombine lvx and stvx patterns so we don't lose info.  */
+  recombine_lvx_stvx_patterns (fun);
+
   /* Allocate structure to represent webs of insns.  */
   insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
 
   /* Walk the insns to gather basic data.  */
   FOR_ALL_BB_FN (bb, fun)
-    FOR_BB_INSNS (bb, insn)
+    FOR_BB_INSNS_SAFE (bb, insn, curr_insn)
     {
       unsigned int uid = INSN_UID (insn);
       if (NONDEBUG_INSN_P (insn))
