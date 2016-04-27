@@ -1,3 +1,7 @@
+2016-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 6.
+
 2016-04-17  Jan Hubicka  <jh@suse.cz>
 
 	* analyze_brprob: Update comment.
