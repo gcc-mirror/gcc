@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2015-10-26  Mike Frysinger  <vapier@gentoo.org>
 
 	* scripts/check_jni_methods.sh.in: Run sort with LC_ALL=C, and

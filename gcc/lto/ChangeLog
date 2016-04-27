@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2016-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/70258

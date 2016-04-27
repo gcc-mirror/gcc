@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2016-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.c (jit_langhook_init): Remove

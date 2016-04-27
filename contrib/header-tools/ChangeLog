@@ -1,3 +1,7 @@
+2016-04-27  Release Manager
+
+	* GCC 6.1.0 released.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* count-headers: Initial file.
