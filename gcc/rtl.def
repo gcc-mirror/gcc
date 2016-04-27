@@ -131,10 +131,10 @@ DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
 /* ----------------------------------------------------------------------
    Expression types used for things in the instruction chain.
 
-   All formats must start with "iuu" to handle the chain.
+   All formats must start with "uu" to handle the chain.
    Each insn expression holds an rtl instruction and its semantics
    during back-end processing.
-   See macros's in "rtl.h" for the meaning of each rtx->u.fld[].
+   See macros in "rtl.h" for the meaning of each rtx->u.fld[].
 
    ---------------------------------------------------------------------- */
 
