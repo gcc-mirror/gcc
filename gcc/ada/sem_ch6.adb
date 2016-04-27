@@ -3306,12 +3306,14 @@ package body Sem_Ch6 is
       --  has already been created. We reuse the source body of the function,
       --  because in an instance it may contain global references that cannot
       --  be reanalyzed. The source function itself is not used any further,
-      --  so we mark it as having a completion.
+      --  so we mark it as having a completion. If the subprogram is a stub the
+      --  transformation is done later, when the proper body is analyzed.
 
       if Expander_Active
         and then Modify_Tree_For_C
         and then Present (Spec_Id)
         and then Ekind (Spec_Id) = E_Function
+        and then Nkind (N) /= N_Subprogram_Body_Stub
         and then Rewritten_For_C (Spec_Id)
       then
          Set_Has_Completion (Spec_Id);

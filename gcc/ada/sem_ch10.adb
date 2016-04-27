@@ -693,7 +693,7 @@ package body Sem_Ch10 is
       if Nkind (Unit_Node) = N_Package_Body then
 
          --  If no Lib_Unit, then there was a serious previous error, so just
-         --  ignore the entire analysis effort
+         --  ignore the entire analysis effort.
 
          if No (Lib_Unit) then
             Check_Error_Detected;

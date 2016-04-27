@@ -8477,7 +8477,10 @@ package body Exp_Ch6 is
          if not Comes_From_Source (Orig_Func)
            and then Etype (Orig_Func) /= Etype (Func_Id)
          then
-            Last_Actual := Unchecked_Convert_To (Etype (Func_Id), Last_Actual);
+            Last_Actual :=
+              Make_Type_Conversion (Loc,
+                New_Occurrence_Of (Etype (Func_Id), Loc),
+                Last_Actual);
          end if;
 
          Append_To (Actuals,

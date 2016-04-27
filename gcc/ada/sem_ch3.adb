@@ -20057,11 +20057,11 @@ package body Sem_Ch3 is
       --  built. Still it is a cheap check and seems safer to make it.
 
       if Has_Predicates (Priv_T) then
+         Set_Has_Predicates (Full_T);
+
          if Present (Predicate_Function (Priv_T)) then
             Set_Predicate_Function (Full_T, Predicate_Function (Priv_T));
          end if;
-
-         Set_Has_Predicates (Full_T);
       end if;
    end Process_Full_View;
 

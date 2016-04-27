@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2754,7 +2754,7 @@ package Sinfo is
 
       --  Note: aliased is not permitted in Ada 83 mode
 
-      --  The N_Object_Declaration node is only for the first two cases.
+      --  The N_Object_Declaration node is only for the first three cases.
       --  Single task declaration is handled by P_Task (9.1)
       --  Single protected declaration is handled by P_protected (9.5)
 
