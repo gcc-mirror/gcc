@@ -1,3 +1,7 @@
+2016-04-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_temporary_equivalences): Fix typo in comment.
+
 2016-04-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_lvx_<mode>): Remove.
