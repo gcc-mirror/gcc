@@ -1143,7 +1143,6 @@ package body Sem_Dim is
               N_Expanded_Name             |
               N_Explicit_Dereference      |
               N_Function_Call             |
-              N_Identifier                |
               N_Indexed_Component         |
               N_Qualified_Expression      |
               N_Selected_Component        |
@@ -1151,6 +1150,14 @@ package body Sem_Dim is
               N_Type_Conversion           |
               N_Unchecked_Type_Conversion =>
             Analyze_Dimension_Has_Etype (N);
+
+         --  In the presence of a repaired syntax error, an identifier
+         --  may be introduced without a usable type.
+
+         when  N_Identifier                =>
+            if Present (Etype (N)) then
+               Analyze_Dimension_Has_Etype (N);
+            end if;
 
          when N_Number_Declaration =>
             Analyze_Dimension_Number_Declaration (N);

@@ -1,3 +1,14 @@
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension, case N_Identifier): Check
+	that identifier has a usable type before analysis, to handle
+	properly identifiers introduced after some lexical/syntactic
+	recovery that created new identifiers.
+
 2016-04-27  Bob Duff  <duff@adacore.com>
 
 	* a-coinve.adb, a-comutr.adb, a-conhel.adb, a-convec.adb,
