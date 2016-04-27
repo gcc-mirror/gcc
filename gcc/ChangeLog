@@ -1,3 +1,12 @@
+2016-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/70683
+	* tree-core.h (enum operand_equal_flag): Add OEP_NO_HASH_CHECK.
+	* fold-const.c (operand_equal_p): If flag_checking and
+	OEP_NO_HASH_CHECK is not set in flag, recurse with OEP_NO_HASH_CHECK
+	and if it returns non-zero, assert iterative_hash_expr on both
+	args is the same.
+
 2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* doc/invoke.texi (-frename-registers): Also enabled at -Os.
