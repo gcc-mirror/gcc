@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,9 @@ pragma Compiler_Unit_Warning;
 
 package body System.String_Hash is
 
-   --  Compute a hash value for a key. The approach here is follows the
-   --  algorithm used in GNU Awk and the ndbm substitute SDBM by Ozan Yigit.
+   --  Compute a hash value for a key. The approach here follows the algorithm
+   --  introduced in the ndbm substitute SDBM by Ozan Yigit and then reused in
+   --  GNU Awk (where they are implemented as a Duff's device).
 
    ----------
    -- Hash --

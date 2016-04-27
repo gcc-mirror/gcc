@@ -17708,6 +17708,67 @@ package body Sem_Util is
       end if;
    end Original_Corresponding_Operation;
 
+   -------------------
+   -- Output_Entity --
+   -------------------
+
+   procedure Output_Entity (Id : Entity_Id) is
+      Scop : Entity_Id;
+
+   begin
+      Scop := Scope (Id);
+
+      --  The entity may lack a scope when it is in the process of being
+      --  analyzed. Use the current scope as an approximation.
+
+      if No (Scop) then
+         Scop := Current_Scope;
+      end if;
+
+      Output_Name (Chars (Id), Scop);
+   end Output_Entity;
+
+   -----------------
+   -- Output_Name --
+   -----------------
+
+   procedure Output_Name (Nam : Name_Id; Scop : Entity_Id := Current_Scope) is
+      procedure Output_Scope (S : Entity_Id);
+      --  Add the fully qualified form of scope S to the name buffer. The
+      --  qualification format is:
+      --    scope1__scopeN__
+
+      ------------------
+      -- Output_Scope --
+      ------------------
+
+      procedure Output_Scope (S : Entity_Id) is
+      begin
+         if S = Empty then
+            null;
+
+         elsif S = Standard_Standard then
+            null;
+
+         else
+            Output_Scope (Scope (S));
+            Add_Str_To_Name_Buffer (Get_Name_String (Chars (S)));
+            Add_Str_To_Name_Buffer ("__");
+         end if;
+      end Output_Scope;
+
+   --  Start of processing for Output_Name
+
+   begin
+      Name_Len := 0;
+      Output_Scope (Scop);
+
+      Add_Str_To_Name_Buffer (Get_Name_String (Nam));
+
+      Write_Str (Name_Buffer (1 .. Name_Len));
+      Write_Eol;
+   end Output_Name;
+
    ----------------------
    -- Policy_In_Effect --
    ----------------------
