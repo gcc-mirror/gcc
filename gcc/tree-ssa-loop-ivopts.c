@@ -30,20 +30,25 @@ along with GCC; see the file COPYING3.  If not see
       -- addresses of arrays
       -- comparisons of induction variables
 
+      Note the interesting uses are categorized and handled in group.
+      Generally, address type uses are grouped together if their iv bases
+      are different in constant offset.
+
    2) Candidates for the induction variables are found.  This includes
 
       -- old induction variables
       -- the variables defined by expressions derived from the "interesting
-	 uses" above
+	 groups/uses" above
 
    3) The optimal (w.r. to a cost function) set of variables is chosen.  The
       cost function assigns a cost to sets of induction variables and consists
       of three parts:
 
-      -- The use costs.  Each of the interesting uses chooses the best induction
-	 variable in the set and adds its cost to the sum.  The cost reflects
-	 the time spent on modifying the induction variables value to be usable
-	 for the given purpose (adding base and offset for arrays, etc.).
+      -- The group/use costs.  Each of the interesting groups/uses chooses
+	 the best induction variable in the set and adds its cost to the sum.
+	 The cost reflects the time spent on modifying the induction variables
+	 value to be usable for the given purpose (adding base and offset for
+	 arrays, etc.).
       -- The variable costs.  Each of the variables has a cost assigned that
 	 reflects the costs associated with incrementing the value of the
 	 variable.  The original variables are somewhat preferred.
@@ -130,6 +135,8 @@ avg_loop_niter (struct loop *loop)
   return niter;
 }
 
+struct iv_use;
+
 /* Representation of the induction variable.  */
 struct iv
 {
@@ -137,9 +144,8 @@ struct iv
   tree base_object;	/* A memory object to that the induction variable points.  */
   tree step;		/* Step of the iv (constant only).  */
   tree ssa_name;	/* The ssa name with the value.  */
-  unsigned use_id;	/* The identifier in the use if it is the case.  */
+  struct iv_use *nonlin_use;	/* The identifier in the use if it is the case.  */
   bool biv_p;		/* Is it a biv?  */
-  bool have_use_for;	/* Do we already have a use for it?  */
   bool no_overflow;	/* True if the iv doesn't overflow.  */
   bool have_address_use;/* For biv, indicate if it's used in any address
 			   type use.  */
@@ -196,25 +202,34 @@ struct cost_pair
 struct iv_use
 {
   unsigned id;		/* The id of the use.  */
-  unsigned sub_id;	/* The id of the sub use.  */
+  unsigned group_id;	/* The group id the use belongs to.  */
   enum use_type type;	/* Type of the use.  */
   struct iv *iv;	/* The induction variable it is based on.  */
   gimple *stmt;		/* Statement in that it occurs.  */
   tree *op_p;		/* The place where it occurs.  */
-  bitmap related_cands;	/* The set of "related" iv candidates, plus the common
-			   important ones.  */
 
-  unsigned n_map_members; /* Number of candidates in the cost_map list.  */
-  struct cost_pair *cost_map;
-			/* The costs wrto the iv candidates.  */
-
-  struct iv_cand *selected;
-			/* The selected candidate.  */
-
-  struct iv_use *next;	/* The next sub use.  */
   tree addr_base;	/* Base address with const offset stripped.  */
   unsigned HOST_WIDE_INT addr_offset;
 			/* Const offset stripped from base address.  */
+};
+
+/* Group of uses.  */
+struct iv_group
+{
+  /* The id of the group.  */
+  unsigned id;
+  /* Uses of the group are of the same type.  */
+  enum use_type type;
+  /* The set of "related" IV candidates, plus the important ones.  */
+  bitmap related_cands;
+  /* Number of IV candidates in the cost_map.  */
+  unsigned n_map_members;
+  /* The costs wrto the iv candidates.  */
+  struct cost_pair *cost_map;
+  /* The selected candidate for the group.  */
+  struct iv_cand *selected;
+  /* Uses in the group.  */
+  vec<struct iv_use *> vuses;
 };
 
 /* The position where the iv is computed.  */
@@ -258,7 +273,7 @@ struct iv_common_cand
   tree base;
   tree step;
   /* IV uses from which this common candidate is derived.  */
-  auto_vec<iv_use *> uses;
+  auto_vec<struct iv_use *> uses;
   hashval_t hash;
 };
 
@@ -354,10 +369,10 @@ struct ivopts_data
   bitmap relevant;
 
   /* The uses of induction variables.  */
-  vec<iv_use *> iv_uses;
+  vec<iv_group *> vgroups;
 
   /* The candidates.  */
-  vec<iv_cand *> iv_candidates;
+  vec<iv_cand *> vcands;
 
   /* A bitmap of important candidates.  */
   bitmap important_candidates;
@@ -402,10 +417,10 @@ struct iv_ca
   unsigned upto;
 
   /* Number of uses that cannot be expressed by the candidates in the set.  */
-  unsigned bad_uses;
+  unsigned bad_groups;
 
   /* Candidate assigned to a use, together with the related costs.  */
-  struct cost_pair **cand_for_use;
+  struct cost_pair **cand_for_group;
 
   /* Number of times each candidate is used.  */
   unsigned *n_cand_uses;
@@ -443,8 +458,8 @@ struct iv_ca
 
 struct iv_ca_delta
 {
-  /* Changed use.  */
-  struct iv_use *use;
+  /* Changed group.  */
+  struct iv_group *group;
 
   /* An old assignment (for rollback purposes).  */
   struct cost_pair *old_cp;
@@ -453,7 +468,7 @@ struct iv_ca_delta
   struct cost_pair *new_cp;
 
   /* Next change in the list.  */
-  struct iv_ca_delta *next_change;
+  struct iv_ca_delta *next;
 };
 
 /* Bound on number of candidates below that all candidates are considered.  */
@@ -464,7 +479,7 @@ struct iv_ca_delta
 /* If there are more iv occurrences, we just give up (it is quite unlikely that
    optimizing such a loop would help, and it would take ages).  */
 
-#define MAX_CONSIDERED_USES \
+#define MAX_CONSIDERED_GROUPS \
   ((unsigned) PARAM_VALUE (PARAM_IV_MAX_CONSIDERED_USES))
 
 /* If there are at most this number of ivs in the set, try removing unnecessary
@@ -479,38 +494,6 @@ struct iv_ca_delta
 static vec<tree> decl_rtl_to_reset;
 
 static comp_cost force_expr_to_var_cost (tree, bool);
-
-/* Number of uses recorded in DATA.  */
-
-static inline unsigned
-n_iv_uses (struct ivopts_data *data)
-{
-  return data->iv_uses.length ();
-}
-
-/* Ith use recorded in DATA.  */
-
-static inline struct iv_use *
-iv_use (struct ivopts_data *data, unsigned i)
-{
-  return data->iv_uses[i];
-}
-
-/* Number of candidates recorded in DATA.  */
-
-static inline unsigned
-n_iv_cands (struct ivopts_data *data)
-{
-  return data->iv_candidates.length ();
-}
-
-/* Ith candidate recorded in DATA.  */
-
-static inline struct iv_cand *
-iv_cand (struct ivopts_data *data, unsigned i)
-{
-  return data->iv_candidates[i];
-}
 
 /* The single loop exit if it dominates the latch, NULL otherwise.  */
 
@@ -528,51 +511,51 @@ single_dom_exit (struct loop *loop)
   return exit;
 }
 
-/* Dumps information about the induction variable IV to FILE.  */
+/* Dumps information about the induction variable IV to FILE.  Don't dump
+   variable's name if DUMP_NAME is FALSE.  The information is dumped with
+   preceding spaces indicated by INDENT_LEVEL.  */
 
 void
-dump_iv (FILE *file, struct iv *iv, bool dump_name)
+dump_iv (FILE *file, struct iv *iv, bool dump_name, unsigned indent_level)
 {
+  const char *p;
+  const char spaces[9] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\0'};
+
+  if (indent_level > 4)
+    indent_level = 4;
+  p = spaces + 8 - (indent_level << 1);
+
+  fprintf (file, "%sIV struct:\n", p);
   if (iv->ssa_name && dump_name)
     {
-      fprintf (file, "ssa name ");
+      fprintf (file, "%s  SSA_NAME:\t", p);
       print_generic_expr (file, iv->ssa_name, TDF_SLIM);
       fprintf (file, "\n");
     }
 
-  fprintf (file, "  type ");
+  fprintf (file, "%s  Type:\t", p);
   print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
   fprintf (file, "\n");
 
-  if (iv->step)
-    {
-      fprintf (file, "  base ");
-      print_generic_expr (file, iv->base, TDF_SLIM);
-      fprintf (file, "\n");
+  fprintf (file, "%s  Base:\t", p);
+  print_generic_expr (file, iv->base, TDF_SLIM);
+  fprintf (file, "\n");
 
-      fprintf (file, "  step ");
-      print_generic_expr (file, iv->step, TDF_SLIM);
-      fprintf (file, "\n");
-    }
-  else
-    {
-      fprintf (file, "  invariant ");
-      print_generic_expr (file, iv->base, TDF_SLIM);
-      fprintf (file, "\n");
-    }
+  fprintf (file, "%s  Step:\t", p);
+  print_generic_expr (file, iv->step, TDF_SLIM);
+  fprintf (file, "\n");
 
   if (iv->base_object)
     {
-      fprintf (file, "  base object ");
+      fprintf (file, "%s  Object:\t", p);
       print_generic_expr (file, iv->base_object, TDF_SLIM);
       fprintf (file, "\n");
     }
 
-  if (iv->biv_p)
-    fprintf (file, "  is a biv\n");
+  fprintf (file, "%s  Biv:\t%c\n", p, iv->biv_p ? 'Y' : 'N');
 
-  if (iv->no_overflow)
-    fprintf (file, "  iv doesn't overflow wrto loop niter\n");
+  fprintf (file, "%s  Overflowness wrto loop niter:\t%s\n",
+	   p, iv->no_overflow ? "No-overflow" : "Overflow");
 }
 
 /* Dumps information about the USE to FILE.  */
@@ -580,66 +563,39 @@ dump_iv (FILE *file, struct iv *iv, bool dump_name)
 void
 dump_use (FILE *file, struct iv_use *use)
 {
-  fprintf (file, "use %d", use->id);
-  if (use->sub_id)
-    fprintf (file, ".%d", use->sub_id);
-
-  fprintf (file, "\n");
-
-  switch (use->type)
-    {
-    case USE_NONLINEAR_EXPR:
-      fprintf (file, "  generic\n");
-      break;
-
-    case USE_ADDRESS:
-      fprintf (file, "  address\n");
-      break;
-
-    case USE_COMPARE:
-      fprintf (file, "  compare\n");
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  fprintf (file, "  in statement ");
+  fprintf (file, "  Use %d.%d:\n", use->group_id, use->id);
+  fprintf (file, "    At stmt:\t");
   print_gimple_stmt (file, use->stmt, 0, 0);
-  fprintf (file, "\n");
-
-  fprintf (file, "  at position ");
+  fprintf (file, "    At pos:\t");
   if (use->op_p)
     print_generic_expr (file, *use->op_p, TDF_SLIM);
   fprintf (file, "\n");
-
-  dump_iv (file, use->iv, false);
-
-  if (use->related_cands)
-    {
-      fprintf (file, "  related candidates ");
-      dump_bitmap (file, use->related_cands);
-    }
+  dump_iv (file, use->iv, false, 2);
 }
 
 /* Dumps information about the uses to FILE.  */
 
 void
-dump_uses (FILE *file, struct ivopts_data *data)
+dump_groups (FILE *file, struct ivopts_data *data)
 {
-  unsigned i;
-  struct iv_use *use;
+  unsigned i, j;
+  struct iv_group *group;
 
-  for (i = 0; i < n_iv_uses (data); i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
-      do
+      group = data->vgroups[i];
+      fprintf (file, "Group %d:\n", group->id);
+      if (group->type == USE_NONLINEAR_EXPR)
+	fprintf (file, "  Type:\tGENERIC\n");
+      else if (group->type == USE_ADDRESS)
+	fprintf (file, "  Type:\tADDRESS\n");
+      else
 	{
-	  dump_use (file, use);
-	  use = use->next;
+	  gcc_assert (group->type == USE_COMPARE);
+	  fprintf (file, "  Type:\tCOMPARE\n");
 	}
-      while (use);
-      fprintf (file, "\n");
+      for (j = 0; j < group->vuses.length (); j++)
+	dump_use (file, group->vuses[j]);
     }
 }
 
@@ -650,30 +606,22 @@ dump_cand (FILE *file, struct iv_cand *cand)
 {
   struct iv *iv = cand->iv;
 
-  fprintf (file, "candidate %d%s\n",
-	   cand->id, cand->important ? " (important)" : "");
-
+  fprintf (file, "Candidate %d:\n", cand->id);
   if (cand->depends_on)
     {
-      fprintf (file, "  depends on ");
+      fprintf (file, "  Depend on: ");
       dump_bitmap (file, cand->depends_on);
-    }
-
-  if (!iv)
-    {
-      fprintf (file, "  final value replacement\n");
-      return;
     }
 
   if (cand->var_before)
     {
-      fprintf (file, "  var_before ");
+      fprintf (file, "  Var befor: ");
       print_generic_expr (file, cand->var_before, TDF_SLIM);
       fprintf (file, "\n");
     }
   if (cand->var_after)
     {
-      fprintf (file, "  var_after ");
+      fprintf (file, "  Var after: ");
       print_generic_expr (file, cand->var_after, TDF_SLIM);
       fprintf (file, "\n");
     }
@@ -681,27 +629,27 @@ dump_cand (FILE *file, struct iv_cand *cand)
   switch (cand->pos)
     {
     case IP_NORMAL:
-      fprintf (file, "  incremented before exit test\n");
+      fprintf (file, "  Incr POS: before exit test\n");
       break;
 
     case IP_BEFORE_USE:
-      fprintf (file, "  incremented before use %d\n", cand->ainc_use->id);
+      fprintf (file, "  Incr POS: before use %d\n", cand->ainc_use->id);
       break;
 
     case IP_AFTER_USE:
-      fprintf (file, "  incremented after use %d\n", cand->ainc_use->id);
+      fprintf (file, "  Incr POS: after use %d\n", cand->ainc_use->id);
       break;
 
     case IP_END:
-      fprintf (file, "  incremented at end\n");
+      fprintf (file, "  Incr POS: at end\n");
       break;
 
     case IP_ORIGINAL:
-      fprintf (file, "  original biv\n");
+      fprintf (file, "  Incr POS: orig biv\n");
       break;
     }
 
-  dump_iv (file, iv, false);
+  dump_iv (file, iv, false, 1);
 }
 
 /* Returns the info for ssa version VER.  */
@@ -937,8 +885,8 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->important_candidates = BITMAP_ALLOC (NULL);
   data->max_inv_id = 0;
   data->niters = NULL;
-  data->iv_uses.create (20);
-  data->iv_candidates.create (20);
+  data->vgroups.create (20);
+  data->vcands.create (20);
   data->inv_expr_tab = new hash_table<iv_inv_expr_hasher> (10);
   data->inv_expr_id = 0;
   data->name_expansion_cache = NULL;
@@ -1055,8 +1003,7 @@ alloc_iv (struct ivopts_data *data, tree base, tree step,
   iv->base_object = determine_base_object (base);
   iv->step = step;
   iv->biv_p = false;
-  iv->have_use_for = false;
-  iv->use_id = 0;
+  iv->nonlin_use = NULL;
   iv->ssa_name = NULL_TREE;
   iv->no_overflow = no_overflow;
   iv->have_address_use = false;
@@ -1346,92 +1293,43 @@ find_induction_variables (struct ivopts_data *data)
 	      fprintf (dump_file, "; zero if ");
 	      print_generic_expr (dump_file, niter->may_be_zero, TDF_SLIM);
 	    }
-	  fprintf (dump_file, "\n\n");
-    	};
+	  fprintf (dump_file, "\n");
+	};
 
-      fprintf (dump_file, "Induction variables:\n\n");
-
+      fprintf (dump_file, "\n<Induction Vars>:\n");
       EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
 	{
-	  if (ver_info (data, i)->iv)
-	    dump_iv (dump_file, ver_info (data, i)->iv, true);
+	  struct version_info *info = ver_info (data, i);
+	  if (info->iv && info->iv->step && !integer_zerop (info->iv->step))
+	    dump_iv (dump_file, ver_info (data, i)->iv, true, 0);
 	}
     }
 
   return true;
 }
 
-/* Records a use of type USE_TYPE at *USE_P in STMT whose value is IV.
+/* Records a use of TYPE at *USE_P in STMT whose value is IV in GROUP.
    For address type use, ADDR_BASE is the stripped IV base, ADDR_OFFSET
-   is the const offset stripped from IV base.  For uses of other types,
-   ADDR_BASE and ADDR_OFFSET are zero by default.  */
+   is the const offset stripped from IV base; for other types use, both
+   are zero by default.  */
 
 static struct iv_use *
-record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
-	    gimple *stmt, enum use_type use_type, tree addr_base = NULL,
-	    unsigned HOST_WIDE_INT addr_offset = 0)
+record_use (struct iv_group *group, tree *use_p, struct iv *iv,
+	    gimple *stmt, enum use_type type, tree addr_base,
+	    unsigned HOST_WIDE_INT addr_offset)
 {
   struct iv_use *use = XCNEW (struct iv_use);
 
-  use->id = n_iv_uses (data);
-  use->sub_id = 0;
-  use->type = use_type;
+  use->id = group->vuses.length ();
+  use->group_id = group->id;
+  use->type = type;
   use->iv = iv;
   use->stmt = stmt;
   use->op_p = use_p;
-  use->related_cands = BITMAP_ALLOC (NULL);
-  use->next = NULL;
   use->addr_base = addr_base;
   use->addr_offset = addr_offset;
 
-  data->iv_uses.safe_push (use);
-
-  return use;
-}
-
-/* Records a sub use of type USE_TYPE at *USE_P in STMT whose value is IV.
-   The sub use is recorded under the one whose use id is ID_GROUP.  */
-
-static struct iv_use *
-record_sub_use (struct ivopts_data *data, tree *use_p,
-		    struct iv *iv, gimple *stmt, enum use_type use_type,
-		    tree addr_base, unsigned HOST_WIDE_INT addr_offset,
-		    unsigned int id_group)
-{
-  struct iv_use *use = XCNEW (struct iv_use);
-  struct iv_use *group = iv_use (data, id_group);
-
-  use->id = group->id;
-  use->sub_id = 0;
-  use->type = use_type;
-  use->iv = iv;
-  use->stmt = stmt;
-  use->op_p = use_p;
-  use->related_cands = NULL;
-  use->addr_base = addr_base;
-  use->addr_offset = addr_offset;
-
-  /* Sub use list is maintained in offset ascending order.  */
-  if (addr_offset <= group->addr_offset)
-    {
-      use->related_cands = group->related_cands;
-      group->related_cands = NULL;
-      use->next = group;
-      data->iv_uses[id_group] = use;
-    }
-  else
-    {
-      struct iv_use *pre;
-      do
-	{
-	  pre = group;
-	  group = group->next;
-	}
-      while (group && addr_offset > group->addr_offset);
-      use->next = pre->next;
-      pre->next = use;
-    }
-
+  group->vuses.safe_push (use);
   return use;
 }
 
@@ -1462,6 +1360,67 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   bitmap_set_bit (data->relevant, SSA_NAME_VERSION (op));
 }
 
+static tree
+strip_offset (tree expr, unsigned HOST_WIDE_INT *offset);
+
+/* Record a group of TYPE.  */
+
+static struct iv_group *
+record_group (struct ivopts_data *data, enum use_type type)
+{
+  struct iv_group *group = XCNEW (struct iv_group);
+
+  group->id = data->vgroups.length ();
+  group->type = type;
+  group->related_cands = BITMAP_ALLOC (NULL);
+  group->vuses.create (1);
+
+  data->vgroups.safe_push (group);
+  return group;
+}
+
+/* Record a use of TYPE at *USE_P in STMT whose value is IV in a group.
+   New group will be created if there is no existing group for the use.  */
+
+static struct iv_use *
+record_group_use (struct ivopts_data *data, tree *use_p,
+		  struct iv *iv, gimple *stmt, enum use_type type)
+{
+  tree addr_base = NULL;
+  struct iv_group *group = NULL;
+  unsigned HOST_WIDE_INT addr_offset = 0;
+
+  /* Record non address type use in a new group.  */
+  if (type == USE_ADDRESS && iv->base_object)
+    {
+      unsigned int i;
+
+      addr_base = strip_offset (iv->base, &addr_offset);
+      for (i = 0; i < data->vgroups.length (); i++)
+	{
+	  struct iv_use *use;
+
+	  group = data->vgroups[i];
+	  use = group->vuses[0];
+	  if (use->type != USE_ADDRESS || !use->iv->base_object)
+	    continue;
+
+	  /* Check if it has the same stripped base and step.  */
+	  if (operand_equal_p (iv->base_object, use->iv->base_object, 0)
+	      && operand_equal_p (iv->step, use->iv->step, 0)
+	      && operand_equal_p (addr_base, use->addr_base, 0))
+	    break;
+	}
+      if (i == data->vgroups.length ())
+	group = NULL;
+    }
+
+  if (!group)
+    group = record_group (data, type);
+
+  return record_use (group, use_p, iv, stmt, type, addr_base, addr_offset);
+}
+
 /* Checks whether the use OP is interesting and if so, records it.  */
 
 static struct iv_use *
@@ -1478,12 +1437,10 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
   if (!iv)
     return NULL;
 
-  if (iv->have_use_for)
+  if (iv->nonlin_use)
     {
-      use = iv_use (data, iv->use_id);
-
-      gcc_assert (use->type == USE_NONLINEAR_EXPR);
-      return use;
+      gcc_assert (iv->nonlin_use->type == USE_NONLINEAR_EXPR);
+      return iv->nonlin_use;
     }
 
   if (integer_zerop (iv->step))
@@ -1491,15 +1448,12 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
       record_invariant (data, op, true);
       return NULL;
     }
-  iv->have_use_for = true;
 
   stmt = SSA_NAME_DEF_STMT (op);
-  gcc_assert (gimple_code (stmt) == GIMPLE_PHI
-	      || is_gimple_assign (stmt));
+  gcc_assert (gimple_code (stmt) == GIMPLE_PHI || is_gimple_assign (stmt));
 
-  use = record_use (data, NULL, iv, stmt, USE_NONLINEAR_EXPR);
-  iv->use_id = use->id;
-
+  use = record_group_use (data, NULL, iv, stmt, USE_NONLINEAR_EXPR);
+  iv->nonlin_use = use;
   return use;
 }
 
@@ -1585,7 +1539,7 @@ find_interesting_uses_cond (struct ivopts_data *data, gimple *stmt)
       return;
     }
 
-  record_use (data, NULL, var_iv, stmt, USE_COMPARE);
+  record_group_use (data, NULL, var_iv, stmt, USE_COMPARE);
 }
 
 /* Returns the outermost loop EXPR is obviously invariant in
@@ -2074,50 +2028,6 @@ may_be_nonaddressable_p (tree expr)
   return false;
 }
 
-static tree
-strip_offset (tree expr, unsigned HOST_WIDE_INT *offset);
-
-/* Record a use of type USE_TYPE at *USE_P in STMT whose value is IV.
-   If there is an existing use which has same stripped iv base and step,
-   this function records this one as a sub use to that; otherwise records
-   it as a normal one.  */
-
-static struct iv_use *
-record_group_use (struct ivopts_data *data, tree *use_p,
-		  struct iv *iv, gimple *stmt, enum use_type use_type)
-{
-  unsigned int i;
-  struct iv_use *use;
-  tree addr_base;
-  unsigned HOST_WIDE_INT addr_offset;
-
-  /* Only support sub use for address type uses, that is, with base
-     object.  */
-  if (!iv->base_object)
-    return record_use (data, use_p, iv, stmt, use_type);
-
-  addr_base = strip_offset (iv->base, &addr_offset);
-  for (i = 0; i < n_iv_uses (data); i++)
-    {
-      use = iv_use (data, i);
-      if (use->type != USE_ADDRESS || !use->iv->base_object)
-	continue;
-
-      /* Check if it has the same stripped base and step.  */
-      if (operand_equal_p (iv->base_object, use->iv->base_object, 0)
-	  && operand_equal_p (iv->step, use->iv->step, 0)
-	  && operand_equal_p (addr_base, use->addr_base, 0))
-	break;
-    }
-
-  if (i == n_iv_uses (data))
-    return record_use (data, use_p, iv, stmt,
-		       use_type, addr_base, addr_offset);
-  else
-    return record_sub_use (data, use_p, iv, stmt,
-			   use_type, addr_base, addr_offset, i);
-}
-
 /* Finds addresses in *OP_P inside STMT.  */
 
 static void
@@ -2359,62 +2269,6 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
     }
 }
 
-/* Finds uses of the induction variables that are interesting.  */
-
-static void
-find_interesting_uses (struct ivopts_data *data)
-{
-  basic_block bb;
-  gimple_stmt_iterator bsi;
-  basic_block *body = get_loop_body (data->current_loop);
-  unsigned i;
-  struct version_info *info;
-  edge e;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Uses:\n\n");
-
-  for (i = 0; i < data->current_loop->num_nodes; i++)
-    {
-      edge_iterator ei;
-      bb = body[i];
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	    && !flow_bb_inside_loop_p (data->current_loop, e->dest))
-	  find_interesting_uses_outside (data, e);
-
-      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	find_interesting_uses_stmt (data, gsi_stmt (bsi));
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	if (!is_gimple_debug (gsi_stmt (bsi)))
-	  find_interesting_uses_stmt (data, gsi_stmt (bsi));
-    }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      bitmap_iterator bi;
-
-      fprintf (dump_file, "\n");
-
-      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
-	{
-	  info = ver_info (data, i);
-	  if (info->inv_id)
-	    {
-	      fprintf (dump_file, "  ");
-	      print_generic_expr (dump_file, info->name, TDF_SLIM);
-	      fprintf (dump_file, " is invariant (%d)%s\n",
-		       info->inv_id, info->has_nonlin_use ? "" : ", eliminable");
-	    }
-	}
-
-      fprintf (dump_file, "\n");
-    }
-
-  free (body);
-}
-
 /* Compute maximum offset of [base + offset] addressing mode
    for memory reference represented by USE.  */
 
@@ -2478,50 +2332,72 @@ compute_max_addr_offset (struct iv_use *use)
   return off;
 }
 
-/* Check if all small groups should be split.  Return true if and
-   only if:
+/* Comparison function to sort group in ascending order of addr_offset.  */
 
-     1) At least one groups contain two uses with different offsets.
-     2) No group contains more than two uses with different offsets.
+static int
+group_compare_offset (const void *a, const void *b)
+{
+  const struct iv_use *const *u1 = (const struct iv_use *const *) a;
+  const struct iv_use *const *u2 = (const struct iv_use *const *) b;
 
-   Return false otherwise.  We want to split such groups because:
+  if ((*u1)->addr_offset != (*u2)->addr_offset)
+    return (*u1)->addr_offset < (*u2)->addr_offset ? -1 : 1;
+  else
+    return 0;
+}
+
+/* Check if small groups should be split.  Return true if no group
+   contains more than two uses with distinct addr_offsets.  Return
+   false otherwise.  We want to split such groups because:
 
      1) Small groups don't have much benefit and may interfer with
 	general candidate selection.
      2) Size for problem with only small groups is usually small and
 	general algorithm can handle it well.
 
-   TODO -- Above claim may not hold when auto increment is supported.  */
+   TODO -- Above claim may not hold when we want to merge memory
+   accesses with conseuctive addresses.  */
 
 static bool
-split_all_small_groups (struct ivopts_data *data)
+split_small_address_groups_p (struct ivopts_data *data)
 {
-  bool split_p = false;
-  unsigned int i, n, distinct;
-  struct iv_use *pre, *use;
+  unsigned int i, j, distinct = 1;
+  struct iv_use *pre;
+  struct iv_group *group;
 
-  n = n_iv_uses (data);
-  for (i = 0; i < n; i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
-      if (!use->next)
+      group = data->vgroups[i];
+      if (group->vuses.length () == 1)
+	continue;
+
+      gcc_assert (group->type == USE_ADDRESS);
+      if (group->vuses.length () == 2)
+	{
+	  if (group->vuses[0]->addr_offset > group->vuses[1]->addr_offset)
+	    std::swap (group->vuses[0], group->vuses[1]);
+	}
+      else
+	group->vuses.qsort (group_compare_offset);
+
+      if (distinct > 2)
 	continue;
 
       distinct = 1;
-      gcc_assert (use->type == USE_ADDRESS);
-      for (pre = use, use = use->next; use; pre = use, use = use->next)
+      for (pre = group->vuses[0], j = 1; j < group->vuses.length (); j++)
 	{
-	  if (pre->addr_offset != use->addr_offset)
-	    distinct++;
+	  if (group->vuses[j]->addr_offset != pre->addr_offset)
+	    {
+	      pre = group->vuses[j];
+	      distinct++;
+	    }
 
 	  if (distinct > 2)
-	    return false;
+	    break;
 	}
-      if (distinct == 2)
-	split_p = true;
     }
 
-  return split_p;
+  return (distinct <= 2);
 }
 
 /* For each group of address type uses, this function further groups
@@ -2529,56 +2405,105 @@ split_all_small_groups (struct ivopts_data *data)
    [base + offset] addressing mode.  */
 
 static void
-group_address_uses (struct ivopts_data *data)
+split_address_groups (struct ivopts_data *data)
 {
+  unsigned int i, j;
   HOST_WIDE_INT max_offset = -1;
-  unsigned int i, n, sub_id;
-  struct iv_use *pre, *use;
-  unsigned HOST_WIDE_INT addr_offset_first;
 
   /* Reset max offset to split all small groups.  */
-  if (split_all_small_groups (data))
+  if (split_small_address_groups_p (data))
     max_offset = 0;
 
-  n = n_iv_uses (data);
-  for (i = 0; i < n; i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
-      if (!use->next)
+      struct iv_group *group = data->vgroups[i];
+      struct iv_use *use = group->vuses[0];
+
+      use->id = 0;
+      use->group_id = group->id;
+      if (group->vuses.length () == 1)
 	continue;
 
-      gcc_assert (use->type == USE_ADDRESS);
       if (max_offset != 0)
 	max_offset = compute_max_addr_offset (use);
 
-      while (use)
+      for (j = 1; j < group->vuses.length (); j++)
 	{
-	  sub_id = 0;
-	  addr_offset_first = use->addr_offset;
+	  struct iv_use *next = group->vuses[j];
+
 	  /* Only uses with offset that can fit in offset part against
 	     the first use can be grouped together.  */
-	  for (pre = use, use = use->next;
-	       use && (use->addr_offset - addr_offset_first
-		       <= (unsigned HOST_WIDE_INT) max_offset);
-	       pre = use, use = use->next)
-	    {
-	      use->id = pre->id;
-	      use->sub_id = ++sub_id;
-	    }
+	  if (next->addr_offset - use->addr_offset
+	      > (unsigned HOST_WIDE_INT) max_offset)
+	    break;
 
-	  /* Break the list and create new group.  */
-	  if (use)
-	    {
-	      pre->next = NULL;
-	      use->id = n_iv_uses (data);
-	      use->related_cands = BITMAP_ALLOC (NULL);
-	      data->iv_uses.safe_push (use);
-	    }
+	  next->id = j;
+	  next->group_id = group->id;
+	}
+      /* Split group.  */
+      if (j < group->vuses.length ())
+	{
+	  struct iv_group *new_group = record_group (data, group->type);
+	  new_group->vuses.safe_splice (group->vuses);
+	  new_group->vuses.block_remove (0, j);
+	  group->vuses.truncate (j);
 	}
     }
+}
+
+/* Finds uses of the induction variables that are interesting.  */
+
+static void
+find_interesting_uses (struct ivopts_data *data)
+{
+  basic_block bb;
+  gimple_stmt_iterator bsi;
+  basic_block *body = get_loop_body (data->current_loop);
+  unsigned i;
+  edge e;
+
+  for (i = 0; i < data->current_loop->num_nodes; i++)
+    {
+      edge_iterator ei;
+      bb = body[i];
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	    && !flow_bb_inside_loop_p (data->current_loop, e->dest))
+	  find_interesting_uses_outside (data, e);
+
+      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	find_interesting_uses_stmt (data, gsi_stmt (bsi));
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	if (!is_gimple_debug (gsi_stmt (bsi)))
+	  find_interesting_uses_stmt (data, gsi_stmt (bsi));
+    }
+
+  split_address_groups (data);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_uses (dump_file, data);
+    {
+      bitmap_iterator bi;
+
+      fprintf (dump_file, "\n<Invariant Vars>:\n");
+      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
+	{
+	  struct version_info *info = ver_info (data, i);
+	  if (info->inv_id)
+	    {
+	      fprintf (dump_file, "Inv %d:\t", info->inv_id);
+	      print_generic_expr (dump_file, info->name, TDF_SLIM);
+	      fprintf (dump_file, "%s\n",
+		       info->has_nonlin_use ? "" : "\t(eliminable)");
+	    }
+	}
+
+      fprintf (dump_file, "\n<IV Groups>:\n");
+      dump_groups (dump_file, data);
+      fprintf (dump_file, "\n");
+    }
+
+  free (body);
 }
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  If INSIDE_ADDR
@@ -2820,6 +2745,8 @@ add_candidate_1 (struct ivopts_data *data,
   struct iv_cand *cand = NULL;
   tree type, orig_type;
 
+  gcc_assert (base && step);
+
   /* -fkeep-gc-roots-live means that we have to keep a real pointer
      live, but the ivopts code may replace a real pointer with one
      pointing before or after the memory block that is then adjusted
@@ -2844,9 +2771,9 @@ add_candidate_1 (struct ivopts_data *data,
 	}
     }
 
-  for (i = 0; i < n_iv_cands (data); i++)
+  for (i = 0; i < data->vcands.length (); i++)
     {
-      cand = iv_cand (data, i);
+      cand = data->vcands[i];
 
       if (cand->pos != pos)
 	continue;
@@ -2856,17 +2783,6 @@ add_candidate_1 (struct ivopts_data *data,
 	      && cand->ainc_use != use))
 	continue;
 
-      if (!cand->iv)
-	{
-	  if (!base && !step)
-	    break;
-
-	  continue;
-	}
-
-      if (!base && !step)
-	continue;
-
       if (operand_equal_p (base, cand->iv->base, 0)
 	  && operand_equal_p (step, cand->iv->step, 0)
           && (TYPE_PRECISION (TREE_TYPE (base))
@@ -2874,28 +2790,22 @@ add_candidate_1 (struct ivopts_data *data,
 	break;
     }
 
-  if (i == n_iv_cands (data))
+  if (i == data->vcands.length ())
     {
       cand = XCNEW (struct iv_cand);
       cand->id = i;
-
-      if (!base && !step)
-	cand->iv = NULL;
-      else
-	cand->iv = alloc_iv (data, base, step);
-
+      cand->iv = alloc_iv (data, base, step);
       cand->pos = pos;
-      if (pos != IP_ORIGINAL && cand->iv)
+      if (pos != IP_ORIGINAL)
 	{
 	  cand->var_before = create_tmp_var_raw (TREE_TYPE (base), "ivtmp");
 	  cand->var_after = cand->var_before;
 	}
       cand->important = important;
       cand->incremented_at = incremented_at;
-      data->iv_candidates.safe_push (cand);
+      data->vcands.safe_push (cand);
 
-      if (step
-	  && TREE_CODE (step) != INTEGER_CST)
+      if (TREE_CODE (step) != INTEGER_CST)
 	{
 	  fd_ivopts_data = data;
 	  walk_tree (&step, find_depends, &cand->depends_on, NULL);
@@ -2911,20 +2821,11 @@ add_candidate_1 (struct ivopts_data *data,
 	dump_cand (dump_file, cand);
     }
 
-  if (important && !cand->important)
-    {
-      cand->important = true;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Candidate %d is important\n", cand->id);
-    }
+  cand->important |= important;
 
+  /* Relate candidate to the group for which it is added.  */
   if (use)
-    {
-      bitmap_set_bit (use->related_cands, i);
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Candidate %d is related to use %d\n",
-		 cand->id, use->id);
-    }
+    bitmap_set_bit (data->vgroups[use->group_id]->related_cands, i);
 
   return cand;
 }
@@ -3018,8 +2919,6 @@ add_candidate (struct ivopts_data *data,
 	       tree base, tree step, bool important, struct iv_use *use,
 	       struct iv *orig_iv = NULL)
 {
-  gcc_assert (use == NULL || use->sub_id == 0);
-
   if (ip_normal_pos (data->current_loop))
     add_candidate_1 (data, base, step, important,
 		     IP_NORMAL, use, NULL, orig_iv);
@@ -3071,7 +2970,7 @@ add_iv_candidate_for_biv (struct ivopts_data *data, struct iv *iv)
       /* Add iv cand of same precision as index part in TARGET_MEM_REF.  */
       add_candidate (data, base, step, true, NULL, iv);
       /* Add iv cand of the original type only if it has nonlinear use.  */
-      if (iv->have_use_for)
+      if (iv->nonlin_use)
 	add_candidate (data, iv->base, iv->step, true, NULL);
     }
   else
@@ -3135,8 +3034,6 @@ record_common_cand (struct ivopts_data *data, tree base,
   struct iv_common_cand ent;
   struct iv_common_cand **slot;
 
-  gcc_assert (use != NULL);
-
   ent.base = base;
   ent.step = step;
   ent.hash = iterative_hash_expr (base, 0);
@@ -3152,6 +3049,8 @@ record_common_cand (struct ivopts_data *data, tree base,
       (*slot)->hash = ent.hash;
       data->iv_common_cands.safe_push ((*slot));
     }
+
+  gcc_assert (use != NULL);
   (*slot)->uses.safe_push (use);
   return;
 }
@@ -3203,11 +3102,11 @@ add_iv_candidate_derived_from_uses (struct ivopts_data *data)
       /* Bind deriving uses and the new candidates.  */
       for (j = 0; j < ptr->uses.length (); j++)
 	{
-	  struct iv_use *use = ptr->uses[j];
+	  struct iv_group *group = data->vgroups[ptr->uses[j]->group_id];
 	  if (cand_1)
-	    bitmap_set_bit (use->related_cands, cand_1->id);
+	    bitmap_set_bit (group->related_cands, cand_1->id);
 	  if (cand_2)
-	    bitmap_set_bit (use->related_cands, cand_2->id);
+	    bitmap_set_bit (group->related_cands, cand_2->id);
 	}
     }
 
@@ -3294,29 +3193,17 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
 /* Adds candidates based on the uses.  */
 
 static void
-add_iv_candidate_for_uses (struct ivopts_data *data)
+add_iv_candidate_for_groups (struct ivopts_data *data)
 {
   unsigned i;
 
-  for (i = 0; i < n_iv_uses (data); i++)
+  /* Only add candidate for the first use in group.  */
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      struct iv_use *use = iv_use (data, i);
+      struct iv_group *group = data->vgroups[i];
 
-      if (!use)
-	continue;
-
-      switch (use->type)
-	{
-	case USE_NONLINEAR_EXPR:
-	case USE_COMPARE:
-	case USE_ADDRESS:
-	  /* Just add the ivs based on the value of the iv used here.  */
-	  add_iv_candidate_for_use (data, use);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
+      gcc_assert (group->vuses[0] != NULL);
+      add_iv_candidate_for_use (data, group->vuses[0]);
     }
   add_iv_candidate_derived_from_uses (data);
 }
@@ -3327,24 +3214,24 @@ static void
 record_important_candidates (struct ivopts_data *data)
 {
   unsigned i;
-  struct iv_use *use;
+  struct iv_group *group;
 
-  for (i = 0; i < n_iv_cands (data); i++)
+  for (i = 0; i < data->vcands.length (); i++)
     {
-      struct iv_cand *cand = iv_cand (data, i);
+      struct iv_cand *cand = data->vcands[i];
 
       if (cand->important)
 	bitmap_set_bit (data->important_candidates, i);
     }
 
-  data->consider_all_candidates = (n_iv_cands (data)
+  data->consider_all_candidates = (data->vcands.length ()
 				   <= CONSIDER_ALL_CANDIDATES_BOUND);
 
-  /* Add important candidates to uses' related_cands bitmaps.  */
-  for (i = 0; i < n_iv_uses (data); i++)
+  /* Add important candidates to groups' related_cands bitmaps.  */
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
-      bitmap_ior_into (use->related_cands, data->important_candidates);
+      group = data->vgroups[i];
+      bitmap_ior_into (group->related_cands, data->important_candidates);
     }
 }
 
@@ -3357,22 +3244,22 @@ alloc_use_cost_map (struct ivopts_data *data)
 {
   unsigned i, size, s;
 
-  for (i = 0; i < n_iv_uses (data); i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      struct iv_use *use = iv_use (data, i);
+      struct iv_group *group = data->vgroups[i];
 
       if (data->consider_all_candidates)
-	size = n_iv_cands (data);
+	size = data->vcands.length ();
       else
 	{
-	  s = bitmap_count_bits (use->related_cands);
+	  s = bitmap_count_bits (group->related_cands);
 
 	  /* Round up to the power of two, so that moduling by it is fast.  */
 	  size = s ? (1 << ceil_log2 (s)) : 1;
 	}
 
-      use->n_map_members = size;
-      use->cost_map = XCNEWVEC (struct cost_pair, size);
+      group->n_map_members = size;
+      group->cost_map = XCNEWVEC (struct cost_pair, size);
     }
 }
 
@@ -3434,15 +3321,15 @@ compare_costs (comp_cost cost1, comp_cost cost2)
   return cost1.cost - cost2.cost;
 }
 
-/* Sets cost of (USE, CANDIDATE) pair to COST and record that it depends
+/* Sets cost of (GROUP, CAND) pair to COST and record that it depends
    on invariants DEPENDS_ON and that the value used in expressing it
    is VALUE, and in case of iv elimination the comparison operator is COMP.  */
 
 static void
-set_use_iv_cost (struct ivopts_data *data,
-		 struct iv_use *use, struct iv_cand *cand,
-		 comp_cost cost, bitmap depends_on, tree value,
-		 enum tree_code comp, int inv_expr_id)
+set_group_iv_cost (struct ivopts_data *data,
+		   struct iv_group *group, struct iv_cand *cand,
+		   comp_cost cost, bitmap depends_on, tree value,
+		   enum tree_code comp, int inv_expr_id)
 {
   unsigned i, s;
 
@@ -3454,40 +3341,40 @@ set_use_iv_cost (struct ivopts_data *data,
 
   if (data->consider_all_candidates)
     {
-      use->cost_map[cand->id].cand = cand;
-      use->cost_map[cand->id].cost = cost;
-      use->cost_map[cand->id].depends_on = depends_on;
-      use->cost_map[cand->id].value = value;
-      use->cost_map[cand->id].comp = comp;
-      use->cost_map[cand->id].inv_expr_id = inv_expr_id;
+      group->cost_map[cand->id].cand = cand;
+      group->cost_map[cand->id].cost = cost;
+      group->cost_map[cand->id].depends_on = depends_on;
+      group->cost_map[cand->id].value = value;
+      group->cost_map[cand->id].comp = comp;
+      group->cost_map[cand->id].inv_expr_id = inv_expr_id;
       return;
     }
 
   /* n_map_members is a power of two, so this computes modulo.  */
-  s = cand->id & (use->n_map_members - 1);
-  for (i = s; i < use->n_map_members; i++)
-    if (!use->cost_map[i].cand)
+  s = cand->id & (group->n_map_members - 1);
+  for (i = s; i < group->n_map_members; i++)
+    if (!group->cost_map[i].cand)
       goto found;
   for (i = 0; i < s; i++)
-    if (!use->cost_map[i].cand)
+    if (!group->cost_map[i].cand)
       goto found;
 
   gcc_unreachable ();
 
 found:
-  use->cost_map[i].cand = cand;
-  use->cost_map[i].cost = cost;
-  use->cost_map[i].depends_on = depends_on;
-  use->cost_map[i].value = value;
-  use->cost_map[i].comp = comp;
-  use->cost_map[i].inv_expr_id = inv_expr_id;
+  group->cost_map[i].cand = cand;
+  group->cost_map[i].cost = cost;
+  group->cost_map[i].depends_on = depends_on;
+  group->cost_map[i].value = value;
+  group->cost_map[i].comp = comp;
+  group->cost_map[i].inv_expr_id = inv_expr_id;
 }
 
-/* Gets cost of (USE, CANDIDATE) pair.  */
+/* Gets cost of (GROUP, CAND) pair.  */
 
 static struct cost_pair *
-get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
-		 struct iv_cand *cand)
+get_group_iv_cost (struct ivopts_data *data, struct iv_group *group,
+		   struct iv_cand *cand)
 {
   unsigned i, s;
   struct cost_pair *ret;
@@ -3497,7 +3384,7 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
 
   if (data->consider_all_candidates)
     {
-      ret = use->cost_map + cand->id;
+      ret = group->cost_map + cand->id;
       if (!ret->cand)
 	return NULL;
 
@@ -3505,16 +3392,16 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
     }
 
   /* n_map_members is a power of two, so this computes modulo.  */
-  s = cand->id & (use->n_map_members - 1);
-  for (i = s; i < use->n_map_members; i++)
-    if (use->cost_map[i].cand == cand)
-      return use->cost_map + i;
-    else if (use->cost_map[i].cand == NULL)
+  s = cand->id & (group->n_map_members - 1);
+  for (i = s; i < group->n_map_members; i++)
+    if (group->cost_map[i].cand == cand)
+      return group->cost_map + i;
+    else if (group->cost_map[i].cand == NULL)
       return NULL;
   for (i = 0; i < s; i++)
-    if (use->cost_map[i].cand == cand)
-      return use->cost_map + i;
-    else if (use->cost_map[i].cand == NULL)
+    if (group->cost_map[i].cand == cand)
+      return group->cost_map + i;
+    else if (group->cost_map[i].cand == NULL)
       return NULL;
 
   return NULL;
@@ -4177,7 +4064,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "Address costs:\n");
+	  fprintf (dump_file, "<Address Costs>:\n");
 
 	  for (i = 0; i < 16; i++)
 	    {
@@ -4956,15 +4843,8 @@ get_computation_cost_at (struct ivopts_data *data,
 
   /* Record setup cost in scrach field.  */
   cost.scratch = cost.cost;
-  /* Set of invariants depended on by sub use has already been computed
-     for the first use in the group.  */
-  if (use->sub_id)
-    {
-      cost.cost = 0;
-      if (depends_on && *depends_on)
-	bitmap_clear (*depends_on);
-    }
-  else if (inv_expr_id)
+
+  if (inv_expr_id)
     {
       *inv_expr_id =
           get_loop_invariant_expr_id (data, ubase, cbase, ratio, address_p);
@@ -5054,109 +4934,98 @@ get_computation_cost (struct ivopts_data *data,
 				  can_autoinc, inv_expr_id);
 }
 
-/* Determines cost of basing replacement of USE on CAND in a generic
+/* Determines cost of computing the use in GROUP with CAND in a generic
    expression.  */
 
 static bool
-determine_use_iv_cost_generic (struct ivopts_data *data,
-			       struct iv_use *use, struct iv_cand *cand)
+determine_group_iv_cost_generic (struct ivopts_data *data,
+				 struct iv_group *group, struct iv_cand *cand)
 {
-  bitmap depends_on;
   comp_cost cost;
   int inv_expr_id = -1;
+  bitmap depends_on = NULL;
+  struct iv_use *use = group->vuses[0];
 
   /* The simple case first -- if we need to express value of the preserved
      original biv, the cost is 0.  This also prevents us from counting the
      cost of increment twice -- once at this use and once in the cost of
      the candidate.  */
-  if (cand->pos == IP_ORIGINAL
-      && cand->incremented_at == use->stmt)
-    {
-      set_use_iv_cost (data, use, cand, no_cost, NULL, NULL_TREE,
-                       ERROR_MARK, -1);
-      return true;
-    }
+  if (cand->pos == IP_ORIGINAL && cand->incremented_at == use->stmt)
+    cost = no_cost;
+  else
+    cost = get_computation_cost (data, use, cand, false,
+				 &depends_on, NULL, &inv_expr_id);
 
-  cost = get_computation_cost (data, use, cand, false, &depends_on,
-                               NULL, &inv_expr_id);
-
-  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
-                   inv_expr_id);
-
+  set_group_iv_cost (data, group, cand, cost, depends_on,
+		     NULL_TREE, ERROR_MARK, inv_expr_id);
   return !infinite_cost_p (cost);
 }
 
-/* Determines cost of basing replacement of USE on CAND in an address.  */
+/* Determines cost of computing uses in GROUP with CAND in addresses.  */
 
 static bool
-determine_use_iv_cost_address (struct ivopts_data *data,
-			       struct iv_use *use, struct iv_cand *cand)
+determine_group_iv_cost_address (struct ivopts_data *data,
+				 struct iv_group *group, struct iv_cand *cand)
 {
+  unsigned i;
   bitmap depends_on;
-  bool can_autoinc, first;
+  bool can_autoinc, first = true;
   int inv_expr_id = -1;
-  struct iv_use *sub_use;
-  comp_cost cost = get_computation_cost (data, use, cand, true, &depends_on,
-					 &can_autoinc, &inv_expr_id);
-  comp_cost sub_cost = cost;
+  struct iv_use *use = group->vuses[0];
+  comp_cost sum_cost = no_cost, cost;
 
-  if (cand->ainc_use == use)
+  cost = get_computation_cost (data, use, cand, true,
+			       &depends_on, &can_autoinc, &inv_expr_id);
+
+  sum_cost = cost;
+  if (!infinite_cost_p (sum_cost) && cand->ainc_use == use)
     {
       if (can_autoinc)
-	cost.cost -= cand->cost_step;
+	sum_cost.cost -= cand->cost_step;
       /* If we generated the candidate solely for exploiting autoincrement
 	 opportunities, and it turns out it can't be used, set the cost to
 	 infinity to make sure we ignore it.  */
       else if (cand->pos == IP_AFTER_USE || cand->pos == IP_BEFORE_USE)
-	cost = infinite_cost;
+	sum_cost = infinite_cost;
     }
 
-  if (!infinite_cost_p (cost) && use->next)
+  /* Uses in a group can share setup code, so only add setup cost once.  */
+  cost.cost -= cost.scratch;
+  /* Compute and add costs for rest uses of this group.  */
+  for (i = 1; i < group->vuses.length () && !infinite_cost_p (sum_cost); i++)
     {
-      first = true;
-      sub_use = use->next;
-      /* We don't want to add setup cost for sub-uses.  */
-      sub_cost.cost -= sub_cost.scratch;
-      /* Add cost for sub uses in group.  */
-      do
+      struct iv_use *next = group->vuses[i];
+
+      /* Compute cost for the first use with different offset to the main
+	 use and add it afterwards.  Costs for these uses could be quite
+	 different.  Given below uses in a group:
+	   use 0  : {base + A + offset_0, step}
+	   use 0.1: {base + A + offset_0, step}
+	   use 0.2: {base + A + offset_1, step}
+	   use 0.3: {base + A + offset_2, step}
+	 when we need to compute costs with candidate:
+	   cand 1 : {base + B + offset_0, step}
+
+	 The first use with different offset is use 0.2, its cost is larger
+	 than cost of use 0/0.1 because we need to compute:
+	   A - B + offset_1 - offset_0
+	   rather than:
+	   A - B.  */
+      if (first && next->addr_offset != use->addr_offset)
 	{
-	  /* Compute cost for the first sub use with different offset to
-	     the main use and add it afterwards.  Costs for these uses
-	     could be quite different.  Given below uses in a group:
-	       use 0  : {base + A + offset_0, step}
-	       use 0.1: {base + A + offset_0, step}
-	       use 0.2: {base + A + offset_1, step}
-	       use 0.3: {base + A + offset_2, step}
-	     when we need to compute costs with candidate:
-	       cand 1 : {base + B + offset_0, step}
-
-	     The first sub use with different offset is use 0.2, its cost
-	     is larger than cost of use 0/0.1 because we need to compute:
-	       A - B + offset_1 - offset_0
-	     rather than:
-	       A - B.  */
-	  if (first && use->addr_offset != sub_use->addr_offset)
-	    {
-	      first = false;
-	      sub_cost = get_computation_cost (data, sub_use, cand, true,
-					       NULL, &can_autoinc, NULL);
-	      if (infinite_cost_p (sub_cost))
-		{
-		  cost = infinite_cost;
-		  break;
-		}
-	    }
-
-	  cost = add_costs (cost, sub_cost);
-	  sub_use = sub_use->next;
+	  first = false;
+	  cost = get_computation_cost (data, next, cand, true,
+				       NULL, &can_autoinc, NULL);
+	  /* Remove setup cost.  */
+	  if (!infinite_cost_p (cost))
+	    cost.cost -= cost.scratch;
 	}
-      while (sub_use);
+      sum_cost = add_costs (sum_cost, cost);
     }
+  set_group_iv_cost (data, group, cand, sum_cost, depends_on,
+		     NULL_TREE, ERROR_MARK, inv_expr_id);
 
-  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
-                   inv_expr_id);
-
-  return !infinite_cost_p (cost);
+  return !infinite_cost_p (sum_cost);
 }
 
 /* Computes value of candidate CAND at position AT in iteration NITER, and
@@ -5562,11 +5431,11 @@ parm_decl_cost (struct ivopts_data *data, tree bound)
   return 0;
 }
 
-/* Determines cost of basing replacement of USE on CAND in a condition.  */
+/* Determines cost of computing the use in GROUP with CAND in a condition.  */
 
 static bool
-determine_use_iv_cost_condition (struct ivopts_data *data,
-				 struct iv_use *use, struct iv_cand *cand)
+determine_group_iv_cost_cond (struct ivopts_data *data,
+			      struct iv_group *group, struct iv_cand *cand)
 {
   tree bound = NULL_TREE;
   struct iv *cmp_iv;
@@ -5576,14 +5445,9 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   int elim_inv_expr_id = -1, express_inv_expr_id = -1, inv_expr_id;
   tree *control_var, *bound_cst;
   enum tree_code comp = ERROR_MARK;
+  struct iv_use *use = group->vuses[0];
 
-  /* Only consider real candidates.  */
-  if (!cand->iv)
-    {
-      set_use_iv_cost (data, use, cand, infinite_cost, NULL, NULL_TREE,
-		       ERROR_MARK, -1);
-      return false;
-    }
+  gcc_assert (cand->iv);
 
   /* Try iv elimination.  */
   if (may_eliminate_iv (data, use, cand, &bound, &comp))
@@ -5661,7 +5525,8 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       inv_expr_id = express_inv_expr_id;
     }
 
-  set_use_iv_cost (data, use, cand, cost, depends_on, bound, comp, inv_expr_id);
+  set_group_iv_cost (data, group, cand, cost,
+		     depends_on, bound, comp, inv_expr_id);
 
   if (depends_on_elim)
     BITMAP_FREE (depends_on_elim);
@@ -5671,23 +5536,23 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   return !infinite_cost_p (cost);
 }
 
-/* Determines cost of basing replacement of USE on CAND.  Returns false
-   if USE cannot be based on CAND.  */
+/* Determines cost of computing uses in GROUP with CAND.  Returns false
+   if USE cannot be represented with CAND.  */
 
 static bool
-determine_use_iv_cost (struct ivopts_data *data,
-		       struct iv_use *use, struct iv_cand *cand)
+determine_group_iv_cost (struct ivopts_data *data,
+			 struct iv_group *group, struct iv_cand *cand)
 {
-  switch (use->type)
+  switch (group->type)
     {
     case USE_NONLINEAR_EXPR:
-      return determine_use_iv_cost_generic (data, use, cand);
+      return determine_group_iv_cost_generic (data, group, cand);
 
     case USE_ADDRESS:
-      return determine_use_iv_cost_address (data, use, cand);
+      return determine_group_iv_cost_address (data, group, cand);
 
     case USE_COMPARE:
-      return determine_use_iv_cost_condition (data, use, cand);
+      return determine_group_iv_cost_cond (data, group, cand);
 
     default:
       gcc_unreachable ();
@@ -5724,17 +5589,18 @@ set_autoinc_for_original_candidates (struct ivopts_data *data)
 {
   unsigned i, j;
 
-  for (i = 0; i < n_iv_cands (data); i++)
+  for (i = 0; i < data->vcands.length (); i++)
     {
-      struct iv_cand *cand = iv_cand (data, i);
+      struct iv_cand *cand = data->vcands[i];
       struct iv_use *closest_before = NULL;
       struct iv_use *closest_after = NULL;
       if (cand->pos != IP_ORIGINAL)
 	continue;
 
-      for (j = 0; j < n_iv_uses (data); j++)
+      for (j = 0; j < data->vgroups.length (); j++)
 	{
-	  struct iv_use *use = iv_use (data, j);
+	  struct iv_group *group = data->vgroups[j];
+	  struct iv_use *use = group->vuses[0];
 	  unsigned uid = gimple_uid (use->stmt);
 
 	  if (gimple_bb (use->stmt) != gimple_bb (cand->incremented_at))
@@ -5772,52 +5638,76 @@ find_iv_candidates (struct ivopts_data *data)
   add_iv_candidate_for_bivs (data);
 
   /* Add induction variables derived from uses.  */
-  add_iv_candidate_for_uses (data);
+  add_iv_candidate_for_groups (data);
 
   set_autoinc_for_original_candidates (data);
 
   /* Record the important candidates.  */
   record_important_candidates (data);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      unsigned i;
+
+      fprintf (dump_file, "\n<Important Candidates>:\t");
+      for (i = 0; i < data->vcands.length (); i++)
+	if (data->vcands[i]->important)
+	  fprintf (dump_file, " %d,", data->vcands[i]->id);
+      fprintf (dump_file, "\n");
+
+      fprintf (dump_file, "\n<Group, Cand> Related:\n");
+      for (i = 0; i < data->vgroups.length (); i++)
+	{
+	  struct iv_group *group = data->vgroups[i];
+
+	  if (group->related_cands)
+	    {
+	      fprintf (dump_file, "  Group %d:\t", group->id);
+	      dump_bitmap (dump_file, group->related_cands);
+	    }
+	}
+      fprintf (dump_file, "\n");
+    }
 }
 
-/* Determines costs of basing the use of the iv on an iv candidate.  */
+/* Determines costs of computing use of iv with an iv candidate.  */
 
 static void
-determine_use_iv_costs (struct ivopts_data *data)
+determine_group_iv_costs (struct ivopts_data *data)
 {
   unsigned i, j;
-  struct iv_use *use;
   struct iv_cand *cand;
+  struct iv_group *group;
   bitmap to_clear = BITMAP_ALLOC (NULL);
 
   alloc_use_cost_map (data);
 
-  for (i = 0; i < n_iv_uses (data); i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
+      group = data->vgroups[i];
 
       if (data->consider_all_candidates)
 	{
-	  for (j = 0; j < n_iv_cands (data); j++)
+	  for (j = 0; j < data->vcands.length (); j++)
 	    {
-	      cand = iv_cand (data, j);
-	      determine_use_iv_cost (data, use, cand);
+	      cand = data->vcands[j];
+	      determine_group_iv_cost (data, group, cand);
 	    }
 	}
       else
 	{
 	  bitmap_iterator bi;
 
-	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, bi)
+	  EXECUTE_IF_SET_IN_BITMAP (group->related_cands, 0, j, bi)
 	    {
-	      cand = iv_cand (data, j);
-	      if (!determine_use_iv_cost (data, use, cand))
+	      cand = data->vcands[j];
+	      if (!determine_group_iv_cost (data, group, cand))
 		bitmap_set_bit (to_clear, j);
 	    }
 
 	  /* Remove the candidates for that the cost is infinite from
 	     the list of related candidates.  */
-	  bitmap_and_compl_into (use->related_cands, to_clear);
+	  bitmap_and_compl_into (group->related_cands, to_clear);
 	  bitmap_clear (to_clear);
 	}
     }
@@ -5826,29 +5716,30 @@ determine_use_iv_costs (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Use-candidate costs:\n");
+      fprintf (dump_file, "<Group-candidate Costs>:\n");
 
-      for (i = 0; i < n_iv_uses (data); i++)
+      for (i = 0; i < data->vgroups.length (); i++)
 	{
-	  use = iv_use (data, i);
+	  group = data->vgroups[i];
 
-	  fprintf (dump_file, "Use %d:\n", i);
+	  fprintf (dump_file, "Group %d:\n", i);
 	  fprintf (dump_file, "  cand\tcost\tcompl.\tdepends on\n");
-	  for (j = 0; j < use->n_map_members; j++)
+	  for (j = 0; j < group->n_map_members; j++)
 	    {
-	      if (!use->cost_map[j].cand
-		  || infinite_cost_p (use->cost_map[j].cost))
+	      if (!group->cost_map[j].cand
+		  || infinite_cost_p (group->cost_map[j].cost))
 		continue;
 
 	      fprintf (dump_file, "  %d\t%d\t%d\t",
-		       use->cost_map[j].cand->id,
-		       use->cost_map[j].cost.cost,
-		       use->cost_map[j].cost.complexity);
-	      if (use->cost_map[j].depends_on)
+		       group->cost_map[j].cand->id,
+		       group->cost_map[j].cost.cost,
+		       group->cost_map[j].cost.complexity);
+	      if (group->cost_map[j].depends_on)
 		bitmap_print (dump_file,
-			      use->cost_map[j].depends_on, "","");
-              if (use->cost_map[j].inv_expr_id != -1)
-                fprintf (dump_file, " inv_expr:%d", use->cost_map[j].inv_expr_id);
+			      group->cost_map[j].depends_on, "","");
+	      if (group->cost_map[j].inv_expr_id != -1)
+		fprintf (dump_file, " inv_expr:%d",
+			 group->cost_map[j].inv_expr_id);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -5915,13 +5806,13 @@ determine_iv_costs (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Candidate costs:\n");
+      fprintf (dump_file, "<Candidate Costs>:\n");
       fprintf (dump_file, "  cand\tcost\n");
     }
 
-  for (i = 0; i < n_iv_cands (data); i++)
+  for (i = 0; i < data->vcands.length (); i++)
     {
-      struct iv_cand *cand = iv_cand (data, i);
+      struct iv_cand *cand = data->vcands[i];
 
       determine_iv_cost (data, cand);
 
@@ -5958,7 +5849,7 @@ determine_set_costs (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Global costs:\n");
+      fprintf (dump_file, "<Global Costs>:\n");
       fprintf (dump_file, "  target_avail_regs %d\n", target_avail_regs);
       fprintf (dump_file, "  target_clobbered_regs %d\n", target_clobbered_regs);
       fprintf (dump_file, "  target_reg_cost %d\n", target_reg_cost[data->speed]);
@@ -6034,9 +5925,9 @@ cheaper_cost_pair (struct cost_pair *a, struct cost_pair *b)
 /* Returns candidate by that USE is expressed in IVS.  */
 
 static struct cost_pair *
-iv_ca_cand_for_use (struct iv_ca *ivs, struct iv_use *use)
+iv_ca_cand_for_group (struct iv_ca *ivs, struct iv_group *group)
 {
-  return ivs->cand_for_use[use->id];
+  return ivs->cand_for_group[group->id];
 }
 
 /* Computes the cost field of IVS structure.  */
@@ -6077,18 +5968,18 @@ iv_ca_set_remove_invariants (struct iv_ca *ivs, bitmap invs)
 
 static void
 iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
-		 struct iv_use *use)
+		 struct iv_group *group)
 {
-  unsigned uid = use->id, cid;
+  unsigned gid = group->id, cid;
   struct cost_pair *cp;
 
-  cp = ivs->cand_for_use[uid];
+  cp = ivs->cand_for_group[gid];
   if (!cp)
     return;
   cid = cp->cand->id;
 
-  ivs->bad_uses++;
-  ivs->cand_for_use[uid] = NULL;
+  ivs->bad_groups++;
+  ivs->cand_for_group[gid] = NULL;
   ivs->n_cand_uses[cid]--;
 
   if (ivs->n_cand_uses[cid] == 0)
@@ -6135,26 +6026,26 @@ iv_ca_set_add_invariants (struct iv_ca *ivs, bitmap invs)
     }
 }
 
-/* Set cost pair for USE in set IVS to CP.  */
+/* Set cost pair for GROUP in set IVS to CP.  */
 
 static void
 iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
-	      struct iv_use *use, struct cost_pair *cp)
+	      struct iv_group *group, struct cost_pair *cp)
 {
-  unsigned uid = use->id, cid;
+  unsigned gid = group->id, cid;
 
-  if (ivs->cand_for_use[uid] == cp)
+  if (ivs->cand_for_group[gid] == cp)
     return;
 
-  if (ivs->cand_for_use[uid])
-    iv_ca_set_no_cp (data, ivs, use);
+  if (ivs->cand_for_group[gid])
+    iv_ca_set_no_cp (data, ivs, group);
 
   if (cp)
     {
       cid = cp->cand->id;
 
-      ivs->bad_uses--;
-      ivs->cand_for_use[uid] = cp;
+      ivs->bad_groups--;
+      ivs->cand_for_group[gid] = cp;
       ivs->n_cand_uses[cid]++;
       if (ivs->n_cand_uses[cid] == 1)
 	{
@@ -6186,38 +6077,38 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
    set IVS don't give any result.  */
 
 static void
-iv_ca_add_use (struct ivopts_data *data, struct iv_ca *ivs,
-	       struct iv_use *use)
+iv_ca_add_group (struct ivopts_data *data, struct iv_ca *ivs,
+	       struct iv_group *group)
 {
   struct cost_pair *best_cp = NULL, *cp;
   bitmap_iterator bi;
   unsigned i;
   struct iv_cand *cand;
 
-  gcc_assert (ivs->upto >= use->id);
+  gcc_assert (ivs->upto >= group->id);
   ivs->upto++;
-  ivs->bad_uses++;
+  ivs->bad_groups++;
 
   EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, i, bi)
     {
-      cand = iv_cand (data, i);
-      cp = get_use_iv_cost (data, use, cand);
+      cand = data->vcands[i];
+      cp = get_group_iv_cost (data, group, cand);
       if (cheaper_cost_pair (cp, best_cp))
 	best_cp = cp;
     }
-   
+
   if (best_cp == NULL)
     {
       EXECUTE_IF_SET_IN_BITMAP (data->important_candidates, 0, i, bi)
 	{
-	  cand = iv_cand (data, i);
-	  cp = get_use_iv_cost (data, use, cand);
+	  cand = data->vcands[i];
+	  cp = get_group_iv_cost (data, group, cand);
 	  if (cheaper_cost_pair (cp, best_cp))
 	    best_cp = cp;
 	}
     }
 
-  iv_ca_set_cp (data, ivs, use, best_cp);
+  iv_ca_set_cp (data, ivs, group, best_cp);
 }
 
 /* Get cost for assignment IVS.  */
@@ -6227,7 +6118,7 @@ iv_ca_cost (struct iv_ca *ivs)
 {
   /* This was a conditional expression but it triggered a bug in
      Sun C 5.5.  */
-  if (ivs->bad_uses)
+  if (ivs->bad_groups)
     return infinite_cost;
   else
     return ivs->cost;
@@ -6253,19 +6144,19 @@ iv_ca_has_deps (struct iv_ca *ivs, struct cost_pair *cp)
   return true;
 }
 
-/* Creates change of expressing USE by NEW_CP instead of OLD_CP and chains
-   it before NEXT_CHANGE.  */
+/* Creates change of expressing GROUP by NEW_CP instead of OLD_CP and chains
+   it before NEXT.  */
 
 static struct iv_ca_delta *
-iv_ca_delta_add (struct iv_use *use, struct cost_pair *old_cp,
-		 struct cost_pair *new_cp, struct iv_ca_delta *next_change)
+iv_ca_delta_add (struct iv_group *group, struct cost_pair *old_cp,
+		 struct cost_pair *new_cp, struct iv_ca_delta *next)
 {
   struct iv_ca_delta *change = XNEW (struct iv_ca_delta);
 
-  change->use = use;
+  change->group = group;
   change->old_cp = old_cp;
   change->new_cp = new_cp;
-  change->next_change = next_change;
+  change->next = next;
 
   return change;
 }
@@ -6284,9 +6175,9 @@ iv_ca_delta_join (struct iv_ca_delta *l1, struct iv_ca_delta *l2)
   if (!l1)
     return l2;
 
-  for (last = l1; last->next_change; last = last->next_change)
+  for (last = l1; last->next; last = last->next)
     continue;
-  last->next_change = l2;
+  last->next = l2;
 
   return l1;
 }
@@ -6300,8 +6191,8 @@ iv_ca_delta_reverse (struct iv_ca_delta *delta)
 
   for (act = delta; act; act = next)
     {
-      next = act->next_change;
-      act->next_change = prev;
+      next = act->next;
+      act->next = prev;
       prev = act;
 
       std::swap (act->old_cp, act->new_cp);
@@ -6323,12 +6214,12 @@ iv_ca_delta_commit (struct ivopts_data *data, struct iv_ca *ivs,
   if (!forward)
     delta = iv_ca_delta_reverse (delta);
 
-  for (act = delta; act; act = act->next_change)
+  for (act = delta; act; act = act->next)
     {
       from = act->old_cp;
       to = act->new_cp;
-      gcc_assert (iv_ca_cand_for_use (ivs, act->use) == from);
-      iv_ca_set_cp (data, ivs, act->use, to);
+      gcc_assert (iv_ca_cand_for_group (ivs, act->group) == from);
+      iv_ca_set_cp (data, ivs, act->group, to);
     }
 
   if (!forward)
@@ -6360,7 +6251,7 @@ iv_ca_delta_free (struct iv_ca_delta **delta)
 
   for (act = *delta; act; act = next)
     {
-      next = act->next_change;
+      next = act->next;
       free (act);
     }
 
@@ -6375,9 +6266,10 @@ iv_ca_new (struct ivopts_data *data)
   struct iv_ca *nw = XNEW (struct iv_ca);
 
   nw->upto = 0;
-  nw->bad_uses = 0;
-  nw->cand_for_use = XCNEWVEC (struct cost_pair *, n_iv_uses (data));
-  nw->n_cand_uses = XCNEWVEC (unsigned, n_iv_cands (data));
+  nw->bad_groups = 0;
+  nw->cand_for_group = XCNEWVEC (struct cost_pair *,
+				 data->vgroups.length ());
+  nw->n_cand_uses = XCNEWVEC (unsigned, data->vcands.length ());
   nw->cands = BITMAP_ALLOC (NULL);
   nw->n_cands = 0;
   nw->n_regs = 0;
@@ -6396,7 +6288,7 @@ iv_ca_new (struct ivopts_data *data)
 static void
 iv_ca_free (struct iv_ca **ivs)
 {
-  free ((*ivs)->cand_for_use);
+  free ((*ivs)->cand_for_group);
   free ((*ivs)->n_cand_uses);
   BITMAP_FREE ((*ivs)->cands);
   free ((*ivs)->n_invariant_uses);
@@ -6415,19 +6307,19 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
   comp_cost cost = iv_ca_cost (ivs);
 
   fprintf (file, "  cost: %d (complexity %d)\n", cost.cost, cost.complexity);
-  fprintf (file, "  cand_cost: %d\n  cand_use_cost: %d (complexity %d)\n",
+  fprintf (file, "  cand_cost: %d\n  cand_group_cost: %d (complexity %d)\n",
            ivs->cand_cost, ivs->cand_use_cost.cost, ivs->cand_use_cost.complexity);
   bitmap_print (file, ivs->cands, "  candidates: ","\n");
 
    for (i = 0; i < ivs->upto; i++)
     {
-      struct iv_use *use = iv_use (data, i);
-      struct cost_pair *cp = iv_ca_cand_for_use (ivs, use);
+      struct iv_group *group = data->vgroups[i];
+      struct cost_pair *cp = iv_ca_cand_for_group (ivs, group);
       if (cp)
-        fprintf (file, "   use:%d --> iv_cand:%d, cost=(%d,%d)\n",
-                 use->id, cp->cand->id, cp->cost.cost, cp->cost.complexity);
+        fprintf (file, "   group:%d --> iv_cand:%d, cost=(%d,%d)\n",
+                 group->id, cp->cand->id, cp->cost.cost, cp->cost.complexity);
       else
-        fprintf (file, "   use:%d --> ??\n", use->id);
+        fprintf (file, "   group:%d --> ??\n", group->id);
     }
 
   for (i = 1; i <= data->max_inv_id; i++)
@@ -6451,20 +6343,20 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
 {
   unsigned i;
   comp_cost cost;
-  struct iv_use *use;
+  struct iv_group *group;
   struct cost_pair *old_cp, *new_cp;
 
   *delta = NULL;
   for (i = 0; i < ivs->upto; i++)
     {
-      use = iv_use (data, i);
-      old_cp = iv_ca_cand_for_use (ivs, use);
+      group = data->vgroups[i];
+      old_cp = iv_ca_cand_for_group (ivs, group);
 
       if (old_cp
 	  && old_cp->cand == cand)
 	continue;
 
-      new_cp = get_use_iv_cost (data, use, cand);
+      new_cp = get_group_iv_cost (data, group, cand);
       if (!new_cp)
 	continue;
 
@@ -6474,7 +6366,7 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
       if (!min_ncand && !cheaper_cost_pair (new_cp, old_cp))
         continue;
 
-      *delta = iv_ca_delta_add (use, old_cp, new_cp, *delta);
+      *delta = iv_ca_delta_add (group, old_cp, new_cp, *delta);
     }
 
   iv_ca_delta_commit (data, ivs, *delta, true);
@@ -6496,24 +6388,24 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	      struct iv_ca_delta **delta)
 {
   unsigned i, ci;
-  struct iv_use *use;
+  struct iv_group *group;
   struct cost_pair *old_cp, *new_cp, *cp;
   bitmap_iterator bi;
   struct iv_cand *cnd;
   comp_cost cost, best_cost, acost;
 
   *delta = NULL;
-  for (i = 0; i < n_iv_uses (data); i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
+      group = data->vgroups[i];
 
-      old_cp = iv_ca_cand_for_use (ivs, use);
+      old_cp = iv_ca_cand_for_group (ivs, group);
       if (old_cp->cand != cand)
 	continue;
 
       best_cost = iv_ca_cost (ivs);
       /* Start narrowing with START.  */
-      new_cp = get_use_iv_cost (data, use, start);
+      new_cp = get_group_iv_cost (data, group, start);
 
       if (data->consider_all_candidates)
 	{
@@ -6522,13 +6414,13 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	      if (ci == cand->id || (start && ci == start->id))
 		continue;
 
-	      cnd = iv_cand (data, ci);
+	      cnd = data->vcands[ci];
 
-	      cp = get_use_iv_cost (data, use, cnd);
+	      cp = get_group_iv_cost (data, group, cnd);
 	      if (!cp)
 		continue;
 
-	      iv_ca_set_cp (data, ivs, use, cp);
+	      iv_ca_set_cp (data, ivs, group, cp);
 	      acost = iv_ca_cost (ivs);
 
 	      if (compare_costs (acost, best_cost) < 0)
@@ -6540,18 +6432,18 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	}
       else
 	{
-	  EXECUTE_IF_AND_IN_BITMAP (use->related_cands, ivs->cands, 0, ci, bi)
+	  EXECUTE_IF_AND_IN_BITMAP (group->related_cands, ivs->cands, 0, ci, bi)
 	    {
 	      if (ci == cand->id || (start && ci == start->id))
 		continue;
 
-	      cnd = iv_cand (data, ci);
+	      cnd = data->vcands[ci];
 
-	      cp = get_use_iv_cost (data, use, cnd);
+	      cp = get_group_iv_cost (data, group, cnd);
 	      if (!cp)
 		continue;
 
-	      iv_ca_set_cp (data, ivs, use, cp);
+	      iv_ca_set_cp (data, ivs, group, cp);
 	      acost = iv_ca_cost (ivs);
 
 	      if (compare_costs (acost, best_cost) < 0)
@@ -6562,7 +6454,7 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	    }
 	}
       /* Restore to old cp for use.  */
-      iv_ca_set_cp (data, ivs, use, old_cp);
+      iv_ca_set_cp (data, ivs, group, old_cp);
 
       if (!new_cp)
 	{
@@ -6570,7 +6462,7 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	  return infinite_cost;
 	}
 
-      *delta = iv_ca_delta_add (use, old_cp, new_cp, *delta);
+      *delta = iv_ca_delta_add (group, old_cp, new_cp, *delta);
     }
 
   iv_ca_delta_commit (data, ivs, *delta, true);
@@ -6599,7 +6491,7 @@ iv_ca_prune (struct ivopts_data *data, struct iv_ca *ivs,
 
   EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, i, bi)
     {
-      cand = iv_cand (data, i);
+      cand = data->vcands[i];
 
       if (cand == except_cand)
 	continue;
@@ -6631,11 +6523,11 @@ iv_ca_prune (struct ivopts_data *data, struct iv_ca *ivs,
 }
 
 /* Check if CAND_IDX is a candidate other than OLD_CAND and has
-   cheaper local cost for USE than BEST_CP.  Return pointer to
+   cheaper local cost for GROUP than BEST_CP.  Return pointer to
    the corresponding cost_pair, otherwise just return BEST_CP.  */
 
 static struct cost_pair*
-cheaper_cost_with_cand (struct ivopts_data *data, struct iv_use *use,
+cheaper_cost_with_cand (struct ivopts_data *data, struct iv_group *group,
 			unsigned int cand_idx, struct iv_cand *old_cand,
 			struct cost_pair *best_cp)
 {
@@ -6646,8 +6538,8 @@ cheaper_cost_with_cand (struct ivopts_data *data, struct iv_use *use,
   if (cand_idx == old_cand->id)
     return best_cp;
 
-  cand = iv_cand (data, cand_idx);
-  cp = get_use_iv_cost (data, use, cand);
+  cand = data->vcands[cand_idx];
+  cp = get_group_iv_cost (data, group, cand);
   if (cp != NULL && cheaper_cost_pair (cp, best_cp))
     return cp;
 
@@ -6667,7 +6559,6 @@ iv_ca_replace (struct ivopts_data *data, struct iv_ca *ivs,
 {
   bitmap_iterator bi, bj;
   unsigned int i, j, k;
-  struct iv_use *use;
   struct iv_cand *cand;
   comp_cost orig_cost, acost;
   struct iv_ca_delta *act_delta, *tmp_delta;
@@ -6682,33 +6573,33 @@ iv_ca_replace (struct ivopts_data *data, struct iv_ca *ivs,
 	  || ivs->n_cand_uses[i] > ALWAYS_PRUNE_CAND_SET_BOUND)
 	continue;
 
-      cand = iv_cand (data, i);
-  
+      cand = data->vcands[i];
+
       act_delta = NULL;
       /*  Represent uses under current candidate using other ones with
 	  lower local cost.  */
       for (j = 0; j < ivs->upto; j++)
 	{
-	  use = iv_use (data, j);
-	  old_cp = iv_ca_cand_for_use (ivs, use);
+	  struct iv_group *group = data->vgroups[j];
+	  old_cp = iv_ca_cand_for_group (ivs, group);
 
 	  if (old_cp->cand != cand)
 	    continue;
 
 	  best_cp = old_cp;
 	  if (data->consider_all_candidates)
-	    for (k = 0; k < n_iv_cands (data); k++)
-	      best_cp = cheaper_cost_with_cand (data, use, k,
+	    for (k = 0; k < data->vcands.length (); k++)
+	      best_cp = cheaper_cost_with_cand (data, group, k,
 						old_cp->cand, best_cp);
 	  else
-	    EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, k, bj)
-	      best_cp = cheaper_cost_with_cand (data, use, k,
+	    EXECUTE_IF_SET_IN_BITMAP (group->related_cands, 0, k, bj)
+	      best_cp = cheaper_cost_with_cand (data, group, k,
 						old_cp->cand, best_cp);
 
 	  if (best_cp == old_cp)
 	    continue;
 
-	  act_delta = iv_ca_delta_add (use, old_cp, best_cp, act_delta);
+	  act_delta = iv_ca_delta_add (group, old_cp, best_cp, act_delta);
 	}
       /* No need for further prune.  */
       if (!act_delta)
@@ -6732,14 +6623,14 @@ iv_ca_replace (struct ivopts_data *data, struct iv_ca *ivs,
   return orig_cost;
 }
 
-/* Tries to extend the sets IVS in the best possible way in order
-   to express the USE.  If ORIGINALP is true, prefer candidates from
+/* Tries to extend the sets IVS in the best possible way in order to
+   express the GROUP.  If ORIGINALP is true, prefer candidates from
    the original set of IVs, otherwise favor important candidates not
    based on any memory object.  */
 
 static bool
 try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
-		  struct iv_use *use, bool originalp)
+		  struct iv_group *group, bool originalp)
 {
   comp_cost best_cost, act_cost;
   unsigned i;
@@ -6748,13 +6639,13 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
   struct iv_ca_delta *best_delta = NULL, *act_delta;
   struct cost_pair *cp;
 
-  iv_ca_add_use (data, ivs, use);
+  iv_ca_add_group (data, ivs, group);
   best_cost = iv_ca_cost (ivs);
-  cp = iv_ca_cand_for_use (ivs, use);
+  cp = iv_ca_cand_for_group (ivs, group);
   if (cp)
     {
-      best_delta = iv_ca_delta_add (use, NULL, cp, NULL);
-      iv_ca_set_no_cp (data, ivs, use);
+      best_delta = iv_ca_delta_add (group, NULL, cp, NULL);
+      iv_ca_set_no_cp (data, ivs, group);
     }
 
   /* If ORIGINALP is true, try to find the original IV for the use.  Otherwise
@@ -6766,9 +6657,9 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
      too many ivs.  The approach from few ivs to more seems more likely to be
      successful -- starting from few ivs, replacing an expensive use by a
      specific iv should always be a win.  */
-  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (group->related_cands, 0, i, bi)
     {
-      cand = iv_cand (data, i);
+      cand = data->vcands[i];
 
       if (originalp && cand->pos !=IP_ORIGINAL)
 	continue;
@@ -6779,15 +6670,15 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
       if (iv_ca_cand_used_p (ivs, cand))
         continue;
 
-      cp = get_use_iv_cost (data, use, cand);
+      cp = get_group_iv_cost (data, group, cand);
       if (!cp)
 	continue;
 
-      iv_ca_set_cp (data, ivs, use, cp);
+      iv_ca_set_cp (data, ivs, group, cp);
       act_cost = iv_ca_extend (data, ivs, cand, &act_delta, NULL,
                                true);
-      iv_ca_set_no_cp (data, ivs, use);
-      act_delta = iv_ca_delta_add (use, NULL, cp, act_delta);
+      iv_ca_set_no_cp (data, ivs, group);
+      act_delta = iv_ca_delta_add (group, NULL, cp, act_delta);
 
       if (compare_costs (act_cost, best_cost) < 0)
 	{
@@ -6802,9 +6693,9 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 
   if (infinite_cost_p (best_cost))
     {
-      for (i = 0; i < use->n_map_members; i++)
+      for (i = 0; i < group->n_map_members; i++)
 	{
-	  cp = use->cost_map + i;
+	  cp = group->cost_map + i;
 	  cand = cp->cand;
 	  if (!cand)
 	    continue;
@@ -6822,10 +6713,11 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 	    continue;
 
 	  act_delta = NULL;
-	  iv_ca_set_cp (data, ivs, use, cp);
+	  iv_ca_set_cp (data, ivs, group, cp);
 	  act_cost = iv_ca_extend (data, ivs, cand, &act_delta, NULL, true);
-	  iv_ca_set_no_cp (data, ivs, use);
-	  act_delta = iv_ca_delta_add (use, iv_ca_cand_for_use (ivs, use),
+	  iv_ca_set_no_cp (data, ivs, group);
+	  act_delta = iv_ca_delta_add (group,
+				       iv_ca_cand_for_group (ivs, group),
 				       cp, act_delta);
 
 	  if (compare_costs (act_cost, best_cost) < 0)
@@ -6852,11 +6744,11 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 static struct iv_ca *
 get_initial_solution (struct ivopts_data *data, bool originalp)
 {
-  struct iv_ca *ivs = iv_ca_new (data);
   unsigned i;
+  struct iv_ca *ivs = iv_ca_new (data);
 
-  for (i = 0; i < n_iv_uses (data); i++)
-    if (!try_add_cand_for (data, ivs, iv_use (data, i), originalp))
+  for (i = 0; i < data->vgroups.length (); i++)
+    if (!try_add_cand_for (data, ivs, data->vgroups[i], originalp))
       {
 	iv_ca_free (&ivs);
 	return NULL;
@@ -6879,9 +6771,9 @@ try_improve_iv_set (struct ivopts_data *data,
   struct iv_cand *cand;
 
   /* Try extending the set of induction variables by one.  */
-  for (i = 0; i < n_iv_cands (data); i++)
+  for (i = 0; i < data->vcands.length (); i++)
     {
-      cand = iv_cand (data, i);
+      cand = data->vcands[i];
 
       if (iv_ca_cand_used_p (ivs, cand))
 	continue;
@@ -6980,9 +6872,8 @@ static struct iv_ca *
 find_optimal_iv_set (struct ivopts_data *data)
 {
   unsigned i;
-  struct iv_ca *set, *origset;
-  struct iv_use *use;
   comp_cost cost, origcost;
+  struct iv_ca *set, *origset;
 
   /* Determine the cost based on a strategy that starts with original IVs,
      and try again using a strategy that prefers candidates not based
@@ -7014,10 +6905,10 @@ find_optimal_iv_set (struct ivopts_data *data)
   else if (origset)
     iv_ca_free (&origset);
 
-  for (i = 0; i < n_iv_uses (data); i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      use = iv_use (data, i);
-      use->selected = iv_ca_cand_for_use (set, use)->cand;
+      struct iv_group *group = data->vgroups[i];
+      group->selected = iv_ca_cand_for_group (set, group)->cand;
     }
 
   return set;
@@ -7030,6 +6921,8 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
 {
   gimple_stmt_iterator incr_pos;
   tree base;
+  struct iv_use *use;
+  struct iv_group *group;
   bool after = false;
 
   if (!cand->iv)
@@ -7059,7 +6952,9 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
       name_info (data, cand->var_after)->preserve_biv = true;
 
       /* Rewrite the increment so that it uses var_before directly.  */
-      find_interesting_uses_op (data, cand->var_after)->selected = cand;
+      use = find_interesting_uses_op (data, cand->var_after);
+      group = data->vgroups[use->group_id];
+      group->selected = cand;
       return;
     }
 
@@ -7083,7 +6978,7 @@ create_new_ivs (struct ivopts_data *data, struct iv_ca *set)
 
   EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)
     {
-      cand = iv_cand (data, i);
+      cand = data->vcands[i];
       create_new_iv (data, cand);
     }
 
@@ -7097,7 +6992,7 @@ create_new_ivs (struct ivopts_data *data, struct iv_ca *set)
       fprintf (dump_file, ", %lu IVs:\n", bitmap_count_bits (set->cands));
       EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)
         {
-          cand = iv_cand (data, i);
+          cand = data->vcands[i];
           dump_cand (dump_file, cand);
         }
       fprintf (dump_file, "\n");
@@ -7296,8 +7191,8 @@ adjust_iv_update_pos (struct iv_cand *cand, struct iv_use *use)
 /* Rewrites USE (address that is an iv) using candidate CAND.  */
 
 static void
-rewrite_use_address_1 (struct ivopts_data *data,
-		       struct iv_use *use, struct iv_cand *cand)
+rewrite_use_address (struct ivopts_data *data,
+		     struct iv_use *use, struct iv_cand *cand)
 {
   aff_tree aff;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
@@ -7332,28 +7227,6 @@ rewrite_use_address_1 (struct ivopts_data *data,
   *use->op_p = ref;
 }
 
-/* Rewrites USE (address that is an iv) using candidate CAND.  If it's the
-   first use of a group, rewrites sub uses in the group too.  */
-
-static void
-rewrite_use_address (struct ivopts_data *data,
-		      struct iv_use *use, struct iv_cand *cand)
-{
-  struct iv_use *next;
-
-  gcc_assert (use->sub_id == 0);
-  rewrite_use_address_1 (data, use, cand);
-  update_stmt (use->stmt);
-
-  for (next = use->next; next != NULL; next = next->next)
-    {
-      rewrite_use_address_1 (data, next, cand);
-      update_stmt (next->stmt);
-    }
-
-  return;
-}
-
 /* Rewrites USE (the condition such that one of the arguments is an iv) using
    candidate CAND.  */
 
@@ -7364,7 +7237,8 @@ rewrite_use_compare (struct ivopts_data *data,
   tree comp, *var_p, op, bound;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
   enum tree_code compare;
-  struct cost_pair *cp = get_use_iv_cost (data, use, cand);
+  struct iv_group *group = data->vgroups[use->group_id];
+  struct cost_pair *cp = get_group_iv_cost (data, group, cand);
   bool ok;
 
   bound = cp->value;
@@ -7406,48 +7280,46 @@ rewrite_use_compare (struct ivopts_data *data,
 				     true, GSI_SAME_STMT);
 }
 
-/* Rewrites USE using candidate CAND.  */
+/* Rewrite the groups using the selected induction variables.  */
 
 static void
-rewrite_use (struct ivopts_data *data, struct iv_use *use, struct iv_cand *cand)
+rewrite_groups (struct ivopts_data *data)
 {
-  switch (use->type)
+  unsigned i, j;
+
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      case USE_NONLINEAR_EXPR:
-	rewrite_use_nonlinear_expr (data, use, cand);
-	break;
+      struct iv_group *group = data->vgroups[i];
+      struct iv_cand *cand = group->selected;
 
-      case USE_ADDRESS:
-	rewrite_use_address (data, use, cand);
-	break;
-
-      case USE_COMPARE:
-	rewrite_use_compare (data, use, cand);
-	break;
-
-      default:
-	gcc_unreachable ();
-    }
-
-  update_stmt (use->stmt);
-}
-
-/* Rewrite the uses using the selected induction variables.  */
-
-static void
-rewrite_uses (struct ivopts_data *data)
-{
-  unsigned i;
-  struct iv_cand *cand;
-  struct iv_use *use;
-
-  for (i = 0; i < n_iv_uses (data); i++)
-    {
-      use = iv_use (data, i);
-      cand = use->selected;
       gcc_assert (cand);
 
-      rewrite_use (data, use, cand);
+      if (group->type == USE_NONLINEAR_EXPR)
+	{
+	  for (j = 0; j < group->vuses.length (); j++)
+	    {
+	      rewrite_use_nonlinear_expr (data, group->vuses[j], cand);
+	      update_stmt (group->vuses[j]->stmt);
+	    }
+	}
+      else if (group->type == USE_ADDRESS)
+	{
+	  for (j = 0; j < group->vuses.length (); j++)
+	    {
+	      rewrite_use_address (data, group->vuses[j], cand);
+	      update_stmt (group->vuses[j]->stmt);
+	    }
+	}
+      else
+	{
+	  gcc_assert (group->type == USE_COMPARE);
+
+	  for (j = 0; j < group->vuses.length (); j++)
+	    {
+	      rewrite_use_compare (data, group->vuses[j], cand);
+	      update_stmt (group->vuses[j]->stmt);
+	    }
+	}
     }
 }
 
@@ -7471,11 +7343,11 @@ remove_unused_ivs (struct ivopts_data *data)
       if (info->iv
 	  && !integer_zerop (info->iv->step)
 	  && !info->inv_id
-	  && !info->iv->have_use_for
+	  && !info->iv->nonlin_use
 	  && !info->preserve_biv)
 	{
 	  bitmap_set_bit (toremove, SSA_NAME_VERSION (info->iv->ssa_name));
-	  
+
 	  tree def = info->iv->ssa_name;
 
 	  if (MAY_HAVE_DEBUG_STMTS && SSA_NAME_DEF_STMT (def))
@@ -7513,9 +7385,9 @@ remove_unused_ivs (struct ivopts_data *data)
 
 	      memset (&dummy_use, 0, sizeof (dummy_use));
 	      dummy_use.iv = info->iv;
-	      for (i = 0; i < n_iv_uses (data) && i < 64; i++)
+	      for (i = 0; i < data->vgroups.length () && i < 64; i++)
 		{
-		  cand = iv_use (data, i)->selected;
+		  cand = data->vgroups[i]->selected;
 		  if (cand == best_cand)
 		    continue;
 		  cand_pref = operand_equal_p (cand->iv->step,
@@ -7625,39 +7497,32 @@ free_loop_data (struct ivopts_data *data)
   bitmap_clear (data->relevant);
   bitmap_clear (data->important_candidates);
 
-  for (i = 0; i < n_iv_uses (data); i++)
+  for (i = 0; i < data->vgroups.length (); i++)
     {
-      struct iv_use *use = iv_use (data, i);
-      struct iv_use *pre = use, *sub = use->next;
+      struct iv_group *group = data->vgroups[i];
 
-      while (sub)
-	{
-	  gcc_assert (sub->related_cands == NULL);
-	  gcc_assert (sub->n_map_members == 0 && sub->cost_map == NULL);
+      for (j = 0; j < group->vuses.length (); j++)
+	free (group->vuses[j]);
 
-	  pre = sub;
-	  sub = sub->next;
-	  free (pre);
-	}
+      BITMAP_FREE (group->related_cands);
+      for (j = 0; j < group->n_map_members; j++)
+	if (group->cost_map[j].depends_on)
+	  BITMAP_FREE (group->cost_map[j].depends_on);
 
-      BITMAP_FREE (use->related_cands);
-      for (j = 0; j < use->n_map_members; j++)
-	if (use->cost_map[j].depends_on)
-	  BITMAP_FREE (use->cost_map[j].depends_on);
-      free (use->cost_map);
-      free (use);
+      free (group->cost_map);
+      free (group);
     }
-  data->iv_uses.truncate (0);
+  data->vgroups.truncate (0);
 
-  for (i = 0; i < n_iv_cands (data); i++)
+  for (i = 0; i < data->vcands.length (); i++)
     {
-      struct iv_cand *cand = iv_cand (data, i);
+      struct iv_cand *cand = data->vcands[i];
 
       if (cand->depends_on)
 	BITMAP_FREE (cand->depends_on);
       free (cand);
     }
-  data->iv_candidates.truncate (0);
+  data->vcands.truncate (0);
 
   if (data->version_info_size < num_ssa_names)
     {
@@ -7692,8 +7557,8 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   BITMAP_FREE (data->important_candidates);
 
   decl_rtl_to_reset.release ();
-  data->iv_uses.release ();
-  data->iv_candidates.release ();
+  data->vgroups.release ();
+  data->vcands.release ();
   delete data->inv_expr_tab;
   data->inv_expr_tab = NULL;
   free_affine_expand_cache (&data->name_expansion_cache);
@@ -7770,8 +7635,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   /* Finds interesting uses (item 1).  */
   find_interesting_uses (data);
-  group_address_uses (data);
-  if (n_iv_uses (data) > MAX_CONSIDERED_USES)
+  if (data->vgroups.length () > MAX_CONSIDERED_GROUPS)
     goto finish;
 
   /* Finds candidates for the induction variables (item 2).  */
@@ -7779,7 +7643,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   /* Calculates the costs (item 3, part 1).  */
   determine_iv_costs (data);
-  determine_use_iv_costs (data);
+  determine_group_iv_costs (data);
   determine_set_costs (data);
 
   /* Find the optimal set of induction variables (item 3, part 2).  */
@@ -7793,7 +7657,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   iv_ca_free (&iv_ca);
 
   /* Rewrite the uses (item 4, part 2).  */
-  rewrite_uses (data);
+  rewrite_groups (data);
 
   /* Remove the ivs that are unused after rewriting.  */
   remove_unused_ivs (data);

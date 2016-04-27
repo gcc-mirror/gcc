@@ -1,3 +1,11 @@
+2016-04-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/pr64705.c: Revise check string.
+	* gcc.dg/tree-ssa/scev-9.c: Ditto.
+	* gcc.dg/tree-ssa/scev-10.c: Ditto.
+	* gcc.dg/tree-ssa/scev-11.c: Ditto.
+	* gcc.dg/tree-ssa/scev-12.c: Ditto.
+
 2016-04-27  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/70760

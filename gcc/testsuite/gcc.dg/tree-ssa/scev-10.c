@@ -18,6 +18,5 @@ foo (signed char s, signed char l)
 }
 
 /* Address of array reference is scev.  */
-/* { dg-final { scan-tree-dump-times "use \[0-9\]\n  address" 1 "ivopts" } } */
-
+/* { dg-final { scan-tree-dump-times "  Type:\\tADDRESS\n  Use \[0-9\].\[0-9\]:" 1 "ivopts" } } */
 

@@ -24,7 +24,4 @@ foo (int x, int n)
 }
 
 /* Address of array reference to b is not scev.  */
-/* { dg-final { scan-tree-dump-times "use \[0-9\]\n  address" 1 "ivopts" } } */
-
-
-
+/* { dg-final { scan-tree-dump-times "  Type:\\tADDRESS\n  Use \[0-9\].\[0-9\]:" 1 "ivopts" } } */

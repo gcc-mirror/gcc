@@ -23,4 +23,4 @@ int foo(char *flags, long len, long i, long steps)
 
 /* Don't expand iv {base+step, step}_loop into {base+x+y, step}_loop
    even if "step == x + y".  */
-/* { dg-final { scan-tree-dump "base step_\[0-9\]* \\+ iter|base iter_\[0-9\]* \\+ step" "ivopts"} } */
+/* { dg-final { scan-tree-dump "Base:\\tstep_\[0-9\]* \\+ iter|Base:\\titer_\[0-9\]* \\+ step" "ivopts"} } */
