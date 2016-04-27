@@ -6202,8 +6202,8 @@ package body Sem_Ch13 is
    -----------------------------------------------
 
    procedure Analyze_Enumeration_Representation_Clause (N : Node_Id) is
-      Ident    : constant Node_Id    := Identifier (N);
-      Aggr     : constant Node_Id    := Array_Aggregate (N);
+      Ident    : constant Node_Id := Identifier (N);
+      Aggr     : constant Node_Id := Array_Aggregate (N);
       Enumtype : Entity_Id;
       Elit     : Entity_Id;
       Expr     : Node_Id;
