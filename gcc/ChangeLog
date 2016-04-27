@@ -1,3 +1,7 @@
+2016-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (LIB_SPEC): Add -latomic.
+
 2016-04-27  Joel Sherrill  <joel@rtems.org>
 
 	* config/microblaze/rtems.h: Redefine LINK_SPEC to avoid
