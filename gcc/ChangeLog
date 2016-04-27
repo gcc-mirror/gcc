@@ -1,5 +1,11 @@
 2016-04-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* emit-rtl.c (maybe_set_first_label_num): Strengthen param from
+	rtx to rtx_code_label *.
+	* rtl.h (maybe_set_first_label_num): Likewise.
+
+2016-04-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* df-core.c (df_add_problem): Make the problem param be const.
 	(df_remove_problem): Make local "problem" be const.
 	* df-problems.c (problem_RD): Make const.

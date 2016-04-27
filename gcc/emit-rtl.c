@@ -1355,7 +1355,7 @@ get_first_label_num (void)
    Fix this now so that array indices work later.  */
 
 void
-maybe_set_first_label_num (rtx x)
+maybe_set_first_label_num (rtx_code_label *x)
 {
   if (CODE_LABEL_NUMBER (x) < first_label_num)
     first_label_num = CODE_LABEL_NUMBER (x);
