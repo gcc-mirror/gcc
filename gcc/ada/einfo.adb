@@ -3935,17 +3935,13 @@ package body Einfo is
 
    procedure Set_Corresponding_Function (Id : E; V : E) is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Procedure
-          and then Rewritten_For_C (V));
+      pragma Assert (Ekind (Id) = E_Procedure and then Rewritten_For_C (V));
       Set_Node32 (Id, V);
    end Set_Corresponding_Function;
 
    procedure Set_Corresponding_Procedure (Id : E; V : E) is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Function
-          and then Rewritten_For_C (Id));
+      pragma Assert (Ekind (Id) = E_Function and then Rewritten_For_C (Id));
       Set_Node32 (Id, V);
    end Set_Corresponding_Procedure;
 

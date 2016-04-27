@@ -2052,8 +2052,8 @@ package body Sem_Aggr is
                      Set_Parent (Expr, Parent (Expression (Assoc)));
                      Analyze (Expr);
 
-                     --  Compute its dimensions now, rather than at the end
-                     --  of resolution, because in the case of multidimensional
+                     --  Compute its dimensions now, rather than at the end of
+                     --  resolution, because in the case of multidimensional
                      --  aggregates subsequent expansion may lead to spurious
                      --  errors.
 

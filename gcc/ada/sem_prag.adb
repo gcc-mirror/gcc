@@ -23319,11 +23319,12 @@ package body Sem_Prag is
       if Class_Present (N) then
 
          --  Verify that a class-wide condition is legal, i.e. the operation is
-         --  a primitive of a tagged type.
+         --  a primitive of a tagged type. Note that a generic subprogram is
+         --  not a primitive operation.
 
          Disp_Typ := Find_Dispatching_Type (Spec_Id);
 
-         if No (Disp_Typ) then
+         if No (Disp_Typ) or else Is_Generic_Subprogram (Spec_Id) then
             Error_Msg_Name_1 := Original_Aspect_Pragma_Name (N);
 
             if From_Aspect_Specification (N) then

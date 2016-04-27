@@ -165,14 +165,14 @@ package Sem_Dim is
    --  literal default value in the list of formals Formals.
 
    procedure Check_Expression_Dimensions
-      (Expr : Node_Id;
-       Typ  : Entity_Id);
-   --  Compute dimensions of a floating-point expression and compare them
-   --  with the dimensions of a the given type. Used to verify dimensions
-   --  of the components of a multidimensional array type, for which components
-   --  are typically themselves arrays. The resolution of such arrays delays
-   --  the resolution of the ultimate components to a separate phase, which
-   --  forces this separate dimension verification.
+     (Expr : Node_Id;
+      Typ  : Entity_Id);
+   --  Compute dimensions of a floating-point expression and compare them with
+   --  the dimensions of a the given type. Used to verify dimensions of the
+   --  components of a multidimensional array type, for which components are
+   --  typically themselves arrays. The resolution of such arrays delays the
+   --  resolution of the ultimate components to a separate phase, which forces
+   --  this separate dimension verification.
 
    procedure Copy_Dimensions (From, To : Node_Id);
    --  Copy dimension vector of node From to node To. Note that To must be a

@@ -2277,8 +2277,8 @@ package body Sem_Dim is
    ---------------------------------
 
    procedure Check_Expression_Dimensions
-      (Expr : Node_Id;
-       Typ  : Entity_Id)
+     (Expr : Node_Id;
+      Typ  : Entity_Id)
    is
    begin
       if Is_Floating_Point_Type (Etype (Expr)) then

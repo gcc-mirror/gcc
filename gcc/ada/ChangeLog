@@ -1,3 +1,20 @@
+2016-04-27  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: For "gnat ls -V -P", recognize switch
+	--unchecked-shared-lib-imports and set the flag
+	Opt.Unchecked_Shared_Lib_Imports accordingly.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_Condition_In_Decl_Part):
+	A generic subprogram is never a primitive operation, and thus
+	a classwide condition for it is not legal.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb, sem_dim.adb, sem_dim.ads, einfo.adb: Minor
+	reformatting.
+
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Flag_Effectively_Volatile_Objects): New routine.
