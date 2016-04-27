@@ -1,3 +1,13 @@
+2016-04-27  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.h (struct dw_loc_descr_node): Remove the
+	dw_loc_frame_offset field.
+	* dwarf2out.c (new_loc_descr): Likewise.
+	(resolve_args_picking_1): Turn the VISITED hash set into a
+	FRAME_OFFSET hash map. Use it to associate a frame offset to
+	visited nodes. Remove uses of the CHECKING_P macro.
+	(resolve_args_picking): Update call to resolve_args_picking_1.
+
 2016-04-27  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (iv_ca_dump): Fix level of indentation.
