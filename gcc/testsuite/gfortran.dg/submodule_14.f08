@@ -46,4 +46,4 @@ end submodule testson
   x = 10
   if (fcn1 (x) .ne. 0) call abort
 end
-
+! { dg-final { cleanup-submodules "test@testson" } }
