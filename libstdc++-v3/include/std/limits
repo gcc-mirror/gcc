@@ -307,9 +307,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  representation of a fundamental type on a given platform.  For
    *  non-fundamental types, the functions will return 0 and the data
    *  members will all be @c false.
-   *
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS:  DRs 201 and 184 (hi Gaby!) are
-   *  noted, but not incorporated in this documented (yet).
   */
   template<typename _Tp>
     struct numeric_limits : public __numeric_limits_base
@@ -360,7 +357,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
     };
 
-#if __cplusplus >= 201103L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 559. numeric_limits<const T>
+
   template<typename _Tp>
     struct numeric_limits<const _Tp>
     : public numeric_limits<_Tp> { };
@@ -372,10 +371,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct numeric_limits<const volatile _Tp>
     : public numeric_limits<_Tp> { };
-#endif
 
   // Now there follow 16 explicit specializations.  Yes, 16.  Make sure
-  // you get the count right. (18 in c++0x mode)
+  // you get the count right. (18 in C++11 mode, with char16_t and char32_t.)
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 184. numeric_limits<bool> wording problems
 
   /// numeric_limits<bool> specialization.
   template<>
