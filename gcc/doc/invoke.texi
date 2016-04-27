@@ -273,7 +273,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len} @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
--Wmain -Wmaybe-uninitialized -Wmemset-transposed-args @gol
+-Wmain -Wmaybe-uninitialized -Wmemset-elt-size -Wmemset-transposed-args @gol
 -Wmisleading-indentation -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
 -Wno-multichar -Wnonnull -Wnonnull-compare @gol
@@ -3548,6 +3548,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wlogical-not-parentheses
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
+-Wmemset-elt-size @gol
 -Wmemset-transposed-args @gol
 -Wmisleading-indentation @r{(only for C/C++)} @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
@@ -5256,6 +5257,15 @@ but a pointer, and suggests a possible fix, or about
 Warn when the @code{sizeof} operator is applied to a parameter that is
 declared as an array in a function definition.  This warning is enabled by
 default for C and C++ programs.
+
+@item -Wmemset-elt-size
+@opindex Wmemset-elt-size
+@opindex Wno-memset-elt-size
+Warn for suspicious calls to the @code{memset} built-in function, if the
+first argument references an array, and the third argument is a number
+equal to the number of elements, but not equal to the size of the array
+in memory.  This indicates that the user has omitted a multiplication by
+the element size.  This warning is enabled by @option{-Wall}.
 
 @item -Wmemset-transposed-args
 @opindex Wmemset-transposed-args

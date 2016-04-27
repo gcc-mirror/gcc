@@ -1,3 +1,8 @@
+2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* parser.c (cp_parser_postfix_expression): Call
+	warn_for_memset instead of warning directly here.
+
 2016-04-26  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70241
