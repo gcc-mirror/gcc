@@ -1,3 +1,8 @@
+2016-04-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70728
+	* gcc.target/i386/pr70728.c: New test.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
