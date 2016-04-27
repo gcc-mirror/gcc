@@ -1,3 +1,7 @@
+2016-04-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* params.def (MIN_PARTITION_SIZE): Set default value to 10000.
+
 2016-04-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (A - B > A, A + B < A): New transformations.

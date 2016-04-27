@@ -1027,7 +1027,7 @@ DEFPARAM (PARAM_LTO_PARTITIONS,
 DEFPARAM (MIN_PARTITION_SIZE,
 	  "lto-min-partition",
 	  "Minimal size of a partition for LTO (in estimated instructions).",
-	  1000, 0, 0)
+	  10000, 0, 0)
 
 DEFPARAM (MAX_PARTITION_SIZE,
 	  "lto-max-partition",
