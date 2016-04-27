@@ -3508,7 +3508,7 @@ extern int condjump_in_parallel_p (const rtx_insn *);
 extern int max_reg_num (void);
 extern int max_label_num (void);
 extern int get_first_label_num (void);
-extern void maybe_set_first_label_num (rtx);
+extern void maybe_set_first_label_num (rtx_code_label *);
 extern void delete_insns_since (rtx_insn *);
 extern void mark_reg_pointer (rtx, int);
 extern void mark_user_reg (rtx);
