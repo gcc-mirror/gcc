@@ -2508,6 +2508,60 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (out @0 { wide_int_to_tree (TREE_TYPE (@0), wi::max_value
 	       (TYPE_PRECISION (TREE_TYPE (@0)), UNSIGNED) - @1); }))))
 
+/* To detect overflow in unsigned A - B, A < B is simpler than A - B > A.
+   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.c
+   expects the long form, so we restrict the transformation for now.  */
+(for cmp (gt le)
+ (simplify
+  (cmp (minus@2 @0 @1) @0)
+  (if (single_use (@2)
+       && ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+   (cmp @1 @0))))
+(for cmp (lt ge)
+ (simplify
+  (cmp @0 (minus@2 @0 @1))
+  (if (single_use (@2)
+       && ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+   (cmp @0 @1))))
+
+/* Testing for overflow is unnecessary if we already know the result.  */
+/* A < A - B  */
+(for cmp (lt ge)
+     out (ne eq)
+ (simplify
+  (cmp @0 (realpart (IFN_SUB_OVERFLOW@2 @0 @1)))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+   (out (imagpart @2) { build_zero_cst (TREE_TYPE (@0)); }))))
+/* A - B > A  */
+(for cmp (gt le)
+     out (ne eq)
+ (simplify
+  (cmp (realpart (IFN_SUB_OVERFLOW@2 @0 @1)) @0)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+   (out (imagpart @2) { build_zero_cst (TREE_TYPE (@0)); }))))
+/* A + B < A  */
+(for cmp (lt ge)
+     out (ne eq)
+ (simplify
+  (cmp (realpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) @0)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+   (out (imagpart @2) { build_zero_cst (TREE_TYPE (@0)); }))))
+/* A > A + B  */
+(for cmp (gt le)
+     out (ne eq)
+ (simplify
+  (cmp @0 (realpart (IFN_ADD_OVERFLOW:c@2 @0 @1)))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+   (out (imagpart @2) { build_zero_cst (TREE_TYPE (@0)); }))))
+
 
 /* Simplification of math builtins.  These rules must all be optimizations
    as well as IL simplifications.  If there is a possibility that the new

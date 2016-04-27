@@ -1,3 +1,8 @@
+2016-04-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/overflow-2.c: New testcase.
+	* gcc.dg/tree-ssa/minus-ovf.c: Likewise.
+
 2015-04-27  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/69024
