@@ -53874,9 +53874,12 @@ ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
 static reg_class_t
 ix86_spill_class (reg_class_t rclass, machine_mode mode)
 {
-  if (TARGET_SSE && TARGET_GENERAL_REGS_SSE_SPILL && ! TARGET_MMX
+  if (TARGET_GENERAL_REGS_SSE_SPILL
+      && TARGET_SSE2
+      && TARGET_INTER_UNIT_MOVES_TO_VEC
+      && TARGET_INTER_UNIT_MOVES_FROM_VEC
       && (mode == SImode || (TARGET_64BIT && mode == DImode))
-      && rclass != NO_REGS && INTEGER_CLASS_P (rclass))
+      && INTEGER_CLASS_P (rclass))
     return ALL_SSE_REGS;
   return NO_REGS;
 }
