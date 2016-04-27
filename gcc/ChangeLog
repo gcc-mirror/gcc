@@ -1,3 +1,59 @@
+2016-04-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70155
+	* config/i386/i386.c (scalar_to_vector_candidate_p): Renamed
+	to ...
+	(dimode_scalar_to_vector_candidate_p): This.
+	(timode_scalar_to_vector_candidate_p): New function.
+	(scalar_to_vector_candidate_p): Likewise.
+	(timode_check_non_convertible_regs): Likewise.
+	(timode_remove_non_convertible_regs): Likewise.
+	(remove_non_convertible_regs): Likewise.
+	(remove_non_convertible_regs): Renamed to ...
+	(dimode_remove_non_convertible_regs): This.
+	(scalar_chain::~scalar_chain): Make it virtual.
+	(scalar_chain::compute_convert_gain): Make it pure virtual.
+	(scalar_chain::mark_dual_mode_def): Likewise.
+	(scalar_chain::convert_insn): Likewise.
+	(scalar_chain::convert_registers): Likewise.
+	(scalar_chain::add_to_queue): Make it protected.
+	(scalar_chain::emit_conversion_insns): Likewise.
+	(scalar_chain::replace_with_subreg): Likewise.
+	(scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(scalar_chain::convert_op): Likewise.
+	(scalar_chain::convert_reg): Likewise.
+	(scalar_chain::make_vector_copies): Likewise.
+	(scalar_chain::convert_registers): New pure virtual function.
+	(class dimode_scalar_chain): New class.
+	(class timode_scalar_chain): Likewise.
+	(scalar_chain::mark_dual_mode_def): Renamed to ...
+	(dimode_scalar_chain::mark_dual_mode_def): This.
+	(timode_scalar_chain::mark_dual_mode_def): New function.
+	(timode_scalar_chain::convert_insn): Likewise.
+	(dimode_scalar_chain::convert_registers): Likewise.
+	(scalar_chain::compute_convert_gain): Renamed to ...
+	(dimode_scalar_chain::compute_convert_gain): This.
+	(scalar_chain::replace_with_subreg): Renamed to ...
+	(dimode_scalar_chain::replace_with_subreg): This.
+	(scalar_chain::replace_with_subreg_in_insn): Renamed to ...
+	(dimode_scalar_chain::replace_with_subreg_in_insn): This.
+	(scalar_chain::make_vector_copies): Renamed to ...
+	(dimode_scalar_chain::make_vector_copies): This.
+	(scalar_chain::convert_reg): Renamed to ...
+	(dimode_scalar_chain::convert_reg ): This.
+	(scalar_chain::convert_op): Renamed to ...
+	(dimode_scalar_chain::convert_op): This.
+	(scalar_chain::convert_insn): Renamed to ...
+	(dimode_scalar_chain::convert_insn): This.
+	(scalar_chain::convert): Call convert_registers.
+	(convert_scalars_to_vector): Change to scalar_chain pointer to
+	use timode_scalar_chain in 64-bit mode and dimode_scalar_chain
+	in 32-bit mode.  Delete scalar_chain pointer.  Call
+	free_dominance_info in 64-bit mode.
+	(pass_stv::gate): Remove TARGET_64BIT check.
+	(ix86_option_override): Put the 64-bit STV pass before the CSE
+	pass.
+
 2016-04-27  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.h (struct dw_loc_descr_node): Remove the
