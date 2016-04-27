@@ -1,3 +1,8 @@
+2016-04-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Replace ".{5}" with
+	".{5,6}".
+
 2016-04-27  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/pr64705.c: Revise check string.
