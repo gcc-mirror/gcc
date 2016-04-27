@@ -275,7 +275,7 @@ struct df_problem {
   df_dump_insn_problem_function dump_insn_bottom_fun;
   df_verify_solution_start verify_start_fun;
   df_verify_solution_end verify_end_fun;
-  struct df_problem *dependent_problem;
+  const struct df_problem *dependent_problem;
   unsigned int block_info_elt_size;
 
   /* The timevar id associated with this pass.  */
@@ -290,7 +290,7 @@ struct df_problem {
 /* The specific instance of the problem to solve.  */
 struct dataflow
 {
-  struct df_problem *problem;           /* The problem to be solved.  */
+  const struct df_problem *problem;     /* The problem to be solved.  */
 
   /* Array indexed by bb->index, that contains basic block problem and
      solution specific information.  */
@@ -948,7 +948,7 @@ extern struct df_d *df;
 
 /* Functions defined in df-core.c.  */
 
-extern void df_add_problem (struct df_problem *);
+extern void df_add_problem (const struct df_problem *);
 extern int df_set_flags (int);
 extern int df_clear_flags (int);
 extern void df_set_blocks (bitmap);

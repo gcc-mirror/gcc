@@ -396,7 +396,7 @@ df_scan_start_block (basic_block bb, FILE *file)
 #endif
 }
 
-static struct df_problem problem_SCAN =
+static const struct df_problem problem_SCAN =
 {
   DF_SCAN,                    /* Problem id.  */
   DF_NONE,                    /* Direction.  */

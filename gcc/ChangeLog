@@ -1,3 +1,21 @@
+2016-04-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* df-core.c (df_add_problem): Make the problem param be const.
+	(df_remove_problem): Make local "problem" be const.
+	* df-problems.c (problem_RD): Make const.
+	(problem_LR): Likewise.
+	(problem_LIVE): Likewise.
+	(problem_MIR): Likewise.
+	(problem_CHAIN): Likewise.
+	(problem_WORD_LR): Likewise.
+	(problem_NOTE): Likewise.
+	(problem_MD): Likewise.
+	* df-scan.c (problem_SCAN): Likewise.
+	* df.h (struct df_problem): Make field "dependent_problem" be
+	const.
+	(struct dataflow): Likewise for field "problem".
+	(df_add_problem): Make param const.
+
 2016-04-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_spill_class): Enable for TARGET_SSE2 when
