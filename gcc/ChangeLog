@@ -1,3 +1,8 @@
+2016-04-27  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (iv_ca_dump): Fix level of indentation.
+	(free_loop_data): Release vuses of groups.
+
 2016-04-27  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (struct iv): Use pointer to struct iv_use

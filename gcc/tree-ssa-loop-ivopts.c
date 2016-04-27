@@ -6311,15 +6311,15 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
            ivs->cand_cost, ivs->cand_use_cost.cost, ivs->cand_use_cost.complexity);
   bitmap_print (file, ivs->cands, "  candidates: ","\n");
 
-   for (i = 0; i < ivs->upto; i++)
+  for (i = 0; i < ivs->upto; i++)
     {
       struct iv_group *group = data->vgroups[i];
       struct cost_pair *cp = iv_ca_cand_for_group (ivs, group);
       if (cp)
-        fprintf (file, "   group:%d --> iv_cand:%d, cost=(%d,%d)\n",
-                 group->id, cp->cand->id, cp->cost.cost, cp->cost.complexity);
+	fprintf (file, "   group:%d --> iv_cand:%d, cost=(%d,%d)\n",
+		 group->id, cp->cand->id, cp->cost.cost, cp->cost.complexity);
       else
-        fprintf (file, "   group:%d --> ??\n", group->id);
+	fprintf (file, "   group:%d --> ??\n", group->id);
     }
 
   for (i = 1; i <= data->max_inv_id; i++)
@@ -7503,6 +7503,7 @@ free_loop_data (struct ivopts_data *data)
 
       for (j = 0; j < group->vuses.length (); j++)
 	free (group->vuses[j]);
+      group->vuses.release ();
 
       BITMAP_FREE (group->related_cands);
       for (j = 0; j < group->n_map_members; j++)
