@@ -7108,8 +7108,10 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      --  Final transformation - turn the object declaration into a renaming if
-      --  appropriate.
+      --  Final transformation - turn the object declaration into a renaming
+      --  if appropriate. If this is the completion of a deferred constant
+      --  declaration, then this transformation generates what would be
+      --  illegal code if written by hand, but that's OK.
 
       if Present (Expr) then
          if Rewrite_As_Renaming then

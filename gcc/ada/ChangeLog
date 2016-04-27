@@ -1,3 +1,35 @@
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Export_Import): Signal that there is no
+	corresponding pragma.
+
+2016-04-27  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb: Minor comment improvement.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration): If the
+	return type is an untagged limited record with only access
+	discriminants and no controlled components, the return value does not
+	need to use the secondary stack.
+
+2016-04-27  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): When
+	generating C code handle object declarations that have
+	discriminants and are initialized by means of a call to a
+	function.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-textio.adb (Get_Line function): Handle properly the case of
+	a line that has the same length as the buffer (or a multiple
+	thereof) and there is no line terminator.
+	* a-tigeli.adb (Get_Line procedure): Do not store an end_of_file
+	in the string when there is no previous line terminator and we
+	need at most one additional character.
+
 2016-04-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-rident.ads: Make No_Implicit_Loops non partition wide.

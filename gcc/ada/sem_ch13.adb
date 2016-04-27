@@ -1691,6 +1691,12 @@ package body Sem_Ch13 is
                   --  into account Conversion, External_Name, and Link_Name.
 
                   Aitem := Build_Export_Import_Pragma (Aspect, E);
+
+               --  Otherwise the expression is either False or erroneous. There
+               --  is no corresponding pragma.
+
+               else
+                  Aitem := Empty;
                end if;
             end Analyze_Aspect_Export_Import;
 

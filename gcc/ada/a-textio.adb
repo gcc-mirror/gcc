@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -704,9 +704,6 @@ package body Ada.Text_IO is
    end Get_Line;
 
    function Get_Line (File : File_Type) return String is
-      Buffer : String (1 .. 500);
-      Last   : Natural;
-
       function Get_Rest (S : String) return String;
       --  This is a recursive function that reads the rest of the line and
       --  returns it. S is the part read so far.
@@ -732,11 +729,18 @@ package body Ada.Text_IO is
          begin
             if Last < Buffer'Last then
                return R;
+
             else
                return Get_Rest (R);
             end if;
          end;
       end Get_Rest;
+
+      --  Local variables
+
+      Buffer : String (1 .. 500);
+      ch     : int;
+      Last   : Natural;
 
    --  Start of processing for Get_Line
 
@@ -745,6 +749,22 @@ package body Ada.Text_IO is
 
       if Last < Buffer'Last then
          return Buffer (1 .. Last);
+
+      --  If the String has the same length as the buffer, and there is no end
+      --  of line, check whether we are at the end of file, in which case we
+      --  have the full String in the buffer.
+
+      elsif Last = Buffer'Last then
+         ch := Getc (File);
+
+         if ch = EOF then
+            return Buffer;
+
+         else
+            Ungetc (ch, File);
+            return Get_Rest (Buffer (1 .. Last));
+         end if;
+
       else
          return Get_Rest (Buffer (1 .. Last));
       end if;

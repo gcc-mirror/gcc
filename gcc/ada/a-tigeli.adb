@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,8 +187,13 @@ begin
          --  If we get EOF after already reading data, this is an incomplete
          --  last line, in which case no End_Error should be raised.
 
-         if ch = EOF and then Last < Item'First then
-            raise End_Error;
+         if ch = EOF then
+            if  Last < Item'First then
+               raise End_Error;
+
+            else  --  All done
+               return;
+            end if;
 
          elsif ch /= LM then
 
