@@ -1062,7 +1062,6 @@ package body Sem_Ch5 is
          end if;
 
          Check_References (Ent);
-         Warn_On_Useless_Assignments (Ent);
          End_Scope;
 
          if Unblocked_Exit_Count = 0 then

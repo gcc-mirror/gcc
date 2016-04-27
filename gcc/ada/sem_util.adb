@@ -13377,14 +13377,14 @@ package body Sem_Util is
 
             return
               Pref = Obj_Ref
-              and then Present (Etype (Pref))
-              and then Is_Protected_Type (Etype (Pref))
-              and then Is_Entity_Name (Subp)
-              and then Present (Entity (Subp))
-              and then Ekind_In (Entity (Subp), E_Entry,
-                                 E_Entry_Family,
-                                 E_Function,
-                                 E_Procedure);
+                and then Present (Etype (Pref))
+                and then Is_Protected_Type (Etype (Pref))
+                and then Is_Entity_Name (Subp)
+                and then Present (Entity (Subp))
+                and then Ekind_In (Entity (Subp), E_Entry,
+                                                  E_Entry_Family,
+                                                  E_Function,
+                                                  E_Procedure);
          else
             return False;
          end if;
@@ -14954,17 +14954,11 @@ package body Sem_Util is
 
    function Is_Volatile_Function (Func_Id : Entity_Id) return Boolean is
    begin
-      --  The caller must ensure that Func_Id denotes a function
-
       pragma Assert (Ekind_In (Func_Id, E_Function, E_Generic_Function));
 
-      --  A protected function is automatically volatile
+      --  A function declared within a protected type is volatile
 
-      if Is_Primitive (Func_Id)
-        and then Present (First_Formal (Func_Id))
-        and then Is_Protected_Type (Etype (First_Formal (Func_Id)))
-        and then Etype (First_Formal (Func_Id)) = Scope (Func_Id)
-      then
+      if Is_Protected_Type (Scope (Func_Id)) then
          return True;
 
       --  An instance of Ada.Unchecked_Conversion is a volatile function if
