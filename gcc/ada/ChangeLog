@@ -1,5 +1,40 @@
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* aspects.ads Aspects Export and Import do not require delay. They
+	were classified as delayed aspects, but treated as non-delayed
+	by the analysis of aspects.
+	* freeze.adb (Copy_Import_Pragma): New routine.
+	(Wrap_Imported_Subprogram): Copy the import pragma by first
+	resetting all semantic fields to avoid an infinite loop when
+	performing the copy.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Add
+	comment on the processing of aspects Export and Import
+	at the freeze point.
+	(Analyze_Aspect_Convention: New routine.
+	(Analyze_Aspect_Export_Import): New routine.
+	(Analyze_Aspect_External_Link_Name): New routine.
+	(Analyze_Aspect_External_Or_Link_Name): Removed.
+	(Analyze_Aspect_Specifications): Factor out the analysis of
+	aspects Convention, Export, External_Name, Import, and Link_Name
+	in their respective routines.  Aspects Export and Import should
+	not generate a Boolean pragma because their corresponding pragmas
+	have a very different syntax.
+	(Build_Export_Import_Pragma): New routine.
+	(Get_Interfacing_Aspects): New routine.
+
+2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Add_Inlined_Body): Overhaul implementation,
+	robustify handling of -gnatn1, add special treatment for
+	expression functions.
+
+2016-04-27  Doug Rupp  <rupp@adacore.com>
+
+	* g-traceb.ads: Update comment.
+	* exp_ch2.adb: minor style fix in object declaration
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_elab.adb (Check_Internal_Call): Do not
 	consider a call when it appears within pragma Initial_Condition
 	since the pragma is part of the elaboration statements of a

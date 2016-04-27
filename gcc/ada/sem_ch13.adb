@@ -101,6 +101,13 @@ package body Sem_Ch13 is
    --  list is stored in Static_Discrete_Predicate (Typ), and the Expr is
    --  rewritten as a canonicalized membership operation.
 
+   function Build_Export_Import_Pragma
+     (Asp : Node_Id;
+      Id  : Entity_Id) return Node_Id;
+   --  Create the corresponding pragma for aspect Export or Import denoted by
+   --  Asp. Id is the related entity subject to the aspect. Return Empty when
+   --  the expression of aspect Asp evaluates to False or is erroneous.
+
    function Build_Predicate_Function_Declaration
       (Typ : Entity_Id) return Node_Id;
    --  Build the declaration for a predicate function. The declaration is built
@@ -135,6 +142,27 @@ package body Sem_Ch13 is
    --  Given the expression for an alignment value, returns the corresponding
    --  Uint value. If the value is inappropriate, then error messages are
    --  posted as required, and a value of No_Uint is returned.
+
+   procedure Get_Interfacing_Aspects
+     (Iface_Asp : Node_Id;
+      Conv_Asp  : out Node_Id;
+      EN_Asp    : out Node_Id;
+      Expo_Asp  : out Node_Id;
+      Imp_Asp   : out Node_Id;
+      LN_Asp    : out Node_Id;
+      Do_Checks : Boolean := False);
+   --  Given a single interfacing aspect Iface_Asp, retrieve other interfacing
+   --  aspects that apply to the same related entity. The aspects considered by
+   --  this routine are as follows:
+   --
+   --    Conv_Asp - aspect Convention
+   --    EN_Asp   - aspect External_Name
+   --    Expo_Asp - aspect Export
+   --    Imp_Asp  - aspect Import
+   --    LN_Asp   - aspect Link_Name
+   --
+   --  When flag Do_Checks is set, this routine will flag duplicate uses of
+   --  aspects.
 
    function Is_Operational_Item (N : Node_Id) return Boolean;
    --  A specification for a stream attribute is allowed before the full type
@@ -730,10 +758,6 @@ package body Sem_Ch13 is
    -------------------------------------
 
    procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id) is
-      ASN   : Node_Id;
-      A_Id  : Aspect_Id;
-      Ritem : Node_Id;
-
       procedure Analyze_Aspect_Default_Value (ASN : Node_Id);
       --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
       --  the aspect specification node ASN.
@@ -771,6 +795,7 @@ package body Sem_Ch13 is
       ----------------------------------
 
       procedure Analyze_Aspect_Default_Value (ASN : Node_Id) is
+         A_Id : constant Aspect_Id := Get_Aspect_Id (ASN);
          Ent  : constant Entity_Id := Entity (ASN);
          Expr : constant Node_Id   := Expression (ASN);
          Id   : constant Node_Id   := Identifier (ASN);
@@ -817,7 +842,8 @@ package body Sem_Ch13 is
       ---------------------------------
 
       procedure Inherit_Delayed_Rep_Aspects (ASN : Node_Id) is
-         P : constant Entity_Id := Entity (ASN);
+         A_Id : constant Aspect_Id := Get_Aspect_Id (ASN);
+         P    : constant Entity_Id := Entity (ASN);
          --  Entithy for parent type
 
          N : Node_Id;
@@ -1013,8 +1039,6 @@ package body Sem_Ch13 is
          Expr   : constant Node_Id    := Expression (ASN);
          Loc    : constant Source_Ptr := Sloc (ASN);
 
-         Prag : Node_Id;
-
          procedure Check_False_Aspect_For_Derived_Type;
          --  This procedure checks for the case of a false aspect for a derived
          --  type, which improperly tries to cancel an aspect inherited from
@@ -1088,6 +1112,10 @@ package body Sem_Ch13 is
               ("derived type& inherits aspect%, cannot cancel", Expr, E);
          end Check_False_Aspect_For_Derived_Type;
 
+         --  Local variables
+
+         Prag : Node_Id;
+
       --  Start of processing for Make_Pragma_From_Boolean_Aspect
 
       begin
@@ -1101,12 +1129,11 @@ package body Sem_Ch13 is
          else
             Prag :=
               Make_Pragma (Loc,
+                Pragma_Identifier            =>
+                  Make_Identifier (Sloc (Ident), Chars (Ident)),
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Sloc (Ident),
-                    Expression => New_Occurrence_Of (Ent, Sloc (Ident)))),
-
-                Pragma_Identifier            =>
-                  Make_Identifier (Sloc (Ident), Chars (Ident)));
+                    Expression => New_Occurrence_Of (Ent, Sloc (Ident)))));
 
             Set_From_Aspect_Specification (Prag, True);
             Set_Corresponding_Aspect (Prag, ASN);
@@ -1115,6 +1142,12 @@ package body Sem_Ch13 is
             Set_Parent (Prag, ASN);
          end if;
       end Make_Pragma_From_Boolean_Aspect;
+
+      --  Local variables
+
+      A_Id  : Aspect_Id;
+      ASN   : Node_Id;
+      Ritem : Node_Id;
 
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
 
@@ -1142,7 +1175,25 @@ package body Sem_Ch13 is
 
                   when Boolean_Aspects      |
                        Library_Unit_Aspects =>
-                     Make_Pragma_From_Boolean_Aspect (ASN);
+
+                     --  Aspects Export and Import require special handling.
+                     --  Both are by definition Boolean and may benefit from
+                     --  forward references, however their expressions are
+                     --  treated as static. In addition, the syntax of their
+                     --  corresponding pragmas requires extra "pieces" which
+                     --  may also contain forward references. To account for
+                     --  all of this, the corresponding pragma is created by
+                     --  Analyze_Aspect_Export_Import, but is not analyzed as
+                     --  the complete analysis must happen now.
+
+                     if A_Id = Aspect_Export or else A_Id = Aspect_Import then
+                        null;
+
+                     --  Otherwise create a corresponding pragma
+
+                     else
+                        Make_Pragma_From_Boolean_Aspect (ASN);
+                     end if;
 
                   --  Special handling for aspects that don't correspond to
                   --  pragmas/attributes.
@@ -1435,8 +1486,9 @@ package body Sem_Ch13 is
       --  Insert pragmas/attribute definition clause after this node when no
       --  delayed analysis is required.
 
-      --  Start of processing for Analyze_Aspect_Specifications
+   --  Start of processing for Analyze_Aspect_Specifications
 
+   begin
       --  The general processing involves building an attribute definition
       --  clause or a pragma node that corresponds to the aspect. Then in order
       --  to delay the evaluation of this aspect to the freeze point, we attach
@@ -1456,7 +1508,6 @@ package body Sem_Ch13 is
       --  of visibility for the expression analysis. Thus, we just insert
       --  the pragma after the node N.
 
-   begin
       pragma Assert (Present (L));
 
       --  Loop through aspects
@@ -1478,8 +1529,14 @@ package body Sem_Ch13 is
             --  Source location of expression, modified when we split PPC's. It
             --  is set below when Expr is present.
 
-            procedure Analyze_Aspect_External_Or_Link_Name;
-            --  Perform analysis of the External_Name or Link_Name aspects
+            procedure Analyze_Aspect_Convention;
+            --  Perform analysis of aspect Convention
+
+            procedure Analyze_Aspect_Export_Import;
+            --  Perform analysis of aspects Export or Import
+
+            procedure Analyze_Aspect_External_Link_Name;
+            --  Perform analysis of aspects External_Name or Link_Name
 
             procedure Analyze_Aspect_Implicit_Dereference;
             --  Perform analysis of the Implicit_Dereference aspects
@@ -1496,35 +1553,193 @@ package body Sem_Ch13 is
             --  True, and sets Corresponding_Aspect to point to the aspect.
             --  The resulting pragma is assigned to Aitem.
 
-            ------------------------------------------
-            -- Analyze_Aspect_External_Or_Link_Name --
-            ------------------------------------------
+            -------------------------------
+            -- Analyze_Aspect_Convention --
+            -------------------------------
 
-            procedure Analyze_Aspect_External_Or_Link_Name is
+            procedure Analyze_Aspect_Convention is
+               Conv    : Node_Id;
+               Dummy_1 : Node_Id;
+               Dummy_2 : Node_Id;
+               Dummy_3 : Node_Id;
+               Expo    : Node_Id;
+               Imp     : Node_Id;
+
             begin
-               --  Verify that there is an Import/Export aspect defined for the
-               --  entity. The processing of that aspect in turn checks that
-               --  there is a Convention aspect declared. The pragma is
-               --  constructed when processing the Convention aspect.
+               --  Obtain all interfacing aspects that apply to the related
+               --  entity.
 
-               declare
-                  A : Node_Id;
+               Get_Interfacing_Aspects
+                 (Iface_Asp => Aspect,
+                  Conv_Asp  => Dummy_1,
+                  EN_Asp    => Dummy_2,
+                  Expo_Asp  => Expo,
+                  Imp_Asp   => Imp,
+                  LN_Asp    => Dummy_3,
+                  Do_Checks => True);
 
-               begin
-                  A := First (L);
-                  while Present (A) loop
-                     exit when Nam_In (Chars (Identifier (A)), Name_Export,
-                                                               Name_Import);
-                     Next (A);
-                  end loop;
+               --  The related entity is subject to aspect Export or Import.
+               --  Do not process Convention now because it must be analysed
+               --  as part of Export or Import.
 
-                  if No (A) then
-                     Error_Msg_N
-                       ("missing Import/Export for Link/External name",
-                        Aspect);
+               if Present (Expo) or else Present (Imp) then
+                  return;
+
+               --  Otherwise Convention appears by itself
+
+               else
+                  --  The aspect specifies a particular convention
+
+                  if Present (Expr) then
+                     Conv := New_Copy_Tree (Expr);
+
+                  --  Otherwise assume convention Ada
+
+                  else
+                     Conv := Make_Identifier (Loc, Name_Ada);
                   end if;
-               end;
-            end Analyze_Aspect_External_Or_Link_Name;
+
+                  --  Generate:
+                  --    pragma Convention (<Conv>, <E>);
+
+                  Make_Aitem_Pragma
+                    (Pragma_Name => Name_Convention,
+                     Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Conv),
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => New_Occurrence_Of (E, Loc))));
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+               end if;
+            end Analyze_Aspect_Convention;
+
+            ----------------------------------
+            -- Analyze_Aspect_Export_Import --
+            ----------------------------------
+
+            procedure Analyze_Aspect_Export_Import is
+               Dummy_1 : Node_Id;
+               Dummy_2 : Node_Id;
+               Dummy_3 : Node_Id;
+               Expo    : Node_Id;
+               Imp     : Node_Id;
+
+            begin
+               --  Obtain all interfacing aspects that apply to the related
+               --  entity.
+
+               Get_Interfacing_Aspects
+                 (Iface_Asp => Aspect,
+                  Conv_Asp  => Dummy_1,
+                  EN_Asp    => Dummy_2,
+                  Expo_Asp  => Expo,
+                  Imp_Asp   => Imp,
+                  LN_Asp    => Dummy_3,
+                  Do_Checks => True);
+
+               --  The related entity cannot be subject to both aspects Export
+               --  and Import.
+
+               if Present (Expo) and then Present (Imp) then
+                  Error_Msg_N
+                    ("incompatible interfacing aspects given for &", E);
+                  Error_Msg_Sloc := Sloc (Expo);
+                  Error_Msg_N ("\aspect `Export` #", E);
+                  Error_Msg_Sloc := Sloc (Imp);
+                  Error_Msg_N ("\aspect `Import` #", E);
+               end if;
+
+               --  A variable is most likely modified from the outside. Take
+               --  Take the optimistic approach to avoid spurious errors.
+
+               if Ekind (E) = E_Variable then
+                  Set_Never_Set_In_Source (E, False);
+               end if;
+
+               --  Resolve the expression of an Import or Export here, and
+               --  require it to be of type Boolean and static. This is not
+               --  quite right, because in general this should be delayed,
+               --  but that seems tricky for these, because normally Boolean
+               --  aspects are replaced with pragmas at the freeze point in
+               --  Make_Pragma_From_Boolean_Aspect.
+
+               if not Present (Expr)
+                 or else Is_True (Static_Boolean (Expr))
+               then
+                  if A_Id = Aspect_Import then
+                     Set_Has_Completion (E);
+                     Set_Is_Imported (E);
+
+                     --  An imported object cannot be explicitly initialized
+
+                     if Nkind (N) = N_Object_Declaration
+                       and then Present (Expression (N))
+                     then
+                        Error_Msg_N
+                          ("imported entities cannot be initialized "
+                           & "(RM B.1(24))", Expression (N));
+                     end if;
+
+                  else
+                     pragma Assert (A_Id = Aspect_Export);
+                     Set_Is_Exported (E);
+                  end if;
+
+                  --  Create the proper form of pragma Export or Import taking
+                  --  into account Conversion, External_Name, and Link_Name.
+
+                  Aitem := Build_Export_Import_Pragma (Aspect, E);
+               end if;
+            end Analyze_Aspect_Export_Import;
+
+            ---------------------------------------
+            -- Analyze_Aspect_External_Link_Name --
+            ---------------------------------------
+
+            procedure Analyze_Aspect_External_Link_Name is
+               Dummy_1 : Node_Id;
+               Dummy_2 : Node_Id;
+               Dummy_3 : Node_Id;
+               Expo    : Node_Id;
+               Imp     : Node_Id;
+
+            begin
+               --  Obtain all interfacing aspects that apply to the related
+               --  entity.
+
+               Get_Interfacing_Aspects
+                 (Iface_Asp => Aspect,
+                  Conv_Asp  => Dummy_1,
+                  EN_Asp    => Dummy_2,
+                  Expo_Asp  => Expo,
+                  Imp_Asp   => Imp,
+                  LN_Asp    => Dummy_3,
+                  Do_Checks => True);
+
+               --  Ensure that aspect External_Name applies to aspect Export or
+               --  Import.
+
+               if A_Id = Aspect_External_Name then
+                  if No (Expo) and then No (Imp) then
+                     Error_Msg_N
+                       ("aspect `External_Name` requires aspect `Import` or "
+                        & "`Export`", Aspect);
+                  end if;
+
+               --  Otherwise ensure that aspect Link_Name applies to aspect
+               --  Export or Import.
+
+               else
+                  pragma Assert (A_Id = Aspect_Link_Name);
+                  if No (Expo) and then No (Imp) then
+                     Error_Msg_N
+                       ("aspect `Link_Name` requires aspect `Import` or "
+                        & "`Export`", Aspect);
+                  end if;
+               end if;
+            end Analyze_Aspect_External_Link_Name;
 
             -----------------------------------------
             -- Analyze_Aspect_Implicit_Dereference --
@@ -1561,8 +1776,7 @@ package body Sem_Ch13 is
                   --  Error if no proper access discriminant
 
                   if No (Disc) then
-                     Error_Msg_NE
-                      ("not an access discriminant of&", Expr, E);
+                     Error_Msg_NE ("not an access discriminant of&", Expr, E);
                      return;
                   end if;
                end if;
@@ -1578,8 +1792,9 @@ package body Sem_Ch13 is
                   if Present (Parent_Disc)
                     and then Corresponding_Discriminant (Disc) /= Parent_Disc
                   then
-                     Error_Msg_N ("reference discriminant does not match " &
-                       "discriminant of parent type", Expr);
+                     Error_Msg_N
+                       ("reference discriminant does not match discriminant "
+                        & "of parent type", Expr);
                   end if;
                end if;
             end Analyze_Aspect_Implicit_Dereference;
@@ -2040,101 +2255,16 @@ package body Sem_Ch13 is
 
                --  Convention
 
-               when Aspect_Convention  =>
+               when Aspect_Convention =>
+                  Analyze_Aspect_Convention;
+                  goto Continue;
 
-                  --  The aspect may be part of the specification of an import
-                  --  or export pragma. Scan the aspect list to gather the
-                  --  other components, if any. The name of the generated
-                  --  pragma is one of Convention/Import/Export.
+               --  External_Name, Link_Name
 
-                  declare
-                     Args : constant List_Id := New_List (
-                              Make_Pragma_Argument_Association (Sloc (Expr),
-                                Expression => Relocate_Node (Expr)),
-                              Make_Pragma_Argument_Association (Sloc (Ent),
-                                Expression => Ent));
-
-                     Imp_Exp_Seen : Boolean := False;
-                     --  Flag set when aspect Import or Export has been seen
-
-                     Imp_Seen : Boolean := False;
-                     --  Flag set when aspect Import has been seen
-
-                     Asp        : Node_Id;
-                     Asp_Nam    : Name_Id;
-                     Extern_Arg : Node_Id;
-                     Link_Arg   : Node_Id;
-                     Prag_Nam   : Name_Id;
-
-                  begin
-                     Extern_Arg := Empty;
-                     Link_Arg   := Empty;
-                     Prag_Nam   := Chars (Id);
-
-                     Asp := First (L);
-                     while Present (Asp) loop
-                        Asp_Nam := Chars (Identifier (Asp));
-
-                        --  Aspects Import and Export take precedence over
-                        --  aspect Convention. As a result the generated pragma
-                        --  must carry the proper interfacing aspect's name.
-
-                        if Nam_In (Asp_Nam, Name_Import, Name_Export) then
-                           if Imp_Exp_Seen then
-                              Error_Msg_N ("conflicting", Asp);
-                           else
-                              Imp_Exp_Seen := True;
-
-                              if Asp_Nam = Name_Import then
-                                 Imp_Seen := True;
-                              end if;
-                           end if;
-
-                           Prag_Nam := Asp_Nam;
-
-                        --  Aspect External_Name adds an extra argument to the
-                        --  generated pragma.
-
-                        elsif Asp_Nam = Name_External_Name then
-                           Extern_Arg :=
-                             Make_Pragma_Argument_Association (Loc,
-                               Chars      => Asp_Nam,
-                               Expression => Relocate_Node (Expression (Asp)));
-
-                        --  Aspect Link_Name adds an extra argument to the
-                        --  generated pragma.
-
-                        elsif Asp_Nam = Name_Link_Name then
-                           Link_Arg :=
-                             Make_Pragma_Argument_Association (Loc,
-                               Chars      => Asp_Nam,
-                               Expression => Relocate_Node (Expression (Asp)));
-                        end if;
-
-                        Next (Asp);
-                     end loop;
-
-                     --  Assemble the full argument list
-
-                     if Present (Extern_Arg) then
-                        Append_To (Args, Extern_Arg);
-                     end if;
-
-                     if Present (Link_Arg) then
-                        Append_To (Args, Link_Arg);
-                     end if;
-
-                     Make_Aitem_Pragma
-                       (Pragma_Argument_Associations => Args,
-                        Pragma_Name                  => Prag_Nam);
-
-                     --  Store the generated pragma Import in the related
-                     --  subprogram.
-
-                     if Imp_Seen and then Is_Subprogram (E) then
-                        Set_Import_Pragma (E, Aitem);
-                     end if;
-                  end;
+               when Aspect_External_Name |
+                    Aspect_Link_Name     =>
+                  Analyze_Aspect_External_Link_Name;
+                  goto Continue;
 
                --  CPU, Interrupt_Priority, Priority
 
@@ -2937,8 +3067,9 @@ package body Sem_Ch13 is
                   if not (Is_Array_Type (E)
                            and then Is_Scalar_Type (Component_Type (E)))
                   then
-                     Error_Msg_N ("aspect Default_Component_Value can only "
-                       & "apply to an array of scalar components", N);
+                     Error_Msg_N
+                       ("aspect Default_Component_Value can only apply to an "
+                        & "array of scalar components", N);
                   end if;
 
                   Aitem := Empty;
@@ -2954,13 +3085,6 @@ package body Sem_Ch13 is
 
                when Aspect_Implicit_Dereference =>
                   Analyze_Aspect_Implicit_Dereference;
-                  goto Continue;
-
-               --  External_Name, Link_Name
-
-               when Aspect_External_Name |
-                    Aspect_Link_Name     =>
-                  Analyze_Aspect_External_Or_Link_Name;
                   goto Continue;
 
                --  Dimension
@@ -3187,61 +3311,8 @@ package body Sem_Ch13 is
 
                      goto Continue;
 
-                  elsif A_Id = Aspect_Import or else A_Id = Aspect_Export then
-
-                     --  For the case of aspects Import and Export, we don't
-                     --  consider that we know the entity is never set in the
-                     --  source, since it is is likely modified outside the
-                     --  program.
-
-                     --  Note: one might think that the analysis of the
-                     --  resulting pragma would take care of that, but
-                     --  that's not the case since it won't be from source.
-
-                     if Ekind (E) = E_Variable then
-                        Set_Never_Set_In_Source (E, False);
-                     end if;
-
-                     --  In older versions of Ada the corresponding pragmas
-                     --  specified a Convention. In Ada 2012 the convention is
-                     --  specified as a separate aspect, and it is optional,
-                     --  given that it defaults to Convention_Ada. The code
-                     --  that verifed that there was a matching convention
-                     --  is now obsolete.
-
-                     --  Resolve the expression of an Import or Export here,
-                     --  and require it to be of type Boolean and static. This
-                     --  is not quite right, because in general this should be
-                     --  delayed, but that seems tricky for these, because
-                     --  normally Boolean aspects are replaced with pragmas at
-                     --  the freeze point (in Make_Pragma_From_Boolean_Aspect),
-                     --  but in the case of these aspects we can't generate
-                     --  a simple pragma with just the entity name. ???
-
-                     if not Present (Expr)
-                       or else Is_True (Static_Boolean (Expr))
-                     then
-                        if A_Id = Aspect_Import then
-                           Set_Is_Imported (E);
-                           Set_Has_Completion (E);
-
-                           --  An imported entity cannot have an explicit
-                           --  initialization.
-
-                           if Nkind (N) = N_Object_Declaration
-                             and then Present (Expression (N))
-                           then
-                              Error_Msg_N
-                                ("imported entities cannot be initialized "
-                                 & "(RM B.1(24))", Expression (N));
-                           end if;
-
-                        elsif A_Id = Aspect_Export then
-                           Set_Is_Exported (E);
-                        end if;
-                     end if;
-
-                     goto Continue;
+                  elsif A_Id = Aspect_Export or else A_Id = Aspect_Import then
+                     Analyze_Aspect_Export_Import;
 
                   --  Disable_Controlled
 
@@ -3302,11 +3373,20 @@ package body Sem_Ch13 is
                   --  expression is missing other than the above cases.
 
                   if not Delay_Required or else No (Expr) then
-                     Make_Aitem_Pragma
-                       (Pragma_Argument_Associations => New_List (
-                          Make_Pragma_Argument_Association (Sloc (Ent),
-                            Expression => Ent)),
-                        Pragma_Name                  => Chars (Id));
+
+                     --  Exclude aspects Export and Import because their pragma
+                     --  syntax does not map directly to a Boolean aspect.
+
+                     if A_Id /= Aspect_Export
+                       and then A_Id /= Aspect_Import
+                     then
+                        Make_Aitem_Pragma
+                          (Pragma_Argument_Associations => New_List (
+                             Make_Pragma_Argument_Association (Sloc (Ent),
+                               Expression => Ent)),
+                           Pragma_Name                  => Chars (Id));
+                     end if;
+
                      Delay_Required := False;
 
                   --  In general cases, the corresponding pragma/attribute
@@ -3506,7 +3586,7 @@ package body Sem_Ch13 is
             --  unit, we simply insert the pragma/attribute definition clause
             --  in sequence.
 
-            else
+            elsif Present (Aitem) then
                Insert_After (Ins_Node, Aitem);
                Ins_Node := Aitem;
             end if;
@@ -7814,6 +7894,133 @@ package body Sem_Ch13 is
          return;
    end Build_Discrete_Static_Predicate;
 
+   --------------------------------
+   -- Build_Export_Import_Pragma --
+   --------------------------------
+
+   function Build_Export_Import_Pragma
+     (Asp : Node_Id;
+      Id  : Entity_Id) return Node_Id
+   is
+      Asp_Id : constant Aspect_Id  := Get_Aspect_Id (Asp);
+      Expr   : constant Node_Id    := Expression (Asp);
+      Loc    : constant Source_Ptr := Sloc (Asp);
+
+      Args     : List_Id;
+      Conv     : Node_Id;
+      Conv_Arg : Node_Id;
+      Dummy_1  : Node_Id;
+      Dummy_2  : Node_Id;
+      EN       : Node_Id;
+      LN       : Node_Id;
+      Prag     : Node_Id;
+
+      Create_Pragma : Boolean := False;
+      --  This flag is set when the aspect form is such that it warrants the
+      --  creation of a corresponding pragma.
+
+   begin
+      if Present (Expr) then
+         if Error_Posted (Expr) then
+            null;
+
+         elsif Is_True (Expr_Value (Expr)) then
+            Create_Pragma := True;
+         end if;
+
+      --  Otherwise the aspect defaults to True
+
+      else
+         Create_Pragma := True;
+      end if;
+
+      --  Nothing to do when the expression is False or is erroneous
+
+      if not Create_Pragma then
+         return Empty;
+      end if;
+
+      --  Obtain all interfacing aspects that apply to the related entity
+
+      Get_Interfacing_Aspects
+        (Iface_Asp => Asp,
+         Conv_Asp  => Conv,
+         EN_Asp    => EN,
+         Expo_Asp  => Dummy_1,
+         Imp_Asp   => Dummy_2,
+         LN_Asp    => LN);
+
+      Args := New_List;
+
+      --  Handle the convention argument
+
+      if Present (Conv) then
+         Conv_Arg := New_Copy_Tree (Expression (Conv));
+
+      --  Assume convention "Ada' when aspect Convention is missing
+
+      else
+         Conv_Arg := Make_Identifier (Loc, Name_Ada);
+      end if;
+
+      Append_To (Args,
+        Make_Pragma_Argument_Association (Loc,
+          Chars      => Name_Convention,
+          Expression => Conv_Arg));
+
+      --  Handle the entity argument
+
+      Append_To (Args,
+        Make_Pragma_Argument_Association (Loc,
+          Chars      => Name_Entity,
+          Expression => New_Occurrence_Of (Id, Loc)));
+
+      --  Handle the External_Name argument
+
+      if Present (EN) then
+         Append_To (Args,
+           Make_Pragma_Argument_Association (Loc,
+             Chars      => Name_External_Name,
+             Expression => New_Copy_Tree (Expression (EN))));
+      end if;
+
+      --  Handle the Link_Name argument
+
+      if Present (LN) then
+         Append_To (Args,
+           Make_Pragma_Argument_Association (Loc,
+             Chars      => Name_Link_Name,
+             Expression => New_Copy_Tree (Expression (LN))));
+      end if;
+
+      --  Generate:
+      --    pragma Export/Import
+      --      (Convention    => <Conv>/Ada,
+      --       Entity        => <Id>,
+      --      [External_Name => <EN>,]
+      --      [Link_Name     => <LN>]);
+
+      Prag :=
+        Make_Pragma (Loc,
+          Pragma_Identifier            =>
+            Make_Identifier (Loc, Chars (Identifier (Asp))),
+          Pragma_Argument_Associations => Args);
+
+      --  Decorate the relevant aspect and the pragma
+
+      Set_Aspect_Rep_Item (Asp, Prag);
+
+      Set_Corresponding_Aspect      (Prag, Asp);
+      Set_From_Aspect_Specification (Prag);
+      Set_Parent                    (Prag, Asp);
+
+      if Asp_Id = Aspect_Import and then Is_Subprogram (Id) then
+         Set_Import_Pragma (Id, Prag);
+      end if;
+
+      return Prag;
+   end Build_Export_Import_Pragma;
+
    -------------------------------------------
    -- Build_Invariant_Procedure_Declaration --
    -------------------------------------------
@@ -11297,6 +11504,106 @@ package body Sem_Ch13 is
          return Align;
       end if;
    end Get_Alignment_Value;
+
+   -----------------------------
+   -- Get_Interfacing_Aspects --
+   -----------------------------
+
+   procedure Get_Interfacing_Aspects
+     (Iface_Asp : Node_Id;
+      Conv_Asp  : out Node_Id;
+      EN_Asp    : out Node_Id;
+      Expo_Asp  : out Node_Id;
+      Imp_Asp   : out Node_Id;
+      LN_Asp    : out Node_Id;
+      Do_Checks : Boolean := False)
+   is
+      procedure Save_Or_Duplication_Error
+        (Asp : Node_Id;
+         To  : in out Node_Id);
+      --  Save the value of aspect Asp in node To. If To already has a value,
+      --  then this is considered a duplicate use of aspect. Emit an error if
+      --  flag Do_Checks is set.
+
+      -------------------------------
+      -- Save_Or_Duplication_Error --
+      -------------------------------
+
+      procedure Save_Or_Duplication_Error
+        (Asp : Node_Id;
+         To  : in out Node_Id)
+      is
+      begin
+         --  Detect an extra aspect and issue an error
+
+         if Present (To) then
+            if Do_Checks then
+               Error_Msg_Name_1 := Chars (Identifier (Asp));
+               Error_Msg_Sloc   := Sloc (To);
+               Error_Msg_N ("aspect % previously given #", Asp);
+            end if;
+
+         --  Otherwise capture the aspect
+
+         else
+            To := Asp;
+         end if;
+      end Save_Or_Duplication_Error;
+
+      --  Local variables
+
+      Asp    : Node_Id;
+      Asp_Id : Aspect_Id;
+
+      --  The following variables capture each individual aspect
+
+      Conv : Node_Id := Empty;
+      EN   : Node_Id := Empty;
+      Expo : Node_Id := Empty;
+      Imp  : Node_Id := Empty;
+      LN   : Node_Id := Empty;
+
+   --  Start of processing for Get_Interfacing_Aspects
+
+   begin
+      --  The input interfacing aspect should reside in an aspect specification
+      --  list.
+
+      pragma Assert (Is_List_Member (Iface_Asp));
+
+      --  Examine the aspect specifications of the related entity. Find and
+      --  capture all interfacing aspects. Detect duplicates and emit errors
+      --  if applicable.
+
+      Asp := First (List_Containing (Iface_Asp));
+      while Present (Asp) loop
+         Asp_Id := Get_Aspect_Id (Asp);
+
+         if Asp_Id = Aspect_Convention then
+            Save_Or_Duplication_Error (Asp, Conv);
+
+         elsif Asp_Id = Aspect_External_Name then
+            Save_Or_Duplication_Error (Asp, EN);
+
+         elsif Asp_Id = Aspect_Export then
+            Save_Or_Duplication_Error (Asp, Expo);
+
+         elsif Asp_Id = Aspect_Import then
+            Save_Or_Duplication_Error (Asp, Imp);
+
+         elsif Asp_Id = Aspect_Link_Name then
+            Save_Or_Duplication_Error (Asp, LN);
+         end if;
+
+         Next (Asp);
+      end loop;
+
+      Conv_Asp := Conv;
+      EN_Asp   := EN;
+      Expo_Asp := Expo;
+      Imp_Asp  := Imp;
+      LN_Asp   := LN;
+   end Get_Interfacing_Aspects;
 
    -------------------------------------
    -- Inherit_Aspects_At_Freeze_Point --

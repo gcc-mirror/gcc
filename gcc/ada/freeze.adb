@@ -4676,14 +4676,65 @@ package body Freeze is
       --  for the subprogram body that calls the inner procedure.
 
       procedure Wrap_Imported_Subprogram (E : Entity_Id) is
+         function Copy_Import_Pragma return Node_Id;
+         --  Obtain a copy of the Import_Pragma which belongs to subprogram E
+
+         ------------------------
+         -- Copy_Import_Pragma --
+         ------------------------
+
+         function Copy_Import_Pragma return Node_Id is
+
+            --  The subprogram should have an import pragma, otherwise it does
+            --  need a wrapper.
+
+            Prag : constant Node_Id := Import_Pragma (E);
+            pragma Assert (Present (Prag));
+
+            --  Save all semantic fields of the pragma
+
+            Save_Asp  : constant Node_Id := Corresponding_Aspect (Prag);
+            Save_From : constant Boolean := From_Aspect_Specification (Prag);
+            Save_Prag : constant Node_Id := Next_Pragma (Prag);
+            Save_Rep  : constant Node_Id := Next_Rep_Item (Prag);
+
+            Result : Node_Id;
+
+         begin
+            --  Reset all semantic fields. This avoids a potential infinite
+            --  loop when the pragma comes from an aspect as the duplication
+            --  will copy the aspect, then copy the corresponding pragma and
+            --  so on.
+
+            Set_Corresponding_Aspect      (Prag, Empty);
+            Set_From_Aspect_Specification (Prag, False);
+            Set_Next_Pragma               (Prag, Empty);
+            Set_Next_Rep_Item             (Prag, Empty);
+
+            Result := Copy_Separate_Tree (Prag);
+
+            --  Restore the original semantic fields
+
+            Set_Corresponding_Aspect      (Prag, Save_Asp);
+            Set_From_Aspect_Specification (Prag, Save_From);
+            Set_Next_Pragma               (Prag, Save_Prag);
+            Set_Next_Rep_Item             (Prag, Save_Rep);
+
+            return Result;
+         end Copy_Import_Pragma;
+
+         --  Local variables
+
          Loc   : constant Source_Ptr := Sloc (E);
          CE    : constant Name_Id    := Chars (E);
-         Spec  : Node_Id;
-         Parms : List_Id;
-         Stmt  : Node_Id;
-         Iprag : Node_Id;
          Bod   : Node_Id;
          Forml : Entity_Id;
+         Parms : List_Id;
+         Prag  : Node_Id;
+         Spec  : Node_Id;
+         Stmt  : Node_Id;
+
+      --  Start of processing for Wrap_Imported_Subprogram
 
       begin
          --  Nothing to do if not imported
@@ -4706,18 +4757,14 @@ package body Freeze is
             --  generates the right visibility, and that is exactly what the
             --  calls to Copy_Separate_Tree give us.
 
-            --  Acquire copy of Inline pragma, and indicate that it does not
-            --  come from an aspect, as it applies to an internal entity.
-
-            Iprag := Copy_Separate_Tree (Import_Pragma (E));
-            Set_From_Aspect_Specification (Iprag, False);
+            Prag := Copy_Import_Pragma;
 
             --  Fix up spec to be not imported any more
 
-            Set_Is_Imported    (E, False);
-            Set_Interface_Name (E, Empty);
             Set_Has_Completion (E, False);
             Set_Import_Pragma  (E, Empty);
+            Set_Interface_Name (E, Empty);
+            Set_Is_Imported    (E, False);
 
             --  Grab the subprogram declaration and specification
 
@@ -4757,13 +4804,12 @@ package body Freeze is
                   Copy_Separate_Tree (Spec),
                 Declarations               => New_List (
                   Make_Subprogram_Declaration (Loc,
-                    Specification =>
-                      Copy_Separate_Tree (Spec)),
-                    Iprag),
+                    Specification => Copy_Separate_Tree (Spec)),
+                  Prag),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements             => New_List (Stmt),
-                    End_Label              => Make_Identifier (Loc, CE)));
+                    Statements => New_List (Stmt),
+                    End_Label  => Make_Identifier (Loc, CE)));
 
             --  Append the body to freeze result
 
