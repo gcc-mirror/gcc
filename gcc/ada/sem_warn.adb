@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4297,8 +4297,10 @@ package body Sem_Warn is
 
             --  When we hit a package/subprogram body, issue warning and exit
 
-            elsif Nkind (P) = N_Subprogram_Body
-              or else Nkind (P) = N_Package_Body
+            elsif Nkind_In (P, N_Entry_Body,
+                               N_Package_Body,
+                               N_Subprogram_Body,
+                               N_Task_Body)
             then
                --  Case of assigned value never referenced
 
@@ -4376,8 +4378,10 @@ package body Sem_Warn is
                   --  not generate the warning, since the variable in question
                   --  may be accessed after an exception in the outer block.
 
-                  if Nkind (Parent (P)) /= N_Subprogram_Body
-                    and then Nkind (Parent (P)) /= N_Package_Body
+                  if not Nkind_In (Parent (P), N_Entry_Body,
+                                               N_Package_Body,
+                                               N_Subprogram_Body,
+                                               N_Task_Body)
                   then
                      Set_Last_Assignment (Ent, Empty);
                      return;

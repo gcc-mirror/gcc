@@ -1,3 +1,25 @@
+2016-04-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-rident.ads: Make No_Implicit_Loops non partition wide.
+
+2016-04-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch11.adb (Analyze_Handled_Statements): check useless
+	assignments also in entries and task bodies, not only in
+	procedures and declaration blocks.
+	* sem_ch5.adb (Analyze_Block_Statement): check useless
+	assignements in declaration blocks as part of processing their
+	handled statement sequence, just like it was done for procedures
+	and now is also done for entries and task bodies.
+	* sem_warn.adb (Warn_On_Useless_Assignment): detect boundries
+	of entries and task bodies just like of procedures.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Volatile_Function): Recognize
+	a function declared within a protected type as well as the
+	protected/unprotected version of a function.
+
 2016-04-27  Bob Duff  <duff@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Rewrite an object
