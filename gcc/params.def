@@ -1029,6 +1029,11 @@ DEFPARAM (MIN_PARTITION_SIZE,
 	  "Minimal size of a partition for LTO (in estimated instructions).",
 	  1000, 0, 0)
 
+DEFPARAM (MAX_PARTITION_SIZE,
+	  "lto-max-partition",
+	  "Maximal size of a partition for LTO (in estimated instructions).",
+	  1000000, 0, INT_MAX)
+
 /* Diagnostic parameters.  */
 
 DEFPARAM (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP,

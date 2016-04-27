@@ -9490,6 +9490,11 @@ Size of minimal partition for WHOPR (in estimated instructions).
 This prevents expenses of splitting very small programs into too many
 partitions.
 
+@item lto-max-partition
+Size of max partition for WHOPR (in estimated instructions).
+to provide an upper bound for individual size of partition.
+Meant to be used only with balanced partitioning.
+
 @item cxx-max-namespaces-for-diagnostic-help
 The maximum number of namespaces to consult for suggestions when C++
 name lookup fails for an identifier.  The default is 1000.
