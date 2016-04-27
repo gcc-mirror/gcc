@@ -1198,14 +1198,14 @@ package body Exp_Ch6 is
       ---------------------------
 
       procedure Add_Call_By_Copy_Code is
+         Crep  : Boolean;
          Expr  : Node_Id;
+         F_Typ : Entity_Id := Etype (Formal);
+         Indic : Node_Id;
          Init  : Node_Id;
          Temp  : Entity_Id;
-         Indic : Node_Id;
-         Var   : Entity_Id;
-         F_Typ : constant Entity_Id := Etype (Formal);
          V_Typ : Entity_Id;
-         Crep  : Boolean;
+         Var   : Entity_Id;
 
       begin
          if not Is_Legal_Copy then
@@ -1214,6 +1214,14 @@ package body Exp_Ch6 is
 
          Temp := Make_Temporary (Loc, 'T', Actual);
 
+         --  Handle formals whose type comes from the limited view
+
+         if From_Limited_With (F_Typ)
+           and then Has_Non_Limited_View (F_Typ)
+         then
+            F_Typ := Non_Limited_View (F_Typ);
+         end if;
+
          --  Use formal type for temp, unless formal type is an unconstrained
          --  array, in which case we don't have to worry about bounds checks,
          --  and we use the actual type, since that has appropriate bounds.
@@ -1221,7 +1229,7 @@ package body Exp_Ch6 is
          if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
             Indic := New_Occurrence_Of (Etype (Actual), Loc);
          else
-            Indic := New_Occurrence_Of (Etype (Formal), Loc);
+            Indic := New_Occurrence_Of (F_Typ, Loc);
          end if;
 
          if Nkind (Actual) = N_Type_Conversion then
@@ -1473,18 +1481,26 @@ package body Exp_Ch6 is
       ----------------------------------
 
       procedure Add_Simple_Call_By_Copy_Code is
-         Temp   : Entity_Id;
          Decl   : Node_Id;
+         F_Typ  : Entity_Id := Etype (Formal);
          Incod  : Node_Id;
-         Outcod : Node_Id;
-         Lhs    : Node_Id;
-         Rhs    : Node_Id;
          Indic  : Node_Id;
-         F_Typ  : constant Entity_Id := Etype (Formal);
+         Lhs    : Node_Id;
+         Outcod : Node_Id;
+         Rhs    : Node_Id;
+         Temp   : Entity_Id;
 
       begin
          if not Is_Legal_Copy then
             return;
+         end if;
+
+         --  Handle formals whose type comes from the limited view
+
+         if From_Limited_With (F_Typ)
+           and then Has_Non_Limited_View (F_Typ)
+         then
+            F_Typ := Non_Limited_View (F_Typ);
          end if;
 
          --  Use formal type for temp, unless formal type is an unconstrained
@@ -1494,7 +1510,7 @@ package body Exp_Ch6 is
          if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
             Indic := New_Occurrence_Of (Etype (Actual), Loc);
          else
-            Indic := New_Occurrence_Of (Etype (Formal), Loc);
+            Indic := New_Occurrence_Of (F_Typ, Loc);
          end if;
 
          --  Prepare to generate code
@@ -1517,7 +1533,7 @@ package body Exp_Ch6 is
          if Ekind (Formal) = E_Out_Parameter then
             Incod := Empty;
 
-            if Has_Discriminants (Etype (Formal)) then
+            if Has_Discriminants (F_Typ) then
                Indic := New_Occurrence_Of (Etype (Actual), Loc);
             end if;
 
@@ -1718,6 +1734,14 @@ package body Exp_Ch6 is
       while Present (Formal) loop
          E_Formal := Etype (Formal);
          E_Actual := Etype (Actual);
+
+         --  Handle formals whose type comes from the limited view
+
+         if From_Limited_With (E_Formal)
+           and then Has_Non_Limited_View (E_Formal)
+         then
+            E_Formal := Non_Limited_View (E_Formal);
+         end if;
 
          if Is_Scalar_Type (E_Formal)
            or else Nkind (Actual) = N_Slice
