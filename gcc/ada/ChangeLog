@@ -1,3 +1,28 @@
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call): Do not
+	consider a call when it appears within pragma Initial_Condition
+	since the pragma is part of the elaboration statements of a
+	package body and may only call external subprograms or subprograms
+	whose body is already available.
+	(Within_Initial_Condition): New routine.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Build_Procedure_Form): Prevent double generation
+	of the procedure form when dealing with an expression function
+	whose return type is an array.
+	* sem_ch3.adb: Fix out-of order Has_Predicates setting.
+	* exp_ch6.adb: Proper conversion for inherited operation in C.
+	* sem_ch6.adb: Code cleanup.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref.ads, sem_ch10.adb: minor style fix in comment
+	* g-socket.adb: Minor reformatting.
+	* sinfo.ads: Minor comment correction.
+	* sem_warn.ads: minor grammar fix in comment
+
 2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (gnat_to_gnu_entity): Adjust prototype.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -611,7 +611,7 @@ package Lib.Xref is
      Table_Name           => "Name_Deferred_References");
 
    procedure Process_Deferred_References;
-   --  This procedure is called from Frontend to process these table entries.
+   --  This procedure is called from Frontend to process these table entries
 
    -----------------------------
    -- SPARK Xrefs Information --

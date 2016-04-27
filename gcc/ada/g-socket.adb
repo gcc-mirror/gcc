@@ -1703,9 +1703,12 @@ package body GNAT.Sockets is
 
    procedure Raise_Host_Error (H_Error : Integer; Name : String) is
       function Dedot (Value : String) return String is
-        (if Value /= "" and then Value (Value'Last) = '.'
-         then Value (Value'First .. Value'Last - 1) else Value);
+        (if Value /= "" and then Value (Value'Last) = '.' then
+            Value (Value'First .. Value'Last - 1)
+         else
+            Value);
       --  Removes dot at the end of error message
+
    begin
       raise Host_Error with
         Err_Code_Image (H_Error)

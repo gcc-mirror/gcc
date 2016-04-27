@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,16 +91,16 @@ package body Sem_Elab is
      Table_Increment      => 100,
      Table_Name           => "Elab_Visited");
 
-   --  This table stores calls to Check_Internal_Call that are delayed
-   --  until all generics are instantiated, and in particular that all
-   --  generic bodies have been inserted. We need to delay, because we
-   --  need to be able to look through the inserted bodies.
+   --  This table stores calls to Check_Internal_Call that are delayed until
+   --  all generics are instantiated and in particular until after all generic
+   --  bodies have been inserted. We need to delay, because we need to be able
+   --  to look through the inserted bodies.
 
    type Delay_Element is record
       N : Node_Id;
-      --  The parameter N from the call to Check_Internal_Call. Note that
-      --  this node may get rewritten over the delay period by expansion
-      --  in the call case (but not in the instantiation case).
+      --  The parameter N from the call to Check_Internal_Call. Note that this
+      --  node may get rewritten over the delay period by expansion in the call
+      --  case (but not in the instantiation case).
 
       E : Entity_Id;
       --  The parameter E from the call to Check_Internal_Call
@@ -109,8 +109,8 @@ package body Sem_Elab is
       --  The parameter Orig_Ent from the call to Check_Internal_Call
 
       Curscop : Entity_Id;
-      --  The current scope of the call. This is restored when we complete
-      --  the delayed call, so that we do this in the right scope.
+      --  The current scope of the call. This is restored when we complete the
+      --  delayed call, so that we do this in the right scope.
 
       From_Elab_Code : Boolean;
       --  Save indication of whether this call is from elaboration code
@@ -2032,24 +2032,85 @@ package body Sem_Elab is
       Outer_Scope : Entity_Id;
       Orig_Ent    : Entity_Id)
    is
+      function Within_Initial_Condition (Call : Node_Id) return Boolean;
+      --  Determine whether call Call occurs within pragma Initial_Condition or
+      --  pragma Check with check_kind set to Initial_Condition.
+
+      ------------------------------
+      -- Within_Initial_Condition --
+      ------------------------------
+
+      function Within_Initial_Condition (Call : Node_Id) return Boolean is
+         Args : List_Id;
+         Nam  : Name_Id;
+         Par  : Node_Id;
+
+      begin
+         --  Traverse the parent chain looking for an enclosing pragma
+
+         Par := Call;
+         while Present (Par) loop
+            if Nkind (Par) = N_Pragma then
+               Nam := Pragma_Name (Par);
+
+               --  Pragma Initial_Condition appears in its alternative from as
+               --  Check (Initial_Condition, ...).
+
+               if Nam = Name_Check then
+                  Args := Pragma_Argument_Associations (Par);
+
+                  --  Pragma Check should have at least two arguments
+
+                  pragma Assert (Present (Args));
+
+                  return
+                    Chars (Expression (First (Args))) = Name_Initial_Condition;
+
+               --  Direct match
+
+               elsif Nam = Name_Initial_Condition then
+                  return True;
+
+               --  Since pragmas are never nested within other pragmas, stop
+               --  the traversal.
+
+               else
+                  return False;
+               end if;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end Within_Initial_Condition;
+
+      --  Local variables
+
       Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
+
+   --  Start of processing for Check_Internal_Call
 
    begin
       --  For P'Access, we want to warn if the -gnatw.f switch is set, and the
       --  node comes from source.
 
-      if Nkind (N) = N_Attribute_Reference and then
-        (not Warn_On_Elab_Access or else not Comes_From_Source (N))
+      if Nkind (N) = N_Attribute_Reference
+        and then (not Warn_On_Elab_Access or else not Comes_From_Source (N))
       then
          return;
 
       --  If not function or procedure call, instantiation, or 'Access, then
       --  ignore call (this happens in some error cases and rewriting cases).
 
-      elsif not Nkind_In
-               (N, N_Function_Call,
-                   N_Procedure_Call_Statement,
-                   N_Attribute_Reference)
+      elsif not Nkind_In (N, N_Attribute_Reference,
+                             N_Function_Call,
+                             N_Procedure_Call_Statement)
         and then not Inst_Case
       then
          return;
@@ -2090,6 +2151,14 @@ package body Sem_Elab is
       --  Nothing to do if call is within a generic unit
 
       elsif Inside_A_Generic then
+         return;
+
+      --  Nothing to do when the call appears within pragma Initial_Condition.
+      --  The pragma is part of the elaboration statements of a package body
+      --  and may only call external subprograms or subprograms whose body is
+      --  already available.
+
+      elsif Within_Initial_Condition (N) then
          return;
       end if;
 

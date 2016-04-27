@@ -932,12 +932,20 @@ package body Exp_Util is
       Proc_Decl    : Node_Id;
 
    begin
-      --  No action needed if this transformation was already done or in case
-      --  of subprogram renaming declarations
+      --  No action needed if this transformation was already done, or in case
+      --  of subprogram renaming declarations.
 
       if Nkind (Specification (N)) = N_Procedure_Specification
         or else Nkind (N) = N_Subprogram_Renaming_Declaration
       then
+         return;
+      end if;
+
+      --  Ditto when dealing with an expression function, where both the
+      --  original expression and the generated declaration end up being
+      --  expanded here.
+
+      if Rewritten_For_C (Subp) then
          return;
       end if;
 
