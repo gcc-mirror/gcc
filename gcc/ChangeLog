@@ -1,3 +1,7 @@
+2016-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 6.1.1.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
