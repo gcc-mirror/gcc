@@ -7508,7 +7508,7 @@ struct pt_solution ipa_escaped_pt
   = { true, false, false, false, false, false, false, false, NULL };
 
 /* Associate node with varinfo DATA. Worker for
-   cgraph_for_node_and_aliases.  */
+   cgraph_for_symbol_thunks_and_aliases.  */
 static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
@@ -7624,6 +7624,29 @@ debug_varmap (void)
   dump_varmap (stderr);
 }
 
+/* Compute whether node is refered to non-locally.  Worker for
+   cgraph_for_symbol_thunks_and_aliases.  */
+static bool
+refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
+{
+  bool *nonlocal_p = (bool *)data;
+  *nonlocal_p |= (node->used_from_other_partition
+		  || node->externally_visible
+		  || node->force_output);
+  return false;
+}
+
+/* Same for varpool nodes.  */
+static bool
+refered_from_nonlocal_var (struct varpool_node *node, void *data)
+{
+  bool *nonlocal_p = (bool *)data;
+  *nonlocal_p |= (node->used_from_other_partition
+		  || node->externally_visible
+		  || node->force_output);
+  return false;
+}
+
 /* Execute the driver for IPA PTA.  */
 static unsigned int
 ipa_pta_execute (void)
@@ -7687,6 +7710,8 @@ ipa_pta_execute (void)
 			 || node->externally_visible
 			 || node->force_output
 			 || node_address_taken);
+      node->call_for_symbol_thunks_and_aliases (refered_from_nonlocal_fn,
+						&nonlocal_p, true);
 
       vi = create_function_info_for (node->decl,
 				     alias_get_name (node->decl), false,
@@ -7724,6 +7749,8 @@ ipa_pta_execute (void)
       bool nonlocal_p = (var->used_from_other_partition
 			 || var->externally_visible
 			 || var->force_output);
+      var->call_for_symbol_and_aliases (refered_from_nonlocal_var,
+					&nonlocal_p, true);
       if (nonlocal_p)
 	vi->is_ipa_escape_point = true;
     }

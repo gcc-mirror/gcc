@@ -1,3 +1,13 @@
+2016-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/70785
+	* tree-ssa-structalias.c (refered_from_nonlocal_fn): New
+	function cummulating used_from_other_partition, externally_visible
+	and force_output from aliases.
+	(refered_from_nonlocal_var): Likewise.
+	(ipa_pta_execute): Use call_for_symbol_and_aliases to cummulate
+	node flags properly.
+
 2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* doc/invoke.texi (Warning Options): Add -Wmemset-elt-size.
