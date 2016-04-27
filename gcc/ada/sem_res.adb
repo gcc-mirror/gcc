@@ -3107,6 +3107,10 @@ package body Sem_Res is
       --  interpretation, but the form of the actual can only be determined
       --  once the primitive operation is identified.
 
+      procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
+      --  Emit an error concerning the illegal usage of an effectively volatile
+      --  object in interfering context (SPARK RM 7.13(12)).
+
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list
       --  an instance of the default expression. The insertion is always
@@ -3360,6 +3364,55 @@ package body Sem_Res is
          end if;
       end Check_Prefixed_Call;
 
+      ---------------------------------------
+      -- Flag_Effectively_Volatile_Objects --
+      ---------------------------------------
+
+      procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id) is
+         function Flag_Object (N : Node_Id) return Traverse_Result;
+         --  Determine whether arbitrary node N denotes an effectively volatile
+         --  object and if it does, emit an error.
+
+         -----------------
+         -- Flag_Object --
+         -----------------
+
+         function Flag_Object (N : Node_Id) return Traverse_Result is
+            Id : Entity_Id;
+
+         begin
+            --  Do not consider nested function calls because they have already
+            --  been processed during their own resolution.
+
+            if Nkind (N) = N_Function_Call then
+               return Skip;
+
+            elsif Is_Entity_Name (N) and then Present (Entity (N)) then
+               Id := Entity (N);
+
+               if Is_Object (Id)
+                 and then Is_Effectively_Volatile (Id)
+                 and then (Async_Writers_Enabled (Id)
+                            or else Effective_Reads_Enabled (Id))
+               then
+                  Error_Msg_N
+                    ("volatile object cannot appear in this context (SPARK "
+                     & "RM 7.1.3(11))", N);
+                  return Skip;
+               end if;
+            end if;
+
+            return OK;
+         end Flag_Object;
+
+         procedure Flag_Objects is new Traverse_Proc (Flag_Object);
+
+      --  Start of processing for Flag_Effectively_Volatile_Objects
+
+      begin
+         Flag_Objects (Expr);
+      end Flag_Effectively_Volatile_Objects;
+
       --------------------
       -- Insert_Default --
       --------------------
@@ -3461,7 +3514,6 @@ package body Sem_Res is
             then
                Set_Is_Controlling_Actual (Actval);
             end if;
-
          end if;
 
          --  If the default expression raises constraint error, then just
@@ -4473,10 +4525,8 @@ package body Sem_Res is
             --  they are not standard Ada legality rule. Internally generated
             --  temporaries are ignored.
 
-            if SPARK_Mode = On
-              and then Comes_From_Source (A)
-              and then Is_Effectively_Volatile_Object (A)
-            then
+            if SPARK_Mode = On and then Comes_From_Source (A) then
+
                --  An effectively volatile object may act as an actual when the
                --  corresponding formal is of a non-scalar effectively volatile
                --  type (SPARK RM 7.1.3(11)).
@@ -4493,10 +4543,23 @@ package body Sem_Res is
                elsif Is_Unchecked_Conversion_Instance (Nam) then
                   null;
 
-               else
+               --  The actual denotes an object
+
+               elsif Is_Effectively_Volatile_Object (A) then
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
                      & "RM 7.1.3(11))", A);
+
+               --  Otherwise the actual denotes an expression. Inspect the
+               --  expression and flag each effectively volatile object with
+               --  enabled property Async_Writers or Effective_Reads as illegal
+               --  because it apprears within an interfering context. Note that
+               --  this is usually done in Resolve_Entity_Name, but when the
+               --  effectively volatile object appears as an actual in a call,
+               --  the call must be resolved first.
+
+               else
+                  Flag_Effectively_Volatile_Objects (A);
                end if;
 
                --  Detect an external variable with an enabled property that

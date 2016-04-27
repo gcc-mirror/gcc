@@ -256,6 +256,8 @@ package body Einfo is
    --    Thunk_Entity                    Node31
    --    Activation_Record_Component     Node31
 
+   --    Corresponding_Function          Node32
+   --    Corresponding_Procedure         Node32
    --    Encapsulating_State             Node32
    --    No_Tagged_Streams_Pragma        Node32
 
@@ -914,6 +916,18 @@ package body Einfo is
           and then Chars (Id) = Name_Op_Ne);
       return Node30 (Id);
    end Corresponding_Equality;
+
+   function Corresponding_Function (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure);
+      return Node32 (Id);
+   end Corresponding_Function;
+
+   function Corresponding_Procedure (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Function);
+      return Node32 (Id);
+   end Corresponding_Procedure;
 
    function Corresponding_Protected_Entry (Id : E) return E is
    begin
@@ -3918,6 +3932,22 @@ package body Einfo is
           and then Chars (Id) = Name_Op_Ne);
       Set_Node30 (Id, V);
    end Set_Corresponding_Equality;
+
+   procedure Set_Corresponding_Function (Id : E; V : E) is
+   begin
+      pragma Assert
+        (Ekind (Id) = E_Procedure
+          and then Rewritten_For_C (V));
+      Set_Node32 (Id, V);
+   end Set_Corresponding_Function;
+
+   procedure Set_Corresponding_Procedure (Id : E; V : E) is
+   begin
+      pragma Assert
+        (Ekind (Id) = E_Function
+          and then Rewritten_For_C (Id));
+      Set_Node32 (Id, V);
+   end Set_Corresponding_Procedure;
 
    procedure Set_Corresponding_Protected_Entry (Id : E; V : E) is
    begin
@@ -10275,6 +10305,12 @@ package body Einfo is
               E_Constant                                   |
               E_Variable                                   =>
             Write_Str ("Encapsulating_State");
+
+         when E_Function                                   =>
+            Write_Str ("Corresponding_Procedure");
+
+         when E_Procedure                                  =>
+            Write_Str ("Corresponding_Function");
 
          when Type_Kind                                    =>
             Write_Str ("No_Tagged_Streams_Pragma");

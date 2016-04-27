@@ -507,7 +507,7 @@ package body Exp_Unst is
 
                elsif Ekind (Callee) = E_Function
                  and then Rewritten_For_C (Callee)
-                 and then Next_Entity (Callee) = Caller
+                 and then Corresponding_Procedure (Callee) = Caller
                then
                   return;
                end if;

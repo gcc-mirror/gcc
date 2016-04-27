@@ -996,9 +996,12 @@ package body Exp_Util is
 
       Set_Is_Immediately_Visible (Defining_Entity (Proc_Decl), False);
 
-      --  Mark the function as having a procedure form
+      --  Mark the function as having a procedure form and link the function
+      --  and its internally built procedure.
 
       Set_Rewritten_For_C (Subp);
+      Set_Corresponding_Procedure (Subp, Defining_Entity (Proc_Decl));
+      Set_Corresponding_Function (Defining_Entity (Proc_Decl), Subp);
    end Build_Procedure_Form;
 
    ------------------------

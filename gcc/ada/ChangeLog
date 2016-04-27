@@ -1,5 +1,45 @@
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): New routine.
+	(Resolve_Actuals): Flag effectively volatile objects with enabled
+	property Async_Writers or Effective_Reads as illegal.
+	* sem_util.adb (Is_OK_Volatile_Context): Comment reformatting.
+
+2016-04-27  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs):
+	Do not generate the profile of the equality operator if it has
+	been explicitly defined as abstract in the parent type. Required
+	to avoid reporting an spurious error.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.ads, sem_dim.adb (Check_Expression_Dimensions): New
+	procedure to compute the dimension vector of a scalar expression
+	and compare it with the dimensions if its expected subtype. Used
+	for the ultimate components of a multidimensional aggregate,
+	whose components typically are themselves aggregates that are
+	expanded separately. Previous to this patch, dimensionality
+	checking on such aggregates generated spurious errors.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Use
+	Check_Expression_Dimensions when needed.
+
+2016-04-27  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Corresponding_Function): New attribute
+	(applicable to E_Procedure).
+	(Corresponding_Procedure): New attribute (applicable to E_Function).
+	* exp_util.adb (Build_Procedure_Form): Link the function with
+	its internally built proc and viceversa.
+	* sem_ch6.adb (Build_Subprogram_Declaration): Propagate the
+	attribute Rewritten_For_C and Corresponding_Procedure to the body.
+	* exp_ch6.adb (Rewritten_For_C_Func_Id): Removed.
+	(Rewritten_For_C_Proc_Id): Removed.
+	* exp_unst.adb (Note_Uplevel_Ref): Use the new attribute to
+	locate the corresponding procedure.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch13.adb (Analyze_Aspect_Export_Import): Signal that there is no
 	corresponding pragma.
 
