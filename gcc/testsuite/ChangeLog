@@ -1,3 +1,12 @@
+2015-04-27  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/69024
+	PR c++/68997
+	* g++.dg/cilk-plus/CK/pr68001.cc: Fix to not depend on broken
+	diagnostic.
+	* g++.dg/cilk-plus/CK/pr69024.cc: New test.
+	* g++.dg/cilk-plus/CK/pr68997.cc: New test.
+
 2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/limited_with4.ad[sb]: New test.
