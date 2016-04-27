@@ -62,6 +62,7 @@
 --     GNU/Linux PowerPC
 --     LynxOS x86
 --     LynxOS 178 xcoff PowerPC
+--     LynxOS 178 elf PowerPC
 --     Solaris x86
 --     Solaris sparc
 --     VxWorks PowerPC
