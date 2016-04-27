@@ -1,3 +1,9 @@
+2016-04-27  Svante Signell  <svante.signell@gmail.com>
+
+	* gcc-interface/Makefile.in (x86 GNU/Hurd): Use s-osinte-gnu.adb.
+	* s-osinte-gnu.ads: Small tweaks.
+	* s-osinte-gnu.adb: New file.
+
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Match_Constituent): Treat a constant as a legal
