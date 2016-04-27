@@ -398,8 +398,8 @@ gigi (Node_Id gnat_root,
   malloc_decl
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
 			   ftype,
-			   NULL_TREE, is_disabled, false, true, true, false,
-			   true, false, NULL, Empty);
+			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
   /* free is a function declaration tree for a function to free memory.  */
@@ -408,8 +408,8 @@ gigi (Node_Id gnat_root,
 			   build_function_type_list (void_type_node,
 						     ptr_type_node,
 						     NULL_TREE),
-			   NULL_TREE, is_disabled, false, true, true, false,
-			   true, false, NULL, Empty);
+			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL, Empty);
 
   /* This is used for 64-bit multiplication with overflow checking.  */
   int64_type = gnat_type_for_size (64, 0);
@@ -417,8 +417,8 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_mulv64"), NULL_TREE,
 			   build_function_type_list (int64_type, int64_type,
 						     int64_type, NULL_TREE),
-			   NULL_TREE, is_disabled, false, true, true, false,
-			   true, false, NULL, Empty);
+			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL, Empty);
 
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
@@ -441,24 +441,21 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl
       (get_identifier ("system__soft_links__get_jmpbuf_address_soft"),
        NULL_TREE, build_function_type_list (jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, false, true, false,
-       NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
 
   set_jmpbuf_decl
     = create_subprog_decl
       (get_identifier ("system__soft_links__set_jmpbuf_address_soft"),
        NULL_TREE, build_function_type_list (void_type_node, jmpbuf_ptr_type,
 					    NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, false, true, false,
-       NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
 
   get_excptr_decl
     = create_subprog_decl
       (get_identifier ("system__soft_links__get_gnat_exception"), NULL_TREE,
        build_function_type_list (build_pointer_type (except_type_node),
 				 NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, false, true, false,
-       NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
 
   not_handled_by_others_decl = get_identifier ("not_handled_by_others");
   for (t = TYPE_FIELDS (except_type_node); t; t = DECL_CHAIN (t))
@@ -476,8 +473,7 @@ gigi (Node_Id gnat_root,
       (get_identifier ("__builtin_setjmp"), NULL_TREE,
        build_function_type_list (integer_type_node, jmpbuf_ptr_type,
 				 NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, false, true, false,
-       NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
   DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
@@ -487,35 +483,26 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl
       (get_identifier ("__builtin_update_setjmp_buf"), NULL_TREE,
        build_function_type_list (void_type_node, jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, false, true, false,
-       NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
   DECL_BUILT_IN_CLASS (update_setjmp_buf_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
 
   /* Indicate that it never returns.  */
+  ftype = build_function_type_list (void_type_node,
+				    build_pointer_type (except_type_node),
+				    NULL_TREE);
+  ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
   raise_nodefer_decl
     = create_subprog_decl
-      (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE,
-       build_function_type_list (void_type_node,
-				 build_pointer_type (except_type_node),
-				 NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, true, true, false,
-       NULL, Empty);
-
-  /* Indicate that these never return.  */
-  reraise_zcx_decl
-    = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
-			   ftype, NULL_TREE,
-			   is_disabled, false, true, true, true, true, false,
-			   NULL, Empty);
+      (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE, ftype,
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
 
   set_exception_parameter_decl
     = create_subprog_decl
       (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
        build_function_type_list (void_type_node, ptr_type_node, ptr_type_node,
 				 NULL_TREE),
-       NULL_TREE, is_disabled, false, true, true, false, true, false,
-       NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
 
   /* Hooks to call when entering/leaving an exception handler.  */
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -523,20 +510,24 @@ gigi (Node_Id gnat_root,
   begin_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, false, true, true, false, true, false,
-			   NULL, Empty);
+			   is_disabled, true, true, true, false, NULL, Empty);
 
   end_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_end_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, false, true, true, false, true, false,
-			   NULL, Empty);
+			   is_disabled, true, true, true, false, NULL, Empty);
 
   unhandled_except_decl
     = create_subprog_decl (get_identifier ("__gnat_unhandled_except_handler"),
 			   NULL_TREE, ftype, NULL_TREE,
-			   is_disabled, false, true, true, false, true, false,
-			   NULL, Empty);
+			   is_disabled, true, true, true, false, NULL, Empty);
+
+  /* Indicate that it never returns.  */
+  ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
+  reraise_zcx_decl
+    = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
+			   ftype, NULL_TREE,
+			   is_disabled, true, true, true, false, NULL, Empty);
 
   /* Dummy objects to materialize "others" and "all others" in the exception
      tables.  These are exported by a-exexpr-gcc.adb, so see this unit for
@@ -567,14 +558,15 @@ gigi (Node_Id gnat_root,
      this procedure will never be called in this mode.  */
   if (No_Exception_Handlers_Set ())
     {
+      /* Indicate that it never returns.  */
+      ftype = build_function_type_list (void_type_node,
+					build_pointer_type (char_type_node),
+					integer_type_node, NULL_TREE);
+      ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
       tree decl
 	= create_subprog_decl
-	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE,
-	   build_function_type_list (void_type_node,
-				     build_pointer_type (char_type_node),
-				     integer_type_node, NULL_TREE),
-	   NULL_TREE, is_disabled, false, true, true, true, true, false,
-	   NULL, Empty);
+	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE, ftype,
+	   NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
       for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
 	gnat_raise_decls[i] = decl;
     }
@@ -736,10 +728,10 @@ build_raise_check (int check, enum exception_info_kind kind)
     }
 
   /* Indicate that it never returns.  */
+  ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
   result
-    = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE,
-			   ftype, NULL_TREE,
-			   is_disabled, false, true, true, true, true, false,
+    = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
+			   NULL_TREE, is_disabled, true, true, true, false,
 			   NULL, Empty);
 
   return result;
@@ -1020,15 +1012,15 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      address clause when the parent doesn't require an lvalue.  */
   bool use_constant_initializer = false;
 
-  /* If the Etype of this node does not equal the Etype of the Entity,
-     something is wrong with the entity map, probably in generic
-     instantiation. However, this does not apply to types. Since we sometime
-     have strange Ekind's, just do this test for objects. Also, if the Etype of
-     the Entity is private, the Etype of the N_Identifier is allowed to be the
-     full type and also we consider a packed array type to be the same as the
-     original type. Similarly, a class-wide type is equivalent to a subtype of
-     itself. Finally, if the types are Itypes, one may be a copy of the other,
-     which is also legal.  */
+  /* If the Etype of this node is not the same as that of the Entity, then
+     something went wrong, probably in generic instantiation.  However, this
+     does not apply to types.  Since we sometime have strange Ekind's, just
+     do this test for objects.  Moreover, if the Etype of the Entity is private
+     or incomplete coming from a limited context, the Etype of the N_Identifier
+     is allowed to be the full/non-limited view and we also consider a packed
+     array type to be the same as the original type.  Similarly, a CW type is
+     equivalent to a subtype of itself.  Finally, if the types are Itypes, one
+     may be a copy of the other, which is also legal.  */
   gnat_temp = ((Nkind (gnat_node) == N_Defining_Identifier
 		|| Nkind (gnat_node) == N_Defining_Operator_Symbol)
 	       ? gnat_node : Entity (gnat_node));
@@ -1046,6 +1038,10 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 			  && (Etype (gnat_node)
 			      == Packed_Array_Impl_Type
 			           (Full_View (gnat_temp_type))))))
+	      || (IN (Ekind (gnat_temp_type), Incomplete_Kind)
+		  && From_Limited_With (gnat_temp_type)
+		  && Present (Non_Limited_View (gnat_temp_type))
+		  && Etype (gnat_node) == Non_Limited_View (gnat_temp_type))
 	      || (Is_Itype (Etype (gnat_node)) && Is_Itype (gnat_temp_type))
 	      || !(Ekind (gnat_temp) == E_Variable
 		   || Ekind (gnat_temp) == E_Component
@@ -1569,24 +1565,10 @@ static tree
 Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 {
   const Node_Id gnat_prefix = Prefix (gnat_node);
-  tree gnu_prefix, gnu_type, gnu_expr;
-  tree gnu_result_type, gnu_result = error_mark_node;
+  tree gnu_prefix = gnat_to_gnu (gnat_prefix);
+  tree gnu_type = TREE_TYPE (gnu_prefix);
+  tree gnu_expr, gnu_result_type, gnu_result = error_mark_node;
   bool prefix_unused = false;
-
-  /* ??? If this is an access attribute for a public subprogram to be used in
-     a dispatch table, do not translate its type as it's useless in this case
-     and the parameter types might be incomplete types coming from a limited
-     context in Ada 2012 (AI05-0151).  */
-  if (Ekind (Etype (gnat_node)) == E_Access_Subprogram_Type
-      && Is_Dispatch_Table_Entity (Etype (gnat_node))
-      && Nkind (gnat_prefix) == N_Identifier
-      && Is_Subprogram (Entity (gnat_prefix))
-      && Is_Public (Entity (gnat_prefix))
-      && !present_gnu_tree (Entity (gnat_prefix)))
-    gnu_prefix = get_minimal_subprog_decl (Entity (gnat_prefix));
-  else
-    gnu_prefix = gnat_to_gnu (gnat_prefix);
-  gnu_type = TREE_TYPE (gnu_prefix);
 
   /* If the input is a NULL_EXPR, make a new one.  */
   if (TREE_CODE (gnu_prefix) == NULL_EXPR)
@@ -5340,8 +5322,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
     = create_subprog_decl
       (create_concat_name (gnat_unit_entity, body_p ? "elabb" : "elabs"),
        NULL_TREE, void_ftype, NULL_TREE,
-       is_disabled, false, true, false, false, true, true,
-       NULL, gnat_unit);
+       is_disabled, true, false, true, true, NULL, gnat_unit);
   struct elab_info *info;
 
   vec_safe_push (gnu_elab_proc_stack, gnu_elab_proc_decl);
@@ -6340,8 +6321,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				 (Entity (Prefix (gnat_node)),
 				  attr == Attr_Elab_Body ? "elabb" : "elabs"),
 				 NULL_TREE, void_ftype, NULL_TREE, is_disabled,
-				 false, true, true, false, true, true,
-				 NULL, gnat_node);
+				 true, true, true, true, NULL, gnat_node);
 
 	gnu_result = Attribute_to_gnu (gnat_node, &gnu_result_type, attr);
       }
@@ -8554,14 +8534,11 @@ process_freeze_entity (Node_Id gnat_node)
   if (kind == E_Class_Wide_Type)
     return;
 
-  /* Check for an old definition.  This freeze node might be for an Itype.  */
+  /* Check for an old definition if this isn't an object with address clause,
+     since the saved GCC tree is the address expression in that case.  */
   gnu_old
-    = present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity) : NULL_TREE;
-
-  /* If this entity has an address representation clause, GNU_OLD is the
-     address, so discard it here.  */
-  if (Present (Address_Clause (gnat_entity)))
-    gnu_old = NULL_TREE;
+    = present_gnu_tree (gnat_entity) && No (Address_Clause (gnat_entity))
+      ? get_gnu_tree (gnat_entity) : NULL_TREE;
 
   /* Don't do anything for subprograms that may have been elaborated before
      their freeze nodes.  This can happen, for example, because of an inner
@@ -8671,6 +8648,8 @@ process_freeze_entity (Node_Id gnat_node)
     {
       update_pointer_to (TYPE_MAIN_VARIANT (TREE_TYPE (gnu_old)),
 			 TREE_TYPE (gnu_new));
+      if (TYPE_DUMMY_IN_PROFILE_P (TREE_TYPE (gnu_old)))
+	update_profiles_with (TREE_TYPE (gnu_old));
       if (DECL_TAFT_TYPE_P (gnu_old))
 	used_types_insert (TREE_TYPE (gnu_new));
     }

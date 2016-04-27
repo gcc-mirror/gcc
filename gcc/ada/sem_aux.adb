@@ -933,8 +933,12 @@ package body Sem_Aux is
          declare
             Ftyp : constant Entity_Id := Full_View (Btype);
          begin
+            --  Return true for a tagged incomplete type built as a shadow
+            --  entity in Build_Limited_Views. It can appear in the profile
+            --  of a thunk and the back end needs to know how it is passed.
+
             if No (Ftyp) then
-               return False;
+               return Is_Tagged_Type (Btype);
             else
                return Is_By_Reference_Type (Ftyp);
             end if;

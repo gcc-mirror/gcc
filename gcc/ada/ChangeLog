@@ -1,3 +1,91 @@
+2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aux.adb (Is_By_Reference_Type): Also return true for a tagged
+	incomplete type without full view.
+	* sem_ch6.adb (Exchange_Limited_Views): Change into a function and
+	return the list of changes.
+	(Restore_Limited_Views): New procedure to undo the transformation made
+	by Exchange_Limited_Views.
+	(Analyze_Subprogram_Body_Helper): Adjust call to Exchange_Limited_Views
+	and call Restore_Limited_Views at the end, if need be.
+	(Possible_Freeze): Do not delay freezing because of incomplete types.
+	(Process_Formals): Remove kludges for class-wide types.
+	* types.h (By_Copy_Return): Delete.
+	* gcc-interface/ada-tree.h (TYPE_MAX_ALIGN): Move around.
+	(TYPE_DUMMY_IN_PROFILE_P): New macro.
+	* gcc-interface/gigi.h (update_profiles_with): Declare.
+	(finish_subprog_decl): Likewise.
+	(get_minimal_subprog_decl): Delete.
+	(create_subprog_type): Likewise.
+	(create_param_decl): Adjust prototype.
+	(create_subprog_decl): Likewise.
+	* gcc-interface/decl.c (defer_limited_with): Rename into...
+	(defer_limited_with_list): ...this.
+	(gnat_to_gnu_entity): Adjust to above renaming.
+	(finalize_from_limited_with): Likewise.
+	(tree_entity_vec_map): New structure.
+	(gt_pch_nx): New helpers.
+	(dummy_to_subprog_map): New hash table.
+	(gnat_to_gnu_param): Set the SLOC here.  Remove MECH parameter and
+	add FIRST parameter.  Deal with the mechanism here instead of...
+	Do not make read-only variant of types.  Simplify expressions.
+	In the by-ref case, test the mechanism before must_pass_by_ref
+	and also TYPE_IS_BY_REFERENCE_P before building the reference type.
+	(gnat_to_gnu_subprog_type): New static function extracted from...
+	Do not special-case the type_annotate_only mode.  Call
+	gnat_to_gnu_profile_type instead of gnat_to_gnu_type on return type.
+	Deal with dummy return types.  Likewise for parameter types.  Deal
+	with by-reference types explicitly and add a kludge for null procedures
+	with untagged incomplete types.  Remove assertion on the types and be
+	prepared for multiple elaboration of the declarations.  Skip the whole
+	CICO processing if the profile is incomplete.  Handle the completion of
+	a previously incomplete profile.
+	(gnat_to_gnu_entity) <E_Variable>: Rename local variable.
+	Adjust couple of calls to create_param_decl.
+	<E_Access_Subprogram_Type, E_Anonymous_Access_Subprogram_Type>:
+	Remove specific deferring code.
+	<E_Access_Type>: Also deal with E_Subprogram_Type designated type.
+	Simplify handling of dummy types and remove obsolete comment.
+	Constify a couple of variables.  Do not set TYPE_UNIVERSAL_ALIASING_P
+	on dummy types.
+	<E_Access_Subtype>: Tweak comment and simplify condition.
+	<E_Subprogram_Type>: ...here.  Call it and clean up handling.  Remove
+	obsolete comment and adjust call to gnat_to_gnu_param.  Adjust call to
+	create_subprog_decl.
+	<E_Incomplete_Type>: Add a couple of 'const' qualifiers and get rid of
+	inner break statements.  Tidy up condition guarding direct use of the
+	full view.
+	(get_minimal_subprog_decl): Delete.
+	(finalize_from_limited_with): Call update_profiles_with on dummy types
+	with TYPE_DUMMY_IN_PROFILE_P set.
+	(is_from_limited_with_of_main): Delete.
+	(associate_subprog_with_dummy_type): New function.
+	(update_profile): Likewise.
+	(update_profiles_with): Likewise.
+	(gnat_to_gnu_profile_type): Likewise.
+	(init_gnat_decl): Initialize dummy_to_subprog_map.
+	(destroy_gnat_decl): Destroy dummy_to_subprog_map.
+	* gcc-interface/misc.c (gnat_get_alias_set): Add guard for accessing
+	TYPE_UNIVERSAL_ALIASING_P.
+	(gnat_get_array_descr_info): Minor tweak.
+	* gcc-interface/trans.c (gigi): Adjust calls to create_subprog_decl.
+	(build_raise_check): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(Identifier_to_gnu): Accept mismatches coming from a limited context.
+	(Attribute_to_gnu): Remove kludge for dispatch table entities.
+	(process_freeze_entity): Do not retrieve old definition if there is an
+	address clause on the entity.  Call update_profiles_with on dummy types
+	with TYPE_DUMMY_IN_PROFILE_P set.
+	* gcc-interface/utils.c (build_dummy_unc_pointer_types): Also set
+	TYPE_REFERENCE_TO to the fat pointer type.
+	(create_subprog_type): Delete.
+	(create_param_decl): Remove READONLY parameter.
+	(finish_subprog_decl): New function extracted from...
+	(create_subprog_decl): ...here.  Call it.  Remove CONST_FLAG and
+	VOLATILE_FLAG parameters and adjust.
+	(update_pointer_to): Also clear TYPE_REFERENCE_TO in the unconstrained
+	case.
+
 2016-04-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* aa_util.adb, aa_util.ads: Removed, no longer used.

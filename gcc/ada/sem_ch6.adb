@@ -2148,6 +2148,7 @@ package body Sem_Ch6 is
       Body_Spec    : Node_Id             := Specification (N);
       Body_Id      : Entity_Id           := Defining_Entity (Body_Spec);
       Prev_Id      : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
+      Exch_Views   : Elist_Id            := No_Elist;
       Conformant   : Boolean;
       HSS          : Node_Id;
       Prot_Typ     : Entity_Id := Empty;
@@ -2214,15 +2215,19 @@ package body Sem_Ch6 is
       --  mechanism is used to find the corresponding spec of the primitive
       --  body.
 
-      procedure Exchange_Limited_Views (Subp_Id : Entity_Id);
+      function Exchange_Limited_Views (Subp_Id : Entity_Id) return Elist_Id;
       --  Ada 2012 (AI05-0151): Detect whether the profile of Subp_Id contains
-      --  incomplete types coming from a limited context and swap their limited
-      --  views with the non-limited ones.
+      --  incomplete types coming from a limited context and replace their
+      --  limited views with the non-limited ones. Return the list of changes
+      --  to be used to undo the transformation.
 
       function Is_Private_Concurrent_Primitive
         (Subp_Id : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp_Id is a primitive of a concurrent
       --  type that implements an interface and has a private view.
+
+      procedure Restore_Limited_Views (Restore_List : Elist_Id);
+      --  Undo the transformation done by Exchange_Limited_Views.
 
       procedure Set_Trivial_Subprogram (N : Node_Id);
       --  Sets the Is_Trivial_Subprogram flag in both spec and body of the
@@ -2870,7 +2875,9 @@ package body Sem_Ch6 is
       -- Exchange_Limited_Views --
       ----------------------------
 
-      procedure Exchange_Limited_Views (Subp_Id : Entity_Id) is
+      function Exchange_Limited_Views (Subp_Id : Entity_Id) return Elist_Id is
+         Result : Elist_Id := No_Elist;
+
          procedure Detect_And_Exchange (Id : Entity_Id);
          --  Determine whether Id's type denotes an incomplete type associated
          --  with a limited with clause and exchange the limited view with the
@@ -2890,6 +2897,12 @@ package body Sem_Ch6 is
               and then Has_Non_Limited_View (Typ)
               and then not From_Limited_With (Scope (Typ))
             then
+               if No (Result) then
+                  Result := New_Elmt_List;
+               end if;
+
+               Prepend_Elmt (Typ, Result);
+               Prepend_Elmt (Id, Result);
                Set_Etype (Id, Non_Limited_View (Typ));
             end if;
          end Detect_And_Exchange;
@@ -2902,13 +2915,13 @@ package body Sem_Ch6 is
 
       begin
          if No (Subp_Id) then
-            return;
+            return No_Elist;
 
          --  Do not process subprogram bodies as they already use the non-
          --  limited view of types.
 
          elsif not Ekind_In (Subp_Id, E_Function, E_Procedure) then
-            return;
+            return No_Elist;
          end if;
 
          --  Examine all formals and swap views when applicable
@@ -2925,6 +2938,8 @@ package body Sem_Ch6 is
          if Ekind (Subp_Id) = E_Function then
             Detect_And_Exchange (Subp_Id);
          end if;
+
+         return Result;
       end Exchange_Limited_Views;
 
       -------------------------------------
@@ -2959,6 +2974,23 @@ package body Sem_Ch6 is
 
          return False;
       end Is_Private_Concurrent_Primitive;
+
+      ---------------------------
+      -- Restore_Limited_Views --
+      ---------------------------
+
+      procedure Restore_Limited_Views (Restore_List : Elist_Id) is
+         Elmt : Elmt_Id := First_Elmt (Restore_List);
+         Id   : Entity_Id;
+
+      begin
+         while Present (Elmt) loop
+            Id := Node (Elmt);
+            Next_Elmt (Elmt);
+            Set_Etype (Id, Node (Elmt));
+            Next_Elmt (Elmt);
+         end loop;
+      end Restore_Limited_Views;
 
       ----------------------------
       -- Set_Trivial_Subprogram --
@@ -3887,7 +3919,7 @@ package body Sem_Ch6 is
       --  spec, swap any limited views with their non-limited counterpart.
 
       if Ada_Version >= Ada_2012 then
-         Exchange_Limited_Views (Spec_Id);
+         Exch_Views := Exchange_Limited_Views (Spec_Id);
       end if;
 
       --  Analyze any aspect specifications that appear on the subprogram body
@@ -4151,6 +4183,13 @@ package body Sem_Ch6 is
             Set_Has_Nested_Subprogram (Ent);
          end if;
       end;
+
+      --  Restore the limited views in the spec, if any, to let the back end
+      --  process it without running into circularities.
+
+      if Exch_Views /= No_Elist then
+         Restore_Limited_Views (Exch_Views);
+      end if;
 
       Ghost_Mode := Save_Ghost_Mode;
    end Analyze_Subprogram_Body_Helper;
@@ -5269,10 +5308,7 @@ package body Sem_Ch6 is
       procedure Possible_Freeze (T : Entity_Id);
       --  T is the type of either a formal parameter or of the return type.
       --  If T is not yet frozen and needs a delayed freeze, then the
-      --  subprogram itself must be delayed. If T is the limited view of an
-      --  incomplete type (or of a CW type thereof) the subprogram must be
-      --  frozen as well, because T may depend on local types that have not
-      --  been frozen yet.
+      --  subprogram itself must be delayed.
 
       ---------------------
       -- Possible_Freeze --
@@ -5286,20 +5322,6 @@ package body Sem_Ch6 is
          elsif Is_Access_Type (T)
            and then Has_Delayed_Freeze (Designated_Type (T))
            and then not Is_Frozen (Designated_Type (T))
-         then
-            Set_Has_Delayed_Freeze (Designator);
-
-         elsif (Ekind (T) = E_Incomplete_Type
-                 or else Ekind (T) = E_Class_Wide_Type)
-           and then From_Limited_With (T)
-         then
-            Set_Has_Delayed_Freeze (Designator);
-
-         --  AI05-0151: In Ada 2012, Incomplete types can appear in the profile
-         --  of a subprogram or entry declaration.
-
-         elsif Ekind (T) = E_Incomplete_Type
-           and then Ada_Version >= Ada_2012
          then
             Set_Has_Delayed_Freeze (Designator);
          end if;
@@ -10451,9 +10473,7 @@ package body Sem_Ch6 is
                --  it is still the case that untagged incomplete types cannot
                --  be Taft-amendment types and must be completed in private
                --  part, so the subprogram must appear in the list of private
-               --  dependents of the type. If the type is class-wide, it is
-               --  not a primitive, but the freezing of the subprogram must
-               --  also be delayed to force the creation of a freeze node.
+               --  dependents of the type.
 
                if Is_Tagged_Type (Formal_Type)
                  or else (Ada_Version >= Ada_2012
@@ -10462,19 +10482,14 @@ package body Sem_Ch6 is
                then
                   if Ekind (Scope (Current_Scope)) = E_Package
                     and then not Is_Generic_Type (Formal_Type)
+                    and then not Is_Class_Wide_Type (Formal_Type)
                   then
                      if not Nkind_In
                        (Parent (T), N_Access_Function_Definition,
                                     N_Access_Procedure_Definition)
                      then
-                        --  A limited view has no private dependents
-
-                        if not Is_Class_Wide_Type (Formal_Type)
-                          and then not From_Limited_With (Formal_Type)
-                        then
-                           Append_Elmt (Current_Scope,
-                             Private_Dependents (Base_Type (Formal_Type)));
-                        end if;
+                        Append_Elmt (Current_Scope,
+                          Private_Dependents (Base_Type (Formal_Type)));
 
                         --  Freezing is delayed to ensure that Register_Prim
                         --  will get called for this operation, which is needed
@@ -10728,19 +10743,6 @@ package body Sem_Ch6 is
 
       if Nkind (Related_Nod) = N_Function_Specification then
          Analyze_Return_Type (Related_Nod);
-
-         --  If return type is class-wide, subprogram freezing may be
-         --  delayed as well, unless the declaration is a compilation unit
-         --  in which case the freeze node would appear too late.
-
-         if Is_Class_Wide_Type (Etype (Current_Scope))
-           and then not Is_Thunk (Current_Scope)
-           and then not Is_Compilation_Unit (Current_Scope)
-           and then Nkind (Unit_Declaration_Node (Current_Scope)) =
-             N_Subprogram_Declaration
-         then
-            Set_Has_Delayed_Freeze (Current_Scope);
-         end if;
       end if;
 
       --  Now set the kind (mode) of each formal

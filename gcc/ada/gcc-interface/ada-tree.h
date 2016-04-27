@@ -180,12 +180,11 @@ do {							 \
 #define TYPE_IS_PADDING_P(NODE) \
   (TREE_CODE (NODE) == RECORD_TYPE && TYPE_PADDING_P (NODE))
 
-/* True if TYPE can alias any other types.  */
+/* True for a non-dummy type if TYPE can alias any other types.  */
 #define TYPE_UNIVERSAL_ALIASING_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
-/* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, this holds the maximum
-   alignment value the type ought to have.  */
-#define TYPE_MAX_ALIGN(NODE) (TYPE_PRECISION (RECORD_OR_UNION_CHECK (NODE)))
+/* True for a dummy type if TYPE appears in a profile.  */
+#define TYPE_DUMMY_IN_PROFILE_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
 /* True for types that implement a packed array and for original packed array
    types.  */
@@ -195,6 +194,10 @@ do {							 \
 
 /* True for types that can hold a debug type.  */
 #define TYPE_CAN_HAVE_DEBUG_TYPE_P(NODE) (!TYPE_IMPL_PACKED_ARRAY_P (NODE))
+
+/* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, this holds the maximum
+   alignment value the type ought to have.  */
+#define TYPE_MAX_ALIGN(NODE) (TYPE_PRECISION (RECORD_OR_UNION_CHECK (NODE)))
 
 /* For an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
    template and the object.
