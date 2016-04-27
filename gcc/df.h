@@ -43,17 +43,20 @@ union df_ref_d;
    a uniform manner.  The last four problems can be added or deleted
    at any time are always defined (though LIVE is always there at -O2
    or higher); the others are always there.  */
-#define DF_SCAN    0
-#define DF_LR      1      /* Live Registers backward. */
-#define DF_LIVE    2      /* Live Registers & Uninitialized Registers */
-#define DF_RD      3      /* Reaching Defs. */
-#define DF_CHAIN   4      /* Def-Use and/or Use-Def Chains. */
-#define DF_WORD_LR 5      /* Subreg tracking lr.  */
-#define DF_NOTE    6      /* REG_DEAD and REG_UNUSED notes.  */
-#define DF_MD      7      /* Multiple Definitions. */
-#define DF_MIR     8      /* Must-initialized Registers.  */
+enum df_problem_id
+  {
+    DF_SCAN,
+    DF_LR,                /* Live Registers backward. */
+    DF_LIVE,              /* Live Registers & Uninitialized Registers */
+    DF_RD,                /* Reaching Defs. */
+    DF_CHAIN,             /* Def-Use and/or Use-Def Chains. */
+    DF_WORD_LR,           /* Subreg tracking lr.  */
+    DF_NOTE,              /* REG_DEAD and REG_UNUSED notes.  */
+    DF_MD,                /* Multiple Definitions. */
+    DF_MIR,               /* Must-initialized Registers.  */
 
-#define DF_LAST_PROBLEM_PLUS1 (DF_MIR + 1)
+    DF_LAST_PROBLEM_PLUS1
+  };
 
 /* Dataflow direction.  */
 enum df_flow_dir
@@ -251,7 +254,7 @@ typedef void (*df_verify_solution_end) (void);
 struct df_problem {
   /* The unique id of the problem.  This is used it index into
      df->defined_problems to make accessing the problem data easy.  */
-  unsigned int id;
+  enum df_problem_id id;
   enum df_flow_dir dir;			/* Dataflow direction.  */
   df_alloc_function alloc_fun;
   df_reset_function reset_fun;

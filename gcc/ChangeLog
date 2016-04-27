@@ -1,5 +1,14 @@
 2016-04-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* df.h (DF_SCAN, DF_LR, DF_LIVE, DF_RD, DF_CHAIN, DF_WORD_LR,
+	DF_NOTE, DF_MD, DF_MIR, DF_LAST_PROBLEM_PLUS1): Convert from
+	#define to...
+	(enum df_problem_id): ...this new enum.
+	(struct df_problem): Convert field "id" from "int" to
+	enum df_problem_id.
+
+2016-04-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.def: Update comment for "things in the instruction chain" to
 	reflect the removal of the leading "i" field for INSN_UID in
 	r210360.  Fix bogus apostrophe.
