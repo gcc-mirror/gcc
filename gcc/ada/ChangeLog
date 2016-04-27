@@ -1,5 +1,13 @@
 2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* lib-xref.adb, exp_ch3.adb: Minor reformatting.
+
+2016-04-27  Nicolas Roche  <roche@adacore.com>
+
+	* rtinit.c: Add weak symbol __gnat_do_argv_expansion.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile): Code
 	cleanup. Check the original node when trying to determine the node kind
 	of pragma Volatile's argument to account for untagged derivations

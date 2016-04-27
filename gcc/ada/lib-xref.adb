@@ -1478,10 +1478,10 @@ package body Lib.Xref is
                   begin
                      if Nkind (Decl) = N_Object_Declaration
                        and then Is_Entity_Name
-                         (Original_Node ((Object_Definition (Decl))))
+                                  (Original_Node (Object_Definition (Decl)))
                      then
                         Tref :=
-                         Entity ((Original_Node ((Object_Definition (Decl)))));
+                          Entity (Original_Node (Object_Definition (Decl)));
                      end if;
                   end;
                end if;
