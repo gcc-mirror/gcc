@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,9 +35,9 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
 
 with Ada.Containers.Helpers; use Ada.Containers.Helpers;
 
-with Ada.Containers.Prime_Numbers;  use Ada.Containers.Prime_Numbers;
+with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Hashed_Maps is
 

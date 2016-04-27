@@ -30,7 +30,7 @@
 with Ada.Containers.Prime_Numbers;
 with Ada.Unchecked_Deallocation;
 
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Hash_Tables.Generic_Operations is
 

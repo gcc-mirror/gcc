@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --     Publisher: The MIT Press (June 18, 1990)
 --     ISBN: 0262031418
 
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
 
