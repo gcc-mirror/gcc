@@ -1120,7 +1120,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       gnu_result = gnat_to_gnu (Expression (Declaration_Node (gnat_temp)));
     }
   else
-    gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, 0);
+    gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, false);
 
   /* Some objects (such as parameters passed by reference, globals of
      variable size, and renamed objects) actually represent the address
@@ -3027,7 +3027,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	gnu_loop_iv = NULL_TREE;
 
       /* Declare the iteration variable and set it to its initial value.  */
-      gnu_loop_var = gnat_to_gnu_entity (gnat_loop_var, gnu_first, 1);
+      gnu_loop_var = gnat_to_gnu_entity (gnat_loop_var, gnu_first, true);
       if (DECL_BY_REF_P (gnu_loop_var))
 	gnu_loop_var = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_loop_var);
       else if (use_iv)
@@ -3792,7 +3792,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	      gnu_cico_entry = TREE_CHAIN (gnu_cico_entry);
 
 	    /* Do any needed dereferences for by-ref objects.  */
-	    gnu_decl = gnat_to_gnu_entity (gnat_param, NULL_TREE, 1);
+	    gnu_decl = gnat_to_gnu_entity (gnat_param, NULL_TREE, true);
 	    gcc_assert (DECL_P (gnu_decl));
 	    if (DECL_BY_REF_P (gnu_decl))
 	      gnu_decl = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_decl);
@@ -5193,7 +5193,7 @@ Exception_Handler_to_gnu_fe_sjlj (Node_Id gnat_node)
 	  if (Present (Renamed_Object (gnat_ex_id)))
 	    gnat_ex_id = Renamed_Object (gnat_ex_id);
 
-	  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, 0);
+	  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, false);
 
 	  this_choice
 	    = build_binary_op
@@ -5248,7 +5248,7 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
 	  if (Present (Renamed_Object (gnat_ex_id)))
 	    gnat_ex_id = Renamed_Object (gnat_ex_id);
 
-	  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, 0);
+	  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, false);
 	  gnu_etype = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
 	}
       else
@@ -5303,7 +5303,7 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
   if (Present (Choice_Parameter (gnat_node)))
     {
       tree gnu_param
-	= gnat_to_gnu_entity (Choice_Parameter (gnat_node), NULL_TREE, 1);
+	= gnat_to_gnu_entity (Choice_Parameter (gnat_node), NULL_TREE, true);
 
       add_stmt (build_call_n_expr
 		(set_exception_parameter_decl, 2,
@@ -5406,7 +5406,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 	}
 
       /* Define the entity first so we set DECL_EXTERNAL.  */
-      gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
+      gnat_to_gnu_entity (gnat_entity, NULL_TREE, false);
       add_stmt (gnat_to_gnu (gnat_body));
     }
 
@@ -6045,7 +6045,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    }
 	}
       else
-	gnat_to_gnu_entity (gnat_temp, gnu_expr, 1);
+	gnat_to_gnu_entity (gnat_temp, gnu_expr, true);
       break;
 
     case N_Object_Renaming_Declaration:
@@ -6063,7 +6063,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  tree gnu_temp
 	    = gnat_to_gnu_entity (gnat_temp,
-				  gnat_to_gnu (Renamed_Object (gnat_temp)), 1);
+				  gnat_to_gnu (Renamed_Object (gnat_temp)),
+				  true);
 	  /* See case 2 of renaming in gnat_to_gnu_entity.  */
 	  if (TREE_SIDE_EFFECTS (gnu_temp))
 	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
@@ -6079,7 +6080,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  tree gnu_temp
 	    = gnat_to_gnu_entity (gnat_temp,
-				  gnat_to_gnu (Renamed_Entity (gnat_temp)), 1);
+				  gnat_to_gnu (Renamed_Entity (gnat_temp)),
+				  true);
 	  if (TREE_SIDE_EFFECTS (gnu_temp))
 	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
 	}
@@ -6109,12 +6111,12 @@ gnat_to_gnu (Node_Id gnat_node)
 		|| Ekind (gnat_renamed) == E_Procedure)
 	    && !Is_Intrinsic_Subprogram (gnat_renaming)
 	    && !Is_Intrinsic_Subprogram (gnat_renamed))
-	  gnat_to_gnu_entity (gnat_renaming, gnat_to_gnu (gnat_renamed), 1);
+	  gnat_to_gnu_entity (gnat_renaming, gnat_to_gnu (gnat_renamed), true);
 	break;
       }
 
     case N_Implicit_Label_Declaration:
-      gnat_to_gnu_entity (Defining_Entity (gnat_node), NULL_TREE, 1);
+      gnat_to_gnu_entity (Defining_Entity (gnat_node), NULL_TREE, true);
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -7146,7 +7148,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
       if (No (Freeze_Node (Defining_Entity (Specification (gnat_node)))))
 	gnat_to_gnu_entity (Defining_Entity (Specification (gnat_node)),
-			    NULL_TREE, 1);
+			    NULL_TREE, true);
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -7168,7 +7170,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   gnat_temp = Next_Formal_With_Extras (gnat_temp))
 	if (Is_Itype (Etype (gnat_temp))
 	    && !From_Limited_With (Etype (gnat_temp)))
-	  gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
+	  gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, false);
 
       /* Then the result type, set to Standard_Void_Type for procedures.  */
       {
@@ -7176,7 +7178,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  = Etype (Defining_Entity (Specification (gnat_node)));
 
 	if (Is_Itype (gnat_temp_type) && !From_Limited_With (gnat_temp_type))
-	  gnat_to_gnu_entity (Etype (gnat_temp_type), NULL_TREE, 0);
+	  gnat_to_gnu_entity (Etype (gnat_temp_type), NULL_TREE, false);
       }
 
       gnu_result = alloc_stmt_list ();
@@ -7253,7 +7255,7 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Single_Task_Declaration:
-      gnat_to_gnu_entity (Defining_Entity (gnat_node), NULL_TREE, 1);
+      gnat_to_gnu_entity (Defining_Entity (gnat_node), NULL_TREE, true);
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -7864,7 +7866,7 @@ static void
 push_exception_label_stack (vec<tree, va_gc> **gnu_stack, Entity_Id gnat_label)
 {
   tree gnu_label = (Present (gnat_label)
-		    ? gnat_to_gnu_entity (gnat_label, NULL_TREE, 0)
+		    ? gnat_to_gnu_entity (gnat_label, NULL_TREE, false)
 		    : NULL_TREE);
 
   vec_safe_push (*gnu_stack, gnu_label);
@@ -8470,7 +8472,7 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
 	    elaborate_all_entities_for_package (gnat_entity);
 	}
       else
-	gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
+	gnat_to_gnu_entity (gnat_entity, NULL_TREE, false);
     }
 }
 
@@ -8628,7 +8630,7 @@ process_freeze_entity (Node_Id gnat_node)
 	  && Present (Underlying_Full_View (full_view)))
 	full_view = Underlying_Full_View (full_view);
 
-      gnu_new = gnat_to_gnu_entity (full_view, NULL_TREE, 1);
+      gnu_new = gnat_to_gnu_entity (full_view, NULL_TREE, true);
 
       /* Propagate back-annotations from full view to partial view.  */
       if (Unknown_Alignment (gnat_entity))
@@ -8653,7 +8655,7 @@ process_freeze_entity (Node_Id gnat_node)
 	   && present_gnu_tree (Declaration_Node (gnat_entity)))
 	  ? get_gnu_tree (Declaration_Node (gnat_entity)) : NULL_TREE;
 
-      gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, 1);
+      gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, true);
     }
 
   if (IN (kind, Type_Kind)
@@ -8745,7 +8747,7 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 
 		    if (Ekind (gnat_subprog_id) != E_Generic_Procedure
 			&& Ekind (gnat_subprog_id) != E_Generic_Function)
-		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, 1);
+		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, true);
 		  }
 	      }
 
@@ -8760,7 +8762,7 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 		    if (Ekind (gnat_subprog_id) != E_Subprogram_Body
 			&& Ekind (gnat_subprog_id) != E_Generic_Procedure
 			&& Ekind (gnat_subprog_id) != E_Generic_Function)
-		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, 1);
+		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, true);
 	      }
 
 	    /* Concurrent stubs stand for the corresponding subprogram bodies,
@@ -9509,7 +9511,7 @@ process_type (Entity_Id gnat_entity)
     }
 
   /* Now fully elaborate the type.  */
-  gnu_new = gnat_to_gnu_entity (gnat_entity, NULL_TREE, 1);
+  gnu_new = gnat_to_gnu_entity (gnat_entity, NULL_TREE, true);
   gcc_assert (TREE_CODE (gnu_new) == TYPE_DECL);
 
   /* If we have an old type and we've made pointers to this type, update those

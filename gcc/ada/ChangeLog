@@ -1,5 +1,42 @@
 2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (gnat_to_gnu_entity): Adjust prototype.
+	(maybe_pad_type): Adjust comment.
+	(finish_record_type): Likewise.
+	(rest_of_record_type_compilation): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Change DEFINITION type
+	parameter from integer to boolean.  Adjust recursive calls.
+	<E_Subprogram_Type>: Use copy_type and remove redundant assignments.
+	<E_Signed_Integer_Subtype>:  Adjust comment.  Remove call to
+	rest_of_record_type_compilation.  Set TYPE_PADDING_P flag earlier.
+	Pass false to finish_record_type.  Set the debug type later.
+	<E_Record_Subtype>: Remove call to rest_of_record_type_compilation.
+	(gnat_to_gnu_component_type): Fix formatting.
+	(gnat_to_gnu_field_decl): Adjust call to gnat_to_gnu_entity.
+	(gnat_to_gnu_type): Likewise.
+	* gcc-interface/trans.c (Identifier_to_gnu): Likewise.
+	(Loop_Statement_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(Exception_Handler_to_gnu_fe_sjlj): Likewise.
+	(Exception_Handler_to_gnu_gcc): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	(push_exception_label_stack): Likewise.
+	(elaborate_all_entities_for_package): Likewise.
+	(process_freeze_entity): Likewise.
+	(process_decls): Likewise.
+	(process_type): Likewise.
+	* gcc-interface/utils.c (struct deferred_decl_context_node): Tweak.
+	(maybe_pad_type): Adjust comments.  Set the debug type later.  Remove
+	call to rest_of_record_type_compilation.
+	(rest_of_record_type_compilation): Use copy_type.
+	(copy_type): Use correctly typed constants.
+	(gnat_signed_or_unsigned_type_for): Use copy_type.
+	* gcc-interface/utils2.c (nonbinary_modular_operation): Likewise.
+	(build_goto_raise): Adjust call tognat_to_gnu_entity.
+
+2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (gnat_init): Do not call
 	internal_reference_types.
 

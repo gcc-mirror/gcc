@@ -560,8 +560,8 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   if (TYPE_PRECISION (op_type) < precision
       || TYPE_UNSIGNED (op_type) != unsignedp)
     {
-      /* Copy the node so we ensure it can be modified to make it modular.  */
-      op_type = copy_node (gnat_type_for_size (precision, unsignedp));
+      /* Copy the type so we ensure it can be modified to make it modular.  */
+      op_type = copy_type (gnat_type_for_size (precision, unsignedp));
       modulus = convert (op_type, modulus);
       SET_TYPE_MODULUS (op_type, modulus);
       TYPE_MODULAR_P (op_type) = 1;
@@ -577,7 +577,8 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
      possible size.  */
   if (op_code == MULT_EXPR)
     {
-      tree div_type = copy_node (gnat_type_for_size (needed_precision, 1));
+      /* Copy the type so we ensure it can be modified to make it modular.  */
+      tree div_type = copy_type (gnat_type_for_size (needed_precision, 1));
       modulus = convert (div_type, modulus);
       SET_TYPE_MODULUS (div_type, modulus);
       TYPE_MODULAR_P (div_type) = 1;
@@ -1761,9 +1762,10 @@ build_goto_raise (tree label, int msg)
   /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
   if (Present (local_raise))
     {
-      tree gnu_local_raise = gnat_to_gnu_entity (local_raise, NULL_TREE, 0);
+      tree gnu_local_raise
+	= gnat_to_gnu_entity (local_raise, NULL_TREE, false);
       tree gnu_exception_entity
-	= gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
+	= gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, false);
       tree gnu_call
 	= build_call_n_expr (gnu_local_raise, 1,
 			     build_unary_op (ADDR_EXPR, NULL_TREE,
