@@ -1,3 +1,43 @@
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile): Code
+	cleanup. Check the original node when trying to determine the node kind
+	of pragma Volatile's argument to account for untagged derivations
+	where the type is transformed into a constrained subtype.
+
+2016-04-27  Olivier Hainque  <hainque@adacore.com>
+
+	* mkdir.c (__gnat_mkdir): Rework the vxworks section to use a
+	consistent posix interface on the caller side.
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Build_Limited_View, Decorate_Type): If this
+	is a limited view of a type, initialize the Limited_Dependents
+	field to catch misuses of the type in a client unit.
+
+2016-04-27  Thomas Quinot  <quinot@adacore.com>
+
+	* a-strunb-shared.adb (Finalize): add missing Reference call.
+	* s-strhas.adb: minor grammar fix and extension of comment
+	* sem_ch8.adb: minor whitespace fixes
+
+2016-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Get_Type_Reference): Handle properly the case
+	of an object declaration whose type definition is a class-wide
+	subtype and whose expression is a function call that returns a
+	classwide type.
+
+2016-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Output_Entity): New routine.
+	(Output_Name): New routine.
+
+2016-04-27  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Rewrite_As_Renaming): Disable previous change for now.
+
 2016-04-27  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb: For "gnat ls -V -P", recognize switch

@@ -799,6 +799,7 @@ package body Ada.Strings.Unbounded is
          --  effects if a program references an already-finalized object.
 
          Object.Reference := Null_Unbounded_String.Reference;
+         Reference (Object.Reference);
          Unreference (SR);
       end if;
    end Finalize;

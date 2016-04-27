@@ -6467,11 +6467,6 @@ package body Sem_Prag is
       ------------------------------------------------
 
       procedure Process_Atomic_Independent_Shared_Volatile is
-         D    : Node_Id;
-         E    : Entity_Id;
-         E_Id : Node_Id;
-         K    : Node_Kind;
-
          procedure Set_Atomic_VFA (E : Entity_Id);
          --  Set given type as Is_Atomic or Is_Volatile_Full_Access. Also, if
          --  no explicit alignment was given, set alignment to unknown, since
@@ -6495,6 +6490,12 @@ package body Sem_Prag is
             end if;
          end Set_Atomic_VFA;
 
+         --  Local variables
+
+         Decl  : Node_Id;
+         E     : Entity_Id;
+         E_Arg : Node_Id;
+
       --  Start of processing for Process_Atomic_Independent_Shared_Volatile
 
       begin
@@ -6502,15 +6503,14 @@ package body Sem_Prag is
          Check_No_Identifiers;
          Check_Arg_Count (1);
          Check_Arg_Is_Local_Name (Arg1);
-         E_Id := Get_Pragma_Arg (Arg1);
+         E_Arg := Get_Pragma_Arg (Arg1);
 
-         if Etype (E_Id) = Any_Type then
+         if Etype (E_Arg) = Any_Type then
             return;
          end if;
 
-         E := Entity (E_Id);
-         D := Declaration_Node (E);
-         K := Nkind (D);
+         E    := Entity (E_Arg);
+         Decl := Declaration_Node (E);
 
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
@@ -6619,8 +6619,8 @@ package body Sem_Prag is
                Set_Treat_As_Volatile (Underlying_Type (E));
             end if;
 
-         elsif K = N_Object_Declaration
-           or else (K = N_Component_Declaration
+         elsif Nkind (Decl) = N_Object_Declaration
+           or else (Nkind (Decl) = N_Component_Declaration
                      and then Original_Record_Component (E) = E)
          then
             if Rep_Item_Too_Late (E, N) then
@@ -6674,12 +6674,15 @@ package body Sem_Prag is
          --  The following check is only relevant when SPARK_Mode is on as
          --  this is not a standard Ada legality rule. Pragma Volatile can
          --  only apply to a full type declaration or an object declaration
-         --  (SPARK RM C.6(1)).
+         --  (SPARK RM C.6(1)). Original_Node is necessary to account for
+         --  untagged derived types that are rewritten as subtypes of their
+         --  respective root types.
 
          if SPARK_Mode = On
            and then Prag_Id = Pragma_Volatile
-           and then not Nkind_In (K, N_Full_Type_Declaration,
-                                     N_Object_Declaration)
+           and then
+             not Nkind_In (Original_Node (Decl), N_Full_Type_Declaration,
+                                                 N_Object_Declaration)
          then
             Error_Pragma_Arg
               ("argument of pragma % must denote a full type or object "

@@ -84,6 +84,13 @@ package body Sem_Ch10 is
    --  required in order to avoid passing non-decorated entities to the
    --  back-end. Implements Ada 2005 (AI-50217).
 
+   procedure Analyze_Proper_Body (N : Node_Id; Nam : Entity_Id);
+   --  Common processing for all stubs (subprograms, tasks, packages, and
+   --  protected cases). N is the stub to be analyzed. Once the subunit name
+   --  is established, load and analyze. Nam is the non-overloadable entity
+   --  for which the proper body provides a completion. Subprogram stubs are
+   --  handled differently because they can be declarations.
+
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id);
    --  Check whether the source for the body of a compilation unit must be
    --  included in a standalone library.
@@ -202,13 +209,6 @@ package body Sem_Ch10 is
 
    procedure Unchain (E : Entity_Id);
    --  Remove single entity from visibility list
-
-   procedure Analyze_Proper_Body (N : Node_Id; Nam : Entity_Id);
-   --  Common processing for all stubs (subprograms, tasks, packages, and
-   --  protected cases). N is the stub to be analyzed. Once the subunit name
-   --  is established, load and analyze. Nam is the non-overloadable entity
-   --  for which the proper body provides a completion. Subprogram stubs are
-   --  handled differently because they can be declarations.
 
    procedure sm;
    --  A dummy procedure, for debugging use, called just before analyzing the
@@ -1489,7 +1489,7 @@ package body Sem_Ch10 is
 
                            --  Check if the named package (or some ancestor)
                            --  leaves visible the full-view of the unit given
-                           --  in the limited-with clause
+                           --  in the limited-with clause.
 
                            loop
                               if Designate_Same_Unit (Lim_Unit_Name,
@@ -5633,15 +5633,19 @@ package body Sem_Ch10 is
 
       begin
          --  An unanalyzed type or a shadow entity of a type is treated as an
-         --  incomplete type.
+         --  incomplete type, and carries the corresponding attributes.
 
-         Set_Ekind             (Ent, E_Incomplete_Type);
-         Set_Etype             (Ent, Ent);
-         Set_Full_View         (Ent, Empty);
-         Set_Is_First_Subtype  (Ent);
-         Set_Scope             (Ent, Scop);
-         Set_Stored_Constraint (Ent, No_Elist);
-         Init_Size_Align       (Ent);
+         Set_Ekind              (Ent, E_Incomplete_Type);
+         Set_Etype              (Ent, Ent);
+         Set_Full_View          (Ent, Empty);
+         Set_Is_First_Subtype   (Ent);
+         Set_Scope              (Ent, Scop);
+         Set_Stored_Constraint  (Ent, No_Elist);
+         Init_Size_Align        (Ent);
+
+         if From_Limited_With (Ent) then
+            Set_Private_Dependents (Ent, New_Elmt_List);
+         end if;
 
          --  A tagged type and its corresponding shadow entity share one common
          --  class-wide type. The list of primitive operations for the shadow
