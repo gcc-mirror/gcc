@@ -1,7 +1,7 @@
 2016-04-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* params.def (MAX_PARTITION_SIZE): New param.
-	* invoke.texi: Document lto-max-partition.
+	* doc/invoke.texi: Document lto-max-partition.
 
 2016-04-27  Richard Biener  <rguenther@suse.de>
 
