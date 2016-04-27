@@ -504,9 +504,13 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   /* ARM Bump has to be an even number because of odd/even architecture.  */
   mcontext->arm_pc+=2;
 #ifdef __thumb2__
+#define CPSR_THUMB_BIT 5
   /* For thumb, the return address much have the low order bit set, otherwise
-     the unwwinder will reset to "arm" mode upon return.  It's a feature.  */
-  mcontext->arm_pc+=1;
+     the unwinder will reset to "arm" mode upon return.  As long as the
+     compilation unit containing the landing pad is compiled with the same
+     mode (arm vs thumb) as the signaling compilation unit, this works.  */
+  if (mcontext->arm_cpsr & (1<<CPSR_THUMB_BIT))
+    mcontext->arm_pc+=1;
 #endif
 #endif
 }

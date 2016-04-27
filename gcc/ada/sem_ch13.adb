@@ -4323,10 +4323,21 @@ package body Sem_Ch13 is
 
          function Valid_Default_Iterator (Subp : Entity_Id) return Boolean is
             Formal : Entity_Id;
+            Root_T : constant Entity_Id := Root_Type (Etype (Etype (Subp)));
 
          begin
             if not Check_Primitive_Function (Subp) then
                return False;
+
+            --  The return type must be derived from a type in an instance
+            --  of Iterator.Interfaces, and thus its root type must have a
+            --  predefined name.
+
+            elsif Chars (Root_T) /= Name_Forward_Iterator
+             and then Chars (Root_T) /= Name_Reversible_Iterator
+            then
+               return False;
+
             else
                Formal := First_Formal (Subp);
             end if;
@@ -4409,6 +4420,9 @@ package body Sem_Ch13 is
                if Present (Default) then
                   Set_Entity (Expr, Default);
                   Set_Is_Overloaded (Expr, False);
+               else
+                  Error_Msg_N
+                    ("No interpretation is a valid default iterator!", Expr);
                end if;
             end;
          end if;

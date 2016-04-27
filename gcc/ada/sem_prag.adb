@@ -15034,6 +15034,18 @@ package body Sem_Prag is
                      Id := Defining_Entity (Stmt);
                      exit;
 
+                  --  When pragma Ghost applies to an object declaration which
+                  --  is initialized by means of a function call that returns
+                  --  on the secondary stack, the object declaration becomes a
+                  --  renaming.
+
+                  elsif Nkind (Stmt) = N_Object_Renaming_Declaration
+                    and then Comes_From_Source (Orig_Stmt)
+                    and then Nkind (Orig_Stmt) = N_Object_Declaration
+                  then
+                     Id := Defining_Entity (Stmt);
+                     exit;
+
                   --  When pragma Ghost applies to an expression function, the
                   --  expression function is transformed into a subprogram.
 

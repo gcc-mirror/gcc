@@ -2030,10 +2030,13 @@ package body Exp_Ch5 is
       end if;
 
       --  Ada 2012 (AI05-148): Update current accessibility level if Rhs is a
-      --  stand-alone obj of an anonymous access type.
+      --  stand-alone obj of an anonymous access type. Do not install the check
+      --  when the Lhs denotes a container cursor and the Next function employs
+      --  an access type because this may never result in a dangling pointer.
 
       if Is_Access_Type (Typ)
         and then Is_Entity_Name (Lhs)
+        and then Ekind (Entity (Lhs)) /= E_Loop_Parameter
         and then Present (Effective_Extra_Accessibility (Entity (Lhs)))
       then
          declare
