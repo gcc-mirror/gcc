@@ -1,3 +1,8 @@
+2016-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* rtlanal.c (nonzero_bits1): Convert preprocessor check
+	for WORD_REGISTER_OPERATIONS to runtime check.
+
 2016-04-27  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/70760
