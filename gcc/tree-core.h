@@ -765,7 +765,9 @@ enum operand_equal_flag {
   OEP_ONLY_CONST = 1,
   OEP_PURE_SAME = 2,
   OEP_MATCH_SIDE_EFFECTS = 4,
-  OEP_ADDRESS_OF = 8
+  OEP_ADDRESS_OF = 8,
+  /* Internal within operand_equal_p:  */
+  OEP_NO_HASH_CHECK = 16
 };
 
 /* Enum and arrays used for tree allocation stats.
