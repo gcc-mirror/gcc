@@ -1,3 +1,8 @@
+2016-04-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinput.ads, a-cfdlli.adb, a-crbtgo.adb, a-chtgop.adb, a-cbhama.adb,
+	a-rbtgbo.adb, a-crdlli.adb, a-chtgbo.adb: Minor editing.
+
 2016-04-27  Bob Duff  <duff@adacore.com>
 
 	* a-chtgop.adb (Adjust): Zero the tampering counts on assignment,

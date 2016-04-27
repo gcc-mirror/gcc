@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,7 +157,7 @@ package Sinput is
    --  separate main units.
 
    --  The entries in the table are accessed using a Source_File_Index that
-   --  ranges from 1 to Last_Source_File. Each entry has the following fields
+   --  ranges from 1 to Last_Source_File. Each entry has the following fields.
 
    --  Note: fields marked read-only are set by Sinput or one of its child
    --  packages when a source file table entry is created, and cannot be
@@ -387,7 +387,7 @@ package Sinput is
 
    --  As described in Sem_Ch12, a generic instantiation involves making a
    --  copy of the tree of the generic template. The source locations in
-   --  this tree directly reference the source of the template. However it
+   --  this tree directly reference the source of the template. However, it
    --  is also possible to find the location of the instantiation.
 
    --  This is achieved as follows. When an instantiation occurs, a new entry
