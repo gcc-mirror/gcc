@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2051,6 +2051,13 @@ package body Sem_Aggr is
 
                      Set_Parent (Expr, Parent (Expression (Assoc)));
                      Analyze (Expr);
+
+                     --  Compute its dimensions now, rather than at the end
+                     --  of resolution, because in the case of multidimensional
+                     --  aggregates subsequent expansion may lead to spurious
+                     --  errors.
+
+                     Check_Expression_Dimensions (Expr, Component_Typ);
 
                      --  If the expression is a literal, propagate this info
                      --  to the expression in the association, to enable some

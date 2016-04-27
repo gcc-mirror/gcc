@@ -9637,11 +9637,13 @@ package body Exp_Ch3 is
                   exit;
 
                --  If the parent is not an interface type and has an abstract
-               --  equality function, the inherited equality is abstract as
-               --  well, and no body can be created for it.
+               --  equality function explicitly defined in the sources, then
+               --  the inherited equality is abstract as well, and no body can
+               --  be created for it.
 
                elsif not Is_Interface (Etype (Tag_Typ))
                  and then Present (Alias (Node (Prim)))
+                 and then Comes_From_Source (Alias (Node (Prim)))
                  and then Is_Abstract_Subprogram (Alias (Node (Prim)))
                then
                   Eq_Needed := False;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1235,10 +1235,12 @@ package body Sem_Dim is
          --  since it may not be decorated at this point. We also don't want to
          --  issue the same error message multiple times on the same expression
          --  (may happen when an aggregate is converted into a positional
-         --  aggregate).
+         --  aggregate). We also must verify that this is a scalar component,
+         --  and not a subaggregate of a multidimensional aggregate.
 
          if Comes_From_Source (Original_Node (Expr))
            and then Present (Etype (Expr))
+           and then Is_Numeric_Type (Etype (Expr))
            and then Dimensions_Of (Expr) /= Dims_Of_Comp_Typ
            and then Sloc (Comp) /= Sloc (Prev (Comp))
          then
@@ -2269,6 +2271,27 @@ package body Sem_Dim is
 
       end case;
    end Analyze_Dimension_Unary_Op;
+
+   ---------------------------------
+   -- Check_Expression_Dimensions --
+   ---------------------------------
+
+   procedure Check_Expression_Dimensions
+      (Expr : Node_Id;
+       Typ  : Entity_Id)
+   is
+   begin
+      if Is_Floating_Point_Type (Etype (Expr)) then
+         Analyze_Dimension (Expr);
+
+         if Dimensions_Of (Expr) /= Dimensions_Of (Typ) then
+            Error_Msg_N ("dimensions mismatch in array aggregate", Expr);
+            Error_Msg_N
+              ("\expected dimension " & Dimensions_Msg_Of (Typ)
+               & ", found " & Dimensions_Msg_Of (Expr), Expr);
+         end if;
+      end if;
+   end Check_Expression_Dimensions;
 
    ---------------------
    -- Copy_Dimensions --

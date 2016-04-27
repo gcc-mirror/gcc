@@ -2405,14 +2405,20 @@ package body Sem_Ch6 is
 
          Analyze (Subp_Decl);
 
-         --  Propagate the attribute Rewritten_For_C to the body since the
-         --  expander may generate calls using that entity. Required to ensure
-         --  that Expand_Call rewrites calls to this function by calls to the
-         --  built procedure.
+         --  Propagate the attributes Rewritten_For_C and Corresponding_Proc to
+         --  the body since the expander may generate calls using that entity.
+         --  Required to ensure that Expand_Call rewrites calls to this
+         --  function by calls to the built procedure.
 
-         if Nkind (Body_Spec) = N_Function_Specification then
-            Set_Rewritten_For_C (Defining_Entity (Body_Spec),
-              Rewritten_For_C (Defining_Entity (Specification (Subp_Decl))));
+         if Modify_Tree_For_C
+           and then Nkind (Body_Spec) = N_Function_Specification
+           and then
+              Rewritten_For_C (Defining_Entity (Specification (Subp_Decl)))
+         then
+            Set_Rewritten_For_C (Defining_Entity (Body_Spec));
+            Set_Corresponding_Procedure (Defining_Entity (Body_Spec),
+              Corresponding_Procedure
+                (Defining_Entity (Specification (Subp_Decl))));
          end if;
 
          --  Analyze any relocated source pragmas or pragmas created for aspect
