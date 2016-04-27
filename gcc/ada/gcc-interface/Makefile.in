@@ -1426,7 +1426,7 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   a-intnam.ads<a-intnam-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-osinte.adb<s-osinte-posix.adb \
+  s-osinte.adb<s-osinte-gnu.adb \
   s-osinte.ads<s-osinte-gnu.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-posix.adb \
