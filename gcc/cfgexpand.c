@@ -1137,7 +1137,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      HOST_WIDE_INT prev_offset
 		= align_base (frame_offset,
 			      MAX (alignb, ASAN_RED_ZONE_SIZE),
-			      FRAME_GROWS_DOWNWARD);
+			      !FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
 	      offset
 		= alloc_stack_frame_space (stack_vars[i].size

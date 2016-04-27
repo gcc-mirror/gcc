@@ -1,6 +1,11 @@
 2016-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/70712
+	* cfgexpand.c (expand_stack_vars): Fix typo.
+
 	2016-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70680
