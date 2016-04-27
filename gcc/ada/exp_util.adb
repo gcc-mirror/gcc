@@ -7944,11 +7944,33 @@ package body Exp_Util is
       else
          --  An expression which is in SPARK mode is considered side effect
          --  free if the resulting value is captured by a variable or a
-         --  constant. Same reasoning when generating C code.
-         --  Why can't we apply this test in general???
+         --  constant.
 
-         if (GNATprove_Mode or Generate_C_Code)
+         if GNATprove_Mode
            and then Nkind (Parent (Exp)) = N_Object_Declaration
+         then
+            goto Leave;
+
+         --  When generating C code we cannot consider side effect free object
+         --  declarations that have discriminants and are initialized by means
+         --  of a function call since on this target there is no secondary
+         --  stack to store the return value and the expander may generate an
+         --  extra call to the function to compute the discriminant value. In
+         --  addition, for targets that have secondary stack, the expansion of
+         --  functions with side effects involves the generation of an access
+         --  type to capture the return value stored in the secondary stack;
+         --  by contrast when generating C code such expansion generates an
+         --  internal object declaration (no access type involved) which must
+         --  be identified here to avoid entering into a never-ending loop
+         --  generating internal object declarations.
+
+         elsif Generate_C_Code
+           and then Nkind (Parent (Exp)) = N_Object_Declaration
+           and then
+             (Nkind (Exp) /= N_Function_Call
+                or else not Has_Discriminants (Exp_Type)
+                or else Is_Internal_Name
+                          (Chars (Defining_Identifier (Parent (Exp)))))
          then
             goto Leave;
          end if;
@@ -8063,12 +8085,39 @@ package body Exp_Util is
             Set_Analyzed (E, False);
          end if;
 
-         Insert_Action (Exp,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
-             Constant_Present    => True,
-             Expression          => New_Exp));
+         --  Generating C code of object declarations that have discriminants
+         --  and are initialized by means of a function call we propagate the
+         --  discriminants of the parent type to the internally built object.
+         --  This is needed to avoid generating an extra call to the called
+         --  function.
+
+         --  For example, if we generate here the following declaration, it
+         --  will be expanded later adding an extra call to evaluate the value
+         --  of the discriminant (needed to compute the size of the object).
+         --
+         --     type Rec (D : Integer) is ...
+         --     Obj : constant Rec := SomeFunc;
+
+         if Generate_C_Code
+           and then Nkind (Parent (Exp)) = N_Object_Declaration
+           and then Has_Discriminants (Exp_Type)
+           and then Nkind (Exp) = N_Function_Call
+         then
+            Insert_Action (Exp,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Object_Definition   => New_Copy_Tree
+                                         (Object_Definition (Parent (Exp))),
+                Constant_Present    => True,
+                Expression          => New_Exp));
+         else
+            Insert_Action (Exp,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
+                Constant_Present    => True,
+                Expression          => New_Exp));
+         end if;
       end if;
 
       --  Preserve the Assignment_OK flag in all copies, since at least one

@@ -7783,7 +7783,12 @@ package body Exp_Ch6 is
       Result_Subt     : Entity_Id;
 
       Definite : Boolean;
-      --  True for definite function result subtype
+      --  True if result subtype is definite, or has a size that does not
+      --  require secondary stack usage (i.e. no variant part or components
+      --  whose type depends on discriminants). In particular, untagged types
+      --  with only access discriminants do not require secondary stack use.
+      --  Note that if the return type is tagged we must always use the sec.
+      --  stack because the call may dispatch on result.
 
    begin
       --  Step past qualification or unchecked conversion (the latter can occur
@@ -7818,7 +7823,10 @@ package body Exp_Ch6 is
       end if;
 
       Result_Subt := Etype (Function_Id);
-      Definite    := Is_Definite_Subtype (Underlying_Type (Result_Subt));
+      Definite :=
+        (Is_Definite_Subtype (Underlying_Type (Result_Subt))
+             and then not Is_Tagged_Type (Result_Subt))
+          or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
 
       --  Create an access type designating the function's result subtype. We
       --  use the type of the original call because it may be a call to an
