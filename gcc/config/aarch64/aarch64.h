@@ -722,7 +722,12 @@ do {									     \
 #define USE_STORE_PRE_INCREMENT(MODE)   0
 #define USE_STORE_PRE_DECREMENT(MODE)   0
 
-/* ?? #define WORD_REGISTER_OPERATIONS  */
+/* WORD_REGISTER_OPERATIONS does not hold for AArch64.
+   The assigned word_mode is DImode but operations narrower than SImode
+   behave as 32-bit operations if using the W-form of the registers rather
+   than as word_mode (64-bit) operations as WORD_REGISTER_OPERATIONS
+   expects.  */
+#define WORD_REGISTER_OPERATIONS 0
 
 /* Define if loading from memory in MODE, an integral mode narrower than
    BITS_PER_WORD will either zero-extend or sign-extend.  The value of this
