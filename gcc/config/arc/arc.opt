@@ -470,6 +470,10 @@ Specify thread pointer register number
 mtp-regno=none
 Target RejectNegative Var(arc_tp_regno,-1)
 
+mbitops
+Target Report Var(TARGET_NPS_BITOPS) Init(TARGET_NPS_BITOPS_DEFAULT)
+Enable use of NPS400 bit operations.
+
 mcmem
 Target Report Var(TARGET_NPS_CMEM) Init(TARGET_NPS_CMEM_DEFAULT)
 Enable use of NPS400 xld/xst extension.

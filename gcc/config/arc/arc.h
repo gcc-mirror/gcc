@@ -326,9 +326,17 @@ along with GCC; see the file COPYING3.  If not see
 #define UNALIGNED_ACCESS_DEFAULT 0
 #endif
 
+#ifndef TARGET_NPS_BITOPS_DEFAULT
+#define TARGET_NPS_BITOPS_DEFAULT 0
+#endif
+
 #ifndef TARGET_NPS_CMEM_DEFAULT
 #define TARGET_NPS_CMEM_DEFAULT 0
 #endif
+
+/* Enable the RRQ instruction alternatives.  */
+
+#define TARGET_RRQ_CLASS TARGET_NPS_BITOPS
 
 /* Target machine storage layout.  */
 
@@ -1033,6 +1041,7 @@ extern int arc_initial_elimination_offset(int from, int to);
 
 /* Is the argument a const_int rtx, containing an exact power of 2 */
 #define  IS_POWEROF2_P(X) (! ( (X) & ((X) - 1)) && (X))
+#define  IS_POWEROF2_OR_0_P(X) (! ( (X) & ((X) - 1)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

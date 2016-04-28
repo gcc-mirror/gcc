@@ -1,3 +1,45 @@
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.c (arc_conditional_register_usage): Take
+	TARGET_RRQ_CLASS into account.
+	(arc_print_operand): Support printing 'p' and 's' operands.
+	* config/arc/arc.h (TARGET_NPS_BITOPS_DEFAULT): Provide default
+	as 0.
+	(TARGET_RRQ_CLASS): Define.
+	(IS_POWEROF2_OR_0_P): Define.
+	* config/arc/arc.md (*movsi_insn): Add w/Clo, w/Chi, and w/Cbi
+	alternatives.
+	(*tst_movb): New define_insn.
+	(*tst): Avoid recognition if it could prevent '*tst_movb'
+	combination; replace c/CnL with c/Chs alternative.
+	(*tst_bitfield_tst): New define_insn.
+	(*tst_bitfield_asr): New define_insn.
+	(*tst_bitfield): New define_insn.
+	(andsi3_i): Add Rrq variant.
+	(extzv): New define_expand.
+	(insv): New define_expand.
+	(*insv_i): New define_insn.
+	(*movb): New define_insn.
+	(*movb_signed): New define_insn.
+	(*movb_high): New define_insn.
+	(*movb_high_signed): New define_insn.
+	(*movb_high_signed + 1): New define_split pattern.
+	(*mrgb): New define_insn.
+	(*mrgb + 1): New define_peephole2 pattern.
+	(*mrgb + 2): New define_peephole2 pattern.
+	* config/arc/arc.opt (mbitops): New option for nps400, uses
+	TARGET_NPS_BITOPS_DEFAULT.
+	* config/arc/constraints.md (q): Make register class conditional.
+	(Rrq): New register constraint.
+	(Chs): New constraint.
+	(Clo): New constraint.
+	(Chi): New constraint.
+	(Cbf): New constraint.
+	(Cbn): New constraint.
+	(C18): New constraint.
+	(Cbi): New constraint.
+
 2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* cfganal.c (bitmap_intersection_of_succs): Delete assert checking
