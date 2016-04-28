@@ -1,3 +1,11 @@
+2016-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70840
+	* match.pd: powi(-x, y) and powi(|x|,y) -> powi(x,y) if y is even;
+	Fix pow(copysign(x, y), z) -> pow(x, z) and add powi variant;
+	Mark x * pow(x,c) -> pow(x,c+1) commutative.
+	Add powi(x,y) * powi(z,y) -> powi(x*z,y).
+
 2015-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.h (WORD_REGISTER_OPERATIONS): Define to 0
