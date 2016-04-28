@@ -44,7 +44,7 @@ if [cilkplus_init] {
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -O3 -std=c99" " "
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -g -O0 -std=c99" " "
 
-    if { [check_libcilkrts_available] } {
+    if { [check_effective_target_cilkplus_runtime] } {
         dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g " " "
         dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O1 " " "
         dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -std=c99 " " "
