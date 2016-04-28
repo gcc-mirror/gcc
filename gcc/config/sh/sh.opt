@@ -37,9 +37,6 @@ Mask(HARD_SH2A_DOUBLE)
 ;; Set if compiling for SH4 hardware (to be used for insn costs etc.)
 Mask(HARD_SH4)
 
-;; Set if we should generate code for a SH5 CPU (either ISA).
-Mask(SH5)
-
 ;; Set if we should save all target registers.
 Mask(SAVE_ALL_TARGET_REGS)
 
@@ -180,30 +177,6 @@ m4al
 Target RejectNegative Condition(SUPPORT_SH4AL)
 Generate SH4al-dsp code.
 
-m5-32media
-Target RejectNegative Condition(SUPPORT_SH5_32MEDIA)
-Generate 32-bit SHmedia code.
-
-m5-32media-nofpu
-Target RejectNegative Condition(SUPPORT_SH5_32MEDIA_NOFPU)
-Generate 32-bit FPU-less SHmedia code.
-
-m5-64media
-Target RejectNegative Condition(SUPPORT_SH5_64MEDIA)
-Generate 64-bit SHmedia code.
-
-m5-64media-nofpu
-Target RejectNegative Condition(SUPPORT_SH5_64MEDIA_NOFPU)
-Generate 64-bit FPU-less SHmedia code.
-
-m5-compact
-Target RejectNegative Condition(SUPPORT_SH5_32MEDIA)
-Generate SHcompact code.
-
-m5-compact-nofpu
-Target RejectNegative Condition(SUPPORT_SH5_32MEDIA_NOFPU)
-Generate FPU-less SHcompact code.
-
 maccumulate-outgoing-args
 Target Report Var(TARGET_ACCUMULATE_OUTGOING_ARGS) Init(1)
 Reserve space for outgoing arguments in the function prologue.
@@ -244,17 +217,13 @@ mcbranch-force-delay-slot
 Target Report RejectNegative Var(TARGET_CBRANCH_FORCE_DELAY_SLOT) Init(0)
 Force the usage of delay slots for conditional branches.
 
-mcut2-workaround
-Target RejectNegative Var(TARGET_SH5_CUT2_WORKAROUND)
-Enable SH5 cut2 workaround.
-
 mdalign
 Target Report RejectNegative Mask(ALIGN_DOUBLE)
 Align doubles at 64-bit boundaries.
 
 mdiv=
 Target RejectNegative Joined Var(sh_div_str) Init("")
-Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table.
+Division strategy, one of: call-div1, call-fp, call-table.
 
 mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
@@ -272,10 +241,6 @@ mfixed-range=
 Target RejectNegative Joined Var(sh_fixed_range_str)
 Specify range of registers to make fixed.
 
-mgettrcost=
-Target RejectNegative Joined UInteger Var(sh_gettrcost) Init(-1)
-Cost to assume for gettr insn.
-
 mhitachi
 Target Report RejectNegative Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions.
@@ -283,10 +248,6 @@ Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 mieee
 Target Var(TARGET_IEEE)
 Increase the IEEE compliance for floating-point comparisons.
-
-mindexed-addressing
-Target Report Mask(ALLOW_INDEXED_ADDRESS) Condition(SUPPORT_ANY_SH5_32MEDIA)
-Enable the use of the indexed addressing mode for SHmedia32/SHcompact.
 
 minline-ic_invalidate
 Target Report Var(TARGET_INLINE_IC_INVALIDATE)
@@ -317,10 +278,6 @@ Make structs a multiple of 4 bytes (warning: ABI altered).
 mprefergot
 Target Report RejectNegative Mask(PREFERGOT)
 Emit function-calls using global offset table when generating PIC.
-
-mpt-fixed
-Target Report Mask(PT_FIXED) Condition(SUPPORT_ANY_SH5)
-Assume pt* instructions won't trap
 
 mrelax
 Target Report RejectNegative Mask(RELAX)

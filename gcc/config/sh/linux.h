@@ -81,32 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
   do {									\
-    if (TARGET_SHMEDIA)							\
-      {									\
-	fprintf (STREAM, "\tpt\t1f,tr1\n");				\
-	fprintf (STREAM, "\taddi.l\tr15,-8,r15\n");			\
-	fprintf (STREAM, "\tst.l\tr15,0,r18\n");			\
-	if (flag_pic)							\
-	  {								\
-	    const char *gofs = "(datalabel _GLOBAL_OFFSET_TABLE_-(0f-.))"; \
-	    fprintf (STREAM, "\tmovi\t((%s>>16)&0xffff),r21\n", gofs);	\
-	    fprintf (STREAM, "\tshori\t(%s & 0xffff),r21\n", gofs);	\
-	    fprintf (STREAM, "0:\tptrel/u\tr21,tr0\n");			\
-	    fprintf (STREAM, "\tmovi\t((mcount@GOTPLT)&0xffff),r22\n");	\
-	    fprintf (STREAM, "\tgettr\ttr0,r21\n");			\
-	    fprintf (STREAM, "\tadd.l\tr21,r22,r21\n");			\
-	    fprintf (STREAM, "\tld.l\tr21,0,r21\n");			\
-	    fprintf (STREAM, "\tptabs\tr21,tr0\n");			\
-	  }								\
-	else								\
-	  fprintf (STREAM, "\tpt\tmcount,tr0\n");			\
-	fprintf (STREAM, "\tgettr\ttr1,r18\n");				\
-	fprintf (STREAM, "\tblink\ttr0,r63\n");				\
-	fprintf (STREAM, "1:\tld.l\tr15,0,r18\n");			\
-	fprintf (STREAM, "\taddi.l\tr15,8,r15\n");			\
-      }									\
-    else								\
-      {									\
 	if (flag_pic)							\
 	  {								\
 	    fprintf (STREAM, "\tmov.l\t3f,r1\n");			\
@@ -130,7 +104,6 @@ along with GCC; see the file COPYING3.  If not see
 	else								\
 	  fprintf (STREAM, "1:\t.long\tmcount\n");			\
 	fprintf (STREAM, "2:\tlds.l\t@r15+,pr\n");			\
-      }									\
   } while (0)
 
 /* For SH3 and SH4, we use a slot of the unwind frame which correspond
@@ -142,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
    so as to return itself for 16.  */
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(REGNO) \
-  ((! TARGET_SH5 && (REGNO) == 16) ? 16 : SH_DBX_REGISTER_NUMBER (REGNO))
+  (((REGNO) == 16) ? 16 : SH_DBX_REGISTER_NUMBER (REGNO))
 
 /* Since libgcc is compiled with -fpic for this target, we can't use
    __sdivsi3_1 as the division strategy for -O0 and -Os.  */

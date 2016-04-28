@@ -17,70 +17,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; TODO: Add a comment here.
-(define_predicate "trapping_target_operand"
-  (match_code "if_then_else")
-{
-  rtx cond, mem, res, tar, and_expr;
-
-  if (GET_MODE (op) != PDImode)
-    return 0;
-  cond = XEXP (op, 0);
-  mem = XEXP (op, 1);
-  res = XEXP (op, 2);
-  if (!MEM_P (mem)
-      || (GET_CODE (res) != SIGN_EXTEND && GET_CODE (res) != TRUNCATE))
-    return 0;
-  tar = XEXP (res, 0);
-  if (!rtx_equal_p (XEXP (mem, 0), tar)
-      || GET_MODE (tar) != Pmode)
-    return 0;
-  if (GET_CODE (cond) == CONST)
-    {
-      cond = XEXP (cond, 0);
-      if (!satisfies_constraint_Csy (tar))
-	return 0;
-      if (GET_CODE (tar) == CONST)
-	tar = XEXP (tar, 0);
-    }
-  else if (!arith_reg_operand (tar, VOIDmode)
-	   && ! satisfies_constraint_Csy (tar))
-    return 0;
-  if (GET_CODE (cond) != EQ)
-    return 0;
-  and_expr = XEXP (cond, 0);
-  return (GET_CODE (and_expr) == AND
-	  && rtx_equal_p (XEXP (and_expr, 0), tar)
-	  && CONST_INT_P (XEXP (and_expr, 1))
-	  && CONST_INT_P (XEXP (cond, 1))
-	  && INTVAL (XEXP (and_expr, 1)) == 3
-	  && INTVAL (XEXP (cond, 1)) == 3);
-})
-
-;; A logical operand that can be used in an shmedia and insn.
-(define_predicate "and_operand"
-  (match_code "subreg,reg,const_int")
-{
-  if (logical_operand (op, mode))
-    return 1;
-
-  /* Check mshflo.l / mshflhi.l opportunities.  */
-  if (TARGET_SHMEDIA
-      && mode == DImode
-      && satisfies_constraint_J16 (op))
-    return 1;
-
-  return 0;
-})
-
-;; Like arith_reg_dest, but this predicate is defined with
-;; define_special_predicate, not define_predicate.
-(define_special_predicate "any_arith_reg_dest"
-  (match_code "subreg,reg")
-{
-  return arith_reg_dest (op, mode);
-})
-
 ;; Like register_operand, but this predicate is defined with
 ;; define_special_predicate, not define_predicate.
 (define_special_predicate "any_register_operand"
@@ -93,35 +29,7 @@
 (define_predicate "arith_operand"
   (match_code "subreg,reg,const_int,truncate")
 {
-  if (arith_reg_operand (op, mode))
-    return 1;
-
-  if (TARGET_SHMEDIA)
-    {
-      /* FIXME: We should be checking whether the CONST_INT fits in a
-	 signed 16-bit here, but this causes reload_cse to crash when
-	 attempting to transform a sequence of two 64-bit sets of the
-	 same register from literal constants into a set and an add,
-	 when the difference is too wide for an add.  */
-      if (CONST_INT_P (op)
-	  || satisfies_constraint_Css (op))
-	return 1;
-      else if (GET_CODE (op) == TRUNCATE
-	       && REG_P (XEXP (op, 0))
-	       && ! system_reg_operand (XEXP (op, 0), VOIDmode)
-	       && (mode == VOIDmode || mode == GET_MODE (op))
-	       && (GET_MODE_SIZE (GET_MODE (op))
-		   < GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
-	       && (! FP_REGISTER_P (REGNO (XEXP (op, 0)))
-		   || GET_MODE_SIZE (GET_MODE (op)) == 4))
-	return register_operand (XEXP (op, 0), VOIDmode);
-      else
-	return 0;
-    }
-  else if (satisfies_constraint_I08 (op))
-    return 1;
-
-  return 0;
+  return arith_reg_operand (op, mode) || satisfies_constraint_I08 (op);
 })
 
 ;; Like above, but for DImode destinations: forbid paradoxical DImode
@@ -130,10 +38,6 @@
 (define_predicate "arith_reg_dest"
   (match_code "subreg,reg")
 {
-  if (mode == DImode && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) < 8
-      && TARGET_SHMEDIA)
-    return 0;
   return arith_reg_operand (op, mode);
 })
 
@@ -160,11 +64,7 @@
   /* Allow a no-op sign extension - compare LOAD_EXTEND_OP.
      We allow SImode here, as not using an FP register is just a matter of
      proper register allocation.  */
-  if (TARGET_SHMEDIA
-      && GET_MODE (op) == DImode && GET_CODE (op) == SIGN_EXTEND
-      && GET_MODE (XEXP (op, 0)) == SImode
-      && GET_CODE (XEXP (op, 0)) != SUBREG)
-    return register_operand (XEXP (op, 0), VOIDmode);
+
 #if 0 /* Can't do this because of PROMOTE_MODE for unsigned vars.  */
   if (GET_MODE (op) == SImode && GET_CODE (op) == SIGN_EXTEND
       && GET_MODE (XEXP (op, 0)) == HImode
@@ -236,47 +136,6 @@
        (ior (match_test "INTVAL (op) == 255")
 	    (match_test "INTVAL (op) == 65535"))))
 
-;; Returns 1 if OP is a floating point operator with two operands.
-(define_predicate "binary_float_operator"
-  (and (match_code "plus,minus,mult,div")
-       (match_test "GET_MODE (op) == mode")))
-
-;; Returns 1 if OP is a logical operator with two operands.
-(define_predicate "binary_logical_operator"
-  (and (match_code "and,ior,xor")
-       (match_test "GET_MODE (op) == mode")))
-
-;; Return 1 if OP is an address suitable for a cache manipulation operation.
-;; MODE has the meaning as in address_operand.
-(define_special_predicate "cache_address_operand"
-  (match_code "plus,reg")
-{
-  if (GET_CODE (op) == PLUS)
-    {
-      if (!REG_P (XEXP (op, 0)))
-	return 0;
-      if (!CONST_INT_P (XEXP (op, 1))
-	  || (INTVAL (XEXP (op, 1)) & 31))
-	return 0;
-    }
-  else if (!REG_P (op))
-    return 0;
-  return address_operand (op, mode);
-})
-
-;; Returns 1 if OP is a valid source operand for shmedia cmpgt / cmpgtu.
-(define_predicate "cmp_operand"
-  (match_code "subreg,reg,const_int")
-{
-  if (satisfies_constraint_N (op))
-    return 1;
-  if (TARGET_SHMEDIA
-      && mode != DImode && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) > 4)
-    return 0;
-  return arith_reg_operand (op, mode);
-})
-
 ;; Returns true if OP is an operand that can be used as the first operand in
 ;; the cstoresi4 expander pattern.
 (define_predicate "cmpsi_operand"
@@ -287,53 +146,6 @@
       && TARGET_SH1)
     return 1;
   return arith_operand (op, mode);
-})
-
-;; Returns true if OP is a comutative float operator.
-;; This predicate is currently unused.
-;;(define_predicate "commutative_float_operator"
-;;  (and (match_code "plus,mult")
-;;       (match_test "GET_MODE (op) == mode")))
-
-;; Returns true if OP is a equal or not equal operator.
-(define_predicate "equality_comparison_operator"
-  (match_code "eq,ne"))
-
-;; Returns true if OP is an arithmetic operand that is zero extended during
-;; an operation.
-(define_predicate "extend_reg_operand"
-  (match_code "subreg,reg,truncate")
-{
-  return (GET_CODE (op) == TRUNCATE
-	  ? arith_operand
-	  : arith_reg_operand) (op, mode);
-})
-
-;; Like extend_reg_operand, but also allow a constant 0.
-(define_predicate "extend_reg_or_0_operand"
-  (match_code "subreg,reg,truncate,const_int")
-{
-  return (GET_CODE (op) == TRUNCATE
-	  ? arith_operand
-	  : arith_reg_or_0_operand) (op, mode);
-})
-
-;; Like arith_reg_operand, but this predicate does not accept SIGN_EXTEND.
-(define_predicate "ext_dest_operand"
-  (match_code "subreg,reg")
-{
-  return arith_reg_operand (op, mode);
-})
-
-;; Returns true if OP can be used as a destination register for shmedia floating
-;; point to integer conversions.
-(define_predicate "fp_arith_reg_dest"
-  (match_code "subreg,reg")
-{
-  if (mode == DImode && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) < 8)
-    return 0;
-  return fp_arith_reg_operand (op, mode);
 })
 
 ;; Returns true if OP is a floating point register that can be used in floating
@@ -390,12 +202,9 @@
 (define_predicate "fpul_operand"
   (match_code "reg")
 {
-  if (TARGET_SHMEDIA)
-    return fp_arith_reg_operand (op, mode);
-
-  return (REG_P (op)
-	  && (REGNO (op) == FPUL_REG || REGNO (op) >= FIRST_PSEUDO_REGISTER)
-	  && GET_MODE (op) == mode);
+  return REG_P (op)
+	 && (REGNO (op) == FPUL_REG || REGNO (op) >= FIRST_PSEUDO_REGISTER)
+	 && GET_MODE (op) == mode;
 })
 
 ;; Returns true if OP is a valid fpul input operand for the fsca insn.
@@ -467,10 +276,7 @@
 
 ;; Returns 1 if the operand can be used in a zero_extend.
 (define_predicate "zero_extend_operand"
-  (ior (and (match_test "TARGET_SHMEDIA")
-	    (match_operand 0 "general_extend_operand"))
-       (and (match_test "! TARGET_SHMEDIA")
-	    (match_operand 0 "arith_reg_operand"))))
+  (match_operand 0 "arith_reg_operand"))
 
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as
@@ -523,10 +329,6 @@
       rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
       rtx x = XEXP (mem_rtx, 0);
 
-      if (! ALLOW_INDEXED_ADDRESS
-	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
-	return false;
-
       if (GET_CODE (x) == PLUS)
 	{
 	  rtx y = XEXP (x, 0);
@@ -571,15 +373,6 @@
 	  return true;
     }
 
-  if (TARGET_SHMEDIA
-      && (GET_CODE (op) == PARALLEL || GET_CODE (op) == CONST_VECTOR)
-      && sh_rep_vec (op, mode))
-    return 1;
-  if (TARGET_SHMEDIA && 1
-      && GET_CODE (op) == SUBREG && GET_MODE (op) == mode
-      && SUBREG_REG (op) == const0_rtx && subreg_lowpart_p (op))
-    /* FIXME */ abort (); /* return 1; */
-
   return general_operand (op, mode);
 })
 
@@ -615,20 +408,12 @@
   /* Only pre dec allowed.  */
   if (MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC)
     return 0;
-  if (mode == DImode && TARGET_SHMEDIA && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) < 8
-      && ! (reload_in_progress || reload_completed))
-    return 0;
 
   if (mode == GET_MODE (op)
       && (MEM_P (op) || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
     {
       rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
       rtx x = XEXP (mem_rtx, 0);
-
-      if (! ALLOW_INDEXED_ADDRESS
-	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
-	return false;
 
       if (GET_CODE (x) == PLUS)
 	{
@@ -675,22 +460,6 @@
     }
 
   return general_operand (op, mode);
-})
-
-;; Returns 1 if OP is a POST_INC on stack pointer register.
-(define_predicate "sh_no_delay_pop_operand"
-  (match_code "mem")
-{
-  rtx inside;
-  inside = XEXP (op, 0);
-
-  if (GET_CODE (op) == MEM && GET_MODE (op) == SImode 
-      && GET_CODE (inside) == POST_INC 
-      && GET_CODE (XEXP (inside, 0)) == REG
-      && REGNO (XEXP (inside, 0)) == SP_REG)
-    return 1;
-
-  return 0;
 })
 
 ;; Returns 1 if OP is a MEM that can be source of a simple move operation.
@@ -741,65 +510,11 @@
 	 && sh_legitimate_index_p (mode, XEXP (plus0_rtx, 1), TARGET_SH2A, true);
 })
 
-;; Returns true if OP is some kind of greater comparision.
-(define_predicate "greater_comparison_operator"
-  (match_code "gt,ge,gtu,geu"))
-
-;; Returns true if OP is an operand suitable for shmedia reload_inqi and
-;; reload_inhi insns.
-(define_predicate "inqhi_operand"
-  (match_code "truncate")
-{
-  if (GET_CODE (op) != TRUNCATE || mode != GET_MODE (op))
-    return 0;
-  op = XEXP (op, 0);
-  /* Can't use true_regnum here because copy_cost wants to know about
-     SECONDARY_INPUT_RELOAD_CLASS.  */
-  return REG_P (op) && FP_REGISTER_P (REGNO (op));
-})
-
-;; Returns true if OP is a general purpose integer register.
-;; This predicate is currently unused.
-;;(define_special_predicate "int_gpr_dest"
-;;  (match_code "subreg,reg")
-;;{
-;;  machine_mode op_mode = GET_MODE (op);
-;;
-;;  if (GET_MODE_CLASS (op_mode) != MODE_INT
-;;      || GET_MODE_SIZE (op_mode) >= UNITS_PER_WORD)
-;;    return 0;
-;;  if (! reload_completed)
-;;    return 0;
-;;  return true_regnum (op) <= LAST_GENERAL_REG;
-;;})
-
-;; Returns true if OP is some kind of less comparison.
-(define_predicate "less_comparison_operator"
-  (match_code "lt,le,ltu,leu"))
-
 ;; Returns 1 if OP is a valid source operand for a logical operation.
 (define_predicate "logical_operand"
   (match_code "subreg,reg,const_int")
 {
-  if (TARGET_SHMEDIA
-      && mode != DImode && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) > 4)
-    return 0;
-
-  if (arith_reg_operand (op, mode))
-    return 1;
-
-  if (TARGET_SHMEDIA)
-    {
-      if (satisfies_constraint_I10 (op))
-	return 1;
-      else
-	return 0;
-    }
-  else if (satisfies_constraint_K08 (op))
-    return 1;
-
-  return 0;
+  return arith_reg_operand (op, mode) || satisfies_constraint_K08 (op);
 })
 
 ;; Returns true if OP is a valid constant source operand for a logical
@@ -813,69 +528,19 @@
 (define_predicate "logical_and_operand"
   (match_code "subreg,reg,const_int")
 {
-  if (logical_operand (op, mode))
-    return 1;
-
-  if (! TARGET_SHMEDIA
-      && (satisfies_constraint_Jmb (op) || satisfies_constraint_Jmw (op)))
-    return 1;
-
-  return 0;
+  return logical_operand (op, mode) || satisfies_constraint_Jmb (op)
+	 || satisfies_constraint_Jmw (op);
 })
 
 ;; Returns true if OP is a logical operator.
 (define_predicate "logical_operator"
   (match_code "and,ior,xor"))
 
-;; Like arith_reg_operand, but for register source operands of narrow
-;; logical SHMEDIA operations: forbid subregs of DImode / TImode regs.
 (define_predicate "logical_reg_operand"
   (match_code "subreg,reg")
 {
-  if (TARGET_SHMEDIA
-      && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) > 4
-      && mode != DImode)
-    return 0;
   return arith_reg_operand (op, mode);
 })
-
-;; Returns true if OP is a valid bit offset value for the shmedia mextr insns.
-(define_predicate "mextr_bit_offset"
-  (match_code "const_int")
-{
-  HOST_WIDE_INT i;
-
-  if (!CONST_INT_P (op))
-    return 0;
-  i = INTVAL (op);
-  return i >= 1 * 8 && i <= 7 * 8 && (i & 7) == 0;
-})
-
-;; Returns true if OP is a constant -1, 0 or an zero extended register that
-;; can be used as an operator in the *subsi3_media insn.
-(define_predicate "minuend_operand"
-  (match_code "subreg,reg,truncate,const_int")
-{
-  return op == constm1_rtx || extend_reg_or_0_operand (op, mode);
-})
-
-;; Returns true if OP is a noncommutative floating point operator.
-;; This predicate is currently unused.
-;;(define_predicate "noncommutative_float_operator"
-;;  (and (match_code "minus,div")
-;;       (match_test "GET_MODE (op) == mode")))
-
-;; UNORDERED is only supported on SHMEDIA.
-
-(define_predicate "sh_float_comparison_operator"
-  (ior (match_operand 0 "ordered_comparison_operator")
-       (and (match_test "TARGET_SHMEDIA")
-	    (match_code "unordered"))))
-
-(define_predicate "shmedia_cbranch_comparison_operator"
-  (ior (match_operand 0 "equality_comparison_operator")
-       (match_operand 0 "greater_comparison_operator")))
 
 ;; Returns true if OP is a constant vector.
 (define_predicate "sh_const_vec"
@@ -927,16 +592,6 @@
   return 1;
 })
 
-;; Like register_operand, but take into account that SHMEDIA can use
-;; the constant zero like a general register.
-(define_predicate "sh_register_operand"
-  (match_code "reg,subreg,const_int,const_double")
-{
-  if (op == CONST0_RTX (mode) && TARGET_SHMEDIA)
-    return 1;
-  return register_operand (op, mode);
-})
-
 ;; Returns true if OP is a vector which is composed of one element that is
 ;; repeated.
 (define_predicate "sh_rep_vec"
@@ -972,38 +627,8 @@
 {
   /* Allow T_REG as shift count for dynamic shifts, although it is not
      really possible.  It will then be copied to a general purpose reg.  */
-  if (! TARGET_SHMEDIA)
-    return const_int_operand (op, mode) || arith_reg_operand (op, mode)
-	   || (TARGET_DYNSHIFT && t_reg_operand (op, mode));
-
-  return (CONSTANT_P (op)
-	  ? (CONST_INT_P (op)
-	     ? (unsigned) INTVAL (op) < GET_MODE_BITSIZE (mode)
-	     : nonmemory_operand (op, mode))
-	  : shift_count_reg_operand (op, mode));
-})
-
-;; Returns true if OP is a valid shift count operand in a register which can
-;; be used by shmedia shift insns.
-(define_predicate "shift_count_reg_operand"
-  (match_code "subreg,reg,zero_extend,sign_extend")
-{
-  if ((GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND
-       || (GET_CODE (op) == SUBREG && SUBREG_BYTE (op) == 0))
-      && (mode == VOIDmode || mode == GET_MODE (op))
-      && GET_MODE_BITSIZE (GET_MODE (XEXP (op, 0))) >= 6
-      && GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_INT)
-    {
-      mode = VOIDmode;
-      do
-	op = XEXP (op, 0);
-      while ((GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND
-	      || GET_CODE (op) == TRUNCATE)
-	     && GET_MODE_BITSIZE (GET_MODE (XEXP (op, 0))) >= 6
-	     && GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_INT);
-
-    }
-  return arith_reg_operand (op, mode);
+  return const_int_operand (op, mode) || arith_reg_operand (op, mode)
+	 || (TARGET_DYNSHIFT && t_reg_operand (op, mode));
 })
 
 ;; Predicates for matching operands that are constant shift
@@ -1029,104 +654,9 @@
        (ior (match_test "! satisfies_constraint_P27 (op)")
 	    (match_test "satisfies_constraint_M (op)"))))
 
-;; Returns true if OP is some kind of a shift operator.
-(define_predicate "shift_operator"
-  (match_code "ashift,ashiftrt,lshiftrt"))
-
 ;; Returns true if OP is a symbol reference.
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
-
-;; Same as target_reg_operand, except that label_refs and symbol_refs
-;; are accepted before reload.
-(define_special_predicate "target_operand"
-  (match_code "subreg,reg,label_ref,symbol_ref,const,unspec")
-{
-  if (mode != VOIDmode && mode != Pmode)
-    return 0;
-
-  if ((GET_MODE (op) == Pmode || GET_MODE (op) == VOIDmode)
-      && satisfies_constraint_Csy (op))
-    return ! reload_completed;
-
-  return target_reg_operand (op, mode);
-})
-
-;; A predicate that accepts pseudos and branch target registers.
-(define_special_predicate "target_reg_operand"
-  (match_code "subreg,reg")
-{
-  if (mode == VOIDmode
-     ? GET_MODE (op) != Pmode && GET_MODE (op) != PDImode
-     : mode != GET_MODE (op))
-    return 0;
-
-  if (GET_CODE (op) == SUBREG)
-    op = XEXP (op, 0);
-
-  if (!REG_P (op))
-    return 0;
-
-  /* We must protect ourselves from matching pseudos that are virtual
-     register, because they will eventually be replaced with hardware
-     registers that aren't branch-target registers.  */
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER
-      || TARGET_REGISTER_P (REGNO (op)))
-    return 1;
-
-  return 0;
-})
-
-;; Returns true if OP is a valid operand for the shmedia mperm.w insn.
-(define_special_predicate "trunc_hi_operand"
-  (match_code "subreg,reg,truncate")
-{
-  machine_mode op_mode = GET_MODE (op);
-
-  if (op_mode != SImode && op_mode != DImode
-      && op_mode != V4HImode && op_mode != V2SImode)
-    return 0;
-  return extend_reg_operand (op, mode);
-})
-
-;; Returns true if OP is an address suitable for an unaligned access
-;; instruction.
-(define_special_predicate "ua_address_operand"
-  (match_code "subreg,reg,plus")
-{
-  if (GET_CODE (op) == PLUS
-      && (! satisfies_constraint_I06 (XEXP (op, 1))))
-    return 0;
-  return address_operand (op, QImode);
-})
-
-;; Returns true if OP is a valid offset for an unaligned memory address.
-(define_predicate "ua_offset"
-  (match_code "const_int")
-{
-  return satisfies_constraint_I06 (op);
-})
-
-;; Returns true if OP is a floating point operator with one operand.
-(define_predicate "unary_float_operator"
-  (and (match_code "abs,neg,sqrt")
-       (match_test "GET_MODE (op) == mode")))
-
-;; Return 1 if OP is a valid source operand for xor.
-(define_predicate "xor_operand"
-  (match_code "subreg,reg,const_int")
-{
-  if (CONST_INT_P (op))
-    return (TARGET_SHMEDIA
-	    ? (satisfies_constraint_I06 (op)
-	       || (!can_create_pseudo_p () && INTVAL (op) == 0xff))
-	    : satisfies_constraint_K08 (op));
-  if (TARGET_SHMEDIA
-      && mode != DImode && GET_CODE (op) == SUBREG
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) > 4)
-    return 0;
-  return arith_reg_operand (op, mode);
-})
 
 (define_predicate "bitwise_memory_operand"
   (match_code "mem")

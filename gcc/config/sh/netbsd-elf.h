@@ -67,13 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
 do									\
   {									\
-    if (TARGET_SHMEDIA32 || TARGET_SHMEDIA64)				\
-      {									\
-	/* FIXME */							\
-	sorry ("unimplemented-shmedia profiling");			\
-      }									\
-    else								\
-      {									\
         fprintf((STREAM), "\tmov.l\t%sLP%d,r1\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
         fprintf((STREAM), "\tmova\t%sLP%dr,r0\n",			\
@@ -84,7 +77,6 @@ do									\
         fprintf((STREAM), "%sLP%d:\t.long\t__mcount\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
         fprintf((STREAM), "%sLP%dr:\n", LOCAL_LABEL_PREFIX, (LABELNO));	\
-      }									\
   }									\
 while (0)
 
