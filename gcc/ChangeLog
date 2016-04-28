@@ -1,3 +1,9 @@
+2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (machine_function): Rename
+	insn_chain_scanned_p to spe_insn_chain_scanned_p.
+	(rs6000_stack_info): Adjust.
+
 2016-04-28  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/constraints.md (Usd): Convert to define_constraint.
