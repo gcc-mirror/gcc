@@ -1,3 +1,9 @@
+2016-04-28  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-cfg.c (verify_expr): Verify that local declarations belong to
+	this function.  Call verify_expr on MEM_REFs and bases of other
+	handled_components.
+
 2016-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* internal-fn.c (expand_arith_overflow): Convert preprocessor check

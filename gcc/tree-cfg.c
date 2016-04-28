@@ -2834,6 +2834,22 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	}
       break;
 
+    case PARM_DECL:
+    case VAR_DECL:
+    case RESULT_DECL:
+      {
+	tree context = decl_function_context (t);
+	if (context != cfun->decl
+	    && !SCOPE_FILE_SCOPE_P (context)
+	    && !TREE_STATIC (t)
+	    && !DECL_EXTERNAL (t))
+	  {
+	    error ("Local declaration from a different function");
+	    return t;
+	  }
+      }
+      break;
+
     case INDIRECT_REF:
       error ("INDIRECT_REF in gimple IL");
       return t;
@@ -2852,9 +2868,14 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("invalid offset operand of MEM_REF");
 	  return TREE_OPERAND (t, 1);
 	}
-      if (TREE_CODE (x) == ADDR_EXPR
-	  && (x = verify_address (x, TREE_OPERAND (x, 0))))
-	return x;
+      if (TREE_CODE (x) == ADDR_EXPR)
+	{
+	  tree va = verify_address (x, TREE_OPERAND (x, 0));
+	  if (va)
+	    return va;
+	  x = TREE_OPERAND (x, 0);
+	}
+      walk_tree (&x, verify_expr, data, NULL);
       *walk_subtrees = 0;
       break;
 
@@ -3016,6 +3037,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("invalid reference prefix");
 	  return t;
 	}
+      walk_tree (&t, verify_expr, data, NULL);
       *walk_subtrees = 0;
       break;
     case PLUS_EXPR:
