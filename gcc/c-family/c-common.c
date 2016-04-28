@@ -12784,4 +12784,37 @@ valid_array_size_p (location_t loc, tree type, tree name)
   return true;
 }
 
+/* Read SOURCE_DATE_EPOCH from environment to have a deterministic
+   timestamp to replace embedded current dates to get reproducible
+   results.  Returns -1 if SOURCE_DATE_EPOCH is not defined.  */
+time_t
+get_source_date_epoch ()
+{
+  char *source_date_epoch;
+  long long epoch;
+  char *endptr;
+
+  source_date_epoch = getenv ("SOURCE_DATE_EPOCH");
+  if (!source_date_epoch)
+    return (time_t) -1;
+
+  errno = 0;
+  epoch = strtoll (source_date_epoch, &endptr, 10);
+  if ((errno == ERANGE && (epoch == LLONG_MAX || epoch == LLONG_MIN))
+      || (errno != 0 && epoch == 0))
+    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
+		 "strtoll: %s\n", xstrerror(errno));
+  if (endptr == source_date_epoch)
+    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
+		 "no digits were found: %s\n", endptr);
+  if (*endptr != '\0')
+    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
+		 "trailing garbage: %s\n", endptr);
+  if (epoch < 0)
+    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
+		 "value must be nonnegative: %lld \n", epoch);
+
+  return (time_t) epoch;
+}
+
 #include "gt-c-family-c-common.h"

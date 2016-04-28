@@ -1,3 +1,15 @@
+2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
+	    Matthias Klose  <doko@debian.org>
+
+	* include/cpplib.h (cpp_init_source_date_epoch): Prototype.
+	* init.c (cpp_init_source_date_epoch): New function.
+	* internal.h: Added source_date_epoch variable to struct
+	cpp_reader to store a reproducible date.
+	* macro.c (_cpp_builtin_macro_text): Set pfile->date timestamp from 
+	pfile->source_date_epoch instead of localtime if source_date_epoch is 
+	set, to be used for __DATE__ and __TIME__ macros to help reproducible 
+	builds.
+
 2016-04-13  Bernd Schmidt  <bschmidt@redhat.com>
 
 	Patch from Roger Orr <rogero@howzatt.demon.co.uk>

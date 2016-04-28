@@ -533,8 +533,15 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__OBJC__ 1");
 }
 
+/* Initialize the source_date_epoch value.  */
+void
+cpp_init_source_date_epoch (cpp_reader *pfile, time_t source_date_epoch)
+{
+  pfile->source_date_epoch = source_date_epoch; 
+}
+
 /* Sanity-checks are dependent on command-line options, so it is
-   called as a subroutine of cpp_read_main_file ().  */
+   called as a subroutine of cpp_read_main_file.  */
 #if CHECKING_P
 static void sanity_checks (cpp_reader *);
 static void sanity_checks (cpp_reader *pfile)
