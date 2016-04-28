@@ -1,3 +1,10 @@
+2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/crttls.S: New file.
+	* config/arc/t-arc: New rule.
+	* config.host (arc*-*-elf*, arc*-*-linux*): Add crttls.o.
+
 2016-04-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/cmpd.c (__mspabi_cmpf): Add prototype.

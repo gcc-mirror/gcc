@@ -367,10 +367,12 @@ alpha*-dec-*vms*)
 arc*-*-elf*)
 	tmake_file="arc/t-arc-newlib arc/t-arc"
 	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o libgmon.a crtg.o crtgend.o"
+	extra_parts="${extra_parts} crttls.o"
 	;;
 arc*-*-linux-uclibc*)
 	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override arc/t-arc700-uClibc arc/t-arc"
 	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o libgmon.a crtg.o crtgend.o"
+	extra_parts="${extra_parts} crttls.o"
 	;;
 arm-wrs-vxworks)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
