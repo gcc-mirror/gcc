@@ -1,6 +1,11 @@
 2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
+	* gcc.target/arc/movh_cl-1.c: New file.
+
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
 	* gcc.target/arc/extzv-1.c: New file.
 	* gcc.target/arc/insv-1.c: New file.
 	* gcc.target/arc/insv-2.c: New file.

@@ -1,3 +1,9 @@
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.c (arc_print_operand): Print integer 'H' / 'L'
+	operands as 32-bits.
+
 2016-04-28  Jason Merrill  <jason@redhat.com>
 
 	* gdbinit.in: Skip line-map.h.

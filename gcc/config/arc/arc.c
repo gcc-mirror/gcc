@@ -3235,19 +3235,17 @@ arc_print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE)
 	{
-	  rtx first, second;
+	  rtx first, second, word;
 
 	  split_double (x, &first, &second);
 
 	  if((WORDS_BIG_ENDIAN) == 0)
-	      fprintf (file, "0x%08" PRIx64,
-		       code == 'L' ? INTVAL (first) : INTVAL (second));
+	    word = (code == 'L' ? first : second);
 	  else
-	      fprintf (file, "0x%08" PRIx64,
-		       code == 'L' ? INTVAL (second) : INTVAL (first));
+	    word = (code == 'L' ? second : first);
 
-
-	  }
+	  fprintf (file, "0x%08" PRIx32, ((uint32_t) INTVAL (word)));
+	}
       else
 	output_operand_lossage ("invalid operand to %%H/%%L code");
       return;
