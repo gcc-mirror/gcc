@@ -1,3 +1,8 @@
+2016-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* internal-fn.c (expand_arith_overflow): Convert preprocessor check
+	for WORD_REGISTER_OPERATIONS to runtime check.
+
 2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.h (ASM_SPEC): Pass mfpuda to assembler.
