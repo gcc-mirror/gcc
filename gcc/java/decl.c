@@ -507,7 +507,7 @@ static void
 parse_version (void)
 {
   const char *p = version_string;
-  unsigned int major = 0, minor = 0;
+  unsigned int major = 0;
   unsigned int abi_version;
 
   /* Skip leading junk.  */
@@ -525,13 +525,6 @@ parse_version (void)
   gcc_assert (*p == '.' && ISDIGIT (p[1]));
   ++p;
 
-  /* Extract minor version.  */
-  while (ISDIGIT (*p))
-    {
-      minor = minor * 10 + *p - '0';
-      ++p;
-    }
-
   if (flag_indirect_dispatch)
     {
       abi_version = GCJ_CURRENT_BC_ABI_VERSION;
@@ -540,8 +533,8 @@ parse_version (void)
   else /* C++ ABI */
     {
       /* Implicit in this computation is the idea that we won't break the
-	 old-style binary ABI in a sub-minor release (e.g., from 6.0 to
-	 6.1).  */
+	 old-style binary ABI in a minor release (e.g., from 6.1.0 to
+	 6.2.0).  */
       abi_version = 100000 * major;
     }
   if (flag_bootstrap_classes)
