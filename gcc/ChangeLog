@@ -1,3 +1,8 @@
+2016-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (sse4_1_round<mode>2): Add avx512f alternative.
+	* config/i386/sse.md (sse4_1_round<ssescalarmodesuffix>): Likewise.
+
 2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/70595

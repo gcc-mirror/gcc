@@ -14867,25 +14867,26 @@
 })
 
 (define_insn "sse4_1_round<ssescalarmodesuffix>"
-  [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x")
+  [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 2 "register_operand" "Yr,*x,x")
-	     (match_operand:SI 3 "const_0_to_15_operand" "n,n,n")]
+	    [(match_operand:VF_128 2 "register_operand" "Yr,*x,x,v")
+	     (match_operand:SI 3 "const_0_to_15_operand" "n,n,n,n")]
 	    UNSPEC_ROUND)
-	  (match_operand:VF_128 1 "register_operand" "0,0,x")
+	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
   "TARGET_ROUND"
   "@
    round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
    round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
-  [(set_attr "isa" "noavx,noavx,avx")
+   vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}
+   vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx,avx512f")
    (set_attr "type" "ssecvt")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_data16" "1,1,*,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "prefix" "orig,orig,vex,evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "round<mode>2"
