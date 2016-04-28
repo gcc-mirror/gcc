@@ -1,3 +1,8 @@
+2016-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70540
+	* g++.dg/cpp0x/auto48.C: New.
+
 2016-04-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/submodule_14.f08: Add cleanup-submodules.
