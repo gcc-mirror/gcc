@@ -1,3 +1,16 @@
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc.target/arc/cmem-1.c: New file.
+	* gcc.target/arc/cmem-2.c: New file.
+	* gcc.target/arc/cmem-3.c: New file.
+	* gcc.target/arc/cmem-4.c: New file.
+	* gcc.target/arc/cmem-5.c: New file.
+	* gcc.target/arc/cmem-6.c: New file.
+	* gcc.target/arc/cmem-7.c: New file.
+	* gcc.target/arc/cmem-ld.inc: New file.
+	* gcc.target/arc/cmem-st.inc: New file.
+
 2016-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70821

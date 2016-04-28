@@ -1843,6 +1843,8 @@ arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
     case LABEL_REF :
     case SYMBOL_REF :
     case CONST :
+      if (TARGET_NPS_CMEM && cmem_address (addr, SImode))
+	return 0;
       /* Most likely needs a LIMM.  */
       return COSTS_N_INSNS (1);
 
@@ -4336,6 +4338,24 @@ arc_encode_section_info (tree decl, rtx rtl, int first)
 	flags |= SYMBOL_FLAG_SHORT_CALL;
 
       SYMBOL_REF_FLAGS (symbol) = flags;
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      rtx symbol = XEXP (rtl, 0);
+
+      tree attr = (TREE_TYPE (decl) != error_mark_node
+		   ? DECL_ATTRIBUTES (decl) : NULL_TREE);
+
+      tree sec_attr = lookup_attribute ("section", attr);
+      if (sec_attr)
+	{
+	  const char *sec_name
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (sec_attr)));
+	  if (strcmp (sec_name, ".cmem") == 0
+	      || strcmp (sec_name, ".cmem_shared") == 0
+	      || strcmp (sec_name, ".cmem_private") == 0)
+	    SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_CMEM;
+	}
     }
 }
 
