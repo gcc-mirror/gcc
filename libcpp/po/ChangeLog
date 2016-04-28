@@ -1,3 +1,9 @@
+2016-04-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, ca.po, da.po, de.po, el.po, eo.po, es.po, fi.po, fr.po,
+	id.po, ja.po, nl.po, pr_BR.po, ru.po, sr.po, sv.po, tr.po, uk.po,
+	vi.po, zh_CN.po, zh_TW.po: Update.
+
 2016-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* cpplib.pot: Regenerate.
