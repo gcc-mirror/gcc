@@ -1,3 +1,12 @@
+2016-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR driver/70132
+	* config/arm/driver-arm.c (host_detect_local_cpu): Reorder exit logic
+	to not call fclose twice on file.
+
 2016-04-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
