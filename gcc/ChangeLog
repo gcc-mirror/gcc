@@ -1,3 +1,8 @@
+2016-04-28  Markus Trippelsdorf  <markus@trippelsdorf.de> 
+
+	* doc/extend.texi (Common Function Attributes) [optimize]:
+	Discourage use of the optimize attribute.
+
 2016-04-28  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (vec_adde): Change vec_adde to a
