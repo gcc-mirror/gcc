@@ -5752,9 +5752,9 @@
    {
     if (GET_CODE (operands[2]) == CONST_DOUBLE)
      {
-        rtx high, low, tmp;
-        split_double (operands[2], &low, &high);
-        tmp = force_reg (SImode, high);
+        rtx first, second, tmp;
+        split_double (operands[2], &first, &second);
+        tmp = force_reg (SImode, TARGET_BIG_ENDIAN ? first : second);
         emit_insn (gen_adddf3_insn (operands[0], operands[1],
                                     operands[2], tmp, const0_rtx));
      }
@@ -5789,10 +5789,10 @@
      if ((GET_CODE (operands[1]) == CONST_DOUBLE)
           || GET_CODE (operands[2]) == CONST_DOUBLE)
       {
-        rtx high, low, tmp;
+        rtx first, second, tmp;
         int const_index = ((GET_CODE (operands[1]) == CONST_DOUBLE) ? 1 : 2);
-        split_double (operands[const_index], &low, &high);
-        tmp = force_reg (SImode, high);
+        split_double (operands[const_index], &first, &second);
+        tmp = force_reg (SImode, TARGET_BIG_ENDIAN ? first : second);
         emit_insn (gen_subdf3_insn (operands[0], operands[1],
                                     operands[2], tmp, const0_rtx));
       }
@@ -5824,9 +5824,9 @@
     {
      if (GET_CODE (operands[2]) == CONST_DOUBLE)
       {
-        rtx high, low, tmp;
-        split_double (operands[2], &low, &high);
-        tmp = force_reg (SImode, high);
+        rtx first, second, tmp;
+        split_double (operands[2], &first, &second);
+        tmp = force_reg (SImode, TARGET_BIG_ENDIAN ? first : second);
         emit_insn (gen_muldf3_insn (operands[0], operands[1],
                                     operands[2], tmp, const0_rtx));
       }
