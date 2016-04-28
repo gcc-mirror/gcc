@@ -1,5 +1,9 @@
 2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.h (ASM_SPEC): Pass mfpuda to assembler.
+
+2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_process_double_reg_moves): Fix for
 	big-endian compilation.
 	* config/arc/arc.md (addf3): Likewise.
