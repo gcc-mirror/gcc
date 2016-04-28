@@ -1,3 +1,8 @@
+2016-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70858
+	* gcc.target/i386/pr70858.c: New test.
+
 2016-04-28  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc.target/arc/nps400-1.c: New file.

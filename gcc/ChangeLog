@@ -1,3 +1,12 @@
+2016-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70858
+	* config/i386/i386.c (bdesc_special_args): Add | OPTION_MASK_ISA_64BIT
+	to __builtin_ia32_lwpval64 and __builtin_ia32_lwpins64.
+	(bdesc_args): Add | OPTION_MASK_ISA_64BIT to __builtin_ia32_bextr_u64,
+	__builtin_ia32_bextri_u64, __builtin_ia32_bzhi_di,
+	__builtin_ia32_pdep_di and __builtin_ia32_pext_di.
+
 2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (compute_save_world_info): Rename info_ptr
