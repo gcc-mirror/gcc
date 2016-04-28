@@ -3026,10 +3026,8 @@ that affect more than one function.
 @xref{Function Specific Option Pragmas}, for details about the
 @samp{#pragma GCC optimize} pragma.
 
-This can be used for instance to have frequently-executed functions
-compiled with more aggressive optimization options that produce faster
-and larger code, while other functions can be compiled with less
-aggressive options.
+This attribute should be used for debugging purposes only.  It is not
+suitable in production code.
 
 @item pure
 @cindex @code{pure} function attribute
