@@ -1,3 +1,8 @@
+2016-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (__detail::_Insert_base,
+	__detail::_Insert): Improve comments.
+
 2016-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70767

@@ -667,7 +667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Primary class template _Insert_base.
    *
-   *  insert member functions appropriate to all _Hashtables.
+   *  Defines @c insert member functions appropriate to all _Hashtables.
    */
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -769,7 +769,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Primary class template _Insert.
    *
-   *  Select insert member functions appropriate to _Hashtable policy choices.
+   *  Defines @c insert member functions that depend on _Hashtable policies,
+   *  via partial specializations.
    */
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
