@@ -130,7 +130,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2016-01-31 15:50+0000\n"
+"POT-Creation-Date: 2016-04-21 15:24+0000\n"
 "PO-Revision-Date: 2016-03-27 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -208,7 +208,7 @@ msgstr "universelt tegn %.*s er ikke gyldigt i et kaldenavn"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universelt tegn %.*s er ikke gyldigt i starten af et kaldenavn"
 
-#: charset.c:1110 charset.c:1684
+#: charset.c:1110 charset.c:1691
 msgid "converting UCN to source character set"
 msgstr "konverterer UCN til et kildetegnsæt"
 
@@ -267,7 +267,7 @@ msgstr "flerbyte-tegnkonstant"
 msgid "empty character constant"
 msgstr "tom tegnkonstant"
 
-#: charset.c:1731
+#: charset.c:1738
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "kunne ikke konvertere %s til %s"
@@ -391,139 +391,144 @@ msgstr "»%s« er ikke et gyldigt filnavn"
 msgid "\"%s\" after # is not a positive integer"
 msgstr "»%s« efter # er ikke et positivt heltal"
 
-#: directives.c:1103 directives.c:1105 directives.c:1107 directives.c:1693
+#: directives.c:1061
+#, c-format
+msgid "file \"%s\" linemarker ignored due to incorrect nesting"
+msgstr ""
+
+#: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1131
+#: directives.c:1148
 #, c-format
 msgid "invalid #%s directive"
 msgstr "ugyldig #%s-direktiv"
 
-#: directives.c:1194
+#: directives.c:1211
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "registrerer pragmaer i navnerum »%s« med fejlmatchede navneudvidelse"
 
-#: directives.c:1203
+#: directives.c:1220
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "registrerer pragma »%s« med navneudvidelse og intet navnerum"
 
-#: directives.c:1221
+#: directives.c:1238
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "registrerer »%s« som både et pragma og et pragmanavnerum"
 
-#: directives.c:1224
+#: directives.c:1241
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s er allerede registreret"
 
-#: directives.c:1227
+#: directives.c:1244
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s er allerede registreret"
 
-#: directives.c:1257
+#: directives.c:1274
 msgid "registering pragma with NULL handler"
 msgstr "registrerer pragma med NULL-håndtering"
 
-#: directives.c:1474
+#: directives.c:1491
 msgid "#pragma once in main file"
 msgstr "#pragma once i hovedfil"
 
-#: directives.c:1497
+#: directives.c:1514
 msgid "invalid #pragma push_macro directive"
 msgstr "ugyldigt #pragma push_macro-direktiv"
 
-#: directives.c:1552
+#: directives.c:1569
 msgid "invalid #pragma pop_macro directive"
 msgstr "ugyldigt #pragma pop_macro-direktiv"
 
-#: directives.c:1607
+#: directives.c:1624
 msgid "invalid #pragma GCC poison directive"
 msgstr "ugyldigt #pragma GCC poison-direktiv"
 
-#: directives.c:1616
+#: directives.c:1633
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "forgifter eksisterende makro »%s«"
 
-#: directives.c:1635
+#: directives.c:1652
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ignoreret uden for inkluderingsfil"
 
-#: directives.c:1660
+#: directives.c:1677
 #, c-format
 msgid "cannot find source file %s"
 msgstr "kan ikke finde kildefilen %s"
 
-#: directives.c:1664
+#: directives.c:1681
 #, c-format
 msgid "current file is older than %s"
 msgstr "aktuel fil er ældre end %s"
 
-#: directives.c:1688
+#: directives.c:1705
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "ugyldigt »#pragma GCC %s«-direktiv"
 
-#: directives.c:1889
+#: directives.c:1906
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma tager en strengkonstant med paranteser omkring"
 
-#: directives.c:2010
+#: directives.c:2027
 msgid "#else without #if"
 msgstr "#else uden #if"
 
-#: directives.c:2015
+#: directives.c:2032
 msgid "#else after #else"
 msgstr "#else efter #else"
 
-#: directives.c:2017 directives.c:2050
+#: directives.c:2034 directives.c:2067
 msgid "the conditional began here"
 msgstr "betingelsen begyndte her"
 
-#: directives.c:2043
+#: directives.c:2060
 msgid "#elif without #if"
 msgstr "#elif uden #if"
 
-#: directives.c:2048
+#: directives.c:2065
 msgid "#elif after #else"
 msgstr "#elif efter #else"
 
-#: directives.c:2079
+#: directives.c:2096
 msgid "#endif without #if"
 msgstr "#endif uden #if"
 
-#: directives.c:2159
+#: directives.c:2176
 msgid "missing '(' after predicate"
 msgstr "manglende »(« efter udsagn"
 
-#: directives.c:2174
+#: directives.c:2191
 msgid "missing ')' to complete answer"
 msgstr "manglende »)« til at fuldføre svar"
 
-#: directives.c:2194
+#: directives.c:2211
 msgid "predicate's answer is empty"
 msgstr "udsagnets svar er tomt"
 
-#: directives.c:2221
+#: directives.c:2238
 msgid "assertion without predicate"
 msgstr "postulat uden udsagn"
 
-#: directives.c:2224
+#: directives.c:2241
 msgid "predicate must be an identifier"
 msgstr "udsagn skal være et kaldenavn"
 
-#: directives.c:2310
+#: directives.c:2327
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "»%s« genpostuleret"
 
-#: directives.c:2602
+#: directives.c:2619
 #, c-format
 msgid "unterminated #%s"
 msgstr "uafsluttet #%s"
@@ -532,12 +537,12 @@ msgstr "uafsluttet #%s"
 msgid "unterminated comment"
 msgstr "uafsluttet kommentar"
 
-#: errors.c:233 errors.c:246
+#: errors.c:234 errors.c:247
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: errors.c:244
+#: errors.c:245
 msgid "stdout"
 msgstr "standardud"
 
@@ -550,7 +555,9 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ugyldigt præfiks »0b« i kommatalskonstant"
 
 #: expr.c:555
-msgid "use of C++11 hexadecimal floating constant"
+#, fuzzy
+#| msgid "use of C++11 hexadecimal floating constant"
+msgid "use of C++1z hexadecimal floating constant"
 msgstr "brug af C++11 hexadecimal kommatalskonstant"
 
 #: expr.c:558
@@ -895,153 +902,153 @@ msgstr "flerlinjekommentar"
 msgid "unspellable token %s"
 msgstr "symbol %s kan ikke staves"
 
-#: macro.c:202
+#: macro.c:203
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "makroen »%s« bliver ikke brugt"
 
-#: macro.c:240 macro.c:472
+#: macro.c:242 macro.c:477
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "ugyldig indbygget makro »%s«"
 
-#: macro.c:247 macro.c:344
+#: macro.c:249 macro.c:349
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "makroen »%s« kan forhindre reproducerbare bygninger"
 
-#: macro.c:278
+#: macro.c:280
 msgid "could not determine file timestamp"
 msgstr "kunne ikke bestemme filtidsstempel"
 
-#: macro.c:379
+#: macro.c:384
 msgid "could not determine date and time"
 msgstr "kunne ikke bestemme dato og tid"
 
-#: macro.c:395
+#: macro.c:400
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ udvidet inden i direktiv med -fdirectives-only"
 
-#: macro.c:583
+#: macro.c:588
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "ugyldig strengkonstant, ignorerer afsluttende »\\«"
 
-#: macro.c:645
+#: macro.c:650
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "indsættelse af »%s« og »%s« giver ikke et gyldigt præprocessorsymbol"
 
-#: macro.c:769
+#: macro.c:774
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 kræver mindst en parameter for »...« i en makro med vilkårligt antal parametre"
 
-#: macro.c:773
+#: macro.c:778
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 kræver mindst en parameter for »...« i en makro med vilkårligt antal parametre"
 
-#: macro.c:780
+#: macro.c:785
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "makroen »%s« kræver %u parametre, men modtager kun %u"
 
-#: macro.c:785
+#: macro.c:790
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "makroen »%s« viderebragte %u parametre, men tager kun mod %u"
 
-#: macro.c:979 traditional.c:819
+#: macro.c:984 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "uafsluttet parameterliste ved kald af makroen »%s«"
 
-#: macro.c:1130
+#: macro.c:1135
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funktionsagtig makro »%s« skal bruges med parametre i traditionel C"
 
-#: macro.c:1813
+#: macro.c:1825
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "starter makroen %s parameter %d: tomme makroparametre er ikke defineret i ISO C+98"
 
-#: macro.c:1821 macro.c:1830
+#: macro.c:1833 macro.c:1842
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "starter makroen %s parameter %d: tomme makroparametre er ikke defineret i ISO C90"
 
-#: macro.c:2794
+#: macro.c:2806
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "makroparameternavnet »%s« optræder mere end en gang"
 
-#: macro.c:2843
+#: macro.c:2855
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "»%s« må ikke optræde i makroparameterliste"
 
-#: macro.c:2851
+#: macro.c:2863
 msgid "macro parameters must be comma-separated"
 msgstr "makroparametre skal være kommaadskilte"
 
-#: macro.c:2869
+#: macro.c:2881
 msgid "parameter name missing"
 msgstr "parameternavn mangler"
 
-#: macro.c:2890
+#: macro.c:2902
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "anonyme makroer med vilkårligt antal parametre blev introduceret i C++11"
 
-#: macro.c:2894 macro.c:2899
+#: macro.c:2906 macro.c:2911
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyme makroer med vilkårligt antal parametre blev introduceret i C99"
 
-#: macro.c:2906
+#: macro.c:2918
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ tillader ikke navngivne makroer med vilkårligt antal parametre"
 
-#: macro.c:2909
+#: macro.c:2921
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C tillader ikke navngivne makroer med vilkårligt antal parametre"
 
-#: macro.c:2919
+#: macro.c:2931
 msgid "missing ')' in macro parameter list"
 msgstr "manglende »)« i makroparameterliste"
 
-#: macro.c:2970
+#: macro.c:2982
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "»##« må ikke optræde ved nogen af enderne i en makrokrop"
 
-#: macro.c:3007
+#: macro.c:3019
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 kræver mellemrum efter makronavnet"
 
-#: macro.c:3010
+#: macro.c:3022
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 kræver mellemrum efter makronavnet"
 
-#: macro.c:3035
+#: macro.c:3047
 msgid "missing whitespace after the macro name"
 msgstr "manglende mellemrum efter makronavnet"
 
-#: macro.c:3069
+#: macro.c:3081
 msgid "'#' is not followed by a macro parameter"
 msgstr "»#« efterfølges ikke af en makroparameter"
 
-#: macro.c:3230
+#: macro.c:3242
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "»%s« omdefineret"
 
-#: macro.c:3235
+#: macro.c:3247
 msgid "this is the location of the previous definition"
 msgstr "den foregående definition er her"
 
-#: macro.c:3296
+#: macro.c:3308
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "makroparameteren »%s« ville blive gjort til en streng i traditionel C"
 
-#: macro.c:3323
+#: macro.c:3344
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "ugyldig hashtype %d i cpp_macro_definition"
