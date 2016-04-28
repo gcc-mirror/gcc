@@ -7836,6 +7836,10 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
     case PLACEHOLDER_EXPR:
       /* The node itself doesn't matter.  */
       return;
+    case BLOCK:
+    case OMP_CLAUSE:
+      /* Ignore.  */
+      return;
     case TREE_LIST:
       /* A list of expressions, for a CALL_EXPR or as the elements of a
 	 VECTOR_CST.  */
@@ -7852,6 +7856,14 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	    inchash::add_expr (field, hstate, flags);
 	    inchash::add_expr (value, hstate, flags);
 	  }
+	return;
+      }
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	for (i = tsi_start (CONST_CAST_TREE (t));
+	     !tsi_end_p (i); tsi_next (&i))
+	  inchash::add_expr (tsi_stmt (i), hstate, flags);
 	return;
       }
     case FUNCTION_DECL:

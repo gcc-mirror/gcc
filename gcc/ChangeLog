@@ -1,3 +1,11 @@
+2016-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70843
+	* fold-const.c (operand_equal_p): Don't verify hash value equality
+	if arg0 == arg1.
+	* tree.c (inchash::add_expr): Handle STATEMENT_LIST.  Ignore BLOCK
+	and OMP_CLAUSE.
+
 2016-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70858
