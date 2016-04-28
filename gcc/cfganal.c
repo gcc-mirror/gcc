@@ -1378,8 +1378,6 @@ bitmap_intersection_of_succs (sbitmap dst, sbitmap *src, basic_block b)
   edge e;
   unsigned ix;
 
-  gcc_assert (!dst->popcount);
-
   for (e = NULL, ix = 0; ix < EDGE_COUNT (b->succs); ix++)
     {
       e = EDGE_SUCC (b, ix);
@@ -1418,8 +1416,6 @@ bitmap_intersection_of_preds (sbitmap dst, sbitmap *src, basic_block b)
   unsigned int set_size = dst->size;
   edge e;
   unsigned ix;
-
-  gcc_assert (!dst->popcount);
 
   for (e = NULL, ix = 0; ix < EDGE_COUNT (b->preds); ix++)
     {
@@ -1460,8 +1456,6 @@ bitmap_union_of_succs (sbitmap dst, sbitmap *src, basic_block b)
   edge e;
   unsigned ix;
 
-  gcc_assert (!dst->popcount);
-
   for (ix = 0; ix < EDGE_COUNT (b->succs); ix++)
     {
       e = EDGE_SUCC (b, ix);
@@ -1500,8 +1494,6 @@ bitmap_union_of_preds (sbitmap dst, sbitmap *src, basic_block b)
   unsigned int set_size = dst->size;
   edge e;
   unsigned ix;
-
-  gcc_assert (!dst->popcount);
 
   for (ix = 0; ix < EDGE_COUNT (b->preds); ix++)
     {
