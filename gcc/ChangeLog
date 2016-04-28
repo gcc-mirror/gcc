@@ -1,3 +1,8 @@
+2015-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (WORD_REGISTER_OPERATIONS): Define to 0
+	and explain why in a comment.
+
 2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (cpu_facility): Add fpx variant.
