@@ -470,11 +470,8 @@ build_aggr_init_expr (tree type, tree init)
   if (processing_template_decl)
     return init;
 
-  if (TREE_CODE (init) == CALL_EXPR)
-    fn = CALL_EXPR_FN (init);
-  else if (TREE_CODE (init) == AGGR_INIT_EXPR)
-    fn = AGGR_INIT_EXPR_FN (init);
-  else
+  fn = cp_get_callee (init);
+  if (fn == NULL_TREE)
     return convert (type, init);
 
   is_ctor = (TREE_CODE (fn) == ADDR_EXPR

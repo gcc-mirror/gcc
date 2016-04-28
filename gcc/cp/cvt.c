@@ -904,6 +904,20 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   return error_mark_node;
 }
 
+/* If CALL is a call, return the callee; otherwise null.  */
+
+tree
+cp_get_callee (tree call)
+{
+  if (call == NULL_TREE)
+    return call;
+  else if (TREE_CODE (call) == CALL_EXPR)
+    return CALL_EXPR_FN (call);
+  else if (TREE_CODE (call) == AGGR_INIT_EXPR)
+    return AGGR_INIT_EXPR_FN (call);
+  return NULL_TREE;
+}
+
 /* When an expression is used in a void context, its value is discarded and
    no lvalue-rvalue and similar conversions happen [expr.static.cast/4,
    stmt.expr/1, expr.comma/1].  This permits dereferencing an incomplete type

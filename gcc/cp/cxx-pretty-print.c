@@ -490,8 +490,7 @@ cxx_pretty_printer::postfix_expression (tree t)
     case AGGR_INIT_EXPR:
     case CALL_EXPR:
       {
-	tree fun = (code == AGGR_INIT_EXPR ? AGGR_INIT_EXPR_FN (t)
-					   : CALL_EXPR_FN (t));
+	tree fun = cp_get_callee (t);
 	tree saved_scope = enclosing_scope;
 	bool skipfirst = false;
 	tree arg;

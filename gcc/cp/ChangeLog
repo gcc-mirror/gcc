@@ -1,3 +1,13 @@
+2016-04-28  Jason Merrill  <jason@redhat.com>
+
+	* cvt.c (cp_get_callee): New.
+	* constexpr.c (get_function_named_in_call): Use it.
+	* cxx-pretty-print.c (postfix_expression): Use it.
+	* except.c (check_noexcept_r): Use it.
+	* method.c (check_nontriv): Use it.
+	* tree.c (build_aggr_init_expr): Use it.
+	* cp-tree.h: Declare it.
+
 2015-04-27  Ryan Burn  <contact@rnburn.com>
 	    Jeff Law  <law@redhat.com>
 
