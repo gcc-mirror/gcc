@@ -1,3 +1,11 @@
+2016-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2016-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init): Do not call
+	internal_reference_types.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
