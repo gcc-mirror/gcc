@@ -1,3 +1,8 @@
+2016-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c (fix_builtin_array_notation_fn): Fix final
+	argument to build_modify_expr in two cases.
+
 2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* c-parser.c (c_parser_postfix_expression_after_primary): Call
