@@ -351,9 +351,12 @@
   switch (GET_CODE (op))
     {
     case SYMBOL_REF :
+      if (SYMBOL_REF_TLS_MODEL (op))
+	return 0;
     case LABEL_REF :
+      return 1;
     case CONST :
-      return (!flag_pic || arc_legitimate_pic_operand_p(op));
+      return arc_legitimate_constant_p (mode, op);
     case CONST_INT :
       return (LARGE_INT (INTVAL (op)));
     case CONST_DOUBLE :
@@ -451,6 +454,16 @@
 	    && (GET_CODE (XEXP (addr, 1)) != PLUS
 		|| !CONST_INT_P (XEXP (XEXP (addr, 1), 1))))
 	  return 0;
+	/* CONST_INT / CONST_DOUBLE is fine, but the PIC CONST ([..] UNSPEC))
+	   constructs are effectively indexed.  */
+	if (flag_pic)
+	  {
+	    rtx ad0 = addr;
+	    while (GET_CODE (ad0) == PLUS)
+	      ad0 = XEXP (ad0, 0);
+	    if (GET_CODE (ad0) == CONST || GET_CODE (ad0) == UNSPEC)
+	      return 0;
+	  }
 	return address_operand (addr, mode);
       }
     default :

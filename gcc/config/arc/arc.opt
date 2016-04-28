@@ -456,3 +456,10 @@ Enum(arc_fpu) String(fpus_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD)
 
 EnumValue
 Enum(arc_fpu) String(fpud_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD | FPU_DP | FPU_DC | FPU_DF | FPU_DD)
+
+mtp-regno=
+Target RejectNegative Joined UInteger Var(arc_tp_regno) Init(25)
+Specify thread pointer register number
+
+mtp-regno=none
+Target RejectNegative Var(arc_tp_regno,-1)

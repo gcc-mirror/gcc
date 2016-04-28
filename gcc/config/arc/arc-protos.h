@@ -57,7 +57,6 @@ extern unsigned int arc_compute_frame_size (int);
 extern bool arc_ccfsm_branch_deleted_p (void);
 extern void arc_ccfsm_record_branch_deleted (void);
 
-extern rtx arc_legitimize_pic_address (rtx, rtx);
 void arc_asm_output_aligned_decl_local (FILE *, tree, const char *,
 					unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT,
@@ -68,7 +67,6 @@ extern bool check_if_valid_sleep_operand (rtx *, int);
 extern bool arc_legitimate_constant_p (machine_mode, rtx);
 extern bool arc_legitimate_pc_offset_p (rtx);
 extern bool arc_legitimate_pic_addr_p (rtx);
-extern void emit_pic_move (rtx *, machine_mode);
 extern bool arc_raw_symbolic_reference_mentioned_p (rtx, bool);
 extern bool arc_legitimate_pic_operand_p (rtx);
 extern bool arc_is_longcall_p (rtx);
@@ -118,8 +116,10 @@ extern bool arc_text_label (rtx_insn *insn);
 extern int arc_decl_pretend_args (tree decl);
 extern bool arc_short_comparison_p (rtx, int);
 extern bool arc_epilogue_uses (int regno);
+extern bool arc_eh_uses (int regno);
 /* insn-attrtab.c doesn't include reload.h, which declares regno_clobbered_p. */
 extern int regno_clobbered_p (unsigned int, rtx_insn *, machine_mode, int);
 extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
+extern bool insn_is_tls_gd_dispatch (rtx_insn *);

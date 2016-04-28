@@ -109,6 +109,8 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define ("__ARC_SIMD__");	\
     if (TARGET_BARREL_SHIFTER)		\
       builtin_define ("__Xbarrel_shifter");\
+    builtin_define_with_int_value ("__ARC_TLS_REGNO__", \
+				   arc_tp_regno);	\
     builtin_assert ("cpu=arc");		\
     builtin_assert ("machine=arc");	\
     builtin_define (TARGET_BIG_ENDIAN	\
@@ -201,7 +203,13 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #if DEFAULT_LIBC != LIBC_UCLIBC
-#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti%O%s %{pg|p:crtg.o%s} crtbegin.o%s"
+#define ARC_TLS_EXTRA_START_SPEC "crttls.o%s"
+
+#define EXTRA_SPECS \
+  { "arc_tls_extra_start_spec", ARC_TLS_EXTRA_START_SPEC }, \
+
+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti%O%s %{pg|p:crtg.o%s} " \
+  "%(arc_tls_extra_start_spec) crtbegin.o%s"
 #else
 #define STARTFILE_SPEC   "%{!shared:%{!mkernel:crt1.o%s}} crti.o%s \
   %{!shared:%{pg|p|profile:crtg.o%s} crtbegin.o%s} %{shared:crtbeginS.o%s}"
@@ -748,9 +756,10 @@ extern enum reg_class arc_regno_reg_class[];
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
-#define REGNO_OK_FOR_BASE_P(REGNO) \
-((REGNO) < 29 || ((REGNO) == ARG_POINTER_REGNUM) || ((REGNO) == 63) ||\
- (unsigned) reg_renumber[REGNO] < 29)
+#define REGNO_OK_FOR_BASE_P(REGNO)					\
+  ((REGNO) < 29 || ((REGNO) == ARG_POINTER_REGNUM) || ((REGNO) == 63)	\
+   || ((unsigned) reg_renumber[REGNO] < 29)				\
+   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
@@ -936,6 +945,8 @@ arc_return_addr_rtx(COUNT,FRAME)
 #define EXIT_IGNORE_STACK 0
 
 #define EPILOGUE_USES(REGNO) arc_epilogue_uses ((REGNO))
+
+#define EH_USES(REGNO) arc_eh_uses((REGNO))
 
 /* Definitions for register eliminations.
 
@@ -1657,7 +1668,8 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
    && GET_CODE (PATTERN (X)) != CLOBBER		\
    && (get_attr_type (X) == TYPE_CALL || get_attr_type (X) == TYPE_SFUNC))
 
-#define INSN_REFERENCES_ARE_DELAYED(insn) INSN_SETS_ARE_DELAYED (insn)
+#define INSN_REFERENCES_ARE_DELAYED(insn)				\
+  (INSN_SETS_ARE_DELAYED (insn) && !insn_is_tls_gd_dispatch (insn))
 
 #define CALL_ATTR(X, NAME) \
   ((CALL_P (X) || NONJUMP_INSN_P (X)) \

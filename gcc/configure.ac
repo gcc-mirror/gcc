@@ -3086,6 +3086,12 @@ foo:	.long	25
 	tls_first_minor=13
 	tls_as_opt=--fatal-warnings
 	;;
+  arc*-*-*)
+    conftest_s='
+	add_s r0,r0, @foo@tpoff'
+	tls_first_major=2
+	tls_first_minor=23
+	;;
   cris-*-*|crisv32-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits

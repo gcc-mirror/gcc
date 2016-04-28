@@ -111,6 +111,10 @@
   ARC_UNSPEC_PLT
   ARC_UNSPEC_GOT
   ARC_UNSPEC_GOTOFF
+  UNSPEC_TLS_GD
+  UNSPEC_TLS_LD
+  UNSPEC_TLS_IE
+  UNSPEC_TLS_OFF
   UNSPEC_ARC_NORM
   UNSPEC_ARC_NORMW
   UNSPEC_ARC_SWAP
@@ -169,6 +173,7 @@
    (R1_REG 1)
    (R2_REG 2)
    (R3_REG 3)
+   (R10_REG 10)
    (R12_REG 12)
    (SP_REG 28)
    (ILINK1_REGNUM 29)
@@ -5276,6 +5281,72 @@
 }
   [(set_attr "type" "call")
    (set_attr "is_SIBCALL" "yes")])
+
+(define_insn "tls_load_tp_soft"
+  [(set (reg:SI R0_REG) (unspec:SI [(const_int 0)] UNSPEC_TLS_OFF))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
+  ""
+  "*return arc_output_libcall (\"__read_tp\");"
+  [(set_attr "is_sfunc" "yes")
+   (set_attr "predicable" "yes")])
+
+(define_insn "tls_gd_load"
+  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcq#q,c")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "Rcq#q,c")
+		    (match_operand:SI 2 "symbolic_operand" "X,X")]
+	 UNSPEC_TLS_GD))]
+  ""
+  ".tls_gd_ld %2`ld%? %0,[%1]"
+  [(set_attr "type" "load")
+   ; if the linker has to patch this into IE, we need a long insn
+   ; (FIXME: or two short insn, ld_s / jl_s.  missing -Os optimization.)
+   (set_attr_alternative "iscompact"
+     [(cond [(ne (symbol_ref "arc_tp_regno == 30") (const_int 0))
+	     (const_string "*")] (const_string "maybe"))
+      (const_string "*")])])
+
+(define_insn "tls_gd_get_addr"
+  [(set (reg:SI R0_REG)
+	(call:SI (mem:SI (unspec:SI [(match_operand:SI 0
+				      "symbolic_operand" "X,X")]
+			  UNSPEC_TLS_GD))
+		 (const_int 0)))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
+  ""
+  ".tls_gd_ld %0`bl%* __tls_get_addr@plt"
+  [(set_attr "type" "call")
+   ; With TARGET_MEDIUM_CALLS, plt calls are not predicable.
+   (set_attr "predicable" "no")])
+
+; We make this call specific to the tls symbol to avoid commoning this
+; with calls for other symbols; we want the linker to be able to
+(define_insn "tls_gd_dispatch"
+  [(set (reg:SI R0_REG)
+	(unspec:SI
+	  [(reg:SI R0_REG)
+	   (call (mem:SI (match_operand:SI 0 "register_operand" "Rcq,q,c"))
+		 (const_int 0))
+	   (match_operand:SI 1 "symbolic_operand" "X,X,X")]
+	 UNSPEC_TLS_GD))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
+   (clobber (reg:DI R10_REG))
+   (clobber (reg:SI R12_REG))]
+  ""
+  ".tls_gd_call %1`jl%!%* [%0]"
+  [(set_attr "type" "call")
+   (set_attr "iscompact" "maybe,false,*")
+   (set_attr "predicable" "no,no,yes")])
+
+;; For thread pointer builtins
+(define_expand "get_thread_pointersi"
+  [(set (match_operand:SI 0 "register_operand") (match_dup 1))]
+ ""
+ "operands[1] = gen_rtx_REG (Pmode, arc_tp_regno);")
+
+(define_expand "set_thread_pointersi"
+  [(set (match_dup 1) (match_operand:SI 0 "register_operand"))]
+ ""
+ "operands[1] = gen_rtx_REG (Pmode, arc_tp_regno);")
 
 ;; If hardware floating point is available, don't define a negdf pattern;
 ;; it would be something like:

@@ -593,7 +593,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcrc -mdsp-packa -mdvbf -mlock -mmac-d16 -mmac-24 -mrtsc -mswape @gol
 -mtelephony -mxy -misize -mannotate-align -marclinux -marclinux_prof @gol
 -mlong-calls -mmedium-calls -msdata @gol
--mucb-mcount -mvolatile-cache @gol
+-mucb-mcount -mvolatile-cache -mtp-regno=@var{regno} @gol
 -malign-call -mauto-modify-reg -mbbit-peephole -mno-brcc @gol
 -mcase-vector-pcrel -mcompact-casesi -mno-cond-exec -mearly-cbranchsi @gol
 -mexpand-adddi -mindexed-loads -mlra -mlra-priority-none @gol
@@ -13359,6 +13359,10 @@ Enable code density instructions for ARC EM, default on for ARC HS.
 @item -mll64
 @opindex mll64
 Enable double load/store operations for ARC HS cores.
+
+@item -mtp-regno=@var{regno}
+@opindex mtp-regno
+Specify thread pointer register number.
 
 @item -mmpy-option=@var{multo}
 @opindex mmpy-option

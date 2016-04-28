@@ -217,7 +217,6 @@ static rtx arc_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static int branch_dest (rtx);
 
 static void  arc_output_pic_addr_const (FILE *,  rtx, int);
-void emit_pic_move (rtx *, machine_mode);
 bool arc_legitimate_pic_operand_p (rtx);
 static bool arc_function_ok_for_sibcall (tree, tree);
 static rtx arc_function_value (const_tree, const_tree, bool);
@@ -456,6 +455,11 @@ static void arc_finalize_pic (void);
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS HAVE_AS_TLS
+#endif
 
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN arc_dwarf_register_span
@@ -1322,6 +1326,14 @@ arc_conditional_register_usage (void)
       strcpy (rname58, TARGET_BIG_ENDIAN ? "mhi" : "mlo");
       strcpy (rname59, TARGET_BIG_ENDIAN ? "mlo" : "mhi");
     }
+
+  /* The nature of arc_tp_regno is actually something more like a global
+     register, however globalize_reg requires a declaration.
+     We use EPILOGUE_USES to compensate so that sets from
+     __builtin_set_frame_pointer are not deleted.  */
+  if (arc_tp_regno != -1)
+    fixed_regs[arc_tp_regno] = call_used_regs[arc_tp_regno] = 1;
+
   if (TARGET_MULMAC_32BY16_SET)
     {
       fix_start = 56;
@@ -3411,7 +3423,16 @@ arc_print_operand (FILE *file, rtx x, int code)
 	}
       /* Fall through.  Let output_addr_const deal with it.  */
     default :
-      if (flag_pic)
+      if (flag_pic
+	  || (GET_CODE (x) == CONST
+	      && GET_CODE (XEXP (x, 0)) == UNSPEC
+	      && (XINT (XEXP (x, 0), 1) == UNSPEC_TLS_OFF
+		  || XINT (XEXP (x, 0), 1) == UNSPEC_TLS_GD))
+	  || (GET_CODE (x) == CONST
+	      && GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == UNSPEC
+	      && (XINT (XEXP (XEXP (x, 0), 0), 1) == UNSPEC_TLS_OFF
+		  || XINT (XEXP (XEXP (x, 0), 0), 1) == UNSPEC_TLS_GD)))
 	arc_output_pic_addr_const (file, x, code);
       else
 	{
@@ -3476,6 +3497,17 @@ arc_print_operand_address (FILE *file , rtx addr)
       {
 	rtx c = XEXP (addr, 0);
 
+	if ((GET_CODE (c) == UNSPEC
+	     && (XINT (c, 1) == UNSPEC_TLS_OFF
+		 || XINT (c, 1) == UNSPEC_TLS_IE))
+	    || (GET_CODE (c) == PLUS
+		&& GET_CODE (XEXP (c, 0)) == UNSPEC
+		&& (XINT (XEXP (c, 0), 1) == UNSPEC_TLS_OFF)))
+	  {
+	    arc_output_pic_addr_const (file, c, 0);
+	    break;
+	  }
+	gcc_assert (GET_CODE (c) == PLUS);
 	gcc_assert (GET_CODE (XEXP (c, 0)) == SYMBOL_REF);
 	gcc_assert (GET_CODE (XEXP (c, 1)) == CONST_INT);
 
@@ -4547,6 +4579,44 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
 }
 
+/* Helper used by arc_legitimate_pc_offset_p.  */
+
+static bool
+arc_needs_pcl_p (rtx x)
+{
+  register const char *fmt;
+  register int i, j;
+
+  if ((GET_CODE (x) == UNSPEC)
+      && (XVECLEN (x, 0) == 1)
+      && (GET_CODE (XVECEXP (x, 0, 0)) == SYMBOL_REF))
+    switch (XINT (x, 1))
+      {
+      case ARC_UNSPEC_GOT:
+      case UNSPEC_TLS_GD:
+      case UNSPEC_TLS_IE:
+	return true;
+      default:
+	break;
+      }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (arc_needs_pcl_p (XEXP (x, i)))
+	    return true;
+	}
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (arc_needs_pcl_p (XVECEXP (x, i, j)))
+	    return true;
+    }
+
+  return false;
+}
+
 /* Return true if ADDR is an address that needs to be expressed as an
    explicit sum of pcl + offset.  */
 
@@ -4555,17 +4625,8 @@ arc_legitimate_pc_offset_p (rtx addr)
 {
   if (GET_CODE (addr) != CONST)
     return false;
-  addr = XEXP (addr, 0);
-  if (GET_CODE (addr) == PLUS)
-    {
-      if (GET_CODE (XEXP (addr, 1)) != CONST_INT)
-	return false;
-      addr = XEXP (addr, 0);
-    }
-  return (GET_CODE (addr) == UNSPEC
-	  && XVECLEN (addr, 0) == 1
-	  && XINT (addr, 1) == ARC_UNSPEC_GOT
-	  && GET_CODE (XVECEXP (addr, 0, 0)) == SYMBOL_REF);
+
+  return arc_needs_pcl_p (addr);
 }
 
 /* Return true if ADDR is a valid pic address.
@@ -4594,9 +4655,11 @@ arc_legitimate_pic_addr_p (rtx addr)
       || XVECLEN (addr, 0) != 1)
     return false;
 
-  /* Must be @GOT or @GOTOFF.  */
+  /* Must be one of @GOT, @GOTOFF, @tlsgd, tlsie.  */
   if (XINT (addr, 1) != ARC_UNSPEC_GOT
-      && XINT (addr, 1) != ARC_UNSPEC_GOTOFF)
+      && XINT (addr, 1) != ARC_UNSPEC_GOTOFF
+      && XINT (addr, 1) != UNSPEC_TLS_GD
+      && XINT (addr, 1) != UNSPEC_TLS_IE)
     return false;
 
   if (GET_CODE (XVECEXP (addr, 0, 0)) != SYMBOL_REF
@@ -4654,6 +4717,10 @@ arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
 
   if (GET_CODE (op) == SYMBOL_REF)
     {
+      if (SYMBOL_REF_TLS_MODEL (op))
+	return true;
+      if (!flag_pic)
+	return false;
       tree decl = SYMBOL_REF_DECL (op);
       return !skip_local || !decl || !default_binds_local_p (decl);
     }
@@ -4680,11 +4747,114 @@ arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
   return false;
 }
 
+/* Get the thread pointer.  */
+
+static rtx
+arc_get_tp (void)
+{
+   /* If arc_tp_regno has been set, we can use that hard register
+      directly as a base register.  */
+  if (arc_tp_regno != -1)
+    return gen_rtx_REG (Pmode, arc_tp_regno);
+
+  /* Otherwise, call __read_tp.  Copy the result to a pseudo to avoid
+     conflicts with function arguments / results.  */
+  rtx reg = gen_reg_rtx (Pmode);
+  emit_insn (gen_tls_load_tp_soft ());
+  emit_move_insn (reg, gen_rtx_REG (Pmode, R0_REG));
+  return reg;
+}
+
+/* Helper to be used by TLS Global dynamic model.  */
+
+static rtx
+arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
+{
+  rtx r0 = gen_rtx_REG (Pmode, R0_REG);
+  rtx insns;
+  rtx call_fusage = NULL_RTX;
+
+  start_sequence ();
+
+  rtx x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym), reloc);
+  x = gen_rtx_CONST (Pmode, x);
+  emit_move_insn (r0, x);
+  use_reg (&call_fusage, r0);
+
+  gcc_assert (reloc == UNSPEC_TLS_GD);
+  rtx call_insn = emit_call_insn (gen_tls_gd_get_addr (sym));
+  /* Should we set RTL_CONST_CALL_P?  We read memory, but not in a
+     way that the application should care.  */
+  RTL_PURE_CALL_P (call_insn) = 1;
+  add_function_usage_to (call_insn, call_fusage);
+
+  insns = get_insns ();
+  end_sequence ();
+
+  rtx dest = gen_reg_rtx (Pmode);
+  emit_libcall_block (insns, dest, r0, eqv);
+  return dest;
+}
+
+#define DTPOFF_ZERO_SYM ".tdata"
+
+/* Return a legitimized address for ADDR,
+   which is a SYMBOL_REF with tls_model MODEL.  */
+
+static rtx
+arc_legitimize_tls_address (rtx addr, enum tls_model model)
+{
+  if (!flag_pic && model == TLS_MODEL_LOCAL_DYNAMIC)
+    model = TLS_MODEL_LOCAL_EXEC;
+
+  switch (model)
+    {
+    case TLS_MODEL_LOCAL_DYNAMIC:
+      rtx base;
+      tree decl;
+      const char *base_name;
+      rtvec v;
+
+      decl = SYMBOL_REF_DECL (addr);
+      base_name = DTPOFF_ZERO_SYM;
+      if (decl && bss_initializer_p (decl))
+	base_name = ".tbss";
+
+      base = gen_rtx_SYMBOL_REF (Pmode, base_name);
+      if (strcmp (base_name, DTPOFF_ZERO_SYM) == 0)
+	{
+	  if (!flag_pic)
+	    goto local_exec;
+	  v = gen_rtvec (1, addr);
+	}
+      else
+	v = gen_rtvec (2, addr, base);
+      addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_TLS_OFF);
+      addr = gen_rtx_CONST (Pmode, addr);
+      base = arc_legitimize_tls_address (base, TLS_MODEL_GLOBAL_DYNAMIC);
+      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base), addr);
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      return arc_emit_call_tls_get_addr (addr, UNSPEC_TLS_GD, addr);
+    case TLS_MODEL_INITIAL_EXEC:
+      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLS_IE);
+      addr = gen_rtx_CONST (Pmode, addr);
+      addr = copy_to_mode_reg (Pmode, gen_const_mem (Pmode, addr));
+      return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+    case TLS_MODEL_LOCAL_EXEC:
+    local_exec:
+      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLS_OFF);
+      addr = gen_rtx_CONST (Pmode, addr);
+      return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Legitimize a pic address reference in ORIG.
    The return value is the legitimated address.
    If OLDX is non-zero, it is the target to assign the address to first.  */
 
-rtx
+static rtx
 arc_legitimize_pic_address (rtx orig, rtx oldx)
 {
   rtx addr = orig;
@@ -4696,40 +4866,36 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 
   if (GET_CODE (addr) == LABEL_REF)
     ; /* Do nothing.  */
-  else if (GET_CODE (addr) == SYMBOL_REF
-	   && (CONSTANT_POOL_ADDRESS_P (addr)
-	       || SYMBOL_REF_LOCAL_P (addr)))
-    {
-      /* This symbol may be referenced via a displacement from the PIC
-	 base address (@GOTOFF).  */
-
-      /* FIXME: if we had a way to emit pc-relative adds that don't
-	 create a GOT entry, we could do without the use of the gp register.  */
-      crtl->uses_pic_offset_table = 1;
-      pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOTOFF);
-      pat = gen_rtx_CONST (Pmode, pat);
-      pat = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pat);
-
-      if (oldx == NULL)
-	oldx = gen_reg_rtx (Pmode);
-
-      if (oldx != 0)
-	{
-	  emit_move_insn (oldx, pat);
-	  pat = oldx;
-	}
-
-    }
   else if (GET_CODE (addr) == SYMBOL_REF)
     {
-      /* This symbol must be referenced via a load from the
-	 Global Offset Table (@GOTPC).  */
+      enum tls_model model = SYMBOL_REF_TLS_MODEL (addr);
+      if (model != 0)
+	return arc_legitimize_tls_address (addr, model);
+      else if (!flag_pic)
+	return orig;
+      else if (CONSTANT_POOL_ADDRESS_P (addr) || SYMBOL_REF_LOCAL_P (addr))
+	{
+	  /* This symbol may be referenced via a displacement from the
+	     PIC base address (@GOTOFF).  */
 
-      pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOT);
-      pat = gen_rtx_CONST (Pmode, pat);
-      pat = gen_const_mem (Pmode, pat);
+	  /* FIXME: if we had a way to emit pc-relative adds that
+	     don't create a GOT entry, we could do without the use of
+	     the gp register.  */
+	  crtl->uses_pic_offset_table = 1;
+	  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOTOFF);
+	  pat = gen_rtx_CONST (Pmode, pat);
+	  pat = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pat);
+	}
+      else
+	{
+	  /* This symbol must be referenced via a load from the
+	     Global Offset Table (@GOTPC).  */
+	  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOT);
+	  pat = gen_rtx_CONST (Pmode, pat);
+	  pat = gen_const_mem (Pmode, pat);
+	}
 
-      if (oldx == 0)
+      if (oldx == NULL)
 	oldx = gen_reg_rtx (Pmode);
 
       emit_move_insn (oldx, pat);
@@ -4752,45 +4918,23 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 	{
 	  rtx op0 = XEXP (addr, 0), op1 = XEXP (addr, 1);
 
-	  /* Check first to see if this is a constant offset from a @GOTOFF
-	     symbol reference.  */
-	  if ((GET_CODE (op0) == LABEL_REF
-	       || (GET_CODE (op0) == SYMBOL_REF
-		   && (CONSTANT_POOL_ADDRESS_P (op0)
-		       || SYMBOL_REF_LOCAL_P (op0))))
-	      && GET_CODE (op1) == CONST_INT)
-	    {
-	      /* FIXME: like above, could do without gp reference.  */
-	      crtl->uses_pic_offset_table = 1;
-	      pat
-		= gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), ARC_UNSPEC_GOTOFF);
-	      pat = gen_rtx_PLUS (Pmode, pat, op1);
-	      pat = gen_rtx_CONST (Pmode, pat);
-	      pat = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pat);
-
-	      if (oldx != 0)
-		{
-		  emit_move_insn (oldx, pat);
-		  pat = oldx;
-		}
-	    }
-	  else
-	    {
-	      base = arc_legitimize_pic_address (XEXP (addr, 0), oldx);
-	      pat  = arc_legitimize_pic_address (XEXP (addr, 1),
+	  base = arc_legitimize_pic_address (op0, oldx);
+	  pat  = arc_legitimize_pic_address (op1,
 					     base == oldx ? NULL_RTX : oldx);
 
-	      if (GET_CODE (pat) == CONST_INT)
-		pat = plus_constant (Pmode, base, INTVAL (pat));
-	      else
+	  if (base == op0 && pat == op1)
+	    return orig;
+
+	  if (GET_CODE (pat) == CONST_INT)
+	    pat = plus_constant (Pmode, base, INTVAL (pat));
+	  else
+	    {
+	      if (GET_CODE (pat) == PLUS && CONSTANT_P (XEXP (pat, 1)))
 		{
-		  if (GET_CODE (pat) == PLUS && CONSTANT_P (XEXP (pat, 1)))
-		    {
-		      base = gen_rtx_PLUS (Pmode, base, XEXP (pat, 0));
-		      pat = XEXP (pat, 1);
-		    }
-		  pat = gen_rtx_PLUS (Pmode, base, pat);
+		  base = gen_rtx_PLUS (Pmode, base, XEXP (pat, 0));
+		  pat = XEXP (pat, 1);
 		}
+	      pat = gen_rtx_PLUS (Pmode, base, pat);
 	    }
 	}
     }
@@ -4906,26 +5050,47 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
 
 
     case UNSPEC:
-      gcc_assert (XVECLEN (x, 0) == 1);
-      if (XINT (x, 1) == ARC_UNSPEC_GOT)
-	fputs ("pcl,", file);
-      arc_output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
+      const char *suffix;
+      bool pcrel; pcrel = false;
+      rtx base; base = NULL;
+      gcc_assert (XVECLEN (x, 0) >= 1);
       switch (XINT (x, 1))
 	{
 	case ARC_UNSPEC_GOT:
-	  fputs ("@gotpc", file);
+	  suffix = "@gotpc", pcrel = true;
 	  break;
 	case ARC_UNSPEC_GOTOFF:
-	  fputs ("@gotoff", file);
+	  suffix = "@gotoff";
 	  break;
 	case ARC_UNSPEC_PLT:
-	  fputs ("@plt", file);
+	  suffix = "@plt";
+	  break;
+	case UNSPEC_TLS_GD:
+	  suffix = "@tlsgd", pcrel = true;
+	  break;
+	case UNSPEC_TLS_IE:
+	  suffix = "@tlsie", pcrel = true;
+	  break;
+	case UNSPEC_TLS_OFF:
+	  if (XVECLEN (x, 0) == 2)
+	    base = XVECEXP (x, 0, 1);
+	  if (SYMBOL_REF_TLS_MODEL (XVECEXP (x, 0, 0)) == TLS_MODEL_LOCAL_EXEC
+	      || (!flag_pic && !base))
+	    suffix = "@tpoff";
+	  else
+	    suffix = "@dtpoff";
 	  break;
 	default:
 	  output_operand_lossage ("invalid UNSPEC as operand: %d", XINT (x,1));
 	  break;
 	}
-       break;
+      if (pcrel)
+	fputs ("pcl,", file);
+      arc_output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
+      fputs (suffix, file);
+      if (base)
+	arc_output_pic_addr_const (file, base, code);
+      break;
 
     default:
       output_operand_lossage ("invalid expression as operand");
@@ -4939,15 +5104,18 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
 
 /* Emit insns to move operands[1] into operands[0].  */
 
-void
-emit_pic_move (rtx *operands, machine_mode)
+static void
+prepare_pic_move (rtx *operands, machine_mode)
 {
-  rtx temp = reload_in_progress ? operands[0] : gen_reg_rtx (Pmode);
-
-  if (GET_CODE (operands[0]) == MEM && SYMBOLIC_CONST (operands[1]))
+  if (GET_CODE (operands[0]) == MEM && SYMBOLIC_CONST (operands[1])
+      && flag_pic)
     operands[1] = force_reg (Pmode, operands[1]);
   else
-    operands[1] = arc_legitimize_pic_address (operands[1], temp);
+    {
+      rtx temp = (reload_in_progress ? operands[0]
+		  : flag_pic? gen_reg_rtx (Pmode) : NULL_RTX);
+      operands[1] = arc_legitimize_pic_address (operands[1], temp);
+    }
 }
 
 
@@ -5149,9 +5317,12 @@ arc_legitimate_pic_operand_p (rtx x)
    satisfies CONSTANT_P.  */
 
 bool
-arc_legitimate_constant_p (machine_mode, rtx x)
+arc_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  if (!flag_pic)
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x))
+    return false;
+
+  if (!flag_pic && mode != Pmode)
     return true;
 
   switch (GET_CODE (x))
@@ -5161,7 +5332,9 @@ arc_legitimate_constant_p (machine_mode, rtx x)
 
       if (GET_CODE (x) == PLUS)
 	{
-	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	  if (flag_pic
+	      ? GET_CODE (XEXP (x, 1)) != CONST_INT
+	      : !arc_legitimate_constant_p (mode, XEXP (x, 1)))
 	    return false;
 	  x = XEXP (x, 0);
 	}
@@ -5173,6 +5346,9 @@ arc_legitimate_constant_p (machine_mode, rtx x)
 	  case ARC_UNSPEC_PLT:
 	  case ARC_UNSPEC_GOTOFF:
 	  case ARC_UNSPEC_GOT:
+	  case UNSPEC_TLS_GD:
+	  case UNSPEC_TLS_IE:
+	  case UNSPEC_TLS_OFF:
 	  case UNSPEC_PROF:
 	    return true;
 
@@ -5187,9 +5363,14 @@ arc_legitimate_constant_p (machine_mode, rtx x)
       /* Return true.  */
       break;
 
-    case LABEL_REF:
     case SYMBOL_REF:
-      return false;
+      if (SYMBOL_REF_TLS_MODEL (x))
+	return false;
+      /* Fall through.  */
+    case LABEL_REF:
+      if (flag_pic)
+	return false;
+      /* Fall through.  */
 
     default:
       break;
@@ -5212,12 +5393,29 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
      return true;
   if (GET_CODE (x) == CONST_INT && LARGE_INT (INTVAL (x)))
      return true;
-  if ((GET_MODE_SIZE (mode) != 16)
-      && (GET_CODE (x) == SYMBOL_REF
-	  || GET_CODE (x) == LABEL_REF
-	  || GET_CODE (x) == CONST))
+
+  /* When we compile for size avoid const (@sym + offset)
+     addresses.  */
+  if (!flag_pic && optimize_size && !reload_completed
+      && (GET_CODE (x) == CONST)
+      && (GET_CODE (XEXP (x, 0)) == PLUS)
+      && (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+      && SYMBOL_REF_TLS_MODEL (XEXP (XEXP (x, 0), 0)) == 0
+      && !SYMBOL_REF_FUNCTION_P (XEXP (XEXP (x, 0), 0)))
     {
-      if (!flag_pic || arc_legitimate_pic_addr_p (x))
+      rtx addend = XEXP (XEXP (x, 0), 1);
+      gcc_assert (CONST_INT_P (addend));
+      HOST_WIDE_INT offset = INTVAL (addend);
+
+      /* Allow addresses having a large offset to pass.  Anyhow they
+	 will end in a limm.  */
+      return !(offset > -1024 && offset < 1020);
+    }
+
+  if ((GET_MODE_SIZE (mode) != 16) && CONSTANT_P (x))
+    {
+      if (flag_pic ? arc_legitimate_pic_addr_p (x)
+	  : arc_legitimate_constant_p (Pmode, x))
 	return true;
     }
   if ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == PRE_INC
@@ -6860,8 +7058,12 @@ arc_rewrite_small_data_p (const_rtx x)
 	x = XEXP (x, 0);
     }
 
-  return (GET_CODE (x) ==  SYMBOL_REF
-	  && SYMBOL_REF_SMALL_P(x));
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_SMALL_P (x))
+    {
+      gcc_assert (SYMBOL_REF_TLS_MODEL (x) == 0);
+      return true;
+    }
+  return false;
 }
 
 /* If possible, rewrite OP so that it refers to small data using
@@ -7280,40 +7482,39 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 {
   /* We used to do this only for MODE_INT Modes, but addresses to floating
      point variables may well be in the small data section.  */
-  if (1)
+  if (!TARGET_NO_SDATA_SET && small_data_pattern (operands[0], Pmode))
+    operands[0] = arc_rewrite_small_data (operands[0]);
+
+  if (mode == SImode && SYMBOLIC_CONST (operands[1]))
     {
-      if (!TARGET_NO_SDATA_SET && small_data_pattern (operands[0], Pmode))
-	operands[0] = arc_rewrite_small_data (operands[0]);
-      else if (mode == SImode && flag_pic && SYMBOLIC_CONST (operands[1]))
-	{
-	  emit_pic_move (operands, SImode);
+      prepare_pic_move (operands, SImode);
 
-	  /* Disable any REG_EQUALs associated with the symref
-	     otherwise the optimization pass undoes the work done
-	     here and references the variable directly.  */
-	}
-      else if (GET_CODE (operands[0]) != MEM
-	       && !TARGET_NO_SDATA_SET
-	       && small_data_pattern (operands[1], Pmode))
-       {
-	  /* This is to take care of address calculations involving sdata
-	     variables.  */
-	  operands[1] = arc_rewrite_small_data (operands[1]);
+      /* Disable any REG_EQUALs associated with the symref
+	 otherwise the optimization pass undoes the work done
+	 here and references the variable directly.  */
+    }
 
-	  emit_insn (gen_rtx_SET (operands[0],operands[1]));
-	  /* ??? This note is useless, since it only restates the set itself.
-	     We should rather use the original SYMBOL_REF.  However, there is
-	     the problem that we are lying to the compiler about these
-	     SYMBOL_REFs to start with.  symbol@sda should be encoded specially
-	     so that we can tell it apart from an actual symbol.  */
-	  set_unique_reg_note (get_last_insn (), REG_EQUAL, operands[1]);
+  if (GET_CODE (operands[0]) != MEM
+      && !TARGET_NO_SDATA_SET
+      && small_data_pattern (operands[1], Pmode))
+    {
+      /* This is to take care of address calculations involving sdata
+	 variables.  */
+      operands[1] = arc_rewrite_small_data (operands[1]);
 
-	  /* Take care of the REG_EQUAL note that will be attached to mark the
-	     output reg equal to the initial symbol_ref after this code is
-	     executed.  */
-	  emit_move_insn (operands[0], operands[0]);
-	  return true;
-	}
+      emit_insn (gen_rtx_SET (operands[0],operands[1]));
+      /* ??? This note is useless, since it only restates the set itself.
+	 We should rather use the original SYMBOL_REF.  However, there is
+	 the problem that we are lying to the compiler about these
+	 SYMBOL_REFs to start with.  symbol@sda should be encoded specially
+	 so that we can tell it apart from an actual symbol.  */
+      set_unique_reg_note (get_last_insn (), REG_EQUAL, operands[1]);
+
+      /* Take care of the REG_EQUAL note that will be attached to mark the
+	 output reg equal to the initial symbol_ref after this code is
+	 executed.  */
+      emit_move_insn (operands[0], operands[0]);
+      return true;
     }
 
   if (MEM_P (operands[0])
@@ -8311,6 +8512,13 @@ arc_legitimize_address_0 (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 static rtx
 arc_legitimize_address (rtx orig_x, rtx oldx, machine_mode mode)
 {
+  if (GET_CODE (orig_x) == SYMBOL_REF)
+    {
+      enum tls_model model = SYMBOL_REF_TLS_MODEL (orig_x);
+      if (model != 0)
+	return arc_legitimize_tls_address (orig_x, model);
+    }
+
   rtx new_x = arc_legitimize_address_0 (orig_x, oldx, mode);
 
   if (new_x)
@@ -9070,6 +9278,8 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
 bool
 arc_epilogue_uses (int regno)
 {
+  if (regno == arc_tp_regno)
+    return true;
   if (reload_completed)
     {
       if (ARC_INTERRUPT_P (cfun->machine->fn_type))
@@ -9083,6 +9293,16 @@ arc_epilogue_uses (int regno)
     }
   else
     return regno == arc_return_address_regs[arc_compute_function_type (cfun)];
+}
+
+/* Helper for EH_USES macro.  */
+
+bool
+arc_eh_uses (int regno)
+{
+  if (regno == arc_tp_regno)
+    return true;
+  return false;
 }
 
 #ifndef TARGET_NO_LRA
@@ -9590,6 +9810,13 @@ arc_dwarf_register_span (rtx rtl)
    return p;
 }
 
+/* We can't inline this in INSN_REFERENCES_ARE_DELAYED because
+   resource.h doesn't include the required header files.  */
+bool
+insn_is_tls_gd_dispatch (rtx_insn *insn)
+{
+  return recog_memoized (insn) == CODE_FOR_tls_gd_dispatch;
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
