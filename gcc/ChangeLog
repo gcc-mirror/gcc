@@ -1,4 +1,55 @@
 2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc-protos.h (arc_legitimize_pic_address): Remove
+	declaration.
+	(emit_pic_move): Remove.
+	(arc_eh_uses, insn_is_tls_gd_dispatch): Declare.
+	* config/arc/arc.c (emit_pic_move): Removed.
+	(TARGET_HAVE_TLS): Define.
+	(arc_conditional_register_usage): Test for arc_tp_regno.
+	(arc_print_operand, arc_print_operand_address): Handle TLS
+	unspecs.
+	(arc_needs_pcl_p): New function.
+	(arc_legitimate_pc_offset_p): Use arc_needs_pcl_p.
+	(arc_legitimate_pic_addr_p): Handle TLS unspecs.
+	(arc_raw_symbolic_reference_mentioned_p): Likewise.
+	(arc_get_tp, arc_emit_call_tls_get_addr): New function.
+	(arc_legitimize_tls_address): Likewise.
+	(DTPOFF_ZERO_SYM): Define.
+	(arc_legitimize_pic_address): Make it static, handle TLS cases.
+	(arc_output_pic_addr_const): Print TLS unspecs.
+	(prepare_pic_move): New function, replaces emit_pic_move.
+	(arc_legitimate_constant_p): Handle TLS unspecs.
+	(arc_legitimate_address_p): Likewise.
+	(arc_rewrite_small_data_p): Use assert for TLS constants.
+	(prepare_move_operands): Use prepare_pic_move.
+	(arc_legitimize_address): Legitimize tls addresses.
+	(arc_epilogue_uses): Check for arc_tp_regno.
+	(arc_eh_uses, insn_is_tls_gd_dispatch): New function.
+	* config/arc/arc.h [DEFAULT_LIBC != LIBC_UCLIBC] (EXTRA_SPECS):
+	Define.
+	[DEFAULT_LIBC != LIBC_UCLIBC] (ARC_TLS_EXTRA_START_SPEC):
+	Likewise.
+	[DEFAULT_LIBC != LIBC_UCLIBC] (STARTFILE_SPEC): Add
+	%(arc_tls_extra_start_spec).
+	(TARGET_CPU_CPP_BUILTINS): Define __ARC_TLS_REGNO__.
+	(REGNO_OK_FOR_BASE_P): Check for arc_tp_regno.
+	(EH_USES): Define.
+	(INSN_REFERENCES_ARE_DELAYED): Use insn_is_tls_gd_dispatch.
+	* config/arc/arc.md (UNSPEC_TLS_GD, UNSPEC_TLS_LD, UNSPEC_TLS_IE)
+	(UNSPEC_TLS_OFF): Add.
+	(R10_REG): Define.
+	(tls_load_tp_soft, tls_gd_load, tls_gd_get_addr, tls_gd_dispatch)
+	(get_thread_pointersi): New patterns.
+	* config/arc/arc.opt (mtp-regno): New option.
+	* config/arc/predicates.md (move_src_operand): Handle TLS symbols.
+	(move_dest_operand): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add arc*-*-* case to test for tls.
+	* doc/invoke.texi (ARC options): Document mtp-regno.
+
+2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_vector_mode_supported_p): Add support for
 	the new ARC HS SIMD instructions.
