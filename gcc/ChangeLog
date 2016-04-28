@@ -1,3 +1,9 @@
+2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/70668
+	* config/nds32/nds32.md (casesi): Don't access the operands array
+	out of bounds.
+
 2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (zeroing peephole2): Use general_reg_operand.
