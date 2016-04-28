@@ -270,7 +270,7 @@
 		     - get_attr_length (insn)")))
 
 ; for ARCv2 we need to disable/enable different instruction alternatives
-(define_attr "cpu_facility" "std,av1,av2"
+(define_attr "cpu_facility" "std,av1,av2,fpx"
   (const_string "std"))
 
 ; We should consider all the instructions enabled until otherwise
@@ -281,6 +281,10 @@
 
 	 (and (eq_attr "cpu_facility" "av2")
 	      (not (match_test "TARGET_V2")))
+	 (const_string "no")
+
+	 (and (eq_attr "cpu_facility" "fpx")
+	      (match_test "TARGET_FP_DP_AX"))
 	 (const_string "no")
 	 ]
 	(const_string "yes")))
@@ -5780,6 +5784,8 @@
   "
    if (TARGET_DPFP)
     {
+     if (TARGET_FP_DP_AX && (GET_CODE (operands[1]) == CONST_DOUBLE))
+       operands[1] = force_reg (DFmode, operands[1]);
      if ((GET_CODE (operands[1]) == CONST_DOUBLE)
           || GET_CODE (operands[2]) == CONST_DOUBLE)
       {

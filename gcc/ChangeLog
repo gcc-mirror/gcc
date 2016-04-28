@@ -1,3 +1,12 @@
+2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (cpu_facility): Add fpx variant.
+	(subdf3): Prohibit use reverse sub when assist operations option
+	is enabled.
+	* config/arc/fpx.md (subdf3_insn, *dsubh_peep2_insn): Allow drsub
+	instructions only when FPX is enabled.
+	* testsuite/gcc.target/arc/trsub.c: New test.
+
 2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*fop_<mode>_1_mixed): Do not check for
