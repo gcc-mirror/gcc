@@ -918,6 +918,104 @@ cp_get_callee (tree call)
   return NULL_TREE;
 }
 
+/* FN is the callee of a CALL_EXPR or AGGR_INIT_EXPR; return the FUNCTION_DECL
+   if we can.  */
+
+tree
+cp_get_fndecl_from_callee (tree fn)
+{
+  if (fn == NULL_TREE)
+    return fn;
+  if (TREE_CODE (fn) == FUNCTION_DECL)
+    return fn;
+  tree type = TREE_TYPE (fn);
+  if (type == unknown_type_node)
+    return NULL_TREE;
+  gcc_assert (POINTER_TYPE_P (type));
+  fn = maybe_constant_init (fn);
+  STRIP_NOPS (fn);
+  if (TREE_CODE (fn) == ADDR_EXPR)
+    {
+      fn = TREE_OPERAND (fn, 0);
+      if (TREE_CODE (fn) == FUNCTION_DECL)
+	return fn;
+    }
+  return NULL_TREE;
+}
+
+/* Like get_callee_fndecl, but handles AGGR_INIT_EXPR as well and uses the
+   constexpr machinery.  */
+
+tree
+cp_get_callee_fndecl (tree call)
+{
+  return cp_get_fndecl_from_callee (cp_get_callee (call));
+}
+
+/* Subroutine of convert_to_void.  Warn if we're discarding something with
+   attribute [[nodiscard]].  */
+
+static void
+maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
+{
+  tree call = expr;
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    call = TARGET_EXPR_INITIAL (expr);
+  location_t loc = EXPR_LOC_OR_LOC (call, input_location);
+  tree callee = cp_get_callee (call);
+  if (!callee)
+    return;
+
+  tree type = TREE_TYPE (callee);
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  tree rettype = TREE_TYPE (type);
+  tree fn = cp_get_fndecl_from_callee (callee);
+  if (implicit != ICV_CAST && fn
+      && lookup_attribute ("nodiscard", DECL_ATTRIBUTES (fn)))
+    {
+      if (warning_at (loc, OPT_Wunused_result,
+		      "ignoring return value of %qD, "
+		      "declared with attribute nodiscard", fn))
+	inform (DECL_SOURCE_LOCATION (fn), "declared here");
+    }
+  else if (implicit != ICV_CAST
+	   && lookup_attribute ("nodiscard", TYPE_ATTRIBUTES (rettype)))
+    {
+      if (warning_at (loc, OPT_Wunused_result,
+		      "ignoring returned value of type %qT, "
+		      "declared with attribute nodiscard", rettype))
+	{
+	  if (fn)
+	    inform (DECL_SOURCE_LOCATION (fn),
+		    "in call to %qD, declared here", fn);
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (rettype)),
+		  "%qT declared here", rettype);
+	}
+    }
+  else if (TREE_CODE (expr) == TARGET_EXPR
+	   && lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (type)))
+    {
+      /* The TARGET_EXPR confuses do_warn_unused_result into thinking that the
+	 result is used, so handle that case here.  */
+      if (fn)
+	{
+	  if (warning_at (loc, OPT_Wunused_result,
+			  "ignoring return value of %qD, "
+			  "declared with attribute warn_unused_result",
+			  fn))
+	    inform (DECL_SOURCE_LOCATION (fn), "declared here");
+	}
+      else
+	warning_at (loc, OPT_Wunused_result,
+		    "ignoring return value of function "
+		    "declared with attribute warn_unused_result");
+    }
+}
+
 /* When an expression is used in a void context, its value is discarded and
    no lvalue-rvalue and similar conversions happen [expr.static.cast/4,
    stmt.expr/1, expr.comma/1].  This permits dereferencing an incomplete type
@@ -1032,6 +1130,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       break;
 
     case CALL_EXPR:   /* We have a special meaning for volatile void fn().  */
+      maybe_warn_nodiscard (expr, implicit);
       break;
 
     case INDIRECT_REF:
@@ -1257,12 +1356,14 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	    {
 	      tree fn = AGGR_INIT_EXPR_FN (init);
 	      expr = build_call_array_loc (input_location,
-					   TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
+					   TREE_TYPE (TREE_TYPE
+						      (TREE_TYPE (fn))),
 					   fn,
 					   aggr_init_expr_nargs (init),
 					   AGGR_INIT_EXPR_ARGP (init));
 	    }
 	}
+      maybe_warn_nodiscard (expr, implicit);
       break;
 
     default:;

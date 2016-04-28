@@ -1,5 +1,15 @@
 2016-04-28  Jason Merrill  <jason@redhat.com>
 
+	Implement C++17 [[nodiscard]] attribute.
+	PR c++/38172
+	PR c++/54379
+	* parser.c (cp_parser_std_attribute): Handle [[nodiscard]].
+	* tree.c (handle_nodiscard_attribute): New.
+	(cxx_attribute_table): Add [[nodiscard]].
+	* cvt.c (cp_get_fndecl_from_callee, cp_get_callee_fndecl): New.
+	(maybe_warn_nodiscard): New.
+	(convert_to_void): Call it.
+
 	* cvt.c (cp_get_callee): New.
 	* constexpr.c (get_function_named_in_call): Use it.
 	* cxx-pretty-print.c (postfix_expression): Use it.

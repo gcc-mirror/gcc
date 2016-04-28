@@ -3570,6 +3570,30 @@ zero_init_p (const_tree t)
   return 1;
 }
 
+/* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
+   warn_unused_result attribute.  */
+
+static tree
+handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
+			    int /*flags*/, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
+	warning (OPT_Wattributes, "%qE attribute applied to %qD with void "
+		 "return type", name, *node);
+    }
+  else if (OVERLOAD_TYPE_P (*node))
+    /* OK */;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or to class or enumeration types", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 /* Table of valid C++ attributes.  */
 const struct attribute_spec cxx_attribute_table[] =
 {
@@ -3591,6 +3615,8 @@ const struct attribute_spec std_attribute_table[] =
        affects_type_identity } */
   { "maybe_unused", 0, 0, false, false, false,
     handle_unused_attribute, false },
+  { "nodiscard", 0, 0, false, false, false,
+    handle_nodiscard_attribute, false },
   { NULL,	      0, 0, false, false, false, NULL, false }
 };
 
