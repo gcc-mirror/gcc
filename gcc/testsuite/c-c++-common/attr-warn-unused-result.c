@@ -1,6 +1,6 @@
 /* warn_unused_result attribute tests.  */
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-O -ftrack-macro-expansion=0" } */
 
 #define WUR __attribute__((warn_unused_result))
 #define WURAI __attribute__((warn_unused_result, always_inline)) inline
@@ -12,7 +12,7 @@ typedef struct { char big[1024]; fnt fn; } C;
 
 WUR int check1 (void);
 WUR void check2 (void); /* { dg-warning "attribute ignored" } */
-int foo WUR;	  /* { dg-warning "only applies" } */
+int foo WUR;	  /* { dg-message "only applies" } */
 int bar (void);
 extern WURAI int check3 (void) { return bar (); }
 WUR A check4 (void);

@@ -1,3 +1,7 @@
+2016-04-28  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Handle nodiscard.
+
 2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
 	    Matthias Klose  <doko@debian.org>
 
