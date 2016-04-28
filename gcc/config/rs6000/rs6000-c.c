@@ -842,11 +842,6 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V1TI, 0 },
   { ALTIVEC_BUILTIN_VEC_ADDC, P8V_BUILTIN_VADDCUQ,
     RS6000_BTI_V1TI, RS6000_BTI_V1TI, RS6000_BTI_V1TI, 0 },
-  { ALTIVEC_BUILTIN_VEC_ADDE, P8V_BUILTIN_VADDEUQM,
-    RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI,
-    RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI },
-  { ALTIVEC_BUILTIN_VEC_ADDE, P8V_BUILTIN_VADDEUQM,
-    RS6000_BTI_V1TI, RS6000_BTI_V1TI, RS6000_BTI_V1TI, RS6000_BTI_V1TI },
   { ALTIVEC_BUILTIN_VEC_ADDEC, P8V_BUILTIN_VADDECUQ,
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI,
     RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI },
@@ -4514,6 +4509,65 @@ assignment for unaligned loads and stores");
   else if (fcode == ALTIVEC_BUILTIN_VEC_LVSR && !VECTOR_ELT_ORDER_BIG)
     warning (OPT_Wdeprecated, "vec_lvsr is deprecated for little endian; use \
 assignment for unaligned loads and stores");
+
+  if (fcode == ALTIVEC_BUILTIN_VEC_ADDE)
+    {
+      /* vec_adde needs to be special cased because there is no instruction
+	  for the {un}signed int version.  */
+      if (nargs != 3)
+	{
+	  error ("vec_adde only accepts 3 arguments");
+	  return error_mark_node;
+	}
+
+      tree arg0 = (*arglist)[0];
+      tree arg0_type = TREE_TYPE (arg0);
+      tree arg1 = (*arglist)[1];
+      tree arg1_type = TREE_TYPE (arg1);
+      tree arg2 = (*arglist)[2];
+      tree arg2_type = TREE_TYPE (arg2);
+
+      /* All 3 arguments must be vectors of (signed or unsigned) (int or
+	  __int128) and the types must match.  */
+      if ((arg0_type != arg1_type) || (arg1_type != arg2_type))
+	goto bad; 
+      if (TREE_CODE (arg0_type) != VECTOR_TYPE)
+	goto bad; 
+
+      switch (TYPE_MODE (TREE_TYPE (arg0_type)))
+	{
+	  /* For {un}signed ints, 
+	     vec_adde (va, vb, carryv) == vec_add (vec_add (va, vb), 
+						vec_and (carryv, 0x1)).  */
+	  case SImode:
+	    {
+	      vec<tree, va_gc> *params = make_tree_vector();
+	      vec_safe_push (params, arg0);
+	      vec_safe_push (params, arg1);
+	      tree call = altivec_resolve_overloaded_builtin
+		 (loc, rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD], params);
+	      tree const1 = build_vector_from_val (arg0_type, 
+		 build_int_cstu(TREE_TYPE (arg0_type), 1));
+	      tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR,
+				arg0_type, arg2, const1);
+	      params = make_tree_vector();
+	      vec_safe_push (params, call);
+	      vec_safe_push (params, and_expr);
+	      return altivec_resolve_overloaded_builtin
+		 (loc, rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD], params);
+	    }
+	  /* For {un}signed __int128s use the vaddeuqm instruction
+		directly.  */
+	  case TImode:
+	    return altivec_resolve_overloaded_builtin
+		(loc, rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDEUQM], arglist);
+
+	  /* Types other than {un}signed int and {un}signed __int128
+		are errors.  */
+	  default:
+	    goto bad;
+	}
+    }
 
   /* For now treat vec_splats and vec_promote as the same.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_SPLATS
