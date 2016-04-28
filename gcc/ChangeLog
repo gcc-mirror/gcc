@@ -381,12 +381,6 @@
 
 2016-04-27  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.c (ix86_spill_class): Enable for TARGET_SSE2 when
-	inter-unit moves to/from vector registers are enabled.  Do not disable
-	for TARGET_MMX.
-
-2016-04-27  Uros Bizjak  <ubizjak@gmail.com>
-
 	* config/i386/i386.md
 	(lea arith with mem operand + setcc peephole2): Set operator mode.
 
