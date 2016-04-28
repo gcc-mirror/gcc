@@ -1807,11 +1807,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       /* For sub-word operations, retry with a wider type first.  */
       if (orig_precres == precres && precop <= BITS_PER_WORD)
 	{
-#if WORD_REGISTER_OPERATIONS
-	  int p = BITS_PER_WORD;
-#else
-	  int p = precop;
-#endif
+	  int p = WORD_REGISTER_OPERATIONS ? BITS_PER_WORD : precop;
 	  enum machine_mode m = smallest_mode_for_size (p, MODE_INT);
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p
