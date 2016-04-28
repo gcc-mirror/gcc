@@ -189,6 +189,12 @@ EnumValue
 Enum(processor_type) String(arc700) Value(PROCESSOR_ARC700)
 
 EnumValue
+Enum(processor_type) String(nps400) Value(PROCESSOR_NPS400)
+
+EnumValue
+Enum(processor_type) String(NPS400) Value(PROCESSOR_NPS400)
+
+EnumValue
 Enum(processor_type) String(ARCEM) Value(PROCESSOR_ARCEM)
 
 EnumValue

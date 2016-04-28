@@ -690,6 +690,11 @@ arc_init (void)
       tune_dflt = TUNE_ARC700_4_2_STD;
       break;
 
+    case PROCESSOR_NPS400:
+      arc_cpu_string = "NPS400";
+      tune_dflt = TUNE_ARC700_4_2_STD;
+      break;
+
     case PROCESSOR_ARCEM:
       arc_cpu_string = "EM";
       break;
