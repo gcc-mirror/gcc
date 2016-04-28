@@ -467,6 +467,36 @@
 		   (plus:SWI (match_dup 1)
 			     (match_dup 2)))])])
 
+;; Likewise, but for the -Os special case of *mov<mode>_or.
+(define_peephole2
+  [(parallel [(set (match_operand:SWI 0 "register_operand")
+		   (match_operand:SWI 2 "constm1_operand"))
+	      (clobber (reg:CC FLAGS_REG))])
+   (parallel [(set (match_dup 0)
+		   (unspec_volatile:SWI
+		     [(match_operand:SWI 1 "memory_operand")
+		      (match_operand:SI 4 "const_int_operand")]
+		     UNSPECV_XCHG))
+	      (set (match_dup 1)
+		   (plus:SWI (match_dup 1)
+			     (match_dup 0)))
+	      (clobber (reg:CC FLAGS_REG))])
+   (set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (match_dup 0)
+		     (match_operand:SWI 3 "const_int_operand")))]
+  "peep2_reg_dead_p (3, operands[0])
+   && (unsigned HOST_WIDE_INT) INTVAL (operands[2])
+      == -(unsigned HOST_WIDE_INT) INTVAL (operands[3])
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+  [(parallel [(set (reg:CCZ FLAGS_REG)
+		   (compare:CCZ
+		     (unspec_volatile:SWI [(match_dup 1) (match_dup 4)]
+					  UNSPECV_XCHG)
+		     (match_dup 3)))
+	      (set (match_dup 1)
+		   (plus:SWI (match_dup 1)
+			     (match_dup 2)))])])
+
 (define_insn "*atomic_fetch_add_cmp<mode>"
   [(set (reg:CCZ FLAGS_REG)
 	(compare:CCZ

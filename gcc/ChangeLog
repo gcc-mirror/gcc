@@ -1,3 +1,10 @@
+2016-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70821
+	* config/i386/sync.md (define_peephole2 *atomic_fetch_add_cmp<mode>):
+	Add new peephole2 where the first insn is *mov<mode>_or instead of
+	*mov<mode>_internal.
+
 2016-04-28  Segher Boesssenkool  <segher@kernel.crashing.org>
 
 	* tracer.c (bb_seen): Make static.
