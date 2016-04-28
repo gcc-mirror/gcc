@@ -249,6 +249,9 @@ skip file tree.h
 # Also skip inline functions in is-a.h.
 skip file is-a.h
 
+# And line-map.h.
+skip file line-map.h
+
 # Likewise, skip various inline functions in rtl.h.
 skip rtx_expr_list::next
 skip rtx_expr_list::element
