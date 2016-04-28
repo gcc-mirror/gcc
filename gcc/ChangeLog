@@ -1,4 +1,10 @@
-2016-04-28  Markus Trippelsdorf  <markus@trippelsdorf.de> 
+2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (zeroing peephole2): Use general_reg_operand.
+	(or $-1,reg peephole2): Ditto.
+	(strict_low_part zeroing peephole2): Use SWI12 mode iterator.
+
+2016-04-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* doc/extend.texi (Common Function Attributes) [optimize]:
 	Discourage use of the optimize attribute.
