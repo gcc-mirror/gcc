@@ -269,11 +269,15 @@
   (and (match_code "mem")
        (match_test "compact_store_memory_operand (op, VOIDmode)")))
 
-(define_memory_constraint "Usd"
-  "@internal
-   A valid _small-data_ memory operand for ARCompact instructions"
-  (and (match_code "mem")
-       (match_test "compact_sda_memory_operand (op, VOIDmode)")))
+; Don't use define_memory_constraint here as the relocation patching
+; for small data symbols only works within a ld/st instruction and
+; define_memory_constraint may result in the address being calculated
+; into a register first.
+(define_constraint "Usd"
+   "@internal
+    A valid _small-data_ memory operand for ARCompact instructions"
+   (and (match_code "mem")
+        (match_test "compact_sda_memory_operand (op, VOIDmode)")))
 
 (define_memory_constraint "Usc"
   "@internal
@@ -283,7 +287,7 @@
 ;; ??? the assembler rejects stores of immediates to small data.
        (match_test "!compact_sda_memory_operand (op, VOIDmode)")))
 
-(define_memory_constraint "Us<"
+(define_constraint "Us<"
   "@internal
    Stack pre-decrement"
   (and (match_code "mem")
@@ -291,7 +295,7 @@
        (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
        (match_test "REGNO (XEXP (XEXP (op, 0), 0)) == SP_REG")))
 
-(define_memory_constraint "Us>"
+(define_constraint "Us>"
   "@internal
    Stack post-increment"
   (and (match_code "mem")
