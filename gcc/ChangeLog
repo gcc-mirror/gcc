@@ -1,3 +1,37 @@
+2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cfganal.c (bitmap_intersection_of_succs): Delete assert checking
+	dst->popcount.
+	(bitmap_intersection_of_preds): Ditto.
+	(bitmap_union_of_succs): Ditto.
+	(bitmap_union_of_preds): Ditto.
+	* sbitmap.c (do_popcount): Delete.
+	(BITMAP_DEBUGGING): Delete.
+	(sbitmap_verify_popcount): Delete.
+	(sbitmap_alloc): Don't initialize the popcount field.
+	(sbitmap_alloc_with_popcount): Delete.
+	(sbitmap_resize): Don't resize the popcount array.
+	(sbitmap_vector_alloc): Don't initialize the popcount field.
+	(bitmap_copy): Don't copy the popcount array.
+	(bitmap_clear): Don't clear the popcount array.
+	(bitmap_clear): Delete the popcount array handling.
+	(bitmap_ior_and_compl): Delete the popcount assert.
+	(bitmap_not): Ditto.
+	(bitmap_and_compl): Ditto.
+	(bitmap_and): Delete the popcount array handling.
+	(bitmap_xor): Ditto.
+	(bitmap_ior): Ditto.
+	(bitmap_or_and): Delete the popcount assert.
+	(bitmap_and_or): Ditto.
+	(popcount_table): Delete.
+	(sbitmap_elt_popcount): Delete.
+	* sbitmap.h (simple_bitmap_def): Delete the popcount field.
+	(bitmap_set_bit): Delete the popcount assert.
+	(bitmap_clear_bit): Ditto.
+	(sbitmap_free): Don't free the popcount array.
+	(sbitmap_alloc_with_popcount): Delete declaration.
+	(sbitmap_popcount): Ditto.
+
 2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 

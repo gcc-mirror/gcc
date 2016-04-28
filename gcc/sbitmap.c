@@ -22,25 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "sbitmap.h"
 
-/* This suffices for roughly 99% of the hosts we run on, and the rest
-   don't have 256 bit integers.  */
-#if SBITMAP_ELT_BITS > 255
-#error Need to increase size of datatype used for popcount
-#endif
-
-#if GCC_VERSION >= 3400
-#  if SBITMAP_ELT_BITS == HOST_BITS_PER_LONG
-#    define do_popcount(x) __builtin_popcountl (x)
-#  elif SBITMAP_ELT_BITS == HOST_BITS_PER_LONGLONG
-#    define do_popcount(x) __builtin_popcountll (x)
-#  else
-#    error "internal error: sbitmap.h and hwint.h are inconsistent"
-#  endif
-#else
-static unsigned long sbitmap_elt_popcount (SBITMAP_ELT_TYPE);
-#  define do_popcount(x) sbitmap_elt_popcount (x)
-#endif
-
 typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
 
@@ -51,29 +32,6 @@ static inline unsigned int sbitmap_size_bytes (const_sbitmap map)
    return map->size * sizeof (SBITMAP_ELT_TYPE);
 }
 
-/* This macro controls debugging that is as expensive as the
-   operations it verifies.  */
-
-/* #define BITMAP_DEBUGGING  */
-#ifdef BITMAP_DEBUGGING
-
-/* Verify the population count of sbitmap A matches the cached value,
-   if there is a cached value. */
-
-static void
-sbitmap_verify_popcount (const_sbitmap a)
-{
-  unsigned ix;
-  unsigned int lastword;
-
-  if (!a->popcount)
-    return;
-
-  lastword = a->size;
-  for (ix = 0; ix < lastword; ix++)
-    gcc_assert (a->popcount[ix] == do_popcount (a->elms[ix]));
-}
-#endif
 
 /* Bitmap manipulation routines.  */
 
@@ -92,17 +50,6 @@ sbitmap_alloc (unsigned int n_elms)
   bmap = (sbitmap) xmalloc (amt);
   bmap->n_bits = n_elms;
   bmap->size = size;
-  bmap->popcount = NULL;
-  return bmap;
-}
-
-/* Allocate a simple bitmap of N_ELMS bits, and a popcount array.  */
-
-sbitmap
-sbitmap_alloc_with_popcount (unsigned int n_elms)
-{
-  sbitmap const bmap = sbitmap_alloc (n_elms);
-  bmap->popcount = XNEWVEC (unsigned char, bmap->size);
   return bmap;
 }
 
@@ -123,8 +70,6 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
       amt = (sizeof (struct simple_bitmap_def)
 	    + bytes - sizeof (SBITMAP_ELT_TYPE));
       bmap = (sbitmap) xrealloc (bmap, amt);
-      if (bmap->popcount)
-	bmap->popcount = XRESIZEVEC (unsigned char, bmap->popcount, size);
     }
 
   if (n_elms > bmap->n_bits)
@@ -147,27 +92,15 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
 	      &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
 	}
       else
-	{
-	  memset (bmap->elms + bmap->size, 0,
-		  bytes - sbitmap_size_bytes (bmap));
-	  if (bmap->popcount)
-	    memset (bmap->popcount + bmap->size, 0,
-		    (size * sizeof (unsigned char))
-		    - (bmap->size * sizeof (unsigned char)));
-
-	}
+	memset (bmap->elms + bmap->size, 0, bytes - sbitmap_size_bytes (bmap));
     }
   else if (n_elms < bmap->n_bits)
     {
       /* Clear the surplus bits in the last word.  */
       last_bit = n_elms % SBITMAP_ELT_BITS;
       if (last_bit)
-	{
-	  bmap->elms[size - 1]
-	    &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
-	  if (bmap->popcount)
-	    bmap->popcount[size - 1] = do_popcount (bmap->elms[size - 1]);
-	}
+	bmap->elms[size - 1]
+	  &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
     }
 
   bmap->n_bits = n_elms;
@@ -236,7 +169,6 @@ sbitmap_vector_alloc (unsigned int n_vecs, unsigned int n_elms)
       bitmap_vector[i] = b;
       b->n_bits = n_elms;
       b->size = size;
-      b->popcount = NULL;
     }
 
   return bitmap_vector;
@@ -248,8 +180,6 @@ void
 bitmap_copy (sbitmap dst, const_sbitmap src)
 {
   memcpy (dst->elms, src->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
-  if (dst->popcount)
-    memcpy (dst->popcount, src->popcount, sizeof (unsigned char) * dst->size);
 }
 
 /* Determine if a == b.  */
@@ -279,8 +209,6 @@ void
 bitmap_clear (sbitmap bmap)
 {
   memset (bmap->elms, 0, sbitmap_size_bytes (bmap));
-  if (bmap->popcount)
-    memset (bmap->popcount, 0, bmap->size * sizeof (unsigned char));
 }
 
 /* Set all elements in a bitmap to ones.  */
@@ -291,18 +219,11 @@ bitmap_ones (sbitmap bmap)
   unsigned int last_bit;
 
   memset (bmap->elms, -1, sbitmap_size_bytes (bmap));
-  if (bmap->popcount)
-    memset (bmap->popcount, -1, bmap->size * sizeof (unsigned char));
 
   last_bit = bmap->n_bits % SBITMAP_ELT_BITS;
   if (last_bit)
-    {
-      bmap->elms[bmap->size - 1]
-	= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
-      if (bmap->popcount)
-	bmap->popcount[bmap->size - 1]
-	  = do_popcount (bmap->elms[bmap->size - 1]);
-    }
+    bmap->elms[bmap->size - 1]
+      = (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
 }
 
 /* Zero a vector of N_VECS bitmaps.  */
@@ -341,8 +262,6 @@ bitmap_ior_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitm
   const_sbitmap_ptr cp = c->elms;
   SBITMAP_ELT_TYPE changed = 0;
 
-  gcc_assert (!dst->popcount);
-
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & ~*cp++);
@@ -362,8 +281,6 @@ bitmap_not (sbitmap dst, const_sbitmap src)
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr srcp = src->elms;
   unsigned int last_bit;
-
-  gcc_assert (!dst->popcount);
 
   for (i = 0; i < n; i++)
     *dstp++ = ~*srcp++;
@@ -386,8 +303,6 @@ bitmap_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b)
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
   const_sbitmap_ptr bp = b->elms;
-
-  gcc_assert (!dst->popcount);
 
   /* A should be at least as large as DEST, to have a defined source.  */
   gcc_assert (a->size >= dst_size);
@@ -432,27 +347,15 @@ bitmap_and (sbitmap dst, const_sbitmap a, const_sbitmap b)
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
   const_sbitmap_ptr bp = b->elms;
-  bool has_popcount = dst->popcount != NULL;
-  unsigned char *popcountp = dst->popcount;
   SBITMAP_ELT_TYPE changed = 0;
 
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ & *bp++;
       SBITMAP_ELT_TYPE wordchanged = *dstp ^ tmp;
-      if (has_popcount)
-	{
-	  if (wordchanged)
-	    *popcountp = do_popcount (tmp);
-	  popcountp++;
-	}
       *dstp++ = tmp;
       changed |= wordchanged;
     }
-#ifdef BITMAP_DEBUGGING
-  if (has_popcount)
-    sbitmap_verify_popcount (dst);
-#endif
   return changed != 0;
 }
 
@@ -466,27 +369,15 @@ bitmap_xor (sbitmap dst, const_sbitmap a, const_sbitmap b)
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
   const_sbitmap_ptr bp = b->elms;
-  bool has_popcount = dst->popcount != NULL;
-  unsigned char *popcountp = dst->popcount;
   SBITMAP_ELT_TYPE changed = 0;
 
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ ^ *bp++;
       SBITMAP_ELT_TYPE wordchanged = *dstp ^ tmp;
-      if (has_popcount)
-	{
-	  if (wordchanged)
-	    *popcountp = do_popcount (tmp);
-	  popcountp++;
-	}
       *dstp++ = tmp;
       changed |= wordchanged;
     }
-#ifdef BITMAP_DEBUGGING
-  if (has_popcount)
-    sbitmap_verify_popcount (dst);
-#endif
   return changed != 0;
 }
 
@@ -500,27 +391,15 @@ bitmap_ior (sbitmap dst, const_sbitmap a, const_sbitmap b)
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
   const_sbitmap_ptr bp = b->elms;
-  bool has_popcount = dst->popcount != NULL;
-  unsigned char *popcountp = dst->popcount;
   SBITMAP_ELT_TYPE changed = 0;
 
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ | *bp++;
       SBITMAP_ELT_TYPE wordchanged = *dstp ^ tmp;
-      if (has_popcount)
-	{
-	  if (wordchanged)
-	    *popcountp = do_popcount (tmp);
-	  popcountp++;
-	}
       *dstp++ = tmp;
       changed |= wordchanged;
     }
-#ifdef BITMAP_DEBUGGING
-  if (has_popcount)
-    sbitmap_verify_popcount (dst);
-#endif
   return changed != 0;
 }
 
@@ -552,8 +431,6 @@ bitmap_or_and (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
   const_sbitmap_ptr cp = c->elms;
   SBITMAP_ELT_TYPE changed = 0;
 
-  gcc_assert (!dst->popcount);
-
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & *cp++);
@@ -576,8 +453,6 @@ bitmap_and_or (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
   const_sbitmap_ptr bp = b->elms;
   const_sbitmap_ptr cp = c->elms;
   SBITMAP_ELT_TYPE changed = 0;
-
-  gcc_assert (!dst->popcount);
 
   for (i = 0; i < n; i++)
     {
@@ -729,35 +604,3 @@ dump_bitmap_vector (FILE *file, const char *title, const char *subtitle,
 
   fprintf (file, "\n");
 }
-
-#if GCC_VERSION < 3400
-/* Table of number of set bits in a character, indexed by value of char.  */
-static const unsigned char popcount_table[] =
-{
-    0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
-    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
-    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
-    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
-    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
-    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
-    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
-    3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8,
-};
-
-/* Count the bits in an SBITMAP element A.  */
-
-static unsigned long
-sbitmap_elt_popcount (SBITMAP_ELT_TYPE a)
-{
-  unsigned long ret = 0;
-  unsigned i;
-
-  if (a == 0)
-    return 0;
-
-  /* Just do this the table way for now  */
-  for (i = 0; i < SBITMAP_ELT_BITS; i += 8)
-    ret += popcount_table[(a >> i) & 0xff];
-  return ret;
-}
-#endif
