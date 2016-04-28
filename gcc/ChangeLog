@@ -1,3 +1,7 @@
+2016-04-28  Segher Boesssenkool  <segher@kernel.crashing.org>
+
+	* tracer.c (bb_seen): Make static.
+
 2016-04-28  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* common/config/arc/arc-common.c (arc_handle_option): Add NPS400
