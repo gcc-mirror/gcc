@@ -1,3 +1,10 @@
+2016-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx-vround-1.c: New test.
+	* gcc.target/i386/avx-vround-2.c: New test.
+	* gcc.target/i386/avx512vl-vround-1.c: New test.
+	* gcc.target/i386/avx512vl-vround-2.c: New test.
+
 2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/70595
