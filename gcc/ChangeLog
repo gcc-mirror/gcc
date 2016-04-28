@@ -1,3 +1,13 @@
+2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*fop_<mode>_1_mixed): Do not check for
+	mult_operator when calculating "type" attribute.
+	(*fop_<mode>_1_i387): Ditto.
+	(*fop_xf_1_i387): Ditto.
+	(x87 stack loads peephole2): Add "reg = op (mem, reg)" peephole2.
+	Use std::swap to swap operands.  Use RTL expressions to generate
+	converted pattern.
+
 2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
