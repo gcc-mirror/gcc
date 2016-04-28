@@ -1,3 +1,23 @@
+2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_vector_mode_supported_p): Add support for
+	the new ARC HS SIMD instructions.
+	(arc_preferred_simd_mode): New function.
+	(arc_autovectorize_vector_sizes): Likewise.
+	(TARGET_VECTORIZE_PREFERRED_SIMD_MODE)
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Define.
+	(arc_init_reg_tables): Accept new ARC HS SIMD modes.
+	(arc_init_builtins): Add new SIMD builtin types.
+	(arc_split_move): Handle 64 bit vector moves.
+	* config/arc/arc.h (TARGET_PLUS_DMPY, TARGET_PLUS_MACD)
+	(TARGET_PLUS_QMACW): Define.
+	* config/arc/builtins.def (QMACH, QMACHU, QMPYH, QMPYHU, DMACH)
+	(DMACHU, DMPYH, DMPYHU, DMACWH, DMACWHU, VMAC2H, VMAC2HU, VMPY2H)
+	(VMPY2HU, VADDSUB2H, VSUBADD2H, VADDSUB, VSUBADD, VADDSUB4H)
+	(VSUBADD4H): New builtins.
+	* config/arc/simdext.md: Add new ARC HS SIMD instructions.
+	* testsuite/gcc.target/arc/builtin_simdarc.c: New file.
+
 2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
 	    Matthias Klose  <doko@debian.org>
 

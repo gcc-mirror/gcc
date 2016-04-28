@@ -247,16 +247,47 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 static bool
 arc_vector_mode_supported_p (machine_mode mode)
 {
-  if (!TARGET_SIMD_SET)
-    return false;
+  switch (mode)
+    {
+    case V2HImode:
+      return TARGET_PLUS_DMPY;
+    case V4HImode:
+    case V2SImode:
+      return TARGET_PLUS_QMACW;
+    case V4SImode:
+    case V8HImode:
+      return TARGET_SIMD_SET;
 
-  if ((mode == V4SImode)
-      || (mode == V8HImode))
-    return true;
-
-  return false;
+    default:
+      return false;
+    }
 }
 
+/* Implements target hook TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
+
+static enum machine_mode
+arc_preferred_simd_mode (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case HImode:
+      return TARGET_PLUS_QMACW ? V4HImode : V2HImode;
+    case SImode:
+      return V2SImode;
+
+    default:
+      return word_mode;
+    }
+}
+
+/* Implements target hook
+   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
+
+static unsigned int
+arc_autovectorize_vector_sizes (void)
+{
+  return TARGET_PLUS_QMACW ? (8 | 4) : 0;
+}
 
 /* TARGET_PRESERVE_RELOAD_P is still awaiting patch re-evaluation / review.  */
 static bool arc_preserve_reload_p (rtx in) ATTRIBUTE_UNUSED;
@@ -344,6 +375,12 @@ static void arc_finalize_pic (void);
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arc_vector_mode_supported_p
+
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arc_preferred_simd_mode
+
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES arc_autovectorize_vector_sizes
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P arc_can_use_doloop_p
@@ -1214,7 +1251,12 @@ arc_init_reg_tables (void)
 	    arc_mode_class[i] = 0;
 	  break;
 	case MODE_VECTOR_INT:
-	  arc_mode_class [i] = (1<< (int) V_MODE);
+	  if (GET_MODE_SIZE (m) == 4)
+	    arc_mode_class[i] = (1 << (int) S_MODE);
+	  else if (GET_MODE_SIZE (m) == 8)
+	    arc_mode_class[i] = (1 << (int) D_MODE);
+	  else
+	    arc_mode_class[i] = (1 << (int) V_MODE);
 	  break;
 	case MODE_CC:
 	default:
@@ -5277,6 +5319,15 @@ arc_builtin_decl (unsigned id, bool initialize_p ATTRIBUTE_UNUSED)
 static void
 arc_init_builtins (void)
 {
+  tree V4HI_type_node;
+  tree V2SI_type_node;
+  tree V2HI_type_node;
+
+  /* Vector types based on HS SIMD elements.  */
+  V4HI_type_node = build_vector_type_for_mode (intHI_type_node, V4HImode);
+  V2SI_type_node = build_vector_type_for_mode (intSI_type_node, V2SImode);
+  V2HI_type_node = build_vector_type_for_mode (intHI_type_node, V2HImode);
+
   tree pcvoid_type_node
     = build_pointer_type (build_qualified_type (void_type_node,
 						TYPE_QUAL_CONST));
@@ -5341,6 +5392,28 @@ arc_init_builtins (void)
   tree v8hi_ftype_v8hi
     = build_function_type_list (V8HI_type_node, V8HI_type_node,
 				NULL_TREE);
+  /* ARCv2 SIMD types.  */
+  tree long_ftype_v4hi_v4hi
+    = build_function_type_list (long_long_integer_type_node,
+				V4HI_type_node,	V4HI_type_node, NULL_TREE);
+  tree int_ftype_v2hi_v2hi
+    = build_function_type_list (integer_type_node,
+				V2HI_type_node, V2HI_type_node, NULL_TREE);
+  tree v2si_ftype_v2hi_v2hi
+    = build_function_type_list (V2SI_type_node,
+				V2HI_type_node, V2HI_type_node, NULL_TREE);
+  tree v2hi_ftype_v2hi_v2hi
+    = build_function_type_list (V2HI_type_node,
+				V2HI_type_node, V2HI_type_node, NULL_TREE);
+  tree v2si_ftype_v2si_v2si
+    = build_function_type_list (V2SI_type_node,
+				V2SI_type_node, V2SI_type_node, NULL_TREE);
+  tree v4hi_ftype_v4hi_v4hi
+    = build_function_type_list (V4HI_type_node,
+				V4HI_type_node, V4HI_type_node, NULL_TREE);
+  tree long_ftype_v2si_v2hi
+    = build_function_type_list (long_long_integer_type_node,
+				V2SI_type_node, V2HI_type_node, NULL_TREE);
 
   /* Add the builtins.  */
 #define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK)			\
@@ -8703,6 +8776,31 @@ arc_split_move (rtx *operands)
 	      && even_register_operand (operands[0], mode))))
     {
       emit_move_insn (operands[0], operands[1]);
+      return;
+    }
+
+  if (TARGET_PLUS_QMACW
+      && GET_CODE (operands[1]) == CONST_VECTOR)
+    {
+      HOST_WIDE_INT intval0, intval1;
+      if (GET_MODE (operands[1]) == V2SImode)
+	{
+	  intval0 = INTVAL (XVECEXP (operands[1], 0, 0));
+	  intval1 = INTVAL (XVECEXP (operands[1], 0, 1));
+	}
+      else
+	{
+	  intval1  = INTVAL (XVECEXP (operands[1], 0, 3)) << 16;
+	  intval1 |= INTVAL (XVECEXP (operands[1], 0, 2)) & 0xFFFF;
+	  intval0  = INTVAL (XVECEXP (operands[1], 0, 1)) << 16;
+	  intval0 |= INTVAL (XVECEXP (operands[1], 0, 0)) & 0xFFFF;
+	}
+      xop[0] = gen_rtx_REG (SImode, REGNO (operands[0]));
+      xop[3] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
+      xop[2] = GEN_INT (trunc_int_for_mode (intval0, SImode));
+      xop[1] = GEN_INT (trunc_int_for_mode (intval1, SImode));
+      emit_move_insn (xop[0], xop[2]);
+      emit_move_insn (xop[3], xop[1]);
       return;
     }
 
