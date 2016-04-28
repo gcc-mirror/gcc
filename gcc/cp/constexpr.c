@@ -1044,21 +1044,7 @@ save_fundef_copy (tree fun, tree copy)
 static tree
 get_function_named_in_call (tree t)
 {
-  tree fun = NULL;
-  switch (TREE_CODE (t))
-    {
-    case CALL_EXPR:
-      fun = CALL_EXPR_FN (t);
-      break;
-
-    case AGGR_INIT_EXPR:
-      fun = AGGR_INIT_EXPR_FN (t);
-      break;
-
-    default:
-      gcc_unreachable();
-      break;
-    }
+  tree fun = cp_get_callee (t);
   if (fun && TREE_CODE (fun) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (fun, 0)) == FUNCTION_DECL)
     fun = TREE_OPERAND (fun, 0);
