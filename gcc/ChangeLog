@@ -1,3 +1,26 @@
+2016-04-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* common/config/sh/sh-common.c: Remove SH5 support.
+	* config/sh/constraints.md: Likewise.
+	* config/sh/config/sh/elf.h: Likewise.
+	* config/sh/linux.h: Likewise.
+	* config/sh/netbsd-elf.h: Likewise.
+	* config/sh/predicates.md: Likewise.
+	* config/sh/sh-c.c: Likewise.
+	* config/sh/sh-protos.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/sh.opt: Likewise.
+	* config/sh/sync.md: Likewise.
+	* config/sh/sh64.h: Delete.
+	* config/sh/shmedia.h: Likewise.
+	* config/sh/shmedia.md: Likewise.
+	* config/sh/sshmedia.h: Likewise.
+	* config/sh/t-netbsd-sh5-64: Likewise.
+	* config/sh/t-sh64: Likewise.
+	* config/sh/ushmedia.h: Likewise.
+
 2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (sign_extend to memory peephole2s): Use
