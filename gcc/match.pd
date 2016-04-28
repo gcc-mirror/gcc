@@ -366,6 +366,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (with { HOST_WIDE_INT n; }
     (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
      (pows @0 @1)))))
+ /* Likewise for powi.  */
+ (for pows (POWI)
+  (simplify
+   (pows (op @0) INTEGER_CST@1)
+   (if (wi::bit_and (@1, 1) == 0)
+    (pows @0 @1))))
  /* Strip negate and abs from both operands of hypot.  */
  (for hypots (HYPOT)
   (simplify
@@ -396,10 +402,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for pows (POW)
      copysigns (COPYSIGN)
  (simplify
-  (pows (copysigns @0 @1) REAL_CST@1)
+  (pows (copysigns @0 @2) REAL_CST@1)
   (with { HOST_WIDE_INT n; }
    (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
     (pows @0 @1)))))
+/* Likewise for powi.  */
+(for pows (POWI)
+     copysigns (COPYSIGN)
+ (simplify
+  (pows (copysigns @0 @2) INTEGER_CST@1)
+  (if (wi::bit_and (@1, 1) == 0)
+   (pows @0 @1))))
 
 (for hypots (HYPOT)
      copysigns (COPYSIGN)
@@ -2781,7 +2794,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
  /* Simplify x * pow(x,c) -> pow(x,c+1). */
  (simplify
-  (mult @0 (POW:s @0 REAL_CST@1))
+  (mult:c @0 (POW:s @0 REAL_CST@1))
   (if (!TREE_OVERFLOW (@1))
    (POW @0 (plus @1 { build_one_cst (type); }))))
 
@@ -2818,6 +2831,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (mult (POW:s @0 @1) (POW:s @2 @1))
    (POW (mult @0 @2) @1))
+
+ /* Simplify powi(x,y) * powi(z,y) -> powi(x*z,y). */
+ (simplify
+  (mult (POWI:s @0 @1) (POWI:s @2 @1))
+   (POWI (mult @0 @2) @1))
 
  /* Simplify pow(x,c) / x -> pow(x,c-1). */
  (simplify
