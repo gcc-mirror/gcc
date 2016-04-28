@@ -138,6 +138,8 @@ along with GCC; see the file COPYING3.  If not see
 %{mdsp-packa:-D__Xdsp_packa} %{mcrc:-D__Xcrc} %{mdvbf:-D__Xdvbf} \
 %{mtelephony:-D__Xtelephony} %{mxy:-D__Xxy} %{mmul64: -D__Xmult32} \
 %{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc} \
+%{mcpu=NPS400:-D__NPS400__} \
+%{mcpu=nps400:-D__NPS400__} \
 "
 
 #define CC1_SPEC "\
@@ -305,7 +307,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ARC600 (arc_cpu == PROCESSOR_ARC600)
 #define TARGET_ARC601 (arc_cpu == PROCESSOR_ARC601)
-#define TARGET_ARC700 (arc_cpu == PROCESSOR_ARC700)
+#define TARGET_ARC700 (arc_cpu == PROCESSOR_ARC700	\
+		       || arc_cpu == PROCESSOR_NPS400)
 #define TARGET_EM     (arc_cpu == PROCESSOR_ARCEM)
 #define TARGET_HS     (arc_cpu == PROCESSOR_ARCHS)
 #define TARGET_V2							\

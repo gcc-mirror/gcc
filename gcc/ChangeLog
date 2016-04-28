@@ -1,3 +1,13 @@
+2016-04-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* common/config/arc/arc-common.c (arc_handle_option): Add NPS400
+	support, setup defaults.
+	* config/arc/arc-opts.h (enum processor_type): Add NPS400.
+	* config/arc/arc.c (arc_init): Add NPS400 support.
+	* config/arc/arc.h (CPP_SPEC): Add NPS400 defines.
+	(TARGET_ARC700): NPS400 is also an ARC700.
+	* config/arc/arc.opt: Add NPS400 options to -mcpu=.
+
 2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/70668

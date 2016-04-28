@@ -83,6 +83,10 @@ arc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
       switch (value)
 	{
+	case PROCESSOR_NPS400:
+	  if (! (opts_set->x_TARGET_CASE_VECTOR_PC_RELATIVE) )
+	    opts->x_TARGET_CASE_VECTOR_PC_RELATIVE = 1;
+	  /* Fall through */
 	case PROCESSOR_ARC600:
 	case PROCESSOR_ARC700:
 	  if (! (opts_set->x_target_flags & MASK_BARREL_SHIFTER) )
