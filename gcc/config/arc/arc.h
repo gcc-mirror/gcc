@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_FLAG_SHORT_CALL	(SYMBOL_FLAG_MACH_DEP << 0)
 #define SYMBOL_FLAG_MEDIUM_CALL	(SYMBOL_FLAG_MACH_DEP << 1)
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 2)
+#define SYMBOL_FLAG_CMEM	(SYMBOL_FLAG_MACH_DEP << 3)
 
 /* Check if this symbol has a long_call attribute in its declaration */
 #define SYMBOL_REF_LONG_CALL_P(X)	\
@@ -319,6 +320,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "mARC700" }
+#endif
+
+#ifndef UNALIGNED_ACCESS_DEFAULT
+#define UNALIGNED_ACCESS_DEFAULT 0
+#endif
+
+#ifndef TARGET_NPS_CMEM_DEFAULT
+#define TARGET_NPS_CMEM_DEFAULT 0
 #endif
 
 /* Target machine storage layout.  */

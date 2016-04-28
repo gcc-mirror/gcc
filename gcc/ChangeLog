@@ -1,10 +1,39 @@
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.h (SYMBOL_FLAG_CMEM): Define.
+	(TARGET_NPS_CMEM_DEFAULT): Provide default definition.
+	* config/arc/arc.c (arc_address_cost): Return 0 for cmem_address.
+	(arc_encode_section_info): Set SYMBOL_FLAG_CMEM where indicated.
+	* config/arc/arc.opt (mcmem): New option.
+	* config/arc/arc.md (*extendqihi2_i): Add r/Uex alternative,
+	supply length for r/m alternative.
+	(*extendqisi2_ac): Likewise.
+	(*extendhisi2_i): Add r/Uex alternative, supply length for r/m and
+	r/Uex alternative.
+	(movqi_insn): Add r/Ucm and Ucm/?Rac alternatives.
+	(movhi_insn): Likewise.
+	(movsi_insn): Add r/Ucm,Ucm/w alternatives.
+	(*zero_extendqihi2_i): Add r/Ucm alternative.
+	(*zero_extendqisi2_ac): Likewise.
+	(*zero_extendhisi2_i): Likewise.
+	* config/arc/constraints.md (Uex): New memory constraint.
+	(Ucm): New define_constraint.
+	* config/arc/predicates.md (long_immediate_loadstore_operand):
+	Return 0 for MEM with cmem_address address.
+	(cmem_address_0): New predicates.
+	(cmem_address_1): Likewise.
+	(cmem_address_2): Likewise.
+	(cmem_address): Likewise.
+
 2016-04-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (machine_function): Rename
 	insn_chain_scanned_p to spe_insn_chain_scanned_p.
 	(rs6000_stack_info): Adjust.
 
-2016-04-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/constraints.md (Usd): Convert to define_constraint.
 	(Us<): Likewise.
