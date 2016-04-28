@@ -23057,52 +23057,53 @@ compute_vrsave_mask (void)
    routines.  */
 
 static void
-compute_save_world_info (rs6000_stack_t *info_ptr)
+compute_save_world_info (rs6000_stack_t *info)
 {
-  info_ptr->world_save_p = 1;
-  info_ptr->world_save_p
-    = (WORLD_SAVE_P (info_ptr)
+  info->world_save_p = 1;
+  info->world_save_p
+    = (WORLD_SAVE_P (info)
        && DEFAULT_ABI == ABI_DARWIN
        && !cfun->has_nonlocal_label
-       && info_ptr->first_fp_reg_save == FIRST_SAVED_FP_REGNO
-       && info_ptr->first_gp_reg_save == FIRST_SAVED_GP_REGNO
-       && info_ptr->first_altivec_reg_save == FIRST_SAVED_ALTIVEC_REGNO
-       && info_ptr->cr_save_p);
+       && info->first_fp_reg_save == FIRST_SAVED_FP_REGNO
+       && info->first_gp_reg_save == FIRST_SAVED_GP_REGNO
+       && info->first_altivec_reg_save == FIRST_SAVED_ALTIVEC_REGNO
+       && info->cr_save_p);
 
   /* This will not work in conjunction with sibcalls.  Make sure there
      are none.  (This check is expensive, but seldom executed.) */
-  if (WORLD_SAVE_P (info_ptr))
+  if (WORLD_SAVE_P (info))
     {
       rtx_insn *insn;
       for (insn = get_last_insn_anywhere (); insn; insn = PREV_INSN (insn))
 	if (CALL_P (insn) && SIBLING_CALL_P (insn))
 	  {
-	    info_ptr->world_save_p = 0;
+	    info->world_save_p = 0;
 	    break;
 	  }
     }
 
-  if (WORLD_SAVE_P (info_ptr))
+  if (WORLD_SAVE_P (info))
     {
       /* Even if we're not touching VRsave, make sure there's room on the
 	 stack for it, if it looks like we're calling SAVE_WORLD, which
 	 will attempt to save it. */
-      info_ptr->vrsave_size  = 4;
+      info->vrsave_size  = 4;
 
       /* If we are going to save the world, we need to save the link register too.  */
-      info_ptr->lr_save_p = 1;
+      info->lr_save_p = 1;
 
       /* "Save" the VRsave register too if we're saving the world.  */
-      if (info_ptr->vrsave_mask == 0)
-	info_ptr->vrsave_mask = compute_vrsave_mask ();
+      if (info->vrsave_mask == 0)
+	info->vrsave_mask = compute_vrsave_mask ();
 
       /* Because the Darwin register save/restore routines only handle
 	 F14 .. F31 and V20 .. V31 as per the ABI, perform a consistency
 	 check.  */
-      gcc_assert (info_ptr->first_fp_reg_save >= FIRST_SAVED_FP_REGNO
-		  && (info_ptr->first_altivec_reg_save
+      gcc_assert (info->first_fp_reg_save >= FIRST_SAVED_FP_REGNO
+		  && (info->first_altivec_reg_save
 		      >= FIRST_SAVED_ALTIVEC_REGNO));
     }
+
   return;
 }
 
@@ -23450,7 +23451,7 @@ rs6000_stack_info (void)
   /* We should never be called for thunks, we are not set up for that.  */
   gcc_assert (!cfun->is_thunk);
 
-  rs6000_stack_t *info_ptr = &stack_info;
+  rs6000_stack_t *info = &stack_info;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int ehrd_size;
   int ehcr_size;
@@ -23459,11 +23460,11 @@ rs6000_stack_info (void)
   HOST_WIDE_INT non_fixed_size;
   bool using_static_chain_p;
 
-  if (reload_completed && info_ptr->reload_completed)
-    return info_ptr;
+  if (reload_completed && info->reload_completed)
+    return info;
 
-  memset (info_ptr, 0, sizeof (*info_ptr));
-  info_ptr->reload_completed = reload_completed;
+  memset (info, 0, sizeof (*info));
+  info->reload_completed = reload_completed;
 
   if (TARGET_SPE)
     {
@@ -23471,14 +23472,14 @@ rs6000_stack_info (void)
       if (cfun->machine->spe_insn_chain_scanned_p == 0)
 	cfun->machine->spe_insn_chain_scanned_p
 	  = spe_func_has_64bit_regs_p () + 1;
-      info_ptr->spe_64bit_regs_used = cfun->machine->spe_insn_chain_scanned_p - 1;
+      info->spe_64bit_regs_used = cfun->machine->spe_insn_chain_scanned_p - 1;
     }
 
   /* Select which calling sequence.  */
-  info_ptr->abi = DEFAULT_ABI;
+  info->abi = DEFAULT_ABI;
 
   /* Calculate which registers need to be saved & save area size.  */
-  info_ptr->first_gp_reg_save = first_reg_to_save ();
+  info->first_gp_reg_save = first_reg_to_save ();
   /* Assume that we will have to save RS6000_PIC_OFFSET_TABLE_REGNUM,
      even if it currently looks like we won't.  Reload may need it to
      get at a constant; if so, it will have already created a constant
@@ -23487,12 +23488,12 @@ rs6000_stack_info (void)
        || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
        || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
       && crtl->uses_const_pool
-      && info_ptr->first_gp_reg_save > RS6000_PIC_OFFSET_TABLE_REGNUM)
+      && info->first_gp_reg_save > RS6000_PIC_OFFSET_TABLE_REGNUM)
     first_gp = RS6000_PIC_OFFSET_TABLE_REGNUM;
   else
-    first_gp = info_ptr->first_gp_reg_save;
+    first_gp = info->first_gp_reg_save;
 
-  info_ptr->gp_size = reg_size * (32 - first_gp);
+  info->gp_size = reg_size * (32 - first_gp);
 
   /* For the SPE, we have an additional upper 32-bits on each GPR.
      Ideally we should save the entire 64-bits only when the upper
@@ -23506,28 +23507,27 @@ rs6000_stack_info (void)
 
      So... since when we save all GPRs (except the SP) in 64-bits, the
      traditional GP save area will be empty.  */
-  if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
-    info_ptr->gp_size = 0;
+  if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
+    info->gp_size = 0;
 
-  info_ptr->first_fp_reg_save = first_fp_reg_to_save ();
-  info_ptr->fp_size = 8 * (64 - info_ptr->first_fp_reg_save);
+  info->first_fp_reg_save = first_fp_reg_to_save ();
+  info->fp_size = 8 * (64 - info->first_fp_reg_save);
 
-  info_ptr->first_altivec_reg_save = first_altivec_reg_to_save ();
-  info_ptr->altivec_size = 16 * (LAST_ALTIVEC_REGNO + 1
-				 - info_ptr->first_altivec_reg_save);
+  info->first_altivec_reg_save = first_altivec_reg_to_save ();
+  info->altivec_size = 16 * (LAST_ALTIVEC_REGNO + 1
+				 - info->first_altivec_reg_save);
 
   /* Does this function call anything?  */
-  info_ptr->calls_p = (! crtl->is_leaf 
-		       || cfun->machine->ra_needs_full_frame);
+  info->calls_p = (!crtl->is_leaf || cfun->machine->ra_needs_full_frame);
 
   /* Determine if we need to save the condition code registers.  */
   if (df_regs_ever_live_p (CR2_REGNO)
       || df_regs_ever_live_p (CR3_REGNO)
       || df_regs_ever_live_p (CR4_REGNO))
     {
-      info_ptr->cr_save_p = 1;
+      info->cr_save_p = 1;
       if (DEFAULT_ABI == ABI_V4)
-	info_ptr->cr_size = reg_size;
+	info->cr_size = reg_size;
     }
 
   /* If the current function calls __builtin_eh_return, then we need
@@ -23540,8 +23540,7 @@ rs6000_stack_info (void)
 	continue;
 
       /* SPE saves EH registers in 64-bits.  */
-      ehrd_size = i * (TARGET_SPE_ABI
-		       && info_ptr->spe_64bit_regs_used != 0
+      ehrd_size = i * (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0
 		       ? UNITS_PER_SPE_WORD : UNITS_PER_WORD);
     }
   else
@@ -23554,41 +23553,33 @@ rs6000_stack_info (void)
       /* This hard-codes that we have three call-saved CR fields.  */
       ehcr_size = 3 * reg_size;
       /* We do *not* use the regular CR save mechanism.  */
-      info_ptr->cr_save_p = 0;
+      info->cr_save_p = 0;
     }
   else
     ehcr_size = 0;
 
   /* Determine various sizes.  */
-  info_ptr->reg_size     = reg_size;
-  info_ptr->fixed_size   = RS6000_SAVE_AREA;
-  info_ptr->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
-  info_ptr->parm_size    = RS6000_ALIGN (crtl->outgoing_args_size,
+  info->reg_size     = reg_size;
+  info->fixed_size   = RS6000_SAVE_AREA;
+  info->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
+  info->parm_size    = RS6000_ALIGN (crtl->outgoing_args_size,
 					 TARGET_ALTIVEC ? 16 : 8);
   if (FRAME_GROWS_DOWNWARD)
-    info_ptr->vars_size
-      += RS6000_ALIGN (info_ptr->fixed_size + info_ptr->vars_size
-		       + info_ptr->parm_size,
+    info->vars_size
+      += RS6000_ALIGN (info->fixed_size + info->vars_size + info->parm_size,
 		       ABI_STACK_BOUNDARY / BITS_PER_UNIT)
-	 - (info_ptr->fixed_size + info_ptr->vars_size
-	    + info_ptr->parm_size);
+	 - (info->fixed_size + info->vars_size + info->parm_size);
 
-  if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
-    info_ptr->spe_gp_size = 8 * (32 - first_gp);
-  else
-    info_ptr->spe_gp_size = 0;
+  if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
+    info->spe_gp_size = 8 * (32 - first_gp);
 
   if (TARGET_ALTIVEC_ABI)
-    info_ptr->vrsave_mask = compute_vrsave_mask ();
-  else
-    info_ptr->vrsave_mask = 0;
+    info->vrsave_mask = compute_vrsave_mask ();
 
-  if (TARGET_ALTIVEC_VRSAVE && info_ptr->vrsave_mask)
-    info_ptr->vrsave_size  = 4;
-  else
-    info_ptr->vrsave_size  = 0;
+  if (TARGET_ALTIVEC_VRSAVE && info->vrsave_mask)
+    info->vrsave_size = 4;
 
-  compute_save_world_info (info_ptr);
+  compute_save_world_info (info);
 
   /* Calculate the offsets.  */
   switch (DEFAULT_ABI)
@@ -23600,112 +23591,98 @@ rs6000_stack_info (void)
     case ABI_AIX:
     case ABI_ELFv2:
     case ABI_DARWIN:
-      info_ptr->fp_save_offset   = - info_ptr->fp_size;
-      info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
+      info->fp_save_offset = -info->fp_size;
+      info->gp_save_offset = info->fp_save_offset - info->gp_size;
 
       if (TARGET_ALTIVEC_ABI)
 	{
-	  info_ptr->vrsave_save_offset
-	    = info_ptr->gp_save_offset - info_ptr->vrsave_size;
+	  info->vrsave_save_offset = info->gp_save_offset - info->vrsave_size;
 
 	  /* Align stack so vector save area is on a quadword boundary.
 	     The padding goes above the vectors.  */
-	  if (info_ptr->altivec_size != 0)
-	    info_ptr->altivec_padding_size
-	      = info_ptr->vrsave_save_offset & 0xF;
-	  else
-	    info_ptr->altivec_padding_size = 0;
+	  if (info->altivec_size != 0)
+	    info->altivec_padding_size = info->vrsave_save_offset & 0xF;
 
-	  info_ptr->altivec_save_offset
-	    = info_ptr->vrsave_save_offset
-	    - info_ptr->altivec_padding_size
-	    - info_ptr->altivec_size;
-	  gcc_assert (info_ptr->altivec_size == 0
-		      || info_ptr->altivec_save_offset % 16 == 0);
+	  info->altivec_save_offset = info->vrsave_save_offset
+				      - info->altivec_padding_size
+				      - info->altivec_size;
+	  gcc_assert (info->altivec_size == 0
+		      || info->altivec_save_offset % 16 == 0);
 
 	  /* Adjust for AltiVec case.  */
-	  info_ptr->ehrd_offset = info_ptr->altivec_save_offset - ehrd_size;
+	  info->ehrd_offset = info->altivec_save_offset - ehrd_size;
 	}
       else
-	info_ptr->ehrd_offset      = info_ptr->gp_save_offset - ehrd_size;
+	info->ehrd_offset = info->gp_save_offset - ehrd_size;
 
-      info_ptr->ehcr_offset      = info_ptr->ehrd_offset - ehcr_size;
-      info_ptr->cr_save_offset   = reg_size; /* first word when 64-bit.  */
-      info_ptr->lr_save_offset   = 2*reg_size;
+      info->ehcr_offset = info->ehrd_offset - ehcr_size;
+      info->cr_save_offset = reg_size; /* first word when 64-bit.  */
+      info->lr_save_offset = 2*reg_size;
       break;
 
     case ABI_V4:
-      info_ptr->fp_save_offset   = - info_ptr->fp_size;
-      info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
-      info_ptr->cr_save_offset   = info_ptr->gp_save_offset - info_ptr->cr_size;
+      info->fp_save_offset = -info->fp_size;
+      info->gp_save_offset = info->fp_save_offset - info->gp_size;
+      info->cr_save_offset = info->gp_save_offset - info->cr_size;
 
-      if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
+      if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
 	{
 	  /* Align stack so SPE GPR save area is aligned on a
 	     double-word boundary.  */
-	  if (info_ptr->spe_gp_size != 0 && info_ptr->cr_save_offset != 0)
-	    info_ptr->spe_padding_size
-	      = 8 - (-info_ptr->cr_save_offset % 8);
+	  if (info->spe_gp_size != 0 && info->cr_save_offset != 0)
+	    info->spe_padding_size = 8 - (-info->cr_save_offset % 8);
 	  else
-	    info_ptr->spe_padding_size = 0;
+	    info->spe_padding_size = 0;
 
-	  info_ptr->spe_gp_save_offset
-	    = info_ptr->cr_save_offset
-	    - info_ptr->spe_padding_size
-	    - info_ptr->spe_gp_size;
+	  info->spe_gp_save_offset = info->cr_save_offset
+				     - info->spe_padding_size
+				     - info->spe_gp_size;
 
 	  /* Adjust for SPE case.  */
-	  info_ptr->ehrd_offset = info_ptr->spe_gp_save_offset;
+	  info->ehrd_offset = info->spe_gp_save_offset;
 	}
       else if (TARGET_ALTIVEC_ABI)
 	{
-	  info_ptr->vrsave_save_offset
-	    = info_ptr->cr_save_offset - info_ptr->vrsave_size;
+	  info->vrsave_save_offset = info->cr_save_offset - info->vrsave_size;
 
 	  /* Align stack so vector save area is on a quadword boundary.  */
-	  if (info_ptr->altivec_size != 0)
-	    info_ptr->altivec_padding_size
-	      = 16 - (-info_ptr->vrsave_save_offset % 16);
-	  else
-	    info_ptr->altivec_padding_size = 0;
+	  if (info->altivec_size != 0)
+	    info->altivec_padding_size = 16 - (-info->vrsave_save_offset % 16);
 
-	  info_ptr->altivec_save_offset
-	    = info_ptr->vrsave_save_offset
-	    - info_ptr->altivec_padding_size
-	    - info_ptr->altivec_size;
+	  info->altivec_save_offset = info->vrsave_save_offset
+				      - info->altivec_padding_size
+				      - info->altivec_size;
 
 	  /* Adjust for AltiVec case.  */
-	  info_ptr->ehrd_offset = info_ptr->altivec_save_offset;
+	  info->ehrd_offset = info->altivec_save_offset;
 	}
       else
-	info_ptr->ehrd_offset    = info_ptr->cr_save_offset;
-      info_ptr->ehrd_offset      -= ehrd_size;
-      info_ptr->lr_save_offset   = reg_size;
-      break;
+	info->ehrd_offset = info->cr_save_offset;
+
+      info->ehrd_offset -= ehrd_size;
+      info->lr_save_offset = reg_size;
     }
 
   save_align = (TARGET_ALTIVEC_ABI || DEFAULT_ABI == ABI_DARWIN) ? 16 : 8;
-  info_ptr->save_size    = RS6000_ALIGN (info_ptr->fp_size
-					 + info_ptr->gp_size
-					 + info_ptr->altivec_size
-					 + info_ptr->altivec_padding_size
-					 + info_ptr->spe_gp_size
-					 + info_ptr->spe_padding_size
-					 + ehrd_size
-					 + ehcr_size
-					 + info_ptr->cr_size
-					 + info_ptr->vrsave_size,
-					 save_align);
+  info->save_size = RS6000_ALIGN (info->fp_size
+				  + info->gp_size
+				  + info->altivec_size
+				  + info->altivec_padding_size
+				  + info->spe_gp_size
+				  + info->spe_padding_size
+				  + ehrd_size
+				  + ehcr_size
+				  + info->cr_size
+				  + info->vrsave_size,
+				  save_align);
 
-  non_fixed_size	 = (info_ptr->vars_size
-			    + info_ptr->parm_size
-			    + info_ptr->save_size);
+  non_fixed_size = info->vars_size + info->parm_size + info->save_size;
 
-  info_ptr->total_size = RS6000_ALIGN (non_fixed_size + info_ptr->fixed_size,
-				       ABI_STACK_BOUNDARY / BITS_PER_UNIT);
+  info->total_size = RS6000_ALIGN (non_fixed_size + info->fixed_size,
+				   ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
   /* Determine if we need to save the link register.  */
-  if (info_ptr->calls_p
+  if (info->calls_p
       || ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 	  && crtl->profile
 	  && !TARGET_PROFILE_KERNEL)
@@ -23714,23 +23691,22 @@ rs6000_stack_info (void)
       || (TARGET_RELOCATABLE && (get_pool_size () != 0))
 #endif
       || rs6000_ra_ever_killed ())
-    info_ptr->lr_save_p = 1;
+    info->lr_save_p = 1;
 
   using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
 			  && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
 			  && call_used_regs[STATIC_CHAIN_REGNUM]);
-  info_ptr->savres_strategy = rs6000_savres_strategy (info_ptr,
-						      using_static_chain_p);
+  info->savres_strategy = rs6000_savres_strategy (info, using_static_chain_p);
 
-  if (!(info_ptr->savres_strategy & SAVE_INLINE_GPRS)
-      || !(info_ptr->savres_strategy & SAVE_INLINE_FPRS)
-      || !(info_ptr->savres_strategy & SAVE_INLINE_VRS)
-      || !(info_ptr->savres_strategy & REST_INLINE_GPRS)
-      || !(info_ptr->savres_strategy & REST_INLINE_FPRS)
-      || !(info_ptr->savres_strategy & REST_INLINE_VRS))
-    info_ptr->lr_save_p = 1;
+  if (!(info->savres_strategy & SAVE_INLINE_GPRS)
+      || !(info->savres_strategy & SAVE_INLINE_FPRS)
+      || !(info->savres_strategy & SAVE_INLINE_VRS)
+      || !(info->savres_strategy & REST_INLINE_GPRS)
+      || !(info->savres_strategy & REST_INLINE_FPRS)
+      || !(info->savres_strategy & REST_INLINE_VRS))
+    info->lr_save_p = 1;
 
-  if (info_ptr->lr_save_p)
+  if (info->lr_save_p)
     df_set_regs_ever_live (LR_REGNO, true);
 
   /* Determine if we need to allocate any stack frame:
@@ -23745,22 +23721,22 @@ rs6000_stack_info (void)
      For V.4 we don't have the stack cushion that AIX uses, but assume
      that the debugger can handle stackless frames.  */
 
-  if (info_ptr->calls_p)
-    info_ptr->push_p = 1;
+  if (info->calls_p)
+    info->push_p = 1;
 
   else if (DEFAULT_ABI == ABI_V4)
-    info_ptr->push_p = non_fixed_size != 0;
+    info->push_p = non_fixed_size != 0;
 
   else if (frame_pointer_needed)
-    info_ptr->push_p = 1;
+    info->push_p = 1;
 
   else if (TARGET_XCOFF && write_symbols != NO_DEBUG)
-    info_ptr->push_p = 1;
+    info->push_p = 1;
 
   else
-    info_ptr->push_p = non_fixed_size > (TARGET_32BIT ? 220 : 288);
+    info->push_p = non_fixed_size > (TARGET_32BIT ? 220 : 288);
 
-  return info_ptr;
+  return info;
 }
 
 /* Return true if the current function uses any GPRs in 64-bit SIMD
