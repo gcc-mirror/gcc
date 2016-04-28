@@ -1,3 +1,12 @@
+2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
+	    Matthias Klose  <doko@debian.org>
+
+	* c-common.c (get_source_date_epoch): New function, gets the environment
+	variable SOURCE_DATE_EPOCH and parses it as long long with error 
+	handling.
+	* c-common.h (get_source_date_epoch): Prototype.
+	* c-lex.c (c_lex_with_flags): set parse_in->source_date_epoch.
+
 2015-04-27  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/69024

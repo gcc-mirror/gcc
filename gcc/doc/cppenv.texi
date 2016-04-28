@@ -79,4 +79,21 @@ main input file is omitted.
 @ifclear cppmanual
 @xref{Preprocessor Options}.
 @end ifclear
+
+@item SOURCE_DATE_EPOCH
+
+If this variable is set, its value specifies a UNIX timestamp to be
+used in replacement of the current date and time in the @code{__DATE__}
+and @code{__TIME__} macros, so that the embedded timestamps become
+reproducible.
+
+The value of @env{SOURCE_DATE_EPOCH} must be a UNIX timestamp,
+defined as the number of seconds (excluding leap seconds) since
+01 Jan 1970 00:00:00 represented in ASCII, identical to the output of
+@samp{@command{date +%s}}.
+
+The value should be a known timestamp such as the last modification
+time of the source or package and it should be set by the build
+process.
+
 @end vtable

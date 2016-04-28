@@ -784,6 +784,9 @@ extern void cpp_init_special_builtins (cpp_reader *);
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);
 
+/* Initialize the source_date_epoch value.  */
+extern void cpp_init_source_date_epoch (cpp_reader *, time_t);
+
 /* This is called after options have been parsed, and partially
    processed.  */
 extern void cpp_post_options (cpp_reader *);

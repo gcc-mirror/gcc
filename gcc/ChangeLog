@@ -1,3 +1,8 @@
+2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
+	    Matthias Klose  <doko@debian.org>
+
+	* doc/cppenv.texi: Document SOURCE_DATE_EPOCH environment variable.
+
 2016-04-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70777
