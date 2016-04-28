@@ -1,3 +1,7 @@
+2016-04-28  Matthias Klose  <doko@ubuntu.com>
+
+	* decl.c (parse_version): Freeze the minor version in the abi version.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.

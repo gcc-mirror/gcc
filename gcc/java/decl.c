@@ -561,9 +561,10 @@ parse_version (void)
   else /* C++ ABI */
     {
       /* Implicit in this computation is the idea that we won't break the
-	 old-style binary ABI in a sub-minor release (e.g., from 4.0.0 to
-	 4.0.1).  */
-      abi_version = 100000 * major + 1000 * minor;
+	 old-style binary ABI in a sub-minor release (e.g., from 5.0 to
+	 5.1).  Freeze the ABI on the gcc-5-branch with the value of the
+	 GCC 5.3 release.*/
+      abi_version = 100000 * major + 1000 * 3;
     }
   if (flag_bootstrap_classes)
     abi_version |= FLAG_BOOTSTRAP_LOADER;
