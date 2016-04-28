@@ -668,7 +668,7 @@ package body Ada.Text_IO is
             Available := True;
 
             Item :=
-              (if Is_Start_Of_Encoding (Character'Val (ch), File.WC_Method)
+              (if not Is_Start_Of_Encoding (Character'Val (ch), File.WC_Method)
                then Character'Val (ch)
                else Get_Upper_Half_Char_Immed (Character'Val (ch), File));
          end if;
