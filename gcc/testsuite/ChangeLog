@@ -1,6 +1,22 @@
 2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
+	* gcc.target/arc/extzv-1.c: New file.
+	* gcc.target/arc/insv-1.c: New file.
+	* gcc.target/arc/insv-2.c: New file.
+	* gcc.target/arc/movb-1.c: New file.
+	* gcc.target/arc/movb-2.c: New file.
+	* gcc.target/arc/movb-3.c: New file.
+	* gcc.target/arc/movb-4.c: New file.
+	* gcc.target/arc/movb-5.c: New file.
+	* gcc.target/arc/movb_cl-1.c: New file.
+	* gcc.target/arc/movb_cl-2.c: New file.
+	* gcc.target/arc/movbi_cl-1.c: New file.
+	* gcc.target/arc/movl-1.c: New file.
+
+2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
 	* gcc.target/arc/cmem-1.c: New file.
 	* gcc.target/arc/cmem-2.c: New file.
 	* gcc.target/arc/cmem-3.c: New file.

@@ -66,8 +66,16 @@
    Link Registers @code{ilink1}:@code{r29}, @code{ilink2}:@code{r30},
    @code{blink}:@code{r31},")
 
-(define_register_constraint "q" "ARCOMPACT16_REGS"
+(define_register_constraint "q" "TARGET_Q_CLASS ? ARCOMPACT16_REGS : NO_REGS"
   "Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
+   @code{r12}-@code{r15}")
+
+; NPS400 bitfield instructions require registers from the r0-r3,r12-r15
+; range, and thus we need a register class and constraint that works
+; independently of size optimization.
+(define_register_constraint
+ "Rrq" "TARGET_RRQ_CLASS ? ARCOMPACT16_REGS : NO_REGS"
+  "Registers usable in NPS400 bitfield instructions: @code{r0}-@code{r3},
    @code{r12}-@code{r15}")
 
 (define_register_constraint "e" "AC16_BASE_REGS"
@@ -236,11 +244,59 @@
   (and (match_code "const_int")
        (match_test "ival == 0xff || ival == 0xffff")))
 
+(define_constraint "Chs"
+ "@internal
+  constant for a highpart that can be checked with a shift (asr.f 0,rn,m)"
+  (and (match_code "const_int")
+       (match_test "IS_POWEROF2_P (-ival)")))
+
+(define_constraint "Clo"
+ "@internal
+  constant that fits into 16 lower bits, for movl"
+  (and (match_code "const_int")
+       (match_test "TARGET_NPS_BITOPS")
+       (match_test "(ival & ~0xffffU) == 0")))
+
+(define_constraint "Chi"
+ "@internal
+  constant that fits into 16 higher bits, for movh_i"
+  (and (match_code "const_int")
+       (match_test "TARGET_NPS_BITOPS")
+       (match_test "trunc_int_for_mode (ival >> 16, HImode) << 16 == ival")))
+
+(define_constraint "Cbf"
+ "@internal
+  a mask for a bit field, for AND using movb_i"
+  (and (match_code "const_int")
+       (match_test "TARGET_NPS_BITOPS")
+       (match_test "IS_POWEROF2_OR_0_P (ival + (ival & -ival))")))
+
+(define_constraint "Cbn"
+ "@internal
+  a constant integer, valid only if TARGET_NPS_BITOPS is true"
+  (and (match_code "const_int")
+       (match_test "TARGET_NPS_BITOPS")))
+
+(define_constraint "C18"
+ "@internal
+  1,2,4 or 8"
+  (and (match_code "const_int")
+       (match_test "ival == 1 || ival == 2 || ival == 4 || ival == 8")))
+
 (define_constraint "Crr"
  "@internal
   constant that can be loaded with ror b,u6"
   (and (match_code "const_int")
        (match_test "(ival & ~0x8000001f) == 0 && !arc_ccfsm_cond_exec_p ()")))
+
+(define_constraint "Cbi"
+ "@internal
+  constant that can be loaded with movbi.cl"
+  (and (match_code "const_int")
+       (match_test "TARGET_NPS_BITOPS")
+       (match_test "!ival
+		    || ((ival & 0xffffffffUL) >> exact_log2 (ival & -ival)
+			<= 0xff)")))
 
 ;; Floating-point constraints
 
