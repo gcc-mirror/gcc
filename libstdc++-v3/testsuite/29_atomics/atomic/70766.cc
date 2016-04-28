@@ -1,8 +1,4 @@
-// { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11 -Wno-pedantic" }
-// { dg-do compile }
-
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +15,41 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 #include <atomic>
 
-// libstdc++/60695
+namespace adl
+{
+  template<typename T>
+    void operator&(const T&) = delete;
 
-struct X {
-  char stuff[0]; // GNU extension, type has zero size
-};
+  struct X {
+    int i;
+  };
+}
 
-std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 182 }
+void
+test01()
+{
+  adl::X x;
+  std::atomic<adl::X> a;
+  a.store(x);
+  x = a.load();
+  x = a.exchange(x);
+  a.compare_exchange_weak(x, x);
+  a.compare_exchange_strong(x, x);
+}
+
+void
+test02()
+{
+  adl::X x;
+  volatile std::atomic<adl::X> a;
+  a.store(x);
+  x = a.load();
+  x = a.exchange(x);
+  a.compare_exchange_weak(x, x);
+  a.compare_exchange_strong(x, x);
+}

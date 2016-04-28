@@ -1,5 +1,18 @@
 2016-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70766
+	* include/bits/basic_ios.tcc (basic_ios::_M_cache_locale): Use
+	__addressof.
+	* include/bits/stream_iterator.h (istream_iterator, ostream_iterator):
+	Likewise.
+	* include/std/atomic (atomic<_Tp>): Likewise.
+	* include/std/shared_mutex (shared_lock): Likewise.
+	* testsuite/24_iterators/istream_iterator/70766.cc: New test.
+	* testsuite/24_iterators/ostream_iterator/70766.cc : New test.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error line number.
+	* testsuite/29_atomics/atomic/70766.cc: New test.
+	* testsuite/30_threads/shared_lock/70766.cc: New test.
+
 	* include/bits/hashtable_policy.h (__detail::_Insert_base,
 	__detail::_Insert): Improve comments.
 
