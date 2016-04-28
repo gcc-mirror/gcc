@@ -1,3 +1,9 @@
+2016-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70777
+	* fold-const.c (fold_binary_loc): Remove x*x to pow(x,2.0)
+	canonicalization.
+
 2016-04-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* common/config/sh/sh-common.c: Remove SH5 support.
