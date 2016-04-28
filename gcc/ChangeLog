@@ -1,3 +1,9 @@
+2016-04-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/constraints.md (Usd): Convert to define_constraint.
+	(Us<): Likewise.
+	(Us>): Likewise.
+
 2016-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70821
