@@ -1,3 +1,9 @@
+2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/70595
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other
+	attributes): Document cilkplus_runtime.
+
 2016-04-28  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-cfg.c (verify_expr): Verify that local declarations belong to

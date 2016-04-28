@@ -1,3 +1,52 @@
+2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/70595
+	* lib/target-supports.exp (check_libcilkrts_available): Rename to ...
+	(check_effective_target_cilkplus_runtime): ... this.
+	* g++.dg/cilk-plus/cilk-plus.exp: Adapt to it.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Likewise.
+
+	* c-c++-common/cilk-plus/CK/cilk-for-2.c: Remove dg-do target selector.
+	Require cilkplus_runtime.
+	Don't add -lcilkrts.
+	* c-c++-common/cilk-plus/CK/cilk-fors.c: Likewise.
+	* c-c++-common/cilk-plus/CK/cilk_for_grain.c: Likewise.
+	* c-c++-common/cilk-plus/CK/cilk_for_ptr_iter.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_init_expr_xy.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_no_return.c: Likewise.
+	* c-c++-common/cilk-plus/CK/fib_no_sync.c: Likewise.
+	* c-c++-common/cilk-plus/CK/nested_cilk_for.c: Likewise.
+	* c-c++-common/cilk-plus/CK/pr60586.c: Likewise.
+	* c-c++-common/cilk-plus/CK/pr69826-1.c: Likewise.
+	* c-c++-common/cilk-plus/CK/pr69826-2.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawnee_inline.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawning_arg.c: Likewise.
+	* c-c++-common/cilk-plus/CK/steal_check.c: Likewise.
+	* c-c++-common/cilk-plus/CK/varargs_test.c: Likewise.
+	* g++.dg/cilk-plus/CK/catch_exc.cc: Likewise.
+	* g++.dg/cilk-plus/CK/cilk-for-tplt.cc: Likewise.
+	* g++.dg/cilk-plus/CK/const_spawn.cc: Likewise.
+	* g++.dg/cilk-plus/CK/fib-opr-overload.cc: Likewise.
+	* g++.dg/cilk-plus/CK/fib-tplt.cc: Likewise.
+	* g++.dg/cilk-plus/CK/for1.cc: Likewise.
+	* g++.dg/cilk-plus/CK/lambda_spawns.cc: Likewise.
+	* g++.dg/cilk-plus/CK/lambda_spawns_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/CK/pr60586.cc: Likewise.
+	* g++.dg/cilk-plus/CK/pr66326.cc: Likewise.
+	* g++.dg/cilk-plus/CK/stl_iter.cc: Likewise.
+	* g++.dg/cilk-plus/CK/stl_rev_iter.cc: Likewise.
+	* g++.dg/cilk-plus/CK/stl_test.cc: Likewise.
+
+	* c-c++-common/cilk-plus/CK/pr63307.c: Remove dg-do target selector.
+	* c-c++-common/cilk-plus/SE/ef_error3.c: Likewise.
+
+	* c-c++-common/cilk-plus/SE/ef_error2.c: Explain target selector.
+
+	* c-c++-common/cilk-plus/CK/test__cilk.c: Run if
+	cilkplus_runtime.
+
 2016-04-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/overflow-2.c: New testcase.

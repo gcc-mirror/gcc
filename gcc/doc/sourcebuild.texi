@@ -1878,6 +1878,9 @@ Target supports wide characters.
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
+@item cilkplus_runtime
+Target supports the Cilk Plus runtime library.
+
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.
 
