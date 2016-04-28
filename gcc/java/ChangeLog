@@ -1,3 +1,8 @@
+2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR java/70839
+	* decl.c (parse_version): Remove minor handling.
+
 2016-04-28  Matthias Klose  <doko@ubuntu.com>
 
 	* decl.c (parse_version): Don't encode the minor version in the abi
