@@ -1,3 +1,8 @@
+2016-04-28  Matthias Klose  <doko@ubuntu.com>
+
+	* decl.c (parse_version): Don't encode the minor version in the abi
+	version.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* class.c (add_method_1): Use SET_DECL_ALIGN.
