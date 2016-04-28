@@ -1,3 +1,12 @@
+2016-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (peephole2s for operations with memory inputs):
+	Use SWI mode iterator.
+	(peephole2s for operations with memory outputs): Ditto.
+	Do not check for stack checking probe.
+
+	(probe_stack): Remove expander.
+
 2016-04-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
