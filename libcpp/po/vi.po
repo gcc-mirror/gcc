@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1-b20160131\n"
+"Project-Id-Version: cpplib 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2016-02-03 07:24+0700\n"
+"POT-Creation-Date: 2016-04-21 15:24+0000\n"
+"PO-Revision-Date: 2016-04-28 07:51+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
@@ -91,7 +91,7 @@ msgstr "ký tự toàn cầu %.*s không hợp lệ trong một định danh"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "ký tự toàn cầu %.*s không hợp lệ tại đầu của một định danh"
 
-#: charset.c:1110 charset.c:1684
+#: charset.c:1110 charset.c:1691
 msgid "converting UCN to source character set"
 msgstr "đang chuyển đổi UCN sang bộ ký tự nguồn"
 
@@ -150,7 +150,7 @@ msgstr "hằng ký tự đa ký tự"
 msgid "empty character constant"
 msgstr "hằng ký tự trống"
 
-#: charset.c:1731
+#: charset.c:1738
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "gặp lỗi nghiêm trong khi chuyển đổi %s sang %s"
@@ -274,139 +274,144 @@ msgstr "“%s” không phải là tên tập tin hợp lệ"
 msgid "\"%s\" after # is not a positive integer"
 msgstr "“%s” nằm sau “#” không phải là số nguyên dương"
 
-#: directives.c:1103 directives.c:1105 directives.c:1107 directives.c:1693
+#: directives.c:1061
+#, c-format
+msgid "file \"%s\" linemarker ignored due to incorrect nesting"
+msgstr "tập tin linemarker \"%s\" bị bỏ qua bởi vì lồng nhau không đúng"
+
+#: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1131
+#: directives.c:1148
 #, c-format
 msgid "invalid #%s directive"
 msgstr "chỉ thị #%s không hợp lệ"
 
-#: directives.c:1194
+#: directives.c:1211
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "việc đăng ký các lệnh mã nguồn điều khiển trình biên dịch (pragma) trong miền tên “%s” sai mở rộng tên "
 
-#: directives.c:1203
+#: directives.c:1220
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "việc đăng ký lệnh mã nguồn điều khiển trình biên dịch (pragma) “%s” có mở rộng tên nhưng không có miền tên"
 
-#: directives.c:1221
+#: directives.c:1238
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "đang đăng ký “%s” là cả lệnh nguồn điều khiển trình biện dịch (pragma), lẫn miền tên của lệnh nguồn điều khiển trình biên dịch."
 
-#: directives.c:1224
+#: directives.c:1241
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "“#pragma %s %s” đã được đăng ký"
 
-#: directives.c:1227
+#: directives.c:1244
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "“#pragma %s” đã được đăng ký"
 
-#: directives.c:1257
+#: directives.c:1274
 msgid "registering pragma with NULL handler"
 msgstr "việc đăng ký lệnh mã nguồn điều khiển trình biên dịch (pragma) có bộ quản lý vô giá trị (NULL)"
 
-#: directives.c:1474
+#: directives.c:1491
 msgid "#pragma once in main file"
 msgstr "Có “#pragma” một lần trong tập tin chính"
 
-#: directives.c:1497
+#: directives.c:1514
 msgid "invalid #pragma push_macro directive"
 msgstr "gặp chỉ thị #pragma push_macro sai"
 
-#: directives.c:1552
+#: directives.c:1569
 msgid "invalid #pragma pop_macro directive"
 msgstr "gặp chỉ thị #pragma pop_macro sai"
 
-#: directives.c:1607
+#: directives.c:1624
 msgid "invalid #pragma GCC poison directive"
 msgstr "gặp chỉ thị vô hiệu hóa (poison) GCC “#pragma” không hợp lệ"
 
-#: directives.c:1616
+#: directives.c:1633
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "đang vô hiệu hóa vĩ lệnh tồn tại “%s”"
 
-#: directives.c:1635
+#: directives.c:1652
 msgid "#pragma system_header ignored outside include file"
 msgstr "“#pragma system_header” (đầu trang hệ thống) bị bỏ qua ở ngoài tập tin bao gồm"
 
-#: directives.c:1660
+#: directives.c:1677
 #, c-format
 msgid "cannot find source file %s"
 msgstr "không tìm thấy tập tin nguồn %s"
 
-#: directives.c:1664
+#: directives.c:1681
 #, c-format
 msgid "current file is older than %s"
 msgstr "tập tin hiện thời là cũ hơn %s"
 
-#: directives.c:1688
+#: directives.c:1705
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "gặp chỉ thị \"#pragma GCC %s\" không hợp lệ"
 
-#: directives.c:1889
+#: directives.c:1906
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "“_Pragma” nhận một hằng chuỗi được đặt trong ngoặc đơn"
 
-#: directives.c:2010
+#: directives.c:2027
 msgid "#else without #if"
 msgstr "#else (nếu không) mà không có #if (nếu)"
 
-#: directives.c:2015
+#: directives.c:2032
 msgid "#else after #else"
 msgstr "#else (nếu không) nằm sau #else"
 
-#: directives.c:2017 directives.c:2050
+#: directives.c:2034 directives.c:2067
 msgid "the conditional began here"
 msgstr "điều kiện đã bắt đầu ở đây"
 
-#: directives.c:2043
+#: directives.c:2060
 msgid "#elif without #if"
 msgstr "#elif (nếu không thì nếu) không có #if (nếu)"
 
-#: directives.c:2048
+#: directives.c:2065
 msgid "#elif after #else"
 msgstr "#elif (nếu không thì nếu) nằm sau #else (nếu không)"
 
-#: directives.c:2079
+#: directives.c:2096
 msgid "#endif without #if"
 msgstr "#endif (nếu không đúng) không có #if (nếu)"
 
-#: directives.c:2159
+#: directives.c:2176
 msgid "missing '(' after predicate"
 msgstr "thiếu “(” nằm sau vị ngữ"
 
-#: directives.c:2174
+#: directives.c:2191
 msgid "missing ')' to complete answer"
 msgstr "thiếu “)” để hoàn tất câu trả lời"
 
-#: directives.c:2194
+#: directives.c:2211
 msgid "predicate's answer is empty"
 msgstr "vị ngữ chứa trả lời trống"
 
-#: directives.c:2221
+#: directives.c:2238
 msgid "assertion without predicate"
 msgstr "sự khẳng định không có vị ngữ"
 
-#: directives.c:2224
+#: directives.c:2241
 msgid "predicate must be an identifier"
 msgstr "vị ngữ phải là định danh"
 
-#: directives.c:2310
+#: directives.c:2327
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "“%s” được khẳng định lại"
 
-#: directives.c:2602
+#: directives.c:2619
 #, c-format
 msgid "unterminated #%s"
 msgstr "#%s chưa chấm dứt"
@@ -415,12 +420,12 @@ msgstr "#%s chưa chấm dứt"
 msgid "unterminated comment"
 msgstr "gặp chú thích chưa được chấm dứt"
 
-#: errors.c:233 errors.c:246
+#: errors.c:234 errors.c:247
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: errors.c:244
+#: errors.c:245
 msgid "stdout"
 msgstr "thiết bị xuất chuẩn"
 
@@ -433,8 +438,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "gặp tiền tố không hợp lệ “0b” cho hằng dấu chấm động"
 
 #: expr.c:555
-msgid "use of C++11 hexadecimal floating constant"
-msgstr "dùng hằng dấu chấm động thập lục C++11"
+msgid "use of C++1z hexadecimal floating constant"
+msgstr "dùng hằng dấu chấm động thập lục C++1z"
 
 #: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
@@ -778,153 +783,153 @@ msgstr "gặp chú thích đa dòng"
 msgid "unspellable token %s"
 msgstr "gặp thẻ bài không thể chính tả %s"
 
-#: macro.c:202
+#: macro.c:203
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "vĩ lệnh “%s” không được dùng"
 
-#: macro.c:240 macro.c:472
+#: macro.c:242 macro.c:477
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "vĩ lệnh dựng-sẵn không hợp lệ “%s”"
 
-#: macro.c:247 macro.c:344
+#: macro.c:249 macro.c:349
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "vĩ lệnh \"%s\" có thể ngăn cản việc dịch tái sinh"
 
-#: macro.c:278
+#: macro.c:280
 msgid "could not determine file timestamp"
 msgstr "không thể xác định nhãn giờ của tập tin"
 
-#: macro.c:379
+#: macro.c:384
 msgid "could not determine date and time"
 msgstr "không thể phân giải ngày và giờ"
 
-#: macro.c:395
+#: macro.c:400
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ đã mở rộng bên trong chỉ thị với “-fdirectives-only”"
 
-#: macro.c:583
+#: macro.c:588
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "chuỗi văn học không hợp lệ nên bỏ qua “\\” cuối cùng"
 
-#: macro.c:645
+#: macro.c:650
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "việc dán “%s” và “%s” không đưa ra thẻ bài tiền xử lý hợp lệ"
 
-#: macro.c:769
+#: macro.c:774
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 cần ít nhất một đối số cho \"...\" còn lại trong vĩ lệnh biến thiên"
 
-#: macro.c:773
+#: macro.c:778
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 cần ít nhất một đối số cho \"...\" còn lại trong vĩ lệnh biến thiên"
 
-#: macro.c:780
+#: macro.c:785
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "vĩ lệnh “%s” cần đến %u đối số, nhưng chỉ đưa ra %u thôi"
 
-#: macro.c:785
+#: macro.c:790
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "vĩ lệnh “%s” đã chuyển %u đối số, nhưng chỉ nhận được %u thôi"
 
-#: macro.c:979 traditional.c:819
+#: macro.c:984 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "danh sách đối số không được chấm dứt có gọi vĩ lệnh “%s”"
 
-#: macro.c:1130
+#: macro.c:1135
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "vĩ lệnh giống hàm số “%s” phải được dùng với đối số trong ngôn ngữ C truyền thống"
 
-#: macro.c:1813
+#: macro.c:1825
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh trống rỗng là không hợp lệ trong ISO C++98 "
 
-#: macro.c:1821 macro.c:1830
+#: macro.c:1833 macro.c:1842
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh trống rỗng là không hợp lệ trong  ISO C90"
 
-#: macro.c:2794
+#: macro.c:2806
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "tham số vĩ lệnh trùng lặp “%s”"
 
-#: macro.c:2843
+#: macro.c:2855
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "không cho phép “%s” xuất hiện trong danh sách tham số vĩ lệnh"
 
-#: macro.c:2851
+#: macro.c:2863
 msgid "macro parameters must be comma-separated"
 msgstr "các tham số bộ đối số phải được ngăn cách bởi dấu phẩy"
 
-#: macro.c:2869
+#: macro.c:2881
 msgid "parameter name missing"
 msgstr "thiếu tên tham số"
 
-#: macro.c:2890
+#: macro.c:2902
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "vĩ lệnh biến thiên vô danh đã được giới thiệu trong C++11"
 
-#: macro.c:2894 macro.c:2899
+#: macro.c:2906 macro.c:2911
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "vĩ lệnh biến thiên vô danh đã được giới thiệu trong C99"
 
-#: macro.c:2906
+#: macro.c:2918
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ không cho phép vĩ lệnh biến thiên có tên"
 
-#: macro.c:2909
+#: macro.c:2921
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C không cho phép vĩ lệnh biến thiên có tên"
 
-#: macro.c:2919
+#: macro.c:2931
 msgid "missing ')' in macro parameter list"
 msgstr "thiếu “)” trong danh sách tham số bộ đối số"
 
-#: macro.c:2970
+#: macro.c:2982
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "không cho phép “##” nằm hoặc trước hoặc sau sự mở rộng vĩ lệnh"
 
-#: macro.c:3007
+#: macro.c:3019
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 cần đến khoảng trắng nằm sau tên vĩ lệnh"
 
-#: macro.c:3010
+#: macro.c:3022
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 cần đến khoảng trắng nằm sau tên vĩ lệnh"
 
-#: macro.c:3035
+#: macro.c:3047
 msgid "missing whitespace after the macro name"
 msgstr "thiếu khoảng trắng nằm sau tên vĩ lệnh"
 
-#: macro.c:3069
+#: macro.c:3081
 msgid "'#' is not followed by a macro parameter"
 msgstr "“#” không cho phép đi theo sau một tham số vĩ lệnh"
 
-#: macro.c:3230
+#: macro.c:3242
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "“%s” bị định nghĩa lại"
 
-#: macro.c:3235
+#: macro.c:3247
 msgid "this is the location of the previous definition"
 msgstr "đây là vị trí của lời định nghĩa trước"
 
-#: macro.c:3296
+#: macro.c:3308
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "đối số vĩ lệnh “%s” nên được chuyển đổi thành chuỗi trong ngôn ngữ C truyền thống"
 
-#: macro.c:3323
+#: macro.c:3344
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "gặp kiểu băm không hợp lệ %d trong “cpp_macro_definition” (lời định nghĩa vĩ lệnh)"
