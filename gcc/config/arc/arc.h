@@ -1724,6 +1724,12 @@ enum
 /* Any multiplication feature macro.  */
 #define TARGET_ANY_MPY						\
   (TARGET_MPY || TARGET_MUL64_SET || TARGET_MULMAC_32BY16_SET)
+/* PLUS_DMPY feature macro.  */
+#define TARGET_PLUS_DMPY  ((arc_mpy_option > 6) && TARGET_HS)
+/* PLUS_MACD feature macro.  */
+#define TARGET_PLUS_MACD  ((arc_mpy_option > 7) && TARGET_HS)
+/* PLUS_QMACW feature macro.  */
+#define TARGET_PLUS_QMACW ((arc_mpy_option > 8) && TARGET_HS)
 
 /* ARC600 and ARC601 feature macro.  */
 #define TARGET_ARC600_FAMILY (TARGET_ARC600 || TARGET_ARC601)

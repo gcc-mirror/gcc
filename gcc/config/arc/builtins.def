@@ -193,3 +193,30 @@ DEF_BUILTIN (VINTI, 1, void_ftype_int, vinti_insn, TARGET_SIMD_SET)
 
 /* END SIMD marker.  */
 DEF_BUILTIN (SIMD_END, 0, void_ftype_void, nothing, 0)
+
+/* ARCv2 SIMD instructions that use/clobber the accumulator reg.  */
+DEF_BUILTIN (QMACH,      2, long_ftype_v4hi_v4hi,   qmach,      TARGET_PLUS_QMACW)
+DEF_BUILTIN (QMACHU,     2, long_ftype_v4hi_v4hi,   qmachu,     TARGET_PLUS_QMACW)
+DEF_BUILTIN (QMPYH,      2, long_ftype_v4hi_v4hi,   qmpyh,      TARGET_PLUS_QMACW)
+DEF_BUILTIN (QMPYHU,     2, long_ftype_v4hi_v4hi,   qmpyhu,     TARGET_PLUS_QMACW)
+
+DEF_BUILTIN (DMACH,      2, int_ftype_v2hi_v2hi,    dmach,      TARGET_PLUS_DMPY)
+DEF_BUILTIN (DMACHU,     2, int_ftype_v2hi_v2hi,    dmachu,     TARGET_PLUS_DMPY)
+DEF_BUILTIN (DMPYH,      2, int_ftype_v2hi_v2hi,    dmpyh,      TARGET_PLUS_DMPY)
+DEF_BUILTIN (DMPYHU,     2, int_ftype_v2hi_v2hi,    dmpyhu,     TARGET_PLUS_DMPY)
+
+DEF_BUILTIN (DMACWH,     2, long_ftype_v2si_v2hi,   dmacwh,     TARGET_PLUS_QMACW)
+DEF_BUILTIN (DMACWHU,    2, long_ftype_v2si_v2hi,   dmacwhu,    TARGET_PLUS_QMACW)
+
+DEF_BUILTIN (VMAC2H,     2, v2si_ftype_v2hi_v2hi,   vmac2h,     TARGET_PLUS_MACD)
+DEF_BUILTIN (VMAC2HU,    2, v2si_ftype_v2hi_v2hi,   vmac2hu,    TARGET_PLUS_MACD)
+DEF_BUILTIN (VMPY2H,     2, v2si_ftype_v2hi_v2hi,   vmpy2h,     TARGET_PLUS_MACD)
+DEF_BUILTIN (VMPY2HU,    2, v2si_ftype_v2hi_v2hi,   vmpy2hu,    TARGET_PLUS_MACD)
+
+/* Combined add/sub HS SIMD instructions.  */
+DEF_BUILTIN (VADDSUB2H,  2, v2hi_ftype_v2hi_v2hi,   addsubv2hi3, TARGET_PLUS_DMPY)
+DEF_BUILTIN (VSUBADD2H,  2, v2hi_ftype_v2hi_v2hi,   subaddv2hi3, TARGET_PLUS_DMPY)
+DEF_BUILTIN (VADDSUB,    2, v2si_ftype_v2si_v2si,   addsubv2si3, TARGET_PLUS_QMACW)
+DEF_BUILTIN (VSUBADD,    2, v2si_ftype_v2si_v2si,   subaddv2si3, TARGET_PLUS_QMACW)
+DEF_BUILTIN (VADDSUB4H,  2, v4hi_ftype_v4hi_v4hi,   addsubv4hi3, TARGET_PLUS_QMACW)
+DEF_BUILTIN (VSUBADD4H,  2, v4hi_ftype_v4hi_v4hi,   subaddv4hi3, TARGET_PLUS_QMACW)
