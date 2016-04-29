@@ -1,3 +1,9 @@
+2016-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/13962
+	PR tree-optimization/65686
+	* gcc.dg/uninit-pr65686.c: New testcase.
+
 2016-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70843

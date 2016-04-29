@@ -1,5 +1,15 @@
 2016-04-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/13962
+	PR tree-optimization/65686
+	* tree-ssa-alias.h (ptrs_compare_unequal): Declare.
+	* tree-ssa-alias.c (ptrs_compare_unequal): New function
+	using PTA to compare pointers.
+	* match.pd: Add pattern for pointer equality compare simplification
+	using ptrs_compare_unequal.
+
+2016-04-29  Richard Biener  <rguenther@suse.de>
+
 	* stor-layout.c (layout_type): Do not build a pointer-to-element
 	type for arrays.
 

@@ -321,6 +321,66 @@ ptr_deref_may_alias_ref_p_1 (tree ptr, ao_ref *ref)
   return true;
 }
 
+/* Returns true if PTR1 and PTR2 compare unequal because of points-to.  */
+
+bool
+ptrs_compare_unequal (tree ptr1, tree ptr2)
+{
+  /* First resolve the pointers down to a SSA name pointer base or
+     a VAR_DECL, PARM_DECL or RESULT_DECL.  This explicitely does
+     not yet try to handle LABEL_DECLs, FUNCTION_DECLs, CONST_DECLs
+     or STRING_CSTs which needs points-to adjustments to track them
+     in the points-to sets.  */
+  tree obj1 = NULL_TREE;
+  tree obj2 = NULL_TREE;
+  if (TREE_CODE (ptr1) == ADDR_EXPR)
+    {
+      tree tem = get_base_address (TREE_OPERAND (ptr1, 0));
+      if (! tem)
+	return false;
+      if (TREE_CODE (tem) == VAR_DECL
+	  || TREE_CODE (tem) == PARM_DECL
+	  || TREE_CODE (tem) == RESULT_DECL)
+	obj1 = tem;
+      else if (TREE_CODE (tem) == MEM_REF)
+	ptr1 = TREE_OPERAND (tem, 0);
+    }
+  if (TREE_CODE (ptr2) == ADDR_EXPR)
+    {
+      tree tem = get_base_address (TREE_OPERAND (ptr2, 0));
+      if (! tem)
+	return false;
+      if (TREE_CODE (tem) == VAR_DECL
+	  || TREE_CODE (tem) == PARM_DECL
+	  || TREE_CODE (tem) == RESULT_DECL)
+	obj2 = tem;
+      else if (TREE_CODE (tem) == MEM_REF)
+	ptr2 = TREE_OPERAND (tem, 0);
+    }
+
+  if (obj1 && obj2)
+    /* Other code handles this correctly, no need to duplicate it here.  */;
+  else if (obj1 && TREE_CODE (ptr2) == SSA_NAME)
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr2);
+      if (!pi)
+	return false;
+      return !pt_solution_includes (&pi->pt, obj1);
+    }
+  else if (TREE_CODE (ptr1) == SSA_NAME && obj2)
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr1);
+      if (!pi)
+	return false;
+      return !pt_solution_includes (&pi->pt, obj2);
+    }
+
+  /* ???  We'd like to handle ptr1 != NULL and ptr1 != ptr2
+     but those require pt.null to be conservatively correct.  */
+
+  return false;
+}
+
 /* Returns whether reference REF to BASE may refer to global memory.  */
 
 static bool

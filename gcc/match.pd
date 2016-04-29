@@ -2400,6 +2400,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(if (cmp == NE_EXPR)
 	 { constant_boolean_node (true, type); })))))))))
 
+/* Simplify pointer equality compares using PTA.  */
+(for neeq (ne eq)
+ (simplify
+  (neeq @0 @1)
+  (if (POINTER_TYPE_P (TREE_TYPE (@0))
+       && ptrs_compare_unequal (@0, @1))
+   { neeq == EQ_EXPR ? boolean_false_node : boolean_true_node; })))
+
 /* Non-equality compare simplifications from fold_binary  */
 (for cmp (lt gt le ge)
  /* Comparisons with the highest or lowest possible integer of
