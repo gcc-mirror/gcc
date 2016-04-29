@@ -2926,24 +2926,29 @@ struct equivalence
    structure for that register.  */
 static struct equivalence *reg_equiv;
 
-/* Used for communication between the following two functions: contains
-   a MEM that we wish to ensure remains unchanged.  */
-static rtx equiv_mem;
+/* Used for communication between the following two functions.  */
+struct equiv_mem_data
+{
+  /* A MEM that we wish to ensure remains unchanged.  */
+  rtx equiv_mem;
 
-/* Set nonzero if EQUIV_MEM is modified.  */
-static int equiv_mem_modified;
+  /* Set true if EQUIV_MEM is modified.  */
+  bool equiv_mem_modified;
+};
 
 /* If EQUIV_MEM is modified by modifying DEST, indicate that it is modified.
    Called via note_stores.  */
 static void
 validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
-			       void *data ATTRIBUTE_UNUSED)
+			       void *data)
 {
+  struct equiv_mem_data *info = (struct equiv_mem_data *) data;
+
   if ((REG_P (dest)
-       && reg_overlap_mentioned_p (dest, equiv_mem))
+       && reg_overlap_mentioned_p (dest, info->equiv_mem))
       || (MEM_P (dest)
-	  && anti_dependence (equiv_mem, dest)))
-    equiv_mem_modified = 1;
+	  && anti_dependence (info->equiv_mem, dest)))
+    info->equiv_mem_modified = true;
 }
 
 /* Verify that no store between START and the death of REG invalidates
@@ -2957,16 +2962,14 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 {
   rtx_insn *insn;
   rtx note;
-
-  equiv_mem = memref;
-  equiv_mem_modified = 0;
+  struct equiv_mem_data info = { memref, false };
 
   /* If the memory reference has side effects or is volatile, it isn't a
      valid equivalence.  */
   if (side_effects_p (memref))
     return 0;
 
-  for (insn = start; insn && ! equiv_mem_modified; insn = NEXT_INSN (insn))
+  for (insn = start; insn; insn = NEXT_INSN (insn))
     {
       if (! INSN_P (insn))
 	continue;
@@ -2982,7 +2985,9 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
       if (CALL_P (insn))
 	return 0;
 
-      note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);
+      note_stores (PATTERN (insn), validate_equiv_mem_from_store, &info);
+      if (info.equiv_mem_modified)
+	return 0;
 
       /* If a register mentioned in MEMREF is modified via an
 	 auto-increment, we lose the equivalence.  Do the same if one
