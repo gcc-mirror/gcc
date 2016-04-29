@@ -1,3 +1,9 @@
+2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* longlong.h (add_ssaaaa): Replace obsolete 'J' constraint with
+	'Cal' constraint.
+	(sub_ddmmss): Likewise.
+
 2016-03-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gomp-constants.h (enum gomp_map_kind): Rename
