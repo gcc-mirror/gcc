@@ -1,3 +1,11 @@
+2016-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (Load+RegOp to Mov+MemOp peephole2):
+	Use SWI mode iterator.  Use general_reg_operand predicate.
+	(Load+RegOp to Mov+MemOp peephole2 with vector regs): Split
+	peephole to MMX and SSE part.  Use mmx_reg_operand and sse_reg_operand
+	predicates.
+
 2016-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70843
