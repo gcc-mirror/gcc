@@ -1,5 +1,11 @@
 2016-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (unspec): Add UNSPEC_PROBE_STACK.
+	(probe_stack): New expander.
+	(probe_stack_<mode>): New insn pattern.
+
+2016-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md
 	(operations with memory inputs setting flags peephole2):
 	Remove uneeded REG_P checks.  Cleanup pattern generation.
