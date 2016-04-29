@@ -1,3 +1,14 @@
+2016-04-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/crt1.S: Remove SH5 support.
+	* config/sh/crti.S: Likewise.
+	* config/sh/crtn.S: Likewise.
+	* config/sh/lib1funcs-4-300.S: Likewise.
+	* config/sh/lib1funcs-Os-4-200.S: Likewise.
+	* config/sh/lib1funcs.S: Likewise.
+	* config/sh/linux-unwind.h: Likewise.
+	* config/sh/t-sh64: Delete.
+
 2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/ieee-754/eqdf2.S: Handle FPX NaN.

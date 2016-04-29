@@ -33,14 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/ucontext.h>
 #include "insn-constants.h"
 
-# if defined (__SH5__)
-#define SH_DWARF_FRAME_GP0	0
-#define SH_DWARF_FRAME_FP0	77
-#define SH_DWARF_FRAME_BT0	68
-#define SH_DWARF_FRAME_PR_MEDIA	18
-#define SH_DWARF_FRAME_SR	65
-#define SH_DWARF_FRAME_FPSCR	76
-#else
 #define SH_DWARF_FRAME_GP0	0
 #define SH_DWARF_FRAME_FP0	25
 #define SH_DWARF_FRAME_XD0	87
@@ -52,96 +44,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SH_DWARF_FRAME_SR	22
 #define SH_DWARF_FRAME_FPUL	23
 #define SH_DWARF_FRAME_FPSCR	24
-#endif /* defined (__SH5__) */
-
-#if defined (__SH5__)
-
-#define MD_FALLBACK_FRAME_STATE_FOR shmedia_fallback_frame_state
-
-static _Unwind_Reason_Code
-shmedia_fallback_frame_state (struct _Unwind_Context *context,
-			      _Unwind_FrameState *fs)
-{
-  unsigned char *pc = context->ra;
-  struct sigcontext *sc;
-  long new_cfa;
-  int i, r;
-
-  /* movi 0x10,r9; shori 0x77,r9; trapa	r9; nop (sigreturn)  */
-  /* movi 0x10,r9; shori 0xad,r9; trapa	r9; nop (rt_sigreturn)  */
-  if ((*(unsigned long *) (pc-1)  == 0xcc004090)
-      && (*(unsigned long *) (pc+3)  == 0xc801dc90)
-      && (*(unsigned long *) (pc+7)  == 0x6c91fff0)
-      && (*(unsigned long *) (pc+11)  == 0x6ff0fff0))
-    sc = context->cfa;
-  else if ((*(unsigned long *) (pc-1)  == 0xcc004090)
-	   && (*(unsigned long *) (pc+3)  == 0xc802b490)
-	   && (*(unsigned long *) (pc+7)  == 0x6c91fff0)
-	   && (*(unsigned long *) (pc+11)  == 0x6ff0fff0))
-    {
-      struct rt_sigframe {
-	siginfo_t *pinfo;
-	void *puc;
-	siginfo_t info;
-	struct ucontext uc;
-      } *rt_ = context->cfa;
-      /* The void * cast is necessary to avoid an aliasing warning.
-         The aliasing warning is correct, but should not be a problem
-         because it does not alias anything.  */
-      sc = (struct sigcontext *) (void *) &rt_->uc.uc_mcontext;
-    }
-  else
-    return _URC_END_OF_STACK;
-
-  new_cfa = sc->sc_regs[15];
-  fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = 15;
-  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
-
-  for (i = 0; i < 63; i++)
-    {
-      if (i == 15)
-	continue;
-
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i].loc.offset
-	= (long)&(sc->sc_regs[i]) - new_cfa;
-    }
-
-  fs->regs.reg[SH_DWARF_FRAME_SR].how = REG_SAVED_OFFSET;
-  fs->regs.reg[SH_DWARF_FRAME_SR].loc.offset
-    = (long)&(sc->sc_sr) - new_cfa;
-
-  r = SH_DWARF_FRAME_BT0;
-  for (i = 0; i < 8; i++)
-    {
-      fs->regs.reg[r+i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[r+i].loc.offset
-	= (long)&(sc->sc_tregs[i]) - new_cfa;
-    }
-
-  r = SH_DWARF_FRAME_FP0;
-  for (i = 0; i < 32; i++)
-    {
-      fs->regs.reg[r+i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[r+i].loc.offset
-	= (long)&(sc->sc_fpregs[i]) - new_cfa;
-    }
-
-  fs->regs.reg[SH_DWARF_FRAME_FPSCR].how = REG_SAVED_OFFSET;
-  fs->regs.reg[SH_DWARF_FRAME_FPSCR].loc.offset
-    = (long)&(sc->sc_fpscr) - new_cfa;
-
-  /* We use the slot for the zero register to save return address.  */
-  fs->regs.reg[63].how = REG_SAVED_OFFSET;
-  fs->regs.reg[63].loc.offset
-    = (long)&(sc->sc_pc) - new_cfa;
-  fs->retaddr_column = 63;
-  fs->signal_frame = 1;
-  return _URC_NO_REASON;
-}
-
-#else /* defined (__SH5__) */
 
 #define MD_FALLBACK_FRAME_STATE_FOR sh_fallback_frame_state
 
@@ -250,6 +152,5 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
   fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
-#endif /* defined (__SH5__) */
 
 #endif /* inhibit_libc */
