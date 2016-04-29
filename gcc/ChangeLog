@@ -1,3 +1,10 @@
+2016-04-29  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/70342
+	* fold-const.c (tree_single_nonzero_warnv_p): For TARGET_EXPR, use
+	TARGET_EXPR_SLOT as a base.
+
 2016-04-29  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.md (*loadqi_update): Replace use of 'rI'

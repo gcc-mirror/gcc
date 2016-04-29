@@ -13534,6 +13534,9 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	if (!DECL_P (base))
 	  base = get_base_address (base);
 
+	if (base && TREE_CODE (base) == TARGET_EXPR)
+	  base = TARGET_EXPR_SLOT (base);
+
 	if (!base)
 	  return false;
 
