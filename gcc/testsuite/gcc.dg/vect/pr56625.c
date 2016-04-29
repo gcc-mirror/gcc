@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_int_mult } */
 
 void foo (int a[], int b[])
 {
