@@ -10,4 +10,4 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-times "movv1ti_internal" 2 } } */
-/* { dg-final { scan-assembler-not "\\*movdi_internal" } } */
+/* { dg-final { scan-assembler-not "\\*movdi_internal" { target nonpic } } } */

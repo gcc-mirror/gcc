@@ -1,3 +1,18 @@
+2016-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr70155-1.c: Check for nonexistence of the
+	*movdi_internal pattern only if PIC off.
+	* gcc.target/i386/pr70155-2.c: Likewise.
+	* gcc.target/i386/pr70155-3.c: Likewise.
+	* gcc.target/i386/pr70155-4.c: Likewise.
+	* gcc.target/i386/pr70155-5.c: Likewise.
+	* gcc.target/i386/pr70155-6.c: Likewise.
+	* gcc.target/i386/pr70155-7.c: Likewise.
+	* gcc.target/i386/pr70155-8.c: Likewise.
+	* gcc.target/i386/pr70155-15.c: Likewise.
+	* gcc.target/i386/pr70155-17.c: Likewise.
+	* gcc.target/i386/pr70155-22.c: Likewise.
+
 2016-04-29  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/70803
