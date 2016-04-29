@@ -1,3 +1,8 @@
+2016-04-29  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/ssa-thread-14.c: New test.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Update expected output.
+
 2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR middle-end/70626

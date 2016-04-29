@@ -1,3 +1,10 @@
+2016-04-29  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Split
+	out into ...
+	(simplify_control_stmt_condition_1): ... here.  Recurse into
+	BIT_AND_EXPRs and BIT_IOR_EXPRs.
+
 2016-04-29  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/69810
