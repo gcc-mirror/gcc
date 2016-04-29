@@ -24,14 +24,14 @@
 #include <testsuite_hooks.h>
 
 void
-test01() 
+test01()
 {
   bool test __attribute__((unused)) = true;
 
   std::tr1::mt19937 a;
   for (int i = 0; i < 9999; ++i)
     a();
-  
+
   VERIFY( a() == 4123659995ul );
 }
 

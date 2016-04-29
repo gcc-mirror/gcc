@@ -86,7 +86,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     struct hash<wstring>
-    { 
+    {
       size_t operator()(wstring) const;
     };
 

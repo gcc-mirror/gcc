@@ -41,5 +41,5 @@ int main()
 
   check_ret_type<shared_ptr<void> >(static_pointer_cast<void>(spd));
   check_ret_type<shared_ptr<int> >(const_pointer_cast<int>(spci));
-  check_ret_type<shared_ptr<MyDP> >(static_pointer_cast<MyDP>(spa));  
+  check_ret_type<shared_ptr<MyDP> >(static_pointer_cast<MyDP>(spa));
 }

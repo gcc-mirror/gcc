@@ -35,10 +35,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Some explicit instantiations.
   template void
      __valarray_fill(size_t* __restrict__, size_t, const size_t&);
-  
+
   template void
      __valarray_copy(const size_t* __restrict__, size_t, size_t* __restrict__);
-  
+
   template valarray<size_t>::valarray(size_t);
   template valarray<size_t>::valarray(const valarray<size_t>&);
   template valarray<size_t>::~valarray();
@@ -55,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     valarray<size_t>& __t = const_cast<valarray<size_t>&>(__a);
     return __valarray_product(&__t[0], &__t[0] + __n);
   }
-  
+
   // Map a gslice, described by its multidimensional LENGTHS
   // and corresponding STRIDES, to a linear array of INDEXES
   // for the purpose of indexing a flat, one-dimensional array
@@ -96,12 +96,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           }
       }
   }
-  
+
   gslice::_Indexer::_Indexer(size_t __o, const valarray<size_t>& __l,
                              const valarray<size_t>& __s)
   : _M_count(1), _M_start(__o), _M_size(__l), _M_stride(__s),
     _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
-  { __gslice_to_index(__o, __l, __s, _M_index); }  
+  { __gslice_to_index(__o, __l, __s, _M_index); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

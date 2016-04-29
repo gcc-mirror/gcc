@@ -36,5 +36,5 @@ void test01()
 
   Mmap::iterator it = cit; // { dg-error "conversion" }
 
-  Mmap::local_iterator lit = clit; // { dg-error "conversion" }  
+  Mmap::local_iterator lit = clit; // { dg-error "conversion" }
 }

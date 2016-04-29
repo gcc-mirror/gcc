@@ -31,17 +31,17 @@ void test01()
 	std::tr1::unordered_set<int> us1, us2;
 	typedef std::tr1::unordered_set<int>::local_iterator local_iterator;
 	typedef std::tr1::unordered_set<int>::size_type      size_type;
-	
+
 	us1.max_load_factor(lf);
 
 	for (int i = 0; i < size; ++i)
 	  us1.insert(i);
-	
+
 	us2 = us1;
-	
+
 	VERIFY( us2.size() == us1.size() );
 	VERIFY( us2.bucket_count() == us1.bucket_count() );
-	
+
 	for (size_type b = 0; b < us1.bucket_count(); ++b)
 	  {
 	    size_type cnt = 0;

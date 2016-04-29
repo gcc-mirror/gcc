@@ -48,7 +48,7 @@ void test01()
 	   const int (ClassType::*)>(false)) );
   VERIFY( (test_category<is_member_function_pointer,
 	   ClassType (ClassType::*)>(false)) );
-  
+
   // Sanity check.
   VERIFY( (test_category<is_member_function_pointer, ClassType>(false)) );
 }

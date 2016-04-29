@@ -32,7 +32,7 @@ void test01()
 
   // required default constructor
   test_type t;
-  
+
   // Check for required typedefs
   typedef test_type::char_type       char_type;
   typedef test_type::string_type     string_type;
@@ -42,7 +42,7 @@ void test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

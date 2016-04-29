@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 
+//
 // NB: This file is for testing tr1/type_traits with NO OTHER INCLUDES.
 
 #include <tr1/type_traits>
@@ -34,7 +34,7 @@ void test01()
   typedef true_type::type                     true_type;
   typedef true_type::type::value_type         true_type_value_type;
   typedef true_type::type::type               true_type_type;
-  
+
   typedef false_type::value_type              false_value_type;
   typedef false_type::type                    false_type;
   typedef false_type::type::value_type        false_type_value_type;

@@ -23,8 +23,8 @@
 #include <testsuite_hooks.h>
 
 void
-test01() 
-{ 
+test01()
+{
   bool test __attribute__((unused)) = true;
 
   const size_t len = 3;
@@ -36,7 +36,7 @@ test01()
   a.assign(value);
   VERIFY( a[0] == value );
   VERIFY( a[1] == value );
-  VERIFY( a[2] == value );  
+  VERIFY( a[2] == value );
 }
 
 int main()

@@ -53,13 +53,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   strstreambuf::strstreambuf(streamsize initial_capacity)
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(true), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(true),
     _M_frozen(false), _M_constant(false)
   {
     streamsize n = std::max(initial_capacity, streamsize(16));
-    
+
     char* buf = _M_alloc(n);
-    if (buf) 
+    if (buf)
       {
 	setp(buf, buf + n);
 	setg(buf, buf, buf);
@@ -67,13 +67,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   strstreambuf::strstreambuf(void* (*alloc_f)(size_t), void (*free_f)(void*))
-  : _Base(), _M_alloc_fun(alloc_f), _M_free_fun(free_f), _M_dynamic(true), 
+  : _Base(), _M_alloc_fun(alloc_f), _M_free_fun(free_f), _M_dynamic(true),
     _M_frozen(false), _M_constant(false)
   {
     streamsize n = 16;
 
     char* buf = _M_alloc(n);
-    if (buf) 
+    if (buf)
       {
 	setp(buf, buf + n);
 	setg(buf, buf, buf);
@@ -81,33 +81,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   strstreambuf::strstreambuf(char* get, streamsize n, char* put) throw ()
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false),
     _M_frozen(false), _M_constant(false)
   { _M_setup(get, put, n); }
 
   strstreambuf::strstreambuf(signed char* get, streamsize n, signed char* put) throw ()
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false),
   _M_frozen(false), _M_constant(false)
   { _M_setup(reinterpret_cast<char*>(get), reinterpret_cast<char*>(put), n); }
 
-  strstreambuf::strstreambuf(unsigned char* get, streamsize n, 
+  strstreambuf::strstreambuf(unsigned char* get, streamsize n,
 			     unsigned char* put) throw ()
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false),
     _M_frozen(false), _M_constant(false)
   { _M_setup(reinterpret_cast<char*>(get), reinterpret_cast<char*>(put), n); }
 
   strstreambuf::strstreambuf(const char* get, streamsize n) throw ()
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false),
     _M_frozen(false), _M_constant(true)
   { _M_setup(const_cast<char*>(get), 0, n); }
 
   strstreambuf::strstreambuf(const signed char* get, streamsize n) throw ()
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false),
     _M_frozen(false), _M_constant(true)
   { _M_setup(reinterpret_cast<char*>(const_cast<signed char*>(get)), 0, n); }
 
   strstreambuf::strstreambuf(const unsigned char* get, streamsize n) throw ()
-  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
+  : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false),
     _M_frozen(false), _M_constant(true)
   { _M_setup(reinterpret_cast<char*>(const_cast<unsigned char*>(get)), 0, n); }
 
@@ -117,61 +117,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_free(eback());
   }
 
-  void 
+  void
   strstreambuf::freeze(bool frozenflag) throw ()
   {
     if (_M_dynamic)
       _M_frozen = frozenflag;
   }
 
-  char* 
+  char*
   strstreambuf::str() throw ()
   {
     freeze(true);
     return eback();
   }
 
-  int 
+  int
   strstreambuf::pcount() const throw ()
   { return pptr() ? pptr() - pbase() : 0; }
 
-  strstreambuf::int_type 
-  strstreambuf::overflow(int_type c) 
+  strstreambuf::int_type
+  strstreambuf::overflow(int_type c)
   {
     if (c == traits_type::eof())
       return traits_type::not_eof(c);
-    
+
     // Try to expand the buffer.
-    if (pptr() == epptr() && _M_dynamic && !_M_frozen && !_M_constant) 
+    if (pptr() == epptr() && _M_dynamic && !_M_frozen && !_M_constant)
       {
 	ptrdiff_t old_size = epptr() - pbase();
 	ptrdiff_t new_size = std::max(ptrdiff_t(2 * old_size), ptrdiff_t(1));
-	
+
 	char* buf = _M_alloc(new_size);
-	if (buf) 
+	if (buf)
 	  {
 	    memcpy(buf, pbase(), old_size);
 	    char* old_buffer = pbase();
 	    bool reposition_get = false;
 	    ptrdiff_t old_get_offset;
-	    if (gptr() != 0) 
+	    if (gptr() != 0)
 	      {
 		reposition_get = true;
 		old_get_offset = gptr() - eback();
 	      }
-	    
+
 	    setp(buf, buf + new_size);
 	    __safe_pbump(old_size);
 
 	    if (reposition_get)
-	      setg(buf, buf + old_get_offset, buf + 
+	      setg(buf, buf + old_get_offset, buf +
 		   std::max(old_get_offset, old_size));
 
 	    _M_free(old_buffer);
 	  }
       }
-    
-    if (pptr() != epptr()) 
+
+    if (pptr() != epptr())
       {
 	*pptr() = c;
 	pbump(1);
@@ -181,22 +181,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return traits_type::eof();
   }
 
-  strstreambuf::int_type 
+  strstreambuf::int_type
   strstreambuf::pbackfail(int_type c)
   {
-    if (gptr() != eback()) 
+    if (gptr() != eback())
       {
-      if (c == _Traits::eof()) 
+      if (c == _Traits::eof())
 	{
 	  gbump(-1);
 	  return _Traits::not_eof(c);
 	}
-      else if (c == _Traits::to_int_type(gptr()[-1])) 
+      else if (c == _Traits::to_int_type(gptr()[-1]))
 	{  // KLUDGE
 	  gbump(-1);
 	  return c;
 	}
-      else if (!_M_constant) 
+      else if (!_M_constant)
 	{
 	  gbump(-1);
 	  *gptr() = c;
@@ -206,12 +206,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return _Traits::eof();
   }
 
-  strstreambuf::int_type 
+  strstreambuf::int_type
   strstreambuf::underflow()
   {
     if (gptr() == egptr() && pptr() && pptr() > egptr())
       setg(eback(), gptr(), pptr());
-    
+
     if (gptr() != egptr())
       return (unsigned char) *gptr();
     else
@@ -223,13 +223,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return this; }
 
   strstreambuf::pos_type
-  strstreambuf::seekoff(off_type off, ios_base::seekdir dir, 
+  strstreambuf::seekoff(off_type off, ios_base::seekdir dir,
 			ios_base::openmode mode)
   {
     bool do_get = false;
     bool do_put = false;
 
-    if ((mode & (ios_base::in | ios_base::out)) 
+    if ((mode & (ios_base::in | ios_base::out))
 	== (ios_base::in | ios_base::out) &&
 	(dir == ios_base::beg || dir == ios_base::end))
       do_get = do_put = true;
@@ -247,7 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     char* seekhigh = epptr() ? epptr() : egptr();
 
     off_type newoff;
-    switch (dir) 
+    switch (dir)
       {
       case ios_base::beg:
 	newoff = 0;
@@ -261,25 +261,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       default:
 	return pos_type(off_type(-1));
       }
-    
+
     off += newoff;
     if (off < 0 || off > seekhigh - seeklow)
       return pos_type(off_type(-1));
 
-    if (do_put) 
+    if (do_put)
       {
-	if (seeklow + off < pbase()) 
+	if (seeklow + off < pbase())
 	  {
 	    setp(seeklow, epptr());
 	    __safe_pbump(off);
 	  }
-	else 
+	else
 	  {
 	    setp(pbase(), epptr());
 	    __safe_pbump(off - (pbase() - seeklow));
 	  }
       }
-    if (do_get) 
+    if (do_get)
       {
 	if (off <= egptr() - seeklow)
 	  setg(seeklow, seeklow + off, egptr());
@@ -295,7 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   strstreambuf::seekpos(pos_type pos, ios_base::openmode mode)
   { return seekoff(pos - pos_type(off_type(0)), ios_base::beg, mode); }
 
-  char* 
+  char*
   strstreambuf::_M_alloc(size_t n)
   {
     if (_M_alloc_fun)
@@ -304,7 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return new char[n];
   }
 
-  void 
+  void
   strstreambuf::_M_free(char* p)
   {
     if (p)
@@ -316,19 +316,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
-  void 
+  void
   strstreambuf::_M_setup(char* get, char* put, streamsize n) throw ()
   {
-    if (get) 
+    if (get)
       {
 	size_t N = n > 0 ? size_t(n) : n == 0 ? strlen(get) : size_t(INT_MAX);
-	
-	if (put) 
+
+	if (put)
 	  {
 	    setg(get, get, put);
 	    setp(put, put + N);
 	  }
-	else 
+	else
 	  setg(get, get, get + N);
       }
   }
@@ -351,11 +351,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   istrstream::~istrstream() { }
 
-  strstreambuf* 
+  strstreambuf*
   istrstream::rdbuf() const throw ()
   { return const_cast<strstreambuf*>(&_M_buf); }
 
-  char* 
+  char*
   istrstream::str() throw ()
   { return _M_buf.str(); }
 
@@ -364,25 +364,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { basic_ios<char>::init(&_M_buf); }
 
   ostrstream::ostrstream(char* s, int n, ios_base::openmode mode)
-  : basic_ios<char>(), basic_ostream<char>(0), 
+  : basic_ios<char>(), basic_ostream<char>(0),
     _M_buf(s, n, mode & ios_base::app ? s + strlen(s) : s)
   { basic_ios<char>::init(&_M_buf); }
 
   ostrstream::~ostrstream() {}
 
-  strstreambuf* 
+  strstreambuf*
   ostrstream::rdbuf() const throw ()
   { return const_cast<strstreambuf*>(&_M_buf); }
 
-  void 
+  void
   ostrstream::freeze(bool freezeflag) throw ()
   { _M_buf.freeze(freezeflag); }
 
-  char* 
+  char*
   ostrstream::str() throw ()
   { return _M_buf.str(); }
 
-  int 
+  int
   ostrstream::pcount() const throw ()
   { return _M_buf.pcount(); }
 
@@ -391,25 +391,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { basic_ios<char>::init(&_M_buf); }
 
   strstream::strstream(char* s, int n, ios_base::openmode mode)
-  : basic_ios<char>(), basic_iostream<char>(0), 
+  : basic_ios<char>(), basic_iostream<char>(0),
     _M_buf(s, n, mode & ios_base::app ? s + strlen(s) : s)
   { basic_ios<char>::init(&_M_buf); }
 
   strstream::~strstream() { }
 
-  strstreambuf* 
+  strstreambuf*
   strstream::rdbuf() const throw ()
   { return const_cast<strstreambuf*>(&_M_buf); }
 
-  void 
+  void
   strstream::freeze(bool freezeflag) throw ()
   { _M_buf.freeze(freezeflag); }
 
-  int 
+  int
   strstream::pcount() const throw ()
   { return _M_buf.pcount(); }
 
-  char* 
+  char*
   strstream::str() throw ()
   { return _M_buf.str(); }
 

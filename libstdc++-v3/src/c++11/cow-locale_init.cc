@@ -32,7 +32,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-namespace 
+namespace
 {
   typedef char fake_collate_c[sizeof(std::collate<char>)]
   __attribute__ ((aligned(__alignof__(std::collate<char>))));
@@ -50,7 +50,7 @@ namespace
   typedef char fake_money_get_c[sizeof(money_get<char>)]
   __attribute__ ((aligned(__alignof__(money_get<char>))));
   fake_money_get_c money_get_c;
-  
+
   typedef char fake_money_put_c[sizeof(money_put<char>)]
   __attribute__ ((aligned(__alignof__(money_put<char>))));
   fake_money_put_c money_put_c;
@@ -80,7 +80,7 @@ namespace
   typedef char fake_money_get_w[sizeof(money_get<wchar_t>)]
   __attribute__ ((aligned(__alignof__(money_get<wchar_t>))));
   fake_money_get_w money_get_w;
-  
+
   typedef char fake_money_put_w[sizeof(money_put<wchar_t>)]
   __attribute__ ((aligned(__alignof__(money_put<wchar_t>))));
   fake_money_put_w money_put_w;
@@ -161,7 +161,7 @@ namespace
     _M_init_facet_unchecked(new money_put<wchar_t>);
     _M_init_facet_unchecked(new time_get<wchar_t>);
     _M_init_facet_unchecked(new std::messages<wchar_t>(__cloc, __s));
-#endif	  
+#endif
   }
 
 // TODO should be in another file
@@ -178,7 +178,7 @@ namespace
 	__ret.reserve(128);
 	__ret += _S_categories[0];
 	__ret += '=';
-	__ret += _M_impl->_M_names[0]; 
+	__ret += _M_impl->_M_names[0];
 	for (size_t __i = 1; __i < _S_categories_size; ++__i)
 	  {
 	    __ret += ';';

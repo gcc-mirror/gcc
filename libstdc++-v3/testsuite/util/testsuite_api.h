@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Exception testing utils for the C++ library testsuite. 
+// Exception testing utils for the C++ library testsuite.
 //
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -56,7 +56,7 @@ namespace __gnu_test
 	: bad_non_virtual(), Exception("construct diamond") { }
       };
     };
-  
+
   template<typename Exception, bool DefaultCons>
     struct diamond_derivation
     : diamond_derivation_base<Exception, DefaultCons>
@@ -70,12 +70,12 @@ namespace __gnu_test
       // behavior is ambiguity.
       static void test()
       {
-	bool test __attribute__((unused)) = true;      
+	bool test __attribute__((unused)) = true;
 	try
 	  { throw error_type(); }
 	catch (std::exception const&)
 	  { VERIFY( false ); }
-	catch (...) 
+	catch (...)
 	  { VERIFY( true ); }
       }
     };
@@ -93,7 +93,7 @@ namespace __gnu_test
     { return *this; }
 #endif
   };
- 
+
   // See: 20.1.1 Template argument requirements.
   inline bool
   operator==(const NonDefaultConstructible&, const NonDefaultConstructible&)
@@ -114,17 +114,17 @@ namespace __gnu_test
   // For 26 numeric algorithms requirements, need addable,
   // subtractable, multiplicable.
   inline NonDefaultConstructible
-  operator+(const NonDefaultConstructible& lhs, 
+  operator+(const NonDefaultConstructible& lhs,
 	    const NonDefaultConstructible& rhs)
   { return NonDefaultConstructible(1); }
 
   inline NonDefaultConstructible
-  operator-(const NonDefaultConstructible& lhs, 
+  operator-(const NonDefaultConstructible& lhs,
 	    const NonDefaultConstructible& rhs)
   { return NonDefaultConstructible(1); }
 
   inline NonDefaultConstructible
-  operator*(const NonDefaultConstructible& lhs, 
+  operator*(const NonDefaultConstructible& lhs,
 	    const NonDefaultConstructible& rhs)
   { return NonDefaultConstructible(1); }
 
@@ -133,7 +133,7 @@ namespace __gnu_test
   template<typename _Result>
     struct void_function
     {
-      typedef _Result result_type; 
+      typedef _Result result_type;
 
       result_type
       operator()() const
@@ -143,7 +143,7 @@ namespace __gnu_test
   template<>
     struct void_function<NonDefaultConstructible>
     {
-      typedef NonDefaultConstructible result_type; 
+      typedef NonDefaultConstructible result_type;
 
       result_type
       operator()() const
@@ -152,7 +152,7 @@ namespace __gnu_test
 
   // For std::addressof, etc.
   struct OverloadedAddressAux { };
-  
+
   struct OverloadedAddress
   {
     OverloadedAddressAux

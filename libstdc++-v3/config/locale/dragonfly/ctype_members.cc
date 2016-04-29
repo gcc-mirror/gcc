@@ -44,19 +44,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // NB: The other ctype<char> specializations are in src/locale.cc and
   // various /config/os/* files.
   ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
-  : ctype<char>(0, false, __refs) 
-  { 		
+  : ctype<char>(0, false, __refs)
+  {
     if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
       {
 	this->_S_destroy_c_locale(this->_M_c_locale_ctype);
-	this->_S_create_c_locale(this->_M_c_locale_ctype, __s); 
+	this->_S_create_c_locale(this->_M_c_locale_ctype, __s);
       }
   }
 
   ctype_byname<char>::~ctype_byname()
   { }
 
-#ifdef _GLIBCXX_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T
   ctype<wchar_t>::__wmask_type
   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const throw()
   {
@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     return __ret;
   }
-  
+
   wchar_t
   ctype<wchar_t>::do_toupper(wchar_t __c) const
   { return towupper_l(__c, (locale_t)_M_c_locale_ctype); }
@@ -119,11 +119,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     return __hi;
   }
-  
+
   wchar_t
   ctype<wchar_t>::do_tolower(wchar_t __c) const
   { return towlower_l(__c, (locale_t)_M_c_locale_ctype); }
-  
+
   const wchar_t*
   ctype<wchar_t>::do_tolower(wchar_t* __lo, const wchar_t* __hi) const
   {
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   do_widen(char __c) const
   { return _M_widen[static_cast<unsigned char>(__c)]; }
 
-  const char* 
+  const char*
   ctype<wchar_t>::
   do_widen(const char* __lo, const char* __hi, wchar_t* __dest) const
   {
@@ -162,12 +162,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __c_locale __old = (__c_locale)uselocale((locale_t)_M_c_locale_ctype);
     const int __c = wctob(__wc);
     uselocale((locale_t)__old);
-    return (__c == EOF ? __dfault : static_cast<char>(__c)); 
+    return (__c == EOF ? __dfault : static_cast<char>(__c));
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
+  do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault,
 	    char* __dest) const
   {
     __c_locale __old = (__c_locale)uselocale((locale_t)_M_c_locale_ctype);

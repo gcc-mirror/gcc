@@ -40,19 +40,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // NB: The other ctype<char> specializations are in src/locale.cc and
   // various /config/os/* files.
   ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
-  : ctype<char>(0, false, __refs) 
-  { 	
+  : ctype<char>(0, false, __refs)
+  {
     if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
       {
 	this->_S_destroy_c_locale(this->_M_c_locale_ctype);
-	this->_S_create_c_locale(this->_M_c_locale_ctype, __s); 
+	this->_S_create_c_locale(this->_M_c_locale_ctype, __s);
       }
   }
 
   ctype_byname<char>::~ctype_byname()
   { }
 
-#ifdef _GLIBCXX_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T
   ctype<wchar_t>::__wmask_type
   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const throw()
   {
@@ -102,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     return __ret;
   };
-  
+
   wchar_t
   ctype<wchar_t>::do_toupper(wchar_t __c) const
   { return towupper(__c); }
@@ -117,11 +117,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     return __hi;
   }
-  
+
   wchar_t
   ctype<wchar_t>::do_tolower(wchar_t __c) const
   { return towlower(__c); }
-  
+
   const wchar_t*
   ctype<wchar_t>::do_tolower(wchar_t* __lo, const wchar_t* __hi) const
   {
@@ -136,11 +136,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   bool
   ctype<wchar_t>::
   do_is(mask __m, char_type __c) const
-  { 
+  {
     bool __ret = false;
     // Generically, 15 (instead of 11) since we don't know the numerical
     // encoding of the various categories in /usr/include/ctype.h.
-    const size_t __bitmasksize = 15; 
+    const size_t __bitmasksize = 15;
     for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
       if (__m & _M_bit[__bitcur]
 	  && iswctype(__c, _M_wmask[__bitcur]))
@@ -148,10 +148,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ret = true;
 	  break;
 	}
-    return __ret;    
+    return __ret;
   }
-  
-  const wchar_t* 
+
+  const wchar_t*
   ctype<wchar_t>::
   do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __vec) const
   {
@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	// Generically, 15 (instead of 11) since we don't know the numerical
 	// encoding of the various categories in /usr/include/ctype.h.
-	const size_t __bitmasksize = 15; 
+	const size_t __bitmasksize = 15;
 	mask __m = 0;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
 	  if (iswctype(*__lo, _M_wmask[__bitcur]))
@@ -168,8 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     return __hi;
   }
-  
-  const wchar_t* 
+
+  const wchar_t*
   ctype<wchar_t>::
   do_scan_is(mask __m, const wchar_t* __lo, const wchar_t* __hi) const
   {
@@ -191,8 +191,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   ctype<wchar_t>::
   do_widen(char __c) const
   { return _M_widen[static_cast<unsigned char>(__c)]; }
-  
-  const char* 
+
+  const char*
   ctype<wchar_t>::
   do_widen(const char* __lo, const char* __hi, wchar_t* __dest) const
   {
@@ -208,16 +208,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   char
   ctype<wchar_t>::
   do_narrow(wchar_t __wc, char __dfault) const
-  { 
+  {
     if (__wc >= 0 && __wc < 128 && _M_narrow_ok)
       return _M_narrow[__wc];
     const int __c = wctob(__wc);
-    return (__c == EOF ? __dfault : static_cast<char>(__c)); 
+    return (__c == EOF ? __dfault : static_cast<char>(__c));
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
+  do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault,
 	    char* __dest) const
   {
     if (_M_narrow_ok)
@@ -265,10 +265,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_widen[__i] = btowc(__i);
 
     for (size_t __i = 0; __i <= 15; ++__i)
-      { 
+      {
 	_M_bit[__i] = static_cast<mask>(1 << __i);
 	_M_wmask[__i] = _M_convert_to_wmask(_M_bit[__i]);
-      }  
+      }
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
 

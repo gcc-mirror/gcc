@@ -43,7 +43,7 @@ void test01()
 	   ClassType (ClassType::*) (ClassType)>(true)) );
   VERIFY( (test_category<is_member_pointer,
 	   float (ClassType::*) (int, float, int[], int&)>(true)) );
-  
+
   // Sanity check.
   VERIFY( (test_category<is_member_pointer, ClassType>(false)) );
 }

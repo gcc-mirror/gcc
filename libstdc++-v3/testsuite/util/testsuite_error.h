@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Error handling utils for the C++ library testsuite. 
+// Error handling utils for the C++ library testsuite.
 //
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -28,7 +28,7 @@
 namespace __gnu_test
 {
   struct test_category : public std::error_category
-  { 
+  {
     virtual const char*
     name() const noexcept
     {
@@ -36,13 +36,13 @@ namespace __gnu_test
       return s;
     }
 
-    virtual std::string 
+    virtual std::string
     message(int) const
     { return std::string("message to be determined"); }
   };
 
   struct test_derived_category : public test_category
-  { 
+  {
     virtual const char*
     name() const noexcept
     {

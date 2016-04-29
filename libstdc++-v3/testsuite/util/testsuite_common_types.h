@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// typelist for the C++ library testsuite. 
+// typelist for the C++ library testsuite.
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -276,10 +276,10 @@ namespace __gnu_test
     typedef char16_t 		a14;
     typedef char32_t 		a15;
 
-    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13, a14, a15)> type;
 #else
-    typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+    typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13)> type;
 #endif
   };
@@ -307,11 +307,11 @@ namespace __gnu_test
     __extension__ typedef __int128            a16;
     __extension__ typedef unsigned __int128   a17;
 
-    typedef node<_GLIBCXX_TYPELIST_CHAIN17(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+    typedef node<_GLIBCXX_TYPELIST_CHAIN17(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13, a14, a15,
 					   a16, a17)> type;
 # else
-    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13, a14, a15)> type;
 # endif
 #else
@@ -319,10 +319,10 @@ namespace __gnu_test
     __extension__ typedef __int128            a14;
     __extension__ typedef unsigned __int128   a15;
 
-    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13, a14, a15)> type;
 # else
-   typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+   typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					  a10, a11, a12, a13)> type;
 # endif
 #endif
@@ -345,8 +345,8 @@ namespace __gnu_test
     typedef std::atomic_wchar_t     	a13;
     typedef std::atomic_char16_t    	a14;
     typedef std::atomic_char32_t    	a15;
-    
-    typedef node<_GLIBCXX_TYPELIST_CHAIN14(a2, a3, a4, a5, a6, a7, a8, a9, 
+
+    typedef node<_GLIBCXX_TYPELIST_CHAIN14(a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13, a14, a15)> type;
   };
 
@@ -367,8 +367,8 @@ namespace __gnu_test
     typedef std::atomic_wchar_t     	a13;
     typedef std::atomic_char16_t    	a14;
     typedef std::atomic_char32_t    	a15;
-    
-    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+
+    typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9,
 					   a10, a11, a12, a13, a14, a15)> type;
   };
 
@@ -395,14 +395,14 @@ namespace __gnu_test
   struct has_increment_operators
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
 	{
 	  void __constraint()
 	  {
-	    _Tp a; 
+	    _Tp a;
 	    ++a; // prefix
 	    a++; // postfix
 	    a += a;
@@ -417,14 +417,14 @@ namespace __gnu_test
   struct has_decrement_operators
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
 	{
 	  void __constraint()
 	  {
-	    _Tp a; 
+	    _Tp a;
 	    --a; // prefix
 	    a--; // postfix
 	    a -= a;
@@ -486,7 +486,7 @@ namespace __gnu_test
   struct has_bitwise_operators
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -511,7 +511,7 @@ namespace __gnu_test
   struct constexpr_comparison_eq_ne
   {
     template<typename _Tp1, typename _Tp2 = _Tp1>
-      void 
+      void
       operator()()
       {
 	static_assert(_Tp1() == _Tp2(), "eq");
@@ -522,7 +522,7 @@ namespace __gnu_test
   struct constexpr_comparison_operators
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	static_assert(!(_Tp() < _Tp()), "less");
@@ -538,7 +538,7 @@ namespace __gnu_test
   struct has_trivial_cons_dtor
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -561,7 +561,7 @@ namespace __gnu_test
   struct standard_layout
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -583,7 +583,7 @@ namespace __gnu_test
   struct has_required_base_class
   {
     template<typename _TBase, typename _TDerived>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -593,7 +593,7 @@ namespace __gnu_test
 	    const _TDerived& obj = __a;
 	    const _TBase* base __attribute__((unused)) = &obj;
 	  }
-	  
+
 	  _TDerived __a;
 	};
 
@@ -606,7 +606,7 @@ namespace __gnu_test
   struct assignable
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -627,7 +627,7 @@ namespace __gnu_test
   struct default_constructible
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -645,7 +645,7 @@ namespace __gnu_test
   struct copy_constructible
   {
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -665,14 +665,14 @@ namespace __gnu_test
   struct single_value_constructible
   {
     template<typename _Ttype, typename _Tvalue>
-      void 
+      void
       operator()()
       {
 	struct _Concept
 	{
 	  void __constraint()
 	  { _Ttype __v(__a); }
-	  
+
 	  _Tvalue __a;
 	};
 
@@ -708,7 +708,7 @@ namespace __gnu_test
       };
 
     template<typename _Tp>
-      void 
+      void
       operator()()
       {
 	_Concept<_Tp> c;
@@ -736,7 +736,7 @@ namespace __gnu_test
 
   struct constexpr_single_value_constructible
   {
-    template<typename _Ttesttype, typename _Tvaluetype, 
+    template<typename _Ttesttype, typename _Tvaluetype,
 	     bool _IsLitp = std::is_literal_type<_Ttesttype>::value>
       struct _Concept;
 
@@ -760,7 +760,7 @@ namespace __gnu_test
       struct _Concept<_Ttesttype, _Tvaluetype, false>
       {
 	void __constraint()
-	{ 
+	{
 	  const _Tvaluetype __v { };
 	  static _Ttesttype __obj(__v);
 	}
@@ -781,17 +781,17 @@ namespace __gnu_test
   struct direct_list_initializable
   {
     template<typename _Ttype, typename _Tvalue>
-      void 
+      void
       operator()()
       {
 	struct _Concept
 	{
 	  void __constraint()
-	  { 
+	  {
 	    _Ttype __v1 { }; // default ctor
 	    _Ttype __v2 { __a };  // single-argument ctor
 	  }
-	  
+
 	  _Tvalue __a;
 	};
 
@@ -805,14 +805,14 @@ namespace __gnu_test
   struct copy_list_initializable
   {
     template<typename _Ttype, typename _Tvalue>
-      void 
+      void
       operator()()
       {
 	struct _Concept
 	{
 	  void __constraint()
 	  { _Ttype __v __attribute__((unused)) = {__a}; }
-	  
+
 	  _Tvalue __a;
 	};
 
@@ -825,7 +825,7 @@ namespace __gnu_test
   struct integral_convertable
   {
     template<typename _Ttype, typename _Tvalue>
-      void 
+      void
       operator()()
       {
 	struct _Concept
@@ -847,11 +847,11 @@ namespace __gnu_test
       }
   };
 
-  // Generator to test integral assignment operator 
+  // Generator to test integral assignment operator
   struct integral_assignable
   {
     template<typename _Ttype, typename _Tvalue>
-      void 
+      void
       operator()()
       {
 	struct _Concept

@@ -37,4 +37,4 @@ typedef int _Atomic_word;
 // This is a memory order release fence.
 #define _GLIBCXX_WRITE_MEM_BARRIER __atomic_thread_fence (__ATOMIC_RELEASE)
 
-#endif 
+#endif

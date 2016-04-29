@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Generic declaration.
   template<typename _CharT>
-    class __basic_file; 
+    class __basic_file;
 
   // Specialization.
   template<>
@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
-      __basic_file* 
+      __basic_file*
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
 
       __basic_file*
@@ -90,13 +90,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __basic_file*
       sys_open(int __fd, ios_base::openmode __mode) throw ();
 
-      __basic_file* 
-      close(); 
+      __basic_file*
+      close();
 
-      _GLIBCXX_PURE bool 
+      _GLIBCXX_PURE bool
       is_open() const throw ();
 
-      _GLIBCXX_PURE int 
+      _GLIBCXX_PURE int
       fd() throw ();
 
       _GLIBCXX_PURE __c_file*
@@ -104,20 +104,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~__basic_file();
 
-      streamsize 
+      streamsize
       xsputn(const char* __s, streamsize __n);
 
-      streamsize 
+      streamsize
       xsputn_2(const char* __s1, streamsize __n1,
 	       const char* __s2, streamsize __n2);
 
-      streamsize 
+      streamsize
       xsgetn(char* __s, streamsize __n);
 
       streamoff
       seekoff(streamoff __off, ios_base::seekdir __way) throw ();
 
-      int 
+      int
       sync();
 
       streamsize
@@ -127,4 +127,4 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif	
+#endif

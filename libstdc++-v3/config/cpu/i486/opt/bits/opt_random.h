@@ -170,7 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  }
 		      }
 		    while (__v2 > __maskval || __v2 < __tmp);
-		    
+
 		    __v.__i = _mm_set_epi64x(__v1, __v2);
 		  }
 

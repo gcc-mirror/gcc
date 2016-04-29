@@ -31,7 +31,7 @@ namespace __gnu_test
     bool	_M_throw;
 
     counter() : _M_count(0), _M_throw(true) { }
-    
+
     ~counter() throw (counter_error)
     {
       if (_M_throw && _M_count != 0)
@@ -45,12 +45,12 @@ namespace __gnu_test
     decrement() { get()._M_count--; }
 
     static counter&
-    get() 
+    get()
     {
       static counter g;
       return g;
     }
-  
+
     static std::size_t
     count() { return get()._M_count; }
 
@@ -59,7 +59,7 @@ namespace __gnu_test
   };
 
   template<typename Alloc, bool uses_global_new>
-    bool 
+    bool
     check_new(Alloc a = Alloc())
     {
       __gnu_test::counter::exceptions(false);
@@ -71,7 +71,7 @@ namespace __gnu_test
     }
 
   template<typename Alloc, bool uses_global_delete>
-    bool 
+    bool
     check_delete(Alloc a = Alloc())
     {
       __gnu_test::counter::exceptions(false);
@@ -95,7 +95,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
   __gnu_test::counter::increment();
   return p;
 }
- 
+
 void operator delete(void* p) throw()
 {
   std::printf("operator delete is called \n");
@@ -104,7 +104,7 @@ void operator delete(void* p) throw()
       std::free(p);
       __gnu_test::counter::decrement();
 
-      std::size_t count = __gnu_test::counter::count(); 
+      std::size_t count = __gnu_test::counter::count();
       if (count == 0)
 	std::printf("All memory released \n");
       else

@@ -30,10 +30,10 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -41,7 +41,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   bool
   ctype<char>::
   is(mask __m, char __c) const
-  { 
+  {
     if (_M_table)
       return _M_table[static_cast<unsigned char>(__c)] & __m;
     else
@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __low;
   }
 
-#ifdef _GLIBCXX_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T
   inline bool
   ctype<wchar_t>::
   do_is(mask __m, wchar_t __c) const
@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __istype (__c, __m);
   }
 
-  inline const wchar_t* 
+  inline const wchar_t*
   ctype<wchar_t>::
   do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __vec) const
   {
@@ -129,8 +129,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   | blank);
     return __hi;
   }
-  
-  inline const wchar_t* 
+
+  inline const wchar_t*
   ctype<wchar_t>::
   do_scan_is(mask __m, const wchar_t* __lo, const wchar_t* __hi) const
   {

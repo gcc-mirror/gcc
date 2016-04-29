@@ -31,7 +31,7 @@
 #include <ext/pod_char_traits.h>
 
 namespace __gnu_test
-{  
+{
   struct pod_int
   {
     int value;
@@ -52,7 +52,7 @@ namespace __gnu_test
   inline bool
   operator==(const pod_int& lhs, const pod_int& rhs)
   { return lhs.value == rhs.value; }
-  
+
   inline bool
   operator<(const pod_int& lhs, const pod_int& rhs)
   { return lhs.value < rhs.value; }
@@ -68,14 +68,14 @@ namespace __gnu_test
 
   inline pod_int
   operator-(const pod_int& lhs, const pod_int& rhs)
-  { 
+  {
     pod_int ret = { lhs.value - rhs.value };
     return ret;
   }
 
   inline pod_int
   operator*(const pod_int& lhs, const pod_int& rhs)
-  { 
+  {
     pod_int ret = { lhs.value * rhs.value };
     return ret;
   }
@@ -98,10 +98,10 @@ namespace __gnu_test
   typedef character<unsigned char, pod_int, pod_state>  	pod_char;
   typedef character<unsigned char, unsigned int, pod_state>  	pod_uchar;
   typedef character<unsigned short, unsigned int>	   	pod_ushort;
-  typedef character<unsigned int, unsigned long>	   	pod_uint;  
+  typedef character<unsigned int, unsigned long>	   	pod_uint;
 }
 
-namespace __gnu_cxx 
+namespace __gnu_cxx
 {
   // Specializations.
   // pod_char
@@ -122,7 +122,7 @@ namespace __gnu_cxx
 	V2 ret = { c.value };
 	return ret;
       }
-  
+
   template<>
     template<typename V2>
       inline __gnu_test::pod_uchar::char_type
@@ -160,7 +160,7 @@ namespace std
   // 3. tmp becomes the new value of state.
   template<>
     class codecvt<__gnu_test::pod_uchar, char, __gnu_test::pod_state>
-    : public __codecvt_abstract_base<__gnu_test::pod_uchar, char, 
+    : public __codecvt_abstract_base<__gnu_test::pod_uchar, char,
 				     __gnu_test::pod_state>
     {
     public:
@@ -303,7 +303,7 @@ namespace std
 		++from;
 		continue;
 	      }
-	    
+
 	    if (max == 0) break;
 
 	    unsigned char tmp;
@@ -390,7 +390,7 @@ namespace std
       do_widen(char c) const
       { return __gnu_test::pod_uchar::from<char>(c); }
 
-      virtual const char* 
+      virtual const char*
       do_widen(const char* low, const char* high, char_type* dest) const
       {
 	transform(low, high, dest, &__gnu_test::pod_uchar::from<char>);
@@ -411,88 +411,27 @@ namespace std
     };
 
   // numpunct specializations
-  template<> 
+  template<>
     class numpunct<__gnu_test::pod_uint>
     : public locale::facet
-    { 
-    public: 
-      typedef __gnu_test::pod_uint    char_type; 
-      typedef basic_string<char_type> string_type; 
-    
-      static locale::id id; 
-      
+    {
+    public:
+      typedef __gnu_test::pod_uint    char_type;
+      typedef basic_string<char_type> string_type;
+
+      static locale::id id;
+
       explicit
       numpunct(size_t refs = 0)
-      : locale::facet(refs) 
-      { } 
- 
-      char_type
-      decimal_point() const 
-      { return this->do_decimal_point(); } 
- 
-      char_type
-      thousands_sep() const 
-      { return this->do_thousands_sep(); } 
- 
-      string
-      grouping() const 
-      { return this->do_grouping(); } 
- 
-      string_type
-      truename() const 
-      { return this->do_truename(); } 
- 
-      string_type
-      falsename() const 
-      { return this->do_falsename(); } 
- 
-    protected: 
-      ~numpunct()
-      { } 
- 
-      virtual char_type
-      do_decimal_point() const 
-      { return char_type(); } 
- 
-      virtual char_type
-      do_thousands_sep() const 
-      { return char_type(); } 
- 
-      virtual string
-      do_grouping() const 
-      { return string(); } 
- 
-      virtual string_type
-      do_truename() const 
-      { return string_type(); }
- 
-      virtual string_type
-      do_falsename() const 
-      { return string_type(); } 
-    };
-
-  template<> 
-    class moneypunct<__gnu_test::pod_uint>
-    : public locale::facet, public money_base
-    { 
-    public: 
-      typedef __gnu_test::pod_uint    char_type; 
-      typedef basic_string<char_type> string_type; 
-    
-      static locale::id id; 
-      static const bool intl = false;
-
-      explicit
-      moneypunct(size_t refs = 0)
-      : locale::facet(refs) 
+      : locale::facet(refs)
       { }
- 
+
       char_type
-      decimal_point() const 
-      { return this->do_decimal_point(); } 
- 
+      decimal_point() const
+      { return this->do_decimal_point(); }
+
       char_type
-      thousands_sep() const 
+      thousands_sep() const
       { return this->do_thousands_sep(); }
 
       string
@@ -500,17 +439,78 @@ namespace std
       { return this->do_grouping(); }
 
       string_type
-      curr_symbol() const 
-      { return this->do_curr_symbol(); } 
- 
-      string_type
-      positive_sign() const 
-      { return this->do_positive_sign(); } 
+      truename() const
+      { return this->do_truename(); }
 
       string_type
-      negative_sign() const 
-      { return this->do_negative_sign(); } 
-      
+      falsename() const
+      { return this->do_falsename(); }
+
+    protected:
+      ~numpunct()
+      { }
+
+      virtual char_type
+      do_decimal_point() const
+      { return char_type(); }
+
+      virtual char_type
+      do_thousands_sep() const
+      { return char_type(); }
+
+      virtual string
+      do_grouping() const
+      { return string(); }
+
+      virtual string_type
+      do_truename() const
+      { return string_type(); }
+
+      virtual string_type
+      do_falsename() const
+      { return string_type(); }
+    };
+
+  template<>
+    class moneypunct<__gnu_test::pod_uint>
+    : public locale::facet, public money_base
+    {
+    public:
+      typedef __gnu_test::pod_uint    char_type;
+      typedef basic_string<char_type> string_type;
+
+      static locale::id id;
+      static const bool intl = false;
+
+      explicit
+      moneypunct(size_t refs = 0)
+      : locale::facet(refs)
+      { }
+
+      char_type
+      decimal_point() const
+      { return this->do_decimal_point(); }
+
+      char_type
+      thousands_sep() const
+      { return this->do_thousands_sep(); }
+
+      string
+      grouping() const
+      { return this->do_grouping(); }
+
+      string_type
+      curr_symbol() const
+      { return this->do_curr_symbol(); }
+
+      string_type
+      positive_sign() const
+      { return this->do_positive_sign(); }
+
+      string_type
+      negative_sign() const
+      { return this->do_negative_sign(); }
+
       int
       frac_digits() const
       { return this->do_frac_digits(); }
@@ -518,39 +518,39 @@ namespace std
       pattern
       pos_format() const
       { return this->do_pos_format(); }
- 
+
       pattern
       neg_format() const
       { return this->do_neg_format(); }
-  
-    protected: 
-      ~moneypunct() 
-      { } 
- 
+
+    protected:
+      ~moneypunct()
+      { }
+
       virtual char_type
-      do_decimal_point() const 
-      { return char_type(); } 
- 
+      do_decimal_point() const
+      { return char_type(); }
+
       virtual char_type
-      do_thousands_sep() const 
-      { return char_type(); } 
- 
+      do_thousands_sep() const
+      { return char_type(); }
+
       virtual string
-      do_grouping() const 
+      do_grouping() const
       { return string(); }
 
       virtual string_type
-      do_curr_symbol() const 
-      { return string_type(); } 
- 
-      string_type
-      do_positive_sign() const 
-      { return string_type(); } 
+      do_curr_symbol() const
+      { return string_type(); }
 
       string_type
-      do_negative_sign() const 
-      { return string_type(); } 
-      
+      do_positive_sign() const
+      { return string_type(); }
+
+      string_type
+      do_negative_sign() const
+      { return string_type(); }
+
       int
       do_frac_digits() const
       { return 0; }
@@ -558,7 +558,7 @@ namespace std
       pattern
       do_pos_format() const
       { return pattern(); }
- 
+
       pattern
       do_neg_format() const
       { return pattern(); }

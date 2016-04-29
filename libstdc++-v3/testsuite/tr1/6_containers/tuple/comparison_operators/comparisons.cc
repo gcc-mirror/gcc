@@ -45,6 +45,6 @@ main()
   VERIFY(!(a > a) && !(b > b));
   VERIFY(a >= a && b >= b);
   VERIFY(a < b && !(b < a) && a <= b && !(b <= a));
-  VERIFY(b > a && !(a > b) && b >= a && !(a >= b));  
+  VERIFY(b > a && !(a > b) && b >= a && !(a >= b));
 }
 

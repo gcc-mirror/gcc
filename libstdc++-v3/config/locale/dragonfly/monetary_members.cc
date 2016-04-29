@@ -44,9 +44,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Construct and return valid pattern consisting of some combination of:
   // space none symbol sign value
   money_base::pattern
-  money_base::_S_construct_pattern(char __precedes, char __space, 
+  money_base::_S_construct_pattern(char __precedes, char __space,
 				   char __posn) throw()
-  { 
+  {
     pattern __ret;
 
     // This insanely complicated routine attempts to construct a valid
@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // if (__precedes) symbol -> value
     // else value -> symbol
-    
+
     // if (__space) space
     // else none
 
@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__precedes)
 	  {
 	    __ret.field[0] = sign;
-	    __ret.field[1] = symbol;	    
+	    __ret.field[1] = symbol;
 	    if (__space)
 	      {
 		__ret.field[2] = space;
@@ -147,7 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 	      {
-		__ret.field[2] = value;		
+		__ret.field[2] = value;
 		__ret.field[3] = none;
 	      }
 	  }
@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     void
-    moneypunct<char, true>::_M_initialize_moneypunct(__c_locale __cloc, 
+    moneypunct<char, true>::_M_initialize_moneypunct(__c_locale __cloc,
 						     const char*)
     {
       if (!_M_data)
@@ -270,7 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __try
 	    {
 	      size_t __len;
-	      
+
 	      // Check for NULL, which implies no grouping.
 	      if (lc->mon_thousands_sep == NULL ||
 	          lc->mon_thousands_sep[0] == '\0')
@@ -365,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     void
-    moneypunct<char, false>::_M_initialize_moneypunct(__c_locale __cloc, 
+    moneypunct<char, false>::_M_initialize_moneypunct(__c_locale __cloc,
 						      const char*)
     {
       if (!_M_data)
@@ -550,7 +550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     void
-    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale __cloc, 
+    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale __cloc,
 							const char*)
     {
       if (!_M_data)
@@ -652,9 +652,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	      else
 		_M_data->_M_positive_sign = L"";
-	      _M_data->_M_positive_sign_size = 
+	      _M_data->_M_positive_sign_size =
 		wcslen(_M_data->_M_positive_sign);
-	      
+
 	      __len = strlen(__cnegsign);
 	      if (!__nposn)
 		_M_data->_M_negative_sign = L"()";
@@ -667,9 +667,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	      else
 		_M_data->_M_negative_sign = L"";
-	      _M_data->_M_negative_sign_size = 
+	      _M_data->_M_negative_sign_size =
 		wcslen(_M_data->_M_negative_sign);
-	      
+
 	      // _Intl == true.
 	      __len = strlen(__ccurr);
 	      if (__len)
@@ -689,11 +689,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_data = 0;
 	      delete [] __group;
 	      delete [] __wcs_ps;
-	      delete [] __wcs_ns;	      
+	      delete [] __wcs_ns;
 	      uselocale((locale_t)__old);
 	      __throw_exception_again;
-	    } 
-	  
+	    }
+
 	  char __pprecedes = lc->int_p_cs_precedes;
 	  char __pspace = lc->int_p_sep_by_space;
 	  char __pposn = lc->int_p_sign_posn;
@@ -812,7 +812,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	      else
 		_M_data->_M_positive_sign = L"";
-              _M_data->_M_positive_sign_size = 
+              _M_data->_M_positive_sign_size =
 		wcslen(_M_data->_M_positive_sign);
 
 	      __len = strlen(__cnegsign);
@@ -827,7 +827,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	      else
 		_M_data->_M_negative_sign = L"";
-              _M_data->_M_negative_sign_size = 
+              _M_data->_M_negative_sign_size =
 		wcslen(_M_data->_M_negative_sign);
 
 	      // _Intl == true.
@@ -849,7 +849,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
               _M_data = 0;
 	      delete [] __group;
 	      delete [] __wcs_ps;
-	      delete [] __wcs_ns;	      
+	      delete [] __wcs_ns;
 	      uselocale((locale_t)__old);
               __throw_exception_again;
 	    }

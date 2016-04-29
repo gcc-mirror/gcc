@@ -43,7 +43,7 @@ void test01()
   Set::iterator i2 = s.find("banana");
   VERIFY(i2 != s.end());
   VERIFY(*i2 == "banana");
-  
+
   std::pair<Set::iterator, Set::iterator> p = s.equal_range("grape");
   VERIFY(std::distance(p.first, p.second) == 2);
   Set::iterator i3 = p.first;
@@ -52,7 +52,7 @@ void test01()
   VERIFY(*i3 == "grape");
 
   Set::iterator i4 = s.find("lime");
-  VERIFY(i4 == s.end());  
+  VERIFY(i4 == s.end());
 
   VERIFY(s.count("grape") == 2);
   VERIFY(s.count("banana") == 1);

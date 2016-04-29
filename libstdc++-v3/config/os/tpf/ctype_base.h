@@ -25,9 +25,9 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Information as gleaned from /usr/include/ctype.h
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -40,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned short 	mask;   
+    typedef unsigned short 	mask;
     static const mask upper    	= _ISupper;
     static const mask lower 	= _ISlower;
     static const mask alpha 	= _ISalpha;

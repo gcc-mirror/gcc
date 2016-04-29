@@ -29,7 +29,7 @@ void test01()
   using std::tr1::aligned_storage;
   using std::tr1::alignment_of;
   using namespace __gnu_test;
-  
+
   const std::size_t align_c = alignment_of<char>::value;
   VERIFY( (sizeof(aligned_storage<4, align_c>::type) >= 4) );
   VERIFY( (__alignof__(aligned_storage<4, align_c>::type) == align_c) );

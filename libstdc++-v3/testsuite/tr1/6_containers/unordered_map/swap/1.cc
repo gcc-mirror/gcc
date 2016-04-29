@@ -38,7 +38,7 @@ test01()
   typedef __gnu_test::uneq_allocator<my_pair> my_alloc;
   typedef unordered_map<char, int, hash<char>, equal_to<char>, my_alloc>
     my_umap;
-  
+
   const char title01[] = "Rivers of sand";
   const char title02[] = "Concret PH";
   const char title03[] = "Sonatas and Interludes for Prepared Piano";
@@ -71,7 +71,7 @@ test01()
   size01 = umap01.size();
   my_umap umap02(10, hash<char>(), equal_to<char>(), alloc01);
   size02 = umap02.size();
-  
+
   umap01.swap(umap02);
   VERIFY( umap01.size() == size02 );
   VERIFY( umap01.empty() );
@@ -89,7 +89,7 @@ test01()
   VERIFY( my_map(umap03.begin(), umap03.end()) == map02_ref );
   VERIFY( umap04.size() == size01 );
   VERIFY( umap04.empty() );
-  
+
   my_umap umap05(map01_ref.begin(), map01_ref.end(), 10, hash<char>(),
 		 equal_to<char>(), alloc01);
   size01 = umap05.size();
@@ -157,7 +157,7 @@ test01()
 }
 
 int main()
-{ 
+{
   test01();
   return 0;
 }

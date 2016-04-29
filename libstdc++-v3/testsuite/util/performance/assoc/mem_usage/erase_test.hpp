@@ -88,14 +88,14 @@ namespace __gnu_pbds
 
 	  typedef __gnu_test::tracker_allocator_counter counter_type;
 	  __gnu_test::tracker_allocator<char> alloc;
-	  const size_t init_mem = counter_type::get_allocation_count() 
+	  const size_t init_mem = counter_type::get_allocation_count()
 	                          - counter_type::get_deallocation_count();
 	  Cntnr cntnr(ins_it_b, ins_it_e);
 
 	  while (cntnr.size() > 1)
             cntnr.erase(*cntnr.begin());
 
-	  const size_t final_mem = counter_type::get_allocation_count() 
+	  const size_t final_mem = counter_type::get_allocation_count()
 	                         - counter_type::get_deallocation_count();
 	  assert(final_mem > init_mem);
 	  const size_t delta_mem = final_mem - init_mem;

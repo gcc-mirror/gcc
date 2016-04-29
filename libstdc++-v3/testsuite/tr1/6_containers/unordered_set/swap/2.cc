@@ -87,7 +87,7 @@ test01()
   VERIFY( uset04.empty() );
   VERIFY( uset03.get_allocator().get_personality() == personality02 );
   VERIFY( uset04.get_allocator().get_personality() == personality01 );
-  
+
   my_uset uset05(set01_ref.begin(), set01_ref.end(), 10, hash<char>(),
 		 equal_to<char>(), alloc01);
   size01 = uset05.size();
@@ -175,7 +175,7 @@ test01()
 }
 
 int main()
-{ 
+{
   test01();
   return 0;
 }

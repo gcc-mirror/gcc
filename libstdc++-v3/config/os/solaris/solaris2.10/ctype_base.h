@@ -25,7 +25,7 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Information as gleaned from /usr/include/ctype.h. Looks like this
 // only works with solaris2.7 and solaris2.8. Thanks for not changing
 // things, sun engineers!
@@ -42,7 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned int 	mask;   
+    typedef unsigned int 	mask;
     static const mask upper    	= _ISUPPER;
     static const mask lower 	= _ISLOWER;
     static const mask alpha 	= _ISALPHA;

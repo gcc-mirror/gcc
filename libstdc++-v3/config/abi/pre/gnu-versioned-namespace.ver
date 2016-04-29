@@ -77,7 +77,7 @@ GLIBCXX_7.0 {
     # locale
     _ZNSt3__79has_facetINS_*;
 
-    # hash 
+    # hash
     _ZNSt8__detail3__712__prime_listE;
     _ZNSt3tr18__detail3__712__prime_listE;
 
@@ -110,7 +110,7 @@ GLIBCXX_7.0 {
     _ZN9__gnu_cxx3__76__poolILb[01]EE10_M_destroyEv;
     _ZN9__gnu_cxx3__76__poolILb1EE16_M_get_thread_idEv;
 
-    _ZN9__gnu_cxx3__717__pool_alloc_base9_M_refillE[jmy];    
+    _ZN9__gnu_cxx3__717__pool_alloc_base9_M_refillE[jmy];
     _ZN9__gnu_cxx3__717__pool_alloc_base16_M_get_free_listE[jmy];
     _ZN9__gnu_cxx3__717__pool_alloc_base12_M_get_mutexEv;
 

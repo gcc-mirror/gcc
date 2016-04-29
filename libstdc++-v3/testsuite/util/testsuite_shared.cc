@@ -34,7 +34,7 @@ try_allocation()
 
   typedef __gnu_cxx::__mt_alloc<value_t> allocator_t;
 
-  typedef std::char_traits<value_t> traits_t; 
+  typedef std::char_traits<value_t> traits_t;
   typedef std::basic_string<value_t, traits_t, allocator_t> string_t;
 
   string_t s;
@@ -42,7 +42,7 @@ try_allocation()
 }
 
 // libstdc++/23591
-extern "C" void 
+extern "C" void
 try_throw_exception()
 {
   try
@@ -53,7 +53,7 @@ try_throw_exception()
     { }
 }
 
-extern "C" void 
+extern "C" void
 try_function_random_fail()
 {
   long seed = lrand48();
@@ -77,23 +77,23 @@ try_function_random_fail()
 
 #if __cplusplus < 201103L
 // "must be compiled with C++98"
-  void 
+  void
   erase_external(std::set<int>& s)
   { s.erase(s.begin()); }
 
-  void 
+  void
   erase_external(std::multiset<int>& s)
   { s.erase(s.begin()); }
-  
-  void 
+
+  void
   erase_external(std::map<int, int>& s)
   { s.erase(s.begin()); }
-  
-  void 
+
+  void
   erase_external(std::multimap<int, int>& s)
   { s.erase(s.begin()); }
 
-  void 
+  void
   erase_external_iterators(std::set<int>& s)
   {
     typedef typename std::set<int>::iterator iterator_type;
@@ -101,7 +101,7 @@ try_function_random_fail()
     s.erase(iter, ++iter);
   }
 
-  void 
+  void
   erase_external_iterators(std::multiset<int>& s)
   {
     typedef typename std::multiset<int>::iterator iterator_type;
@@ -109,7 +109,7 @@ try_function_random_fail()
     s.erase(iter, ++iter);
   }
 
-  void 
+  void
   erase_external_iterators(std::map<int, int>& s)
   {
     typedef typename std::map<int, int>::iterator iterator_type;
@@ -117,8 +117,8 @@ try_function_random_fail()
     s.erase(iter, ++iter);
   }
 
-  
-  void 
+
+  void
   erase_external_iterators(std::multimap<int, int>& s)
   {
     typedef typename std::multimap<int, int>::iterator iterator_type;

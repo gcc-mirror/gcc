@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Iterator Wrappers for the C++ library testsuite. 
+// Iterator Wrappers for the C++ library testsuite.
 //
 // Copyright (C) 2004-2016 Free Software Foundation, Inc.
 //
@@ -113,7 +113,7 @@ namespace __gnu_test
 
   /**
    * @brief output_iterator wrapper for pointer
-   * 
+   *
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a output_iterator. It should not be
    * instantiated directly, but generated from a test_container
@@ -131,7 +131,7 @@ namespace __gnu_test
     {
       ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last);
     }
-    
+
     output_iterator_wrapper(const output_iterator_wrapper& in)
     : ptr(in.ptr), SharedInfo(in.SharedInfo)
     { }
@@ -143,9 +143,9 @@ namespace __gnu_test
       ITERATOR_VERIFY(SharedInfo->writtento[ptr - SharedInfo->first] == false);
       return WritableObject<T>(ptr, SharedInfo);
     }
-    
+
     output_iterator_wrapper&
-    operator=(const output_iterator_wrapper& in) 
+    operator=(const output_iterator_wrapper& in)
     {
       ptr = in.ptr;
       SharedInfo = in.SharedInfo;
@@ -182,7 +182,7 @@ namespace __gnu_test
 
   /**
    * @brief input_iterator wrapper for pointer
-   * 
+   *
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a input_iterator. It should not be
    * instantiated directly, but generated from a test_container
@@ -203,7 +203,7 @@ namespace __gnu_test
     input_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : ptr(_ptr), SharedInfo(SharedInfo_in)
     { ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last); }
-    
+
     input_iterator_wrapper(const input_iterator_wrapper& in)
     : ptr(in.ptr), SharedInfo(in.SharedInfo)
     { }
@@ -273,7 +273,7 @@ namespace __gnu_test
 
   /**
    * @brief forward_iterator wrapper for pointer
-   * 
+   *
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a forward_iterator. It should not be
    * instantiated directly, but generated from a test_container
@@ -286,7 +286,7 @@ namespace __gnu_test
     forward_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : input_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
-    
+
     forward_iterator_wrapper(const forward_iterator_wrapper& in)
     : input_iterator_wrapper<T>(in)
     { }
@@ -327,7 +327,7 @@ namespace __gnu_test
 
   /**
    * @brief bidirectional_iterator wrapper for pointer
-   * 
+   *
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a forward_iterator. It should not be
    * instantiated directly, but generated from a test_container
@@ -355,7 +355,7 @@ namespace __gnu_test
       this->SharedInfo = in.SharedInfo;
       return *this;
     }
-   
+
     bidirectional_iterator_wrapper&
     operator++()
     {
@@ -372,7 +372,7 @@ namespace __gnu_test
       return tmp;
     }
 
-    bidirectional_iterator_wrapper& 
+    bidirectional_iterator_wrapper&
     operator--()
     {
       ITERATOR_VERIFY(this->SharedInfo && this->ptr > this->SharedInfo->first);
@@ -382,7 +382,7 @@ namespace __gnu_test
 
     bidirectional_iterator_wrapper
     operator--(int)
-    { 
+    {
       bidirectional_iterator_wrapper<T> tmp = *this;
       --*this;
       return tmp;
@@ -391,13 +391,13 @@ namespace __gnu_test
 
   /**
    * @brief random_access_iterator wrapper for pointer
-   * 
+   *
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a forward_iterator. It should not be
    * instantiated directly, but generated from a test_container
    */
   template<class T>
-  struct random_access_iterator_wrapper 
+  struct random_access_iterator_wrapper
   : public bidirectional_iterator_wrapper<T>
   {
     typedef BoundsContainer<T> ContainerType;
@@ -510,7 +510,7 @@ namespace __gnu_test
       return !(*this < in);
     }
 
-    bool 
+    bool
     operator<=(const random_access_iterator_wrapper<T>& in) const
     {
       return !(*this > in);
@@ -524,15 +524,15 @@ namespace __gnu_test
 
   template<typename T>
     random_access_iterator_wrapper<T>
-    operator+(std::ptrdiff_t n, random_access_iterator_wrapper<T> it) 
+    operator+(std::ptrdiff_t n, random_access_iterator_wrapper<T> it)
     { return it += n; }
 
 
-  /** 
+  /**
    * @brief A container-type class for holding iterator wrappers
    * test_container takes two parameters, a class T and an iterator
    * wrapper templated by T (for example forward_iterator_wrapper<T>.
-   * It takes two pointers representing a range and presents them as 
+   * It takes two pointers representing a range and presents them as
    * a container of iterators.
    */
   template <class T, template<class TT> class ItType>

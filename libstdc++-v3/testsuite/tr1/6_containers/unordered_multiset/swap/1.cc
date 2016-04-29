@@ -61,7 +61,7 @@ test01()
   size01 = umset01.size();
   my_umset umset02(10, hash<char>(), equal_to<char>(), alloc01);
   size02 = umset02.size();
-  
+
   umset01.swap(umset02);
   VERIFY( umset01.size() == size02 );
   VERIFY( umset01.empty() );
@@ -73,20 +73,20 @@ test01()
   my_umset umset04(mset02_ref.begin(), mset02_ref.end(), 10, hash<char>(),
 		   equal_to<char>(), alloc01);
   size02 = umset04.size();
-  
+
   umset03.swap(umset04);
   VERIFY( umset03.size() == size02 );
   VERIFY( my_mset(umset03.begin(), umset03.end()) == mset02_ref );
   VERIFY( umset04.size() == size01 );
   VERIFY( umset04.empty() );
-  
+
   my_umset umset05(mset01_ref.begin(), mset01_ref.end(), 10, hash<char>(),
 		   equal_to<char>(), alloc01);
   size01 = umset05.size();
   my_umset umset06(mset02_ref.begin(), mset02_ref.end(), 10, hash<char>(),
 		   equal_to<char>(), alloc01);
   size02 = umset06.size();
-  
+
   umset05.swap(umset06);
   VERIFY( umset05.size() == size02 );
   VERIFY( my_mset(umset05.begin(), umset05.end()) == mset02_ref );
@@ -147,7 +147,7 @@ test01()
 }
 
 int main()
-{ 
+{
   test01();
   return 0;
 }

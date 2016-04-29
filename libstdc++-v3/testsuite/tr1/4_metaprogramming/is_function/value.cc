@@ -42,7 +42,7 @@ void test01()
 
   VERIFY( (test_category<is_function, AbstractClass>(false)) );
   VERIFY( (test_category<is_function, int(&)(int)>(false)) );
-  
+
   // Sanity check.
   VERIFY( (test_category<is_function, ClassType>(false)) );
 }

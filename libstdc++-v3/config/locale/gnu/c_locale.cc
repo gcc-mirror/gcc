@@ -43,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     void
-    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
+    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err,
 		   const __c_locale& __cloc) throw()
     {
       char* __sanity;
@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     void
-    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
+    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err,
 		   const __c_locale& __cloc) throw()
     {
       char* __sanity;
@@ -129,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   void
-  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s, 
+  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s,
 				    __c_locale __old)
   {
     __cloc = __newlocale(1 << LC_ALL, __s, __old);
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
   {
     if (__cloc && _S_get_c_locale() != __cloc)
-      __freelocale(__cloc); 
+      __freelocale(__cloc);
   }
 
   __c_locale
@@ -261,18 +261,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   const char* const category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
-      "LC_CTYPE", 
+      "LC_CTYPE",
       "LC_NUMERIC",
-      "LC_TIME", 
-      "LC_COLLATE", 
+      "LC_TIME",
+      "LC_COLLATE",
       "LC_MONETARY",
-      "LC_MESSAGES", 
-      "LC_PAPER", 
-      "LC_NAME", 
+      "LC_MESSAGES",
+      "LC_PAPER",
+      "LC_NAME",
       "LC_ADDRESS",
-      "LC_TELEPHONE", 
-      "LC_MEASUREMENT", 
-      "LC_IDENTIFICATION" 
+      "LC_TELEPHONE",
+      "LC_MEASUREMENT",
+      "LC_IDENTIFICATION"
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION

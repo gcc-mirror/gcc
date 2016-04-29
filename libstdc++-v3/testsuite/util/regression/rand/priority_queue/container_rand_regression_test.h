@@ -145,20 +145,20 @@ namespace detail
       split_join();
 
       void
-      cmp(const Cntnr& r_container, const native_type& r_native_c, 
+      cmp(const Cntnr& r_container, const native_type& r_native_c,
 	  const std::string& r_call_fn);
 
       void
-      print_container(const native_type& r_cnt, 
+      print_container(const native_type& r_cnt,
 		      std::ostream& r_os = std::cerr) const;
 
       void
-      print_container(const cntnr& r_cnt, 
+      print_container(const cntnr& r_cnt,
 		      std::ostream& r_os = std::cerr) const;
 
       struct destructor_printer
       {
-	destructor_printer(const std::string& r_msg) 
+	destructor_printer(const std::string& r_msg)
 	: m_msg(r_msg), m_print(true) { }
 
 	void
@@ -169,7 +169,7 @@ namespace detail
 	{
 	  if (m_print)
 	    {
-	      std::cerr << std::endl << "Uncaught exception: " << std::endl 
+	      std::cerr << std::endl << "Uncaught exception: " << std::endl
 			<< m_msg << std::endl;
 	    }
 	}
@@ -195,14 +195,14 @@ namespace detail
       size_t 			m_i;
 
     public:
-      container_rand_regression_test(unsigned long seed, size_t n, size_t m, 
-				     double tp, double ip, double dp, 
-				     double ep, double cp, double mp, 
+      container_rand_regression_test(unsigned long seed, size_t n, size_t m,
+				     double tp, double ip, double dp,
+				     double ep, double cp, double mp,
 				     bool disp);
 
       virtual
       ~container_rand_regression_test();
-      
+
       void
       operator()();
   };
@@ -210,7 +210,7 @@ namespace detail
 
 #ifdef PB_DS_REGRESSION_TRACE
 # define PB_DS_TRACE(X) std::cerr << X << std::endl
-#else 
+#else
 # define PB_DS_TRACE(X)
 #endif
 

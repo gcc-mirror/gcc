@@ -52,7 +52,7 @@ namespace __gnu_pbds
       class subscript_insert_functor
       {
       public:
-        subscript_insert_functor(It ins_it_b,  It ins_it_e) 
+        subscript_insert_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -78,9 +78,9 @@ namespace __gnu_pbds
     class subscript_insert_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
-      subscript_insert_test(It ins_b, It b, size_t ins_vn, size_t ins_vs, 
+      subscript_insert_test(It ins_b, It b, size_t ins_vn, size_t ins_vs,
 			    size_t ins_vm, size_t vn, size_t vs, size_t vm)
-      : m_ins_b(ins_b), m_fnd_b(b), m_ins_vn(ins_vn), m_ins_vs(ins_vs), 
+      : m_ins_b(ins_b), m_fnd_b(b), m_ins_vn(ins_vn), m_ins_vs(ins_vs),
 	m_ins_vm(ins_vm), m_fnd_vn(vn), m_fnd_vs(vs), m_fnd_vm(vm)
       { }
 
@@ -130,5 +130,5 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

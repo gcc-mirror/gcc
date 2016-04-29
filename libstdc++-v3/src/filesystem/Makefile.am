@@ -73,7 +73,7 @@ AM_MAKEFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use.
-# 
+#
 # The second tag argument, `--tag disable-shared` means that libtool
 # only compiles each source once, for static objects. In actuality,
 # glibcxx_lt_pic_flag and glibcxx_compiler_shared_flag are added to

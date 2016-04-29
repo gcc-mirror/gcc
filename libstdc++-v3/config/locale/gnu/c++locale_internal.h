@@ -63,7 +63,7 @@ extern "C" __typeof(wcscoll_l) __wcscoll_l;
 extern "C" __typeof(wcsftime_l) __wcsftime_l;
 extern "C" __typeof(wcsxfrm_l) __wcsxfrm_l;
 extern "C" __typeof(wctype_l) __wctype_l;
-#endif 
+#endif
 
 #endif // GLIBC 2.3 and later
 

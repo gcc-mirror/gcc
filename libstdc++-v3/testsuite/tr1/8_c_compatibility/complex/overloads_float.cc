@@ -47,11 +47,11 @@ void test01()
   check_ret_type<cmplx_f_type>(std::tr1::conj(f1));
   check_ret_type<cmplx_d_type>(std::tr1::conj(d1));
   check_ret_type<cmplx_ld_type>(std::tr1::conj(ld1));
-  
+
   check_ret_type<float>(std::tr1::imag(f1));
   check_ret_type<double>(std::tr1::imag(d1));
   check_ret_type<long double>(std::tr1::imag(ld1));
-  
+
   check_ret_type<float>(std::tr1::norm(f1));
   check_ret_type<double>(std::tr1::norm(d1));
   check_ret_type<long double>(std::tr1::norm(ld1));

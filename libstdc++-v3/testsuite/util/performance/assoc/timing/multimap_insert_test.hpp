@@ -52,7 +52,7 @@ namespace __gnu_pbds
       class multimap_insert_functor
       {
       public:
-        multimap_insert_functor(It ins_it_b, It ins_it_e) 
+        multimap_insert_functor(It ins_it_b, It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -76,7 +76,7 @@ namespace __gnu_pbds
       class multimap_insert_functor<It, Cntnr, true>
       {
       public:
-        multimap_insert_functor(It ins_it_b,  It ins_it_e) 
+        multimap_insert_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -98,11 +98,11 @@ namespace __gnu_pbds
     } // namespace detail
 
     template<typename It, bool Native>
-    class multimap_insert_test 
+    class multimap_insert_test
     : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
-      multimap_insert_test(It b, size_t ins_vn, size_t ins_vs, size_t ins_vm) 
+      multimap_insert_test(It b, size_t ins_vn, size_t ins_vs, size_t ins_vm)
       : m_ins_b(b), m_ins_vn(ins_vn), m_ins_vs(ins_vs), m_ins_vm(ins_vm)
       { }
 

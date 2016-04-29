@@ -32,7 +32,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       || defined(__mc68040__) || defined(__mc68060__) ) \
     && !defined(__mcpu32__)
   // These variants support compare-and-swap.
-  _Atomic_word 
+  _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
@@ -58,16 +58,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     short __level, __tmpsr;
     __asm__ __volatile__ ("move%.w %%sr,%0\n\tor%.l %0,%1\n\tmove%.w %1,%%sr"
 			  : "=d"(__level), "=d"(__tmpsr) : "1"(0x700));
-    
+
     __result = *__mem;
-    *__mem = __result + __val;    
+    *__mem = __result + __val;
     __asm__ __volatile__ ("move%.w %0,%%sr" : : "d"(__level));
-    
+
     return __result;
   }
 
 #else
-  
+
   template<int __inst>
     struct _Atomicity_lock
     {
@@ -76,29 +76,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<int __inst>
   volatile unsigned char _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
-  
+
   template volatile unsigned char _Atomicity_lock<0>::_S_atomicity_lock;
-  
-  _Atomic_word 
+
+  _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     _Atomic_word __result;
-    
+
     // bset with no immediate addressing (not SMP-safe)
 #if defined(__mcfisaa__) || defined(__mcfisaaplus__)
     __asm__ __volatile__("1: bset.b #7,%0@\n\tjbne 1b"
 			 : /* no outputs */
 			 : "a"(&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "cc", "memory");
-    
+
     // CPU32 and CF ISAs B & C support test-and-set (SMP-safe).
 #elif defined(__mcpu32__) || defined(__mcfisab__) || defined (__mcfisac__)
     __asm__ __volatile__("1: tas %0\n\tjbne 1b"
 			 : "+m"(_Atomicity_lock<0>::_S_atomicity_lock)
 			 : /* none */
 			 : "cc");
-    
+
     // Use bset with immediate addressing for 68000/68010 (not SMP-safe)
     // NOTE: TAS is available on the 68000, but unsupported by some Amiga
     // memory controllers.
@@ -108,15 +108,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 : /* none */
 			 : "cc");
 #endif
-    
+
     __result = *__mem;
     *__mem = __result + __val;
-    
+
     _Atomicity_lock<0>::_S_atomicity_lock = 0;
-    
+
     return __result;
   }
-  
+
 #endif /* TAS / BSET */
 
   void

@@ -32,11 +32,11 @@ using std::equal_to;
 
 template class unordered_map<string, float>;
 template class unordered_map<string, int,
-			     hash<string>, equal_to<string>, 
+			     hash<string>, equal_to<string>,
 			     allocator<pair<const string, int> > >;
 template class unordered_map<string, float,
-			     hash<string>, equal_to<string>, 
+			     hash<string>, equal_to<string>,
 			     allocator<char> >;
 template class __unordered_map<string, int,
-			       hash<string>, equal_to<string>, 
+			       hash<string>, equal_to<string>,
 			       allocator<pair<const string, int> >, true>;

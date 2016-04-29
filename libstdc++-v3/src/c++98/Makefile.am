@@ -23,7 +23,7 @@
 include $(top_srcdir)/fragment.am
 
 # Convenience library for C++98 runtime.
-noinst_LTLIBRARIES = libc++98convenience.la 
+noinst_LTLIBRARIES = libc++98convenience.la
 
 headers =
 
@@ -209,7 +209,7 @@ concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 
 # Use special rules for parallel mode compilation.
-PARALLEL_FLAGS = -D_GLIBCXX_PARALLEL 
+PARALLEL_FLAGS = -D_GLIBCXX_PARALLEL
 parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
@@ -243,7 +243,7 @@ AM_MAKEFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use.
-# 
+#
 # The second tag argument, `--tag disable-shared` means that libtool
 # only compiles each source once, for static objects. In actuality,
 # glibcxx_lt_pic_flag and glibcxx_compiler_shared_flag are added to

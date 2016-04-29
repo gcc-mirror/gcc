@@ -46,17 +46,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // XXX these came from c++98/misc-inst.cc, repeat them for COW string
   // string related to iostreams
-  template 
-    basic_istream<wchar_t>& 
+  template
+    basic_istream<wchar_t>&
     operator>>(basic_istream<wchar_t>&, wstring&);
-  template 
-    basic_ostream<wchar_t>& 
+  template
+    basic_ostream<wchar_t>&
     operator<<(basic_ostream<wchar_t>&, const wstring&);
-  template 
-    basic_istream<wchar_t>& 
+  template
+    basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>&, wstring&, wchar_t);
-  template 
-    basic_istream<wchar_t>& 
+  template
+    basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>&, wstring&);
 
 _GLIBCXX_END_NAMESPACE_VERSION

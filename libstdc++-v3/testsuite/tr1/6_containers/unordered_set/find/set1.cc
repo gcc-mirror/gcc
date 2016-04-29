@@ -49,7 +49,7 @@ void test01()
   VERIFY(std::distance(p.first, p.second) == 1);
 
   Set::iterator i3 = s.find("lime");
-  VERIFY(i3 == s.end());  
+  VERIFY(i3 == s.end());
 
   std::pair<Set::iterator, Set::iterator> p2 = s.equal_range("lime");
   VERIFY(p2.first == p2.second);

@@ -62,7 +62,7 @@ test01()
   VERIFY( A::dtor_count == 1 );
 }
 
-int 
+int
 main()
 {
   test01();

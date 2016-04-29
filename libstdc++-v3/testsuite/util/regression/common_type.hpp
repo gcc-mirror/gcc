@@ -111,10 +111,10 @@ namespace test
 
   typedef tl_t min_tl_t;
   };
- 
+
   // Sequence types.
   typedef pq_common_types<basic_type, std::less<basic_type>, alloc_type> pq_types;
- 
+
   typedef pq_types::regression_tl pq_tl_t;
   typedef pq_tl_t min_pq_tl_t;
 
@@ -126,14 +126,14 @@ namespace test
 
   public:
     typedef typename base_type::value_type		value_type;
-    typedef typename base_type::pointer 		pointer; 
-    typedef typename base_type::const_pointer 		const_pointer; 
-    typedef typename base_type::reference 		reference; 
-    typedef typename base_type::const_reference 	const_reference; 
-    typedef typename base_type::iterator 		iterator; 
-    typedef typename base_type::const_iterator 		const_iterator; 
-    typedef typename base_type::reverse_iterator	reverse_iterator; 
-    typedef typename base_type::const_reverse_iterator 	const_reverse_iterator; 
+    typedef typename base_type::pointer 		pointer;
+    typedef typename base_type::const_pointer 		const_pointer;
+    typedef typename base_type::reference 		reference;
+    typedef typename base_type::const_reference 	const_reference;
+    typedef typename base_type::iterator 		iterator;
+    typedef typename base_type::const_iterator 		const_iterator;
+    typedef typename base_type::reverse_iterator	reverse_iterator;
+    typedef typename base_type::const_reverse_iterator 	const_reverse_iterator;
     typedef typename base_type::size_type 		size_type;
     typedef typename base_type::difference_type 	difference_type;
     typedef typename base_type::allocator_type 		allocator_type;
@@ -141,7 +141,7 @@ namespace test
     typedef __gnu_pbds::sequence_tag 			container_category;
     typedef std::less<_Tp> 		   		cmp_fn;
 
-    const cmp_fn& 
+    const cmp_fn&
     get_cmp_fn() const
     { return _M_cmp; }
 
@@ -159,7 +159,7 @@ namespace test
     cmp_fn _M_cmp;
 
   };
- 
+
   typedef vector_adaptor<basic_type, alloc_type>	vector_type;
   typedef __gnu_cxx::typelist::create1<vector_type>::type vector_tl_t;
 
@@ -186,4 +186,4 @@ namespace test
 } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif

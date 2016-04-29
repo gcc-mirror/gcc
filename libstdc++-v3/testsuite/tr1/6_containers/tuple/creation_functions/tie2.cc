@@ -24,7 +24,7 @@
 int
 main()
 {
-  bool test __attribute__((unused)) = true; 
+  bool test __attribute__((unused)) = true;
   using namespace std::tr1;
 
   int i;

@@ -20,7 +20,7 @@
 // Benjamin Kosnik  <bkoz@redhat.com>
 // Blame subsequent hacks on Loren J. Rittle <ljrittle@acm.org>, Phil
 // Edwards <pme@gcc.gnu.org>, and a cast of dozens at libstdc++@gcc.gnu.org.
- 
+
 #include "testsuite_abi.h"
 #include <iostream>
 #include <cstdlib>
@@ -47,13 +47,13 @@ main(int argc, char** argv)
 	   << endl;
       exit(1);
     }
-  
+
   if (argv1.find("--check") != string::npos)
     {
       bool verbose = false;
       if (argv1 == "--check-verbose")
 	verbose = true;
-      
+
       // Quick sanity/setup check for arguments.
       const char* test_file = argv[2];
       const char* baseline_file = argv[3];
@@ -71,7 +71,7 @@ main(int argc, char** argv)
       if (!compare_symbols(baseline_file, test_file, verbose))
 	exit (1);
     }
-  
+
   if (argv1 == "--examine")
     {
       const char* file = argv[3];

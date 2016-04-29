@@ -28,7 +28,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   using std::tr1::is_object;
   using namespace __gnu_test;
-  
+
   VERIFY( (test_category<is_object, int (int)>(false)) );
   VERIFY( (test_category<is_object, ClassType (ClassType)>(false)) );
   VERIFY( (test_category<is_object, float (int, float, int[], int&)>(false)) );

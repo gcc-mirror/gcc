@@ -31,7 +31,7 @@ void test01()
   VERIFY( true_type::value == true );
   VERIFY( false_type::value == false );
   VERIFY( true_type::type::value == true );
-  VERIFY( false_type::type::value == false );  
+  VERIFY( false_type::type::value == false );
 }
 
 int main()

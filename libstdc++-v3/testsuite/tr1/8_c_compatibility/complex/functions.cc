@@ -39,7 +39,7 @@ template<typename T>
     ans = std::tr1::atanh(cmplx_type(1.0, 1.0));
     ans = std::tr1::fabs(cmplx_type(1.0, 1.0));
   }
-    
+
 void test01()
 {
   test01_do<float>();

@@ -52,7 +52,7 @@ namespace __gnu_pbds
       class find_find_functor
       {
       public:
-        find_find_functor(Cntnr& contnr,  It fnd_it_b,  It fnd_it_e) 
+        find_find_functor(Cntnr& contnr,  It fnd_it_b,  It fnd_it_e)
 	: m_contnr(contnr), m_fnd_it_b(fnd_it_b), m_fnd_it_e(fnd_it_e)
 	{ }
 
@@ -77,7 +77,7 @@ namespace __gnu_pbds
       class find_find_functor<It, Cntnr, true>
       {
       public:
-        find_find_functor(Cntnr& contnr,  It fnd_it_b,  It fnd_it_e) 
+        find_find_functor(Cntnr& contnr,  It fnd_it_b,  It fnd_it_e)
 	: m_contnr(contnr), m_fnd_it_b(fnd_it_b), m_fnd_it_e(fnd_it_e)
 	{ }
 
@@ -104,7 +104,7 @@ namespace __gnu_pbds
     class find_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
-      find_test(It ins_b, It fnd_it_b, size_t ins_vn, size_t ins_vs, 
+      find_test(It ins_b, It fnd_it_b, size_t ins_vn, size_t ins_vs,
 		size_t ins_vm, size_t fnd_vn, size_t fnd_vs, size_t fnd_vm):
       m_ins_b(ins_b), m_fnd_it_b(fnd_it_b), m_ins_vn(ins_vn), m_ins_vs(ins_vs),
       m_ins_vm(ins_vm), m_fnd_vn(fnd_vn), m_fnd_vs(fnd_vs), m_fnd_vm(fnd_vm)
@@ -162,5 +162,5 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

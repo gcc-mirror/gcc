@@ -1,3 +1,10 @@
+2016-04-29  Chris Gregory  <czipperz@gmail.com>
+
+	* config/*: Remove trailing whitespace.
+	* src/*: Likewise.
+	* testsuite/tr1/*: Likewise.
+	* testsuite/util/*: Likewise.
+
 2016-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70766

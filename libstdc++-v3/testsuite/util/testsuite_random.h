@@ -149,7 +149,7 @@ namespace __gnu_test
 	double f = std::lgamma(k + (double)n);
 	double a = std::lgamma(n);
 	double b = std::lgamma(k + 1.0);
- 
+
 	return std::exp(f - a - b) * std::pow(p, n) * std::pow(1 - p, k);
       }
   }
@@ -161,7 +161,7 @@ namespace __gnu_test
       return 0.0;
     else
       {
-	double lf = std::lgamma(k + 1.0); 
+	double lf = std::lgamma(k + 1.0);
 	return std::exp(std::log(mu) * k - lf - mu);
       }
   }

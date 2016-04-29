@@ -38,32 +38,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   volatile _Atomic_word _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
 
   template volatile _Atomic_word _Atomicity_lock<0>::_S_atomicity_lock;
-  
-  _Atomic_word 
+
+  _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     register _Atomic_word __result, __tmp = 1;
-    
+
     // Obtain the atomic exchange/add spin lock.
-    do 
+    do
       {
 	__asm__ __volatile__ ("xchg{l} {%0,%1|%1,%0}"
 			      : "=m" (_Atomicity_lock<0>::_S_atomicity_lock),
 			      "+r" (__tmp)
 			      : "m" (_Atomicity_lock<0>::_S_atomicity_lock));
-      } 
+      }
     while (__tmp);
-    
+
     __result = *__mem;
     *__mem += __val;
-    
+
     // Release spin lock.
     _Atomicity_lock<0>::_S_atomicity_lock = 0;
-    
+
     return __result;
   }
-  
+
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()

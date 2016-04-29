@@ -1,4 +1,4 @@
-// 2005-10-08  Paolo Carlini  <pcarlini@suse.de> 
+// 2005-10-08  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -27,12 +27,12 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  
+
   typedef std::tr1::unordered_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;
   typedef Map::value_type     value_type;
-  
+
   Map m1;
 
   m1.insert(value_type("all the love in the world", 1));
@@ -44,7 +44,7 @@ void test01()
   m1.insert(value_type("with teeth", 7));
   m1.insert(value_type("only", 8));
   m1.insert(value_type("getting smaller", 9));
-  m1.insert(value_type("sunspots", 10)); 
+  m1.insert(value_type("sunspots", 10));
   VERIFY( m1.size() == 10 );
 
   iterator it1 = m1.begin();
@@ -97,7 +97,7 @@ void test01()
   VERIFY( it13 == it12 );
   VERIFY( it13 == m1.begin() );
 }
-  
+
 int main()
 {
   test01();

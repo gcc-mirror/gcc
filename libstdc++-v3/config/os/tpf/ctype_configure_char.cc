@@ -53,8 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __ret;
   }
 
-  ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
-		     size_t __refs) 
+  ctype<char>::ctype(__c_locale, const mask* __table, bool __del,
+		     size_t __refs)
   : facet(__refs), _M_del(__table != 0 && __del)
   {
     char* __old = setlocale(LC_CTYPE, NULL);
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   ctype<char>::do_tolower(char __c) const
   { return _M_tolower[static_cast<unsigned char>(__c)]; }
 
-  const char* 
+  const char*
   ctype<char>::do_tolower(char* __low, const char* __high) const
   {
     while (__low < __high)

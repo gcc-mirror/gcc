@@ -31,12 +31,12 @@ struct symbol
   enum category { function, object, tls, uncategorized };
   enum designation { existing, added, subtracted, undesignated };
   enum version { none, compatible, incompatible, unversioned };
-  enum compatibility 
-    { 
-      compat_type = 1, 
-      compat_name = 2, 
-      compat_size = 4, 
-      compat_version = 8 
+  enum compatibility
+    {
+      compat_type = 1,
+      compat_name = 2,
+      compat_size = 4,
+      compat_version = 8
     };
 
   category 	type;
@@ -48,13 +48,13 @@ struct symbol
   version	version_status;
   designation	status;
 
-  symbol() 
-  : type(uncategorized), size(0), version_status(unversioned), 
+  symbol()
+  : type(uncategorized), size(0), version_status(unversioned),
     status(undesignated) { }
 
-  symbol(const symbol& other) 
-  : type(other.type), name(other.name), demangled_name(other.demangled_name), 
-    size(other.size), version_name(other.version_name), 
+  symbol(const symbol& other)
+  : type(other.type), name(other.name), demangled_name(other.demangled_name),
+    size(other.size), version_name(other.version_name),
     version_status(other.version_status), status(other.status) { }
 
   void
@@ -72,7 +72,7 @@ typedef std::tr1::unordered_map<std::string, symbol> 	symbols;
 bool
 check_version(symbol& test, bool added = false);
 
-bool 
+bool
 check_compatible(symbol& lhs, symbol& rhs, bool verbose = false);
 
 
