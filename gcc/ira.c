@@ -2918,6 +2918,8 @@ struct equivalence
   unsigned char replace : 1;
   /* Set if this register has no known equivalence.  */
   unsigned char no_equiv : 1;
+  /* Set if this register is mentioned in a paradoxical subreg.  */
+  unsigned char pdx_subregs : 1;
 };
 
 /* reg_equiv[N] (where N is a pseudo reg number) is the equivalence
@@ -3294,7 +3296,7 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
    in PDX_SUBREGS.  */
 
 static void
-set_paradoxical_subreg (rtx_insn *insn, bool *pdx_subregs)
+set_paradoxical_subreg (rtx_insn *insn)
 {
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
@@ -3304,7 +3306,7 @@ set_paradoxical_subreg (rtx_insn *insn, bool *pdx_subregs)
 	{
 	  const_rtx reg = SUBREG_REG (subreg);
 	  if (REG_P (reg) && paradoxical_subreg_p (subreg))
-	    pdx_subregs[REGNO (reg)] = true;
+	    reg_equiv[REGNO (reg)].pdx_subregs = true;
 	}
     }
 }
@@ -3342,26 +3344,21 @@ update_equiv_regs (void)
   basic_block bb;
   int loop_depth;
   bitmap cleared_regs;
-  bool *pdx_subregs;
   bitmap_head seen_insns;
-
-  /* Use pdx_subregs to show whether a reg is used in a paradoxical
-     subreg.  */
-  pdx_subregs = XCNEWVEC (bool, max_regno);
 
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
   grow_reg_equivs ();
 
   init_alias_analysis ();
 
-  /* Scan insns and set pdx_subregs[regno] if the reg is used in a
-     paradoxical subreg. Don't set such reg equivalent to a mem,
+  /* Scan insns and set pdx_subregs if the reg is used in a
+     paradoxical subreg.  Don't set such reg equivalent to a mem,
      because lra will not substitute such equiv memory in order to
      prevent access beyond allocated memory for paradoxical memory subreg.  */
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
-	set_paradoxical_subreg (insn, pdx_subregs);
+	set_paradoxical_subreg (insn);
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
@@ -3466,8 +3463,9 @@ update_equiv_regs (void)
 	      continue;
 	    }
 
-	  /* Don't set reg (if pdx_subregs[regno] == true) equivalent to a mem.  */
-	  if (MEM_P (src) && pdx_subregs[regno])
+	  /* Don't set reg mentioned in a paradoxical subreg
+	     equivalent to a mem.  */
+	  if (MEM_P (src) && reg_equiv[regno].pdx_subregs)
 	    {
 	      note_stores (set, no_equiv, NULL);
 	      continue;
@@ -3651,12 +3649,12 @@ update_equiv_regs (void)
 	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
 	  && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
 	  && DF_REG_DEF_COUNT (regno) == 1
+	  && ! reg_equiv[regno].pdx_subregs
 	  && reg_equiv[regno].init_insns != NULL
 	  && reg_equiv[regno].init_insns->insn () != NULL
 	  && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
 			      REG_EQUIV, NULL_RTX)
-	  && ! contains_replace_regs (XEXP (dest, 0))
-	  && ! pdx_subregs[regno])
+	  && ! contains_replace_regs (XEXP (dest, 0)))
 	{
 	  rtx_insn *init_insn =
 	    as_a <rtx_insn *> (XEXP (reg_equiv[regno].init_insns, 0));
@@ -3856,7 +3854,6 @@ update_equiv_regs (void)
 
   end_alias_analysis ();
   free (reg_equiv);
-  free (pdx_subregs);
 }
 
 /* A pass over indirect jumps, converting simple cases to direct jumps.
