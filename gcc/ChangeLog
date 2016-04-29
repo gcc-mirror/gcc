@@ -1,5 +1,12 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* ira.c (struct equiv_mem_data): New.
+	(equiv_mem, equiv_mem_modified): Delete static vars.
+	(validate_equiv_mem_from_store): Use "data" param to communicate..
+	(validate_equiv_mem): ..from here.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* ira.c (add_store_equivs, combine_and_move_insns): New functions,
 	split out from..
 	(update_reg_equivs): ..here.  Move allocation and freeing of
