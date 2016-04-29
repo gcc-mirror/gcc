@@ -72,7 +72,7 @@ namespace
     return freelist_mutex;
   }
 
-  static void 
+  static void
   _M_destroy_thread_key(void* __id)
   {
     // Return this thread id record to the front of thread_freelist.
@@ -80,7 +80,7 @@ namespace
     {
       __gnu_cxx::__scoped_lock sentry(get_freelist_mutex());
       uintptr_t _M_id = reinterpret_cast<uintptr_t>(__id);
-      
+
       typedef __gnu_cxx::__pool<true>::_Thread_record _Thread_record;
       _Thread_record* __tr = &freelist._M_thread_freelist_array[_M_id - 1];
       __tr->_M_next = freelist._M_thread_freelist;
@@ -124,23 +124,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     char* __c = __p - _M_get_align();
     _Block_record* __block = reinterpret_cast<_Block_record*>(__c);
-      
+
     // Single threaded application - return to global pool.
     __block->_M_next = __bin._M_first[0];
     __bin._M_first[0] = __block;
   }
 
-  char* 
+  char*
   __pool<false>::_M_reserve_block(size_t __bytes, const size_t __thread_id)
   {
     // Round up to power of 2 and figure out which bin to use.
     const size_t __which = _M_binmap[__bytes];
     _Bin_record& __bin = _M_bin[__which];
     const _Tune& __options = _M_get_options();
-    const size_t __bin_size = (__options._M_min_bin << __which) 
+    const size_t __bin_size = (__options._M_min_bin << __which)
 			       + __options._M_align;
     size_t __block_count = __options._M_chunk_size - sizeof(_Block_address);
-    __block_count /= __bin_size;	  
+    __block_count /= __bin_size;
 
     // Get a new block dynamically, set it up for use.
     void* __v = ::operator new(__options._M_chunk_size);
@@ -174,12 +174,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // _M_force_new must not change after the first allocate(), which
     // in turn calls this method, so if it's false, it's false forever
     // and we don't need to return here ever again.
-    if (_M_options._M_force_new) 
+    if (_M_options._M_force_new)
       {
 	_M_init = true;
 	return;
       }
-      
+
     // Create the bins.
     // Calculate the number of bins required based on _M_max_bytes.
     // _M_bin_size is statically-initialized to one.
@@ -189,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__bin_size <<= 1;
 	++_M_bin_size;
       }
-      
+
     // Setup the bin map for quick lookup of the relevant bin.
     const size_t __j = (_M_options._M_max_bytes + 1) * sizeof(_Binmap_type);
     _M_binmap = static_cast<_Binmap_type*>(::operator new(__j));
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	*__bp++ = __bint;
       }
-      
+
     // Initialize _M_bin and its members.
     void* __v = ::operator new(sizeof(_Bin_record) * _M_bin_size);
     _M_bin = static_cast<_Bin_record*>(__v);
@@ -220,7 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_init = true;
   }
 
-  
+
 #ifdef __GTHREADS
   void
   __pool<true>::_M_destroy() throw()
@@ -279,7 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// in order to avoid too much contention we wait until the
 	// number of records is "high enough".
 	const size_t __thread_id = _M_get_thread_id();
-	const _Tune& __options = _M_get_options();	
+	const _Tune& __options = _M_get_options();
 	const size_t __limit = (100 * (_M_bin_size - __which)
 				* __options._M_freelist_headroom);
 
@@ -319,7 +319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __tmp = __tmp->_M_next;
 	    __bin._M_first[__thread_id] = __tmp->_M_next;
 	    __bin._M_free[__thread_id] -= __removed;
-	    
+
 	    __gthread_mutex_lock(__bin._M_mutex);
 	    __tmp->_M_next = __bin._M_first[0];
 	    __bin._M_first[0] = __first;
@@ -336,7 +336,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	__block->_M_next = __bin._M_first[__thread_id];
 	__bin._M_first[__thread_id] = __block;
-	
+
 	++__bin._M_free[__thread_id];
       }
     else
@@ -348,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
-  char* 
+  char*
   __pool<true>::_M_reserve_block(size_t __bytes, const size_t __thread_id)
   {
     // Round up to power of 2 and figure out which bin to use.
@@ -357,13 +357,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     const size_t __bin_size = ((__options._M_min_bin << __which)
 			       + __options._M_align);
     size_t __block_count = __options._M_chunk_size - sizeof(_Block_address);
-    __block_count /= __bin_size;	  
-    
+    __block_count /= __bin_size;
+
     // Are we using threads?
     // - Yes, check if there are free blocks on the global
     //   list. If so, grab up to __block_count blocks in one
-    //   lock and change ownership. If the global list is 
-    //   empty, we allocate a new chunk and add those blocks 
+    //   lock and change ownership. If the global list is
+    //   empty, we allocate a new chunk and add those blocks
     //   directly to our own freelist (with us as owner).
     // - No, all operations are made directly to global pool 0
     //   no need to lock or change ownership but check for free
@@ -449,7 +449,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	__block->_M_next = 0;
       }
-      
+
     __block = __bin._M_first[__thread_id];
     __bin._M_first[__thread_id] = __block->_M_next;
 
@@ -471,7 +471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // _M_force_new must not change after the first allocate(),
     // which in turn calls this method, so if it's false, it's false
     // forever and we don't need to return here ever again.
-    if (_M_options._M_force_new) 
+    if (_M_options._M_force_new)
       {
 	_M_init = true;
 	return;
@@ -486,7 +486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__bin_size <<= 1;
 	++_M_bin_size;
       }
-      
+
     // Setup the bin map for quick lookup of the relevant bin.
     const size_t __j = (_M_options._M_max_bytes + 1) * sizeof(_Binmap_type);
     _M_binmap = static_cast<_Binmap_type*>(::operator new(__j));
@@ -502,11 +502,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	*__bp++ = __bint;
       }
-      
+
     // Initialize _M_bin and its members.
     void* __v = ::operator new(sizeof(_Bin_record) * _M_bin_size);
     _M_bin = static_cast<_Bin_record*>(__v);
-      
+
     // If __gthread_active_p() create and initialize the list of
     // free thread ids. Single threaded applications use thread id 0
     // directly and have no need for this.
@@ -577,7 +577,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    _Bin_record& __bin = _M_bin[__n];
 	    __v = ::operator new(sizeof(_Block_record*) * __max_threads);
-	    std::memset(__v, 0, sizeof(_Block_record*) * __max_threads);    
+	    std::memset(__v, 0, sizeof(_Block_record*) * __max_threads);
 	    __bin._M_first = static_cast<_Block_record**>(__v);
 
 	    __bin._M_address = 0;
@@ -592,10 +592,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    std::memset(__v, 0, (sizeof(size_t) * __max_threads
 				 + sizeof(_Atomic_word) * __max_threads));
 	    __bin._M_used = static_cast<size_t*>(__v);
-	      
+
 	    __v = ::operator new(sizeof(__gthread_mutex_t));
 	    __bin._M_mutex = static_cast<__gthread_mutex_t*>(__v);
-	      
+
 #ifdef __GTHREAD_MUTEX_INIT
 	    {
 	      // Do not copy a POSIX/gthr mutex once in use.
@@ -656,7 +656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // XXX GLIBCXX_ABI Deprecated
-  void 
+  void
   __pool<true>::_M_destroy_thread_key(void*) throw () { }
 
   // XXX GLIBCXX_ABI Deprecated
@@ -666,7 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // _M_force_new must not change after the first allocate(),
     // which in turn calls this method, so if it's false, it's false
     // forever and we don't need to return here ever again.
-    if (_M_options._M_force_new) 
+    if (_M_options._M_force_new)
       {
 	_M_init = true;
 	return;
@@ -681,7 +681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__bin_size <<= 1;
 	++_M_bin_size;
       }
-      
+
     // Setup the bin map for quick lookup of the relevant bin.
     const size_t __j = (_M_options._M_max_bytes + 1) * sizeof(_Binmap_type);
     _M_binmap = static_cast<_Binmap_type*>(::operator new(__j));
@@ -697,11 +697,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	*__bp++ = __bint;
       }
-      
+
     // Initialize _M_bin and its members.
     void* __v = ::operator new(sizeof(_Bin_record) * _M_bin_size);
     _M_bin = static_cast<_Bin_record*>(__v);
-      
+
     // If __gthread_active_p() create and initialize the list of
     // free thread ids. Single threaded applications use thread id 0
     // directly and have no need for this.
@@ -737,7 +737,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		{
 		  // Initialize per thread key to hold pointer to
 		  // _M_thread_freelist.
-		  __gthread_key_create(&freelist._M_key, 
+		  __gthread_key_create(&freelist._M_key,
 				       ::_M_destroy_thread_key);
 		  freelist._M_thread_freelist = _M_thread_freelist;
 		}
@@ -780,8 +780,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __v = ::operator new(sizeof(size_t) * __max_threads);
 	    std::memset(__v, 0, sizeof(size_t) * __max_threads);
 	    __bin._M_free = static_cast<size_t*>(__v);
-	      
-	    __v = ::operator new(sizeof(size_t) * __max_threads + 
+
+	    __v = ::operator new(sizeof(size_t) * __max_threads +
 				 sizeof(_Atomic_word) * __max_threads);
 	    std::memset(__v, 0, (sizeof(size_t) * __max_threads
 				 + sizeof(_Atomic_word) * __max_threads));
@@ -789,7 +789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	    __v = ::operator new(sizeof(__gthread_mutex_t));
 	    __bin._M_mutex = static_cast<__gthread_mutex_t*>(__v);
-	      
+
 #ifdef __GTHREAD_MUTEX_INIT
 	    {
 	      // Do not copy a POSIX/gthr mutex once in use.

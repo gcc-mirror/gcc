@@ -44,9 +44,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_stringbuf<wchar_t>;
-  template class basic_istringstream<wchar_t>; 
-  template class basic_ostringstream<wchar_t>; 
-  template class basic_stringstream<wchar_t>; 
+  template class basic_istringstream<wchar_t>;
+  template class basic_ostringstream<wchar_t>;
+  template class basic_stringstream<wchar_t>;
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

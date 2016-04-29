@@ -26,7 +26,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace tr1 
+  namespace tr1
   {
 #include "../shared/hashtable-aux.cc"
   }

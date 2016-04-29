@@ -25,9 +25,9 @@
 #include <ios>
 
 namespace __gnu_test
-{  
+{
   // Used to verify the constraints/requirements on get and put areas
-  // as defined in 
+  // as defined in
   // 27.5.1 - Stream buffer requirements: get and put areas
   // 27.8.1.1 - Template class basic_filebuf p 3
   //   If the file is not open (ios_base::in) -> input seq. cannot be read
@@ -44,36 +44,36 @@ namespace __gnu_test
     {
     public:
       bool
-      write_position() 
-      { 
-	bool one = this->pptr() != 0; 
+      write_position()
+      {
+	bool one = this->pptr() != 0;
 	bool two = this->pptr() < this->epptr();
 	return one && two;
       }
-      
+
       bool
       read_position()
-      { 
-	bool one = this->gptr() != 0; 
+      {
+	bool one = this->gptr() != 0;
 	bool two = this->gptr() < this->egptr();
 	return one && two;
       }
-      
+
       bool
-      unbuffered() 
-      { 
-	bool one = this->pbase() == 0; 
-	bool two = this->pptr() == 0; 
+      unbuffered()
+      {
+	bool one = this->pbase() == 0;
+	bool two = this->pptr() == 0;
 	return one && two;
       }
-  
+
       bool
       check_pointers()
       {
 	bool one   = this->eback() == 0;
 	bool two   = this->gptr() == 0;
 	bool three = this->egptr() == 0;
-	
+
 	bool four  = this->pbase() == 0;
 	bool five  = this->pptr() == 0;
 	bool six   = this->epptr() == 0;
@@ -99,12 +99,12 @@ namespace __gnu_test
     {
     private:
       bool m_sync_called;
-    
+
     public:
       sync_buf()
       : m_sync_called(false)
       { }
-      
+
       bool sync_called() const
       { return m_sync_called; }
 
@@ -146,44 +146,44 @@ namespace __gnu_test
 	this->setg(p, p, p + 1);
       }
 
-      virtual int_type underflow() 
+      virtual int_type underflow()
       {
 	throw underflow_error();
 	return int_type();
       }
-      
-      virtual int_type uflow() 
+
+      virtual int_type uflow()
       {
 	throw underflow_error();
 	return int_type();
       }
-      
+
       virtual int_type
       overflow(int_type)
       {
 	throw overflow_error();
 	return int_type();
       }
-      
-      virtual pos_type 
+
+      virtual pos_type
       seekoff(off_type, std::ios_base::seekdir, std::ios_base::openmode)
-      { 
+      {
 	throw positioning_error();
-	return pos_type(off_type(-1)); 
-      } 
-      
-      virtual pos_type 
+	return pos_type(off_type(-1));
+      }
+
+      virtual pos_type
       seekpos(pos_type, std::ios_base::openmode)
-      { 
+      {
 	throw positioning_error();
-	return pos_type(off_type(-1)); 
-      } 
-      
-      virtual int 
-      sync() 
-      { 
+	return pos_type(off_type(-1));
+      }
+
+      virtual int
+      sync()
+      {
 	throw positioning_error();
-	return 0; 
+	return 0;
       }
     };
 
@@ -203,58 +203,58 @@ namespace __gnu_test
       typedef typename std::num_get<T>::iter_type iter_type;
 
     protected:
-      iter_type 
+      iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const
       { throw facet_error(); return iter_type(); }
 
-      virtual iter_type 
+      virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     unsigned short&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     unsigned int&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     unsigned long&) const
       { throw facet_error(); return iter_type(); }
 
-#ifdef _GLIBCXX_USE_LONG_LONG 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+#ifdef _GLIBCXX_USE_LONG_LONG
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     long long&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     unsigned long long&) const
       { throw facet_error(); return iter_type(); }
 #endif
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     float&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     double&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     long double&) const
       { throw facet_error(); return iter_type(); }
-      
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     void*&) const
       { throw facet_error(); return iter_type(); }
     };
@@ -273,37 +273,37 @@ namespace __gnu_test
       typedef typename std::num_put<T>::char_type char_type;
 
     protected:
-      iter_type 
+      iter_type
       do_put(iter_type, ios_base&, char_type, bool) const
       { throw facet_error(); return iter_type(0); }
-      
-      virtual iter_type 
+
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, long) const
       { throw facet_error(); return iter_type(0); }
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, unsigned long) const
       { throw facet_error(); return iter_type(0); }
 
-#ifdef _GLIBCXX_USE_LONG_LONG 
-      virtual iter_type 
+#ifdef _GLIBCXX_USE_LONG_LONG
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, long long) const
       { throw facet_error(); return iter_type(0); }
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, unsigned long long) const
       { throw facet_error(); return iter_type(0); }
 #endif
-      
-      virtual iter_type 
+
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, double) const
       { throw facet_error(); return iter_type(0); }
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, long double) const
       { throw facet_error(); return iter_type(0); }
-      
-      virtual iter_type 
+
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type, const void*) const
       { throw facet_error(); return iter_type(0); }
     };

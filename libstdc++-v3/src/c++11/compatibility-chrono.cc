@@ -41,7 +41,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   namespace chrono
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
- 
+
     // NB: Default configuration was no realtime.
     struct system_clock
     {

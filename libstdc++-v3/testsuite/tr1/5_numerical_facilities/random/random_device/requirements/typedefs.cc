@@ -24,8 +24,8 @@
 #include <tr1/random>
 
 void
-test01() 
-{ 
+test01()
+{
   typedef std::tr1::random_device test_type;
   typedef test_type::result_type result_type;
 }

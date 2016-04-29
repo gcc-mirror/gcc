@@ -36,7 +36,7 @@ test01()
     0xefc60000ul, 18> u, v;
 
   VERIFY( u == v );
-  
+
   for (int i = 0; i < 100; ++i)
     {
       u();

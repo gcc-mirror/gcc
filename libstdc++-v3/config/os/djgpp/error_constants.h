@@ -93,10 +93,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       no_lock_available = 			ENOLCK,
 
 #ifdef _GLIBCXX_HAVE_ENODATA
-      no_message_available = 			ENODATA, 
+      no_message_available = 			ENODATA,
 #endif
 
-//    no_message = 				ENOMSG, 
+//    no_message = 				ENOMSG,
 //    no_protocol_option = 			ENOPROTOOPT,
       no_space_on_device = 			ENOSPC,
 

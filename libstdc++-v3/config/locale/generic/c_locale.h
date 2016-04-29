@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // fall back to the unsafe vsprintf which, in general, can be dangerous
   // and should be avoided.
   inline int
-  __convert_from_v(const __c_locale&, char* __out, 
+  __convert_from_v(const __c_locale&, char* __out,
 		   const int __size __attribute__((__unused__)),
 		   const char* __fmt, ...)
   {

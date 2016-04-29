@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Utility subroutines for the C++ library testsuite. 
+// Utility subroutines for the C++ library testsuite.
 //
 // Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //

@@ -33,7 +33,7 @@
 #ifdef __cplusplus
 namespace __cxxabiv1
 {
-  extern "C" 
+  extern "C"
   {
 #endif
 
@@ -56,4 +56,4 @@ namespace __cxxabiv1
 } // namespace __cxxabiv1
 #endif
 
-#endif 
+#endif

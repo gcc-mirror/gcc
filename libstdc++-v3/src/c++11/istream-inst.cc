@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template istream& operator>>(istream&, _Setw);
 
   template istream& istream::_M_extract(unsigned short&);
-  template istream& istream::_M_extract(unsigned int&);  
+  template istream& istream::_M_extract(unsigned int&);
   template istream& istream::_M_extract(long&);
   template istream& istream::_M_extract(unsigned long&);
   template istream& istream::_M_extract(bool&);
@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template wistream& operator>>(wistream&, _Setw);
 
   template wistream& wistream::_M_extract(unsigned short&);
-  template wistream& wistream::_M_extract(unsigned int&);  
+  template wistream& wistream::_M_extract(unsigned int&);
   template wistream& wistream::_M_extract(long&);
   template wistream& wistream::_M_extract(unsigned long&);
   template wistream& wistream::_M_extract(bool&);

@@ -28,7 +28,7 @@
 
 // C++0x only.
 namespace __gnu_test
-{  
+{
   // Assume _Tp::native_handle_type.
   // Check C++ to native_handle_type characteristics: size and alignment.
   template<typename _Tp>
@@ -42,7 +42,7 @@ namespace __gnu_test
       typedef typename std::remove_pointer<native_handle>::type native_type;
 
       int st = sizeof(test_type);
-      int snt = sizeof(native_type);      
+      int snt = sizeof(native_type);
       int at = __alignof__(test_type);
       int ant = __alignof__(native_type);
       if (st != snt || at != ant)

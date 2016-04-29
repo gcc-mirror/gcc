@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static volatile int _S_atomicity_lock;
     };
-  
+
   template<int _Inst>
   volatile int
   _Atomicity_lock<_Inst>::_S_atomicity_lock __attribute__ ((aligned (16))) = 1;
@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Atomic_word result;
     int tmp;
     volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
-    
+
     __asm__ __volatile__ ("ldcw 0(%1),%0\n\t"
 			  "cmpib,<>,n 0,%0,.+20\n\t"
 			  "ldw 0(%1),%0\n\t"
@@ -60,21 +60,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  : "=&r" (tmp)
 			  : "r" (&lock)
 			  : "memory");
-    
+
     result = *__mem;
     *__mem = result + __val;
     __asm__ __volatile__ ("stw %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");
     return result;
   }
-  
+
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     int tmp;
     volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
-    
+
     __asm__ __volatile__ ("ldcw 0(%1),%0\n\t"
 			  "cmpib,<>,n 0,%0,.+20\n\t"
 			  "ldw 0(%1),%0\n\t"
@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  : "=&r" (tmp)
 			  : "r" (&lock)
 			  : "memory");
-    
+
     *__mem += __val;
     __asm__ __volatile__ ("stw %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");

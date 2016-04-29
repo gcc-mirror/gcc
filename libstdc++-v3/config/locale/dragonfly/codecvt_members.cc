@@ -42,7 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_out(state_type& __state, const intern_type* __from, 
+  do_out(state_type& __state, const intern_type* __from,
 	 const intern_type* __from_end, const intern_type*& __from_next,
 	 extern_type* __to, extern_type* __to_end,
 	 extern_type*& __to_next) const
@@ -108,12 +108,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     uselocale((locale_t)__old);
 
-    return __ret; 
+    return __ret;
   }
-  
+
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_in(state_type& __state, const extern_type* __from, 
+  do_in(state_type& __state, const extern_type* __from,
 	const extern_type* __from_end, const extern_type*& __from_next,
 	intern_type* __to, intern_type* __to_end,
 	intern_type*& __to_next) const
@@ -155,12 +155,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  break;
 	      }
 	    __from_next = __from;
-	    __state = __tmp_state;	    
+	    __state = __tmp_state;
 	    __ret = error;
 	  }
 	else if (__from_next && __from_next < __from_chunk_end)
 	  {
-	    // It is unclear what to return in this case (see DR 382). 
+	    // It is unclear what to return in this case (see DR 382).
 	    __to_next += __conv;
 	    __ret = partial;
 	  }
@@ -175,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__to_next < __to_end)
 	      {
 		// XXX Probably wrong for stateful encodings
-		__tmp_state = __state;		
+		__tmp_state = __state;
 		++__from_next;
 		*__to_next++ = L'\0';
 	      }
@@ -186,10 +186,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     uselocale((locale_t)__old);
 
-    return __ret; 
+    return __ret;
   }
 
-  int 
+  int
   codecvt<wchar_t, char, mbstate_t>::
   do_encoding() const throw()
   {
@@ -201,9 +201,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ret = 1;
     uselocale((locale_t)__old);
     return __ret;
-  }  
+  }
 
-  int 
+  int
   codecvt<wchar_t, char, mbstate_t>::
   do_max_length() const throw()
   {
@@ -213,8 +213,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uselocale((locale_t)__old);
     return __ret;
   }
-  
-  int 
+
+  int
   codecvt<wchar_t, char, mbstate_t>::
   do_length(state_type& __state, const extern_type* __from,
 	    const extern_type* __end, size_t __max) const
@@ -227,10 +227,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // mbsnrtowcs is *very* fast but stops if encounters NUL characters:
     // in case we advance past it and then continue, in a loop.
     // NB: mbsnrtowcs is a GNU extension
-  
+
     // A dummy internal buffer is needed in order for mbsnrtocws to consider
     // its fourth parameter (it wouldn't with NULL as first parameter).
-    wchar_t* __to = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t) 
+    wchar_t* __to = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t)
 							   * __max));
     while (__from < __end && __max)
       {
@@ -264,7 +264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	if (!__from)
 	  __from = __from_chunk_end;
-	
+
 	__ret += __from - __tmp_from;
 	__max -= __conv;
 
@@ -280,7 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     uselocale((locale_t)__old);
 
-    return __ret; 
+    return __ret;
   }
 #endif
 

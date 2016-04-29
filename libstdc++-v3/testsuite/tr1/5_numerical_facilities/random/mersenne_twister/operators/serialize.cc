@@ -36,12 +36,12 @@ test01()
     0x9908b0dful, 11, 7,
     0x9d2c5680ul, 15,
     0xefc60000ul, 18> u, v;
-  
+
   u(); // advance
   str << u;
-  
+
   VERIFY( u != v );
-  
+
   str >> v;
   VERIFY( u == v );
 }

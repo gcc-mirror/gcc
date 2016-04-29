@@ -37,7 +37,7 @@ namespace __gnu_test
   class tracker_allocator_counter
   {
   public:
-    typedef std::size_t    size_type; 
+    typedef std::size_t    size_type;
 
     static void
     allocate(size_type blocksize)
@@ -114,7 +114,7 @@ namespace __gnu_test
 	  typedef tracker_allocator<U,
 		typename AllocTraits::template rebind<U>::other> other;
 	};
-    
+
 #if __cplusplus >= 201103L
       tracker_allocator() = default;
       tracker_allocator(const tracker_allocator&) = default;
@@ -156,7 +156,7 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
       template<typename U, typename... Args>
 	void
-	construct(U* p, Args&&... args) 
+	construct(U* p, Args&&... args)
 	{
 	  AllocTraits::construct(*this, p, std::forward<Args>(args)...);
 	  counter_type::construct();
@@ -201,12 +201,12 @@ namespace __gnu_test
 	Alloc& aa = a;
 	Alloc& ab = b;
 	swap(aa, ab);
-      } 
+      }
     };
 
   template<class T1, class Alloc1, class T2, class Alloc2>
     bool
-    operator==(const tracker_allocator<T1, Alloc1>& lhs, 
+    operator==(const tracker_allocator<T1, Alloc1>& lhs,
 	       const tracker_allocator<T2, Alloc2>& rhs) throw()
     {
       const Alloc1& alloc1 = lhs;
@@ -216,7 +216,7 @@ namespace __gnu_test
 
   template<class T1, class Alloc1, class T2, class Alloc2>
     bool
-    operator!=(const tracker_allocator<T1, Alloc1>& lhs, 
+    operator!=(const tracker_allocator<T1, Alloc1>& lhs,
 	       const tracker_allocator<T2, Alloc2>& rhs) throw()
     { return !(lhs == rhs); }
 
@@ -235,7 +235,7 @@ namespace __gnu_test
     }
 
   template<typename Alloc>
-    bool 
+    bool
     check_allocate_max_size()
     {
       Alloc a;
@@ -316,7 +316,7 @@ namespace __gnu_test
       uneq_allocator(const uneq_allocator&) = default;
       uneq_allocator(uneq_allocator&&) = default;
 #endif
-      
+
       template<typename Tp1>
 	uneq_allocator(const uneq_allocator<Tp1,
 		       typename AllocTraits::template rebind<Tp1>::other>& b)
@@ -327,10 +327,10 @@ namespace __gnu_test
       { }
 
       int get_personality() const { return personality; }
-      
+
       pointer
       allocate(size_type n, const void* hint = 0)
-      { 
+      {
 	pointer p = AllocTraits::allocate(*this, n);
 
 	try
@@ -387,7 +387,7 @@ namespace __gnu_test
       {
 	std::swap(a.personality, b.personality);
 	a.swap_base(b);
-      } 
+      }
 
       template<typename Tp1>
 	friend inline bool
@@ -402,7 +402,7 @@ namespace __gnu_test
 		   const uneq_allocator<Tp1,
 		   typename AllocTraits::template rebind<Tp1>::other>& b)
 	{ return !(a == b); }
-      
+
       int personality;
     };
 

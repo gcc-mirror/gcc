@@ -612,7 +612,7 @@ namespace __gnu_test
 
 
     template<typename _Tp, bool = traits<_Tp>::has_push_pop::value
-				  && traits<_Tp>::has_emplace::value 
+				  && traits<_Tp>::has_emplace::value
 				  && traits<_Tp>::is_reversible::value>
       struct emplace_back
       {
@@ -1317,7 +1317,7 @@ namespace __gnu_test
 	  functions.push_back(function_type(iops));
 	  typename base_type::const_iterator_ops ciops;
 	  functions.push_back(function_type(ciops));
-	
+
 	  typename base_type::erase_point erasep;
 	  functions.push_back(function_type(erasep));
 	  typename base_type::erase_range eraser;
@@ -1352,7 +1352,7 @@ namespace __gnu_test
 	  typename base_type::move_assign_operator massignop;
 	  populate p4(massignop._M_other);
 	  functions.push_back(function_type(massignop));
-#endif	
+#endif
 	  // Last.
 	  typename base_type::clear clear;
 	  functions.push_back(function_type(clear));

@@ -28,4 +28,4 @@
 // This entity must not cross a page boundary.
 typedef int _Atomic_word __attribute__ ((__aligned__ (4)));
 
-#endif 
+#endif

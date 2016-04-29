@@ -28,7 +28,7 @@ void test01()
 
   s.bucket(42);
   s.key_eq();
-  s.max_load_factor();  
+  s.max_load_factor();
 }
 
 int main()

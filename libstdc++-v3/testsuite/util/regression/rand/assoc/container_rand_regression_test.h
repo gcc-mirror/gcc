@@ -60,7 +60,7 @@ namespace detail
   {
   public:
 
-    container_rand_regression_test(unsigned long, size_t, size_t, double, 
+    container_rand_regression_test(unsigned long, size_t, size_t, double,
 				   double, double, double, double, bool);
 
     virtual
@@ -301,43 +301,43 @@ namespace detail
     cmp_(const Cntnr&, const native_type&);
 
     void
-    order_preserving_cmp_imp(const Cntnr&, const native_type&, 
+    order_preserving_cmp_imp(const Cntnr&, const native_type&,
 			     __gnu_pbds::detail::false_type);
 
     void
-    order_preserving_cmp_imp(const Cntnr&, const native_type&, 
+    order_preserving_cmp_imp(const Cntnr&, const native_type&,
 			     __gnu_pbds::detail::true_type);
 
     void
-    back_order_preserving_cmp_imp(const Cntnr&, const native_type&, 
+    back_order_preserving_cmp_imp(const Cntnr&, const native_type&,
 				  __gnu_pbds::detail::false_type);
 
     void
-    back_order_preserving_cmp_imp(const Cntnr&, const native_type&, 
+    back_order_preserving_cmp_imp(const Cntnr&, const native_type&,
 				  __gnu_pbds::detail::true_type);
 
     void
-    reverse_iteration_cmp_imp(const Cntnr&, const native_type&, 
+    reverse_iteration_cmp_imp(const Cntnr&, const native_type&,
 			      __gnu_pbds::detail::false_type);
 
     void
-    reverse_iteration_cmp_imp(const Cntnr&, const native_type&, 
+    reverse_iteration_cmp_imp(const Cntnr&, const native_type&,
 			      __gnu_pbds::detail::true_type);
 
     void
-    order_statistics_cmp_imp(const Cntnr&, const native_type&, 
+    order_statistics_cmp_imp(const Cntnr&, const native_type&,
 			     __gnu_pbds::detail::false_type);
 
     void
-    order_statistics_cmp_imp(const Cntnr&, const native_type&, 
+    order_statistics_cmp_imp(const Cntnr&, const native_type&,
 			     __gnu_pbds::detail::true_type);
 
     void
-    prefix_search_cmp_imp(const Cntnr&, const native_type&, 
+    prefix_search_cmp_imp(const Cntnr&, const native_type&,
 			  __gnu_pbds::detail::false_type);
 
     void
-    prefix_search_cmp_imp(const Cntnr&, const native_type&, 
+    prefix_search_cmp_imp(const Cntnr&, const native_type&,
 			  __gnu_pbds::detail::true_type);
 
     template<typename Const_It, class Const_Native_It>
@@ -349,19 +349,19 @@ namespace detail
     back_it_cmp_imp(Const_It, Const_It, Const_Native_It, Const_Native_It);
 
     void
-    lower_bound_cmp_imp(const Cntnr&, const native_type&, 
+    lower_bound_cmp_imp(const Cntnr&, const native_type&,
 			__gnu_pbds::detail::false_type);
 
     void
-    lower_bound_cmp_imp(const Cntnr&, const native_type&, 
+    lower_bound_cmp_imp(const Cntnr&, const native_type&,
 			__gnu_pbds::detail::true_type);
 
     void
-    upper_bound_cmp_imp(const Cntnr&, const native_type&, 
+    upper_bound_cmp_imp(const Cntnr&, const native_type&,
 			__gnu_pbds::detail::false_type);
 
     void
-    upper_bound_cmp_imp(const Cntnr&, const native_type&, 
+    upper_bound_cmp_imp(const Cntnr&, const native_type&,
 			__gnu_pbds::detail::true_type);
 
     void
@@ -372,7 +372,7 @@ namespace detail
 
     struct destructor_printer
     {
-      destructor_printer(const std::string& r_msg) 
+      destructor_printer(const std::string& r_msg)
       : m_msg(r_msg), m_print(true) { }
 
       void
@@ -384,7 +384,7 @@ namespace detail
 	if (!m_print)
 	  return;
 
-	std::cerr << std::endl << "Uncaught exception: " << std::endl 
+	std::cerr << std::endl << "Uncaught exception: " << std::endl
 		  << m_msg << std::endl;
       }
 
@@ -411,7 +411,7 @@ namespace detail
 
 #ifdef PB_DS_REGRESSION_TRACE
 #define PB_DS_TRACE(X) std::cerr << X << std::endl
-#else 
+#else
 #define PB_DS_TRACE(X)
 #endif
 

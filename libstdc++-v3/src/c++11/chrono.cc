@@ -75,7 +75,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
     }
 
-    
+
     constexpr bool steady_clock::is_steady;
 
     steady_clock::time_point

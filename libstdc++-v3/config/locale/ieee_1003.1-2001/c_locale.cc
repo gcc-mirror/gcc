@@ -30,7 +30,7 @@
 
 #include <locale>
 
-namespace std _GLIBCXX_VISIBILITY(default) 
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   void
   locale::facet::_S_create_c_locale(__c_locale&, const char*, __c_locale*)
@@ -44,7 +44,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   locale::facet::_S_clone_c_locale(__c_locale&) throw()
   { return __c_locale(); }
 
-  template<> 
+  template<>
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale)
     {
@@ -55,9 +55,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       _M_truename = "true";
       _M_falsename = "false";
     }
-      
+
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
+  template<>
     void
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale)
     {
@@ -70,7 +70,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 #endif
 
-  template<> 
+  template<>
     void
     moneypunct<char>::_M_initialize_moneypunct(__c_locale)
     {
@@ -87,7 +87,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
+  template<>
     void
     moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale)
     {

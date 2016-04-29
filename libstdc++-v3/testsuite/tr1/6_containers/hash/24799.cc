@@ -33,14 +33,14 @@ template<typename T>
 
     using std::tr1::is_same;
     using __gnu_test::test_relationship;
-    
+
     typedef typename std::tr1::hash<T>::argument_type  argument_type;
     typedef typename std::tr1::hash<T>::result_type    result_type;
-    
+
     VERIFY( (test_relationship<is_same, argument_type, T>(true)) );
     VERIFY( (test_relationship<is_same, result_type, std::size_t>(true)) );
   }
-  
+
 // libstdc++/24799
 void test01()
 {

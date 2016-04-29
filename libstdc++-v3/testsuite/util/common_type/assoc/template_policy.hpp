@@ -47,7 +47,7 @@ namespace __gnu_pbds
   namespace test
   {
     template<typename _Alloc>
-    struct direct_mask_range_hashing_t_ 
+    struct direct_mask_range_hashing_t_
     : public __gnu_pbds::direct_mask_range_hashing<typename _Alloc::size_type>
     {
       typedef typename _Alloc::size_type size_type;
@@ -55,7 +55,7 @@ namespace __gnu_pbds
     };
 
     template<typename _Alloc>
-    struct direct_mod_range_hashing_t_ 
+    struct direct_mod_range_hashing_t_
     : public __gnu_pbds::direct_mod_range_hashing<typename _Alloc::size_type>
     {
       typedef typename _Alloc::size_type size_type;
@@ -68,7 +68,7 @@ namespace __gnu_pbds
 	     typename _Alloc::size_type Max_Load_Nom,
 	     typename _Alloc::size_type Max_Load_Denom,
 	     bool External_Access>
-    struct hash_load_check_resize_trigger_t_ 
+    struct hash_load_check_resize_trigger_t_
     : public __gnu_pbds::hash_load_check_resize_trigger<External_Access,
 						   typename _Alloc::size_type>
     {
@@ -76,7 +76,7 @@ namespace __gnu_pbds
       typedef __gnu_pbds::hash_load_check_resize_trigger<External_Access, size_type>  base_type;
 
       inline
-      hash_load_check_resize_trigger_t_() 
+      hash_load_check_resize_trigger_t_()
       : base_type(static_cast<float>(Min_Load_Nom) / static_cast<float>(Min_Load_Denom), static_cast<float>(Max_Load_Nom) / static_cast<float>(Max_Load_Denom))
       { }
 
@@ -91,7 +91,7 @@ namespace __gnu_pbds
 	     typename _Alloc::size_type Load_Nom,
 	     typename _Alloc::size_type Load_Denom,
 	     bool External_Access>
-    struct cc_hash_max_collision_check_resize_trigger_t_ 
+    struct cc_hash_max_collision_check_resize_trigger_t_
     : public __gnu_pbds::cc_hash_max_collision_check_resize_trigger<External_Access,
       typename _Alloc::size_type>
     {
@@ -99,7 +99,7 @@ namespace __gnu_pbds
       typedef __gnu_pbds::cc_hash_max_collision_check_resize_trigger<External_Access, size_type> base_type;
 
       inline
-      cc_hash_max_collision_check_resize_trigger_t_() 
+      cc_hash_max_collision_check_resize_trigger_t_()
       : base_type(static_cast<float>(Load_Nom) / static_cast<float>(Load_Denom))
       { }
 
@@ -114,32 +114,32 @@ namespace __gnu_pbds
     { };
 
     template<typename _Alloc>
-    struct hash_exponential_size_policy_t_ 
+    struct hash_exponential_size_policy_t_
     : public __gnu_pbds::hash_exponential_size_policy<typename _Alloc::size_type>
     { };
 
     template<typename Key, typename _Alloc>
-    struct linear_probe_fn_t_ 
+    struct linear_probe_fn_t_
     : public __gnu_pbds::linear_probe_fn<typename _Alloc::size_type>
     { };
 
     template<typename Key, typename _Alloc>
-    struct quadratic_probe_fn_t_ 
+    struct quadratic_probe_fn_t_
     : public __gnu_pbds::quadratic_probe_fn<typename _Alloc::size_type>
     { };
 
     template<typename _Alloc, typename _Alloc::size_type Max_Count>
-    struct lu_counter_policy_t_ 
+    struct lu_counter_policy_t_
     : public __gnu_pbds::lu_counter_policy<Max_Count, _Alloc>
     {
       typedef __gnu_pbds::lu_counter_policy<Max_Count, _Alloc> base_type;
     };
 
-    struct lu_move_to_front_policy_t_ 
+    struct lu_move_to_front_policy_t_
     : public __gnu_pbds::lu_move_to_front_policy<>
     { };
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-	      
+
 	      while (_M_gcount + 1 < __n
 		     && !traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim))
@@ -82,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __idelim))
 		{
-		  ++_M_gcount;		  
+		  ++_M_gcount;
 		  __sb->sbumpc();
 		}
 	      else
@@ -290,7 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-	      
+
 	      while (_M_gcount + 1 < __n
 		     && !traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim))
@@ -324,7 +324,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __idelim))
 		{
-		  ++_M_gcount;		  
+		  ++_M_gcount;
 		  __sb->sbumpc();
 		}
 	      else

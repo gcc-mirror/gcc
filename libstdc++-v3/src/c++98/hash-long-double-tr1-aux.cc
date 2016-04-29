@@ -24,7 +24,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace tr1 
+  namespace tr1
   {
     // For long double, careful with random padding bits (e.g., on x86,
     // 10 bytes -> 12 bytes) and resort to frexp.

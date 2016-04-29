@@ -44,7 +44,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     void
     __timepunct<char>::
-    _M_put(char* __s, size_t __maxlen, const char* __format, 
+    _M_put(char* __s, size_t __maxlen, const char* __format,
 	   const tm* __tm) const throw()
     {
       const size_t __len = strftime_l(__s, __maxlen, __format, __tm,
@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__s[0] = '\0';
     }
 
-  template<> 
+  template<>
     void
     __timepunct<char>::_M_initialize_timepunct(__c_locale __cloc)
     {
@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  _M_c_locale_timepunct = _S_clone_c_locale(__cloc); 
+	  _M_c_locale_timepunct = _S_clone_c_locale(__cloc);
 
 	  _M_data->_M_date_format = nl_langinfo_l(D_FMT, (locale_t)__cloc);
 	  _M_data->_M_date_era_format = nl_langinfo_l(ERA_D_FMT,
@@ -193,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     void
     __timepunct<wchar_t>::
-    _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
+    _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format,
 	   const tm* __tm) const throw()
     {
       const size_t __len = wcsftime_l(__s, __maxlen, __format, __tm,
@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	langstring[fmtlen] = L'\0'; \
 	_M_data->M = langstring;
 
-  template<> 
+  template<>
     void
     __timepunct<wchar_t>::_M_initialize_timepunct(__c_locale __cloc)
     {
@@ -285,7 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  wchar_t holder[128];
 	  size_t fmtlen;
 
-	  _M_c_locale_timepunct = _S_clone_c_locale(__cloc); 
+	  _M_c_locale_timepunct = _S_clone_c_locale(__cloc);
 
 	  WIDE_LANGINFO(_M_date_format, D_FMT)
 	  WIDE_LANGINFO(_M_date_era_format, ERA_D_FMT)
@@ -345,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-  template<> 
+  template<>
     __timepunct<wchar_t>::~__timepunct()
     {
       delete [] _M_data->_M_date_format;

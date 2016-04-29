@@ -75,7 +75,7 @@ test03()
   VERIFY( D::delete_count == 1 );
 
   return 0;
-}   
+}
 
 int
 main()

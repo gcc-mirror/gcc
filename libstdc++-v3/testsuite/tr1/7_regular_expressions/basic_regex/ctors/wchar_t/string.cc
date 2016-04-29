@@ -26,7 +26,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
-// Tests C++ string constructor of the basic_regex class.  
+// Tests C++ string constructor of the basic_regex class.
 void test01()
 {
   typedef std::tr1::basic_regex<wchar_t> test_type;
@@ -46,7 +46,7 @@ void test02()
 
 int
 main()
-{ 
+{
   test01();
   test02();
   return 0;

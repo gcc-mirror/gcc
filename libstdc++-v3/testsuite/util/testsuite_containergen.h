@@ -62,7 +62,7 @@ namespace __gnu_test
     test_containers(Tester test)
     {
       std::mt19937_64 random_gen;
-      
+
 #ifdef SIMULATOR_TEST
       int loops = 10;
 #else
@@ -75,7 +75,7 @@ namespace __gnu_test
       for(int i = 1; i < 100; ++i)
 	for(int j = 0; j < loops; ++j)
 	  test_single_container<ContainerType>(test, random_gen, i, i);
-     
+
       for(int i = 0; i < loops; ++i)
 	{
 	  test_single_container<ContainerType>(test, random_gen, 10, 10);

@@ -29,7 +29,7 @@ void test01()
   const std::tr1::unordered_set<int> &s_ref = s;
 
   s_ref.find(27);
-}  
+}
 
 int main()
 {

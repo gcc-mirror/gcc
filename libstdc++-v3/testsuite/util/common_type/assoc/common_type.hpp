@@ -537,7 +537,7 @@ namespace __gnu_pbds
 	  __gnu_pbds::null_type,
 	  Eq_Fn,
 	  Comb_Hash_Fn,
-	  typename one_resize_policy_selector<typename Comb_Hash_Fn::comb_fn>::type, 
+	  typename one_resize_policy_selector<typename Comb_Hash_Fn::comb_fn>::type,
 	  false, _Alloc>
 	type;
       };

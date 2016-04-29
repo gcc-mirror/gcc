@@ -24,7 +24,7 @@
 #include <tr1/regex>
 #include <testsuite_hooks.h>
 
-// Tests assign operation from a C-style null-terminated-string.  
+// Tests assign operation from a C-style null-terminated-string.
 void test01()
 {
   typedef std::tr1::basic_regex<wchar_t> test_type;
@@ -36,7 +36,7 @@ void test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

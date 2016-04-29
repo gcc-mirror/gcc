@@ -39,7 +39,7 @@ test01()
   typedef __gnu_test::uneq_allocator<my_pair> my_alloc;
   typedef unordered_multimap<char, int, hash<char>, equal_to<char>, my_alloc>
     my_ummap;
-  
+
   const char title01[] = "Rivers of sand";
   const char title02[] = "Concret PH";
   const char title03[] = "Sonatas and Interludes for Prepared Piano";
@@ -74,7 +74,7 @@ test01()
   size01 = ummap01.size();
   my_ummap ummap02(10, hash<char>(), equal_to<char>(), alloc01);
   size02 = ummap02.size();
-  
+
   ummap01.swap(ummap02);
   VERIFY( ummap01.size() == size02 );
   VERIFY( ummap01.empty() );
@@ -93,7 +93,7 @@ test01()
 	  == my_map(mmap02_ref.begin(), mmap02_ref.end()) );
   VERIFY( ummap04.size() == size01 );
   VERIFY( ummap04.empty() );
-  
+
   my_ummap ummap05(mmap01_ref.begin(), mmap01_ref.end(), 10, hash<char>(),
 		   equal_to<char>(), alloc01);
   size01 = ummap05.size();
@@ -171,7 +171,7 @@ test01()
 }
 
 int main()
-{ 
+{
   test01();
   return 0;
 }

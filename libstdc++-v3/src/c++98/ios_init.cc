@@ -62,7 +62,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using namespace __gnu_internal;
-  
+
   extern istream cin;
   extern ostream cout;
   extern ostream cerr;
@@ -109,9 +109,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	new (&wclog) wostream(&buf_wcerr_sync);
 	wcin.tie(&wcout);
 	wcerr.setf(ios_base::unitbuf);
-	wcerr.tie(&wcout);	
+	wcerr.tie(&wcout);
 #endif
-	
+
 	// NB: Have to set refcount above one, so that standard
 	// streams are not re-initialized with uses of ios_base::Init
 	// besides <iostream> static object, ie just using <ios> with
@@ -129,26 +129,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_S_refcount);
 	// Catch any exceptions thrown by basic_ostream::flush()
 	__try
-	  { 
+	  {
 	    // Flush standard output streams as required by 27.4.2.1.6
 	    cout.flush();
 	    cerr.flush();
 	    clog.flush();
-    
+
 #ifdef _GLIBCXX_USE_WCHAR_T
 	    wcout.flush();
 	    wcerr.flush();
-	    wclog.flush();    
+	    wclog.flush();
 #endif
 	  }
 	__catch(...)
 	  { }
       }
-  } 
+  }
 
-  bool 
+  bool
   ios_base::sync_with_stdio(bool __sync)
-  { 
+  {
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 49.  Underspecification of ios_base::sync_with_stdio
     bool __ret = ios_base::Init::_S_synced_with_stdio;
@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	cin.rdbuf(&buf_cin);
 	cerr.rdbuf(&buf_cerr);
 	clog.rdbuf(&buf_cerr);
-    
+
 #ifdef _GLIBCXX_USE_WCHAR_T
 	new (&buf_wcout) stdio_filebuf<wchar_t>(stdout, ios_base::out);
 	new (&buf_wcin) stdio_filebuf<wchar_t>(stdin, ios_base::in);
@@ -196,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	wclog.rdbuf(&buf_wcerr);
 #endif
       }
-    return __ret; 
+    return __ret;
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -347,7 +347,7 @@ WARN_CXXFLAGS = \
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 
 # Convenience library for C++98 runtime.
-noinst_LTLIBRARIES = libc++98convenience.la 
+noinst_LTLIBRARIES = libc++98convenience.la
 headers = 
 @ENABLE_DUAL_ABI_TRUE@cow_string_host_sources = \
 @ENABLE_DUAL_ABI_TRUE@	collate_members_cow.cc \
@@ -435,7 +435,7 @@ libc__98convenience_la_SOURCES = $(sources)
 GLIBCXX_INCLUDE_DIR = $(glibcxx_builddir)/include
 
 # Use special rules for parallel mode compilation.
-PARALLEL_FLAGS = -D_GLIBCXX_PARALLEL 
+PARALLEL_FLAGS = -D_GLIBCXX_PARALLEL
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -466,7 +466,7 @@ AM_MAKEFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use.
-# 
+#
 # The second tag argument, `--tag disable-shared` means that libtool
 # only compiles each source once, for static objects. In actuality,
 # glibcxx_lt_pic_flag and glibcxx_compiler_shared_flag are added to

@@ -1,4 +1,4 @@
-// 2007-02-22  Paolo Carlini  <pcarlini@suse.de> 
+// 2007-02-22  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -27,13 +27,13 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  
+
   typedef std::tr1::unordered_set<std::string> Set;
   typedef Set::iterator       iterator;
   typedef Set::const_iterator const_iterator;
 
   Set s1;
-  
+
   s1.insert("because to why");
   s1.insert("the stockholm syndrome");
   s1.insert("a cereous night");
@@ -113,11 +113,11 @@ void test01()
   VERIFY( s1.size() == 2 );
   VERIFY( ++it10 == s1.end() );
 
-  VERIFY( s1.erase(s1.begin()) != s1.end() );  
+  VERIFY( s1.erase(s1.begin()) != s1.end() );
   VERIFY( s1.size() == 1 );
   VERIFY( s1.begin() == it11 );
 
-  VERIFY( s1.erase(*s1.begin()) == 1 );  
+  VERIFY( s1.erase(*s1.begin()) == 1 );
   VERIFY( s1.size() == 0 );
   VERIFY( s1.begin() == s1.end() );
 }

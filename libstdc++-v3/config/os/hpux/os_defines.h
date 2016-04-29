@@ -43,7 +43,7 @@
    everyone else, they put them into a non-standard header
    <inttypes.h>.  Ugh.
 
-   <inttypes.h> defines a variety of things, some of which we 
+   <inttypes.h> defines a variety of things, some of which we
    probably do not want.  So we don't want to include it here.
 
    Luckily we can just declare strtoll and strtoull with the
@@ -60,7 +60,7 @@
 #ifdef __cplusplus
 namespace std
 {
-  extern "C" 
+  extern "C"
   {
 #ifndef __LP64__
   __extension__ long long strtoll (const char *, char **, int)
@@ -80,7 +80,7 @@ namespace std
 #define _GLIBCXX_USE_LONG_LONG 1
 
 // HPUX on IA64 requires vtable to be 64 bit aligned even at 32 bit
-// mode.  We need to pad the vtable structure to achieve this.  
+// mode.  We need to pad the vtable structure to achieve this.
 #if !defined(_LP64) && defined (__ia64__)
 #define _GLIBCXX_VTABLE_PADDING 8
 typedef long int __padding_type;
@@ -105,7 +105,7 @@ typedef long int __padding_type;
 // The strtold function is obsolete and not C99 conformant on PA HP-UX.
 // It returns plus or minus _LDBL_MAX instead of plus or minus HUGE_VALL
 // if the correct value would cause overflow.  It doesn't handle "inf",
-// "infinity" and "nan".  It is not thread safe. 
+// "infinity" and "nan".  It is not thread safe.
 #if defined (__hppa__)
 #define _GLIBCXX_HAVE_BROKEN_STRTOLD 1
 #endif

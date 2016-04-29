@@ -28,17 +28,17 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  _Atomic_word 
+  _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     register _Atomic_word __result;
     __asm__ __volatile__ ("lock; xadd{l} {%0,%1|%1,%0}"
-			  : "=r" (__result), "=m" (*__mem) 
+			  : "=r" (__result), "=m" (*__mem)
 			  : "0" (__val), "m" (*__mem));
     return __result;
   }
-  
+
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()

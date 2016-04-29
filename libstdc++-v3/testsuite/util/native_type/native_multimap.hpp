@@ -124,7 +124,7 @@ namespace __gnu_pbds
 	  }
         return base_type::end();
       }
-      
+
       static std::string
       name()
       { return std::string("n_mmap"); }

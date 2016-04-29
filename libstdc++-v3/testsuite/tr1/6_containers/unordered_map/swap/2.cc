@@ -98,7 +98,7 @@ test01()
   VERIFY( umap04.empty() );
   VERIFY( umap03.get_allocator().get_personality() == personality02 );
   VERIFY( umap04.get_allocator().get_personality() == personality01 );
-  
+
   my_umap umap05(map01_ref.begin(), map01_ref.end(), 10, hash<char>(),
 		 equal_to<char>(), alloc01);
   size01 = umap05.size();
@@ -186,7 +186,7 @@ test01()
 }
 
 int main()
-{ 
+{
   test01();
   return 0;
 }

@@ -24,8 +24,8 @@
 #include <tr1/regex>
 
 void
-test01() 
-{ 
+test01()
+{
   using std::tr1::regex;
 
   regex re("(a|b)*abb", regex::grep);

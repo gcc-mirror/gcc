@@ -106,7 +106,7 @@ namespace __gnu_test
 
 	show_regex_error_codes();
 	cout << "regex_error::code " << regex_error_codes[e.code()] << endl;
-	
+
 	if (__error != regex_error_internal)
 	  {
 	    // Then expected error_type is __error. Check.

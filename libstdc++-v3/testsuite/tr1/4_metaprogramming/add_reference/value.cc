@@ -38,7 +38,7 @@ void test01()
   VERIFY( (is_same<add_reference<ClassType>::type, ClassType&>::value) );
 
   VERIFY( (is_same<add_reference<void>::type, void>::value) );
-  VERIFY( (is_same<add_reference<const void>::type, const void>::value) );  
+  VERIFY( (is_same<add_reference<const void>::type, const void>::value) );
 }
 
 int main()

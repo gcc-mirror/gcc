@@ -37,12 +37,12 @@ test01()
     subtract_with_carry<long, (1 << 24), 10, 24>,
     389, 24
     > u, v;
-  
+
   u(); // advance
   str << u;
-  
+
   VERIFY( u != v );
-  
+
   str >> v;
   VERIFY( u == v );
 }

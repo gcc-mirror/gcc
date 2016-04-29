@@ -25,19 +25,19 @@
 #include <testsuite_hooks.h>
 
 void
-test01() 
+test01()
 {
   bool test __attribute__((unused)) = true;
- 
+
   std::stringstream str;
   std::tr1::minstd_rand0 a;
   std::tr1::minstd_rand0 b;
-  
+
   a(); // advance
   str << a;
-  
+
   VERIFY( a != b );
-  
+
   str >> b;
   VERIFY( a == b );
 }

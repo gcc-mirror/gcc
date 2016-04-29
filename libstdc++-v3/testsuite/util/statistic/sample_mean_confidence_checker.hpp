@@ -58,8 +58,8 @@ namespace __gnu_pbds
        */
       template<typename Value_Type>
       bool
-      sample_mean_confidence_checker(Value_Type sm, Value_Type sv, 
-				     std::size_t num_samples, 
+      sample_mean_confidence_checker(Value_Type sm, Value_Type sv,
+				     std::size_t num_samples,
 				     double relative_interval)
       {
 	enum
@@ -80,5 +80,5 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

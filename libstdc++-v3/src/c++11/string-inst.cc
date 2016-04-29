@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template S operator+(C, const S&);
   template S operator+(const S&, const S&);
 
-  // Only one template keyword allowed here. 
+  // Only one template keyword allowed here.
   // See core issue #46 (NAD)
   // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_closed.html#46
   template
@@ -62,17 +62,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template
     S::basic_string(const C*, const C*, const allocator<C>&);
 
-  template 
+  template
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 
 #if _GLIBCXX_USE_CXX11_ABI
-  template 
+  template
     void
     S::_M_construct(S::iterator, S::iterator, forward_iterator_tag);
 
-  template 
+  template
     void
-    S::_M_construct(S::const_iterator, S::const_iterator, 
+    S::_M_construct(S::const_iterator, S::const_iterator,
 		    forward_iterator_tag);
 
   template
@@ -85,9 +85,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #else // !_GLIBCXX_USE_CXX11_ABI
 
-  template 
-    C* 
-    S::_S_construct(S::iterator, S::iterator, 
+  template
+    C*
+    S::_S_construct(S::iterator, S::iterator,
 		    const allocator<C>&, forward_iterator_tag);
 
   template

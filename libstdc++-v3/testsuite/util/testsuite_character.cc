@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Utility subroutines for the C++ library testsuite. 
+// Utility subroutines for the C++ library testsuite.
 //
 // Copyright (C) 2002-2016 Free Software Foundation, Inc.
 //
@@ -27,7 +27,7 @@ namespace std
   locale::id
   codecvt<__gnu_test::pod_uchar, char, __gnu_test::pod_state>::id;
 
-  locale::id 
+  locale::id
   ctype<__gnu_test::pod_uchar>::id;
 
   locale::id
@@ -36,14 +36,14 @@ namespace std
   locale::id
   moneypunct<__gnu_test::pod_uint>::id;
 
-  // Member specializations for the existing facet classes.  
+  // Member specializations for the existing facet classes.
   // NB: This isn't especially portable. Perhaps a better way would be
   // to just specialize all of numpunct and ctype.
   using __gnu_test::pod_ushort;
   typedef pod_ushort::value_type value_type;
 
   template<>
-    bool 
+    bool
     ctype<pod_ushort>::
     do_is(mask, char_type) const { return true; }
 
@@ -66,7 +66,7 @@ namespace std
     { return __lo; }
 
   template<>
-    pod_ushort 
+    pod_ushort
     ctype<pod_ushort>::
     do_toupper(char_type __c) const
     { return __c; }
@@ -78,7 +78,7 @@ namespace std
     { return __hi; }
 
   template<>
-    pod_ushort 
+    pod_ushort
     ctype<pod_ushort>::
     do_tolower(char_type __c) const
     { return __c; }
@@ -93,7 +93,7 @@ namespace std
     pod_ushort
     ctype<pod_ushort>::
     do_widen(char __c) const
-    { 
+    {
       char_type ret = { value_type(__c) };
       return ret;
     }
@@ -121,7 +121,7 @@ namespace std
   template<>
     const pod_ushort*
     ctype<pod_ushort>::
-    do_narrow(const pod_ushort* __lo, const pod_ushort* __hi, 
+    do_narrow(const pod_ushort* __lo, const pod_ushort* __hi,
 	      char, char* __dest) const
     {
       while (__lo < __hi)
@@ -148,14 +148,14 @@ namespace std
 
       _M_data->_M_decimal_point.value =  value_type('.');
       _M_data->_M_thousands_sep.value = value_type(',');
-      
+
       for (size_t i = 0; i < __num_base::_S_oend; ++i)
 	{
 	  value_type v = __num_base::_S_atoms_out[i];
 	  _M_data->_M_atoms_out[i].value = v;
 	}
       _M_data->_M_atoms_out[__num_base::_S_oend] = pod_ushort();
-      
+
       for (size_t j = 0; j < __num_base::_S_iend; ++j)
 	_M_data->_M_atoms_in[j].value = value_type(__num_base::_S_atoms_in[j]);
       _M_data->_M_atoms_in[__num_base::_S_iend] = pod_ushort();

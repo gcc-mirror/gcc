@@ -30,7 +30,7 @@ void test01()
   using namespace __gnu_test;
 
   VERIFY( (test_category<is_void, void>(true)) );
-  
+
   VERIFY( (test_category<is_void, char>(false)) );
   VERIFY( (test_category<is_void, signed char>(false)) );
   VERIFY( (test_category<is_void, unsigned char>(false)) );

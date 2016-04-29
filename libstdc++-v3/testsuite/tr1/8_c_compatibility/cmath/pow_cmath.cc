@@ -24,7 +24,7 @@ using std::pow;
 #include <tr1/cmath>
 #include <testsuite_tr1.h>
 
-void 
+void
 test01()
 {
   using namespace __gnu_test;

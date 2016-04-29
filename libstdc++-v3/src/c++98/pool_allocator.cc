@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Definitions for __pool_alloc_base.
   __pool_alloc_base::_Obj* volatile*
   __pool_alloc_base::_M_get_free_list(size_t __bytes) throw ()
-  { 
+  {
     size_t __i = ((__bytes + (size_t)_S_align - 1) / (size_t)_S_align - 1);
     return _S_free_list + __i;
   }
@@ -65,7 +65,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     char* __result;
     size_t __total_bytes = __n * __nobjs;
     size_t __bytes_left = _S_end_free - _S_start_free;
-    
+
     if (__bytes_left >= __total_bytes)
       {
 	__result = _S_start_free;
@@ -89,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ((_Obj*)(void*)_S_start_free)->_M_free_list_link = *__free_list;
 	    *__free_list = (_Obj*)(void*)_S_start_free;
 	  }
-	
+
 	size_t __bytes_to_get = (2 * __total_bytes
 				 + _M_round_up(_S_heap_size >> 4));
 	__try
@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_allocate_chunk(__n, __nobjs);
       }
   }
-  
+
   // Returns an object of size __n, and optionally adds to "size
   // __n"'s free list.  We assume that __n is properly aligned.  We
   // hold the allocation lock.
@@ -138,11 +138,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Obj* __result;
     _Obj* __current_obj;
     _Obj* __next_obj;
-    
+
     if (__nobjs == 1)
       return __chunk;
     __free_list = _M_get_free_list(__n);
-    
+
     // Build free list in chunk.
     __result = (_Obj*)(void*)__chunk;
     *__free_list = __next_obj = (_Obj*)(void*)(__chunk + __n);
@@ -162,11 +162,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   __pool_alloc_base::_Obj* volatile __pool_alloc_base::_S_free_list[_S_free_list_size];
-  
+
   char* __pool_alloc_base::_S_start_free = 0;
-  
+
   char* __pool_alloc_base::_S_end_free = 0;
-  
+
   size_t __pool_alloc_base::_S_heap_size = 0;
 
   // Instantiations.

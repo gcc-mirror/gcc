@@ -24,7 +24,7 @@
 #include <tr1/regex>
 #include <testsuite_hooks.h>
 
-// Tests assign operation from a Pascal-style counted-string.  
+// Tests assign operation from a Pascal-style counted-string.
 void test01()
 {
   typedef std::tr1::basic_regex<char> test_type;
@@ -36,7 +36,7 @@ void test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

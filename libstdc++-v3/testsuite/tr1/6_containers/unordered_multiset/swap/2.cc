@@ -88,7 +88,7 @@ test01()
   VERIFY( umset04.empty() );
   VERIFY( umset03.get_allocator().get_personality() == personality02 );
   VERIFY( umset04.get_allocator().get_personality() == personality01 );
-  
+
   my_umset umset05(mset01_ref.begin(), mset01_ref.end(), 10, hash<char>(),
 		   equal_to<char>(), alloc01);
   size01 = umset05.size();
@@ -176,7 +176,7 @@ test01()
 }
 
 int main()
-{ 
+{
   test01();
   return 0;
 }
