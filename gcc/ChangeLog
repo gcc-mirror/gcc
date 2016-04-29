@@ -1,5 +1,10 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* ira.c (combine_and_move_insns): Rather than scanning insns,
+	use DF infrastucture to find use and def insns.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	ira.c (combine_and_move_insns): Move invariant conditions..
 	(ira.c): ..to here.  Call combine_and_move_insns before
 	add_store_equivs.  Call grow_reg_equivs later.  Allocate

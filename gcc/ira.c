@@ -3630,142 +3630,119 @@ add_store_equivs (void)
 static void
 combine_and_move_insns (void)
 {
-  rtx_insn *insn;
-  basic_block bb;
-  int loop_depth;
   bitmap cleared_regs = BITMAP_ALLOC (NULL);
+  int max = max_reg_num ();
 
-  FOR_EACH_BB_REVERSE_FN (bb, cfun)
+  for (int regno = FIRST_PSEUDO_REGISTER; regno < max; regno++)
     {
-      loop_depth = bb_loop_depth (bb);
-      for (insn = BB_END (bb);
-	   insn != PREV_INSN (BB_HEAD (bb));
-	   insn = PREV_INSN (insn))
+      if (!reg_equiv[regno].replace)
+	continue;
+
+      rtx_insn *use_insn = 0;
+      for (df_ref use = DF_REG_USE_CHAIN (regno);
+	   use;
+	   use = DF_REF_NEXT_REG (use))
+	if (DF_REF_INSN_INFO (use))
+	  {
+	    if (DEBUG_INSN_P (DF_REF_INSN (use)))
+	      continue;
+	    gcc_assert (!use_insn);
+	    use_insn = DF_REF_INSN (use);
+	  }
+      gcc_assert (use_insn);
+
+      /* Don't substitute into jumps.  indirect_jump_optimize does
+	 this for anything we are prepared to handle.  */
+      if (JUMP_P (use_insn))
+	continue;
+
+      df_ref def = DF_REG_DEF_CHAIN (regno);
+      gcc_assert (DF_REG_DEF_COUNT (regno) == 1 && DF_REF_INSN_INFO (def));
+      rtx_insn *def_insn = DF_REF_INSN (def);
+
+      /* We may not move instructions that can throw, since that
+	 changes basic block boundaries and we are not prepared to
+	 adjust the CFG to match.  */
+      if (can_throw_internal (def_insn))
+	continue;
+
+      basic_block use_bb = BLOCK_FOR_INSN (use_insn);
+      basic_block def_bb = BLOCK_FOR_INSN (def_insn);
+      if (bb_loop_depth (use_bb) > bb_loop_depth (def_bb))
+	continue;
+
+      if (asm_noperands (PATTERN (def_insn)) < 0
+	  && validate_replace_rtx (regno_reg_rtx[regno],
+				   *reg_equiv[regno].src_p, use_insn))
 	{
 	  rtx link;
-
-	  if (! INSN_P (insn))
-	    continue;
-
-	  /* Don't substitute into jumps.  indirect_jump_optimize does
-	     this for anything we are prepared to handle.  */
-	  if (JUMP_P (insn))
-	    continue;
-
-	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+	  /* Append the REG_DEAD notes from def_insn.  */
+	  for (rtx *p = &REG_NOTES (def_insn); (link = *p) != 0; )
 	    {
-	      if (REG_NOTE_KIND (link) == REG_DEAD
-		  /* Make sure this insn still refers to the register.  */
-		  && reg_mentioned_p (XEXP (link, 0), PATTERN (insn)))
+	      if (REG_NOTE_KIND (XEXP (link, 0)) == REG_DEAD)
 		{
-		  int regno = REGNO (XEXP (link, 0));
-		  rtx equiv_insn;
-
-		  if (! reg_equiv[regno].replace
-		      || reg_equiv[regno].loop_depth < (short) loop_depth)
-		    continue;
-
-		  /* reg_equiv[REGNO].replace gets set only when
-		     REG_N_REFS[REGNO] is 2, i.e. the register is set
-		     once and used once.  (If it were only set, but
-		     not used, flow would have deleted the setting
-		     insns.)  Hence there can only be one insn in
-		     reg_equiv[REGNO].init_insns.  */
-		  gcc_assert (reg_equiv[regno].init_insns
-			      && !XEXP (reg_equiv[regno].init_insns, 1));
-		  equiv_insn = XEXP (reg_equiv[regno].init_insns, 0);
-
-		  /* We may not move instructions that can throw, since
-		     that changes basic block boundaries and we are not
-		     prepared to adjust the CFG to match.  */
-		  if (can_throw_internal (equiv_insn))
-		    continue;
-
-		  if (asm_noperands (PATTERN (equiv_insn)) < 0
-		      && validate_replace_rtx (regno_reg_rtx[regno],
-					       *(reg_equiv[regno].src_p), insn))
-		    {
-		      rtx equiv_link;
-		      rtx last_link;
-		      rtx note;
-
-		      /* Find the last note.  */
-		      for (last_link = link; XEXP (last_link, 1);
-			   last_link = XEXP (last_link, 1))
-			;
-
-		      /* Append the REG_DEAD notes from equiv_insn.  */
-		      equiv_link = REG_NOTES (equiv_insn);
-		      while (equiv_link)
-			{
-			  note = equiv_link;
-			  equiv_link = XEXP (equiv_link, 1);
-			  if (REG_NOTE_KIND (note) == REG_DEAD)
-			    {
-			      remove_note (equiv_insn, note);
-			      XEXP (last_link, 1) = note;
-			      XEXP (note, 1) = NULL_RTX;
-			      last_link = note;
-			    }
-			}
-
-		      remove_death (regno, insn);
-		      SET_REG_N_REFS (regno, 0);
-		      REG_FREQ (regno) = 0;
-		      delete_insn (equiv_insn);
-
-		      reg_equiv[regno].init_insns
-			= reg_equiv[regno].init_insns->next ();
-
-		      ira_reg_equiv[regno].init_insns = NULL;
-		      bitmap_set_bit (cleared_regs, regno);
-		    }
-		  /* Move the initialization of the register to just before
-		     INSN.  Update the flow information.  */
-		  else if (prev_nondebug_insn (insn) != equiv_insn)
-		    {
-		      rtx_insn *new_insn;
-
-		      new_insn = emit_insn_before (PATTERN (equiv_insn), insn);
-		      REG_NOTES (new_insn) = REG_NOTES (equiv_insn);
-		      REG_NOTES (equiv_insn) = 0;
-		      /* Rescan it to process the notes.  */
-		      df_insn_rescan (new_insn);
-
-		      /* Make sure this insn is recognized before
-			 reload begins, otherwise
-			 eliminate_regs_in_insn will die.  */
-		      INSN_CODE (new_insn) = INSN_CODE (equiv_insn);
-
-		      delete_insn (equiv_insn);
-
-		      XEXP (reg_equiv[regno].init_insns, 0) = new_insn;
-
-		      REG_BASIC_BLOCK (regno) = bb->index;
-		      REG_N_CALLS_CROSSED (regno) = 0;
-		      REG_FREQ_CALLS_CROSSED (regno) = 0;
-		      REG_N_THROWING_CALLS_CROSSED (regno) = 0;
-		      REG_LIVE_LENGTH (regno) = 2;
-
-		      if (insn == BB_HEAD (bb))
-			BB_HEAD (bb) = PREV_INSN (insn);
-
-		      ira_reg_equiv[regno].init_insns
-			= gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
-		      bitmap_set_bit (cleared_regs, regno);
-		    }
+		  *p = XEXP (link, 1);
+		  XEXP (link, 1) = REG_NOTES (use_insn);
+		  REG_NOTES (use_insn) = link;
 		}
+	      else
+		p = &XEXP (link, 1);
 	    }
+
+	  remove_death (regno, use_insn);
+	  SET_REG_N_REFS (regno, 0);
+	  REG_FREQ (regno) = 0;
+	  delete_insn (def_insn);
+
+	  reg_equiv[regno].init_insns = NULL;
+	  ira_reg_equiv[regno].init_insns = NULL;
+	  bitmap_set_bit (cleared_regs, regno);
+	}
+
+      /* Move the initialization of the register to just before
+	 USE_INSN.  Update the flow information.  */
+      else if (prev_nondebug_insn (use_insn) != def_insn)
+	{
+	  rtx_insn *new_insn;
+
+	  new_insn = emit_insn_before (PATTERN (def_insn), use_insn);
+	  REG_NOTES (new_insn) = REG_NOTES (def_insn);
+	  REG_NOTES (def_insn) = 0;
+	  /* Rescan it to process the notes.  */
+	  df_insn_rescan (new_insn);
+
+	  /* Make sure this insn is recognized before reload begins,
+	     otherwise eliminate_regs_in_insn will die.  */
+	  INSN_CODE (new_insn) = INSN_CODE (def_insn);
+
+	  delete_insn (def_insn);
+
+	  XEXP (reg_equiv[regno].init_insns, 0) = new_insn;
+
+	  REG_BASIC_BLOCK (regno) = use_bb->index;
+	  REG_N_CALLS_CROSSED (regno) = 0;
+	  REG_FREQ_CALLS_CROSSED (regno) = 0;
+	  REG_N_THROWING_CALLS_CROSSED (regno) = 0;
+	  REG_LIVE_LENGTH (regno) = 2;
+
+	  if (use_insn == BB_HEAD (use_bb))
+	    BB_HEAD (use_bb) = new_insn;
+
+	  ira_reg_equiv[regno].init_insns
+	    = gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
+	  bitmap_set_bit (cleared_regs, regno);
 	}
     }
 
   if (!bitmap_empty_p (cleared_regs))
     {
+      basic_block bb;
+
       FOR_EACH_BB_FN (bb, cfun)
 	{
 	  bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
 	  bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
-	  if (! df_live)
+	  if (!df_live)
 	    continue;
 	  bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
 	  bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
@@ -3773,7 +3750,7 @@ combine_and_move_insns (void)
 
       /* Last pass - adjust debug insns referencing cleared regs.  */
       if (MAY_HAVE_DEBUG_INSNS)
-	for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	  if (DEBUG_INSN_P (insn))
 	    {
 	      rtx old_loc = INSN_VAR_LOCATION_LOC (insn);
