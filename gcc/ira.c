@@ -3120,51 +3120,6 @@ equiv_init_movable_p (rtx x, int regno)
   return 1;
 }
 
-/* TRUE if X uses any registers for which reg_equiv[REGNO].replace is
-   true.  */
-static int
-contains_replace_regs (rtx x)
-{
-  int i, j;
-  const char *fmt;
-  enum rtx_code code = GET_CODE (x);
-
-  switch (code)
-    {
-    case CONST:
-    case LABEL_REF:
-    case SYMBOL_REF:
-    CASE_CONST_ANY:
-    case PC:
-    case CC0:
-    case HIGH:
-      return 0;
-
-    case REG:
-      return reg_equiv[REGNO (x)].replace;
-
-    default:
-      break;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    switch (fmt[i])
-      {
-      case 'e':
-	if (contains_replace_regs (XEXP (x, i)))
-	  return 1;
-	break;
-      case 'E':
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if (contains_replace_regs (XVECEXP (x, i, j)))
-	    return 1;
-	break;
-      }
-
-  return 0;
-}
-
 /* TRUE if X references a memory location that would be affected by a store
    to MEMREF.  */
 static int
@@ -3634,13 +3589,7 @@ add_store_equivs (void)
       src = SET_SRC (set);
 
       /* Don't add a REG_EQUIV note if the insn already has one.  The existing
-	 REG_EQUIV is likely more useful than the one we are adding.
-
-	 If one of the regs in the address has reg_equiv[REGNO].replace set,
-	 then we can't add this REG_EQUIV note.  The reg_equiv[REGNO].replace
-	 optimization may move the set of this register immediately before
-	 insn, which puts it after reg_equiv[REGNO].init_insns, and hence the
-	 mention in the REG_EQUIV note would be to an uninitialized pseudo.  */
+	 REG_EQUIV is likely more useful than the one we are adding.  */
       if (MEM_P (dest) && REG_P (src)
 	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
 	  && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
@@ -3650,7 +3599,6 @@ add_store_equivs (void)
 	  && (init_insn = reg_equiv[regno].init_insns->insn ()) != 0
 	  && bitmap_bit_p (&seen_insns, INSN_UID (init_insn))
 	  && ! find_reg_note (init_insn, REG_EQUIV, NULL_RTX)
-	  && ! contains_replace_regs (XEXP (dest, 0))
 	  && validate_equiv_mem (init_insn, src, dest)
 	  && ! memref_used_between_p (dest, init_insn, insn)
 	  /* Attaching a REG_EQUIV note will fail if INIT_INSN has
@@ -3714,14 +3662,7 @@ combine_and_move_insns (void)
 		  rtx equiv_insn;
 
 		  if (! reg_equiv[regno].replace
-		      || reg_equiv[regno].loop_depth < (short) loop_depth
-		      /* There is no sense to move insns if live range
-			 shrinkage or register pressure-sensitive
-			 scheduling were done because it will not
-			 improve allocation but worsen insn schedule
-			 with a big probability.  */
-		      || flag_live_range_shrinkage
-		      || (flag_sched_pressure && flag_schedule_insns))
+		      || reg_equiv[regno].loop_depth < (short) loop_depth)
 		    continue;
 
 		  /* reg_equiv[REGNO].replace gets set only when
@@ -5222,20 +5163,27 @@ ira (FILE *f)
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);
 
-  reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  grow_reg_equivs ();
   init_alias_analysis ();
+  reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
   update_equiv_regs ();
+
+  /* Don't move insns if live range shrinkage or register
+     pressure-sensitive scheduling were done because it will not
+     improve allocation but likely worsen insn scheduling.  */
+  if (optimize
+      && !flag_live_range_shrinkage
+      && !(flag_sched_pressure && flag_schedule_insns))
+    combine_and_move_insns ();
+
+  /* Gather additional equivalences with memory.  */
   if (optimize)
-    {
-      /* Gather additional equivalences with memory.  */
-      add_store_equivs ();
-      combine_and_move_insns ();
-    }
+    add_store_equivs ();
+
   end_alias_analysis ();
   free (reg_equiv);
 
   setup_reg_equiv ();
+  grow_reg_equivs ();
   setup_reg_equiv_init ();
 
   allocated_reg_info_size = max_reg_num ();
