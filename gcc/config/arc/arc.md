@@ -1254,7 +1254,7 @@
   [(set (match_operand:QI 3 "dest_reg_operand" "=r,r")
         (match_operator:QI 4 "any_mem_operand"
          [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-                   (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
+                   (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1266,7 +1266,7 @@
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
 	(zero_extend:SI (match_operator:QI 4 "any_mem_operand"
 			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
+			           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1278,7 +1278,7 @@
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
 	(sign_extend:SI (match_operator:QI 4 "any_mem_operand"
 			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
+			           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1304,7 +1304,7 @@
   [(set (match_operand:HI 3 "dest_reg_operand" "=r,r")
 	(match_operator:HI 4 "any_mem_operand"
 	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
+	           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1316,7 +1316,7 @@
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
 	(zero_extend:SI (match_operator:HI 4 "any_mem_operand"
 			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
+			           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1329,7 +1329,7 @@
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
 	(sign_extend:SI (match_operator:HI 4 "any_mem_operand"
 			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
+			           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1354,7 +1354,7 @@
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
 	(match_operator:SI 4 "any_mem_operand"
 	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
+	           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1378,7 +1378,7 @@
   [(set (match_operand:SF 3 "dest_reg_operand" "=r,r")
 	(match_operator:SF 4 "any_mem_operand"
 	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
-	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
+	           (match_operand:SI 2 "nonmemory_operand" "rCm2,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
