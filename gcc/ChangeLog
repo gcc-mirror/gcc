@@ -1,5 +1,14 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	ira.c (combine_and_move_insns): Move invariant conditions..
+	(ira.c): ..to here.  Call combine_and_move_insns before
+	add_store_equivs.  Call grow_reg_equivs later.  Allocate
+	req_equiv later using max_reg_num() rather than global max_regno.
+	(contains_replace_regs): Delete.
+	(add_store_equivs): Remove contains_replace_regs test.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* ira.c (struct equiv_mem_data): New.
 	(equiv_mem, equiv_mem_modified): Delete static vars.
 	(validate_equiv_mem_from_store): Use "data" param to communicate..
