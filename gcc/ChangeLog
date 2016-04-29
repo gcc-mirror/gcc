@@ -1,3 +1,8 @@
+2016-04-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Fix
+	nb_iterations_upper_bound computation for vectorized loop.
+
 2016-04-29  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
