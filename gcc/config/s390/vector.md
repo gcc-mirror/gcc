@@ -237,7 +237,7 @@
 	(match_operand:V_32 1 "general_operand"      " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,b,d,R,T,d,d,d"))]
   "TARGET_VX"
   "@
-   lder\t%v0,%v1
+   ldr\t%v0,%v1
    lde\t%0,%1
    ley\t%0,%1
    ste\t%1,%0
@@ -263,7 +263,7 @@
    st\t%1,%0
    sty\t%1,%0
    strl\t%1,%0"
-  [(set_attr "op_type" "RRE,RXE,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,SIL,SIL,RI,RI,
+  [(set_attr "op_type" "RR,RXE,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,SIL,SIL,RI,RI,
                         RIL,RR,RX,RXY,RX,RXY,RIL")])
 
 (define_insn "mov<mode>"

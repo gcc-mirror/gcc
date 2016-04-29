@@ -1,3 +1,10 @@
+2016-04-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/2964.md ("z13_unit_fxu", "z13_0"): Remove lder.
+	* config/s390/s390.md ("movsi_larl", "*movsi_esa", "mov<mode>"):
+	Change lder to ldr.
+	* config/s390/vector.md ("mov<mode>"): Likewise.
+
 2016-04-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/constraints.md ("U", "W"): Invoke
