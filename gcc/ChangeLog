@@ -1,3 +1,7 @@
+2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_rtx_costs): Update documentation.
+
 2016-04-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/2964.md ("z13_unit_fxu", "z13_0"): Remove lder.
