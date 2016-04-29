@@ -1,3 +1,7 @@
+2016-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (constm1_operand): Fix comparison.
+
 2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* testsuite/gcc.target/arc/ieee_eq.c: New test.
