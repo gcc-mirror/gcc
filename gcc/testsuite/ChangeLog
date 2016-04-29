@@ -1,5 +1,9 @@
 2016-04-29  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/pr18589-10.c: Adjust.
+
+2016-04-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/13962
 	PR tree-optimization/65686
 	* gcc.dg/uninit-pr65686.c: New testcase.
