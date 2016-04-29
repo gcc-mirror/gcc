@@ -1,3 +1,50 @@
+2016-04-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h: Change definitions of vec_xl and
+	vec_xst.
+	* config/rs6000/rs6000-builtin.def (LD_ELEMREV_V2DF): New.
+	(LD_ELEMREV_V2DI): New.
+	(LD_ELEMREV_V4SF): New.
+	(LD_ELEMREV_V4SI): New.
+	(LD_ELEMREV_V8HI): New.
+	(LD_ELEMREV_V16QI): New.
+	(ST_ELEMREV_V2DF): New.
+	(ST_ELEMREV_V2DI): New.
+	(ST_ELEMREV_V4SF): New.
+	(ST_ELEMREV_V4SI): New.
+	(ST_ELEMREV_V8HI): New.
+	(ST_ELEMREV_V16QI): New.
+	(XL): New.
+	(XST): New.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	descriptions for VSX_BUILTIN_VEC_XL and VSX_BUILTIN_VEC_XST.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Map from
+	TARGET_P9_VECTOR to RS6000_BTM_P9_VECTOR.
+	(altivec_expand_builtin): Add handling for
+	VSX_BUILTIN_ST_ELEMREV_<MODE> and VSX_BUILTIN_LD_ELEMREV_<MODE>.
+	(rs6000_invalid_builtin): Add error-checking for
+	RS6000_BTM_P9_VECTOR.
+	(altivec_init_builtins): Define builtins used to implement vec_xl
+	and vec_xst.
+	(rs6000_builtin_mask_names): Define power9-vector.
+	* config/rs6000/rs6000.h (MASK_P9_VECTOR): Define.
+	(RS6000_BTM_P9_VECTOR): Define.
+	(RS6000_BTM_COMMON): Include RS6000_BTM_P9_VECTOR.
+	* config/rs6000/vsx.md (vsx_ld_elemrev_v2di): New define_insn.
+	(vsx_ld_elemrev_v2df): Likewise.
+	(vsx_ld_elemrev_v4sf): Likewise.
+	(vsx_ld_elemrev_v4si): Likewise.
+	(vsx_ld_elemrev_v8hi): Likewise.
+	(vsx_ld_elemrev_v16qi): Likewise.
+	(vsx_st_elemrev_v2df): Likewise.
+	(vsx_st_elemrev_v2di): Likewise.
+	(vsx_st_elemrev_v4sf): Likewise.
+	(vsx_st_elemrev_v4si): Likewise.
+	(vsx_st_elemrev_v8hi): Likewise.
+	(vsx_st_elemrev_v16qi): Likewise.
+	* doc/extend.texi: Add prototypes for vec_xl and vec_xst.  Correct
+	grammar.
+
 2016-04-29  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Split
