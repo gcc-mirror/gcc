@@ -678,7 +678,7 @@
 ;; Match exactly -1.
 (define_predicate "constm1_operand"
   (and (match_code "const_int")
-       (match_test "op = constm1_rtx")))
+       (match_test "op == constm1_rtx")))
 
 ;; Match exactly eight.
 (define_predicate "const8_operand"
