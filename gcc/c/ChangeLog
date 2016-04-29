@@ -1,3 +1,11 @@
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* c-parser.c (c_parser_oacc_loop): Don't augment mask with
+	OACC_LOOP_CLAUSE_MASK.
+	(c_parser_oacc_kernels_parallel): Update call to
+	c_oacc_split_loop_clauses.
+
 2016-04-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-array-notation.c (fix_builtin_array_notation_fn): Fix final

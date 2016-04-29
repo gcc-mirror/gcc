@@ -7,7 +7,7 @@ sum (T array[])
 {
    T s = 0;
 
-#pragma acc parallel loop num_gangs (10) gang reduction (+:s) copy (s, array[0:n])
+#pragma acc parallel loop num_gangs (10) gang reduction (+:s) copy (array[0:n])
   for (int i = 0; i < n; i++)
     s += array[i];
 
@@ -25,7 +25,7 @@ sum ()
   for (int i = 0; i < n; i++)
     array[i] = i+1;
 
-#pragma acc parallel loop num_gangs (10) gang reduction (+:s) copy (s)
+#pragma acc parallel loop num_gangs (10) gang reduction (+:s)
   for (int i = 0; i < n; i++)
     s += array[i];
 
@@ -43,7 +43,7 @@ async_sum (T array[])
    for (int i = 0; i < n; i++)
      array[i] = i+1;
 
-#pragma acc parallel loop num_gangs (10) gang reduction (+:s) present (array[0:n]) copy (s) async wait (1)
+#pragma acc parallel loop num_gangs (10) gang reduction (+:s) present (array[0:n]) async wait (1)
   for (int i = 0; i < n; i++)
     s += array[i];
 
@@ -59,7 +59,7 @@ async_sum (int c)
 {
    T s = 0;
 
-#pragma acc parallel loop num_gangs (10) gang reduction (+:s) copy(s) firstprivate (c) async wait (1)
+#pragma acc parallel loop num_gangs (10) gang reduction (+:s) firstprivate (c) async wait (1)
   for (int i = 0; i < n; i++)
     s += i+c;
 

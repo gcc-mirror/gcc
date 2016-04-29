@@ -1,3 +1,10 @@
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* c-common.h (c_oacc_split_loop_clauses): Add boolean argument.
+	* c-omp.c (c_oacc_split_loop_clauses): Use it to duplicate
+	reduction clauses in acc parallel loops.
+
 2016-04-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70852

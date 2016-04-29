@@ -1,3 +1,10 @@
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* testsuite/libgomp.oacc-c++/template-reduction.C: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/combined-reduction.c: New test.
+	* testsuite/libgomp.oacc-fortran/combined-reduction.f90: New test.
+
 2016-04-21  Alexander Monakov  <amonakov@ispras.ru>
 
 	* plugin/plugin-nvptx.c (map_fini): Make cuMemFreeHost error
