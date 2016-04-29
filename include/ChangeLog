@@ -1,3 +1,8 @@
+2016-04-29  Tom Tromey  <tom@tromey.com>
+
+	* dwarf2.h (enum dwarf_source_language) <DW_LANG_Rust,
+	DW_LANG_Rust_old>: New constants.
+
 2016-04-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* longlong.h (umul_ppmm): Remove SHMEDIA checks.
