@@ -1,5 +1,10 @@
 2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	PR/69089
+	* g++.dg/cpp0x/alignas6.C: New test.
+
+2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc/testsuite/gcc.dg/cpp/mac-dir-2.c: Remove pointless duplicate
 	dg-do.
 	* gcc/testsuite/gcc.dg/pr27003.c: Likewise.
