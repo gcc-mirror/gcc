@@ -3497,7 +3497,8 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
       construct_clauses.independent = false;
       construct_clauses.tile_list = NULL;
       construct_clauses.lists[OMP_LIST_PRIVATE] = NULL;
-      construct_clauses.lists[OMP_LIST_REDUCTION] = NULL;
+      if (construct_code == OACC_KERNELS)
+	construct_clauses.lists[OMP_LIST_REDUCTION] = NULL;
       oacc_clauses = gfc_trans_omp_clauses (&block, &construct_clauses,
 					    code->loc);
     }

@@ -1,3 +1,9 @@
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* trans-openmp.c (gfc_trans_oacc_combined_directive): Duplicate
+	the reduction clause in both parallel and loop directives.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
