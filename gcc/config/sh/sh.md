@@ -9300,6 +9300,16 @@
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
+(define_expand "divsf3"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand")
+	(div:SF (match_operand:SF 1 "fp_arith_reg_operand")
+		(match_operand:SF 2 "fp_arith_reg_operand")))]
+  "TARGET_SH2E"
+{
+  emit_insn (gen_divsf3_i (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
 (define_insn "divsf3_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(div:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")

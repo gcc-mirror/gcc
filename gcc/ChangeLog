@@ -1,3 +1,17 @@
+2016-04-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* common/config/sh/sh-common.c (sh_option_optimization_table): Remove
+	remaining SH5 related settings.
+	* config/sh/sh-protos.h (shmedia_cleanup_truncate,
+	shmedia_prepare_call_address): Delete.
+	* config/sh/sh.c (sh_print_operand, output_stack_adjust,
+	DWARF_CIE_DATA_ALIGNMENT, LOCAL_ALIGNMENT): Update comments.
+	* config/sh/sh.h (SUBTARGET_ASM_RELAX_SPEC,
+	UNSUPPORTED_SH2A): Remove m5 checks.
+	(sh_divide_strategy_e): Remove SH5 division strategies.
+	(TARGET_PTRMEMFUNC_VBIT_LOCATION): Remove and use default.
+	* config/sh/sh.md (divsf3): Reinstate define_expand pattern.
+
 2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_rtx_costs): Update documentation.

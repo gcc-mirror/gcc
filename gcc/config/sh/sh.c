@@ -1177,9 +1177,6 @@ sh_print_operand (FILE *stream, rtx x, int code)
       output_addr_const (stream, x);
       break;
     /* N.B.: %R / %S / %T adjust memory addresses by four.
-       For SHMEDIA, that means they can be used to access the first and
-       second 32 bit part of a 64 bit (or larger) value that
-       might be held in floating point registers or memory.
        While they can be used to access 64 bit parts of a larger value
        held in general purpose registers, that won't work with memory -
        neither for fp registers, since the frxx names are used.  */
@@ -6748,15 +6745,12 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	      rtx adj_reg, tmp_reg, mem;
 	      
 	      /* If we reached here, the most likely case is the (sibcall)
-		 epilogue for non SHmedia.  Put a special push/pop sequence
-		 for such case as the last resort.  This looks lengthy but
-		 would not be problem because it seems to be very
-		 rare.  */
-	      
+		 epilogue.  Put a special push/pop sequence for such case as
+		 the last resort.  This looks lengthy but would not be problem
+		 because it seems to be very rare.  */
 	      gcc_assert (epilogue_p);
-	      
 
-	       /* ??? There is still the slight possibility that r4 or
+	      /* ??? There is still the slight possibility that r4 or
 		  r5 have been reserved as fixed registers or assigned
 		  as global registers, and they change during an
 		  interrupt.  There are possible ways to handle this:

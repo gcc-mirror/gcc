@@ -1,3 +1,8 @@
+2016-04-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* longlong.h (umul_ppmm): Remove SHMEDIA checks.
+	(__umulsidi3, count_leading_zeros): Remove SHMEDIA implementations.
+
 2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* longlong.h (add_ssaaaa): Replace obsolete 'J' constraint with
