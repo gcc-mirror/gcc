@@ -1,3 +1,8 @@
+2016-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70852
+	* c-common.c (warn_for_memset): Check domain before accessing it.
+
 2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR/69089
