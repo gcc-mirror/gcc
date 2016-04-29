@@ -31,15 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 static const struct default_options sh_option_optimization_table[] =
   {
     { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_mdiv_, "inv:minlat", 1 },
     { OPT_LEVELS_SIZE, OPT_mdiv_, SH_DIV_STR_FOR_SIZE, 1 },
     { OPT_LEVELS_0_ONLY, OPT_mdiv_, "", 1 },
-    /* We can't meaningfully test TARGET_SHMEDIA here, because -m
-       options haven't been parsed yet, hence we'd read only the
-       default.  sh_target_reg_class will return NO_REGS if this is
-       not SHMEDIA, so it's OK to always set
-       flag_branch_target_load_optimize.  */
-    { OPT_LEVELS_2_PLUS, OPT_fbranch_target_load_optimize, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 

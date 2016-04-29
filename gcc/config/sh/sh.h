@@ -206,7 +206,7 @@ extern int code_for_indirect_jump_scratch;
   SUBTARGET_EXTRA_SPECS
 
 #if TARGET_CPU_DEFAULT & MASK_HARD_SH4
-#define SUBTARGET_ASM_RELAX_SPEC "%{!m1:%{!m2:%{!m3*:%{!m5*:-isa=sh4-up}}}}"
+#define SUBTARGET_ASM_RELAX_SPEC "%{!m1:%{!m2:%{!m3*::-isa=sh4-up}}}"
 #else
 #define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4-up}"
 #endif
@@ -250,7 +250,7 @@ extern int code_for_indirect_jump_scratch;
 /* Strict nofpu means that the compiler should tell the assembler
    to reject FPU instructions. E.g. from ASM inserts.  */
 #if TARGET_CPU_DEFAULT & MASK_HARD_SH4 && !(TARGET_CPU_DEFAULT & MASK_SH_E)
-#define SUBTARGET_ASM_ISA_SPEC "%{!m1:%{!m2:%{!m3*:%{m4-nofpu|!m4*:%{!m5:-isa=sh4-nofpu}}}}}"
+#define SUBTARGET_ASM_ISA_SPEC "%{!m1:%{!m2:%{!m3*:%{m4-nofpu|!m4*::-isa=sh4-nofpu}}}}"
 #else
 
 #define SUBTARGET_ASM_ISA_SPEC \
@@ -299,7 +299,7 @@ extern int code_for_indirect_jump_scratch;
  
 #if TARGET_CPU_DEFAULT & MASK_HARD_SH2A
 #define UNSUPPORTED_SH2A IS_LITTLE_ENDIAN_OPTION \
-"%{m2a*|!m1:%{!m2*:%{!m3*:%{!m4*:{!m5*:%eSH2a does not support little-endian}}}}}}"
+"%{m2a*|!m1:%{!m2*:%{!m3*:%{!m4*:%eSH2a does not support little-endian}}}}}"
 #else
 #define UNSUPPORTED_SH2A IS_LITTLE_ENDIAN_OPTION \
 "%{m2a*:%eSH2a does not support little-endian}}"
@@ -323,17 +323,6 @@ extern int code_for_indirect_jump_scratch;
 extern int assembler_dialect;
 
 enum sh_divide_strategy_e {
-  /* SH5 strategies.  */
-  SH_DIV_CALL,
-  SH_DIV_CALL2,
-  SH_DIV_FP, /* We could do this also for SH4.  */
-  SH_DIV_INV,
-  SH_DIV_INV_MINLAT,
-  SH_DIV_INV20U,
-  SH_DIV_INV20L,
-  SH_DIV_INV_CALL,
-  SH_DIV_INV_CALL2,
-  SH_DIV_INV_FP,
   /* SH1 .. SH4 strategies.  Because of the small number of registers
      available, the compiler uses knowledge of the actual set of registers
      being clobbered by the different functions called.  */
@@ -390,10 +379,7 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 #define MIN_UNITS_PER_WORD 4
 
 /* Scaling factor for Dwarf data offsets for CFI information.
-   The dwarf2out.c default would use -UNITS_PER_WORD, which is -8 for
-   SHmedia; however, since we do partial register saves for the registers
-   visible to SHcompact, and for target registers for SHMEDIA32, we have
-   to allow saves that are only 4-byte aligned.  */
+   The dwarf2out.c default would use -UNITS_PER_WORD.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
 /* Width in bits of a pointer.
@@ -415,11 +401,6 @@ extern enum sh_divide_strategy_e sh_div_strategy;
    code of a function.  */
 #define FUNCTION_BOUNDARY (16)
 
-/* On SH5, the lowest bit is used to indicate SHmedia functions, so
-   the vbit must go into the delta field of
-   pointers-to-member-functions.  */
-#define TARGET_PTRMEMFUNC_VBIT_LOCATION (ptrmemfunc_vbit_in_pfn)
-
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY  32
 
@@ -437,9 +418,7 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 
 /* get_mode_alignment assumes complex values are always held in multiple
    registers, but that is not the case on the SH; CQImode and CHImode are
-   held in a single integer register.  SH5 also holds CSImode and SCmode
-   values in integer registers.  This is relevant for argument passing on
-   SHcompact as we use a stack temp in order to pass CSImode by reference.  */
+   held in a single integer register.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \

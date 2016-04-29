@@ -392,11 +392,8 @@ extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
 				     signed int, machine_mode);
 extern rtx sh_dwarf_register_span (rtx);
 
-extern int shmedia_cleanup_truncate (rtx);
-
 extern bool sh_contains_memref_p (rtx);
 extern bool sh_loads_bankedreg_p (rtx);
-extern rtx shmedia_prepare_call_address (rtx fnaddr, int is_sibcall);
 extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
