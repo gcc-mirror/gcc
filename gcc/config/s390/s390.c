@@ -3116,6 +3116,19 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
       decomposed = true;
     }
 
+  /* With reload, we sometimes get intermediate address forms that are
+     actually invalid as-is, but we need to accept them in the most
+     generic cases below ('R' or 'T'), since reload will in fact fix
+     them up.  LRA behaves differently here; we never see such forms,
+     but on the other hand, we need to strictly reject every invalid
+     address form.  Perform this check right up front.  */
+  if (lra_in_progress)
+    {
+      if (!decomposed && !s390_decompose_address (op, &addr))
+	return 0;
+      decomposed = true;
+    }
+
   switch (c)
     {
     case 'Q': /* no index short displacement */
@@ -3140,25 +3153,17 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
       break;
 
     case 'S': /* no index long displacement */
-      if (!TARGET_LONG_DISPLACEMENT)
-	return 0;
       if (!decomposed && !s390_decompose_address (op, &addr))
 	return 0;
       if (addr.indx)
 	return 0;
-      if (s390_short_displacement (addr.disp))
-	return 0;
       break;
 
     case 'T': /* with index long displacement */
-      if (!TARGET_LONG_DISPLACEMENT)
-	return 0;
       /* Any invalid address here will be fixed up by reload,
 	 so accept it for the most generic constraint.  */
-      if ((decomposed || s390_decompose_address (op, &addr))
-	  && s390_short_displacement (addr.disp))
-	return 0;
       break;
+
     default:
       return 0;
     }
@@ -3167,7 +3172,7 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 
 
 /* Evaluates constraint strings described by the regular expression
-   ([A|B|Z](Q|R|S|T))|U|W|Y and returns 1 if OP is a valid operand for
+   ([A|B|Z](Q|R|S|T))|Y and returns 1 if OP is a valid operand for
    the constraint given in STR, or 0 else.  */
 
 int
@@ -3197,12 +3202,6 @@ s390_mem_constraint (const char *str, rtx op)
       if (GET_CODE (op) != MEM)
 	return 0;
       return s390_check_qrst_address (c, XEXP (op, 0), true);
-    case 'U':
-      return (s390_check_qrst_address ('Q', op, true)
-	      || s390_check_qrst_address ('R', op, true));
-    case 'W':
-      return (s390_check_qrst_address ('S', op, true)
-	      || s390_check_qrst_address ('T', op, true));
     case 'Y':
       /* Simply check for the basic form of a shift count.  Reload will
 	 take care of making sure we have a proper base register.  */
