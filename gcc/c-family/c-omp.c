@@ -861,9 +861,10 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, tree decl,
    #pragma acc parallel loop  */
 
 tree
-c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses)
+c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
+			   bool is_parallel)
 {
-  tree next, loop_clauses;
+  tree next, loop_clauses, nc;
 
   loop_clauses = *not_loop_clauses = NULL_TREE;
   for (; clauses ; clauses = next)
@@ -882,7 +883,23 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses)
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_PRIVATE:
+	  OMP_CLAUSE_CHAIN (clauses) = loop_clauses;
+	  loop_clauses = clauses;
+	  break;
+
+	  /* Reductions must be duplicated on both constructs.  */
 	case OMP_CLAUSE_REDUCTION:
+	  if (is_parallel)
+	    {
+	      nc = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				     OMP_CLAUSE_REDUCTION);
+	      OMP_CLAUSE_DECL (nc) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_REDUCTION_CODE (nc)
+		= OMP_CLAUSE_REDUCTION_CODE (clauses);
+	      OMP_CLAUSE_CHAIN (nc) = *not_loop_clauses;
+	      *not_loop_clauses = nc;
+	    }
+
 	  OMP_CLAUSE_CHAIN (clauses) = loop_clauses;
 	  loop_clauses = clauses;
 	  break;

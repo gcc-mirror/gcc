@@ -1,3 +1,9 @@
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* c-c++-common/goacc/combined-reduction.c: New test.
+	* gfortran.dg/goacc/reduction-2.f95: Add check for kernels reductions.
+
 2016-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr70155-1.c: Check for nonexistence of the

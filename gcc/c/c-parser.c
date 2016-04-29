@@ -13828,6 +13828,8 @@ static tree
 c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 		    omp_clause_mask mask, tree *cclauses, bool *if_p)
 {
+  bool is_parallel = ((mask >> PRAGMA_OACC_CLAUSE_REDUCTION) & 1) == 1;
+
   strcat (p_name, " loop");
   mask |= OACC_LOOP_CLAUSE_MASK;
 
@@ -13835,7 +13837,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 					    cclauses == NULL);
   if (cclauses)
     {
-      clauses = c_oacc_split_loop_clauses (clauses, cclauses);
+      clauses = c_oacc_split_loop_clauses (clauses, cclauses, is_parallel);
       if (*cclauses)
 	*cclauses = c_finish_omp_clauses (*cclauses, false);
       if (clauses)
@@ -13930,8 +13932,6 @@ c_parser_oacc_kernels_parallel (location_t loc, c_parser *parser,
       if (strcmp (p, "loop") == 0)
 	{
 	  c_parser_consume_token (parser);
-	  mask |= OACC_LOOP_CLAUSE_MASK;
-
 	  tree block = c_begin_omp_parallel ();
 	  tree clauses;
 	  c_parser_oacc_loop (loc, parser, p_name, mask, &clauses, if_p);
