@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-mlock" } */
 /* { dg-do assemble } */
 

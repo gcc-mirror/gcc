@@ -1,3 +1,22 @@
+2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc/testsuite/gcc.dg/cpp/mac-dir-2.c: Remove pointless duplicate
+	dg-do.
+	* gcc/testsuite/gcc.dg/pr27003.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/cswtch.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-2.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-4.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/predcom-5.c: Likewise.
+	* gcc.target/arc/mxy.c: Likewise.
+	* gcc.target/arc/mswape.c: Likewise.
+	* gcc.target/arc/mrtsc.c: Likewise.
+	* gcc.target/arc/mcrc.c: Likewise.
+	* gcc.target/arc/mdsp-packa.c: Likewise.
+	* gcc.target/arc/mdvbf.c: Likewise.
+	* gcc.target/arc/mlock.c: Likewise.
+	* gcc.target/arc/mmac-24.c: Likewise.
+	* gcc.dg/spec-options.c: Switch order of the two "dg-do run".
+
 2016-04-29  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 	    Matthijs Kooijman  <matthijs@stdin.nl>
 	    Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>

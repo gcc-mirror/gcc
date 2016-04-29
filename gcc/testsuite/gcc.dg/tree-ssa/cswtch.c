@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-switchconv" } */
 /* { dg-do run } */
 
