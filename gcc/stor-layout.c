@@ -2243,8 +2243,6 @@ layout_type (tree type)
 	tree index = TYPE_DOMAIN (type);
 	tree element = TREE_TYPE (type);
 
-	build_pointer_type (element);
-
 	/* We need to know both bounds in order to compute the size.  */
 	if (index && TYPE_MAX_VALUE (index) && TYPE_MIN_VALUE (index)
 	    && TYPE_SIZE (element))

@@ -1,3 +1,8 @@
+2016-04-29  Richard Biener  <rguenther@suse.de>
+
+	* stor-layout.c (layout_type): Do not build a pointer-to-element
+	type for arrays.
+
 2016-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (Load+RegOp to Mov+MemOp peephole2):
