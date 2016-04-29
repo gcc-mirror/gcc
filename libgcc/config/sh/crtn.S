@@ -25,20 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* See an explanation about .init and .fini in crti.S.  */
 
 	.section .init
-#if __SHMEDIA__
-	add	r14, r63, r15
-	ld.q	r15, 0, r18
-	ptabs	r18, tr0
-	ld.q	r15, 8, r14
-	addi	r15, 16, r15
-	blink	tr0, r63
-#elif __SH5__ && ! __SHMEDIA__
-	mov	r14,r15
-	lds.l	@r14+,pr
-	mov.l	@r14,r14
-	rts
-	add	#8,r15
-#else
 	mov	r14,r15
 	lds.l	@r15+,pr
 	mov.l	@r15+,r14
@@ -48,23 +34,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 	nop
 #endif
-#endif /* __SHMEDIA__ */
 
 	.section .fini
-#if __SHMEDIA__
-	add	r14, r63, r15
-	ld.q	r15, 0, r18
-	ptabs	r18, tr0
-	ld.q	r15, 8, r14
-	addi	r15, 16, r15
-	blink	tr0, r63
-#elif __SH5__ && ! __SHMEDIA__
-	mov	r14,r15
-	lds.l	@r14+,pr
-	mov.l	@r14,r14
-	rts
-	add	#8,r15
-#else
 	mov	r14,r15
 	lds.l	@r15+,pr
 	mov.l	@r15+,r14
@@ -74,4 +45,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 	nop
 #endif
-#endif /* __SHMEDIA__ */

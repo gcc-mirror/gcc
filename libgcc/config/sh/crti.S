@@ -47,19 +47,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 	.global	 GLOBAL(_init)
 GLOBAL(_init):
-#if __SHMEDIA__
-	addi	r15, -16, r15
-	st.q	r15, 8, r14
-	st.q	r15, 0, r18
-	add	r15, r63, r14
-#elif __SH5__ && ! __SHMEDIA__
-	mov	r15,r0
-	add	#-8,r15
-	mov.l	r14,@-r0
-	sts.l	pr,@-r0
-	mov	r15,r14
-	nop
-#else
 #ifdef __ELF__
 	mov.l	r12,@-r15
 	mova	0f,r0
@@ -78,7 +65,6 @@ GLOBAL(_init):
 0:	.long	_GLOBAL_OFFSET_TABLE_
 1:
 #endif
-#endif /* __SHMEDIA__ */
 
 	.section .fini
 /* The alignment below can't be smaller, otherwise the mova below
@@ -92,19 +78,6 @@ GLOBAL(_init):
 #endif
 	.global  GLOBAL(_fini)
 GLOBAL(_fini):	
-#if __SHMEDIA__
-	addi	r15, -16, r15
-	st.q	r15, 8, r14
-	st.q	r15, 0, r18
-	add	r15, r63, r14
-#elif __SH5__ && ! __SHMEDIA__
-	mov	r15,r0
-	add	#-8,r15
-	mov.l	r14,@-r0
-	sts.l	pr,@-r0
-	mov	r15,r14
-	nop
-#else
 #ifdef __ELF__
 	mov.l	r12,@-r15
 	mova	0f,r0
@@ -123,4 +96,3 @@ GLOBAL(_fini):
 0:	.long	_GLOBAL_OFFSET_TABLE_
 1:
 #endif
-#endif /* __SHMEDIA__ */
