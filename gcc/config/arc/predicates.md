@@ -838,3 +838,11 @@
   (ior (match_operand:SI 0 "cmem_address_0")
        (match_operand:SI 0 "cmem_address_1")
        (match_operand:SI 0 "cmem_address_2")))
+
+(define_predicate "short_unsigned_const_operand"
+  (and (match_code "const_int")
+       (match_test "satisfies_constraint_J16 (op)")))
+
+(define_predicate "arc_short_operand"
+  (ior (match_test "register_operand (op, mode)")
+       (match_test "short_unsigned_const_operand (op, mode)")))

@@ -1,3 +1,15 @@
+2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (UNSIGNED_INT12, UNSIGNED_INT16): Define.
+	* config/arc/arc.md (umulhisi3): Use arc_short_operand predicate.
+	(umulhisi3_imm): Update predicates and constraint letters.
+	(umulhisi3_reg): Declare instruction as commutative.
+	* config/arc/constraints.md (J12, J16): New constraints.
+	* config/arc/predicates.md (short_unsigned_const_operand): New
+	predicate.
+	(arc_short_operand): Likewise.
+	* testsuite/gcc.target/arc/umulsihi3_z.c: New file.
+
 2016-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/13962

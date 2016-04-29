@@ -815,6 +815,8 @@ extern enum reg_class arc_regno_reg_class[];
 #define UNSIGNED_INT6(X) ((unsigned) (X) < 0x40)
 #define UNSIGNED_INT7(X) ((unsigned) (X) < 0x80)
 #define UNSIGNED_INT8(X) ((unsigned) (X) < 0x100)
+#define UNSIGNED_INT12(X) ((unsigned) (X) < 0x800)
+#define UNSIGNED_INT16(X) ((unsigned) (X) < 0x10000)
 #define IS_ONE(X) ((X) == 1)
 #define IS_ZERO(X) ((X) == 0)
 

@@ -1820,7 +1820,7 @@
 (define_expand "umulhisi3"
   [(set (match_operand:SI 0 "register_operand"                           "")
 	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand"  ""))
-		 (zero_extend:SI (match_operand:HI 2 "nonmemory_operand" ""))))]
+		 (zero_extend:SI (match_operand:HI 2 "arc_short_operand" ""))))]
   "TARGET_MPYW"
   "{
     if (CONSTANT_P (operands[2]))
@@ -1832,9 +1832,9 @@
 )
 
 (define_insn "umulhisi3_imm"
-  [(set (match_operand:SI 0 "register_operand"                          "=r, r,r,  r,  r")
-	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" " 0, r,0,  0,  r"))
-		 (match_operand:HI 2 "short_const_int_operand"          " L, L,I,C16,C16")))]
+  [(set (match_operand:SI 0 "register_operand"                          "=r, r,  r,  r,  r")
+	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "%0, r,  0,  0,  r"))
+		 (match_operand:HI 2 "short_unsigned_const_operand"     " L, L,J12,J16,J16")))]
   "TARGET_MPYW"
   "mpyuw%? %0,%1,%2"
   [(set_attr "length" "4,4,4,8,8")
@@ -1846,7 +1846,7 @@
 
 (define_insn "umulhisi3_reg"
   [(set (match_operand:SI 0 "register_operand"                          "=Rcqq, r, r")
-	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "    0, 0, r"))
+	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "   %0, 0, r"))
 		 (zero_extend:SI (match_operand:HI 2 "register_operand" " Rcqq, r, r"))))]
   "TARGET_MPYW"
   "mpyuw%? %0,%1,%2"
