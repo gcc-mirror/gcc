@@ -1,3 +1,11 @@
+2016-04-29  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Matthijs Kooijman  <matthijs@stdin.nl>
+	    Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/60040
+	* gcc.target/avr/pr60040-1.c: New.
+	* gcc.target/avr/pr60040-2.c: New.
+
 2016-04-29  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr18589-10.c: Adjust.

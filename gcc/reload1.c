@@ -981,7 +981,8 @@ reload (rtx_insn *first, int global)
       /* If we allocated another stack slot, redo elimination bookkeeping.  */
       if (something_was_spilled || starting_frame_size != get_frame_size ())
 	{
-	  update_eliminables_and_spill ();
+	  if (update_eliminables_and_spill ())
+	    finish_spills (global);
 	  continue;
 	}
 
@@ -1021,10 +1022,12 @@ reload (rtx_insn *first, int global)
 	  did_spill = 1;
 	  something_changed = 1;
 	}
-
-      select_reload_regs ();
-      if (failure)
-	goto failed;
+      else
+	{
+	  select_reload_regs ();
+	  if (failure)
+	    goto failed;
+	}
 
       if (insns_need_reload != 0 || did_spill)
 	something_changed |= finish_spills (global);

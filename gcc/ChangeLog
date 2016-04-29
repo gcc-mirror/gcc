@@ -1,3 +1,10 @@
+2016-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/60040
+	* reload1.c (reload): Call finish_spills before
+	restarting reload loop. Skip select_reload_regs
+	if update_eliminables_and_spill returns true.
+
 2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.h (UNSIGNED_INT12, UNSIGNED_INT16): Define.
