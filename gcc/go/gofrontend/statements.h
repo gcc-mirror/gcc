@@ -47,7 +47,6 @@ class Bexpression;
 class Bstatement;
 class Bvariable;
 class Ast_dump_context;
-class Dataflow;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -860,10 +859,6 @@ class Select_clauses
   void
   check_types();
 
-  // Analyze the dataflow across each case statement.
-  void
-  analyze_dataflow(Dataflow*);
-
   // Whether the select clauses may fall through to the statement
   // which follows the overall select statement.
   bool
@@ -919,10 +914,6 @@ class Select_clauses
     // Check types.
     void
     check_types();
-
-    // Analyze the dataflow across each case statement.
-    void
-    analyze_dataflow(Dataflow*);
 
     // Return true if this is the default clause.
     bool
@@ -1029,10 +1020,6 @@ class Select_statement : public Statement
   // Return the break label for this select statement.
   Unnamed_label*
   break_label();
-
-  void
-  analyze_dataflow(Dataflow* dataflow)
-  { this->clauses_->analyze_dataflow(dataflow); }
 
  protected:
   int

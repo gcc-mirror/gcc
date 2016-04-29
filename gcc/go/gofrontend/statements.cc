@@ -14,7 +14,6 @@
 #include "backend.h"
 #include "statements.h"
 #include "ast-dump.h"
-#include "dataflow.h"
 
 // Class Statement.
 
@@ -4821,22 +4820,6 @@ Select_clauses::Select_clause::check_types()
     error_at(this->location(), "invalid receive on send-only channel");
 }
 
-// Analyze the dataflow across each case statement.
-
-void
-Select_clauses::Select_clause::analyze_dataflow(Dataflow* dataflow)
-{
-  if (this->is_default_)
-    return;
-
-  // For a CommClause, the dataflow analysis should record a definition of
-  // VAR and CLOSEDVAR
-  if (this->var_ != NULL && !this->var_->is_sink())
-    dataflow->add_def(this->var_, this->channel_, NULL, false);
-  if (this->closedvar_ != NULL && !this->closedvar_->is_sink())
-    dataflow->add_def(this->closedvar_, this->channel_, NULL, false);
-}
-
 // Whether this clause may fall through to the statement which follows
 // the overall select statement.
 
@@ -4953,17 +4936,6 @@ Select_clauses::check_types()
        p != this->clauses_.end();
        ++p)
     p->check_types();
-}
-
-// Analyze the dataflow across each case statement.
-
-void
-Select_clauses::analyze_dataflow(Dataflow* dataflow)
-{
-  for (Clauses::iterator p = this->clauses_.begin();
-       p != this->clauses_.end();
-       ++p)
-    p->analyze_dataflow(dataflow);
 }
 
 // Return whether these select clauses fall through to the statement

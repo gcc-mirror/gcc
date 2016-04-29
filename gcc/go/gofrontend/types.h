@@ -8,7 +8,6 @@
 #define GO_TYPES_H
 
 #include "go-linemap.h"
-#include "escape.h"
 
 class Gogo;
 class Package;
@@ -1779,23 +1778,13 @@ class Function_type : public Type
     : Type(TYPE_FUNCTION),
       receiver_(receiver), parameters_(parameters), results_(results),
       location_(location), is_varargs_(false), is_builtin_(false),
-      has_escape_info_(false), fnbtype_(NULL), parameter_escape_states_(NULL)
+      fnbtype_(NULL)
   { }
 
   // Get the receiver.
   const Typed_identifier*
   receiver() const
   { return this->receiver_; }
-
-  // Get the escape state of the receiver.
-  const Node::Escapement_lattice&
-  receiver_escape_state() const
-  { return this->receiver_escape_state_; }
-
-  // Set the escape state of the receiver.
-  void
-  set_receiver_escape_state(const Node::Escapement_lattice& e)
-  { this->receiver_escape_state_ = e; }
 
   // Get the return names and types.
   const Typed_identifier_list*
@@ -1807,16 +1796,6 @@ class Function_type : public Type
   parameters() const
   { return this->parameters_; }
 
-  // Get the escape states associated with each parameter.
-  const Node::Escape_states*
-  parameter_escape_states() const
-  { return this->parameter_escape_states_; }
-
-  // Set the escape states of the parameters.
-  void
-  set_parameter_escape_states(Node::Escape_states* states)
-  { this->parameter_escape_states_ = states; }
-
   // Whether this is a varargs function.
   bool
   is_varargs() const
@@ -1826,11 +1805,6 @@ class Function_type : public Type
   bool
   is_builtin() const
   { return this->is_builtin_; }
-
-  // Whether this contains escape information.
-  bool
-  has_escape_info() const
-  { return this->has_escape_info_; }
 
   // The location where this type was defined.
   Location
@@ -1861,11 +1835,6 @@ class Function_type : public Type
   void
   set_is_builtin()
   { this->is_builtin_ = true; }
-
-  // Record that this has escape information.
-  void
-  set_has_escape_info()
-  { this->has_escape_info_ = true; }
 
   // Import a function type.
   static Function_type*
@@ -1978,16 +1947,9 @@ class Function_type : public Type
   // Whether this is a special builtin function which can not simply
   // be called.  This is used for len, cap, etc.
   bool is_builtin_;
-  // Whether escape information for the receiver and parameters has been
-  // recorded.
-  bool has_escape_info_;
   // The backend representation of this type for backend function
   // declarations and definitions.
   Btype* fnbtype_;
-  // The escape state of the receiver.
-  Node::Escapement_lattice receiver_escape_state_;
-  // The escape states of each parameter.
-  Node::Escape_states* parameter_escape_states_;
 };
 
 // The type of a function's backend representation.

@@ -502,27 +502,15 @@ Import::import_func(Package* package)
 {
   std::string name;
   Typed_identifier* receiver;
-  Node::Escapement_lattice rcvr_escape;
   Typed_identifier_list* parameters;
-  Node::Escape_states* param_escapes;
   Typed_identifier_list* results;
   bool is_varargs;
-  bool has_escape_info;
-  Function::import_func(this, &name, &receiver, &rcvr_escape, &parameters,
-			&param_escapes, &results, &is_varargs,
-			&has_escape_info);
+  Function::import_func(this, &name, &receiver,
+			&parameters, &results, &is_varargs);
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
     fntype->set_is_varargs();
-
-  if (has_escape_info)
-    {
-      if (fntype->is_method())
-	fntype->set_receiver_escape_state(rcvr_escape);
-      fntype->set_parameter_escape_states(param_escapes);
-      fntype->set_has_escape_info();
-    }
 
   Location loc = this->location_;
   Named_object* no;
@@ -772,19 +760,6 @@ Import::read_type()
   this->require_c_string(">");
 
   return type;
-}
-
-// Read escape info in the import stream.
-
-Node::Escapement_lattice
-Import::read_escape_info()
-{
-  Stream* stream = this->stream_;
-  this->require_c_string("<escape ");
-
-  int escape_value = stream->get_char() - '0';
-  this->require_c_string(">");
-  return Node::Escapement_lattice(escape_value);
 }
 
 // Register the builtin types.

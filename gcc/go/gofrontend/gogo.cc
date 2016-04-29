@@ -18,7 +18,6 @@
 #include "runtime.h"
 #include "import.h"
 #include "export.h"
-#include "escape.h"
 #include "backend.h"
 #include "gogo.h"
 
@@ -156,19 +155,11 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   Function_type* new_type = Type::make_function_type(NULL, NULL, NULL, loc);
   new_type->set_is_varargs();
   new_type->set_is_builtin();
-  Node::Escape_states* new_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  new_type->set_parameter_escape_states(new_escapes);
-  new_type->set_has_escape_info();
   this->globals_->add_function_declaration("new", NULL, new_type, loc);
 
   Function_type* make_type = Type::make_function_type(NULL, NULL, NULL, loc);
   make_type->set_is_varargs();
   make_type->set_is_builtin();
-  Node::Escape_states* make_escapes =
-    new Node::Escape_states(2, Node::ESCAPE_NONE);
-  make_type->set_parameter_escape_states(make_escapes);
-  make_type->set_has_escape_info();
   this->globals_->add_function_declaration("make", NULL, make_type, loc);
 
   Typed_identifier_list* len_result = new Typed_identifier_list();
@@ -176,10 +167,6 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   Function_type* len_type = Type::make_function_type(NULL, NULL, len_result,
 						     loc);
   len_type->set_is_builtin();
-  Node::Escape_states* len_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  len_type->set_parameter_escape_states(len_escapes);
-  len_type->set_has_escape_info();
   this->globals_->add_function_declaration("len", NULL, len_type, loc);
 
   Typed_identifier_list* cap_result = new Typed_identifier_list();
@@ -187,26 +174,16 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   Function_type* cap_type = Type::make_function_type(NULL, NULL, len_result,
 						     loc);
   cap_type->set_is_builtin();
-  Node::Escape_states* cap_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  cap_type->set_parameter_escape_states(cap_escapes);
-  cap_type->set_has_escape_info();
   this->globals_->add_function_declaration("cap", NULL, cap_type, loc);
 
   Function_type* print_type = Type::make_function_type(NULL, NULL, NULL, loc);
   print_type->set_is_varargs();
   print_type->set_is_builtin();
-  Node::Escape_states* print_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  print_type->set_parameter_escape_states(print_escapes);
-  print_type->set_has_escape_info();
   this->globals_->add_function_declaration("print", NULL, print_type, loc);
 
   print_type = Type::make_function_type(NULL, NULL, NULL, loc);
   print_type->set_is_varargs();
   print_type->set_is_builtin();
-  print_type->set_parameter_escape_states(print_escapes);
-  print_type->set_has_escape_info();
   this->globals_->add_function_declaration("println", NULL, print_type, loc);
 
   Type *empty = Type::make_empty_interface_type(loc);
@@ -215,10 +192,6 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   Function_type *panic_type = Type::make_function_type(NULL, panic_parms,
 						       NULL, loc);
   panic_type->set_is_builtin();
-  Node::Escape_states* panic_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_ARG);
-  panic_type->set_parameter_escape_states(panic_escapes);
-  panic_type->set_has_escape_info();
   this->globals_->add_function_declaration("panic", NULL, panic_type, loc);
 
   Typed_identifier_list* recover_result = new Typed_identifier_list();
@@ -232,10 +205,6 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   Function_type* close_type = Type::make_function_type(NULL, NULL, NULL, loc);
   close_type->set_is_varargs();
   close_type->set_is_builtin();
-  Node::Escape_states* close_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  close_type->set_parameter_escape_states(close_escapes);
-  close_type->set_has_escape_info();
   this->globals_->add_function_declaration("close", NULL, close_type, loc);
 
   Typed_identifier_list* copy_result = new Typed_identifier_list();
@@ -244,56 +213,31 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
 						      copy_result, loc);
   copy_type->set_is_varargs();
   copy_type->set_is_builtin();
-  Node::Escape_states* copy_escapes =
-    new Node::Escape_states(2, Node::ESCAPE_NONE);
-  copy_type->set_parameter_escape_states(copy_escapes);
-  copy_type->set_has_escape_info();
   this->globals_->add_function_declaration("copy", NULL, copy_type, loc);
 
   Function_type* append_type = Type::make_function_type(NULL, NULL, NULL, loc);
   append_type->set_is_varargs();
   append_type->set_is_builtin();
-  Node::Escape_states* append_escapes = new Node::Escape_states;
-  append_escapes->push_back(Node::ESCAPE_ARG);
-  append_escapes->push_back(Node::ESCAPE_NONE);
-  append_type->set_parameter_escape_states(append_escapes);
-  append_type->set_has_escape_info();
   this->globals_->add_function_declaration("append", NULL, append_type, loc);
 
   Function_type* complex_type = Type::make_function_type(NULL, NULL, NULL, loc);
   complex_type->set_is_varargs();
   complex_type->set_is_builtin();
-  Node::Escape_states* complex_escapes =
-    new Node::Escape_states(2, Node::ESCAPE_NONE);
-  complex_type->set_parameter_escape_states(complex_escapes);
-  complex_type->set_has_escape_info();
   this->globals_->add_function_declaration("complex", NULL, complex_type, loc);
 
   Function_type* real_type = Type::make_function_type(NULL, NULL, NULL, loc);
   real_type->set_is_varargs();
   real_type->set_is_builtin();
-  Node::Escape_states* real_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  real_type->set_parameter_escape_states(real_escapes);
-  real_type->set_has_escape_info();
   this->globals_->add_function_declaration("real", NULL, real_type, loc);
 
   Function_type* imag_type = Type::make_function_type(NULL, NULL, NULL, loc);
   imag_type->set_is_varargs();
   imag_type->set_is_builtin();
-  Node::Escape_states* imag_escapes =
-    new Node::Escape_states(1, Node::ESCAPE_NONE);
-  imag_type->set_parameter_escape_states(imag_escapes);
-  imag_type->set_has_escape_info();
   this->globals_->add_function_declaration("imag", NULL, imag_type, loc);
 
   Function_type* delete_type = Type::make_function_type(NULL, NULL, NULL, loc);
   delete_type->set_is_varargs();
   delete_type->set_is_builtin();
-  Node::Escape_states* delete_escapes =
-    new Node::Escape_states(2, Node::ESCAPE_NONE);
-  delete_type->set_parameter_escape_states(delete_escapes);
-  delete_type->set_has_escape_info();
   this->globals_->add_function_declaration("delete", NULL, delete_type, loc);
 }
 
@@ -1887,74 +1831,6 @@ Gogo::add_label_reference(const std::string& label_name,
   Function* func = this->functions_.back().function->func_value();
   return func->add_label_reference(this, label_name, location,
 				   issue_goto_errors);
-}
-
-// Add a function to the call graph.
-
-Node*
-Gogo::add_call_node(Named_object* function)
-{
-  Node* call = this->lookup_call_node(function);
-  if (call == NULL)
-    {
-      call = Node::make_call(function);
-      this->call_graph_.insert(call);
-      this->named_call_nodes_[function] = call;
-    }
-  return call;
-}
-
-// Find the call node that represents FUNCTION.  Return NULL if it does not
-// exist.
-
-Node*
-Gogo::lookup_call_node(Named_object* function) const
-{
-  Named_escape_nodes::const_iterator p = this->named_call_nodes_.find(function);
-  if (p == this->named_call_nodes_.end())
-    return NULL;
-  return p->second;
-}
-
-// Add a connection node for OBJECT.
-
-Node*
-Gogo::add_connection_node(Named_object* object)
-{
-  Node* connection = this->lookup_connection_node(object);
-  if (connection == NULL)
-    {
-      connection = Node::make_connection(object, Node::ESCAPE_NONE);
-
-      // Each global variable is a part of the global connection graph.
-      if (object->is_variable()
-	  && object->var_value()->is_global())
-	{
-	  connection->connection_node()->set_escape_state(Node::ESCAPE_GLOBAL);
-	  this->global_connections_.insert(connection);
-	}
-
-      // Each function declaration or definition is the root of its own
-      // connection graph.  This means closures will have their own
-      // connection graph that objects in the enclosing function might
-      // refer to.
-      if (object->is_function() || object->is_function_declaration())
-	this->connection_roots_.insert(connection);
-      this->named_connection_nodes_[object] = connection;
-    }
-  return connection;
-}
-
-// Find the connection node for OBJECT.  Return NULL if it does not exist.
-
-Node*
-Gogo::lookup_connection_node(Named_object* object) const
-{
-  Named_escape_nodes::const_iterator p =
-    this->named_connection_nodes_.find(object);
-  if (p == this->named_connection_nodes_.end())
-    return NULL;
-  return p->second;
 }
 
 // Return the current binding state.
@@ -4918,13 +4794,6 @@ Function::export_func_with_type(Export* exp, const std::string& name,
       exp->write_c_string("(");
       const Typed_identifier* receiver = fntype->receiver();
       exp->write_name(receiver->name());
-
-      if (fntype->has_escape_info())
-        {
-          exp->write_c_string(" ");
-          exp->write_escape(fntype->receiver_escape_state());
-        }
-
       exp->write_c_string(" ");
       exp->write_type(receiver->type());
       exp->write_c_string(") ");
@@ -4948,13 +4817,6 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 	  else
 	    exp->write_c_string(", ");
 	  exp->write_name(p->name());
-
-	  if (fntype->has_escape_info())
-	    {
-	      exp->write_c_string(" ");
-	      exp->write_escape(fntype->parameter_escape_states()->at(i));
-	    }
-
 	  exp->write_c_string(" ");
 	  if (!is_varargs || p + 1 != parameters->end())
 	    exp->write_type(p->type());
@@ -5002,29 +4864,17 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 void
 Function::import_func(Import* imp, std::string* pname,
 		      Typed_identifier** preceiver,
-		      Node::Escapement_lattice* rcvr_escape,
 		      Typed_identifier_list** pparameters,
-		      Node::Escape_states** pparam_escapes,
 		      Typed_identifier_list** presults,
-		      bool* is_varargs, bool* has_escape_info)
+		      bool* is_varargs)
 {
-  *has_escape_info = false;
-
   imp->require_c_string("func ");
 
   *preceiver = NULL;
-  *rcvr_escape = Node::ESCAPE_NONE;
   if (imp->peek_char() == '(')
     {
       imp->require_c_string("(");
       std::string name = imp->read_name();
-
-      if (imp->match_c_string(" <escape")){
-	*has_escape_info = true;
-	imp->require_c_string(" ");
-	*rcvr_escape = imp->read_escape_info();
-      }
-
       imp->require_c_string(" ");
       Type* rtype = imp->read_type();
       *preceiver = new Typed_identifier(name, rtype, imp->location());
@@ -5034,27 +4884,16 @@ Function::import_func(Import* imp, std::string* pname,
   *pname = imp->read_identifier();
 
   Typed_identifier_list* parameters;
-  Node::Escape_states* param_escapes;
   *is_varargs = false;
   imp->require_c_string(" (");
   if (imp->peek_char() == ')')
-    {
-      parameters = NULL;
-      param_escapes = NULL;
-    }
+    parameters = NULL;
   else
     {
       parameters = new Typed_identifier_list();
-      param_escapes = new Node::Escape_states();
       while (true)
 	{
 	  std::string name = imp->read_name();
-	  if (imp->match_c_string(" <escape")){
-	    *has_escape_info = true;
-	    imp->require_c_string(" ");
-	    param_escapes->push_back(imp->read_escape_info());
-	  }
-
 	  imp->require_c_string(" ");
 
 	  if (imp->match_c_string("..."))
@@ -5076,7 +4915,6 @@ Function::import_func(Import* imp, std::string* pname,
     }
   imp->require_c_string(")");
   *pparameters = parameters;
-  *pparam_escapes = param_escapes;
 
   Typed_identifier_list* results;
   if (imp->peek_char() != ' ')
