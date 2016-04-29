@@ -1,3 +1,9 @@
+2016-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md
+	(operations with memory inputs setting flags peephole2):
+	Remove uneeded REG_P checks.  Cleanup pattern generation.
+
 2016-04-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-vect-loop.c (vect_transform_loop): Fix
@@ -12,9 +18,8 @@
 
 2016-04-29  Andrew Burgess  <andrew.burgess@embecosm.com>
 
-	* config/arc/arc.md (*loadqi_update): Replace use of 'rI'
-	constraint with 'rCm2' constraints to limit possible immediate
-	size.
+	* config/arc/arc.md (*loadqi_update): Replace use of 'rI' constraint
+	with 'rCm2' constraints to limit possible immediate size.
 	(*load_zeroextendqisi_update): Likewise.
 	(*load_signextendqisi_update): Likewise.
 	(*loadhi_update): Likewise.
