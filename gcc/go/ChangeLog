@@ -1,3 +1,7 @@
+2016-04-29  Chris Manghane  <cmang@google.com>
+
+	* Make-lang.in (GO_OBJS): Remove go/dataflow.o, go/escape.o.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* go-gcc.cc (Gcc_backend::implicit_variable): Use SET_DECL_ALIGN.

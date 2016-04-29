@@ -7,7 +7,6 @@
 #ifndef GO_GOGO_H
 #define GO_GOGO_H
 
-#include "escape.h"
 #include "go-linemap.h"
 
 class Traverse;
@@ -125,21 +124,6 @@ class Gogo
   Linemap*
   linemap()
   { return this->linemap_; }
-
-  // Get the Call Graph.
-  const std::set<Node*>&
-  call_graph() const
-  { return this->call_graph_; }
-
-  // Get the roots of each connection graph.
-  const std::set<Node*>&
-  connection_roots() const
-  { return this->connection_roots_; }
-
-  // Get the nodes that escape globally.
-  const std::set<Node*>&
-  global_connections() const
-  { return this->global_connections_; }
 
   // Get the package name.
   const std::string&
@@ -361,22 +345,6 @@ class Gogo
   add_label_reference(const std::string&, Location,
 		      bool issue_goto_errors);
 
-  // Add a FUNCTION to the call graph.
-  Node*
-  add_call_node(Named_object* function);
-
-  // Lookup the call node for FUNCTION.
-  Node*
-  lookup_call_node(Named_object* function) const;
-
-  // Add a connection node for OBJECT.
-  Node*
-  add_connection_node(Named_object* object);
-
-  // Lookup the connection node for OBJECT.
-  Node*
-  lookup_connection_node(Named_object* object) const;
-
   // Return a snapshot of the current binding state.
   Bindings_snapshot*
   bindings_snapshot(Location);
@@ -576,26 +544,6 @@ class Gogo
   void
   check_return_statements();
 
-  // Build call graph.
-  void
-  build_call_graph();
-
-  // Build connection graphs.
-  void
-  build_connection_graphs();
-
-  // Analyze reachability in the connection graphs.
-  void
-  analyze_reachability();
-
-  // Record escape information in function signatures for export data.
-  void
-  mark_escaping_signatures();
-
-  // Optimize variable allocation.
-  void
-  optimize_allocations(const char** filenames);
-
   // Do all exports.
   void
   do_exports();
@@ -730,10 +678,6 @@ class Gogo
   // where they were defined.
   typedef Unordered_map(std::string, Location) File_block_names;
 
-  // Type used to map named objects that refer to objects to the
-  // node that represent them in the escape analysis graphs.
-  typedef Unordered_map(Named_object*, Node*)  Named_escape_nodes;
-
   // Type used to queue writing a type specific function.
   struct Specific_type_function
   {
@@ -766,20 +710,6 @@ class Gogo
   // The global binding contour.  This includes the builtin functions
   // and the package we are compiling.
   Bindings* globals_;
-  // The call graph for a program execution which represents the functions
-  // encountered and the caller-callee relationship between the functions.
-  std::set<Node*> call_graph_;
-  // The nodes that form the roots of the connection graphs for each called
-  // function and represent the connectivity relationship between all objects
-  // in the function.
-  std::set<Node*> connection_roots_;
-  // All connection nodes that have an escape state of ESCAPE_GLOBAL are a part
-  // of a special connection graph of only global variables.
-  std::set<Node*> global_connections_;
-  // Mapping from named objects to nodes in the call graph.
-  Named_escape_nodes named_call_nodes_;
-  // Mapping from named objects to nodes in a connection graph.
-  Named_escape_nodes named_connection_nodes_;
   // The list of names we have seen in the file block.
   File_block_names file_block_names_;
   // Mapping from import file names to packages.
@@ -1215,11 +1145,8 @@ class Function
   // Import a function.
   static void
   import_func(Import*, std::string* pname, Typed_identifier** receiver,
-	      Node::Escapement_lattice* rcvr_escape,
 	      Typed_identifier_list** pparameters,
-	      Node::Escape_states** pparam_escapes,
-	      Typed_identifier_list** presults, bool* is_varargs,
-	      bool* has_escape_info);
+	      Typed_identifier_list** presults, bool* is_varargs);
 
  private:
   // Type for mapping from label names to Label objects.
