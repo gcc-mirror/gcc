@@ -3,6 +3,9 @@
 	PR sanitizer/70342
 	* g++.dg/ubsan/null-7.C: New test.
 
+	PR c/70852
+	* gcc.dg/pr70852.c: New test.
+
 2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR/69089

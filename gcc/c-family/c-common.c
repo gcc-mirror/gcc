@@ -11796,6 +11796,7 @@ warn_for_memset (location_t loc, tree arg0, tree arg2,
 	  tree elt_type = TREE_TYPE (type);
 	  tree domain = TYPE_DOMAIN (type);
 	  if (!integer_onep (TYPE_SIZE_UNIT (elt_type))
+	      && domain != NULL_TREE
 	      && TYPE_MAXVAL (domain)
 	      && TYPE_MINVAL (domain)
 	      && integer_zerop (TYPE_MINVAL (domain))
