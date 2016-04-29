@@ -137,8 +137,8 @@
 
 ; Full HW vector size moves
 (define_insn "mov<mode>"
-  [(set (match_operand:V_128 0 "nonimmediate_operand" "=v, v,QR,  v,  v,  v,  v,  v,v,d")
-	(match_operand:V_128 1 "general_operand"      " v,QR, v,j00,jm1,jyy,jxx,jKK,d,v"))]
+  [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,d")
+	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d,v"))]
   "TARGET_VX"
   "@
    vlr\t%v0,%v1
@@ -178,8 +178,8 @@
 ; However, this would probably be slower.
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_8 0 "nonimmediate_operand" "=v,v,d, v,QR,  v,  v,  v,  v,d,  Q,  S,  Q,  S,  d,  d,d,d,d,R,T")
-        (match_operand:V_8 1 "general_operand"      " v,d,v,QR, v,j00,jm1,jyy,jxx,d,j00,j00,jm1,jm1,j00,jm1,R,T,b,d,d"))]
+  [(set (match_operand:V_8 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  S,  Q,  S,  d,  d,d,d,d,R,T")
+        (match_operand:V_8 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,d,j00,j00,jm1,jm1,j00,jm1,R,T,b,d,d"))]
   ""
   "@
    vlr\t%v0,%v1
@@ -206,8 +206,8 @@
   [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,RR,SI,SIY,SI,SIY,RI,RI,RX,RXY,RIL,RX,RXY")])
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_16 0 "nonimmediate_operand" "=v,v,d, v,QR,  v,  v,  v,  v,d,  Q,  Q,  d,  d,d,d,d,R,T,b")
-        (match_operand:V_16 1 "general_operand"      " v,d,v,QR, v,j00,jm1,jyy,jxx,d,j00,jm1,j00,jm1,R,T,b,d,d,d"))]
+  [(set (match_operand:V_16 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  Q,  d,  d,d,d,d,R,T,b")
+        (match_operand:V_16 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,d,j00,jm1,j00,jm1,R,T,b,d,d,d"))]
   ""
   "@
    vlr\t%v0,%v1
@@ -233,8 +233,8 @@
   [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,RR,SIL,SIL,RI,RI,RX,RXY,RIL,RX,RXY,RIL")])
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_32 0 "nonimmediate_operand" "=f,f,f,R,T,v,v,d, v,QR,  f,  v,  v,  v,  v,  Q,  Q,  d,  d,d,d,d,d,R,T,b")
-	(match_operand:V_32 1 "general_operand"      " f,R,T,f,f,v,d,v,QR, v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,b,d,R,T,d,d,d"))]
+  [(set (match_operand:V_32 0 "nonimmediate_operand" "=f,f,f,R,T,v,v,d,v,R,  f,  v,  v,  v,  v,  Q,  Q,  d,  d,d,d,d,d,R,T,b")
+	(match_operand:V_32 1 "general_operand"      " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,b,d,R,T,d,d,d"))]
   "TARGET_VX"
   "@
    lder\t%v0,%v1
@@ -268,9 +268,9 @@
 
 (define_insn "mov<mode>"
   [(set (match_operand:V_64 0 "nonimmediate_operand"
-         "=f,f,f,R,T,v,v,d, v,QR,  f,  v,  v,  v,  v,  Q,  Q,  d,  d,f,d,d,d, d,RT,b")
+         "=f,f,f,R,T,v,v,d,v,R,  f,  v,  v,  v,  v,  Q,  Q,  d,  d,f,d,d,d,d,T,b")
         (match_operand:V_64 1 "general_operand"
-         " f,R,T,f,f,v,d,v,QR, v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,d,f,b,d,RT, d,d"))]
+         " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,d,f,b,d,T,d,d"))]
   "TARGET_ZARCH"
   "@
    ldr\t%0,%1
@@ -322,10 +322,10 @@
 ; up with vl vlvgg vst.  Shouldn't the middle-end be able to handle
 ; that itself?
 (define_insn "*vec_set<mode>"
-  [(set (match_operand:V                    0 "register_operand"  "=v, v,v")
-	(unspec:V [(match_operand:<non_vec> 1 "general_operand"    "d,QR,K")
-		   (match_operand:SI        2 "nonmemory_operand" "an, I,I")
-		   (match_operand:V         3 "register_operand"   "0, 0,0")]
+  [(set (match_operand:V                    0 "register_operand"  "=v,v,v")
+	(unspec:V [(match_operand:<non_vec> 1 "general_operand"    "d,R,K")
+		   (match_operand:SI        2 "nonmemory_operand" "an,I,I")
+		   (match_operand:V         3 "register_operand"   "0,0,0")]
 		  UNSPEC_VEC_SET))]
   "TARGET_VX
    && (!CONST_INT_P (operands[2])
@@ -359,9 +359,9 @@
   "TARGET_VX")
 
 (define_insn "*vec_extract<mode>"
-  [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,QR")
-	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v, v")
-			   (match_operand:SI 2 "nonmemory_operand" "an, I")]
+  [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,R")
+	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v,v")
+			   (match_operand:SI 2 "nonmemory_operand" "an,I")]
 			  UNSPEC_VEC_EXTRACT))]
   "TARGET_VX
    && (!CONST_INT_P (operands[2])
@@ -404,7 +404,7 @@
 
 (define_insn "*vec_splats<mode>"
   [(set (match_operand:V_HW                          0 "register_operand" "=v,v,v,v")
-	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  "QR,K,v,d")))]
+	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  " R,K,v,d")))]
   "TARGET_VX"
   "@
    vlrep<bhfgq>\t%v0,%1

@@ -70,7 +70,7 @@
   [(set (match_operand:V_HW_32_64                     0 "register_operand"  "=v")
 	(unspec:V_HW_32_64 [(match_operand:V_HW_32_64 1 "register_operand"   "0")
 			    (match_operand:<tointvec> 2 "register_operand"   "v")
-			    (match_operand:BLK        3 "memory_operand"    "QR")
+			    (match_operand:BLK        3 "memory_operand"     "R")
 			    (match_operand:QI         4 "const_mask_operand" "C")]
 			   UNSPEC_VEC_GATHER))]
   "TARGET_VX && UINTVAL (operands[4]) < GET_MODE_NUNITS (<V_HW_32_64:MODE>mode)"
@@ -170,7 +170,7 @@
 
 (define_insn "vec_insert_and_zero<mode>"
   [(set (match_operand:V_HW                    0 "register_operand" "=v")
-	(unspec:V_HW [(match_operand:<non_vec> 1 "memory_operand"   "QR")]
+	(unspec:V_HW [(match_operand:<non_vec> 1 "memory_operand"    "R")]
 		     UNSPEC_VEC_INSERT_AND_ZERO))]
   "TARGET_VX"
   "vllez<bhfgq>\t%v0,%1"
@@ -178,7 +178,7 @@
 
 (define_insn "vlbb"
   [(set (match_operand:V16QI              0 "register_operand"   "=v")
-	(unspec:V16QI [(match_operand:BLK 1 "memory_operand"     "QR")
+	(unspec:V16QI [(match_operand:BLK 1 "memory_operand"      "R")
 		       (match_operand:QI  2 "const_mask_operand"  "C")]
 		      UNSPEC_VEC_LOAD_BNDRY))]
   "TARGET_VX && UINTVAL (operands[2]) < 7"

@@ -1,3 +1,18 @@
+2016-04-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/constraints.md ("U", "W"): Invoke
+	s390_mem_constraint with "ZR" and "ZT".
+	* config/s390/s390.c (s390_check_qrst_address): Reject invalid
+	addresses when using LRA.  Accept also short displacements for S
+	and T constraints.  Do not check for long displacement target for
+	S and T constraints.
+	(s390_mem_constraint): Remove handling of U and W constraints.
+	* config/s390/s390.md (various patterns): Remove the short
+	displacement constraints (Q and R) if a long displacement
+	constraint is present.  Add longdisp as required CPU capability.
+	* config/s390/vector.md: Likewise.
+	* config/s390/vx-builtins.md: Likewise.
+
 2016-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/60040
