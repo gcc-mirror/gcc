@@ -7815,7 +7815,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   else if (TYPE_P (*node))
     type = node, is_type = 1;
 
-  if ((i = check_user_alignment (align_expr, false)) == -1
+  if ((i = check_user_alignment (align_expr, true)) == -1
       || !check_cxx_fundamental_alignment_constraints (*node, i, flags))
     *no_add_attrs = true;
   else if (is_type)

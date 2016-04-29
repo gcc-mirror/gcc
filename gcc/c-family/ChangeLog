@@ -1,3 +1,9 @@
+2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR/69089
+	* c-common.c (handle_aligned_attribute): Allow 0 as an argument to the
+	"aligned" attribute.
+
 2016-04-28  Jason Merrill  <jason@redhat.com>
 
 	* c-lex.c (c_common_has_attribute): Handle nodiscard.
