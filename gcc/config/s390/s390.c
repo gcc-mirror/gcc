@@ -3370,8 +3370,10 @@ s390_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
-   scanned.  In either case, *TOTAL contains the cost result.
-   OUTER_CODE contains the code of the superexpression of x.  */
+   scanned.  In either case, *TOTAL contains the cost result.  The
+   initial value of *TOTAL is the default value computed by
+   rtx_cost.  It may be left unmodified.  OUTER_CODE contains the
+   code of the superexpression of x.  */
 
 static bool
 s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
