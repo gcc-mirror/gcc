@@ -1,5 +1,14 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* ira.c (add_store_equivs, combine_and_move_insns): New functions,
+	split out from..
+	(update_reg_equivs): ..here.  Move allocation and freeing of
+	reg_equiv, and calls to grow_reg_equivs, init_alias_analysis,
+	end_alias_analysis to..
+	(ira): ..here.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* ira.c (pdx_subregs): Delete.
 	(struct equivalence): Add pdx_subregs field.
 	(set_paradoxical_subreg): Remove pdx_subregs param.  Update

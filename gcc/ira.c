@@ -3343,13 +3343,6 @@ update_equiv_regs (void)
   rtx_insn *insn;
   basic_block bb;
   int loop_depth;
-  bitmap cleared_regs;
-  bitmap_head seen_insns;
-
-  reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  grow_reg_equivs ();
-
-  init_alias_analysis ();
 
   /* Scan insns and set pdx_subregs if the reg is used in a
      paradoxical subreg.  Don't set such reg equivalent to a mem,
@@ -3604,18 +3597,24 @@ update_equiv_regs (void)
 	    }
 	}
     }
+}
 
-  if (!optimize)
-    goto out;
-
-  /* A second pass, to gather additional equivalences with memory.  This needs
-     to be done after we know which registers we are going to replace.  */
+/* For insns that set a MEM to the contents of a REG that is only used
+   in a single basic block, see if the register is always equivalent
+   to that memory location and if moving the store from INSN to the
+   insn that sets REG is safe.  If so, put a REG_EQUIV note on the
+   initializing insn.  */
+static void
+add_store_equivs (void)
+{
+  bitmap_head seen_insns;
 
   bitmap_initialize (&seen_insns, NULL);
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx set, src, dest;
       unsigned regno;
+      rtx_insn *init_insn;
 
       bitmap_set_bit (&seen_insns, INSN_UID (insn));
 
@@ -3629,66 +3628,60 @@ update_equiv_regs (void)
       dest = SET_DEST (set);
       src = SET_SRC (set);
 
-      /* If this sets a MEM to the contents of a REG that is only used
-	 in a single basic block, see if the register is always equivalent
-	 to that memory location and if moving the store from INSN to the
-	 insn that set REG is safe.  If so, put a REG_EQUIV note on the
-	 initializing insn.
-
-	 Don't add a REG_EQUIV note if the insn already has one.  The existing
+      /* Don't add a REG_EQUIV note if the insn already has one.  The existing
 	 REG_EQUIV is likely more useful than the one we are adding.
 
 	 If one of the regs in the address has reg_equiv[REGNO].replace set,
 	 then we can't add this REG_EQUIV note.  The reg_equiv[REGNO].replace
 	 optimization may move the set of this register immediately before
-	 insn, which puts it after reg_equiv[REGNO].init_insns, and hence
-	 the mention in the REG_EQUIV note would be to an uninitialized
-	 pseudo.  */
-
+	 insn, which puts it after reg_equiv[REGNO].init_insns, and hence the
+	 mention in the REG_EQUIV note would be to an uninitialized pseudo.  */
       if (MEM_P (dest) && REG_P (src)
 	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
 	  && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
 	  && DF_REG_DEF_COUNT (regno) == 1
 	  && ! reg_equiv[regno].pdx_subregs
 	  && reg_equiv[regno].init_insns != NULL
-	  && reg_equiv[regno].init_insns->insn () != NULL
-	  && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
-			      REG_EQUIV, NULL_RTX)
-	  && ! contains_replace_regs (XEXP (dest, 0)))
+	  && (init_insn = reg_equiv[regno].init_insns->insn ()) != 0
+	  && bitmap_bit_p (&seen_insns, INSN_UID (init_insn))
+	  && ! find_reg_note (init_insn, REG_EQUIV, NULL_RTX)
+	  && ! contains_replace_regs (XEXP (dest, 0))
+	  && validate_equiv_mem (init_insn, src, dest)
+	  && ! memref_used_between_p (dest, init_insn, insn)
+	  /* Attaching a REG_EQUIV note will fail if INIT_INSN has
+	     multiple sets.  */
+	  && set_unique_reg_note (init_insn, REG_EQUIV, copy_rtx (dest)))
 	{
-	  rtx_insn *init_insn =
-	    as_a <rtx_insn *> (XEXP (reg_equiv[regno].init_insns, 0));
-	  if (validate_equiv_mem (init_insn, src, dest)
-	      && bitmap_bit_p (&seen_insns, INSN_UID (init_insn))
-	      && ! memref_used_between_p (dest, init_insn, insn)
-	      /* Attaching a REG_EQUIV note will fail if INIT_INSN has
-		 multiple sets.  */
-	      && set_unique_reg_note (init_insn, REG_EQUIV, copy_rtx (dest)))
-	    {
-	      /* This insn makes the equivalence, not the one initializing
-		 the register.  */
-	      ira_reg_equiv[regno].init_insns
-		= gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
-	      df_notes_rescan (init_insn);
-	      if (dump_file)
-		fprintf (dump_file,
-			 "Adding REG_EQUIV to insn %d for source of insn %d\n",
-			 INSN_UID (init_insn),
-			 INSN_UID (insn));
-	    }
+	  /* This insn makes the equivalence, not the one initializing
+	     the register.  */
+	  ira_reg_equiv[regno].init_insns
+	    = gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
+	  df_notes_rescan (init_insn);
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Adding REG_EQUIV to insn %d for source of insn %d\n",
+		     INSN_UID (init_insn),
+		     INSN_UID (insn));
 	}
     }
   bitmap_clear (&seen_insns);
+}
 
-  cleared_regs = BITMAP_ALLOC (NULL);
-  /* Now scan all regs killed in an insn to see if any of them are
-     registers only used that once.  If so, see if we can replace the
-     reference with the equivalent form.  If we can, delete the
-     initializing reference and this register will go away.  If we
-     can't replace the reference, and the initializing reference is
-     within the same loop (or in an inner loop), then move the register
-     initialization just before the use, so that they are in the same
-     basic block.  */
+/* Scan all regs killed in an insn to see if any of them are registers
+   only used that once.  If so, see if we can replace the reference
+   with the equivalent form.  If we can, delete the initializing
+   reference and this register will go away.  If we can't replace the
+   reference, and the initializing reference is within the same loop
+   (or in an inner loop), then move the register initialization just
+   before the use, so that they are in the same basic block.  */
+static void
+combine_and_move_insns (void)
+{
+  rtx_insn *insn;
+  basic_block bb;
+  int loop_depth;
+  bitmap cleared_regs = BITMAP_ALLOC (NULL);
+
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       loop_depth = bb_loop_depth (bb);
@@ -3848,12 +3841,6 @@ update_equiv_regs (void)
     }
 
   BITMAP_FREE (cleared_regs);
-
-  out:
-  /* Clean up.  */
-
-  end_alias_analysis ();
-  free (reg_equiv);
 }
 
 /* A pass over indirect jumps, converting simple cases to direct jumps.
@@ -5230,7 +5217,19 @@ ira (FILE *f)
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);
 
+  reg_equiv = XCNEWVEC (struct equivalence, max_regno);
+  grow_reg_equivs ();
+  init_alias_analysis ();
   update_equiv_regs ();
+  if (optimize)
+    {
+      /* Gather additional equivalences with memory.  */
+      add_store_equivs ();
+      combine_and_move_insns ();
+    }
+  end_alias_analysis ();
+  free (reg_equiv);
+
   setup_reg_equiv ();
   setup_reg_equiv_init ();
 
