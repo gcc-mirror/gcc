@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-mrtsc" } */
 /* { dg-do assemble } */
 

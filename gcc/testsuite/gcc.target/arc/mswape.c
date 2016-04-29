@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-mswape" } */
 /* { dg-do assemble } */
 
