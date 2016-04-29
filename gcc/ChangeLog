@@ -1,3 +1,12 @@
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
+	* ira.c (pdx_subregs): Delete.
+	(struct equivalence): Add pdx_subregs field.
+	(set_paradoxical_subreg): Remove pdx_subregs param.  Update
+	pdx_subregs access.
+	(update_equiv_regs): Don't create or free pdx_subregs.  Update
+	pdx_subregs access.
+
 2016-04-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h: Change definitions of vec_xl and
