@@ -499,3 +499,15 @@
 (define_memory_constraint "ATO"
   "A memory with only a base register"
   (match_operand 0 "mem_noofs_operand"))
+
+(define_constraint "J12"
+  "@internal
+   An unsigned 12-bit integer constant."
+  (and (match_code "const_int")
+       (match_test "UNSIGNED_INT12 (ival)")))
+
+(define_constraint "J16"
+  "@internal
+   An unsigned 16-bit integer constant"
+  (and (match_code "const_int")
+       (match_test "UNSIGNED_INT16 (ival)")))
