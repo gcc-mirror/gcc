@@ -1,5 +1,12 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* ira.c (enum valid_equiv): New.
+	(validate_equiv_mem): Return enum.
+	(update_equiv_mem): Create replacement in more cases.
+	(add_store_equivs): Update validate_equiv_mem call.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* ira.c (combine_and_move_insns): Rather than scanning insns,
 	use DF infrastucture to find use and def insns.
 

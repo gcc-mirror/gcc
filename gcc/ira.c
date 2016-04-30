@@ -2951,43 +2951,56 @@ validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
     info->equiv_mem_modified = true;
 }
 
+enum valid_equiv { valid_none, valid_combine, valid_reload };
+
 /* Verify that no store between START and the death of REG invalidates
    MEMREF.  MEMREF is invalidated by modifying a register used in MEMREF,
    by storing into an overlapping memory location, or with a non-const
    CALL_INSN.
 
-   Return 1 if MEMREF remains valid.  */
-static int
+   Return VALID_RELOAD if MEMREF remains valid for both reload and
+   combine_and_move insns, VALID_COMBINE if only valid for
+   combine_and_move_insns, and VALID_NONE otherwise.  */
+static enum valid_equiv
 validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 {
   rtx_insn *insn;
   rtx note;
   struct equiv_mem_data info = { memref, false };
+  enum valid_equiv ret = valid_reload;
 
   /* If the memory reference has side effects or is volatile, it isn't a
      valid equivalence.  */
   if (side_effects_p (memref))
-    return 0;
+    return valid_none;
 
   for (insn = start; insn; insn = NEXT_INSN (insn))
     {
-      if (! INSN_P (insn))
+      if (!INSN_P (insn))
 	continue;
 
       if (find_reg_note (insn, REG_DEAD, reg))
-	return 1;
+	return ret;
 
-      /* This used to ignore readonly memory and const/pure calls.  The problem
-	 is the equivalent form may reference a pseudo which gets assigned a
-	 call clobbered hard reg.  When we later replace REG with its
-	 equivalent form, the value in the call-clobbered reg has been
-	 changed and all hell breaks loose.  */
       if (CALL_P (insn))
-	return 0;
+	{
+	  /* We can combine a reg def from one insn into a reg use in
+	     another over a call if the memory is readonly or the call
+	     const/pure.  However, we can't set reg_equiv notes up for
+	     reload over any call.  The problem is the equivalent form
+	     may reference a pseudo which gets assigned a call
+	     clobbered hard reg.  When we later replace REG with its
+	     equivalent form, the value in the call-clobbered reg has
+	     been changed and all hell breaks loose.  */
+	  ret = valid_combine;
+	  if (!MEM_READONLY_P (memref)
+	      && !RTL_CONST_OR_PURE_CALL_P (insn))
+	    return valid_none;
+	}
 
       note_stores (PATTERN (insn), validate_equiv_mem_from_store, &info);
       if (info.equiv_mem_modified)
-	return 0;
+	return valid_none;
 
       /* If a register mentioned in MEMREF is modified via an
 	 auto-increment, we lose the equivalence.  Do the same if one
@@ -2999,10 +3012,10 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 	     || REG_NOTE_KIND (note) == REG_DEAD)
 	    && REG_P (XEXP (note, 0))
 	    && reg_overlap_mentioned_p (XEXP (note, 0), memref))
-	  return 0;
+	  return valid_none;
     }
 
-  return 0;
+  return valid_none;
 }
 
 /* Returns zero if X is known to be invariant.  */
@@ -3510,24 +3523,32 @@ update_equiv_regs (void)
 	     note.  */
 	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 
-	  if (note == NULL_RTX && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
-	      && MEM_P (SET_SRC (set))
-	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
-	    note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (SET_SRC (set)));
-
+	  rtx replacement = NULL_RTX;
 	  if (note)
+	    replacement = XEXP (note, 0);
+	  else if (REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
+		   && MEM_P (SET_SRC (set)))
 	    {
-	      int regno = REGNO (dest);
-	      rtx x = XEXP (note, 0);
+	      enum valid_equiv validity;
+	      validity = validate_equiv_mem (insn, dest, SET_SRC (set));
+	      if (validity != valid_none)
+		{
+		  replacement = copy_rtx (SET_SRC (set));
+		  if (validity == valid_reload)
+		    note = set_unique_reg_note (insn, REG_EQUIV, replacement);
+		}
+	    }
 
-	      /* If we haven't done so, record for reload that this is an
-		 equivalencing insn.  */
-	      if (!reg_equiv[regno].is_arg_equivalence)
-		ira_reg_equiv[regno].init_insns
-		  = gen_rtx_INSN_LIST (VOIDmode, insn,
-				       ira_reg_equiv[regno].init_insns);
+	  /* If we haven't done so, record for reload that this is an
+	     equivalencing insn.  */
+	  if (note && !reg_equiv[regno].is_arg_equivalence)
+	    ira_reg_equiv[regno].init_insns
+	      = gen_rtx_INSN_LIST (VOIDmode, insn,
+				   ira_reg_equiv[regno].init_insns);
 
-	      reg_equiv[regno].replacement = x;
+	  if (replacement)
+	    {
+	      reg_equiv[regno].replacement = replacement;
 	      reg_equiv[regno].src_p = &SET_SRC (set);
 	      reg_equiv[regno].loop_depth = (short) loop_depth;
 
@@ -3548,7 +3569,7 @@ update_equiv_regs (void)
 		     calls.  */
 
 		  if (REG_N_REFS (regno) == 2
-		      && (rtx_equal_p (x, src)
+		      && (rtx_equal_p (replacement, src)
 			  || ! equiv_init_varies_p (src))
 		      && NONJUMP_INSN_P (insn)
 		      && equiv_init_movable_p (PATTERN (insn), regno))
@@ -3599,7 +3620,7 @@ add_store_equivs (void)
 	  && (init_insn = reg_equiv[regno].init_insns->insn ()) != 0
 	  && bitmap_bit_p (&seen_insns, INSN_UID (init_insn))
 	  && ! find_reg_note (init_insn, REG_EQUIV, NULL_RTX)
-	  && validate_equiv_mem (init_insn, src, dest)
+	  && validate_equiv_mem (init_insn, src, dest) == valid_reload
 	  && ! memref_used_between_p (dest, init_insn, insn)
 	  /* Attaching a REG_EQUIV note will fail if INIT_INSN has
 	     multiple sets.  */
