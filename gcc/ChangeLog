@@ -1,5 +1,16 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Force inline
+	restoring when fixed_reg_p, but allow out-of-line or stmw save.
+	Check for user regs later to avoid unnecessary looping over regs.
+	Merge user reg check with non-saved reg check.  Don't force
+	inline VR restore when static chain used.
+	(rs6000_frame_related): Omit eh_frame info for user regs when
+	saving.
+	(fixed_regs_p): Delete.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (SAVRES_MULTIPLE): Replace with..
 	(SAVE_STRATEGY, REST_STRATEGY): ..this.  Renumber and sort enum.
 	Update all uses.
