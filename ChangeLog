@@ -1,6 +1,11 @@
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
-	* config.guess:  Remove SH5 support.
+	* config.guess: Revert r235676.
+	* config.sub: Revert r235676.
+
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config.guess: Remove SH5 support.
 	* config.sub: Likewise.
 	* configure: Likewise.
 	* configure.ac: Likewise.
