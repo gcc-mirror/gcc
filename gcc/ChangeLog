@@ -1,5 +1,17 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* regs.h (struct reg_info_t): Delete freq_calls_crossed and
+	throw_calls_crossed.
+	(REG_FREQ_CALLS_CROSSED): Delete.
+	(REG_N_THROWING_CALLS_CROSSED): Delete.
+	* regstat.c (regstat_bb_compute_ri): Don't calculate
+	REG_FREQ_CALLS_CROSSED and REG_N_THROWING_CALLS_CROSSED.
+	(dump_reg_info): Don't print call cross frequency.
+	* ira.c (combine_and_move_insns): Don't set REG_FREQ_CALLS_CROSSED
+	and REG_N_THROWING_CALLS_CROSSED.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* regs.h (struct reg_info_t): Delete live_length.
 	(REG_LIVE_LENGTH): Delete macro.
 	* regstat.c (regstat_bb_compute_ri): Delete artificial_uses,

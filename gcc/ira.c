@@ -3738,8 +3738,6 @@ combine_and_move_insns (void)
 
 	  REG_BASIC_BLOCK (regno) = use_bb->index;
 	  REG_N_CALLS_CROSSED (regno) = 0;
-	  REG_FREQ_CALLS_CROSSED (regno) = 0;
-	  REG_N_THROWING_CALLS_CROSSED (regno) = 0;
 
 	  if (use_insn == BB_HEAD (use_bb))
 	    BB_HEAD (use_bb) = new_insn;
