@@ -1529,12 +1529,9 @@
 		 (match_operand:DI 2 "arith_operand")))]
   ""
 {
-  if (TARGET_SH1)
-    {
-      operands[2] = force_reg (DImode, operands[2]);
-      emit_insn (gen_adddi3_compact (operands[0], operands[1], operands[2]));
-      DONE;
-    }
+  operands[2] = force_reg (DImode, operands[2]);
+  emit_insn (gen_adddi3_compact (operands[0], operands[1], operands[2]));
+  DONE;
 })
 
 (define_insn_and_split "adddi3_compact"
@@ -1780,7 +1777,7 @@
 		 (match_operand:SI 2 "arith_or_int_operand")))]
   ""
 {
-  if (TARGET_SH1 && !arith_operand (operands[2], SImode))
+  if (!arith_operand (operands[2], SImode))
     {
       if (!sh_lra_p () || reg_overlap_mentioned_p (operands[0], operands[1]))
 	{
@@ -1935,12 +1932,9 @@
 		  (match_operand:DI 2 "arith_reg_operand" "")))]
   ""
 {
-  if (TARGET_SH1)
-    {
-      operands[1] = force_reg (DImode, operands[1]);
-      emit_insn (gen_subdi3_compact (operands[0], operands[1], operands[2]));
-      DONE;
-    }
+  operands[1] = force_reg (DImode, operands[1]);
+  emit_insn (gen_subdi3_compact (operands[0], operands[1], operands[2]));
+  DONE;
 })
 
 (define_insn_and_split "subdi3_compact"
@@ -2165,7 +2159,7 @@
 		  (match_operand:SI 2 "arith_reg_operand" "")))]
   ""
 {
-  if (TARGET_SH1 && CONST_INT_P (operands[1]))
+  if (CONST_INT_P (operands[1]))
     {
       emit_insn (gen_negsi2 (operands[0], operands[2]));
       emit_insn (gen_addsi3 (operands[0], operands[0], operands[1]));
@@ -2840,20 +2834,18 @@
      Ideally the splitter of *andsi_compact would be enough, if redundant
      zero extensions were detected after the combine pass, which does not
      happen at the moment.  */
-  if (TARGET_SH1)
+
+  if (satisfies_constraint_Jmb (operands[2]))
     {
-      if (satisfies_constraint_Jmb (operands[2]))
-	{
-	  emit_insn (gen_zero_extendqisi2 (operands[0],
-					   gen_lowpart (QImode, operands[1])));
-	  DONE;
-	}
-      else if (satisfies_constraint_Jmw (operands[2]))
-	{
-	  emit_insn (gen_zero_extendhisi2 (operands[0],
-					   gen_lowpart (HImode, operands[1])));
-	  DONE;
-	}
+      emit_insn (gen_zero_extendqisi2 (operands[0],
+					gen_lowpart (QImode, operands[1])));
+      DONE;
+    }
+  else if (satisfies_constraint_Jmw (operands[2]))
+    {
+      emit_insn (gen_zero_extendhisi2 (operands[0],
+				       gen_lowpart (HImode, operands[1])));
+      DONE;
     }
 })
 
@@ -5565,23 +5557,19 @@
   ""
 {
   prepare_move_operands (operands, DImode);
-  if (TARGET_SH1)
+
+  /* When the dest operand is (R0, R1) register pair, split it to
+     two movsi of which dest is R1 and R0 so as to lower R0-register
+     pressure on the first movsi.  Apply only for simple source not
+     to make complex rtl here.  */
+  if (REG_P (operands[0]) && REGNO (operands[0]) == R0_REG
+      && REG_P (operands[1]) && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
     {
-      /* When the dest operand is (R0, R1) register pair, split it to
-	 two movsi of which dest is R1 and R0 so as to lower R0-register
-	 pressure on the first movsi.  Apply only for simple source not
-	 to make complex rtl here.  */
-      if (REG_P (operands[0])
-	  && REGNO (operands[0]) == R0_REG
-	  && REG_P (operands[1])
-	  && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
-	{
-	  emit_insn (gen_movsi (gen_rtx_REG (SImode, R1_REG),
-			        gen_rtx_SUBREG (SImode, operands[1], 4)));
-	  emit_insn (gen_movsi (gen_rtx_REG (SImode, R0_REG),
-			        gen_rtx_SUBREG (SImode, operands[1], 0)));
-	  DONE;
-	}
+      emit_insn (gen_movsi (gen_rtx_REG (SImode, R1_REG),
+			    gen_rtx_SUBREG (SImode, operands[1], 4)));
+      emit_insn (gen_movsi (gen_rtx_REG (SImode, R0_REG),
+			    gen_rtx_SUBREG (SImode, operands[1], 0)));
+      DONE;
     }
 })
 
