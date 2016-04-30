@@ -3315,7 +3315,6 @@ update_equiv_regs (void)
 {
   rtx_insn *insn;
   basic_block bb;
-  int loop_depth;
 
   /* Scan insns and set pdx_subregs if the reg is used in a
      paradoxical subreg.  Don't set such reg equivalent to a mem,
@@ -3329,9 +3328,10 @@ update_equiv_regs (void)
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
      a register can be set below its use.  */
+  bitmap setjmp_crosses = regstat_get_setjmp_crosses ();
   FOR_EACH_BB_FN (bb, cfun)
     {
-      loop_depth = bb_loop_depth (bb);
+      int loop_depth = bb_loop_depth (bb);
 
       for (insn = BB_HEAD (bb);
 	   insn != NEXT_INSN (BB_END (bb));
@@ -3553,12 +3553,8 @@ update_equiv_regs (void)
 	      reg_equiv[regno].loop_depth = (short) loop_depth;
 
 	      /* Don't mess with things live during setjmp.  */
-	      if (REG_LIVE_LENGTH (regno) >= 0 && optimize)
+	      if (optimize && !bitmap_bit_p (setjmp_crosses, regno))
 		{
-		  /* Note that the statement below does not affect the priority
-		     in local-alloc!  */
-		  REG_LIVE_LENGTH (regno) *= 2;
-
 		  /* If the register is referenced exactly twice, meaning it is
 		     set once and used once, indicate that the reference may be
 		     replaced by the equivalence we computed above.  Do this
@@ -3744,7 +3740,6 @@ combine_and_move_insns (void)
 	  REG_N_CALLS_CROSSED (regno) = 0;
 	  REG_FREQ_CALLS_CROSSED (regno) = 0;
 	  REG_N_THROWING_CALLS_CROSSED (regno) = 0;
-	  REG_LIVE_LENGTH (regno) = 2;
 
 	  if (use_insn == BB_HEAD (use_bb))
 	    BB_HEAD (use_bb) = new_insn;
