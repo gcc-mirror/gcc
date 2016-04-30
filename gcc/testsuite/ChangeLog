@@ -1,3 +1,13 @@
+2016-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/run_acats: Rename into...
+	* ada/acats/run_acats.sh: ...this.  Only export BASE variable.
+	* ada/acats/run_all.sh: Remove redundant test.
+	(target_run): Move around.
+	(target_gnatchop): Use newly built executable.
+	(target_gnatmake): Likewise.
+	Check that the compilation of impbit succeeds.
+
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* g++.old-deja/g++.jason/thunk3.C: Remove SH5 checks.

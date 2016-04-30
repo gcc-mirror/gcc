@@ -12,10 +12,6 @@
 gccflags="-O2"
 gnatflags="-gnatws"
 
-target_run () {
-  eval $EXPECT -f $testdir/run_test.exp $*
-}
-
 # End of customization section.
 
 # Perform arithmetic evaluation on the ARGs, and store the result in the
@@ -52,27 +48,28 @@ log () {
 
 dir=`${PWDCMD-pwd}`
 
-if [ "$testdir" = "" ]; then
-   echo You must use make check or make check-ada
-   exit 1
-fi
-
 if [ "$dir" = "$testdir" ]; then
   echo "error: srcdir must be different than objdir, exiting."
   exit 1
 fi
 
+GCC="$BASE/xgcc -B$BASE/"
+
 target_gnatchop () {
-  gnatchop --GCC="$GCC_DRIVER" $*
+  $BASE/gnatchop --GCC="$BASE/xgcc" $*
 }
 
 target_gnatmake () {
-  echo gnatmake --GCC=\"$GCC\" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC=\"$GCC\"
-  gnatmake --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
+  echo $BASE/gnatmake --GNATBIND=$BASE/gnatbind --GNATLINK=$BASE/gnatlink --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
+  $BASE/gnatmake --GNATBIND=$BASE/gnatbind --GNATLINK=$BASE/gnatlink --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
 }
 
 target_gcc () {
   $GCC $gccflags $*
+}
+
+target_run () {
+  eval $EXPECT -f $testdir/run_test.exp $*
 }
 
 clean_dir () {
@@ -128,6 +125,10 @@ cp $testdir/support/*.ada $testdir/support/*.a $testdir/support/*.tst $dir/suppo
 
 # Find out the size in bit of an address on the target
 target_gnatmake $testdir/support/impbit.adb >> $dir/acats.log 2>&1
+if [ $? -ne 0 ]; then
+   display "**** Failed to compile impbit"
+   exit 1
+fi
 target_run $dir/support/impbit > $dir/support/impbit.out 2>&1
 target_bit=`cat $dir/support/impbit.out`
 echo target_bit="$target_bit" >> $dir/acats.log
