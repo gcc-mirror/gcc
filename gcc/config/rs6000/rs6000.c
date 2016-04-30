@@ -8650,21 +8650,16 @@ rs6000_conditional_register_usage (void)
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     call_really_used_regs[2] = 0;
 
-  if (DEFAULT_ABI == ABI_V4
-      && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
-      && flag_pic == 2)
+  if (DEFAULT_ABI == ABI_V4 && flag_pic == 2)
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
-  if (DEFAULT_ABI == ABI_V4
-      && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
-      && flag_pic == 1)
+  if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
-  if (DEFAULT_ABI == ABI_DARWIN
-      && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-      fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
+  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+    fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
