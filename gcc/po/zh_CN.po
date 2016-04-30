@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2016-04-27 20:30-0400\n"
+"PO-Revision-Date: 2016-04-30 17:13-0400\n"
 "Last-Translator: Mingye Wang (Arthur2e5) <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -2984,19 +2984,19 @@ msgid "invalid operand address"
 msgstr "fr30_print_operand：未处理的指针"
 
 #: config/arc/arc.c:2966
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%Z code"
-msgstr "‘z’修饰符的操作数无效"
+msgstr "%%Z 代码的操作数无效"
 
 #: config/arc/arc.c:2974
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%z code"
-msgstr "‘z’修饰符的操作数无效"
+msgstr "%%z 代码的操作数无效"
 
 #: config/arc/arc.c:2982
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%M code"
-msgstr "‘m’修饰符的操作数无效"
+msgstr "%%M 代码的操作数无效"
 
 #: config/arc/arc.c:3131 config/m32r/m32r.c:2105
 #, c-format
@@ -3019,9 +3019,9 @@ msgid "invalid operand to %%V code"
 msgstr "%%V 代码的操作数无效"
 
 #: config/arc/arc.c:3286
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%O code"
-msgstr "‘o’修饰符的操作数无效"
+msgstr "%%O 代码的操作数无效"
 
 #. Unknown flag.
 #. Undocumented flag.
@@ -9499,106 +9499,76 @@ msgid "Use standard main function as entry for startup."
 msgstr "使用标准 main 函数作为启动入口"
 
 #: config/spu/spu.opt:52
-#, fuzzy
-#| msgid "Generate branch hints for branches"
 msgid "Generate branch hints for branches."
-msgstr "为跳转生成暗示"
+msgstr "为分支生成跳转提示。"
 
 #: config/spu/spu.opt:56
-#, fuzzy
-#| msgid "Maximum number of nops to insert for a hint (Default 2)"
 msgid "Maximum number of nops to insert for a hint (Default 2)."
-msgstr "为实现跳转提示插入的 nop 的最大数(默认 2)"
+msgstr "为实现提示插入的 nop 的最大数（默认 2）。"
 
 #: config/spu/spu.opt:60
-#, fuzzy
-#| msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]"
 msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]."
-msgstr "跳转提示和其分支之间所允许的大致最大指令数[125]"
+msgstr "跳转提示和其分支之间所允许的大致最大指令数[125]。"
 
 #: config/spu/spu.opt:64
-#, fuzzy
-#| msgid "Generate code for 18 bit addressing"
 msgid "Generate code for 18 bit addressing."
-msgstr "为 18 位寻址生成代码"
+msgstr "为 18 位寻址生成代码。"
 
 #: config/spu/spu.opt:68
-#, fuzzy
-#| msgid "Generate code for 32 bit addressing"
 msgid "Generate code for 32 bit addressing."
-msgstr "为 32 位寻址生成代码"
+msgstr "为 32 位寻址生成代码。"
 
 #: config/spu/spu.opt:76
-#, fuzzy
-#| msgid "Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue"
 msgid "Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue."
-msgstr "在提示分支目标后插入 hbrp 指令以避免 SPU 死锁"
+msgstr "在提示分支目标后插入 hbrp 指令以避免 SPU 死锁。"
 
 #: config/spu/spu.opt:80 config/i386/i386.opt:247 config/s390/s390.opt:56
-#, fuzzy
-#| msgid "Generate code for given CPU"
 msgid "Generate code for given CPU."
-msgstr "为给定的 CPU 生成代码"
+msgstr "为给定的 CPU 生成代码。"
 
 #: config/spu/spu.opt:88
-#, fuzzy
-#| msgid "Access variables in 32-bit PPU objects (default)"
 msgid "Access variables in 32-bit PPU objects (default)."
-msgstr "在 32 位 PPU 对象访问变量(默认)"
+msgstr "在 32 位 PPU 对象访问变量（默认）。"
 
 #: config/spu/spu.opt:92
-#, fuzzy
-#| msgid "Access variables in 64-bit PPU objects"
 msgid "Access variables in 64-bit PPU objects."
-msgstr "在 64 位 PPU 对象访问变量"
+msgstr "在 64 位 PPU 对象访问变量。"
 
 #: config/spu/spu.opt:96
-#, fuzzy
-#| msgid "Allow conversions between __ea and generic pointers (default)"
 msgid "Allow conversions between __ea and generic pointers (default)."
-msgstr "支持在 __ea 和普通指针之间的转换(默认)"
+msgstr "允许在 __ea 和普通指针之间的转换(默认)。"
 
 #: config/spu/spu.opt:100
-#, fuzzy
-#| msgid "Size (in KB) of software data cache"
 msgid "Size (in KB) of software data cache."
-msgstr "以 KB 表示的软件数据缓存的大小"
+msgstr "以 KB 表示的软件数据缓存的大小，"
 
 #: config/spu/spu.opt:104
-#, fuzzy
-#| msgid "Atomically write back software data cache lines (default)"
 msgid "Atomically write back software data cache lines (default)."
-msgstr "原子化对软件数据缓存的写回操作(默认)"
+msgstr "原子化对软件数据缓存的写回操作（默认）。"
 
 #: config/epiphany/epiphany.opt:24
-#, fuzzy
 msgid "Don't use any of r32..r63."
-msgstr "不使用任何的 r32..r63。"
+msgstr "不使用 r32..r63 中的任何一个。"
 
 #: config/epiphany/epiphany.opt:28
-#, fuzzy
 msgid "preferentially allocate registers that allow short instruction generation."
-msgstr "优先配置暂存器该允许短指令产生。"
+msgstr "最优化分配允许使用产生短指令的寄存器。"
 
 #: config/epiphany/epiphany.opt:32
-#, fuzzy
 msgid "Set branch cost."
-msgstr "设定分支的开销"
+msgstr "设定分支的开销。"
 
 #: config/epiphany/epiphany.opt:36
-#, fuzzy
 msgid "enable conditional move instruction usage."
-msgstr "启用所有可选指令"
+msgstr "启用条件移动指令。"
 
 #: config/epiphany/epiphany.opt:40
-#, fuzzy
 msgid "set number of nops to emit before each insn pattern."
-msgstr "预取操作完成前执行指令的数目"
+msgstr "设置每个指令模式之前发出的的 nop 数目。"
 
 #: config/epiphany/epiphany.opt:52
-#, fuzzy
 msgid "Use software floating point comparisons."
-msgstr "使用软件浮点单元"
+msgstr "使用软件浮点比较。"
 
 #: config/epiphany/epiphany.opt:56
 #, fuzzy
@@ -9681,64 +9651,44 @@ msgid "Avoid use of the DIV and MOD instructions"
 msgstr "允许使用 MDMX 指令"
 
 #: config/h8300/h8300.opt:23
-#, fuzzy
-#| msgid "Generate H8S code"
 msgid "Generate H8S code."
-msgstr "生成 H8S 代码"
+msgstr "生成 H8S 代码。"
 
 #: config/h8300/h8300.opt:27
-#, fuzzy
-#| msgid "Generate H8SX code"
 msgid "Generate H8SX code."
-msgstr "生成 H8SX 代码"
+msgstr "生成 H8SX 代码。"
 
 #: config/h8300/h8300.opt:31
-#, fuzzy
-#| msgid "Generate H8S/2600 code"
 msgid "Generate H8S/2600 code."
-msgstr "生成 H8S/2600 代码"
+msgstr "生成 H8S/2600 代码。"
 
 #: config/h8300/h8300.opt:35
-#, fuzzy
-#| msgid "Make integers 32 bits wide"
 msgid "Make integers 32 bits wide."
-msgstr "让整数有 32 位宽"
+msgstr "让整数有 32 位宽。"
 
 #: config/h8300/h8300.opt:42
-#, fuzzy
-#| msgid "Use registers for argument passing"
 msgid "Use registers for argument passing."
-msgstr "使用寄存器传递参数"
+msgstr "使用寄存器传递参数。"
 
 #: config/h8300/h8300.opt:46
-#, fuzzy
-#| msgid "Consider access to byte sized memory slow"
 msgid "Consider access to byte sized memory slow."
-msgstr "认为按字节访问内存速度较慢"
+msgstr "认为按字节访问内存速度较慢。"
 
 #: config/h8300/h8300.opt:50
-#, fuzzy
-#| msgid "Enable linker relaxing"
 msgid "Enable linker relaxing."
-msgstr "启用链接器松弛"
+msgstr "启用链接器松弛 (relax)。"
 
 #: config/h8300/h8300.opt:54
-#, fuzzy
-#| msgid "Generate H8/300H code"
 msgid "Generate H8/300H code."
-msgstr "生成 H8/300H 代码"
+msgstr "生成 H8/300H 代码。"
 
 #: config/h8300/h8300.opt:58
-#, fuzzy
-#| msgid "Enable the normal mode"
 msgid "Enable the normal mode."
-msgstr "启用正常模式"
+msgstr "启用正常（normal）模式。"
 
 #: config/h8300/h8300.opt:62
-#, fuzzy
-#| msgid "Use H8/300 alignment rules"
 msgid "Use H8/300 alignment rules."
-msgstr "使用 H8/300 对齐规则"
+msgstr "使用 H8/300 对齐规则。"
 
 #: config/h8300/h8300.opt:66
 msgid "Push extended registers on stack in monitor functions."
@@ -10323,186 +10273,128 @@ msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the a
 msgstr "自动向量化时使用 128 位 AVX 指令而不是 256 位 AVX 指令"
 
 #: config/i386/i386.opt:588
-#, fuzzy
-#| msgid "Generate 32bit i386 code"
 msgid "Generate 32bit i386 code."
-msgstr "生成 32 位 i386 代码"
+msgstr "生成 32 位 i386 代码。"
 
 #: config/i386/i386.opt:592
-#, fuzzy
-#| msgid "Generate 64bit x86-64 code"
 msgid "Generate 64bit x86-64 code."
-msgstr "生成 64 位 x86-64 代码"
+msgstr "生成 64 位 x86-64 代码。"
 
 #: config/i386/i386.opt:596
-#, fuzzy
 msgid "Generate 32bit x86-64 code."
-msgstr "生成 32 位 i386 代码"
+msgstr "生成 32 位 x86-64 代码。"
 
 #: config/i386/i386.opt:600
-#, fuzzy
 msgid "Generate 16bit i386 code."
-msgstr "生成 32 位 i386 代码"
+msgstr "生成 16 位 i386 代码。"
 
 #: config/i386/i386.opt:604
-#, fuzzy
-#| msgid "Support MMX built-in functions"
 msgid "Support MMX built-in functions."
-msgstr "支持 MMX 内建函数"
+msgstr "支持 MMX 内建函数。"
 
 #: config/i386/i386.opt:608
-#, fuzzy
-#| msgid "Support 3DNow! built-in functions"
 msgid "Support 3DNow! built-in functions."
-msgstr "支持 3DNow! 内建函数"
+msgstr "支持 3DNow! 内建函数。"
 
 #: config/i386/i386.opt:612
-#, fuzzy
-#| msgid "Support Athlon 3Dnow! built-in functions"
 msgid "Support Athlon 3Dnow! built-in functions."
-msgstr "支持扩展 3DNow! 内建函数"
+msgstr "支持 Athlon 3DNow! 内建函数。"
 
 #: config/i386/i386.opt:616
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MMX and SSE built-in functions and code generation."
-msgstr "支持 MMX 和 SSE 内建函数及代码生成"
+msgstr "支持 MMX 和 SSE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:620
-#, fuzzy
-#| msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
 msgid "Support MMX, SSE and SSE2 built-in functions and code generation."
-msgstr "支持 MMX、SSE 和 SSE2 内建函数及代码生成"
+msgstr "支持 MMX、SSE 和 SSE2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:624
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2 和 SSE3 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2 和 SSE3 内建函数及代码生成。"
 
 #: config/i386/i386.opt:628
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3 和 SSSE3 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2、SSE3 和 SSSE3 内建函数及代码生成。"
 
 #: config/i386/i386.opt:632
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3 和 SSE4.1 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3 和 SSE4.1 内建函数及代码生成。"
 
 #: config/i386/i386.opt:636 config/i386/i386.opt:640
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1 和 SSE4.2 内建函数及代码生成"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1 和 SSE4.2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:644
-#, fuzzy
-#| msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
 msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation."
-msgstr "不支持 SSE4.1 和 SSE4.2 内建函数及代码生成"
+msgstr "不支持 SSE4.1 和 SSE4.2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:647
 msgid "%<-msse5%> was removed"
 msgstr "%<-msse5%>已被移除"
 
 #: config/i386/i386.opt:652
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2 和 AVX 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2 和 AVX 内建函数及代码生成。"
 
 #: config/i386/i386.opt:656
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 AVX2 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 AVX2 内建函数及代码生成"
 
 #: config/i386/i386.opt:660
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
 
 #: config/i386/i386.opt:664
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512PF 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512PF 内建函数及代码生成"
 
 #: config/i386/i386.opt:668
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512ER 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512ER 内建函数及代码生成"
 
 #: config/i386/i386.opt:672
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512CD 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512CD 内建函数及代码生成。"
 
 #: config/i386/i386.opt:676
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512DQ 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512DQ 内建函数及代码生成。"
 
 #: config/i386/i386.opt:680
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BW 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BW 内建函数及代码生成。"
 
 #: config/i386/i386.opt:684
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VL 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VL 内建函数及代码生成。"
 
 #: config/i386/i386.opt:688
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512IFMA 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512IFMA 内建函数及代码生成。"
 
 #: config/i386/i386.opt:692
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:696
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 FMA 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 FMA 内建函数及代码生成。"
 
 #: config/i386/i386.opt:700
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation."
-msgstr "支持生成 MMX、SSE、SSE2、SSE3 和 SSE4A 内建函数及代码"
+msgstr "支持 MMX、SSE、SSE2、SSE3 和 SSE4A 内建函数及代码生成。"
 
 #: config/i386/i386.opt:704
-#, fuzzy
-#| msgid "Support FMA4 built-in functions and code generation "
 msgid "Support FMA4 built-in functions and code generation."
-msgstr "支持生成 FMA4 内建函数及代码"
+msgstr "支持 FMA4 内建函数及代码生成。"
 
 #: config/i386/i386.opt:708
-#, fuzzy
-#| msgid "Support XOP built-in functions and code generation "
 msgid "Support XOP built-in functions and code generation."
-msgstr "支持生成 XOP 内建函数及代码"
+msgstr "支持 XOP 内建函数及代码生成。"
 
 #: config/i386/i386.opt:712
-#, fuzzy
-#| msgid "Support LWP built-in functions and code generation "
 msgid "Support LWP built-in functions and code generation."
-msgstr "支持生成 LWP 内建函数及代码"
+msgstr "支持 LWP 内建函数及代码生成。"
 
 #: config/i386/i386.opt:716
 msgid "Support code generation of Advanced Bit Manipulation (ABM) instructions."
@@ -10513,95 +10405,68 @@ msgid "Support code generation of popcnt instruction."
 msgstr "支持生成 popcnt 指令。"
 
 #: config/i386/i386.opt:724
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation"
 msgid "Support BMI built-in functions and code generation."
-msgstr "支持生成 BMI 内建函数及代码"
+msgstr "支持 BMI 内建函数及代码生成"
 
 #: config/i386/i386.opt:728
-#, fuzzy
 msgid "Support BMI2 built-in functions and code generation."
-msgstr "支持 TBM 内建函数及代码生成"
+msgstr "支持 BMI2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:732
-#, fuzzy
 msgid "Support LZCNT built-in function and code generation."
-msgstr "支持 XOP 内建函数及代码生成"
+msgstr "支持 LCZNT 内建函数及代码生成。"
 
 #: config/i386/i386.opt:736
 msgid "Support Hardware Lock Elision prefixes."
 msgstr ""
 
 #: config/i386/i386.opt:740
-#, fuzzy
-#| msgid "Support RDSEED instruction"
 msgid "Support RDSEED instruction."
-msgstr "支持生成 RDSEED 指令"
+msgstr "支持 RDSEED 指令。"
 
 #: config/i386/i386.opt:744
-#, fuzzy
-#| msgid "Support PREFETCHW instruction"
 msgid "Support PREFETCHW instruction."
-msgstr "支持生成 PREFETCHW 指令"
+msgstr "支持 PREFETCHW 指令。"
 
 #: config/i386/i386.opt:748
-#, fuzzy
 msgid "Support flag-preserving add-carry instructions."
-msgstr "支持生成 crc32 指令。"
+msgstr "支持保存标志的加进位（add-carry）指令。"
 
 #: config/i386/i386.opt:752
-#, fuzzy
-#| msgid "Support CLFLUSHOPT instructions"
 msgid "Support CLFLUSHOPT instructions."
-msgstr "支持生成 CLFLUSHOPT 指令"
+msgstr "支持 CLFLUSHOPT 指令。"
 
 #: config/i386/i386.opt:756
-#, fuzzy
-#| msgid "Support CLWB instruction"
 msgid "Support CLWB instruction."
-msgstr "支持生成 CLWB 指令"
+msgstr "支持 CLWB 指令。"
 
 #: config/i386/i386.opt:760
-#, fuzzy
-#| msgid "Support PCOMMIT instruction"
 msgid "Support PCOMMIT instruction."
-msgstr "支持生成 PCOMMIT 指令"
+msgstr "支持 PCOMMIT 指令。"
 
 #: config/i386/i386.opt:764
-#, fuzzy
-#| msgid "Support FXSAVE and FXRSTOR instructions"
 msgid "Support FXSAVE and FXRSTOR instructions."
-msgstr "支持生成 FXSAVE 和 FXRSTOR 指令"
+msgstr "支持 FXSAVE 和 FXRSTOR 指令。"
 
 #: config/i386/i386.opt:768
-#, fuzzy
-#| msgid "Support XSAVE and XRSTOR instructions"
 msgid "Support XSAVE and XRSTOR instructions."
-msgstr "支持生成 XSAVE 和 XRSTOR 指令"
+msgstr "支持 XSAVE 和 XRSTOR 指令。"
 
 #: config/i386/i386.opt:772
-#, fuzzy
-#| msgid "Support XSAVEOPT instruction"
 msgid "Support XSAVEOPT instruction."
-msgstr "支持生成 XSAVEOPT 指令"
+msgstr "支持 XSAVEOPT 指令。"
 
 #: config/i386/i386.opt:776
-#, fuzzy
-#| msgid "Support XSAVEC instructions"
 msgid "Support XSAVEC instructions."
-msgstr "支持生成 XSAVEC 指令"
+msgstr "支持 XSAVEC 指令。"
 
 #: config/i386/i386.opt:780
-#, fuzzy
-#| msgid "Support XSAVES and XRSTORS instructions"
 msgid "Support XSAVES and XRSTORS instructions."
-msgstr "支持生成 XSAVES 和 XRSTORS 指令"
+msgstr "支持 XSAVES 和 XRSTORS 指令。"
 
 #: config/i386/i386.opt:784
-#, fuzzy
-#| msgid "Support TBM built-in functions and code generation"
 msgid "Support TBM built-in functions and code generation."
-msgstr "支持生成 TBM 内建函数及代码"
+msgstr "支持 TBM 内建函数及代码生成。"
 
 #: config/i386/i386.opt:788
 msgid "Support code generation of cmpxchg16b instruction."
@@ -10620,51 +10485,36 @@ msgid "Support code generation of crc32 instruction."
 msgstr "支持生成 crc32 指令。"
 
 #: config/i386/i386.opt:804
-#, fuzzy
-#| msgid "Support AES built-in functions and code generation"
 msgid "Support AES built-in functions and code generation."
-msgstr "支持生成 AES 内建函数及代码"
+msgstr "支持 AES 内建函数及代码生成。"
 
 #: config/i386/i386.opt:808
-#, fuzzy
-#| msgid "Support SHA1 and SHA256 built-in functions and code generation"
 msgid "Support SHA1 and SHA256 built-in functions and code generation."
-msgstr "支持生成 SHA1 和 SHA256 内建函数及代码"
+msgstr "支持 SHA1 和 SHA256 内建函数及代码生成。"
 
 #: config/i386/i386.opt:812
-#, fuzzy
-#| msgid "Support PCLMUL built-in functions and code generation"
 msgid "Support PCLMUL built-in functions and code generation."
-msgstr "支持生成 PCLMUL 内建函数及代码"
+msgstr "支持 PCLMUL 内建函数及代码生成。"
 
 #: config/i386/i386.opt:816
-#, fuzzy
-#| msgid "Encode SSE instructions with VEX prefix"
 msgid "Encode SSE instructions with VEX prefix."
-msgstr "编码带 VEX 前缀的 SSE 指令"
+msgstr "编码带 VEX 前缀的 SSE 指令。"
 
 #: config/i386/i386.opt:820
-#, fuzzy
-#| msgid "Support FSGSBASE built-in functions and code generation"
 msgid "Support FSGSBASE built-in functions and code generation."
-msgstr "支持生成 FSGSBASE 内建函数及代码"
+msgstr "支持 FSGSBASE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:824
-#, fuzzy
-#| msgid "Support RDRND built-in functions and code generation"
 msgid "Support RDRND built-in functions and code generation."
-msgstr "支持生成 RDRND 内建函数及代码"
+msgstr "支持 RDRND 内建函数及代码生成。"
 
 #: config/i386/i386.opt:828
-#, fuzzy
-#| msgid "Support F16C built-in functions and code generation"
 msgid "Support F16C built-in functions and code generation."
-msgstr "支持生成 F16C 内建函数及代码"
+msgstr "支持 F16C 内建函数及代码生成。"
 
 #: config/i386/i386.opt:832
-#, fuzzy
 msgid "Support PREFETCHWT1 built-in functions and code generation."
-msgstr "支持 TBM 内建函数及代码生成"
+msgstr "支持 PREFETCHWT1 内建函数及代码生成。"
 
 #: config/i386/i386.opt:836
 #, fuzzy
@@ -10684,47 +10534,36 @@ msgid "Skip setting up RAX register when passing variable arguments."
 msgstr ""
 
 #: config/i386/i386.opt:853
-#, fuzzy
-#| msgid "Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check"
 msgid "Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check."
-msgstr "将 32/64 位整数除法扩展为带运行时检查的 8 位无符号整数除法"
+msgstr "将 32/64 位整数除法扩展为带运行时检查的 8 位无符号整数除法。"
 
 #: config/i386/i386.opt:857
-#, fuzzy
 msgid "Split 32-byte AVX unaligned load."
-msgstr "分割 32-byte AVX unaligned 加载"
+msgstr "分割 32 字节的 AVX 未对齐加载。"
 
 #: config/i386/i386.opt:861
-#, fuzzy
 msgid "Split 32-byte AVX unaligned store."
-msgstr "分割 32-byte AVX unaligned 保存"
+msgstr "分割 32 字节的 AVX 未对齐储存。"
 
 #: config/i386/i386.opt:865
-#, fuzzy
 msgid "Support RTM built-in functions and code generation."
-msgstr "支持 TBM 内建函数及代码生成"
+msgstr "支持 RTM 内建函数及代码生成。"
 
 #: config/i386/i386.opt:869
-#, fuzzy
 msgid "Support MPX code generation."
-msgstr "支持 FMA4 内建函数及代码生成"
+msgstr "支持 MPX 代码生成"
 
 #: config/i386/i386.opt:873
-#, fuzzy
 msgid "Support MWAITX and MONITORX built-in functions and code generation."
-msgstr "支持 MMX 和 SSE 内建函数及代码生成"
+msgstr "支持 MWAITX 和 MONITORX 内建函数及代码生成。"
 
 #: config/i386/i386.opt:877
-#, fuzzy
-#| msgid "Support AES built-in functions and code generation"
 msgid "Support CLZERO built-in functions and code generation."
-msgstr "支持生成 AES 内建函数及代码"
+msgstr "支持 CLZERO 内建函数及代码。"
 
 #: config/i386/i386.opt:881
-#, fuzzy
-#| msgid "Support PCLMUL built-in functions and code generation"
 msgid "Support PKU built-in functions and code generation."
-msgstr "支持生成 PCLMUL 内建函数及代码"
+msgstr "支持 PKU 内建函数及代码生成。"
 
 #: config/i386/i386.opt:885
 #, fuzzy
@@ -10749,182 +10588,119 @@ msgid "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
 msgstr ""
 
 #: config/i386/stringop.opt:18
-#, fuzzy
 msgid "see <http://www.gnu.org/licenses/>.  */"
-msgstr ""
-"这个程序是自由软件, 您可以在自由软件基金会所出版的 GNU\n"
-"一般公用授权书的规范下加以重新散发或且修改; 不管是第三\n"
-"或 (你认为的) 更后面的版本皆可.\n"
-"\n"
-"这个程序的散发只是希望它能有所用途而不附有任何的保证!\n"
-"甚至也不暗示它有商品价值或能合用于特定的目的. 细节请见\n"
-"GNU 一般公用授权书.\n"
-" \n"
-"正常情况下, 您在收到这个软件的同时, 也应该收到 GNU\n"
-"一般公用授权书。如果没有, 请参看 <http://www.gnu.org/licenses/>。\n"
+msgstr "参见 <http://www.gnu.org/licenses/>。  */"
 
 #: config/pa/pa64-hpux.opt:23
-#, fuzzy
-#| msgid "Assume code will be linked by GNU ld"
 msgid "Assume code will be linked by GNU ld."
-msgstr "假定代码将由 GNU ld 链接"
+msgstr "假定代码将由 GNU ld 链接。"
 
 #: config/pa/pa64-hpux.opt:27
-#, fuzzy
-#| msgid "Assume code will be linked by HP ld"
 msgid "Assume code will be linked by HP ld."
-msgstr "假定代码将由 HP ld 链接"
+msgstr "假定代码将由 HP ld 链接。"
 
 #: config/pa/pa-hpux1010.opt:23 config/pa/pa-hpux.opt:31
 #: config/pa/pa-hpux1131.opt:23 config/pa/pa-hpux1111.opt:23
-#, fuzzy
-#| msgid "Specify UNIX standard for predefines and linking"
 msgid "Specify UNIX standard for predefines and linking."
-msgstr "指定用于预定义和链接的 UNIX 标准"
+msgstr "指定用于预定义和链接的 UNIX 标准。"
 
+# C 预处理器？
 #: config/pa/pa-hpux.opt:27
-#, fuzzy
-#| msgid "Generate cpp defines for server IO"
 msgid "Generate cpp defines for server IO."
-msgstr "为服务器 IO 生成 cpp 定义"
+msgstr "为服务器 IO 生成 cpp 定义。"
 
 #: config/pa/pa-hpux.opt:35
-#, fuzzy
-#| msgid "Generate cpp defines for workstation IO"
 msgid "Generate cpp defines for workstation IO."
-msgstr "为工作站 IO 生成 cpp 定义"
+msgstr "为工作站 IO 生成 cpp 定义。"
 
 #: config/pa/pa.opt:30 config/pa/pa.opt:83 config/pa/pa.opt:91
-#, fuzzy
-#| msgid "Generate PA1.0 code"
 msgid "Generate PA1.0 code."
-msgstr "生成 PA1.0 代码"
+msgstr "生成 PA1.0 代码。"
 
 #: config/pa/pa.opt:34 config/pa/pa.opt:95 config/pa/pa.opt:136
-#, fuzzy
-#| msgid "Generate PA1.1 code"
 msgid "Generate PA1.1 code."
-msgstr "生成 PA1.1 代码"
+msgstr "生成 PA1.1 代码。"
 
 #: config/pa/pa.opt:38 config/pa/pa.opt:99
-#, fuzzy
-#| msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)."
-msgstr "生成 PA2.0 代码 (需要 binutils 2.10 或更新版本)"
+msgstr "生成 PA2.0 代码 (需要 binutils 2.10 或更新版本)。"
 
 #: config/pa/pa.opt:46
-#, fuzzy
-#| msgid "Disable FP regs"
 msgid "Disable FP regs."
-msgstr "禁用浮点寄存器"
+msgstr "禁用浮点寄存器。"
 
 #: config/pa/pa.opt:50
 #, fuzzy
-#| msgid "Disable indexed addressing"
 msgid "Disable indexed addressing."
-msgstr "禁用变址寻址"
+msgstr "禁用变址寻址。"
 
 #: config/pa/pa.opt:54
-#, fuzzy
-#| msgid "Generate fast indirect calls"
 msgid "Generate fast indirect calls."
-msgstr "生成快速间接调用"
+msgstr "生成快速间接调用。"
 
 #: config/pa/pa.opt:62
-#, fuzzy
-#| msgid "Assume code will be assembled by GAS"
 msgid "Assume code will be assembled by GAS."
-msgstr "假定代码将由 GAS 汇编"
+msgstr "假定代码将由 GAS 汇编。"
 
 #: config/pa/pa.opt:71
-#, fuzzy
-#| msgid "Enable linker optimizations"
 msgid "Enable linker optimizations."
-msgstr "启用链接器优化"
+msgstr "启用链接器优化。"
 
 #: config/pa/pa.opt:75
-#, fuzzy
-#| msgid "Always generate long calls"
 msgid "Always generate long calls."
-msgstr "总是生成远调用"
+msgstr "总是生成长调用。"
 
 #: config/pa/pa.opt:79
-#, fuzzy
-#| msgid "Emit long load/store sequences"
 msgid "Emit long load/store sequences."
-msgstr "生成长读/写序列"
+msgstr "生成长读/写序列。"
 
 #: config/pa/pa.opt:87
-#, fuzzy
-#| msgid "Disable space regs"
 msgid "Disable space regs."
-msgstr "禁用空间寄存器"
+msgstr "禁用空间寄存器。"
 
 #: config/pa/pa.opt:103
-#, fuzzy
-#| msgid "Use portable calling conventions"
 msgid "Use portable calling conventions."
-msgstr "使用一般的调用约定"
+msgstr "使用可移植调用约定。"
 
 #: config/pa/pa.opt:107
-#, fuzzy
-#| msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000"
 msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000."
-msgstr "指定调度优化的目标 CPU。有效的选项是 700，7100，7100LC，7200，7300，和 8000"
+msgstr "指定调度优化的目标 CPU。有效的选项是 700、7100、7100LC、7200、7300，和 8000。"
 
 #: config/pa/pa.opt:132 config/frv/frv.opt:215
-#, fuzzy
-#| msgid "Use software floating point"
 msgid "Use software floating point."
-msgstr "使用软件浮点单元"
+msgstr "使用软件浮点单元。"
 
 #: config/pa/pa.opt:140
-#, fuzzy
-#| msgid "Do not disable space regs"
 msgid "Do not disable space regs."
-msgstr "不禁用空间寄存器"
+msgstr "不禁用空间寄存器。"
 
 #: config/v850/v850.opt:29
-#, fuzzy
-#| msgid "Use registers r2 and r5"
 msgid "Use registers r2 and r5."
-msgstr "使用寄存器 r2 和 r5"
+msgstr "使用寄存器 r2 和 r5。"
 
 #: config/v850/v850.opt:33
-#, fuzzy
-#| msgid "Use 4 byte entries in switch tables"
 msgid "Use 4 byte entries in switch tables."
-msgstr "在分支表中使用 4 字节长的条目"
+msgstr "在 switch 分支表中使用 4 字节长的条目。"
 
 #: config/v850/v850.opt:37
-#, fuzzy
-#| msgid "Enable backend debugging"
 msgid "Enable backend debugging."
-msgstr "启用后端调试"
+msgstr "启用后端调试."
 
 #: config/v850/v850.opt:41
-#, fuzzy
-#| msgid "Do not use the callt instruction (default)"
 msgid "Do not use the callt instruction (default)."
-msgstr "不要使用 callt 指令（默认）"
+msgstr "不要使用 callt 指令（默认）."
 
 #: config/v850/v850.opt:45
-#, fuzzy
-#| msgid "Reuse r30 on a per function basis"
 msgid "Reuse r30 on a per function basis."
-msgstr "为每个函数重用 r30"
+msgstr "按函数重用 r30。"
 
 #: config/v850/v850.opt:52
-#, fuzzy
-#| msgid "Prohibit PC relative function calls"
 msgid "Prohibit PC relative function calls."
-msgstr "禁止相对 PC 的函数调用"
+msgstr "禁止相对 PC 的函数调用。"
 
 #: config/v850/v850.opt:56
-#, fuzzy
-#| msgid "Use stubs for function prologues"
 msgid "Use stubs for function prologues."
-msgstr "使用占位程序完成函数前言/尾声"
+msgstr "使用占位程序完成函数前言。"
 
 #: config/v850/v850.opt:60
 #, fuzzy
@@ -59868,9 +59644,9 @@ msgid "%s attribute conflicts with %s attribute in %qs at %L"
 msgstr "%s 属性与 %s 属性在%L处冲突"
 
 #: fortran/symbol.c:813
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s attribute with %s attribute at %L"
-msgstr "%s 属性与 %s 属性在%L处冲突"
+msgstr "%s 属性与 %s 属性共存在 %L"
 
 #: fortran/symbol.c:819
 #, fuzzy, gcc-internal-format
