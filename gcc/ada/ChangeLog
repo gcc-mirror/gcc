@@ -1,3 +1,9 @@
+2016-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ACATSCMD): New variable.
+	(check-acats): Use it.
+	(check_acats_targets): Likewise.
+
 2016-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/70786

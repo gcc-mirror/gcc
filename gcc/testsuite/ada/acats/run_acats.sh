@@ -47,9 +47,7 @@ if [ ! -f $BASE/gnatmake ]; then
    exit 1
 fi
 
-GCC_DRIVER="$BASE/xgcc"
-GCC="$BASE/xgcc -B$BASE/"
-export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_DRIVER GCC LD_LIBRARY_PATH
+export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH BASE LD_LIBRARY_PATH
 
 echo '#!/bin/sh' > host_gnatchop
 echo PATH=`dirname $host_gnatchop`:'$PATH' >> host_gnatchop

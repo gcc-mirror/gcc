@@ -868,6 +868,7 @@ check-ada: check-acats check-gnat
 check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
+ACATSCMD = run_acats.sh
 
 check_acats_numbers0:=1 2 3 4 5 6 7 8 9
 check_acats_numbers1:=0 $(check_acats_numbers0)
@@ -892,7 +893,7 @@ check-acats:
 	  mkdir $(ACATSDIR)-parallel; \
 	  ( testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
 	    export testdir; \
-	    cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats NONE ) \
+	    cd $(ACATSDIR) && $(SHELL) $${testdir}/$(ACATSCMD) NONE ) \
 	    || exit 1; \
 	  GCC_RUNTEST_PARALLELIZE_DIR=$$rootme/$(ACATSDIR)-parallel; \
 	  export GCC_RUNTEST_PARALLELIZE_DIR; \
@@ -913,7 +914,7 @@ check-acats:
 	  exit 0; \
 	fi; \
 	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
-	export testdir; cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats $(CHAPTERS)
+	export testdir; cd $(ACATSDIR) && $(SHELL) $${testdir}/$(ACATSCMD) $(CHAPTERS)
 
 check-acats-subtargets:
 	@echo check-acats
@@ -925,7 +926,7 @@ $(check_acats_targets): check-acats%:
 	fi; \
 	test -d $(ACATSDIR)$* || mkdir -p $(ACATSDIR)$*; \
 	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
-	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/run_acats
+	export testdir; cd $(ACATSDIR)$* && $(SHELL) $${testdir}/$(ACATSCMD)
 	touch $$GCC_RUNTEST_PARALLELIZE_DIR/finished
 
 .PHONY: check-acats $(check_acats_targets)
