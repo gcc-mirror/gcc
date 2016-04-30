@@ -94,8 +94,7 @@ regstat_free_n_sets_and_refs (void)
 /*----------------------------------------------------------------------------
    REGISTER INFORMATION
 
-   Process REG_N_DEATHS, REG_N_CALLS_CROSSED,
-   REG_N_THROWING_CALLS_CROSSED and REG_BASIC_BLOCK.
+   Process REG_N_DEATHS, REG_N_CALLS_CROSSED, and REG_BASIC_BLOCK.
 
    ----------------------------------------------------------------------------*/
 
@@ -156,16 +155,10 @@ regstat_bb_compute_ri (basic_block bb, bitmap live)
       /* Process the defs.  */
       if (CALL_P (insn))
 	{
-	  bool can_throw = can_throw_internal (insn);
 	  bool set_jump = (find_reg_note (insn, REG_SETJMP, NULL) != NULL);
 	  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
 	    {
 	      REG_N_CALLS_CROSSED (regno)++;
-	      REG_FREQ_CALLS_CROSSED (regno) += REG_FREQ_FROM_BB (bb);
-	      REG_FREQ_CALLS_CROSSED (regno) =
-		MIN (REG_FREQ_CALLS_CROSSED (regno), REG_FREQ_MAX);
-	      if (can_throw)
-		REG_N_THROWING_CALLS_CROSSED (regno)++;
 
 	      /* We have a problem with any pseudoreg that lives
 		 across the setjmp.  ANSI says that if a user variable
@@ -344,9 +337,6 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 	  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
 	    {
 	      REG_N_CALLS_CROSSED (regno)++;
-	      REG_FREQ_CALLS_CROSSED (regno) += REG_FREQ_FROM_BB (bb);
-	      REG_FREQ_CALLS_CROSSED (regno) =
-		MIN (REG_FREQ_CALLS_CROSSED (regno), REG_FREQ_MAX);
 	    }
 	}
 
@@ -445,8 +435,6 @@ dump_reg_info (FILE *file)
 	fputs ("; crosses 1 call", file);
       else if (REG_N_CALLS_CROSSED (i))
 	fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
-      if (REG_FREQ_CALLS_CROSSED (i))
-	fprintf (file, "; crosses call with %d frequency", REG_FREQ_CALLS_CROSSED (i));
       if (regno_reg_rtx[i] != NULL
 	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
