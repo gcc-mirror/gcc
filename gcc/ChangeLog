@@ -1,5 +1,11 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage):
+	Remove redundant PIC_OFFSET_TABLE_REGNUM test.  Replace with
+	flag_pic test for Darwin.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* regs.h (struct reg_info_t): Delete freq_calls_crossed and
 	throw_calls_crossed.
 	(REG_FREQ_CALLS_CROSSED): Delete.
