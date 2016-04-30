@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1-b20160131\n"
+"Project-Id-Version: cpplib 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2016-02-03 21:55+0100\n"
+"PO-Revision-Date: 2016-04-30 15:42+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -274,7 +274,7 @@ msgstr "”%s” efter # är inte ett positivt heltal"
 #: directives.c:1061
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr ""
+msgstr "filen ”%s” linjemarkör ignoreras på grund av felaktig nästning"
 
 #: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
 #, c-format
@@ -435,10 +435,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ogiltigt prefix ”0b” på flyttalskonstant"
 
 #: expr.c:555
-#, fuzzy
-#| msgid "use of C++11 hexadecimal floating constant"
 msgid "use of C++1z hexadecimal floating constant"
-msgstr "användning av hexadecimal flyttalskonstant enligt C++11"
+msgstr "användning av hexadecimal flyttalskonstant enligt C++1z"
 
 #: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
