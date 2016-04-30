@@ -23231,7 +23231,10 @@ is_altivec_return_reg (rtx reg, void *xyes)
 
 
 /* Return whether REG is a global user reg or has been specifed by
-   -ffixed-REG.  */
+   -ffixed-REG.  We should not restore these, and so cannot use
+   lmw or out-of-line restore functions if there are any.  We also
+   can't save them (well, emit frame notes for them), because frame
+   unwinding during exception handling will restore saved registers.  */
 
 static bool
 fixed_reg_p (int reg)
@@ -23245,21 +23248,6 @@ fixed_reg_p (int reg)
     return false;
 
   return fixed_regs[reg];
-}
-
-/* Look for user-defined global regs or -ffixed-<reg> in the range
-   FIRST to LAST-1.  We should not restore these, and so cannot use
-   lmw or out-of-line restore functions if there are any.  We also
-   can't save them (well, emit frame notes for them), because frame
-   unwinding during exception handling will restore saved registers.  */
-
-static bool
-fixed_regs_p (unsigned first, unsigned last)
-{
-  while (first < last)
-    if (fixed_reg_p (first++))
-      return true;
-  return false;
 }
 
 /* Determine the strategy for savings/restoring registers.  */
@@ -23283,35 +23271,25 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 			bool using_static_chain_p)
 {
   int strategy = 0;
-  bool lr_save_p;
 
-  if (TARGET_MULTIPLE
-      && !TARGET_POWERPC64
-      && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
-      && info->first_gp_reg_save < 31
-      && !fixed_regs_p (info->first_gp_reg_save, 32))
-    strategy |= SAVE_MULTIPLE | REST_MULTIPLE;
-
+  /* Select between in-line and out-of-line save and restore of regs.
+     First, all the obvious cases where we don't use out-of-line.  */
   if (crtl->calls_eh_return
       || cfun->machine->ra_need_lr)
     strategy |= (SAVE_INLINE_FPRS | REST_INLINE_FPRS
 		 | SAVE_INLINE_GPRS | REST_INLINE_GPRS
 		 | SAVE_INLINE_VRS | REST_INLINE_VRS);
 
+  if (info->first_gp_reg_save == 32)
+    strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+
   if (info->first_fp_reg_save == 64
       /* The out-of-line FP routines use double-precision stores;
 	 we can't use those routines if we don't have such stores.  */
-      || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT)
-      || fixed_regs_p (info->first_fp_reg_save, 64))
+      || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT))
     strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
 
-  if (info->first_gp_reg_save == 32
-      || (!(strategy & (SAVE_MULTIPLE | REST_MULTIPLE))
-	  && fixed_regs_p (info->first_gp_reg_save, 32)))
-    strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
-
-  if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1
-      || fixed_regs_p (info->first_altivec_reg_save, LAST_ALTIVEC_REGNO + 1))
+  if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1)
     strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
 
   /* Define cutoff for using out-of-line functions to save registers.  */
@@ -23364,51 +23342,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN))
     strategy |= ((DEFAULT_ABI == ABI_DARWIN ? 0 : SAVE_INLINE_FPRS)
 		 | SAVE_INLINE_GPRS
-		 | SAVE_INLINE_VRS | REST_INLINE_VRS);
-
-  /* We can only use the out-of-line routines to restore if we've
-     saved all the registers from first_fp_reg_save in the prologue.
-     Otherwise, we risk loading garbage.  */
-  if ((strategy & (SAVE_INLINE_FPRS | REST_INLINE_FPRS)) == SAVE_INLINE_FPRS)
-    {
-      int i;
-
-      for (i = info->first_fp_reg_save; i < 64; i++)
-	if (!save_reg_p (i))
-	  {
-	    strategy |= REST_INLINE_FPRS;
-	    break;
-	  }
-    }
-
-  /* If we are going to use store multiple, then don't even bother
-     with the out-of-line routines, since the store-multiple
-     instruction will always be smaller.  */
-  if ((strategy & (SAVE_MULTIPLE | REST_MULTIPLE)))
-    strategy |= SAVE_INLINE_GPRS;
-
-  /* info->lr_save_p isn't yet set if the only reason lr needs to be
-     saved is an out-of-line save or restore.  Set up the value for
-     the next test (excluding out-of-line gpr restore).  */
-  lr_save_p = (info->lr_save_p
-	       || !(strategy & SAVE_INLINE_GPRS)
-	       || !(strategy & SAVE_INLINE_FPRS)
-	       || !(strategy & SAVE_INLINE_VRS)
-	       || !(strategy & REST_INLINE_FPRS)
-	       || !(strategy & REST_INLINE_VRS));
-
-  /* The situation is more complicated with load multiple.  We'd
-     prefer to use the out-of-line routines for restores, since the
-     "exit" out-of-line routines can handle the restore of LR and the
-     frame teardown.  However if doesn't make sense to use the
-     out-of-line routine if that is the only reason we'd need to save
-     LR, and we can't use the "exit" out-of-line gpr restore if we
-     have saved some fprs; In those cases it is advantageous to use
-     load multiple when available.  */
-  if ((strategy & (SAVE_MULTIPLE | REST_MULTIPLE))
-      && (!lr_save_p
-	  || info->first_fp_reg_save != 64))
-    strategy |= REST_INLINE_GPRS;
+		 | SAVE_INLINE_VRS);
 
   /* Saving CR interferes with the exit routines used on the SPE, so
      just punt here.  */
@@ -23417,19 +23351,82 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       && info->cr_save_p)
     strategy |= REST_INLINE_GPRS;
 
+  /* We can only use the out-of-line routines to restore fprs if we've
+     saved all the registers from first_fp_reg_save in the prologue.
+     Otherwise, we risk loading garbage.  Of course, if we have saved
+     out-of-line then we know we haven't skipped any fprs.  */
+  if ((strategy & SAVE_INLINE_FPRS)
+      && !(strategy & REST_INLINE_FPRS))
+    {
+      int i;
+
+      for (i = info->first_fp_reg_save; i < 64; i++)
+	if (fixed_regs[i] || !save_reg_p (i))
+	  {
+	    strategy |= REST_INLINE_FPRS;
+	    break;
+	  }
+    }
+
+  /* Similarly, for altivec regs.  */
+  if ((strategy & SAVE_INLINE_VRS)
+      && !(strategy & REST_INLINE_VRS))
+    {
+      int i;
+
+      for (i = info->first_altivec_reg_save; i < LAST_ALTIVEC_REGNO + 1; i++)
+	if (fixed_regs[i] || !save_reg_p (i))
+	  {
+	    strategy |= REST_INLINE_VRS;
+	    break;
+	  }
+    }
+
+  if (TARGET_MULTIPLE
+      && !TARGET_POWERPC64
+      && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
+      && info->first_gp_reg_save != 32)
+    {
+      /* Prefer store multiple for saves over out-of-line routines,
+	 since the store-multiple instruction will always be smaller.  */
+      strategy |= SAVE_INLINE_GPRS | SAVE_MULTIPLE;
+
+      /* info->lr_save_p isn't yet set if the only reason lr needs to be
+	 saved is an out-of-line save or restore.  Set up the value for
+	 the next test (excluding out-of-line gprs).  */
+      bool lr_save_p = (info->lr_save_p
+			|| !(strategy & SAVE_INLINE_FPRS)
+			|| !(strategy & SAVE_INLINE_VRS)
+			|| !(strategy & REST_INLINE_FPRS)
+			|| !(strategy & REST_INLINE_VRS));
+
+      /* The situation is more complicated with load multiple.  We'd
+	 prefer to use the out-of-line routines for restores, since the
+	 "exit" out-of-line routines can handle the restore of LR and the
+	 frame teardown.  However if doesn't make sense to use the
+	 out-of-line routine if that is the only reason we'd need to save
+	 LR, and we can't use the "exit" out-of-line gpr restore if we
+	 have saved some fprs; In those cases it is advantageous to use
+	 load multiple when available.  */
+      if (info->first_fp_reg_save != 64 || !lr_save_p)
+	strategy |= REST_INLINE_GPRS | REST_MULTIPLE;
+    }
+
   /* We can only use load multiple or the out-of-line routines to
-     restore if we've used store multiple or out-of-line routines
-     in the prologue, i.e. if we've saved all the registers from
-     first_gp_reg_save.  Otherwise, we risk loading garbage.  */
-  if ((strategy & (SAVE_INLINE_GPRS | REST_INLINE_GPRS | SAVE_MULTIPLE | REST_MULTIPLE))
-      == SAVE_INLINE_GPRS)
+     restore gprs if we've saved all the registers from
+     first_gp_reg_save.  Otherwise, we risk loading garbage.
+     Of course, if we have saved out-of-line or used stmw then we know
+     we haven't skipped any gprs.  */
+  if ((strategy & (SAVE_INLINE_GPRS | SAVE_MULTIPLE)) == SAVE_INLINE_GPRS
+      && (strategy & (REST_INLINE_GPRS | REST_MULTIPLE)) != REST_INLINE_GPRS)
     {
       int i;
 
       for (i = info->first_gp_reg_save; i < 32; i++)
-	if (!save_reg_p (i))
+	if (fixed_reg_p (i) || !save_reg_p (i))
 	  {
 	    strategy |= REST_INLINE_GPRS;
+	    strategy &= ~REST_MULTIPLE;
 	    break;
 	  }
     }
@@ -24702,7 +24699,14 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 	    {
 	      rtx set = XVECEXP (real, 0, i);
 
-	      RTX_FRAME_RELATED_P (set) = 1;
+	      /* If this PARALLEL has been emitted for out-of-line
+		 register save functions, or store multiple, then omit
+		 eh_frame info for any user-defined global regs.  If
+		 eh_frame info is supplied, frame unwinding will
+		 restore a user reg.  */
+	      if (!REG_P (SET_SRC (set))
+		  || !fixed_reg_p (REGNO (SET_SRC (set))))
+		RTX_FRAME_RELATED_P (set) = 1;
 	    }
       RTX_FRAME_RELATED_P (insn) = 1;
       return insn;
@@ -24772,7 +24776,10 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 		if (temp)
 		  XEXP (SET_DEST (set), 0) = temp;
 	      }
-	    RTX_FRAME_RELATED_P (set) = 1;
+	    /* Omit eh_frame info for any user-defined global regs.  */
+	    if (!REG_P (SET_SRC (set))
+		|| !fixed_reg_p (REGNO (SET_SRC (set))))
+	      RTX_FRAME_RELATED_P (set) = 1;
 	  }
     }
 
