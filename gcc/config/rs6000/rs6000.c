@@ -23230,17 +23230,34 @@ is_altivec_return_reg (rtx reg, void *xyes)
 }
 
 
-/* Look for user-defined global regs in the range FIRST to LAST-1.
-   We should not restore these, and so cannot use lmw or out-of-line
-   restore functions if there are any.  We also can't save them
-   (well, emit frame notes for them), because frame unwinding during
-   exception handling will restore saved registers.  */
+/* Return whether REG is a global user reg or has been specifed by
+   -ffixed-REG.  */
 
 static bool
-global_regs_p (unsigned first, unsigned last)
+fixed_reg_p (int reg)
+{
+  /* Ignore fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] when the
+     backend sets it, overriding anything the user might have given.  */
+  if (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+      && ((DEFAULT_ABI == ABI_V4 && flag_pic)
+	  || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+	  || (TARGET_TOC && TARGET_MINIMAL_TOC)))
+    return false;
+
+  return fixed_regs[reg];
+}
+
+/* Look for user-defined global regs or -ffixed-<reg> in the range
+   FIRST to LAST-1.  We should not restore these, and so cannot use
+   lmw or out-of-line restore functions if there are any.  We also
+   can't save them (well, emit frame notes for them), because frame
+   unwinding during exception handling will restore saved registers.  */
+
+static bool
+fixed_regs_p (unsigned first, unsigned last)
 {
   while (first < last)
-    if (global_regs[first++])
+    if (fixed_reg_p (first++))
       return true;
   return false;
 }
@@ -23271,7 +23288,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       && !TARGET_POWERPC64
       && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
       && info->first_gp_reg_save < 31
-      && !global_regs_p (info->first_gp_reg_save, 32))
+      && !fixed_regs_p (info->first_gp_reg_save, 32))
     strategy |= SAVRES_MULTIPLE;
 
   if (crtl->calls_eh_return
@@ -23284,16 +23301,16 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       /* The out-of-line FP routines use double-precision stores;
 	 we can't use those routines if we don't have such stores.  */
       || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT)
-      || global_regs_p (info->first_fp_reg_save, 64))
+      || fixed_regs_p (info->first_fp_reg_save, 64))
     strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
 
   if (info->first_gp_reg_save == 32
       || (!(strategy & SAVRES_MULTIPLE)
-	  && global_regs_p (info->first_gp_reg_save, 32)))
+	  && fixed_regs_p (info->first_gp_reg_save, 32)))
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
   if (info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1
-      || global_regs_p (info->first_altivec_reg_save, LAST_ALTIVEC_REGNO + 1))
+      || fixed_regs_p (info->first_altivec_reg_save, LAST_ALTIVEC_REGNO + 1))
     strategy |= SAVE_INLINE_VRS | REST_INLINE_VRS;
 
   /* Define cutoff for using out-of-line functions to save registers.  */
