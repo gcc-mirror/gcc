@@ -1,5 +1,20 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* regs.h (struct reg_info_t): Delete live_length.
+	(REG_LIVE_LENGTH): Delete macro.
+	* regstat.c (regstat_bb_compute_ri): Delete artificial_uses,
+	local_live, local_processed and local_live_last_luid params.
+	Replace bb_index param with bb.  Don't set REG_LIVE_LENGTH.
+	Formatting fixes.
+	(regstat_compute_ri): Adjust for above.  Don't set
+	REG_LIVE_LENGTH.
+	(dump_reg_info): Don't print live length.
+	* ira.c (update_equiv_regs): Replace test of REG_LIVE_LENGTH
+	with test of setjmp_crosses.  Don't set REG_LIVE_LENGTH.
+	Localize loop_depth var.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	* ira.c (enum valid_equiv): New.
 	(validate_equiv_mem): Return enum.
 	(update_equiv_mem): Create replacement in more cases.
