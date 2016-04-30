@@ -306,6 +306,7 @@ case $basic_machine in
 	| rl78 | rx \
 	| score \
 	| sh | sh[1234] | sh[24]a | sh[24]aeb | sh[23]e | sh[234]eb | sheb | shbe | shle | sh[1234]le | sh3ele \
+	| sh64 | sh64le \
 	| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet | sparclite \
 	| sparcv8 | sparcv9 | sparcv9b | sparcv9v \
 	| spu \
@@ -431,7 +432,7 @@ case $basic_machine in
 	| riscv32-* | riscv64-* \
 	| rl78-* | romp-* | rs6000-* | rx-* \
 	| sh-* | sh[1234]-* | sh[24]a-* | sh[24]aeb-* | sh[23]e-* | sh[34]eb-* | sheb-* | shbe-* \
-	| shle-* | sh[1234]le-* | sh3ele-* \
+	| shle-* | sh[1234]le-* | sh3ele-* | sh64-* | sh64le-* \
 	| sparc-* | sparc64-* | sparc64b-* | sparc64v-* | sparc86x-* | sparclet-* \
 	| sparclite-* \
 	| sparcv8-* | sparcv9-* | sparcv9b-* | sparcv9v-* | sv1-* | sx*-* \
@@ -1092,6 +1093,12 @@ case $basic_machine in
 	sh)
 		basic_machine=sh-hitachi
 		os=-hms
+		;;
+	sh5el)
+		basic_machine=sh5le-unknown
+		;;
+	sh64)
+		basic_machine=sh64-unknown
 		;;
 	sparclite-wrs | simso-wrs)
 		basic_machine=sparclite-wrs
