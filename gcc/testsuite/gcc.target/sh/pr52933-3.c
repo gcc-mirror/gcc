@@ -1,7 +1,6 @@
 /* Check that the div0s instruction is used for integer sign comparisons.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-times "div0s" 2 } } */
 
 typedef struct { unsigned int arg[100]; } *FunctionCallInfo;

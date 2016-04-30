@@ -2,7 +2,6 @@
    uses the subc instruction.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1 -mbranch-cost=2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-not "movt|tst|negc|movrt" } } */
 /* { dg-final { scan-assembler-times "subc" 3 } }  */
 /* { dg-final { scan-assembler-times "not\t" 1 } }  */

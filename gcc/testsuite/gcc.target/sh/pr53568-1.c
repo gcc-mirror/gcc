@@ -2,7 +2,6 @@
    instructions.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "swap.w" 7 } } */
 /* { dg-final { scan-assembler-times "swap.b" 16 } } */
 /* { dg-final { scan-assembler-times "extu.w" 2 } } */

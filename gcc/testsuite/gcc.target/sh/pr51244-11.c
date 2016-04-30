@@ -2,7 +2,6 @@
    execution patterns.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1 -mzdcbranch" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "subc|and" } } */
 
 int*

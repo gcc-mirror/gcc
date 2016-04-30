@@ -2,7 +2,6 @@
    works as expected.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-times "clrt" 2 } } */
 /* { dg-final { scan-assembler-times "sett" 1 } } */
 

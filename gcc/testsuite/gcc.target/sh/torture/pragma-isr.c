@@ -1,6 +1,5 @@
 /* Check whether rte is generated for two ISRs.  */
 /* { dg-do compile }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler-times "rte" 2 } }  */
 
 extern void foo (void);

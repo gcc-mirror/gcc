@@ -5,7 +5,6 @@
    logic usually show up as redundant tst insns.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2 -mpretend-cmove" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-times "div0s" 32 } } */
 /* { dg-final { scan-assembler-not "tst" } } */
 /* { dg-final { scan-assembler-not "not\t" } }  */
