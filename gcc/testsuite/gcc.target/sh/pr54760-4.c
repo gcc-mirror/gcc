@@ -3,7 +3,6 @@
    register, i.e. it is invalidated by function calls.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1 -fcall-used-gbr" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler "stc\tgbr" } } */
 
 extern int test00 (void);

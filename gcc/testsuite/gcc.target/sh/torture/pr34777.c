@@ -1,6 +1,5 @@
 /* { dg-do compile }  */
 /* { dg-additional-options "-fschedule-insns -fPIC -mprefergot" }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } }  */
 
 static __inline __attribute__ ((__always_inline__)) void *
 _dl_mmap (void * start, int length, int prot, int flags, int fd,

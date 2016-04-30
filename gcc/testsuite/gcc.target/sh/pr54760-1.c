@@ -2,7 +2,6 @@
    built-in functions result in gbr store / load instructions.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "ldc" 1 } } */
 /* { dg-final { scan-assembler-times "stc" 1 } } */
 /* { dg-final { scan-assembler-times "gbr" 2 } } */

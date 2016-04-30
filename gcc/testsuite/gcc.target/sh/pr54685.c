@@ -2,7 +2,6 @@
    utilizing the cmp/pz instruction.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-not "not\[ \t\]" } } */
 /* { dg-final { scan-assembler-times "cmp/pz" 7 } } */
 /* { dg-final { scan-assembler-times "shll" 1 } } */

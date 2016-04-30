@@ -1,7 +1,6 @@
 /* Check that the option -mdiv=call-table works.  */
 /* { dg-do link }  */
 /* { dg-options "-mdiv=call-table" }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 
 int
 test00 (int a, int b)

@@ -3,7 +3,7 @@
    movt instructions in these cases.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
+
 /* { dg-final { scan-assembler-times "addc" 6 } } */
 /* { dg-final { scan-assembler-times "subc" 4 } } */
 /* { dg-final { scan-assembler-times "sett" 5 } } */

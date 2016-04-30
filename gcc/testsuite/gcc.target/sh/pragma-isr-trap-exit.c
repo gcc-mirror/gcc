@@ -1,6 +1,5 @@
 /* Check whether trapa is generated only for an ISR.  */
 /* { dg-do compile }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } }  */
 /* { dg-options "-O" }  */
 /* { dg-final { scan-assembler-times "trapa\[ \t\]\[ \t\]*#4" 1 } }  */
 

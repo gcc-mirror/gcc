@@ -3,7 +3,6 @@
    test instructions.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1 -mbranch-cost=2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-not "movt|tst|negc|extu" } } */
 
 int
