@@ -772,9 +772,6 @@ extern opt_pass* make_pass_sh_optimize_sett_clrt (gcc::context* ctx,
 static void
 register_sh_passes (void)
 {
-  if (!TARGET_SH1)
-    return;
-
 /* Running the sh_treg_combine pass after ce1 generates better code when
    comparisons are combined and reg-reg moves are introduced, because
    reg-reg moves will be eliminated afterwards.  However, there are quite
@@ -848,36 +845,31 @@ sh_option_override (void)
   if (!TARGET_SH3 && TARGET_USERMODE)
     TARGET_USERMODE = false;
 
-  if (TARGET_SH1)
+  if (! strcmp (sh_div_str, "call-div1"))
+    sh_div_strategy = SH_DIV_CALL_DIV1;
+  else if (! strcmp (sh_div_str, "call-fp") && TARGET_FPU_ANY)
+    sh_div_strategy = SH_DIV_CALL_FP;
+  else if (! strcmp (sh_div_str, "call-table") && TARGET_DYNSHIFT)
+    sh_div_strategy = SH_DIV_CALL_TABLE;
+  else
     {
-      if (! strcmp (sh_div_str, "call-div1"))
-	sh_div_strategy = SH_DIV_CALL_DIV1;
-      else if (! strcmp (sh_div_str, "call-fp")
-	       && (TARGET_FPU_DOUBLE || TARGET_FPU_SINGLE_ONLY
-		   || TARGET_FPU_ANY))
-	sh_div_strategy = SH_DIV_CALL_FP;
-      else if (! strcmp (sh_div_str, "call-table") && TARGET_DYNSHIFT)
-	sh_div_strategy = SH_DIV_CALL_TABLE;
-      else
-	/* Pick one that makes most sense for the target in general.
-	   It is not much good to use different functions depending
-	   on -Os, since then we'll end up with two different functions
-	   when some of the code is compiled for size, and some for
-	   speed.  */
+      /* Pick one that makes most sense for the target in general.
+	 It is not much good to use different functions depending on -Os,
+	 since then we'll end up with two different functions when some of
+	 the code is compiled for size, and some for speed.  */
 
-	/* SH4 tends to emphasize speed.  */
-	if (TARGET_HARD_SH4)
-	  sh_div_strategy = SH_DIV_CALL_TABLE;
-	/* These have their own way of doing things.  */
-	else if (TARGET_SH2A)
-	  sh_div_strategy = SH_DIV_INTRINSIC;
-	/* SH1 .. SH3 cores often go into small-footprint systems, so
-	   default to the smallest implementation available.  */
-	else
-	  sh_div_strategy = SH_DIV_CALL_DIV1;
+      /* SH4 tends to emphasize speed.  */
+      if (TARGET_HARD_SH4)
+	sh_div_strategy = SH_DIV_CALL_TABLE;
+      /* These have their own way of doing things.  */
+      else if (TARGET_SH2A)
+	sh_div_strategy = SH_DIV_INTRINSIC;
+      /* SH1 .. SH3 cores often go into small-footprint systems, so
+	 default to the smallest implementation available.  */
+      else
+	sh_div_strategy = SH_DIV_CALL_DIV1;
     }
-  if (!TARGET_SH1)
-    TARGET_PRETEND_CMOVE = 0;
+
   if (sh_divsi3_libfunc[0])
     ; /* User supplied - leave it alone.  */
   else if (TARGET_DIVIDE_CALL_FP)
@@ -1443,8 +1435,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	  break;
 
 	default:
-	  if (TARGET_SH1)
-	    fputc ('#', stream);
+	  fputc ('#', stream);
 	  output_addr_const (stream, x);
 	  break;
 	}
@@ -1618,8 +1609,7 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	 of a library call to the target.  Reject `st r0,@(rX,rY)' because
 	 reload will fail to find a spill register for rX, since r0 is already
 	 being used for the source.  */
-      else if (TARGET_SH1
-	       && refers_to_regno_p (R0_REG, operands[1])
+      else if (refers_to_regno_p (R0_REG, operands[1])
 	       && MEM_P (operands[0])
 	       && GET_CODE (XEXP (operands[0], 0)) == PLUS
 	       && REG_P (XEXP (XEXP (operands[0], 0), 1)))
@@ -1639,7 +1629,7 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	 case.  We can pre-allocate R0 for that index term to avoid
 	 the issue.  See PR target/66591.  */
       else if (sh_lra_p ()
-	       && TARGET_SH1 && ! TARGET_SH2A
+	       && ! TARGET_SH2A
 	       && ((REG_P (operands[0]) && MEM_P (operands[1]))
 		   || (REG_P (operands[1]) && MEM_P (operands[0]))))
 	{
@@ -9590,8 +9580,7 @@ sh_can_follow_jump (const rtx_insn *branch1, const rtx_insn *branch2)
 {
   /* Don't follow if BRANCH2 is possible to be a jump crossing between
      hot and cold partitions.  */
-  if (TARGET_SH1
-      && flag_reorder_blocks_and_partition
+  if (flag_reorder_blocks_and_partition
       && simplejump_p (branch2)
       && CROSSING_JUMP_P (branch2))
     return false;

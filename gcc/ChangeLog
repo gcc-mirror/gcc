@@ -1,3 +1,13 @@
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (register_sh_passes, sh_option_override,
+	sh_print_operand, prepare_move_operands,
+	sh_can_follow_jump): Remove TARGET_SH1 checks.
+	* config/sh/sh.h (TARGET_VARARGS_PRETEND_ARGS, VALID_REGISTER_P,
+	PROMOTE_MODE): Likewise.
+	* config/sh/sh.md (adddi3, addsi3, subdi3, subsi3, andsi3,
+	movdi): Likewise.
+
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_savres_strategy): Force inline

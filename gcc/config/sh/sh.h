@@ -77,7 +77,7 @@ extern int code_for_indirect_jump_scratch;
 
 /* This is not used by the SH2E calling convention  */
 #define TARGET_VARARGS_PRETEND_ARGS(FUN_DECL) \
-  (TARGET_SH1 && ! TARGET_SH2E \
+  (! TARGET_SH2E \
    && ! (TARGET_HITACHI || sh_attr_renesas_p (FUN_DECL)))
 
 #ifndef TARGET_CPU_DEFAULT
@@ -636,7 +636,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    || XD_REGISTER_P (REGNO) \
    || (REGNO) == AP_REG || (REGNO) == RAP_REG \
    || (REGNO) == FRAME_POINTER_REGNUM \
-   || (TARGET_SH1 && (SPECIAL_REGISTER_P (REGNO) || (REGNO) == PR_REG)) \
+   || ((SPECIAL_REGISTER_P (REGNO) || (REGNO) == PR_REG)) \
    || (TARGET_SH2E && (REGNO) == FPUL_REG))
 
 /* The mode that should be generally used to store a register by
@@ -1879,8 +1879,7 @@ extern int current_function_interrupt;
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE) \
   if (GET_MODE_CLASS (MODE) == MODE_INT			\
       && GET_MODE_SIZE (MODE) < 4/* ! UNITS_PER_WORD */)\
-    (UNSIGNEDP) = ((MODE) == SImode ? 0 : (UNSIGNEDP)),	\
-    (MODE) = (TARGET_SH1 ? SImode : DImode);
+    (UNSIGNEDP) = ((MODE) == SImode ? 0 : (UNSIGNEDP)),	(MODE) = SImode;
 
 #define MAX_FIXED_MODE_SIZE (64)
 
