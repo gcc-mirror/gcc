@@ -782,8 +782,6 @@ case "${target}" in
     ;;
   sh-*-* | sh[[34]]*-*-*)
     ;;
-  sh64-*-* | sh5*-*-*)
-    ;;
   sparc*-*-*)
     ;;
   x86_64-*-*)
@@ -1282,7 +1280,7 @@ case "${target}" in
   or1k*-*-*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
-  sh-*-* | sh64-*-*)
+  sh-*-*)
     case "${target}" in
       sh*-*-elf)
          ;;

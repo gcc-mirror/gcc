@@ -2617,16 +2617,15 @@ s390x-ibm-tpf*)
 	;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
-  sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
-  sh64-*-netbsd* | sh64l*-*-netbsd*)
+  sh-*-netbsdelf* | shl*-*-netbsdelf*)
 	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
 	if test x${with_endian} = x; then
 		case ${target} in
 		sh[1234]*be-*-* | sh[1234]*eb-*-*) with_endian=big ;;
 		shbe-*-* | sheb-*-*)		   with_endian=big,little ;;
 		sh[1234]l* | sh[34]*-*-linux*)	   with_endian=little ;;
-		shl* | sh64l* | sh*-*-linux* | \
-		  sh5l* | sh-superh-elf)	   with_endian=little,big ;;
+		shl* | sh*-*-linux* | \
+		  sh-superh-elf)		   with_endian=little,big ;;
 		sh[1234]*-*-*)			   with_endian=big ;;
 		*)				   with_endian=big,little ;;
 		esac
@@ -2670,28 +2669,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 			tm_file="${tm_file} sh/embed-elf.h" ;;
 	esac
 	case ${target} in
-	sh5*-*-netbsd*)
-		# SHmedia, 32-bit ABI
-		tmake_file="${tmake_file} sh/t-sh64"
-		;;
-	sh64*-netbsd*)
-		# SHmedia, 64-bit ABI
-		tmake_file="${tmake_file} sh/t-sh64 sh/t-netbsd-sh5-64"
-		;;
 	*-*-netbsd)
-		;;
-	sh64*-*-linux*)
-		tmake_file="${tmake_file} sh/t-sh64"
-		tm_file="${tm_file} sh/sh64.h"
-		extra_headers="shmedia.h ushmedia.h sshmedia.h"
-		;;
-	sh64*)
-		tmake_file="${tmake_file} sh/t-sh64"
-		tm_file="${tm_file} sh/sh64.h"
-		if test x$with_newlib = xyes; then
-			tm_file="${tm_file} newlib-stdint.h"
-		fi
-		extra_headers="shmedia.h ushmedia.h sshmedia.h"
 		;;
 	*-*-elf*)
 		tm_file="${tm_file} newlib-stdint.h"
@@ -2699,8 +2677,6 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	esac
 	# sed el/eb endian suffixes away to avoid confusion with sh[23]e
 	case `echo ${target} | sed 's/e[lb]-/-/'` in
-	sh64*-*-netbsd*)	sh_cpu_target=sh5-64media ;;
-	sh64* | sh5*-*-netbsd*)	sh_cpu_target=sh5-32media ;;
 	sh4a_single_only*)	sh_cpu_target=sh4a-single-only ;;
 	sh4a_single*)		sh_cpu_target=sh4a-single ;;
 	sh4a_nofpu*)		sh_cpu_target=sh4a-nofpu ;;
@@ -2723,7 +2699,6 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	# did the user say --without-fp ?
 	if test x$with_fp = xno; then
 		case ${sh_cpu_target} in
-		sh5-*media)	sh_cpu_target=${sh_cpu_target}-nofpu ;;
 		sh4al | sh1)	;;
 		sh4a* )		sh_cpu_target=sh4a-nofpu ;;
 		sh4*)		sh_cpu_target=sh4-nofpu ;;
@@ -2736,8 +2711,6 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	fi
 	sh_cpu_default="`echo $with_cpu|sed s/^m/sh/|tr A-Z_ a-z-`"
 	case $sh_cpu_default in
-	sh5-64media-nofpu | sh5-64media | \
-	  sh5-32media-nofpu | sh5-32media | sh5-compact-nofpu | sh5-compact | \
 	  sh2a-single-only | sh2a-single | sh2a-nofpu | sh2a | \
 	  sh4a-single-only | sh4a-single | sh4a-nofpu | sh4a | sh4al | \
 	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | sh4-300 | \
@@ -2748,9 +2721,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	sh_multilibs=${with_multilib_list}
 	if test "$sh_multilibs" = "default" ; then
 		case ${target} in
-		sh64-superh-linux* | \
 		sh[1234]*)	sh_multilibs=${sh_cpu_target} ;;
-		sh64* | sh5*)	sh_multilibs=m5-32media,m5-32media-nofpu,m5-compact,m5-compact-nofpu,m5-64media,m5-64media-nofpu ;;
 		sh-superh-*)	sh_multilibs=m4,m4-single,m4-single-only,m4-nofpu ;;
 		sh*-*-linux*)	sh_multilibs=m1,m2,m2a,m3e,m4 ;;
 		sh*-*-netbsd*)	sh_multilibs=m3,m3e,m4 ;;
@@ -2769,10 +2740,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 		m1 | m2 | m2e | m3 | m3e | \
 		m4 | m4-single | m4-single-only | m4-nofpu | m4-300 |\
 		m4a | m4a-single | m4a-single-only | m4a-nofpu | m4al | \
-		m2a | m2a-single | m2a-single-only | m2a-nofpu | \
-		m5-64media | m5-64media-nofpu | \
-		m5-32media | m5-32media-nofpu | \
-		m5-compact | m5-compact-nofpu)
+		m2a | m2a-single | m2a-single-only | m2a-nofpu)
 			# TM_MULTILIB_CONFIG is used by t-sh for the non-endian multilib definition
 			# It is passed to MULTIILIB_OPTIONS verbatim.
 			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG}/${sh_multilib}"
@@ -2789,7 +2757,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	done
 	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's:^/::'`
 	if test x${enable_incomplete_targets} = xyes ; then
-		tm_defines="$tm_defines SUPPORT_SH1=1 SUPPORT_SH2E=1 SUPPORT_SH4=1 SUPPORT_SH4_SINGLE=1 SUPPORT_SH2A=1 SUPPORT_SH2A_SINGLE=1 SUPPORT_SH5_32MEDIA=1 SUPPORT_SH5_32MEDIA_NOFPU=1 SUPPORT_SH5_64MEDIA=1 SUPPORT_SH5_64MEDIA_NOFPU=1"
+		tm_defines="$tm_defines SUPPORT_SH1=1 SUPPORT_SH2E=1 SUPPORT_SH4=1 SUPPORT_SH4_SINGLE=1 SUPPORT_SH2A=1 SUPPORT_SH2A_SINGLE=1"
 	fi
 	tm_file="$tm_file ./sysroot-suffix.h"
 	tmake_file="$tmake_file t-sysroot-suffix"

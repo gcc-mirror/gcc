@@ -1,3 +1,8 @@
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* classpath/config.guess: Remove SH5 support.
+	* classpath/config.sub: Likewise.
+
 2016-04-20  Ben Elliston  <bje@gnu.org>
 
 	PR testsuite/70719

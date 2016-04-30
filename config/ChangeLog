@@ -1,3 +1,7 @@
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* picflag.m4:  Remove SH5 support.
+
 2015-10-21  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* bootstrap-asan.mk: Replace ASAN_OPTIONS=detect_leaks with

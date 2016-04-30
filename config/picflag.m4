@@ -61,8 +61,7 @@ case "${$2}" in
 	$1=-fpic
 	;;
     # FIXME: Simplify to sh*-*-netbsd*?
-    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
-      sh64-*-netbsd* | sh64l*-*-netbsd*)
+    sh-*-netbsdelf* | shl*-*-netbsdelf*)
 	$1=-fpic
 	;;
     # Default to -fPIC unless specified otherwise.

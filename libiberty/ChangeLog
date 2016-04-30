@@ -1,3 +1,7 @@
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* configure: Remove SH5 support.
+
 2016-04-08  Marcel Böhme  <boehme.marcel@gmail.com>
 
 	PR c++/69687
