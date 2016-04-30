@@ -1138,10 +1138,6 @@ sh-*-elf* | sh[12346l]*-*-elf*)
 		libic_invalidate_array_4-200.a \
 		libic_invalidate_array_4a.a \
 		libgcc-Os-4-200.a libgcc-4-300.a"
-	case ${host} in sh64*-*-*)
-		tmake_file="$tmake_file sh/t-sh64"
-		;;
-	esac
 	case ${host} in
 	sh*-superh-elf)
 		tmake_file="$tmake_file sh/t-superh"
@@ -1151,20 +1147,11 @@ sh-*-elf* | sh[12346l]*-*-elf*)
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
 	tmake_file="${tmake_file} sh/t-sh t-slibgcc-libgcc sh/t-linux t-fdpbit"
-	case ${host} in sh64*-*-linux*)
-		tmake_file="$tmake_file sh/t-sh64"
-		;;
-	esac
 	md_unwind_header=sh/linux-unwind.h
 	;;
-sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
-  sh64-*-netbsd* | sh64l*-*-netbsd*)
+sh-*-netbsdelf* | shl*-*-netbsdelf*)
 	tmake_file="$tmake_file sh/t-sh sh/t-netbsd"
-	case ${host} in
-	sh5*-*-netbsd* | sh64*-netbsd*)
-		tmake_file="$tmake_file sh/t-sh64"
-		;;
-	esac
+
 	# NetBSD's C library includes a fast software FP library that
 	# has support for setting/setting the rounding mode, exception
 	# mask, etc.  Therefore, we don't want to include software FP

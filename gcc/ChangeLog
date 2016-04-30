@@ -1,3 +1,9 @@
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/t-sh: Remove SH5 support.
+	* config.gcc: Likewise.
+	* configure: Likewise.
+
 2016-04-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Handle -fcilkplus.
