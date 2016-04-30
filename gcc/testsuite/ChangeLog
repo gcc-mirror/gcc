@@ -1,3 +1,8 @@
+2016-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66644
+	* g++.dg/cpp0x/nsdmi-anon-struct1.C: New.
+
 2016-04-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-elemrev-1.c: New.
