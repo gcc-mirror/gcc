@@ -23265,16 +23265,17 @@ fixed_regs_p (unsigned first, unsigned last)
 /* Determine the strategy for savings/restoring registers.  */
 
 enum {
-  SAVRES_MULTIPLE = 0x1,
-  SAVE_INLINE_FPRS = 0x2,
-  SAVE_INLINE_GPRS = 0x4,
-  REST_INLINE_FPRS = 0x8,
-  REST_INLINE_GPRS = 0x10,
-  SAVE_NOINLINE_GPRS_SAVES_LR = 0x20,
-  SAVE_NOINLINE_FPRS_SAVES_LR = 0x40,
-  REST_NOINLINE_FPRS_DOESNT_RESTORE_LR = 0x80,
-  SAVE_INLINE_VRS = 0x100,
-  REST_INLINE_VRS = 0x200
+  SAVE_MULTIPLE = 0x1,
+  SAVE_INLINE_GPRS = 0x2,
+  SAVE_INLINE_FPRS = 0x4,
+  SAVE_NOINLINE_GPRS_SAVES_LR = 0x8,
+  SAVE_NOINLINE_FPRS_SAVES_LR = 0x10,
+  SAVE_INLINE_VRS = 0x20,
+  REST_MULTIPLE = 0x100,
+  REST_INLINE_GPRS = 0x200,
+  REST_INLINE_FPRS = 0x400,
+  REST_NOINLINE_FPRS_DOESNT_RESTORE_LR = 0x800,
+  REST_INLINE_VRS = 0x1000
 };
 
 static int
@@ -23289,7 +23290,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
       && info->first_gp_reg_save < 31
       && !fixed_regs_p (info->first_gp_reg_save, 32))
-    strategy |= SAVRES_MULTIPLE;
+    strategy |= SAVE_MULTIPLE | REST_MULTIPLE;
 
   if (crtl->calls_eh_return
       || cfun->machine->ra_need_lr)
@@ -23305,7 +23306,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
     strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
 
   if (info->first_gp_reg_save == 32
-      || (!(strategy & SAVRES_MULTIPLE)
+      || (!(strategy & (SAVE_MULTIPLE | REST_MULTIPLE))
 	  && fixed_regs_p (info->first_gp_reg_save, 32)))
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
@@ -23383,7 +23384,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
   /* If we are going to use store multiple, then don't even bother
      with the out-of-line routines, since the store-multiple
      instruction will always be smaller.  */
-  if ((strategy & SAVRES_MULTIPLE))
+  if ((strategy & (SAVE_MULTIPLE | REST_MULTIPLE)))
     strategy |= SAVE_INLINE_GPRS;
 
   /* info->lr_save_p isn't yet set if the only reason lr needs to be
@@ -23404,7 +23405,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
      LR, and we can't use the "exit" out-of-line gpr restore if we
      have saved some fprs; In those cases it is advantageous to use
      load multiple when available.  */
-  if ((strategy & SAVRES_MULTIPLE)
+  if ((strategy & (SAVE_MULTIPLE | REST_MULTIPLE))
       && (!lr_save_p
 	  || info->first_fp_reg_save != 64))
     strategy |= REST_INLINE_GPRS;
@@ -23420,7 +23421,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
      restore if we've used store multiple or out-of-line routines
      in the prologue, i.e. if we've saved all the registers from
      first_gp_reg_save.  Otherwise, we risk loading garbage.  */
-  if ((strategy & (SAVE_INLINE_GPRS | REST_INLINE_GPRS | SAVRES_MULTIPLE))
+  if ((strategy & (SAVE_INLINE_GPRS | REST_INLINE_GPRS | SAVE_MULTIPLE | REST_MULTIPLE))
       == SAVE_INLINE_GPRS)
     {
       int i;
@@ -25795,7 +25796,7 @@ rs6000_emit_prologue (void)
       if (lr)
 	END_USE (0);
     }
-  else if (!WORLD_SAVE_P (info) && (strategy & SAVRES_MULTIPLE))
+  else if (!WORLD_SAVE_P (info) && (strategy & SAVE_MULTIPLE))
     {
       rtvec p;
       int i;
@@ -26707,7 +26708,7 @@ rs6000_emit_epilogue (int sibcall)
     }
 
   strategy = info->savres_strategy;
-  using_load_multiple = strategy & SAVRES_MULTIPLE;
+  using_load_multiple = strategy & REST_MULTIPLE;
   restoring_FPRs_inline = sibcall || (strategy & REST_INLINE_FPRS);
   restoring_GPRs_inline = sibcall || (strategy & REST_INLINE_GPRS);
   using_mtcr_multiple = (rs6000_cpu == PROCESSOR_PPC601

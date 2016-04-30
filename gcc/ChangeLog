@@ -1,5 +1,11 @@
 2016-04-30  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (SAVRES_MULTIPLE): Replace with..
+	(SAVE_STRATEGY, REST_STRATEGY): ..this.  Renumber and sort enum.
+	Update all uses.
+
+2016-04-30  Alan Modra  <amodra@gmail.com>
+
 	PR target/69645
 	* config/rs6000/rs6000.c (fixed_reg_p): New function.
 	(fixed_regs_p): Rename from global_regs_p.  Call fixed_reg_p.
