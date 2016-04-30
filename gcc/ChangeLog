@@ -1,3 +1,7 @@
+2016-04-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Handle -fcilkplus.
+
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.c (register_sh_passes, sh_option_override,
