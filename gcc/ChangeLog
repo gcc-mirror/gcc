@@ -1,3 +1,10 @@
+2016-05-01  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config/sh/linux.h (SH_DIV_STRATEGY_DEFAULT,
+	SH_DIV_STR_FOR_SIZE): Remove.
+	* config/sh/netbsd-elf.h (SH_DIV_STRATEGY_DEFAULT,
+	SH_DIV_STR_FOR_SIZE): Remove.
+
 2016-05-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/predicates.md (any_register_operand, zero_extend_operand,
