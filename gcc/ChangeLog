@@ -1,3 +1,8 @@
+2016-05-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (push, pop, ic_invalidate_line, cstoresi4, cstoredi4,
+	cstoresf4, cstoredf4, fix_truncsfsi2): Remove constraints.
+
 2016-05-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_lv_builtin): Do not use switch
