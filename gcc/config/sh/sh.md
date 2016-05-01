@@ -2256,8 +2256,7 @@
    (clobber (reg:SI R5_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r,r"))
    (use (match_operand 2 "" "Z,Ccl"))]
-  "(TARGET_FPU_SINGLE_ONLY || TARGET_FPU_DOUBLE)
-   && TARGET_FPU_SINGLE"
+  "TARGET_FPU_ANY && TARGET_FPU_SINGLE"
   "@
 	jsr	@%1%#
 	bsrf	%1\n%O2:%#"
@@ -2393,8 +2392,7 @@
    (clobber (reg:SI R2_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r,r"))
    (use (match_operand 2 "" "Z,Ccl"))]
-  "(TARGET_FPU_SINGLE_ONLY || TARGET_FPU_DOUBLE)
-   && TARGET_FPU_SINGLE"
+  "TARGET_FPU_ANY && TARGET_FPU_SINGLE"
   "@
 	jsr	@%1%#
 	bsrf	%1\n%O2:%#"
@@ -5568,7 +5566,7 @@
   [(set (match_operand:DF 0 "general_movdst_operand" "=r,r,r,m")
 	(match_operand:DF 1 "general_movsrc_operand" "r,FQ,m,r"))]
   "TARGET_SH1
-   && (! (TARGET_SH4 || TARGET_SH2A_DOUBLE) || reload_completed
+   && (!TARGET_FPU_DOUBLE || reload_completed
        /* ??? We provide some insn so that direct_{load,store}[DFmode] get set */
        || (REG_P (operands[0]) && REGNO (operands[0]) == 3)
        || (REG_P (operands[1]) && REGNO (operands[1]) == 3))
@@ -5591,7 +5589,7 @@
 	(match_operand:DF 1 "general_movsrc_operand"  "d,r,F,m,d,FQ,m,r,d,r"))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2                      "=X,X,&z,X,X,X,X,X,X,X"))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
+  "TARGET_FPU_DOUBLE
    && (arith_reg_operand (operands[0], DFmode)
        || arith_reg_operand (operands[1], DFmode))"
   {
@@ -5641,7 +5639,7 @@
 	(match_operand:DF 1 "register_operand"))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed
+  "TARGET_FPU_DOUBLE && reload_completed
    && (true_regnum (operands[0]) < 16) != (true_regnum (operands[1]) < 16)"
   [(const_int 0)]
 {
@@ -5665,7 +5663,7 @@
 	(match_operand:DF 1 "general_movsrc_operand"  ""))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
+  "TARGET_FPU_DOUBLE
    && reload_completed
    && true_regnum (operands[0]) < 16
    && true_regnum (operands[1]) < 16"
@@ -5736,7 +5734,7 @@
 	(match_operand:DF 1 "memory_operand"  ""))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (reg:SI R0_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed"
+  "TARGET_FPU_DOUBLE && reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (use (reg:SI FPSCR_MODES_REG))
 	      (clobber (scratch:SI))])]
@@ -5792,7 +5790,7 @@
 	(mem:DF (match_operand:SI 1 "register_operand" "")))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
+  "TARGET_FPU_DOUBLE && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && find_regno_note (insn, REG_DEAD, true_regnum (operands[1]))"
   [(const_int 0)]
@@ -5817,7 +5815,7 @@
 	(match_operand:DF 1 "memory_operand" ""))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
+  "TARGET_FPU_DOUBLE && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))"
   [(const_int 0)]
 {
@@ -5884,7 +5882,7 @@
 	(match_operand:DF 1 "register_operand" ""))
    (use (reg:SI FPSCR_MODES_REG))
    (clobber (match_scratch:SI 2))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
+  "TARGET_FPU_DOUBLE && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
 {
@@ -6010,7 +6008,7 @@
   ""
 {
   prepare_move_operands (operands, DFmode);
-  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
+  if (TARGET_FPU_DOUBLE)
     {
       emit_insn (gen_movdf_i4 (operands[0], operands[1]));
       DONE;
@@ -8563,7 +8561,7 @@
 	(match_operator:SI 1 "ordered_comparison_operator"
 	 [(match_operand:DF 2 "arith_operand" "")
 	  (match_operand:DF 3 "arith_operand" "")]))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   if (! currently_expanding_to_rtl)
     FAIL;
@@ -9143,7 +9141,7 @@
 	(xor:SI (reg:SI FPSCR_REG) (const_int FPSCR_SZ)))
    (set (reg:SI FPSCR_MODES_REG)
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_MODES))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fschg"
   [(set_attr "type" "fpscr_toggle") (set_attr "fp_set" "unknown")])
 
@@ -9493,7 +9491,7 @@
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(plus:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_adddf3_i (operands[0], operands[1], operands[2]));
   DONE;
@@ -9505,7 +9503,7 @@
 		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fadd	%2,%0"
   [(set_attr "type" "dfp_arith")
    (set_attr "fp_mode" "double")])
@@ -9514,7 +9512,7 @@
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(minus:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		  (match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_subdf3_i (operands[0], operands[1], operands[2]));
   DONE;
@@ -9526,7 +9524,7 @@
 		  (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fsub	%2,%0"
   [(set_attr "type" "dfp_arith")
    (set_attr "fp_mode" "double")])
@@ -9535,7 +9533,7 @@
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(mult:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_muldf3_i (operands[0], operands[1], operands[2]));
   DONE;
@@ -9547,7 +9545,7 @@
 		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fmul	%2,%0"
   [(set_attr "type" "dfp_mul")
    (set_attr "fp_mode" "double")])
@@ -9556,7 +9554,7 @@
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(div:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		(match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_divdf3_i (operands[0], operands[1], operands[2]));
   DONE;
@@ -9568,7 +9566,7 @@
 		(match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fdiv	%2,%0"
   [(set_attr "type" "dfdiv")
    (set_attr "fp_mode" "double")])
@@ -9576,7 +9574,7 @@
 (define_expand "floatsidf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(float:DF (match_operand:SI 1 "fpul_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_floatsidf2_i (operands[0], operands[1]));
   DONE;
@@ -9587,7 +9585,7 @@
 	(float:DF (match_operand:SI 1 "fpul_operand" "y")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "float	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "fp_mode" "double")])
@@ -9595,7 +9593,7 @@
 (define_expand "fix_truncdfsi2"
   [(set (match_operand:SI 0 "fpul_operand" "")
 	(fix:SI (match_operand:DF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
    emit_insn (gen_fix_truncdfsi2_i (operands[0], operands[1]));
    DONE;
@@ -9606,7 +9604,7 @@
 	(fix:SI (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "ftrc	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "dfp_comp" "no")
@@ -9618,7 +9616,7 @@
 	       (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "dfp_cmp")
    (set_attr "fp_mode" "double")])
@@ -9629,7 +9627,7 @@
 	       (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "dfp_cmp")
    (set_attr "fp_mode" "double")])
@@ -9641,7 +9639,7 @@
 		       (match_operand:DF 1 "fp_arith_reg_operand" "f"))))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "TARGET_IEEE && (TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_IEEE && TARGET_FPU_DOUBLE"
 {
   return output_ieee_ccmpeq (insn, operands);
 }
@@ -9655,7 +9653,7 @@
 			(match_operand:DF 2 "arith_operand" "")])
 		      (match_operand 3 "" "")
 		      (pc)))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   sh_emit_compare_and_branch (operands, DFmode);
   DONE;
@@ -9664,19 +9662,19 @@
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE")
+  "TARGET_FPU_DOUBLE")
 
 (define_insn "*negdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fneg	%0"
   [(set_attr "type" "fmove")])
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(sqrt:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_sqrtdf2_i (operands[0], operands[1]));
   DONE;
@@ -9687,7 +9685,7 @@
 	(sqrt:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fsqrt	%0"
   [(set_attr "type" "dfdiv")
    (set_attr "fp_mode" "double")])
@@ -9695,19 +9693,19 @@
 (define_expand "absdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE")
+  "TARGET_FPU_DOUBLE")
 
 (define_insn "*absdf2_i"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fabs	%0"
   [(set_attr "type" "fmove")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(float_extend:DF (match_operand:SF 1 "fpul_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_extendsfdf2_i4 (operands[0], operands[1]));
   DONE;
@@ -9718,7 +9716,7 @@
 	(float_extend:DF (match_operand:SF 1 "fpul_operand" "y")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fcnvsd  %1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "double")])
@@ -9726,7 +9724,7 @@
 (define_expand "truncdfsf2"
   [(set (match_operand:SF 0 "fpul_operand" "")
 	(float_truncate:SF (match_operand:DF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SH2A_DOUBLE"
+  "TARGET_FPU_DOUBLE"
 {
   emit_insn (gen_truncdfsf2_i4 (operands[0], operands[1]));
   DONE;
@@ -9737,7 +9735,7 @@
 	(float_truncate:SF (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
+  "TARGET_FPU_DOUBLE"
   "fcnvds  %1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "double")])

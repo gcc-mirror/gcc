@@ -6821,7 +6821,7 @@ push (int rn)
     x = gen_push_fpul ();
   else if (rn == FPSCR_REG)
     x = gen_push_fpscr ();
-  else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD
+  else if (TARGET_FPU_DOUBLE && TARGET_FMOVD
 	   && ! TARGET_FPU_SINGLE && FP_OR_XD_REGISTER_P (rn))
     {
       if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
@@ -6847,7 +6847,7 @@ pop (int rn)
     x = gen_pop_fpul ();
   else if (rn == FPSCR_REG)
     x = gen_pop_fpscr ();
-  else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD
+  else if (TARGET_FPU_DOUBLE && TARGET_FMOVD
 	   && ! TARGET_FPU_SINGLE && FP_OR_XD_REGISTER_P (rn))
     {
       if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
@@ -6991,12 +6991,11 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
   nosave_low_regs = lookup_attribute ("nosave_low_regs", attrs) != NULL_TREE;
 
   CLEAR_HARD_REG_SET (*live_regs_mask);
-  if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && interrupt_handler
+  if (TARGET_FPU_DOUBLE && TARGET_FMOVD && interrupt_handler
       && df_regs_ever_live_p (FPSCR_REG))
     target_flags &= ~MASK_FPU_SINGLE;
   /* If we can save a lot of saves by switching to double mode, do that.  */
-  else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD
-	   && TARGET_FPU_SINGLE)
+  else if (TARGET_FPU_DOUBLE && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (df_regs_ever_live_p (reg) && df_regs_ever_live_p (reg+1)
 	  && (! call_really_used_regs[reg]
@@ -7058,7 +7057,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  SET_HARD_REG_BIT (*live_regs_mask, reg);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
 
-	  if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD
+	  if (TARGET_FPU_DOUBLE && TARGET_FMOVD
 	      && GET_MODE_CLASS (REGISTER_NATURAL_MODE (reg)) == MODE_FLOAT)
 	    {
 	      if (FP_REGISTER_P (reg))
@@ -7543,7 +7542,7 @@ sh_builtin_saveregs (void)
   fpregs = copy_to_mode_reg (Pmode,
 			     plus_constant (Pmode, XEXP (regbuf, 0),
 					    n_floatregs * UNITS_PER_WORD));
-  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
+  if (TARGET_FPU_DOUBLE)
     {
       rtx mem;
       for (regno = NPARM_REGS (DFmode) - 2; regno >= first_floatreg; regno -= 2)
@@ -7796,7 +7795,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	    }
 	}
 
-      if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
+      if (TARGET_FPU_DOUBLE)
 	{
 	  pass_as_float = ((TREE_CODE (eff_type) == REAL_TYPE && size <= 8)
 			   || (TREE_CODE (eff_type) == COMPLEX_TYPE
@@ -8020,7 +8019,7 @@ sh_round_reg (const CUMULATIVE_ARGS& cum, machine_mode mode)
      function as is.  Make this more readable.  */
   return
   (((TARGET_ALIGN_DOUBLE
-      || ((TARGET_SH4 || TARGET_SH2A_DOUBLE)
+      || (TARGET_FPU_DOUBLE
 	  && (mode == DFmode || mode == DCmode)
 	  && cum.arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (mode)))
      && GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD)
@@ -8065,7 +8064,7 @@ sh_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   int words = 0;
 
   if (sh_pass_in_reg_p (*cum, mode, type)
-      && !(TARGET_SH4 || TARGET_SH2A_DOUBLE)
+      && !TARGET_FPU_DOUBLE
       && (sh_round_reg (*cum, mode)
 	  + (mode != BLKmode
 	     ? CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)
@@ -9187,8 +9186,7 @@ sh_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	return true;
 
       if (GET_MODE_SIZE (mode) <= 4
-	  || ((TARGET_SH4 || TARGET_SH2A_DOUBLE)
-	      && TARGET_FMOVD && mode == DFmode))
+	  || (TARGET_FPU_DOUBLE && TARGET_FMOVD && mode == DFmode))
 	{
 	  if (MAYBE_BASE_REGISTER_RTX_P (xop1, strict)
 	      && MAYBE_INDEX_REGISTER_RTX_P (xop0, strict))
@@ -9373,7 +9371,7 @@ sh_legitimize_address (rtx x, rtx oldx, machine_mode mode)
   if (flag_pic)
     x = legitimize_pic_address (oldx, mode, NULL_RTX);
 
-  if (((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
+  if ((TARGET_FPU_DOUBLE && mode == DFmode)
       || (TARGET_SH2E && mode == SFmode))
     return x;
 
@@ -10732,8 +10730,7 @@ sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (mode == SFmode
 	  || mode == SImode
 	  || ((TARGET_SH2E) && mode == SCmode)
-	  || ((((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
-	       || mode == DCmode)
+	  || (((TARGET_FPU_DOUBLE && mode == DFmode) || mode == DCmode)
 	      && ((regno - FIRST_FP_REG) & 1) == 0)
 	  || (TARGET_SH4 && mode == TImode
 	      && ((regno - FIRST_FP_REG) & 3) == 0))
@@ -11558,7 +11555,7 @@ static bool
 sh_legitimize_address_displacement (rtx *disp, rtx *offs,
 				    machine_mode mode)
 {
-  if (((TARGET_SH4 || TARGET_SH2A_DOUBLE) && mode == DFmode)
+  if ((TARGET_FPU_DOUBLE && mode == DFmode)
       || (TARGET_SH2E && mode == SFmode))
     return false;
 
