@@ -60,15 +60,10 @@ extern int code_for_indirect_jump_scratch;
 #define TARGET_SUPERSCALAR (TARGET_HARD_SH4 || TARGET_SH2A)
 
 /* Nonzero if a double-precision FPU is available.  */
-#define TARGET_FPU_DOUBLE \
-  ((target_flags & MASK_SH4) != 0 || TARGET_SH2A_DOUBLE)
+#define TARGET_FPU_DOUBLE (TARGET_SH4 || TARGET_SH2A_DOUBLE)
 
 /* Nonzero if an FPU is available.  */
 #define TARGET_FPU_ANY (TARGET_SH2E || TARGET_FPU_DOUBLE)
-
-/* Nonzero if we should generate code using type 4 insns.  */
-#undef TARGET_SH4
-#define TARGET_SH4 ((target_flags & MASK_SH4) != 0 && TARGET_SH1)
 
 /* Nonzero if we're generating code for SH4a, unless the use of the
    FPU is disabled (which makes it compatible with SH4al-dsp).  */
@@ -1085,7 +1080,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define NPARM_REGS(MODE) \
   (TARGET_FPU_ANY && (MODE) == SFmode \
    ? 8 \
-   : (TARGET_SH4 || TARGET_SH2A_DOUBLE) \
+   : TARGET_FPU_DOUBLE \
      && (GET_MODE_CLASS (MODE) == MODE_FLOAT \
 	 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
    ? 8 \
@@ -1142,8 +1137,9 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define BASE_ARG_REG(MODE) \
   ((TARGET_SH2E && ((MODE) == SFmode))			\
    ? FIRST_FP_PARM_REG					\
-   : (TARGET_SH4 || TARGET_SH2A_DOUBLE) && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
-		    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)\
+   : TARGET_FPU_DOUBLE					\
+     && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
+	 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)\
    ? FIRST_FP_PARM_REG					\
    : FIRST_PARM_REG)
 
@@ -1487,8 +1483,7 @@ struct sh_args {
 
 /* Since the SH2e has only `float' support, it is desirable to make all
    floating point types equivalent to `float'.  */
-#define DOUBLE_TYPE_SIZE ((TARGET_SH2E && ! TARGET_SH4 && ! TARGET_SH2A_DOUBLE)\
-			  ? 32 : 64)
+#define DOUBLE_TYPE_SIZE (TARGET_FPU_SINGLE_ONLY ? 32 : 64)
 
 /* 'char' is signed by default.  */
 #define DEFAULT_SIGNED_CHAR  1
@@ -1886,7 +1881,7 @@ extern int current_function_interrupt;
 
 #define NUM_MODES_FOR_MODE_SWITCHING { FP_MODE_NONE }
 
-#define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_SH4 || TARGET_SH2A_DOUBLE)
+#define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_FPU_DOUBLE)
 
 #define ACTUAL_NORMAL_MODE(ENTITY) \
   (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)

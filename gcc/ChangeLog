@@ -1,3 +1,13 @@
+2016-05-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (TARGET_SH4): Remove and use default implementation.
+	(TARGET_FPU_DOUBLE): Simplify.
+	(BASE_ARG_REG, DOUBLE_TYPE_SIZE, OPTIMIZE_MODE_SWITCHING): Replace
+	'TARGET_SH4 || TARGET_SH2A_DOUBLE' conditions with 'TARGET_FPU_DOUBLE'.
+	* config/sh/sh.c: Replace 'TARGET_SH4 || TARGET_SH2A_DOUBLE' conditions
+	with 'TARGET_FPU_DOUBLE'.
+	* config/sh/sh.md: Likewise.
+
 2016-05-01  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config/sh/linux.h (SH_DIV_STRATEGY_DEFAULT,
