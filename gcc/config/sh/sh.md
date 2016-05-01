@@ -2823,14 +2823,14 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "andsi3"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(and:SI (match_operand:SI 1 "logical_reg_operand" "")
-		(match_operand:SI 2 "logical_and_operand" "")))]
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(and:SI (match_operand:SI 1 "arith_reg_operand")
+		(match_operand:SI 2 "logical_and_operand")))]
   ""
 {
   /* If it is possible to turn the and insn into a zero extension
      already, redundant zero extensions will be folded, which results
-     in better code.  
+     in better code.
      Ideally the splitter of *andsi_compact would be enough, if redundant
      zero extensions were detected after the combine pass, which does not
      happen at the moment.  */
@@ -2880,11 +2880,9 @@
   [(set_attr "type" "arith")])
 
 (define_expand "iorsi3"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(ior:SI (match_operand:SI 1 "logical_reg_operand" "")
-		(match_operand:SI 2 "logical_operand" "")))]
-  ""
-  "")
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (match_operand:SI 1 "arith_reg_operand")
+		(match_operand:SI 2 "logical_operand")))])
 
 (define_insn "*iorsi3_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,z")
@@ -2903,14 +2901,7 @@
   "bset	%V2,%0"
   [(set_attr "type" "arith")])
 
-(define_expand "xorsi3"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(xor:SI (match_operand:SI 1 "logical_reg_operand" "")
-		(match_operand:SI 2 "logical_operand" "")))]
-  ""
-  "")
-
-(define_insn "*xorsi3_compact"
+(define_insn "xorsi3"
   [(set (match_operand:SI 0 "arith_reg_dest" "=z,r")
 	(xor:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
 		(match_operand:SI 2 "logical_operand" "K08,r")))]
@@ -4784,7 +4775,7 @@
 
 (define_expand "zero_extend<mode>si2"
   [(set (match_operand:SI 0 "arith_reg_dest")
-	(zero_extend:SI (match_operand:QIHI 1 "zero_extend_operand")))])
+	(zero_extend:SI (match_operand:QIHI 1 "arith_reg_operand")))])
 
 (define_insn_and_split "*zero_extend<mode>si2_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -4819,12 +4810,11 @@
 ;; the displacement value to zero.  However, doing so too early results in
 ;; missed opportunities for other optimizations such as post-inc or index
 ;; addressing loads.
-;; We don't allow the zero extending loads to match during RTL expansion
-;; (see zero_extend_operand predicate), as this would pessimize other
-;; optimization opportunities such as bit extractions of unsigned mems,
-;; where the zero extraction is irrelevant.  If the zero extracting mem
-;; loads are emitted early it will be more difficult to change them back
-;; to sign extending loads (which are preferred).
+;; We don't allow the zero extending loads to match during RTL expansion,
+;; as this would pessimize other optimization opportunities such as bit
+;; extractions of unsigned mems, where the zero extraction is irrelevant.
+;; If the zero extracting mem loads are emitted early it will be more
+;; difficult to change them back to sign extending loads (which are preferred).
 ;; The combine pass will also try to combine mem loads and zero extends,
 ;; which is prevented by 'sh_legitimate_combined_insn'.
 (define_insn "*zero_extend<mode>si2_disp_mem"
@@ -6268,13 +6258,6 @@
       DONE;
     }
 })
-
-(define_insn "mov_nop"
-  [(set (match_operand 0 "any_register_operand" "") (match_dup 0))]
-  "TARGET_SH2E"
-  ""
-  [(set_attr "length" "0")
-   (set_attr "type" "nil")])
 
 (define_expand "reload_insf__frn"
   [(parallel [(set (match_operand:SF 0 "register_operand" "=a")
