@@ -1,3 +1,11 @@
+2016-05-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx256-unaligned-load-1.c: Update scan strings.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-4.c: Ditto.
+
 2016-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ada/acats/run_acats: Rename into...
