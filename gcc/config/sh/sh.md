@@ -4969,10 +4969,10 @@
 
 (define_expand "push"
   [(set (mem:SI (pre_dec:SI (reg:SI SP_REG)))
-	(match_operand:SI 0 "register_operand" "r,l,x"))])
+	(match_operand:SI 0 "register_operand"))])
 
 (define_expand "pop"
-  [(set (match_operand:SI 0 "register_operand" "=r,l,x")
+  [(set (match_operand:SI 0 "register_operand")
 	(mem:SI (post_inc:SI (reg:SI SP_REG))))])
 
 (define_expand "push_e"
@@ -5323,7 +5323,7 @@
 })
 
 (define_expand "ic_invalidate_line"
-  [(parallel [(unspec_volatile [(match_operand:SI 0 "register_operand" "+r")
+  [(parallel [(unspec_volatile [(match_operand:SI 0 "register_operand")
 				(match_dup 1)] UNSPEC_ICACHE)
 	      (clobber (scratch:SI))])]
   "TARGET_HARD_SH4"
@@ -8158,10 +8158,10 @@
   [(set_attr "type" "arith")])
 
 (define_expand "cstoresi4"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "comparison_operator"
-	 [(match_operand:SI 2 "cmpsi_operand" "")
-	  (match_operand:SI 3 "arith_operand" "")]))]
+	 [(match_operand:SI 2 "cmpsi_operand")
+	  (match_operand:SI 3 "arith_operand")]))]
   "TARGET_SH1"
 {
    if (sh_expand_t_scc (operands))
@@ -8175,10 +8175,10 @@
 })
 
 (define_expand "cstoredi4"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "comparison_operator"
-	 [(match_operand:DI 2 "arith_operand" "")
-	  (match_operand:DI 3 "arith_operand" "")]))]
+	 [(match_operand:DI 2 "arith_operand")
+	  (match_operand:DI 3 "arith_operand")]))]
   "TARGET_SH2"
 {
    if (sh_expand_t_scc (operands))
@@ -8543,10 +8543,10 @@
    (set_attr "length" "4")])
 
 (define_expand "cstoresf4"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "ordered_comparison_operator"
-	 [(match_operand:SF 2 "arith_operand" "")
-	  (match_operand:SF 3 "arith_operand" "")]))]
+	 [(match_operand:SF 2 "arith_operand")
+	  (match_operand:SF 3 "arith_operand")]))]
   "TARGET_SH2E"
 {
   if (! currently_expanding_to_rtl)
@@ -8557,10 +8557,10 @@
 })
 
 (define_expand "cstoredf4"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "ordered_comparison_operator"
-	 [(match_operand:DF 2 "arith_operand" "")
-	  (match_operand:DF 3 "arith_operand" "")]))]
+	 [(match_operand:DF 2 "arith_operand")
+	  (match_operand:DF 3 "arith_operand")]))]
   "TARGET_FPU_DOUBLE"
 {
   if (! currently_expanding_to_rtl)
@@ -9310,8 +9310,8 @@
    (set_attr "fp_mode" "single")])
 
 (define_expand "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "fpul_operand" "=y")
-	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
+  [(set (match_operand:SI 0 "fpul_operand")
+	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand")))]
   "TARGET_SH2E"
 {
   emit_insn (gen_fix_truncsfsi2_i4 (operands[0], operands[1]));
