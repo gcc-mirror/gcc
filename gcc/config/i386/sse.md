@@ -833,8 +833,10 @@
 })
 
 (define_insn "mov<mode>_internal"
-  [(set (match_operand:VMOVE 0 "nonimmediate_operand"               "=v,v ,m")
-	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"  "BC,vm,v"))]
+  [(set (match_operand:VMOVE 0 "nonimmediate_operand"
+	 "=v,v ,v ,m")
+	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
+	 " C,BC,vm,v"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -936,16 +938,15 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "sselog1,ssemov,ssemov")
+  [(set_attr "type" "sselog1,sselog1,ssemov,ssemov")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(and (eq_attr "alternative" "0")
-		    (and (match_test "TARGET_AVX512VL")
-		    	 (match_operand 1 "vector_all_ones_operand")))
+	(cond [(and (eq_attr "alternative" "1")
+		    (match_test "TARGET_AVX512VL"))
 		 (const_string "XI")
 	       (and (match_test "<MODE_SIZE> == 16")
 		    (ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-			 (and (eq_attr "alternative" "2")
+			 (and (eq_attr "alternative" "3")
 			      (match_test "TARGET_SSE_TYPELESS_STORES"))))
 		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
@@ -957,7 +958,16 @@
 		    (match_test "TARGET_SSE_LOAD0_BY_PXOR"))
 		 (const_string "TI")
 	      ]
-	      (const_string "<sseinsnmode>")))])
+	      (const_string "<sseinsnmode>")))
+   (set (attr "enabled")
+        (cond [(and (match_test "<MODE_SIZE> == 16")
+		    (eq_attr "alternative" "1"))
+		 (symbol_ref "TARGET_SSE2")
+	       (and (match_test "<MODE_SIZE> == 32")
+		    (eq_attr "alternative" "1"))
+		 (symbol_ref "TARGET_AVX2")
+	      ]
+	      (symbol_ref "true")))])
 
 (define_insn "<avx512>_load<mode>_mask"
   [(set (match_operand:V48_AVX512VL 0 "register_operand" "=v,v")

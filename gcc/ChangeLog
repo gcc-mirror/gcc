@@ -1,3 +1,12 @@
+2016-05-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (BC): Only allow -1 operands.
+	* config/i386/sse.md (mov<mode>_internal): Add (v,C) alternative.
+	Add "enabled" attribute.  Update XI mode attribute calculation.
+	* config/i386/i386.md (*movxi_internal_avx512f): Add (v,C) alternative.
+	(*movoi_internal_avx): Update XI mode attribute calculation.
+	(*movti_internal): Ditto.
+
 2016-05-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (push, pop, ic_invalidate_line, cstoresi4, cstoredi4,

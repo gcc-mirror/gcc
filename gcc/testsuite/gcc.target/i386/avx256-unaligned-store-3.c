@@ -17,6 +17,6 @@ avx_test (void)
     d[i] = c[i] * 20.0;
 }
 
-/* { dg-final { scan-assembler-not "vmovups.*movv4df_internal/3" } } */
-/* { dg-final { scan-assembler "vmovups.*movv2df_internal/3" } } */
+/* { dg-final { scan-assembler-not "vmovups.*movv4df_internal/4" } } */
+/* { dg-final { scan-assembler "vmovups.*movv2df_internal/4" } } */
 /* { dg-final { scan-assembler "vextractf128" } } */
