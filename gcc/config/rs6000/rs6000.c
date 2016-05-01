@@ -13105,45 +13105,41 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
   /* For LVX, express the RTL accurately by ANDing the address with -16.
      LVXL and LVE*X expand to use UNSPECs to hide their special behavior,
      so the raw address is fine.  */
-  switch (icode)
+  if (icode == CODE_FOR_altivec_lvx_v2df_2op
+      || icode == CODE_FOR_altivec_lvx_v2di_2op
+      || icode == CODE_FOR_altivec_lvx_v4sf_2op
+      || icode == CODE_FOR_altivec_lvx_v4si_2op
+      || icode == CODE_FOR_altivec_lvx_v8hi_2op
+      || icode == CODE_FOR_altivec_lvx_v16qi_2op)
     {
-    case CODE_FOR_altivec_lvx_v2df_2op:
-    case CODE_FOR_altivec_lvx_v2di_2op:
-    case CODE_FOR_altivec_lvx_v4sf_2op:
-    case CODE_FOR_altivec_lvx_v4si_2op:
-    case CODE_FOR_altivec_lvx_v8hi_2op:
-    case CODE_FOR_altivec_lvx_v16qi_2op:
-      {
-	rtx rawaddr;
-	if (op0 == const0_rtx)
-	  rawaddr = op1;
-	else
-	  {
-	    op0 = copy_to_mode_reg (mode0, op0);
-	    rawaddr = gen_rtx_PLUS (Pmode, op1, op0);
-	  }
-	addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
-	addr = gen_rtx_MEM (blk ? BLKmode : tmode, addr);
+      rtx rawaddr;
+      if (op0 == const0_rtx)
+	rawaddr = op1;
+      else
+	{
+	  op0 = copy_to_mode_reg (mode0, op0);
+	  rawaddr = gen_rtx_PLUS (Pmode, op1, op0);
+	}
+      addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
+      addr = gen_rtx_MEM (blk ? BLKmode : tmode, addr);
 
-	/* For -maltivec=be, emit the load and follow it up with a
-	   permute to swap the elements.  */
-	if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-	  {
-	    rtx temp = gen_reg_rtx (tmode);
-	    emit_insn (gen_rtx_SET (temp, addr));
+      /* For -maltivec=be, emit the load and follow it up with a
+	 permute to swap the elements.  */
+      if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+	{
+	  rtx temp = gen_reg_rtx (tmode);
+	  emit_insn (gen_rtx_SET (temp, addr));
 
-	    rtx sel = swap_selector_for_mode (tmode);
-	    rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, temp, temp, sel),
-					UNSPEC_VPERM);
-	    emit_insn (gen_rtx_SET (target, vperm));
-	  }
-	else
-	  emit_insn (gen_rtx_SET (target, addr));
-
-	break;
-      }
-
-    default:
+	  rtx sel = swap_selector_for_mode (tmode);
+	  rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, temp, temp, sel),
+				      UNSPEC_VPERM);
+	  emit_insn (gen_rtx_SET (target, vperm));
+	}
+      else
+	emit_insn (gen_rtx_SET (target, addr));
+    }
+  else
+    {
       if (op0 == const0_rtx)
 	addr = gen_rtx_MEM (blk ? BLKmode : tmode, op1);
       else
@@ -13157,10 +13153,8 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
       if (! pat)
 	return 0;
       emit_insn (pat);
-
-      break;
     }
-  
+
   return target;
 }
 
@@ -13264,63 +13258,57 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
   /* For STVX, express the RTL accurately by ANDing the address with -16.
      STVXL and STVE*X expand to use UNSPECs to hide their special behavior,
      so the raw address is fine.  */
-  switch (icode)
+  if (icode == CODE_FOR_altivec_stvx_v2df_2op
+      || icode == CODE_FOR_altivec_stvx_v2di_2op
+      || icode == CODE_FOR_altivec_stvx_v4sf_2op
+      || icode == CODE_FOR_altivec_stvx_v4si_2op
+      || icode == CODE_FOR_altivec_stvx_v8hi_2op
+      || icode == CODE_FOR_altivec_stvx_v16qi_2op)
     {
-    case CODE_FOR_altivec_stvx_v2df_2op:
-    case CODE_FOR_altivec_stvx_v2di_2op:
-    case CODE_FOR_altivec_stvx_v4sf_2op:
-    case CODE_FOR_altivec_stvx_v4si_2op:
-    case CODE_FOR_altivec_stvx_v8hi_2op:
-    case CODE_FOR_altivec_stvx_v16qi_2op:
-      {
-	if (op1 == const0_rtx)
-	  rawaddr = op2;
-	else
-	  {
-	    op1 = copy_to_mode_reg (mode1, op1);
-	    rawaddr = gen_rtx_PLUS (Pmode, op2, op1);
-	  }
+      if (op1 == const0_rtx)
+	rawaddr = op2;
+      else
+	{
+	  op1 = copy_to_mode_reg (mode1, op1);
+	  rawaddr = gen_rtx_PLUS (Pmode, op2, op1);
+	}
 
-	addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
-	addr = gen_rtx_MEM (tmode, addr);
+      addr = gen_rtx_AND (Pmode, rawaddr, gen_rtx_CONST_INT (Pmode, -16));
+      addr = gen_rtx_MEM (tmode, addr);
 
-	op0 = copy_to_mode_reg (tmode, op0);
+      op0 = copy_to_mode_reg (tmode, op0);
 
-	/* For -maltivec=be, emit a permute to swap the elements, followed
-	   by the store.  */
-	if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
-	  {
-	    rtx temp = gen_reg_rtx (tmode);
-	    rtx sel = swap_selector_for_mode (tmode);
-	    rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, op0, op0, sel),
-					UNSPEC_VPERM);
-	    emit_insn (gen_rtx_SET (temp, vperm));
-	    emit_insn (gen_rtx_SET (addr, temp));
-	  }
-	else
-	  emit_insn (gen_rtx_SET (addr, op0));
+      /* For -maltivec=be, emit a permute to swap the elements, followed
+	by the store.  */
+     if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+	{
+	  rtx temp = gen_reg_rtx (tmode);
+	  rtx sel = swap_selector_for_mode (tmode);
+	  rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, op0, op0, sel),
+				      UNSPEC_VPERM);
+	  emit_insn (gen_rtx_SET (temp, vperm));
+	  emit_insn (gen_rtx_SET (addr, temp));
+	}
+      else
+	emit_insn (gen_rtx_SET (addr, op0));
+    }
+  else
+    {
+      if (! (*insn_data[icode].operand[1].predicate) (op0, smode))
+	op0 = copy_to_mode_reg (smode, op0);
 
-	break;
-      }
+      if (op1 == const0_rtx)
+	addr = gen_rtx_MEM (tmode, op2);
+      else
+	{
+	  op1 = copy_to_mode_reg (mode1, op1);
+	  addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op2, op1));
+	}
 
-    default:
-      {
-	if (! (*insn_data[icode].operand[1].predicate) (op0, smode))
-	  op0 = copy_to_mode_reg (smode, op0);
-
-	if (op1 == const0_rtx)
-	  addr = gen_rtx_MEM (tmode, op2);
-	else
-	  {
-	    op1 = copy_to_mode_reg (mode1, op1);
-	    addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op2, op1));
-	  }
-
-	pat = GEN_FCN (icode) (addr, op0);
-	if (pat)
-	  emit_insn (pat);
-      }
-    }      
+      pat = GEN_FCN (icode) (addr, op0);
+      if (pat)
+	emit_insn (pat);
+    }
 
   return NULL_RTX;
 }

@@ -1,3 +1,9 @@
+2016-05-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_lv_builtin): Do not use switch
+	statement on instruction code.  Remove trailing spaces.
+	(altivec_expand_stv_builtin): Likewise.
+
 2016-05-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_SH4): Remove and use default implementation.
