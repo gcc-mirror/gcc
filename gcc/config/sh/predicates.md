@@ -17,29 +17,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Like register_operand, but this predicate is defined with
-;; define_special_predicate, not define_predicate.
-(define_special_predicate "any_register_operand"
-  (match_code "subreg,reg")
-{
-  return register_operand (op, mode);
-})
-
-;; Returns 1 if OP is a valid source operand for an arithmetic insn.
-(define_predicate "arith_operand"
-  (match_code "subreg,reg,const_int,truncate")
-{
-  return arith_reg_operand (op, mode) || satisfies_constraint_I08 (op);
-})
-
-;; Like above, but for DImode destinations: forbid paradoxical DImode
-;; subregs, because this would lead to missing sign extensions when
-;; truncating from DImode to SImode.
-(define_predicate "arith_reg_dest"
-  (match_code "subreg,reg")
-{
-  return arith_reg_operand (op, mode);
-})
 
 ;; Returns 1 if OP is a normal arithmetic register.
 (define_predicate "arith_reg_operand"
@@ -82,38 +59,36 @@
   return 0;
 })
 
+;; Like above, but for DImode destinations: forbid paradoxical DImode
+;; subregs, because this would lead to missing sign extensions when
+;; truncating from DImode to SImode.
+(define_predicate "arith_reg_dest"
+  (and (match_code "subreg,reg")
+       (match_operand 0 "arith_reg_operand")))
+
+;; Returns true if OP is a valid source operand for an arithmetic insn.
+(define_predicate "arith_operand"
+  (and (match_code "subreg,reg,const_int,truncate")
+       (ior (match_operand 0 "arith_reg_operand")
+	    (match_test "satisfies_constraint_I08 (op)"))))
+
 ;; Likewise arith_operand but always permits const_int.
 (define_predicate "arith_or_int_operand"
-  (match_code "subreg,reg,const_int,const_vector")
-{
-  if (arith_operand (op, mode))
-    return 1;
+  (and (match_code "subreg,reg,const_int,const_vector")
+       (ior (match_operand 0 "arith_operand")
+	    (match_operand 0 "const_int_operand"))))
 
-  if (CONST_INT_P (op))
-    return 1;
-
-  return 0;
-})
-
-;; Returns 1 if OP is a valid source operand for a compare insn.
-(define_predicate "arith_reg_or_0_operand"
-  (match_code "subreg,reg,const_int,const_vector")
-{
-  if (arith_reg_operand (op, mode))
-    return 1;
-
-  if (satisfies_constraint_Z (op))
-    return 1;
-
-  return 0;
-})
+;; Returns true if OP is a valid source operand for a compare insn.
+(define_predicate "arith_reg_or_0_operand" 
+  (and (match_code "subreg,reg,const_int,const_vector")
+       (ior (match_operand 0 "arith_reg_operand")
+	    (match_test "satisfies_constraint_Z (op)"))))
 
 ;; Returns true if OP is either a register or constant 0 or constant 1.
 (define_predicate "arith_reg_or_0_or_1_operand"
-  (match_code "subreg,reg,const_int,const_vector")
-{
-  return arith_reg_or_0_operand (op, mode) || satisfies_constraint_M (op);
-})
+  (and (match_code "subreg,reg,const_int,const_vector")
+       (ior (match_operand 0 "arith_reg_or_0_operand")
+	    (match_test "satisfies_constraint_M (op)"))))
 
 ;; Returns true if OP is a suitable constant for the minimum value of a
 ;; clips.b or clips.w insn.
@@ -135,18 +110,6 @@
   (and (match_code "const_int")
        (ior (match_test "INTVAL (op) == 255")
 	    (match_test "INTVAL (op) == 65535"))))
-
-;; Returns true if OP is an operand that can be used as the first operand in
-;; the cstoresi4 expander pattern.
-(define_predicate "cmpsi_operand"
-  (match_code "subreg,reg,const_int")
-{
-  if (REG_P (op) && REGNO (op) == T_REG
-      && GET_MODE (op) == SImode
-      && TARGET_SH1)
-    return 1;
-  return arith_operand (op, mode);
-})
 
 ;; Returns true if OP is a floating point register that can be used in floating
 ;; point arithmetic operations.
@@ -274,10 +237,6 @@
        (ior (match_test "GET_MODE (op) == QImode")
 	    (match_test "GET_MODE (op) == HImode"))))
 
-;; Returns 1 if the operand can be used in a zero_extend.
-(define_predicate "zero_extend_operand"
-  (match_operand 0 "arith_reg_operand"))
-
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as
 ;; are subregs of system registers.
@@ -376,12 +335,11 @@
   return general_operand (op, mode);
 })
 
-;; Returns 1 if OP is a MEM that does not use displacement addressing.
+;; Returns true if OP is a MEM that does not use displacement addressing.
 (define_predicate "movsrc_no_disp_mem_operand"
-  (match_code "mem")
-{
-  return general_movsrc_operand (op, mode) && satisfies_constraint_Snd (op);
-})
+  (and (match_code "mem")
+       (match_operand 0 "general_movsrc_operand")
+       (match_test "satisfies_constraint_Snd (op)")))
 
 ;; Returns 1 if OP can be a destination of a move. Same as
 ;; general_operand, but no preinc allowed.
@@ -510,12 +468,11 @@
 	 && sh_legitimate_index_p (mode, XEXP (plus0_rtx, 1), TARGET_SH2A, true);
 })
 
-;; Returns 1 if OP is a valid source operand for a logical operation.
+;; Returns true if OP is a valid source operand for a logical operation.
 (define_predicate "logical_operand"
-  (match_code "subreg,reg,const_int")
-{
-  return arith_reg_operand (op, mode) || satisfies_constraint_K08 (op);
-})
+  (and (match_code "subreg,reg,const_int")
+       (ior (match_operand 0 "arith_reg_operand")
+	    (match_test "satisfies_constraint_K08 (op)"))))
 
 ;; Returns true if OP is a valid constant source operand for a logical
 ;; operations tst/and/or/xor #imm,r0.
@@ -526,36 +483,23 @@
 ;; Like logical_operand but allows additional constant values which can be
 ;; done with zero extensions.  Used for the second operand of and insns.
 (define_predicate "logical_and_operand"
-  (match_code "subreg,reg,const_int")
-{
-  return logical_operand (op, mode) || satisfies_constraint_Jmb (op)
-	 || satisfies_constraint_Jmw (op);
-})
+  (and (match_code "subreg,reg,const_int")
+       (ior (match_operand 0 "logical_operand")
+	    (match_test "satisfies_constraint_Jmb (op)")
+	    (match_test "satisfies_constraint_Jmw (op)"))))
 
 ;; Returns true if OP is a logical operator.
 (define_predicate "logical_operator"
   (match_code "and,ior,xor"))
 
-(define_predicate "logical_reg_operand"
-  (match_code "subreg,reg")
-{
-  return arith_reg_operand (op, mode);
-})
-
 ;; Returns true if OP is a constant vector.
 (define_predicate "sh_const_vec"
   (match_code "const_vector")
 {
-  int i;
-
-  if (GET_CODE (op) != CONST_VECTOR
-      || (GET_MODE (op) != mode && mode != VOIDmode))
-    return 0;
-  i = XVECLEN (op, 0) - 1;
-  for (; i >= 0; i--)
+  for (int i = XVECLEN (op, 0) - 1; i >= 0; i--)
     if (!CONST_INT_P (XVECEXP (op, 0, i)))
-      return 0;
-  return 1;
+      return false;
+  return true;
 })
 
 ;; Determine if OP is a constant vector matching MODE with only one
@@ -564,32 +508,25 @@
 (define_predicate "sh_1el_vec"
   (match_code "const_vector")
 {
-  int unit_size;
-  int i, last, least, sign_ix;
-  rtx sign;
-
-  if (GET_CODE (op) != CONST_VECTOR
-      || (GET_MODE (op) != mode && mode != VOIDmode))
-    return 0;
   /* Determine numbers of last and of least significant elements.  */
-  last = XVECLEN (op, 0) - 1;
-  least = TARGET_LITTLE_ENDIAN ? 0 : last;
+  int last = XVECLEN (op, 0) - 1;
+  int least = TARGET_LITTLE_ENDIAN ? 0 : last;
   if (!CONST_INT_P (XVECEXP (op, 0, least)))
-    return 0;
-  sign_ix = least;
+    return false;
+  int sign_ix = least;
   if (GET_MODE_UNIT_SIZE (mode) == 1)
     sign_ix = TARGET_LITTLE_ENDIAN ? 1 : last - 1;
   if (!CONST_INT_P (XVECEXP (op, 0, sign_ix)))
-    return 0;
-  unit_size = GET_MODE_UNIT_SIZE (GET_MODE (op));
-  sign = (INTVAL (XVECEXP (op, 0, sign_ix)) >> (unit_size * BITS_PER_UNIT - 1)
-	  ? constm1_rtx : const0_rtx);
-  i = XVECLEN (op, 0) - 1;
+    return false;
+  int unit_size = GET_MODE_UNIT_SIZE (GET_MODE (op));
+  rtx sign = INTVAL (XVECEXP (op, 0, sign_ix)) >> (unit_size * BITS_PER_UNIT - 1)
+	     ? constm1_rtx : const0_rtx;
+  int i = XVECLEN (op, 0) - 1;
   do
     if (i != least && i != sign_ix && XVECEXP (op, 0, i) != sign)
       return 0;
   while (--i);
-  return 1;
+  return true;
 })
 
 ;; Returns true if OP is a vector which is composed of one element that is
@@ -597,27 +534,21 @@
 (define_predicate "sh_rep_vec"
   (match_code "const_vector,parallel")
 {
-  int i;
-  rtx x, y;
-
-  if ((GET_CODE (op) != CONST_VECTOR && GET_CODE (op) != PARALLEL)
-      || (GET_MODE (op) != mode && mode != VOIDmode))
-    return 0;
-  i = XVECLEN (op, 0) - 2;
-  x = XVECEXP (op, 0, i + 1);
+  int i = XVECLEN (op, 0) - 2;
+  rtx x = XVECEXP (op, 0, i + 1);
   if (GET_MODE_UNIT_SIZE (mode) == 1)
     {
-      y = XVECEXP (op, 0, i);
+      rtx y = XVECEXP (op, 0, i);
       for (i -= 2; i >= 0; i -= 2)
 	if (! rtx_equal_p (XVECEXP (op, 0, i + 1), x)
 	    || ! rtx_equal_p (XVECEXP (op, 0, i), y))
-	  return 0;
+	  return false;
     }
   else
     for (; i >= 0; i--)
       if (XVECEXP (op, 0, i) != x)
-	return 0;
-  return 1;
+	return false;
+  return true;
 })
 
 ;; Returns true if OP is a valid shift count operand for shift operations.
@@ -744,6 +675,13 @@
 	return 0;
     }
 })
+
+;; Returns true if OP is an operand that can be used as the first operand in
+;; the cstoresi4 expander pattern.
+(define_predicate "cmpsi_operand"
+  (and (match_code "subreg,reg,const_int")
+       (ior (match_operand:SI 0 "t_reg_operand")
+	    (match_operand 0 "arith_operand"))))
 
 ;; A predicate that returns true if OP is a valid construct around the T bit
 ;; that can be used as an operand for conditional branches.

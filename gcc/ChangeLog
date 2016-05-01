@@ -1,3 +1,22 @@
+2016-05-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates.md (any_register_operand, zero_extend_operand,
+	logical_reg_operand): Delete.
+	(arith_operand, arith_reg_dest, arith_or_int_operand, cmpsi_operand,
+	arith_reg_or_0_operand, arith_reg_or_0_or_1_operand, logical_operand,
+	logical_and_operand, movsrc_no_disp_mem_operand): Rewrite using
+	match_operand and match_test.
+	(sh_const_vec, sh_1el_vec): Remove redundant checks.  Declare local
+	variables on their first use.  Return bool values.
+	* config/sh/sh.h (LOAD_EXTEND_OP): Update comment.
+	* config/sh/sh.md (andsi3, iorsi3): Use arith_reg_dest for result and
+	arith_reg_operand for input operand.  Remove empty constraints.
+	(xorsi3): Delete.
+	(*xorsi3_compact): Rename to xorsi3.
+	(zero_extend<mode>si2): Use arith_reg_operand for input operand.
+	(*zero_extend<mode>si2_disp_mem): Update comment.
+	(mov_nop): Delete.
+
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/t-sh: Remove SH5 support.
