@@ -1,3 +1,17 @@
+2016-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (register_ssemem_operand): New predicate.
+	* config/i386/i386.md (*cmpi<FPCMP:unord><MODEF:mode>): Merge from
+	*cmpi<FPCMP:unord><MODEF:mode>_mixed and
+	*cmpi<FPCMP:unord><X87MODEF:mode>_i387.  Disable unsupported
+	alternatives using "enabled" attribute.  Use register_ssemem_operand
+	as operand 1 predicate.
+	(*cmpi<unord>xf_i387): Split XFmode pattern from
+	*cmpi<FPCMP:unord><X87MODEF:mode>_i387.
+	(*absneg<mode>2): Merge from *absneg<mode>2_mixed and
+	*absneg<mode>2_i387.  Disable unsupported alternatives using
+	"enabled" attribute.
+
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* omp-low.c (lower_oacc_head_tail): Assert there is at least one
@@ -97,8 +111,6 @@
 	Disable unsupported alternatives using "enabled" attribute.  Use
 	nonimm_ssenomem_operand as operand 1 predicate.  Also check
 	X87_ENABLE_ARITH for TARGET_MIX_SSE_I387 alternatives.
-	* config/i386/predicates.md (nonimm_ssenomem_operand): New predicate.
-	(register_mixssei387nonimm_operand): Remove predicate.
 
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
