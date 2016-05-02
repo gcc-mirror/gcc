@@ -1,3 +1,9 @@
+2016-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49244
+	* gimple.c (gimple_builtin_call_types_compatible_p): Allow
+	char/short arguments promoted to int because of promote_prototypes.
+
 2016-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (register_ssemem_operand): New predicate.
