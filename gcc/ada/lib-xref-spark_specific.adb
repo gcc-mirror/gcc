@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,7 +178,7 @@ package body SPARK_Specific is
       --  Update scope numbers
 
       declare
-         Scope_Id : Int;
+         Scope_Id : Pos;
       begin
          Scope_Id := 1;
          for Index in From .. SPARK_Scope_Table.Last loop
@@ -917,8 +917,8 @@ package body SPARK_Specific is
      (Sdep_Table : Unit_Ref_Table;
       Num_Sdep   : Nat)
    is
-      D1 : Nat;
-      D2 : Nat;
+      D1 : Pos;
+      D2 : Pos;
 
    begin
       --  Cross-references should have been computed first
@@ -991,9 +991,9 @@ package body SPARK_Specific is
                Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
 
                Spec_Entity : constant Entity_Id :=
-                               Unique_Entity (Srec.Scope_Entity);
+                 Unique_Entity (Srec.Scope_Entity);
                Spec_Scope  : constant Scope_Index :=
-                               Entity_Hash_Table.Get (Spec_Entity);
+                 Entity_Hash_Table.Get (Spec_Entity);
 
             begin
                --  Generic spec may be missing in which case Spec_Scope is zero
