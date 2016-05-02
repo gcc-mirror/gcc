@@ -17088,9 +17088,24 @@ package body Sem_Util is
                  and then Actual /= Last
                  and then No (Next_Named_Actual (Actual))
                then
-                  Error_Msg_N ("unmatched actual & in call",
-                    Selector_Name (Actual));
-                  exit;
+                  --  A validity check may introduce a copy of a call that
+                  --  includes an extra actual (for example for an unrelated
+                  --  accessibility check). Check that the extra actual matches
+                  --  some extra formal, which must exist already because
+                  --  subprogram must be frozen at this point.
+
+                  if Present (Extra_Formals (S))
+                    and then not Comes_From_Source (Actual)
+                    and then Nkind (Actual) = N_Parameter_Association
+                    and then Chars (Extra_Formals (S)) =
+                               Chars (Selector_Name (Actual))
+                  then
+                     null;
+                  else
+                     Error_Msg_N
+                       ("unmatched actual & in call", Selector_Name (Actual));
+                     exit;
+                  end if;
                end if;
 
                Next (Actual);

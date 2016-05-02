@@ -1,3 +1,13 @@
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Normalize_Actuals): Take into account extra
+	actuals that may have been introduced previously. Normally extra
+	actuals are introduced when a call is expanded, but a validity
+	check may copy and reanalyze a call that carries an extra actual
+	(e.g. an accessibility parameter) before the call itself is
+	marked Analzyed, and the analysis of the copy has to be able to
+	cope with the added actual.
+
 2016-05-02  Bob Duff  <duff@adacore.com>
 
 	* sem_ch10.adb (Analyze_Compilation_Unit): Preserve
