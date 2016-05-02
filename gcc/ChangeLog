@@ -1,3 +1,10 @@
+2016-05-02  Marek Polacek  <polacek@redhat.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/70700
+	* tree-ssa-structalias.c (dump_pred_graph): Fix getting varinfo for ids
+	bigger than FIRST_REF_NODE.
+
 2016-05-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52898

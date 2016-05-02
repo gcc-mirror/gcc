@@ -2241,7 +2241,11 @@ dump_pred_graph (struct scc_info *si, FILE *file)
       if (graph->points_to[i]
 	  && !bitmap_empty_p (graph->points_to[i]))
 	{
-	  fprintf (file, "[label=\"%s = {", get_varinfo (i)->name);
+	  if (i < FIRST_REF_NODE)
+	    fprintf (file, "[label=\"%s = {", get_varinfo (i)->name);
+	  else
+	    fprintf (file, "[label=\"*%s = {",
+		     get_varinfo (i - FIRST_REF_NODE)->name);
 	  unsigned j;
 	  bitmap_iterator bi;
 	  EXECUTE_IF_SET_IN_BITMAP (graph->points_to[i], 0, j, bi)
