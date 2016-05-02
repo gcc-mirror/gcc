@@ -8774,6 +8774,7 @@ build_complex_type (tree component_type)
   t = make_node (COMPLEX_TYPE);
 
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
+  SET_TYPE_MODE (t, GET_MODE_COMPLEX_MODE (TYPE_MODE (component_type)));
 
   /* If we already have such a type, use the old one.  */
   hstate.add_object (TYPE_HASH (component_type));
