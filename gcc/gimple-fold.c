@@ -5435,8 +5435,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 
       /* Compute bit offset of the field.  */
       bitoffset = (wi::to_offset (field_offset)
-		   + wi::lshift (wi::to_offset (byte_offset),
-				 LOG2_BITS_PER_UNIT));
+		   + (wi::to_offset (byte_offset) << LOG2_BITS_PER_UNIT));
       /* Compute bit offset where the field ends.  */
       if (field_size != NULL_TREE)
 	bitoffset_end = bitoffset + wi::to_offset (field_size);

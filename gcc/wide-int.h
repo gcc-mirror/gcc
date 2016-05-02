@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
      Since the values are logically signed, there is no need to
      distinguish between signed and unsigned operations.  Sign-sensitive
      comparison operators <, <=, > and >= are therefore supported.
+     Shift operators << and >> are also supported, with >> being
+     an _arithmetic_ right shift.
 
      [ Note that, even though offset_int is effectively int128_t,
        it can still be useful to use unsigned comparisons like
@@ -82,7 +84,8 @@ along with GCC; see the file COPYING3.  If not see
 
      Like offset_int, widest_int is wider than all the values that
      it needs to represent, so the integers are logically signed.
-     Sign-sensitive comparison operators <, <=, > and >= are supported.
+     Sign-sensitive comparison operators <, <=, > and >= are supported,
+     as are << and >>.
 
      There are several places in the GCC where this should/must be used:
 
@@ -259,6 +262,11 @@ along with GCC; see the file COPYING3.  If not see
 #define WI_BINARY_RESULT(T1, T2) \
   typename wi::binary_traits <T1, T2>::result_type
 
+/* The type of result produced by T1 << T2.  Leads to substitution failure
+   if the operation isn't supported.  Defined purely for brevity.  */
+#define WI_SIGNED_SHIFT_RESULT(T1, T2) \
+  typename wi::binary_traits <T1, T2>::signed_shift_result_type
+
 /* The type of result produced by a signed binary predicate on types T1 and T2.
    This is bool if signed comparisons make sense for T1 and T2 and leads to
    substitution failure otherwise.  */
@@ -405,6 +413,7 @@ namespace wi
        so as not to confuse gengtype.  */
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T1>::precision> > result_type;
+    typedef result_type signed_shift_result_type;
     typedef bool signed_predicate_result;
   };
 
@@ -416,6 +425,7 @@ namespace wi
     STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T1>::precision> > result_type;
+    typedef result_type signed_shift_result_type;
     typedef bool signed_predicate_result;
   };
 
@@ -681,6 +691,11 @@ public:
   template <typename T> \
     generic_wide_int &OP (const T &c) { return (*this = wi::F (*this, c)); }
 
+/* Restrict these to cases where the shift operator is defined.  */
+#define SHIFT_ASSIGNMENT_OPERATOR(OP, OP2) \
+  template <typename T> \
+    generic_wide_int &OP (const T &c) { return (*this = *this OP2 c); }
+
 #define INCDEC_OPERATOR(OP, DELTA) \
   generic_wide_int &OP () { *this += DELTA; return *this; }
 
@@ -702,12 +717,15 @@ public:
   ASSIGNMENT_OPERATOR (operator +=, add)
   ASSIGNMENT_OPERATOR (operator -=, sub)
   ASSIGNMENT_OPERATOR (operator *=, mul)
+  SHIFT_ASSIGNMENT_OPERATOR (operator <<=, <<)
+  SHIFT_ASSIGNMENT_OPERATOR (operator >>=, >>)
   INCDEC_OPERATOR (operator ++, 1)
   INCDEC_OPERATOR (operator --, -1)
 
 #undef BINARY_PREDICATE
 #undef UNARY_OPERATOR
 #undef BINARY_OPERATOR
+#undef SHIFT_ASSIGNMENT_OPERATOR
 #undef ASSIGNMENT_OPERATOR
 #undef INCDEC_OPERATOR
 
@@ -857,7 +875,7 @@ generic_wide_int <storage>::elt (unsigned int i) const
 
 template <typename storage>
 template <typename T>
-generic_wide_int <storage> &
+inline generic_wide_int <storage> &
 generic_wide_int <storage>::operator = (const T &x)
 {
   storage::operator = (x);
@@ -3077,6 +3095,20 @@ SIGNED_BINARY_PREDICATE (operator >, gts_p)
 SIGNED_BINARY_PREDICATE (operator >=, ges_p)
 
 #undef SIGNED_BINARY_PREDICATE
+
+template <typename T1, typename T2>
+inline WI_SIGNED_SHIFT_RESULT (T1, T2)
+operator << (const T1 &x, const T2 &y)
+{
+  return wi::lshift (x, y);
+}
+
+template <typename T1, typename T2>
+inline WI_SIGNED_SHIFT_RESULT (T1, T2)
+operator >> (const T1 &x, const T2 &y)
+{
+  return wi::arshift (x, y);
+}
 
 template<typename T>
 void

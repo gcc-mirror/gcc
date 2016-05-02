@@ -1,6 +1,28 @@
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* wide-int.h: Update offset_int and widest_int documentation.
+	(WI_SIGNED_SHIFT_RESULT): New macro.
+	(wi::binary_shift): Define signed_shift_result_type for
+	shifts on offset_int- and widest_int-like types.
+	(generic_wide_int): Support <<= and >>= if << and >> are supported.
+	* tree.h (int_bit_position): Use shift operators instead of wi::
+	 shifts.
+	* alias.c (adjust_offset_for_component_ref): Likewise.
+	* expr.c (get_inner_reference): Likewise.
+	* fold-const.c (fold_comparison): Likewise.
+	* gimple-fold.c (fold_nonarray_ctor_reference): Likewise.
+	* gimple-ssa-strength-reduction.c (restructure_reference): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
+	(stmt_kills_ref_p): Likewise.
+	* tree-ssa-ccp.c (bit_value_binop_1): Likewise.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	(ao_ref_init_from_vn_reference): Likewise.
+
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* wide-int.h: Update offset_int and widest_int documentation.
 	(WI_SIGNED_BINARY_PREDICATE_RESULT): New macro.
 	(wi::binary_traits): Allow ordered comparisons between offset_int and
 	offset_int, between widest_int and widest_int, and between either

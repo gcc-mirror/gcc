@@ -8521,7 +8521,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    {
 	      offset_int tem = wi::sext (wi::to_offset (offset0),
 					 TYPE_PRECISION (sizetype));
-	      tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+	      tem <<= LOG2_BITS_PER_UNIT;
 	      tem += bitpos0;
 	      if (wi::fits_shwi_p (tem))
 		{
@@ -8568,7 +8568,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    {
 	      offset_int tem = wi::sext (wi::to_offset (offset1),
 					 TYPE_PRECISION (sizetype));
-	      tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+	      tem <<= LOG2_BITS_PER_UNIT;
 	      tem += bitpos1;
 	      if (wi::fits_shwi_p (tem))
 		{

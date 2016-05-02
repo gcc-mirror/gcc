@@ -1372,8 +1372,8 @@ bit_value_binop_1 (enum tree_code code, tree type,
 		}
 	      else
 		{
-		  *mask = wi::ext (wi::lshift (r1mask, shift), width, sgn);
-		  *val = wi::ext (wi::lshift (r1val, shift), width, sgn);
+		  *mask = wi::ext (r1mask << shift, width, sgn);
+		  *val = wi::ext (r1val << shift, width, sgn);
 		}
 	    }
 	}
