@@ -788,8 +788,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		  {
 		    offset_int off
 		      = (wi::to_offset (this_offset)
-			 + wi::lrshift (wi::to_offset (bit_offset),
-					LOG2_BITS_PER_UNIT));
+			 + (wi::to_offset (bit_offset) >> LOG2_BITS_PER_UNIT));
 		    if (wi::fits_shwi_p (off)
 			/* Probibit value-numbering zero offset components
 			   of addresses the same before the pass folding
@@ -999,8 +998,8 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      max_size = -1;
 	    else
 	      {
-		offset_int woffset = wi::lshift (wi::to_offset (this_offset),
-						 LOG2_BITS_PER_UNIT);
+		offset_int woffset = (wi::to_offset (this_offset)
+				      << LOG2_BITS_PER_UNIT);
 		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 		offset += woffset;
 	      }
@@ -1020,7 +1019,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 		= wi::sext (wi::to_offset (op->op0) - wi::to_offset (op->op1),
 			    TYPE_PRECISION (TREE_TYPE (op->op0)));
 	      woffset *= wi::to_offset (op->op2);
-	      woffset = wi::lshift (woffset, LOG2_BITS_PER_UNIT);
+	      woffset <<= LOG2_BITS_PER_UNIT;
 	      offset += woffset;
 	    }
 	  break;

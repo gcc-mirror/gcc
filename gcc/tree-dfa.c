@@ -424,8 +424,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
-		offset_int woffset = wi::lshift (wi::to_offset (this_offset),
-						 LOG2_BITS_PER_UNIT);
+		offset_int woffset = (wi::to_offset (this_offset)
+				      << LOG2_BITS_PER_UNIT);
 		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 		bit_offset += woffset;
 
@@ -453,7 +453,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			  {
 			    offset_int tem = (wi::to_offset (ssize)
 					      - wi::to_offset (fsize));
-			    tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+			    tem <<= LOG2_BITS_PER_UNIT;
 			    tem -= woffset;
 			    maxsize += tem;
 			  }
@@ -493,7 +493,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= wi::to_offset (unit_size);
-		woffset = wi::lshift (woffset, LOG2_BITS_PER_UNIT);
+		woffset <<= LOG2_BITS_PER_UNIT;
 		bit_offset += woffset;
 
 		/* An array ref with a constant index up in the structure
@@ -570,7 +570,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  offset_int off = mem_ref_offset (exp);
-		  off = wi::lshift (off, LOG2_BITS_PER_UNIT);
+		  off <<= LOG2_BITS_PER_UNIT;
 		  off += bit_offset;
 		  if (wi::fits_shwi_p (off))
 		    {

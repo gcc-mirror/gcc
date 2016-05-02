@@ -1,3 +1,7 @@
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* init.c (build_new_1): Use shift operators instead of wi:: shifts.
+
 2016-05-02  Richard Biener  <rguenther@suse.de>
 
 	* decl.c (grokdeclarator): Properly insert a DECL_EXPR for

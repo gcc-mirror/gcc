@@ -2812,8 +2812,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
 	  unsigned shift = (max_outer_nelts.get_precision ()) - 7
 	    - wi::clz (max_outer_nelts);
-	  max_outer_nelts = wi::lshift (wi::lrshift (max_outer_nelts, shift),
-				        shift);
+	  max_outer_nelts = (max_outer_nelts >> shift) << shift;
 
           outer_nelts_check = fold_build2 (LE_EXPR, boolean_type_node,
 					   outer_nelts,

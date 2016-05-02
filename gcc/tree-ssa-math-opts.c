@@ -2104,7 +2104,7 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
       if (!integer_zerop (off))
 	{
 	  offset_int boff, coff = mem_ref_offset (base_addr);
-	  boff = wi::lshift (coff, LOG2_BITS_PER_UNIT);
+	  boff = coff << LOG2_BITS_PER_UNIT;
 	  bit_offset += boff;
 	}
 
@@ -2118,7 +2118,7 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;
-	  tem = wi::arshift (tem, LOG2_BITS_PER_UNIT);
+	  tem >>= LOG2_BITS_PER_UNIT;
 	  if (offset)
 	    offset = size_binop (PLUS_EXPR, offset,
 				    wide_int_to_tree (sizetype, tem));
