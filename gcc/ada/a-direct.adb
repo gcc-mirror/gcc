@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -597,7 +597,6 @@ package body Ada.Directories is
    -----------------
 
    procedure Delete_Tree (Directory : String) is
-      Current_Dir : constant String := Current_Directory;
       Search      : Search_Type;
       Dir_Ent     : Directory_Entry_Type;
    begin
@@ -611,28 +610,32 @@ package body Ada.Directories is
          raise Name_Error with '"' & Directory & """ not a directory";
 
       else
-         Set_Directory (Directory);
 
-         Start_Search (Search, Directory => ".", Pattern => "");
+         --  We used to change the current directory to Directory here,
+         --  allowing the use of a local Simple_Name for all references. This
+         --  turned out unfriendly to multitasking programs, where tasks
+         --  running in parallel of this Delete_Tree could see their current
+         --  directory change unpredictably. We now resort to Full_Name
+         --  computations to reach files and subdirs instead.
+
+         Start_Search (Search, Directory => Directory, Pattern => "");
          while More_Entries (Search) loop
             Get_Next_Entry (Search, Dir_Ent);
 
             declare
-               File_Name : constant String := Simple_Name (Dir_Ent);
-
+               Sname : constant String := Simple_Name (Dir_Ent);
+               Fname : constant String := Full_Name (Dir_Ent);
             begin
-               if OS_Lib.Is_Directory (File_Name) then
-                  if File_Name /= "." and then File_Name /= ".." then
-                     Delete_Tree (File_Name);
+               if OS_Lib.Is_Directory (Fname) then
+                  if Sname /= "." and then Sname /= ".." then
+                     Delete_Tree (Fname);
                   end if;
-
                else
-                  Delete_File (File_Name);
+                  Delete_File (Fname);
                end if;
             end;
          end loop;
 
-         Set_Directory (Current_Dir);
          End_Search (Search);
 
          declare

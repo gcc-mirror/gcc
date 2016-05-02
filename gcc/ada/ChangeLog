@@ -1,3 +1,23 @@
+2016-05-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): Preserve
+	treeishness. Previous version had Context_Items shared between
+	the spec and body.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggr_Expression): For both array and
+	record cases, apply predicate check on component for expression
+	only if expression has been analyzed already. For expressions
+	that need to be duplicated when they cover multiple components,
+	resolution and predicate checking take place later.
+
+2016-05-02  Olivier Hainque  <hainque@adacore.com>
+
+	* a-direct.adb (Delete_Tree): Use full names to designate subdirs
+	and files therein, instead of local names after a change of
+	current directory.
+
 2016-05-02  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb (Check_Component_Storage_Order): Get full view of

@@ -783,15 +783,15 @@ package body Sem_Ch10 is
                   begin
                      Set_Comes_From_Source_Default (False);
 
-                     --  Checks for redundant USE TYPE clauses have a special
-                     --  exception for the synthetic spec we create here. This
-                     --  special case relies on the two compilation units
-                     --  sharing the same context clause.
-
-                     --  Note: We used to do a shallow copy (New_Copy_List),
-                     --  which defeated those checks and also created malformed
-                     --  trees (subtype mark shared by two distinct
-                     --  N_Use_Type_Clause nodes) which crashed the compiler.
+                     --  Note: We copy the Context_Items from the explicit body
+                     --  to the implicit spec, setting the former to Empty_List
+                     --  to preserve the treeish nature of the tree, during
+                     --  analysis of the spec. Then we put it back the way it
+                     --  was -- copy the Context_Items from the spec to the
+                     --  body, and set the spec Context_Items to Empty_List.
+                     --  It is necessary to preserve the treeish nature,
+                     --  because otherwise we will call End_Use_* twice on the
+                     --  same thing.
 
                      Lib_Unit :=
                        Make_Compilation_Unit (Loc,
@@ -804,6 +804,7 @@ package body Sem_Ch10 is
                          Aux_Decls_Node =>
                            Make_Compilation_Unit_Aux (Loc));
 
+                     Set_Context_Items (N, Empty_List);
                      Set_Library_Unit (N, Lib_Unit);
                      Set_Parent_Spec (Unit (Lib_Unit), Cunit (Unum));
                      Make_Child_Decl_Unit (N);
@@ -816,6 +817,11 @@ package body Sem_Ch10 is
                      Set_Is_Child_Unit (Defining_Entity (Unit_Node));
                      Set_Debug_Info_Needed (Defining_Entity (Unit (Lib_Unit)));
                      Set_Comes_From_Source_Default (SCS);
+
+                     --  Restore Context_Items to the body
+
+                     Set_Context_Items (N, Context_Items (Lib_Unit));
+                     Set_Context_Items (Lib_Unit, Empty_List);
                   end;
                end if;
             end if;
