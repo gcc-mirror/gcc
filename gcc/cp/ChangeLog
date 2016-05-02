@@ -1,3 +1,8 @@
+2016-05-02  Richard Biener  <rguenther@suse.de>
+
+	* decl.c (grokdeclarator): Properly insert a DECL_EXPR for
+	anonymous VLAs.
+
 2016-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66644
