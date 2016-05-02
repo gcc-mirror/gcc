@@ -1,3 +1,22 @@
+2016-05-02  Tristan Gingold  <gingold@adacore.com>
+
+	* fname.adb (Is_Predefined_File_Name): Also consider non-krunched
+	i-* names.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Aggregate_Constraint_Checks): Separate
+	accessibility checks and non-null checks for aggregate components,
+	to prevent spurious accessibility errors.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init): A type conversion is not
+	always legal in the in-place initialization of a limited entity
+	(e.g. an allocator).
+	* sem_res.adb (Resolve_Allocator): Improve error message with RM
+	reference  when allocator expression is illegal.
+
 2016-05-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Call): When inlining a call to a function

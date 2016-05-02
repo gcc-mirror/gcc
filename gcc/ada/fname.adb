@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,14 +134,9 @@ package body Fname is
          Name_Len := Name_Len - 4;
       end if;
 
-      --  Definitely false if longer than 12 characters (8.3)
-
-      if Name_Len > 8 then
-         return False;
-
       --  Definitely predefined if prefix is a- i- or s- followed by letter
 
-      elsif Name_Len >=  3
+      if Name_Len >=  3
         and then Name_Buffer (2) = '-'
         and then (Name_Buffer (1) = 'a'
                     or else
@@ -153,6 +148,11 @@ package body Fname is
                   Name_Buffer (3) in 'A' .. 'Z')
       then
          return True;
+
+      --  Definitely false if longer than 12 characters (8.3)
+
+      elsif Name_Len > 8 then
+         return False;
       end if;
 
       --  Otherwise check against special list, first padding to 8 characters
