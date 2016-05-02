@@ -9445,6 +9445,24 @@ package body Sem_Res is
       if Nkind (N) = N_Qualified_Expression and then Is_Scalar_Type (Typ) then
          Apply_Scalar_Range_Check (Expr, Typ);
       end if;
+
+      --  Finally, check whether a predicate applies to the target type.
+      --  This comes from AI12-0100. As for type conversions, check the
+      --  enclosing context to prevent an infinite expansion.
+
+      if Has_Predicates (Target_Typ) then
+         if Nkind (Parent (N)) = N_Function_Call
+           and then Present (Name (Parent (N)))
+           and then (Is_Predicate_Function (Entity (Name (Parent (N))))
+                       or else
+                     Is_Predicate_Function_M (Entity (Name (Parent (N)))))
+         then
+            null;
+
+         elsif Nkind (N) = N_Qualified_Expression then
+            Apply_Predicate_Check (N, Target_Typ);
+         end if;
+      end if;
    end Resolve_Qualified_Expression;
 
    ------------------------------

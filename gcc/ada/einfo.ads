@@ -1910,6 +1910,9 @@ package Einfo is
 --       Defined in type and subtype entities. Set if a pragma Predicate or
 --       Predicate aspect applies to the type or subtype, or if it inherits a
 --       Predicate aspect from its parent or progenitor types.
+--
+--       Note: this flag is set on both partial and full view of types to which
+--       a Predicate pragma or aspect applies.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Defined in all type entities. Set if at least one primitive operation
@@ -3746,6 +3749,14 @@ package Einfo is
 --       specified predicates are True. Contains the entity for the function
 --       which takes a single argument of the given type, and returns True if
 --       the predicate holds and False if it does not.
+--
+--       Note: flag Has_Predicate does not imply that Predicate_Function is set
+--       to a non-empty entity; this happens, for example, for itypes created
+--       when instantiating generic units with private types with predicates.
+--       However, if an explicit pragma Predicate or Predicate aspect is given
+--       either for private or full type declaration then both Has_Predicates
+--       and a non-empty Predicate_Function will be set on both the partial and
+--       full views of the type.
 --
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.

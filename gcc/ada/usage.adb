@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 --  Warning: the output of this usage for warnings is duplicated in the GNAT
 --  reference manual. Be sure to update that if you change the warning list.
 
-with Targparm; use Targparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
@@ -90,19 +89,6 @@ begin
    end if;
 
    Write_Eol;
-
-   --  Common GCC switches not available for AAMP targets
-
-   if not AAMP_On_Target then
-      Write_Switch_Char ("fstack-check ", "");
-      Write_Line ("Generate stack checking code");
-
-      Write_Switch_Char ("fno-inline   ", "");
-      Write_Line ("Inhibit all inlining (makes executable smaller)");
-
-      Write_Switch_Char ("fpreserve-control-flow ", "");
-      Write_Line ("Preserve control flow for coverage analysis");
-   end if;
 
    --  Common switches available everywhere
 
@@ -681,29 +667,31 @@ begin
    Write_Switch_Char ("zr");
    Write_Line ("Distribution stub generation for receiver stubs");
 
-   --  Line for -gnat83 switch
+   if not Latest_Ada_Only then
+      --  Line for -gnat83 switch
 
-   Write_Switch_Char ("83");
-   Write_Line ("Ada 83 mode");
+      Write_Switch_Char ("83");
+      Write_Line ("Ada 83 mode");
 
-   --  Line for -gnat95 switch
+      --  Line for -gnat95 switch
 
-   Write_Switch_Char ("95");
+      Write_Switch_Char ("95");
 
-   if Ada_Version_Default = Ada_95 then
-      Write_Line ("Ada 95 mode (default)");
-   else
-      Write_Line ("Ada 95 mode");
-   end if;
+      if Ada_Version_Default = Ada_95 then
+         Write_Line ("Ada 95 mode (default)");
+      else
+         Write_Line ("Ada 95 mode");
+      end if;
 
-   --  Line for -gnat2005 switch
+      --  Line for -gnat2005 switch
 
-   Write_Switch_Char ("2005");
+      Write_Switch_Char ("2005");
 
-   if Ada_Version_Default = Ada_2005 then
-      Write_Line ("Ada 2005 mode (default)");
-   else
-      Write_Line ("Ada 2005 mode");
+      if Ada_Version_Default = Ada_2005 then
+         Write_Line ("Ada 2005 mode (default)");
+      else
+         Write_Line ("Ada 2005 mode");
+      end if;
    end if;
 
    --  Line for -gnat2012 switch

@@ -1817,7 +1817,7 @@ package body Sem_Ch5 is
       Bas : Entity_Id;
       Typ : Entity_Id;
 
-   --   Start of processing for Analyze_iterator_Specification
+   --   Start of processing for Analyze_Iterator_Specification
 
    begin
       Enter_Name (Def_Id);
@@ -2207,6 +2207,8 @@ package body Sem_Ch5 is
                      --  be performed.
 
                      if Nkind (Orig_Iter_Name) = N_Selected_Component
+                       and then
+                         Present (Entity (Selector_Name (Orig_Iter_Name)))
                        and then Ekind_In
                                   (Entity (Selector_Name (Orig_Iter_Name)),
                                    E_Component,

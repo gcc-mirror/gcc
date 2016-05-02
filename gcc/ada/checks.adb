@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2667,8 +2667,10 @@ package body Checks is
       S : Entity_Id;
 
    begin
-      if Present (Predicate_Function (Typ)) then
+      if Predicate_Checks_Suppressed (Empty) then
+         return;
 
+      elsif Present (Predicate_Function (Typ)) then
          S := Current_Scope;
          while Present (S) and then not Is_Subprogram (S) loop
             S := Scope (S);
@@ -2703,8 +2705,21 @@ package body Checks is
 
             Check_Expression_Against_Static_Predicate (N, Typ);
 
-            Insert_Action (N,
-              Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
+            if Is_Entity_Name (N) then
+               Insert_Action (N,
+                 Make_Predicate_Check
+                   (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
+
+               --  If the expression is not an entity it may have side-effects,
+               --  and the following call will create an object declaration for
+               --  it. We disable checks during its analysis, to prevent an
+               --  infinite recursion.
+
+            else
+               Insert_Action (N,
+                 Make_Predicate_Check (Typ, Duplicate_Subexpr (N)),
+                 Suppress => All_Checks);
+            end if;
          end if;
       end if;
    end Apply_Predicate_Check;

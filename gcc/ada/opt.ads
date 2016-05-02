@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,6 +111,11 @@ package Opt is
    --  some cases, the values can also be modified by pragmas, and in the
    --  case of some binder variables, Gnatbind.Scan_Bind_Arg may modify
    --  the default values.
+
+   Latest_Ada_Only : Boolean := False;
+   --  If True, the only value valid for Ada_Version is Ada_Version_Type'Last,
+   --  trying to specify other values will be ignored (in case of pragma
+   --  Ada_xxx) or generate an error (in case of -gnat83/95/xx switches).
 
    type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012);
    pragma Ordered (Ada_Version_Type);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,9 +123,6 @@ package body System.Storage_Pools.Subpools is
       N_Size  : Storage_Count;
       Subpool : Subpool_Handle := null;
 
-      Allocation_Locked : Boolean;
-      --  This flag stores the state of the associated collection
-
       Header_And_Padding : Storage_Offset;
       --  This offset includes the size of a FM_Node plus any additional
       --  padding due to a larger alignment.
@@ -170,25 +167,25 @@ package body System.Storage_Pools.Subpools is
 
       else
          --  If the master is missing, then the expansion of the access type
-         --  failed to create one. This is a serious error.
+         --  failed to create one. This is a compiler bug.
 
-         if Context_Master = null then
-            raise Program_Error
-              with "missing master in pool allocation";
+         pragma Assert
+           (Context_Master /= null, "missing master in pool allocation");
 
          --  If a subpool is present, then this is the result of erroneous
          --  allocator expansion. This is not a serious error, but it should
          --  still be detected.
 
-         elsif Context_Subpool /= null then
+         if Context_Subpool /= null then
             raise Program_Error
               with "subpool not required in pool allocation";
+         end if;
 
          --  If the allocation is intended to be on a subpool, but the access
          --  type's pool does not support subpools, then this is the result of
-         --  erroneous end-user code.
+         --  incorrect end-user code.
 
-         elsif On_Subpool then
+         if On_Subpool then
             raise Program_Error
               with "pool of access type does not support subpools";
          end if;
@@ -209,24 +206,20 @@ package body System.Storage_Pools.Subpools is
          --    Write - finalization
 
          Lock_Task.all;
-         Allocation_Locked := Finalization_Started (Master.all);
-         Unlock_Task.all;
 
          --  Do not allow the allocation of controlled objects while the
          --  associated master is being finalized.
 
-         if Allocation_Locked then
+         if Finalization_Started (Master.all) then
             raise Program_Error with "allocation after finalization started";
          end if;
 
          --  Check whether primitive Finalize_Address is available. If it is
          --  not, then either the expansion of the designated type failed or
-         --  the expansion of the allocator failed. This is a serious error.
+         --  the expansion of the allocator failed. This is a compiler bug.
 
-         if Fin_Address = null then
-            raise Program_Error
-              with "primitive Finalize_Address not available";
-         end if;
+         pragma Assert
+           (Fin_Address /= null, "primitive Finalize_Address not available");
 
          --  The size must acount for the hidden header preceding the object.
          --  Account for possible padding space before the header due to a
@@ -262,7 +255,7 @@ package body System.Storage_Pools.Subpools is
       --  Step 4: Attachment
 
       if Is_Controlled then
-         Lock_Task.all;
+         --  Note that we already did "Lock_Task.all;" in Step 2 above.
 
          --  Map the allocated memory into a FM_Node record. This converts the
          --  top of the allocated bits into a list header. If there is padding
@@ -334,6 +327,16 @@ package body System.Storage_Pools.Subpools is
       else
          Addr := N_Addr;
       end if;
+
+   exception
+      when others =>
+         --  If we locked, we want to unlock
+
+         if Is_Controlled then
+            Unlock_Task.all;
+         end if;
+
+         raise;
    end Allocate_Any_Controlled;
 
    ------------
@@ -384,59 +387,67 @@ package body System.Storage_Pools.Subpools is
       if Is_Controlled then
          Lock_Task.all;
 
-         --  Destroy the relation pair object - Finalize_Address since it is no
-         --  longer needed.
+         begin
+            --  Destroy the relation pair object - Finalize_Address since it is
+            --  no longer needed.
 
-         if Finalize_Address_Table_In_Use then
+            if Finalize_Address_Table_In_Use then
+
+               --  Synchronization:
+               --    Read  - finalization
+               --    Write - allocation, deallocation
+
+               Delete_Finalize_Address_Unprotected (Addr);
+            end if;
+
+            --  Account for possible padding space before the header due to a
+            --  larger alignment.
+
+            Header_And_Padding := Header_Size_With_Padding (Alignment);
+
+            --    N_Addr  N_Ptr           Addr (from input)
+            --    |       |               |
+            --    V       V               V
+            --    +-------+---------------+----------------------+
+            --    |Padding|    Header     |        Object        |
+            --    +-------+---------------+----------------------+
+            --    ^       ^               ^
+            --    |       +- Header_Size -+
+            --    |                       |
+            --    +- Header_And_Padding --+
+
+            --  Convert the bits preceding the object into a list header
+
+            N_Ptr := Address_To_FM_Node_Ptr (Addr - Header_Size);
+
+            --  Detach the object from the related finalization master. This
+            --  action does not need to know the prior context used during
+            --  allocation.
 
             --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, deallocation
+            --    Write - allocation, deallocation, finalization
 
-            Delete_Finalize_Address_Unprotected (Addr);
-         end if;
+            Detach_Unprotected (N_Ptr);
 
-         --  Account for possible padding space before the header due to a
-         --  larger alignment.
+            --  Move the address from the object to the beginning of the list
+            --  header.
 
-         Header_And_Padding := Header_Size_With_Padding (Alignment);
+            N_Addr := Addr - Header_And_Padding;
 
-         --    N_Addr  N_Ptr           Addr (from input)
-         --    |       |               |
-         --    V       V               V
-         --    +-------+---------------+----------------------+
-         --    |Padding|    Header     |        Object        |
-         --    +-------+---------------+----------------------+
-         --    ^       ^               ^
-         --    |       +- Header_Size -+
-         --    |                       |
-         --    +- Header_And_Padding --+
+            --  The size of the deallocated object must include the size of the
+            --  hidden list header.
 
-         --  Convert the bits preceding the object into a list header
+            N_Size := Storage_Size + Header_And_Padding;
 
-         N_Ptr := Address_To_FM_Node_Ptr (Addr - Header_Size);
+            Unlock_Task.all;
 
-         --  Detach the object from the related finalization master. This
-         --  action does not need to know the prior context used during
-         --  allocation.
+         exception
+            when others =>
+               --  If we locked, we want to unlock
 
-         --  Synchronization:
-         --    Write - allocation, deallocation, finalization
-
-         Detach_Unprotected (N_Ptr);
-
-         --  Move the address from the object to the beginning of the list
-         --  header.
-
-         N_Addr := Addr - Header_And_Padding;
-
-         --  The size of the deallocated object must include the size of the
-         --  hidden list header.
-
-         N_Size := Storage_Size + Header_And_Padding;
-
-         Unlock_Task.all;
-
+               Unlock_Task.all;
+               raise;
+         end;
       else
          N_Addr := Addr;
          N_Size := Storage_Size;
