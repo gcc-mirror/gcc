@@ -91,6 +91,10 @@ DEFCIFCODE(NOT_DECLARED_INLINED, CIF_FINAL_NORMAL,
 DEFCIFCODE(MISMATCHED_ARGUMENTS, CIF_FINAL_ERROR,
 	   N_("mismatched arguments"))
 
+/* Caller and callee disagree on the arguments.  */
+DEFCIFCODE(THUNK, CIF_FINAL_ERROR,
+	   N_("thunk call"))
+
 /* Call was originally indirect.  */
 DEFCIFCODE(ORIGINALLY_INDIRECT_CALL, CIF_FINAL_NORMAL,
 	   N_("originally indirect function call not considered for inlining"))
