@@ -1,3 +1,10 @@
+2016-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (toolexeclib_LTLIBRARIES): Only set if
+	ENABLE_VTABLE_VERIFY.
+	Simplify.
+	* Makefile.in: Regenerate.
+
 2015-12-02  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Move AM_ENABLE_MULTILIB before
