@@ -1,6 +1,9 @@
 2016-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70467
+	* cse.c (cse_insn): Handle no-op MEM moves after folding.
+
+	PR rtl-optimization/70467
 	* ipa-pure-const.c (check_call): Handle internal calls even in
 	ipa mode like in local mode.
 
