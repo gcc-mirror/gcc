@@ -1,5 +1,18 @@
 2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch3.adb, exp_ch9.adb, einfo.adb, sem_ch4.adb, sem_ch6.adb: Minor
+	reformatting.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): If the designated type
+	is a private derived type with no discriminants, examine its
+	underlying_full_view to determine whether the full view has
+	defaulted discriminants, so their defaults can be used in the
+	call to the initialization procedure for the designated object.
+
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_prag.adb, comperr.adb: Minor reformatting.
 
 2016-05-02  Ed Schonberg  <schonberg@adacore.com>
