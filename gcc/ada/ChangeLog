@@ -1,3 +1,41 @@
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb, comperr.adb: Minor reformatting.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Rj_Unchecked_Convert_To): Do not perform an
+	unchecked conversion if the source size is 0 (indicating that
+	its RM size is unknown). This will happen with packed arrays of
+	non-discrete types, in which case the component type is known
+	to match.
+
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb: Reserve -gnatd.V.
+
+2016-05-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Remove from visibility
+	wrappers of synchronized types to avoid spurious errors with
+	their wrapped entity.
+	* exp_ch9.adb (Build_Wrapper_Spec): Do not generate the wrapper
+	if no interface primitive is covered by the subprogram and this is
+	not a primitive declared between two views; see Process_Full_View.
+	(Build_Protected_Sub_Specification): Link the dispatching
+	subprogram with its original non-dispatching protected subprogram
+	since their names differ.
+	(Expand_N_Protected_Type_Declaration):
+	If a protected subprogram overrides an interface primitive then
+	do not build a wrapper if it was already built.
+	* einfo.ads, einfo.adb (Original_Protected_Subprogram): New attribute.
+	* sem_ch4.adb (Names_Match): New subprogram.
+	* sem_ch6.adb (Check_Synchronized_Overriding): Moved
+	to library level and defined in the public part of the
+	package to invoke it from Exp_Ch9.Build_Wrapper_Spec
+	(Has_Matching_Entry_Or_Subprogram): New subprogram.
+	(Report_Conflict): New subprogram.
+
 2016-05-02  Jerome Lambourg  <lambourg@adacore.com>
 
 	* s-unstyp.ads: Code cleanups.

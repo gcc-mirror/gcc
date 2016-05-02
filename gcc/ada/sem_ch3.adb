@@ -19835,6 +19835,13 @@ package body Sem_Ch3 is
                            Curr_Nod := Wrap_Spec;
 
                            Analyze (Wrap_Spec);
+
+                           --  Remove the wrapper from visibility to avoid
+                           --  spurious conflict with the wrapped entity.
+
+                           Set_Is_Immediately_Visible
+                             (Defining_Entity (Specification (Wrap_Spec)),
+                              False);
                         end if;
 
                         Next_Elmt (Prim_Elmt);

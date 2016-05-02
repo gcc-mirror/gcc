@@ -8817,6 +8817,15 @@ package body Sem_Ch4 is
          --  is visible a direct call to it will dispatch to the private one,
          --  which is therefore a valid candidate.
 
+         function Names_Match
+           (Obj_Type : Entity_Id;
+            Prim_Op  : Entity_Id;
+            Subprog  : Entity_Id) return Boolean;
+         --  Return True if the names of Prim_Op and Subprog match. If Obj_Type
+         --  is a protected type then compare also the original name of Prim_Op
+         --  with the name of Subprog (since the expander may have added a
+         --  prefix to its original name --see Exp_Ch9.Build_Selected_Name).
+
          function Valid_First_Argument_Of (Op : Entity_Id) return Boolean;
          --  Verify that the prefix, dereferenced if need be, is a valid
          --  controlling argument in a call to Op. The remaining actuals
@@ -8993,6 +9002,34 @@ package body Sem_Ch4 is
               and then not Is_Hidden (Visible_Op);
          end Is_Private_Overriding;
 
+         -----------------
+         -- Names_Match --
+         -----------------
+
+         function Names_Match
+           (Obj_Type : Entity_Id;
+            Prim_Op  : Entity_Id;
+            Subprog  : Entity_Id) return Boolean is
+         begin
+            --  Common case: exact match
+
+            if Chars (Prim_Op) = Chars (Subprog) then
+               return True;
+
+            --  For protected type primitives the expander may have built the
+            --  name of the dispatching primitive prepending the type name to
+            --  avoid conflicts with the name of the protected subprogram (see
+            --  Exp_Ch9.Build_Selected_Name).
+
+            elsif Is_Protected_Type (Obj_Type) then
+               return Present (Original_Protected_Subprogram (Prim_Op))
+                 and then Chars (Original_Protected_Subprogram (Prim_Op))
+                            = Chars (Subprog);
+            end if;
+
+            return False;
+         end Names_Match;
+
          -----------------------------
          -- Valid_First_Argument_Of --
          -----------------------------
@@ -9059,7 +9096,7 @@ package body Sem_Ch4 is
          while Present (Elmt) loop
             Prim_Op := Node (Elmt);
 
-            if Chars (Prim_Op) = Chars (Subprog)
+            if Names_Match (Obj_Type, Prim_Op, Subprog)
               and then Present (First_Formal (Prim_Op))
               and then Valid_First_Argument_Of (Prim_Op)
               and then
