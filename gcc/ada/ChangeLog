@@ -1,3 +1,15 @@
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch5.adb, layout.adb, gnatcmd.adb exp_attr.adb, make.adb,
+	bindgen.adb, debug.adb, exp_pakd.adb, freeze.adb, sem_util.adb,
+	gnatlink.adb, switch-m.adb, exp_ch4.adb, repinfo.adb, adabkend.adb,
+	osint.adb: Remove dead code.
+
+2016-05-02  Yannick Moy  <moy@adacore.com>
+
+	* a-tigeli.adb (Get_Line): Fix bound for test to
+	decide when to compensate for character 0 added by call to fgets.
+
 2016-05-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Allocator): If the expression does not

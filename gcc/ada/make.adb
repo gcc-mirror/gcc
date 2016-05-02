@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2978,7 +2978,7 @@ package body Make is
             Comp_Last := Comp_Last + 1;
             Comp_Args (Comp_Last) := AdaSCIL_Flag;
 
-         elsif not Ada_File_Name (S) and then not Targparm.AAMP_On_Target then
+         elsif not Ada_File_Name (S) then
             Comp_Last := Comp_Last + 1;
             Comp_Args (Comp_Last) := Ada_Flag_1;
             Comp_Last := Comp_Last + 1;
@@ -5816,7 +5816,7 @@ package body Make is
             Finish_Program (Project_Tree, E_Success);
 
          else
-            --  Call Get_Target_Parameters to ensure that AAMP_On_Target gets
+            --  Call Get_Target_Parameters to ensure that flags are properly
             --  set before calling Usage.
 
             Targparm.Get_Target_Parameters;

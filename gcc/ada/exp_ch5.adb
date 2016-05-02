@@ -59,7 +59,6 @@ with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -749,25 +748,11 @@ package body Exp_Ch5 is
          --  then the outcome depends on the capabilities of the back end.
 
          if not Loop_Required then
+            --  Assume the back end can deal with all cases of overlap by
+            --  falling back to memmove if it cannot use a more efficient
+            --  approach.
 
-            --  The GCC back end can deal with all cases of overlap by falling
-            --  back to memmove if it cannot use a more efficient approach.
-
-            if not AAMP_On_Target then
-               return;
-
-            --  Assume other back ends can handle it if Forwards_OK is set
-
-            elsif Forwards_OK (N) then
-               return;
-
-            --  If Forwards_OK is not set, the back end will need something
-            --  like memmove to handle the move. For now, this processing is
-            --  activated using the .s debug flag (-gnatd.s).
-
-            elsif Debug_Flag_Dot_S then
-               return;
-            end if;
+            return;
          end if;
 
          --  At this stage we have to generate an explicit loop, and we have
