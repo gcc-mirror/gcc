@@ -2710,15 +2710,15 @@ package body Checks is
                  Make_Predicate_Check
                    (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
 
-               --  If the expression is not an entity it may have side-effects,
-               --  and the following call will create an object declaration for
-               --  it. We disable checks during its analysis, to prevent an
-               --  infinite recursion.
+            --  If the expression is not an entity it may have side-effects,
+            --  and the following call will create an object declaration for
+            --  it. We disable checks during its analysis, to prevent an
+            --  infinite recursion.
 
             else
                Insert_Action (N,
-                 Make_Predicate_Check (Typ, Duplicate_Subexpr (N)),
-                 Suppress => All_Checks);
+                 Make_Predicate_Check
+                   (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
             end if;
          end if;
       end if;

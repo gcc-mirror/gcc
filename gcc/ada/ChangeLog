@@ -1,5 +1,10 @@
 2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* checks.adb, freeze.adb, sem_res.adb, s-stposu.adb, repinfo.adb:
+	Minor reformatting.
+
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch4.adb (Find_Indexing_Operations): Use the underlying type
 	of the container base type in case the container is a subtype.
 	* sem_ch5.adb (Analyze_Iterator_Specification): Ensure that

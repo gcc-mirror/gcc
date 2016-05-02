@@ -136,7 +136,7 @@ package body Repinfo is
    --  a blank line precedes the output for a particular entity.
 
    procedure List_Entities
-     (Ent : Entity_Id;
+     (Ent              : Entity_Id;
       Bytes_Big_Endian : Boolean;
       In_Subprogram    : Boolean := False);
    --  This procedure lists the entities associated with the entity E, starting
@@ -320,7 +320,7 @@ package body Repinfo is
    -------------------
 
    procedure List_Entities
-     (Ent : Entity_Id;
+     (Ent              : Entity_Id;
       Bytes_Big_Endian : Boolean;
       In_Subprogram    : Boolean := False)
    is
