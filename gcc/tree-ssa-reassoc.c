@@ -2464,7 +2464,7 @@ extract_bit_test_mask (tree exp, int prec, tree totallow, tree low, tree high,
 		return NULL_TREE;
 	      bias = wi::to_widest (tbias);
 	      bias -= wi::to_widest (totallow);
-	      if (wi::ges_p (bias, 0) && wi::lts_p (bias, prec - max))
+	      if (bias >= 0 && bias < prec - max)
 		{
 		  *mask = wi::lshift (*mask, bias);
 		  return ret;

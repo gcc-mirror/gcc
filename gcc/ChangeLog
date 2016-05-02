@@ -1,3 +1,27 @@
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* wide-int.h: Update offset_int and widest_int documentation.
+	(WI_SIGNED_BINARY_PREDICATE_RESULT): New macro.
+	(wi::binary_traits): Allow ordered comparisons between offset_int and
+	offset_int, between widest_int and widest_int, and between either
+	of these types and basic C types.
+	(operator <, <=, >, >=): Define for the same combinations.
+	* tree.h (tree_int_cst_lt): Use comparison operators instead
+	of wi:: comparisons.
+	(tree_int_cst_le): Likewise.
+	* gimple-fold.c (fold_array_ctor_reference): Likewise.
+	(fold_nonarray_ctor_reference): Likewise.
+	* gimple-ssa-strength-reduction.c (record_increment): Likewise.
+	* tree-affine.c (aff_comb_cannot_overlap_p): Likewise.
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Likewise.
+	* tree-sra.c (completely_scalarize): Likewise.
+	* tree-ssa-alias.c (stmt_kills_ref_p): Likewise.
+	* tree-ssa-reassoc.c (extract_bit_test_mask): Likewise.
+	* tree-vrp.c (extract_range_from_binary_expr_1): Likewise.
+	(check_for_binary_op_overflow): Likewise.
+	(search_for_addr_array): Likewise.
+	* ubsan.c (ubsan_expand_objsize_ifn): Likewise.
+
 2016-05-02  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_preferred_simd_mode): Remove enum keyword.

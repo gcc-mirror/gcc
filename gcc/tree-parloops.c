@@ -1868,7 +1868,7 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
 
   /* Check if nit + 1 overflows.  */
   widest_int type_max = wi::to_widest (TYPE_MAXVAL (nit_type));
-  if (!wi::lts_p (nit_max, type_max))
+  if (nit_max >= type_max)
     return false;
 
   gimple *def = SSA_NAME_DEF_STMT (nit);

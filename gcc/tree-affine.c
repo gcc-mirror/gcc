@@ -929,7 +929,7 @@ aff_comb_cannot_overlap_p (aff_tree *diff, const widest_int &size1,
   else
     {
       /* We succeed if the second object starts after the first one ends.  */
-      return wi::les_p (size1, diff->offset);
+      return size1 <= diff->offset;
     }
 }
 

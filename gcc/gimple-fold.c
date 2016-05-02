@@ -5380,7 +5380,7 @@ fold_array_ctor_reference (tree type, tree ctor,
      be larger than size of array element.  */
   if (!TYPE_SIZE_UNIT (type)
       || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-      || wi::lts_p (elt_size, wi::to_offset (TYPE_SIZE_UNIT (type)))
+      || elt_size < wi::to_offset (TYPE_SIZE_UNIT (type))
       || elt_size == 0)
     return NULL_TREE;
 
@@ -5457,7 +5457,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 	     fields.  */
 	  if (wi::cmps (access_end, bitoffset_end) > 0)
 	    return NULL_TREE;
-	  if (wi::lts_p (offset, bitoffset))
+	  if (offset < bitoffset)
 	    return NULL_TREE;
 	  return fold_ctor_reference (type, cval,
 				      inner_offset.to_uhwi (), size,

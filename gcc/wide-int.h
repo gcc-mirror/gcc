@@ -53,22 +53,26 @@ along with GCC; see the file COPYING3.  If not see
      multiply, division, shifts, comparisons, and operations that need
      overflow detected), the signedness must be specified separately.
 
-     2) offset_int.  This is a fixed size representation that is
-     guaranteed to be large enough to compute any bit or byte sized
-     address calculation on the target.  Currently the value is 64 + 4
-     bits rounded up to the next number even multiple of
-     HOST_BITS_PER_WIDE_INT (but this can be changed when the first
-     port needs more than 64 bits for the size of a pointer).
+     2) offset_int.  This is a fixed-precision integer that can hold
+     any address offset, measured in either bits or bytes, with at
+     least one extra sign bit.  At the moment the maximum address
+     size GCC supports is 64 bits.  With 8-bit bytes and an extra
+     sign bit, offset_int therefore needs to have at least 68 bits
+     of precision.  We round this up to 128 bits for efficiency.
+     Values of type T are converted to this precision by sign- or
+     zero-extending them based on the signedness of T.
 
-     This flavor can be used for all address math on the target.  In
-     this representation, the values are sign or zero extended based
-     on their input types to the internal precision.  All math is done
-     in this precision and then the values are truncated to fit in the
-     result type.  Unlike most gimple or rtl intermediate code, it is
-     not useful to perform the address arithmetic at the same
-     precision in which the operands are represented because there has
-     been no effort by the front ends to convert most addressing
-     arithmetic to canonical types.
+     The extra sign bit means that offset_int is effectively a signed
+     128-bit integer, i.e. it behaves like int128_t.
+
+     Since the values are logically signed, there is no need to
+     distinguish between signed and unsigned operations.  Sign-sensitive
+     comparison operators <, <=, > and >= are therefore supported.
+
+     [ Note that, even though offset_int is effectively int128_t,
+       it can still be useful to use unsigned comparisons like
+       wi::leu_p (a, b) as a more efficient short-hand for
+       "a >= 0 && a <= b". ]
 
      3) widest_int.  This representation is an approximation of
      infinite precision math.  However, it is not really infinite
@@ -76,9 +80,9 @@ along with GCC; see the file COPYING3.  If not see
      precision math where the precision is 4 times the size of the
      largest integer that the target port can represent.
 
-     widest_int is supposed to be wider than any number that it needs to
-     store, meaning that there is always at least one leading sign bit.
-     All widest_int values are therefore signed.
+     Like offset_int, widest_int is wider than all the values that
+     it needs to represent, so the integers are logically signed.
+     Sign-sensitive comparison operators <, <=, > and >= are supported.
 
      There are several places in the GCC where this should/must be used:
 
@@ -255,6 +259,12 @@ along with GCC; see the file COPYING3.  If not see
 #define WI_BINARY_RESULT(T1, T2) \
   typename wi::binary_traits <T1, T2>::result_type
 
+/* The type of result produced by a signed binary predicate on types T1 and T2.
+   This is bool if signed comparisons make sense for T1 and T2 and leads to
+   substitution failure otherwise.  */
+#define WI_SIGNED_BINARY_PREDICATE_RESULT(T1, T2) \
+  typename wi::binary_traits <T1, T2>::signed_predicate_result
+
 /* The type of result produced by a unary operation on type T.  */
 #define WI_UNARY_RESULT(T) \
   typename wi::unary_traits <T>::result_type
@@ -316,7 +326,7 @@ namespace wi
     VAR_PRECISION,
 
     /* The integer has a constant precision (known at GCC compile time)
-       but no defined signedness.  */
+       and is signed.  */
     CONST_PRECISION
   };
 
@@ -379,6 +389,7 @@ namespace wi
        so as not to confuse gengtype.  */
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T2>::precision> > result_type;
+    typedef bool signed_predicate_result;
   };
 
   template <typename T1, typename T2>
@@ -394,6 +405,7 @@ namespace wi
        so as not to confuse gengtype.  */
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T1>::precision> > result_type;
+    typedef bool signed_predicate_result;
   };
 
   template <typename T1, typename T2>
@@ -404,6 +416,7 @@ namespace wi
     STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T1>::precision> > result_type;
+    typedef bool signed_predicate_result;
   };
 
   template <typename T1, typename T2>
@@ -3049,6 +3062,21 @@ wi::min_precision (const T &x, signop sgn)
   else
     return get_precision (x) - clz (x);
 }
+
+#define SIGNED_BINARY_PREDICATE(OP, F)			\
+  template <typename T1, typename T2>			\
+    inline WI_SIGNED_BINARY_PREDICATE_RESULT (T1, T2)	\
+    OP (const T1 &x, const T2 &y)			\
+    {							\
+      return wi::F (x, y);				\
+    }
+
+SIGNED_BINARY_PREDICATE (operator <, lts_p)
+SIGNED_BINARY_PREDICATE (operator <=, les_p)
+SIGNED_BINARY_PREDICATE (operator >, gts_p)
+SIGNED_BINARY_PREDICATE (operator >=, ges_p)
+
+#undef SIGNED_BINARY_PREDICATE
 
 template<typename T>
 void

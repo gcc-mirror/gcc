@@ -2440,10 +2440,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		  rbase = TREE_OPERAND (rbase, 0);
 		}
 	      if (base == rbase
-		  && wi::les_p (offset, roffset)
-		  && wi::les_p (roffset + ref->max_size,
-				offset + wi::lshift (wi::to_offset (len),
-						     LOG2_BITS_PER_UNIT)))
+		  && offset <= roffset
+		  && (roffset + ref->max_size
+		      <= offset + wi::lshift (wi::to_offset (len),
+					      LOG2_BITS_PER_UNIT)))
 		return true;
 	      break;
 	    }
