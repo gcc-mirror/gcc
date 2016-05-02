@@ -809,10 +809,6 @@ sh_option_override (void)
   if (optimize > 1 && !optimize_size)
     target_flags |= MASK_SAVE_ALL_TARGET_REGS;
 
-  /* Set default values of TARGET_CBRANCHDI4 and TARGET_CMPEQDI_T.  */
-  TARGET_CBRANCHDI4 = 1;
-  TARGET_CMPEQDI_T = 0;
-
   sh_cpu = PROCESSOR_SH1;
   assembler_dialect = 0;
   if (TARGET_SH2)
@@ -1936,24 +1932,17 @@ enum rtx_code
 prepare_cbranch_operands (rtx *operands, machine_mode mode,
 			  enum rtx_code comparison)
 {
-  /* The scratch reg is only available when this is invoked from within
-     the cbranchdi4_i splitter, through expand_cbranchdi4.  */
-  rtx scratch = NULL_RTX;
+  gcc_assert (can_create_pseudo_p ());
 
   if (comparison == LAST_AND_UNUSED_RTX_CODE)
     comparison = GET_CODE (operands[0]);
-  else
-    scratch = operands[4];
 
   sh_canonicalize_comparison (comparison, operands[1], operands[2],
 			      mode, false);
 
-  /* Notice that this function is also invoked after reload by
-     the cbranchdi4_i pattern, through expand_cbranchdi4.  */
   rtx op1 = operands[1];
+  operands[1] = force_reg (mode, op1);
 
-  if (can_create_pseudo_p ())
-    operands[1] = force_reg (mode, op1);
   /* When we are handling DImode comparisons, we want to keep constants so
      that we can optimize the component comparisons; however, memory loads
      are better issued as a whole so that they can be scheduled well.
@@ -1969,15 +1958,8 @@ prepare_cbranch_operands (rtx *operands, machine_mode mode,
 	      && ((comparison != EQ && comparison != NE)
 		  || (REG_P (op1) && REGNO (op1) != R0_REG)
 		  || !satisfies_constraint_I08 (operands[2])))))
-    {
-      if (scratch && GET_MODE (scratch) == mode)
-	{
-	  emit_move_insn (scratch, operands[2]);
-	  operands[2] = scratch;
-	}
-      else if (can_create_pseudo_p ())
-	operands[2] = force_reg (mode, operands[2]);
-    }
+    operands[2] = force_reg (mode, operands[2]);
+
   return comparison;
 }
 
@@ -2027,7 +2009,6 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   int num_branches;
   int prob, rev_prob;
   int msw_taken_prob = -1, msw_skip_prob = -1, lsw_taken_prob = -1;
-  rtx scratch = operands[4];
 
   comparison = prepare_cbranch_operands (operands, DImode, comparison);
   op1h = gen_highpart_mode (SImode, DImode, operands[1]);
@@ -2039,17 +2020,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   rev_prob = REG_BR_PROB_BASE - prob;
   switch (comparison)
     {
-    /* ??? Should we use the cmpeqdi_t pattern for equality comparisons?
-       That costs 1 cycle more when the first branch can be predicted taken,
-       but saves us mispredicts because only one branch needs prediction.
-       It also enables generating the cmpeqdi_t-1 pattern.  */
     case EQ:
-      if (TARGET_CMPEQDI_T)
-	{
-	  emit_insn (gen_cmpeqdi_t (operands[1], operands[2]));
-	  emit_jump_insn (gen_branch_true (operands[3]));
-	  return true;
-	}
       msw_skip = NE;
       lsw_taken = EQ;
       if (prob >= 0)
@@ -2070,12 +2041,6 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	}
       break;
     case NE:
-      if (TARGET_CMPEQDI_T)
-	{
-	  emit_insn (gen_cmpeqdi_t (operands[1], operands[2]));
-	  emit_jump_insn (gen_branch_false (operands[3]));
-	  return true;
-	}
       msw_taken = NE;
       msw_taken_prob = prob;
       lsw_taken = NE;
@@ -2152,15 +2117,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   operands[1] = op1h;
   operands[2] = op2h;
   operands[4] = NULL_RTX;
-  if (reload_completed
-      && ! arith_reg_or_0_operand (op2h, SImode)
-      && (true_regnum (op1h) || (comparison != EQ && comparison != NE))
-      && (msw_taken != LAST_AND_UNUSED_RTX_CODE
-	  || msw_skip != LAST_AND_UNUSED_RTX_CODE))
-    {
-      emit_move_insn (scratch, operands[2]);
-      operands[2] = scratch;
-    }
+
   if (msw_taken != LAST_AND_UNUSED_RTX_CODE)
     expand_cbranchsi4 (operands, msw_taken, msw_taken_prob);
   if (msw_skip != LAST_AND_UNUSED_RTX_CODE)
@@ -2173,13 +2130,6 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	{
 	  operands[1] = op1h;
 	  operands[2] = op2h;
-	  if (reload_completed
-	      && ! arith_reg_or_0_operand (op2h, SImode)
-	      && (true_regnum (op1h) || (comparison != EQ && comparison != NE)))
-	    {
-	      emit_move_insn (scratch, operands[2]);
-	      operands[2] = scratch;
-	    }
 	}
 
       operands[3] = skip_label = gen_label_rtx ();
@@ -2189,16 +2139,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   operands[1] = op1l;
   operands[2] = op2l;
   if (lsw_taken != LAST_AND_UNUSED_RTX_CODE)
-    {
-      if (reload_completed
-	  && ! arith_reg_or_0_operand (op2l, SImode)
-	  && (true_regnum (op1l) || (lsw_taken != EQ && lsw_taken != NE)))
-	{
-	  emit_move_insn (scratch, operands[2]);
-	  operands[2] = scratch;
-	}
-      expand_cbranchsi4 (operands, lsw_taken, lsw_taken_prob);
-    }
+    expand_cbranchsi4 (operands, lsw_taken, lsw_taken_prob);
   if (msw_skip != LAST_AND_UNUSED_RTX_CODE)
     emit_label (skip_label);
   return true;

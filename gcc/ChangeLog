@@ -1,3 +1,16 @@
+2016-05-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52898
+	* config/sh/sh.c (sh_option_override): Remove TARGET_CBRANCHDI4,
+	TARGET_CMPEQDI_T.
+	(prepare_cbranch_operands): Don't use scratch register.  Assume that
+	function is used when pseudos can be created.
+	(expand_cbranchdi4): Likewise.  Remove unused TARGET_CMPEQDI_T paths.
+	* config/sh/sh.md (cbranchsi4): Allow only when pseudos can be created.
+	(cbranchdi4, cbranchdi4_i): Simplify to single cbranchdi4
+	define_expand.  Allow it only when pseudos can be created.
+	* config/sh/sh.opt (mcbranchdi, mcmpeqdi): Delete.
+
 2016-05-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md (BC): Only allow -1 operands.

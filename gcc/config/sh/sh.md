@@ -1115,7 +1115,7 @@
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))
    (clobber (reg:SI T_REG))]
-  ""
+  "can_create_pseudo_p ()"
 {
   expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE, -1);
   DONE;
@@ -1161,7 +1161,8 @@
 			   (label_ref (match_dup 2))
 			   (pc)))])
 
-;; FIXME: These could probably use code iterators for the compare op.
+;; FIXME: These don't seem to have any effect on the generated cbranch code
+;;	  anymore, but only on some register allocation choices.
 (define_split
   [(set (pc)
 	(if_then_else (le (match_operand:SI 0 "arith_reg_operand" "")
@@ -1255,48 +1256,12 @@
 (define_expand "cbranchdi4"
   [(set (pc)
 	(if_then_else (match_operator 0 "comparison_operator"
-			[(match_operand:DI 1 "arith_operand" "")
-			 (match_operand:DI 2 "arith_operand" "")])
-		      (label_ref (match_operand 3 "" ""))
+			[(match_operand:DI 1 "arith_operand")
+			 (match_operand:DI 2 "arith_operand")])
+		      (label_ref (match_operand 3))
 		      (pc)))
-   (clobber (match_dup 4))
    (clobber (reg:SI T_REG))]
-  "TARGET_CBRANCHDI4 || TARGET_SH2"
-{
-  enum rtx_code comparison;
-
-  if (!TARGET_CBRANCHDI4)
-    {
-      sh_emit_compare_and_branch (operands, DImode);
-      DONE;
-    }
-  else
-    {
-      if (expand_cbranchdi4 (operands, LAST_AND_UNUSED_RTX_CODE))
-	DONE;
-
-      comparison = prepare_cbranch_operands (operands, DImode,
-					     LAST_AND_UNUSED_RTX_CODE);
-      if (comparison != GET_CODE (operands[0]))
-	operands[0]
-	  = gen_rtx_fmt_ee (comparison, VOIDmode, operands[1], operands[2]);
-       operands[4] = gen_rtx_SCRATCH (SImode);
-    }
-})
-
-(define_insn_and_split "cbranchdi4_i"
-  [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
-			[(match_operand:DI 1 "arith_operand" "r,r")
-			 (match_operand:DI 2 "arith_operand" "rN,I08")])
-		      (label_ref (match_operand 3 "" ""))
-		      (pc)))
-   (clobber (match_scratch:SI 4 "=X,&r"))
-   (clobber (reg:SI T_REG))]
-  "TARGET_CBRANCHDI4"
-  "#"
-  "&& reload_completed"
-  [(pc)]
+  "TARGET_SH2 && can_create_pseudo_p ()"
 {
   if (!expand_cbranchdi4 (operands, GET_CODE (operands[0])))
     FAIL;
