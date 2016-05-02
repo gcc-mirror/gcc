@@ -1,3 +1,8 @@
+2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/spec-options.c: Run the test on all targets.
+	* gcc.dg/foo.specs: Use cpp_unique_options.
+
 2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/unord.c: New testcase.
