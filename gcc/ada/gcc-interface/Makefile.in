@@ -2670,10 +2670,9 @@ gnatlink-re: ../stamp-tools gnatmake-re
 install-gcc-specs:
 #	Install all the requested GCC spec files.
 
-	for f in $(GCC_SPEC_FILES); do \
-	    $(INSTALL_DATA_DATE) $(srcdir)/ada/$$f \
-	    $(libsubdir)/$$(echo $$f|sed -e 's#_[a-zA-Z0-9]*##g'); \
-	done
+	$(foreach f,$(GCC_SPEC_FILES), \
+	    $(INSTALL_DATA_DATE) $(srcdir)/ada/$(f) \
+	    $(DESTDIR)$(libsubdir)/$$(echo $(f)|sed -e 's#_[a-zA-Z0-9]*##g');)
 
 install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	$(RMDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
