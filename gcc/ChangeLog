@@ -1,5 +1,9 @@
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree.c (cst_and_fits_in_hwi): Simplify.
+
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree.h (wi::to_wide): New function.
 	* expr.c (expand_expr_real_1): Use wi::to_wide.
 	* fold-const.c (int_const_binop_1): Likewise.
