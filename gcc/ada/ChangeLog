@@ -1,3 +1,9 @@
+2016-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Range_to_gnu): New static function.
+	(Raise_Error_to_gnu) <N_In>: Call it to translate the range.
+	(gnat_to_gnu) <N_In>: Likewise.
+
 2016-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (ACATSCMD): New variable.
