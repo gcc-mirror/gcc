@@ -1094,6 +1094,16 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   info->descriptor = desc;
   size = gfc_index_one_node;
 
+  /* Emit a DECL_EXPR for the variable sized array type in
+     GFC_TYPE_ARRAY_DATAPTR_TYPE so the gimplification of its type
+     sizes works correctly.  */
+  tree arraytype = TREE_TYPE (GFC_TYPE_ARRAY_DATAPTR_TYPE (type));
+  if (! TYPE_NAME (arraytype))
+    TYPE_NAME (arraytype) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+					NULL_TREE, arraytype);
+  gfc_add_expr_to_block (pre, build1 (DECL_EXPR,
+				      arraytype, TYPE_NAME (arraytype)));
+
   /* Fill in the array dtype.  */
   tmp = gfc_conv_descriptor_dtype (desc);
   gfc_add_modify (pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
