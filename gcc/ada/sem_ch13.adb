@@ -4322,8 +4322,8 @@ package body Sem_Ch13 is
          ----------------------------
 
          function Valid_Default_Iterator (Subp : Entity_Id) return Boolean is
-            Formal : Entity_Id;
             Root_T : constant Entity_Id := Root_Type (Etype (Etype (Subp)));
+            Formal : Entity_Id;
 
          begin
             if not Check_Primitive_Function (Subp) then
@@ -4422,7 +4422,7 @@ package body Sem_Ch13 is
                   Set_Is_Overloaded (Expr, False);
                else
                   Error_Msg_N
-                    ("No interpretation is a valid default iterator!", Expr);
+                    ("no interpretation is a valid default iterator!", Expr);
                end if;
             end;
          end if;

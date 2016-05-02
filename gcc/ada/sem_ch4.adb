@@ -597,13 +597,15 @@ package body Sem_Ch4 is
                if Is_Tagged_Type (Type_Id)
                  and then Has_Discriminants (Type_Id)
                  and then not Is_Constrained (Type_Id)
-                 and then Present
-                   (Discriminant_Default_Value (First_Discriminant (Type_Id)))
+                 and then
+                   Present
+                     (Discriminant_Default_Value
+                       (First_Discriminant (Type_Id)))
                then
                   declare
+                     Constr : constant List_Id    := New_List;
                      Loc    : constant Source_Ptr := Sloc (E);
                      Discr  : Entity_Id := First_Discriminant (Type_Id);
-                     Constr : constant List_Id := New_List;
 
                   begin
                      if Present (Discriminant_Default_Value (Discr)) then
@@ -612,11 +614,12 @@ package body Sem_Ch4 is
                            Next_Discriminant (Discr);
                         end loop;
 
-                        Rewrite (E, Make_Subtype_Indication (Loc,
-                          Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
-                          Constraint   =>
-                            Make_Index_Or_Discriminant_Constraint (Loc,
-                              Constr)));
+                        Rewrite (E,
+                          Make_Subtype_Indication (Loc,
+                            Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
+                            Constraint   =>
+                              Make_Index_Or_Discriminant_Constraint (Loc,
+                                Constraints => Constr)));
                      end if;
                   end;
                end if;
@@ -638,7 +641,7 @@ package body Sem_Ch4 is
                      Error_Msg_N ("constraint not allowed here", E);
 
                      if Nkind (Constraint (E)) =
-                       N_Index_Or_Discriminant_Constraint
+                          N_Index_Or_Discriminant_Constraint
                      then
                         Error_Msg_N -- CODEFIX
                           ("\if qualified expression was meant, " &

@@ -4980,7 +4980,6 @@ package body Sem_Attr is
             --  type may lead to spurious errors if context is a case.
 
             if not GNATprove_Mode then
-
                if not Is_Discrete_Type (Pref_Typ) then
                   Pref_Typ := Base_Type (Pref_Typ);
                end if;
