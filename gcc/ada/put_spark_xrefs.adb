@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,47 +31,30 @@ begin
 
    for J in 1 .. SPARK_File_Table.Last loop
       declare
-         F     : SPARK_File_Record renames SPARK_File_Table.Table (J);
-         Start : Scope_Index;
-         Stop  : Scope_Index;
+         F : SPARK_File_Record renames SPARK_File_Table.Table (J);
 
       begin
-         Start := F.From_Scope;
-         Stop  := F.To_Scope;
-
          Write_Info_Initiate ('F');
          Write_Info_Char ('D');
          Write_Info_Char (' ');
          Write_Info_Nat (F.File_Num);
          Write_Info_Char (' ');
 
-         for N in F.File_Name'Range loop
-            Write_Info_Char (F.File_Name (N));
-         end loop;
+         Write_Info_Str (F.File_Name.all);
 
          --  If file is a subunit, print the file name for the unit
 
          if F.Unit_File_Name /= null then
-            Write_Info_Char (' ');
-            Write_Info_Char ('-');
-            Write_Info_Char ('>');
-            Write_Info_Char (' ');
-
-            for N in F.Unit_File_Name'Range loop
-               Write_Info_Char (F.Unit_File_Name (N));
-            end loop;
+            Write_Info_Str (" -> " & F.Unit_File_Name.all);
          end if;
 
          Write_Info_Terminate;
 
          --  Loop through scope entries for this file
 
-         loop
-            exit when Start = Stop + 1;
-            pragma Assert (Start <= Stop);
-
+         for J in F.From_Scope .. F.To_Scope loop
             declare
-               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Start);
+               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (J);
 
             begin
                Write_Info_Initiate ('F');
@@ -87,15 +70,10 @@ begin
 
                pragma Assert (S.Scope_Name.all /= "");
 
-               for N in S.Scope_Name'Range loop
-                  Write_Info_Char (S.Scope_Name (N));
-               end loop;
+               Write_Info_Str (S.Scope_Name.all);
 
                if S.Spec_File_Num /= 0 then
-                  Write_Info_Char (' ');
-                  Write_Info_Char ('-');
-                  Write_Info_Char ('>');
-                  Write_Info_Char (' ');
+                  Write_Info_Str (" -> ");
                   Write_Info_Nat (S.Spec_File_Num);
                   Write_Info_Char ('.');
                   Write_Info_Nat (S.Spec_Scope_Num);
@@ -103,8 +81,6 @@ begin
 
                Write_Info_Terminate;
             end;
-
-            Start := Start + 1;
          end loop;
       end;
    end loop;
@@ -114,129 +90,103 @@ begin
    for J in 1 .. SPARK_File_Table.Last loop
       declare
          F           : SPARK_File_Record renames SPARK_File_Table.Table (J);
-         Start       : Scope_Index;
-         Stop        : Scope_Index;
          File        : Nat;
          Scope       : Nat;
          Entity_Line : Nat;
          Entity_Col  : Nat;
 
       begin
-         Start := F.From_Scope;
-         Stop  := F.To_Scope;
-
          --  Loop through scope entries for this file
 
-         loop
-            exit when Start = Stop + 1;
-            pragma Assert (Start <= Stop);
-
+         for K in F.From_Scope .. F.To_Scope loop
             Output_One_Scope : declare
-               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Start);
-
-               XStart : Xref_Index;
-               XStop  : Xref_Index;
+               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (K);
 
             begin
-               XStart := S.From_Xref;
-               XStop  := S.To_Xref;
+               --  Write only non-empty tables
+               if S.From_Xref <= S.To_Xref then
 
-               if XStart > XStop then
-                  goto Continue;
+                  Write_Info_Initiate ('F');
+                  Write_Info_Char ('X');
+                  Write_Info_Char (' ');
+                  Write_Info_Nat (F.File_Num);
+                  Write_Info_Char (' ');
+
+                  Write_Info_Str (F.File_Name.all);
+
+                  Write_Info_Char (' ');
+                  Write_Info_Char ('.');
+                  Write_Info_Nat (S.Scope_Num);
+                  Write_Info_Char (' ');
+
+                  Write_Info_Str (S.Scope_Name.all);
+
+                  --  Default value of (0,0) is used for the special __HEAP
+                  --  variable so use another default value.
+
+                  Entity_Line := 0;
+                  Entity_Col  := 1;
+
+                  --  Loop through cross reference entries for this scope
+
+                  for X in S.From_Xref .. S.To_Xref loop
+
+                     Output_One_Xref : declare
+                        R : SPARK_Xref_Record renames
+                          SPARK_Xref_Table.Table (X);
+
+                     begin
+                        if R.Entity_Line /= Entity_Line
+                          or else R.Entity_Col /= Entity_Col
+                        then
+                           Write_Info_Terminate;
+
+                           Write_Info_Initiate ('F');
+                           Write_Info_Char (' ');
+                           Write_Info_Nat (R.Entity_Line);
+                           Write_Info_Char (R.Etype);
+                           Write_Info_Nat (R.Entity_Col);
+                           Write_Info_Char (' ');
+
+                           Write_Info_Str (R.Entity_Name.all);
+
+                           Entity_Line := R.Entity_Line;
+                           Entity_Col  := R.Entity_Col;
+                           File        := F.File_Num;
+                           Scope       := S.Scope_Num;
+                        end if;
+
+                        if Write_Info_Col > 72 then
+                           Write_Info_Terminate;
+                           Write_Info_Initiate ('.');
+                        end if;
+
+                        Write_Info_Char (' ');
+
+                        if R.File_Num /= File then
+                           Write_Info_Nat (R.File_Num);
+                           Write_Info_Char ('|');
+                           File  := R.File_Num;
+                           Scope := 0;
+                        end if;
+
+                        if R.Scope_Num /= Scope then
+                           Write_Info_Char ('.');
+                           Write_Info_Nat (R.Scope_Num);
+                           Write_Info_Char (':');
+                           Scope := R.Scope_Num;
+                        end if;
+
+                        Write_Info_Nat (R.Line);
+                        Write_Info_Char (R.Rtype);
+                        Write_Info_Nat (R.Col);
+                     end Output_One_Xref;
+
+                  end loop;
+
+                  Write_Info_Terminate;
                end if;
-
-               Write_Info_Initiate ('F');
-               Write_Info_Char ('X');
-               Write_Info_Char (' ');
-               Write_Info_Nat (F.File_Num);
-               Write_Info_Char (' ');
-
-               for N in F.File_Name'Range loop
-                  Write_Info_Char (F.File_Name (N));
-               end loop;
-
-               Write_Info_Char (' ');
-               Write_Info_Char ('.');
-               Write_Info_Nat (S.Scope_Num);
-               Write_Info_Char (' ');
-
-               for N in S.Scope_Name'Range loop
-                  Write_Info_Char (S.Scope_Name (N));
-               end loop;
-
-               --  Default value of (0,0) is used for the special __HEAP
-               --  variable so use another default value.
-
-               Entity_Line := 0;
-               Entity_Col  := 1;
-
-               --  Loop through cross reference entries for this scope
-
-               loop
-                  exit when XStart = XStop + 1;
-                  pragma Assert (XStart <= XStop);
-
-                  Output_One_Xref : declare
-                     R : SPARK_Xref_Record renames
-                           SPARK_Xref_Table.Table (XStart);
-
-                  begin
-                     if R.Entity_Line /= Entity_Line
-                       or else R.Entity_Col /= Entity_Col
-                     then
-                        Write_Info_Terminate;
-
-                        Write_Info_Initiate ('F');
-                        Write_Info_Char (' ');
-                        Write_Info_Nat (R.Entity_Line);
-                        Write_Info_Char (R.Etype);
-                        Write_Info_Nat (R.Entity_Col);
-                        Write_Info_Char (' ');
-
-                        for N in R.Entity_Name'Range loop
-                           Write_Info_Char (R.Entity_Name (N));
-                        end loop;
-
-                        Entity_Line := R.Entity_Line;
-                        Entity_Col  := R.Entity_Col;
-                        File        := F.File_Num;
-                        Scope       := S.Scope_Num;
-                     end if;
-
-                     if Write_Info_Col > 72 then
-                        Write_Info_Terminate;
-                        Write_Info_Initiate ('.');
-                     end if;
-
-                     Write_Info_Char (' ');
-
-                     if R.File_Num /= File then
-                        Write_Info_Nat (R.File_Num);
-                        Write_Info_Char ('|');
-                        File  := R.File_Num;
-                        Scope := 0;
-                     end if;
-
-                     if R.Scope_Num /= Scope then
-                        Write_Info_Char ('.');
-                        Write_Info_Nat (R.Scope_Num);
-                        Write_Info_Char (':');
-                        Scope := R.Scope_Num;
-                     end if;
-
-                     Write_Info_Nat (R.Line);
-                     Write_Info_Char (R.Rtype);
-                     Write_Info_Nat (R.Col);
-                  end Output_One_Xref;
-
-                  XStart := XStart + 1;
-               end loop;
-
-               Write_Info_Terminate;
             end Output_One_Scope;
-
-         <<Continue>>
-            Start := Start + 1;
          end loop;
       end;
    end loop;

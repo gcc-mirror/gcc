@@ -1,3 +1,17 @@
+2016-05-02  Yannick Moy  <moy@adacore.com>
+
+	* a-tigeli.adb (Get_Line): Always set Last prior to returning.
+
+2016-05-02  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb: Minor style fix in whitespace of declarations.
+	* put_spark_xrefs.adb (Put_SPARK_Xrefs): printing of strings
+	refactored without loops.
+	* put_spark_xrefs.ads (Write_Info_Str): new formal argument of
+	generic procedure.
+	* spark_xrefs.adb (Write_Info_Str): new actual in instantiation
+	of generic procedure.
+
 2016-05-02  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib-xref-spark_specific.adb (Add_SPARK_Scope): add task type scope.
