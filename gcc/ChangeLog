@@ -1,3 +1,15 @@
+2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	* flag-types.h (enum warn_strict_overflow_code): Move ...
+	* coretypes.h: ... here.
+	* fold-const.h (fold_overflow_warning): Declare.
+	* fold-const.c (fold_overflow_warning): Make non-static.
+	(fold_comparison): Move the transformation of X +- C1 CMP C2
+	into X CMP C2 -+ C1 ...
+	* match.pd: ... here.
+	* gimple-fold.c (fold_stmt_1): Protect with
+	fold_defer_overflow_warnings.
+
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* omp-low.c (struct oacc_loop): Add 'inner' field.

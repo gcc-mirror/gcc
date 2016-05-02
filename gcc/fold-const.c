@@ -297,7 +297,7 @@ fold_deferring_overflow_warnings_p (void)
 /* This is called when we fold something based on the fact that signed
    overflow is undefined.  */
 
-static void
+void
 fold_overflow_warning (const char* gmsgid, enum warn_strict_overflow_code wc)
 {
   if (fold_deferring_overflow_warnings > 0)
@@ -8391,75 +8391,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
   STRIP_SIGN_NOPS (arg0);
   STRIP_SIGN_NOPS (arg1);
-
-  /* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 -+ C1.  */
-  if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-      && (equality_code
-	  || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
-      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-      && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1))
-      && TREE_CODE (arg1) == INTEGER_CST
-      && !TREE_OVERFLOW (arg1))
-    {
-      const enum tree_code
-	reverse_op = TREE_CODE (arg0) == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
-      tree const1 = TREE_OPERAND (arg0, 1);
-      tree const2 = fold_convert_loc (loc, TREE_TYPE (const1), arg1);
-      tree variable = TREE_OPERAND (arg0, 0);
-      tree new_const = int_const_binop (reverse_op, const2, const1);
-
-      /* If the constant operation overflowed this can be
-	 simplified as a comparison against INT_MAX/INT_MIN.  */
-      if (TREE_OVERFLOW (new_const)
-	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
-	{
-	  int const1_sgn = tree_int_cst_sgn (const1);
-	  enum tree_code code2 = code;
-
-	  /* Get the sign of the constant on the lhs if the
-	     operation were VARIABLE + CONST1.  */
-	  if (TREE_CODE (arg0) == MINUS_EXPR)
-	    const1_sgn = -const1_sgn;
-
-	  /* The sign of the constant determines if we overflowed
-	     INT_MAX (const1_sgn == -1) or INT_MIN (const1_sgn == 1).
-	     Canonicalize to the INT_MIN overflow by swapping the comparison
-	     if necessary.  */
-	  if (const1_sgn == -1)
-	    code2 = swap_tree_comparison (code);
-
-	  /* We now can look at the canonicalized case
-	       VARIABLE + 1  CODE2  INT_MIN
-	     and decide on the result.  */
-	  switch (code2)
-	    {
-	    case EQ_EXPR:
-	    case LT_EXPR:
-	    case LE_EXPR:
-	      return
-		omit_one_operand_loc (loc, type, boolean_false_node, variable);
-
-	    case NE_EXPR:
-	    case GE_EXPR:
-	    case GT_EXPR:
-	      return
-		omit_one_operand_loc (loc, type, boolean_true_node, variable);
-
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
-      else
-	{
-	  if (!equality_code)
-	    fold_overflow_warning ("assuming signed overflow does not occur "
-				   "when changing X +- C1 cmp C2 to "
-				   "X cmp C2 -+ C1",
-				   WARN_STRICT_OVERFLOW_COMPARISON);
-	  return fold_build2_loc (loc, code, type, variable, new_const);
-	}
-    }
 
   /* For comparisons of pointers we can decompose it to a compile time
      comparison of the base objects and the offsets into the object.
