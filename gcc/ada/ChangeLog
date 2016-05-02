@@ -1,3 +1,14 @@
+2016-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/70900
+	Backport from mainline
+	2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Do not set a delay freeze on
+	a subprogram that returns a class-wide type, if the subprogram
+	is a compilation unit, because otherwise gigi will treat the
+	subprogram as external, leading to link errors.
+
 2016-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
