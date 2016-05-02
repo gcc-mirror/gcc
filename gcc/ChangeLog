@@ -1,3 +1,7 @@
+2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/install.texi: Document supported in-tree gmp/mpfr/mpc versions.
+
 2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (X u< X, X u> X): New transformations.

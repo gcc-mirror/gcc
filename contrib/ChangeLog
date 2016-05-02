@@ -1,3 +1,7 @@
+2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* download_prerequisites: Adjust gmp/mpfr/mpc versions.
+
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* compare-all-tests: Remove SH5 support.

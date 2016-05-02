@@ -4,7 +4,7 @@
 # Run this from the top level of the gcc source tree and the gcc
 # build will do the right thing.
 #
-# (C) 2010 Free Software Foundation
+# (C) 2010-2016 Free Software Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,9 +30,9 @@ if [ ! -e gcc/BASE-VER ] ; then
 fi
 
 # Necessary to build GCC.
-MPFR=mpfr-2.4.2
-GMP=gmp-4.3.2
-MPC=mpc-0.8.1
+MPFR=mpfr-3.1.4
+GMP=gmp-6.1.0
+MPC=mpc-1.0.3
 
 wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPFR.tar.bz2 || exit 1
 tar xjf $MPFR.tar.bz2 || exit 1

@@ -1,3 +1,12 @@
+2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* configure.ac (mpfr): Remove pre-3.1.0 mpfr compatibility code.
+	* configure: Regenerated.
+	* Makefile.def (gmp): Explicitly disable assembler.
+	(mpfr): Adjust lib_path.
+	(mpc): Likewise.
+	* Makefile.in: Regenerated.
+
 2016-05-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/70704
