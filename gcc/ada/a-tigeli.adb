@@ -150,6 +150,12 @@ is
 begin
    FIO.Check_Read_Status (AP (File));
 
+   --  Set Last to Item'First - 1 when no characters are read, as mandated by
+   --  Ada RM. In the case where Item'First is negative or null, this results
+   --  in Constraint_Error being raised.
+
+   Last := Item'First - 1;
+
    --  Immediate exit for null string, this is a case in which we do not
    --  need to test for end of file and we do not skip a line mark under
    --  any circumstances.
@@ -159,8 +165,6 @@ begin
    end if;
 
    N := Item'Last - Item'First + 1;
-
-   Last := Item'First - 1;
 
    --  Here we have at least one character, if we are immediately before
    --  a line mark, then we will just skip past it storing no characters.

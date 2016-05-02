@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -160,7 +160,10 @@ package body SPARK_Xrefs is
    procedure pspark is
 
       procedure Write_Info_Char (C : Character) renames Write_Char;
-      --  Write one character;
+      --  Write one character
+
+      procedure Write_Info_Str (Val : String) renames Write_Str;
+      --  Write string
 
       function Write_Info_Col return Positive;
       --  Return next column for writing

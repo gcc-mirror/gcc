@@ -191,8 +191,7 @@ package body Lib.Xref is
 
          Set_Has_Xref_Entry (Key.Ent);
 
-      --  It was already in Xref_Set, so throw away the tentatively-added
-      --  entry.
+      --  It was already in Xref_Set, so throw away the tentatively-added entry
 
       else
          Xrefs.Decrement_Last;
@@ -373,16 +372,16 @@ package body Lib.Xref is
       Set_Ref : Boolean   := True;
       Force   : Boolean   := False)
    is
-      Actual_Typ     : Character := Typ;
-      Call           : Node_Id;
-      Def            : Source_Ptr;
-      Ent            : Entity_Id;
-      Ent_Scope      : Entity_Id;
-      Formal         : Entity_Id;
-      Kind           : Entity_Kind;
-      Nod            : Node_Id;
-      Ref            : Source_Ptr;
-      Ref_Scope      : Entity_Id;
+      Actual_Typ : Character := Typ;
+      Call       : Node_Id;
+      Def        : Source_Ptr;
+      Ent        : Entity_Id;
+      Ent_Scope  : Entity_Id;
+      Formal     : Entity_Id;
+      Kind       : Entity_Kind;
+      Nod        : Node_Id;
+      Ref        : Source_Ptr;
+      Ref_Scope  : Entity_Id;
 
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id;
       --  Get the enclosing entity through renamings, which may come from

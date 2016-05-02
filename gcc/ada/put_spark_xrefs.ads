@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,9 @@ generic
 
    with procedure Write_Info_Char (C : Character) is <>;
    --  Output one character
+
+   with procedure Write_Info_Str (Val : String) is <>;
+   --  Output string stored in string pointer
 
    with procedure Write_Info_Initiate (Key : Character) is <>;
    --  Initiate write of new line to output file, the parameter is the
