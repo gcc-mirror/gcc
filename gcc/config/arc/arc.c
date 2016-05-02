@@ -264,8 +264,8 @@ arc_vector_mode_supported_p (machine_mode mode)
 
 /* Implements target hook TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
-static enum machine_mode
-arc_preferred_simd_mode (enum machine_mode mode)
+static machine_mode
+arc_preferred_simd_mode (machine_mode mode)
 {
   switch (mode)
     {
@@ -2347,7 +2347,7 @@ arc_save_restore (rtx base_reg,
 
       for (regno = 0; regno <= 31; regno++)
 	{
-	  enum machine_mode mode = SImode;
+	  machine_mode mode = SImode;
 	  bool found = false;
 
 	  if (TARGET_LL64
@@ -5124,6 +5124,7 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
 	    suffix = "@dtpoff";
 	  break;
 	default:
+	  suffix = "@invalid";
 	  output_operand_lossage ("invalid UNSPEC as operand: %d", XINT (x,1));
 	  break;
 	}
@@ -9847,7 +9848,7 @@ arc_no_speculation_in_delay_slots_p ()
 static rtx
 arc_dwarf_register_span (rtx rtl)
 {
-   enum machine_mode mode = GET_MODE (rtl);
+   machine_mode mode = GET_MODE (rtl);
    unsigned regno;
    rtx p;
 
