@@ -1,3 +1,8 @@
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Alignment_Error): Removed.
+	(Get_Alignment_Value): Code cleanup.
+
 2016-05-02  Tristan Gingold  <gingold@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Use Has_Protected
