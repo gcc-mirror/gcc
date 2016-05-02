@@ -1,3 +1,9 @@
+2016-05-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70851
+	* c-decl.c (grokdeclarator): Diagnose when array's size has an
+	incomplete type.
+
 2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR middle-end/70626
