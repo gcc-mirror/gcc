@@ -623,8 +623,9 @@ package body Ada.Directories is
             Get_Next_Entry (Search, Dir_Ent);
 
             declare
+               Fname : constant String := Full_Name   (Dir_Ent);
                Sname : constant String := Simple_Name (Dir_Ent);
-               Fname : constant String := Full_Name (Dir_Ent);
+
             begin
                if OS_Lib.Is_Directory (Fname) then
                   if Sname /= "." and then Sname /= ".." then
