@@ -7153,7 +7153,7 @@ package body Sem_Util is
       end if;
 
       while Present (Old_Disc) and then Present (New_Disc) loop
-         if Old_Disc = Par_Disc  then
+         if Old_Disc = Par_Disc then
             return New_Disc;
          end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -190,7 +190,7 @@ package body Prj is
       pragma Warnings (Off, Dont_Care);
 
    begin
-      if not Opt.Keep_Temporary_Files  then
+      if not Opt.Keep_Temporary_Files then
          if Current_Verbosity = High then
             Write_Line ("Removing temp file: " & Get_Name_String (Path));
          end if;

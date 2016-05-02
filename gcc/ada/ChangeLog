@@ -1,3 +1,11 @@
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* get_spark_xrefs.adb (Get_Nat, Get_Name): Initialize variables when
+	they are declared; refine type of a counter from Integer to Natural.
+	* sem_ch5.adb, gnatcmd.adb, s-intman-posix.adb, eval_fat.adb,
+	prj.adb, sem_util.adb, s-intman-android.adb, prj-nmsc.adb, sem_ch8.adb,
+	exp_ch3.adb: Minor editing.
+
 2016-05-02  Yannick Moy  <moy@adacore.com>
 
 	* a-tigeli.adb (Get_Line): Always set Last prior to returning.

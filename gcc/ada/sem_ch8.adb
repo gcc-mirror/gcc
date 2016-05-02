@@ -6957,7 +6957,7 @@ package body Sem_Ch8 is
             --  Issue error message, but avoid this if error issued already.
             --  Use identifier of prefix if one is available.
 
-            if P_Name = Any_Id  then
+            if P_Name = Any_Id then
                null;
 
             --  It is not an error if the prefix is the current instance of
@@ -8610,7 +8610,7 @@ package body Sem_Ch8 is
                   Next (Pack_Name);
                end loop;
 
-            elsif Nkind (Decl) = N_Use_Type_Clause  then
+            elsif Nkind (Decl) = N_Use_Type_Clause then
                Chain_Use_Clause (Decl);
 
                Id := First (Subtype_Marks (Decl));
@@ -9152,7 +9152,7 @@ package body Sem_Ch8 is
                      Ent1 := Entity_Of_Unit (Unit1);
                      Ent2 := Entity_Of_Unit (Unit2);
 
-                     if Scope (Ent2) = Standard_Standard  then
+                     if Scope (Ent2) = Standard_Standard then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Err_No := Clause1;
 

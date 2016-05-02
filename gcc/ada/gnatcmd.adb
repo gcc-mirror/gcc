@@ -701,7 +701,7 @@ begin
                if Call_GPR_Tool then
                   case The_Command is
                      when Make | Compile | Bind | Link =>
-                        if Locate_Exec_On_Path (Gprbuild) /= null  then
+                        if Locate_Exec_On_Path (Gprbuild) /= null then
                            Program    := new String'(Gprbuild);
                            Get_Target := True;
 
