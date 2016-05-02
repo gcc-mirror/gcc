@@ -1,5 +1,17 @@
 2016-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (elaborate_reference_1): Do not bother about
+	operand #2 for COMPONENT_REF.
+	* gcc-interface/utils2.c (gnat_save_expr): Likewise.
+	(gnat_protect_expr): Likewise.
+	(gnat_stabilize_reference_1): Likewise.
+	(gnat_rewrite_reference): Do not bother about operand #3 for ARRAY_REF.
+	(get_inner_constant_reference): Likewise.
+	(gnat_invariant_expr): Likewise.
+	* gcc-interface/trans.c (fold_constant_decl_in_expr): Likewise.
+
+2016-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Range_to_gnu): New static function.
 	(Raise_Error_to_gnu) <N_In>: Call it to translate the range.
 	(gnat_to_gnu) <N_In>: Likewise.

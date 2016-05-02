@@ -2510,7 +2510,7 @@ gnat_save_expr (tree exp)
   if (code == COMPONENT_REF
       && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     return build3 (code, type, gnat_save_expr (TREE_OPERAND (exp, 0)),
-		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
+		   TREE_OPERAND (exp, 1), NULL_TREE);
 
   return save_expr (exp);
 }
@@ -2562,7 +2562,7 @@ gnat_protect_expr (tree exp)
   if (code == COMPONENT_REF
       && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
-		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
+		   TREE_OPERAND (exp, 1), NULL_TREE);
 
   /* If this is a fat pointer or a scalar, just make a SAVE_EXPR.  Likewise
      for a CALL_EXPR as large objects are returned via invisible reference
@@ -2610,7 +2610,7 @@ gnat_stabilize_reference_1 (tree e, void *data)
 	result
 	  = build3 (code, type,
 		    gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), data),
-		    TREE_OPERAND (e, 1), TREE_OPERAND (e, 2));
+		    TREE_OPERAND (e, 1), NULL_TREE);
       /* If the expression has side-effects, then encase it in a SAVE_EXPR
 	 so that it will only be evaluated once.  */
       /* The tcc_reference and tcc_comparison classes could be handled as
@@ -2718,7 +2718,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
 		  gnat_rewrite_reference (TREE_OPERAND (ref, 0), func, data,
 					  init),
 		  func (TREE_OPERAND (ref, 1), data),
-		  TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
+		  TREE_OPERAND (ref, 2), NULL_TREE);
       break;
 
     case COMPOUND_EXPR:
@@ -2796,9 +2796,6 @@ get_inner_constant_reference (tree exp)
 	  break;
 
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (exp, 2))
-	    return NULL_TREE;
-
 	  if (!TREE_CONSTANT (DECL_FIELD_OFFSET (TREE_OPERAND (exp, 1))))
 	    return NULL_TREE;
 	  break;
@@ -2806,7 +2803,7 @@ get_inner_constant_reference (tree exp)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  {
-	    if (TREE_OPERAND (exp, 2) || TREE_OPERAND (exp, 3))
+	    if (TREE_OPERAND (exp, 2))
 	      return NULL_TREE;
 
 	    tree array_type = TREE_TYPE (TREE_OPERAND (exp, 0));
@@ -2934,16 +2931,12 @@ gnat_invariant_expr (tree expr)
       switch (TREE_CODE (t))
 	{
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (t, 2))
-	    return NULL_TREE;
 	  invariant_p |= DECL_INVARIANT_P (TREE_OPERAND (t, 1));
 	  break;
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
-	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1))
-	      || TREE_OPERAND (t, 2)
-	      || TREE_OPERAND (t, 3))
+	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1)) || TREE_OPERAND (t, 2))
 	    return NULL_TREE;
 	  break;
 
