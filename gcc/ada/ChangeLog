@@ -1,5 +1,13 @@
 2016-05-02  Arnaud Charlet  <charlet@adacore.com>
 
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): add task type scope.
+	(Detect_And_Add_SPARK_Scope): detect and add task type scope.
+	(Enclosing_Subprogram_Or_Package): Respect boundaries of task
+	and entry declarations.
+	* spark_xrefs.ads: minor typo in comment.
+
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
 	* make.adb: Minor: avoid an exception when calling gnatmake with
 	no argument and gnatmake is built with checks on.
 	* lib-xref-spark_specific.adb: Minor code cleanup.

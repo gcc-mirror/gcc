@@ -265,6 +265,7 @@ package body SPARK_Specific is
             | E_Generic_Package
             | E_Generic_Procedure
             | E_Package
+            | E_Task_Type
          =>
             Typ := Xref_Entity_Letters (Ekind (E));
 
@@ -382,7 +383,7 @@ package body SPARK_Specific is
          Key        => Entity_Id,
          Hash       => Entity_Hash,
          Equal      => "=");
-      --  Package used to build a correspondance between entities and scope
+      --  Package used to build a correspondence between entities and scope
       --  numbers used in SPARK cross references.
 
       Nrefs : Nat := Xrefs.Last;
@@ -1033,7 +1034,8 @@ package body SPARK_Specific is
                       N_Subprogram_Declaration)
            or else
          Nkind_In (N, N_Task_Body,              --  tasks
-                      N_Task_Body_Stub)
+                      N_Task_Body_Stub,
+                      N_Task_Type_Declaration)
       then
          Add_SPARK_Scope (N);
       end if;
@@ -1125,7 +1127,15 @@ package body SPARK_Specific is
                Result := Defining_Identifier (Result);
                exit;
 
+            when N_Entry_Declaration =>
+               Result := Defining_Identifier (Result);
+               exit;
+
             when N_Task_Body =>
+               Result := Defining_Identifier (Result);
+               exit;
+
+            when N_Task_Type_Declaration =>
                Result := Defining_Identifier (Result);
                exit;
 

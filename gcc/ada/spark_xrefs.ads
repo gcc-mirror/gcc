@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,7 +133,7 @@ package SPARK_Xrefs is
 
    --    FX dependency-number filename . entity-number entity
 
-   --      dependency-number and filename identity a file in FD lines
+   --      dependency-number and filename identify a file in FD lines
 
    --      entity-number and identity identify a scope entity in FS lines for
    --      the file previously identified.
