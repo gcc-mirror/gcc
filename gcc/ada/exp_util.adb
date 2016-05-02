@@ -3123,13 +3123,13 @@ package body Exp_Util is
    is
    begin
       Remove_Side_Effects
-        (Exp           => Exp,
-         Name_Req      => Name_Req,
-         Variable_Ref  => True,
-         Renaming_Req  => False,
-         Related_Id    => Related_Id,
-         Is_Low_Bound  => Is_Low_Bound,
-         Is_High_Bound => Is_High_Bound,
+        (Exp                => Exp,
+         Name_Req           => Name_Req,
+         Variable_Ref       => True,
+         Renaming_Req       => False,
+         Related_Id         => Related_Id,
+         Is_Low_Bound       => Is_Low_Bound,
+         Is_High_Bound      => Is_High_Bound,
          Check_Side_Effects =>
            Is_Static_Expression (Exp)
              or else Mode = Relaxed);
