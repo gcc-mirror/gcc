@@ -1,3 +1,18 @@
+2016-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (nonimm_ssenomem_operand): New predicate.
+	(register_mixssei387nonimm_operand): Remove predicate.
+	* config/i386/i386.md (*fop_<mode>_comm): Merge from
+	*fop_<mode>_comm_mixed and *fop_<mode>_comm_i387.  Disable unsupported
+	alternatives using "enabled" attribute.  Also check X87_ENABLE_ARITH
+	for TARGET_MIX_SSE_I387 alternatives.
+	(*fop_<mode>_1): Merge from *fop_<mode>_1_mixed and *fop_<mode>_1_i387.
+	Disable unsupported alternatives using "enabled" attribute.  Use
+	nonimm_ssenomem_operand as operand 1 predicate.  Also check
+	X87_ENABLE_ARITH for TARGET_MIX_SSE_I387 alternatives.
+	* config/i386/predicates.md (nonimm_ssenomem_operand): New predicate.
+	(register_mixssei387nonimm_operand): Remove predicate.
+
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree.c (cst_and_fits_in_hwi): Simplify.
