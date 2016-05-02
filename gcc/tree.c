@@ -1675,13 +1675,8 @@ build_low_bits_mask (tree type, unsigned bits)
 bool
 cst_and_fits_in_hwi (const_tree x)
 {
-  if (TREE_CODE (x) != INTEGER_CST)
-    return false;
-
-  if (TYPE_PRECISION (TREE_TYPE (x)) > HOST_BITS_PER_WIDE_INT)
-    return false;
-
-  return TREE_INT_CST_NUNITS (x) == 1;
+  return (TREE_CODE (x) == INTEGER_CST
+	  && TYPE_PRECISION (TREE_TYPE (x)) <= HOST_BITS_PER_WIDE_INT);
 }
 
 /* Build a newly constructed VECTOR_CST node of length LEN.  */
