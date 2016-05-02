@@ -1,3 +1,9 @@
+2016-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70467
+	* ipa-pure-const.c (check_call): Handle internal calls even in
+	ipa mode like in local mode.
+
 2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* doc/install.texi: Document supported in-tree gmp/mpfr/mpc versions.
