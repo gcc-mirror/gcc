@@ -1,3 +1,9 @@
+2016-05-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/70860
+	* config/nvptx/nvptx.c (nvptx_libcall_value): Handle NULL cfun.
+	(nvptx_function_value): Assert non-NULL cfun.
+
 2016-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/70886
