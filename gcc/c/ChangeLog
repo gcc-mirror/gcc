@@ -1,3 +1,17 @@
+2016-05-02  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_all_clauses): Update call to
+	c_finish_omp_clauses.
+	(c_parser_omp_all_clauses): Likewise.
+	(c_parser_oacc_cache): Likewise.
+	(c_parser_oacc_loop): Likewise.
+	(omp_split_clauses): Likewise.
+	(c_parser_omp_declare_target): Likewise.
+	(c_parser_cilk_all_clauses): Likewise.
+	(c_parser_cilk_for): Likewise.
+	* c-typeck.c (c_finish_omp_clauses): Replace bool arguments
+	is_omp, declare_simd, and is_cilk with enum c_omp_region_type ort.
+
 2016-05-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70851

@@ -13183,7 +13183,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
   c_parser_skip_to_pragma_eol (parser);
 
   if (finish_p)
-    return c_finish_omp_clauses (clauses, false);
+    return c_finish_omp_clauses (clauses, C_ORT_ACC);
 
   return clauses;
 }
@@ -13468,8 +13468,8 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
   if (finish_p)
     {
       if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_UNIFORM)) != 0)
-	return c_finish_omp_clauses (clauses, true, true);
-      return c_finish_omp_clauses (clauses, true);
+	return c_finish_omp_clauses (clauses, C_ORT_OMP_DECLARE_SIMD);
+      return c_finish_omp_clauses (clauses, C_ORT_OMP);
     }
 
   return clauses;
@@ -13503,7 +13503,7 @@ c_parser_oacc_cache (location_t loc, c_parser *parser)
   tree stmt, clauses;
 
   clauses = c_parser_omp_var_list_parens (parser, OMP_CLAUSE__CACHE_, NULL);
-  clauses = c_finish_omp_clauses (clauses, false);
+  clauses = c_finish_omp_clauses (clauses, C_ORT_ACC);
 
   c_parser_skip_to_pragma_eol (parser);
 
@@ -13839,9 +13839,9 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
     {
       clauses = c_oacc_split_loop_clauses (clauses, cclauses, is_parallel);
       if (*cclauses)
-	*cclauses = c_finish_omp_clauses (*cclauses, false);
+	*cclauses = c_finish_omp_clauses (*cclauses, C_ORT_ACC);
       if (clauses)
-	clauses = c_finish_omp_clauses (clauses, false);
+	clauses = c_finish_omp_clauses (clauses, C_ORT_ACC);
     }
 
   tree block = c_begin_compound_stmt (true);
@@ -15015,7 +15015,7 @@ omp_split_clauses (location_t loc, enum tree_code code,
   c_omp_split_clauses (loc, code, mask, clauses, cclauses);
   for (i = 0; i < C_OMP_CLAUSE_SPLIT_COUNT; i++)
     if (cclauses[i])
-      cclauses[i] = c_finish_omp_clauses (cclauses[i], true);
+      cclauses[i] = c_finish_omp_clauses (cclauses[i], C_ORT_OMP);
 }
 
 /* OpenMP 4.0:
@@ -16546,7 +16546,7 @@ c_parser_omp_declare_target (c_parser *parser)
     {
       clauses = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_TO_DECLARE,
 					      clauses);
-      clauses = c_finish_omp_clauses (clauses, true);
+      clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
       c_parser_skip_to_pragma_eol (parser);
     }
   else
@@ -17515,7 +17515,7 @@ c_parser_cilk_all_clauses (c_parser *parser)
 
  saw_error:
   c_parser_skip_to_pragma_eol (parser);
-  return c_finish_omp_clauses (clauses, false, false, true);
+  return c_finish_omp_clauses (clauses, C_ORT_CILK);
 }
 
 /* This function helps parse the grainsize pragma for a _Cilk_for statement.
@@ -17597,7 +17597,7 @@ c_parser_cilk_for (c_parser *parser, tree grain, bool *if_p)
   tree clauses = build_omp_clause (EXPR_LOCATION (grain), OMP_CLAUSE_SCHEDULE);
   OMP_CLAUSE_SCHEDULE_KIND (clauses) = OMP_CLAUSE_SCHEDULE_CILKFOR;
   OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (clauses) = grain;
-  clauses = c_finish_omp_clauses (clauses, false);
+  clauses = c_finish_omp_clauses (clauses, C_ORT_CILK);
 
   tree block = c_begin_compound_stmt (true);
   tree sb = push_stmt_list ();
@@ -17663,7 +17663,7 @@ c_parser_cilk_for (c_parser *parser, tree grain, bool *if_p)
       OMP_CLAUSE_OPERAND (c, 0)
 	= cilk_for_number_of_iterations (omp_for);
       OMP_CLAUSE_CHAIN (c) = clauses;
-      OMP_PARALLEL_CLAUSES (omp_par) = c_finish_omp_clauses (c, true);
+      OMP_PARALLEL_CLAUSES (omp_par) = c_finish_omp_clauses (c, C_ORT_CILK);
       add_stmt (omp_par);
     }
 
