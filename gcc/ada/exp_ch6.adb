@@ -6800,7 +6800,7 @@ package body Exp_Ch6 is
          --  once in the call to _Postconditions, and once in the actual return
          --  statement, but we can't have side effects happening twice.
 
-         Remove_Side_Effects (Exp);
+         Force_Evaluation (Exp, Mode => Strict);
 
          --  Generate call to _Postconditions
 
