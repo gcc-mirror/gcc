@@ -1,3 +1,8 @@
+2016-05-02  Richard Biener  <rguenther@suse.de>
+
+	* trans-array.c (gfc_trans_create_temp_array): Properly
+	create a DECL_EXPR for the anonymous VLA array type.
+
 2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR middle-end/70626
