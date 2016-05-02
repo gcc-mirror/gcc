@@ -67,6 +67,7 @@ package body System.Memory is
 
    function Alloc (Size : size_t) return System.Address is
       Result : System.Address;
+
    begin
       if Parameters.No_Abort then
          Result := c_malloc (System.CRTL.size_t (Size));
@@ -77,6 +78,7 @@ package body System.Memory is
       end if;
 
       if Result = System.Null_Address then
+
          --  If Size = 0, we can't allocate 0 bytes, because then two different
          --  allocators, one of which has Size = 0, could return pointers that
          --  compare equal, which is wrong. (Nonnull pointers compare equal if

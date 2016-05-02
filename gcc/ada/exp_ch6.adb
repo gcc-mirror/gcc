@@ -3977,7 +3977,7 @@ package body Exp_Ch6 is
                begin
                   Inst := Scope (Subp);
 
-                  --  Find enclosing instance.
+                  --  Find enclosing instance
 
                   while Present (Inst) and then Inst /= Standard_Standard loop
                      exit when Is_Generic_Instance (Inst);
@@ -4002,11 +4002,11 @@ package body Exp_Ch6 is
                         null;
 
                      else
-                        --  The instantiation node follows the package
-                        --  declaration for the instance. If the generic
-                        --  unit had aspect specifications, they have
-                        --  been transformed into pragmas in the instance,
-                        --  and the instance node appears after them.
+                        --  The instantiation node usually follows the package
+                        --  declaration for the instance. If the generic unit
+                        --  has aspect specifications, they are transformed
+                        --  into pragmas in the instance, and the instance node
+                        --  appears after them.
 
                         Inst_Node := Next (Decl);
 
