@@ -1,3 +1,7 @@
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c (shorten_compare): Use wi::to_wide.
+
 2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR middle-end/70626

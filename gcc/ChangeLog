@@ -1,5 +1,12 @@
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree.h (wi::to_wide): New function.
+	* expr.c (expand_expr_real_1): Use wi::to_wide.
+	* fold-const.c (int_const_binop_1): Likewise.
+	(extract_muldiv_1): Likewise.
+
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* wide-int.h: Update offset_int and widest_int documentation.
 	(WI_SIGNED_SHIFT_RESULT): New macro.
 	(wi::binary_shift): Define signed_shift_result_type for
