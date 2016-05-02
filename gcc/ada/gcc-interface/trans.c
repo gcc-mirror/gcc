@@ -955,14 +955,21 @@ fold_constant_decl_in_expr (tree exp)
 
       return DECL_INITIAL (exp);
 
-    case BIT_FIELD_REF:
     case COMPONENT_REF:
       op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
       if (op0 == TREE_OPERAND (exp, 0))
 	return exp;
 
-      return fold_build3 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
-			  TREE_OPERAND (exp, 2));
+      return fold_build3 (COMPONENT_REF, TREE_TYPE (exp), op0,
+			  TREE_OPERAND (exp, 1), NULL_TREE);
+
+    case BIT_FIELD_REF:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold_build3 (BIT_FIELD_REF, TREE_TYPE (exp), op0,
+			  TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
 
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
@@ -974,7 +981,7 @@ fold_constant_decl_in_expr (tree exp)
 	return exp;
 
       return fold (build4 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
-			   TREE_OPERAND (exp, 2), TREE_OPERAND (exp, 3)));
+			   TREE_OPERAND (exp, 2), NULL_TREE));
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:

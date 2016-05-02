@@ -6656,7 +6656,7 @@ elaborate_reference_1 (tree ref, void *data)
       && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (ref, 0))))
     return build3 (COMPONENT_REF, TREE_TYPE (ref),
 		   elaborate_reference_1 (TREE_OPERAND (ref, 0), data),
-		   TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2));
+		   TREE_OPERAND (ref, 1), NULL_TREE);
 
   sprintf (suffix, "EXP%d", ++er->n);
   return
