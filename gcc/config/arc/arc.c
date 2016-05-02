@@ -7389,6 +7389,11 @@ arc_output_commutative_cond_exec (rtx *operands, bool output_p)
       case AND:
 	if (satisfies_constraint_C1p (operands[2]))
 	  pat = "bmsk%? %0,%1,%Z2";
+	else if (satisfies_constraint_C2p (operands[2]))
+	  {
+	    operands[2] = GEN_INT ((~INTVAL (operands[2])));
+	    pat = "bmskn%? %0,%1,%Z2";
+	  }
 	else if (satisfies_constraint_Ccp (operands[2]))
 	  pat = "bclr%? %0,%1,%M2";
 	else if (satisfies_constraint_CnL (operands[2]))
@@ -9859,10 +9864,151 @@ arc_dwarf_register_span (rtx rtl)
 
 /* We can't inline this in INSN_REFERENCES_ARE_DELAYED because
    resource.h doesn't include the required header files.  */
+
 bool
 insn_is_tls_gd_dispatch (rtx_insn *insn)
 {
   return recog_memoized (insn) == CODE_FOR_tls_gd_dispatch;
+}
+
+/* Return true if OP is an acceptable memory operand for ARCompact
+   16-bit load instructions of MODE.
+
+   AV2SHORT: TRUE if address needs to fit into the new ARCv2 short
+   non scaled instructions.
+
+   SCALED: TRUE if address can be scaled.  */
+
+bool
+compact_memory_operand_p (rtx op, machine_mode mode,
+			  bool av2short, bool scaled)
+{
+  rtx addr, plus0, plus1;
+  int size, off;
+
+  /* Eliminate non-memory operations.  */
+  if (GET_CODE (op) != MEM)
+    return 0;
+
+  /* .di instructions have no 16-bit form.  */
+  if (MEM_VOLATILE_P (op) && !TARGET_VOLATILE_CACHE_SET)
+    return false;
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+
+  size = GET_MODE_SIZE (mode);
+
+  /* dword operations really put out 2 instructions, so eliminate
+     them.  */
+  if (size > UNITS_PER_WORD)
+    return false;
+
+  /* Decode the address now.  */
+  addr = XEXP (op, 0);
+  switch (GET_CODE (addr))
+    {
+    case REG:
+      return (REGNO (addr) >= FIRST_PSEUDO_REGISTER
+	      || COMPACT_GP_REG_P (REGNO (addr))
+	      || (SP_REG_P (REGNO (addr)) && (size != 2)));
+    case PLUS:
+      plus0 = XEXP (addr, 0);
+      plus1 = XEXP (addr, 1);
+
+      if ((GET_CODE (plus0) == REG)
+	  && ((REGNO (plus0) >= FIRST_PSEUDO_REGISTER)
+	      || COMPACT_GP_REG_P (REGNO (plus0)))
+	  && ((GET_CODE (plus1) == REG)
+	      && ((REGNO (plus1) >= FIRST_PSEUDO_REGISTER)
+		  || COMPACT_GP_REG_P (REGNO (plus1)))))
+	{
+	  return !av2short;
+	}
+
+      if ((GET_CODE (plus0) == REG)
+	  && ((REGNO (plus0) >= FIRST_PSEUDO_REGISTER)
+	      || (COMPACT_GP_REG_P (REGNO (plus0)) && !av2short)
+	      || (IN_RANGE (REGNO (plus0), 0, 31) && av2short))
+	  && (GET_CODE (plus1) == CONST_INT))
+	{
+	  bool valid = false;
+
+	  off = INTVAL (plus1);
+
+	  /* Negative offset is not supported in 16-bit load/store insns.  */
+	  if (off < 0)
+	    return 0;
+
+	  /* Only u5 immediates allowed in code density instructions.  */
+	  if (av2short)
+	    {
+	      switch (size)
+		{
+		case 1:
+		  return false;
+		case 2:
+		  /* This is an ldh_s.x instruction, check the u6
+		     immediate.  */
+		  if (COMPACT_GP_REG_P (REGNO (plus0)))
+		    valid = true;
+		  break;
+		case 4:
+		  /* Only u5 immediates allowed in 32bit access code
+		     density instructions.  */
+		  if (REGNO (plus0) <= 31)
+		    return ((off < 32) && (off % 4 == 0));
+		  break;
+		default:
+		  return false;
+		}
+	    }
+	  else
+	    if (COMPACT_GP_REG_P (REGNO (plus0)))
+	      valid = true;
+
+	  if (valid)
+	    {
+
+	      switch (size)
+		{
+		case 1:
+		  return (off < 32);
+		case 2:
+		  /* The 6-bit constant get shifted to fit the real
+		     5-bits field.  Check also for the alignment.  */
+		  return ((off < 64) && (off % 2 == 0));
+		case 4:
+		  return ((off < 128) && (off % 4 == 0));
+		default:
+		  return false;
+		}
+	    }
+	}
+
+      if (REG_P (plus0) && CONST_INT_P (plus1)
+	  && ((REGNO (plus0) >= FIRST_PSEUDO_REGISTER)
+	      || SP_REG_P (REGNO (plus0)))
+	  && !av2short)
+	{
+	  off = INTVAL (plus1);
+	  return ((size != 2) && (off >= 0 && off < 128) && (off % 4 == 0));
+	}
+
+      if ((GET_CODE (plus0) == MULT)
+	  && (GET_CODE (XEXP (plus0, 0)) == REG)
+	  && ((REGNO (XEXP (plus0, 0)) >= FIRST_PSEUDO_REGISTER)
+	      || COMPACT_GP_REG_P (REGNO (XEXP (plus0, 0))))
+	  && (GET_CODE (plus1) == REG)
+	  && ((REGNO (plus1) >= FIRST_PSEUDO_REGISTER)
+	      || COMPACT_GP_REG_P (REGNO (plus1))))
+	return scaled;
+    default:
+      break ;
+      /* TODO: 'gp' and 'pcl' are to supported as base address operand
+	 for 16-bit load instructions.  */
+    }
+  return false;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
