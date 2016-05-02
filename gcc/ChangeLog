@@ -1,3 +1,23 @@
+2016-05-02  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (compact_memory_operand_p): Declare.
+	* config/arc/arc.c (arc_output_commutative_cond_exec): Consider
+	bmaskn instruction.
+	(arc_dwarf_register_span): Remove enum keyword.
+	(compact_memory_operand_p): New function.
+	* config/arc/arc.h (reg_class): Add code density register classes.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/arc/arc.md (*movqi_insn): Add code density instructions.
+	(*movhi_insn, *movsi_insn, *movsf_insn): Likewise.
+	(*extendhisi2_i, andsi3_i, cmpsi_cc_insn_mixed): Likewise.
+	(*cmpsi_cc_c_insn, *movsi_ne): Likewise.
+	* config/arc/constraints.md (C2p, Uts, Cm1, Cm3, Ucd): New
+	constraints.
+	(h, Rcd, Rsd, Rzd): New register constraints.
+	(T): Use compact_memory_operand_p function.
+	* config/arc/predicates.md (compact_load_memory_operand): Remove.
+
 2016-05-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (*negnegt, *movtt): Remove.

@@ -674,6 +674,9 @@ enum reg_class
    WRITABLE_CORE_REGS,		/* 'w' */
    CHEAP_CORE_REGS,		/* 'c' */
    ALL_CORE_REGS,		/* 'Rac' */
+   R0R3_CD_REGS,		/* 'Rcd' */
+   R0R1_CD_REGS,		/* 'Rsd' */
+   AC16_H_REGS,			/* 'h' */
    ALL_REGS,
    LIM_REG_CLASSES
 };
@@ -700,6 +703,9 @@ enum reg_class
   "MPY_WRITABLE_CORE_REGS",   \
   "WRITABLE_CORE_REGS",   \
   "CHEAP_CORE_REGS",	  \
+  "R0R3_CD_REGS", \
+  "R0R1_CD_REGS", \
+  "AC16_H_REGS",	    \
   "ALL_CORE_REGS",	  \
   "ALL_REGS"          	  \
 }
@@ -732,6 +738,9 @@ enum reg_class
   {0xffffffff, 0xd0000000, 0x00000000, 0x00000000, 0x00000000},      /* 'w', r0-r31, r60 */ \
   {0xffffffff, 0xdfffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'c', r0-r60, ap, pcl */ \
   {0xffffffff, 0xdfffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'Rac', r0-r60, ap, pcl */ \
+  {0x0000000f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'Rcd', r0-r3 */ \
+  {0x00000003, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'Rsd', r0-r1 */ \
+  {0x9fffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'h',  r0-28, r30 */ \
   {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x0003ffff}       /* All Registers */		\
 }
 

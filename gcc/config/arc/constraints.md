@@ -226,6 +226,14 @@
   (and (match_code "const_int")
        (match_test "ival && IS_POWEROF2_P (ival + 1)")))
 
+(define_constraint "C2p"
+ "@internal
+  constant such that (~x)+1 is a power of two, and x < -1"
+  (and (match_code "const_int")
+       (match_test "TARGET_V2
+		    && (ival < -1)
+		    && IS_POWEROF2_P ((~ival) + 1)")))
+
 (define_constraint "C3p"
  "@internal
   constant int used to select xbfu a,b,u6 instruction.  The values accepted are 1 and 2."
@@ -317,7 +325,13 @@
   "@internal
    A valid memory operand for ARCompact load instructions"
   (and (match_code "mem")
-       (match_test "compact_load_memory_operand (op, VOIDmode)")))
+       (match_test "compact_memory_operand_p (op, mode, false, false)")))
+
+(define_memory_constraint "Uts"
+  "@internal
+   A valid memory operand for ARCompact load instructions scaled"
+  (and (match_code "mem")
+       (match_test "compact_memory_operand_p (op, mode, false, TARGET_CODE_DENSITY)")))
 
 (define_memory_constraint "S"
   "@internal
@@ -340,7 +354,7 @@
    "@internal
     A valid _small-data_ memory operand for ARCompact instructions"
    (and (match_code "mem")
-        (match_test "compact_sda_memory_operand (op, VOIDmode)")))
+	(match_test "compact_sda_memory_operand (op, VOIDmode)")))
 
 (define_memory_constraint "Usc"
   "@internal
@@ -483,11 +497,25 @@
   (and (match_code "const_int")
        (match_test "IS_ZERO (ival)")))
 
+(define_constraint "Cm1"
+  "@internal
+   Integer signed constant in the interval [-1,6]"
+  (and (match_code "const_int")
+       (match_test "(ival >= -1) && (ival <=6)")
+       (match_test "TARGET_V2")))
+
 (define_constraint "Cm2"
   "@internal
    A signed 9-bit integer constant."
   (and (match_code "const_int")
        (match_test "(ival >= -256) && (ival <=255)")))
+
+(define_constraint "Cm3"
+  "@internal
+   A signed 6-bit integer constant."
+  (and (match_code "const_int")
+       (match_test "(ival >= -32) && (ival <=31)")
+       (match_test "TARGET_V2")))
 
 (define_constraint "C62"
   "@internal
@@ -511,3 +539,32 @@
    An unsigned 16-bit integer constant"
   (and (match_code "const_int")
        (match_test "UNSIGNED_INT16 (ival)")))
+
+; Memory addresses suited for code density load ops
+(define_memory_constraint "Ucd"
+  "@internal
+   A valid memory operand for use with code density load ops"
+  (and (match_code "mem")
+       (match_test "compact_memory_operand_p (op, mode, true, false)")
+       (match_test "TARGET_V2")))
+
+(define_register_constraint "h"
+  "TARGET_V2 ? AC16_H_REGS : NO_REGS"
+  "5-bit h register set except @code{r30} and @code{r29}:
+   @code{r0}-@code{r31}, nonfixed core register")
+
+; Code density registers
+(define_register_constraint "Rcd"
+  "TARGET_CODE_DENSITY ? R0R3_CD_REGS : NO_REGS"
+  "@internal
+   core register @code{r0}-@code{r3}")
+
+(define_register_constraint "Rsd"
+  "TARGET_CODE_DENSITY ? R0R1_CD_REGS : NO_REGS"
+  "@internal
+   core register @code{r0}-@code{r1}")
+
+(define_register_constraint "Rzd"
+  "TARGET_CODE_DENSITY ? R0_REGS : NO_REGS"
+  "@internal
+   @code{r0} register for code density instructions.")
