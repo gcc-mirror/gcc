@@ -1,3 +1,8 @@
+2016-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
+	Honor DESTDIR.
+
 2016-05-02  Tristan Gingold  <gingold@adacore.com>
 
 	* fname.adb (Is_Predefined_File_Name): Also consider non-krunched
