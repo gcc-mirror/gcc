@@ -1,3 +1,7 @@
+2016-05-02  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-common.h (enum c_omp_region_type): Define.
+
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.c (shorten_compare): Use wi::to_wide.
