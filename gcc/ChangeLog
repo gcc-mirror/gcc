@@ -1,5 +1,9 @@
 2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd (X u< X, X u> X): New transformations.
+
+2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
+
 	* flag-types.h (enum warn_strict_overflow_code): Move ...
 	* coretypes.h: ... here.
 	* fold-const.h (fold_overflow_warning): Declare.

@@ -1,5 +1,9 @@
 2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.dg/tree-ssa/unord.c: New testcase.
+
+2016-05-02  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/20040305-1.c: Adjust.
 
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
