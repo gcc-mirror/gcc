@@ -4767,13 +4767,21 @@ package body Sem_Res is
            and then not In_Instance_Body
          then
             if not OK_For_Limited_Init (Etype (E), Expression (E)) then
-               Error_Msg_N ("initialization not allowed for limited types", N);
+               if Nkind (Parent (N)) = N_Assignment_Statement then
+                  Error_Msg_N
+                    ("illegal expression for initialized allocator of a "
+                     & "limited type (RM 7.5 (2.7/2))", N);
+               else
+                  Error_Msg_N
+                    ("initialization not allowed for limited types", N);
+               end if;
+
                Explain_Limited_Type (Etype (E), N);
             end if;
          end if;
 
-         --  A qualified expression requires an exact match of the type.
-         --  Class-wide matching is not allowed.
+         --  A qualified expression requires an exact match of the type. Class-
+         --  wide matching is not allowed.
 
          if (Is_Class_Wide_Type (Etype (Expression (E)))
               or else Is_Class_Wide_Type (Etype (E)))

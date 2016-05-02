@@ -18656,11 +18656,14 @@ package body Sem_Ch3 is
    is
    begin
       --  An object of a limited interface type can be initialized with any
-      --  expression of a nonlimited descendant type.
+      --  expression of a nonlimited descendant type. However this does not
+      --  apply if this is a view conversion of some other expression. This
+      --  is checked below.
 
       if Is_Class_Wide_Type (Typ)
         and then Is_Limited_Interface (Typ)
         and then not Is_Limited_Type (Etype (Exp))
+        and then Nkind (Exp) /= N_Type_Conversion
       then
          return True;
       end if;

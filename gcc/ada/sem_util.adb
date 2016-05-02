@@ -326,21 +326,19 @@ package body Sem_Util is
       --  Ada 2005 (AI-230): Generate a conversion to an anonymous access
       --  component's type to force the appropriate accessibility checks.
 
-      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
-      --  type to force the corresponding run-time check
+      --  Ada 2005 (AI-231): Generate conversion to the null-excluding type to
+      --  force the corresponding run-time check
 
       if Is_Access_Type (Check_Typ)
-        and then ((Is_Local_Anonymous_Access (Check_Typ))
-                    or else (Can_Never_Be_Null (Check_Typ)
-                              and then not Can_Never_Be_Null (Exp_Typ)))
+        and then Is_Local_Anonymous_Access (Check_Typ)
       then
          Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
          Analyze_And_Resolve (Exp, Check_Typ);
          Check_Unset_Reference (Exp);
       end if;
 
-      --  This is really expansion activity, so make sure that expansion is
-      --  on and is allowed. In GNATprove mode, we also want check flags to
+      --  What follows is really expansion activity, so check that expansion
+      --  is on and is allowed. In GNATprove mode, we also want check flags to
       --  be added in the tree, so that the formal verification can rely on
       --  those to be present. In GNATprove mode for formal verification, some
       --  treatment typically only done during expansion needs to be performed
@@ -351,6 +349,13 @@ package body Sem_Util is
         and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
       then
          return;
+      end if;
+
+      if Is_Access_Type (Check_Typ)
+        and then Can_Never_Be_Null (Check_Typ)
+        and then not Can_Never_Be_Null (Exp_Typ)
+      then
+         Install_Null_Excluding_Check (Exp);
       end if;
 
       --  First check if we have to insert discriminant checks
