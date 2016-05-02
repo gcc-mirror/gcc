@@ -23,7 +23,7 @@ void foo(int edx, int eax)
  
 
 /* Verify that we did a forward propagation.  */
-/* { dg-final { scan-tree-dump-times "Replaced" 1 "forwprop1"} } */
+/* { dg-final { scan-tree-dump-times "gimple_simplified" 1 "forwprop1"} } */
 
 /* After cddce we should have two IF statements remaining as the other
    two tests can be threaded.  */

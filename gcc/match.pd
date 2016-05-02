@@ -3186,3 +3186,47 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (SIGNBIT @0)
  (if (!HONOR_SIGNED_ZEROS (@0))
   (convert (lt @0 { build_real (TREE_TYPE (@0), dconst0); }))))
+
+/* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 -+ C1.  */
+(for cmp (eq ne)
+ (for op (plus minus)
+      rop (minus plus)
+  (simplify
+   (cmp (op@3 @0 INTEGER_CST@1) INTEGER_CST@2)
+   (if (!TREE_OVERFLOW (@1) && !TREE_OVERFLOW (@2)
+	&& !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+	&& !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
+	&& !TYPE_SATURATING (TREE_TYPE (@0)))
+    (with { tree res = int_const_binop (rop, @2, @1); }
+     (if (TREE_OVERFLOW (res))
+      { constant_boolean_node (cmp == NE_EXPR, type); }
+      (if (single_use (@3))
+       (cmp @0 { res; }))))))))
+(for cmp (lt le gt ge)
+ (for op (plus minus)
+      rop (minus plus)
+  (simplify
+   (cmp (op@3 @0 INTEGER_CST@1) INTEGER_CST@2)
+   (if (!TREE_OVERFLOW (@1) && !TREE_OVERFLOW (@2)
+	&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+    (with { tree res = int_const_binop (rop, @2, @1); }
+     (if (TREE_OVERFLOW (res))
+      {
+	fold_overflow_warning (("assuming signed overflow does not occur "
+				"when simplifying conditional to constant"),
+			       WARN_STRICT_OVERFLOW_CONDITIONAL);
+        bool less = cmp == LE_EXPR || cmp == LT_EXPR;
+	/* wi::ges_p (@2, 0) should be sufficient for a signed type.  */
+	bool ovf_high = wi::lt_p (@1, 0, TYPE_SIGN (TREE_TYPE (@1)))
+			!= (op == MINUS_EXPR);
+	constant_boolean_node (less == ovf_high, type);
+      }
+      (if (single_use (@3))
+       (with
+	{
+	  fold_overflow_warning (("assuming signed overflow does not occur "
+				  "when changing X +- C1 cmp C2 to "
+				  "X cmp C2 -+ C1"),
+				 WARN_STRICT_OVERFLOW_COMPARISON);
+	}
+	(cmp @0 { res; })))))))))

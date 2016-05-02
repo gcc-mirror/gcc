@@ -3525,7 +3525,9 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 {
   bool changed = false;
   gimple *stmt = gsi_stmt (*gsi);
+  bool nowarning = gimple_no_warning_p (stmt);
   unsigned i;
+  fold_defer_overflow_warnings ();
 
   /* First do required canonicalization of [TARGET_]MEM_REF addresses
      after propagation.
@@ -3818,6 +3820,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	}
     }
 
+  fold_undefer_overflow_warnings (changed && !nowarning, stmt, 0);
   return changed;
 }
 
