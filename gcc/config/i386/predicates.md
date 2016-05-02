@@ -121,6 +121,13 @@
     (match_operand 0 "nonmemory_operand")
     (match_operand 0 "general_operand")))
 
+;; Match register operands, but include memory operands for TARGET_SSE_MATH.
+(define_predicate "register_ssemem_operand"
+  (if_then_else
+    (match_test "SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH")
+    (match_operand 0 "nonimmediate_operand")
+    (match_operand 0 "register_operand")))
+
 ;; Match nonimmediate operands, but exclude memory operands
 ;; for TARGET_SSE_MATH if TARGET_MIX_SSE_I387 is not enabled.
 (define_predicate "nonimm_ssenomem_operand"
