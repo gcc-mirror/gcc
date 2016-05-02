@@ -6491,13 +6491,6 @@ package body Sem_Ch6 is
         (Prim_Params  : List_Id;
          Iface_Params : List_Id) return Boolean
       is
-         Iface_Id     : Entity_Id;
-         Iface_Param  : Node_Id;
-         Iface_Typ    : Entity_Id;
-         Prim_Id      : Entity_Id;
-         Prim_Param   : Node_Id;
-         Prim_Typ     : Entity_Id;
-
          function Is_Implemented
            (Ifaces_List : Elist_Id;
             Iface       : Entity_Id) return Boolean;
@@ -6527,6 +6520,15 @@ package body Sem_Ch6 is
             return False;
          end Is_Implemented;
 
+         --  Local variables
+
+         Iface_Id     : Entity_Id;
+         Iface_Param  : Node_Id;
+         Iface_Typ    : Entity_Id;
+         Prim_Id      : Entity_Id;
+         Prim_Param   : Node_Id;
+         Prim_Typ     : Entity_Id;
+
       --  Start of processing for Matches_Prefixed_View_Profile
 
       begin
@@ -6539,8 +6541,8 @@ package body Sem_Ch6 is
 
          Prim_Param := First (Prim_Params);
 
-         --  The first parameter of the potentially overridden subprogram
-         --  must be an interface implemented by Prim.
+         --  The first parameter of the potentially overridden subprogram must
+         --  be an interface implemented by Prim.
 
          if not Is_Interface (Iface_Typ)
            or else not Is_Implemented (Ifaces_List, Iface_Typ)
@@ -6548,8 +6550,8 @@ package body Sem_Ch6 is
             return False;
          end if;
 
-         --  The checks on the object parameters are done, move onto the
-         --  rest of the parameters.
+         --  The checks on the object parameters are done, move onto the rest
+         --  of the parameters.
 
          if not In_Scope then
             Prim_Param := Next (Prim_Param);
@@ -6568,15 +6570,15 @@ package body Sem_Ch6 is
               and then Is_Concurrent_Type (Designated_Type (Prim_Typ))
             then
                Iface_Typ := Designated_Type (Iface_Typ);
-               Prim_Typ := Designated_Type (Prim_Typ);
+               Prim_Typ  := Designated_Type (Prim_Typ);
             end if;
 
             --  Case of multiple interface types inside a parameter profile
 
             --     (Obj_Param : in out Iface; ...; Param : Iface)
 
-            --  If the interface type is implemented, then the matching type
-            --  in the primitive should be the implementing record type.
+            --  If the interface type is implemented, then the matching type in
+            --  the primitive should be the implementing record type.
 
             if Ekind (Iface_Typ) = E_Record_Type
               and then Is_Interface (Iface_Typ)
@@ -6626,9 +6628,9 @@ package body Sem_Ch6 is
          return;
       end if;
 
-      --  Search for the concurrent declaration since it contains the list
-      --  of all implemented interfaces. In this case, the subprogram is
-      --  declared within the scope of a protected or a task type.
+      --  Search for the concurrent declaration since it contains the list of
+      --  all implemented interfaces. In this case, the subprogram is declared
+      --  within the scope of a protected or a task type.
 
       if Present (Scope (Def_Id))
         and then Is_Concurrent_Type (Scope (Def_Id))
@@ -6658,10 +6660,10 @@ package body Sem_Ch6 is
          then
             In_Scope := False;
 
-         --  This case occurs when the concurrent type is declared within
-         --  a generic unit. As a result the corresponding record has been
-         --  built and used as the type of the first formal, we just have
-         --  to retrieve the corresponding concurrent type.
+         --  This case occurs when the concurrent type is declared within a
+         --  generic unit. As a result the corresponding record has been built
+         --  and used as the type of the first formal, we just have to retrieve
+         --  the corresponding concurrent type.
 
          elsif Is_Concurrent_Record_Type (Typ)
            and then not Is_Class_Wide_Type (Typ)
@@ -6693,9 +6695,8 @@ package body Sem_Ch6 is
          Subp      : Entity_Id := Empty;
 
       begin
-         --  Traverse the homonym chain, looking for a potentially
-         --  overridden subprogram that belongs to an implemented
-         --  interface.
+         --  Traverse the homonym chain, looking for a potentially overridden
+         --  subprogram that belongs to an implemented interface.
 
          Hom := Current_Entity_In_Scope (Def_Id);
          while Present (Hom) loop
@@ -6710,11 +6711,10 @@ package body Sem_Ch6 is
             then
                null;
 
-            --  Entries and procedures can override abstract or null
-            --  interface procedures.
+            --  Entries and procedures can override abstract or null interface
+            --  procedures.
 
-            elsif (Ekind (Def_Id) = E_Procedure
-                    or else Ekind (Def_Id) = E_Entry)
+            elsif Ekind_In (Def_Id, E_Entry, E_Procedure)
               and then Ekind (Subp) = E_Procedure
               and then Matches_Prefixed_View_Profile
                          (Parameter_Specifications (Parent (Def_Id)),
@@ -6723,17 +6723,16 @@ package body Sem_Ch6 is
                Candidate := Subp;
 
                --  For an overridden subprogram Subp, check whether the mode
-               --  of its first parameter is correct depending on the kind
-               --  of synchronized type.
+               --  of its first parameter is correct depending on the kind of
+               --  synchronized type.
 
                declare
                   Formal : constant Node_Id := First_Formal (Candidate);
 
                begin
                   --  In order for an entry or a protected procedure to
-                  --  override, the first parameter of the overridden
-                  --  routine must be of mode "out", "in out" or
-                  --  access-to-variable.
+                  --  override, the first parameter of the overridden routine
+                  --  must be of mode "out", "in out" or access-to-variable.
 
                   if Ekind_In (Candidate, E_Entry, E_Procedure)
                     and then Is_Protected_Type (Typ)
@@ -6744,9 +6743,9 @@ package body Sem_Ch6 is
                   then
                      null;
 
-                  --  All other cases are OK since a task entry or routine
-                  --  does not have a restriction on the mode of the first
-                  --  parameter of the overridden interface routine.
+                  --  All other cases are OK since a task entry or routine does
+                  --  not have a restriction on the mode of the first parameter
+                  --  of the overridden interface routine.
 
                   else
                      Overridden_Subp := Candidate;
@@ -6768,8 +6767,8 @@ package body Sem_Ch6 is
 
                --  If an inherited subprogram is implemented by a protected
                --  function, then the first parameter of the inherited
-               --  subprogram shall be of mode in, but not an
-               --  access-to-variable parameter (RM 9.4(11/9)
+               --  subprogram shall be of mode in, but not an access-to-
+               --  variable parameter (RM 9.4(11/9)
 
                if Present (First_Formal (Subp))
                  and then Ekind (First_Formal (Subp)) = E_In_Parameter
@@ -9692,7 +9691,8 @@ package body Sem_Ch6 is
       -- Has_Matching_Entry_Or_Subprogram --
       --------------------------------------
 
-      function Has_Matching_Entry_Or_Subprogram (E : Entity_Id) return Boolean
+      function Has_Matching_Entry_Or_Subprogram
+        (E : Entity_Id) return Boolean
       is
          function Check_Conforming_Parameters
            (E1_Param : Node_Id;
@@ -9738,12 +9738,13 @@ package body Sem_Ch6 is
 
          begin
             while Present (Param_E1) and then Present (Param_E2) loop
-               if Ekind (Defining_Identifier (Param_E1))
-                    /= Ekind (Defining_Identifier (Param_E2))
+               if Ekind (Defining_Identifier (Param_E1)) /=
+                    Ekind (Defining_Identifier (Param_E2))
                  or else not
-                   Conforming_Types (Find_Parameter_Type (Param_E1),
-                                     Find_Parameter_Type (Param_E2),
-                                     Subtype_Conformant)
+                   Conforming_Types
+                     (Find_Parameter_Type (Param_E1),
+                      Find_Parameter_Type (Param_E2),
+                      Subtype_Conformant)
                then
                   return False;
                end if;
@@ -9799,7 +9800,7 @@ package body Sem_Ch6 is
 
          begin
             --  Search for entities in the enclosing scope of this synchonized
-            --  type
+            --  type.
 
             pragma Assert (Is_Concurrent_Type (Conc_Typ));
             Push_Scope (Scope (Conc_Typ));
@@ -9841,7 +9842,7 @@ package body Sem_Ch6 is
 
          begin
             --  Temporarily decorate the first parameter of Subp as controlling
-            --  formal; required to invoke Subtype_Conformant()
+            --  formal, required to invoke Subtype_Conformant.
 
             Set_Is_Controlling_Formal (First_Entity (Subp));
 
@@ -9866,6 +9867,7 @@ package body Sem_Ch6 is
             end loop;
 
             Set_Is_Controlling_Formal (First_Entity (Subp), ICF);
+
             return Empty;
          end Matching_Original_Protected_Subprogram;
 
@@ -9882,8 +9884,8 @@ package body Sem_Ch6 is
            and then Is_Concurrent_Record_Type (Etype (First_Entity (E)))
          then
             if Scope (E) =
-                 Scope (Corresponding_Concurrent_Type (
-                          Etype (First_Entity (E))))
+                 Scope (Corresponding_Concurrent_Type
+                         (Etype (First_Entity (E))))
               and then
                 Present
                   (Matching_Entry_Or_Subprogram
@@ -9913,8 +9915,8 @@ package body Sem_Ch6 is
            and then
              Present
                (Matching_Original_Protected_Subprogram
-                  (Corresponding_Concurrent_Type (Etype (First_Entity (E))),
-                   Subp => E))
+                 (Corresponding_Concurrent_Type (Etype (First_Entity (E))),
+                  Subp => E))
          then
             Report_Conflict (E,
               Matching_Original_Protected_Subprogram
@@ -9944,8 +9946,8 @@ package body Sem_Ch6 is
       ----------------------------
 
       function Is_Private_Declaration (E : Entity_Id) return Boolean is
-         Priv_Decls : List_Id;
          Decl       : constant Node_Id := Unit_Declaration_Node (E);
+         Priv_Decls : List_Id;
 
       begin
          if Is_Package_Or_Generic_Package (Current_Scope)
@@ -9979,6 +9981,7 @@ package body Sem_Ch6 is
       is
          AO : constant Entity_Id := Alias (Old_E);
          AN : constant Entity_Id := Alias (New_E);
+
       begin
          return Scope (AO) /= Scope (AN)
            or else No (DTC_Entity (AO))

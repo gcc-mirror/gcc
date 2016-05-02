@@ -5908,7 +5908,7 @@ package body Einfo is
 
    procedure Set_Original_Protected_Subprogram (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function));
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       Set_Node41 (Id, V);
    end Set_Original_Protected_Subprogram;
 

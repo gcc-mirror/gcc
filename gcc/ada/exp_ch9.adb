@@ -2558,9 +2558,9 @@ package body Exp_Ch9 is
          end if;
 
          return
-           Type_Conformant_Parameters (
-             Parameter_Specifications (Iface_Op_Spec),
-             Parameter_Specifications (Wrapper_Spec));
+           Type_Conformant_Parameters
+             (Parameter_Specifications (Iface_Op_Spec),
+              Parameter_Specifications (Wrapper_Spec));
       end Overriding_Possible;
 
       -----------------------
@@ -2609,14 +2609,13 @@ package body Exp_Ch9 is
 
             Append_To (New_Formals,
               Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
+                Defining_Identifier    =>
                   Make_Defining_Identifier (Loc,
-                    Chars                  => Chars
-                                             (Defining_Identifier (Formal))),
-                    In_Present             => In_Present  (Formal),
-                    Out_Present            => Out_Present (Formal),
-                    Null_Exclusion_Present => Null_Exclusion_Present (Formal),
-                    Parameter_Type         => Param_Type));
+                    Chars => Chars (Defining_Identifier (Formal))),
+                In_Present             => In_Present  (Formal),
+                Out_Present            => Out_Present (Formal),
+                Null_Exclusion_Present => Null_Exclusion_Present (Formal),
+                Parameter_Type         => Param_Type));
 
             Next (Formal);
          end loop;
@@ -2776,13 +2775,16 @@ package body Exp_Ch9 is
 
          else
             pragma Assert (Is_Private_Primitive_Subprogram (Subp_Id));
+
             Obj_Param :=
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uO),
-                In_Present  => In_Present (Parent (First_Entity (Subp_Id))),
-                Out_Present => Ekind (Subp_Id) /= E_Function,
-                  Parameter_Type => New_Occurrence_Of (Obj_Typ, Loc));
+                In_Present          =>
+                  In_Present (Parent (First_Entity (Subp_Id))),
+                Out_Present         => Ekind (Subp_Id) /= E_Function,
+                Parameter_Type      => New_Occurrence_Of (Obj_Typ, Loc));
+
             Prepend_To (New_Formals, Obj_Param);
          end if;
 
@@ -4195,8 +4197,7 @@ package body Exp_Ch9 is
                       Unprotected_Mode => 'N');
 
    begin
-      if Ekind (Defining_Unit_Name (Specification (N))) =
-           E_Subprogram_Body
+      if Ekind (Defining_Unit_Name (Specification (N))) = E_Subprogram_Body
       then
          Decl := Unit_Declaration_Node (Corresponding_Spec (N));
       else
@@ -4238,7 +4239,7 @@ package body Exp_Ch9 is
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          New_Spec :=
            Make_Procedure_Specification (Loc,
-             Defining_Unit_Name => New_Id,
+             Defining_Unit_Name       => New_Id,
              Parameter_Specifications => New_Plist);
 
       --  Create a new specification for the anonymous subprogram type
@@ -4246,9 +4247,9 @@ package body Exp_Ch9 is
       else
          New_Spec :=
            Make_Function_Specification (Loc,
-             Defining_Unit_Name => New_Id,
+             Defining_Unit_Name       => New_Id,
              Parameter_Specifications => New_Plist,
-             Result_Definition =>
+             Result_Definition        =>
                Copy_Result_Type (Result_Definition (Specification (Decl))));
 
          Set_Return_Present (Defining_Unit_Name (New_Spec));
@@ -9654,22 +9655,22 @@ package body Exp_Ch9 is
                 Present (Interfaces (Corresponding_Record_Type (Prot_Typ)))
             then
                declare
+                  Found     : Boolean := False;
                   Prim_Elmt : Elmt_Id;
                   Prim_Op   : Node_Id;
-                  Found     : Boolean := False;
 
                begin
                   Prim_Elmt :=
                     First_Elmt
                       (Primitive_Operations
-                         (Corresponding_Record_Type (Prot_Typ)));
+                        (Corresponding_Record_Type (Prot_Typ)));
 
                   while Present (Prim_Elmt) loop
                      Prim_Op := Node (Prim_Elmt);
 
                      if Is_Primitive_Wrapper (Prim_Op)
-                       and then (Wrapped_Entity (Prim_Op))
-                                   = Defining_Entity (Specification (Comp))
+                       and then Wrapped_Entity (Prim_Op) =
+                                  Defining_Entity (Specification (Comp))
                      then
                         Found := True;
                         exit;
@@ -9684,6 +9685,7 @@ package body Exp_Ch9 is
                          Specification =>
                            Build_Protected_Sub_Specification
                              (Comp, Prot_Typ, Dispatching_Mode));
+
                      Insert_After (Current_Node, Sub);
                      Analyze (Sub);
 
@@ -9740,19 +9742,19 @@ package body Exp_Ch9 is
                Body_Arr :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Body_Id,
-                   Aliased_Present => True,
-                   Object_Definition =>
+                   Aliased_Present     => True,
+                   Object_Definition   =>
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
                          New_Occurrence_Of
                            (RTE (RE_Protected_Entry_Body_Array), Loc),
-                       Constraint =>
+                       Constraint   =>
                          Make_Index_Or_Discriminant_Constraint (Loc,
                            Constraints => New_List (
                               Make_Range (Loc,
                                 Make_Integer_Literal (Loc, 1),
                                 Make_Integer_Literal (Loc, E_Count))))),
-                   Expression => Entries_Aggr);
+                   Expression          => Entries_Aggr);
 
             when System_Tasking_Protected_Objects_Single_Entry =>
                Body_Arr :=
@@ -9761,7 +9763,8 @@ package body Exp_Ch9 is
                    Aliased_Present     => True,
                    Object_Definition   =>
                      New_Occurrence_Of (RTE (RE_Entry_Body), Loc),
-                   Expression => Remove_Head (Expressions (Entries_Aggr)));
+                   Expression          =>
+                     Remove_Head (Expressions (Entries_Aggr)));
 
             when others =>
                raise Program_Error;

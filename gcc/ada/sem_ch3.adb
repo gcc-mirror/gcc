@@ -19828,8 +19828,8 @@ package body Sem_Ch3 is
                                    (Subp_Id => Prim,
                                     Obj_Typ => Conc_Typ,
                                     Formals =>
-                                      Parameter_Specifications (
-                                        Parent (Prim))));
+                                      Parameter_Specifications
+                                        (Parent (Prim))));
 
                            Insert_After (Curr_Nod, Wrap_Spec);
                            Curr_Nod := Wrap_Spec;

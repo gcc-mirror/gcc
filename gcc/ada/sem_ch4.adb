@@ -9022,9 +9022,10 @@ package body Sem_Ch4 is
             --  Exp_Ch9.Build_Selected_Name).
 
             elsif Is_Protected_Type (Obj_Type) then
-               return Present (Original_Protected_Subprogram (Prim_Op))
-                 and then Chars (Original_Protected_Subprogram (Prim_Op))
-                            = Chars (Subprog);
+               return
+                 Present (Original_Protected_Subprogram (Prim_Op))
+                   and then Chars (Original_Protected_Subprogram (Prim_Op)) =
+                              Chars (Subprog);
             end if;
 
             return False;
