@@ -11551,36 +11551,21 @@ package body Sem_Ch13 is
    -------------------------
 
    function Get_Alignment_Value (Expr : Node_Id) return Uint is
-      procedure Alignment_Error;
-      --  Issue an error concerning a negatize or zero alignment represented by
-      --  expression Expr.
-
-      ---------------------
-      -- Alignment_Error --
-      ---------------------
-
-      procedure Alignment_Error is
-      begin
-         --  This error is suppressed in ASIS mode to allow for different ASIS
-         --  back-ends or ASIS-based tools to query the illegal clause.
-
-         if not ASIS_Mode then
-            Error_Msg_N ("alignment value must be positive", Expr);
-         end if;
-      end Alignment_Error;
-
-      --  Local variables
-
       Align : constant Uint := Static_Integer (Expr);
-
-   --  Start of processing for Get_Alignment_Value
 
    begin
       if Align = No_Uint then
          return No_Uint;
 
       elsif Align <= 0 then
-         Alignment_Error;
+
+         --  This error is suppressed in ASIS mode to allow for different ASIS
+         --  back-ends or ASIS-based tools to query the illegal clause.
+
+         if not ASIS_Mode then
+            Error_Msg_N ("alignment value must be positive", Expr);
+         end if;
+
          return No_Uint;
 
       else
@@ -11592,7 +11577,15 @@ package body Sem_Ch13 is
                exit when M = Align;
 
                if M > Align then
-                  Alignment_Error;
+
+                  --  This error is suppressed in ASIS mode to allow for
+                  --  different ASIS back-ends or ASIS-based tools to query the
+                  --  illegal clause.
+
+                  if not ASIS_Mode then
+                     Error_Msg_N ("alignment value must be power of 2", Expr);
+                  end if;
+
                   return No_Uint;
                end if;
             end;
