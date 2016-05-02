@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -467,7 +467,8 @@ package body Comperr is
       Main := Unit (Cunit (Main_Unit));
 
       case Nkind (Main) is
-         when N_Subprogram_Body | N_Package_Declaration =>
+         when N_Subprogram_Declaration | N_Subprogram_Body |
+              N_Package_Declaration =>
             Unit_Name := Defining_Unit_Name (Specification (Main));
 
          when N_Package_Body =>

@@ -60,6 +60,7 @@ package System.Unsigned_Types is
    type Packed_Bytes1 is array (Natural range <>) of aliased Packed_Byte;
    for Packed_Bytes1'Alignment use 1;
    for Packed_Bytes1'Component_Size use Packed_Byte'Size;
+   pragma Suppress_Initialization (Packed_Bytes1);
    --  This is the type used to implement packed arrays where no alignment
    --  is required. This includes the cases of 1,2,4 (where we use direct
    --  masking operations), and all odd component sizes (where the clusters
@@ -68,6 +69,7 @@ package System.Unsigned_Types is
 
    type Packed_Bytes2 is new Packed_Bytes1;
    for Packed_Bytes2'Alignment use Integer'Min (2, Standard'Maximum_Alignment);
+   pragma Suppress_Initialization (Packed_Bytes2);
    --  This is the type used to implement packed arrays where an alignment
    --  of 2 (is possible) is helpful for maximum efficiency of the get and
    --  set routines in the corresponding library unit. This is true of all
@@ -78,6 +80,7 @@ package System.Unsigned_Types is
 
    type Packed_Bytes4 is new Packed_Bytes1;
    for Packed_Bytes4'Alignment use Integer'Min (4, Standard'Maximum_Alignment);
+   pragma Suppress_Initialization (Packed_Bytes4);
    --  This is the type used to implement packed arrays where an alignment
    --  of 4 (if possible) is helpful for maximum efficiency of the get and
    --  set routines in the corresponding library unit. This is true of all

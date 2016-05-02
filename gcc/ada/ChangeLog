@@ -1,3 +1,24 @@
+2016-05-02  Jerome Lambourg  <lambourg@adacore.com>
+
+	* s-unstyp.ads: Code cleanups.
+
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Size_Too_Small_Error): Fix the error message format.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_prag.adb (Expand_attributes_In_Consequence,
+	Expand_Attributes): If the prefix of'Old is an unconstrained type,
+	for example an unconstrained formal of the enclosing subprogram,
+	create an object declaration with an expression to obtain the
+	actual subtype of the temporary.
+
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Add missing handling of
+	N_Subprogram_Declaration.
+
 2016-05-02  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch5.adb, exp_ch7.adb, exp_ch7.ads, checks.adb, sem_attr.adb,

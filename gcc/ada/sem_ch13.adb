@@ -10906,7 +10906,7 @@ package body Sem_Ch13 is
 
          if not ASIS_Mode then
             Error_Msg_Uint_1 := Min_Siz;
-            Error_Msg_NE ("size for & too small, minimum allowed is ^", N, T);
+            Error_Msg_NE ("size for& too small, minimum allowed is ^", N, T);
          end if;
       end Size_Too_Small_Error;
 
