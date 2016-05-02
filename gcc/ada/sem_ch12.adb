@@ -5759,7 +5759,7 @@ package body Sem_Ch12 is
       --------------------
 
       procedure Check_Mismatch (B : Boolean) is
-         --  a Formal_Type_Declaration for a derived private type is rewritten
+         --  A Formal_Type_Declaration for a derived private type is rewritten
          --  as a private extension decl. (see Analyze_Formal_Derived_Type),
          --  which is why we examine the original node.
 
@@ -5927,9 +5927,9 @@ package body Sem_Ch12 is
          --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
-         elsif
-           Nkind_In (Original_Node (Parent (E2)),
-             N_Formal_Object_Declaration, N_Formal_Type_Declaration)
+         elsif Nkind_In (Original_Node (Parent (E2)),
+                         N_Formal_Object_Declaration,
+                         N_Formal_Type_Declaration)
          then
             goto Next_E;
 

@@ -542,8 +542,8 @@ package Exp_Util is
    --  of the same expression won't generate multiple side effects, whereas
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result. If Mode is Relaxed then calls to this subprogram have
-   --  no effect if Exp is side-effects free; if Mode is Strict and Exp is not
-   --  a static expression then no side-effects check is performed on Exp and
+   --  no effect if Exp is side-effect free; if Mode is Strict and Exp is not
+   --  a static expression then no side-effect check is performed on Exp and
    --  temporaries are unconditionally generated.
    --
    --  Related_Id denotes the entity of the context where Expr appears. Flags
@@ -985,7 +985,7 @@ package Exp_Util is
      (L            : List_Id;
       Name_Req     : Boolean := False;
       Variable_Ref : Boolean := False) return Boolean;
-   --  Determines if all elements of the list L are side effect free. Name_Req
+   --  Determines if all elements of the list L are side-effect free. Name_Req
    --  and Variable_Ref are as described above.
 
    procedure Silly_Boolean_Array_Not_Test (N : Node_Id; T : Entity_Id);
