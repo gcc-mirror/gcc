@@ -1,6 +1,8 @@
 2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cif-code.def (CIF_THUNK): Add.
+	* ipa-inline-analsysis.c (evaluate_conditions_for_known_args): Revert
+	accidental change.
 
 2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
 
