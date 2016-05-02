@@ -121,11 +121,14 @@
     (match_operand 0 "nonmemory_operand")
     (match_operand 0 "general_operand")))
 
-;; Match register operands, include memory operand for TARGET_MIX_SSE_I387.
-(define_predicate "register_mixssei387nonimm_operand"
-  (if_then_else (match_test "TARGET_MIX_SSE_I387")
-    (match_operand 0 "nonimmediate_operand")
-    (match_operand 0 "register_operand")))
+;; Match nonimmediate operands, but exclude memory operands
+;; for TARGET_SSE_MATH if TARGET_MIX_SSE_I387 is not enabled.
+(define_predicate "nonimm_ssenomem_operand"
+  (if_then_else
+    (and (match_test "SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH")
+	 (not (match_test "TARGET_MIX_SSE_I387 && X87_ENABLE_ARITH (mode)")))
+    (match_operand 0 "register_operand")
+    (match_operand 0 "nonimmediate_operand")))
 
 ;; Match register operands, include memory operand for TARGET_SSE4_1.
 (define_predicate "register_sse4nonimm_operand"
