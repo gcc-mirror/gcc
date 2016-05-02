@@ -362,6 +362,8 @@ together with GCC.  Alternatively, if GMP is already installed but it
 is not in your library search path, you will have to configure with the
 @option{--with-gmp} configure option.  See also @option{--with-gmp-lib}
 and @option{--with-gmp-include}.
+The in-tree build is only supported with the GMP version that
+download_prerequisites installs.
 
 @item MPFR Library version 2.4.2 (or later)
 
@@ -372,6 +374,8 @@ built together with GCC.  Alternatively, if MPFR is already installed
 but it is not in your default library search path, the
 @option{--with-mpfr} configure option should be used.  See also
 @option{--with-mpfr-lib} and @option{--with-mpfr-include}.
+The in-tree build is only supported with the MPFR version that
+download_prerequisites installs.
 
 @item MPC Library version 0.8.1 (or later)
 
@@ -382,6 +386,8 @@ will be built together with GCC.  Alternatively, if MPC is already
 installed but it is not in your default library search path, the
 @option{--with-mpc} configure option should be used.  See also
 @option{--with-mpc-lib} and @option{--with-mpc-include}.
+The in-tree build is only supported with the MPC version that
+download_prerequisites installs.
 
 @item isl Library version 0.16, 0.15, or 0.14.
 
