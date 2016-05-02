@@ -5439,6 +5439,38 @@ build_noreturn_cond (tree cond)
   return build1 (NOP_EXPR, boolean_type_node, t);
 }
 
+/* Subroutine of gnat_to_gnu to translate GNAT_RANGE, a node representing a
+   range of values, into GNU_LOW and GNU_HIGH bounds.  */
+
+static void
+Range_to_gnu (Node_Id gnat_range, tree *gnu_low, tree *gnu_high)
+{
+  /* GNAT_RANGE is either an N_Range or an identifier denoting a subtype.  */
+  switch (Nkind (gnat_range))
+    {
+    case N_Range:
+      *gnu_low = gnat_to_gnu (Low_Bound (gnat_range));
+      *gnu_high = gnat_to_gnu (High_Bound (gnat_range));
+      break;
+
+    case N_Expanded_Name:
+    case N_Identifier:
+      {
+	tree gnu_range_type = get_unpadded_type (Entity (gnat_range));
+	tree gnu_range_base_type = get_base_type (gnu_range_type);
+
+	*gnu_low
+	  = convert (gnu_range_base_type, TYPE_MIN_VALUE (gnu_range_type));
+	*gnu_high
+	  = convert (gnu_range_base_type, TYPE_MAX_VALUE (gnu_range_type));
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Raise_xxx_Error,
    to a GCC tree and return it.  GNU_RESULT_TYPE_P is a pointer to where
    we should place the result type.  */
@@ -5469,7 +5501,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     case CE_Invalid_Data:
       if (Present (gnat_cond) && Nkind (gnat_cond) == N_Op_Not)
 	{
-	  Node_Id gnat_range, gnat_index, gnat_type;
+	  Node_Id gnat_index, gnat_type;
 	  tree gnu_type, gnu_index, gnu_low_bound, gnu_high_bound, disp;
 	  bool neg_p;
 	  struct loop_info_d *loop;
@@ -5477,10 +5509,8 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	  switch (Nkind (Right_Opnd (gnat_cond)))
 	    {
 	    case N_In:
-	      gnat_range = Right_Opnd (Right_Opnd (gnat_cond));
-	      gcc_assert (Nkind (gnat_range) == N_Range);
-	      gnu_low_bound = gnat_to_gnu (Low_Bound (gnat_range));
-	      gnu_high_bound = gnat_to_gnu (High_Bound (gnat_range));
+	      Range_to_gnu (Right_Opnd (Right_Opnd (gnat_cond)),
+			    &gnu_low_bound, &gnu_high_bound);
 	      break;
 
 	    case N_Op_Ge:
@@ -6458,30 +6488,9 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Not_In:
       {
 	tree gnu_obj = gnat_to_gnu (Left_Opnd (gnat_node));
-	Node_Id gnat_range = Right_Opnd (gnat_node);
 	tree gnu_low, gnu_high;
 
-	/* GNAT_RANGE is either an N_Range node or an identifier denoting a
-	   subtype.  */
-	if (Nkind (gnat_range) == N_Range)
-	  {
-	    gnu_low = gnat_to_gnu (Low_Bound (gnat_range));
-	    gnu_high = gnat_to_gnu (High_Bound (gnat_range));
-	  }
-	else if (Nkind (gnat_range) == N_Identifier
-		 || Nkind (gnat_range) == N_Expanded_Name)
-	  {
-	    tree gnu_range_type = get_unpadded_type (Entity (gnat_range));
-	    tree gnu_range_base_type = get_base_type (gnu_range_type);
-
-	    gnu_low
-	      = convert (gnu_range_base_type, TYPE_MIN_VALUE (gnu_range_type));
-	    gnu_high
-	      = convert (gnu_range_base_type, TYPE_MAX_VALUE (gnu_range_type));
-	  }
-	else
-	  gcc_unreachable ();
-
+	Range_to_gnu (Right_Opnd (gnat_node), &gnu_low, &gnu_high);
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
 	tree gnu_op_type = maybe_character_type (TREE_TYPE (gnu_obj));
