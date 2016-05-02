@@ -1065,9 +1065,9 @@ package body SPARK_Specific is
 
       if Nkind_In (N, N_Defining_Identifier, N_Defining_Operator_Symbol)
         and then (Ekind (N) in Entry_Kind
-                  or else Ekind (N) = E_Subprogram_Body
-                  or else Ekind (N) in Generic_Subprogram_Kind
-                  or else Ekind (N) in Subprogram_Kind)
+                   or else Ekind (N) = E_Subprogram_Body
+                   or else Ekind (N) in Generic_Subprogram_Kind
+                   or else Ekind (N) in Subprogram_Kind)
       then
          Context := Parent (Unit_Declaration_Node (N));
 
