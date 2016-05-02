@@ -4758,9 +4758,8 @@ package body Sem_Ch13 is
             elsif Is_Subprogram (U_Ent) then
                if Has_Homonym (U_Ent) then
                   Error_Msg_N
-                    ("address clause cannot be given " &
-                     "for overloaded subprogram",
-                     Nam);
+                    ("address clause cannot be given for overloaded "
+                     & "subprogram", Nam);
                   return;
                end if;
 
@@ -4802,8 +4801,8 @@ package body Sem_Ch13 is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
-                    ("?j?attaching interrupt to task entry is an " &
-                     "obsolescent feature (RM J.7.1)", N);
+                    ("?j?attaching interrupt to task entry is an obsolescent "
+                     & "feature (RM J.7.1)", N);
                   Error_Msg_N
                     ("\?j?use interrupt procedure instead", N);
                end if;
@@ -5022,12 +5021,17 @@ package body Sem_Ch13 is
                Set_Has_Alignment_Clause (U_Ent);
 
                --  Tagged type case, check for attempt to set alignment to a
-               --  value greater than Max_Align, and reset if so.
+               --  value greater than Max_Align, and reset if so. This error
+               --  is suppressed in ASIS mode to allow for different ASIS
+               --  back-ends or ASIS-based tools to query the illegal clause.
 
-               if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
+               if Is_Tagged_Type (U_Ent)
+                 and then Align > Max_Align
+                 and then not ASIS_Mode
+               then
                   Error_Msg_N
                     ("alignment for & set to Maximum_Aligment??", Nam);
-                     Set_Alignment (U_Ent, Max_Align);
+                  Set_Alignment (U_Ent, Max_Align);
 
                --  All other cases
 
@@ -5100,7 +5104,7 @@ package body Sem_Ch13 is
             end if;
 
             Btype := Base_Type (U_Ent);
-            Ctyp := Component_Type (Btype);
+            Ctyp  := Component_Type (Btype);
 
             if Duplicate_Clause then
                null;
@@ -5324,8 +5328,8 @@ package body Sem_Ch13 is
                   Error_Msg_NE
                     ("??non-unique external tag supplied for &", N, U_Ent);
                   Error_Msg_N
-                       ("\??same external tag applies to all "
-                        & "subprogram calls", N);
+                    ("\??same external tag applies to all subprogram calls",
+                     N);
                   Error_Msg_N
                     ("\??corresponding internal tag cannot be obtained", N);
                end if;
@@ -5363,8 +5367,8 @@ package body Sem_Ch13 is
             if From_Aspect_Specification (N) then
                if not Is_Concurrent_Type (U_Ent) then
                   Error_Msg_N
-                    ("Interrupt_Priority can only be defined for task "
-                     & "and protected object", Nam);
+                    ("Interrupt_Priority can only be defined for task and "
+                     & "protected object", Nam);
 
                elsif Duplicate_Clause then
                   null;
@@ -5456,9 +5460,15 @@ package body Sem_Ch13 is
 
                if Radix = 2 then
                   null;
+
                elsif Radix = 10 then
                   Set_Machine_Radix_10 (U_Ent);
-               else
+
+               --  The following error is suppressed in ASIS mode to allow for
+               --  different ASIS back-ends or ASIS-based tools to query the
+               --  illegal clause.
+
+               elsif not ASIS_Mode then
                   Error_Msg_N ("machine radix value must be 2 or 10", Expr);
                end if;
             end if;
@@ -5486,7 +5496,14 @@ package body Sem_Ch13 is
             else
                Check_Size (Expr, U_Ent, Size, Biased);
 
-               if Is_Scalar_Type (U_Ent) then
+               --  The following errors are suppressed in ASIS mode to allow
+               --  for different ASIS back-ends or ASIS-based tools to query
+               --  the illegal clause.
+
+               if ASIS_Mode then
+                  null;
+
+               elsif Is_Scalar_Type (U_Ent) then
                   if Size /= 8 and then Size /= 16 and then Size /= 32
                     and then UI_Mod (Size, 64) /= 0
                   then
@@ -5573,8 +5590,8 @@ package body Sem_Ch13 is
          begin
             if not (Is_Record_Type (U_Ent) or else Is_Array_Type (U_Ent)) then
                Error_Msg_N
-                 ("Scalar_Storage_Order can only be defined for "
-                  & "record or array type", Nam);
+                 ("Scalar_Storage_Order can only be defined for record or "
+                  & "array type", Nam);
 
             elsif Duplicate_Clause then
                null;
@@ -5598,8 +5615,8 @@ package body Sem_Ch13 is
                      Set_Reverse_Storage_Order (Base_Type (U_Ent), True);
                   else
                      Error_Msg_N
-                       ("non-default Scalar_Storage_Order "
-                        & "not supported on target", Expr);
+                       ("non-default Scalar_Storage_Order not supported on "
+                        & "target", Expr);
                   end if;
                end if;
 
@@ -5696,21 +5713,22 @@ package body Sem_Ch13 is
                --  For objects, set Esize only
 
                else
-                  if Is_Elementary_Type (Etyp) then
-                     if Size /= System_Storage_Unit
-                          and then
-                        Size /= System_Storage_Unit * 2
-                          and then
-                        Size /= System_Storage_Unit * 4
-                           and then
-                        Size /= System_Storage_Unit * 8
-                     then
-                        Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
-                        Error_Msg_Uint_2 := Error_Msg_Uint_1 * 8;
-                        Error_Msg_N
-                          ("size for primitive object must be a power of 2"
-                            & " in the range ^-^", N);
-                     end if;
+                  --  The following error is suppressed in ASIS mode to allow
+                  --  for different ASIS back-ends or ASIS-based tools to query
+                  --  the illegal clause.
+
+                  if Is_Elementary_Type (Etyp)
+                    and then Size /= System_Storage_Unit
+                    and then Size /= System_Storage_Unit * 2
+                    and then Size /= System_Storage_Unit * 4
+                    and then Size /= System_Storage_Unit * 8
+                    and then not ASIS_Mode
+                  then
+                     Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
+                     Error_Msg_Uint_2 := Error_Msg_Uint_1 * 8;
+                     Error_Msg_N
+                       ("size for primitive object must be a power of 2 in "
+                        & "the range ^-^", N);
                   end if;
 
                   Set_Esize (U_Ent, Size);
@@ -5955,8 +5973,8 @@ package body Sem_Ch13 is
 
                   if Warn_On_Obsolescent_Feature then
                      Error_Msg_N
-                       ("?j?storage size clause for task is an " &
-                        "obsolescent feature (RM J.9)", N);
+                       ("?j?storage size clause for task is an obsolescent "
+                        & "feature (RM J.9)", N);
                      Error_Msg_N ("\?j?use Storage_Size pragma instead", N);
                   end if;
                end if;
@@ -6024,24 +6042,29 @@ package body Sem_Ch13 is
                null;
 
             elsif Is_Elementary_Type (U_Ent) then
-               if Size /= System_Storage_Unit
-                    and then
-                  Size /= System_Storage_Unit * 2
-                    and then
-                  Size /= System_Storage_Unit * 4
-                     and then
-                  Size /= System_Storage_Unit * 8
+
+               --  The following errors are suppressed in ASIS mode to allow
+               --  for different ASIS back-ends or ASIS-based tools to query
+               --  the illegal clause.
+
+               if ASIS_Mode then
+                  null;
+
+               elsif Size /= System_Storage_Unit
+                 and then Size /= System_Storage_Unit * 2
+                 and then Size /= System_Storage_Unit * 4
+                 and then Size /= System_Storage_Unit * 8
                then
                   Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
                   Error_Msg_N
-                    ("stream size for elementary type must be a"
-                       & " power of 2 and at least ^", N);
+                    ("stream size for elementary type must be a power of 2 "
+                     & "and at least ^", N);
 
                elsif RM_Size (U_Ent) > Size then
                   Error_Msg_Uint_1 := RM_Size (U_Ent);
                   Error_Msg_N
-                    ("stream size for elementary type must be a"
-                       & " power of 2 and at least ^", N);
+                    ("stream size for elementary type must be a power of 2 "
+                     & "and at least ^", N);
                end if;
 
                Set_Has_Stream_Size_Clause (U_Ent);
@@ -6787,12 +6810,10 @@ package body Sem_Ch13 is
               and then Lbit /= No_Uint
             then
                if Posit < 0 then
-                  Error_Msg_N
-                    ("position cannot be negative", Position (CC));
+                  Error_Msg_N ("position cannot be negative", Position (CC));
 
                elsif Fbit < 0 then
-                  Error_Msg_N
-                    ("first bit cannot be negative", First_Bit (CC));
+                  Error_Msg_N ("first bit cannot be negative", First_Bit (CC));
 
                --  The Last_Bit specified in a component clause must not be
                --  less than the First_Bit minus one (RM-13.5.1(10)).
@@ -6885,8 +6906,8 @@ package body Sem_Ch13 is
                                                    Intval (Last_Bit (CC))
                            then
                               Error_Msg_N
-                                ("component clause inconsistent "
-                                 & "with representation of ancestor", CC);
+                                ("component clause inconsistent with "
+                                 & "representation of ancestor", CC);
 
                            elsif Warn_On_Redundant_Constructs then
                               Error_Msg_N
@@ -10870,13 +10891,36 @@ package body Sem_Ch13 is
       Siz    : Uint;
       Biased : out Boolean)
    is
+      procedure Size_Too_Small_Error (Min_Siz : Uint);
+      --  Emit an error concerning illegal size Siz. Min_Siz denotes the
+      --  minimum size.
+
+      --------------------------
+      -- Size_Too_Small_Error --
+      --------------------------
+
+      procedure Size_Too_Small_Error (Min_Siz : Uint) is
+      begin
+         --  This error is suppressed in ASIS mode to allow for different ASIS
+         --  back-ends or ASIS-based tools to query the illegal clause.
+
+         if not ASIS_Mode then
+            Error_Msg_Uint_1 := Min_Siz;
+            Error_Msg_NE ("size for & too small, minimum allowed is ^", N, T);
+         end if;
+      end Size_Too_Small_Error;
+
+      --  Local variables
+
       UT : constant Entity_Id := Underlying_Type (T);
       M  : Uint;
+
+   --  Start of processing for Check_Size
 
    begin
       Biased := False;
 
-      --  Reject patently improper size values.
+      --  Reject patently improper size values
 
       if Is_Elementary_Type (T)
         and then Siz > UI_From_Int (Int'Last)
@@ -10945,9 +10989,7 @@ package body Sem_Ch13 is
                return;
 
             else
-               Error_Msg_Uint_1 := Asiz;
-               Error_Msg_NE
-                 ("size for& too small, minimum allowed is ^", N, T);
+               Size_Too_Small_Error (Asiz);
                Set_Esize   (T, Asiz);
                Set_RM_Size (T, Asiz);
             end if;
@@ -10962,9 +11004,7 @@ package body Sem_Ch13 is
       --  since we don't know all the characteristics of the type that can
       --  affect the size (e.g. a specified small) till freeze time.
 
-      elsif Is_Fixed_Point_Type (UT)
-        and then not Is_Frozen (UT)
-      then
+      elsif Is_Fixed_Point_Type (UT) and then not Is_Frozen (UT) then
          null;
 
       --  Cases for which a minimum check is required
@@ -10988,10 +11028,8 @@ package body Sem_Ch13 is
             M := UI_From_Int (Minimum_Size (UT, Biased => True));
 
             if Siz < M then
-               Error_Msg_Uint_1 := M;
-               Error_Msg_NE
-                 ("size for& too small, minimum allowed is ^", N, T);
-               Set_Esize (T, M);
+               Size_Too_Small_Error (M);
+               Set_Esize   (T, M);
                Set_RM_Size (T, M);
             else
                Biased := True;
@@ -11513,14 +11551,36 @@ package body Sem_Ch13 is
    -------------------------
 
    function Get_Alignment_Value (Expr : Node_Id) return Uint is
+      procedure Alignment_Error;
+      --  Issue an error concerning a negatize or zero alignment represented by
+      --  expression Expr.
+
+      ---------------------
+      -- Alignment_Error --
+      ---------------------
+
+      procedure Alignment_Error is
+      begin
+         --  This error is suppressed in ASIS mode to allow for different ASIS
+         --  back-ends or ASIS-based tools to query the illegal clause.
+
+         if not ASIS_Mode then
+            Error_Msg_N ("alignment value must be positive", Expr);
+         end if;
+      end Alignment_Error;
+
+      --  Local variables
+
       Align : constant Uint := Static_Integer (Expr);
+
+   --  Start of processing for Get_Alignment_Value
 
    begin
       if Align = No_Uint then
          return No_Uint;
 
       elsif Align <= 0 then
-         Error_Msg_N ("alignment value must be positive", Expr);
+         Alignment_Error;
          return No_Uint;
 
       else
@@ -11532,8 +11592,7 @@ package body Sem_Ch13 is
                exit when M = Align;
 
                if M > Align then
-                  Error_Msg_N
-                    ("alignment value must be power of 2", Expr);
+                  Alignment_Error;
                   return No_Uint;
                end if;
             end;

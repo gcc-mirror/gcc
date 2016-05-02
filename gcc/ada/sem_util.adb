@@ -8322,6 +8322,73 @@ package body Sem_Util is
       return Get_Pragma_Id (Pragma_Name (N));
    end Get_Pragma_Id;
 
+   ------------------------
+   -- Get_Qualified_Name --
+   ------------------------
+
+   function Get_Qualified_Name
+     (Id     : Entity_Id;
+      Suffix : Entity_Id := Empty) return Name_Id
+   is
+      Suffix_Nam : Name_Id := No_Name;
+
+   begin
+      if Present (Suffix) then
+         Suffix_Nam := Chars (Suffix);
+      end if;
+
+      return Get_Qualified_Name (Chars (Id), Suffix_Nam, Scope (Id));
+   end Get_Qualified_Name;
+
+   function Get_Qualified_Name
+     (Nam    : Name_Id;
+      Suffix : Name_Id   := No_Name;
+      Scop   : Entity_Id := Current_Scope) return Name_Id
+   is
+      procedure Add_Scope (S : Entity_Id);
+      --  Add the fully qualified form of scope S to the name buffer. The
+      --  format is:
+      --    s-1__s__
+
+      ---------------
+      -- Add_Scope --
+      ---------------
+
+      procedure Add_Scope (S : Entity_Id) is
+      begin
+         if S = Empty then
+            null;
+
+         elsif S = Standard_Standard then
+            null;
+
+         else
+            Add_Scope (Scope (S));
+            Get_Name_String_And_Append (Chars (S));
+            Add_Str_To_Name_Buffer ("__");
+         end if;
+      end Add_Scope;
+
+   --  Start of processing for Get_Qualified_Name
+
+   begin
+      Name_Len := 0;
+      Add_Scope (Scop);
+
+      --  Append the base name after all scopes have been chained
+
+      Get_Name_String_And_Append (Nam);
+
+      --  Append the suffix (if present)
+
+      if Suffix /= No_Name then
+         Add_Str_To_Name_Buffer ("__");
+         Get_Name_String_And_Append (Suffix);
+      end if;
+
+      return Name_Find;
+   end Get_Qualified_Name;
+
    -----------------------
    -- Get_Reason_String --
    -----------------------
@@ -17762,39 +17829,13 @@ package body Sem_Util is
    -----------------
 
    procedure Output_Name (Nam : Name_Id; Scop : Entity_Id := Current_Scope) is
-      procedure Output_Scope (S : Entity_Id);
-      --  Add the fully qualified form of scope S to the name buffer. The
-      --  qualification format is:
-      --    scope1__scopeN__
-
-      ------------------
-      -- Output_Scope --
-      ------------------
-
-      procedure Output_Scope (S : Entity_Id) is
-      begin
-         if S = Empty then
-            null;
-
-         elsif S = Standard_Standard then
-            null;
-
-         else
-            Output_Scope (Scope (S));
-            Add_Str_To_Name_Buffer (Get_Name_String (Chars (S)));
-            Add_Str_To_Name_Buffer ("__");
-         end if;
-      end Output_Scope;
-
-   --  Start of processing for Output_Name
-
    begin
-      Name_Len := 0;
-      Output_Scope (Scop);
-
-      Add_Str_To_Name_Buffer (Get_Name_String (Nam));
-
-      Write_Str (Name_Buffer (1 .. Name_Len));
+      Write_Str
+        (Get_Name_String
+          (Get_Qualified_Name
+            (Nam    => Nam,
+             Suffix => No_Name,
+             Scop   => Scop)));
       Write_Eol;
    end Output_Name;
 

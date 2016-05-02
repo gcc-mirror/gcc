@@ -4600,8 +4600,6 @@ package body Exp_Ch3 is
 
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
-      Ins_Node : Node_Id;
-
    begin
       --  Ensure that all freezing activities are properly flagged as Ghost
 
@@ -4654,39 +4652,13 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         if Typ = Base then
-            if Has_Controlled_Component (Base) then
-               Build_Controlling_Procs (Base);
+         if Typ = Base and then Has_Controlled_Component (Base) then
+            Build_Controlling_Procs (Base);
 
-               if not Is_Limited_Type (Comp_Typ)
-                 and then Number_Dimensions (Typ) = 1
-               then
-                  Build_Slice_Assignment (Typ);
-               end if;
-            end if;
-
-            --  Create a finalization master to service the anonymous access
-            --  components of the array.
-
-            if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-              and then Needs_Finalization (Designated_Type (Comp_Typ))
+            if not Is_Limited_Type (Comp_Typ)
+              and then Number_Dimensions (Typ) = 1
             then
-               --  The finalization master is inserted before the declaration
-               --  of the array type. The only exception to this is when the
-               --  array type is an itype, in which case the master appears
-               --  before the related context.
-
-               if Is_Itype (Typ) then
-                  Ins_Node := Associated_Node_For_Itype (Typ);
-               else
-                  Ins_Node := Parent (Typ);
-               end if;
-
-               Build_Finalization_Master
-                 (Typ            => Comp_Typ,
-                  For_Anonymous  => True,
-                  Context_Scope  => Scope (Typ),
-                  Insertion_Node => Ins_Node);
+               Build_Slice_Assignment (Typ);
             end if;
          end if;
 
@@ -5044,13 +5016,12 @@ package body Exp_Ch3 is
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
-             Statements => New_List (
+             Statements       => New_List (
                Make_Raise_Constraint_Error (Loc,
                  Condition => Make_Identifier (Loc, Name_uF),
                  Reason    => CE_Invalid_Data),
                Make_Simple_Return_Statement (Loc,
-                 Expression =>
-                   Make_Integer_Literal (Loc, -1)))));
+                 Expression => Make_Integer_Literal (Loc, -1)))));
 
       --  If either of the restrictions No_Exceptions_Handlers/Propagation is
       --  active then return -1 (we cannot usefully raise Constraint_Error in
@@ -5060,10 +5031,9 @@ package body Exp_Ch3 is
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
-             Statements => New_List (
+             Statements       => New_List (
                Make_Simple_Return_Statement (Loc,
-                 Expression =>
-                   Make_Integer_Literal (Loc, -1)))));
+                 Expression => Make_Integer_Literal (Loc, -1)))));
       end if;
 
       --  Now we can build the function body
@@ -5137,8 +5107,10 @@ package body Exp_Ch3 is
 
       Comp        : Entity_Id;
       Comp_Typ    : Entity_Id;
-      Has_AACC    : Boolean;
       Predef_List : List_Id;
+
+      Wrapper_Decl_List : List_Id := No_List;
+      Wrapper_Body_List : List_Id := No_List;
 
       Renamed_Eq : Node_Id := Empty;
       --  Defining unit name for the predefined equality function in the case
@@ -5146,9 +5118,6 @@ package body Exp_Ch3 is
       --  predefined equality (but only if there is also an overriding
       --  user-defined equality function). Used to pass this entity from
       --  Make_Predefined_Primitive_Specs to Predefined_Primitive_Bodies.
-
-      Wrapper_Decl_List : List_Id := No_List;
-      Wrapper_Body_List : List_Id := No_List;
 
    --  Start of processing for Expand_Freeze_Record_Type
 
@@ -5212,8 +5181,6 @@ package body Exp_Ch3 is
       --  of the component types may have been private at the point of the
       --  record declaration. Detect anonymous access-to-controlled components.
 
-      Has_AACC := False;
-
       Comp := First_Component (Typ);
       while Present (Comp) loop
          Comp_Typ := Etype (Comp);
@@ -5236,15 +5203,6 @@ package body Exp_Ch3 is
                          and then (Is_Controlled_Active (Comp_Typ))))
          then
             Set_Has_Controlled_Component (Typ);
-         end if;
-
-         --  Non-self-referential anonymous access-to-controlled component
-
-         if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-           and then Needs_Finalization (Designated_Type (Comp_Typ))
-           and then Designated_Type (Comp_Typ) /= Typ
-         then
-            Has_AACC := True;
          end if;
 
          Next_Component (Comp);
@@ -5591,97 +5549,6 @@ package body Exp_Ch3 is
                end if;
 
                Next_Elmt (Elmt);
-            end loop;
-         end;
-      end if;
-
-      --  Create a heterogeneous finalization master to service the anonymous
-      --  access-to-controlled components of the record type.
-
-      if Has_AACC then
-         declare
-            Encl_Scope : constant Entity_Id  := Scope (Typ);
-            Ins_Node   : constant Node_Id    := Parent (Typ);
-            Loc        : constant Source_Ptr := Sloc (Typ);
-            Fin_Mas_Id : Entity_Id;
-
-            Attributes_Set : Boolean := False;
-            Master_Built   : Boolean := False;
-            --  Two flags which control the creation and initialization of a
-            --  common heterogeneous master.
-
-         begin
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               Comp_Typ := Etype (Comp);
-
-               --  A non-self-referential anonymous access-to-controlled
-               --  component.
-
-               if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-                 and then Needs_Finalization (Designated_Type (Comp_Typ))
-                 and then Designated_Type (Comp_Typ) /= Typ
-               then
-                  --  Build a homogeneous master for the first anonymous
-                  --  access-to-controlled component. This master may be
-                  --  converted into a heterogeneous collection if more
-                  --  components are to follow.
-
-                  if not Master_Built then
-                     Master_Built := True;
-
-                     --  All anonymous access-to-controlled types allocate
-                     --  on the global pool. Note that the finalization
-                     --  master and the associated storage pool must be set
-                     --  on the root type (both are "root type only").
-
-                     Set_Associated_Storage_Pool
-                       (Root_Type (Comp_Typ), RTE (RE_Global_Pool_Object));
-
-                     Build_Finalization_Master
-                       (Typ            => Root_Type (Comp_Typ),
-                        For_Anonymous  => True,
-                        Context_Scope  => Encl_Scope,
-                        Insertion_Node => Ins_Node);
-
-                     Fin_Mas_Id := Finalization_Master (Comp_Typ);
-
-                  --  Subsequent anonymous access-to-controlled components
-                  --  reuse the available master.
-
-                  else
-                     --  All anonymous access-to-controlled types allocate
-                     --  on the global pool. Note that both the finalization
-                     --  master and the associated storage pool must be set
-                     --  on the root type (both are "root type only").
-
-                     Set_Associated_Storage_Pool
-                       (Root_Type (Comp_Typ), RTE (RE_Global_Pool_Object));
-
-                     --  Shared the master among multiple components
-
-                     Set_Finalization_Master
-                       (Root_Type (Comp_Typ), Fin_Mas_Id);
-
-                     --  Convert the master into a heterogeneous collection.
-                     --  Generate:
-                     --    Set_Is_Heterogeneous (<Fin_Mas_Id>);
-
-                     if not Attributes_Set then
-                        Attributes_Set := True;
-
-                        Insert_Action (Ins_Node,
-                          Make_Procedure_Call_Statement (Loc,
-                            Name                   =>
-                              New_Occurrence_Of
-                                (RTE (RE_Set_Is_Heterogeneous), Loc),
-                            Parameter_Associations => New_List (
-                              New_Occurrence_Of (Fin_Mas_Id, Loc))));
-                     end if;
-                  end if;
-               end if;
-
-               Next_Component (Comp);
             end loop;
          end;
       end if;

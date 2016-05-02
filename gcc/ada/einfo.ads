@@ -438,11 +438,11 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
---    Anonymous_Master (Node36)
---       Defined in the entities of non-generic packages, subprograms and their
---       corresponding bodies. Contains the entity of a special heterogeneous
---       finalization master that services most anonymous access-to-controlled
---       allocations that occur within the unit.
+--    Anonymous_Master (Node35)
+--       Defined in all types. Contains the entity of an anonymous finalization
+--       master which services all anonymous access types associated with the
+--       same designated type within the current semantic unit. The attribute
+--       is set reactively during the expansion of allocators.
 
 --    Anonymous_Object (Node30)
 --       Present in protected and task type entities. Contains the entity of
@@ -5468,6 +5468,7 @@ package Einfo is
    --    Derived_Type_Link                   (Node31)
    --    No_Tagged_Streams_Pragma            (Node32)
    --    Linker_Section_Pragma               (Node33)
+   --    Anonymous_Master                    (Node35)
 
    --    Depends_On_Private                  (Flag14)
    --    Disable_Controlled                  (Flag253)
@@ -5668,8 +5669,8 @@ package Einfo is
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Equivalent_Type                     (Node18)   (always Empty for type)
-   --    Last_Entity                         (Node20)
    --    Non_Limited_View                    (Node19)
+   --    Last_Entity                         (Node20)
    --    SSO_Set_High_By_Default             (Flag273)  (base type only)
    --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    First_Component                     (synth)
@@ -5919,7 +5920,6 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
-   --    Anonymous_Master                    (Node36)   (non-generic case only)
    --    Class_Wide_Preconds                 (List38)
    --    Class_Wide_Postconds                (List39)
    --    SPARK_Pragma                        (Node40)
@@ -6141,7 +6141,6 @@ package Einfo is
    --    Current_Use_Clause                  (Node27)
    --    Finalizer                           (Node28)   (non-generic case only)
    --    Contract                            (Node34)
-   --    Anonymous_Master                    (Node36)   (non-generic case only)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Delay_Subprogram_Descriptors        (Flag50)
@@ -6179,7 +6178,6 @@ package Einfo is
    --    Scope_Depth_Value                   (Uint22)
    --    Finalizer                           (Node28)   (non-generic case only)
    --    Contract                            (Node34)
-   --    Anonymous_Master                    (Node36)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Contains_Ignored_Ghost_Code         (Flag279)
@@ -6233,7 +6231,6 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
-   --    Anonymous_Master                    (Node36)   (non-generic case only)
    --    Class_Wide_Preconds                 (List38)
    --    Class_Wide_Postconds                (List39)
    --    SPARK_Pragma                        (Node40)
@@ -6419,7 +6416,6 @@ package Einfo is
    --    Scope_Depth_Value                   (Uint22)
    --    Extra_Formals                       (Node28)
    --    Contract                            (Node34)
-   --    Anonymous_Master                    (Node36)
    --    SPARK_Pragma                        (Node40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    SPARK_Pragma_Inherited              (Flag265)

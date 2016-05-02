@@ -44,7 +44,6 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
-with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -57,7 +56,6 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -91,12 +89,6 @@ package body Exp_Ch4 is
       Op2 : Node_Id);
    --  If a boolean array assignment can be done in place, build call to
    --  corresponding library procedure.
-
-   function Current_Anonymous_Master return Entity_Id;
-   --  Return the entity of the heterogeneous finalization master belonging to
-   --  the current unit (either function, package or procedure). This master
-   --  services all anonymous access-to-controlled types. If the current unit
-   --  does not have such master, create one.
 
    procedure Displace_Allocator_Pointer (N : Node_Id);
    --  Ada 2005 (AI-251): Subsidiary procedure to Expand_N_Allocator and
@@ -409,202 +401,6 @@ package body Exp_Ch4 is
       when RE_Not_Available =>
          return;
    end Build_Boolean_Array_Proc_Call;
-
-   ------------------------------
-   -- Current_Anonymous_Master --
-   ------------------------------
-
-   function Current_Anonymous_Master return Entity_Id is
-      function Create_Anonymous_Master
-        (Unit_Id   : Entity_Id;
-         Unit_Decl : Node_Id) return Entity_Id;
-      --  Create a new anonymous master for a compilation unit denoted by its
-      --  entity Unit_Id and declaration Unit_Decl. The declaration of the new
-      --  master along with any specialized initialization is inserted at the
-      --  top of the unit's declarations (see body for special cases). Return
-      --  the entity of the anonymous master.
-
-      -----------------------------
-      -- Create_Anonymous_Master --
-      -----------------------------
-
-      function Create_Anonymous_Master
-        (Unit_Id   : Entity_Id;
-         Unit_Decl : Node_Id) return Entity_Id
-      is
-         Insert_Nod : Node_Id := Empty;
-         --  The point of insertion into the declarative list of the unit. All
-         --  nodes are inserted before Insert_Nod.
-
-         procedure Insert_And_Analyze (Decls : List_Id; N : Node_Id);
-         --  Insert arbitrary node N in declarative list Decls and analyze it
-
-         ------------------------
-         -- Insert_And_Analyze --
-         ------------------------
-
-         procedure Insert_And_Analyze (Decls : List_Id; N : Node_Id) is
-         begin
-            --  The declarative list is already populated, the nodes are
-            --  inserted at the top of the list, preserving their order.
-
-            if Present (Insert_Nod) then
-               Insert_Before (Insert_Nod, N);
-
-            --  Otherwise append to the declarations to preserve order
-
-            else
-               Append_To (Decls, N);
-            end if;
-
-            Analyze (N);
-         end Insert_And_Analyze;
-
-         --  Local variables
-
-         Loc       : constant Source_Ptr := Sloc (Unit_Id);
-         Spec_Id   : constant Entity_Id  := Unique_Defining_Entity (Unit_Decl);
-         Decls     : List_Id;
-         FM_Id     : Entity_Id;
-         Pref      : Character;
-         Unit_Spec : Node_Id;
-
-      --  Start of processing for Create_Anonymous_Master
-
-      begin
-         --  Find the declarative list of the unit
-
-         if Nkind (Unit_Decl) = N_Package_Declaration then
-            Unit_Spec := Specification (Unit_Decl);
-            Decls := Visible_Declarations (Unit_Spec);
-
-            if No (Decls) then
-               Decls := New_List (Make_Null_Statement (Loc));
-               Set_Visible_Declarations (Unit_Spec, Decls);
-            end if;
-
-         --  Package or subprogram body
-
-         --  ??? A subprogram declaration that acts as a compilation unit may
-         --  contain a formal parameter of an anonymous access-to-controlled
-         --  type initialized by an allocator.
-
-         --    procedure Comp_Unit_Proc (Param : access Ctrl := new Ctrl);
-
-         --  There is no suitable place to create the anonymous master as the
-         --  subprogram is not in a declarative list.
-
-         else
-            Decls := Declarations (Unit_Decl);
-
-            if No (Decls) then
-               Decls := New_List (Make_Null_Statement (Loc));
-               Set_Declarations (Unit_Decl, Decls);
-            end if;
-         end if;
-
-         --  The anonymous master and all initialization actions are inserted
-         --  before the first declaration (if any).
-
-         Insert_Nod := First (Decls);
-
-         --  Since the anonymous master and all its initialization actions are
-         --  inserted at top level, use the scope of the unit when analyzing.
-
-         Push_Scope (Spec_Id);
-
-         --  Step 1: Anonymous master creation
-
-         --  Use a unique prefix in case the same unit requires two anonymous
-         --  masters, one for the spec (S) and one for the body (B).
-
-         if Ekind_In (Unit_Id, E_Function, E_Package, E_Procedure) then
-            Pref := 'S';
-         else
-            Pref := 'B';
-         end if;
-
-         FM_Id :=
-           Make_Defining_Identifier (Loc,
-             New_External_Name
-               (Related_Id => Chars (Unit_Id),
-                Suffix     => "AM",
-                Prefix     => Pref));
-
-         Set_Anonymous_Master (Unit_Id, FM_Id);
-
-         --  Generate:
-         --    <FM_Id> : Finalization_Master;
-
-         Insert_And_Analyze (Decls,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => FM_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
-
-         --  Step 2: Initialization actions
-
-         --  Generate:
-         --    Set_Base_Pool
-         --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
-
-         Insert_And_Analyze (Decls,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (FM_Id, Loc),
-               Make_Attribute_Reference (Loc,
-                 Prefix         =>
-                   New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
-                 Attribute_Name => Name_Unrestricted_Access))));
-
-         --  Generate:
-         --    Set_Is_Heterogeneous (<FM_Id>);
-
-         Insert_And_Analyze (Decls,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (FM_Id, Loc))));
-
-         Pop_Scope;
-         return FM_Id;
-      end Create_Anonymous_Master;
-
-      --  Local declarations
-
-      Unit_Decl : Node_Id;
-      Unit_Id   : Entity_Id;
-
-   --  Start of processing for Current_Anonymous_Master
-
-   begin
-      Unit_Decl := Unit (Cunit (Current_Sem_Unit));
-      Unit_Id   := Defining_Entity (Unit_Decl);
-
-      --  The compilation unit is a package instantiation. In this case the
-      --  anonymous master is associated with the package spec as both the
-      --  spec and body appear at the same level.
-
-      if Nkind (Unit_Decl) = N_Package_Body
-        and then Nkind (Original_Node (Unit_Decl)) = N_Package_Instantiation
-      then
-         Unit_Id   := Corresponding_Spec (Unit_Decl);
-         Unit_Decl := Unit_Declaration_Node (Unit_Id);
-      end if;
-
-      if Present (Anonymous_Master (Unit_Id)) then
-         return Anonymous_Master (Unit_Id);
-
-      --  Create a new anonymous master when allocating an object of anonymous
-      --  access-to-controlled type for the first time.
-
-      else
-         return Create_Anonymous_Master (Unit_Id, Unit_Decl);
-      end if;
-   end Current_Anonymous_Master;
 
    --------------------------------
    -- Displace_Allocator_Pointer --
@@ -4296,8 +4092,7 @@ package body Exp_Ch4 is
             Set_Finalization_Master
               (Root_Type (PtrT), Finalization_Master (Rel_Typ));
          else
-            Set_Finalization_Master
-              (Root_Type (PtrT), Current_Anonymous_Master);
+            Build_Anonymous_Master (Root_Type (PtrT));
          end if;
       end if;
 

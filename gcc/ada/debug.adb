@@ -125,7 +125,7 @@ package body Debug is
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
-   --  d.H
+   --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
    --  d.K
@@ -629,6 +629,9 @@ package body Debug is
    --       when doing the analysis for the static elaboration model. This is
    --       now fixed, but we provide this debug flag to revert to the previous
    --       situation of ignoring such calls to aid in transition.
+
+   --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
+   --       the call to gigi in ASIS_Mode.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration

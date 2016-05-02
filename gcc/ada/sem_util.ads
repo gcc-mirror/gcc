@@ -950,6 +950,20 @@ package Sem_Util is
    pragma Inline (Get_Pragma_Id);
    --  Obtains the Pragma_Id from the Chars field of Pragma_Identifier (N)
 
+   function Get_Qualified_Name
+     (Id     : Entity_Id;
+      Suffix : Entity_Id := Empty) return Name_Id;
+   --  Obtain the fully qualified form of entity Id. The format is:
+   --    scope_of_id-1__scope_of_id__chars_of_id__chars_of_suffix
+
+   function Get_Qualified_Name
+     (Nam    : Name_Id;
+      Suffix : Name_Id   := No_Name;
+      Scop   : Entity_Id := Current_Scope) return Name_Id;
+   --  Obtain the fully qualified form of name Nam assuming it appears in scope
+   --  Scop. The format is:
+   --    scop-1__scop__nam__suffix
+
    procedure Get_Reason_String (N : Node_Id);
    --  Recursive routine to analyze reason argument for pragma Warnings. The
    --  value of the reason argument is appended to the current string using
