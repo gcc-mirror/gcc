@@ -25,7 +25,7 @@ volatile int zero = 0;
 int main(int argc, char **argv) {
   int i;
   const int kStackSize = 1 << 20;
-  char child_stack[kStackSize + 1];
+  char __attribute__((aligned(16))) child_stack[kStackSize + 1];
   char *sp = child_stack + kStackSize;  /* Stack grows down. */
   printf("Parent: %p\n", sp);
   pid_t clone_pid = clone(Child, sp, CLONE_FILES | CLONE_VM, NULL, 0, 0, 0);

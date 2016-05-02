@@ -1,3 +1,9 @@
+2016-05-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/70520
+	* c-c++-common/asan/clone-test-1.c (main): Align child process
+	stack to 16 bytes.
+
 2016-05-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62314
