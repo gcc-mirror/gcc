@@ -39,13 +39,6 @@ public:
   function_summary (symbol_table *symtab, bool ggc = false): m_ggc (ggc),
     m_map (13, ggc), m_insertion_enabled (true), m_symtab (symtab)
   {
-    if (flag_checking)
-      {
-	cgraph_node *node;
-	FOR_EACH_FUNCTION (node)
-	  gcc_assert (node->summary_uid > 0);
-      }
-
     m_symtab_insertion_hook =
       symtab->add_cgraph_insertion_hook
       (function_summary::symtab_insertion, this);
@@ -124,6 +117,7 @@ public:
   /* Getter for summary callgraph node pointer.  */
   T* get (cgraph_node *node)
   {
+    gcc_checking_assert (node->summary_uid);
     return get (node->summary_uid);
   }
 
@@ -148,6 +142,7 @@ public:
   /* Symbol insertion hook that is registered to symbol table.  */
   static void symtab_insertion (cgraph_node *node, void *data)
   {
+    gcc_checking_assert (node->summary_uid);
     function_summary *summary = (function_summary <T *> *) (data);
 
     if (summary->m_insertion_enabled)
