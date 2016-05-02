@@ -11,6 +11,7 @@
 	(*absneg<mode>2): Merge from *absneg<mode>2_mixed and
 	*absneg<mode>2_i387.  Disable unsupported alternatives using
 	"enabled" attribute.
+	(*absnegxf2_i387): Split XFmode pattern from *absneg<mode>2_i387.
 
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
