@@ -1,3 +1,36 @@
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref.ads, lib-xref-spark_specific.adb, get_spark_xrefs.adb,
+	put_spark_xrefs.adb: Minor reformatting.
+
+2016-05-02  Doug Rupp  <rupp@adacore.com>
+
+	* g-traceb.ads: Document traceback for ARM.
+
+2016-05-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_Tags): Do not generate the
+	external name of interface tags adding the suffix counter since
+	it causes problems at link time when the IP routines are inlined
+	across units with optimization.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Predicates_Ignared): new flag to indicate
+	that predicate checking is disabled for predicated subtypes in
+	the context of an Assertion_Policy pragma.
+	* checks.adb (Apply_Predicate_Check): Do nothing if
+	Predicates_Ignored is true.
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): If
+	Predicates_Ignores is true, the function Rep_To_Pos does raise
+	an exception for invalid data.
+	* exp_ch4.adb (Expand_N_Type_Conversion): IF target is a predicated
+	type do not apply check if Predicates_Ignored is true.
+	* exp_ch5.adb (Expand_N_Case_Statement): If Predicates_Ignored
+	is true, sem_prag.adb:
+	* sem_ch3.adb (Analyze_Object_Declaration): If Predicates_Ignored
+	is true do not emit predicate check on initializing expression.
+
 2016-05-02  Arnaud Charlet  <charlet@adacore.com>
 
 	* get_spark_xrefs.adb (Get_Nat, Get_Name): Initialize variables when

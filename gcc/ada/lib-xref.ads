@@ -509,9 +509,9 @@ package Lib.Xref is
       E_Void                                       => ' ',
 
       --  The following entities are not ones to which we gather the cross-
-      --  references, since it does not make sense to do so (e.g. references to
-      --  a package are to the spec, not the body) Indeed the occurrence of the
-      --  body entity is considered to be a reference to the spec entity.
+      --  references, since it does not make sense to do so (e.g. references
+      --  to a package are to the spec, not the body). Indeed the occurrence of
+      --  the body entity is considered to be a reference to the spec entity.
 
       E_Package_Body                               => ' ',
       E_Protected_Body                             => ' ',

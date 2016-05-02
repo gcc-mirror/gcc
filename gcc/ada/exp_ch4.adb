@@ -11387,6 +11387,7 @@ package body Exp_Ch4 is
       --  internal conversions for the purpose of checking predicates.
 
       if Present (Predicate_Function (Target_Type))
+        and then not Predicates_Ignored (Target_Type)
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then

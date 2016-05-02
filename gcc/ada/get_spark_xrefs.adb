@@ -114,8 +114,8 @@ procedure Get_SPARK_Xrefs is
    -------------
 
    function Get_Nat return Nat is
-      Val : Nat := 0;
       C   : Character := Nextc;
+      Val : Nat := 0;
 
    begin
       if C not in '0' .. '9' then

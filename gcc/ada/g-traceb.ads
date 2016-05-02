@@ -65,6 +65,8 @@
 --     LynxOS 178 elf PowerPC
 --     Solaris x86
 --     Solaris sparc
+--     VxWorks ARM
+--     VxWorks7 ARM
 --     VxWorks PowerPC
 --     VxWorks x86
 --     Windows XP

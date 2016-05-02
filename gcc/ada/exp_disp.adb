@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6751,8 +6751,7 @@ package body Exp_Disp is
                if Building_Static_DT (Typ) then
                   Iface_DT :=
                     Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name
-                                 (Typ_Name, 'T', Suffix_Index => -1));
+                      Chars => New_External_Name (Typ_Name, 'T'));
                   Import_DT
                     (Tag_Typ => Related_Type (Node (AI_Tag_Comp)),
                      DT      => Iface_DT,
