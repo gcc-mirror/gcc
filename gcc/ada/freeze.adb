@@ -1242,6 +1242,13 @@ package body Freeze is
       --  the attribute definition clause is attached to the first subtype.
 
       Comp_Type := Base_Type (Comp_Type);
+
+      --  If the base type is incomplete or private, go to full view if known
+
+      if Present (Underlying_Type (Comp_Type)) then
+         Comp_Type := Underlying_Type (Comp_Type);
+      end if;
+
       Comp_ADC := Get_Attribute_Definition_Clause
                     (First_Subtype (Comp_Type),
                      Attribute_Scalar_Storage_Order);

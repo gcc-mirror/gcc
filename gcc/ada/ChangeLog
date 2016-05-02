@@ -1,3 +1,8 @@
+2016-05-02  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Get full view of
+	component type.
+
 2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, freeze.adb, sem_res.adb, s-stposu.adb, repinfo.adb:
