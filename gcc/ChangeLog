@@ -1,3 +1,11 @@
+2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* omp-low.c (struct oacc_loop): Add 'inner' field.
+	(new_oacc_loop_raw): Initialize it to zero.
+	(oacc_loop_fixed_partitions): Initialize it.
+	(oacc_loop_auto_partitions): Partition outermost loop to outermost
+	available partitioning.
+
 2016-05-02  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (mulsidi3): Change operand 0 predicate to
