@@ -2798,13 +2798,15 @@ package body Exp_Ch5 is
 
             if Predicates_Ignored (Etype (Expr)) then
                declare
-                  Except : constant Node_Id :=
-                   Make_Raise_Constraint_Error (Loc,
-                     Reason => CE_Invalid_Data);
+                  Except  : constant Node_Id :=
+                              Make_Raise_Constraint_Error (Loc,
+                                Reason => CE_Invalid_Data);
                   New_Alt : constant Node_Id :=
-                    Make_Case_Statement_Alternative (Loc,
-                      Discrete_Choices => New_List (Make_Others_Choice (Loc)),
-                      Statements => New_List (Except));
+                              Make_Case_Statement_Alternative (Loc,
+                                Discrete_Choices => New_List (
+                                  Make_Others_Choice (Loc)),
+                                Statements       => New_List (Except));
+
                begin
                   Append (New_Alt, Alternatives (N));
                   Analyze_And_Resolve (Except);
