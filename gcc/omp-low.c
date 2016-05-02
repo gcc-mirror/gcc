@@ -6402,12 +6402,10 @@ lower_oacc_head_tail (location_t loc, tree clauses,
   gimple_seq_add_stmt (head, gimple_build_assign (ddvar, integer_zero_node));
 
   unsigned count = lower_oacc_head_mark (loc, ddvar, clauses, head, ctx);
-  if (!count)
-    lower_oacc_loop_marker (loc, ddvar, false, integer_zero_node, tail);
-  
   tree fork_kind = build_int_cst (unsigned_type_node, IFN_UNIQUE_OACC_FORK);
   tree join_kind = build_int_cst (unsigned_type_node, IFN_UNIQUE_OACC_JOIN);
 
+  gcc_assert (count);
   for (unsigned done = 1; count; count--, done++)
     {
       gimple_seq fork_seq = NULL;
@@ -19331,10 +19329,8 @@ oacc_loop_process (oacc_loop *loop)
 
       oacc_loop_xform_loop (loop->head_end, loop->ifns, mask_arg, chunk_arg);
 
-      for (ix = 0; ix != GOMP_DIM_MAX && loop->heads[ix]; ix++)
+      for (ix = 0; ix != GOMP_DIM_MAX && mask; ix++)
 	{
-	  gcc_assert (mask);
-
 	  while (!(GOMP_DIM_MASK (dim) & mask))
 	    dim++;
 
