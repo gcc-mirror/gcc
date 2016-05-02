@@ -6418,7 +6418,7 @@ package body Make is
       --  platform.
 
       declare
-         Arg_Len       : Positive      := Argument_Count;
+         Arg_Len       : Natural       := Argument_Count;
          Call_Gprbuild : Boolean       := False;
          Gprbuild      : String_Access := null;
          Pos           : Natural       := 0;
