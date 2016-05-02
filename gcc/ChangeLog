@@ -1,3 +1,18 @@
+2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (reset_inline_summary): Clear fp_expressions
+	(dump_inline_summary): Dump it.
+	(fp_expression_p): New predicate.
+	(estimate_function_body_sizes): Use it.
+	(inline_merge_summary): Merge fp_expressions.
+	(inline_read_section): Read fp_expressions.
+	(inline_write_summary): Write fp_expressions.
+	* ipa-inline.c (can_inline_edge_p): Permit inlining across fp math
+	codegen boundary if either caller or callee is !fp_expressions.
+	* ipa-inline.h (inline_summary): Add fp_expressions.
+	* ipa-inline-transform.c (inline_call): When inlining !fp_expressions
+	to fp_expressions be sure the fp generation flags are updated.
+
 2016-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70467
