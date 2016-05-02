@@ -53,7 +53,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_NO_OBSTACK_TRUE@am__append_1 = obstack.c
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am__append_1 = libvtv_stubs.la
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_NO_OBSTACK_TRUE@am__append_2 = obstack.c
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -119,8 +120,8 @@ libvtv_la_OBJECTS = $(am_libvtv_la_OBJECTS)
 libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(libvtv_la_LDFLAGS) $(LDFLAGS) -o $@
-@VTV_CYGMIN_FALSE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
-@VTV_CYGMIN_TRUE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
+@ENABLE_VTABLE_VERIFY_TRUE@am_libvtv_la_rpath = -rpath \
+@ENABLE_VTABLE_VERIFY_TRUE@	$(toolexeclibdir)
 libvtv_stubs_la_LIBADD =
 am__objects_3 = vtv_start.lo vtv_stubs.lo vtv_end.lo
 @ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am_libvtv_stubs_la_OBJECTS =  \
@@ -129,7 +130,9 @@ libvtv_stubs_la_OBJECTS = $(am_libvtv_stubs_la_OBJECTS)
 libvtv_stubs_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(libvtv_stubs_la_LDFLAGS) $(LDFLAGS) -o $@
-@VTV_CYGMIN_TRUE@am_libvtv_stubs_la_rpath = -rpath $(toolexeclibdir)
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am_libvtv_stubs_la_rpath =  \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	-rpath \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	$(toolexeclibdir)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -323,8 +326,8 @@ AM_CFLAGS = $(XCFLAGS)
 AM_CCASFLAGS = $(XCFLAGS)
 AM_CXXFLAGS = $(XCFLAGS) $(LIBSTDCXX_RAW_CXX_CXXFLAGS) \
 	-Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end
-@VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libvtv.la
-@VTV_CYGMIN_TRUE@toolexeclib_LTLIBRARIES = libvtv.la libvtv_stubs.la
+@ENABLE_VTABLE_VERIFY_TRUE@toolexeclib_LTLIBRARIES = libvtv.la \
+@ENABLE_VTABLE_VERIFY_TRUE@	$(am__append_1)
 vtv_headers = \
 	vtv_map.h \
 	vtv_malloc.h \
@@ -354,7 +357,7 @@ BUILT_SOURCES = vtv_start.c vtv_end.c
 @VTV_CYGMIN_TRUE@libvtv_stubs_la_LDFLAGS = $(lt_host_flags)
 @ENABLE_VTABLE_VERIFY_FALSE@libvtv_la_SOURCES = 
 @ENABLE_VTABLE_VERIFY_TRUE@libvtv_la_SOURCES = $(vtv_sources) \
-@ENABLE_VTABLE_VERIFY_TRUE@	$(am__append_1)
+@ENABLE_VTABLE_VERIFY_TRUE@	$(am__append_2)
 @ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@libvtv_stubs_la_SOURCES = $(vtv_stubs_sources)
 @ENABLE_VTABLE_VERIFY_FALSE@libvtv_include_HEADERS = 
 @ENABLE_VTABLE_VERIFY_TRUE@libvtv_include_HEADERS = $(vtv_headers)
