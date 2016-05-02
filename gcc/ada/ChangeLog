@@ -1,3 +1,55 @@
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Find_Indexing_Operations): Use the underlying type
+	of the container base type in case the container is a subtype.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Ensure that
+	the selector has an entity when checking for a component of a
+	mutable object.
+
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	Remove dead code.
+	* opt.ads (Latest_Ada_Only): New flag.
+	* sem_prag.adb, par-prag.adb: Ignore pragma Ada_xx under this flag.
+	* usage.adb, switch-c.adb: Disable support for -gnatxx under this flag.
+	* einfo.ads (Has_Predicates, Predicate_Function):
+	Clarify that Has_Predicates does not imply that Predicate_Function
+	will return a non-empty entity.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Qualified_Expression): Generate a predicate
+	check if type requires it.
+	* checks.adb (Apply_Predicate_Check): Disable checks in the
+	object declaration created for an expression with side-effects
+	that requires a predicate check to prevent infinite recursion
+	during expansion.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Check properly the type of a
+	formal to determine whether a given convention applies to it.
+
+2016-05-02  Doug Rupp  <rupp@adacore.com>
+
+	* tracebak.c: Add incantations for arm-vxworks[67] traceback.
+
+2016-05-02  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Make it a warning, not an
+	error, to have a component with implicit SSO within a composite type
+	that has explicit SSO.
+
+2016-05-02  Bob Duff  <duff@adacore.com>
+
+	* s-stposu.adb (Allocate_Any_Controlled): Don't lock/unlock twice.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* repinfo.adb (List_Entities): Make procedure recursive, to
+	provide representation information for subprograms declared
+	within subprogram bodies.
+
 2016-05-02  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch5.adb, layout.adb, gnatcmd.adb exp_attr.adb, make.adb,

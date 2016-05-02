@@ -1269,13 +1269,6 @@ package body Freeze is
                   & "parent", Err_Node);
             end if;
 
-         --  If enclosing composite has explicit SSO then nested composite must
-         --  have explicit SSO as well.
-
-         elsif Present (ADC) and then No (Comp_ADC) then
-            Error_Msg_N ("nested composite must have explicit scalar "
-                         & "storage order", Err_Node);
-
          --  If component and composite SSO differs, check that component
          --  falls on byte boundaries and isn't packed.
 
@@ -1306,6 +1299,13 @@ package body Freeze is
                Error_Msg_N
                  ("type of non-byte-aligned component must have same scalar "
                   & "storage order as enclosing composite", Err_Node);
+
+            --  Warn if specified only for the outer composite
+
+            elsif Present (ADC) and then No (Comp_ADC) then
+               Error_Msg_NE
+                 ("scalar storage order specified for& doesn''t "
+                  & "apply to component?", Err_Node, Encl_Type);
             end if;
          end if;
 

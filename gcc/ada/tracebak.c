@@ -300,7 +300,20 @@ __gnat_backtrace (void **array,
 #define PC_ADJUST -2
 /* The minimum size of call instructions on this architecture is 2 bytes */
 
-/*---------------------- PPC AIX/PPC Lynx 178/Older Darwin ------------------*/
+/*---------------------- ARM VxWorks ------------------------------------*/
+#elif (defined (ARMEL) && defined (__vxworks))
+
+#include "vxWorks.h"
+#include "version.h"
+
+#define USE_GCC_UNWINDER
+#define PC_ADJUST -2
+
+#if (_WRS_VXWORKS_MAJOR >= 7)
+#define USING_ARM_UNWINDING 1
+#endif
+
+/*---------------------- PPC AIX/PPC Lynx 178/Older Darwin --------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \
        (defined (__powerpc__) && defined (__Lynx__) && !defined(__ELF__)) || \
        (defined (__ppc__) && defined (__APPLE__)))
@@ -518,6 +531,12 @@ struct layout
    The condition is expressed the way above because we cannot reliably rely on
    any other macro from the base compiler when compiling stage1.  */
 
+#ifdef USING_ARM_UNWINDING
+/* This value is not part of the enumerated reason codes defined in unwind.h
+   for ARM style unwinding, but is used in the included "C" code, so we
+   define it to a reasonable value to avoid a compilation error.  */
+#define _URC_NORMAL_STOP 0
+#endif
 #include "tb-gcc.c"
 
 /*------------------------------------------------------------------*

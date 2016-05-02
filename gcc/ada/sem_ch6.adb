@@ -10792,24 +10792,28 @@ package body Sem_Ch6 is
 
          --  Force call by reference if aliased
 
-         if Is_Aliased (Formal) then
-            Set_Mechanism (Formal, By_Reference);
+         declare
+            Conv : constant Convention_Id := Convention (Etype (Formal));
+         begin
+            if Is_Aliased (Formal) then
+               Set_Mechanism (Formal, By_Reference);
 
-            --  Warn if user asked this to be passed by copy
+               --  Warn if user asked this to be passed by copy
 
-            if Convention (Formal_Type) = Convention_Ada_Pass_By_Copy then
-               Error_Msg_N
-                 ("cannot pass aliased parameter & by copy??", Formal);
+               if Conv = Convention_Ada_Pass_By_Copy then
+                  Error_Msg_N
+                    ("cannot pass aliased parameter & by copy??", Formal);
+               end if;
+
+            --  Force mechanism if type has Convention Ada_Pass_By_Ref/Copy
+
+            elsif Conv = Convention_Ada_Pass_By_Copy then
+               Set_Mechanism (Formal, By_Copy);
+
+            elsif Conv = Convention_Ada_Pass_By_Reference then
+               Set_Mechanism (Formal, By_Reference);
             end if;
-
-         --  Force mechanism if type has Convention Ada_Pass_By_Ref/Copy
-
-         elsif Convention (Formal_Type) = Convention_Ada_Pass_By_Copy then
-            Set_Mechanism (Formal, By_Copy);
-
-         elsif Convention (Formal_Type) = Convention_Ada_Pass_By_Reference then
-            Set_Mechanism (Formal, By_Reference);
-         end if;
+         end;
 
       <<Next_Parameter>>
          Next (Param_Spec);

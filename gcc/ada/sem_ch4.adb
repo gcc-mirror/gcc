@@ -7619,12 +7619,14 @@ package body Sem_Ch4 is
       begin
          Typ := T;
 
+         --  Use the specific type when the parameter type is class-wide
+
          if Is_Class_Wide_Type (Typ) then
             Typ := Root_Type (Typ);
          end if;
 
          Ref := Empty;
-         Typ := Underlying_Type (Typ);
+         Typ := Underlying_Type (Base_Type (Typ));
 
          Inspect_Primitives   (Typ, Ref);
          Inspect_Declarations (Typ, Ref);

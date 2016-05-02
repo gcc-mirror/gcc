@@ -5203,32 +5203,22 @@ package body Sem_Prag is
          Handler_Proc := Find_Unique_Parameterless_Procedure (Arg1_X, Arg1);
          Proc_Scope := Scope (Handler_Proc);
 
-         --  On AAMP only, a pragma Interrupt_Handler is supported for
-         --  nonprotected parameterless procedures.
-
-         if not AAMP_On_Target
-           or else Prag_Id = Pragma_Attach_Handler
-         then
-            if Ekind (Proc_Scope) /= E_Protected_Type then
-               Error_Pragma_Arg
-                 ("argument of pragma% must be protected procedure", Arg1);
-            end if;
-
-            --  For pragma case (as opposed to access case), check placement.
-            --  We don't need to do that for aspects, because we have the
-            --  check that they aspect applies an appropriate procedure.
-
-            if not From_Aspect_Specification (N)
-              and then Parent (N) /= Protected_Definition (Parent (Proc_Scope))
-            then
-               Error_Pragma ("pragma% must be in protected definition");
-            end if;
+         if Ekind (Proc_Scope) /= E_Protected_Type then
+            Error_Pragma_Arg
+              ("argument of pragma% must be protected procedure", Arg1);
          end if;
 
-         if not Is_Library_Level_Entity (Proc_Scope)
-           or else (AAMP_On_Target
-                     and then not Is_Library_Level_Entity (Handler_Proc))
+         --  For pragma case (as opposed to access case), check placement.
+         --  We don't need to do that for aspects, because we have the
+         --  check that they aspect applies an appropriate procedure.
+
+         if not From_Aspect_Specification (N)
+           and then Parent (N) /= Protected_Definition (Parent (Proc_Scope))
          then
+            Error_Pragma ("pragma% must be in protected definition");
+         end if;
+
+         if not Is_Library_Level_Entity (Proc_Scope) then
             Error_Pragma_Arg
               ("argument for pragma% must be library level entity", Arg1);
          end if;
@@ -9027,14 +9017,9 @@ package body Sem_Prag is
          Mark_Pragma_As_Ghost (N, Handler);
          Set_Is_Interrupt_Handler (Handler);
 
-         --  If the pragma is not associated with a handler procedure within a
-         --  protected type, then it must be for a nonprotected procedure for
-         --  the AAMP target, in which case we don't associate a representation
-         --  item with the procedure's scope.
+         pragma Assert (Ekind (Prot_Typ) = E_Protected_Type);
 
-         if Ekind (Prot_Typ) = E_Protected_Type then
-            Record_Rep_Item (Prot_Typ, N);
-         end if;
+         Record_Rep_Item (Prot_Typ, N);
 
          --  Chain the pragma on the contract for completeness
 
@@ -11064,9 +11049,11 @@ package body Sem_Prag is
 
             --  Now set Ada 83 mode
 
-            Ada_Version          := Ada_83;
-            Ada_Version_Explicit := Ada_83;
-            Ada_Version_Pragma   := N;
+            if not Latest_Ada_Only then
+               Ada_Version          := Ada_83;
+               Ada_Version_Explicit := Ada_83;
+               Ada_Version_Pragma   := N;
+            end if;
 
          ------------
          -- Ada_95 --
@@ -11096,9 +11083,11 @@ package body Sem_Prag is
 
             --  Now set Ada 95 mode
 
-            Ada_Version          := Ada_95;
-            Ada_Version_Explicit := Ada_95;
-            Ada_Version_Pragma   := N;
+            if not Latest_Ada_Only then
+               Ada_Version          := Ada_95;
+               Ada_Version_Explicit := Ada_95;
+               Ada_Version_Pragma   := N;
+            end if;
 
          ---------------------
          -- Ada_05/Ada_2005 --
@@ -11153,9 +11142,11 @@ package body Sem_Prag is
 
                --  Now set appropriate Ada mode
 
-               Ada_Version          := Ada_2005;
-               Ada_Version_Explicit := Ada_2005;
-               Ada_Version_Pragma   := N;
+               if not Latest_Ada_Only then
+                  Ada_Version          := Ada_2005;
+                  Ada_Version_Explicit := Ada_2005;
+                  Ada_Version_Pragma   := N;
+               end if;
             end if;
          end;
 
@@ -28957,12 +28948,10 @@ package body Sem_Prag is
    begin
       --  If first character is asterisk, this is a link name, and we leave it
       --  completely unmodified. We also ignore null strings (the latter case
-      --  happens only in error cases) and no encoding should occur for AAMP
-      --  interface names.
+      --  happens only in error cases).
 
       if Len = 0
         or else Get_String_Char (Str, 1) = Get_Char_Code ('*')
-        or else AAMP_On_Target
       then
          Set_Interface_Name (E, S);
 
