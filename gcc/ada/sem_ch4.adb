@@ -583,6 +583,45 @@ package body Sem_Ch4 is
             --  so that the bounds of the subtype indication are attached to
             --  the tree in case the allocator is inside a generic unit.
 
+            --  Finally, if there is no subtype indication and the type is
+            --  a tagged unconstrained type with discriminants, the designated
+            --  object is constrained by their default values, and it is
+            --  simplest to introduce an explicit constraint now. In some cases
+            --  this is done during expansion, but freeze actions are certain
+            --  to be emitted in the proper order if constraint is explicit.
+
+            if Is_Entity_Name (E) and then Expander_Active then
+               Find_Type (E);
+               Type_Id := Entity (E);
+
+               if Is_Tagged_Type (Type_Id)
+                 and then Has_Discriminants (Type_Id)
+                 and then not Is_Constrained (Type_Id)
+                 and then Present
+                   (Discriminant_Default_Value (First_Discriminant (Type_Id)))
+               then
+                  declare
+                     Loc    : constant Source_Ptr := Sloc (E);
+                     Discr  : Entity_Id := First_Discriminant (Type_Id);
+                     Constr : constant List_Id := New_List;
+
+                  begin
+                     if Present (Discriminant_Default_Value (Discr)) then
+                        while Present (Discr) loop
+                           Append (Discriminant_Default_Value (Discr), Constr);
+                           Next_Discriminant (Discr);
+                        end loop;
+
+                        Rewrite (E, Make_Subtype_Indication (Loc,
+                          Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
+                          Constraint   =>
+                            Make_Index_Or_Discriminant_Constraint (Loc,
+                              Constr)));
+                     end if;
+                  end;
+               end if;
+            end if;
+
             if Nkind (E) = N_Subtype_Indication then
 
                --  A constraint is only allowed for a composite type in Ada
