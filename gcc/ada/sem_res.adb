@@ -9446,9 +9446,9 @@ package body Sem_Res is
          Apply_Scalar_Range_Check (Expr, Typ);
       end if;
 
-      --  Finally, check whether a predicate applies to the target type.
-      --  This comes from AI12-0100. As for type conversions, check the
-      --  enclosing context to prevent an infinite expansion.
+      --  Finally, check whether a predicate applies to the target type. This
+      --  comes from AI12-0100. As for type conversions, check the enclosing
+      --  context to prevent an infinite expansion.
 
       if Has_Predicates (Target_Typ) then
          if Nkind (Parent (N)) = N_Function_Call

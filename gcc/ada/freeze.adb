@@ -1281,20 +1281,21 @@ package body Freeze is
 
             if Is_Packed_Array (Comp_Type) then
                Error_Msg_N
-                 ("type of packed component must have same scalar "
-                  & "storage order as enclosing composite", Err_Node);
+                 ("type of packed component must have same scalar storage "
+                  & "order as enclosing composite", Err_Node);
 
             --  Reject if composite is a packed array, as it may be rewritten
             --  into an array of scalars.
 
             elsif Is_Packed_Array (Encl_Type) then
-               Error_Msg_N ("type of packed array must have same scalar "
-                  & "storage order as component", Err_Node);
+               Error_Msg_N
+                 ("type of packed array must have same scalar storage order "
+                  & "as component", Err_Node);
 
             --  Reject if not byte aligned
 
             elsif Is_Record_Type (Encl_Type)
-                    and then not Comp_Byte_Aligned
+              and then not Comp_Byte_Aligned
             then
                Error_Msg_N
                  ("type of non-byte-aligned component must have same scalar "
@@ -1304,8 +1305,8 @@ package body Freeze is
 
             elsif Present (ADC) and then No (Comp_ADC) then
                Error_Msg_NE
-                 ("scalar storage order specified for& doesn''t "
-                  & "apply to component?", Err_Node, Encl_Type);
+                 ("scalar storage order specified for & does not apply to "
+                  & "component?", Err_Node, Encl_Type);
             end if;
          end if;
 
@@ -1314,8 +1315,8 @@ package body Freeze is
 
       elsif Present (ADC) and then Component_Aliased then
          Error_Msg_N
-           ("aliased component not permitted for type with "
-            & "explicit Scalar_Storage_Order", Err_Node);
+           ("aliased component not permitted for type with explicit "
+            & "Scalar_Storage_Order", Err_Node);
       end if;
    end Check_Component_Storage_Order;
 

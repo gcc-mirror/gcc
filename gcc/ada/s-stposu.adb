@@ -255,7 +255,8 @@ package body System.Storage_Pools.Subpools is
       --  Step 4: Attachment
 
       if Is_Controlled then
-         --  Note that we already did "Lock_Task.all;" in Step 2 above.
+
+         --  Note that we already did "Lock_Task.all;" in Step 2 above
 
          --  Map the allocated memory into a FM_Node record. This converts the
          --  top of the allocated bits into a list header. If there is padding
@@ -273,8 +274,8 @@ package body System.Storage_Pools.Subpools is
          --     |                       |
          --     +- Header_And_Padding --+
 
-         N_Ptr := Address_To_FM_Node_Ptr
-                    (N_Addr + Header_And_Padding - Header_Size);
+         N_Ptr :=
+           Address_To_FM_Node_Ptr (N_Addr + Header_And_Padding - Header_Size);
 
          --  Prepend the allocated object to the finalization master
 
@@ -330,7 +331,9 @@ package body System.Storage_Pools.Subpools is
 
    exception
       when others =>
-         --  If we locked, we want to unlock
+
+         --  Unlock the task in case the allocation step failed and reraise the
+         --  exception.
 
          if Is_Controlled then
             Unlock_Task.all;
@@ -443,7 +446,9 @@ package body System.Storage_Pools.Subpools is
 
          exception
             when others =>
-               --  If we locked, we want to unlock
+
+               --  Unlock the task in case the computations performed above
+               --  fail for some reason.
 
                Unlock_Task.all;
                raise;
