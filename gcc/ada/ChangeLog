@@ -1,3 +1,17 @@
+2016-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* spark_xrefs.ads Description of the spark cross-references
+	clarified; small style fixes.
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope,
+	Detect_And_Add_SPARK_Scope): consider protected types and bodies
+	as yet another scopes.
+	(Enclosing_Subprogram_Or_Library_Package): refactored using
+	Hristian's suggestions; added support for scopes of protected
+	types and bodies; fix for entries to return the scope of the
+	enclosing concurrent type, which is consistent with what is
+	returned for protected subprograms.
+	* sem_intr.adb: Minor style fix in comment.
+
 2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-xref.ads, lib-xref-spark_specific.adb, get_spark_xrefs.adb,

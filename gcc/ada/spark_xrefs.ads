@@ -36,7 +36,7 @@ package SPARK_Xrefs is
 
    --  SPARK cross-reference information can exist in one of two forms. In
    --  the ALI file, it is represented using a text format that is described
-   --  in this specification. Internally it is stored using three tables
+   --  in this specification. Internally it is stored using three tables:
    --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are
    --  also defined in this unit.
 
@@ -56,21 +56,21 @@ package SPARK_Xrefs is
 
    --  SPARK cross-reference information is generated on a unit-by-unit basis
    --  in the ALI file, using lines that start with the identifying character F
-   --  ("Formal"). These lines are generated if Frame_Condition_Mode is True.
+   --  ("Formal"). These lines are generated if GNATprove_Mode is True.
 
    --  The SPARK cross-reference information comes after the shared
-   --  cross-reference information, so it needs not be read by tools like
-   --  gnatbind, gnatmake etc.
+   --  cross-reference information, so it can be ignored by tools like
+   --  gnatbind, gnatmake, etc.
 
    --  -------------------
    --  -- Scope Section --
    --  -------------------
 
    --  A first section defines the scopes in which entities are defined and
-   --  referenced. A scope is a package/subprogram declaration/body. Note that
-   --  a package declaration and body define two different scopes. Similarly, a
-   --  subprogram declaration and body, when both present, define two different
-   --  scopes.
+   --  referenced. A scope is a package/subprogram/protected_type/task_type
+   --  declaration/body. Note that a package declaration and body define two
+   --  different scopes. Similarly, a subprogram, protected type and task type
+   --  declaration and body, when both present, define two different scopes.
 
    --    FD dependency-number filename (-> unit-filename)?
 
@@ -135,8 +135,11 @@ package SPARK_Xrefs is
 
    --      dependency-number and filename identify a file in FD lines
 
-   --      entity-number and identity identify a scope entity in FS lines for
-   --      the file previously identified.
+   --      entity-number and entity identify a scope in FS lines
+   --      for the file previously identified file.
+
+   --      (filename and entity are just a textual representations of
+   --       dependency-number and entity-number)
 
    --    F line typ col entity ref*
 
@@ -192,7 +195,7 @@ package SPARK_Xrefs is
    --  -- Generated Globals Section --
    --  -------------------------------
 
-   --  The Generated Globals section is located at the end of the ALI file.
+   --  The Generated Globals section is located at the end of the ALI file
 
    --  All lines introducing information related to the Generated Globals
    --  have the string "GG" appearing in the beginning. This string ("GG")

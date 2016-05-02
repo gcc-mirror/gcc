@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,7 @@ package body Sem_Intr is
    procedure Check_Shift (E : Entity_Id; N : Node_Id);
    --  Check intrinsic shift subprogram, the two arguments are the same
    --  as for Check_Intrinsic_Subprogram (i.e. the entity of the subprogram
-   --  declaration, and the node for the pragma argument, used for messages)
+   --  declaration, and the node for the pragma argument, used for messages).
 
    procedure Errint (Msg : String; S : Node_Id; N : Node_Id);
    --  Post error message for bad intrinsic, the message itself is posted
@@ -340,7 +340,7 @@ package body Sem_Intr is
       then
          null;
 
-      --  Exception  functions
+      --  Exception functions
 
       elsif Nam_In (Nam, Name_Exception_Information,
                          Name_Exception_Message,
