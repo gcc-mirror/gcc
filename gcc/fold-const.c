@@ -963,8 +963,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
   signop sign = TYPE_SIGN (type);
   bool overflow = false;
 
-  wide_int arg2 = wide_int::from (parg2, TYPE_PRECISION (type),
-				  TYPE_SIGN (TREE_TYPE (parg2)));
+  wide_int arg2 = wi::to_wide (parg2, TYPE_PRECISION (type));
 
   switch (code)
     {
@@ -6397,10 +6396,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  bool overflow_mul_p;
 	  signop sign = TYPE_SIGN (ctype);
 	  unsigned prec = TYPE_PRECISION (ctype);
-	  wide_int mul = wi::mul (wide_int::from (op1, prec,
-						  TYPE_SIGN (TREE_TYPE (op1))),
-				  wide_int::from (c, prec,
-						  TYPE_SIGN (TREE_TYPE (c))),
+	  wide_int mul = wi::mul (wi::to_wide (op1, prec),
+				  wi::to_wide (c, prec),
 				  sign, &overflow_mul_p);
 	  overflow_p = TREE_OVERFLOW (c) | TREE_OVERFLOW (op1);
 	  if (overflow_mul_p

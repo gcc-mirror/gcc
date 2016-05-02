@@ -5211,6 +5211,8 @@ namespace wi
   to_widest (const_tree);
 
   generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > to_offset (const_tree);
+
+  wide_int to_wide (const_tree, unsigned int);
 }
 
 inline unsigned int
@@ -5238,6 +5240,16 @@ inline generic_wide_int <wi::extended_tree <ADDR_MAX_PRECISION> >
 wi::to_offset (const_tree t)
 {
   return t;
+}
+
+/* Convert INTEGER_CST T to a wide_int of precision PREC, extending or
+   truncating as necessary.  When extending, use sign extension if T's
+   type is signed and zero extension if T's type is unsigned.  */
+
+inline wide_int
+wi::to_wide (const_tree t, unsigned int prec)
+{
+  return wide_int::from (t, prec, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 template <int N>

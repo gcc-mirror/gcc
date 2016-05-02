@@ -4012,10 +4012,9 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
 	  primop1 = force_fit_type (*restype_ptr,
-				    wide_int::from
-				      (primop1,
-				       TYPE_PRECISION (*restype_ptr),
-				       TYPE_SIGN (TREE_TYPE (primop1))),
+				    wi::to_wide
+				     (primop1,
+				      TYPE_PRECISION (*restype_ptr)),
 				    0, TREE_OVERFLOW (primop1));
 	}
       if (type != *restype_ptr)

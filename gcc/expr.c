@@ -9729,10 +9729,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
          GET_MODE_PRECISION (TYPE_MODE (type)), we need to extend from
          the former to the latter according to the signedness of the
          type. */
-      temp = immed_wide_int_const (wide_int::from
+      temp = immed_wide_int_const (wi::to_wide
 				   (exp,
-				    GET_MODE_PRECISION (TYPE_MODE (type)),
-				    TYPE_SIGN (type)),
+				    GET_MODE_PRECISION (TYPE_MODE (type))),
 				   TYPE_MODE (type));
       return temp;
 
