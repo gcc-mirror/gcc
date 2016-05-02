@@ -2817,9 +2817,21 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 		  tree guessed_id = lookup_member_fuzzy (access_path, name,
 							 /*want_type=*/false);
 		  if (guessed_id)
-		    error ("%q#T has no member named %qE; did you mean %qE?",
-			   TREE_CODE (access_path) == TREE_BINFO
-			   ? TREE_TYPE (access_path) : object_type, name, guessed_id);
+		    {
+		      location_t bogus_component_loc = input_location;
+		      rich_location rich_loc (line_table, bogus_component_loc);
+		      source_range bogus_component_range =
+			get_range_from_loc (line_table, bogus_component_loc);
+		      rich_loc.add_fixit_replace
+			(bogus_component_range,
+			 IDENTIFIER_POINTER (guessed_id));
+		      error_at_rich_loc
+			(&rich_loc,
+			 "%q#T has no member named %qE; did you mean %qE?",
+			 TREE_CODE (access_path) == TREE_BINFO
+			 ? TREE_TYPE (access_path) : object_type, name,
+			 guessed_id);
+		    }
 		  else
 		    error ("%q#T has no member named %qE",
 			   TREE_CODE (access_path) == TREE_BINFO

@@ -1,3 +1,10 @@
+2016-05-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62314
+	* typeck.c (finish_class_member_access_expr): When
+	giving a hint about a possibly-misspelled member name,
+	add a fix-it replacement hint.
+
 2016-05-02  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* cp-tree.h (finish_omp_clauses): Update prototype.

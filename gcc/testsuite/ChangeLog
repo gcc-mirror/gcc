@@ -1,6 +1,11 @@
 2016-05-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62314
+	* g++.dg/spellcheck-fields-2.C: New test case.
+
+2016-05-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62314
 	* g++.dg/pr62314.C: New test case.
 
 2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
