@@ -1,3 +1,10 @@
+2016-05-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62314
+	* parser.c (cp_parser_class_head): Capture the start location;
+	use it to emit a fix-it insertion hint when complaining
+	about missing "template <> " in explicit specializations.
+
 2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* init.c (build_new_1): Use shift operators instead of wi:: shifts.
