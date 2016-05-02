@@ -1,3 +1,21 @@
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): When inlining a call to a function
+	declared in a package instance, locate the instance node of the
+	package after the actual package declaration. skipping over
+	pragmas that may have been introduced when the generic unit
+	carries aspects that are transformed into pragmas.
+
+2016-05-02  Bob Duff  <duff@adacore.com>
+
+	* s-memory.adb (Alloc, Realloc): Move checks
+	for Size = 0 or size_t'Last into the Result = System.Null_Address
+	path for efficiency. Improve comments (based on actual C language
+	requirements for malloc).
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Optimize the
+	case where we are using the default Global_Pool_Object, and we
+	don't need the heavy finalization machinery.
+
 2016-05-02  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.ads, sem_ch12.adb: Minor reformatting.

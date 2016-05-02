@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,14 +43,12 @@
 
 pragma Compiler_Unit_Warning;
 
-with Ada.Exceptions;
-with System.Soft_Links;
-with System.Parameters;
 with System.CRTL;
+with System.Parameters;
+with System.Soft_Links;
 
 package body System.Memory is
 
-   use Ada.Exceptions;
    use System.Soft_Links;
 
    function c_malloc (Size : System.CRTL.size_t) return System.Address
@@ -68,33 +66,41 @@ package body System.Memory is
    -----------
 
    function Alloc (Size : size_t) return System.Address is
-      Result      : System.Address;
-      Actual_Size : size_t := Size;
-
+      Result : System.Address;
    begin
-      if Size = size_t'Last then
-         Raise_Exception (Storage_Error'Identity, "object too large");
-      end if;
-
-      --  Change size from zero to non-zero. We still want a proper pointer
-      --  for the zero case because pointers to zero length objects have to
-      --  be distinct, but we can't just go ahead and allocate zero bytes,
-      --  since some malloc's return zero for a zero argument.
-
-      if Size = 0 then
-         Actual_Size := 1;
-      end if;
-
       if Parameters.No_Abort then
-         Result := c_malloc (System.CRTL.size_t (Actual_Size));
+         Result := c_malloc (System.CRTL.size_t (Size));
       else
          Abort_Defer.all;
-         Result := c_malloc (System.CRTL.size_t (Actual_Size));
+         Result := c_malloc (System.CRTL.size_t (Size));
          Abort_Undefer.all;
       end if;
 
       if Result = System.Null_Address then
-         Raise_Exception (Storage_Error'Identity, "heap exhausted");
+         --  If Size = 0, we can't allocate 0 bytes, because then two different
+         --  allocators, one of which has Size = 0, could return pointers that
+         --  compare equal, which is wrong. (Nonnull pointers compare equal if
+         --  and only if they designate the same object, and two different
+         --  allocators allocate two different objects).
+
+         --  malloc(0) is defined to allocate a non-zero-sized object (in which
+         --  case we won't get here, and all is well) or NULL, in which case we
+         --  get here. We also get here in case of error. So check for the
+         --  zero-size case, and allocate 1 byte. Otherwise, raise
+         --  Storage_Error.
+
+         --  We check for zero size here, rather than at the start, for
+         --  efficiency.
+
+         if Size = 0 then
+            return Alloc (1);
+         end if;
+
+         if Size = size_t'Last then
+            raise Storage_Error with "object too large";
+         end if;
+
+         raise Storage_Error with "heap exhausted";
       end if;
 
       return Result;
@@ -125,23 +131,21 @@ package body System.Memory is
       return System.Address
    is
       Result      : System.Address;
-      Actual_Size : constant size_t := Size;
-
    begin
-      if Size = size_t'Last then
-         Raise_Exception (Storage_Error'Identity, "object too large");
-      end if;
-
       if Parameters.No_Abort then
-         Result := c_realloc (Ptr, System.CRTL.size_t (Actual_Size));
+         Result := c_realloc (Ptr, System.CRTL.size_t (Size));
       else
          Abort_Defer.all;
-         Result := c_realloc (Ptr, System.CRTL.size_t (Actual_Size));
+         Result := c_realloc (Ptr, System.CRTL.size_t (Size));
          Abort_Undefer.all;
       end if;
 
       if Result = System.Null_Address then
-         Raise_Exception (Storage_Error'Identity, "heap exhausted");
+         if Size = size_t'Last then
+            raise Storage_Error with "object too large";
+         end if;
+
+         raise Storage_Error with "heap exhausted";
       end if;
 
       return Result;
