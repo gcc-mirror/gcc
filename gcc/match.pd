@@ -1921,6 +1921,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp @0 @0)
   { constant_boolean_node (true, type); }))
+(for cmp (unlt ungt)
+ (simplify
+  (cmp @0 @0)
+  (unordered @0 @0)))
 (simplify
  (ltgt @0 @0)
  (if (!flag_trapping_math)
