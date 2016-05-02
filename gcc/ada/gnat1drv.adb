@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,6 +179,12 @@ procedure Gnat1drv is
 
       if Operating_Mode = Check_Semantics and then Tree_Output then
          ASIS_Mode := True;
+
+         --  Set ASIS GNSA mode if -gnatd.H is set
+
+         if Debug_Flag_Dot_HH then
+            ASIS_GNSA_Mode := True;
+         end if;
 
          --  Turn off inlining in ASIS mode, since ASIS cannot handle the extra
          --  information in the trees caused by inlining being active.
@@ -1054,7 +1060,7 @@ begin
       if GNATprove_Mode then
          declare
             Unused_E : constant Entity_Id :=
-              Rtsfind.RTE (Rtsfind.RE_Interrupt_Priority);
+                         Rtsfind.RTE (Rtsfind.RE_Interrupt_Priority);
          begin
             null;
          end;
@@ -1176,13 +1182,11 @@ begin
       --  We can generate code for a package declaration or a subprogram
       --  declaration only if it does not required a body.
 
-      elsif Nkind_In (Main_Kind,
-              N_Package_Declaration,
-              N_Subprogram_Declaration)
+      elsif Nkind_In (Main_Kind, N_Package_Declaration,
+                                 N_Subprogram_Declaration)
         and then
           (not Body_Required (Main_Unit_Node)
-             or else
-           Distribution_Stub_Mode = Generate_Caller_Stub_Body)
+             or else Distribution_Stub_Mode = Generate_Caller_Stub_Body)
       then
          Back_End_Mode := Generate_Object;
 
@@ -1247,8 +1251,7 @@ begin
 
       if Back_End_Mode = Skip then
          Set_Standard_Error;
-         Write_Str ("cannot generate code for ");
-         Write_Str ("file ");
+         Write_Str ("cannot generate code for file ");
          Write_Name (Unit_File_Name (Main_Unit));
 
          if Subunits_Missing then
@@ -1320,11 +1323,16 @@ begin
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
+      --  The back-end is not invoked in ASIS mode with GNSA because all type
+      --  representation information will be provided by the GNSA back-end, not
+      --  gigi.
+
       if Back_End_Mode = Declarations_Only
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Kind = N_Subunit
-            or else Frontend_Layout_On_Target)
+            or else Frontend_Layout_On_Target
+            or else ASIS_GNSA_Mode)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);

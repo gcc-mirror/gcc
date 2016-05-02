@@ -3560,9 +3560,7 @@ package body Sem_Ch3 is
 
       --  Special checks for protected objects not at library level
 
-      if Is_Protected_Type (T)
-        and then not Is_Library_Level_Entity (Id)
-      then
+      if Has_Protected (T) and then not Is_Library_Level_Entity (Id) then
          Check_Restriction (No_Local_Protected_Objects, Id);
 
          --  Protected objects with interrupt handlers must be at library level
@@ -3574,7 +3572,10 @@ package body Sem_Ch3 is
          --  AI05-0303: The AI is in fact a binding interpretation, and thus
          --  applies to the '95 version of the language as well.
 
-         if Has_Interrupt_Handler (T) and then Ada_Version < Ada_95 then
+         if Is_Protected_Type (T)
+           and then Has_Interrupt_Handler (T)
+           and then Ada_Version < Ada_95
+         then
             Error_Msg_N
               ("interrupt object can only be declared at library level", Id);
          end if;

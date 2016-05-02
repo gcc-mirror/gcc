@@ -208,6 +208,11 @@ package Opt is
    --  Set to non-null when Bind_Alternate_Main_Name is True. This value
    --  is modified as needed by Gnatbind.Scan_Bind_Arg.
 
+   ASIS_GNSA_Mode : Boolean := False;
+   --  GNAT
+   --  Enable GNSA back-end processing assuming ASIS_Mode is already set to
+   --  True. ASIS_GNSA mode suppresses the call to gigi.
+
    ASIS_Mode : Boolean := False;
    --  GNAT
    --  Enable semantic checks and tree transformations that are important

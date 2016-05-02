@@ -422,11 +422,7 @@ package body Exp_Ch6 is
                if Ekind (Ptr_Typ) = E_Anonymous_Access_Type
                  and then No (Finalization_Master (Ptr_Typ))
                then
-                  Build_Finalization_Master
-                    (Typ            => Ptr_Typ,
-                     For_Anonymous  => True,
-                     Context_Scope  => Scope (Ptr_Typ),
-                     Insertion_Node => Associated_Node_For_Itype (Ptr_Typ));
+                  Build_Anonymous_Master (Ptr_Typ);
                end if;
 
                --  Access-to-controlled types should always have a master

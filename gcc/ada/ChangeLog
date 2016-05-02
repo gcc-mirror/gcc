@@ -1,3 +1,65 @@
+2016-05-02  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Use Has_Protected
+	to check for the no local protected objects restriction.
+
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Anonymous_Master now uses Node35.
+	(Anonymous_Master): Update the assertion and node reference.
+	(Set_Anonymous_Master): Update the assertion and node reference.
+	(Write_Field35_Name): Add output for Anonymous_Master.
+	(Write_Field36_Name): The output is now undefined.
+	* einfo.ads Update the node and description of attribute
+	Anonymous_Master. Remove prior occurrences in entities as this
+	is now a type attribute.
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Remove local variable
+	Ins_Node. Anonymous access- to-controlled component types no
+	longer need finalization masters. The master is now built when
+	a related allocator is expanded.
+	(Expand_Freeze_Record_Type): Remove local variable Has_AACC. Do not
+	detect whether the record type has at least one component of anonymous
+	access-to- controlled type. These types no longer need finalization
+	masters. The master is now built when a related allocator is expanded.
+	* exp_ch4.adb Remove with and use clauses for Lib and Sem_Ch8.
+	(Current_Anonymous_Master): Removed.
+	(Expand_N_Allocator): Call Build_Anonymous_Master to create a
+	finalization master for an anonymous access-to-controlled type.
+	* exp_ch6.adb (Add_Finalization_Master_Actual_To_Build_In_Place_Call):
+	Call routine Build_Anonymous_Master to create a finalization master
+	for an anonymous access-to-controlled type.
+	* exp_ch7.adb (Allows_Finalization_Master): New routine.
+	(Build_Anonymous_Master): New routine.
+	(Build_Finalization_Master): Remove formal parameter
+	For_Anonymous. Use Allows_Finalization_Master to determine whether
+	circumstances warrant a finalization master. This routine no
+	longer creates masters for anonymous access-to-controlled types.
+	(In_Deallocation_Instance): Removed.
+	* exp_ch7.ads (Build_Anonymous_Master): New routine.
+	(Build_Finalization_Master): Remove formal parameter For_Anonymous
+	and update the comment on usage.
+	* sem_util.adb (Get_Qualified_Name): New routines.
+	(Output_Name): Reimplemented.
+	(Output_Scope): Removed.
+	* sem_util.ads (Get_Qualified_Name): New routines.
+
+2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Document the use of switch -gnatd.H.
+	* gnat1drv.adb (Adjust_Global_Switches): Set ASIS_GNSA mode when
+	-gnatd.H is present.
+	(Gnat1drv): Suppress the call to gigi when ASIS_GNSA mode is active.
+	* opt.ads: Add new option ASIS_GNSA_Mode.
+	* sem_ch13.adb (Alignment_Error): New routine.
+	(Analyze_Attribute_Definition_Clause): Suppress certain errors in
+	ASIS mode for attribute clause Alignment, Machine_Radix, Size, and
+	Stream_Size.
+	(Check_Size): Use routine Size_Too_Small_Error to
+	suppress certain errors in ASIS mode.
+	(Get_Alignment_Value): Use routine Alignment_Error to suppress certain
+	errors in ASIS mode.
+	(Size_Too_Small_Error): New routine.
+
 2016-05-02  Arnaud Charlet  <charlet@adacore.com>
 
 	* spark_xrefs.ads Description of the spark cross-references

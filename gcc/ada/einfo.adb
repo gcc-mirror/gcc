@@ -265,9 +265,8 @@ package body Einfo is
 
    --    Contract                        Node34
 
+   --    Anonymous_Master                Node35
    --    Import_Pragma                   Node35
-
-   --    Anonymous_Master                Node36
 
    --    Class_Wide_Preconds             List38
 
@@ -757,12 +756,8 @@ package body Einfo is
 
    function Anonymous_Master (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Function,
-                                   E_Package,
-                                   E_Package_Body,
-                                   E_Procedure,
-                                   E_Subprogram_Body));
-      return Node36 (Id);
+      pragma Assert (Is_Type (Id));
+      return Node35 (Id);
    end Anonymous_Master;
 
    function Anonymous_Object (Id : E) return E is
@@ -3682,12 +3677,8 @@ package body Einfo is
 
    procedure Set_Anonymous_Master (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function,
-                                   E_Package,
-                                   E_Package_Body,
-                                   E_Procedure,
-                                   E_Subprogram_Body));
-      Set_Node36 (Id, V);
+      pragma Assert (Is_Type (Id));
+      Set_Node35 (Id, V);
    end Set_Anonymous_Master;
 
    procedure Set_Anonymous_Object (Id : E; V : E) is
@@ -10385,6 +10376,9 @@ package body Einfo is
    procedure Write_Field35_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when Type_Kind                                    =>
+            Write_Str ("Anonymous_Master");
+
          when Subprogram_Kind                              =>
             Write_Str ("Import_Pragma");
 
@@ -10398,19 +10392,9 @@ package body Einfo is
    ------------------------
 
    procedure Write_Field36_Name (Id : Entity_Id) is
+      pragma Unreferenced (Id);
    begin
-      case Ekind (Id) is
-         when E_Function                                   |
-              E_Operator                                   |
-              E_Package                                    |
-              E_Package_Body                               |
-              E_Procedure                                  |
-              E_Subprogram_Body                            =>
-            Write_Str ("Anonymous_Master");
-
-         when others                                       =>
-            Write_Str ("Field36??");
-      end case;
+      Write_Str ("Field36??");
    end Write_Field36_Name;
 
    ------------------------
