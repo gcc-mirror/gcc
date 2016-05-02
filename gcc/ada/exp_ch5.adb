@@ -2251,14 +2251,14 @@ package body Exp_Ch5 is
                                Prefix =>
                                  Unchecked_Convert_To (RTE (RE_Tag_Ptr),
                                    Make_Attribute_Reference (Loc,
-                                     Prefix => Duplicate_Subexpr (Lhs),
+                                     Prefix         => Duplicate_Subexpr (Lhs),
                                      Attribute_Name => Name_Address)));
                            Rhs_Tag :=
                              Make_Explicit_Dereference (Loc,
                                Prefix =>
                                  Unchecked_Convert_To (RTE (RE_Tag_Ptr),
                                    Make_Attribute_Reference (Loc,
-                                     Prefix => Duplicate_Subexpr (Rhs),
+                                     Prefix         => Duplicate_Subexpr (Rhs),
                                      Attribute_Name => Name_Address)));
                         end if;
 
@@ -2266,9 +2266,9 @@ package body Exp_Ch5 is
                           Make_Raise_Constraint_Error (Loc,
                             Condition =>
                               Make_Op_Ne (Loc,
-                                Left_Opnd => Lhs_Tag,
+                                Left_Opnd  => Lhs_Tag,
                                 Right_Opnd => Rhs_Tag),
-                            Reason => CE_Tag_Check_Failed));
+                            Reason    => CE_Tag_Check_Failed));
                      end;
                   end if;
 
