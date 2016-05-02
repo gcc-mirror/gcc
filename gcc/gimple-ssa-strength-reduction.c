@@ -2506,8 +2506,7 @@ record_increment (slsr_cand_t c, widest_int increment, bool is_phi_adjust)
       if (c->kind == CAND_ADD
 	  && !is_phi_adjust
 	  && c->index == increment
-	  && (wi::gts_p (increment, 1)
-	      || wi::lts_p (increment, -1))
+	  && (increment > 1 || increment < -1)
 	  && (gimple_assign_rhs_code (c->cand_stmt) == PLUS_EXPR
 	      || gimple_assign_rhs_code (c->cand_stmt) == POINTER_PLUS_EXPR))
 	{

@@ -911,8 +911,8 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
     /* Yes, __builtin_object_size couldn't determine the
        object size.  */;
   else if (TREE_CODE (offset) == INTEGER_CST
-	   && wi::ges_p (wi::to_widest (offset), -OBJSZ_MAX_OFFSET)
-	   && wi::les_p (wi::to_widest (offset), -1))
+	   && wi::to_widest (offset) >= -OBJSZ_MAX_OFFSET
+	   && wi::to_widest (offset) <= -1)
     /* The offset is in range [-16K, -1].  */;
   else
     {
@@ -928,8 +928,8 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
       /* If the offset is small enough, we don't need the second
 	 run-time check.  */
       if (TREE_CODE (offset) == INTEGER_CST
-	  && wi::ges_p (wi::to_widest (offset), 0)
-	  && wi::les_p (wi::to_widest (offset), OBJSZ_MAX_OFFSET))
+	  && wi::to_widest (offset) >= 0
+	  && wi::to_widest (offset) <= OBJSZ_MAX_OFFSET)
 	*gsi = gsi_after_labels (then_bb);
       else
 	{

@@ -2749,17 +2749,17 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  /* Sort the 4 products so that min is in prod0 and max is in
 	     prod3.  */
 	  /* min0min1 > max0max1 */
-	  if (wi::gts_p (prod0, prod3))
+	  if (prod0 > prod3)
 	    std::swap (prod0, prod3);
 
 	  /* min0max1 > max0min1 */
-	  if (wi::gts_p (prod1, prod2))
+	  if (prod1 > prod2)
 	    std::swap (prod1, prod2);
 
-	  if (wi::gts_p (prod0, prod1))
+	  if (prod0 > prod1)
 	    std::swap (prod0, prod1);
 
-	  if (wi::gts_p (prod2, prod3))
+	  if (prod2 > prod3)
 	    std::swap (prod2, prod3);
 
 	  /* diff = max - min.  */
@@ -3775,7 +3775,7 @@ check_for_binary_op_overflow (enum tree_code subcode, tree type,
       /* If all values in [wmin, wmax] are smaller than
 	 [wtmin, wtmax] or all are larger than [wtmin, wtmax],
 	 the arithmetic operation will always overflow.  */
-      if (wi::lts_p (wmax, wtmin) || wi::gts_p (wmin, wtmax))
+      if (wmax < wtmin || wmin > wtmax)
 	return true;
       return false;
     }
@@ -6587,7 +6587,7 @@ search_for_addr_array (tree t, location_t location)
 
       idx = mem_ref_offset (t);
       idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
-      if (wi::lts_p (idx, 0))
+      if (idx < 0)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -6599,8 +6599,8 @@ search_for_addr_array (tree t, location_t location)
 		      "array subscript is below array bounds");
 	  TREE_NO_WARNING (t) = 1;
 	}
-      else if (wi::gts_p (idx, (wi::to_offset (up_bound)
-				- wi::to_offset (low_bound) + 1)))
+      else if (idx > (wi::to_offset (up_bound)
+		      - wi::to_offset (low_bound) + 1))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
