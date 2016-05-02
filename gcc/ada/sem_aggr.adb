@@ -1610,9 +1610,12 @@ package body Sem_Aggr is
          --  If an aggregate component has a type with predicates, an explicit
          --  predicate check must be applied, as for an assignment statement,
          --  because the aggegate might not be expanded into individual
-         --  component assignments.
+         --  component assignments. If the expression covers several components
+         --  the analysis and the predicate check take place later.
 
-         if Present (Predicate_Function (Component_Typ)) then
+         if Present (Predicate_Function (Component_Typ))
+           and then Analyzed (Expr)
+         then
             Apply_Predicate_Check (Expr, Component_Typ);
          end if;
 
@@ -3565,7 +3568,9 @@ package body Sem_Aggr is
          --  because the aggegate might not be expanded into individual
          --  component assignments.
 
-         if Present (Predicate_Function (Expr_Type)) then
+         if Present (Predicate_Function (Expr_Type))
+           and then Analyzed (Expr)
+         then
             Apply_Predicate_Check (Expr, Expr_Type);
          end if;
 
