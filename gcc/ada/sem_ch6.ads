@@ -125,10 +125,10 @@ package Sem_Ch6 is
    procedure Check_Synchronized_Overriding
      (Def_Id          : Entity_Id;
       Overridden_Subp : out Entity_Id);
-   --  First determine if Def_Id is an entry or a subprogram either defined
-   --  in the scope of a task or protected type, or is a primitive of such
+   --  First determine if Def_Id is an entry or a subprogram either defined in
+   --  the scope of a task or protected type, or that is a primitive of such
    --  a type. Check whether Def_Id overrides a subprogram of an interface
-   --  implemented by the synchronized type, return the overridden entity
+   --  implemented by the synchronized type, returning the overridden entity
    --  or Empty.
 
    procedure Check_Type_Conformant

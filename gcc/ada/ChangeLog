@@ -1,3 +1,8 @@
+2016-05-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb, sem_ch6.adb, sem_ch6.ads: Minor reformatting and typo
+	fixes.
+
 2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, exp_ch9.adb, einfo.adb, sem_ch4.adb, sem_ch6.adb: Minor
