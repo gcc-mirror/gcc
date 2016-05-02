@@ -3482,7 +3482,7 @@ package body Freeze is
            and then Convention (E) /= Convention_Intrinsic
 
            --  Assume that ASM interface knows what it is doing. This deals
-           --  with unsigned.ads in the AAMP back end.
+           --  with e.g. unsigned.ads in the AAMP back end.
 
            and then Convention (E) /= Convention_Assembler
          then

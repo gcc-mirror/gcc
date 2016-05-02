@@ -7504,9 +7504,6 @@ package body Exp_Attr is
       --  that appear in GNAT's library, but will generate calls via rtsfind
       --  to library routines for user code.
 
-      --  This is disabled for AAMP, to avoid creating dependences on files not
-      --  supported in the AAMP library (such as s-fileio.adb).
-
       --  Note: In the case of using a configurable run time, it is very likely
       --  that stream routines for string types are not present (they require
       --  file system support). In this case, the specific stream routines for
@@ -7514,10 +7511,7 @@ package body Exp_Attr is
       --  instead. That is why we include the test Is_Available when dealing
       --  with these cases.
 
-      if not AAMP_On_Target
-        and then
-          not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-      then
+      if not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit)) then
          --  Storage_Array as defined in package System.Storage_Elements
 
          if Is_RTE (Base_Typ, RE_Storage_Array) then

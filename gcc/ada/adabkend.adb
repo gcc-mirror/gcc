@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                        GNAAMP COMPILER COMPONENTS                        --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             A D A B K E N D                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2015, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,8 +157,8 @@ package body Adabkend is
             return; -- ignore this switch
 
          --  The -x switch and its language name argument will generally be
-         --  ignored by non-gcc back ends (e.g. the GNAAMP back end). In any
-         --  case, we save the switch and argument in the compilation switches.
+         --  ignored by non-gcc back ends. In any case, we save the switch and
+         --  argument in the compilation switches.
 
          elsif Switch_Chars (First .. Last) = "x" then
             Lib.Store_Compilation_Switch (Switch_Chars);

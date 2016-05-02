@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -494,14 +494,6 @@ package body Bindgen is
 
       if CodePeer_Mode then
          WBI ("   begin");
-
-      --  When compiling for the AAMP small library, where the standard library
-      --  is no longer suppressed, we still want to exclude the setting of the
-      --  various imported globals, which aren't present for that library.
-
-      elsif AAMP_On_Target and then Configurable_Run_Time_On_Target then
-         WBI ("   begin");
-         WBI ("      null;");
 
       --  If the standard library is suppressed, then the only global variables
       --  that might be needed (by the Ravenscar profile) are the priority and
@@ -1116,38 +1108,9 @@ package body Bindgen is
                then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
-
-                  --  The AAMP target has no notion of shared libraries, and
-                  --  there's no possibility of reelaboration, so we treat the
-                  --  the elaboration var as a flag instead of a counter and
-                  --  simply set it.
-
-                  if AAMP_On_Target then
-                     Set_String (" := 1;");
-
-                  --  Otherwise (normal case), increment elaboration counter
-
-                  else
-                     Set_String (" := E");
-                     Set_Unit_Number (Unum_Spec);
-                     Set_String (" + 1;");
-                  end if;
-
-                  Write_Statement_Buffer;
-
-               --  In the special case where the target is AAMP and the unit is
-               --  a spec with a body, the elaboration entity is initialized
-               --  here. This is done because it's the only way to accomplish
-               --  initialization of such entities, as there is no mechanism
-               --  for load time global variable initialization on AAMP.
-
-               elsif AAMP_On_Target
-                 and then U.Utype = Is_Spec
-                 and then Units.Table (Unum_Spec).Set_Elab_Entity
-               then
-                  Set_String ("      E");
+                  Set_String (" := E");
                   Set_Unit_Number (Unum_Spec);
-                  Set_String (" := 0;");
+                  Set_String (" + 1;");
                   Write_Statement_Buffer;
                end if;
 
@@ -1171,22 +1134,6 @@ package body Bindgen is
             --  variables, only calls to 'Elab* subprograms.
 
             else
-               --  In the special case where the target is AAMP and the unit is
-               --  a spec with a body, the elaboration entity is initialized
-               --  here. This is done because it's the only way to accomplish
-               --  initialization of such entities, as there is no mechanism
-               --  for load time global variable initialization on AAMP.
-
-               if AAMP_On_Target
-                 and then U.Utype = Is_Spec
-                 and then Units.Table (Unum_Spec).Set_Elab_Entity
-               then
-                  Set_String ("      E");
-                  Set_Unit_Number (Unum_Spec);
-                  Set_String (" := 0;");
-                  Write_Statement_Buffer;
-               end if;
-
                --  Check incompatibilities with No_Multiple_Elaboration
 
                if not CodePeer_Mode
@@ -1270,23 +1217,9 @@ package body Bindgen is
                then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
-
-                  --  The AAMP target has no notion of shared libraries, and
-                  --  there's no possibility of reelaboration, so we treat the
-                  --  the elaboration var as a flag instead of a counter and
-                  --  simply set it.
-
-                  if AAMP_On_Target then
-                     Set_String (" := 1;");
-
-                  --  Otherwise (normal case), increment elaboration counter
-
-                  else
-                     Set_String (" := E");
-                     Set_Unit_Number (Unum_Spec);
-                     Set_String (" + 1;");
-                  end if;
-
+                  Set_String (" := E");
+                  Set_Unit_Number (Unum_Spec);
+                  Set_String (" + 1;");
                   Write_Statement_Buffer;
                end if;
             end if;

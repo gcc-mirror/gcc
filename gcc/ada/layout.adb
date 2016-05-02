@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2498,24 +2498,6 @@ package body Layout is
            and then Nkind (Type_Definition (Parent (Desig_Type))) =
                                              N_Unconstrained_Array_Definition
            and then not Debug_Flag_6
-         then
-            Init_Size (E, 2 * System_Address_Size);
-
-         --  When the target is AAMP, access-to-subprogram types are fat
-         --  pointers consisting of the subprogram address and a static link,
-         --  with the exception of library-level access types (including
-         --  library-level anonymous access types, such as for components),
-         --  where a simple subprogram address is used.
-
-         elsif AAMP_On_Target
-           and then
-             ((Ekind (E) = E_Access_Subprogram_Type
-                and then Present (Enclosing_Subprogram (E)))
-               or else
-                 (Ekind (E) = E_Anonymous_Access_Subprogram_Type
-                   and then
-                     (not Is_Local_Anonymous_Access (E)
-                       or else Present (Enclosing_Subprogram (E)))))
          then
             Init_Size (E, 2 * System_Address_Size);
 

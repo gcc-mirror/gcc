@@ -290,7 +290,7 @@ package body Sem_Util is
    -- Addressable --
    -----------------
 
-   --  For now, just 8/16/32/64. but analyze later if AAMP is special???
+   --  For now, just 8/16/32/64
 
    function Addressable (V : Uint) return Boolean is
    begin

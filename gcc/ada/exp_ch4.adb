@@ -8136,11 +8136,7 @@ package body Exp_Ch4 is
       then
          Etyp := Standard_Long_Long_Integer;
 
-         --  Overflow checking is the only choice on the AAMP target, where
-         --  arithmetic instructions check overflow automatically, so only
-         --  one version of the exponentiation unit is needed.
-
-         if Ovflo or AAMP_On_Target then
+         if Ovflo then
             Rent := RE_Exp_Long_Long_Integer;
          else
             Rent := RE_Exn_Long_Long_Integer;
@@ -8149,11 +8145,7 @@ package body Exp_Ch4 is
       elsif Is_Signed_Integer_Type (Rtyp) then
          Etyp := Standard_Integer;
 
-         --  Overflow checking is the only choice on the AAMP target, where
-         --  arithmetic instructions check overflow automatically, so only
-         --  one version of the exponentiation unit is needed.
-
-         if Ovflo or AAMP_On_Target then
+         if Ovflo then
             Rent := RE_Exp_Integer;
          else
             Rent := RE_Exn_Integer;
@@ -8511,8 +8503,8 @@ package body Exp_Ch4 is
 
       else
          --  Apply optimization x mod 1 = 0. We don't really need that with
-         --  gcc, but it is useful with other back ends (e.g. AAMP), and is
-         --  certainly harmless.
+         --  gcc, but it is useful with other back ends and is certainly
+         --  harmless.
 
          if Is_Integer_Type (Etype (N))
            and then Compile_Time_Known_Value (Right)
@@ -9263,8 +9255,7 @@ package body Exp_Ch4 is
       Right := Right_Opnd (N);
 
       --  Apply optimization x rem 1 = 0. We don't really need that with gcc,
-      --  but it is useful with other back ends (e.g. AAMP), and is certainly
-      --  harmless.
+      --  but it is useful with other back ends, and is certainly harmless.
 
       if Is_Integer_Type (Etype (N))
         and then Compile_Time_Known_Value (Right)
@@ -12865,11 +12856,9 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Nothing to do if special -gnatd.P debug flag set or target is AAMP.
-      --  For AAMP the 64-bit arithmetic package would get dragged in, which
-      --  we want to avoid, plus this optimization has limited benefit on AAMP.
+      --  Nothing to do if special -gnatd.P debug flag set.
 
-      if Debug_Flag_Dot_PP or else AAMP_On_Target then
+      if Debug_Flag_Dot_PP then
          return;
       end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,7 @@ package body Debug is
    --  d.p
    --  d.q
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
-   --  d.s  Disable expansion of slice move, use memmove
+   --  d.s
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
    --  d.v  Enable OK_To_Reorder_Components in variant records
@@ -559,11 +559,6 @@ package body Debug is
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.
 
-   --  d.s  Normally the compiler expands slice moves into loops if overlap
-   --       might be possible. This debug flag inhibits that expansion, and
-   --       the back end is expected to use an appropriate routine to handle
-   --       overlap, based on Forward_OK and Backwards_OK flags.
-
    --  d.t  The compiler has been modified (a fairly extensive modification)
    --       to generate static dispatch tables for library level tagged types.
    --       This debug switch disables this modification and reverts to the
@@ -585,11 +580,10 @@ package body Debug is
    --       code generation step.
 
    --  d.z  Restore previous front-end support for Inline_Always. In default
-   --       mode, for targets that use the GCC back end (i.e. currently all
-   --       targets except AAMP and GNATprove), Inline_Always is handled by the
-   --       back end. Use of this switch restores the previous handling of
-   --       Inline_Always by the front end on such targets. For the targets
-   --       that do not use the GCC back end, this switch is ignored.
+   --       mode, for targets that use the GCC back end, Inline_Always is
+   --       handled by the back end. Use of this switch restores the previous
+   --       handling of Inline_Always by the front end on such targets. For the
+   --       targets that do not use the GCC back end, this switch is ignored.
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so
