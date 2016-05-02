@@ -584,6 +584,14 @@ package body Exp_Util is
       elsif Is_RTE (Pool_Id, RE_SS_Pool) then
          return;
 
+      --  Optimize the case where we are using the default Global_Pool_Object,
+      --  and we don't need the heavy finalization machinery.
+
+      elsif Pool_Id = RTE (RE_Global_Pool_Object)
+        and then not Needs_Finalization (Desig_Typ)
+      then
+         return;
+
       --  Do not replicate the machinery if the allocator / free has already
       --  been expanded and has a custom Allocate / Deallocate.
 

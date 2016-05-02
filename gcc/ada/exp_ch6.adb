@@ -3970,8 +3970,9 @@ package body Exp_Ch6 is
               and then Optimization_Level > 0
             then
                declare
-                  Inst : Entity_Id;
-                  Decl : Node_Id;
+                  Decl      : Node_Id;
+                  Inst      : Entity_Id;
+                  Inst_Node : Node_Id;
 
                begin
                   Inst := Scope (Subp);
@@ -4001,7 +4002,19 @@ package body Exp_Ch6 is
                         null;
 
                      else
-                        Add_Pending_Instantiation (Next (Decl), Decl);
+                        --  The instantiation node follows the package
+                        --  declaration for the instance. If the generic
+                        --  unit had aspect specifications, they have
+                        --  been transformed into pragmas in the instance,
+                        --  and the instance node appears after them.
+
+                        Inst_Node := Next (Decl);
+
+                        while Nkind (Inst_Node) /= N_Package_Instantiation loop
+                           Inst_Node := Next (Inst_Node);
+                        end loop;
+
+                        Add_Pending_Instantiation (Inst_Node, Decl);
                      end if;
                   end if;
                end;
