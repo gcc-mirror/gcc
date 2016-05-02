@@ -2079,9 +2079,9 @@
   (set_attr "cond" "nocond,canuse,nocond,canuse_limm,canuse,nocond")])
 
 (define_expand "mulsidi3"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "")
-	(mult:DI (sign_extend:DI(match_operand:SI 1 "register_operand" ""))
-		 (sign_extend:DI(match_operand:SI 2 "nonmemory_operand" ""))))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
   "TARGET_ANY_MPY"
 "
 {
@@ -2315,9 +2315,9 @@
 }")
 
 (define_expand "umulsidi3"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "")
-	(mult:DI (zero_extend:DI(match_operand:SI 1 "register_operand" ""))
-		 (zero_extend:DI(match_operand:SI 2 "nonmemory_operand" ""))))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
+		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
   ""
 {
   if (TARGET_MPY)
@@ -3809,7 +3809,12 @@
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "nonmemory_operand" "L,I,Cal,Rcqq,r"))]
   ""
-  "j%!%* [%0]%&"
+  "@
+   j%!%* %0%&
+   j%!%* %0%&
+   j%!%* %0%&
+   j%!%* [%0]%&
+   j%!%* [%0]%&"
   [(set_attr "type" "jump")
    (set_attr "iscompact" "false,false,false,maybe,false")
    (set_attr "cond" "canuse,canuse_limm,canuse,canuse,canuse")])
