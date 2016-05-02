@@ -49,7 +49,6 @@ static void unchain_one_value (cselib_val *);
 static void unchain_one_elt_list (struct elt_list **);
 static void unchain_one_elt_loc_list (struct elt_loc_list **);
 static void remove_useless_values (void);
-static int rtx_equal_for_cselib_1 (rtx, rtx, machine_mode);
 static unsigned int cselib_hash_rtx (rtx, int, machine_mode);
 static cselib_val *new_cselib_val (unsigned int, machine_mode, rtx);
 static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
@@ -788,15 +787,6 @@ cselib_reg_set_mode (const_rtx x)
   return GET_MODE (REG_VALUES (REGNO (x))->elt->val_rtx);
 }
 
-/* Return nonzero if we can prove that X and Y contain the same value, taking
-   our gathered information into account.  */
-
-int
-rtx_equal_for_cselib_p (rtx x, rtx y)
-{
-  return rtx_equal_for_cselib_1 (x, y, VOIDmode);
-}
-
 /* If x is a PLUS or an autoinc operation, expand the operation,
    storing the offset, if any, in *OFF.  */
 
@@ -843,7 +833,7 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
    addressing modes.  If X and Y are not (known to be) part of
    addresses, MEMMODE should be VOIDmode.  */
 
-static int
+int
 rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
 {
   enum rtx_code code;

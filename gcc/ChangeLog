@@ -1,3 +1,13 @@
+2016-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/70886
+	* sched-deps.c (estimate_dep_weak): Canonicalize cselib values.
+
+	* cselib.h (rtx_equal_for_cselib_1): Declare.
+	(rtx_equal_for_cselib_p: New inline function.
+	* cselib.c (rtx_equal_for_cselib_p): Delete.
+	(rtx_equal_for_cselib_1): Make public.
+
 2016-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (nonimm_ssenomem_operand): New predicate.
