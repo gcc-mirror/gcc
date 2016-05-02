@@ -7908,7 +7908,7 @@ package body Sem_Ch12 is
       end loop;
 
       --  Expanded code usually shares the source location of the original
-      --  construct it was generated for. This however may not necessarely
+      --  construct it was generated for. This however may not necessarily
       --  reflect the true location of the code within the tree.
 
       --  Before comparing the slocs of the two nodes, make sure that we are

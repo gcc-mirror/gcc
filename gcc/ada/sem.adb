@@ -618,8 +618,11 @@ package body Sem is
 
          --  A call to analyze the error node is simply ignored, to avoid
          --  causing cascaded errors (happens of course only in error cases)
+         --  Disable expansion in case it is still enabled, to prevent other
+         --  subsequent compiler glitches.
 
          when N_Error =>
+            Expander_Mode_Save_And_Set (False);
             null;
 
          --  Push/Pop nodes normally don't come through an analyze call. An

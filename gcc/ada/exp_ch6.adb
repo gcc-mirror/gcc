@@ -7241,6 +7241,7 @@ package body Exp_Ch6 is
 
       if Nkind_In (Func_Call,
                    N_Qualified_Expression,
+                   N_Type_Conversion,
                    N_Unchecked_Type_Conversion)
       then
          Func_Call := Expression (Func_Call);

@@ -625,7 +625,7 @@ package body Exp_Ch7 is
 
          --  Associate the anonymous master with the designated type. This
          --  ensures that any additional anonymous access types with the same
-         --  designated type will share the same anonymous paster within the
+         --  designated type will share the same anonymous master within the
          --  same unit.
 
          Set_Anonymous_Master (Desig_Typ, FM_Id);
@@ -2409,7 +2409,7 @@ package body Exp_Ch7 is
 
          Init_Typ : Entity_Id;
          --  The initialization type of the related object declaration. Note
-         --  that this is not necessarely the same type as Obj_Typ because of
+         --  that this is not necessarily the same type as Obj_Typ because of
          --  possible type derivations.
 
          Obj_Typ : Entity_Id;

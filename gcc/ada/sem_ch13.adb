@@ -5023,7 +5023,7 @@ package body Sem_Ch13 is
                --  Tagged type case, check for attempt to set alignment to a
                --  value greater than Max_Align, and reset if so. This error
                --  is suppressed in ASIS mode to allow for different ASIS
-               --  back-ends or ASIS-based tools to query the illegal clause.
+               --  back ends or ASIS-based tools to query the illegal clause.
 
                if Is_Tagged_Type (U_Ent)
                  and then Align > Max_Align
@@ -5465,7 +5465,7 @@ package body Sem_Ch13 is
                   Set_Machine_Radix_10 (U_Ent);
 
                --  The following error is suppressed in ASIS mode to allow for
-               --  different ASIS back-ends or ASIS-based tools to query the
+               --  different ASIS back ends or ASIS-based tools to query the
                --  illegal clause.
 
                elsif not ASIS_Mode then
@@ -5497,7 +5497,7 @@ package body Sem_Ch13 is
                Check_Size (Expr, U_Ent, Size, Biased);
 
                --  The following errors are suppressed in ASIS mode to allow
-               --  for different ASIS back-ends or ASIS-based tools to query
+               --  for different ASIS back ends or ASIS-based tools to query
                --  the illegal clause.
 
                if ASIS_Mode then
@@ -5714,7 +5714,7 @@ package body Sem_Ch13 is
 
                else
                   --  The following error is suppressed in ASIS mode to allow
-                  --  for different ASIS back-ends or ASIS-based tools to query
+                  --  for different ASIS back ends or ASIS-based tools to query
                   --  the illegal clause.
 
                   if Is_Elementary_Type (Etyp)
@@ -6044,7 +6044,7 @@ package body Sem_Ch13 is
             elsif Is_Elementary_Type (U_Ent) then
 
                --  The following errors are suppressed in ASIS mode to allow
-               --  for different ASIS back-ends or ASIS-based tools to query
+               --  for different ASIS back ends or ASIS-based tools to query
                --  the illegal clause.
 
                if ASIS_Mode then
@@ -10902,7 +10902,7 @@ package body Sem_Ch13 is
       procedure Size_Too_Small_Error (Min_Siz : Uint) is
       begin
          --  This error is suppressed in ASIS mode to allow for different ASIS
-         --  back-ends or ASIS-based tools to query the illegal clause.
+         --  back ends or ASIS-based tools to query the illegal clause.
 
          if not ASIS_Mode then
             Error_Msg_Uint_1 := Min_Siz;
@@ -11560,7 +11560,7 @@ package body Sem_Ch13 is
       elsif Align <= 0 then
 
          --  This error is suppressed in ASIS mode to allow for different ASIS
-         --  back-ends or ASIS-based tools to query the illegal clause.
+         --  back ends or ASIS-based tools to query the illegal clause.
 
          if not ASIS_Mode then
             Error_Msg_N ("alignment value must be positive", Expr);
@@ -11579,7 +11579,7 @@ package body Sem_Ch13 is
                if M > Align then
 
                   --  This error is suppressed in ASIS mode to allow for
-                  --  different ASIS back-ends or ASIS-based tools to query the
+                  --  different ASIS back ends or ASIS-based tools to query the
                   --  illegal clause.
 
                   if not ASIS_Mode then
@@ -14206,7 +14206,7 @@ package body Sem_Ch13 is
                                  Target   => Target,
                                  Act_Unit => Act_Unit));
 
-         --  If both sizes are known statically now, then back end annotation
+         --  If both sizes are known statically now, then back-end annotation
          --  is not required to do a proper check but if either size is not
          --  known statically, then we need the annotation.
 
