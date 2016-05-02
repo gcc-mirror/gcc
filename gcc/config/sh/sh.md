@@ -8345,16 +8345,6 @@
     gcc_unreachable ();
 })
 
-;; The *negnegt pattern helps the combine pass to figure out how to fold 
-;; an explicit double T bit negation.
-(define_insn_and_split "*negnegt"
-  [(set (reg:SI T_REG)
-	(eq:SI (match_operand 0 "negt_reg_operand" "") (const_int 0)))]
-  "TARGET_SH1"
-  "#"
-  ""
-  [(const_int 0)])
-
 ;; Store (negated) T bit as all zeros or ones in a reg.
 ;;	subc	Rn,Rn	! Rn = Rn - Rn - T; T = T
 ;;	not	Rn,Rn	! Rn = 0 - Rn
@@ -8378,15 +8368,6 @@
   DONE;
 }
   [(set_attr "type" "arith")])
-
-;; The *movtt pattern eliminates redundant T bit to T bit moves / tests.
-(define_insn_and_split "*movtt"
-  [(set (reg:SI T_REG)
-	(eq:SI (match_operand 0 "t_reg_operand" "") (const_int 1)))]
-  "TARGET_SH1"
-  "#"
-  ""
-  [(const_int 0)])
 
 ;; Invert the T bit.
 ;; On SH2A we can use the nott insn.  On anything else this must be done with
