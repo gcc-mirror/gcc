@@ -5,6 +5,29 @@
 # Jeff Bai <jeffbai@aosc.xyz>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2015, 2016.
 #
+# Fellow translatiors:
+# Many of the fuzzy strings are caused by an addition of a period (".")
+# mark in the original text. Consider writing a, e.g., python script
+# that parses the PO file with tools provided by translate-toolkit,
+# and adds a Chinese period ("。") to the msgstr and unfuzzy the string
+# if msgid string is really just (the '#| msgid' string) + (".").
+#
+# PO-escapes in translate-toolkit parsers are really a mess (I really
+# consider it an abstraction leak), so you may want to refer to my
+# (ugly) example at github.com/AOSC-Dev/translations/commit/f1d15d9.
+#
+# You may find some fuzzy strings perfectly fine. Some of them are
+# written by our friends in Taiwan, who seems to have done some similar
+# conversion work to give themselves a headstart. Remember to do some
+# concordance check. Find-and-replace is good for dealing with simple
+# differences in terminology, e.g. 型态 (TW) == 类型 (CN) == type (en).
+# Perhaps the only difference that forces you to do manual replacements
+# is that they have just the reverse ideas about 行 and 列 from us.
+#
+# The work may not be that difficult, it's just time-consuming and
+# somehow boring to fight a hill of fuzzy strings. Consider having some
+# caffeine along with this work. -- Arthur2e5, 2016-05-01.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 6.1.0\n"
