@@ -1,5 +1,9 @@
 2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cif-code.def (CIF_THUNK): Add.
+
+2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (reset_inline_summary): Clear fp_expressions
 	(dump_inline_summary): Dump it.
 	(fp_expression_p): New predicate.
