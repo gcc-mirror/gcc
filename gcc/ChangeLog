@@ -1,3 +1,10 @@
+2016-05-02  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (function_summary::function_summary):
+	Remove checking assert for all cgraph nodes.
+	(function_summary::get): Check summary_uid.
+	(symtab_insertion): Check summary_uid.
+
 2016-05-02  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-protos.h (compact_memory_operand_p): Declare.
