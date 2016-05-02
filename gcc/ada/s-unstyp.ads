@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@ pragma Compiler_Unit_Warning;
 
 package System.Unsigned_Types is
    pragma Pure;
+   pragma No_Elaboration_Code_All;
 
    type Short_Short_Unsigned is mod 2 ** Short_Short_Integer'Size;
    type Short_Unsigned       is mod 2 ** Short_Integer'Size;

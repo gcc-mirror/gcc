@@ -466,7 +466,7 @@ package body Sem_Prag is
 
       --  Set the Ghost mode in effect from the pragma. Due to the delayed
       --  analysis of the pragma, the Ghost mode at point of declaration and
-      --  point of analysis may not necessarely be the same. Use the mode in
+      --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
       Set_Ghost_Mode (N);
@@ -2658,7 +2658,7 @@ package body Sem_Prag is
 
       --  Set the Ghost mode in effect from the pragma. Due to the delayed
       --  analysis of the pragma, the Ghost mode at point of declaration and
-      --  point of analysis may not necessarely be the same. Use the mode in
+      --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
       Set_Ghost_Mode (N);
@@ -23297,7 +23297,7 @@ package body Sem_Prag is
 
       --  Set the Ghost mode in effect from the pragma. Due to the delayed
       --  analysis of the pragma, the Ghost mode at point of declaration and
-      --  point of analysis may not necessarely be the same. Use the mode in
+      --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
       Set_Ghost_Mode (N);

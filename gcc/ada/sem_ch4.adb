@@ -7469,7 +7469,7 @@ package body Sem_Ch4 is
             Subp_Id  : Entity_Id;
 
          begin
-            --  Ensure that the routine is not called with itypes which lack a
+            --  Ensure that the routine is not called with itypes, which lack a
             --  declarative node.
 
             pragma Assert (Present (Typ_Decl));
@@ -7526,7 +7526,7 @@ package body Sem_Ch4 is
             Param_Typ  : Node_Id;
 
          begin
-            --  The classify as a suitable candidate, the subprogram must be a
+            --  To classify as a suitable candidate, the subprogram must be a
             --  function whose name matches the argument of aspect Constant or
             --  Variable_Indexing.
 
@@ -7667,12 +7667,12 @@ package body Sem_Ch4 is
          C_Type := Etype (Base_Type (C_Type));
       end if;
 
-      --  Check whether type the has a specified indexing aspect
+      --  Check whether the type has a specified indexing aspect
 
       Func_Name := Empty;
 
-      --  The context is suitable for constant indexing, obtain the name of the
-      --  indexing function from aspect Constant_Indexing.
+      --  The context is suitable for constant indexing, so obtain the name of
+      --  the indexing function from aspect Constant_Indexing.
 
       if Constant_Indexing_OK then
          Func_Name :=

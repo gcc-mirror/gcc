@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,6 +36,7 @@
 pragma Compiler_Unit_Warning;
 
 package Interfaces is
+   pragma No_Elaboration_Code_All;
    pragma Pure;
 
    --  All identifiers in this unit are implementation defined

@@ -109,7 +109,7 @@ package Exp_Ch7 is
       Context_Scope  : Entity_Id := Empty;
       Insertion_Node : Node_Id   := Empty);
    --  Build a finalization master for an access type. The designated type may
-   --  not necessarely be controlled or need finalization actions depending on
+   --  not necessarily be controlled or need finalization actions depending on
    --  the context. Flag For_Lib_Level must be set when creating a master for a
    --  build-in-place function call access result type. Flag For_Private must
    --  be set when the designated type contains a private component. Parameters

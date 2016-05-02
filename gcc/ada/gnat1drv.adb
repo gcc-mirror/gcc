@@ -96,10 +96,10 @@ procedure Gnat1drv is
    --  Kind of main compilation unit node
 
    Back_End_Mode : Back_End.Back_End_Mode_Type;
-   --  Record back end mode
+   --  Record back-end mode
 
    procedure Adjust_Global_Switches;
-   --  There are various interactions between front end switch settings,
+   --  There are various interactions between front-end switch settings,
    --  including debug switch settings and target dependent parameters.
    --  This procedure takes care of properly handling these interactions.
    --  We do it after scanning out all the switches, so that we are not
@@ -350,7 +350,7 @@ procedure Gnat1drv is
          Force_ALI_Tree_File := True;
          Try_Semantics := True;
 
-         --  Make the Ada front-end more liberal so that the compiler will
+         --  Make the Ada front end more liberal so that the compiler will
          --  allow illegal code that is allowed by other compilers. CodePeer
          --  is in the business of finding problems, not enforcing rules.
          --  This is useful when using CodePeer mode with other compilers.
@@ -527,7 +527,7 @@ procedure Gnat1drv is
          Ttypes.Bytes_Big_Endian := not Ttypes.Bytes_Big_Endian;
       end if;
 
-      --  Activate front end layout if debug flag -gnatdF is set
+      --  Activate front-end layout if debug flag -gnatdF is set
 
       if Debug_Flag_FF then
          Targparm.Frontend_Layout_On_Target := True;
@@ -668,31 +668,31 @@ procedure Gnat1drv is
          Front_End_Inlining := AAMP_On_Target or Generate_C_Code;
       end if;
 
-      --  Set back end inlining indication
+      --  Set back-end inlining indication
 
       Back_End_Inlining :=
 
-        --  No back end inlining available on AAMP
+        --  No back-end inlining available on AAMP
 
         not AAMP_On_Target
 
-        --  No back end inlining available on C generation
+        --  No back-end inlining available on C generation
 
         and then not Generate_C_Code
 
-        --  No back end inlining in GNATprove mode, since it just confuses
+        --  No back-end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
 
         and then not GNATprove_Mode
 
-        --  No back end inlining if front end inlining explicitly enabled.
+        --  No back-end inlining if front-end inlining explicitly enabled.
         --  Done to minimize the output differences to customers still using
         --  this deprecated switch; in addition, this behavior reduces the
         --  output differences in old tests.
 
         and then not Front_End_Inlining
 
-        --  Back end inlining is disabled if debug flag .z is set
+        --  Back-end inlining is disabled if debug flag .z is set
 
         and then not Debug_Flag_Dot_Z;
 
@@ -1318,13 +1318,13 @@ begin
       --  as indicated by Back_Annotate_Rep_Info being set to True.
 
       --  We don't call for annotations on a subunit, because to process those
-      --  the back-end requires that the parent(s) be properly compiled.
+      --  the back end requires that the parent(s) be properly compiled.
 
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
-      --  The back-end is not invoked in ASIS mode with GNSA because all type
-      --  representation information will be provided by the GNSA back-end, not
+      --  The back end is not invoked in ASIS mode with GNSA because all type
+      --  representation information will be provided by the GNSA back end, not
       --  gigi.
 
       if Back_End_Mode = Declarations_Only

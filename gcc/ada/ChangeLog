@@ -1,3 +1,26 @@
+2016-05-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb, exp_ch7.adb, exp_ch7.ads, checks.adb, sem_attr.adb,
+	gnat1drv.adb, sem_ch4.adb, sem_ch13.adb: Minor reformatting and typo
+	fixes.
+	* sem_prag.adb, sem_ch12.adb: Minor typo fixes.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): The
+	function call may be wrapped in an explicit type conversion.
+
+2016-05-02  Jerome Lambourg  <lambourg@adacore.com>
+
+	* interfac.ads: use pragma No_Elaboration_Code_All.
+	* s-unstyp.ads: s-unstyp.ads: use pragma No_Elaboration_Code_All.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Analyze: If node is an error node previously created
+	by the parser, disable expansion to prevent subsequent glitches
+	in error recovery.
+
 2016-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch13.adb (Alignment_Error): Removed.

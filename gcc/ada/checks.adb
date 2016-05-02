@@ -2713,7 +2713,7 @@ package body Checks is
                  Make_Predicate_Check
                    (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
 
-            --  If the expression is not an entity it may have side-effects,
+            --  If the expression is not an entity it may have side effects,
             --  and the following call will create an object declaration for
             --  it. We disable checks during its analysis, to prevent an
             --  infinite recursion.
@@ -6195,8 +6195,8 @@ package body Checks is
       --  twice (once for the check, once for the actual reference). Such a
       --  double evaluation is always a potential source of inefficiency, and
       --  is functionally incorrect in the volatile case, or when the prefix
-      --  may have side-effects. A non-volatile entity or a component of a
-      --  non-volatile entity requires no evaluation.
+      --  may have side effects. A nonvolatile entity or a component of a
+      --  nonvolatile entity requires no evaluation.
 
       if Is_Entity_Name (Pref) then
          if Treat_As_Volatile (Entity (Pref)) then
@@ -6418,7 +6418,7 @@ package body Checks is
                   Set_Do_Range_Check (Sub, False);
 
                   --  Force evaluation except for the case of a simple name of
-                  --  a non-volatile entity.
+                  --  a nonvolatile entity.
 
                   if not Is_Entity_Name (Sub)
                     or else Treat_As_Volatile (Entity (Sub))
