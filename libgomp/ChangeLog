@@ -1,3 +1,8 @@
+2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Adjust
+	expected partitioning.
+
 2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR middle-end/70626

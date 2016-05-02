@@ -103,9 +103,11 @@ int vector_1 (int *ary, int size)
   
 #pragma acc parallel num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
   {
+#pragma acc loop gang
+    for (int jx = 0; jx < 1; jx++)
 #pragma acc loop auto
-    for (int ix = 0; ix < size; ix++)
-      ary[ix] = place ();
+      for (int ix = 0; ix < size; ix++)
+	ary[ix] = place ();
   }
 
   return check (ary, size, 0, 0, 1);
@@ -118,7 +120,7 @@ int vector_2 (int *ary, int size)
 #pragma acc parallel num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
   {
 #pragma acc loop worker
-    for (int jx = 0; jx <  size  / 64; jx++)
+    for (int jx = 0; jx < size  / 64; jx++)
 #pragma acc loop auto
       for (int ix = 0; ix < 64; ix++)
 	ary[ix + jx * 64] = place ();
@@ -133,30 +135,16 @@ int worker_1 (int *ary, int size)
   
 #pragma acc parallel num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
   {
+#pragma acc loop gang
+    for (int kx = 0; kx < 1; kx++)
 #pragma acc loop auto
-    for (int jx = 0; jx <  size  / 64; jx++)
+      for (int jx = 0; jx <  size  / 64; jx++)
 #pragma acc loop vector
-      for (int ix = 0; ix < 64; ix++)
-	ary[ix + jx * 64] = place ();
+	for (int ix = 0; ix < 64; ix++)
+	  ary[ix + jx * 64] = place ();
   }
 
-  return check (ary, size, 0, 1, 1);
-}
-
-int worker_2 (int *ary, int size)
-{
-  clear (ary, size);
-  
-#pragma acc parallel num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
-  {
-#pragma acc loop auto
-    for (int jx = 0; jx <  size  / 64; jx++)
-#pragma acc loop auto
-      for (int ix = 0; ix < 64; ix++)
-	ary[ix + jx * 64] = place ();
-  }
-
-  return check (ary, size, 0, 1, 1);
+  return check (ary, size, 0,  1, 1);
 }
 
 int gang_1 (int *ary, int size)
@@ -193,6 +181,22 @@ int gang_2 (int *ary, int size)
   return check (ary, size, 1, 1, 1);
 }
 
+int gang_3 (int *ary, int size)
+{
+  clear (ary, size);
+  
+#pragma acc parallel num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
+  {
+#pragma acc loop auto
+    for (int jx = 0; jx <  size  / 64; jx++)
+#pragma acc loop auto
+      for (int ix = 0; ix < 64; ix++)
+	ary[ix + jx * 64] = place ();
+  }
+
+  return check (ary, size, 1, 0, 1);
+}
+
 #define N (32*32*32)
 int main ()
 {
@@ -214,12 +218,12 @@ int main ()
 
   if (worker_1 (ary,  N))
     return 1;
-  if (worker_2 (ary,  N))
-    return 1;
   
   if (gang_1 (ary,  N))
     return 1;
   if (gang_2 (ary,  N))
+    return 1;
+  if (gang_3 (ary,  N))
     return 1;
 
   return 0;

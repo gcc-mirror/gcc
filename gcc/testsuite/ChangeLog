@@ -1,3 +1,7 @@
+2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-c++-common/goacc/loop-auto-1.c: Adjust expected warnings.
+
 2016-05-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70851
