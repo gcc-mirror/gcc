@@ -884,8 +884,8 @@ package body Exp_Prag is
                   Set_Expression (Decl, Pref);
                   Analyze (Decl);
 
-                  --  Otherwise add an assignment  statement to temporary
-                  --  using prefix as RHS.
+               --  Otherwise add an assignment statement to temporary using
+               --  prefix as RHS.
 
                else
                   Analyze (Decl);

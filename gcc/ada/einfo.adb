@@ -274,6 +274,7 @@ package body Einfo is
 
    --    SPARK_Pragma                    Node40
 
+   --    Original_Protected_Subprogram   Node41
    --    SPARK_Aux_Pragma                Node41
 
    ---------------------------------------------
@@ -2836,6 +2837,11 @@ package body Einfo is
       pragma Assert (Is_Array_Type (Id) or else Is_Modular_Integer_Type (Id));
       return Node21 (Id);
    end Original_Array_Type;
+
+   function Original_Protected_Subprogram (Id : E) return N is
+   begin
+      return Node41 (Id);
+   end Original_Protected_Subprogram;
 
    function Original_Record_Component (Id : E) return E is
    begin
@@ -5899,6 +5905,12 @@ package body Einfo is
       pragma Assert (Is_Array_Type (Id) or else Is_Modular_Integer_Type (Id));
       Set_Node21 (Id, V);
    end Set_Original_Array_Type;
+
+   procedure Set_Original_Protected_Subprogram (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Procedure, E_Function));
+      Set_Node41 (Id, V);
+   end Set_Original_Protected_Subprogram;
 
    procedure Set_Original_Record_Component (Id : E; V : E) is
    begin
@@ -10482,6 +10494,10 @@ package body Einfo is
               E_Protected_Type                             |
               E_Task_Type                                  =>
             Write_Str ("SPARK_Aux_Pragma");
+
+         when E_Function                                   |
+              E_Procedure                                  =>
+            Write_Str ("Original_Protected_Subprogram");
 
          when others                                       =>
             Write_Str ("Field41??");

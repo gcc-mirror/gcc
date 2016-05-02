@@ -467,8 +467,9 @@ package body Comperr is
       Main := Unit (Cunit (Main_Unit));
 
       case Nkind (Main) is
-         when N_Subprogram_Declaration | N_Subprogram_Body |
-              N_Package_Declaration =>
+         when N_Package_Declaration    |
+              N_Subprogram_Body        |
+              N_Subprogram_Declaration =>
             Unit_Name := Defining_Unit_Name (Specification (Main));
 
          when N_Package_Body =>

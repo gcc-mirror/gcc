@@ -139,7 +139,7 @@ package body Debug is
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
    --  d.U  Ignore indirect calls for static elaboration
-   --  d.V
+   --  d.V  Do not verify validity of SCIL files (CodePeer mode)
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Old treatment of indexing aspects
    --  d.Y
@@ -685,6 +685,12 @@ package body Debug is
    --       Proc. This can cause elaboration cycles at bind time. This flag
    --       reverts to the behavior of earlier compilers, which ignored
    --       indirect calls.
+
+   --  d.V  Do not verify the validity of SCIL files (CodePeer mode). When
+   --       generating SCIL files for CodePeer, by default we verify that the
+   --       SCIL is well formed before saving it on disk. This switch can be
+   --       used to disable this checking, either to improve speed or to shut
+   --       down a false positive detected during the verification.
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in

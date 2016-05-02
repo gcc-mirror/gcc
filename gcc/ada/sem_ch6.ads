@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,6 +121,15 @@ package Sem_Ch6 is
    --  argument Get_Inst is set to True when this is a check against a
    --  formal access-to-subprogram type, indicating that mapping of types
    --  is needed.
+
+   procedure Check_Synchronized_Overriding
+     (Def_Id          : Entity_Id;
+      Overridden_Subp : out Entity_Id);
+   --  First determine if Def_Id is an entry or a subprogram either defined
+   --  in the scope of a task or protected type, or is a primitive of such
+   --  a type. Check whether Def_Id overrides a subprogram of an interface
+   --  implemented by the synchronized type, return the overridden entity
+   --  or Empty.
 
    procedure Check_Type_Conformant
      (New_Id  : Entity_Id;

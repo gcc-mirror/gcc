@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2443,13 +2443,6 @@ package body Exp_Ch9 is
       Obj_Typ : Entity_Id;
       Formals : List_Id) return Node_Id
    is
-      Loc           : constant Source_Ptr := Sloc (Subp_Id);
-      First_Param   : Node_Id;
-      Iface         : Entity_Id;
-      Iface_Elmt    : Elmt_Id;
-      Iface_Op      : Entity_Id;
-      Iface_Op_Elmt : Elmt_Id;
-
       function Overriding_Possible
         (Iface_Op : Entity_Id;
          Wrapper  : Entity_Id) return Boolean;
@@ -2631,6 +2624,16 @@ package body Exp_Ch9 is
          return New_Formals;
       end Replicate_Formals;
 
+      --  Local variables
+
+      Loc             : constant Source_Ptr := Sloc (Subp_Id);
+      First_Param     : Node_Id := Empty;
+      Iface           : Entity_Id;
+      Iface_Elmt      : Elmt_Id;
+      Iface_Op        : Entity_Id;
+      Iface_Op_Elmt   : Elmt_Id;
+      Overridden_Subp : Entity_Id;
+
    --  Start of processing for Build_Wrapper_Spec
 
    begin
@@ -2638,17 +2641,24 @@ package body Exp_Ch9 is
 
       pragma Assert (Is_Tagged_Type (Obj_Typ));
 
+      --  Check if this subprogram has a profile that matches some interface
+      --  primitive
+
+      Check_Synchronized_Overriding (Subp_Id, Overridden_Subp);
+
+      if Present (Overridden_Subp) then
+         First_Param :=
+           First (Parameter_Specifications (Parent (Overridden_Subp)));
+
       --  An entry or a protected procedure can override a routine where the
       --  controlling formal is either IN OUT, OUT or is of access-to-variable
       --  type. Since the wrapper must have the exact same signature as that of
       --  the overridden subprogram, we try to find the overriding candidate
       --  and use its controlling formal.
 
-      First_Param := Empty;
-
       --  Check every implemented interface
 
-      if Present (Interfaces (Obj_Typ)) then
+      elsif Present (Interfaces (Obj_Typ)) then
          Iface_Elmt := First_Elmt (Interfaces (Obj_Typ));
          Search : while Present (Iface_Elmt) loop
             Iface := Node (Iface_Elmt);
@@ -2684,40 +2694,14 @@ package body Exp_Ch9 is
          end loop Search;
       end if;
 
-      --  Ada 2012 (AI05-0090-1): If no interface primitive is covered by
-      --  this subprogram and this is not a primitive declared between two
-      --  views then force the generation of a wrapper. As an optimization,
-      --  previous versions of the frontend avoid generating the wrapper;
-      --  however, the wrapper facilitates locating and reporting an error
-      --  when a duplicate declaration is found later. See example in
-      --  AI05-0090-1.
+      --  Do not generate the wrapper if no interface primitive is covered by
+      --  the subprogram and it is not a primitive declared declared between
+      --  two views (see Process_Full_View).
 
       if No (First_Param)
         and then not Is_Private_Primitive_Subprogram (Subp_Id)
       then
-         if Is_Task_Type
-              (Corresponding_Concurrent_Type (Obj_Typ))
-         then
-            First_Param :=
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => Make_Defining_Identifier (Loc, Name_uO),
-                In_Present          => True,
-                Out_Present         => False,
-                Parameter_Type      => New_Occurrence_Of (Obj_Typ, Loc));
-
-         --  For entries and procedures of protected types the mode of
-         --  the controlling argument must be in-out.
-
-         else
-            First_Param :=
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Name_uO),
-                In_Present     => True,
-                Out_Present    => (Ekind (Subp_Id) /= E_Function),
-                Parameter_Type => New_Occurrence_Of (Obj_Typ, Loc));
-         end if;
+         return Empty;
       end if;
 
       declare
@@ -4228,6 +4212,15 @@ package body Exp_Ch9 is
       New_Id :=
         Make_Defining_Identifier (Loc,
           Chars => Build_Selected_Name (Prot_Typ, Def_Id, Append_Chr (Mode)));
+
+      --  Reference the original non-dispatching subprogram since the analysis
+      --  of the object.operation notation may need its original name (see
+      --  Sem_Ch4.Names_Match).
+
+      if Mode = Dispatching_Mode then
+         Set_Ekind (New_Id, Ekind (Def_Id));
+         Set_Original_Protected_Subprogram (New_Id, Def_Id);
+      end if;
 
       --  The unprotected operation carries the user code, and debugging
       --  information must be generated for it, even though this spec does
@@ -9653,22 +9646,50 @@ package body Exp_Ch9 is
             Current_Node := Sub;
 
             --  Generate an overriding primitive operation specification for
-            --  this subprogram if the protected type implements an interface.
+            --  this subprogram if the protected type implements an interface
+            --  and Build_Wrapper_Spec did not not generate its wrapper.
 
             if Ada_Version >= Ada_2005
               and then
                 Present (Interfaces (Corresponding_Record_Type (Prot_Typ)))
             then
-               Sub :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Protected_Sub_Specification
-                       (Comp, Prot_Typ, Dispatching_Mode));
+               declare
+                  Prim_Elmt : Elmt_Id;
+                  Prim_Op   : Node_Id;
+                  Found     : Boolean := False;
 
-               Insert_After (Current_Node, Sub);
-               Analyze (Sub);
+               begin
+                  Prim_Elmt :=
+                    First_Elmt
+                      (Primitive_Operations
+                         (Corresponding_Record_Type (Prot_Typ)));
 
-               Current_Node := Sub;
+                  while Present (Prim_Elmt) loop
+                     Prim_Op := Node (Prim_Elmt);
+
+                     if Is_Primitive_Wrapper (Prim_Op)
+                       and then (Wrapped_Entity (Prim_Op))
+                                   = Defining_Entity (Specification (Comp))
+                     then
+                        Found := True;
+                        exit;
+                     end if;
+
+                     Next_Elmt (Prim_Elmt);
+                  end loop;
+
+                  if not Found then
+                     Sub :=
+                       Make_Subprogram_Declaration (Loc,
+                         Specification =>
+                           Build_Protected_Sub_Specification
+                             (Comp, Prot_Typ, Dispatching_Mode));
+                     Insert_After (Current_Node, Sub);
+                     Analyze (Sub);
+
+                     Current_Node := Sub;
+                  end if;
+               end;
             end if;
 
             --  If a pragma Interrupt_Handler applies, build and add a call to

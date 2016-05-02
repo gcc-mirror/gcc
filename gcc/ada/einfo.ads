@@ -3647,6 +3647,11 @@ package Einfo is
 --       points to the original array type for which this is the packed
 --       array implementation type.
 
+--    Original_Protected_Subprogram (Node41)
+--       Defined in functions and procedures. Set only on internally built
+--       dispatching subprograms of protected types to reference their original
+--       non-dispatching protected subprogram since their names differ.
+
 --    Original_Record_Component (Node22)
 --       Defined in components, including discriminants. The usage depends
 --       on whether the record is a base type and whether it is tagged.
@@ -5923,6 +5928,7 @@ package Einfo is
    --    Class_Wide_Preconds                 (List38)
    --    Class_Wide_Postconds                (List39)
    --    SPARK_Pragma                        (Node40)
+   --    Original_Protected_Subprogram       (Node41)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Default_Expressions_Processed       (Flag108)
@@ -6234,6 +6240,7 @@ package Einfo is
    --    Class_Wide_Preconds                 (List38)
    --    Class_Wide_Postconds                (List39)
    --    SPARK_Pragma                        (Node40)
+   --    Original_Protected_Subprogram       (Node41)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
@@ -7127,6 +7134,7 @@ package Einfo is
    function Optimize_Alignment_Time             (Id : E) return B;
    function Original_Access_Type                (Id : E) return E;
    function Original_Array_Type                 (Id : E) return E;
+   function Original_Protected_Subprogram       (Id : E) return N;
    function Original_Record_Component           (Id : E) return E;
    function Overlays_Constant                   (Id : E) return B;
    function Overridden_Operation                (Id : E) return E;
@@ -7801,6 +7809,7 @@ package Einfo is
    procedure Set_Optimize_Alignment_Time         (Id : E; V : B := True);
    procedure Set_Original_Access_Type            (Id : E; V : E);
    procedure Set_Original_Array_Type             (Id : E; V : E);
+   procedure Set_Original_Protected_Subprogram   (Id : E; V : N);
    procedure Set_Original_Record_Component       (Id : E; V : E);
    procedure Set_Overlays_Constant               (Id : E; V : B := True);
    procedure Set_Overridden_Operation            (Id : E; V : E);
@@ -8628,6 +8637,7 @@ package Einfo is
    pragma Inline (Optimize_Alignment_Time);
    pragma Inline (Original_Access_Type);
    pragma Inline (Original_Array_Type);
+   pragma Inline (Original_Protected_Subprogram);
    pragma Inline (Original_Record_Component);
    pragma Inline (Overlays_Constant);
    pragma Inline (Overridden_Operation);
@@ -9093,6 +9103,7 @@ package Einfo is
    pragma Inline (Set_Optimize_Alignment_Time);
    pragma Inline (Set_Original_Access_Type);
    pragma Inline (Set_Original_Array_Type);
+   pragma Inline (Set_Original_Protected_Subprogram);
    pragma Inline (Set_Original_Record_Component);
    pragma Inline (Set_Overlays_Constant);
    pragma Inline (Set_Overridden_Operation);
