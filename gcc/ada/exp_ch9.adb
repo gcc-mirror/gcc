@@ -2641,7 +2641,7 @@ package body Exp_Ch9 is
       pragma Assert (Is_Tagged_Type (Obj_Typ));
 
       --  Check if this subprogram has a profile that matches some interface
-      --  primitive
+      --  primitive.
 
       Check_Synchronized_Overriding (Subp_Id, Overridden_Subp);
 
@@ -2694,8 +2694,8 @@ package body Exp_Ch9 is
       end if;
 
       --  Do not generate the wrapper if no interface primitive is covered by
-      --  the subprogram and it is not a primitive declared declared between
-      --  two views (see Process_Full_View).
+      --  the subprogram and it is not a primitive declared between two views
+      --  (see Process_Full_View).
 
       if No (First_Param)
         and then not Is_Private_Primitive_Subprogram (Subp_Id)
@@ -4214,7 +4214,7 @@ package body Exp_Ch9 is
         Make_Defining_Identifier (Loc,
           Chars => Build_Selected_Name (Prot_Typ, Def_Id, Append_Chr (Mode)));
 
-      --  Reference the original non-dispatching subprogram since the analysis
+      --  Reference the original nondispatching subprogram since the analysis
       --  of the object.operation notation may need its original name (see
       --  Sem_Ch4.Names_Match).
 
@@ -9648,7 +9648,7 @@ package body Exp_Ch9 is
 
             --  Generate an overriding primitive operation specification for
             --  this subprogram if the protected type implements an interface
-            --  and Build_Wrapper_Spec did not not generate its wrapper.
+            --  and Build_Wrapper_Spec did not generate its wrapper.
 
             if Ada_Version >= Ada_2005
               and then
@@ -9800,7 +9800,7 @@ package body Exp_Ch9 is
    -- Expand_N_Requeue_Statement --
    --------------------------------
 
-   --  A non-dispatching requeue statement is expanded into one of four GNARLI
+   --  A nondispatching requeue statement is expanded into one of four GNARLI
    --  operations, depending on the source and destination (task or protected
    --  object). A dispatching requeue statement is expanded into a call to the
    --  predefined primitive _Disp_Requeue. In addition, code is generated to
@@ -10004,7 +10004,7 @@ package body Exp_Ch9 is
       --  and perform the appropriate kind of dispatching select.
 
       function Build_Normal_Requeue return Node_Id;
-      --  N denotes a non-dispatching requeue statement to either a task or a
+      --  N denotes a nondispatching requeue statement to either a task or a
       --  protected entry. Build the appropriate runtime call to perform the
       --  action.
 
@@ -10556,7 +10556,7 @@ package body Exp_Ch9 is
             end if;
          end;
 
-      --  Processing for regular (non-dispatching) requeues
+      --  Processing for regular (nondispatching) requeues
 
       else
          Rewrite (N, Build_Normal_Requeue);
@@ -12826,7 +12826,7 @@ package body Exp_Ch9 is
              Else_Statements => D_Stats));
 
       else
-         --  Simple case of a non-dispatching trigger. Skip assignments to
+         --  Simple case of a nondispatching trigger. Skip assignments to
          --  temporaries created for in-out parameters.
 
          --  This makes unwarranted assumptions about the shape of the expanded
