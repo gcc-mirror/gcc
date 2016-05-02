@@ -1,3 +1,10 @@
+2016-05-02  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsidi3): Change operand 0 predicate to
+	register_operand.
+	(umulsidi3): Likewise.
+	(indirect_jump): Fix jump instruction assembly patterns.
+
 2016-05-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/70860
