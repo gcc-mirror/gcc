@@ -1,3 +1,19 @@
+2016-05-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Force_Evaluation): Adding new formal.
+	(Remove_Side_Effects): Adding a new formal.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Generating the
+	call to the _Postconditions procedure ensure that side-effects
+	are unconditionally removed.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance, Check_Mismatch):
+	Use original node to determine whether the declaration is for
+	a formal type declaration, to take into account that formwl
+	private types are rewritten as private extension declarations
+	to simplify semantic analysis.
+
 2016-05-02  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch9.adb, sem_ch6.adb, sem_ch6.ads: Minor reformatting and typo
