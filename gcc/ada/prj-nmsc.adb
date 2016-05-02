@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4452,7 +4452,7 @@ package body Prj.Nmsc is
             --  An extending project inherits its parent projects' languages
             --  so if needed we should create entries for those languages
 
-            if Lang = null  then
+            if Lang = null then
                Extended := Project.Extends;
                while Extended /= null loop
                   Lang := Get_Language_From_Name

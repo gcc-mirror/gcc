@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,13 +114,10 @@ procedure Get_SPARK_Xrefs is
    -------------
 
    function Get_Nat return Nat is
-      Val : Nat;
-      C   : Character;
+      Val : Nat := 0;
+      C   : Character := Nextc;
 
    begin
-      C := Nextc;
-      Val := 0;
-
       if C not in '0' .. '9' then
          raise Data_Error;
       end if;
@@ -152,10 +149,9 @@ procedure Get_SPARK_Xrefs is
    --------------
 
    procedure Get_Name is
-      N : Integer;
+      N : Natural := 0;
 
    begin
-      N := 0;
       while Nextc > ' ' loop
          N := N + 1;
          Name_Str (N) := Getc;

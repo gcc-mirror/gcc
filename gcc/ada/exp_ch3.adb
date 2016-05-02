@@ -3921,7 +3921,7 @@ package body Exp_Ch3 is
    --          return;
    --       end if;
 
-   --       if Rev  then
+   --       if Rev then
    --          Li1 := Left_Hi;
    --          Ri1 := Right_Hi;
    --       else

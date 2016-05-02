@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -666,7 +666,7 @@ package body Eval_Fat is
       Result := Truncation (RT, abs X);
       Tail   := abs X - Result;
 
-      if Tail >= Ureal_Half  then
+      if Tail >= Ureal_Half then
          Result := Result + Ureal_1;
       end if;
 
@@ -761,7 +761,7 @@ package body Eval_Fat is
       Result := Truncation (RT, Abs_X);
       Tail   := Abs_X - Result;
 
-      if Tail > Ureal_Half  then
+      if Tail > Ureal_Half then
          Result := Result + Ureal_1;
 
       elsif Tail = Ureal_Half then
