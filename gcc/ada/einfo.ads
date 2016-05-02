@@ -3767,6 +3767,11 @@ package Einfo is
 --       is the special version created for membership tests, where if one of
 --       these raise expressions is executed, the result is to return False.
 
+--    Predicates_Ignored (Flag288)
+--       Defined on all types. Indicates whether the subtype declaration is in
+--       a context where Assertion_Policy is Ignore, in which case no checks
+--       (static or dynamic) must be generated for objects of the type.
+
 --    Primitive_Operations (synthesized)
 --       Defined in concurrent types, tagged record types and subtypes, tagged
 --       private types and tagged incomplete types. For concurrent types whose
@@ -7137,6 +7142,7 @@ package Einfo is
    function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
    function Postconditions_Proc                 (Id : E) return E;
+   function Predicates_Ignored                  (Id : E) return B;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
    function Private_Dependents                  (Id : E) return L;
@@ -7489,6 +7495,7 @@ package Einfo is
    procedure Set_Depends_On_Private              (Id : E; V : B := True);
    procedure Set_Derived_Type_Link               (Id : E; V : E);
    procedure Set_Digits_Value                    (Id : E; V : U);
+   procedure Set_Predicates_Ignored              (Id : E; V : B);
    procedure Set_Direct_Primitive_Operations     (Id : E; V : L);
    procedure Set_Directly_Designated_Type        (Id : E; V : E);
    procedure Set_Disable_Controlled              (Id : E; V : B := True);
@@ -8637,6 +8644,7 @@ package Einfo is
    pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
    pragma Inline (Postconditions_Proc);
+   pragma Inline (Predicates_Ignored);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
    pragma Inline (Private_Dependents);
@@ -9100,6 +9108,7 @@ package Einfo is
    pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postconditions_Proc);
+   pragma Inline (Set_Predicates_Ignored);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);
    pragma Inline (Set_Private_Dependents);

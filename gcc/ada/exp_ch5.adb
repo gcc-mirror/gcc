@@ -2573,10 +2573,11 @@ package body Exp_Ch5 is
       --  does not obey the predicate, the value is marked non-static, and
       --  there can be no corresponding static alternative. In that case we
       --  replace the case statement with an exception, regardless of whether
-      --  assertions are enabled or not.
+      --  assertions are enabled or not, unless predicates are ignored.
 
       if Compile_Time_Known_Value (Expr)
         and then Has_Predicates (Etype (Expr))
+        and then not Predicates_Ignored (Etype (Expr))
         and then not Is_OK_Static_Expression (Expr)
       then
          Rewrite (N,
@@ -2659,7 +2660,9 @@ package body Exp_Ch5 is
          --  comes from source -- no need to validity check internally
          --  generated case statements).
 
-         if Validity_Check_Default then
+         if Validity_Check_Default
+           and then not Predicates_Ignored (Etype (Expr))
+         then
             Ensure_Valid (Expr);
          end if;
 
@@ -2788,9 +2791,31 @@ package body Exp_Ch5 is
 
          if not Others_Present then
             Others_Node := Make_Others_Choice (Sloc (Last_Alt));
-            Set_Others_Discrete_Choices
-              (Others_Node, Discrete_Choices (Last_Alt));
-            Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
+
+            --  If Predicates_Ignored is true the value does not satisfy the
+            --  predicate, and there is no Others choice, Constraint_Error
+            --  must be raised (4.5.7 (21/3)).
+
+            if Predicates_Ignored (Etype (Expr)) then
+               declare
+                  Except : constant Node_Id :=
+                   Make_Raise_Constraint_Error (Loc,
+                     Reason => CE_Invalid_Data);
+                  New_Alt : constant Node_Id :=
+                    Make_Case_Statement_Alternative (Loc,
+                      Discrete_Choices => New_List (Make_Others_Choice (Loc)),
+                      Statements => New_List (Except));
+               begin
+                  Append (New_Alt, Alternatives (N));
+                  Analyze_And_Resolve (Except);
+               end;
+
+            else
+               Set_Others_Discrete_Choices
+                 (Others_Node, Discrete_Choices (Last_Alt));
+               Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
+            end if;
+
          end if;
 
          --  Deal with possible declarations of controlled objects, and also

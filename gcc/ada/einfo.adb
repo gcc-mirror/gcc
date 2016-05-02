@@ -601,8 +601,8 @@ package body Einfo is
    --    Is_Volatile_Full_Access         Flag285
    --    Is_Exception_Handler            Flag286
    --    Rewritten_For_C                 Flag287
+   --    Predicates_Ignored              Flag288
 
-   --    (unused)                        Flag288
    --    (unused)                        Flag289
    --    (unused)                        Flag300
 
@@ -2909,6 +2909,12 @@ package body Einfo is
                                    E_Procedure));
       return Node14 (Id);
    end Postconditions_Proc;
+
+   function Predicates_Ignored (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag288 (Id);
+   end Predicates_Ignored;
 
    function Prival (Id : E) return E is
    begin
@@ -5970,6 +5976,12 @@ package body Einfo is
                                    E_Procedure));
       Set_Node14 (Id, V);
    end Set_Postconditions_Proc;
+
+   procedure Set_Predicates_Ignored (Id : E; V : B) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag288 (Id, V);
+   end Set_Predicates_Ignored;
 
    procedure Set_Direct_Primitive_Operations (Id : E; V : L) is
    begin
@@ -9130,6 +9142,7 @@ package body Einfo is
       W ("Reverse_Bit_Order",               Flag164 (Id));
       W ("Reverse_Storage_Order",           Flag93  (Id));
       W ("Rewritten_For_C",                 Flag287 (Id));
+      W ("Predicates_Ignored",              Flag288 (Id));
       W ("Sec_Stack_Needed_For_Return",     Flag167 (Id));
       W ("Size_Depends_On_Discriminant",    Flag177 (Id));
       W ("Size_Known_At_Compile_Time",      Flag92  (Id));

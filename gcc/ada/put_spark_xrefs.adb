@@ -104,6 +104,7 @@ begin
 
             begin
                --  Write only non-empty tables
+
                if S.From_Xref <= S.To_Xref then
 
                   Write_Info_Initiate ('F');
@@ -133,7 +134,7 @@ begin
 
                      Output_One_Xref : declare
                         R : SPARK_Xref_Record renames
-                          SPARK_Xref_Table.Table (X);
+                              SPARK_Xref_Table.Table (X);
 
                      begin
                         if R.Entity_Line /= Entity_Line

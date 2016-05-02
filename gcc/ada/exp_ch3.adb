@@ -5034,9 +5034,13 @@ package body Exp_Ch3 is
          end loop;
       end if;
 
-      --  In normal mode, add the others clause with the test
+      --  In normal mode, add the others clause with the test.
+      --  If Predicates_Ignored is True, validity checks do not apply to
+      --  the subtype.
 
-      if not No_Exception_Handlers_Set then
+      if not No_Exception_Handlers_Set
+        and then not Predicates_Ignored (Typ)
+      then
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),

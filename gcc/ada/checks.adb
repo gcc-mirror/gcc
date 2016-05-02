@@ -2670,6 +2670,9 @@ package body Checks is
       if Predicate_Checks_Suppressed (Empty) then
          return;
 
+      elsif Predicates_Ignored (Typ) then
+         return;
+
       elsif Present (Predicate_Function (Typ)) then
          S := Current_Scope;
          while Present (S) and then not Is_Subprogram (S) loop

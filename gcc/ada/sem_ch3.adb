@@ -3814,14 +3814,15 @@ package body Sem_Ch3 is
       --  do this in the analyzer and not the expander because the analyzer
       --  does some substantial rewriting in some cases.
 
-      --  We need a predicate check if the type has predicates, and if either
-      --  there is an initializing expression, or for default initialization
-      --  when we have at least one case of an explicit default initial value
-      --  and then this is not an internal declaration whose initialization
-      --  comes later (as for an aggregate expansion).
+      --  We need a predicate check if the type has predicates that are not
+      --  ignored, and if either there is an initializing expression, or for
+      --  default initialization when we have at least one case of an explicit
+      --  default initial value and then this is not an internal declaration
+      --  whose initialization comes later (as for an aggregate expansion).
 
       if not Suppress_Assignment_Checks (N)
         and then Present (Predicate_Function (T))
+        and then not Predicates_Ignored (T)
         and then not No_Initialization (N)
         and then
           (Present (E)

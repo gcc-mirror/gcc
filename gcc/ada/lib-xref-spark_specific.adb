@@ -992,9 +992,9 @@ package body SPARK_Specific is
                Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
 
                Spec_Entity : constant Entity_Id :=
-                 Unique_Entity (Srec.Scope_Entity);
+                               Unique_Entity (Srec.Scope_Entity);
                Spec_Scope  : constant Scope_Index :=
-                 Entity_Hash_Table.Get (Spec_Entity);
+                               Entity_Hash_Table.Get (Spec_Entity);
 
             begin
                --  Generic spec may be missing in which case Spec_Scope is zero
