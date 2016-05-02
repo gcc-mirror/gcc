@@ -2240,21 +2240,51 @@ package body Exp_Ch5 is
                     and then Is_Tagged_Type (Typ)
                     and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
                   then
-                     Append_To (L,
-                       Make_Raise_Constraint_Error (Loc,
-                         Condition =>
-                           Make_Op_Ne (Loc,
-                             Left_Opnd =>
-                               Make_Selected_Component (Loc,
-                                 Prefix        => Duplicate_Subexpr (Lhs),
-                                 Selector_Name =>
-                                   Make_Identifier (Loc, Name_uTag)),
-                             Right_Opnd =>
-                               Make_Selected_Component (Loc,
-                                 Prefix        => Duplicate_Subexpr (Rhs),
-                                 Selector_Name =>
-                                   Make_Identifier (Loc, Name_uTag))),
-                         Reason => CE_Tag_Check_Failed));
+                     declare
+                        Lhs_Tag : Node_Id;
+                        Rhs_Tag : Node_Id;
+
+                     begin
+                        if not Is_Interface (Typ) then
+                           Lhs_Tag :=
+                             Make_Selected_Component (Loc,
+                               Prefix        => Duplicate_Subexpr (Lhs),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uTag));
+                           Rhs_Tag :=
+                             Make_Selected_Component (Loc,
+                               Prefix        => Duplicate_Subexpr (Rhs),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uTag));
+                        else
+                           --  Displace the pointer to the base of the objects
+                           --  applying 'Address, which is later expanded into
+                           --  a call to RE_Base_Address.
+
+                           Lhs_Tag :=
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix => Duplicate_Subexpr (Lhs),
+                                     Attribute_Name => Name_Address)));
+                           Rhs_Tag :=
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix => Duplicate_Subexpr (Rhs),
+                                     Attribute_Name => Name_Address)));
+                        end if;
+
+                        Append_To (L,
+                          Make_Raise_Constraint_Error (Loc,
+                            Condition =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd => Lhs_Tag,
+                                Right_Opnd => Rhs_Tag),
+                            Reason => CE_Tag_Check_Failed));
+                     end;
                   end if;
 
                   declare

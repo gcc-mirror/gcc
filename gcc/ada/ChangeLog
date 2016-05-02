@@ -1,3 +1,25 @@
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): If the expression does not
+	have a subtype indication and the type is an unconstrained tagged
+	type with defaulted discriminants, create an explicit constraint
+	for it during analysis to prevent out-of-order freezing actions
+	on generated classwide types.
+
+2016-05-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement):
+	In the runtime check that ensures that the tags of source an
+	target match, add missing displacement of the pointer to the
+	objects if they cover interface types.
+
+2016-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Old): Do not use
+	base type for attribute when type is discrete: transformation
+	is not needed for such types, and leads to spurious errors if
+	the context is a case construct.
+
 2016-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (elaborate_reference_1): Do not bother about

@@ -4975,8 +4975,16 @@ package body Sem_Attr is
             --  and does not suffer from the out-of-order issue described
             --  above. Thus, this expansion is skipped in SPARK mode.
 
+            --  THe expansion is not relevant for discrete types, that will
+            --  not generate extra declarations, and where use of the base
+            --  type may lead to spurious errors if context is a case.
+
             if not GNATprove_Mode then
-               Pref_Typ := Base_Type (Pref_Typ);
+
+               if not Is_Discrete_Type (Pref_Typ) then
+                  Pref_Typ := Base_Type (Pref_Typ);
+               end if;
+
                Set_Etype (N, Pref_Typ);
                Set_Etype (P, Pref_Typ);
 
