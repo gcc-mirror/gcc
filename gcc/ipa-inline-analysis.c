@@ -850,7 +850,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  if (known_aggs.exists ())
 	    {
 	      agg = known_aggs[c->operand_num];
-	      val = ipa_find_agg_cst_for_param (agg, c->offset, c->by_ref);
+	      val = ipa_find_agg_cst_for_param (agg, known_vals[c->operand_num],
+						c->offset, c->by_ref);
 	    }
 	  else
 	    val = NULL_TREE;
@@ -1069,6 +1070,7 @@ reset_inline_summary (struct cgraph_node *node,
     reset_inline_edge_summary (e);
   for (e = node->indirect_calls; e; e = e->next_callee)
     reset_inline_edge_summary (e);
+  info->fp_expressions = false;
 }
 
 /* Hook that is called by cgraph.c when a node is removed.  */
@@ -1423,6 +1425,8 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, " inlinable");
       if (s->contains_cilk_spawn)
 	fprintf (f, " contains_cilk_spawn");
+      if (s->fp_expressions)
+	fprintf (f, " fp_expression");
       fprintf (f, "\n  self time:       %i\n", s->self_time);
       fprintf (f, "  global time:     %i\n", s->time);
       fprintf (f, "  self size:       %i\n", s->self_size);
@@ -2459,6 +2463,21 @@ clobber_only_eh_bb_p (basic_block bb, bool need_eh = true)
   return true;
 }
 
+/* Return true if STMT compute a floating point expression that may be affected
+   by -ffast-math and similar flags.  */
+
+static bool
+fp_expression_p (gimple *stmt)
+{
+  ssa_op_iter i;
+  tree op;
+
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF|SSA_OP_USE)
+    if (FLOAT_TYPE_P (TREE_TYPE (op)))
+      return true;
+  return false;
+}
+
 /* Compute function body size parameters for NODE.
    When EARLY is true, we compute only simple summaries without
    non-trivial predicates to drive the early inliner.  */
@@ -2731,6 +2750,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  if (prob != 2)
 		    account_size_time (info, this_size * (2 - prob),
 				       this_time * (2 - prob), &p);
+		}
+
+	      if (!info->fp_expressions && fp_expression_p (stmt))
+		{
+		  info->fp_expressions = true;
+		  if (dump_file)
+		    fprintf (dump_file, "   fp_expression set\n");
 		}
 
 	      gcc_assert (time >= 0);
@@ -3577,6 +3603,8 @@ inline_merge_summary (struct cgraph_edge *edge)
   else
     toplev_predicate = true_predicate ();
 
+  info->fp_expressions |= callee_info->fp_expressions;
+
   if (callee_info->conds)
     evaluate_properties_for_edge (edge, true, &clause, NULL, NULL, NULL);
   if (ipa_node_params_sum && callee_info->conds)
@@ -4229,6 +4257,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
       info->contains_cilk_spawn = bp_unpack_value (&bp, 1);
+      info->fp_expressions = bp_unpack_value (&bp, 1);
 
       count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info->conds);
@@ -4395,6 +4424,7 @@ inline_write_summary (void)
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
 	  bp_pack_value (&bp, info->contains_cilk_spawn, 1);
+	  bp_pack_value (&bp, info->fp_expressions, 1);
 	  streamer_write_bitpack (&bp);
 	  streamer_write_uhwi (ob, vec_safe_length (info->conds));
 	  for (i = 0; vec_safe_iterate (info->conds, i, &c); i++)

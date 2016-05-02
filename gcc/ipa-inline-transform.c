@@ -338,6 +338,63 @@ inline_call (struct cgraph_edge *e, bool update_original,
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
     }
+  inline_summary *caller_info = inline_summaries->get (to);
+  inline_summary *callee_info = inline_summaries->get (callee);
+  if (!caller_info->fp_expressions && callee_info->fp_expressions)
+    {
+      caller_info->fp_expressions = true;
+      if (opt_for_fn (callee->decl, flag_rounding_math)
+	  != opt_for_fn (to->decl, flag_rounding_math)
+	  || opt_for_fn (callee->decl, flag_trapping_math)
+	     != opt_for_fn (to->decl, flag_trapping_math)
+	  || opt_for_fn (callee->decl, flag_unsafe_math_optimizations)
+	     != opt_for_fn (to->decl, flag_unsafe_math_optimizations)
+	  || opt_for_fn (callee->decl, flag_finite_math_only)
+	     != opt_for_fn (to->decl, flag_finite_math_only)
+	  || opt_for_fn (callee->decl, flag_signaling_nans)
+	     != opt_for_fn (to->decl, flag_signaling_nans)
+	  || opt_for_fn (callee->decl, flag_cx_limited_range)
+	     != opt_for_fn (to->decl, flag_cx_limited_range)
+	  || opt_for_fn (callee->decl, flag_signed_zeros)
+	     != opt_for_fn (to->decl, flag_signed_zeros)
+	  || opt_for_fn (callee->decl, flag_associative_math)
+	     != opt_for_fn (to->decl, flag_associative_math)
+	  || opt_for_fn (callee->decl, flag_reciprocal_math)
+	     != opt_for_fn (to->decl, flag_reciprocal_math)
+	  || opt_for_fn (callee->decl, flag_errno_math)
+	     != opt_for_fn (to->decl, flag_errno_math))
+	{
+	  struct gcc_options opts = global_options;
+
+	  cl_optimization_restore (&opts, opts_for_fn (to->decl));
+	  opts.x_flag_rounding_math
+	    = opt_for_fn (callee->decl, flag_rounding_math);
+	  opts.x_flag_trapping_math
+	    = opt_for_fn (callee->decl, flag_trapping_math);
+	  opts.x_flag_unsafe_math_optimizations
+	    = opt_for_fn (callee->decl, flag_unsafe_math_optimizations);
+	  opts.x_flag_finite_math_only
+	    = opt_for_fn (callee->decl, flag_finite_math_only);
+	  opts.x_flag_signaling_nans
+	    = opt_for_fn (callee->decl, flag_signaling_nans);
+	  opts.x_flag_cx_limited_range
+	    = opt_for_fn (callee->decl, flag_cx_limited_range);
+	  opts.x_flag_signed_zeros
+	    = opt_for_fn (callee->decl, flag_signed_zeros);
+	  opts.x_flag_associative_math
+	    = opt_for_fn (callee->decl, flag_associative_math);
+	  opts.x_flag_reciprocal_math
+	    = opt_for_fn (callee->decl, flag_reciprocal_math);
+	  opts.x_flag_errno_math
+	    = opt_for_fn (callee->decl, flag_errno_math);
+	  if (dump_file)
+	    fprintf (dump_file, "Copying FP flags from %s:%i to %s:%i\n",
+		     callee->name (), callee->order, to->name (), to->order);
+	  build_optimization_node (&opts);
+	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
+	     = build_optimization_node (&opts);
+	}
+    }
 
   /* If aliases are involved, redirect edge to the actual destination and
      possibly remove the aliases.  */

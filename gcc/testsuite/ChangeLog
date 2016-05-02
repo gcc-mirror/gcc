@@ -1,3 +1,7 @@
+2016-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/inline-8.c: New testcase.
+
 2016-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70467

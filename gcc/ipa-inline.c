@@ -338,7 +338,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   else if (e->call_stmt_cannot_inline_p)
     {
       if (e->inline_failed != CIF_FUNCTION_NOT_OPTIMIZED)
-        e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+        e->inline_failed = e->caller->thunk.thunk_p ? CIF_THUNK : CIF_MISMATCHED_ARGUMENTS;
       inlinable = false;
     }
   /* Don't inline if the functions have different EH personalities.  */
@@ -396,6 +396,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 	     (DECL_DISREGARD_INLINE_LIMITS (callee->decl)
 	      && lookup_attribute ("always_inline",
 				   DECL_ATTRIBUTES (callee->decl)));
+      inline_summary *caller_info = inline_summaries->get (caller);
+      inline_summary *callee_info = inline_summaries->get (callee);
 
      /* Until GCC 4.9 we did not check the semantics alterning flags
 	bellow and inline across optimization boundry.
@@ -417,16 +419,21 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		   == !opt_for_fn (callee->decl, optimize) || !always_inline))
 	      || check_match (flag_wrapv)
 	      || check_match (flag_trapv)
-	      /* Strictly speaking only when the callee uses FP math.  */
-	      || check_maybe_up (flag_rounding_math)
-	      || check_maybe_up (flag_trapping_math)
-	      || check_maybe_down (flag_unsafe_math_optimizations)
-	      || check_maybe_down (flag_finite_math_only)
-	      || check_maybe_up (flag_signaling_nans)
-	      || check_maybe_down (flag_cx_limited_range)
-	      || check_maybe_up (flag_signed_zeros)
-	      || check_maybe_down (flag_associative_math)
-	      || check_maybe_down (flag_reciprocal_math)
+	      /* When caller or callee does FP math, be sure FP codegen flags
+		 compatible.  */
+	      || ((caller_info->fp_expressions && callee_info->fp_expressions)
+		  && (check_maybe_up (flag_rounding_math)
+		      || check_maybe_up (flag_trapping_math)
+		      || check_maybe_down (flag_unsafe_math_optimizations)
+		      || check_maybe_down (flag_finite_math_only)
+		      || check_maybe_up (flag_signaling_nans)
+		      || check_maybe_down (flag_cx_limited_range)
+		      || check_maybe_up (flag_signed_zeros)
+		      || check_maybe_down (flag_associative_math)
+		      || check_maybe_down (flag_reciprocal_math)
+		      /* Strictly speaking only when the callee contains function
+			 calls that may end up setting errno.  */
+		      || check_maybe_up (flag_errno_math)))
 	      /* We do not want to make code compiled with exceptions to be
 		 brought into a non-EH function unless we know that the callee
 		 does not throw.
@@ -435,9 +442,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      || (check_maybe_up (flag_exceptions)
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
-	      /* Strictly speaking only when the callee contains function
-		 calls that may end up setting errno.  */
-	      || check_maybe_up (flag_errno_math)
 	      /* When devirtualization is diabled for callee, it is not safe
 		 to inline it as we possibly mangled the type info.
 		 Allow early inlining of always inlines.  */
