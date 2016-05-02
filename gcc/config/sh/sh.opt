@@ -205,14 +205,6 @@ mzdcbranch
 Target Report Var(TARGET_ZDCBRANCH)
 Assume that zero displacement conditional branches are fast.
 
-mcbranchdi
-Target Undocumented Var(TARGET_CBRANCHDI4) Warn(%qs is deprecated and has no effect)
-Enable cbranchdi4 pattern.
-
-mcmpeqdi
-Target Undocumented Var(TARGET_CMPEQDI_T) Warn(%qs is deprecated and has no effect)
-Emit cmpeqdi_t pattern even when -mcbranchdi is in effect.
-
 mcbranch-force-delay-slot
 Target Report RejectNegative Var(TARGET_CBRANCH_FORCE_DELAY_SLOT) Init(0)
 Force the usage of delay slots for conditional branches.
