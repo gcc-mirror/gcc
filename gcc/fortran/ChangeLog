@@ -1,3 +1,7 @@
+2016-05-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* trans-types.c (gfc_build_complex_type):
+
 2016-05-02  Richard Biener  <rguenther@suse.de>
 
 	* trans-array.c (gfc_trans_create_temp_array): Properly

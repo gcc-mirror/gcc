@@ -962,8 +962,13 @@ complex @code{__float128} type.  When these problems are fixed, you
 would use the following syntax to declare @code{_Complex128} to be a
 complex @code{__float128} type:
 
+On the PowerPC Linux VSX targets, you can declare complex types using
+the corresponding internal complex type, @code{KCmode} for
+@code{__float128} type and @code{ICmode} for @code{__ibm128} type:
+
 @smallexample
-typedef _Complex float __attribute__((mode(KC))) _Complex128;
+typedef _Complex float __attribute__((mode(KC))) _Complex_float128;
+typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @end smallexample
 
 Not all targets support additional floating-point types.
