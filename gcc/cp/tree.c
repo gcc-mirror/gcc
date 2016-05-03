@@ -346,10 +346,16 @@ builtin_valid_in_constant_expr_p (const_tree decl)
     return false;
   switch (DECL_FUNCTION_CODE (decl))
     {
-    case BUILT_IN_CONSTANT_P:
-    case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
+      /* These always have constant results like the corresponding
+	 macros/symbol.  */
+    case BUILT_IN_FILE:
+    case BUILT_IN_FUNCTION:
+    case BUILT_IN_LINE:
+
       /* These have constant results even if their operands are
 	 non-constant.  */
+    case BUILT_IN_CONSTANT_P:
+    case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return true;
     default:
       return false;

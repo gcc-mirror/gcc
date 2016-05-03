@@ -8929,9 +8929,11 @@ This extension is not supported by GNU C++.
 @cindex @code{__FUNCTION__} identifier
 @cindex @code{__PRETTY_FUNCTION__} identifier
 
-GCC provides three magic variables that hold the name of the current
-function, as a string.  The first of these is @code{__func__}, which
-is part of the C99 standard:
+GCC provides three magic constants that hold the name of the current
+function as a string.  In C++11 and later modes, all three are treated
+as constant expressions and can be used in @code{constexpr} constexts.
+The first of these constants is @code{__func__}, which is part of
+the C99 standard:
 
 The identifier @code{__func__} is implicitly declared by the translator
 as if, immediately following the opening brace of each function
@@ -8943,20 +8945,21 @@ static const char __func__[] = "function-name";
 
 @noindent
 appeared, where function-name is the name of the lexically-enclosing
-function.  This name is the unadorned name of the function.
+function.  This name is the unadorned name of the function.  As an
+extension, at file (or, in C++, namespace scope), @code{__func__}
+evaluates to the empty string.
 
 @code{__FUNCTION__} is another name for @code{__func__}, provided for
 backward compatibility with old versions of GCC.
 
 In C, @code{__PRETTY_FUNCTION__} is yet another name for
-@code{__func__}.  However, in C++, @code{__PRETTY_FUNCTION__} contains
-the type signature of the function as well as its bare name.  For
-example, this program:
+@code{__func__}, except that at file (or, in C++, namespace scope),
+it evaluates to the string @code{"top level"}.  In addition, in C++,
+@code{__PRETTY_FUNCTION__} contains the signature of the function as
+well as its bare name.  For example, this program:
 
 @smallexample
-extern "C" @{
-extern int printf (char *, ...);
-@}
+extern "C" int printf (const char *, ...);
 
 class a @{
  public:
@@ -8985,7 +8988,7 @@ __PRETTY_FUNCTION__ = void a::sub(int)
 @end smallexample
 
 These identifiers are variables, not preprocessor macros, and may not
-be used to initialize @code{char} arrays or be concatenated with other string
+be used to initialize @code{char} arrays or be concatenated with string
 literals.
 
 @node Return Address
@@ -11091,22 +11094,50 @@ means that the compiler can assume for @code{x}, set to @code{arg}, that
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_LINE ()
-This function is the equivalent to the preprocessor @code{__LINE__}
-macro and returns the line number of the invocation of the built-in.
-In a C++ default argument for a function @var{F}, it gets the line number of
-the call to @var{F}.
+This function is the equivalent of the preprocessor @code{__LINE__}
+macro and returns a constant integer expression that evaluates to
+the line number of the invocation of the built-in.  When used as a C++
+default argument for a function @var{F}, it returns the line number
+of the call to @var{F}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {const char *} __builtin_FUNCTION ()
-This function is the equivalent to the preprocessor @code{__FUNCTION__}
-macro and returns the function name the invocation of the built-in is in.
+This function is the equivalent of the @code{__FUNCTION__} symbol
+and returns an address constant pointing to the name of the function
+from which the built-in was invoked, or the empty string if
+the invocation is not at function scope.  When used as a C++ default
+argument for a function @var{F}, it returns the name of @var{F}'s
+caller or the empty string if the call was not made at function
+scope.
 @end deftypefn
 
 @deftypefn {Built-in Function} {const char *} __builtin_FILE ()
-This function is the equivalent to the preprocessor @code{__FILE__}
-macro and returns the file name the invocation of the built-in is in.
-In a C++ default argument for a function @var{F}, it gets the file name of
-the call to @var{F}.
+This function is the equivalent of the preprocessor @code{__FILE__}
+macro and returns an address constant pointing to the file name
+containing the invocation of the built-in, or the empty string if
+the invocation is not at function scope.  When used as a C++ default
+argument for a function @var{F}, it returns the file name of the call
+to @var{F} or the empty string if the call was not made at function
+scope.
+
+For example, in the following, each call to function @code{foo} will
+print a line similar to @code{"file.c:123: foo: message"} with the name
+of the file and the line number of the @code{printf} call, the name of
+the function @code{foo}, followed by the word @code{message}.
+
+@smallexample
+const char*
+function (const char *func = __builtin_FUNCTION ())
+@{
+  return func;
+@}
+
+void foo (void)
+@{
+  printf ("%s:%i: %s: message\n", file (), line (), function ());
+@}
+@end smallexample
+
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})

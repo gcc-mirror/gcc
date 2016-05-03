@@ -1,3 +1,9 @@
+2016-05-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/66561
+	* tree.c (builtin_valid_in_constant_expr_p): Treat BUILT_IN_FILE,
+	BUILT_IN_FUNCTION, and BUILT_IN_LINE as constant expressions.
+
 2016-05-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70859

@@ -1,3 +1,9 @@
+2016-05-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/66561
+	* c-c++-common/builtin_location.c: New test.
+	* g++.dg/cpp1y/builtin_location.C: New test.
+
 2016-05-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70859

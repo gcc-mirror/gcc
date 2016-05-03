@@ -8011,6 +8011,39 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
   return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
 }
 
+/* Fold a call to __builtin_FILE to a constant string.  */
+
+static inline tree
+fold_builtin_FILE (location_t loc)
+{
+  if (const char *fname = LOCATION_FILE (loc))
+    return build_string_literal (strlen (fname) + 1, fname);
+
+  return build_string_literal (1, "");
+}
+
+/* Fold a call to __builtin_FUNCTION to a constant string.  */
+
+static inline tree
+fold_builtin_FUNCTION ()
+{
+  if (current_function_decl)
+    {
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+      return build_string_literal (strlen (name) + 1, name);
+    }
+
+  return build_string_literal (1, "");
+}
+
+/* Fold a call to __builtin_LINE to an integer constant.  */
+
+static inline tree
+fold_builtin_LINE (location_t loc, tree type)
+{
+  return build_int_cst (type, LOCATION_LINE (loc));
+}
+
 /* Fold a call to built-in function FNDECL with 0 arguments.
    This function returns NULL_TREE if no simplification was possible.  */
 
@@ -8021,6 +8054,15 @@ fold_builtin_0 (location_t loc, tree fndecl)
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   switch (fcode)
     {
+    case BUILT_IN_FILE:
+      return fold_builtin_FILE (loc);
+
+    case BUILT_IN_FUNCTION:
+      return fold_builtin_FUNCTION ();
+
+    case BUILT_IN_LINE:
+      return fold_builtin_LINE (loc, type);
+
     CASE_FLT_FN (BUILT_IN_INF):
     case BUILT_IN_INFD32:
     case BUILT_IN_INFD64:
