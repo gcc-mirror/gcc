@@ -5310,6 +5310,90 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
   return ret;
 }
 
+/* Expand IFN_ATOMIC_BIT_TEST_AND_* internal function.  */
+
+void
+expand_ifn_atomic_bit_test_and (gcall *call)
+{
+  tree ptr = gimple_call_arg (call, 0);
+  tree bit = gimple_call_arg (call, 1);
+  tree flag = gimple_call_arg (call, 2);
+  tree lhs = gimple_call_lhs (call);
+  enum memmodel model = MEMMODEL_SYNC_SEQ_CST;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (flag));
+  enum rtx_code code;
+  optab optab;
+  struct expand_operand ops[5];
+
+  gcc_assert (flag_inline_atomics);
+
+  if (gimple_call_num_args (call) == 4)
+    model = get_memmodel (gimple_call_arg (call, 3));
+
+  rtx mem = get_builtin_sync_mem (ptr, mode);
+  rtx val = expand_expr_force_mode (bit, mode);
+
+  switch (gimple_call_internal_fn (call))
+    {
+    case IFN_ATOMIC_BIT_TEST_AND_SET:
+      code = IOR;
+      optab = atomic_bit_test_and_set_optab;
+      break;
+    case IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT:
+      code = XOR;
+      optab = atomic_bit_test_and_complement_optab;
+      break;
+    case IFN_ATOMIC_BIT_TEST_AND_RESET:
+      code = AND;
+      optab = atomic_bit_test_and_reset_optab;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (lhs == NULL_TREE)
+    {
+      val = expand_simple_binop (mode, ASHIFT, const1_rtx,
+				 val, NULL_RTX, true, OPTAB_DIRECT);
+      if (code == AND)
+	val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
+      expand_atomic_fetch_op (const0_rtx, mem, val, code, model, false);
+      return;
+    }
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  enum insn_code icode = direct_optab_handler (optab, mode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  create_output_operand (&ops[0], target, mode);
+  create_fixed_operand (&ops[1], mem);
+  create_convert_operand_to (&ops[2], val, mode, true);
+  create_integer_operand (&ops[3], model);
+  create_integer_operand (&ops[4], integer_onep (flag));
+  if (maybe_expand_insn (icode, 5, ops))
+    return;
+
+  rtx bitval = val;
+  val = expand_simple_binop (mode, ASHIFT, const1_rtx,
+			     val, NULL_RTX, true, OPTAB_DIRECT);
+  rtx maskval = val;
+  if (code == AND)
+    val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
+  rtx result = expand_atomic_fetch_op (gen_reg_rtx (mode), mem, val,
+				       code, model, false);
+  if (integer_onep (flag))
+    {
+      result = expand_simple_binop (mode, ASHIFTRT, result, bitval,
+				    NULL_RTX, true, OPTAB_DIRECT);
+      result = expand_simple_binop (mode, AND, result, const1_rtx, target,
+				    true, OPTAB_DIRECT);
+    }
+  else
+    result = expand_simple_binop (mode, AND, result, maskval, target, true,
+				  OPTAB_DIRECT);
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
 /* Expand an atomic clear operation.
 	void _atomic_clear (BOOL *obj, enum memmodel)
    EXP is the call expression.  */
