@@ -1,3 +1,9 @@
+2016-05-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/md/rXsbg_mode_sXl.c: New test.
+	* gcc.target/s390/s390.exp (check_effective_target_z10_instructions):
+	Procedure to check for z10 instruction set.
+
 2016-05-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.dg/ipa/inline-8.c: Require c99_runtime.

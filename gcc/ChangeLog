@@ -1,3 +1,10 @@
+2016-05-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("*r<noxa>sbg_<mode>_sll")
+	("*r<noxa>sbg_<mode>_srl"): New define_insns.
+	("*r<noxa>sbg_<mode>_srl_bitmask"): Rename by adding "_bitmask".
+	("*r<noxa>sbg_<mode>_sll_bitmask"): Likewise.
+
 2016-05-03  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_savres_strategy): Correct condition

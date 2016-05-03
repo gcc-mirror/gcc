@@ -24,6 +24,17 @@ if ![istarget s390*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if z10 instructions work.
+proc check_effective_target_z10_instructions { } {
+    if { ![check_runtime s390_check_z10_instructions [subst {
+	int main (void)
+	{
+	    asm ("rosbg %%r2,%%r2,0,0,0" : : );
+	    return 0;
+	}
+    }] "-march=z10 -mzarch" ] } { return 0 } else { return 1 }
+}
+
 # Return 1 if the the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
 proc check_effective_target_target_attribute { } {
