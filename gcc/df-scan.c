@@ -3223,11 +3223,22 @@ df_insn_refs_collect (struct df_collection_rec *collection_rec,
         }
     }
 
+  int flags = (is_cond_exec) ? DF_REF_CONDITIONAL : 0;
   /* For CALL_INSNs, first record DF_REF_BASE register defs, as well as
      uses from CALL_INSN_FUNCTION_USAGE. */
   if (CALL_P (insn_info->insn))
-    df_get_call_refs (collection_rec, bb, insn_info,
-		      (is_cond_exec) ? DF_REF_CONDITIONAL : 0);
+    df_get_call_refs (collection_rec, bb, insn_info, flags);
+
+  if (asm_noperands (PATTERN (insn_info->insn)) >= 0)
+    for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (global_regs[i])
+       {
+         /* As with calls, asm statements reference all global regs. */
+         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+                        NULL, bb, insn_info, DF_REF_REG_USE, flags);
+         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+                        NULL, bb, insn_info, DF_REF_REG_DEF, flags);
+       }
 
   /* Record other defs.  These should be mostly for DF_REF_REGULAR, so
      that a qsort on the defs is unnecessary in most cases.  */

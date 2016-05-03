@@ -512,7 +512,7 @@ setup_alloc_regs (bool use_hard_frame_p)
 #ifdef ADJUST_REG_ALLOC_ORDER
   ADJUST_REG_ALLOC_ORDER;
 #endif
-  COPY_HARD_REG_SET (no_unit_alloc_regs, fixed_reg_set);
+  COPY_HARD_REG_SET (no_unit_alloc_regs, fixed_nonglobal_reg_set);
   if (! use_hard_frame_p)
     SET_HARD_REG_BIT (no_unit_alloc_regs, HARD_FRAME_POINTER_REGNUM);
   setup_class_hard_regs ();
