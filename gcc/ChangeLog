@@ -1,3 +1,14 @@
+2016-05-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/44281
+	* hard-reg-set.h (struct target_hard_regs): New field
+	x_fixed_nonglobal_reg_set.
+	(fixed_nonglobal_reg_set): New macro.
+	* reginfo.c (init_reg_sets_1): Initialize it.
+	* ira.c (setup_alloc_regs): Use fixed_nonglobal_reg_set instead
+	of fixed_reg_set.
+	* df-scan.c (df_insn_refs_collect): Asms may reference global regs.
+
 2016-05-03  bin cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/56541

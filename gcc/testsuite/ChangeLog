@@ -1,3 +1,8 @@
+2016-05-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/44281
+	* gcc.target/i386/pr44281.c: New test.
+
 2016-05-03  bin cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/56541

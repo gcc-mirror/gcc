@@ -449,6 +449,7 @@ init_reg_sets_1 (void)
     }
 
   COPY_HARD_REG_SET (call_fixed_reg_set, fixed_reg_set);
+  COPY_HARD_REG_SET (fixed_nonglobal_reg_set, fixed_reg_set);
 
   /* Preserve global registers if called more than once.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
