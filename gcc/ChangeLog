@@ -1,3 +1,9 @@
+2016-05-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/57193
+	* opts.c (default_options_table): Revert OPT_frename_registers change.
+	* doc/invoke.texi (-frename-registers, -O2): Likewise.
+
 2016-05-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/66561
