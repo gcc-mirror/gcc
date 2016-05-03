@@ -1051,62 +1051,6 @@ init_tree_ssa (struct function *fn)
   init_ssanames (fn, 0);
 }
 
-/* Do the actions required to initialize internal data structures used
-   in tree-ssa optimization passes.  */
-
-static unsigned int
-execute_init_datastructures (void)
-{
-  /* Allocate hash tables, arrays and other structures.  */
-  gcc_assert (!cfun->gimple_df);
-  init_tree_ssa (cfun);
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_init_datastructures =
-{
-  GIMPLE_PASS, /* type */
-  "*init_datastructures", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  PROP_cfg, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_init_datastructures : public gimple_opt_pass
-{
-public:
-  pass_init_datastructures (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_init_datastructures, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *fun)
-    {
-      /* Do nothing for funcions that was produced already in SSA form.  */
-      return !(fun->curr_properties & PROP_ssa);
-    }
-
-  virtual unsigned int execute (function *)
-    {
-      return execute_init_datastructures ();
-    }
-
-}; // class pass_init_datastructures
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_init_datastructures (gcc::context *ctxt)
-{
-  return new pass_init_datastructures (ctxt);
-}
-
 /* Deallocate memory associated with SSA data structures for FNDECL.  */
 
 void

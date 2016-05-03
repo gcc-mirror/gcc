@@ -84,5 +84,5 @@ test_8 (int code)
    the negated code == 22 compare to code != 22 first.  It turns out if
    we do that we even generate better code on x86 at least.  */
 
-/* { dg-final { scan-tree-dump-times "simplified to if \\\(\[^ ]* <" 4 "forwprop1"} } */
+/* { dg-final { scan-tree-dump-times "simplified to if \\\(\[^ ]* \[<>\]" 4 "forwprop1"} } */
 

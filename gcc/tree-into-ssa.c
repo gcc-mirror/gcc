@@ -666,6 +666,8 @@ mark_def_sites (basic_block bb, gimple *stmt, bitmap kills)
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
       tree sym = USE_FROM_PTR (use_p);
+      if (TREE_CODE (sym) == SSA_NAME)
+	continue;
       gcc_checking_assert (DECL_P (sym));
       if (!bitmap_bit_p (kills, DECL_UID (sym)))
 	set_livein_block (sym, bb);
@@ -676,6 +678,8 @@ mark_def_sites (basic_block bb, gimple *stmt, bitmap kills)
      each def to the set of killed symbols.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     {
+      if (TREE_CODE (def) == SSA_NAME)
+	continue;
       gcc_checking_assert (DECL_P (def));
       set_def_block (def, bb, false);
       bitmap_set_bit (kills, DECL_UID (def));
@@ -1310,6 +1314,8 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
 	  {
 	    tree var = USE_FROM_PTR (use_p);
+	    if (TREE_CODE (var) == SSA_NAME)
+	      continue;
 	    gcc_checking_assert (DECL_P (var));
 	    SET_USE (use_p, get_reaching_def (var));
 	  }
@@ -1323,6 +1329,8 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	tree name;
 	tree tracked_var;
 
+	if (TREE_CODE (var) == SSA_NAME)
+	  continue;
 	gcc_checking_assert (DECL_P (var));
 
 	if (gimple_clobber_p (stmt)

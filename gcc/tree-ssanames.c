@@ -740,10 +740,6 @@ release_defs (gimple *stmt)
   tree def;
   ssa_op_iter iter;
 
-  /* Make sure that we are in SSA.  Otherwise, operand cache may point
-     to garbage.  */
-  gcc_assert (gimple_in_ssa_p (cfun));
-
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     if (TREE_CODE (def) == SSA_NAME)
       release_ssa_name (def);

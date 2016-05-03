@@ -1428,10 +1428,10 @@ init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
   allocate_struct_function (decl, false);
   gimple_register_cfg_hooks ();
   init_empty_tree_cfg ();
+  init_tree_ssa (cfun);
 
   if (in_ssa)
     {
-      init_tree_ssa (cfun);
       init_ssa_operands (cfun);
       cfun->gimple_df->in_ssa_p = true;
       cfun->curr_properties |= PROP_ssa;

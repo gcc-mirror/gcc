@@ -273,6 +273,7 @@ get_default_value (tree var)
 	 can assume initially that it is UNDEFINED, otherwise we must
 	 consider it VARYING.  */
       if (!virtual_operand_p (var)
+	  && SSA_NAME_VAR (var)
 	  && TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
 	val.lattice_val = UNDEFINED;
       else

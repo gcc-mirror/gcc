@@ -1,3 +1,14 @@
+2016-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/pr30172-1.c: Adjust.
+	* gcc.dg/pr63743.c: Likewise.
+	* gcc.dg/tm/pr51696.c: Likewise.
+	* c-c++-common/tm/safe-1.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/plugin/self-assign-test-1.c: XFAIL case that needs CSE.
+	* g++.dg/plugin/self-assign-test-1.C: Likewise.
+	* g++.dg/plugin/self-assign-test-2.C: Likewise.
+
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70467

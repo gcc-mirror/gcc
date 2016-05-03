@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_ssa_passes);
   PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
       NEXT_PASS (pass_fixup_cfg);
-      NEXT_PASS (pass_init_datastructures);
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_warn_nonnull_compare);
       NEXT_PASS (pass_ubsan);

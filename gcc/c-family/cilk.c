@@ -795,9 +795,13 @@ cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p)
     fix_parm_expr = &TREE_OPERAND (*expr_p, 1);
 
   if (TREE_CODE (*fix_parm_expr) == CALL_EXPR)
-    for (ii = 0; ii < call_expr_nargs (*fix_parm_expr); ii++)
-      gimplify_arg (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p,
-		    EXPR_LOCATION (*fix_parm_expr));
+    {
+      /* Cilk outlining assumes GENERIC bodies, avoid leaking SSA names
+         via parameters.  */
+      for (ii = 0; ii < call_expr_nargs (*fix_parm_expr); ii++)
+	gimplify_arg (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p,
+		      EXPR_LOCATION (*fix_parm_expr), false);
+    }
 }
 
 

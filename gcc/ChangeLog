@@ -1,3 +1,62 @@
+2016-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.h (get_initialized_tmp_var): Add allow_ssa parameter
+	default true.
+	(gimplify_arg): Likewise.
+	* gimplify.c (gimplify_expr): Add overload with allow_ssa parameter,
+	re-writing the result to a decl if required.
+	(internal_get_tmp_var): Add allow_ssa parameter
+	and override into_ssa with it.
+	(get_formal_tmp_var): Adjust.
+	(get_initialized_tmp_var): Add allow_ssa parameter.
+	(gimplify_arg): Add allow_ssa parameter and avoid generating
+	SSA names for the result false.
+	(gimplify_call_expr): If the call may return twice do not
+	gimplify parameters into SSA.
+	(prepare_gimple_addressable): Do not allow an SSA name as
+	temporary.
+	(gimplify_modify_expr): Adjust assert.  For noreturn calls
+	with a SSA name LHS adjust its def.
+	(gimplify_save_expr): Do not allow an SSA name as save-expr
+	result.
+	(gimplify_one_sizepos): Do not allow an SSA name as a sizepos.
+	(gimplify_body): Init GIMPLE SSA data structures and gimplify
+	into-SSA.
+	(gimplify_scan_omp_clauses): Make sure OMP_CLAUSE_SIZE is not
+	an SSA name.  Likewise for OMP_CLAUSE_REDUCTION operands.
+	(gimplify_omp_for): Likewise for OMP_CLAUSE_DECL.  Likewise
+	for OMP_FOR_COND,  OMP_FOR_INCR and OMP_CLAUSE_LINEAR_STEP.
+	(optimize_target_teams): Do not allow SSA names for clause operands.
+	(gimplify_expr): Likewise for where we mark the result addressable.
+	* passes.def (pass_init_datastructures): Remove.
+	* tree-into-ssa.c (mark_def_sites): Ignore existing SSA names.
+	(rewrite_stmt): Likewise.
+	* tree-inline.c (initialize_cfun): Properly transfer SSA state.
+	(replace_locals_op): Replace SSA names.
+	(copy_gimple_seq_and_replace_locals): Init src_cfun.
+	* gimple-low.c (lower_builtin_setjmp): Deal with SSA.
+	* cgraph.c (release_function_body): Free CFG annotations only
+	when we have a CFG.  Simplify.
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Use
+	force_gimple_operand instead of get_initialized_tmp_var.
+	* tree-pass.h (make_pass_init_datastructures): Remove.
+	* tree-ssa.c (execute_init_datastructures): Remove.
+	(pass_data_init_datastructures): Likewise.
+	(class pass_init_datastructures): Likewise.
+	(make_pass_init_datastructures): Likewise.
+	* omp-low.c (create_omp_child_function): Init SSA data structures.
+	(grid_expand_target_grid_body): Likewise.
+	* tree-cfg.c (move_block_to_fn): Double-check the DEF is an SSA
+	name before adding it to names_to_release.
+	(remove_bb): Always release SSA defs.
+	* tree-ssa-ccp.c (get_default_value): Check SSA_NAME_VAR
+	before dereferencing it.
+	* cgraphunit.c (init_lowered_empty_function): Always
+	int SSA data structures.
+	* tree-ssanames.c (release_defs): Remove assert that we are in
+	SSA form.
+	* trans-mem.c (diagnose_tm_1): Handle SSA name function.
+
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
