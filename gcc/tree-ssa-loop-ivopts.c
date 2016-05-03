@@ -4846,12 +4846,12 @@ get_computation_cost_at (struct ivopts_data *data,
   /* Record setup cost in scrach field.  */
   cost.scratch = cost.cost;
 
-  if (inv_expr_id)
+  if (inv_expr_id && depends_on && *depends_on)
     {
       *inv_expr_id =
           get_loop_invariant_expr_id (data, ubase, cbase, ratio, address_p);
       /* Clear depends on.  */
-      if (*inv_expr_id != -1 && depends_on && *depends_on)
+      if (*inv_expr_id != -1)
         bitmap_clear (*depends_on);
     }
 

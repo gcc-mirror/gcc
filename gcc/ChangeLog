@@ -1,5 +1,10 @@
 2016-05-03  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Check depends_on
+	before using it.
+
+2016-05-03  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Don't clobber
 	cbase.
 
