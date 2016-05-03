@@ -1,3 +1,13 @@
+2016-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (udivsi3, divsi3, mulsi3): Simplify.
+	(mulhisi3, umulhisi3, (smulsi3_highpart, umulsi3_highpart): Convert to
+	define_insn_and_split.
+	(mulsi3_i): New define_insn_and_split.
+	(mulsi3_call): Convert to define_insn.
+	(mulsidi3, mulsidi3_compact, umulsidi3, umulsidi3_compact):
+	Remove constraints.
+
 2016-05-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* machmode.h (mode_complex): Add support to give the complex mode
