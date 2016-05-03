@@ -1,3 +1,9 @@
+2016-05-03  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/70890
+	* ira.c (combine_and_move_insns): When moving def_insn, remove
+	equivs on use_insn.
+
 2016-05-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("*r<noxa>sbg_<mode>_sll")
