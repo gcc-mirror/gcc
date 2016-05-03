@@ -1,3 +1,7 @@
+2016-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-cvt-1.c: New test.
+
 2016-05-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/tree-ssa/ssa-thread-14.c: Replace -fdump-tree-vrp with
