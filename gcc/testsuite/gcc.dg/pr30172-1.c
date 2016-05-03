@@ -10,5 +10,5 @@ _Complex double test5 (double x, double y) { return (x + y * 1.i) * -1.i; }
 /* { dg-final { scan-tree-dump "COMPLEX_EXPR <x, 1.0e\\+0>" "gimple" } } */
 /* { dg-final { scan-tree-dump "COMPLEX_EXPR <1.0e\\+0, x>" "gimple" } } */
 /* { dg-final { scan-tree-dump "COMPLEX_EXPR <x, y>" "gimple" } } */
-/* { dg-final { scan-tree-dump "D.* = -y;\n.*COMPLEX_EXPR <D.*, x>" "gimple" } } */
-/* { dg-final { scan-tree-dump "D.* = -x;\n.*COMPLEX_EXPR <y, D.*>" "gimple" } } */
+/* { dg-final { scan-tree-dump " = -y;\n.*COMPLEX_EXPR <\[^,\]*, x>" "gimple" } } */
+/* { dg-final { scan-tree-dump " = -x;\n.*COMPLEX_EXPR <y, " "gimple" } } */

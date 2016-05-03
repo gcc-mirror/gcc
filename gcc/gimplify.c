@@ -185,6 +185,8 @@ static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 /* Forward declaration.  */
 static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
 static hash_map<tree, tree> *oacc_declare_returns;
+static enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
+					   bool (*) (tree), fallback_t, bool);
 
 /* Shorter alias name for the above function for use in gimplify.c
    only.  */
@@ -547,7 +549,7 @@ lookup_tmp_var (tree val, bool is_formal)
 
 static tree
 internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
-                      bool is_formal)
+                      bool is_formal, bool allow_ssa)
 {
   tree t, mod;
 
@@ -556,9 +558,18 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
   gimplify_expr (&val, pre_p, post_p, is_gimple_reg_rhs_or_call,
 		 fb_rvalue);
 
-  if (gimplify_ctxp->into_ssa
+  if (allow_ssa
+      && gimplify_ctxp->into_ssa
       && is_gimple_reg_type (TREE_TYPE (val)))
-    t = make_ssa_name (TYPE_MAIN_VARIANT (TREE_TYPE (val)));
+    {
+      t = make_ssa_name (TYPE_MAIN_VARIANT (TREE_TYPE (val)));
+      if (! gimple_in_ssa_p (cfun))
+	{
+	  const char *name = get_name (val);
+	  if (name)
+	    SET_SSA_NAME_VAR_OR_IDENTIFIER (t, create_tmp_var_name (name));
+	}
+    }
   else
     t = lookup_tmp_var (val, is_formal);
 
@@ -588,16 +599,17 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 tree
 get_formal_tmp_var (tree val, gimple_seq *pre_p)
 {
-  return internal_get_tmp_var (val, pre_p, NULL, true);
+  return internal_get_tmp_var (val, pre_p, NULL, true, true);
 }
 
 /* Return a temporary variable initialized with VAL.  PRE_P and POST_P
    are as in gimplify_expr.  */
 
 tree
-get_initialized_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p)
+get_initialized_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
+			 bool allow_ssa)
 {
-  return internal_get_tmp_var (val, pre_p, post_p, false);
+  return internal_get_tmp_var (val, pre_p, post_p, false, allow_ssa);
 }
 
 /* Declare all the variables in VARS in SCOPE.  If DEBUG_INFO is true,
@@ -2279,10 +2291,12 @@ maybe_with_size_expr (tree *expr_p)
 
 /* Helper for gimplify_call_expr.  Gimplify a single argument *ARG_P
    Store any side-effects in PRE_P.  CALL_LOCATION is the location of
-   the CALL_EXPR.  */
+   the CALL_EXPR.  If ALLOW_SSA is set the actual parameter may be
+   gimplified to an SSA name.  */
 
 enum gimplify_status
-gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
+gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location,
+	      bool allow_ssa)
 {
   bool (*test) (tree);
   fallback_t fb;
@@ -2319,7 +2333,7 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
      the argument list must occur before the actual call. So, when
      gimplifying arguments, force gimplify_expr to use an internal
      post queue which is then appended to the end of PRE_P.  */
-  return gimplify_expr (arg_p, pre_p, NULL, test, fb);
+  return gimplify_expr (arg_p, pre_p, NULL, test, fb, allow_ssa);
 }
 
 /* Don't fold inside offloading or taskreg regions: it can break code by
@@ -2522,6 +2536,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	}
     }
 
+  /* If the call returns twice then after building the CFG the call
+     argument computations will no longer dominate the call because
+     we add an abnormal incoming edge to the call.  So do not use SSA
+     vars there.  */
+  bool returns_twice = call_expr_flags (*expr_p) & ECF_RETURNS_TWICE;
+
   /* Gimplify the function arguments.  */
   if (nargs > 0)
     {
@@ -2536,7 +2556,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
           if ((i != 1) || !builtin_va_start_p)
             {
               t = gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p,
-				EXPR_LOCATION (*expr_p));
+				EXPR_LOCATION (*expr_p), ! returns_twice);
 
               if (t == GS_ERROR)
                 ret = GS_ERROR;
@@ -2553,7 +2573,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	{
 	  enum gimplify_status t;
 	  t = gimplify_arg (&CALL_EXPR_STATIC_CHAIN (*expr_p), pre_p,
-			    EXPR_LOCATION (*expr_p));
+			    EXPR_LOCATION (*expr_p), ! returns_twice);
 	  if (t == GS_ERROR)
 	    ret = GS_ERROR;
 	}
@@ -3316,7 +3336,8 @@ prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
     expr_p = &TREE_OPERAND (*expr_p, 0);
   if (is_gimple_reg (*expr_p))
     {
-      tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL);
+      /* Do not allow an SSA name as the temporary.  */
+      tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL, false);
       DECL_GIMPLE_REG_P (var) = 0;
       *expr_p = var;
     }
@@ -4848,6 +4869,11 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  || TREE_ADDRESSABLE (TREE_TYPE (*to_p))
 	  || TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (*to_p))) != INTEGER_CST)
 	gimple_call_set_lhs (call_stmt, *to_p);
+      else if (TREE_CODE (*to_p) == SSA_NAME)
+	/* The above is somewhat premature, avoid ICEing later for a
+	   SSA name w/o a definition.  We may have uses in the GIMPLE IL.
+	   ???  This doesn't make it a default-def.  */
+	SSA_NAME_DEF_STMT (*to_p) = gimple_build_nop ();
       assign = call_stmt;
     }
   else
@@ -4861,7 +4887,8 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
     {
       /* We should have got an SSA name from the start.  */
-      gcc_assert (TREE_CODE (*to_p) == SSA_NAME);
+      gcc_assert (TREE_CODE (*to_p) == SSA_NAME
+		  || ! gimple_in_ssa_p (cfun));
     }
 
   gimplify_seq_add_stmt (pre_p, assign);
@@ -4994,7 +5021,9 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  val = NULL;
 	}
       else
-	val = get_initialized_tmp_var (val, pre_p, post_p);
+	/* The temporary may not be an SSA name as later abnormal and EH
+	   control flow may invalidate use/def domination.  */
+	val = get_initialized_tmp_var (val, pre_p, post_p, false);
 
       TREE_OPERAND (*expr_p, 0) = val;
       SAVE_EXPR_RESOLVED_P (*expr_p) = 1;
@@ -6653,7 +6682,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    {
 	      tree type = TREE_TYPE (decl);
 	      if (gimplify_expr (&TYPE_MAX_VALUE (TYPE_DOMAIN (type)), pre_p,
-				 NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+				 NULL, is_gimple_val, fb_rvalue, false)
+		  == GS_ERROR)
 		{
 		  remove = true;
 		  break;
@@ -6668,7 +6698,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      if (TREE_CODE (decl) == POINTER_PLUS_EXPR)
 		{
 		  if (gimplify_expr (&TREE_OPERAND (decl, 1), pre_p,
-				     NULL, is_gimple_val, fb_rvalue)
+				     NULL, is_gimple_val, fb_rvalue, false)
 		      == GS_ERROR)
 		    {
 		      remove = true;
@@ -6865,7 +6895,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		   && TREE_CODE (OMP_CLAUSE_SIZE (c)) != INTEGER_CST)
 	    {
 	      OMP_CLAUSE_SIZE (c)
-		= get_initialized_tmp_var (OMP_CLAUSE_SIZE (c), pre_p, NULL);
+		= get_initialized_tmp_var (OMP_CLAUSE_SIZE (c), pre_p, NULL,
+					   false);
 	      omp_add_variable (ctx, OMP_CLAUSE_SIZE (c),
 				GOVD_FIRSTPRIVATE | GOVD_SEEN);
 	    }
@@ -8609,7 +8640,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    {
 	      TREE_OPERAND (t, 1)
 		= get_initialized_tmp_var (TREE_OPERAND (t, 1),
-					   pre_p, NULL);
+					   pre_p, NULL, false);
 	      tree c = build_omp_clause (input_location,
 					 OMP_CLAUSE_FIRSTPRIVATE);
 	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (t, 1);
@@ -8624,7 +8655,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	      TREE_OPERAND (t, 1)
 		= get_initialized_tmp_var (TREE_OPERAND (t, 1),
 					   gimple_seq_empty_p (for_pre_body)
-					   ? pre_p : &for_pre_body, NULL);
+					   ? pre_p : &for_pre_body, NULL,
+					   false);
 	      tree c = build_omp_clause (input_location,
 					 OMP_CLAUSE_FIRSTPRIVATE);
 	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (t, 1);
@@ -8646,7 +8678,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		{
 		  gimple_seq *seq = gimple_seq_empty_p (for_pre_body)
 				    ? pre_p : &for_pre_body;
-		  *tp = get_initialized_tmp_var (*tp, seq, NULL);
+		  *tp = get_initialized_tmp_var (*tp, seq, NULL, false);
 		  tree c = build_omp_clause (input_location,
 					     OMP_CLAUSE_FIRSTPRIVATE);
 		  OMP_CLAUSE_DECL (c) = *tp;
@@ -8982,7 +9014,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	var = decl;
 
       tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
-			    is_gimple_val, fb_rvalue);
+			    is_gimple_val, fb_rvalue, false);
       ret = MIN (ret, tret);
       if (ret == GS_ERROR)
 	return ret;
@@ -8993,7 +9025,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       gcc_assert (TREE_OPERAND (t, 0) == decl);
 
       tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
-			    is_gimple_val, fb_rvalue);
+			    is_gimple_val, fb_rvalue, false);
       ret = MIN (ret, tret);
 
       /* Handle OMP_FOR_INCR.  */
@@ -9060,7 +9092,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    }
 
 	  tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
-				is_gimple_val, fb_rvalue);
+				is_gimple_val, fb_rvalue, false);
 	  ret = MIN (ret, tret);
 	  if (c)
 	    {
@@ -9076,7 +9108,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		{
 		  tret = gimplify_expr (&OMP_CLAUSE_LINEAR_STEP (c),
 					&for_pre_body, NULL,
-					is_gimple_val, fb_rvalue);
+					is_gimple_val, fb_rvalue, false);
 		  ret = MIN (ret, tret);
 		}
 	    }
@@ -9530,7 +9562,7 @@ optimize_target_teams (tree target, gimple_seq *pre_p)
 	  }
 	*p = expr;
 	gimplify_omp_ctxp = gimplify_omp_ctxp->outer_context;
-	if (gimplify_expr (p, pre_p, NULL, is_gimple_val, fb_rvalue)
+	if (gimplify_expr (p, pre_p, NULL, is_gimple_val, fb_rvalue, false)
 	    == GS_ERROR)
 	  {
 	    gimplify_omp_ctxp = target_ctx;
@@ -10248,7 +10280,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	     required.  */
 	  if (fallback == fb_lvalue)
 	    {
-	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
+	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p, false);
 	      mark_addressable (*expr_p);
 	      ret = GS_OK;
 	    }
@@ -10263,7 +10295,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	     required.  */
 	  if (fallback == fb_lvalue)
 	    {
-	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
+	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p, false);
 	      mark_addressable (*expr_p);
 	      ret = GS_OK;
 	    }
@@ -10558,7 +10590,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	     required.  */
 	  else if (fallback == fb_lvalue)
 	    {
-	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
+	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p, false);
 	      mark_addressable (*expr_p);
 	      ret = GS_OK;
 	    }
@@ -11256,6 +11288,35 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   return ret;
 }
 
+/* Like gimplify_expr but make sure the gimplified result is not itself
+   a SSA name (but a decl if it were).  Temporaries required by
+   evaluating *EXPR_P may be still SSA names.  */
+
+static enum gimplify_status
+gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
+	       bool (*gimple_test_f) (tree), fallback_t fallback,
+	       bool allow_ssa)
+{
+  bool was_ssa_name_p = TREE_CODE (*expr_p) == SSA_NAME;
+  enum gimplify_status ret = gimplify_expr (expr_p, pre_p, post_p,
+					    gimple_test_f, fallback);
+  if (! allow_ssa
+      && TREE_CODE (*expr_p) == SSA_NAME)
+    {
+      tree name = *expr_p;
+      if (was_ssa_name_p)
+	*expr_p = get_initialized_tmp_var (*expr_p, pre_p, NULL, false);
+      else
+	{
+	  /* Avoid the extra copy if possible.  */
+	  *expr_p = create_tmp_reg (TREE_TYPE (name));
+	  gimple_set_lhs (SSA_NAME_DEF_STMT (name), *expr_p);
+	  release_ssa_name (name);
+	}
+    }
+  return ret;
+}
+
 /* Look through TYPE for variable-sized objects and gimplify each such
    size that we find.  Add to LIST_P any statements generated.  */
 
@@ -11378,7 +11439,9 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
 
   *expr_p = unshare_expr (expr);
 
-  gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
+  /* SSA names in decl/type fields are a bad idea - they'll get reclaimed
+     if the def vanishes.  */
+  gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue, false);
 }
 
 /* Gimplify the body of statements of FNDECL and return a GIMPLE_BIND node
@@ -11396,12 +11459,14 @@ gimplify_body (tree fndecl, bool do_parms)
 
   timevar_push (TV_TREE_GIMPLIFY);
 
+  init_tree_ssa (cfun);
+
   /* Initialize for optimize_insn_for_s{ize,peed}_p possibly called during
      gimplification.  */
   default_rtl_profile ();
 
   gcc_assert (gimplify_ctxp == NULL);
-  push_gimplify_context ();
+  push_gimplify_context (true);
 
   if (flag_openacc || flag_openmp)
     {

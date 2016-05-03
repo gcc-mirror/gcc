@@ -2570,6 +2570,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
      it afterward.  */
   push_struct_function (decl);
   cfun->function_end_locus = gimple_location (ctx->stmt);
+  init_tree_ssa (cfun);
   pop_cfun ();
 }
 
@@ -13672,6 +13673,7 @@ grid_expand_target_grid_body (struct omp_region *target)
   DECL_INITIAL (kern_fndecl) = fniniblock;
   push_struct_function (kern_fndecl);
   cfun->function_end_locus = gimple_location (tgt_stmt);
+  init_tree_ssa (cfun);
   pop_cfun ();
 
   tree old_parm_decl = DECL_ARGUMENTS (kern_fndecl);

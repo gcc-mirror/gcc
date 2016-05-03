@@ -10,5 +10,5 @@ static void (*compare)();
 __attribute__((transaction_safe))
 static void func () {
   listPtr->compare(); /* { dg-error "unsafe indirect function call" } */
-  compare(); /* { dg-error "unsafe function call" } */
+  compare(); /* { dg-error "unsafe indirect function call" } */
 }

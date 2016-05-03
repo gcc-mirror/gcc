@@ -1729,30 +1729,26 @@ release_function_body (tree decl)
   if (fn)
     {
       if (fn->cfg
-	  || fn->gimple_df)
+	  && loops_for_fn (fn))
 	{
-	  if (fn->cfg
-	      && loops_for_fn (fn))
-	    {
-	      fn->curr_properties &= ~PROP_loops;
-	      loop_optimizer_finalize (fn);
-	    }
-	  if (fn->gimple_df)
-	    {
-	      delete_tree_ssa (fn);
-	      delete_tree_cfg_annotations (fn);
-	      fn->eh = NULL;
-	    }
-	  if (fn->cfg)
-	    {
-	      gcc_assert (!dom_info_available_p (fn, CDI_DOMINATORS));
-	      gcc_assert (!dom_info_available_p (fn, CDI_POST_DOMINATORS));
-	      clear_edges (fn);
-	      fn->cfg = NULL;
-	    }
-	  if (fn->value_histograms)
-	    free_histograms (fn);
+	  fn->curr_properties &= ~PROP_loops;
+	  loop_optimizer_finalize (fn);
 	}
+      if (fn->gimple_df)
+	{
+	  delete_tree_ssa (fn);
+	  fn->eh = NULL;
+	}
+      if (fn->cfg)
+	{
+	  gcc_assert (!dom_info_available_p (fn, CDI_DOMINATORS));
+	  gcc_assert (!dom_info_available_p (fn, CDI_POST_DOMINATORS));
+	  delete_tree_cfg_annotations (fn);
+	  clear_edges (fn);
+	  fn->cfg = NULL;
+	}
+      if (fn->value_histograms)
+	free_histograms (fn);
       gimple_set_body (decl, NULL);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */

@@ -44,7 +44,7 @@ int func()
   foo = foo; // { dg-warning "assigned to itself" }
   foo.setA(5);
   bar_array[3].c_ = bar_array[3].c_; // { dg-warning "assigned to itself" }
-  bar_array[x+g].b_ = bar_array[x+g].b_; // { dg-warning "self-assignment detected" }
+  bar_array[x+g].b_ = bar_array[x+g].b_; // { dg-warning "self-assignment detected" "" { xfail *-*-* } }
   y = x;
   x = y;
 }
