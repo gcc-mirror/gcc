@@ -1,3 +1,15 @@
+2016-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (x87nonimm_ssenomem_operand): Rename
+	from nonimm_ssenomem_operand.
+	(nonimm_ssenomem_operand): New predicate.
+	* config/i386/i386.md (extendsfdf2): Use nonimm_ssenomem_operand
+	as operand 0 predicate.
+	(*extendsfdf2): Merge from *extendsfdf2_mixed and *extendsfdf2_i387.
+	Disable unsupported alternatives using "enabled" attribute.
+	Use register_ssemem_operand as operand 0 predicate.
+	(*fop_<mode>_1): Use x87nonimm_ssenomem_operand as operand 1 predicate.
+
 2016-05-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70859
@@ -48,15 +60,12 @@
 	SSA names for the result false.
 	(gimplify_call_expr): If the call may return twice do not
 	gimplify parameters into SSA.
-	(prepare_gimple_addressable): Do not allow an SSA name as
-	temporary.
+	(prepare_gimple_addressable): Do not allow an SSA name as temporary.
 	(gimplify_modify_expr): Adjust assert.  For noreturn calls
 	with a SSA name LHS adjust its def.
-	(gimplify_save_expr): Do not allow an SSA name as save-expr
-	result.
+	(gimplify_save_expr): Do not allow an SSA name as save-expr result.
 	(gimplify_one_sizepos): Do not allow an SSA name as a sizepos.
-	(gimplify_body): Init GIMPLE SSA data structures and gimplify
-	into-SSA.
+	(gimplify_body): Init GIMPLE SSA data structures and gimplify into-SSA.
 	(gimplify_scan_omp_clauses): Make sure OMP_CLAUSE_SIZE is not
 	an SSA name.  Likewise for OMP_CLAUSE_REDUCTION operands.
 	(gimplify_omp_for): Likewise for OMP_CLAUSE_DECL.  Likewise
@@ -158,7 +167,7 @@
 	of fixed_reg_set.
 	* df-scan.c (df_insn_refs_collect): Asms may reference global regs.
 
-2016-05-03  bin cheng  <bin.cheng@arm.com>
+2016-05-03  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/56541
 	* doc/invoke.texi (@item max-tree-if-conversion-phi-args): New item.
