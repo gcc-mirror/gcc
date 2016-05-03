@@ -1,6 +1,11 @@
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70916
+	* tree-if-conv.c (constant_or_ssa_name): Removed.
+	(fold_build_cond_expr): Use is_gimple_val instead of
+	constant_or_ssa_name.
+
+	PR tree-optimization/70916
 	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Give up
 	if COND_EXPR rhs1 is neither SSA_NAME nor COMPARISON_CLASS_P.
 
