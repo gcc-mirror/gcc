@@ -441,6 +441,16 @@ void s_r (void)
   __asm __volatile ("#%0" : "=m" (a) : : "r30", "r31");
 }
 
+void s_r31 (void)
+{
+  char a[33];
+#ifndef NO_BODY
+  TRASH_GPR (r31);
+  __asm__ __volatile__ ("#%0" : : "r" (r31));
+#endif
+  __asm __volatile ("#%0" : "=m" (a) : : "r31");
+}
+
 void s_c (void)
 {
   char a[33];
@@ -1139,6 +1149,8 @@ int main (void)
   s_cr ();
   VERIFY_REGS;
   s_r ();
+  VERIFY_REGS;
+  s_r31 ();
   VERIFY_REGS;
   s_c ();
   VERIFY_REGS;
