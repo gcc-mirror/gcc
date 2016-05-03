@@ -1,3 +1,7 @@
+2016-05-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/ipa/inline-8.c: Require c99_runtime.
+
 2016-05-03  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/savres.c: Add func using a single gpr.
