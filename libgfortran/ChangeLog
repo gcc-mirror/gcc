@@ -1,3 +1,9 @@
+2016-05-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk.
+	PR libgfortran/70684
+	* io/list_read (check_buffers): Add '\r' to check for end of line.
+
 2016-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 

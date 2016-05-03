@@ -1,3 +1,9 @@
+2016-05-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline
+	PR libgfortran/70684
+	* gfortran.dg/list_read_14.f90: New test.
+
 2016-05-02  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
