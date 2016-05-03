@@ -1,3 +1,8 @@
+2016-05-03  Richard Biener  <rguenther@suse.de>
+
+	* Make-lang.in (cc1-checksum.c): For stage-final re-use
+	the checksum from the previous stage.
+
 2016-05-02  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_all_clauses): Update call to

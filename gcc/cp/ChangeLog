@@ -1,3 +1,8 @@
+2016-05-03  Richard Biener  <rguenther@suse.de>
+
+	* Make-lang.in (cc1plus-checksum.c): For stage-final re-use
+	the checksum from the previous stage.
+
 2016-05-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62314

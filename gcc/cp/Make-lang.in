@@ -90,11 +90,18 @@ c++_OBJS = $(CXX_OBJS) cc1plus-checksum.o cp/g++spec.o
 cp-warn = $(STRICT_WARN)
 
 # compute checksum over all object files and the options
+# re-use the checksum from the prev-final stage so it passes
+# the bootstrap comparison and allows comparing of the cc1 binary
 cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	$(CXX_OBJS) $(BACKEND) $(LIBDEPS) 
-	build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
+	if [ -f ../stage_final ] \
+	   && cmp -s ../stage_current ../stage_final; then \
+	   cp ../prev-gcc/cc1plus-checksum.c cc1plus-checksum.c; \
+	else \
+	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
                      checksum-options > cc1plus-checksum.c.tmp &&	   \
-	$(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c
+	  $(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c; \
+	fi
 
 cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
