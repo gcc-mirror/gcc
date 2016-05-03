@@ -1,18 +1,17 @@
 # Dutch translations for GNU cpplib.
-# Copyright (C) 2015 Free Software Foundation, Inc.
+# Copyright (C) 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
-# "If economists could manage to get themselves thought of as humble,
-# competent people, on a level with dentists, that would be splendid!"
+# « Vorsicht. Bissiger Mensch! »
 #
 # Tim Van Holder <tim.van.holder@telenet.be>, 2008, 2009, 2010.
-# Benno Schulenberg <benno@vertaalt.nl>, 2014, 2015.
+# Benno Schulenberg <benno@vertaalt.nl>, 2014, 2015, 2016.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 5.2.0\n"
+"Project-Id-Version: cpplib 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2015-07-23 19:42+0200\n"
+"PO-Revision-Date: 2016-05-03 12:27+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "Language: nl\n"
@@ -281,7 +280,7 @@ msgstr "\"%s\" (na #) is geen positieve integer"
 #: directives.c:1061
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr ""
+msgstr "regelmarkering voor bestand \"%s\" is genegeerd wegens incorrecte nesting"
 
 # FIXME: most likely shouldn't have been marked as translatable
 #: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
@@ -452,10 +451,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ongeldige prefix \"0b\" voor floating-point constante"
 
 #: expr.c:555
-#, fuzzy
-#| msgid "use of C++11 hexadecimal floating constant"
 msgid "use of C++1z hexadecimal floating constant"
-msgstr "gebruik van een C++11 hexadecimale floating-point constante"
+msgstr "gebruik van een C++1z hexadecimale floating-point constante"
 
 #: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
@@ -778,10 +775,8 @@ msgid "missing terminating %c character"
 msgstr "afsluitend %c-teken ontbreekt"
 
 #: lex.c:1932
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "ongeldige suffix aan constante; C++11 vereist een spatie tussen constante en stringmacro"
+msgstr "C++11 vereist een spatie tussen stringconstante en macro"
 
 #: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"
