@@ -1,7 +1,9 @@
 /* Verify that we do not inline isnanf test info -ffast-math code but that we
    do inline trivial functions across -Ofast boundary.  */
 /* { dg-do run } */
+/* { dg-require-effective-target c99_runtime } */
 /* { dg-options "-O2"  } */
+/* { dg-add-options c99_runtime } */
 #include <math.h>
 /* Can't be inlined because isnanf will be optimized out.  */
 int
