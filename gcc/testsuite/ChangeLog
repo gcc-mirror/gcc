@@ -1,3 +1,7 @@
+2016-05-03  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/savres.c: Add func using a single gpr.
+
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512f-cvt-1.c: New test.

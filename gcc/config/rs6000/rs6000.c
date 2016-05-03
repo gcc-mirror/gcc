@@ -23425,7 +23425,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
   if (TARGET_MULTIPLE
       && !TARGET_POWERPC64
       && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
-      && info->first_gp_reg_save != 32)
+      && info->first_gp_reg_save < 31)
     {
       /* Prefer store multiple for saves over out-of-line routines,
 	 since the store-multiple instruction will always be smaller.  */
