@@ -1,3 +1,7 @@
+2016-05-04  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr70866.c: New.
+
 2016-05-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/66561
