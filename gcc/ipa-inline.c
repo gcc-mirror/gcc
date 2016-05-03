@@ -335,12 +335,10 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_OVERWRITABLE;
       inlinable = false;
     }
+  /* All edges with call_stmt_cannot_inline_p should have inline_failed
+     initialized to one of FINAL_ERROR reasons.  */
   else if (e->call_stmt_cannot_inline_p)
-    {
-      if (e->inline_failed != CIF_FUNCTION_NOT_OPTIMIZED)
-        e->inline_failed = e->caller->thunk.thunk_p ? CIF_THUNK : CIF_MISMATCHED_ARGUMENTS;
-      inlinable = false;
-    }
+    gcc_unreachable ();
   /* Don't inline if the functions have different EH personalities.  */
   else if (DECL_FUNCTION_PERSONALITY (caller->decl)
 	   && DECL_FUNCTION_PERSONALITY (callee->decl)
@@ -529,6 +527,8 @@ can_early_inline_edge_p (struct cgraph_edge *e)
   /* Early inliner might get called at WPA stage when IPA pass adds new
      function.  In this case we can not really do any of early inlining
      because function bodies are missing.  */
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    return false;
   if (!gimple_has_body_p (callee->decl))
     {
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
@@ -2741,7 +2741,10 @@ early_inliner (function *fun)
 	      if (edge->callee->decl
 		  && !gimple_check_call_matching_types (
 		      edge->call_stmt, edge->callee->decl, false))
-		edge->call_stmt_cannot_inline_p = true;
+		{
+ 		  edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+		  edge->call_stmt_cannot_inline_p = true;
+		}
 	    }
 	  if (iterations < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS) - 1)
 	    inline_update_overall_summary (node);

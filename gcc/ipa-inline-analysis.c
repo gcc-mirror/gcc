@@ -1490,19 +1490,23 @@ initialize_inline_failed (struct cgraph_edge *e)
 {
   struct cgraph_node *callee = e->callee;
 
-  if (e->indirect_unknown_callee)
+  if (e->inline_failed && e->inline_failed != CIF_BODY_NOT_AVAILABLE
+      && cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    ;
+  else if (e->indirect_unknown_callee)
     e->inline_failed = CIF_INDIRECT_UNKNOWN_CALL;
   else if (!callee->definition)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-  else if (e->call_stmt_cannot_inline_p)
-    e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
   else if (cfun && fn_contains_cilk_spawn_p (cfun))
     /* We can't inline if the function is spawing a function.  */
-    e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
+    e->inline_failed = CIF_CILK_SPAWN;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
+  gcc_checking_assert (!e->call_stmt_cannot_inline_p
+		       || cgraph_inline_failed_type (e->inline_failed)
+			    == CIF_FINAL_ERROR);
 }
 
 /* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the
@@ -2925,7 +2929,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       struct predicate t = true_predicate ();
 
       info->inlinable = 0;
-      node->callees->call_stmt_cannot_inline_p = true;
+      node->callees->inline_failed = CIF_THUNK;
       node->local.can_change_signature = false;
       es->call_stmt_time = 1;
       es->call_stmt_size = 1;
@@ -4107,17 +4111,9 @@ inline_analyze_function (struct cgraph_node *node)
     {
       struct cgraph_edge *e;
       for (e = node->callees; e; e = e->next_callee)
-	{
-	  if (e->inline_failed == CIF_FUNCTION_NOT_CONSIDERED)
-	    e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
-	  e->call_stmt_cannot_inline_p = true;
-	}
+	e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
       for (e = node->indirect_calls; e; e = e->next_callee)
-	{
-	  if (e->inline_failed == CIF_FUNCTION_NOT_CONSIDERED)
-	    e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
-	  e->call_stmt_cannot_inline_p = true;
-	}
+	e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
     }
 
   pop_cfun ();
