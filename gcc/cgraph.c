@@ -859,9 +859,15 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       && callee && callee->decl
       && !gimple_check_call_matching_types (call_stmt, callee->decl,
 					    false))
-    edge->call_stmt_cannot_inline_p = true;
+    {
+      edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+      edge->call_stmt_cannot_inline_p = true;
+    }
   else
-    edge->call_stmt_cannot_inline_p = false;
+    {
+      edge->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
+      edge->call_stmt_cannot_inline_p = false;
+    }
 
   edge->indirect_info = NULL;
   edge->indirect_inlining_edge = 0;
@@ -1240,10 +1246,12 @@ cgraph_edge::make_direct (cgraph_node *callee)
   /* Insert to callers list of the new callee.  */
   edge->set_callee (callee);
 
-  if (call_stmt)
-    call_stmt_cannot_inline_p
-      = !gimple_check_call_matching_types (call_stmt, callee->decl,
-					   false);
+  if (call_stmt
+      && !gimple_check_call_matching_types (call_stmt, callee->decl, false))
+    {
+      call_stmt_cannot_inline_p = true;
+      inline_failed = CIF_MISMATCHED_ARGUMENTS;
+    }
 
   /* We need to re-determine the inlining status of the edge.  */
   initialize_inline_failed (edge);
@@ -1996,6 +2004,8 @@ cgraph_edge::dump_edge_flags (FILE *f)
     fprintf (f, "(speculative) ");
   if (!inline_failed)
     fprintf (f, "(inlined) ");
+  if (call_stmt_cannot_inline_p)
+    fprintf (f, "(call_stmt_cannot_inline_p) ");
   if (indirect_inlining_edge)
     fprintf (f, "(indirect_inlining) ");
   if (count)

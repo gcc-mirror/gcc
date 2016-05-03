@@ -1,3 +1,21 @@
+2016-05-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (symbol_table::create_edge): Set inline_failed.
+	(cgraph_edge::make_direct): Likewise.
+	(cgraph_edge::dump_edge_flags): Dump call_stmt_cannot_inline_p.
+	* cgraphclones.c (duplicate_thunk_for_node): Set inline_failed.
+	* cif-code.def (CIF_LTO_MISMATCHED_DECLARATIONS): New code
+	(CIF_THUNK): New code.
+	* ipa-inline-analysis.c (initialize_inline_failed): Preserve
+	CIF_FINAL_ERROR codes; do not deal with call_stmt_cannot_inline_p.
+	(compute_inline_parameters): Set inline_failed for thunks.
+	(inline_analyze_function): Cleanup.
+	* ipa-inline.c (can_inline_edge_p): Do not deal with
+	call_stmt_cannot_inline_p.
+	(can_early_inline_edge_p): Likewise.
+	(early_inliner): Initialize inline_failed.
+	* lto-cgraph.c (lto_output_edge): Sanity check inline_failed.
+
 2016-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (x87nonimm_ssenomem_operand): Rename

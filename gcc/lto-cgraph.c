@@ -268,6 +268,8 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (&bp, edge->speculative, 1);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
+  gcc_assert (!edge->call_stmt_cannot_inline_p
+	      || edge->inline_failed != CIF_BODY_NOT_AVAILABLE);
   bp_pack_value (&bp, edge->can_throw_external, 1);
   bp_pack_value (&bp, edge->in_polymorphic_cdtor, 1);
   if (edge->indirect_unknown_callee)
