@@ -1,3 +1,9 @@
+2016-05-04  Alan Modra  <amodra@gmail.com>
+
+	PR target/70866
+	* config/rs6000/rs6000.c (rs6000_stack_info): Don't set cr_save_p
+	when cr2,3,4 are all fixed regs.
+
 2016-05-04  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/57193

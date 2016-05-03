@@ -23689,9 +23689,9 @@ rs6000_stack_info (void)
   info->calls_p = (!crtl->is_leaf || cfun->machine->ra_needs_full_frame);
 
   /* Determine if we need to save the condition code registers.  */
-  if (df_regs_ever_live_p (CR2_REGNO)
-      || df_regs_ever_live_p (CR3_REGNO)
-      || df_regs_ever_live_p (CR4_REGNO))
+  if (save_reg_p (CR2_REGNO)
+      || save_reg_p (CR3_REGNO)
+      || save_reg_p (CR4_REGNO))
     {
       info->cr_save_p = 1;
       if (DEFAULT_ABI == ABI_V4)
