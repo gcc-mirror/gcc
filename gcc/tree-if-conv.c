@@ -113,6 +113,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "builtins.h"
 #include "params.h"
+#include "cfganal.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -2812,12 +2813,22 @@ pass_if_conversion::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
+  /* If there are infinite loops, during CDI_POST_DOMINATORS computation
+     we can pick pretty much random bb inside of the infinite loop that
+     has the fake edge.  If we are unlucky enough, this can confuse the
+     add_to_predicate_list post-dominator check to optimize as if that
+     bb or some other one is a join block when it actually is not.
+     See PR70916.  */
+  connect_infinite_loops_to_exit ();
+
   FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
 	|| flag_tree_loop_if_convert_stores == 1
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
+
+  remove_fake_exit_edges ();
 
   if (flag_checking)
     {

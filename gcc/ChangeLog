@@ -1,3 +1,11 @@
+2016-05-03  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70916
+	* tree-if-conv.c: Include cfganal.h.
+	(pass_if_conversion::execute): Call connect_infinite_loops_to_exit
+	and remove_fake_exit_edges around the optimization pass.
+
 2016-05-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (symbol_table::create_edge): Set inline_failed.
