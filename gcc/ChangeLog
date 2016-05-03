@@ -1,3 +1,9 @@
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70859
+	* input.c (expansion_point_location): New function.
+	* input.h (expansion_point_location): Declare.
+
 2016-05-03  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (resolve_args_picking_1): Replace the frame_offset

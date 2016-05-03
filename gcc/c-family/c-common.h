@@ -788,7 +788,8 @@ extern void check_function_arguments_recurse (void (*)
 					       unsigned HOST_WIDE_INT),
 					      void *, tree,
 					      unsigned HOST_WIDE_INT);
-extern bool check_builtin_function_arguments (tree, int, tree *);
+extern bool check_builtin_function_arguments (location_t, vec<location_t>,
+					      tree, int, tree *);
 extern void check_function_format (tree, int, tree *);
 extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);

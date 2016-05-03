@@ -789,6 +789,16 @@ expansion_point_location_if_in_system_header (source_location location)
   return location;
 }
 
+/* If LOCATION is a virtual location for a token coming from the expansion
+   of a macro, unwind to the location of the expansion point of the macro.  */
+
+source_location
+expansion_point_location (source_location location)
+{
+  return linemap_resolve_location (line_table, location,
+				   LRK_MACRO_EXPANSION_POINT, NULL);
+}
+
 #define ONE_K 1024
 #define ONE_M (ONE_K * ONE_K)
 
