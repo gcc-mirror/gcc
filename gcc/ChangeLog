@@ -1,3 +1,20 @@
+2016-05-03  bin cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/56541
+	* doc/invoke.texi (@item max-tree-if-conversion-phi-args): New item.
+	* params.def (PARAM_MAX_TREE_IF_CONVERSION_PHI_ARGS): new param.
+	* tree-if-conv.c (MAX_PHI_ARG_NUM): new macro.
+	(any_complicated_phi): new static variable.
+	(aggressive_if_conv): delete.
+	(if_convertible_phi_p): support phis with more than two arguments.
+	(if_convertible_bb_p): remvoe check on aggressive_if_conv and
+	critical pred edges.
+	(ifcvt_split_critical_edges): support phis with more than two
+	arguments by checking new parameter.  only split critical edges
+	if needed.
+	(tree_if_conversion): handle simd pragma marked loop using new
+	local variable aggressive_if_conv.  check any_complicated_phi.
+
 2016-05-03  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Check depends_on

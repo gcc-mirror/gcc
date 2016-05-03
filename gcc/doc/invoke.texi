@@ -9020,6 +9020,10 @@ Large expressions slow the analyzer.
 Bound on the complexity of the expressions in the scalar evolutions analyzer.
 Complex expressions slow the analyzer.
 
+@item max-tree-if-conversion-phi-args
+Maximum number of arguments in a PHI supported by TREE if conversion
+unless the loop is marked with simd pragma.
+
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
 doing loop versioning for alignment in the vectorizer.

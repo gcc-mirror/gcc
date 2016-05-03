@@ -530,6 +530,12 @@ DEFPARAM(PARAM_SCEV_MAX_EXPR_COMPLEXITY,
 	 "Bound on the complexity of the expressions in the scalar evolutions analyzer.",
 	 10, 0, 0)
 
+DEFPARAM (PARAM_MAX_TREE_IF_CONVERSION_PHI_ARGS,
+	  "max-tree-if-conversion-phi-args",
+	  "Maximum number of arguments in a PHI supported by TREE if-conversion "
+	  "unless the loop is marked with simd pragma.",
+	  4, 2, 0)
+
 DEFPARAM(PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS,
          "vect-max-version-for-alignment-checks",
          "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check.",
