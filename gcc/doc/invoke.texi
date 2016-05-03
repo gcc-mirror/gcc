@@ -6265,7 +6265,6 @@ also turns on the following optimization flags:
 -foptimize-strlen @gol
 -fpartial-inlining @gol
 -fpeephole2 @gol
--frename-registers @gol
 -freorder-blocks-algorithm=stc @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop  @gol
@@ -8573,8 +8572,7 @@ debug information format adopted by the target, however, it can
 make debugging impossible, since variables no longer stay in
 a ``home register''.
 
-Enabled by default with @option{-funroll-loops} and @option{-fpeel-loops},
-and also enabled at levels @option{-O2}, @option{-O3} and @option{-Os}.
+Enabled by default with @option{-funroll-loops} and @option{-fpeel-loops}.
 
 @item -fschedule-fusion
 @opindex fschedule-fusion
