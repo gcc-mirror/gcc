@@ -1,3 +1,9 @@
+2016-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49244
+	* gcc.target/i386/pr49244-1.c: New test.
+	* gcc.target/i386/pr49244-2.c: New test.
+
 2016-05-03  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/44281

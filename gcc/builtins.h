@@ -71,6 +71,7 @@ extern tree std_fn_abi_va_list (tree);
 extern tree std_canonical_va_list_type (tree);
 extern void std_expand_builtin_va_start (tree, rtx);
 extern void expand_builtin_trap (void);
+extern void expand_ifn_atomic_bit_test_and (gcall *);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern rtx expand_builtin_with_bounds (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);

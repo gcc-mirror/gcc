@@ -6909,6 +6909,33 @@ The specific value that defines "set" is implementation defined, and
 is normally based on what is performed by the native atomic test and set
 instruction.
 
+@cindex @code{atomic_bit_test_and_set@var{mode}} instruction pattern
+@cindex @code{atomic_bit_test_and_complement@var{mode}} instruction pattern
+@cindex @code{atomic_bit_test_and_reset@var{mode}} instruction pattern
+@item @samp{atomic_bit_test_and_set@var{mode}}
+@itemx @samp{atomic_bit_test_and_complement@var{mode}}
+@itemx @samp{atomic_bit_test_and_reset@var{mode}}
+These patterns emit code for an atomic bitwise operation on memory with memory
+model semantics, and return the original value of the specified bit.
+Operand 0 is an output operand which contains the value of the specified bit
+from the memory location before the operation was performed.  Operand 1 is the
+memory on which the atomic operation is performed.  Operand 2 is the bit within
+the operand, starting with least significant bit.  Operand 3 is the memory model
+to be used by the operation.  Operand 4 is a flag - it is @code{const1_rtx}
+if operand 0 should contain the original value of the specified bit in the
+least significant bit of the operand, and @code{const0_rtx} if the bit should
+be in its original position in the operand.
+@code{atomic_bit_test_and_set@var{mode}} atomically sets the specified bit after
+remembering its original value, @code{atomic_bit_test_and_complement@var{mode}}
+inverts the specified bit and @code{atomic_bit_test_and_reset@var{mode}} clears
+the specified bit.
+
+If these patterns are not defined, attempts will be made to use
+@code{atomic_fetch_or@var{mode}}, @code{atomic_fetch_xor@var{mode}} or
+@code{atomic_fetch_and@var{mode}} instruction patterns, or their @code{sync}
+counterparts.  If none of these are available a compare-and-swap
+loop will be used.
+
 @cindex @code{mem_thread_fence@var{mode}} instruction pattern
 @item @samp{mem_thread_fence@var{mode}}
 This pattern emits code required to implement a thread fence with

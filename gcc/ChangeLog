@@ -1,3 +1,29 @@
+2016-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49244
+	* tree-ssa-ccp.c: Include stor-layout.h and optabs-query.h.
+	(optimize_atomic_bit_test_and): New function.
+	(pass_fold_builtins::execute): Use it.
+	* optabs.def (atomic_bit_test_and_set_optab,
+	atomic_bit_test_and_complement_optab,
+	atomic_bit_test_and_reset_optab): New optabs.
+	* internal-fn.def (ATOMIC_BIT_TEST_AND_SET,
+	ATOMIC_BIT_TEST_AND_COMPLEMENT, ATOMIC_BIT_TEST_AND_RESET): New ifns.
+	* builtins.h (expand_ifn_atomic_bit_test_and): New prototype.
+	* builtins.c (expand_ifn_atomic_bit_test_and): New function.
+	* internal-fn.c (expand_ATOMIC_BIT_TEST_AND_SET,
+	expand_ATOMIC_BIT_TEST_AND_COMPLEMENT,
+	expand_ATOMIC_BIT_TEST_AND_RESET): New functions.
+	* doc/md.texi (atomic_bit_test_and_set@var{mode},
+	atomic_bit_test_and_complement@var{mode},
+	atomic_bit_test_and_reset@var{mode}): Document.
+	* config/i386/sync.md (atomic_bit_test_and_set<mode>,
+	atomic_bit_test_and_complement<mode>,
+	atomic_bit_test_and_reset<mode>): New expanders.
+	(atomic_bit_test_and_set<mode>_1,
+	atomic_bit_test_and_complement<mode>_1,
+	atomic_bit_test_and_reset<mode>_1): New insns.
+
 2016-05-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/70687

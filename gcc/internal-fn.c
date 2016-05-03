@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "ubsan.h"
 #include "recog.h"
+#include "builtins.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -2116,6 +2117,30 @@ expand_SET_EDOM (internal_fn, gcall *)
 #else
   gcc_unreachable ();
 #endif
+}
+
+/* Expand atomic bit test and set.  */
+
+static void
+expand_ATOMIC_BIT_TEST_AND_SET (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_bit_test_and (call);
+}
+
+/* Expand atomic bit test and complement.  */
+
+static void
+expand_ATOMIC_BIT_TEST_AND_COMPLEMENT (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_bit_test_and (call);
+}
+
+/* Expand atomic bit test and reset.  */
+
+static void
+expand_ATOMIC_BIT_TEST_AND_RESET (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_bit_test_and (call);
 }
 
 /* Expand a call to FN using the operands in STMT.  FN has a single
