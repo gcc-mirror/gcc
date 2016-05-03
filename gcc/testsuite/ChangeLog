@@ -1,3 +1,8 @@
+2016-05-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Replace -fdump-tree-vrp with
+	-fdump-tree-vrp-details.
+
 2016-05-03  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/pr30172-1.c: Adjust.

@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-additional-options "-O2 -fdump-tree-vrp" }  */
+/* { dg-additional-options "-O2 -fdump-tree-vrp-details" }  */
 /* { dg-final { scan-tree-dump-times "Threaded jump" 8 "vrp1" } }  */
 
 void foo (void);
