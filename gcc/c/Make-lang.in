@@ -61,11 +61,18 @@ c_OBJS = $(C_OBJS) cc1-checksum.o c/gccspec.o
 c-warn = $(STRICT_WARN)
 
 # compute checksum over all object files and the options
+# re-use the checksum from the prev-final stage so it passes
+# the bootstrap comparison and allows comparing of the cc1 binary
 cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
-	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
+	if [ -f ../stage_final ] \
+	   && cmp -s ../stage_current ../stage_final; then \
+	  cp ../prev-gcc/cc1-checksum.c cc1-checksum.c; \
+	else \
+	  build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
                      checksum-options > cc1-checksum.c.tmp && 		 \
-	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
+	  $(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c; \
+	fi
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
