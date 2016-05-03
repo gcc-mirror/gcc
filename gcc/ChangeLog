@@ -1,3 +1,9 @@
+2016-05-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/70687
+	* combine.c (change_zero_ext): Check for scalar modes.  Use wide_int
+	instead of unsigned HOST_WIDE_INT.
+
 2016-05-03  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/44281
