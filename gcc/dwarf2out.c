@@ -15571,7 +15571,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 
 	    if (stack_usage == NULL)
 	      return false;
-	    frame_offset += *stack_usage;
+	    frame_offset_ += *stack_usage;
 	    break;
 	  }
 
