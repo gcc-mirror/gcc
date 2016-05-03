@@ -342,6 +342,29 @@
   return false;
 })
 
+;; Return true if VALUE is a constant integer whose low and high words satisfy
+;; x86_64_immediate_operand.
+(define_predicate "x86_64_hilo_int_operand"
+  (match_code "const_int,const_wide_int")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST_INT:
+      return x86_64_immediate_operand (op, mode);
+
+    case CONST_WIDE_INT:
+      gcc_assert (CONST_WIDE_INT_NUNITS (op) == 2);
+      return (x86_64_immediate_operand (GEN_INT (CONST_WIDE_INT_ELT (op, 0)),
+					DImode)
+	      && x86_64_immediate_operand (GEN_INT (CONST_WIDE_INT_ELT (op,
+									1)),
+					   DImode));
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
 ;; Return true if size of VALUE can be stored in a sign
 ;; extended immediate field.
 (define_predicate "x86_64_immediate_size_operand"
@@ -355,6 +378,14 @@
   (if_then_else (match_test "TARGET_64BIT")
     (ior (match_operand 0 "nonimmediate_operand")
 	 (match_operand 0 "x86_64_immediate_operand"))
+    (match_operand 0 "general_operand")))
+
+;; Return true if OP's both words are general operands representable
+;; on x86_64.
+(define_predicate "x86_64_hilo_general_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (ior (match_operand 0 "nonimmediate_operand")
+	 (match_operand 0 "x86_64_hilo_int_operand"))
     (match_operand 0 "general_operand")))
 
 ;; Return true if OP is non-VOIDmode general operand representable

@@ -270,6 +270,11 @@
   (and (match_operand 0 "x86_64_zext_immediate_operand")
        (match_test "GET_MODE (op) != VOIDmode")))
 
+(define_constraint "Wd"
+  "128-bit integer constant where both the high and low 64-bit word
+   of it satisfies the e constraint."
+  (match_operand 0 "x86_64_hilo_int_operand"))
+
 (define_constraint "Z"
   "32-bit unsigned integer constant, or a symbolic reference known
    to fit that range (for immediate operands in zero-extending x86-64
