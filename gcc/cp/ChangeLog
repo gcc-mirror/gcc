@@ -1,3 +1,9 @@
+2016-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70635
+	* pt.c (resolve_typename_type): Fix typos in infinite recursion
+	avoidance mechanism.
+
 2016-04-18  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

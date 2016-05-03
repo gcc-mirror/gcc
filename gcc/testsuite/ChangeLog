@@ -1,3 +1,8 @@
+2016-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70635
+	* g++.dg/parse/pr70635.C: New.
+
 2016-05-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline
