@@ -1,3 +1,8 @@
+2016-05-03  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (resolve_args_picking_1): Replace the frame_offset
+	occurence with frame_offset_ ones.
+
 2016-05-03  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/70890
