@@ -2244,16 +2244,9 @@
 
 
 (define_expand "udivsi3"
-  [(set (match_dup 3) (symbol_ref:SI "__udivsi3"))
-   (set (reg:SI R4_REG) (match_operand:SI 1 "general_operand" ""))
-   (set (reg:SI R5_REG) (match_operand:SI 2 "general_operand" ""))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (udiv:SI (reg:SI R4_REG)
-			    (reg:SI R5_REG)))
-	      (clobber (reg:SI T_REG))
-	      (clobber (reg:SI PR_REG))
-	      (clobber (reg:SI R4_REG))
-	      (use (match_dup 3))])]
+  [(set (match_operand:SI 0 "register_operand")
+	(udiv:SI (match_operand:SI 1 "general_operand")
+		 (match_operand:SI 2 "general_operand")))]
   ""
 {
   rtx last;
@@ -2379,18 +2372,9 @@
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "divsi3"
-  [(set (match_dup 3) (symbol_ref:SI "__sdivsi3"))
-   (set (reg:SI R4_REG) (match_operand:SI 1 "general_operand" ""))
-   (set (reg:SI R5_REG) (match_operand:SI 2 "general_operand" ""))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (div:SI (reg:SI R4_REG)
-			   (reg:SI R5_REG)))
-	      (clobber (reg:SI T_REG))
-	      (clobber (reg:SI PR_REG))
-	      (clobber (reg:SI R1_REG))
-	      (clobber (reg:SI R2_REG))
-	      (clobber (reg:SI R3_REG))
-	      (use (match_dup 3))])]
+  [(set (match_operand:SI 0 "register_operand")
+	(div:SI (match_operand:SI 1 "general_operand")
+		(match_operand:SI 2 "general_operand")))]
   ""
 {
   rtx last;
@@ -2434,6 +2418,30 @@
 ;; Multiplication instructions
 ;; -------------------------------------------------------------------------
 
+(define_insn_and_split "mulhisi3"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(mult:SI (sign_extend:SI (match_operand:HI 1 "arith_reg_operand"))
+		 (sign_extend:SI (match_operand:HI 2 "arith_reg_operand"))))
+   (clobber (reg:SI MACL_REG))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (reg:SI MACL_REG) (mult:SI (sign_extend:SI (match_dup 1))
+				   (sign_extend:SI (match_dup 2))))
+   (set (match_dup 0) (reg:SI MACL_REG))])
+
+(define_insn_and_split "umulhisi3"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(mult:SI (zero_extend:SI (match_operand:HI 1 "arith_reg_operand"))
+		 (zero_extend:SI (match_operand:HI 2 "arith_reg_operand"))))
+   (clobber (reg:SI MACL_REG))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (reg:SI MACL_REG) (mult:SI (zero_extend:SI (match_dup 1))
+				   (zero_extend:SI (match_dup 2))))
+   (set (match_dup 0) (reg:SI MACL_REG))])
+
 (define_insn "umulhisi3_i"
   [(set (reg:SI MACL_REG)
 	(mult:SI (zero_extend:SI
@@ -2454,69 +2462,10 @@
   "muls.w	%1,%0"
   [(set_attr "type" "smpy")])
 
-(define_expand "mulhisi3"
-  [(set (reg:SI MACL_REG)
-	(mult:SI (sign_extend:SI
-		  (match_operand:HI 1 "arith_reg_operand" ""))
-		 (sign_extend:SI
-		  (match_operand:HI 2 "arith_reg_operand" ""))))
-   (set (match_operand:SI 0 "arith_reg_operand" "")
-	(reg:SI MACL_REG))]
-  "TARGET_SH1"
-{
-  rtx_insn *insn;
-  rtx macl;
-
-  macl = gen_rtx_REG (SImode, MACL_REG);
-  start_sequence ();
-  emit_insn (gen_mulhisi3_i (operands[1], operands[2]));
-  insn = get_insns ();  
-  end_sequence ();
-  /* expand_binop can't find a suitable code in umul_widen_optab to
-     make a REG_EQUAL note from, so make one here.
-     See also smulsi3_highpart.
-     ??? Alternatively, we could put this at the calling site of expand_binop,
-     i.e. expand_expr.  */
-  /* Use emit_libcall_block for loop invariant code motion and to make
-     a REG_EQUAL note.  */
-  emit_libcall_block (insn, operands[0], macl, SET_SRC (single_set (insn)));
-
-  DONE;
-})
-
-(define_expand "umulhisi3"
-  [(set (reg:SI MACL_REG)
-	(mult:SI (zero_extend:SI
-		  (match_operand:HI 1 "arith_reg_operand" ""))
-		 (zero_extend:SI
-		  (match_operand:HI 2 "arith_reg_operand" ""))))
-   (set (match_operand:SI 0 "arith_reg_operand" "")
-	(reg:SI MACL_REG))]
-  "TARGET_SH1"
-{
-  rtx_insn *insn;
-  rtx macl;
-
-  macl = gen_rtx_REG (SImode, MACL_REG);
-  start_sequence ();
-  emit_insn (gen_umulhisi3_i (operands[1], operands[2]));
-  insn = get_insns ();  
-  end_sequence ();
-  /* expand_binop can't find a suitable code in umul_widen_optab to
-     make a REG_EQUAL note from, so make one here.
-     See also smulsi3_highpart.
-     ??? Alternatively, we could put this at the calling site of expand_binop,
-     i.e. expand_expr.  */
-  /* Use emit_libcall_block for loop invariant code motion and to make
-     a REG_EQUAL note.  */
-  emit_libcall_block (insn, operands[0], macl, SET_SRC (single_set (insn)));
-
-  DONE;
-})
 
 ;; mulsi3 on the SH2 can be done in one instruction, on the SH1 we generate
 ;; a call to a routine which clobbers known registers.
-(define_insn ""
+(define_insn "mulsi3_call"
   [(set (match_operand:SI 1 "register_operand" "=z")
 	(mult:SI (reg:SI R4_REG) (reg:SI R5_REG)))
    (clobber (reg:SI MACL_REG))
@@ -2530,22 +2479,6 @@
   "jsr	@%0%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
-
-(define_expand "mulsi3_call"
-  [(set (reg:SI R4_REG) (match_operand:SI 1 "general_operand" ""))
-   (set (reg:SI R5_REG) (match_operand:SI 2 "general_operand" ""))
-   (parallel[(set (match_operand:SI 0 "register_operand" "")
-		  (mult:SI (reg:SI R4_REG)
-			   (reg:SI R5_REG)))
-	     (clobber (reg:SI MACL_REG))
-	     (clobber (reg:SI T_REG))
-	     (clobber (reg:SI PR_REG))
-	     (clobber (reg:SI R3_REG))
-	     (clobber (reg:SI R2_REG))
-	     (clobber (reg:SI R1_REG))
-	     (use (match_operand:SI 3 "register_operand" ""))])]
-  "TARGET_SH1"
-  "")
 
 (define_insn "mul_r"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -2563,33 +2496,44 @@
   "mul.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
+(define_insn_and_split "mulsi3_i"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(mult:SI (match_operand:SI 1 "arith_reg_operand")
+		 (match_operand:SI 2 "arith_reg_operand")))
+   (clobber (reg:SI MACL_REG))]
+  "TARGET_SH2 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (reg:SI MACL_REG) (mult:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (reg:SI MACL_REG))])
+
 (define_expand "mulsi3"
-  [(set (reg:SI MACL_REG)
-	(mult:SI  (match_operand:SI 1 "arith_reg_operand" "")
-		  (match_operand:SI 2 "arith_reg_operand" "")))
-   (set (match_operand:SI 0 "arith_reg_operand" "")
-	(reg:SI MACL_REG))]
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(mult:SI (match_operand:SI 1 "arith_reg_operand")
+		 (match_operand:SI 2 "arith_reg_operand")))]
   "TARGET_SH1"
 {
   if (!TARGET_SH2)
     {
-      /* The address must be set outside the libcall,
-	 since it goes into a pseudo.  */
+      emit_move_insn (gen_rtx_REG (SImode, R4_REG), operands[1]);
+      emit_move_insn (gen_rtx_REG (SImode, R5_REG), operands[2]);
+
       rtx sym = function_symbol (NULL, "__mulsi3", SFUNC_STATIC).sym;
-      rtx addr = force_reg (SImode, sym);
-      rtx insns = gen_mulsi3_call (operands[0], operands[1],
-				   operands[2], addr);
-      emit_insn (insns);
+
+      emit_insn (gen_mulsi3_call (force_reg (SImode, sym), operands[0]));
     }
   else
     {
-      rtx macl = gen_rtx_REG (SImode, MACL_REG);
+      /* FIXME: For some reason, expanding the mul_l insn and the macl store
+	 insn early gives slightly better code.  In particular it prevents
+	 the decrement-test loop type to be used in some cases which saves
+	 one multiplication in the loop setup code.
+
+         emit_insn (gen_mulsi3_i (operands[0], operands[1], operands[2]));
+      */
 
       emit_insn (gen_mul_l (operands[1], operands[2]));
-      /* consec_sets_giv can only recognize the first insn that sets a
-	 giv as the giv insn.  So we must tag this also with a REG_EQUAL
-	 note.  */
-      emit_insn (gen_movsi_i ((operands[0]), macl));
+      emit_move_insn (operands[0], gen_rtx_REG (SImode, MACL_REG));
     }
   DONE;
 })
@@ -2610,9 +2554,9 @@
   [(set_attr "type" "dmpy")])
 
 (define_expand "mulsidi3"
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
-		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))]
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand"))
+		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand"))))]
   "TARGET_SH2"
 {
   emit_insn (gen_mulsidi3_compact (operands[0], operands[1], operands[2]));
@@ -2620,13 +2564,12 @@
 })
 
 (define_insn_and_split "mulsidi3_compact"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-	 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand"))
+		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand"))))
    (clobber (reg:SI MACH_REG))
    (clobber (reg:SI MACL_REG))]
-  "TARGET_SH2"
+  "TARGET_SH2 && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -2659,9 +2602,9 @@
   [(set_attr "type" "dmpy")])
 
 (define_expand "umulsidi3"
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
-		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))]
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand"))
+		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand"))))]
   "TARGET_SH2"
 {
   emit_insn (gen_umulsidi3_compact (operands[0], operands[1], operands[2]));
@@ -2669,13 +2612,12 @@
 })
 
 (define_insn_and_split "umulsidi3_compact"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(mult:DI
-	 (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-	 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand"))
+		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand"))))
    (clobber (reg:SI MACH_REG))
    (clobber (reg:SI MACL_REG))]
-  "TARGET_SH2"
+  "TARGET_SH2 && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -2705,38 +2647,23 @@
   "dmuls.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
-(define_expand "smulsi3_highpart"
-  [(parallel
-    [(set (reg:SI MACH_REG)
-	  (truncate:SI
-	   (lshiftrt:DI
+(define_insn_and_split "smulsi3_highpart"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(truncate:SI
+	  (lshiftrt:DI
 	    (mult:DI
-	     (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
-	     (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "")))
-	    (const_int 32))))
-    (clobber (reg:SI MACL_REG))])
-   (set (match_operand:SI 0 "arith_reg_operand" "")
-	(reg:SI MACH_REG))]
-  "TARGET_SH2"
+	      (sign_extend:DI (match_operand:SI 1 "arith_reg_operand"))
+	      (sign_extend:DI (match_operand:SI 2 "arith_reg_operand")))
+	  (const_int 32))))
+   (clobber (reg:SI MACL_REG))
+   (clobber (reg:SI MACH_REG))]
+  "TARGET_SH2 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
-  rtx_insn *insn;
-  rtx mach;
-
-  mach = gen_rtx_REG (SImode, MACH_REG);
-  start_sequence ();
   emit_insn (gen_smulsi3_highpart_i (operands[1], operands[2]));
-  insn = get_insns ();  
-  end_sequence ();
-  /* expand_binop can't find a suitable code in mul_highpart_optab to
-     make a REG_EQUAL note from, so make one here.
-     See also {,u}mulhisi.
-     ??? Alternatively, we could put this at the calling site of expand_binop,
-     i.e. expand_mult_highpart.  */
-  /* Use emit_libcall_block for loop invariant code motion and to make
-     a REG_EQUAL note.  */
-  emit_libcall_block (insn, operands[0], mach, SET_SRC (single_set (insn)));
-
-  DONE;
+  emit_move_insn (operands[0], gen_rtx_REG (SImode, MACH_REG));
 })
 
 (define_insn "umulsi3_highpart_i"
@@ -2752,33 +2679,22 @@
   "dmulu.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
-(define_expand "umulsi3_highpart"
-  [(parallel
-    [(set (reg:SI MACH_REG)
-	  (truncate:SI
-	   (lshiftrt:DI
+(define_insn_and_split "umulsi3_highpart"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(truncate:SI
+	  (lshiftrt:DI
 	    (mult:DI
-	     (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
-	     (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "")))
-	    (const_int 32))))
-    (clobber (reg:SI MACL_REG))])
-   (set (match_operand:SI 0 "arith_reg_operand" "")
-	(reg:SI MACH_REG))]
-  "TARGET_SH2"
+	      (zero_extend:DI (match_operand:SI 1 "arith_reg_operand"))
+	      (zero_extend:DI (match_operand:SI 2 "arith_reg_operand")))
+	  (const_int 32))))
+   (clobber (reg:SI MACL_REG))]
+  "TARGET_SH2 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
-  rtx_insn *insn;
-  rtx mach;
-
-  mach = gen_rtx_REG (SImode, MACH_REG);
-  start_sequence ();
   emit_insn (gen_umulsi3_highpart_i (operands[1], operands[2]));
-  insn = get_insns ();  
-  end_sequence ();
-  /* Use emit_libcall_block for loop invariant code motion and to make
-     a REG_EQUAL note.  */
-  emit_libcall_block (insn, operands[0], mach, SET_SRC (single_set (insn)));
-
-  DONE;
+  emit_move_insn (operands[0], gen_rtx_REG (SImode, MACH_REG));
 })
 
 ;; -------------------------------------------------------------------------
