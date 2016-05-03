@@ -113,10 +113,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "builtins.h"
 #include "params.h"
- 
+
+/* Only handle PHIs with no more arguments unless we are asked to by
+   simd pragma.  */
+#define MAX_PHI_ARG_NUM \
+  ((unsigned) PARAM_VALUE (PARAM_MAX_TREE_IF_CONVERSION_PHI_ARGS))
+
 /* Indicate if new load/store that needs to be predicated is introduced
    during if conversion.  */
 static bool any_pred_load_store;
+
+/* Indicate if there are any complicated PHIs that need to be handled in
+   if-conversion.  Complicated PHI has more than two arguments and can't
+   be degenerated to two arguments PHI.  See more information in comment
+   before phi_convertible_by_degenerating_args.  */
+static bool any_complicated_phi;
 
 /* Hash for struct innermost_loop_behavior.  It depends on the user to
    free the memory.  */
@@ -171,9 +182,6 @@ innermost_loop_behavior_hash::equal (const value_type &e1,
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
-
-/* Apply more aggressive (extended) if-conversion if true.  */
-static bool aggressive_if_conv;
 
 /* Hash table to store <DR's innermost loop behavior, DR> pairs.  */
 static hash_map<innermost_loop_behavior_hash,
@@ -639,13 +647,9 @@ phi_convertible_by_degenerating_args (gphi *phi)
 }
 
 /* Return true when PHI is if-convertible.  PHI is part of loop LOOP
-   and it belongs to basic block BB.
-
-   PHI is not if-convertible if:
-   - it has more than 2 arguments.
-
-   When the aggressive_if_conv is set, PHI can have more than
-   two arguments.  */
+   and it belongs to basic block BB.  Note at this point, it is sure
+   that PHI is if-convertible.  This function updates global variable
+   ANY_COMPLICATED_PHI if PHI is complicated.  */
 
 static bool
 if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi)
@@ -656,17 +660,10 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi)
       print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
     }
 
-  if (bb != loop->header)
-    {
-      if (gimple_phi_num_args (phi) > 2
-	  && !aggressive_if_conv
-	  && !phi_convertible_by_degenerating_args (phi))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Phi can't be predicated by single cond.\n");
-	  return false;
-        }
-    }
+  if (bb != loop->header
+      && gimple_phi_num_args (phi) > 2
+      && !phi_convertible_by_degenerating_args (phi))
+    any_complicated_phi = true;
 
   return true;
 }
@@ -1012,8 +1009,6 @@ has_pred_critical_p (basic_block bb)
    - it is after the exit block but before the latch,
    - its edges are not normal.
 
-   Last restriction is valid if aggressive_if_conv is false.
-
    EXIT_BB is the basic block containing the exit of the LOOP.  BB is
    inside LOOP.  */
 
@@ -1061,19 +1056,6 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 	  fprintf (dump_file, "Difficult to handle edges\n");
 	return false;
       }
-
-  /* At least one incoming edge has to be non-critical as otherwise edge
-     predicates are not equal to basic-block predicates of the edge
-     source.  This check is skipped if aggressive_if_conv is true.  */
-  if (!aggressive_if_conv
-      && EDGE_COUNT (bb->preds) > 1
-      && bb != loop->header
-      && all_preds_critical_p (bb))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "only critical predecessors\n");
-      return false;
-    }
 
   return true;
 }
@@ -2380,11 +2362,16 @@ version_loop_for_if_conversion (struct loop *loop)
   return true;
 }
 
-/* Performs splitting of critical edges if aggressive_if_conv is true.
-   Returns false if loop won't be if converted and true otherwise.  */
+/* Performs splitting of critical edges.  Skip splitting and return false
+   if LOOP will not be converted because:
+
+     - LOOP is not well formed.
+     - LOOP has PHI with more than MAX_PHI_ARG_NUM arguments.
+
+   Last restriction is valid only if AGGRESSIVE_IF_CONV is false.  */
 
 static bool
-ifcvt_split_critical_edges (struct loop *loop)
+ifcvt_split_critical_edges (struct loop *loop, bool aggressive_if_conv)
 {
   basic_block *body;
   basic_block bb;
@@ -2393,30 +2380,51 @@ ifcvt_split_critical_edges (struct loop *loop)
   gimple *stmt;
   edge e;
   edge_iterator ei;
+  vec<edge> critical_edges = vNULL;
 
-  if (num <= 2)
-    return false;
-  if (loop->inner)
-    return false;
-  if (!single_exit (loop))
+  /* Loop is not well formed.  */
+  if (num <= 2 || loop->inner || !single_exit (loop))
     return false;
 
   body = get_loop_body (loop);
   for (i = 0; i < num; i++)
     {
       bb = body[i];
-      if (bb == loop->latch
-	  || bb_with_exit_edge_p (loop, bb))
+      if (!aggressive_if_conv
+	  && phi_nodes (bb)
+	  && EDGE_COUNT (bb->preds) > MAX_PHI_ARG_NUM)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "BB %d has complicated PHI with more than %u args.\n",
+		     bb->index, MAX_PHI_ARG_NUM);
+
+	  free (body);
+	  critical_edges.release ();
+	  return false;
+	}
+      if (bb == loop->latch || bb_with_exit_edge_p (loop, bb))
 	continue;
+
       stmt = last_stmt (bb);
       /* Skip basic blocks not ending with conditional branch.  */
-      if (!(stmt && gimple_code (stmt) == GIMPLE_COND))
+      if (!stmt || gimple_code (stmt) != GIMPLE_COND)
 	continue;
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (EDGE_CRITICAL_P (e) && e->dest->loop_father == loop)
-	  split_edge (e);
+	  critical_edges.safe_push (e);
     }
   free (body);
+
+  while (critical_edges.length () > 0)
+    {
+      e = critical_edges.pop ();
+      /* Don't split if bb can be predicated along non-critical edge.  */
+      if (EDGE_COUNT (e->dest->preds) > 2 || all_preds_critical_p (e->dest))
+	split_edge (e);
+    }
+
   return true;
 }
 
@@ -2713,12 +2721,16 @@ static unsigned int
 tree_if_conversion (struct loop *loop)
 {
   unsigned int todo = 0;
+  bool aggressive_if_conv;
+
   ifc_bbs = NULL;
   any_pred_load_store = false;
+  any_complicated_phi = false;
 
-  /* Set up aggressive if-conversion for loops marked with simd pragma.  */
+  /* Apply more aggressive if-conversion when loop or its outer loop were
+     marked with simd pragma.  When that's the case, we try to if-convert
+     loop containing PHIs with more than MAX_PHI_ARG_NUM arguments.  */
   aggressive_if_conv = loop->force_vectorize;
-  /* Check either outer loop was marked with simd pragma.  */
   if (!aggressive_if_conv)
     {
       struct loop *outer_loop = loop_outer (loop);
@@ -2726,20 +2738,20 @@ tree_if_conversion (struct loop *loop)
 	aggressive_if_conv = true;
     }
 
-  if (aggressive_if_conv)
-    if (!ifcvt_split_critical_edges (loop))
-      goto cleanup;
+  if (!ifcvt_split_critical_edges (loop, aggressive_if_conv))
+    goto cleanup;
 
   if (!if_convertible_loop_p (loop)
       || !dbg_cnt (if_conversion_tree))
     goto cleanup;
 
-  if (any_pred_load_store
+  if ((any_pred_load_store || any_complicated_phi)
       && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
 	  || loop->dont_vectorize))
     goto cleanup;
 
-  if (any_pred_load_store && !version_loop_for_if_conversion (loop))
+  if ((any_pred_load_store || any_complicated_phi)
+      && !version_loop_for_if_conversion (loop))
     goto cleanup;
 
   /* Now all statements are if-convertible.  Combine all the basic
@@ -2749,11 +2761,8 @@ tree_if_conversion (struct loop *loop)
 
   /* Delete dead predicate computations and repair tree correspondent
      to bool pattern to delete multiple uses of predicates.  */
-  if (aggressive_if_conv)
-    {
-      ifcvt_local_dce (loop->header);
-      ifcvt_repair_bool_pattern (loop->header);
-    }
+  ifcvt_local_dce (loop->header);
+  ifcvt_repair_bool_pattern (loop->header);
 
   todo |= TODO_cleanup_cfg;
   mark_virtual_operands_for_renaming (cfun);
