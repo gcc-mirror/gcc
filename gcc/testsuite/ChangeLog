@@ -1,3 +1,9 @@
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70859
+	* gcc.dg/pr70859.c: New test.
+	* gcc.dg/pr70859-2.c: New test.
+
 2016-05-03  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/debug5.adb: New testcase.

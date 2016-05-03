@@ -1,3 +1,12 @@
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70859
+	* c-common.c (builtin_function_validate_nargs): Add location
+	parameter.  Use it.
+	(check_builtin_function_arguments): Add location and arguments
+	parameters.  Use them.
+	* c-common.h (check_builtin_function_arguments): Update declaration.
+
 2016-05-03  Richard Biener  <rguenther@suse.de>
 
 	* cilk.c (cilk_gimplify_call_params_in_spawned_fn): Do not

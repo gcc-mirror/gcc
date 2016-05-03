@@ -1,3 +1,9 @@
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70859
+	* c-typeck.c (build_function_call_vec): Pass LOC and ARG_LOC down to
+	check_builtin_function_arguments.
+
 2016-05-03  Richard Biener  <rguenther@suse.de>
 
 	* Make-lang.in (cc1-checksum.c): For stage-final re-use

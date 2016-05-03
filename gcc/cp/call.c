@@ -7790,7 +7790,8 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       for (i = 0; i < nargs; i++)
 	argarray[i] = fold_non_dependent_expr (argarray[i]);
 
-      if (!check_builtin_function_arguments (fndecl, nargs, argarray))
+      if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
+					     nargs, argarray))
 	return error_mark_node;
     }
 

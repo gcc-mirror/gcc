@@ -9797,31 +9797,39 @@ check_function_arguments_recurse (void (*callback)
 /* Checks for a builtin function FNDECL that the number of arguments
    NARGS against the required number REQUIRED and issues an error if
    there is a mismatch.  Returns true if the number of arguments is
-   correct, otherwise false.  */
+   correct, otherwise false.  LOC is the location of FNDECL.  */
 
 static bool
-builtin_function_validate_nargs (tree fndecl, int nargs, int required)
+builtin_function_validate_nargs (location_t loc, tree fndecl, int nargs,
+				 int required)
 {
   if (nargs < required)
     {
-      error_at (input_location,
-		"not enough arguments to function %qE", fndecl);
+      error_at (loc, "not enough arguments to function %qE", fndecl);
       return false;
     }
   else if (nargs > required)
     {
-      error_at (input_location,
-		"too many arguments to function %qE", fndecl);
+      error_at (loc, "too many arguments to function %qE", fndecl);
       return false;
     }
   return true;
 }
 
+/* Helper macro for check_builtin_function_arguments.  */
+#define ARG_LOCATION(N)					\
+  (arg_loc.is_empty ()					\
+   ? EXPR_LOC_OR_LOC (args[(N)], input_location)	\
+   : expansion_point_location (arg_loc[(N)]))
+
 /* Verifies the NARGS arguments ARGS to the builtin function FNDECL.
-   Returns false if there was an error, otherwise true.  */
+   Returns false if there was an error, otherwise true.  LOC is the
+   location of the function; ARG_LOC is a vector of locations of the
+   arguments.  */
 
 bool
-check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
+check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
+				  tree fndecl, int nargs, tree *args)
 {
   if (!DECL_BUILT_IN (fndecl)
       || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
@@ -9843,21 +9851,21 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 	/* The maximum alignment in bits corresponding to the same
 	   maximum in bytes enforced in check_user_alignment().  */
 	unsigned maxalign = (UINT_MAX >> 1) + 1;
-  
+
 	/* Reject invalid alignments.  */
 	if (align < BITS_PER_UNIT || maxalign < align)
 	  {
-	    error_at (EXPR_LOC_OR_LOC (args[1], input_location),
+	    error_at (ARG_LOCATION (1),
 		      "second argument to function %qE must be a constant "
 		      "integer power of 2 between %qi and %qu bits",
 		      fndecl, BITS_PER_UNIT, maxalign);
 	    return false;
 	  }
-      return true;
+	return true;
       }
 
     case BUILT_IN_CONSTANT_P:
-      return builtin_function_validate_nargs (fndecl, nargs, 1);
+      return builtin_function_validate_nargs (loc, fndecl, nargs, 1);
 
     case BUILT_IN_ISFINITE:
     case BUILT_IN_ISINF:
@@ -9865,12 +9873,12 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNORMAL:
     case BUILT_IN_SIGNBIT:
-      if (builtin_function_validate_nargs (fndecl, nargs, 1))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 1))
 	{
 	  if (TREE_CODE (TREE_TYPE (args[0])) != REAL_TYPE)
 	    {
-	      error ("non-floating-point argument in call to "
-		     "function %qE", fndecl);
+	      error_at (ARG_LOCATION (0), "non-floating-point argument in "
+			"call to function %qE", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -9883,7 +9891,7 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
     case BUILT_IN_ISLESSEQUAL:
     case BUILT_IN_ISLESSGREATER:
     case BUILT_IN_ISUNORDERED:
-      if (builtin_function_validate_nargs (fndecl, nargs, 2))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 2))
 	{
 	  enum tree_code code0, code1;
 	  code0 = TREE_CODE (TREE_TYPE (args[0]));
@@ -9892,8 +9900,8 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 		|| (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
 		|| (code0 == INTEGER_TYPE && code1 == REAL_TYPE)))
 	    {
-	      error ("non-floating-point arguments in call to "
-		     "function %qE", fndecl);
+	      error_at (loc, "non-floating-point arguments in call to "
+			"function %qE", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -9901,22 +9909,20 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
       return false;
 
     case BUILT_IN_FPCLASSIFY:
-      if (builtin_function_validate_nargs (fndecl, nargs, 6))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 6))
 	{
-	  unsigned i;
-
-	  for (i=0; i<5; i++)
+	  for (unsigned int i = 0; i < 5; i++)
 	    if (TREE_CODE (args[i]) != INTEGER_CST)
 	      {
-		error ("non-const integer argument %u in call to function %qE",
-		       i+1, fndecl);
+		error_at (ARG_LOCATION (i), "non-const integer argument %u in "
+			  "call to function %qE", i + 1, fndecl);
 		return false;
 	      }
 
 	  if (TREE_CODE (TREE_TYPE (args[5])) != REAL_TYPE)
 	    {
-	      error ("non-floating-point argument in call to function %qE",
-		     fndecl);
+	      error_at (ARG_LOCATION (5), "non-floating-point argument in "
+			"call to function %qE", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -9924,11 +9930,12 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
       return false;
 
     case BUILT_IN_ASSUME_ALIGNED:
-      if (builtin_function_validate_nargs (fndecl, nargs, 2 + (nargs > 2)))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 2 + (nargs > 2)))
 	{
 	  if (nargs >= 3 && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE)
 	    {
-	      error ("non-integer argument 3 in call to function %qE", fndecl);
+	      error_at (ARG_LOCATION (2), "non-integer argument 3 in call to "
+			"function %qE", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -9938,21 +9945,21 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
     case BUILT_IN_ADD_OVERFLOW:
     case BUILT_IN_SUB_OVERFLOW:
     case BUILT_IN_MUL_OVERFLOW:
-      if (builtin_function_validate_nargs (fndecl, nargs, 3))
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 3))
 	{
 	  unsigned i;
 	  for (i = 0; i < 2; i++)
 	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
 	      {
-		error ("argument %u in call to function %qE does not have "
-		       "integral type", i + 1, fndecl);
+		error_at (ARG_LOCATION (i), "argument %u in call to function "
+			  "%qE does not have integral type", i + 1, fndecl);
 		return false;
 	      }
 	  if (TREE_CODE (TREE_TYPE (args[2])) != POINTER_TYPE
 	      || TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) != INTEGER_TYPE)
 	    {
-	      error ("argument 3 in call to function %qE does not have "
-		     "pointer to integer type", fndecl);
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
+			"does not have pointer to integer type", fndecl);
 	      return false;
 	    }
 	  return true;

@@ -3046,7 +3046,8 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   if (fundecl
       && DECL_BUILT_IN (fundecl)
       && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL
-      && !check_builtin_function_arguments (fundecl, nargs, argarray))
+      && !check_builtin_function_arguments (loc, arg_loc, fundecl, nargs,
+					    argarray))
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
