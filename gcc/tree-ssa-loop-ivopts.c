@@ -4814,17 +4814,19 @@ get_computation_cost_at (struct ivopts_data *data,
 		(ratio, mem_mode,
 			TYPE_ADDR_SPACE (TREE_TYPE (utype))))
     {
+      tree real_cbase = cbase;
+
       if (cstepi == 0 && stmt_is_after_inc)
 	{
 	  if (POINTER_TYPE_P (ctype))
-	    cbase = fold_build2 (POINTER_PLUS_EXPR, ctype, cbase, cstep);
+	    real_cbase = fold_build2 (POINTER_PLUS_EXPR, ctype, cbase, cstep);
 	  else
-	    cbase = fold_build2 (PLUS_EXPR, ctype, cbase, cstep);
+	    real_cbase = fold_build2 (PLUS_EXPR, ctype, cbase, cstep);
 	}
-      cbase
-	= fold_build2 (MULT_EXPR, ctype, cbase, build_int_cst (ctype, ratio));
+      real_cbase = fold_build2 (MULT_EXPR, ctype, real_cbase,
+				build_int_cst (ctype, ratio));
       cost = difference_cost (data,
-			      ubase, cbase,
+			      ubase, real_cbase,
 			      &symbol_present, &var_present, &offset,
 			      depends_on);
       cost.cost /= avg_loop_niter (data->current_loop);

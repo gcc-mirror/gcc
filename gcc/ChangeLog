@@ -1,3 +1,8 @@
+2016-05-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Don't clobber
+	cbase.
+
 2016-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (udivsi3, divsi3, mulsi3): Simplify.
