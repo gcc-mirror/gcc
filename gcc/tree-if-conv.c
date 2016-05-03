@@ -416,24 +416,6 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
   return fold_build2_loc (loc, TRUTH_OR_EXPR, boolean_type_node, c1, c2);
 }
 
-/* Returns true if N is either a constant or a SSA_NAME.  */
-
-static bool
-constant_or_ssa_name (tree n)
-{
-  switch (TREE_CODE (n))
-    {
-      case SSA_NAME:
-      case INTEGER_CST:
-      case REAL_CST:
-      case COMPLEX_CST:
-      case VECTOR_CST:
-	return true;
-      default:
-	return false;
-    }
-}
-
 /* Returns either a COND_EXPR or the folded expression if the folded
    expression is a MIN_EXPR, a MAX_EXPR, an ABS_EXPR,
    a constant or a SSA_NAME. */
@@ -454,22 +436,21 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 	  && (integer_zerop (op1)))
 	cond = op0;
     }
-  cond_expr = fold_ternary (COND_EXPR, type, cond,
-			    rhs, lhs);
+  cond_expr = fold_ternary (COND_EXPR, type, cond, rhs, lhs);
 
   if (cond_expr == NULL_TREE)
     return build3 (COND_EXPR, type, cond, rhs, lhs);
 
   STRIP_USELESS_TYPE_CONVERSION (cond_expr);
 
-  if (constant_or_ssa_name (cond_expr))
+  if (is_gimple_val (cond_expr))
     return cond_expr;
 
   if (TREE_CODE (cond_expr) == ABS_EXPR)
     {
       rhs1 = TREE_OPERAND (cond_expr, 1);
       STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      if (constant_or_ssa_name (rhs1))
+      if (is_gimple_val (rhs1))
 	return build1 (ABS_EXPR, type, rhs1);
     }
 
@@ -480,8 +461,7 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
       STRIP_USELESS_TYPE_CONVERSION (lhs1);
       rhs1 = TREE_OPERAND (cond_expr, 1);
       STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      if (constant_or_ssa_name (rhs1)
-	  && constant_or_ssa_name (lhs1))
+      if (is_gimple_val (rhs1) && is_gimple_val (lhs1))
 	return build2 (TREE_CODE (cond_expr), type, lhs1, rhs1);
     }
   return build3 (COND_EXPR, type, cond, rhs, lhs);
