@@ -1,4 +1,18 @@
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/70467
+	* config/i386/predicates.md (x86_64_hilo_int_operand,
+	x86_64_hilo_general_operand): New predicates.
+	* config/i386/constraints.md (Wd): New constraint.
+	* config/i386/i386.md (mode attr di): Use Wd instead of e.
+	(general_hilo_operand): New mode attr.
+	(add<mode>3, sub<mode>3): Use <general_hilo_operand>
+	instead of <general_operand>.
+	(*add<dwi>3_doubleword, *sub<dwi>3_doubleword): Use
+	x86_64_hilo_general_operand instead of <general_operand>.
+
+2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70916
 	* tree-if-conv.c (constant_or_ssa_name): Removed.
