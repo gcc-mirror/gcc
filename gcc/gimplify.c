@@ -2437,25 +2437,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	    }
 	  break;
 	}
-      case BUILT_IN_LINE:
-	{
-	  *expr_p = build_int_cst (TREE_TYPE (*expr_p),
-				   LOCATION_LINE (EXPR_LOCATION (*expr_p)));
-	  return GS_OK;
-	}
-      case BUILT_IN_FILE:
-	{
-	  const char *locfile = LOCATION_FILE (EXPR_LOCATION (*expr_p));
-	  *expr_p = build_string_literal (strlen (locfile) + 1, locfile);
-	  return GS_OK;
-	}
-      case BUILT_IN_FUNCTION:
-	{
-	  const char *function;
-	  function = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
-	  *expr_p = build_string_literal (strlen (function) + 1, function);
-	  return GS_OK;
-	}
+
       default:
         ;
       }

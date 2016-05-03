@@ -1,3 +1,22 @@
+2016-05-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/66561
+	* builtins.c (fold_builtin_FILE): New function.
+	(fold_builtin_FUNCTION, fold_builtin_LINE): New functions.
+	(fold_builtin_0): Call them.
+	* gimplify.c (gimplify_call_expr): Remove the handling of
+	BUILT_IN_FILE, BUILT_IN_FUNCTION, and BUILT_IN_LINE.
+
+	PR c++/66561
+	* doc/extend.texi (Other Builtins): Update __builtin_FILE,
+	__builtin_FUNCTION, and __builtin_LINE to reflect they yield
+	constants.
+
+	PR c++/66639
+	* doc/extend.texi (Function Names as Strings): Update __func__,
+	__FUNCTION__, __PRETTY_FUNCTION__ to reflect they evaluate to
+	constants.
+
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
