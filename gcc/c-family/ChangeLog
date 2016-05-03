@@ -1,3 +1,7 @@
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.h (enum c_omp_region_type): Remove stray comma.
+
 2016-05-02  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-common.h (enum c_omp_region_type): Define.
