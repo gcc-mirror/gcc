@@ -1076,10 +1076,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "sse2_movq128"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
 	(vec_concat:V2DI
 	  (vec_select:DI
-	    (match_operand:V2DI 1 "nonimmediate_operand" "xm")
+	    (match_operand:V2DI 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0)]))
 	  (const_int 0)))]
   "TARGET_SSE2"
