@@ -4820,6 +4820,15 @@
   [(set_attr "type" "load")
    (set_attr "length" "2,2,4")])
 
+;; The pre-dec and post-inc mems must be captured by the '<' and '>'
+;; constraints, otherwise wrong code might get generated.
+(define_insn "*extend<mode>si2_predec"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z")
+	(sign_extend:SI (match_operand:QIHI 1 "pre_dec_mem" "<")))]
+  "TARGET_SH2A"
+  "mov.<bw>	%1,%0"
+  [(set_attr "type" "load")])
+
 ;; The *_snd patterns will take care of other QImode/HImode addressing
 ;; modes than displacement addressing.  They must be defined _after_ the
 ;; displacement addressing patterns.  Otherwise the displacement addressing
@@ -5260,6 +5269,22 @@
 
   prepare_move_operands (operands, <MODE>mode);
 })
+
+;; The pre-dec and post-inc mems must be captured by the '<' and '>'
+;; constraints, otherwise wrong code might get generated.
+(define_insn "*mov<mode>_load_predec"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=z")
+	(match_operand:QIHISI 1 "pre_dec_mem" "<"))]
+  "TARGET_SH2A"
+  "mov.<bwl>	%1,%0"
+  [(set_attr "type" "load")])
+
+(define_insn "*mov<mode>_store_postinc"
+  [(set (match_operand:QIHISI 0 "post_inc_mem" "=>")
+	(match_operand:QIHISI 1 "arith_reg_operand" "z"))]
+  "TARGET_SH2A"
+  "mov.<bwl>	%1,%0"
+  [(set_attr "type" "store")])
 
 ;; Specifying the displacement addressing load / store patterns separately
 ;; before the generic movqi / movhi pattern allows controlling the order

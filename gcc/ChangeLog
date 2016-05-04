@@ -1,3 +1,14 @@
+2016-05-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates (post_inc_mem, pre_dec_mem): New predicates.
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Return null result if
+	result.set_rtx is null instead of aborting.
+	* config/sh/sh.h (USE_LOAD_POST_INCREMENT, USE_STORE_PRE_DECREMENT):
+	Always enable.
+	(USE_LOAD_PRE_DECREMENT, USE_STORE_POST_INCREMENT): Enable for SH2A.
+	* config/sh/sh.md (*extend<mode>si2_predec, *mov<mode>_load_predec,
+	*mov<mode>_store_postinc): New patterns.
+
 2016-05-04  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd ((A | B) & (A | C)): Generalize to BIT_XOR_EXPR.  Mark
