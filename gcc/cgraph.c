@@ -2289,7 +2289,7 @@ cgraph_node::can_be_local_p (void)
 }
 
 /* Call callback on cgraph_node, thunks and aliases associated to cgraph_node.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   When INCLUDE_OVERWRITABLE is false, overwritable symbols are
    skipped.  When EXCLUDE_VIRTUAL_THUNKS is true, virtual thunks are
    skipped.  */
 bool
@@ -2301,9 +2301,14 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
 {
   cgraph_edge *e;
   ipa_ref *ref;
+  enum availability avail = AVAIL_AVAILABLE;
 
-  if (callback (this, data))
-    return true;
+  if (include_overwritable
+      || (avail = get_availability ()) > AVAIL_INTERPOSABLE)
+    {
+      if (callback (this, data))
+        return true;
+    }
   FOR_EACH_ALIAS (this, ref)
     {
       cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
@@ -2314,7 +2319,7 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
 						     exclude_virtual_thunks))
 	  return true;
     }
-  if (get_availability () <= AVAIL_INTERPOSABLE)
+  if (avail <= AVAIL_INTERPOSABLE)
     return false;
   for (e = callers; e; e = e->next_caller)
     if (e->caller->thunk.thunk_p

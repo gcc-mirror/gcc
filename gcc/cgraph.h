@@ -3096,8 +3096,7 @@ symtab_node::get_availability (symtab_node *ref)
 }
 
 /* Call calback on symtab node and aliases associated to this node.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped. */
+   When INCLUDE_OVERWRITABLE is false, overwritable symbols are skipped. */
 
 inline bool
 symtab_node::call_for_symbol_and_aliases (bool (*callback) (symtab_node *,
@@ -3105,15 +3104,19 @@ symtab_node::call_for_symbol_and_aliases (bool (*callback) (symtab_node *,
 					  void *data,
 					  bool include_overwritable)
 {
-  if (callback (this, data))
-    return true;
+  if (include_overwritable
+      || get_availability () > AVAIL_INTERPOSABLE)
+    {
+      if (callback (this, data))
+        return true;
+    }
   if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
   return false;
 }
 
 /* Call callback on function and aliases associated to the function.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   When INCLUDE_OVERWRITABLE is false, overwritable symbols are
    skipped.  */
 
 inline bool
@@ -3122,15 +3125,19 @@ cgraph_node::call_for_symbol_and_aliases (bool (*callback) (cgraph_node *,
 					  void *data,
 					  bool include_overwritable)
 {
-  if (callback (this, data))
-    return true;
+  if (include_overwritable
+      || get_availability () > AVAIL_INTERPOSABLE)
+    {
+      if (callback (this, data))
+        return true;
+    }
   if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
   return false;
 }
 
 /* Call calback on varpool symbol and aliases associated to varpool symbol.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   When INCLUDE_OVERWRITABLE is false, overwritable symbols are
    skipped. */
 
 inline bool
@@ -3139,8 +3146,12 @@ varpool_node::call_for_symbol_and_aliases (bool (*callback) (varpool_node *,
 					   void *data,
 					   bool include_overwritable)
 {
-  if (callback (this, data))
-    return true;
+  if (include_overwritable
+      || get_availability () > AVAIL_INTERPOSABLE)
+    {
+      if (callback (this, data))
+        return true;
+    }
   if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
   return false;
