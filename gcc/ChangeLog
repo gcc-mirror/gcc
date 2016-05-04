@@ -1,3 +1,8 @@
+2016-06-04  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips-cpus.def (p5600): Avoid IMADD by default.
+	Clean up p5600 comments.
+
 2016-05-04  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Add BIT_FIELD_REF canonicalizations and vector
