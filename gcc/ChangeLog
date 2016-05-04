@@ -1,3 +1,16 @@
+2016-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::call_for_symbol_thunks_and_aliases):
+	Check availability on NODE, too.
+	* cgraph.h (symtab_node::call_for_symbol_and_aliases): Likewise.
+	(cgraph_node::call_for_symbol_and_aliases): Likewise.
+	(varpool_node::call_for_symbol_and_aliase): Likewise.
+	* ipa-pure-const.c (add_new_function): Analyze all bodies.
+	(propagate_pure_const): Propagate across interposable functions, too.
+	(skip_function_for_local_pure_const): Do not skip interposable bodies
+	with aliases.
+	(pass_local_pure_const::execute): Update.
+
 2016-05-04  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -Wdangling-else.
