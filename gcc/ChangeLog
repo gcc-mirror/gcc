@@ -1,5 +1,9 @@
 2016-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_interleave_highv8sf,
+	vec_interleave_lowv8sf, vec_interleave_highv4df,
+	vec_interleave_lowv4df): Remove constraints from expanders.
+
 	* config/i386/sse.md (sse2_movq128): Use v constraint instead of x.
 
 2016-05-04  Jan Hubicka  <hubicka@ucw.cz>
