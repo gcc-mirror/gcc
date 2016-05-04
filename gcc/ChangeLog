@@ -1,3 +1,29 @@
+2016-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70873
+	* config/i386/i386.md
+	(TARGET_SSE_PARTIAL_REG_DEPENDENCY float_extend sf->df peephole2):
+	Change to post-epilogue_completed late splitter.  Use sse_reg_operand
+	as operand 0 predicate.
+	(TARGET_SSE_PARTIAL_REG_DEPENDENCY float_truncate df->sf peephole2):
+	Ditto.
+	(TARGET_SSE_PARTIAL_REG_DEPENDENCY float {si,di}->{sf,df} peephole2):
+	Ditto.  Emit the pattern using RTX.
+
+	(TARGET_USE_VECTOR_FP_CONVERTS float_extend sf->df splitter):
+	Use sse_reg_opreand as operand 0 predicate.  Do not use true_regnum in
+	the post-reload splitter.  Use lowpart_subreg instead of gen_rtx_REG.
+	(TARGET_USE_VECTOR_FP_CONVERTS float_truncate df->sf splitter):
+	Ditto.
+	(TARGET_USE_VECTOR_CONVERTS float si->{sf,df} splitter): Use
+	sse_reg_operand as operand 0 predicate.
+
+	(TARGET_SPLIT_MEM_OPND_FOR_FP_CONVERTS float_extend sf->df peephole2):
+	Use sse_reg_opreand as operand 0 predicate.  Use lowpart_subreg
+	instead of gen_rtx_REG.
+	(TARGET_SPLIT_MEM_OPND_FOR_FP_CONVERTS float_truncate sf->df peephole2):
+	Ditto.
+
 2016-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* function.c (emit_use_return_register_into_block): Delete.
@@ -94,8 +120,7 @@
 
 	* match.pd: Add BIT_FIELD_REF canonicalizations and vector
 	constructor simplifications.
-	* fold-const.c (fold_ternary_loc): Remove duplicate functionality
-	here.
+	* fold-const.c (fold_ternary_loc): Remove duplicate functionality here.
 
 2016-05-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -219,8 +244,7 @@
 2016-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (*truncdfsf_mixed, *truncdfsf_i387,
-	*truncxfsf2_mixed, *truncxfdf2_mixed): Use v constraint instead
-	of x.
+	*truncxfsf2_mixed, *truncxfdf2_mixed): Use v constraint instead of x.
 
 2016-05-03  Richard Biener  <rguenther@suse.de>
 
