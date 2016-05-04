@@ -2,11 +2,9 @@
  *
  *************************************************************************
  *
- *  @copyright
- *  Copyright (C) 2012-2013, Intel Corporation
+ *  Copyright (C) 2012-2016, Intel Corporation
  *  All rights reserved.
  *  
- *  @copyright
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -21,7 +19,6 @@
  *      contributors may be used to endorse or promote products derived
  *      from this software without specific prior written permission.
  *  
- *  @copyright
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -34,6 +31,20 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
  *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *  
+ *  *********************************************************************
+ *  
+ *  PLEASE NOTE: This file is a downstream copy of a file mainitained in
+ *  a repository at cilkplus.org. Changes made to this file that are not
+ *  submitted through the contribution process detailed at
+ *  http://www.cilkplus.org/submit-cilk-contribution will be lost the next
+ *  time that a new version is released. Changes only submitted to the
+ *  GNU compiler collection or posted to the git repository at
+ *  https://bitbucket.org/intelcilkruntime/intel-cilk-runtime.git are
+ *  not tracked.
+ *  
+ *  We welcome your contributions to this open source project. Thank you
+ *  for your assistance in helping us improve Cilk Plus.
  **************************************************************************/
 
 #include "cilk_fiber-unix.h"
@@ -47,33 +58,32 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-// You'd think that getting a defintion for alloca would be easy.  But you'd
-// be wrong. Here's a variant on what's recommended in the autoconf doc.  I've
-// remove the Windows portion since this is Unix-specific code.
-#if defined HAVE_ALLOCA_H
-#   include <alloca.h>
-#elif defined __GNUC__
-#   define alloca __builtin_alloca
-#elif defined _AIX
-#   define alloca __alloca
-#else
-#   include <stddef.h>
-#   ifdef  __cplusplus
-extern "C"
-#   endif
-void *alloca (size_t);
-#endif
+#include "declare-alloca.h"
 
 // MAP_ANON is deprecated on Linux, but seems to be required on Mac...
 #ifndef MAP_ANONYMOUS
-#define MAP_ANONYMOUS MAP_ANON
+#   define MAP_ANONYMOUS MAP_ANON
+#endif
+
+// MAP_STACK and MAP_GROWSDOWN have no affect in Linux as of 2014-04-04, but
+// could be very useful in future versions.  If they are not defined, then set
+// them to zero (no bits set).
+#ifndef MAP_STACK
+#   define MAP_STACK 0
+#endif
+#ifndef MAP_GROWSDOWN
+#   define MAP_GROWSDOWN 0
 #endif
 
 // Magic number for sanity checking fiber structure
 const unsigned magic_number = 0x5afef00d;
 
-int cilk_fiber_sysdep::s_page_size = getpagesize();
+// Page size for stacks
+#ifdef _WRS_KERNEL
+long cilk_fiber_sysdep::s_page_size = 4096;
+#else
+long cilk_fiber_sysdep::s_page_size = sysconf(_SC_PAGESIZE);
+#endif
 
 cilk_fiber_sysdep::cilk_fiber_sysdep(std::size_t stack_size)
     : cilk_fiber(stack_size)
@@ -270,7 +280,7 @@ void cilk_fiber_sysdep::make_stack(size_t stack_size)
 
     p = (char*)mmap(0, rounded_stack_size,
                     PROT_READ|PROT_WRITE,
-                    MAP_PRIVATE|MAP_ANONYMOUS,
+                    MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK|MAP_GROWSDOWN,
                     -1, 0);
     if (MAP_FAILED == p) {
         // For whatever reason (probably ran out of memory), mmap() failed.

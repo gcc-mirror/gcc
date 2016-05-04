@@ -7,7 +7,7 @@ ___cilkrts_bump_worker_rank
 ___cilkrts_bump_worker_rank_internal
 ___cilkrts_cilk_for_32
 ___cilkrts_cilk_for_64
-___cilkrts_debugger_notification
+
 ___cilkrts_dump_stats
 ___cilkrts_end_cilk
 ___cilkrts_enter_frame
@@ -33,15 +33,17 @@ ___cilkrts_hyperobject_alloc
 ___cilkrts_hyperobject_dealloc
 ___cilkrts_hyperobject_noop_destroy
 ___cilkrts_init
-___cilkrts_irml_version
+
 ___cilkrts_leave_frame
 ___cilkrts_metacall
+___cilkrts_resume
 ___cilkrts_rethrow
 ___cilkrts_return_exception
 ___cilkrts_save_fp_ctrl_state
 ___cilkrts_set_param
 ___cilkrts_stack_alloc
 ___cilkrts_stack_free
+___cilkrts_suspend
 ___cilkrts_sync
 ___cilkrts_synched
 ___cilkrts_watch_stack
