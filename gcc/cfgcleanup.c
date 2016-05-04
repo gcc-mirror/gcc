@@ -156,6 +156,7 @@ try_simplify_condjump (basic_block cbranch_block)
   cbranch_dest_block = cbranch_jump_edge->dest;
 
   if (cbranch_dest_block == EXIT_BLOCK_PTR_FOR_FN (cfun)
+      || jump_dest_block == EXIT_BLOCK_PTR_FOR_FN (cfun)
       || !can_fallthru (jump_block, cbranch_dest_block))
     return false;
 
