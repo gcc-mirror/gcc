@@ -257,7 +257,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
--Wconversion -Wcoverage-mismatch -Wno-cpp -Wdate-time -Wdelete-incomplete @gol
+-Wconversion -Wcoverage-mismatch -Wno-cpp -Wdangling-else -Wdate-time @gol
+-Wdelete-incomplete @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-qualifiers -Wno-discarded-array-qualifiers @gol
@@ -3976,46 +3977,6 @@ Also warn if a comparison like @code{x<=y<=z} appears; this is
 equivalent to @code{(x<=y ? 1 : 0) <= z}, which is a different
 interpretation from that of ordinary mathematical notation.
 
-Also warn about constructions where there may be confusion to which
-@code{if} statement an @code{else} branch belongs.  Here is an example of
-such a case:
-
-@smallexample
-@group
-@{
-  if (a)
-    if (b)
-      foo ();
-  else
-    bar ();
-@}
-@end group
-@end smallexample
-
-In C/C++, every @code{else} branch belongs to the innermost possible
-@code{if} statement, which in this example is @code{if (b)}.  This is
-often not what the programmer expected, as illustrated in the above
-example by indentation the programmer chose.  When there is the
-potential for this confusion, GCC issues a warning when this flag
-is specified.  To eliminate the warning, add explicit braces around
-the innermost @code{if} statement so there is no way the @code{else}
-can belong to the enclosing @code{if}.  The resulting code
-looks like this:
-
-@smallexample
-@group
-@{
-  if (a)
-    @{
-      if (b)
-        foo ();
-      else
-        bar ();
-    @}
-@}
-@end group
-@end smallexample
-
 Also warn for dangerous uses of the GNU extension to
 @code{?:} with omitted middle operand. When the condition
 in the @code{?}: operator is a boolean expression, the omitted value is
@@ -5147,6 +5108,51 @@ internal linkage by putting it in an anonymous namespace as well.  The
 compiler doesn't give this warning for types defined in the main .C
 file, as those are unlikely to have multiple definitions.
 @option{-Wsubobject-linkage} is enabled by default.
+
+@item -Wdangling-else
+@opindex Wdangling-else
+@opindex Wno-dangling-else
+Warn about constructions where there may be confusion to which
+@code{if} statement an @code{else} branch belongs.  Here is an example of
+such a case:
+
+@smallexample
+@group
+@{
+  if (a)
+    if (b)
+      foo ();
+  else
+    bar ();
+@}
+@end group
+@end smallexample
+
+In C/C++, every @code{else} branch belongs to the innermost possible
+@code{if} statement, which in this example is @code{if (b)}.  This is
+often not what the programmer expected, as illustrated in the above
+example by indentation the programmer chose.  When there is the
+potential for this confusion, GCC issues a warning when this flag
+is specified.  To eliminate the warning, add explicit braces around
+the innermost @code{if} statement so there is no way the @code{else}
+can belong to the enclosing @code{if}.  The resulting code
+looks like this:
+
+@smallexample
+@group
+@{
+  if (a)
+    @{
+      if (b)
+        foo ();
+      else
+        bar ();
+    @}
+@}
+@end group
+@end smallexample
+
+This warning is enabled by @option{-Wparentheses}.
 
 @item -Wdate-time
 @opindex Wdate-time

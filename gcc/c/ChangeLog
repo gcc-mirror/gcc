@@ -1,5 +1,10 @@
 2016-05-04  Marek Polacek  <polacek@redhat.com>
 
+	* c-parser.c (c_parser_if_statement): Replace OPT_Wparentheses with
+	OPT_Wdangling_else.
+
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
 	PR c/48778
 	* c-typeck.c (build_binary_op): Don't issue -Waddress warnings
 	for macro expansions.

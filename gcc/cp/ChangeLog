@@ -1,3 +1,8 @@
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (cp_parser_selection_statement): Replace OPT_Wparentheses
+	with OPT_Wdangling_else.
+
 2016-05-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/66561
