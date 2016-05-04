@@ -7915,9 +7915,12 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	       && integer_zerop (TREE_OPERAND (t, 1)))
 	inchash::add_expr (TREE_OPERAND (TREE_OPERAND (t, 0), 0),
 			   hstate, flags);
+      /* Don't ICE on FE specific trees, or their arguments etc.
+	 during operand_equal_p hash verification.  */
+      else if (!IS_EXPR_CODE_CLASS (tclass))
+	gcc_assert (flags & OEP_HASH_CHECK);
       else
 	{
-	  gcc_assert (IS_EXPR_CODE_CLASS (tclass));
 	  unsigned int sflags = flags;
 
 	  hstate.add_object (code);
@@ -7965,6 +7968,13 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	      if (CALL_EXPR_FN (t) == NULL_TREE)
 		hstate.add_int (CALL_EXPR_IFN (t));
 	      break;
+
+	    case TARGET_EXPR:
+	      /* For TARGET_EXPR, just hash on the TARGET_EXPR_SLOT.
+		 Usually different TARGET_EXPRs just should use
+		 different temporaries in their slots.  */
+	      inchash::add_expr (TARGET_EXPR_SLOT (t), hstate, flags);
+	      return;
 
 	    default:
 	      break;

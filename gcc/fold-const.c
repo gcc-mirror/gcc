@@ -2758,8 +2758,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  if (arg0 != arg1)
 	    {
 	      inchash::hash hstate0 (0), hstate1 (0);
-	      inchash::add_expr (arg0, hstate0, flags);
-	      inchash::add_expr (arg1, hstate1, flags);
+	      inchash::add_expr (arg0, hstate0, flags | OEP_HASH_CHECK);
+	      inchash::add_expr (arg1, hstate1, flags | OEP_HASH_CHECK);
 	      hashval_t h0 = hstate0.end ();
 	      hashval_t h1 = hstate1.end ();
 	      gcc_assert (h0 == h1);
