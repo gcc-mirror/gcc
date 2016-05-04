@@ -1,3 +1,14 @@
+2016-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70906
+	PR c++/70933
+	* tree-core.h (enum operand_equal_flag): Add OEP_HASH_CHECK.
+	* tree.c (inchash::add_expr): If !IS_EXPR_CODE_CLASS (tclass),
+	assert flags & OEP_HASH_CHECK, instead of asserting it
+	never happens.  Handle TARGET_EXPR.
+	* fold-const.c (operand_equal_p): For hash verification,
+	or in OEP_HASH_CHECK into flags.
+
 2016-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-coalesce.c (gimple_can_coalesce_p): Fix reference in head

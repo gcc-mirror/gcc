@@ -1,5 +1,10 @@
 2016-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70906
+	PR c++/70933
+	* g++.dg/opt/pr70906.C: New test.
+	* g++.dg/opt/pr70933.C: New test.
+
 	* gcc.target/i386/avx512vl-vmovq-1.c: New test.
 
 2016-05-04  Jan Hubicka  <hubicka@ucw.cz>
