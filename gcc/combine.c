@@ -6736,7 +6736,7 @@ simplify_set (rtx x)
 	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
       && (WORD_REGISTER_OPERATIONS
 	  || (GET_MODE_SIZE (GET_MODE (src))
-	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
+	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (REG_P (dest) && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
