@@ -1,3 +1,9 @@
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/48778
+	* c-typeck.c (build_binary_op): Don't issue -Waddress warnings
+	for macro expansions.
+
 2016-05-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70859
