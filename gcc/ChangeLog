@@ -1,3 +1,9 @@
+2016-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-coalesce.c (gimple_can_coalesce_p): Fix reference in head
+	comment.
+	(compute_samebase_partition_bases): Fix typo.
+
 2016-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_interleave_highv8sf,
