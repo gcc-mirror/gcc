@@ -1,5 +1,6 @@
 2016-05-04  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/sysv4.h (TARGET_TOC): Simplify.
 	* config/rs6000/rs6000.c (rs6000_elf_output_toc_section_asm_op):
 	Align .toc.
 
