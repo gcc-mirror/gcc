@@ -5753,49 +5753,6 @@ prologue_epilogue_contains (const_rtx insn)
   return 0;
 }
 
-/* Insert use of return register before the end of BB.  */
-
-static void
-emit_use_return_register_into_block (basic_block bb)
-{
-  start_sequence ();
-  use_return_register ();
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
-  rtx_insn *insn = BB_END (bb);
-  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
-    insn = prev_cc0_setter (insn);
-
-  emit_insn_before (seq, insn);
-}
-
-
-/* Create a return pattern, either simple_return or return, depending on
-   simple_p.  */
-
-static rtx_insn *
-gen_return_pattern (bool simple_p)
-{
-  return (simple_p
-	  ? targetm.gen_simple_return ()
-	  : targetm.gen_return ());
-}
-
-/* Insert an appropriate return pattern at the end of block BB.  This
-   also means updating block_for_insn appropriately.  SIMPLE_P is
-   the same as in gen_return_pattern and passed to it.  */
-
-void
-emit_return_into_block (bool simple_p, basic_block bb)
-{
-  rtx_jump_insn *jump = emit_jump_insn_after (gen_return_pattern (simple_p),
-					      BB_END (bb));
-  rtx pat = PATTERN (jump);
-  if (GET_CODE (pat) == PARALLEL)
-    pat = XVECEXP (pat, 0, 0);
-  gcc_assert (ANY_RETURN_P (pat));
-  JUMP_LABEL (jump) = pat;
-}
 
 /* Set JUMP_LABEL for a return insn.  */
 
@@ -5809,135 +5766,6 @@ set_return_jump_label (rtx_insn *returnjump)
     JUMP_LABEL (returnjump) = pat;
   else
     JUMP_LABEL (returnjump) = ret_rtx;
-}
-
-/* Return true if there are any active insns between HEAD and TAIL.  */
-bool
-active_insn_between (rtx_insn *head, rtx_insn *tail)
-{
-  while (tail)
-    {
-      if (active_insn_p (tail))
-	return true;
-      if (tail == head)
-	return false;
-      tail = PREV_INSN (tail);
-    }
-  return false;
-}
-
-/* LAST_BB is a block that exits, and empty of active instructions.
-   Examine its predecessors for jumps that can be converted to
-   (conditional) returns.  */
-vec<edge>
-convert_jumps_to_returns (basic_block last_bb, bool simple_p,
-			  vec<edge> unconverted ATTRIBUTE_UNUSED)
-{
-  int i;
-  basic_block bb;
-  edge_iterator ei;
-  edge e;
-  auto_vec<basic_block> src_bbs (EDGE_COUNT (last_bb->preds));
-
-  FOR_EACH_EDGE (e, ei, last_bb->preds)
-    if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
-      src_bbs.quick_push (e->src);
-
-  rtx_insn *label = BB_HEAD (last_bb);
-
-  FOR_EACH_VEC_ELT (src_bbs, i, bb)
-    {
-      rtx_insn *jump = BB_END (bb);
-
-      if (!JUMP_P (jump) || JUMP_LABEL (jump) != label)
-	continue;
-
-      e = find_edge (bb, last_bb);
-
-      /* If we have an unconditional jump, we can replace that
-	 with a simple return instruction.  */
-      if (simplejump_p (jump))
-	{
-	  /* The use of the return register might be present in the exit
-	     fallthru block.  Either:
-	     - removing the use is safe, and we should remove the use in
-	     the exit fallthru block, or
-	     - removing the use is not safe, and we should add it here.
-	     For now, we conservatively choose the latter.  Either of the
-	     2 helps in crossjumping.  */
-	  emit_use_return_register_into_block (bb);
-
-	  emit_return_into_block (simple_p, bb);
-	  delete_insn (jump);
-	}
-
-      /* If we have a conditional jump branching to the last
-	 block, we can try to replace that with a conditional
-	 return instruction.  */
-      else if (condjump_p (jump))
-	{
-	  rtx dest;
-
-	  if (simple_p)
-	    dest = simple_return_rtx;
-	  else
-	    dest = ret_rtx;
-	  if (!redirect_jump (as_a <rtx_jump_insn *> (jump), dest, 0))
-	    {
-	      if (targetm.have_simple_return () && simple_p)
-		{
-		  if (dump_file)
-		    fprintf (dump_file,
-			     "Failed to redirect bb %d branch.\n", bb->index);
-		  unconverted.safe_push (e);
-		}
-	      continue;
-	    }
-
-	  /* See comment in simplejump_p case above.  */
-	  emit_use_return_register_into_block (bb);
-
-	  /* If this block has only one successor, it both jumps
-	     and falls through to the fallthru block, so we can't
-	     delete the edge.  */
-	  if (single_succ_p (bb))
-	    continue;
-	}
-      else
-	{
-	  if (targetm.have_simple_return () && simple_p)
-	    {
-	      if (dump_file)
-		fprintf (dump_file,
-			 "Failed to redirect bb %d branch.\n", bb->index);
-	      unconverted.safe_push (e);
-	    }
-	  continue;
-	}
-
-      /* Fix up the CFG for the successful change we just made.  */
-      redirect_edge_succ (e, EXIT_BLOCK_PTR_FOR_FN (cfun));
-      e->flags &= ~EDGE_CROSSING;
-    }
-  src_bbs.release ();
-  return unconverted;
-}
-
-/* Emit a return insn for the exit fallthru block.  */
-basic_block
-emit_return_for_exit (edge exit_fallthru_edge, bool simple_p)
-{
-  basic_block last_bb = exit_fallthru_edge->src;
-
-  if (JUMP_P (BB_END (last_bb)))
-    {
-      last_bb = split_edge (exit_fallthru_edge);
-      exit_fallthru_edge = single_succ_edge (last_bb);
-    }
-  emit_barrier_after (BB_END (last_bb));
-  emit_return_into_block (simple_p, last_bb);
-  exit_fallthru_edge->flags &= ~EDGE_FALLTHRU;
-  return last_bb;
 }
 
 
@@ -5993,7 +5821,6 @@ void
 thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;
-  vec<edge> unconverted_simple_returns = vNULL;
   bitmap_head bb_flags;
   rtx_insn *returnjump;
   rtx_insn *epilogue_end ATTRIBUTE_UNUSED;
@@ -6088,40 +5915,8 @@ thread_prologue_and_epilogue_insns (void)
 
   exit_fallthru_edge = find_fallthru_edge (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 
-  if (targetm.have_simple_return () && entry_edge != orig_entry_edge)
-    exit_fallthru_edge
-	= get_unconverted_simple_return (exit_fallthru_edge, bb_flags,
-					 &unconverted_simple_returns,
-					 &returnjump);
-  if (targetm.have_return ())
-    {
-      if (exit_fallthru_edge == NULL)
-	goto epilogue_done;
-
-      if (optimize)
-	{
-	  basic_block last_bb = exit_fallthru_edge->src;
-
-	  if (LABEL_P (BB_HEAD (last_bb))
-	      && !active_insn_between (BB_HEAD (last_bb), BB_END (last_bb)))
-	    convert_jumps_to_returns (last_bb, false, vNULL);
-
-	  if (EDGE_COUNT (last_bb->preds) != 0
-	      && single_succ_p (last_bb))
-	    {
-	      last_bb = emit_return_for_exit (exit_fallthru_edge, false);
-	      epilogue_end = returnjump = BB_END (last_bb);
-
-	      /* Emitting the return may add a basic block.
-		 Fix bb_flags for the added block.  */
-	      if (targetm.have_simple_return ()
-		  && last_bb != exit_fallthru_edge->src)
-		bitmap_set_bit (&bb_flags, last_bb->index);
-
-	      goto epilogue_done;
-	    }
-	}
-    }
+  if (targetm.have_return () && exit_fallthru_edge == NULL)
+    goto epilogue_done;
 
   /* A small fib -- epilogue is not yet completed, but we wish to re-use
      this marker for the splits of EH_RETURN patterns, and nothing else
@@ -6228,10 +6023,6 @@ epilogue_done:
 	    e->flags &= ~EDGE_FALLTHRU;
 	}
     }
-
-  if (targetm.have_simple_return ())
-    convert_to_simple_return (entry_edge, orig_entry_edge, bb_flags,
-			      returnjump, unconverted_simple_returns);
 
   /* Emit sibling epilogues before any sibling call sites.  */
   for (ei = ei_start (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds); (e =

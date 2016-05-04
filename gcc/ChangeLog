@@ -1,5 +1,22 @@
 2016-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* function.c (emit_use_return_register_into_block): Delete.
+	(gen_return_pattern): Delete.
+	(emit_return_into_block): Delete.
+	(active_insn_between): Delete.
+	(convert_jumps_to_returns): Delete.
+	(emit_return_for_exit): Delete.
+	(thread_prologue_and_epilogue_insns): Delete all code dealing with
+	simple_return for shrink-wrapped blocks.
+	* shrink-wrap.c (try_shrink_wrapping): Insert simple_return at the
+	end of blocks that need one.
+	(get_unconverted_simple_return): Delete.
+	(convert_to_simple_return): Delete.
+	* shrink-wrap.c (get_unconverted_simple_return): Delete declaration.
+	(convert_to_simple_return): Ditto.
+
+2016-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* cfgcleanup.c (bb_is_just_return): New function.
 	(try_optimize_cfg): Simplify jumps to return, branches to return,
 	and branches around return.
