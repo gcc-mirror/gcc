@@ -1,3 +1,8 @@
+2016-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cfgcleanup.c (try_simplify_condjump): Don't try to simplify a
+	branch to a return.
+
 2016-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70906
