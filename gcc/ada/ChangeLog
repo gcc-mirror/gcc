@@ -1,3 +1,8 @@
+2016-05-04  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* s-osinte-gnu.ads (Get_Page_Size): Return int and use getpagesize
+	instead of __getpagesize.
+
 2016-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (install-gcc-specs): Use foreach.
