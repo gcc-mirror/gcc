@@ -344,10 +344,9 @@ package System.OS_Interface is
    --  returns the stack base of the specified thread. Only call this function
    --  when Stack_Base_Available is True.
 
-   --  From: /usr/include/i386-gnu/bits/shm.h __getpagesize or getpagesize??
-   function Get_Page_Size return size_t;
-   function Get_Page_Size return Address;
-   pragma Import (C, Get_Page_Size, "__getpagesize");
+   --  From: /usr/include/i386-gnu/bits/shm.h
+   function Get_Page_Size return int;
+   pragma Import (C, Get_Page_Size, "getpagesize");
    --  Returns the size of a page
 
    --  From /usr/include/i386-gnu/bits/mman.h
