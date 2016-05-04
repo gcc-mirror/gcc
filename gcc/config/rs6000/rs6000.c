@@ -23422,6 +23422,15 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	  }
     }
 
+  /* info->lr_save_p isn't yet set if the only reason lr needs to be
+     saved is an out-of-line save or restore.  Set up the value for
+     the next test (excluding out-of-line gprs).  */
+  bool lr_save_p = (info->lr_save_p
+		    || !(strategy & SAVE_INLINE_FPRS)
+		    || !(strategy & SAVE_INLINE_VRS)
+		    || !(strategy & REST_INLINE_FPRS)
+		    || !(strategy & REST_INLINE_VRS));
+
   if (TARGET_MULTIPLE
       && !TARGET_POWERPC64
       && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
@@ -23430,15 +23439,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       /* Prefer store multiple for saves over out-of-line routines,
 	 since the store-multiple instruction will always be smaller.  */
       strategy |= SAVE_INLINE_GPRS | SAVE_MULTIPLE;
-
-      /* info->lr_save_p isn't yet set if the only reason lr needs to be
-	 saved is an out-of-line save or restore.  Set up the value for
-	 the next test (excluding out-of-line gprs).  */
-      bool lr_save_p = (info->lr_save_p
-			|| !(strategy & SAVE_INLINE_FPRS)
-			|| !(strategy & SAVE_INLINE_VRS)
-			|| !(strategy & REST_INLINE_FPRS)
-			|| !(strategy & REST_INLINE_VRS));
 
       /* The situation is more complicated with load multiple.  We'd
 	 prefer to use the out-of-line routines for restores, since the
@@ -23451,6 +23451,12 @@ rs6000_savres_strategy (rs6000_stack_t *info,
       if (info->first_fp_reg_save != 64 || !lr_save_p)
 	strategy |= REST_INLINE_GPRS | REST_MULTIPLE;
     }
+
+  /* Using the "exit" out-of-line routine does not improve code size
+     if using it would require lr to be saved and if only saving one
+     or two gprs.  */
+  else if (!lr_save_p && info->first_gp_reg_save > 29)
+    strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
   /* We can only use load multiple or the out-of-line routines to
      restore gprs if we've saved all the registers from

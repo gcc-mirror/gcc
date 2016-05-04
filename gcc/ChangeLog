@@ -1,3 +1,9 @@
+2016-05-05  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Don't use
+	out-of-line gpr restore for one or two regs if that would add
+	a save of lr.
+
 2016-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70873
