@@ -230,6 +230,18 @@
        (match_test "sh_disp_addr_displacement (op)
 		    <= sh_max_mov_insn_displacement (GET_MODE (op), false)")))
 
+;; Returns true if OP is a post-increment addressing mode memory reference.
+(define_predicate "post_inc_mem"
+  (and (match_code "mem")
+       (match_code "post_inc" "0")
+       (match_code "reg" "00")))
+
+;; Returns true if OP is a pre-decrement addressing mode memory reference.
+(define_predicate "pre_dec_mem"
+  (and (match_code "mem")
+       (match_code "pre_dec" "0")
+       (match_code "reg" "00")))
+
 ;; Returns 1 if the operand can be used in an SH2A movu.{b|w} insn.
 (define_predicate "zero_extend_movu_operand"
   (and (ior (match_operand 0 "displacement_mem_operand")

@@ -224,8 +224,12 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
 	}
     }
 
-  if (result.set_src != NULL)
-    gcc_assert (result.insn != NULL && result.set_rtx != NULL);
+  /* If the searched reg is found inside a (mem (post_inc:SI (reg))), set_of
+     will return NULL and set_rtx will be NULL.
+     In this case report a 'not found'.  result.insn will always be non-null
+     at this point, so no need to check it.  */
+  if (result.set_src != NULL && result.set_rtx == NULL)
+    result.set_src = NULL;
 
   return result;
 }

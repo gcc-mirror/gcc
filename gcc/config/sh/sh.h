@@ -1307,12 +1307,10 @@ struct sh_args {
 #define HAVE_POST_INCREMENT  TARGET_SH1
 #define HAVE_PRE_DECREMENT   TARGET_SH1
 
-#define USE_LOAD_POST_INCREMENT(mode)    ((mode == SImode || mode == DImode) \
-					  ? 0 : TARGET_SH1)
-#define USE_LOAD_PRE_DECREMENT(mode)     0
-#define USE_STORE_POST_INCREMENT(mode)   0
-#define USE_STORE_PRE_DECREMENT(mode)    ((mode == SImode || mode == DImode) \
-					  ? 0 : TARGET_SH1)
+#define USE_LOAD_POST_INCREMENT(mode) TARGET_SH1
+#define USE_LOAD_PRE_DECREMENT(mode) TARGET_SH2A
+#define USE_STORE_POST_INCREMENT(mode) TARGET_SH2A
+#define USE_STORE_PRE_DECREMENT(mode) TARGET_SH1
 
 /* If a memory clear move would take CLEAR_RATIO or more simple
    move-instruction pairs, we will do a setmem instead.  */
