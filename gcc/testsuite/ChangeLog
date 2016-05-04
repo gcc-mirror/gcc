@@ -1,3 +1,8 @@
+2016-05-04  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gcc.target/mips/mips16-attributes.c: Skip if -mmicromips
+	flag is present.
+
 2016-05-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/48778
