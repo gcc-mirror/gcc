@@ -282,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_t __new_size = _S_aligned_size(__bytes,
 					    _S_supported(__alignment) ?
 					    __alignment : _S_max_align);
-	return _Aligned_alloc().allocate(__new_size);
+	return _Aligned_alloc(_M_alloc).allocate(__new_size);
       }
 
       virtual void
@@ -292,9 +292,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_t __new_size = _S_aligned_size(__bytes,
 					    _S_supported(__alignment) ?
 					    __alignment : _S_max_align);
-	_Aligned_alloc().deallocate(static_cast<typename
-				    _Aligned_alloc::pointer>(__p),
-				    __new_size);
+	using _Ptr = typename allocator_traits<_Aligned_alloc>::pointer;
+	_Aligned_alloc(_M_alloc).deallocate(static_cast<_Ptr>(__p),
+					    __new_size);
       }
 
       virtual bool
@@ -306,8 +306,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       // Calculate Aligned Size
-      // Returns a size that is larger than or equal to __size and divided by
-      // __alignment, where __alignment is required to be the power of 2.
+      // Returns a size that is larger than or equal to __size and divisible
+      // by __alignment, where __alignment is required to be the power of 2.
       static size_t
       _S_aligned_size(size_t __size, size_t __alignment)
       { return ((__size - 1)|(__alignment - 1)) + 1; }
@@ -342,16 +342,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     protected:
       void*
-      do_allocate(size_t __bytes, size_t __alignment)
+      do_allocate(size_t, size_t)
       { std::__throw_bad_alloc(); }
 
       void
-      do_deallocate(void* __p, size_t __bytes, size_t __alignment)
+      do_deallocate(void*, size_t, size_t) noexcept
       { }
 
       bool
       do_is_equal(const memory_resource& __other) const noexcept
-      { }
+      { return this == &__other; }
 
       friend memory_resource* null_memory_resource() noexcept;
     };

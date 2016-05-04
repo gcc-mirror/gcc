@@ -1,7 +1,6 @@
-// { dg-do run { xfail *-*-* } }
 // { dg-options "-std=gnu++14" }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,17 +19,34 @@
 
 #include <experimental/memory_resource>
 #include <testsuite_hooks.h>
-#include <testsuite_allocator.h>
 
-using std::experimental::pmr::polymorphic_allocator;
-using std::experimental::pmr::null_memory_resource;
 using std::experimental::pmr::memory_resource;
+using std::experimental::pmr::null_memory_resource;
+using std::experimental::pmr::new_delete_resource;
 
-void test01() {
+// null_memory_resource
+void
+test06()
+{
+  bool test __attribute((unused)) = false;
+
   memory_resource* r = null_memory_resource();
-  auto p = r->allocate(1);
+  bool caught = false;
+
+  void* p = nullptr;
+  try {
+    p = r->allocate(1);
+  } catch (const std::bad_alloc&) {
+    caught = true;
+  }
+  VERIFY( caught );
+
+  VERIFY( *r == *r );
+  VERIFY( r->is_equal(*r) );
+  VERIFY( !r->is_equal(*new_delete_resource()) );
 }
 
-int main() {
-  test01();
+int main()
+{
+  test06();
 }
