@@ -1,5 +1,10 @@
 2016-05-04  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-inline.c (expand_call_inline): Fix path dealing with
+	making lhs of call statement undefined.
+
+2016-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c (cgraph_node::call_for_symbol_thunks_and_aliases):
 	Check availability on NODE, too.
 	* cgraph.h (symtab_node::call_for_symbol_and_aliases): Likewise.

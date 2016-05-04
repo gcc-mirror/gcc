@@ -4708,7 +4708,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	{
 	  tree name = gimple_call_lhs (stmt);
 	  tree var = SSA_NAME_VAR (name);
-	  tree def = ssa_default_def (cfun, var);
+	  tree def = var ? ssa_default_def (cfun, var) : NULL;
 
 	  if (def)
 	    {
@@ -4719,6 +4719,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	    }
 	  else
 	    {
+	      if (!var)
+		{
+		  tree var = create_tmp_reg_fn (cfun, TREE_TYPE (name), NULL);
+		  SET_SSA_NAME_VAR_OR_IDENTIFIER (name, var);
+		}
 	      /* Otherwise make this variable undefined.  */
 	      gsi_remove (&stmt_gsi, true);
 	      set_ssa_default_def (cfun, var, name);
