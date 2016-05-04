@@ -1,4 +1,9 @@
-2016-06-04  Matthew Fortune  <matthew.fortune@imgtec.com>
+2016-05-04  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_elf_output_toc_section_asm_op):
+	Align .toc.
+
+2016-05-04  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips-cpus.def (p5600): Avoid IMADD by default.
 	Clean up p5600 comments.
