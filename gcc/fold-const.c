@@ -11719,9 +11719,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       gcc_unreachable ();
 
     case BIT_FIELD_REF:
-      if ((TREE_CODE (arg0) == VECTOR_CST
-	   || (TREE_CODE (arg0) == CONSTRUCTOR
-	       && TREE_CODE (TREE_TYPE (arg0)) == VECTOR_TYPE))
+      if (TREE_CODE (arg0) == VECTOR_CST
 	  && (type == TREE_TYPE (TREE_TYPE (arg0))
 	      || (TREE_CODE (type) == VECTOR_TYPE
 		  && TREE_TYPE (type) == TREE_TYPE (TREE_TYPE (arg0)))))
@@ -11749,88 +11747,32 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		    vals[i] = VECTOR_CST_ELT (arg0, idx + i);
 		  return build_vector (type, vals);
 		}
-
-	      /* Constructor elements can be subvectors.  */
-	      unsigned HOST_WIDE_INT k = 1;
-	      if (CONSTRUCTOR_NELTS (arg0) != 0)
-		{
-		  tree cons_elem = TREE_TYPE (CONSTRUCTOR_ELT (arg0, 0)->value);
-		  if (TREE_CODE (cons_elem) == VECTOR_TYPE)
-		    k = TYPE_VECTOR_SUBPARTS (cons_elem);
-		}
-
-	      /* We keep an exact subset of the constructor elements.  */
-	      if ((idx % k) == 0 && (n % k) == 0)
-		{
-		  if (CONSTRUCTOR_NELTS (arg0) == 0)
-		    return build_constructor (type, NULL);
-		  idx /= k;
-		  n /= k;
-		  if (n == 1)
-		    {
-		      if (idx < CONSTRUCTOR_NELTS (arg0))
-			return CONSTRUCTOR_ELT (arg0, idx)->value;
-		      return build_zero_cst (type);
-		    }
-
-		  vec<constructor_elt, va_gc> *vals;
-		  vec_alloc (vals, n);
-		  for (unsigned i = 0;
-		       i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
-		       ++i)
-		    CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
-					    CONSTRUCTOR_ELT
-					      (arg0, idx + i)->value);
-		  return build_constructor (type, vals);
-		}
-	      /* The bitfield references a single constructor element.  */
-	      else if (idx + n <= (idx / k + 1) * k)
-		{
-		  if (CONSTRUCTOR_NELTS (arg0) <= idx / k)
-		    return build_zero_cst (type);
-		  else if (n == k)
-		    return CONSTRUCTOR_ELT (arg0, idx / k)->value;
-		  else
-		    return fold_build3_loc (loc, code, type,
-		      CONSTRUCTOR_ELT (arg0, idx / k)->value, op1,
-		      build_int_cst (TREE_TYPE (op2), (idx % k) * width));
-		}
 	    }
 	}
-
-      /* A bit-field-ref that referenced the full argument can be stripped.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	  && TYPE_PRECISION (TREE_TYPE (arg0)) == tree_to_uhwi (arg1)
-	  && integer_zerop (op2))
-	return fold_convert_loc (loc, type, arg0);
 
       /* On constants we can use native encode/interpret to constant
          fold (nearly) all BIT_FIELD_REFs.  */
       if (CONSTANT_CLASS_P (arg0)
 	  && can_native_interpret_type_p (type)
-	  && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (arg0)))
-	  /* This limitation should not be necessary, we just need to
-	     round this up to mode size.  */
-	  && tree_to_uhwi (op1) % BITS_PER_UNIT == 0
-	  /* Need bit-shifting of the buffer to relax the following.  */
-	  && tree_to_uhwi (op2) % BITS_PER_UNIT == 0)
+	  && BITS_PER_UNIT == 8)
 	{
 	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (op2);
 	  unsigned HOST_WIDE_INT bitsize = tree_to_uhwi (op1);
-	  unsigned HOST_WIDE_INT clen;
-	  clen = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (arg0)));
-	  /* ???  We cannot tell native_encode_expr to start at
-	     some random byte only.  So limit us to a reasonable amount
-	     of work.  */
-	  if (clen <= 4096)
+	  /* Limit us to a reasonable amount of work.  To relax the
+	     other limitations we need bit-shifting of the buffer
+	     and rounding up the size.  */
+	  if (bitpos % BITS_PER_UNIT == 0
+	      && bitsize % BITS_PER_UNIT == 0
+	      && bitsize <= MAX_BITSIZE_MODE_ANY_MODE)
 	    {
-	      unsigned char *b = XALLOCAVEC (unsigned char, clen);
-	      unsigned HOST_WIDE_INT len = native_encode_expr (arg0, b, clen);
+	      unsigned char b[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+	      unsigned HOST_WIDE_INT len
+		= native_encode_expr (arg0, b, bitsize / BITS_PER_UNIT,
+				      bitpos / BITS_PER_UNIT);
 	      if (len > 0
-		  && len * BITS_PER_UNIT >= bitpos + bitsize)
+		  && len * BITS_PER_UNIT >= bitsize)
 		{
-		  tree v = native_interpret_expr (type,
-						  b + bitpos / BITS_PER_UNIT,
+		  tree v = native_interpret_expr (type, b,
 						  bitsize / BITS_PER_UNIT);
 		  if (v)
 		    return v;

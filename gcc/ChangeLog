@@ -1,3 +1,10 @@
+2016-05-04  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Add BIT_FIELD_REF canonicalizations and vector
+	constructor simplifications.
+	* fold-const.c (fold_ternary_loc): Remove duplicate functionality
+	here.
+
 2016-05-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/predicates (post_inc_mem, pre_dec_mem): New predicates.
