@@ -1,3 +1,8 @@
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/48778
+	* gcc.dg/Waddress-2.c: New test.
+
 2016-05-04  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr70866.c: New.
