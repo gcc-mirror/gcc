@@ -370,6 +370,10 @@ Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
 Warn when all constructors and destructors are private.
 
+Wdangling-else
+C ObjC C++ ObjC++ Var(warn_dangling_else) Warning LangEnabledBy(C ObjC C++ ObjC++,Wparentheses)
+Warn about dangling else.
+
 Wdate-time
 C ObjC C++ ObjC++ CPP(warn_date_time) CppReason(CPP_W_DATE_TIME) Var(cpp_warn_date_time) Init(0) Warning
 Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage.

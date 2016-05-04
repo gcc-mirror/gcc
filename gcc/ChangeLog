@@ -1,3 +1,7 @@
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -Wdangling-else.
+
 2016-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config.gcc: Error out when conflicting multilib is detected.  Do not

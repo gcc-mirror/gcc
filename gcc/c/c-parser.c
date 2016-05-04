@@ -5542,7 +5542,7 @@ c_parser_if_statement (c_parser *parser, bool *if_p, vec<tree> *chain)
       /* Diagnose an ambiguous else if if-then-else is nested inside
 	 if-then.  */
       if (nested_if)
-	warning_at (loc, OPT_Wparentheses,
+	warning_at (loc, OPT_Wdangling_else,
 		    "suggest explicit braces to avoid ambiguous %<else%>");
 
       if (warn_duplicated_cond)

@@ -1,3 +1,7 @@
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wdangling-else): New option.
+
 2016-05-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70859

@@ -10951,7 +10951,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 		   statement which does have an else clause.  We warn
 		   about the potential ambiguity.  */
 		if (nested_if)
-		  warning_at (EXPR_LOCATION (statement), OPT_Wparentheses,
+		  warning_at (EXPR_LOCATION (statement), OPT_Wdangling_else,
 			      "suggest explicit braces to avoid ambiguous"
 			      " %<else%>");
 		if (warn_duplicated_cond)
