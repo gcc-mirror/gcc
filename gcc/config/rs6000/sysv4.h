@@ -40,10 +40,8 @@
 #undef	ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc"
 
-#define	TARGET_TOC		((rs6000_isa_flags & OPTION_MASK_64BIT)	\
-				 || ((rs6000_isa_flags			\
-				      & (OPTION_MASK_RELOCATABLE	\
-					 | OPTION_MASK_MINIMAL_TOC))	\
+#define	TARGET_TOC		(TARGET_64BIT				\
+				 || (TARGET_MINIMAL_TOC			\
 				     && flag_pic > 1)			\
 				 || DEFAULT_ABI != ABI_V4)
 
