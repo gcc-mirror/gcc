@@ -2,11 +2,9 @@
  *
  *************************************************************************
  *
- *  @copyright
- *  Copyright (C) 2009-2013, Intel Corporation
+ *  Copyright (C) 2009-2016, Intel Corporation
  *  All rights reserved.
  *  
- *  @copyright
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -21,7 +19,6 @@
  *      contributors may be used to endorse or promote products derived
  *      from this software without specific prior written permission.
  *  
- *  @copyright
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -34,6 +31,20 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
  *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *  
+ *  *********************************************************************
+ *  
+ *  PLEASE NOTE: This file is a downstream copy of a file mainitained in
+ *  a repository at cilkplus.org. Changes made to this file that are not
+ *  submitted through the contribution process detailed at
+ *  http://www.cilkplus.org/submit-cilk-contribution will be lost the next
+ *  time that a new version is released. Changes only submitted to the
+ *  GNU compiler collection or posted to the git repository at
+ *  https://bitbucket.org/intelcilkruntime/intel-cilk-runtime.git are
+ *  not tracked.
+ *  
+ *  We welcome your contributions to this open source project. Thank you
+ *  for your assistance in helping us improve Cilk Plus.
  **************************************************************************/
 
 #ifndef INCLUDED_RTS_COMMON_DOT_H
@@ -64,8 +75,8 @@
 #define COMMON_SYSDEP
 #define NON_COMMON
 
-#if !(defined __GNUC__ || defined __ICC)
-#   define __builtin_expect(a_, b_) a_
+#if !(defined __GNUC__ || defined __ICC) || defined(_WRS_KERNEL)
+#   define __builtin_expect(a_, b_) (a_)
 #endif
 
 #ifdef __cplusplus
@@ -103,7 +114,7 @@
  * intrinsics (__notify_intrinsic()).  For those that don't, #undef the
  * following definition:
  */
-//#define ENABLE_NOTIFY_ZC_INTRINSIC 1
+#define ENABLE_NOTIFY_ZC_INTRINSIC 1
 
 #if defined(__INTEL_COMPILER)
 /* The notify intrinsic was introduced in ICC 12.0. */
@@ -112,12 +123,16 @@
 #   endif
 #elif defined(__VXWORKS__)
 #   undef ENABLE_NOTIFY_ZC_INTRINSIC
+#elif defined(__GNUC__)
+#   // GCC doesn't support the notify intrinsic as of 4.9
+#   undef ENABLE_NOTIFY_ZC_INTRINSIC
 #elif defined(__clang__)
 #   if !defined(__has_extension) || !__has_extension(notify_zc_intrinsic)
 #      undef ENABLE_NOTIFY_ZC_INTRINSIC
 #   endif
-#elif defined(__arm__)
-// __notify_zc_intrinsic not yet supported by gcc for ARM
+#elif ! (defined(__x86_64__) || defined(__i386) \
+         || defined(_M_X64) || defined(_M_IX86))
+// __notify_zc_intrinsic currently supported only for intel architecture
 #   undef ENABLE_NOTIFY_ZC_INTRINSIC
 #endif
 

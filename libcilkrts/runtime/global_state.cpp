@@ -2,11 +2,9 @@
  *
  *************************************************************************
  *
- *  @copyright
- *  Copyright (C) 2009-2013, Intel Corporation
+ *  Copyright (C) 2009-2016, Intel Corporation
  *  All rights reserved.
  *  
- *  @copyright
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -21,7 +19,6 @@
  *      contributors may be used to endorse or promote products derived
  *      from this software without specific prior written permission.
  *  
- *  @copyright
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -34,6 +31,20 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
  *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *  
+ *  *********************************************************************
+ *  
+ *  PLEASE NOTE: This file is a downstream copy of a file mainitained in
+ *  a repository at cilkplus.org. Changes made to this file that are not
+ *  submitted through the contribution process detailed at
+ *  http://www.cilkplus.org/submit-cilk-contribution will be lost the next
+ *  time that a new version is released. Changes only submitted to the
+ *  GNU compiler collection or posted to the git repository at
+ *  https://bitbucket.org/intelcilkruntime/intel-cilk-runtime.git are
+ *  not tracked.
+ *  
+ *  We welcome your contributions to this open source project. Thank you
+ *  for your assistance in helping us improve Cilk Plus.
  **************************************************************************/
 
 #include "global_state.h"
@@ -57,7 +68,7 @@
 
 // TBD: There is a race when multiple threads try to initialize the
 // user_settable_values??
-// 
+//
 // Set to true if the user settable values portion of the global state
 // singleton is initialized, even if the rest of the singleton is not
 // initialized.
@@ -69,9 +80,10 @@ namespace {
 // cilkg_get_user_settable_values() is called and partially-zero-filled until
 // cilkg_init_global_state() is called.  The first field is filled in with
 // the size of a void* for the debugger and must be valid before initialization
-global_state_t global_state_singleton =
+static global_state_t global_state_singleton =
 {
-    sizeof(void *),    // addr_size
+    sizeof(void *),         // addr_size
+    GLOBAL_STATE_VERSION,   // structure version
 };
 
 
@@ -93,13 +105,15 @@ inline bool strmatch(const char* a, const char* b)
     return 0 == std::strcmp(a, b);
 }
 
-// Returns the integer value represented by the null-terminated string at 's'.
+// Returns the integer value represented by the null-terminated, decimal string
+// at 's'.
+
 inline long to_long(const char* s)
 {
     char *end;
 
     errno = 0;
-    return std::strtol(s, &end, 0);
+    return std::strtol(s, &end, 10);
 }
 
 #ifdef _WIN32
@@ -571,7 +585,6 @@ global_state_t* cilkg_init_global_state()
 
 void cilkg_publish_global_state(global_state_t* g) 
 {
-
     // TBD: which one of these needs to be executed first?  I say
     // cilkg_singleton_ptr needs to be set last, with a mfence in
     // between, since it is the flag that cilkg_is_published_is
@@ -584,7 +597,15 @@ void cilkg_publish_global_state(global_state_t* g)
 void cilkg_deinit_global_state()
 {
     cilkg_singleton_ptr = NULL;
-    __cilkrts_global_state = NULL;
+
+    // The pointer to the global state needs to remain valid for the
+    // debugger.  Thus, we can't clear the following pointer.
+    //    __cilkrts_global_state = NULL;
+
+
+    // We also don't reset the global state, so that if we resume
+    // execution after ending Cilk, user set variables (e.g., # of
+    // workers) remains valid.
 }
 
 int cilkg_is_published(void)

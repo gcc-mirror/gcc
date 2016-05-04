@@ -2,11 +2,9 @@
  *
  *************************************************************************
  *
- *  @copyright
- *  Copyright (C) 2012-2013, Intel Corporation
+ *  Copyright (C) 2012-2016, Intel Corporation
  *  All rights reserved.
  *  
- *  @copyright
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -21,7 +19,6 @@
  *      contributors may be used to endorse or promote products derived
  *      from this software without specific prior written permission.
  *  
- *  @copyright
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -34,6 +31,20 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
  *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *  
+ *  *********************************************************************
+ *  
+ *  PLEASE NOTE: This file is a downstream copy of a file mainitained in
+ *  a repository at cilkplus.org. Changes made to this file that are not
+ *  submitted through the contribution process detailed at
+ *  http://www.cilkplus.org/submit-cilk-contribution will be lost the next
+ *  time that a new version is released. Changes only submitted to the
+ *  GNU compiler collection or posted to the git repository at
+ *  https://bitbucket.org/intelcilkruntime/intel-cilk-runtime.git are
+ *  not tracked.
+ *  
+ *  We welcome your contributions to this open source project. Thank you
+ *  for your assistance in helping us improve Cilk Plus.
  *
  **************************************************************************/
 
@@ -46,8 +57,8 @@
 #include <stdlib.h>
 
 // clang is really strict about printf formats, so use the annoying integer
-// printf macros.  Unfortunately they're not avaiable on Windows
-#ifdef _WIN32
+// printf macros.  Unfortunately they're not available on Windows (or on VxWorks)
+#if defined(_WIN32) || defined(_WRS_KERNEL)
 #define PRIu64 "llu"
 #else
 #define __STDC_FORMAT_MACROS 1
@@ -251,10 +262,9 @@ char * walk_pedigree_nodes(char *p, const __cilkrts_pedigree *pnode)
     if (pnode->parent)
     {
         p = walk_pedigree_nodes(p, pnode->parent);
-        p += sprintf(p, "_");
+        p += cilk_snprintf_s(p, PEDIGREE_BUFF_SIZE, "%s", (char *) "_");
     }
-
-    return p + sprintf(p, "%" PRIu64, pnode->rank);
+    return p + cilk_snprintf_l(p, PEDIGREE_BUFF_SIZE, "%" PRIu64, pnode->rank);
 }
 
 /**
@@ -278,7 +288,7 @@ void write_to_replay_log (__cilkrts_worker *w, const char *type,
 
     // If we don't have an initial pedigree node, just use "0" to fill the slot
     if (NULL == initial_node)
-        strcpy(pedigree, "0");
+        cilk_strcpy_s(pedigree, PEDIGREE_BUFF_SIZE, "0");
     else
         walk_pedigree_nodes(pedigree, initial_node);
 
@@ -544,7 +554,9 @@ void load_recorded_log(__cilkrts_worker *w)
     FILE *f;
 
     // Open the log for reading
-    sprintf(local_replay_file_name, "%s%d.cilklog", w->g->record_replay_file_name,  w->self);
+    cilk_snprintf_si(local_replay_file_name, sizeof(local_replay_file_name),
+                     "%s%d.cilklog", w->g->record_replay_file_name,  w->self);
+
     f = fopen(local_replay_file_name, "r");
 
     // Make sure we found a log!
@@ -701,7 +713,8 @@ void replay_init_workers(global_state_t *g)
         for(i = 0; i < g->total_workers; ++i)
         {
             __cilkrts_worker *w = g->workers[i];
-            sprintf(worker_file_name, "replay_log_%d.cilklog",  w->self);
+            cilk_snprintf_i(worker_file_name, sizeof(worker_file_name),
+                            "replay_log_%d.cilklog",  w->self);
             w->l->record_replay_fptr = fopen(worker_file_name, "w+");
             CILK_ASSERT(NULL != w->l->record_replay_fptr);
         }
@@ -717,9 +730,8 @@ void replay_init_workers(global_state_t *g)
         for(i = 0; i < g->total_workers; ++i)
         {
             __cilkrts_worker *w = g->workers[i];
-            sprintf(worker_file_name, "%s%d.cilklog",
-                    g->record_replay_file_name,
-                    w->self);
+            cilk_snprintf_si(worker_file_name, sizeof(worker_file_name),
+                             "%s%d.cilklog", g->record_replay_file_name, w->self);
             w->l->record_replay_fptr = fopen(worker_file_name, "w+");
             CILK_ASSERT(NULL != w->l->record_replay_fptr);
         }

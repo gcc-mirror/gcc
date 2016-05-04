@@ -40,6 +40,9 @@ configure script:
 
 % ./configure --prefix=/your/path/to/lib
 
+It is also possible to use CMake if the above method does not apply
+well in your environment. Instruction is available in CMakeLists.txt.
+
 #
 #  2. USING:
 #
@@ -78,6 +81,9 @@ http://cilkplus.org/
 
 Changes to the Intel Cilk Plus runtime are welcome and should be
 contributed to the upstream version via http://cilkplus.org/.
+
+Thanks to Tobias Burnus for showing us the magic to make gcc and g++
+automatically include the Cilk Plus runtime.
 
 ------------------------
 Intel and Cilk are trademarks of Intel Corporation in the U.S. and/or
