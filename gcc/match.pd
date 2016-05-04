@@ -3229,3 +3229,99 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				 WARN_STRICT_OVERFLOW_COMPARISON);
 	}
 	(cmp @0 { res; })))))))))
+
+/* Canonicalizations of BIT_FIELD_REFs.  */
+
+(simplify
+ (BIT_FIELD_REF @0 @1 @2)
+ (switch
+  (if (TREE_CODE (TREE_TYPE (@0)) == COMPLEX_TYPE
+       && tree_int_cst_equal (@1, TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0)))))
+   (switch
+    (if (integer_zerop (@2))
+     (view_convert (realpart @0)))
+    (if (tree_int_cst_equal (@2, TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0)))))
+     (view_convert (imagpart @0)))))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (type)
+       /* A bit-field-ref that referenced the full argument can be stripped.  */
+       && ((compare_tree_int (@1, TYPE_PRECISION (TREE_TYPE (@0))) == 0
+	    && integer_zerop (@2))
+	   /* Low-parts can be reduced to integral conversions.
+	      ???  The following doesn't work for PDP endian.  */
+	   || (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+	       /* Don't even think about BITS_BIG_ENDIAN.  */
+	       && TYPE_PRECISION (TREE_TYPE (@0)) % BITS_PER_UNIT == 0
+	       && TYPE_PRECISION (type) % BITS_PER_UNIT == 0
+	       && compare_tree_int (@2, (BYTES_BIG_ENDIAN
+					 ? (TYPE_PRECISION (TREE_TYPE (@0))
+					    - TYPE_PRECISION (type))
+					 : 0)) == 0)))
+   (convert @0))))
+
+/* Simplify vector extracts.  */
+
+(simplify
+ (BIT_FIELD_REF CONSTRUCTOR@0 @1 @2)
+ (if (VECTOR_TYPE_P (TREE_TYPE (@0))
+      && (types_match (type, TREE_TYPE (TREE_TYPE (@0)))
+          || (VECTOR_TYPE_P (type)
+	      && types_match (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
+  (with
+   {
+     tree ctor = (TREE_CODE (@0) == SSA_NAME
+		  ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
+     tree eltype = TREE_TYPE (TREE_TYPE (ctor));
+     unsigned HOST_WIDE_INT width = tree_to_uhwi (TYPE_SIZE (eltype));
+     unsigned HOST_WIDE_INT n = tree_to_uhwi (@1);
+     unsigned HOST_WIDE_INT idx = tree_to_uhwi (@2);
+   }
+   (if (n != 0
+	&& (idx % width) == 0
+	&& (n % width) == 0
+	&& ((idx + n) / width) <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (ctor)))
+    (with
+     {
+       idx = idx / width;
+       n = n / width;
+       /* Constructor elements can be subvectors.  */
+       unsigned HOST_WIDE_INT k = 1;
+       if (CONSTRUCTOR_NELTS (ctor) != 0)
+         {
+           tree cons_elem = TREE_TYPE (CONSTRUCTOR_ELT (ctor, 0)->value);
+	   if (TREE_CODE (cons_elem) == VECTOR_TYPE)
+	     k = TYPE_VECTOR_SUBPARTS (cons_elem);
+	 }
+     }
+     (switch
+      /* We keep an exact subset of the constructor elements.  */
+      (if ((idx % k) == 0 && (n % k) == 0)
+       (if (CONSTRUCTOR_NELTS (ctor) == 0)
+        { build_constructor (type, NULL); }
+	(with
+	 {
+	   idx /= k;
+	   n /= k;
+	 }
+	 (if (n == 1)
+	  (if (idx < CONSTRUCTOR_NELTS (ctor))
+	   { CONSTRUCTOR_ELT (ctor, idx)->value; }
+	   { build_zero_cst (type); })
+	  {
+	    vec<constructor_elt, va_gc> *vals;
+	    vec_alloc (vals, n);
+	    for (unsigned i = 0;
+	         i < n && idx + i < CONSTRUCTOR_NELTS (ctor); ++i)
+	      CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
+				      CONSTRUCTOR_ELT (ctor, idx + i)->value);
+	    build_constructor (type, vals);
+	  }))))
+      /* The bitfield references a single constructor element.  */
+      (if (idx + n <= (idx / k + 1) * k)
+       (switch
+        (if (CONSTRUCTOR_NELTS (ctor) <= idx / k)
+	 { build_zero_cst (type); })
+	(if (n == k)
+	 { CONSTRUCTOR_ELT (ctor, idx / k)->value; })
+	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / k)->value; }
+		       @1 { bitsize_int ((idx % k) * width); })))))))))
