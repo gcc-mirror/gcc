@@ -1,3 +1,9 @@
+2016-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-coalesce.c (gimple_can_coalesce_p): Fix reference in head
+	comment.
+	(compute_samebase_partition_bases): Fix typo.
+
 2016-05-03  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (resolve_args_picking_1): Replace the frame_offset

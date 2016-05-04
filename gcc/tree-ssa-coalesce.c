@@ -1505,7 +1505,8 @@ dump_part_var_map (FILE *f, partition part, var_map map)
 /* Given SSA_NAMEs NAME1 and NAME2, return true if they are candidates for
    coalescing together, false otherwise.
 
-   This must stay consistent with var_map_base_init in tree-ssa-live.c.  */
+   This must stay consistent with compute_samebase_partition_bases and 
+   compute_optimized_partition_bases.  */
 
 bool
 gimple_can_coalesce_p (tree name1, tree name2)
@@ -1759,7 +1760,7 @@ compute_samebase_partition_bases (var_map map)
       else
 	/* This restricts what anonymous SSA names we can coalesce
 	   as it restricts the sets we compute conflicts for.
-	   Using TREE_TYPE to generate sets is the easies as
+	   Using TREE_TYPE to generate sets is the easiest as
 	   type equivalency also holds for SSA names with the same
 	   underlying decl.
 
