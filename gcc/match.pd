@@ -685,11 +685,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    constants are involved.  For example, convert
      (A | B) & (A | C) into A | (B & C)
    Further simplification will occur if B and C are constants.  */
-(for op (bit_and bit_ior)
-     rop (bit_ior bit_and)
+(for op (bit_and bit_ior bit_xor)
+     rop (bit_ior bit_and bit_and)
  (simplify
-  (op (convert? (rop:c @0 @1)) (convert? (rop @0 @2)))
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (op (convert? (rop:c @0 @1)) (convert? (rop:c @0 @2)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
+       && tree_nop_conversion_p (type, TREE_TYPE (@2)))
    (rop (convert @0) (op (convert @1) (convert @2))))))
 
 
@@ -786,12 +787,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (bitop:c (rbitop:c (bit_not @0) @1) @0)
   (bitop @0 @1)))
-
-/* Simplify (A & B) OP0 (C & B) to (A OP0 C) & B. */
-(for bitop (bit_and bit_ior bit_xor)
- (simplify
-  (bitop (bit_and:c @0 @1) (bit_and @2 @1))
-  (bit_and (bitop @0 @2) @1)))
 
 /* (x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2) */
 (simplify
