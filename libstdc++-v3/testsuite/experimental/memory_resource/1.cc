@@ -17,9 +17,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
 #include <experimental/memory_resource>
 #include <vector>
+#include <cstdlib>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
@@ -36,6 +36,7 @@ struct A
   static int ctor_count;
   static int dtor_count;
 };
+
 int A::ctor_count = 0;
 int A::dtor_count = 0;
 
@@ -43,7 +44,7 @@ struct CountedResource : public memory_resource
 {
 public:
   CountedResource() = default;
-  ~ CountedResource() = default;
+  ~CountedResource() = default;
 
   static size_t get_alloc_count()  { return alloc_count;  }
   static size_t get_dalloc_count() { return dalloc_count; }
@@ -54,23 +55,23 @@ protected:
   void* do_allocate(size_t bytes, size_t alignment)
   {
     alloc_count += bytes;
-    if (auto ptr = std::malloc(bytes)) {
+    if (auto ptr = std::malloc(bytes))
       return ptr;
-    }
     throw std::bad_alloc();
   }
 
   void do_deallocate(void *p, size_t bytes, size_t alignment)
   {
     dalloc_count += bytes;
-    free(p);
+    std::free(p);
   }
 
   bool do_is_equal(const memory_resource& __other) const noexcept
   { return this == &__other; }
 };
-  size_t  CountedResource::alloc_count  = 0;
-  size_t  CountedResource::dalloc_count = 0;
+
+size_t CountedResource::alloc_count  = 0;
+size_t CountedResource::dalloc_count = 0;
 
 void clear()
 {
@@ -81,8 +82,11 @@ void clear()
 }
 
 // memory resource
-void test01()
+void
+test01()
 {
+  bool test __attribute((unused)) = false;
+
   memory_resource* r = new_delete_resource();
   VERIFY(get_default_resource() == r);
   void *p = get_default_resource()->allocate(5);
@@ -101,8 +105,11 @@ void test01()
 }
 
 // polymorphic_allocator
-void test02()
+void
+test02()
 {
+  bool test __attribute((unused)) = false;
+
   clear();
   {
     CountedResource cr;
@@ -115,7 +122,11 @@ void test02()
   VERIFY(CountedResource::get_dalloc_count() == 5);
 }
 
-void test03() {
+void
+test03()
+{
+  bool test __attribute((unused)) = false;
+
   clear();
   CountedResource cr;
   polymorphic_allocator<A> pa(&cr);
@@ -129,7 +140,11 @@ void test03() {
   VERIFY(CountedResource::get_dalloc_count() == 1);
 }
 
-void test04() {
+void
+test04()
+{
+  bool test __attribute((unused)) = false;
+
   polymorphic_allocator<A> pa1(get_default_resource());
   polymorphic_allocator<A> pa2(get_default_resource());
   VERIFY(pa1 == pa2);
@@ -137,10 +152,10 @@ void test04() {
   VERIFY(pa1 == pa3);
 }
 
-int main() {
+int main()
+{
   test01();
   test02();
   test03();
   test04();
-  return 0;
 }
