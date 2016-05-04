@@ -44,10 +44,7 @@ MIPS_CPU ("mips4", PROCESSOR_R10000, 4, 0)
    isn't tuned to a specific processor.  */
 MIPS_CPU ("mips32", PROCESSOR_4KC, 32, PTF_AVOID_BRANCHLIKELY)
 MIPS_CPU ("mips32r2", PROCESSOR_74KF2_1, 33, PTF_AVOID_BRANCHLIKELY)
-/* mips32r3 is micromips hense why it uses the M4K processor.
-   mips32r5 should use the p5600 processor, but there is no definition 
-   for this yet, so in the short term we will use the same processor entry 
-   as mips32r2.  */
+/* mips32r3 is micromips hense why it uses the M4K processor.  */
 MIPS_CPU ("mips32r3", PROCESSOR_M4K, 34, PTF_AVOID_BRANCHLIKELY)
 MIPS_CPU ("mips32r5", PROCESSOR_P5600, 36, PTF_AVOID_BRANCHLIKELY)
 MIPS_CPU ("mips32r6", PROCESSOR_I6400, 37, 0)
@@ -150,7 +147,8 @@ MIPS_CPU ("1004kf1_1", PROCESSOR_24KF1_1, 33, 0)
 MIPS_CPU ("interaptiv", PROCESSOR_24KF2_1, 33, 0)
 
 /* MIPS32 Release 5 processors.  */
-MIPS_CPU ("p5600", PROCESSOR_P5600, 36, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("p5600", PROCESSOR_P5600, 36, PTF_AVOID_BRANCHLIKELY
+					| PTF_AVOID_IMADD)
 MIPS_CPU ("m5100", PROCESSOR_M5100, 36, PTF_AVOID_BRANCHLIKELY)
 MIPS_CPU ("m5101", PROCESSOR_M5100, 36, PTF_AVOID_BRANCHLIKELY)
 
