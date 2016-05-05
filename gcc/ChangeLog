@@ -1,3 +1,8 @@
+2016-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask3<round_name>): Use
+	v constraint instead of x.
+
 2016-05-05  Alan Modra  <amodra@gmail.com>
 
 	PR target/68662
