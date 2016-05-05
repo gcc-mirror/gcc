@@ -1,3 +1,8 @@
+2016-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_selection_statement): For RID_SWITCH,
+	pass if_p instead of NULL to cp_parser_implicitly_scoped_statement.
+
 2016-05-04  Marek Polacek  <polacek@redhat.com>
 
 	* parser.c (cp_parser_selection_statement): Replace OPT_Wparentheses

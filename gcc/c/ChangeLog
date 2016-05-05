@@ -1,3 +1,10 @@
+2016-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_switch_statement): Add IF_P argument,
+	parse it through to c_parser_c99_block_statement.
+	(c_parser_statement_after_labels): Adjust c_parser_switch_statement
+	caller.
+
 2016-05-04  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_if_statement): Replace OPT_Wparentheses with

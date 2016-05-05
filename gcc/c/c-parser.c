@@ -1305,7 +1305,7 @@ static void c_parser_statement (c_parser *, bool *);
 static void c_parser_statement_after_labels (c_parser *, bool *,
 					     vec<tree> * = NULL);
 static void c_parser_if_statement (c_parser *, bool *, vec<tree> *);
-static void c_parser_switch_statement (c_parser *);
+static void c_parser_switch_statement (c_parser *, bool *);
 static void c_parser_while_statement (c_parser *, bool, bool *);
 static void c_parser_do_statement (c_parser *, bool);
 static void c_parser_for_statement (c_parser *, bool, bool *);
@@ -5138,7 +5138,7 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	  c_parser_if_statement (parser, if_p, chain);
 	  break;
 	case RID_SWITCH:
-	  c_parser_switch_statement (parser);
+	  c_parser_switch_statement (parser, if_p);
 	  break;
 	case RID_WHILE:
 	  c_parser_while_statement (parser, false, if_p);
@@ -5570,7 +5570,7 @@ c_parser_if_statement (c_parser *parser, bool *if_p, vec<tree> *chain)
 */
 
 static void
-c_parser_switch_statement (c_parser *parser)
+c_parser_switch_statement (c_parser *parser, bool *if_p)
 {
   struct c_expr ce;
   tree block, expr, body, save_break;
@@ -5605,7 +5605,7 @@ c_parser_switch_statement (c_parser *parser)
   c_start_case (switch_loc, switch_cond_loc, expr, explicit_cast_p);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
-  body = c_parser_c99_block_statement (parser, NULL/*if??*/);
+  body = c_parser_c99_block_statement (parser, if_p);
   c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
