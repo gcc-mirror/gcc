@@ -1,8 +1,20 @@
+2016-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70873
+	* config/i386/i386-protos.h (ix86_standard_x87sse_constant_load_p):
+	New prototype.
+	* config/i386/i386.c (ix86_standard_x87sse_constant_load_p): New.
+	* config/i386/i386.md (push mem splitter): Use find_constant_src in
+	the splitter condition.
+	(FP load splitter): Use ix86_standard_x87sse_constant_load_p in
+	the splitter condition.
+	(FP float_extend load splitter): Ditto.
+
 2016-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (peehole2 patterns): Change true_regnum
-	to REGNUM in all peephole2 patterns.
-	(post-reload splitters): Change true_regnum to REGNUM in
+	to REGNO in all peephole2 patterns.
+	(post-reload splitters): Change true_regnum to REGNO in
 	post-reload splitters.
 	(zero_extend splitters): Use general_reg_operand and
 	nonimmediate_gr_operand predicates.
