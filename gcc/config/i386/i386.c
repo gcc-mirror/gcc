@@ -11219,6 +11219,26 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
   gcc_unreachable ();
 }
 
+/* Returns true if INSN can be transformed from a memory load
+   to a supported FP constant load.  */
+
+bool
+ix86_standard_x87sse_constant_load_p (const rtx_insn *insn, rtx dst)
+{
+  rtx src = find_constant_src (insn);
+
+  gcc_assert (REG_P (dst));
+
+  if (src == NULL
+      || (SSE_REGNO_P (REGNO (dst))
+	  && standard_sse_constant_p (src, GET_MODE (dst)) != 1)
+      || (STACK_REGNO_P (REGNO (dst))
+	   && standard_80387_constant_p (src) < 1))
+    return false;
+
+  return true;
+}
+
 /* Returns true if OP contains a symbol reference */
 
 bool
