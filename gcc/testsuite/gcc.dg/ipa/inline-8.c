@@ -5,6 +5,7 @@
 /* { dg-options "-O2"  } */
 /* { dg-add-options c99_runtime } */
 #include <math.h>
+extern int isnanf (float);
 /* Can't be inlined because isnanf will be optimized out.  */
 int
 cmp (float a)

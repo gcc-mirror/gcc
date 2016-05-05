@@ -1,3 +1,7 @@
+2016-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/inline-8.c	(isnanf): Declare.
+
 2016-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512f-vfmadd-1.c: New test.
