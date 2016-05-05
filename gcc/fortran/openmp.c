@@ -640,646 +640,711 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
       needs_space = false;
       first = false;
       gfc_gobble_whitespace ();
-      if ((mask & OMP_CLAUSE_ASYNC) && !c->async)
-	if (gfc_match ("async") == MATCH_YES)
-	  {
-	    c->async = true;
-	    needs_space = false;
-	    if (gfc_match (" ( %e )", &c->async_expr) != MATCH_YES)
-	      {
-		c->async_expr = gfc_get_constant_expr (BT_INTEGER,
-						       gfc_default_integer_kind,
-						      &gfc_current_locus);
-		mpz_set_si (c->async_expr->value.integer, GOMP_ASYNC_NOVAL);
-	      }
-	    continue;
-	  }
-      if ((mask & OMP_CLAUSE_GANG) && !c->gang)
-	if (gfc_match ("gang") == MATCH_YES)
-	  {
-	    c->gang = true;
-	    if (match_oacc_clause_gang(c) == MATCH_YES)
-	      needs_space = false;
-	    else
-	      needs_space = true;
-	    continue;
-	  }
-      if ((mask & OMP_CLAUSE_WORKER) && !c->worker)
-	if (gfc_match ("worker") == MATCH_YES)
-	  {
-	    c->worker = true;
-	    if (gfc_match (" ( num : %e )", &c->worker_expr) == MATCH_YES
-	        || gfc_match (" ( %e )", &c->worker_expr) == MATCH_YES)
-	      needs_space = false;
-	    else
-	      needs_space = true;
-	    continue;
-	  }
-      if ((mask & OMP_CLAUSE_VECTOR_LENGTH) && c->vector_length_expr == NULL
-	  && gfc_match ("vector_length ( %e )", &c->vector_length_expr)
-	  == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_VECTOR) && !c->vector)
-	if (gfc_match ("vector") == MATCH_YES)
-	  {
-	    c->vector = true;
-	    if (gfc_match (" ( length : %e )", &c->vector_expr) == MATCH_YES
-	        || gfc_match (" ( %e )", &c->vector_expr) == MATCH_YES)
-	      needs_space = false;
-	    else
-	      needs_space = true;
-	    continue;
-	  }
-      if ((mask & OMP_CLAUSE_IF) && c->if_expr == NULL
-	  && gfc_match ("if ( %e )", &c->if_expr) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_FINAL) && c->final_expr == NULL
-	  && gfc_match ("final ( %e )", &c->final_expr) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_NUM_THREADS) && c->num_threads == NULL
-	  && gfc_match ("num_threads ( %e )", &c->num_threads) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_PRIVATE)
-	  && gfc_match_omp_variable_list ("private (",
-					  &c->lists[OMP_LIST_PRIVATE], true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_FIRSTPRIVATE)
-	  && gfc_match_omp_variable_list ("firstprivate (",
-					  &c->lists[OMP_LIST_FIRSTPRIVATE],
-					  true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_LASTPRIVATE)
-	  && gfc_match_omp_variable_list ("lastprivate (",
-					  &c->lists[OMP_LIST_LASTPRIVATE],
-					  true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_COPYPRIVATE)
-	  && gfc_match_omp_variable_list ("copyprivate (",
-					  &c->lists[OMP_LIST_COPYPRIVATE],
-					  true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_SHARED)
-	  && gfc_match_omp_variable_list ("shared (",
-					  &c->lists[OMP_LIST_SHARED], true)
-	     == MATCH_YES)
-	continue;
-      if (mask & OMP_CLAUSE_COPYIN)
+      bool end_colon;
+      gfc_omp_namelist **head;
+      old_loc = gfc_current_locus;
+      char pc = gfc_peek_ascii_char ();
+      switch (pc)
 	{
-	  if (openacc)
+	case 'a':
+	  end_colon = false;
+	  head = NULL;
+	  if ((mask & OMP_CLAUSE_ALIGNED)
+	      && gfc_match_omp_variable_list ("aligned (",
+					      &c->lists[OMP_LIST_ALIGNED],
+					      false, &end_colon,
+					      &head) == MATCH_YES)
 	    {
-	      if (gfc_match ("copyin ( ") == MATCH_YES
-		  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-					       OMP_MAP_FORCE_TO))
+	      gfc_expr *alignment = NULL;
+	      gfc_omp_namelist *n;
+
+	      if (end_colon && gfc_match (" %e )", &alignment) != MATCH_YES)
+		{
+		  gfc_free_omp_namelist (*head);
+		  gfc_current_locus = old_loc;
+		  *head = NULL;
+		  break;
+		}
+	      for (n = *head; n; n = n->next)
+		if (n->next && alignment)
+		  n->expr = gfc_copy_expr (alignment);
+		else
+		  n->expr = alignment;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_ASYNC)
+	      && !c->async
+	      && gfc_match ("async") == MATCH_YES)
+	    {
+	      c->async = true;
+	      needs_space = false;
+	      if (gfc_match (" ( %e )", &c->async_expr) != MATCH_YES)
+		{
+		  c->async_expr
+		    = gfc_get_constant_expr (BT_INTEGER,
+					     gfc_default_integer_kind,
+					     &gfc_current_locus);
+		  mpz_set_si (c->async_expr->value.integer, GOMP_ASYNC_NOVAL);
+		}
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_AUTO)
+	      && !c->par_auto
+	      && gfc_match ("auto") == MATCH_YES)
+	    {
+	      c->par_auto = true;
+	      needs_space = true;
+	      continue;
+	    }
+	  break;
+	case 'c':
+	  if ((mask & OMP_CLAUSE_COLLAPSE)
+	      && !c->collapse)
+	    {
+	      gfc_expr *cexpr = NULL;
+	      match m = gfc_match ("collapse ( %e )", &cexpr);
+
+	      if (m == MATCH_YES)
+		{
+		  int collapse;
+		  const char *p = gfc_extract_int (cexpr, &collapse);
+		  if (p)
+		    {
+		      gfc_error_now (p);
+		      collapse = 1;
+		    }
+		  else if (collapse <= 0)
+		    {
+		      gfc_error_now ("COLLAPSE clause argument not"
+				     " constant positive integer at %C");
+		      collapse = 1;
+		    }
+		  c->collapse = collapse;
+		  gfc_free_expr (cexpr);
+		  continue;
+		}
+	    }
+	  if ((mask & OMP_CLAUSE_COPY)
+	      && gfc_match ("copy ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_TOFROM))
+	    continue;
+	  if (mask & OMP_CLAUSE_COPYIN)
+	    {
+	      if (openacc)
+		{
+		  if (gfc_match ("copyin ( ") == MATCH_YES
+		      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+						   OMP_MAP_FORCE_TO))
+		    continue;
+		}
+	      else if (gfc_match_omp_variable_list ("copyin (",
+						    &c->lists[OMP_LIST_COPYIN],
+						    true) == MATCH_YES)
 		continue;
 	    }
-	  else if (gfc_match_omp_variable_list ("copyin (",
-						&c->lists[OMP_LIST_COPYIN],
-						true) == MATCH_YES)
+	  if ((mask & OMP_CLAUSE_COPYOUT)
+	      && gfc_match ("copyout ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_FROM))
 	    continue;
-	}
-      if ((mask & OMP_CLAUSE_NUM_GANGS) && c->num_gangs_expr == NULL
-	  && gfc_match ("num_gangs ( %e )", &c->num_gangs_expr) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_NUM_WORKERS) && c->num_workers_expr == NULL
-	  && gfc_match ("num_workers ( %e )", &c->num_workers_expr)
-	  == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_COPY)
-	  && gfc_match ("copy ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_TOFROM))
-	continue;
-      if ((mask & OMP_CLAUSE_COPYOUT)
-	  && gfc_match ("copyout ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_FROM))
-	continue;
-      if ((mask & OMP_CLAUSE_CREATE)
-	  && gfc_match ("create ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_ALLOC))
-	continue;
-      if ((mask & OMP_CLAUSE_DELETE)
-	  && gfc_match ("delete ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_DELETE))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT)
-	  && gfc_match ("present ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_PRESENT))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_COPY)
-	  && gfc_match ("present_or_copy ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_TOFROM))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_COPY)
-	  && gfc_match ("pcopy ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_TOFROM))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_COPYIN)
-	  && gfc_match ("present_or_copyin ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_TO))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_COPYIN)
-	  && gfc_match ("pcopyin ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_TO))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_COPYOUT)
-	  && gfc_match ("present_or_copyout ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FROM))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_COPYOUT)
-	  && gfc_match ("pcopyout ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FROM))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_CREATE)
-	  && gfc_match ("present_or_create ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_ALLOC))
-	continue;
-      if ((mask & OMP_CLAUSE_PRESENT_OR_CREATE)
-	  && gfc_match ("pcreate ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_ALLOC))
-	continue;
-      if ((mask & OMP_CLAUSE_DEVICEPTR)
-	  && gfc_match ("deviceptr ( ") == MATCH_YES)
-	{
-	  gfc_omp_namelist **list = &c->lists[OMP_LIST_MAP];
-	  gfc_omp_namelist **head = NULL;
-	  if (gfc_match_omp_variable_list ("", list, true, NULL, &head, false)
-	      == MATCH_YES)
+	  if ((mask & OMP_CLAUSE_COPYPRIVATE)
+	      && gfc_match_omp_variable_list ("copyprivate (",
+					      &c->lists[OMP_LIST_COPYPRIVATE],
+					      true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_CREATE)
+	      && gfc_match ("create ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_ALLOC))
+	    continue;
+	  break;
+	case 'd':
+	  if ((mask & OMP_CLAUSE_DELETE)
+	      && gfc_match ("delete ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_DELETE))
+	    continue;
+	  if ((mask & OMP_CLAUSE_DEFAULT)
+	      && c->default_sharing == OMP_DEFAULT_UNKNOWN)
 	    {
-	      gfc_omp_namelist *n;
-	      for (n = *head; n; n = n->next)
-		n->u.map_op = OMP_MAP_FORCE_DEVICEPTR;
-	      continue;
+	      if (gfc_match ("default ( none )") == MATCH_YES)
+		c->default_sharing = OMP_DEFAULT_NONE;
+	      else if (openacc)
+		/* c->default_sharing = OMP_DEFAULT_UNKNOWN */;
+	      else if (gfc_match ("default ( shared )") == MATCH_YES)
+		c->default_sharing = OMP_DEFAULT_SHARED;
+	      else if (gfc_match ("default ( private )") == MATCH_YES)
+		c->default_sharing = OMP_DEFAULT_PRIVATE;
+	      else if (gfc_match ("default ( firstprivate )") == MATCH_YES)
+		c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
+	      if (c->default_sharing != OMP_DEFAULT_UNKNOWN)
+		continue;
 	    }
-	}
-      if ((mask & OMP_CLAUSE_USE_DEVICE)
-	  && gfc_match_omp_variable_list ("use_device (",
-					  &c->lists[OMP_LIST_USE_DEVICE], true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_DEVICE_RESIDENT)
-	  && gfc_match_omp_variable_list ("device_resident (",
-					  &c->lists[OMP_LIST_DEVICE_RESIDENT],
-					  true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_LINK)
-	  && gfc_match_oacc_clause_link ("link (",
-					  &c->lists[OMP_LIST_LINK])
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_OACC_DEVICE)
-	  && gfc_match ("device ( ") == MATCH_YES
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_TO))
-	continue;
-      if ((mask & OMP_CLAUSE_HOST_SELF)
-	  && (gfc_match ("host ( ") == MATCH_YES
-	      || gfc_match ("self ( ") == MATCH_YES)
-	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_FROM))
-	continue;
-      if ((mask & OMP_CLAUSE_TILE)
-	  && !c->tile_list
-	  && match_oacc_expr_list ("tile (", &c->tile_list, true) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_SEQ) && !c->seq
-	  && gfc_match ("seq") == MATCH_YES)
-	{
-	  c->seq = true;
-	  needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_INDEPENDENT) && !c->independent
-	  && gfc_match ("independent") == MATCH_YES)
-	{
-	  c->independent = true;
-	  needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_AUTO) && !c->par_auto
-	        && gfc_match ("auto") == MATCH_YES)
-	{
-	  c->par_auto = true;
-	  needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_WAIT) && !c->wait
-	        && gfc_match ("wait") == MATCH_YES)
-	{
-	  c->wait = true;
-	  match_oacc_expr_list (" (", &c->wait_list, false);
-	  continue;
-	}
-      old_loc = gfc_current_locus;
-      if ((mask & OMP_CLAUSE_REDUCTION)
-	  && gfc_match ("reduction ( ") == MATCH_YES)
-	{
-	  gfc_omp_reduction_op rop = OMP_REDUCTION_NONE;
-	  char buffer[GFC_MAX_SYMBOL_LEN + 3];
-	  if (gfc_match_char ('+') == MATCH_YES)
-	    rop = OMP_REDUCTION_PLUS;
-	  else if (gfc_match_char ('*') == MATCH_YES)
-	    rop = OMP_REDUCTION_TIMES;
-	  else if (gfc_match_char ('-') == MATCH_YES)
-	    rop = OMP_REDUCTION_MINUS;
-	  else if (gfc_match (".and.") == MATCH_YES)
-	    rop = OMP_REDUCTION_AND;
-	  else if (gfc_match (".or.") == MATCH_YES)
-	    rop = OMP_REDUCTION_OR;
-	  else if (gfc_match (".eqv.") == MATCH_YES)
-	    rop = OMP_REDUCTION_EQV;
-	  else if (gfc_match (".neqv.") == MATCH_YES)
-	    rop = OMP_REDUCTION_NEQV;
-	  if (rop != OMP_REDUCTION_NONE)
-	    snprintf (buffer, sizeof buffer,
-		      "operator %s", gfc_op2string ((gfc_intrinsic_op) rop));
-	  else if (gfc_match_defined_op_name (buffer + 1, 1) == MATCH_YES)
+	  if ((mask & OMP_CLAUSE_DEPEND)
+	      && gfc_match ("depend ( ") == MATCH_YES)
 	    {
-	      buffer[0] = '.';
-	      strcat (buffer, ".");
-	    }
-	  else if (gfc_match_name (buffer) == MATCH_YES)
-	    {
-	      gfc_symbol *sym;
-	      const char *n = buffer;
-
-	      gfc_find_symbol (buffer, NULL, 1, &sym);
-	      if (sym != NULL)
+	      match m = MATCH_YES;
+	      gfc_omp_depend_op depend_op = OMP_DEPEND_OUT;
+	      if (gfc_match ("inout") == MATCH_YES)
+		depend_op = OMP_DEPEND_INOUT;
+	      else if (gfc_match ("in") == MATCH_YES)
+		depend_op = OMP_DEPEND_IN;
+	      else if (gfc_match ("out") == MATCH_YES)
+		depend_op = OMP_DEPEND_OUT;
+	      else
+		m = MATCH_NO;
+	      head = NULL;
+	      if (m == MATCH_YES
+		  && gfc_match_omp_variable_list (" : ",
+						  &c->lists[OMP_LIST_DEPEND],
+						  false, NULL, &head,
+						  true) == MATCH_YES)
 		{
-		  if (sym->attr.intrinsic)
-		    n = sym->name;
-		  else if ((sym->attr.flavor != FL_UNKNOWN
-			    && sym->attr.flavor != FL_PROCEDURE)
-			   || sym->attr.external
-			   || sym->attr.generic
-			   || sym->attr.entry
-			   || sym->attr.result
-			   || sym->attr.dummy
-			   || sym->attr.subroutine
-			   || sym->attr.pointer
-			   || sym->attr.target
-			   || sym->attr.cray_pointer
-			   || sym->attr.cray_pointee
-			   || (sym->attr.proc != PROC_UNKNOWN
-			       && sym->attr.proc != PROC_INTRINSIC)
-			   || sym->attr.if_source != IFSRC_UNKNOWN
-			   || sym == sym->ns->proc_name)
-		    {
-		      sym = NULL;
-		      n = NULL;
-		    }
-		  else
-		    n = sym->name;
-		}
-	      if (n == NULL)
-		rop = OMP_REDUCTION_NONE;
-	      else if (strcmp (n, "max") == 0)
-		rop = OMP_REDUCTION_MAX;
-	      else if (strcmp (n, "min") == 0)
-		rop = OMP_REDUCTION_MIN;
-	      else if (strcmp (n, "iand") == 0)
-		rop = OMP_REDUCTION_IAND;
-	      else if (strcmp (n, "ior") == 0)
-		rop = OMP_REDUCTION_IOR;
-	      else if (strcmp (n, "ieor") == 0)
-		rop = OMP_REDUCTION_IEOR;
-	      if (rop != OMP_REDUCTION_NONE
-		  && sym != NULL
-		  && ! sym->attr.intrinsic
-		  && ! sym->attr.use_assoc
-		  && ((sym->attr.flavor == FL_UNKNOWN
-		       && !gfc_add_flavor (&sym->attr, FL_PROCEDURE,
-					   sym->name, NULL))
-		      || !gfc_add_intrinsic (&sym->attr, NULL)))
-		rop = OMP_REDUCTION_NONE;
-	    }
-	  else
-	    buffer[0] = '\0';
-	  gfc_omp_udr *udr
-	    = (buffer[0]
-	       ? gfc_find_omp_udr (gfc_current_ns, buffer, NULL) : NULL);
-	  gfc_omp_namelist **head = NULL;
-	  if (rop == OMP_REDUCTION_NONE && udr)
-	    rop = OMP_REDUCTION_USER;
-
-	  if (gfc_match_omp_variable_list (" :",
-					   &c->lists[OMP_LIST_REDUCTION],
-					   false, NULL, &head, openacc)
-	      == MATCH_YES)
-	    {
-	      gfc_omp_namelist *n;
-	      if (rop == OMP_REDUCTION_NONE)
-		{
-		  n = *head;
-		  *head = NULL;
-		  gfc_error_now ("!$OMP DECLARE REDUCTION %s not found "
-				 "at %L", buffer, &old_loc);
-		  gfc_free_omp_namelist (n);
+		  gfc_omp_namelist *n;
+		  for (n = *head; n; n = n->next)
+		    n->u.depend_op = depend_op;
+		  continue;
 		}
 	      else
-		for (n = *head; n; n = n->next)
-		  {
-		    n->u.reduction_op = rop;
-		    if (udr)
-		      {
-			n->udr = gfc_get_omp_namelist_udr ();
-			n->udr->udr = udr;
-		      }
-		  }
-	      continue;
+		gfc_current_locus = old_loc;
 	    }
-	  else
-	    gfc_current_locus = old_loc;
-	}
-      if ((mask & OMP_CLAUSE_DEFAULT)
-	  && c->default_sharing == OMP_DEFAULT_UNKNOWN)
-	{
-	  if (gfc_match ("default ( none )") == MATCH_YES)
-	    c->default_sharing = OMP_DEFAULT_NONE;
-	  else if (openacc)
-	    /* c->default_sharing = OMP_DEFAULT_UNKNOWN */;
-	  else if (gfc_match ("default ( shared )") == MATCH_YES)
-	    c->default_sharing = OMP_DEFAULT_SHARED;
-	  else if (gfc_match ("default ( private )") == MATCH_YES)
-	    c->default_sharing = OMP_DEFAULT_PRIVATE;
-	  else if (gfc_match ("default ( firstprivate )") == MATCH_YES)
-	    c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
-	  if (c->default_sharing != OMP_DEFAULT_UNKNOWN)
+	  if ((mask & OMP_CLAUSE_DEVICE)
+	      && c->device == NULL
+	      && gfc_match ("device ( %e )", &c->device) == MATCH_YES)
 	    continue;
-	}
-      old_loc = gfc_current_locus;
-      if ((mask & OMP_CLAUSE_SCHEDULE)
-	  && c->sched_kind == OMP_SCHED_NONE
-	  && gfc_match ("schedule ( ") == MATCH_YES)
-	{
-	  if (gfc_match ("static") == MATCH_YES)
-	    c->sched_kind = OMP_SCHED_STATIC;
-	  else if (gfc_match ("dynamic") == MATCH_YES)
-	    c->sched_kind = OMP_SCHED_DYNAMIC;
-	  else if (gfc_match ("guided") == MATCH_YES)
-	    c->sched_kind = OMP_SCHED_GUIDED;
-	  else if (gfc_match ("runtime") == MATCH_YES)
-	    c->sched_kind = OMP_SCHED_RUNTIME;
-	  else if (gfc_match ("auto") == MATCH_YES)
-	    c->sched_kind = OMP_SCHED_AUTO;
-	  if (c->sched_kind != OMP_SCHED_NONE)
+	  if ((mask & OMP_CLAUSE_OACC_DEVICE)
+	      && gfc_match ("device ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_TO))
+	    continue;
+	  if ((mask & OMP_CLAUSE_DEVICEPTR)
+	      && gfc_match ("deviceptr ( ") == MATCH_YES)
+	    {
+	      gfc_omp_namelist **list = &c->lists[OMP_LIST_MAP];
+	      gfc_omp_namelist **head = NULL;
+	      if (gfc_match_omp_variable_list ("", list, true, NULL,
+					       &head, false) == MATCH_YES)
+		{
+		  gfc_omp_namelist *n;
+		  for (n = *head; n; n = n->next)
+		    n->u.map_op = OMP_MAP_FORCE_DEVICEPTR;
+		  continue;
+		}
+	    }
+	  if ((mask & OMP_CLAUSE_DEVICE_RESIDENT)
+	      && gfc_match_omp_variable_list
+		   ("device_resident (",
+		    &c->lists[OMP_LIST_DEVICE_RESIDENT], true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_DIST_SCHEDULE)
+	      && c->dist_sched_kind == OMP_SCHED_NONE
+	      && gfc_match ("dist_schedule ( static") == MATCH_YES)
 	    {
 	      match m = MATCH_NO;
-	      if (c->sched_kind != OMP_SCHED_RUNTIME
-		  && c->sched_kind != OMP_SCHED_AUTO)
-		m = gfc_match (" , %e )", &c->chunk_size);
+	      c->dist_sched_kind = OMP_SCHED_STATIC;
+	      m = gfc_match (" , %e )", &c->dist_chunk_size);
 	      if (m != MATCH_YES)
 		m = gfc_match_char (')');
 	      if (m != MATCH_YES)
-		c->sched_kind = OMP_SCHED_NONE;
-	    }
-	  if (c->sched_kind != OMP_SCHED_NONE)
-	    continue;
-	  else
-	    gfc_current_locus = old_loc;
-	}
-      if ((mask & OMP_CLAUSE_ORDERED) && !c->ordered
-	  && gfc_match ("ordered") == MATCH_YES)
-	{
-	  c->ordered = needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_UNTIED) && !c->untied
-	  && gfc_match ("untied") == MATCH_YES)
-	{
-	  c->untied = needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_MERGEABLE) && !c->mergeable
-	  && gfc_match ("mergeable") == MATCH_YES)
-	{
-	  c->mergeable = needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_COLLAPSE) && !c->collapse)
-	{
-	  gfc_expr *cexpr = NULL;
-	  match m = gfc_match ("collapse ( %e )", &cexpr);
-
-	  if (m == MATCH_YES)
-	    {
-	      int collapse;
-	      const char *p = gfc_extract_int (cexpr, &collapse);
-	      if (p)
 		{
-		  gfc_error_now (p);
-		  collapse = 1;
+		  c->dist_sched_kind = OMP_SCHED_NONE;
+		  gfc_current_locus = old_loc;
 		}
-	      else if (collapse <= 0)
+	      else
+		continue;
+	    }
+	  break;
+	case 'f':
+	  if ((mask & OMP_CLAUSE_FINAL)
+	      && c->final_expr == NULL
+	      && gfc_match ("final ( %e )", &c->final_expr) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_FIRSTPRIVATE)
+	      && gfc_match_omp_variable_list ("firstprivate (",
+					      &c->lists[OMP_LIST_FIRSTPRIVATE],
+					      true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_FROM)
+	      && gfc_match_omp_variable_list ("from (",
+					      &c->lists[OMP_LIST_FROM], false,
+					      NULL, &head, true) == MATCH_YES)
+	    continue;
+	  break;
+	case 'g':
+	  if ((mask & OMP_CLAUSE_GANG)
+	      && !c->gang
+	      && gfc_match ("gang") == MATCH_YES)
+	    {
+	      c->gang = true;
+	      if (match_oacc_clause_gang(c) == MATCH_YES)
+		needs_space = false;
+	      else
+		needs_space = true;
+	      continue;
+	    }
+	  break;
+	case 'h':
+	  if ((mask & OMP_CLAUSE_HOST_SELF)
+	      && gfc_match ("host ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_FROM))
+	    continue;
+	  break;
+	case 'i':
+	  if ((mask & OMP_CLAUSE_IF)
+	      && c->if_expr == NULL
+	      && gfc_match ("if ( %e )", &c->if_expr) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_INBRANCH)
+	      && !c->inbranch
+	      && !c->notinbranch
+	      && gfc_match ("inbranch") == MATCH_YES)
+	    {
+	      c->inbranch = needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_INDEPENDENT)
+	      && !c->independent
+	      && gfc_match ("independent") == MATCH_YES)
+	    {
+	      c->independent = true;
+	      needs_space = true;
+	      continue;
+	    }
+	  break;
+	case 'l':
+	  if ((mask & OMP_CLAUSE_LASTPRIVATE)
+	      && gfc_match_omp_variable_list ("lastprivate (",
+					      &c->lists[OMP_LIST_LASTPRIVATE],
+					      true) == MATCH_YES)
+	    continue;
+	  end_colon = false;
+	  head = NULL;
+	  if ((mask & OMP_CLAUSE_LINEAR)
+	      && gfc_match_omp_variable_list ("linear (",
+					      &c->lists[OMP_LIST_LINEAR],
+					      false, &end_colon,
+					      &head) == MATCH_YES)
+	    {
+	      gfc_expr *step = NULL;
+
+	      if (end_colon && gfc_match (" %e )", &step) != MATCH_YES)
 		{
-		  gfc_error_now ("COLLAPSE clause argument not"
-				 " constant positive integer at %C");
-		  collapse = 1;
+		  gfc_free_omp_namelist (*head);
+		  gfc_current_locus = old_loc;
+		  *head = NULL;
+		  break;
 		}
-	      c->collapse = collapse;
-	      gfc_free_expr (cexpr);
+	      else if (!end_colon)
+		{
+		  step = gfc_get_constant_expr (BT_INTEGER,
+						gfc_default_integer_kind,
+						&old_loc);
+		  mpz_set_si (step->value.integer, 1);
+		}
+	      (*head)->expr = step;
 	      continue;
 	    }
-	}
-      if ((mask & OMP_CLAUSE_INBRANCH) && !c->inbranch && !c->notinbranch
-	  && gfc_match ("inbranch") == MATCH_YES)
-	{
-	  c->inbranch = needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_NOTINBRANCH) && !c->notinbranch && !c->inbranch
-	  && gfc_match ("notinbranch") == MATCH_YES)
-	{
-	  c->notinbranch = needs_space = true;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_PROC_BIND)
-	  && c->proc_bind == OMP_PROC_BIND_UNKNOWN)
-	{
-	  if (gfc_match ("proc_bind ( master )") == MATCH_YES)
-	    c->proc_bind = OMP_PROC_BIND_MASTER;
-	  else if (gfc_match ("proc_bind ( spread )") == MATCH_YES)
-	    c->proc_bind = OMP_PROC_BIND_SPREAD;
-	  else if (gfc_match ("proc_bind ( close )") == MATCH_YES)
-	    c->proc_bind = OMP_PROC_BIND_CLOSE;
-	  if (c->proc_bind != OMP_PROC_BIND_UNKNOWN)
+	  if ((mask & OMP_CLAUSE_LINK)
+	      && (gfc_match_oacc_clause_link ("link (",
+					      &c->lists[OMP_LIST_LINK])
+		  == MATCH_YES))
 	    continue;
-	}
-      if ((mask & OMP_CLAUSE_SAFELEN) && c->safelen_expr == NULL
-	  && gfc_match ("safelen ( %e )", &c->safelen_expr) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_SIMDLEN) && c->simdlen_expr == NULL
-	  && gfc_match ("simdlen ( %e )", &c->simdlen_expr) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_UNIFORM)
-	  && gfc_match_omp_variable_list ("uniform (",
-					  &c->lists[OMP_LIST_UNIFORM], false)
-	     == MATCH_YES)
-	continue;
-      bool end_colon = false;
-      gfc_omp_namelist **head = NULL;
-      old_loc = gfc_current_locus;
-      if ((mask & OMP_CLAUSE_ALIGNED)
-	  && gfc_match_omp_variable_list ("aligned (",
-					  &c->lists[OMP_LIST_ALIGNED], false,
-					  &end_colon, &head)
-	     == MATCH_YES)
-	{
-	  gfc_expr *alignment = NULL;
-	  gfc_omp_namelist *n;
-
-	  if (end_colon
-	      && gfc_match (" %e )", &alignment) != MATCH_YES)
+	  break;
+	case 'm':
+	  if ((mask & OMP_CLAUSE_MAP)
+	      && gfc_match ("map ( ") == MATCH_YES)
 	    {
-	      gfc_free_omp_namelist (*head);
-	      gfc_current_locus = old_loc;
-	      *head = NULL;
-	      break;
+	      gfc_omp_map_op map_op = OMP_MAP_TOFROM;
+	      if (gfc_match ("alloc : ") == MATCH_YES)
+		map_op = OMP_MAP_ALLOC;
+	      else if (gfc_match ("tofrom : ") == MATCH_YES)
+		map_op = OMP_MAP_TOFROM;
+	      else if (gfc_match ("to : ") == MATCH_YES)
+		map_op = OMP_MAP_TO;
+	      else if (gfc_match ("from : ") == MATCH_YES)
+		map_op = OMP_MAP_FROM;
+	      head = NULL;
+	      if (gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
+					       false, NULL, &head,
+					       true) == MATCH_YES)
+		{
+		  gfc_omp_namelist *n;
+		  for (n = *head; n; n = n->next)
+		    n->u.map_op = map_op;
+		  continue;
+		}
+	      else
+		gfc_current_locus = old_loc;
 	    }
-	  for (n = *head; n; n = n->next)
-	    if (n->next && alignment)
-	      n->expr = gfc_copy_expr (alignment);
-	    else
-	      n->expr = alignment;
-	  continue;
-	}
-      end_colon = false;
-      head = NULL;
-      old_loc = gfc_current_locus;
-      if ((mask & OMP_CLAUSE_LINEAR)
-	  && gfc_match_omp_variable_list ("linear (",
-					  &c->lists[OMP_LIST_LINEAR], false,
-					  &end_colon, &head)
-	     == MATCH_YES)
-	{
-	  gfc_expr *step = NULL;
-
-	  if (end_colon
-	      && gfc_match (" %e )", &step) != MATCH_YES)
+	  if ((mask & OMP_CLAUSE_MERGEABLE) && !c->mergeable
+	      && gfc_match ("mergeable") == MATCH_YES)
 	    {
-	      gfc_free_omp_namelist (*head);
-	      gfc_current_locus = old_loc;
-	      *head = NULL;
-	      break;
-	    }
-	  else if (!end_colon)
-	    {
-	      step = gfc_get_constant_expr (BT_INTEGER,
-					    gfc_default_integer_kind,
-					    &old_loc);
-	      mpz_set_si (step->value.integer, 1);
-	    }
-	  (*head)->expr = step;
-	  continue;
-	}
-      if ((mask & OMP_CLAUSE_DEPEND)
-	  && gfc_match ("depend ( ") == MATCH_YES)
-	{
-	  match m = MATCH_YES;
-	  gfc_omp_depend_op depend_op = OMP_DEPEND_OUT;
-	  if (gfc_match ("inout") == MATCH_YES)
-	    depend_op = OMP_DEPEND_INOUT;
-	  else if (gfc_match ("in") == MATCH_YES)
-	    depend_op = OMP_DEPEND_IN;
-	  else if (gfc_match ("out") == MATCH_YES)
-	    depend_op = OMP_DEPEND_OUT;
-	  else
-	    m = MATCH_NO;
-	  head = NULL;
-	  if (m == MATCH_YES
-	      && gfc_match_omp_variable_list (" : ",
-					      &c->lists[OMP_LIST_DEPEND],
-					      false, NULL, &head, true)
-		 == MATCH_YES)
-	    {
-	      gfc_omp_namelist *n;
-	      for (n = *head; n; n = n->next)
-		n->u.depend_op = depend_op;
+	      c->mergeable = needs_space = true;
 	      continue;
 	    }
-	  else
-	    gfc_current_locus = old_loc;
-	}
-      if ((mask & OMP_CLAUSE_DIST_SCHEDULE)
-	  && c->dist_sched_kind == OMP_SCHED_NONE
-	  && gfc_match ("dist_schedule ( static") == MATCH_YES)
-	{
-	  match m = MATCH_NO;
-	  c->dist_sched_kind = OMP_SCHED_STATIC;
-	  m = gfc_match (" , %e )", &c->dist_chunk_size);
-	  if (m != MATCH_YES)
-	    m = gfc_match_char (')');
-	  if (m != MATCH_YES)
+	  break;
+	case 'n':
+	  if ((mask & OMP_CLAUSE_NOTINBRANCH)
+	      && !c->notinbranch
+	      && !c->inbranch
+	      && gfc_match ("notinbranch") == MATCH_YES)
 	    {
-	      c->dist_sched_kind = OMP_SCHED_NONE;
-	      gfc_current_locus = old_loc;
+	      c->notinbranch = needs_space = true;
+	      continue;
 	    }
-	  else
+	  if ((mask & OMP_CLAUSE_NUM_GANGS)
+	      && c->num_gangs_expr == NULL
+	      && gfc_match ("num_gangs ( %e )",
+			    &c->num_gangs_expr) == MATCH_YES)
 	    continue;
-	}
-      if ((mask & OMP_CLAUSE_NUM_TEAMS) && c->num_teams == NULL
-	  && gfc_match ("num_teams ( %e )", &c->num_teams) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_DEVICE) && c->device == NULL
-	  && gfc_match ("device ( %e )", &c->device) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_THREAD_LIMIT) && c->thread_limit == NULL
-	  && gfc_match ("thread_limit ( %e )", &c->thread_limit) == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_MAP)
-	  && gfc_match ("map ( ") == MATCH_YES)
-	{
-	  gfc_omp_map_op map_op = OMP_MAP_TOFROM;
-	  if (gfc_match ("alloc : ") == MATCH_YES)
-	    map_op = OMP_MAP_ALLOC;
-	  else if (gfc_match ("tofrom : ") == MATCH_YES)
-	    map_op = OMP_MAP_TOFROM;
-	  else if (gfc_match ("to : ") == MATCH_YES)
-	    map_op = OMP_MAP_TO;
-	  else if (gfc_match ("from : ") == MATCH_YES)
-	    map_op = OMP_MAP_FROM;
-	  head = NULL;
-	  if (gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
-					   false, NULL, &head, true)
-	      == MATCH_YES)
+	  if ((mask & OMP_CLAUSE_NUM_TEAMS)
+	      && c->num_teams == NULL
+	      && gfc_match ("num_teams ( %e )", &c->num_teams) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_NUM_THREADS)
+	      && c->num_threads == NULL
+	      && (gfc_match ("num_threads ( %e )", &c->num_threads)
+		  == MATCH_YES))
+	    continue;
+	  if ((mask & OMP_CLAUSE_NUM_WORKERS)
+	      && c->num_workers_expr == NULL
+	      && gfc_match ("num_workers ( %e )",
+			    &c->num_workers_expr) == MATCH_YES)
+	    continue;
+	  break;
+	case 'o':
+	  if ((mask & OMP_CLAUSE_ORDERED)
+	      && !c->ordered
+	      && gfc_match ("ordered") == MATCH_YES)
 	    {
-	      gfc_omp_namelist *n;
-	      for (n = *head; n; n = n->next)
-		n->u.map_op = map_op;
+	      c->ordered = needs_space = true;
 	      continue;
 	    }
-	  else
-	    gfc_current_locus = old_loc;
-	}
-      if ((mask & OMP_CLAUSE_TO)
-	  && gfc_match_omp_variable_list ("to (",
-					  &c->lists[OMP_LIST_TO], false,
-					  NULL, &head, true)
-	     == MATCH_YES)
-	continue;
-      if ((mask & OMP_CLAUSE_FROM)
-	  && gfc_match_omp_variable_list ("from (",
-					  &c->lists[OMP_LIST_FROM], false,
-					  NULL, &head, true)
-	     == MATCH_YES)
-	continue;
+	  break;
+	case 'p':
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_COPY)
+	      && gfc_match ("pcopy ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_TOFROM))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_COPYIN)
+	      && gfc_match ("pcopyin ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_TO))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_COPYOUT)
+	      && gfc_match ("pcopyout ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FROM))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_CREATE)
+	      && gfc_match ("pcreate ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_ALLOC))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT)
+	      && gfc_match ("present ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_PRESENT))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_COPY)
+	      && gfc_match ("present_or_copy ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_TOFROM))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_COPYIN)
+	      && gfc_match ("present_or_copyin ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_TO))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_COPYOUT)
+	      && gfc_match ("present_or_copyout ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FROM))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRESENT_OR_CREATE)
+	      && gfc_match ("present_or_create ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_ALLOC))
+	    continue;
+	  if ((mask & OMP_CLAUSE_PRIVATE)
+	      && gfc_match_omp_variable_list ("private (",
+					      &c->lists[OMP_LIST_PRIVATE],
+					      true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_PROC_BIND)
+	      && c->proc_bind == OMP_PROC_BIND_UNKNOWN)
+	    {
+	      if (gfc_match ("proc_bind ( master )") == MATCH_YES)
+		c->proc_bind = OMP_PROC_BIND_MASTER;
+	      else if (gfc_match ("proc_bind ( spread )") == MATCH_YES)
+		c->proc_bind = OMP_PROC_BIND_SPREAD;
+	      else if (gfc_match ("proc_bind ( close )") == MATCH_YES)
+		c->proc_bind = OMP_PROC_BIND_CLOSE;
+	      if (c->proc_bind != OMP_PROC_BIND_UNKNOWN)
+		continue;
+	    }
+	  break;
+	case 'r':
+	  if ((mask & OMP_CLAUSE_REDUCTION)
+	      && gfc_match ("reduction ( ") == MATCH_YES)
+	    {
+	      gfc_omp_reduction_op rop = OMP_REDUCTION_NONE;
+	      char buffer[GFC_MAX_SYMBOL_LEN + 3];
+	      if (gfc_match_char ('+') == MATCH_YES)
+		rop = OMP_REDUCTION_PLUS;
+	      else if (gfc_match_char ('*') == MATCH_YES)
+		rop = OMP_REDUCTION_TIMES;
+	      else if (gfc_match_char ('-') == MATCH_YES)
+		rop = OMP_REDUCTION_MINUS;
+	      else if (gfc_match (".and.") == MATCH_YES)
+		rop = OMP_REDUCTION_AND;
+	      else if (gfc_match (".or.") == MATCH_YES)
+		rop = OMP_REDUCTION_OR;
+	      else if (gfc_match (".eqv.") == MATCH_YES)
+		rop = OMP_REDUCTION_EQV;
+	      else if (gfc_match (".neqv.") == MATCH_YES)
+		rop = OMP_REDUCTION_NEQV;
+	      if (rop != OMP_REDUCTION_NONE)
+		snprintf (buffer, sizeof buffer, "operator %s",
+			  gfc_op2string ((gfc_intrinsic_op) rop));
+	      else if (gfc_match_defined_op_name (buffer + 1, 1) == MATCH_YES)
+		{
+		  buffer[0] = '.';
+		  strcat (buffer, ".");
+		}
+	      else if (gfc_match_name (buffer) == MATCH_YES)
+		{
+		  gfc_symbol *sym;
+		  const char *n = buffer;
 
+		  gfc_find_symbol (buffer, NULL, 1, &sym);
+		  if (sym != NULL)
+		    {
+		      if (sym->attr.intrinsic)
+			n = sym->name;
+		      else if ((sym->attr.flavor != FL_UNKNOWN
+				&& sym->attr.flavor != FL_PROCEDURE)
+			       || sym->attr.external
+			       || sym->attr.generic
+			       || sym->attr.entry
+			       || sym->attr.result
+			       || sym->attr.dummy
+			       || sym->attr.subroutine
+			       || sym->attr.pointer
+			       || sym->attr.target
+			       || sym->attr.cray_pointer
+			       || sym->attr.cray_pointee
+			       || (sym->attr.proc != PROC_UNKNOWN
+				   && sym->attr.proc != PROC_INTRINSIC)
+			       || sym->attr.if_source != IFSRC_UNKNOWN
+			       || sym == sym->ns->proc_name)
+			{
+			  sym = NULL;
+			  n = NULL;
+			}
+		      else
+			n = sym->name;
+		    }
+		  if (n == NULL)
+		    rop = OMP_REDUCTION_NONE;
+		  else if (strcmp (n, "max") == 0)
+		    rop = OMP_REDUCTION_MAX;
+		  else if (strcmp (n, "min") == 0)
+		    rop = OMP_REDUCTION_MIN;
+		  else if (strcmp (n, "iand") == 0)
+		    rop = OMP_REDUCTION_IAND;
+		  else if (strcmp (n, "ior") == 0)
+		    rop = OMP_REDUCTION_IOR;
+		  else if (strcmp (n, "ieor") == 0)
+		    rop = OMP_REDUCTION_IEOR;
+		  if (rop != OMP_REDUCTION_NONE
+		      && sym != NULL
+		      && ! sym->attr.intrinsic
+		      && ! sym->attr.use_assoc
+		      && ((sym->attr.flavor == FL_UNKNOWN
+			  && !gfc_add_flavor (&sym->attr, FL_PROCEDURE,
+					      sym->name, NULL))
+			  || !gfc_add_intrinsic (&sym->attr, NULL)))
+		    rop = OMP_REDUCTION_NONE;
+		}
+	      else
+		buffer[0] = '\0';
+	      gfc_omp_udr *udr
+		= (buffer[0]
+		   ? gfc_find_omp_udr (gfc_current_ns, buffer, NULL) : NULL);
+	      gfc_omp_namelist **head = NULL;
+	      if (rop == OMP_REDUCTION_NONE && udr)
+		rop = OMP_REDUCTION_USER;
+
+	      if (gfc_match_omp_variable_list (" :",
+					       &c->lists[OMP_LIST_REDUCTION],
+					       false, NULL, &head,
+					       openacc) == MATCH_YES)
+		{
+		  gfc_omp_namelist *n;
+		  if (rop == OMP_REDUCTION_NONE)
+		    {
+		      n = *head;
+		      *head = NULL;
+		      gfc_error_now ("!$OMP DECLARE REDUCTION %s not found "
+				     "at %L", buffer, &old_loc);
+		      gfc_free_omp_namelist (n);
+		    }
+		  else
+		    for (n = *head; n; n = n->next)
+		      {
+			n->u.reduction_op = rop;
+			if (udr)
+			  {
+			    n->udr = gfc_get_omp_namelist_udr ();
+			    n->udr->udr = udr;
+			  }
+		      }
+		  continue;
+		}
+	      else
+		gfc_current_locus = old_loc;
+	    }
+	  break;
+	case 's':
+	  if ((mask & OMP_CLAUSE_SAFELEN)
+	      && c->safelen_expr == NULL
+	      && gfc_match ("safelen ( %e )", &c->safelen_expr) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_SCHEDULE)
+	      && c->sched_kind == OMP_SCHED_NONE
+	      && gfc_match ("schedule ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("static") == MATCH_YES)
+		c->sched_kind = OMP_SCHED_STATIC;
+	      else if (gfc_match ("dynamic") == MATCH_YES)
+		c->sched_kind = OMP_SCHED_DYNAMIC;
+	      else if (gfc_match ("guided") == MATCH_YES)
+		c->sched_kind = OMP_SCHED_GUIDED;
+	      else if (gfc_match ("runtime") == MATCH_YES)
+		c->sched_kind = OMP_SCHED_RUNTIME;
+	      else if (gfc_match ("auto") == MATCH_YES)
+		c->sched_kind = OMP_SCHED_AUTO;
+	      if (c->sched_kind != OMP_SCHED_NONE)
+		{
+		  match m = MATCH_NO;
+		  if (c->sched_kind != OMP_SCHED_RUNTIME
+		      && c->sched_kind != OMP_SCHED_AUTO)
+		    m = gfc_match (" , %e )", &c->chunk_size);
+		  if (m != MATCH_YES)
+		    m = gfc_match_char (')');
+		  if (m != MATCH_YES)
+		    c->sched_kind = OMP_SCHED_NONE;
+		}
+	      if (c->sched_kind != OMP_SCHED_NONE)
+		continue;
+	      else
+		gfc_current_locus = old_loc;
+	    }
+	  if ((mask & OMP_CLAUSE_HOST_SELF)
+	      && gfc_match ("self ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_FROM))
+	    continue;
+	  if ((mask & OMP_CLAUSE_SEQ)
+	      && !c->seq
+	      && gfc_match ("seq") == MATCH_YES)
+	    {
+	      c->seq = true;
+	      needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_SHARED)
+	      && gfc_match_omp_variable_list ("shared (",
+					      &c->lists[OMP_LIST_SHARED],
+					      true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_SIMDLEN)
+	      && c->simdlen_expr == NULL
+	      && gfc_match ("simdlen ( %e )", &c->simdlen_expr) == MATCH_YES)
+	    continue;
+	  break;
+	case 't':
+	  if ((mask & OMP_CLAUSE_THREAD_LIMIT)
+	      && c->thread_limit == NULL
+	      && gfc_match ("thread_limit ( %e )",
+			    &c->thread_limit) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_TILE)
+	      && !c->tile_list
+	      && match_oacc_expr_list ("tile (", &c->tile_list,
+				       true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_TO)
+	      && gfc_match_omp_variable_list ("to (",
+					      &c->lists[OMP_LIST_TO], false,
+					      NULL, &head, true) == MATCH_YES)
+	    continue;
+	  break;
+	case 'u':
+	  if ((mask & OMP_CLAUSE_UNIFORM)
+	      && gfc_match_omp_variable_list ("uniform (",
+					      &c->lists[OMP_LIST_UNIFORM],
+					      false) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_UNTIED)
+	      && !c->untied
+	      && gfc_match ("untied") == MATCH_YES)
+	    {
+	      c->untied = needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_USE_DEVICE)
+	      && gfc_match_omp_variable_list ("use_device (",
+					      &c->lists[OMP_LIST_USE_DEVICE],
+					      true) == MATCH_YES)
+	    continue;
+	  break;
+	case 'v':
+	  if ((mask & OMP_CLAUSE_VECTOR)
+	      && !c->vector
+	      && gfc_match ("vector") == MATCH_YES)
+	    {
+	      c->vector = true;
+	      if (gfc_match (" ( length : %e )", &c->vector_expr) == MATCH_YES
+		  || gfc_match (" ( %e )", &c->vector_expr) == MATCH_YES)
+		needs_space = false;
+	      else
+		needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_VECTOR_LENGTH)
+	      && c->vector_length_expr == NULL
+	      && (gfc_match ("vector_length ( %e )", &c->vector_length_expr)
+		  == MATCH_YES))
+	    continue;
+	  break;
+	case 'w':
+	  if ((mask & OMP_CLAUSE_WAIT)
+	      && !c->wait
+	      && gfc_match ("wait") == MATCH_YES)
+	    {
+	      c->wait = true;
+	      match_oacc_expr_list (" (", &c->wait_list, false);
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_WORKER)
+	      && !c->worker
+	      && gfc_match ("worker") == MATCH_YES)
+	    {
+	      c->worker = true;
+	      if (gfc_match (" ( num : %e )", &c->worker_expr) == MATCH_YES
+		  || gfc_match (" ( %e )", &c->worker_expr) == MATCH_YES)
+		needs_space = false;
+	      else
+		needs_space = true;
+	      continue;
+	    }
+	  break;
+	}
       break;
     }
 
