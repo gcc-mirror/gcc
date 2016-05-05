@@ -1,5 +1,7 @@
 2016-05-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512f-vfmadd-1.c: New test.
+
 	* c-c++-common/Wdangling-else-4.c: New test.
 
 2016-05-04  Jakub Jelinek  <jakub@redhat.com>
