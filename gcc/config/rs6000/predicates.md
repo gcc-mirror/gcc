@@ -539,13 +539,6 @@
   if (flag_pic && DEFAULT_ABI == ABI_V4)
     return 0;
 
-#ifdef TARGET_RELOCATABLE
-  /* Similarly if we are using -mrelocatable, consider all constants
-     to be hard.  */
-  if (TARGET_RELOCATABLE)
-    return 0;
-#endif
-
   /* If we have real FPRs, consider floating point constants hard (other than
      0.0 under VSX), so that the constant gets pushed to memory during the
      early RTL phases.  This has the advantage that double precision constants

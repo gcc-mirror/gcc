@@ -489,7 +489,7 @@ extern int dot_symbols;
 #define MINIMAL_TOC_SECTION_ASM_OP \
   (TARGET_64BIT						\
    ? "\t.section\t\".toc1\",\"aw\""			\
-   : ((TARGET_RELOCATABLE || flag_pic)			\
+   : (flag_pic						\
       ? "\t.section\t\".got2\",\"aw\""			\
       : "\t.section\t\".got1\",\"aw\""))
 
@@ -585,7 +585,6 @@ extern int dot_symbols;
 			&& ! TARGET_NO_FP_IN_TOC)))			\
 	       || (!TARGET_64BIT					\
 		   && !TARGET_NO_FP_IN_TOC				\
-		   && !TARGET_RELOCATABLE				\
 		   && SCALAR_FLOAT_MODE_P (GET_MODE (X))		\
 		   && BITS_PER_WORD == HOST_BITS_PER_INT)))))
 
@@ -594,7 +593,7 @@ extern int dot_symbols;
    true if the symbol may be affected by dynamic relocations.  */
 #undef	ASM_PREFERRED_EH_DATA_FORMAT
 #define	ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
-  ((TARGET_64BIT || flag_pic || TARGET_RELOCATABLE)			\
+  (TARGET_64BIT || flag_pic						\
    ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel		\
       | (TARGET_64BIT ? DW_EH_PE_udata8 : DW_EH_PE_sdata4))		\
    : DW_EH_PE_absptr)

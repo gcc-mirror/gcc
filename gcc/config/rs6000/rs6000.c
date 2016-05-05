@@ -20665,7 +20665,8 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	 don't need to mark it here.  We used to skip the text section, but it
 	 should never be valid for relocated addresses to be placed in the text
 	 section.  */
-      if (TARGET_RELOCATABLE
+      if (DEFAULT_ABI == ABI_V4
+	  && (TARGET_RELOCATABLE || flag_pic > 1)
 	  && in_section != toc_section
 	  && !recurse
 	  && !CONST_SCALAR_INT_P (x)
@@ -23862,7 +23863,9 @@ rs6000_stack_info (void)
 	  && !TARGET_PROFILE_KERNEL)
       || (DEFAULT_ABI == ABI_V4 && cfun->calls_alloca)
 #ifdef TARGET_RELOCATABLE
-      || (TARGET_RELOCATABLE && (get_pool_size () != 0))
+      || (DEFAULT_ABI == ABI_V4
+	  && (TARGET_RELOCATABLE || flag_pic > 1)
+	  && get_pool_size () != 0)
 #endif
       || rs6000_ra_ever_killed ())
     info->lr_save_p = 1;
@@ -31314,8 +31317,7 @@ static void
 rs6000_elf_output_toc_section_asm_op (const void *data ATTRIBUTE_UNUSED)
 {
   if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-      && TARGET_MINIMAL_TOC
-      && !TARGET_RELOCATABLE)
+      && TARGET_MINIMAL_TOC)
     {
       if (!toc_initialized)
 	{
@@ -31336,8 +31338,7 @@ rs6000_elf_output_toc_section_asm_op (const void *data ATTRIBUTE_UNUSED)
       else
 	fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
     }
-  else if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-	   && !TARGET_RELOCATABLE)
+  else if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     {
       fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);
       if (!toc_initialized)
@@ -31928,7 +31929,8 @@ rs6000_elf_asm_out_constructor (rtx symbol, int priority)
   switch_to_section (get_section (section, SECTION_WRITE, NULL));
   assemble_align (POINTER_SIZE);
 
-  if (TARGET_RELOCATABLE)
+  if (DEFAULT_ABI == ABI_V4
+      && (TARGET_RELOCATABLE || flag_pic > 1))
     {
       fputs ("\t.long (", asm_out_file);
       output_addr_const (asm_out_file, symbol);
@@ -31958,7 +31960,8 @@ rs6000_elf_asm_out_destructor (rtx symbol, int priority)
   switch_to_section (get_section (section, SECTION_WRITE, NULL));
   assemble_align (POINTER_SIZE);
 
-  if (TARGET_RELOCATABLE)
+  if (DEFAULT_ABI == ABI_V4
+      && (TARGET_RELOCATABLE || flag_pic > 1))
     {
       fputs ("\t.long (", asm_out_file);
       output_addr_const (asm_out_file, symbol);
@@ -32000,7 +32003,8 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
       return;
     }
 
-  if (TARGET_RELOCATABLE
+  if (DEFAULT_ABI == ABI_V4
+      && (TARGET_RELOCATABLE || flag_pic > 1)
       && !TARGET_SECURE_PLT
       && (get_pool_size () != 0 || crtl->profile)
       && uses_TOC ())
