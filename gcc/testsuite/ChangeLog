@@ -1,3 +1,8 @@
+2016-05-05  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/57206
+	* gcc.dg/vect/pr57206.c: New test.
+
 2016-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/ipa/inline-8.c	(isnanf): Declare.
