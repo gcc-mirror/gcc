@@ -1,3 +1,12 @@
+2016-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (peehole2 patterns): Change true_regnum
+	to REGNUM in all peephole2 patterns.
+	(post-reload splitters): Change true_regnum to REGNUM in
+	post-reload splitters.
+	(zero_extend splitters): Use general_reg_operand and
+	nonimmediate_gr_operand predicates.
+
 2016-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask3<round_name>): Use
