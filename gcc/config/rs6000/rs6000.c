@@ -24718,7 +24718,7 @@ output_probe_stack_range (rtx reg1, rtx reg2)
 }
 
 /* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced
-   with (plus:P (reg 1) VAL), and with REG2 replaced with RREG if REG2
+   with (plus:P (reg 1) VAL), and with REG2 replaced with REPL2 if REG2
    is not NULL.  It would be nice if dwarf2out_frame_debug_expr could
    deduce these equivalences by itself so it wasn't necessary to hold
    its hand so much.  Don't be tempted to always supply d2_f_d_e with
@@ -24728,22 +24728,28 @@ output_probe_stack_range (rtx reg1, rtx reg2)
 
 static rtx
 rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
-		      rtx reg2, rtx rreg)
+		      rtx reg2, rtx repl2)
 {
-  rtx real, temp;
+  rtx repl;
 
-  if (REGNO (reg) == STACK_POINTER_REGNUM && reg2 == NULL_RTX)
+  if (REGNO (reg) == STACK_POINTER_REGNUM)
+    {
+      gcc_checking_assert (val == 0);
+      repl = NULL_RTX;
+    }
+  else
+    repl = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM),
+			 GEN_INT (val));
+
+  rtx pat = PATTERN (insn);
+  if (!repl && !reg2)
     {
       /* No need for any replacement.  Just set RTX_FRAME_RELATED_P.  */
-      int i;
-
-      gcc_checking_assert (val == 0);
-      real = PATTERN (insn);
-      if (GET_CODE (real) == PARALLEL)
-	for (i = 0; i < XVECLEN (real, 0); i++)
-	  if (GET_CODE (XVECEXP (real, 0, i)) == SET)
+      if (GET_CODE (pat) == PARALLEL)
+	for (int i = 0; i < XVECLEN (pat, 0); i++)
+	  if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
 	    {
-	      rtx set = XVECEXP (real, 0, i);
+	      rtx set = XVECEXP (pat, 0, i);
 
 	      /* If this PARALLEL has been emitted for out-of-line
 		 register save functions, or store multiple, then omit
@@ -24758,79 +24764,47 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
       return insn;
     }
 
-  /* copy_rtx will not make unique copies of registers, so we need to
-     ensure we don't have unwanted sharing here.  */
-  if (reg == reg2)
-    reg = gen_raw_REG (GET_MODE (reg), REGNO (reg));
-
-  if (reg == rreg)
-    reg = gen_raw_REG (GET_MODE (reg), REGNO (reg));
-
-  real = copy_rtx (PATTERN (insn));
-
-  if (reg2 != NULL_RTX)
-    real = replace_rtx (real, reg2, rreg);
-
-  if (REGNO (reg) == STACK_POINTER_REGNUM)
-    gcc_checking_assert (val == 0);
-  else
-    real = replace_rtx (real, reg,
-			gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode,
-							  STACK_POINTER_REGNUM),
-				      GEN_INT (val)));
-
-  /* We expect that 'real' is either a SET or a PARALLEL containing
+  /* We expect that 'pat' is either a SET or a PARALLEL containing
      SETs (and possibly other stuff).  In a PARALLEL, all the SETs
-     are important so they all have to be marked RTX_FRAME_RELATED_P.  */
+     are important so they all have to be marked RTX_FRAME_RELATED_P.
+     Call simplify_replace_rtx on the SETs rather than the whole insn
+     so as to leave the other stuff alone (for example USE of r12).  */
 
-  if (GET_CODE (real) == SET)
+  if (GET_CODE (pat) == SET)
     {
-      rtx set = real;
-
-      temp = simplify_rtx (SET_SRC (set));
-      if (temp)
-	SET_SRC (set) = temp;
-      temp = simplify_rtx (SET_DEST (set));
-      if (temp)
-	SET_DEST (set) = temp;
-      if (GET_CODE (SET_DEST (set)) == MEM)
-	{
-	  temp = simplify_rtx (XEXP (SET_DEST (set), 0));
-	  if (temp)
-	    XEXP (SET_DEST (set), 0) = temp;
-	}
+      if (repl)
+	pat = simplify_replace_rtx (pat, reg, repl);
+      if (reg2)
+	pat = simplify_replace_rtx (pat, reg2, repl2);
     }
-  else
+  else if (GET_CODE (pat) == PARALLEL)
     {
-      int i;
+      pat = shallow_copy_rtx (pat);
+      XVEC (pat, 0) = shallow_copy_rtvec (XVEC (pat, 0));
 
-      gcc_assert (GET_CODE (real) == PARALLEL);
-      for (i = 0; i < XVECLEN (real, 0); i++)
-	if (GET_CODE (XVECEXP (real, 0, i)) == SET)
+      for (int i = 0; i < XVECLEN (pat, 0); i++)
+	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
 	  {
-	    rtx set = XVECEXP (real, 0, i);
+	    rtx set = XVECEXP (pat, 0, i);
 
-	    temp = simplify_rtx (SET_SRC (set));
-	    if (temp)
-	      SET_SRC (set) = temp;
-	    temp = simplify_rtx (SET_DEST (set));
-	    if (temp)
-	      SET_DEST (set) = temp;
-	    if (GET_CODE (SET_DEST (set)) == MEM)
-	      {
-		temp = simplify_rtx (XEXP (SET_DEST (set), 0));
-		if (temp)
-		  XEXP (SET_DEST (set), 0) = temp;
-	      }
+	    if (repl)
+	      set = simplify_replace_rtx (set, reg, repl);
+	    if (reg2)
+	      set = simplify_replace_rtx (set, reg2, repl2);
+	    XVECEXP (pat, 0, i) = set;
+
 	    /* Omit eh_frame info for any user-defined global regs.  */
 	    if (!REG_P (SET_SRC (set))
 		|| !fixed_reg_p (REGNO (SET_SRC (set))))
 	      RTX_FRAME_RELATED_P (set) = 1;
 	  }
     }
+  else
+    gcc_unreachable ();
 
   RTX_FRAME_RELATED_P (insn) = 1;
-  add_reg_note (insn, REG_FRAME_RELATED_EXPR, real);
+  if (repl || reg2)
+    add_reg_note (insn, REG_FRAME_RELATED_EXPR, pat);
 
   return insn;
 }
