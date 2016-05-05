@@ -1,5 +1,33 @@
 2016-05-05  Alan Modra  <amodra@gmail.com>
 
+	PR target/68662
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Don't
+	set OPTION_MASK_RELOCATABLE when flag_pic == 2.  Set
+	TARGET_NO_FP_IN_TOC for -mrelocatable.
+	(MINIMAL_TOC_SECTION_ASM_OP): Remove redundant
+	TARGET_RELOCATABLE test.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
+	* config/rs6000/linux64.h (MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
+	* config/rs6000/freebsd64.h (MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
+	* config/rs6000/predicates.md (easy_fp_constant): Likewise.
+	* config/rs6000/rs6000.c (rs6000_elf_output_toc_section_asm_op):
+	Likewise.
+	(rs6000_assemble_integer): Update TARGET_RELOCATABLE test.
+	(rs6000_stack_info): Likewise.
+	(rs6000_elf_asm_out_constructor): Likewise.
+	(rs6000_elf_asm_out_destructor): Likewise.
+	(rs6000_elf_declare_function_name): Likewise.
+	* config/rs6000/rs6000.md (load_toc_aix_di): Likewise.
+	* config/rs6000/rs6000.h (MASK_RELOCATABLE, MASK_MINIMAL_TOC):
+	Don't define.
+
+2016-05-05  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_frame_related): Rewrite.
 
 2016-05-05  Alan Modra  <amodra@gmail.com>
