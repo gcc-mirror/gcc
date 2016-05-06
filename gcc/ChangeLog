@@ -1,3 +1,8 @@
+2016-05-06  Richard Biener  <rguenther@suse.de>
+
+	* fwprop.c (fwprop): Remove duplicate cleanup_cfg call.
+	(fwprop_addr): Likewise.
+
 2016-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70873
