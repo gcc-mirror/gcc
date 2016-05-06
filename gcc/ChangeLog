@@ -1,5 +1,10 @@
 2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (*cmpeqsi_t): Remove combine insn pattern and similar
+	corresponding combine split pattern.
+
+2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/58219
 	* config/sh/predicates.md (long_displacement_mem_operand): New.
 	* config/sh/sh.md (movsi_i): Allow for SH2A, disallow for any FPU.

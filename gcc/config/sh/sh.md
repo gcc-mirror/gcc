@@ -909,22 +909,6 @@
   FAIL;
 })
 
-;; FIXME: For some reason, on SH4A and SH2A combine fails to simplify this
-;; pattern by itself.  What this actually does is:
-;;	x == 0: (1 >> 0-0) & 1 = 1
-;;	x != 0: (1 >> 0-x) & 1 = 0
-;; Without this the test pr51244-8.c fails on SH2A and SH4A.
-(define_insn_and_split "*cmpeqsi_t"
-  [(set (reg:SI T_REG)
-	(and:SI (lshiftrt:SI
-		  (const_int 1)
-		  (neg:SI (match_operand:SI 0 "arith_reg_operand" "r")))
-		(const_int 1)))]
-  "TARGET_SH1"
-  "#"
-  "&& 1"
-  [(set (reg:SI T_REG) (eq:SI (match_dup 0) (const_int 0)))])
-
 (define_insn "cmpgtsi_t"
   [(set (reg:SI T_REG)
 	(gt:SI (match_operand:SI 0 "arith_reg_operand" "r,r")
@@ -1225,29 +1209,6 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   [(set (reg:SI T_REG) (eq:SI (match_dup 0) (match_dup 1)))
-   (set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
-			   (label_ref (match_dup 2))
-			   (pc)))])
-
-;; FIXME: Similar to the *cmpeqsi_t pattern above, for some reason, on SH4A
-;; and SH2A combine fails to simplify this pattern by itself.
-;; What this actually does is:
-;;	x == 0: (1 >> 0-0) & 1 = 1
-;;	x != 0: (1 >> 0-x) & 1 = 0
-;; Without this the test pr51244-8.c fails on SH2A and SH4A.
-(define_split
-  [(set (pc)
-	(if_then_else
-	  (eq (and:SI (lshiftrt:SI
-			(const_int 1)
-			(neg:SI (match_operand:SI 0 "arith_reg_operand" "")))
-		      (const_int 1))
-	      (const_int 0))
-	  (label_ref (match_operand 2))
-	  (pc)))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  [(set (reg:SI T_REG) (eq:SI (match_dup 0) (const_int 0)))
    (set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
 			   (label_ref (match_dup 2))
 			   (pc)))])
