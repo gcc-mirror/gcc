@@ -10458,19 +10458,20 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*<code>v8hi3"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
+  [(set (match_operand:V8HI 0 "register_operand" "=x,x,v")
 	(smaxmin:V8HI
-	  (match_operand:V8HI 1 "vector_operand" "%0,x")
-	  (match_operand:V8HI 2 "vector_operand" "xBm,xm")))]
+	  (match_operand:V8HI 1 "vector_operand" "%0,x,v")
+	  (match_operand:V8HI 2 "vector_operand" "xBm,xm,vm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, V8HImode, operands)"
   "@
    p<maxmin_int>w\t{%2, %0|%0, %2}
+   vp<maxmin_int>w\t{%2, %1, %0|%0, %1, %2}
    vp<maxmin_int>w\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sseiadd")
-   (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix_extra" "*,1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix_extra" "*,1,1")
+   (set_attr "prefix" "orig,vex,evex")
    (set_attr "mode" "TI")])
 
 (define_expand "<code><mode>3"
@@ -10542,19 +10543,20 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*<code>v16qi3"
-  [(set (match_operand:V16QI 0 "register_operand" "=x,x")
+  [(set (match_operand:V16QI 0 "register_operand" "=x,x,v")
 	(umaxmin:V16QI
-	  (match_operand:V16QI 1 "vector_operand" "%0,x")
-	  (match_operand:V16QI 2 "vector_operand" "xBm,xm")))]
+	  (match_operand:V16QI 1 "vector_operand" "%0,x,v")
+	  (match_operand:V16QI 2 "vector_operand" "xBm,xm,vm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, V16QImode, operands)"
   "@
    p<maxmin_int>b\t{%2, %0|%0, %2}
+   vp<maxmin_int>b\t{%2, %1, %0|%0, %1, %2}
    vp<maxmin_int>b\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sseiadd")
-   (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix_extra" "*,1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix_extra" "*,1,1")
+   (set_attr "prefix" "orig,vex,evex")
    (set_attr "mode" "TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,5 +1,8 @@
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*<code>v8hi3, *<code>v16qi3): Add
+	avx512bw alternative.
+
 	* config/i386/sse.md (<mask_codefor>ashr<mode>3<mask_name>): Move
 	before the ashr<mode>3 pattern.
 
