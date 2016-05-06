@@ -10088,6 +10088,20 @@
   DONE;
 })
 
+(define_insn "<mask_codefor>ashr<mode>3<mask_name>"
+  [(set (match_operand:VI24_AVX512BW_1 0 "register_operand" "=v,v")
+	(ashiftrt:VI24_AVX512BW_1
+	  (match_operand:VI24_AVX512BW_1 1 "nonimmediate_operand" "v,vm")
+	  (match_operand:SI 2 "nonmemory_operand" "v,N")))]
+  "TARGET_AVX512VL"
+  "vpsra<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sseishft")
+   (set (attr "length_immediate")
+     (if_then_else (match_operand 2 "const_int_operand")
+       (const_string "1")
+       (const_string "0")))
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "ashr<mode>3"
   [(set (match_operand:VI24_AVX2 0 "register_operand" "=x,x")
 	(ashiftrt:VI24_AVX2
@@ -10105,20 +10119,6 @@
        (const_string "0")))
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "<mask_codefor>ashr<mode>3<mask_name>"
-  [(set (match_operand:VI24_AVX512BW_1 0 "register_operand" "=v,v")
-	(ashiftrt:VI24_AVX512BW_1
-	  (match_operand:VI24_AVX512BW_1 1 "nonimmediate_operand" "v,vm")
-	  (match_operand:SI 2 "nonmemory_operand" "v,N")))]
-  "TARGET_AVX512VL"
-  "vpsra<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "type" "sseishft")
-   (set (attr "length_immediate")
-     (if_then_else (match_operand 2 "const_int_operand")
-       (const_string "1")
-       (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<mask_codefor>ashrv2di3<mask_name>"
