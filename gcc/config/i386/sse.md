@@ -6415,12 +6415,12 @@
 ;; unpcklps with register source since it is shorter.
 (define_insn "*vec_concatv2sf_sse4_1"
   [(set (match_operand:V2SF 0 "register_operand"
-	  "=Yr,*x,x,Yr,*x,x,x,*y ,*y")
+	  "=Yr,*x,v,Yr,*x,v,v,*y ,*y")
 	(vec_concat:V2SF
 	  (match_operand:SF 1 "nonimmediate_operand"
-	  "  0, 0,x, 0,0, x,m, 0 , m")
+	  "  0, 0,v, 0,0, v,m, 0 , m")
 	  (match_operand:SF 2 "vector_move_operand"
-	  " Yr,*x,x, m,m, m,C,*ym, C")))]
+	  " Yr,*x,v, m,m, m,C,*ym, C")))]
   "TARGET_SSE4_1 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    unpcklps\t{%2, %0|%0, %2}
@@ -6437,7 +6437,7 @@
    (set_attr "prefix_data16" "*,*,*,1,1,*,*,*,*")
    (set_attr "prefix_extra" "*,*,*,1,1,1,*,*,*")
    (set_attr "length_immediate" "*,*,*,1,1,1,*,*,*")
-   (set_attr "prefix" "orig,orig,vex,orig,orig,vex,maybe_vex,orig,orig")
+   (set_attr "prefix" "orig,orig,maybe_evex,orig,orig,maybe_evex,maybe_vex,orig,orig")
    (set_attr "mode" "V4SF,V4SF,V4SF,V4SF,V4SF,V4SF,SF,DI,DI")])
 
 ;; ??? In theory we can match memory for the MMX alternative, but allowing
@@ -6458,10 +6458,10 @@
    (set_attr "mode" "V4SF,SF,DI,DI")])
 
 (define_insn "*vec_concatv4sf"
-  [(set (match_operand:V4SF 0 "register_operand"       "=x,x,x,x")
+  [(set (match_operand:V4SF 0 "register_operand"       "=x,v,x,v")
 	(vec_concat:V4SF
-	  (match_operand:V2SF 1 "register_operand"     " 0,x,0,x")
-	  (match_operand:V2SF 2 "nonimmediate_operand" " x,x,m,m")))]
+	  (match_operand:V2SF 1 "register_operand"     " 0,v,0,v")
+	  (match_operand:V2SF 2 "nonimmediate_operand" " x,v,m,m")))]
   "TARGET_SSE"
   "@
    movlhps\t{%2, %0|%0, %2}
@@ -6470,7 +6470,7 @@
    vmovhps\t{%2, %1, %0|%0, %1, %q2}"
   [(set_attr "isa" "noavx,avx,noavx,avx")
    (set_attr "type" "ssemov")
-   (set_attr "prefix" "orig,vex,orig,vex")
+   (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF")])
 
 (define_expand "vec_init<mode>"
