@@ -1,3 +1,8 @@
+2016-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/70875
+	* ubsan.c (get_ubsan_type_info_for_type): Remove assert.
+
 2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089

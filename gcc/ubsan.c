@@ -302,7 +302,6 @@ ubsan_source_location (location_t loc)
 static unsigned short
 get_ubsan_type_info_for_type (tree type)
 {
-  gcc_assert (TYPE_SIZE (type) && tree_fits_uhwi_p (TYPE_SIZE (type)));
   if (TREE_CODE (type) == REAL_TYPE)
     return tree_to_uhwi (TYPE_SIZE (type));
   else if (INTEGRAL_TYPE_P (type))
