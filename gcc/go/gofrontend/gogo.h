@@ -50,6 +50,7 @@ class Bblock;
 class Bvariable;
 class Blabel;
 class Bfunction;
+class Escape_context;
 
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
@@ -345,6 +346,16 @@ class Gogo
   add_label_reference(const std::string&, Location,
 		      bool issue_goto_errors);
 
+  // An analysis set is a list of functions paired with a boolean that indicates
+  // whether the list of functions are recursive.
+  typedef std::pair<std::vector<Named_object*>, bool> Analysis_set;
+
+  // Add a GROUP of possibly RECURSIVE functions to the Analysis_set for this
+  // package.
+  void
+  add_analysis_set(const std::vector<Named_object*>& group, bool recursive)
+  { this->analysis_sets_.push_back(std::make_pair(group, recursive)); }
+
   // Return a snapshot of the current binding state.
   Bindings_snapshot*
   bindings_snapshot(Location);
@@ -543,6 +554,28 @@ class Gogo
   // Check for return statements.
   void
   check_return_statements();
+
+  // Analyze the program flow for escape information.
+  void
+  analyze_escape();
+
+  // Discover the groups of possibly recursive functions in this package.
+  void
+  discover_analysis_sets();
+
+  // Build a connectivity graph between the objects in each analyzed function.
+  void
+  assign_connectivity(Escape_context*, Named_object*);
+
+  // Traverse the objects in the connecitivty graph from the sink, adjusting the
+  // escape levels of each object.
+  void
+  propagate_escape(Escape_context*);
+
+  // Add notes about the escape level of a function's input and output
+  // parameters for exporting and importing top level functions. 
+  void
+  tag_function(Escape_context*, Named_object*);
 
   // Do all exports.
   void
@@ -762,6 +795,9 @@ class Gogo
   bool specific_type_functions_are_written_;
   // Whether named types have been converted.
   bool named_types_are_converted_;
+  // A list containing groups of possibly mutually recursive functions to be
+  // considered during escape analysis.
+  std::vector<Analysis_set> analysis_sets_;
 };
 
 // A block of statements.

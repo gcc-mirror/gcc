@@ -50,6 +50,7 @@ go-warn = $(STRICT_WARN)
 
 GO_OBJS = \
 	go/ast-dump.o \
+	go/escape.o \
 	go/export.o \
 	go/expressions.o \
 	go/go-backend.o \
