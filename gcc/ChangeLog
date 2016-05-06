@@ -1,3 +1,11 @@
+2016-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (int cmove peephole2s): Use general_reg_operand
+	instead of register_and_not_any_fp_reg_operand as operand 0 predicate.
+	* config/i386/predicates.md (register_and_not_any_fp_reg_operand):
+	Remove unused predicate.
+	(register_and_not_fp_reg_operand): Ditto.
+
 2016-05-06  Martin Liska  <mliska@suse.cz>
 
 	* tree-if-conv.c (ifcvt_split_critical_edges): Use auto_vec
@@ -2756,6 +2764,7 @@
 	(avx512f_<castmode><avxsizesuffix>_<castmode>): Ditto.
 	(avx512f_<castmode><avxsizesuffix>_256<castmode>): Ditto.
 	(*sse4_1_extractps): Use lowpart_subreg.
+	* config/i386/i386.md (x87 floatsplitter): Use gen_lowpart.
 
 2016-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
