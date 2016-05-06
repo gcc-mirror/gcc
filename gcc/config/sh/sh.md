@@ -5362,7 +5362,7 @@
 	 "	synco"		"\n"
 	 "	icbi	@%0";
 }
-  [(set_attr "length" "16")	;; FIXME: Why 16 and not 6?  Looks like typo.
+  [(set_attr "length" "6")
    (set_attr "type" "cwb")])
 
 (define_expand "mov<mode>"

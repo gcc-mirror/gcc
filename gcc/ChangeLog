@@ -1,5 +1,9 @@
 2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (ic_invalidate_line_sh4a): Fix insn length.
+
+2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md (*cmpeqsi_t): Remove combine insn pattern and similar
 	corresponding combine split pattern.
 
