@@ -27,11 +27,6 @@
   (and (match_code "reg")
        (match_test "STACK_REGNO_P (REGNO (op))")))
 
-;; Return true if OP is a non-fp register_operand.
-(define_predicate "register_and_not_any_fp_reg_operand"
-  (and (match_code "reg")
-       (not (match_test "ANY_FP_REGNO_P (REGNO (op))"))))
-
 ;; True if the operand is a GENERAL class register.
 (define_predicate "general_reg_operand"
   (and (match_code "reg")
@@ -42,11 +37,6 @@
   (if_then_else (match_code "reg")
     (match_test "GENERAL_REGNO_P (REGNO (op))")
     (match_operand 0 "nonimmediate_operand")))
-
-;; Return true if OP is a register operand other than an i387 fp register.
-(define_predicate "register_and_not_fp_reg_operand"
-  (and (match_code "reg")
-       (not (match_test "STACK_REGNO_P (REGNO (op))"))))
 
 ;; True if the operand is an MMX register.
 (define_predicate "mmx_reg_operand"
