@@ -1,5 +1,11 @@
 2016-05-06  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/70941
+	* fold-const.c (split_tree): Always convert to the original type
+	before negating.
+
+2016-05-06  Richard Biener  <rguenther@suse.de>
+
 	* fwprop.c (fwprop): Remove duplicate cleanup_cfg call.
 	(fwprop_addr): Likewise.
 
