@@ -1,5 +1,11 @@
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/70941
+	* gcc.dg/torture/pr70941.c (abort): Remove prototype.
+	(a, b, c, d): Change type from char to signed char.
+	(main): Compare against (signed char) -1634678893 instead of
+	hardcoded -109.  Use __builtin_abort instead of abort.
+
 	* gcc.target/i386/avx512bw-vpsraw-3.c: New test.
 	* gcc.target/i386/avx512vl-vpsrad-3.c: New test.
 
