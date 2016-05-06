@@ -5744,11 +5744,11 @@
 })
 
 (define_insn "sse_movhlps"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,x,x,m")
+  [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,v,x,v,m")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,x,0,x,0")
-	    (match_operand:V4SF 2 "nonimmediate_operand" " x,x,o,o,x"))
+	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,v,0,v,0")
+	    (match_operand:V4SF 2 "nonimmediate_operand" " x,v,o,o,v"))
 	  (parallel [(const_int 6)
 		     (const_int 7)
 		     (const_int 2)
@@ -5762,7 +5762,7 @@
    %vmovhps\t{%2, %0|%q0, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx,*")
    (set_attr "type" "ssemov")
-   (set_attr "prefix" "orig,vex,orig,vex,maybe_vex")
+   (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex,maybe_vex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
 
 (define_expand "sse_movlhps_exp"
@@ -5789,11 +5789,11 @@
 })
 
 (define_insn "sse_movlhps"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,x,x,o")
+  [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,v,x,v,o")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,x,0,x,0")
-	    (match_operand:V4SF 2 "nonimmediate_operand" " x,x,m,m,x"))
+	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,v,0,v,0")
+	    (match_operand:V4SF 2 "nonimmediate_operand" " x,v,m,v,v"))
 	  (parallel [(const_int 0)
 		     (const_int 1)
 		     (const_int 4)
@@ -5807,7 +5807,7 @@
    %vmovlps\t{%2, %H0|%H0, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx,*")
    (set_attr "type" "ssemov")
-   (set_attr "prefix" "orig,vex,orig,vex,maybe_vex")
+   (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex,maybe_vex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
 
 (define_insn "<mask_codefor>avx512f_unpckhps512<mask_name>"
