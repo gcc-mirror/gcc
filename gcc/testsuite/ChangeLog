@@ -1,6 +1,14 @@
 2016-05-06  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
+	2016-05-06  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/70875
+	* gcc.dg/ubsan/bounds-3.c: New test.
+
+2016-05-06  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
 	2016-04-29  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/70342
