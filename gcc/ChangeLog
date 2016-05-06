@@ -1,3 +1,8 @@
+2016-05-06  Martin Liska  <mliska@suse.cz>
+
+	* tree-if-conv.c (ifcvt_split_critical_edges): Use auto_vec
+	instead of vec as the vector is local to the function.
+
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (*<code>v8hi3, *<code>v16qi3): Add
