@@ -141,7 +141,8 @@ next_char (st_parameter_dt *dtp)
       dtp->u.p.at_eol = 0;
       c = dtp->u.p.last_char;
       dtp->u.p.last_char = EOF - 1;
-      goto done;
+      dtp->u.p.at_eol = (c == '\n' || c == '\r' || c == EOF);
+      return c;
     }
 
   /* Read from line_buffer if enabled.  */
@@ -155,7 +156,8 @@ next_char (st_parameter_dt *dtp)
 	{
 	  dtp->u.p.line_buffer[dtp->u.p.line_buffer_pos] = '\0';
 	  dtp->u.p.line_buffer_pos++;
-	  goto done;
+	  dtp->u.p.at_eol = (c == '\n' || c == '\r' || c == EOF);
+	  return c;
 	}
 
       dtp->u.p.line_buffer_pos = 0;
