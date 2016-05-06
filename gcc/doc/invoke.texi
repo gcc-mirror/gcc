@@ -1051,7 +1051,7 @@ See RS/6000 and PowerPC Options.
 -mb  -ml  -mdalign  -mrelax @gol
 -mbigtable -mfmovd -mrenesas -mno-renesas -mnomacsave @gol
 -mieee -mno-ieee -mbitops  -misize  -minline-ic_invalidate -mpadstruct @gol
--mspace -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
+-mprefergot -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -maccumulate-outgoing-args @gol
 -matomic-model=@var{atomic-model} @gol

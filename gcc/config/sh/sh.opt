@@ -181,10 +181,6 @@ maccumulate-outgoing-args
 Target Report Var(TARGET_ACCUMULATE_OUTGOING_ARGS) Init(1)
 Reserve space for outgoing arguments in the function prologue.
 
-madjust-unroll
-Target Ignore
-Does nothing.  Preserved for backward compatibility.
-
 mb
 Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
 Generate code in big endian mode.
@@ -245,10 +241,6 @@ minline-ic_invalidate
 Target Report Var(TARGET_INLINE_IC_INVALIDATE)
 inline code to invalidate instruction cache entries after setting up nested function trampolines.
 
-minvalid-symbols
-Target Report Mask(INVALID_SYMBOLS) Condition(SUPPORT_ANY_SH5)
-Assume symbols might be invalid.
-
 misize
 Target Report RejectNegative Mask(DUMPISIZE)
 Annotate assembler instructions with estimated addresses.
@@ -279,10 +271,6 @@ mrenesas
 Target Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 
-msoft-atomic
-Target Undocumented Alias(matomic-model=, soft-gusa, none)
-Deprecated.  Use -matomic= instead to select the atomic model.
-
 matomic-model=
 Target Report RejectNegative Joined Var(sh_atomic_model_str)
 Specify the model for atomic operations.
@@ -290,10 +278,6 @@ Specify the model for atomic operations.
 mtas
 Target Report RejectNegative Var(TARGET_ENABLE_TAS)
 Use tas.b instruction for __atomic_test_and_set.
-
-mspace
-Target RejectNegative Alias(Os)
-Deprecated.  Use -Os instead.
 
 multcost=
 Target RejectNegative Joined UInteger Var(sh_multcost) Init(-1)
