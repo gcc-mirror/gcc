@@ -4735,9 +4735,9 @@
   "operands[2] = CONST0_RTX (V4SImode);")
 
 (define_insn "*avx_cvtpd2dq256_2"
-  [(set (match_operand:V8SI 0 "register_operand" "=x")
+  [(set (match_operand:V8SI 0 "register_operand" "=v")
 	(vec_concat:V8SI
-	  (unspec:V4SI [(match_operand:V4DF 1 "nonimmediate_operand" "xm")]
+	  (unspec:V4SI [(match_operand:V4DF 1 "nonimmediate_operand" "vm")]
 		       UNSPEC_FIX_NOTRUNC)
 	  (match_operand:V4SI 2 "const0_operand")))]
   "TARGET_AVX"
@@ -5050,10 +5050,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx_cvtps2pd256_2"
-  [(set (match_operand:V4DF 0 "register_operand" "=x")
+  [(set (match_operand:V4DF 0 "register_operand" "=v")
 	(float_extend:V4DF
 	  (vec_select:V4SF
-	    (match_operand:V8SF 1 "nonimmediate_operand" "xm")
+	    (match_operand:V8SF 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX"
