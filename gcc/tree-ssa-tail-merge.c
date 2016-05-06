@@ -538,6 +538,9 @@ same_succ::equal (const same_succ *e1, const same_succ *e2)
   gimple *s1, *s2;
   basic_block bb1, bb2;
 
+  if (e1 == e2)
+    return 1;
+
   if (e1->hashval != e2->hashval)
     return 0;
 
