@@ -3359,6 +3359,22 @@
   DONE;
 })
 
+(define_insn_and_split "*rotcr"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+			     (const_int 1))
+		(const_int -2147483648))) ;; 0xffffffff80000000
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  emit_insn (gen_sett ());
+  emit_insn (gen_rotcr (operands[0], operands[1], get_t_reg_rtx ()));
+  DONE;
+})
+
 ;; rotcr combine patterns for rotating in the negated T_REG value.
 (define_insn_and_split "*rotcr_neg_t"
   [(set (match_operand:SI 0 "arith_reg_dest")

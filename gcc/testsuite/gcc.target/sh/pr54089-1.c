@@ -1,7 +1,8 @@
 /* Check that the rotcr instruction is generated.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-times "rotcr" 24 } } */
+/* { dg-final { scan-assembler-times "rotcr" 25 } } */
+/* { dg-final { scan-assembler-times "sett" 1 } } */
 /* { dg-final { scan-assembler-times "shll\t" 1 } } */
 /* { dg-final { scan-assembler-not "and\t#1" } }  */
 /* { dg-final { scan-assembler-not "cmp/pl" } }  */
@@ -172,4 +173,10 @@ test_23 (unsigned int a, int b, int c)
 {
   bool r = b != c;
   return ((a >> 31) | (r << 31));
+}
+
+unsigned int
+test_24 (unsigned int a)
+{
+  return (a >> 1) | (1 << 31);
 }
