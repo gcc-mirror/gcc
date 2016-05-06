@@ -2462,6 +2462,9 @@ ifcvt_walk_pattern_tree (tree var, vec<gimple *> *defuse_list,
   enum tree_code code;
   gimple *def_stmt;
 
+  if (TREE_CODE (var) != SSA_NAME)
+    return;
+
   def_stmt = SSA_NAME_DEF_STMT (var);
   if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
     return;
