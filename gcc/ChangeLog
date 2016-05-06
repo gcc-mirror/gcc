@@ -1,3 +1,9 @@
+2016-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70948
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Properly clobber all fields of va_list for __builtin_va_start.
+
 2016-05-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR debug/70935

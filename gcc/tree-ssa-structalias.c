@@ -4492,7 +4492,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	  tree valist = gimple_call_arg (t, 0);
 	  struct constraint_expr rhs, *lhsp;
 	  unsigned i;
-	  get_constraint_for (valist, &lhsc);
+	  get_constraint_for_ptr_offset (valist, NULL_TREE, &lhsc);
 	  do_deref (&lhsc);
 	  /* The va_list gets access to pointers in variadic
 	     arguments.  Which we know in the case of IPA analysis
