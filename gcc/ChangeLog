@@ -1,5 +1,25 @@
 2016-05-06  David Malcolm  <dmalcolm@redhat.com>
 
+	* pass_manager.h (pass_manager::register_pass_name): New method.
+	(pass_manager::get_pass_by_name): New method.
+	(pass_manager::create_pass_tab): New method.
+	(pass_manager::m_name_to_pass_map): New field.
+	* passes.c (name_to_pass_map): Delete global in favor of field
+	"m_name_to_pass_map" of pass_manager.
+	(register_pass_name): Rename from a function to...
+	(pass_manager::register_pass_name): ...this method, updating
+	for renaming of global "name_to_pass_map" to field
+	"m_name_to_pass_map".
+	(create_pass_tab): Rename from a function to...
+	(pass_manager::create_pass_tab): ...this method, updating
+	for renaming of global "name_to_pass_map" to field.
+	(get_pass_by_name): Rename from a function to...
+	(pass_manager::get_pass_by_name): ...this method.
+	(enable_disable_pass): Convert use of get_pass_by_name to
+	a method call, locating the pass_manager singleton.
+
+2016-05-06  David Malcolm  <dmalcolm@redhat.com>
+
 	* genattr-common.c (main): Convert argv from
 	char ** to const char **.
 	* genattr.c (main): Likewise.

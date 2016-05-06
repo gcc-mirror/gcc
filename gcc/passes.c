@@ -66,8 +66,6 @@ using namespace gcc;
    The variable current_pass is also used for statistics and plugins.  */
 opt_pass *current_pass;
 
-static void register_pass_name (opt_pass *, const char *);
-
 /* Most passes are single-instance (within their context) and thus don't
    need to implement cloning, but passes that support multiple instances
    *must* provide their own implementation of the clone method.
@@ -844,21 +842,19 @@ pass_manager::register_dump_files (opt_pass *pass)
   while (pass);
 }
 
-static hash_map<nofree_string_hash, opt_pass *> *name_to_pass_map;
-
 /* Register PASS with NAME.  */
 
-static void
-register_pass_name (opt_pass *pass, const char *name)
+void
+pass_manager::register_pass_name (opt_pass *pass, const char *name)
 {
-  if (!name_to_pass_map)
-    name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
+  if (!m_name_to_pass_map)
+    m_name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
 
-  if (name_to_pass_map->get (name))
+  if (m_name_to_pass_map->get (name))
     return; /* Ignore plugin passes.  */
 
-      const char *unique_name = xstrdup (name);
-      name_to_pass_map->put (unique_name, pass);
+  const char *unique_name = xstrdup (name);
+  m_name_to_pass_map->put (unique_name, pass);
 }
 
 /* Map from pass id to canonicalized pass name.  */
@@ -882,14 +878,14 @@ passes_pass_traverse (const char *const &name, opt_pass *const &pass, void *)
 /* The function traverses NAME_TO_PASS_MAP and creates a pass info
    table for dumping purpose.  */
 
-static void
-create_pass_tab (void)
+void
+pass_manager::create_pass_tab (void) const
 {
   if (!flag_dump_passes)
     return;
 
-  pass_tab.safe_grow_cleared (g->get_passes ()->passes_by_id_size + 1);
-  name_to_pass_map->traverse <void *, passes_pass_traverse> (NULL);
+  pass_tab.safe_grow_cleared (passes_by_id_size + 1);
+  m_name_to_pass_map->traverse <void *, passes_pass_traverse> (NULL);
 }
 
 static bool override_gate_status (opt_pass *, tree, bool);
@@ -960,10 +956,10 @@ pass_manager::dump_passes () const
 
 /* Returns the pass with NAME.  */
 
-static opt_pass *
-get_pass_by_name (const char *name)
+opt_pass *
+pass_manager::get_pass_by_name (const char *name)
 {
-  opt_pass **p = name_to_pass_map->get (name);
+  opt_pass **p = m_name_to_pass_map->get (name);
   if (p)
     return *p;
 
@@ -1025,7 +1021,7 @@ enable_disable_pass (const char *arg, bool is_enable)
       free (argstr);
       return;
     }
-  pass = get_pass_by_name (phase_name);
+  pass = g->get_passes ()->get_pass_by_name (phase_name);
   if (!pass || pass->static_pass_number == -1)
     {
       if (is_enable)
