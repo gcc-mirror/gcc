@@ -1,3 +1,13 @@
+2016-05-06  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2016-04-29  Marek Polacek  <polacek@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/70342
+	* fold-const.c (tree_single_nonzero_warnv_p): For TARGET_EXPR, use
+	TARGET_EXPR_SLOT as a base.
+
 2016-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-coalesce.c (gimple_can_coalesce_p): Fix reference in head

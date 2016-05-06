@@ -1,3 +1,11 @@
+2016-05-06  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2016-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/70342
+	* g++.dg/ubsan/null-7.C: New test.
+
 2016-05-03  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/debug5.adb: New testcase.
