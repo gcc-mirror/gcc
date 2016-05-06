@@ -361,6 +361,31 @@ typedef void (*gt_pointer_operator) (void *, void *);
 typedef unsigned char uchar;
 #endif
 
+/* C++11 adds the ability to add "override" after an implementation of a
+   virtual function in a subclass, to:
+     (A) document that this is an override of a virtual function
+     (B) allow the compiler to issue a warning if it isn't (e.g. a mismatch
+         of the type signature).
+
+   Similarly, it allows us to add a "final" to indicate that no subclass
+   may subsequently override the vfunc.
+
+   Provide OVERRIDE and FINAL as macros, allowing us to get these benefits
+   when compiling with C++11 support, but without requiring C++11.
+
+   For gcc, use "-std=c++11" to enable C++11 support; gcc 6 onwards enables
+   this by default (actually GNU++14).  */
+
+#if __cplusplus >= 201103
+/* C++11 claims to be available: use it: */
+#define OVERRIDE override
+#define FINAL final
+#else
+/* No C++11 support; leave the macros empty: */
+#define OVERRIDE
+#define FINAL
+#endif
+
 /* Most host source files will require the following headers.  */
 #if !defined (GENERATOR_FILE) && !defined (USED_FOR_TARGET)
 #include "machmode.h"
