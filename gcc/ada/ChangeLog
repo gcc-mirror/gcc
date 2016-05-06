@@ -1,3 +1,15 @@
+2016-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/70969
+	* system-darwin-ppc64.ads: Add pragma No_Elaboration_Code_All.
+	* system-linux-armeb.ads: Likewise.
+	* system-linux-mips64el.ads: Likewise.
+	* system-linux-mips.ads: Likewise.
+	* system-linux-mipsel.ads: Likewise.
+	* system-linux-ppc64.ads: Likewise.
+	* system-linux-sparcv9.ads: Likewise.
+	* system-rtems.ads: Likewise.
+
 2016-05-04  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* s-osinte-gnu.ads (Get_Page_Size): Return int and use getpagesize
