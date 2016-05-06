@@ -5181,20 +5181,23 @@
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (set (subreg:SI (mem:QI (plus:SI (reg:SI SP_REG) (const_int 12)) 0) 0)
 ;; (made from (set (subreg:SI (reg:QI ###) 0) ) into T.
+;; Notice that although this pattern allows movi20 and movi20s on non-SH2A,
+;; those alternatives will not be taken, as they will be converted into
+;; PC-relative loads.
 (define_insn "movsi_i"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,r,r,r,m,<,<,x,l,x,l,r")
+			    "=r,r,  r,  r,  r, r,r,r,m,<,<,x,l,x,l,r")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,r,I08,mr,x,l,r,x,l,r,r,>,>,i"))]
-  "TARGET_SH1
-   && ! TARGET_SH2E
-   && ! TARGET_SH2A
+			    " Q,r,I08,I20,I28,mr,x,l,r,x,l,r,r,>,>,i"))]
+  "TARGET_SH1 && !TARGET_FPU_ANY
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
 	mov.l	%1,%0
 	mov	%1,%0
 	mov	%1,%0
+	movi20	%1,%0
+	movi20s	%1,%0
 	mov.l	%1,%0
 	sts	%1,%0
 	sts	%1,%0
@@ -5206,9 +5209,27 @@
 	lds.l	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload_si,move,movi8,load_si,mac_gp,prget,store,mac_mem,
-		     pstore,gp_mac,prset,mem_mac,pload,pcload_si")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "pcload_si,move,movi8,move,move,load_si,mac_gp,prget,store,
+		     mac_mem,pstore,gp_mac,prset,mem_mac,pload,pcload_si")
+   (set_attr_alternative "length"
+     [(const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 4)
+      (const_int 4)
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (const_int 2)
+      (const_int 2)
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)])])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (subreg:SI (reg:SF FR14_REG) 0) into T (compiling stdlib/strtod.c -m3e -O2)
@@ -5216,12 +5237,15 @@
 ;; will require a reload.
 ;; ??? We can't include f/f because we need the proper FPSCR setting when
 ;; TARGET_FMOVD is in effect, and mode switching is done before reload.
+;; Notice that although this pattern allows movi20 and movi20s on non-SH2A,
+;; those alternatives will not be taken, as they will be converted into
+;; PC-relative loads.
 (define_insn "movsi_ie"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,r,r,r,r,r,mr,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
+	    "=r,r,  r,  r,  r, r,r,r,mr,<,<,x,l,x,l,y,<,r,y,r,*f, y,*f,y")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,r,I08,I20,I28,mr,x,l,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
-  "(TARGET_SH2E || TARGET_SH2A)
+	    " Q,r,I08,I20,I28,mr,x,l, r,x,l,r,r,>,>,>,y,i,r,y, y,*f,*f,y"))]
+  "TARGET_SH1 && TARGET_FPU_ANY
    && ((register_operand (operands[0], SImode)
 	&& !fpscr_operand (operands[0], SImode))
        || (register_operand (operands[1], SImode)
@@ -5261,14 +5285,12 @@
       (const_int 2)
       (const_int 4)
       (const_int 4)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
       (const_int 2)
       (const_int 2)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
       (const_int 2)
       (const_int 2)
       (const_int 2)
@@ -5285,23 +5307,44 @@
       (const_int 2)
       (const_int 0)])])
 
+;; Notice that although this pattern allows movi20 and movi20s on non-SH2A,
+;; those alternatives will not be taken, as they will be converted into
+;; PC-relative loads.
 (define_insn "movsi_i_lowpart"
   [(set (strict_low_part
-	  (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,m,r"))
-	(match_operand:SI 1 "general_movsrc_operand" "Q,r,I08,mr,x,l,r,i"))]
-   "TARGET_SH1
-    && (register_operand (operands[0], SImode)
-        || register_operand (operands[1], SImode))"
+	  (match_operand:SI 0 "general_movdst_operand"
+			      "+r,r,  r,  r,  r, r,r,r,m,r"))
+	(match_operand:SI 1 "general_movsrc_operand"
+			      " Q,r,I08,I20,I28,mr,x,l,r,i"))]
+  "TARGET_SH1
+   && (register_operand (operands[0], SImode)
+       || register_operand (operands[1], SImode))"
   "@
 	mov.l	%1,%0
 	mov	%1,%0
 	mov	%1,%0
+	movi20	%1,%0
+	movi20s	%1,%0
 	mov.l	%1,%0
 	sts	%1,%0
 	sts	%1,%0
 	mov.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload,move,arith,load,mac_gp,prget,store,pcload")])
+  [(set_attr "type" "pcload,move,movi8,move,move,load,mac_gp,prget,store,
+		     pcload")
+   (set_attr_alternative "length"
+     [(const_int 2)
+      (const_int 2)
+      (const_int 2)
+      (const_int 4)
+      (const_int 4)
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (const_int 2)
+      (const_int 2)
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (const_int 2)])])
 
 (define_insn_and_split "load_ra"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
@@ -5478,27 +5521,26 @@
 	lds	%1,%0"
   [(set_attr "type" "pcload,move,movi8,store,load,store,load,store,load,prget,prset")
    (set (attr "length")
-	(cond [(and (match_operand 0 "displacement_mem_operand")
-		    (not (match_operand 0 "short_displacement_mem_operand")))
-	       (const_int 4)
-	       (and (match_operand 1 "displacement_mem_operand")
-		    (not (match_operand 1 "short_displacement_mem_operand")))
-	       (const_int 4)]
+	(cond [(match_operand 0 "long_displacement_mem_operand") (const_int 4)
+	       (match_operand 1 "long_displacement_mem_operand") (const_int 4)]
 	      (const_int 2)))])
 
 ;; x/r can be created by inlining/cse, e.g. for execute/961213-1.c
 ;; compiled with -m2 -ml -O3 -funroll-loops
 (define_insn "*movdi_i"
-  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r,r,*!x")
-	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,I08,i,x,r"))]
+  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,  r,r,r,*!x")
+	(match_operand:DI 1 "general_movsrc_operand" " Q,r,m,r,I08,i,x,  r"))]
   "TARGET_SH1
    && (arith_reg_operand (operands[0], DImode)
        || arith_reg_operand (operands[1], DImode))"
 {
   return output_movedouble (insn, operands, DImode);
 }
-  [(set_attr "length" "4")
-   (set_attr "type" "pcload,move,load,store,move,pcload,move,move")])
+  [(set_attr "type" "pcload,move,load,store,move,pcload,move,move")
+   (set (attr "length")
+	(cond [(match_operand 0 "long_displacement_mem_operand") (const_int 8)
+	       (match_operand 1 "long_displacement_mem_operand") (const_int 8)]
+	      (const_int 4)))])
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.
@@ -5576,8 +5618,8 @@
 
 ;; FIXME: This should be a define_insn_and_split.
 (define_insn "movdf_k"
-  [(set (match_operand:DF 0 "general_movdst_operand" "=r,r,r,m")
-	(match_operand:DF 1 "general_movsrc_operand" "r,FQ,m,r"))]
+  [(set (match_operand:DF 0 "general_movdst_operand" "=r, r,r,m")
+	(match_operand:DF 1 "general_movsrc_operand" " r,FQ,m,r"))]
   "TARGET_SH1
    && (!TARGET_FPU_DOUBLE || reload_completed
        /* ??? We provide some insn so that direct_{load,store}[DFmode] get set */
@@ -5588,8 +5630,11 @@
 {
   return output_movedouble (insn, operands, DFmode);
 }
-  [(set_attr "length" "4")
-   (set_attr "type" "move,pcload,load,store")])
+  [(set_attr "type" "move,pcload,load,store")
+   (set (attr "length")
+	(cond [(match_operand 0 "long_displacement_mem_operand") (const_int 8)
+	       (match_operand 1 "long_displacement_mem_operand") (const_int 8)]
+	      (const_int 4)))])
 
 ;; All alternatives of movdf_i4 are split for ! TARGET_FMOVD.
 ;; However, the d/F/c/z alternative cannot be split directly; it is converted
@@ -5597,11 +5642,19 @@
 ;; the d/m/c/X alternative, which is split later into single-precision
 ;; instructions.  And when not optimizing, no splits are done before fixing
 ;; up pcloads, so we need usable length information for that.
+;; A DF constant load results in the following worst-case 8 byte sequence:
+;;	mova	...,r0
+;;	fmov.s	@r0+,..
+;;	fmov.s	@r0,...
+;;	add	#-4,r0
 (define_insn "movdf_i4"
-  [(set (match_operand:DF 0 "general_movdst_operand" "=d,r,d,d,m,r,r,m,!??r,!???d")
-	(match_operand:DF 1 "general_movsrc_operand"  "d,r,F,m,d,FQ,m,r,d,r"))
+  [(set (match_operand:DF 0 "general_movdst_operand"
+				"=d,r, d,d,m, r,r,m,!??r,!???d")
+	(match_operand:DF 1 "general_movsrc_operand"
+				" d,r, F,m,d,FQ,m,r,   d,    r"))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SI 2                      "=X,X,&z,X,X,X,X,X,X,X"))]
+   (clobber (match_scratch:SI 2
+				"=X,X,&z,X,X, X,X,X,   X,    X"))]
   "TARGET_FPU_DOUBLE
    && (arith_reg_operand (operands[0], DFmode)
        || arith_reg_operand (operands[1], DFmode))"
@@ -5625,16 +5678,28 @@
     }
   }
   [(set_attr_alternative "length"
-     [(if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 8))
+     [(if_then_else (eq_attr "fmovd" "yes") (const_int 2) (const_int 4))
       (const_int 4)
-      (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
-      (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
-      (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
+      (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 8))
+      (if_then_else (match_operand 1 "displacement_mem_operand")
+		    (if_then_else (eq_attr "fmovd" "yes")
+				  (const_int 4) (const_int 8))
+		    (if_then_else (eq_attr "fmovd" "yes")
+				  (const_int 2) (const_int 4)))
+      (if_then_else (match_operand 0 "displacement_mem_operand")
+		    (if_then_else (eq_attr "fmovd" "yes")
+				  (const_int 4) (const_int 8))
+		    (if_then_else (eq_attr "fmovd" "yes")
+				  (const_int 2) (const_int 4)))
       (const_int 4)
-      (const_int 8) (const_int 8) ;; these need only 8 bytes for @(r0,rn)
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 8) (const_int 4))
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 8) (const_int 4))
       (const_int 8)
       (const_int 8)])
-   (set_attr "type" "fmove,move,pcfload,fload,fstore,pcload,load,store,load,fload")
+   (set_attr "type" "fmove,move,pcfload,fload,fstore,pcload,load,store,load,
+		    fload")
    (set_attr "late_fp_use" "*,*,*,*,yes,*,*,*,*,*")
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "double")
@@ -6028,8 +6093,11 @@
     }
 })
 
+;; FIXME Although the movsf_i pattern is not used when there's an FPU,
+;; it somehow influences some RA choices also on FPU targets.
+;; For non-FPU targets it's actually not needed.
 (define_insn "movsf_i"
-  [(set (match_operand:SF 0 "general_movdst_operand" "=r,r,r,r,m,l,r")
+  [(set (match_operand:SF 0 "general_movdst_operand" "=r,r, r, r,m,l,r")
 	(match_operand:SF 1 "general_movsrc_operand"  "r,G,FQ,mr,r,r,l"))]
   "TARGET_SH1
    && (! TARGET_SH2E
@@ -6046,21 +6114,34 @@
 	mov.l	%1,%0
 	lds	%1,%0
 	sts	%1,%0"
-  [(set_attr "type" "move,move,pcload,load,store,move,move")])
+  [(set_attr "type" "move,move,pcload,load,store,move,move")
+   (set_attr_alternative "length"
+     [(const_int 2)
+      (const_int 2)
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (const_int 2)
+      (const_int 2)])])
 
 ;; We may not split the ry/yr/XX alternatives to movsi_ie, since
 ;; update_flow_info would not know where to put REG_EQUAL notes
 ;; when the destination changes mode.
 (define_insn "movsf_ie"
   [(set (match_operand:SF 0 "general_movdst_operand"
-	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,<,y,y")
+			        "=f,r,f,f,fy, f,m, r, r,m,f,y,y,rf,r,y,<,y,y")
 	(match_operand:SF 1 "general_movsrc_operand"
-	  "f,r,G,H,FQ,mf,f,FQ,mr,r,y,f,>,fr,y,r,y,>,y"))
+			        " f,r,G,H,FQ,mf,f,FQ,mr,r,y,f,>,fr,y,r,y,>,y"))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X,X,X,X,X"))]
+   (clobber (match_scratch:SI 2 "=X,X,X,X,&z, X,X, X, X,X,X,X,X, y,X,X,X,X,X"))]
   "TARGET_SH2E
-   && (arith_reg_operand (operands[0], SFmode) || fpul_operand (operands[0], SFmode)
-       || arith_reg_operand (operands[1], SFmode) || fpul_operand (operands[1], SFmode)
+   && (arith_reg_operand (operands[0], SFmode)
+       || fpul_operand (operands[0], SFmode)
+       || arith_reg_operand (operands[1], SFmode)
+       || fpul_operand (operands[1], SFmode)
        || arith_reg_operand (operands[2], SImode))"
   "@
 	fmov	%1,%0
@@ -6091,19 +6172,15 @@
       (const_int 2)
       (const_int 2)
       (const_int 4)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
+      (if_then_else (match_operand 1 "displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (if_then_else (match_operand 0 "displacement_mem_operand")
+		    (const_int 4) (const_int 2))
       (const_int 2)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
       (const_int 2)
       (const_int 2)
       (const_int 2)
@@ -6139,11 +6216,11 @@
 
 (define_insn_and_split "movsf_ie_ra"
   [(set (match_operand:SF 0 "general_movdst_operand"
-	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,<,y,y")
+	 			"=f,r,f,f,fy,f,m, r,r,m,f,y,y,rf,r,y,<,y,y")
 	(match_operand:SF 1 "general_movsrc_operand"
-	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,y,r,y,>,y"))
+				" f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,y,r,y,>,y"))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SF 2 "=r,r,X,X,&z,r,r,X,r,r,r,r,r,y,r,r,r,r,r"))
+   (clobber (match_scratch:SF 2 "=r,r,X,X,&z,r,r, X,r,r,r,r,r, y,r,r,r,r,r"))
    (const_int 0)]
   "TARGET_SH2E
    && (arith_reg_operand (operands[0], SFmode)
@@ -6189,19 +6266,15 @@
       (const_int 2)
       (const_int 2)
       (const_int 4)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
+      (if_then_else (match_operand 1 "displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (if_then_else (match_operand 0 "displacement_mem_operand")
+		    (const_int 4) (const_int 2))
       (const_int 2)
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
-      (if_then_else
-	(match_test "TARGET_SH2A")
-	(const_int 4) (const_int 2))
+      (if_then_else (match_operand 1 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
+      (if_then_else (match_operand 0 "long_displacement_mem_operand")
+		    (const_int 4) (const_int 2))
       (const_int 2)
       (const_int 2)
       (const_int 2)
