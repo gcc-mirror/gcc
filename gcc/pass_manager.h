@@ -78,6 +78,10 @@ public:
   opt_pass *get_pass_peephole2 () const { return pass_peephole2_1; }
   opt_pass *get_pass_profile () const { return pass_profile_1; }
 
+  void register_pass_name (opt_pass *pass, const char *name);
+
+  opt_pass *get_pass_by_name (const char *name);
+
 public:
   /* The root of the compilation pass tree, once constructed.  */
   opt_pass *all_passes;
@@ -95,9 +99,11 @@ public:
 private:
   void set_pass_for_id (int id, opt_pass *pass);
   void register_dump_files (opt_pass *pass);
+  void create_pass_tab () const;
 
 private:
   context *m_ctxt;
+  hash_map<nofree_string_hash, opt_pass *> *m_name_to_pass_map;
 
   /* References to all of the individual passes.
      These fields are generated via macro expansion.
