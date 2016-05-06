@@ -5223,7 +5223,7 @@ remove_clobbers (acceptance_type *acceptance_ptr, rtx *pattern_ptr)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   state insn_root, split_root, peephole2_root;
 

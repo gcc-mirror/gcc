@@ -61,7 +61,7 @@ gen_attr (md_rtx_info *info)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   bool have_delay = false;
   bool have_sched = false;

@@ -5197,7 +5197,7 @@ handle_arg (const char *arg)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   struct attr_desc *attr;
   struct insn_def *id;

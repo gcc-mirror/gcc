@@ -45,7 +45,7 @@ print_enum_type (void **slot, void *info ATTRIBUTE_UNUSED)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   progname = "genenums";
 
