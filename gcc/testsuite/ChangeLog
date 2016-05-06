@@ -1,3 +1,8 @@
+2016-05-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR debug/70935
+	* gcc.dg/torture/pr70935.c: New test.
+
 2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/58219

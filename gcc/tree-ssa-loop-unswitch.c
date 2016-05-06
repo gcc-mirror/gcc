@@ -536,6 +536,12 @@ find_loop_guard (struct loop *loop)
 		 guard_edge->src->index, guard_edge->dest->index);
       return NULL;
     }
+  if (guard_edge->dest == loop->latch)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Guard edge destination is loop latch.\n");
+      return NULL;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
