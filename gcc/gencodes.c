@@ -47,7 +47,7 @@ gen_insn (md_rtx_info *info)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   progname = "gencodes";
 

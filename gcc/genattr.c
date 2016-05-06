@@ -138,7 +138,7 @@ find_tune_attr (rtx exp)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   bool have_annul_true = false;
   bool have_annul_false = false;

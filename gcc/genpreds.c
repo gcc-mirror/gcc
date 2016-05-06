@@ -1618,7 +1618,7 @@ parse_option (const char *opt)
 
 /* Master control.  */
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   progname = argv[0];
   if (argc <= 1)

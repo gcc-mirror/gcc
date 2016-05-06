@@ -1,3 +1,33 @@
+2016-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* genattr-common.c (main): Convert argv from
+	char ** to const char **.
+	* genattr.c (main): Likewise.
+	* genattrtab.c (main): Likewise.
+	* genautomata.c (initiate_automaton_gen): Likewise.
+	(main): Likewise.
+	* gencodes.c (main): Likewise.
+	* genconditions.c (main): Likewise.
+	* genconfig.c (main): Likewise.
+	* genconstants.c (main): Likewise.
+	* genemit.c (main): Likewise.
+	* genenums.c (main): Likewise.
+	* genextract.c (main): Likewise.
+	* genflags.c (main): Likewise.
+	* genmddeps.c (main): Likewise.
+	* genopinit.c (main): Likewise.
+	* genoutput.c (main): Likewise.
+	* genpeep.c (main): Likewise.
+	* genpreds.c (main): Likewise.
+	* genrecog.c (main): Likewise.
+	* gensupport.c (init_rtx_reader_args_cb): Likewise.
+	(init_rtx_reader_args): Likewise.
+	* gensupport.h (init_rtx_reader_args_cb): Likewise.
+	(init_rtx_reader_args): Likewise.
+	* gentarget-def.c (main): Likewise.
+	* read-md.c (read_md_files): Likewise.
+	* read-md.h (read_md_files): Likewise.
+
 2016-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (int cmove peephole2s): Use general_reg_operand

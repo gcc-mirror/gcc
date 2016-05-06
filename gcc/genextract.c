@@ -394,7 +394,7 @@ insn_extract (rtx_insn *insn)\n{\n\
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   unsigned int i;
   struct extraction *p;

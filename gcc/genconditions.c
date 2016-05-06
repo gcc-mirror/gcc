@@ -212,7 +212,7 @@ write_writer (void)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   progname = "genconditions";
 

@@ -2501,7 +2501,7 @@ check_define_attr_duplicates ()
 /* The entry point for initializing the reader.  */
 
 bool
-init_rtx_reader_args_cb (int argc, char **argv,
+init_rtx_reader_args_cb (int argc, const char **argv,
 			 bool (*parse_opt) (const char *))
 {
   /* Prepare to read input.  */
@@ -2538,7 +2538,7 @@ init_rtx_reader_args_cb (int argc, char **argv,
 /* Programs that don't have their own options can use this entry point
    instead.  */
 bool
-init_rtx_reader_args (int argc, char **argv)
+init_rtx_reader_args (int argc, const char **argv)
 {
   return init_rtx_reader_args_cb (argc, argv, 0);
 }

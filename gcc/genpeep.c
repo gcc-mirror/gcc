@@ -340,10 +340,10 @@ print_code (RTX_CODE code)
     putchar (TOUPPER (*p1));
 }
 
-extern int main (int, char **);
+extern int main (int, const char **);
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   max_opno = -1;
 

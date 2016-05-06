@@ -9300,7 +9300,7 @@ parse_automata_opt (const char *str)
 /* The following is top level function to initialize the work of
    pipeline hazards description translator.  */
 static void
-initiate_automaton_gen (char **argv)
+initiate_automaton_gen (const char **argv)
 {
   const char *base_name;
 
@@ -9592,7 +9592,7 @@ write_automata (void)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   progname = "genautomata";
 

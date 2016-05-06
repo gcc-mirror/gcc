@@ -1063,7 +1063,7 @@ parse_include (const char *arg)
    details about the callback's interface.  */
 
 bool
-read_md_files (int argc, char **argv, bool (*parse_opt) (const char *),
+read_md_files (int argc, const char **argv, bool (*parse_opt) (const char *),
 	       directive_handler_t handle_directive)
 {
   int i;
