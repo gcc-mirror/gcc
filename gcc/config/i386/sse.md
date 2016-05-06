@@ -6613,9 +6613,9 @@
 })
 
 (define_insn_and_split "*vec_extractv4sf_0"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=x,m,f,r")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=v,m,f,r")
 	(vec_select:SF
-	  (match_operand:V4SF 1 "nonimmediate_operand" "xm,x,m,m")
+	  (match_operand:V4SF 1 "nonimmediate_operand" "vm,v,m,m")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
@@ -6624,9 +6624,9 @@
   "operands[1] = gen_lowpart (SFmode, operands[1]);")
 
 (define_insn_and_split "*sse4_1_extractps"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm,rm,x,x")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm,rm,v,v")
 	(vec_select:SF
-	  (match_operand:V4SF 1 "register_operand" "Yr,*x,0,x")
+	  (match_operand:V4SF 1 "register_operand" "Yr,*v,0,v")
 	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n,n")])))]
   "TARGET_SSE4_1"
   "@
@@ -6665,7 +6665,7 @@
    (set_attr "mode" "V4SF,V4SF,*,*")])
 
 (define_insn_and_split "*vec_extractv4sf_mem"
-  [(set (match_operand:SF 0 "register_operand" "=x,*r,f")
+  [(set (match_operand:SF 0 "register_operand" "=v,*r,f")
 	(vec_select:SF
 	  (match_operand:V4SF 1 "memory_operand" "o,o,o")
 	  (parallel [(match_operand 2 "const_0_to_3_operand" "n,n,n")])))]
@@ -7239,9 +7239,9 @@
    (set_attr "mode" "XI")])
 
 (define_insn_and_split "vec_extract_lo_v16hi"
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m")
+  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=v,m")
 	(vec_select:V8HI
-	  (match_operand:V16HI 1 "nonimmediate_operand" "xm,x")
+	  (match_operand:V16HI 1 "nonimmediate_operand" "vm,v")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
@@ -7253,20 +7253,27 @@
   "operands[1] = gen_lowpart (V8HImode, operands[1]);")
 
 (define_insn "vec_extract_hi_v16hi"
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m")
+  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m,v,m,v,m")
 	(vec_select:V8HI
-	  (match_operand:V16HI 1 "register_operand" "x,x")
+	  (match_operand:V16HI 1 "register_operand" "x,x,v,v,v,v")
 	  (parallel [(const_int 8) (const_int 9)
 		     (const_int 10) (const_int 11)
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
   "TARGET_AVX"
-  "vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "@
+   vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}
+   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
+   (set_attr "isa" "*,*,avx512dq,avx512dq,avx512f,avx512f")
+   (set_attr "memory" "none,store,none,store,none,store")
+   (set_attr "prefix" "vex,vex,evex,evex,evex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn_and_split "vec_extract_lo_v64qi"
@@ -7325,9 +7332,9 @@
    (set_attr "mode" "XI")])
 
 (define_insn_and_split "vec_extract_lo_v32qi"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m")
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=v,m")
 	(vec_select:V16QI
-	  (match_operand:V32QI 1 "nonimmediate_operand" "xm,x")
+	  (match_operand:V32QI 1 "nonimmediate_operand" "vm,v")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
@@ -7343,9 +7350,9 @@
   "operands[1] = gen_lowpart (V16QImode, operands[1]);")
 
 (define_insn "vec_extract_hi_v32qi"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m")
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m,v,m,v,m")
 	(vec_select:V16QI
-	  (match_operand:V32QI 1 "register_operand" "x,x")
+	  (match_operand:V32QI 1 "register_operand" "x,x,v,v,v,v")
 	  (parallel [(const_int 16) (const_int 17)
 		     (const_int 18) (const_int 19)
 		     (const_int 20) (const_int 21)
@@ -7355,12 +7362,19 @@
 		     (const_int 28) (const_int 29)
 		     (const_int 30) (const_int 31)])))]
   "TARGET_AVX"
-  "vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "@
+   vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
+   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}
+   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
+   (set_attr "isa" "*,*,avx512dq,avx512dq,avx512f,avx512f")
+   (set_attr "memory" "none,store,none,store,none,store")
+   (set_attr "prefix" "vex,vex,evex,evex,evex,evex")
    (set_attr "mode" "OI")])
 
 ;; Modes handled by vec_extract patterns.

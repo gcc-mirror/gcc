@@ -1,5 +1,11 @@
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*vec_extractv4sf_0, *sse4_1_extractps,
+	*vec_extractv4sf_mem, vec_extract_lo_v16hi, vec_extract_hi_v16hi,
+	vec_extract_lo_v32qi, vec_extract_hi_v32qi): Use v instead of x
+	in vex or maybe_vex alternatives, use maybe_evex instead of vex
+	in prefix.
+
 	* config/i386/sse.md (*vec_concatv2sf_sse4_1, *vec_concatv4sf): Use
 	v instead of x in vex or maybe_vex alternatives, use
 	maybe_evex instead of vex in prefix.
