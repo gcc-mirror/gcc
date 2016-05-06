@@ -1,7 +1,7 @@
 2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/58219
-	*gcc.target/sh/pr58219.c: New tests.
+	* gcc.target/sh/pr58219.c: New tests.
 
 2016-05-06  Richard Biener  <rguenther@suse.de>
 
