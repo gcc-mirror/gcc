@@ -1,3 +1,10 @@
+2016-05-06  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-uninit.c: Apply manual changes
+	to the GNU coding style.
+	(prune_uninit_phi_opnds): Rename from
+	prune_uninit_phi_opnds_in_unrealizable_paths.
+
 2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.opt (madjust-unroll, minvalid-symbols, msoft-atomic,
