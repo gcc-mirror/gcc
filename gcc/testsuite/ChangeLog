@@ -1,5 +1,8 @@
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512bw-vpsraw-3.c: New test.
+	* gcc.target/i386/avx512vl-vpsrad-3.c: New test.
+
 	* gcc.target/i386/avx512bw-vpmaddwd-3.c: New test.
 
 2016-05-06  Yuri Rumyantsev  <ysrumyan@gmail.com>

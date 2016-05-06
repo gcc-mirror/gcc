@@ -1,5 +1,8 @@
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (<mask_codefor>ashr<mode>3<mask_name>): Move
+	before the ashr<mode>3 pattern.
+
 	* config/i386/sse.md (*avx2_pmaddwd, *sse2_pmaddwd): Use
 	v instead of x in vex or maybe_vex alternatives, use
 	maybe_evex instead of vex in prefix.
