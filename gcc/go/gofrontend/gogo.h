@@ -51,6 +51,7 @@ class Bvariable;
 class Blabel;
 class Bfunction;
 class Escape_context;
+class Node;
 
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
@@ -570,7 +571,7 @@ class Gogo
   // Traverse the objects in the connecitivty graph from the sink, adjusting the
   // escape levels of each object.
   void
-  propagate_escape(Escape_context*);
+  propagate_escape(Escape_context*, Node*);
 
   // Add notes about the escape level of a function's input and output
   // parameters for exporting and importing top level functions. 
