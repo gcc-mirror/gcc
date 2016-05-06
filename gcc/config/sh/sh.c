@@ -3209,6 +3209,15 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	  *total = 1; //COSTS_N_INSNS (1);
 	  return true;
 	}
+
+      /* div0s variant.  */
+      if (GET_CODE (XEXP (x, 0)) == XOR
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == XOR
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+	{
+	  *total = 1;
+	  return true;
+	}
       return false;
 
     /* The cost of a sign or zero extend depends on whether the source is a

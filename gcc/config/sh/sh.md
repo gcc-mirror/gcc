@@ -1103,6 +1103,97 @@
 	(lshiftrt:SI (xor:SI (match_dup 0) (match_dup 1)) (const_int 31)))
    (set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))])
 
+;; In some cases, it might be shorter to get a tested bit into bit 31 and
+;; use div0s.  Otherwise it's usually better to just leave the xor and tst
+;; sequence.  The only thing we can try to do here is avoiding the large
+;; tst constant.
+(define_insn_and_split "*cmp_div0s_7"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI (xor:SI (match_operand:SI 0 "arith_reg_operand")
+				 (match_operand:SI 1 "arith_reg_operand"))
+			 (const_int 1)
+			 (match_operand 2 "const_int_operand")))]
+  "TARGET_SH1 && can_create_pseudo_p ()
+   && (INTVAL (operands[2]) == 7 || INTVAL (operands[2]) == 15
+       || INTVAL (operands[2]) == 23 || INTVAL (operands[2]) == 29
+       || INTVAL (operands[2]) == 30 || INTVAL (operands[2]) == 31)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  const int bitpos = INTVAL (operands[2]);
+
+  rtx op0 = gen_reg_rtx (SImode);
+  rtx op1 = gen_reg_rtx (SImode);
+
+  if (bitpos == 23 || bitpos == 30 || bitpos == 29)
+    {
+      emit_insn (gen_ashlsi3 (op0, operands[0], GEN_INT (31 - bitpos)));
+      emit_insn (gen_ashlsi3 (op1, operands[1], GEN_INT (31 - bitpos)));
+    }
+  else if (bitpos == 15)
+    {
+      emit_insn (gen_extendhisi2 (op0, gen_lowpart (HImode, operands[0])));
+      emit_insn (gen_extendhisi2 (op1, gen_lowpart (HImode, operands[1])));
+    }
+  else if (bitpos == 7)
+    {
+      emit_insn (gen_extendqisi2 (op0, gen_lowpart (QImode, operands[0])));
+      emit_insn (gen_extendqisi2 (op1, gen_lowpart (QImode, operands[1])));
+    }
+  else if (bitpos == 31)
+    {
+      op0 = operands[0];
+      op1 = operands[1];
+    }
+  else
+    gcc_unreachable ();
+
+  emit_insn (gen_cmp_div0s (op0, op1));
+  DONE;
+})
+
+;; For bits 0..7 using a xor and tst #imm,r0 sequence seems to be better.
+;; Thus allow the following patterns only for higher bit positions where
+;; we it's more likely to save the large tst constant.
+(define_insn_and_split "*cmp_div0s_8"
+  [(set (reg:SI T_REG)
+	(eq:SI (zero_extract:SI (match_operand:SI 0 "arith_reg_operand")
+				(const_int 1)
+				(match_operand 2 "const_int_operand"))
+	       (zero_extract:SI (match_operand:SI 1 "arith_reg_operand")
+				(const_int 1)
+				(match_dup 2))))]
+  "TARGET_SH1 && can_create_pseudo_p ()
+   && (INTVAL (operands[2]) == 15
+       || INTVAL (operands[2]) == 23 || INTVAL (operands[2]) == 29
+       || INTVAL (operands[2]) == 30 || INTVAL (operands[2]) == 31)"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
+			 (const_int 1) (match_dup 2)))
+   (set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))])
+
+(define_insn_and_split "*cmp_div0s_9"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI (xor:SI (xor:SI (match_operand:SI 0 "arith_reg_operand")
+					 (match_operand:SI 1 "arith_reg_operand"))
+				 (match_operand 2 "const_int_operand"))
+			 (const_int 1)
+			 (match_operand 3 "const_int_operand")))]
+  "TARGET_SH1 && can_create_pseudo_p ()
+   && (INTVAL (operands[2]) & 0xFFFFFFFF) == (1U << INTVAL (operands[3]))
+   && (INTVAL (operands[3]) == 15
+       || INTVAL (operands[3]) == 23 || INTVAL (operands[3]) == 29
+       || INTVAL (operands[3]) == 30 || INTVAL (operands[3]) == 31)"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
+			 (const_int 1) (match_dup 3)))
+   (set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))])
+
 ;; -------------------------------------------------------------------------
 ;; SImode compare and branch
 ;; -------------------------------------------------------------------------

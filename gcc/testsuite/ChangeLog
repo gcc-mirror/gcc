@@ -1,3 +1,11 @@
+2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* gcc.target/sh/pr52933-1.c (test_31, test_32, test_33, test_34,
+	test_35, test_36, test_37, test_38, test_39, test_40): New sub-tests.
+	Adjust expected instruction counts.
+	* gcc.target/sh/pr52933-2.c: Adjust expected instruction counts.
+
 2016-05-06  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/70875
