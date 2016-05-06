@@ -1,5 +1,11 @@
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (sse_shufps_<mode>, sse_storehps, sse_loadhps,
+	sse_storelps, sse_movss, avx2_vec_dup<mode>, avx2_vec_dupv8sf_1,
+	sse2_shufpd_<mode>, sse2_storehpd, sse2_storelpd, sse2_loadhpd,
+	sse2_loadlpd, sse2_movsd): Use v instead of x in vex or maybe_vex
+	alternatives, use maybe_evex instead of vex in prefix.
+
 	* config/i386/sse.md (vec_interleave_lowv4sf,
 	*vec_interleave_highv2df, *vec_interleave_lowv2df): Use
 	v instead of x in vex or maybe_vex alternatives, use
