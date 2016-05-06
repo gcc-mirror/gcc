@@ -230,6 +230,12 @@
        (match_test "sh_disp_addr_displacement (op)
 		    <= sh_max_mov_insn_displacement (GET_MODE (op), false)")))
 
+;; Returns true if OP is a displacement address that does not fit into
+;; a 16 bit (non-SH2A) memory load / store insn.
+(define_predicate "long_displacement_mem_operand"
+  (and (match_operand 0 "displacement_mem_operand")
+       (not (match_operand 0 "short_displacement_mem_operand"))))
+
 ;; Returns true if OP is a post-increment addressing mode memory reference.
 (define_predicate "post_inc_mem"
   (and (match_code "mem")

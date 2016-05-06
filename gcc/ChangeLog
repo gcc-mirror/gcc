@@ -1,3 +1,18 @@
+2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/58219
+	* config/sh/predicates.md (long_displacement_mem_operand): New.
+	* config/sh/sh.md (movsi_i): Allow for SH2A, disallow for any FPU.
+	Add movi20, movi20s alternatives.  Adjust length attribute for
+	alternatives.
+	(movsi_ie): Allow for any FPU.  Adjust length attribute for
+	alternatives.
+	(movsi_i_lowpart): Add movi20, movi20s alternatives.  Adjust length
+	attribute for alternatives.
+	(*mov<mode>): Use long_displacement_mem_operand for length attribute.
+	(*movdi_i, movdf_k, movdf_i4, movsf_i, movsf_ie, movsf_ie_ra): Adjust
+	length attribute for alternatives.
+
 2016-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70960
