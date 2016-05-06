@@ -1,3 +1,14 @@
+2016-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (LEAMODE): New mode attribute.
+	(plus to LEA splitter): Rewrite splitter using LEAMODE mode attribute.
+	(ashift to LEA splitter): Rewrte splitter using SWI mode iterator
+	and LEAMODE mode attribute.  Use VOIDmode const_0_to_3_operand as
+	operand 2 predicate.
+	(*lea<mode>_general_2): Use VOIDmode for const248_operand.
+	(*lea<mode>_general_3): Ditto.
+	(*lea<mode>_general_4): Use VOIDmode for const_0_to_3_operand.
+
 2016-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* genmddump.c (main): Convert argv from char ** to const char **.
@@ -34,8 +45,7 @@
 
 2016-05-06  David Malcolm  <dmalcolm@redhat.com>
 
-	* genattr-common.c (main): Convert argv from
-	char ** to const char **.
+	* genattr-common.c (main): Convert argv from char ** to const char **.
 	* genattr.c (main): Likewise.
 	* genattrtab.c (main): Likewise.
 	* genautomata.c (initiate_automaton_gen): Likewise.
