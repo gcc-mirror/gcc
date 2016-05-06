@@ -1,3 +1,9 @@
+2016-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* config/sh/sh.md (*cmp_div0s_7, *cmp_div0s_8): Add div0s variants.
+	* config/sh/sh.c (sh_rtx_costs): Add another div0s case.
+
 2016-05-06  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/70875

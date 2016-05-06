@@ -4,13 +4,13 @@
    logic usually show up as redundant tst insns.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-times "div0s" 32 } } */
+/* { dg-final { scan-assembler-times "div0s" 42 } } */
 /* { dg-final { scan-assembler-not "tst" } } */
 /* { dg-final { scan-assembler-not "not\t" } }  */
 /* { dg-final { scan-assembler-not "nott" } }  */
 
-/* { dg-final { scan-assembler-times "negc" 9 { target { ! sh2a } } } }  */
-/* { dg-final { scan-assembler-times "movrt" 9 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "negc" 10 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "movrt" 10 { target { sh2a } } } }  */
 
 typedef unsigned char bool;
 
@@ -211,4 +211,76 @@ int
 test_30 (int a, int b)
 {
   return ((a >> 31) ^ (b >> 31)) & 1;
+}
+
+// -------------------------------------------------------
+
+bool
+test_31 (int a, int b)
+{
+  /* 2x exts.w, div0s  */
+  return ((a & 0x8000) ^ (b & 0x8000)) != 0;
+}
+
+bool
+test_32 (int a, int b)
+{
+  /* 2x exts.w, div0s  */
+  return (a & 0x8000) != (b & 0x8000);
+}
+
+bool
+test_33 (int a, int b)
+{
+  /* 2x add/shll, div0s  */
+  return ((a & (1<<30)) ^ (b & (1<<30))) != 0;
+}
+
+bool
+test_34 (int a, int b)
+{
+  /* 2x exts.b, div0s  */
+  return (a & 0x80) != (b & 0x80);
+}
+
+bool
+test_35 (signed char a, signed char b)
+{
+  /* 2x exts.b, div0s  */
+  return (a < 0) != (b < 0);
+}
+
+bool
+test_36 (short a, short b)
+{
+  /* 2x exts.w, div0s  */
+  return (a < 0) != (b < 0);
+}
+
+int
+test_37 (short a, short b)
+{
+  /* 2x exts.w, div0s  */
+  return (a < 0) != (b < 0) ? 40 : -10;
+}
+
+bool
+test_38 (int a, int b)
+{
+  /* 2x shll8, div0s  */
+  return ((a & (1<<23)) ^ (b & (1<<23))) != 0;
+}
+
+bool
+test_39 (int a, int b)
+{
+  /* 2x shll2, div0s  */
+  return ((a & (1<<29)) ^ (b & (1<<29))) != 0;
+}
+
+bool
+test_40 (short a, short b)
+{
+  /* 2x exts.w, div0s, negc  */
+  return (a < 0) == (b < 0);
 }
