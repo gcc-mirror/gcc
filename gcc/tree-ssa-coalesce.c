@@ -1569,17 +1569,24 @@ gimple_can_coalesce_p (tree name1, tree name2)
 			    var2 ? LOCAL_DECL_ALIGNMENT (var2) : TYPE_ALIGN (t2)))
     return false;
 
-  /* If the types are not the same, check for a canonical type match.  This
+  /* If the types are not the same, see whether they are compatible.  This
      (for example) allows coalescing when the types are fundamentally the
-     same, but just have different names. 
+     same, but just have different names.
 
-     Note pointer types with different address spaces may have the same
-     canonical type.  Those are rejected for coalescing by the
-     types_compatible_p check.  */
-  if (TYPE_CANONICAL (t1)
-      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
-      && types_compatible_p (t1, t2))
-    goto check_modes;
+     In the non-optimized case, we must first test TYPE_CANONICAL because
+     we use it to compute the partition_to_base_index of the map.  */
+  if (flag_tree_coalesce_vars)
+    {
+      if (types_compatible_p (t1, t2))
+	goto check_modes;
+    }
+  else
+    {
+      if (TYPE_CANONICAL (t1)
+	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
+	  && types_compatible_p (t1, t2))
+	goto check_modes;
+    }
 
   return false;
 }

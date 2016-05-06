@@ -1,3 +1,8 @@
+2016-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-coalesce.c (gimple_can_coalesce_p): In the optimized case,
+	allow coalescing if the types are compatible.
+
 2016-05-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* pass_manager.h (pass_manager::register_pass_name): New method.
