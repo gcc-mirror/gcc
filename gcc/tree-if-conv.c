@@ -2361,7 +2361,7 @@ ifcvt_split_critical_edges (struct loop *loop, bool aggressive_if_conv)
   gimple *stmt;
   edge e;
   edge_iterator ei;
-  vec<edge> critical_edges = vNULL;
+  auto_vec<edge> critical_edges;
 
   /* Loop is not well formed.  */
   if (num <= 2 || loop->inner || !single_exit (loop))
@@ -2381,7 +2381,6 @@ ifcvt_split_critical_edges (struct loop *loop, bool aggressive_if_conv)
 		     bb->index, MAX_PHI_ARG_NUM);
 
 	  free (body);
-	  critical_edges.release ();
 	  return false;
 	}
       if (bb == loop->latch || bb_with_exit_edge_p (loop, bb))
