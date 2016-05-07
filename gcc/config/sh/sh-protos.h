@@ -348,6 +348,18 @@ private:
 
 extern sh_treg_insns sh_split_treg_set_expr (rtx x, rtx_insn* curr_insn);
 
+enum
+{
+  /* An effective conditional branch distance of zero bytes is impossible.
+     Hence we can use it to designate an unknown value.  */
+  unknown_cbranch_distance = 0u,
+  infinite_cbranch_distance = ~0u
+};
+
+unsigned int
+sh_cbranch_distance (rtx_insn* cbranch_insn,
+		     unsigned int max_dist = infinite_cbranch_distance);
+
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);
