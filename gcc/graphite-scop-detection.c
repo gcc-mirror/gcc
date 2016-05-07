@@ -1722,8 +1722,7 @@ static void
 build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
 			     vec<tree> *writes)
 {
-  gcc_assert (def);
-  if (!is_gimple_reg (def))
+  if (!def || !is_gimple_reg (def))
     return;
 
   /* Do not gather scalar variables that can be analyzed by SCEV as they can be
