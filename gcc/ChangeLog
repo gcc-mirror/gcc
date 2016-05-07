@@ -1,3 +1,18 @@
+2016-05-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_1): Add preferred_for_speed attribute
+	to disparage alternatives 3 and 4 for TARGET_PARTIAL_REG_STALL targets.
+	(*andqi_1): Add preferred_for_speed attribute to disparage
+	alternative 2 for TARGET_PARTIAL_REG_STALL targets.
+	(*<code>qi_1): Ditto.
+	(*one_cmplqi2_1): Add preferred_for_speed attribute to disparage
+	alternative 1 for TARGET_PARTIAL_REG_STALL targets.
+	(*ashlqi3_1): Ditto.
+	(*swap<mode>): Merge from *swap<mode>_1 and *swap<mode>_2 patterns.
+	Add preferred_for_size attribute to disparage alternative 0 and
+	preferred_for_speed attribute to disparage alternative 1 for
+	TARGET_PARTIAL_REG_STALL targets.
+
 2016-05-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/70956
