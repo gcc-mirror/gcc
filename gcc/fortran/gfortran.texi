@@ -474,9 +474,9 @@ The GNU Fortran compiler is able to compile nearly all
 standard-compliant Fortran 95, Fortran 90, and Fortran 77 programs,
 including a number of standard and non-standard extensions, and can be
 used on real-world programs.  In particular, the supported extensions
-include OpenMP, Cray-style pointers, and several Fortran 2003 and Fortran
-2008 features, including TR 15581.  However, it is still under
-development and has a few remaining rough edges.
+include OpenMP, Cray-style pointers, some old vendor extensions, and several
+Fortran 2003 and Fortran 2008 features, including TR 15581.  However, it is
+still under development and has a few remaining rough edges.
 There also is initial support for OpenACC.
 Note that this is an experimental feature, incomplete, and subject to
 change in future versions of GCC.  See
@@ -1459,6 +1459,8 @@ without warning.
 * OpenACC::
 * Argument list functions::
 * Read/Write after EOF marker::
+* STRUCTURE and RECORD::
+* UNION and MAP::
 @end menu
 
 @node Old-style kind specifications
@@ -2117,40 +2119,6 @@ consider @code{BACKSPACE} or @code{REWIND} to properly position
 the file before the EOF marker.  As an extension, the run-time error may
 be disabled using -std=legacy.
 
-@node Extensions not implemented in GNU Fortran
-@section Extensions not implemented in GNU Fortran
-@cindex extensions, not implemented
-
-The long history of the Fortran language, its wide use and broad
-userbase, the large number of different compiler vendors and the lack of
-some features crucial to users in the first standards have lead to the
-existence of a number of important extensions to the language.  While
-some of the most useful or popular extensions are supported by the GNU
-Fortran compiler, not all existing extensions are supported.  This section
-aims at listing these extensions and offering advice on how best make
-code that uses them running with the GNU Fortran compiler.
-
-@c More can be found here:
-@c   -- https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
-@c   -- the list of Fortran and libgfortran bugs closed as WONTFIX:
-@c      http://tinyurl.com/2u4h5y
-
-@menu
-* STRUCTURE and RECORD::
-@c * UNION and MAP::
-* ENCODE and DECODE statements::
-* Variable FORMAT expressions::
-@c * Q edit descriptor::
-@c * AUTOMATIC statement::
-@c * TYPE and ACCEPT I/O Statements::
-@c * .XOR. operator::
-@c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
-@c * Omitted arguments in procedure call::
-* Alternate complex function syntax::
-* Volatile COMMON blocks::
-* OPEN( ... NAME=)::
-@end menu
-
 
 @node STRUCTURE and RECORD
 @subsection @code{STRUCTURE} and @code{RECORD}
@@ -2226,16 +2194,218 @@ store_catalog(12) = pear
 print *, store_catalog(12)
 @end example
 
+@noindent
+GNU Fortran implements STRUCTURES like derived types with the following
+rules and exceptions:
 
-@c @node UNION and MAP
-@c @subsection @code{UNION} and @code{MAP}
-@c @cindex @code{UNION}
-@c @cindex @code{MAP}
-@c
-@c For help writing this one, see
-@c http://www.eng.umd.edu/~nsw/ench250/fortran1.htm#UNION and
-@c http://www.tacc.utexas.edu/services/userguides/pgi/pgiws_ug/pgi32u06.htm
+@itemize @bullet
+@item Structures act like derived types with the @code{SEQUENCE} attribute.
+Otherwise they may contain no specifiers.
 
+@item Structures may share names with other symbols. For example, the following
+is invalid for derived types, but valid for structures:
+
+@smallexample
+structure /header/
+  ! ...
+end structure
+record /header/ header
+@end smallexample
+
+@item Structure types may be declared nested within another parent structure.
+The syntax is:
+@smallexample
+structure /type-name/
+    ...
+    structure [/<type-name>/] <field-list>
+...
+@end smallexample
+
+The type name may be ommitted, in which case the structure type itself is
+anonymous, and other structures of the same type cannot be instantiated. The
+following shows some examples:
+
+@example
+structure /appointment/
+  ! nested structure definition: app_time is an array of two 'time'
+  structure /time/ app_time (2) 
+    integer(1) hour, minute
+  end structure
+  character(10) memo
+end structure
+
+! The 'time' structure is still usable
+record /time/ now
+now = time(5, 30)
+
+...
+
+structure /appointment/
+  ! anonymous nested structure definition
+  structure start, end
+    integer(1) hour, minute
+  end structure
+  character(10) memo
+end structure
+@end example
+
+@item Structures may contain @code{UNION} blocks. For more detail see the
+section on @ref{UNION and MAP}.
+
+@item Structures support old-style initialization of components, like
+those described in @ref{Old-style variable initialization}. For array
+initializers, an initializer may contain a repeat specification of the form
+@code{<literal-integer> * <constant-initializer>}. The value of the integer
+indicates the number of times to repeat the constant initializer when expanding
+the initializer list.
+@end itemize
+
+@node UNION and MAP
+@subsection @code{UNION} and @code{MAP}
+@cindex @code{UNION}
+@cindex @code{MAP}
+
+Unions are an old vendor extension which were commonly used with the
+non-standard @ref{STRUCTURE and RECORD} extensions. Use of @code{UNION} and
+@code{MAP} is automatically enabled with @option{-fdec-structure}.
+
+A @code{UNION} declaration occurs within a structure; within the definition of
+each union is a number of @code{MAP} blocks. Each @code{MAP} shares storage
+with its sibling maps (in the same union), and the size of the union is the
+size of the largest map within it, just as with unions in C. The major
+difference is that component references do not indicate which union or map the
+component is in (the compiler gets to figure that out).
+
+Here is a small example:
+@smallexample
+structure /myunion/
+union
+  map
+    integer(2) w, x, y, z
+  end map
+  map
+    integer(4) wx, yz
+  end map
+end union
+end structure
+
+record /myunion/ rec
+! After these assignments...
+rec.wx = z'0DEDBEEF'
+rec.y  = z'0BAD'
+rec.z  = z'0FAD'
+
+! The following is true:
+! rec.w  === z'0DED'
+! rec.x  === z'BEEF'
+! rec.yz === z'0BAD0FAD'
+@end smallexample
+
+The two maps share memory, and the size of the union is ultimately six bytes
+(subject to alignment):
+
+@example
+0    1    2    3    4   5   6     Byte offset
+-------------------------------
+|    |    |    |    |    |    |
+-------------------------------
+
+^    W0   ^    W1   ^    W2   ^
+ \-------/ \-------/ \-------/
+
+^       LONG        ^  unused ^
+ \-----------------/ \-------/
+@end example
+
+Following is an example mirroring the layout of an Intel x86_64 register:
+
+@example
+structure /reg/
+  union    ! rax
+    map
+      integer*8 rx         ! rax
+    end map
+    map
+      integer*4 rh         ! rah
+      union   ! eax
+        map
+          integer*4 rl     ! ral
+        end map
+        map
+          integer*4 ex     ! eax
+        end map
+        map
+          integer*2 eh     ! eah
+          union     ! ax
+            map
+              integer*2 el ! eal
+            end map
+            map
+              integer*2 x  ! ax
+            end map
+            map
+              integer*1 h  ! ah
+              integer*1 l  ! al
+            end map
+          end union ! ax
+        end map
+      end union ! eax
+    end map
+  end union ! rax
+end structure
+
+record /reg/ a
+
+! After this assignment...
+a.rx = z'AABBCCCCFFFFFFFF'
+
+! The following is true:
+!
+! a.rx == z'AABBCCCCFFFFFFFF'
+! a.rh ==         z'FFFFFFFF'
+! a.rl == z'AABBCCCC'
+!
+! a.ex == z'AABBCCCC'
+! a.eh ==     z'CCCC'
+! a.el == z'AABB'
+!
+!  a.x == z'AABB'
+!  a.h ==   z'BB'
+!  a.l == z'AA'
+@end example
+
+
+@node Extensions not implemented in GNU Fortran
+@section Extensions not implemented in GNU Fortran
+@cindex extensions, not implemented
+
+The long history of the Fortran language, its wide use and broad
+userbase, the large number of different compiler vendors and the lack of
+some features crucial to users in the first standards have lead to the
+existence of a number of important extensions to the language.  While
+some of the most useful or popular extensions are supported by the GNU
+Fortran compiler, not all existing extensions are supported.  This section
+aims at listing these extensions and offering advice on how best make
+code that uses them running with the GNU Fortran compiler.
+
+@c More can be found here:
+@c   -- https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
+@c   -- the list of Fortran and libgfortran bugs closed as WONTFIX:
+@c      http://tinyurl.com/2u4h5y
+
+@menu
+* ENCODE and DECODE statements::
+* Variable FORMAT expressions::
+@c * Q edit descriptor::
+@c * AUTOMATIC statement::
+@c * TYPE and ACCEPT I/O Statements::
+@c * .XOR. operator::
+@c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
+@c * Omitted arguments in procedure call::
+* Alternate complex function syntax::
+* Volatile COMMON blocks::
+* OPEN( ... NAME=)::
+@end menu
 
 @node ENCODE and DECODE statements
 @subsection @code{ENCODE} and @code{DECODE} statements
@@ -2353,7 +2523,6 @@ Some Fortran compilers, including @command{g77}, let the user declare
 invalid standard Fortran syntax and is not supported by
 @command{gfortran}.  Note that @command{gfortran} accepts
 @code{VOLATILE} variables in @code{COMMON} blocks since revision 4.3.
-
 
 
 @node OPEN( ... NAME=)

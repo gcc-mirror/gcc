@@ -62,6 +62,15 @@ not after.
 
 #define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
 
+/* Macros to check for groups of structure-like types and flavors since
+   derived types, structures, maps, unions are often treated similarly. */
+#define gfc_bt_struct(t) \
+  ((t) == BT_DERIVED || (t) == BT_UNION)
+#define gfc_fl_struct(f) \
+  ((f) == FL_DERIVED || (f) == FL_UNION || (f) == FL_STRUCT)
+#define case_bt_struct case BT_DERIVED: case BT_UNION
+#define case_fl_struct case FL_DERIVED: case FL_UNION: case FL_STRUCT
+
 /* Stringization.  */
 #define stringize(x) expand_macro(x)
 #define expand_macro(x) # x
@@ -203,6 +212,8 @@ enum gfc_statement
   ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE, ST_SIMPLE_IF,
   ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT, ST_ENUM,
   ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
+  ST_STRUCTURE_DECL, ST_END_STRUCTURE,
+  ST_UNION, ST_END_UNION, ST_MAP, ST_END_MAP,
   ST_OACC_PARALLEL_LOOP, ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL,
   ST_OACC_END_PARALLEL, ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_DATA,
   ST_OACC_END_DATA, ST_OACC_HOST_DATA, ST_OACC_END_HOST_DATA, ST_OACC_LOOP,
@@ -254,12 +265,12 @@ enum interface_type
 };
 
 /* Symbol flavors: these are all mutually exclusive.
-   10 elements = 4 bits.  */
+   12 elements = 4 bits.  */
 enum sym_flavor
 {
   FL_UNKNOWN = 0, FL_PROGRAM, FL_BLOCK_DATA, FL_MODULE, FL_VARIABLE,
   FL_PARAMETER, FL_LABEL, FL_PROCEDURE, FL_DERIVED, FL_NAMELIST,
-  FL_VOID
+  FL_UNION, FL_STRUCT, FL_VOID
 };
 
 /* Procedure types.  7 elements = 3 bits.  */
@@ -2523,6 +2534,8 @@ typedef struct
   int flag_init_character;
   char flag_init_character_value;
 
+  int flag_dec_structure;
+
   int fpe;
   int fpe_summary;
   int rtcheck;
@@ -2743,6 +2756,7 @@ bool gfc_check_any_c_kind (gfc_typespec *);
 int gfc_validate_kind (bt, int, bool);
 int gfc_get_int_kind_from_width_isofortranenv (int size);
 int gfc_get_real_kind_from_width_isofortranenv (int size);
+tree gfc_get_union_type (gfc_symbol *);
 tree gfc_get_derived_type (gfc_symbol * derived);
 extern int gfc_index_integer_kind;
 extern int gfc_default_integer_kind;
@@ -2831,7 +2845,8 @@ int gfc_copy_dummy_sym (gfc_symbol **, gfc_symbol *, int);
 bool gfc_add_component (gfc_symbol *, const char *, gfc_component **);
 gfc_symbol *gfc_use_derived (gfc_symbol *);
 gfc_symtree *gfc_use_derived_tree (gfc_symtree *);
-gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool);
+gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool,
+                                   gfc_ref **);
 
 gfc_st_label *gfc_get_st_label (int);
 void gfc_free_st_label (gfc_st_label *);
@@ -3174,6 +3189,8 @@ void gfc_module_done_2 (void);
 void gfc_dump_module (const char *, int);
 bool gfc_check_symbol_access (gfc_symbol *);
 void gfc_free_use_stmts (gfc_use_list *);
+const char *gfc_dt_lower_string (const char *);
+const char *gfc_dt_upper_string (const char *);
 
 /* primary.c */
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);

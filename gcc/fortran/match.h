@@ -60,6 +60,7 @@ match gfc_match (const char *, ...);
 match gfc_match_iterator (gfc_iterator *, int);
 match gfc_match_parens (void);
 match gfc_match_type_spec (gfc_typespec *);
+match gfc_match_member_sep(gfc_symbol *);
 
 
 /* Statement matchers.  */
@@ -208,6 +209,9 @@ match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);
 match gfc_match_submod_proc (void);
+match gfc_match_map (void);
+match gfc_match_union (void);
+match gfc_match_structure_decl (void);
 match gfc_match_derived_decl (void);
 match gfc_match_final_decl (void);
 
