@@ -394,8 +394,8 @@
 ;; DFmode moves
 
 (define_insn "*movdf_vfp"
-  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w  ,Uv,r, m,w,r")
-	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,Dy,UvF,w ,mF,r,w,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w,w  ,Uv,r, m,w,r")
+	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,Dy,G,UvF,w ,mF,r,w,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -410,39 +410,43 @@
       case 2:
 	gcc_assert (TARGET_VFP_DOUBLE);
         return \"vmov%?.f64\\t%P0, %1\";
-      case 3: case 4:
+      case 3:
+	gcc_assert (TARGET_VFP_DOUBLE);
+	return \"vmov.i64\\t%P0, #0\\t%@ float\";
+      case 4: case 5:
 	return output_move_vfp (operands);
-      case 5: case 6:
+      case 6: case 7:
 	return output_move_double (operands, true, NULL);
-      case 7:
+      case 8:
 	if (TARGET_VFP_SINGLE)
 	  return \"vmov%?.f32\\t%0, %1\;vmov%?.f32\\t%p0, %p1\";
 	else
 	  return \"vmov%?.f64\\t%P0, %P1\";
-      case 8:
+      case 9:
         return \"#\";
       default:
 	gcc_unreachable ();
       }
     }
   "
-  [(set_attr "type" "f_mcrr,f_mrrc,fconstd,f_loadd,f_stored,\
+  [(set_attr "type" "f_mcrr,f_mrrc,fconstd,neon_move,f_loadd,f_stored,\
                      load2,store2,ffarithd,multiple")
-   (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
-			       (eq_attr "alternative" "7")
+   (set (attr "length") (cond [(eq_attr "alternative" "6,7,9") (const_int 8)
+			       (eq_attr "alternative" "8")
 				(if_then_else
 				 (match_test "TARGET_VFP_SINGLE")
 				 (const_int 8)
 				 (const_int 4))]
 			      (const_int 4)))
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,1020,*,1020,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,1004,*,1004,*,*,*")]
+   (set_attr "predicable" "yes,yes,yes,no,yes,yes,yes,yes,yes,yes")
+   (set_attr "pool_range" "*,*,*,*,1020,*,1020,*,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,1004,*,1004,*,*,*")
+   (set_attr "arch" "any,any,any,neon,any,any,any,any,any,any")]
 )
 
 (define_insn "*thumb2_movdf_vfp"
-  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w  ,Uv,r ,m,w,r")
-	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,Dy,UvF,w, mF,r, w,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w,w  ,Uv,r ,m,w,r")
+	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,Dy,G,UvF,w, mF,r, w,r"))]
   "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -457,11 +461,14 @@
       case 2:
 	gcc_assert (TARGET_VFP_DOUBLE);
 	return \"vmov%?.f64\\t%P0, %1\";
-      case 3: case 4:
+      case 3:
+	gcc_assert (TARGET_VFP_DOUBLE);
+	return \"vmov.i64\\t%P0, #0\\t%@ float\";
+      case 4: case 5:
 	return output_move_vfp (operands);
-      case 5: case 6: case 8:
+      case 6: case 7: case 9:
 	return output_move_double (operands, true, NULL);
-      case 7:
+      case 8:
 	if (TARGET_VFP_SINGLE)
 	  return \"vmov%?.f32\\t%0, %1\;vmov%?.f32\\t%p0, %p1\";
 	else
@@ -471,17 +478,18 @@
       }
     }
   "
-  [(set_attr "type" "f_mcrr,f_mrrc,fconstd,f_loadd,\
+  [(set_attr "type" "f_mcrr,f_mrrc,fconstd,neon_move,f_loadd,\
                      f_stored,load2,store2,ffarithd,multiple")
-   (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
-			       (eq_attr "alternative" "7")
+   (set (attr "length") (cond [(eq_attr "alternative" "6,7,9") (const_int 8)
+			       (eq_attr "alternative" "8")
 				(if_then_else
 				 (match_test "TARGET_VFP_SINGLE")
 				 (const_int 8)
 				 (const_int 4))]
 			      (const_int 4)))
-   (set_attr "pool_range" "*,*,*,1018,*,4094,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
+   (set_attr "pool_range" "*,*,*,*,1018,*,4094,*,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,1008,*,0,*,*,*")
+   (set_attr "arch" "any,any,any,neon,any,any,any,any,any,any")]
 )
 
 
