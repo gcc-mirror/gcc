@@ -1,3 +1,9 @@
+2016-05-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/70956
+	* graphite-scop-detection.c (build_cross_bb_scalars_def): Handle NULL
+	def.
+
 2016-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (sh_cbranch_distance): Declare new function.
