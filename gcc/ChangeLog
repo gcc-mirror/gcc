@@ -1,3 +1,13 @@
+2016-05-07  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/arm/arm.md: (arch): Add neon.
+	(arch_enabled): Return yes for arch neon when TARGET_NEON.
+	* config/arm/vfp.md (movdf_vfp): Add w/G as alternative 3.  Add
+	neon_move as type for alt 3.  Add arch attr enabling alt 3 for neon.
+	Emit vmov.i64 for alt 3.  Renumber alternatives 3 to 8.  Adjust
+	attributes for alt renumbering.  Mark alt 3 as non-predicable.
+	(thumb2_movdf_vfp): Likewise.
+
 2016-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*addqi_1): Add preferred_for_speed attribute
