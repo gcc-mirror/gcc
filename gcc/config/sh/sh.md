@@ -477,16 +477,6 @@
 (define_attr "is_sfunc" ""
   (if_then_else (eq_attr "type" "sfunc") (const_int 1) (const_int 0)))
 
-(define_attr "branch_zero" "yes,no"
-  (cond [(eq_attr "type" "!cbranch") (const_string "no")
-	 (ne (symbol_ref "(next_active_insn (insn)\
-			   == (prev_active_insn\
-			       (XEXP (SET_SRC (PATTERN (insn)), 1))))\
-			  && get_attr_length (next_active_insn (insn)) == 2")
-	     (const_int 0))
-	 (const_string "yes")]
-	(const_string "no")))
-
 ;; SH4 Double-precision computation with double-precision result -
 ;; the two halves are ready at different times.
 (define_attr "dfp_comp" "yes,no"
@@ -539,8 +529,13 @@
 	(eq_attr "type" "!pstore,prget")) (nil) (nil)])
 
 ;; Conditional branches with delay slots are available starting with SH2.
+;; If zero displacement conditional branches are fast, disable the delay
+;; slot if the branch jumps over only one 2-byte insn.
 (define_delay
-  (and (eq_attr "type" "cbranch") (match_test "TARGET_SH2"))
+  (and (eq_attr "type" "cbranch")
+       (match_test "TARGET_SH2")
+       (not (and (match_test "TARGET_ZDCBRANCH")
+		 (match_test "sh_cbranch_distance (insn, 4) == 2"))))
   [(eq_attr "cond_delay_slot" "yes") (nil) (nil)])
 
 ;; -------------------------------------------------------------------------

@@ -1928,6 +1928,52 @@ sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2)
   return true;
 }
 
+/* Try to calculate the branch distance of a conditional branch in bytes.
+
+   FIXME: Because of PR 59189 we can't use the CFG here.  Instead just
+   walk from this insn into the next (fall-through) basic block and see if
+   we hit the label.  */
+unsigned int
+sh_cbranch_distance (rtx_insn* _cbranch_insn, unsigned int max_dist)
+{
+  rtx_jump_insn* cbranch_insn = safe_as_a<rtx_jump_insn*> (_cbranch_insn);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "sh_cbranch_distance insn = \n");
+      print_rtl_single (dump_file, cbranch_insn);
+    }
+
+  unsigned int dist = 0;
+
+  for (rtx_insn* i = next_nonnote_insn (cbranch_insn);
+       i != NULL && dist < max_dist; i = next_nonnote_insn (i))
+    {
+      const unsigned int i_len = get_attr_length (i);
+      dist += i_len;
+
+      if (dump_file)
+	fprintf (dump_file, "  insn %d  length = %u  dist = %u\n",
+		 INSN_UID (i), i_len, dist);
+
+      if (rtx_code_label* l = dyn_cast<rtx_code_label*> (i))
+	{
+	  if (l == cbranch_insn->jump_target ())
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "  cbranch dist = %u\n", dist);
+	      return dist;
+	    }
+	  break;
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "  cbranch dist = unknown\n");
+
+  return unknown_cbranch_distance;
+}
+
 enum rtx_code
 prepare_cbranch_operands (rtx *operands, machine_mode mode,
 			  enum rtx_code comparison)
