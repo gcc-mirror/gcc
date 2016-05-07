@@ -535,7 +535,7 @@ static void
 find_arglists (gfc_symbol *sym)
 {
   if (sym->attr.if_source == IFSRC_UNKNOWN || sym->ns != gfc_current_ns
-      || sym->attr.flavor == FL_DERIVED || sym->attr.intrinsic)
+      || gfc_fl_struct (sym->attr.flavor) || sym->attr.intrinsic)
     return;
 
   resolve_formal_arglist (sym);
@@ -1116,6 +1116,7 @@ resolve_contained_functions (gfc_namespace *ns)
 
 
 static bool resolve_fl_derived0 (gfc_symbol *sym);
+static bool resolve_fl_struct (gfc_symbol *sym);
 
 
 /* Resolve all of the elements of a structure constructor and make sure that
@@ -1132,8 +1133,13 @@ resolve_structure_cons (gfc_expr *expr, int init)
 
   t = true;
 
-  if (expr->ts.type == BT_DERIVED)
-    resolve_fl_derived0 (expr->ts.u.derived);
+  if (expr->ts.type == BT_DERIVED || expr->ts.type == BT_UNION)
+    {
+      if (expr->ts.u.derived->attr.flavor == FL_DERIVED)
+        resolve_fl_derived0 (expr->ts.u.derived);
+      else
+        resolve_fl_struct (expr->ts.u.derived);
+    }
 
   cons = gfc_constructor_first (expr->value.constructor);
 
@@ -1561,7 +1567,7 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
   gfc_namespace* real_context;
 
   if (sym->attr.flavor == FL_PROGRAM
-      || sym->attr.flavor == FL_DERIVED)
+      || gfc_fl_struct (sym->attr.flavor))
     return false;
 
   gcc_assert (sym->attr.flavor == FL_PROCEDURE);
@@ -2548,7 +2554,7 @@ resolve_generic_f (gfc_expr *expr)
 generic:
       if (!intr)
 	for (intr = sym->generic; intr; intr = intr->next)
-	  if (intr->sym->attr.flavor == FL_DERIVED)
+	  if (gfc_fl_struct (intr->sym->attr.flavor))
 	    break;
 
       if (sym->ns->parent == NULL)
@@ -5715,7 +5721,7 @@ get_declared_from_expr (gfc_ref **class_ref, gfc_ref **new_ref,
 	continue;
 
       if ((ref->u.c.component->ts.type == BT_CLASS
-	     || (check_types && ref->u.c.component->ts.type == BT_DERIVED))
+	     || (check_types && gfc_bt_struct (ref->u.c.component->ts.type)))
 	  && ref->u.c.component->attr.flavor != FL_PROCEDURE)
 	{
 	  declared = ref->u.c.component->ts.u.derived;
@@ -5978,7 +5984,7 @@ resolve_typebound_function (gfc_expr* e)
 	 is present.  */
       ts = expr->ts;
       declared = ts.u.derived;
-      c = gfc_find_component (declared, "_vptr", true, true);
+      c = gfc_find_component (declared, "_vptr", true, true, NULL);
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
 
@@ -6025,14 +6031,14 @@ resolve_typebound_function (gfc_expr* e)
     return false;
 
   /* Weed out cases of the ultimate component being a derived type.  */
-  if ((class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)
+  if ((class_ref && gfc_bt_struct (class_ref->u.c.component->ts.type))
 	 || (!class_ref && st->n.sym->ts.type != BT_CLASS))
     {
       gfc_free_ref_list (new_ref);
       return resolve_compcall (e, NULL);
     }
 
-  c = gfc_find_component (declared, "_data", true, true);
+  c = gfc_find_component (declared, "_data", true, true, NULL);
   declared = c->ts.u.derived;
 
   /* Treat the call as if it is a typebound procedure, in order to roll
@@ -6111,7 +6117,7 @@ resolve_typebound_subroutine (gfc_code *code)
 	 that any delays in resolution are corrected and that the vtab
 	 is present.  */
       declared = expr->ts.u.derived;
-      c = gfc_find_component (declared, "_vptr", true, true);
+      c = gfc_find_component (declared, "_vptr", true, true, NULL);
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
 
@@ -6156,7 +6162,7 @@ resolve_typebound_subroutine (gfc_code *code)
   get_declared_from_expr (&class_ref, &new_ref, code->expr1, true);
 
   /* Weed out cases of the ultimate component being a derived type.  */
-  if ((class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)
+  if ((class_ref && gfc_bt_struct (class_ref->u.c.component->ts.type))
 	 || (!class_ref && st->n.sym->ts.type != BT_CLASS))
     {
       gfc_free_ref_list (new_ref);
@@ -7140,7 +7146,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
       gfc_typespec ts;
       gfc_expr *init_e;
 
-      if (code->ext.alloc.ts.type == BT_DERIVED)
+      if (gfc_bt_struct (code->ext.alloc.ts.type))
 	ts = code->ext.alloc.ts;
       else
 	ts = e->ts;
@@ -7148,7 +7154,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
       if (ts.type == BT_CLASS)
 	ts = ts.u.derived->components->ts;
 
-      if (ts.type == BT_DERIVED && (init_e = gfc_default_initializer (&ts)))
+      if (gfc_bt_struct (ts.type) && (init_e = gfc_default_initializer (&ts)))
 	{
 	  gfc_code *init_st = gfc_get_code (EXEC_INIT_ASSIGN);
 	  init_st->loc = code->loc;
@@ -7282,7 +7288,7 @@ check_symbols:
 	  sym = a->expr->symtree->n.sym;
 
 	  /* TODO - check derived type components.  */
-	  if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
+	  if (gfc_bt_struct (sym->ts.type) || sym->ts.type == BT_CLASS)
 	    continue;
 
 	  if ((ar->start[i] != NULL
@@ -8220,7 +8226,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  if (!gfc_build_class_symbol (&sym->ts, &attr, &as))
 	    gcc_unreachable ();
 	  /* Make sure the _vptr is set.  */
-	  c = gfc_find_component (sym->ts.u.derived, "_vptr", true, true);
+	  c = gfc_find_component (sym->ts.u.derived, "_vptr", true, true, NULL);
 	  if (c->ts.u.derived == NULL)
 	    c->ts.u.derived = gfc_find_derived_vtab (sym->ts.u.derived);
 	  CLASS_DATA (sym)->attr.pointer = 1;
@@ -9911,7 +9917,7 @@ nonscalar_typebound_assign (gfc_symbol *derived, int depth)
 
   for (c= derived->components; c; c = c->next)
     {
-      if ((c->ts.type != BT_DERIVED
+      if ((!gfc_bt_struct (c->ts.type)
 	    || c->attr.pointer
 	    || c->attr.allocatable
 	    || c->attr.proc_pointer_comp
@@ -10051,7 +10057,7 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 
       /* The intrinsic assignment does the right thing for pointers
 	 of all kinds and allocatable components.  */
-      if (comp1->ts.type != BT_DERIVED
+      if (!gfc_bt_struct (comp1->ts.type)
 	  || comp1->attr.pointer
 	  || comp1->attr.allocatable
 	  || comp1->attr.proc_pointer_comp
@@ -11433,7 +11439,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
       gfc_find_symbol (sym->ts.u.derived->name, sym->ns, 0, &s);
       if (s && s->attr.generic)
 	s = gfc_find_dt_in_generic (s);
-      if (s && s->attr.flavor != FL_DERIVED)
+      if (s && !gfc_fl_struct (s->attr.flavor))
 	{
 	  gfc_error ("The type %qs cannot be host associated at %L "
 		     "because it is blocked by an incompatible object "
@@ -12733,7 +12739,8 @@ resolve_typebound_procedure (gfc_symtree* stree)
       }
 
   /* Try to find a name collision with an inherited component.  */
-  if (super_type && gfc_find_component (super_type, stree->name, true, true))
+  if (super_type && gfc_find_component (super_type, stree->name, true, true,
+                                        NULL))
     {
       gfc_error ("Procedure %qs at %L has the same name as an inherited"
 		 " component of %qs",
@@ -12881,7 +12888,7 @@ check_defined_assignments (gfc_symbol *derived)
 
   for (c = derived->components; c; c = c->next)
     {
-      if (c->ts.type != BT_DERIVED
+      if (!gfc_bt_struct (c->ts.type)
 	  || c->attr.pointer
 	  || c->attr.allocatable
 	  || c->attr.proc_pointer_comp
@@ -12907,6 +12914,453 @@ check_defined_assignments (gfc_symbol *derived)
 }
 
 
+/* Resolve a single component of a derived type or structure.  */
+
+static bool
+resolve_component (gfc_component *c, gfc_symbol *sym)
+{
+  gfc_symbol *super_type;
+
+  if (c->attr.artificial)
+    return true;
+
+  /* F2008, C442.  */
+  if ((!sym->attr.is_class || c != sym->components)
+      && c->attr.codimension
+      && (!c->attr.allocatable || (c->as && c->as->type != AS_DEFERRED)))
+    {
+      gfc_error ("Coarray component %qs at %L must be allocatable with "
+                 "deferred shape", c->name, &c->loc);
+      return false;
+    }
+
+  /* F2008, C443.  */
+  if (c->attr.codimension && c->ts.type == BT_DERIVED
+      && c->ts.u.derived->ts.is_iso_c)
+    {
+      gfc_error ("Component %qs at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
+                 "shall not be a coarray", c->name, &c->loc);
+      return false;
+    }
+
+  /* F2008, C444.  */
+  if (gfc_bt_struct (c->ts.type) && c->ts.u.derived->attr.coarray_comp
+      && (c->attr.codimension || c->attr.pointer || c->attr.dimension
+          || c->attr.allocatable))
+    {
+      gfc_error ("Component %qs at %L with coarray component "
+                 "shall be a nonpointer, nonallocatable scalar",
+                 c->name, &c->loc);
+      return false;
+    }
+
+  /* F2008, C448.  */
+  if (c->attr.contiguous && (!c->attr.dimension || !c->attr.pointer))
+    {
+      gfc_error ("Component %qs at %L has the CONTIGUOUS attribute but "
+                 "is not an array pointer", c->name, &c->loc);
+      return false;
+    }
+
+  if (c->attr.proc_pointer && c->ts.interface)
+    {
+      gfc_symbol *ifc = c->ts.interface;
+
+      if (!sym->attr.vtype && !check_proc_interface (ifc, &c->loc))
+        {
+          c->tb->error = 1;
+          return false;
+        }
+
+      if (ifc->attr.if_source || ifc->attr.intrinsic)
+        {
+          /* Resolve interface and copy attributes.  */
+          if (ifc->formal && !ifc->formal_ns)
+            resolve_symbol (ifc);
+          if (ifc->attr.intrinsic)
+            gfc_resolve_intrinsic (ifc, &ifc->declared_at);
+
+          if (ifc->result)
+            {
+              c->ts = ifc->result->ts;
+              c->attr.allocatable = ifc->result->attr.allocatable;
+              c->attr.pointer = ifc->result->attr.pointer;
+              c->attr.dimension = ifc->result->attr.dimension;
+              c->as = gfc_copy_array_spec (ifc->result->as);
+              c->attr.class_ok = ifc->result->attr.class_ok;
+            }
+          else
+            {
+              c->ts = ifc->ts;
+              c->attr.allocatable = ifc->attr.allocatable;
+              c->attr.pointer = ifc->attr.pointer;
+              c->attr.dimension = ifc->attr.dimension;
+              c->as = gfc_copy_array_spec (ifc->as);
+              c->attr.class_ok = ifc->attr.class_ok;
+            }
+          c->ts.interface = ifc;
+          c->attr.function = ifc->attr.function;
+          c->attr.subroutine = ifc->attr.subroutine;
+
+          c->attr.pure = ifc->attr.pure;
+          c->attr.elemental = ifc->attr.elemental;
+          c->attr.recursive = ifc->attr.recursive;
+          c->attr.always_explicit = ifc->attr.always_explicit;
+          c->attr.ext_attr |= ifc->attr.ext_attr;
+          /* Copy char length.  */
+          if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
+            {
+              gfc_charlen *cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
+              if (cl->length && !cl->resolved
+                  && !gfc_resolve_expr (cl->length))
+                {
+                  c->tb->error = 1;
+                  return false;
+                }
+              c->ts.u.cl = cl;
+            }
+        }
+    }
+  else if (c->attr.proc_pointer && c->ts.type == BT_UNKNOWN)
+    {
+      /* Since PPCs are not implicitly typed, a PPC without an explicit
+         interface must be a subroutine.  */
+      gfc_add_subroutine (&c->attr, c->name, &c->loc);
+    }
+
+  /* Procedure pointer components: Check PASS arg.  */
+  if (c->attr.proc_pointer && !c->tb->nopass && c->tb->pass_arg_num == 0
+      && !sym->attr.vtype)
+    {
+      gfc_symbol* me_arg;
+
+      if (c->tb->pass_arg)
+        {
+          gfc_formal_arglist* i;
+
+          /* If an explicit passing argument name is given, walk the arg-list
+            and look for it.  */
+
+          me_arg = NULL;
+          c->tb->pass_arg_num = 1;
+          for (i = c->ts.interface->formal; i; i = i->next)
+            {
+              if (!strcmp (i->sym->name, c->tb->pass_arg))
+                {
+                  me_arg = i->sym;
+                  break;
+                }
+              c->tb->pass_arg_num++;
+            }
+
+          if (!me_arg)
+            {
+              gfc_error ("Procedure pointer component %qs with PASS(%s) "
+                         "at %L has no argument %qs", c->name,
+                         c->tb->pass_arg, &c->loc, c->tb->pass_arg);
+              c->tb->error = 1;
+              return false;
+            }
+        }
+      else
+        {
+          /* Otherwise, take the first one; there should in fact be at least
+            one.  */
+          c->tb->pass_arg_num = 1;
+          if (!c->ts.interface->formal)
+            {
+              gfc_error ("Procedure pointer component %qs with PASS at %L "
+                         "must have at least one argument",
+                         c->name, &c->loc);
+              c->tb->error = 1;
+              return false;
+            }
+          me_arg = c->ts.interface->formal->sym;
+        }
+
+      /* Now check that the argument-type matches.  */
+      gcc_assert (me_arg);
+      if ((me_arg->ts.type != BT_DERIVED && me_arg->ts.type != BT_CLASS)
+          || (me_arg->ts.type == BT_DERIVED && me_arg->ts.u.derived != sym)
+          || (me_arg->ts.type == BT_CLASS
+              && CLASS_DATA (me_arg)->ts.u.derived != sym))
+        {
+          gfc_error ("Argument %qs of %qs with PASS(%s) at %L must be of"
+                     " the derived type %qs", me_arg->name, c->name,
+                     me_arg->name, &c->loc, sym->name);
+          c->tb->error = 1;
+          return false;
+        }
+
+      /* Check for C453.  */
+      if (me_arg->attr.dimension)
+        {
+          gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
+                     "must be scalar", me_arg->name, c->name, me_arg->name,
+                     &c->loc);
+          c->tb->error = 1;
+          return false;
+        }
+
+      if (me_arg->attr.pointer)
+        {
+          gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
+                     "may not have the POINTER attribute", me_arg->name,
+                     c->name, me_arg->name, &c->loc);
+          c->tb->error = 1;
+          return false;
+        }
+
+      if (me_arg->attr.allocatable)
+        {
+          gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
+                     "may not be ALLOCATABLE", me_arg->name, c->name,
+                     me_arg->name, &c->loc);
+          c->tb->error = 1;
+          return false;
+        }
+
+      if (gfc_type_is_extensible (sym) && me_arg->ts.type != BT_CLASS)
+        {
+          gfc_error ("Non-polymorphic passed-object dummy argument of %qs"
+                     " at %L", c->name, &c->loc);
+          return false;
+        }
+
+    }
+
+  /* Check type-spec if this is not the parent-type component.  */
+  if (((sym->attr.is_class
+        && (!sym->components->ts.u.derived->attr.extension
+            || c != sym->components->ts.u.derived->components))
+       || (!sym->attr.is_class
+           && (!sym->attr.extension || c != sym->components)))
+      && !sym->attr.vtype
+      && !resolve_typespec_used (&c->ts, &c->loc, c->name))
+    return false;
+
+  super_type = gfc_get_derived_super_type (sym);
+
+  /* If this type is an extension, set the accessibility of the parent
+     component.  */
+  if (super_type
+      && ((sym->attr.is_class
+           && c == sym->components->ts.u.derived->components)
+          || (!sym->attr.is_class && c == sym->components))
+      && strcmp (super_type->name, c->name) == 0)
+    c->attr.access = super_type->attr.access;
+
+  /* If this type is an extension, see if this component has the same name
+     as an inherited type-bound procedure.  */
+  if (super_type && !sym->attr.is_class
+      && gfc_find_typebound_proc (super_type, NULL, c->name, true, NULL))
+    {
+      gfc_error ("Component %qs of %qs at %L has the same name as an"
+                 " inherited type-bound procedure",
+                 c->name, sym->name, &c->loc);
+      return false;
+    }
+
+  if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer
+        && !c->ts.deferred)
+    {
+     if (c->ts.u.cl->length == NULL
+         || (!resolve_charlen(c->ts.u.cl))
+         || !gfc_is_constant_expr (c->ts.u.cl->length))
+       {
+         gfc_error ("Character length of component %qs needs to "
+                    "be a constant specification expression at %L",
+                    c->name,
+                    c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
+         return false;
+       }
+    }
+
+  if (c->ts.type == BT_CHARACTER && c->ts.deferred
+      && !c->attr.pointer && !c->attr.allocatable)
+    {
+      gfc_error ("Character component %qs of %qs at %L with deferred "
+                 "length must be a POINTER or ALLOCATABLE",
+                 c->name, sym->name, &c->loc);
+      return false;
+    }
+
+  /* Add the hidden deferred length field.  */
+  if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function
+      && !sym->attr.is_class)
+    {
+      char name[GFC_MAX_SYMBOL_LEN+9];
+      gfc_component *strlen;
+      sprintf (name, "_%s_length", c->name);
+      strlen = gfc_find_component (sym, name, true, true, NULL);
+      if (strlen == NULL)
+        {
+          if (!gfc_add_component (sym, name, &strlen))
+            return false;
+          strlen->ts.type = BT_INTEGER;
+          strlen->ts.kind = gfc_charlen_int_kind;
+          strlen->attr.access = ACCESS_PRIVATE;
+          strlen->attr.artificial = 1;
+        }
+    }
+
+  if (c->ts.type == BT_DERIVED
+      && sym->component_access != ACCESS_PRIVATE
+      && gfc_check_symbol_access (sym)
+      && !is_sym_host_assoc (c->ts.u.derived, sym->ns)
+      && !c->ts.u.derived->attr.use_assoc
+      && !gfc_check_symbol_access (c->ts.u.derived)
+      && !gfc_notify_std (GFC_STD_F2003, "the component %qs is a "
+                          "PRIVATE type and cannot be a component of "
+                          "%qs, which is PUBLIC at %L", c->name,
+                          sym->name, &sym->declared_at))
+    return false;
+
+  if ((sym->attr.sequence || sym->attr.is_bind_c) && c->ts.type == BT_CLASS)
+    {
+      gfc_error ("Polymorphic component %s at %L in SEQUENCE or BIND(C) "
+                 "type %s", c->name, &c->loc, sym->name);
+      return false;
+    }
+
+  if (sym->attr.sequence)
+    {
+      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.sequence == 0)
+        {
+          gfc_error ("Component %s of SEQUENCE type declared at %L does "
+                     "not have the SEQUENCE attribute",
+                     c->ts.u.derived->name, &sym->declared_at);
+          return false;
+        }
+    }
+
+  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.generic)
+    c->ts.u.derived = gfc_find_dt_in_generic (c->ts.u.derived);
+  else if (c->ts.type == BT_CLASS && c->attr.class_ok
+           && CLASS_DATA (c)->ts.u.derived->attr.generic)
+    CLASS_DATA (c)->ts.u.derived
+                    = gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
+
+  if (!sym->attr.is_class && c->ts.type == BT_DERIVED && !sym->attr.vtype
+      && c->attr.pointer && c->ts.u.derived->components == NULL
+      && !c->ts.u.derived->attr.zero_comp)
+    {
+      gfc_error ("The pointer component %qs of %qs at %L is a type "
+                 "that has not been declared", c->name, sym->name,
+                 &c->loc);
+      return false;
+    }
+
+  if (c->ts.type == BT_CLASS && c->attr.class_ok
+      && CLASS_DATA (c)->attr.class_pointer
+      && CLASS_DATA (c)->ts.u.derived->components == NULL
+      && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp
+      && !UNLIMITED_POLY (c))
+    {
+      gfc_error ("The pointer component %qs of %qs at %L is a type "
+                 "that has not been declared", c->name, sym->name,
+                 &c->loc);
+      return false;
+    }
+
+  /* C437.  */
+  if (c->ts.type == BT_CLASS && c->attr.flavor != FL_PROCEDURE
+      && (!c->attr.class_ok
+          || !(CLASS_DATA (c)->attr.class_pointer
+               || CLASS_DATA (c)->attr.allocatable)))
+    {
+      gfc_error ("Component %qs with CLASS at %L must be allocatable "
+                 "or pointer", c->name, &c->loc);
+      /* Prevent a recurrence of the error.  */
+      c->ts.type = BT_UNKNOWN;
+      return false;
+    }
+
+  /* Ensure that all the derived type components are put on the
+     derived type list; even in formal namespaces, where derived type
+     pointer components might not have been declared.  */
+  if (c->ts.type == BT_DERIVED
+        && c->ts.u.derived
+        && c->ts.u.derived->components
+        && c->attr.pointer
+        && sym != c->ts.u.derived)
+    add_dt_to_dt_list (c->ts.u.derived);
+
+  if (!gfc_resolve_array_spec (c->as,
+                               !(c->attr.pointer || c->attr.proc_pointer
+                                 || c->attr.allocatable)))
+    return false;
+
+  if (c->initializer && !sym->attr.vtype
+      && !gfc_check_assign_symbol (sym, c, c->initializer))
+    return false;
+
+  return true;
+}
+
+
+/* Be nice about the locus for a structure expression - show the locus of the
+   first non-null sub-expression if we can.  */
+
+static locus *
+cons_where (gfc_expr *struct_expr)
+{
+  gfc_constructor *cons;
+
+  gcc_assert (struct_expr && struct_expr->expr_type == EXPR_STRUCTURE);
+
+  cons = gfc_constructor_first (struct_expr->value.constructor);
+  for (; cons; cons = gfc_constructor_next (cons))
+    {
+      if (cons->expr && cons->expr->expr_type != EXPR_NULL)
+        return &cons->expr->where;
+    }
+
+  return &struct_expr->where;
+}
+
+/* Resolve the components of a structure type. Much less work than derived
+   types.  */
+
+static bool
+resolve_fl_struct (gfc_symbol *sym)
+{
+  gfc_component *c;
+  gfc_expr *init = NULL;
+  bool success;
+
+  /* Make sure UNIONs do not have overlapping initializers.  */
+  if (sym->attr.flavor == FL_UNION)
+    {
+      for (c = sym->components; c; c = c->next)
+        {
+          if (init && c->initializer)
+            {
+              gfc_error ("Conflicting initializers in union at %L and %L",
+                         cons_where (init), cons_where (c->initializer));
+              gfc_free_expr (c->initializer);
+              c->initializer = NULL;
+            }
+          if (init == NULL)
+            init = c->initializer;
+        }
+    }
+
+  success = true;
+  for (c = sym->components; c; c = c->next)
+    if (!resolve_component (c, sym))
+      success = false;
+
+  if (!success)
+    return false;
+
+  if (sym->components)
+    add_dt_to_dt_list (sym);
+
+  return true;
+}
+
+
 /* Resolve the components of a derived type. This does not have to wait until
    resolution stage, but can be done as soon as the dt declaration has been
    parsed.  */
@@ -12916,6 +13370,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 {
   gfc_symbol* super_type;
   gfc_component *c;
+  bool success;
 
   if (sym->attr.unlimited_polymorphic)
     return true;
@@ -12946,395 +13401,10 @@ resolve_fl_derived0 (gfc_symbol *sym)
   c = (sym->attr.is_class) ? sym->components->ts.u.derived->components
 			   : sym->components;
 
-  bool success = true;
-
+  success = true;
   for ( ; c != NULL; c = c->next)
-    {
-      if (c->attr.artificial)
-	continue;
-
-      /* F2008, C442.  */
-      if ((!sym->attr.is_class || c != sym->components)
-	  && c->attr.codimension
-	  && (!c->attr.allocatable || (c->as && c->as->type != AS_DEFERRED)))
-	{
-	  gfc_error ("Coarray component %qs at %L must be allocatable with "
-		     "deferred shape", c->name, &c->loc);
-	  success = false;
-	  continue;
-	}
-
-      /* F2008, C443.  */
-      if (c->attr.codimension && c->ts.type == BT_DERIVED
-	  && c->ts.u.derived->ts.is_iso_c)
-	{
-	  gfc_error ("Component %qs at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
-		     "shall not be a coarray", c->name, &c->loc);
-	  success = false;
-	  continue;
-	}
-
-      /* F2008, C444.  */
-      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp
-	  && (c->attr.codimension || c->attr.pointer || c->attr.dimension
-	      || c->attr.allocatable))
-	{
-	  gfc_error ("Component %qs at %L with coarray component "
-		     "shall be a nonpointer, nonallocatable scalar",
-		     c->name, &c->loc);
-	  success = false;
-	  continue;
-	}
-
-      /* F2008, C448.  */
-      if (c->attr.contiguous && (!c->attr.dimension || !c->attr.pointer))
-	{
-	  gfc_error ("Component %qs at %L has the CONTIGUOUS attribute but "
-		     "is not an array pointer", c->name, &c->loc);
-	  success = false;
-	  continue;
-	}
-
-      if (c->attr.proc_pointer && c->ts.interface)
-	{
-	  gfc_symbol *ifc = c->ts.interface;
-
-	  if (!sym->attr.vtype && !check_proc_interface (ifc, &c->loc))
-	    {
-	      c->tb->error = 1;
-	      success = false;
-	      continue;
-	    }
-
-	  if (ifc->attr.if_source || ifc->attr.intrinsic)
-	    {
-	      /* Resolve interface and copy attributes.  */
-	      if (ifc->formal && !ifc->formal_ns)
-		resolve_symbol (ifc);
-	      if (ifc->attr.intrinsic)
-		gfc_resolve_intrinsic (ifc, &ifc->declared_at);
-
-	      if (ifc->result)
-		{
-		  c->ts = ifc->result->ts;
-		  c->attr.allocatable = ifc->result->attr.allocatable;
-		  c->attr.pointer = ifc->result->attr.pointer;
-		  c->attr.dimension = ifc->result->attr.dimension;
-		  c->as = gfc_copy_array_spec (ifc->result->as);
-		  c->attr.class_ok = ifc->result->attr.class_ok;
-		}
-	      else
-		{
-		  c->ts = ifc->ts;
-		  c->attr.allocatable = ifc->attr.allocatable;
-		  c->attr.pointer = ifc->attr.pointer;
-		  c->attr.dimension = ifc->attr.dimension;
-		  c->as = gfc_copy_array_spec (ifc->as);
-		  c->attr.class_ok = ifc->attr.class_ok;
-		}
-	      c->ts.interface = ifc;
-	      c->attr.function = ifc->attr.function;
-	      c->attr.subroutine = ifc->attr.subroutine;
-
-	      c->attr.pure = ifc->attr.pure;
-	      c->attr.elemental = ifc->attr.elemental;
-	      c->attr.recursive = ifc->attr.recursive;
-	      c->attr.always_explicit = ifc->attr.always_explicit;
-	      c->attr.ext_attr |= ifc->attr.ext_attr;
-	      /* Copy char length.  */
-	      if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
-		{
-		  gfc_charlen *cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
-		  if (cl->length && !cl->resolved
-		      && !gfc_resolve_expr (cl->length))
-		    {
-		      c->tb->error = 1;
-		      success = false;
-		      continue;
-		    }
-		  c->ts.u.cl = cl;
-		}
-	    }
-	}
-      else if (c->attr.proc_pointer && c->ts.type == BT_UNKNOWN)
-	{
-	  /* Since PPCs are not implicitly typed, a PPC without an explicit
-	     interface must be a subroutine.  */
-	  gfc_add_subroutine (&c->attr, c->name, &c->loc);
-	}
-
-      /* Procedure pointer components: Check PASS arg.  */
-      if (c->attr.proc_pointer && !c->tb->nopass && c->tb->pass_arg_num == 0
-	  && !sym->attr.vtype)
-	{
-	  gfc_symbol* me_arg;
-
-	  if (c->tb->pass_arg)
-	    {
-	      gfc_formal_arglist* i;
-
-	      /* If an explicit passing argument name is given, walk the arg-list
-		and look for it.  */
-
-	      me_arg = NULL;
-	      c->tb->pass_arg_num = 1;
-	      for (i = c->ts.interface->formal; i; i = i->next)
-		{
-		  if (!strcmp (i->sym->name, c->tb->pass_arg))
-		    {
-		      me_arg = i->sym;
-		      break;
-		    }
-		  c->tb->pass_arg_num++;
-		}
-
-	      if (!me_arg)
-		{
-		  gfc_error ("Procedure pointer component %qs with PASS(%s) "
-			     "at %L has no argument %qs", c->name,
-			     c->tb->pass_arg, &c->loc, c->tb->pass_arg);
-		  c->tb->error = 1;
-		  success = false;
-		  continue;
-		}
-	    }
-	  else
-	    {
-	      /* Otherwise, take the first one; there should in fact be at least
-		one.  */
-	      c->tb->pass_arg_num = 1;
-	      if (!c->ts.interface->formal)
-		{
-		  gfc_error ("Procedure pointer component %qs with PASS at %L "
-			     "must have at least one argument",
-			     c->name, &c->loc);
-		  c->tb->error = 1;
-		  success = false;
-		  continue;
-		}
-	      me_arg = c->ts.interface->formal->sym;
-	    }
-
-	  /* Now check that the argument-type matches.  */
-	  gcc_assert (me_arg);
-	  if ((me_arg->ts.type != BT_DERIVED && me_arg->ts.type != BT_CLASS)
-	      || (me_arg->ts.type == BT_DERIVED && me_arg->ts.u.derived != sym)
-	      || (me_arg->ts.type == BT_CLASS
-		  && CLASS_DATA (me_arg)->ts.u.derived != sym))
-	    {
-	      gfc_error ("Argument %qs of %qs with PASS(%s) at %L must be of"
-			 " the derived type %qs", me_arg->name, c->name,
-			 me_arg->name, &c->loc, sym->name);
-	      c->tb->error = 1;
-	      success = false;
-	      continue;
-	    }
-
-	  /* Check for C453.  */
-	  if (me_arg->attr.dimension)
-	    {
-	      gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
-			 "must be scalar", me_arg->name, c->name, me_arg->name,
-			 &c->loc);
-	      c->tb->error = 1;
-	      success = false;
-	      continue;
-	    }
-
-	  if (me_arg->attr.pointer)
-	    {
-	      gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
-			 "may not have the POINTER attribute", me_arg->name,
-			 c->name, me_arg->name, &c->loc);
-	      c->tb->error = 1;
-	      success = false;
-	      continue;
-	    }
-
-	  if (me_arg->attr.allocatable)
-	    {
-	      gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
-			 "may not be ALLOCATABLE", me_arg->name, c->name,
-			 me_arg->name, &c->loc);
-	      c->tb->error = 1;
-	      success = false;
-	      continue;
-	    }
-
-	  if (gfc_type_is_extensible (sym) && me_arg->ts.type != BT_CLASS)
-	    {
-	      gfc_error ("Non-polymorphic passed-object dummy argument of %qs"
-			 " at %L", c->name, &c->loc);
-	      success = false;
-	      continue;
-	    }
-
-	}
-
-      /* Check type-spec if this is not the parent-type component.  */
-      if (((sym->attr.is_class
-	    && (!sym->components->ts.u.derived->attr.extension
-		|| c != sym->components->ts.u.derived->components))
-	   || (!sym->attr.is_class
-	       && (!sym->attr.extension || c != sym->components)))
-	  && !sym->attr.vtype
-	  && !resolve_typespec_used (&c->ts, &c->loc, c->name))
-	return false;
-
-      /* If this type is an extension, set the accessibility of the parent
-	 component.  */
-      if (super_type
-	  && ((sym->attr.is_class
-	       && c == sym->components->ts.u.derived->components)
-	      || (!sym->attr.is_class && c == sym->components))
-	  && strcmp (super_type->name, c->name) == 0)
-	c->attr.access = super_type->attr.access;
-
-      /* If this type is an extension, see if this component has the same name
-	 as an inherited type-bound procedure.  */
-      if (super_type && !sym->attr.is_class
-	  && gfc_find_typebound_proc (super_type, NULL, c->name, true, NULL))
-	{
-	  gfc_error ("Component %qs of %qs at %L has the same name as an"
-		     " inherited type-bound procedure",
-		     c->name, sym->name, &c->loc);
-	  return false;
-	}
-
-      if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer
-	    && !c->ts.deferred)
-	{
-	 if (c->ts.u.cl->length == NULL
-	     || (!resolve_charlen(c->ts.u.cl))
-	     || !gfc_is_constant_expr (c->ts.u.cl->length))
-	   {
-	     gfc_error ("Character length of component %qs needs to "
-			"be a constant specification expression at %L",
-			c->name,
-			c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
-	     return false;
-	   }
-	}
-
-      if (c->ts.type == BT_CHARACTER && c->ts.deferred
-	  && !c->attr.pointer && !c->attr.allocatable)
-	{
-	  gfc_error ("Character component %qs of %qs at %L with deferred "
-		     "length must be a POINTER or ALLOCATABLE",
-		     c->name, sym->name, &c->loc);
-	  return false;
-	}
-
-      /* Add the hidden deferred length field.  */
-      if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function
-	  && !sym->attr.is_class)
-	{
-	  char name[GFC_MAX_SYMBOL_LEN+9];
-	  gfc_component *strlen;
-	  sprintf (name, "_%s_length", c->name);
-	  strlen = gfc_find_component (sym, name, true, true);
-	  if (strlen == NULL)
-	    {
-	      if (!gfc_add_component (sym, name, &strlen))
-		return false;
-	      strlen->ts.type = BT_INTEGER;
-	      strlen->ts.kind = gfc_charlen_int_kind;
-	      strlen->attr.access = ACCESS_PRIVATE;
-	      strlen->attr.artificial = 1;
-	    }
-	}
-
-      if (c->ts.type == BT_DERIVED
-	  && sym->component_access != ACCESS_PRIVATE
-	  && gfc_check_symbol_access (sym)
-	  && !is_sym_host_assoc (c->ts.u.derived, sym->ns)
-	  && !c->ts.u.derived->attr.use_assoc
-	  && !gfc_check_symbol_access (c->ts.u.derived)
-	  && !gfc_notify_std (GFC_STD_F2003, "the component %qs is a "
-			      "PRIVATE type and cannot be a component of "
-			      "%qs, which is PUBLIC at %L", c->name,
-			      sym->name, &sym->declared_at))
-	return false;
-
-      if ((sym->attr.sequence || sym->attr.is_bind_c) && c->ts.type == BT_CLASS)
-	{
-	  gfc_error ("Polymorphic component %s at %L in SEQUENCE or BIND(C) "
-		     "type %s", c->name, &c->loc, sym->name);
-	  return false;
-	}
-
-      if (sym->attr.sequence)
-	{
-	  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.sequence == 0)
-	    {
-	      gfc_error ("Component %s of SEQUENCE type declared at %L does "
-			 "not have the SEQUENCE attribute",
-			 c->ts.u.derived->name, &sym->declared_at);
-	      return false;
-	    }
-	}
-
-      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.generic)
-	c->ts.u.derived = gfc_find_dt_in_generic (c->ts.u.derived);
-      else if (c->ts.type == BT_CLASS && c->attr.class_ok
-	       && CLASS_DATA (c)->ts.u.derived->attr.generic)
-	CLASS_DATA (c)->ts.u.derived
-			= gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
-
-      if (!sym->attr.is_class && c->ts.type == BT_DERIVED && !sym->attr.vtype
-	  && c->attr.pointer && c->ts.u.derived->components == NULL
-	  && !c->ts.u.derived->attr.zero_comp)
-	{
-	  gfc_error ("The pointer component %qs of %qs at %L is a type "
-		     "that has not been declared", c->name, sym->name,
-		     &c->loc);
-	  return false;
-	}
-
-      if (c->ts.type == BT_CLASS && c->attr.class_ok
-	  && CLASS_DATA (c)->attr.class_pointer
-	  && CLASS_DATA (c)->ts.u.derived->components == NULL
-	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp
-	  && !UNLIMITED_POLY (c))
-	{
-	  gfc_error ("The pointer component %qs of %qs at %L is a type "
-		     "that has not been declared", c->name, sym->name,
-		     &c->loc);
-	  return false;
-	}
-
-      /* C437.  */
-      if (c->ts.type == BT_CLASS && c->attr.flavor != FL_PROCEDURE
-	  && (!c->attr.class_ok
-	      || !(CLASS_DATA (c)->attr.class_pointer
-		   || CLASS_DATA (c)->attr.allocatable)))
-	{
-	  gfc_error ("Component %qs with CLASS at %L must be allocatable "
-		     "or pointer", c->name, &c->loc);
-	  /* Prevent a recurrence of the error.  */
-	  c->ts.type = BT_UNKNOWN;
-	  return false;
-	}
-
-      /* Ensure that all the derived type components are put on the
-	 derived type list; even in formal namespaces, where derived type
-	 pointer components might not have been declared.  */
-      if (c->ts.type == BT_DERIVED
-	    && c->ts.u.derived
-	    && c->ts.u.derived->components
-	    && c->attr.pointer
-	    && sym != c->ts.u.derived)
-	add_dt_to_dt_list (c->ts.u.derived);
-
-      if (!gfc_resolve_array_spec (c->as,
-				   !(c->attr.pointer || c->attr.proc_pointer
-				     || c->attr.allocatable)))
-	return false;
-
-      if (c->initializer && !sym->attr.vtype
-	  && !gfc_check_assign_symbol (sym, c, c->initializer))
-	return false;
-    }
+    if (!resolve_component (c, sym))
+      success = false;
 
   if (!success)
     return false;
@@ -13396,8 +13466,8 @@ resolve_fl_derived (gfc_symbol *sym)
   if (sym->attr.is_class && sym->ts.u.derived == NULL)
     {
       /* Fix up incomplete CLASS symbols.  */
-      gfc_component *data = gfc_find_component (sym, "_data", true, true);
-      gfc_component *vptr = gfc_find_component (sym, "_vptr", true, true);
+      gfc_component *data = gfc_find_component (sym, "_data", true, true, NULL);
+      gfc_component *vptr = gfc_find_component (sym, "_vptr", true, true, NULL);
 
       /* Nothing more to do for unlimited polymorphic entities.  */
       if (data->ts.u.derived->attr.unlimited_polymorphic)
@@ -13616,6 +13686,11 @@ resolve_symbol (gfc_symbol *sym)
     return;
   sym->resolved = 1;
 
+  /* No symbol will ever have union type; only components can be unions.
+     Union type declaration symbols have type BT_UNKNOWN but flavor FL_UNION
+     (just like derived type declaration symbols have flavor FL_DERIVED). */
+  gcc_assert (sym->ts.type != BT_UNION);
+
   if (sym->attr.artificial)
     return;
 
@@ -13685,6 +13760,10 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   if (sym->attr.flavor == FL_DERIVED && !resolve_fl_derived (sym))
+    return;
+
+  else if ((sym->attr.flavor == FL_STRUCT || sym->attr.flavor == FL_UNION)
+           && !resolve_fl_struct (sym))
     return;
 
   /* Symbols that are module procedures with results (functions) have
@@ -15030,7 +15109,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 
   for (; c ; c = c->next)
     {
-      if (c->ts.type == BT_DERIVED
+      if (gfc_bt_struct (c->ts.type)
 	  && (!resolve_equivalence_derived(c->ts.u.derived, sym, e)))
 	return false;
 

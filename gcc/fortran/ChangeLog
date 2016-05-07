@@ -1,3 +1,88 @@
+2016-05-07  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/56226
+	* module.c (dt_upper_string): Rename to gfc_dt_upper_string
+	(dt_lower_string): Likewise.
+	* gfortran.h: Make new gfc_dt_upper/lower_string global.
+	* class.c: Use gfc_dt_upper_string.
+	* decl.c: Likewise.
+	* symbol.c: Likewise.
+	* resolve.c (resolve_component): New function.
+	(resolve_fl_derived0): Move component loop code to resolve_component.
+	* parse.c (check_component): New function.
+	(parse_derived): Move loop code to check_component.
+	* lang.opt, invoke.texi, options.c : New option -fdec-structure.
+	* libgfortran.h (bt): New basic type BT_UNION.
+	* gfortran.h (gfc_option): New option -fdec-structure.
+	(gfc_get_union_type, gfc_compare_union_types): New prototypes.
+	(gfc_bt_struct, gfc_fl_struct, case_bt_struct, case_fl_struct): New
+	macros.
+	(gfc_find_component): Change prototype.
+	* match.h (gfc_match_member_sep, gfc_match_map, gfc_match_union,
+	gfc_match_structure_decl): New prototypes.
+	* parse.h (gfc_comp_struct): New macro.
+	* symbol.c (gfc_find_component): Search for components in nested unions
+	* class.c (insert_component_ref, gfc_add_component_ref, add_proc_comp,
+	copy_vtab_proc_comps): Update calls to gfc_find_component.
+	* primary.c (gfc_convert_to_structure_constructor): Likewise.
+	* symbol.c (gfc_add_component): Likewise.
+	* resolve.c (resolve_typebound_function, resolve_typebound_subroutine,
+	resolve_typebound_procedure, resolve_component, resolve_fl_derived):
+	Likewise.
+	* expr.c (get_union_init, component_init): New functions.
+	* decl.c (match_clist_expr, match_record_decl, get_struct_decl,
+	gfc_match_map, gfc_match_union, gfc_match_structure_decl): Likewise.
+	* interface.c (compare_components, gfc_compare_union_types): Likewise.
+	* match.c (gfc_match_member_sep): Likewise.
+	* parse.c (check_component, parse_union, parse_struct_map): Likewise.
+	* resolve.c (resolve_fl_struct): Likewise.
+	* symbol.c (find_union_component): Likewise.
+	* trans-types.c (gfc_get_union_type): Likewise.
+	* parse.c (parse_derived): Use new functions.
+	* interface.c (gfc_compare_derived_types, gfc_compare_types): Likewise.
+	* expr.c (gfc_default_initializer): Likewise.
+	* gfortran.texi: Support for DEC structures, unions, and maps.
+	* gfortran.h (gfc_statement, sym_flavor): Likewise.
+	* check.c (gfc_check_kill_sub): Likewise.
+	* expr.c (gfc_copy_expr, simplify_const_ref,
+	gfc_has_default_initializer): Likewise.
+	* decl.c (build_sym, match_data_constant, add_init_expr_to_sym,
+	match_pointer_init, build_struct, variable_decl,
+	gfc_match_decl_type_spec, gfc_mach_data-decl, gfc_match_entry,
+	gfc_match_end, gfc_match_derived_decl): Likewise.
+	* interface.c (check_interface0, check_interface1,
+	gfc_search_interface): Likewise.
+	* misc.c (gfc_basic_typename, gfc_typename): Likewise.
+	* module.c (add_true_name, build_tnt, bt_types, mio_typespec,
+	fix_mio_expr, load_needed, mio_symbol, read_module, write_symbol,
+	gfc_get_module_backend_decl): Likewise.
+	* parse.h (gfc_compile_state): Likewise.
+	* parse.c (decode_specification_statement, decode_statement,
+	gfc_ascii_statement, verify_st_order, parse_spec): Likewise.
+	* primary.c (gfc_match_varspec, gfc_match_structure_constructor,
+	gfc_match_rvalue, match_variable): Likewise.
+	* resolve.c (find_arglists, resolve_structure_cons,
+	is_illegal_recursion, resolve_generic_f, get_declared_from_expr,
+	resolve_typebound_subroutine, resolve_allocate_expr,
+	nonscalar_typebound_assign, generate_component_assignments,
+	resolve_fl_variable_derived, check_defined_assignments,
+	resolve_component, resolve_symbol, resolve_equivalence_derived):
+	Likewise.
+	* symbol.c (flavors, check_conflict, gfc_add_flavor, gfc_use_derived,
+	gfc_restore_last_undo_checkpoint, gfc_type_compatible,
+	gfc_find_dt_in_generic): Likewise.
+	* trans-decl.c (gfc_get_module_backend_decl, create_function_arglist,
+	gfc_create_module_variable, check_constant_initializer): Likewise.
+	* trans-expr.c (gfc_conv_component_ref, gfc_conv_initializer,
+	gfc_trans_alloc_subarray_assign, gfc_trans_subcomponent_assign,
+	gfc_conv_structure, gfc_trans_scalar_assign, copyable_array_p):
+	Likewise.
+	* trans-io.c (transfer_namelist_element, transfer_expr,
+	gfc_trans_transfer): Likewise.
+	* trans-stmt.c (gfc_trans_deallocate): Likewise.
+	* trans-types.c (gfc_typenode_for_spec, gfc_copy_dt_decls_ifequal,
+	gfc_get_derived_type): Likewise.
+
 2016-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* openmp.c (gfc_match_omp_clauses): Restructuralize, so that clause

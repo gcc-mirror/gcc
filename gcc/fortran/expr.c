@@ -335,7 +335,7 @@ gfc_copy_expr (gfc_expr *p)
 
 	case BT_HOLLERITH:
 	case BT_LOGICAL:
-	case BT_DERIVED:
+	case_bt_struct:
 	case BT_CLASS:
 	case BT_ASSUMED:
 	  break;		/* Already done.  */
@@ -1279,7 +1279,7 @@ find_component_ref (gfc_constructor_base base, gfc_ref *ref)
   /* For extended types, check if the desired component is in one of the
    * parent types.  */
   while (ext > 0 && gfc_find_component (dt->components->ts.u.derived,
-					pick->name, true, true))
+					pick->name, true, true, NULL))
     {
       dt = dt->components->ts.u.derived;
       c = gfc_constructor_first (c->expr->value.constructor);
@@ -1649,7 +1649,7 @@ simplify_const_ref (gfc_expr *p)
 
 	    case AR_FULL:
 	      if (p->ref->next != NULL
-		  && (p->ts.type == BT_CHARACTER || p->ts.type == BT_DERIVED))
+		  && (p->ts.type == BT_CHARACTER || gfc_bt_struct (p->ts.type)))
 		{
 		  for (c = gfc_constructor_first (p->value.constructor);
 		       c; c = gfc_constructor_next (c))
@@ -1659,7 +1659,7 @@ simplify_const_ref (gfc_expr *p)
 			return false;
 		    }
 
-		  if (p->ts.type == BT_DERIVED
+		  if (gfc_bt_struct (p->ts.type)
 			&& p->ref->next
 			&& (c = gfc_constructor_first (p->value.constructor)))
 		    {
@@ -3926,9 +3926,9 @@ gfc_has_default_initializer (gfc_symbol *der)
 {
   gfc_component *c;
 
-  gcc_assert (der->attr.flavor == FL_DERIVED);
+  gcc_assert (gfc_fl_struct (der->attr.flavor));
   for (c = der->components; c; c = c->next)
-    if (c->ts.type == BT_DERIVED)
+    if (gfc_bt_struct (c->ts.type))
       {
         if (!c->attr.pointer && !c->attr.proc_pointer
 	     && gfc_has_default_initializer (c->ts.u.derived))
@@ -3975,6 +3975,7 @@ gfc_default_initializer (gfc_typespec *ts)
 
       if (comp->initializer)
 	{
+          ctor->n.component = comp;
 	  ctor->expr = gfc_copy_expr (comp->initializer);
 	  if ((comp->ts.type != comp->initializer->ts.type
 	       || comp->ts.kind != comp->initializer->ts.kind)

@@ -113,6 +113,128 @@ gfc_op2string (gfc_intrinsic_op op)
 
 /******************** Generic matching subroutines ************************/
 
+/* Matches a member separator. With standard FORTRAN this is '%', but with
+   DEC structures we must carefully match dot ('.').
+   Because operators are spelled ".op.", a dotted string such as "x.y.z..."
+   can be either a component reference chain or a combination of binary
+   operations.
+   There is no real way to win because the string may be grammatically
+   ambiguous. The following rules help avoid ambiguities - they match
+   some behavior of other (older) compilers. If the rules here are changed
+   the test cases should be updated. If the user has problems with these rules
+   they probably deserve the consequences. Consider "x.y.z":
+     (1) If any user defined operator ".y." exists, this is always y(x,z)
+         (even if ".y." is the wrong type and/or x has a member y).
+     (2) Otherwise if x has a member y, and y is itself a derived type,
+         this is (x->y)->z, even if an intrinsic operator exists which 
+         can handle (x,z). 
+     (3) If x has no member y or (x->y) is not a derived type but ".y." 
+         is an intrinsic operator (such as ".eq."), this is y(x,z).
+     (4) Lastly if there is no operator ".y." and x has no member "y", it is an
+         error.  
+   It is worth noting that the logic here does not support mixed use of member
+   accessors within a single string. That is, even if x has component y and y
+   has component z, the following are all syntax errors:
+         "x%y.z"  "x.y%z" "(x.y).z"  "(x%y)%z"
+ */
+
+match
+gfc_match_member_sep(gfc_symbol *sym)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  locus dot_loc, start_loc;
+  gfc_intrinsic_op iop;
+  match m;
+  gfc_symbol *tsym;
+  gfc_component *c = NULL;
+
+  /* What a relief: '%' is an unambiguous member separator.  */
+  if (gfc_match_char ('%') == MATCH_YES)
+    return MATCH_YES;
+
+  /* Beware ye who enter here.  */
+  if (!gfc_option.flag_dec_structure || !sym)
+    return MATCH_NO;
+
+  tsym = NULL;
+
+  /* We may be given either a derived type variable or the derived type
+    declaration itself (which actually contains the components); 
+    we need the latter to search for components.  */
+  if (gfc_fl_struct (sym->attr.flavor))
+    tsym = sym;
+  else if (gfc_bt_struct (sym->ts.type))
+    tsym = sym->ts.u.derived;
+
+  iop = INTRINSIC_NONE;
+  name[0] = '\0';
+  m = MATCH_NO;
+
+  /* If we have to reject come back here later.  */
+  start_loc = gfc_current_locus;
+
+  /* Look for a component access next.  */
+  if (gfc_match_char ('.') != MATCH_YES)
+    return MATCH_NO;
+
+  /* If we accept, come back here.  */
+  dot_loc = gfc_current_locus;
+
+  /* Try to match a symbol name following the dot.  */
+  if (gfc_match_name (name) != MATCH_YES)
+    {
+      gfc_error ("Expected structure component or operator name "
+                 "after '.' at %C");
+      goto error;
+    }
+
+  /* If no dot follows we have "x.y" which should be a component access.  */
+  if (gfc_match_char ('.') != MATCH_YES)
+    goto yes;
+
+  /* Now we have a string "x.y.z" which could be a nested member access
+    (x->y)->z or a binary operation y on x and z.  */
+
+  /* First use any user-defined operators ".y."  */
+  if (gfc_find_uop (name, sym->ns) != NULL)
+    goto no;
+
+  /* Match accesses to existing derived-type components for 
+    derived-type vars: "x.y.z" = (x->y)->z  */
+  c = gfc_find_component(tsym, name, false, true, NULL);
+  if (c && (gfc_bt_struct (c->ts.type) || c->ts.type == BT_CLASS))
+    goto yes;
+
+  /* If y is not a component or has no members, try intrinsic operators.  */
+  gfc_current_locus = start_loc;
+  if (gfc_match_intrinsic_op (&iop) != MATCH_YES)
+    {
+      /* If ".y." is not an intrinsic operator but y was a valid non-
+        structure component, match and leave the trailing dot to be 
+        dealt with later.  */
+      if (c)
+        goto yes;
+
+      gfc_error ("'%s' is neither a defined operator nor a "
+                 "structure component in dotted string at %C", name);
+      goto error;
+    }
+
+  /* .y. is an intrinsic operator, overriding any possible member access.  */
+  goto no;
+
+  /* Return keeping the current locus consistent with the match result.  */
+error:
+  m = MATCH_ERROR;
+no:
+  gfc_current_locus = start_loc;
+  return m;
+yes:
+  gfc_current_locus = dot_loc;
+  return MATCH_YES;
+}
+
+
 /* This function scans the current statement counting the opened and closed
    parenthesis to make sure they are balanced.  */
 

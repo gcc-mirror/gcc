@@ -1102,6 +1102,10 @@ gfc_typenode_for_spec (gfc_typespec * spec)
 					     gfc_index_one_node);
       break;
 
+    case BT_UNION:
+      basetype = gfc_get_union_type (spec->u.derived);
+      break;
+
     case BT_DERIVED:
     case BT_CLASS:
       basetype = gfc_get_derived_type (spec->u.derived);
@@ -2315,7 +2319,9 @@ gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
   for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
     {
       to_cm->backend_decl = from_cm->backend_decl;
-      if (from_cm->ts.type == BT_DERIVED
+      if (from_cm->ts.type == BT_UNION)
+        gfc_get_union_type (to_cm->ts.u.derived);
+      else if (from_cm->ts.type == BT_DERIVED
 	  && (!from_cm->attr.pointer || from_gsym))
 	gfc_get_derived_type (to_cm->ts.u.derived);
       else if (from_cm->ts.type == BT_CLASS
@@ -2347,6 +2353,62 @@ gfc_get_ppc_type (gfc_component* c)
     t = void_type_node;
 
   return build_pointer_type (build_function_type_list (t, NULL_TREE));
+}
+
+
+/* Build a tree node for a union type. Requires building each map
+   structure which is an element of the union. */
+
+tree
+gfc_get_union_type (gfc_symbol *un)
+{
+    gfc_component *map = NULL;
+    tree typenode = NULL, map_type = NULL, map_field = NULL;
+    tree *chain = NULL;
+
+    if (un->backend_decl)
+      {
+        if (TYPE_FIELDS (un->backend_decl) || un->attr.proc_pointer_comp)
+          return un->backend_decl;
+        else
+          typenode = un->backend_decl;
+      }
+    else
+      {
+        typenode = make_node (UNION_TYPE);
+        TYPE_NAME (typenode) = get_identifier (un->name);
+      }
+
+    /* Add each contained MAP as a field. */
+    for (map = un->components; map; map = map->next)
+      {
+        gcc_assert (map->ts.type == BT_DERIVED);
+
+        /* The map's type node, which is defined within this union's context. */
+        map_type = gfc_get_derived_type (map->ts.u.derived);
+        TYPE_CONTEXT (map_type) = typenode;
+
+        /* The map field's declaration. */
+        map_field = gfc_add_field_to_struct(typenode, get_identifier(map->name),
+                                            map_type, &chain);
+        if (map->loc.lb)
+          gfc_set_decl_location (map_field, &map->loc);
+        else if (un->declared_at.lb)
+          gfc_set_decl_location (map_field, &un->declared_at);
+
+        DECL_PACKED (map_field) |= TYPE_PACKED (typenode);
+        DECL_NAMELESS(map_field) = true;
+
+        /* We should never clobber another backend declaration for this map,
+           because each map component is unique. */
+        if (!map->backend_decl)
+          map->backend_decl = map_field;
+      }
+
+    un->backend_decl = typenode;
+    gfc_finish_type (typenode);
+
+    return typenode;
 }
 
 
@@ -2492,6 +2554,9 @@ gfc_get_derived_type (gfc_symbol * derived)
      will be built and so we can return the type.  */
   for (c = derived->components; c; c = c->next)
     {
+      if (c->ts.type == BT_UNION && c->ts.u.derived->backend_decl == NULL)
+        c->ts.u.derived->backend_decl = gfc_get_union_type (c->ts.u.derived);
+
       if (c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
 	continue;
 
@@ -2521,7 +2586,10 @@ gfc_get_derived_type (gfc_symbol * derived)
     return derived->backend_decl;
 
   /* Build the type member list. Install the newly created RECORD_TYPE
-     node as DECL_CONTEXT of each FIELD_DECL.  */
+     node as DECL_CONTEXT of each FIELD_DECL. In this case we must go
+     through only the top-level linked list of components so we correctly
+     build UNION_TYPE nodes for BT_UNION components. MAPs and other nested
+     types are built as part of gfc_get_union_type.  */
   for (c = derived->components; c; c = c->next)
     {
       /* Prevent infinite recursion, when the procedure pointer type is

@@ -115,7 +115,8 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
--fd-lines-as-comments -fdefault-double-8 -fdefault-integer-8 @gol
+-fd-lines-as-comments @gol
+-fdec -fdec-structure -fdefault-double-8 -fdefault-integer-8 @gol
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
@@ -227,6 +228,24 @@ in fixed form sources.  If the @option{-fd-lines-as-code} option is
 given they are treated as if the first column contained a blank.  If the
 @option{-fd-lines-as-comments} option is given, they are treated as
 comment lines.
+
+@item -fdec
+@opindex @code{fdec}
+DEC compatibility mode. Enables extensions and other features that mimic
+the default behavior of older compilers (such as DEC).
+These features are non-standard and should be avoided at all costs.
+For details on GNU Fortran's implementation of these extensions see the 
+full documentation.
+
+Other flags enabled by this switch are:
+@option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
+
+@item -fdec-structure
+@opindex @code{fdec-structure}
+Enable DEC @code{STRUCTURE} and @code{RECORD} as well as @code{UNION},
+@code{MAP}, and dot ('.') as a member separator (in addition to '%'). This is
+provided for compatibility only; Fortran 90 derived types should be used
+instead where possible.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}

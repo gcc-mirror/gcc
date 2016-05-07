@@ -106,6 +106,7 @@ show_typespec (gfc_typespec *ts)
     {
     case BT_DERIVED:
     case BT_CLASS:
+    case BT_UNION:
       fprintf (dumpfile, "%s", ts->u.derived->name);
       break;
 
