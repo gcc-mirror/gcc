@@ -201,7 +201,7 @@ extern int code_for_indirect_jump_scratch;
   SUBTARGET_EXTRA_SPECS
 
 #if TARGET_CPU_DEFAULT & MASK_HARD_SH4
-#define SUBTARGET_ASM_RELAX_SPEC "%{!m1:%{!m2:%{!m3*::-isa=sh4-up}}}"
+#define SUBTARGET_ASM_RELAX_SPEC "%{!m1:%{!m2:%{!m3*:-isa=sh4-up}}}"
 #else
 #define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4-up}"
 #endif
@@ -245,7 +245,7 @@ extern int code_for_indirect_jump_scratch;
 /* Strict nofpu means that the compiler should tell the assembler
    to reject FPU instructions. E.g. from ASM inserts.  */
 #if TARGET_CPU_DEFAULT & MASK_HARD_SH4 && !(TARGET_CPU_DEFAULT & MASK_SH_E)
-#define SUBTARGET_ASM_ISA_SPEC "%{!m1:%{!m2:%{!m3*:%{m4-nofpu|!m4*::-isa=sh4-nofpu}}}}"
+#define SUBTARGET_ASM_ISA_SPEC "%{!m1:%{!m2:%{!m3*:%{m4-nofpu|!m4*:-isa=sh4-nofpu}}}}"
 #else
 
 #define SUBTARGET_ASM_ISA_SPEC \
