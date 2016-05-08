@@ -1,3 +1,33 @@
+2016-05-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (sh_media_register_for_return): Remove.
+	* config/sh/sh.c: Define and declare variables on first use throughout
+	the file.
+	(current_function_interrupt): Change to bool type.
+	(frame_insn): Rename to emit_frame_insn and update users.
+	(push_regs): Use bool for 'interrupt_handler' argument.
+	(save_schedule_s): Remove.
+	(TARGET_ASM_UNALIGNED_DI_OP, TARGET_ASM_ALIGNED_DI_OP): Remove.
+	(sh_option_override): Don't nullify targetm.asm_out.aligned_op.di and
+	targetm.asm_out.unaligned_op.di.
+	(gen_far_branch): Remove redundant forward declaration.
+	(sh_media_register_for_return, MAX_SAVED_REGS, save_entry_s, save_entry,
+	MAX_TEMPS, save_schedule_ssave_schedule): Remove.
+	(sh_set_return_address, sh_function_ok_for_sibcall,
+	scavenge_reg): Update comments.
+	(sh_builtin_saveregs): Use TRAGET_FPU_ANY condition.
+	(sh2a_get_function_vector_number, sh2a_function_vector_p): Use for loop.
+	(sh_attr_renesas_p): Remove unnecessary parentheses.
+	(branch_dest): Simplify.
+	* config/sh/sh.h (sh_args): Remove byref, byref_regs, stack_regs fields.
+	Change force_mem, prototype_p, outgoing, renesas_abi fields to bool.
+	(CUMULATIVE_ARGS): Change macro to typedef.
+	(current_function_interrupt): Change to bool type.
+	(sh_arg_class, sh_args, CUMULATIVE_ARGS, current_function_interrupt):
+	Surround with __cplusplus ifdef.
+	(sh_compare_op0, sh_compare_op1): Remove.
+	(EPILOGUE_USES): Use TARGET_FPU_ANY condition.
+
 2016-05-07  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/arm/arm.md: (arch): Add neon.

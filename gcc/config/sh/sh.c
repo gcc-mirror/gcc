@@ -80,8 +80,9 @@ int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 		  ? (DECL_ATTRIBUTES (decl)) \
 		  : TYPE_ATTRIBUTES (TREE_TYPE (decl))
 
-/* Set to 1 by expand_prologue() when the function is an interrupt handler.  */
-int current_function_interrupt;
+/* Set to true by expand_prologue() when the function is an
+   interrupt handler.  */
+bool current_function_interrupt;
 
 tree sh_deferred_function_attributes;
 tree *sh_deferred_function_attributes_tail = &sh_deferred_function_attributes;
@@ -180,10 +181,10 @@ static void sh_reorg (void);
 static void sh_option_override (void);
 static void sh_override_options_after_change (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
-static rtx_insn *frame_insn (rtx);
+static rtx_insn* emit_frame_insn (rtx);
 static rtx push (int);
 static void pop (int);
-static void push_regs (HARD_REG_SET *, int);
+static void push_regs (HARD_REG_SET* mask, bool interrupt_handler);
 static int calc_live_regs (HARD_REG_SET *);
 static HOST_WIDE_INT rounded_frame_size (int);
 static bool sh_frame_pointer_required (void);
@@ -267,7 +268,6 @@ static rtx sh_delegitimize_address (rtx);
 static bool sh_cannot_substitute_mem_equiv_p (rtx);
 static bool sh_legitimize_address_displacement (rtx *, rtx *, machine_mode);
 static int scavenge_reg (HARD_REG_SET *s);
-struct save_schedule_s;
 
 static rtx sh_struct_value_rtx (tree, int);
 static rtx sh_function_value (const_tree, const_tree, bool);
@@ -354,12 +354,6 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.uaword\t"
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.ualong\t"
-
-/* These are NULLed out on non-SH5 in TARGET_OPTION_OVERRIDE.  */
-#undef TARGET_ASM_UNALIGNED_DI_OP
-#define TARGET_ASM_UNALIGNED_DI_OP "\t.uaquad\t"
-#undef TARGET_ASM_ALIGNED_DI_OP
-#define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sh_option_override
@@ -831,10 +825,6 @@ sh_option_override (void)
       assembler_dialect = 1;
       sh_cpu = PROCESSOR_SH4A;
     }
-
-  /* Only the sh64-elf assembler fully supports .quad properly.  */
-  targetm.asm_out.aligned_op.di = NULL;
-  targetm.asm_out.unaligned_op.di = NULL;
 
   /* User/priviledged mode is supported only on SH3* and SH4*.
      Disable it for everything else.  */
@@ -1662,11 +1652,9 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 
   if (mode == Pmode || mode == ptr_mode)
     {
-      rtx op0, op1, opc;
-      enum tls_model tls_kind;
-
-      op0 = operands[0];
-      op1 = operands[1];
+      rtx op0 = operands[0];
+      rtx op1 = operands[1];
+      rtx opc;
       if (GET_CODE (op1) == CONST
 	  && GET_CODE (XEXP (op1, 0)) == PLUS
 	  && (tls_symbolic_operand (XEXP (XEXP (op1, 0), 0), Pmode)
@@ -1677,6 +1665,8 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	}
       else
 	opc = NULL_RTX;
+
+      enum tls_model tls_kind;
 
       if (! reload_in_progress && ! reload_completed
 	  && (tls_kind = tls_symbolic_operand (op1, Pmode)) != TLS_MODEL_NONE)
@@ -1698,7 +1688,7 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	      emit_use (gen_rtx_REG (SImode, PIC_REG));
 	      if (flag_schedule_insns)
 		emit_insn (gen_blockage ());
-	}
+	    }
 
 	  switch (tls_kind)
 	    {
@@ -2256,7 +2246,6 @@ sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
 {
   rtx t_reg = get_t_reg_rtx ();
   enum rtx_code oldcode = code;
-  machine_mode mode;
 
   /* First need a compare insn.  */
   switch (code)
@@ -2282,7 +2271,7 @@ sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
   if (code != oldcode)
     std::swap (op0, op1);
 
-  mode = GET_MODE (op0);
+  machine_mode mode = GET_MODE (op0);
   if (mode == VOIDmode)
     mode = GET_MODE (op1);
 
@@ -2825,14 +2814,13 @@ static bool
 unspec_caller_rtx_p (rtx pat)
 {
   rtx base, offset;
-  int i;
-
   split_const (pat, &base, &offset);
+
   if (GET_CODE (base) == UNSPEC)
     {
       if (XINT (base, 1) == UNSPEC_CALLER)
 	return true;
-      for (i = 0; i < XVECLEN (base, 0); i++)
+      for (int i = 0; i < XVECLEN (base, 0); i++)
 	if (unspec_caller_rtx_p (XVECEXP (base, 0, i)))
 	  return true;
     }
@@ -2844,8 +2832,6 @@ unspec_caller_rtx_p (rtx pat)
 static bool
 sh_cannot_copy_insn_p (rtx_insn *insn)
 {
-  rtx pat;
-
   if (!reload_completed || !flag_pic)
     return false;
 
@@ -2854,7 +2840,7 @@ sh_cannot_copy_insn_p (rtx_insn *insn)
   if (asm_noperands (insn) >= 0)
     return false;
 
-  pat = PATTERN (insn);
+  rtx pat = PATTERN (insn);
 
   if (GET_CODE (pat) == CLOBBER || GET_CODE (pat) == USE)
     return false;
@@ -4479,12 +4465,11 @@ static int max_labelno_before_reorg;
 static rtx_code_label *
 add_constant (rtx x, machine_mode mode, rtx last_value)
 {
-  int i;
   rtx_code_label *lab, *new_rtx;
   label_ref_list_t ref, newref;
 
   /* First see if we've already got it.  */
-  for (i = 0; i < pool_size; i++)
+  for (int i = 0; i < pool_size; i++)
     {
       if (x->code == pool_vector[i].value->code
 	  && mode == pool_vector[i].mode)
@@ -4558,7 +4543,6 @@ static void
 dump_table (rtx_insn *start, rtx_insn *barrier)
 {
   rtx_insn *scan = barrier;
-  int i;
   bool need_align = true;
   rtx lab;
   label_ref_list_t ref;
@@ -4566,7 +4550,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 
   /* Do two passes, first time dump out the HI sized constants.  */
 
-  for (i = 0; i < pool_size; i++)
+  for (int i = 0; i < pool_size; i++)
     {
       pool_node *p = &pool_vector[i];
 
@@ -4615,7 +4599,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
       scan = emit_insn_after (gen_align_log (GEN_INT (3)), scan);
       need_align = false;
 
-      for (i = 0; i < pool_size; i++)
+      for (int i = 0; i < pool_size; i++)
 	{
 	  pool_node *p = &pool_vector[i];
 
@@ -4681,7 +4665,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
       pool_size = 0;
     }
 
-  for (i = 0; i < pool_size; i++)
+  for (int i = 0; i < pool_size; i++)
     {
       pool_node *p = &pool_vector[i];
 
@@ -5250,7 +5234,7 @@ sfunc_uses_reg (rtx_insn *insn)
   if (! reg_part)
     return NULL_RTX;
   reg = XEXP (reg_part, 0);
-  for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
+  for (int i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
     {
       part = XVECEXP (pattern, 0, i);
       if (part == reg_part || GET_CODE (part) == CLOBBER)
@@ -5269,14 +5253,12 @@ sfunc_uses_reg (rtx_insn *insn)
 static bool
 noncall_uses_reg (rtx reg, rtx_insn *insn, rtx *set)
 {
-  rtx pattern, reg2;
-
   *set = NULL_RTX;
 
-  reg2 = sfunc_uses_reg (insn);
+  rtx reg2 = sfunc_uses_reg (insn);
   if (reg2 && REGNO (reg2) == REGNO (reg))
     {
-      pattern = single_set (insn);
+      rtx pattern = single_set (insn);
       if (pattern
 	  && REG_P (SET_DEST (pattern))
 	  && REGNO (reg) == REGNO (SET_DEST (pattern)))
@@ -5287,7 +5269,7 @@ noncall_uses_reg (rtx reg, rtx_insn *insn, rtx *set)
     {
       /* We don't use rtx_equal_p because we don't care if the mode is
 	 different.  */
-      pattern = single_set (insn);
+      rtx pattern = single_set (insn);
       if (pattern
 	  && REG_P (SET_DEST (pattern))
 	  && REGNO (reg) == REGNO (SET_DEST (pattern)))
@@ -5310,13 +5292,11 @@ noncall_uses_reg (rtx reg, rtx_insn *insn, rtx *set)
       return true;
     }
 
-  pattern = PATTERN (insn);
+  rtx pattern = PATTERN (insn);
 
   if (GET_CODE (pattern) == PARALLEL)
     {
-      int i;
-
-      for (i = XVECLEN (pattern, 0) - 1; i >= 1; i--)
+      for (int i = XVECLEN (pattern, 0) - 1; i >= 1; i--)
 	if (reg_mentioned_p (reg, XVECEXP (pattern, 0, i)))
 	  return true;
       pattern = XVECEXP (pattern, 0, 0);
@@ -5356,7 +5336,7 @@ regs_used (rtx x, int is_dest)
 {
   enum rtx_code code;
   const char *fmt;
-  int i, used = 0;
+  int used = 0;
 
   if (! x)
     return used;
@@ -5403,12 +5383,11 @@ regs_used (rtx x, int is_dest)
 
   fmt = GET_RTX_FORMAT (code);
 
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'E')
 	{
-	  int j;
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  for (int j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    used |= regs_used (XVECEXP (x, i, j), is_dest);
 	}
       else if (fmt[i] == 'e')
@@ -5431,7 +5410,6 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 {
   int dead = 0;
   rtx_insn *prev = prev_nonnote_insn (jump);
-  rtx dest;
 
   /* First, check if we already have an instruction that satisfies our need.  */
   if (prev && NONJUMP_INSN_P (prev) && ! prev->deleted ())
@@ -5457,7 +5435,7 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
     }
   /* We can't use JUMP_LABEL here because it might be undefined
      when not optimizing.  */
-  dest = XEXP (SET_SRC (PATTERN (jump)), 0);
+  rtx dest = XEXP (SET_SRC (PATTERN (jump)), 0);
   /* If the branch is out of range, try to find a scratch register for it.  */
   if (optimize
       && (INSN_ADDRESSES (INSN_UID (dest)) - addr + (unsigned) 4092
@@ -5475,11 +5453,9 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 
       for (scan = jump; (scan = PREV_INSN (scan)); )
 	{
-	  enum rtx_code code;
-
 	  if (scan->deleted ())
 	    continue;
-	  code = GET_CODE (scan);
+	  rtx_code code = GET_CODE (scan);
 	  if (code == CODE_LABEL || code == JUMP_INSN)
 	    break;
 	  if (code == INSN
@@ -5494,11 +5470,9 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
       for (used = dead = 0, scan = JUMP_LABEL_AS_INSN (jump);
 	   (scan = NEXT_INSN (scan)); )
 	{
-	  enum rtx_code code;
-
 	  if (scan->deleted ())
 	    continue;
-	  code = GET_CODE (scan);
+	  rtx_code code = GET_CODE (scan);
 	  if (INSN_P (scan))
 	    {
 	      used |= regs_used (PATTERN (scan), 0);
@@ -5594,15 +5568,14 @@ struct far_branch
   int address;
 };
 
-static void gen_far_branch (struct far_branch *);
 enum mdep_reorg_phase_e mdep_reorg_phase;
+
 static void
 gen_far_branch (struct far_branch *bp)
 {
   rtx_insn *insn = bp->insert_place;
   rtx_jump_insn *jump;
   rtx_code_label *label = gen_label_rtx ();
-  int ok;
 
   emit_label_after (label, insn);
   if (bp->far_label)
@@ -5631,7 +5604,7 @@ gen_far_branch (struct far_branch *bp)
       JUMP_LABEL (jump) = pat;
     }
 
-  ok = invert_jump (as_a <rtx_jump_insn *> (insn), label, 1);
+  bool ok = invert_jump (as_a <rtx_jump_insn *> (insn), label, 1);
   gcc_assert (ok);
 
   /* If we are branching around a jump (rather than a return), prevent
@@ -5701,8 +5674,6 @@ fixup_addr_diff_vecs (rtx_insn *first)
 int
 barrier_align (rtx_insn *barrier_or_label)
 {
-  rtx next, pat;
-
   if (! barrier_or_label)
     return 0;
 
@@ -5715,7 +5686,7 @@ barrier_align (rtx_insn *barrier_or_label)
       && PREV_INSN (barrier_or_label)
       && JUMP_TABLE_DATA_P (PREV_INSN (barrier_or_label)))
     {
-      pat = PATTERN (PREV_INSN (barrier_or_label));
+      rtx pat = PATTERN (PREV_INSN (barrier_or_label));
       /* If this is a very small table, we want to keep the alignment after
 	 the table to the minimum for proper code alignment.  */
       return ((optimize_size
@@ -5724,12 +5695,12 @@ barrier_align (rtx_insn *barrier_or_label)
 	      ? 1 : align_jumps_log);
     }
 
-  next = next_active_insn (barrier_or_label);
+  rtx next = next_active_insn (barrier_or_label);
 
   if (! next)
     return 0;
 
-  pat = PATTERN (next);
+  rtx pat = PATTERN (next);
 
   if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_ALIGN)
     /* This is a barrier in front of a constant table.  */
@@ -6297,11 +6268,11 @@ int
 get_dest_uid (rtx label, int max_uid)
 {
   rtx_insn *dest = next_real_insn (label);
-  int dest_uid;
+
   if (! dest)
     /* This can happen for an undefined label.  */
     return 0;
-  dest_uid = INSN_UID (dest);
+  int dest_uid = INSN_UID (dest);
   /* If this is a newly created branch redirection blocking instruction,
      we cannot index the branch_uid or insn_addresses arrays with its
      uid.  But then, we won't need to, because the actual destination is
@@ -6560,14 +6531,9 @@ final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 
   if (TARGET_RELAX)
     {
-      rtx note;
-
-      note = find_reg_note (insn, REG_LABEL_OPERAND, NULL_RTX);
-      if (note)
+      if (rtx note = find_reg_note (insn, REG_LABEL_OPERAND, NULL_RTX))
 	{
-	  rtx pattern;
-
-	  pattern = PATTERN (insn);
+	  rtx pattern = PATTERN (insn);
 	  if (GET_CODE (pattern) == PARALLEL)
 	    pattern = XVECEXP (pattern, 0, 0);
 	  switch (GET_CODE (pattern))
@@ -6598,12 +6564,10 @@ final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 const char *
 output_jump_label_table (void)
 {
-  int i;
-
   if (pool_size)
     {
       fprintf (asm_out_file, "\t.align 2\n");
-      for (i = 0; i < pool_size; i++)
+      for (int i = 0; i < pool_size; i++)
 	{
 	  pool_node *p = &pool_vector[i];
 
@@ -6648,7 +6612,7 @@ static void
 output_stack_adjust (int size, rtx reg, int epilogue_p,
 		     HARD_REG_SET *live_regs_mask, bool frame_p)
 {
-  rtx_insn *(*emit_fn) (rtx) = frame_p ? &frame_insn : &emit_insn;
+  rtx_insn *(*emit_fn) (rtx) = frame_p ? &emit_frame_insn : &emit_insn;
   if (size)
     {
       HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
@@ -6798,10 +6762,9 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
     }
 }
 
-/* Emit the specified insn and mark it as frame related.
-   FIXME: Rename this to emit_frame_insn.  */
+/* Emit the specified insn and mark it as frame related.  */
 static rtx_insn *
-frame_insn (rtx x)
+emit_frame_insn (rtx x)
 {
   rtx_insn *insn = emit_insn (x);
   RTX_FRAME_RELATED_P (insn) = 1;
@@ -6829,7 +6792,7 @@ push (int rn)
   else
     x = gen_push (gen_rtx_REG (SImode, rn));
 
-  x = frame_insn (x);
+  x = emit_frame_insn (x);
   add_reg_note (x, REG_INC, gen_rtx_REG (SImode, STACK_POINTER_REGNUM));
   return x;
 }
@@ -6872,15 +6835,15 @@ pop (int rn)
 
 /* Generate code to push the regs specified in the mask.  */
 static void
-push_regs (HARD_REG_SET *mask, int interrupt_handler)
+push_regs (HARD_REG_SET *mask, bool interrupt_handler)
 {
-  int i = interrupt_handler ? LAST_BANKED_REG + 1 : 0;
-  int skip_fpscr = 0;
+  bool skip_fpscr = false;
 
   /* Push PR last; this gives better latencies after the prologue, and
      candidates for the return delay slot when there are no general
      registers pushed.  */
-  for (; i < FIRST_PSEUDO_REGISTER; i++)
+  for (int i = interrupt_handler ? LAST_BANKED_REG + 1 : 0;
+       i < FIRST_PSEUDO_REGISTER; i++)
     {
       /* If this is an interrupt handler, and the SZ bit varies,
 	 and we have to push any floating point register, we need
@@ -6893,7 +6856,7 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	  push (FPSCR_REG);
 	  COMPL_HARD_REG_SET (unsaved, *mask);
 	  fpscr_set_from_mem (NORMAL_MODE (FP_MODE), unsaved);
-	  skip_fpscr = 1;
+	  skip_fpscr = true;
 	}
       if (i != PR_REG
 	  && (i != FPSCR_REG || ! skip_fpscr)
@@ -6919,7 +6882,7 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	{
 	  unsigned int count = 0;
 
-	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	  for (int i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
 	    if (TEST_HARD_REG_BIT (*mask, i))
 	      count++;
 	    else
@@ -6941,8 +6904,8 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	     insns.  */
 	  emit_insn (gen_blockage ());
 	  x = gen_movml_push_banked (sp_reg);
-	  x = frame_insn (x);
-	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	  x = emit_frame_insn (x);
+	  for (int i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
 	    {
 	      mem = gen_rtx_MEM (SImode, plus_constant (Pmode, sp_reg, i * 4));
 	      reg = gen_rtx_REG (SImode, i);
@@ -6954,7 +6917,7 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	  emit_insn (gen_blockage ());
 	}
       else
-	for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	for (int i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
 	  if (TEST_HARD_REG_BIT (*mask, i))
 	    push (i);
     }
@@ -6974,11 +6937,9 @@ static int
 calc_live_regs (HARD_REG_SET *live_regs_mask)
 {
   unsigned int reg;
-  int count;
   tree attrs;
   bool interrupt_or_trapa_handler, trapa_handler, interrupt_handler;
   bool nosave_low_regs;
-  int pr_live, has_call;
 
   attrs = DECL_ATTRIBUTES (current_function_decl);
   interrupt_or_trapa_handler = sh_cfun_interrupt_handler_p ();
@@ -6992,7 +6953,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
     target_flags &= ~MASK_FPU_SINGLE;
   /* If we can save a lot of saves by switching to double mode, do that.  */
   else if (TARGET_FPU_DOUBLE && TARGET_FMOVD && TARGET_FPU_SINGLE)
-    for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
+    for (int count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (df_regs_ever_live_p (reg) && df_regs_ever_live_p (reg+1)
 	  && (! call_really_used_regs[reg]
 	      || interrupt_handler)
@@ -7002,20 +6963,22 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  break;
 	}
 
-    {
-      rtx pr_initial = has_hard_reg_initial_val (Pmode, PR_REG);
-      pr_live = (pr_initial
+
+  rtx pr_initial = has_hard_reg_initial_val (Pmode, PR_REG);
+  bool pr_live = (pr_initial
 		 ? (!REG_P (pr_initial)
 		    || REGNO (pr_initial) != (PR_REG))
 		 : df_regs_ever_live_p (PR_REG));
-      /* For Shcompact, if not optimizing, we end up with a memory reference
-	 using the return address pointer for __builtin_return_address even
-	 though there is no actual need to put the PR register on the stack.  */
-      pr_live |= df_regs_ever_live_p (RETURN_ADDRESS_POINTER_REGNUM);
-    }
+  /* For Shcompact, if not optimizing, we end up with a memory reference
+     using the return address pointer for __builtin_return_address even
+     though there is no actual need to put the PR register on the stack.  */
+  pr_live |= df_regs_ever_live_p (RETURN_ADDRESS_POINTER_REGNUM);
+
   /* Force PR to be live if the prologue has to call the SHmedia
      argument decoder or register saver.  */
-  has_call = pr_live;
+  bool has_call = pr_live;
+
+  int count;
   for (count = 0, reg = FIRST_PSEUDO_REGISTER; reg-- != 0; )
     {
       if (reg == PR_REG
@@ -7119,68 +7082,11 @@ rounded_frame_size (int pushed)
   return ((size + pushed + align - 1) & -align) - pushed;
 }
 
-/* Choose a call-clobbered target-branch register that remains
-   unchanged along the whole function.  We set it up as the return
-   value in the prologue.  */
-int
-sh_media_register_for_return (void)
-{
-  int regno;
-  int tr0_used;
-
-  if (! crtl->is_leaf)
-    return -1;
-  if (lookup_attribute ("interrupt_handler",
-			DECL_ATTRIBUTES (current_function_decl)))
-    return -1;
-  if (sh_cfun_interrupt_handler_p ())
-    return -1;
-
-  tr0_used = flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM);
-
-  for (regno = FIRST_TARGET_REG + tr0_used; regno <= LAST_TARGET_REG; regno++)
-    if (call_really_used_regs[regno] && ! df_regs_ever_live_p (regno))
-      return regno;
-
-  return -1;
-}
-
-/* The maximum registers we need to save are:
-   - 62 general purpose registers (r15 is stack pointer, r63 is zero)
-   - 32 floating point registers (for each pair, we save none,
-         one single precision value, or a double precision value).
-   -  8 target registers
-   -  add 1 entry for a delimiter.  */
-#define MAX_SAVED_REGS (62+32+8)
-
-typedef struct save_entry_s
-{
-  unsigned char reg;
-  unsigned char mode;
-  short offset;
-} save_entry;
-
-#define MAX_TEMPS 4
-
-/* There will be a delimiter entry with VOIDmode both at the start and the
-   end of a filled in schedule.  The end delimiter has the offset of the
-   save with the smallest (i.e. most negative) offset.  */
-typedef struct save_schedule_s
-{
-  save_entry entries[MAX_SAVED_REGS + 2];
-  int temps[MAX_TEMPS+1];
-} save_schedule;
-
 /* Expand code for the function prologue.  */
 void
 sh_expand_prologue (void)
 {
-  HARD_REG_SET live_regs_mask;
-  int d, i;
-  int d_rounding = 0;
   int save_flags = target_flags;
-  int pretend_args;
-  int stack_usage;
   tree sp_switch_attr
     = lookup_attribute ("sp_switch", DECL_ATTRIBUTES (current_function_decl));
 
@@ -7188,16 +7094,14 @@ sh_expand_prologue (void)
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
-  pretend_args = crtl->args.pretend_args_size;
+  int pretend_args = crtl->args.pretend_args_size;
   if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl)
       && (NPARM_REGS(SImode)
 	  > crtl->args.info.arg_count[(int) SH_ARG_INT]))
     pretend_args = 0;
 
-  output_stack_adjust (-pretend_args
-		       - crtl->args.info.stack_regs * 8,
-		       stack_pointer_rtx, 0, NULL, true);
-  stack_usage = pretend_args + crtl->args.info.stack_regs * 8;
+  output_stack_adjust (-pretend_args, stack_pointer_rtx, 0, NULL, true);
+  int stack_usage = pretend_args;
 
   /* Emit the code for SETUP_VARARGS.  */
   if (cfun->stdarg)
@@ -7205,7 +7109,7 @@ sh_expand_prologue (void)
       if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
 	{
 	  /* Push arg regs as if they'd been provided by caller in stack.  */
-	  for (i = 0; i < NPARM_REGS(SImode); i++)
+	  for (int i = 0; i < NPARM_REGS(SImode); i++)
 	    {
 	      int rn = NPARM_REGS(SImode) + FIRST_PARM_REG - i - 1;
 
@@ -7226,8 +7130,7 @@ sh_expand_prologue (void)
       /* The argument specifies a variable holding the address of the
 	 stack the interrupt function should switch to/from at entry/exit.  */
       tree arg = TREE_VALUE ( TREE_VALUE (sp_switch_attr));
-      const char *s
-	= ggc_strdup (TREE_STRING_POINTER (arg));
+      const char* s = ggc_strdup (TREE_STRING_POINTER (arg));
       rtx sp_switch = gen_rtx_SYMBOL_REF (Pmode, s);
 
       lab = add_constant (sp_switch, SImode, 0);
@@ -7236,7 +7139,8 @@ sh_expand_prologue (void)
       emit_insn (gen_sp_switch_1 (newsrc));
     }
 
-  d = calc_live_regs (&live_regs_mask);
+  HARD_REG_SET live_regs_mask;
+  int d = calc_live_regs (&live_regs_mask);
   /* ??? Maybe we could save some switching if we can move a mode switch
      that already happens to be at the function start into the prologue.  */
   if (target_flags != save_flags && ! current_function_interrupt)
@@ -7254,12 +7158,12 @@ sh_expand_prologue (void)
 
   target_flags = save_flags;
 
-  output_stack_adjust (-rounded_frame_size (d) + d_rounding,
+  output_stack_adjust (-rounded_frame_size (d),
 		       stack_pointer_rtx, 0, NULL, true);
-  stack_usage += rounded_frame_size (d) - d_rounding;
+  stack_usage += rounded_frame_size (d);
 
   if (frame_pointer_needed)
-    frame_insn (GEN_MOV (hard_frame_pointer_rtx, stack_pointer_rtx));
+    emit_frame_insn (GEN_MOV (hard_frame_pointer_rtx, stack_pointer_rtx));
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if some call instructions are swapped
@@ -7276,19 +7180,15 @@ sh_expand_prologue (void)
 void
 sh_expand_epilogue (bool sibcall_p)
 {
-  HARD_REG_SET live_regs_mask;
-  int d, i;
-  int d_rounding = 0;
-
   int save_flags = target_flags;
-  int frame_size, save_size;
-  int fpscr_deferred = 0;
+  bool fpscr_deferred = false;
   int e = sibcall_p ? -1 : 1;
 
-  d = calc_live_regs (&live_regs_mask);
+  HARD_REG_SET live_regs_mask;
+  int d = calc_live_regs (&live_regs_mask);
 
-  save_size = d;
-  frame_size = rounded_frame_size (d);
+  int save_size = d;
+  int frame_size = rounded_frame_size (d);
 
   if (frame_pointer_needed)
     {
@@ -7303,7 +7203,7 @@ sh_expand_epilogue (bool sibcall_p)
 	 occur after the SP adjustment and clobber data in the local
 	 frame.  */
       emit_insn (gen_blockage ());
-      frame_insn (GEN_MOV (stack_pointer_rtx, hard_frame_pointer_rtx));
+      emit_frame_insn (GEN_MOV (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
   else if (frame_size)
     {
@@ -7345,7 +7245,7 @@ sh_expand_epilogue (bool sibcall_p)
 	    {
 	      unsigned int count = 0;
 
-	      for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	      for (int i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
 		if (TEST_HARD_REG_BIT (live_regs_mask, i))
 		  count++;
 		else
@@ -7369,7 +7269,7 @@ sh_expand_epilogue (bool sibcall_p)
 	      emit_insn (gen_blockage ());
 	    }
 	  else
-	    for (i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
+	    for (int i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
 	      if (TEST_HARD_REG_BIT (live_regs_mask, i))
 		pop (i);
 
@@ -7378,14 +7278,14 @@ sh_expand_epilogue (bool sibcall_p)
       else
 	last_reg = FIRST_PSEUDO_REGISTER;
 
-      for (i = 0; i < last_reg; i++)
+      for (int i = 0; i < last_reg; i++)
 	{
 	  int j = (FIRST_PSEUDO_REGISTER - 1) - i;
 
 	  if (j == FPSCR_REG && current_function_interrupt && TARGET_FMOVD
 	      && hard_reg_set_intersect_p (live_regs_mask,
 					  reg_class_contents[DF_REGS]))
-	    fpscr_deferred = 1;
+	    fpscr_deferred = true;
 	  /* For an ISR with RESBANK attribute assigned, don't pop
 	     following registers, R0-R14, MACH, MACL and GBR.  */
 	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j) 
@@ -7405,9 +7305,7 @@ sh_expand_epilogue (bool sibcall_p)
     emit_insn (gen_toggle_sz ());
   target_flags = save_flags;
 
-  output_stack_adjust (crtl->args.pretend_args_size
-		       + save_size + d_rounding
-		       + crtl->args.info.stack_regs * 8,
+  output_stack_adjust (crtl->args.pretend_args_size + save_size,
 		       stack_pointer_rtx, e, NULL, true);
 
   if (crtl->calls_eh_return)
@@ -7434,8 +7332,7 @@ sh_set_return_address (rtx ra, rtx tmp)
   HARD_REG_SET live_regs_mask;
   int d = calc_live_regs (&live_regs_mask);
 
-  /* If pr_reg isn't life, we can set it (or the register given in
-     sh_media_register_for_return) directly.  */
+  /* If pr_reg isn't life, we can set it directly.  */
   if (! TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
     {
       rtx rr = gen_rtx_REG (SImode, PR_REG);
@@ -7482,7 +7379,7 @@ sh_builtin_saveregs (void)
   int bufsize, regno;
   alias_set_type alias_set;
 
-  if (! TARGET_SH2E && ! TARGET_SH4)
+  if (!TARGET_FPU_ANY)
     {
       error ("__builtin_saveregs not supported by this subtarget");
       return const0_rtx;
@@ -7723,30 +7620,26 @@ static tree
 sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 			 gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
-  HOST_WIDE_INT size, rsize;
-  tree tmp, pptr_type_node;
+  tree tmp;
   tree addr, lab_over = NULL, result = NULL;
-  bool pass_by_ref;
   tree eff_type;
 
-  if (!VOID_TYPE_P (type))
-    pass_by_ref = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
-  else
-    pass_by_ref = false;
+  const bool pass_by_ref =
+    !VOID_TYPE_P (type)
+    && targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
 
   if (pass_by_ref)
     type = build_pointer_type (type);
 
-  size = int_size_in_bytes (type);
-  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
-  pptr_type_node = build_pointer_type (ptr_type_node);
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+  HOST_WIDE_INT rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+  tree pptr_type_node = build_pointer_type (ptr_type_node);
 
   if ((TARGET_SH2E || TARGET_SH4)
       && ! (TARGET_HITACHI || sh_cfun_attr_renesas_p ()))
     {
       tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
       tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
-      int pass_as_float;
       tree lab_false;
       tree member;
 
@@ -7791,6 +7684,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	    }
 	}
 
+      bool pass_as_float;
       if (TARGET_FPU_DOUBLE)
 	{
 	  pass_as_float = ((TREE_CODE (eff_type) == REAL_TYPE && size <= 8)
@@ -8149,7 +8043,7 @@ sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
   if (ca->force_mem)
-    ca->force_mem = 0;
+    ca->force_mem = false;
 
   if ((TARGET_HITACHI || ca->renesas_abi) && TARGET_FPU_DOUBLE)
     {
@@ -8290,27 +8184,22 @@ sh_pretend_outgoing_varargs_named (cumulative_args_t ca_v)
 int
 initial_elimination_offset (int from, int to)
 {
-  int regs_saved;
-  int regs_saved_rounding = 0;
-  int total_saved_regs_space;
-  int total_auto_space;
+  const int regs_saved_rounding = 0;
   int save_flags = target_flags;
   HARD_REG_SET live_regs_mask;
 
-  regs_saved = calc_live_regs (&live_regs_mask);
+  int regs_saved = calc_live_regs (&live_regs_mask);
 
-  total_auto_space = rounded_frame_size (regs_saved) - regs_saved_rounding;
+  int total_auto_space = rounded_frame_size (regs_saved) - regs_saved_rounding;
   target_flags = save_flags;
 
-  total_saved_regs_space = regs_saved + regs_saved_rounding;
+  int total_saved_regs_space = regs_saved + regs_saved_rounding;
 
   if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    return total_saved_regs_space + total_auto_space
-	   + crtl->args.info.byref_regs * 8;
+    return total_saved_regs_space + total_auto_space;
 
   if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return total_saved_regs_space + total_auto_space
-	   + crtl->args.info.byref_regs * 8;
+    return total_saved_regs_space + total_auto_space;
 
   /* Initial gap between fp and sp is 0.  */
   if (from == HARD_FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
@@ -8332,39 +8221,34 @@ initial_elimination_offset (int from, int to)
 void
 sh_fix_range (const char *const_str)
 {
-  int i, first, last;
-  char *str, *dash, *comma;
-
   /* str must be of the form REG1'-'REG2{,REG1'-'REG} where REG1 and
      REG2 are either register names or register numbers.  The effect
      of this option is to mark the registers in the range from REG1 to
      REG2 as ``fixed'' so they won't be used by the compiler.  */
 
-  i = strlen (const_str);
-  str = (char *) alloca (i + 1);
-  memcpy (str, const_str, i + 1);
+  char* str = strcpy ((char*)alloca (strlen (const_str) + 1), const_str);
 
   while (1)
     {
-      dash = strchr (str, '-');
+      char* dash = strchr (str, '-');
       if (!dash)
 	{
 	  warning (0, "value of -mfixed-range must have form REG1-REG2");
 	  return;
 	}
       *dash = '\0';
-      comma = strchr (dash + 1, ',');
+      char* comma = strchr (dash + 1, ',');
       if (comma)
 	*comma = '\0';
 
-      first = decode_reg_name (str);
+      int first = decode_reg_name (str);
       if (first < 0)
 	{
 	  warning (0, "unknown register name: %s", str);
 	  return;
 	}
 
-      last = decode_reg_name (dash + 1);
+      int last = decode_reg_name (dash + 1);
       if (last < 0)
 	{
 	  warning (0, "unknown register name: %s", dash + 1);
@@ -8379,7 +8263,7 @@ sh_fix_range (const char *const_str)
 	  return;
 	}
 
-      for (i = first; i <= last; ++i)
+      for (int i = first; i <= last; ++i)
 	fixed_regs[i] = call_used_regs[i] = 1;
 
       if (!comma)
@@ -8394,8 +8278,6 @@ sh_fix_range (const char *const_str)
 static void
 sh_insert_attributes (tree node, tree *attributes)
 {
-  tree attrs;
-
   if (TREE_CODE (node) != FUNCTION_DECL)
     return;
 
@@ -8405,7 +8287,7 @@ sh_insert_attributes (tree node, tree *attributes)
 
   /* Append the attributes to the deferred attributes.  */
   *sh_deferred_function_attributes_tail = *attributes;
-  attrs = sh_deferred_function_attributes;
+  tree attrs = sh_deferred_function_attributes;
   if (!attrs)
     return;
 
@@ -8600,28 +8482,17 @@ sh2a_is_function_vector_call (rtx x)
 int
 sh2a_get_function_vector_number (rtx x)
 {
-  int num;
-  tree list, t;
-
   if ((GET_CODE (x) == SYMBOL_REF)
       && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
     {
-      t = SYMBOL_REF_DECL (x);
+      tree t = SYMBOL_REF_DECL (x);
 
       if (TREE_CODE (t) != FUNCTION_DECL)
 	return 0;
 
-      list = SH_ATTRIBUTES (t);
-      while (list)
-	{
-	  if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
-	    {
-	      num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
-	      return num;
-	    }
-
-	  list = TREE_CHAIN (list);
-	}
+      for (tree list = SH_ATTRIBUTES (t); list; list = TREE_CHAIN (list))
+	if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+	  return TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
 
       return 0;
     }
@@ -8699,8 +8570,7 @@ sh_attr_renesas_p (const_tree td)
     td = TREE_TYPE (td);
   if (td == error_mark_node)
     return false;
-  return (lookup_attribute ("renesas", TYPE_ATTRIBUTES (td))
-	  != NULL_TREE);
+  return lookup_attribute ("renesas", TYPE_ATTRIBUTES (td)) != NULL_TREE;
 }
 
 /* True if __attribute__((renesas)) or -mrenesas, for the current
@@ -8726,18 +8596,13 @@ sh_cfun_interrupt_handler_p (void)
 bool
 sh2a_function_vector_p (tree func)
 {
-  tree list;
   if (TREE_CODE (func) != FUNCTION_DECL)
     return false;
 
-  list = SH_ATTRIBUTES (func);
-  while (list)
-    {
-      if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
-	return true;
+  for (tree list = SH_ATTRIBUTES (func); list; list = TREE_CHAIN (list))
+    if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+      return true;
 
-      list = TREE_CHAIN (list);
-    }
   return false;
 }
 
@@ -8797,12 +8662,10 @@ system_reg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 bool
 fp_zero_operand (rtx op)
 {
-  const REAL_VALUE_TYPE *r;
-
   if (GET_MODE (op) != SFmode)
     return false;
 
-  r = CONST_DOUBLE_REAL_VALUE (op);
+  const REAL_VALUE_TYPE* r = CONST_DOUBLE_REAL_VALUE (op);
   return real_equal (r, &dconst0) && ! REAL_VALUE_MINUS_ZERO (*r);
 }
 
@@ -8830,13 +8693,11 @@ static int
 branch_dest (rtx branch)
 {
   rtx dest = SET_SRC (PATTERN (branch));
-  int dest_uid;
 
   if (GET_CODE (dest) == IF_THEN_ELSE)
     dest = XEXP (dest, 1);
-  dest = XEXP (dest, 0);
-  dest_uid = INSN_UID (dest);
-  return INSN_ADDRESSES (dest_uid);
+
+  return INSN_ADDRESSES (INSN_UID (XEXP (dest, 0)));
 }
 
 /* Return nonzero if REG is not used after INSN.
@@ -8845,24 +8706,20 @@ branch_dest (rtx branch)
 bool
 reg_unused_after (rtx reg, rtx_insn *insn)
 {
-  enum rtx_code code;
-  rtx set;
-
   /* If the reg is set by this instruction, then it is safe for our
      case.  Disregard the case where this is a store to memory, since
      we are checking a register used in the store address.  */
-  set = single_set (insn);
+  rtx set = single_set (insn);
   if (set && !MEM_P (SET_DEST (set))
       && reg_overlap_mentioned_p (reg, SET_DEST (set)))
     return true;
 
   while ((insn = NEXT_INSN (insn)))
     {
-      rtx set;
       if (!INSN_P (insn))
 	continue;
 
-      code = GET_CODE (insn);
+      rtx_code code = GET_CODE (insn);
 
 #if 0
       /* If this is a label that existed before reload, then the register
@@ -8884,10 +8741,9 @@ reg_unused_after (rtx reg, rtx_insn *insn)
       else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
-	  int i;
-	  int retval = 0;
+	  bool retval = false;
 
-	  for (i = 0; i < seq->len (); i++)
+	  for (int i = 0; i < seq->len (); i++)
 	    {
 	      rtx_insn *this_insn = seq->insn (i);
 	      rtx set = single_set (this_insn);
@@ -8914,18 +8770,18 @@ reg_unused_after (rtx reg, rtx_insn *insn)
 		  && reg_overlap_mentioned_p (reg, PATTERN (this_insn)))
 		return false;
 	    }
-	  if (retval == 1)
+	  if (retval)
 	    return true;
 	  else if (code == JUMP_INSN)
 	    return false;
 	}
 
-      set = single_set (insn);
+      rtx set = single_set (insn);
       if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
 	return false;
       if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
 	return !MEM_P (SET_DEST (set));
-      if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+      if (set == NULL && reg_overlap_mentioned_p (reg, PATTERN (insn)))
 	return false;
 
       if (code == CALL_INSN && call_really_used_regs[REGNO (reg)])
@@ -8949,13 +8805,9 @@ static GTY(()) tree fpscr_values;
 static void
 emit_fpu_switch (rtx scratch, int index)
 {
-  rtx src;
-
   if (fpscr_values == NULL)
     {
-      tree t;
-
-      t = build_index_type (integer_one_node);
+      tree t = build_index_type (integer_one_node);
       t = build_array_type (integer_type_node, t);
       t = build_decl (BUILTINS_LOCATION,
 		      VAR_DECL, get_identifier ("__fpscr_values"), t);
@@ -8969,7 +8821,7 @@ emit_fpu_switch (rtx scratch, int index)
       fpscr_values = t;
     }
 
-  src = DECL_RTL (fpscr_values);
+  rtx src = DECL_RTL (fpscr_values);
   if (!can_create_pseudo_p ())
     {
       emit_move_insn (scratch, XEXP (src, 0));
@@ -9017,9 +8869,8 @@ fpscr_set_from_mem (int mode, HARD_REG_SET regs_live)
 {
   enum attr_fp_mode fp_mode = (enum attr_fp_mode) mode;
   enum attr_fp_mode norm_mode = ACTUAL_NORMAL_MODE (FP_MODE);
-  rtx addr_reg;
 
-  addr_reg = !can_create_pseudo_p () ? get_free_reg (regs_live) : NULL_RTX;
+  rtx addr_reg = !can_create_pseudo_p () ? get_free_reg (regs_live) : NULL_RTX;
   emit_fpu_switch (addr_reg, fp_mode == norm_mode);
 }
 
@@ -9031,13 +8882,11 @@ fpscr_set_from_mem (int mode, HARD_REG_SET regs_live)
 static bool
 sequence_insn_p (rtx_insn *insn)
 {
-  rtx_insn *prev, *next;
-
-  prev = PREV_INSN (insn);
+  rtx_insn* prev = PREV_INSN (insn);
   if (prev == NULL)
     return false;
 
-  next = NEXT_INSN (prev);
+  rtx_insn* next = NEXT_INSN (prev);
   if (next == NULL)
     return false;
 
@@ -9201,9 +9050,6 @@ sh_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 bool
 nonpic_symbol_mentioned_p (rtx x)
 {
-  const char *fmt;
-  int i;
-
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF
       || GET_CODE (x) == PC)
     return true;
@@ -9229,13 +9075,12 @@ nonpic_symbol_mentioned_p (rtx x)
 	  || XINT (x, 1) == UNSPEC_GOTOFFFUNCDESC))
     return false;
 
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+  const char* fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (int i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'E')
 	{
-	  int j;
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  for (int j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (nonpic_symbol_mentioned_p (XVECEXP (x, i, j)))
 	      return true;
 	}
@@ -9249,8 +9094,7 @@ nonpic_symbol_mentioned_p (rtx x)
 /* Convert a non-PIC address in `orig' to a PIC address using @GOT or
    @GOTOFF in `reg'.  */
 rtx
-legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
-			rtx reg)
+legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED, rtx reg)
 {
   if (tls_symbolic_operand (orig, Pmode) != TLS_MODEL_NONE)
     return orig;
@@ -9466,16 +9310,14 @@ sh_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
 static rtx
 sh_delegitimize_address (rtx orig_x)
 {
-  rtx x, y;
-
   orig_x = delegitimize_mem_from_attrs (orig_x);
 
-  x = orig_x;
+  rtx x = orig_x;
   if (MEM_P (x))
     x = XEXP (x, 0);
   if (GET_CODE (x) == CONST)
     {
-      y = XEXP (x, 0);
+      rtx y = XEXP (x, 0);
       if (GET_CODE (y) == UNSPEC)
 	{
 	  if (XINT (y, 1) == UNSPEC_GOT
@@ -9505,9 +9347,6 @@ sh_delegitimize_address (rtx orig_x)
 static rtx
 mark_constant_pool_use (rtx x)
 {
-  rtx_insn *insn, *lab;
-  rtx pattern;
-
   if (x == NULL_RTX)
     return x;
 
@@ -9523,8 +9362,8 @@ mark_constant_pool_use (rtx x)
 
   /* Get the first label in the list of labels for the same constant
      and delete another labels in the list.  */
-  lab = as_a <rtx_insn *> (x);
-  for (insn = PREV_INSN (lab); insn; insn = PREV_INSN (insn))
+  rtx_insn* lab = as_a <rtx_insn*> (x);
+  for (rtx_insn* insn = PREV_INSN (lab); insn; insn = PREV_INSN (insn))
     {
       if (!LABEL_P (insn)
 	  || LABEL_REFS (insn) != NEXT_INSN (insn))
@@ -9536,12 +9375,13 @@ mark_constant_pool_use (rtx x)
     as_a<rtx_insn *> (insn)->set_deleted ();
 
   /* Mark constants in a window.  */
-  for (insn = NEXT_INSN (as_a <rtx_insn *> (x)); insn; insn = NEXT_INSN (insn))
+  for (rtx_insn* insn = NEXT_INSN (as_a <rtx_insn *> (x)); insn;
+       insn = NEXT_INSN (insn))
     {
       if (!NONJUMP_INSN_P (insn))
 	continue;
 
-      pattern = PATTERN (insn);
+      rtx pattern = PATTERN (insn);
       if (GET_CODE (pattern) != UNSPEC_VOLATILE)
 	continue;
 
@@ -9636,14 +9476,11 @@ sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
 
   if (REG_NOTE_KIND (link) == 0)
     {
-      enum attr_type type;
-      rtx dep_set;
-
       if (recog_memoized (insn) < 0
 	  || recog_memoized (dep_insn) < 0)
 	return cost;
 
-      dep_set = single_set (dep_insn);
+      rtx dep_set = single_set (dep_insn);
 
       /* The latency that we specify in the scheduling description refers
 	 to the actual output, not to an auto-increment register; for that,
@@ -9689,8 +9526,8 @@ sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
 	}
       if (TARGET_HARD_SH4 && !TARGET_SH4_300)
 	{
-	  enum attr_type dep_type = get_attr_type (dep_insn);
-
+	  attr_type dep_type = get_attr_type (dep_insn);
+	  attr_type type;
 	  if (dep_type == TYPE_FLOAD || dep_type == TYPE_PCFLOAD)
 	    cost--;
 	  else if ((dep_type == TYPE_LOAD_SI || dep_type == TYPE_PCLOAD_SI)
@@ -9730,6 +9567,7 @@ sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
       else if (TARGET_SH4_300)
 	{
 	  /* Stores need their input register two cycles later.  */
+	  attr_type type;
 	  if (dep_set && cost >= 1
 	      && ((type = get_attr_type (insn)) == TYPE_STORE
 		  || type == TYPE_PSTORE
@@ -9849,12 +9687,9 @@ find_set_regmode_weight (rtx x, machine_mode mode)
 static short
 find_insn_regmode_weight (rtx insn, machine_mode mode)
 {
-  short reg_weight = 0;
-  rtx x;
-
   /* Increment weight for each register born here.  */
-  x = PATTERN (insn);
-  reg_weight += find_set_regmode_weight (x, mode);
+  rtx x = PATTERN (insn);
+  short reg_weight = find_set_regmode_weight (x, mode);
   if (GET_CODE (x) == PARALLEL)
     {
       int j;
@@ -9949,27 +9784,24 @@ ready_reorder (rtx_insn **ready, int nready)
 static int
 find_r0_life_regions (basic_block b)
 {
-  rtx_insn *end, *insn;
-  rtx pset;
-  rtx r0_reg;
-  int live;
+  bool live;
   int set;
   int death = 0;
 
   if (REGNO_REG_SET_P (df_get_live_in (b), R0_REG))
     {
       set = 1;
-      live = 1;
+      live = true;
     }
   else
     {
       set = 0;
-      live = 0;
+      live = false;
     }
 
-  insn = BB_HEAD (b);
-  end = BB_END (b);
-  r0_reg = gen_rtx_REG (SImode, R0_REG);
+  rtx_insn* insn = BB_HEAD (b);
+  rtx_insn* end = BB_END (b);
+  rtx r0_reg = gen_rtx_REG (SImode, R0_REG);
   while (1)
     {
       if (INSN_P (insn))
@@ -9977,15 +9809,17 @@ find_r0_life_regions (basic_block b)
 	  if (find_regno_note (insn, REG_DEAD, R0_REG))
 	    {
 	      death++;
-	      live = 0;
+	      live = false;
 	    }
+
+	  rtx pset;
 	  if (!live
 	      && (pset = single_set (insn))
 	      && reg_overlap_mentioned_p (r0_reg, SET_DEST (pset))
 	      && !find_regno_note (insn, REG_UNUSED, R0_REG))
 	    {
 	      set++;
-	      live = 1;
+	      live = true;
 	    }
 	}
       if (insn == end)
@@ -10278,10 +10112,6 @@ sh_trampoline_adjust_address (rtx tramp)
   return tramp;
 }
 
-/* FIXME: This is overly conservative.  A SHcompact function that
-   receives arguments ``by reference'' will have them stored in its
-   own stack frame, so it must not pass pointers or references to
-   these arguments to other functions by means of sibling calls.  */
 /* If PIC, we cannot make sibling calls to global functions
    because the PLT requires r12 to be live.  */
 static bool
@@ -10621,15 +10451,14 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
   for (int i = 1; i <= 3; i++, nop++)
     {
-      tree arg;
-      machine_mode opmode, argmode;
-      tree optype;
-
       if (! signature_args[signature][i])
 	break;
-      arg = CALL_EXPR_ARG (exp, i - 1);
+      tree arg = CALL_EXPR_ARG (exp, i - 1);
       if (arg == error_mark_node)
 	return const0_rtx;
+
+      machine_mode opmode;
+      tree optype;
       if (signature_args[signature][i] & 8)
 	{
 	  opmode = ptr_mode;
@@ -10640,7 +10469,8 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  opmode = insn_data[icode].operand[nop].mode;
 	  optype = (*lang_hooks.types.type_for_mode) (opmode, 0);
 	}
-      argmode = TYPE_MODE (TREE_TYPE (arg));
+
+      machine_mode argmode = TYPE_MODE (TREE_TYPE (arg));
       if (argmode != opmode)
 	arg = build1 (NOP_EXPR, optype, arg);
       op[nop] = expand_expr (arg, NULL_RTX, opmode, EXPAND_NORMAL);
@@ -11150,12 +10980,12 @@ function_symbol (rtx target, const char *name, sh_function_kind kind)
   return function_symbol_result (sym, lab);
 }
 
-/* Find the number of a general purpose register in S.  */
+/* Find the number of the first general purpose register in S that
+   is not set.  */
 static int
 scavenge_reg (HARD_REG_SET *s)
 {
-  int r;
-  for (r = FIRST_GENERAL_REG; r <= LAST_GENERAL_REG; r++)
+  for (int r = FIRST_GENERAL_REG; r <= LAST_GENERAL_REG; r++)
     if (TEST_HARD_REG_BIT (*s, r))
       return r;
   return -1;
@@ -11188,14 +11018,13 @@ sh_expand_t_scc (rtx operands[])
   rtx op0 = operands[2];
   rtx op1 = operands[3];
   rtx result = target;
-  HOST_WIDE_INT val;
 
   if (!REG_P (op0) || REGNO (op0) != T_REG
       || !CONST_INT_P (op1))
     return false;
   if (!REG_P (result))
     result = gen_reg_rtx (SImode);
-  val = INTVAL (op1);
+  HOST_WIDE_INT val = INTVAL (op1);
   if ((code == EQ && val == 1) || (code == NE && val == 0))
     emit_insn (gen_movt (result, get_t_reg_rtx ()));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
@@ -11213,14 +11042,11 @@ sh_expand_t_scc (rtx operands[])
 static rtx
 extract_sfunc_addr (rtx insn)
 {
-  rtx pattern, part = NULL_RTX;
-  int len, i;
-
-  pattern = PATTERN (insn);
-  len = XVECLEN (pattern, 0);
-  for (i = 0; i < len; i++)
+  rtx pattern = PATTERN (insn);
+  const int len = XVECLEN (pattern, 0);
+  for (int i = 0; i < len; i++)
     {
-      part = XVECEXP (pattern, 0, i);
+      rtx part = XVECEXP (pattern, 0, i);
       if (GET_CODE (part) == USE && GET_MODE (XEXP (part, 0)) == Pmode
 	  && GENERAL_REGISTER_P (true_regnum (XEXP (part, 0))))
 	return XEXP (part, 0);
@@ -11305,13 +11131,10 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
 {
   pcum->arg_count [(int) SH_ARG_FLOAT] = 0;
   pcum->free_single_fp_reg = 0;
-  pcum->stack_regs = 0;
-  pcum->byref_regs = 0;
-  pcum->byref = 0;
-  pcum->outgoing = (n_named_args == -1) ? 0 : 1;
+  pcum->outgoing = n_named_args != -1;
 
-  /* XXX - Should we check TARGET_HITACHI here ???  */
-  pcum->renesas_abi = sh_attr_renesas_p (fntype) ? 1 : 0;
+  /* FIXME: Should we check TARGET_HITACHI here ???  */
+  pcum->renesas_abi = sh_attr_renesas_p (fntype);
 
   if (fntype)
     {
@@ -11323,7 +11146,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
   else
     {
       pcum->arg_count [(int) SH_ARG_INT] = 0;
-      pcum->prototype_p = FALSE;
+      pcum->prototype_p = false;
       if (mode != VOIDmode)
 	{
 	  /* If the default ABI is the Renesas ABI then all library
@@ -11342,7 +11165,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
 			 && TARGET_FPU_DOUBLE)));
 	}
       else
-	pcum->force_mem = FALSE;
+	pcum->force_mem = false;
     }
 }
 
@@ -11598,8 +11421,7 @@ sh_movsf_ie_ra_split_p (rtx op0, rtx op1, rtx op2)
 static void
 sh_conditional_register_usage (void)
 {
-  int regno;
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno ++)
+  for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno ++)
     if (! VALID_REGISTER_P (regno))
       fixed_regs[regno] = call_used_regs[regno] = 1;
   /* R8 and R9 are call-clobbered on SH5, but not on earlier SH ABIs.  */
@@ -11621,7 +11443,7 @@ sh_conditional_register_usage (void)
       call_really_used_regs[MACL_REG] = 0;
     }
 
-  for (regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)
+  for (int regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)
     if (! fixed_regs[regno] && call_really_used_regs[regno])
       SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
 
@@ -11669,9 +11491,6 @@ sh_init_sync_libfuncs (void)
 bool
 sh_can_use_simple_return_p (void)
 {
-  HARD_REG_SET live_regs_mask;
-  int d;
-
   if (! reload_completed || frame_pointer_needed)
     return false;
 
@@ -11680,7 +11499,8 @@ sh_can_use_simple_return_p (void)
     return false;
 
   /* Finally, allow for pr save.  */
-  d = calc_live_regs (&live_regs_mask);
+  HARD_REG_SET live_regs_mask;
+  int d = calc_live_regs (&live_regs_mask);
 
   if (rounded_frame_size (d) > 4)
    return false;
