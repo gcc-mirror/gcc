@@ -1,3 +1,14 @@
+2016-05-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (thunk_adjust): Export.
+	* cgraphclones.c (cgraph_node::create_clone): Clone thunk info.
+	* cgraphunit.c (thunk_adjust): Export.
+	(cgraph_node::assemble_thunks_and_aliases): Do not assemble inlined
+	thunks.
+	* ipa-inline-analyssi.c (compute_inline_parameters): Thunks are
+	inlinable.
+	* tree-inline.c (expand_call_inline): Expand thunks inline.
+
 2016-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70998

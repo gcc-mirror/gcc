@@ -4450,6 +4450,43 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	}
       goto egress;
     }
+  id->src_node = cg_edge->callee;
+
+  /* If callee is thunk, all we need is to adjust the THIS pointer
+     and redirect to function being thunked.  */
+  if (id->src_node->thunk.thunk_p)
+    {
+      cgraph_edge *edge;
+      tree virtual_offset = NULL;
+      int freq = cg_edge->frequency;
+      gcov_type count = cg_edge->count;
+      tree op;
+      gimple_stmt_iterator iter = gsi_for_stmt (stmt);
+
+      cg_edge->remove ();
+      edge = id->src_node->callees->clone (id->dst_node, call_stmt,
+		   		           gimple_uid (stmt),
+				   	   REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
+				           true);
+      edge->frequency = freq;
+      edge->count = count;
+      if (id->src_node->thunk.virtual_offset_p)
+        virtual_offset = size_int (id->src_node->thunk.virtual_value);
+      op = create_tmp_reg_fn (cfun, TREE_TYPE (gimple_call_arg (stmt, 0)),
+			      NULL);
+      gsi_insert_before (&iter, gimple_build_assign (op,
+						    gimple_call_arg (stmt, 0)),
+			 GSI_NEW_STMT);
+      gcc_assert (id->src_node->thunk.this_adjusting);
+      op = thunk_adjust (&iter, op, 1, id->src_node->thunk.fixed_offset,
+			 virtual_offset);
+
+      gimple_call_set_arg (stmt, 0, op);
+      gimple_call_set_fndecl (stmt, edge->callee->decl);
+      update_stmt (stmt);
+      id->src_node->remove ();
+      return true;
+    }
   fn = cg_edge->callee->decl;
   cg_edge->callee->get_untransformed_body ();
 
@@ -4523,7 +4560,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
-  id->src_node = cg_edge->callee;
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
   id->call_stmt = stmt;
 

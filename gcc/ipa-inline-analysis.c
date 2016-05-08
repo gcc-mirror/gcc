@@ -2920,67 +2920,70 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info = inline_summaries->get (node);
   reset_inline_summary (node, info);
 
-  /* FIXME: Thunks are inlinable, but tree-inline don't know how to do that.
-     Once this happen, we will need to more curefully predict call
-     statement size.  */
+  /* Estimate the stack size for the function if we're optimizing.  */
+  self_stack_size = optimize && !node->thunk.thunk_p
+		    ? estimated_stack_frame_size (node) : 0;
+  info->estimated_self_stack_size = self_stack_size;
+  info->estimated_stack_size = self_stack_size;
+  info->stack_frame_offset = 0;
+
   if (node->thunk.thunk_p)
     {
       struct inline_edge_summary *es = inline_edge_summary (node->callees);
       struct predicate t = true_predicate ();
 
-      info->inlinable = 0;
       node->callees->inline_failed = CIF_THUNK;
       node->local.can_change_signature = false;
-      es->call_stmt_time = 1;
-      es->call_stmt_size = 1;
-      account_size_time (info, 0, 0, &t);
-      return;
+      es->call_stmt_size = INLINE_SIZE_SCALE;
+      es->call_stmt_time = INLINE_TIME_SCALE;
+      account_size_time (info, INLINE_SIZE_SCALE * 2, INLINE_TIME_SCALE * 2, &t);
+      inline_update_overall_summary (node);
+      info->self_size = info->size;
+      info->self_time = info->time;
+      /* We can not inline instrumetnation clones.  */
+      info->inlinable = !node->thunk.add_pointer_bounds_args;
     }
-
-  /* Even is_gimple_min_invariant rely on current_function_decl.  */
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-
-  /* Estimate the stack size for the function if we're optimizing.  */
-  self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
-  info->estimated_self_stack_size = self_stack_size;
-  info->estimated_stack_size = self_stack_size;
-  info->stack_frame_offset = 0;
-
-  /* Can this function be inlined at all?  */
-  if (!opt_for_fn (node->decl, optimize)
-      && !lookup_attribute ("always_inline",
-			    DECL_ATTRIBUTES (node->decl)))
-    info->inlinable = false;
-  else
-    info->inlinable = tree_inlinable_function_p (node->decl);
-
-  info->contains_cilk_spawn = fn_contains_cilk_spawn_p (cfun);
-
-  /* Type attributes can use parameter indices to describe them.  */
-  if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
-    node->local.can_change_signature = false;
   else
     {
-      /* Otherwise, inlinable functions always can change signature.  */
-      if (info->inlinable)
-	node->local.can_change_signature = true;
-      else
-	{
-	  /* Functions calling builtin_apply can not change signature.  */
-	  for (e = node->callees; e; e = e->next_callee)
-	    {
-	      tree cdecl = e->callee->decl;
-	      if (DECL_BUILT_IN (cdecl)
-		  && DECL_BUILT_IN_CLASS (cdecl) == BUILT_IN_NORMAL
-		  && (DECL_FUNCTION_CODE (cdecl) == BUILT_IN_APPLY_ARGS
-		      || DECL_FUNCTION_CODE (cdecl) == BUILT_IN_VA_START))
-		break;
-	    }
-	  node->local.can_change_signature = !e;
-	}
-    }
-  estimate_function_body_sizes (node, early);
+       /* Even is_gimple_min_invariant rely on current_function_decl.  */
+       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
+       /* Can this function be inlined at all?  */
+       if (!opt_for_fn (node->decl, optimize)
+	   && !lookup_attribute ("always_inline",
+				 DECL_ATTRIBUTES (node->decl)))
+	 info->inlinable = false;
+       else
+	 info->inlinable = tree_inlinable_function_p (node->decl);
+
+       info->contains_cilk_spawn = fn_contains_cilk_spawn_p (cfun);
+
+       /* Type attributes can use parameter indices to describe them.  */
+       if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+	 node->local.can_change_signature = false;
+       else
+	 {
+	   /* Otherwise, inlinable functions always can change signature.  */
+	   if (info->inlinable)
+	     node->local.can_change_signature = true;
+	   else
+	     {
+	       /* Functions calling builtin_apply can not change signature.  */
+	       for (e = node->callees; e; e = e->next_callee)
+		 {
+		   tree cdecl = e->callee->decl;
+		   if (DECL_BUILT_IN (cdecl)
+		       && DECL_BUILT_IN_CLASS (cdecl) == BUILT_IN_NORMAL
+		       && (DECL_FUNCTION_CODE (cdecl) == BUILT_IN_APPLY_ARGS
+			   || DECL_FUNCTION_CODE (cdecl) == BUILT_IN_VA_START))
+		     break;
+		 }
+	       node->local.can_change_signature = !e;
+	     }
+	 }
+       estimate_function_body_sizes (node, early);
+       pop_cfun ();
+     }
   for (e = node->callees; e; e = e->next_callee)
     if (e->callee->comdat_local_p ())
       break;
@@ -2997,8 +3000,6 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       gcc_assert (info->time == info->self_time
 		  && info->size == info->self_size);
     }
-
-  pop_cfun ();
 }
 
 

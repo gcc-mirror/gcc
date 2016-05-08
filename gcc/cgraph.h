@@ -2299,6 +2299,7 @@ void cgraphunit_c_finalize (void);
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool, gcov_type);
 
+tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree);
 /* In cgraphclones.c  */
 
 tree clone_function_name_1 (const char *, const char *);

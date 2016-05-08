@@ -1471,7 +1471,7 @@ init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
    non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
    zero for a result adjusting thunk.  */
 
-static tree
+tree
 thunk_adjust (gimple_stmt_iterator * bsi,
 	      tree ptr, bool this_adjusting,
 	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
@@ -1907,6 +1907,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
+	&& !e->caller->global.inlined_to
 	&& !e->caller->thunk.add_pointer_bounds_args)
       {
 	cgraph_node *thunk = e->caller;
