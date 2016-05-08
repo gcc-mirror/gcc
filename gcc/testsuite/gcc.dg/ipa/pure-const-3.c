@@ -21,4 +21,4 @@ main()
     __builtin_abort ();
   return 0;
 }
-/* { dg-final { scan-ipa-dump "found to be const" "pure-const"} } */
+/* { dg-final { scan-tree-dump "found to be const" "local-pure-const1"} } */
