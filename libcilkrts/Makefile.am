@@ -43,6 +43,9 @@ GENERAL_FLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/runtime -I$(top_srcdir)/
 # Enable Intel Cilk Plus extension
 GENERAL_FLAGS += -fcilkplus
 
+# Always generate unwind tables
+GENERAL_FLAGS += -funwind-tables
+
 AM_CFLAGS = $(XCFLAGS) $(GENERAL_FLAGS) -std=c99
 AM_CPPFLAGS = $(GENERAL_FLAGS)
 AM_LDFLAGS = $(XLDFLAGS)
