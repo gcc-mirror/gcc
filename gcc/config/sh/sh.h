@@ -1198,13 +1198,6 @@ extern bool current_function_interrupt;
 
 #endif // __cplusplus
 
-#define GET_SH_ARG_CLASS(MODE) \
-  ((TARGET_FPU_ANY && (MODE) == SFmode) \
-   ? SH_ARG_FLOAT \
-   : TARGET_FPU_DOUBLE && (GET_MODE_CLASS (MODE) == MODE_FLOAT \
-			   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
-     ? SH_ARG_FLOAT : SH_ARG_INT)
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.

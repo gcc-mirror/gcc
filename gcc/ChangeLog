@@ -1,5 +1,11 @@
 2016-05-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h (GET_SH_ARG_CLASS): Convert macro into ...
+	* config/sh/sh.c (get_sh_arg_class): ... this new function.  Update its
+	users.
+
+2016-05-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (sh_media_register_for_return): Remove.
 	* config/sh/sh.c: Define and declare variables on first use throughout
 	the file.

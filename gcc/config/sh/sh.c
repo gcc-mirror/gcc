@@ -7898,6 +7898,20 @@ sh_callee_copies (cumulative_args_t cum, machine_mode mode,
 	      % SH_MIN_ALIGN_FOR_CALLEE_COPY == 0));
 }
 
+static sh_arg_class
+get_sh_arg_class (machine_mode mode)
+{
+  if (TARGET_FPU_ANY && mode == SFmode)
+    return SH_ARG_FLOAT;
+
+  if (TARGET_FPU_DOUBLE
+      && (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT))
+    return SH_ARG_FLOAT;
+
+  return SH_ARG_INT;
+}
+
 /* Round a register number up to a proper boundary for an arg of mode
    MODE.
    The SH doesn't care about double alignment, so we only
@@ -7913,9 +7927,9 @@ sh_round_reg (const CUMULATIVE_ARGS& cum, machine_mode mode)
 	  && (mode == DFmode || mode == DCmode)
 	  && cum.arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (mode)))
      && GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD)
-    ? (cum.arg_count[(int) GET_SH_ARG_CLASS (mode)]
-       + (cum.arg_count[(int) GET_SH_ARG_CLASS (mode)] & 1))
-    : cum.arg_count[(int) GET_SH_ARG_CLASS (mode)]);
+    ? (cum.arg_count[(int) get_sh_arg_class (mode)]
+       + (cum.arg_count[(int) get_sh_arg_class (mode)] & 1))
+    : cum.arg_count[(int) get_sh_arg_class (mode)]);
 }
 
 /* Return true if arg of the specified mode should be passed in a register
@@ -8067,7 +8081,7 @@ sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
 
   if (! ((TARGET_SH4 || TARGET_SH2A) || ca->renesas_abi)
       || sh_pass_in_reg_p (*ca, mode, type))
-    (ca->arg_count[(int) GET_SH_ARG_CLASS (mode)]
+    (ca->arg_count[(int) get_sh_arg_class (mode)]
      = (sh_round_reg (*ca, mode)
 	+ (mode == BLKmode
 	   ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
