@@ -1,3 +1,7 @@
+2016-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/pure-const-3.c: Scan local-pure-const1 dump.
+
 2016-05-07  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/56226
