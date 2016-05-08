@@ -1,3 +1,14 @@
+2016-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70998
+	* config/i386/sse.md (*sse2_vd_cvtsd2ss): New insn pattern.
+	(*sse2_vd_cvtss2sd): Ditto.
+	* config/i386/i386.md
+	(TARGET_SSE_PARTIAL_REG_DEPENDENCY float_truncate df->sf splitter):
+	Generate *sse2_vd_cvtsd2ss pattern.
+	(TARGET_SSE_PARTIAL_REG_DEPENDENCY float_extend sf->df splitter):
+	Generate *sse2_vd_cvtss2sd pattern.
+
 2016-05-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (GET_SH_ARG_CLASS): Convert macro into ...

@@ -4949,6 +4949,27 @@
    (set_attr "prefix" "orig,orig,<round_prefix>")
    (set_attr "mode" "SF")])
 
+(define_insn "*sse2_vd_cvtsd2ss"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x,v")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (float_truncate:SF (match_operand:DF 2 "nonimmediate_operand" "x,m,vm")))
+	  (match_operand:V4SF 1 "register_operand" "0,0,v")
+	  (const_int 1)))]
+  "TARGET_SSE2"
+  "@
+   cvtsd2ss\t{%2, %0|%0, %2}
+   cvtsd2ss\t{%2, %0|%0, %2}
+   vcvtsd2ss\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssecvt")
+   (set_attr "athlon_decode" "vector,double,*")
+   (set_attr "amdfam10_decode" "vector,double,*")
+   (set_attr "bdver1_decode" "direct,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "SF")])
+
 (define_insn "sse2_cvtss2sd<round_saeonly_name>"
   [(set (match_operand:V2DF 0 "register_operand" "=x,x,v")
 	(vec_merge:V2DF
@@ -4970,6 +4991,27 @@
    (set_attr "bdver1_decode" "direct,direct,*")
    (set_attr "btver2_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,<round_saeonly_prefix>")
+   (set_attr "mode" "DF")])
+
+(define_insn "*sse2_vd_cvtss2sd"
+  [(set (match_operand:V2DF 0 "register_operand" "=x,x,v")
+	(vec_merge:V2DF
+	  (vec_duplicate:V2DF
+	    (float_extend:DF (match_operand:SF 2 "nonimmediate_operand" "x,m,vm")))
+	  (match_operand:V2DF 1 "register_operand" "0,0,v")
+	  (const_int 1)))]
+  "TARGET_SSE2"
+  "@
+   cvtss2sd\t{%2, %0|%0, %2}
+   cvtss2sd\t{%2, %0|%0, %2}
+   vcvtss2sd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssecvt")
+   (set_attr "amdfam10_decode" "vector,double,*")
+   (set_attr "athlon_decode" "direct,direct,*")
+   (set_attr "bdver1_decode" "direct,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
+   (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "DF")])
 
 (define_insn "<mask_codefor>avx512f_cvtpd2ps512<mask_name><round_name>"
