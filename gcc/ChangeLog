@@ -1,3 +1,8 @@
+2016-05-09  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* regrename.c (base_reg_class_for_rename): New static function.
+	(scan_rtx_address, scan_rtx): Use it instead of base_reg_class.
+
 2016-05-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (thunk_adjust): Export.
