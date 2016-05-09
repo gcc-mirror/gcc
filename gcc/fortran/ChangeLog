@@ -1,3 +1,10 @@
+2016-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/70937
+	* trans-decl.c: Include gimplify.h for unshare_expr.
+	(gfc_trans_vla_one_sizepos): Unshare exprs before inserting
+	them into the IL.
+
 2016-05-07  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/56226

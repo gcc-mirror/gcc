@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_code.  Shouldn't need to include this.  */
 #include "trans-stmt.h"
 #include "gomp-constants.h"
+#include "gimplify.h"
 
 #define MAX_LABEL_VALUE 99999
 
@@ -3754,7 +3755,7 @@ gfc_trans_vla_one_sizepos (tree *tp, stmtblock_t *body)
 
   var = gfc_create_var_np (TREE_TYPE (t), NULL);
   gfc_add_decl_to_function (var);
-  gfc_add_modify (body, var, val);
+  gfc_add_modify (body, var, unshare_expr (val));
   if (TREE_CODE (t) == SAVE_EXPR)
     TREE_OPERAND (t, 0) = var;
   *tp = var;
