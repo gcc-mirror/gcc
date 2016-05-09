@@ -1,3 +1,14 @@
+2016-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (absneg splitters with general regs): Use
+	general_reg_operand predicate.
+	(btsq peephole2): Use x86_64_immediate_operand to check if new
+	value is suitable for immediate operand.  Generate emitted insn
+	using RTL expressions.
+	(btcq peephole2): Ditto.
+	(btrq peephole2): Ditto.  Generate correct immediate operand
+	for AND masking.
+
 2016-05-07  Tom de Vries  <tom@codesourcery.com>
 
 	backport:
@@ -158,7 +169,7 @@
 	constant boolean.
 
 2016-04-20  Andrew Pinski  <apinski@cavium.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/64971
 	* config/aarch64/aarch64.md (sibcall): Force call
