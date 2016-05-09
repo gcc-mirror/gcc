@@ -1,3 +1,8 @@
+2016-05-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (probe_stack): Add modes to set source
+	and destination.
+
 2016-05-09  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* regrename.c (base_reg_class_for_rename): New static function.
