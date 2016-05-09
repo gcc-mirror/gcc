@@ -1,3 +1,13 @@
+2016-05-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (enable_vtable_verify): Handle --enable-vtable-verify.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* gcc.c (VTABLE_VERIFICATION_SPEC) [!ENABLE_VTABLE_VERIFY]: Error
+	on -fvtable-verify.
+	* config/sol2.h [!ENABLE_VTABLE_VERIFY] (STARTFILE_VTV_SPEC): Define.
+	(ENDFILE_VTV_SPEC): Define.
+
 2016-05-09  Kaushik Phatak  <kaushik.phatak@kpit.com>
 
 	* config/rl78/rl78.c (rl78_expand_prologue): Save the MDUC related

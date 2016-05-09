@@ -166,21 +166,26 @@ along with GCC; see the file COPYING3.  If not see
 #define STARTFILE_CRTBEGIN_SPEC	"crtbegin.o%s"
 #endif
 
+#if ENABLE_VTABLE_VERIFY
 #if SUPPORTS_INIT_PRIORITY
 #define STARTFILE_VTV_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
      fvtable-verify=std:vtv_start.o%s}"
-
 #define ENDFILE_VTV_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s}"
-#else
+#else /* !SUPPORTS_INIT_PRIORITY */
 #define STARTFILE_VTV_SPEC \
-  "%{fvtable-verify:%e-fvtable-verify is not supported in this configuration}"
+  "%{fvtable-verify=*: \
+     %e-fvtable-verify=%* is not supported in this configuration}"
 #define ENDFILE_VTV_SPEC ""
-#endif
+#endif /* !SUPPORTS_INIT_PRIORITY */
+#else /* !ENABLE_VTABLE_VERIFY */
+#define STARTFILE_VTV_SPEC ""
+#define ENDFILE_VTV_SPEC ""
+#endif /* !ENABLE_VTABLE_VERIFY */
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC
