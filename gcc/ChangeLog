@@ -1,3 +1,8 @@
+2016-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-affine.c (wide_int_constant_multiple_p): Add missing
+	pointer dereference.
+
 2016-05-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70985
