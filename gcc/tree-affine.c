@@ -769,7 +769,7 @@ wide_int_constant_multiple_p (const widest_int &val, const widest_int &div,
 
   if (val == 0)
     {
-      if (*mult_set && mult != 0)
+      if (*mult_set && *mult != 0)
 	return false;
       *mult_set = true;
       *mult = 0;
