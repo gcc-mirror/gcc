@@ -8156,8 +8156,8 @@
 )
 
 (define_insn "probe_stack"
-  [(set (match_operand 0 "memory_operand" "=m")
-        (unspec [(const_int 0)] UNSPEC_PROBE_STACK))]
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+        (unspec:SI [(const_int 0)] UNSPEC_PROBE_STACK))]
   "TARGET_32BIT"
   "str%?\\tr0, %0"
   [(set_attr "type" "store1")
