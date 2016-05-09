@@ -1,3 +1,8 @@
+2016-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70985
+	* gcc.dg/torture/pr70985.c: New testcase.
+
 2016-05-09  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/ifc-9.c: New test.

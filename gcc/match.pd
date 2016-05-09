@@ -3244,6 +3244,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (view_convert (imagpart @0)))))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && INTEGRAL_TYPE_P (type)
+       /* On GIMPLE this should only apply to register arguments.  */
+       && (! GIMPLE || is_gimple_reg (@0))
        /* A bit-field-ref that referenced the full argument can be stripped.  */
        && ((compare_tree_int (@1, TYPE_PRECISION (TREE_TYPE (@0))) == 0
 	    && integer_zerop (@2))

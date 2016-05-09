@@ -1,3 +1,9 @@
+2016-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70985
+	* match.pd (BIT_FIELD_REF -> (type)): Disable on GIMPLE when
+	op0 isn't a gimple register.
+
 2016-05-09  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/i6400.md (i6400_fpu_intadd, i6400_fpu_logic)
