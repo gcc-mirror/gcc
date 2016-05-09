@@ -1,5 +1,10 @@
 2016-05-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* cfgexpand.c (expand_debug_expr): Fix address offset for negative
+	bitpos.
+
+2016-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-affine.c (wide_int_constant_multiple_p): Add missing
 	pointer dereference.
 
