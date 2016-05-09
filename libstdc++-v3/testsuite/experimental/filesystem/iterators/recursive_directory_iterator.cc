@@ -97,6 +97,16 @@ test01()
   remove_all(p, ec);
 }
 
+void
+test02()
+{
+  // libstdc++71004
+  const fs::recursive_directory_iterator it;
+  assert( it.options() == fs::directory_options{} );
+  assert( it.depth() == 0 );
+  assert(it.recursion_pending() == false);
+}
+
 int
 main()
 {
