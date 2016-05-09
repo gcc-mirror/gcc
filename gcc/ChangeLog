@@ -1,3 +1,11 @@
+2016-05-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline
+	2016-04-27  Joel Sherrill  <joel@rtems.org>
+
+	* config/microblaze/rtems.h: Redefine LINK_SPEC to avoid
+	xilink.ld and flags not relevant to RTEMS.
+
 2016-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70858
