@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fno-inline -fomit-frame-pointer" } */
+/* { dg-options "-fno-inline -fomit-frame-pointer -fno-rename-registers" } */
 /* { dg-additional-options "-mdynamic-no-pic" { target *-*-darwin* } } */
 
 /* -fno-inline -maltivec -m32/-m64 -mmultiple/no-multiple -Os/-O2.  */
@@ -10,6 +10,13 @@
 #define SET_GPR(R,V) SET (long, R, V)
 #define SET_FPR(R,V) SET (double, R, V)
 #define SET_VR(R,V) SET (__attribute__ ((vector_size (16))) int, R, V)
+/* There doesn't seem to be a way of letting gcc know that cr2, cr3
+   and cr4 are being used, and therefore should not be touched by
+   gcc.  Unlike gpr, fpr and vr we can't do something like
+   register __attribute__ ((__mode__ ("__CC__"))) int cr2 __asm__ ("cr2");
+   This makes the test somewhat fragile, dependent on gcc not using
+   any of cr2, cr3 and cr4 in main(), and is why -fno-rename-registers
+   is required.  */
 #define SET_CR(R,V) __asm__ __volatile__ ("mtcrf %0,%1" : : "n" (1<<(7-R)), "r" (V<<(4*(7-R))) : "cr" #R)
 #define TRASH_GPR(R) SET_GPR (R, 0)
 #define TRASH_FPR(R) SET_FPR (R, 0)
@@ -1063,7 +1070,18 @@ void ws_0 (void)
     abort ();
 }
 
-int main (void)
+/* We'd like to compile main with
+   __attribute__ ((__optimize__ ("fixed-cr2,fixed-cr3,fixed-cr4")))
+   but that doesn't do anything currently.  Obviously we don't want to
+   compile the whole file with -ffixed-cr2 -ffixed-cr3 -ffixed-cr4 as
+   that would also tell gcc not to save/restore cr, and we're trying
+   to check that the above functions do save/restore cr.
+   __attribute__ ((__optimize__ ("no-rename-registers,omit-frame-pointer")))
+   works, but it seems odd to need omit-frame-pointer and raises the
+   question of whether darwin would need -mdynamic-no-pic.
+   So for now use -fno-rename-registers over the whole test.  */
+int
+main (void)
 {
   INIT_REGS;
   USE_ALL_CR;
