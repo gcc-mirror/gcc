@@ -1,3 +1,10 @@
+2016-05-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71004
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Fix test02 to not call member
+	functions on invalid iterator, and use VERIFY not assert.
+
 2016-05-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Avoid endless run-time recursion for copying single-element

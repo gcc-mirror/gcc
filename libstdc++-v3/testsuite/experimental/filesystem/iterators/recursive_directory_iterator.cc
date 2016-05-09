@@ -100,15 +100,16 @@ test01()
 void
 test02()
 {
+  bool test __attribute__((unused)) = false;
+
   // libstdc++71004
   const fs::recursive_directory_iterator it;
-  assert( it.options() == fs::directory_options{} );
-  assert( it.depth() == 0 );
-  assert(it.recursion_pending() == false);
+  VERIFY( it == fs::recursive_directory_iterator() );
 }
 
 int
 main()
 {
   test01();
+  test02();
 }
