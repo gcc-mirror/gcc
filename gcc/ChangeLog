@@ -1,3 +1,12 @@
+2016-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (set_got, set_got_labelled, lwp_llwpcb,
+	lwp_lwpval<mode>3, lwp_lwpins<mode>3): Remove constraints from
+	expanders.
+	* config/i386/sse.md (vec_interleave_high<mode>,
+	vec_interleave_low<mode>, <avx512>_vpermi2var<mode>3_maskz,
+	<avx512>_vpermt2var<mode>3_maskz): Likewise.
+
 2016-05-04  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
         * config/rs6000/rs6000.c (rs6000_reassociation_width): Add
