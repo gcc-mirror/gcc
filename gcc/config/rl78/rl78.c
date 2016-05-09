@@ -76,6 +76,23 @@ static const char * const word_regnames[] =
   "sp", "ap", "psw", "es", "cs"
 };
 
+/* Structure for G13 MDUC registers.  */
+struct mduc_reg_type
+{
+  unsigned int       address;
+  enum machine_mode  mode;
+};
+
+struct mduc_reg_type  mduc_regs[] =
+{
+  {0xf00e8, QImode},
+  {0xffff0, HImode},
+  {0xffff2, HImode},
+  {0xf2224, HImode},
+  {0xf00e0, HImode},
+  {0xf00e2, HImode}
+};
+
 struct GTY(()) machine_function
 {
   /* If set, the rest of the fields have been computed.  */
@@ -317,6 +334,10 @@ rl78_output_symbol_ref (FILE * file, rtx sym)
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		rl78_option_override
 
+#define MUST_SAVE_MDUC_REGISTERS			\
+  (TARGET_SAVE_MDUC_REGISTERS				\
+   && (is_interrupt_func (NULL_TREE)) && RL78_MUL_G13)
+
 static void
 rl78_option_override (void)
 {
@@ -343,6 +364,9 @@ rl78_option_override (void)
       && strcmp (lang_hooks.name, "GNU GIMPLE"))
     /* Address spaces are currently only supported by C.  */
     error ("-mes0 can only be used with C");
+
+  if (TARGET_SAVE_MDUC_REGISTERS && !(TARGET_G13 || RL78_MUL_G13))
+    warning (0, "mduc registers only saved for G13 target");
 
   switch (rl78_cpu_type)
     {
@@ -1257,13 +1281,34 @@ rl78_initial_elimination_offset (int from, int to)
   return rv;
 }
 
-static int
+static bool
 rl78_is_naked_func (void)
 {
   return (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE);
 }
 
+/* Check if the block uses mul/div insns for G13 target.  */
+
+static bool
+check_mduc_usage (void)
+{
+  rtx_insn * insn;
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      FOR_BB_INSNS (bb, insn)
+        {
+          if (INSN_P (insn)
+              && (get_attr_is_g13_muldiv_insn (insn) == IS_G13_MULDIV_INSN_YES))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Expand the function prologue (from the prologue pattern).  */
+
 void
 rl78_expand_prologue (void)
 {
@@ -1277,6 +1322,9 @@ rl78_expand_prologue (void)
 
   /* Always re-compute the frame info - the register usage may have changed.  */
   rl78_compute_frame_info ();
+
+  if (MUST_SAVE_MDUC_REGISTERS && (!crtl->is_leaf || check_mduc_usage ()))
+    cfun->machine->framesize += ARRAY_SIZE (mduc_regs) * 2;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->framesize;
@@ -1325,6 +1373,24 @@ rl78_expand_prologue (void)
     {
       emit_insn (gen_movqi_from_es (gen_rtx_REG (QImode, A_REG)));
       F (emit_insn (gen_push (ax)));
+    }
+
+  /* Save MDUC registers inside interrupt routine.  */
+  if (MUST_SAVE_MDUC_REGISTERS && (!crtl->is_leaf || check_mduc_usage ()))
+    {
+      for (int i = 0; i < ARRAY_SIZE (mduc_regs); i++)
+        {
+          mduc_reg_type *reg = mduc_regs + i;
+          rtx mem_mduc = gen_rtx_MEM (reg->mode, GEN_INT (reg->address));
+
+          MEM_VOLATILE_P (mem_mduc) = 1;
+          if (reg->mode == QImode)
+            emit_insn (gen_movqi (gen_rtx_REG (QImode, A_REG), mem_mduc));
+          else
+            emit_insn (gen_movhi (gen_rtx_REG (HImode, AX_REG), mem_mduc));
+
+          emit_insn (gen_push (gen_rtx_REG (HImode, AX_REG)));
+        }
     }
 
   if (frame_pointer_needed)
@@ -1398,6 +1464,23 @@ rl78_expand_epilogue (void)
 	      fs -= fs_byte;
 	    }
 	}
+    }
+
+  /* Restore MDUC registers from interrupt routine.  */
+  if (MUST_SAVE_MDUC_REGISTERS && (!crtl->is_leaf || check_mduc_usage ()))
+    {
+      for (int i = ARRAY_SIZE (mduc_regs) - 1; i >= 0; i--)
+        {
+          mduc_reg_type *reg = mduc_regs + i;
+          rtx mem_mduc = gen_rtx_MEM (reg->mode, GEN_INT (reg->address));
+
+          emit_insn (gen_pop (gen_rtx_REG (HImode, AX_REG)));
+          MEM_VOLATILE_P (mem_mduc) = 1;
+          if (reg->mode == QImode)
+            emit_insn (gen_movqi (mem_mduc, gen_rtx_REG (QImode, A_REG)));
+          else
+            emit_insn (gen_movhi (mem_mduc, gen_rtx_REG (HImode, AX_REG)));
+        }
     }
 
   if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
@@ -1495,6 +1578,9 @@ rl78_start_function (FILE *file, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
 
   if (cfun->machine->uses_es)
     fprintf (file, "\t; uses ES register\n");
+
+  if (MUST_SAVE_MDUC_REGISTERS)
+    fprintf (file, "\t; preserves MDUC registers\n");
 }
 
 /* Return an RTL describing where a function return value of type RET_TYPE

@@ -947,7 +947,7 @@ See RS/6000 and PowerPC Options.
 @emph{RL78 Options}
 @gccoptlist{-msim -mmul=none -mmul=g13 -mmul=g14 -mallregs @gol
 -mcpu=g10 -mcpu=g13 -mcpu=g14 -mg10 -mg13 -mg14 @gol
--m64bit-doubles -m32bit-doubles}
+-m64bit-doubles -m32bit-doubles -msave-mduc-in-interrupts}
 
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -19782,6 +19782,20 @@ functions as well.
 Make the @code{double} data type be 64 bits (@option{-m64bit-doubles})
 or 32 bits (@option{-m32bit-doubles}) in size.  The default is
 @option{-m32bit-doubles}.
+
+@item -msave-mduc-in-interrupts
+@item -mno-save-mduc-in-interrupts
+@opindex msave-mduc-in-interrupts
+@opindex mno-save-mduc-in-interrupts
+Specifies that interrupt handler functions should preserve the
+MDUC registers.  This is only necessary if normal code might use
+the MDUC registers, for example because it performs multiplication
+and division operations.  The default is to ignore the MDUC registers
+as this makes the interrupt handlers faster.  The target option -mg13
+needs to be passed for this to work as this feature is only available
+on the G13 target (S2 core).  The MDUC registers will only be saved
+if the interrupt handler performs a multiplication or division
+operation or it calls another function.
 
 @end table
 
