@@ -1,3 +1,13 @@
+2016-05-09  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ifc-9.c: New test.
+	* gcc.dg/tree-ssa/ifc-10.c: New test.
+	* gcc.dg/tree-ssa/ifc-11.c: New test.
+	* gcc.dg/tree-ssa/ifc-12.c: New test.
+	* gcc.dg/vect/pr61194.c: Remove XFAIL.
+	* gcc.dg/vect/vect-23.c: Remove XFAIL.
+	* gcc.dg/vect/vect-mask-store-move-1.c: Revise test check.
+
 2016-05-09  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/70937

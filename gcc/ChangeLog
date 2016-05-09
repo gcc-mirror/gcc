@@ -1,3 +1,12 @@
+2016-05-09  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-if-conv.c (tree-ssa-loop.h): Include header file.
+	(tree-ssa-loop-niter.h): Ditto.
+	(idx_within_array_bound, ref_within_array_bound): New functions.
+	(ifcvt_memrefs_wont_trap): Check if array ref is within bound.
+	Factor out check on writable base object to ...
+	(base_object_writable): ... here.
+
 2016-05-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (probe_stack): Add modes to set source
