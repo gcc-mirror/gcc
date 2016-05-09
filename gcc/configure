@@ -904,6 +904,7 @@ enable_decimal_float
 enable_fixed_point
 enable_threads
 enable_tls
+enable_vtable_verify
 enable_objc_gc
 with_dwarf2
 enable_shared
@@ -1619,6 +1620,7 @@ Optional Features:
                           package
   --enable-tls            enable or disable generation of tls code overriding
                           the assembler check for tls support
+  --enable-vtable-verify  enable vtable verification feature
   --enable-objc-gc        enable the use of Boehm's garbage collector with the
                           GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
@@ -7589,6 +7591,20 @@ Valid choices are 'yes' and 'no'." "$LINENO" 5 ;;
 else
   enable_tls=''
 fi
+
+
+# Check whether --enable-vtable-verify was given.
+if test "${enable_vtable_verify+set}" = set; then :
+  enableval=$enable_vtable_verify;
+else
+  enable_vtable_verify=no
+fi
+
+vtable_verify=`if test x$enable_vtable_verify = xyes; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define ENABLE_VTABLE_VERIFY $vtable_verify
+_ACEOF
 
 
 # Check whether --enable-objc-gc was given.
@@ -18458,7 +18474,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18462 "configure"
+#line 18477 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18564,7 +18580,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18568 "configure"
+#line 18583 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

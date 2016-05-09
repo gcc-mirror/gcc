@@ -989,9 +989,18 @@ proper position among the other output files.  */
     the vtable verification runtime functions are in libstdc++, so we use
     the spec just below this one.  */
 #ifndef VTABLE_VERIFICATION_SPEC
+#if ENABLE_VTABLE_VERIFY
 #define VTABLE_VERIFICATION_SPEC "\
 %{!nostdlib:%{fvtable-verify=std: -lvtv -u_vtable_map_vars_start -u_vtable_map_vars_end}\
     %{fvtable-verify=preinit: -lvtv -u_vtable_map_vars_start -u_vtable_map_vars_end}}"
+#else
+#define VTABLE_VERIFICATION_SPEC "\
+%{fvtable-verify=none:} \
+%{fvtable-verify=std: \
+  %e-fvtable-verify=std is not supported in this configuration} \
+%{fvtable-verify=preinit: \
+  %e-fvtable-verify=preinit is not supported in this configuration}"
+#endif
 #endif
 
 #ifndef CHKP_SPEC

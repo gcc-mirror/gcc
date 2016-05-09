@@ -234,6 +234,12 @@
 #endif
 
 
+/* Define 0/1 if vtable verification feature is enabled. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_VTABLE_VERIFY
+#endif
+
+
 /* Define to 1 if installation paths should be looked up in the Windows
    Registry. Ignored on non-Windows hosts. */
 #ifndef USED_FOR_TARGET
