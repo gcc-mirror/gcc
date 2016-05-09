@@ -1,3 +1,11 @@
+2016-05-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/70947
+	* config/rs6000/rs6000.c (rs6000_expand_split_stack_prologue): Stop
+	regrename modifying insns saving lr before __morestack call.
+	* config/rs6000/rs6000.md (split_stack_return): Similarly for
+	insns restoring lr after __morestack call.
+
 2016-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (set_got, set_got_labelled, lwp_llwpcb,
