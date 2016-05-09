@@ -1,3 +1,9 @@
+2016-05-04  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+        * config/rs6000/rs6000.c (rs6000_reassociation_width): Add
+        function for TARGET_SCHED_REASSOCIATION_WIDTH to enable
+        parallel reassociation for power8 and forward.
+
 2016-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (absneg splitters with general regs): Use
