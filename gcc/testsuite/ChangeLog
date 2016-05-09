@@ -1,3 +1,8 @@
+2016-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/70937
+	* gfortran.dg/pr70937.f90: New testcase.
+
 2016-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/ipa/pure-const-3.c: Scan local-pure-const1 dump.
