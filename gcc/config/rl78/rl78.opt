@@ -91,3 +91,7 @@ Alias for -mcpu=g14.
 mes0
 Target Mask(ES0)
 Assume ES is zero throughout program execution, use ES: for read-only data.
+
+msave-mduc-in-interrupts
+Target Mask(SAVE_MDUC_REGISTERS)
+Stores the MDUC registers in interrupt handlers for G13 target.

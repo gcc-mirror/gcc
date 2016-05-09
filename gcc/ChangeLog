@@ -1,3 +1,19 @@
+2016-05-09  Kaushik Phatak  <kaushik.phatak@kpit.com>
+
+	* config/rl78/rl78.c (rl78_expand_prologue): Save the MDUC related
+	registers in all interrupt handlers if necessary.
+	(rl78_option_override): Add warning.
+	(MUST_SAVE_MDUC_REGISTERS): New macro.
+	(rl78_expand_epilogue): Restore the MDUC registers if necessary.
+	* config/rl78/rl78.c (check_mduc_usage): New function.
+	(mduc_regs): New structure to hold MDUC register data.
+	* config/rl78/rl78.md (is_g13_muldiv_insn): New attribute.
+	(mulsi3_g13): Add is_g13_muldiv_insn attribute.
+	(udivmodsi4_g13): Add is_g13_muldiv_insn attribute.
+	(mulhi3_g13): Add is_g13_muldiv_insn attribute.
+	* config/rl78/rl78.opt (msave-mduc-in-interrupts): New option.
+	* doc/invoke.texi (RL78 Options): Add -msave-mduc-in-interrupts.
+
 2016-05-09  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-if-conv.c (tree-ssa-loop.h): Include header file.
