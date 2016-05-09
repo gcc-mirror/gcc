@@ -1641,6 +1641,9 @@ MIPS target can generate MIPS16 code.
 MIPS target is a Loongson-2E or -2F target using an ABI that supports
 the Loongson vector modes.
 
+@item mips_msa
+MIPS target supports @code{-mmsa}, MIPS SIMD Architecture (MSA).
+
 @item mips_newabi_large_long_double
 MIPS target supports @code{long double} larger than @code{double}
 when using the new ABI.
