@@ -1,3 +1,8 @@
+2016-05-09  Alan Modra  <amodra@gmail.com>
+
+	PR testsuite/70826
+	* gcc.target/powerpc/savres.c: Compile with -fno-rename-registers.
+
 2016-05-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70985
