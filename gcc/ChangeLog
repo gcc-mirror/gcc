@@ -1,3 +1,376 @@
+2016-05-09  Robert Suchanek  <robert.suchanek@imgtec.com>
+	    Sameera Deshpande  <sameera.deshpande@imgtec.com>
+	    Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Graham Stott  <graham.stott@imgtec.com>
+	    Chao-ying Fu  <chao-ying.fu@imgtec.com>
+
+	* config.gcc: Add MSA header file for mips*-*-* target.
+	* config/mips/constraints.md (YI, YC, YZ, Unv5, Uuv5, Usv5, Uuv6)
+	(Ubv8i, Urv8):	New constraints.
+	* config/mips/mips-ftypes.def: Add function types for MSA
+	builtins.
+	* config/mips/mips-modes.def (V16QI, V8HI, V4SI, V2DI, V4SF)
+	(V2DF, V32QI, V16HI, V8SI, V4DI, V8SF, V4DF): New modes.
+	* config/mips/mips-msa.md: New file.
+	* config/mips/mips-protos.h
+	(mips_split_128bit_const_insns): New prototype.
+	(mips_msa_idiv_insns): Likewise.
+	(mips_split_128bit_move): Likewise.
+	(mips_split_128bit_move_p): Likewise.
+	(mips_split_msa_copy_d): Likewise.
+	(mips_split_msa_insert_d): Likewise.
+	(mips_split_msa_fill_d): Likewise.
+	(mips_expand_msa_branch): Likewise.
+	(mips_const_vector_same_val_p): Likewise.
+	(mips_const_vector_same_bytes_p): Likewise.
+	(mips_const_vector_same_int_p): Likewise.
+	(mips_const_vector_shuffle_set_p): Likewise.
+	(mips_const_vector_bitimm_set_p): Likewise.
+	(mips_const_vector_bitimm_clr_p): Likewise.
+	(mips_msa_vec_parallel_const_half): Likewise.
+	(mips_msa_output_division): Likewise.
+	(mips_ldst_scaled_shift): Likewise.
+	(mips_expand_vec_cond_expr): Likewise.
+	* config/mips/mips.c (enum mips_builtin_type): Add
+	MIPS_BUILTIN_MSA_TEST_BRANCH.
+	(mips_gen_const_int_vector_shuffle): New prototype.
+	(mips_const_vector_bitimm_set_p): New function.
+	(mips_const_vector_bitimm_clr_p): Likewise.
+	(mips_const_vector_same_val_p): Likewise.
+	(mips_const_vector_same_bytes_p): Likewise.
+	(mips_const_vector_same_int_p): Likewise.
+	(mips_const_vector_shuffle_set_p): Likewise.
+	(mips_symbol_insns): Forbid loading symbols via immediate for
+	MSA.
+	(mips_valid_offset_p): Limit offset to 10-bit for MSA loads and
+	stores.
+	(mips_valid_lo_sum_p): Forbid loadings symbols via %lo(base) for
+	MSA.
+	(mips_lx_address_p): Add support load indexed address for MSA.
+	(mips_address_insns): Add calculation of instructions needed for
+	stores and loads for MSA.
+	(mips_const_insns): Move CONST_DOUBLE below CONST_VECTOR.  Handle
+	CONST_VECTOR for MSA and let it fall through.
+	(mips_ldst_scaled_shift): New function.
+	(mips_subword_at_byte): Likewise.
+	(mips_msa_idiv_insns): Likewise.
+	(mips_legitimize_move): Validate MSA moves.
+	(mips_rtx_costs): Add UNGE, UNGT, UNLE, UNLT cases.  Add
+	calculation of costs for MSA division.
+	(mips_split_move_p): Check if MSA moves need splitting.
+	(mips_split_move): Split MSA moves if necessary.
+	(mips_split_128bit_move_p): New function.
+	(mips_split_128bit_move): Likewise.
+	(mips_split_msa_copy_d): Likewise.
+	(mips_split_msa_insert_d): Likewise.
+	(mips_split_msa_fill_d): Likewise.
+	(mips_output_move): Handle MSA moves.
+	(mips_expand_msa_branch): New function.
+	(mips_print_operand): Add 'E', 'B', 'w', 'v' and 'V' modifiers.
+	Reinstate 'y' modifier.
+	(mips_file_start): Add MSA .gnu_attribute.
+	(mips_hard_regno_mode_ok_p): Allow TImode and 128-bit vectors in
+	FPRs.
+	(mips_hard_regno_nregs): Always return 1 for MSA supported mode.
+	(mips_class_max_nregs): Add register size for MSA supported mode.
+	(mips_cannot_change_mode_class): Allow conversion between MSA
+	vector modes and TImode.
+	(mips_mode_ok_for_mov_fmt_p): Allow MSA to use move.v
+	instruction.
+	(mips_secondary_reload_class): Force MSA loads/stores via memory.
+	(mips_preferred_simd_mode): Add preffered modes for MSA.
+	(mips_vector_mode_supported_p): Add MSA supported modes.
+	(mips_autovectorize_vector_sizes): New function.
+	(mips_msa_output_division): Likewise.
+	(MSA_BUILTIN, MIPS_BUILTIN_DIRECT_NO_TARGET)
+	(MSA_NO_TARGET_BUILTIN, MSA_BUILTIN_TEST_BRANCH): New macros.
+	(CODE_FOR_msa_adds_s_b, CODE_FOR_msa_adds_s_h)
+	(CODE_FOR_msa_adds_s_w, CODE_FOR_msa_adds_s_d)
+	(CODE_FOR_msa_adds_u_b, CODE_FOR_msa_adds_u_h)
+	(CODE_FOR_msa_adds_u_w, CODE_FOR_msa_adds_u_du
+	(CODE_FOR_msa_addv_b, CODE_FOR_msa_addv_h, CODE_FOR_msa_addv_w)
+	(CODE_FOR_msa_addv_d, CODE_FOR_msa_and_v, CODE_FOR_msa_bmnz_v)
+	(CODE_FOR_msa_bmnzi_b, CODE_FOR_msa_bmz_v, CODE_FOR_msa_bmzi_b)
+	(CODE_FOR_msa_bnz_v, CODE_FOR_msa_bz_v, CODE_FOR_msa_bsel_v)
+	(CODE_FOR_msa_bseli_b, CODE_FOR_msa_ceqi_h, CODE_FOR_msa_ceqi_w)
+	(CODE_FOR_msa_ceqi_d, CODE_FOR_msa_clti_s_b)
+	(CODE_FOR_msa_clti_s_h, CODE_FOR_msa_clti_s_w)
+	(CODE_FOR_msa_clti_s_d, CODE_FOR_msa_clti_u_b)
+	(CODE_FOR_msa_clti_u_h, CODE_FOR_msa_clti_u_w)
+	(CODE_FOR_msa_clti_u_d, CODE_FOR_msa_clei_s_b)
+	(CODE_FOR_msa_clei_s_h, CODE_FOR_msa_clei_s_w)
+	(CODE_FOR_msa_clei_s_d, CODE_FOR_msa_clei_u_b)
+	(CODE_FOR_msa_clei_u_h, CODE_FOR_msa_clei_u_w)
+	(CODE_FOR_msa_clei_u_d, CODE_FOR_msa_div_s_b)
+	(CODE_FOR_msa_div_s_h, CODE_FOR_msa_div_s_w)
+	(CODE_FOR_msa_div_s_d, CODE_FOR_msa_div_u_b)
+	(CODE_FOR_msa_div_u_h, CODE_FOR_msa_div_u_w)
+	(CODE_FOR_msa_div_u_d, CODE_FOR_msa_fadd_w, CODE_FOR_msa_fadd_d)
+	(CODE_FOR_msa_fexdo_w, CODE_FOR_msa_ftrunc_s_w)
+	(CODE_FOR_msa_ftrunc_s_d, CODE_FOR_msa_ftrunc_u_w)
+	(CODE_FOR_msa_ftrunc_u_d, CODE_FOR_msa_ffint_s_w)
+	(CODE_FOR_msa_ffint_s_d, CODE_FOR_msa_ffint_u_w)
+	(CODE_FOR_msa_ffint_u_d, CODE_FOR_msa_fsub_w)
+	(CODE_FOR_msa_fsub_d, CODE_FOR_msa_fmsub_d, CODE_FOR_msa_fmadd_w)
+	(CODE_FOR_msa_fmadd_d, CODE_FOR_msa_fmsub_w, CODE_FOR_msa_fmul_w)
+	(CODE_FOR_msa_fmul_d, CODE_FOR_msa_fdiv_w, CODE_FOR_msa_fdiv_d)
+	(CODE_FOR_msa_fmax_w, CODE_FOR_msa_fmax_d, CODE_FOR_msa_fmax_a_w)
+	(CODE_FOR_msa_fmax_a_d, CODE_FOR_msa_fmin_w, CODE_FOR_msa_fmin_d)
+	(CODE_FOR_msa_fmin_a_w, CODE_FOR_msa_fmin_a_d)
+	(CODE_FOR_msa_fsqrt_w, CODE_FOR_msa_fsqrt_d)
+	(CODE_FOR_msa_max_s_b, CODE_FOR_msa_max_s_h)
+	(CODE_FOR_msa_max_s_w, CODE_FOR_msa_max_s_d)
+	(CODE_FOR_msa_max_u_b, CODE_FOR_msa_max_u_h)
+	(CODE_FOR_msa_max_u_w, CODE_FOR_msa_max_u_d)
+	(CODE_FOR_msa_min_s_b, CODE_FOR_msa_min_s_h)
+	(CODE_FOR_msa_min_s_w, CODE_FOR_msa_min_s_d)
+	(CODE_FOR_msa_min_u_b, CODE_FOR_msa_min_u_h)
+	(CODE_FOR_msa_min_u_w, CODE_FOR_msa_min_u_d)
+	(CODE_FOR_msa_mod_s_b, CODE_FOR_msa_mod_s_h)
+	(CODE_FOR_msa_mod_s_w, CODE_FOR_msa_mod_s_d)
+	(CODE_FOR_msa_mod_u_b, CODE_FOR_msa_mod_u_h)
+	(CODE_FOR_msa_mod_u_w, CODE_FOR_msa_mod_u_d)
+	(CODE_FOR_msa_mod_s_b, CODE_FOR_msa_mod_s_h)
+	(CODE_FOR_msa_mod_s_w, CODE_FOR_msa_mod_s_d)
+	(CODE_FOR_msa_mod_u_b, CODE_FOR_msa_mod_u_h)
+	(CODE_FOR_msa_mod_u_w, CODE_FOR_msa_mod_u_d)
+	(CODE_FOR_msa_mulv_b, CODE_FOR_msa_mulv_h, CODE_FOR_msa_mulv_w)
+	(CODE_FOR_msa_mulv_d, CODE_FOR_msa_nlzc_b, CODE_FOR_msa_nlzc_h)
+	(CODE_FOR_msa_nlzc_w, CODE_FOR_msa_nlzc_d, CODE_FOR_msa_nor_v)
+	(CODE_FOR_msa_or_v, CODE_FOR_msa_ori_b, CODE_FOR_msa_nori_b)
+	(CODE_FOR_msa_pcnt_b, CODE_FOR_msa_pcnt_h, CODE_FOR_msa_pcnt_w)
+	(CODE_FOR_msa_pcnt_d, CODE_FOR_msa_xor_v, CODE_FOR_msa_xori_b)
+	(CODE_FOR_msa_sll_b, CODE_FOR_msa_sll_h, CODE_FOR_msa_sll_w)
+	(CODE_FOR_msa_sll_d, CODE_FOR_msa_slli_b, CODE_FOR_msa_slli_h)
+	(CODE_FOR_msa_slli_w, CODE_FOR_msa_slli_d, CODE_FOR_msa_sra_b)
+	(CODE_FOR_msa_sra_h, CODE_FOR_msa_sra_w, CODE_FOR_msa_sra_d)
+	(CODE_FOR_msa_srai_b, CODE_FOR_msa_srai_h, CODE_FOR_msa_srai_w)
+	(CODE_FOR_msa_srai_d, CODE_FOR_msa_srl_b, CODE_FOR_msa_srl_h)
+	(CODE_FOR_msa_srl_w, CODE_FOR_msa_srl_d, CODE_FOR_msa_srli_b)
+	(CODE_FOR_msa_srli_h, CODE_FOR_msa_srli_w, CODE_FOR_msa_srli_d)
+	(CODE_FOR_msa_subv_b, CODE_FOR_msa_subv_h, CODE_FOR_msa_subv_w)
+	(CODE_FOR_msa_subv_d, CODE_FOR_msa_subvi_b, CODE_FOR_msa_subvi_h)
+	(CODE_FOR_msa_subvi_w, CODE_FOR_msa_subvi_d, CODE_FOR_msa_move_v)
+	(CODE_FOR_msa_vshf_b, CODE_FOR_msa_vshf_h, CODE_FOR_msa_vshf_w)
+	(CODE_FOR_msa_vshf_d, CODE_FOR_msa_ilvod_d, CODE_FOR_msa_ilvev_d)
+	(CODE_FOR_msa_pckod_d, CODE_FOR_msa_pckdev_d, CODE_FOR_msa_ldi_b)
+	(CODE_FOR_msa_ldi_hi, CODE_FOR_msa_ldi_w)
+	(CODE_FOR_msa_ldi_d): New code_aliasing macros.
+	(mips_builtins): Add MSA sll_b, sll_h, sll_w, sll_d, slli_b,
+	slli_h,	slli_w, slli_d, sra_b, sra_h, sra_w, sra_d, srai_b,
+	srai_h, srai_w,	srai_d, srar_b, srar_h, srar_w, srar_d, srari_b,
+	srari_h, srari_w, srari_d, srl_b, srl_h, srl_w, srl_d, srli_b,
+	srli_h, srli_w, srli_d, srlr_b, srlr_h, srlr_w, srlr_d, srlri_b,
+	srlri_h, srlri_w, srlri_d, bclr_b, bclr_h, bclr_w, bclr_d,
+	bclri_b, bclri_h, bclri_w, bclri_d, bset_b, bset_h, bset_w,
+	bset_d, bseti_b, bseti_h, bseti_w, bseti_d, bneg_b, bneg_h,
+	bneg_w, bneg_d, bnegi_b, bnegi_h, bnegi_w, bnegi_d, binsl_b,
+	binsl_h, binsl_w, binsl_d, binsli_b, binsli_h, binsli_w,
+	binsli_d, binsr_b, binsr_h, binsr_w, binsr_d, binsri_b, binsri_h,
+	binsri_w, binsri_d, addv_b, addv_h, addv_w, addv_d, addvi_b,
+	addvi_h, addvi_w, addvi_d, subv_b, subv_h, subv_w, subv_d,
+	subvi_b, subvi_h, subvi_w, subvi_d, max_s_b, max_s_h, max_s_w,
+	max_s_d, maxi_s_b, maxi_s_h, maxi_s_w, maxi_s_d, max_u_b,
+	max_u_h, max_u_w, max_u_d, maxi_u_b, maxi_u_h, maxi_u_w,
+	maxi_u_d, min_s_b, min_s_h, min_s_w, min_s_d, mini_s_b, mini_s_h,
+	mini_s_w, mini_s_d, min_u_b, min_u_h, min_u_w, min_u_d, mini_u_b,
+	mini_u_h, mini_u_w, mini_u_d, max_a_b, max_a_h, max_a_w, max_a_d,
+	min_a_b, min_a_h, min_a_w, min_a_d, ceq_b, ceq_h, ceq_w, ceq_d,
+	ceqi_b, ceqi_h, ceqi_w, ceqi_d, clt_s_b, clt_s_h, clt_s_w,
+	clt_s_d, clti_s_b, clti_s_h, clti_s_w, clti_s_d, clt_u_b,
+	clt_u_h, clt_u_w, clt_u_d, clti_u_b, clti_u_h, clti_u_w,
+	clti_u_d, cle_s_b, cle_s_h, cle_s_w, cle_s_d, clei_s_b, clei_s_h,
+	clei_s_w, clei_s_d, cle_u_b, cle_u_h, cle_u_w, cle_u_d, clei_u_b,
+	clei_u_h, clei_u_w, clei_u_d, ld_b, ld_h, ld_w, ld_d, st_b, st_h,
+	st_w, st_d, sat_s_b, sat_s_h, sat_s_w, sat_s_d, sat_u_b, sat_u_h,
+	sat_u_w, sat_u_d, add_a_b, add_a_h, add_a_w, add_a_d, adds_a_b,
+	adds_a_h, adds_a_w, adds_a_d, adds_s_b, adds_s_h, adds_s_w,
+	adds_s_d, adds_u_b, adds_u_h, adds_u_w, adds_u_d, ave_s_b,
+	ave_s_h, ave_s_w, ave_s_d, ave_u_b, ave_u_h, ave_u_w, ave_u_d,
+	aver_s_b, aver_s_h, aver_s_w, aver_s_d, aver_u_b, aver_u_h,
+	aver_u_w, aver_u_d, subs_s_b, subs_s_h, subs_s_w, subs_s_d,
+	subs_u_b, subs_u_h, subs_u_w, subs_u_d, subsuu_s_b, subsuu_s_h,
+	subsuu_s_w, subsuu_s_d, subsus_u_b, subsus_u_h, subsus_u_w,
+	subsus_u_d, asub_s_b, asub_s_h, asub_s_w, asub_s_d, asub_u_b,
+	asub_u_h, asub_u_w, asub_u_d, mulv_b, mulv_h, mulv_w, mulv_d,
+	maddv_b, maddv_h, maddv_w, maddv_d, msubv_b, msubv_h, msubv_w,
+	msubv_d, div_s_b, div_s_h, div_s_w, div_s_d, div_u_b, div_u_h,
+	div_u_w, div_u_d, hadd_s_h, hadd_s_w, hadd_s_d, hadd_u_h,
+	hadd_u_w, hadd_u_d, hsub_s_h, hsub_s_w, hsub_s_d, hsub_u_h,
+	hsub_u_w, hsub_u_d, mod_s_b, mod_s_h, mod_s_w, mod_s_d, mod_u_b,
+	mod_u_h, mod_u_w, mod_u_d, dotp_s_h, dotp_s_w, dotp_s_d,
+	dotp_u_h, dotp_u_w, dotp_u_d, dpadd_s_h, dpadd_s_w, dpadd_s_d,
+	dpadd_u_h, dpadd_u_w, dpadd_u_d, dpsub_s_h, dpsub_s_w, dpsub_s_d,
+	dpsub_u_h, dpsub_u_w, dpsub_u_d, sld_b, sld_h, sld_w, sld_d,
+	sldi_b, sldi_h, sldi_w, sldi_d, splat_b, splat_h, splat_w,
+	splat_d, splati_b, splati_h, splati_w, splati_d, pckev_b,
+	pckev_h, pckev_w, pckev_d, pckod_b, pckod_h, pckod_w, pckod_d,
+	ilvl_b, ilvl_h, ilvl_w, ilvl_d, ilvr_b, ilvr_h, ilvr_w, ilvr_d,
+	ilvev_b, ilvev_h, ilvev_w, ilvev_d, ilvod_b, ilvod_h, ilvod_w,
+	ilvod_d, vshf_b, vshf_h, vshf_w, vshf_d, and_v, andi_b, or_v,
+	ori_b, nor_v, nori_b, xor_v, xori_b, bmnz_v, bmnzi_b, bmz_v,
+	bmzi_b, bsel_v, bseli_b, shf_b, shf_h, shf_w, bnz_v, bz_v,
+	fill_b, fill_h, fill_w, fill_d, pcnt_b, pcnt_h, pcnt_w,
+	pcnt_d, nloc_b, nloc_h, nloc_w, nloc_d, nlzc_b, nlzc_h, nlzc_w,
+	nlzc_d, copy_s_b, copy_s_h, copy_s_w, copy_s_d, copy_u_b,
+	copy_u_h, copy_u_w, copy_u_d, insert_b, insert_h, insert_w,
+	insert_d, insve_b, insve_h, insve_w, insve_d, bnz_b, bnz_h,
+	bnz_w, bnz_d, bz_b, bz_h, bz_w, bz_d, ldi_b, ldi_h, ldi_w, ldi_d,
+	fcaf_w, fcaf_d, fcor_w, fcor_d, fcun_w, fcun_d, fcune_w, fcune_d,
+	fcueq_w, fcueq_d, fceq_w, fceq_d, fcne_w, fcne_d, fclt_w, fclt_d,
+	fcult_w, fcult_d, fcle_w, fcle_d, fcule_w, fcule_d, fsaf_w,
+	fsaf_d, fsor_w, fsor_d, fsun_w, fsun_d, fsune_w, fsune_d,
+	fsueq_w, fsueq_d, fseq_w, fseq_d, fsne_w, fsne_d, fslt_w,
+	fslt_d, fsult_w, fsult_d, fsle_w, fsle_d, fsule_w, fsule_d,
+	fadd_w,	fadd_d, fsub_w, fsub_d, fmul_w, fmul_d, fdiv_w, fdiv_d,
+	fmadd_w, fmadd_d, fmsub_w, fmsub_d, fexp2_w, fexp2_d, fexdo_h,
+	fexdo_w, ftq_h, ftq_w, fmin_w, fmin_d, fmin_a_w, fmin_a_d,
+	fmax_w, fmax_d, fmax_a_w, fmax_a_d, mul_q_h, mul_q_w, mulr_q_h,
+	mulr_q_w, madd_q_h, madd_q_w, maddr_q_h, maddr_q_w, msub_q_h,
+	msub_q_w, msubr_q_h, msubr_q_w, fclass_w, fclass_d, fsqrt_w,
+	fsqrt_d, frcp_w, frcp_d, frint_w, frint_d, frsqrt_w, frsqrt_d,
+	flog2_w, flog2_d, fexupl_w, fexupl_d, fexupr_w, fexupr_d, ffql_w,
+	ffql_d, ffqr_w, ffqr_d, ftint_s_w, ftint_s_d, ftint_u_w,
+	ftint_u_d, ftrunc_s_w, ftrunc_s_d, ftrunc_u_w, ftrunc_u_d,
+	ffint_s_w, ffint_s_d, ffint_u_w, ffint_u_d, ctcmsa, cfcmsa,
+	move_v builtins.
+	(mips_get_builtin_decl_index): New array.
+	(MIPS_ATYPE_QI, MIPS_ATYPE_HI, MIPS_ATYPE_V2DI, MIPS_ATYPE_V4SI)
+	(MIPS_ATYPE_V8HI, MIPS_ATYPE_V16QI, MIPS_ATYPE_V2DF)
+	(MIPS_ATYPE_V4SF, MIPS_ATYPE_UV2DI, MIPS_ATYPE_UV4SI)
+	(MIPS_ATYPE_UV8HI, MIPS_ATYPE_UV16QI): New.
+	(mips_init_builtins): Initialize mips_get_builtin_decl_index
+	array.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Define target
+	hook.
+	(mips_expand_builtin_insn): Prepare operands for
+	CODE_FOR_msa_addvi_b, CODE_FOR_msa_addvi_h, CODE_FOR_msa_addvi_w,
+	CODE_FOR_msa_addvi_d, CODE_FOR_msa_clti_u_b,
+	CODE_FOR_msa_clti_u_h, CODE_FOR_msa_clti_u_w,
+	CODE_FOR_msa_clti_u_d, CODE_FOR_msa_clei_u_b,
+	CODE_FOR_msa_clei_u_h, CODE_FOR_msa_clei_u_w,
+	CODE_FOR_msa_clei_u_d, CODE_FOR_msa_maxi_u_b,
+	CODE_FOR_msa_maxi_u_h, CODE_FOR_msa_maxi_u_w,
+	CODE_FOR_msa_maxi_u_d, CODE_FOR_msa_mini_u_b,
+	CODE_FOR_msa_mini_u_h, CODE_FOR_msa_mini_u_w,
+	CODE_FOR_msa_mini_u_d, CODE_FOR_msa_subvi_b,
+	CODE_FOR_msa_subvi_h, CODE_FOR_msa_subvi_w, CODE_FOR_msa_subvi_d,
+	CODE_FOR_msa_ceqi_b, CODE_FOR_msa_ceqi_h, CODE_FOR_msa_ceqi_w,
+	CODE_FOR_msa_ceqi_d, CODE_FOR_msa_clti_s_b,
+	CODE_FOR_msa_clti_s_h, CODE_FOR_msa_clti_s_w,
+	CODE_FOR_msa_clti_s_d, CODE_FOR_msa_clei_s_b,
+	CODE_FOR_msa_clei_s_h, CODE_FOR_msa_clei_s_w,
+	CODE_FOR_msa_clei_s_d, CODE_FOR_msa_maxi_s_b,
+	CODE_FOR_msa_maxi_s_h, CODE_FOR_msa_maxi_s_w,
+	CODE_FOR_msa_maxi_s_d, CODE_FOR_msa_mini_s_b,
+	CODE_FOR_msa_mini_s_h, CODE_FOR_msa_mini_s_w,
+	CODE_FOR_msa_mini_s_d, CODE_FOR_msa_andi_b, CODE_FOR_msa_ori_b,
+	CODE_FOR_msa_nori_b, CODE_FOR_msa_xori_b, CODE_FOR_msa_bmzi_b,
+	CODE_FOR_msa_bmnzi_b, CODE_FOR_msa_bseli_b, CODE_FOR_msa_fill_b,
+	CODE_FOR_msa_fill_h, CODE_FOR_msa_fill_w, CODE_FOR_msa_fill_d,
+	CODE_FOR_msa_ilvl_b, CODE_FOR_msa_ilvl_h, CODE_FOR_msa_ilvl_w,
+	CODE_FOR_msa_ilvl_d, CODE_FOR_msa_ilvr_b, CODE_FOR_msa_ilvr_h,
+	CODE_FOR_msa_ilvr_w, CODE_FOR_msa_ilvr_d, CODE_FOR_msa_ilvev_b,
+	CODE_FOR_msa_ilvev_h, CODE_FOR_msa_ilvev_w, CODE_FOR_msa_ilvod_b,
+	CODE_FOR_msa_ilvod_h, CODE_FOR_msa_ilvod_w, CODE_FOR_msa_pckev_b,
+	CODE_FOR_msa_pckev_h, CODE_FOR_msa_pckev_w, CODE_FOR_msa_pckod_b,
+	CODE_FOR_msa_pckod_h, CODE_FOR_msa_pckod_w, CODE_FOR_msa_slli_b,
+	CODE_FOR_msa_slli_h, CODE_FOR_msa_slli_w, CODE_FOR_msa_slli_d,
+	CODE_FOR_msa_srai_b, CODE_FOR_msa_srai_h, CODE_FOR_msa_srai_w,
+	CODE_FOR_msa_srai_d, CODE_FOR_msa_srli_b, CODE_FOR_msa_srli_h,
+	CODE_FOR_msa_srli_w, CODE_FOR_msa_srli_d, CODE_FOR_msa_insert_b,
+	CODE_FOR_msa_insert_h, CODE_FOR_msa_insert_w,
+	CODE_FOR_msa_insert_d, CODE_FOR_msa_insve_b,
+	CODE_FOR_msa_insve_h, CODE_FOR_msa_insve_w, CODE_FOR_msa_insve_d,
+	CODE_FOR_msa_shf_b, CODE_FOR_msa_shf_h, CODE_FOR_msa_shf_w,
+	CODE_FOR_msa_shf_w_f, CODE_FOR_msa_vshf_b, CODE_FOR_msa_vshf_h,
+	CODE_FOR_msa_vshf_w, CODE_FOR_msa_vshf_d.
+	(mips_expand_builtin): Add case for MIPS_BULTIN_MSA_TEST_BRANCH.
+	(mips_set_compression_mode): Disallow MSA with MIPS16 code.
+	(mips_option_override): -mmsa requires -mfp64 and -mhard-float.
+	These are set implicitly and an error is reported if overridden.
+	(mips_expand_builtin_msa_test_branch): New function.
+	(mips_expand_msa_shuffle): Likewise.
+	(MAX_VECT_LEN): Increase maximum length of a vector to 16 bytes.
+	(TARGET_SCHED_REASSOCIATION_WIDTH): Define target hook.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Likewise.
+	(mips_expand_vec_unpack): Add support for MSA.
+	(mips_expand_vector_init): Likewise.
+	(mips_expand_vi_constant): Use CONST0_RTX (element_mode)
+	instead of const0_rtx.
+	(mips_msa_vec_parallel_const_half): New function.
+	(mips_gen_const_int_vector): Likewise.
+	(mips_gen_const_int_vector_shuffle): Likewise.
+	(mips_expand_msa_cmp): Likewise.
+	(mips_expand_vec_cond_expr): Likewise.
+	* config/mips/mips.h
+	(TARGET_CPU_CPP_BUILTINS): Add __mips_msa and __mips_msa_width.
+	(OPTION_DEFAULT_SPECS): Ignore --with-fp-32 if -mmsa is
+	specified.
+	(ASM_SPEC): Pass mmsa and mno-msa to the assembler.
+	(ISA_HAS_MSA): New macro.
+	(UNITS_PER_MSA_REG): Likewise.
+	(BITS_PER_MSA_REG): Likewise.
+	(BIGGEST_ALIGNMENT): Redefine using ISA_HAS_MSA.
+	(MSA_REG_FIRST): New macro.
+	(MSA_REG_LAST): Likewise.
+	(MSA_REG_NUM): Likewise.
+	(MSA_REG_P): Likewise.
+	(MSA_REG_RTX_P): Likewise.
+	(MSA_SUPPORTED_MODE_P): Likewise.
+	(HARD_REGNO_CALL_PART_CLOBBERED): Redefine using TARGET_MSA.
+	(ADDITIONAL_REGISTER_NAMES): Add named registers $w0-$w31.
+	* config/mips/mips.md: Include mips-msa.md.
+	(alu_type): Add simd_add.
+	(mode): Add V2DI, V4SI, V8HI, V16QI, V2DF, V4SF.
+	(type): Add simd_div, simd_fclass, simd_flog2, simd_fadd,
+	simd_fcvt, simd_fmul, simd_fmadd, simd_fdiv, simd_bitins,
+	simd_bitmov, simd_insert, simd_sld, simd_mul, simd_fcmp,
+	simd_fexp2, simd_int_arith, simd_bit, simd_shift, simd_splat,
+	simd_fill, simd_permute, simd_shf, simd_sat, simd_pcnt,
+	simd_copy, simd_branch, simd_cmsa, simd_fminmax, simd_logic,
+	simd_move, simd_load, simd_store.  Choose "multi" for moves
+	for "qword_mode".
+	(qword_mode): New attribute.
+	(insn_count): Add instruction count for quad moves.
+	Increase the count for MIPS SIMD division.
+	(UNITMODE): Add UNITMODEs for vector types.
+	(addsub): New code iterator.
+	* config/mips/mips.opt (mmsa): New option.
+	* config/mips/msa.h: New file.
+	* config/mips/mti-elf.h: Don't infer -mfpxx if -mmsa is
+	specified.
+	* config/mips/mti-linux.h: Likewise.
+	* config/mips/predicates.md
+	(const_msa_branch_operand): New constraint.
+	(const_uimm3_operand): Likewise.
+	(const_uimm4_operand): Likewise.
+	(const_uimm5_operand): Likewise.
+	(const_uimm8_operand): Likewise.
+	(const_imm5_operand): Likewise.
+	(aq10b_operand): Likewise.
+	(aq10h_operand): Likewise.
+	(aq10w_operand): Likewise.
+	(aq10d_operand): Likewise.
+	(const_m1_operand): Likewise.
+	(reg_or_m1_operand): Likewise.
+	(const_exp_2_operand): Likewise.
+	(const_exp_4_operand): Likewise.
+	(const_exp_8_operand): Likewise.
+	(const_exp_16_operand): Likewise.
+	(const_vector_same_val_operand): Likewise.
+	(const_vector_same_simm5_operand): Likewise.
+	(const_vector_same_uimm5_operand): Likewise.
+	(const_vector_same_uimm6_operand): Likewise.
+	(const_vector_same_uimm8_operand): Likewise.
+	(par_const_vector_shf_set_operand): Likewise.
+	(reg_or_vector_same_val_operand): Likewise.
+	(reg_or_vector_same_simm5_operand): Likewise.
+	(reg_or_vector_same_uimm6_operand): Likewise.
+	* doc/extend.texi (MIPS SIMD Architecture Functions): New
+	section.
+	* doc/invoke.texi (-mmsa): Document new option.
+
 2016-05-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (enable_vtable_verify): Handle --enable-vtable-verify.

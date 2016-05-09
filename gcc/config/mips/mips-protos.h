@@ -197,8 +197,9 @@ extern bool mips_stack_address_p (rtx, machine_mode);
 extern int mips_address_insns (rtx, machine_mode, bool);
 extern int mips_const_insns (rtx);
 extern int mips_split_const_insns (rtx);
+extern int mips_split_128bit_const_insns (rtx);
 extern int mips_load_store_insns (rtx, rtx_insn *);
-extern int mips_idiv_insns (void);
+extern int mips_idiv_insns (machine_mode);
 extern rtx_insn *mips_emit_move (rtx, rtx);
 #ifdef RTX_CODE
 extern void mips_emit_binary (enum rtx_code, rtx, rtx, rtx);
@@ -216,6 +217,11 @@ extern bool mips_split_move_p (rtx, rtx, enum mips_split_type);
 extern void mips_split_move (rtx, rtx, enum mips_split_type);
 extern bool mips_split_move_insn_p (rtx, rtx, rtx);
 extern void mips_split_move_insn (rtx, rtx, rtx);
+extern void mips_split_128bit_move (rtx, rtx);
+extern bool mips_split_128bit_move_p (rtx, rtx);
+extern void mips_split_msa_copy_d (rtx, rtx, rtx, rtx (*)(rtx, rtx, rtx));
+extern void mips_split_msa_insert_d (rtx, rtx, rtx, rtx);
+extern void mips_split_msa_fill_d (rtx, rtx);
 extern const char *mips_output_move (rtx, rtx);
 extern bool mips_cfun_has_cprestore_slot_p (void);
 extern bool mips_cprestore_address_p (rtx, bool);
@@ -278,6 +284,15 @@ extern void mips_expand_before_return (void);
 extern void mips_expand_epilogue (bool);
 extern bool mips_can_use_return_insn (void);
 
+extern bool mips_const_vector_same_val_p (rtx, machine_mode);
+extern bool mips_const_vector_same_bytes_p (rtx, machine_mode);
+extern bool mips_const_vector_same_int_p (rtx, machine_mode, HOST_WIDE_INT,
+					  HOST_WIDE_INT);
+extern bool mips_const_vector_shuffle_set_p (rtx, machine_mode);
+extern bool mips_const_vector_bitimm_set_p (rtx, machine_mode);
+extern bool mips_const_vector_bitimm_clr_p (rtx, machine_mode);
+extern rtx mips_msa_vec_parallel_const_half (machine_mode, bool);
+extern rtx mips_gen_const_int_vector (machine_mode, int);
 extern bool mips_secondary_memory_needed (enum reg_class, enum reg_class,
 					  machine_mode);
 extern bool mips_cannot_change_mode_class (machine_mode,
@@ -305,6 +320,7 @@ extern const char *mips_output_sync (void);
 extern const char *mips_output_sync_loop (rtx_insn *, rtx *);
 extern unsigned int mips_sync_loop_insns (rtx_insn *, rtx *);
 extern const char *mips_output_division (const char *, rtx *);
+extern const char *mips_msa_output_division (const char *, rtx *);
 extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern bool mips_hard_regno_rename_ok (unsigned int, unsigned int);
 extern unsigned int mips_hard_regno_nregs (int, machine_mode);
@@ -343,6 +359,7 @@ extern void mips_expand_vec_reduc (rtx, rtx, rtx (*)(rtx, rtx, rtx));
 extern void mips_expand_vec_minmax (rtx, rtx, rtx,
 				    rtx (*) (rtx, rtx, rtx), bool);
 
+extern int mips_ldst_scaled_shift (machine_mode);
 extern bool mips_signed_immediate_p (unsigned HOST_WIDE_INT, int, int);
 extern bool mips_unsigned_immediate_p (unsigned HOST_WIDE_INT, int, int);
 extern const char *umips_output_save_restore (bool, rtx);
@@ -372,5 +389,6 @@ extern mulsidi3_gen_fn mips_mulsidi3_gen_fn (enum rtx_code);
 #endif
 
 extern void mips_register_frame_header_opt (void);
+extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 
 #endif /* ! GCC_MIPS_PROTOS_H */

@@ -24,11 +24,17 @@ VECTOR_MODES (INT, 4);        /* V4QI  V2HI      */
 VECTOR_MODES (INT, 8);        /* V8QI  V4HI V2SI */
 VECTOR_MODES (FLOAT, 8);      /*       V4HF V2SF */
 
+/* For MIPS MSA 128 bits.  */
+VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
+VECTOR_MODES (FLOAT, 16);     /*            V4SF V2DF */
+
 /* Double-sized vector modes for vec_concat.  */
-VECTOR_MODE (INT, QI, 16);    /* V16QI           */
-VECTOR_MODE (INT, HI, 8);     /*       V8HI      */
-VECTOR_MODE (INT, SI, 4);     /*            V4SI */
-VECTOR_MODE (FLOAT, SF, 4);   /*            V4SF */
+VECTOR_MODE (INT, QI, 32);    /* V32QI                */
+VECTOR_MODE (INT, HI, 16);    /*       V16HI          */
+VECTOR_MODE (INT, SI, 8);     /*            V8SI      */
+VECTOR_MODE (INT, DI, 4);     /*                 V4DI */
+VECTOR_MODE (FLOAT, SF, 8);   /*            V8SF      */
+VECTOR_MODE (FLOAT, DF, 4);   /*                 V4DF */
 
 VECTOR_MODES (FRACT, 4);	/* V4QQ  V2HQ */
 VECTOR_MODES (UFRACT, 4);	/* V4UQQ V2UHQ */
