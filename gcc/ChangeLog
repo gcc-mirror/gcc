@@ -1,3 +1,31 @@
+2016-05-09  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/i6400.md (i6400_fpu_intadd, i6400_fpu_logic)
+	(i6400_fpu_div, i6400_fpu_cmp, i6400_fpu_float,	i6400_fpu_store)
+	(i6400_fpu_long_pipe, i6400_fpu_logic_l, i6400_fpu_float_l)
+	(i6400_fpu_mult): New cpu units.
+	(i6400_msa_add_d, i6400_msa_int_add, i6400_msa_short_logic3)
+	(i6400_msa_short_logic2, i6400_msa_short_logic, i6400_msa_move)
+	(i6400_msa_cmp, i6400_msa_short_float2, i6400_msa_div_d)
+	(i6400_msa_div_w, i6400_msa_div_h, i6400_msa_div_b)
+	(i6400_msa_copy, i6400_msa_branch, i6400_fpu_msa_store)
+	(i6400_fpu_msa_load, i6400_fpu_msa_move, i6400_msa_long_logic1)
+	(i6400_msa_long_logic2, i6400_msa_mult, i6400_msa_long_float2)
+	(i6400_msa_long_float4, i6400_msa_long_float5)
+	(i6400_msa_long_float8, i6400_msa_fdiv_df)
+	(i6400_msa_fdiv_sf): New reservations.
+	* config/mips/p5600.md (p5600_fpu_intadd, p5600_fpu_cmp)
+	(p5600_fpu_float, p5600_fpu_logic_a, p5600_fpu_logic_b)
+	(p5600_fpu_div, p5600_fpu_logic, p5600_fpu_float_a)
+	(p5600_fpu_float_b, p5600_fpu_float_c, p5600_fpu_float_d)
+	(p5600_fpu_mult, p5600_fpu_fdiv, p5600_fpu_load): New cpu units.
+	(msa_short_int_add, msa_short_logic, msa_short_logic_move_v)
+	(msa_short_cmp, msa_short_float2, msa_short_logic3)
+	(msa_short_store4, msa_long_load, msa_short_store)
+	(msa_long_logic, msa_long_float2, msa_long_float4)
+	(msa_long_float5, msa_long_float8, msa_long_mult)
+	(msa_long_fdiv, msa_long_div): New reservations.
+
 2016-05-09  Robert Suchanek  <robert.suchanek@imgtec.com>
 	    Sameera Deshpande  <sameera.deshpande@imgtec.com>
 	    Matthew Fortune  <matthew.fortune@imgtec.com>
