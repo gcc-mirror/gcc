@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-additional-options "-Wno-pedantic" } */
 
 struct trailing 

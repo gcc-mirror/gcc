@@ -1,3 +1,6 @@
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
+
 static volatile int v = 0;
 static
 void benchmark(long runs) {

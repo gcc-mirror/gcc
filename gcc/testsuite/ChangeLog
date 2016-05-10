@@ -1,3 +1,13 @@
+2016-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/nested-func-10.c: Requires alloca.
+	* gcc.dg/nested-func-9.c: Requires alloca.
+	* gcc.c-torture/execute/pr70460.c: Requires labels.
+	* gcc.c-torture/compile/pr70199.c: Requires labels.
+	* gcc.target/nvptx/decl.c: Compile only.
+	* gcc.target/nvptx/trailing-init.c: Compile only.
+	* gcc.target/nvptx/ary-init.c: Compile only.
+
 2016-05-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70255
