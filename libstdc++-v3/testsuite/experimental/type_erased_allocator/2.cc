@@ -17,9 +17,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
 #include <experimental/memory_resource>
 #include <experimental/utility>
+#include <memory>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
@@ -27,7 +27,6 @@ using std::experimental::pmr::polymorphic_allocator;
 using std::experimental::pmr::memory_resource;
 using std::experimental::pmr::new_delete_resource;
 using std::experimental::pmr::get_default_resource;
-using std::experimental::pmr::set_default_resource;
 using std::allocator_arg_t;
 
 enum CtorType { Default, Copy, Move, Other, Tuple, Piecewise_Default, Piecewise_Copy};
