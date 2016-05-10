@@ -1,5 +1,8 @@
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/type_erased_allocator/2.cc: Remove unused
+	using declaration.
+
 	PR libstdc++/71005
 	* include/experimental/bits/fs_dir.h (__directory_iterator_proxy):
 	New type.
