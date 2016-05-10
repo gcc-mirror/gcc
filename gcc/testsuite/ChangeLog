@@ -1,3 +1,8 @@
+2016-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71039
+	* gcc.dg/torture/pr71039.c: New testcase.
+
 2016-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/nested-func-10.c: Requires alloca.

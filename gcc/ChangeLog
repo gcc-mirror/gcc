@@ -1,3 +1,11 @@
+2016-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71039
+	* tree-ssa-phiprop.c: Include tree-ssa-loop.h.
+	(chk_uses): New function.
+	(propagate_with_phi): Verify we can safely replicate the lhs of an
+	aggregate assignment on all incoming edges.
+
 2016-05-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/rx/rx-protos.h (is_interrupt_func, is_fast_interrupt_func):
