@@ -749,21 +749,32 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 %{!mnewlib: %{pthread:-lpthread} %{shared:-lc} \
 %{!shared: %{profile:-lc_p} %{!profile:-lc}}}"
 
+#if ENABLE_OFFLOADING == 1
+#define CRTOFFLOADBEGIN "%{fopenacc|fopenmp:crtoffloadbegin%O%s}"
+#define CRTOFFLOADEND "%{fopenacc|fopenmp:crtoffloadend%O%s}"
+#else
+#define CRTOFFLOADBEGIN ""
+#define CRTOFFLOADEND ""
+#endif
+
 #ifdef HAVE_LD_PIE
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
 %{mnewlib:ecrti.o%s;:crti.o%s} \
-%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
+" CRTOFFLOADBEGIN
 #else
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
 %{mnewlib:ecrti.o%s;:crti.o%s} \
-%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
+" CRTOFFLOADBEGIN
 #endif
 
 #define	ENDFILE_LINUX_SPEC "\
 %{shared|pie:crtendS.o%s;:crtend.o%s} \
-%{mnewlib:ecrtn.o%s;:crtn.o%s}"
+%{mnewlib:ecrtn.o%s;:crtn.o%s} \
+" CRTOFFLOADEND
 
 #define LINK_START_LINUX_SPEC ""
 
