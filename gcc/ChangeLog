@@ -1,3 +1,10 @@
+2016-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/70963
+	* config/rs6000/vsx.md (vsx_xvcvdpsxds_scale): Generate correct
+	code for a zero scale factor.
+	(vsx_xvcvdpuxds_scale): Likewise.
+
 2016-05-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (layout::layout): Call show_ruler
