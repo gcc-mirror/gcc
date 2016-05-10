@@ -1,5 +1,9 @@
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71038
+	* src/filesystem/ops.cc (do_copy_file): Fix backwards conditions.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: New test.
+
 	* include/experimental/bits/fs_dir.h (__directory_iterator_proxy):
 	Overload operator* to move from rvalues.
 
