@@ -1,5 +1,11 @@
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71037
+	* src/filesystem/ops.cc (canonical(const path&, const path&)): Add
+	base path to exception.
+	* testsuite/experimental/filesystem/operations/canonical.cc: Test
+	paths contained in exception.
+
 	* testsuite/experimental/type_erased_allocator/2.cc: Remove unused
 	using declaration.
 
