@@ -1,3 +1,7 @@
+2016-05-10  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc.dg/debug/dwarf2/nested_fun.c: New testcase.
+
 2016-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/fabsneg-1.c New test.
