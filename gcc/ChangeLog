@@ -1,3 +1,11 @@
+2016-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70927
+	* config/i386/sse.md (<sse>_andnot<mode>3<mask_name>),
+	*<code><mode>3<mask_name>): For !TARGET_AVX512DQ and EVEX encoding,
+	use vp*[dq] instead of v*p[sd] instructions and adjust mode attribute
+	accordingly.
+
 2016-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/70963
