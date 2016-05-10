@@ -2789,7 +2789,8 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
     return convertible_comparison_p (insn);
 
   /* We are interested in DImode promotion only.  */
-  if (GET_MODE (src) != DImode
+  if ((GET_MODE (src) != DImode
+       && !CONST_INT_P (src))
       || GET_MODE (dst) != DImode)
     return false;
 
@@ -2809,24 +2810,31 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
       return true;
 
     case MEM:
+    case CONST_INT:
       return REG_P (dst);
 
     default:
       return false;
     }
 
-  if (!REG_P (XEXP (src, 0)) && !MEM_P (XEXP (src, 0))
+  if (!REG_P (XEXP (src, 0))
+      && !MEM_P (XEXP (src, 0))
+      && !CONST_INT_P (XEXP (src, 0))
       /* Check for andnot case.  */
       && (GET_CODE (src) != AND
 	  || GET_CODE (XEXP (src, 0)) != NOT
 	  || !REG_P (XEXP (XEXP (src, 0), 0))))
       return false;
 
-  if (!REG_P (XEXP (src, 1)) && !MEM_P (XEXP (src, 1)))
+  if (!REG_P (XEXP (src, 1))
+      && !MEM_P (XEXP (src, 1))
+      && !CONST_INT_P (XEXP (src, 1)))
       return false;
 
-  if (GET_MODE (XEXP (src, 0)) != DImode
-      || GET_MODE (XEXP (src, 1)) != DImode)
+  if ((GET_MODE (XEXP (src, 0)) != DImode
+       && !CONST_INT_P (XEXP (src, 0)))
+      || (GET_MODE (XEXP (src, 1)) != DImode
+	  && !CONST_INT_P (XEXP (src, 1))))
     return false;
 
   return true;
@@ -3120,6 +3128,7 @@ class dimode_scalar_chain : public scalar_chain
   void convert_reg (unsigned regno);
   void make_vector_copies (unsigned regno);
   void convert_registers ();
+  int vector_const_cost (rtx exp);
 };
 
 class timode_scalar_chain : public scalar_chain
@@ -3328,6 +3337,19 @@ scalar_chain::build (bitmap candidates, unsigned insn_uid)
   BITMAP_FREE (queue);
 }
 
+/* Return a cost of building a vector costant
+   instead of using a scalar one.  */
+
+int
+dimode_scalar_chain::vector_const_cost (rtx exp)
+{
+  gcc_assert (CONST_INT_P (exp));
+
+  if (standard_sse_constant_p (exp, V2DImode))
+    return COSTS_N_INSNS (1);
+  return ix86_cost->sse_load[1];
+}
+
 /* Compute a gain for chain conversion.  */
 
 int
@@ -3359,10 +3381,24 @@ dimode_scalar_chain::compute_convert_gain ()
 	       || GET_CODE (src) == IOR
 	       || GET_CODE (src) == XOR
 	       || GET_CODE (src) == AND)
-	gain += ix86_cost->add;
+	{
+	  gain += ix86_cost->add;
+	  if (CONST_INT_P (XEXP (src, 0)))
+	    gain -= vector_const_cost (XEXP (src, 0));
+	  if (CONST_INT_P (XEXP (src, 1)))
+	    gain -= vector_const_cost (XEXP (src, 1));
+	}
       else if (GET_CODE (src) == COMPARE)
 	{
 	  /* Assume comparison cost is the same.  */
+	}
+      else if (GET_CODE (src) == CONST_INT)
+	{
+	  if (REG_P (dst))
+	    gain += COSTS_N_INSNS (2);
+	  else if (MEM_P (dst))
+	    gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
+	  gain -= vector_const_cost (src);
 	}
       else
 	gcc_unreachable ();
@@ -3639,6 +3675,24 @@ dimode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	  }
       *op = gen_rtx_SUBREG (V2DImode, *op, 0);
     }
+  else if (CONST_INT_P (*op))
+    {
+      rtx vec_cst;
+      rtx tmp = gen_rtx_SUBREG (V2DImode, gen_reg_rtx (DImode), 0);
+
+      /* Prefer all ones vector in case of -1.  */
+      if (constm1_operand (*op, GET_MODE (*op)))
+	vec_cst = CONSTM1_RTX (V2DImode);
+      else
+	vec_cst = gen_rtx_CONST_VECTOR (V2DImode,
+					gen_rtvec (2, *op, const0_rtx));
+
+      if (!standard_sse_constant_p (vec_cst, V2DImode))
+	vec_cst = validize_mem (force_const_mem (V2DImode, vec_cst));
+
+      emit_insn_before (gen_move_insn (tmp, vec_cst), insn);
+      *op = tmp;
+    }
   else
     {
       gcc_assert (SUBREG_P (*op));
@@ -3709,6 +3763,10 @@ dimode_scalar_chain::convert_insn (rtx_insn *insn)
       src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (src),
 					       copy_rtx_if_shared (src)),
 			    UNSPEC_PTEST);
+      break;
+
+    case CONST_INT:
+      convert_op (&src, insn);
       break;
 
     default:
