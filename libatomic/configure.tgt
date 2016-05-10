@@ -26,6 +26,10 @@
 # Map the target cpu to an ARCH sub-directory.  At the same time,
 # work out any special compilation flags as necessary.
 
+# Give operating systems the opportunity to discard XCFLAGS modifications based
+# on ${target_cpu}.  For example to allow proper use of multilibs.
+configure_tgt_pre_target_cpu_XCFLAGS="${XCFLAGS}"
+
 case "${target_cpu}" in
   alpha*)
 	# fenv.c needs this option to generate inexact exceptions.
@@ -128,6 +132,12 @@ case "${target}" in
             ;;
         esac
 	;;
+
+  *-*-rtems*)
+	XCFLAGS="${configure_tgt_pre_target_cpu_XCFLAGS}"
+	config_path="rtems"
+	;;
+
   *-*-elf*)
 	# ??? No target OS.  We could be targeting bare-metal kernel-mode,
 	# or user-mode for some custom OS.  If the target supports TAS,
