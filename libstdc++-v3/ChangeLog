@@ -1,5 +1,8 @@
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_dir.h (__directory_iterator_proxy):
+	Overload operator* to move from rvalues.
+
 	PR libstdc++/71036
 	* src/filesystem/ops.cc (create_dir): Handle EEXIST from mkdir.
 	* testsuite/experimental/filesystem/operations/create_directory.cc:
