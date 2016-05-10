@@ -840,7 +840,7 @@ is_parm (tree decl)
 static unsigned short
 remap_dependence_clique (copy_body_data *id, unsigned short clique)
 {
-  if (clique == 0)
+  if (clique == 0 || processing_debug_stmt)
     return 0;
   if (!id->dependence_map)
     id->dependence_map = new hash_map<dependence_hash, unsigned short>;

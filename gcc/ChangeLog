@@ -1,3 +1,8 @@
+2016-05-10  Martin Liska  <mliska@suse.cz>
+
+	* tree-inline.c (remap_dependence_clique): Do not remap
+	debugging statements.
+
 2016-05-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("*vec_cmp<insn_cmp>df_cconly")
