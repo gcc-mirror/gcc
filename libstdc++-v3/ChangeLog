@@ -1,5 +1,10 @@
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71036
+	* src/filesystem/ops.cc (create_dir): Handle EEXIST from mkdir.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	New test.
+
 	PR libstdc++/71037
 	* src/filesystem/ops.cc (canonical(const path&, const path&)): Add
 	base path to exception.
