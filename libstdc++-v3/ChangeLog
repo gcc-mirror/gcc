@@ -1,5 +1,11 @@
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_dir.h (begin, end): Add noexcept.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Test begin and end functions.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+
 	PR libstdc++/71038
 	* src/filesystem/ops.cc (do_copy_file): Fix backwards conditions.
 	* testsuite/experimental/filesystem/operations/copy_file.cc: New test.
