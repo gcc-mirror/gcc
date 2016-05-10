@@ -2228,6 +2228,18 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      tree a1 = lookup_attribute ("optimize", DECL_ATTRIBUTES (olddecl));
+      tree a2 = lookup_attribute ("optimize", DECL_ATTRIBUTES (newdecl));
+      /* An optimization attribute applied on a declaration after the
+	 definition is likely not what the user wanted.  */
+      if (a2 != NULL_TREE
+	  && DECL_SAVED_TREE (olddecl) != NULL_TREE
+	  && (a1 == NULL_TREE || !attribute_list_equal (a1, a2)))
+	warned |= warning (OPT_Wattributes,
+			   "optimization attribute on %qD follows "
+			   "definition but the attribute doesn%'t match",
+			   newdecl);
+
       /* Diagnose inline __attribute__ ((noinline)) which is silly.  */
       if (DECL_DECLARED_INLINE_P (newdecl)
 	  && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))

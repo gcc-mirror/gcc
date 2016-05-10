@@ -1,3 +1,8 @@
+2016-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70255
+	* gcc.dg/attr-opt-1.c: New test.
+
 2016-05-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70497

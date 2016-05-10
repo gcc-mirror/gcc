@@ -1,3 +1,9 @@
+2016-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70255
+	* c-decl.c (diagnose_mismatched_decls): Warn for optimize attribute
+	on a declaration following the definition.
+
 2016-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_switch_statement): Add IF_P argument,
