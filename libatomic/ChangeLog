@@ -1,3 +1,13 @@
+2016-05-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline:
+	2016-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* configure.tgt (configure_tgt_pre_target_cpu_XCFLAGS): New variable.
+	(*-*-rtems*): New supported target.
+	* config/rtems/host-config.h: New file.
+	* config/rtems/lock.c: Likewise.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
