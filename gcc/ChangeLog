@@ -1,3 +1,13 @@
+2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/70799
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p): Allow
+	integer constants.
+	(dimode_scalar_chain::vector_const_cost): New.
+	(dimode_scalar_chain::compute_convert_gain): Handle constants.
+	(dimode_scalar_chain::convert_op): Likewise.
+	(dimode_scalar_chain::convert_insn): Likewise.
+
 2016-05-10  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (resolve_args_picking_1): Consider DW_OP_neg as an
