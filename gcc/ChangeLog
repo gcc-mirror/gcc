@@ -1,3 +1,10 @@
+2016-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/71028
+	* cfgcleanup.c (try_optimize_cfg): Do not flip a conditional
+	jump with just a return in the fallthrough block if the branch
+	block contains just a return as well.
+
 2016-05-10  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_binary_loc) [(X ^ Y) & Y]: Remove and merge with...

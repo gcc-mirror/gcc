@@ -2870,6 +2870,7 @@ try_optimize_cfg (int mode)
 		 a return so that it becomes a conditional return and a
 		 new jump to the original branch target.  */
 	      if (EDGE_COUNT (b->succs) == 2
+		  && BRANCH_EDGE (b)->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && any_condjump_p (BB_END (b))
 		  && bb_is_just_return (FALLTHRU_EDGE (b)->dest, &ret, &use))
 		{
