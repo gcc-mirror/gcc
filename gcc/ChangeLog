@@ -1,3 +1,16 @@
+2016-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70497
+	PR tree-optimization/28367
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup): New function
+	split out from ...
+	(visit_reference_op_load): ... here.
+	(vn_reference_lookup_3): Use it to handle subreg-like accesses
+	with simplified BIT_FIELD_REFs.
+	* tree-ssa-pre.c (eliminate_insert): Handle inserting BIT_FIELD_REFs.
+	* tree-complex.c (extract_component): Handle BIT_FIELD_REFs
+	correctly.
+
 2016-05-10  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (add_abstract_origin_attribute): Adjust
