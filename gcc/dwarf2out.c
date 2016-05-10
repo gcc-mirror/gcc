@@ -15407,6 +15407,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_swap:
 	case DW_OP_rot:
 	case DW_OP_abs:
+	case DW_OP_neg:
 	case DW_OP_not:
 	case DW_OP_plus_uconst:
 	case DW_OP_skip:
@@ -15543,7 +15544,6 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_minus:
 	case DW_OP_mod:
 	case DW_OP_mul:
-	case DW_OP_neg:
 	case DW_OP_or:
 	case DW_OP_plus:
 	case DW_OP_shl:

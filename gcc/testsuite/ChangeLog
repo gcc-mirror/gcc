@@ -1,3 +1,7 @@
+2016-05-10  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/debug6.adb, gnat.dg/debug6_pkg.ads: New testcase.
+
 2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR tree-optimization/70786
