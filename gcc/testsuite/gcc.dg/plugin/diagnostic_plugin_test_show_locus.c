@@ -234,9 +234,11 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_very_wide_line"))
     {
       const int line = fnstart_line + 2;
+      global_dc->show_ruler_p = true;
       warning_at (make_location (get_loc (line, 94), get_loc (line, 90),
 				 get_loc (line, 98)),
 		  0, "test");
+      global_dc->show_ruler_p = false;
     }
 
   /* Example of multiple carets.  */

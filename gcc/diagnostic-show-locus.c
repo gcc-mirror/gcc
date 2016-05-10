@@ -199,6 +199,8 @@ class layout
   void print_annotation_line (int row, const line_bounds lbounds);
   void print_any_fixits (int row, const rich_location *richloc);
 
+  void show_ruler (int max_column) const;
+
  private:
   void calculate_line_spans ();
 
@@ -653,6 +655,9 @@ layout::layout (diagnostic_context * context,
 	m_x_offset = column - right_margin;
       gcc_assert (m_x_offset >= 0);
     }
+
+  if (context->show_ruler_p)
+    show_ruler (m_x_offset + max_width);
 }
 
 /* Return true iff we should print a heading when starting the
@@ -1082,6 +1087,40 @@ layout::move_to_column (int *column, int dest_column)
       pp_space (m_pp);
       (*column)++;
     }
+}
+
+/* For debugging layout issues, render a ruler giving column numbers
+   (after the 1-column indent).  */
+
+void
+layout::show_ruler (int max_column) const
+{
+  /* Hundreds.  */
+  if (max_column > 99)
+    {
+      pp_space (m_pp);
+      for (int column = 1 + m_x_offset; column <= max_column; column++)
+	if (0 == column % 10)
+	  pp_character (m_pp, '0' + (column / 100) % 10);
+	else
+	  pp_space (m_pp);
+      pp_newline (m_pp);
+    }
+
+  /* Tens.  */
+  pp_space (m_pp);
+  for (int column = 1 + m_x_offset; column <= max_column; column++)
+    if (0 == column % 10)
+      pp_character (m_pp, '0' + (column / 10) % 10);
+    else
+      pp_space (m_pp);
+  pp_newline (m_pp);
+
+  /* Units.  */
+  pp_space (m_pp);
+  for (int column = 1 + m_x_offset; column <= max_column; column++)
+    pp_character (m_pp, '0' + (column % 10));
+  pp_newline (m_pp);
 }
 
 } /* End of anonymous namespace.  */

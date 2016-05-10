@@ -1,3 +1,11 @@
+2016-05-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::layout): Call show_ruler
+	if show_ruler_p was set on the context.
+	(layout::show_ruler): New method.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"show_ruler_p".
+
 2016-05-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71039
