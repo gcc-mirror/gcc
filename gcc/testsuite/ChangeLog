@@ -1,3 +1,11 @@
+2016-05-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	Backport from mainline r235962.
+	2016-05-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR debug/70935
+	* gcc.dg/torture/pr70935.c: New test.
+
 2016-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/fabsneg-1.c New test.
