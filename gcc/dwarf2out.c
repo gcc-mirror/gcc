@@ -18621,15 +18621,16 @@ add_prototyped_attribute (dw_die_ref die, tree func_type)
 }
 
 /* Add an 'abstract_origin' attribute below a given DIE.  The DIE is found
-   by looking in either the type declaration or object declaration
-   equate table.  */
+   by looking in the type declaration, the object declaration equate table or
+   the block mapping.  */
 
 static inline dw_die_ref
 add_abstract_origin_attribute (dw_die_ref die, tree origin)
 {
   dw_die_ref origin_die = NULL;
 
-  if (TREE_CODE (origin) != FUNCTION_DECL)
+  if (TREE_CODE (origin) != FUNCTION_DECL
+      && TREE_CODE (origin) != BLOCK)
     {
       /* We may have gotten separated from the block for the inlined
 	 function, if we're in an exception handler or some such; make
@@ -18651,6 +18652,8 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
     origin_die = lookup_decl_die (origin);
   else if (TYPE_P (origin))
     origin_die = lookup_type_die (origin);
+  else if (TREE_CODE (origin) == BLOCK)
+    origin_die = BLOCK_DIE (origin);
 
   /* XXX: Functions that are never lowered don't always have correct block
      trees (in the case of java, they simply have no block tree, in some other
@@ -21467,6 +21470,10 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
 	  BLOCK_DIE (stmt) = stmt_die;
 	  old_die = NULL;
 	}
+
+      tree origin = block_ultimate_origin (stmt);
+      if (origin != NULL_TREE && origin != stmt)
+	add_abstract_origin_attribute (stmt_die, origin);
     }
 
   if (old_die)
