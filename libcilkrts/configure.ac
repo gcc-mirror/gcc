@@ -51,14 +51,14 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
-# Test for GNU extensions. Will define _GNU_SOURCE if they're available
-AC_USE_SYSTEM_EXTENSIONS
-
 AM_INIT_AUTOMAKE(foreign no-dist)
 
 AM_MAINTAINER_MODE
 
 AM_ENABLE_MULTILIB(, ..)
+
+# Test for GNU extensions. Will define _GNU_SOURCE if they're available
+AC_USE_SYSTEM_EXTENSIONS
 
 # Build a DLL on Windows
 # AC_LIBTOOL_WIN32_DLL
