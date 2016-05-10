@@ -201,6 +201,10 @@ struct diagnostic_context
      source code (to avoid e.g. colorizing just the first character in
      a token, which would look strange).  */
   bool colorize_source_p;
+
+  /* Usable by plugins; if true, print a debugging ruler above the
+     source output.  */
+  bool show_ruler_p;
 };
 
 static inline void
