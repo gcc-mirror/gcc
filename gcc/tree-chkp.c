@@ -1853,7 +1853,9 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
 
   /* If function decl is available then use it for
      formal arguments list.  Otherwise use function type.  */
-  if (fndecl && DECL_ARGUMENTS (fndecl))
+  if (fndecl
+      && DECL_ARGUMENTS (fndecl)
+      && gimple_call_fntype (call) == TREE_TYPE (fndecl))
     first_formal_arg = DECL_ARGUMENTS (fndecl);
   else
     {
@@ -1929,7 +1931,16 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
     {
       tree new_decl = chkp_maybe_create_clone (fndecl)->decl;
       gimple_call_set_fndecl (new_call, new_decl);
-      gimple_call_set_fntype (new_call, TREE_TYPE (new_decl));
+      /* In case of a type cast we should modify used function
+	 type instead of using type of new fndecl.  */
+      if (gimple_call_fntype (call) != TREE_TYPE (fndecl))
+	{
+	  tree type = gimple_call_fntype (call);
+	  type = chkp_copy_function_type_adding_bounds (type);
+	  gimple_call_set_fntype (new_call, type);
+	}
+      else
+	gimple_call_set_fntype (new_call, TREE_TYPE (new_decl));
     }
   /* For indirect call we should fix function pointer type if
      pass some bounds.  */
