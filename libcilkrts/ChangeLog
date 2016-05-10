@@ -1,3 +1,8 @@
+2016-05-10  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AC_USE_SYSTEM_EXTENSIONS behind AM_ENABLE_MULTILIB.
+	* configure: Regenerate.
+
 2016-05-04  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* Makefile.am: Merge from upstream, version 2.0.4420.0
