@@ -1,3 +1,8 @@
+2016-05-10  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (resolve_args_picking_1): Consider DW_OP_neg as an
+	unary operation, not a binary one.
+
 2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR tree-optimization/70786
