@@ -1,3 +1,11 @@
+2016-05-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("*vec_cmp<insn_cmp>df_cconly")
+	("*fixuns_truncdfdi2_z13")
+	("*fixuns_trunc<FP:mode><GPR:mode>2_z196")
+	("*fix_truncdfdi2_bfp_z13", "*floatunsdidf2_z13")
+	("*extendsfdf2_z13"): Replace TARGET_Z13 with TARGET_VX.
+
 2016-05-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70497
