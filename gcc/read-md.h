@@ -141,6 +141,7 @@ extern void fatal_with_file_and_line (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
 extern int read_skip_spaces (void);
+extern void require_char_ws (char expected);
 extern void read_name (struct md_name *);
 extern char *read_quoted_string (void);
 extern char *read_string (int);

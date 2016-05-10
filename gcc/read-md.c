@@ -391,6 +391,17 @@ read_skip_spaces (void)
     }
 }
 
+/* Consume any whitespace, then consume the next non-whitespace
+   character, issuing a fatal error if it is not EXPECTED.  */
+
+void
+require_char_ws (char expected)
+{
+  int ch = read_skip_spaces ();
+  if (ch != expected)
+    fatal_expected_char (expected, ch);
+}
+
 /* Read an rtx code name into NAME.  It is terminated by any of the
    punctuation chars of rtx printed syntax.  */
 
@@ -603,11 +614,7 @@ read_string (int star_if_braced)
     fatal_with_file_and_line ("expected `\"' or `{', found `%c'", c);
 
   if (saw_paren)
-    {
-      c = read_skip_spaces ();
-      if (c != ')')
-	fatal_expected_char (')', c);
-    }
+    require_char_ws (')');
 
   set_md_ptr_loc (stringbuf, read_md_filename, old_lineno);
   return stringbuf;
@@ -764,9 +771,7 @@ handle_constants (void)
   int c;
   htab_t defs;
 
-  c = read_skip_spaces ();
-  if (c != '[')
-    fatal_expected_char ('[', c);
+  require_char_ws ('[');
 
   /* Disable constant expansion during definition processing.  */
   defs = md_constants;
@@ -782,9 +787,7 @@ handle_constants (void)
       read_name (&value);
       add_constant (defs, xstrdup (name.string), xstrdup (value.string), 0);
 
-      c = read_skip_spaces ();
-      if (c != ')')
-	fatal_expected_char (')', c);
+      require_char_ws (')');
     }
   md_constants = defs;
 }
@@ -846,9 +849,7 @@ handle_enum (file_location loc, bool md_p)
       *slot = def;
     }
 
-  c = read_skip_spaces ();
-  if (c != '[')
-    fatal_expected_char ('[', c);
+  require_char_ws ('[');
 
   while ((c = read_skip_spaces ()) != ']')
     {
@@ -1007,9 +1008,7 @@ handle_file (directive_handler_t handle_directive)
       else
 	read_skip_construct (1, loc);
 
-      c = read_skip_spaces ();
-      if (c != ')')
-	fatal_expected_char (')', c);
+      require_char_ws (')');
     }
   fclose (read_md_file);
 }

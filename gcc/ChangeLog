@@ -1,3 +1,16 @@
+2016-05-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* read-md.c (require_char_ws): New function.
+	(read_string): Simplify using require_char_ws.
+	(handle_constants): Likewise.
+	(handle_enum): Likewise.
+	(handle_file): Likewise.
+	* read-md.h (require_char_ws): New declaration.
+	* read-rtl.c (read_conditions): Simplify using require_char_ws.
+	(read_mapping): Likewise.
+	(read_rtx_code): Likewise.
+	(read_nested_rtx): Likewise.
+
 2016-05-10  James Norris  <jnorris@codesourcery.com>
 
 	* config/rs6000/sysv4.h (CRTOFFLOADBEGIN): Define. Add crtoffloadbegin.o
