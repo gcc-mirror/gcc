@@ -1,3 +1,9 @@
+2016-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (legitimize_pic_address): Merge 64-bit and 32-bit
+	gotoff_operand code paths.  Use copy_to_suggested_regs and
+	expand_simple_binop where appropriate.  Cleanup.
+
 2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/70799
