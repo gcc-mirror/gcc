@@ -1188,6 +1188,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	    j--;
 	  }
       }
+    argpos = 0;
     FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
       {
 	tree argtype = TREE_TYPE (arg);
@@ -1205,6 +1206,14 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		slots = BITMAP_ALLOC (NULL);
 		chkp_find_bound_slots (argtype, slots);
 	      }
+	  }
+	else if (CALL_WITH_BOUNDS_P (exp)
+		 && pass_by_reference (NULL, TYPE_MODE (argtype), argtype,
+				       argpos < n_named_args))
+	  {
+	    if (slots)
+	      BITMAP_FREE (slots);
+	    ptr_arg = j;
 	  }
 	else if (POINTER_BOUNDS_TYPE_P (argtype))
 	  {
@@ -1249,6 +1258,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	else
 	  args[j].tree_value = arg;
 	j--;
+	argpos++;
       }
 
     if (slots)
