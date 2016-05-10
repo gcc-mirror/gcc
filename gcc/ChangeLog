@@ -1,3 +1,10 @@
+2016-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_loc) [(X ^ Y) & Y]: Remove and merge with...
+	* match.pd ((X & Y) ^ Y): ... this.
+	((X & Y) & Y, (X | Y) | Y, (X ^ Y) ^ Y, (X & Y) & (X & Z), (X | Y)
+	| (X | Z), (X ^ Y) ^ (X ^ Z)): New transformations.
+
 2016-05-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* read-md.c (require_char_ws): New function.
