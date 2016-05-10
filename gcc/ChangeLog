@@ -5,6 +5,12 @@
 
 2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	PR middle-end/70877
+	* tree-chkp.c (chkp_add_bounds_to_call_stmt): Handle
+	calls with type casted fndecl.
+
+2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR tree-optimization/70786
 	* tree-chkp.c (chkp_find_bounds_1): Support WITH_SIZE_EXPR.
 	* gcc/calls.c (initialize_argument_information): Bind bounds

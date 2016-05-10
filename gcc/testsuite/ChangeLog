@@ -4,6 +4,11 @@
 
 2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	PR middle-end/70877
+	* gcc.target/i386/pr70877.c: New test.
+
+2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR tree-optimization/70786
 	* gcc.target/i386/pr70876.c: New test.
 
