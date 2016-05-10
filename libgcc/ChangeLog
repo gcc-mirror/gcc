@@ -1,3 +1,10 @@
+2016-05-10  Joel Sherrill <joel@rtems.org>
+
+	PR libgcc/70720
+	* config.host (moxie-*-rtems*): Merge this stanza with other moxie
+	targets so the same extra_parts are built.  Also have tmake_file add
+	on to its value rather than override.
+
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config.host: Remove SH5 support.
