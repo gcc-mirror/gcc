@@ -1,3 +1,10 @@
+2016-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70927
+	* gcc.target/i386/avx512vl-logic-1.c: New test.
+	* gcc.target/i386/avx512vl-logic-2.c: New test.
+	* gcc.target/i386/avx512dq-logic-2.c: New test.
+
 2016-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/70963
