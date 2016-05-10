@@ -1,3 +1,9 @@
+2016-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/bit-assoc.c: New testcase.
+	* gcc.dg/tree-ssa/pr69270.c: Adjust.
+	* gcc.dg/tree-ssa/vrp59.c: Disable forwprop.
+
 2016-05-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/70799

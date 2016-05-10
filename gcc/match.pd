@@ -674,10 +674,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (bit_xor (convert @0) (bit_not @1))))
 
-/* Fold (X & Y) ^ Y as ~X & Y.  */
-(simplify
- (bit_xor:c (bit_and:c @0 @1) @1)
- (bit_and (bit_not @0) @1))
+/* Fold (X & Y) ^ Y and (X ^ Y) & Y as ~X & Y.  */
+(for opo (bit_and bit_xor)
+     opi (bit_xor bit_and)
+ (simplify
+  (opo:c (opi:c @0 @1) @1) 
+  (bit_and (bit_not @0) @1)))
 
 /* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both
    operands are another bit-wise operation with a common input.  If so,
@@ -693,6 +695,35 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (type, TREE_TYPE (@2)))
    (rop (convert @0) (op (convert @1) (convert @2))))))
 
+/* Some simple reassociation for bit operations, also handled in reassoc.  */
+/* (X & Y) & Y -> X & Y
+   (X | Y) | Y -> X | Y  */
+(for op (bit_and bit_ior)
+ (simplify
+  (op:c (convert?@2 (op:c @0 @1)) (convert? @1))
+  @2))
+/* (X ^ Y) ^ Y -> X  */
+(simplify
+ (bit_xor:c (convert? (bit_xor:c @0 @1)) (convert? @1))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (convert @0)))
+/* (X & Y) & (X & Z) -> (X & Y) & Z
+   (X | Y) | (X | Z) -> (X | Y) | Z  */
+(for op (bit_and bit_ior)
+ (simplify
+  (op:c (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
+       && tree_nop_conversion_p (type, TREE_TYPE (@2)))
+   (if (single_use (@5) && single_use (@6))
+    (op @3 (convert @2))
+    (if (single_use (@3) && single_use (@4))
+     (op (convert @1) @5))))))
+/* (X ^ Y) ^ (X ^ Z) -> Y ^ Z  */
+(simplify
+ (bit_xor (convert1? (bit_xor:c @0 @1)) (convert2? (bit_xor:c @0 @2)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
+      && tree_nop_conversion_p (type, TREE_TYPE (@2)))
+  (convert (bit_xor @1 @2))))
 
 (simplify
  (abs (abs@1 @0))
