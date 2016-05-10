@@ -3673,8 +3673,10 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 	  if (!rhs1_type)
 	    return NULL;
 	}
-      else
+      else if (COMPARISON_CLASS_P (rhs1))
 	rhs1_type = TREE_TYPE (TREE_OPERAND (rhs1, 0));
+      else
+	return NULL;
 
       vectype2 = get_mask_type_for_scalar_type (rhs1_type);
 
