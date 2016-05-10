@@ -1,3 +1,23 @@
+2016-05-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/rx/rx-protos.h (is_interrupt_func, is_fast_interrupt_func):
+	Forward declare.
+	(rx_atomic_sequence): New class.
+	* config/rx/rx.c (rx_print_operand): Use symbolic names for PSW bits.
+	(is_interrupt_func, is_fast_interrupt_func): Make non-static and
+	non-inline.
+	(rx_atomic_sequence::rx_atomic_sequence,
+	rx_atomic_sequence::~rx_atomic_sequence): New functions.
+	* config/rx/rx.md (CTRLREG_PSW, CTRLREG_USP, CTRLREG_FPSW, CTRLREG_CPEN,
+	CTRLREG_BPSW, CTRLREG_BPC, CTRLREG_ISP, CTRLREG_FINTV,
+	CTRLREG_INTB): New constants.
+	(FETCHOP): New code iterator.
+	(fethcop_name, fetchop_name2): New iterator code attributes.
+	(QIHI): New mode iterator.
+	(atomic_exchange<mode>, atomic_exchangesi, xchg_mem<mode>,
+	atomic_fetch_<fetchop_name>si, atomic_fetch_nandsi,
+	atomic_<fetchop_name>_fetchsi, atomic_nand_fetchsi): New patterns.
+
 2016-05-10  Martin Liska  <mliska@suse.cz>
 
 	* tree-inline.c (remap_dependence_clique): Do not remap
