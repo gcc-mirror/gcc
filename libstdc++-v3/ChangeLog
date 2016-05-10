@@ -1,3 +1,15 @@
+2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71005
+	* include/experimental/bits/fs_dir.h (__directory_iterator_proxy):
+	New type.
+	(directory_iterator::operator++(int)): Return proxy.
+	(recursive_directory_iterator::operator++(int)): Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Test post-increment.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+
 2016-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71004
@@ -20,7 +32,7 @@
 	* include/experimental/bits/fs_dir.h (recursive_directory_iterator):
 	Initialize scalar member variables in default constructor.
 	* testsuite/experimental/filesystem/iterators/
-	recursive_directory_iterator.cc: Teste default construction.
+	recursive_directory_iterator.cc: Test default construction.
 
 2016-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
