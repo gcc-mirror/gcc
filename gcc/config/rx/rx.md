@@ -75,6 +75,16 @@
    (UNSPEC_BUILTIN_WAIT	   51)
 
    (UNSPEC_PID_ADDR	   52)
+
+   (CTRLREG_PSW		    0)
+   (CTRLREG_USP		    2)
+   (CTRLREG_FPSW	    3)
+   (CTRLREG_CPEN	    4)
+   (CTRLREG_BPSW	    8)
+   (CTRLREG_BPC		    9)
+   (CTRLREG_ISP		   10)
+   (CTRLREG_FINTV	   11)
+   (CTRLREG_INTB	   12)
   ]
 )
 
@@ -2145,7 +2155,17 @@
     FAIL;
 })
 
-;; Atomic exchange operation.
+;; Atomic operations.
+
+(define_code_iterator FETCHOP [plus minus ior xor and])
+
+(define_code_attr fetchop_name
+  [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
+
+(define_code_attr fetchop_name2
+  [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
+
+(define_mode_iterator QIHI [QI HI])
 
 (define_insn "sync_lock_test_and_setsi"
   [(set (match_operand:SI 0 "register_operand"   "=r,r")
@@ -2157,6 +2177,126 @@
   [(set_attr "length" "3,6")
    (set_attr "timings" "22")]
 )
+
+(define_expand "atomic_exchange<mode>"
+  [(match_operand:QIHI 0 "register_operand")		;; oldval output
+   (match_operand:QIHI 1 "rx_restricted_mem_operand")	;; memory
+   (match_operand:QIHI 2 "register_operand")		;; newval input
+   (match_operand:QIHI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  emit_insn (gen_xchg_mem<mode> (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "atomic_exchangesi"
+  [(match_operand:SI 0 "register_operand")		;; oldval output
+   (match_operand:SI 1 "rx_restricted_mem_operand")	;; memory
+   (match_operand:SI 2 "register_operand")		;; newval input
+   (match_operand:SI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  emit_insn (gen_sync_lock_test_and_setsi (operands[0], operands[1],
+					   operands[2]));
+  DONE;
+})
+
+(define_insn "xchg_mem<mode>"
+  [(set (match_operand:QIHI 0 "register_operand"   "=r")
+	(match_operand:QIHI 1 "rx_compare_operand" "=Q"))
+   (set (match_dup 1)
+	(match_operand:QIHI 2 "register_operand"    "0"))]
+  ""
+  "xchg\t%1, %0"
+  [(set_attr "length" "6")
+   (set_attr "timings" "22")]
+)
+
+;; read - modify - write - return old value
+(define_expand "atomic_fetch_<fetchop_name>si"
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "memory_operand"))
+   (set (match_dup 1)
+	(FETCHOP:SI (match_dup 1) (match_operand:SI 2 "rx_source_operand")))
+   (match_operand:SI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  {
+    rx_atomic_sequence seq (current_function_decl);
+
+    emit_move_insn (operands[0], operands[1]);
+
+    rtx tmp = gen_reg_rtx (SImode);
+    emit_insn (gen_<fetchop_name2>si3 (tmp, operands[0], operands[2]));
+
+    emit_move_insn (operands[1], tmp);
+  }
+  DONE;
+})
+
+(define_expand "atomic_fetch_nandsi"
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "memory_operand"))
+   (set (match_dup 1)
+	(not:SI (and:SI (match_dup 1)
+			(match_operand:SI 2 "rx_source_operand"))))
+   (match_operand:SI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  {
+    rx_atomic_sequence seq (current_function_decl);
+
+    emit_move_insn (operands[0], operands[1]);
+
+    rtx tmp = gen_reg_rtx (SImode);
+    emit_insn (gen_andsi3 (tmp, operands[0], operands[2]));
+    emit_insn (gen_one_cmplsi2 (tmp, tmp));
+
+    emit_move_insn (operands[1], tmp);
+  }
+  DONE;
+})
+
+;; read - modify - write - return new value
+(define_expand "atomic_<fetchop_name>_fetchsi"
+  [(set (match_operand:SI 0 "register_operand")
+	(FETCHOP:SI (match_operand:SI 1 "rx_restricted_mem_operand")
+		    (match_operand:SI 2 "register_operand")))
+   (set (match_dup 1)
+	(FETCHOP:SI (match_dup 1) (match_dup 2)))
+   (match_operand:SI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  {
+    rx_atomic_sequence seq (current_function_decl);
+
+    emit_move_insn (operands[0], operands[2]);
+    emit_insn (gen_<fetchop_name2>si3 (operands[0], operands[0], operands[1]));
+    emit_move_insn (operands[1], operands[0]);
+  }
+  DONE;
+})
+
+(define_expand "atomic_nand_fetchsi"
+  [(set (match_operand:SI 0 "register_operand")
+	(not:SI (and:SI (match_operand:SI 1 "rx_restricted_mem_operand")
+			(match_operand:SI 2 "register_operand"))))
+   (set (match_dup 1)
+	(not:SI (and:SI (match_dup 1) (match_dup 2))))
+   (match_operand:SI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  {
+    rx_atomic_sequence seq (current_function_decl);
+
+    emit_move_insn (operands[0], operands[2]);
+    emit_insn (gen_andsi3 (operands[0], operands[0], operands[1]));
+    emit_insn (gen_one_cmplsi2 (operands[0], operands[0]));
+    emit_move_insn (operands[1], operands[0]);
+  }
+  DONE;
+});
+
 
 ;; Block move functions.
 
