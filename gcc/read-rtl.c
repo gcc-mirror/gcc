@@ -742,9 +742,7 @@ read_conditions (void)
 {
   int c;
 
-  c = read_skip_spaces ();
-  if (c != '[')
-    fatal_expected_char ('[', c);
+  require_char_ws ('[');
 
   while ( (c = read_skip_spaces ()) != ']')
     {
@@ -759,14 +757,10 @@ read_conditions (void)
       validate_const_int (name.string);
       value = atoi (name.string);
 
-      c = read_skip_spaces ();
-      if (c != '"')
-	fatal_expected_char ('"', c);
+      require_char_ws ('"');
       expr = read_quoted_string ();
 
-      c = read_skip_spaces ();
-      if (c != ')')
-	fatal_expected_char (')', c);
+      require_char_ws (')');
 
       add_c_test (expr, value);
     }
@@ -890,9 +884,7 @@ read_mapping (struct iterator_group *group, htab_t table)
   read_name (&name);
   m = add_mapping (group, table, name.string);
 
-  c = read_skip_spaces ();
-  if (c != '[')
-    fatal_expected_char ('[', c);
+  require_char_ws ('[');
 
   /* Read each value.  */
   end_ptr = &m->values;
@@ -912,9 +904,7 @@ read_mapping (struct iterator_group *group, htab_t table)
 	  /* A "(name string)" pair.  */
 	  read_name (&name);
 	  string = read_string (false);
-	  c = read_skip_spaces ();
-	  if (c != ')')
-	    fatal_expected_char (')', c);
+	  require_char_ws (')');
 	}
       number = group->find_builtin (name.string);
       end_ptr = add_map_value (end_ptr, number, string);
@@ -1181,9 +1171,7 @@ read_rtx_code (const char *code_name)
 	  int list_counter = 0;
 	  rtvec return_vec = NULL_RTVEC;
 
-	  c = read_skip_spaces ();
-	  if (c != '[')
-	    fatal_expected_char ('[', c);
+	  require_char_ws ('[');
 
 	  /* Add expressions to a list, while keeping a count.  */
 	  obstack_init (&vector_stack);
@@ -1398,12 +1386,9 @@ static rtx
 read_nested_rtx (void)
 {
   struct md_name name;
-  int c;
   rtx return_rtx;
 
-  c = read_skip_spaces ();
-  if (c != '(')
-    fatal_expected_char ('(', c);
+  require_char_ws ('(');
 
   read_name (&name);
   if (strcmp (name.string, "nil") == 0)
@@ -1411,9 +1396,7 @@ read_nested_rtx (void)
   else
     return_rtx = read_rtx_code (name.string);
 
-  c = read_skip_spaces ();
-  if (c != ')')
-    fatal_expected_char (')', c);
+  require_char_ws (')');
 
   return return_rtx;
 }
