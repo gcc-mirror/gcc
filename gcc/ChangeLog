@@ -1,5 +1,12 @@
 2016-05-11  Richard Biener  <rguenther@suse.de>
 
+	PR debug/71057
+	* dwarf2out.c (retry_incomplete_types): Set early_dwarf.
+	(dwarf2out_finish): Move retry_incomplete_types call ...
+	(dwarf2out_early_finish): ... here.
+
+2016-05-11  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/71002
 	* alias.c (reference_alias_ptr_type): Preserve alias-set zero
 	if the langhook insists on it.
