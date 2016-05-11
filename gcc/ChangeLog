@@ -1,3 +1,12 @@
+2016-05-11  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (is_complex_IBM_long_double,
+	abi_v4_pass_in_fpr): New functions.
+	(rs6000_function_arg_boundary): Exclude complex IBM long double
+	from 64-bit alignment when ABI_V4.
+	(rs6000_function_arg, rs6000_function_arg_advance_1,
+	rs6000_gimplify_va_arg): Use abi_v4_pass_in_fpr.
+
 2016-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/71028
