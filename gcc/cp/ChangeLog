@@ -1,3 +1,8 @@
+2016-05-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71024
+	* decl.c (duplicate_decls): Call diagnose_mismatched_decls.
+
 2016-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_selection_statement): For RID_SWITCH,

@@ -1,3 +1,9 @@
+2016-05-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71024
+	* c-common.c (diagnose_mismatched_attributes): New function.
+	* c-common.h (diagnose_mismatched_attributes): Declare.
+
 2016-05-04  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt (Wdangling-else): New option.
