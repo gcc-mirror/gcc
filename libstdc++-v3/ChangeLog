@@ -1,3 +1,9 @@
+2016-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71049
+	* src/c++11/cow-stdexcept.cc [!_GLIBCXX_USE_DUAL_ABI]: Don't define
+	exception constructors with __sso_string parameters.
+
 2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_dir.h (begin, end): Add noexcept.
