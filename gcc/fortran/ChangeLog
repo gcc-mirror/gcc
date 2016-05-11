@@ -1,3 +1,8 @@
+2016-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/70855
+	* frontend-passes.c (inline_matmul_assign): Disable in !$omp workshare.
+
 2016-05-09  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/70937
