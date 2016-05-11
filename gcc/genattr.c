@@ -240,11 +240,11 @@ main (int argc, const char **argv)
       printf ("/* Insn latency time on data consumed by the 2nd insn.\n");
       printf ("   Use the function if bypass_p returns nonzero for\n");
       printf ("   the 1st insn. */\n");
-      printf ("extern int insn_latency (rtx, rtx);\n\n");
+      printf ("extern int insn_latency (rtx_insn *, rtx_insn *);\n\n");
       printf ("/* Maximal insn latency time possible of all bypasses for this insn.\n");
       printf ("   Use the function if bypass_p returns nonzero for\n");
       printf ("   the 1st insn. */\n");
-      printf ("extern int maximal_insn_latency (rtx);\n\n");
+      printf ("extern int maximal_insn_latency (rtx_insn *);\n\n");
       printf ("\n#if AUTOMATON_ALTS\n");
       printf ("/* The following function returns number of alternative\n");
       printf ("   reservations of given insn.  It may be used for better\n");
@@ -290,8 +290,8 @@ main (int argc, const char **argv)
       printf ("    state_transition should return negative value for\n");
       printf ("    the insn and the state).  Data dependencies between\n");
       printf ("    the insns are ignored by the function.  */\n");
-      printf
-	("extern int min_insn_conflict_delay (state_t, rtx, rtx);\n");
+      printf ("extern int "
+              "min_insn_conflict_delay (state_t, rtx_insn *, rtx_insn *);\n");
       printf ("/* The following function outputs reservations for given\n");
       printf ("   insn as they are described in the corresponding\n");
       printf ("   define_insn_reservation.  */\n");
