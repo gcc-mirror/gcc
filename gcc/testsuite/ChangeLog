@@ -1,3 +1,8 @@
+2016-05-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/38611
+	* g++.dg/Wattributes.C: New test.
+
 2016-05-10  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/bit-assoc.c: New testcase.
