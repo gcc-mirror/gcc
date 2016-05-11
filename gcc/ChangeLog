@@ -1,3 +1,18 @@
+2016-05-11  Alexander Monakov  <amonakov@ispras.ru>
+
+	* genattr.c (main): Change 'rtx' to 'rtx_insn *' in prototypes of
+	'insn_latency', 'maximal_insn_latency', 'min_insn_conflict_delay'.
+	* genautomata.c (output_internal_insn_code_evaluation): Simplify.
+	Move handling of non-insn arguments inline into the sole user:
+	(output_trans_func): ...here.
+	(output_min_insn_conflict_delay_func): Change 'rtx' to 'rtx_insn *'
+	in emitted function prototype.
+	(output_internal_insn_latency_func): Ditto.  Simplify.
+	(output_internal_maximal_insn_latency_func): Ditto.  Delete
+	always-unused argument.
+	(output_insn_latency_func): Ditto.
+	(output_maximal_insn_latency_func): Ditto.
+
 2016-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71055
