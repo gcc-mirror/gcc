@@ -15474,8 +15474,6 @@ legitimize_pic_address (rtx orig, rtx reg)
 	{
 	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PCREL);
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
-
-	  new_rtx = copy_to_suggested_reg (new_rtx, reg, Pmode);
 	}
       else if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
@@ -15484,14 +15482,6 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 	  new_rtx = gen_const_mem (Pmode, new_rtx);
 	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
-
-	  if (reg == 0)
-	    reg = gen_reg_rtx (Pmode);
-	  /* Use directly gen_movsi, otherwise the address is loaded
-	     into register for CSE.  We don't want to CSE this addresses,
-	     instead we CSE addresses from the GOT table, so skip this.  */
-	  emit_insn (gen_movsi (reg, new_rtx));
-	  new_rtx = reg;
 	}
       else
 	{
@@ -15504,9 +15494,9 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
 	  new_rtx = gen_const_mem (Pmode, new_rtx);
 	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
-
-	  new_rtx = copy_to_suggested_reg (new_rtx, reg, Pmode);
 	}
+
+      new_rtx = copy_to_suggested_reg (new_rtx, reg, Pmode);
     }
   else
     {
