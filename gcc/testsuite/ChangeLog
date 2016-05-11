@@ -1,3 +1,9 @@
+2016-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-13.c: Add dg-add-options bind_pic_locally
+	directive.
+	* gcc.target/i386/pr66746.c: Ditto.
+
 2016-05-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/dform-3.c: New test for ISA 3.0 vector d-form
