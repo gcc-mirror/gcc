@@ -2812,6 +2812,12 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (in_where)
     return 0;
 
+  /* For now don't do anything in OpenMP workshare, it confuses
+     its translation, which expects only the allowed statements in there.
+     We should figure out how to parallelize this eventually.  */
+  if (in_omp_workshare)
+    return 0;
+
   expr1 = co->expr1;
   expr2 = co->expr2;
   if (expr2->expr_type != EXPR_FUNCTION
