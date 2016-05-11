@@ -3646,6 +3646,7 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
       break;
 
     case ADDR_EXPR:
+    case WITH_SIZE_EXPR:
       bounds = chkp_make_addressed_object_bounds (TREE_OPERAND (ptr_src, 0), iter);
       break;
 
