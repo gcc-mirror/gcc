@@ -1,3 +1,87 @@
+2016-05-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (quad_memory_operand): Move most of
+	the code into quad_address_p and call it to share code with
+	vsx_quad_dform_memory_operand.
+	(vsx_quad_dform_memory_operand): New predicate for ISA 3.0 vector
+	d-form support.
+	* config/rs6000/rs6000.opt (-mlra): Switch to being an option mask
+	bit instead of being a separate word.  Split -mpower9-dform into
+	two switches, -mpower9-dform-scalar and -mpower9-dform-vector.
+	* config/rs6000/rs6000.c (RELOAD_REG_QUAD_OFFSET): New addr_mask
+	for the register class supporting 128-bit quad word memory
+	offsets.
+	(mode_supports_vsx_dform_quad): Helper function to return if the
+	register class uses quad word memory offsets.
+	(rs6000_debug_addr_mask): Add support for quad word memory
+	offsets.
+	(rs6000_debug_reg_global): Always print if we are using LRA or
+	not.
+	(rs6000_setup_reg_addr_masks): If ISA 3.0 vector d-form
+	instructions are enabled, set up the appropriate addr_masks for
+	128-bit types.
+	(rs6000_init_hard_regno_mode_ok): wb constraint is now based on
+	-mpower9-dform-scalar, instead of -mpower9-dform.
+	(rs6000_option_override_internal): Split -mpower9-dform into two
+	switches, -mpower9-dform-scalar and -mpower9-dform-vector.  The
+	-mpower9-dform switch sets or clears both.  If we are not using
+	the LRA register allocator, do not enable -mpower9-dform-vector by
+	default.  If we are using LRA, enable -mpower9-dform-vector and
+	-mvsx-timode if it is appropriate.  Issue a warning if either
+	-mpower9-dform-vector or -mvsx-timode are explicitly used without
+	enabling LRA.
+	(quad_address_offset_p): New helper function to return if the
+	offset is legal for quad word memory instructions.
+	(quad_address_p): New function to determin if GPR or vector
+	register quad word memory addresses are legal.
+	(mem_operand_gpr): Validate quad word address offsets.
+	(reg_offset_addressing_ok_p): Add support for ISA 3.0 vector
+	d-form (register + offset) instructions.
+	(offsettable_ok_by_alignment): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(legitimate_lo_sum_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Add more debug statements for
+	-mdebug=addr.
+	(rs6000_legitimate_address_p): Add support for ISA 3.0 vector
+	d-form instructions.
+	(rs6000_secondary_reload_memory): Add support for ISA 3.0 vector
+	d-form instructions.  Distinguish different cases in debug
+	output.	(rs6000_secondary_reload_inner): Add support for ISA 3.0 vector
+	d-form instructions.
+	(rs6000_preferred_reload_class): Likewise.
+	(rs6000_output_move_128bit): Add support for ISA 3.0 d-form
+	instructions.  If ISA 3.0 is available, generate lxvx/stxvx instead
+	of the ISA 2.06 indexed memory instructions.
+	(rs6000_emit_prologue): If we have ISA 3.0 d-form instructions,
+	use them to save/restore the saved vector registers instead of
+	using Altivec instructions.
+	(rs6000_emit_epilogue): Likewise.
+	(rs6000_lra_p): Use TARGET_LRA instead of the old option word.
+	(rs6000_opt_masks): Split -mpower9-dform into
+	-mpower9-dform-scalar and -mpower9-dform-vector.
+	(rs6000_print_options_internal): Print -mno-<switch> if <switch>
+	was not selected.
+	* config/rs6000/vsx.md (p9_vecload_<mode>): Delete hack to emit
+	ISA 3.0 vector indexed memory instructions, and fold the code into
+	the normal mov<mode> patterns.
+	(p9_vecstore_<mode>): Likewise.
+	(vsx_mov<mode>): Add support for ISA 3.0 vector d-form
+	instructions.
+	(vsx_movti_64bit): Likewise.
+	(vsx_movti_32bit): Likewise.
+	* config/rs6000/constraints.md (wO constraint): New constraint for
+	ISA 3.0 vector d-form support.
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Use
+	-mpower9-dform-scalar instead of -mpower9-dform.  Add note not to
+	include -mpower9-dform-vector until we switch over to LRA.
+	(POWERPC_MASKS): Add -mlra. Split -mpower9-dform into two. 
+	switches, -mpower9-dform-scalar and -mpower9-dform-vector.
+	* config/rs6000/rs6000-protos.h (quad_address_p): Add declaration.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add documentation
+	for -mpower9-dform and -mlra.
+	* doc/md.texi (wO constraint): Document wO constraint.
+
 2016-05-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	* genattr.c (main): Change 'rtx' to 'rtx_insn *' in prototypes of
