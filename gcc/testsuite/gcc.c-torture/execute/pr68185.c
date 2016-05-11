@@ -1,3 +1,5 @@
+/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } { "-O0" } { "" } } */
+
 int a, b, d = 1, e, f, o, u, w = 1, z;
 short c, q, t;
 
