@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target label_values } */
+
 int test(void)
 {
     static int a =  ((char *)&&l1-(char *)&&l2)-1;

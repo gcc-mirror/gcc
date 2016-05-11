@@ -1,3 +1,12 @@
+2016-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/pr68671.c: Xfail on PTX -- assembler crash.
+	* gcc.c-torture/execute/pr68185.c: Likewise.
+	* gcc.dg/ipa/pr70306.c: Requires global constructors.
+	* gcc.dg/pr69634.c: Requires scheduling.
+	* gcc.dg/torture/pr66178.c: Require label values.
+	* gcc.dg/setjmp-6.c: Require indirect jumps.
+
 2016-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71055
