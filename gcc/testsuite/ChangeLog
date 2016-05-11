@@ -1,3 +1,8 @@
+2016-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* g++.dg/torture/pr71002.C: New testcase.
+
 2016-05-11  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/70807
