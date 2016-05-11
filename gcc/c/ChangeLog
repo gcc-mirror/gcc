@@ -1,3 +1,9 @@
+2016-05-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71024
+	* c-decl.c (diagnose_mismatched_decls): Factor out code to
+	diagnose_mismatched_attributes and call it.
+
 2016-05-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70255
