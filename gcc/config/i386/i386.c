@@ -3969,13 +3969,6 @@ convert_scalars_to_vector ()
   bitmap_obstack_release (NULL);
   df_process_deferred_rescans ();
 
-  /* FIXME: Since the CSE pass may change dominance info, which isn't
-     expected by the fwprop pass, call free_dominance_info to
-     invalidate dominance info.  Otherwise, the fwprop pass may crash
-     when dominance info is changed.  */
-  if (TARGET_64BIT)
-    free_dominance_info (CDI_DOMINATORS);
-
   /* Conversion means we may have 128bit register spills/fills
      which require aligned stack.  */
   if (converted_insns)

@@ -5505,7 +5505,7 @@ cse_insn (rtx_insn *insn)
       else if (n_sets == 1 && dest == pc_rtx && src == pc_rtx)
 	{
 	  /* One less use of the label this insn used to jump to.  */
-	  delete_insn_and_edges (insn);
+	  cse_cfg_altered |= delete_insn_and_edges (insn);
 	  cse_jumps_altered = true;
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
@@ -5516,7 +5516,7 @@ cse_insn (rtx_insn *insn)
 	{
 	  if (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
 	    cse_cfg_altered = true;
-	  delete_insn_and_edges (insn);
+	  cse_cfg_altered |= delete_insn_and_edges (insn);
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
 	}
@@ -5551,7 +5551,7 @@ cse_insn (rtx_insn *insn)
 		  REG_NOTES (new_rtx) = note;
 		}
 
-	      delete_insn_and_edges (insn);
+	      cse_cfg_altered |= delete_insn_and_edges (insn);
 	      insn = new_rtx;
 	    }
 	  else
@@ -7131,7 +7131,7 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	      count_reg_usage (insn, counts, NULL_RTX, -1);
 	      ndead++;
 	    }
-	  delete_insn_and_edges (insn);
+	  cse_cfg_altered |= delete_insn_and_edges (insn);
 	}
     }
 
@@ -7427,7 +7427,7 @@ cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
 				    newreg);
 	}
 
-      delete_insn_and_edges (insns[i]);
+      cse_cfg_altered |= delete_insn_and_edges (insns[i]);
     }
 
   return mode;
@@ -7568,6 +7568,9 @@ rest_of_handle_cse (void)
   else if (tem == 1 || optimize > 1)
     cleanup_cfg (0);
 
+  if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
+    free_dominance_info (CDI_DOMINATORS);
+
   return 0;
 }
 
@@ -7637,6 +7640,9 @@ rest_of_handle_cse2 (void)
   else if (tem == 1)
     cleanup_cfg (0);
 
+  if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
+    free_dominance_info (CDI_DOMINATORS);
+
   cse_not_expected = 1;
   return 0;
 }
@@ -7695,7 +7701,7 @@ rest_of_handle_cse_after_global_opts (void)
 
   rebuild_jump_labels (get_insns ());
   tem = cse_main (get_insns (), max_reg_num ());
-  purge_all_dead_edges ();
+  cse_cfg_altered |= purge_all_dead_edges ();
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
   cse_not_expected = !flag_rerun_cse_after_loop;
@@ -7710,6 +7716,9 @@ rest_of_handle_cse_after_global_opts (void)
     }
   else if (tem == 1)
     cleanup_cfg (0);
+
+  if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
+    free_dominance_info (CDI_DOMINATORS);
 
   flag_cse_follow_jumps = save_cfj;
   return 0;
