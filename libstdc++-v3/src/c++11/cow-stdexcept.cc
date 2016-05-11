@@ -292,6 +292,7 @@ _txnal_cow_string_c_str(const void* that)
   return (const char*) txnal_read_ptr((void**)&bs->_M_dataplus._M_p);
 }
 
+#if _GLIBCXX_USE_DUAL_ABI
 const char*
 _txnal_sso_string_c_str(const void* that)
 {
@@ -299,6 +300,7 @@ _txnal_sso_string_c_str(const void* that)
       (void* const*)const_cast<char* const*>(
 	  &((const std::__sso_string*) that)->_M_s._M_p));
 }
+#endif
 
 void
 _txnal_cow_string_D1_commit(void* data)
@@ -344,9 +346,24 @@ _txnal_runtime_error_get_msg(void* e)
 // result in undefined behavior, which is in this case not initializing this
 // string.
 #if _GLIBCXX_USE_DUAL_ABI
-#define CTORDTORSTRINGCSTR(s) _txnal_sso_string_c_str((s))
+#define CTORS_FROM_SSOSTRING(NAME, CLASS, BASE)			\
+void									\
+_ZGTtNSt##NAME##C1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE( \
+    CLASS* that, const std::__sso_string& s)				\
+{									\
+  CLASS e("");								\
+  _ITM_memcpyRnWt(that, &e, sizeof(CLASS));				\
+  /* Get the C string from the SSO string.  */				\
+  _txnal_cow_string_C1_for_exceptions(_txnal_##BASE##_get_msg(that),	\
+				      _txnal_sso_string_c_str(&s), that); \
+}									\
+void									\
+_ZGTtNSt##NAME##C2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE( \
+    CLASS*, const std::__sso_string&) __attribute__((alias		\
+("_ZGTtNSt" #NAME							\
+  "C1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE")));
 #else
-#define CTORDTORSTRINGCSTR(s) ""
+#define CTORS_FROM_SSOSTRING(NAME, CLASS, BASE)
 #endif
 
 // This macro defines transaction constructors and destructors for a specific
@@ -373,21 +390,7 @@ _ZGTtNSt##NAME##C1EPKc (CLASS* that, const char* s)			\
 void									\
 _ZGTtNSt##NAME##C2EPKc (CLASS*, const char*)				\
   __attribute__((alias ("_ZGTtNSt" #NAME "C1EPKc")));			\
-void									\
-_ZGTtNSt##NAME##C1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE( \
-    CLASS* that, const std::__sso_string& s)				\
-{									\
-  CLASS e("");								\
-  _ITM_memcpyRnWt(that, &e, sizeof(CLASS));				\
-  /* Get the C string from the SSO string.  */				\
-  _txnal_cow_string_C1_for_exceptions(_txnal_##BASE##_get_msg(that),	\
-				      CTORDTORSTRINGCSTR(&s), that);	\
-}									\
-void									\
-_ZGTtNSt##NAME##C2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE( \
-    CLASS*, const std::__sso_string&) __attribute__((alias		\
-("_ZGTtNSt" #NAME							\
-  "C1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE")));	\
+CTORS_FROM_SSOSTRING(NAME, CLASS, BASE)					\
 void									\
 _ZGTtNSt##NAME##D1Ev(CLASS* that)					\
 { _txnal_cow_string_D1(_txnal_##BASE##_get_msg(that)); }		\

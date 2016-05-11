@@ -1,3 +1,9 @@
+2016-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71049
+	* src/c++11/cow-stdexcept.cc [!_GLIBCXX_USE_DUAL_ABI]: Don't define
+	exception constructors with __sso_string parameters.
+
 2016-05-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Avoid endless run-time recursion for copying single-element
