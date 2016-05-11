@@ -1,3 +1,8 @@
+2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c/43651
+	* c.opt (Wduplicate-decl-specifier): New option.
+
 2016-05-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/71024

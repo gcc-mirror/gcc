@@ -1,3 +1,9 @@
+2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c/43651
+	* gcc.dg/Wduplicate-decl-specifier-c11.c: New test.
+	* gcc.dg/Wduplicate-decl-specifier.c: Likewise.
+
 2016-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-13.c: Add dg-add-options bind_pic_locally

@@ -253,6 +253,7 @@ enum c_declspec_word {
   cdw_const,
   cdw_volatile,
   cdw_restrict,
+  cdw_atomic,
   cdw_saturating,
   cdw_alignas,
   cdw_address_space,
@@ -716,7 +717,7 @@ extern void c_bind (location_t, tree, bool);
 extern bool tag_exists_p (enum tree_code, tree);
 
 /* In c-errors.c */
-extern void pedwarn_c90 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c90 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
