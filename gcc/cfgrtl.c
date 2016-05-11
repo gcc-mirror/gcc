@@ -215,9 +215,10 @@ delete_insn (rtx uncast_insn)
     }
 }
 
-/* Like delete_insn but also purge dead edges from BB.  */
+/* Like delete_insn but also purge dead edges from BB.
+   Return true if any edges are eliminated.  */
 
-void
+bool
 delete_insn_and_edges (rtx_insn *insn)
 {
   bool purge = false;
@@ -228,7 +229,8 @@ delete_insn_and_edges (rtx_insn *insn)
     purge = true;
   delete_insn (insn);
   if (purge)
-    purge_dead_edges (BLOCK_FOR_INSN (insn));
+    return purge_dead_edges (BLOCK_FOR_INSN (insn));
+  return false;
 }
 
 /* Unlink a chain of insns between START and FINISH, leaving notes

@@ -1,3 +1,17 @@
+2016-05-11  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/70807
+	* cfgrtl.h (delete_insn_and_edges): Now return bool.
+	* cfgrtl.c (delete_insn_and_edges): Likewise.
+	* config/i386/i386.c (convert_scalars_to_vector): Remove
+	redundant code.
+	* cse.c (cse_insn): Compute cse_cfg_altered.
+	(delete_trivially_dead_insns): Likewise.
+	(cse_cc_succs): Likewise.
+	(rest_of_handle_cse): Free dominance info if required.
+	(rest_of_handle_cse2): Likewise.
+	(rest_of_handle_cse_after_global_opts): Likewise.
+
 2016-05-11  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (is_complex_IBM_long_double,
