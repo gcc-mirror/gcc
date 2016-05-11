@@ -1907,14 +1907,34 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 				    buffer, sizeof (buffer));
 	  if (len > 0)
 	    {
-	      tree val = native_interpret_expr (vr->type,
+	      tree type = vr->type;
+	      /* Make sure to interpret in a type that has a range
+	         covering the whole access size.  */
+	      if (INTEGRAL_TYPE_P (vr->type)
+		  && ref->size != TYPE_PRECISION (vr->type))
+		type = build_nonstandard_integer_type (ref->size,
+						       TYPE_UNSIGNED (type));
+	      tree val = native_interpret_expr (type,
 						buffer
 						+ ((offset - offset2)
 						   / BITS_PER_UNIT),
 						ref->size / BITS_PER_UNIT);
+	      /* If we chop off bits because the types precision doesn't
+		 match the memory access size this is ok when optimizing
+		 reads but not when called from the DSE code during
+		 elimination.  */
+	      if (val
+		  && type != vr->type)
+		{
+		  if (! int_fits_type_p (val, vr->type))
+		    val = NULL_TREE;
+		  else
+		    val = fold_convert (vr->type, val);
+		}
+
 	      if (val)
 		return vn_reference_lookup_or_insert_for_pieces
-		         (vuse, vr->set, vr->type, vr->operands, val);
+			 (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
     }

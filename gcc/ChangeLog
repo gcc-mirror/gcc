@@ -1,5 +1,12 @@
 2016-05-11  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71055
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): When native-interpreting
+	sth with precision not equal to access size verify we don't chop
+	off bits.
+
+2016-05-11  Richard Biener  <rguenther@suse.de>
+
 	PR debug/71057
 	* dwarf2out.c (retry_incomplete_types): Set early_dwarf.
 	(dwarf2out_finish): Move retry_incomplete_types call ...
