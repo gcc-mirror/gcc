@@ -1006,7 +1006,8 @@ See RS/6000 and PowerPC Options.
 -mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
 -mupper-regs -mno-upper-regs -mmodulo -mno-modulo @gol
 -mfloat128 -mno-float128 -mfloat128-hardware -mno-float128-hardware @gol
--mpower9-fusion -mno-mpower9-fusion -mpower9-vector -mno-power9-vector}
+-mpower9-fusion -mno-mpower9-fusion -mpower9-vector -mno-power9-vector @gol
+-mpower9-dform -mno-power9-dform -mlra -mno-lra}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -13702,7 +13703,6 @@ Enable the use of indexed loads.  This can be problematic because some
 optimizers then assume that indexed stores exist, which is not
 the case.
 
-@item -mlra
 @opindex mlra
 Enable Local Register Allocation.  This is still experimental for ARC,
 so by default the compiler uses standard reload
@@ -19928,7 +19928,7 @@ following options:
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mdirect-move -mpower8-fusion -mpower8-vector @gol
 -mquad-memory -mquad-memory-atomic -mmodulo -mfloat128 -mfloat128-hardware @gol
--mpower9-fusion -mpower9-vector}
+-mpower9-fusion -mpower9-vector -mpower9-dform}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -20051,6 +20051,12 @@ This switch enables or disables the generation of ISEL instructions.
 @item -misel=@var{yes/no}
 This switch has been deprecated.  Use @option{-misel} and
 @option{-mno-isel} instead.
+
+@item -mlra
+@opindex mlra
+Enable Local Register Allocation.  This is still experimental for PowerPC,
+so by default the compiler uses standard reload
+(i.e. @option{-mno-lra}).
 
 @item -mspe
 @itemx -mno-spe
@@ -20201,9 +20207,18 @@ processors.
 @opindex mpower9-vector
 @opindex mno-power9-vector
 Generate code that uses (does not use) the vector and scalar
-instructions that were added in version 2.07 of the PowerPC ISA.  Also
+instructions that were added in version 3.0 of the PowerPC ISA.  Also
 enable the use of built-in functions that allow more direct access to
 the vector instructions.
+
+@item -mpower9-dform
+@itemx -mno-power9-dform
+@opindex mpower9-dform
+@opindex mno-power9-dform
+Enable (disable) scalar d-form (register + offset) memory instructions
+to load/store traditional Altivec registers. If the @var{LRA} register
+allocator is enabled, also enable (disable) vector d-form memory
+instructions.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs

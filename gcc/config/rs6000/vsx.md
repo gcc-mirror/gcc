@@ -301,24 +301,6 @@
    UNSPEC_VSX_XVCVDPUXDS
   ])
 
-;; VSX (P9) moves
-
-(define_insn "*p9_vecload_<mode>"
-  [(set (match_operand:VSX_M2 0 "vsx_register_operand" "=<VSa>")
-        (match_operand:VSX_M2 1 "memory_operand" "Z"))]
-  "TARGET_P9_VECTOR"
-  "lxvx %x0,%y1"
-  [(set_attr "type" "vecload")
-   (set_attr "length" "4")])
-
-(define_insn "*p9_vecstore_<mode>"
-  [(set (match_operand:VSX_M2 0 "memory_operand" "=Z")
-        (match_operand:VSX_M2 1 "vsx_register_operand" "<VSa>"))]
-  "TARGET_P9_VECTOR"
-  "stxvx %x1,%y0"
-  [(set_attr "type" "vecstore")
-   (set_attr "length" "4")])
-
 ;; VSX moves
 
 ;; The patterns for LE permuted loads and stores come before the general
@@ -788,8 +770,8 @@
   "")
 
 (define_insn "*vsx_mov<mode>"
-  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?<VSa>,?<VSa>,r,we,wQ,?&r,??Y,??r,??r,<VSr>,?<VSa>,*r,v,wZ,v")
-	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,<VSa>,Z,<VSa>,we,b,r,wQ,r,Y,r,j,j,j,W,v,wZ"))]
+  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=ZwO,<VSr>,<VSr>,?ZwO,?<VSa>,?<VSa>,r,we,wQ,?&r,??Y,??r,??r,<VSr>,?<VSa>,*r,v,wZ,v")
+	(match_operand:VSX_M 1 "input_operand" "<VSr>,ZwO,<VSr>,<VSa>,ZwO,<VSa>,we,b,r,wQ,r,Y,r,j,j,j,W,v,wZ"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
@@ -803,8 +785,8 @@
 ;; use of TImode is for unions.  However for plain data movement, slightly
 ;; favor the vector loads
 (define_insn "*vsx_movti_64bit"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,wa,r,we,v,v,wZ,wQ,&r,Y,r,r,?r")
-	(match_operand:TI 1 "input_operand" "wa,Z,wa,O,we,b,W,wZ,v,r,wQ,r,Y,r,n"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=ZwO,wa,wa,wa,r,we,v,v,wZ,wQ,&r,Y,r,r,?r")
+	(match_operand:TI 1 "input_operand" "wa,ZwO,wa,O,we,b,W,wZ,v,r,wQ,r,Y,r,n"))]
   "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"
@@ -815,8 +797,8 @@
    (set_attr "length" "4,4,4,4,8,4,16,4,4,8,8,8,8,8,8")])
 
 (define_insn "*vsx_movti_32bit"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,wa,v, v,wZ,Q,Y,????r,????r,????r,r")
-	(match_operand:TI 1 "input_operand"        "wa, Z,wa, O,W,wZ, v,r,r,    Q,    Y,    r,n"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=ZwO,wa,wa,wa,v,v,wZ,Q,Y,????r,????r,????r,r")
+	(match_operand:TI 1 "input_operand"        "wa,ZwO,wa,O,W,wZ,v,r,r,Q,Y,r,n"))]
   "! TARGET_POWERPC64 && VECTOR_MEM_VSX_P (TImode)
    && (register_operand (operands[0], TImode)
        || register_operand (operands[1], TImode))"
