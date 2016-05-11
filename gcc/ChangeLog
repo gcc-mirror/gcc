@@ -1,3 +1,8 @@
+2016-05-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr70963.c: Require at least power8 at both
+	compile and run time.
+
 2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c/43651
