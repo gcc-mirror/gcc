@@ -71,11 +71,12 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
    ISO C99 but not supported in ISO C90, thus we explicitly don't pedwarn
    when C99 is specified.  (There is no flag_c90.)  */
 
-void
+bool
 pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool warned = false;
   rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
@@ -92,6 +93,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 			       ? DK_PEDWARN : DK_WARNING);
 	  diagnostic.option_index = opt;
 	  report_diagnostic (&diagnostic);
+	  warned = true;
 	  goto out;
 	}
     }
@@ -114,7 +116,9 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
       diagnostic.option_index = opt;
       report_diagnostic (&diagnostic);
+      warned = true;
     }
 out:
   va_end (ap);
+  return warned;
 }

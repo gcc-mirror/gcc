@@ -1008,6 +1008,10 @@ Wsubobject-linkage
 C++ ObjC++ Var(warn_subobject_linkage) Warning Init(1)
 Warn if a class type has a base or a field whose type uses the anonymous namespace or depends on a type with no linkage.
 
+Wduplicate-decl-specifier
+C ObjC Var(warn_duplicate_decl_specifier) Warning LangEnabledBy(C ObjC,Wall)
+Warn when a declaration has duplicate const, volatile, restrict or _Atomic specifier.
+
 ansi
 C ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++).

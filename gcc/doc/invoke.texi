@@ -3542,6 +3542,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
 -Wcomment  @gol
+-Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wformat   @gol
 -Wimplicit @r{(C and Objective-C only)} @gol
@@ -3698,6 +3699,13 @@ float area(float radius)
 @end smallexample
 the compiler performs the entire computation with @code{double}
 because the floating-point literal is a @code{double}.
+
+@item -Wduplicate-decl-specifier @r{(C and Objective-C only)}
+@opindex Wduplicate-decl-specifier
+@opindex Wno-duplicate-decl-specifier
+Warn if a declaration has duplicate @code{const}, @code{volatile},
+@code{restrict} or @code{_Atomic} specifier.  This warning is enabled by
+@option{-Wall}.
 
 @item -Wformat
 @itemx -Wformat=@var{n}
