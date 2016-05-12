@@ -1,5 +1,9 @@
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (pinsr_evex_isa): New mode attr.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Add 2 alternatives with
+	v constraints instead of x and <pinsr_evex_isa> isa attribute.
+
 	PR target/71019
 	* config/i386/sse.md (<sse2_avx2>_packssdw<mask_name>,
 	<sse4_1_avx2>_packusdw<mask_name>): Make sure EVEX encoded insn

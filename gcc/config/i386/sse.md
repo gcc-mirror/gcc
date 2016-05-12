@@ -12036,13 +12036,17 @@
   [(V16QI "sse4_1") (V8HI "sse2")
    (V4SI "sse4_1") (V2DI "sse4_1")])
 
+(define_mode_attr pinsr_evex_isa
+  [(V16QI "avx512bw") (V8HI "avx512bw")
+   (V4SI "avx512dq") (V2DI "avx512dq")])
+
 ;; sse4_1_pinsrd must come before sse2_loadld since it is preferred.
 (define_insn "<sse2p4_1>_pinsr<ssemodesuffix>"
-  [(set (match_operand:PINSR_MODE 0 "register_operand" "=x,x,x,x")
+  [(set (match_operand:PINSR_MODE 0 "register_operand" "=x,x,x,x,v,v")
 	(vec_merge:PINSR_MODE
 	  (vec_duplicate:PINSR_MODE
-	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m,r,m"))
-	  (match_operand:PINSR_MODE 1 "register_operand" "0,0,x,x")
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m,r,m,r,m"))
+	  (match_operand:PINSR_MODE 1 "register_operand" "0,0,x,x,v,v")
 	  (match_operand:SI 3 "const_int_operand")))]
   "TARGET_SSE2
    && ((unsigned) exact_log2 (INTVAL (operands[3]))
@@ -12059,16 +12063,18 @@
     case 1:
       return "pinsr<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}";
     case 2:
+    case 4:
       if (GET_MODE_SIZE (<ssescalarmode>mode) < GET_MODE_SIZE (SImode))
 	return "vpinsr<ssemodesuffix>\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
       /* FALLTHRU */
     case 3:
+    case 5:
       return "vpinsr<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "isa" "noavx,noavx,avx,avx")
+  [(set_attr "isa" "noavx,noavx,avx,avx,<pinsr_evex_isa>,<pinsr_evex_isa>")
    (set_attr "type" "sselog")
    (set (attr "prefix_rex")
      (if_then_else
@@ -12089,7 +12095,7 @@
        (const_string "*")
        (const_string "1")))
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,orig,vex,vex")
+   (set_attr "prefix" "orig,orig,vex,vex,evex,evex")
    (set_attr "mode" "TI")])
 
 (define_expand "<extract_type>_vinsert<shuffletype><extract_suf>_mask"
