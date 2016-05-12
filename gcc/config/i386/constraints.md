@@ -145,6 +145,10 @@
  "TARGET_SSE ? (X86_TUNE_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
  "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
 
+(define_register_constraint "Yv"
+ "TARGET_AVX512VL ? ALL_SSE_REGS : TARGET_SSE ? SSE_REGS : NO_REGS"
+ "@internal For AVX512VL, any EVEX encodable SSE register (@code{%xmm0-%xmm31}), otherwise any SSE register.")
+
 ;; We use the B prefix to denote any number of internal operands:
 ;;  f  FLAGS_REG
 ;;  g  GOT memory operand.

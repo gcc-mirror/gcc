@@ -1,3 +1,19 @@
+2016-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/constraints.md (Yv): New constraint.
+	* config/i386/i386.h (VALID_AVX512VL_128_REG_MODE): Allow
+	TFmode and V1TImode in xmm16+ registers for TARGET_AVX512VL.
+	* config/i386/i386.md (avx512fvecmode): New mode attr.
+	(*pushtf): Use v constraint instead of x.
+	(*movtf_internal): Likewise.  For TARGET_AVX512VL and
+	xmm16+ registers, use vmovdqu64 or vmovdqa64 instructions.
+	(*absneg<mode>2): Use Yv constraint instead of x constraint.
+	(*absnegtf2_sse): Likewise.
+	(copysign<mode>3_const, copysign<mode>3_var): Likewise.
+	* config/i386/sse.md (*andnot<mode>3): Add avx512vl and
+	avx512f alternatives.
+	(*andnottf3, *<code><mode>3, *<code>tf3): Likewise.
+
 2016-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71060
