@@ -1,3 +1,9 @@
+2016-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70756
+	* c-c++-common/pr70756-2.c: New test.
+	* c-c++-common/pr70756.c: New test.
+
 2016-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71059

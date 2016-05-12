@@ -4269,7 +4269,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
       size_exp = integer_one_node;
     }
   else
-    size_exp = size_in_bytes (TREE_TYPE (result_type));
+    size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
 
   /* We are manipulating pointer values, so we don't need to warn
      about relying on undefined signed overflow.  We disable the

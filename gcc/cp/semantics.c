@@ -8073,7 +8073,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	{
 	  if (orig_incr)
 	    TREE_VEC_ELT (orig_incr, i) = incr;
-	  incr = cp_build_modify_expr (TREE_OPERAND (incr, 0),
+	  incr = cp_build_modify_expr (elocus, TREE_OPERAND (incr, 0),
 				       TREE_CODE (TREE_OPERAND (incr, 1)),
 				       TREE_OPERAND (incr, 2),
 				       tf_warning_or_error);
@@ -8107,7 +8107,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       if (!processing_template_decl)
 	{
 	  init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);
-	  init = cp_build_modify_expr (decl, NOP_EXPR, init, tf_warning_or_error);
+	  init = cp_build_modify_expr (elocus, decl, NOP_EXPR, init,
+				       tf_warning_or_error);
 	}
       else
 	init = build2 (MODIFY_EXPR, void_type_node, decl, init);

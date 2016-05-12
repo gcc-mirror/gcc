@@ -199,7 +199,8 @@ lhd_register_builtin_type (tree ARG_UNUSED (type),
 
 /* Invalid use of an incomplete type.  */
 void
-lhd_incomplete_type_error (const_tree ARG_UNUSED (value), const_tree type)
+lhd_incomplete_type_error (location_t ARG_UNUSED (loc),
+			   const_tree ARG_UNUSED (value), const_tree type)
 {
   gcc_assert (TREE_CODE (type) == ERROR_MARK);
   return;

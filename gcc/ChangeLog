@@ -1,3 +1,14 @@
+2016-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70756
+	* langhooks-def.h (lhd_incomplete_type_error): Adjust declaration.
+	* langhooks.c (lhd_incomplete_type_error): Add location parameter.
+	* langhooks.h (incomplete_type_error): Likewise.
+	* tree.c (size_in_bytes_loc): Renamed from size_in_bytes.  Add location
+	parameter, pass it down to incomplete_type_error.
+	* tree.h (size_in_bytes): New inline overload.
+	(size_in_bytes_loc): Renamed from size_in_bytes.
+
 2016-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71059

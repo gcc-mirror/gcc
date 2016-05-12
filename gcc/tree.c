@@ -2939,7 +2939,7 @@ ctor_to_vec (tree ctor)
    make_unsigned_type).  */
 
 tree
-size_in_bytes (const_tree type)
+size_in_bytes_loc (location_t loc, const_tree type)
 {
   tree t;
 
@@ -2951,7 +2951,7 @@ size_in_bytes (const_tree type)
 
   if (t == 0)
     {
-      lang_hooks.types.incomplete_type_error (NULL_TREE, type);
+      lang_hooks.types.incomplete_type_error (loc, NULL_TREE, type);
       return size_zero_node;
     }
 

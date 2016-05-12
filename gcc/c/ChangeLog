@@ -1,3 +1,25 @@
+2016-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70756
+	* c-decl.c (build_compound_literal): Pass LOC down to
+	c_incomplete_type_error.
+	* c-tree.h (require_complete_type): Adjust declaration.
+	(c_incomplete_type_error): Likewise.
+	* c-typeck.c (require_complete_type): Add location parameter, pass it
+	down to c_incomplete_type_error.
+	(c_incomplete_type_error): Add location parameter, pass it down to
+	error_at.
+	(build_component_ref): Pass location down to c_incomplete_type_error.
+	(default_conversion): Pass location down to require_complete_type.
+	(build_array_ref): Likewise.
+	(build_function_call_vec): Likewise.
+	(convert_arguments): Likewise.
+	(build_unary_op): Likewise.
+	(build_c_cast): Likewise.
+	(build_modify_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	(c_finish_omp_clauses): Likewise.
+
 2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c/43651

@@ -741,7 +741,7 @@ do_build_copy_assign (tree fndecl)
 	    init = move (init);
 
 	  if (DECL_NAME (field))
-	    init = cp_build_modify_expr (comp, NOP_EXPR, init, 
+	    init = cp_build_modify_expr (input_location, comp, NOP_EXPR, init,
 					 tf_warning_or_error);
 	  else
 	    init = build2 (MODIFY_EXPR, TREE_TYPE (comp), comp, init);
@@ -1023,7 +1023,7 @@ assignable_expr (tree to, tree from)
   ++cp_unevaluated_operand;
   to = build_stub_object (to);
   from = build_stub_object (from);
-  tree r = cp_build_modify_expr (to, NOP_EXPR, from, tf_none);
+  tree r = cp_build_modify_expr (input_location, to, NOP_EXPR, from, tf_none);
   --cp_unevaluated_operand;
   return r;
 }

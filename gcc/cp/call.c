@@ -5757,7 +5757,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
   switch (code)
     {
     case MODIFY_EXPR:
-      return cp_build_modify_expr (arg1, code2, arg2, complain);
+      return cp_build_modify_expr (loc, arg1, code2, arg2, complain);
 
     case INDIRECT_REF:
       return cp_build_indirect_ref (arg1, RO_UNARY_STAR, complain);
