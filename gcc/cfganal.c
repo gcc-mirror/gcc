@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "timevar.h"
 #include "cfganal.h"
+#include "cfgloop.h"
 
 /* Store the data structures necessary for depth-first search.  */
 struct depth_first_search_ds {
@@ -747,7 +748,21 @@ dfs_find_deadend (basic_block bb)
           return bb;
         }
 
-      bb = EDGE_SUCC (bb, 0)->dest;
+      /* If we are in an analyzed cycle make sure to try exiting it.
+         Note this is a heuristic only and expected to work when loop
+	 fixup is needed as well.  */
+      if (! bb->loop_father
+	  || ! loop_outer (bb->loop_father))
+	bb = EDGE_SUCC (bb, 0)->dest;
+      else
+	{
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (loop_exit_edge_p (bb->loop_father, e))
+	      break;
+	  bb = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
+	}
     }
 
   gcc_unreachable ();
