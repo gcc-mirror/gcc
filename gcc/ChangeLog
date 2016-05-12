@@ -1,3 +1,9 @@
+2016-05-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR tree-optimization/71006
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Don't
+	consider COND_EXPR as a mask producer.
+
 2016-05-12  Marek Polacek  <polacek@redhat.com>
 
 	PR driver/71063
