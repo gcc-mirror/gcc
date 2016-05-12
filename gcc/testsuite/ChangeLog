@@ -1,3 +1,10 @@
+2016-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70986
+	* gcc.dg/torture/pr70986-1.c: New testcase.
+	* gcc.dg/torture/pr70986-2.c: Likewise.
+	* gcc.dg/torture/pr70986-3.c: Likewise.
+
 2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c/43651
