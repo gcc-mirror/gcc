@@ -1,5 +1,9 @@
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*vec_setv4sf_sse4_1, sse4_1_insertps): Use v
+	constraint instead of x in avx alternatives.  Use maybe_evex instead
+	of vex prefix.
+
 	* config/i386/constraints.md (Yv): New constraint.
 	* config/i386/i386.h (VALID_AVX512VL_128_REG_MODE): Allow
 	TFmode and V1TImode in xmm16+ registers for TARGET_AVX512VL.
