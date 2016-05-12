@@ -1,3 +1,9 @@
+2016-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*call_got_x32): Change operand 0 to
+	DImode before it is passed to ix86_output_call_operand.
+	(*call_value_got_x32): Ditto for operand 1.
+
 2016-05-12  Jiong Wang  <jiong.wang@arm.com>
 
 	PR rtl-optimization/70904
@@ -30,8 +36,8 @@
 	PR tree-optimization/71062
 	* tree-ssa-alias.h (struct pt_solution): Add vars_contains_restrict
 	field.
-	* tree-ssa-structalias.c (set_uids_in_ptset): Set vars_contains_restrict
-	if the var is a restrict tag.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Set
+	vars_contains_restrict if the var is a restrict tag.
 	* tree-ssa-alias.c (ptrs_compare_unequal): If vars_contains_restrict
 	do not disambiguate pointers against it.
 	(dump_points_to_solution): Re-structure and adjust for new
@@ -40,8 +46,8 @@
 
 2016-05-12  Martin Liska  <mliska@suse.cz>
 
-	* doc/invoke.texi: Explain connection between -fsanitize-recover=address
-	and ASAN_OPTIONS="halt_on_error=1".
+	* doc/invoke.texi: Explain connection between
+	-fsanitize-recover=address and ASAN_OPTIONS="halt_on_error=1".
 
 2016-05-12  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -148,14 +154,11 @@
 	bit instead of being a separate word.  Split -mpower9-dform into
 	two switches, -mpower9-dform-scalar and -mpower9-dform-vector.
 	* config/rs6000/rs6000.c (RELOAD_REG_QUAD_OFFSET): New addr_mask
-	for the register class supporting 128-bit quad word memory
-	offsets.
+	for the register class supporting 128-bit quad word memory offsets.
 	(mode_supports_vsx_dform_quad): Helper function to return if the
 	register class uses quad word memory offsets.
-	(rs6000_debug_addr_mask): Add support for quad word memory
-	offsets.
-	(rs6000_debug_reg_global): Always print if we are using LRA or
-	not.
+	(rs6000_debug_addr_mask): Add support for quad word memory offsets.
+	(rs6000_debug_reg_global): Always print if we are using LRA or not.
 	(rs6000_setup_reg_addr_masks): If ISA 3.0 vector d-form
 	instructions are enabled, set up the appropriate addr_masks for
 	128-bit types.
@@ -214,7 +217,7 @@
 	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Use
 	-mpower9-dform-scalar instead of -mpower9-dform.  Add note not to
 	include -mpower9-dform-vector until we switch over to LRA.
-	(POWERPC_MASKS): Add -mlra. Split -mpower9-dform into two. 
+	(POWERPC_MASKS): Add -mlra. Split -mpower9-dform into two.
 	switches, -mpower9-dform-scalar and -mpower9-dform-vector.
 	* config/rs6000/rs6000-protos.h (quad_address_p): Add declaration.
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Add documentation
