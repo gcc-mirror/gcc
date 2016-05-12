@@ -1,5 +1,12 @@
 2016-05-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71060
+	* tree-data-ref.c (initialize_data_dependence_relation): Do not
+	require exact match of DR_BASE_OBJECT but only matching address and
+	type.
+
+2016-05-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/70986
 	* cfganal.c: Include cfgloop.h.
 	(dfs_find_deadend): Prefer to take edges exiting loops.
