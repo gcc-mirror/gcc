@@ -1,3 +1,9 @@
+2016-05-12  Jiong Wang  <jiong.wang@arm.com>
+
+	PR rtl-optimization/70904
+	* lra-constraint.c (process_addr_reg): Relax the restriction on subreg
+	reload for wide mode.
+
 2016-05-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70756
