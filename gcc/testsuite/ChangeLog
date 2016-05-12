@@ -1,3 +1,9 @@
+2016-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512dq-abs-copysign-1.c: New test.
+	* gcc.target/i386/avx512vl-abs-copysign-1.c: New test.
+	* gcc.target/i386/avx512vl-abs-copysign-2.c: New test.
+
 2016-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70986
