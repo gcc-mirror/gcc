@@ -1,3 +1,12 @@
+2016-05-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70830
+	* gcc.target/arm/interrupt-1.c: Change dg-compile to dg-assemble.
+	Add -save-temps to dg-options.
+	Scan for ldmfd rather than pop instruction.
+	* gcc.target/arm/interrupt-2.c: Likewise.
+	* gcc.target/arm/pr70830.c: New test.
+
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512bw-vpextr-1.c: New test.
