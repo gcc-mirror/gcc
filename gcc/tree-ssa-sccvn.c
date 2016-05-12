@@ -1632,7 +1632,7 @@ vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
 {
   tree result = NULL_TREE;
   /* We will be creating a value number for
-       ROCDE (OPS...).
+       RCODE (OPS...).
      So first simplify and lookup this expression to see if it
      is already available.  */
   mprts_hook = vn_lookup_simplify_result;
@@ -1682,6 +1682,16 @@ vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
       gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
 					  new_stmt);
       VN_INFO (result)->needs_insertion = true;
+      /* ???  PRE phi-translation inserts NARYs without corresponding
+         SSA name result.  Re-use those but set their result according
+	 to the stmt we just built.  */
+      vn_nary_op_t nary = NULL;
+      vn_nary_op_lookup_stmt (new_stmt, &nary);
+      if (nary)
+	{
+	  gcc_assert (nary->result == NULL_TREE);
+	  nary->result = gimple_assign_lhs (new_stmt);
+	}
       /* As all "inserted" statements are singleton SCCs, insert
 	 to the valid table.  This is strictly needed to
 	 avoid re-generating new value SSA_NAMEs for the same
@@ -1689,7 +1699,7 @@ vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
 	 optimistic table gets cleared after each iteration).
 	 We do not need to insert into the optimistic table, as
 	 lookups there will fall back to the valid table.  */
-      if (current_info == optimistic_info)
+      else if (current_info == optimistic_info)
 	{
 	  current_info = valid_info;
 	  vn_nary_op_insert_stmt (new_stmt, result);
