@@ -43,13 +43,14 @@ static tree pfn_from_ptrmemfunc (tree);
 static tree delta_from_ptrmemfunc (tree);
 static tree convert_for_assignment (tree, tree, impl_conv_rhs, tree, int,
 				    tsubst_flags_t, int);
-static tree cp_pointer_int_sum (enum tree_code, tree, tree, tsubst_flags_t);
+static tree cp_pointer_int_sum (location_t, enum tree_code, tree, tree,
+				tsubst_flags_t);
 static tree rationalize_conditional_expr (enum tree_code, tree, 
 					  tsubst_flags_t);
 static int comp_ptr_ttypes_real (tree, tree, int);
 static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (const_tree, const_tree, bool);
-static tree pointer_diff (tree, tree, tree, tsubst_flags_t);
+static tree pointer_diff (location_t, tree, tree, tree, tsubst_flags_t);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
@@ -4236,8 +4237,8 @@ cp_build_binary_op (location_t location,
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
 	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
 							TREE_TYPE (type1)))
-	return pointer_diff (op0, op1, common_pointer_type (type0, type1),
-			     complain);
+	return pointer_diff (location, op0, op1,
+			     common_pointer_type (type0, type1), complain);
       /* In all other cases except pointer - int, the usual arithmetic
 	 rules apply.  */
       else if (!(code0 == POINTER_TYPE && code1 == INTEGER_TYPE))
@@ -4260,8 +4261,8 @@ cp_build_binary_op (location_t location,
 	      result_type = TREE_TYPE (ptr_operand);
 	      break;
 	    }
-	  return cp_pointer_int_sum (code,
-				     ptr_operand, 
+	  return cp_pointer_int_sum (location, code,
+				     ptr_operand,
 				     int_operand,
 				     complain);
 	}
@@ -5226,8 +5227,8 @@ build_x_vec_perm_expr (location_t loc,
    of pointer PTROP and integer INTOP.  */
 
 static tree
-cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop,
-		    tsubst_flags_t complain)
+cp_pointer_int_sum (location_t loc, enum tree_code resultcode, tree ptrop,
+		    tree intop, tsubst_flags_t complain)
 {
   tree res_type = TREE_TYPE (ptrop);
 
@@ -5238,7 +5239,7 @@ cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop,
      pointer_int_sum() anyway.  */
   complete_type (TREE_TYPE (res_type));
 
-  return pointer_int_sum (input_location, resultcode, ptrop,
+  return pointer_int_sum (loc, resultcode, ptrop,
 			  intop, complain & tf_warning_or_error);
 }
 
@@ -5246,7 +5247,8 @@ cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop,
    The resulting tree has type int.  */
 
 static tree
-pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
+pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
+	      tsubst_flags_t complain)
 {
   tree result;
   tree restype = ptrdiff_type_node;
@@ -5258,7 +5260,7 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
   if (VOID_TYPE_P (target_type))
     {
       if (complain & tf_error)
-	permerror (input_location, "ISO C++ forbids using pointer of "
+	permerror (loc, "ISO C++ forbids using pointer of "
 		   "type %<void *%> in subtraction");
       else
 	return error_mark_node;
@@ -5266,7 +5268,7 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
   if (TREE_CODE (target_type) == FUNCTION_TYPE)
     {
       if (complain & tf_error)
-	permerror (input_location, "ISO C++ forbids using pointer to "
+	permerror (loc, "ISO C++ forbids using pointer to "
 		   "a function in subtraction");
       else
 	return error_mark_node;
@@ -5274,7 +5276,7 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
   if (TREE_CODE (target_type) == METHOD_TYPE)
     {
       if (complain & tf_error)
-	permerror (input_location, "ISO C++ forbids using pointer to "
+	permerror (loc, "ISO C++ forbids using pointer to "
 		   "a method in subtraction");
       else
 	return error_mark_node;
@@ -5283,7 +5285,7 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
   /* First do the subtraction as integers;
      then drop through to build the divide operator.  */
 
-  op0 = cp_build_binary_op (input_location,
+  op0 = cp_build_binary_op (loc,
 			    MINUS_EXPR,
 			    cp_convert (restype, op0, complain),
 			    cp_convert (restype, op1, complain),
@@ -5293,8 +5295,8 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
   if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (op1))))
     {
       if (complain & tf_error)
-	error ("invalid use of a pointer to an incomplete type in "
-	       "pointer arithmetic");
+	error_at (loc, "invalid use of a pointer to an incomplete type in "
+		  "pointer arithmetic");
       else
 	return error_mark_node;
     }
@@ -5302,19 +5304,19 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
   if (pointer_to_zero_sized_aggr_p (TREE_TYPE (op1)))
     {
       if (complain & tf_error)
-	error ("arithmetic on pointer to an empty aggregate");
+	error_at (loc, "arithmetic on pointer to an empty aggregate");
       else
 	return error_mark_node;
     }
 
   op1 = (TYPE_PTROB_P (ptrtype)
-	 ? size_in_bytes (target_type)
+	 ? size_in_bytes_loc (loc, target_type)
 	 : integer_one_node);
 
   /* Do the division.  */
 
-  result = build2 (EXACT_DIV_EXPR, restype, op0,
-		   cp_convert (restype, op1, complain));
+  result = build2_loc (loc, EXACT_DIV_EXPR, restype, op0,
+		       cp_convert (restype, op1, complain));
   return result;
 }
 
@@ -7470,13 +7472,14 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 
 /* For use from the C common bits.  */
 tree
-build_modify_expr (location_t /*location*/,
+build_modify_expr (location_t location,
 		   tree lhs, tree /*lhs_origtype*/,
 		   enum tree_code modifycode, 
 		   location_t /*rhs_location*/, tree rhs,
 		   tree /*rhs_origtype*/)
 {
-  return cp_build_modify_expr (lhs, modifycode, rhs, tf_warning_or_error);
+  return cp_build_modify_expr (location, lhs, modifycode, rhs,
+			       tf_warning_or_error);
 }
 
 /* Build an assignment expression of lvalue LHS from value RHS.
@@ -7487,8 +7490,8 @@ build_modify_expr (location_t /*location*/,
    C++: If MODIFYCODE is INIT_EXPR, then leave references unbashed.  */
 
 tree
-cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
-		      tsubst_flags_t complain)
+cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
+		      tree rhs, tsubst_flags_t complain)
 {
   tree result;
   tree newrhs = rhs;
@@ -7510,7 +7513,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
 		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
 		      TREE_OPERAND (lhs, 1));
-      newrhs = cp_build_modify_expr (TREE_OPERAND (lhs, 0),
+      newrhs = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 0),
 				     modifycode, rhs, complain);
       if (newrhs == error_mark_node)
 	return error_mark_node;
@@ -7518,7 +7521,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
       /* Handle (a, b) used as an "lvalue".  */
     case COMPOUND_EXPR:
-      newrhs = cp_build_modify_expr (TREE_OPERAND (lhs, 1),
+      newrhs = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
 				     modifycode, rhs, complain);
       if (newrhs == error_mark_node)
 	return error_mark_node;
@@ -7530,8 +7533,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
 		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
 		      TREE_OPERAND (lhs, 1));
-      newrhs = cp_build_modify_expr (TREE_OPERAND (lhs, 0), modifycode, rhs,
-				     complain);
+      newrhs = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 0), modifycode,
+				     rhs, complain);
       if (newrhs == error_mark_node)
 	return error_mark_node;
       return build2 (COMPOUND_EXPR, lhstype, lhs, newrhs);
@@ -7580,9 +7583,9 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
 	cond = build_conditional_expr
 	  (input_location, TREE_OPERAND (lhs, 0),
-	   cp_build_modify_expr (TREE_OPERAND (lhs, 1),
+	   cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
 				 modifycode, rhs, complain),
-	   cp_build_modify_expr (TREE_OPERAND (lhs, 2),
+	   cp_build_modify_expr (loc, TREE_OPERAND (lhs, 2),
 				 modifycode, rhs, complain),
            complain);
 
@@ -7680,9 +7683,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	  lhs = cp_stabilize_reference (lhs);
 	  rhs = rvalue (rhs);
 	  rhs = stabilize_expr (rhs, &init);
-	  newrhs = cp_build_binary_op (input_location,
-				       modifycode, lhs, rhs,
-				       complain);
+	  newrhs = cp_build_binary_op (loc, modifycode, lhs, rhs, complain);
 	  if (newrhs == error_mark_node)
 	    {
 	      if (complain & tf_error)
@@ -7893,7 +7894,7 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	  return rval;
 	}
     }
-  return cp_build_modify_expr (lhs, modifycode, rhs, complain);
+  return cp_build_modify_expr (loc, lhs, modifycode, rhs, complain);
 }
 
 /* Helper function for get_delta_difference which assumes FROM is a base

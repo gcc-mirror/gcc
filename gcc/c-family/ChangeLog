@@ -1,3 +1,9 @@
+2016-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70756
+	* c-common.c (pointer_int_sum): Call size_in_bytes_loc instead of
+	size_in_bytes and pass LOC to it.
+
 2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c/43651

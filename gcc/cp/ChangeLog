@@ -1,3 +1,34 @@
+2016-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70756
+	* call.c (build_new_op_1): Pass LOC to cp_build_modify_expr.
+	* cp-tree.h (cp_build_modify_expr): Update declaration.
+	(cxx_incomplete_type_error, cxx_incomplete_type_diagnostic): New inline
+	overloads.
+	* cp-ubsan.c (cp_ubsan_dfs_initialize_vtbl_ptrs): Pass INPUT_LOCATION to
+	cp_build_modify_expr.
+	* decl2.c (set_guard): Likewise.
+	(handle_tls_init): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(expand_virtual_init): Likewise.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(get_temp_regvar): Likewise.
+	(build_vec_init): Likewise.
+	* method.c (do_build_copy_assign): Likewise.
+	(assignable_expr): Likewise.
+	* semantics.c (finish_omp_for): Likewise.
+	* typeck.c (cp_build_binary_op): Pass LOCATION to pointer_diff and
+	cp_pointer_int_sum.
+	(cp_pointer_int_sum): Add location parameter.  Pass it down to
+	pointer_int_sum.
+	(pointer_diff): Add location parameter.  Use it.
+	(build_modify_expr): Pass location down to cp_build_modify_expr.
+	(cp_build_modify_expr): Add location parameter.  Use it.
+	(build_x_modify_expr): Pass location down to cp_build_modify_expr.
+	* typeck2.c (cxx_incomplete_type_diagnostic,
+	cxx_incomplete_type_error): Add location parameter.
+
 2016-05-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/71024

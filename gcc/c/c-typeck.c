@@ -183,11 +183,12 @@ struct tagged_tu_seen_cache {
 static const struct tagged_tu_seen_cache * tagged_tu_seen_base;
 static void free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *);
 
-/* Do `exp = require_complete_type (exp);' to make sure exp
-   does not have an incomplete type.  (That includes void types.)  */
+/* Do `exp = require_complete_type (loc, exp);' to make sure exp
+   does not have an incomplete type.  (That includes void types.)
+   LOC is the location of the use.  */
 
 tree
-require_complete_type (tree value)
+require_complete_type (location_t loc, tree value)
 {
   tree type = TREE_TYPE (value);
 
@@ -198,23 +199,24 @@ require_complete_type (tree value)
   if (COMPLETE_TYPE_P (type))
     return value;
 
-  c_incomplete_type_error (value, type);
+  c_incomplete_type_error (loc, value, type);
   return error_mark_node;
 }
 
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
-   and TYPE is the type that was invalid.  */
+   and TYPE is the type that was invalid.  LOC is the location for
+   the error.  */
 
 void
-c_incomplete_type_error (const_tree value, const_tree type)
+c_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 {
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
   if (value != 0 && (VAR_P (value) || TREE_CODE (value) == PARM_DECL))
-    error ("%qD has an incomplete type %qT", value, type);
+    error_at (loc, "%qD has an incomplete type %qT", value, type);
   else
     {
     retry:
@@ -228,7 +230,7 @@ c_incomplete_type_error (const_tree value, const_tree type)
 	  break;
 
 	case VOID_TYPE:
-	  error ("invalid use of void expression");
+	  error_at (loc, "invalid use of void expression");
 	  return;
 
 	case ARRAY_TYPE:
@@ -236,13 +238,13 @@ c_incomplete_type_error (const_tree value, const_tree type)
 	    {
 	      if (TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL)
 		{
-		  error ("invalid use of flexible array member");
+		  error_at (loc, "invalid use of flexible array member");
 		  return;
 		}
 	      type = TREE_TYPE (type);
 	      goto retry;
 	    }
-	  error ("invalid use of array with unspecified bounds");
+	  error_at (loc, "invalid use of array with unspecified bounds");
 	  return;
 
 	default:
@@ -250,10 +252,10 @@ c_incomplete_type_error (const_tree value, const_tree type)
 	}
 
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	error ("invalid use of undefined type %qT", type);
+	error_at (loc, "invalid use of undefined type %qT", type);
       else
 	/* If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.  */
-	error ("invalid use of incomplete typedef %qT", type);
+	error_at (loc, "invalid use of incomplete typedef %qT", type);
     }
 }
 
@@ -2117,7 +2119,7 @@ default_conversion (tree exp)
       return error_mark_node;
     }
 
-  exp = require_complete_type (exp);
+  exp = require_complete_type (EXPR_LOC_OR_LOC (exp, input_location), exp);
   if (exp == error_mark_node)
     return error_mark_node;
 
@@ -2334,7 +2336,7 @@ build_component_ref (location_t loc, tree datum, tree component)
     {
       if (!COMPLETE_TYPE_P (type))
 	{
-	  c_incomplete_type_error (NULL_TREE, type);
+	  c_incomplete_type_error (loc, NULL_TREE, type);
 	  return error_mark_node;
 	}
 
@@ -2642,7 +2644,7 @@ build_array_ref (location_t loc, tree array, tree index)
 	       in an inline function.
 	       Hope it doesn't break something else.  */
 	    | TREE_THIS_VOLATILE (array));
-      ret = require_complete_type (rval);
+      ret = require_complete_type (loc, rval);
       protected_set_expr_location (ret, loc);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
@@ -3088,7 +3090,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 		 "function with qualified void return type called");
       return result;
     }
-  return require_complete_type (result);
+  return require_complete_type (loc, result);
 }
 
 /* Like build_function_call_vec, but call also resolve_overloaded_builtin.  */
@@ -3239,7 +3241,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       val = c_fully_fold (val, false, NULL);
       STRIP_TYPE_NOPS (val);
 
-      val = require_complete_type (val);
+      val = require_complete_type (ploc, val);
 
       if (type != 0)
 	{
@@ -4047,7 +4049,7 @@ build_unary_op (location_t location,
     arg = remove_c_maybe_const_expr (arg);
 
   if (code != ADDR_EXPR)
-    arg = require_complete_type (arg);
+    arg = require_complete_type (location, arg);
 
   typecode = TREE_CODE (TREE_TYPE (arg));
   if (typecode == ERROR_MARK)
@@ -5268,7 +5270,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 
   if (!VOID_TYPE_P (type))
     {
-      value = require_complete_type (value);
+      value = require_complete_type (loc, value);
       if (value == error_mark_node)
 	return error_mark_node;
     }
@@ -5538,7 +5540,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   bool is_atomic_op;
 
   /* Types that aren't fully specified cannot be used in assignments.  */
-  lhs = require_complete_type (lhs);
+  lhs = require_complete_type (location, lhs);
 
   /* Avoid duplicate error messages from operands that had errors.  */
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
@@ -6133,7 +6135,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       error_at (location, "void value not ignored as it ought to be");
       return error_mark_node;
     }
-  rhs = require_complete_type (rhs);
+  rhs = require_complete_type (location, rhs);
   if (rhs == error_mark_node)
     return error_mark_node;
 
@@ -12550,7 +12552,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	      t = OMP_CLAUSE_DECL (c);
 	    }
-	  t = require_complete_type (t);
+	  t = require_complete_type (OMP_CLAUSE_LOCATION (c), t);
 	  if (t == error_mark_node)
 	    {
 	      remove = true;
@@ -13361,7 +13363,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	  if (need_complete)
 	    {
-	      t = require_complete_type (t);
+	      t = require_complete_type (OMP_CLAUSE_LOCATION (c), t);
 	      if (t == error_mark_node)
 		remove = true;
 	    }

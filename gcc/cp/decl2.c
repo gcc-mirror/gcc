@@ -3161,7 +3161,7 @@ set_guard (tree guard)
   guard_init = integer_one_node;
   if (!same_type_p (TREE_TYPE (guard_init), TREE_TYPE (guard)))
     guard_init = fold_convert (TREE_TYPE (guard), guard_init);
-  return cp_build_modify_expr (guard, NOP_EXPR, guard_init, 
+  return cp_build_modify_expr (input_location, guard, NOP_EXPR, guard_init,
 			       tf_warning_or_error);
 }
 
@@ -4346,7 +4346,8 @@ handle_tls_init (void)
   tree cond = cp_build_unary_op (TRUTH_NOT_EXPR, guard, false,
 				 tf_warning_or_error);
   finish_if_stmt_cond (cond, if_stmt);
-  finish_expr_stmt (cp_build_modify_expr (guard, NOP_EXPR, boolean_true_node,
+  finish_expr_stmt (cp_build_modify_expr (loc, guard, NOP_EXPR,
+					  boolean_true_node,
 					  tf_warning_or_error));
   for (; vars; vars = TREE_CHAIN (vars))
     {
