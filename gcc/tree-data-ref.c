@@ -1538,8 +1538,13 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the references do not access the same object, we do not know
-     whether they alias or not.  */
-  if (!operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), 0))
+     whether they alias or not.  We do not care about TBAA or alignment
+     info so we can use OEP_ADDRESS_OF to avoid false negatives.
+     But the accesses have to use compatible types as otherwise the
+     built indices would not match.  */
+  if (!operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), OEP_ADDRESS_OF)
+      || !types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (a)),
+			      TREE_TYPE (DR_BASE_OBJECT (b))))
     {
       DDR_ARE_DEPENDENT (res) = chrec_dont_know;
       return res;
