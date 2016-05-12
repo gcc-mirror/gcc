@@ -1,3 +1,12 @@
+2016-05-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70830
+	* config/arm/arm.c (arm_output_multireg_pop): Avoid POP instruction
+	when popping the PC and within an interrupt handler routine.
+	Add missing tab to output of "ldmfd".
+	(output_return_instruction): Output LDMFD with SP update rather
+	than POP when returning from interrupt handler.
+
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (isa): Add x64_avx512dq, enable if
