@@ -1,5 +1,16 @@
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (isa): Add x64_avx512dq, enable if
+	TARGET_64BIT && TARGET_AVX512DQ.
+	* config/i386/sse.md (*vec_extract<mode>): Add avx512bw alternatives.
+	(*vec_extract<PEXTR_MODE12:mode>_zext): Add avx512bw alternative.
+	(*vec_extract<ssevecmodelower>_0, *vec_extractv4si_0_zext,
+	*vec_extractv2di_0_sse): Use v constraint instead of x constraint.
+	(*vec_extractv4si): Add avx512dq and avx512bw alternatives.
+	(*vec_extractv4si_zext): Add avx512dq alternative.
+	(*vec_extractv2di_1): Add x64_avx512dq and avx512bw alternatives,
+	use v instead of x constraint in other alternatives where possible.
+
 	* config/i386/sse.md (sse2_loadld): Use v instead of x
 	constraint in alternatives 0,1,4.
 
