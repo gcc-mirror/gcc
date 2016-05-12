@@ -1,5 +1,13 @@
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/71019
+	* config/i386/sse.md (<sse2_avx2>_packssdw<mask_name>,
+	<sse4_1_avx2>_packusdw<mask_name>): Make sure EVEX encoded insn
+	is not emitted unless TARGET_AVX512BW.
+	(<sse2_avx2>_packuswb<mask_name>, <sse2_avx2>_packsswb<mask_name>):
+	Likewise.  For TARGET_AVX512BW, use "=v" constraint instead of "=x"
+	for the result operand.
+
 	* config/i386/sse.md (*vec_setv4sf_sse4_1, sse4_1_insertps): Use v
 	constraint instead of x in avx alternatives.  Use maybe_evex instead
 	of vex prefix.

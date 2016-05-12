@@ -11500,54 +11500,57 @@
 })
 
 (define_insn "<sse2_avx2>_packsswb<mask_name>"
-  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x")
+  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x,v")
 	(vec_concat:VI1_AVX512
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,x,v"))
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,vm"))))]
+	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,xm,vm"))))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packsswb\t{%2, %0|%0, %2}
+   vpacksswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}
    vpacksswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sselog")
-   (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,maybe_evex")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix" "orig,<mask_prefix>,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse2_avx2>_packssdw<mask_name>"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,v")
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x,v")
 	(vec_concat:VI2_AVX2
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,x,v"))
 	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,vm"))))]
+	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,xm,vm"))))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packssdw\t{%2, %0|%0, %2}
+   vpackssdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}
    vpackssdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sselog")
-   (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix" "orig,<mask_prefix>,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse2_avx2>_packuswb<mask_name>"
-  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x")
+  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,x,v")
 	(vec_concat:VI1_AVX512
 	  (us_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,v"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,x,v"))
 	  (us_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,vm"))))]
+	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,xm,vm"))))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packuswb\t{%2, %0|%0, %2}
+   vpackuswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}
    vpackuswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sselog")
-   (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix" "orig,<mask_prefix>,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "avx512bw_interleave_highv64qi<mask_name>"
@@ -14572,21 +14575,22 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse4_1_avx2>_packusdw<mask_name>"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=Yr,*x,v")
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=Yr,*x,x,v")
 	(vec_concat:VI2_AVX2
 	  (us_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,0,v"))
+	    (match_operand:<sseunpackmode> 1 "register_operand" "0,0,x,v"))
 	  (us_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "vector_operand" "YrBm,*xBm,vm"))))]
+	    (match_operand:<sseunpackmode> 2 "vector_operand" "YrBm,*xBm,xm,vm"))))]
   "TARGET_SSE4_1 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    packusdw\t{%2, %0|%0, %2}
    packusdw\t{%2, %0|%0, %2}
+   vpackusdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}
    vpackusdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "isa" "noavx,noavx,avx")
+  [(set_attr "isa" "noavx,noavx,avx,avx512bw")
    (set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,orig,maybe_evex")
+   (set_attr "prefix" "orig,orig,<mask_prefix>,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse4_1_avx2>_pblendvb"
