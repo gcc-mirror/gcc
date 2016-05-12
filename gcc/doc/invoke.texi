@@ -10007,6 +10007,14 @@ for which this feature is experimental.
 accepted, the former enables recovery for all sanitizers that support it,
 the latter disables recovery for all sanitizers that support it.
 
+Even if a recovery mode is turned on the compiler side, it needs to be also
+enabled on the runtime library side, otherwise the failures are still fatal.
+The runtime library defaults to @code{halt_on_error=0} for
+ThreadSanitizer and UndefinedBehaviorSanitizer, while default value for
+AddressSanitizer is @code{halt_on_error=1}. This can overridden through
+the following environment variables: @env{ASAN_OPTIONS}, @env{TSAN_OPTIONS},
+@env{UBSAN_OPTIONS}.
+
 Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
 @smallexample
 -fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero

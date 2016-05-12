@@ -1,3 +1,8 @@
+2016-05-12  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Explain connection between -fsanitize-recover=address
+	and ASAN_OPTIONS="halt_on_error=1".
+
 2016-05-12  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR tree-optimization/71006
