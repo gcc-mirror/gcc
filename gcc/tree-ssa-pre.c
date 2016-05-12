@@ -1464,6 +1464,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    pre_expr constant;
 	    unsigned int new_val_id;
 
+	    PRE_EXPR_NARY (expr) = newnary;
+	    constant = fully_constant_expression (expr);
+	    PRE_EXPR_NARY (expr) = nary;
+	    if (constant != expr)
+	      return constant;
+
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,
 						    newnary->type,
@@ -1478,10 +1484,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    if (nary)
 	      {
 		PRE_EXPR_NARY (expr) = nary;
-		constant = fully_constant_expression (expr);
-		if (constant != expr)
-		  return constant;
-
 		new_val_id = nary->value_id;
 		get_or_alloc_expression_id (expr);
 	      }
@@ -1495,9 +1497,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						 &newnary->op[0],
 						 result, new_val_id);
 		PRE_EXPR_NARY (expr) = nary;
-		constant = fully_constant_expression (expr);
-		if (constant != expr)
-		  return constant;
 		get_or_alloc_expression_id (expr);
 	      }
 	    add_to_value (new_val_id, expr);

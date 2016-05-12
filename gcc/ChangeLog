@@ -1,5 +1,15 @@
 2016-05-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71059
+	* tree-ssa-pre.c (phi_translate_1): Fully fold translated
+	nary before looking up or entering the expression into the VN
+	hashes.
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup): Fix comment typo.
+	Make sure to re-use NARYs without result as inserted by
+	phi-translation.
+
+2016-05-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71062
 	* tree-ssa-alias.h (struct pt_solution): Add vars_contains_restrict
 	field.
