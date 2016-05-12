@@ -1,5 +1,8 @@
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (sse2_loadld): Use v instead of x
+	constraint in alternatives 0,1,4.
+
 	* config/i386/sse.md (pinsr_evex_isa): New mode attr.
 	(<sse2p4_1>_pinsr<ssemodesuffix>): Add 2 alternatives with
 	v constraints instead of x and <pinsr_evex_isa> isa attribute.

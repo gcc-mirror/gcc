@@ -13013,11 +13013,11 @@
   "operands[2] = CONST0_RTX (V4SImode);")
 
 (define_insn "sse2_loadld"
-  [(set (match_operand:V4SI 0 "register_operand"       "=x,Yi,x,x,x")
+  [(set (match_operand:V4SI 0 "register_operand"       "=v,Yi,x,x,v")
 	(vec_merge:V4SI
 	  (vec_duplicate:V4SI
-	    (match_operand:SI 2 "nonimmediate_operand" "m ,r ,m,x,x"))
-	  (match_operand:V4SI 1 "reg_or_0_operand"     "C ,C ,C,0,x")
+	    (match_operand:SI 2 "nonimmediate_operand" "m ,r ,m,x,v"))
+	  (match_operand:V4SI 1 "reg_or_0_operand"     "C ,C ,C,0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
@@ -13028,7 +13028,7 @@
    vmovss\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "sse2,sse2,noavx,noavx,avx")
    (set_attr "type" "ssemov")
-   (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,vex")
+   (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,SF,SF")])
 
 ;; QI and HI modes handled by pextr patterns.
