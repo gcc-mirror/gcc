@@ -1,5 +1,8 @@
 2016-05-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512bw-vpextr-1.c: New test.
+	* gcc.target/i386/avx512dq-vpextr-1.c: New test.
+
 	* gcc.target/i386/avx512bw-vpinsr-1.c: New test.
 	* gcc.target/i386/avx512dq-vpinsr-1.c: New test.
 	* gcc.target/i386/avx512vl-vpinsr-1.c: New test.
