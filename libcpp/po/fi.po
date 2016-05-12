@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1-b20160131\n"
+"Project-Id-Version: cpplib 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2016-02-09 22:14+0200\n"
+"PO-Revision-Date: 2016-05-12 23:30+0300\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.6\n"
+"X-Generator: Poedit 1.8.7\n"
 
 #: charset.c:674
 #, c-format
@@ -275,7 +275,7 @@ msgstr "#:n jälkeinen ”%s” ei ole positiivinen kokonaisluku"
 #: directives.c:1061
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr ""
+msgstr "tiedoston ”%s” rivinmerkitsin jätetään huomiotta virheellisen sisäkkäisyyden vuoksi"
 
 #: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
 #, c-format
@@ -437,10 +437,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "virheellinen etuliite ”0b” liukulukuvakiolle"
 
 #: expr.c:555
-#, fuzzy
-#| msgid "use of C++11 hexadecimal floating constant"
 msgid "use of C++1z hexadecimal floating constant"
-msgstr "C++11:n heksadesimaaliliukulukuvakion käyttö"
+msgstr "C++1z:n heksadesimaaliliukulukuvakion käyttö"
 
 #: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
