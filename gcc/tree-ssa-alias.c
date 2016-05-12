@@ -363,14 +363,17 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
   else if (obj1 && TREE_CODE (ptr2) == SSA_NAME)
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr2);
-      if (!pi)
+      /* We may not use restrict to optimize pointer comparisons.
+         See PR71062.  So we have to assume that restrict-pointed-to
+	 may be in fact obj1.  */
+      if (!pi || pi->pt.vars_contains_restrict)
 	return false;
       return !pt_solution_includes (&pi->pt, obj1);
     }
   else if (TREE_CODE (ptr1) == SSA_NAME && obj2)
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr1);
-      if (!pi)
+      if (!pi || pi->pt.vars_contains_restrict)
 	return false;
       return !pt_solution_includes (&pi->pt, obj2);
     }
@@ -521,17 +524,31 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
       fprintf (file, ", points-to vars: ");
       dump_decl_set (file, pt->vars);
       if (pt->vars_contains_nonlocal
-	  && pt->vars_contains_escaped_heap)
-	fprintf (file, " (nonlocal, escaped heap)");
-      else if (pt->vars_contains_nonlocal
-	       && pt->vars_contains_escaped)
-	fprintf (file, " (nonlocal, escaped)");
-      else if (pt->vars_contains_nonlocal)
-	fprintf (file, " (nonlocal)");
-      else if (pt->vars_contains_escaped_heap)
-	fprintf (file, " (escaped heap)");
-      else if (pt->vars_contains_escaped)
-	fprintf (file, " (escaped)");
+	  || pt->vars_contains_escaped
+	  || pt->vars_contains_escaped_heap
+	  || pt->vars_contains_restrict)
+	{
+	  const char *comma = "";
+	  fprintf (file, " (");
+	  if (pt->vars_contains_nonlocal)
+	    {
+	      fprintf (file, "nonlocal");
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_escaped)
+	    {
+	      fprintf (file, "%sescaped", comma);
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_escaped_heap)
+	    {
+	      fprintf (file, "%sescaped heap", comma);
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_restrict)
+	    fprintf (file, "%srestrict", comma);
+	  fprintf (file, ")");
+	}
     }
 }
 

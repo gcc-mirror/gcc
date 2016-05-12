@@ -1,3 +1,16 @@
+2016-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71062
+	* tree-ssa-alias.h (struct pt_solution): Add vars_contains_restrict
+	field.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Set vars_contains_restrict
+	if the var is a restrict tag.
+	* tree-ssa-alias.c (ptrs_compare_unequal): If vars_contains_restrict
+	do not disambiguate pointers against it.
+	(dump_points_to_solution): Re-structure and adjust for new
+	vars_contains_restrict flag.
+	* gimple-pretty-print.c (pp_points_to_solution): Likewise.
+
 2016-05-12  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Explain connection between -fsanitize-recover=address
