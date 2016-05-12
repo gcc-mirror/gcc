@@ -632,17 +632,37 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
 	}
       pp_right_brace (buffer);
       if (pt->vars_contains_nonlocal
-	  && pt->vars_contains_escaped_heap)
-	pp_string (buffer, " (nonlocal, escaped heap)");
-      else if (pt->vars_contains_nonlocal
-	       && pt->vars_contains_escaped)
-	pp_string (buffer, " (nonlocal, escaped)");
-      else if (pt->vars_contains_nonlocal)
-	pp_string (buffer, " (nonlocal)");
-      else if (pt->vars_contains_escaped_heap)
-	pp_string (buffer, " (escaped heap)");
-      else if (pt->vars_contains_escaped)
-	pp_string (buffer, " (escaped)");
+	  || pt->vars_contains_escaped
+	  || pt->vars_contains_escaped_heap
+	  || pt->vars_contains_restrict)
+	{
+	  const char *comma = "";
+	  pp_string (buffer, " (");
+	  if (pt->vars_contains_nonlocal)
+	    {
+	      pp_string (buffer, "nonlocal");
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_escaped)
+	    {
+	      pp_string (buffer, comma);
+	      pp_string (buffer, "escaped");
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_escaped_heap)
+	    {
+	      pp_string (buffer, comma);
+	      pp_string (buffer, "escaped heap");
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_restrict)
+	    {
+	      pp_string (buffer, comma);
+	      pp_string (buffer, "restrict");
+	    }
+	  pp_string (buffer, ")");
+	}
+
     }
 }
 
