@@ -109,14 +109,12 @@ static bool block_move_libcall_safe_for_call_parm (void);
 static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
-static tree emit_block_move_libcall_fn (int);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static rtx clear_by_pieces_1 (void *, HOST_WIDE_INT, machine_mode);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static void store_by_pieces_1 (struct store_by_pieces_d *, unsigned int);
 static void store_by_pieces_2 (insn_gen_fn, machine_mode,
 			       struct store_by_pieces_d *);
-static tree clear_storage_libcall_fn (int);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
@@ -1132,7 +1130,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 	mark_addressable (y_expr);
       if (x_expr)
 	mark_addressable (x_expr);
-      retval = emit_block_move_via_libcall (x, y, size,
+      retval = emit_block_copy_via_libcall (x, y, size,
 					    method == BLOCK_OP_TAILCALL);
     }
 
@@ -1175,7 +1173,7 @@ block_move_libcall_safe_for_call_parm (void)
   /* If registers go on the stack anyway, any argument is sure to clobber
      an outgoing argument.  */
 #if defined (REG_PARM_STACK_SPACE)
-  fn = emit_block_move_libcall_fn (false);
+  fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
   /* Avoid set but not used warning if *REG_PARM_STACK_SPACE doesn't
      depend on its argument.  */
   (void) fn;
@@ -1191,7 +1189,7 @@ block_move_libcall_safe_for_call_parm (void)
     cumulative_args_t args_so_far;
     tree fn, arg;
 
-    fn = emit_block_move_libcall_fn (false);
+    fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
     INIT_CUMULATIVE_ARGS (args_so_far_v, TREE_TYPE (fn), NULL_RTX, 0, 3);
     args_so_far = pack_cumulative_args (&args_so_far_v);
 
@@ -1310,106 +1308,6 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
   return false;
 }
 
-/* A subroutine of emit_block_move.  Expand a call to memcpy.
-   Return the return value from memcpy, 0 otherwise.  */
-
-rtx
-emit_block_move_via_libcall (rtx dst, rtx src, rtx size, bool tailcall)
-{
-  rtx dst_addr, src_addr;
-  tree call_expr, fn, src_tree, dst_tree, size_tree;
-  machine_mode size_mode;
-  rtx retval;
-
-  /* Emit code to copy the addresses of DST and SRC and SIZE into new
-     pseudos.  We can then place those new pseudos into a VAR_DECL and
-     use them later.  */
-
-  dst_addr = copy_addr_to_reg (XEXP (dst, 0));
-  src_addr = copy_addr_to_reg (XEXP (src, 0));
-
-  dst_addr = convert_memory_address (ptr_mode, dst_addr);
-  src_addr = convert_memory_address (ptr_mode, src_addr);
-
-  dst_tree = make_tree (ptr_type_node, dst_addr);
-  src_tree = make_tree (ptr_type_node, src_addr);
-
-  size_mode = TYPE_MODE (sizetype);
-
-  size = convert_to_mode (size_mode, size, 1);
-  size = copy_to_mode_reg (size_mode, size);
-
-  /* It is incorrect to use the libcall calling conventions to call
-     memcpy in this context.  This could be a user call to memcpy and
-     the user may wish to examine the return value from memcpy.  For
-     targets where libcalls and normal calls have different conventions
-     for returning pointers, we could end up generating incorrect code.  */
-
-  size_tree = make_tree (sizetype, size);
-
-  fn = emit_block_move_libcall_fn (true);
-  call_expr = build_call_expr (fn, 3, dst_tree, src_tree, size_tree);
-  CALL_EXPR_TAILCALL (call_expr) = tailcall;
-
-  retval = expand_normal (call_expr);
-
-  return retval;
-}
-
-/* A subroutine of emit_block_move_via_libcall.  Create the tree node
-   for the function we use for block copies.  */
-
-static GTY(()) tree block_move_fn;
-
-void
-init_block_move_fn (const char *asmspec)
-{
-  if (!block_move_fn)
-    {
-      tree args, fn, attrs, attr_args;
-
-      fn = get_identifier ("memcpy");
-      args = build_function_type_list (ptr_type_node, ptr_type_node,
-				       const_ptr_type_node, sizetype,
-				       NULL_TREE);
-
-      fn = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn, args);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      DECL_VISIBILITY (fn) = VISIBILITY_DEFAULT;
-      DECL_VISIBILITY_SPECIFIED (fn) = 1;
-
-      attr_args = build_tree_list (NULL_TREE, build_string (1, "1"));
-      attrs = tree_cons (get_identifier ("fn spec"), attr_args, NULL);
-
-      decl_attributes (&fn, attrs, ATTR_FLAG_BUILT_IN);
-
-      block_move_fn = fn;
-    }
-
-  if (asmspec)
-    set_user_assembler_name (block_move_fn, asmspec);
-}
-
-static tree
-emit_block_move_libcall_fn (int for_call)
-{
-  static bool emitted_extern;
-
-  if (!block_move_fn)
-    init_block_move_fn (NULL);
-
-  if (for_call && !emitted_extern)
-    {
-      emitted_extern = true;
-      make_decl_rtl (block_move_fn);
-    }
-
-  return block_move_fn;
-}
-
 /* A subroutine of emit_block_move.  Copy the data via an explicit
    loop.  This is used only when libcalls are forbidden.  */
 /* ??? It'd be nice to copy in hunks larger than QImode.  */
@@ -1462,6 +1360,39 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
 
   emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
 			   true, top_label, REG_BR_PROB_BASE * 90 / 100);
+}
+
+/* Expand a call to memcpy or memmove or memcmp, and return the result.
+   TAILCALL is true if this is a tail call.  */
+
+rtx
+emit_block_op_via_libcall (enum built_in_function fncode, rtx dst, rtx src,
+			   rtx size, bool tailcall)
+{
+  rtx dst_addr, src_addr;
+  tree call_expr, dst_tree, src_tree, size_tree;
+  machine_mode size_mode;
+
+  dst_addr = copy_addr_to_reg (XEXP (dst, 0));
+  dst_addr = convert_memory_address (ptr_mode, dst_addr);
+  dst_tree = make_tree (ptr_type_node, dst_addr);
+
+  src_addr = copy_addr_to_reg (XEXP (src, 0));
+  src_addr = convert_memory_address (ptr_mode, src_addr);
+  src_tree = make_tree (ptr_type_node, src_addr);
+
+  size_mode = TYPE_MODE (sizetype);
+  size = convert_to_mode (size_mode, size, 1);
+  size = copy_to_mode_reg (size_mode, size);
+  size_tree = make_tree (sizetype, size);
+
+  /* It is incorrect to use the libcall calling conventions for calls to
+     memcpy/memmove/memcmp because they can be provided by the user.  */
+  tree fn = builtin_decl_implicit (fncode);
+  call_expr = build_call_expr (fn, 3, dst_tree, src_tree, size_tree);
+  CALL_EXPR_TAILCALL (call_expr) = tailcall;
+
+  return expand_call (call_expr, NULL_RTX, false);
 }
 
 /* Copy all or part of a value X into registers starting at REGNO.
@@ -2784,85 +2715,26 @@ set_storage_via_libcall (rtx object, rtx size, rtx val, bool tailcall)
 {
   tree call_expr, fn, object_tree, size_tree, val_tree;
   machine_mode size_mode;
-  rtx retval;
-
-  /* Emit code to copy OBJECT and SIZE into new pseudos.  We can then
-     place those into new pseudos into a VAR_DECL and use them later.  */
 
   object = copy_addr_to_reg (XEXP (object, 0));
+  object_tree = make_tree (ptr_type_node, object);
+
+  if (!CONST_INT_P (val))
+    val = convert_to_mode (TYPE_MODE (integer_type_node), val, 1);
+  val_tree = make_tree (integer_type_node, val);
 
   size_mode = TYPE_MODE (sizetype);
   size = convert_to_mode (size_mode, size, 1);
   size = copy_to_mode_reg (size_mode, size);
-
-  /* It is incorrect to use the libcall calling conventions to call
-     memset in this context.  This could be a user call to memset and
-     the user may wish to examine the return value from memset.  For
-     targets where libcalls and normal calls have different conventions
-     for returning pointers, we could end up generating incorrect code.  */
-
-  object_tree = make_tree (ptr_type_node, object);
-  if (!CONST_INT_P (val))
-    val = convert_to_mode (TYPE_MODE (integer_type_node), val, 1);
   size_tree = make_tree (sizetype, size);
-  val_tree = make_tree (integer_type_node, val);
 
-  fn = clear_storage_libcall_fn (true);
+  /* It is incorrect to use the libcall calling conventions for calls to
+     memset because it can be provided by the user.  */
+  fn = builtin_decl_implicit (BUILT_IN_MEMSET);
   call_expr = build_call_expr (fn, 3, object_tree, val_tree, size_tree);
   CALL_EXPR_TAILCALL (call_expr) = tailcall;
 
-  retval = expand_normal (call_expr);
-
-  return retval;
-}
-
-/* A subroutine of set_storage_via_libcall.  Create the tree node
-   for the function we use for block clears.  */
-
-tree block_clear_fn;
-
-void
-init_block_clear_fn (const char *asmspec)
-{
-  if (!block_clear_fn)
-    {
-      tree fn, args;
-
-      fn = get_identifier ("memset");
-      args = build_function_type_list (ptr_type_node, ptr_type_node,
-				       integer_type_node, sizetype,
-				       NULL_TREE);
-
-      fn = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn, args);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      DECL_VISIBILITY (fn) = VISIBILITY_DEFAULT;
-      DECL_VISIBILITY_SPECIFIED (fn) = 1;
-
-      block_clear_fn = fn;
-    }
-
-  if (asmspec)
-    set_user_assembler_name (block_clear_fn, asmspec);
-}
-
-static tree
-clear_storage_libcall_fn (int for_call)
-{
-  static bool emitted_extern;
-
-  if (!block_clear_fn)
-    init_block_clear_fn (NULL);
-
-  if (for_call && !emitted_extern)
-    {
-      emitted_extern = true;
-      make_decl_rtl (block_clear_fn);
-    }
-
-  return block_clear_fn;
+  return expand_call (call_expr, NULL_RTX, false);
 }
 
 /* Expand a setmem pattern; return true if successful.  */
@@ -5157,12 +5029,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       size = expr_size (from);
       from_rtx = expand_normal (from);
 
-      emit_library_call (memmove_libfunc, LCT_NORMAL,
-			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
-			 XEXP (from_rtx, 0), Pmode,
-			 convert_to_mode (TYPE_MODE (sizetype),
-					  size, TYPE_UNSIGNED (sizetype)),
-			 TYPE_MODE (sizetype));
+      emit_block_move_via_libcall (XEXP (to_rtx, 0), XEXP (from_rtx, 0), size);
 
       preserve_temp_slots (to_rtx);
       pop_temp_slots ();
@@ -11653,5 +11520,3 @@ int_expr_size (tree exp)
 
   return tree_to_shwi (size);
 }
-
-#include "gt-expr.h"

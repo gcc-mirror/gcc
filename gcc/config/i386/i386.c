@@ -26908,7 +26908,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	{
 	  if (UINTVAL (count_exp) >= (unsigned HOST_WIDE_INT)dynamic_check)
 	    {
-	      emit_block_move_via_libcall (dst, src, count_exp, false);
+	      emit_block_copy_via_libcall (dst, src, count_exp);
 	      count_exp = const0_rtx;
 	      goto epilogue;
 	    }
@@ -26923,9 +26923,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 				   1, hot_label);
 	  predict_jump (REG_BR_PROB_BASE * 90 / 100);
 	  if (issetmem)
-	    set_storage_via_libcall (dst, count_exp, val_exp, false);
+	    set_storage_via_libcall (dst, count_exp, val_exp);
 	  else
-	    emit_block_move_via_libcall (dst, src, count_exp, false);
+	    emit_block_copy_via_libcall (dst, src, count_exp);
 	  emit_jump (jump_around_label);
 	  emit_label (hot_label);
 	}

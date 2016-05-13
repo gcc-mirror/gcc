@@ -731,14 +731,15 @@ static GTY (()) hash_table<libfunc_decl_hasher> *libfunc_decls;
 tree
 build_libfunc_function (const char *name)
 {
+  /* ??? We don't have any type information; pretend this is "int foo ()".  */
   tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
 			  get_identifier (name),
 			  build_function_type (integer_type_node, NULL_TREE));
-  /* ??? We don't have any type information except for this is
-     a function.  Pretend this is "int foo ()".  */
-  DECL_ARTIFICIAL (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
   gcc_assert (DECL_ASSEMBLER_NAME (decl));
 
   /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
@@ -887,31 +888,9 @@ init_optabs (void)
     set_optab_libfunc (abs_optab, TYPE_MODE (complex_double_type_node),
 		       "cabs");
 
-  abort_libfunc = init_one_libfunc ("abort");
-  memcpy_libfunc = init_one_libfunc ("memcpy");
-  memmove_libfunc = init_one_libfunc ("memmove");
-  memcmp_libfunc = init_one_libfunc ("memcmp");
-  memset_libfunc = init_one_libfunc ("memset");
-  setbits_libfunc = init_one_libfunc ("__setbits");
-
-#ifndef DONT_USE_BUILTIN_SETJMP
-  setjmp_libfunc = init_one_libfunc ("__builtin_setjmp");
-  longjmp_libfunc = init_one_libfunc ("__builtin_longjmp");
-#else
-  setjmp_libfunc = init_one_libfunc ("setjmp");
-  longjmp_libfunc = init_one_libfunc ("longjmp");
-#endif
   unwind_sjlj_register_libfunc = init_one_libfunc ("_Unwind_SjLj_Register");
   unwind_sjlj_unregister_libfunc
     = init_one_libfunc ("_Unwind_SjLj_Unregister");
-
-  /* For function entry/exit instrumentation.  */
-  profile_function_entry_libfunc
-    = init_one_libfunc ("__cyg_profile_func_enter");
-  profile_function_exit_libfunc
-    = init_one_libfunc ("__cyg_profile_func_exit");
-
-  gcov_flush_libfunc = init_one_libfunc ("__gcov_flush");
 
   /* Allow the target to add more libcalls or rename some, etc.  */
   targetm.init_libfuncs ();

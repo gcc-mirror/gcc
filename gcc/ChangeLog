@@ -1,3 +1,63 @@
+2016-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins.c (expand_builtin_memcmp): Do not emit the call here.
+	(expand_builtin_trap): Emit a regular call.
+	(set_builtin_user_assembler_name): Remove obsolete cases.
+	* dse.c (scan_insn): Adjust.
+	* except.c: Include calls.h.
+	(sjlj_emit_function_enter): If DONT_USE_BUILTIN_SETJMP is defined,
+	emit a regular call to setjmp.
+	* expr.c (emit_block_move_hints): Call emit_block_copy_via_libcall.
+	(block_move_libcall_safe_for_call_parm): Use memcpy builtin.
+	(emit_block_move_via_libcall): Delete.
+	(block_move_fn): Delete.
+	(init_block_move_fn): Likewise.
+	(emit_block_move_libcall_fn): Likewise.
+	(emit_block_op_via_libcall): New function.
+	(set_storage_via_libcall): Tidy up and use memset builtin.
+	(block_clear_fn): Delete.
+	(init_block_clear_fn): Likewise.
+	(clear_storage_libcall_fn): Likewise.
+	(expand_assignment): Call emit_block_move_via_libcall.
+	Do not include gt-expr.h.
+	* expr.h (emit_block_op_via_libcall): Declare.
+	(emit_block_copy_via_libcall): New inline function.
+	(emit_block_move_via_libcall): Likewise.
+	(emit_block_comp_via_libcall): Likewise.
+	(block_clear_fn): Delete.
+	(init_block_move_fn): Likewise.
+	(init_block_clear_fn): Likewise.
+	(emit_block_move_via_libcall): Likewise.
+	(set_storage_via_libcall): Add default parameter value.
+	* libfuncs.h (enum libfunc_index): Remove obsolete values.
+	(abort_libfunc): Delete.
+	(memcpy_libfunc): Likewise.
+	(memmove_libfunc): Likewise.
+	(memcmp_libfunc): Likewise.
+	(memset_libfunc): Likewise.
+	(setbits_libfunc): Likewise.
+	(setjmp_libfunc): Likewise.
+	(longjmp_libfunc): Likewise.
+	(profile_function_entry_libfunc): Likewise.
+	(profile_function_exit_libfunc): Likewise.
+	(gcov_flush_libfunc): Likewise.
+	* optabs-libfuncs.c (build_libfunc_function): Set DECL_ARTIFICIAL
+	and DECL_VISIBILITY on the declaration.
+	(init_optabs): Do not initialize obsolete libfuncs.
+	* optabs.c (prepare_cmp_insn): Call emit_block_comp_via_libcall.
+	* tree-core.h (ECF_RET1): Define.
+	(ECF_TM_PURE): Adjust.
+	(ECF_TM_BUILTIN): Likewise.
+	* tree.c (set_call_expr_flags): Deal with ECF_RET1.
+	(build_common_builtin_nodes): Initialize abort builtin.
+	Add ECF_RET1 on memcpy, memmove and memset builtins.
+	Pass final flags for alloca and alloca_with_align builtins.
+	* config/alpha/alpha.c (alpha_init_libfuncs): Do not initialize
+	obsolete builtins.
+	* config/ia64/ia64.c (ia64_vms_init_libfuncs): Likewise.
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Adjust call to
+	set_storage_via_libcall and call emit_block_copy_via_libcall.
+
 2016-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*call_got_x32): Change operand 0 to

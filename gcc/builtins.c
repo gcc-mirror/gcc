@@ -3757,20 +3757,7 @@ expand_builtin_memcmp (tree exp, rtx target)
       return convert_to_mode (mode, result, 0);
     }
 
-  result = target;
-  if (! (result != 0
-	 && REG_P (result) && GET_MODE (result) == mode
-	 && REGNO (result) >= FIRST_PSEUDO_REGISTER))
-    result = gen_reg_rtx (mode);
-
-  emit_library_call_value (memcmp_libfunc, result, LCT_PURE,
-			   TYPE_MODE (integer_type_node), 3,
-			   XEXP (arg1_rtx, 0), Pmode,
-			   XEXP (arg2_rtx, 0), Pmode,
-			   convert_to_mode (TYPE_MODE (sizetype), arg3_rtx,
-					    TYPE_UNSIGNED (sizetype)),
-			   TYPE_MODE (sizetype));
-  return result;
+  return NULL_RTX;
 }
 
 /* Expand expression EXP, which is a call to the strcmp builtin.  Return NULL_RTX
@@ -4455,7 +4442,12 @@ expand_builtin_trap (void)
 	add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
     }
   else
-    emit_library_call (abort_libfunc, LCT_NORETURN, VOIDmode, 0);
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_ABORT);
+      tree call_expr = build_call_expr (fn, 0);
+      expand_call (call_expr, NULL_RTX, false);
+    }
+
   emit_barrier ();
 }
 
@@ -9888,42 +9880,19 @@ fold_call_stmt (gcall *stmt, bool ignore)
 void
 set_builtin_user_assembler_name (tree decl, const char *asmspec)
 {
-  tree builtin;
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	      && asmspec != 0);
 
-  builtin = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
+  tree builtin = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
   set_user_assembler_name (builtin, asmspec);
-  switch (DECL_FUNCTION_CODE (decl))
+
+  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_FFS
+      && INT_TYPE_SIZE < BITS_PER_WORD)
     {
-    case BUILT_IN_MEMCPY:
-      init_block_move_fn (asmspec);
-      memcpy_libfunc = set_user_assembler_libfunc ("memcpy", asmspec);
-      break;
-    case BUILT_IN_MEMSET:
-      init_block_clear_fn (asmspec);
-      memset_libfunc = set_user_assembler_libfunc ("memset", asmspec);
-      break;
-    case BUILT_IN_MEMMOVE:
-      memmove_libfunc = set_user_assembler_libfunc ("memmove", asmspec);
-      break;
-    case BUILT_IN_MEMCMP:
-      memcmp_libfunc = set_user_assembler_libfunc ("memcmp", asmspec);
-      break;
-    case BUILT_IN_ABORT:
-      abort_libfunc = set_user_assembler_libfunc ("abort", asmspec);
-      break;
-    case BUILT_IN_FFS:
-      if (INT_TYPE_SIZE < BITS_PER_WORD)
-	{
-	  set_user_assembler_libfunc ("ffs", asmspec);
-	  set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE,
-						       MODE_INT, 0), "ffs");
-	}
-      break;
-    default:
-      break;
+      set_user_assembler_libfunc ("ffs", asmspec);
+      set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
+			 "ffs");
     }
 }
 

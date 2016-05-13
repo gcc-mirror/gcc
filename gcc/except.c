@@ -130,6 +130,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "stmt.h"
 #include "expr.h"
+#include "calls.h"
 #include "libfuncs.h"
 #include "except.h"
 #include "output.h"
@@ -1173,20 +1174,22 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 
   if (dispatch_label)
     {
+      rtx addr = plus_constant (Pmode, XEXP (fc, 0), sjlj_fc_jbuf_ofs);
+
 #ifdef DONT_USE_BUILTIN_SETJMP
-      rtx x;
-      x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
-				   TYPE_MODE (integer_type_node), 1,
-				   plus_constant (Pmode, XEXP (fc, 0),
-						  sjlj_fc_jbuf_ofs), Pmode);
+      addr = copy_addr_to_reg (addr);
+      addr = convert_memory_address (ptr_mode, addr);
+      tree addr_tree = make_tree (ptr_type_node, addr);
+
+      tree fn = builtin_decl_implicit (BUILT_IN_SETJMP);
+      tree call_expr = build_call_expr (fn, 1, addr_tree);
+      rtx x = expand_call (call_expr, NULL_RTX, false);
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			       TYPE_MODE (integer_type_node), 0,
 			       dispatch_label, REG_BR_PROB_BASE / 100);
 #else
-      expand_builtin_setjmp_setup (plus_constant (Pmode, XEXP (fc, 0),
-						  sjlj_fc_jbuf_ofs),
-				   dispatch_label);
+      expand_builtin_setjmp_setup (addr, dispatch_label);
 #endif
     }
 

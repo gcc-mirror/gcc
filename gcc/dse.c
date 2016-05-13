@@ -2269,6 +2269,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
   if (CALL_P (insn))
     {
       bool const_call;
+      rtx call, sym;
       tree memset_call = NULL_TREE;
 
       insn_info->cannot_delete = true;
@@ -2278,24 +2279,16 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 	 been pushed onto the stack.
 	 memset and bzero don't read memory either.  */
       const_call = RTL_CONST_CALL_P (insn);
-      if (!const_call)
-	{
-	  rtx call = get_call_rtx_from (insn);
-	  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
-	    {
-	      rtx symbol = XEXP (XEXP (call, 0), 0);
-	      if (SYMBOL_REF_DECL (symbol)
-		  && TREE_CODE (SYMBOL_REF_DECL (symbol)) == FUNCTION_DECL)
-		{
-		  if ((DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (symbol))
-		       == BUILT_IN_NORMAL
-		       && (DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol))
-			   == BUILT_IN_MEMSET))
-		      || SYMBOL_REF_DECL (symbol) == block_clear_fn)
-		    memset_call = SYMBOL_REF_DECL (symbol);
-		}
-	    }
-	}
+      if (!const_call
+	  && (call = get_call_rtx_from (insn))
+	  && (sym = XEXP (XEXP (call, 0), 0))
+	  && GET_CODE (sym) == SYMBOL_REF
+	  && SYMBOL_REF_DECL (sym)
+	  && TREE_CODE (SYMBOL_REF_DECL (sym)) == FUNCTION_DECL
+	  && DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (sym)) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (sym)) == BUILT_IN_MEMSET)
+	memset_call = SYMBOL_REF_DECL (sym);
+
       if (const_call || memset_call)
 	{
 	  insn_info_t i_ptr = active_local_stores;

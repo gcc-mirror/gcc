@@ -10451,6 +10451,11 @@ set_call_expr_flags (tree decl, int flags)
   if (flags & ECF_LEAF)
     DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
 					NULL, DECL_ATTRIBUTES (decl));
+  if (flags & ECF_RET1)
+    DECL_ATTRIBUTES (decl)
+      = tree_cons (get_identifier ("fn spec"),
+		   build_tree_list (NULL_TREE, build_string (1, "1")),
+		   DECL_ATTRIBUTES (decl));
   if ((flags & ECF_TM_PURE) && flag_tm)
     apply_tm_attr (decl, get_identifier ("transaction_pure"));
   /* Looping const or pure is implied by noreturn.
@@ -10486,13 +10491,20 @@ build_common_builtin_nodes (void)
   tree tmp, ftype;
   int ecf_flags;
 
-  if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE))
+  if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
+      || !builtin_decl_explicit_p (BUILT_IN_ABORT))
     {
       ftype = build_function_type (void_type_node, void_list_node);
-      local_define_builtin ("__builtin_unreachable", ftype, BUILT_IN_UNREACHABLE,
-			    "__builtin_unreachable",
-			    ECF_NOTHROW | ECF_LEAF | ECF_NORETURN
-			    | ECF_CONST);
+      if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE))
+	local_define_builtin ("__builtin_unreachable", ftype,
+			      BUILT_IN_UNREACHABLE,
+			      "__builtin_unreachable",
+			      ECF_NOTHROW | ECF_LEAF | ECF_NORETURN
+			      | ECF_CONST);
+      if (!builtin_decl_explicit_p (BUILT_IN_ABORT))
+	local_define_builtin ("__builtin_abort", ftype, BUILT_IN_ABORT,
+			      "abort",
+			      ECF_LEAF | ECF_NORETURN | ECF_CONST);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY)
@@ -10504,10 +10516,10 @@ build_common_builtin_nodes (void)
 
       if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY))
 	local_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
-			      "memcpy", ECF_NOTHROW | ECF_LEAF);
+			      "memcpy", ECF_NOTHROW | ECF_LEAF | ECF_RET1);
       if (!builtin_decl_explicit_p (BUILT_IN_MEMMOVE))
 	local_define_builtin ("__builtin_memmove", ftype, BUILT_IN_MEMMOVE,
-			      "memmove", ECF_NOTHROW | ECF_LEAF);
+			      "memmove", ECF_NOTHROW | ECF_LEAF | ECF_RET1);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCMP))
@@ -10525,15 +10537,19 @@ build_common_builtin_nodes (void)
 					ptr_type_node, integer_type_node,
 					size_type_node, NULL_TREE);
       local_define_builtin ("__builtin_memset", ftype, BUILT_IN_MEMSET,
-			    "memset", ECF_NOTHROW | ECF_LEAF);
+			    "memset", ECF_NOTHROW | ECF_LEAF | ECF_RET1);
     }
+
+  /* If we're checking the stack, `alloca' can throw.  */
+  const int alloca_flags
+    = ECF_MALLOC | ECF_LEAF | (flag_stack_check ? 0 : ECF_NOTHROW);
 
   if (!builtin_decl_explicit_p (BUILT_IN_ALLOCA))
     {
       ftype = build_function_type_list (ptr_type_node,
 					size_type_node, NULL_TREE);
       local_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
-			    "alloca", ECF_MALLOC | ECF_NOTHROW | ECF_LEAF);
+			    "alloca", alloca_flags);
     }
 
   ftype = build_function_type_list (ptr_type_node, size_type_node,
@@ -10541,14 +10557,7 @@ build_common_builtin_nodes (void)
   local_define_builtin ("__builtin_alloca_with_align", ftype,
 			BUILT_IN_ALLOCA_WITH_ALIGN,
 			"__builtin_alloca_with_align",
-			ECF_MALLOC | ECF_NOTHROW | ECF_LEAF);
-
-  /* If we're checking the stack, `alloca' can throw.  */
-  if (flag_stack_check)
-    {
-      TREE_NOTHROW (builtin_decl_explicit (BUILT_IN_ALLOCA)) = 0;
-      TREE_NOTHROW (builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN)) = 0;
-    }
+			alloca_flags);
 
   ftype = build_function_type_list (void_type_node,
 				    ptr_type_node, ptr_type_node,
