@@ -6823,6 +6823,9 @@ ix86_in_large_data_p (tree exp)
   if (ix86_cmodel != CM_MEDIUM && ix86_cmodel != CM_MEDIUM_PIC)
     return false;
 
+  if (exp == NULL_TREE)
+    return false;
+
   /* Functions are never large data.  */
   if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
