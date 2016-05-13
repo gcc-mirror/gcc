@@ -4639,12 +4639,11 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	  auto_vec<ce_s, 2> lhsc;
 	  struct constraint_expr rhs;
 	  struct constraint_expr *lhsp;
+	  bool aggr_p = aggregate_value_p (lhsop, gimple_call_fntype (t));
 
 	  get_constraint_for (lhsop, &lhsc);
 	  rhs = get_function_part_constraint (fi, fi_result);
-	  if (fndecl
-	      && DECL_RESULT (fndecl)
-	      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
+	  if (aggr_p)
 	    {
 	      auto_vec<ce_s, 2> tem;
 	      tem.quick_push (rhs);
@@ -4654,22 +4653,19 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	    }
 	  FOR_EACH_VEC_ELT (lhsc, j, lhsp)
 	    process_constraint (new_constraint (*lhsp, rhs));
-	}
 
-      /* If we pass the result decl by reference, honor that.  */
-      if (lhsop
-	  && fndecl
-	  && DECL_RESULT (fndecl)
-	  && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
-	{
-	  struct constraint_expr lhs;
-	  struct constraint_expr *rhsp;
+	  /* If we pass the result decl by reference, honor that.  */
+	  if (aggr_p)
+	    {
+	      struct constraint_expr lhs;
+	      struct constraint_expr *rhsp;
 
-	  get_constraint_for_address_of (lhsop, &rhsc);
-	  lhs = get_function_part_constraint (fi, fi_result);
-	  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
-	    process_constraint (new_constraint (lhs, *rhsp));
-	  rhsc.truncate (0);
+	      get_constraint_for_address_of (lhsop, &rhsc);
+	      lhs = get_function_part_constraint (fi, fi_result);
+	      FOR_EACH_VEC_ELT (rhsc, j, rhsp)
+		  process_constraint (new_constraint (lhs, *rhsp));
+	      rhsc.truncate (0);
+	    }
 	}
 
       /* If we use a static chain, pass it along.  */

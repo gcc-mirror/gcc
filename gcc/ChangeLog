@@ -1,3 +1,24 @@
+2016-05-13  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/70760
+	* tree-ssa-structalias.c (find_func_aliases_for_call): Use
+	aggregate_value_p to determine if a function result is
+	returned by reference.
+
+	2016-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70931
+	* dwarf2out.c (native_encode_initializer): Skip zero-sized fields.
+
+	2016-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70941
+	* fold-const.c (split_tree): Always convert to the original type
+	before negating.
+
 2016-05-12  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
