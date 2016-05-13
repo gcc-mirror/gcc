@@ -7046,9 +7046,9 @@ create_new_ivs (struct ivopts_data *data, struct iv_ca *set)
       if (data->loop_loc != UNKNOWN_LOCATION)
 	fprintf (dump_file, " at %s:%d", LOCATION_FILE (data->loop_loc),
 		 LOCATION_LINE (data->loop_loc));
-      fprintf (dump_file, ", %lu avg niters",
+      fprintf (dump_file, ", " HOST_WIDE_INT_PRINT_DEC " avg niters",
 	       avg_loop_niter (data->current_loop));
-      fprintf (dump_file, ", %lu expressions",
+      fprintf (dump_file, ", %" PRIu64 " expressions",
 	       set->used_inv_exprs->elements ());
       fprintf (dump_file, ", %lu IVs:\n", bitmap_count_bits (set->cands));
       EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)

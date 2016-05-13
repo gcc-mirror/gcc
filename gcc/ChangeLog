@@ -1,3 +1,8 @@
+2016-05-13  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (create_new_ivs): Use HOST_WIDE_INT_PRINT_DEC
+	and PRIu64 in printf format.
+
 2016-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* tree-ssa-loop-ivanon.c (try_unroll_loop_completely): Typo fix in
