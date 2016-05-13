@@ -304,14 +304,193 @@ Gogo::analyze_escape()
     }
 }
 
+// Traverse the program, discovering the functions that are roots of strongly
+// connected components.  The goal of this phase to produce a set of functions
+// that must be analyzed in order.
+
+class Escape_analysis_discover : public Traverse
+{
+ public:
+  Escape_analysis_discover(Gogo* gogo)
+    : Traverse(traverse_functions),
+      gogo_(gogo), component_ids_()
+  { }
+
+  int
+  function(Named_object*);
+
+  int
+  visit(Named_object*);
+
+  int
+  visit_code(Named_object*, int);
+
+ private:
+  // A counter used to generate the ID for the function node in the graph.
+  static int id;
+
+  // Type used to map functions to an ID in a graph of connected components.
+  typedef Unordered_map(Named_object*, int) Component_ids;
+
+  // The Go IR.
+  Gogo* gogo_;
+  // The list of functions encountered during connected component discovery.
+  Component_ids component_ids_;
+  // The stack of functions that this component consists of.
+  std::stack<Named_object*> stack_;
+};
+
+int Escape_analysis_discover::id = 0;
+
+// Visit each function.
+
+int
+Escape_analysis_discover::function(Named_object* fn)
+{
+  this->visit(fn);
+  return TRAVERSE_CONTINUE;
+}
+
+// Visit a function FN, adding it to the current stack of functions
+// in this connected component.  If this is the root of the component,
+// create a set of functions to be analyzed later.
+//
+// Finding these sets is finding strongly connected components
+// in the static call graph.  The algorithm for doing that is taken
+// from Sedgewick, Algorithms, Second Edition, p. 482, with two
+// adaptations.
+//
+// First, a closure (fn->func_value()->enclosing() == NULL) cannot be the
+// root of a connected component.  Refusing to use it as a root
+// forces it into the component of the function in which it appears.
+// This is more convenient for escape analysis.
+//
+// Second, each function becomes two virtual nodes in the graph,
+// with numbers n and n+1. We record the function's node number as n
+// but search from node n+1. If the search tells us that the component
+// number (min) is n+1, we know that this is a trivial component: one function
+// plus its closures. If the search tells us that the component number is
+// n, then there was a path from node n+1 back to node n, meaning that
+// the function set is mutually recursive. The escape analysis can be
+// more precise when analyzing a single non-recursive function than
+// when analyzing a set of mutually recursive functions.
+
+int
+Escape_analysis_discover::visit(Named_object* fn)
+{
+  Component_ids::const_iterator p = this->component_ids_.find(fn);
+  if (p != this->component_ids_.end())
+    // Already visited.
+    return p->second;
+
+  this->id++;
+  int id = this->id;
+  this->component_ids_[fn] = id;
+  this->id++;
+  int min = this->id;
+
+  this->stack_.push(fn);
+  min = this->visit_code(fn, min);
+  if ((min == id || min == id + 1)
+      && fn->is_function()
+      && fn->func_value()->enclosing() == NULL)
+    {
+      bool recursive = min == id;
+      std::vector<Named_object*> group;
+
+      for (; !this->stack_.empty(); this->stack_.pop())
+	{
+	  Named_object* n = this->stack_.top();
+	  if (n == fn)
+	    {
+	      this->stack_.pop();
+	      break;
+	    }
+
+	  group.push_back(n);
+	  this->component_ids_[n] = std::numeric_limits<int>::max();
+	}
+      group.push_back(fn);
+      this->component_ids_[fn] = std::numeric_limits<int>::max();
+
+      std::reverse(group.begin(), group.end());
+      this->gogo_->add_analysis_set(group, recursive);
+    }
+
+  return min;
+}
+
+// Helper class for discovery step.  Traverse expressions looking for
+// function calls and closures to visit during the discovery step.
+
+class Escape_discover_expr : public Traverse
+{
+ public:
+  Escape_discover_expr(Escape_analysis_discover* ead, int min)
+    : Traverse(traverse_expressions),
+      ead_(ead), min_(min)
+  { }
+
+  int
+  min()
+  { return this->min_; }
+
+  int
+  expression(Expression** pexpr);
+
+ private:
+  // The original discovery analysis.
+  Escape_analysis_discover* ead_;
+  // The minimum component ID in this group.
+  int min_;
+};
+
+// Visit any calls or closures found when discovering expressions.
+
+int
+Escape_discover_expr::expression(Expression** pexpr)
+{
+  Expression* e = *pexpr;
+  Named_object* fn = NULL;
+  if (e->call_expression() != NULL
+      && e->call_expression()->fn()->func_expression() != NULL)
+    {
+      // Method call or function call.
+      fn = e->call_expression()->fn()->func_expression()->named_object();
+    }
+  else if (e->func_expression() != NULL
+           && e->func_expression()->closure() != NULL)
+    {
+      // Closure.
+      fn = e->func_expression()->named_object();
+    }
+
+  if (fn != NULL)
+    this->min_ = std::min(this->min_, this->ead_->visit(fn));
+  return TRAVERSE_CONTINUE;
+}
+
+// Visit the body of each function, returns ID of the minimum connected
+// component found in the body.
+
+int
+Escape_analysis_discover::visit_code(Named_object* fn, int min)
+{
+  if (!fn->is_function())
+    return min;
+
+  Escape_discover_expr ede(this, min);
+  fn->func_value()->traverse(&ede);
+  return ede.min();
+}
+
 // Discover strongly connected groups of functions to analyze.
 
 void
 Gogo::discover_analysis_sets()
 {
-  // TODO(cmang): Implement Analysis_set discovery traversal.
-  // Escape_analysis_discover(this);
-  // this->traverse(&ead);
+  Escape_analysis_discover ead(this);
+  this->traverse(&ead);
 }
 
 // Build a connectivity graph between nodes in the function being analyzed.
