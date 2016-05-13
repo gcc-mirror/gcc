@@ -7562,11 +7562,11 @@ rest_of_handle_cse (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_CFG_CHANGED);
+      cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
   else if (tem == 1 || optimize > 1)
-    cleanup_cfg (0);
+    cse_cfg_altered |= cleanup_cfg (0);
 
   if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
     free_dominance_info (CDI_DOMINATORS);
@@ -7634,11 +7634,11 @@ rest_of_handle_cse2 (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_CFG_CHANGED);
+      cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
   else if (tem == 1)
-    cleanup_cfg (0);
+    cse_cfg_altered |= cleanup_cfg (0);
 
   if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
     free_dominance_info (CDI_DOMINATORS);
@@ -7711,11 +7711,11 @@ rest_of_handle_cse_after_global_opts (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_CFG_CHANGED);
+      cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
   else if (tem == 1)
-    cleanup_cfg (0);
+    cse_cfg_altered |= cleanup_cfg (0);
 
   if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
     free_dominance_info (CDI_DOMINATORS);

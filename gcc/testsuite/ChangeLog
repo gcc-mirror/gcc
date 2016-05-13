@@ -1,3 +1,7 @@
+2016-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/pr71084.c: New test.
+
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/53440
