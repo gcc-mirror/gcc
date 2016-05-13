@@ -1,5 +1,13 @@
 2016-05-13  Nathan Sidwell  <nathan@acm.org>
 
+	* config/nvptx/nvptx.c (nvptx_mangle_decl_assembler_name): New.
+	(nvptx_name_replacement): Delete.
+	(write_fn_proto, write_fn_proto_from_insn,
+	nvptx_output_call_insn): Remove nvptx_name_replacement call.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): Override.
+	* langhooks.c (add_builtin_funcction_common): Call
+	targetm.mangle_decl_assembler_name.
+
 	* config/nvptx/nvptx.c (write_fn_proto): Handle
 	BUILT_IN_ATOMIC_COMPARE_EXCHANGE_n oddity.
 
