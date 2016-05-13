@@ -1,5 +1,9 @@
 2016-05-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/71071
+	* fold-const.c (fold_checksum_tree): Allow modification
+	of TYPE_ALIAS_SET during folding.
+
 	* config/i386/i386.c (ix86_compute_frame_layout, ix86_expand_prologue,
 	ix86_expand_split_stack_prologue): Use HOST_WIDE_INT_C macro.
 	(ix86_split_to_parts): Likewise.  Fix up formatting.
