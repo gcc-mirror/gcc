@@ -4,7 +4,7 @@
 
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu99" } */
 
 int foo (); /* { dg-message "note: previous declaration" "different qualifiers" } */
 const int foo () { return 0; } /* { dg-error "conflicting types" "different qualifiers" } */

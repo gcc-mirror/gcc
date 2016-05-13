@@ -1,3 +1,8 @@
+2016-05-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokdeclarator): For C11, discard qualifiers on
+	function return type.
+
 2016-05-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70756
