@@ -11960,7 +11960,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   to_allocate = offset - frame->sse_reg_save_offset;
 
   if ((!to_allocate && frame->nregs <= 1)
-      || (TARGET_64BIT && to_allocate >= (HOST_WIDE_INT) 0x80000000))
+      || (TARGET_64BIT && to_allocate >= HOST_WIDE_INT_C (0x80000000)))
     frame->save_regs_using_mov = false;
 
   if (ix86_using_red_zone ()
@@ -13382,7 +13382,7 @@ ix86_expand_prologue (void)
 	{
 	  HOST_WIDE_INT size = allocate;
 
-	  if (TARGET_64BIT && size >= (HOST_WIDE_INT) 0x80000000)
+	  if (TARGET_64BIT && size >= HOST_WIDE_INT_C (0x80000000))
 	    size = 0x80000000 - STACK_CHECK_PROTECT - 1;
 
 	  if (TARGET_STACK_PROBE)
@@ -14323,7 +14323,7 @@ ix86_expand_split_stack_prologue (void)
 	     different function: __morestack_large.  We pass the
 	     argument size in the upper 32 bits of r10 and pass the
 	     frame size in the lower 32 bits.  */
-	  gcc_assert ((allocate & (HOST_WIDE_INT) 0xffffffff) == allocate);
+	  gcc_assert ((allocate & HOST_WIDE_INT_C (0xffffffff)) == allocate);
 	  gcc_assert ((args_size & 0xffffffff) == args_size);
 
 	  if (split_stack_fn_large == NULL_RTX)
@@ -24557,20 +24557,17 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
 	      real_to_target (l, CONST_DOUBLE_REAL_VALUE (operand), mode);
 
 	      /* real_to_target puts 32-bit pieces in each long.  */
-	      parts[0] =
-		gen_int_mode
-		  ((l[0] & (HOST_WIDE_INT) 0xffffffff)
-		   | ((l[1] & (HOST_WIDE_INT) 0xffffffff) << 32),
-		   DImode);
+	      parts[0] = gen_int_mode ((l[0] & HOST_WIDE_INT_C (0xffffffff))
+				       | ((l[1] & HOST_WIDE_INT_C (0xffffffff))
+					  << 32), DImode);
 
 	      if (upper_mode == SImode)
 	        parts[1] = gen_int_mode (l[2], SImode);
 	      else
-	        parts[1] =
-		  gen_int_mode
-		    ((l[2] & (HOST_WIDE_INT) 0xffffffff)
-		     | ((l[3] & (HOST_WIDE_INT) 0xffffffff) << 32),
-		     DImode);
+	        parts[1]
+		  = gen_int_mode ((l[2] & HOST_WIDE_INT_C (0xffffffff))
+				  | ((l[3] & HOST_WIDE_INT_C (0xffffffff))
+				     << 32), DImode);
 	    }
 	  else
 	    gcc_unreachable ();
