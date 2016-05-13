@@ -11700,16 +11700,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (TREE_CODE (DECL_TI_TEMPLATE (t)) == TEMPLATE_DECL)
 	  {
 	    tree spec;
-	    bool dependent_p;
 
-	    /* If T is not dependent, just return it.  We have to
-	       increment PROCESSING_TEMPLATE_DECL because
-	       value_dependent_expression_p assumes that nothing is
-	       dependent when PROCESSING_TEMPLATE_DECL is zero.  */
-	    ++processing_template_decl;
-	    dependent_p = value_dependent_expression_p (t);
-	    --processing_template_decl;
-	    if (!dependent_p)
+	    /* If T is not dependent, just return it.  */
+	    if (!uses_template_parms (DECL_TI_ARGS (t)))
 	      RETURN (t);
 
 	    /* Calculate the most general template of which R is a
@@ -17328,12 +17321,14 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
 
   /* Check to see if we already have this specialization.  */
   gen_tmpl = most_general_template (tmpl);
-  if (tmpl != gen_tmpl)
-    /* The TMPL is a partial instantiation.  To get a full set of
-       arguments we must add the arguments used to perform the
-       partial instantiation.  */
-    targ_ptr = add_outermost_template_args (DECL_TI_ARGS (tmpl),
-					    targ_ptr);
+  if (TMPL_ARGS_DEPTH (targ_ptr)
+      < TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (gen_tmpl)))
+    /* targ_ptr only has the innermost template args, so add the outer ones
+       from tmpl, which could be either a partial instantiation or gen_tmpl (in
+       the case of a non-dependent call within a template definition).  */
+    targ_ptr = (add_outermost_template_args
+		(DECL_TI_ARGS (DECL_TEMPLATE_RESULT (tmpl)),
+		 targ_ptr));
 
   /* It would be nice to avoid hashing here and then again in tsubst_decl,
      but it doesn't seem to be on the hot path.  */
@@ -22653,6 +22648,22 @@ value_dependent_expression_p (tree expression)
 
   switch (TREE_CODE (expression))
     {
+    case BASELINK:
+      /* A member function of a dependent class has dependent template
+	 arguments from its class.  */
+      if (dependent_type_p (BINFO_TYPE (BASELINK_BINFO (expression))))
+	return true;
+      return value_dependent_expression_p (BASELINK_FUNCTIONS (expression));
+
+    case FUNCTION_DECL:
+      /* A function template specialization is value-dependent if it has any
+	 dependent template arguments, since that means it cannot be
+	 instantiated for constexpr evaluation.  */
+      if (DECL_LANG_SPECIFIC (expression)
+	  && DECL_TEMPLATE_INFO (expression))
+	return any_dependent_template_arguments_p (DECL_TI_ARGS (expression));
+      break;
+
     case IDENTIFIER_NODE:
       /* A name that has not been looked up -- must be dependent.  */
       return true;
@@ -22797,10 +22808,10 @@ value_dependent_expression_p (tree expression)
 
     case CALL_EXPR:
       {
+	if (value_dependent_expression_p (CALL_EXPR_FN (expression)))
+	  return true;
 	tree fn = get_callee_fndecl (expression);
 	int i, nargs;
-	if (!fn && value_dependent_expression_p (CALL_EXPR_FN (expression)))
-	  return true;
 	nargs = call_expr_nargs (expression);
 	for (i = 0; i < nargs; ++i)
 	  {
@@ -22964,13 +22975,6 @@ type_dependent_expression_p (tree expression)
 	      || dependent_scope_p (scope));
     }
 
-  /* A function template specialization is type-dependent if it has any
-     dependent template arguments.  */
-  if (TREE_CODE (expression) == FUNCTION_DECL
-      && DECL_LANG_SPECIFIC (expression)
-      && DECL_TEMPLATE_INFO (expression))
-    return any_dependent_template_arguments_p (DECL_TI_ARGS (expression));
-
   if (TREE_CODE (expression) == TEMPLATE_DECL
       && !DECL_TEMPLATE_TEMPLATE_PARM_P (expression))
     return false;
@@ -23023,13 +23027,18 @@ type_dependent_expression_p (tree expression)
       && DECL_INITIAL (expression))
    return true;
 
-  /* A variable template specialization is type-dependent if it has any
-     dependent template arguments.  */
-  if (VAR_P (expression)
+  /* A function or variable template-id is type-dependent if it has any
+     dependent template arguments.  Note that we only consider the innermost
+     template arguments here, since those are the ones that come from the
+     template-id; the template arguments for the enclosing class do not make it
+     type-dependent, they only make a member function value-dependent.  */
+  if (VAR_OR_FUNCTION_DECL_P (expression)
       && DECL_LANG_SPECIFIC (expression)
       && DECL_TEMPLATE_INFO (expression)
-      && variable_template_p (DECL_TI_TEMPLATE (expression)))
-    return any_dependent_template_arguments_p (DECL_TI_ARGS (expression));
+      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (expression))
+      && (any_dependent_template_arguments_p
+	  (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
+    return true;
 
   /* Always dependent, on the number of arguments if nothing else.  */
   if (TREE_CODE (expression) == EXPR_PACK_EXPANSION)
@@ -23085,6 +23094,22 @@ type_dependent_expression_p (tree expression)
   gcc_assert (TREE_CODE (expression) != TYPE_DECL);
 
   return (dependent_type_p (TREE_TYPE (expression)));
+}
+
+/* [temp.dep.expr]/5: A class member access expression (5.2.5) is
+   type-dependent if the expression refers to a member of the current
+   instantiation and the type of the referenced member is dependent, or the
+   class member access expression refers to a member of an unknown
+   specialization.
+
+   This function returns true if the OBJECT in such a class member access
+   expression is of an unknown specialization.  */
+
+bool
+type_dependent_object_expression_p (tree object)
+{
+  tree scope = TREE_TYPE (object);
+  return (!scope || dependent_scope_p (scope));
 }
 
 /* walk_tree callback function for instantiation_dependent_expression_p,
@@ -23291,9 +23316,18 @@ dependent_template_arg_p (tree arg)
   if (TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
     arg = ARGUMENT_PACK_SELECT_ARG (arg);
 
-  if (TREE_CODE (arg) == TEMPLATE_DECL
-      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
-    return dependent_template_p (arg);
+  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+    return true;
+  if (TREE_CODE (arg) == TEMPLATE_DECL)
+    {
+      if (DECL_TEMPLATE_PARM_P (arg))
+	return true;
+      /* A member template of a dependent class is not necessarily
+	 type-dependent, but it is a dependent template argument because it
+	 will be a member of an unknown specialization to that template.  */
+      tree scope = CP_DECL_CONTEXT (arg);
+      return TYPE_P (scope) && dependent_type_p (scope);
+    }
   else if (ARGUMENT_PACK_P (arg))
     {
       tree args = ARGUMENT_PACK_ARGS (arg);
@@ -23389,7 +23423,7 @@ any_dependent_template_arguments_p (const_tree args)
   return false;
 }
 
-/* Returns TRUE if the template TMPL is dependent.  */
+/* Returns TRUE if the template TMPL is type-dependent.  */
 
 bool
 dependent_template_p (tree tmpl)
@@ -23412,9 +23446,6 @@ dependent_template_p (tree tmpl)
   /* So are names that have not been looked up.  */
   if (TREE_CODE (tmpl) == SCOPE_REF || identifier_p (tmpl))
     return true;
-  /* So are member templates of dependent classes.  */
-  if (TYPE_P (CP_DECL_CONTEXT (tmpl)))
-    return dependent_type_p (DECL_CONTEXT (tmpl));
   return false;
 }
 

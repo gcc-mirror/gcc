@@ -8407,6 +8407,9 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		     we know we really need it.  */
 		  cand->first_arg = instance;
 		}
+	      else if (any_dependent_bases_p ())
+		/* We can't tell until instantiation time whether we can use
+		   *this as the implicit object argument.  */;
 	      else
 		{
 		  if (complain & tf_error)

@@ -1,5 +1,27 @@
 2016-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/10200
+	PR c++/69753
+	* pt.c (tsubst_decl): Use uses_template_parms.
+	(instantiate_template_1): Handle non-dependent calls in templates.
+	(value_dependent_expression_p): Handle BASELINK, FUNCTION_DECL.
+	(type_dependent_expression_p): Only consider innermost template	args.
+	(dependent_template_arg_p): Check enclosing class of a template here.
+	(dependent_template_p): Not here.
+	(type_dependent_object_expression_p): New.
+	* typeck.c (finish_class_member_access_expr): Use it.
+	* parser.c (cp_parser_postfix_expression): Use it.
+	(cp_parser_postfix_dot_deref_expression): Use it.  Use comptypes
+	to detect the current instantiation.
+	(cp_parser_lookup_name): Really implement DR 141.
+	* search.c (lookup_field_r): Prefer a dependent using-declaration.
+	(any_dependent_bases_p): Split out from...
+	* name-lookup.c (do_class_using_decl): ...here.
+	* call.c (build_new_method_call_1): Use it.
+	* semantics.c (finish_call_expr): 'this' doesn't make a call dependent.
+	* tree.c (non_static_member_function_p): Remove.
+	* typeck2.c (build_x_arrow): Use dependent_scope_p.
+
 	* parser.c (cp_parser_postfix_dot_deref_expression): Use
 	complete_type_or_else for unknown_type_node, too.
 

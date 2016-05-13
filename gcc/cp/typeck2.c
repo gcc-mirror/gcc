@@ -1703,7 +1703,10 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
   if (processing_template_decl)
     {
-      if (type_dependent_expression_p (expr))
+      if (type && TREE_CODE (type) == POINTER_TYPE
+	  && !dependent_scope_p (TREE_TYPE (type)))
+	/* Pointer to current instantiation, don't treat as dependent.  */;
+      else if (type_dependent_expression_p (expr))
 	return build_min_nt_loc (loc, ARROW_EXPR, expr);
       expr = build_non_dependent_expr (expr);
     }

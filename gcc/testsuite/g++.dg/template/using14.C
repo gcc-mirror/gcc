@@ -17,5 +17,5 @@ template <class T> struct C : public B1<T>, public B2
 int main()
 {
   C<int> c;
-  c.f();			// { dg-message "required" }
+  c.f();
 }
