@@ -1,5 +1,10 @@
 2016-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* tree-ssa-loop-ivanon.c (try_unroll_loop_completely): Typo fix in
+	comment.
+
+2016-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
 	Change --param max-completely-peeled-times to
 	--param max-completely-peel-times in dump file printing.
