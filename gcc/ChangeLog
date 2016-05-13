@@ -1,3 +1,8 @@
+2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (TARGET_OMIT_STRUCT_RETURN_REG): Set
+	to true.
+
 2016-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/71080

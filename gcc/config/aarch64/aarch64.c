@@ -14232,6 +14232,9 @@ aarch64_optab_supported_p (int op, machine_mode, machine_mode,
 #undef TARGET_OPTAB_SUPPORTED_P
 #define TARGET_OPTAB_SUPPORTED_P aarch64_optab_supported_p
 
+#undef TARGET_OMIT_STRUCT_RETURN_REG
+#define TARGET_OMIT_STRUCT_RETURN_REG true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-aarch64.h"
