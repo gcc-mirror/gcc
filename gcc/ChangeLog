@@ -1,3 +1,9 @@
+2016-05-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/67483
+	* combine.c (make_compound_operation): Don't call extract_left_shift
+	with negative shift amounts.
+
 2016-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/71071
