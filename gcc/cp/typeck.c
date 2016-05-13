@@ -2668,7 +2668,7 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
   if (processing_template_decl)
     {
       if (/* If OBJECT is dependent, so is OBJECT.NAME.  */
-	  type_dependent_expression_p (object)
+	  type_dependent_object_expression_p (object)
 	  /* If NAME is "f<args>", where either 'f' or 'args' is
 	     dependent, then the expression is dependent.  */
 	  || (TREE_CODE (name) == TEMPLATE_ID_EXPR
@@ -2678,9 +2678,12 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	     expression is dependent.  */
 	  || (TREE_CODE (name) == SCOPE_REF
 	      && TYPE_P (TREE_OPERAND (name, 0))
-	      && dependent_type_p (TREE_OPERAND (name, 0))))
-	return build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF,
-				 object.get_value (), name, NULL_TREE);
+	      && dependent_scope_p (TREE_OPERAND (name, 0))))
+	{
+	dependent:
+	  return build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF,
+				   orig_object, name, NULL_TREE);
+	}
       object = build_non_dependent_expr (object);
     }
   else if (c_dialect_objc ()
@@ -2805,7 +2808,12 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	}
 
       if (TREE_CODE (name) == BIT_NOT_EXPR)
-	member = lookup_destructor (object, scope, name, complain);
+	{
+	  if (dependent_type_p (object_type))
+	    /* The destructor isn't declared yet.  */
+	    goto dependent;
+	  member = lookup_destructor (object, scope, name, complain);
+	}
       else
 	{
 	  /* Look up the member.  */
@@ -2813,6 +2821,9 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 				  /*want_type=*/false, complain);
 	  if (member == NULL_TREE)
 	    {
+	      if (dependent_type_p (object_type))
+		/* Try again at instantiation time.  */
+		goto dependent;
 	      if (complain & tf_error)
 		{
 		  tree guessed_id = lookup_member_fuzzy (access_path, name,
@@ -2842,6 +2853,8 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	    }
 	  if (member == error_mark_node)
 	    return error_mark_node;
+	  if (TREE_CODE (member) == USING_DECL && DECL_DEPENDENT_P (member))
+	    goto dependent;
 	}
 
       if (is_template_id)

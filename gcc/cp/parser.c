@@ -6851,7 +6851,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		tree fn = TREE_OPERAND (postfix_expression, 1);
 
 		if (processing_template_decl
-		    && (type_dependent_expression_p (instance)
+		    && (type_dependent_object_expression_p (instance)
 			|| (!BASELINK_P (fn)
 			    && TREE_CODE (fn) != FIELD_DECL)
 			|| type_dependent_expression_p (fn)
@@ -7186,8 +7186,9 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
   if (token_type == CPP_DEREF)
     postfix_expression = build_x_arrow (location, postfix_expression,
 					tf_warning_or_error);
-  /* Check to see whether or not the expression is type-dependent.  */
-  dependent_p = type_dependent_expression_p (postfix_expression);
+  /* Check to see whether or not the expression is type-dependent and
+     not the current instantiation.  */
+  dependent_p = type_dependent_object_expression_p (postfix_expression);
   /* The identifier following the `->' or `.' is not qualified.  */
   parser->scope = NULL_TREE;
   parser->qualifying_scope = NULL_TREE;
@@ -7211,7 +7212,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	 required to be of complete type for purposes of class member
 	 access (5.2.5) outside the member function body.  */
       if (postfix_expression != current_class_ref
-	  && !(processing_template_decl && scope == current_class_type))
+	  && !(processing_template_decl
+	       && current_class_type
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (scope, current_class_type))))
 	scope = complete_type_or_else (scope, postfix_expression);
       /* Let the name lookup machinery know that we are processing a
 	 class member access expression.  */
@@ -24806,24 +24810,11 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	decl = NULL_TREE;
 
       if (!decl)
-	{
-	  /* Look it up in the enclosing context.  */
-	  decl = lookup_name_real (name, tag_type != none_type,
-				   /*nonclass=*/0,
-				   /*block_p=*/true, is_namespace, 0);
-	  /* DR 141 says when looking for a template-name after -> or ., only
-	     consider class templates.  We need to fix our handling of
-	     dependent expressions to implement that properly, but for now
-	     let's ignore namespace-scope function templates.  */
-	  if (decl && is_template && !DECL_TYPE_TEMPLATE_P (decl))
-	    {
-	      tree d = decl;
-	      if (is_overloaded_fn (d))
-		d = get_first_fn (d);
-	      if (DECL_P (d) && !DECL_CLASS_SCOPE_P (d))
-		decl = NULL_TREE;
-	    }
-	}
+	/* Look it up in the enclosing context.  DR 141: When looking for a
+	   template-name after -> or ., only consider class templates.  */
+	decl = lookup_name_real (name, tag_type != none_type || is_template,
+				 /*nonclass=*/0,
+				 /*block_p=*/true, is_namespace, 0);
       if (object_type == unknown_type_node)
 	/* The object is type-dependent, so we can't look anything up; we used
 	   this to get the DR 141 behavior.  */

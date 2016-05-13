@@ -6125,6 +6125,7 @@ extern bool any_dependent_template_arguments_p  (const_tree);
 extern bool dependent_template_p		(tree);
 extern bool dependent_template_id_p		(tree, tree);
 extern bool type_dependent_expression_p		(tree);
+extern bool type_dependent_object_expression_p	(tree);
 extern bool any_type_dependent_arguments_p      (const vec<tree, va_gc> *);
 extern bool any_type_dependent_elements_p       (const_tree);
 extern bool type_dependent_expression_p_push	(tree);
@@ -6233,6 +6234,7 @@ extern tree adjust_result_of_qualified_name_lookup
 extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
 extern int shared_member_p			(tree);
+extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
 
 /* The representation of a deferred access check.  */
 
@@ -6525,7 +6527,6 @@ extern tree get_first_fn			(tree);
 extern tree ovl_cons				(tree, tree);
 extern tree build_overload			(tree, tree);
 extern tree ovl_scope				(tree);
-extern bool non_static_member_function_p        (tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);
 extern tree build_exception_variant		(tree, tree);

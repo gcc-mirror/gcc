@@ -1106,6 +1106,14 @@ lookup_field_r (tree binfo, void *data)
   if (!nval)
     /* Look for a data member or type.  */
     nval = lookup_field_1 (type, lfi->name, lfi->want_type);
+  else if (TREE_CODE (nval) == OVERLOAD && OVL_USED (nval))
+    {
+      /* If we have both dependent and non-dependent using-declarations, return
+	 the dependent one rather than an incomplete list of functions.  */
+      tree dep_using = lookup_field_1 (type, lfi->name, lfi->want_type);
+      if (dep_using && TREE_CODE (dep_using) == USING_DECL)
+	nval = dep_using;
+    }
 
   /* If there is no declaration with the indicated name in this type,
      then there's nothing to do.  */
@@ -2844,3 +2852,21 @@ original_binfo (tree binfo, tree here)
   return result;
 }
 
+/* True iff TYPE has any dependent bases (and therefore we can't say
+   definitively that another class is not a base of an instantiation of
+   TYPE).  */
+
+bool
+any_dependent_bases_p (tree type)
+{
+  if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
+    return false;
+
+  unsigned i;
+  tree base_binfo;
+  FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (type)), i, base_binfo)
+    if (BINFO_DEPENDENT_BASE_P (base_binfo))
+      return true;
+
+  return false;
+}
