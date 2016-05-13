@@ -1,3 +1,9 @@
+2016-05-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tree-ssa-loop-ivopts.c (create_new_ivs): Cast to
+	unsigned HOST_WIDE_INT with HOST_WIDE_INT_PRINT_UNSIGNED in
+	printf format.
+
 2016-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_mangle_decl_assembler_name): New.
