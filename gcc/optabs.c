@@ -3776,8 +3776,6 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
     {
       machine_mode result_mode;
       enum insn_code cmp_code;
-      tree length_type;
-      rtx libfunc;
       rtx result;
       rtx opalign
 	= GEN_INT (MIN (MEM_ALIGN (x), MEM_ALIGN (y)) / BITS_PER_UNIT);
@@ -3818,22 +3816,12 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       if (methods != OPTAB_LIB && methods != OPTAB_LIB_WIDEN)
 	goto fail;
 
-      /* Otherwise call a library function, memcmp.  */
-      libfunc = memcmp_libfunc;
-      length_type = sizetype;
-      result_mode = TYPE_MODE (integer_type_node);
-      cmp_mode = TYPE_MODE (length_type);
-      size = convert_to_mode (TYPE_MODE (length_type), size,
-			      TYPE_UNSIGNED (length_type));
+      /* Otherwise call a library function.  */
+      result = emit_block_comp_via_libcall (XEXP (x, 0), XEXP (y, 0), size);
 
-      result = emit_library_call_value (libfunc, 0, LCT_PURE,
-					result_mode, 3,
-					XEXP (x, 0), Pmode,
-					XEXP (y, 0), Pmode,
-					size, cmp_mode);
       x = result;
       y = const0_rtx;
-      mode = result_mode;
+      mode = TYPE_MODE (integer_type_node);
       methods = OPTAB_LIB_WIDEN;
       unsignedp = false;
     }

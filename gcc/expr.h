@@ -71,8 +71,29 @@ extern rtx convert_to_mode (machine_mode, rtx, int);
 /* Convert an rtx to MODE from OLDMODE and return the result.  */
 extern rtx convert_modes (machine_mode, machine_mode, rtx, int);
 
-/* Emit code to move a block Y to a block X.  */
+/* Expand a call to memcpy or memmove or memcmp, and return the result.  */
+extern rtx emit_block_op_via_libcall (enum built_in_function, rtx, rtx, rtx,
+				      bool);
 
+static inline rtx
+emit_block_copy_via_libcall (rtx dst, rtx src, rtx size, bool tailcall = false)
+{
+  return emit_block_op_via_libcall (BUILT_IN_MEMCPY, dst, src, size, tailcall);
+}
+
+static inline rtx
+emit_block_move_via_libcall (rtx dst, rtx src, rtx size, bool tailcall = false)
+{
+  return emit_block_op_via_libcall (BUILT_IN_MEMMOVE, dst, src, size, tailcall);
+}
+
+static inline rtx
+emit_block_comp_via_libcall (rtx dst, rtx src, rtx size, bool tailcall = false)
+{
+  return emit_block_op_via_libcall (BUILT_IN_MEMCMP, dst, src, size, tailcall);
+}
+
+/* Emit code to move a block Y to a block X.  */
 enum block_op_methods
 {
   BLOCK_OP_NORMAL,
@@ -82,12 +103,7 @@ enum block_op_methods
   BLOCK_OP_TAILCALL
 };
 
-extern GTY(()) tree block_clear_fn;
-extern void init_block_move_fn (const char *);
-extern void init_block_clear_fn (const char *);
-
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
-extern rtx emit_block_move_via_libcall (rtx, rtx, rtx, bool);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 			          unsigned int, HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
@@ -166,7 +182,7 @@ extern rtx clear_storage_hints (rtx, rtx, enum block_op_methods,
 				unsigned HOST_WIDE_INT,
 				unsigned HOST_WIDE_INT);
 /* The same, but always output an library call.  */
-rtx set_storage_via_libcall (rtx, rtx, rtx, bool);
+extern rtx set_storage_via_libcall (rtx, rtx, rtx, bool = false);
 
 /* Expand a setmem pattern; return true if successful.  */
 extern bool set_storage_via_setmem (rtx, rtx, rtx, unsigned int,
