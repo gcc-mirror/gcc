@@ -1,3 +1,8 @@
+2016-05-13  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/tree-ssa/ivopts-3.C: Change test-case to follow
+	the new format of dump output.
+
 2016-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.dg/pr71084.c: New test.
