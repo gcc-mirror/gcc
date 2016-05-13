@@ -29,11 +29,10 @@
 #ifndef _GLIBCXX_DEBUG_FUNCTIONS_H
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
-#include <bits/move.h>				// for __addressof
-#include <bits/stl_function.h>			// for less
+#include <bits/move.h>		// for __addressof
+#include <bits/stl_function.h>	// for less
 #if __cplusplus >= 201103L
-# include <type_traits>				// for is_lvalue_reference and
-						// conditional.
+# include <type_traits>		// for is_lvalue_reference and conditional.
 #endif
 
 #include <debug/helper_functions.h>

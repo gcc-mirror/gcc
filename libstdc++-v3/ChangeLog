@@ -1,3 +1,17 @@
+2016-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71073
+	* include/debug/bitset: Add #pragma GCC system_header.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/map: Likewise.
+	* include/debug/set: Likewise.
+	* include/debug/string: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* include/debug/functions.h: Adjust whitespace.
+
 2016-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71081
