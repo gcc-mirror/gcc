@@ -1,5 +1,10 @@
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+        PR target/53440
+        * g++.dg/inherit/thunk1.C: Support arm / aarch64.
+
+2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	* gcc.target/aarch64/struct_return.c: New test.
 
 2016-05-12  Marek Polacek  <polacek@redhat.com>
