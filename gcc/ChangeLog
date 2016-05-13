@@ -1,5 +1,10 @@
 2016-05-13  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi: Enhance explanation of error recovery
+	of sanitizers.
+
+2016-05-13  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-loop-ivopts.c (avg_loop_niter): Fix coding style.
 	(struct cost_pair): Change inv_expr_id (int) to inv_expr
 	(iv_inv_expr_ent *).

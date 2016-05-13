@@ -10011,9 +10011,8 @@ Even if a recovery mode is turned on the compiler side, it needs to be also
 enabled on the runtime library side, otherwise the failures are still fatal.
 The runtime library defaults to @code{halt_on_error=0} for
 ThreadSanitizer and UndefinedBehaviorSanitizer, while default value for
-AddressSanitizer is @code{halt_on_error=1}. This can overridden through
-the following environment variables: @env{ASAN_OPTIONS}, @env{TSAN_OPTIONS},
-@env{UBSAN_OPTIONS}.
+AddressSanitizer is @code{halt_on_error=1}. This can be overridden through
+setting the @code{halt_on_error} flag in the corresponding environment variable.
 
 Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
 @smallexample
