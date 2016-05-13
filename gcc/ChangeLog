@@ -1,5 +1,13 @@
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+        PR target/53440
+        * config/arm/arm.c (arm32_output_mi_thunk): New.
+        (arm_output_mi_thunk): Rename to arm_thumb1_mi_thunk. Rework
+        to split Thumb1 vs TARGET_32BIT functionality.
+        (arm_thumb1_mi_thunk): New.
+
+2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	* config/aarch64/aarch64.c (TARGET_OMIT_STRUCT_RETURN_REG): Set
 	to true.
 

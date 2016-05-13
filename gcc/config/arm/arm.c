@@ -300,6 +300,9 @@ static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 static unsigned HOST_WIDE_INT arm_asan_shadow_offset (void);
 
 static void arm_sched_fusion_priority (rtx_insn *, int, int *, int*);
+static bool arm_can_output_mi_thunk (const_tree, HOST_WIDE_INT, HOST_WIDE_INT,
+				     const_tree);
+
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -463,7 +466,7 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef  TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK arm_can_output_mi_thunk
 
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS arm_rtx_costs
@@ -26132,11 +26135,10 @@ arm_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
 
 /* Output code to add DELTA to the first argument, and then jump
    to FUNCTION.  Used for C++ multiple inheritance.  */
+
 static void
-arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
-		     HOST_WIDE_INT delta,
-		     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
-		     tree function)
+arm_thumb1_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
+		     HOST_WIDE_INT, tree function)
 {
   static int thunk_label = 0;
   char label[256];
@@ -26275,6 +26277,76 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
 
   final_end_function ();
+}
+
+/* MI thunk handling for TARGET_32BIT.  */
+
+static void
+arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
+		       HOST_WIDE_INT vcall_offset, tree function)
+{
+  /* On ARM, this_regno is R0 or R1 depending on
+     whether the function returns an aggregate or not.
+  */
+  int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)),
+				       function)
+		    ? R1_REGNUM : R0_REGNUM);
+
+  rtx temp = gen_rtx_REG (Pmode, IP_REGNUM);
+  rtx this_rtx = gen_rtx_REG (Pmode, this_regno);
+  reload_completed = 1;
+  emit_note (NOTE_INSN_PROLOGUE_END);
+
+  /* Add DELTA to THIS_RTX.  */
+  if (delta != 0)
+    arm_split_constant (PLUS, Pmode, NULL_RTX,
+			delta, this_rtx, this_rtx, false);
+
+  /* Add *(*THIS_RTX + VCALL_OFFSET) to THIS_RTX.  */
+  if (vcall_offset != 0)
+    {
+      /* Load *THIS_RTX.  */
+      emit_move_insn (temp, gen_rtx_MEM (Pmode, this_rtx));
+      /* Compute *THIS_RTX + VCALL_OFFSET.  */
+      arm_split_constant (PLUS, Pmode, NULL_RTX, vcall_offset, temp, temp,
+			  false);
+      /* Compute *(*THIS_RTX + VCALL_OFFSET).  */
+      emit_move_insn (temp, gen_rtx_MEM (Pmode, temp));
+      emit_insn (gen_add3_insn (this_rtx, this_rtx, temp));
+    }
+
+  /* Generate a tail call to the target function.  */
+  if (!TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+  rtx funexp = XEXP (DECL_RTL (function), 0);
+  funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  rtx_insn * insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  SIBLING_CALL_P (insn) = 1;
+
+  insn = get_insns ();
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
+  final_end_function ();
+
+  /* Stop pretending this is a post-reload pass.  */
+  reload_completed = 0;
+}
+
+/* Output code to add DELTA to the first argument, and then jump
+   to FUNCTION.  Used for C++ multiple inheritance.  */
+
+static void
+arm_output_mi_thunk (FILE *file, tree thunk, HOST_WIDE_INT delta,
+		     HOST_WIDE_INT vcall_offset, tree function)
+{
+  if (TARGET_32BIT)
+    arm32_output_mi_thunk (file, thunk, delta, vcall_offset, function);
+  else
+    arm_thumb1_mi_thunk (file, thunk, delta, vcall_offset, function);
 }
 
 int
@@ -30378,6 +30450,20 @@ arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
 	  || INTVAL (elt_ideal) != INTVAL (elt_op))
 	return false;
     }
+  return true;
+}
+
+/* Can output mi_thunk for all cases except for non-zero vcall_offset
+   in Thumb1.  */
+static bool
+arm_can_output_mi_thunk (const_tree, HOST_WIDE_INT, HOST_WIDE_INT vcall_offset,
+			 const_tree)
+{
+  /* For now, we punt and not handle this for TARGET_THUMB1.  */
+  if (vcall_offset && TARGET_THUMB1)
+    return false;
+
+  /* Otherwise ok.  */
   return true;
 }
 
