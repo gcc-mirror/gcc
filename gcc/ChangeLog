@@ -1,3 +1,10 @@
+2016-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/42587
+	* tree-ssa-math-opts.c (perform_symbolic_merge): Handle BIT_FIELD_REF.
+	(find_bswap_or_nop_1): Likewise.
+	(bswap_replace): Likewise.
+
 2016-05-13  Martin Liska  <mliska@suse.cz>
 
 	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern):
