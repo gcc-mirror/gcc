@@ -1,3 +1,8 @@
+2016-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/60049
+	* g++.dg/cpp0x/constexpr-60049.C: New test.
+
 2016-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/71071
