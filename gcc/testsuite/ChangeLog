@@ -1,3 +1,8 @@
+2016-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/tree-vect.h (check_vect): Handle AVX2,
+	remove XOP handling.
+
 2016-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/atomic-noinline-aux.c: Include stddef.h. Fix
