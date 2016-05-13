@@ -1,3 +1,8 @@
+2016-05-13  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_postfix_dot_deref_expression): Use
+	complete_type_or_else for unknown_type_node, too.
+
 2016-05-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70756
