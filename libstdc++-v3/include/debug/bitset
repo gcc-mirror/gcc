@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_BITSET
 #define _GLIBCXX_DEBUG_BITSET
 
+#pragma GCC system_header
+
 #include <bitset>
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
