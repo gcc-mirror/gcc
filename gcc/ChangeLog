@@ -1,3 +1,57 @@
+2016-05-13  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (avg_loop_niter): Fix coding style.
+	(struct cost_pair): Change inv_expr_id (int) to inv_expr
+	(iv_inv_expr_ent *).
+	(struct iv_inv_expr_ent): Comment struct fields.
+	(sort_iv_inv_expr_ent): New function.
+	(struct ivopts_data): Rename inv_expr_id to max_inv_expr_id.
+	(struct iv_ca): Replace used_inv_expr and num_used_inv_expr with
+	a hash_map between iv_inv_expr_ent and number of usages.
+	(niter_for_exit): Fix coding style.
+	(tree_ssa_iv_optimize_init): Use renamed variable.
+	(determine_base_object): Fix coding style.
+	(alloc_iv): Likewise.
+	(find_interesting_uses_outside): Likewise.
+	(add_candidate_1): Likewise.
+	(add_standard_iv_candidates): Likewise.
+	(set_group_iv_cost): Replace inv_expr_id with inv_expr.
+	(prepare_decl_rtl): Fix coding style.
+	(get_address_cost): Likewise.
+	(get_shiftadd_cost): Likewise.
+	(force_expr_to_var_cost): Likewise.
+	(compare_aff_trees): Likewise.
+	(get_expr_id): Restructure the function.
+	(get_loop_invariant_expr_id): Renamed to
+	get_loop_invariant_expr.
+	(get_computation_cost_at): Replace usage of inv_expr_id with
+	inv_expr.
+	(get_computation_cost): Likewise.
+	(determine_group_iv_cost_generic): Likewise.
+	(determine_group_iv_cost_address): Likewise.
+	(iv_period): Fix coding style.
+	(iv_elimination_compare_lt): Likewise.
+	(may_eliminate_iv): Likewise.
+	(determine_group_iv_cost_cond):  Replace usage of inv_expr_id with
+	inv_expr.
+	(determine_group_iv_costs): Dump invariant expressions.
+	(iv_ca_recount_cost): Use the newly added hash_map.
+	(iv_ca_set_remove_invariants): Fix coding style.
+	(iv_ca_set_add_invariants): Fix coding style.
+	(iv_ca_set_no_cp): Utilize the newly added hash_map for used
+	invariants.
+	(iv_ca_set_cp): Likewise.
+	(iv_ca_new): Initialize the newly added hash_map and remove
+	initialization of fields.
+	(iv_ca_free): Delete the hash_map.
+	(iv_ca_dump): Dump invariant expressions.
+	(iv_ca_extend): Fix coding style.
+	(try_add_cand_for): Likewise.
+	(create_new_ivs): Dump information about # of avg iterations and
+	# of used invariant expressions.
+	(rewrite_use_compare): Fix coding style.
+	(free_loop_data): Set default value for max_inv_expr_id.
+
 2016-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* cse.c (rest_of_handle_cse): Use cleanup_cfg
