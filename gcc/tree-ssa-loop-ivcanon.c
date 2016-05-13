@@ -807,7 +807,7 @@ try_unroll_loop_completely (struct loop *loop,
 		     loop->num);
 	  return false;
 	}
-      /* Complette unrolling is major win when control flow is removed and
+      /* Complete unrolling is a major win when control flow is removed and
 	 one big basic block is created.  If the loop contains control flow
 	 the optimization may still be a win because of eliminating the loop
 	 overhead but it also may blow the branch predictor tables.
