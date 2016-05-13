@@ -1,3 +1,9 @@
+2016-05-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/qual-return-5.c, gcc.dg/qual-return-6.c: New tests.
+	* gcc.dg/call-diag-2.c, gcc.dg/qual-return-2.c ,
+	gcc.dg/qual-return-3.c, gcc.dg/qual-return-4.c: Use -std=gnu99.
+
 2016-05-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/60049
