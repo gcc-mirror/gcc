@@ -12130,7 +12130,8 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	       || TYPE_REFERENCE_TO (expr)
 	       || TYPE_CACHED_VALUES_P (expr)
 	       || TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)
-	       || TYPE_NEXT_VARIANT (expr)))
+	       || TYPE_NEXT_VARIANT (expr)
+	       || TYPE_ALIAS_SET_KNOWN_P (expr)))
     {
       /* Allow these fields to be modified.  */
       tree tmp;
@@ -12140,6 +12141,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
       TYPE_POINTER_TO (tmp) = NULL;
       TYPE_REFERENCE_TO (tmp) = NULL;
       TYPE_NEXT_VARIANT (tmp) = NULL;
+      TYPE_ALIAS_SET (tmp) = -1;
       if (TYPE_CACHED_VALUES_P (tmp))
 	{
 	  TYPE_CACHED_VALUES_P (tmp) = 0;
