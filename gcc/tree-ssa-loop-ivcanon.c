@@ -712,7 +712,7 @@ try_unroll_loop_completely (struct loop *loop,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Not unrolling loop %d "
-		 "(--param max-completely-peeled-times limit reached).\n",
+		 "(--param max-completely-peel-times limit reached).\n",
 		 loop->num);
       return false;
     }
