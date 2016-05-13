@@ -3570,7 +3570,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 {
   gimple *last_stmt = stmts->pop ();
   enum tree_code rhs_code;
-  tree lhs, rhs1, rhs2, tmp, rhs1_type, rhs2_type, vectype1, vectype2;
+  tree lhs = NULL_TREE, rhs1, rhs2, tmp, rhs1_type, rhs2_type;
+  tree vectype1, vectype2;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   stmt_vec_info pattern_stmt_info;
   vec_info *vinfo = stmt_vinfo->vinfo;
