@@ -1,3 +1,8 @@
+2016-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/atomic-noinline-aux.c: Include stddef.h. Fix
+	__atomic_is_lock_free declaration.
+
 2016-05-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/42587
