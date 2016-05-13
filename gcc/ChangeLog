@@ -1,3 +1,8 @@
+2016-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (write_fn_proto): Handle
+	BUILT_IN_ATOMIC_COMPARE_EXCHANGE_n oddity.
+
 2016-05-13  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (create_new_ivs): Use HOST_WIDE_INT_PRINT_DEC
