@@ -1,3 +1,8 @@
+2016-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/71080
+	* config/i386/i386.c (ix86_in_large_data_p): Guard against NULL exp.
+
 2016-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* builtins.c (expand_builtin_memcmp): Do not emit the call here.
