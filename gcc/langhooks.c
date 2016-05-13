@@ -561,6 +561,8 @@ add_builtin_function_common (const char *name,
   if (library_name)
     {
       tree libname = get_identifier (library_name);
+
+      libname = targetm.mangle_decl_assembler_name (decl, libname);
       SET_DECL_ASSEMBLER_NAME (decl, libname);
     }
 
