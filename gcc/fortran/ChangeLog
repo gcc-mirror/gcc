@@ -1,3 +1,9 @@
+2016-05-14  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/71047
+	* expr.c (gfc_default_initializer): Avoid extra component refs in
+	constructors for derived types and classes.
+
 2016-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/70855

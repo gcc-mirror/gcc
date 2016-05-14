@@ -1,3 +1,8 @@
+2016-05-14  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/71047
+	* gfortran.dg/pr71047.f08: New test.
+
 2016-05-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/qual-return-5.c, gcc.dg/qual-return-6.c: New tests.
