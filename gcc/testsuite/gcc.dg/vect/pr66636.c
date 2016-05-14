@@ -6,7 +6,8 @@ extern void abort (void);
 
 struct X { double x; double y; };
 
-void foo (struct X *x, double px, int s)
+void __attribute__((noinline,noclone))
+foo (struct X *x, double px, int s)
 {
   int i;
   for (i = 0; i < 256; ++i)
