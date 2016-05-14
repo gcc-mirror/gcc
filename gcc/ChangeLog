@@ -1,3 +1,13 @@
+2016-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71097
+	* config/i386/i386.md (*movtf_internal): Before register allocation,
+	do not allow FP constants for CM_MEDIUM memory model, allow only
+	standard FP constants for CM_LARGE and CM_LARGE_PIC models.
+	(*movxf_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+
 2016-05-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/67483
