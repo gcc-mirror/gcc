@@ -3975,7 +3975,10 @@ gfc_default_initializer (gfc_typespec *ts)
 
       if (comp->initializer)
 	{
-          ctor->n.component = comp;
+	  /* Save the component ref for STRUCTUREs and UNIONs.  */
+	  if (ts->u.derived->attr.flavor == FL_STRUCT
+	      || ts->u.derived->attr.flavor == FL_UNION)
+	    ctor->n.component = comp;
 	  ctor->expr = gfc_copy_expr (comp->initializer);
 	  if ((comp->ts.type != comp->initializer->ts.type
 	       || comp->ts.kind != comp->initializer->ts.kind)
