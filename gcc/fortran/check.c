@@ -2592,7 +2592,7 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 bool
 gfc_check_kind (gfc_expr *x)
 {
-  if (x->ts.type == BT_DERIVED || x->ts.type == BT_CLASS)
+  if (gfc_bt_struct (x->ts.type) || x->ts.type == BT_CLASS)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be of "
 		 "intrinsic type", gfc_current_intrinsic_arg[0]->name,

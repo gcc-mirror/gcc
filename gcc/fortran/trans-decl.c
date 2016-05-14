@@ -732,6 +732,7 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
       st = NULL;
       s = NULL;
 
+      /* Check for a symbol with the same name. */
       if (gsym)
 	gfc_find_symbol (sym->name, gsym->ns, 0, &s);
 
@@ -748,22 +749,37 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
 	  st->n.sym = sym;
 	  sym->refs++;
 	}
-      else if (sym->attr.flavor == FL_DERIVED)
+      else if (gfc_fl_struct (sym->attr.flavor))
 	{
 	  if (s && s->attr.flavor == FL_PROCEDURE)
 	    {
 	      gfc_interface *intr;
 	      gcc_assert (s->attr.generic);
 	      for (intr = s->generic; intr; intr = intr->next)
-		if (intr->sym->attr.flavor == FL_DERIVED)
+		if (gfc_fl_struct (intr->sym->attr.flavor))
 		  {
 		    s = intr->sym;
 		    break;
 		  }
     	    }
 
-	  if (!s->backend_decl)
-	    s->backend_decl = gfc_get_derived_type (s);
+          /* Normally we can assume that s is a derived-type symbol since it
+             shares a name with the derived-type sym. However if sym is a
+             STRUCTURE, it may in fact share a name with any other basic type
+             variable. If s is in fact of derived type then we can continue
+             looking for a duplicate type declaration.  */
+          if (sym->attr.flavor == FL_STRUCT && s->ts.type == BT_DERIVED)
+            {
+              s = s->ts.u.derived;
+            }
+
+	  if (gfc_fl_struct (s->attr.flavor) && !s->backend_decl)
+            {
+              if (s->attr.flavor == FL_UNION)
+                s->backend_decl = gfc_get_union_type (s);
+              else
+                s->backend_decl = gfc_get_derived_type (s);
+            }
 	  gfc_copy_dt_decls_ifequal (s, sym, true);
 	  return true;
 	}
@@ -2384,7 +2400,7 @@ create_function_arglist (gfc_symbol * sym)
 	 Thus, we will use a hidden argument in that case.  */
       else if (f->sym->attr.optional && f->sym->attr.value
 	       && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
-	       && f->sym->ts.type != BT_DERIVED)
+	       && !gfc_bt_struct (f->sym->ts.type))
 	{
           tree tmp;
           strcpy (&name[1], f->sym->name);
@@ -4596,7 +4612,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       && sym->ts.type == BT_DERIVED)
     sym->backend_decl = gfc_typenode_for_spec (&(sym->ts));
 
-  if (sym->attr.flavor == FL_DERIVED
+  if (gfc_fl_struct (sym->attr.flavor)
       && sym->backend_decl
       && TREE_CODE (sym->backend_decl) == RECORD_TYPE)
     {
@@ -4839,7 +4855,7 @@ check_constant_initializer (gfc_expr *expr, gfc_typespec *ts, bool array,
     }
   else switch (ts->type)
     {
-    case BT_DERIVED:
+    case_bt_struct:
       if (expr->expr_type != EXPR_STRUCTURE)
 	return false;
       cm = expr->ts.u.derived->components;

@@ -6275,7 +6275,7 @@ gfc_trans_deallocate (gfc_code *code)
 	{
 	  gfc_ref *ref;
 
-	  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp
+	  if (gfc_bt_struct (expr->ts.type) && expr->ts.u.derived->attr.alloc_comp
 	      && !gfc_is_finalizable (expr->ts.u.derived, NULL))
 	    {
 	      gfc_ref *last = NULL;
