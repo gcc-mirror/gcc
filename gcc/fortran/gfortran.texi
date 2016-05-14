@@ -2281,28 +2281,25 @@ Here is a small example:
 structure /myunion/
 union
   map
-    integer(2) w, x, y, z
+    character(2) w0, w1, w2
   end map
   map
-    integer(4) wx, yz
+    character(6) long
   end map
 end union
 end structure
 
 record /myunion/ rec
-! After these assignments...
-rec.wx = z'0DEDBEEF'
-rec.y  = z'0BAD'
-rec.z  = z'0FAD'
+! After this assignment...
+rec.long = 'hello!'
 
 ! The following is true:
-! rec.w  === z'0DED'
-! rec.x  === z'BEEF'
-! rec.yz === z'0BAD0FAD'
+! rec.w0 === 'he'
+! rec.w1 === 'll'
+! rec.w2 === 'o!'
 @end smallexample
 
-The two maps share memory, and the size of the union is ultimately six bytes
-(subject to alignment):
+The two maps share memory, and the size of the union is ultimately six bytes:
 
 @example
 0    1    2    3    4   5   6     Byte offset
@@ -2313,65 +2310,61 @@ The two maps share memory, and the size of the union is ultimately six bytes
 ^    W0   ^    W1   ^    W2   ^
  \-------/ \-------/ \-------/
 
-^       LONG        ^  unused ^
- \-----------------/ \-------/
+^             LONG            ^
+ \---------------------------/
 @end example
 
 Following is an example mirroring the layout of an Intel x86_64 register:
 
 @example
 structure /reg/
-  union    ! rax
+  union ! U0                ! rax
     map
-      integer*8 rx         ! rax
+      character(16) rx
     end map
     map
-      integer*4 rh         ! rah
-      union   ! eax
+      character(8) rh         ! rah
+      union ! U1
         map
-          integer*4 rl     ! ral
+          character(8) rl     ! ral
         end map
         map
-          integer*4 ex     ! eax
+          character(8) ex     ! eax
         end map
         map
-          integer*2 eh     ! eah
-          union     ! ax
+          character(4) eh     ! eah
+          union ! U2
             map
-              integer*2 el ! eal
+              character(4) el ! eal
             end map
             map
-              integer*2 x  ! ax
+              character(4) x  ! ax
             end map
             map
-              integer*1 h  ! ah
-              integer*1 l  ! al
+              character(2) h  ! ah
+              character(2) l  ! al
             end map
-          end union ! ax
+          end union
         end map
-      end union ! eax
+      end union
     end map
-  end union ! rax
+  end union
 end structure
-
 record /reg/ a
 
 ! After this assignment...
-a.rx = z'AABBCCCCFFFFFFFF'
+a.rx     =     'AAAAAAAA.BBB.C.D'
 
 ! The following is true:
-!
-! a.rx == z'AABBCCCCFFFFFFFF'
-! a.rh ==         z'FFFFFFFF'
-! a.rl == z'AABBCCCC'
-!
-! a.ex == z'AABBCCCC'
-! a.eh ==     z'CCCC'
-! a.el == z'AABB'
-!
-!  a.x == z'AABB'
-!  a.h ==   z'BB'
-!  a.l == z'AA'
+a.rx === 'AAAAAAAA.BBB.C.D'
+a.rh === 'AAAAAAAA'
+a.rl ===         '.BBB.C.D'
+a.ex ===         '.BBB.C.D'
+a.eh ===         '.BBB'
+a.el ===             '.C.D'
+a.x  ===             '.C.D'
+a.h  ===             '.C'
+a.l  ===               '.D'
 @end example
 
 

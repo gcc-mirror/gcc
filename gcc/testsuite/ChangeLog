@@ -1,5 +1,9 @@
 2016-05-14  Fritz Reese  <fritzoreese@gmail.com>
 
+	* gfortran.dg/dec_union_4.f90: Fix endian issue.
+
+2016-05-14  Fritz Reese  <fritzoreese@gmail.com>
+
 	PR fortran/71047
 	* gfortran.dg/pr71047.f08: New test.
 
