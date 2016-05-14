@@ -47,6 +47,15 @@ set_default_std_flags (void)
 }
 
 
+/* Set all the DEC extension flags. */
+
+static void
+set_dec_flags (int value)
+{
+    gfc_option.flag_dec_structure  = value;
+}
+
+
 /* Return language mask for Fortran options.  */
 
 unsigned int
@@ -101,6 +110,8 @@ gfc_init_options (unsigned int decoded_options_count,
      in .opt, but that is not supported yet.  */
   if (!global_options_set.x_cpp_warn_missing_include_dirs)
     global_options.x_cpp_warn_missing_include_dirs = 1;
+
+  set_dec_flags (0);
 
   set_default_std_flags ();
 
@@ -708,6 +719,15 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fcheck_:
       gfc_handle_runtime_check_option (arg);
+      break;
+
+    case OPT_fdec:
+      /* Enable all DEC extensions.  */
+      set_dec_flags (1);
+      break;
+
+    case OPT_fdec_structure:
+      gfc_option.flag_dec_structure = 1;
       break;
     }
 

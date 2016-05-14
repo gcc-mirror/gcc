@@ -1,3 +1,31 @@
+2016-05-14  Fritz Reese  <fritzoreese@gmail.com>
+
+	Backport from trunk: r235999, r236241, r236242
+	* gfortran.dg/dec_union_4.f90: Fix endian issue.
+
+	PR fortran/71047
+	* gfortran.dg/pr71047.f08: New test.
+
+	PR fortran/56226
+	* gfortran.dg/dec_structure_1.f90: New testcase.
+	* gfortran.dg/dec_structure_2.f90: Ditto.
+	* gfortran.dg/dec_structure_3.f90: Ditto.
+	* gfortran.dg/dec_structure_4.f90: Ditto.
+	* gfortran.dg/dec_structure_5.f90: Ditto.
+	* gfortran.dg/dec_structure_6.f90: Ditto.
+	* gfortran.dg/dec_structure_7.f90: Ditto.
+	* gfortran.dg/dec_structure_8.f90: Ditto.
+	* gfortran.dg/dec_structure_9.f90: Ditto.
+	* gfortran.dg/dec_structure_10.f90: Ditto.
+	* gfortran.dg/dec_structure_11.f90: Ditto.
+	* gfortran.dg/dec_union_1.f90: Ditto.
+	* gfortran.dg/dec_union_2.f90: Ditto.
+	* gfortran.dg/dec_union_3.f90: Ditto.
+	* gfortran.dg/dec_union_4.f90: Ditto.
+	* gfortran.dg/dec_union_5.f90: Ditto.
+	* gfortran.dg/dec_union_6.f90: Ditto.
+	* gfortran.dg/dec_union_7.f90: Ditto.
+
 2016-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/tree-vect.h (check_vect): Handle AVX2,
