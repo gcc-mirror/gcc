@@ -38,7 +38,7 @@ check_vect (void)
     /* Determine what instruction set we've been compiled for, and detect
        that we're running with it.  This allows us to at least do a compile
        check for, e.g. SSE4.1 when the machine only supports SSE2.  */
-#if defined(__AVX2__)
+# if defined(__AVX2__)
     want_level = 7, want_b = bit_AVX2;
 # elif defined(__AVX__)
     want_level = 1, want_c = bit_AVX;

@@ -18,6 +18,7 @@
 
 	* gcc.dg/vect/tree-vect.h (check_vect): Handle AVX2,
 	remove XOP handling.
+	* gcc.dg/vect/pr66636.c (foo): Add __attribute__((noinline,noclone)).
 
 2016-05-13  Nathan Sidwell  <nathan@acm.org>
 
