@@ -1,7 +1,8 @@
-/* { dg-do run { target { powerpc64*-*-* && vsx_hw } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-do run { target powerpc64*-*-* } } */
+/* { dg-require-effective-target p8vector_hw } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
-/* { dg-options "-maltivec" } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-options "-mcpu=power8" } */
 
 #include <stdlib.h>
 #include <stdio.h>
