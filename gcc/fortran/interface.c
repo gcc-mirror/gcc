@@ -2113,7 +2113,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     }
 
   ppc = gfc_get_proc_ptr_comp (actual);
-  if (ppc)
+  if (ppc && ppc->ts.interface)
     {
       if (!gfc_compare_interfaces (formal, ppc->ts.interface, ppc->name, 0, 1,
 				   err, sizeof(err), NULL, NULL))
