@@ -1,3 +1,8 @@
+2016-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69603
+	* gfortran.dg/pr69603.f90: New testcase.
+
 2016-05-14  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_union_4.f90: Fix endian issue.
