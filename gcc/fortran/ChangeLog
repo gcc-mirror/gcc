@@ -1,3 +1,8 @@
+2016-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69603
+	* interface.c (compare_parameter): Check for non-NULL pointer.
+
 2016-04-04  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/66911
