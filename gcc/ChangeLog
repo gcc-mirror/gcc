@@ -1,3 +1,11 @@
+2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64.h (LEGITIMIZE_RELOAD_ADDRESS): Remove.
+	* config/aarch64/arch64-protos.h
+	(aarch64_legitimize_reload_address): Remove.
+	* config/aarch64/aarch64.c (aarch64_legitimize_reload_address):
+	Remove.
+
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Add ACX_NONCANONICAL_HOST.
