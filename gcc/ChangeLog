@@ -1,3 +1,9 @@
+2016-05-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/70857
+	* omp-low.c (grid_expand_target_grid_body): Copy RESULT_DECL of
+	the outlined kernel function.
+
 2016-05-16  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.h (ISA_HAS_LSA): Enable for -mmsa.
