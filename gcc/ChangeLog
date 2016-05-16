@@ -1,3 +1,13 @@
+2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_INVALID_PARAMETER_TYPE): Remove.
+	(TARGET_INVALID_RETURN_TYPE): Remove.
+	* system.h: Poison TARGET_INVALID_PARAMETER_TYPE and
+	TARGET_INVALID_RETURN_TYPE.
+	* target.def (invalid_parameter_type): Remove.
+	(invalid_return_type): Remove.
+
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (compute_inline_parameters): Be more reailistic

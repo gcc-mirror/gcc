@@ -1,3 +1,10 @@
+2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* c-decl.c (grokdeclarator): Remove errmsg and use of
+	targetm.invalid_return_type.
+	(grokparms): Remove errmsg and use of
+	targetm.invalid_parameter_type.
+
 2016-05-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (grokdeclarator): For C11, discard qualifiers on
