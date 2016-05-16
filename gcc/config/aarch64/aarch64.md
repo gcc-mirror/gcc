@@ -1786,7 +1786,7 @@
   "aarch64_zero_extend_const_eq (<DWI>mode, operands[2],
 				 <MODE>mode, operands[1])"
   "@
-  cmn\\t%<w>0, %<w>1
+  cmn\\t%<w>0, %1
   cmp\\t%<w>0, #%n1"
   [(set_attr "type" "alus_imm")]
 )
@@ -1818,11 +1818,11 @@
   "aarch64_zero_extend_const_eq (<DWI>mode, operands[3],
                                  <MODE>mode, operands[2])"
   "@
-  adds\\t%<w>0, %<w>1, %<w>2
+  adds\\t%<w>0, %<w>1, %2
   subs\\t%<w>0, %<w>1, #%n2"
   [(set_attr "type" "alus_imm")]
 )
- 
+
 (define_insn "add<mode>3_compareC"
   [(set (reg:CC_C CC_REGNUM)
 	(ne:CC_C
@@ -3425,7 +3425,9 @@
          (LOGICAL:SI (match_operand:SI 1 "register_operand" "%r,r")
 		     (match_operand:SI 2 "aarch64_logical_operand" "r,K"))))]
   ""
-  "<logical>\\t%w0, %w1, %w2"
+  "@
+   <logical>\\t%w0, %w1, %w2
+   <logical>\\t%w0, %w1, %2"
   [(set_attr "type" "logic_reg,logic_imm")]
 )
 
@@ -3438,7 +3440,9 @@
    (set (match_operand:GPI 0 "register_operand" "=r,r")
 	(and:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "ands\\t%<w>0, %<w>1, %<w>2"
+  "@
+   ands\\t%<w>0, %<w>1, %<w>2
+   ands\\t%<w>0, %<w>1, %2"
   [(set_attr "type" "logics_reg,logics_imm")]
 )
 
@@ -3452,7 +3456,9 @@
    (set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (and:SI (match_dup 1) (match_dup 2))))]
   ""
-  "ands\\t%w0, %w1, %w2"
+  "@
+   ands\\t%w0, %w1, %w2
+   ands\\t%w0, %w1, %2"
   [(set_attr "type" "logics_reg,logics_imm")]
 )
 
@@ -3806,7 +3812,9 @@
 		  (match_operand:GPI 1 "aarch64_logical_operand" "r,<lconst>"))
 	 (const_int 0)))]
   ""
-  "tst\\t%<w>0, %<w>1"
+  "@
+   tst\\t%<w>0, %<w>1
+   tst\\t%<w>0, %1"
   [(set_attr "type" "logics_reg,logics_imm")]
 )
 
@@ -5201,7 +5209,7 @@
 	 UNSPEC_SP_TEST))
    (clobber (match_scratch:PTR 3 "=&r"))]
   ""
-  "ldr\t%<w>3, %x1\;ldr\t%<w>0, %x2\;eor\t%<w>0, %<w>3, %<w>0"
+  "ldr\t%<w>3, %1\;ldr\t%<w>0, %2\;eor\t%<w>0, %<w>3, %<w>0"
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
