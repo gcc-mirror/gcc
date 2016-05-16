@@ -822,6 +822,7 @@ host_subdir
 build_subdir
 build_libsubdir
 target_noncanonical
+host_noncanonical
 target_os
 target_vendor
 target_cpu
@@ -3323,7 +3324,7 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
-# Determine the noncanonical target name, for directory use.
+# Determine the noncanonical host name, for Ada.
  case ${build_alias} in
   "") build_noncanonical=${build} ;;
   *) build_noncanonical=${build_alias} ;;
@@ -3334,6 +3335,10 @@ esac
   *) host_noncanonical=${host_alias} ;;
 esac
 
+
+
+
+# Determine the noncanonical target name, for directory use.
  case ${target_alias} in
   "") target_noncanonical=${host_noncanonical} ;;
   *) target_noncanonical=${target_alias} ;;
@@ -18474,7 +18479,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18477 "configure"
+#line 18482 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18580,7 +18585,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18583 "configure"
+#line 18588 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

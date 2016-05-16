@@ -567,6 +567,7 @@ TOOLS_TARGET_PAIRS
 default_gnattools_target
 LN_S
 target_noncanonical
+host_noncanonical
 target_os
 target_vendor
 target_cpu
@@ -1989,6 +1990,8 @@ esac
   "") host_noncanonical=${build_noncanonical} ;;
   *) host_noncanonical=${host_alias} ;;
 esac
+
+
 
  case ${target_alias} in
   "") target_noncanonical=${host_noncanonical} ;;

@@ -35,6 +35,9 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
+# Determine the noncanonical host name, for Ada.
+ACX_NONCANONICAL_HOST
+
 # Determine the noncanonical target name, for directory use.
 ACX_NONCANONICAL_TARGET
 

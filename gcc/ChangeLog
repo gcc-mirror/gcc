@@ -1,3 +1,9 @@
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Add ACX_NONCANONICAL_HOST.
+	* configure: Regenerate.
+	* Makefile.in: Set host_noncanonical.
+
 2016-05-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71097

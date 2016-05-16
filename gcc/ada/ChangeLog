@@ -1,3 +1,11 @@
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (GNATMAKE_FOR_HOST): In the canadian
+	cross case, use host_noncanonical instead of host as prefix.
+	(GNATBIND_FOR_HOST): Likewise.
+	(GNATLINK_FOR_HOST): Likewise.
+	(GNATLS_FOR_HOST): Likewise.
+
 2016-05-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/70969
