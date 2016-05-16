@@ -1,3 +1,7 @@
+2016-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/xopintrin.h: Correct "unsinged" typo in the comments.
+
 2016-05-16  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa-gen.c (fillup_for_decl): Increase alignment to natural one.
