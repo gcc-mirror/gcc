@@ -1,3 +1,8 @@
+2016-05-16  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+	* config.guess: Import version 2016-04-02 (newest).
+	* config.sub: Import version 2016-05-10 (newest).
+
 2016-05-16  Anton Kolesov  <anton.kolesov@synopsys.com>
 
 	* configure.ac: Add ARC support to libgloss.
