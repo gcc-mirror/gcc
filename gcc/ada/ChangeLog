@@ -1,5 +1,13 @@
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* freeze.adb (Freeze_Array_Type): Call Addressable predicate instead
+	of testing for individual sizes.
+	(Freeze_Entity): Rework implementation of pragma Implicit_Packing for
+	array types, in particular test for suitable sizes upfront and do not
+	mimic the processing that will be redone later in Freeze_Array_Type.
+
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (elaborate_all_entities_for_package): Also skip
 	formal objects.
 
