@@ -1,3 +1,8 @@
+2016-05-16  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.h (ISA_HAS_LSA): Enable for -mmsa.
+	(ISA_HAS_DLSA): Ditto.
+
 2016-05-16  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/m5100.md (m51_int_load): Update the latency to 2.
