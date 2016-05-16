@@ -1,3 +1,11 @@
+2016-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_mangle_decl_assembler_name): Revert.
+	(nvptx_name_replacement): Restore.  Add comment.
+	(write_fn_proto, write_fn_proto_from_insn,
+	nvptx_output_call_insn): Restore
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): Delete.
+
 2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md
@@ -59,8 +67,8 @@
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (report_inline_failed_reason): Look into thunks, too
-	(inline_small_functions): Do not look for function symbol when resetting
-	caches.
+	(inline_small_functions): Do not look for function symbol when
+	resetting caches.
 
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
