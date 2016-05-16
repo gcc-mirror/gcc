@@ -5356,7 +5356,6 @@ grokdeclarator (const struct c_declarator *declarator,
   struct c_arg_info *arg_info = 0;
   addr_space_t as1, as2, address_space;
   location_t loc = UNKNOWN_LOCATION;
-  const char *errmsg;
   tree expr_dummy;
   bool expr_const_operands_dummy;
   enum c_declarator_kind first_non_attr_kind;
@@ -6088,12 +6087,6 @@ grokdeclarator (const struct c_declarator *declarator,
 		else
 		  error_at (loc, "type name declared as function returning "
 		      	    "an array");
-		type = integer_type_node;
-	      }
-	    errmsg = targetm.invalid_return_type (type);
-	    if (errmsg)
-	      {
-		error (errmsg);
 		type = integer_type_node;
 	      }
 
@@ -6847,7 +6840,6 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
     {
       tree parm, type, typelt;
       unsigned int parmno;
-      const char *errmsg;
 
       /* If there is a parameter of incomplete type in a definition,
 	 this is an error.  In a declaration this is valid, and a
@@ -6894,15 +6886,6 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 				"parameter %u has void type",
 				parmno);
 		}
-	    }
-
-	  errmsg = targetm.invalid_parameter_type (type);
-	  if (errmsg)
-	    {
-	      error (errmsg);
-	      TREE_VALUE (typelt) = error_mark_node;
-	      TREE_TYPE (parm) = error_mark_node;
-	      arg_types = NULL_TREE;
 	    }
 
 	  if (DECL_NAME (parm) && TREE_USED (parm))

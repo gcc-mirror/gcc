@@ -4820,28 +4820,6 @@ the front end.",
  const char *, (int op, const_tree type1, const_tree type2),
  hook_constcharptr_int_const_tree_const_tree_null)
 
-/* Return the diagnostic message string if TYPE is not valid as a
-   function parameter type, NULL otherwise.  */
-DEFHOOK
-(invalid_parameter_type,
- "If defined, this macro returns the diagnostic message when it is\n\
-invalid for functions to include parameters of type @var{type},\n\
-or @code{NULL} if validity should be determined by\n\
-the front end.  This is currently used only by the C and C++ front ends.",
- const char *, (const_tree type),
- hook_constcharptr_const_tree_null)
-
-/* Return the diagnostic message string if TYPE is not valid as a
-   function return type, NULL otherwise.  */
-DEFHOOK
-(invalid_return_type,
- "If defined, this macro returns the diagnostic message when it is\n\
-invalid for functions to have return type @var{type},\n\
-or @code{NULL} if validity should be determined by\n\
-the front end.  This is currently used only by the C and C++ front ends.",
- const char *, (const_tree type),
- hook_constcharptr_const_tree_null)
-
 /* If values of TYPE are promoted to some other type when used in
    expressions (analogous to the integer promotions), return that type,
    or NULL_TREE otherwise.  */

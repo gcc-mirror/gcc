@@ -11504,20 +11504,6 @@ and @var{type2}, or @code{NULL} if validity should be determined by
 the front end.
 @end deftypefn
 
-@deftypefn {Target Hook} {const char *} TARGET_INVALID_PARAMETER_TYPE (const_tree @var{type})
-If defined, this macro returns the diagnostic message when it is
-invalid for functions to include parameters of type @var{type},
-or @code{NULL} if validity should be determined by
-the front end.  This is currently used only by the C and C++ front ends.
-@end deftypefn
-
-@deftypefn {Target Hook} {const char *} TARGET_INVALID_RETURN_TYPE (const_tree @var{type})
-If defined, this macro returns the diagnostic message when it is
-invalid for functions to have return type @var{type},
-or @code{NULL} if validity should be determined by
-the front end.  This is currently used only by the C and C++ front ends.
-@end deftypefn
-
 @deftypefn {Target Hook} tree TARGET_PROMOTED_TYPE (const_tree @var{type})
 If defined, this target hook returns the type to which values of
 @var{type} should be promoted when they appear in expressions,
