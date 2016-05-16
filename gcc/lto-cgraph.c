@@ -972,7 +972,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (node->alias && node->analyzed)
 	create_references (encoder, node);
       if (cnode
-	  && cnode->thunk.thunk_p)
+	  && cnode->thunk.thunk_p && !cnode->global.inlined_to)
 	add_node_to (encoder, cnode->callees->callee, false);
       while (node->transparent_alias && node->analyzed)
 	{
@@ -1028,7 +1028,7 @@ output_symtab (void)
     {
       node = dyn_cast <cgraph_node *> (lto_symtab_encoder_deref (encoder, i));
       if (node
-	  && (node->thunk.thunk_p
+	  && ((node->thunk.thunk_p && !node->global.inlined_to)
 	      || lto_symtab_encoder_in_partition_p (encoder, node)))
 	{
 	  output_outgoing_cgraph_edges (node->callees, ob, encoder);

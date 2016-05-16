@@ -1,3 +1,8 @@
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-cgraph.c (compute_ltrans_boundary, output_symtab): Fix handling
+	of inline thunks
+
 2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>

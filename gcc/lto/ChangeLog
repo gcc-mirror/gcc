@@ -1,3 +1,7 @@
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (add_symbol_to_partition_1): Likewise.
+
 2016-05-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c (lto_cgraph_replace_node): Initialize inline_failed.
