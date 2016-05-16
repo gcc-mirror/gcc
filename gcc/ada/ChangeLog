@@ -1,5 +1,10 @@
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (elaborate_all_entities_for_package): Also skip
+	formal objects.
+
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* doc/gnat_rm/implementation_defined_attributes.rst
 	(Scalar_Storage_Order): Adjust restriction for packed array types.
 	* einfo.ads (Is_Bit_Packed_Array): Adjust description.

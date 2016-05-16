@@ -8446,6 +8446,10 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
       if (IN (kind, Generic_Unit_Kind))
 	continue;
 
+      /* Skip formal objects.  */
+      if (IN (kind, Formal_Object_Kind))
+	continue;
+
       /* Skip package bodies.  */
       if (kind == E_Package_Body)
 	continue;
