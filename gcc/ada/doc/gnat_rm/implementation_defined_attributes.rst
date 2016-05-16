@@ -969,7 +969,7 @@ must have the same scalar storage order as the parent type.
 If a component of `T` is of a record or array type, then that type must
 also have a `Scalar_Storage_Order` attribute definition clause.
 
-A component of a record or array type that is a packed array, or that
+A component of a record or array type that is a bit-packed array, or that
 does not start on a byte boundary, must have the same scalar storage order
 as the enclosing record or array type.
 

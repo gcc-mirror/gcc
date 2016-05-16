@@ -6216,9 +6216,11 @@ package body Exp_Ch4 is
          Activate_Atomic_Synchronization (N);
       end if;
 
-      --  All done for the non-packed case
+      --  All done if the prefix is not a packed array implemented specially
 
-      if not Is_Packed (Etype (Prefix (N))) then
+      if not (Is_Packed (Etype (Prefix (N)))
+               and then Present (Packed_Array_Impl_Type (Etype (Prefix (N)))))
+      then
          return;
       end if;
 

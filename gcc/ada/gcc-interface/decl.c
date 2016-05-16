@@ -1961,47 +1961,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
       /* If the type we are dealing with has got a smaller alignment than the
 	 natural one, we need to wrap it up in a record type and misalign the
-	 latter; we reuse the padding machinery for this purpose.  Note that,
-	 even if the record type is marked as packed because of misalignment,
-	 we don't pack the field so as to give it the size of the type.  */
+	 latter; we reuse the padding machinery for this purpose.  */
       else if (align > 0)
 	{
-	  tree gnu_field_type, gnu_field;
+	  tree gnu_size = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 
-	  /* Set the RM size before wrapping up the type.  */
-	  SET_TYPE_RM_SIZE (gnu_type,
-			    UI_To_gnu (RM_Size (gnat_entity), bitsizetype));
+	  /* Set the RM size before wrapping the type.  */
+	  SET_TYPE_RM_SIZE (gnu_type, gnu_size);
 
-	  /* Create a stripped-down declaration, mainly for debugging.  */
-	  create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
-			    gnat_entity);
+	  gnu_type
+	    = maybe_pad_type (gnu_type, TYPE_SIZE (gnu_type), align,
+			      gnat_entity, false, true, definition, false);
 
-	  /* Now save it and build the enclosing record type.  */
-	  gnu_field_type = gnu_type;
-
-	  gnu_type = make_node (RECORD_TYPE);
-	  TYPE_PADDING_P (gnu_type) = 1;
-	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "PAD");
 	  TYPE_PACKED (gnu_type) = 1;
-	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
-	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
-	  SET_TYPE_ADA_SIZE (gnu_type, TYPE_RM_SIZE (gnu_field_type));
-	  SET_TYPE_ALIGN (gnu_type, align);
-	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
-
-	  /* Don't declare the field as addressable since we won't be taking
-	     its address and this would prevent create_field_decl from making
-	     a bitfield.  */
-	  gnu_field
-	    = create_field_decl (get_identifier ("F"), gnu_field_type,
-				 gnu_type, TYPE_SIZE (gnu_field_type),
-				 bitsize_zero_node, 0, 0);
-
-	  finish_record_type (gnu_type, gnu_field, 2, false);
-	  compute_record_mode (gnu_type);
-
-	  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-	    SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
+	  SET_TYPE_ADA_SIZE (gnu_type, gnu_size);
 	}
 
       break;
@@ -2909,10 +2882,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    TREE_TYPE (TYPE_FIELDS (gnu_type)) = gnu_inner;
 		}
 	    }
-
-	  else
-	    /* Abort if packed array with no Packed_Array_Impl_Type.  */
-	    gcc_assert (!Is_Packed (gnat_entity));
 	}
       break;
 
@@ -5234,6 +5203,16 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   const Entity_Id gnat_type = Component_Type (gnat_array);
   tree gnu_type = gnat_to_gnu_type (gnat_type);
   tree gnu_comp_size;
+  unsigned int max_align;
+
+  /* If an alignment is specified, use it as a cap on the component type
+     so that it can be honored for the whole type.  But ignore it for the
+     original type of packed array types.  */
+  if (No (Packed_Array_Impl_Type (gnat_array))
+      && Known_Alignment (gnat_array))
+    max_align = validate_alignment (Alignment (gnat_array), gnat_array, 0);
+  else
+    max_align = 0;
 
   /* Try to get a smaller form of the component if needed.  */
   if ((Is_Packed (gnat_array) || Has_Component_Size_Clause (gnat_array))
@@ -5243,7 +5222,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
-    gnu_type = make_packable_type (gnu_type, false);
+    gnu_type = make_packable_type (gnu_type, false, max_align);
 
   if (Has_Atomic_Components (gnat_array))
     check_ok_for_atomic_type (gnu_type, gnat_array, true);
@@ -5276,16 +5255,6 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_array))
     {
       tree orig_type = gnu_type;
-      unsigned int max_align;
-
-      /* If an alignment is specified, use it as a cap on the component type
-	 so that it can be honored for the whole type.  But ignore it for the
-	 original type of packed array types.  */
-      if (No (Packed_Array_Impl_Type (gnat_array))
-	  && Known_Alignment (gnat_array))
-	max_align = validate_alignment (Alignment (gnat_array), gnat_array, 0);
-      else
-	max_align = 0;
 
       gnu_type = make_type_from_size (gnu_type, gnu_comp_size, false);
       if (max_align > 0 && TYPE_ALIGN (gnu_type) > max_align)

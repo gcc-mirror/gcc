@@ -1,3 +1,36 @@
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst
+	(Scalar_Storage_Order): Adjust restriction for packed array types.
+	* einfo.ads (Is_Bit_Packed_Array): Adjust description.
+	(Is_Packed): Likewise.
+	(Is_Packed_Array_Impl_Type): Likewise.
+	(Packed_Array_Impl_Type): Likewise.
+	* exp_ch4.adb (Expand_N_Indexed_Component): Do not do anything special
+	if the prefix is not a packed array implemented specially.
+	* exp_ch6.adb (Expand_Actuals): Expand indexed components only for
+	bit-packed array types.
+	* exp_pakd.adb (Install_PAT): Set Is_Packed_Array_Impl_Type flag on
+	the PAT before analyzing its declaration.
+	(Create_Packed_Array_Impl_Type): Remove redundant statements.
+	* freeze.adb (Check_Component_Storage_Order): Reject packed array
+	components only if they are bit packed.
+	(Freeze_Array_Type): Fix logic detecting bit packing and do not bit
+	pack for composite types whose size is multiple of a byte.
+	Create the implementation type for packed array types only when it is
+	needed, i.e. bit packing or packing because of holes in index types.
+	Make sure the Has_Non_Standard_Rep and Is_Packed flags agree.
+	* gcc-interface/gigi.h (make_packable_type): Add MAX_ALIGN parameter.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
+	Call maybe_pad_type instead of building the padding type manually.
+	(gnat_to_gnu_entity) <E_Array_Subtype>: Do not assert that
+	Packed_Array_Impl_Type is present for packed arrays.
+	(gnat_to_gnu_component_type): Also handle known alignment for packed
+	types by passing it to make_packable_type.
+	* gcc-interface/utils.c (make_packable_type): Add MAX_ALIGN parameter
+	and deal with it in the array case.  Adjust recursive call.  Simplify
+	computation of new size and cap the alignment to BIGGEST_ALIGNMENT.
+
 2016-05-16  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb (Check_Component_Storage_Order): Also get full view of

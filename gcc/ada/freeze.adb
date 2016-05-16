@@ -1254,24 +1254,24 @@ package body Freeze is
             end if;
 
          --  If component and composite SSO differs, check that component
-         --  falls on byte boundaries and isn't packed.
+         --  falls on byte boundaries and isn't bit packed.
 
          elsif Comp_SSO_Differs then
 
             --  Component SSO differs from enclosing composite:
 
-            --  Reject if component is a packed array, as it may be represented
+            --  Reject if component is a bit-packed array, as it is represented
             --  as a scalar internally.
 
-            if Is_Packed_Array (Comp_Base) then
+            if Is_Bit_Packed_Array (Comp_Base) then
                Error_Msg_N
                  ("type of packed component must have same scalar storage "
                   & "order as enclosing composite", Err_Node);
 
-            --  Reject if composite is a packed array, as it may be rewritten
+            --  Reject if composite is a bit-packed array, as it is rewritten
             --  into an array of scalars.
 
-            elsif Is_Packed_Array (Encl_Base) then
+            elsif Is_Bit_Packed_Array (Encl_Base) then
                Error_Msg_N
                  ("type of packed array must have same scalar storage order "
                   & "as component", Err_Node);
@@ -2386,7 +2386,7 @@ package body Freeze is
                   end if;
                end if;
 
-               --  Case of component size that may result in packing
+               --  Case of component size that may result in bit packing
 
                if 1 <= Csiz and then Csiz <= 64 then
                   declare
@@ -2451,44 +2451,58 @@ package body Freeze is
                         end if;
                      end if;
 
-                     --  Actual packing is not needed for 8, 16, 32, 64. Also
-                     --  not needed for multiples of 8 if alignment is 1, and
-                     --  for multiples of 16 (i.e. only 48) if alignment is 2.
+                     --  Bit packing is never needed for 8, 16, 32, 64
 
                      if        Csiz = 8
                        or else Csiz = 16
                        or else Csiz = 32
                        or else Csiz = 64
-                       or else (Csiz mod 8 = 0 and then Alignment (Ctyp) = 1)
-                       or else (Csiz = 48 and then Alignment (Ctyp) = 2)
                      then
-                        --  Here the array was requested to be packed, but
-                        --  the packing request had no effect, so Is_Packed
-                        --  is reset.
-
-                        --  Note: semantically this means that we lose track
-                        --  of the fact that a derived type inherited a pragma
-                        --  Pack that was non- effective, but that seems fine.
-
-                        --  We regard a Pack pragma as a request to set a
-                        --  representation characteristic, and this request
-                        --  may be ignored.
-
-                        Set_Is_Packed           (Base_Type (Arr), False);
-                        Set_Is_Bit_Packed_Array (Base_Type (Arr), False);
+                        --  If the Esize of the component is known and equal to
+                        --  the component size then even packing is not needed.
 
                         if Known_Static_Esize (Component_Type (Arr))
                           and then Esize (Component_Type (Arr)) = Csiz
                         then
+                           --  Here the array was requested to be packed, but
+                           --  the packing request had no effect whatsoever,
+                           --  so flag Is_Packed is reset.
+
+                           --  Note: semantically this means that we lose track
+                           --  of the fact that a derived type inherited pragma
+                           --  Pack that was non-effective, but that is fine.
+
+                           --  We regard a Pack pragma as a request to set a
+                           --  representation characteristic, and this request
+                           --  may be ignored.
+
+                           Set_Is_Packed            (Base_Type (Arr), False);
                            Set_Has_Non_Standard_Rep (Base_Type (Arr), False);
+                        else
+                           Set_Is_Packed            (Base_Type (Arr), True);
+                           Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         end if;
 
-                        --  In all other cases, packing is indeed needed
+                        Set_Is_Bit_Packed_Array (Base_Type (Arr), False);
+
+                     --  Bit packing is not needed for multiples of the storage
+                     --  unit if the type is composite because the back end can
+                     --  byte pack composite types.
+
+                     elsif Csiz mod System_Storage_Unit = 0
+                       and then Is_Composite_Type (Ctyp)
+                     then
+
+                        Set_Is_Packed            (Base_Type (Arr), True);
+                        Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
+                        Set_Is_Bit_Packed_Array  (Base_Type (Arr), False);
+
+                     --  In all other cases, bit packing is needed
 
                      else
+                        Set_Is_Packed            (Base_Type (Arr), True);
                         Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         Set_Is_Bit_Packed_Array  (Base_Type (Arr), True);
-                        Set_Is_Packed            (Base_Type (Arr), True);
                      end if;
                   end;
                end if;
@@ -2780,12 +2794,14 @@ package body Freeze is
 
          Set_Component_Alignment_If_Not_Set (Arr);
 
-         --  If the array is packed, we must create the packed array type to be
-         --  used to actually implement the type. This is only needed for real
-         --  array types (not for string literal types, since they are present
-         --  only for the front end).
+         --  If the array is packed and bit packed or packed to eliminate holes
+         --  in the non-contiguous enumeration index types, we must create the
+         --  packed array type to be used to actually implement the type. This
+         --  is only needed for real array types (not for string literal types,
+         --  since they are present only for the front end).
 
          if Is_Packed (Arr)
+           and then (Is_Bit_Packed_Array (Arr) or else Non_Standard_Enum)
            and then Ekind (Arr) /= E_String_Literal_Subtype
          then
             Create_Packed_Array_Impl_Type (Arr);
