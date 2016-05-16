@@ -1,5 +1,10 @@
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* freeze.adb (Freeze_Record_Type): Extend pragma Implicit_Packing to
+	components of any elementary types and of composite types.
+
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* freeze.adb (Freeze_Array_Type): Call Addressable predicate instead
 	of testing for individual sizes.
 	(Freeze_Entity): Rework implementation of pragma Implicit_Packing for
