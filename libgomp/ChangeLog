@@ -1,3 +1,7 @@
+2016-05-16  Martin Jambor  <mjambor@suse.cz>
+
+        * testsuite/libgomp.hsa.c/complex-align-2.c: New test.
+
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Adjust
