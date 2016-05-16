@@ -1,4 +1,30 @@
 2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Use def_or_undef_macro
+	for __ARM_FP16_FORMAT_IEEE and __ARM_FP16_FORMAT_ALTERNATIVE.
+	Define __ARM_FP16_ARGS when appropriate.
+	* config/arm/arm.c (arm_invalid_parameter_type): Remove
+	declaration.
+	(arm_invalid_return_type): Likewise.
+	(TARGET_INVALID_PARAMETER_TYPE): Remove.
+	(TARGET_INVALID_RETURN_TYPE): Remove.
+	(aapcs_vfp_sub_candidate): Allow HFmode.
+	(aapcs_vfp_allocate): Add comment.  Support HFmode.
+	(aapcs_vfp_allocate_return_reg): Likewise.
+	(struct aapcs_cp_arg_layout): Slightly reword comments for
+	is_return_candidate and allocate_return_reg.
+	(output_mov_vfp): Update assert.
+	(arm_hard_regno_mode_ok): Remove comment, update HF-mode
+	condition.
+	(arm_invalid_parameter_type): Remove.
+	(amr_invalid_return_type): Remove.
+	* config/arm/arm.h (TARGET_NEON_FP16): Fix definition.
+	* config/arm/arm.md (*arm32_movhf): Disable for TARGET_VFP.
+	* config/arm/vfp.md (*movhf_vfp): Enable for TARGET_VFP.
+
+2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64.h (LEGITIMIZE_RELOAD_ADDRESS): Remove.
 	* config/aarch64/arch64-protos.h

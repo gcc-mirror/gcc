@@ -194,7 +194,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU supports half-precision floating-point with NEON element load/store.  */
 #define TARGET_NEON_FP16						\
   (TARGET_VFP								\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON | FPU_FL_FP16))
+   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
+   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
 
 /* FPU supports VFP half-precision floating-point.  */
 #define TARGET_FP16							\

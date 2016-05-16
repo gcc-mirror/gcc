@@ -268,7 +268,8 @@
 (define_insn "*movhf_vfp"
   [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,t,r,t,r,r")
 	(match_operand:HF 1 "general_operand"	   " m,r,t,r,r,t,F"))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FP16 && !TARGET_NEON_FP16
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP
+   && !TARGET_NEON_FP16
    && (   s_register_operand (operands[0], HFmode)
        || s_register_operand (operands[1], HFmode))"
   "*
