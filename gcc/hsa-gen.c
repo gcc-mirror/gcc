@@ -203,9 +203,13 @@ hsa_symbol::fillup_for_decl (tree decl)
 {
   m_decl = decl;
   m_type = hsa_type_for_tree_type (TREE_TYPE (decl), &m_dim, false);
-
   if (hsa_seen_error ())
-    m_seen_error = true;
+    {
+      m_seen_error = true;
+      return;
+    }
+
+  m_align = MAX (m_align, hsa_natural_alignment (m_type));
 }
 
 /* Constructor of class representing global HSA function/kernel information and
@@ -929,6 +933,14 @@ get_symbol_for_decl (tree decl)
 				BRIG_LINKAGE_PROGRAM, true,
 				BRIG_ALLOCATION_PROGRAM, align);
 	  hsa_cfun->m_global_symbols.safe_push (sym);
+	  sym->fillup_for_decl (decl);
+	  if (sym->m_align > align)
+	    {
+	      sym->m_seen_error = true;
+	      HSA_SORRY_ATV (EXPR_LOCATION (decl),
+			     "HSA specification requires that %E is at least "
+			     "naturally aligned", decl);
+	    }
 	}
       else
 	{
@@ -944,12 +956,11 @@ get_symbol_for_decl (tree decl)
 	  sym = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_PRIVATE,
 				BRIG_LINKAGE_FUNCTION);
 	  sym->m_align = align;
+	  sym->fillup_for_decl (decl);
 	  hsa_cfun->m_private_variables.safe_push (sym);
 	}
 
-      sym->fillup_for_decl (decl);
       sym->m_name = hsa_get_declaration_name (decl);
-
       *slot = sym;
       return sym;
     }
