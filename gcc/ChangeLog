@@ -1,3 +1,7 @@
+2016-05-16  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/m5100.md (m51_int_load): Update the latency to 2.
+
 2016-05-16  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_mangle_decl_assembler_name): Revert.
