@@ -1437,9 +1437,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      = build_reference_type (TYPE_OBJECT_RECORD_TYPE (gnu_array));
 	  }
 
-	if (const_flag)
-	  gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_CONST);
-
 	/* Convert the expression to the type of the object if need be.  */
 	if (gnu_expr && initial_value_needs_conversion (gnu_type, gnu_expr))
 	  gnu_expr = convert (gnu_type, gnu_expr);

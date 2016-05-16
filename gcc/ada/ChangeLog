@@ -1,5 +1,10 @@
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Do not build
+	a specific type for the object if it is deemed a constant.
+
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* freeze.adb (Freeze_Record_Type): Extend pragma Implicit_Packing to
 	components of any elementary types and of composite types.
 
