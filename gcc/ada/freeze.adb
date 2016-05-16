@@ -2453,11 +2453,7 @@ package body Freeze is
 
                      --  Bit packing is never needed for 8, 16, 32, 64
 
-                     if        Csiz = 8
-                       or else Csiz = 16
-                       or else Csiz = 32
-                       or else Csiz = 64
-                     then
+                     if Addressable (Csiz) then
                         --  If the Esize of the component is known and equal to
                         --  the component size then even packing is not needed.
 
@@ -5295,20 +5291,20 @@ package body Freeze is
 
          if E /= Base_Type (E) then
 
-            --  Before we do anything else, a specialized test for the case of
-            --  a size given for an array where the array needs to be packed,
-            --  but was not so the size cannot be honored. This is the case
-            --  where implicit packing may apply. The reason we do this so
-            --  early is that if we have implicit packing, the layout of the
-            --  base type is affected, so we must do this before we freeze
-            --  the base type.
+            --  Before we do anything else, a specific test for the case of a
+            --  size given for an array where the array would need to be packed
+            --  in order for the size to be honored, but is not. This is the
+            --  case where implicit packing may apply. The reason we do this so
+            --  early is that, if we have implicit packing, the layout of the
+            --  base type is affected, so we must do this before we freeze the
+            --  base type.
 
             --  We could do this processing only if implicit packing is enabled
             --  since in all other cases, the error would be caught by the back
             --  end. However, we choose to do the check even if we do not have
             --  implicit packing enabled, since this allows us to give a more
-            --  useful error message (advising use of pragmas Implicit_Packing
-            --  or Pack).
+            --  useful error message (advising use of pragma Implicit_Packing
+            --  or pragma Pack).
 
             if Is_Array_Type (E) then
                declare
@@ -5321,7 +5317,8 @@ package body Freeze is
                   Hi   : Node_Id;
                   Indx : Node_Id;
 
-                  Num_Elmts : Uint;
+                  Dim       : Uint;
+                  Num_Elmts : Uint := Uint_1;
                   --  Number of elements in array
 
                begin
@@ -5337,13 +5334,21 @@ package body Freeze is
                   --  a chance to freeze the base type (and it is that freeze
                   --  action that causes stuff to be inherited).
 
+                  --  The conditions on the size are identical to those used in
+                  --  Freeze_Array_Type to set the Is_Packed flag.
+
                   if Has_Size_Clause (E)
                     and then Known_Static_RM_Size (E)
                     and then not Is_Packed (E)
                     and then not Has_Pragma_Pack (E)
                     and then not Has_Component_Size_Clause (E)
                     and then Known_Static_RM_Size (Ctyp)
-                    and then RM_Size (Ctyp) < 64
+                    and then Rsiz <= 64
+                    and then not (Addressable (Rsiz)
+                                   and then Known_Static_Esize (Ctyp)
+                                   and then Esize (Ctyp) = Rsiz)
+                    and then not (Rsiz mod System_Storage_Unit = 0
+                                   and then Is_Composite_Type (Ctyp))
                     and then not Is_Limited_Composite (E)
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
@@ -5351,7 +5356,6 @@ package body Freeze is
                   then
                      --  Compute number of elements in array
 
-                     Num_Elmts := Uint_1;
                      Indx := First_Index (E);
                      while Present (Indx) loop
                         Get_Index_Bounds (Indx, Lo, Hi);
@@ -5363,33 +5367,28 @@ package body Freeze is
                            goto No_Implicit_Packing;
                         end if;
 
-                        Num_Elmts :=
-                          Num_Elmts *
-                            UI_Max (Uint_0,
-                                    Expr_Value (Hi) - Expr_Value (Lo) + 1);
+                        Dim := Expr_Value (Hi) - Expr_Value (Lo) + 1;
+
+                        if Dim >= 0 then
+                           Num_Elmts := Num_Elmts * Dim;
+                        else
+                           Num_Elmts := Uint_0;
+                        end if;
+
                         Next_Index (Indx);
                      end loop;
 
                      --  What we are looking for here is the situation where
                      --  the RM_Size given would be exactly right if there was
-                     --  a pragma Pack (resulting in the component size being
-                     --  the same as the RM_Size). Furthermore, the component
-                     --  type size must be an odd size (not a multiple of
-                     --  storage unit). If the component RM size is an exact
-                     --  number of storage units that is a power of two, the
-                     --  array is not packed and has a standard representation.
+                     --  a pragma Pack, resulting in the component size being
+                     --  the RM_Size of the component type.
 
-                     if RM_Size (E) = Num_Elmts * Rsiz
-                       and then Rsiz mod System_Storage_Unit /= 0
-                     then
+                     if RM_Size (E) = Num_Elmts * Rsiz then
                         --  For implicit packing mode, just set the component
-                        --  size silently.
+                        --  size and Freeze_Array_Type will do the rest.
 
                         if Implicit_Packing then
-                           Set_Component_Size       (Btyp, Rsiz);
-                           Set_Is_Bit_Packed_Array  (Btyp);
-                           Set_Is_Packed            (Btyp);
-                           Set_Has_Non_Standard_Rep (Btyp);
+                           Set_Component_Size (Btyp, Rsiz);
 
                            --  Otherwise give an error message
 
@@ -5400,20 +5399,6 @@ package body Freeze is
                              ("\use explicit pragma Pack "
                               & "or use pragma Implicit_Packing", SZ);
                         end if;
-
-                     elsif RM_Size (E) = Num_Elmts * Rsiz
-                       and then Implicit_Packing
-                       and then
-                         (Rsiz / System_Storage_Unit = 1
-                            or else
-                          Rsiz / System_Storage_Unit = 2
-                            or else
-                          Rsiz / System_Storage_Unit = 4)
-                     then
-                        --  Not a packed array, but indicate the desired
-                        --  component size, for the back-end.
-
-                        Set_Component_Size (Btyp, Rsiz);
                      end if;
                   end if;
                end;
