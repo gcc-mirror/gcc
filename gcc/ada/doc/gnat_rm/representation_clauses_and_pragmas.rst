@@ -32,9 +32,9 @@ GNAT requires that all alignment clauses specify a power of 2, and all
 default alignments are always a power of 2.  The default alignment
 values are as follows:
 
-* *Primitive Types*.
+* *Elementary Types*.
 
-  For primitive types, the alignment is the minimum of the actual size of
+  For elementary types, the alignment is the minimum of the actual size of
   objects of the type divided by `Storage_Unit`,
   and the maximum alignment supported by the target.
   (This maximum alignment is given by the GNAT-specific attribute
@@ -53,10 +53,11 @@ values are as follows:
   For arrays, the alignment is equal to the alignment of the component type
   for the normal case where no packing or component size is given.  If the
   array is packed, and the packing is effective (see separate section on
-  packed arrays), then the alignment will be one for long packed arrays,
-  or arrays whose length is not known at compile time.  For short packed
+  packed arrays), then the alignment will be either 4, 2 or 1 for long packed
+  arrays or arrays whose length is not known at compile time, depending on
+  whether the component size is divisible by 4, 2 or is odd.  For short packed
   arrays, which are handled internally as modular types, the alignment
-  will be as described for primitive types, e.g., a packed array of length
+  will be as described for elementary types, e.g. a packed array of length
   31 bits will have an object size of four bytes, and an alignment of 4.
 
 * *Records*.
@@ -789,7 +790,7 @@ restrictions placed on component clauses as follows:
   little-endian machines, this must be explicitly programmed.  This capability
   is not provided by `Bit_Order`.
 
-* Components that are positioned across byte boundaries
+* Components that are positioned across byte boundaries.
 
   but do not occupy an integral number of bytes.  Given that bytes are not
   reordered, such fields would occupy a non-contiguous sequence of bits
@@ -1069,22 +1070,23 @@ Pragma Pack for Arrays
 
 .. index:: Pragma Pack (for arrays)
 
-Pragma `Pack` applied to an array has no effect unless the component type
-is packable.  For a component type to be packable, it must be one of the
-following cases:
+Pragma `Pack` applied to an array has an effect that depends upon whether the
+component type is *packable*.  For a component type to be *packable*, it must
+be one of the following cases:
 
-*
-  Any scalar type
-*
-  Any type whose size is specified with a size clause
-*
-  Any packed array type with a static size
-*
-  Any record type padded because of its default alignment
+* Any elementary type.
+
+* Any small packed array type with a static size.
+
+* Any small simple record type with a static size.
 
 For all these cases, if the component subtype size is in the range
-1 through 63, then the effect of the pragma `Pack` is exactly as though a
+1 through 64, then the effect of the pragma `Pack` is exactly as though a
 component size were specified giving the component subtype size.
+
+All other types are non-packable, they occupy an integral number of storage
+units and the only effect of pragma Pack is to remove alignment gaps.
+
 For example if we have:
 
 .. code-block:: ada
@@ -1095,7 +1097,7 @@ For example if we have:
      pragma Pack (ar);
 
 Then the component size of `ar` will be set to 5 (i.e., to `r'size`,
-and the size of the array `ar` will be exactly 40 bits.
+and the size of the array `ar` will be exactly 40 bits).
 
 Note that in some cases this rather fierce approach to packing can produce
 unexpected effects.  For example, in Ada 95 and Ada 2005,
@@ -1184,23 +1186,21 @@ taken by components.  We distinguish between *packable* components and
 *non-packable* components.
 Components of the following types are considered packable:
 
-*
-  Components of a primitive type are packable unless they are aliased
-  or of an atomic type.
+* Components of an elementary type are packable unless they are aliased,
+  independent or of an atomic type.
 
-*
-  Small packed arrays, whose size does not exceed 64 bits, and where the
-  size is statically known at compile time, are represented internally
-  as modular integers, and so they are also packable.
+* Small packed arrays, where the size is statically known, are represented
+  internally as modular integers, and so they are also packable.
 
+* Small simple records, where the size is statically known, are also packable.
 
-All packable components occupy the exact number of bits corresponding to
-their `Size` value, and are packed with no padding bits, i.e., they
-can start on an arbitrary bit boundary.
+For all these cases, if the 'Size value is in the range 1 through 64, the
+components occupy the exact number of bits corresponding to this value
+and are packed with no padding bits, i.e. they can start on an arbitrary
+bit boundary.
 
-All other types are non-packable, they occupy an integral number of
-storage units, and
-are placed at a boundary corresponding to their alignment requirements.
+All other types are non-packable, they occupy an integral number of storage
+units and the only effect of pragma Pack is to remove alignment gaps.
 
 For example, consider the record
 
@@ -1331,7 +1331,7 @@ so for example, the following is permitted:
 
 Note: the above rules apply to recent releases of GNAT 5.
 In GNAT 3, there are more severe restrictions on larger components.
-For non-primitive types, including packed arrays with a size greater than
+For composite types, including packed arrays with a size greater than
 64 bits, component clauses must respect the alignment requirement of the
 type, in particular, always starting on a byte boundary, and the length
 must be a multiple of the storage unit.

@@ -745,9 +745,9 @@ package body Freeze is
    procedure Check_Compile_Time_Size (T : Entity_Id) is
 
       procedure Set_Small_Size (T : Entity_Id; S : Uint);
-      --  Sets the compile time known size (32 bits or less) in the Esize
-      --  field, of T checking for a size clause that was given which attempts
-      --  to give a smaller size, and also checking for an alignment clause.
+      --  Sets the compile time known size (64 bits or less) in the RM_Size
+      --  field of T, checking for a size clause that was given which attempts
+      --  to give a smaller size.
 
       function Size_Known (T : Entity_Id) return Boolean;
       --  Recursive function that does all the work
@@ -765,7 +765,7 @@ package body Freeze is
 
       procedure Set_Small_Size (T : Entity_Id; S : Uint) is
       begin
-         if S > 32 then
+         if S > 64 then
             return;
 
          --  Check for bad size clause given
@@ -800,14 +800,12 @@ package body Freeze is
          if Size_Known_At_Compile_Time (T) then
             return True;
 
-         --  Always True for scalar types. This is true even for generic formal
-         --  scalar types. We used to return False in the latter case, but the
-         --  size is known at compile time, even in the template, we just do
-         --  not know the exact size but that's not the point of this routine.
+         --  Always True for elementary types, even generic formal elementary
+         --  types. We used to return False in the latter case, but the size
+         --  is known at compile time, even in the template, we just do not
+         --  know the exact size but that's not the point of this routine.
 
-         elsif Is_Scalar_Type (T)
-           or else Is_Task_Type (T)
-         then
+         elsif Is_Elementary_Type (T) or else Is_Task_Type (T) then
             return True;
 
          --  Array types
@@ -817,8 +815,8 @@ package body Freeze is
             --  String literals always have known size, and we can set it
 
             if Ekind (T) = E_String_Literal_Subtype then
-               Set_Small_Size (T, Component_Size (T)
-                               * String_Literal_Length (T));
+               Set_Small_Size
+                 (T, Component_Size (T) * String_Literal_Length (T));
                return True;
 
             --  Unconstrained types never have known at compile time size
@@ -839,10 +837,10 @@ package body Freeze is
             end if;
 
             --  Check for all indexes static, and also compute possible size
-            --  (in case it is less than 32 and may be packable).
+            --  (in case it is not greater than 64 and may be packable).
 
             declare
-               Esiz : Uint := Component_Size (T);
+               Size : Uint := Component_Size (T);
                Dim  : Uint;
 
             begin
@@ -869,23 +867,18 @@ package body Freeze is
                      Dim := Expr_Value (High) - Expr_Value (Low) + 1;
 
                      if Dim >= 0 then
-                        Esiz := Esiz * Dim;
+                        Size := Size * Dim;
                      else
-                        Esiz := Uint_0;
+                        Size := Uint_0;
                      end if;
                   end if;
 
                   Next_Index (Index);
                end loop;
 
-               Set_Small_Size (T, Esiz);
+               Set_Small_Size (T, Size);
                return True;
             end;
-
-         --  Access types always have known at compile time sizes
-
-         elsif Is_Access_Type (T) then
-            return True;
 
          --  For non-generic private types, go to underlying type if present
 
@@ -1074,11 +1067,10 @@ package body Freeze is
 
                   if Packed_Size_Known then
 
-                     --  We can only deal with elementary types, since for
-                     --  non-elementary components, alignment enters into the
-                     --  picture, and we don't know enough to handle proper
-                     --  alignment in this context. Packed arrays count as
-                     --  elementary if the representation is a modular type.
+                     --  We can deal with elementary types, small packed arrays
+                     --  if the representation is a modular type and also small
+                     --  record types (if the size is not greater than 64, but
+                     --  the condition is checked by Set_Small_Size).
 
                      if Is_Elementary_Type (Ctyp)
                        or else (Is_Array_Type (Ctyp)
@@ -1086,33 +1078,14 @@ package body Freeze is
                                             (Packed_Array_Impl_Type (Ctyp))
                                  and then Is_Modular_Integer_Type
                                             (Packed_Array_Impl_Type (Ctyp)))
+                       or else Is_Record_Type (Ctyp)
                      then
-                        --  Packed size unknown if we have an atomic/VFA type
-                        --  or a by-reference type, since the back end knows
-                        --  how these are layed out.
-
-                        if Is_Atomic_Or_VFA (Ctyp)
-                          or else Is_By_Reference_Type (Ctyp)
-                        then
-                           Packed_Size_Known := False;
-
                         --  If RM_Size is known and static, then we can keep
-                        --  accumulating the packed size
+                        --  accumulating the packed size.
 
-                        elsif Known_Static_RM_Size (Ctyp) then
+                        if Known_Static_RM_Size (Ctyp) then
 
-                           --  A little glitch, to be removed sometime ???
-                           --  gigi does not understand zero sizes yet.
-
-                           if RM_Size (Ctyp) = Uint_0 then
-                              Packed_Size_Known := False;
-
-                           --  Normal case where we can keep accumulating the
-                           --  packed array size.
-
-                           else
-                              Packed_Size := Packed_Size + RM_Size (Ctyp);
-                           end if;
+                           Packed_Size := Packed_Size + RM_Size (Ctyp);
 
                         --  If we have a field whose RM_Size is not known then
                         --  we can't figure out the packed size here.
@@ -1121,8 +1094,7 @@ package body Freeze is
                            Packed_Size_Known := False;
                         end if;
 
-                     --  If we have a non-elementary type we can't figure out
-                     --  the packed array size (alignment issues).
+                     --  For other types we can't figure out the packed size
 
                      else
                         Packed_Size_Known := False;
@@ -2475,13 +2447,15 @@ package body Freeze is
                      end if;
 
                      --  Actual packing is not needed for 8, 16, 32, 64. Also
-                     --  not needed for 24 if alignment is 1.
+                     --  not needed for multiples of 8 if alignment is 1, and
+                     --  for multiples of 16 (i.e. only 48) if alignment is 2.
 
                      if        Csiz = 8
                        or else Csiz = 16
                        or else Csiz = 32
                        or else Csiz = 64
-                       or else (Csiz = 24 and then Alignment (Ctyp) = 1)
+                       or else (Csiz mod 8 = 0 and then Alignment (Ctyp) = 1)
+                       or else (Csiz = 48 and then Alignment (Ctyp) = 2)
                      then
                         --  Here the array was requested to be packed, but
                         --  the packing request had no effect, so Is_Packed

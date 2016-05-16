@@ -7711,15 +7711,22 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
-      --  If it is an elementary type and we need to capture the value, just
-      --  make a constant. Likewise if this is not a name reference, except
-      --  for a type conversion because we would enter an infinite recursion
-      --  with Checks.Apply_Predicate_Check if the target type has predicates.
-      --  And type conversions need a specific treatment anyway, see below.
-      --  Also do it if we have a volatile reference and Name_Req is not set
-      --  (see comments for Side_Effect_Free).
+      --  If this is an elementary or a small not by-reference record type, and
+      --  we need to capture the value, just make a constant; this is cheap and
+      --  objects of both kinds of types can be bit aligned, so it might not be
+      --  possible to generate a reference to them. Likewise if this is not a
+      --  name reference, except for a type conversion because we would enter
+      --  an infinite recursion with Checks.Apply_Predicate_Check if the target
+      --  type has predicates (and type conversions need a specific treatment
+      --  anyway, see below). Also do it if we have a volatile reference and
+      --  Name_Req is not set (see comments for Side_Effect_Free).
 
-      if Is_Elementary_Type (Exp_Type)
+      if (Is_Elementary_Type (Exp_Type)
+           or else (Is_Record_Type (Exp_Type)
+                     and then Known_Static_RM_Size (Exp_Type)
+                     and then RM_Size (Exp_Type) <= 64
+                     and then not Has_Discriminants (Exp_Type)
+                     and then not Is_By_Reference_Type (Exp_Type)))
         and then (Variable_Ref
                    or else (not Is_Name_Reference (Exp)
                              and then Nkind (Exp) /= N_Type_Conversion)
