@@ -2038,7 +2038,7 @@ package body Exp_Ch6 is
          --  Processing for IN parameters
 
          else
-            --  For IN parameters is in the packed array case, we expand an
+            --  For IN parameters in the bit packed array case, we expand an
             --  indexed component (the circuit in Exp_Ch4 deliberately left
             --  indexed components appearing as actuals untouched, so that
             --  the special processing above for the OUT and IN OUT cases
@@ -2047,7 +2047,7 @@ package body Exp_Ch6 is
             --  easier simply to handle all cases here.)
 
             if Nkind (Actual) = N_Indexed_Component
-              and then Is_Packed (Etype (Prefix (Actual)))
+              and then Is_Bit_Packed_Array (Etype (Prefix (Actual)))
             then
                Reset_Packed_Prefix;
                Expand_Packed_Element_Reference (Actual);

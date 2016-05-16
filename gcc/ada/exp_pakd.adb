@@ -543,6 +543,7 @@ package body Exp_Pakd is
          end if;
 
          Set_Is_Itype (PAT, True);
+         Set_Is_Packed_Array_Impl_Type (PAT, True);
          Set_Packed_Array_Impl_Type (Typ, PAT);
          Analyze (Decl, Suppress => All_Checks);
 
@@ -569,7 +570,6 @@ package body Exp_Pakd is
          Init_Alignment                (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
-         Set_Is_Packed_Array_Impl_Type (PAT, True);
          Set_Original_Array_Type       (PAT, Typ);
 
          --  Propagate representation aspects
@@ -701,8 +701,6 @@ package body Exp_Pakd is
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), 'P'));
 
-         Set_Packed_Array_Impl_Type (Typ, PAT);
-
          declare
             Indexes   : constant List_Id := New_List;
             Indx      : Node_Id;
@@ -798,9 +796,6 @@ package body Exp_Pakd is
                 Type_Definition     => Typedef);
          end;
 
-         --  Set type as packed array type and install it
-
-         Set_Is_Packed_Array_Impl_Type (PAT);
          Install_PAT;
          return;
 
@@ -819,13 +814,13 @@ package body Exp_Pakd is
            Make_Defining_Identifier (Loc,
              Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));
 
-         Set_Packed_Array_Impl_Type (Typ, PAT);
          Set_PB_Type;
 
          Decl :=
            Make_Subtype_Declaration (Loc,
              Defining_Identifier => PAT,
                Subtype_Indication => New_Occurrence_Of (PB_Type, Loc));
+
          Install_PAT;
          return;
 
@@ -842,8 +837,6 @@ package body Exp_Pakd is
          PAT :=
            Make_Defining_Identifier (Loc,
              Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));
-
-         Set_Packed_Array_Impl_Type (Typ, PAT);
 
          --  Build an expression for the length of the array in bits.
          --  This is the product of the length of each of the dimensions
