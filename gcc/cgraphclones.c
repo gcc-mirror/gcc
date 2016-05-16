@@ -337,8 +337,6 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 
   cgraph_edge *e = new_thunk->create_edge (node, NULL, 0,
 						  CGRAPH_FREQ_BASE);
-  e->call_stmt_cannot_inline_p = true;
-  e->inline_failed = CIF_THUNK;
   symtab->call_edge_duplication_hooks (thunk->callees, e);
   symtab->call_cgraph_duplication_hooks (thunk, new_thunk);
   return new_thunk;

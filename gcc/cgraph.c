@@ -3324,7 +3324,7 @@ cgraph_node::verify_node (void)
 	  error ("More than one edge out of thunk node");
           error_found = true;
 	}
-      if (gimple_has_body_p (decl))
+      if (gimple_has_body_p (decl) && !global.inlined_to)
         {
 	  error ("Thunk is not supposed to have body");
           error_found = true;

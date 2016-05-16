@@ -314,12 +314,20 @@ inline_call (struct cgraph_edge *e, bool update_original,
   /* Don't even think of inlining inline clone.  */
   gcc_assert (!callee->global.inlined_to);
 
-  e->inline_failed = CIF_OK;
-  DECL_POSSIBLY_INLINED (callee->decl) = true;
-
   to = e->caller;
   if (to->global.inlined_to)
     to = to->global.inlined_to;
+  if (to->thunk.thunk_p)
+    {
+      if (in_lto_p)
+	to->get_untransformed_body ();
+      to->expand_thunk (false, true);
+      e = to->callees;
+    }
+
+
+  e->inline_failed = CIF_OK;
+  DECL_POSSIBLY_INLINED (callee->decl) = true;
 
   if (DECL_FUNCTION_PERSONALITY (callee->decl))
     DECL_FUNCTION_PERSONALITY (to->decl)
@@ -580,7 +588,7 @@ preserve_function_body_p (struct cgraph_node *node)
   gcc_assert (!node->alias && !node->thunk.thunk_p);
 
   /* Look if there is any clone around.  */
-  if (node->clones)
+  if (node->clones && !node->clones->thunk.thunk_p)
     return true;
   return false;
 }

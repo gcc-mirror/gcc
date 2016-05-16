@@ -1,5 +1,16 @@
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (compute_inline_parameters): Be more reailistic
+	on estimating thunk bodies; do not set inline_failed to CIF_THUNK for
+	calls from thunk.
+	* ipa-inline-transform.c (inline_call): When inlining into thunk produce
+	gimple body.
+	(preserve_function_body_p): No need to preserve function body
+	* cif-codes.def (CIF_THUNK): Remove.
+	* cgraphclones.c (duplicate_thunk_for_node): Thunks calls are inlinable.
+
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-inline.c (expand_call_inline): recurse after inlining thunk.
 
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
