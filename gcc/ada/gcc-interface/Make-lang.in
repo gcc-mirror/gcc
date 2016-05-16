@@ -175,10 +175,10 @@ else
   # or a cross-native compiler. We provide defaults for tools targeting the
   # host platform, but they can be overriden by just setting <tool>_FOR_HOST
   # variables.
-  GNATMAKE_FOR_HOST=$(host)-gnatmake
-  GNATBIND_FOR_HOST=$(host)-gnatbind
-  GNATLINK_FOR_HOST=$(host)-gnatlink
-  GNATLS_FOR_HOST=$(host)-gnatls
+  GNATMAKE_FOR_HOST=$(host_noncanonical)-gnatmake
+  GNATBIND_FOR_HOST=$(host_noncanonical)-gnatbind
+  GNATLINK_FOR_HOST=$(host_noncanonical)-gnatlink
+  GNATLS_FOR_HOST=$(host_noncanonical)-gnatls
 
   ifeq ($(host), $(target))
     # This is a cross native. All the sources are taken from the currently
