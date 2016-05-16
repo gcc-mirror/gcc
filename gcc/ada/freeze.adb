@@ -3534,13 +3534,23 @@ package body Freeze is
          --  Set True if we find at least one component whose type has a
          --  Scalar_Storage_Order attribute definition clause.
 
-         All_Scalar_Components : Boolean := True;
-         --  Set False if we encounter a component of a non-scalar type
+         All_Elem_Components : Boolean := True;
+         --  Set False if we encounter a component of a composite type
 
-         Scalar_Component_Total_RM_Size : Uint := Uint_0;
-         Scalar_Component_Total_Esize   : Uint := Uint_0;
-         --  Accumulates total RM_Size values and total Esize values of all
-         --  scalar components. Used for processing of Implicit_Packing.
+         All_Sized_Components : Boolean := True;
+         --  Set False if we encounter a component with unknown RM_Size
+
+         All_Storage_Unit_Components : Boolean := True;
+         --  Set False if we encounter a component of a composite type whose
+         --  RM_Size is not a multiple of the storage unit.
+
+         Elem_Component_Total_Esize : Uint := Uint_0;
+         --  Accumulates total Esize values of all elementary components. Used
+         --  for processing of Implicit_Packing.
+
+         Sized_Component_Total_RM_Size : Uint := Uint_0;
+         --  Accumulates total RM_Size values of all sized components. Used
+         --  for processing of Implicit_Packing.
 
          function Check_Allocator (N : Node_Id) return Node_Id;
          --  If N is an allocator, possibly wrapped in one or more level of
@@ -3835,13 +3845,22 @@ package body Freeze is
             --  this stage we might be dealing with a real component, or with
             --  an implicit subtype declaration.
 
-            if not Is_Scalar_Type (Etype (Comp)) then
-               All_Scalar_Components := False;
+            if Known_Static_RM_Size (Etype (Comp)) then
+               Sized_Component_Total_RM_Size :=
+                 Sized_Component_Total_RM_Size + RM_Size (Etype (Comp));
+
+               if Is_Elementary_Type (Etype (Comp)) then
+                  Elem_Component_Total_Esize :=
+                    Elem_Component_Total_Esize + Esize (Etype (Comp));
+               else
+                  All_Elem_Components := False;
+
+                  if RM_Size (Etype (Comp)) mod System_Storage_Unit /= 0 then
+                     All_Storage_Unit_Components := False;
+                  end if;
+               end if;
             else
-               Scalar_Component_Total_RM_Size :=
-                 Scalar_Component_Total_RM_Size + RM_Size (Etype (Comp));
-               Scalar_Component_Total_Esize :=
-                 Scalar_Component_Total_Esize + Esize (Etype (Comp));
+               All_Sized_Components := False;
             end if;
 
             --  If the component is an Itype with Delayed_Freeze and is either
@@ -4312,26 +4331,33 @@ package body Freeze is
 
            and then not Aliased_Component
 
-           --  Must have size clause and all scalar components
+           --  Must have size clause and all sized components
 
            and then Has_Size_Clause (Rec)
-           and then All_Scalar_Components
+           and then All_Sized_Components
 
            --  Do not try implicit packing on records with discriminants, too
            --  complicated, especially in the variant record case.
 
            and then not Has_Discriminants (Rec)
 
-           --  We can implicitly pack if the specified size of the record is
-           --  less than the sum of the object sizes (no point in packing if
-           --  this is not the case).
+           --  We want to implicitly pack if the specified size of the record
+           --  is less than the sum of the object sizes (no point in packing
+           --  if this is not the case) if we can compute it, i.e. if we have
+           --  only elementary components. Otherwise, we have at least one
+           --  composite component and we want to implicit pack only if bit
+           --  packing is required for it, as we are sure in this case that
+           --  the back end cannot do the expected layout without packing.
 
-           and then RM_Size (Rec) < Scalar_Component_Total_Esize
+           and then ((All_Elem_Components
+                       and then RM_Size (Rec) < Elem_Component_Total_Esize)
+                     or else (not All_Elem_Components
+                               and then not All_Storage_Unit_Components))
 
            --  And the total RM size cannot be greater than the specified size
            --  since otherwise packing will not get us where we have to be.
 
-           and then RM_Size (Rec) >= Scalar_Component_Total_RM_Size
+           and then RM_Size (Rec) >= Sized_Component_Total_RM_Size
 
            --  Never do implicit packing in CodePeer or SPARK modes since
            --  we don't do any packing in these modes, since this generates
