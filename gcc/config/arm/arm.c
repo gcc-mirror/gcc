@@ -249,8 +249,6 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static bool arm_output_addr_const_extra (FILE *, rtx);
 static bool arm_allocate_stack_slots_for_args (void);
 static bool arm_warn_func_return (tree);
-static const char *arm_invalid_parameter_type (const_tree t);
-static const char *arm_invalid_return_type (const_tree t);
 static tree arm_promoted_type (const_tree t);
 static tree arm_convert_to_type (tree type, tree expr);
 static bool arm_scalar_mode_supported_p (machine_mode);
@@ -656,12 +654,6 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS arm_preferred_reload_class
-
-#undef TARGET_INVALID_PARAMETER_TYPE
-#define TARGET_INVALID_PARAMETER_TYPE arm_invalid_parameter_type
-
-#undef TARGET_INVALID_RETURN_TYPE
-#define TARGET_INVALID_RETURN_TYPE arm_invalid_return_type
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE arm_promoted_type
@@ -5552,7 +5544,7 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
     {
     case REAL_TYPE:
       mode = TYPE_MODE (type);
-      if (mode != DFmode && mode != SFmode)
+      if (mode != DFmode && mode != SFmode && mode != HFmode)
 	return -1;
 
       if (*modep == VOIDmode)
@@ -5800,11 +5792,16 @@ aapcs_vfp_is_call_candidate (CUMULATIVE_ARGS *pcum, machine_mode mode,
 						&pcum->aapcs_vfp_rcount);
 }
 
+/* Implement the allocate field in aapcs_cp_arg_layout.  See the comment there
+   for the behaviour of this function.  */
+
 static bool
 aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, machine_mode mode,
 		    const_tree type  ATTRIBUTE_UNUSED)
 {
-  int shift = GET_MODE_SIZE (pcum->aapcs_vfp_rmode) / GET_MODE_SIZE (SFmode);
+  int rmode_size
+    = MAX (GET_MODE_SIZE (pcum->aapcs_vfp_rmode), GET_MODE_SIZE (SFmode));
+  int shift = rmode_size / GET_MODE_SIZE (SFmode);
   unsigned mask = (1 << (shift * pcum->aapcs_vfp_rcount)) - 1;
   int regno;
 
@@ -5852,6 +5849,9 @@ aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, machine_mode mode,
       }
   return false;
 }
+
+/* Implement the allocate_return_reg field in aapcs_cp_arg_layout.  See the
+   comment there for the behaviour of this function.  */
 
 static rtx
 aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
@@ -5943,13 +5943,13 @@ static struct
      required for a return from FUNCTION_ARG.  */
   bool (*allocate) (CUMULATIVE_ARGS *, machine_mode, const_tree);
 
-  /* Return true if a result of mode MODE (or type TYPE if MODE is
-     BLKmode) is can be returned in this co-processor's registers.  */
+  /* Return true if a result of mode MODE (or type TYPE if MODE is BLKmode) can
+     be returned in this co-processor's registers.  */
   bool (*is_return_candidate) (enum arm_pcs, machine_mode, const_tree);
 
-  /* Allocate and return an RTX element to hold the return type of a
-     call, this routine must not fail and will only be called if
-     is_return_candidate returned true with the same parameters.  */
+  /* Allocate and return an RTX element to hold the return type of a call.  This
+     routine must not fail and will only be called if is_return_candidate
+     returned true with the same parameters.  */
   rtx (*allocate_return_reg) (enum arm_pcs, machine_mode, const_tree);
 
   /* Finish processing this argument and prepare to start processing
@@ -18610,7 +18610,8 @@ output_move_vfp (rtx *operands)
 
   gcc_assert (REG_P (reg));
   gcc_assert (IS_VFP_REGNUM (REGNO (reg)));
-  gcc_assert (mode == SFmode
+  gcc_assert ((mode == HFmode && TARGET_HARD_FLOAT && TARGET_VFP)
+	      || mode == SFmode
 	      || mode == DFmode
 	      || mode == SImode
 	      || mode == DImode
@@ -23403,10 +23404,8 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (mode == DFmode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
-      /* VFP registers can hold HFmode values, but there is no point in
-	 putting them there unless we have hardware conversion insns. */
       if (mode == HFmode)
-	return TARGET_FP16 && VFP_REGNO_OK_FOR_SINGLE (regno);
+	return VFP_REGNO_OK_FOR_SINGLE (regno);
 
       if (TARGET_NEON)
         return (VALID_NEON_DREG_MODE (mode) && VFP_REGNO_OK_FOR_DOUBLE (regno))
@@ -23610,26 +23609,6 @@ arm_debugger_arg_offset (int value, rtx addr)
   return value;
 }
 
-/* Implement TARGET_INVALID_PARAMETER_TYPE.  */
-
-static const char *
-arm_invalid_parameter_type (const_tree t)
-{
-  if (SCALAR_FLOAT_TYPE_P (t) && TYPE_PRECISION (t) == 16)
-    return N_("function parameters cannot have __fp16 type");
-  return NULL;
-}
-
-/* Implement TARGET_INVALID_PARAMETER_TYPE.  */
-
-static const char *
-arm_invalid_return_type (const_tree t)
-{
-  if (SCALAR_FLOAT_TYPE_P (t) && TYPE_PRECISION (t) == 16)
-    return N_("functions cannot return __fp16 type");
-  return NULL;
-}
-
 /* Implement TARGET_PROMOTED_TYPE.  */
 
 static tree

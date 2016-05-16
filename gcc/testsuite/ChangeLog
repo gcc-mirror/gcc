@@ -1,3 +1,19 @@
+2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* g++.dg/ext/arm-fp16/fp16-param-1.c: Update expected output.  Add
+	test for __ARM_FP16_ARGS.
+	* g++.dg/ext/arm-fp16/fp16-return-1.c: Update expected output.
+	* gcc.target/arm/aapcs/neon-vect10.c: New.
+	* gcc.target/arm/aapcs/neon-vect9.c: New.
+	* gcc.target/arm/aapcs/vfp18.c: New.
+	* gcc.target/arm/aapcs/vfp19.c: New.
+	* gcc.target/arm/aapcs/vfp20.c: New.
+	* gcc.target/arm/aapcs/vfp21.c: New.
+	* gcc.target/arm/fp16-aapcs-1.c: New.
+	* g++.target/arm/fp16-param-1.c: Update expected output.  Add
+	test for __ARM_FP16_ARGS.
+	* g++.target/arm/fp16-return-1.c: Update expected output.
+
 2016-05-16  Jiong Wang  <jiong.wang@arm.com>
 
 	PR testsuite/70227

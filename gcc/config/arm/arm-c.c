@@ -135,10 +135,12 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   else
     cpp_undef (pfile, "__ARM_FP");
 
-  if (arm_fp16_format == ARM_FP16_FORMAT_IEEE)
-    builtin_define ("__ARM_FP16_FORMAT_IEEE");
-  if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
-    builtin_define ("__ARM_FP16_FORMAT_ALTERNATIVE");
+  def_or_undef_macro (pfile, "__ARM_FP16_FORMAT_IEEE",
+		      arm_fp16_format == ARM_FP16_FORMAT_IEEE);
+  def_or_undef_macro (pfile, "__ARM_FP16_FORMAT_ALTERNATIVE",
+		      arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE);
+  def_or_undef_macro (pfile, "__ARM_FP16_ARGS",
+		      arm_fp16_format != ARM_FP16_FORMAT_NONE);
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_FMA", TARGET_FMA);
   def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);
