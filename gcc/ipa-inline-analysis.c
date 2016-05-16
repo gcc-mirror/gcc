@@ -2943,7 +2943,13 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       info->self_size = info->size;
       info->self_time = info->time;
       /* We can not inline instrumetnation clones.  */
-      info->inlinable = !node->thunk.add_pointer_bounds_args;
+      if (node->thunk.add_pointer_bounds_args)
+	{
+          info->inlinable = false;
+          node->callees->inline_failed = CIF_CHKP;
+	}
+      else
+        info->inlinable = true;
     }
   else
     {

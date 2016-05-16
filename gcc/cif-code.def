@@ -135,3 +135,7 @@ DEFCIFCODE(CILK_SPAWN, CIF_FINAL_ERROR,
 /* We proved that the call is unreachable.  */
 DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,
 	   N_("unreachable"))
+
+/* We can't inline because of instrumentation thunk.  */
+DEFCIFCODE(CHKP, CIF_FINAL_ERROR,
+	   N_("caller is instrumetnation thunk"))

@@ -1,3 +1,9 @@
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (compute_inline_parameters): Disable inlinig
+	into instrumentation thunks.
+	* cif-code.def (CIF_CHKP): New.
+
 2016-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/xopintrin.h: Correct "unsinged" typo in the comments.
