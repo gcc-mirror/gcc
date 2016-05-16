@@ -1,5 +1,11 @@
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (report_inline_failed_reason): Look into thunks, too
+	(inline_small_functions): Do not look for function symbol when resetting
+	caches.
+
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-cgraph.c (compute_ltrans_boundary, output_symtab): Fix handling
 	of inline thunks
 

@@ -233,11 +233,11 @@ report_inline_failed_reason (struct cgraph_edge *e)
       if ((e->inline_failed == CIF_TARGET_OPTION_MISMATCH
 	   || e->inline_failed == CIF_OPTIMIZATION_MISMATCH)
 	  && e->caller->lto_file_data
-	  && e->callee->function_symbol ()->lto_file_data)
+	  && e->callee->ultimate_alias_target ()->lto_file_data)
 	{
 	  fprintf (dump_file, "  LTO objects: %s, %s\n",
 		   e->caller->lto_file_data->file_name,
-		   e->callee->function_symbol ()->lto_file_data->file_name);
+		   e->callee->ultimate_alias_target ()->lto_file_data->file_name);
 	}
       if (e->inline_failed == CIF_TARGET_OPTION_MISMATCH)
 	cl_target_option_print_diff
@@ -2027,7 +2027,7 @@ inline_small_functions (void)
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
-	  reset_edge_caches (edge->callee->function_symbol ());
+	  reset_edge_caches (edge->callee);
 
 	  update_callee_keys (&edge_heap, where, updated_nodes);
 	}
