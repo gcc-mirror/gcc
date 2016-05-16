@@ -1,3 +1,7 @@
+2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* doc/invoke.texi (AArch64 Options): Various updates.
+
 2016-05-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
