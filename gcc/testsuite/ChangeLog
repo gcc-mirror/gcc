@@ -1,3 +1,8 @@
+2016-05-16  Jiong Wang  <jiong.wang@arm.com>
+
+	PR testsuite/70227
+	* g++.dg/lto/pr69589_0.C: Skip arm and aarch64 bare-metal targets.
+
 2016-05-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/69603
