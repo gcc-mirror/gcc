@@ -1,6 +1,7 @@
-2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
+2016-05-16  Anton Kolesov  <anton.kolesov@synopsys.com>
 
-	* doc/invoke.texi (AArch64 Options): Various updates.
+	* configure.ac: Add ARC support to libgloss.
+	* configure: Regenerate
 
 2016-05-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 

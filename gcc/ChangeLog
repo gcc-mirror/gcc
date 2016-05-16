@@ -1,3 +1,7 @@
+2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+        * doc/invoke.texi (AArch64 Options): Various updates.
+
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (compute_inline_parameters): Disable inlinig
