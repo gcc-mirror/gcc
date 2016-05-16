@@ -1,3 +1,8 @@
+2016-05-16  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Also get full view of
+	enclosing type.
+
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.adb (Remove_Side_Effects): Also make a constant if we need

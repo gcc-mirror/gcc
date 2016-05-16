@@ -1161,7 +1161,8 @@ package body Freeze is
       ADC              : Node_Id;
       Comp_ADC_Present : out Boolean)
    is
-      Comp_Type : Entity_Id;
+      Encl_Base : Entity_Id;
+      Comp_Base : Entity_Id;
       Comp_ADC  : Node_Id;
       Err_Node  : Node_Id;
 
@@ -1180,7 +1181,7 @@ package body Freeze is
 
       if Present (Comp) then
          Err_Node  := Comp;
-         Comp_Type := Etype (Comp);
+         Comp_Base := Etype (Comp);
 
          if Is_Tag (Comp) then
             Comp_Byte_Aligned := True;
@@ -1205,24 +1206,28 @@ package body Freeze is
 
       else
          Err_Node  := Encl_Type;
-         Comp_Type := Component_Type (Encl_Type);
+         Comp_Base := Component_Type (Encl_Type);
 
          Component_Aliased := Has_Aliased_Components (Encl_Type);
       end if;
 
       --  Note: the Reverse_Storage_Order flag is set on the base type, but
       --  the attribute definition clause is attached to the first subtype.
+      --  Also, if the base type is incomplete or private, go to full view
+      --  if known
 
-      Comp_Type := Base_Type (Comp_Type);
+      Encl_Base := Base_Type (Encl_Type);
+      if Present (Underlying_Type (Encl_Base)) then
+         Encl_Base := Underlying_Type (Encl_Base);
+      end if;
 
-      --  If the base type is incomplete or private, go to full view if known
-
-      if Present (Underlying_Type (Comp_Type)) then
-         Comp_Type := Underlying_Type (Comp_Type);
+      Comp_Base := Base_Type (Comp_Base);
+      if Present (Underlying_Type (Comp_Base)) then
+         Comp_Base := Underlying_Type (Comp_Base);
       end if;
 
       Comp_ADC := Get_Attribute_Definition_Clause
-                    (First_Subtype (Comp_Type),
+                    (First_Subtype (Comp_Base),
                      Attribute_Scalar_Storage_Order);
       Comp_ADC_Present := Present (Comp_ADC);
 
@@ -1230,14 +1235,14 @@ package body Freeze is
       --  But, if the record has Complex_Representation, then it is treated as
       --  a scalar in the back end so the storage order is irrelevant.
 
-      if (Is_Record_Type (Comp_Type)
-            and then not Has_Complex_Representation (Comp_Type))
-        or else Is_Array_Type (Comp_Type)
+      if (Is_Record_Type (Comp_Base)
+            and then not Has_Complex_Representation (Comp_Base))
+        or else Is_Array_Type (Comp_Base)
       then
          Comp_SSO_Differs :=
-           Reverse_Storage_Order (Encl_Type)
+           Reverse_Storage_Order (Encl_Base)
              /=
-           Reverse_Storage_Order (Comp_Type);
+           Reverse_Storage_Order (Comp_Base);
 
          --  Parent and extension must have same storage order
 
@@ -1258,7 +1263,7 @@ package body Freeze is
             --  Reject if component is a packed array, as it may be represented
             --  as a scalar internally.
 
-            if Is_Packed_Array (Comp_Type) then
+            if Is_Packed_Array (Comp_Base) then
                Error_Msg_N
                  ("type of packed component must have same scalar storage "
                   & "order as enclosing composite", Err_Node);
@@ -1266,14 +1271,14 @@ package body Freeze is
             --  Reject if composite is a packed array, as it may be rewritten
             --  into an array of scalars.
 
-            elsif Is_Packed_Array (Encl_Type) then
+            elsif Is_Packed_Array (Encl_Base) then
                Error_Msg_N
                  ("type of packed array must have same scalar storage order "
                   & "as component", Err_Node);
 
             --  Reject if not byte aligned
 
-            elsif Is_Record_Type (Encl_Type)
+            elsif Is_Record_Type (Encl_Base)
               and then not Comp_Byte_Aligned
             then
                Error_Msg_N
@@ -1285,7 +1290,7 @@ package body Freeze is
             elsif Present (ADC) and then No (Comp_ADC) then
                Error_Msg_NE
                  ("scalar storage order specified for & does not apply to "
-                  & "component?", Err_Node, Encl_Type);
+                  & "component?", Err_Node, Encl_Base);
             end if;
          end if;
 
