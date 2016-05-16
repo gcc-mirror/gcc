@@ -1,3 +1,16 @@
+2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	 * gcc/config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3):
+	Split integer shifts into shift_reg and bfm.
+	(aarch64_lshr_sisd_or_int_<mode>3): Likewise.
+	(aarch64_ashr_sisd_or_int_<mode>3): Likewise.
+	(ror<mode>3_insn): Likewise.
+	(<optab>si3_insn_uxtw): Likewise.
+	(<optab><mode>3_insn): Change to rotate_imm.
+	(extr<mode>5_insn_alt): Likewise.
+	(extrsi5_insn_uxtw): Likewise.
+	(extrsi5_insn_uxtw_alt): Likewise.
+
 2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* doc/tm.texi: Regenerate.
