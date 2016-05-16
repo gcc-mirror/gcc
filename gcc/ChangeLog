@@ -1,3 +1,7 @@
+2016-05-16  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips-cpus.def (p5600): Add multi-line brackets.
+
 2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	 * gcc/config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3):
