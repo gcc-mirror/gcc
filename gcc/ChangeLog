@@ -1,3 +1,15 @@
+2016-05-16  James Norris  <jnorris@codesourcery.com>
+
+	Backport from mainline r236098.
+	2016-05-10  James Norris  <jnorris@codesourcery.com>
+
+	PR driver/68463
+	* config/rs6000/sysv4.h (CRTOFFLOADBEGIN): Define. Add crtoffloadbegin.o
+	if offloading is enabled and -fopenacc or -fopenmp is specified.
+	(CRTOFFLOADEND): Likewise.
+	(STARTFILE_LINUX_SPEC): Add CRTOFFLOADBEGIN.
+	(ENDFILE_LINUX_SPEC): Add CRTOFFLOADEND.
+
 2016-05-16  Alan Modra  <amodra@gmail.com>
 
 	Apply from mainline
