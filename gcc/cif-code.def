@@ -95,10 +95,6 @@ DEFCIFCODE(MISMATCHED_ARGUMENTS, CIF_FINAL_ERROR,
 DEFCIFCODE(LTO_MISMATCHED_DECLARATIONS, CIF_FINAL_ERROR,
 	   N_("mismatched declarations during linktime optimization"))
 
-/* Caller is thunk.  */
-DEFCIFCODE(THUNK, CIF_FINAL_ERROR,                                             
-          N_("thunk call"))                                                    
-
 /* Call was originally indirect.  */
 DEFCIFCODE(ORIGINALLY_INDIRECT_CALL, CIF_FINAL_NORMAL,
 	   N_("originally indirect function call not considered for inlining"))

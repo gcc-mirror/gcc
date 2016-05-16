@@ -2932,11 +2932,13 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       struct inline_edge_summary *es = inline_edge_summary (node->callees);
       struct predicate t = true_predicate ();
 
-      node->callees->inline_failed = CIF_THUNK;
       node->local.can_change_signature = false;
-      es->call_stmt_size = INLINE_SIZE_SCALE;
-      es->call_stmt_time = INLINE_TIME_SCALE;
-      account_size_time (info, INLINE_SIZE_SCALE * 2, INLINE_TIME_SCALE * 2, &t);
+      es->call_stmt_size = eni_size_weights.call_cost;
+      es->call_stmt_time = eni_time_weights.call_cost;
+      account_size_time (info, INLINE_SIZE_SCALE * 2,
+			 INLINE_TIME_SCALE * 2, &t);
+      t = not_inlined_predicate ();
+      account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &t);
       inline_update_overall_summary (node);
       info->self_size = info->size;
       info->self_time = info->time;

@@ -1,3 +1,8 @@
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/ivinline-7.C: Do not xfail.
+	* g++.dg/ipa/ivinline-9.C: Do not xfail.
+
 2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* g++.dg/ext/arm-fp16/fp16-param-1.c: Update expected output.  Add
