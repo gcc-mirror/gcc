@@ -1,3 +1,13 @@
+2016-05-16  Alan Modra  <amodra@gmail.com>
+
+	Apply from mainline
+	2016-05-10  Alan Modra  <amodra@gmail.com>
+	PR target/70947
+	* config/rs6000/rs6000.c (rs6000_expand_split_stack_prologue): Stop
+	regrename modifying insns saving lr before __morestack call.
+	* config/rs6000/rs6000.md (split_stack_return): Similarly for
+	insns restoring lr after __morestack call.
+
 2016-05-13  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
