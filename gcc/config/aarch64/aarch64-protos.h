@@ -339,7 +339,6 @@ int aarch64_simd_attr_length_move (rtx_insn *);
 int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);
 rtx aarch64_final_eh_return_addr (void);
-rtx aarch64_legitimize_reload_address (rtx *, machine_mode, int, int, int);
 rtx aarch64_mask_from_zextract_ops (rtx, rtx);
 const char *aarch64_output_move_struct (rtx *operands);
 rtx aarch64_return_addr (int, rtx);

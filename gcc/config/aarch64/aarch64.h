@@ -652,21 +652,6 @@ typedef struct
 
 #define CONSTANT_ADDRESS_P(X)		aarch64_constant_address_p(X)
 
-/* Try a machine-dependent way of reloading an illegitimate address
-   operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.  */
-
-#define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_L, WIN)	     \
-do {									     \
-  rtx new_x = aarch64_legitimize_reload_address (&(X), MODE, OPNUM, TYPE,    \
-						 IND_L);		     \
-  if (new_x)								     \
-    {									     \
-      X = new_x;							     \
-      goto WIN;								     \
-    }									     \
-} while (0)
-
 #define REGNO_OK_FOR_BASE_P(REGNO)	\
   aarch64_regno_ok_for_base_p (REGNO, true)
 
