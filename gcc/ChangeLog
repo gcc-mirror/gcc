@@ -1,5 +1,10 @@
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (free_lang_data_in_decl): Also set target/optimization flags
+	for thunks.
+
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (report_inline_failed_reason): Look into thunks, too
 	(inline_small_functions): Do not look for function symbol when resetting
 	caches.
