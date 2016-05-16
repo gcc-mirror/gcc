@@ -1,5 +1,9 @@
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-inline.c (expand_call_inline): recurse after inlining thunk.
+
+2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (free_lang_data_in_decl): Also set target/optimization flags
 	for thunks.
 

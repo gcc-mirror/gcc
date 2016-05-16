@@ -4485,6 +4485,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       gimple_call_set_fndecl (stmt, edge->callee->decl);
       update_stmt (stmt);
       id->src_node->remove ();
+      expand_call_inline (bb, stmt, id);
       return true;
     }
   fn = cg_edge->callee->decl;
