@@ -12872,9 +12872,9 @@ These options are defined for AArch64 implementations:
 @item -mabi=@var{name}
 @opindex mabi
 Generate code for the specified data model.  Permissible values
-are @samp{ilp32} for SysV-like data model where int, long int and pointer
-are 32-bit, and @samp{lp64} for SysV-like data model where int is 32-bit,
-but long int and pointer are 64-bit.
+are @samp{ilp32} for SysV-like data model where int, long int and pointers
+are 32 bits, and @samp{lp64} for SysV-like data model where int is 32 bits,
+but long int and pointers are 64 bits.
 
 The default depends on the specific target configuration.  Note that
 the LP64 and ILP32 ABIs are not link-compatible; you must compile your
@@ -12899,25 +12899,24 @@ Generate little-endian code.  This is the default when GCC is configured for an
 @item -mcmodel=tiny
 @opindex mcmodel=tiny
 Generate code for the tiny code model.  The program and its statically defined
-symbols must be within 1GB of each other.  Pointers are 64 bits.  Programs can
-be statically or dynamically linked.  This model is not fully implemented and
-mostly treated as @samp{small}.
+symbols must be within 1MB of each other.  Programs can be statically or
+dynamically linked.
 
 @item -mcmodel=small
 @opindex mcmodel=small
 Generate code for the small code model.  The program and its statically defined
-symbols must be within 4GB of each other.  Pointers are 64 bits.  Programs can
-be statically or dynamically linked.  This is the default code model.
+symbols must be within 4GB of each other.  Programs can be statically or
+dynamically linked.  This is the default code model.
 
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate code for the large code model.  This makes no assumptions about
-addresses and sizes of sections.  Pointers are 64 bits.  Programs can be
-statically linked only.
+addresses and sizes of sections.  Programs can be statically linked only.
 
 @item -mstrict-align
 @opindex mstrict-align
-Do not assume that unaligned memory references are handled by the system.
+Avoid generating memory accesses that may not be aligned on a natural object
+boundary as described in the architecture specification.
 
 @item -momit-leaf-frame-pointer
 @itemx -mno-omit-leaf-frame-pointer
@@ -12939,7 +12938,7 @@ of TLS variables.
 @item -mtls-size=@var{size}
 @opindex mtls-size
 Specify bit size of immediate TLS offsets.  Valid values are 12, 24, 32, 48.
-This option depends on binutils higher than 2.25.
+This option requires binutils 2.26 or newer.
 
 @item -mfix-cortex-a53-835769
 @itemx -mno-fix-cortex-a53-835769
@@ -12959,12 +12958,13 @@ corresponding flag to the linker.
 
 @item -mlow-precision-recip-sqrt
 @item -mno-low-precision-recip-sqrt
-@opindex -mlow-precision-recip-sqrt
-@opindex -mno-low-precision-recip-sqrt
-When calculating the reciprocal square root approximation,
-uses one less step than otherwise, thus reducing latency and precision.
-This is only relevant if @option{-ffast-math} enables the reciprocal square root
-approximation, which in turn depends on the target processor.
+@opindex mlow-precision-recip-sqrt
+@opindex mno-low-precision-recip-sqrt
+Enable or disable reciprocal square root approximation.
+This option only has an effect if @option{-ffast-math} or
+@option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
+precision of reciprocal square root results to about 16 bits for
+single precision and to 32 bits for double precision.
 
 @item -march=@var{name}
 @opindex march
@@ -13001,17 +13001,15 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
 @samp{cortex-a72}, @samp{exynos-m1}, @samp{qdf24xx}, @samp{thunderx},
-@samp{xgene1}.
+@samp{xgene1}, @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
+@samp{native}.
 
-Additionally, this option can specify that GCC should tune the performance
-of the code for a big.LITTLE system.  Permissible values for this
-option are: @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}.
+The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}
+specify that GCC should tune for a big.LITTLE system.
 
 Additionally on native AArch64 GNU/Linux systems the value
-@samp{native} is available.  This option causes the compiler to pick
-the architecture of and tune the performance of the code for the
-processor of the host system.  This option has no effect if the
-compiler is unable to recognize the architecture of the host system.
+@samp{native} tunes performance to the host system.  This option has no effect
+if the compiler is unable to recognize the processor of the host system.
 
 Where none of @option{-mtune=}, @option{-mcpu=} or @option{-march=}
 are specified, the code is tuned to perform well across a range
@@ -13031,12 +13029,6 @@ documented in the sub-section on
 Feature Modifiers}.  Where conflicting feature modifiers are
 specified, the right-most feature is used.
 
-Additionally on native AArch64 GNU/Linux systems the value
-@samp{native} is available.  This option causes the compiler to tune
-the performance of the code for the processor of the host system.
-This option has no effect if the compiler is unable to recognize the
-architecture of the host system.
-
 GCC uses @var{name} to determine what kind of instructions it can emit when
 generating assembly code (as if by @option{-march}) and to determine
 the target processor for which to tune for performance (as if
@@ -13054,11 +13046,11 @@ across releases.
 This option is only intended to be useful when developing GCC.
 
 @item -mpc-relative-literal-loads
-@opindex mpcrelativeliteralloads
-Enable PC relative literal loads. If this option is used, literal
-pools are assumed to have a range of up to 1MiB and an appropriate
-instruction sequence is used. This option has no impact when used
-with @option{-mcmodel=tiny}.
+@opindex mpc-relative-literal-loads
+Enable PC-relative literal loads.  With this option literal pools are
+accessed using a single instruction and emitted after each function.  This
+limits the maximum size of functions to 1MB.  This is enabled by default for
+@option{-mcmodel=tiny}.
 
 @end table
 
@@ -13089,9 +13081,9 @@ Enable Large System Extension instructions.  This is on by default for
 
 @end table
 
-That is, @option{crypto} implies @option{simd} implies @option{fp}.
-Conversely, @option{nofp} (or equivalently, @option{-mgeneral-regs-only})
-implies @option{nosimd} implies @option{nocrypto}.
+Feature @option{crypto} implies @option{simd}, which implies @option{fp}.
+Conversely, @option{nofp} implies @option{nosimd}, which implies
+@option{nocrypto}.
 
 @node Adapteva Epiphany Options
 @subsection Adapteva Epiphany Options
