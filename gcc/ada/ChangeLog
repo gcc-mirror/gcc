@@ -1,5 +1,24 @@
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_util.adb (Remove_Side_Effects): Also make a constant if we need
+	to capture the value for a small not by-reference record type.
+	* freeze.ads (Check_Compile_Time_Size): Adjust comment.
+	* freeze.adb (Set_Small_Size): Likewise.  Accept a size in the range
+	of 33 .. 64 bits.
+	(Check_Compile_Time_Size): Merge scalar and access type cases. Change
+	variable name in array type case.  For the computation of the packed
+	size, deal with record components and remove redundant test.
+	(Freeze_Array_Type): Also adjust packing status when the size of the
+	component type is in the range 33 .. 64 bits.
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Turn primitive
+	into elementary type throughout.  Minor tweaks.
+	(Alignment Clauses): Document actual alignment of packed array types.
+	(Pragma Pack for Arrays): List only the 3 main cases and adjust.  Add
+	"simple" to the record case.  Document effect on non packable types.
+	(Pragma Pack for Records): Likewise.  Add record case and adjust.
+
+2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/Make-lang.in (GNATMAKE_FOR_HOST): In the canadian
 	cross case, use host_noncanonical instead of host as prefix.
 	(GNATBIND_FOR_HOST): Likewise.
