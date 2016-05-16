@@ -1,3 +1,14 @@
+2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md
+	(add<mode>3_compareC_cconly_imm): Remove use of %w.
+	(add<mode>3_compareC_imm): Likewise.
+	(<optab>si3_uxtw): Split into register and immediate variants.
+	(andsi3_compare0_uxtw): Likewise.
+	(and<mode>3_compare0): Likewise.
+	(and<mode>3nr_compare0): Likewise.
+	(stack_protect_test_<mode>): Don't use %x for memory operands.
+
 2016-05-16  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips-cpus.def (p5600): Add multi-line brackets.
