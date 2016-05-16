@@ -1,3 +1,8 @@
+2016-05-16  Marek Polacek  <polacek@redhat.com>
+
+	* gimple.c (maybe_remove_unused_call_args): Fix typos in the
+	commentary.
+
 2016-05-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR hsa/70857

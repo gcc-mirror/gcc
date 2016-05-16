@@ -3002,7 +3002,7 @@ gimple_seq_discard (gimple_seq seq)
 
 /* See if STMT now calls function that takes no parameters and if so, drop
    call arguments.  This is used when devirtualization machinery redirects
-   to __builtiln_unreacahble or __cxa_pure_virutal.  */
+   to __builtin_unreachable or __cxa_pure_virtual.  */
 
 void
 maybe_remove_unused_call_args (struct function *fn, gimple *stmt)
