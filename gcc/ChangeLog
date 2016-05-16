@@ -1,3 +1,8 @@
+2016-05-16  Martin Jambor  <mjambor@suse.cz>
+
+	* hsa-gen.c (fillup_for_decl): Increase alignment to natural one.
+	(get_symbol_for_decl): Sorry if a global symbol in under-aligned.
+
 2016-05-16  Marek Polacek  <polacek@redhat.com>
 
 	* gimple.c (maybe_remove_unused_call_args): Fix typos in the
