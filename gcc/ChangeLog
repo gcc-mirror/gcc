@@ -1,3 +1,8 @@
+2016-05-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70809
+	* config/aarch64/aarch64-simd.md (aarch64_vmls<mode>): Delete.
+
 2016-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-elf.h (ASM_OUTPUT_DEF): Delete.
