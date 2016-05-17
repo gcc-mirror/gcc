@@ -8940,6 +8940,11 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
       gassign *newop
 	= gimple_build_assign (tem, BIT_XOR_EXPR, op0, op1);
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (tem))
+	  && TYPE_PRECISION (TREE_TYPE (tem)) > 1)
+	set_range_info (tem, VR_RANGE,
+			wi::zero (TYPE_PRECISION (TREE_TYPE (tem))),
+			wi::one (TYPE_PRECISION (TREE_TYPE (tem))));
       gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, tem);
     }
   /* Or without.  */
@@ -9648,7 +9653,6 @@ simplify_conversion_using_ranges (gimple *stmt)
 {
   tree innerop, middleop, finaltype;
   gimple *def_stmt;
-  value_range *innervr;
   signop inner_sgn, middle_sgn, final_sgn;
   unsigned inner_prec, middle_prec, final_prec;
   widest_int innermin, innermed, innermax, middlemin, middlemed, middlemax;
@@ -9666,18 +9670,17 @@ simplify_conversion_using_ranges (gimple *stmt)
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop))
     return false;
 
-  /* Get the value-range of the inner operand.  */
-  innervr = get_value_range (innerop);
-  if (innervr->type != VR_RANGE
-      || TREE_CODE (innervr->min) != INTEGER_CST
-      || TREE_CODE (innervr->max) != INTEGER_CST)
+  /* Get the value-range of the inner operand.  Use get_range_info in
+     case innerop was created during substitute-and-fold.  */
+  wide_int imin, imax;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop))
+      || get_range_info (innerop, &imin, &imax) != VR_RANGE)
     return false;
+  innermin = widest_int::from (imin, TYPE_SIGN (TREE_TYPE (innerop)));
+  innermax = widest_int::from (imax, TYPE_SIGN (TREE_TYPE (innerop)));
 
   /* Simulate the conversion chain to check if the result is equal if
      the middle conversion is removed.  */
-  innermin = wi::to_widest (innervr->min);
-  innermax = wi::to_widest (innervr->max);
-
   inner_prec = TYPE_PRECISION (TREE_TYPE (innerop));
   middle_prec = TYPE_PRECISION (TREE_TYPE (middleop));
   final_prec = TYPE_PRECISION (finaltype);

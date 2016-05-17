@@ -7,8 +7,6 @@
 /* { dg-final { scan-tree-dump-times "Replaced .bufferstep_\[0-9\]+. with constant .1." 1 "dom3"} } */
 
 /* And some assignments ought to fold down to constants.  */
-/* { dg-final { scan-tree-dump-times "Folded to: _\[0-9\]+ = -1;" 1 "dom3"} } */
-/* { dg-final { scan-tree-dump-times "Folded to: _\[0-9\]+ = -2;" 1 "dom3"} } */
 /* { dg-final { scan-tree-dump-times "Folded to: _\[0-9\]+ = 1;" 1 "dom3"} } */
 /* { dg-final { scan-tree-dump-times "Folded to: _\[0-9\]+ = 0;" 1 "dom3"} } */
 
