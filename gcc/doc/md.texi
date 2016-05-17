@@ -5018,7 +5018,7 @@ it is unspecified which of the two operands is returned as the result.
 IEEE-conformant minimum and maximum operations.  If one operand is a quiet
 @code{NaN}, then the other operand is returned.  If both operands are quiet
 @code{NaN}, then a quiet @code{NaN} is returned.  In the case when gcc supports
-signalling @code{NaN} (-fsignaling-nans) an invalid floating point exception is
+signaling @code{NaN} (-fsignaling-nans) an invalid floating point exception is
 raised and a quiet @code{NaN} is returned.
 
 All operands have mode @var{m}, which is a scalar or vector

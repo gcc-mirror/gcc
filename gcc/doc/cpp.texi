@@ -1984,7 +1984,7 @@ by GCC, or a non-GCC compiler that claims to accept the GNU C dialects,
 you can simply test @code{__GNUC__}.  If you need to write code
 which depends on a specific version, you must be more careful.  Each
 time the minor version is increased, the patch level is reset to zero;
-each time the major version is increased (which happens rarely), the
+each time the major version is increased, the
 minor version and patch level are reset.  If you wish to use the
 predefined macros directly in the conditional, you will need to write it
 like this:
