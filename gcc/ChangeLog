@@ -1,5 +1,9 @@
 2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd (~X & Y): New transformation.
+
+2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
 	* tree-vrp.c (simplify_truth_ops_using_ranges): Set range
 	information for new SSA_NAME.
 	(simplify_conversion_using_ranges): Get range through get_range_info
