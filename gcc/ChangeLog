@@ -1,3 +1,15 @@
+2016-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71132
+	* tree-loop-distribution.c (create_rdg_cd_edges): Pass in loop.
+	Only add control dependences for blocks in the loop.
+	(build_rdg): Adjust.
+	(generate_code_for_partition): Return whether loop should
+	be destroyed and delay that.
+	(distribute_loop): Likewise.
+	(pass_loop_distribution::execute): Record loops to be destroyed
+	and perform delayed destroying of loops.
+
 2016-05-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70809

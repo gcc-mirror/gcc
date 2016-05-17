@@ -1,3 +1,8 @@
+2016-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71132
+	* gcc.dg/torture/pr71132.c: New testcase.
+
 2016-05-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* g++.dg/inherit/think1.C: Fix dg-do and dg-skip order.
