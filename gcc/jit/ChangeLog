@@ -1,5 +1,18 @@
 2016-05-17  David Malcolm  <dmalcolm@redhat.com>
 
+	* dummy-frontend.c: Include diagnostic.h.
+	(jit_begin_diagnostic): New function.
+	(jit_end_diagnostic): New function.
+	(jit_langhook_init): Register jit_begin_diagnostic
+	and jit_end_diagnostic with the global_dc.
+	* jit-playback.c: Include diagnostic.h.
+	(gcc::jit::playback::context::add_diagnostic): New method.
+	* jit-playback.h (struct diagnostic_context): Add forward
+	declaration.
+	(gcc::jit::playback::context::add_diagnostic): New method.
+
+2016-05-17  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/topics/expressions.rst (Function calls): Document
 	gcc_jit_context_new_call_through_ptr.
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.
