@@ -1,3 +1,9 @@
+2016-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_output_simd_mov_immediate): Make "buf_size" a variable
+	rather than a macro.
+
 2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
         * doc/invoke.texi (AArch64 Options): Various updates.
