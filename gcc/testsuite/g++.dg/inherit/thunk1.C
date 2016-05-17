@@ -1,5 +1,5 @@
-// { dg-skip-if "" { arm_thumb1_ok } }
 // { dg-do run { target arm*-*-* aarch64*-*-* i?86-*-* x86_64-*-* s390*-*-* alpha*-*-* ia64-*-* sparc*-*-* } }
+// { dg-skip-if "" { arm_thumb1_ok } }
 
 #include <stdarg.h>
 
