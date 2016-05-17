@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "jit-recording.h"
 
+struct diagnostic_context;
+struct diagnostic_info;
+
 namespace gcc {
 
 namespace jit {
@@ -201,6 +204,10 @@ public:
 
   const char *
   get_first_error () const;
+
+  void
+  add_diagnostic (struct diagnostic_context *context,
+		  struct diagnostic_info *diagnostic);
 
   void
   set_tree_location (tree t, location *loc);

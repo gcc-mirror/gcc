@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "diagnostic.h"
 
 
 #include <mpfr.h>
@@ -90,6 +91,35 @@ struct ggc_root_tab jit_root_tab[] =
     LAST_GGC_ROOT_TAB
   };
 
+/* JIT-specific implementation of diagnostic callbacks.  */
+
+/* Implementation of "begin_diagnostic".  */
+
+static void
+jit_begin_diagnostic (diagnostic_context */*context*/,
+		      diagnostic_info */*diagnostic*/)
+{
+  gcc_assert (gcc::jit::active_playback_ctxt);
+  JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+
+  /* No-op (apart from logging); the real error-handling is done in the
+     "end_diagnostic" hook.  */
+}
+
+/* Implementation of "end_diagnostic".  */
+
+static void
+jit_end_diagnostic (diagnostic_context *context,
+		    diagnostic_info *diagnostic)
+{
+  gcc_assert (gcc::jit::active_playback_ctxt);
+  JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+
+  /* Delegate to the playback context (and thence to the
+     recording context).  */
+  gcc::jit::active_playback_ctxt->add_diagnostic (context, diagnostic);
+}
+
 /* Language hooks.  */
 
 static bool
@@ -104,6 +134,10 @@ jit_langhook_init (void)
       ggc_register_root_tab (jit_root_tab);
       registered_root_tab = true;
     }
+
+  gcc_assert (global_dc);
+  global_dc->begin_diagnostic = jit_begin_diagnostic;
+  global_dc->end_diagnostic = jit_end_diagnostic;
 
   build_common_tree_nodes (false);
 
