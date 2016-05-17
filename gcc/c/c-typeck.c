@@ -3491,8 +3491,8 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
     {
       result.value = build_unary_op (loc, code, arg.value, 0);
 
-  if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
-    overflow_warning (loc, result.value);
+      if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
+	overflow_warning (loc, result.value);
     }
 
   /* We are typically called when parsing a prefix token at LOC acting on
