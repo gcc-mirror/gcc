@@ -1,3 +1,7 @@
+2016-05-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* wide-int.h: Change fixed_wide_int_storage from class to struct.
+	
 2016-05-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71132
