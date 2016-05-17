@@ -464,6 +464,17 @@ nvptx_function_arg_advance (cumulative_args_t cum_v,
   cum->count++;
 }
 
+/* Implement TARGET_FUNCTION_ARG_BOUNDARY.
+
+   For nvptx This is only used for varadic args.  The type has already
+   been promoted and/or converted to invisible reference.  */
+
+static unsigned
+nvptx_function_arg_boundary (machine_mode mode, const_tree ARG_UNUSED (type))
+{
+  return GET_MODE_ALIGNMENT (mode);
+}
+
 /* Handle the TARGET_STRICT_ARGUMENT_NAMING target hook.
 
    For nvptx, we know how to handle functions declared as stdarg: by
@@ -4835,6 +4846,8 @@ nvptx_goacc_reduction (gcall *call)
 #define TARGET_FUNCTION_INCOMING_ARG nvptx_function_incoming_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE nvptx_function_arg_advance
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY nvptx_function_arg_boundary
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE nvptx_pass_by_reference
 #undef TARGET_FUNCTION_VALUE_REGNO_P

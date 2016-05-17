@@ -1,3 +1,7 @@
+2016-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/abi-vararg-3.c: New.
+
 2016-05-17  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR tree-optimization/54579
