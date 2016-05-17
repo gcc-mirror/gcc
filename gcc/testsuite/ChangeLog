@@ -1,3 +1,11 @@
+2016-05-17  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR tree-optimization/54579
+	PR middle-end/55299
+	* gcc.dg/fold-notrotate-1.c: New test.
+	* gcc.dg/fold-notshift-1.c: New test.
+	* gcc.dg/fold-notshift-2.c: New test.
+
 2016-05-17  Marek Polacek  <polacek@redhat.com>
 
 	PR ipa/71146

@@ -1,3 +1,9 @@
+2016-05-17  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR tree-optimization/54579
+	PR middle-end/55299
+	* match.pd (~(~X >> Y), ~(~X >>r Y), ~(~X <<r Y)): New patterns.
+
 2016-05-17  Marek Polacek  <polacek@redhat.com>
 
 	PR ipa/71146
