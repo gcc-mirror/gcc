@@ -1,3 +1,14 @@
+2016-05-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* oacc-init.c (acc_init): Remove !cached_base_dev condition on call
+	to gomp_init_targets_once.
+	(acc_set_device_type): Remove !cached_base_dev condition on call to
+	gomp_init_targets_once, move call to before acc_device_lock acquire,
+	to avoid deadlock.
+	(acc_get_device_num): Remove !cached_base_dev condition on call to
+	gomp_init_targets_once.
+	(acc_set_device_num): Likewise.
+
 2016-05-16  Martin Jambor  <mjambor@suse.cz>
 
         * testsuite/libgomp.hsa.c/complex-align-2.c: New test.
