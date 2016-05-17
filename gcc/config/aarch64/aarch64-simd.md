@@ -1579,16 +1579,16 @@
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fma4_elt_to_128df"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-    (fma:V2DF
-      (vec_duplicate:V2DF
-	  (match_operand:DF 1 "register_operand" "w"))
-      (match_operand:V2DF 2 "register_operand" "w")
-      (match_operand:V2DF 3 "register_operand" "0")))]
+(define_insn "*aarch64_fma4_elt_from_dup<mode>"
+  [(set (match_operand:VMUL 0 "register_operand" "=w")
+    (fma:VMUL
+      (vec_duplicate:VMUL
+	  (match_operand:<VEL> 1 "register_operand" "w"))
+      (match_operand:VMUL 2 "register_operand" "w")
+      (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
-  "fmla\\t%0.2d, %2.2d, %1.2d[0]"
-  [(set_attr "type" "neon_fp_mla_d_scalar_q")]
+  "fmla\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
+  [(set_attr "type" "neon<fp>_mla_<Vetype>_scalar<q>")]
 )
 
 (define_insn "*aarch64_fma4_elt_to_64v2df"
@@ -1656,17 +1656,17 @@
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fnma4_elt_to_128df"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-    (fma:V2DF
-      (neg:V2DF
-        (match_operand:V2DF 2 "register_operand" "w"))
-      (vec_duplicate:V2DF
-	(match_operand:DF 1 "register_operand" "w"))
-      (match_operand:V2DF 3 "register_operand" "0")))]
+(define_insn "*aarch64_fnma4_elt_from_dup<mode>"
+  [(set (match_operand:VMUL 0 "register_operand" "=w")
+    (fma:VMUL
+      (neg:VMUL
+        (match_operand:VMUL 2 "register_operand" "w"))
+      (vec_duplicate:VMUL
+	(match_operand:<VEL> 1 "register_operand" "w"))
+      (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
-  "fmls\\t%0.2d, %2.2d, %1.2d[0]"
-  [(set_attr "type" "neon_fp_mla_d_scalar_q")]
+  "fmls\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
+  [(set_attr "type" "neon<fp>_mla_<Vetype>_scalar<q>")]
 )
 
 (define_insn "*aarch64_fnma4_elt_to_64v2df"

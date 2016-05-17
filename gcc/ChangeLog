@@ -1,3 +1,15 @@
+2016-05-17  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_fma4_elt_to_128df): Rename
+	to *aarch64_fma4_elt_from_dup<mode>.
+	(*aarch64_fnma4_elt_to_128df): Rename to
+	*aarch64_fnma4_elt_from_dup<mode>.
+	* config/aarch64/arm_neon.h (vfma_n_f64): New.
+	(vfms_n_f32): Likewise.
+	(vfms_n_f64): Likewise.
+	(vfmsq_n_f32): Likewise.
+	(vfmsq_n_f64): Likewise.
+
 2016-05-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* wide-int.h: Change fixed_wide_int_storage from class to struct.

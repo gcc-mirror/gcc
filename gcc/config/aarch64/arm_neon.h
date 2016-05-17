@@ -14456,6 +14456,12 @@ vfma_n_f32 (float32x2_t __a, float32x2_t __b, float32_t __c)
   return __builtin_aarch64_fmav2sf (__b, vdup_n_f32 (__c), __a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vfma_n_f64 (float64x1_t __a, float64x1_t __b, float64_t __c)
+{
+  return (float64x1_t) {__b[0] * __c + __a[0]};
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vfmaq_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c)
 {
@@ -14597,6 +14603,29 @@ vfmsq_f64 (float64x2_t __a, float64x2_t __b, float64x2_t __c)
   return __builtin_aarch64_fmav2df (-__b, __c, __a);
 }
 
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vfms_n_f32 (float32x2_t __a, float32x2_t __b, float32_t __c)
+{
+  return __builtin_aarch64_fmav2sf (-__b, vdup_n_f32 (__c), __a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vfms_n_f64 (float64x1_t __a, float64x1_t __b, float64_t __c)
+{
+  return (float64x1_t) {-__b[0] * __c + __a[0]};
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vfmsq_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c)
+{
+  return __builtin_aarch64_fmav4sf (-__b, vdupq_n_f32 (__c), __a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vfmsq_n_f64 (float64x2_t __a, float64x2_t __b, float64_t __c)
+{
+  return __builtin_aarch64_fmav2df (-__b, vdupq_n_f64 (__c), __a);
+}
 
 /* vfms_lane  */
 

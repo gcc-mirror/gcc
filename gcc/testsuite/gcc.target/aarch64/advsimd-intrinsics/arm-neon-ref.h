@@ -136,6 +136,7 @@ static ARRAY(result, poly, 16, 4);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 static ARRAY(result, float, 16, 4);
 #endif
+static ARRAY(result, float, 64, 1);
 static ARRAY(result, float, 32, 2);
 static ARRAY(result, int, 8, 16);
 static ARRAY(result, int, 16, 8);
@@ -169,6 +170,7 @@ extern ARRAY(expected, poly, 8, 8);
 extern ARRAY(expected, poly, 16, 4);
 extern ARRAY(expected, hfloat, 16, 4);
 extern ARRAY(expected, hfloat, 32, 2);
+extern ARRAY(expected, hfloat, 64, 1);
 extern ARRAY(expected, int, 8, 16);
 extern ARRAY(expected, int, 16, 8);
 extern ARRAY(expected, int, 32, 4);
