@@ -1,5 +1,9 @@
 2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.dg/tree-ssa/and-1.c: New testcase.
+
+2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/pr69270.c: Adjust.
 	* gcc.dg/tree-ssa/andnot-1.c: New testcase.
 

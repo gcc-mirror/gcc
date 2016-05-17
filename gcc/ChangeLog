@@ -1,5 +1,9 @@
 2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd (X & C): New transformation.
+
+2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
 	* match.pd (~X & Y): New transformation.
 
 2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
