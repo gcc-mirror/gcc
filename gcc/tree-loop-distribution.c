@@ -312,7 +312,7 @@ create_rdg_flow_edges (struct graph *rdg)
 /* Creates the edges of the reduced dependence graph RDG.  */
 
 static void
-create_rdg_cd_edges (struct graph *rdg, control_dependences *cd)
+create_rdg_cd_edges (struct graph *rdg, control_dependences *cd, loop_p loop)
 {
   int i;
 
@@ -324,6 +324,7 @@ create_rdg_cd_edges (struct graph *rdg, control_dependences *cd)
 	  edge_iterator ei;
 	  edge e;
 	  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->preds)
+	    if (flow_bb_inside_loop_p (loop, e->src))
 	      create_edge_for_control_dependence (rdg, e->src, i, cd);
 	}
       else
@@ -455,7 +456,7 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
 
   create_rdg_flow_edges (rdg);
   if (cd)
-    create_rdg_cd_edges (rdg, cd);
+    create_rdg_cd_edges (rdg, cd, loop_nest[0]);
 
   datarefs.release ();
 
@@ -917,9 +918,9 @@ destroy_loop (struct loop *loop)
 			   recompute_dominator (CDI_DOMINATORS, dest));
 }
 
-/* Generates code for PARTITION.  */
+/* Generates code for PARTITION.  Return whether LOOP needs to be destroyed.  */
 
-static void
+static bool 
 generate_code_for_partition (struct loop *loop,
 			     partition *partition, bool copy_p)
 {
@@ -930,7 +931,7 @@ generate_code_for_partition (struct loop *loop,
       gcc_assert (!partition_reduction_p (partition)
 		  || !copy_p);
       generate_loops_for_partition (loop, partition, copy_p);
-      return;
+      return false;
 
     case PKIND_MEMSET:
       generate_memset_builtin (loop, partition);
@@ -947,7 +948,8 @@ generate_code_for_partition (struct loop *loop,
   /* Common tail for partitions we turn into a call.  If this was the last
      partition for which we generate code, we have to destroy the loop.  */
   if (!copy_p)
-    destroy_loop (loop);
+    return true;
+  return false;
 }
 
 
@@ -1397,11 +1399,12 @@ pgcmp (const void *v1_, const void *v2_)
 /* Distributes the code from LOOP in such a way that producer
    statements are placed before consumer statements.  Tries to separate
    only the statements from STMTS into separate loops.
-   Returns the number of distributed loops.  */
+   Returns the number of distributed loops.  Set *DESTROY_P to whether
+   LOOP needs to be destroyed.  */
 
 static int
 distribute_loop (struct loop *loop, vec<gimple *> stmts,
-		 control_dependences *cd, int *nb_calls)
+		 control_dependences *cd, int *nb_calls, bool *destroy_p)
 {
   struct graph *rdg;
   partition *partition;
@@ -1644,11 +1647,12 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg_partitions (dump_file, partitions);
 
+  *destroy_p = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
     {
       if (partition_builtin_p (partition))
 	(*nb_calls)++;
-      generate_code_for_partition (loop, partition, i < nbp - 1);
+      *destroy_p |= generate_code_for_partition (loop, partition, i < nbp - 1);
     }
 
  ldist_done:
@@ -1702,6 +1706,7 @@ pass_loop_distribution::execute (function *fun)
   bool changed = false;
   basic_block bb;
   control_dependences *cd = NULL;
+  auto_vec<loop_p> loops_to_be_destroyed;
 
   FOR_ALL_BB_FN (bb, fun)
     {
@@ -1787,8 +1792,12 @@ out:
 	      cd = new control_dependences (create_edge_list ());
 	      free_dominance_info (CDI_POST_DOMINATORS);
 	    }
+	  bool destroy_p;
 	  nb_generated_loops = distribute_loop (loop, work_list, cd,
-						&nb_generated_calls);
+						&nb_generated_calls,
+						&destroy_p);
+	  if (destroy_p)
+	    loops_to_be_destroyed.safe_push (loop);
 	}
 
       if (nb_generated_loops + nb_generated_calls > 0)
@@ -1805,6 +1814,12 @@ out:
 
   if (cd)
     delete cd;
+
+  /* Destroy loop bodies that could not be reused.  Do this late as we
+     otherwise can end up refering to stale data in control dependences.  */
+  unsigned i;
+  FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)
+    destroy_loop (loop);
 
   if (changed)
     {
