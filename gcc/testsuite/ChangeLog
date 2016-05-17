@@ -1,3 +1,12 @@
+2016-05-17  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Allow ".d[index]" besides
+	".2d[index]" when scan the assembly.
+	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: New entry for
+	float64x1.
+	* gcc.target/aarch64/advsimd-intrinsics/vfms_vfma_n.c: New.
+
 2016-05-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71132
