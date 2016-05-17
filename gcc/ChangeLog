@@ -1,5 +1,10 @@
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd.md (*aarch64_mul3_elt_to_128df): Extend to
+	all supported modes.  Rename to "*aarch64_mul3_elt_from_dup".
+
+2016-05-17  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd.md (*aarch64_fma4_elt_to_128df): Rename
 	to *aarch64_fma4_elt_from_dup<mode>.
 	(*aarch64_fnma4_elt_to_128df): Rename to
