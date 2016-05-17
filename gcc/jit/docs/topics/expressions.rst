@@ -409,6 +409,22 @@ Function calls
              printf_func,
              2, args));
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_call_through_ptr (gcc_jit_context *ctxt,\
+                                                    gcc_jit_location *loc,\
+                                                    gcc_jit_rvalue *fn_ptr,\
+                                                    int numargs, \
+                                                    gcc_jit_rvalue **args)
+
+   Given an rvalue of function pointer type, and the given table of
+   argument rvalues, construct a call to the function pointer, with the
+   result as an rvalue.
+
+   .. note::
+
+      The same caveat as for :c:func:`gcc_jit_context_new_call` applies.
+
+
 Type-coercion
 *************
 

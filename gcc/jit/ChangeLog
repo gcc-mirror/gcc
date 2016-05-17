@@ -1,3 +1,9 @@
+2016-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/expressions.rst (Function calls): Document
+	gcc_jit_context_new_call_through_ptr.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2016-05-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-playback.h: Within namespace gcc:jit::playback...
