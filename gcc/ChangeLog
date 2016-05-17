@@ -1,5 +1,23 @@
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/arm_neon.h (vmvn_s8): Reimplement using C operator.
+	Remove inline assembly.
+	(vmvn_s16): Likewise.
+	(vmvn_s32): Likewise.
+	(vmvn_u8): Likewise.
+	(vmvn_u16): Likewise.
+	(vmvn_u32): Likewise.
+	(vmvnq_s8): Likewise.
+	(vmvnq_s16): Likewise.
+	(vmvnq_s32): Likewise.
+	(vmvnq_u8): Likewise.
+	(vmvnq_u16): Likewise.
+	(vmvnq_u32): Likewise.
+	(vmvn_p8): Likewise.
+	(vmvnq_p16): Likewise.
+
+2016-05-17  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd.md (vmul_n_f32): Remove inline assembly.
 	Use builtin.
 	(vmul_n_s16): Likewise.

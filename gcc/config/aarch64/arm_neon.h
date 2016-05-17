@@ -8388,161 +8388,6 @@ vmull_u32 (uint32x2_t a, uint32x2_t b)
   return result;
 }
 
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vmvn_p8 (poly8x8_t a)
-{
-  poly8x8_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vmvn_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vmvn_s16 (int16x4_t a)
-{
-  int16x4_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vmvn_s32 (int32x2_t a)
-{
-  int32x2_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vmvn_u8 (uint8x8_t a)
-{
-  uint8x8_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vmvn_u16 (uint16x4_t a)
-{
-  uint16x4_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vmvn_u32 (uint32x2_t a)
-{
-  uint32x2_t result;
-  __asm__ ("mvn %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vmvnq_p8 (poly8x16_t a)
-{
-  poly8x16_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vmvnq_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vmvnq_s16 (int16x8_t a)
-{
-  int16x8_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vmvnq_s32 (int32x4_t a)
-{
-  int32x4_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vmvnq_u8 (uint8x16_t a)
-{
-  uint8x16_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vmvnq_u16 (uint16x8_t a)
-{
-  uint16x8_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vmvnq_u32 (uint32x4_t a)
-{
-  uint32x4_t result;
-  __asm__ ("mvn %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vpadal_s8 (int16x4_t a, int8x8_t b)
 {
@@ -18869,6 +18714,92 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vmulq_n_u32 (uint32x4_t __a, uint32_t __b)
 {
   return __a * __b;
+}
+
+/* vmvn  */
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vmvn_p8 (poly8x8_t __a)
+{
+  return (poly8x8_t) ~((int8x8_t) __a);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vmvn_s8 (int8x8_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vmvn_s16 (int16x4_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vmvn_s32 (int32x2_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vmvn_u8 (uint8x8_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vmvn_u16 (uint16x4_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vmvn_u32 (uint32x2_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vmvnq_p8 (poly8x16_t __a)
+{
+  return (poly8x16_t) ~((int8x16_t) __a);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vmvnq_s8 (int8x16_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vmvnq_s16 (int16x8_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vmvnq_s32 (int32x4_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vmvnq_u8 (uint8x16_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vmvnq_u16 (uint16x8_t __a)
+{
+  return ~__a;
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vmvnq_u32 (uint32x4_t __a)
+{
+  return ~__a;
 }
 
 /* vneg  */
