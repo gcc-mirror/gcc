@@ -1919,16 +1919,6 @@
   }
 )
 
-(define_insn "aarch64_vmls<mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-       (minus:VDQF (match_operand:VDQF 1 "register_operand" "0")
-		   (mult:VDQF (match_operand:VDQF 2 "register_operand" "w")
-			      (match_operand:VDQF 3 "register_operand" "w"))))]
-  "TARGET_SIMD"
- "fmls\\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
-  [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
-)
-
 ;; FP Max/Min
 ;; Max/Min are introduced by idiom recognition by GCC's mid-end.  An
 ;; expression like:
