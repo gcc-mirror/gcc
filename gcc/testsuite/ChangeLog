@@ -1,5 +1,12 @@
 2016-05-17  Nathan Sidwell  <nathan@acm.org>
 
+	* gcc.c-torture/execute/20030222-1.c: Skip on ptx.
+	* gcc.dg/pr68671.c: Fix ptx xfail-if.
+	* gcc.dg/torture/pr54261-1.c: Allocate atomic var statically.
+	* gcc.dg/torture/type-generic-1.c: Enable UNSAFE for ptx.
+
+2016-05-17  Nathan Sidwell  <nathan@acm.org>
+
 	* gcc.target/nvptx/abi-vararg-3.c: New.
 
 2016-05-17  Mikhail Maltsev  <maltsevm@gmail.com>

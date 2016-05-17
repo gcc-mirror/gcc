@@ -4,6 +4,7 @@
    actually truncated to int, in case a single register is wide enough
    for a long long.  */
 /* { dg-skip-if "asm would require extra shift-left-4-byte" { spu-*-* } "*" "" } */
+/* { dg-skip-if "asm requires register allocation" { nvptx-*-* } "*" "" } */
 #include <limits.h>
 
 void

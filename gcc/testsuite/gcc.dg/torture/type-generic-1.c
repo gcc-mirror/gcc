@@ -3,7 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-skip-if "No Inf/NaN support" { spu-*-* } } */
-/* { dg-options "-DUNSAFE" { target tic6x*-*-* visium-*-* } } */
+/* { dg-options "-DUNSAFE" { target tic6x*-*-* visium-*-* nvptx-*-* } } */
 /* { dg-add-options ieee } */
 
 #include "../tg-tests.h"
