@@ -1,3 +1,10 @@
+2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-vrp.c (simplify_truth_ops_using_ranges): Set range
+	information for new SSA_NAME.
+	(simplify_conversion_using_ranges): Get range through get_range_info
+	instead of get_value_range.
+
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/arm_neon.h (vmvn_s8): Reimplement using C operator.

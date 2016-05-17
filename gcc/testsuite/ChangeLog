@@ -1,3 +1,8 @@
+2016-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/pr69270.c: Adjust.
+	* gcc.dg/tree-ssa/vrp99.c: New testcase.
+
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/simd/vmul_elem_1.c: Use intrinsics.
