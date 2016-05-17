@@ -1,3 +1,8 @@
+2016-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_function_arg_boundary): New.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Override.
+
 2016-05-17  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR tree-optimization/54579
