@@ -371,15 +371,15 @@
   [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mul3_elt_to_128df"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-     (mult:V2DF
-       (vec_duplicate:V2DF
-	 (match_operand:DF 2 "register_operand" "w"))
-      (match_operand:V2DF 1 "register_operand" "w")))]
+(define_insn "*aarch64_mul3_elt_from_dup<mode>"
+ [(set (match_operand:VMUL 0 "register_operand" "=w")
+    (mult:VMUL
+      (vec_duplicate:VMUL
+	    (match_operand:<VEL> 1 "register_operand" "<h_con>"))
+      (match_operand:VMUL 2 "register_operand" "w")))]
   "TARGET_SIMD"
-  "fmul\\t%0.2d, %1.2d, %2.d[0]"
-  [(set_attr "type" "neon_fp_mul_d_scalar_q")]
+  "<f>mul\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]";
+  [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
 )
 
 (define_insn "aarch64_rsqrte_<mode>2"
