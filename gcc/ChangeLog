@@ -1,3 +1,7 @@
+2016-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-elf.h (ASM_OUTPUT_DEF): Delete.
+
 2016-05-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/71114
