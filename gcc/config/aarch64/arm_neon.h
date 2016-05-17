@@ -7938,61 +7938,6 @@ vmovn_u64 (uint64x2_t a)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vmul_n_f32 (float32x2_t a, float32_t b)
-{
-  float32x2_t result;
-  __asm__ ("fmul %0.2s,%1.2s,%2.s[0]"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vmul_n_s16 (int16x4_t a, int16_t b)
-{
-  int16x4_t result;
-  __asm__ ("mul %0.4h,%1.4h,%2.h[0]"
-           : "=w"(result)
-           : "w"(a), "x"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vmul_n_s32 (int32x2_t a, int32_t b)
-{
-  int32x2_t result;
-  __asm__ ("mul %0.2s,%1.2s,%2.s[0]"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vmul_n_u16 (uint16x4_t a, uint16_t b)
-{
-  uint16x4_t result;
-  __asm__ ("mul %0.4h,%1.4h,%2.h[0]"
-           : "=w"(result)
-           : "w"(a), "x"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vmul_n_u32 (uint32x2_t a, uint32_t b)
-{
-  uint32x2_t result;
-  __asm__ ("mul %0.2s,%1.2s,%2.s[0]"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 #define vmull_high_lane_s16(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
@@ -8437,72 +8382,6 @@ vmull_u32 (uint32x2_t a, uint32x2_t b)
 {
   uint64x2_t result;
   __asm__ ("umull %0.2d, %1.2s, %2.2s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vmulq_n_f32 (float32x4_t a, float32_t b)
-{
-  float32x4_t result;
-  __asm__ ("fmul %0.4s,%1.4s,%2.s[0]"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vmulq_n_f64 (float64x2_t a, float64_t b)
-{
-  float64x2_t result;
-  __asm__ ("fmul %0.2d,%1.2d,%2.d[0]"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vmulq_n_s16 (int16x8_t a, int16_t b)
-{
-  int16x8_t result;
-  __asm__ ("mul %0.8h,%1.8h,%2.h[0]"
-           : "=w"(result)
-           : "w"(a), "x"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vmulq_n_s32 (int32x4_t a, int32_t b)
-{
-  int32x4_t result;
-  __asm__ ("mul %0.4s,%1.4s,%2.s[0]"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vmulq_n_u16 (uint16x8_t a, uint16_t b)
-{
-  uint16x8_t result;
-  __asm__ ("mul %0.8h,%1.8h,%2.h[0]"
-           : "=w"(result)
-           : "w"(a), "x"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vmulq_n_u32 (uint32x4_t a, uint32_t b)
-{
-  uint32x4_t result;
-  __asm__ ("mul %0.4s,%1.4s,%2.s[0]"
            : "=w"(result)
            : "w"(a), "w"(b)
            : /* No clobbers */);
@@ -18922,6 +18801,74 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vmulq_laneq_u32 (uint32x4_t __a, uint32x4_t __b, const int __lane)
 {
   return __a * __aarch64_vget_lane_any (__b, __lane);
+}
+
+/* vmul_n.  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vmul_n_f32 (float32x2_t __a, float32_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vmulq_n_f32 (float32x4_t __a, float32_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vmulq_n_f64 (float64x2_t __a, float64_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vmul_n_s16 (int16x4_t __a, int16_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vmulq_n_s16 (int16x8_t __a, int16_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vmul_n_s32 (int32x2_t __a, int32_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vmulq_n_s32 (int32x4_t __a, int32_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vmul_n_u16 (uint16x4_t __a, uint16_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vmulq_n_u16 (uint16x8_t __a, uint16_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vmul_n_u32 (uint32x2_t __a, uint32_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vmulq_n_u32 (uint32x4_t __a, uint32_t __b)
+{
+  return __a * __b;
 }
 
 /* vneg  */

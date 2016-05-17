@@ -1,5 +1,9 @@
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
+	* gcc.target/aarch64/simd/vmul_elem_1.c: Use intrinsics.
+
+2016-05-17  Jiong Wang  <jiong.wang@arm.com>
+
 	* gcc.target/aarch64/simd/vmul_elem_1.c: New.
 
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>

@@ -142,13 +142,13 @@ check_v2sf (float32_t elemA, float32_t elemB)
   int32_t indx;
   const float32_t vec32x2_buf[2] = {A, B};
   float32x2_t vec32x2_src = vld1_f32 (vec32x2_buf);
-  float32x2_t vec32x2_res = vec32x2_src * elemA;
+  float32x2_t vec32x2_res = vmul_n_f32 (vec32x2_src, elemA);
 
   for (indx = 0; indx < 2; indx++)
     if (* (uint32_t *) &vec32x2_res[indx] != * (uint32_t *) &expected2_1[indx])
       abort ();
 
-  vec32x2_res = vec32x2_src * elemB;
+  vec32x2_res = vmul_n_f32 (vec32x2_src, elemB);
 
   for (indx = 0; indx < 2; indx++)
     if (* (uint32_t *) &vec32x2_res[indx] != * (uint32_t *) &expected2_2[indx])
@@ -163,25 +163,25 @@ check_v4sf (float32_t elemA, float32_t elemB, float32_t elemC, float32_t elemD)
   int32_t indx;
   const float32_t vec32x4_buf[4] = {A, B, C, D};
   float32x4_t vec32x4_src = vld1q_f32 (vec32x4_buf);
-  float32x4_t vec32x4_res = vec32x4_src * elemA;
+  float32x4_t vec32x4_res = vmulq_n_f32 (vec32x4_src, elemA);
 
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_1[indx])
       abort ();
 
-  vec32x4_res = vec32x4_src * elemB;
+  vec32x4_res = vmulq_n_f32 (vec32x4_src, elemB);
 
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_2[indx])
       abort ();
 
-  vec32x4_res = vec32x4_src * elemC;
+  vec32x4_res = vmulq_n_f32 (vec32x4_src, elemC);
 
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_3[indx])
       abort ();
 
-  vec32x4_res = vec32x4_src * elemD;
+  vec32x4_res = vmulq_n_f32 (vec32x4_src, elemD);
 
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_4[indx])
@@ -196,13 +196,13 @@ check_v2df (float64_t elemdC, float64_t elemdD)
   int32_t indx;
   const float64_t vec64x2_buf[2] = {AD, BD};
   float64x2_t vec64x2_src = vld1q_f64 (vec64x2_buf);
-  float64x2_t vec64x2_res = vec64x2_src * elemdC;
+  float64x2_t vec64x2_res = vmulq_n_f64 (vec64x2_src, elemdC);
 
   for (indx = 0; indx < 2; indx++)
     if (* (uint64_t *) &vec64x2_res[indx] != * (uint64_t *) &expectedd2_1[indx])
       abort ();
 
-  vec64x2_res = vec64x2_src * elemdD;
+  vec64x2_res = vmulq_n_f64 (vec64x2_src, elemdD);
 
   for (indx = 0; indx < 2; indx++)
     if (* (uint64_t *) &vec64x2_res[indx] != * (uint64_t *) &expectedd2_2[indx])
@@ -217,13 +217,13 @@ check_v2si (int32_t elemsA, int32_t elemsB)
   int32_t indx;
   const int32_t vecs32x2_buf[2] = {AS, BS};
   int32x2_t vecs32x2_src = vld1_s32 (vecs32x2_buf);
-  int32x2_t vecs32x2_res = vecs32x2_src * elemsA;
+  int32x2_t vecs32x2_res = vmul_n_s32 (vecs32x2_src, elemsA);
 
   for (indx = 0; indx < 2; indx++)
     if (vecs32x2_res[indx] != expecteds2_1[indx])
       abort ();
 
-  vecs32x2_res = vecs32x2_src * elemsB;
+  vecs32x2_res = vmul_n_s32 (vecs32x2_src, elemsB);
 
   for (indx = 0; indx < 2; indx++)
     if (vecs32x2_res[indx] != expecteds2_2[indx])
@@ -236,13 +236,13 @@ check_v2si_unsigned (uint32_t elemusA, uint32_t elemusB)
   int indx;
   const uint32_t vecus32x2_buf[2] = {AUS, BUS};
   uint32x2_t vecus32x2_src = vld1_u32 (vecus32x2_buf);
-  uint32x2_t vecus32x2_res = vecus32x2_src * elemusA;
+  uint32x2_t vecus32x2_res = vmul_n_u32 (vecus32x2_src, elemusA);
 
   for (indx = 0; indx < 2; indx++)
     if (vecus32x2_res[indx] != expectedus2_1[indx])
       abort ();
 
-  vecus32x2_res = vecus32x2_src * elemusB;
+  vecus32x2_res = vmul_n_u32 (vecus32x2_src, elemusB);
 
   for (indx = 0; indx < 2; indx++)
     if (vecus32x2_res[indx] != expectedus2_2[indx])
@@ -257,25 +257,25 @@ check_v4si (int32_t elemsA, int32_t elemsB, int32_t elemsC, int32_t elemsD)
   int32_t indx;
   const int32_t vecs32x4_buf[4] = {AS, BS, CS, DS};
   int32x4_t vecs32x4_src = vld1q_s32 (vecs32x4_buf);
-  int32x4_t vecs32x4_res = vecs32x4_src * elemsA;
+  int32x4_t vecs32x4_res = vmulq_n_s32 (vecs32x4_src, elemsA);
 
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_1[indx])
       abort ();
 
-  vecs32x4_res = vecs32x4_src * elemsB;
+  vecs32x4_res = vmulq_n_s32 (vecs32x4_src, elemsB);
 
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_2[indx])
       abort ();
 
-  vecs32x4_res = vecs32x4_src * elemsC;
+  vecs32x4_res = vmulq_n_s32 (vecs32x4_src, elemsC);
 
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_3[indx])
       abort ();
 
-  vecs32x4_res = vecs32x4_src * elemsD;
+  vecs32x4_res = vmulq_n_s32 (vecs32x4_src, elemsD);
 
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_4[indx])
@@ -289,25 +289,25 @@ check_v4si_unsigned (uint32_t elemusA, uint32_t elemusB, uint32_t elemusC,
   int indx;
   const uint32_t vecus32x4_buf[4] = {AUS, BUS, CUS, DUS};
   uint32x4_t vecus32x4_src = vld1q_u32 (vecus32x4_buf);
-  uint32x4_t vecus32x4_res = vecus32x4_src * elemusA;
+  uint32x4_t vecus32x4_res = vmulq_n_u32 (vecus32x4_src, elemusA);
 
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_1[indx])
       abort ();
 
-  vecus32x4_res = vecus32x4_src * elemusB;
+  vecus32x4_res = vmulq_n_u32 (vecus32x4_src, elemusB);
 
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_2[indx])
       abort ();
 
-  vecus32x4_res = vecus32x4_src * elemusC;
+  vecus32x4_res = vmulq_n_u32 (vecus32x4_src, elemusC);
 
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_3[indx])
       abort ();
 
-  vecus32x4_res = vecus32x4_src * elemusD;
+  vecus32x4_res = vmulq_n_u32 (vecus32x4_src, elemusD);
 
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_4[indx])
@@ -323,25 +323,25 @@ check_v4hi (int16_t elemhA, int16_t elemhB, int16_t elemhC, int16_t elemhD)
   int32_t indx;
   const int16_t vech16x4_buf[4] = {AH, BH, CH, DH};
   int16x4_t vech16x4_src = vld1_s16 (vech16x4_buf);
-  int16x4_t vech16x4_res = vech16x4_src * elemhA;
+  int16x4_t vech16x4_res = vmul_n_s16 (vech16x4_src, elemhA);
 
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_1[indx])
       abort ();
 
-  vech16x4_res = vech16x4_src * elemhB;
+  vech16x4_res = vmul_n_s16 (vech16x4_src, elemhB);
 
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_2[indx])
       abort ();
 
-  vech16x4_res = vech16x4_src * elemhC;
+  vech16x4_res = vmul_n_s16 (vech16x4_src, elemhC);
 
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_3[indx])
       abort ();
 
-  vech16x4_res = vech16x4_src * elemhD;
+  vech16x4_res = vmul_n_s16 (vech16x4_src, elemhD);
 
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_4[indx])
@@ -355,25 +355,25 @@ check_v4hi_unsigned (uint16_t elemuhA, uint16_t elemuhB, uint16_t elemuhC,
   int indx;
   const uint16_t vecuh16x4_buf[4] = {AUH, BUH, CUH, DUH};
   uint16x4_t vecuh16x4_src = vld1_u16 (vecuh16x4_buf);
-  uint16x4_t vecuh16x4_res = vecuh16x4_src * elemuhA;
+  uint16x4_t vecuh16x4_res = vmul_n_u16 (vecuh16x4_src, elemuhA);
 
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_1[indx])
       abort ();
 
-  vecuh16x4_res = vecuh16x4_src * elemuhB;
+  vecuh16x4_res = vmul_n_u16 (vecuh16x4_src, elemuhB);
 
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_2[indx])
       abort ();
 
-  vecuh16x4_res = vecuh16x4_src * elemuhC;
+  vecuh16x4_res = vmul_n_u16 (vecuh16x4_src, elemuhC);
 
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_3[indx])
       abort ();
 
-  vecuh16x4_res = vecuh16x4_src * elemuhD;
+  vecuh16x4_res = vmul_n_u16 (vecuh16x4_src, elemuhD);
 
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_4[indx])
@@ -389,49 +389,49 @@ check_v8hi (int16_t elemhA, int16_t elemhB, int16_t elemhC, int16_t elemhD,
   int32_t indx;
   const int16_t vech16x8_buf[8] = {AH, BH, CH, DH, EH, FH, GH, HH};
   int16x8_t vech16x8_src = vld1q_s16 (vech16x8_buf);
-  int16x8_t vech16x8_res = vech16x8_src * elemhA;
+  int16x8_t vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhA);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_1[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhB;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhB);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_2[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhC;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhC);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_3[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhD;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhD);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_4[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhE;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhE);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_5[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhF;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhF);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_6[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhG;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhG);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_7[indx])
       abort ();
 
-  vech16x8_res = vech16x8_src * elemhH;
+  vech16x8_res = vmulq_n_s16 (vech16x8_src, elemhH);
 
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_8[indx])
@@ -446,49 +446,49 @@ check_v8hi_unsigned (uint16_t elemuhA, uint16_t elemuhB, uint16_t elemuhC,
   int indx;
   const uint16_t vecuh16x8_buf[8] = {AUH, BUH, CUH, DUH, EUH, FUH, GUH, HUH};
   uint16x8_t vecuh16x8_src = vld1q_u16 (vecuh16x8_buf);
-  uint16x8_t vecuh16x8_res = vecuh16x8_src * elemuhA;
+  uint16x8_t vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhA);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_1[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhB;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhB);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_2[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhC;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhC);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_3[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhD;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhD);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_4[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhE;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhE);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_5[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhF;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhF);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_6[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhG;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhG);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_7[indx])
       abort ();
 
-  vecuh16x8_res = vecuh16x8_src * elemuhH;
+  vecuh16x8_res = vmulq_n_u16 (vecuh16x8_src, elemuhH);
 
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_8[indx])
