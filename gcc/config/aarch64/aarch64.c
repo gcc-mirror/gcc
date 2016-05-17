@@ -11845,12 +11845,11 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
         info.value = GEN_INT (0);
       else
 	{
-#define buf_size 20
+	  const unsigned int buf_size = 20;
 	  char float_buf[buf_size] = {'\0'};
 	  real_to_decimal_for_mode (float_buf,
 				    CONST_DOUBLE_REAL_VALUE (info.value),
 				    buf_size, buf_size, 1, mode);
-#undef buf_size
 
 	  if (lane_count == 1)
 	    snprintf (templ, sizeof (templ), "fmov\t%%d0, %s", float_buf);
