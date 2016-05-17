@@ -1,3 +1,9 @@
+2016-05-17  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/71114
+	* gcc.target/i386/pr70799-1.c: Fix scan for Darwin.
+
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/ivinline-7.C: Do not xfail.

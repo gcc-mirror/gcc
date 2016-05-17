@@ -3688,7 +3688,13 @@ dimode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 					gen_rtvec (2, *op, const0_rtx));
 
       if (!standard_sse_constant_p (vec_cst, V2DImode))
-	vec_cst = validize_mem (force_const_mem (V2DImode, vec_cst));
+	{
+	  start_sequence ();
+	  vec_cst = validize_mem (force_const_mem (V2DImode, vec_cst));
+	  rtx_insn *seq = get_insns ();
+	  end_sequence ();
+	  emit_insn_before (seq, insn);
+	}
 
       emit_insn_before (gen_move_insn (tmp, vec_cst), insn);
       *op = tmp;
