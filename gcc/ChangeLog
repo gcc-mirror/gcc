@@ -1,5 +1,20 @@
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd.md (vmul_n_f32): Remove inline assembly.
+	Use builtin.
+	(vmul_n_s16): Likewise.
+	(vmul_n_s32): Likewise.
+	(vmul_n_u16): Likewise.
+	(vmul_n_u32): Likewise.
+	(vmulq_n_f32): Likewise.
+	(vmulq_n_f64): Likewise.
+	(vmulq_n_s16): Likewise.
+	(vmulq_n_s32): Likewise.
+	(vmulq_n_u16): Likewise.
+	(vmulq_n_u32): Likewise.
+
+2016-05-17  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd.md (*aarch64_mul3_elt_to_128df): Extend to
 	all supported modes.  Rename to "*aarch64_mul3_elt_from_dup".
 
