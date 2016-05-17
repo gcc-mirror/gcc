@@ -433,8 +433,7 @@ goacc_attach_host_thread_to_device (int ord)
 void
 acc_init (acc_device_t d)
 {
-  if (!cached_base_dev)
-    gomp_init_targets_once ();
+  gomp_init_targets_once ();
 
   gomp_mutex_lock (&acc_device_lock);
 
@@ -498,10 +497,9 @@ acc_set_device_type (acc_device_t d)
   struct gomp_device_descr *base_dev, *acc_dev;
   struct goacc_thread *thr = goacc_thread ();
 
-  gomp_mutex_lock (&acc_device_lock);
+  gomp_init_targets_once ();
 
-  if (!cached_base_dev)
-    gomp_init_targets_once ();
+  gomp_mutex_lock (&acc_device_lock);
 
   cached_base_dev = base_dev = resolve_device (d, true);
   acc_dev = &base_dev[goacc_device_num];
@@ -563,8 +561,7 @@ acc_get_device_num (acc_device_t d)
   if (d >= _ACC_device_hwm)
     gomp_fatal ("unknown device type %u", (unsigned) d);
 
-  if (!cached_base_dev)
-    gomp_init_targets_once ();
+  gomp_init_targets_once ();
 
   gomp_mutex_lock (&acc_device_lock);
   dev = resolve_device (d, true);
@@ -584,8 +581,7 @@ acc_set_device_num (int ord, acc_device_t d)
   struct gomp_device_descr *base_dev, *acc_dev;
   int num_devices;
 
-  if (!cached_base_dev)
-    gomp_init_targets_once ();
+  gomp_init_targets_once ();
 
   if (ord < 0)
     ord = goacc_device_num;
