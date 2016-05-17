@@ -1,3 +1,10 @@
+2016-05-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/cpu-diagnostics-1.c: Skip if -mcpu is overriden.
+	* gcc.target/aarch64/cpu-diagnostics-2.c: Likewise.
+	* gcc.target/aarch64/cpu-diagnostics-3.c: Likewise.
+	* gcc.target/aarch64/cpu-diagnostics-4.c: Likewise.
+
 2016-05-17  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Ilya Enkovich  <ilya.enkovich@intel.com>
 
