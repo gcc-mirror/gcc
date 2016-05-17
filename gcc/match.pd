@@ -563,6 +563,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bitop @0 @0)
   (non_lvalue @0)))
 
+/* x & C -> x if we know that x & ~C == 0.  */
+#if GIMPLE
+(simplify
+ (bit_and SSA_NAME@0 INTEGER_CST@1)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && (get_nonzero_bits (@0) & wi::bit_not (@1)) == 0)
+  @0))
+#endif
+
 /* x + (x & 1) -> (x + 1) & ~1 */
 (simplify
  (plus:c @0 (bit_and:s @0 integer_onep@1))
