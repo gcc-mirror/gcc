@@ -483,7 +483,7 @@ nvptx_strict_argument_naming (cumulative_args_t cum_v)
 static rtx
 nvptx_libcall_value (machine_mode mode, const_rtx)
 {
-  if (!cfun->machine->doing_call)
+  if (!cfun || !cfun->machine->doing_call)
     /* Pretend to return in a hard reg for early uses before pseudos can be
        generated.  */
     return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
@@ -502,6 +502,7 @@ nvptx_function_value (const_tree type, const_tree ARG_UNUSED (func),
 
   if (outgoing)
     {
+      gcc_assert (cfun);
       cfun->machine->return_mode = mode;
       return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
     }
