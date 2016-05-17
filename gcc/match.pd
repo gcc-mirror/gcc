@@ -503,6 +503,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_ior:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
  (if (wi::bit_not (@2) == @1)
   (bit_xor @0 @1)))
+/* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
+#if GIMPLE
+(simplify
+ (bit_and (bit_not SSA_NAME@0) INTEGER_CST@1)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && (get_nonzero_bits (@0) & wi::bit_not (@1)) == 0)
+  (bit_xor @0 @1)))
+#endif
 
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
