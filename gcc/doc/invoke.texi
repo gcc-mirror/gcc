@@ -18122,7 +18122,7 @@ IEEE 754 floating-point data.
 
 The @option{-mnan=legacy} option selects the legacy encoding.  In this
 case quiet NaNs (qNaNs) are denoted by the first bit of their trailing
-significand field being 0, whereas signalling NaNs (sNaNs) are denoted
+significand field being 0, whereas signaling NaNs (sNaNs) are denoted
 by the first bit of their trailing significand field being 1.
 
 The @option{-mnan=2008} option selects the IEEE 754-2008 encoding.  In
