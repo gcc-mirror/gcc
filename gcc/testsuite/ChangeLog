@@ -1,3 +1,8 @@
+2016-05-17  Marek Polacek  <polacek@redhat.com>
+
+	PR ipa/71146
+	* g++.dg/ipa/pr71146.C: New test.
+
 2016-05-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-error-array-bounds.c: New test case.

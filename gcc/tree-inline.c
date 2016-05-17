@@ -4486,6 +4486,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       update_stmt (stmt);
       id->src_node->remove ();
       expand_call_inline (bb, stmt, id);
+      maybe_remove_unused_call_args (cfun, stmt);
       return true;
     }
   fn = cg_edge->callee->decl;
