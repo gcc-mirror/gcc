@@ -1,3 +1,12 @@
+2016-05-17  Jim Wilson  <jim.wilson@linaro.org>
+
+	Partial backport from trunk r228017.
+	2015-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70613
+	* doc/invoke.texi (-fabi-version): Document version 9.
+	(-Wabi): Document version 9.  Mention version 8 is default for GCC 5.1.
+
 2016-05-12  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
