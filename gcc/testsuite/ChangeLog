@@ -1,5 +1,8 @@
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512vl-vpalignr-3.c: New test.
+	* gcc.target/i386/avx512bw-vpalignr-3.c: New test.
+
 	* gcc.target/i386/avx512vl-vpshufb-3.c: New test.
 	* gcc.target/i386/avx512bw-vpshufb-3.c: New test.
 
