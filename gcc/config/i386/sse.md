@@ -14301,11 +14301,11 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<ssse3_avx2>_palignr<mode>"
-  [(set (match_operand:SSESCALARMODE 0 "register_operand" "=x,v")
+  [(set (match_operand:SSESCALARMODE 0 "register_operand" "=x,x,v")
 	(unspec:SSESCALARMODE
-	  [(match_operand:SSESCALARMODE 1 "register_operand" "0,v")
-	   (match_operand:SSESCALARMODE 2 "vector_operand" "xBm,vm")
-	   (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n,n")]
+	  [(match_operand:SSESCALARMODE 1 "register_operand" "0,x,v")
+	   (match_operand:SSESCALARMODE 2 "vector_operand" "xBm,xm,vm")
+	   (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n,n,n")]
 	  UNSPEC_PALIGNR))]
   "TARGET_SSSE3"
 {
@@ -14316,18 +14316,19 @@
     case 0:
       return "palignr\t{%3, %2, %0|%0, %2, %3}";
     case 1:
+    case 2:
       return "vpalignr\t{%3, %2, %1, %0|%0, %1, %2, %3}";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sseishft")
    (set_attr "atom_unit" "sishuf")
-   (set_attr "prefix_data16" "1,*")
+   (set_attr "prefix_data16" "1,*,*")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,vex,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "ssse3_palignrdi"
