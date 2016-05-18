@@ -1,6 +1,12 @@
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/70646
+	* ipa-prop.c (determine_locally_known_aggregate_parts): Bail out early
+	if parameter PARAM_IPA_MAX_AGG_ITEMS is zero.
+
+2016-05-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/70646
 	* ipa-inline.h (condition): New field size.
 	* ipa-inline-analysis.c (add_condition): New parameter SIZE, use it
 	for comaprison and store it into the new condition.
