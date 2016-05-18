@@ -371,6 +371,83 @@ VECT_VAR_DECL(expected_q_u64_8,uint,64,2) [] = { 0xf7f6f5f4f3f2f1f0,
 VECT_VAR_DECL(expected_q_u64_9,uint,64,2) [] = { 0xfff3fff2fff1fff0,
 						 0xfff7fff6fff5fff4 };
 
+
+/* Expected results for vreinterpretq_p8_xx.  */
+VECT_VAR_DECL(expected_q_p8_1,poly,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+						0xf4, 0xf5, 0xf6, 0xf7,
+						0xf8, 0xf9, 0xfa, 0xfb,
+						0xfc, 0xfd, 0xfe, 0xff };
+VECT_VAR_DECL(expected_q_p8_2,poly,8,16) [] = { 0xf0, 0xff, 0xf1, 0xff,
+						0xf2, 0xff, 0xf3, 0xff,
+						0xf4, 0xff, 0xf5, 0xff,
+						0xf6, 0xff, 0xf7, 0xff };
+VECT_VAR_DECL(expected_q_p8_3,poly,8,16) [] = { 0xf0, 0xff, 0xff, 0xff,
+						0xf1, 0xff, 0xff, 0xff,
+						0xf2, 0xff, 0xff, 0xff,
+						0xf3, 0xff, 0xff, 0xff };
+VECT_VAR_DECL(expected_q_p8_4,poly,8,16) [] = { 0xf0, 0xff, 0xff, 0xff,
+						0xff, 0xff, 0xff, 0xff,
+						0xf1, 0xff, 0xff, 0xff,
+						0xff, 0xff, 0xff, 0xff };
+VECT_VAR_DECL(expected_q_p8_5,poly,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
+						0xf4, 0xf5, 0xf6, 0xf7,
+						0xf8, 0xf9, 0xfa, 0xfb,
+						0xfc, 0xfd, 0xfe, 0xff };
+VECT_VAR_DECL(expected_q_p8_6,poly,8,16) [] = { 0xf0, 0xff, 0xf1, 0xff,
+						0xf2, 0xff, 0xf3, 0xff,
+						0xf4, 0xff, 0xf5, 0xff,
+						0xf6, 0xff, 0xf7, 0xff };
+VECT_VAR_DECL(expected_q_p8_7,poly,8,16) [] = { 0xf0, 0xff, 0xff, 0xff,
+						0xf1, 0xff, 0xff, 0xff,
+						0xf2, 0xff, 0xff, 0xff,
+						0xf3, 0xff, 0xff, 0xff };
+VECT_VAR_DECL(expected_q_p8_8,poly,8,16) [] = { 0xf0, 0xff, 0xff, 0xff,
+						0xff, 0xff, 0xff, 0xff,
+						0xf1, 0xff, 0xff, 0xff,
+						0xff, 0xff, 0xff, 0xff };
+VECT_VAR_DECL(expected_q_p8_9,poly,8,16) [] = { 0xf0, 0xff, 0xf1, 0xff,
+						0xf2, 0xff, 0xf3, 0xff,
+						0xf4, 0xff, 0xf5, 0xff,
+						0xf6, 0xff, 0xf7, 0xff };
+
+/* Expected results for vreinterpretq_p16_xx.  */
+VECT_VAR_DECL(expected_q_p16_1,poly,16,8) [] = { 0xf1f0, 0xf3f2,
+						 0xf5f4, 0xf7f6,
+						 0xf9f8, 0xfbfa,
+						 0xfdfc, 0xfffe };
+VECT_VAR_DECL(expected_q_p16_2,poly,16,8) [] = { 0xfff0, 0xfff1,
+						 0xfff2, 0xfff3,
+						 0xfff4, 0xfff5,
+						 0xfff6, 0xfff7 };
+VECT_VAR_DECL(expected_q_p16_3,poly,16,8) [] = { 0xfff0, 0xffff,
+						 0xfff1, 0xffff,
+						 0xfff2, 0xffff,
+						 0xfff3, 0xffff };
+VECT_VAR_DECL(expected_q_p16_4,poly,16,8) [] = { 0xfff0, 0xffff,
+						 0xffff, 0xffff,
+						 0xfff1, 0xffff,
+						 0xffff, 0xffff };
+VECT_VAR_DECL(expected_q_p16_5,poly,16,8) [] = { 0xf1f0, 0xf3f2,
+						 0xf5f4, 0xf7f6,
+						 0xf9f8, 0xfbfa,
+						 0xfdfc, 0xfffe };
+VECT_VAR_DECL(expected_q_p16_6,poly,16,8) [] = { 0xfff0, 0xfff1,
+						 0xfff2, 0xfff3,
+						 0xfff4, 0xfff5,
+						 0xfff6, 0xfff7 };
+VECT_VAR_DECL(expected_q_p16_7,poly,16,8) [] = { 0xfff0, 0xffff,
+						 0xfff1, 0xffff,
+						 0xfff2, 0xffff,
+						 0xfff3, 0xffff };
+VECT_VAR_DECL(expected_q_p16_8,poly,16,8) [] = { 0xfff0, 0xffff,
+						 0xffff, 0xffff,
+						 0xfff1, 0xffff,
+						 0xffff, 0xffff };
+VECT_VAR_DECL(expected_q_p16_9,poly,16,8) [] = { 0xf1f0, 0xf3f2,
+						 0xf5f4, 0xf7f6,
+						 0xf9f8, 0xfbfa,
+						 0xfdfc, 0xfffe };
+
 /* Expected results for vreinterpret_f32_xx.  */
 VECT_VAR_DECL(expected_f32_1,hfloat,32,2) [] = { 0xf3f2f1f0, 0xf7f6f5f4 };
 VECT_VAR_DECL(expected_f32_2,hfloat,32,2) [] = { 0xfff1fff0, 0xfff3fff2 };
@@ -684,6 +761,28 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, uint, u, 64, 2, uint, u, 32, 4, expected_q_u64_7);
   TEST_VREINTERPRET(q, uint, u, 64, 2, poly, p, 8, 16, expected_q_u64_8);
   TEST_VREINTERPRET(q, uint, u, 64, 2, poly, p, 16, 8, expected_q_u64_9);
+
+  /* vreinterpretq_p8_xx.  */
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, int, s, 8, 16, expected_q_p8_1);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, int, s, 16, 8, expected_q_p8_2);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, int, s, 32, 4, expected_q_p8_3);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, int, s, 64, 2, expected_q_p8_4);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, uint, u, 8, 16, expected_q_p8_5);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, uint, u, 16, 8, expected_q_p8_6);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, uint, u, 32, 4, expected_q_p8_7);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, uint, u, 64, 2, expected_q_p8_8);
+  TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, poly, p, 16, 8, expected_q_p8_9);
+
+  /* vreinterpretq_p16_xx.  */
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, int, s, 8, 16, expected_q_p16_1);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, int, s, 16, 8, expected_q_p16_2);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, int, s, 32, 4, expected_q_p16_3);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, int, s, 64, 2, expected_q_p16_4);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, uint, u, 8, 16, expected_q_p16_5);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, uint, u, 16, 8, expected_q_p16_6);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, uint, u, 32, 4, expected_q_p16_7);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, uint, u, 64, 2, expected_q_p16_8);
+  TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, poly, p, 8, 16, expected_q_p16_9);
 
   /* vreinterpret_f32_xx.  */
   TEST_VREINTERPRET_FP(, float, f, 32, 2, int, s, 8, 8, expected_f32_1);
