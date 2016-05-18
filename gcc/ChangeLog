@@ -1,3 +1,18 @@
+2016-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (preserve_function_body_p): Look for
+	first non-thunk clone.
+	(save_function_body): Save into first non-thunk.
+	* lto-cgraph.c (lto_output_edge): When streaming thunk do not look
+	up call stmt id.
+	(lto_output_node): Inline thunks don't need body in every
+	partition.
+	* lto-streamer-in.c: Do not fixup thunk clones.
+	* cgraphclones.c (cgraph_node::create_edge_including_clone): Skip
+	thunks.
+	* tree-inline.c (copy_bb): Be prepared for target node to be new after
+	folding suceeds.
+
 2016-05-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/63586

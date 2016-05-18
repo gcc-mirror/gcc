@@ -259,7 +259,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   streamer_write_gcov_count_stream (ob->main_stream, edge->count);
 
   bp = bitpack_create (ob->main_stream);
-  uid = (!gimple_has_body_p (edge->caller->decl)
+  uid = (!gimple_has_body_p (edge->caller->decl) || edge->caller->thunk.thunk_p
 	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt) + 1);
   bp_pack_enum (&bp, cgraph_inline_failed_t,
 	        CIF_N_REASONS, edge->inline_failed);
@@ -398,7 +398,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
 
-  if (node->analyzed && (!boundary_p || node->alias || node->thunk.thunk_p))
+  if (node->analyzed && (!boundary_p || node->alias
+			 || (node->thunk.thunk_p && !node->global.inlined_to)))
     tag = LTO_symtab_analyzed_node;
   else
     tag = LTO_symtab_unavail_node;

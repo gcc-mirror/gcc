@@ -2063,7 +2063,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  && id->dst_node->definition
 		  && (fn = gimple_call_fndecl (stmt)) != NULL)
 		{
-		  struct cgraph_node *dest = cgraph_node::get (fn);
+		  struct cgraph_node *dest = cgraph_node::get_create (fn);
 
 		  /* We have missing edge in the callgraph.  This can happen
 		     when previous inlining turned an indirect call into a
