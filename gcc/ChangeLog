@@ -1,3 +1,9 @@
+2016-05-18  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/70856
+	* ipa-icf.c (sem_variable::merge): Set DECL_PT_UID for
+	merged variables.
+
 2016-05-18  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (LTO_major_version): Bump to 6.
