@@ -1,3 +1,8 @@
+2016-05-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (determine_max_movement): Properly add
+	condition cost to PHI cost instead of total_cost.
+
 2016-05-18  Martin Liska  <mliska@suse.cz>
 
 	PR fortran/70856
