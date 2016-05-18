@@ -22649,19 +22649,14 @@ value_dependent_expression_p (tree expression)
   switch (TREE_CODE (expression))
     {
     case BASELINK:
-      /* A member function of a dependent class has dependent template
-	 arguments from its class.  */
-      if (dependent_type_p (BINFO_TYPE (BASELINK_BINFO (expression))))
-	return true;
-      return value_dependent_expression_p (BASELINK_FUNCTIONS (expression));
+      /* A dependent member function of the current instantiation.  */
+      return dependent_type_p (BINFO_TYPE (BASELINK_BINFO (expression)));
 
     case FUNCTION_DECL:
-      /* A function template specialization is value-dependent if it has any
-	 dependent template arguments, since that means it cannot be
-	 instantiated for constexpr evaluation.  */
-      if (DECL_LANG_SPECIFIC (expression)
-	  && DECL_TEMPLATE_INFO (expression))
-	return any_dependent_template_arguments_p (DECL_TI_ARGS (expression));
+      /* A dependent member function of the current instantiation.  */
+      if (DECL_CLASS_SCOPE_P (expression)
+	  && dependent_type_p (DECL_CONTEXT (expression)))
+	return true;
       break;
 
     case IDENTIFIER_NODE:
