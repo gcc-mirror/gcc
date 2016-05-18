@@ -1,3 +1,9 @@
+2016-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71145
+	* config/alpha/alpha.md (trap): Add (use (reg:DI 29)).
+	(*exception_receiver_1): Return "#" for TARGET_EXPLICIT_RELOCS.
+
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70353
