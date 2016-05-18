@@ -1,5 +1,11 @@
 2016-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/69793
+	* parser.c (cp_parser_template_id): Don't call cp_lexer_peek_nth_token
+	when the previous cp_lexer_peek_token returns CPP_EOF.
+
+2016-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/70466
 	* call.c (convert_like_real): Check that we are actually converting
 	from an init list.

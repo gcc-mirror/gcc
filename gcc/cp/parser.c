@@ -14835,11 +14835,11 @@ cp_parser_template_id (cp_parser *parser,
   /* If we find the sequence `[:' after a template-name, it's probably
      a digraph-typo for `< ::'. Substitute the tokens and check if we can
      parse correctly the argument list.  */
-  next_token = cp_lexer_peek_token (parser->lexer);
-  next_token_2 = cp_lexer_peek_nth_token (parser->lexer, 2);
-  if (next_token->type == CPP_OPEN_SQUARE
+  if (((next_token = cp_lexer_peek_token (parser->lexer))->type
+       == CPP_OPEN_SQUARE)
       && next_token->flags & DIGRAPH
-      && next_token_2->type == CPP_COLON
+      && ((next_token_2 = cp_lexer_peek_nth_token (parser->lexer, 2))->type
+	  == CPP_COLON)
       && !(next_token_2->flags & PREV_WHITE))
     {
       cp_parser_parse_tentatively (parser);
