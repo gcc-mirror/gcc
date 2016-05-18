@@ -866,6 +866,9 @@ struct phdr_data
    libraries.  */
 
 static int
+#ifdef __i386__
+__attribute__ ((__force_align_arg_pointer__))
+#endif
 phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
 	       void *pdata)
 {
