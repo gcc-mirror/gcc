@@ -1,3 +1,8 @@
+2016-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx2_pmaddubsw256, ssse3_pmaddubsw128): Add
+	avx512bw alternative.
+
 2016-05-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * gcc/config/i386/sse.md (define_insn "*andnot<mode>3"): Extend static
