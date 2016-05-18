@@ -4874,7 +4874,7 @@ get_computation_cost_at (struct ivopts_data *data,
       *inv_expr = get_loop_invariant_expr (data, ubase, cbase, ratio,
 					   address_p);
       /* Clear depends on.  */
-      if (inv_expr != NULL)
+      if (*inv_expr != NULL)
 	bitmap_clear (*depends_on);
     }
 
