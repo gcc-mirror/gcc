@@ -1,6 +1,14 @@
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69708
+	* gcc.dg/ipa/iinline-cstagg-2.c: New test.
+	* gcc.dg/ipa/ipcp-cstagg-5.c: Likewise.
+	* gcc.dg/ipa/ipcp-cstagg-6.c: Likewise.
+	* gcc.dg/ipa/ipcp-cstagg-7.c: Likewise.
+
+2016-05-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/69708
 	* gcc.dg/ipa/iinline-cstagg-1.c: New test.
 	* gcc.dg/ipa/ipcp-cstagg-1.c: Likewise.
 	* gcc.dg/ipa/ipcp-cstagg-2.c: Likewise.

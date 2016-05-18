@@ -1674,7 +1674,10 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
       else
 	gcc_assert (!jfunc->alignment.known);
 
-      if (is_gimple_ip_invariant (arg))
+      if (is_gimple_ip_invariant (arg)
+	  || (TREE_CODE (arg) == VAR_DECL
+	      && is_global_var (arg)
+	      && TREE_READONLY (arg)))
 	ipa_set_jf_constant (jfunc, arg, cs);
       else if (!is_gimple_reg_type (TREE_TYPE (arg))
 	       && TREE_CODE (arg) == PARM_DECL)

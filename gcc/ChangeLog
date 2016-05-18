@@ -1,6 +1,14 @@
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69708
+	* ipa-cp.c (ipa_get_jf_pass_through_result): Allow non-ip constant
+	input for NOP_EXPR pass-through functions.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Allow
+	aggregate global constant VAR_DECLs in constant jump functions.
+
+2016-05-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/69708
 	* ipa-prop.c (parm_preserved_before_stmt_p): Return true for loads
 	from TREE_READONLY parameters.
 
