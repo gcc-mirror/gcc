@@ -1317,7 +1317,8 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
 	 register, and this normally will be a subreg which should be reloaded
 	 as a whole.  This is particularly likely to be triggered when
 	 -fno-split-wide-types specified.  */
-      if (in_class_p (reg, cl, &new_class)
+      if (!REG_P (reg)
+	  || in_class_p (reg, cl, &new_class)
 	  || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (ptr_mode))
        loc = &SUBREG_REG (*loc);
     }
