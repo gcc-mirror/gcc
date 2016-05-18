@@ -2920,6 +2920,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       /* An outer ctx->ctor might be pointing to *valp, so just replace
 	 its contents.  */
       CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
+      CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp)
+	= CONSTRUCTOR_NO_IMPLICIT_ZERO (init);
     }
   else
     *valp = init;

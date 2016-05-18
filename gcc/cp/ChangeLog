@@ -1,5 +1,9 @@
 2016-05-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70648
+	* constexpr.c (cxx_eval_store_expression): Also copy
+	CONSTRUCTOR_NO_IMPLICIT_ZERO.
+
 	PR c++/70353
 	* decl.c (make_rtl_for_nonlocal_decl): Don't defer local statics
 	in constexpr functions.
