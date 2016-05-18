@@ -1,3 +1,8 @@
+2016-05-18  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (value_dependent_expression_p): Tweak new cases to better
+	match the wording in the standard.
+
 2016-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69793
