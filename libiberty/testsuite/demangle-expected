@@ -31,6 +31,11 @@ ArrowLine::ArrowheadIntersects(Arrowhead *, BoxObj &, Graphic *)
 ArrowLine::ArrowheadIntersects
 #
 --format=gnu --no-params
+ArrowheadIntersects__9ArrowLineP9ArrowheadO6BoxObjP7Graphic
+ArrowLine::ArrowheadIntersects(Arrowhead *, BoxObj &&, Graphic *)
+ArrowLine::ArrowheadIntersects
+#
+--format=gnu --no-params
 AtEnd__13ivRubberGroup
 ivRubberGroup::AtEnd(void)
 ivRubberGroup::AtEnd
@@ -51,6 +56,11 @@ TextCode::CoreConstDecls(ostream &)
 TextCode::CoreConstDecls
 #
 --format=gnu --no-params
+CoreConstDecls__8TextCodeO7ostream
+TextCode::CoreConstDecls(ostream &&)
+TextCode::CoreConstDecls
+#
+--format=gnu --no-params
 Detach__8StateVarP12StateVarView
 StateVar::Detach(StateVarView *)
 StateVar::Detach
@@ -66,8 +76,18 @@ RelateManip::Effect(ivEvent &)
 RelateManip::Effect
 #
 --format=gnu --no-params
+Effect__11RelateManipO7ivEvent
+RelateManip::Effect(ivEvent &&)
+RelateManip::Effect
+#
+--format=gnu --no-params
 FindFixed__FRP4CNetP4CNet
 FindFixed(CNet *&, CNet *)
+FindFixed
+#
+--format=gnu --no-params
+FindFixed__FOP4CNetP4CNet
+FindFixed(CNet *&&, CNet *)
 FindFixed
 #
 --format=gnu --no-params
@@ -76,8 +96,18 @@ Fix48_abort(twolongs &)
 Fix48_abort
 #
 --format=gnu --no-params
+Fix48_abort__FO8twolongs
+Fix48_abort(twolongs &&)
+Fix48_abort
+#
+--format=gnu --no-params
 GetBarInfo__15iv2_6_VScrollerP13ivPerspectiveRiT2
 iv2_6_VScroller::GetBarInfo(ivPerspective *, int &, int &)
+iv2_6_VScroller::GetBarInfo
+#
+--format=gnu --no-params
+GetBarInfo__15iv2_6_VScrollerP13ivPerspectiveOiT2
+iv2_6_VScroller::GetBarInfo(ivPerspective *, int &&, int &&)
 iv2_6_VScroller::GetBarInfo
 #
 --format=gnu --no-params
@@ -986,8 +1016,18 @@ List<VHDLEntity>::Pix::Pix(List<VHDLEntity>::Pix const &)
 List<VHDLEntity>::Pix::Pix
 #
 --format=gnu --no-params
+__Q2t4List1Z10VHDLEntity3PixOCQ2t4List1Z10VHDLEntity3Pix
+List<VHDLEntity>::Pix::Pix(List<VHDLEntity>::Pix const &&)
+List<VHDLEntity>::Pix::Pix
+#
+--format=gnu --no-params
 __Q2t4List1Z10VHDLEntity7elementRC10VHDLEntityPT0
 List<VHDLEntity>::element::element(VHDLEntity const &, List<VHDLEntity>::element *)
+List<VHDLEntity>::element::element
+#
+--format=gnu --no-params
+__Q2t4List1Z10VHDLEntity7elementOC10VHDLEntityPT0
+List<VHDLEntity>::element::element(VHDLEntity const &&, List<VHDLEntity>::element *)
 List<VHDLEntity>::element::element
 #
 --format=gnu --no-params
@@ -1033,6 +1073,11 @@ PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> >::PixX
 --format=gnu --no-params
 __t4PixX3Z11VHDLLibraryZ14VHDLLibraryRepZt4List1Z10VHDLEntityRCt4PixX3Z11VHDLLibraryZ14VHDLLibraryRepZt4List1Z10VHDLEntity
 PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> >::PixX(PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> > const &)
+PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> >::PixX
+#
+--format=gnu --no-params
+__t4PixX3Z11VHDLLibraryZ14VHDLLibraryRepZt4List1Z10VHDLEntityOCt4PixX3Z11VHDLLibraryZ14VHDLLibraryRepZt4List1Z10VHDLEntity
+PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> >::PixX(PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> > const &&)
 PixX<VHDLLibrary, VHDLLibraryRep, List<VHDLEntity> >::PixX
 #
 --format=gnu --no-params
@@ -1261,6 +1306,11 @@ smanip_int::smanip_int(ios &(*)(ios &, int), int)
 smanip_int::smanip_int
 #
 --format=lucid --no-params
+__ct__10smanip_intFPFO3iosi_O3iosi
+smanip_int::smanip_int(ios &&(*)(ios &&, int), int)
+smanip_int::smanip_int
+#
+--format=lucid --no-params
 __ct__11fstreambaseFi
 fstreambase::fstreambase(int)
 fstreambase::fstreambase
@@ -1278,6 +1328,11 @@ fstreambase::fstreambase
 --format=lucid --no-params
 __ct__11smanip_longFPFR3iosl_R3iosl
 smanip_long::smanip_long(ios &(*)(ios &, long), long)
+smanip_long::smanip_long
+#
+--format=lucid --no-params
+__ct__11smanip_longFPFO3iosl_O3iosl
+smanip_long::smanip_long(ios &&(*)(ios &&, long), long)
 smanip_long::smanip_long
 #
 --format=lucid --no-params
@@ -1321,6 +1376,11 @@ foo::foo(foo &)
 foo::foo
 #
 --format=lucid --no-params
+__ct__3fooFO3foo
+foo::foo(foo &&)
+foo::foo
+#
+--format=lucid --no-params
 __ct__3fooFi
 foo::foo(int)
 foo::foo
@@ -1333,6 +1393,11 @@ foo::foo
 --format=lucid --no-params
 __ct__3fooFiR3fooT1T2T1T2
 foo::foo(int, foo &, int, foo &, int, foo &)
+foo::foo
+#
+--format=lucid --no-params
+__ct__3fooFiO3fooT1T2T1T2
+foo::foo(int, foo &&, int, foo &&, int, foo &&)
 foo::foo
 #
 --format=lucid --no-params
@@ -1808,6 +1873,11 @@ foo
 --format=lucid --no-params
 foo__FiR3fooT1T2T1T2
 foo(int, foo &, int, foo &, int, foo &)
+foo
+#
+--format=lucid --no-params
+foo__FiO3fooT1T2T1T2
+foo(int, foo &&, int, foo &&, int, foo &&)
 foo
 #
 --format=lucid --no-params
@@ -2561,6 +2631,11 @@ DListNode<RLabel &>::DListNode(RLabel &, DListNode<RLabel &> *, DListNode<RLabel
 DListNode<RLabel &>::DListNode
 #
 --format=arm --no-params
+__ct__25DListNode__pt__9_O6RLabelFO6RLabelP25DListNode__pt__9_O6RLabelT2
+DListNode<RLabel &&>::DListNode(RLabel &&, DListNode<RLabel &&> *, DListNode<RLabel &&> *)
+DListNode<RLabel &&>::DListNode
+#
+--format=arm --no-params
 bar__3fooFiT16FooBar
 foo::bar(int, int, FooBar)
 foo::bar
@@ -2991,6 +3066,11 @@ DListNode<RLabel &>::DListNode(RLabel &, DListNode<RLabel &> *, DListNode<RLabel
 DListNode<RLabel &>::DListNode
 #
 --format=hp --no-params
+__ct__9DListNodeXTO6RLabel__FO6RLabelP9DListNodeXTO6RLabel_T2
+DListNode<RLabel &&>::DListNode(RLabel &&, DListNode<RLabel &&> *, DListNode<RLabel &&> *)
+DListNode<RLabel &&>::DListNode
+#
+--format=hp --no-params
 elem__6vectorXTiUP34__Fi
 vector<int,34U>::elem(int)
 vector<int,34U>::elem
@@ -3021,14 +3101,29 @@ vector<int,-67,4000U,short &>::elem(int)
 vector<int,-67,4000U,short &>::elem
 #
 --format=hp --no-params
+elem__6vectorXTiSN67UP4000TOs__Fi
+vector<int,-67,4000U,short &&>::elem(int)
+vector<int,-67,4000U,short &&>::elem
+#
+--format=hp --no-params
 elem__6vectorXTiSN67TRdTFPv_i__Fi
 vector<int,-67,double &,int (void *)>::elem(int)
 vector<int,-67,double &,int (void *)>::elem
 #
 --format=hp --no-params
+elem__6vectorXTiSN67TOdTFPv_i__Fi
+vector<int,-67,double &&,int (void *)>::elem(int)
+vector<int,-67,double &&,int (void *)>::elem
+#
+--format=hp --no-params
 X__6vectorXTiSN67TdTPvUP5TRs
 vector<int,-67,double,void *,5U,short &>::X
 vector<int,-67,double,void *,5U,short &>::X
+#
+--format=hp --no-params
+X__6vectorXTiSN67TdTPvUP5TOs
+vector<int,-67,double,void *,5U,short &&>::X
+vector<int,-67,double,void *,5U,short &&>::X
 #
 --format=hp --no-params
 elem__6vectorXTiA3foo__Fi
@@ -3071,6 +3166,11 @@ Spec<int,int &,int>::spec(int *)
 Spec<int,int &,int>::spec
 #
 --format=hp --no-params
+spec__17Spec<#1,#1.&&,#1>XTiTOiTi_FPi
+Spec<int,int &&,int>::spec(int *)
+Spec<int,int &&,int>::spec
+#
+--format=hp --no-params
 add__XTc_FcT1
 add<char>(char, char)
 add<char>
@@ -3101,6 +3201,11 @@ C<Test, Test::output> call<Test>(Test &)
 C<Test, Test::output> call<Test>
 #
 --format=gnu --no-params
+call__H1Z4Test_OX01_t1C2ZX01PMX01FPX01i_vQ2X016output
+C<Test, Test::output> call<Test>(Test &&)
+C<Test, Test::output> call<Test>
+#
+--format=gnu --no-params
 fn__FPQ21n1cPMQ21n1cFPQ21n1c_i
 fn(n::c *, int (n::c::*)(n::c *))
 fn
@@ -3124,6 +3229,11 @@ f
 foo__H1Zt2TA2ZRCiZt2NA1Ui9_X01_i
 int foo<TA<int const &, NA<9> > >(TA<int const &, NA<9> >)
 int foo<TA<int const &, NA<9> > >
+#
+--format=gnu --no-params
+foo__H1Zt2TA2ZOCiZt2NA1Ui9_X01_i
+int foo<TA<int const &&, NA<9> > >(TA<int const &&, NA<9> >)
+int foo<TA<int const &&, NA<9> > >
 #
 --format=gnu --no-params
 foo__H1Zt2TA2ZcZt2NA1Ui20_X01_i
@@ -3401,6 +3511,11 @@ int* const volatile restrict _far
 --format=gnu-v3 --no-params
 _Z3fooILi2EEvRAplT_Li1E_i
 void foo<2>(int (&) [(2)+(1)])
+foo<2>
+#
+--format=gnu-v3 --no-params
+_Z3fooILi2EEvOAplT_Li1E_i
+void foo<2>(int (&&) [(2)+(1)])
 foo<2>
 # 
 --format=gnu-v3 --no-params
