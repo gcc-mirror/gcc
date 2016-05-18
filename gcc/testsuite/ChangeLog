@@ -1,5 +1,10 @@
 2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret.c: Add
+	missing tests for vreinterpretq_p{8,16}.
+
+2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vsli_n.c: Add checks for
 	vsliq_n_s64 and vsliq_n_u64.
 
