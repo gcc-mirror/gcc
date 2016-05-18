@@ -128,10 +128,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1-b20160131\n"
+"Project-Id-Version: cpplib 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2016-03-27 18:00+0200\n"
+"PO-Revision-Date: 2016-05-16 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -394,7 +394,7 @@ msgstr "»%s« efter # er ikke et positivt heltal"
 #: directives.c:1061
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr ""
+msgstr "filen »%s« linjemarkør ignoreret på grund af ukorrekt indlejring"
 
 #: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
 #, c-format
@@ -555,10 +555,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ugyldigt præfiks »0b« i kommatalskonstant"
 
 #: expr.c:555
-#, fuzzy
-#| msgid "use of C++11 hexadecimal floating constant"
 msgid "use of C++1z hexadecimal floating constant"
-msgstr "brug af C++11 hexadecimal kommatalskonstant"
+msgstr "brug af C++1z hexadecimal kommatalskonstant"
 
 #: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
