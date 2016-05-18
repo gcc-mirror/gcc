@@ -1515,7 +1515,8 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   /* If the call becomes noreturn, remove the LHS if possible.  */
   if (lhs
       && (gimple_call_flags (new_stmt) & ECF_NORETURN)
-      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST)
+      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
+      && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))
     {
       if (TREE_CODE (lhs) == SSA_NAME)
 	{

@@ -1,3 +1,8 @@
+2016-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71100
+	* g++.dg/opt/pr71100.C: New test.
+
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69708

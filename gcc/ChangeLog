@@ -1,3 +1,9 @@
+2016-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71100
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Don't drop
+	lhs if it has TREE_ADDRESSABLE type.
+
 2016-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71145
