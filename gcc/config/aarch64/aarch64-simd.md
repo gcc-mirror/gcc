@@ -1979,19 +1979,6 @@
   }
 )
 
-(define_expand "reduc_plus_scal_<mode>"
-  [(match_operand:<VEL> 0 "register_operand" "=w")
-   (match_operand:V2F 1 "register_operand" "w")]
-  "TARGET_SIMD"
-  {
-    rtx elt = GEN_INT (ENDIAN_LANE_N (<MODE>mode, 0));
-    rtx scratch = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_aarch64_reduc_plus_internal<mode> (scratch, operands[1]));
-    emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
-    DONE;
-  }
-)
-
 (define_insn "aarch64_reduc_plus_internal<mode>"
  [(set (match_operand:VDQV 0 "register_operand" "=w")
        (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
@@ -2010,9 +1997,9 @@
   [(set_attr "type" "neon_reduc_add")]
 )
 
-(define_insn "aarch64_reduc_plus_internal<mode>"
- [(set (match_operand:V2F 0 "register_operand" "=w")
-       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
+(define_insn "reduc_plus_scal_<mode>"
+ [(set (match_operand:<VEL> 0 "register_operand" "=w")
+       (unspec:<VEL> [(match_operand:V2F 1 "register_operand" "w")]
 		   UNSPEC_FADDV))]
  "TARGET_SIMD"
  "faddp\\t%<Vetype>0, %1.<Vtype>"
