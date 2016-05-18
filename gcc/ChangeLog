@@ -1,3 +1,9 @@
+2016-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70353
+	* tree-inline.c (remap_decls): Don't add_local_decl if
+	cfun is null.
+
 2016-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
