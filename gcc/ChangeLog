@@ -1,3 +1,9 @@
+2016-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71168
+	* tree-loop-distribution.c (distribute_loop): Move *destroy_p
+	initialization earlier.
+
 2016-05-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md

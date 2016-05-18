@@ -1413,6 +1413,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   graph *pg = NULL;
   int num_sccs = 1;
 
+  *destroy_p = false;
   *nb_calls = 0;
   auto_vec<loop_p, 3> loop_nest;
   if (!find_loop_nest (loop, &loop_nest))
@@ -1647,7 +1648,6 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg_partitions (dump_file, partitions);
 
-  *destroy_p = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
     {
       if (partition_builtin_p (partition))
