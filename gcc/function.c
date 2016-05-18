@@ -6369,8 +6369,10 @@ make_pass_leaf_regs (gcc::context *ctxt)
 static unsigned int
 rest_of_handle_thread_prologue_and_epilogue (void)
 {
+  /* prepare_shrink_wrap is sensitive to the block structure of the control
+     flow graph, so clean it up first.  */
   if (optimize)
-    cleanup_cfg (CLEANUP_EXPENSIVE);
+    cleanup_cfg (0);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between
@@ -6384,7 +6386,7 @@ rest_of_handle_thread_prologue_and_epilogue (void)
 
   /* Shrink-wrapping can result in unreachable edges in the epilogue,
      see PR57320.  */
-  cleanup_cfg (0);
+  cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
 
   /* The stack usage info is finalized during prologue expansion.  */
   if (flag_stack_usage_info)
