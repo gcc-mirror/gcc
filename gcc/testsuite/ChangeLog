@@ -1,3 +1,10 @@
+2016-05-18  Jiong Wang  <jiong.wang@arm.com>
+
+        * gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Guard float64_t
+        with __aarch64__.
+        * gcc.target/aarch64/advsimd-intrinsics/vfms_vfma_n.c: Guard variable
+        declarations under __aarch64__ and __ARM_FEATURE_FMA.
+
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512bw-vpbroadcast-1.c: New test.
