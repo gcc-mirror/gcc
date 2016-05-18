@@ -13945,12 +13945,12 @@
    (set_attr "mode" "DI")])
 
 (define_insn "avx2_pmaddubsw256"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+  [(set (match_operand:V16HI 0 "register_operand" "=x,v")
 	(ss_plus:V16HI
 	  (mult:V16HI
 	    (zero_extend:V16HI
 	      (vec_select:V16QI
-		(match_operand:V32QI 1 "register_operand" "x")
+		(match_operand:V32QI 1 "register_operand" "x,v")
 		(parallel [(const_int 0) (const_int 2)
 			   (const_int 4) (const_int 6)
 			   (const_int 8) (const_int 10)
@@ -13961,7 +13961,7 @@
 			   (const_int 28) (const_int 30)])))
 	    (sign_extend:V16HI
 	      (vec_select:V16QI
-		(match_operand:V32QI 2 "nonimmediate_operand" "xm")
+		(match_operand:V32QI 2 "nonimmediate_operand" "xm,vm")
 		(parallel [(const_int 0) (const_int 2)
 			   (const_int 4) (const_int 6)
 			   (const_int 8) (const_int 10)
@@ -13993,9 +13993,10 @@
 			   (const_int 29) (const_int 31)]))))))]
   "TARGET_AVX2"
   "vpmaddubsw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sseiadd")
+  [(set_attr "isa" "*,avx512bw")
+   (set_attr "type" "sseiadd")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 ;; The correct representation for this is absolutely enormous, and
@@ -14048,19 +14049,19 @@
    (set_attr "mode" "XI")])
 
 (define_insn "ssse3_pmaddubsw128"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
+  [(set (match_operand:V8HI 0 "register_operand" "=x,x,v")
 	(ss_plus:V8HI
 	  (mult:V8HI
 	    (zero_extend:V8HI
 	      (vec_select:V8QI
-		(match_operand:V16QI 1 "register_operand" "0,x")
+		(match_operand:V16QI 1 "register_operand" "0,x,v")
 		(parallel [(const_int 0) (const_int 2)
 			   (const_int 4) (const_int 6)
 			   (const_int 8) (const_int 10)
 			   (const_int 12) (const_int 14)])))
 	    (sign_extend:V8HI
 	      (vec_select:V8QI
-		(match_operand:V16QI 2 "vector_operand" "xBm,xm")
+		(match_operand:V16QI 2 "vector_operand" "xBm,xm,vm")
 		(parallel [(const_int 0) (const_int 2)
 			   (const_int 4) (const_int 6)
 			   (const_int 8) (const_int 10)
@@ -14081,13 +14082,14 @@
   "TARGET_SSSE3"
   "@
    pmaddubsw\t{%2, %0|%0, %2}
+   vpmaddubsw\t{%2, %1, %0|%0, %1, %2}
    vpmaddubsw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "simul")
-   (set_attr "prefix_data16" "1,*")
+   (set_attr "prefix_data16" "1,*,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,vex,evex")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_pmaddubsw"
