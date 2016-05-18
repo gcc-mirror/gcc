@@ -1,3 +1,9 @@
+2016-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71145
+	* config/alpha/alpha.md (trap): Add (use (reg:DI 29)).
+	(*exception_receiver_1): Return "#" for TARGET_EXPLICIT_RELOCS.
+
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69708
@@ -61,8 +67,7 @@
 	loaded via XXSPLTIB.
 	(all_ones_constant): New predicate for vector constant with all
 	1's set.
-	(splat_input_operand): Add support for ISA 3.0 word splat
-	operations.
+	(splat_input_operand): Add support for ISA 3.0 word splat operations.
 	* config/rs6000/rs6000.c (xxspltib_constant_p): New function to
 	return if a constant can be loaded with the ISA 3.0 XXSPLTIB
 	instruction and possibly with a sign extension.
@@ -106,7 +111,7 @@
 	(vsx_movti_64bit): Fold movti into normal vector moves.
 	(vsx_movti_32bit): Likewise.
 	(vsx_splat_<mode>, V4SI/V4SF modes): Add support for ISA 3.0 word
-	spat instructions.
+	splat instructions.
 	(vsx_splat_v4si_internal): Likewise.
 	(vsx_splat_v4sf_internal): Likewise.
 	(vector fusion peepholes): Use VSX_M instead of VSX_M2.
@@ -219,7 +224,7 @@
 
 2016-05-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * gcc/config/i386/sse.md (define_insn "*andnot<mode>3"): Extend static
+	* gcc/config/i386/sse.md (define_insn "*andnot<mode>3"): Extend static
 	array to 128 chars.
 	(define_insn "*andnottf3"): Ditto.
 	(define_insn "*<code><mode>3"/any_logic): Ditto.
@@ -235,7 +240,7 @@
 2016-05-18  Petr Murzin  <petr.murzin@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/sse.md (define_insn "srcp14<mode>"): Use proper operand
+	* config/i386/sse.md (define_insn "srcp14<mode>"): Use proper operand
 	modifiers.
 	(define_insn "rsqrt14<mode>"): Ditto.
 	(define_insn "<mask_codefor>avx512dq_cvtps2qqv2di<mask_name>"): Ditto.
@@ -288,7 +293,8 @@
 
 2016-05-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
-	* config/aarch64/aarch64.c (all_extensions): Removed unused static variable.
+	* config/aarch64/aarch64.c (all_extensions): Removed unused
+	static variable.
 
 2016-05-17  Nathan Sidwell  <nathan@acm.org>
 
@@ -363,8 +369,8 @@
 
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
-	* config/aarch64/aarch64-simd.md (*aarch64_mul3_elt_to_128df): Extend to
-	all supported modes.  Rename to "*aarch64_mul3_elt_from_dup".
+	* config/aarch64/aarch64-simd.md (*aarch64_mul3_elt_to_128df): Extend
+	to all supported modes.  Rename to "*aarch64_mul3_elt_from_dup".
 
 2016-05-17  Jiong Wang  <jiong.wang@arm.com>
 
@@ -381,7 +387,7 @@
 2016-05-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* wide-int.h: Change fixed_wide_int_storage from class to struct.
-	
+
 2016-05-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71132
@@ -422,7 +428,7 @@
 
 2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
-        * doc/invoke.texi (AArch64 Options): Various updates.
+	* doc/invoke.texi (AArch64 Options): Various updates.
 
 2016-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -717,11 +723,11 @@
 
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/53440
-        * config/arm/arm.c (arm32_output_mi_thunk): New.
-        (arm_output_mi_thunk): Rename to arm_thumb1_mi_thunk. Rework
-        to split Thumb1 vs TARGET_32BIT functionality.
-        (arm_thumb1_mi_thunk): New.
+	PR target/53440
+	* config/arm/arm.c (arm32_output_mi_thunk): New.
+	(arm_output_mi_thunk): Rename to arm_thumb1_mi_thunk. Rework
+	to split Thumb1 vs TARGET_32BIT functionality.
+	(arm_thumb1_mi_thunk): New.
 
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -1258,9 +1264,9 @@
 
 2016-05-04  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
-        * config/rs6000/rs6000.c (rs6000_reassociation_width): Add
-        function for TARGET_SCHED_REASSOCIATION_WIDTH to enable
-        parallel reassociation for power8 and forward.
+	* config/rs6000/rs6000.c (rs6000_reassociation_width): Add
+	function for TARGET_SCHED_REASSOCIATION_WIDTH to enable
+	parallel reassociation for power8 and forward.
 
 2016-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
