@@ -1,5 +1,11 @@
 2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vmul.c: Remove useless #ifdef.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vtst.c: Likewise.
+
+2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret.c: Fix typo
 	in comment.
 
