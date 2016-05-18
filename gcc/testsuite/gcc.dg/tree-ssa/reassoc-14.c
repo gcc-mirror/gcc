@@ -19,6 +19,7 @@ unsigned int test2 (unsigned int x, unsigned int y, unsigned int z,
   return tmp1 + tmp2 + tmp3;
 }
 
-/* There should be one multiplication left in test1 and three in test2.  */
+/* There should be two multiplication left in test1 (inculding one generated
+   when converting addition to multiplication) and three in test2.  */
 
-/* { dg-final { scan-tree-dump-times "\\\*" 4 "reassoc1" } } */
+/* { dg-final { scan-tree-dump-times "\\\*" 5 "reassoc1" } } */
