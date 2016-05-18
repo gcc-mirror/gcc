@@ -1,5 +1,10 @@
 2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret.c: Fix typo
+	in comment.
+
+2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/noplt_3.c: Scan for "br\t".
 	* gcc.target/aarch64/tail_indirect_call_1.c: Scan for "br\t",
 	"blr\t" and switch to scan-assembler-times.

@@ -405,7 +405,7 @@ VECT_VAR_DECL(expected_q_f32_9,hfloat,32,4) [] = { 0xf3f2f1f0, 0xf7f6f5f4,
 VECT_VAR_DECL(expected_q_f32_10,hfloat,32,4) [] = { 0xfff1fff0, 0xfff3fff2,
 						    0xfff5fff4, 0xfff7fff6 };
 
-/* Expected results for vreinterpretq_xx_f32.  */
+/* Expected results for vreinterpret_xx_f32.  */
 VECT_VAR_DECL(expected_xx_f32_1,int,8,8) [] = { 0x0, 0x0, 0x80, 0xc1,
 						0x0, 0x0, 0x70, 0xc1 };
 VECT_VAR_DECL(expected_xx_f32_2,int,16,4) [] = { 0x0, 0xc180, 0x0, 0xc170 };
