@@ -803,6 +803,11 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
   bool modified = false;
   ao_ref refd;
 
+  tree base = get_base_address (parm_load);
+  gcc_assert (TREE_CODE (base) == PARM_DECL);
+  if (TREE_READONLY (base))
+    return true;
+
   /* FIXME: FBI can be NULL if we are being called from outside
      ipa_node_analysis or ipcp_transform_function, which currently happens
      during inlining analysis.  It would be great to extend fbi's lifetime and
