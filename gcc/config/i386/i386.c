@@ -17622,6 +17622,10 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    size = "QWORD";
 	  else if (code == 'x')
 	    size = "XMMWORD";
+	  else if (code == 't')
+	    size = "YMMWORD";
+	  else if (code == 'g')
+	    size = "ZMMWORD";
 	  else if (mode == BLKmode)
 	    /* ... or BLKmode operands, when not overridden.  */
 	    size = NULL;

@@ -1,3 +1,20 @@
+2016-05-18  Petr Murzin  <petr.murzin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/sse.md (define_insn "srcp14<mode>"): Use proper operand
+	modifiers.
+	(define_insn "rsqrt14<mode>"): Ditto.
+	(define_insn "<mask_codefor>avx512dq_cvtps2qqv2di<mask_name>"): Ditto.
+	(define_insn "<fixsuffix>fix_truncv2sfv2di2<mask_name>"): Ditto.
+	(define_insn "avx512f_<code>v8div16qi2_mask_store"): Ditto.
+	(define_insn "vec_set_hi_<mode><mask_name>"): Ditto.
+	(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>"):
+	Ditto.
+	(define_insn "*avx512f_gatherdi<mode>"): Ditto.
+	(define_insn "*avx512f_scatterdi<mode>"): Ditto.
+	* config/i386/i386.c (ix86_print_operand): Expand check for size
+	override codes for Intel syntax.
+
 2016-05-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71168
