@@ -1,3 +1,8 @@
+2016-05-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/sse.md (define_insn "*vec_concatv2sf_sse4_1"): Use 'Yv'
+	constraint fot SF mode.
+
 2016-05-18  Petr Murzin  <petr.murzin@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
