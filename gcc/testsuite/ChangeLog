@@ -1,3 +1,8 @@
+2016-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71168
+	* gcc.dg/torture/pr71168.c: New testcase.
+
 2016-05-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/63586
