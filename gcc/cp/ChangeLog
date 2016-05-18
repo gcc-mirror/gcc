@@ -1,4 +1,9 @@
 2016-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70095
+	* pt.c (instantiate_decl): Fix call to variable_template_p.
+
+2016-05-18  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70135
