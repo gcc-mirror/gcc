@@ -1,5 +1,12 @@
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512bw-vpbroadcast-1.c: New test.
+	* gcc.target/i386/avx512bw-vpbroadcast-2.c: New test.
+	* gcc.target/i386/avx512bw-vpbroadcast-3.c: New test.
+	* gcc.target/i386/avx512vl-vpbroadcast-1.c: New test.
+	* gcc.target/i386/avx512vl-vpbroadcast-2.c: New test.
+	* gcc.target/i386/avx512vl-vpbroadcast-3.c: New test.
+
 	* gcc.target/i386/avx512vl-vpalignr-3.c: New test.
 	* gcc.target/i386/avx512bw-vpalignr-3.c: New test.
 

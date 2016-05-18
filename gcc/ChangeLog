@@ -1,5 +1,10 @@
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (pbroadcast_evex_isa): New mode attr.
+	(avx2_pbroadcast<mode>): Add another alternative with v instead
+	of x constraints in it, using <pbroadcast_evex_isa> isa.
+	(avx2_pbroadcast<mode>_1): Similarly, add two such alternatives.
+
 	* config/i386/sse.md (<ssse3_avx2>_palignr<mode>): Use
 	constraint x instead of v in second alternative, add avx512bw
 	alternative.
