@@ -1,3 +1,9 @@
+2016-05-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_reduc_plus_internal<mode>): Rename to...
+	(reduc_plus_scal): ...This, and remove previous implementation.
+
 2016-05-18  Richard Biener  <rguenther@suse.de>
 
 	* passes.def: Put late dse and cd_dce in canonical order.
