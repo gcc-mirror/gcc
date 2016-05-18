@@ -1,3 +1,9 @@
+2016-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/noplt_3.c: Scan for "br\t".
+	* gcc.target/aarch64/tail_indirect_call_1.c: Scan for "br\t",
+	"blr\t" and switch to scan-assembler-times.
+
 2016-05-18  Jiong Wang  <jiong.wang@arm.com>
 
         * gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Guard float64_t

@@ -16,5 +16,5 @@ cal_novalue (int a)
   dec (a);
 }
 
-/* { dg-final { scan-assembler-times "br" 2 } } */
+/* { dg-final { scan-assembler-times "br\t" 2 } } */
 /* { dg-final { scan-assembler-not "b\t" } } */
