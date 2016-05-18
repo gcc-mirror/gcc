@@ -1,5 +1,10 @@
 2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vsli_n.c: Add checks for
+	vsliq_n_s64 and vsliq_n_u64.
+
+2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (CHECK,
 	CHECK_FP, CHECK_CUMULATIVE_SAT): Print which type was checked.
 
