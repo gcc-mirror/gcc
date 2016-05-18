@@ -1,3 +1,7 @@
+2016-05-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr71020.c: New test.
+
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/70646

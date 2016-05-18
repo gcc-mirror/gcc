@@ -1,3 +1,21 @@
+2016-05-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/71020
+	* tree-dfa.h (replace_abnormal_ssa_names): Declare.
+	* tree-dfa.c (replace_abnormal_ssa_names): New function.
+	* tree-call-cdce.c: Include tree-dfa.h.
+	(can_guard_call_p): New function, extracted from...
+	(can_use_internal_fn): ...here.
+	(shrink_wrap_one_built_in_call_with_conds): Remove failure path
+	and return void.
+	(shrink_wrap_one_built_in_call): Likewise.
+	(use_internal_fn): Likewise.
+	(shrink_wrap_conditional_dead_built_in_calls): Update accordingly
+	and return void.  Call replace_abnormal_ssa_names.
+	(pass_call_cdce::execute): Check can_guard_call_p during the
+	initial walk.  Assume shrink_wrap_conditional_dead_built_in_calls
+	will always change something.
+
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/70646
