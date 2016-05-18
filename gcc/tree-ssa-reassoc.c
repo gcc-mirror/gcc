@@ -1756,6 +1756,82 @@ eliminate_redundant_comparison (enum tree_code opcode,
   return false;
 }
 
+/* Transform repeated addition of same values into multiply with
+   constant.  */
+static bool
+transform_add_to_multiply (gimple *stmt, vec<operand_entry *> *ops)
+{
+  operand_entry *oe;
+  tree op = NULL_TREE;
+  int j;
+  int i, start = -1, end = 0, count = 0;
+  vec<std::pair <int, int> > indxs = vNULL;
+  bool changed = false;
+
+  if (!INTEGRAL_TYPE_P (TREE_TYPE ((*ops)[0]->op))
+      && !flag_unsafe_math_optimizations)
+    return false;
+
+  /* Look for repeated operands.  */
+  FOR_EACH_VEC_ELT (*ops, i, oe)
+    {
+      if (start == -1)
+	{
+	  count = 1;
+	  op = oe->op;
+	  start = i;
+	}
+      else if (operand_equal_p (oe->op, op, 0))
+	{
+	  count++;
+	  end = i;
+	}
+      else
+	{
+	  if (count > 1)
+	    indxs.safe_push (std::make_pair (start, end));
+	  count = 1;
+	  op = oe->op;
+	  start = i;
+	}
+    }
+
+  if (count > 1)
+    indxs.safe_push (std::make_pair (start, end));
+
+  for (j = indxs.length () - 1; j >= 0; --j)
+    {
+      /* Convert repeated operand addition to multiplication.  */
+      start = indxs[j].first;
+      end = indxs[j].second;
+      op = (*ops)[start]->op;
+      count = end - start + 1;
+      for (i = end; i >= start; --i)
+	ops->unordered_remove (i);
+      tree tmp = make_ssa_name (TREE_TYPE (op));
+      tree cst = build_int_cst (integer_type_node, count);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
+      gassign *mul_stmt
+	= gimple_build_assign (tmp, MULT_EXPR,
+			       op, fold_convert (TREE_TYPE (op), cst));
+      if (gimple_code (def_stmt) == GIMPLE_NOP
+	  || gimple_bb (stmt) != gimple_bb (def_stmt))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gimple_set_uid (mul_stmt, gimple_uid (stmt));
+	  gsi_insert_before (&gsi, mul_stmt, GSI_NEW_STMT);
+	}
+      else
+	insert_stmt_after (mul_stmt, def_stmt);
+      gimple_set_visited (mul_stmt, true);
+      add_to_ops_vec (ops, tmp);
+      changed = true;
+    }
+
+  return changed;
+}
+
+
 /* Perform various identities and other optimizations on the list of
    operand entries, stored in OPS.  The tree code for the binary
    operation between all the operands is OPCODE.  */
@@ -5109,6 +5185,10 @@ reassociate_bb (basic_block bb)
 		  ops.qsort (sort_by_operand_rank);
 		  optimize_ops_list (rhs_code, &ops);
 		}
+
+	      if (rhs_code == PLUS_EXPR
+		  && transform_add_to_multiply (stmt, &ops))
+		ops.qsort (sort_by_operand_rank);
 
 	      if (rhs_code == BIT_IOR_EXPR || rhs_code == BIT_AND_EXPR)
 		{
