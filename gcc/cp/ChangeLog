@@ -1,4 +1,13 @@
 2016-05-18  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70135
+	* constexpr.c (struct constexpr_ctx): Add save_exprs field.
+	(cxx_eval_loop_expr): Discard SAVE_EXPR values before looping.
+	(cxx_eval_constant_expression) [SAVE_EXPR]: Add it to the set.
+	(cxx_eval_outermost_constant_expr, is_sub_constant_expr): Initialize.
+
+2016-05-18  Jason Merrill  <jason@redhat.com>
 
 	* method.c (synthesized_method_walk): operator= can also be constexpr.
 

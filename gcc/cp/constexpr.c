@@ -899,6 +899,9 @@ struct constexpr_ctx {
   /* Values for any temporaries or local variables within the
      constant-expression. */
   hash_map<tree,tree> *values;
+  /* SAVE_EXPRs that we've seen within the current LOOP_EXPR.  NULL if we
+     aren't inside a loop.  */
+  hash_set<tree> *save_exprs;
   /* The CONSTRUCTOR we're currently building up for an aggregate
      initializer.  */
   tree ctor;
@@ -3106,6 +3109,15 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
   return r;
 }
 
+namespace {
+bool
+save_exprs_remover (const tree &expr, constexpr_ctx &ctx)
+{
+  ctx.values->remove (expr);
+  return true;
+}
+}
+
 /* Evaluate a LOOP_EXPR for side-effects.  Handles break and return
    semantics; continue semantics are covered by cxx_eval_statement_list.  */
 
@@ -3114,16 +3126,25 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 		    bool *non_constant_p, bool *overflow_p,
 		    tree *jump_target)
 {
+  constexpr_ctx new_ctx = *ctx;
+
   tree body = TREE_OPERAND (t, 0);
-  while (true)
+  do
     {
-      cxx_eval_statement_list (ctx, body,
+      hash_set<tree> save_exprs;
+      new_ctx.save_exprs = &save_exprs;
+
+      cxx_eval_statement_list (&new_ctx, body,
 			       non_constant_p, overflow_p, jump_target);
-      if (returns (jump_target) || breaks (jump_target) || *non_constant_p)
-	break;
+
+      /* Forget saved values of SAVE_EXPRs.  */
+      save_exprs.traverse<constexpr_ctx &, save_exprs_remover>(new_ctx);
     }
+  while (!returns (jump_target) && !breaks (jump_target) && !*non_constant_p);
+
   if (breaks (jump_target))
     *jump_target = NULL_TREE;
+
   return NULL_TREE;
 }
 
@@ -3418,6 +3439,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), false,
 					    non_constant_p, overflow_p);
 	  ctx->values->put (t, r);
+	  if (ctx->save_exprs)
+	    ctx->save_exprs->add (t);
 	}
       break;
 
@@ -3799,7 +3822,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map<tree,tree> map;
-  constexpr_ctx ctx = { NULL, &map, NULL, NULL, allow_non_constant, strict };
+
+  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL,
+			allow_non_constant, strict };
+
   tree type = initialized_type (t);
   tree r = t;
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
@@ -3907,7 +3933,9 @@ is_sub_constant_expr (tree t)
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map <tree, tree> map;
-  constexpr_ctx ctx = { NULL, &map, NULL, NULL, true, true };
+
+  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, true, true };
+
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
 				&overflow_p);
   return !non_constant_p && !overflow_p;
