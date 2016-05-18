@@ -1,8 +1,8 @@
 # Danish version of GCC strings.
-# Copyright (C) 2015 Free Software Foundation, Inc.
+# Copyright (C) 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Ole Laursen <olau@hardworking.dk>, 2001, 02, 03, 04.
-# Joe Hansen <joedalton2@yahoo.dk>, 2015.
+# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016.
 #
 # Konventioner:
 #
@@ -30,6 +30,7 @@
 # declared -> erklæret
 # defaults to -> antages at være
 # dereference -> følge
+# directory -> mappe
 # discard -> fjerne
 # discard -> kassere
 # divide -> division
@@ -133,10 +134,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 5.2.0\n"
+"Project-Id-Version: gcc 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2015-08-16 18:00+0200\n"
+"PO-Revision-Date: 2016-05-16 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -400,282 +401,196 @@ msgid "Options:\n"
 msgstr "Tilvalg:\n"
 
 #: gcc.c:3384
-#, fuzzy
-#| msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
 msgid "  -pass-exit-codes         Exit with highest error code from a phase.\n"
-msgstr "  -pass-exit-codes         Afslut med den højeste fejlkode fra en fase\n"
+msgstr "  -pass-exit-codes         Afslut med den højeste fejlkode fra en fase.\n"
 
 #: gcc.c:3385
-#, fuzzy
-#| msgid "  --help                   Display this information\n"
 msgid "  --help                   Display this information.\n"
-msgstr "  --help                   Vis disse oplysninger\n"
+msgstr "  --help                   Vis disse oplysninger.\n"
 
 #: gcc.c:3386
-#, fuzzy
-#| msgid "  --target-help            Display target specific command line options\n"
 msgid "  --target-help            Display target specific command line options.\n"
-msgstr "  --target-help            Vis målspecifikke kommandolinjetilvalg\n"
+msgstr "  --target-help            Vis målspecifikke kommandolinjetilvalg.\n"
 
 #: gcc.c:3387
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
 msgstr ""
 
 #: gcc.c:3388
-#, fuzzy
-#| msgid "                           Display specific types of command line options\n"
 msgid "                           Display specific types of command line options.\n"
-msgstr "                           Vis specifikke typer af tilvalg for kommandolinjen\n"
+msgstr "                           Vis specifikke typer af tilvalg for kommandolinjen.\n"
 
 #: gcc.c:3390
-#, fuzzy
-#| msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr "  (benyt »-v --help« for at vise kommandolinjetilvalg for underprocesser)\n"
+msgstr "  (benyt »-v --help« for at vise kommandolinjetilvalg for underprocesser).\n"
 
 #: gcc.c:3391
-#, fuzzy
-#| msgid "  --version                Display compiler version information\n"
 msgid "  --version                Display compiler version information.\n"
-msgstr "  --version                Udskriv oversætterens version\n"
+msgstr "  --version                Udskriv oversætterens version.\n"
 
 #: gcc.c:3392
-#, fuzzy
-#| msgid "  -dumpspecs               Display all of the built in spec strings\n"
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
-msgstr "  -dumpspecs               Vis alle de indbyggede specifikationsstrenge\n"
+msgstr "  -dumpspecs               Vis alle de indbyggede specifikationsstrenge.\n"
 
 #: gcc.c:3393
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -dumpversion             Display the version of the compiler.\n"
-msgstr "  -dumpversion             Vis oversætterens versionsnummer\n"
+msgstr "  -dumpversion             Vis oversætterens versionsnummer.\n"
 
 #: gcc.c:3394
-#, fuzzy
-#| msgid "  -dumpmachine             Display the compiler's target processor\n"
 msgid "  -dumpmachine             Display the compiler's target processor.\n"
-msgstr "  -dumpmachine             Vis oversætterens målprocessor\n"
+msgstr "  -dumpmachine             Vis oversætterens målprocessor.\n"
 
 #: gcc.c:3395
-#, fuzzy
-#| msgid "  -print-search-dirs       Display the directories in the compiler's search path\n"
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
-msgstr "  -print-search-dirs       Vis katalogerne i oversætterens søgesti\n"
+msgstr "  -print-search-dirs       Vis mapperne i oversætterens søgesti.\n"
 
 #: gcc.c:3396
-#, fuzzy
-#| msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library\n"
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"
-msgstr "  -print-libgcc-file-name  Vis navnet på oversætterens tilhørende bibliotek\n"
+msgstr "  -print-libgcc-file-name  Vis navnet på oversætterens tilhørende bibliotek.\n"
 
 #: gcc.c:3397
-#, fuzzy
-#| msgid "  -print-file-name=<lib>   Display the full path to library <lib>\n"
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
-msgstr "  -print-file-name=<bibl>  Vis den komplette sti til biblioteket <bibl>\n"
+msgstr "  -print-file-name=<bibl>  Vis den komplette sti til biblioteket <bibl>.\n"
 
 #: gcc.c:3398
-#, fuzzy
-#| msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr "  -print-prog-name=<prog>  Vis den komplette sti til oversætterkomponenten <prog>\n"
+msgstr "  -print-prog-name=<prog>  Vis den komplette sti til oversætterkomponenten <prog>.\n"
 
 #: gcc.c:3399
-#, fuzzy
-#| msgid ""
-#| "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
-#| "                           a component in the library path\n"
 msgid ""
 "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
 "                           a component in the library path.\n"
 msgstr ""
 "  -print-multi-lib         Vis målets normaliseret GNU-triplet, brugt som\n"
-"                           en komponent i bibioteksstien\n"
+"                           en komponent i bibioteksstien.\n"
 
 #: gcc.c:3402
-#, fuzzy
-#| msgid "  -print-multi-directory   Display the root directory for versions of libgcc\n"
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc.\n"
-msgstr "  -print-multi-directory   Vis rodkataloget for versioner af libgcc\n"
+msgstr "  -print-multi-directory   Vis rodmappen for versioner af libgcc.\n"
 
 #: gcc.c:3403
-#, fuzzy
-#| msgid ""
-#| "  -print-multi-lib         Display the mapping between command line options and\n"
-#| "                           multiple library search directories\n"
 msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories.\n"
 msgstr ""
 "  -print-multi-lib         Vis afbildningen mellem kommandolinjetilvalg og\n"
-"                           flere bibliotekssøgekataloger\n"
+"                           flere bibliotekssøgemapper.\n"
 
 #: gcc.c:3406
-#, fuzzy
-#| msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr "  -print-multi-os-directory Vis den relative sti for OS-biblioteker\n"
+msgstr "  -print-multi-os-directory Vis den relative sti for OS-biblioteker.\n"
 
 #: gcc.c:3407
-#, fuzzy
-#| msgid "  -print-sysroot           Display the target libraries directory\n"
 msgid "  -print-sysroot           Display the target libraries directory.\n"
-msgstr "  -print-sysroot           Vis mappen for målets biblioteker\n"
+msgstr "  -print-sysroot           Vis mappen for målets biblioteker.\n"
 
 #: gcc.c:3408
-#, fuzzy
-#| msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers.\n"
-msgstr "  -print-sysroot-headers-suffix Vis sysroot-suffikset brugt til at finde teksthoveder\n"
+msgstr "  -print-sysroot-headers-suffix Vis sysroot-suffikset brugt til at finde teksthoveder.\n"
 
 #: gcc.c:3409
-#, fuzzy
-#| msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"
-msgstr "  -Wa,<tilvalg>            Videregiv komma-adskilte <tilvalg> til maskinkodeoversætteren\n"
+msgstr "  -Wa,<tilvalg>            Videregiv komma-adskilte <tilvalg> til maskinkodeoversætteren.\n"
 
 #: gcc.c:3410
-#, fuzzy
-#| msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
-msgstr "  -Wp,<tilvalg>            Videregiv komma-adskilte <tilvalg> til præprocessoren\n"
+msgstr "  -Wp,<tilvalg>            Videregiv komma-adskilte <tilvalg> til forbrænderen.\n"
 
 #: gcc.c:3411
-#, fuzzy
-#| msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker\n"
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
-msgstr "  -Wl,<tilvalg>            Videregiv komma-adskilte <tilvalg> til sammenkæderen\n"
+msgstr "  -Wl,<tilvalg>            Videregiv komma-adskilte <tilvalg> til sammenkæderen.\n"
 
 #: gcc.c:3412
-#, fuzzy
-#| msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr "  -Xassembler <para>       Videregiv <para> til maskinkodeoversætteren\n"
+msgstr "  -Xassembler <para>       Videregiv <para> til maskinkodeoversætteren.\n"
 
 #: gcc.c:3413
-#, fuzzy
-#| msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr "  -Xpreprocessor <para>    Videregiv <para> til forbrænderen\n"
+msgstr "  -Xpreprocessor <para>    Videregiv <para> til forbrænderen.\n"
 
 #: gcc.c:3414
-#, fuzzy
-#| msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <para>          Videregiv <para> til sammenkæderen\n"
+msgstr "  -Xlinker <para>          Videregiv <para> til sammenkæderen.\n"
 
 #: gcc.c:3415
-#, fuzzy
-#| msgid "  -save-temps              Do not delete intermediate files\n"
 msgid "  -save-temps              Do not delete intermediate files.\n"
-msgstr "  -save-temps              Slet ikke midlertidige filer\n"
+msgstr "  -save-temps              Slet ikke midlertidige filer.\n"
 
 #: gcc.c:3416
-#, fuzzy
-#| msgid "  -save-temps=<arg>        Do not delete intermediate files\n"
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr "  -save-temps=<para>       Slet ikke midlertidige filer\n"
+msgstr "  -save-temps=<para>       Slet ikke midlertidige filer.\n"
 
 #: gcc.c:3417
 msgid ""
 "  -no-canonical-prefixes   Do not canonicalize paths when building relative\n"
 "                           prefixes to other gcc components.\n"
 msgstr ""
+"  -no-canonical-prefixes   Normaliser ikke stier når der bygges relative\n"
+"                           præfiks til andre gcc-komponenter.\n"
 
 #: gcc.c:3420
-#, fuzzy
-#| msgid "  -pipe                    Use pipes rather than intermediate files\n"
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
-msgstr "  -pipe                    Brug datakanaler i stedet for midlertidige filer\n"
+msgstr "  -pipe                    Brug datakanaler i stedet for midlertidige filer.\n"
 
 #: gcc.c:3421
-#, fuzzy
-#| msgid "  -time                    Time the execution of each subprocess\n"
 msgid "  -time                    Time the execution of each subprocess.\n"
-msgstr "  -time                    Tag tid på udførslen af hver underproces\n"
+msgstr "  -time                    Tag tid på udførslen af hver underproces.\n"
 
 #: gcc.c:3422
-#, fuzzy
-#| msgid "  -specs=<file>            Override built-in specs with the contents of <file>\n"
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
-msgstr "  -specs=<fil>             Overskriv indbyggede specifikationer med indholdet af <fil>\n"
+msgstr "  -specs=<fil>             Overskriv indbyggede specifikationer med indholdet af <fil>.\n"
 
 #: gcc.c:3423
-#, fuzzy
-#| msgid "  -std=<standard>          Assume that the input sources are for <standard>\n"
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
-msgstr "  -std=<standard>          Antag at inddatakildekoden er skrevet til <standard>\n"
+msgstr "  -std=<standard>          Antag at inddatakildekoden er skrevet til <standard>.\n"
 
 #: gcc.c:3424
 msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           and libraries.\n"
 msgstr ""
+"  --sysroot=<mappe>    Brug <mappe> som rodmappen for teksthoveder\n"
+"                       og biblioteker.\n"
 
 #: gcc.c:3427
-#, fuzzy
-#| msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
 msgid "  -B <directory>           Add <directory> to the compiler's search paths.\n"
-msgstr "  -B <katalog>             Tilføj katalog til oversætterens søgestier\n"
+msgstr "  -B <mappe>               Tilføj mappe til oversætterens søgestier.\n"
 
 #: gcc.c:3428
-#, fuzzy
-#| msgid "  -v                       Display the programs invoked by the compiler\n"
 msgid "  -v                       Display the programs invoked by the compiler.\n"
-msgstr "  -v                       Vis de programmer der startes af oversætteren\n"
+msgstr "  -v                       Vis de programmer der startes af oversætteren.\n"
 
 #: gcc.c:3429
-#, fuzzy
-#| msgid "  -###                     Like -v but options quoted and commands not executed\n"
 msgid "  -###                     Like -v but options quoted and commands not executed.\n"
 msgstr ""
 "  -###                     Som '-v', men tilvalg anbringes i anførselstegn\n"
-"                           og kommandoerne udføres ikke\n"
+"                           og kommandoerne udføres ikke.\n"
 
 #: gcc.c:3430
-#, fuzzy
-#| msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
-msgstr "  -E                       Forbehandl kun; oversæt og sammenkæd ikke\n"
+msgstr "  -E                       Forbehandl kun; oversæt, maskinkodeoversæt og sammenkæd ikke.\n"
 
 #: gcc.c:3431
-#, fuzzy
-#| msgid "  -S                       Compile only; do not assemble or link\n"
 msgid "  -S                       Compile only; do not assemble or link.\n"
-msgstr "  -S                       Oversæt kun; maskinekodeoversæt og sammenkæd ikke\n"
+msgstr "  -S                       Oversæt kun; maskinekodeoversæt og sammenkæd ikke.\n"
 
 #: gcc.c:3432
-#, fuzzy
-#| msgid "  -c                       Compile and assemble, but do not link\n"
 msgid "  -c                       Compile and assemble, but do not link.\n"
-msgstr "  -c                       Oversæt, også til maskinkode, men sammenkæd ikke\n"
+msgstr "  -c                       Oversæt, også til maskinkode, men sammenkæd ikke.\n"
 
 #: gcc.c:3433
-#, fuzzy
-#| msgid "  -o <file>                Place the output into <file>\n"
 msgid "  -o <file>                Place the output into <file>.\n"
-msgstr "  -o <fil>                 Anbring uddataene i <fil>\n"
+msgstr "  -o <fil>                 Anbring uddataene i <fil>.\n"
 
 #: gcc.c:3434
-#, fuzzy
-#| msgid "  -pie                     Create a position independent executable\n"
 msgid "  -pie                     Create a position independent executable.\n"
-msgstr "  -pie                     Opret en positionsuafhængig kørbar fil\n"
+msgstr "  -pie                     Opret en positionsuafhængig kørbar fil.\n"
 
 #: gcc.c:3435
-#, fuzzy
-#| msgid "  -shared                  Create a shared library\n"
 msgid "  -shared                  Create a shared library.\n"
-msgstr "  -shared                  Opret et delt bibliotek\n"
+msgstr "  -shared                  Opret et delt bibliotek.\n"
 
 #: gcc.c:3436
-#, fuzzy
-#| msgid ""
-#| "  -x <language>            Specify the language of the following input files\n"
-#| "                           Permissible languages include: c c++ assembler none\n"
-#| "                           'none' means revert to the default behavior of\n"
-#| "                           guessing the language based on the file's extension\n"
 msgid ""
 "  -x <language>            Specify the language of the following input files.\n"
 "                           Permissible languages include: c c++ assembler none\n"
@@ -684,8 +599,8 @@ msgid ""
 msgstr ""
 "  -x <sprog>               Angiv sproget for de følgende inddatafiler.\n"
 "                           Tilladte sprog inkluderer: c c++ assembler none\n"
-"                           'none' betyder at standardopførslen med at gætte\n"
-"                           sproget på filendelsen udføres\n"
+"                           »none« betyder at standardopførslen med at gætte\n"
+"                           sproget på filendelsen udføres.\n"
 
 #: gcc.c:3443
 #, c-format
@@ -699,7 +614,7 @@ msgstr ""
 "Tilvalg der begynder med -g, -f, -m, -O, -W eller --param bliver automatisk\n"
 " givet videre til de forskellige underprocesser som %s starter. For at\n"
 " videregive andre indstillinger til disse processer kan tilvalg på formen\n"
-" '-W<bogstav>' bruges.\n"
+" »-W<bogstav>« bruges.\n"
 
 #: gcc.c:5876
 #, c-format
@@ -734,12 +649,12 @@ msgstr "gcc-styringsprogram version %s %skører gcc-version %s\n"
 #: gcc.c:6682 gcc.c:6894
 #, c-format
 msgid "The bug is not reproducible, so it is likely a hardware or OS problem.\n"
-msgstr ""
+msgstr "Fejlen kan ikke genskabes, så det er sandsynligvis et udstyrsproblem eller et problem med operativsystemet.\n"
 
 #: gcc.c:6818
 #, c-format
 msgid "Preprocessed source stored into %s file, please attach this to your bugreport.\n"
-msgstr ""
+msgstr "Forbrændt kilde lagret i %s-filen, vedhæft venligst den til din fejlrapport.\n"
 
 #: gcc.c:7757
 #, c-format
@@ -793,6 +708,10 @@ msgid ""
 "==============\n"
 "\n"
 msgstr ""
+"\n"
+"Tilvalg for sammenkæder\n"
+"==============\n"
+"\n"
 
 #: gcc.c:8205
 #, c-format
@@ -800,6 +719,8 @@ msgid ""
 "Use \"-Wl,OPTION\" to pass \"OPTION\" to the linker.\n"
 "\n"
 msgstr ""
+"Brug »-Wl,TILVALG« for at sende »TILVALG« til sammenkæderen.\n"
+"\n"
 
 #: gcc.c:9497
 #, c-format
@@ -808,6 +729,9 @@ msgid ""
 "=================\n"
 "\n"
 msgstr ""
+"Tilvalg for maskinkodeoversætteren\n"
+"=================\n"
+"\n"
 
 #: gcc.c:9498
 #, c-format
@@ -815,11 +739,13 @@ msgid ""
 "Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n"
 "\n"
 msgstr ""
+"Brug »-Wa,TILVALG« til at sende »TILVALG« til maskinkodeoversætteren.\n"
+"\n"
 
 #: gcov-tool.c:166
 #, c-format
 msgid "  merge [options] <dir1> <dir2>         Merge coverage file contents\n"
-msgstr ""
+msgstr "  merge [tilvalg] <map1> <map2>         Sammenføj dækningsfilindhold\n"
 
 #: gcov-tool.c:167 gcov-tool.c:261 gcov-tool.c:417
 #, c-format
@@ -827,10 +753,9 @@ msgid "    -v, --verbose                       Verbose mode\n"
 msgstr "    -v, --verbose                       Uddybende tilstand\n"
 
 #: gcov-tool.c:168 gcov-tool.c:262
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "    -o, --output <dir>                  Output directory\n"
-msgstr "  -n, --no-output                 Opret ikke en uddatafil\n"
+msgstr "    -o, --output <map>                  Vis mappe\n"
 
 #: gcov-tool.c:169
 #, c-format
@@ -840,12 +765,12 @@ msgstr ""
 #: gcov-tool.c:185
 #, c-format
 msgid "Merge subcomand usage:"
-msgstr ""
+msgstr "Sammenføj brug af underkommando:"
 
 #: gcov-tool.c:260
 #, c-format
 msgid "  rewrite [options] <dir>               Rewrite coverage file contents\n"
-msgstr ""
+msgstr "  rewrite [tilvalg] <map>               Genskriv dækningsfilindhold\n"
 
 #: gcov-tool.c:263
 #, c-format
@@ -875,46 +800,42 @@ msgstr ""
 #: gcov-tool.c:359
 #, c-format
 msgid "normalization cannot co-exist with scaling\n"
-msgstr ""
+msgstr "normalisering kan ikke sameksistere med skalering\n"
 
 #: gcov-tool.c:416
 #, c-format
 msgid "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n"
-msgstr ""
+msgstr "  overlap [tilvalg] <map1> <map2>       Beregn overlap for to profiler\n"
 
 #: gcov-tool.c:418
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -h, --hotonly                       Only print info for hot objects/functions\n"
-msgstr "  -h, --help                      Udskriv denne hjælp og afslut\n"
+msgstr "    -h, --hotonly                       Udskriv kun info for varme objekter/funktioner\n"
 
 #: gcov-tool.c:419
-#, fuzzy, c-format
-#| msgid "  -p                      Enable function profiling\n"
+#, c-format
 msgid "    -f, --function                      Print function level info\n"
-msgstr "  -p                      Aktivér funktionsprofilering\n"
+msgstr "    -f, --function                      Udskriv info om funktionsniveau\n"
 
 #: gcov-tool.c:420
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -F, --fullname                      Print full filename\n"
-msgstr "  -h, --help                      Udskriv denne hjælp og afslut\n"
+msgstr "    -F, --fullname                      Udskriv fuldt filnavn\n"
 
 #: gcov-tool.c:421
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -o, --object                        Print object level info\n"
-msgstr "  -h, --help                      Udskriv denne hjælp og afslut\n"
+msgstr "    -o, --object                        Udskriv info på objektniveau\n"
 
 #: gcov-tool.c:422
 #, c-format
 msgid "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n"
-msgstr ""
+msgstr "    -t <float>, --hot_threshold <float> Angiv tærskel for varme\n"
 
 #: gcov-tool.c:442
 #, c-format
 msgid "Overlap subcomand usage:"
-msgstr ""
+msgstr "Overlap brug af underkommando:"
 
 #: gcov-tool.c:508
 #, c-format
@@ -956,21 +877,22 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.c:526
-#, fuzzy, c-format
-#| msgid "Copyright %s 2014-2015 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
-msgstr "Ophavsret %s 2014-2015 Free Software Foundation, Inc.\n"
+msgstr "Ophavsret %s 2014-2016 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:529 gcov.c:506
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "This is free software; see the source for copying conditions.\n"
 "There is NO warranty; not even for MERCHANTABILITY or \n"
 "FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
-"Dette er et frit program; se kildekoden for kopieringsbetingelser. Der er\n"
-"INGEN garanti; ikke engang for SALGBARHED eller BRUGBARHED TIL NOGET FORMÅL.\n"
+"Dette er et frit program; se kildekoden for kopieringsbetingelser.\n"
+"Der er INGEN garanti; ikke engang for SALGBARHED eller\n"
+"BRUGBARHED TIL NOGET FORMÅL.\n"
+"\n"
 
 #: gcov.c:472
 #, c-format
@@ -1015,10 +937,9 @@ msgstr ""
 "                                    for procenter\n"
 
 #: gcov.c:479
-#, fuzzy, c-format
-#| msgid "  --help                   Display this information\n"
+#, c-format
 msgid "  -d, --display-progress          Display progress information\n"
-msgstr "  --help                   Vis disse oplysninger\n"
+msgstr "  -d, --display-progress          Vis statusinformation\n"
 
 #: gcov.c:480
 #, c-format
@@ -1028,14 +949,16 @@ msgstr "  -f, --function-summaries        Udskriv sammendrag for hver funktion\n
 #: gcov.c:481
 #, c-format
 msgid "  -i, --intermediate-format       Output .gcov file in intermediate text format\n"
-msgstr ""
+msgstr "  -i, --intermediate-format       Vis .gcov-filen i melleliggende tekstformat\n"
 
 #: gcov.c:482
 #, c-format
 msgid ""
 "  -l, --long-file-names           Use long output file names for included\n"
 "                                    source files\n"
-msgstr "  -l, --long-file-names           Brug lange filnavne til inkluderede kildefiler\n"
+msgstr ""
+"  -l, --long-file-names           Brug lange filnavne til inkluderede\n"
+"                                    kildefiler\n"
 
 #: gcov.c:484
 #, c-format
@@ -1058,10 +981,9 @@ msgid "  -p, --preserve-paths            Preserve all pathname components\n"
 msgstr "  -p, --preserve-paths            Bevar alle stinavnskomponenter\n"
 
 #: gcov.c:488
-#, fuzzy, c-format
-#| msgid "  -a, --all-blocks                Show information for every basic block\n"
+#, c-format
 msgid "  -r, --relative-only             Only show data for relative sources\n"
-msgstr "  -a, --all-blocks                Vis oplysninger for alle basisblokke\n"
+msgstr "  -r, --relative-only             Vis kun data for relative kilder\n"
 
 #: gcov.c:489
 #, c-format
@@ -1119,10 +1041,9 @@ msgid "%s:source file is newer than notes file '%s'\n"
 msgstr "%s: kildefil er nyere end notefil »%s«\n"
 
 #: gcov.c:1144
-#, fuzzy, c-format
-#| msgid "(the message is only displayed one per source file)\n"
+#, c-format
 msgid "(the message is displayed only once per source file)\n"
-msgstr "(beskeden er kun vist en per kildefil)\n"
+msgstr "(beskeden er kun vist en gang per kildefil)\n"
 
 #: gcov.c:1169
 #, c-format
@@ -1180,19 +1101,19 @@ msgid "%s:unknown function '%u'\n"
 msgstr "%s:ukendt funktion »%u«\n"
 
 #: gcov.c:1466
-#, fuzzy, c-format
+#, c-format
 msgid "%s:profile mismatch for '%s'\n"
-msgstr "%s før '%s'"
+msgstr "%s:forskelige profiler for »%s«\n"
 
 #: gcov.c:1485
-#, fuzzy, c-format
+#, c-format
 msgid "%s:overflowed\n"
-msgstr "%s: overløbsintervalfejl"
+msgstr "%s: overløb\n"
 
 #: gcov.c:1531
 #, c-format
 msgid "%s:'%s' lacks entry and/or exit blocks\n"
-msgstr ""
+msgstr "%s:»%s« mangler indgangs- og/eller afslutningsblokke\n"
 
 #: gcov.c:1536
 #, c-format
@@ -1205,9 +1126,9 @@ msgid "%s:'%s' has arcs from exit block\n"
 msgstr ""
 
 #: gcov.c:1752
-#, fuzzy, c-format
+#, c-format
 msgid "%s:graph is unsolvable for '%s'\n"
-msgstr "%s før '%s'"
+msgstr "%s:graf kan ikke løses for »%s«\n"
 
 #: gcov.c:1860
 #, c-format
@@ -1310,17 +1231,17 @@ msgstr "funktion kan returnere adressen på en lokal variabel"
 #: incpath.c:72
 #, c-format
 msgid "ignoring duplicate directory \"%s\"\n"
-msgstr "ignorerer mere end én angivelse af kataloget \"%s\"\n"
+msgstr "ignorerer mere end en angivelse af mappen »%s«\n"
 
 #: incpath.c:75
 #, c-format
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr "  da det er et ikke-systemkatalog som dublerer et systemkatalog\n"
+msgstr "  da det ikke er en systemmappe, som dublerer en systemmappe\n"
 
 #: incpath.c:79
 #, c-format
 msgid "ignoring nonexistent directory \"%s\"\n"
-msgstr "ignorerer det ikke-eksisterende katalog \"%s\"\n"
+msgstr "ignorerer den ikkeeksisterende mappe »%s«\n"
 
 #: incpath.c:373
 #, c-format
@@ -1348,64 +1269,55 @@ msgid "'"
 msgstr "«"
 
 #: ipa-pure-const.c:187
-#, fuzzy
-#| msgid "function might be possible candidate for attribute `noreturn'"
 msgid "function might be candidate for attribute %<%s%>"
-msgstr "funktion er muligvis en kandidat til egenskaben 'noreturn'"
+msgstr "funktion er muligvis en kandidat til egenskaben %<%s%>"
 
 #: ipa-pure-const.c:188
-#, fuzzy
-#| msgid "function might be possible candidate for attribute `noreturn'"
 msgid "function might be candidate for attribute %<%s%> if it is known to return normally"
-msgstr "funktion er muligvis en kandidat til egenskaben 'noreturn'"
+msgstr "funktion er muligvis en kandidat til egenskaben %<%s%>, hvis den vides at returnere normalt"
 
 #: langhooks.c:373
 msgid "At top level:"
 msgstr "Ved øverste niveau:"
 
 #: langhooks.c:393 cp/error.c:3299
-#, fuzzy, c-format
-#| msgid "In member function `%s':"
+#, c-format
 msgid "In member function %qs"
-msgstr "I medlemsfunktionen '%s':"
+msgstr "I medlemsfunktionen %qs"
 
 #: langhooks.c:397 cp/error.c:3302
-#, fuzzy, c-format
-#| msgid "In function `%s':"
+#, c-format
 msgid "In function %qs"
-msgstr "I funktionen '%s':"
+msgstr "I funktionen %qs"
 
 #: langhooks.c:448 cp/error.c:3252
 msgid "    inlined from %qs at %r%s:%d:%d%R"
-msgstr ""
+msgstr "    indlejret fra %qs ved %r%s:%d:%d%R"
 
 #: langhooks.c:453 cp/error.c:3257
-#, fuzzy
-#| msgid "In file included from %s:%d"
 msgid "    inlined from %qs at %r%s:%d%R"
-msgstr "I filen inkluderet af %s:%d"
+msgstr "    indlejret fra %qs ved %r%s:%d%R"
 
 #: langhooks.c:459 cp/error.c:3263
-#, fuzzy, c-format
-#| msgid "In file included from %s:%u"
+#, c-format
 msgid "    inlined from %qs"
-msgstr "I filen inkluderet af %s:%u"
+msgstr "    indlejret fra %qs"
 
 #: loop-iv.c:3041 tree-ssa-loop-niter.c:2319
 msgid "assuming that the loop is not infinite"
-msgstr ""
+msgstr "antager at loopet ikke er uendeligt"
 
 #: loop-iv.c:3042 tree-ssa-loop-niter.c:2320
 msgid "cannot optimize possibly infinite loops"
-msgstr ""
+msgstr "kan ikke opitmere eventuelle uendelige loop"
 
 #: loop-iv.c:3050 tree-ssa-loop-niter.c:2324
 msgid "assuming that the loop counter does not overflow"
-msgstr ""
+msgstr "antager at looptælleren ikke løber over"
 
 #: loop-iv.c:3051 tree-ssa-loop-niter.c:2325
 msgid "cannot optimize loop, the loop counter may overflow"
-msgstr ""
+msgstr "kan ikke optimere loop, looptælleren kan løbe over"
 
 #: lra-assigns.c:1417 reload1.c:2089
 msgid "this is the insn:"
@@ -1417,53 +1329,49 @@ msgstr "kunne ikke generere genindlæsninger for:"
 
 #. What to print when a switch has no documentation.
 #: opts.c:184
-#, fuzzy
-#| msgid "This switch lacks documentation"
 msgid "This option lacks documentation."
-msgstr "Denne switch mangler dokumentation"
+msgstr "Dette tilvalg mangler dokumentation."
 
 #: opts.c:185
 msgid "Uses of this option are diagnosed."
-msgstr ""
+msgstr "Brug af dette tilvalg diagnosticeres."
 
 #: opts.c:1061
 #, c-format
 msgid "default %d minimum %d maximum %d"
-msgstr ""
+msgstr "standard %d minimum %d maksimum %d"
 
 #: opts.c:1128
 #, c-format
 msgid "Same as %s.  Use the latter option instead."
-msgstr ""
+msgstr "Samme som %s. Brug det sidste tilvalg i stedet."
 
 #: opts.c:1136
 #, c-format
 msgid "%s  Same as %s."
-msgstr ""
+msgstr "%s Samme som %s."
 
 #: opts.c:1207
 msgid "[default]"
-msgstr ""
+msgstr "[standard]"
 
 #: opts.c:1218
 msgid "[enabled]"
-msgstr ""
+msgstr "[aktiveret]"
 
 #: opts.c:1218
-#, fuzzy
-#| msgid "GCSE disabled"
 msgid "[disabled]"
-msgstr "GCSE deaktiveret"
+msgstr "[deaktiveret]"
 
 #: opts.c:1237
 #, c-format
 msgid " No options with the desired characteristics were found\n"
-msgstr ""
+msgstr " Ingen tilvalg med de ønskede karakteristika blev fundet\n"
 
 #: opts.c:1246
 #, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"
-msgstr ""
+msgstr " Ingen fundet. Brug --help=%s for at vise *alle* tilvalgene understøttet af brugerfladen %s.\n"
 
 #: opts.c:1252
 #, c-format
@@ -1479,21 +1387,16 @@ msgid "The following options control compiler warning messages"
 msgstr "De følgende tilvalg kontrollerer advarselsbeskeder for oversætteren"
 
 #: opts.c:1343
-#, fuzzy
 msgid "The following options control optimizations"
-msgstr "Udfør løkkeoptimeringerne"
+msgstr "De følgende tilvalg kontrollerer optimeringer"
 
 #: opts.c:1346 opts.c:1385
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are language-independent"
-msgstr "De følgende tilvalg er sproguafhængige:\n"
+msgstr "De følgende tilvalg er sproguafhængige"
 
 #: opts.c:1349
-#, fuzzy
-#| msgid "The --param option recognizes the following as parameters:\n"
 msgid "The --param option recognizes the following as parameters"
-msgstr "Tilvalget --param genkender følgende som parametre:\n"
+msgstr "Tilvalget --param genkender følgende som parametre"
 
 #: opts.c:1355
 msgid "The following options are specific to just the language "
@@ -1508,16 +1411,12 @@ msgid "The following options are not documented"
 msgstr "De følgende tilvalg er ikke dokumenterede"
 
 #: opts.c:1370
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options take separate arguments"
-msgstr "De følgende tilvalg er sproguafhængige:\n"
+msgstr "De følgende tilvalg anvender forskellige parametre"
 
 #: opts.c:1372
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options take joined arguments"
-msgstr "De følgende tilvalg er sproguafhængige:\n"
+msgstr "De følgende tilvalg anvender fælles parametre"
 
 #: opts.c:1383
 msgid "The following options are language-related"
@@ -1534,7 +1433,7 @@ msgstr "Udvidelsesmoduler"
 #: plugin.c:828
 #, c-format
 msgid "*** WARNING *** there are active plugins, do not report this as a bug unless you can reproduce it without enabling any plugins.\n"
-msgstr ""
+msgstr "*** ADVARSEL *** der er aktive udvidelsesmoduler, rapporter ikke dette som en fejl med mindre, at du kan genskabe det uden at udvidelsesmoduler er aktiveret.\n"
 
 #. It's the compiler's fault.
 #: reload1.c:6113
@@ -1593,39 +1492,33 @@ msgid "collect: relinking\n"
 msgstr "collect: kæder sammen igen\n"
 
 #: toplev.c:331
-#, fuzzy, c-format
-#| msgid "internal error"
+#, c-format
 msgid "unrecoverable error"
-msgstr "intern fejl"
+msgstr "uoprettelig fejl"
 
 #: toplev.c:640
-#, fuzzy, c-format
-#| msgid ""
-#| "%s%s%s version %s (%s)\n"
-#| "%s\tcompiled by GNU C version %s.\n"
-#| "%s%s%s version %s (%s) compiled by CC.\n"
+#, c-format
 msgid ""
 "%s%s%s %sversion %s (%s)\n"
 "%s\tcompiled by GNU C version %s, "
 msgstr ""
-"%s%s%s version %s (%s)\n"
-"%s\toversat af GNU C version %s.\n"
-"%s%s%s version %s (%s) oversat af CC.\n"
+"%s%s%s %sversion %s (%s)\n"
+"%s\toversat af GNU C version %s, "
 
 #: toplev.c:642
 #, c-format
 msgid "%s%s%s %sversion %s (%s) compiled by CC, "
-msgstr ""
+msgstr "%s%s%s %sversion %s (%s) oversat af CC, "
 
 #: toplev.c:646
 #, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s, isl version %s\n"
-msgstr ""
+msgstr "GMP-version %s, MPFR-version %s, MPC-version %s, isl-version %s\n"
 
 #: toplev.c:648
 #, c-format
 msgid "%s%swarning: %s header version %s differs from library version %s.\n"
-msgstr ""
+msgstr "%s%sadvarsel: %s teksthovedversion %s svarer ikke til biblioteksversion %s.\n"
 
 #: toplev.c:650
 #, c-format
@@ -1647,63 +1540,56 @@ msgid "<anonymous>"
 msgstr "<anonym>"
 
 #: cif-code.def:39
-#, fuzzy
 msgid "function not considered for inlining"
-msgstr "funktion kan ikke indbygges"
+msgstr "funktion overvejes ikke for indbygning"
 
 #: cif-code.def:43
 msgid "caller is not optimized"
-msgstr ""
+msgstr "kalder er ikke optimeret"
 
 #: cif-code.def:47
-#, fuzzy
 msgid "function body not available"
-msgstr "funktion kan ikke indbygges"
+msgstr "funktionskrop er ikke tilgængelig"
 
 #: cif-code.def:51
-#, fuzzy
 msgid "redefined extern inline functions are not considered for inlining"
-msgstr "Advar når en inline funktion ikke kan indbygges"
+msgstr "omdefinerede eksterne indbyggede funktioner overvejes ikke for indlejring"
 
 #: cif-code.def:56
-#, fuzzy
 msgid "function not inlinable"
 msgstr "funktion kan ikke indbygges"
 
 #: cif-code.def:60
-#, fuzzy
-#| msgid "function cannot be inline"
 msgid "function body can be overwritten at link time"
-msgstr "funktion kan ikke indbygges"
+msgstr "funktionskrop kan ikke overskrives på sammenkædningstidspunktet"
 
 #: cif-code.def:64
-#, fuzzy
 msgid "function not inline candidate"
-msgstr "funktion kan ikke indbygges"
+msgstr "funktion er ikke en indbygningskandidat"
 
 #: cif-code.def:68
 msgid "--param large-function-growth limit reached"
-msgstr ""
+msgstr "--param large-function-growth grænse nået"
 
 #: cif-code.def:70
 msgid "--param large-stack-frame-growth limit reached"
-msgstr ""
+msgstr "--param large-stack-frame-growth grænse nået"
 
 #: cif-code.def:72
 msgid "--param max-inline-insns-single limit reached"
-msgstr ""
+msgstr "--param max-inline-insns-single grænse nået"
 
 #: cif-code.def:74
 msgid "--param max-inline-insns-auto limit reached"
-msgstr ""
+msgstr "--param max-inline-insns-auto grænse nået"
 
 #: cif-code.def:76
 msgid "--param inline-unit-growth limit reached"
-msgstr ""
+msgstr "--param inline-unit-growth grænse nået"
 
 #: cif-code.def:80
 msgid "recursive inlining"
-msgstr ""
+msgstr "rekursiv indbygning"
 
 #: cif-code.def:84
 msgid "call is unlikely and code size would grow"
@@ -1760,7 +1646,7 @@ msgstr ""
 
 #: cif-code.def:125
 msgid "function attribute mismatch"
-msgstr ""
+msgstr "forskellige funktionsattributter"
 
 #: cif-code.def:129
 #, fuzzy
@@ -1770,7 +1656,7 @@ msgstr "funktion der bruger alloca, kan ikke indbygges"
 
 #: cif-code.def:133
 msgid "unreachable"
-msgstr ""
+msgstr "kan ikke nås"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -1830,10 +1716,9 @@ msgid "The minimal estimated speedup allowing inliner to ignore inline-insns-sin
 msgstr ""
 
 #: params.def:71
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "The maximum number of instructions in a single function eligible for inlining."
-msgstr "Det maksimale antal instruktioner i en enkelt funktion der må indbygges"
+msgstr "Det maksimale antal instruktioner i en enkelt funktion der må indbygges."
 
 #: params.def:83
 #, fuzzy, no-c-format
@@ -6049,10 +5934,9 @@ msgid "  --classpath PATH        Set path to find .class files\n"
 msgstr ""
 
 #: java/jcf-dump.c:1211
-#, fuzzy, c-format
-#| msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
+#, c-format
 msgid "  -IDIR                   Append directory to class path\n"
-msgstr "  -B <katalog>             Tilføj katalog til oversætterens søgestier\n"
+msgstr "  -IDIR                   Tilføj mappe til klassesti\n"
 
 #: java/jcf-dump.c:1212
 #, c-format
@@ -18938,16 +18822,14 @@ msgid "Cannot read string table from %s."
 msgstr ""
 
 #: auto-profile.c:912
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot find file for class %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read function profile from %s."
-msgstr "kan ikke finde filen for klassen %s"
+msgstr "kan ikke læse funktionsprofil fra %s."
 
 #: auto-profile.c:919
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s: cannot get working directory: %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read working set from %s."
-msgstr "%s: kan ikke få fat i arbejdskataloget: %s\n"
+msgstr "Kan ikke læse arbejdssæt fra %s."
 
 #: bt-load.c:1566
 #, gcc-internal-format
@@ -21159,20 +21041,19 @@ msgid "error in removing %s\n"
 msgstr "fejl ved skrivning til %s"
 
 #: gcov-tool.c:103
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot make directory %s"
-msgstr "kan ikke oprette kataloget %s"
+msgstr "Kan ikke oprette mappen %s"
 
 #: gcov-tool.c:111
-#, fuzzy, gcc-internal-format
-#| msgid "can't get current directory"
+#, gcc-internal-format
 msgid "Cannot get current directory name"
-msgstr "kan ikke få fat i det aktuelle katalog"
+msgstr "Kan ikke få fat i det aktuelle mappenavn"
 
 #: gcov-tool.c:115 gcov-tool.c:121
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot change directory to %s"
-msgstr "kan ikke oprette kataloget %s"
+msgstr "Kan ikke ændre mappen til %s"
 
 #: gcov-tool.c:214
 #, gcc-internal-format
@@ -21205,10 +21086,9 @@ msgid "DEF_INTERNAL_INT_FN (%s) has no associated built-in functions"
 msgstr ""
 
 #: gentarget-def.c:126
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid operand code `%c'"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid prototype for '%s'"
-msgstr "ugyldig operandkode '%c'"
+msgstr "ugyldig prototype for »%s«"
 
 #: gentarget-def.c:131
 #, gcc-internal-format, gfc-internal-format
@@ -22149,10 +22029,9 @@ msgid "Reference statement index not found"
 msgstr "Advar hvis forældede tomme sætninger bliver fundet"
 
 #: lto-streamer-in.c:1513
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s: cannot get working directory: %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read LTO mode table from %s"
-msgstr "%s: kan ikke få fat i arbejdskataloget: %s\n"
+msgstr "kan ikke læse LTO-tilstandstabel fra %s"
 
 #: lto-streamer-in.c:1611
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -28174,9 +28053,9 @@ msgid "too late for # directive to set debug directory"
 msgstr ""
 
 #: c-family/c-pch.c:110
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t create precompiled header %s: %m"
-msgstr "kan ikke oprette kataloget %s"
+msgstr "kan ikke oprette prækompileret teksthoved %s: %m"
 
 #: c-family/c-pch.c:133
 #, fuzzy, gcc-internal-format
@@ -62004,21 +61883,19 @@ msgid "Contained procedure %qs at %L of a PURE procedure must also be PURE"
 msgstr ""
 
 #: fortran/scanner.c:330
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Include directory %qs: %s"
-msgstr "kan ikke oprette kataloget %s"
+msgstr "Inkluder mappe %qs: %s"
 
 #: fortran/scanner.c:334
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring nonexistent directory \"%s\"\n"
+#, gcc-internal-format
 msgid "Nonexistent include directory %qs"
-msgstr "ignorerer det ikke-eksisterende katalog \"%s\"\n"
+msgstr "Ikkeeksisterende include-mappe %qs"
 
 #: fortran/scanner.c:339
-#, fuzzy, gcc-internal-format
-#| msgid "%s: Not a directory"
+#, gcc-internal-format
 msgid "%qs is not a directory"
-msgstr "%s: ikke et katalog"
+msgstr "%qs er ikke en mappe"
 
 #: fortran/scanner.c:742
 #, gcc-internal-format, gfc-internal-format
@@ -66051,17 +65928,11 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n"
 #~ msgstr "%s: brug '%s [ -VqfnkN ] [ -i <istreng> ] [ filenavn ... ]'\n"
 
-#~ msgid "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n"
-#~ msgstr "%s: brug '%s [ -VqfnkNlgC ] [ -B <katalognavn> ] [ filnavn ... ]'\n"
-
 #~ msgid "%s: warning: no read access for file `%s'\n"
 #~ msgstr "%s: advarsel: ingen læseadgang til filen '%s'\n"
 
 #~ msgid "%s: warning: no write access for file `%s'\n"
 #~ msgstr "%s: advarsel: ingen skriveadgang til filen '%s'\n"
-
-#~ msgid "%s: warning: no write access for dir containing `%s'\n"
-#~ msgstr "%s: advarsel: ingen skriveadgang til kataloget der indeholder '%s'\n"
 
 #~ msgid "%s: invalid file name: %s\n"
 #~ msgstr "%s: ugyldigt filnavn: %s\n"
@@ -69189,23 +69060,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ "  -isystem <ktlg>           Føj <ktlg> til begyndelsen af systeminkluderingsstien\n"
 
 #~ msgid ""
-#~ "  -idirafter <dir>          Add <dir> to the end of the system include path\n"
-#~ "  -I <dir>                  Add <dir> to the end of the main include path\n"
-#~ "  -I-                       Fine-grained include path control; see info docs\n"
-#~ "  -nostdinc                 Do not search system include directories\n"
-#~ "                             (dirs specified with -isystem will still be used)\n"
-#~ "  -nostdinc++               Do not search system include directories for C++\n"
-#~ "  -o <file>                 Put output into <file>\n"
-#~ msgstr ""
-#~ "  -idirafter <ktlg>         Føj <ktlg> til slutningen af systeminkluderingsstien\n"
-#~ "  -I <ktlg>                 Føj <ktlg> til slutningen af den alm. inkluderingssti\n"
-#~ "  -I-                       Nøje kontrolleret inkluderingssti; se info-hjælpen\n"
-#~ "  -nostdinc                 Søg ikke i systeminkluderingskataloger\n"
-#~ "                             (kataloger angivet med -isystem søges dog stadig)\n"
-#~ "  -nostdinc++               Søg ikke i systeminkluderingskataloger til C++\n"
-#~ "  -o <fil>                  Send uddata til <fil>\n"
-
-#~ msgid ""
 #~ "  -trigraphs                Support ISO C trigraphs\n"
 #~ "  -std=<std name>           Specify the conformance standard; one of:\n"
 #~ "                            gnu89, gnu99, c89, c99, iso9899:1990,\n"
@@ -69403,9 +69257,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #~ msgid "absolute file name in remap_filename"
 #~ msgstr "absolut filnavn i remap_filename"
-
-#~ msgid "directory name missing after %s"
-#~ msgstr "et katalognavn mangler efter %s"
 
 #~ msgid "file name missing after %s"
 #~ msgstr "et filnavn mangler efter %s"
@@ -70178,9 +70029,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "Don't announce deprecation of compiler features"
 #~ msgstr "Annoncér ikke forældelse af oversætterfaciliteter"
 
-#~ msgid "directory name must immediately follow -I"
-#~ msgstr "et katalognavn skal følge umiddelbart efter -I"
-
 #~ msgid "Program does not use Unix-f77 dialectal features"
 #~ msgstr "Program benytter ikke Unix f77-dialektiske faciliteter"
 
@@ -70189,9 +70037,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #~ msgid "Fortran-specific form of -fbounds-check"
 #~ msgstr "Fortran-specifik form for -fbounds-check"
-
-#~ msgid "Add a directory for INCLUDE searching"
-#~ msgstr "Tilføj et katalog til INCLUDE-søgning"
 
 #~ msgid "Set the maximum line length"
 #~ msgstr "Angiv den maksimale linjelængde"
@@ -70207,12 +70052,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #~ msgid "Choose class whose main method should be used"
 #~ msgstr "Vælg klasse hvis main-metode skal bruges"
-
-#~ msgid "Add directory to class path"
-#~ msgstr "Tilføj katalog til klassesti"
-
-#~ msgid "Directory where class files should be written"
-#~ msgstr "Katalog som klassefiler skrives i"
 
 #~ msgid "`%s' cannot be statically allocated"
 #~ msgstr "'%s' kan ikke allokeres statisk"
@@ -70412,21 +70251,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ msgid "operator '%s' has no left operand"
 #~ msgstr "operatoren '%s' har ikke nogen venstre operand"
 
-#~ msgid "changing search order for system directory \"%s\""
-#~ msgstr "skifter søgeorden for systemkataloget \"%s\""
-
-#~ msgid "  as it is the same as non-system directory \"%s\""
-#~ msgstr "  da det er det samme som ikke-system-kataloget \"%s\""
-
-#~ msgid "  as it has already been specified as a non-system directory"
-#~ msgstr "  da det allerede er blevet angivet som et ikke-system-katalog"
-
-#~ msgid "I/O error on output"
-#~ msgstr "I/O-fejl på uddata"
-
-#~ msgid "number missing after %s"
-#~ msgstr "et tal mangler efter %s"
-
 #~ msgid "GNU CPP version %s (cpplib)"
 #~ msgstr "GNU CPP version %s (cpplib)"
 
@@ -70622,9 +70446,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #~ msgid "-trigraphs and -traditional are mutually exclusive"
 #~ msgstr "-trigraphs og -traditional er indbyrdes uforenelige"
-
-#~ msgid "directory name missing after -I option"
-#~ msgstr "et katalognavn mangler efter '-I'-tilvalg"
 
 #~ msgid "`/*' within comment"
 #~ msgstr "'/*' i en kommentar"
@@ -71367,9 +71188,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 #~ "  -idirafter <ktlg>         Føj <ktlg> til slutningen af systeminkluderingsstien\n"
 #~ "  -I <ktlg>                 Føj <ktlg> til slutningen af den alm. inkluderingssti\n"
 #~ "  -I-                       Nøje kontrolleret inkluderingssti; se info-hjælpen\n"
-#~ "  -nostdinc                 Søg ikke i systeminkluderingskataloger\n"
-#~ "                             (kataloger angivet med -isystem søges dog stadig)\n"
-#~ "  -nostdinc++               Søg ikke i systeminkluderingskataloger til C++\n"
 #~ "  -o <fil>                  Send uddata til <fil>\n"
 #~ "  -pedantic                 Fremkom med alle advarsler påkrævet for nøje ISO C\n"
 #~ "  -pedantic-errors          Behandl '-pedantic'-advarsler som fejl\n"
