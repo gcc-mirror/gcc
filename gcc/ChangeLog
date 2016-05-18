@@ -1,5 +1,11 @@
 2016-05-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* function.c (make_split_prologue_seq, make_prologue_seq,
+	make_epilogue_seq): New functions, factored out from...
+	(thread_prologue_and_epilogue_insns): Here.
+
+2016-05-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* function.c (rest_of_handle_thread_prologue_and_epilogue): Call
 	cleanup_cfg with CLEANUP_EXPENSIVE after shrink-wrapping instead
 	of before.  Add a comment.
