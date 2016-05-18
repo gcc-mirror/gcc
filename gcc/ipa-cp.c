@@ -1999,9 +1999,9 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
       if (ie->indirect_info->agg_contents)
 	{
-	  if (agg_reps)
+	  t = NULL;
+	  if (agg_reps && ie->indirect_info->guaranteed_unmodified)
 	    {
-	      t = NULL;
 	      while (agg_reps)
 		{
 		  if (agg_reps->index == param_index
@@ -2014,15 +2014,22 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 		  agg_reps = agg_reps->next;
 		}
 	    }
-	  else if (known_aggs.length () > (unsigned int) param_index)
+	  if (!t)
 	    {
 	      struct ipa_agg_jump_function *agg;
-	      agg = known_aggs[param_index];
-	      t = ipa_find_agg_cst_for_param (agg, ie->indirect_info->offset,
-					      ie->indirect_info->by_ref);
+	      if (known_aggs.length () > (unsigned int) param_index)
+		agg = known_aggs[param_index];
+	      else
+		agg = NULL;
+	      bool from_global_constant;
+	      t = ipa_find_agg_cst_for_param (agg, known_csts[param_index],
+					      ie->indirect_info->offset,
+					      ie->indirect_info->by_ref,
+					      &from_global_constant);
+	      if (!from_global_constant
+		  && !ie->indirect_info->guaranteed_unmodified)
+		t = NULL_TREE;
 	    }
-	  else
-	    t = NULL;
 	}
       else
 	t = known_csts[param_index];
@@ -2066,7 +2073,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
     {
        struct ipa_agg_jump_function *agg;
        agg = known_aggs[param_index];
-       t = ipa_find_agg_cst_for_param (agg, ie->indirect_info->offset,
+       t = ipa_find_agg_cst_for_param (agg, known_csts[param_index],
+				       ie->indirect_info->offset,
 				       true);
     }
 
