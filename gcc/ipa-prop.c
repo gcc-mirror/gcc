@@ -930,10 +930,15 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
   return !modified;
 }
 
-/* Return true if we can prove that OP is a memory reference loading unmodified
-   data from an aggregate passed as a parameter and if the aggregate is passed
-   by reference, that the alias type of the load corresponds to the type of the
-   formal parameter (so that we can rely on this type for TBAA in callers).
+/* Return true if we can prove that OP is a memory reference loading
+   data from an aggregate passed as a parameter.
+
+   The function works in two modes.  If GUARANTEED_UNMODIFIED is NULL, it return
+   false if it cannot prove that the value has not been modified before the
+   load in STMT.  If GUARANTEED_UNMODIFIED is not NULL, it will return true even
+   if it cannot prove the value has not been modified, in that case it will
+   store false to *GUARANTEED_UNMODIFIED, otherwise it will store true there.
+
    INFO and PARMS_AINFO describe parameters of the current function (but the
    latter can be NULL), STMT is the load statement.  If function returns true,
    *INDEX_P, *OFFSET_P and *BY_REF is filled with the parameter index, offset
@@ -945,7 +950,7 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			vec<ipa_param_descriptor> descriptors,
 			gimple *stmt, tree op, int *index_p,
 			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
-			bool *by_ref_p)
+			bool *by_ref_p, bool *guaranteed_unmodified)
 {
   int index;
   HOST_WIDE_INT size, max_size;
@@ -966,6 +971,8 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 	  *by_ref_p = false;
 	  if (size_p)
 	    *size_p = size;
+	  if (guaranteed_unmodified)
+	    *guaranteed_unmodified = true;
 	  return true;
 	}
       return false;
@@ -1002,13 +1009,18 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
       index = load_from_unmodified_param (fbi, descriptors, def);
     }
 
-  if (index >= 0
-      && parm_ref_data_preserved_p (fbi, index, stmt, op))
+  if (index >= 0)
     {
+      bool data_preserved = parm_ref_data_preserved_p (fbi, index, stmt, op);
+      if (!data_preserved && !guaranteed_unmodified)
+	return false;
+
       *index_p = index;
       *by_ref_p = true;
       if (size_p)
 	*size_p = size;
+      if (guaranteed_unmodified)
+	*guaranteed_unmodified = data_preserved;
       return true;
     }
   return false;
@@ -1824,6 +1836,7 @@ ipa_note_param_call (struct cgraph_node *node, int param_index,
   cs->indirect_info->param_index = param_index;
   cs->indirect_info->agg_contents = 0;
   cs->indirect_info->member_ptr = 0;
+  cs->indirect_info->guaranteed_unmodified = 0;
   return cs;
 }
 
@@ -1905,15 +1918,17 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
 
   int index;
   gimple *def = SSA_NAME_DEF_STMT (target);
+  bool guaranteed_unmodified;
   if (gimple_assign_single_p (def)
       && ipa_load_from_parm_agg (fbi, info->descriptors, def,
 				 gimple_assign_rhs1 (def), &index, &offset,
-				 NULL, &by_ref))
+				 NULL, &by_ref, &guaranteed_unmodified))
     {
       struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
       cs->indirect_info->by_ref = by_ref;
+      cs->indirect_info->guaranteed_unmodified = guaranteed_unmodified;
       return;
     }
 
@@ -2014,6 +2029,7 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
       cs->indirect_info->member_ptr = 1;
+      cs->indirect_info->guaranteed_unmodified = 1;
     }
 
   return;
@@ -2701,18 +2717,125 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
   return ie;
 }
 
-/* Retrieve value from aggregate jump function AGG for the given OFFSET or
-   return NULL if there is not any.  BY_REF specifies whether the value has to
-   be passed by reference or by value.  */
+/* Attempt to locate an interprocedural constant at a given REQ_OFFSET in
+   CONSTRUCTOR and return it.  Return NULL if the search fails for some
+   reason.  */
+
+static tree
+find_constructor_constant_at_offset (tree constructor, HOST_WIDE_INT req_offset)
+{
+  tree type = TREE_TYPE (constructor);
+  if (TREE_CODE (type) != ARRAY_TYPE
+      && TREE_CODE (type) != RECORD_TYPE)
+    return NULL;
+
+  unsigned ix;
+  tree index, val;
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (constructor), ix, index, val)
+    {
+      HOST_WIDE_INT elt_offset;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+       {
+         offset_int off;
+         tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
+         gcc_assert (TREE_CODE (unit_size) == INTEGER_CST);
+
+         if (index)
+           {
+             off = wi::to_offset (index);
+             if (TYPE_DOMAIN (type) && TYPE_MIN_VALUE (TYPE_DOMAIN (type)))
+               {
+                 tree low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+                 gcc_assert (TREE_CODE (unit_size) == INTEGER_CST);
+                 off = wi::sext (off - wi::to_offset (low_bound),
+                                 TYPE_PRECISION (TREE_TYPE (index)));
+               }
+             off *= wi::to_offset (unit_size);
+           }
+         else
+           off = wi::to_offset (unit_size) * ix;
+
+         off = wi::lshift (off, LOG2_BITS_PER_UNIT);
+         if (!wi::fits_shwi_p (off) || wi::neg_p (off))
+           continue;
+         elt_offset = off.to_shwi ();
+       }
+      else if (TREE_CODE (type) == RECORD_TYPE)
+       {
+         gcc_checking_assert (index && TREE_CODE (index) == FIELD_DECL);
+         if (DECL_BIT_FIELD (index))
+           continue;
+         elt_offset = int_bit_position (index);
+       }
+      else
+       gcc_unreachable ();
+
+      if (elt_offset > req_offset)
+	return NULL;
+
+      if (TREE_CODE (val) == CONSTRUCTOR)
+	return find_constructor_constant_at_offset (val,
+						    req_offset - elt_offset);
+
+      if (elt_offset == req_offset
+	  && is_gimple_reg_type (TREE_TYPE (val))
+	  && is_gimple_ip_invariant (val))
+	return val;
+    }
+  return NULL;
+}
+
+/* Check whether SCALAR could be used to look up an aggregate interprocedural
+   invariant from a static constructor and if so, return it.  Otherwise return
+   NULL. */
+
+static tree
+ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
+{
+  if (by_ref)
+    {
+      if (TREE_CODE (scalar) != ADDR_EXPR)
+	return NULL;
+      scalar = TREE_OPERAND (scalar, 0);
+    }
+
+  if (TREE_CODE (scalar) != VAR_DECL
+      || !is_global_var (scalar)
+      || !TREE_READONLY (scalar)
+      || !DECL_INITIAL (scalar)
+      || TREE_CODE (DECL_INITIAL (scalar)) != CONSTRUCTOR)
+    return NULL;
+
+  return find_constructor_constant_at_offset (DECL_INITIAL (scalar), offset);
+}
+
+/* Retrieve value from aggregate jump function AGG or static initializer of
+   SCALAR (which can be NULL) for the given OFFSET or return NULL if there is
+   none.  BY_REF specifies whether the value has to be passed by reference or
+   by value.  If FROM_GLOBAL_CONSTANT is non-NULL, then the boolean it points
+   to is set to true if the value comes from an initializer of a constant.  */
 
 tree
-ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg,
-			    HOST_WIDE_INT offset, bool by_ref)
+ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg, tree scalar,
+			    HOST_WIDE_INT offset, bool by_ref,
+			    bool *from_global_constant)
 {
   struct ipa_agg_jf_item *item;
   int i;
 
-  if (by_ref != agg->by_ref)
+  if (scalar)
+    {
+      tree res = ipa_find_agg_cst_from_init (scalar, offset, by_ref);
+      if (res)
+	{
+	  if (from_global_constant)
+	    *from_global_constant = true;
+	  return res;
+	}
+    }
+
+  if (!agg
+      || by_ref != agg->by_ref)
     return NULL;
 
   FOR_EACH_VEC_SAFE_ELT (agg->items, i, item)
@@ -2721,6 +2844,8 @@ ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg,
 	/* Currently we do not have clobber values, return NULL for them once
 	   we do.  */
 	gcc_checking_assert (is_gimple_ip_invariant (item->value));
+	if (from_global_constant)
+	  *from_global_constant = false;
 	return item->value;
       }
   return NULL;
@@ -2819,13 +2944,21 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
   struct cgraph_edge *cs;
   tree target;
   bool agg_contents = ie->indirect_info->agg_contents;
-
-  if (ie->indirect_info->agg_contents)
-    target = ipa_find_agg_cst_for_param (&jfunc->agg,
-					 ie->indirect_info->offset,
-					 ie->indirect_info->by_ref);
+  tree scalar = ipa_value_from_jfunc (new_root_info, jfunc);
+  if (agg_contents)
+    {
+      bool from_global_constant;
+      target = ipa_find_agg_cst_for_param (&jfunc->agg, scalar,
+					   ie->indirect_info->offset,
+					   ie->indirect_info->by_ref,
+					   &from_global_constant);
+      if (target
+	  && !from_global_constant
+	  && !ie->indirect_info->guaranteed_unmodified)
+	return NULL;
+    }
   else
-    target = ipa_value_from_jfunc (new_root_info, jfunc);
+    target = scalar;
   if (!target)
     return NULL;
   cs = ipa_make_edge_direct_to_target (ie, target);
@@ -2893,7 +3026,9 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
     {
       tree vtable;
       unsigned HOST_WIDE_INT offset;
-      tree t = ipa_find_agg_cst_for_param (&jfunc->agg,
+      tree scalar = (jfunc->type == IPA_JF_CONST) ? ipa_get_jf_constant (jfunc)
+	: NULL;
+      tree t = ipa_find_agg_cst_for_param (&jfunc->agg, scalar,
 					   ie->indirect_info->offset,
 					   true);
       if (t && vtable_pointer_value_to_vtable (t, &vtable, &offset))
@@ -4560,6 +4695,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   bp_pack_value (&bp, ii->agg_contents, 1);
   bp_pack_value (&bp, ii->member_ptr, 1);
   bp_pack_value (&bp, ii->by_ref, 1);
+  bp_pack_value (&bp, ii->guaranteed_unmodified, 1);
   bp_pack_value (&bp, ii->vptr_changed, 1);
   streamer_write_bitpack (&bp);
   if (ii->agg_contents || ii->polymorphic)
@@ -4592,6 +4728,7 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
   ii->agg_contents = bp_unpack_value (&bp, 1);
   ii->member_ptr = bp_unpack_value (&bp, 1);
   ii->by_ref = bp_unpack_value (&bp, 1);
+  ii->guaranteed_unmodified = bp_unpack_value (&bp, 1);
   ii->vptr_changed = bp_unpack_value (&bp, 1);
   if (ii->agg_contents || ii->polymorphic)
     ii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);

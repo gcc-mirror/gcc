@@ -1,3 +1,31 @@
+2016-05-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/69708
+	* cgraph.h (cgraph_indirect_call_info): New field
+	guaranteed_unmodified.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Also pass parameter value
+	to ipa_find_agg_cst_for_param, check guaranteed_unmodified when
+	appropriate.
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args): Also
+	pass the parameter value to ipa_find_agg_cst_for_param.
+	* ipa-prop.c (ipa_load_from_parm_agg): New parameter
+	guaranteed_unmodified, store AA results there instead of bailing out
+	if present.
+	(ipa_note_param_call): Also initialize guaranteed_unmodified flag.
+	(ipa_analyze_indirect_call_uses): Also set guaranteed_unmodified flag.
+	(find_constructor_constant_at_offset): New function.
+	(ipa_find_agg_cst_from_init): Likewise.
+	(ipa_find_agg_cst_for_param): Also seearch for aggregate values in
+	static initializers of contants, report back through a new paameter
+	from_global_constant if that was the case.
+	(try_make_edge_direct_simple_call): Also pass parameter value to
+	ipa_find_agg_cst_for_param, check guaranteed_unmodified when
+	appropriate.
+	(ipa_write_indirect_edge_info): Stream new flag guaranteed_unmodified.
+	(ipa_read_indirect_edge_info): Likewise.
+	* ipa-prop.h (ipa_find_agg_cst_for_param): Update declaration.
+	(ipa_load_from_parm_agg): Likewise.
+
 2016-05-18  Jiong Wang  <jiong.wang@arm.com>
 
 	PR rtl-optimization/71150
