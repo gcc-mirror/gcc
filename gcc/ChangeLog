@@ -1,5 +1,15 @@
 2016-05-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
+        * gcc/config/i386/sse.md (define_insn "*andnot<mode>3"): Extend static
+	array to 128 chars.
+	(define_insn "*andnottf3"): Ditto.
+	(define_insn "*<code><mode>3"/any_logic): Ditto.
+	(define_insn "*<code>tf3"/any_logic): Ditto.
+	(define_insn "sse2_storehpd"): Use Yv constraint for scalar
+	operand to block AVX-512VL insn variant emit when it is not enabled.
+
+2016-05-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	* config/i386/sse.md (define_insn "*vec_concatv2sf_sse4_1"): Use 'Yv'
 	constraint fot SF mode.
 
