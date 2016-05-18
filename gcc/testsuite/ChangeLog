@@ -1,5 +1,10 @@
 2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (CHECK,
+	CHECK_FP, CHECK_CUMULATIVE_SAT): Print which type was checked.
+
+2016-05-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vmul.c: Remove useless #ifdef.
 	* gcc.target/aarch64/advsimd-intrinsics/vshl.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vtst.c: Likewise.
