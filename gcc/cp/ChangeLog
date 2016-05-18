@@ -1,5 +1,9 @@
 2016-05-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70494
+	* decl.c (cxx_maybe_build_cleanup): Handle non-decls.
+	* typeck2.c (split_nonconstant_init_1): Use it.
+
 	PR c++/70648
 	* constexpr.c (cxx_eval_store_expression): Also copy
 	CONSTRUCTOR_NO_IMPLICIT_ZERO.
