@@ -1,3 +1,13 @@
+2016-05-18  Artemiy Volkov  <artemiyv@acm.org>
+
+	* cplus-dem.c (enum type_kind_t): Add tk_rvalue_reference
+	constant.
+	(demangle_template_value_parm): Handle tk_rvalue_reference
+	type kind.
+	(do_type): Support 'O' type id (rvalue references).
+
+	* testsuite/demangle-expected: Add tests.
+
 2016-05-02  Marcel Böhme  <boehme.marcel@gmail.com>
 
 	PR c++/70498
