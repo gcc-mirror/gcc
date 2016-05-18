@@ -953,7 +953,8 @@ fixup_call_stmt_edges (struct cgraph_node *orig, gimple **stmts)
   if (orig->clones)
     for (node = orig->clones; node != orig;)
       {
-	fixup_call_stmt_edges_1 (node, stmts, fn);
+	if (!node->thunk.thunk_p)
+	  fixup_call_stmt_edges_1 (node, stmts, fn);
 	if (node->clones)
 	  node = node->clones;
 	else if (node->next_sibling_clone)

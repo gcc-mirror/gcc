@@ -771,33 +771,35 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
   node = clones;
   if (node)
     while (node != this)
-      {
-	cgraph_edge *edge = node->get_edge (old_stmt);
+      /* Thunk clones do not get updated while copying inline function body.  */
+      if (!node->thunk.thunk_p)
+	{
+	  cgraph_edge *edge = node->get_edge (old_stmt);
 
-        /* It is possible that clones already contain the edge while
-	   master didn't.  Either we promoted indirect call into direct
-	   call in the clone or we are processing clones of unreachable
-	   master where edges has been removed.  */
-	if (edge)
-	  edge->set_call_stmt (stmt);
-	else if (! node->get_edge (stmt))
-	  {
-	    edge = node->create_edge (callee, stmt, count, freq);
-	    edge->inline_failed = reason;
-	  }
+	  /* It is possible that clones already contain the edge while
+	     master didn't.  Either we promoted indirect call into direct
+	     call in the clone or we are processing clones of unreachable
+	     master where edges has been removed.  */
+	  if (edge)
+	    edge->set_call_stmt (stmt);
+	  else if (! node->get_edge (stmt))
+	    {
+	      edge = node->create_edge (callee, stmt, count, freq);
+	      edge->inline_failed = reason;
+	    }
 
-	if (node->clones)
-	  node = node->clones;
-	else if (node->next_sibling_clone)
-	  node = node->next_sibling_clone;
-	else
-	  {
-	    while (node != this && !node->next_sibling_clone)
-	      node = node->clone_of;
-	    if (node != this)
-	      node = node->next_sibling_clone;
-	  }
-      }
+	  if (node->clones)
+	    node = node->clones;
+	  else if (node->next_sibling_clone)
+	    node = node->next_sibling_clone;
+	  else
+	    {
+	      while (node != this && !node->next_sibling_clone)
+		node = node->clone_of;
+	      if (node != this)
+		node = node->next_sibling_clone;
+	    }
+	}
 }
 
 /* Remove the node from cgraph and all inline clones inlined into it.

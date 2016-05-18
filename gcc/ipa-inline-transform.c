@@ -506,6 +506,22 @@ save_inline_function_body (struct cgraph_node *node)
 
   /* first_clone will be turned into real function.  */
   first_clone = node->clones;
+
+  /* Arrange first clone to not be thunk as those do not have bodies.  */
+  if (first_clone->thunk.thunk_p)
+    {
+      while (first_clone->thunk.thunk_p)
+        first_clone = first_clone->next_sibling_clone;
+      first_clone->prev_sibling_clone->next_sibling_clone
+	= first_clone->next_sibling_clone;
+      if (first_clone->next_sibling_clone)
+	first_clone->next_sibling_clone->prev_sibling_clone
+	   = first_clone->prev_sibling_clone;
+      first_clone->next_sibling_clone = node->clones;
+      first_clone->prev_sibling_clone = NULL;
+      node->clones->prev_sibling_clone = first_clone;
+      node->clones = first_clone;
+    }
   first_clone->decl = copy_node (node->decl);
   first_clone->decl->decl_with_vis.symtab_node = first_clone;
   gcc_assert (first_clone == cgraph_node::get (first_clone->decl));
@@ -514,7 +530,8 @@ save_inline_function_body (struct cgraph_node *node)
      first_clone.  */
   if (first_clone->next_sibling_clone)
     {
-      for (n = first_clone->next_sibling_clone; n->next_sibling_clone; n = n->next_sibling_clone)
+      for (n = first_clone->next_sibling_clone; n->next_sibling_clone;
+	   n = n->next_sibling_clone)
         n->clone_of = first_clone;
       n->clone_of = first_clone;
       n->next_sibling_clone = first_clone->clones;
@@ -587,9 +604,10 @@ preserve_function_body_p (struct cgraph_node *node)
   gcc_assert (symtab->global_info_ready);
   gcc_assert (!node->alias && !node->thunk.thunk_p);
 
-  /* Look if there is any clone around.  */
-  if (node->clones && !node->clones->thunk.thunk_p)
-    return true;
+  /* Look if there is any non-thunk clone around.  */
+  for (node = node->clones; node; node = node->next_sibling_clone)
+    if (!node->thunk.thunk_p)
+      return true;
   return false;
 }
 
