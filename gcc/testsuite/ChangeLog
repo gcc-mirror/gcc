@@ -1,3 +1,12 @@
+2016-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p9-splat-1.c: New tests for ISA 3.0 word
+	splat operations and the XXSPLTIB instruction.
+	* gcc.target/powerpc/p9-splat-2.c: Likewise.
+	* gcc.target/powerpc/p9-splat-3.c: Likewise.
+	* gcc.target/powerpc/pr47755.c: Allow vspltisw in addition to
+	xxlxor to clear a register.
+
 2016-05-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/torture/pr71020.c: New test.

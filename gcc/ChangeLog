@@ -1,3 +1,76 @@
+2016-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70915
+	* config/rs6000/constraints.md (wE constraint): New constraint
+	for a vector constant that can be loaded with XXSPLTIB.
+	(wM constraint): New constraint for a vector constant of a 1's.
+	(wS constraint): New constraint for a vector constant that can be
+	loaded with XXSPLTIB and a vector sign extend instruction.
+	* config/rs6000/predicates.md (xxspltib_constant_split): New
+	predicates for wE/wS constraints.
+	(xxspltib_constant_nosplit): Likewise.
+	(easy_vector_constant): Add support for constants that can be
+	loaded via XXSPLTIB.
+	(all_ones_constant): New predicate for vector constant with all
+	1's set.
+	(splat_input_operand): Add support for ISA 3.0 word splat
+	operations.
+	* config/rs6000/rs6000.c (xxspltib_constant_p): New function to
+	return if a constant can be loaded with the ISA 3.0 XXSPLTIB
+	instruction and possibly with a sign extension.
+	(output_vec_const_move): Add support for XXSPLTIB. If we are
+	loading up 0/-1 into Altivec registers, prefer using VSPLTISW
+	instead of XXLXOR/XXLORC.
+	(rs6000_expand_vector_init): Add support for ISA 3.0 word splat
+	operations.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_output_move_128bit): Use output_vec_const_move to emit
+	constants.
+	* config/rs6000/vsx.md (VSX_M): Add TImode (if -mvsx-timode) and
+	combine VSX_M and VSX_M2 into one iterator.
+	(VSX_M2): Likewise.
+	(VSINT_84): New iterators for loading constants with XXSPLTIB.
+	(VSINT_842): Likewise.
+	(UNSPEC_VSX_SIGN_EXTEND): New UNSPEC.
+	(xxspltib_v16qi): New insns to load up constants with the ISA 3.0
+	XXSPLTIB instruction.
+	(xxspltib_<mode>_nosplit): Likewise.
+	(xxspltib_<mode>_split): New insn to load up constants with
+	XXSPLTIB and a sign extend instruction.
+	(vsx_mov<mode>): Replace single move that handled all vector types
+	with separate 32-bit and 64-bit moves.  Combine the movti_<bit>
+	moves (when -mvsx-timode is in effect) into the main vector
+	moves.  Eliminate separate moves for <VSr> <VSa>, where the
+	preferred register class (<VSr>) is listed first, and the
+	secondary register class (<VSa>) is listed second with a '?' to
+	discourage use.  Prefer loading 0/-1 in any VSX register for ISA
+	3.0, and Altivec registers for ISA 2.06/2.07 (PR target/70915) so
+	that if the register was involved in a slow operation, the
+	clear/set operation does not wait for the slow operation to
+	finish.  Adjust the length attributes for 32-bit mode.  Use
+	rs6000_output_move_128bit and drop the use of the string
+	instructions for 32-bit movti when -mvsx-timode is in effect.  Use
+	spacing so that the alternatives and attributes don't generate
+	long lines, and put things in columns, so that it is easier to
+	match up the operands and attributes with the insn alternatives.
+	(vsx_mov<mode>_64bit): Likewise.
+	(vsx_mov<mode>_32bit): Likewise.
+	(vsx_movti_64bit): Fold movti into normal vector moves.
+	(vsx_movti_32bit): Likewise.
+	(vsx_splat_<mode>, V4SI/V4SF modes): Add support for ISA 3.0 word
+	spat instructions.
+	(vsx_splat_v4si_internal): Likewise.
+	(vsx_splat_v4sf_internal): Likewise.
+	(vector fusion peepholes): Use VSX_M instead of VSX_M2.
+	(vsx_sign_extend_qi_<mode>): New ISA 3.0 instructions to sign
+	extend vector elements.
+	(vsx_sign_extend_hi_<mode>): Likewise.
+	(vsx_sign_extend_si_v2di): Likewise.
+	* config/rs6000/rs6000-protos.h (xxspltib_constant_p): Add
+	declaration.
+	* doc/md.texi (PowerPC constraints): Document the wE, wM, and wS
+	constraints.  Add trailing period to wL documentation.
+
 2016-05-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/71020
