@@ -101,10 +101,8 @@ VECT_VAR_DECL(expected_negative_shift,uint,64,2) [] = { 0x7ffffffffffffff,
 							0x7ffffffffffffff };
 
 
-#ifndef INSN_NAME
 #define INSN_NAME vshl
 #define TEST_MSG "VSHL/VSHLQ"
-#endif
 
 #define FNNAME1(NAME) exec_ ## NAME
 #define FNNAME(NAME) FNNAME1(NAME)

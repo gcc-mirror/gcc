@@ -32,10 +32,8 @@ VECT_VAR_DECL(expected_unsigned,uint,16,8) [] = { 0x0, 0xffff,
 VECT_VAR_DECL(expected_unsigned,uint,32,4) [] = { 0x0, 0xffffffff,
 						  0x0, 0xffffffff };
 
-#ifndef INSN_NAME
 #define INSN_NAME vtst
 #define TEST_MSG "VTST/VTSTQ"
-#endif
 
 /* We can't use the standard ref_v_binary_op.c template because vtst
    has no 64 bits variant, and outputs are always of uint type.  */
