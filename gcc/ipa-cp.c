@@ -1026,9 +1026,10 @@ ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
 {
   tree restype, res;
 
-  gcc_checking_assert (is_gimple_ip_invariant (input));
   if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
     return input;
+  if (!is_gimple_ip_invariant (input))
+    return NULL_TREE;
 
   if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
       == tcc_comparison)
