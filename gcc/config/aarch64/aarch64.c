@@ -663,16 +663,6 @@ struct aarch64_option_extension
   const unsigned long flags_off;
 };
 
-/* ISA extensions in AArch64.  */
-static const struct aarch64_option_extension all_extensions[] =
-{
-#define AARCH64_OPT_EXTENSION(NAME, X, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
-  {NAME, FLAGS_ON, FLAGS_OFF},
-#include "aarch64-option-extensions.def"
-#undef AARCH64_OPT_EXTENSION
-  {NULL, 0, 0}
-};
-
 typedef enum aarch64_cond_code
 {
   AARCH64_EQ = 0, AARCH64_NE, AARCH64_CS, AARCH64_CC, AARCH64_MI, AARCH64_PL,

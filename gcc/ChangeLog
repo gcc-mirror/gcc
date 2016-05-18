@@ -1,3 +1,7 @@
+2016-05-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64.c (all_extensions): Removed unused static variable.
+
 2016-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_function_arg_boundary): New.
