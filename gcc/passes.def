@@ -315,8 +315,8 @@ along with GCC; see the file COPYING3.  If not see
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
-      NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_dse);
+      NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_fold_builtins);
