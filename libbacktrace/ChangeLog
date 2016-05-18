@@ -1,3 +1,9 @@
+2016-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71161
+	* elf.c (phdr_callback) [__i386__]: Add
+	__attribute__((__force_align_arg_pointer__)).
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
