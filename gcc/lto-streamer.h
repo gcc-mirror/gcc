@@ -128,7 +128,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 5
+#define LTO_major_version 6
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
