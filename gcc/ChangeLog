@@ -1,6 +1,12 @@
 2016-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69708
+	* ipa-prop.c (parm_preserved_before_stmt_p): Return true for loads
+	from TREE_READONLY parameters.
+
+2016-05-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/69708
 	* cgraph.h (cgraph_indirect_call_info): New field
 	guaranteed_unmodified.
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Also pass parameter value
