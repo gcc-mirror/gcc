@@ -1,3 +1,9 @@
+2016-05-18  Jiong Wang  <jiong.wang@arm.com>
+
+	PR rtl-optimization/71150
+	* lra-constraint (process_addr_reg): Guard "in_class_p" with REG_P
+	check.
+
 2016-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/70915
