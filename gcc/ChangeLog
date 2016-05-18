@@ -1,3 +1,9 @@
+2016-05-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* function.c (rest_of_handle_thread_prologue_and_epilogue): Call
+	cleanup_cfg with CLEANUP_EXPENSIVE after shrink-wrapping instead
+	of before.  Add a comment.
+
 2016-05-18 Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Check invariant
