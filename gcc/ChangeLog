@@ -1,5 +1,9 @@
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (<ssse3_avx2>_pshufb<mode>3<mask_name>): Use
+	constraint x instead of v in second alternative, add avx512bw
+	alternative.
+
 	* config/i386/sse.md (*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>): Use
 	constraint x instead of v in second alternative, add avx512bw
 	alternative.
