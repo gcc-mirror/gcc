@@ -1,5 +1,10 @@
 2016-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/69793
+	* g++.dg/template/crash122.C: New.
+
+2016-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/70466
 	* g++.dg/template/pr70466-1.C: New.
 	* g++.dg/template/pr70466-2.C: Likewise.
