@@ -717,7 +717,7 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
 		return false;
 	      def_data = get_lim_data (SSA_NAME_DEF_STMT (val));
 	      if (def_data)
-		total_cost += def_data->cost;
+		lim_data->cost += def_data->cost;
 	    }
 
 	  /* We want to avoid unconditionally executing very expensive
