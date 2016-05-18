@@ -823,6 +823,29 @@ stmt_references_abnormal_ssa_name (gimple *stmt)
   return false;
 }
 
+/* If STMT takes any abnormal PHI values as input, replace them with
+   local copies.  */
+
+void
+replace_abnormal_ssa_names (gimple *stmt)
+{
+  ssa_op_iter oi;
+  use_operand_p use_p;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, oi, SSA_OP_USE)
+    {
+      tree op = USE_FROM_PTR (use_p);
+      if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  tree new_name = make_ssa_name (TREE_TYPE (op));
+	  gassign *assign = gimple_build_assign (new_name, op);
+	  gsi_insert_before (&gsi, assign, GSI_SAME_STMT);
+	  SET_USE (use_p, new_name);
+	}
+    }
+}
+
 /* Pair of tree and a sorting index, for dump_enumerated_decls.  */
 struct GTY(()) numbered_tree
 {
