@@ -1,3 +1,9 @@
+2016-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70466
+	* call.c (convert_like_real): Check that we are actually converting
+	from an init list.
+
 2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* decl.c (grokdeclarator): Remove errmsg and use of
