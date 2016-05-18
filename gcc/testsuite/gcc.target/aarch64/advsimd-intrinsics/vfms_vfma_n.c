@@ -2,6 +2,8 @@
 #include "arm-neon-ref.h"
 #include "compute-ref-data.h"
 
+#if defined(__aarch64__) && defined(__ARM_FEATURE_FMA)
+
 #define A0 123.4f
 #define A1 -3.8f
 #define A2 -29.4f
@@ -55,8 +57,6 @@ float64_t delem0 = DE0;
 float64_t delem1 = DE1;
 float64_t delem2 = DE2;
 float64_t delem3 = DE3;
-
-#if defined(__aarch64__) && defined(__ARM_FEATURE_FMA)
 
 /* Expected results for vfms_n.  */
 

@@ -136,8 +136,10 @@ static ARRAY(result, poly, 16, 4);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 static ARRAY(result, float, 16, 4);
 #endif
-static ARRAY(result, float, 64, 1);
 static ARRAY(result, float, 32, 2);
+#ifdef __aarch64__
+static ARRAY(result, float, 64, 1);
+#endif
 static ARRAY(result, int, 8, 16);
 static ARRAY(result, int, 16, 8);
 static ARRAY(result, int, 32, 4);
