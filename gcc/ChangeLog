@@ -1,3 +1,8 @@
+2016-05-18 Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Check invariant
+	expression pointer, not pointer to the pointer.
+
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (pbroadcast_evex_isa): New mode attr.
