@@ -13,6 +13,7 @@ uint32_t   expected_u32  = 0xfffffff1;
 uint64_t   expected_u64  = 0xfffffffffffffff0;
 poly8_t    expected_p8   = 0xf6;
 poly16_t   expected_p16  = 0xfff2;
+hfloat16_t expected_f16  = 0xcb80;
 hfloat32_t expected_f32  = 0xc1700000;
 
 int8_t     expectedq_s8  = 0xff;
@@ -25,6 +26,7 @@ uint32_t   expectedq_u32 = 0xfffffff2;
 uint64_t   expectedq_u64 = 0xfffffffffffffff1;
 poly8_t    expectedq_p8  = 0xfe;
 poly16_t   expectedq_p16 = 0xfff6;
+hfloat16_t expectedq_f16 = 0xca80;
 hfloat32_t expectedq_f32 = 0xc1500000;
 
 int error_found = 0;
@@ -52,6 +54,10 @@ void exec_vget_lane (void)
     uint32_t var_int32;
     float32_t var_float32;
   } var_int32_float32;
+  union {
+    uint16_t var_int16;
+    float16_t var_float16;
+  } var_int16_float16;
 
 #define TEST_VGET_LANE_FP(Q, T1, T2, W, N, L)				   \
   VAR(var, T1, W) = vget##Q##_lane_##T2##W(VECT_VAR(vector, T1, W, N), L); \
@@ -81,10 +87,17 @@ void exec_vget_lane (void)
   VAR_DECL(var, uint, 64);
   VAR_DECL(var, poly, 8);
   VAR_DECL(var, poly, 16);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  VAR_DECL(var, float, 16);
+#endif
   VAR_DECL(var, float, 32);
 
   /* Initialize input values.  */
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  VLOAD(vector, buffer, , float, f, 16, 4);
+  VLOAD(vector, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vector, buffer, , float, f, 32, 2);
   VLOAD(vector, buffer, q, float, f, 32, 4);
 
@@ -99,6 +112,9 @@ void exec_vget_lane (void)
   TEST_VGET_LANE(, uint, u, 64, 1, 0);
   TEST_VGET_LANE(, poly, p, 8, 8, 6);
   TEST_VGET_LANE(, poly, p, 16, 4, 2);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  TEST_VGET_LANE_FP(, float, f, 16, 4, 1);
+#endif
   TEST_VGET_LANE_FP(, float, f, 32, 2, 1);
 
   TEST_VGET_LANE(q, int, s, 8, 16, 15);
@@ -111,6 +127,9 @@ void exec_vget_lane (void)
   TEST_VGET_LANE(q, uint, u, 64, 2, 1);
   TEST_VGET_LANE(q, poly, p, 8, 16, 14);
   TEST_VGET_LANE(q, poly, p, 16, 8, 6);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  TEST_VGET_LANE_FP(q, float, f, 16, 8, 3);
+#endif
   TEST_VGET_LANE_FP(q, float, f, 32, 4, 3);
 }
 
