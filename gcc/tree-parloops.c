@@ -3168,6 +3168,7 @@ oacc_entry_exit_ok (struct loop *loop,
 	}
     }
 
+  region_bbs.release ();
   free (loop_bbs);
 
   BITMAP_FREE (in_loop_bbs);
