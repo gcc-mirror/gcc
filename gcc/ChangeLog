@@ -1,5 +1,9 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* tree-parloops.c (oacc_entry_exit_ok): Release a vector.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* tree-if-conv.c (ifcvt_repair_bool_pattern): Utilize auto_vecs.
 
 2016-05-19  Martin Liska  <mliska@suse.cz>
