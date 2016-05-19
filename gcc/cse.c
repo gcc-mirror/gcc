@@ -6669,6 +6669,10 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   int *rc_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int i, n_blocks;
 
+  /* CSE doesn't use dominane info but can invalidate it in different ways.
+     For simplicity free dominance info here.  */
+  free_dominance_info (CDI_DOMINATORS);
+
   df_set_flags (DF_LR_RUN_DCE);
   df_note_add_problem ();
   df_analyze ();
@@ -7568,9 +7572,6 @@ rest_of_handle_cse (void)
   else if (tem == 1 || optimize > 1)
     cse_cfg_altered |= cleanup_cfg (0);
 
-  if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
-    free_dominance_info (CDI_DOMINATORS);
-
   return 0;
 }
 
@@ -7639,9 +7640,6 @@ rest_of_handle_cse2 (void)
     }
   else if (tem == 1)
     cse_cfg_altered |= cleanup_cfg (0);
-
-  if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
-    free_dominance_info (CDI_DOMINATORS);
 
   cse_not_expected = 1;
   return 0;
@@ -7716,9 +7714,6 @@ rest_of_handle_cse_after_global_opts (void)
     }
   else if (tem == 1)
     cse_cfg_altered |= cleanup_cfg (0);
-
-  if (cse_cfg_altered && dom_info_available_p (CDI_DOMINATORS))
-    free_dominance_info (CDI_DOMINATORS);
 
   flag_cse_follow_jumps = save_cfj;
   return 0;
