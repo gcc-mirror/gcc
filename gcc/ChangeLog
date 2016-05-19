@@ -1,3 +1,8 @@
+2016-05-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Use also 
+	max_loop_iterations_int.
+
 2016-05-19  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/71031
