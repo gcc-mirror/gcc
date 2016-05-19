@@ -34,6 +34,8 @@ struct GTY(()) condition
   /* If agg_contents is set, this is the offset from which the used data was
      loaded.  */
   HOST_WIDE_INT offset;
+  /* Size of the access reading the data (or the PARM_DECL SSA_NAME).  */
+  HOST_WIDE_INT size;
   tree val;
   int operand_num;
   ENUM_BITFIELD(tree_code) code : 16;
