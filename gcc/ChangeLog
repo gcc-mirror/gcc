@@ -1,3 +1,10 @@
+2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71056
+	* config/arm/arm-builtins.c (arm_builtin_vectorized_function): Return
+	NULL_TREE early if NEON is not available.  Remove now redundant check
+	in ARM_CHECK_BUILTIN_MODE.
+
 2016-05-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/64354
