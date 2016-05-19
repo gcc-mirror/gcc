@@ -1,3 +1,8 @@
+2016-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/71031
+	* gcc.dg/tree-ssa/vrp100.c: New test.
+
 2016-05-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR rtl-optimization/71148
