@@ -1,3 +1,9 @@
+2016-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/71031
+	* tree-vrp.c (extract_range_from_binary_expr_1): Turn assert into a
+	condition and adjust the code a bit.
+
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
 	* tree-vect-stmts.c (vectorizable_simd_clone_call): Utilize
