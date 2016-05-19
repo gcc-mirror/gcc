@@ -1546,7 +1546,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
   vec<ddr_p> dependences = vNULL;
   struct mem_ref_group *gr;
   struct mem_ref *ref, *refb;
-  vec<loop_p> vloops = vNULL;
+  auto_vec<loop_p> vloops;
   unsigned *loop_data_size;
   unsigned i, j, n;
   unsigned volume, dist, adist;
