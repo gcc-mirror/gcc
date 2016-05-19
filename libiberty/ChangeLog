@@ -1,6 +1,28 @@
 2016-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-11-27  Pedro Alves  <palves@redhat.com>
+
+	PR other/61321
+	PR other/61233
+	* cp-demangle.c (d_demangle_callback, d_make_comp): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+	(is_ctor_dtor_or_conversion): Handle DEMANGLE_COMPONENT_CONVERSION
+	instead of DEMANGLE_COMPONENT_CAST.
+	(d_operator_name): Return a DEMANGLE_COMPONENT_CONVERSION
+	component if handling a conversion.
+	(d_count_templates_scopes, d_print_comp_inner): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+	(d_print_comp_inner): Handle DEMANGLE_COMPONENT_CONVERSION instead
+	of DEMANGLE_COMPONENT_CAST.
+	(d_print_cast): Rename as ...
+	(d_print_conversion): ... this.  Adjust comments.
+	(d_print_cast): Rewrite - simply print the left subcomponent.
+	* cp-demint.c (cplus_demangle_fill_component): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+
+	* testsuite/demangle-expected: Add tests.
+
 	2015-07-13  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* cp-demangle.c (d_dump): Fix syntax error.
