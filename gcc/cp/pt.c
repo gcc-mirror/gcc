@@ -17578,6 +17578,13 @@ fn_type_unification (tree fn,
   tree tinst;
   tree r = error_mark_node;
 
+  tree full_targs = targs;
+  if (TMPL_ARGS_DEPTH (targs)
+      < TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (fn)))
+    full_targs = (add_outermost_template_args
+		  (DECL_TI_ARGS (DECL_TEMPLATE_RESULT (fn)),
+		   targs));
+
   if (decltype_p)
     complain |= tf_decltype;
 
@@ -17622,6 +17629,14 @@ fn_type_unification (tree fn,
       int i, len = TREE_VEC_LENGTH (tparms);
       location_t loc = input_location;
       bool incomplete = false;
+
+      if (explicit_targs == error_mark_node)
+	goto fail;
+
+      if (TMPL_ARGS_DEPTH (explicit_targs)
+	  < TMPL_ARGS_DEPTH (full_targs))
+	explicit_targs = add_outermost_template_args (full_targs,
+						      explicit_targs);
 
       /* Adjust any explicit template arguments before entering the
 	 substitution context.  */
@@ -17702,6 +17717,7 @@ fn_type_unification (tree fn,
 	goto fail;
 
       /* Place the explicitly specified arguments in TARGS.  */
+      explicit_targs = INNERMOST_TEMPLATE_ARGS (explicit_targs);
       for (i = NUM_TMPL_ARGS (explicit_targs); i--;)
 	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (explicit_targs, i);
     }
@@ -17751,7 +17767,7 @@ fn_type_unification (tree fn,
   checks = NULL;
 
   ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
-			       targs, parms, args, nargs, /*subr=*/0,
+			       full_targs, parms, args, nargs, /*subr=*/0,
 			       strict, flags, &checks, explain_p);
   if (!explain_p)
     pop_tinst_level ();
@@ -18247,7 +18263,7 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 
 static int
 type_unification_real (tree tparms,
-		       tree targs,
+		       tree full_targs,
 		       tree xparms,
 		       const tree *xargs,
 		       unsigned int xnargs,
@@ -18269,6 +18285,8 @@ type_unification_real (tree tparms,
   gcc_assert (TREE_CODE (tparms) == TREE_VEC);
   gcc_assert (xparms == NULL_TREE || TREE_CODE (xparms) == TREE_LIST);
   gcc_assert (ntparms > 0);
+
+  tree targs = INNERMOST_TEMPLATE_ARGS (full_targs);
 
   /* Reset the number of non-defaulted template arguments contained
      in TARGS.  */
@@ -18304,7 +18322,7 @@ type_unification_real (tree tparms,
       arg = args[ia];
       ++ia;
 
-      if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
+      if (unify_one_argument (tparms, full_targs, parm, arg, subr, strict,
 			      explain_p))
 	return 1;
     }
@@ -18324,7 +18342,7 @@ type_unification_real (tree tparms,
 
       /* Copy the parameter into parmvec.  */
       TREE_VEC_ELT (parmvec, 0) = TREE_VALUE (parms);
-      if (unify_pack_expansion (tparms, targs, parmvec, argvec, strict,
+      if (unify_pack_expansion (tparms, full_targs, parmvec, argvec, strict,
                                 /*subr=*/subr, explain_p))
         return 1;
 
@@ -18485,8 +18503,8 @@ type_unification_real (tree tparms,
 	  location_t save_loc = input_location;
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
-	  arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
-	  arg = convert_template_argument (parm, arg, targs, complain,
+	  arg = tsubst_template_arg (arg, full_targs, complain, NULL_TREE);
+	  arg = convert_template_argument (parm, arg, full_targs, complain,
 					   i, NULL_TREE);
 	  input_location = save_loc;
 	  *checks = get_deferred_access_checks ();
