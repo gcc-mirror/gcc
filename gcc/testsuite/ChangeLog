@@ -1,3 +1,8 @@
+2016-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71184
+	* g++.dg/pr71184.C: New test case.
+
 2016-05-19  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/darn-0.c: New test.
