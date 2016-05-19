@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-pre" } */
+/* { dg-options "-O3 -fdump-tree-pre -fno-tree-loop-im" } */
 int db[100];
 int a_global_var, fact;
 int main()
