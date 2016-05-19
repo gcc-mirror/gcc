@@ -1,3 +1,8 @@
+2016-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* function.c (thread_prologue_and_epilogue_insn): Move the
+	"goto epilogue_done" one block later.
+
 2016-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70729

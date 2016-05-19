@@ -5960,11 +5960,6 @@ thread_prologue_and_epilogue_insns (void)
 
   exit_fallthru_edge = find_fallthru_edge (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 
-  /* If nothing falls through into the exit block, we don't need an
-     epilogue.  */
-  if (exit_fallthru_edge == NULL)
-    goto epilogue_done;
-
   /* A small fib -- epilogue is not yet completed, but we wish to re-use
      this marker for the splits of EH_RETURN patterns, and nothing else
      uses the flag in the meantime.  */
@@ -5993,6 +5988,11 @@ thread_prologue_and_epilogue_insns (void)
       record_insns (NEXT_INSN (prev), NEXT_INSN (trial), &epilogue_insn_hash);
       emit_note_after (NOTE_INSN_EPILOGUE_BEG, prev);
     }
+
+  /* If nothing falls through into the exit block, we don't need an
+     epilogue.  */
+  if (exit_fallthru_edge == NULL)
+    goto epilogue_done;
 
   if (epilogue_seq)
     {
