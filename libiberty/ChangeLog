@@ -107,8 +107,6 @@
 
 	PR other/61321
 	PR other/61233
-	* demangle.h (enum demangle_component_type)
-	<DEMANGLE_COMPONENT_CONVERSION>: New value.
 	* cp-demangle.c (d_demangle_callback, d_make_comp): Handle
 	DEMANGLE_COMPONENT_CONVERSION.
 	(is_ctor_dtor_or_conversion): Handle DEMANGLE_COMPONENT_CONVERSION
