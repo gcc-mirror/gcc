@@ -275,6 +275,16 @@ struct d_growable_string
   int allocation_failure;
 };
 
+/* Stack of components, innermost first, used to avoid loops.  */
+
+struct d_component_stack
+{
+  /* This component.  */
+  const struct demangle_component *dc;
+  /* This component's parent.  */
+  const struct d_component_stack *parent;
+};
+
 /* A demangle component and some scope captured when it was first
    traversed.  */
 
@@ -327,6 +337,8 @@ struct d_print_info
   int pack_index;
   /* Number of d_print_flush calls so far.  */
   unsigned long int flush_count;
+  /* Stack of components, innermost first, used to avoid loops.  */
+  const struct d_component_stack *component_stack;
   /* Array of saved scopes for evaluating substitutions.  */
   struct d_saved_scope *saved_scopes;
   /* Index of the next unused saved scope in the above array.  */
@@ -563,6 +575,9 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
       printf ("template parameter %ld\n", dc->u.s_number.number);
       return;
+    case DEMANGLE_COMPONENT_FUNCTION_PARAM:
+      printf ("function parameter %ld\n", dc->u.s_number.number);
+      return;
     case DEMANGLE_COMPONENT_CTOR:
       printf ("constructor %d\n", (int) dc->u.s_ctor.kind);
       d_dump (dc->u.s_ctor.name, indent + 2);
@@ -698,7 +713,9 @@ d_dump (struct demangle_component *dc, int indent)
       printf ("pointer to member type\n");
       break;
     case DEMANGLE_COMPONENT_FIXED_TYPE:
-      printf ("fixed-point type\n");
+      printf ("fixed-point type, accum? %d, sat? %d\n",
+              dc->u.s_fixed.accum, dc->u.s_fixed.sat);
+      d_dump (dc->u.s_fixed.length, indent + 2)
       break;
     case DEMANGLE_COMPONENT_ARGLIST:
       printf ("argument list\n");
@@ -747,6 +764,9 @@ d_dump (struct demangle_component *dc, int indent)
       break;
     case DEMANGLE_COMPONENT_CHARACTER:
       printf ("character '%c'\n",  dc->u.s_character.character);
+      return;
+    case DEMANGLE_COMPONENT_NUMBER:
+      printf ("number %ld\n", dc->u.s_number.number);
       return;
     case DEMANGLE_COMPONENT_DECLTYPE:
       printf ("decltype\n");
@@ -3857,7 +3877,6 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_FUNCTION_TYPE:
     case DEMANGLE_COMPONENT_ARRAY_TYPE:
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
@@ -3902,6 +3921,11 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
 				dc->u.s_extended_operator.name);
       break;
 
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
+      d_count_templates_scopes (num_templates, num_scopes,
+                                dc->u.s_fixed.length);
+      break;
+
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
     case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
       d_count_templates_scopes (num_templates, num_scopes,
@@ -3933,6 +3957,8 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->opaque = opaque;
 
   dpi->demangle_failure = 0;
+
+  dpi->component_stack = NULL;
 
   dpi->saved_scopes = NULL;
   dpi->next_saved_scope = 0;
@@ -4269,8 +4295,8 @@ d_get_saved_scope (struct d_print_info *dpi,
 /* Subroutine to handle components.  */
 
 static void
-d_print_comp (struct d_print_info *dpi, int options,
-              const struct demangle_component *dc)
+d_print_comp_inner (struct d_print_info *dpi, int options,
+		  const struct demangle_component *dc)
 {
   /* Magic variable to let reference smashing skip over the next modifier
      without needing to modify *dc.  */
@@ -4673,11 +4699,30 @@ d_print_comp (struct d_print_info *dpi, int options,
 	      }
 	    else
 	      {
+		const struct d_component_stack *dcse;
+		int found_self_or_parent = 0;
+
 		/* This traversal is reentering SUB as a substition.
-		   Restore the original templates temporarily.  */
-		saved_templates = dpi->templates;
-		dpi->templates = scope->templates;
-		need_template_restore = 1;
+		   If we are not beneath SUB or DC in the tree then we
+		   need to restore SUB's template stack temporarily.  */
+		for (dcse = dpi->component_stack; dcse != NULL;
+		     dcse = dcse->parent)
+		  {
+		    if (dcse->dc == sub
+			|| (dcse->dc == dc
+			    && dcse != dpi->component_stack))
+		      {
+			found_self_or_parent = 1;
+			break;
+		      }
+		  }
+
+		if (!found_self_or_parent)
+		  {
+		    saved_templates = dpi->templates;
+		    dpi->templates = scope->templates;
+		    need_template_restore = 1;
+		  }
 	      }
 
 	    a = d_lookup_template_argument (dpi, sub);
@@ -5314,6 +5359,21 @@ d_print_comp (struct d_print_info *dpi, int options,
       d_print_error (dpi);
       return;
     }
+}
+
+static void
+d_print_comp (struct d_print_info *dpi, int options,
+	      const struct demangle_component *dc)
+{
+  struct d_component_stack self;
+
+  self.dc = dc;
+  self.parent = dpi->component_stack;
+  dpi->component_stack = &self;
+
+  d_print_comp_inner (dpi, options, dc);
+
+  dpi->component_stack = self.parent;
 }
 
 /* Print a Java dentifier.  For Java we try to handle encoded extended
