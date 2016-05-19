@@ -1,3 +1,21 @@
+2016-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70729
+	* gcc.dg/autopar/outer-6.c: Adjust to avoid redundant store.
+	* gcc.dg/graphite/scop-18.c: Likewise.
+	* gcc.dg/pr41783.c: Disable LIM.
+	* gcc.dg/tree-ssa/loadpre10.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre23.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre24.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre25.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre4.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-16.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-18.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-20.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-3.c: Likewise.
+	* gfortran.dg/pr42108.f90: Likewise.
+
 2016-05-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/69265

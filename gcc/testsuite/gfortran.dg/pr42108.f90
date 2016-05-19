@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fdump-tree-fre1 -fdump-tree-pre-details" }
+! { dg-options "-O2 -fdump-tree-fre1 -fdump-tree-pre-details -fno-tree-loop-im" }
 
 subroutine  eval(foo1,foo2,foo3,foo4,x,n,nnd)
   implicit real*8 (a-h,o-z)

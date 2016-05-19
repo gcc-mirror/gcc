@@ -13,13 +13,13 @@ void test (void)
   for (i = 0; i < 24; i++)
     for (j = 0; j < 24; j++)
       for (k = 0; k < 24; k++)
-        A[i][j] = B[i][k] * C[k][j];
+        A[i][j] += B[i][k] * C[k][j];
 
   /* These loops should still be strip mined.  */
   for (i = 0; i < 1000; i++)
     for (j = 0; j < 1000; j++)
       for (k = 0; k < 1000; k++)
-        A[i][j] = B[i][k] * C[k][j];
+        A[i][j] += B[i][k] * C[k][j];
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */

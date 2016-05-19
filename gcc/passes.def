@@ -243,12 +243,14 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_cse_sincos);
       NEXT_PASS (pass_optimize_bswap);
       NEXT_PASS (pass_laddress);
+      NEXT_PASS (pass_lim);
       NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_pre);
       NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_sancov);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
+      NEXT_PASS (pass_dce);
       /* Pass group that runs when 1) enabled, 2) there are loops
 	 in the function.  Make sure to run pass_fix_loops before
 	 to discover/remove loops before running the gate function
@@ -257,9 +259,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
 	  NEXT_PASS (pass_tree_loop_init);
-	  NEXT_PASS (pass_lim);
-	  NEXT_PASS (pass_copy_prop);
-	  NEXT_PASS (pass_dce);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_record_bounds);

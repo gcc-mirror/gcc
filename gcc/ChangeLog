@@ -1,3 +1,9 @@
+2016-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70729
+	* passes.def: Move LIM pass before PRE.  Remove no longer
+	required copyprop and move first DCE out of the loop pipeline.
+
 2016-05-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/69265
