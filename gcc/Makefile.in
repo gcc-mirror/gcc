@@ -1160,7 +1160,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
 # Object files for gcc many-languages driver.
-GCC_OBJS = gcc.o gcc-main.o ggc-none.o spellcheck.o
+GCC_OBJS = gcc.o gcc-main.o ggc-none.o
 
 c-family-warn = $(STRICT_WARN)
 
@@ -1549,7 +1549,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
-	hash-table.o file-find.o
+	hash-table.o file-find.o spellcheck.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))

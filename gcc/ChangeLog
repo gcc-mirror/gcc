@@ -1,3 +1,12 @@
+2016-05-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/69265
+	* Makefile.in (GCC_OBJS): Move spellcheck.o to...
+	(OBJS-libcommon-target): ...here.
+	* opts-common.c: Include spellcheck.h.
+	(cmdline_handle_error): Build a vec of valid options and use it
+	to suggest provide hints for misspelled arguments.
+
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71100
