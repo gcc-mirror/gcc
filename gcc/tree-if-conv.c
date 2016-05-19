@@ -2651,8 +2651,8 @@ ifcvt_repair_bool_pattern (basic_block bb)
   tree rhs;
   gimple *stmt;
   gimple_stmt_iterator gsi;
-  vec<gimple *> defuse_list = vNULL;
-  vec<gimple *> pattern_roots = vNULL;
+  auto_vec<gimple *> defuse_list;
+  auto_vec<gimple *> pattern_roots;
   bool repeat = true;
   int niter = 0;
   unsigned int ix;
