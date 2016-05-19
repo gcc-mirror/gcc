@@ -1,5 +1,10 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Use
+	auto_vec instead of vec.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* lto-section-in.c (lto_get_section_data): Call
 	lto_check_version with additional argument.
 	* lto-streamer.c (lto_check_version): Add new argument.
