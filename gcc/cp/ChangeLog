@@ -1,3 +1,10 @@
+2016-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71184
+	* parser.c (cp_parser_operator): For array new/delete, check that
+	cp_parser_require returned a non-NULL token before dereferencing
+	it.
+
 2016-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* decl.c (finish_enum_value_list): Use the specified mode.

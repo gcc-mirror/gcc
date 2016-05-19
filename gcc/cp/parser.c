@@ -13791,8 +13791,9 @@ cp_parser_operator (cp_parser* parser)
 	    /* Consume the `[' token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Look for the `]' token.  */
-	    end_loc = cp_parser_require (parser, CPP_CLOSE_SQUARE,
-                                         RT_CLOSE_SQUARE)->location;
+	    if (cp_token *close_token
+		= cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
+	      end_loc = close_token->location;
 	    id = ansi_opname (op == NEW_EXPR
 			      ? VEC_NEW_EXPR : VEC_DELETE_EXPR);
 	  }
