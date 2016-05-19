@@ -1,5 +1,10 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Utilize
+	auto_vec instead of vec.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* tree-parloops.c (oacc_entry_exit_ok): Release a vector.
 
 2016-05-19  Martin Liska  <mliska@suse.cz>
