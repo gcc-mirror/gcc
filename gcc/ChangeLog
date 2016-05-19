@@ -1,3 +1,8 @@
+2016-05-16  Ryan Burn  <contact@rnburn.com>
+
+	* Makefile.in (GTFILES): Add cilk.h and cilk-common.c.
+	* gengtype.c (open_base_files): Add cilk.h to ifiles.
+
 2016-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sched-deps.c (sched_analyze_2) <case TRAP_IF>: Also
