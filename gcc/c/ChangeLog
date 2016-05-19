@@ -1,3 +1,13 @@
+2016-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/71171
+	* c-parser.c (c_parser_generic_selection): Use c_expr::set_error
+	in error-handling.
+	(c_parser_postfix_expression): Likewise.
+	* c-tree.h (c_expr::set_error): New method.
+	* c-typeck.c (parser_build_binary_op): In error-handling, ensure
+	that result's range is initialized.
+
 2016-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* c-typeck.c (parser_build_unary_op): Fix formatting.
