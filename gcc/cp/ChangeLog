@@ -1,3 +1,11 @@
+2016-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from trunk r236483.
+	PR c++/71184
+	* parser.c (cp_parser_operator): For array new/delete, check that
+	cp_parser_require returned a non-NULL token before dereferencing
+	it.
+
 2016-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Backport from mainline
