@@ -58,6 +58,13 @@
 	* libiberty.h (dupargv): Change arg to char * const *.
 	(writeargv, countargv): Likewise.
 
+2015-11-27  Pedro Alves  <palves@redhat.com>
+
+	PR other/61321
+	PR other/61233
+	* demangle.h (enum demangle_component_type)
+	<DEMANGLE_COMPONENT_CONVERSION>: New value.
+
 2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* vtv-change-permission.h (VTV_PAGE_SIZE) [__sun__ && __svr4__ &&
