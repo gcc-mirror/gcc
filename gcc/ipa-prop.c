@@ -1414,6 +1414,9 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
   bool check_ref, by_ref;
   ao_ref r;
 
+  if (PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS) == 0)
+    return;
+
   /* The function operates in three stages.  First, we prepare check_ref, r,
      arg_base and arg_offset based on what is actually passed as an actual
      argument.  */
