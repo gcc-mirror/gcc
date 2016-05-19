@@ -1,6 +1,52 @@
 2016-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70498
+	* cp-demangle.c (d_expression_1): Formatting fix.
+
+	2016-05-02  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/70498
+	* cp-demangle.c: Parse numbers as integer instead of long to avoid
+	overflow after sanity checks. Include <limits.h> if available.
+	(INT_MAX): Define if necessary.
+	(d_make_template_param): Takes integer argument instead of long.
+	(d_make_function_param): Likewise.
+	(d_append_num): Likewise.
+	(d_identifier): Likewise.
+	(d_number): Parse as and return integer.
+	(d_compact_number): Handle overflow.
+	(d_source_name): Change variable type to integer for parsed number.
+	(d_java_resource): Likewise.
+	(d_special_name): Likewise.
+	(d_discriminator): Likewise.
+	(d_unnamed_type): Likewise.
+	* testsuite/demangle-expected: Add regression test cases.
+
+	2016-04-08  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/69687
+	* cplus-dem.c: Include <limits.h> if available.
+	(INT_MAX): Define if necessary.
+	(remember_type, remember_Ktype, register_Btype, string_need):
+	Abort if we detect cases where we the size of the allocation would
+	overflow.
+
+	PR c++/70492
+	* cplus-dem.c (gnu_special): Handle case where consume_count returns
+	-1.
+
+	2016-03-31  Mikhail Maltsev  <maltsevm@gmail.com>
+		    Marcel Bohme  <boehme.marcel@gmail.com>
+
+	PR c++/67394
+	PR c++/70481
+	* cplus-dem.c (squangle_mop_up): Zero bsize/ksize after freeing
+	btypevec/ktypevec.
+	* testsuite/demangle-expected: Add coverage tests.
+
 	2015-11-27  Pedro Alves  <palves@redhat.com>
 
 	PR other/61321
