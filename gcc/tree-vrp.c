@@ -2519,20 +2519,13 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		  min = wide_int_to_tree (expr_type, tmin);
 		  max = wide_int_to_tree (expr_type, tmax);
 		}
-	      else if (min_ovf == -1 && max_ovf == 1)
-		{
-		  /* Underflow and overflow, drop to VR_VARYING.  */
-		  set_value_range_to_varying (vr);
-		  return;
-		}
-	      else
+	      else if ((min_ovf == -1 && max_ovf == 0)
+		       || (max_ovf == 1 && min_ovf == 0))
 		{
 		  /* Min underflow or max overflow.  The range kind
 		     changes to VR_ANTI_RANGE.  */
 		  bool covers = false;
 		  wide_int tem = tmin;
-		  gcc_assert ((min_ovf == -1 && max_ovf == 0)
-			      || (max_ovf == 1 && min_ovf == 0));
 		  type = VR_ANTI_RANGE;
 		  tmin = tmax + 1;
 		  if (wi::cmp (tmin, tmax, sgn) < 0)
@@ -2550,6 +2543,12 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		    }
 		  min = wide_int_to_tree (expr_type, tmin);
 		  max = wide_int_to_tree (expr_type, tmax);
+		}
+	      else
+		{
+		  /* Other underflow and/or overflow, drop to VR_VARYING.  */
+		  set_value_range_to_varying (vr);
+		  return;
 		}
 	    }
 	  else
