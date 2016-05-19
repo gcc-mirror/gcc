@@ -143,6 +143,15 @@ struct c_expr
      of this expression.  */
   location_t get_start () const { return src_range.m_start; }
   location_t get_finish () const { return src_range.m_finish; }
+
+  /* Set the value to error_mark_node whilst ensuring that src_range
+     is initialized.  */
+  void set_error ()
+  {
+    value = error_mark_node;
+    src_range.m_start = UNKNOWN_LOCATION;
+    src_range.m_finish = UNKNOWN_LOCATION;
+  }
 };
 
 /* Type alias for struct c_expr. This allows to use the structure
