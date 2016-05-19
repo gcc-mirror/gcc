@@ -1,3 +1,9 @@
+2016-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10200
+	* pt.c (fn_type_unification): Add outer template args if needed.
+	(type_unification_real): Handle getting full args.
+
 2016-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/71184
