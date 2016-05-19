@@ -4422,12 +4422,22 @@ void baz<int>(A<sizeof (foo((int)(), (floatcomplex )00000000_00000000))>*)
 _Z3fooI1FEN1XIXszdtcl1PclcvT__EEE5arrayEE4TypeEv
 X<sizeof ((P(((F)())())).array)>::Type foo<F>()
 #
-# Tests a use-after-free problem
+# Tests a use-after-free problem PR70481
 
 _Q.__0
 ::Q.(void)
 #
-# Tests a use-after-free problem
+# Tests a use-after-free problem PR70481
 
 _Q10-__9cafebabe.
 cafebabe.::-(void)
+#
+# Tests integer overflow problem PR70492
+
+__vt_90000000000cafebabe
+__vt_90000000000cafebabe
+#
+# Tests write access violation PR70498
+
+_Z80800000000000000000000
+_Z80800000000000000000000

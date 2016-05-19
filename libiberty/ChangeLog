@@ -1,3 +1,30 @@
+2016-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70498
+	* cp-demangle.c (d_expression_1): Formatting fix.
+
+	2016-05-02  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/70498
+	* cp-demangle.c: Parse numbers as integer instead of long to avoid
+	overflow after sanity checks. Include <limits.h> if available.
+	(INT_MAX): Define if necessary.
+	(d_make_template_param): Takes integer argument instead of long.
+	(d_make_function_param): Likewise.
+	(d_append_num): Likewise.
+	(d_identifier): Likewise.
+	(d_number): Parse as and return integer.
+	(d_compact_number): Handle overflow.
+	(d_source_name): Change variable type to integer for parsed number.
+	(d_java_resource): Likewise.
+	(d_special_name): Likewise.
+	(d_discriminator): Likewise.
+	(d_unnamed_type): Likewise.
+	* testsuite/demangle-expected: Add regression test cases.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
@@ -16,7 +43,7 @@
 	-1.
 
 2016-03-31  Mikhail Maltsev  <maltsevm@gmail.com>
-	    Marcel Bohme  boehme.marcel@gmail.com
+	    Marcel Bohme  <boehme.marcel@gmail.com>
 
 	PR c++/67394
 	PR c++/70481
@@ -2037,7 +2064,7 @@
 	that are locale-independent.
 	* Makefile.in (filename_cmp.o): Add dependency on safe-ctype.h.
 
-2007-04-11  Thomas Neumann  tneumann@users.sourceforge.net
+2007-04-11  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* argv.c: Use ANSI C declarations.
 	* make-relative-prefix.c: Likewise.
