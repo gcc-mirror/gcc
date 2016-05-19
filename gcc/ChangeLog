@@ -1,3 +1,15 @@
+2016-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* function.c (make_epilogue_seq): Remove epilogue_end parameter.
+	(thread_prologue_and_epilogue_insns): Remove bb_flags.  Restructure
+	code.  Ignore sibcalls on EDGE_IGNORE edges.
+	* shrink-wrap.c (handle_simple_exit): New function.  Set EDGE_IGNORE
+	on edges for sibcalls that run without prologue.  The rest of the
+	function is combined from...
+	(fix_fake_fallthrough_edge): ... this, and ...
+	(try_shrink_wrapping): ... a part of this.  Remove the bb_with
+	function argument, make it a local variable.
+
 2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Allow 
@@ -6,7 +18,7 @@
 	* config/i386/mingw32.h (SHARED_LIBGCC_UNDEFS_SPEC): Handle
 	TARGET_64BIT_DEFAULT.
 
-2016-05-16  Ryan Burn  <contact@rnburn.com>
+2016-05-19  Ryan Burn  <contact@rnburn.com>
 
 	* Makefile.in (GTFILES): Add cilk.h and cilk-common.c.
 	* gengtype.c (open_base_files): Add cilk.h to ifiles.
