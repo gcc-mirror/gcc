@@ -258,6 +258,13 @@ set_function_state (struct cgraph_node *node, funct_state s)
   if (!funct_state_vec.exists ()
       || funct_state_vec.length () <= (unsigned int)node->uid)
      funct_state_vec.safe_grow_cleared (node->uid + 1);
+
+  /* If funct_state_vec already contains a funct_state, we have to release
+     it before it's going to be ovewritten.  */
+  if (funct_state_vec[node->uid] != NULL
+      && funct_state_vec[node->uid] != &varying_state)
+    free (funct_state_vec[node->uid]);
+
   funct_state_vec[node->uid] = s;
 }
 
@@ -956,12 +963,7 @@ static void
 remove_node_data (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   if (has_function_state (node))
-    {
-      funct_state l = get_function_state (node);
-      if (l != &varying_state)
-        free (l);
-      set_function_state (node, NULL);
-    }
+    set_function_state (node, NULL);
 }
 
 
