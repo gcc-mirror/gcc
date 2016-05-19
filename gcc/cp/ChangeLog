@@ -1,3 +1,8 @@
+2016-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71075
+	* pt.c (unify_template_argument_mismatch): Use %qE instead of %qD.
+
 2016-05-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10200
