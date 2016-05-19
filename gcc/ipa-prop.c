@@ -1374,6 +1374,9 @@ determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
   bool check_ref, by_ref;
   ao_ref r;
 
+  if (PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS) == 0)
+    return;
+
   /* The function operates in three stages.  First, we prepare check_ref, r,
      arg_base and arg_offset based on what is actually passed as an actual
      argument.  */
