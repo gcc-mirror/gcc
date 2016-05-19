@@ -10762,8 +10762,6 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       if ((arm_arch4 || GET_MODE (XEXP (x, 0)) == SImode)
 	  && MEM_P (XEXP (x, 0)))
 	{
-	  *cost = rtx_cost (XEXP (x, 0), VOIDmode, code, 0, speed_p);
-
 	  if (mode == DImode)
 	    *cost += COSTS_N_INSNS (1);
 

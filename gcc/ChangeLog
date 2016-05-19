@@ -1,3 +1,9 @@
+2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs, SIGN_EXTEND case):
+	Don't add cost of inner memory when handling sign-extended
+	loads.
+
 2016-05-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR rtl-optimization/71148
