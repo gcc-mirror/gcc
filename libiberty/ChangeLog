@@ -1,3 +1,8 @@
+2016-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70498
+	* cp-demangle.c (d_expression_1): Formatting fix.
+
 2016-05-18  Artemiy Volkov  <artemiyv@acm.org>
 
 	* cplus-dem.c (enum type_kind_t): Add tk_rvalue_reference

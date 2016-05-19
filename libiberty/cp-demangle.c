@@ -3181,7 +3181,7 @@ d_expression_1 (struct d_info *di)
 	  index = d_compact_number (di);
 	  if (index == INT_MAX || index == -1)
 	    return NULL;
-	  index ++;
+	  index++;
 	}
       return d_make_function_param (di, index);
     }
