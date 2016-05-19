@@ -1,3 +1,10 @@
+2016-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backport from mainline
+	2016-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/pr69669.c: Check the used mode.
+
 2016-05-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/70646
