@@ -45,7 +45,7 @@
 	-1.
 
 2016-03-31  Mikhail Maltsev  <maltsevm@gmail.com>
-	    Marcel Bohme  boehme.marcel@gmail.com
+	    Marcel Bohme  <boehme.marcel@gmail.com>
 
 	PR c++/67394
 	PR c++/70481
@@ -2066,7 +2066,7 @@
 	that are locale-independent.
 	* Makefile.in (filename_cmp.o): Add dependency on safe-ctype.h.
 
-2007-04-11  Thomas Neumann  tneumann@users.sourceforge.net
+2007-04-11  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* argv.c: Use ANSI C declarations.
 	* make-relative-prefix.c: Likewise.
