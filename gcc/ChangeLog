@@ -1,5 +1,10 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-reassoc.c (eliminate_duplicate_pair): Truncate
+	an auto_vec instead of re-creating it.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Use
 	auto_vec instead of vec.
 

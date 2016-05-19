@@ -732,7 +732,7 @@ eliminate_duplicate_pair (enum tree_code opcode,
 
 	  if (ops->length () == 2)
 	    {
-	      ops->create (0);
+	      ops->truncate (0);
 	      add_to_ops_vec (ops, build_zero_cst (TREE_TYPE (last->op)));
 	      *all_done = true;
 	    }
