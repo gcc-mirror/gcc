@@ -678,6 +678,9 @@ x86_64-*-cygwin*)
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$ac_cv_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
+	elif test "${host_address}" = 32; then
+	        # biarch -m32 with --disable-sjlj-exceptions
+	     	tmake_eh_file="i386/t-dw2-eh"
 	else
 		tmake_eh_file="i386/t-seh-eh"
 	fi
@@ -730,6 +733,10 @@ x86_64-*-mingw*)
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$ac_cv_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
+	elif test "${host_address}" = 32; then
+	        # biarch -m32 with --disable-sjlj-exceptions
+	     	tmake_eh_file="i386/t-dw2-eh"
+		md_unwind_header=i386/w32-unwind.h
 	else
 		tmake_eh_file="i386/t-seh-eh"
 	fi

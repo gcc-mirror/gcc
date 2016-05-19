@@ -1,3 +1,9 @@
+2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config.host [x86_64-*-cygwin*]: Handle tmake_eh_file for mixed 
+	dw2/seh configuration.
+	[x86_64-*-mingw*]: Likewise.
+
 2016-05-10  Joel Sherrill <joel@rtems.org>
 
 	PR libgcc/70720

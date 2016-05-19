@@ -1,3 +1,11 @@
+2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Allow 
+	--disable-sjlj-exceptions for TARGET_BI_ARCH to select DWARF-2 EH
+	for 32-bit mode and SEH for 64-bit.
+	* config/i386/mingw32.h (SHARED_LIBGCC_UNDEFS_SPEC): Handle
+	TARGET_64BIT_DEFAULT.
+
 2016-05-16  Ryan Burn  <contact@rnburn.com>
 
 	* Makefile.in (GTFILES): Add cilk.h and cilk-common.c.
