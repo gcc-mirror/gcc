@@ -1,3 +1,8 @@
+2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71056
+	* gcc.target/arm/pr71056.c: New test.
+
 2016-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/pr69669.c: Check the used mode.
