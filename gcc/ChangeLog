@@ -1,3 +1,12 @@
+2016-05-18  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2016-05-18  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/70856
+	* ipa-icf.c (sem_variable::merge): Set DECL_PT_UID for
+	merged variables.
+
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71100
