@@ -24,6 +24,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Before including this file, some macros must be defined:
+   RS6000_BUILTIN_0 -- 0 arg builtins
    RS6000_BUILTIN_1 -- 1 arg builtins
    RS6000_BUILTIN_2 -- 2 arg builtins
    RS6000_BUILTIN_3 -- 3 arg builtins
@@ -42,6 +43,10 @@
 	MASK	Mask of bits that indicate which options enables the builtin
 	ATTR	builtin attribute information.
 	ICODE	Insn code of the function that implents the builtin.  */
+
+#ifndef RS6000_BUILTIN_0
+  #error "RS6000_BUILTIN_0 is not defined."
+#endif
 
 #ifndef RS6000_BUILTIN_1
   #error "RS6000_BUILTIN_1 is not defined."
@@ -635,6 +640,41 @@
 		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Miscellaneous builtins for instructions added in ISA 3.0.  These
+   instructions don't require either the DFP or VSX options, just the basic
+   ISA 3.0 enablement since they operate on general purpose registers.  */
+#define BU_P9_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_MODULO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Miscellaneous builtins for instructions added in ISA 3.0.  These
+   instructions don't require either the DFP or VSX options, just the basic
+   ISA 3.0 enablement since they operate on general purpose registers,
+   and they require 64-bit addressing.  */
+#define BU_P9_64BIT_MISC_0(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_0 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_MODULO                                   \
+                     | RS6000_BTM_64BIT,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Miscellaneous builtins for instructions added in ISA 3.0.  These
+   instructions don't require either the DFP or VSX options, just the basic
+   ISA 3.0 enablement since they operate on general purpose registers.  */
+#define BU_P9_MISC_0(ENUM, NAME, ATTR, ICODE)                      \
+  RS6000_BUILTIN_0 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_MODULO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 /* 128-bit long double floating point builtins.  */
@@ -1652,6 +1692,11 @@ BU_P8V_MISC_3 (BCDSUB_OV,	"bcdsub_ov",	CONST,	bcdsub_unordered)
 /* 2 argument pack/unpack 128-bit floating point types.  */
 BU_DFP_MISC_2 (PACK_TD,		"pack_dec128",		CONST,	packtd)
 BU_DFP_MISC_2 (UNPACK_TD,	"unpack_dec128",	CONST,	unpacktd)
+
+/* 0 argument general-purpose register functions added in ISA 3.0 (power9).  */
+BU_P9_MISC_0 (DARN_32,		"darn_32", 		MISC, darn_32)
+BU_P9_64BIT_MISC_0 (DARN_RAW,	"darn_raw", 		MISC, darn_raw)
+BU_P9_64BIT_MISC_0 (DARN,	"darn",			MISC, darn)
 
 BU_LDBL128_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
 BU_LDBL128_2 (UNPACK_TF,	"unpack_longdouble",	CONST,	unpacktf)

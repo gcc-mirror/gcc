@@ -1,3 +1,9 @@
+2016-05-19  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/darn-0.c: New test.
+	* gcc.target/powerpc/darn-1.c: New test.
+	* gcc.target/powerpc/darn-2.c: New test.
+
 2016-05-19  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/71031

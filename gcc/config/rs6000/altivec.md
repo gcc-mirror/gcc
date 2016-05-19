@@ -73,6 +73,9 @@
    UNSPEC_VUNPACK_LO_SIGN_DIRECT
    UNSPEC_VUPKHPX
    UNSPEC_VUPKLPX
+   UNSPEC_DARN
+   UNSPEC_DARN_32
+   UNSPEC_DARN_RAW
    UNSPEC_DST
    UNSPEC_DSTT
    UNSPEC_DSTST
@@ -3589,6 +3592,27 @@
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
+
+(define_insn "darn_32"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(const_int 0)] UNSPEC_DARN_32))]
+  "TARGET_MODULO"
+  "darn %0,0"
+  [(set_attr "type" "integer")])
+
+(define_insn "darn_raw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(const_int 0)] UNSPEC_DARN_RAW))]
+  "TARGET_MODULO && TARGET_64BIT"
+  "darn %0,2"
+  [(set_attr "type" "integer")])
+
+(define_insn "darn"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(const_int 0)] UNSPEC_DARN))]
+  "TARGET_MODULO && TARGET_64BIT"
+  "darn %0,1"
+  [(set_attr "type" "integer")])
 
 (define_expand "bcd<bcd_add_sub>_<code>"
   [(parallel [(set (reg:CCFP 74)
