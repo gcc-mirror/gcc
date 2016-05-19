@@ -1,3 +1,8 @@
+2016-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sched-deps.c (sched_analyze_2) <case TRAP_IF>: Also
+	force pending loads from memory.
+
 2016-05-19  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.md (UNSPEC_DARN): New unspec constant.
@@ -39,7 +44,7 @@
 
 2016-05-19  Jan Hubicka  <hubicka@ucw.cz>
 
-	* tree-vect-loop.c (vect_analyze_loop_2): Use also 
+	* tree-vect-loop.c (vect_analyze_loop_2): Use also
 	max_loop_iterations_int.
 
 2016-05-19  Marek Polacek  <polacek@redhat.com>
@@ -97,8 +102,7 @@
 2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs, SIGN_EXTEND case):
-	Don't add cost of inner memory when handling sign-extended
-	loads.
+	Don't add cost of inner memory when handling sign-extended loads.
 
 2016-05-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 

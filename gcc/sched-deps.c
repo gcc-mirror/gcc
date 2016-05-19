@@ -2709,9 +2709,12 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	return;
       }
 
-    /* Force pending stores to memory in case a trap handler needs them.  */
+    /* Force pending stores to memory in case a trap handler needs them.
+       Also force pending loads from memory; loads and stores can segfault
+       and the signal handler won't be triggered if the trap insn was moved
+       above load or store insn.  */
     case TRAP_IF:
-      flush_pending_lists (deps, insn, true, false);
+      flush_pending_lists (deps, insn, true, true);
       break;
 
     case PREFETCH:
