@@ -1,3 +1,8 @@
+2016-05-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/70646
+	* gcc.dg/ipa/pr70646.c: New test.
+
 2016-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 2016-01-26  Richard Sandiford  <richard.sandiford@arm.com>
