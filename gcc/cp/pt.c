@@ -6165,7 +6165,7 @@ unify_template_argument_mismatch (bool explain_p, tree parm, tree arg)
 {
   if (explain_p)
     inform (input_location,
-	    "  template argument %qE does not match %qD", arg, parm);
+	    "  template argument %qE does not match %qE", arg, parm);
   return 1;
 }
 

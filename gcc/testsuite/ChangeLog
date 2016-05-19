@@ -1,3 +1,8 @@
+2016-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71075
+	* g++.dg/diagnostic/pr71075.C: New test.
+
 2016-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/71184
