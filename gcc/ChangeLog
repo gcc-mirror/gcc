@@ -1,3 +1,10 @@
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
+	* lto-section-in.c (lto_get_section_data): Call
+	lto_check_version with additional argument.
+	* lto-streamer.c (lto_check_version): Add new argument.
+	* lto-streamer.h (lto_check_version): Likewise.
+
 2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs, SIGN_EXTEND case):

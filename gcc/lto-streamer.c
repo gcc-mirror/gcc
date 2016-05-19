@@ -376,12 +376,13 @@ lto_orig_address_remove (tree t)
 /* Check that the version MAJOR.MINOR is the correct version number.  */
 
 void
-lto_check_version (int major, int minor)
+lto_check_version (int major, int minor, const char *file_name)
 {
   if (major != LTO_major_version || minor != LTO_minor_version)
     fatal_error (input_location,
-		 "bytecode stream generated with LTO version %d.%d instead "
-	         "of the expected %d.%d",
+		 "bytecode stream in file '%s' generated with LTO version "
+		 "%d.%d instead of the expected %d.%d",
+		 file_name,
 		 major, minor,
 		 LTO_major_version, LTO_minor_version);
 }
