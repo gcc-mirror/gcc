@@ -1,5 +1,9 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* omp-simd-clone.c (simd_clone_adjust): Release vector.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-reassoc.c (eliminate_duplicate_pair): Truncate
 	an auto_vec instead of re-creating it.
 

@@ -1079,6 +1079,7 @@ simd_clone_adjust (struct cgraph_node *node)
   tree iter1 = make_ssa_name (iter);
   tree iter2 = make_ssa_name (iter);
   ipa_simd_modify_function_body (node, adjustments, retval, iter1);
+  adjustments.release ();
 
   /* Initialize the iteration variable.  */
   basic_block entry_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
