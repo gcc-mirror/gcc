@@ -380,6 +380,10 @@ enum demangle_component_type
   /* A typecast, represented as a unary operator.  The one subtree is
      the type to which the argument should be cast.  */
   DEMANGLE_COMPONENT_CAST,
+  /* A conversion operator, represented as a unary operator.  The one
+     subtree is the type to which the argument should be converted
+     to.  */
+  DEMANGLE_COMPONENT_CONVERSION,
   /* A nullary expression.  The left subtree is the operator.  */
   DEMANGLE_COMPONENT_NULLARY,
   /* A unary expression.  The left subtree is the operator, and the
