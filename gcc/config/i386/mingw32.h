@@ -100,10 +100,12 @@ along with GCC; see the file COPYING3.  If not see
 #if DWARF2_UNWIND_INFO
 /* DW2-unwind is just available for 32-bit mode.  */
 #if TARGET_64BIT_DEFAULT
-#error DW2 unwind is not available for 64-bit.
-#endif
+#define SHARED_LIBGCC_UNDEFS_SPEC \
+  "%{m32: %{shared-libgcc: -u ___register_frame_info -u ___deregister_frame_info}}"
+#else
 #define SHARED_LIBGCC_UNDEFS_SPEC \
  "%{shared-libgcc: -u ___register_frame_info -u ___deregister_frame_info}"
+#endif
 #else
 #define SHARED_LIBGCC_UNDEFS_SPEC ""
 #endif
