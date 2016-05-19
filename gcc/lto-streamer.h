@@ -844,7 +844,7 @@ extern void lto_orig_address_map (tree, intptr_t);
 extern intptr_t lto_orig_address_get (tree);
 extern void lto_orig_address_remove (tree);
 #endif
-extern void lto_check_version (int, int);
+extern void lto_check_version (int, int, const char *);
 extern void lto_streamer_hooks_init (void);
 
 /* In lto-streamer-in.c */
