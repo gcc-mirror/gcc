@@ -1,3 +1,7 @@
+2016-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl.c (finish_enum_value_list): Use the specified mode.
+
 2016-05-18  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (value_dependent_expression_p): Tweak new cases to better
