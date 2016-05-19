@@ -1,5 +1,9 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* tree-if-conv.c (ifcvt_repair_bool_pattern): Utilize auto_vecs.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* ipa-pure-const.c (set_function_state): Remove an existing
 	funct_state.
 	(remove_node_data): Do not free it as it's released
