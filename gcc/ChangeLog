@@ -1,3 +1,9 @@
+2016-05-19 Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69848
+	* tree-vect-loop.c (vectorizable_reduction): Don't factor
+	comparison expr out of VEC_COND_EXPR for COND_REDUCTION.
+
 2016-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* function.c (thread_prologue_and_epilogue_insn): Move the
