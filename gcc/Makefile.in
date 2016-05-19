@@ -2355,7 +2355,8 @@ s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
-  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
+  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/cilk.h \
+  $(srcdir)/cilk-common.c $(srcdir)/coverage.c  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
