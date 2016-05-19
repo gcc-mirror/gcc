@@ -1,3 +1,11 @@
+2016-05-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR rtl-optimization/71148
+	* cse.c (cse_main): Free dominance info.
+	(rest_of_handle_cse): Don't free dominance info.
+	(rest_of_handle_cse2): Likewise.
+	(rest_of_handle_cse_after_global_opts): Likewise.
+
 2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/71056

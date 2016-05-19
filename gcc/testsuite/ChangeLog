@@ -1,3 +1,8 @@
+2016-05-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR rtl-optimization/71148
+	* gcc.dg/pr71148.c: New test.
+
 2016-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/71056
