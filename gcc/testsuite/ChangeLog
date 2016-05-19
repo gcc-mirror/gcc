@@ -1,3 +1,8 @@
+2016-05-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/64354
+	* c-c++-common/tsan/sanitize-thread-macro.c: New test.
+
 2016-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70729
