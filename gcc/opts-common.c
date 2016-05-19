@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "diagnostic.h"
+#include "spellcheck.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -1113,6 +1114,7 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
       for (i = 0; e->values[i].arg != NULL; i++)
 	len += strlen (e->values[i].arg) + 1;
 
+      auto_vec <const char *> candidates;
       s = XALLOCAVEC (char, len);
       p = s;
       for (i = 0; e->values[i].arg != NULL; i++)
@@ -1123,9 +1125,16 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
 	  memcpy (p, e->values[i].arg, arglen);
 	  p[arglen] = ' ';
 	  p += arglen + 1;
+	  candidates.safe_push (e->values[i].arg);
 	}
       p[-1] = 0;
-      inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+      const char *hint = find_closest_string (arg, &candidates);
+      if (hint)
+	inform (loc, "valid arguments to %qs are: %s; did you mean %qs?",
+		option->opt_text, s, hint);
+      else
+	inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+
       return true;
     }
 

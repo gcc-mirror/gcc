@@ -1,3 +1,8 @@
+2016-05-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/69265
+	* gcc.dg/spellcheck-options-11.c: New test case.
+
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71100
