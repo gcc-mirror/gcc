@@ -1,3 +1,10 @@
+2016-05-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/64354
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags): Add new
+	builtin __SANITIZE_THREAD__ macros for fsanitize=thread switch.
+	* doc/cpp.texi: Document new macros.
+
 2016-05-19 Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69848
