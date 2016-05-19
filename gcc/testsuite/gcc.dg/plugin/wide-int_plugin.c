@@ -36,11 +36,44 @@ test_wide_int_round_sdiv (void)
     abort ();
 }
 
+static void
+test_wide_int_mod_trunc (void)
+{
+  for (unsigned int i = 1; i < MAX_BITSIZE_MODE_ANY_INT; ++i)
+    {
+      if (wi::smod_trunc (wi::lshift (1, i + 1) - 3,
+			  wi::lshift (1, i) - 1)
+	  != wi::lshift (1, i) - 2)
+	abort ();
+      for (unsigned int base = 32; base <= MAX_BITSIZE_MODE_ANY_INT; base *= 2)
+	for (int bias = -1; bias <= 1; ++bias)
+	  {
+	    unsigned int precision = base + bias;
+	    if (i + 1 < precision && precision <= MAX_BITSIZE_MODE_ANY_INT)
+	      {
+		wide_int one = wi::uhwi (1, precision);
+		wide_int a = wi::lshift (one, i + 1) - 3;
+		wide_int b = wi::lshift (one, i) - 1;
+		wide_int c = wi::lshift (one, i) - 2;
+		if (wi::umod_trunc (a, b) != c)
+		  abort ();
+		if (wi::smod_trunc (a, b) != c)
+		  abort ();
+		if (wi::smod_trunc (-a, b) != -c)
+		  abort ();
+		if (wi::smod_trunc (a, -b) != c)
+		  abort ();
+	      }
+	  }
+    }
+}
+
 int
 plugin_init (struct plugin_name_args *plugin_info,
 	     struct plugin_gcc_version *version)
 {
   test_double_int_round_udiv ();
   test_wide_int_round_sdiv ();
+  test_wide_int_mod_trunc ();
   return 0;
 }

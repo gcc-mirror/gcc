@@ -1,3 +1,13 @@
+2016-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+2016-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/69400
+	* gcc.dg/plugin/wide-int_plugin.c (test_wide_int_mod_trunc): New
+	function.
+	(plugin_init): Call it.
+	* gcc.dg/torture/pr69400.c: New test.
+
 2016-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70135
