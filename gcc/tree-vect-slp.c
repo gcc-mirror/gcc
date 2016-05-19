@@ -1308,7 +1308,10 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
   FOR_EACH_VEC_ELT (node->load_permutation, i, lidx)
     {
       if (lidx >= group_size)
-	return false;
+	{
+	  sbitmap_free (load_index);
+	  return false;
+	}
       if (bitmap_bit_p (load_index, lidx))
 	{
 	  sbitmap_free (load_index);

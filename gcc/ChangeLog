@@ -1,5 +1,10 @@
 2016-05-19  Martin Liska  <mliska@suse.cz>
 
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Release
+	bitmap.
+
+2016-05-19  Martin Liska  <mliska@suse.cz>
+
 	* omp-simd-clone.c (simd_clone_adjust): Release vector.
 
 2016-05-19  Martin Liska  <mliska@suse.cz>
