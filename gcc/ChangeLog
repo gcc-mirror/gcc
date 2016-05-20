@@ -1,3 +1,8 @@
+2016-05-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* function.c (thread_prologue_and_epilogue_insns): Commit the
+	insertion of the epilogue.
+
 2016-05-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/70884
