@@ -1,3 +1,9 @@
+2016-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70572
+	* decl.c (cp_finish_decl): Check do_auto_deduction return value
+	and return immediately in case of erroneous code.
+
 2016-05-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/71075
