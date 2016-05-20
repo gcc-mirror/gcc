@@ -1,3 +1,8 @@
+2016-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71204
+	* gfortran.dg/pr71204.f90: New test.
+
 2016-05-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gcc.target/nvptx/sincos.c: New test.
