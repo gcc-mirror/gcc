@@ -1814,7 +1814,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* First subtypes of Character are treated as Character; otherwise
 	 this should be an unsigned type if the base type is unsigned or
 	 if the lower bound is constant and non-negative or if the type
-	 is biased.  */
+	 is biased.  However, even if the lower bound is constant and
+	 non-negative, we use a signed type for a subtype with the same
+	 size as its signed base type, because this eliminates useless
+	 conversions to it and gives more leeway to the optimizer; but
+	 this means that we will need to explicitly test for this case
+	 when we change the representation based on the RM size.  */
       if (kind == E_Enumeration_Subtype
 	  && No (First_Literal (Etype (gnat_entity)))
 	  && Esize (gnat_entity) == RM_Size (gnat_entity)
@@ -1822,7 +1827,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && flag_signed_char)
 	gnu_type = make_signed_type (CHAR_TYPE_SIZE);
       else if (Is_Unsigned_Type (Etype (gnat_entity))
-	       || Is_Unsigned_Type (gnat_entity)
+	       || (Esize (Etype (gnat_entity)) != Esize (gnat_entity)
+		   && Is_Unsigned_Type (gnat_entity))
 	       || Has_Biased_Representation (gnat_entity))
 	gnu_type = make_unsigned_type (esize);
       else

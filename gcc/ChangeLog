@@ -1,3 +1,9 @@
+2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vrp.c (compare_values_warnv): Simplify handling of symbolic
+	ranges by calling get_single_symbol and tidy up.  Look more closely
+	into NAME + CST1 vs CST2 comparisons if type overflow is undefined.
+
 2016-05-20  Jeff Law  <law@redhat.com>
 
 	* bitmap.c (bitmap_find_bit): Remove useless test.
