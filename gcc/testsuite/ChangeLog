@@ -1,3 +1,8 @@
+2016-05-20  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-addec.c: New test.
+	* gcc.target/powerpc/vec-addec-int128.c: New test.
+
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/must-tail-call-1.c: New test case.

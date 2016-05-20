@@ -1,3 +1,12 @@
+2016-05-20  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (vec_addec): Change vec_addec to a
+	special case builtin.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	support for ALTIVEC_BUILTIN_VEC_ADDEC.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add definition
+	for __builtin_vec_addec.
+
 2016-05-16  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
 	* config.guess: Import version 2016-04-02 (newest).
