@@ -231,14 +231,20 @@ average_num_loop_insns (const struct loop *loop)
    value.  */
 
 gcov_type
-expected_loop_iterations_unbounded (const struct loop *loop)
+expected_loop_iterations_unbounded (struct loop *loop)
 {
   edge e;
   edge_iterator ei;
+  gcov_type expected;
+  
 
-  if (loop->latch->count || loop->header->count)
+  /* Average loop rolls about 3 times. If we have no profile at all, it is
+     best we can do.  */
+  if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
+    expected = 3;
+  else if (loop->latch->count || loop->header->count)
     {
-      gcov_type count_in, count_latch, expected;
+      gcov_type count_in, count_latch;
 
       count_in = 0;
       count_latch = 0;
@@ -253,8 +259,6 @@ expected_loop_iterations_unbounded (const struct loop *loop)
 	expected = count_latch * 2;
       else
 	expected = (count_latch + count_in - 1) / count_in;
-
-      return expected;
     }
   else
     {
@@ -270,17 +274,28 @@ expected_loop_iterations_unbounded (const struct loop *loop)
 	  freq_in += EDGE_FREQUENCY (e);
 
       if (freq_in == 0)
-	return freq_latch * 2;
-
-      return (freq_latch + freq_in - 1) / freq_in;
+	{
+	  /* If we have no profile at all, expect 3 iterations.  */
+	  if (!freq_latch)
+	    expected = 3;
+	  else
+	    expected = freq_latch * 2;
+	}
+      else
+        expected = (freq_latch + freq_in - 1) / freq_in;
     }
+
+  HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
+  if (max != -1 && max < expected)
+    return max;
+  return expected;
 }
 
 /* Returns expected number of LOOP iterations.  The returned value is bounded
    by REG_BR_PROB_BASE.  */
 
 unsigned
-expected_loop_iterations (const struct loop *loop)
+expected_loop_iterations (struct loop *loop)
 {
   gcov_type expected = expected_loop_iterations_unbounded (loop);
   return (expected > REG_BR_PROB_BASE ? REG_BR_PROB_BASE : expected);
