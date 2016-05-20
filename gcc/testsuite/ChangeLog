@@ -1,3 +1,8 @@
+2016-05-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/71115
+	* gcc.dg/init-excess-2.c: New test.
+
 2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt53.adb: New test.
