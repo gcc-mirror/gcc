@@ -1,3 +1,7 @@
+2016-05-20  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gcc.target/nvptx/sincos.c: New test.
+
 2016-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70572
