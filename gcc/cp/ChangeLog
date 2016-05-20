@@ -1,3 +1,9 @@
+2016-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70466
+	* call.c (convert_like_real): Check that we are actually converting
+	from an init list.
+
 2016-05-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70505
