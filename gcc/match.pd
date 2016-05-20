@@ -740,7 +740,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_xor (convert1? (bit_xor:c @0 @1)) (convert2? (bit_xor:c @0 @2)))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
       && tree_nop_conversion_p (type, TREE_TYPE (@2)))
-  (convert (bit_xor @1 @2))))
+  (bit_xor (convert @1) (convert @2))))
 
 (simplify
  (abs (abs@1 @0))

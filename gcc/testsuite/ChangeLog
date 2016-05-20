@@ -1,3 +1,9 @@
+2016-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/71079
+	PR tree-optimization/71206
+	* gcc.dg/tree-ssa/pr71206.c: New testcase.
+
 2016-05-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/vect/section-anchors-vect-70.c: New test-case.

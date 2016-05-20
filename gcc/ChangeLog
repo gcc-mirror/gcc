@@ -1,3 +1,9 @@
+2016-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/71079
+	PR tree-optimization/71206
+	* match.pd ((X ^ Y) ^ (X ^ Z)): Convert the arguments.
+
 2016-05-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree-vectorizer.c (get_vec_alignment_for_decl): New static function.
