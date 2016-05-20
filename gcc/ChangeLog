@@ -1,3 +1,11 @@
+2016-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71210
+	* gimple-fold.c (gimple_fold_call): Do not remove lhs of noreturn
+	calls if the LHS is variable length or has addressable type.
+	If targets[0]->decl is a noreturn call with void return type and
+	zero arguments, adjust fntype and remove lhs in that case.
+
 2016-05-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/71079

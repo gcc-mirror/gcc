@@ -1,5 +1,9 @@
 2016-05-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71210
+	* g++.dg/opt/pr71210-1.C: New test.
+	* g++.dg/opt/pr71210-2.C: New test.
+
 	PR tree-optimization/29756
 	gcc.dg/tree-ssa/vector-6.c: Add -Wno-psabi -w to dg-options.
 	Add -msse2 for x86 and -maltivec for powerpc.  Use scan-tree-dump-times
