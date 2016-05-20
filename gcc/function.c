@@ -5966,6 +5966,7 @@ thread_prologue_and_epilogue_insns (void)
       if (epilogue_seq)
 	{
 	  insert_insn_on_edge (epilogue_seq, exit_fallthru_edge);
+	  commit_edge_insertions ();
 
 	  /* The epilogue insns we inserted may cause the exit edge to no longer
 	     be fallthru.  */
