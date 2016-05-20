@@ -16557,6 +16557,8 @@ altivec_init_builtins (void)
 
   def_builtin ("__builtin_vec_adde", opaque_ftype_opaque_opaque_opaque,
 		ALTIVEC_BUILTIN_VEC_ADDE);
+  def_builtin ("__builtin_vec_addec", opaque_ftype_opaque_opaque_opaque,
+		ALTIVEC_BUILTIN_VEC_ADDEC);
 
   /* Cell builtins.  */
   def_builtin ("__builtin_altivec_lvlx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVLX);
