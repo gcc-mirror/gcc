@@ -1,3 +1,8 @@
+2016-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sched-deps.c (sched_analyze_2) <case TRAP_IF>: Also
+	force pending loads from memory.
+
 2016-05-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
