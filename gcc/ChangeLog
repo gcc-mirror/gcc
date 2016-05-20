@@ -1,3 +1,13 @@
+2016-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc/config/i386/i386.c (ix86_rtx_costs) <case CONST_DOUBLE>:
+	Use IS_STACK_MODE when calculating cost of standard 80387 constants.
+	Fallthru to CONST_VECTOR case to calculate cost of standard SSE
+	constants.
+	<case CONST_WIDE_INT>: Calculate cost of (MEM (SYMBOL_REF)).
+	(ix86_legitimate_constant_p): Use CASE_CONST_SCALAR_INT
+	and CASE_CONST_ANY.
+
 2016-05-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* config/nvptx/nvptx.md (sincossf3): New pattern.

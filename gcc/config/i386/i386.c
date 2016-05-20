@@ -14867,8 +14867,7 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 #endif
       break;
 
-    case CONST_INT:
-    case CONST_WIDE_INT:
+    CASE_CONST_SCALAR_INT:
       switch (mode)
 	{
 	case TImode:
@@ -14903,18 +14902,16 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 static bool
 ix86_cannot_force_const_mem (machine_mode mode, rtx x)
 {
-  /* We can always put integral constants and vectors in memory.  */
+  /* We can put any immediate constant in memory.  */
   switch (GET_CODE (x))
     {
-    case CONST_INT:
-    case CONST_WIDE_INT:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
       return false;
 
     default:
       break;
     }
+
   return !ix86_legitimate_constant_p (mode, x);
 }
 
@@ -44076,43 +44073,43 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	*total = 0;
       return true;
 
-    case CONST_WIDE_INT:
-      *total = 0;
-      return true;
-
     case CONST_DOUBLE:
-      switch (standard_80387_constant_p (x))
+      if (TARGET_80387 && IS_STACK_MODE (mode))
+	switch (standard_80387_constant_p (x))
+	  {
+	  case -1:
+	  case 0:
+	    break;
+	  case 1: /* 0.0 */
+	    *total = 1;
+	    return true;
+	  default: /* Other constants */
+	    *total = 2;
+	    return true;
+	  }
+      /* FALLTHRU */
+
+    case CONST_VECTOR:
+      switch (standard_sse_constant_p (x, mode))
 	{
-	case 1: /* 0.0 */
+	case 0:
+	  break;
+	case 1:  /* 0: xor eliminates false dependency */
+	  *total = 0;
+	  return true;
+	default: /* -1: cmp contains false dependency */
 	  *total = 1;
 	  return true;
-	default: /* Other constants */
-	  *total = 2;
-	  return true;
-	case 0:
-	case -1:
-	  break;
 	}
-      if (SSE_FLOAT_MODE_P (mode))
-	{
-	case CONST_VECTOR:
-	  switch (standard_sse_constant_p (x, mode))
-	    {
-	    case 0:
-	      break;
-	    case 1:  /* 0: xor eliminates false dependency */
-	      *total = 0;
-	      return true;
-	    default: /* -1: cmp contains false dependency */
-	      *total = 1;
-	      return true;
-	    }
-	}
+      /* FALLTHRU */
+
+    case CONST_WIDE_INT:
       /* Fall back to (MEM (SYMBOL_REF)), since that's where
 	 it'll probably end up.  Add a penalty for size.  */
       *total = (COSTS_N_INSNS (1)
-		+ (flag_pic != 0 && !TARGET_64BIT)
-		+ (mode == SFmode ? 0 : mode == DFmode ? 1 : 2));
+		+ (!TARGET_64BIT && flag_pic)
+		+ (GET_MODE_SIZE (mode) <= 4
+		   ? 0 : GET_MODE_SIZE (mode) <= 8 ? 1 : 2));
       return true;
 
     case ZERO_EXTEND:
