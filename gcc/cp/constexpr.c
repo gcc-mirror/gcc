@@ -1201,18 +1201,18 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
       /* Just discard ellipsis args after checking their constantitude.  */
       if (!parms)
 	continue;
-      if (*non_constant_p)
-	/* Don't try to adjust the type of non-constant args.  */
-	goto next;
 
-      /* Make sure the binding has the same type as the parm.  */
-      if (TREE_CODE (type) != REFERENCE_TYPE)
-	arg = adjust_temp_type (type, arg);
-      if (!TREE_CONSTANT (arg))
-	*non_constant_args = true;
-      *p = build_tree_list (parms, arg);
-      p = &TREE_CHAIN (*p);
-    next:
+      if (!*non_constant_p)
+	{
+	  /* Make sure the binding has the same type as the parm.  But
+	     only for constant args.  */
+	  if (TREE_CODE (type) != REFERENCE_TYPE)
+	    arg = adjust_temp_type (type, arg);
+	  if (!TREE_CONSTANT (arg))
+	    *non_constant_args = true;
+	  *p = build_tree_list (parms, arg);
+	  p = &TREE_CHAIN (*p);
+	}
       parms = TREE_CHAIN (parms);
     }
 }
@@ -1420,7 +1420,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  *slot = entry = ggc_alloc<constexpr_call> ();
 	  *entry = new_call;
 	}
-      /* Calls which are in progress have their result set to NULL
+      /* Calls that are in progress have their result set to NULL,
 	 so that we can detect circular dependencies.  */
       else if (entry->result == NULL)
 	{
