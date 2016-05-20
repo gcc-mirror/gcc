@@ -1,6 +1,20 @@
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67278
+	* tree-cfg.c (verify_expr): Adjust BIT_FIELD_REF case.
+
+	2016-03-02  Richard Biener  <rguenther@suse.de>
+		Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67278
+	* config/i386/i386.c (type_natural_mode): Handle XFmode vectors.
+
+2016-05-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-02-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69720
