@@ -257,7 +257,7 @@ set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 static inline void
 add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 {
-  gimple_seq_add_seq
+  gimple_seq_add_seq_without_update
     (&(((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts), stmts);
 }
 
@@ -280,10 +280,11 @@ release_bb_predicate (basic_block bb)
   gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
   if (stmts)
     {
-      gimple_stmt_iterator i;
+      if (flag_checking)
+	for (gimple_stmt_iterator i = gsi_start (stmts);
+	     !gsi_end_p (i); gsi_next (&i))
+	  gcc_assert (! gimple_use_ops (gsi_stmt (i)));
 
-      for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
-	free_stmt_operands (cfun, gsi_stmt (i));
       set_bb_predicate_gimplified_stmts (bb, NULL);
     }
 }
@@ -1322,7 +1323,6 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
     return false;
 
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   /* Allow statements that can be handled during if-conversion.  */
   ifc_bbs = get_loop_body_in_if_conv_order (loop);
@@ -1370,6 +1370,7 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	  = new hash_map<innermost_loop_behavior_hash, data_reference_p>;
   baseref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
 
+  calculate_dominance_info (CDI_POST_DOMINATORS);
   predicate_bbs (loop);
 
   for (i = 0; refs->iterate (i, &dr); i++)
@@ -1420,9 +1421,6 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	  if (!if_convertible_stmt_p (gsi_stmt (itr), *refs))
 	    return false;
     }
-
-  for (i = 0; i < loop->num_nodes; i++)
-    free_bb_predicate (ifc_bbs[i]);
 
   /* Checking PHIs needs to be done after stmts, as the fact whether there
      are any masked loads or stores affects the tests.  */
@@ -2298,7 +2296,6 @@ combine_blocks (struct loop *loop)
   edge e;
   edge_iterator ei;
 
-  predicate_bbs (loop);
   remove_conditions_and_labels (loop);
   insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop);
@@ -2428,13 +2425,23 @@ version_loop_for_if_conversion (struct loop *loop)
 				  integer_zero_node);
   gimple_call_set_lhs (g, cond);
 
+  /* Save BB->aux around loop_version as that uses the same field.  */
+  void **saved_preds = XALLOCAVEC (void *, loop->num_nodes);
+  for (unsigned i = 0; i < loop->num_nodes; i++)
+    saved_preds[i] = ifc_bbs[i]->aux;
+
   initialize_original_copy_tables ();
   new_loop = loop_version (loop, cond, &cond_bb,
 			   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
 			   REG_BR_PROB_BASE, true);
   free_original_copy_tables ();
+
+  for (unsigned i = 0; i < loop->num_nodes; i++)
+    ifc_bbs[i]->aux = saved_preds[i];
+
   if (new_loop == NULL)
     return false;
+
   new_loop->dont_vectorize = true;
   new_loop->force_vectorize = false;
   gsi = gsi_last_bb (cond_bb);
