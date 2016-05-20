@@ -1,3 +1,11 @@
+2016-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/29756
+	gcc.dg/tree-ssa/vector-6.c: Add -Wno-psabi -w to dg-options.
+	Add -msse2 for x86 and -maltivec for powerpc.  Use scan-tree-dump-times
+	only on selected targets where V4SImode vectors are known to be
+	supported.
+
 2016-05-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/71079
