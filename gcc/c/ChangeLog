@@ -1,3 +1,10 @@
+2016-05-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/71115
+	* c-typeck.c (error_init): Use
+	expansion_point_location_if_in_system_header.
+	(warning_init): Same.
+
 2016-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/71171
