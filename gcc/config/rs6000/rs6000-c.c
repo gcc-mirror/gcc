@@ -4622,37 +4622,41 @@ assignment for unaligned loads and stores");
       /* All 3 arguments must be vectors of (signed or unsigned) (int or
 	  __int128) and the types must match.  */
       if ((arg0_type != arg1_type) || (arg1_type != arg2_type))
-	goto bad; 
+	goto bad;
       if (TREE_CODE (arg0_type) != VECTOR_TYPE)
-	goto bad; 
+	goto bad;
 
       switch (TYPE_MODE (TREE_TYPE (arg0_type)))
 	{
-	  /* For {un}signed ints, 
-	     vec_adde (va, vb, carryv) == vec_add (vec_add (va, vb), 
-						vec_and (carryv, 0x1)).  */
+	  /* For {un}signed ints,
+	     vec_adde (va, vb, carryv) == vec_add (vec_add (va, vb),
+						   vec_and (carryv, 0x1)).  */
 	  case SImode:
 	    {
-	      vec<tree, va_gc> *params = make_tree_vector();
+	      vec<tree, va_gc> *params = make_tree_vector ();
 	      vec_safe_push (params, arg0);
 	      vec_safe_push (params, arg1);
-	      tree call = altivec_resolve_overloaded_builtin
-		 (loc, rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD], params);
-	      tree const1 = build_vector_from_val (arg0_type, 
-		 build_int_cstu(TREE_TYPE (arg0_type), 1));
-	      tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR,
-				arg0_type, arg2, const1);
-	      params = make_tree_vector();
+	      tree add_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD];
+	      tree call = altivec_resolve_overloaded_builtin (loc, add_builtin,
+							      params);
+	      tree const1 = build_int_cstu (TREE_TYPE (arg0_type), 1);
+	      tree ones_vector = build_vector_from_val (arg0_type, const1);
+	      tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR, arg0_type,
+					       arg2, ones_vector);
+	      params = make_tree_vector ();
 	      vec_safe_push (params, call);
 	      vec_safe_push (params, and_expr);
-	      return altivec_resolve_overloaded_builtin
-		 (loc, rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD], params);
+	      return altivec_resolve_overloaded_builtin (loc, add_builtin,
+							 params);
 	    }
 	  /* For {un}signed __int128s use the vaddeuqm instruction
 		directly.  */
 	  case TImode:
-	    return altivec_resolve_overloaded_builtin
-		(loc, rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDEUQM], arglist);
+	    {
+	      tree adde_bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDEUQM];
+	      return altivec_resolve_overloaded_builtin (loc, adde_bii,
+							 arglist);
+	    }
 
 	  /* Types other than {un}signed int and {un}signed __int128
 		are errors.  */
@@ -4839,9 +4843,9 @@ assignment for unaligned loads and stores");
       arg1_type = TREE_TYPE (arg1);
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
-	goto bad; 
+	goto bad;
       if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
-	goto bad; 
+	goto bad;
 
       /* If we are targeting little-endian, but -maltivec=be has been
 	 specified to override the element order, adjust the element
@@ -4942,9 +4946,9 @@ assignment for unaligned loads and stores");
       arg2 = (*arglist)[2];
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
-	goto bad; 
+	goto bad;
       if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
-	goto bad; 
+	goto bad;
 
       /* If we are targeting little-endian, but -maltivec=be has been
 	 specified to override the element order, adjust the element
