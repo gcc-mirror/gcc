@@ -1,3 +1,7 @@
+2016-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/prefetch-5.c: xfail.
+
 2016-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71210

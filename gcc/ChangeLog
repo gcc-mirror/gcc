@@ -1,3 +1,8 @@
+2016-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): We can not produce
+	realistic upper bounds here.
+
 2016-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71210
