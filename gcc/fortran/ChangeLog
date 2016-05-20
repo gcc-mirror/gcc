@@ -1,3 +1,9 @@
+2016-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71204
+	* frontend-passes.c (realloc_string_callback): Clear inserted_block
+	and changed_statement before calling create_var.
+
 2016-05-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/69603
