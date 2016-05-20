@@ -1,3 +1,12 @@
+2016-05-20  Martin Liska  <mliska@suse.cz>
+
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* configure.ac: Handle --enable-valgrind-annotations.
+	* lex.c (new_buff): Use ENABLE_VALGRIND_ANNOTATIONS instead
+	of ENABLE_VALGRIND_CHECKING.
+	(_cpp_free_buff): Likewise.
+
 2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
 	    Matthias Klose  <doko@debian.org>
 

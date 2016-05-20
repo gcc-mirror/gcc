@@ -21,6 +21,9 @@
    language is requested. */
 #undef ENABLE_NLS
 
+/* Define to get calls to the valgrind runtime enabled. */
+#undef ENABLE_VALGRIND_ANNOTATIONS
+
 /* Define if you want to workaround valgrind (a memory checker) warnings about
    possible memory leaks because of libcpp use of interior pointers. */
 #undef ENABLE_VALGRIND_CHECKING
