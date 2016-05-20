@@ -1,5 +1,11 @@
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71185
+	* tree-ssa-loop-prefetch.c (gather_memory_references): Drop
+	register operations.
+
+2016-05-20  Richard Biener  <rguenther@suse.de>
+
 	* tree-if-conv.c (add_bb_predicate_gimplified_stmts): Use
 	gimple_seq_add_seq_without_update.
 	(release_bb_predicate): Assert we have no operands to free.

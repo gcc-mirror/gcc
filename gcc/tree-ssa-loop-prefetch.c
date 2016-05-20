@@ -631,6 +631,9 @@ gather_memory_references (struct loop *loop, bool *no_other_refs, unsigned *ref_
 	      continue;
 	    }
 
+	  if (! gimple_vuse (stmt))
+	    continue;
+
 	  lhs = gimple_assign_lhs (stmt);
 	  rhs = gimple_assign_rhs1 (stmt);
 
