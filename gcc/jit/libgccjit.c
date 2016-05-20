@@ -2950,3 +2950,23 @@ gcc_jit_timer_print (gcc_jit_timer *timer,
   timer->start (TV_TOTAL);
   timer->push (TV_JIT_CLIENT_CODE);
 }
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is effectively done by the
+   gcc::jit::base_call::set_require_tail_call setter in jit-recording.h.  */
+
+void
+gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *rvalue,
+					   int require_tail_call)
+{
+  RETURN_IF_FAIL (rvalue, NULL, NULL, "NULL call");
+  JIT_LOG_FUNC (rvalue->get_context ()->get_logger ());
+
+  /* Verify that it's a call.  */
+  gcc::jit::recording::base_call *call = rvalue->dyn_cast_base_call ();
+  RETURN_IF_FAIL_PRINTF1 (call, NULL, NULL, "not a call: %s",
+			  rvalue->get_debug_string ());
+
+  call->set_require_tail_call (require_tail_call);
+}

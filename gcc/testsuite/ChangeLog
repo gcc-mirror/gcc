@@ -1,3 +1,10 @@
+2016-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add
+	test-factorial-must-tail-call.c.
+	* jit.dg/test-error-impossible-must-tail-call.c: New test case.
+	* jit.dg/test-factorial-must-tail-call.c: New test case.
+
 2016-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71204

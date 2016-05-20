@@ -854,7 +854,8 @@ playback::rvalue *
 playback::context::
 build_call (location *loc,
 	    tree fn_ptr,
-	    const auto_vec<rvalue *> *args)
+	    const auto_vec<rvalue *> *args,
+	    bool require_tail_call)
 {
   vec<tree, va_gc> *tree_args;
   vec_alloc (tree_args, args->length ());
@@ -868,9 +869,13 @@ build_call (location *loc,
   tree fn_type = TREE_TYPE (fn);
   tree return_type = TREE_TYPE (fn_type);
 
-  return new rvalue (this,
-		     build_call_vec (return_type,
-				     fn_ptr, tree_args));
+  tree call = build_call_vec (return_type,
+			      fn_ptr, tree_args);
+
+  if (require_tail_call)
+    CALL_EXPR_MUST_TAIL_CALL (call) = 1;
+
+  return new rvalue (this, call);
 
   /* see c-typeck.c: build_function_call
      which calls build_function_call_vec
@@ -890,7 +895,8 @@ playback::rvalue *
 playback::context::
 new_call (location *loc,
 	  function *func,
-	  const auto_vec<rvalue *> *args)
+	  const auto_vec<rvalue *> *args,
+	  bool require_tail_call)
 {
   tree fndecl;
 
@@ -902,7 +908,7 @@ new_call (location *loc,
 
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
-  return build_call (loc, fn, args);
+  return build_call (loc, fn, args, require_tail_call);
 }
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
@@ -912,12 +918,13 @@ playback::rvalue *
 playback::context::
 new_call_through_ptr (location *loc,
 		      rvalue *fn_ptr,
-		      const auto_vec<rvalue *> *args)
+		      const auto_vec<rvalue *> *args,
+		      bool require_tail_call)
 {
   gcc_assert (fn_ptr);
   tree t_fn_ptr = fn_ptr->as_tree ();
 
-  return build_call (loc, t_fn_ptr, args);
+  return build_call (loc, t_fn_ptr, args, require_tail_call);
 }
 
 /* Construct a tree for a cast.  */

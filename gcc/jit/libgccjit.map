@@ -145,3 +145,8 @@ LIBGCCJIT_ABI_5 {
   global:
     gcc_jit_context_set_bool_use_external_driver;
 } LIBGCCJIT_ABI_4;
+
+LIBGCCJIT_ABI_6 {
+  global:
+    gcc_jit_rvalue_set_bool_require_tail_call;
+} LIBGCCJIT_ABI_5;

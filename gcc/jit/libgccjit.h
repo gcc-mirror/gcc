@@ -1374,6 +1374,19 @@ extern void
 gcc_jit_timer_print (gcc_jit_timer *timer,
 		     FILE *f_out);
 
+
+#define LIBGCCJIT_HAVE_gcc_jit_rvalue_set_bool_require_tail_call
+
+/* Mark/clear a call as needing tail-call optimization.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_6; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_rvalue_set_bool_require_tail_call
+*/
+extern void
+gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,
+					   int require_tail_call);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

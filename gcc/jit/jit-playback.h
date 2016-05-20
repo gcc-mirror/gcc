@@ -133,12 +133,14 @@ public:
   rvalue *
   new_call (location *loc,
 	    function *func,
-	    const auto_vec<rvalue *> *args);
+	    const auto_vec<rvalue *> *args,
+	    bool require_tail_call);
 
   rvalue *
   new_call_through_ptr (location *loc,
 			rvalue *fn_ptr,
-			const auto_vec<rvalue *> *args);
+			const auto_vec<rvalue *> *args,
+			bool require_tail_call);
 
   rvalue *
   new_cast (location *loc,
@@ -236,7 +238,8 @@ private:
   rvalue *
   build_call (location *loc,
 	      tree fn_ptr,
-	      const auto_vec<rvalue *> *args);
+	      const auto_vec<rvalue *> *args,
+	      bool require_tail_call);
 
   tree
   build_cast (location *loc,

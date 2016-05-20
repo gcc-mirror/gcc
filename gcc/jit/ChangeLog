@@ -1,3 +1,47 @@
+2016-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst: Add LIBGCCJIT_ABI_6.
+	* docs/topics/expressions.rst (Function calls): Add documentation
+	of gcc_jit_rvalue_set_bool_require_tail_call.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::recording::base_call): Add forward decl.
+	* jit-playback.c: Within namespace gcc::jit::playback...
+	(context::build_call) Add "require_tail_call" param and use it
+	to set CALL_EXPR_MUST_TAIL_CALL.
+	(context::new_call): Add "require_tail_call" param.
+	(context::new_call_through_ptr): Likewise.
+	* jit-playback.h: Within namespace gcc::jit::playback...
+	(context::new_call: Add "require_tail_call" param.
+	(context::new_call_through_ptr): Likewise.
+	(context::build_call): Likewise.
+	* jit-recording.c: Within namespace gcc::jit::recording...
+	(base_call::base_call): New constructor.
+	(base_call::write_reproducer_tail_call): New method.
+	(call::call): Update for inheritance from base_call.
+	(call::replay_into): Provide m_require_tail_call to call
+	to new_call.
+	(call::write_reproducer): Call write_reproducer_tail_call.
+	(call_through_ptr::call_through_ptr): Update for inheritance from
+	base_call.
+	(call_through_ptr::replay_into): Provide m_require_tail_call to call
+	to new_call_through_ptr.
+	(recording::call_through_ptr::write_reproducer): Call
+	write_reproducer_tail_call.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(rvalue::dyn_cast_base_call): New virtual function.
+	(class base_call): New subclass of class rvalue.
+	(class call): Inherit from base_call rather than directly from
+	rvalue, moving get_precedence and m_args to base_call.
+	(class call_through_ptr): Likewise.
+	* libgccjit.c (gcc_jit_rvalue_set_bool_require_tail_call): New
+	function.
+	* libgccjit.h
+	(LIBGCCJIT_HAVE_gcc_jit_rvalue_set_bool_require_tail_call): New
+	macro.
+	(gcc_jit_rvalue_set_bool_require_tail_call): New function.
+	* libgccjit.map (LIBGCCJIT_ABI_6): New.
+	(gcc_jit_rvalue_set_bool_require_tail_call): Add.
+
 2016-05-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.c: Include diagnostic.h.
