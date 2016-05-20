@@ -1,3 +1,8 @@
+2016-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70572
+	* g++.dg/cpp1y/auto-fn31.C: New.
+
 2016-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/70738
