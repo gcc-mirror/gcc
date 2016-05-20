@@ -3039,10 +3039,25 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		}
 	      if (targets.length () == 1)
 		{
-		  gimple_call_set_fndecl (stmt, targets[0]->decl);
+		  tree fndecl = targets[0]->decl;
+		  gimple_call_set_fndecl (stmt, fndecl);
 		  changed = true;
+		  /* If changing the call to __cxa_pure_virtual
+		     or similar noreturn function, adjust gimple_call_fntype
+		     too.  */
+		  if ((gimple_call_flags (stmt) & ECF_NORETURN)
+		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
+		      && TYPE_ARG_TYPES (TREE_TYPE (fndecl))
+		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+			  == void_type_node))
+		    gimple_call_set_fntype (stmt, TREE_TYPE (fndecl));
 		  /* If the call becomes noreturn, remove the lhs.  */
-		  if (lhs && (gimple_call_flags (stmt) & ECF_NORETURN))
+		  if (lhs
+		      && (gimple_call_flags (stmt) & ECF_NORETURN)
+		      && (VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (stmt)))
+			  || ((TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))
+			       == INTEGER_CST)
+			      && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))))
 		    {
 		      if (TREE_CODE (lhs) == SSA_NAME)
 			{
