@@ -556,7 +556,7 @@ bitmap_find_bit (bitmap head, unsigned int bit)
      want, the one we want doesn't exist.  */
   head->current = element;
   head->indx = element->indx;
-  if (element != 0 && element->indx != indx)
+  if (element->indx != indx)
     element = 0;
 
   return element;
