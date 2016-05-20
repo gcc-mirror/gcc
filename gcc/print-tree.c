@@ -324,7 +324,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   if (TREE_PROTECTED (node))
     fputs (" protected", file);
   if (TREE_STATIC (node))
-    fputs (" static", file);
+    fputs (code == CALL_EXPR ? " must-tail-call" : " static", file);
   if (TREE_DEPRECATED (node))
     fputs (" deprecated", file);
   if (TREE_VISITED (node))

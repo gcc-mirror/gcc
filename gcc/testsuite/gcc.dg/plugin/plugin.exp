@@ -74,6 +74,9 @@ set plugin_test_list [list \
     { location_overflow_plugin.c \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c } \
+    { must_tail_call_plugin.c \
+	  must-tail-call-1.c \
+	  must-tail-call-2.c } \
 ]
 
 foreach plugin_test $plugin_test_list {
