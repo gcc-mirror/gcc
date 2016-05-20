@@ -1,3 +1,8 @@
+2016-05-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29756
+	* gcc.dg/tree-ssa/vector-6.c: New testcase.
+
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71185

@@ -10931,6 +10931,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  /* Classified as tcc_expression.  */
 	  goto expr_3;
 
+	case BIT_INSERT_EXPR:
+	  /* Argument 3 is a constant.  */
+	  goto expr_2;
+
 	case POINTER_PLUS_EXPR:
 	  {
 	    enum gimplify_status r0, r1;

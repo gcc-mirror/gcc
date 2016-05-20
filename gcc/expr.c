@@ -9225,6 +9225,23 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       target = expand_vec_cond_expr (type, treeop0, treeop1, treeop2, target);
       return target;
 
+    case BIT_INSERT_EXPR:
+      {
+	unsigned bitpos = tree_to_uhwi (treeop2);
+	unsigned bitsize;
+	if (INTEGRAL_TYPE_P (TREE_TYPE (treeop1)))
+	  bitsize = TYPE_PRECISION (TREE_TYPE (treeop1));
+	else
+	  bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (treeop1)));
+	rtx op0 = expand_normal (treeop0);
+	rtx op1 = expand_normal (treeop1);
+	rtx dst = gen_reg_rtx (mode);
+	emit_move_insn (dst, op0);
+	store_bit_field (dst, bitsize, bitpos, 0, 0,
+			 TYPE_MODE (TREE_TYPE (treeop1)), op1, false);
+	return dst;
+      }
+
     default:
       gcc_unreachable ();
     }

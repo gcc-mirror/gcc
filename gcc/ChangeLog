@@ -1,3 +1,22 @@
+2016-05-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29756
+	* tree.def (BIT_INSERT_EXPR): New tcc_expression tree code.
+	* expr.c (expand_expr_real_2): Handle BIT_INSERT_EXPR.
+	* fold-const.c (operand_equal_p): Likewise.
+	(fold_ternary_loc): Add constant folding of BIT_INSERT_EXPR.
+	* gimplify.c (gimplify_expr): Handle BIT_INSERT_EXPR.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* gimple-pretty-print.c (dump_ternary_rhs): Likewise.
+	* gimple.c (get_gimple_rhs_num_ops): Handle BIT_INSERT_EXPR.
+	* tree-cfg.c (verify_gimple_assign_ternary): Verify BIT_INSERT_EXPR.
+	* tree-ssa.c (non_rewritable_lvalue_p): We can rewrite
+	vector inserts using BIT_FIELD_REF or MEM_REF on the lhs.
+	(execute_update_addresses_taken): Do it.
+
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71185
