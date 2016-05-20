@@ -760,6 +760,8 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc, int flags)
     pp_string (buffer, " [return slot optimization]");
   if (gimple_call_tail_p (gs))
     pp_string (buffer, " [tail call]");
+  if (gimple_call_must_tail_p (gs))
+    pp_string (buffer, " [must tail call]");
 
   if (fn == NULL)
     return;

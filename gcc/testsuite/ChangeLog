@@ -1,3 +1,10 @@
+2016-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/must-tail-call-1.c: New test case.
+	* gcc.dg/plugin/must-tail-call-2.c: New test case.
+	* gcc.dg/plugin/must_tail_call_plugin.c: New file.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the above.
+
 2016-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/prefetch-5.c: xfail.

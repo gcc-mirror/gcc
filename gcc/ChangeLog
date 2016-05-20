@@ -1,5 +1,31 @@
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 
+	* calls.c (maybe_complain_about_tail_call): New function.
+	(initialize_argument_information): Call
+	maybe_complain_about_tail_call when clearing *may_tailcall.
+	(can_implement_as_sibling_call_p): Call
+	maybe_complain_about_tail_call when returning false.
+	(expand_call): Read CALL_EXPR_MUST_TAIL_CALL and, if set,
+	ensure try_tail_call is set.  Call maybe_complain_about_tail_call
+	if tail-call optimization fails.
+	* cfgexpand.c (expand_call_stmt): Initialize
+	CALL_EXPR_MUST_TAIL_CALL from gimple_call_must_tail_p.
+	* gimple-pretty-print.c (dump_gimple_call): Dump
+	gimple_call_must_tail_p.
+	* gimple.c (gimple_build_call_from_tree): Call
+	gimple_call_set_must_tail with the value of
+	CALL_EXPR_MUST_TAIL_CALL.
+	* gimple.h (enum gf_mask): Add GF_CALL_MUST_TAIL_CALL.
+	(gimple_call_set_must_tail): New function.
+	(gimple_call_must_tail_p): New function.
+	* print-tree.c (print_node): Update printing of TREE_STATIC
+	to reflect its use for CALL_EXPR_MUST_TAIL_CALL.
+	* tree-core.h (struct tree_base): Add MUST_TAIL_CALL to the
+	trailing comment listing applicable flags.
+	* tree.h (CALL_EXPR_MUST_TAIL_CALL): New macro.
+
+2016-05-20  David Malcolm  <dmalcolm@redhat.com>
+
 	* calls.c (expand_call): Move "Rest of purposes for tail call
 	optimizations to fail" to...
 	(can_implement_as_sibling_call_p): ...this new function, and
