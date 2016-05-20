@@ -1,5 +1,10 @@
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71185
+	* gcc.dg/tree-ssa/pr71185.c: New testcase.
+
+2016-05-20  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ifc-cd.c: Adjust.
 
 2016-05-19  Marek Polacek  <polacek@redhat.com>
