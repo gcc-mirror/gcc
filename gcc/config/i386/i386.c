@@ -5337,7 +5337,10 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
 
-	if (!(opts_set->x_target_flags & MASK_80387))
+	/* Don't enable x87 instructions if only the general registers
+	   are allowed.  */
+	if (!(opts_set->x_target_flags & MASK_GENERAL_REGS_ONLY)
+	    && !(opts_set->x_target_flags & MASK_80387))
 	  {
 	    if (processor_alias_table[i].flags & PTA_NO_80387)
 	      opts->x_target_flags &= ~MASK_80387;

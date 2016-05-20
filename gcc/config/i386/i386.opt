@@ -897,3 +897,7 @@ Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
 mmitigate-rop
 Target Var(flag_mitigate_rop) Init(0)
 Attempt to avoid generating instruction sequences containing ret bytes.
+
+mgeneral-regs-only
+Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
+Generate code which uses only the general registers.
