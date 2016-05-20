@@ -1,3 +1,9 @@
+2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_expand_prologue): Set the stack usage to 0
+	for naked functions.
+	(thumb1_expand_prologue): Likewise.
+
 2016-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* sched-deps.c (sched_analyze_2) <case TRAP_IF>: Also
