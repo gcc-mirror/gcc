@@ -1,6 +1,14 @@
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-02-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69720
+	* gcc.dg/vect/vect-outer-pr69720.c: New testcase.
+
+2016-05-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-02-01  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/67921
