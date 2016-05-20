@@ -610,7 +610,8 @@ doloop_optimize (struct loop *loop)
   widest_int iterations, iterations_max;
   rtx_code_label *start_label;
   rtx condition;
-  unsigned level, est_niter;
+  unsigned level;
+  HOST_WIDE_INT est_niter;
   int max_cost;
   struct niter_desc *desc;
   unsigned word_mode_size;
@@ -635,21 +636,16 @@ doloop_optimize (struct loop *loop)
     }
   mode = desc->mode;
 
-  est_niter = 3;
-  if (desc->const_iter)
-    est_niter = desc->niter;
-  /* If the estimate on number of iterations is reliable (comes from profile
-     feedback), use it.  Do not use it normally, since the expected number
-     of iterations of an unrolled loop is 2.  */
-  if (loop->header->count)
-    est_niter = expected_loop_iterations (loop);
+  est_niter = get_estimated_loop_iterations_int (loop);
+  if (est_niter == -1)
+    est_niter = get_max_loop_iterations_int (loop);
 
-  if (est_niter < 3)
+  if (est_niter >= 0 && est_niter < 3)
     {
       if (dump_file)
 	fprintf (dump_file,
 		 "Doloop: Too few iterations (%u) to be profitable.\n",
-		 est_niter);
+		 (unsigned int)est_niter);
       return false;
     }
 

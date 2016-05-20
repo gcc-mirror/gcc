@@ -1,5 +1,10 @@
 2016-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* loop-doloop.c (doloop_optimize): Use get_estimated_loop_iterations_int
+	and get_max_loop_iterations_int.
+
+2016-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): We can not produce
 	realistic upper bounds here.
 
