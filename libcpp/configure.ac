@@ -200,6 +200,21 @@ AC_ARG_ENABLE(host-shared,
 [PICFLAG=-fPIC], [PICFLAG=])
 AC_SUBST(PICFLAG)
 
+AC_ARG_ENABLE(valgrind-annotations,
+[AS_HELP_STRING([--enable-valgrind-annotations],
+		[enable valgrind runtime interaction])], [],
+[enable_valgrind_annotations=no])
+if test x$enable_valgrind_annotations != xno \
+    || test x$ac_valgrind_checking != x; then
+  if (test $have_valgrind_h = no \
+      && test $gcc_cv_header_memcheck_h = no \
+      && test $gcc_cv_header_valgrind_memcheck_h = no); then
+    AC_MSG_ERROR([*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h])
+  fi
+  AC_DEFINE(ENABLE_VALGRIND_ANNOTATIONS, 1,
+[Define to get calls to the valgrind runtime enabled.])
+fi
+
 # Output.
 
 AC_CONFIG_HEADERS(config.h:config.in, [echo timestamp > stamp-h1])
