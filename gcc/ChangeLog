@@ -1,3 +1,11 @@
+2016-05-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/70884
+	* tree-sra.c (initialize_constant_pool_replacements): Do not check
+	should_scalarize_away_bitmap and cannot_scalarize_away_bitmap bits.
+	(sort_and_splice_var_accesses): Do not consider multiple scalar reads
+	of constant pool data as a reason for scalarization.
+
 2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_expand_prologue): Set the stack usage to 0
