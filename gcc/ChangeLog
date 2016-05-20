@@ -1,3 +1,9 @@
+2016-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nptx.c (nvptx_option_override): Only set
+	flag_toplevel_reorder, if not explicitly specified.  Set
+	flag_no_common, unless explicitly specified.
+
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* calls.c (can_implement_as_sibling_call_p): Mark param
