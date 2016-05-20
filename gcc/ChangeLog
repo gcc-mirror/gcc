@@ -1,3 +1,8 @@
+2016-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* calls.c (can_implement_as_sibling_call_p): Mark param
+	reg_parm_stack_space with ATTRIBUTE_UNUSED.
+
 2016-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc/config/i386/i386.c (ix86_rtx_costs) <case CONST_DOUBLE>:

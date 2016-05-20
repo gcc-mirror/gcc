@@ -2373,7 +2373,7 @@ static bool
 can_implement_as_sibling_call_p (tree exp,
 				 rtx structure_value_addr,
 				 tree funtype,
-				 int reg_parm_stack_space,
+				 int reg_parm_stack_space ATTRIBUTE_UNUSED,
 				 tree fndecl,
 				 int flags,
 				 tree addr,
