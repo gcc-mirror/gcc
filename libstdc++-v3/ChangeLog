@@ -1,3 +1,8 @@
+2016-05-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* testsuite/experimental/memory_resource/1.cc: Add required argument
+	to dg-require-atomic-builtins.
+
 2016-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71073
