@@ -1,3 +1,9 @@
+2016-05-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/vect/section-anchors-vect-70.c: New test-case.
+	* gcc.dg/vect/section-anchors-vect-71.c: Likewise.
+	* gcc.dg/vect/section-anchors-vect-72.c: Likewise.
+
 2016-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/29756
