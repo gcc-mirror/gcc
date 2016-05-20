@@ -2344,6 +2344,78 @@ avoid_likely_spilled_reg (rtx x)
   return x;
 }
 
+/* Helper function for expand_call.
+   Return false is EXP is not implementable as a sibling call.  */
+
+static bool
+can_implement_as_sibling_call_p (tree exp,
+				 rtx structure_value_addr,
+				 tree funtype,
+				 int reg_parm_stack_space,
+				 tree fndecl,
+				 int flags,
+				 tree addr,
+				 const args_size &args_size)
+{
+  if (!targetm.have_sibcall_epilogue ())
+    return false;
+
+  /* Doing sibling call optimization needs some work, since
+     structure_value_addr can be allocated on the stack.
+     It does not seem worth the effort since few optimizable
+     sibling calls will return a structure.  */
+  if (structure_value_addr != NULL_RTX)
+    return false;
+
+#ifdef REG_PARM_STACK_SPACE
+  /* If outgoing reg parm stack space changes, we can not do sibcall.  */
+  if (OUTGOING_REG_PARM_STACK_SPACE (funtype)
+      != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl))
+      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl)))
+    return false;
+#endif
+
+  /* Check whether the target is able to optimize the call
+     into a sibcall.  */
+  if (!targetm.function_ok_for_sibcall (fndecl, exp))
+    return false;
+
+  /* Functions that do not return exactly once may not be sibcall
+     optimized.  */
+  if (flags & (ECF_RETURNS_TWICE | ECF_NORETURN))
+    return false;
+
+  if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr))))
+    return false;
+
+  /* If the called function is nested in the current one, it might access
+     some of the caller's arguments, but could clobber them beforehand if
+     the argument areas are shared.  */
+  if (fndecl && decl_function_context (fndecl) == current_function_decl)
+    return false;
+
+  /* If this function requires more stack slots than the current
+     function, we cannot change it into a sibling call.
+     crtl->args.pretend_args_size is not part of the
+     stack allocated by our caller.  */
+  if (args_size.constant > (crtl->args.size - crtl->args.pretend_args_size))
+    return false;
+
+  /* If the callee pops its own arguments, then it must pop exactly
+     the same number of arguments as the current function.  */
+  if (targetm.calls.return_pops_args (fndecl, funtype, args_size.constant)
+      != targetm.calls.return_pops_args (current_function_decl,
+					 TREE_TYPE (current_function_decl),
+					 crtl->args.size))
+    return false;
+
+  if (!lang_hooks.decls.ok_for_sibcall (fndecl))
+    return false;
+
+  /* All checks passed.  */
+  return true;
+}
+
 /* Generate all the code for a CALL_EXPR exp
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -2740,44 +2812,10 @@ expand_call (tree exp, rtx target, int ignore)
     try_tail_call = 0;
 
   /*  Rest of purposes for tail call optimizations to fail.  */
-  if (!try_tail_call
-      || !targetm.have_sibcall_epilogue ()
-      /* Doing sibling call optimization needs some work, since
-	 structure_value_addr can be allocated on the stack.
-	 It does not seem worth the effort since few optimizable
-	 sibling calls will return a structure.  */
-      || structure_value_addr != NULL_RTX
-#ifdef REG_PARM_STACK_SPACE
-      /* If outgoing reg parm stack space changes, we can not do sibcall.  */
-      || (OUTGOING_REG_PARM_STACK_SPACE (funtype)
-	  != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl)))
-      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl))
-#endif
-      /* Check whether the target is able to optimize the call
-	 into a sibcall.  */
-      || !targetm.function_ok_for_sibcall (fndecl, exp)
-      /* Functions that do not return exactly once may not be sibcall
-	 optimized.  */
-      || (flags & (ECF_RETURNS_TWICE | ECF_NORETURN))
-      || TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr)))
-      /* If the called function is nested in the current one, it might access
-	 some of the caller's arguments, but could clobber them beforehand if
-	 the argument areas are shared.  */
-      || (fndecl && decl_function_context (fndecl) == current_function_decl)
-      /* If this function requires more stack slots than the current
-	 function, we cannot change it into a sibling call.
-	 crtl->args.pretend_args_size is not part of the
-	 stack allocated by our caller.  */
-      || args_size.constant > (crtl->args.size
-			       - crtl->args.pretend_args_size)
-      /* If the callee pops its own arguments, then it must pop exactly
-	 the same number of arguments as the current function.  */
-      || (targetm.calls.return_pops_args (fndecl, funtype, args_size.constant)
-	  != targetm.calls.return_pops_args (current_function_decl,
-					     TREE_TYPE (current_function_decl),
-					     crtl->args.size))
-      || !lang_hooks.decls.ok_for_sibcall (fndecl))
-    try_tail_call = 0;
+  if (try_tail_call)
+    try_tail_call = can_implement_as_sibling_call_p (exp, structure_value_addr, funtype,
+						     reg_parm_stack_space, fndecl,
+						     flags, addr, args_size);
 
   /* Check if caller and callee disagree in promotion of function
      return value.  */
