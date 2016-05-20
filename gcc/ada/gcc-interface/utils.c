@@ -1116,7 +1116,14 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	break;
 
       biased_p |= for_biased;
-      if (TYPE_UNSIGNED (type) || biased_p)
+
+      /* The type should be an unsigned type if the original type is unsigned
+	 or if the lower bound is constant and non-negative or if the type is
+	 biased, see E_Signed_Integer_Subtype case of gnat_to_gnu_entity.  */
+      if (TYPE_UNSIGNED (type)
+	  || (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
+	      && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
+	  || biased_p)
 	new_type = make_unsigned_type (size);
       else
 	new_type = make_signed_type (size);
@@ -5111,7 +5118,9 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   /* If the result is an integral type whose precision is not equal to its
      size, sign- or zero-extend the result.  We need not do this if the input
      is an integral type of the same precision and signedness or if the output
-     is a biased type or if both the input and output are unsigned.  */
+     is a biased type or if both the input and output are unsigned, or if the
+     lower bound is constant and non-negative, see E_Signed_Integer_Subtype
+     case of gnat_to_gnu_entity.  */
   if (!notrunc_p
       && INTEGRAL_TYPE_P (type)
       && TYPE_RM_SIZE (type)
@@ -5123,7 +5132,10 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 				    ? TYPE_RM_SIZE (etype)
 				    : TYPE_SIZE (etype)) == 0)
       && !(code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
-      && !(TYPE_UNSIGNED (type) && TYPE_UNSIGNED (etype)))
+      && !((TYPE_UNSIGNED (type)
+	    || (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
+		&& tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0))
+	   && TYPE_UNSIGNED (etype)))
     {
       tree base_type
 	= gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),

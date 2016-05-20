@@ -1,3 +1,10 @@
+2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
+	Make same-sized subtypes of signed base types signed.
+	* gcc-interface/utils.c (make_type_from_size): Adjust to above change.
+	(unchecked_convert): Likewise.
+
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Do not build
