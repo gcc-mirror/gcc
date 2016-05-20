@@ -1,3 +1,10 @@
+2016-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* calls.c (expand_call): Move "Rest of purposes for tail call
+	optimizations to fail" to...
+	(can_implement_as_sibling_call_p): ...this new function, and
+	split into multiple "if" statements.
+
 2016-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfgloop.h (expected_loop_iterations_unbounded,
