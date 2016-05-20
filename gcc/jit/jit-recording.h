@@ -960,8 +960,9 @@ public:
   void set_scope (function *scope);
   function *get_scope () const { return m_scope; }
 
-  /* Dynamic cast.  */
+  /* Dynamic casts.  */
   virtual param *dyn_cast_param () { return NULL; }
+  virtual base_call *dyn_cast_base_call () { return NULL; }
 
   virtual const char *access_as_rvalue (reproducer &r);
 
@@ -1418,7 +1419,36 @@ private:
   rvalue *m_rvalue;
 };
 
-class call : public rvalue
+class base_call : public rvalue
+{
+ public:
+  base_call (context *ctxt,
+	     location *loc,
+	     type *type_,
+	     int numargs,
+	     rvalue **args);
+
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_POSTFIX;
+  }
+
+  base_call *dyn_cast_base_call () FINAL OVERRIDE { return this; }
+
+  void set_require_tail_call (bool require_tail_call)
+  {
+    m_require_tail_call = require_tail_call;
+  }
+
+ protected:
+  void write_reproducer_tail_call (reproducer &r, const char *id);
+
+ protected:
+  auto_vec<rvalue *> m_args;
+  bool m_require_tail_call;
+};
+
+class call : public base_call
 {
 public:
   call (context *ctxt,
@@ -1434,17 +1464,12 @@ public:
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
-  enum precedence get_precedence () const FINAL OVERRIDE
-  {
-    return PRECEDENCE_POSTFIX;
-  }
 
 private:
   function *m_func;
-  auto_vec<rvalue *> m_args;
 };
 
-class call_through_ptr : public rvalue
+class call_through_ptr : public base_call
 {
 public:
   call_through_ptr (context *ctxt,
@@ -1460,14 +1485,9 @@ public:
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
-  enum precedence get_precedence () const FINAL OVERRIDE
-  {
-    return PRECEDENCE_POSTFIX;
-  }
 
 private:
   rvalue *m_fn_ptr;
-  auto_vec<rvalue *> m_args;
 };
 
 class array_access : public lvalue

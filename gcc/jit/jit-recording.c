@@ -4681,6 +4681,39 @@ recording::cast::write_reproducer (reproducer &r)
 	   r.get_identifier_as_type (get_type ()));
 }
 
+/* The implementation of class gcc::jit::recording::base_call.  */
+
+/* The constructor for gcc::jit::recording::base_call.  */
+
+recording::base_call::base_call (context *ctxt,
+				 location *loc,
+				 type *type_,
+				 int numargs,
+				 rvalue **args)
+: rvalue (ctxt, loc, type_),
+  m_args (),
+  m_require_tail_call (0)
+{
+  for (int i = 0; i< numargs; i++)
+    m_args.safe_push (args[i]);
+}
+
+/* Subroutine for use by call and call_though_ptr's write_reproducer
+   methods.  */
+
+void
+recording::base_call::write_reproducer_tail_call (reproducer &r,
+						  const char *id)
+{
+  if (m_require_tail_call)
+    {
+      r.write ("  gcc_jit_rvalue_set_bool_require_tail_call (%s,  /* gcc_jit_rvalue *call*/\n"
+	       "                                             %i); /* int require_tail_call*/\n",
+	       id,
+	       1);
+    }
+}
+
 /* The implementation of class gcc::jit::recording::call.  */
 
 /* The constructor for gcc::jit::recording::call.  */
@@ -4690,12 +4723,9 @@ recording::call::call (recording::context *ctxt,
 		       recording::function *func,
 		       int numargs,
 		       rvalue **args)
-: rvalue (ctxt, loc, func->get_return_type ()),
-  m_func (func),
-  m_args ()
+: base_call (ctxt, loc, func->get_return_type (), numargs, args),
+  m_func (func)
 {
-  for (int i = 0; i< numargs; i++)
-    m_args.safe_push (args[i]);
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4711,7 +4741,8 @@ recording::call::replay_into (replayer *r)
 
   set_playback_obj (r->new_call (playback_location (r, m_loc),
 				 m_func->playback_function (),
-				 &playback_args));
+				 &playback_args,
+				 m_require_tail_call));
 }
 
 /* Implementation of pure virtual hook recording::rvalue::visit_children
@@ -4790,6 +4821,7 @@ recording::call::write_reproducer (reproducer &r)
 	   r.get_identifier (m_func),
 	   m_args.length (),
 	   args_id);
+  write_reproducer_tail_call (r, id);
 }
 
 /* The implementation of class gcc::jit::recording::call_through_ptr.  */
@@ -4801,14 +4833,12 @@ recording::call_through_ptr::call_through_ptr (recording::context *ctxt,
 					       recording::rvalue *fn_ptr,
 					       int numargs,
 					       rvalue **args)
-: rvalue (ctxt, loc,
-	  fn_ptr->get_type ()->dereference ()
-	    ->as_a_function_type ()->get_return_type ()),
-  m_fn_ptr (fn_ptr),
-  m_args ()
+: base_call (ctxt, loc,
+	     fn_ptr->get_type ()->dereference ()
+	       ->as_a_function_type ()->get_return_type (),
+	     numargs, args),
+  m_fn_ptr (fn_ptr)
 {
-  for (int i = 0; i< numargs; i++)
-    m_args.safe_push (args[i]);
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4824,7 +4854,8 @@ recording::call_through_ptr::replay_into (replayer *r)
 
   set_playback_obj (r->new_call_through_ptr (playback_location (r, m_loc),
 					     m_fn_ptr->playback_rvalue (),
-					     &playback_args));
+					     &playback_args,
+					     m_require_tail_call));
 }
 
 /* Implementation of pure virtual hook recording::rvalue::visit_children
@@ -4907,6 +4938,7 @@ recording::call_through_ptr::write_reproducer (reproducer &r)
 	   r.get_identifier_as_rvalue (m_fn_ptr),
 	   m_args.length (),
 	   args_id);
+  write_reproducer_tail_call (r, id);
 }
 
 /* The implementation of class gcc::jit::recording::array_access.  */

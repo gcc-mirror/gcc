@@ -424,6 +424,30 @@ Function calls
 
       The same caveat as for :c:func:`gcc_jit_context_new_call` applies.
 
+.. function:: void\
+              gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,\
+                                                         int require_tail_call)
+
+   Given an :c:type:`gcc_jit_rvalue *` for a call created through
+   :c:func:`gcc_jit_context_new_call` or
+   :c:func:`gcc_jit_context_new_call_through_ptr`, mark/clear the
+   call as needing tail-call optimization.  The optimizer will
+   attempt to optimize the call into a jump instruction; if it is
+   unable to do do, an error will be emitted.
+
+   This may be useful when implementing functions that use the
+   continuation-passing style (e.g. for functional programming
+   languages), in which every function "returns" by calling a
+   "continuation" function pointer.  This call must be
+   guaranteed to be implemented as a jump, otherwise the program
+   could consume an arbitrary amount of stack space as it executed.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_6`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_rvalue_set_bool_require_tail_call
 
 Type-coercion
 *************

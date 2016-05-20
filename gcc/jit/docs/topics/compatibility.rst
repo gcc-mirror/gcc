@@ -135,3 +135,10 @@ entrypoints:
 -------------------
 ``LIBGCCJIT_ABI_5`` covers the addition of
 :func:`gcc_jit_context_set_bool_use_external_driver`
+
+.. _LIBGCCJIT_ABI_6:
+
+``LIBGCCJIT_ABI_6``
+-------------------
+``LIBGCCJIT_ABI_6`` covers the addition of
+:func:`gcc_jit_rvalue_set_bool_require_tail_call`
