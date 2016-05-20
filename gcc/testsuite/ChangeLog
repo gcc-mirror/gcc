@@ -1,3 +1,10 @@
+2016-05-20  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-adde.c: Change dejagnu options, fix code
+	formatting.
+	* gcc.target/powerpc/vec-adde-int128.c: Change dejagnu options, fix code
+	formatting.
+
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/all-non-failing-tests.h: Add
