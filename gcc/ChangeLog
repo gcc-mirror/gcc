@@ -1,3 +1,7 @@
+2016-05-20  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* config/nvptx/nvptx.md (sincossf3): New pattern.
+
 2016-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/70738

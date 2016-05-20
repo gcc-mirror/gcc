@@ -794,6 +794,17 @@
   ""
   "%.\\tsqrt%#%t0\\t%0, %1;")
 
+(define_expand "sincossf3"
+  [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
+	(unspec:SF [(match_operand:SF 2 "nvptx_register_operand" "R")]
+	           UNSPEC_COS))
+   (set (match_operand:SF 1 "nvptx_register_operand" "=R")
+	(unspec:SF [(match_dup 2)] UNSPEC_SIN))]
+  "flag_unsafe_math_optimizations"
+{
+  operands[2] = make_safe_from (operands[2], operands[0]);
+})
+
 (define_insn "sinsf2"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
 	(unspec:SF [(match_operand:SF 1 "nvptx_register_operand" "R")]
