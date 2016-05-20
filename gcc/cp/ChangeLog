@@ -1,3 +1,9 @@
+2016-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* constexpr.c (cxx_bind_parameters_in_call): Avoid gratuitous if
+	... goto.
+	(cxx_eval_call_expression): Fix comment grammar.
+
 2016-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70572
