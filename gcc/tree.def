@@ -852,6 +852,21 @@ DEFTREECODE (ADDR_EXPR, "addr_expr", tcc_expression, 1)
    descriptor of type ptr_mode.  */
 DEFTREECODE (FDESC_EXPR, "fdesc_expr", tcc_expression, 2)
 
+/* Given a container value, a replacement value and a bit position within
+   the container, produce the value that results from replacing the part of
+   the container starting at the bit position with the replacement value.
+   Operand 0 is a tree for the container value of integral or vector type;
+   Operand 1 is a tree for the replacement value of another integral or
+   the vector element type;
+   Operand 2 is a tree giving the constant bit position;
+   The number of bits replaced is given by the precision of the type of the
+   replacement value if it is integral or by its size if it is non-integral.
+   ???  The reason to make the size of the replacement implicit is to avoid
+   introducing a quaternary operation.
+   The replaced bits shall be fully inside the container.  If the container
+   is of vector type, then these bits shall be aligned with its elements.  */
+DEFTREECODE (BIT_INSERT_EXPR, "bit_field_insert", tcc_expression, 3)
+
 /* Given two real or integer operands of the same type,
    returns a complex value of the corresponding complex type.  */
 DEFTREECODE (COMPLEX_EXPR, "complex_expr", tcc_binary, 2)

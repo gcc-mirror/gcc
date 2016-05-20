@@ -3941,6 +3941,10 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
         return weights->div_mod_cost;
       return 1;
 
+    /* Bit-field insertion needs several shift and mask operations.  */
+    case BIT_INSERT_EXPR:
+      return 3;
+
     default:
       /* We expect a copy assignment with no operator.  */
       gcc_assert (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS);

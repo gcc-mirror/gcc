@@ -1876,6 +1876,23 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
       pp_greater (pp);
       break;
 
+    case BIT_INSERT_EXPR:
+      pp_string (pp, "BIT_INSERT_EXPR <");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, ", ");
+      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (pp, ", ");
+      dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_string (pp, " (");
+      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (node, 1))))
+	pp_decimal_int (pp,
+			TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (node, 1))));
+      else
+	dump_generic_node (pp, TYPE_SIZE (TREE_TYPE (TREE_OPERAND (node, 1))),
+			   spc, flags, false);
+      pp_string (pp, " bits)>");
+      break;
+
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
       op0 = TREE_OPERAND (node, 0);

@@ -3163,6 +3163,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case VEC_COND_EXPR:
 	case DOT_PROD_EXPR:
+	case BIT_INSERT_EXPR:
 	  return OP_SAME (0) && OP_SAME (1) && OP_SAME (2);
 
 	default:
@@ -11857,6 +11858,46 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
 	  if (changed)
 	    return build3_loc (loc, VEC_PERM_EXPR, type, op0, op1, op2);
+	}
+      return NULL_TREE;
+
+    case BIT_INSERT_EXPR:
+      /* Perform (partial) constant folding of BIT_INSERT_EXPR.  */
+      if (TREE_CODE (arg0) == INTEGER_CST
+	  && TREE_CODE (arg1) == INTEGER_CST)
+	{
+	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (op2);
+	  unsigned bitsize = TYPE_PRECISION (TREE_TYPE (arg1));
+	  wide_int tem = wi::bit_and (arg0,
+				      wi::shifted_mask (bitpos, bitsize, true,
+							TYPE_PRECISION (type)));
+	  wide_int tem2
+	    = wi::lshift (wi::zext (wi::to_wide (arg1, TYPE_PRECISION (type)),
+				    bitsize), bitpos);
+	  return wide_int_to_tree (type, wi::bit_or (tem, tem2));
+	}
+      else if (TREE_CODE (arg0) == VECTOR_CST
+	       && CONSTANT_CLASS_P (arg1)
+	       && types_compatible_p (TREE_TYPE (TREE_TYPE (arg0)),
+				      TREE_TYPE (arg1)))
+	{
+	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (op2);
+	  unsigned HOST_WIDE_INT elsize
+	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (arg1)));
+	  if (bitpos % elsize == 0)
+	    {
+	      unsigned k = bitpos / elsize;
+	      if (operand_equal_p (VECTOR_CST_ELT (arg0, k), arg1, 0))
+		return arg0;
+	      else
+		{
+		  tree *elts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
+		  memcpy (elts, VECTOR_CST_ELTS (arg0),
+			  sizeof (tree) * TYPE_VECTOR_SUBPARTS (type));
+		  elts[k] = arg1;
+		  return build_vector (type, elts);
+		}
+	    }
 	}
       return NULL_TREE;
 

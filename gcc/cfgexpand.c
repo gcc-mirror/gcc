@@ -5025,6 +5025,7 @@ expand_debug_expr (tree exp)
     case FIXED_CONVERT_EXPR:
     case OBJ_TYPE_REF:
     case WITH_SIZE_EXPR:
+    case BIT_INSERT_EXPR:
       return NULL;
 
     case DOT_PROD_EXPR:
