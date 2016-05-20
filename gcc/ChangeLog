@@ -1,3 +1,12 @@
+2016-05-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-vectorizer.c (get_vec_alignment_for_decl): New static function.
+	(get_vec_alignment_for_array_decl): Likewise.
+	(get_vec_alignment_for_record_decl): Likewise.
+	(increase_alignment::execute): Move code to find alignment to
+	get_vec_alignment_for_array_decl and call get_vec_alignment_for_decl.
+	(type_align_map): New hash_map.
+
 2016-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/29756
