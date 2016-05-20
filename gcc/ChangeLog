@@ -1,3 +1,8 @@
+2016-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sched-deps.c (sched_analyze_2) <case TRAP_IF>: Also
+	force pending loads from memory.
+
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -7,7 +12,7 @@
 	* tree-cfg.c (verify_expr): Adjust BIT_FIELD_REF case.
 
 	2016-03-02  Richard Biener  <rguenther@suse.de>
-		Uros Bizjak  <ubizjak@gmail.com>
+		    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67278
 	* config/i386/i386.c (type_natural_mode): Handle XFmode vectors.
@@ -30,7 +35,7 @@
 
 	PR tree-optimization/67921
 	* fold-const.c (split_tree): New parameters.  Convert pointer
-	type variable part to proper type before negating. 
+	type variable part to proper type before negating.
 	(fold_binary_loc): Pass new arguments to split_tree.
 
 	2016-05-06  Richard Biener  <rguenther@suse.de>
@@ -262,7 +267,7 @@
 	Use proper memory operand modifiers.
 
 2016-04-14  Nick Clifton  <nickc@redhat.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70044
 	* config/aarch64/aarch64.c
