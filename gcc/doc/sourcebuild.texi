@@ -1794,6 +1794,9 @@ time) should be run on this target.  This can be enabled by setting the
 Test system runs executables on a simulator (i.e. slowly) rather than
 hardware (i.e. fast).
 
+@item stabs
+Target supports the stabs debugging format.
+
 @item stdint_types
 Target has the basic signed and unsigned C types in @code{stdint.h}.
 This will be obsolete when GCC ensures a working @code{stdint.h} for

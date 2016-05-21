@@ -1,8 +1,7 @@
 /* Check if the final SO STABS record goes into the .text section.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com> */
 
-/* { dg-do compile } */
-/* { dg-skip-if "No stabs" { mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* } { "*" } { "" } } */
+/* { dg-do compile { target stabs } } */
 /* { dg-options "-gstabs" } */
 
 @interface MyClass

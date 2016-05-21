@@ -393,12 +393,13 @@ extern GTY(()) int darwin_ms_struct;
 
 #define ASM_DEBUG_SPEC  "%{g*:%{!g0:%{!gdwarf*:--gstabs}}}"
 
-/* We still allow output of STABS.  */
-
+/* We still allow output of STABS if the assembler supports it.  */
+#ifdef HAVE_AS_STABS_DIRECTIVE
 #define DBX_DEBUGGING_INFO 1
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#endif
 
 #define DWARF2_DEBUGGING_INFO 1
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #define DEBUG_FRAME_SECTION	"__DWARF,__debug_frame,regular,debug"
 #define DEBUG_INFO_SECTION	"__DWARF,__debug_info,regular,debug"

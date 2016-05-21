@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -236,7 +236,11 @@ do {									\
    compiles default to stabs+.  darwin9+ defaults to dwarf-2.  */
 #ifndef DARWIN_PREFER_DWARF
 #undef PREFERRED_DEBUGGING_TYPE
+#ifdef HAVE_AS_STABS_DIRECTIVE
 #define PREFERRED_DEBUGGING_TYPE (TARGET_64BIT ? DWARF2_DEBUG : DBX_DEBUG)
+#else
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#endif
 #endif
 
 /* Darwin uses the standard DWARF register numbers but the default
