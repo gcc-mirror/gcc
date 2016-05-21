@@ -1,3 +1,8 @@
+2016-05-20  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	PR target/71103
+	* gcc.target/avr/pr71103.c: New test.
+
 2016-05-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71179
