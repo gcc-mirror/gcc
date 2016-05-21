@@ -1,3 +1,8 @@
+2016-05-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr.c (avr_expand_prologue): Add INCOMING_FRAME_SP_OFFSET
+	to computed stack_usage.
+
 2016-05-21  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	PR target/71103
