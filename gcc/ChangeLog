@@ -1,3 +1,9 @@
+2016-05-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71179
+	* tree-ssa-reassoc.c (transform_add_to_multiply): Disallow float
+	VECTOR type.
+
 2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vrp.c (compare_values_warnv): Simplify handling of symbolic
