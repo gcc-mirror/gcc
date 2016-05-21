@@ -1930,7 +1930,7 @@ nios2_delegitimize_address (rtx x)
 	case UNSPEC_LOAD_TLS_IE:
 	case UNSPEC_ADD_TLS_LE:
 	  x = XVECEXP (XEXP (x, 0), 0, 0);
-	  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	  gcc_assert (CONSTANT_P (x));
 	  break;
 	}
     }
