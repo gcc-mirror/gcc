@@ -1,3 +1,7 @@
+2016-05-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (array_at_struct_end_p): Look through MEM_REF.
+
 2016-05-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71179
