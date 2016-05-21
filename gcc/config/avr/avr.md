@@ -638,6 +638,13 @@
     rtx dest = operands[0];
     rtx src  = avr_eval_addr_attrib (operands[1]);
 
+    if (SUBREG_P(src) && (GET_CODE(XEXP(src,0)) == SYMBOL_REF) &&
+        can_create_pseudo_p())
+      {
+        rtx symbol_ref = XEXP(src, 0);
+        XEXP (src, 0) = copy_to_mode_reg (GET_MODE(symbol_ref), symbol_ref);
+      }
+
     if (avr_mem_flash_p (dest))
       DONE;
 

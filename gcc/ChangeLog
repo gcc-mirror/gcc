@@ -1,3 +1,9 @@
+2016-05-21  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	PR target/71103
+	* config/avr/avr.md (define_expand "mov<mode>"): If the source
+	operand is subreg (symbol_ref) then move the symbol ref to register.
+
 2016-05-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (array_at_struct_end_p): Look through MEM_REF.
