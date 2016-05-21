@@ -1769,7 +1769,8 @@ transform_add_to_multiply (gimple *stmt, vec<operand_entry *> *ops)
   bool changed = false;
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE ((*ops)[0]->op))
-      && !flag_unsafe_math_optimizations)
+      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE ((*ops)[0]->op))
+	  || !flag_unsafe_math_optimizations))
     return false;
 
   /* Look for repeated operands.  */
