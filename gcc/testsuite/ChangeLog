@@ -1,5 +1,11 @@
 2016-05-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512bw-kunpckdq-1.c (avx512bw_test): Use "m"
+	constraint instead of "r".
+	* gcc.target/i386/avx512f-additional-reg-names.c (foo): Use vpxord
+	insn instead of vxorpd.
+	* gcc.target/i386/strinline.c: Add dg-require-effective-target ia32.
+
 	* gcc.target/i386/avx512dq-vinsert-1.c: New test.
 	* gcc.target/i386/avx512vl-vinsert-1.c: New test.
 
