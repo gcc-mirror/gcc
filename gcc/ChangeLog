@@ -103,19 +103,6 @@
 
 	* config/nvptx/nvptx.md (sincossf3): New pattern.
 
-2016-05-20  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR target/70738
-	* common/config/i386/i386-common.c
-	(OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET): New.
-	(ix86_handle_option): Disable MPX, MMX, SSE and x87 instructions
-	for -mgeneral-regs-only.
-	* config/i386/i386.c (ix86_option_override_internal): Don't
-	enable x87 instructions if only the general registers are
-	allowed.
-	* config/i386/i386.opt: Add -mgeneral-regs-only.
-	* doc/invoke.texi: Document -mgeneral-regs-only.
-
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* calls.c (maybe_complain_about_tail_call): New function.
