@@ -1,3 +1,10 @@
+2016-05-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/40921
+        * tree-ssa-reassoc.c (try_special_add_to_ops): New.
+        (linearize_expr_tree): Call try_special_add_to_ops.
+        (reassociate_bb): Convert MULT_EXPR by (-1) to NEGATE_EXPR.
+
 2016-05-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr.c (avr_expand_prologue): Add INCOMING_FRAME_SP_OFFSET

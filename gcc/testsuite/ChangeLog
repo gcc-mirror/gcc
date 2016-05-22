@@ -1,3 +1,8 @@
+2016-05-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/40921
+	* gcc.dg/tree-ssa/pr40921.c: New test.
+
 2016-05-20  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	PR target/71103

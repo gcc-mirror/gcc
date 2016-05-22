@@ -4329,6 +4329,45 @@ acceptable_pow_call (gimple *stmt, tree *base, HOST_WIDE_INT *exponent)
   return true;
 }
 
+/* Try to derive and add operand entry for OP to *OPS.  Return false if
+   unsuccessful.  */
+
+static bool
+try_special_add_to_ops (vec<operand_entry *> *ops,
+			enum tree_code code,
+			tree op, gimple* def_stmt)
+{
+  tree base = NULL_TREE;
+  HOST_WIDE_INT exponent = 0;
+
+  if (TREE_CODE (op) != SSA_NAME)
+    return false;
+
+  if (code == MULT_EXPR
+      && acceptable_pow_call (def_stmt, &base, &exponent))
+    {
+      add_repeat_to_ops_vec (ops, base, exponent);
+      gimple_set_visited (def_stmt, true);
+      return true;
+    }
+  else if (code == MULT_EXPR
+	   && is_gimple_assign (def_stmt)
+	   && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
+	   && !HONOR_SNANS (TREE_TYPE (op))
+	   && (!HONOR_SIGNED_ZEROS (TREE_TYPE (op))
+	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op))))
+    {
+      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+      tree cst = build_minus_one_cst (TREE_TYPE (op));
+      add_to_ops_vec (ops, rhs1);
+      add_to_ops_vec (ops, cst);
+      gimple_set_visited (def_stmt, true);
+      return true;
+    }
+
+  return false;
+}
+
 /* Recursively linearize a binary expression that is the RHS of STMT.
    Place the operands of the expression tree in the vector named OPS.  */
 
@@ -4343,8 +4382,6 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
   bool binrhsisreassoc = false;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
   struct loop *loop = loop_containing_stmt (stmt);
-  tree base = NULL_TREE;
-  HOST_WIDE_INT exponent = 0;
 
   if (set_visited)
     gimple_set_visited (stmt, true);
@@ -4380,24 +4417,10 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
 
       if (!binrhsisreassoc)
 	{
-	  if (rhscode == MULT_EXPR
-	      && TREE_CODE (binrhs) == SSA_NAME
-	      && acceptable_pow_call (binrhsdef, &base, &exponent))
-	    {
-	      add_repeat_to_ops_vec (ops, base, exponent);
-	      gimple_set_visited (binrhsdef, true);
-	    }
-	  else
+	  if (!try_special_add_to_ops (ops, rhscode, binrhs, binrhsdef))
 	    add_to_ops_vec (ops, binrhs);
 
-	  if (rhscode == MULT_EXPR
-	      && TREE_CODE (binlhs) == SSA_NAME
-	      && acceptable_pow_call (binlhsdef, &base, &exponent))
-	    {
-	      add_repeat_to_ops_vec (ops, base, exponent);
-	      gimple_set_visited (binlhsdef, true);
-	    }
-	  else
+	  if (!try_special_add_to_ops (ops, rhscode, binlhs, binlhsdef))
 	    add_to_ops_vec (ops, binlhs);
 
 	  return;
@@ -4437,14 +4460,7 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
   linearize_expr_tree (ops, SSA_NAME_DEF_STMT (binlhs),
 		       is_associative, set_visited);
 
-  if (rhscode == MULT_EXPR
-      && TREE_CODE (binrhs) == SSA_NAME
-      && acceptable_pow_call (SSA_NAME_DEF_STMT (binrhs), &base, &exponent))
-    {
-      add_repeat_to_ops_vec (ops, base, exponent);
-      gimple_set_visited (SSA_NAME_DEF_STMT (binrhs), true);
-    }
-  else
+  if (!try_special_add_to_ops (ops, rhscode, binrhs, binrhsdef))
     add_to_ops_vec (ops, binrhs);
 }
 
@@ -5208,6 +5224,24 @@ reassociate_bb (basic_block bb)
 		    powi_result = attempt_builtin_powi (stmt, &ops);
 		}
 
+	      operand_entry *last;
+	      bool negate_result = false;
+	      if (ops.length () > 1
+		  && rhs_code == MULT_EXPR)
+		{
+		  last = ops.last ();
+		  if (((TREE_CODE (last->op) == INTEGER_CST
+			&& integer_minus_onep (last->op))
+		       || real_minus_onep (last->op))
+		      && !HONOR_SNANS (TREE_TYPE (lhs))
+		      && (!HONOR_SIGNED_ZEROS (TREE_TYPE (lhs))
+			  || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (lhs))))
+		    {
+		      ops.pop ();
+		      negate_result = true;
+		    }
+		}
+
 	      /* If the operand vector is now empty, all operands were 
 		 consumed by the __builtin_powi optimization.  */
 	      if (ops.length () == 0)
@@ -5269,6 +5303,18 @@ reassociate_bb (basic_block bb)
 		      gimple_set_uid (mul_stmt, gimple_uid (stmt));
 		      gsi_insert_after (&gsi, mul_stmt, GSI_NEW_STMT);
 		    }
+		}
+
+	      if (negate_result)
+		{
+		  stmt = SSA_NAME_DEF_STMT (lhs);
+		  tree tmp = make_ssa_name (TREE_TYPE (lhs));
+		  gimple_set_lhs (stmt, tmp);
+		  gassign *neg_stmt = gimple_build_assign (lhs, NEGATE_EXPR,
+							   tmp);
+		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+		  gsi_insert_after (&gsi, neg_stmt, GSI_NEW_STMT);
+		  update_stmt (stmt);
 		}
 	    }
 	}
