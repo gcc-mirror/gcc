@@ -17818,10 +17818,12 @@
 	  (vec_select:<ssehalfvecmode>
 	    (match_operand:VI8F_256 1 "register_operand" "v")
 	    (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_AVX"
+  "TARGET_AVX && <mask_avx512dq_condition>"
 {
-  if (TARGET_AVX512VL)
+  if (TARGET_AVX512DQ)
     return "vinsert<shuffletype>64x2\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x0}";
+  else if (TARGET_AVX512VL)
+    return "vinsert<shuffletype>32x4\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x0}";
   else
     return "vinsert<i128>\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}";
 }
@@ -17838,10 +17840,12 @@
 	    (match_operand:VI8F_256 1 "register_operand" "v")
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX"
+  "TARGET_AVX && <mask_avx512dq_condition>"
 {
-  if (TARGET_AVX512VL)
+  if (TARGET_AVX512DQ)
     return "vinsert<shuffletype>64x2\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x1}";
+  else if (TARGET_AVX512VL)
+    return "vinsert<shuffletype>32x4\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x1}";
   else
     return "vinsert<i128>\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}";
 }

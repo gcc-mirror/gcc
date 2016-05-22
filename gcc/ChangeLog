@@ -1,5 +1,10 @@
 2016-05-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_set_lo_<mode><mask_name>,
+	vec_set_hi_<mode><mask_name>): Add && <mask_avx512dq_condition>
+	condition.  For !TARGET_AVX512DQ, emit 32x4 instruction instead
+	of 64x2.
+
 	* config/i386/sse.md (vec_set_lo_v16hi, vec_set_hi_v16hi,
 	vec_set_lo_v32qi, vec_set_hi_v32qi): Add alternative with
 	v constraint instead of x and vinserti32x4 insn.
