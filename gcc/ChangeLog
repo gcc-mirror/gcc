@@ -1,5 +1,9 @@
 2016-05-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (i128vldq): New mode iterator.
+	(avx2_vbroadcasti128_<mode>, avx_vbroadcastf128_<mode>): Add
+	avx512dq and avx512vl alternatives.
+
 	* config/i386/sse.md (avx2_vec_dupv4df): Use v instead of x
 	constraint, use maybe_evex prefix instead of vex.
 	(vec_dupv4sf): Use v constraint instead of x for output
