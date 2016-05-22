@@ -17894,47 +17894,51 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_set_lo_v16hi"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+  [(set (match_operand:V16HI 0 "register_operand" "=x,v")
 	(vec_concat:V16HI
-	  (match_operand:V8HI 2 "nonimmediate_operand" "xm")
+	  (match_operand:V8HI 2 "nonimmediate_operand" "xm,vm")
 	  (vec_select:V8HI
-	    (match_operand:V16HI 1 "register_operand" "x")
+	    (match_operand:V16HI 1 "register_operand" "x,v")
 	    (parallel [(const_int 8) (const_int 9)
 		       (const_int 10) (const_int 11)
 		       (const_int 12) (const_int 13)
 		       (const_int 14) (const_int 15)]))))]
   "TARGET_AVX"
-  "vinsert%~128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
+  "@
+   vinsert%~128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}
+   vinserti32x4\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn "vec_set_hi_v16hi"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
+  [(set (match_operand:V16HI 0 "register_operand" "=x,v")
 	(vec_concat:V16HI
 	  (vec_select:V8HI
-	    (match_operand:V16HI 1 "register_operand" "x")
+	    (match_operand:V16HI 1 "register_operand" "x,v")
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))
-	  (match_operand:V8HI 2 "nonimmediate_operand" "xm")))]
+	  (match_operand:V8HI 2 "nonimmediate_operand" "xm,vm")))]
   "TARGET_AVX"
-  "vinsert%~128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
+  "@
+   vinsert%~128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}
+   vinserti32x4\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn "vec_set_lo_v32qi"
-  [(set (match_operand:V32QI 0 "register_operand" "=x")
+  [(set (match_operand:V32QI 0 "register_operand" "=x,v")
 	(vec_concat:V32QI
-	  (match_operand:V16QI 2 "nonimmediate_operand" "xm")
+	  (match_operand:V16QI 2 "nonimmediate_operand" "xm,v")
 	  (vec_select:V16QI
-	    (match_operand:V32QI 1 "register_operand" "x")
+	    (match_operand:V32QI 1 "register_operand" "x,v")
 	    (parallel [(const_int 16) (const_int 17)
 		       (const_int 18) (const_int 19)
 		       (const_int 20) (const_int 21)
@@ -17944,18 +17948,20 @@
 		       (const_int 28) (const_int 29)
 		       (const_int 30) (const_int 31)]))))]
   "TARGET_AVX"
-  "vinsert%~128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
+  "@
+   vinsert%~128\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}
+   vinserti32x4\t{$0x0, %2, %1, %0|%0, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn "vec_set_hi_v32qi"
-  [(set (match_operand:V32QI 0 "register_operand" "=x")
+  [(set (match_operand:V32QI 0 "register_operand" "=x,v")
 	(vec_concat:V32QI
 	  (vec_select:V16QI
-	    (match_operand:V32QI 1 "register_operand" "x")
+	    (match_operand:V32QI 1 "register_operand" "x,v")
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
@@ -17964,13 +17970,15 @@
 		       (const_int 10) (const_int 11)
 		       (const_int 12) (const_int 13)
 		       (const_int 14) (const_int 15)]))
-	  (match_operand:V16QI 2 "nonimmediate_operand" "xm")))]
+	  (match_operand:V16QI 2 "nonimmediate_operand" "xm,vm")))]
   "TARGET_AVX"
-  "vinsert%~128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
+  "@
+   vinsert%~128\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}
+   vinserti32x4\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn "<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>"
