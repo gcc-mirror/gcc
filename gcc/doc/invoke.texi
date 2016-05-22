@@ -1172,7 +1172,7 @@ See RS/6000 and PowerPC Options.
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -malign-data=@var{type} -mstack-protector-guard=@var{guard} @gol
--mmitigate-rop -mgeneral-regs-only}
+-mmitigate-rop}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -24263,12 +24263,6 @@ Try to avoid generating code sequences that contain unintended return
 opcodes, to mitigate against certain forms of attack. At the moment,
 this option is limited in what it can do and should not be relied
 on to provide serious protection.
-
-@item -mgeneral-regs-only
-@opindex mgeneral-regs-only
-Generate code that uses only the general-purpose registers.  This
-prevents the compiler from using floating-point, vector, mask and bound
-registers.
 
 @end table
 
