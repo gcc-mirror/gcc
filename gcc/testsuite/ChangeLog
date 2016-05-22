@@ -1,5 +1,7 @@
 2016-05-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512vl-vinserti32x4-3.c: New test.
+
 	* gcc.target/i386/avx512dq-vbroadcast-2.c: New test.
 	* gcc.target/i386/avx512vl-vbroadcast-2.c: New test.
 
