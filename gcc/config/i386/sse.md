@@ -778,6 +778,12 @@
    (V64QI "i64x4") (V32QI "%~128") (V32HI "i64x4") (V16HI "%~128")
    (V16SI "i64x4") (V8SI "%~128") (V8DI "i64x4") (V4DI "%~128")])
 
+;; For 256-bit modes for TARGET_AVX512VL && TARGET_AVX512DQ
+;; i32x4, f32x4, i64x2 or f64x2 suffixes.
+(define_mode_attr i128vldq
+  [(V8SF "f32x4") (V4DF "f64x2")
+   (V32QI "i32x4") (V16HI "i32x4") (V8SI "i32x4") (V4DI "i64x2")])
+
 ;; Mix-n-match
 (define_mode_iterator AVX256MODE2P [V8SI V8SF V4DF])
 (define_mode_iterator AVX512MODE2P [V16SI V16SF V8DF])
@@ -17038,15 +17044,19 @@
    (set_attr "mode" "TI,TI,DF,V4SF")])
 
 (define_insn "avx2_vbroadcasti128_<mode>"
-  [(set (match_operand:VI_256 0 "register_operand" "=x")
+  [(set (match_operand:VI_256 0 "register_operand" "=x,v,v")
 	(vec_concat:VI_256
-	  (match_operand:<ssehalfvecmode> 1 "memory_operand" "m")
+	  (match_operand:<ssehalfvecmode> 1 "memory_operand" "m,m,m")
 	  (match_dup 1)))]
   "TARGET_AVX2"
-  "vbroadcasti128\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
+  "@
+   vbroadcasti128\t{%1, %0|%0, %1}
+   vbroadcast<i128vldq>\t{%1, %0|%0, %1}
+   vbroadcast<shuffletype>32x4\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "*,avx512dq,avx512vl")
+   (set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,evex,evex")
    (set_attr "mode" "OI")])
 
 ;; Modes handled by AVX vec_dup patterns.
@@ -17123,19 +17133,24 @@
   "operands[2] = gen_lowpart (<ssehalfvecmode>mode, operands[0]);")
 
 (define_insn "avx_vbroadcastf128_<mode>"
-  [(set (match_operand:V_256 0 "register_operand" "=x,x,x")
+  [(set (match_operand:V_256 0 "register_operand" "=x,x,x,v,v,v,v")
 	(vec_concat:V_256
-	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "m,0,?x")
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "m,0,?x,m,0,m,0")
 	  (match_dup 1)))]
   "TARGET_AVX"
   "@
    vbroadcast<i128>\t{%1, %0|%0, %1}
    vinsert<i128>\t{$1, %1, %0, %0|%0, %0, %1, 1}
-   vperm2<i128>\t{$0, %t1, %t1, %0|%0, %t1, %t1, 0}"
-  [(set_attr "type" "ssemov,sselog1,sselog1")
+   vperm2<i128>\t{$0, %t1, %t1, %0|%0, %t1, %t1, 0}
+   vbroadcast<i128vldq>\t{%1, %0|%0, %1}
+   vinsert<i128vldq>\t{$1, %1, %0, %0|%0, %0, %1, 1}
+   vbroadcast<shuffletype>32x4\t{%1, %0|%0, %1}
+   vinsert<shuffletype>32x4\t{$1, %1, %0, %0|%0, %0, %1, 1}"
+  [(set_attr "isa" "*,*,*,avx512dq,avx512dq,avx512vl,avx512vl")
+   (set_attr "type" "ssemov,sselog1,sselog1,ssemov,sselog1,ssemov,sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "0,1,1")
-   (set_attr "prefix" "vex")
+   (set_attr "length_immediate" "0,1,1,0,1,0,1")
+   (set_attr "prefix" "vex,vex,vex,evex,evex,evex,evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 ;; For broadcast[i|f]32x2.  Yes there is no v4sf version, only v4si.
