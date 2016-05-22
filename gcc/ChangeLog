@@ -1,3 +1,13 @@
+2016-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx2_vec_dupv4df): Use v instead of x
+	constraint, use maybe_evex prefix instead of vex.
+	(vec_dupv4sf): Use v constraint instead of x for output
+	operand except for noavx alternative, use Yv constraint
+	instead of x for input.  Use maybe_evex prefix instead of vex.
+	(*vec_dupv4si): Likewise.
+	(*vec_dupv2di): Likewise.
+
 2016-05-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/40921
