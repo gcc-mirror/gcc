@@ -1,4 +1,12 @@
-2016-05-23 Bin Cheng  <bin.cheng@arm.com>
+2016-05-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49859
+	* common.opt (Wswitch-unreachable): New option.
+	* doc/invoke.texi: Document -Wswitch-unreachable.
+	* gimplify.c (gimplify_switch_expr): Implement the -Wswitch-unreachable
+	warning.
+
+2016-05-23  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-address.c (copy_ref_info): Check NULL TMR_STEP when
 	TMR_INDEX is non-NULL.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wjump-misses-init" } */
+/* { dg-options "-Wjump-misses-init -Wno-switch-unreachable" } */
 int
 f1 (int a)
 {

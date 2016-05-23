@@ -23,7 +23,7 @@ foo (int x, int y)
 
   switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
-  #pragma omp target data map(tofrom: y)
+  #pragma omp target data map(tofrom: y) // { dg-warning "statement will never be executed" }
     { case 0:; }
   }
 }

@@ -5,7 +5,7 @@ void foo(int i)
   int j;
   switch (i)
   {
-  #pragma omp parallel
+  #pragma omp parallel		// { dg-warning "statement will never be executed" }
     { case 0:; }		// { dg-error "jump|enters" }
   #pragma omp for
     for (j = 0; j < 10; ++ j)

@@ -707,6 +707,11 @@ Wsuggest-final-methods
 Common Var(warn_suggest_final_methods) Warning
 Warn about C++ virtual methods where adding final keyword would improve code quality.
 
+Wswitch-unreachable
+Common Var(warn_switch_unreachable) Warning Init(1)
+Warn about statements between switch's controlling expression and the first
+case.
+
 Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers.

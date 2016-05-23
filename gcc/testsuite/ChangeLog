@@ -1,3 +1,31 @@
+2016-05-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49859
+	* c-c++-common/Wswitch-unreachable-1.c: New test.
+	* gcc.dg/Wswitch-unreachable-1.c: New test.
+	* c-c++-common/goacc/sb-2.c (void foo): Add dg-warning.
+	* g++.dg/cpp0x/lambda/lambda-switch.C (main): Likewise.
+	* g++.dg/gomp/block-10.C: Likewise.
+	* gcc.dg/gomp/block-10.c: Likewise.
+	* g++.dg/gomp/block-9.C: Likewise.
+	* gcc.dg/gomp/block-9.c: Likewise.
+	* g++.dg/gomp/target-1.C: Likewise.
+	* g++.dg/gomp/target-2.C: Likewise.
+	* gcc.dg/gomp/target-1.c: Likewise.
+	* gcc.dg/gomp/target-2.c: Likewise. 
+	* g++.dg/gomp/taskgroup-1.C: Likewise.
+	* gcc.dg/gomp/taskgroup-1.c: Likewise.
+	* gcc.dg/gomp/teams-1.c: Likewise.
+	* g++.dg/gomp/teams-1.C: Likewise.
+	* g++.dg/overload/error3.C: Likewise.
+	* g++.dg/tm/jump1.C: Likewise.
+	* g++.dg/torture/pr40335.C: Likewise.
+	* gcc.dg/c99-vla-jump-5.c: Likewise.
+	* gcc.dg/switch-warn-1.c: Likewise.
+	* gcc.dg/Wjump-misses-init-1.c: Use -Wno-switch-unreachable.
+	* gcc.dg/nested-func-1.c: Likewise.
+	* gcc.dg/pr67784-4.c: Likewise.
+
 2016-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71230
