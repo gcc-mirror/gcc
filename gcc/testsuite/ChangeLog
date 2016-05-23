@@ -1,5 +1,15 @@
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (result):
+	Add poly64x1_t and poly64x2_t cases if supported.
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h
+	(buffer, buffer_pad, buffer_dup, buffer_dup_pad): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p64.c: New file.
+
+2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vrnd.c: New.
 	* gcc.target/aarch64/advsimd-intrinsics/vrndX.inc: New.
 	* gcc.target/aarch64/advsimd-intrinsics/vrnda.c: New.
