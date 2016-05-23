@@ -1,3 +1,10 @@
+2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/pr31445.C: Test column number too.
+	* g++.dg/cpp0x/pr32253.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex13.C: Likewise.
+	* g++.dg/cpp0x/variadic36.C: Likewise.
+
 2016-05-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/fold-notshift-2.c: Adjust.
@@ -16,7 +23,7 @@
 	* g++.dg/gomp/target-1.C: Likewise.
 	* g++.dg/gomp/target-2.C: Likewise.
 	* gcc.dg/gomp/target-1.c: Likewise.
-	* gcc.dg/gomp/target-2.c: Likewise. 
+	* gcc.dg/gomp/target-2.c: Likewise.
 	* g++.dg/gomp/taskgroup-1.C: Likewise.
 	* gcc.dg/gomp/taskgroup-1.c: Likewise.
 	* gcc.dg/gomp/teams-1.c: Likewise.
@@ -38,7 +45,7 @@
 
 2016-05-23  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
-	* gcc.dg/vect/bb-slp-19.c:  Remove XFAIL. 
+	* gcc.dg/vect/bb-slp-19.c:  Remove XFAIL.
 	* gcc.dg/vect/pr58135.c:  Add new.
 	* gfortran.dg/pr46519-1.f: Adjust test case.
 
