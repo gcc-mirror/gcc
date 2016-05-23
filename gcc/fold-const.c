@@ -5996,8 +5996,15 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 or (for divide and modulus) if it is a multiple of our constant.  */
       if (code == MULT_EXPR
 	  || wi::multiple_of_p (t, c, TYPE_SIGN (type)))
-	return const_binop (code, fold_convert (ctype, t),
-			    fold_convert (ctype, c));
+	{
+	  tree tem = const_binop (code, fold_convert (ctype, t),
+				  fold_convert (ctype, c));
+	  /* If the multiplication overflowed, we lost information on it.
+	     See PR68142 and PR69845.  */
+	  if (TREE_OVERFLOW (tem))
+	    return NULL_TREE;
+	  return tem;
+	}
       break;
 
     CASE_CONVERT: case NON_LVALUE_EXPR:

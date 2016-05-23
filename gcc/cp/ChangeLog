@@ -1,3 +1,12 @@
+2016-05-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
+ 
+	PR c++/70347
+	* typeck.c (process_init_constructor_union): If the initializer
+	is empty, use the union's NSDMI if it has one.
+
 2016-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70466

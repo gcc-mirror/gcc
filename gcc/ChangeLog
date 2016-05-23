@@ -1,6 +1,27 @@
 2016-05-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-02-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/69634
+	* regstat.c (regstat_bb_compute_calls_crossed): Disregard
+	debug insns.
+
+	2015-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68142
+	* fold-const.c (extract_muldiv_1): Avoid introducing undefined
+	overflow.
+
+	2016-03-24  Richard Henderson  <rth@redhat.com>
+
+        PR middle-end/69845
+	* fold-const.c (extract_muldiv_1): Correct test for multiplication
+	overflow.
+
+2016-05-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2015-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68814
