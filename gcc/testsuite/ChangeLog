@@ -1,5 +1,11 @@
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret.c: Add fp16 tests.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p64.c: Likewise.
+
+2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (result):
 	Add poly64x1_t and poly64x2_t cases if supported.
 	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h
