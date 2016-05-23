@@ -43301,36 +43301,34 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 	  || MAYBE_MASK_CLASS_P (regclass)))
     return NO_REGS;
 
-  /* Prefer SSE regs only, if we can use them for math.  */
-  if (TARGET_SSE_MATH && !TARGET_MIX_SSE_I387 && SSE_FLOAT_MODE_P (mode))
-    return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
-
   /* Floating-point constants need more complex checks.  */
   if (CONST_DOUBLE_P (x))
     {
       /* General regs can load everything.  */
-      if (reg_class_subset_p (regclass, GENERAL_REGS))
+      if (INTEGER_CLASS_P (regclass))
         return regclass;
 
       /* Floats can load 0 and 1 plus some others.  Note that we eliminated
 	 zero above.  We only want to wind up preferring 80387 registers if
 	 we plan on doing computation with them.  */
-      if (TARGET_80387
+      if (IS_STACK_MODE (mode)
 	  && standard_80387_constant_p (x) > 0)
 	{
-	  /* Limit class to non-sse.  */
-	  if (regclass == FLOAT_SSE_REGS)
+	  /* Limit class to FP regs.  */
+	  if (FLOAT_CLASS_P (regclass))
 	    return FLOAT_REGS;
-	  if (regclass == FP_TOP_SSE_REGS)
+	  else if (regclass == FP_TOP_SSE_REGS)
 	    return FP_TOP_REG;
-	  if (regclass == FP_SECOND_SSE_REGS)
+	  else if (regclass == FP_SECOND_SSE_REGS)
 	    return FP_SECOND_REG;
-	  if (regclass == FLOAT_INT_REGS || regclass == FLOAT_REGS)
-	    return regclass;
 	}
 
       return NO_REGS;
     }
+
+  /* Prefer SSE regs only, if we can use them for math.  */
+  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+    return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
 
   /* Generally when we see PLUS here, it's the function invariant
      (plus soft-fp const_int).  Which can only be computed into general
@@ -43363,10 +43361,10 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
      math on.  If we would like not to return a subset of CLASS, reject this
      alternative: if reload cannot do this, it will still use its choice.  */
   mode = GET_MODE (x);
-  if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
+  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
     return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
-  if (X87_FLOAT_MODE_P (mode))
+  if (IS_STACK_MODE (mode))
     {
       if (regclass == FP_TOP_SSE_REGS)
 	return FP_TOP_REG;
@@ -44071,7 +44069,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return true;
 
     case CONST_DOUBLE:
-      if (TARGET_80387 && IS_STACK_MODE (mode))
+      if (IS_STACK_MODE (mode))
 	switch (standard_80387_constant_p (x))
 	  {
 	  case -1:
