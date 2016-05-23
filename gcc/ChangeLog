@@ -1,5 +1,10 @@
 2016-05-23  Martin Jambor  <mjambor@suse.cz>
 
+	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Create an empty
+	default block if a PHI node in the original one would be resized.
+
+2016-05-23  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/70884
 	* tree-sra.c (initialize_constant_pool_replacements): Do not check
 	should_scalarize_away_bitmap and cannot_scalarize_away_bitmap bits.
