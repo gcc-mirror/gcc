@@ -1,3 +1,8 @@
+2016-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libffi/65567
+	* testsuite/lib/libffi.exp (libffi_feature_test): Fix, and simply.
+
 2016-03-17  Andreas Schwab  <schwab@suse.de>
 
 	* src/aarch64/ffitarget.h (FFI_SIZEOF_JAVA_RAW) [__ILP32__]:
