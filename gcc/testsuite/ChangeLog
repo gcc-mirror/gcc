@@ -1,5 +1,10 @@
 2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/69095
+	* g++.dg/cpp0x/variadic168.C: New.
+
+2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* g++.dg/cpp0x/pr31445.C: Test column number too.
 	* g++.dg/cpp0x/pr32253.C: Likewise.
 	* g++.dg/cpp0x/variadic-ex13.C: Likewise.
