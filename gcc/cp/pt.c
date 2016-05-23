@@ -3761,7 +3761,8 @@ check_for_bare_parameter_packs (tree t)
 
   if (parameter_packs) 
     {
-      error ("parameter packs not expanded with %<...%>:");
+      location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+      error_at (loc, "parameter packs not expanded with %<...%>:");
       while (parameter_packs)
         {
           tree pack = TREE_VALUE (parameter_packs);
@@ -3776,9 +3777,9 @@ check_for_bare_parameter_packs (tree t)
             name = DECL_NAME (pack);
 
 	  if (name)
-	    inform (input_location, "        %qD", name);
+	    inform (loc, "        %qD", name);
 	  else
-	    inform (input_location, "        <anonymous>");
+	    inform (loc, "        <anonymous>");
 
           parameter_packs = TREE_CHAIN (parameter_packs);
         }
