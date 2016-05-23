@@ -454,7 +454,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (mult:c @0 (convert? (lshift integer_onep@1 @2)))
   (if (! FLOAT_TYPE_P (type)
-       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+       && (element_precision (type) <= element_precision (TREE_TYPE (@1))
+	   || TYPE_UNSIGNED (TREE_TYPE (@1))))
    (lshift @0 @2)))
 
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
@@ -655,8 +656,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      rop (bit_ior bit_and)
  (simplify
   (op (convert1? (bit_not @0)) (convert2? (bit_not @1)))
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
-       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+  (if (element_precision (type) <= element_precision (TREE_TYPE (@0))
+       && element_precision (type) <= element_precision (TREE_TYPE (@1)))
    (bit_not (rop (convert @0) (convert @1))))))
 
 /* If we are XORing or adding two BIT_AND_EXPR's, both of which are and'ing
@@ -681,8 +682,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Convert ~X ^ ~Y to X ^ Y.  */
 (simplify
  (bit_xor (convert1? (bit_not @0)) (convert2? (bit_not @1)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
-      && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+ (if (element_precision (type) <= element_precision (TREE_TYPE (@0))
+      && element_precision (type) <= element_precision (TREE_TYPE (@1)))
   (bit_xor (convert @0) (convert @1))))
 
 /* Convert ~X ^ C to X ^ ~C.  */
@@ -722,8 +723,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (X ^ Y) ^ Y -> X  */
 (simplify
  (bit_xor:c (convert? (bit_xor:c @0 @1)) (convert? @1))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
-  (convert @0)))
+ (convert @0))
 /* (X & Y) & (X & Z) -> (X & Y) & Z
    (X | Y) | (X | Z) -> (X | Y) | Z  */
 (for op (bit_and bit_ior)
@@ -915,17 +915,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Convert ~ (-A) to A - 1.  */
 (simplify
  (bit_not (convert? (negate @0)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+ (if (element_precision (type) <= element_precision (TREE_TYPE (@0))
+      || !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (convert (minus @0 { build_each_one_cst (TREE_TYPE (@0)); }))))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify
  (bit_not (convert? (minus @0 integer_each_onep)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+ (if (element_precision (type) <= element_precision (TREE_TYPE (@0))
+      || !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (convert (negate @0))))
 (simplify
  (bit_not (convert? (plus @0 integer_all_onesp)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+ (if (element_precision (type) <= element_precision (TREE_TYPE (@0))
+      || !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (convert (negate @0))))
 
 /* Part of convert ~(X ^ Y) to ~X ^ Y or X ^ ~Y if ~X or ~Y simplify.  */
@@ -1505,9 +1508,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_not (convert1?:s (rshift:s (convert2?@0 (bit_not @1)) @2)))
   (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
-       && element_precision (TREE_TYPE (@0))
-          <= element_precision (TREE_TYPE (@1))
-       && element_precision (type) <= element_precision (TREE_TYPE (@0)))
+       && (element_precision (TREE_TYPE (@0))
+	   <= element_precision (TREE_TYPE (@1))
+	   || !TYPE_UNSIGNED (TREE_TYPE (@1))))
    (with
     { tree shift_type = TREE_TYPE (@0); }
      (convert (rshift (convert:shift_type @1) @2)))))
@@ -1517,8 +1520,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for rotate (lrotate rrotate)
  (simplify
   (bit_not (convert1?:s (rotate:s (convert2?@0 (bit_not @1)) @2)))
-   (if (element_precision (TREE_TYPE (@0)) <= element_precision (TREE_TYPE (@1))
-        && element_precision (type) <= element_precision (TREE_TYPE (@0)))
+   (if ((element_precision (TREE_TYPE (@0))
+	 <= element_precision (TREE_TYPE (@1))
+	 || !TYPE_UNSIGNED (TREE_TYPE (@1)))
+        && (element_precision (type) <= element_precision (TREE_TYPE (@0))
+	    || !TYPE_UNSIGNED (TREE_TYPE (@0))))
     (with
      { tree rotate_type = TREE_TYPE (@0); }
       (convert (rotate (convert:rotate_type @1) @2))))))
