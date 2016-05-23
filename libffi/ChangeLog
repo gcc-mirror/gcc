@@ -1,3 +1,10 @@
+2016-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport trunk r236594:
+
+	PR libffi/65567
+	* testsuite/lib/libffi.exp (libffi_feature_test): Fix, and simply.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
