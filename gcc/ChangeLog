@@ -1,3 +1,7 @@
+2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_neon.h (vtst_p16, vtstq_p16): New.
+
 2016-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vec_set_lo_<mode><mask_name>,

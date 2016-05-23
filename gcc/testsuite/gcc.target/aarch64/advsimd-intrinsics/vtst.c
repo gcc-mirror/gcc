@@ -32,6 +32,19 @@ VECT_VAR_DECL(expected_unsigned,uint,16,8) [] = { 0x0, 0xffff,
 VECT_VAR_DECL(expected_unsigned,uint,32,4) [] = { 0x0, 0xffffffff,
 						  0x0, 0xffffffff };
 
+/* Expected results with poly input.  */
+VECT_VAR_DECL(expected_poly,uint,8,8) [] = { 0x0, 0xff, 0xff, 0xff,
+					     0xff, 0xff, 0xff, 0xff };
+VECT_VAR_DECL(expected_poly,uint,8,16) [] = { 0x0, 0xff, 0xff, 0xff,
+					      0xff, 0xff, 0xff, 0xff,
+					      0xff, 0xff, 0xff, 0xff,
+					      0xff, 0xff, 0xff, 0xff };
+VECT_VAR_DECL(expected_poly,uint,16,4) [] = { 0x0, 0xffff, 0x0, 0xffff };
+VECT_VAR_DECL(expected_poly,uint,16,8) [] = { 0x0, 0xffff,
+					      0x0, 0xffff,
+					      0xffff, 0xffff,
+					      0xffff, 0xffff };
+
 #define INSN_NAME vtst
 #define TEST_MSG "VTST/VTSTQ"
 
@@ -71,12 +84,16 @@ FNNAME (INSN_NAME)
   VDUP(vector2, , uint, u, 8, 8, 15);
   VDUP(vector2, , uint, u, 16, 4, 5);
   VDUP(vector2, , uint, u, 32, 2, 1);
+  VDUP(vector2, , poly, p, 8, 8, 15);
+  VDUP(vector2, , poly, p, 16, 4, 5);
   VDUP(vector2, q, int, s, 8, 16, 15);
   VDUP(vector2, q, int, s, 16, 8, 5);
   VDUP(vector2, q, int, s, 32, 4, 1);
   VDUP(vector2, q, uint, u, 8, 16, 15);
   VDUP(vector2, q, uint, u, 16, 8, 5);
   VDUP(vector2, q, uint, u, 32, 4, 1);
+  VDUP(vector2, q, poly, p, 8, 16, 15);
+  VDUP(vector2, q, poly, p, 16, 8, 5);
 
 #define TEST_MACRO_NO64BIT_VARIANT_1_5(MACRO, VAR, T1, T2)	\
   MACRO(VAR, , T1, T2, 8, 8);					\
@@ -109,6 +126,18 @@ FNNAME (INSN_NAME)
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_unsigned, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_unsigned, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_unsigned, CMT);
+
+  /* Now, test the variants with poly8 and poly16 as input.  */
+#undef CMT
+#define CMT " (poly input)"
+  TEST_BINARY_OP(INSN_NAME, , poly, p, 8, 8);
+  TEST_BINARY_OP(INSN_NAME, , poly, p, 16, 4);
+  TEST_BINARY_OP(INSN_NAME, q, poly, p, 8, 16);
+  TEST_BINARY_OP(INSN_NAME, q, poly, p, 16, 8);
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_poly, CMT);
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_poly, CMT);
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_poly, CMT);
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_poly, CMT);
 }
 
 int main (void)

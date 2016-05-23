@@ -2607,6 +2607,12 @@ vtst_p8 (poly8x8_t __a, poly8x8_t __b)
   return (uint8x8_t)__builtin_neon_vtstv8qi ((int8x8_t) __a, (int8x8_t) __b);
 }
 
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vtst_p16 (poly16x4_t __a, poly16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vtstv4hi ((int16x4_t) __a, (int16x4_t) __b);
+}
+
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vtstq_s8 (int8x16_t __a, int8x16_t __b)
 {
@@ -2647,6 +2653,12 @@ __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vtstq_p8 (poly8x16_t __a, poly8x16_t __b)
 {
   return (uint8x16_t)__builtin_neon_vtstv16qi ((int8x16_t) __a, (int8x16_t) __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vtstq_p16 (poly16x8_t __a, poly16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vtstv8hi ((int16x8_t) __a, (int16x8_t) __b);
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
