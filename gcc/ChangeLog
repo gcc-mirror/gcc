@@ -1,3 +1,8 @@
+2016-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Create an empty
+	default block if a PHI node in the original one would be resized.
+
 2016-05-23  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	PR tree-optimization/58135
