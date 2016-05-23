@@ -1,3 +1,9 @@
+2016-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71230
+	* tree-ssa-reassoc.c (acceptable_pow_call): Move initial condition...
+	(try_special_add_to_ops): ... here.  Always test for single-use.
+
 2016-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Create an empty

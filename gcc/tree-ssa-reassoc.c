@@ -4271,16 +4271,10 @@ break_up_subtract (gimple *stmt, gimple_stmt_iterator *gsip)
    If any of these conditions does not hold, return FALSE.  */
 
 static bool
-acceptable_pow_call (gimple *stmt, tree *base, HOST_WIDE_INT *exponent)
+acceptable_pow_call (gcall *stmt, tree *base, HOST_WIDE_INT *exponent)
 {
   tree arg1;
   REAL_VALUE_TYPE c, cint;
-
-  if (!reassoc_insert_powi_p
-      || !flag_unsafe_math_optimizations
-      || !is_gimple_call (stmt)
-      || !has_single_use (gimple_call_lhs (stmt)))
-    return false;
 
   switch (gimple_call_combined_fn (stmt))
     {
@@ -4340,11 +4334,15 @@ try_special_add_to_ops (vec<operand_entry *> *ops,
   tree base = NULL_TREE;
   HOST_WIDE_INT exponent = 0;
 
-  if (TREE_CODE (op) != SSA_NAME)
+  if (TREE_CODE (op) != SSA_NAME
+      || ! has_single_use (op))
     return false;
 
   if (code == MULT_EXPR
-      && acceptable_pow_call (def_stmt, &base, &exponent))
+      && reassoc_insert_powi_p
+      && flag_unsafe_math_optimizations
+      && is_gimple_call (def_stmt)
+      && acceptable_pow_call (as_a <gcall *> (def_stmt), &base, &exponent))
     {
       add_repeat_to_ops_vec (ops, base, exponent);
       gimple_set_visited (def_stmt, true);

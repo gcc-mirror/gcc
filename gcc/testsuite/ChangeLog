@@ -1,3 +1,9 @@
+2016-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71230
+	* gfortran.dg/pr71230-1.f90: New testcase.
+	* gfortran.dg/pr71230-2.f90: Likewise.
+
 2016-05-23  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* gcc.dg/vect/bb-slp-19.c:  Remove XFAIL. 
