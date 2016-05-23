@@ -1,5 +1,11 @@
 2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/70972
+	* g++.dg/cpp0x/inh-ctor20.C: New.
+	* g++.dg/cpp0x/inh-ctor21.C: Likewise.
+
+2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/69095
 	* g++.dg/cpp0x/variadic168.C: New.
 
