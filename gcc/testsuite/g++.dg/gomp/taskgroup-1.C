@@ -24,7 +24,7 @@ foo (int x)
 
   switch (x)
   {
-  #pragma omp taskgroup
+  #pragma omp taskgroup		// { dg-warning "statement will never be executed" }
     { case 0:; }		// { dg-error "jump" }
                                 // { dg-message "enters" "" { target *-*-* } 28 }
   }

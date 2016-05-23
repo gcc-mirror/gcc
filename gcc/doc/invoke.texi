@@ -297,7 +297,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wsuggest-final-types @gol -Wsuggest-final-methods -Wsuggest-override @gol
 -Wmissing-format-attribute -Wsubobject-linkage @gol
--Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
+-Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
+-Wswitch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
 -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wunsafe-loop-optimizations @gol
@@ -4138,6 +4139,39 @@ expression to a type other than @code{bool}.  For example:
 @group
 switch ((int) (a == 4))
   @{
+  @dots{}
+  @}
+@end group
+@end smallexample
+This warning is enabled by default for C and C++ programs.
+
+@item -Wswitch-unreachable
+@opindex Wswitch-unreachable
+@opindex Wno-switch-unreachable
+Warn whenever a @code{switch} statement contains statements between the
+controlling expression and the first case label, which will never be
+executed.  For example:
+@smallexample
+@group
+switch (cond)
+  @{
+   i = 15;
+  @dots{}
+   case 5:
+  @dots{}
+  @}
+@end group
+@end smallexample
+@option{-Wswitch-unreachable} does not warn if the statement between the
+controlling expression and the first case label is just a declaration:
+@smallexample
+@group
+switch (cond)
+  @{
+   int i;
+  @dots{}
+   case 5:
+   i = 5;
   @dots{}
   @}
 @end group

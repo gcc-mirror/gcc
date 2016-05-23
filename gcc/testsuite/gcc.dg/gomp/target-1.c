@@ -23,7 +23,7 @@ foo (int x)
 
   switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
-  #pragma omp target
+  #pragma omp target // { dg-warning "statement will never be executed" }
     { case 0:; }
   }
 }

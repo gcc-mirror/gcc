@@ -1,6 +1,6 @@
 /* PR c/67784 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-switch-unreachable" } */
 
 typedef int T;
 

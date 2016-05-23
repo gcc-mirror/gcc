@@ -1,7 +1,7 @@
 /* Test for proper errors for break and continue in nested functions.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-switch-unreachable" } */
 
 void
 foo (int a)

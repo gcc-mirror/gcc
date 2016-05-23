@@ -24,7 +24,7 @@ foo (int x, int y)
 
   switch (x)
   {
-  #pragma omp target data map(tofrom: y)
+  #pragma omp target data map(tofrom: y) // { dg-warning "statement will never be executed" }
     { case 0:; }		// { dg-error "jump" }
                                 // { dg-message "enters" "" { target *-*-* } 28 }
   }

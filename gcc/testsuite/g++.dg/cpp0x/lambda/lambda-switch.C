@@ -20,7 +20,7 @@ main ()
 	    {
 	    case 3:		// { dg-error "case" }
 	      break;		// { dg-error "break" }
-	    };
+	    };			// { dg-warning "statement will never be executed" }
 	}
     }
 }

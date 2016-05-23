@@ -11,7 +11,7 @@ foo1 (unsigned char i)
 {
   switch (i)
     {
-    case -1:   /* { dg-warning "case label value is less than minimum value for type" } */
+    case -1:   /* { dg-warning "case label value is less than minimum value for type|statement will never be executed" } */
       return 1;
     case 256:  /* { dg-warning "case label value exceeds maximum value for type" } */
       return 2;
