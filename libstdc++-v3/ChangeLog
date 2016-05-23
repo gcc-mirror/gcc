@@ -1,3 +1,11 @@
+2016-05-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h
+	(_Safe_iterator<>::operator->()): Implement using underlying iterator
+	operator ->.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::operator->()): Likewise.
+
 2016-05-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* testsuite/experimental/memory_resource/1.cc: Add required argument
