@@ -1,3 +1,8 @@
+2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53401
+	* g++.dg/cpp0x/decltype64.C: New.
+
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret.c: Add fp16 tests.
