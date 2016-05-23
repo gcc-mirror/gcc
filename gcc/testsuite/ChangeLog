@@ -1,5 +1,15 @@
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vrnd.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndX.inc: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrnda.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndm.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndn.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndp.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndx.c: New.
+
+2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c: Add fp16 tests.
 
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
