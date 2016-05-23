@@ -1996,6 +1996,15 @@ cp_fold (tree x)
 
       break;
 
+    case INDIRECT_REF:
+      /* We don't need the decltype(auto) obfuscation anymore.  */
+      if (REF_PARENTHESIZED_P (x))
+	{
+	  tree p = maybe_undo_parenthesized_ref (x);
+	  return cp_fold_maybe_rvalue (p, rval_ops);
+	}
+      goto unary;
+
     case ADDR_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -2008,7 +2017,7 @@ cp_fold (tree x)
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
-    case INDIRECT_REF:
+    unary:
 
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
