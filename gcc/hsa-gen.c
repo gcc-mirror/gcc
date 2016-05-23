@@ -3482,6 +3482,12 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   basic_block default_label_bb = label_to_block_fn (func,
 						    CASE_LABEL (default_label));
 
+  if (!gimple_seq_empty_p (phi_nodes (default_label_bb)))
+    {
+      default_label_bb = split_edge (find_edge (e->dest, default_label_bb));
+      hsa_init_new_bb (default_label_bb);
+    }
+
   make_edge (e->src, default_label_bb, EDGE_FALSE_VALUE);
 
   hsa_cfun->m_modified_cfg = true;
