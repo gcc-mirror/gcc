@@ -1,5 +1,9 @@
 2016-05-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70584
+	* cp-gimplify.c (cp_fold) [INDIRECT_REF]: Call
+	maybe_undo_parenthesized_ref.
+
 	PR c++/70735
 	* pt.c (tsubst_copy): Just return a local variable from
 	non-template context.  Don't call rest_of_decl_compilation for
