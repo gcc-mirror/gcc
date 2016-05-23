@@ -1,5 +1,9 @@
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c: Add fp16 tests.
+
+2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vtst.c: Add tests for
 	vtst_p8, vtstq_p8, vtst_p16 and vtstq_p16.
 
