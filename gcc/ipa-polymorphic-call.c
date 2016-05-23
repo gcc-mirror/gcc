@@ -528,7 +528,7 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
 tree
 inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
 {
-  tree fn = BLOCK_ABSTRACT_ORIGIN (block);
+  tree fn = block_ultimate_origin (block);
   if (fn == NULL || TREE_CODE (fn) != FUNCTION_DECL)
     return NULL_TREE;
 
@@ -1184,7 +1184,7 @@ noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
   for (tree block = gimple_block (stmt); block && TREE_CODE (block) == BLOCK;
        block = BLOCK_SUPERCONTEXT (block))
     if (BLOCK_ABSTRACT_ORIGIN (block)
-	&& TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block)) == FUNCTION_DECL)
+	&& TREE_CODE (block_ultimate_origin (block)) == FUNCTION_DECL)
       return inlined_polymorphic_ctor_dtor_block_p (block, false);
   return (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
 	  && (DECL_CXX_CONSTRUCTOR_P (current_function_decl)

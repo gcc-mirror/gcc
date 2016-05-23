@@ -1,3 +1,16 @@
+2016-05-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/69239
+	* g++.dg/ipa/pr69239.C: New test.
+
+	2016-01-21  Martin Sebor  <msebor@redhat.com>
+
+	PR target/69252
+	* gcc.target/powerpc/pr69252.c: New test.
+
 2016-05-21  Iain Sandoe  <iain@codesourcery.com>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 

@@ -1,3 +1,30 @@
+2016-05-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/68814
+	* rtlanal.c (set_noop_p): Use BITS_BIG_ENDIAN instead of
+	BYTES_BIG_ENDIAN.
+
+	2016-01-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/69003
+	* lto-partition.c (rename_statics): Fix pasto.
+
+	2016-01-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66487
+	* ipa-polymorphic-call.c (inlined_polymorphic_ctor_dtor_block_p):
+	use block_ultimate_origin
+	(noncall-stmt_may_be_vtbl_ptr_store): Likewise.
+
+	2016-01-21  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR target/69252
+	* modulo-sched.c (optimize_sc):	Allow branch-scheduling to add a new
+	first stage.
+
 2016-05-21  Iain Sandoe  <iain@codesourcery.com>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
