@@ -1,3 +1,7 @@
+2016-05-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-notshift-2.c: Adjust.
+
 2016-05-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/49859

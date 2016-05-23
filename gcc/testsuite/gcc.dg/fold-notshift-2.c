@@ -15,17 +15,17 @@ sl (int a, int b)
   return ~((~a) << b);
 }
 
-typedef __INT32_TYPE__ int32_t;
+typedef unsigned __INT32_TYPE__ uint32_t;
 typedef __INT64_TYPE__ int64_t;
 
 int64_t
-asr_widen1 (int32_t a, int b)
+asr_widen1 (uint32_t a, int b)
 {
   return ~((int64_t)(~a) >> b);
 }
 
 int64_t
-asr_widen2 (int32_t a, int b)
+asr_widen2 (uint32_t a, int b)
 {
   return ~(int64_t)(~a >> b);
 }

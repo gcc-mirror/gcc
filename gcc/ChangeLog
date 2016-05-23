@@ -1,3 +1,8 @@
+2016-05-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (a * (1 << b), ~x & ~y, ~X ^ ~Y, (X ^ Y) ^ Y, ~ (-A),
+	~ (A - 1), ~(~X >> Y), ~(~X >>r Y)): Relax constraints.
+
 2016-05-23  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadbackward.c (profitable_jump_thread_path): New function
