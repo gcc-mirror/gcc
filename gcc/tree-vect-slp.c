@@ -1757,18 +1757,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
     }
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
-  /* Calculate the unrolling factor.  */
-  unrolling_factor = least_common_multiple (nunits, group_size) / group_size;
-  if (unrolling_factor != 1 && is_a <bb_vec_info> (vinfo))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: unrolling required in basic"
-			 " block SLP\n");
-
-      return false;
-    }
-
   /* Create a node (a root of the SLP tree) for the packed grouped stores.  */
   scalar_stmts.create (group_size);
   next = stmt;
@@ -1804,26 +1792,36 @@ vect_analyze_slp_instance (vec_info *vinfo,
   /* Build the tree for the SLP instance.  */
   bool *matches = XALLOCAVEC (bool, group_size);
   unsigned npermutes = 0;
-  if ((node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
+  node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
 				   &max_nunits, &loads, matches, &npermutes,
-				   NULL, max_tree_size)) != NULL)
+			      NULL, max_tree_size);
+  if (node != NULL)
     {
       /* Calculate the unrolling factor based on the smallest type.  */
-      if (max_nunits > nunits)
-        unrolling_factor = least_common_multiple (max_nunits, group_size)
-                           / group_size;
+      unrolling_factor
+	= least_common_multiple (max_nunits, group_size) / group_size;
 
-      if (unrolling_factor != 1 && is_a <bb_vec_info> (vinfo))
+      if (unrolling_factor != 1
+	  && is_a <bb_vec_info> (vinfo))
+	{
+
+	  if (max_nunits > group_size)
         {
-          if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Build SLP failed: unrolling required in basic"
-			     " block SLP\n");
+			       "Build SLP failed: store group "
+			       "size not a multiple of the vector size "
+			       "in basic block SLP\n");
 	  vect_free_slp_tree (node);
 	  loads.release ();
           return false;
         }
-
+	  /* Fatal mismatch.  */
+	  matches[group_size/max_nunits * max_nunits] = false;
+	  vect_free_slp_tree (node);
+	  loads.release ();
+	}
+      else
+	{
       /* Create a new SLP instance.  */
       new_instance = XNEW (struct _slp_instance);
       SLP_INSTANCE_TREE (new_instance) = node;
@@ -1845,8 +1843,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (load_node)[0]));
 	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load)
 	    {
-	      int load_place
-		= vect_get_place_in_interleaving_chain (load, first_stmt);
+		  int load_place = vect_get_place_in_interleaving_chain
+				     (load, first_stmt);
 	      gcc_assert (load_place != -1);
 	      if (load_place != j)
 		this_load_permuted = true;
@@ -1876,7 +1874,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
                   dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				   "Build SLP failed: unsupported load "
 				   "permutation ");
-                  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,
+					TDF_SLIM, stmt, 0);
                   dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
                 }
               vect_free_slp_instance (new_instance);
@@ -1884,7 +1883,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
             }
         }
 
-      /* If the loads and stores can be handled with load/store-lane
+	  /* If the loads and stores can be handled with load/store-lan
 	 instructions do not generate this SLP instance.  */
       if (is_a <loop_vec_info> (vinfo)
 	  && loads_permuted
@@ -1896,7 +1895,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      gimple *first_stmt = GROUP_FIRST_ELEMENT
 		  (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (load_node)[0]));
 	      stmt_vec_info stmt_vinfo = vinfo_for_stmt (first_stmt);
-	      /* Use SLP for strided accesses (or if we can't load-lanes).  */
+		  /* Use SLP for strided accesses (or if we
+		     can't load-lanes).  */
 	      if (STMT_VINFO_STRIDED_P (stmt_vinfo)
 		  || ! vect_load_lanes_supported
 			(STMT_VINFO_VECTYPE (stmt_vinfo),
@@ -1925,11 +1925,14 @@ vect_analyze_slp_instance (vec_info *vinfo,
 
       return true;
     }
-
+    }
+  else
+    {
   /* Failed to SLP.  */
   /* Free the allocated memory.  */
   scalar_stmts.release ();
   loads.release ();
+    }
 
   /* For basic block SLP, try to break the group up into multiples of the
      vector size.  */
