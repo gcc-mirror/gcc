@@ -1,3 +1,19 @@
+2016-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (IS_STACK_MODE): Enable for
+	TARGET_MIX_SSE_I387.  Rewrite using X87_FLOAT_MODE_P and
+	SSE_FLOAT_MODE_P macros.
+	* config/i386/i386.c (ix86_preferred_reload_class): Use
+	IS_STACK_MODE, INTEGER_CLASS_P and FLOAT_CLASS_P macros.  Cleanup
+	regclass processing for CONST_DOUBLE_P.
+	(ix86_preferred_output_reload_class): Use IS_STACK_MODE macro.
+	(ix86_rtx_costs): Remove redundant TARGET_80387 check
+	with IS_STACK_MODE macro.
+	* config/i386/i386.md: Replace SSE_FLOAT_MODE_P (DFmode)
+	with TARGET_SSE2.
+	(*movdf_internal): Use IS_STACK_MODE macro.
+	(*movsf_internal): Ditto.
+
 2016-05-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (a * (1 << b), ~x & ~y, ~X ^ ~Y, (X ^ Y) ^ Y, ~ (-A),
@@ -143,7 +159,7 @@
 
 2016-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc/config/i386/i386.c (ix86_rtx_costs) <case CONST_DOUBLE>:
+	* config/i386/i386.c (ix86_rtx_costs) <case CONST_DOUBLE>:
 	Use IS_STACK_MODE when calculating cost of standard 80387 constants.
 	Fallthru to CONST_VECTOR case to calculate cost of standard SSE
 	constants.
@@ -279,7 +295,7 @@
 
 2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Allow 
+	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Allow
 	--disable-sjlj-exceptions for TARGET_BI_ARCH to select DWARF-2 EH
 	for 32-bit mode and SEH for 64-bit.
 	* config/i386/mingw32.h (SHARED_LIBGCC_UNDEFS_SPEC): Handle
@@ -676,7 +692,7 @@
 
 2016-05-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/sse.md (define_insn "*andnot<mode>3"): Extend static
+	* config/i386/sse.md (define_insn "*andnot<mode>3"): Extend static
 	array to 128 chars.
 	(define_insn "*andnottf3"): Ditto.
 	(define_insn "*<code><mode>3"/any_logic): Ditto.
@@ -942,7 +958,7 @@
 
 2016-05-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	 * gcc/config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3):
+	* config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3):
 	Split integer shifts into shift_reg and bfm.
 	(aarch64_lshr_sisd_or_int_<mode>3): Likewise.
 	(aarch64_ashr_sisd_or_int_<mode>3): Likewise.
@@ -1608,7 +1624,7 @@
 
 	PR tree-optimization/70786
 	* tree-chkp.c (chkp_find_bounds_1): Support WITH_SIZE_EXPR.
-	* gcc/calls.c (initialize_argument_information): Bind bounds
+	* calls.c (initialize_argument_information): Bind bounds
 	with corresponding args passed by reference.
 
 2016-05-10  Jakub Jelinek  <jakub@redhat.com>
@@ -4642,7 +4658,7 @@
 2016-04-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70728
-	* gcc/config/i386/sse.md (define_insn "<shift_insn><mode>3<mask_name>"):
+	* config/i386/sse.md (define_insn "<shift_insn><mode>3<mask_name>"):
 	Extract AVX-512BW constraint from AVX.
 
 2016-04-21  Richard Biener  <rguenther@suse.de>
@@ -5904,7 +5920,7 @@
 	Fix the predicate "aarch64_simd_reg_or_zero" to correctly validate
 	the "Y" constraint (scalar FP 0.0 immediate).
 
-	* gcc/config/aarch64/predicates.md (aarch64_simd_reg_or_zero):
+	* config/aarch64/predicates.md (aarch64_simd_reg_or_zero):
 	Add the "const_double" to the list of operand constraints.
 
 2016-04-01  Jakub Jelinek  <jakub@redhat.com>
@@ -7177,7 +7193,7 @@
 	* config/arm/arm-cores.def (cortex-r8): New.
 	* config/arm/arm-tables.opt (cortex-r8): Regenerate.
 	* config/arm/arm-tune.md: Likewise.
-	* gcc/doc/invoke.texi: Add cortex-r8 to list of cpu values.
+	* doc/invoke.texi: Add cortex-r8 to list of cpu values.
 
 2016-03-07  Martin Sebor  <msebor@redhat.com>
 
@@ -7778,12 +7794,12 @@
 2016-02-26  Joel Sherrill  <joel@rtems.org>
 
 	* config.gcc: Add x86_64-*-rtems*.
-	* gcc/config/i386/rtems-64.h: New file.
+	* config/i386/rtems-64.h: New file.
 
 2016-02-26  Joel Sherrill  <joel@rtems.org>
 
 	* config.gcc: Add aarch64-*-rtems*.
-	* gcc/config/aarch64/rtems.h: New file.
+	* config/aarch64/rtems.h: New file.
 
 2016-02-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -9523,7 +9539,7 @@
 
 2016-02-04  Victoria Stepanyan  <victoria.stepanyan@amd.com>
 
-	* gcc/config/i386/x86-tune.def: Disable default prefetching
+	* config/i386/x86-tune.def: Disable default prefetching
 	for -march=znver1.
 
 2016-02-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
@@ -11775,10 +11791,10 @@
 2016-01-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Revert 2016-01-13 change.
-	* gcc/config/rs6000/rs6000.c: Likewise.
-	* gcc/config/rs6000/rs6000.h: Likewise.
-	* gcc/config/rs6000/rs6000.md: Likewise.
-	* gcc/doc/extend.texi: Likewsie.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+	* doc/extend.texi: Likewsie.
 
 2016-01-14  Jeff Law  <law@redhat.com>
 
