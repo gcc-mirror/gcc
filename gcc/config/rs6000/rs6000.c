@@ -6863,21 +6863,29 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
 			gen_rtvec (3, target, reg,
 				   force_reg (V16QImode, x)),
 			UNSPEC_VPERM);
-  else 
+  else
     {
-      /* Invert selector.  We prefer to generate VNAND on P8 so
-         that future fusion opportunities can kick in, but must
-         generate VNOR elsewhere.  */
-      rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
-      rtx iorx = (TARGET_P8_VECTOR
-		  ? gen_rtx_IOR (V16QImode, notx, notx)
-		  : gen_rtx_AND (V16QImode, notx, notx));
-      rtx tmp = gen_reg_rtx (V16QImode);
-      emit_insn (gen_rtx_SET (tmp, iorx));
+      if (TARGET_P9_VECTOR)
+	x = gen_rtx_UNSPEC (mode,
+			    gen_rtvec (3, target, reg,
+				       force_reg (V16QImode, x)),
+			    UNSPEC_VPERMR);
+      else
+	{
+	  /* Invert selector.  We prefer to generate VNAND on P8 so
+	     that future fusion opportunities can kick in, but must
+	     generate VNOR elsewhere.  */
+	  rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
+	  rtx iorx = (TARGET_P8_VECTOR
+		      ? gen_rtx_IOR (V16QImode, notx, notx)
+		      : gen_rtx_AND (V16QImode, notx, notx));
+	  rtx tmp = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_rtx_SET (tmp, iorx));
 
-      /* Permute with operands reversed and adjusted selector.  */
-      x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
-			  UNSPEC_VPERM);
+	  /* Permute with operands reversed and adjusted selector.  */
+	  x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
+			      UNSPEC_VPERM);
+	}
     }
 
   emit_insn (gen_rtx_SET (target, x));
@@ -34365,17 +34373,25 @@ altivec_expand_vec_perm_le (rtx operands[4])
   if (!REG_P (target))
     tmp = gen_reg_rtx (mode);
 
-  /* Invert the selector with a VNAND if available, else a VNOR.
-     The VNAND is preferred for future fusion opportunities.  */
-  notx = gen_rtx_NOT (V16QImode, sel);
-  iorx = (TARGET_P8_VECTOR
-	  ? gen_rtx_IOR (V16QImode, notx, notx)
-	  : gen_rtx_AND (V16QImode, notx, notx));
-  emit_insn (gen_rtx_SET (norreg, iorx));
+  if (TARGET_P9_VECTOR)
+    {
+      unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op0, op1, sel),
+			       UNSPEC_VPERMR);
+    }
+  else
+    {
+      /* Invert the selector with a VNAND if available, else a VNOR.
+	 The VNAND is preferred for future fusion opportunities.  */
+      notx = gen_rtx_NOT (V16QImode, sel);
+      iorx = (TARGET_P8_VECTOR
+	      ? gen_rtx_IOR (V16QImode, notx, notx)
+	      : gen_rtx_AND (V16QImode, notx, notx));
+      emit_insn (gen_rtx_SET (norreg, iorx));
 
-  /* Permute with operands reversed and adjusted selector.  */
-  unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, norreg),
-			   UNSPEC_VPERM);
+      /* Permute with operands reversed and adjusted selector.  */
+      unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, norreg),
+			       UNSPEC_VPERM);
+    }
 
   /* Copy into target, possibly by way of a register.  */
   if (!REG_P (target))

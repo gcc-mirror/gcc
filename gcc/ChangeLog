@@ -1,3 +1,23 @@
+2016-05-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71201
+	* config/rs6000/altivec.md (altivec_vperm_<mode>_internal): Drop
+	ISA 3.0 xxperm fusion alternative.
+	(altivec_vperm_v8hiv16qi): Likewise.
+	(altivec_vperm_<mode>_uns_internal): Likewise.
+	(vperm_v8hiv4si): Likewise.
+	(vperm_v16qiv8hi): Likewise.
+
+2016-05-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Generate
+	vpermr/xxpermr on ISA 3.0.
+	(altivec_expand_vec_perm_le): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VPERMR): New unspec.
+	(altivec_vpermr_<mode>_internal): Add VPERMR/XXPERMR support for
+	ISA 3.0.
+
 2016-05-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (IS_STACK_MODE): Enable for
