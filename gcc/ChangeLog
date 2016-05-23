@@ -1,3 +1,10 @@
+2016-05-23  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR tree-optimization/58135
+	* tree-vect-slp.c: When group size is not multiple
+	of vector size, allow splitting of store group at
+	vector boundary.
+
 2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm_neon.h (vtst_p16, vtstq_p16): New.

@@ -1,5 +1,5 @@
 ! { dg-do compile { target i?86-*-* x86_64-*-* } }
-! { dg-options "-O3 -mavx -mvzeroupper -mtune=generic -dp" }
+! { dg-options "-O3 -mavx -mvzeroupper -fno-tree-slp-vectorize -mtune=generic -dp" }
 
       PROGRAM MG3XDEMO 
       INTEGER LM, NM, NV, NR, NIT
