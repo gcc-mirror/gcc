@@ -1,3 +1,12 @@
+2016-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70735
+	* pt.c (tsubst_copy): Just return a local variable from
+	non-template context.  Don't call rest_of_decl_compilation for
+	duplicated static locals.
+	(tsubst_decl): Set DECL_CONTEXT of local static from another
+	function.
+
 2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70972
