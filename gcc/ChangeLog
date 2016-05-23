@@ -1,3 +1,8 @@
+2016-05-23 Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-address.c (copy_ref_info): Check NULL TMR_STEP when
+	TMR_INDEX is non-NULL.
+
 2016-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71230
