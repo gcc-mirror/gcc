@@ -1,3 +1,9 @@
+2016-05-23  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadbackward.c (profitable_jump_thread_path): New function
+	extracted from ...
+	(fsm_find_control_statement_thread_paths): Call it.
+
 2016-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/71234
