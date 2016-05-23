@@ -1,3 +1,8 @@
+2016-05-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vtst.c: Add tests for
+	vtst_p8, vtstq_p8, vtst_p16 and vtstq_p16.
+
 2016-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512bw-kunpckdq-1.c (avx512bw_test): Use "m"
