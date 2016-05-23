@@ -1,5 +1,10 @@
 2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/69095
+	* parser.c (cp_parser_initializer): Use check_for_bare_parameter_packs.
+
+2016-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* pt.c (check_for_bare_parameter_packs): Improve error message
 	location for expressions.
 

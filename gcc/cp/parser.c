@@ -20800,6 +20800,9 @@ cp_parser_initializer (cp_parser* parser, bool* is_direct_init,
       init = error_mark_node;
     }
 
+  if (check_for_bare_parameter_packs (init))
+    init = error_mark_node;
+
   return init;
 }
 
