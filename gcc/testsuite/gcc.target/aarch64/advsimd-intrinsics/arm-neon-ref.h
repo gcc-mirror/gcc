@@ -133,6 +133,9 @@ static ARRAY(result, uint, 32, 2);
 static ARRAY(result, uint, 64, 1);
 static ARRAY(result, poly, 8, 8);
 static ARRAY(result, poly, 16, 4);
+#if defined (__ARM_FEATURE_CRYPTO)
+static ARRAY(result, poly, 64, 1);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 static ARRAY(result, float, 16, 4);
 #endif
@@ -150,6 +153,9 @@ static ARRAY(result, uint, 32, 4);
 static ARRAY(result, uint, 64, 2);
 static ARRAY(result, poly, 8, 16);
 static ARRAY(result, poly, 16, 8);
+#if defined (__ARM_FEATURE_CRYPTO)
+static ARRAY(result, poly, 64, 2);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 static ARRAY(result, float, 16, 8);
 #endif
