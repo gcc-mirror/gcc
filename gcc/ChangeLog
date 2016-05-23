@@ -1,3 +1,9 @@
+2016-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/71234
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Only check value of
+	from_global_constant if t is not NULL.
+
 2016-05-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/49859

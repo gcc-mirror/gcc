@@ -2027,7 +2027,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 					      ie->indirect_info->offset,
 					      ie->indirect_info->by_ref,
 					      &from_global_constant);
-	      if (!from_global_constant
+	      if (t
+		  && !from_global_constant
 		  && !ie->indirect_info->guaranteed_unmodified)
 		t = NULL_TREE;
 	    }
