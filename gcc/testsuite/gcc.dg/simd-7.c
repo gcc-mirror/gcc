@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target x86_64-*-* i?86-*-* } } */
 /* { dg-options "-w -Wno-psabi" } */
 
 #if __SIZEOF_LONG_DOUBLE__ == 16 || __SIZEOF_LONG_DOUBLE__ == 8

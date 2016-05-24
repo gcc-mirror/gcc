@@ -1,3 +1,8 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/71254
+	* gcc.dg/simd-7.c: Compile on x86_64 and i?86 only.
+
 2016-05-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
