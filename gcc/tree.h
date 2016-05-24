@@ -4753,6 +4753,17 @@ ptrofftype_p (tree type)
 	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (sizetype));
 }
 
+/* Return true if the argument is a complete type or an array
+   of unknown bound (whose type is incomplete but) whose elements
+   have complete type.  */
+static inline bool
+complete_or_array_type_p (const_tree type)
+{
+  return COMPLETE_TYPE_P (type)
+         || (TREE_CODE (type) == ARRAY_TYPE
+	     && COMPLETE_TYPE_P (TREE_TYPE (type)));
+}
+
 extern tree strip_float_extensions (tree);
 extern int really_constant_p (const_tree);
 extern bool decl_address_invariant_p (const_tree);

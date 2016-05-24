@@ -1,3 +1,8 @@
+2016-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71147
+	* g++.dg/ext/flexary16.C: New test.
+
 2016-05-24  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* gcc.target/i386/avx-ceil-sfix-2-vec.c: Define __NO_MATH_INLINES before
