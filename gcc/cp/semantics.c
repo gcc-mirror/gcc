@@ -5884,7 +5884,8 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 		}
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
 		type = TREE_TYPE (type);
-	      if (!INTEGRAL_TYPE_P (type)
+	      if (OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_REF
+		  && !INTEGRAL_TYPE_P (type)
 		  && TREE_CODE (type) != POINTER_TYPE)
 		{
 		  error ("linear clause applied to non-integral non-pointer "
