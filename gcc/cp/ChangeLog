@@ -1,3 +1,10 @@
+2016-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70584
+	* cp-gimplify.c (cp_fold_maybe_rvalue): Loop in case cp_fold
+	returns a decl.
+	(cp_fold) [INDIRECT_REF]: Don't fold to an rvalue.
+
 2016-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71147

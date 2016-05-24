@@ -1878,13 +1878,21 @@ cp_fully_fold (tree x)
 static tree
 cp_fold_maybe_rvalue (tree x, bool rval)
 {
-  if (rval && DECL_P (x))
+  while (true)
     {
-      tree v = decl_constant_value (x);
-      if (v != error_mark_node)
-	x = v;
+      x = cp_fold (x);
+      if (rval && DECL_P (x))
+	{
+	  tree v = decl_constant_value (x);
+	  if (v != x && v != error_mark_node)
+	    {
+	      x = v;
+	      continue;
+	    }
+	}
+      break;
     }
-  return cp_fold (x);
+  return x;
 }
 
 /* Fold expression X which is used as an rvalue.  */
@@ -2001,7 +2009,7 @@ cp_fold (tree x)
       if (REF_PARENTHESIZED_P (x))
 	{
 	  tree p = maybe_undo_parenthesized_ref (x);
-	  return cp_fold_maybe_rvalue (p, rval_ops);
+	  return cp_fold (p);
 	}
       goto unary;
 
