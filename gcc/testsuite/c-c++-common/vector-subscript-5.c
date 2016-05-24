@@ -7,7 +7,8 @@ foo (int i)
 {
   register U u
 #if __SSE2__
-      asm ("xmm0");
+      asm ("xmm0")
 #endif
+      ;
   return u[i];
 }
