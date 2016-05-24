@@ -1,3 +1,23 @@
+2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (andsi3): Replace cast of 1 to HOST_WIDE_INT
+	with HOST_WIDE_INT_1.
+	(insv): Likewise.
+	* config/arm/arm.c (optimal_immediate_sequence): Replace cast of
+	1 to unsigned HOST_WIDE_INT with HOST_WIDE_INT_1U.
+	(arm_canonicalize_comparison): Likewise.
+	(thumb1_rtx_costs): Replace cast of 1 to HOST_WIDE_INT with
+	HOST_WIDE_INT_1.
+	(thumb1_size_rtx_costs): Likewise.
+	(vfp_const_double_index): Replace cast of 1 to unsigned
+	HOST_WIDE_INT with HOST_WIDE_INT_1U.
+	(get_jump_table_size): Replace cast of 1 to HOST_WIDE_INT with
+	HOST_WIDE_INT_1.
+	(arm_asan_shadow_offset): Replace cast of 1 to unsigned
+	HOST_WIDE_INT with HOST_WIDE_INT_1U.
+	* config/arm/neon.md (vec_set<mode>): Replace cast of 1 to
+	HOST_WIDE_INT with HOST_WIDE_INT_1.
+
 2016-05-24  Marek Polacek  <polacek@redhat.com>
 
 	* tree-cfg.h (should_remove_lhs_p): New predicate.
