@@ -127,7 +127,27 @@ template<bool cache>
   using __umset = std::__umset_hashtable<Foo, HashFunction,
 					 std::equal_to<Foo>,
 					 std::allocator<Foo>,
-					 std::__uset_traits<cache>>;
+					 std::__umset_traits<cache>>;
+
+template<bool cache>
+  using __uset2 =
+	      std::_Hashtable<Foo, Foo, std::allocator<Foo>,
+			      std::__detail::_Identity,
+			      std::equal_to<Foo>, HashFunction,
+			      std::__detail::_Mask_range_hashing,
+			      std::__detail::_Default_ranged_hash,
+			      std::__detail::_Power2_rehash_policy,
+			      std::__uset_traits<cache>>;
+
+template<bool cache>
+  using __umset2 =
+	      std::_Hashtable<Foo, Foo, std::allocator<Foo>,
+			      std::__detail::_Identity,
+			      std::equal_to<Foo>, HashFunction,
+			      std::__detail::_Mask_range_hashing,
+			      std::__detail::_Default_ranged_hash,
+			      std::__detail::_Power2_rehash_policy,
+			      std::__umset_traits<cache>>;
 
 int main()
 {
@@ -180,6 +200,19 @@ int main()
 
   stop_counters(time, resource);
   report_performance(__FILE__, "std benches", time, resource);
+
+  start_counters(time, resource);
+  bench<__uset2<false>>(
+	"std::unordered_set2 without hash code cached ", foos);
+  bench<__uset2<true>>(
+	"std::unordered_set2 with hash code cached ", foos);
+  bench<__umset2<false>>(
+	"std::unordered_multiset2 without hash code cached ", foos);
+  bench<__umset2<true>>(
+	"std::unordered_multiset2 with hash code cached ", foos);
+
+  stop_counters(time, resource);
+  report_performance(__FILE__, "std2 benches", time, resource);
 
   bench<std::unordered_set<Foo, HashFunction>>(
 	"std::unordered_set default cache ", foos);
