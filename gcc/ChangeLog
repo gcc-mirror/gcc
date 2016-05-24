@@ -1,5 +1,28 @@
 2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (ashldi3): Replace comparison of INTVAL of
+	operands[2] against 1 with comparison against CONST1_RTX.
+	(ashrdi3): Likewise.
+	(lshrdi3): Likewise.
+	(ashlsi3): Replace cast of INTVAL to unsigned HOST_WIDE_INT with
+	UINTVAL.
+	(ashrsi3): Likewise.
+	(lshrsi3): Likewise.
+	(rotrsi3): Likewise.
+	(define_split above *compareqi_eq0): Likewise.
+	(define_split above "prologue"): Likewise.
+	* config/arm/arm.c (thumb1_size_rtx_costs): Likewise.
+	* config/arm/predicates.md (shift_operator): Likewise.
+	(shift_nomul_operator): Likewise.
+	(sat_shift_operator): Likewise.
+	(thumb1_cmp_operand): Likewise.
+	(const_neon_scalar_shift_amount_operand): Replace manual range
+	check with IN_RANGE.
+	* config/arm/thumb1.md (define_peephole2 above *thumb_subdi3):
+	Replace cast of INTVAL to unsigned HOST_WIDE_INT with UINTVAL.
+
+2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (andsi3): Replace cast of 1 to HOST_WIDE_INT
 	with HOST_WIDE_INT_1.
 	(insv): Likewise.

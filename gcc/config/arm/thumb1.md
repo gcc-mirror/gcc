@@ -114,8 +114,8 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (reg:SI SP_REGNUM)))]
   "TARGET_THUMB1
-   && (unsigned HOST_WIDE_INT) (INTVAL (operands[1])) < 1024
-   && (INTVAL (operands[1]) & 3) == 0"
+   && UINTVAL (operands[1]) < 1024
+   && (UINTVAL (operands[1]) & 3) == 0"
   [(set (match_dup 0) (plus:SI (reg:SI SP_REGNUM) (match_dup 1)))]
   ""
 )
