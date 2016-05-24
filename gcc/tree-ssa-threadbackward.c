@@ -356,6 +356,44 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
   return taken_edge;
 }
 
+/* PATH is vector of blocks forming a jump threading path in reverse
+   order.  TAKEN_EDGE is the edge taken from path[0].
+
+   Convert that path into the form used by register_jump_thread and
+   register the path.   */
+
+static void
+convert_and_register_jump_thread_path (vec<basic_block, va_gc> *&path,
+				       edge taken_edge)
+{
+  vec<jump_thread_edge *> *jump_thread_path = new vec<jump_thread_edge *> ();
+
+  /* Record the edges between the blocks in PATH.  */
+  for (unsigned int j = 0; j < path->length () - 1; j++)
+    {
+      basic_block bb1 = (*path)[path->length () - j - 1];
+      basic_block bb2 = (*path)[path->length () - j - 2];
+      if (bb1 == bb2)
+	continue;
+
+      edge e = find_edge (bb1, bb2);
+      gcc_assert (e);
+      jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
+      jump_thread_path->safe_push (x);
+    }
+
+  /* Add the edge taken when the control variable has value ARG.  */
+  jump_thread_edge *x
+    = new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
+  jump_thread_path->safe_push (x);
+
+  register_jump_thread (jump_thread_path);
+  --max_threaded_paths;
+
+  /* Remove BBI from the path.  */
+  path->pop ();
+}
+
 /* We trace the value of the SSA_NAME NAME back through any phi nodes looking
    for places where it gets a constant value and save the path.  Stop after
    having recorded MAX_PATHS jump threading paths.  */
@@ -377,24 +415,30 @@ fsm_find_control_statement_thread_paths (tree name,
   if (var_bb == NULL)
     return;
 
-  /* For the moment we assume that an SSA chain only contains phi nodes, and
-     eventually one of the phi arguments will be an integer constant.  In the
-     future, this could be extended to also handle simple assignments of
-     arithmetic operations.  */
+  /* We allow the SSA chain to contains PHIs and simple copies and constant
+     initializations.  */
   if (gimple_code (def_stmt) != GIMPLE_PHI
-      || (gimple_phi_num_args (def_stmt)
+      && gimple_code (def_stmt) != GIMPLE_ASSIGN)
+    return;
+
+  if (gimple_code (def_stmt) == GIMPLE_PHI
+      && (gimple_phi_num_args (def_stmt)
 	  >= (unsigned) PARAM_VALUE (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS)))
+    return;
+
+  if (gimple_code (def_stmt) == GIMPLE_ASSIGN
+      && gimple_assign_rhs_code (def_stmt) != INTEGER_CST
+      && gimple_assign_rhs_code (def_stmt) != SSA_NAME)
     return;
 
   /* Avoid infinite recursion.  */
   if (visited_bbs->add (var_bb))
     return;
 
-  gphi *phi = as_a <gphi *> (def_stmt);
   int next_path_length = 0;
   basic_block last_bb_in_path = path->last ();
 
-  if (loop_containing_stmt (phi)->header == gimple_bb (phi))
+  if (loop_containing_stmt (def_stmt)->header == gimple_bb (def_stmt))
     {
       /* Do not walk through more than one loop PHI node.  */
       if (seen_loop_phi)
@@ -469,9 +513,9 @@ fsm_find_control_statement_thread_paths (tree name,
 
   /* Iterate over the arguments of PHI.  */
   unsigned int i;
-  if (gimple_phi_num_args (phi)
-      < (unsigned) PARAM_VALUE (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS))
+  if (gimple_code (def_stmt) == GIMPLE_PHI)
     {
+      gphi *phi = as_a <gphi *> (def_stmt);
       for (i = 0; i < gimple_phi_num_args (phi); i++)
 	{
 	  tree arg = gimple_phi_arg_def (phi, i);
@@ -500,32 +544,23 @@ fsm_find_control_statement_thread_paths (tree name,
 	     into the canonical form and register it.  */
 	  edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg);
 	  if (taken_edge)
-	    {
-	      vec<jump_thread_edge *> *jump_thread_path
-		= new vec<jump_thread_edge *> ();
+	    convert_and_register_jump_thread_path (path, taken_edge);
+	}
+    }
+  else if (gimple_code (def_stmt) == GIMPLE_ASSIGN)
+    {
+      tree arg = gimple_assign_rhs1 (def_stmt);
 
-	      /* Record the edges between the blocks in PATH.  */
-	      for (unsigned int j = 0; j < path->length () - 1; j++)
-		{
-		  edge e = find_edge ((*path)[path->length () - j - 1],
-				      (*path)[path->length () - j - 2]);
-		  gcc_assert (e);
-		  jump_thread_edge *x
-		    = new jump_thread_edge (e, EDGE_FSM_THREAD);
-		  jump_thread_path->safe_push (x);
-		}
+      if (TREE_CODE (arg) == SSA_NAME)
+	fsm_find_control_statement_thread_paths (arg, visited_bbs,
+						 path, seen_loop_phi);
 
-	      /* Add the edge taken when the control variable has value ARG.  */
-	      jump_thread_edge *x
-		= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-	      jump_thread_path->safe_push (x);
-
-	      register_jump_thread (jump_thread_path);
-	      --max_threaded_paths;
-
-	      /* Remove BBI from the path.  */
-	      path->pop ();
-	    }
+      else
+	{
+	  edge taken_edge = profitable_jump_thread_path (path, var_bb,
+						     name, arg);
+	  if (taken_edge)
+	    convert_and_register_jump_thread_path (path, taken_edge);
 	}
     }
 

@@ -1,3 +1,10 @@
+2016-05-24  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadbackwards.c (convert_and_register_jump_thread_path):
+	New function, extracted from...
+	(fsm_find_control_statement_thread_paths): Here.  Use the new function.
+	Allow simple copies and constant initializations in the SSA chain.
+
 2016-05-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71249
