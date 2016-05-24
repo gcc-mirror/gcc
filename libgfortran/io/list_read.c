@@ -418,7 +418,7 @@ eat_spaces (st_parameter_dt *dtp)
   /* Now skip spaces, EOF and EOL are handled in next_char.  */
   do
     c = next_char (dtp);
-  while (c != EOF && (c == ' ' || c == '\t'));
+  while (c != EOF && (c == ' ' || c == '\r' || c == '\t'));
 
   unget_char (dtp, c);
   return c;
