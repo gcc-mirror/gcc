@@ -1,6 +1,6 @@
 2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/70684
+	PR libgfortran/71123
 	* io/list_read (eat_spaces): Eat '\r' as part of spaces.
 
 2016-04-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
