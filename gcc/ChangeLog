@@ -1,3 +1,12 @@
+2016-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (sse4_1_<code>v8qiv8hi2<mask_name>): Limit
+	first two alternatives to noavx, use *x instead of *v in the second
+	one, add avx alternative without *.
+	(sse4_1_<code>v4qiv4si2<mask_name>, sse4_1_<code>v4hiv4si2<mask_name>,
+	sse4_1_<code>v2qiv2di2<mask_name>, sse4_1_<code>v2hiv2di2<mask_name>,
+	sse4_1_<code>v2siv2di2<mask_name>): Likewise.
+
 2016-05-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadbackwards.c (convert_and_register_jump_thread_path):
