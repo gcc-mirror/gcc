@@ -32,6 +32,7 @@
 #include "gomp-constants.h"
 #include "oacc-int.h"
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 /* Return block containing [H->S), or NULL if not contained.  The device lock
@@ -104,6 +105,9 @@ acc_malloc (size_t s)
 
   assert (thr->dev);
 
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return malloc (s);
+
   return thr->dev->alloc_func (thr->dev->target_id, s);
 }
 
@@ -123,6 +127,9 @@ acc_free (void *d)
   assert (thr && thr->dev);
 
   struct gomp_device_descr *acc_dev = thr->dev;
+
+  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return free (d);
 
   gomp_mutex_lock (&acc_dev->lock);
 
@@ -154,6 +161,12 @@ acc_memcpy_to_device (void *d, void *h, size_t s)
 
   assert (thr && thr->dev);
 
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    {
+      memmove (d, h, s);
+      return;
+    }
+
   thr->dev->host2dev_func (thr->dev->target_id, d, h, s);
 }
 
@@ -165,6 +178,12 @@ acc_memcpy_from_device (void *h, void *d, size_t s)
   struct goacc_thread *thr = goacc_thread ();
 
   assert (thr && thr->dev);
+
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    {
+      memmove (h, d, s);
+      return;
+    }
 
   thr->dev->dev2host_func (thr->dev->target_id, h, d, s);
 }
@@ -183,6 +202,9 @@ acc_deviceptr (void *h)
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *dev = thr->dev;
+
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return h;
 
   gomp_mutex_lock (&dev->lock);
 
@@ -218,6 +240,9 @@ acc_hostptr (void *d)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return d;
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_dev (acc_dev->openacc.data_environ, d, 1);
@@ -252,6 +277,9 @@ acc_is_present (void *h, size_t s)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return h != NULL;
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, h, s);
@@ -271,7 +299,7 @@ acc_is_present (void *h, size_t s)
 void
 acc_map_data (void *h, void *d, size_t s)
 {
-  struct target_mem_desc *tgt;
+  struct target_mem_desc *tgt = NULL;
   size_t mapnum = 1;
   void *hostaddrs = h;
   void *devaddrs = d;
@@ -287,9 +315,6 @@ acc_map_data (void *h, void *d, size_t s)
     {
       if (d != h)
         gomp_fatal ("cannot map data on shared-memory system");
-
-      tgt = gomp_map_vars (NULL, 0, NULL, NULL, NULL, NULL, true,
-			   GOMP_MAP_VARS_OPENACC);
     }
   else
     {
@@ -334,6 +359,10 @@ acc_unmap_data (void *h)
   struct gomp_device_descr *acc_dev = thr->dev;
 
   /* No need to call lazy open, as the address must have been mapped.  */
+
+  /* This is a no-op on shared-memory targets.  */
+  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return;
 
   size_t host_size;
 
@@ -404,6 +433,9 @@ present_create_copy (unsigned f, void *h, size_t s)
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
+
+  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return h;
 
   gomp_mutex_lock (&acc_dev->lock);
 
@@ -496,6 +528,9 @@ delete_copyout (unsigned f, void *h, size_t s)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
+  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return;
+
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, h, s);
@@ -552,6 +587,9 @@ update_dev_host (int is_dev, void *h, size_t s)
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
+
+  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return;
 
   gomp_mutex_lock (&acc_dev->lock);
 

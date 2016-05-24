@@ -7,4 +7,4 @@ f (char *cp)
   ;
 }
 
-/* { dg-final { scan-tree-dump-times "#pragma acc parallel map\\(from:\\*\\(cp \\+ 5\\) \\\[len: 7]\\) map\\(alloc:cp \\\[pointer assign, bias: 5]\\)" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "#pragma acc parallel map\\(from:\\*\\(cp \\+ 5\\) \\\[len: 7]\\) map\\(firstprivate:cp \\\[pointer assign, bias: 5]\\)" 1 "original" } } */

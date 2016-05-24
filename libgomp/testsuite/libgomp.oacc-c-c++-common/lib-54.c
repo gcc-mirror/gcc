@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Exercise acc_map_data with data size of zero on nvidia targets.  */
+
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <stdio.h>
 #include <stdlib.h>
