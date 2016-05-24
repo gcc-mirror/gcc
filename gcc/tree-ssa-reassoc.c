@@ -1189,12 +1189,20 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
     {
       tree name;
 
-      if (opcode == MULT_EXPR
-	  && stmt_is_power_of_op (stmt, op))
+      if (opcode == MULT_EXPR)
 	{
-	  if (decrement_power (stmt) == 1)
-	    propagate_op_to_single_use (op, stmt, def);
-	  return;
+	  if (stmt_is_power_of_op (stmt, op))
+	    {
+	      if (decrement_power (stmt) == 1)
+		propagate_op_to_single_use (op, stmt, def);
+	      return;
+	    }
+	  else if (gimple_assign_rhs_code (stmt) == NEGATE_EXPR
+		   && gimple_assign_rhs1 (stmt) == op)
+	    {
+	      propagate_op_to_single_use (op, stmt, def);
+	      return;
+	    }
 	}
 
       name = gimple_assign_rhs1 (stmt);
@@ -1213,7 +1221,8 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	}
 
       /* We might have a multiply of two __builtin_pow* calls, and
-	 the operand might be hiding in the rightmost one.  */
+	 the operand might be hiding in the rightmost one.  Likewise
+	 this can happen for a negate.  */
       if (opcode == MULT_EXPR
 	  && gimple_assign_rhs_code (stmt) == opcode
 	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME
@@ -1224,6 +1233,13 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	    {
 	      if (decrement_power (stmt2) == 1)
 		propagate_op_to_single_use (op, stmt2, def);
+	      return;
+	    }
+	  else if (is_gimple_assign (stmt2)
+		   && gimple_assign_rhs_code (stmt2) == NEGATE_EXPR
+		   && gimple_assign_rhs1 (stmt2) == op)
+	    {
+	      propagate_op_to_single_use (op, stmt2, def);
 	      return;
 	    }
 	}
