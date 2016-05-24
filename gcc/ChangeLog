@@ -1,3 +1,10 @@
+2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Set
+	GROUP_GAP for single-element interleaving.
+	* tree-vect-stmts.c (vectorizable_load): Remove force_peeling
+	variable.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70434
