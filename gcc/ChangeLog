@@ -1,3 +1,13 @@
+2016-05-24  Marek Polacek  <polacek@redhat.com>
+
+	* tree-cfg.h (should_remove_lhs_p): New predicate.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Use it.
+	* gimplify.c (gimplify_modify_expr): Likewise.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Likewise.
+	* gimple-fold.c: Include "tree-cfg.h".
+	(gimple_fold_call): Use should_remove_lhs_p.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71253

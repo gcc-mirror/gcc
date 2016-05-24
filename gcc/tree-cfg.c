@@ -3385,11 +3385,9 @@ verify_gimple_call (gcall *stmt)
       return true;
     }
 
-  if (lhs
-      && gimple_call_ctrl_altering_p (stmt)
+  if (gimple_call_ctrl_altering_p (stmt)
       && gimple_call_noreturn_p (stmt)
-      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
-      && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))
+      && should_remove_lhs_p (lhs))
     {
       error ("LHS in noreturn call");
       return true;

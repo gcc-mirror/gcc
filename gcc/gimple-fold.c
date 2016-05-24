@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-query.h"
 #include "omp-low.h"
 #include "ipa-chkp.h"
+#include "tree-cfg.h"
 
 
 /* Return true when DECL can be referenced from current unit.
@@ -3052,12 +3053,9 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 			  == void_type_node))
 		    gimple_call_set_fntype (stmt, TREE_TYPE (fndecl));
 		  /* If the call becomes noreturn, remove the lhs.  */
-		  if (lhs
-		      && (gimple_call_flags (stmt) & ECF_NORETURN)
+		  if (gimple_call_noreturn_p (stmt)
 		      && (VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (stmt)))
-			  || ((TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))
-			       == INTEGER_CST)
-			      && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))))
+			  || should_remove_lhs_p (lhs)))
 		    {
 		      if (TREE_CODE (lhs) == SSA_NAME)
 			{
