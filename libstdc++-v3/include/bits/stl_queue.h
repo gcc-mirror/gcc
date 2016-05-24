@@ -417,6 +417,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Sequence::const_reference           const_reference;
       typedef typename _Sequence::size_type                 size_type;
       typedef          _Sequence                            container_type;
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 2684. priority_queue lacking comparator typedef
+      typedef	       _Compare				    value_compare;
 
     protected:
       //  See queue::c for notes on these names.
