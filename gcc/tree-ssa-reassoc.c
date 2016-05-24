@@ -519,6 +519,8 @@ sort_by_operand_rank (const void *pa, const void *pb)
 	 See PR60418.  */
       if (!SSA_NAME_IS_DEFAULT_DEF (oea->op)
 	  && !SSA_NAME_IS_DEFAULT_DEF (oeb->op)
+	  && !oea->stmt_to_insert
+	  && !oeb->stmt_to_insert
 	  && SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
 	{
 	  gimple *stmta = SSA_NAME_DEF_STMT (oea->op);

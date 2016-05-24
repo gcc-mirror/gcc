@@ -1,3 +1,7 @@
+2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/tree-ssa/reassoc-44.c: New test.
+
 2016-05-24  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/71050
