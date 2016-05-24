@@ -1,5 +1,10 @@
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71240
+	* gcc.dg/optimize-bswapsi-5.c: New testcase.
+
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71230
 	* gcc.dg/torture/pr71230.c: New testcase.
 	* g++.dg/torture/pr71230.C: Likewise.
