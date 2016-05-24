@@ -193,6 +193,13 @@
 			   (KF "FLOAT128_VECTOR_P (KFmode)")
 			   (TF "FLOAT128_VECTOR_P (TFmode)")])
 
+;; Specific iterator for parity which does not have a byte/half-word form, but
+;; does have a quad word form
+(define_mode_iterator VParity [V4SI
+			       V2DI
+			       V1TI
+			       (TI "TARGET_VSX_TIMODE")])
+
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
 (define_mode_attr VI_unit [(V16QI "VECTOR_UNIT_ALTIVEC_P (V16QImode)")
@@ -3415,7 +3422,7 @@
 }")
 
 
-;; Power8 vector instructions encoded as Altivec instructions
+;; Power8/power9 vector instructions encoded as Altivec instructions
 
 ;; Vector count leading zeros
 (define_insn "*p8v_clz<mode>2"
@@ -3426,12 +3433,30 @@
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
 
+;; Vector count trailing zeros
+(define_insn "*p9v_ctz<mode>2"
+  [(set (match_operand:VI2 0 "register_operand" "=v")
+	(ctz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
+  "TARGET_P9_VECTOR"
+  "vctz<wd> %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
 ;; Vector population count
 (define_insn "*p8v_popcount<mode>2"
   [(set (match_operand:VI2 0 "register_operand" "=v")
         (popcount:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P8_VECTOR"
   "vpopcnt<wd> %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+;; Vector parity
+(define_insn "*p9v_parity<mode>2"
+  [(set (match_operand:VParity 0 "register_operand" "=v")
+        (parity:VParity (match_operand:VParity 1 "register_operand" "v")))]
+  "TARGET_P9_VECTOR"
+  "vprtyb<wd> %0,%1"
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
 
