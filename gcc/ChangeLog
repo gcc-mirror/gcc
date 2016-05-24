@@ -1,5 +1,12 @@
 2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_load): Reorder checks so that
+	load_lanes/grouped_load classification comes first.  Don't check
+	whether the vectorization factor is a multiple of the group size
+	for load_lanes.
+
+2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_analyze_group_access_1): Set
 	GROUP_GAP for single-element interleaving.
 	* tree-vect-stmts.c (vectorizable_load): Remove force_peeling

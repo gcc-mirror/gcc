@@ -6303,6 +6303,17 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       gcc_assert (!nested_in_vect_loop && !STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+
+      if (!slp
+	  && !PURE_SLP_STMT (stmt_info)
+	  && !STMT_VINFO_STRIDED_P (stmt_info))
+	{
+	  if (vect_load_lanes_supported (vectype, group_size))
+	    load_lanes_p = true;
+	  else if (!vect_grouped_load_supported (vectype, group_size))
+	    return false;
+	}
 
       /* If this is single-element interleaving with an element distance
          that leaves unused vector loads around punt - we at least create
@@ -6330,7 +6341,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (loop_vinfo
 	  && ! STMT_VINFO_STRIDED_P (stmt_info)
 	  && (GROUP_GAP (vinfo_for_stmt (first_stmt)) != 0
-	      || (!slp && vf % GROUP_SIZE (vinfo_for_stmt (first_stmt)) != 0)))
+	      || (!slp && !load_lanes_p && vf % group_size != 0)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6350,8 +6361,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	slp_perm = true;
 
-      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-
       /* ???  The following is overly pessimistic (as well as the loop
          case above) in the case we can statically determine the excess
 	 elements loaded are within the bounds of a decl that is accessed.
@@ -6362,16 +6371,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 			   "BB vectorization with gaps at the end of a load "
 			   "is not supported\n");
 	  return false;
-	}
-
-      if (!slp
-	  && !PURE_SLP_STMT (stmt_info)
-	  && !STMT_VINFO_STRIDED_P (stmt_info))
-	{
-	  if (vect_load_lanes_supported (vectype, group_size))
-	    load_lanes_p = true;
-	  else if (!vect_grouped_load_supported (vectype, group_size))
-	    return false;
 	}
 
       /* Invalidate assumptions made by dependence analysis when vectorization
