@@ -1,5 +1,13 @@
 2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/neon.md (ashldi3_neon):  Replace comparison of INTVAL of
+	operands[2] against 1 with comparison against CONST1_RTX.
+	(<shift>di3_neon): Likewise.
+	* config/arm/predicates.md (const0_operand): Replace with comparison
+	against CONST0_RTX.
+
+2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (ashldi3): Replace comparison of INTVAL of
 	operands[2] against 1 with comparison against CONST1_RTX.
 	(ashrdi3): Likewise.

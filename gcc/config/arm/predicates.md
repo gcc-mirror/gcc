@@ -141,8 +141,7 @@
        (match_test "const_ok_for_arm (~INTVAL (op))")))
 
 (define_predicate "const0_operand"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 0")))
+  (match_test "op == CONST0_RTX (mode)"))
 
 ;; Something valid on the RHS of an ARM data-processing instruction
 (define_predicate "arm_rhs_operand"
