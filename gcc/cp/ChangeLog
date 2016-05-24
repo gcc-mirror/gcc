@@ -1,3 +1,13 @@
+2016-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71147
+	* decl.c (layout_var_decl, grokdeclarator): Use complete_or_array_type_p.
+	* pt.c (instantiate_class_template_1): Try to complete the element
+	type of a flexible array member.
+	(can_complete_type_without_circularity): Handle arrays of unknown bound.
+	* typeck.c (complete_type): Also complete the type of the elements of
+	arrays with an unspecified bound.
+
 2016-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69872
