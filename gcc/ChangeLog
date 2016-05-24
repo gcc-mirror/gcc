@@ -1,5 +1,22 @@
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (vec_set<mode>_0): Use sse4_noavx isa instead
+	of sse4 for the first alternative, drop %v from the template
+	and d operand modifier.  Split second alternative into one sse4_noavx
+	and one avx alternative, use *x instead of *v in the former and v
+	instead of *v in the latter.
+	(*sse4_1_extractps): Use noavx isa instead of * for the first
+	alternative, drop %v from the template.  Split second alternative into
+	one noavx and one avx alternative, use *x instead of *v in the
+	former and v instead of *v in the latter.
+	(<vi8_sse4_1_avx2_avx512>_movntdqa): Guard the first 2 alternatives
+	with noavx and the last one with avx.
+	(sse4_1_phminposuw): Guard first alternative with noavx isa,
+	split the second one into one noavx and one avx alternative,
+	use *x and Bm in the former and x and m in the latter one.
+	(<sse4_1>_ptest<mode>): Use noavx instead of * for the first two
+	alternatives.
+
 	* config/i386/sse.md (sse4_1_<code>v8qiv8hi2<mask_name>): Limit
 	first two alternatives to noavx, use *x instead of *v in the second
 	one, add avx alternative without *.
