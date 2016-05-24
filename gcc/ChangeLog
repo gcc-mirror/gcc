@@ -1,5 +1,9 @@
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.h (TARGET_AVOID_4BYTE_PREFIXES): Define.
+	* config/i386/constraints.md (Yr): Test TARGET_AVOID_4BYTE_PREFIXES
+	rather than X86_TUNE_AVOID_4BYTE_PREFIXES.
+
 	* config/i386/sse.md (<sse4_1>_round<ssemodesuffix><avxsizesuffix>):
 	Limit 1st alternative to noavx isa, split 2nd alternative into one
 	noavx and one avx alternative, use *x and Bm in the former and
