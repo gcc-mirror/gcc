@@ -142,7 +142,7 @@
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
 
 (define_register_constraint "Yr"
- "TARGET_SSE ? (X86_TUNE_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
+ "TARGET_SSE ? (TARGET_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
  "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
 
 (define_register_constraint "Yv"
