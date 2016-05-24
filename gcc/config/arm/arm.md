@@ -3747,8 +3747,7 @@
     {
       rtx scratch1, scratch2;
 
-      if (CONST_INT_P (operands[2])
-	  && (HOST_WIDE_INT) INTVAL (operands[2]) == 1)
+      if (operands[2] == CONST1_RTX (SImode))
         {
           emit_insn (gen_arm_ashldi3_1bit (operands[0], operands[1]));
           DONE;
@@ -3793,7 +3792,7 @@
   "TARGET_EITHER"
   "
   if (CONST_INT_P (operands[2])
-      && ((unsigned HOST_WIDE_INT) INTVAL (operands[2])) > 31)
+      && (UINTVAL (operands[2])) > 31)
     {
       emit_insn (gen_movsi (operands[0], const0_rtx));
       DONE;
@@ -3821,8 +3820,7 @@
     {
       rtx scratch1, scratch2;
 
-      if (CONST_INT_P (operands[2])
-	  && (HOST_WIDE_INT) INTVAL (operands[2]) == 1)
+      if (operands[2] == CONST1_RTX (SImode))
         {
           emit_insn (gen_arm_ashrdi3_1bit (operands[0], operands[1]));
           DONE;
@@ -3867,7 +3865,7 @@
   "TARGET_EITHER"
   "
   if (CONST_INT_P (operands[2])
-      && ((unsigned HOST_WIDE_INT) INTVAL (operands[2])) > 31)
+      && UINTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (31);
   "
 )
@@ -3892,8 +3890,7 @@
     {
       rtx scratch1, scratch2;
 
-      if (CONST_INT_P (operands[2])
-	  && (HOST_WIDE_INT) INTVAL (operands[2]) == 1)
+      if (operands[2] == CONST1_RTX (SImode))
         {
           emit_insn (gen_arm_lshrdi3_1bit (operands[0], operands[1]));
           DONE;
@@ -3938,7 +3935,7 @@
   "TARGET_EITHER"
   "
   if (CONST_INT_P (operands[2])
-      && ((unsigned HOST_WIDE_INT) INTVAL (operands[2])) > 31)
+      && (UINTVAL (operands[2])) > 31)
     {
       emit_insn (gen_movsi (operands[0], const0_rtx));
       DONE;
@@ -3972,7 +3969,7 @@
   if (TARGET_32BIT)
     {
       if (CONST_INT_P (operands[2])
-          && ((unsigned HOST_WIDE_INT) INTVAL (operands[2])) > 31)
+          && UINTVAL (operands[2]) > 31)
         operands[2] = GEN_INT (INTVAL (operands[2]) % 32);
     }
   else /* TARGET_THUMB1 */
@@ -5120,7 +5117,7 @@
 		     (match_operator 5 "subreg_lowpart_operator"
 		      [(match_operand:SI 4 "s_register_operand" "")]))))]
   "TARGET_32BIT
-   && ((unsigned HOST_WIDE_INT) INTVAL (operands[3])
+   && (UINTVAL (operands[3])
        == (GET_MODE_MASK (GET_MODE (operands[5]))
            & (GET_MODE_MASK (GET_MODE (operands[5]))
 	      << (INTVAL (operands[2])))))"
@@ -10224,8 +10221,8 @@
 	 (match_operand 1 "const_int_operand" "")))
    (clobber (match_scratch:SI 2 ""))]
   "TARGET_ARM
-   && (((unsigned HOST_WIDE_INT) INTVAL (operands[1]))
-       == (((unsigned HOST_WIDE_INT) INTVAL (operands[1])) >> 24) << 24)"
+   && ((UINTVAL (operands[1]))
+       == ((UINTVAL (operands[1])) >> 24) << 24)"
   [(set (match_dup 2) (zero_extend:SI (match_dup 0)))
    (set (reg:CC CC_REGNUM) (compare:CC (match_dup 2) (match_dup 1)))]
   "
