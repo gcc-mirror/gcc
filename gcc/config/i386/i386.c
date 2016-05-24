@@ -43334,17 +43334,18 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
      (plus soft-fp const_int).  Which can only be computed into general
      regs.  */
   if (GET_CODE (x) == PLUS)
-    return reg_class_subset_p (regclass, GENERAL_REGS) ? regclass : NO_REGS;
+    return INTEGER_CLASS_P (regclass) ? regclass : NO_REGS;
 
   /* QImode constants are easy to load, but non-constant QImode data
      must go into Q_REGS.  */
   if (GET_MODE (x) == QImode && !CONSTANT_P (x))
     {
-      if (reg_class_subset_p (regclass, Q_REGS))
+      if (Q_CLASS_P (regclass))
 	return regclass;
-      if (reg_class_subset_p (Q_REGS, regclass))
+      else if (reg_class_subset_p (Q_REGS, regclass))
 	return Q_REGS;
-      return NO_REGS;
+      else
+	return NO_REGS;
     }
 
   return regclass;

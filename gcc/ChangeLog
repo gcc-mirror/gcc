@@ -124,8 +124,8 @@
 2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71252
-	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Add stmt_to_insert after
-	build_and_add_sum creates new use stmt.
+	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Add stmt_to_insert
+	after build_and_add_sum creates new use stmt.
 
 2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -157,7 +157,8 @@
 	(add_to_ops_vec): Add stmt_to_insert.
 	(add_repeat_to_ops_vec): Init stmt_to_insert.
 	(insert_stmt_before_use): New.
-	(transform_add_to_multiply): Remove mult_stmt insertion and add it to ops vector.
+	(transform_add_to_multiply): Remove mult_stmt insertion and add it
+	to ops vector.
 	(get_ops): Init stmt_to_insert.
 	(maybe_optimize_range_tests): Likewise.
 	(rewrite_expr_tree): Insert stmt_to_insert before use stmt.
@@ -190,8 +191,8 @@
 	TARGET_MIX_SSE_I387.  Rewrite using X87_FLOAT_MODE_P and
 	SSE_FLOAT_MODE_P macros.
 	* config/i386/i386.c (ix86_preferred_reload_class): Use
-	IS_STACK_MODE, INTEGER_CLASS_P and FLOAT_CLASS_P macros.  Cleanup
-	regclass processing for CONST_DOUBLE_P.
+	IS_STACK_MODE, INTEGER_CLASS_P, FLOAT_CLASS_P and Q_CLASS_P macros.
+	Cleanup regclass processing for CONST_DOUBLE_P.
 	(ix86_preferred_output_reload_class): Use IS_STACK_MODE macro.
 	(ix86_rtx_costs): Remove redundant TARGET_80387 check
 	with IS_STACK_MODE macro.
@@ -278,9 +279,9 @@
 2016-05-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/40921
-        * tree-ssa-reassoc.c (try_special_add_to_ops): New.
-        (linearize_expr_tree): Call try_special_add_to_ops.
-        (reassociate_bb): Convert MULT_EXPR by (-1) to NEGATE_EXPR.
+	* tree-ssa-reassoc.c (try_special_add_to_ops): New.
+	(linearize_expr_tree): Call try_special_add_to_ops.
+	(reassociate_bb): Convert MULT_EXPR by (-1) to NEGATE_EXPR.
 
 2016-05-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
