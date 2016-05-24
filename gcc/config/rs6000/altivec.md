@@ -214,6 +214,9 @@
 (define_mode_attr VP_small_lc [(V2DI "v4si") (V4SI "v8hi") (V8HI "v16qi")])
 (define_mode_attr VU_char [(V2DI "w") (V4SI "h") (V8HI "b")])
 
+;; Vector negate
+(define_mode_iterator VNEG [V4SI V2DI])
+
 ;; Vector move instructions.
 (define_insn "*altivec_mov<mode>"
   [(set (match_operand:VM2 0 "nonimmediate_operand" "=Z,v,v,*Y,*r,*r,v,v,*r")
@@ -2761,20 +2764,28 @@
   DONE;
 })
 
-(define_expand "neg<mode>2"
-  [(use (match_operand:VI 0 "register_operand" ""))
-   (use (match_operand:VI 1 "register_operand" ""))]
-  "TARGET_ALTIVEC"
-  "
-{
-  rtx vzero;
+(define_insn "*p9_neg<mode>2"
+  [(set (match_operand:VNEG 0 "altivec_register_operand" "=v")
+	(neg:VNEG (match_operand:VNEG 1 "altivec_register_operand" "v")))]
+  "TARGET_P9_VECTOR"
+  "vneg<VI_char> %0,%1"
+  [(set_attr "type" "vecsimple")])
 
-  vzero = gen_reg_rtx (GET_MODE (operands[0]));
-  emit_insn (gen_altivec_vspltis<VI_char> (vzero, const0_rtx));
-  emit_insn (gen_sub<mode>3 (operands[0], vzero, operands[1])); 
-  
-  DONE;
-}")
+(define_expand "neg<mode>2"
+  [(set (match_operand:VI2 0 "register_operand" "")
+	(neg:VI2 (match_operand:VI2 1 "register_operand" "")))]
+  "<VI_unit>"
+{
+  if (!TARGET_P9_VECTOR || (<MODE>mode != V4SImode && <MODE>mode != V2DImode))
+    {
+      rtx vzero;
+
+      vzero = gen_reg_rtx (GET_MODE (operands[0]));
+      emit_move_insn (vzero, CONST0_RTX (<MODE>mode));
+      emit_insn (gen_sub<mode>3 (operands[0], vzero, operands[1]));
+      DONE;
+    }
+})
 
 (define_expand "udot_prod<mode>"
   [(set (match_operand:V4SI 0 "register_operand" "=v")

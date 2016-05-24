@@ -1,3 +1,8 @@
+2016-05-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p9-vneg.c: New test for ISA 3.0 VNEGW/VNEGD
+	instructions.
+
 2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-c++-common/goacc/data-clause-duplicate-1.c: Adjust test.
