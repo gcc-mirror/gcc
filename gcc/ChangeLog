@@ -1,3 +1,10 @@
+2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/69857
+	* config/arm/arm.c (gen_operands_ldrd_strd): Remove bogus early
+	return.  Reindent transformation comment and mention the ARM state
+	behavior.
+
 2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71252
