@@ -1,3 +1,8 @@
+2016-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/69872
+	* typeck2.c (check_narrowing): Check pedwarn return value.
+
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71257
