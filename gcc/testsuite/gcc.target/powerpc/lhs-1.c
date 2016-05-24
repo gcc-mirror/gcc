@@ -4,19 +4,12 @@
 /* { dg-options "-O2 -mcpu=power5" } */
 /* { dg-final { scan-assembler-times "nop" 3 } } */
 
-/* Test generation of nops in load hit store situation.  */
+/* Test generation of nops in load hit store situation.  Make sure enough nop
+   insns are generated to move the load to a new dispatch group.  With the
+   simple stw/lwz pair below, that would be 3 nop insns for Power5.  */
 
-typedef union {
-  double val;
-  struct {
-    unsigned int w1;
-    unsigned int w2;
-  };
-} words;
-
-unsigned int f (double d, words *u)
+unsigned int f (volatile unsigned int *u, unsigned int u2)
 {
-  u->val = d;
-  return u->w2;
+  *u = u2;
+  return *u;
 }
-

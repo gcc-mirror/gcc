@@ -1,3 +1,8 @@
+2016-05-24  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/71050
+	* gcc.target/powerpc/lhs-1.c: Fix testcase to avoid subreg changes.
+
 2016-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50436
