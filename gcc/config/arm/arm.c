@@ -15982,14 +15982,17 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
   /* If the same input register is used in both stores
      when storing different constants, try to find a free register.
      For example, the code
-        mov r0, 0
-        str r0, [r2]
-        mov r0, 1
-        str r0, [r2, #4]
+	mov r0, 0
+	str r0, [r2]
+	mov r0, 1
+	str r0, [r2, #4]
      can be transformed into
-        mov r1, 0
-        strd r1, r0, [r2]
-     in Thumb mode assuming that r1 is free.  */
+	mov r1, 0
+	mov r0, 1
+	strd r1, r0, [r2]
+     in Thumb mode assuming that r1 is free.
+     For ARM mode do the same but only if the starting register
+     can be made to be even.  */
   if (const_store
       && REGNO (operands[0]) == REGNO (operands[1])
       && INTVAL (operands[4]) != INTVAL (operands[5]))
@@ -16008,7 +16011,6 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
       }
     else if (TARGET_ARM)
       {
-        return false;
         int regno = REGNO (operands[0]);
         if (!peep2_reg_dead_p (4, operands[0]))
           {
