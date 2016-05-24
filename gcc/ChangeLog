@@ -1,5 +1,10 @@
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (<sse4_1>_round<ssemodesuffix><avxsizesuffix>):
+	Limit 1st alternative to noavx isa, split 2nd alternative into one
+	noavx and one avx alternative, use *x and Bm in the former and
+	x and m in the latter.
+
 	* config/i386/sse.md (vec_set<mode>_0): Use sse4_noavx isa instead
 	of sse4 for the first alternative, drop %v from the template
 	and d operand modifier.  Split second alternative into one sse4_noavx
