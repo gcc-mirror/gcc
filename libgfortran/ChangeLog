@@ -1,8 +1,12 @@
+2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/70684
+	* io/list_read (eat_spaces): Eat '\r' as part of spaces.
+
 2016-04-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/70684
 	* io/list_read (check_buffers): Add '\r' to check for end of line.
-	factor.
 
 2016-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>

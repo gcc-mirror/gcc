@@ -1,5 +1,10 @@
 2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/71123
+	* gfortran.dg/namelist_90.f: New test
+
+2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/66461
 	* gfortran.dg/unexpected_eof.f: New test
 
