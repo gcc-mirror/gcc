@@ -2140,13 +2140,13 @@
 
           for (i = 9; i <= 31; i++)
 	    {
-	      if ((((HOST_WIDE_INT) 1) << i) - 1 == INTVAL (operands[2]))
+	      if ((HOST_WIDE_INT_1 << i) - 1 == INTVAL (operands[2]))
 	        {
 	          emit_insn (gen_extzv (operands[0], operands[1], GEN_INT (i),
 			 	        const0_rtx));
 	          DONE;
 	        }
-	      else if ((((HOST_WIDE_INT) 1) << i) - 1
+	      else if ((HOST_WIDE_INT_1 << i) - 1
 		       == ~INTVAL (operands[2]))
 	        {
 	          rtx shift = GEN_INT (i);
@@ -2445,7 +2445,7 @@
   {
     int start_bit = INTVAL (operands[2]);
     int width = INTVAL (operands[1]);
-    HOST_WIDE_INT mask = (((HOST_WIDE_INT)1) << width) - 1;
+    HOST_WIDE_INT mask = (HOST_WIDE_INT_1 << width) - 1;
     rtx target, subtarget;
 
     if (arm_arch_thumb2)

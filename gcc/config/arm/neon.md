@@ -406,7 +406,7 @@
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  HOST_WIDE_INT elem = (HOST_WIDE_INT) 1 << INTVAL (operands[2]);
+  HOST_WIDE_INT elem = HOST_WIDE_INT_1 << INTVAL (operands[2]);
   emit_insn (gen_vec_set<mode>_internal (operands[0], operands[1],
 					 GEN_INT (elem), operands[0]));
   DONE;
