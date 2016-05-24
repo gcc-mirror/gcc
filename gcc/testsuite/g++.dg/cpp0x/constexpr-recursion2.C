@@ -1,5 +1,6 @@
 // PR c++/70344
 // { dg-do compile { target c++11 } }
+// { dg-options -O }
 
 struct Z
 {
