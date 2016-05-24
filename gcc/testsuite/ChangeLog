@@ -1,3 +1,8 @@
+2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71252
+	* gfortran.dg/pr71252.f90: New test.
+
 2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/vect-load-lanes-peeling-1.c: New test.

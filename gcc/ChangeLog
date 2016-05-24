@@ -1,3 +1,9 @@
+2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71252
+	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Add stmt_to_insert after
+	build_and_add_sum creates new use stmt.
+
 2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-stmts.c (vectorizable_load): Reorder checks so that
