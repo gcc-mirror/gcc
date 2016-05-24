@@ -13983,25 +13983,24 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
       c_parser_consume_token (parser);
 
       c_token *token = c_parser_peek_token (parser);
-
       if (token->type == CPP_NAME && (token->id_kind == C_ID_ID
 				      || token->id_kind == C_ID_TYPENAME))
 	{
 	  decl = lookup_name (token->value);
 	  if (!decl)
-	    {
-	      error_at (token->location, "%qE has not been declared",
-			token->value);
-	      decl = error_mark_node;
-	    }
+	    error_at (token->location, "%qE has not been declared",
+		      token->value);
+	  c_parser_consume_token (parser);
 	}
       else
 	c_parser_error (parser, "expected function name");
 
-      if (token->type != CPP_CLOSE_PAREN)
-	c_parser_consume_token (parser);
-
-      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, 0);
+      if (!decl
+	  || !c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+	{
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  return;
+	}
     }
 
   /* Build a chain of clauses.  */

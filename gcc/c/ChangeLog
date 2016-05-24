@@ -1,3 +1,7 @@
+2016-05-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_routine): Tighten syntax checks.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70434

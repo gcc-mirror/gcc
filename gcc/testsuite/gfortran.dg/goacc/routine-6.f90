@@ -29,6 +29,13 @@ program main
   !$acc routine (subr1) ! { dg-error "invalid function name" }
   external :: subr2
   !$acc routine (subr2)
+
+  external :: R1, R2
+  !$acc routine (R1 R2 R3) ! { dg-error "Syntax error in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\), expecting .\\). after NAME" }
+  !$acc routine (R1, R2, R3) ! { dg-error "Syntax error in \\!\\\$ACC ROUTINE \\( NAME \\) at \\(1\\), expecting .\\). after NAME" }
+  !$acc routine (R1)
+  !$acc routine (R2)
+
   !$acc parallel
   !$acc loop
   do i = 1, n

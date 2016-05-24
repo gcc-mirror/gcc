@@ -1,3 +1,9 @@
+2016-05-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/routine-5.c: Add tests.
+	* g++.dg/goacc/routine-2.C: Remove duplicate tests.
+	* gfortran.dg/goacc/routine-6.f90: Add tests.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71253

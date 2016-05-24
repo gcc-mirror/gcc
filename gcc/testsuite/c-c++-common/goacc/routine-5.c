@@ -38,13 +38,26 @@ namespace g {}
 #pragma acc routine /* { dg-error "not followed by" "" { target c++ } } */
 using namespace g;
 
-#pragma acc routine (g) /* { dg-error "does not refer to" "" { target c++ } } */
+#pragma acc routine (g) /* { dg-error "does not refer to a function" "" { target c++ } } */
 
-#endif
+#endif /* __cplusplus */
 
-#pragma acc routine (a) /* { dg-error "does not refer to" } */
+#pragma acc routine (a) /* { dg-error "does not refer to a function" } */
   
-#pragma acc routine (c) /* { dg-error "does not refer to" } */
+#pragma acc routine (c) /* { dg-error "does not refer to a function" } */
+
+
+#pragma acc routine () vector /* { dg-error "expected (function name|unqualified-id) before .\\). token" } */
+
+#pragma acc routine (+) /* { dg-error "expected (function name|unqualified-id) before .\\+. token" } */
+
+
+extern void R1(void);
+extern void R2(void);
+#pragma acc routine (R1, R2, R3) worker /* { dg-error "expected .\\). before .,. token" } */
+#pragma acc routine (R1 R2 R3) worker /* { dg-error "expected .\\). before .R2." } */
+#pragma acc routine (R1) worker
+#pragma acc routine (R2) worker
 
 
 void Bar ();
