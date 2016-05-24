@@ -604,8 +604,7 @@ fixup_noreturn_call (gimple *stmt)
      temporaries of variable-sized types is not supported.  Also don't
      do this with TREE_ADDRESSABLE types, as assign_temp will abort.  */
   tree lhs = gimple_call_lhs (stmt);
-  if (lhs && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
-      && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))
+  if (should_remove_lhs_p (lhs))
     {
       gimple_call_set_lhs (stmt, NULL_TREE);
 

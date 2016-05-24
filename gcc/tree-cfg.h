@@ -108,4 +108,14 @@ extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
 extern bool extract_true_false_controlled_edges (basic_block, basic_block,
 						 edge *, edge *);
 
+/* Return true if the LHS of a call should be removed.  */
+
+inline bool
+should_remove_lhs_p (tree lhs)
+{
+  return (lhs
+	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
+	  && !TREE_ADDRESSABLE (TREE_TYPE (lhs)));
+}
+
 #endif /* _TREE_CFG_H  */
