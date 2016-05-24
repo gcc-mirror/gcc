@@ -34,17 +34,18 @@ struct edge_list
 class control_dependences
 {
 public:
-  control_dependences (edge_list *);
+  control_dependences ();
   ~control_dependences ();
   bitmap get_edges_dependent_on (int);
-  edge get_edge (int);
+  basic_block get_edge_src (int);
+  basic_block get_edge_dest (int);
 
 private:
   void set_control_dependence_map_bit (basic_block, int);
   void clear_control_dependence_bitmap (basic_block);
   void find_control_dependence (int);
   vec<bitmap> control_dependence_map;
-  edge_list *m_el;
+  vec<std::pair<int, int> > m_el;
 };
 
 extern bool mark_dfs_back_edges (void);

@@ -408,43 +408,54 @@ control_dependences::find_control_dependence (int edge_index)
   basic_block current_block;
   basic_block ending_block;
 
-  gcc_assert (INDEX_EDGE_PRED_BB (m_el, edge_index)
-	      != EXIT_BLOCK_PTR_FOR_FN (cfun));
+  gcc_assert (get_edge_src (edge_index) != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
-  if (INDEX_EDGE_PRED_BB (m_el, edge_index) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+  /* For abnormal edges, we don't make current_block control
+     dependent because instructions that throw are always necessary
+     anyway.  */
+  edge e = find_edge (get_edge_src (edge_index), get_edge_dest (edge_index));
+  if (e->flags & EDGE_ABNORMAL)
+    return;
+
+  if (get_edge_src (edge_index) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     ending_block = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   else
-    ending_block = find_pdom (INDEX_EDGE_PRED_BB (m_el, edge_index));
+    ending_block = find_pdom (get_edge_src (edge_index));
 
-  for (current_block = INDEX_EDGE_SUCC_BB (m_el, edge_index);
+  for (current_block = get_edge_dest (edge_index);
        current_block != ending_block
        && current_block != EXIT_BLOCK_PTR_FOR_FN (cfun);
        current_block = find_pdom (current_block))
-    {
-      edge e = INDEX_EDGE (m_el, edge_index);
-
-      /* For abnormal edges, we don't make current_block control
-	 dependent because instructions that throw are always necessary
-	 anyway.  */
-      if (e->flags & EDGE_ABNORMAL)
-	continue;
-
-      set_control_dependence_map_bit (current_block, edge_index);
-    }
+    set_control_dependence_map_bit (current_block, edge_index);
 }
 
 /* Record all blocks' control dependences on all edges in the edge
    list EL, ala Morgan, Section 3.6.  */
 
-control_dependences::control_dependences (struct edge_list *edges)
-  : m_el (edges)
+control_dependences::control_dependences ()
 {
   timevar_push (TV_CONTROL_DEPENDENCES);
+
+  /* Initialize the edge list.  */
+  int num_edges = 0;
+  basic_block bb;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
+    num_edges += EDGE_COUNT (bb->succs);
+  m_el.create (num_edges);
+  edge e;
+  edge_iterator ei;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      m_el.quick_push (std::make_pair (e->src->index, e->dest->index));
+
   control_dependence_map.create (last_basic_block_for_fn (cfun));
   for (int i = 0; i < last_basic_block_for_fn (cfun); ++i)
     control_dependence_map.quick_push (BITMAP_ALLOC (NULL));
-  for (int i = 0; i < NUM_EDGES (m_el); ++i)
+  for (int i = 0; i < num_edges; ++i)
     find_control_dependence (i);
+
   timevar_pop (TV_CONTROL_DEPENDENCES);
 }
 
@@ -455,7 +466,7 @@ control_dependences::~control_dependences ()
   for (unsigned i = 0; i < control_dependence_map.length (); ++i)
     BITMAP_FREE (control_dependence_map[i]);
   control_dependence_map.release ();
-  free_edge_list (m_el);
+  m_el.release ();
 }
 
 /* Returns the bitmap of edges the basic-block I is dependent on.  */
@@ -466,12 +477,20 @@ control_dependences::get_edges_dependent_on (int i)
   return control_dependence_map[i];
 }
 
-/* Returns the edge with index I from the edge list.  */
+/* Returns the edge source with index I from the edge list.  */
 
-edge
-control_dependences::get_edge (int i)
+basic_block
+control_dependences::get_edge_src (int i)
 {
-  return INDEX_EDGE (m_el, i);
+  return BASIC_BLOCK_FOR_FN (cfun, m_el[i].first);
+}
+
+/* Returns the edge destination with index I from the edge list.  */
+
+basic_block
+control_dependences::get_edge_dest (int i)
+{
+  return BASIC_BLOCK_FOR_FN (cfun, m_el[i].second);
 }
 
 
