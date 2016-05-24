@@ -1371,11 +1371,17 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   else
     {
       new_call.fundef = retrieve_constexpr_fundef (fun);
-      if (new_call.fundef == NULL || new_call.fundef->body == NULL)
+      if (new_call.fundef == NULL || new_call.fundef->body == NULL
+	  || fun == current_function_decl)
         {
 	  if (!ctx->quiet)
 	    {
-	      if (DECL_INITIAL (fun) == error_mark_node)
+	      /* We need to check for current_function_decl here in case we're
+		 being called during cp_fold_function, because at that point
+		 DECL_INITIAL is set properly and we have a fundef but we
+		 haven't lowered invisirefs yet (c++/70344).  */
+	      if (DECL_INITIAL (fun) == error_mark_node
+		  || fun == current_function_decl)
 		error_at (loc, "%qD called in a constant expression before its "
 			  "definition is complete", fun);
 	      else if (DECL_INITIAL (fun))
