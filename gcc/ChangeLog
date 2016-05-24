@@ -1,3 +1,12 @@
+2016-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71257
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Handle
+	SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP like
+	SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP.  Add
+	SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP and
+	SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP cases explicitly.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71240
