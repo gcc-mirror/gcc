@@ -1,3 +1,23 @@
+2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vectorizable_comparison): Delete.
+	* tree-vect-loop.c (vectorizable_reduction): Remove redundant
+	PURE_SLP_STMT check.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_store): Likewise.  Assert that we don't have
+	hybrid SLP.
+	(vectorizable_comparison): Make static.  Remove redundant
+	PURE_SLP_STMT check.
+	(vect_transform_stmt): Assert that we always have an slp_node
+	if PURE_SLP_STMT.
+
 2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.md (ashldi3_neon):  Replace comparison of INTVAL of
