@@ -1,3 +1,8 @@
+2016-05-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71249
+	* c-c++-common/Wswitch-unreachable-2.c: New test.
+
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71257

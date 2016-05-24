@@ -1605,8 +1605,9 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	  && switch_body_seq != NULL)
 	{
 	  gimple_seq seq = switch_body_seq;
-	  if (gimple_code (switch_body_seq) == GIMPLE_BIND)
-	    seq = gimple_bind_body (as_a <gbind *> (switch_body_seq));
+	  /* Look into the innermost lexical scope.  */
+	  while (gimple_code (seq) == GIMPLE_BIND)
+	    seq = gimple_bind_body (as_a <gbind *> (seq));
 	  gimple *stmt = gimple_seq_first_stmt (seq);
 	  enum gimple_code code = gimple_code (stmt);
 	  if (code != GIMPLE_LABEL && code != GIMPLE_TRY)
