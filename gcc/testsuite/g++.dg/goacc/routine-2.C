@@ -14,15 +14,9 @@ one()
 
 int incr (int);
 float incr (float);
-int inc;
 
 #pragma acc routine (incr) /* { dg-error "names a set of overloads" } */
 
-#pragma acc routine (increment) /* { dg-error "has not been declared" } */
-
-#pragma acc routine (inc) /* { dg-error "does not refer to a function" } */
-
-#pragma acc routine (+) /* { dg-error "expected unqualified-id before '.' token" } */
 
 int sum (int, int);
 
