@@ -1,3 +1,9 @@
+2016-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70434
+	PR c/69504
+	* c-c++-common/vector-subscript-5.c (foo): Move ; out of the ifdef.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71240
