@@ -4091,24 +4091,30 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
 	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
 	}
 
-      /* If the stmt that defines operand has to be inserted, insert it
-	 before the use.  */
-      if (stmt1)
-	insert_stmt_before_use (stmts[i], stmt1);
-      if (stmt2)
-	insert_stmt_before_use (stmts[i], stmt2);
-
       /* We keep original statement only for the last one.  All
 	 others are recreated.  */
       if (i == stmt_num - 1)
 	{
+	  /* If the stmt that defines operand has to be inserted, insert it
+	     before the use.  */
+	  if (stmt1)
+	    insert_stmt_before_use (stmts[i], stmt1);
+	  if (stmt2)
+	    insert_stmt_before_use (stmts[i], stmt2);
 	  gimple_assign_set_rhs1 (stmts[i], op1);
 	  gimple_assign_set_rhs2 (stmts[i], op2);
 	  update_stmt (stmts[i]);
 	}
       else
-	stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1), op1, op2, opcode);
-
+	{
+	  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1), op1, op2, opcode);
+	  /* If the stmt that defines operand has to be inserted, insert it
+	     before new build_and_add stmt after it is created.  */
+	  if (stmt1)
+	    insert_stmt_before_use (stmts[i], stmt1);
+	  if (stmt2)
+	    insert_stmt_before_use (stmts[i], stmt2);
+	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " into ");
