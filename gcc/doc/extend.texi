@@ -17251,17 +17251,17 @@ vector __uint128_t vec_vadduqm (vector __uint128_t, vector __uint128_t);
 
 vector __int128_t vec_vaddecuq (vector __int128_t, vector __int128_t,
                                 vector __int128_t);
-vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t, 
+vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t,
                                  vector __uint128_t);
 
 vector __int128_t vec_vaddeuqm (vector __int128_t, vector __int128_t,
                                 vector __int128_t);
-vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t, 
+vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t,
                                  vector __uint128_t);
 
 vector __int128_t vec_vsubecuq (vector __int128_t, vector __int128_t,
                                 vector __int128_t);
-vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t, 
+vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t,
                                  vector __uint128_t);
 
 vector __int128_t vec_vsubeuqm (vector __int128_t, vector __int128_t,
@@ -17285,6 +17285,60 @@ int __builtin_bcdsub_lt (vector __int128_t, vector__int128_t);
 int __builtin_bcdsub_eq (vector __int128_t, vector__int128_t);
 int __builtin_bcdsub_gt (vector __int128_t, vector__int128_t);
 int __builtin_bcdsub_ov (vector __int128_t, vector__int128_t);
+@end smallexample
+
+If the ISA 3.0 additions to the vector/scalar (power9-vector)
+instruction set are available:
+
+@smallexample
+vector long long vec_vctz (vector long long);
+vector unsigned long long vec_vctz (vector unsigned long long);
+vector int vec_vctz (vector int);
+vector unsigned int vec_vctz (vector int);
+vector short vec_vctz (vector short);
+vector unsigned short vec_vctz (vector unsigned short);
+vector signed char vec_vctz (vector signed char);
+vector unsigned char vec_vctz (vector unsigned char);
+
+vector signed char vec_vctzb (vector signed char);
+vector unsigned char vec_vctzb (vector unsigned char);
+
+vector long long vec_vctzd (vector long long);
+vector unsigned long long vec_vctzd (vector unsigned long long);
+
+vector short vec_vctzh (vector short);
+vector unsigned short vec_vctzh (vector unsigned short);
+
+vector int vec_vctzw (vector int);
+vector unsigned int vec_vctzw (vector int);
+
+vector int vec_vprtyb (vector int);
+vector unsigned int vec_vprtyb (vector unsigned int);
+vector long long vec_vprtyb (vector long long);
+vector unsigned long long vec_vprtyb (vector unsigned long long);
+
+vector int vec_vprtybw (vector int);
+vector unsigned int vec_vprtybw (vector unsigned int);
+
+vector long long vec_vprtybd (vector long long);
+vector unsigned long long vec_vprtybd (vector unsigned long long);
+@end smallexample
+
+
+If the ISA 3.0 additions to the vector/scalar (power9-vector)
+instruction set are available for 64-bit targets:
+
+@smallexample
+vector long vec_vprtyb (vector long);
+vector unsigned long vec_vprtyb (vector unsigned long);
+vector __int128_t vec_vprtyb (vector __int128_t);
+vector __uint128_t vec_vprtyb (vector __uint128_t);
+
+vector long vec_vprtybd (vector long);
+vector unsigned long vec_vprtybd (vector unsigned long);
+
+vector __int128_t vec_vprtybq (vector __int128_t);
+vector __uint128_t vec_vprtybd (vector __uint128_t);
 @end smallexample
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or

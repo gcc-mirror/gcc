@@ -1,3 +1,12 @@
+2016-05-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p9-vparity.c: New file to check ISA 3.0
+	vector parity built-in functions.
+	* gcc.target/powerpc/ctz-3.c: New file to check ISA 3.0 vector
+	count trailing zeros automatic vectorization.
+	* gcc.target/powerpc/ctz-4.c: New file to check ISA 3.0 vector
+	count trailing zeros built-in functions.
+
 2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/tree-ssa/reassoc-44.c: New test.

@@ -26,6 +26,13 @@
 ;; Vector int modes
 (define_mode_iterator VEC_I [V16QI V8HI V4SI V2DI])
 
+;; Vector int modes for parity
+(define_mode_iterator VEC_IP [V8HI
+			      V4SI
+			      V2DI
+			      V1TI
+			      (TI "TARGET_VSX_TIMODE")])
+
 ;; Vector float modes
 (define_mode_iterator VEC_F [V4SF V2DF])
 
@@ -752,11 +759,23 @@
 	(clz:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
   "TARGET_P8_VECTOR")
 
+;; Vector count trailing zeros
+(define_expand "ctz<mode>2"
+  [(set (match_operand:VEC_I 0 "register_operand" "")
+	(ctz:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
+  "TARGET_P9_VECTOR")
+
 ;; Vector population count
 (define_expand "popcount<mode>2"
   [(set (match_operand:VEC_I 0 "register_operand" "")
         (popcount:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
   "TARGET_P8_VECTOR")
+
+;; Vector parity
+(define_expand "parity<mode>2"
+  [(set (match_operand:VEC_IP 0 "register_operand" "")
+	(parity:VEC_IP (match_operand:VEC_IP 1 "register_operand" "")))]
+  "TARGET_P9_VECTOR")
 
 
 ;; Same size conversions
