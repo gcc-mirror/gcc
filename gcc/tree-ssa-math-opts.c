@@ -2051,6 +2051,9 @@ init_symbolic_number (struct symbolic_number *n, tree src)
 {
   int size;
 
+  if (! INTEGRAL_TYPE_P (TREE_TYPE (src)))
+    return false;
+
   n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
 
   /* Set up the symbolic number N by setting each byte to a value between 1 and
