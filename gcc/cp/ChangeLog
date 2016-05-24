@@ -1,5 +1,9 @@
 2016-05-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70344
+	* constexpr.c (cxx_eval_call_expression): Check for
+	fun == current_function_decl again.
+
 	PR c++/70584
 	* cp-gimplify.c (cp_fold) [INDIRECT_REF]: Call
 	maybe_undo_parenthesized_ref.
