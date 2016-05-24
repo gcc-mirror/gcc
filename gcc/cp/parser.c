@@ -35214,6 +35214,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
       gcc_assert (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_MAP);
       switch (OMP_CLAUSE_MAP_KIND (t))
 	{
+	case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	case GOMP_MAP_FORCE_ALLOC:
 	case GOMP_MAP_FORCE_TO:
 	case GOMP_MAP_FORCE_DEVICEPTR:

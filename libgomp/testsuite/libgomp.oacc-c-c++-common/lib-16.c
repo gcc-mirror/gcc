@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Test if duplicate data mappings with acc_copy_in.  */
+
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <stdio.h>
 #include <stdlib.h>

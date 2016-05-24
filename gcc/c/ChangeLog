@@ -1,3 +1,15 @@
+2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_declare): Add support for
+	GOMP_MAP_FIRSTPRIVATE_POINTER.
+	* c-typeck.c (handle_omp_array_sections_1): Replace bool is_omp
+	argument with enum c_omp_region_type ort.
+	(handle_omp_array_sections): Likewise.  Update call to
+	handle_omp_array_sections_1.
+	(c_finish_omp_clauses): Add specific errors and warning messages for
+	OpenACC.  Use firsrtprivate pointers for OpenACC subarrays.  Update
+	call to handle_omp_array_sections.
+
 2016-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_routine): Tighten syntax checks.

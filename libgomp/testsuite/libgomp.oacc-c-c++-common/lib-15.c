@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Check acc_is_present and acc_copyout.  */
+
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <stdlib.h>
 #include <openacc.h>

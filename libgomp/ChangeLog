@@ -1,3 +1,48 @@
+2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* oacc-mem.c (acc_malloc): Update handling of shared-memory targets.
+	(acc_free): Likewise.
+	(acc_memcpy_to_device): Likewise.
+	(acc_memcpy_from_device): Likewise.
+	(acc_deviceptr): Likewise.
+	(acc_hostptr): Likewise.
+	(acc_is_present): Likewise.
+	(acc_map_data): Likewise.
+	(acc_unmap_data): Likewise.
+	(present_create_copy): Likewise.
+	(delete_copyout): Likewise.
+	(update_dev_host): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Remove xfail.
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/enter_exit-lib.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-13.c: Adjust test so that
+	it only runs on nvptx targets.
+	* testsuite/libgomp.oacc-c-c++-common/lib-14.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-15.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-24.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-25.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-34.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-44.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-47.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-48.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-52.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-53.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-54.c: Likewise.
+
 2016-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/libgomp.hsa.c/switch-sbr-2.c: New test.

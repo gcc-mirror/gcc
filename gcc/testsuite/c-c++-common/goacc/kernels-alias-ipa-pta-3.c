@@ -31,6 +31,5 @@ foo (void)
   free (c);
 }
 
-/* { dg-final { scan-tree-dump-times "(?n)= 0;$" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "(?n)= 1;$" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "(?n)= \\*a" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "(?n)= 0;$" 1 "optimized" { target c } } } */
+/* { dg-final { scan-tree-dump-times "(?n)= 1;$" 1 "optimized" { target c }  } } */
