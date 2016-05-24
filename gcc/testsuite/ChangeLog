@@ -1,3 +1,7 @@
+2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-load-lanes-peeling-1.c: New test.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70434
