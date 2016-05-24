@@ -1,3 +1,10 @@
+2016-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71257
+	* semantics.c (finish_omp_clauses) <case OMP_CLAUSE_LINEAR>:
+	For OMP_CLAUSE_LINEAR_REF don't require type to be
+	integral or pointer.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70434

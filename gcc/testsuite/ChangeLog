@@ -1,5 +1,9 @@
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71257
+	* g++.dg/vect/simd-clone-6.cc: New test.
+	* g++.dg/gomp/declare-simd-6.C: New test.
+
 	PR middle-end/70434
 	PR c/69504
 	* c-c++-common/vector-subscript-5.c (foo): Move ; out of the ifdef.

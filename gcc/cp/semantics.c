@@ -5881,7 +5881,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      break;
 		    }
 		}
-	      else
+	      else if (OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_REF)
 		{
 		  if (!INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (type) != POINTER_TYPE)
