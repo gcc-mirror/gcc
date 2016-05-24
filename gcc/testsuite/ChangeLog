@@ -1,3 +1,9 @@
+2016-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50436
+	* g++.dg/template/crash123.C: New.
+	* g++.dg/template/crash124.C: Likewise.
+
 2016-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71147
