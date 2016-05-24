@@ -1,3 +1,12 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70434
+	PR c/69504
+	* expr.c (mark_exp_read): Handle VIEW_CONVERT_EXPR.
+	* constexpr.c (cxx_eval_array_reference): Handle indexed
+	vectors.
+	* typeck.c (cp_build_array_ref): Adjust.
+
 2016-05-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70344

@@ -1222,14 +1222,19 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 static tree
 non_rewritable_mem_ref_base (tree ref)
 {
-  tree base = ref;
+  tree base;
 
   /* A plain decl does not need it set.  */
   if (DECL_P (ref))
     return NULL_TREE;
 
-  while (handled_component_p (base))
-    base = TREE_OPERAND (base, 0);
+  if (! (base = CONST_CAST_TREE (strip_invariant_refs (ref))))
+    {
+      base = get_base_address (ref);
+      if (DECL_P (base))
+	return base;
+      return NULL_TREE;
+    }
 
   /* But watch out for MEM_REFs we cannot lower to a
      VIEW_CONVERT_EXPR or a BIT_FIELD_REF.  */

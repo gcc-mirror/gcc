@@ -146,6 +146,7 @@ mark_exp_read (tree exp)
     case INDIRECT_REF:
     case FLOAT_EXPR:
     case NON_DEPENDENT_EXPR:
+    case VIEW_CONVERT_EXPR:
       mark_exp_read (TREE_OPERAND (exp, 0));
       break;
     case COMPOUND_EXPR:

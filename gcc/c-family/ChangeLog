@@ -1,3 +1,13 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70434
+	PR c/69504
+	* c-common.h (convert_vector_to_pointer_for_subscript): Rename to ...
+	(convert_vector_to_array_for_subscript): ... this.
+	* c-common.c (convert_vector_to_pointer_for_subscript): Use a
+	VIEW_CONVERT_EXPR to an array type.  Rename to ...
+	(convert_vector_to_array_for_subscript): ... this.
+
 2016-05-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70756
