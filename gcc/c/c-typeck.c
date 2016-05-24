@@ -2583,8 +2583,8 @@ build_array_ref (location_t loc, tree array, tree index)
 
   gcc_assert (TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE);
 
-  bool non_lvalue
-    = convert_vector_to_pointer_for_subscript (loc, &array, index);
+  bool was_vector = VECTOR_TYPE_P (TREE_TYPE (array));
+  bool non_lvalue = convert_vector_to_array_for_subscript (loc, &array, index);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
@@ -2613,7 +2613,8 @@ build_array_ref (location_t loc, tree array, tree index)
 	    return error_mark_node;
 	}
 
-      if (pedantic || warn_c90_c99_compat)
+      if ((pedantic || warn_c90_c99_compat)
+	  && ! was_vector)
 	{
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)

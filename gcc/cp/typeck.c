@@ -3161,8 +3161,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       break;
     }
 
-  bool non_lvalue
-    = convert_vector_to_pointer_for_subscript (loc, &array, idx);
+  bool non_lvalue = convert_vector_to_array_for_subscript (loc, &array, idx);
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {

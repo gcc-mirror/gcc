@@ -3459,6 +3459,44 @@ maybe_canonicalize_mem_ref_addr (tree *t)
   if (TREE_CODE (*t) == ADDR_EXPR)
     t = &TREE_OPERAND (*t, 0);
 
+  /* The C and C++ frontends use an ARRAY_REF for indexing with their
+     generic vector extension.  The actual vector referenced is
+     view-converted to an array type for this purpose.  If the index
+     is constant the canonical representation in the middle-end is a
+     BIT_FIELD_REF so re-write the former to the latter here.  */
+  if (TREE_CODE (*t) == ARRAY_REF
+      && TREE_CODE (TREE_OPERAND (*t, 0)) == VIEW_CONVERT_EXPR
+      && TREE_CODE (TREE_OPERAND (*t, 1)) == INTEGER_CST
+      && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*t, 0), 0))))
+    {
+      tree vtype = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*t, 0), 0));
+      if (VECTOR_TYPE_P (vtype))
+	{
+	  tree low = array_ref_low_bound (*t);
+	  if (TREE_CODE (low) == INTEGER_CST)
+	    {
+	      if (tree_int_cst_le (low, TREE_OPERAND (*t, 1)))
+		{
+		  widest_int idx = wi::sub (wi::to_widest (TREE_OPERAND (*t, 1)),
+					    wi::to_widest (low));
+		  idx = wi::mul (idx, wi::to_widest
+					 (TYPE_SIZE (TREE_TYPE (*t))));
+		  widest_int ext
+		    = wi::add (idx, wi::to_widest (TYPE_SIZE (TREE_TYPE (*t))));
+		  if (wi::les_p (ext, wi::to_widest (TYPE_SIZE (vtype))))
+		    {
+		      *t = build3_loc (EXPR_LOCATION (*t), BIT_FIELD_REF,
+				       TREE_TYPE (*t),
+				       TREE_OPERAND (TREE_OPERAND (*t, 0), 0),
+				       TYPE_SIZE (TREE_TYPE (*t)),
+				       wide_int_to_tree (sizetype, idx));
+		      res = true;
+		    }
+		}
+	    }
+	}
+    }
+
   while (handled_component_p (*t))
     t = &TREE_OPERAND (*t, 0);
 

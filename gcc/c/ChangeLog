@@ -1,3 +1,10 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70434
+	PR c/69504
+	* c-typeck.c (build_array_ref): Do not complain about indexing
+	non-lvalue vectors.  Adjust for function name change.
+
 2016-05-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71115

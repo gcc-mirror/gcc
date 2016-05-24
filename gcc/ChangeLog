@@ -1,3 +1,12 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70434
+	PR c/69504
+	* tree-ssa.c (non_rewritable_mem_ref_base): Make sure to mark
+	bases which are accessed with non-invariant indices.
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Re-write
+	constant index ARRAY_REFs of vectors into BIT_FIELD_REFs.
+
 2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71170

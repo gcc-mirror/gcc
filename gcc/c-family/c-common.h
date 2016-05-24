@@ -1368,7 +1368,7 @@ extern tree build_userdef_literal (tree suffix_id, tree value,
 				   enum overflow_type overflow,
 				   tree num_string);
 
-extern bool convert_vector_to_pointer_for_subscript (location_t, tree *, tree);
+extern bool convert_vector_to_array_for_subscript (location_t, tree *, tree);
 
 /* Possibe cases of scalar_to_vector conversion.  */
 enum stv_conv {

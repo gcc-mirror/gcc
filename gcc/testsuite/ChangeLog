@@ -1,3 +1,10 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70434
+	PR c/69504
+	* c-c++-common/vector-subscript-4.c: New testcase.
+	* c-c++-common/vector-subscript-5.c: Likewise.
+
 2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/71123
