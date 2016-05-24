@@ -1,3 +1,8 @@
+2016-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/69872
+	* g++.dg/warn/Wno-narrowing1.C: New.
+
 2016-05-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71249

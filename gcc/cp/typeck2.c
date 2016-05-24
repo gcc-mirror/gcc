@@ -950,10 +950,12 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 	{
 	  if (complain & tf_warning_or_error)
 	    {
-	      if (!almost_ok || pedantic)
-		pedwarn (loc, OPT_Wnarrowing, "narrowing conversion of %qE "
-			 "from %qT to %qT inside { }", init, ftype, type);
-	      if (pedantic && almost_ok)
+	      if ((!almost_ok || pedantic)
+		  && pedwarn (loc, OPT_Wnarrowing,
+			      "narrowing conversion of %qE "
+			      "from %qT to %qT inside { }",
+			      init, ftype, type)
+		  && almost_ok)
 		inform (loc, " the expression has a constant value but is not "
 			"a C++ constant-expression");
 	      ok = true;
