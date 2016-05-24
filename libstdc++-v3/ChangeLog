@@ -1,3 +1,7 @@
+2016-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_queue.h (priority_queue::value_compare): Define.
+
 2016-05-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.h
