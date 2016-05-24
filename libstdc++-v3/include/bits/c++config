@@ -106,8 +106,10 @@
 #ifndef _GLIBCXX14_CONSTEXPR
 # if __cplusplus >= 201402L
 #  define _GLIBCXX14_CONSTEXPR constexpr
+#  define _GLIBCXX14_USE_CONSTEXPR constexpr
 # else
 #  define _GLIBCXX14_CONSTEXPR
+#  define _GLIBCXX14_USE_CONSTEXPR const
 # endif
 #endif
 

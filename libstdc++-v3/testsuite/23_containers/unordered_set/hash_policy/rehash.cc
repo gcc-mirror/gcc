@@ -18,13 +18,15 @@
 // { dg-options "-std=gnu++11" }
 
 #include <unordered_set>
+
 #include <testsuite_hooks.h>
 
-void test01()
+template<typename _USet>
+void test()
 {
   bool test __attribute__((unused)) = true;
-  std::unordered_set<int> us;
-  typedef typename std::unordered_set<int>::size_type size_type;
+  _USet us;
+  typedef typename _USet::size_type size_type;
   bool rehashed = false;
   for (int i = 0; i != 100000; ++i)
   {
@@ -55,8 +57,20 @@ void test01()
   VERIFY( rehashed );
 }
 
+template<typename _Value>
+  using unordered_set_power2_rehash =
+  std::_Hashtable<_Value, _Value, std::allocator<_Value>,
+		  std::__detail::_Identity,
+		  std::equal_to<_Value>,
+		  std::hash<_Value>,
+		  std::__detail::_Mask_range_hashing,
+		  std::__detail::_Default_ranged_hash,
+		  std::__detail::_Power2_rehash_policy,
+		  std::__detail::_Hashtable_traits<false, true, true>>;
+
 int main()
 {
-  test01();
+  test<std::unordered_set<int>>();
+  test<unordered_set_power2_rehash<int>>();
   return 0;
 }

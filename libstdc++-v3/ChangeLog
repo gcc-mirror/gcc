@@ -1,3 +1,31 @@
+2016-05-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/c++config (_GLIBCXX14_USE_CONSTEXPR): New.
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::__has_load_factor): New. Mark rehash policy
+	having load factor management.
+	(_Mask_range_hashing): New.
+	(__clp2): New.
+	(_Power2_rehash_policy): New.
+	(_Inserts<>): Remove last template parameter, _Unique_keys, so that
+	partial specializations only depend on whether iterators are constant
+	or not.
+	* testsuite/23_containers/unordered_set/hash_policy/26132.cc: Adapt to
+	test new hash policy.
+	* testsuite/23_containers/unordered_set/hash_policy/load_factor.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/hash_policy/rehash.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/insert/hash_policy.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/max_load_factor/robustness.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/hash_policy/power2_rehash.cc:
+	New.
+	* testsuite/performance/23_containers/insert/54075.cc: Add benchmark
+	using the new hash policy.
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Likewise.
+
 2016-05-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_queue.h (priority_queue::value_compare): Define.
