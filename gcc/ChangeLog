@@ -1,3 +1,27 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71253
+	* cfganal.h (control_dependences): Make robust against edge
+	and BB removal.
+	(control_dependences::control_dependences): Remove edge_list argument.
+	(control_dependences::get_edge): Remove.
+	(control_dependences::get_edge_src): Add.
+	(control_dependences::get_edge_dest): Likewise.
+	(control_dependences::m_el): Make a vector of edge src/dest index.
+	* cfganal.c (control_dependences::find_control_dependence): Adjust.
+	(control_dependences::control_dependences): Likewise.
+	(control_dependences::~control_dependence): Likewise.
+	(control_dependences::get_edge): Remove.
+	(control_dependences::get_edge_src): Add.
+	(control_dependences::get_edge_dest): Likewise.
+	* tree-ssa-dce.c (mark_control_dependent_edges_necessary): Use
+	get_edge_src.
+	(perform_tree_ssa_dce): Adjust.
+	* tree-loop-distribution.c (create_edge_for_control_dependence): Use
+	get_edge_src.
+	(pass_loop_distribution::execute): Adjust.  Do loop destroying
+	conditional on changed.
+
 2016-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69857
