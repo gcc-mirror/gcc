@@ -1,3 +1,17 @@
+2016-05-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71170
+	* tree-ssa-reassoc.c (struct operand_entry): Add field stmt_to_insert.
+	(add_to_ops_vec): Add stmt_to_insert.
+	(add_repeat_to_ops_vec): Init stmt_to_insert.
+	(insert_stmt_before_use): New.
+	(transform_add_to_multiply): Remove mult_stmt insertion and add it to ops vector.
+	(get_ops): Init stmt_to_insert.
+	(maybe_optimize_range_tests): Likewise.
+	(rewrite_expr_tree): Insert stmt_to_insert before use stmt.
+	(rewrite_expr_tree_parallel): Likewise.
+	(reassociate_bb): Likewise.
+
 2016-05-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71201
