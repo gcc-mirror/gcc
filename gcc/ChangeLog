@@ -1,3 +1,8 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71230
+	* tree-ssa-reassoc.c (zero_one_operation): Handle negate special ops.
+
 2016-05-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vectorizer.h (vectorizable_comparison): Delete.

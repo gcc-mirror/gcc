@@ -1,3 +1,9 @@
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71230
+	* gcc.dg/torture/pr71230.c: New testcase.
+	* g++.dg/torture/pr71230.C: Likewise.
+
 2016-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/routine-5.c: Add tests.
