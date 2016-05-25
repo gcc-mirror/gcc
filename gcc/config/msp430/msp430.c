@@ -1832,6 +1832,7 @@ msp430_attr (tree * node,
 
   if (args != NULL)
     {
+      /* Only the interrupt attribute takes an argument.  */
       gcc_assert (TREE_NAME_EQ (name, ATTR_INTR));
 
       tree value = TREE_VALUE (args);
@@ -1878,6 +1879,9 @@ msp430_attr (tree * node,
       if (TREE_CODE (TREE_TYPE (* node)) == FUNCTION_TYPE
 	  && ! VOID_TYPE_P (TREE_TYPE (TREE_TYPE (* node))))
 	message = "interrupt handlers must be void";
+
+      if (! TREE_PUBLIC (* node))
+	message = "interrupt handlers cannot be static";
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {

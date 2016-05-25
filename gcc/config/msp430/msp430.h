@@ -98,7 +98,6 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 %{!msim:-lnosys}					\
 --end-group					   	\
 %{!T*:%{!msim:%{mmcu=*:--script=%*.ld}}}		\
-%{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}}			\
 %{!T*:%{msim:%{mlarge:%Tmsp430xl-sim.ld}%{!mlarge:%Tmsp430-sim.ld}}} \
 "
 
