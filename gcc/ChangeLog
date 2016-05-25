@@ -1,3 +1,8 @@
+2016-05-25  Richard Biener  <rguenther@suse.de>
+
+	* timevar.def (TV_TREE_LOOP_IFCVT): Add.
+	* tree-if-conv.c (pass_data_if_conversion): Use it.
+
 2016-05-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* cgraph.c (cgraph_node::get_availability): Fix typo in comment.
