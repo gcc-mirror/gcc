@@ -1,3 +1,12 @@
+2016-05-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_attr): Produce an error if a
+	static interrupt handler is detected.
+	* config/msp430/msp430.h (LIB_SPEC): Do not use msp430.ld as the
+	default linker script.
+	* config/msp430/msp430.md (movpsihi2_lo): New pattern for loading
+	the low part of a symbolic pointer.
+
 2016-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71261
