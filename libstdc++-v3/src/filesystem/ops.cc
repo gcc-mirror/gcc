@@ -300,6 +300,17 @@ namespace
     };
   }
 
+  // Returns true if the file descriptor was successfully closed,
+  // otherwise returns false and the reason will be in errno.
+  inline bool
+  close_fd(int fd)
+  {
+    while (::close(fd))
+      if (errno != EINTR)
+	return false;
+    return true;
+  }
+
   bool
   do_copy_file(const fs::path& from, const fs::path& to,
 	       fs::copy_options option,
@@ -376,7 +387,8 @@ namespace
       }
 
     struct CloseFD {
-      ~CloseFD() { if (fd != -1) ::close(fd); }
+      ~CloseFD() { if (fd != -1) close_fd(fd); }
+      bool close() { return close_fd(std::exchange(fd, -1)); }
       int fd;
     };
 
@@ -401,23 +413,6 @@ namespace
 	return false;
       }
 
-#ifdef _GLIBCXX_USE_SENDFILE
-    auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
-    if (n != from_st->st_size)
-      {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
-#else
-    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-    if ( !(std::ostream(&sbout) << &sbin) )
-      {
-	ec = std::make_error_code(std::errc::io_error);
-	return false;
-      }
-#endif
-
 #ifdef _GLIBCXX_USE_FCHMOD
     if (::fchmod(out.fd, from_st->st_mode))
 #elif _GLIBCXX_USE_FCHMODAT
@@ -429,6 +424,38 @@ namespace
 	ec.assign(errno, std::generic_category());
 	return false;
       }
+
+#ifdef _GLIBCXX_USE_SENDFILE
+    const auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
+    if (n != from_st->st_size)
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+    if (!out.close() || !in.close())
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+#else
+    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
+    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+    if (sbin.is_open())
+      in.fd = -1;
+    if (sbout.is_open())
+      out.fd = -1;
+    if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
+      {
+	ec = std::make_error_code(std::errc::io_error);
+	return false;
+      }
+    if (sbout.close() || sbin.close())
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+#endif
+
     ec.clear();
     return true;
   }
@@ -439,13 +466,15 @@ void
 fs::copy(const path& from, const path& to, copy_options options,
 	 error_code& ec) noexcept
 {
-  bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
-  bool create_symlinks = is_set(options, copy_options::create_symlinks);
-  bool use_lstat = create_symlinks || skip_symlinks;
+  const bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
+  const bool create_symlinks = is_set(options, copy_options::create_symlinks);
+  const bool copy_symlinks = is_set(options, copy_options::copy_symlinks);
+  const bool use_lstat = create_symlinks || skip_symlinks;
 
   file_status f, t;
   stat_type from_st, to_st;
-  if (use_lstat
+  // N4099 doesn't check copy_symlinks here, but I think that's a defect.
+  if (use_lstat || copy_symlinks
       ? ::lstat(from.c_str(), &from_st)
       : ::stat(from.c_str(), &from_st))
     {
@@ -488,7 +517,7 @@ fs::copy(const path& from, const path& to, copy_options options,
     {
       if (skip_symlinks)
 	ec.clear();
-      else if (!exists(t) && is_set(options, copy_options::copy_symlinks))
+      else if (!exists(t) && copy_symlinks)
 	copy_symlink(from, to, ec);
       else
 	// Not clear what should be done here.

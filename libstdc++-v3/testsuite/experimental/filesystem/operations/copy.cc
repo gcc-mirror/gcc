@@ -21,34 +21,127 @@
 // 15.3 Copy [fs.op.copy]
 
 #include <experimental/filesystem>
+#include <fstream>
 #include <testsuite_fs.h>
 #include <testsuite_hooks.h>
 
-using std::experimental::filesystem::path;
+namespace fs = std::experimental::filesystem;
 
+// Test error conditions.
 void
 test01()
 {
   bool test __attribute__((unused)) = false;
 
-  for (const path& p : __gnu_test::test_paths)
-    VERIFY( absolute(p).is_absolute() );
+  auto p = __gnu_test::nonexistent_path();
+  std::error_code ec;
+
+  VERIFY( !fs::exists(p) );
+  fs::copy(p, ".", fs::copy_options::none, ec);
+  VERIFY( ec );
+
+  ec.clear();
+  fs::copy(".", ".", fs::copy_options::none, ec);
+  VERIFY( ec );
+
+  std::ofstream{p.native()};
+  VERIFY( fs::is_directory(".") );
+  VERIFY( fs::is_regular_file(p) );
+  ec.clear();
+  fs::copy(".", p, fs::copy_options::none, ec);
+  VERIFY( ec );
+
+  remove(p, ec);
 }
 
+// Test is_symlink(f) case.
 void
 test02()
 {
   bool test __attribute__((unused)) = false;
 
-  path p1("/");
-  VERIFY( absolute(p1) == p1 );
-  VERIFY( absolute(p1, "/bar") == p1 );
-  path p2("/foo");
-  VERIFY( absolute(p2) == p2 );
-  VERIFY( absolute(p2, "/bar") == p2 );
-  path p3("foo");
-  VERIFY( absolute(p3) != p3 );
-  VERIFY( absolute(p3, "/bar") == "/bar/foo" );
+  auto from = __gnu_test::nonexistent_path();
+  auto to = __gnu_test::nonexistent_path();
+  std::error_code ec;
+
+  fs::create_symlink(".", from, ec);
+  VERIFY( !ec );
+  VERIFY( fs::exists(from) );
+
+  fs::copy(from, to, fs::copy_options::skip_symlinks, ec);
+  VERIFY( !ec );
+  VERIFY( !fs::exists(to) );
+
+  fs::copy(from, to, fs::copy_options::skip_symlinks, ec);
+  VERIFY( !ec );
+  VERIFY( !fs::exists(to) );
+
+  fs::copy(from, to,
+           fs::copy_options::skip_symlinks|fs::copy_options::copy_symlinks,
+           ec);
+  VERIFY( !ec );
+  VERIFY( !fs::exists(to) );
+
+  fs::copy(from, to, fs::copy_options::copy_symlinks, ec);
+  VERIFY( !ec );
+  VERIFY( fs::exists(to) );
+
+  fs::copy(from, to, fs::copy_options::copy_symlinks, ec);
+  VERIFY( ec );
+
+  remove(from, ec);
+  remove(to, ec);
+}
+
+// Test is_regular_file(f) case.
+void
+test03()
+{
+  bool test __attribute__((unused)) = false;
+
+  auto from = __gnu_test::nonexistent_path();
+  auto to = __gnu_test::nonexistent_path();
+
+  // test empty file
+  std::ofstream{from.native()};
+  VERIFY( fs::exists(from) );
+  VERIFY( fs::file_size(from) == 0 );
+  fs::copy(from, to);
+  VERIFY( fs::exists(to) );
+  VERIFY( fs::file_size(to) == 0 );
+
+  remove(to);
+  VERIFY( !fs::exists(to) );
+  std::ofstream{from.native()} << "Hello, filesystem!";
+  VERIFY( fs::file_size(from) != 0 );
+  fs::copy(from, to);
+  VERIFY( fs::exists(to) );
+  VERIFY( fs::file_size(to) == fs::file_size(from) );
+}
+
+// Test is_directory(f) case.
+void
+test04()
+{
+  bool test __attribute__((unused)) = false;
+
+  auto from = __gnu_test::nonexistent_path();
+  auto to = __gnu_test::nonexistent_path();
+  std::error_code ec;
+
+}
+
+// Test no-op cases.
+void
+test05()
+{
+  bool test __attribute__((unused)) = false;
+
+  auto to = __gnu_test::nonexistent_path();
+  std::error_code ec;
+
+  fs::copy("/", to, fs::copy_options::create_symlinks, ec);
+  VERIFY( !ec );
 }
 
 int
@@ -56,4 +149,7 @@ main()
 {
   test01();
   test02();
+  test03();
+  test04();
+  test05();
 }
