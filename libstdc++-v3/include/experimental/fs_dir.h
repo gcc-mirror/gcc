@@ -158,7 +158,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   struct __directory_iterator_proxy
   {
-    const directory_entry& operator*() const noexcept { return _M_entry; }
+    const directory_entry& operator*() const& noexcept { return _M_entry; }
+
+    directory_entry operator*() && noexcept { return std::move(_M_entry); }
 
   private:
     friend class directory_iterator;
