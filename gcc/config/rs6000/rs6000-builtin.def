@@ -1282,6 +1282,7 @@ BU_ALTIVEC_OVERLOAD_P (VCMPGE_P,   "vcmpge_p")
 /* Overloaded Altivec builtins that are handled as special cases.  */
 BU_ALTIVEC_OVERLOAD_X (ADDE,	   "adde")
 BU_ALTIVEC_OVERLOAD_X (ADDEC,	   "addec")
+BU_ALTIVEC_OVERLOAD_X (CMPNE,	   "cmpne")
 BU_ALTIVEC_OVERLOAD_X (CTF,	   "ctf")
 BU_ALTIVEC_OVERLOAD_X (CTS,	   "cts")
 BU_ALTIVEC_OVERLOAD_X (CTU,	   "ctu")

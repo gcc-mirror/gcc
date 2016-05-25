@@ -196,6 +196,7 @@
 #define vec_andc __builtin_vec_andc
 #define vec_avg __builtin_vec_avg
 #define vec_cmpeq __builtin_vec_cmpeq
+#define vec_cmpne __builtin_vec_cmpne
 #define vec_cmpgt __builtin_vec_cmpgt
 #define vec_ctf __builtin_vec_ctf
 #define vec_dst __builtin_vec_dst

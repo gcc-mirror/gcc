@@ -1,3 +1,13 @@
+2016-05-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_cmpne): Add #define for vec_cmpne.
+	* config/rs6000/rs6000-builtin.def (vec_cmpne): Add vec_cmpne as a
+	special case builtin.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	code for ALTIVEC_BUILTIN_VEC_CMPNE.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add definition
+	for __builtin_vec_cmpne.
+
 2016-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Remove
