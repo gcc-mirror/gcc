@@ -141,8 +141,12 @@
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
 
+;; Yr constraint is meant to be used in noavx contexts only, for VEX and EVEX
+;; the lower register numbers need the same instruction sizes as any other.
+;; In case Yr constraint is misused, try to limit the damage, by treating
+;; it as x constraint in avx mode, not v constraint.
 (define_register_constraint "Yr"
- "TARGET_SSE ? (X86_TUNE_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
+ "TARGET_SSE ? ((TARGET_AVOID_4BYTE_PREFIXES && !TARGET_AVX) ? NO_REX_SSE_REGS : SSE_REGS) : NO_REGS"
  "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
 
 ;; We use the B prefix to denote any number of internal operands:

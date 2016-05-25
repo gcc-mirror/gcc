@@ -1,3 +1,10 @@
+2016-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.h (TARGET_AVOID_4BYTE_PREFIXES): Define.
+	* config/i386/constraints.md (Yr): Test TARGET_AVOID_4BYTE_PREFIXES
+	rather than X86_TUNE_AVOID_4BYTE_PREFIXES.  Use SSE_REGS instead
+	of ALL_SSE_REGS.  Return SSE_REGS also when TARGET_AVX.
+
 2016-05-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
