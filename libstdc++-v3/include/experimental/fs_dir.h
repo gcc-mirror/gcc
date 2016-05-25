@@ -301,8 +301,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     struct _Dir_stack;
     std::shared_ptr<_Dir_stack> _M_dirs;
-    directory_options _M_options;
-    bool _M_pending;
+    directory_options _M_options = {};
+    bool _M_pending = false;
   };
 
   inline recursive_directory_iterator
