@@ -1,3 +1,16 @@
+2016-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70738
+	* gcc.target/i386/pr70738-1.c: New test.
+	* gcc.target/i386/pr70738-2.c: Likewise.
+	* gcc.target/i386/pr70738-3.c: Likewise.
+	* gcc.target/i386/pr70738-4.c: Likewise.
+	* gcc.target/i386/pr70738-5.c: Likewise.
+	* gcc.target/i386/pr70738-6.c: Likewise.
+	* gcc.target/i386/pr70738-7.c: Likewise.
+	* gcc.target/i386/pr70738-8.c: Likewise.
+	* gcc.target/i386/pr70738-9.c: Likewise.
+
 2016-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/66940
