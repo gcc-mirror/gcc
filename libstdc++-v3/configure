@@ -80358,7 +80358,7 @@ else
 int
 main ()
 {
-sendfile(1, 2, (off_t*)NULL, sizeof 1);
+sendfile(1, 2, (off_t*)0, sizeof 1);
   ;
   return 0;
 }
@@ -80379,7 +80379,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-sendfile(1, 2, (off_t*)NULL, sizeof 1);
+sendfile(1, 2, (off_t*)0, sizeof 1);
   ;
   return 0;
 }
