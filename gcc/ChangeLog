@@ -1,3 +1,10 @@
+2016-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/66940
+	* ifcvt.c (noce_get_alt_condition): Check that incrementing or
+	decrementing desired_val will not overflow before performing these
+	operations.
+
 2016-05-25  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* config/i386/i386-builtin-types.def: Add V16SI_FTYPE_V16SF,

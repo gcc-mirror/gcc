@@ -2364,28 +2364,32 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
 	  switch (code)
 	    {
 	    case LT:
-	      if (actual_val == desired_val + 1)
+	      if (desired_val != HOST_WIDE_INT_MAX
+		  && actual_val == desired_val + 1)
 		{
 		  code = LE;
 		  op_b = GEN_INT (desired_val);
 		}
 	      break;
 	    case LE:
-	      if (actual_val == desired_val - 1)
+	      if (desired_val != HOST_WIDE_INT_MIN
+		  && actual_val == desired_val - 1)
 		{
 		  code = LT;
 		  op_b = GEN_INT (desired_val);
 		}
 	      break;
 	    case GT:
-	      if (actual_val == desired_val - 1)
+	      if (desired_val != HOST_WIDE_INT_MIN
+		  && actual_val == desired_val - 1)
 		{
 		  code = GE;
 		  op_b = GEN_INT (desired_val);
 		}
 	      break;
 	    case GE:
-	      if (actual_val == desired_val + 1)
+	      if (desired_val != HOST_WIDE_INT_MAX
+		  && actual_val == desired_val + 1)
 		{
 		  code = GT;
 		  op_b = GEN_INT (desired_val);
