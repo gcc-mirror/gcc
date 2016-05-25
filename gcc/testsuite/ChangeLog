@@ -3,6 +3,9 @@
 	PR c/71265
 	* gcc.dg/noncompile/pr71265.c: New test.
 
+	PR c/71266
+	* gcc.dg/noncompile/old-style-parm-3.c: New test.
+
 2016-05-25  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c-torture/execute/921110-1.c: Fix abort decl.

@@ -3,6 +3,9 @@
 	PR c/71265
 	* c-decl.c (c_make_fname_decl): Don't check seen_error.
 
+	PR c/71266
+	* c-decl.c (store_parm_decls_oldstyle): Skip non-PARM_DECLs.
+
 2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_declare): Add support for
