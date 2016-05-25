@@ -1,3 +1,10 @@
+2016-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71261
+	* tree-if-conv.c (ifcvt_split_def_stmt): Walk uses on the
+	interesting stmt instead of immediate uses when looking
+	for the use operand to replace.
+
 2016-05-25  Martin Liska  <mliska@suse.cz>
 
 	* ipa-inline.c (edge_badness): Use 'w/' instead of 'w'.
