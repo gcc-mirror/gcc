@@ -1,3 +1,9 @@
+2016-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55992
+	* g++.dg/cpp0x/alias-decl-53.C: New.
+	* g++.dg/cpp0x/alias-decl-54.C: Likewise.
+
 2016-05-25  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/pr71239.C: New test.
