@@ -1,6 +1,7 @@
 /* Test support of scalar_storage_order pragma */
 
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 #pragma scalar_storage_order /* { dg-warning "missing .big-endian.little-endian.default." } */
 

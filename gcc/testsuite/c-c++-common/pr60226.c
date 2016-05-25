@@ -1,6 +1,7 @@
 /* PR c/60226 */
 /* { dg-do compile } */
 /* { dg-options "-Wno-c++-compat" { target c } } */
+/* { dg-require-effective-target int32plus } */
 
 typedef int __attribute__ ((aligned (1 << 28))) int28;
 int28 foo[4] = {}; /* { dg-error "alignment of array elements is greater than element size" } */

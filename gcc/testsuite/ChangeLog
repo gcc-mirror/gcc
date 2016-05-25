@@ -1,3 +1,32 @@
+2016-05-25  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-c++-common/Wduplicated-cond-1.c: Use smaller const literal.
+	* c-c++-common/pr60226.c: Require int32plus.
+	* gcc.c-torture/execute/pr70602.c: Likewise.
+	* gcc.dg/Warray-bounds-11.c: Use __SIZE_TYPE__ instead of
+	unsigned long for malloc arg type.
+	* gcc.dg/asr_div1.c: Require int32plus.
+	* gcc.dg/enum-mode-1.c: XFAIL for int16.
+	* gcc.dg/pie-1.c: Require pie.
+	* gcc.dg/pie-2.c: Likewise.
+	* gcc.dg/pr59471.c: Require int32plus.
+	* gcc.dg/pr59963-2.c: XFAIL for int16.
+	* gcc.dg/pr60114.c: Require int32plus.
+	* gcc.dg/pr62090-2.c: Use __SIZE_TYPE__ instead of
+	unsigned long for typedef of size_t.
+	* gcc.dg/pr63914.c: Require int32plus.
+	* gcc.dg/pr64536.c: Require pt32plus.
+	* gcc.dg/pr65658.c: Likewise.
+	* gcc.dg/pr67271.c: Require int32plus.
+	* gcc.dg/pr68112.c: Likewise.
+	* gcc.dg/pr69071.c: Skip for avr target.
+	* gcc.dg/pr69973.c: Require int32plus.
+	* gcc.dg/pr70169.c: Skip for avr target.
+	* gcc.dg/sso-6.c: Require int32plus.
+	* gcc.dg/sso-7.c: Likewise.
+	* gcc.dg/sso-8.c: Likewise.
+	* gcc.dg/vrp-min-max-2.c: Likewise.
+
 2016-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/70738

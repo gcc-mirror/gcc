@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp2" } */
+/* { dg-require-effective-target int32plus } */
 
 int Foo (int X)
 {

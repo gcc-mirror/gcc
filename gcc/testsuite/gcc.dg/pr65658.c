@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wuninitialized -O2 -Wno-implicit" } */
+/* { dg-require-effective-target ptr32plus } */
 
 extern int optind;
 struct undefinfo
