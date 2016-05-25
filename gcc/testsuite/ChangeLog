@@ -1,3 +1,8 @@
+2016-05-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc/testsuite/gcc.dg/vect/pr58135.c: Rename to ...
+	* gcc/testsuite/gcc.dg/vect/bb-slp-pr58135.c: ... this.
+
 2016-05-25  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/pr65295.C: Use target c++14.
