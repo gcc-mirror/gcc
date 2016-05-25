@@ -1,5 +1,9 @@
 2016-05-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Fix test for sendfile.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 	* include/bits/c++config (_GLIBCXX14_USE_CONSTEXPR): Remove it.
 	* include/bits/hashtable_policy.h (_Power2_rehash_policy::_M_next_bkt):
 	Remove const qualification on function. Replace
