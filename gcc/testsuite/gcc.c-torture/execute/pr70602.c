@@ -1,4 +1,5 @@
 /* PR tree-optimization/70602 */
+/* { dg-require-effective-target int32plus } */
 
 struct __attribute__((packed)) S
 {

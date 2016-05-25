@@ -1,6 +1,7 @@
 /* PR target/69071 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
+/* { dg-skip-if "Array too big" { "avr-*-*" } } */
 
 void *bar (void *);
 
