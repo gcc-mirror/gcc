@@ -1,3 +1,8 @@
+2016-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71265
+	* c-decl.c (c_make_fname_decl): Don't check seen_error.
+
 2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_declare): Add support for
