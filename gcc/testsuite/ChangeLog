@@ -1,3 +1,7 @@
+2016-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt55.ad[sb]: New test.
+
 2016-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71147
