@@ -1,3 +1,9 @@
+2016-05-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/71239
+	* tree.c (array_at_struct_end_p): Do not call operand_equal_p
+	if DECL_SIZE is NULL.
+
 2016-05-25  Richard Biener  <rguenther@suse.de>
 
 	* timevar.def (TV_TREE_LOOP_IFCVT): Add.

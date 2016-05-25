@@ -13097,7 +13097,8 @@ array_at_struct_end_p (tree ref)
 
 	 is valid because BUF allocate enough space.  */
 
-      && (!size || operand_equal_p (DECL_SIZE (ref), size, 0))
+      && (!size || (DECL_SIZE (ref) != NULL
+		    && operand_equal_p (DECL_SIZE (ref), size, 0)))
       && !(flag_unconstrained_commons
 	   && TREE_CODE (ref) == VAR_DECL && DECL_COMMON (ref)))
     return false;
