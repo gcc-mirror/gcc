@@ -4602,7 +4602,7 @@ enum tag_types {
   union_type,    /* "union" types.  */
   enum_type,     /* "enum" types.  */
   typename_type, /* "typename" types.  */
-  scope_type	 /* namespace or tagged type of a name followed by :: */
+  scope_type	 /* namespace or tagged type name followed by :: */
 };
 
 /* The various kinds of lvalues we distinguish.  */
