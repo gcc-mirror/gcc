@@ -1,3 +1,7 @@
+2016-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c-torture/execute/921110-1.c: Fix abort decl.
+
 2016-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71261
@@ -86,8 +90,8 @@
 
 2016-05-24  Ilya Verbin  <ilya.verbin@intel.com>
 
-	* gcc.target/i386/avx-ceil-sfix-2-vec.c: Define __NO_MATH_INLINES before
-	math.h is included.
+	* gcc.target/i386/avx-ceil-sfix-2-vec.c: Define __NO_MATH_INLINES
+	before math.h is included.
 	* gcc.target/i386/avx-floor-sfix-2-vec.c: Likewise.
 	* gcc.target/i386/avx-rint-sfix-2-vec.c: Likewise.
 	* gcc.target/i386/avx-round-sfix-2-vec.c: Likewise.
@@ -346,8 +350,14 @@
 
 	* gcc.target/powerpc/vec-adde.c: Change dejagnu options, fix code
 	formatting.
-	* gcc.target/powerpc/vec-adde-int128.c: Change dejagnu options, fix code
-	formatting.
+	* gcc.target/powerpc/vec-adde-int128.c: Change dejagnu options,
+	fix code formatting.
+
+2016-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/uninit-decl.c: Force common storage,  add
+	non-common cases.
+	* gcc.dg/tree-ssa/ssa-store-ccp-2.c: Add -fcommon.
 
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 

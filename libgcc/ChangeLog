@@ -1,3 +1,9 @@
+2016-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/crt0.s: Delete.
+	* config/nvptx/crt0.c: New.
+	* t-nvptx: Update.
+
 2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config.host [x86_64-*-cygwin*]: Handle tmake_eh_file for mixed 
