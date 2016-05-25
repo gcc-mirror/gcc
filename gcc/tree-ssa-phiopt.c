@@ -438,15 +438,18 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   /* Check if arg0 is an SSA_NAME and the stmt which defines arg0 is
      a conversion.  */
   arg0_def_stmt = SSA_NAME_DEF_STMT (arg0);
-  if (!is_gimple_assign (arg0_def_stmt)
-      || !gimple_assign_cast_p (arg0_def_stmt))
+  if (!gimple_assign_cast_p (arg0_def_stmt))
     return NULL;
 
   /* Use the RHS as new_arg0.  */
   convert_code = gimple_assign_rhs_code (arg0_def_stmt);
   new_arg0 = gimple_assign_rhs1 (arg0_def_stmt);
   if (convert_code == VIEW_CONVERT_EXPR)
-    new_arg0 = TREE_OPERAND (new_arg0, 0);
+    {
+      new_arg0 = TREE_OPERAND (new_arg0, 0);
+      if (!is_gimple_reg_type (TREE_TYPE (new_arg0)))
+	return NULL;
+    }
 
   if (TREE_CODE (arg1) == SSA_NAME)
     {

@@ -1,3 +1,9 @@
+2016-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Remove
+	redundant test and bail out if the type of the new operand is not
+	a GIMPLE register type after stripping a VIEW_CONVERT_EXPR.
+
 2016-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt (ix86_target_flags_explicit): Remove.
