@@ -153,6 +153,21 @@ test04()
   VERIFY( it == fs::recursive_directory_iterator() );
 }
 
+void
+test05()
+{
+  bool test __attribute__((unused)) = false;
+
+  auto p = __gnu_test::nonexistent_path();
+  create_directory(p);
+  create_directory_symlink(p, p / "l");
+  fs::recursive_directory_iterator it(p), endit;
+  VERIFY( begin(it) == it );
+  static_assert( noexcept(begin(it)), "begin is noexcept" );
+  VERIFY( end(it) == endit );
+  static_assert( noexcept(end(it)), "end is noexcept" );
+}
+
 int
 main()
 {
@@ -160,4 +175,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }
