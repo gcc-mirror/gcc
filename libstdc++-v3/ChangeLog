@@ -3,6 +3,17 @@
 	Backport from mainline
 	2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71037
+	* src/filesystem/ops.cc (canonical(const path&, const path&)): Add
+	base path to exception.
+	* testsuite/experimental/filesystem/operations/canonical.cc: Test
+	paths contained in exception.
+
+2016-05-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/71005
 	* include/experimental/bits/fs_dir.h (__directory_iterator_proxy):
 	New type.

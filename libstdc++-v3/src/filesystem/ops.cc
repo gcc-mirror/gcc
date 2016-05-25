@@ -220,8 +220,9 @@ fs::canonical(const path& p, const path& base)
 {
   error_code ec;
   path can = canonical(p, base, ec);
-  if (ec.value())
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot canonicalize", p, ec));
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot canonicalize", p, base,
+					     ec));
   return can;
 }
 
