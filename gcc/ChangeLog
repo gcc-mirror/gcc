@@ -1,3 +1,8 @@
+2016-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71147
+	* gcc/tree.h (complete_or_array_type_p): New inline function.
+
 2016-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (TARGET_AVOID_4BYTE_PREFIXES): Define.
