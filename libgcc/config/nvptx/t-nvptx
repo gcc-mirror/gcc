@@ -6,8 +6,8 @@ LIB2ADD=$(srcdir)/config/nvptx/malloc.asm \
 LIB2ADDEH=
 LIB2FUNCS_EXCLUDE=__main
 
-crt0.o: $(srcdir)/config/nvptx/crt0.s
-	cp $< $@
+crt0.o: $(srcdir)/config/nvptx/crt0.c
+	$(crt_compile) -c $<
 
 # Prevent building "advanced" stuff (for example, gcov support).  We don't
 # support it, and it may cause the build to fail, because of alloca usage, for
