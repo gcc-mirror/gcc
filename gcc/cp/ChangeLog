@@ -1,3 +1,15 @@
+2016-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71173
+	PR c++/70522
+	* cp-tree.h (enum tag_types): Add scope_type.
+	* parser.c (cp_parser_class_name): Use scope_type.
+	(prefer_type_arg): Handle scope_type.
+	(cp_parser_lookup_name): Use prefer_type_arg.
+	* name-lookup.c (lookup_qualified_name): Change bool is_type_p to
+	int prefer_type, use lookup_flags.
+	* name-lookup.h: Adjust.
+
 2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_declare): Add support for
