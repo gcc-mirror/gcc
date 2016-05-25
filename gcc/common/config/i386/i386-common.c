@@ -223,6 +223,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_RDRND_UNSET OPTION_MASK_ISA_RDRND
 #define OPTION_MASK_ISA_F16C_UNSET OPTION_MASK_ISA_F16C
 
+#define OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET \
+  (OPTION_MASK_ISA_MMX_UNSET \
+   | OPTION_MASK_ISA_SSE_UNSET \
+   | OPTION_MASK_ISA_MPX)
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 bool
@@ -236,6 +241,22 @@ ix86_handle_option (struct gcc_options *opts,
 
   switch (code)
     {
+    case OPT_mgeneral_regs_only:
+      if (value)
+	{
+	  /* Disable MPX, MMX, SSE and x87 instructions if only
+	     general registers are allowed.  */
+	  opts->x_ix86_isa_flags
+	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+	  opts->x_ix86_isa_flags_explicit
+	    |= OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+
+	  opts->x_target_flags &= ~MASK_80387;
+	}
+      else
+	gcc_unreachable ();
+      return true;
+
     case OPT_mmmx:
       if (value)
 	{

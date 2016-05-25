@@ -1,3 +1,27 @@
+2016-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt (ix86_target_flags_explicit): Remove.
+	(x_ix86_target_flags_explicit): Remove.
+	* config/i386/i386.c (ix86_function_specific_save): Do not copy
+	x_ix86_target_flags_explicit.
+	(ix86_function_specific_restore): Ditto.
+
+2016-05-25  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70738
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET): New.
+	(ix86_handle_option) <case OPT_mgeneral_regs_only>: Disable
+	MPX, MMX, SSE and x87 instructions for -mgeneral-regs-only.
+	* config/i386/i386.opt (ix86_target_flags): Add new Variable.
+	(-mgeneral-regs-only): Add new option.
+	* config/i386/i386.c (ix86_option_override_internal): Don't enable
+	x87 instructions if only general registers are allowed.
+	(ix86_target_string): Add ix86_flags argument. Handle additional
+	flags options through ix86_flags argument.  Update all callers.
+	* doc/invoke.texi: Document -mgeneral-regs-only.
+
 2016-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/66940

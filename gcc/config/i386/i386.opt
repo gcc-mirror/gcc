@@ -30,6 +30,10 @@ HOST_WIDE_INT ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAU
 Variable
 HOST_WIDE_INT ix86_isa_flags_explicit
 
+; Additional target flags
+Variable
+int ix86_target_flags
+
 TargetVariable
 int recip_mask = RECIP_MASK_DEFAULT
 
@@ -71,14 +75,6 @@ unsigned char branch_cost
 ;; which flags were passed by the user
 TargetSave
 HOST_WIDE_INT x_ix86_isa_flags_explicit
-
-;; which flags were passed by the user
-Variable
-int ix86_target_flags_explicit
-
-;; which flags were passed by the user
-TargetSave
-HOST_WIDE_INT x_ix86_target_flags_explicit
 
 ;; whether -mtune was not specified
 TargetSave
@@ -897,3 +893,7 @@ Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
 mmitigate-rop
 Target Var(flag_mitigate_rop) Init(0)
 Attempt to avoid generating instruction sequences containing ret bytes.
+
+mgeneral-regs-only
+Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
+Generate code which uses only the general registers.

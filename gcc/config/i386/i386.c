@@ -2586,7 +2586,7 @@ enum ix86_function_specific_strings
   IX86_FUNCTION_SPECIFIC_MAX
 };
 
-static char *ix86_target_string (HOST_WIDE_INT, int, const char *,
+static char *ix86_target_string (HOST_WIDE_INT, int, int, const char *,
 				 const char *, enum fpmath_unit, bool);
 static void ix86_function_specific_save (struct cl_target_option *,
 					 struct gcc_options *opts);
@@ -4084,9 +4084,9 @@ ix86_using_red_zone (void)
    responsible for freeing the string.  */
 
 static char *
-ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
-		    const char *tune, enum fpmath_unit fpmath,
-		    bool add_nl_p)
+ix86_target_string (HOST_WIDE_INT isa, int flags, int ix86_flags,
+		    const char *arch, const char *tune,
+		    enum fpmath_unit fpmath, bool add_nl_p)
 {
   struct ix86_target_opts
   {
@@ -4189,10 +4189,18 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mprefer-avx128",		MASK_PREFER_AVX128},
   };
 
-  const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
+  /* Additional flag options.  */
+  static struct ix86_target_opts ix86_flag_opts[] =
+  {
+    { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY },
+  };
+
+  const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts)
+		   + ARRAY_SIZE (ix86_flag_opts) + 6][2];
 
   char isa_other[40];
   char target_other[40];
+  char ix86_target_other[40];
   unsigned num = 0;
   unsigned i, j;
   char *ret;
@@ -4264,6 +4272,22 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     {
       opts[num++][0] = target_other;
       sprintf (target_other, "(other flags: %#x)", flags);
+    }
+
+    /* Add additional flag options.  */
+  for (i = 0; i < ARRAY_SIZE (ix86_flag_opts); i++)
+    {
+      if ((ix86_flags & ix86_flag_opts[i].mask) != 0)
+	{
+	  opts[num++][0] = ix86_flag_opts[i].option;
+	  ix86_flags &= ~ ix86_flag_opts[i].mask;
+	}
+    }
+
+  if (ix86_flags && add_nl_p)
+    {
+      opts[num++][0] = ix86_target_other;
+      sprintf (ix86_target_other, "(other flags: %#x)", ix86_flags);
     }
 
   /* Add -fpmath= option.  */
@@ -4360,6 +4384,7 @@ void ATTRIBUTE_UNUSED
 ix86_debug_options (void)
 {
   char *opts = ix86_target_string (ix86_isa_flags, target_flags,
+				   ix86_target_flags,
 				   ix86_arch_string, ix86_tune_string,
 				   ix86_fpmath, true);
 
@@ -5337,7 +5362,10 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
 
-	if (!(opts_set->x_target_flags & MASK_80387))
+	/* Don't enable x87 instructions if only
+	   general registers are allowed.  */
+	if (!(opts_set->x_ix86_target_flags & OPTION_MASK_GENERAL_REGS_ONLY)
+	    && !(opts_set->x_target_flags & MASK_80387))
 	  {
 	    if (processor_alias_table[i].flags & PTA_NO_80387)
 	      opts->x_target_flags &= ~MASK_80387;
@@ -6075,7 +6103,6 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->tune_defaulted = ix86_tune_defaulted;
   ptr->arch_specified = ix86_arch_specified;
   ptr->x_ix86_isa_flags_explicit = opts->x_ix86_isa_flags_explicit;
-  ptr->x_ix86_target_flags_explicit = opts->x_ix86_target_flags_explicit;
   ptr->x_recip_mask_explicit = opts->x_recip_mask_explicit;
   ptr->x_ix86_arch_string = opts->x_ix86_arch_string;
   ptr->x_ix86_tune_string = opts->x_ix86_tune_string;
@@ -6132,7 +6159,6 @@ ix86_function_specific_restore (struct gcc_options *opts,
   ix86_tune_defaulted = ptr->tune_defaulted;
   ix86_arch_specified = ptr->arch_specified;
   opts->x_ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
-  opts->x_ix86_target_flags_explicit = ptr->x_ix86_target_flags_explicit;
   opts->x_recip_mask_explicit = ptr->x_recip_mask_explicit;
   opts->x_ix86_arch_string = ptr->x_ix86_arch_string;
   opts->x_ix86_tune_string = ptr->x_ix86_tune_string;
@@ -6239,7 +6265,8 @@ ix86_function_specific_print (FILE *file, int indent,
 {
   char *target_string
     = ix86_target_string (ptr->x_ix86_isa_flags, ptr->x_target_flags,
-			  NULL, NULL, ptr->x_ix86_fpmath, false);
+			  ptr->x_ix86_target_flags, NULL, NULL,
+			  ptr->x_ix86_fpmath, false);
 
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
@@ -40593,9 +40620,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
   if (ix86_builtins_isa[fcode].isa
       && !(ix86_builtins_isa[fcode].isa & ix86_isa_flags))
     {
-      char *opts = ix86_target_string (ix86_builtins_isa[fcode].isa, 0, NULL,
-				       NULL, (enum fpmath_unit) 0, false);
-
+      char *opts = ix86_target_string (ix86_builtins_isa[fcode].isa, 0, 0,
+				       NULL, NULL, (enum fpmath_unit) 0,
+				       false);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);
       else
