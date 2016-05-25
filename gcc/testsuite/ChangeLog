@@ -1,3 +1,8 @@
+2016-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71264
+	* gcc.dg/vect/pr71264.c: New testcase.
+
 2016-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55992

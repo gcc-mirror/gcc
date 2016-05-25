@@ -1,3 +1,9 @@
+2016-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71264
+	* tree-vect-stmts.c (vect_init_vector): Properly deal with
+	vector type val.
+
 2016-05-25  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/71239
