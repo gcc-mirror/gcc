@@ -4675,6 +4675,65 @@ assignment for unaligned loads and stores");
     warning (OPT_Wdeprecated, "vec_lvsr is deprecated for little endian; use \
 assignment for unaligned loads and stores");
 
+
+  if (fcode == ALTIVEC_BUILTIN_VEC_CMPNE)
+    {
+      /* vec_cmpne needs to be special cased because there are no instructions
+	 for it (prior to power 9).  */
+      if (nargs != 2)
+	{
+	  error ("vec_cmpne only accepts 2 arguments");
+	  return error_mark_node;
+	}
+
+      tree arg0 = (*arglist)[0];
+      tree arg0_type = TREE_TYPE (arg0);
+      tree arg1 = (*arglist)[1];
+      tree arg1_type = TREE_TYPE (arg1);
+
+      /* Both arguments must be vectors and the types must match.  */
+      if (arg0_type != arg1_type)
+	goto bad;
+      if (TREE_CODE (arg0_type) != VECTOR_TYPE)
+	goto bad;
+
+      switch (TYPE_MODE (TREE_TYPE (arg0_type)))
+	{
+	  /* vec_cmpneq (va, vb) == vec_nor (vec_cmpeq (va, vb),
+					     vec_cmpeq (va, vb)).  */
+	  /* Note:  vec_nand also works but opt changes vec_nand's to vec_nor's
+	     anyway.  */
+	  case QImode:
+	  case HImode:
+	  case SImode:
+	  case DImode:
+	  case TImode:
+ 	  case SFmode:
+	  case DFmode:
+	   {
+	      /* call = vec_cmpeq (va, vb)
+		 result = vec_nor (call, call).  */
+	      vec<tree, va_gc> *params = make_tree_vector ();
+	      vec_safe_push (params, arg0);
+	      vec_safe_push (params, arg1);
+	      tree call = altivec_resolve_overloaded_builtin
+		(loc, rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_CMPEQ], params);
+ 	      /* Use save_expr to ensure that operands used more than once
+		 that may have side effects (like calls) are only evaluated
+		 once.  */
+	      call = save_expr (call);
+	      params = make_tree_vector ();
+	      vec_safe_push (params, call);
+	      vec_safe_push (params, call);
+	      return altivec_resolve_overloaded_builtin
+		(loc, rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_NOR], params);
+	    }
+	  /* Other types are errors.  */
+	  default:
+	    goto bad;
+	}
+    }
+
   if (fcode == ALTIVEC_BUILTIN_VEC_ADDE)
     {
       /* vec_adde needs to be special cased because there is no instruction

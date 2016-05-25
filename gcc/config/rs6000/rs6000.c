@@ -16293,6 +16293,10 @@ altivec_init_builtins (void)
     = build_function_type_list (opaque_V4SI_type_node,
 				opaque_V4SI_type_node, opaque_V4SI_type_node,
 				opaque_V4SI_type_node, NULL_TREE);
+  tree opaque_ftype_opaque_opaque
+    = build_function_type_list (opaque_V4SI_type_node,
+				opaque_V4SI_type_node, opaque_V4SI_type_node,
+				NULL_TREE);
   tree int_ftype_int_opaque_opaque
     = build_function_type_list (integer_type_node,
                                 integer_type_node, opaque_V4SI_type_node,
@@ -16567,6 +16571,8 @@ altivec_init_builtins (void)
 		ALTIVEC_BUILTIN_VEC_ADDE);
   def_builtin ("__builtin_vec_addec", opaque_ftype_opaque_opaque_opaque,
 		ALTIVEC_BUILTIN_VEC_ADDEC);
+  def_builtin ("__builtin_vec_cmpne", opaque_ftype_opaque_opaque,
+		ALTIVEC_BUILTIN_VEC_CMPNE);
 
   /* Cell builtins.  */
   def_builtin ("__builtin_altivec_lvlx",  v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVLX);

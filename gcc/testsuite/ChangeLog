@@ -1,3 +1,8 @@
+2016-05-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-cmpne.c: New test.
+	* gcc.target/powerpc/vec-cmpne-long.c: New test.
+
 2016-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt55.ad[sb]: New test.
