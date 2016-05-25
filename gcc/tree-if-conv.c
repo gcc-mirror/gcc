@@ -2884,7 +2884,7 @@ const pass_data pass_data_if_conversion =
   GIMPLE_PASS, /* type */
   "ifcvt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  TV_TREE_LOOP_IFCVT, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */

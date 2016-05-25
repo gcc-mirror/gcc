@@ -281,6 +281,7 @@ DEFTIMEVAR (TV_VTABLE_VERIFICATION   , "vtable verification")
 DEFTIMEVAR (TV_TREE_UBSAN            , "tree ubsan")
 DEFTIMEVAR (TV_INITIALIZE_RTL        , "initialize rtl")
 DEFTIMEVAR (TV_GIMPLE_LADDRESS       , "address lowering")
+DEFTIMEVAR (TV_TREE_LOOP_IFCVT       , "tree loop if-conversion")
 
 /* Everything else in rest_of_compilation not included above.  */
 DEFTIMEVAR (TV_EARLY_LOCAL	     , "early local passes")
