@@ -2529,7 +2529,7 @@ ifcvt_split_def_stmt (gimple *def_stmt, gimple *use_stmt)
   gimple *copy_stmt;
   gimple_stmt_iterator gsi;
   use_operand_p use_p;
-  imm_use_iterator imm_iter;
+  ssa_op_iter iter;
 
   var = gimple_assign_lhs (def_stmt);
   copy_stmt = gimple_copy (def_stmt);
@@ -2548,9 +2548,9 @@ ifcvt_split_def_stmt (gimple *def_stmt, gimple *use_stmt)
       print_generic_expr (dump_file, lhs, TDF_SLIM);
       fprintf (dump_file, "\n");
     }
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
+  FOR_EACH_SSA_USE_OPERAND (use_p, use_stmt, iter, SSA_OP_USE)
     {
-      if (USE_STMT (use_p) != use_stmt)
+      if (USE_FROM_PTR (use_p) != var)
 	continue;
       SET_USE (use_p, lhs);
       break;
