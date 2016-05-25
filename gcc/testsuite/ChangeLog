@@ -1,3 +1,7 @@
+2016-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt55.ad[sb]: New test.
+
 2016-05-25  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* c-c++-common/Wduplicated-cond-1.c: Use smaller const literal.
