@@ -8605,8 +8605,11 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	    continue;
 	  /* If we got something other than a PARM_DECL it is an error.  */
 	  if (TREE_CODE (decl) != PARM_DECL)
-	    error_at (DECL_SOURCE_LOCATION (decl),
-		      "%qD declared as a non-parameter", decl);
+	    {
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"%qD declared as a non-parameter", decl);
+	      continue;
+	    }
 	  /* If the declaration is already marked, we have a duplicate
 	     name.  Complain and ignore the duplicate.  */
 	  else if (seen_args.contains (decl))
