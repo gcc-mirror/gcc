@@ -1,3 +1,9 @@
+2016-05-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* cgraph.c (cgraph_node::get_availability): Fix typo in comment.
+	* symtab.c (symtab_node::binds_to_current_def_p): Likewise.
+	* varpool.c (varpool_node::get_availability): Likewise.
+
 2016-05-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (VNEG iterator): New iterator for

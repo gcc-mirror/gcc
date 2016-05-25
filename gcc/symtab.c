@@ -2239,7 +2239,7 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
     }
 
   /* If this is a reference from symbol itself and there are no aliases, we
-     may be sure that the symbol was not interposed by soemthing else because
+     may be sure that the symbol was not interposed by something else because
      the symbol itself would be unreachable otherwise.  This is important
      to optimize recursive functions well.
 

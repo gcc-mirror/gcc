@@ -2235,7 +2235,7 @@ cgraph_node::get_availability (symtab_node *ref)
   else if (!externally_visible)
     avail = AVAIL_AVAILABLE;
   /* If this is a reference from symbol itself and there are no aliases, we
-     may be sure that the symbol was not interposed by soemthing else because
+     may be sure that the symbol was not interposed by something else because
      the symbol itself would be unreachable otherwise.
 
      Also comdat groups are always resolved in groups.  */
