@@ -450,7 +450,7 @@ namespace
 	ec = std::make_error_code(std::errc::io_error);
 	return false;
       }
-    if (sbout.close() || sbin.close())
+    if (!sbout.close() || !sbin.close())
       {
 	ec.assign(errno, std::generic_category());
 	return false;
