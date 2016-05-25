@@ -1,3 +1,12 @@
+2016-05-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX14_USE_CONSTEXPR): Remove it.
+	* include/bits/hashtable_policy.h (_Power2_rehash_policy::_M_next_bkt):
+	Remove const qualification on function. Replace
+	_GLIBCXX14_USE_CONSTEXPR on automatic variables with const.
+	(_Power2_rehash_policy::_M_need_rehash): Remove const qualification.
+	(_Power2_rehash_policy::_M_next_bkt): Remove mutable specifier.
+
 2016-05-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/c++config (_GLIBCXX14_USE_CONSTEXPR): New.

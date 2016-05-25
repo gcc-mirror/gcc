@@ -557,13 +557,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Return a bucket size no smaller than n (as long as n is not above the
     // highest power of 2).
     std::size_t
-    _M_next_bkt(std::size_t __n) const noexcept
+    _M_next_bkt(std::size_t __n) noexcept
     {
-      _GLIBCXX14_USE_CONSTEXPR size_t __max_width
-	= std::min<size_t>(sizeof(size_t), 8);
-      _GLIBCXX14_USE_CONSTEXPR auto __max_bkt
-	= std::size_t(1) << (__max_width * __CHAR_BIT__ - 1);
-
+      const auto __max_width = std::min<size_t>(sizeof(size_t), 8);
+      const auto __max_bkt = size_t(1) << (__max_width * __CHAR_BIT__ - 1);
       std::size_t __res = __clp2(__n);
 
       if (__res == __n)
@@ -595,7 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // is the new bucket count.  If not, return make_pair(false, 0).
     std::pair<bool, std::size_t>
     _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
-		   std::size_t __n_ins) const noexcept
+		   std::size_t __n_ins) noexcept
     {
       if (__n_elt + __n_ins >= _M_next_resize)
 	{
@@ -630,8 +627,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     static const std::size_t _S_growth_factor = 2;
 
-    float		_M_max_load_factor;
-    mutable std::size_t	_M_next_resize;
+    float	_M_max_load_factor;
+    std::size_t	_M_next_resize;
   };
 
   // Base classes for std::_Hashtable.  We define these base classes
