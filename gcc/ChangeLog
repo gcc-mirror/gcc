@@ -1,3 +1,38 @@
+2016-05-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* config/i386/i386-builtin-types.def: Add V16SI_FTYPE_V16SF,
+	V8DF_FTYPE_V8DF_ROUND, V16SF_FTYPE_V16SF_ROUND, V16SI_FTYPE_V16SF_ROUND.
+	* config/i386/i386.c (enum ix86_builtins): Add
+	IX86_BUILTIN_CVTPS2DQ512_MASK, IX86_BUILTIN_FLOORPS512,
+	IX86_BUILTIN_FLOORPD512, IX86_BUILTIN_CEILPS512, IX86_BUILTIN_CEILPD512,
+	IX86_BUILTIN_TRUNCPS512, IX86_BUILTIN_TRUNCPD512,
+	IX86_BUILTIN_CVTPS2DQ512, IX86_BUILTIN_VEC_PACK_SFIX512,
+	IX86_BUILTIN_FLOORPS_SFIX512, IX86_BUILTIN_CEILPS_SFIX512,
+	IX86_BUILTIN_ROUNDPS_AZ_SFIX512.
+	(builtin_description bdesc_args): Add __builtin_ia32_floorps512,
+	__builtin_ia32_ceilps512, __builtin_ia32_truncps512,
+	__builtin_ia32_floorpd512, __builtin_ia32_ceilpd512,
+	__builtin_ia32_truncpd512, __builtin_ia32_cvtps2dq512,
+	__builtin_ia32_vec_pack_sfix512, __builtin_ia32_roundps_az_sfix512,
+	__builtin_ia32_floorps_sfix512, __builtin_ia32_ceilps_sfix512.
+	Change IX86_BUILTIN_CVTPS2DQ512 to IX86_BUILTIN_CVTPS2DQ512_MASK for
+	__builtin_ia32_cvtps2dq512_mask.
+	(ix86_expand_args_builtin): Handle V8DF_FTYPE_V8DF_ROUND,
+	V16SF_FTYPE_V16SF_ROUND, V16SI_FTYPE_V16SF_ROUND, V16SI_FTYPE_V16SF.
+	(ix86_builtin_vectorized_function): Handle builtins mentioned above.
+	* config/i386/sse.md
+	(<mask_codefor>avx512f_fix_notruncv16sfv16si<mask_name><round_name>):
+	Rename to ...
+	(avx512f_fix_notruncv16sfv16si<mask_name><round_name>): ... this.
+	(<mask_codefor>avx512f_cvtpd2dq512<mask_name><round_name>): Rename
+	to ...
+	(avx512f_cvtpd2dq512<mask_name><round_name>): ... this.
+	(avx512f_vec_pack_sfix_v8df): New define_expand.
+	(avx512f_roundpd512): Rename to ...
+	(avx512f_round<castmode>512): ... this.  Change iterator.
+	(avx512f_roundps512_sfix): New define_expand.
+	(round<mode>2_sfix): Change iterator.
+
 2016-05-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_attr): Produce an error if a

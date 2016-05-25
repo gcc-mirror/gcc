@@ -1,3 +1,30 @@
+2016-05-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* gcc.target/i386/avx512f-ceil-vec-1.c: New test.
+	* gcc.target/i386/avx512f-ceil-vec-2.c: New test.
+	* gcc.target/i386/avx512f-ceilf-sfix-vec-1.c: New test.
+	* gcc.target/i386/avx512f-ceilf-sfix-vec-2.c: New test.
+	* gcc.target/i386/avx512f-ceilf-vec-1.c: New test.
+	* gcc.target/i386/avx512f-ceilf-vec-2.c: New test.
+	* gcc.target/i386/avx512f-floor-vec-1.c: New test.
+	* gcc.target/i386/avx512f-floor-vec-2.c: New test.
+	* gcc.target/i386/avx512f-floorf-sfix-vec-1.c: New test.
+	* gcc.target/i386/avx512f-floorf-sfix-vec-2.c: New test.
+	* gcc.target/i386/avx512f-floorf-vec-1.c: New test.
+	* gcc.target/i386/avx512f-floorf-vec-2.c: New test.
+	* gcc.target/i386/avx512f-rint-sfix-vec-1.c: New test.
+	* gcc.target/i386/avx512f-rint-sfix-vec-2.c: New test.
+	* gcc.target/i386/avx512f-rintf-sfix-vec-1.c: New test.
+	* gcc.target/i386/avx512f-rintf-sfix-vec-2.c: New test.
+	* gcc.target/i386/avx512f-round-sfix-vec-1.c: New test.
+	* gcc.target/i386/avx512f-round-sfix-vec-2.c: New test.
+	* gcc.target/i386/avx512f-roundf-sfix-vec-1.c: New test.
+	* gcc.target/i386/avx512f-roundf-sfix-vec-2.c: New test.
+	* gcc.target/i386/avx512f-trunc-vec-1.c: New test.
+	* gcc.target/i386/avx512f-trunc-vec-2.c: New test.
+	* gcc.target/i386/avx512f-truncf-vec-1.c: New test.
+	* gcc.target/i386/avx512f-truncf-vec-2.c: New test.
+
 2016-05-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71265
