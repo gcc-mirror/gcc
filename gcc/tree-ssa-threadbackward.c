@@ -373,6 +373,10 @@ convert_and_register_jump_thread_path (vec<basic_block, va_gc> *&path,
     {
       basic_block bb1 = (*path)[path->length () - j - 1];
       basic_block bb2 = (*path)[path->length () - j - 2];
+
+      /* This can happen when we have an SSA_NAME as a PHI argument and
+	 its initialization block is the head of the PHI argument's
+	 edge.  */
       if (bb1 == bb2)
 	continue;
 
@@ -380,6 +384,22 @@ convert_and_register_jump_thread_path (vec<basic_block, va_gc> *&path,
       gcc_assert (e);
       jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
       jump_thread_path->safe_push (x);
+    }
+
+  /* As a consequence of the test for duplicate blocks in the path
+     above, we can get a path with no blocks.  This happens if a
+     conditional can be fully evaluated at compile time using just
+     defining statements in the same block as the test.
+
+     When we no longer push the block associated with a PHI argument
+     onto the stack, then this as well as the test in the loop above
+     can be removed.  */
+  if (jump_thread_path->length () == 0)
+    {
+      jump_thread_path->release ();
+      delete jump_thread_path;
+      path->pop ();
+      return;
     }
 
   /* Add the edge taken when the control variable has value ARG.  */
