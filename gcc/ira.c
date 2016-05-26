@@ -5171,6 +5171,7 @@ ira (FILE *f)
     ira_set_pseudo_classes (true, ira_dump_file);
 
   init_alias_analysis ();
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
   update_equiv_regs ();
 
@@ -5186,6 +5187,7 @@ ira (FILE *f)
   if (optimize)
     add_store_equivs ();
 
+  loop_optimizer_finalize ();
   end_alias_analysis ();
   free (reg_equiv);
 
