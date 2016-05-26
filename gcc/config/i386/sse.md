@@ -12399,7 +12399,7 @@
   DONE;
 })
 
-(define_insn "<mask_codefor>avx512vl_shuf_<shuffletype>32x4_1<mask_name>"
+(define_insn "avx512vl_shuf_<shuffletype>32x4_1<mask_name>"
   [(set (match_operand:VI4F_256 0 "register_operand" "=v")
 	(vec_select:VI4F_256
 	  (vec_concat:<ssedoublemode>
@@ -17283,9 +17283,9 @@
 ;; If it so happens that the input is in memory, use vbroadcast.
 ;; Otherwise use vpermilp (and in the case of 256-bit modes, vperm2f128).
 (define_insn "*avx_vperm_broadcast_v4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "=x,x,x")
+  [(set (match_operand:V4SF 0 "register_operand" "=v,v,v")
 	(vec_select:V4SF
-	  (match_operand:V4SF 1 "nonimmediate_operand" "m,o,x")
+	  (match_operand:V4SF 1 "nonimmediate_operand" "m,o,v")
 	  (match_parallel 2 "avx_vbroadcast_operand"
 	    [(match_operand 3 "const_int_operand" "C,n,n")])))]
   "TARGET_AVX"
@@ -17307,13 +17307,13 @@
   [(set_attr "type" "ssemov,ssemov,sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "0,0,1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "SF,SF,V4SF")])
 
 (define_insn_and_split "*avx_vperm_broadcast_<mode>"
-  [(set (match_operand:VF_256 0 "register_operand" "=x,x,x")
+  [(set (match_operand:VF_256 0 "register_operand" "=v,v,v")
 	(vec_select:VF_256
-	  (match_operand:VF_256 1 "nonimmediate_operand" "m,o,?x")
+	  (match_operand:VF_256 1 "nonimmediate_operand" "m,o,?v")
 	  (match_parallel 2 "avx_vbroadcast_operand"
 	    [(match_operand 3 "const_int_operand" "C,n,n")])))]
   "TARGET_AVX"
@@ -17345,6 +17345,23 @@
 
       /* Shuffle the lane we care about into both lanes of the dest.  */
       mask = (elt / (<ssescalarnum> / 2)) * 0x11;
+      if (EXT_REX_SSE_REG_P (op0))
+	{
+	  /* There is no EVEX VPERM2F128, but we can use either VBROADCASTSS
+	     or VSHUFF128.  */
+	  gcc_assert (<MODE>mode == V8SFmode);
+	  if ((mask & 1) == 0)
+	    emit_insn (gen_avx2_vec_dupv8sf (op0,
+					     gen_lowpart (V4SFmode, op0)));
+	  else
+	    emit_insn (gen_avx512vl_shuf_f32x4_1 (op0, op0, op0,
+						  GEN_INT (4), GEN_INT (5),
+						  GEN_INT (6), GEN_INT (7),
+						  GEN_INT (12), GEN_INT (13),
+						  GEN_INT (14), GEN_INT (15)));
+	  DONE;
+	}
+
       emit_insn (gen_avx_vperm2f128<mode>3 (op0, op0, op0, GEN_INT (mask)));
       DONE;
     }
