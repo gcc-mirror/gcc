@@ -610,8 +610,14 @@
    #"
   [(set_attr "isa" "*,sse3,noavx,*,*,*,*")
    (set_attr "type" "mmxcvt,sse,sseshuf1,mmxmov,ssemov,fmov,imov")
-   (set_attr "length_immediate" "*,*,1,*,*,*,*")
-   (set_attr "prefix_rep" "*,1,*,*,*,*,*")
+   (set (attr "length_immediate")
+     (if_then_else (eq_attr "alternative" "2")
+		   (const_string "1")
+		   (const_string "*")))
+   (set (attr "prefix_rep")
+     (if_then_else (eq_attr "alternative" "1")
+		   (const_string "1")
+		   (const_string "*")))
    (set_attr "prefix" "orig,maybe_vex,orig,orig,orig,orig,orig")
    (set_attr "mode" "DI,V4SF,V4SF,SF,SF,SF,SF")])
 
@@ -1297,7 +1303,10 @@
    #"
   [(set_attr "isa" "*,sse2,noavx,*,*,*")
    (set_attr "type" "mmxcvt,sseshuf1,sseshuf1,mmxmov,ssemov,imov")
-   (set_attr "length_immediate" "*,1,1,*,*,*")
+   (set (attr "length_immediate")
+     (if_then_else (eq_attr "alternative" "1,2")
+		   (const_string "1")
+		   (const_string "*")))
    (set_attr "prefix" "orig,maybe_vex,orig,orig,orig,orig")
    (set_attr "mode" "DI,TI,V4SF,SI,SI,SI")])
 

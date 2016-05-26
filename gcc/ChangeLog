@@ -1,3 +1,46 @@
+2016-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movqi_internal) <attr "isa">: Use
+	if_then_else or cond RTXes to calculate attribute value.
+	* config/i386/mmx.md (*vec_extractv2sf_1) <attr "prefix_rep">: Ditto.
+	<attr "length_immediate>: Ditto.
+	(*vec_extractv2sf_1) <attr "length_immediate">: Ditto.
+	* config/i386/sse.md (sse_loadlps) <attr "length_immediate">: Ditto.
+	(*vec_concatv2sf_sse4_1) <attr "isa">: Ditto.
+	<attr "type">: Ditto.
+	<attr "prefix_data16">: Ditto.
+	<attr "prefix_extra">: Ditto.
+	<attr "length_immediate">: Ditto.
+	<attr "prefix">: Ditto.
+	(vec_set<mode>_0) <attr "isa">: Ditto.
+	<attr "prefix_extra">: Ditto.
+	<attr "length_immediate">: Ditto.
+	<attr "prefix">: Ditto.
+	(*vec_interleave_highv2df) <attr "prefix_data16">: Ditto.
+	(*vec_interleave_lowv2df) <attr "prefix_data16">: Ditto.
+	(sse2_storelpd) <attr "prefix_data16">: Ditto.
+	(sse2_loadhpd) <attr "prefix_data16">: Ditto.
+	(sse2_loadlpd) <attr "prefix_data16">: Ditto.
+	<attr "length_immediate">: Ditto.
+	<attr "prefix">: Ditto.
+	(sse2_movsd) <attr "length_immediate">: Ditto.
+	<attr "prefix">: Ditto.
+	(vec_concatv2df)  <attr "isa">: Ditto.
+	<attr "prefix">: Ditto.
+	(*vec_extractv4si) <attr "prefix_extra">: Ditto.
+	(*vec_extractv2di_1) <attr "isa">: Ditto.
+	<attr "type">: Ditto.
+	<attr "length_immediate">: Ditto.
+	<attr "prefix_rex">: Ditto.
+	<attr "prefix_extra">: Ditto.
+	(*vec_concatv2si_sse4_1) <attr "type">: Ditto.
+	<attr "prefix_extra">: Ditto.
+	<attr "length_immediate">: Ditto.
+	(vec_concatv2di) <attr "isa">: Ditto.
+	<attr "prefix_extra">: Ditto.
+	<attr "length_immediate">: Ditto.
+	<attr "prefix">: Ditto.
+
 2016-05-26  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (comp_cost::infinite_cost_p): New
