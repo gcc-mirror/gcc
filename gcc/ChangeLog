@@ -1,3 +1,14 @@
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md
+	(<mask_codefor>avx512vl_shuf_<shuffletype>32x4_1<mask_name>): Rename
+	to ...
+	(avx512vl_shuf_<shuffletype>32x4_1<mask_name>): ... this.
+	(*avx_vperm_broadcast_v4sf): Use v constraint instead of x.  Use
+	maybe_evex prefix instead of vex.
+	(*avx_vperm_broadcast_<mode>): Use v constraint instead of x.  Handle
+	EXT_REX_SSE_REG_P (op0) case in the splitter.
+
 2016-05-25  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71272

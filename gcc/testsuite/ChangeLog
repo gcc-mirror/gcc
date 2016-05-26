@@ -1,3 +1,7 @@
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512vl-vbroadcast-3.c: New test.
+
 2016-05-26  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/simd/vmul_elem_1.c: Force result variables to be
