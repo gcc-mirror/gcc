@@ -36,7 +36,7 @@ main ()
 	#pragma omp atomic write
 	a[i] = 3;
       }
-    #pragma omp for schedule(static, 0) ordered (3) nowait
+    #pragma omp for schedule(static) ordered (3) nowait
     for (i = 2; i < N / 16 - 1; i++)
       for (j = 0; j < 8; j += 2)
 	for (k = 1; k <= 3; k++)

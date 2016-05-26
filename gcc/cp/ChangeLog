@@ -1,3 +1,8 @@
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses) <case OMP_CLAUSE_SCHEDULE>: Warn
+	if OMP_CLAUSE_SCHEDULE_CHUNK_EXPR is known not to be positive.
+
 2016-05-26  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70822

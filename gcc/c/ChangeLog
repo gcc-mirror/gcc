@@ -1,3 +1,8 @@
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_schedule): Warn if
+	OMP_CLAUSE_SCHEDULE_CHUNK_EXPR is known not to be positive.
+
 2016-05-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71265

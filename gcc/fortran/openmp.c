@@ -3259,6 +3259,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  || expr->ts.type != BT_INTEGER || expr->rank != 0)
 	gfc_error ("SCHEDULE clause's chunk_size at %L requires "
 		   "a scalar INTEGER expression", &expr->where);
+      else if (expr->expr_type == EXPR_CONSTANT
+	       && expr->ts.type == BT_INTEGER
+	       && mpz_sgn (expr->value.integer) <= 0)
+	gfc_warning (0, "INTEGER expression of SCHEDULE clause's chunk_size "
+		     "at %L must be positive", &expr->where);
     }
 
   /* Check that no symbol appears on multiple clauses, except that

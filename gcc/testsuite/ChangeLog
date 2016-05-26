@@ -1,3 +1,8 @@
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/schedule-1.c: New test.
+	* gfortran.dg/gomp/schedule-1.f90: New test.
+
 2016-05-26  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70822

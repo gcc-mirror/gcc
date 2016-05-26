@@ -6319,6 +6319,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  break;
 			}
 		    }
+		  else
+		    {
+		      t = maybe_constant_value (t);
+		      if (TREE_CODE (t) == INTEGER_CST
+			  && tree_int_cst_sgn (t) != 1)
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "chunk size value must be positive");
+			  t = integer_one_node;
+			}
+		    }
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c) = t;
