@@ -835,8 +835,6 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Asynchronous reference count.  */
-  uintptr_t async_refcount;
   /* Pointer to the original mapping of "omp declare target link" object.  */
   splay_tree_key link_key;
 };
@@ -872,7 +870,7 @@ typedef struct acc_dispatch_t
 		     unsigned *, void *);
 
   /* Async cleanup callback registration.  */
-  void (*register_async_cleanup_func) (void *);
+  void (*register_async_cleanup_func) (void *, int);
 
   /* Asynchronous routines.  */
   int (*async_test_func) (int);
@@ -977,7 +975,6 @@ extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
 					      size_t *, void *, bool,
 					      enum gomp_map_vars_kind);
-extern void gomp_copy_from_async (struct target_mem_desc *);
 extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);

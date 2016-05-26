@@ -1,5 +1,37 @@
 2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* oacc-plugin.h (GOMP_PLUGIN_async_unmap_vars): Add int parameter.
+	* oacc-plugin.c (GOMP_PLUGIN_async_unmap_vars): Add 'int async'
+	parameter, use to set async stream around call to gomp_unmap_vars,
+	call gomp_unmap_vars() with 'do_copyfrom' set to true.
+	* plugin/plugin-nvptx.c (struct ptx_event): Add 'int val' field.
+	(event_gc): Adjust event handling loop, collect PTX_EVT_ASYNC_CLEANUP
+	events and call GOMP_PLUGIN_async_unmap_vars() for each of them.
+	(event_add): Add int parameter, initialize 'val' field when
+	adding new ptx_event struct.
+	(nvptx_evec): Adjust event_add() call arguments.
+	(nvptx_host2dev): Likewise.
+	(nvptx_dev2host): Likewise.
+	(nvptx_wait_async): Likewise.
+	(nvptx_wait_all_async): Likewise.
+	(GOMP_OFFLOAD_openacc_register_async_cleanup): Add async parameter,
+	pass to event_add() call.
+	* oacc-host.c (host_openacc_register_async_cleanup): Add 'int async'
+	parameter.
+	* oacc-mem.c (gomp_acc_remove_pointer): Adjust async case to
+	call openacc.register_async_cleanup_func() hook.
+	* oacc-parallel.c (GOACC_parallel_keyed): Likewise.
+	* target.c (gomp_copy_from_async): Delete function.
+	(gomp_map_vars): Remove async_refcount.
+	(gomp_unmap_vars): Likewise.
+	(gomp_load_image_to_device): Likewise.
+	(omp_target_associate_ptr): Likewise.
+	* libgomp.h (struct splay_tree_key_s): Remove async_refcount.
+	(acc_dispatch_t.register_async_cleanup_func): Add int parameter.
+	(gomp_copy_from_async): Remove.
+
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* target.c (gomp_device_copy): New function.
 	(gomp_copy_host2dev): Likewise.
 	(gomp_copy_dev2host): Likewise.

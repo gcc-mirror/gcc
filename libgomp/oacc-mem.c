@@ -704,10 +704,7 @@ gomp_acc_remove_pointer (void *h, bool force_copyfrom, int async, int mapnum)
   if (async < acc_async_noval)
     gomp_unmap_vars (t, true);
   else
-    {
-      gomp_copy_from_async (t);
-      acc_dev->openacc.register_async_cleanup_func (t);
-    }
+    t->device_descr->openacc.register_async_cleanup_func (t, async);
 
   gomp_debug (0, "  %s: mappings restored\n", __FUNCTION__);
 }

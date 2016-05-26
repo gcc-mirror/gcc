@@ -148,7 +148,8 @@ host_openacc_exec (void (*fn) (void *),
 }
 
 static void
-host_openacc_register_async_cleanup (void *targ_mem_desc __attribute__ ((unused)))
+host_openacc_register_async_cleanup (void *targ_mem_desc __attribute__ ((unused)),
+				     int async __attribute__ ((unused)))
 {
 }
 
