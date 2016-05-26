@@ -1,3 +1,9 @@
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/doacross-1.c (main): Use schedule(static)
+	instead of invalid schedule(static, 0).
+	* testsuite/libgomp.c/doacross-2.c (main): Likewise.
+
 2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* oacc-plugin.h (GOMP_PLUGIN_async_unmap_vars): Add int parameter.
