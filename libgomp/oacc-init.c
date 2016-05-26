@@ -300,8 +300,8 @@ acc_shutdown_1 (acc_device_t d)
 
   gomp_mutex_unlock (&goacc_thread_lock);
 
-
   /* Close all the devices of this type that have been opened.  */
+  bool ret = true;
   for (i = 0; i < ndevs; i++)
     {
       struct gomp_device_descr *acc_dev = &base_dev[i];
@@ -309,11 +309,14 @@ acc_shutdown_1 (acc_device_t d)
       if (acc_dev->state == GOMP_DEVICE_INITIALIZED)
         {
 	  devices_active = true;
-	  acc_dev->fini_device_func (acc_dev->target_id);
+	  ret &= acc_dev->fini_device_func (acc_dev->target_id);
 	  acc_dev->state = GOMP_DEVICE_UNINITIALIZED;
 	}
       gomp_mutex_unlock (&acc_dev->lock);
     }
+
+  if (!ret)
+    gomp_fatal ("device finalization failed");
 
   if (!devices_active)
     gomp_fatal ("no device initialized");

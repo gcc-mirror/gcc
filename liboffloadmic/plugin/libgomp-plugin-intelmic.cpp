@@ -205,7 +205,7 @@ GOMP_OFFLOAD_get_num_devices (void)
   return num_devices;
 }
 
-static void
+static bool
 offload (const char *file, uint64_t line, int device, const char *name,
 	 int num_vars, VarDesc *vars, const void **async_data)
 {
@@ -213,20 +213,21 @@ offload (const char *file, uint64_t line, int device, const char *name,
   if (ofld)
     {
       if (async_data == NULL)
-	__offload_offload1 (ofld, name, 0, num_vars, vars, NULL, 0, NULL, NULL);
+	return __offload_offload1 (ofld, name, 0, num_vars, vars, NULL, 0,
+				   NULL, NULL);
       else
 	{
 	  OffloadFlags flags;
 	  flags.flags = 0;
 	  flags.bits.omp_async = 1;
-	  __offload_offload3 (ofld, name, 0, num_vars, vars, NULL, 0, NULL,
-			      async_data, 0, NULL, flags, NULL);
+	  return __offload_offload3 (ofld, name, 0, num_vars, vars, NULL, 0,
+				     NULL, async_data, 0, NULL, flags, NULL);
 	}
     }
   else
     {
-      fprintf (stderr, "%s:%d: Offload target acquire failed\n", file, line);
-      exit (1);
+      GOMP_PLUGIN_error ("%s:%d: Offload target acquire failed\n", file, line);
+      return false;
     }
 }
 
@@ -244,25 +245,26 @@ register_main_image ()
 
 /* liboffloadmic loads and runs offload_target_main on all available devices
    during a first call to offload ().  */
-extern "C" void
+extern "C" bool
 GOMP_OFFLOAD_init_device (int device)
 {
   TRACE ("(device = %d)", device);
   pthread_once (&main_image_is_registered, register_main_image);
-  offload (__FILE__, __LINE__, device, "__offload_target_init_proc", 0, NULL,
-	   NULL);
+  return offload (__FILE__, __LINE__, device, "__offload_target_init_proc", 0,
+		  NULL, NULL);
 }
 
-extern "C" void
+extern "C" bool
 GOMP_OFFLOAD_fini_device (int device)
 {
   TRACE ("(device = %d)", device);
 
   /* liboffloadmic will finalize target processes on all available devices.  */
   __offload_unregister_image (&main_target_image);
+  return true;
 }
 
-static void
+static bool
 get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
 {
   VarDesc vd1[2] = { vd_tgt2host, vd_tgt2host };
@@ -271,8 +273,9 @@ get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
   vd1[1].ptr = &num_vars;
   vd1[1].size = sizeof (num_vars);
 
-  offload (__FILE__, __LINE__, device, "__offload_target_table_p1", 2, vd1,
-	   NULL);
+  if (!offload (__FILE__, __LINE__, device, "__offload_target_table_p1", 2,
+		vd1, NULL))
+    return false;
 
   int table_size = num_funcs + 2 * num_vars;
   if (table_size > 0)
@@ -284,15 +287,16 @@ get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
       vd2.ptr = table;
       vd2.size = table_size * sizeof (void *);
 
-      offload (__FILE__, __LINE__, device, "__offload_target_table_p2", 1, &vd2,
-	       NULL);
+      return offload (__FILE__, __LINE__, device, "__offload_target_table_p2",
+		      1, &vd2, NULL);
     }
+  return true;
 }
 
 /* Offload TARGET_IMAGE to all available devices and fill address_table with
    corresponding target addresses.  */
 
-static void
+static bool
 offload_image (const void *target_image)
 {
   void *image_start = ((void **) target_image)[0];
@@ -306,8 +310,8 @@ offload_image (const void *target_image)
 						       + image_size);
   if (!image)
     {
-      fprintf (stderr, "%s: Can't allocate memory\n", __FILE__);
-      exit (1);
+      GOMP_PLUGIN_error ("%s: Can't allocate memory\n", __FILE__);
+      return false;
     }
 
   image->size = image_size;
@@ -322,13 +326,14 @@ offload_image (const void *target_image)
 
   /* Receive tables for target_image from all devices.  */
   DevAddrVect dev_table;
+  bool ret = true;
   for (int dev = 0; dev < num_devices; dev++)
     {
       int num_funcs = 0;
       int num_vars = 0;
       void **table = NULL;
 
-      get_target_table (dev, num_funcs, num_vars, table);
+      ret &= get_target_table (dev, num_funcs, num_vars, table);
 
       AddrVect curr_dev_table;
 
@@ -357,6 +362,7 @@ offload_image (const void *target_image)
 
   address_table->insert (std::make_pair (target_image, dev_table));
   image_descriptors->insert (std::make_pair (target_image, image));
+  return ret;
 }
 
 /* Return the libgomp version number we're compatible with.  There is
@@ -375,22 +381,29 @@ GOMP_OFFLOAD_load_image (int device, const unsigned version,
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 
   if (GOMP_VERSION_DEV (version) > GOMP_VERSION_INTEL_MIC)
-    GOMP_PLUGIN_fatal ("Offload data incompatible with intelmic plugin"
-		       " (expected %u, received %u)",
-		       GOMP_VERSION_INTEL_MIC, GOMP_VERSION_DEV (version));
+    {
+      GOMP_PLUGIN_error ("Offload data incompatible with intelmic plugin"
+			 " (expected %u, received %u)",
+			 GOMP_VERSION_INTEL_MIC, GOMP_VERSION_DEV (version));
+      return -1;
+    }
 
   /* If target_image is already present in address_table, then there is no need
      to offload it.  */
   if (address_table->count (target_image) == 0)
-    offload_image (target_image);
+    {
+      /* If fail, return -1 as error code.  */
+      if (!offload_image (target_image))
+	return -1;
+    }
 
   AddrVect *curr_dev_table = &(*address_table)[target_image][device];
   int table_size = curr_dev_table->size ();
   addr_pair *table = (addr_pair *) malloc (table_size * sizeof (addr_pair));
   if (table == NULL)
     {
-      fprintf (stderr, "%s: Can't allocate memory\n", __FILE__);
-      exit (1);
+      GOMP_PLUGIN_error ("%s: Can't allocate memory\n", __FILE__);
+      return -1;
     }
 
   std::copy (curr_dev_table->begin (), curr_dev_table->end (), table);
@@ -398,12 +411,17 @@ GOMP_OFFLOAD_load_image (int device, const unsigned version,
   return table_size;
 }
 
-extern "C" void
+extern "C" bool
 GOMP_OFFLOAD_unload_image (int device, unsigned version,
 			   const void *target_image)
 {
   if (GOMP_VERSION_DEV (version) > GOMP_VERSION_INTEL_MIC)
-    return;
+    {
+      GOMP_PLUGIN_error ("Offload data incompatible with intelmic plugin"
+			 " (expected %u, received %u)",
+			 GOMP_VERSION_INTEL_MIC, GOMP_VERSION_DEV (version));
+      return false;
+    }
 
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 
@@ -417,6 +435,7 @@ GOMP_OFFLOAD_unload_image (int device, unsigned version,
       address_table->erase (target_image);
       image_descriptors->erase (target_image);
     }
+  return true;
 }
 
 extern "C" void *
@@ -431,12 +450,14 @@ GOMP_OFFLOAD_alloc (int device, size_t size)
   vd[1].ptr = &tgt_ptr;
   vd[1].size = sizeof (void *);
 
-  offload (__FILE__, __LINE__, device, "__offload_target_alloc", 2, vd, NULL);
+  if (!offload (__FILE__, __LINE__, device, "__offload_target_alloc", 2,
+		vd, NULL))
+    return NULL;
 
   return tgt_ptr;
 }
 
-extern "C" void
+extern "C" bool
 GOMP_OFFLOAD_free (int device, void *tgt_ptr)
 {
   TRACE ("(device = %d, tgt_ptr = %p)", device, tgt_ptr);
@@ -445,17 +466,18 @@ GOMP_OFFLOAD_free (int device, void *tgt_ptr)
   vd.ptr = &tgt_ptr;
   vd.size = sizeof (void *);
 
-  offload (__FILE__, __LINE__, device, "__offload_target_free", 1, &vd, NULL);
+  return offload (__FILE__, __LINE__, device, "__offload_target_free", 1,
+		  &vd, NULL);
 }
 
-extern "C" void *
+extern "C" bool
 GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr,
 		       size_t size)
 {
   TRACE ("(device = %d, tgt_ptr = %p, host_ptr = %p, size = %d)",
 	 device, tgt_ptr, host_ptr, size);
   if (!size)
-    return tgt_ptr;
+    return true;
 
   VarDesc vd1[2] = { vd_host2tgt, vd_host2tgt };
   vd1[0].ptr = &tgt_ptr;
@@ -463,27 +485,26 @@ GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr,
   vd1[1].ptr = &size;
   vd1[1].size = sizeof (size);
 
-  offload (__FILE__, __LINE__, device, "__offload_target_host2tgt_p1", 2, vd1,
-	   NULL);
+  if (!offload (__FILE__, __LINE__, device, "__offload_target_host2tgt_p1", 2,
+		vd1, NULL))
+    return false;
 
   VarDesc vd2 = vd_host2tgt;
   vd2.ptr = (void *) host_ptr;
   vd2.size = size;
 
-  offload (__FILE__, __LINE__, device, "__offload_target_host2tgt_p2", 1, &vd2,
-	   NULL);
-
-  return tgt_ptr;
+  return offload (__FILE__, __LINE__, device, "__offload_target_host2tgt_p2", 1,
+		  &vd2, NULL);
 }
 
-extern "C" void *
+extern "C" bool
 GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr,
 		       size_t size)
 {
   TRACE ("(device = %d, host_ptr = %p, tgt_ptr = %p, size = %d)",
 	 device, host_ptr, tgt_ptr, size);
   if (!size)
-    return host_ptr;
+    return true;
 
   VarDesc vd1[2] = { vd_host2tgt, vd_host2tgt };
   vd1[0].ptr = &tgt_ptr;
@@ -491,27 +512,26 @@ GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr,
   vd1[1].ptr = &size;
   vd1[1].size = sizeof (size);
 
-  offload (__FILE__, __LINE__, device, "__offload_target_tgt2host_p1", 2, vd1,
-	   NULL);
+  if (!offload (__FILE__, __LINE__, device, "__offload_target_tgt2host_p1", 2,
+		vd1, NULL))
+    return false;
 
   VarDesc vd2 = vd_tgt2host;
   vd2.ptr = (void *) host_ptr;
   vd2.size = size;
 
-  offload (__FILE__, __LINE__, device, "__offload_target_tgt2host_p2", 1, &vd2,
-	   NULL);
-
-  return host_ptr;
+  return offload (__FILE__, __LINE__, device, "__offload_target_tgt2host_p2", 1,
+		  &vd2, NULL);
 }
 
-extern "C" void *
+extern "C" bool
 GOMP_OFFLOAD_dev2dev (int device, void *dst_ptr, const void *src_ptr,
 		      size_t size)
 {
   TRACE ("(device = %d, dst_ptr = %p, src_ptr = %p, size = %d)",
 	 device, dst_ptr, src_ptr, size);
   if (!size)
-    return dst_ptr;
+    return true;
 
   VarDesc vd[3] = { vd_host2tgt, vd_host2tgt, vd_host2tgt };
   vd[0].ptr = &dst_ptr;
@@ -521,9 +541,8 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst_ptr, const void *src_ptr,
   vd[2].ptr = &size;
   vd[2].size = sizeof (size);
 
-  offload (__FILE__, __LINE__, device, "__offload_target_tgt2tgt", 3, vd, NULL);
-
-  return dst_ptr;
+  return offload (__FILE__, __LINE__, device, "__offload_target_tgt2tgt", 3,
+		  vd, NULL);
 }
 
 extern "C" void

@@ -1,3 +1,120 @@
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_device_copy): New function.
+	(gomp_copy_host2dev): Likewise.
+	(gomp_copy_dev2host): Likewise.
+	(gomp_free_device_memory): Likewise.
+	(gomp_map_vars_existing): Adjust to call gomp_copy_host2dev.
+	(gomp_map_pointer): Likewise.
+	(gomp_map_vars): Adjust to call gomp_copy_host2dev, handle
+	NULL value from alloc_func plugin hook.
+	(gomp_unmap_tgt): Adjust to call gomp_free_device_memory.
+	(gomp_copy_from_async): Adjust to call gomp_copy_dev2host.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Adjust to call gomp_copy_dev2host and
+	gomp_copy_host2dev functions.
+	(gomp_unload_image_from_device): Handle false value from
+	unload_image_func plugin hook.
+	(gomp_init_device): Handle false value from init_device_func
+	plugin hook.
+	(gomp_exit_data): Adjust to call gomp_copy_dev2host.
+	(omp_target_free): Adjust to call gomp_free_device_memory.
+	(omp_target_memcpy): Handle return values from host2dev_func,
+	dev2host_func, and dev2dev_func plugin hooks.
+	(omp_target_memcpy_rect_worker): Likewise.
+	(gomp_target_fini): Handle false value from fini_device_func
+	plugin hook.
+	* libgomp.h (struct gomp_device_descr): Adjust return type of
+	init_device_func, fini_device_func, unload_image_func, free_func,
+	dev2host_func,host2dev_func, and dev2dev_func plugin hooks to 'bool'.
+	* oacc-init.c (acc_shutdown_1): Handle false value from
+	fini_device_func plugin hook.
+	* oacc-host.c (host_init_device): Change return type to bool.
+	(host_fini_device): Likewise.
+	(host_unload_image): Likewise.
+	(host_free): Likewise.
+	(host_dev2host): Likewise.
+	(host_host2dev): Likewise.
+	* oacc-mem.c (acc_free): Handle plugin hook fatal error case.
+	(acc_memcpy_to_device): Likewise.
+	(acc_memcpy_from_device): Likewise.
+	(delete_copyout): Add libfnname parameter, handle free_func
+	hook fatal error case.
+	(acc_delete): Adjust delete_copyout call.
+	(acc_copyout): Likewise.
+	(update_dev_host): Move gomp_mutex_unlock to after
+	host2dev/dev2host hook calls.
+
+	* plugin/plugin-hsa.c (hsa_warn): Adjust 'hsa_error' local variable
+	to 'hsa_error_msg', for clarity.
+	(hsa_fatal): Likewise.
+	(hsa_error): New function.
+	(init_hsa_context): Change return type to bool, adjust to return
+	false on error.
+	(GOMP_OFFLOAD_get_num_devices): Adjust to handle init_hsa_context
+	return value.
+	(GOMP_OFFLOAD_init_device): Change return type to bool, adjust to
+	return false on error.
+	(get_agent_info): Adjust to return NULL on error.
+	(destroy_hsa_program): Change return type to bool, adjust to
+	return false on error.
+	(GOMP_OFFLOAD_load_image): Adjust to return -1 on error.
+	(destroy_module): Change return type to bool, adjust to
+	return false on error.
+	(GOMP_OFFLOAD_unload_image): Likewise.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(GOMP_OFFLOAD_alloc): Change to return NULL when called.
+	(GOMP_OFFLOAD_free): Change to return false when called.
+	(GOMP_OFFLOAD_dev2host): Likewise.
+	(GOMP_OFFLOAD_host2dev): Likewise.
+	(GOMP_OFFLOAD_dev2dev): Likewise.
+
+	* plugin/plugin-nvptx.c (CUDA_CALL_ERET): New convenience macro.
+	(CUDA_CALL): Likewise.
+	(CUDA_CALL_ASSERT): Likewise.
+	(map_init): Change return type to bool, use CUDA_CALL* macros.
+	(map_fini): Likewise.
+	(init_streams_for_device): Change return type to bool, adjust
+	call to map_init.
+	(fini_streams_for_device): Change return type to bool, adjust
+	call to map_fini.
+	(select_stream_for_async): Release stream_lock before calls to
+	GOMP_PLUGIN_fatal, adjust call to map_init.
+	(nvptx_init): Use CUDA_CALL* macros.
+	(nvptx_attach_host_thread_to_device): Change return type to bool,
+	use CUDA_CALL* macros.
+	(nvptx_open_device): Use CUDA_CALL* macros.
+	(nvptx_close_device): Change return type to bool, use CUDA_CALL*
+	macros.
+	(nvptx_get_num_devices): Use CUDA_CALL* macros.
+	(link_ptx): Change return type to bool, use CUDA_CALL* macros.
+	(nvptx_exec): Use CUDA_CALL* macros.
+	(nvptx_alloc): Use CUDA_CALL* macros.
+	(nvptx_free): Change return type to bool, use CUDA_CALL* macros.
+	(nvptx_host2dev): Likewise.
+	(nvptx_dev2host): Likewise.
+	(nvptx_wait): Use CUDA_CALL* macros.
+	(nvptx_wait_async): Likewise.
+	(nvptx_wait_all): Likewise.
+	(nvptx_wait_all_async): Likewise.
+	(nvptx_set_cuda_stream): Adjust order of stream_lock acquire,
+	use CUDA_CALL* macros, adjust call to map_fini.
+	(GOMP_OFFLOAD_init_device): Change return type to bool,
+	adjust code accordingly.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(GOMP_OFFLOAD_load_image): Adjust calls to
+	nvptx_attach_host_thread_to_device/link_ptx to handle errors,
+	use CUDA_CALL* macros.
+	(GOMP_OFFLOAD_unload_image): Change return type to bool, adjust
+	return code.
+	(GOMP_OFFLOAD_alloc): Adjust calls to code to handle error return.
+	(GOMP_OFFLOAD_free): Change return type to bool, adjust calls to
+	handle error return.
+	(GOMP_OFFLOAD_dev2host): Likewise.
+	(GOMP_OFFLOAD_host2dev): Likewise.
+	(GOMP_OFFLOAD_openacc_register_async_cleanup): Use CUDA_CALL* macros.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Likewise.
+
 2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* oacc-mem.c (acc_malloc): Update handling of shared-memory targets.

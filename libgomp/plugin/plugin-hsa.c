@@ -175,10 +175,10 @@ hsa_warn (const char *str, hsa_status_t status)
   if (!debug)
     return;
 
-  const char *hsa_error;
-  hsa_status_string (status, &hsa_error);
+  const char *hsa_error_msg;
+  hsa_status_string (status, &hsa_error_msg);
 
-  fprintf (stderr, "HSA warning: %s\nRuntime message: %s", str, hsa_error);
+  fprintf (stderr, "HSA warning: %s\nRuntime message: %s", str, hsa_error_msg);
 }
 
 /* Report a fatal error STR together with the HSA error corresponding to STATUS
@@ -187,10 +187,23 @@ hsa_warn (const char *str, hsa_status_t status)
 static void
 hsa_fatal (const char *str, hsa_status_t status)
 {
-  const char *hsa_error;
-  hsa_status_string (status, &hsa_error);
+  const char *hsa_error_msg;
+  hsa_status_string (status, &hsa_error_msg);
   GOMP_PLUGIN_fatal ("HSA fatal error: %s\nRuntime message: %s", str,
-		     hsa_error);
+		     hsa_error_msg);
+}
+
+/* Like hsa_fatal, except only report error message, and return FALSE
+   for propagating error processing to outside of plugin.  */
+
+static bool
+hsa_error (const char *str, hsa_status_t status)
+{
+  const char *hsa_error_msg;
+  hsa_status_string (status, &hsa_error_msg);
+  GOMP_PLUGIN_error ("HSA fatal error: %s\nRuntime message: %s", str,
+		     hsa_error_msg);
+  return false;
 }
 
 struct hsa_kernel_description
@@ -418,24 +431,25 @@ assign_agent_ids (hsa_agent_t agent, void *data)
   return HSA_STATUS_SUCCESS;
 }
 
-/* Initialize hsa_context if it has not already been done.  */
+/* Initialize hsa_context if it has not already been done.
+   Return TRUE on success.  */
 
-static void
+static bool
 init_hsa_context (void)
 {
   hsa_status_t status;
   int agent_index = 0;
 
   if (hsa_context.initialized)
-    return;
+    return true;
   init_enviroment_variables ();
   status = hsa_init ();
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Run-time could not be initialized", status);
+    return hsa_error ("Run-time could not be initialized", status);
   HSA_DEBUG ("HSA run-time initialized\n");
   status = hsa_iterate_agents (count_gpu_agents, NULL);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("HSA GPU devices could not be enumerated", status);
+    return hsa_error ("HSA GPU devices could not be enumerated", status);
   HSA_DEBUG ("There are %i HSA GPU devices.\n", hsa_context.agent_count);
 
   hsa_context.agents
@@ -443,8 +457,12 @@ init_hsa_context (void)
 				  * sizeof (struct agent_info));
   status = hsa_iterate_agents (assign_agent_ids, &agent_index);
   if (agent_index != hsa_context.agent_count)
-    GOMP_PLUGIN_fatal ("Failed to assign IDs to all HSA agents");
+    {
+      GOMP_PLUGIN_error ("Failed to assign IDs to all HSA agents");
+      return false;
+    }
   hsa_context.initialized = true;
+  return true;
 }
 
 /* Callback of dispatch queues to report errors.  */
@@ -492,75 +510,100 @@ get_kernarg_memory_region (hsa_region_t region, void *data)
 int
 GOMP_OFFLOAD_get_num_devices (void)
 {
-  init_hsa_context ();
+  if (!init_hsa_context ())
+    return 0;
   return hsa_context.agent_count;
 }
 
 /* Part of the libgomp plugin interface.  Initialize agent number N so that it
-   can be used for computation.  */
+   can be used for computation.  Return TRUE on success.  */
 
-void
+bool
 GOMP_OFFLOAD_init_device (int n)
 {
-  init_hsa_context ();
+  if (!init_hsa_context ())
+    return false;
   if (n >= hsa_context.agent_count)
-    GOMP_PLUGIN_fatal ("Request to initialize non-existing HSA device %i", n);
+    {
+      GOMP_PLUGIN_error ("Request to initialize non-existing HSA device %i", n);
+      return false;
+    }
   struct agent_info *agent = &hsa_context.agents[n];
 
   if (agent->initialized)
-    return;
+    return true;
 
   if (pthread_rwlock_init (&agent->modules_rwlock, NULL))
-    GOMP_PLUGIN_fatal ("Failed to initialize an HSA agent rwlock");
+    {
+      GOMP_PLUGIN_error ("Failed to initialize an HSA agent rwlock");
+      return false;
+    }
   if (pthread_mutex_init (&agent->prog_mutex, NULL))
-    GOMP_PLUGIN_fatal ("Failed to initialize an HSA agent program mutex");
+    {
+      GOMP_PLUGIN_error ("Failed to initialize an HSA agent program mutex");
+      return false;
+    }
 
   uint32_t queue_size;
   hsa_status_t status;
   status = hsa_agent_get_info (agent->id, HSA_AGENT_INFO_QUEUE_MAX_SIZE,
 			       &queue_size);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Error requesting maximum queue size of the HSA agent", status);
+    return hsa_error ("Error requesting maximum queue size of the HSA agent",
+		      status);
   status = hsa_agent_get_info (agent->id, HSA_AGENT_INFO_ISA, &agent->isa);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Error querying the ISA of the agent", status);
+    return hsa_error ("Error querying the ISA of the agent", status);
   status = hsa_queue_create (agent->id, queue_size, HSA_QUEUE_TYPE_MULTI,
 			     queue_callback, NULL, UINT32_MAX, UINT32_MAX,
 			     &agent->command_q);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Error creating command queue", status);
+    return hsa_error ("Error creating command queue", status);
 
   status = hsa_queue_create (agent->id, queue_size, HSA_QUEUE_TYPE_MULTI,
 			     queue_callback, NULL, UINT32_MAX, UINT32_MAX,
 			     &agent->kernel_dispatch_command_q);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Error creating kernel dispatch command queue", status);
+    return hsa_error ("Error creating kernel dispatch command queue", status);
 
   agent->kernarg_region.handle = (uint64_t) -1;
   status = hsa_agent_iterate_regions (agent->id, get_kernarg_memory_region,
 				      &agent->kernarg_region);
   if (agent->kernarg_region.handle == (uint64_t) -1)
-    GOMP_PLUGIN_fatal ("Could not find suitable memory region for kernel "
-		       "arguments");
+    {
+      GOMP_PLUGIN_error ("Could not find suitable memory region for kernel "
+			 "arguments");
+      return false;
+    }
   HSA_DEBUG ("HSA agent initialized, queue has id %llu\n",
 	     (long long unsigned) agent->command_q->id);
   HSA_DEBUG ("HSA agent initialized, kernel dispatch queue has id %llu\n",
 	     (long long unsigned) agent->kernel_dispatch_command_q->id);
   agent->initialized = true;
+  return true;
 }
 
 /* Verify that hsa_context has already been initialized and return the
-   agent_info structure describing device number N.  */
+   agent_info structure describing device number N.  Return NULL on error.  */
 
 static struct agent_info *
 get_agent_info (int n)
 {
   if (!hsa_context.initialized)
-    GOMP_PLUGIN_fatal ("Attempt to use uninitialized HSA context.");
+    {
+      GOMP_PLUGIN_error ("Attempt to use uninitialized HSA context.");
+      return NULL;
+    }
   if (n >= hsa_context.agent_count)
-    GOMP_PLUGIN_fatal ("Request to operate on anon-existing HSA device %i", n);
+    {
+      GOMP_PLUGIN_error ("Request to operate on anon-existing HSA device %i", n);
+      return NULL;
+    }
   if (!hsa_context.agents[n].initialized)
-    GOMP_PLUGIN_fatal ("Attempt to use an uninitialized HSA agent.");
+    {
+      GOMP_PLUGIN_error ("Attempt to use an uninitialized HSA agent.");
+      return NULL;
+    }
   return &hsa_context.agents[n];
 }
 
@@ -590,13 +633,14 @@ remove_module_from_agent (struct agent_info *agent, struct module_info *module)
 }
 
 /* Free the HSA program in agent and everything associated with it and set
-   agent->prog_finalized and the initialized flags of all kernels to false.  */
+   agent->prog_finalized and the initialized flags of all kernels to false.
+   Return TRUE on success.  */
 
-static void
+static bool
 destroy_hsa_program (struct agent_info *agent)
 {
   if (!agent->prog_finalized || agent->prog_finalized_error)
-    return;
+    return true;
 
   hsa_status_t status;
 
@@ -604,7 +648,7 @@ destroy_hsa_program (struct agent_info *agent)
 
   status = hsa_executable_destroy (agent->executable);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Could not destroy HSA executable", status);
+    return hsa_error ("Could not destroy HSA executable", status);
 
   struct module_info *module;
   for (module = agent->first_module; module; module = module->next)
@@ -614,6 +658,7 @@ destroy_hsa_program (struct agent_info *agent)
 	module->kernels[i].initialized = false;
     }
   agent->prog_finalized = false;
+  return true;
 }
 
 /* Part of the libgomp plugin interface.  Load BRIG module described by struct
@@ -625,9 +670,12 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, void *target_data,
 			 struct addr_pair **target_table)
 {
   if (GOMP_VERSION_DEV (version) > GOMP_VERSION_HSA)
-    GOMP_PLUGIN_fatal ("Offload data incompatible with HSA plugin"
-		       " (expected %u, received %u)",
-		       GOMP_VERSION_HSA, GOMP_VERSION_DEV (version));
+    {
+      GOMP_PLUGIN_error ("Offload data incompatible with HSA plugin"
+			 " (expected %u, received %u)",
+			 GOMP_VERSION_HSA, GOMP_VERSION_DEV (version));
+      return -1;
+    }
 
   struct brig_image_desc *image_desc = (struct brig_image_desc *) target_data;
   struct agent_info *agent;
@@ -637,10 +685,17 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, void *target_data,
   int kernel_count = image_desc->kernel_count;
 
   agent = get_agent_info (ord);
+  if (!agent)
+    return -1;
+
   if (pthread_rwlock_wrlock (&agent->modules_rwlock))
-    GOMP_PLUGIN_fatal ("Unable to write-lock an HSA agent rwlock");
-  if (agent->prog_finalized)
-    destroy_hsa_program (agent);
+    {
+      GOMP_PLUGIN_error ("Unable to write-lock an HSA agent rwlock");
+      return -1;
+    }
+  if (agent->prog_finalized
+      && !destroy_hsa_program (agent))
+    return -1;
 
   HSA_DEBUG ("Encountered %d kernels in an image\n", kernel_count);
   pair = GOMP_PLUGIN_malloc (kernel_count * sizeof (struct addr_pair));
@@ -668,7 +723,10 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, void *target_data,
       kernel->dependencies_count = d->kernel_dependencies_count;
       kernel->dependencies = d->kernel_dependencies;
       if (pthread_mutex_init (&kernel->init_mutex, NULL))
-	GOMP_PLUGIN_fatal ("Failed to initialize an HSA kernel mutex");
+	{
+	  GOMP_PLUGIN_error ("Failed to initialize an HSA kernel mutex");
+	  return -1;
+	}
 
       kernel++;
       pair++;
@@ -676,7 +734,10 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, void *target_data,
 
   add_module_to_agent (agent, module);
   if (pthread_rwlock_unlock (&agent->modules_rwlock))
-    GOMP_PLUGIN_fatal ("Unable to unlock an HSA agent rwlock");
+    {
+      GOMP_PLUGIN_error ("Unable to unlock an HSA agent rwlock");
+      return -1;
+    }
   return kernel_count;
 }
 
@@ -1373,34 +1434,47 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 }
 
 /* Deinitialize all information associated with MODULE and kernels within
-   it.  */
+   it.  Return TRUE on success.  */
 
-void
+static bool
 destroy_module (struct module_info *module)
 {
   int i;
   for (i = 0; i < module->kernel_count; i++)
     if (pthread_mutex_destroy (&module->kernels[i].init_mutex))
-      GOMP_PLUGIN_fatal ("Failed to destroy an HSA kernel initialization "
-			 "mutex");
+      {
+	GOMP_PLUGIN_error ("Failed to destroy an HSA kernel initialization "
+			   "mutex");
+	return false;
+      }
+  return true;
 }
 
 /* Part of the libgomp plugin interface.  Unload BRIG module described by
-   struct brig_image_desc in TARGET_DATA from agent number N.  */
+   struct brig_image_desc in TARGET_DATA from agent number N.  Return
+   TRUE on success.  */
 
-void
+bool
 GOMP_OFFLOAD_unload_image (int n, unsigned version, void *target_data)
 {
   if (GOMP_VERSION_DEV (version) > GOMP_VERSION_HSA)
-    GOMP_PLUGIN_fatal ("Offload data incompatible with HSA plugin"
-		       " (expected %u, received %u)",
-		       GOMP_VERSION_HSA, GOMP_VERSION_DEV (version));
+    {
+      GOMP_PLUGIN_error ("Offload data incompatible with HSA plugin"
+			 " (expected %u, received %u)",
+			 GOMP_VERSION_HSA, GOMP_VERSION_DEV (version));
+      return false;
+    }
 
   struct agent_info *agent;
   agent = get_agent_info (n);
-  if (pthread_rwlock_wrlock (&agent->modules_rwlock))
-    GOMP_PLUGIN_fatal ("Unable to write-lock an HSA agent rwlock");
+  if (!agent)
+    return false;
 
+  if (pthread_rwlock_wrlock (&agent->modules_rwlock))
+    {
+      GOMP_PLUGIN_error ("Unable to write-lock an HSA agent rwlock");
+      return false;
+    }
   struct module_info *module = agent->first_module;
   while (module)
     {
@@ -1409,54 +1483,75 @@ GOMP_OFFLOAD_unload_image (int n, unsigned version, void *target_data)
       module = module->next;
     }
   if (!module)
-    GOMP_PLUGIN_fatal ("Attempt to unload an image that has never been "
-		       "loaded before");
+    {
+      GOMP_PLUGIN_error ("Attempt to unload an image that has never been "
+			 "loaded before");
+      return false;
+    }
 
   remove_module_from_agent (agent, module);
-  destroy_module (module);
+  if (!destroy_module (module))
+    return false;
   free (module);
-  destroy_hsa_program (agent);
+  if (!destroy_hsa_program (agent))
+    return false;
   if (pthread_rwlock_unlock (&agent->modules_rwlock))
-    GOMP_PLUGIN_fatal ("Unable to unlock an HSA agent rwlock");
+    {
+      GOMP_PLUGIN_error ("Unable to unlock an HSA agent rwlock");
+      return false;
+    }
+  return true;
 }
 
 /* Part of the libgomp plugin interface.  Deinitialize all information and
    status associated with agent number N.  We do not attempt any
    synchronization, assuming the user and libgomp will not attempt
    deinitialization of a device that is in any way being used at the same
-   time.  */
+   time.  Return TRUE on success.  */
 
-void
+bool
 GOMP_OFFLOAD_fini_device (int n)
 {
   struct agent_info *agent = get_agent_info (n);
+  if (!agent)
+    return false;
+
   if (!agent->initialized)
-    return;
+    return true;
 
   struct module_info *next_module = agent->first_module;
   while (next_module)
     {
       struct module_info *module = next_module;
       next_module = module->next;
-      destroy_module (module);
+      if (!destroy_module (module))
+	return false;
       free (module);
     }
   agent->first_module = NULL;
-  destroy_hsa_program (agent);
+  if (!destroy_hsa_program (agent))
+    return false;
 
   release_agent_shared_libraries (agent);
 
   hsa_status_t status = hsa_queue_destroy (agent->command_q);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Error destroying command queue", status);
+    return hsa_error ("Error destroying command queue", status);
   status = hsa_queue_destroy (agent->kernel_dispatch_command_q);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Error destroying kernel dispatch command queue", status);
+    return hsa_error ("Error destroying kernel dispatch command queue", status);
   if (pthread_mutex_destroy (&agent->prog_mutex))
-    GOMP_PLUGIN_fatal ("Failed to destroy an HSA agent program mutex");
+    {
+      GOMP_PLUGIN_error ("Failed to destroy an HSA agent program mutex");
+      return false;
+    }
   if (pthread_rwlock_destroy (&agent->modules_rwlock))
-    GOMP_PLUGIN_fatal ("Failed to destroy an HSA agent rwlock");
+    {
+      GOMP_PLUGIN_error ("Failed to destroy an HSA agent rwlock");
+      return false;
+    }
   agent->initialized = false;
+  return true;
 }
 
 /* Part of the libgomp plugin interface.  Not implemented as it is not required
@@ -1465,46 +1560,51 @@ GOMP_OFFLOAD_fini_device (int n)
 void *
 GOMP_OFFLOAD_alloc (int ord, size_t size)
 {
-  GOMP_PLUGIN_fatal ("HSA GOMP_OFFLOAD_alloc is not implemented because "
+  GOMP_PLUGIN_error ("HSA GOMP_OFFLOAD_alloc is not implemented because "
 		     "it should never be called");
+  return NULL;
 }
 
 /* Part of the libgomp plugin interface.  Not implemented as it is not required
    for HSA.  */
 
-void
+bool
 GOMP_OFFLOAD_free (int ord, void *ptr)
 {
-  GOMP_PLUGIN_fatal ("HSA GOMP_OFFLOAD_free is not implemented because "
+  GOMP_PLUGIN_error ("HSA GOMP_OFFLOAD_free is not implemented because "
 		     "it should never be called");
+  return false;
 }
 
 /* Part of the libgomp plugin interface.  Not implemented as it is not required
    for HSA.  */
 
-void *
+bool
 GOMP_OFFLOAD_dev2host (int ord, void *dst, const void *src, size_t n)
 {
-  GOMP_PLUGIN_fatal ("HSA GOMP_OFFLOAD_dev2host is not implemented because "
+  GOMP_PLUGIN_error ("HSA GOMP_OFFLOAD_dev2host is not implemented because "
 		     "it should never be called");
+  return false;
 }
 
 /* Part of the libgomp plugin interface.  Not implemented as it is not required
    for HSA.  */
 
-void *
+bool
 GOMP_OFFLOAD_host2dev (int ord, void *dst, const void *src, size_t n)
 {
-  GOMP_PLUGIN_fatal ("HSA GOMP_OFFLOAD_host2dev is not implemented because "
+  GOMP_PLUGIN_error ("HSA GOMP_OFFLOAD_host2dev is not implemented because "
 		     "it should never be called");
+  return false;
 }
 
 /* Part of the libgomp plugin interface.  Not implemented as it is not required
    for HSA.  */
 
-void *
+bool
 GOMP_OFFLOAD_dev2dev (int ord, void *dst, const void *src, size_t n)
 {
-  GOMP_PLUGIN_fatal ("HSA GOMP_OFFLOAD_dev2dev is not implemented because "
+  GOMP_PLUGIN_error ("HSA GOMP_OFFLOAD_dev2dev is not implemented because "
 		     "it should never be called");
+  return false;
 }
