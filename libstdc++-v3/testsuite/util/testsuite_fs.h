@@ -83,7 +83,9 @@ namespace __gnu_test
     p = tmp;
 #else
     char buf[64];
-    std::sprintf(buf, "test.%lu", (unsigned long)::getpid());
+    static int counter;
+    std::sprintf(buf, "filesystem-ts-test.%d.%lu", counter++,
+		 (unsigned long) ::getpid());
     p = buf;
 #endif
     return p;
