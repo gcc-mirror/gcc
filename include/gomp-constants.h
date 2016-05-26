@@ -196,8 +196,10 @@ enum gomp_map_kind
 /* Internal to libgomp.  */
 #define GOMP_TARGET_FLAG_UPDATE		(1U << 31)
 
-/* Versions of libgomp and device-specific plugins.  */
-#define GOMP_VERSION	0
+/* Versions of libgomp and device-specific plugins.  GOMP_VERSION
+   should be incremented whenever an ABI-incompatible change is introduced
+   to the plugin interface defined in libgomp/libgomp.h.  */
+#define GOMP_VERSION	1
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
 #define GOMP_VERSION_HSA 0
