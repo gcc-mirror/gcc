@@ -1,3 +1,9 @@
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Increment to 1, add comment to
+	describe the need for incrementing this macro whenever the plugin
+	interface is modified.
+
 2016-04-29  Tom Tromey  <tom@tromey.com>
 
 	* dwarf2.h (enum dwarf_source_language) <DW_LANG_Rust,
