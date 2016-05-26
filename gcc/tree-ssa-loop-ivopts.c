@@ -7643,6 +7643,7 @@ loop_body_includes_call (basic_block *body, unsigned num_nodes)
       {
 	gimple *stmt = gsi_stmt (gsi);
 	if (is_gimple_call (stmt)
+	    && !gimple_call_internal_p (stmt)
 	    && !is_inexpensive_builtin (gimple_call_fndecl (stmt)))
 	  return true;
       }

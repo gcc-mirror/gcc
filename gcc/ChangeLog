@@ -1,3 +1,8 @@
+2016-05-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-loop-ivopts.c (loop_body_includes_call): Don't assume
+	that internal functions will clobber all caller-saved registers.
+
 2016-05-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_case_values_threshold):
