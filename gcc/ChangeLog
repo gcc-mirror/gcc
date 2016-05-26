@@ -1,5 +1,9 @@
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*vcvtps2ph_store<mask_name>): Use v constraint
+	instead of x constraint.
+	(vcvtps2ph256<mask_name>): Likewise.
+
 	* config/i386/sse.md (*ssse3_palignr<mode>_perm): Add avx512bw
 	alternative.  Formatting fix.
 
