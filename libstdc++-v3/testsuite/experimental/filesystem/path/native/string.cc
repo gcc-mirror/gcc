@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++11 -lstdc++fs" }
+// { dg-require-filesystem-ts "" }
 
 #include <experimental/filesystem>
 #include <string>
