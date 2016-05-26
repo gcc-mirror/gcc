@@ -1,3 +1,48 @@
+2016-05-26  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (comp_cost::infinite_cost_p): New
+	function.
+	(operator+): Likewise.
+	(operator-): Likewise.
+	(comp_cost::operator+=): Likewise.
+	(comp_cost::operator-=): Likewise.
+	(comp_cost::operator/=): Likewise.
+	(comp_cost::operator*=): Likewise.
+	(operator<): Likewise.
+	(operator==): Likewise.
+	(operator<=): Likewise.
+	(new_cost): Remove.
+	(infinite_cost_p): Likewise.
+	(add_costs): Likewise.
+	(sub_costs): Likewise.
+	(compare_costs): Likewise.
+	(set_group_iv_cost): Use the newly introduced functions.
+	(get_address_cost): Likewise.
+	(get_shiftadd_cost): Likewise.
+	(force_expr_to_var_cost): Likewise.
+	(split_address_cost): Likewise.
+	(ptr_difference_cost): Likewise.
+	(difference_cost): Likewise.
+	(get_computation_cost_at): Likewise.
+	(determine_group_iv_cost_generic): Likewise.
+	(determine_group_iv_cost_address): Likewise.
+	(determine_group_iv_cost_cond): Likewise.
+	(autoinc_possible_for_pair): Likewise.
+	(determine_group_iv_costs): Likewise.
+	(cheaper_cost_pair): Likewise.
+	(iv_ca_recount_cost): Likewise.
+	(iv_ca_set_no_cp): Likewise.
+	(iv_ca_set_cp): Likewise.
+	(iv_ca_cost): Likewise.
+	(iv_ca_new): Likewise.
+	(iv_ca_dump): Likewise.
+	(iv_ca_narrow): Likewise.
+	(iv_ca_prune): Likewise.
+	(iv_ca_replace): Likewise.
+	(try_add_cand_for): Likewise.
+	(try_improve_iv_set): Likewise.
+	(find_optimal_iv_set): Likewise.
+
 2016-05-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-ssa-loop-ivopts.c (loop_body_includes_call): Don't assume
