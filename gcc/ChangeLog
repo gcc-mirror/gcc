@@ -1,3 +1,9 @@
+2016-05-27  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/71275
+	* ira.c (ira): Call loop_optimizer_init to set up bb_loop_depth
+	for update_equiv_regs and combine_and_move_insns.
+
 2016-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movqi_internal) <attr "isa">: Use
