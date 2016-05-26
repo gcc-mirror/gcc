@@ -1,3 +1,12 @@
+2016-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/20060410.c: Xfail on ptx.
+	* gcc.dg/torture/c99-contract-1.c: Skip on ptx.
+	* c-c++-common/torture/complex-sign-mixed-add.c: Skip on ptx -O0
+	* c-c++-common/torture/complex-sign-mixed-sub.c: Skip on ptx -O0
+	* gcc.c-torture/execute/pr68185.c: Skip on ptx -O0 & Os.
+	* gcc.c-torture/execute/20020529-1.c: Skip on ptx -00.
+
 2016-05-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/plugin/plugin.exp: skip tail call tests for Thumb-1.

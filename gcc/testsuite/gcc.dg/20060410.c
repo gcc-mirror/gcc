@@ -13,4 +13,4 @@ int bar (void)
     return ((struct foo *)0x1234)->i;
 }
 
-/* { dg-final { scan-assembler "foo" } } */
+/* { dg-final { scan-assembler "foo" { xfail nvptx-*-* } } } */
