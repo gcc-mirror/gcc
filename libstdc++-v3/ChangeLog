@@ -1,5 +1,12 @@
 2016-05-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2016-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70762
+	* testsuite/util/testsuite_fs.h (__gnu_test::nonexistent_path): Use
+	static counter to return a different path on every call.
+
 	* testsuite/experimental/filesystem/path/native/string.cc: Add
 	dg-require-filesystem-ts directive.
 
