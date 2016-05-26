@@ -1109,10 +1109,6 @@
 (define_special_predicate "equality_operator"
   (match_code "eq,ne"))
 
-;; Return true if operand is MIN or MAX operator.
-(define_predicate "min_max_operator"
-  (match_code "smin,smax,umin,umax"))
-
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; instruction.  We check the opcode against the mode of the CC value.
 ;; validate_condition_mode is an assertion.
@@ -1154,6 +1150,11 @@
 (define_predicate "scc_rev_comparison_operator"
   (and (match_operand 0 "branch_comparison_operator")
        (match_code "ne,le,ge,leu,geu,ordered")))
+
+;; Return 1 if OP is a comparison operator suitable for vector/scalar
+;; comparisons that generate a -1/0 mask.
+(define_predicate "fpmask_comparison_operator"
+  (match_code "eq,gt,ge"))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; insn, which is true if the corresponding bit in the CC register is set.

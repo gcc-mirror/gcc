@@ -1,3 +1,9 @@
+2016-05-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p9-minmax-1.c: New tests for ISA 3.0
+	floating point min/max/comparison instructions.
+	* gcc.target/powerpc/p9-minmax-2.c: Likewise.
+
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/schedule-1.c: New test.
