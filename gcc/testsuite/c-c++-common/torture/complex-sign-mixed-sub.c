@@ -2,6 +2,7 @@
    subtraction.  */
 /* { dg-do run } */
 /* { dg-options "-std=gnu99" { target c } } */
+/* { dg-skip-if "ptx can elide zero additions" { "nvptx-*-*" } { "-O0" } { "" } } */
 
 #include "complex-sign.h"
 
