@@ -1,5 +1,10 @@
 2016-05-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_case_values_threshold):
+	Return a better case_values_threshold when optimizing.
+
+2016-05-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_combinez):
 	Add ? to integer variant.
 	(aarch64_combinez_be): Likewise.

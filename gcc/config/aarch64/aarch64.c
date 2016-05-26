@@ -3572,7 +3572,12 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   return aarch64_tls_referenced_p (x);
 }
 
-/* Implement TARGET_CASE_VALUES_THRESHOLD.  */
+/* Implement TARGET_CASE_VALUES_THRESHOLD.
+   The expansion for a table switch is quite expensive due to the number
+   of instructions, the table lookup and hard to predict indirect jump.
+   When optimizing for speed, and -O3 enabled, use the per-core tuning if 
+   set, otherwise use tables for > 16 cases as a tradeoff between size and
+   performance.  When optimizing for size, use the default setting.  */
 
 static unsigned int
 aarch64_case_values_threshold (void)
@@ -3583,7 +3588,7 @@ aarch64_case_values_threshold (void)
       && selected_cpu->tune->max_case_values != 0)
     return selected_cpu->tune->max_case_values;
   else
-    return default_case_values_threshold ();
+    return optimize_size ? default_case_values_threshold () : 17;
 }
 
 /* Return true if register REGNO is a valid index register.
