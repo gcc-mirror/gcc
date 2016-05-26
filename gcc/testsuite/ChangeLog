@@ -1,3 +1,10 @@
+2016-05-26  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70822
+	PR c++/70106
+	* g++.dg/cpp1y/auto-fn32.C: New test.
+	* g++.dg/cpp1y/paren4.C: New test.
+
 2016-05-26  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/20060410.c: Xfail on ptx.

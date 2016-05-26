@@ -170,7 +170,7 @@ operator == (const cp_expr &lhs, tree rhs)
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
       FNDECL_USED_AUTO (in FUNCTION_DECL)
       DECLTYPE_FOR_LAMBDA_PROXY (in DECLTYPE_TYPE)
-      REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF)
+      REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
@@ -3398,12 +3398,12 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define PAREN_STRING_LITERAL_P(NODE) \
   TREE_LANG_FLAG_0 (STRING_CST_CHECK (NODE))
 
-/* Indicates whether a COMPONENT_REF has been parenthesized, or an
-   INDIRECT_REF comes from parenthesizing a _DECL.  Currently only set
-   some of the time in C++14 mode.  */
+/* Indicates whether a COMPONENT_REF or a SCOPE_REF has been parenthesized, or
+   an INDIRECT_REF comes from parenthesizing a _DECL.  Currently only set some
+   of the time in C++14 mode.  */
 
 #define REF_PARENTHESIZED_P(NODE) \
-  TREE_LANG_FLAG_2 (TREE_CHECK2 ((NODE), COMPONENT_REF, INDIRECT_REF))
+  TREE_LANG_FLAG_2 (TREE_CHECK3 ((NODE), COMPONENT_REF, INDIRECT_REF, SCOPE_REF))
 
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */

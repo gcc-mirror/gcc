@@ -13739,8 +13739,10 @@ tsubst_qualified_id (tree qualified_id, tree args,
     {
       if (is_template)
 	expr = build_min_nt_loc (loc, TEMPLATE_ID_EXPR, expr, template_args);
-      return build_qualified_name (NULL_TREE, scope, expr,
-				   QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
+      tree r = build_qualified_name (NULL_TREE, scope, expr,
+				     QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
+      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (qualified_id);
+      return r;
     }
 
   if (!BASELINK_P (name) && !DECL_P (expr))
@@ -13819,6 +13821,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
 	 want the referenced member referenced.  */
       && TREE_CODE (expr) != OFFSET_REF)
     expr = convert_from_reference (expr);
+
+  if (REF_PARENTHESIZED_P (qualified_id))
+    expr = force_paren_expr (expr);
 
   return expr;
 }
@@ -24016,8 +24021,10 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   if (AUTO_IS_DECLTYPE (auto_node))
     {
-      bool id = (DECL_P (init) || (TREE_CODE (init) == COMPONENT_REF
-				   && !REF_PARENTHESIZED_P (init)));
+      bool id = (DECL_P (init)
+		 || ((TREE_CODE (init) == COMPONENT_REF
+		      || TREE_CODE (init) == SCOPE_REF)
+		     && !REF_PARENTHESIZED_P (init)));
       targs = make_tree_vec (1);
       TREE_VEC_ELT (targs, 0)
 	= finish_decltype_type (init, id, tf_warning_or_error);
