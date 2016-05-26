@@ -1,3 +1,8 @@
+2016-05-26  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/simd/vmul_elem_1.c: Force result variables to be
+	kept in memory. 
+
 2016-05-25  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71272
