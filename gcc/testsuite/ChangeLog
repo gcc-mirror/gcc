@@ -1,3 +1,7 @@
+2016-05-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/plugin/plugin.exp: skip tail call tests for Thumb-1.
+
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71280

@@ -90,6 +90,12 @@ foreach plugin_test $plugin_test_list {
     if ![runtest_file_p $runtests $plugin_src] then {
         continue
     }
+    # Skip tail call tests on targets that do not have sibcall_epilogue.
+    if {[regexp ".*must_tail_call_plugin.c" $plugin_src]
+	&& [istarget arm*-*-*]
+	&& [check_effective_target_arm_thumb1]} then {
+	continue
+    }
     set plugin_input_tests [lreplace $plugin_test 0 0]
     plugin-test-execute $plugin_src $plugin_input_tests
 }
