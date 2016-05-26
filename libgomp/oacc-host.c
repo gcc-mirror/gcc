@@ -60,14 +60,16 @@ host_get_num_devices (void)
   return 1;
 }
 
-static void
+static bool
 host_init_device (int n __attribute__ ((unused)))
 {
+  return true;
 }
 
-static void
+static bool
 host_fini_device (int n __attribute__ ((unused)))
 {
+  return true;
 }
 
 static unsigned
@@ -85,11 +87,12 @@ host_load_image (int n __attribute__ ((unused)),
   return 0;
 }
 
-static void
+static bool
 host_unload_image (int n __attribute__ ((unused)),
 		   unsigned v __attribute__ ((unused)),
 		   const void *t __attribute__ ((unused)))
 {
+  return true;
 }
 
 static void *
@@ -98,28 +101,29 @@ host_alloc (int n __attribute__ ((unused)), size_t s)
   return gomp_malloc (s);
 }
 
-static void
+static bool
 host_free (int n __attribute__ ((unused)), void *p)
 {
   free (p);
+  return true;
 }
 
-static void *
+static bool
 host_dev2host (int n __attribute__ ((unused)),
 	       void *h __attribute__ ((unused)),
 	       const void *d __attribute__ ((unused)),
 	       size_t s __attribute__ ((unused)))
 {
-  return NULL;
+  return true;
 }
 
-static void *
+static bool
 host_host2dev (int n __attribute__ ((unused)),
 	       void *d __attribute__ ((unused)),
 	       const void *h __attribute__ ((unused)),
 	       size_t s __attribute__ ((unused)))
 {
-  return NULL;
+  return true;
 }
 
 static void

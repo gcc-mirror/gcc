@@ -149,7 +149,8 @@ acc_free (void *d)
   else
     gomp_mutex_unlock (&acc_dev->lock);
 
-  acc_dev->free_func (acc_dev->target_id, d);
+  if (!acc_dev->free_func (acc_dev->target_id, d))
+    gomp_fatal ("error in freeing device memory in %s", __FUNCTION__);
 }
 
 void
@@ -167,7 +168,8 @@ acc_memcpy_to_device (void *d, void *h, size_t s)
       return;
     }
 
-  thr->dev->host2dev_func (thr->dev->target_id, d, h, s);
+  if (!thr->dev->host2dev_func (thr->dev->target_id, d, h, s))
+    gomp_fatal ("error in %s", __FUNCTION__);
 }
 
 void
@@ -185,7 +187,8 @@ acc_memcpy_from_device (void *h, void *d, size_t s)
       return;
     }
 
-  thr->dev->dev2host_func (thr->dev->target_id, h, d, s);
+  if (!thr->dev->dev2host_func (thr->dev->target_id, h, d, s))
+    gomp_fatal ("error in %s", __FUNCTION__);
 }
 
 /* Return the device pointer that corresponds to host data H.  Or NULL
@@ -520,7 +523,7 @@ acc_present_or_copyin (void *h, size_t s)
 #define FLAG_COPYOUT (1 << 0)
 
 static void
-delete_copyout (unsigned f, void *h, size_t s)
+delete_copyout (unsigned f, void *h, size_t s, const char *libfnname)
 {
   size_t host_size;
   splay_tree_key n;
@@ -563,18 +566,20 @@ delete_copyout (unsigned f, void *h, size_t s)
 
   acc_unmap_data (h);
 
-  acc_dev->free_func (acc_dev->target_id, d);
+  if (!acc_dev->free_func (acc_dev->target_id, d))
+    gomp_fatal ("error in freeing device memory in %s", libfnname);
 }
 
 void
 acc_delete (void *h , size_t s)
 {
-  delete_copyout (0, h, s);
+  delete_copyout (0, h, s, __FUNCTION__);
 }
 
-void acc_copyout (void *h, size_t s)
+void
+acc_copyout (void *h, size_t s)
 {
-  delete_copyout (FLAG_COPYOUT, h, s);
+  delete_copyout (FLAG_COPYOUT, h, s, __FUNCTION__);
 }
 
 static void
@@ -604,12 +609,12 @@ update_dev_host (int is_dev, void *h, size_t s)
   d = (void *) (n->tgt->tgt_start + n->tgt_offset
 		+ (uintptr_t) h - n->host_start);
 
-  gomp_mutex_unlock (&acc_dev->lock);
-
   if (is_dev)
     acc_dev->host2dev_func (acc_dev->target_id, d, h, s);
   else
     acc_dev->dev2host_func (acc_dev->target_id, h, d, s);
+
+  gomp_mutex_unlock (&acc_dev->lock);
 }
 
 void

@@ -63,6 +63,34 @@ cuda_error (CUresult r)
   return desc;
 }
 
+/* Convenience macros for the frequently used CUDA library call and
+   error handling sequence.  This does not capture all the cases we
+   use in this file, but is common enough.  */
+
+#define CUDA_CALL_ERET(ERET, FN, ...)		\
+  do {						\
+    unsigned __r = FN (__VA_ARGS__);		\
+    if (__r != CUDA_SUCCESS)			\
+      {						\
+	GOMP_PLUGIN_error (#FN " error: %s",	\
+			   cuda_error (__r));	\
+	return ERET;				\
+      }						\
+  } while (0)
+
+#define CUDA_CALL(FN, ...)			\
+  CUDA_CALL_ERET (false, (FN), __VA_ARGS__)
+
+#define CUDA_CALL_ASSERT(FN, ...)		\
+  do {						\
+    unsigned __r = FN (__VA_ARGS__);		\
+    if (__r != CUDA_SUCCESS)			\
+      {						\
+	GOMP_PLUGIN_fatal (#FN " error: %s",	\
+			   cuda_error (__r));	\
+      }						\
+  } while (0)
+
 static unsigned int instantiated_devices = 0;
 static pthread_mutex_t ptx_dev_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -98,24 +126,17 @@ struct map
   char    mappings[0];
 };
 
-static void
+static bool
 map_init (struct ptx_stream *s)
 {
-  CUresult r;
-
   int size = getpagesize ();
 
   assert (s);
   assert (!s->d);
   assert (!s->h);
 
-  r = cuMemAllocHost (&s->h, size);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemAllocHost error: %s", cuda_error (r));
-
-  r = cuMemHostGetDevicePointer (&s->d, s->h, 0);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemHostGetDevicePointer error: %s", cuda_error (r));
+  CUDA_CALL (cuMemAllocHost, &s->h, size);
+  CUDA_CALL (cuMemHostGetDevicePointer, &s->d, s->h, 0);
 
   assert (s->h);
 
@@ -125,16 +146,14 @@ map_init (struct ptx_stream *s)
 
   assert (s->h_next);
   assert (s->h_end);
+  return true;
 }
 
-static void
+static bool
 map_fini (struct ptx_stream *s)
 {
-  CUresult r;
-
-  r = cuMemFreeHost (s->h);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_error ("cuMemFreeHost error: %s", cuda_error (r));
+  CUDA_CALL (cuMemFreeHost, s->h);
+  return true;
 }
 
 static void
@@ -325,7 +344,7 @@ nvptx_thread (void)
   return (struct nvptx_thread *) GOMP_PLUGIN_acc_thread ();
 }
 
-static void
+static bool
 init_streams_for_device (struct ptx_device *ptx_dev, int concurrency)
 {
   int i;
@@ -337,9 +356,10 @@ init_streams_for_device (struct ptx_device *ptx_dev, int concurrency)
   null_stream->multithreaded = true;
   null_stream->d = (CUdeviceptr) NULL;
   null_stream->h = NULL;
-  map_init (null_stream);
-  ptx_dev->null_stream = null_stream;
+  if (!map_init (null_stream))
+    return false;
 
+  ptx_dev->null_stream = null_stream;
   ptx_dev->active_streams = NULL;
   pthread_mutex_init (&ptx_dev->stream_lock, NULL);
 
@@ -355,25 +375,35 @@ init_streams_for_device (struct ptx_device *ptx_dev, int concurrency)
 
   for (i = 0; i < concurrency; i++)
     ptx_dev->async_streams.arr[i] = NULL;
+
+  return true;
 }
 
-static void
+static bool
 fini_streams_for_device (struct ptx_device *ptx_dev)
 {
   free (ptx_dev->async_streams.arr);
 
+  bool ret = true;
   while (ptx_dev->active_streams != NULL)
     {
       struct ptx_stream *s = ptx_dev->active_streams;
       ptx_dev->active_streams = ptx_dev->active_streams->next;
 
-      map_fini (s);
-      cuStreamDestroy (s->stream);
+      ret &= map_fini (s);
+
+      CUresult r = cuStreamDestroy (s->stream);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("cuStreamDestroy error: %s", cuda_error (r));
+	  ret = false;
+	}
       free (s);
     }
 
-  map_fini (ptx_dev->null_stream);
+  ret &= map_fini (ptx_dev->null_stream);
   free (ptx_dev->null_stream);
+  return ret;
 }
 
 /* Select a stream for (OpenACC-semantics) ASYNC argument for the current
@@ -447,7 +477,11 @@ select_stream_for_async (int async, pthread_t thread, bool create,
 	    {
 	      r = cuStreamCreate (&s->stream, CU_STREAM_DEFAULT);
 	      if (r != CUDA_SUCCESS)
-		GOMP_PLUGIN_fatal ("cuStreamCreate error: %s", cuda_error (r));
+		{
+		  pthread_mutex_unlock (&ptx_dev->stream_lock);
+		  GOMP_PLUGIN_fatal ("cuStreamCreate error: %s",
+				     cuda_error (r));
+		}
 	    }
 
 	  /* If CREATE is true, we're going to be queueing some work on this
@@ -457,7 +491,11 @@ select_stream_for_async (int async, pthread_t thread, bool create,
 
 	  s->d = (CUdeviceptr) NULL;
 	  s->h = NULL;
-	  map_init (s);
+	  if (!map_init (s))
+	    {
+	      pthread_mutex_unlock (&ptx_dev->stream_lock);
+	      GOMP_PLUGIN_fatal ("map_init fail");
+	    }
 
 	  s->next = ptx_dev->active_streams;
 	  ptx_dev->active_streams = s;
@@ -467,7 +505,11 @@ select_stream_for_async (int async, pthread_t thread, bool create,
       stream = ptx_dev->async_streams.arr[async];
     }
   else if (async < 0)
-    GOMP_PLUGIN_fatal ("bad async %d", async);
+    {
+      if (create)
+	pthread_mutex_unlock (&ptx_dev->stream_lock);
+      GOMP_PLUGIN_fatal ("bad async %d", async);
+    }
 
   if (create)
     {
@@ -498,34 +540,25 @@ select_stream_for_async (int async, pthread_t thread, bool create,
 static bool
 nvptx_init (void)
 {
-  CUresult r;
   int ndevs;
 
   if (instantiated_devices != 0)
     return true;
 
-  r = cuInit (0);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuInit error: %s", cuda_error (r));
-
+  CUDA_CALL (cuInit, 0);
   ptx_events = NULL;
-
   pthread_mutex_init (&ptx_event_lock, NULL);
 
-  r = cuDeviceGetCount (&ndevs);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetCount error: %s", cuda_error (r));
-
+  CUDA_CALL (cuDeviceGetCount, &ndevs);
   ptx_devices = GOMP_PLUGIN_malloc_cleared (sizeof (struct ptx_device *)
 					    * ndevs);
-
   return true;
 }
 
 /* Select the N'th PTX device for the current host thread.  The device must
    have been previously opened before calling this function.  */
 
-static void
+static bool
 nvptx_attach_host_thread_to_device (int n)
 {
   CUdevice dev;
@@ -535,34 +568,34 @@ nvptx_attach_host_thread_to_device (int n)
 
   r = cuCtxGetDevice (&dev);
   if (r != CUDA_SUCCESS && r != CUDA_ERROR_INVALID_CONTEXT)
-    GOMP_PLUGIN_fatal ("cuCtxGetDevice error: %s", cuda_error (r));
+    {
+      GOMP_PLUGIN_error ("cuCtxGetDevice error: %s", cuda_error (r));
+      return false;
+    }
 
   if (r != CUDA_ERROR_INVALID_CONTEXT && dev == n)
-    return;
+    return true;
   else
     {
       CUcontext old_ctx;
 
       ptx_dev = ptx_devices[n];
-      assert (ptx_dev);
+      if (!ptx_dev)
+	{
+	  GOMP_PLUGIN_error ("device %d not found", n);
+	  return false;
+	}
 
-      r = cuCtxGetCurrent (&thd_ctx);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuCtxGetCurrent error: %s", cuda_error (r));
+      CUDA_CALL (cuCtxGetCurrent, &thd_ctx);
 
       /* We don't necessarily have a current context (e.g. if it has been
          destroyed.  Pop it if we do though.  */
       if (thd_ctx != NULL)
-	{
-	  r = cuCtxPopCurrent (&old_ctx);
-	  if (r != CUDA_SUCCESS)
-            GOMP_PLUGIN_fatal ("cuCtxPopCurrent error: %s", cuda_error (r));
-	}
+	CUDA_CALL (cuCtxPopCurrent, &old_ctx);
 
-      r = cuCtxPushCurrent (ptx_dev->ctx);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuCtxPushCurrent error: %s", cuda_error (r));
+      CUDA_CALL (cuCtxPushCurrent, ptx_dev->ctx);
     }
+  return true;
 }
 
 static struct ptx_device *
@@ -573,9 +606,7 @@ nvptx_open_device (int n)
   CUresult r;
   int async_engines, pi;
 
-  r = cuDeviceGet (&dev, n);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGet error: %s", cuda_error (r));
+  CUDA_CALL_ERET (NULL, cuDeviceGet, &dev, n);
 
   ptx_dev = GOMP_PLUGIN_malloc (sizeof (struct ptx_device));
 
@@ -585,60 +616,44 @@ nvptx_open_device (int n)
 
   r = cuCtxGetDevice (&ctx_dev);
   if (r != CUDA_SUCCESS && r != CUDA_ERROR_INVALID_CONTEXT)
-    GOMP_PLUGIN_fatal ("cuCtxGetDevice error: %s", cuda_error (r));
+    {
+      GOMP_PLUGIN_error ("cuCtxGetDevice error: %s", cuda_error (r));
+      return NULL;
+    }
   
   if (r != CUDA_ERROR_INVALID_CONTEXT && ctx_dev != dev)
     {
       /* The current host thread has an active context for a different device.
          Detach it.  */
       CUcontext old_ctx;
-      
-      r = cuCtxPopCurrent (&old_ctx);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuCtxPopCurrent error: %s", cuda_error (r));
+      CUDA_CALL_ERET (NULL, cuCtxPopCurrent, &old_ctx);
     }
 
-  r = cuCtxGetCurrent (&ptx_dev->ctx);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuCtxGetCurrent error: %s", cuda_error (r));
+  CUDA_CALL_ERET (NULL, cuCtxGetCurrent, &ptx_dev->ctx);
 
   if (!ptx_dev->ctx)
-    {
-      r = cuCtxCreate (&ptx_dev->ctx, CU_CTX_SCHED_AUTO, dev);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuCtxCreate error: %s", cuda_error (r));
-    }
+    CUDA_CALL_ERET (NULL, cuCtxCreate, &ptx_dev->ctx, CU_CTX_SCHED_AUTO, dev);
   else
     ptx_dev->ctx_shared = true;
 
-  r = cuDeviceGetAttribute (&pi, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, dev);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetAttribute error: %s", cuda_error (r));
-
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
+		  &pi, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, dev);
   ptx_dev->overlap = pi;
 
-  r = cuDeviceGetAttribute (&pi, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, dev);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetAttribute error: %s", cuda_error (r));
-
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
+		  &pi, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, dev);
   ptx_dev->map = pi;
 
-  r = cuDeviceGetAttribute (&pi, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, dev);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetAttribute error: %s", cuda_error (r));
-
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
+		  &pi, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, dev);
   ptx_dev->concur = pi;
 
-  r = cuDeviceGetAttribute (&pi, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, dev);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetAttribute error: %s", cuda_error (r));
-
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
+		  &pi, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, dev);
   ptx_dev->mode = pi;
 
-  r = cuDeviceGetAttribute (&pi, CU_DEVICE_ATTRIBUTE_INTEGRATED, dev);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetAttribute error: %s", cuda_error (r));
-
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
+		  &pi, CU_DEVICE_ATTRIBUTE_INTEGRATED, dev);
   ptx_dev->mkern = pi;
 
   r = cuDeviceGetAttribute (&async_engines,
@@ -649,38 +664,34 @@ nvptx_open_device (int n)
   ptx_dev->images = NULL;
   pthread_mutex_init (&ptx_dev->image_lock, NULL);
 
-  init_streams_for_device (ptx_dev, async_engines);
+  if (!init_streams_for_device (ptx_dev, async_engines))
+    return NULL;
 
   return ptx_dev;
 }
 
-static void
+static bool
 nvptx_close_device (struct ptx_device *ptx_dev)
 {
-  CUresult r;
-
   if (!ptx_dev)
-    return;
+    return true;
 
-  fini_streams_for_device (ptx_dev);
+  if (!fini_streams_for_device (ptx_dev))
+    return false;
   
   pthread_mutex_destroy (&ptx_dev->image_lock);
 
   if (!ptx_dev->ctx_shared)
-    {
-      r = cuCtxDestroy (ptx_dev->ctx);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuCtxDestroy error: %s", cuda_error (r));
-    }
+    CUDA_CALL (cuCtxDestroy, ptx_dev->ctx);
 
   free (ptx_dev);
+  return true;
 }
 
 static int
 nvptx_get_num_devices (void)
 {
   int n;
-  CUresult r;
 
   /* PR libgomp/65099: Currently, we only support offloading in 64-bit
      configurations.  */
@@ -693,22 +704,19 @@ nvptx_get_num_devices (void)
      further initialization).  */
   if (instantiated_devices == 0)
     {
-      r = cuInit (0);
+      CUresult r = cuInit (0);
       /* This is not an error: e.g. we may have CUDA libraries installed but
          no devices available.  */
       if (r != CUDA_SUCCESS)
         return 0;
     }
 
-  r = cuDeviceGetCount (&n);
-  if (r!= CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetCount error: %s", cuda_error (r));
-
+  CUDA_CALL_ERET (-1, cuDeviceGetCount, &n);
   return n;
 }
 
 
-static void
+static bool
 link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 	  unsigned num_objs)
 {
@@ -742,9 +750,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
   opts[5] = CU_JIT_LOG_VERBOSE;
   optvals[5] = (void *) 1;
 
-  r = cuLinkCreate (6, opts, optvals, &linkstate);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuLinkCreate error: %s", cuda_error (r));
+  CUDA_CALL (cuLinkCreate, 6, opts, optvals, &linkstate);
 
   for (; num_objs--; ptx_objs++)
     {
@@ -756,8 +762,9 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
       if (r != CUDA_SUCCESS)
 	{
 	  GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
-	  GOMP_PLUGIN_fatal ("cuLinkAddData (ptx_code) error: %s",
+	  GOMP_PLUGIN_error ("cuLinkAddData (ptx_code) error: %s",
 			     cuda_error (r));
+	  return false;
 	}
     }
 
@@ -768,15 +775,14 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
   GOMP_PLUGIN_debug (0, "Link log %s\n", &ilog[0]);
 
   if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuLinkComplete error: %s", cuda_error (r));
+    {
+      GOMP_PLUGIN_error ("cuLinkComplete error: %s", cuda_error (r));
+      return false;
+    }
 
-  r = cuModuleLoadData (module, linkout);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuModuleLoadData error: %s", cuda_error (r));
-
-  r = cuLinkDestroy (linkstate);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuLinkDestory error: %s", cuda_error (r));
+  CUDA_CALL (cuModuleLoadData, module, linkout);
+  CUDA_CALL (cuLinkDestroy, linkstate);
+  return true;
 }
 
 static void
@@ -923,10 +929,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
   /* Copy the (device) pointers to arguments to the device (dp and hp might in
      fact have the same value on a unified-memory system).  */
-  r = cuMemcpy ((CUdeviceptr)dp, (CUdeviceptr)hp, mapnum * sizeof (void *));
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemcpy failed: %s", cuda_error (r));
-
+  CUDA_CALL_ASSERT (cuMemcpy, (CUdeviceptr) dp, (CUdeviceptr) hp,
+		    mapnum * sizeof (void *));
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
 		     " gangs=%u, workers=%u, vectors=%u\n",
 		     __FUNCTION__, targ_fn->launch->fn,
@@ -939,12 +943,10 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   // vector length	ntid.x
 
   kargs[0] = &dp;
-  r = cuLaunchKernel (function,
-		      dims[GOMP_DIM_GANG], 1, 1,
-		      dims[GOMP_DIM_VECTOR], dims[GOMP_DIM_WORKER], 1,
-		      0, dev_str->stream, kargs, 0);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuLaunchKernel error: %s", cuda_error (r));
+  CUDA_CALL_ASSERT (cuLaunchKernel, function,
+		    dims[GOMP_DIM_GANG], 1, 1,
+		    dims[GOMP_DIM_VECTOR], dims[GOMP_DIM_WORKER], 1,
+		    0, dev_str->stream, kargs, 0);
 
 #ifndef DISABLE_ASYNC
   if (async < acc_async_noval)
@@ -971,9 +973,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
       event_gc (true);
 
-      r = cuEventRecord (*e, dev_str->stream);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuEventRecord error: %s", cuda_error (r));
+      CUDA_CALL_ASSERT (cuEventRecord, *e, dev_str->stream);
 
       event_add (PTX_EVT_KNL, e, (void *)dev_str);
     }
@@ -1001,163 +1001,139 @@ static void *
 nvptx_alloc (size_t s)
 {
   CUdeviceptr d;
-  CUresult r;
 
-  r = cuMemAlloc (&d, s);
-  if (r == CUDA_ERROR_OUT_OF_MEMORY)
-    return 0;
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemAlloc error: %s", cuda_error (r));
-  return (void *)d;
+  CUDA_CALL_ERET (NULL, cuMemAlloc, &d, s);
+  return (void *) d;
 }
 
-static void
+static bool
 nvptx_free (void *p)
 {
-  CUresult r;
   CUdeviceptr pb;
   size_t ps;
 
-  r = cuMemGetAddressRange (&pb, &ps, (CUdeviceptr)p);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemGetAddressRange error: %s", cuda_error (r));
+  CUDA_CALL (cuMemGetAddressRange, &pb, &ps, (CUdeviceptr) p);
+  if ((CUdeviceptr) p != pb)
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
 
-  if ((CUdeviceptr)p != pb)
-    GOMP_PLUGIN_fatal ("invalid device address");
-
-  r = cuMemFree ((CUdeviceptr)p);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemFree error: %s", cuda_error (r));
+  CUDA_CALL (cuMemFree, (CUdeviceptr) p);
+  return true;
 }
 
-static void *
+
+static bool
 nvptx_host2dev (void *d, const void *h, size_t s)
 {
-  CUresult r;
   CUdeviceptr pb;
   size_t ps;
   struct nvptx_thread *nvthd = nvptx_thread ();
 
   if (!s)
-    return 0;
-
+    return true;
   if (!d)
-    GOMP_PLUGIN_fatal ("invalid device address");
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
 
-  r = cuMemGetAddressRange (&pb, &ps, (CUdeviceptr)d);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemGetAddressRange error: %s", cuda_error (r));
+  CUDA_CALL (cuMemGetAddressRange, &pb, &ps, (CUdeviceptr) d);
 
   if (!pb)
-    GOMP_PLUGIN_fatal ("invalid device address");
-
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
   if (!h)
-    GOMP_PLUGIN_fatal ("invalid host address");
-
+    {
+      GOMP_PLUGIN_error ("invalid host address");
+      return false;
+    }
   if (d == h)
-    GOMP_PLUGIN_fatal ("invalid host or device address");
-
+    {
+      GOMP_PLUGIN_error ("invalid host or device address");
+      return false;
+    }
   if ((void *)(d + s) > (void *)(pb + ps))
-    GOMP_PLUGIN_fatal ("invalid size");
+    {
+      GOMP_PLUGIN_error ("invalid size");
+      return false;
+    }
 
 #ifndef DISABLE_ASYNC
   if (nvthd->current_stream != nvthd->ptx_dev->null_stream)
     {
-      CUevent *e;
-
-      e = (CUevent *)GOMP_PLUGIN_malloc (sizeof (CUevent));
-
-      r = cuEventCreate (e, CU_EVENT_DISABLE_TIMING);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuEventCreate error: %s", cuda_error (r));
-
+      CUevent *e = (CUevent *)GOMP_PLUGIN_malloc (sizeof (CUevent));
+      CUDA_CALL (cuEventCreate, e, CU_EVENT_DISABLE_TIMING);
       event_gc (false);
-
-      r = cuMemcpyHtoDAsync ((CUdeviceptr)d, h, s,
-			     nvthd->current_stream->stream);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuMemcpyHtoDAsync error: %s", cuda_error (r));
-
-      r = cuEventRecord (*e, nvthd->current_stream->stream);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuEventRecord error: %s", cuda_error (r));
-
+      CUDA_CALL (cuMemcpyHtoDAsync,
+		 (CUdeviceptr) d, h, s, nvthd->current_stream->stream);
+      CUDA_CALL (cuEventRecord, *e, nvthd->current_stream->stream);
       event_add (PTX_EVT_MEM, e, (void *)h);
     }
   else
 #endif
-    {
-      r = cuMemcpyHtoD ((CUdeviceptr)d, h, s);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuMemcpyHtoD error: %s", cuda_error (r));
-    }
+    CUDA_CALL (cuMemcpyHtoD, (CUdeviceptr) d, h, s);
 
-  return 0;
+  return true;
 }
 
-static void *
+static bool
 nvptx_dev2host (void *h, const void *d, size_t s)
 {
-  CUresult r;
   CUdeviceptr pb;
   size_t ps;
   struct nvptx_thread *nvthd = nvptx_thread ();
 
   if (!s)
-    return 0;
-
+    return true;
   if (!d)
-    GOMP_PLUGIN_fatal ("invalid device address");
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
 
-  r = cuMemGetAddressRange (&pb, &ps, (CUdeviceptr)d);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemGetAddressRange error: %s", cuda_error (r));
+  CUDA_CALL (cuMemGetAddressRange, &pb, &ps, (CUdeviceptr) d);
 
   if (!pb)
-    GOMP_PLUGIN_fatal ("invalid device address");
-
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
   if (!h)
-    GOMP_PLUGIN_fatal ("invalid host address");
-
+    {
+      GOMP_PLUGIN_error ("invalid host address");
+      return false;
+    }
   if (d == h)
-    GOMP_PLUGIN_fatal ("invalid host or device address");
-
+    {
+      GOMP_PLUGIN_error ("invalid host or device address");
+      return false;
+    }
   if ((void *)(d + s) > (void *)(pb + ps))
-    GOMP_PLUGIN_fatal ("invalid size");
+    {
+      GOMP_PLUGIN_error ("invalid size");
+      return false;
+    }
 
 #ifndef DISABLE_ASYNC
   if (nvthd->current_stream != nvthd->ptx_dev->null_stream)
     {
-      CUevent *e;
-
-      e = (CUevent *)GOMP_PLUGIN_malloc (sizeof (CUevent));
-
-      r = cuEventCreate (e, CU_EVENT_DISABLE_TIMING);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuEventCreate error: %s\n", cuda_error (r));
-
+      CUevent *e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
+      CUDA_CALL (cuEventCreate, e, CU_EVENT_DISABLE_TIMING);
       event_gc (false);
-
-      r = cuMemcpyDtoHAsync (h, (CUdeviceptr)d, s,
-			     nvthd->current_stream->stream);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuMemcpyDtoHAsync error: %s", cuda_error (r));
-
-      r = cuEventRecord (*e, nvthd->current_stream->stream);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuEventRecord error: %s", cuda_error (r));
-
+      CUDA_CALL (cuMemcpyDtoHAsync,
+		 h, (CUdeviceptr) d, s, nvthd->current_stream->stream);
+      CUDA_CALL (cuEventRecord, *e, nvthd->current_stream->stream);
       event_add (PTX_EVT_MEM, e, (void *)h);
     }
   else
 #endif
-    {
-      r = cuMemcpyDtoH (h, (CUdeviceptr)d, s);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
-    }
+    CUDA_CALL (cuMemcpyDtoH, h, (CUdeviceptr) d, s);
 
-  return 0;
+  return true;
 }
 
 static void
@@ -1227,17 +1203,13 @@ nvptx_async_test_all (void)
 static void
 nvptx_wait (int async)
 {
-  CUresult r;
   struct ptx_stream *s;
 
   s = select_stream_for_async (async, pthread_self (), false, NULL);
-
   if (!s)
     GOMP_PLUGIN_fatal ("unknown async %d", async);
 
-  r = cuStreamSynchronize (s->stream);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuStreamSynchronize error: %s", cuda_error (r));
+  CUDA_CALL_ASSERT (cuStreamSynchronize, s->stream);
 
   event_gc (true);
 }
@@ -1245,7 +1217,6 @@ nvptx_wait (int async)
 static void
 nvptx_wait_async (int async1, int async2)
 {
-  CUresult r;
   CUevent *e;
   struct ptx_stream *s1, *s2;
   pthread_t self = pthread_self ();
@@ -1261,23 +1232,17 @@ nvptx_wait_async (int async1, int async2)
   if (s1 == s2)
     GOMP_PLUGIN_fatal ("identical parameters");
 
-  e = (CUevent *)GOMP_PLUGIN_malloc (sizeof (CUevent));
+  e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
 
-  r = cuEventCreate (e, CU_EVENT_DISABLE_TIMING);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuEventCreate error: %s", cuda_error (r));
+  CUDA_CALL_ASSERT (cuEventCreate, e, CU_EVENT_DISABLE_TIMING);
 
   event_gc (true);
 
-  r = cuEventRecord (*e, s1->stream);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuEventRecord error: %s", cuda_error (r));
+  CUDA_CALL_ASSERT (cuEventRecord, *e, s1->stream);
 
   event_add (PTX_EVT_SYNC, e, NULL);
 
-  r = cuStreamWaitEvent (s2->stream, *e, 0);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuStreamWaitEvent error: %s", cuda_error (r));
+  CUDA_CALL_ASSERT (cuStreamWaitEvent, s2->stream, *e, 0);
 }
 
 static void
@@ -1302,9 +1267,7 @@ nvptx_wait_all (void)
 	  else if (r != CUDA_ERROR_NOT_READY)
 	    GOMP_PLUGIN_fatal ("cuStreamQuery error: %s", cuda_error (r));
 
-	  r = cuStreamSynchronize (s->stream);
-	  if (r != CUDA_SUCCESS)
-	    GOMP_PLUGIN_fatal ("cuStreamSynchronize error: %s", cuda_error (r));
+	  CUDA_CALL_ASSERT (cuStreamSynchronize, s->stream);
 	}
     }
 
@@ -1316,7 +1279,6 @@ nvptx_wait_all (void)
 static void
 nvptx_wait_all_async (int async)
 {
-  CUresult r;
   struct ptx_stream *waiting_stream, *other_stream;
   CUevent *e;
   struct nvptx_thread *nvthd = nvptx_thread ();
@@ -1346,20 +1308,14 @@ nvptx_wait_all_async (int async)
 
       e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
 
-      r = cuEventCreate (e, CU_EVENT_DISABLE_TIMING);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuEventCreate error: %s", cuda_error (r));
+      CUDA_CALL_ASSERT (cuEventCreate, e, CU_EVENT_DISABLE_TIMING);
 
       /* Record an event on the waited-for stream.  */
-      r = cuEventRecord (*e, other_stream->stream);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuEventRecord error: %s", cuda_error (r));
+      CUDA_CALL_ASSERT (cuEventRecord, *e, other_stream->stream);
 
       event_add (PTX_EVT_SYNC, e, NULL);
 
-      r = cuStreamWaitEvent (waiting_stream->stream, *e, 0);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuStreamWaitEvent error: %s", cuda_error (r));
+      CUDA_CALL_ASSERT (cuStreamWaitEvent, waiting_stream->stream, *e, 0);
    }
 
   pthread_mutex_unlock (&nvthd->ptx_dev->stream_lock);
@@ -1408,10 +1364,10 @@ nvptx_set_cuda_stream (int async, void *stream)
   pthread_t self = pthread_self ();
   struct nvptx_thread *nvthd = nvptx_thread ();
 
-  pthread_mutex_lock (&nvthd->ptx_dev->stream_lock);
-
   if (async < 0)
     GOMP_PLUGIN_fatal ("bad async %d", async);
+
+  pthread_mutex_lock (&nvthd->ptx_dev->stream_lock);
 
   /* We have a list of active streams and an array mapping async values to
      entries of that list.  We need to take "ownership" of the passed-in stream,
@@ -1435,8 +1391,11 @@ nvptx_set_cuda_stream (int async, void *stream)
 	  s->next = s->next->next;
 	}
 
-      cuStreamDestroy (oldstream->stream);
-      map_fini (oldstream);
+      CUDA_CALL_ASSERT (cuStreamDestroy, oldstream->stream);
+
+      if (!map_fini (oldstream))
+	GOMP_PLUGIN_fatal ("error when freeing host memory");
+
       free (oldstream);
     }
 
@@ -1473,37 +1432,50 @@ GOMP_OFFLOAD_get_num_devices (void)
   return nvptx_get_num_devices ();
 }
 
-void
+bool
 GOMP_OFFLOAD_init_device (int n)
 {
+  struct ptx_device *dev;
+
   pthread_mutex_lock (&ptx_dev_lock);
 
   if (!nvptx_init () || ptx_devices[n] != NULL)
     {
       pthread_mutex_unlock (&ptx_dev_lock);
-      return;
+      return false;
     }
 
-  ptx_devices[n] = nvptx_open_device (n);
-  instantiated_devices++;
+  dev = nvptx_open_device (n);
+  if (dev)
+    {
+      ptx_devices[n] = dev;
+      instantiated_devices++;
+    }
 
   pthread_mutex_unlock (&ptx_dev_lock);
+
+  return dev != NULL;
 }
 
-void
+bool
 GOMP_OFFLOAD_fini_device (int n)
 {
   pthread_mutex_lock (&ptx_dev_lock);
 
   if (ptx_devices[n] != NULL)
     {
-      nvptx_attach_host_thread_to_device (n);
-      nvptx_close_device (ptx_devices[n]);
+      if (!nvptx_attach_host_thread_to_device (n)
+	  || !nvptx_close_device (ptx_devices[n]))
+	{
+	  pthread_mutex_unlock (&ptx_dev_lock);
+	  return false;
+	}
       ptx_devices[n] = NULL;
       instantiated_devices--;
     }
 
   pthread_mutex_unlock (&ptx_dev_lock);
+  return true;
 }
 
 /* Return the libgomp version number we're compatible with.  There is
@@ -1526,7 +1498,6 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   const char *const *var_names;
   const struct targ_fn_launch *fn_descs;
   unsigned int fn_entries, var_entries, i, j;
-  CUresult r;
   struct targ_fn_descriptor *targ_fns;
   struct addr_pair *targ_tbl;
   const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
@@ -1534,17 +1505,18 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   struct ptx_device *dev;
 
   if (GOMP_VERSION_DEV (version) > GOMP_VERSION_NVIDIA_PTX)
-    GOMP_PLUGIN_fatal ("Offload data incompatible with PTX plugin"
-		       " (expected %u, received %u)",
-		       GOMP_VERSION_NVIDIA_PTX, GOMP_VERSION_DEV (version));
-  
-  GOMP_OFFLOAD_init_device (ord);
+    {
+      GOMP_PLUGIN_error ("Offload data incompatible with PTX plugin"
+			 " (expected %u, received %u)",
+			 GOMP_VERSION_NVIDIA_PTX, GOMP_VERSION_DEV (version));
+      return -1;
+    }
+
+  if (!nvptx_attach_host_thread_to_device (ord)
+      || !link_ptx (&module, img_header->ptx_objs, img_header->ptx_num))
+    return -1;
 
   dev = ptx_devices[ord];
-  
-  nvptx_attach_host_thread_to_device (ord);
-
-  link_ptx (&module, img_header->ptx_objs, img_header->ptx_num);
 
   /* The mkoffload utility emits a struct of pointers/integers at the
      start of each offload image.  The array of kernel names and the
@@ -1576,9 +1548,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
     {
       CUfunction function;
 
-      r = cuModuleGetFunction (&function, module, fn_descs[i].fn);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuModuleGetFunction error: %s", cuda_error (r));
+      CUDA_CALL_ERET (-1, cuModuleGetFunction, &function, module,
+		      fn_descs[i].fn);
 
       targ_fns->fn = function;
       targ_fns->launch = &fn_descs[i];
@@ -1592,9 +1563,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       CUdeviceptr var;
       size_t bytes;
 
-      r = cuModuleGetGlobal (&var, &bytes, module, var_names[j]);
-      if (r != CUDA_SUCCESS)
-        GOMP_PLUGIN_fatal ("cuModuleGetGlobal error: %s", cuda_error (r));
+      CUDA_CALL_ERET (-1, cuModuleGetGlobal,
+		      &var, &bytes, module, var_names[j]);
 
       targ_tbl->start = (uintptr_t) var;
       targ_tbl->end = targ_tbl->start + bytes;
@@ -1606,54 +1576,63 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 /* Unload the program described by TARGET_DATA.  DEV_DATA is the
    function descriptors allocated by G_O_load_image.  */
 
-void
+bool
 GOMP_OFFLOAD_unload_image (int ord, unsigned version, const void *target_data)
 {
   struct ptx_image_data *image, **prev_p;
   struct ptx_device *dev = ptx_devices[ord];
 
   if (GOMP_VERSION_DEV (version) > GOMP_VERSION_NVIDIA_PTX)
-    return;
-  
+    {
+      GOMP_PLUGIN_error ("Offload data incompatible with PTX plugin"
+			 " (expected %u, received %u)",
+			 GOMP_VERSION_NVIDIA_PTX, GOMP_VERSION_DEV (version));
+      return false;
+    }
+
+  bool ret = true;
   pthread_mutex_lock (&dev->image_lock);
   for (prev_p = &dev->images; (image = *prev_p) != 0; prev_p = &image->next)
     if (image->target_data == target_data)
       {
 	*prev_p = image->next;
-	cuModuleUnload (image->module);
+	if (cuModuleUnload (image->module) != CUDA_SUCCESS)
+	  ret = false;
 	free (image->fns);
 	free (image);
 	break;
       }
   pthread_mutex_unlock (&dev->image_lock);
+  return ret;
 }
 
 void *
 GOMP_OFFLOAD_alloc (int ord, size_t size)
 {
-  nvptx_attach_host_thread_to_device (ord);
+  if (!nvptx_attach_host_thread_to_device (ord))
+    return NULL;
   return nvptx_alloc (size);
 }
 
-void
+bool
 GOMP_OFFLOAD_free (int ord, void *ptr)
 {
-  nvptx_attach_host_thread_to_device (ord);
-  nvptx_free (ptr);
+  return (nvptx_attach_host_thread_to_device (ord)
+	  && nvptx_free (ptr));
 }
 
-void *
+bool
 GOMP_OFFLOAD_dev2host (int ord, void *dst, const void *src, size_t n)
 {
-  nvptx_attach_host_thread_to_device (ord);
-  return nvptx_dev2host (dst, src, n);
+  return (nvptx_attach_host_thread_to_device (ord)
+	  && nvptx_dev2host (dst, src, n));
 }
 
-void *
+bool
 GOMP_OFFLOAD_host2dev (int ord, void *dst, const void *src, size_t n)
 {
-  nvptx_attach_host_thread_to_device (ord);
-  return nvptx_host2dev (dst, src, n);
+  return (nvptx_attach_host_thread_to_device (ord)
+	  && nvptx_host2dev (dst, src, n));
 }
 
 void (*device_run) (int n, void *fn_ptr, void *vars) = NULL;
@@ -1669,20 +1648,11 @@ GOMP_OFFLOAD_openacc_parallel (void (*fn) (void *), size_t mapnum,
 void
 GOMP_OFFLOAD_openacc_register_async_cleanup (void *targ_mem_desc)
 {
-  CUevent *e;
-  CUresult r;
   struct nvptx_thread *nvthd = nvptx_thread ();
+  CUevent *e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
 
-  e = (CUevent *) GOMP_PLUGIN_malloc (sizeof (CUevent));
-
-  r = cuEventCreate (e, CU_EVENT_DISABLE_TIMING);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuEventCreate error: %s", cuda_error (r));
-
-  r = cuEventRecord (*e, nvthd->current_stream->stream);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuEventRecord error: %s", cuda_error (r));
-
+  CUDA_CALL_ASSERT (cuEventCreate, e, CU_EVENT_DISABLE_TIMING);
+  CUDA_CALL_ASSERT (cuEventRecord, *e, nvthd->current_stream->stream);
   event_add (PTX_EVT_ASYNC_CLEANUP, e, targ_mem_desc);
 }
 
@@ -1734,25 +1704,18 @@ GOMP_OFFLOAD_openacc_create_thread_data (int ord)
   struct ptx_device *ptx_dev;
   struct nvptx_thread *nvthd
     = GOMP_PLUGIN_malloc (sizeof (struct nvptx_thread));
-  CUresult r;
   CUcontext thd_ctx;
 
   ptx_dev = ptx_devices[ord];
 
   assert (ptx_dev);
 
-  r = cuCtxGetCurrent (&thd_ctx);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuCtxGetCurrent error: %s", cuda_error (r));
+  CUDA_CALL_ASSERT (cuCtxGetCurrent, &thd_ctx);
 
   assert (ptx_dev->ctx);
 
   if (!thd_ctx)
-    {
-      r = cuCtxPushCurrent (ptx_dev->ctx);
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuCtxPushCurrent error: %s", cuda_error (r));
-    }
+    CUDA_CALL_ASSERT (cuCtxPushCurrent, ptx_dev->ctx);
 
   nvthd->current_stream = ptx_dev->null_stream;
   nvthd->ptx_dev = ptx_dev;

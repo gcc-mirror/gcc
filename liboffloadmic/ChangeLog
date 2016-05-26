@@ -1,3 +1,21 @@
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (offload): Change return type
+	to bool, adjust return code.
+	(GOMP_OFFLOAD_init_device): Likewise.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(get_target_table): Likewise.
+	(offload_image): Likwise.
+	(GOMP_OFFLOAD_load_image): Adjust call to offload_image(), change
+	to return -1 on error.
+	(GOMP_OFFLOAD_unload_image): Change return type to bool, adjust return
+	code.
+	(GOMP_OFFLOAD_alloc): Likewise.
+	(GOMP_OFFLOAD_free): Likewise.
+	(GOMP_OFFLOAD_host2dev): Likewise.
+	(GOMP_OFFLOAD_dev2host): Likewise.
+	(GOMP_OFFLOAD_dev2dev): Likewise.
+
 2016-01-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_run): Pass extra NULL
