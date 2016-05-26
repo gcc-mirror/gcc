@@ -1,3 +1,9 @@
+2016-05-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_combinez):
+	Add ? to integer variant.
+	(aarch64_combinez_be): Likewise.
+
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (*vcvtps2ph_store<mask_name>): Use v constraint
