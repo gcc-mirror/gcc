@@ -3880,22 +3880,16 @@
 (define_expand "ashl<mode>3"
   [(set (match_operand:SHORT 0 "register_operand")
 	(ashift:SHORT (match_operand:SHORT 1 "register_operand")
-		      (match_operand:QI 2 "nonmemory_operand")))]
+		      (match_operand:QI 2 "const_int_operand")))]
   ""
   {
-    if (CONST_INT_P (operands[2]))
-      {
-        operands[2] = GEN_INT (INTVAL (operands[2])
-                               & (GET_MODE_BITSIZE (<MODE>mode) - 1));
+    operands[2] = GEN_INT (INTVAL (operands[2]) & GET_MODE_MASK (<MODE>mode));
 
-        if (operands[2] == const0_rtx)
-          {
-	    emit_insn (gen_mov<mode> (operands[0], operands[1]));
-	    DONE;
-          }
+    if (operands[2] == const0_rtx)
+      {
+	emit_insn (gen_mov<mode> (operands[0], operands[1]));
+	DONE;
       }
-    else
-      FAIL;
   }
 )
 

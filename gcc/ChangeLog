@@ -1,3 +1,9 @@
+2016-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (ashl<mode>3, SHORT modes):
+	Use const_int_operand for operand 2 predicate.  Simplify expand code
+	as a result.
+
 2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/71279
