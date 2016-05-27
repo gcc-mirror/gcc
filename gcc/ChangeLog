@@ -1,3 +1,8 @@
+2016-05-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.h (TARGET_ARM_V6M): Remove.
+	(TARGET_ARM_V7M): Likewise.
+
 2016-05-26  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c: Remove include of tree-ssa-threadbackward.h.
