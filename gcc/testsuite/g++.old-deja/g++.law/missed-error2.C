@@ -25,9 +25,10 @@ int main() {
    foo(4, -37, 14.39, 14.38);
 }
 
-// 971006 we no longer give an error for this since we emit a hard error
-// about the declaration above
-static void foo(int i, int j, double x, double y) { 
+// 971006 we no longer gave an error for this since we emit a hard error
+// about the declaration above, but after the fix for PR c++/69855
+// this declaration emits a diagnostic again
+static void foo(int i, int j, double x, double y) { // { dg-error "extern|static" }
 
    std::cout << "Max(int): " << max(i,j) << " Max(double): " <<
 max(x,y) << '\n';
