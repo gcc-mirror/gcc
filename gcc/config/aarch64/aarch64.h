@@ -832,9 +832,6 @@ typedef struct
   extern void  __aarch64_sync_cache_range (void *, void *);	\
   __aarch64_sync_cache_range (beg, end)
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
-  aarch64_cannot_change_mode_class (FROM, TO, CLASS)
-
 #define SHIFT_COUNT_TRUNCATED (!TARGET_SIMD)
 
 /* Choose appropriate mode for caller saves, so we do the minimum
