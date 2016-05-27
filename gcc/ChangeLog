@@ -1,3 +1,9 @@
+2016-05-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.ac: Treat a --with-headers option without argument
+	the same as the default (i.e. consult sys-include directory).
+	* configure: Regenerate.
+
 2016-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_fusion_enabled_p): New function.
