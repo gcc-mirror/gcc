@@ -1,3 +1,11 @@
+2016-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_fusion_enabled_p): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_fusion_enabled_p): Declare
+	prototype.
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_aes<aesmc_op>v16qi):
+	Add "=w,0" alternative.  Enable it when AES/AESMC fusion is enabled.
+
 2016-05-27  Jiong Wang  <jiong.wang@arm.com>
 
 	PR target/63596
