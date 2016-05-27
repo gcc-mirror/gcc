@@ -12615,24 +12615,6 @@ aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
   return ret;
 }
 
-/* Implement target hook CANNOT_CHANGE_MODE_CLASS.  */
-bool
-aarch64_cannot_change_mode_class (machine_mode from,
-				  machine_mode to,
-				  enum reg_class rclass)
-{
-  /* We cannot allow word_mode subregs of full vector modes.
-     Otherwise the middle-end will assume it's ok to store to
-     (subreg:DI (reg:TI 100) 0) in order to modify only the low 64 bits
-     of the 128-bit register.  However, after reload the subreg will
-     be dropped leaving a plain DImode store.  See PR67609 for a more
-     detailed dicussion.  In all other cases, we want to be permissive
-     and return false.  */
-  return (reg_classes_intersect_p (FP_REGS, rclass)
-	  && GET_MODE_SIZE (to) == UNITS_PER_WORD
-	  && GET_MODE_SIZE (from) > UNITS_PER_WORD);
-}
-
 rtx
 aarch64_reverse_mask (enum machine_mode mode)
 {
