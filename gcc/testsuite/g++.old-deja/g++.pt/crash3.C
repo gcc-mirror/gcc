@@ -10,7 +10,7 @@ public:
     }
     CVector<long> g() const
     {
-       CVector<long> v();
-       return v;
+       CVector<long> v2();
+       return v2;
     }
 };

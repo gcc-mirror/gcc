@@ -1,3 +1,10 @@
+2016-05-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/69855
+	* g++.dg/overload/69855.C: New.
+	* g++.old-deja/g++.law/missed-error2.C: Adjust.
+	* g++.old-deja/g++.pt/crash3.C: Likewise.
+
 2016-05-27  Jiong Wang  <jiong.wang@arm.com>
 
 	PR target/63596

@@ -1,3 +1,10 @@
+2016-05-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/69855
+	* name-lookup.c (pushdecl_maybe_friend_1): Push local function
+	decls into the global scope after stripping template bits
+	and setting DECL_ANTICIPATED.
+
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_clauses) <case OMP_CLAUSE_SCHEDULE>: Warn
