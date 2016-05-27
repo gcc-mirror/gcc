@@ -1,3 +1,18 @@
+2016-05-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/66338
+	* include/std/tuple (_TMC): Add a check for _NotSameTuple.
+	* include/std/tuple (tuple(_UElements&&...)): Remove the separate
+	check for _NotSameTuple.
+	* include/std/tuple (_TMCT): New.
+	* include/std/tuple (tuple(const tuple<_UElements...>&)): Use it.
+	* include/std/tuple (tuple(tuple<_UElements...>&&)): Likewise.
+	* include/std/tuple (tuple(allocator_arg_t, const _Alloc&,
+	      const tuple<_UElements...>&)): Likewise.
+	* include/std/tuple (tuple(allocator_arg_t, const _Alloc&,
+	      tuple<_UElements...>&&)): Likewise.
+	* testsuite/20_util/tuple/cons/66338.cc: New.
+
 2016-05-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Fix test for sendfile.
