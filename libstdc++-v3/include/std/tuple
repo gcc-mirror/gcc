@@ -629,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // need to be constrained.
       template<typename... _UElements> using _TMCT =
                   _TC<(sizeof...(_Elements) == sizeof...(_UElements))
-		      && !is_same<tuple<Elements...>,
+		      && !is_same<tuple<_Elements...>,
 				  tuple<_UElements...>>::value,
                       _Elements...>;
 
