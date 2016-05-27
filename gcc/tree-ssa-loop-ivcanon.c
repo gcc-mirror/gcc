@@ -1036,6 +1036,8 @@ try_peel_loop (struct loop *loop,
     }
   if (loop->any_upper_bound)
     loop->nb_iterations_upper_bound -= npeel;
+  if (loop->any_likely_upper_bound)
+    loop->nb_iterations_likely_upper_bound -= npeel;
   loop->nb_iterations_estimate = 0;
   /* Make sure to mark loop cold so we do not try to peel it more.  */
   scale_loop_profile (loop, 1, 0);
@@ -1106,6 +1108,12 @@ canonicalize_loop_induction_variables (struct loop *loop,
     {
       fprintf (dump_file, "Loop %d iterates at most %i times.\n", loop->num,
 	       (int)maxiter);
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && likely_max_loop_iterations_int (loop) >= 0)
+    {
+      fprintf (dump_file, "Loop likely %d iterates at most %i times.\n", loop->num,
+	       (int)likely_max_loop_iterations_int (loop));
     }
 
   /* Remove exits that are known to be never taken based on loop bound.

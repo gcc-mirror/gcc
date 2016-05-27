@@ -160,6 +160,8 @@ struct GTY ((chain_next ("%h.next"))) loop {
      valid if any_upper_bound is true.  */
   widest_int nb_iterations_upper_bound;
 
+  widest_int nb_iterations_likely_upper_bound;
+
   /* An integer giving an estimate on nb_iterations.  Unlike
      nb_iterations_upper_bound, there is no guarantee that it is at least
      nb_iterations.  */
@@ -167,6 +169,7 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   bool any_upper_bound;
   bool any_estimate;
+  bool any_likely_upper_bound;
 
   /* True if the loop can be parallel.  */
   bool can_be_parallel;
@@ -776,8 +779,10 @@ loop_outermost (struct loop *loop)
 extern void record_niter_bound (struct loop *, const widest_int &, bool, bool);
 extern HOST_WIDE_INT get_estimated_loop_iterations_int (struct loop *);
 extern HOST_WIDE_INT get_max_loop_iterations_int (struct loop *);
+extern HOST_WIDE_INT get_likely_max_loop_iterations_int (struct loop *);
 extern bool get_estimated_loop_iterations (struct loop *loop, widest_int *nit);
 extern bool get_max_loop_iterations (struct loop *loop, widest_int *nit);
+extern bool get_likely_max_loop_iterations (struct loop *loop, widest_int *nit);
 extern int bb_loop_depth (const_basic_block);
 
 /* Converts VAL to widest_int.  */

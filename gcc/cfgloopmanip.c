@@ -1016,6 +1016,9 @@ copy_loop_info (struct loop *loop, struct loop *target)
   gcc_checking_assert (!target->any_upper_bound && !target->any_estimate);
   target->any_upper_bound = loop->any_upper_bound;
   target->nb_iterations_upper_bound = loop->nb_iterations_upper_bound;
+  target->any_likely_upper_bound = loop->any_likely_upper_bound;
+  target->nb_iterations_likely_upper_bound
+    = loop->nb_iterations_likely_upper_bound;
   target->any_estimate = loop->any_estimate;
   target->nb_iterations_estimate = loop->nb_iterations_estimate;
   target->estimate_state = loop->estimate_state;

@@ -1,3 +1,30 @@
+2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgloop.c (record_niter_bound): Record likely upper bounds.
+	(likely_max_stmt_executions_int, get_likely_max_loop_iterations,
+	get_likely_max_loop_iterations_int): New.
+	* cfgloop.h (struct loop): Add nb_iterations_likely_upper_bound,
+	any_likely_upper_bound.
+	(get_likely_max_loop_iterations_int, get_likely_max_loop_iterations):
+	Declare.
+	* cfgloopmanip.c (copy_loop_info): Copy likely upper bounds.
+	* loop-unroll.c (unroll_loop_constant_iterations): Update likely
+	upper bound.
+	(unroll_loop_constant_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise.
+	* lto-streamer-in.c (input_cfg): Stream likely upper bounds.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* tree-ssa-loop-ivcanon.c (try_peel_loop): Update likely upper
+	bounds.
+	(canonicalize_loop_induction_variables): Dump likely upper bounds.
+	* tree-ssa-loop-niter.c (record_estimate): Record likely upper bounds.
+	(likely_max_loop_iterations): New.
+	(likely_max_loop_iterations_int): New.
+	(likely_max_stmt_executions): New.
+	* tree-ssa-loop-niter.h (likely_max_loop_iterations,
+	likely_max_loop_iterations_int, likely_max_stmt_executions_int,
+	likely_max_stmt_executions): Declare.
+
 2016-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/71308

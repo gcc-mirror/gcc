@@ -1790,6 +1790,11 @@ record_niter_bound (struct loop *loop, const widest_int &i_bound,
     {
       loop->any_upper_bound = true;
       loop->nb_iterations_upper_bound = i_bound;
+      if (!loop->any_likely_upper_bound)
+	{
+	  loop->any_likely_upper_bound = true;
+	  loop->nb_iterations_likely_upper_bound = i_bound;
+	}
     }
   if (realistic
       && (!loop->any_estimate
@@ -1797,6 +1802,13 @@ record_niter_bound (struct loop *loop, const widest_int &i_bound,
     {
       loop->any_estimate = true;
       loop->nb_iterations_estimate = i_bound;
+    }
+  if (!realistic
+      && (!loop->any_likely_upper_bound
+          || wi::ltu_p (i_bound, loop->nb_iterations_likely_upper_bound)))
+    {
+      loop->any_likely_upper_bound = true;
+      loop->nb_iterations_likely_upper_bound = i_bound;
     }
 
   /* If an upper bound is smaller than the realistic estimate of the
@@ -1806,6 +1818,11 @@ record_niter_bound (struct loop *loop, const widest_int &i_bound,
       && wi::ltu_p (loop->nb_iterations_upper_bound,
 		    loop->nb_iterations_estimate))
     loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
+  if (loop->any_upper_bound
+      && loop->any_likely_upper_bound
+      && wi::ltu_p (loop->nb_iterations_upper_bound,
+		    loop->nb_iterations_likely_upper_bound))
+    loop->nb_iterations_likely_upper_bound = loop->nb_iterations_upper_bound;
 }
 
 /* Similar to get_estimated_loop_iterations, but returns the estimate only
@@ -1836,6 +1853,25 @@ HOST_WIDE_INT
 max_stmt_executions_int (struct loop *loop)
 {
   HOST_WIDE_INT nit = get_max_loop_iterations_int (loop);
+  HOST_WIDE_INT snit;
+
+  if (nit == -1)
+    return -1;
+
+  snit = (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) nit + 1);
+
+  /* If the computation overflows, return -1.  */
+  return snit < 0 ? -1 : snit;
+}
+
+/* Returns an likely upper bound on the number of executions of statements
+   in the LOOP.  For statements before the loop exit, this exceeds
+   the number of execution of the latch by one.  */
+
+HOST_WIDE_INT
+likely_max_stmt_executions_int (struct loop *loop)
+{
+  HOST_WIDE_INT nit = get_likely_max_loop_iterations_int (loop);
   HOST_WIDE_INT snit;
 
   if (nit == -1)
@@ -1896,6 +1932,40 @@ get_max_loop_iterations_int (struct loop *loop)
   HOST_WIDE_INT hwi_nit;
 
   if (!get_max_loop_iterations (loop, &nit))
+    return -1;
+
+  if (!wi::fits_shwi_p (nit))
+    return -1;
+  hwi_nit = nit.to_shwi ();
+
+  return hwi_nit < 0 ? -1 : hwi_nit;
+}
+
+/* Sets NIT to an upper bound for the maximum number of executions of the
+   latch of the LOOP.  If we have no reliable estimate, the function returns
+   false, otherwise returns true.  */
+
+bool
+get_likely_max_loop_iterations (struct loop *loop, widest_int *nit)
+{
+  if (!loop->any_likely_upper_bound)
+    return false;
+
+  *nit = loop->nb_iterations_likely_upper_bound;
+  return true;
+}
+
+/* Similar to get_max_loop_iterations, but returns the estimate only
+   if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
+   on the number of iterations of LOOP could not be derived, returns -1.  */
+
+HOST_WIDE_INT
+get_likely_max_loop_iterations_int (struct loop *loop)
+{
+  widest_int nit;
+  HOST_WIDE_INT hwi_nit;
+
+  if (!get_likely_max_loop_iterations (loop, &nit))
     return -1;
 
   if (!wi::fits_shwi_p (nit))
