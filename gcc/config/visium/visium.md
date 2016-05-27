@@ -627,7 +627,7 @@
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
 {
-  split_double_move (operands, DImode);
+  visium_split_double_move (operands, DImode);
 })
 
 ;;
@@ -726,7 +726,7 @@
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
 {
-  split_double_move (operands, DFmode);
+  visium_split_double_move (operands, DFmode);
 })
 
 ;;
@@ -815,31 +815,20 @@
 		 (match_operand:DI 2 "add_operand" "")))]
   "")
 
+; Disfavour the use of add.l because of the early clobber.
+
 (define_insn_and_split "*addi3_insn"
   [(set (match_operand:DI 0 "register_operand"          "=r,r,&r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0,0, r")
-		 (match_operand:DI 2 "add_operand"      " J,L, r")))]
+		 (match_operand:DI 2 "add_operand"      " L,J, r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
   "reload_completed"
-  [(parallel [(set (match_dup 0)
-		   (plus:DI (match_dup 1) (match_dup 2)))
-	      (clobber (reg:CC R_FLAGS))])]
-  ""
-  [(set_attr "type" "arith2")])
-
-; Disfavour the use of add.l because of the early clobber.
-
-(define_insn "*adddi3_insn_flags"
-  [(set (match_operand:DI 0 "register_operand"          "=r,r,&r")
-	(plus:DI (match_operand:DI 1 "register_operand" "%0,0, r")
-		 (match_operand:DI 2 "add_operand"      " J,L, r")))
-   (clobber (reg:CC R_FLAGS))]
-  "reload_completed"
-  "@
-    addi    %d0,%2\n\tadc.l   %0,%0,r0
-    subi    %d0,%n2\n\tsubc.l  %0,%0,r0
-    add.l   %d0,%d1,%d2\n\tadc.l   %0,%1,%2"
+  [(const_int 0)]
+{
+  visium_split_double_add (PLUS, operands[0], operands[1], operands[2]);
+  DONE;
+}
   [(set_attr "type" "arith2")])
 
 ;;
@@ -847,7 +836,7 @@
 ;;
 ;; Integer Add with Carry
 ;;
-;; Only SI mode is supported as slt[u] for the sake of cstore.
+;; Only SI mode is supported.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -867,6 +856,16 @@
    (clobber (reg:CC R_FLAGS))]
   "reload_completed"
   "adc.l   %0,%1,r0"
+  [(set_attr "type" "arith")])
+
+(define_insn "*plus_plus_sltu<subst_arith>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			  (match_operand:SI 2 "register_operand" "r"))
+		 (ltu:SI (reg R_FLAGS) (const_int 0))))
+   (clobber (reg:CC R_FLAGS))]
+  "reload_completed"
+  "adc.l   %0,%1,%2"
   [(set_attr "type" "arith")])
 
 ;;
@@ -955,31 +954,20 @@
 		  (match_operand:DI 2 "add_operand" "")))]
   "")
 
+; Disfavour the use of the sub.l because of the early clobber.
+
 (define_insn_and_split "*subdi3_insn"
   [(set (match_operand:DI 0 "register_operand"           "=r,r,&r")
 	(minus:DI (match_operand:DI 1 "register_operand" " 0,0, r")
-		  (match_operand:DI 2 "add_operand"      " J,L, r")))]
+		  (match_operand:DI 2 "add_operand"      " L,J, r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
   "reload_completed"
-  [(parallel [(set (match_dup 0)
-		   (minus:DI (match_dup 1) (match_dup 2)))
-	      (clobber (reg:CC R_FLAGS))])]
- ""
-  [(set_attr "type" "arith2")])
-
-; Disfavour the use of the sub.l because of the early clobber.
-
-(define_insn "*subdi3_insn_flags"
-  [(set (match_operand:DI 0 "register_operand"           "=r,r,&r")
-	(minus:DI (match_operand:DI 1 "register_operand" " 0,0, r")
-		  (match_operand:DI 2 "add_operand"      " J,L, r")))
-   (clobber (reg:CC R_FLAGS))]
-  "reload_completed"
-  "@
-    subi    %d0,%2\n\tsubc.l  %0,%0,r0
-    addi    %d0,%n2\n\tadc.l   %0,%0,r0
-    sub.l   %d0,%d1,%d2\n\tsubc.l  %0,%1,%2"
+  [(const_int 0)]
+{
+  visium_split_double_add (MINUS, operands[0], operands[1], operands[2]);
+  DONE;
+}
   [(set_attr "type" "arith2")])
 
 ;;
@@ -987,7 +975,7 @@
 ;;
 ;; Integer Subtract with Carry
 ;;
-;; Only SI mode is supported as neg<slt[u]> for the sake of cstore.
+;; Only SI mode is supported.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -1007,6 +995,16 @@
    (clobber (reg:CC R_FLAGS))]
   "reload_completed"
   "subc.l  %0,%1,r0"
+  [(set_attr "type" "arith")])
+
+(define_insn "*minus_minus_sltu<subst_arith>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rO")
+			    (match_operand:SI 2 "register_operand" "r"))
+		  (ltu:SI (reg R_FLAGS) (const_int 0))))
+   (clobber (reg:CC R_FLAGS))]
+  "reload_completed"
+  "subc.l  %0,%r1,%2"
   [(set_attr "type" "arith")])
 
 ;;
@@ -1054,17 +1052,11 @@
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
   "reload_completed"
-  [(parallel [(set (match_dup 0) (neg:DI (match_dup 1)))
-	      (clobber (reg:CC R_FLAGS))])]
-  ""
-  [(set_attr "type" "arith2")])
-
-(define_insn "*negdi2_insn_flags"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(neg:DI (match_operand:DI 1 "register_operand" "r")))
-   (clobber (reg:CC R_FLAGS))]
-  "reload_completed"
-  "sub.l   %d0,r0,%d1\n\tsubc.l  %0,r0,%1"
+  [(const_int 0)]
+{
+  visium_split_double_add (MINUS, operands[0], const0_rtx, operands[1]);
+  DONE;
+}
   [(set_attr "type" "arith2")])
 
 ;;

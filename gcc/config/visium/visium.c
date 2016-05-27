@@ -2026,7 +2026,7 @@ visium_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 /* Split a double move of OPERANDS in MODE.  */
 
 void
-split_double_move (rtx *operands, enum machine_mode mode)
+visium_split_double_move (rtx *operands, enum machine_mode mode)
 {
   bool swap = false;
 
@@ -2076,14 +2076,74 @@ split_double_move (rtx *operands, enum machine_mode mode)
     }
 }
 
+/* Split a double addition or subtraction of operands.  */
+
+void
+visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
+{
+  rtx op3 = gen_lowpart (SImode, op0);
+  rtx op4 = gen_lowpart (SImode, op1);
+  rtx op5;
+  rtx op6 = gen_highpart (SImode, op0);
+  rtx op7 = (op1 == const0_rtx ? op1 : gen_highpart (SImode, op1));
+  rtx op8;
+
+  /* If operand #2 is a small constant, then its high part is null.  */
+  if (CONST_INT_P (op2))
+    {
+      HOST_WIDE_INT val = INTVAL (op2);
+
+      if (val < 0)
+	{
+	  code = (code == MINUS ? PLUS : MINUS);
+	  val = -val;
+	}
+
+      op5 = gen_int_mode (val, SImode);
+      op8 = const0_rtx;
+    }
+  else
+    {
+      op5 = gen_lowpart (SImode, op2);
+      op8 = gen_highpart (SImode, op2);
+    }
+
+  /* This is the {add,sub,neg}si3_insn_set_flags pattern.  */
+  rtx x;
+  if (op4 == const0_rtx)
+    x = gen_rtx_NEG (SImode, op5);
+  else
+    x = gen_rtx_fmt_ee (code, SImode, op4, op5);
+  rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+  XVECEXP (pat, 0, 0) = gen_rtx_SET (op3, x);
+  rtx flags = gen_rtx_REG (CC_NOOVmode, FLAGS_REGNUM);
+  x = gen_rtx_COMPARE (CC_NOOVmode, shallow_copy_rtx (x), const0_rtx);
+  XVECEXP (pat, 0, 1) = gen_rtx_SET (flags, x);
+  emit_insn (pat);
+
+  /* This is the plus_[plus_]sltu_flags or minus_[minus_]sltu_flags pattern.  */
+  if (op8 == const0_rtx)
+    x = op7;
+  else
+    x = gen_rtx_fmt_ee (code, SImode, op7, op8);
+  x = gen_rtx_fmt_ee (code, SImode, x, gen_rtx_LTU (SImode, flags, const0_rtx));
+  pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+  XVECEXP (pat, 0, 0) = gen_rtx_SET (op6, x);
+  flags = gen_rtx_REG (CCmode, FLAGS_REGNUM);
+  XVECEXP (pat, 0, 1) = gen_rtx_CLOBBER (VOIDmode, flags);
+  emit_insn (pat);
+
+  visium_flags_exposed = true;
+}
+
 /* Expand a copysign of OPERANDS in MODE.  */
 
 void
 visium_expand_copysign (rtx *operands, enum machine_mode mode)
 {
-  rtx dest = operands[0];
-  rtx op0 = operands[1];
-  rtx op1 = operands[2];
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
   rtx mask = force_reg (SImode, GEN_INT (0x7fffffff));
   rtx x;
 
@@ -2091,37 +2151,37 @@ visium_expand_copysign (rtx *operands, enum machine_mode mode)
      the FPU on the MCM have a non-standard behavior wrt NaNs.  */
   gcc_assert (mode == SFmode);
 
-  /* First get all the non-sign bits of OP0.  */
-  if (GET_CODE (op0) == CONST_DOUBLE)
+  /* First get all the non-sign bits of op1.  */
+  if (GET_CODE (op1) == CONST_DOUBLE)
     {
-      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
-	op0 = simplify_unary_operation (ABS, mode, op0, mode);
-      if (op0 != CONST0_RTX (mode))
+      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op1)))
+	op1 = simplify_unary_operation (ABS, mode, op1, mode);
+      if (op1 != CONST0_RTX (mode))
 	{
 	  long l;
-	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op0), l);
-	  op0 = force_reg (SImode, GEN_INT (trunc_int_for_mode (l, SImode)));
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op1), l);
+	  op1 = force_reg (SImode, GEN_INT (trunc_int_for_mode (l, SImode)));
 	}
     }
   else
     {
-      op0 = copy_to_mode_reg (SImode, gen_lowpart (SImode, op0));
-      op0 = force_reg (SImode, gen_rtx_AND (SImode, op0, mask));
+      op1 = copy_to_mode_reg (SImode, gen_lowpart (SImode, op1));
+      op1 = force_reg (SImode, gen_rtx_AND (SImode, op1, mask));
     }
 
-  /* Then get the sign bit of OP1.  */
+  /* Then get the sign bit of op2.  */
   mask = force_reg (SImode, gen_rtx_NOT (SImode, mask));
-  op1 = copy_to_mode_reg (SImode, gen_lowpart (SImode, op1));
-  op1 = force_reg (SImode, gen_rtx_AND (SImode, op1, mask));
+  op2 = copy_to_mode_reg (SImode, gen_lowpart (SImode, op2));
+  op2 = force_reg (SImode, gen_rtx_AND (SImode, op2, mask));
 
   /* Finally OR the two values.  */
-  if (op0 == CONST0_RTX (SFmode))
-    x = op1;
+  if (op1 == CONST0_RTX (SFmode))
+    x = op2;
   else
-    x = force_reg (SImode, gen_rtx_IOR (SImode, op0, op1));
+    x = force_reg (SImode, gen_rtx_IOR (SImode, op1, op2));
 
   /* And move the result to the destination.  */
-  emit_insn (gen_rtx_SET (dest, gen_lowpart (SFmode, x)));
+  emit_insn (gen_rtx_SET (op0, gen_lowpart (SFmode, x)));
 }
 
 /* Expand a cstore of OPERANDS in MODE for EQ/NE/LTU/GTU/GEU/LEU.  We generate
