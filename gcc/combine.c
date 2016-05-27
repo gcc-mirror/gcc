@@ -7988,6 +7988,34 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 							next_code),
 			       i, NULL_RTX, 1, 1, 0, 1);
 
+      /* If the one operand is a paradoxical subreg of a register or memory and
+	 the constant (limited to the smaller mode) has only zero bits where
+	 the sub expression has known zero bits, this can be expressed as
+	 a zero_extend.  */
+      else if (GET_CODE (XEXP (x, 0)) == SUBREG)
+	{
+	  rtx sub;
+
+	  sub = XEXP (XEXP (x, 0), 0);
+	  machine_mode sub_mode = GET_MODE (sub);
+	  if ((REG_P (sub) || MEM_P (sub))
+	      && GET_MODE_PRECISION (sub_mode) < mode_width)
+	    {
+	      unsigned HOST_WIDE_INT mode_mask = GET_MODE_MASK (sub_mode);
+	      unsigned HOST_WIDE_INT mask;
+
+	      /* original AND constant with all the known zero bits set */
+	      mask = UINTVAL (XEXP (x, 1)) | (~nonzero_bits (sub, sub_mode));
+	      if ((mask & mode_mask) == mode_mask)
+		{
+		  new_rtx = make_compound_operation (sub, next_code);
+		  new_rtx = make_extraction (mode, new_rtx, 0, 0,
+					     GET_MODE_PRECISION (sub_mode),
+					     1, 0, in_code == COMPARE);
+		}
+	    }
+	}
+
       break;
 
     case LSHIFTRT:
