@@ -1,3 +1,8 @@
+2016-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Adjust URL to use https.
+	* doc/html/manual/*: Regenerate.
+
 2016-05-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/66338
