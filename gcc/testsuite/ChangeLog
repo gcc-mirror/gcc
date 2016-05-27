@@ -1,3 +1,8 @@
+2016-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/71308
+	* g++.dg/torture/pr71308.C: New test.
+
 2016-05-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.dg/zero_bits_compound-1.c: New test.
