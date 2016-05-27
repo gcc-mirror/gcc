@@ -1,3 +1,9 @@
+2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71279
+	* fold-const.c (fold_ternary_loc): Don't fold VEC_COND_EXPR
+	into comparison.
+
 2016-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-modes.def (CC_ZESWP, CC_SESWP): Delete.
