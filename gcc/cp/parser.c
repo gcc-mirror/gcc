@@ -17549,7 +17549,7 @@ cp_parser_namespace_definition (cp_parser* parser)
     }
 
   /* Start the namespace.  */
-  push_namespace (identifier);
+  bool ok = push_namespace (identifier);
 
   /* Parse any nested namespace definition. */
   if (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
@@ -17582,7 +17582,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   /* "inline namespace" is equivalent to a stub namespace definition
      followed by a strong using directive.  */
-  if (is_inline)
+  if (is_inline && ok)
     {
       tree name_space = current_namespace;
       /* Set up namespace association.  */
@@ -17610,7 +17610,8 @@ cp_parser_namespace_definition (cp_parser* parser)
     pop_namespace ();
 
   /* Finish the namespace.  */
-  pop_namespace ();
+  if (ok)
+    pop_namespace ();
   /* Look for the final `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
 }

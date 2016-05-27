@@ -312,7 +312,7 @@ extern tree push_inner_scope (tree);
 extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (cp_binding_level *);
 
-extern void push_namespace (tree);
+extern bool push_namespace (tree);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
