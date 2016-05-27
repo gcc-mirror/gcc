@@ -1,3 +1,8 @@
+2016-05-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* combine.c (make_compound_operation): Take known zero bits into
+	account when checking for possible zero_extend.
+
 2016-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (ashl<mode>3, SHORT modes):

@@ -1,3 +1,8 @@
+2016-05-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.dg/zero_bits_compound-1.c: New test.
+	* gcc.dg/zero_bits_compound-2.c: New test.
+
 2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/71279
