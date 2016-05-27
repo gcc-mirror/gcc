@@ -1131,7 +1131,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.akkadia.org/drepper/dsohowto.pdf">
+	      xlink:href="https://www.akkadia.org/drepper/dsohowto.pdf">
       How to Write Shared Libraries
 	</link>
       </title>
