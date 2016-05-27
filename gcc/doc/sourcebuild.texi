@@ -86,7 +86,7 @@ The Fortran runtime library.
 
 @item libgo
 The Go runtime library.  The bulk of this library is mirrored from the
-@uref{http://code.google.com/@/p/@/go/, master Go repository}.
+@uref{https://github.com/@/golang/go, master Go repository}.
 
 @item libgomp
 The GNU Offloading and Multi Processing Runtime Library.

@@ -1,3 +1,7 @@
+2016-05-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/sourcebuild.texi: New address for upstream Go repository.
+
 2016-05-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.h (TARGET_ARM_V6M): Remove.
