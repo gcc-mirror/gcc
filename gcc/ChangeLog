@@ -1,5 +1,12 @@
 2016-05-27  Jiong Wang  <jiong.wang@arm.com>
 
+	PR target/63596
+	* config/aarch64/aarch64.c (aarch64_expand_builtin_va_start): Honor
+	tree-stdarg analysis results.
+	(aarch64_setup_incoming_varargs): Likewise.
+
+2016-05-27  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_build_builtin_va_list): Initialize
 	va_list_gpr_counter_field and va_list_fpr_counter_field.
 
