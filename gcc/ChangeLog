@@ -1,3 +1,23 @@
+2016-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium-protos.h (split_double_move): Rename into...
+	(visium_split_double_move): ...this.
+	(visium_split_double_add): Declare.
+	* config/visium/visium.c (split_double_move): Rename into...
+	(visium_split_double_move): ...this.
+	(visium_split_double_add): New function.
+	(visium_expand_copysign): Renumber operands for consistency.
+	* config/visium/visium.md (DImode move splitter): Adjust to renaming.
+	(DFmode move splitter): Likewise.
+	(*addi3_insn): Split by means of visium_split_double_add.
+	(*adddi3_insn_flags): Delete.
+	(*plus_plus_sltu<subst_arith>): New insn.
+	(*subdi3_insn): Split by means of visium_split_double_add.
+	(subdi3_insn_flags): Delete.
+	(*minus_minus_sltu<subst_arith>): New insn.
+	(*negdi2_insn): Split by means of visium_split_double_add.
+	(*negdi2_insn_flags): Delete.
+
 2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	Backport from mainline r236810.
