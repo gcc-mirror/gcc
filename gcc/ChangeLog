@@ -1,3 +1,8 @@
+2016-05-27  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.md (2x risbg splitters): Use
+	reg_overlap_mentioned_p instead of rtx_equal_p.
+
 2016-05-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* combine.c (make_compound_operation): Take known zero bits into
