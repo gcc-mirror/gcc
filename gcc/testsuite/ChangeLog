@@ -1,3 +1,19 @@
+2016-05-26  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr21417.c: Update expected output.
+	* gcc.dg/tree-ssa/pr66752-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr68198.c: Likewise.
+	* gcc.dg/tree-ssa/pr69196-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr69270-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2b.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2g.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2h.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-12.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-13.c: Likewise.
+	* gcc.dg/tree-ssa/vrp56.c: Likewise.
+
 2016-05-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/69855

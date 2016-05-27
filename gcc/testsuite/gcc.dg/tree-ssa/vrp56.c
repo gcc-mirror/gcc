@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdump-tree-thread1-stats" } */
 typedef struct basic_block_def *basic_block;
 struct basic_block_def;
 struct edge_def;
@@ -38,5 +38,5 @@ cleanup_empty_eh (basic_block bb)
 	foo ();
     }
 }
-/* { dg-final { scan-tree-dump-times "Threaded" 1 "vrp1"} } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 1" "thread1"} } */
 
