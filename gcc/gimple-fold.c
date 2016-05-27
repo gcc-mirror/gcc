@@ -3053,7 +3053,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 			  == void_type_node))
 		    gimple_call_set_fntype (stmt, TREE_TYPE (fndecl));
 		  /* If the call becomes noreturn, remove the lhs.  */
-		  if (gimple_call_noreturn_p (stmt)
+		  if (lhs
+		      && gimple_call_noreturn_p (stmt)
 		      && (VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (stmt)))
 			  || should_remove_lhs_p (lhs)))
 		    {

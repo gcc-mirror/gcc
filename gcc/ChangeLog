@@ -1,3 +1,8 @@
+2016-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/71308
+	* gimple-fold.c (gimple_fold_call): Check that LHS is not null.
+
 2016-05-27  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.md (2x risbg splitters): Use
