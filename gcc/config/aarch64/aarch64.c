@@ -4227,14 +4227,6 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
       && GET_CODE (x) == NEG)
     return CC_Zmode;
 
-  /* A compare of a mode narrower than SI mode against zero can be done
-     by extending the value in the comparison.  */
-  if ((GET_MODE (x) == QImode || GET_MODE (x) == HImode)
-      && y == const0_rtx)
-    /* Only use sign-extension if we really need it.  */
-    return ((code == GT || code == GE || code == LE || code == LT)
-	    ? CC_SESWPmode : CC_ZESWPmode);
-
   /* A test for unsigned overflow.  */
   if ((GET_MODE (x) == DImode || GET_MODE (x) == TImode)
       && code == NE
@@ -4303,8 +4295,6 @@ aarch64_get_condition_code_1 (enum machine_mode mode, enum rtx_code comp_code)
       break;
 
     case CC_SWPmode:
-    case CC_ZESWPmode:
-    case CC_SESWPmode:
       switch (comp_code)
 	{
 	case NE: return AARCH64_NE;
@@ -6291,10 +6281,6 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
         {
           /* TODO: A write to the CC flags possibly costs extra, this
 	     needs encoding in the cost tables.  */
-
-          /* CC_ZESWPmode supports zero extend for free.  */
-          if (mode == CC_ZESWPmode && GET_CODE (op0) == ZERO_EXTEND)
-            op0 = XEXP (op0, 0);
 
 	  mode = GET_MODE (op0);
           /* ANDS.  */
