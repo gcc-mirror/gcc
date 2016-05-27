@@ -9330,7 +9330,7 @@ aarch64_build_builtin_va_list (void)
 			FIELD_DECL, get_identifier ("__vr_offs"),
 			integer_type_node);
 
-  /* Tell tree-stdarg pass what's our internal offset fields.
+  /* Tell tree-stdarg pass about our internal offset fields.
      NOTE: va_list_gpr/fpr_counter_field are only used for tree comparision
      purpose to identify whether the code is updating va_list internal
      offset fields through irregular way.  */
@@ -9369,15 +9369,17 @@ aarch64_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   tree f_stack, f_grtop, f_vrtop, f_groff, f_vroff;
   tree stack, grtop, vrtop, groff, vroff;
   tree t;
-  int gr_save_area_size;
-  int vr_save_area_size;
+  int gr_save_area_size = cfun->va_list_gpr_size;
+  int vr_save_area_size = cfun->va_list_fpr_size;
   int vr_offset;
 
   cum = &crtl->args.info;
-  gr_save_area_size
-    = (NUM_ARG_REGS - cum->aapcs_ncrn) * UNITS_PER_WORD;
-  vr_save_area_size
-    = (NUM_FP_ARG_REGS - cum->aapcs_nvrn) * UNITS_PER_VREG;
+  if (cfun->va_list_gpr_size)
+    gr_save_area_size = MIN ((NUM_ARG_REGS - cum->aapcs_ncrn) * UNITS_PER_WORD,
+			     cfun->va_list_gpr_size);
+  if (cfun->va_list_fpr_size)
+    vr_save_area_size = MIN ((NUM_FP_ARG_REGS - cum->aapcs_nvrn)
+			     * UNITS_PER_VREG, cfun->va_list_fpr_size);
 
   if (!TARGET_FLOAT)
     {
@@ -9711,7 +9713,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS local_cum;
-  int gr_saved, vr_saved;
+  int gr_saved = cfun->va_list_gpr_size;
+  int vr_saved = cfun->va_list_fpr_size;
 
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
@@ -9719,9 +9722,14 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
   local_cum = *cum;
   aarch64_function_arg_advance (pack_cumulative_args(&local_cum), mode, type, true);
 
-  /* Found out how many registers we need to save.  */
-  gr_saved = NUM_ARG_REGS - local_cum.aapcs_ncrn;
-  vr_saved = NUM_FP_ARG_REGS - local_cum.aapcs_nvrn;
+  /* Found out how many registers we need to save.
+     Honor tree-stdvar analysis results.  */
+  if (cfun->va_list_gpr_size)
+    gr_saved = MIN (NUM_ARG_REGS - local_cum.aapcs_ncrn,
+		    cfun->va_list_gpr_size / UNITS_PER_WORD);
+  if (cfun->va_list_fpr_size)
+    vr_saved = MIN (NUM_FP_ARG_REGS - local_cum.aapcs_nvrn,
+		    cfun->va_list_fpr_size / UNITS_PER_VREG);
 
   if (!TARGET_FLOAT)
     {
@@ -9749,7 +9757,7 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 	  /* We can't use move_block_from_reg, because it will use
 	     the wrong mode, storing D regs only.  */
 	  machine_mode mode = TImode;
-	  int off, i;
+	  int off, i, vr_start;
 
 	  /* Set OFF to the offset from virtual_incoming_args_rtx of
 	     the first vector register.  The VR save area lies below
@@ -9758,14 +9766,15 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 			   STACK_BOUNDARY / BITS_PER_UNIT);
 	  off -= vr_saved * UNITS_PER_VREG;
 
-	  for (i = local_cum.aapcs_nvrn; i < NUM_FP_ARG_REGS; ++i)
+	  vr_start = V0_REGNUM + local_cum.aapcs_nvrn;
+	  for (i = 0; i < vr_saved; ++i)
 	    {
 	      rtx ptr, mem;
 
 	      ptr = plus_constant (Pmode, virtual_incoming_args_rtx, off);
 	      mem = gen_frame_mem (mode, ptr);
 	      set_mem_alias_set (mem, get_varargs_alias_set ());
-	      aarch64_emit_move (mem, gen_rtx_REG (mode, V0_REGNUM + i));
+	      aarch64_emit_move (mem, gen_rtx_REG (mode, vr_start + i));
 	      off += UNITS_PER_VREG;
 	    }
 	}
