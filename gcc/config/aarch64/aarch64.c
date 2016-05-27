@@ -13181,6 +13181,14 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   return false;
 }
 
+/* Return true iff the instruction fusion described by OP is enabled.  */
+
+bool
+aarch64_fusion_enabled_p (enum aarch64_fusion_pairs op)
+{
+  return (aarch64_tune_params.fusible_ops & op) != 0;
+}
+
 /* If MEM is in the form of [base+offset], extract the two parts
    of address and set to BASE and OFFSET, otherwise return false
    after clearing BASE and OFFSET.  */
