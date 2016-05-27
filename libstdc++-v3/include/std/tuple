@@ -620,14 +620,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Shortcut for the cases where constructors taking _UElements...
       // need to be constrained.
       template<typename... _UElements> using _TMC =
-                  _TC<(sizeof...(_Elements) == sizeof...(_UElements)),
+                  _TC<(sizeof...(_Elements) == sizeof...(_UElements))
+		      && (_TC<(sizeof...(_UElements)==1), _Elements...>::
+			  template _NotSameTuple<_UElements...>()),
+                      _Elements...>;
+
+      // Shortcut for the cases where constructors taking tuple<_UElements...>
+      // need to be constrained.
+      template<typename... _UElements> using _TMCT =
+                  _TC<(sizeof...(_Elements) == sizeof...(_UElements))
+		      && !is_same<tuple<Elements...>,
+				  tuple<_UElements...>>::value,
                       _Elements...>;
 
       template<typename... _UElements, typename
 	       enable_if<
-		  _TC<sizeof...(_UElements) == 1, _Elements...>::template
-		    _NotSameTuple<_UElements...>()
-		  && _TMC<_UElements...>::template
+		  _TMC<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
                   && _TMC<_UElements...>::template
                     _ImplicitlyMoveConvertibleTuple<_UElements...>()
@@ -638,9 +646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _UElements, typename
         enable_if<
-		  _TC<sizeof...(_UElements) == 1, _Elements...>::template
-		    _NotSameTuple<_UElements...>()
-		  && _TMC<_UElements...>::template
+		  _TMC<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
                   && !_TMC<_UElements...>::template
                     _ImplicitlyMoveConvertibleTuple<_UElements...>()
@@ -660,9 +666,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             _Elements...>;
 
       template<typename... _UElements, typename _Dummy = void, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _ConstructibleTuple<_UElements...>()
-                  && _TMC<_UElements...>::template
+                  && _TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
                     _NonNestedTuple<const tuple<_UElements...>&>(),
@@ -672,9 +678,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { }
 
       template<typename... _UElements, typename _Dummy = void, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _ConstructibleTuple<_UElements...>()
-                  && !_TMC<_UElements...>::template
+                  && !_TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
                     _NonNestedTuple<const tuple<_UElements...>&>(),
@@ -684,9 +690,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { }
 
       template<typename... _UElements, typename _Dummy = void, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
-                  && _TMC<_UElements...>::template
+                  && _TMCT<_UElements...>::template
                     _ImplicitlyMoveConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
                     _NonNestedTuple<tuple<_UElements...>&&>(),
@@ -695,9 +701,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       template<typename... _UElements, typename _Dummy = void, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
-                  && !_TMC<_UElements...>::template
+                  && !_TMCT<_UElements...>::template
                     _ImplicitlyMoveConvertibleTuple<_UElements...>()
                   && _TNTC<_Dummy>::template
                     _NonNestedTuple<tuple<_UElements...>&&>(),
@@ -764,9 +770,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
 
       template<typename _Alloc, typename... _UElements, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _ConstructibleTuple<_UElements...>()
-                  && _TMC<_UElements...>::template
+                  && _TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>(),
         bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
@@ -776,9 +782,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Alloc, typename... _UElements, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _ConstructibleTuple<_UElements...>()
-                  && !_TMC<_UElements...>::template
+                  && !_TMCT<_UElements...>::template
                     _ImplicitlyConvertibleTuple<_UElements...>(),
         bool>::type=false>
 	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
@@ -788,9 +794,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Alloc, typename... _UElements, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
-                  && _TMC<_UElements...>::template
+                  && _TMCT<_UElements...>::template
                     _ImplicitlyMoveConvertibleTuple<_UElements...>(),
         bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
@@ -800,9 +806,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Alloc, typename... _UElements, typename
-        enable_if<_TMC<_UElements...>::template
+        enable_if<_TMCT<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
-                  && !_TMC<_UElements...>::template
+                  && !_TMCT<_UElements...>::template
                     _ImplicitlyMoveConvertibleTuple<_UElements...>(),
         bool>::type=false>
 	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
