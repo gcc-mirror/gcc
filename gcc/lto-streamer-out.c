@@ -1925,6 +1925,9 @@ output_cfg (struct output_block *ob, struct function *fn)
       streamer_write_hwi (ob, loop->any_upper_bound);
       if (loop->any_upper_bound)
 	streamer_write_wi (ob, loop->nb_iterations_upper_bound);
+      streamer_write_hwi (ob, loop->any_likely_upper_bound);
+      if (loop->any_likely_upper_bound)
+	streamer_write_wi (ob, loop->nb_iterations_likely_upper_bound);
       streamer_write_hwi (ob, loop->any_estimate);
       if (loop->any_estimate)
 	streamer_write_wi (ob, loop->nb_iterations_estimate);

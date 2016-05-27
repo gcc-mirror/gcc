@@ -523,6 +523,11 @@ unroll_loop_constant_iterations (struct loop *loop)
 	    loop->nb_iterations_estimate -= exit_mod;
 	  else
 	    loop->any_estimate = false;
+	  if (loop->any_likely_upper_bound
+	      && wi::leu_p (exit_mod, loop->nb_iterations_likely_upper_bound))
+	    loop->nb_iterations_likely_upper_bound -= exit_mod;
+	  else
+	    loop->any_likely_upper_bound = false;
 	}
 
       bitmap_set_bit (wont_exit, 1);
@@ -566,6 +571,11 @@ unroll_loop_constant_iterations (struct loop *loop)
 	    loop->nb_iterations_estimate -= exit_mod + 1;
 	  else
 	    loop->any_estimate = false;
+	  if (loop->any_likely_upper_bound
+	      && wi::leu_p (exit_mod + 1, loop->nb_iterations_likely_upper_bound))
+	    loop->nb_iterations_likely_upper_bound -= exit_mod + 1;
+	  else
+	    loop->any_likely_upper_bound = false;
 	  desc->noloop_assumptions = NULL_RTX;
 
 	  bitmap_set_bit (wont_exit, 0);
@@ -619,6 +629,9 @@ unroll_loop_constant_iterations (struct loop *loop)
   if (loop->any_estimate)
     loop->nb_iterations_estimate
       = wi::udiv_trunc (loop->nb_iterations_estimate, max_unroll + 1);
+  if (loop->any_likely_upper_bound)
+    loop->nb_iterations_likely_upper_bound
+      = wi::udiv_trunc (loop->nb_iterations_likely_upper_bound, max_unroll + 1);
   desc->niter_expr = GEN_INT (desc->niter);
 
   /* Remove the edges.  */
@@ -1059,6 +1072,9 @@ unroll_loop_runtime_iterations (struct loop *loop)
   if (loop->any_estimate)
     loop->nb_iterations_estimate
       = wi::udiv_trunc (loop->nb_iterations_estimate, max_unroll + 1);
+  if (loop->any_likely_upper_bound)
+    loop->nb_iterations_likely_upper_bound
+      = wi::udiv_trunc (loop->nb_iterations_likely_upper_bound, max_unroll + 1);
   if (exit_at_end)
     {
       desc->niter_expr =
@@ -1070,6 +1086,11 @@ unroll_loop_runtime_iterations (struct loop *loop)
 	--loop->nb_iterations_estimate;
       else
 	loop->any_estimate = false;
+      if (loop->any_likely_upper_bound
+	  && loop->nb_iterations_likely_upper_bound != 0)
+	--loop->nb_iterations_likely_upper_bound;
+      else
+	loop->any_likely_upper_bound = false;
     }
 
   if (dump_file)
