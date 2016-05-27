@@ -9330,6 +9330,13 @@ aarch64_build_builtin_va_list (void)
 			FIELD_DECL, get_identifier ("__vr_offs"),
 			integer_type_node);
 
+  /* Tell tree-stdarg pass what's our internal offset fields.
+     NOTE: va_list_gpr/fpr_counter_field are only used for tree comparision
+     purpose to identify whether the code is updating va_list internal
+     offset fields through irregular way.  */
+  va_list_gpr_counter_field = f_groff;
+  va_list_fpr_counter_field = f_vroff;
+
   DECL_ARTIFICIAL (f_stack) = 1;
   DECL_ARTIFICIAL (f_grtop) = 1;
   DECL_ARTIFICIAL (f_vrtop) = 1;

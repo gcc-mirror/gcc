@@ -30,6 +30,7 @@ bar (int x, char const *y, ...)
 /* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "bar: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */

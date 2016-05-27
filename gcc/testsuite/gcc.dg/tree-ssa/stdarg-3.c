@@ -24,6 +24,7 @@ f1 (int i, ...)
 /* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f1: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -39,6 +40,7 @@ f2 (int i, ...)
 /* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f2: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -57,6 +59,7 @@ f3 (int i, ...)
 /* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f3: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -73,6 +76,7 @@ f4 (int i, ...)
 /* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -89,6 +93,7 @@ f5 (int i, ...)
 /* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f5: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -107,6 +112,7 @@ f6 (int i, ...)
 /* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f6: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -123,6 +129,7 @@ f7 (int i, ...)
 /* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -139,6 +146,7 @@ f8 (int i, ...)
 /* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f8: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -155,6 +163,7 @@ f10 (int i, ...)
 /* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f10: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -171,6 +180,7 @@ f11 (int i, ...)
 /* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f11: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
@@ -187,6 +197,7 @@ f12 (int i, ...)
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target { powerpc*-*-linux* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target s390*-*-linux* } } } */
+/* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */

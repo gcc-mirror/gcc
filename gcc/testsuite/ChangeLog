@@ -1,3 +1,11 @@
+2016-05-27  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.dg/tree-ssa/stdarg-2.c: Enable all testcases for AArch64.
+	* gcc.dg/tree-ssa/stdarg-3.c: Likewise.
+	* gcc.dg/tree-ssa/stdarg-4.c: Likewise.
+	* gcc.dg/tree-ssa/stdarg-5.c: Likewise.
+	* gcc.dg/tree-ssa/stdarg-6.c: Likewise.
+
 2016-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/71308
