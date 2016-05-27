@@ -1,3 +1,11 @@
+2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r236810.
+	2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71279
+	* gcc.dg/pr71279.c: New test.
+
 2016-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk.

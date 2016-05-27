@@ -1,3 +1,12 @@
+2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r236810.
+	2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71279
+	* fold-const.c (fold_ternary_loc): Don't fold VEC_COND_EXPR
+	into comparison.
+
 2016-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Remove
