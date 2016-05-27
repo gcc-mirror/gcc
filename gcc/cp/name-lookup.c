@@ -3701,9 +3701,10 @@ handle_namespace_attrs (tree ns, tree attributes)
 }
   
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
-   select a name that is unique to this compilation unit.  */
+   select a name that is unique to this compilation unit.  Returns FALSE if
+   pushdecl fails, TRUE otherwise.  */
 
-void
+bool
 push_namespace (tree name)
 {
   tree d = NULL_TREE;
@@ -3777,7 +3778,11 @@ push_namespace (tree name)
 	TREE_PUBLIC (d) = 0;
       else
 	TREE_PUBLIC (d) = 1;
-      pushdecl (d);
+      if (pushdecl (d) == error_mark_node)
+	{
+	  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+	  return false;
+	}
       if (anon)
 	{
 	  /* Clear DECL_NAME for the benefit of debugging back ends.  */
@@ -3795,6 +3800,7 @@ push_namespace (tree name)
   current_namespace = d;
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return true;
 }
 
 /* Pop from the scope of the current namespace.  */

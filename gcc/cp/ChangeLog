@@ -1,3 +1,12 @@
+2016-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60385
+	* name-lookup.c (push_namespace): Return bool, false when pushdecl
+	fails.
+	* name-lookup.h (push_namespace): Adjust declaration.
+	* parser.c (cp_parser_namespace_definition): Check push_namespace
+	return value.
+
 2016-05-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/69855

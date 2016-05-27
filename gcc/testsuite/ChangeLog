@@ -1,3 +1,8 @@
+2016-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60385
+	* g++.dg/parse/namespace13.C: New.
+
 2016-05-26  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/pr21417.c: Update expected output.
