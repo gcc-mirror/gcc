@@ -398,6 +398,7 @@ extern gimple_opt_pass *make_pass_dce (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_cd_dce (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_call_cdce (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_merge_phi (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_thread_jumps (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_split_crit_edges (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_laddress (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_pre (gcc::context *ctxt);

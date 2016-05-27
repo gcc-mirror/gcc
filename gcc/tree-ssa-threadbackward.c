@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "cfganal.h"
 #include "tree-pass.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
 
 static int max_threaded_paths;
 
@@ -596,15 +598,13 @@ fsm_find_control_statement_thread_paths (tree name,
    finding a path where NAME is a constant, we can thread the path.  */
 
 void  
-find_jump_threads_backwards (edge e)
+find_jump_threads_backwards (basic_block bb)
 {     
   if (!flag_expensive_optimizations
-      || optimize_function_for_size_p (cfun)
-      || e->dest->loop_father != e->src->loop_father
-      || loop_depth (e->dest->loop_father) == 0)
+      || optimize_function_for_size_p (cfun))
     return;
 
-  gimple *stmt = get_gimple_control_stmt (e->dest);
+  gimple *stmt = get_gimple_control_stmt (bb);
   if (!stmt)
     return;
 
@@ -628,7 +628,7 @@ find_jump_threads_backwards (edge e)
 
   vec<basic_block, va_gc> *bb_path;
   vec_alloc (bb_path, 10);
-  vec_safe_push (bb_path, e->dest);
+  vec_safe_push (bb_path, bb);
   hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
 
   max_threaded_paths = PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS);
@@ -636,4 +636,61 @@ find_jump_threads_backwards (edge e)
 
   delete visited_bbs;
   vec_free (bb_path);
+}
+
+namespace {
+
+const pass_data pass_data_thread_jumps =
+{
+  GIMPLE_PASS,
+  "thread",
+  OPTGROUP_NONE,
+  TV_TREE_SSA_THREAD_JUMPS,
+  ( PROP_cfg | PROP_ssa ),
+  0,
+  0,
+  0,
+  ( TODO_cleanup_cfg | TODO_update_ssa ),
+};
+
+class pass_thread_jumps : public gimple_opt_pass
+{
+public:
+  pass_thread_jumps (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_thread_jumps, ctxt)
+  {}
+
+  opt_pass * clone (void) { return new pass_thread_jumps (m_ctxt); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *);
+};
+
+bool
+pass_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
+{
+  return (flag_expensive_optimizations
+	  && ! optimize_function_for_size_p (cfun));
+}
+
+
+unsigned int
+pass_thread_jumps::execute (function *fun)
+{
+  /* Try to thread each block with more than one successor.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      if (EDGE_COUNT (bb->succs) > 1)
+	find_jump_threads_backwards (bb);
+    }
+  thread_through_all_blocks (true);
+  return 0;
+}
+
+}
+
+gimple_opt_pass *
+make_pass_thread_jumps (gcc::context *ctxt)
+{
+  return new pass_thread_jumps (ctxt);
 }

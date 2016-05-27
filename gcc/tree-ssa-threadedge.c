@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
-#include "tree-ssa-threadbackward.h"
 #include "tree-ssa-dom.h"
 #include "gimple-fold.h"
 
@@ -1183,8 +1182,6 @@ thread_across_edge (gcond *dummy_cond,
       path->release ();
       delete path;
 
-      find_jump_threads_backwards (e);
-
       /* A negative status indicates the target block was deemed too big to
 	 duplicate.  Just quit now rather than trying to use the block as
 	 a joiner in a jump threading path.
@@ -1231,10 +1228,7 @@ thread_across_edge (gcond *dummy_cond,
       {
 	if ((e->flags & EDGE_DFS_BACK) != 0
 	    || (taken_edge->flags & EDGE_DFS_BACK) != 0)
-	  {
-	    find_jump_threads_backwards (taken_edge);
-	    continue;
-	  }
+	  continue;
 
 	/* Push a fresh marker so we can unwind the equivalences created
 	   for each of E->dest's successors.  */
@@ -1282,10 +1276,7 @@ thread_across_edge (gcond *dummy_cond,
 	    register_jump_thread (path);
 	  }
 	else
-	  {
-	    find_jump_threads_backwards (path->last ()->e);
-	    delete_jump_thread_path (path);
-	  }
+	  delete_jump_thread_path (path);
 
 	/* And unwind the equivalence table.  */
 	if (avail_exprs_stack)

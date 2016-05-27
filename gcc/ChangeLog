@@ -1,3 +1,16 @@
+2016-05-26  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c: Remove include of tree-ssa-threadbackward.h.
+	(thread_across_edge): Remove calls to find_jump_threads_backwards.
+	* passes.def: Add jump threading passes before DOM/VRP.
+	* tree-ssa-threadbackward.c (find_jump_threads_backwards): Change
+	argument to a basic block from an edge.  Remove tests which are
+	handled elsewhere.
+	(pass_data_thread_jumps, class pass_thread_jumps): New.
+	(pass_thread_jumps::gate, pass_thread_jumps::execute): New.
+	(make_pass_thread_jumps): Likewise.
+	* tree-pass.h (make_pass_thread_jumps): Declare.
+
 2016-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium-protos.h (split_double_move): Rename into...
