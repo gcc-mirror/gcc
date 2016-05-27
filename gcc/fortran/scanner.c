@@ -1499,6 +1499,7 @@ restart:
 not_continuation:
   c = '\n';
   gfc_current_locus = old_loc;
+  end_flag = 0;
 
 done:
   if (c == '\n')

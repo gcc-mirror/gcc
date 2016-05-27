@@ -1,3 +1,9 @@
+2016-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/66461
+	* gfortran.dg/unexpected_eof.f: New test.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/71254
