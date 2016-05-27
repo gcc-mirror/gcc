@@ -1,3 +1,8 @@
+2016-05-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71279
+	* gcc.dg/pr71279.c: New test.
+
 2016-05-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-minmax-1.c: New tests for ISA 3.0

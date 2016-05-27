@@ -11515,9 +11515,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       /* Convert A ? 0 : 1 to !A.  This prefers the use of NOT_EXPR
 	 over COND_EXPR in cases such as floating point comparisons.  */
       if (integer_zerop (op1)
-	  && (code == VEC_COND_EXPR ? integer_all_onesp (op2)
-				    : (integer_onep (op2)
-				       && !VECTOR_TYPE_P (type)))
+	  && code == COND_EXPR
+	  && integer_onep (op2)
+	  && !VECTOR_TYPE_P (type)
 	  && truth_value_p (TREE_CODE (arg0)))
 	return pedantic_non_lvalue_loc (loc,
 				    fold_convert_loc (loc, type,
