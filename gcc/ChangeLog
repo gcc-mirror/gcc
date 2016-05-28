@@ -1,5 +1,11 @@
 2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (edge_predicted_by_p): New function.
+	(predict_paths_for_bb): Do not put multiple predictions of the same type
+	on one edge.
+
+2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-niter.c (number_of_iterations_exit): Revert accidental
 	commit.
 
