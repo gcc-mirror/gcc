@@ -929,24 +929,6 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      DECL_ANTICIPATED (t) = 1;
 	      DECL_HIDDEN_FRIEND_P (t) = 1;
 	    }
-
-	  if (TREE_CODE (x) == FUNCTION_DECL
-	      && DECL_LOCAL_FUNCTION_P (x)
-	      && !DECL_OMP_DECLARE_REDUCTION_P (x)
-	      && !type_dependent_expression_p (x))
-	    {
-	      /* PR c++/69855, a local function declaration
-		 is stripped from template info and pushed to
-		 the local scope as a hidden declaration. This
-		 allows ill-formed overloads even in other scopes
-		 to be diagnosed both at the local declaration site
-		 and after it.  */
-	      tree t2 = copy_decl (t);
-	      DECL_USE_TEMPLATE (t2) = 0;
-	      DECL_TEMPLATE_INFO (t2) = NULL_TREE;
-	      DECL_ANTICIPATED (t2) = 1;
-	      push_overloaded_decl (t2, PUSH_GLOBAL, is_friend);
-	    }
 	}
 
       if (t != x || DECL_FUNCTION_TEMPLATE_P (t))
