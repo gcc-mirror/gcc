@@ -1,3 +1,7 @@
+2016-05-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi: Use https for shop.fsf.org.
+
 2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-ivopts.c (estimated_stmt_executions_int): Use
