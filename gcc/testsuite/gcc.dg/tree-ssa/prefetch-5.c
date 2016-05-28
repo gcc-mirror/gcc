@@ -56,5 +56,5 @@ int loop5 (int n, struct tail5 *x)
 
 /* Until we are able to track likely upper bounds, we can't really work out that
    small trailing arrays should not be prefetched.  */
-/* { dg-final { scan-tree-dump-times "Issued prefetch" 2 "aprefetch" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Not prefetching" 1 "aprefetch" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Issued prefetch" 2 "aprefetch"  } } */
+/* { dg-final { scan-tree-dump-times "Not prefetching" 1 "aprefetch"  } } */

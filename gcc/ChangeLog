@@ -1,5 +1,10 @@
 2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Use
+	likely_max_stmt_executions_int.
+
+2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile.c (compute_branch_probabilities): Do not report hitrates
 	here.
 	(branch_prob): Report hitrates here.
