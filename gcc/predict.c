@@ -478,6 +478,31 @@ gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
   return false;
 }
 
+/* Return true if the one of outgoing edges is already predicted by
+   PREDICTOR for edge E predicted as TAKEN.  */
+
+bool
+edge_predicted_by_p (edge e, enum br_predictor predictor, bool taken)
+{
+  struct edge_prediction *i;
+  basic_block bb = e->src;
+  edge_prediction **preds = bb_predictions->get (bb);
+  if (!preds)
+    return false;
+
+  int probability = predictor_info[(int) predictor].hitrate;
+
+  if (taken != TAKEN)
+    probability = REG_BR_PROB_BASE - probability;
+
+  for (i = *preds; i; i = i->ep_next)
+    if (i->ep_predictor == predictor
+	&& i->ep_edge == e
+	&& i->ep_probability == probability)
+      return true;
+  return false;
+}
+
 /* Return true when the probability of edge is reliable.
 
    The profile guessing code is good at predicting branch outcome (ie.
@@ -2415,7 +2440,10 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 	 regions that are only reachable by abnormal edges.  We simply
 	 prevent visiting given BB twice.  */
       if (found)
-        predict_edge_def (e, pred, taken);
+	{
+	  if (!edge_predicted_by_p (e, pred, taken))
+            predict_edge_def (e, pred, taken);
+	}
       else if (bitmap_set_bit (visited, e->src->index))
 	predict_paths_for_bb (e->src, e->src, pred, taken, visited);
     }
