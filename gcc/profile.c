@@ -845,8 +845,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       fputc ('\n', dump_file);
       fputc ('\n', dump_file);
     }
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    report_predictor_hitrates ();
 
   free_aux_for_blocks ();
 }
@@ -1331,6 +1329,8 @@ branch_prob (void)
   values.release ();
   free_edge_list (el);
   coverage_end_function (lineno_checksum, cfg_checksum);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    report_predictor_hitrates ();
 }
 
 /* Union find algorithm implementation for the basic blocks using

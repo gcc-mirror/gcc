@@ -593,10 +593,10 @@ rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
-  gcc_assert (profile_status_for_fn (cfun) != PROFILE_GUESSED);
-  if ((e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun) && EDGE_COUNT (e->src->succs) >
-       1)
-      && flag_guess_branch_prob && optimize)
+  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      && EDGE_COUNT (e->src->succs) > 1
+      && flag_guess_branch_prob
+      && optimize)
     {
       struct edge_prediction *i = XNEW (struct edge_prediction);
       edge_prediction *&preds = bb_predictions->get_or_insert (e->src);
