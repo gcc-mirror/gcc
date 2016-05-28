@@ -1,3 +1,7 @@
+2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/prefetch-5.c: Remove xfail.
+
 2016-05-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Revert:

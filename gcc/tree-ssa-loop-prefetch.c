@@ -1848,7 +1848,7 @@ loop_prefetch_arrays (struct loop *loop)
   ahead = (PREFETCH_LATENCY + time - 1) / time;
   est_niter = estimated_stmt_executions_int (loop);
   if (est_niter == -1)
-    est_niter = max_stmt_executions_int (loop);
+    est_niter = likely_max_stmt_executions_int (loop);
 
   /* Prefetching is not likely to be profitable if the trip count to ahead
      ratio is too small.  */
