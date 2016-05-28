@@ -127,7 +127,7 @@ avg_loop_niter (struct loop *loop)
   HOST_WIDE_INT niter = estimated_stmt_executions_int (loop);
   if (niter == -1)
     {
-      niter = max_stmt_executions_int (loop);
+      niter = likely_max_stmt_executions_int (loop);
       if (niter == -1 || niter > AVG_LOOP_NITER (loop))
 	return AVG_LOOP_NITER (loop);
     }
