@@ -2289,11 +2289,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 
   /* If NITER has simplified into a constant, update MAX.  */
   if (TREE_CODE (niter->niter) == INTEGER_CST)
-    {
-      niter->max = wi::to_widest (niter->niter);
-      record_niter_bound (loop, niter->max, loop_only_exit_p (loop, exit),
-			  true);
-    }
+    niter->max = wi::to_widest (niter->niter);
 
   if (integer_onep (niter->assumptions))
     return true;

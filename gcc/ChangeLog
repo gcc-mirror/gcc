@@ -1,3 +1,8 @@
+2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Revert accidental
+	commit.
+
 2016-05-28  Alan Modra  <amodra@gmail.com>
 
 	* dominance.c (verify_dominators): Don't segfault on NULL imm_bb.
