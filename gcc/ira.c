@@ -5188,6 +5188,7 @@ ira (FILE *f)
     add_store_equivs ();
 
   loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
   end_alias_analysis ();
   free (reg_equiv);
 
