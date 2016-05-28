@@ -1,5 +1,9 @@
 2016-05-28  Alan Modra  <amodra@gmail.com>
 
+	* dominance.c (verify_dominators): Don't segfault on NULL imm_bb.
+
+2016-05-28  Alan Modra  <amodra@gmail.com>
+
 	PR rtl-optimization/71275
 	* ira.c (ira): Free dominance info.
 

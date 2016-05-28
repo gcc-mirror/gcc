@@ -1024,6 +1024,7 @@ verify_dominators (cdi_direction dir)
 	{
 	  error ("dominator of %d status unknown", bb->index);
 	  err = true;
+	  continue;
 	}
 
       basic_block imm_bb_correct = di.get_idom (bb);
