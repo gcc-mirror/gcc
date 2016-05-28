@@ -51091,7 +51091,10 @@ config.status: configure
 # Rebuilding configure.
 AUTOCONF = autoconf
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/config/acx.m4 \
-	$(srcdir)/config/override.m4 $(srcdir)/config/proginstall.m4
+	$(srcdir)/config/override.m4 $(srcdir)/config/proginstall.m4 \
+	$(srcdir)/config/elf.m4 $(srcdir)/config/isl.m4 \
+	$(srcdir)/libtool.m4 $(srcdir)/ltoptions.m4 $(srcdir)/ltsugar.m4 \
+	$(srcdir)/ltversion.m4 $(srcdir)/lt~obsolete.m4
 	cd $(srcdir) && $(AUTOCONF)
 
 # ------------------------------
