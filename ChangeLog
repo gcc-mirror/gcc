@@ -1,3 +1,8 @@
+2016-05-28  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.tpl (configure): Depend on m4 files included.
+	* Makefile.in: Regenerate.
+
 2016-05-20  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Fix
