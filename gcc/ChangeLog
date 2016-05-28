@@ -1,5 +1,10 @@
 2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-loop-ivopts.c (estimated_stmt_executions_int): Use
+	likely_max_stmt_executions_int.
+
+2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Use
 	likely_max_stmt_executions_int.
 
