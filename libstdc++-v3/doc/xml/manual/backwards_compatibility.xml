@@ -1304,7 +1304,7 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://lists.debian.org/debian-gcc/2006/03/msg00405.html">
+	      xlink:href="https://lists.debian.org/debian-gcc/2006/03/msg00405.html">
       Building the Whole Debian Archive with GCC 4.1: A Summary
 	</link>
       </title>
