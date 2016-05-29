@@ -1,3 +1,9 @@
+2016-05-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/backwards_compatibility.xml: Adjust
+	lists.debian.org link to https.
+	* doc/html/manual/backwards.html: Regenerate.
+
 2016-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Adjust URL to use https.
