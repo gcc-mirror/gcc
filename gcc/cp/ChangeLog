@@ -1,7 +1,14 @@
+2016-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71105
+	* lambda.c (maybe_add_lambda_conv_op): Early return also when
+	LAMBDA_EXPR_DEFAULT_CAPTURE_MODE != CPLD_NONE.
+
 2016-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71147
-	* decl.c (layout_var_decl, grokdeclarator): Use complete_or_array_type_p.
+	* decl.c (layout_var_decl, grokdeclarator): Use
+	complete_or_array_type_p.
 	* pt.c (instantiate_class_template_1): Try to complete the element
 	type of a flexible array member.
 	(can_complete_type_without_circularity): Handle arrays of unknown bound.
