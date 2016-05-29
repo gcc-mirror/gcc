@@ -1,3 +1,10 @@
+2016-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71245
+	* config/i386/sync.md (define_peephole2 atomic_storedi_fpu):
+	New peepholes to remove unneeded fild/fistp pairs.
+	(define_peephole2 atomic_loaddi_fpu): Ditto.
+
 2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (maybe_hot_frequency_p): Avoid division.

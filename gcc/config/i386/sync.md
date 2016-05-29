@@ -210,6 +210,34 @@
   DONE;
 })
 
+(define_peephole2
+  [(set (match_operand:DF 0 "fp_register_operand")
+	(unspec:DF [(match_operand:DI 1 "memory_operand")]
+		   UNSPEC_FILD_ATOMIC))
+   (set (match_operand:DI 2 "memory_operand")
+	(unspec:DI [(match_dup 0)]
+		   UNSPEC_FIST_ATOMIC))
+   (set (match_operand:DF 3 "fp_register_operand")
+	(match_operand:DF 4 "memory_operand"))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (2, operands[0])
+   && rtx_equal_p (operands[4], adjust_address_nv (operands[2], DFmode, 0))"
+  [(set (match_dup 3) (match_dup 5))]
+  "operands[5] = gen_lowpart (DFmode, operands[1]);")
+
+(define_peephole2
+  [(set (match_operand:DI 0 "sse_reg_operand")
+	(match_operand:DI 1 "memory_operand"))
+   (set (match_operand:DI 2 "memory_operand")
+	(match_dup 0))
+   (set (match_operand:DF 3 "fp_register_operand")
+	(match_operand:DF 4 "memory_operand"))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (2, operands[0])
+   && rtx_equal_p (operands[4], adjust_address_nv (operands[2], DFmode, 0))"
+  [(set (match_dup 3) (match_dup 5))]
+  "operands[5] = gen_lowpart (DFmode, operands[1]);")
+
 (define_expand "atomic_store<mode>"
   [(set (match_operand:ATOMIC 0 "memory_operand")
 	(unspec:ATOMIC [(match_operand:ATOMIC 1 "nonimmediate_operand")
@@ -297,6 +325,34 @@
   emit_move_insn (dst, src);
   DONE;
 })
+
+(define_peephole2
+  [(set (match_operand:DF 0 "memory_operand")
+	(match_operand:DF 1 "fp_register_operand"))
+   (set (match_operand:DF 2 "fp_register_operand")
+	(unspec:DF [(match_operand:DI 3 "memory_operand")]
+		   UNSPEC_FILD_ATOMIC))
+   (set (match_operand:DI 4 "memory_operand")
+	(unspec:DI [(match_dup 2)]
+		   UNSPEC_FIST_ATOMIC))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (3, operands[2])
+   && rtx_equal_p (operands[0], adjust_address_nv (operands[3], DFmode, 0))"
+  [(set (match_dup 5) (match_dup 1))]
+  "operands[5] = gen_lowpart (DFmode, operands[4]);")
+
+(define_peephole2
+  [(set (match_operand:DF 0 "memory_operand")
+	(match_operand:DF 1 "fp_register_operand"))
+   (set (match_operand:DI 2 "sse_reg_operand")
+	(match_operand:DI 3 "memory_operand"))
+   (set (match_operand:DI 4 "memory_operand")
+	(match_dup 2))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (3, operands[2])
+   && rtx_equal_p (operands[0], adjust_address_nv (operands[3], DFmode, 0))"
+  [(set (match_dup 5) (match_dup 1))]
+  "operands[5] = gen_lowpart (DFmode, operands[4]);")
 
 ;; ??? You'd think that we'd be able to perform this via FLOAT + FIX_TRUNC
 ;; operations.  But the fix_trunc patterns want way more setup than we want
