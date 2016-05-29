@@ -872,8 +872,10 @@ maybe_add_lambda_conv_op (tree type)
   bool nested = (cfun != NULL);
   bool nested_def = decl_function_context (TYPE_MAIN_DECL (type));
   tree callop = lambda_function (type);
+  tree lam = CLASSTYPE_LAMBDA_EXPR (type);
 
-  if (LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (type)) != NULL_TREE)
+  if (LAMBDA_EXPR_CAPTURE_LIST (lam) != NULL_TREE
+      || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) != CPLD_NONE)
     return;
 
   if (processing_template_decl)

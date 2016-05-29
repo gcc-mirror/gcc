@@ -1,3 +1,9 @@
+2016-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71105
+	* lambda.c (maybe_add_lambda_conv_op): Early return also when
+	LAMBDA_EXPR_DEFAULT_CAPTURE_MODE != CPLD_NONE.
+
 2016-05-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Revert:
