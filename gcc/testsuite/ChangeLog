@@ -1,3 +1,10 @@
+2016-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71105
+	* g++.dg/cpp0x/lambda/lambda-conv11.C: New.
+	* g++.dg/cpp1y/lambda-conv1.C: Likewise.
+	* g++.dg/cpp1y/lambda-conv2.C: Likewise.
+
 2016-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/prefetch-5.c: Remove xfail.
