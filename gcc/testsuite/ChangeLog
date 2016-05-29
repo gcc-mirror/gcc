@@ -1,3 +1,9 @@
+2016-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71245
+	* gcc.target/i386/pr71245-1.c: New test.
+	* gcc.target/i386/pr71245-2.c: Ditto.
+
 2016-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71105
