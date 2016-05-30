@@ -1,3 +1,11 @@
+2016-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	backport:
+	2016-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69067
+	* graphite-isl-ast-to-gimple.c (get_def_bb_for_const): Remove assert.
+
 2016-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium-protos.h (split_double_move): Rename into...

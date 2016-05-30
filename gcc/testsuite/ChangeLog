@@ -1,3 +1,11 @@
+2016-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	backport:
+	2016-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69067
+	* gcc.dg/graphite/pr69067.c: New test.
+
 2016-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71105
