@@ -1,3 +1,8 @@
+2016-05-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR tree-optimization/71289
+	* gcc.dg/pr71289.c: New test.
+
 2016-05-30  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71269
