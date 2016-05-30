@@ -12,5 +12,5 @@ int
 main()
 {
 	C<char*>	c;
-	char*		p = Z(c.O); //{ dg-error "" } ambiguous c.O
+	char*		p = Z(c.O); //{ dg-error "13:'Z' was not declared" } ambiguous c.O
 }

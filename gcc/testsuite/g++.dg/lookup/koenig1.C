@@ -9,5 +9,5 @@ class X;
 
 void foo() {
   X x(1); // { dg-error "incomplete type" "" }
-  bar(x); // { dg-error "not declared" "" }
+  bar(x); // { dg-error "3:'bar' was not declared" "" }
 }

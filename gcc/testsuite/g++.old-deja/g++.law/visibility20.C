@@ -31,6 +31,6 @@ int main() {
     Base b;
     Derived d;
     d.noticeThisFunction(&b);
-    printf("gpptest run\n");// { dg-error "" } .*
+    printf("gpptest run\n");// { dg-error "5:'printf' was not declared" } .*
 }
 

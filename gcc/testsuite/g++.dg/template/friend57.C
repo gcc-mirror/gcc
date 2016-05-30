@@ -15,7 +15,7 @@ int
 main ()
 {
   f(1);
-  g(1); // { dg-error "'g' was not declared in this scope" }
+  g(1); // { dg-error "3:'g' was not declared in this scope" }
   g(S());
   h(1);
 }
