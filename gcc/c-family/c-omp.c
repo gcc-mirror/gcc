@@ -983,6 +983,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_DEPEND:
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  break;
 	case OMP_CLAUSE_NUM_TEAMS:
@@ -998,7 +999,6 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  break;
 	case OMP_CLAUSE_ORDERED:
-	case OMP_CLAUSE_NOWAIT:
 	  s = C_OMP_CLAUSE_SPLIT_FOR;
 	  break;
 	case OMP_CLAUSE_SCHEDULE:
@@ -1330,6 +1330,18 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	     innermost construct.  */
 	  if (code == OMP_SIMD)
 	    s = C_OMP_CLAUSE_SPLIT_SIMD;
+	  else
+	    s = C_OMP_CLAUSE_SPLIT_FOR;
+	  break;
+	case OMP_CLAUSE_NOWAIT:
+	  /* Nowait clause is allowed on target, for and sections, but
+	     is not allowed on parallel for or parallel sections.  Therefore,
+	     put it on target construct if present, because that can only
+	     be combined with parallel for{, simd} and not with for{, simd},
+	     otherwise to the worksharing construct.  */
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
+	      != 0)
+	    s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_FOR;
 	  break;
