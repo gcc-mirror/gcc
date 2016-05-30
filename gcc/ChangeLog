@@ -1,3 +1,9 @@
+2016-05-30  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Scale
+	computed costs by frequency of BB they belong to.
+	(get_scaled_computation_cost_at): New function.
+
 2016-05-30  Alexander Monakov  <amonakov@ispras.ru>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
