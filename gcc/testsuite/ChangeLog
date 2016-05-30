@@ -1,3 +1,9 @@
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/cunroll-12.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-13.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-14.c: New testcase.
+
 2016-05-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69067

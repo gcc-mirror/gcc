@@ -91,5 +91,6 @@ extern tree build_predict_expr (enum br_predictor, enum prediction);
 extern const char *predictor_name (enum br_predictor);
 extern void rebuild_frequencies (void);
 extern void report_predictor_hitrates (void);
+extern void force_edge_cold (edge, bool);
 
 #endif  /* GCC_PREDICT_H */

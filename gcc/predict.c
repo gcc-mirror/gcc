@@ -3249,3 +3249,99 @@ report_predictor_hitrates (void)
   loop_optimizer_finalize ();
 }
 
+/* Force edge E to be cold.
+   If IMPOSSIBLE is true, for edge to have count and probability 0 otherwise
+   keep low probability to represent possible error in a guess.  This is used
+   i.e. in case we predict loop to likely iterate given number of times but
+   we are not 100% sure.
+
+   This function locally updates profile without attempt to keep global
+   consistency which can not be reached in full generality without full profile
+   rebuild from probabilities alone.  Doing so is not necessarily a good idea
+   because frequencies and counts may be more realistic then probabilities.
+
+   In some cases (such as for elimination of early exits during full loop
+   unrolling) the caller can ensure that profile will get consistent
+   afterwards.  */
+
+void
+force_edge_cold (edge e, bool impossible)
+{
+  gcov_type count_sum = 0;
+  int prob_sum = 0;
+  edge_iterator ei;
+  edge e2;
+  gcov_type old_count = e->count;
+  int old_probability = e->probability;
+  gcov_type gcov_scale = REG_BR_PROB_BASE;
+  int prob_scale = REG_BR_PROB_BASE;
+
+  /* If edge is already improbably or cold, just return.  */
+  if (e->probability <= impossible ? PROB_VERY_UNLIKELY : 0
+      && (!impossible || !e->count))
+    return;
+  FOR_EACH_EDGE (e2, ei, e->src->succs)
+    if (e2 != e)
+      {
+	count_sum += e2->count;
+	prob_sum += e2->probability;
+      }
+
+  /* If there are other edges out of e->src, redistribute probabilitity
+     there.  */
+  if (prob_sum)
+    {
+      e->probability
+	 = MIN (e->probability, impossible ? 0 : PROB_VERY_UNLIKELY);
+      if (old_probability)
+	e->count = RDIV (e->count * e->probability, old_probability);
+      else
+        e->count = MIN (e->count, impossible ? 0 : 1);
+
+      if (count_sum)
+	gcov_scale = RDIV ((count_sum + old_count - e->count) * REG_BR_PROB_BASE,
+			   count_sum);
+      prob_scale = RDIV ((REG_BR_PROB_BASE - e->probability) * REG_BR_PROB_BASE,
+			 prob_sum);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Making edge %i->%i %s by redistributing "
+		 "probability to other edges.\n",
+		 e->src->index, e->dest->index,
+		 impossible ? "imposisble" : "cold");
+      FOR_EACH_EDGE (e2, ei, e->src->succs)
+	if (e2 != e)
+	  {
+	    e2->count = RDIV (e2->count * gcov_scale, REG_BR_PROB_BASE);
+	    e2->probability = RDIV (e2->probability * prob_scale,
+				    REG_BR_PROB_BASE);
+	  }
+    }
+  /* If all edges out of e->src are unlikely, the basic block itself
+     is unlikely.  */
+  else
+    {
+      e->probability = REG_BR_PROB_BASE;
+
+      /* If we did not adjusting, the source basic block has no likely edeges
+ 	 leaving other direction. In that case force that bb cold, too.
+	 This in general is difficult task to do, but handle special case when
+	 BB has only one predecestor.  This is common case when we are updating
+	 after loop transforms.  */
+      if (!prob_sum && !count_sum && single_pred_p (e->src)
+	  && e->src->frequency > (impossible ? 0 : 1))
+	{
+	  int old_frequency = e->src->frequency;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Making bb %i %s.\n", e->src->index,
+		     impossible ? "imposisble" : "cold");
+	  e->src->frequency = MIN (e->src->frequency, impossible ? 0 : 1);
+	  e->src->count = e->count = RDIV (e->src->count * e->src->frequency,
+					   old_frequency);
+	  force_edge_cold (single_pred_edge (e->src), impossible);
+	}
+      else if (dump_file && (dump_flags & TDF_DETAILS)
+	       && maybe_hot_bb_p (cfun, e->src))
+	fprintf (dump_file, "Giving up on making bb %i %s.\n", e->src->index,
+		 impossible ? "imposisble" : "cold");
+    }
+}

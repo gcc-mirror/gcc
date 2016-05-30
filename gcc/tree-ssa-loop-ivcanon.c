@@ -730,8 +730,14 @@ try_unroll_loop_completely (struct loop *loop,
       if (ul == UL_SINGLE_ITER)
 	return false;
 
+      /* EXIT can be removed only if we are sure it passes first N_UNROLL
+	 iterations.  */
+      bool remove_exit = (exit && niter
+			  && TREE_CODE (niter) == INTEGER_CST
+			  && wi::leu_p (n_unroll, wi::to_widest (niter)));
+
       large = tree_estimate_loop_size
-		 (loop, exit, edge_to_cancel, &size,
+		 (loop, remove_exit ? exit : NULL, edge_to_cancel, &size,
 		  PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
       ninsns = size.overall;
       if (large)
@@ -837,8 +843,20 @@ try_unroll_loop_completely (struct loop *loop,
 
       initialize_original_copy_tables ();
       wont_exit = sbitmap_alloc (n_unroll + 1);
-      bitmap_ones (wont_exit);
-      bitmap_clear_bit (wont_exit, 0);
+      if (exit && niter
+	  && TREE_CODE (niter) == INTEGER_CST
+	  && wi::leu_p (n_unroll, wi::to_widest (niter)))
+	{
+	  bitmap_ones (wont_exit);
+	  if (wi::eq_p (wi::to_widest (niter), n_unroll)
+	      || edge_to_cancel)
+	    bitmap_clear_bit (wont_exit, 0);
+	}
+      else
+	{
+	  exit = NULL;
+	  bitmap_clear (wont_exit);
+	}
 
       if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 						 n_unroll, wont_exit,
@@ -869,6 +887,7 @@ try_unroll_loop_completely (struct loop *loop,
   if (edge_to_cancel)
     {
       gcond *cond = as_a <gcond *> (last_stmt (edge_to_cancel->src));
+      force_edge_cold (edge_to_cancel, true);
       if (edge_to_cancel->flags & EDGE_TRUE_VALUE)
 	gimple_cond_make_false (cond);
       else
@@ -1112,8 +1131,8 @@ canonicalize_loop_induction_variables (struct loop *loop,
   if (dump_file && (dump_flags & TDF_DETAILS)
       && likely_max_loop_iterations_int (loop) >= 0)
     {
-      fprintf (dump_file, "Loop likely %d iterates at most %i times.\n", loop->num,
-	       (int)likely_max_loop_iterations_int (loop));
+      fprintf (dump_file, "Loop %d likely iterates at most %i times.\n",
+	       loop->num, (int)likely_max_loop_iterations_int (loop));
     }
 
   /* Remove exits that are known to be never taken based on loop bound.
