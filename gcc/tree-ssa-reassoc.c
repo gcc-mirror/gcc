@@ -3759,7 +3759,7 @@ swap_ops_for_binary_stmt (vec<operand_entry *> ops,
 	   || (stmt && is_phi_for_stmt (stmt, oe2->op)
 	       && !is_phi_for_stmt (stmt, oe1->op)
 	       && !is_phi_for_stmt (stmt, oe3->op)))
-    std::swap (*oe1, *oe3);
+    std::swap (*oe1, *oe2);
 }
 
 /* If definition of RHS1 or RHS2 dominates STMT, return the later of those
