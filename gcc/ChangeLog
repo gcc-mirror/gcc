@@ -1,3 +1,9 @@
+2016-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.c (visium_split_double_add): Minor tweaks.
+	(visium_expand_copysign): Use gen_int_mode directly.
+	(visium_compute_frame_size): Minor tweaks.
+
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): Use

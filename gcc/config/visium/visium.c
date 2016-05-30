@@ -2087,6 +2087,7 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
   rtx op6 = gen_highpart (SImode, op0);
   rtx op7 = (op1 == const0_rtx ? op1 : gen_highpart (SImode, op1));
   rtx op8;
+  rtx x, pat, flags;
 
   /* If operand #2 is a small constant, then its high part is null.  */
   if (CONST_INT_P (op2))
@@ -2109,14 +2110,13 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
     }
 
   /* This is the {add,sub,neg}si3_insn_set_flags pattern.  */
-  rtx x;
   if (op4 == const0_rtx)
     x = gen_rtx_NEG (SImode, op5);
   else
     x = gen_rtx_fmt_ee (code, SImode, op4, op5);
-  rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+  pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
   XVECEXP (pat, 0, 0) = gen_rtx_SET (op3, x);
-  rtx flags = gen_rtx_REG (CC_NOOVmode, FLAGS_REGNUM);
+  flags = gen_rtx_REG (CC_NOOVmode, FLAGS_REGNUM);
   x = gen_rtx_COMPARE (CC_NOOVmode, shallow_copy_rtx (x), const0_rtx);
   XVECEXP (pat, 0, 1) = gen_rtx_SET (flags, x);
   emit_insn (pat);
@@ -2160,7 +2160,7 @@ visium_expand_copysign (rtx *operands, enum machine_mode mode)
 	{
 	  long l;
 	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op1), l);
-	  op1 = force_reg (SImode, GEN_INT (trunc_int_for_mode (l, SImode)));
+	  op1 = force_reg (SImode, gen_int_mode (l, SImode));
 	}
     }
   else
@@ -3597,18 +3597,15 @@ visium_compute_frame_size (int size)
 int
 visium_initial_elimination_offset (int from, int to ATTRIBUTE_UNUSED)
 {
-  const int frame_size = visium_compute_frame_size (get_frame_size ());
   const int save_fp = current_frame_info.save_fp;
   const int save_lr = current_frame_info.save_lr;
   const int lr_slot = current_frame_info.lr_slot;
-  const int local_frame_offset
-    = (save_fp + save_lr + lr_slot) * UNITS_PER_WORD;
   int offset;
 
   if (from == FRAME_POINTER_REGNUM)
-    offset = local_frame_offset;
+    offset = (save_fp + save_lr + lr_slot) * UNITS_PER_WORD;
   else if (from == ARG_POINTER_REGNUM)
-    offset = frame_size;
+    offset = visium_compute_frame_size (get_frame_size ());
   else
     gcc_unreachable ();
 
