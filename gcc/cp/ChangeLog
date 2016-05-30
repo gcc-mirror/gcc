@@ -1,3 +1,9 @@
+2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71099
+	* parser.c (cp_parser_function_specifier_opt): Use current_class_type
+	to improve the diagnostic about wrong uses of 'virtual'.
+
 2016-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71105
