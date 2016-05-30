@@ -1,3 +1,9 @@
+2016-05-30  Alexander Monakov  <amonakov@ispras.ru>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/71289
+	* match.pd (-1 / B < A, A > -1 / B): New transformations.
+
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-vect-loop.c (vect_transform_loop): Update likely bounds.
