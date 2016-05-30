@@ -2210,6 +2210,7 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
   tree functions = NULL_TREE;
   tree tmpl_args = NULL_TREE;
   bool template_id = false;
+  location_t loc = fn.get_location ();
 
   if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
     {
@@ -2245,7 +2246,7 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
 	{
 	  /* The unqualified name could not be resolved.  */
 	  if (complain)
-	    fn = unqualified_fn_lookup_error (identifier);
+	    fn = unqualified_fn_lookup_error (cp_expr (identifier, loc));
 	  else
 	    fn = identifier;
 	}

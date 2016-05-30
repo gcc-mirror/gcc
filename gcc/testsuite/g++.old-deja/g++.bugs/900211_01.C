@@ -10,7 +10,7 @@
 
 void global_function_0 ()
 {
-  global_function_1 ();		/* { dg-error "" } */
+  global_function_1 ();		/* { dg-error "3:'global_function_1' was not declared" } */
 }
 
 int main () { return 0; }

@@ -5974,8 +5974,9 @@ extern tree build_vtbl_address                  (tree);
 extern void cxx_dup_lang_specific_decl		(tree);
 extern void yyungetc				(int, int);
 
-extern tree unqualified_name_lookup_error	(tree);
-extern tree unqualified_fn_lookup_error		(tree);
+extern tree unqualified_name_lookup_error	(tree,
+						 location_t = UNKNOWN_LOCATION);
+extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
 extern void retrofit_lang_decl			(tree);

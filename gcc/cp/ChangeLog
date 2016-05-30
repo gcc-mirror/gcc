@@ -1,5 +1,16 @@
 2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/71238
+	* lex.c (unqualified_name_lookup_error): Take a location too.
+	(unqualified_fn_lookup_error): Take a cp_expr.
+	* cp-tree.h (unqualified_name_lookup_error,
+	unqualified_fn_lookup_error): Adjust declarations.
+	* semantics.c (perform_koenig_lookup): Adjust
+	unqualified_fn_lookup_error call, pass the location of
+	the identifier too as part of a cp_expr.
+
+2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/71099
 	* parser.c (cp_parser_function_specifier_opt): Use current_class_type
 	to improve the diagnostic about wrong uses of 'virtual'.

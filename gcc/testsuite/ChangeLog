@@ -1,3 +1,33 @@
+2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71238
+	* g++.dg/parse/pr71238.C: New.
+	* g++.dg/concepts/friend1.C: Test column numbers too.
+	* g++.dg/cpp0x/initlist31.C: Likewise.
+	* g++.dg/cpp0x/pr51420.C: Likewise.
+	* g++.dg/cpp0x/udlit-declare-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-member-neg.C: Likewise.
+	* g++.dg/ext/builtin3.C: Likewise.
+	* g++.dg/lookup/friend12.C: Likewise.
+	* g++.dg/lookup/friend7.C: Likewise.
+	* g++.dg/lookup/koenig1.C: Likewise.
+	* g++.dg/lookup/koenig5.C: Likewise.
+	* g++.dg/lookup/used-before-declaration.C: Likewise.
+	* g++.dg/overload/koenig1.C: Likewise.
+	* g++.dg/template/crash65.C: Likewise.
+	* g++.dg/template/friend57.C: Likewise.
+	* g++.dg/warn/Wshadow-5.C: Likewise.
+	* g++.dg/warn/Wunused-8.C: Likewise.
+	* g++.old-deja/g++.bugs/900211_01.C: Likewise.
+	* g++.old-deja/g++.jason/lineno5.C: Likewise.
+	* g++.old-deja/g++.jason/member.C: Likewise.
+	* g++.old-deja/g++.jason/report.C: Likewise.
+	* g++.old-deja/g++.jason/scoping12.C: Likewise.
+	* g++.old-deja/g++.law/visibility20.C: Likewise.
+	* g++.old-deja/g++.ns/koenig5.C: Likewise.
+	* g++.old-deja/g++.other/static5.C: Likewise.
+	* g++.old-deja/g++.pt/overload2.C: Likewise.
+
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/peel1.c: New testcase.

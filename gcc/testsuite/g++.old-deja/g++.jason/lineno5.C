@@ -6,5 +6,5 @@ template <class T> class A;
 int main()
 {
   A<int> *p;
-  undef1();// { dg-error "" } 
+  undef1();// { dg-error "3:'undef1' was not declared" } 
 }

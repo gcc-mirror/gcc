@@ -24,7 +24,7 @@ struct X { } x;
 int main() {
   // f(0); // OK
   f(nt); // { dg-error "cannot call" }
-  f(x);  // { dg-error "not declared" }
+  f(x);  // { dg-error "3:'f' was not declared" }
 
   S<int> si;
   si == si; // OK
