@@ -884,16 +884,25 @@ static void
 read_profile (void)
 {
   if (gcov_open (auto_profile_file, 1) == 0)
-    error ("Cannot open profile file %s.", auto_profile_file);
+    {
+      error ("Cannot open profile file %s.", auto_profile_file);
+      return;
+    }
 
   if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
-    error ("AutoFDO profile magic number does not mathch.");
+    {
+      error ("AutoFDO profile magic number does not match.");
+      return;
+    }
 
   /* Skip the version number.  */
   unsigned version = gcov_read_unsigned ();
   if (version != AUTO_PROFILE_VERSION)
-    error ("AutoFDO profile version %u does match %u.",
-           version, AUTO_PROFILE_VERSION);
+    {
+      error ("AutoFDO profile version %u does match %u.",
+	     version, AUTO_PROFILE_VERSION);
+      return;
+    }
 
   /* Skip the empty integer.  */
   gcov_read_unsigned ();
@@ -901,19 +910,28 @@ read_profile (void)
   /* string_table.  */
   afdo_string_table = new string_table ();
   if (!afdo_string_table->read())
-    error ("Cannot read string table from %s.", auto_profile_file);
+    {
+      error ("Cannot read string table from %s.", auto_profile_file);
+      return;
+    }
 
   /* autofdo_source_profile.  */
   afdo_source_profile = autofdo_source_profile::create ();
   if (afdo_source_profile == NULL)
-    error ("Cannot read function profile from %s.", auto_profile_file);
+    {
+      error ("Cannot read function profile from %s.", auto_profile_file);
+      return;
+    }
 
   /* autofdo_module_profile.  */
   fake_read_autofdo_module_profile ();
 
   /* Read in the working set.  */
   if (gcov_read_unsigned () != GCOV_TAG_AFDO_WORKING_SET)
-    error ("Cannot read working set from %s.", auto_profile_file);
+    {
+      error ("Cannot read working set from %s.", auto_profile_file);
+      return;
+    }
 
   /* Skip the length of the section.  */
   gcov_read_unsigned ();
