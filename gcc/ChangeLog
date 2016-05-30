@@ -1,5 +1,9 @@
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-vect-loop.c (vect_transform_loop): Update likely bounds.
+
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-ivcanon.c (try_peel_loop): Correctly set wont_exit
 	for peeled copies; avoid underflow when updating estimates; correctly
 	scale loop profile.
