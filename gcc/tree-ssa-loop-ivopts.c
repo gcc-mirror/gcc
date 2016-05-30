@@ -4794,7 +4794,33 @@ get_loop_invariant_expr (struct ivopts_data *data, tree ubase,
   return record_inv_expr (data, expr);
 }
 
+/* Scale (multiply) the computed COST (except scratch part that should be
+   hoisted out a loop) by header->frequency / AT->frequency,
+   which makes expected cost more accurate.  */
 
+static comp_cost
+get_scaled_computation_cost_at (ivopts_data *data, gimple *at, iv_cand *cand,
+				comp_cost cost)
+{
+   int loop_freq = data->current_loop->header->frequency;
+   int bb_freq = at->bb->frequency;
+   if (loop_freq != 0)
+     {
+       gcc_assert (cost.scratch <= cost.cost);
+       int scaled_cost
+	 = cost.scratch + (cost.cost - cost.scratch) * bb_freq / loop_freq;
+
+       if (dump_file && (dump_flags & TDF_DETAILS))
+	 fprintf (dump_file, "Scaling iv_use based on cand %d "
+		  "by %2.2f: %d (scratch: %d) -> %d (%d/%d)\n",
+		  cand->id, 1.0f * bb_freq / loop_freq, cost.cost,
+		  cost.scratch, scaled_cost, bb_freq, loop_freq);
+
+       cost.cost = scaled_cost;
+     }
+
+  return cost;
+}
 
 /* Determines the cost of the computation by that USE is expressed
    from induction variable CAND.  If ADDRESS_P is true, we just need
@@ -4982,18 +5008,21 @@ get_computation_cost_at (struct ivopts_data *data,
      (symbol/var1/const parts may be omitted).  If we are looking for an
      address, find the cost of addressing this.  */
   if (address_p)
-    return cost + get_address_cost (symbol_present, var_present,
-				    offset, ratio, cstepi,
-				    mem_mode,
-				    TYPE_ADDR_SPACE (TREE_TYPE (utype)),
-				    speed, stmt_is_after_inc, can_autoinc);
+    {
+      cost += get_address_cost (symbol_present, var_present,
+				offset, ratio, cstepi,
+				mem_mode,
+				TYPE_ADDR_SPACE (TREE_TYPE (utype)),
+				speed, stmt_is_after_inc, can_autoinc);
+      return get_scaled_computation_cost_at (data, at, cand, cost);
+    }
 
   /* Otherwise estimate the costs for computing the expression.  */
   if (!symbol_present && !var_present && !offset)
     {
       if (ratio != 1)
 	cost += mult_by_coeff_cost (ratio, TYPE_MODE (ctype), speed);
-      return cost;
+      return get_scaled_computation_cost_at (data, at, cand, cost);
     }
 
   /* Symbol + offset should be compile-time computable so consider that they
@@ -5012,24 +5041,25 @@ get_computation_cost_at (struct ivopts_data *data,
   aratio = ratio > 0 ? ratio : -ratio;
   if (aratio != 1)
     cost += mult_by_coeff_cost (aratio, TYPE_MODE (ctype), speed);
-  return cost;
+
+  return get_scaled_computation_cost_at (data, at, cand, cost);
 
 fallback:
   if (can_autoinc)
     *can_autoinc = false;
 
-  {
-    /* Just get the expression, expand it and measure the cost.  */
-    tree comp = get_computation_at (data->current_loop, use, cand, at);
+  /* Just get the expression, expand it and measure the cost.  */
+  tree comp = get_computation_at (data->current_loop, use, cand, at);
 
-    if (!comp)
-      return infinite_cost;
+  if (!comp)
+    return infinite_cost;
 
-    if (address_p)
-      comp = build_simple_mem_ref (comp);
+  if (address_p)
+    comp = build_simple_mem_ref (comp);
 
-    return comp_cost (computation_cost (comp, speed), 0);
-  }
+  cost = comp_cost (computation_cost (comp, speed), 0);
+
+  return get_scaled_computation_cost_at (data, at, cand, cost);
 }
 
 /* Determines the cost of the computation by that USE is expressed
