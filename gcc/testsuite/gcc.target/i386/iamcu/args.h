@@ -30,7 +30,7 @@ extern void *iamcu_memset (void *, int, size_t);
 /* Clear all scratch integer registers, excluding the one used to return
    aggregate.  */
 #define clear_non_sret_int_hardware_registers \
-  asm __volatile__ ("xor %%edx, %%ebx\n\t" \
+  asm __volatile__ ("xor %%edx, %%edx\n\t" \
 		    "xor %%ecx, %%ecx\n\t" \
 		    ::: "edx", "ecx");
 

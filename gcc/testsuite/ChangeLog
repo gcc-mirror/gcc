@@ -1,3 +1,8 @@
+2016-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/iamcu/args.h (clear_non_sret_int_hardware_registers):
+	Use correct register when clearing %edx.
+
 2016-05-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
