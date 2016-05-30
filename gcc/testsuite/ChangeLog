@@ -1,3 +1,8 @@
+2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71099
+	* g++.dg/parse/virtual1.C: New.
+
 2016-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/iamcu/args.h (clear_non_sret_int_hardware_registers):
