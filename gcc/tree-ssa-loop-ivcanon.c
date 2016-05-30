@@ -594,6 +594,8 @@ remove_redundant_iv_tests (struct loop *loop)
 /* Stores loops that will be unlooped after we process whole loop tree. */
 static vec<loop_p> loops_to_unloop;
 static vec<int> loops_to_unloop_nunroll;
+/* Stores loops that has been peeled.  */
+static bitmap peeled_loops;
 
 /* Cancel all fully unrolled loops by putting __builtin_unreachable
    on the latch edge.  
@@ -962,13 +964,16 @@ try_peel_loop (struct loop *loop,
   vec<edge> to_remove = vNULL;
   edge e;
 
-  /* If the iteration bound is known and large, then we can safely eliminate
-     the check in peeled copies.  */
-  if (TREE_CODE (niter) != INTEGER_CST)
-    exit = NULL;
-
-  if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0)
+  if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
+      || !peeled_loops)
     return false;
+
+  if (bitmap_bit_p (peeled_loops, loop->num))
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: loop is already peeled\n");
+      return false;
+    }
 
   /* Peel only innermost loops.
      While the code is perfectly capable of peeling non-innermost loops,
@@ -989,6 +994,8 @@ try_peel_loop (struct loop *loop,
 
   /* Check if there is an estimate on the number of iterations.  */
   npeel = estimated_loop_iterations_int (loop);
+  if (npeel < 0)
+    npeel = likely_max_loop_iterations_int (loop);
   if (npeel < 0)
     {
       if (dump_file)
@@ -1036,8 +1043,7 @@ try_peel_loop (struct loop *loop,
       && wi::leu_p (npeel, wi::to_widest (niter)))
     {
       bitmap_ones (wont_exit);
-      if (wi::eq_p (wi::to_widest (niter), npeel))
-        bitmap_clear_bit (wont_exit, 0);
+      bitmap_clear_bit (wont_exit, 0);
     }
   else
     {
@@ -1074,14 +1080,14 @@ try_peel_loop (struct loop *loop,
     }
   if (loop->any_upper_bound)
     {
-      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
+      if (wi::ltu_p (npeel, loop->nb_iterations_upper_bound))
         loop->nb_iterations_upper_bound -= npeel;
       else
         loop->nb_iterations_upper_bound = 0;
     }
   if (loop->any_likely_upper_bound)
     {
-      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
+      if (wi::ltu_p (npeel, loop->nb_iterations_likely_upper_bound))
 	loop->nb_iterations_likely_upper_bound -= npeel;
       else
 	{
@@ -1107,6 +1113,7 @@ try_peel_loop (struct loop *loop,
   else if (loop->header->frequency)
     scale = RDIV (entry_freq * REG_BR_PROB_BASE, loop->header->frequency);
   scale_loop_profile (loop, scale, 0);
+  bitmap_set_bit (peeled_loops, loop->num);
   return true;
 }
 /* Adds a canonical induction variable to LOOP if suitable.
@@ -1519,9 +1526,20 @@ pass_complete_unroll::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  return tree_unroll_loops_completely (flag_unroll_loops
-				       || flag_peel_loops
-				       || optimize >= 3, true);
+  /* If we ever decide to run loop peeling more than once, we will need to
+     track loops already peeled in loop structures themselves to avoid
+     re-peeling the same loop multiple times.  */
+  if (flag_peel_loops)
+    peeled_loops = BITMAP_ALLOC (NULL);
+  int val = tree_unroll_loops_completely (flag_unroll_loops
+					  || flag_peel_loops
+					  || optimize >= 3, true);
+  if (peeled_loops)
+    {
+      BITMAP_FREE (peeled_loops);
+      peeled_loops = NULL;
+    }
+  return val;
 }
 
 } // anon namespace

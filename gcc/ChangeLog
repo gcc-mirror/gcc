@@ -1,3 +1,12 @@
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (-fpeel-loops,-O3): Update documentation.
+	* opts.c (default_options): Enable peel loops at -O3.
+	* tree-ssa-loop-ivcanon.c (peeled_loops): New static var.
+	(try_peel_loop): Do not re-peel already peeled loops;
+	use likely upper bounds; fix profile updating.
+	(pass_complete_unroll::execute): Initialize peeled_loops.
+
 2016-05-30  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Scale

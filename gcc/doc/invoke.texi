@@ -6338,7 +6338,8 @@ by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-fgcse-after-reload}, @option{-ftree-loop-vectorize},
 @option{-ftree-loop-distribute-patterns}, @option{-fsplit-paths}
 @option{-ftree-slp-vectorize}, @option{-fvect-cost-model},
-@option{-ftree-partial-pre} and @option{-fipa-cp-clone} options.
+@option{-ftree-partial-pre}, @option{-fpeel-loops}
+and @option{-fipa-cp-clone} options.
 
 @item -O0
 @opindex O0
@@ -8661,10 +8662,11 @@ the loop is entered.  This usually makes programs run more slowly.
 @item -fpeel-loops
 @opindex fpeel-loops
 Peels loops for which there is enough information that they do not
-roll much (from profile feedback).  It also turns on complete loop peeling
-(i.e.@: complete removal of loops with small constant number of iterations).
+roll much (from profile feedback or static analysis).  It also turns on
+complete loop peeling (i.e.@: complete removal of loops with small constant
+number of iterations).
 
-Enabled with @option{-fprofile-use}.
+Enabled with @option{-O3} and/or @option{-fprofile-use}.
 
 @item -fmove-loop-invariants
 @opindex fmove-loop-invariants
