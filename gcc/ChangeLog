@@ -1,3 +1,13 @@
+2016-05-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc (sparc*-*-*): Support cpu_32, cpu_64, tune_32 and
+	tune_64.
+	* doc/install.texi (--with-cpu-32, --with-cpu-64): Document
+	support on SPARC.
+	* config/sparc/linux64.h (OPTION_DEFAULT_SPECS): Add entries for
+	cpu_32, cpu_64, tune_32 and tune_64.
+	* config/sparc/sol2.h (OPTION_DEFAULT_SPECS): Likewise.
+
 2016-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (mfence_nosse): Use "lock orl $0, -4(%esp)".

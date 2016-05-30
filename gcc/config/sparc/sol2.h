@@ -231,22 +231,42 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #endif
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
-   --with-cpu is ignored if -mcpu is specified.
-   --with-tune is ignored if -mtune is specified.
+   --with-cpu is ignored if -mcpu is specified; likewise --with-cpu-32
+     and --with-cpu-64.
+   --with-tune is ignored if -mtune is specified; likewise --with-tune-32
+     and --with-tune-64.
    --with-float is ignored if -mhard-float, -msoft-float, -mfpu, or -mno-fpu
      are specified.
    In the SPARC_BI_ARCH compiler we cannot pass %{!mcpu=*:-mcpu=%(VALUE)}
    here, otherwise say -mcpu=v7 would be passed even when -m64.
-   CC1_SPEC above takes care of this instead.  */
+   CC1_SPEC above takes care of this instead.
+
+   Note that the order of the cpu* and tune* options matters: the
+   config.gcc file always sets with_cpu to some value, even if the
+   user didn't use --with-cpu when invoking the configure script.
+   This value is based on the target name.  Therefore we have to make
+   sure that --with-cpu-32 takes precedence to --with-cpu in < v9
+   systems, and that --with-cpu-64 takes precedence to --with-cpu in
+   >= v9 systems.  As for the tune* options, in some platforms
+   config.gcc also sets a default value for it if the user didn't use
+   --with-tune when invoking the configure script.  */
 #undef OPTION_DEFAULT_SPECS
 #if DEFAULT_ARCH32_P
 #define OPTION_DEFAULT_SPECS \
+  {"cpu_32", "%{!m64:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
+  {"cpu_64", "%{m64:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"cpu", "%{!m64:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
+  {"tune_32", "%{!m64:%{!mtune=*:-mtune=%(VALUE)}}" }, \
+  {"tune_64", "%{m64:%{!mtune=*:-mtune=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #else
 #define OPTION_DEFAULT_SPECS \
+  {"cpu_32", "%{m32:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
+  {"cpu_64", "%{!m32:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"cpu", "%{!m32:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
+  {"tune_32", "%{m32:%{!mtune=*:-mtune=%(VALUE)}}" },	\
+  {"tune_64", "%{!m32:%{!mtune=*:-mtune=%(VALUE)}}" },	\
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #endif
