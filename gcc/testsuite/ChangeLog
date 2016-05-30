@@ -1,3 +1,12 @@
+2016-05-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from trunk.
+	2015-10-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/68042
+	* c-c++-common/asan/sanity-check-pure-c-1.c: Adjust test
+	to pass on Darwin.
+
 2016-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk.
