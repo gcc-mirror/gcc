@@ -4250,9 +4250,9 @@ case "${target}" in
 		esac
 		;;
 	sparc*-*-*)
-		supported_defaults="cpu float tune"
+		supported_defaults="cpu cpu_32 cpu_64 float tune tune_32 tune_64"
 
-		for which in cpu tune; do
+		for which in cpu cpu_32 cpu_64 tune tune_32 tune_64; do
 			eval "val=\$with_$which"
 			case ${val} in
 			"" | sparc | sparcv9 | sparc64 \
