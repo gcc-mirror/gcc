@@ -252,7 +252,7 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 3.0 */
 #endif /* ATTRIBUTE_ALIGNED_ALIGNOF */
 
-/* Useful for structures whose layout must much some binary specification
+/* Useful for structures whose layout must match some binary specification
    regardless of the alignment and padding qualities of the compiler.  */
 #ifndef ATTRIBUTE_PACKED
 # define ATTRIBUTE_PACKED __attribute__ ((packed))
