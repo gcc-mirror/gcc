@@ -1,3 +1,24 @@
+2016-05-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* alias.c (reference_alias_ptr_type): Preserve alias-set zero
+	if the langhook insists on it.
+	* fold-const.c (make_bit_field_ref): Add arg for the original
+	reference and preserve its alias-set.
+	(decode_field_reference): Take exp by reference and adjust it
+	to the original memory reference.
+	(optimize_bit_field_compare): Adjust callers.
+	(fold_truth_andor_1): Likewise.
+
+	2016-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/71071
+	* fold-const.c (fold_checksum_tree): Allow modification
+	of TYPE_ALIAS_SET during folding.
+
 2016-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.c (visium_split_double_add): Minor tweaks.

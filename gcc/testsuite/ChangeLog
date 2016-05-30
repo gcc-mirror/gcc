@@ -1,3 +1,16 @@
+2016-05-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* g++.dg/torture/pr71002.C: New testcase.
+
+	2016-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/71071
+	* gcc.dg/pr71071.c: New test.
+
 2016-05-30  Tom de Vries  <tom@codesourcery.com>
 
 	backport:
