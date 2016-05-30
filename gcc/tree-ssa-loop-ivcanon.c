@@ -970,7 +970,9 @@ try_peel_loop (struct loop *loop,
   if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0)
     return false;
 
-  /* Peel only innermost loops.  */
+  /* Peel only innermost loops.
+     While the code is perfectly capable of peeling non-innermost loops,
+     the heuristics would probably need some improvements. */
   if (loop->inner)
     {
       if (dump_file)
@@ -1029,13 +1031,23 @@ try_peel_loop (struct loop *loop,
   /* Duplicate possibly eliminating the exits.  */
   initialize_original_copy_tables ();
   wont_exit = sbitmap_alloc (npeel + 1);
-  bitmap_ones (wont_exit);
-  bitmap_clear_bit (wont_exit, 0);
+  if (exit && niter
+      && TREE_CODE (niter) == INTEGER_CST
+      && wi::leu_p (npeel, wi::to_widest (niter)))
+    {
+      bitmap_ones (wont_exit);
+      if (wi::eq_p (wi::to_widest (niter), npeel))
+        bitmap_clear_bit (wont_exit, 0);
+    }
+  else
+    {
+      exit = NULL;
+      bitmap_clear (wont_exit);
+    }
   if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					     npeel, wont_exit,
 					     exit, &to_remove,
-					     DLTHE_FLAG_UPDATE_FREQ
-					     | DLTHE_FLAG_COMPLETTE_PEEL))
+					     DLTHE_FLAG_UPDATE_FREQ))
     {
       free_original_copy_tables ();
       free (wont_exit);
@@ -1053,14 +1065,48 @@ try_peel_loop (struct loop *loop,
       fprintf (dump_file, "Peeled loop %d, %i times.\n",
 	       loop->num, (int) npeel);
     }
+  if (loop->any_estimate)
+    {
+      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
+        loop->nb_iterations_estimate -= npeel;
+      else
+	loop->nb_iterations_estimate = 0;
+    }
   if (loop->any_upper_bound)
-    loop->nb_iterations_upper_bound -= npeel;
+    {
+      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
+        loop->nb_iterations_upper_bound -= npeel;
+      else
+        loop->nb_iterations_upper_bound = 0;
+    }
   if (loop->any_likely_upper_bound)
-    loop->nb_iterations_likely_upper_bound -= npeel;
-  loop->nb_iterations_estimate = 0;
-  /* Make sure to mark loop cold so we do not try to peel it more.  */
-  scale_loop_profile (loop, 1, 0);
-  loop->header->count = 0;
+    {
+      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
+	loop->nb_iterations_likely_upper_bound -= npeel;
+      else
+	{
+	  loop->any_estimate = true;
+	  loop->nb_iterations_estimate = 0;
+	  loop->nb_iterations_likely_upper_bound = 0;
+	}
+    }
+  gcov_type entry_count = 0;
+  int entry_freq = 0;
+
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, loop->header->preds)
+    if (e->src != loop->latch)
+      {
+	entry_count += e->src->count;
+	entry_freq += e->src->frequency;
+	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
+      }
+  int scale = 1;
+  if (loop->header->count)
+    scale = RDIV (entry_count * REG_BR_PROB_BASE, loop->header->count);
+  else if (loop->header->frequency)
+    scale = RDIV (entry_freq * REG_BR_PROB_BASE, loop->header->frequency);
+  scale_loop_profile (loop, scale, 0);
   return true;
 }
 /* Adds a canonical induction variable to LOOP if suitable.
