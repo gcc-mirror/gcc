@@ -1792,7 +1792,6 @@ get_def_bb_for_const (basic_block bb, basic_block old_bb) const
 	b1 = b2;
     }
 
-  gcc_assert (b1);
   return b1;
 }
 
