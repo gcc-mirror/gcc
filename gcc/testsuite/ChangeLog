@@ -1,5 +1,12 @@
 2016-05-30  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/71269
+	PR middle-end/71292
+	* gcc.dg/tree-ssa/pr71269.c: New test.
+	* gcc.dg/tree-ssa/pr71292.c: New test.
+
+2016-05-30  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/71252
 	* gcc.dg/tree-ssa/pr71252-2.c: New test.
 
