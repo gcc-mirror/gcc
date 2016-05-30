@@ -1,3 +1,11 @@
+2016-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71349
+	* c-omp.c (c_omp_split_clauses): Put OMP_CLAUSE_DEPEND to
+	C_OMP_CLAUSE_SPLIT_TARGET.  Put OMP_CLAUSE_NOWAIT to
+	C_OMP_CLAUSE_SPLIT_TARGET if combined with target construct,
+	instead of C_OMP_CLAUSE_SPLIT_FOR.
+
 2016-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70434

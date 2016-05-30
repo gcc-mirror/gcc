@@ -1,3 +1,11 @@
+2016-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71349
+	* parser.c (cp_parser_omp_for): Don't disallow nowait clause
+	when combined with target construct.
+	(cp_parser_omp_parallel): Pass cclauses == NULL as last argument
+	to cp_parser_omp_all_clauses.
+
 2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71238
