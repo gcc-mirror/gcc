@@ -24,5 +24,5 @@ ce (void)
 int
 main (void)
 {
-  return ce (aa);
+  return ce ();
 }
