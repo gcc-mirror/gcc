@@ -1,5 +1,14 @@
 2016-05-30  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/71269
+	PR middle-end/71252
+	* tree-ssa-reassoc.c (insert_stmt_before_use): Use find_insert_point so
+	that inserted stmt will not dominate stmts that defines its operand.
+	(rewrite_expr_tree): Add stmt_to_insert before adding the use stmt.
+	(rewrite_expr_tree_parallel): Likewise.
+
+2016-05-30  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/71252
 	* tree-ssa-reassoc.c (swap_ops_for_binary_stmt): Fix swap such that
 	all fields including stmt_to_insert are swapped.
