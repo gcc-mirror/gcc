@@ -1,3 +1,8 @@
+2016-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69067
+	* gcc.dg/graphite/pr69067.c: New test.
+
 2016-05-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71245
