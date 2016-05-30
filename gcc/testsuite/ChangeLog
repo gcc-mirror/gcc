@@ -1,3 +1,8 @@
+2016-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/iamcu/args.h (clear_non_sret_int_hardware_registers):
+	Use correct register when clearing %edx.
+
 2016-05-30  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR tree-optimization/71289
@@ -288,8 +293,8 @@
 
 2016-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        * g++.dg/cpp1y/lambda-generic-static1.C: Use target c++14.
-        * g++.dg/cpp1y/lambda-generic-static2.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-static1.C: Use target c++14.
+	* g++.dg/cpp1y/lambda-generic-static2.C: Likewise.
 
 2016-05-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -841,10 +846,10 @@
 
 2016-05-18  Jiong Wang  <jiong.wang@arm.com>
 
-        * gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Guard float64_t
-        with __aarch64__.
-        * gcc.target/aarch64/advsimd-intrinsics/vfms_vfma_n.c: Guard variable
-        declarations under __aarch64__ and __ARM_FEATURE_FMA.
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h: Guard float64_t
+	with __aarch64__.
+	* gcc.target/aarch64/advsimd-intrinsics/vfms_vfma_n.c: Guard variable
+	declarations under __aarch64__ and __ARM_FEATURE_FMA.
 
 2016-05-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1047,8 +1052,8 @@
 
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/53440
-        * g++.dg/inherit/thunk1.C: Support arm / aarch64.
+	PR target/53440
+	* g++.dg/inherit/thunk1.C: Support arm / aarch64.
 
 2016-05-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
