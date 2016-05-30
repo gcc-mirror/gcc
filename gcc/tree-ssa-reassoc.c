@@ -3763,25 +3763,13 @@ swap_ops_for_binary_stmt (vec<operand_entry *> ops,
       || (stmt && is_phi_for_stmt (stmt, oe3->op)
 	  && !is_phi_for_stmt (stmt, oe1->op)
 	  && !is_phi_for_stmt (stmt, oe2->op)))
-    {
-      operand_entry temp = *oe3;
-      oe3->op = oe1->op;
-      oe3->rank = oe1->rank;
-      oe1->op = temp.op;
-      oe1->rank= temp.rank;
-    }
+    std::swap (*oe1, *oe3);
   else if ((oe1->rank == oe3->rank
 	    && oe2->rank != oe3->rank)
 	   || (stmt && is_phi_for_stmt (stmt, oe2->op)
 	       && !is_phi_for_stmt (stmt, oe1->op)
 	       && !is_phi_for_stmt (stmt, oe3->op)))
-    {
-      operand_entry temp = *oe2;
-      oe2->op = oe1->op;
-      oe2->rank = oe1->rank;
-      oe1->op = temp.op;
-      oe1->rank = temp.rank;
-    }
+    std::swap (*oe1, *oe3);
 }
 
 /* If definition of RHS1 or RHS2 dominates STMT, return the later of those
