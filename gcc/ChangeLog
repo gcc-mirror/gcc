@@ -1,3 +1,9 @@
+2016-05-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: Move hard float support for arm*hf*-*-freebsd* into
+	armv6*-*-freebsd* for FreeBSD 11. Eliminate the arm*hf*-*-freebsd*
+	target.
+
 2016-05-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config.gcc (sparc*-*-*): Support cpu_32, cpu_64, tune_32 and

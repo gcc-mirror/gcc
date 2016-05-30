@@ -1058,11 +1058,9 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	case $target in
 	armv6*-*-freebsd*)
 	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
-	    ;;
-	esac
-	case $target in
-	arm*hf-*-freebsd*)
-	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
+            if test $fbsd_major -ge 11; then
+               tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
+            fi
 	    ;;
 	esac
 	with_tls=${with_tls:-gnu}
