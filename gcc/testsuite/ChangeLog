@@ -1,3 +1,9 @@
+2016-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71349
+	* c-c++-common/gomp/clauses-1.c (bar): Add dd argument.  Add
+	nowait depend(inout: dd[0]) clauses where permitted.
+
 2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71238

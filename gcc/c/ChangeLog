@@ -1,3 +1,9 @@
+2016-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71349
+	* c-parser.c (c_parser_omp_for): Don't disallow nowait clause
+	when combined with target construct.
+
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_schedule): Warn if
