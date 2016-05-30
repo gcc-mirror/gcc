@@ -1,3 +1,7 @@
+2016-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (mfence_nosse): Use "lock orl $0, -4(%esp)".
+
 2016-05-30  Andi Kleen  <ak@linux.intel.com>
 
 	* auto-profile.c (read_profile): Replace asserts with errors
@@ -5,7 +9,7 @@
 	* gcov-io.c (gcov_read_words): Dito.
 
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
-	
+
 	* tree-cfg.c (print_loop): Print likely upper bounds.
 
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
