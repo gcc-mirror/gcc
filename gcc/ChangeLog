@@ -1,3 +1,11 @@
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.h (force_edge_cold): Declare.
+	* predict.c (force_edge_cold): New function.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Fix profile
+	updating.
+	(canonicalize_loop_induction_variables): Fix formating.
+
 2016-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.c (visium_split_double_add): Minor tweaks.
