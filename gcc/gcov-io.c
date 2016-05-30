@@ -493,7 +493,9 @@ gcov_read_words (unsigned words)
   const gcov_unsigned_t *result;
   unsigned excess = gcov_var.length - gcov_var.offset;
 
-  gcov_nonruntime_assert (gcov_var.mode > 0);
+  if (gcov_var.mode <= 0)
+    return NULL;
+
   if (excess < words)
     {
       gcov_var.start += gcov_var.offset;
