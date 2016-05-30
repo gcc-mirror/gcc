@@ -1,3 +1,9 @@
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/peel1.c: New testcase.
+	* gcc.dg/tree-ssa/pr61743-1.c: Disable loop peeling.
+	* gcc.dg/tree-ssa/pr61743-2.c: Disable loop peeling.
+
 2016-05-30  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/graphite/pr69067.c (main): Remove superfluous argument in call
