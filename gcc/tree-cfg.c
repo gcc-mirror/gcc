@@ -7780,6 +7780,11 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
       fprintf (file, ", upper_bound = ");
       print_decu (loop->nb_iterations_upper_bound, file);
     }
+  if (loop->any_likely_upper_bound)
+    {
+      fprintf (file, ", likely_upper_bound = ");
+      print_decu (loop->nb_iterations_likely_upper_bound, file);
+    }
 
   if (loop->any_estimate)
     {

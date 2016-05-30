@@ -1,4 +1,8 @@
 2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+	
+	* tree-cfg.c (print_loop): Print likely upper bounds.
+
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (-fpeel-loops,-O3): Update documentation.
 	* opts.c (default_options): Enable peel loops at -O3.
