@@ -1,3 +1,8 @@
+2016-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/graphite/pr69067.c (main): Remove superfluous argument in call
+	to ce.
+
 2016-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71099
