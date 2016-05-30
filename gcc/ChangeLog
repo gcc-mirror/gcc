@@ -1,3 +1,8 @@
+2016-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Use
+	likely_max_stmt_executions_int.
+
 2016-05-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69067

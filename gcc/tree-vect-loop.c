@@ -1945,7 +1945,7 @@ start_over:
 		     LOOP_VINFO_INT_NITERS (loop_vinfo));
 
   HOST_WIDE_INT max_niter
-    = max_stmt_executions_int (LOOP_VINFO_LOOP (loop_vinfo));
+    = likely_max_stmt_executions_int (LOOP_VINFO_LOOP (loop_vinfo));
   if ((LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
        && (LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor))
       || (max_niter != -1
