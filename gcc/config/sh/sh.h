@@ -1718,15 +1718,6 @@ extern bool current_function_interrupt;
    ? (24) \
    : (unsigned) -1)
 
-/* This is how to output a reference to a symbol_ref.  On SH5,
-   references to non-code symbols must be preceded by `datalabel'.  */
-#define ASM_OUTPUT_SYMBOL_REF(FILE,SYM)			\
-  do 							\
-    {							\
-      assemble_name ((FILE), XSTR ((SYM), 0));		\
-    }							\
-  while (0)
-
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
