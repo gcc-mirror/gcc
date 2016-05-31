@@ -86,9 +86,6 @@
   (FP_REG	14)
   (SP_REG	15)
 
-  (PR_MEDIA_REG	18)
-  (T_MEDIA_REG	19)
-
   (R0_REG	0)
   (R1_REG	1)
   (R2_REG	2)
@@ -108,11 +105,6 @@
   (DR0_REG	64)
   (DR2_REG	66)
   (DR4_REG	68)
-  (FR23_REG	87)
-
-  (TR0_REG	128)
-  (TR1_REG	129)
-  (TR2_REG	130)
 
   (XD0_REG	136)
 

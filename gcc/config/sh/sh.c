@@ -234,8 +234,6 @@ static int sh_variable_issue (FILE *, int, rtx_insn *, int);
 static bool sh_function_ok_for_sibcall (tree, tree);
 
 static bool sh_can_follow_jump (const rtx_insn *, const rtx_insn *);
-static reg_class_t sh_target_reg_class (void);
-static bool sh_optimize_target_register_callee_saved (bool);
 static bool sh_ms_bitfield_layout_p (const_tree);
 
 static void sh_init_builtins (void);
@@ -465,11 +463,6 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_CAN_FOLLOW_JUMP
 #define TARGET_CAN_FOLLOW_JUMP sh_can_follow_jump
-#undef TARGET_BRANCH_TARGET_REGISTER_CLASS
-#define TARGET_BRANCH_TARGET_REGISTER_CLASS sh_target_reg_class
-#undef TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED
-#define TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED \
-  sh_optimize_target_register_callee_saved
 
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P sh_ms_bitfield_layout_p
@@ -800,8 +793,6 @@ sh_option_override (void)
   int regno;
 
   SUBTARGET_OVERRIDE_OPTIONS;
-  if (optimize > 1 && !optimize_size)
-    target_flags |= MASK_SAVE_ALL_TARGET_REGS;
 
   sh_cpu = PROCESSOR_SH1;
   assembler_dialect = 0;
@@ -7037,30 +7028,6 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
       if (nosave_low_regs && reg == R8_REG)
 	break;
     }
-  /* If we have a target register optimization pass after prologue / epilogue
-     threading, we need to assume all target registers will be live even if
-     they aren't now.  */
-  if (flag_branch_target_load_optimize2 && TARGET_SAVE_ALL_TARGET_REGS)
-    for (reg = LAST_TARGET_REG; reg >= FIRST_TARGET_REG; reg--)
-      if ((! call_really_used_regs[reg] || interrupt_handler)
-	  && ! TEST_HARD_REG_BIT (*live_regs_mask, reg))
-	{
-	  SET_HARD_REG_BIT (*live_regs_mask, reg);
-	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
-	}
-  /* If this is an interrupt handler, we don't have any call-clobbered
-     registers we can conveniently use for target register save/restore.
-     Make sure we save at least one general purpose register when we need
-     to save target registers.  */
-  if (interrupt_handler
-      && hard_reg_set_intersect_p (*live_regs_mask,
-				   reg_class_contents[TARGET_REGS])
-      && ! hard_reg_set_intersect_p (*live_regs_mask,
-				     reg_class_contents[GENERAL_REGS]))
-    {
-      SET_HARD_REG_BIT (*live_regs_mask, R0_REG);
-      count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (R0_REG));
-    }
 
   return count;
 }
@@ -7317,9 +7284,6 @@ sh_expand_epilogue (bool sibcall_p)
     emit_insn (gen_sp_switch_2 ());
 
   /* Tell flow the insn that pops PR isn't dead.  */
-  /* PR_REG will never be live in SHmedia mode, and we don't need to
-     USE PR_MEDIA_REG, since it will be explicitly copied to TR0_REG
-     by the return pattern.  */
   if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
     emit_use (gen_rtx_REG (SImode, PR_REG));
 }
@@ -10014,19 +9978,6 @@ sh_dfa_new_cycle (FILE *sched_dump ATTRIBUTE_UNUSED,
   return 0;
 }
 
-static reg_class_t
-sh_target_reg_class (void)
-{
-  return NO_REGS;
-}
-
-static bool
-sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen
-					  ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
 static bool
 sh_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
 {
@@ -10582,9 +10533,6 @@ sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (XD_REGISTER_P (regno))
     return mode == DFmode;
 
-  if (TARGET_REGISTER_P (regno))
-    return (mode == DImode || mode == SImode || mode == PDImode);
-
   if (regno == PR_REG)
     return mode == SImode;
 
@@ -10725,10 +10673,6 @@ sh_register_move_cost (machine_mode mode,
       || (srcclass == FPUL_REGS
 	  && (dstclass == PR_REGS || dstclass == MAC_REGS)))
     return 7;
-
-  if ((srcclass == TARGET_REGS && ! REGCLASS_HAS_GENERAL_REG (dstclass))
-      || ((dstclass) == TARGET_REGS && ! REGCLASS_HAS_GENERAL_REG (srcclass)))
-    return 20;
 
   if ((srcclass == FPSCR_REGS && ! REGCLASS_HAS_GENERAL_REG (dstclass))
       || (dstclass == FPSCR_REGS && ! REGCLASS_HAS_GENERAL_REG (srcclass)))
@@ -11324,16 +11268,10 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	return GENERAL_REGS;
       return NO_REGS;  // LRA wants NO_REGS here, it used to be FPUL_REGS;
     }
-  if (rclass == TARGET_REGS
-      && !satisfies_constraint_Csy (x)
-      && (!REG_P (x) || ! GENERAL_REGISTER_P (REGNO (x))))
-    return GENERAL_REGS;
+
   if ((rclass == MAC_REGS || rclass == PR_REGS)
       && REG_P (x) && ! GENERAL_REGISTER_P (REGNO (x))
       && rclass != REGNO_REG_CLASS (REGNO (x)))
-    return GENERAL_REGS;
-  if (rclass != GENERAL_REGS && REG_P (x)
-      && TARGET_REGISTER_P (REGNO (x)))
     return GENERAL_REGS;
 
  /* If here fall back to loading FPUL register through general registers.

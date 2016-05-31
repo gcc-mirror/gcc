@@ -1,5 +1,23 @@
 2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/constraints.md (b): Remove constraint.
+	* config/sh/predicates.md (arith_reg_operand): Remove TARGET_REGISTER_P.
+	* config/sh/sh-modes.def (PDI): Remove.
+	* config/sh/sh.c (sh_target_reg_class,
+	sh_optimize_target_register_callee_saved): Remove functions.
+	(sh_option_override): Don't set MASK_SAVE_ALL_TARGET_REGS.
+	(sh_expand_epilogue): Update comment.
+	(sh_hard_regno_mode_ok, sh_register_move_cost, calc_live_regs,
+	sh_secondary_reload): Remove TARGET_REGS related code.
+	* config/sh/sh.h (FIRST_TARGET_REG, LAST_TARGET_REG,
+	TARGET_REGISTER_P): Remove macros.
+	(SH_DBX_REGISTER_NUMBER, REG_ALLOC_ORDER): Remove target regs.
+	* config/sh/sh.md (PR_MEDIA_REG, T_MEDIA_REG, FR23_REG, TR0_REG,
+	TR1_REG, TR2_REG): Remove constants.
+	* config/sh/sh.opt (SAVE_ALL_TARGET_REGS): Remove.
+
+2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md (adddi3, subdi3, negdi2, abs<mode>2): Remove
 	define_expand patterns.
 	(adddi3_compact): Rename to adddi3.
