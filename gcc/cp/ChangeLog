@@ -1,3 +1,9 @@
+2016-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71227
+	* pt.c (check_explicit_specialization): Give better diagnostic about
+	specializing a hidden friend.
+
 2016-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71248
