@@ -1,3 +1,8 @@
+2016-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Use
+	aarch64_fusion_enabled_p to check for fusion capabilities.
+
 2016-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71352
