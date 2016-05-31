@@ -1,3 +1,8 @@
+2016-05-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69068
+	* gcc.dg/graphite/pr69068.c: New test.
+
 2016-05-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71306

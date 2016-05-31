@@ -1,3 +1,9 @@
+2016-05-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69068
+	* graphite-isl-ast-to-gimple.c (copy_bb_and_scalar_dependences): Handle
+	phis with more than two args.
+
 2016-05-30  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.gcc: Move hard float support for arm*hf*-*-freebsd* into
