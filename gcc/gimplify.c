@@ -1609,10 +1609,17 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	  while (gimple_code (seq) == GIMPLE_BIND)
 	    seq = gimple_bind_body (as_a <gbind *> (seq));
 	  gimple *stmt = gimple_seq_first_stmt (seq);
-	  enum gimple_code code = gimple_code (stmt);
-	  if (code != GIMPLE_LABEL && code != GIMPLE_TRY)
+	  if (gimple_code (stmt) == GIMPLE_TRY)
 	    {
-	      if (code == GIMPLE_GOTO
+	      /* A compiler-generated cleanup or a user-written try block.
+		 Try to get the first statement in its try-block, for better
+		 location.  */
+	      if ((seq = gimple_try_eval (stmt)))
+		stmt = gimple_seq_first_stmt (seq);
+	    }
+	  if (gimple_code (stmt) != GIMPLE_LABEL)
+	    {
+	      if (gimple_code (stmt) == GIMPLE_GOTO
 		  && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
 		  && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
 		/* Don't warn for compiler-generated gotos.  These occur
