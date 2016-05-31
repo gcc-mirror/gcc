@@ -333,7 +333,6 @@ machine_mode aarch64_hard_regno_caller_save_mode (unsigned, unsigned,
 						       machine_mode);
 int aarch64_hard_regno_mode_ok (unsigned, machine_mode);
 int aarch64_hard_regno_nregs (unsigned, machine_mode);
-int aarch64_simd_attr_length_move (rtx_insn *);
 int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);
 rtx aarch64_final_eh_return_addr (void);

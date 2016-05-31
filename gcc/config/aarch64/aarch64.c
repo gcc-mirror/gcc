@@ -10734,33 +10734,6 @@ aarch64_simd_emit_reg_reg_move (rtx *operands, enum machine_mode mode,
 		      gen_rtx_REG (mode, rsrc + count - i - 1));
 }
 
-/* Compute and return the length of aarch64_simd_mov<mode>, where <mode> is
-   one of VSTRUCT modes: OI, CI or XI.  */
-int
-aarch64_simd_attr_length_move (rtx_insn *insn)
-{
-  machine_mode mode;
-
-  extract_insn_cached (insn);
-
-  if (REG_P (recog_data.operand[0]) && REG_P (recog_data.operand[1]))
-    {
-      mode = GET_MODE (recog_data.operand[0]);
-      switch (mode)
-	{
-	case OImode:
-	  return 8;
-	case CImode:
-	  return 12;
-	case XImode:
-	  return 16;
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  return 4;
-}
-
 /* Compute and return the length of aarch64_simd_reglist<mode>, where <mode> is
    one of VSTRUCT modes: OI, CI, or XI.  */
 int

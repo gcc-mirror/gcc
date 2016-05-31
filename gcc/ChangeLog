@@ -1,3 +1,16 @@
+2016-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_move): Delete.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_move):
+	Delete prototype.
+	* config/aarch64/iterators.md (insn_count): Add descriptive comment.
+	* config/aarch64/aarch64-simd.md (*aarch64_mov<mode>, VSTRUCT modes):
+	Remove use of aarch64_simd_attr_length_move, set length attribute
+	directly.
+	(*aarch64_be_movoi): Likewise.
+	(*aarch64_be_movci): Likewise.
+	(*aarch64_be_movxi): Likewise.
+
 2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* loop-init.c (gate): Do not enale RTL loop unroller with -fpeel-loops.

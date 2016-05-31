@@ -715,6 +715,7 @@
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 
+;; Sum of lengths of instructions needed to move vector registers of a mode.
 (define_mode_attr insn_count [(OI "8") (CI "12") (XI "16")])
 
 ;; -fpic small model GOT reloc modifers: gotpage_lo15/lo14 for ILP64/32.
