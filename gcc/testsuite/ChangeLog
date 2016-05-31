@@ -1,3 +1,7 @@
+2016-05-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/armv5_thumb_isa.c: New test.
+
 2016-05-31  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/71346

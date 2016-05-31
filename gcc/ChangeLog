@@ -1,3 +1,12 @@
+2016-05-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-protos.h (arm_arch_thumb1): Declare.
+	* config/arm/arm.c (arm_arch_thumb1): Define.
+	(arm_option_override): Initialize arm_arch_thumb1.
+	* config/arm/arm.h (arm_arch_thumb1): Declare.
+	(TARGET_ARM_ARCH_ISA_THUMB): Use arm_arch_thumb to determine if target
+	support Thumb-1 ISA.
+
 2016-05-31  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/71346

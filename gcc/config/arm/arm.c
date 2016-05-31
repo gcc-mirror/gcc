@@ -847,6 +847,9 @@ int arm_tune_cortex_a9 = 0;
    interworking clean.  */
 int arm_cpp_interwork = 0;
 
+/* Nonzero if chip supports Thumb 1.  */
+int arm_arch_thumb1;
+
 /* Nonzero if chip supports Thumb 2.  */
 int arm_arch_thumb2;
 
@@ -3165,6 +3168,7 @@ arm_option_override (void)
   arm_arch7em = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH7EM);
   arm_arch8 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH8);
   arm_arch8_1 = ARM_FSET_HAS_CPU2 (insn_flags, FL2_ARCH8_1);
+  arm_arch_thumb1 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB);
   arm_arch_thumb2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB2);
   arm_arch_xscale = ARM_FSET_HAS_CPU1 (insn_flags, FL_XSCALE);
 
