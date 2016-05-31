@@ -1,3 +1,9 @@
+2016-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71352
+	* tree-ssa-reassoc.c (zero_one_operation): Handle op equal to
+	minus one and a negate.
+
 2016-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_attr_length_move): Delete.

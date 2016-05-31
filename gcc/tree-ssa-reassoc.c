@@ -1199,11 +1199,20 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 		propagate_op_to_single_use (op, stmt, def);
 	      return;
 	    }
-	  else if (gimple_assign_rhs_code (stmt) == NEGATE_EXPR
-		   && gimple_assign_rhs1 (stmt) == op)
+	  else if (gimple_assign_rhs_code (stmt) == NEGATE_EXPR)
 	    {
-	      propagate_op_to_single_use (op, stmt, def);
-	      return;
+	      if (gimple_assign_rhs1 (stmt) == op)
+		{
+		  propagate_op_to_single_use (op, stmt, def);
+		  return;
+		}
+	      else if (integer_minus_onep (op)
+		       || real_minus_onep (op))
+		{
+		  gimple_assign_set_rhs_code
+		    (stmt, TREE_CODE (gimple_assign_rhs1 (stmt)));
+		  return;
+		}
 	    }
 	}
 
@@ -1238,11 +1247,20 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	      return;
 	    }
 	  else if (is_gimple_assign (stmt2)
-		   && gimple_assign_rhs_code (stmt2) == NEGATE_EXPR
-		   && gimple_assign_rhs1 (stmt2) == op)
+		   && gimple_assign_rhs_code (stmt2) == NEGATE_EXPR)
 	    {
-	      propagate_op_to_single_use (op, stmt2, def);
-	      return;
+	      if (gimple_assign_rhs1 (stmt2) == op)
+		{
+		  propagate_op_to_single_use (op, stmt2, def);
+		  return;
+		}
+	      else if (integer_minus_onep (op)
+		       || real_minus_onep (op))
+		{
+		  gimple_assign_set_rhs_code
+		    (stmt2, TREE_CODE (gimple_assign_rhs1 (stmt2)));
+		  return;
+		}
 	    }
 	}
 
