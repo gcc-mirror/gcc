@@ -3038,7 +3038,7 @@ static unsigned int line_info_label_num;
 /* The current table to which we should emit line number information
    for the current function.  This will be set up at the beginning of
    assembly for the function.  */
-static dw_line_info_table *cur_line_info_table;
+static GTY(()) dw_line_info_table *cur_line_info_table;
 
 /* The two default tables of line number info.  */
 static GTY(()) dw_line_info_table *text_section_line_info;
