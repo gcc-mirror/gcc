@@ -21179,7 +21179,7 @@ cp_parser_class_name (cp_parser *parser,
 	     resolution operator, object, function, and enumerator
 	     names are ignored.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
-	    tag_type = typename_type;
+	    tag_type = scope_type;
 	  /* Look up the name.  */
 	  decl = cp_parser_lookup_name (parser, identifier,
 					tag_type,
@@ -24570,6 +24570,20 @@ cp_parser_nested_requirement (cp_parser *parser)
 
 /* Support Functions */
 
+/* Return the appropriate prefer_type argument for lookup_name_real based on
+   tag_type.  */
+
+static inline int
+prefer_type_arg (tag_types tag_type)
+{
+  switch (tag_type)
+    {
+    case none_type:  return 0;	// No preference.
+    case scope_type: return 1;	// Type or namespace.
+    default:         return 2;	// Type only.
+    }
+}
+
 /* Looks up NAME in the current scope, as given by PARSER->SCOPE.
    NAME should have one of the representations used for an
    id-expression.  If NAME is the ERROR_MARK_NODE, the ERROR_MARK_NODE
@@ -24706,7 +24720,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     errors may be issued.  Even if we rollback the current
 	     tentative parse, those errors are valid.  */
 	  decl = lookup_qualified_name (parser->scope, name,
-					tag_type != none_type,
+					prefer_type_arg (tag_type),
 					/*complain=*/true);
 
 	  /* 3.4.3.1: In a lookup in which the constructor is an acceptable
@@ -24727,7 +24741,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	      && DECL_SELF_REFERENCE_P (decl)
 	      && same_type_p (DECL_CONTEXT (decl), parser->scope))
 	    decl = lookup_qualified_name (parser->scope, ctor_identifier,
-					  tag_type != none_type,
+					  prefer_type_arg (tag_type),
 					  /*complain=*/true);
 
 	  /* If we have a single function from a using decl, pull it out.  */
@@ -24783,7 +24797,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	decl = lookup_member (object_type,
 			      name,
 			      /*protect=*/0,
-			      tag_type != none_type,
+			      prefer_type_arg (tag_type),
 			      tf_warning_or_error);
       else
 	decl = NULL_TREE;
@@ -24791,7 +24805,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       if (!decl)
 	{
 	  /* Look it up in the enclosing context.  */
-	  decl = lookup_name_real (name, tag_type != none_type,
+	  decl = lookup_name_real (name, prefer_type_arg (tag_type),
 				   /*nonclass=*/0,
 				   /*block_p=*/true, is_namespace, 0);
 	  /* DR 141 says when looking for a template-name after -> or ., only
@@ -24816,7 +24830,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else
     {
-      decl = lookup_name_real (name, tag_type != none_type,
+      decl = lookup_name_real (name, prefer_type_arg (tag_type),
 			       /*nonclass=*/0,
 			       /*block_p=*/true, is_namespace, 0);
       parser->qualifying_scope = NULL_TREE;
