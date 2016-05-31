@@ -1075,9 +1075,7 @@ bb_contains_loop_close_phi_nodes (basic_block bb)
 static bool
 bb_contains_loop_phi_nodes (basic_block bb)
 {
-  gcc_assert (EDGE_COUNT (bb->preds) <= 2);
-
-  if (bb->preds->length () == 1)
+  if (EDGE_COUNT (bb->preds) != 2)
     return false;
 
   unsigned depth = loop_depth (bb->loop_father);
@@ -2480,12 +2478,13 @@ copy_cond_phi_nodes (basic_block bb, basic_block new_bb, vec<tree> iv_map)
 
   gcc_assert (!bb_contains_loop_close_phi_nodes (bb));
 
+  /* TODO: Handle cond phi nodes with more than 2 predecessors.  */
+  if (EDGE_COUNT (bb->preds) != 2)
+    return false;
+
   if (dump_file)
     fprintf (dump_file, "[codegen] copying cond phi nodes in bb_%d.\n",
 	     new_bb->index);
-
-  /* Cond phi nodes should have exactly two arguments.  */
-  gcc_assert (2 == EDGE_COUNT (bb->preds));
 
   for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
        gsi_next (&psi))
