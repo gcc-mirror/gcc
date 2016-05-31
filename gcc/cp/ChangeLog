@@ -1,4 +1,11 @@
-2016-05-27  Martin Sebor  <msebor@redhat.com>
+2016-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71248
+	* decl.c (check_static_variable_definition): Use DECL_SOURCE_LOCATION
+	to obtain correct locations; avoid redundant diagnostics on
+	out-of-class definitions.
+
+2016-05-30  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71306
 	* init.c (warn_placement_new_too_small): Handle placement new arguments
