@@ -9,4 +9,5 @@ void test() {
   return;
 }
 
+/* { dg-final { scan-tree-dump-times "extra loop exit heuristics:" 1 "profile_estimate"} } */
 /* { dg-final { scan-tree-dump-times "loop exit heuristics:" 2 "profile_estimate"} } */

@@ -1,5 +1,12 @@
 2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.def (PRED_LOOP_EXTRA_EXIT): Define.
+	* predict.c (predict_iv_comparison): Also check PRED_LOOP_EXTRA_EXIT.
+	(predict_extra_loop_exits): Use PRED_LOOP_EXTRA_EXIT instead of
+	PRED_LOOP_EXIT.
+
+2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
+
 	* doc/invoke.texi (-frename-registers): Drop -fpeel-loops from list
 	of flags impliying the register renaming.
 	* toplev.c (process_options): Do not imply flag_rename_registers with
