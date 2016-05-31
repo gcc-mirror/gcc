@@ -2808,6 +2808,13 @@ check_explicit_specialization (tree declarator,
 		 context.  */
 	      fns = lookup_qualified_name (CP_DECL_CONTEXT (decl), dname,
 					   false, true);
+	      if (fns == error_mark_node)
+		/* If lookup fails, look for a friend declaration so we can
+		   give a better diagnostic.  */
+		fns = lookup_qualified_name (CP_DECL_CONTEXT (decl), dname,
+					     /*type*/false, /*complain*/true,
+					     /*hidden*/true);
+
 	      if (fns == error_mark_node || !is_overloaded_fn (fns))
 		{
 		  error ("%qD is not a template function", dname);
@@ -2953,6 +2960,15 @@ check_explicit_specialization (tree declarator,
 					   CP_DECL_CONTEXT (tmpl)))
 	    error ("%qD is not declared in %qD",
 		   tmpl, current_namespace);
+	  else if (TREE_CODE (decl) == FUNCTION_DECL
+		   && DECL_HIDDEN_FRIEND_P (tmpl))
+	    {
+	      if (pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+			   "friend declaration %qD is not visible to "
+			   "explicit specialization", tmpl))
+		inform (DECL_SOURCE_LOCATION (tmpl),
+			"friend declaration here");
+	    }
 
 	  tree gen_tmpl = most_general_template (tmpl);
 
