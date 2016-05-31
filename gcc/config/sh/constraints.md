@@ -62,9 +62,6 @@
 (define_register_constraint "a" "ALL_REGS"
   "@internal")
 
-(define_register_constraint "b" "TARGET_REGS"
-  "Branch target registers.")
-
 (define_register_constraint "c" "FPSCR_REGS"
   "Floating-point status register.")
 

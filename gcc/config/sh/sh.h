@@ -585,8 +585,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define LAST_FP_REG  (FIRST_FP_REG + (TARGET_SH2E ? 15 : -1))
 #define FIRST_XD_REG XD0_REG
 #define LAST_XD_REG  (FIRST_XD_REG + ((TARGET_SH4 && TARGET_FMOVD) ? 7 : -1))
-#define FIRST_TARGET_REG TR0_REG
-#define LAST_TARGET_REG  (FIRST_TARGET_REG + (-1))
 
 /* Registers that can be accessed through bank0 or bank1 depending on sr.md.  */
 #define FIRST_BANKED_REG R0_REG
@@ -622,9 +620,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   ((REGNO) == GBR_REG || (REGNO) == T_REG \
    || (REGNO) == MACH_REG || (REGNO) == MACL_REG \
    || (REGNO) == FPSCR_MODES_REG || (REGNO) == FPSCR_STAT_REG)
-
-#define TARGET_REGISTER_P(REGNO) \
-  ((int) (REGNO) >= FIRST_TARGET_REG && (int) (REGNO) <= LAST_TARGET_REG)
 
 #define VALID_REGISTER_P(REGNO) \
   (GENERAL_REGISTER_P (REGNO) || FP_REGISTER_P (REGNO) \
@@ -1037,8 +1032,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
     44, 45, 46, 47, 48, 49, 50, 51, \
     52, 53, 54, 55, 56, 57, 58, 59, \
    /* FPUL */ 150, \
-   /* SH5 branch target registers */ \
-   128,129,130,131,132,133,134,135, \
    /* Fixed registers */ \
     15, 16, 24, 25, 26, 27, 63,144, \
    145,146,147,148,149,152,153,154,155  }
@@ -1698,13 +1691,6 @@ extern bool current_function_interrupt;
    register exists, so we should return -1 for invalid register numbers.  */
 #define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
 
-/* SHcompact PR_REG used to use the encoding 241, and SHcompact FP registers
-   used to use the encodings 245..260, but that doesn't make sense:
-   PR_REG and PR_MEDIA_REG are actually the same register, and likewise
-   the FP registers stay the same when switching between compact and media
-   mode.  Hence, we also need to use the same dwarf frame columns.
-   Likewise, we need to support unwind information for SHmedia registers
-   even in compact code.  */
 #define SH_DBX_REGISTER_NUMBER(REGNO) \
   (IN_RANGE ((REGNO), \
 	     (unsigned HOST_WIDE_INT) FIRST_GENERAL_REG, \
@@ -1716,12 +1702,8 @@ extern bool current_function_interrupt;
    ? ((unsigned) (REGNO) - FIRST_FP_REG + 25) \
    : XD_REGISTER_P (REGNO) \
    ? ((unsigned) (REGNO) - FIRST_XD_REG + 87) \
-   : TARGET_REGISTER_P (REGNO) \
-   ? ((unsigned) (REGNO) - FIRST_TARGET_REG + 68) \
    : (REGNO) == PR_REG \
    ? (17) \
-   : (REGNO) == PR_MEDIA_REG \
-   ? ((unsigned) -1) \
    : (REGNO) == GBR_REG \
    ? (18) \
    : (REGNO) == MACH_REG \

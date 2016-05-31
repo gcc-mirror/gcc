@@ -34,7 +34,6 @@
 	return 1;
 
       return (regno != T_REG && regno != PR_REG
-	      && ! TARGET_REGISTER_P (regno)
 	      && regno != FPUL_REG && regno != FPSCR_REG
 	      && regno != MACH_REG && regno != MACL_REG);
     }

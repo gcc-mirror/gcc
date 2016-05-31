@@ -37,9 +37,6 @@ Mask(HARD_SH2A_DOUBLE)
 ;; Set if compiling for SH4 hardware (to be used for insn costs etc.)
 Mask(HARD_SH4)
 
-;; Set if we should save all target registers.
-Mask(SAVE_ALL_TARGET_REGS)
-
 m1
 Target RejectNegative Mask(SH1) Condition(SUPPORT_SH1)
 Generate SH1 code.
