@@ -1,3 +1,9 @@
+2016-05-31  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/71346
+	* config/i386/sse.md (define_insn_and_split "*vec_extractv4sf_0"): Use
+	`Yv' for scalar operand.
+
 2016-05-31  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69068

@@ -1,3 +1,8 @@
+2016-05-31  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/71346
+	* gcc.target/i386/pr71346.c: New test.
+
 2016-05-31  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69068
