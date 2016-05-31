@@ -1296,7 +1296,7 @@ process_options (void)
 
   /* web and rename-registers help when run after loop unrolling.  */
   if (flag_web == AUTODETECT_VALUE)
-    flag_web = flag_unroll_loops || flag_peel_loops;
+    flag_web = flag_unroll_loops;
 
   if (flag_rename_registers == AUTODETECT_VALUE)
     flag_rename_registers = flag_unroll_loops || flag_peel_loops;

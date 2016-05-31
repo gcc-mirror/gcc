@@ -1,3 +1,9 @@
+2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* loop-init.c (gate): Do not enale RTL loop unroller with -fpeel-loops.
+	It no longer does that.
+	* toplev.c (process_options): Do not enable flag_web with -fpeel-loops.
+
 2016-05-31  Wladimir J. van der Laan  <laanwj@gmail.com>
 
 	* config/aarch64/arm_neon.h (vdupb_laneq_s8): Remove spurious
