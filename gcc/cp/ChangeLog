@@ -1,5 +1,8 @@
 2016-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71166
+	* decl2.c (c_parse_final_cleanups): Don't call fini_constexpr.
+
 	PR c++/71227
 	* pt.c (check_explicit_specialization): Give better diagnostic about
 	specializing a hidden friend.
