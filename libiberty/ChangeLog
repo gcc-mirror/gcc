@@ -1,3 +1,7 @@
+2016-05-31  Alan Modra  <amodra@gmail.com>
+
+	* xmemdup.c (xmemdup): Use xmalloc rather than xcalloc.
+
 2016-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70498
