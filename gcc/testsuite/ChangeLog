@@ -1,3 +1,8 @@
+2016-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71056
+	* gcc.target/arm/pr71056.c: New test.
+
 2016-05-31  Tom de Vries  <tom@codesourcery.com>
 
 	backport:

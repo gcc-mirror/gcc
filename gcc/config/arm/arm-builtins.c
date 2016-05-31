@@ -2861,6 +2861,10 @@ arm_builtin_vectorized_function (unsigned int fn, tree type_out, tree type_in)
   int in_n, out_n;
   bool out_unsigned_p = TYPE_UNSIGNED (type_out);
 
+  /* Can't provide any vectorized builtins when we can't use NEON.  */
+  if (!TARGET_NEON)
+    return NULL_TREE;
+
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
@@ -2875,7 +2879,7 @@ arm_builtin_vectorized_function (unsigned int fn, tree type_out, tree type_in)
    NULL_TREE is returned if no such builtin is available.  */
 #undef ARM_CHECK_BUILTIN_MODE
 #define ARM_CHECK_BUILTIN_MODE(C)    \
-  (TARGET_NEON && TARGET_FPU_ARMV8   \
+  (TARGET_FPU_ARMV8   \
    && flag_unsafe_math_optimizations \
    && ARM_CHECK_BUILTIN_MODE_1 (C))
 
