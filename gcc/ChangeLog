@@ -1,3 +1,8 @@
+2016-05-31  Wladimir J. van der Laan  <laanwj@gmail.com>
+
+	* config/aarch64/arm_neon.h (vdupb_laneq_s8): Remove spurious
+	attribute __unused__.
+
 2016-05-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-protos.h (arm_arch_thumb1): Declare.
