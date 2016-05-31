@@ -2158,6 +2158,7 @@
 ;; Atomic operations.
 
 (define_code_iterator FETCHOP [plus minus ior xor and])
+(define_code_iterator FETCHOP_NO_MINUS [plus ior xor and])
 
 (define_code_attr fetchop_name
   [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
@@ -2258,12 +2259,14 @@
 })
 
 ;; read - modify - write - return new value
+;; Because subtraction is not commutative we need to specify a different
+;; set of patterns for it.
 (define_expand "atomic_<fetchop_name>_fetchsi"
   [(set (match_operand:SI 0 "register_operand")
-	(FETCHOP:SI (match_operand:SI 1 "rx_restricted_mem_operand")
-		    (match_operand:SI 2 "register_operand")))
+	(FETCHOP_NO_MINUS:SI (match_operand:SI 1 "rx_restricted_mem_operand")
+			     (match_operand:SI 2 "register_operand")))
    (set (match_dup 1)
-	(FETCHOP:SI (match_dup 1) (match_dup 2)))
+	(FETCHOP_NO_MINUS:SI (match_dup 1) (match_dup 2)))
    (match_operand:SI 3 "const_int_operand")]		;; memory model
   ""
 {
@@ -2272,6 +2275,25 @@
 
     emit_move_insn (operands[0], operands[2]);
     emit_insn (gen_<fetchop_name2>si3 (operands[0], operands[0], operands[1]));
+    emit_move_insn (operands[1], operands[0]);
+  }
+  DONE;
+})
+
+(define_expand "atomic_sub_fetchsi"
+  [(set (match_operand:SI 0 "register_operand")
+	(minus:SI (match_operand:SI 1 "rx_restricted_mem_operand")
+		  (match_operand:SI 2 "rx_source_operand")))
+   (set (match_dup 1)
+	(minus:SI (match_dup 1) (match_dup 2)))
+   (match_operand:SI 3 "const_int_operand")]		;; memory model
+  ""
+{
+  {
+    rx_atomic_sequence seq (current_function_decl);
+
+    emit_move_insn (operands[0], operands[1]);
+    emit_insn (gen_subsi3 (operands[0], operands[0], operands[2]));
     emit_move_insn (operands[1], operands[0]);
   }
   DONE;
@@ -2674,18 +2696,16 @@
 )
 
 ;; Move to control register
+;; This insn can be used in atomic sequences to restore the previous PSW
+;; and re-enable interrupts.  Because of that it always clobbers the CC_REG.
 (define_insn "mvtc"
   [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i,i")
 	       (match_operand:SI 1 "nonmemory_operand" "r,i")]
-	      UNSPEC_BUILTIN_MVTC)]
+	      UNSPEC_BUILTIN_MVTC)
+   (clobber (reg:CC CC_REG))]
   ""
   "mvtc\t%1, %C0"
   [(set_attr "length" "3,7")]
-  ;; Ignore possible clobbering of the comparison flags in the
-  ;; PSW register.  This is a cc0 target so any cc0 setting
-  ;; instruction will always be paired with a cc0 user, without
-  ;; the possibility of this instruction being placed in between
-  ;; them.
 )
 
 ;; Move to interrupt priority level
