@@ -1535,18 +1535,7 @@
 ;; Addition instructions
 ;; -------------------------------------------------------------------------
 
-(define_expand "adddi3"
-  [(set (match_operand:DI 0 "arith_reg_operand")
-	(plus:DI (match_operand:DI 1 "arith_reg_operand")
-		 (match_operand:DI 2 "arith_operand")))]
-  ""
-{
-  operands[2] = force_reg (DImode, operands[2]);
-  emit_insn (gen_adddi3_compact (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_insn_and_split "adddi3_compact"
+(define_insn_and_split "adddi3"
   [(set (match_operand:DI 0 "arith_reg_dest")
 	(plus:DI (match_operand:DI 1 "arith_reg_operand")
 		 (match_operand:DI 2 "arith_reg_operand")))
@@ -1938,21 +1927,10 @@
 ;; Subtraction instructions
 ;; -------------------------------------------------------------------------
 
-(define_expand "subdi3"
-  [(set (match_operand:DI 0 "arith_reg_operand" "")
-	(minus:DI (match_operand:DI 1 "arith_reg_or_0_operand" "")
-		  (match_operand:DI 2 "arith_reg_operand" "")))]
-  ""
-{
-  operands[1] = force_reg (DImode, operands[1]);
-  emit_insn (gen_subdi3_compact (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_insn_and_split "subdi3_compact"
+(define_insn_and_split "subdi3"
   [(set (match_operand:DI 0 "arith_reg_dest")
 	(minus:DI (match_operand:DI 1 "arith_reg_operand")
-		 (match_operand:DI 2 "arith_reg_operand")))
+		  (match_operand:DI 2 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
@@ -4393,13 +4371,7 @@
 
 ;; Don't split into individual negc insns immediately so that neg:DI (abs:DI)
 ;; can be combined.
-(define_expand "negdi2"
-  [(parallel [(set (match_operand:DI 0 "arith_reg_dest")
-		   (neg:DI (match_operand:DI 1 "arith_reg_operand")))
-	      (clobber (reg:SI T_REG))])]
-  "TARGET_SH1")
-
-(define_insn_and_split "*negdi2"
+(define_insn_and_split "negdi2"
   [(set (match_operand:DI 0 "arith_reg_dest")
 	(neg:DI (match_operand:DI 1 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
@@ -4480,13 +4452,7 @@
 }
   [(set_attr "type" "arith")])
 
-(define_expand "abs<mode>2"
-  [(parallel [(set (match_operand:SIDI 0 "arith_reg_dest")
-		   (abs:SIDI (match_operand:SIDI 1 "arith_reg_operand")))
-	      (clobber (reg:SI T_REG))])]
-  "TARGET_SH1")
-
-(define_insn_and_split "*abs<mode>2"
+(define_insn_and_split "abs<mode>2"
   [(set (match_operand:SIDI 0 "arith_reg_dest")
   	(abs:SIDI (match_operand:SIDI 1 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
