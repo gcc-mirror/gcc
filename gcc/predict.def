@@ -92,6 +92,11 @@ DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", HITRATE (86),
 DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (91),
 	       PRED_FLAG_FIRST_MATCH)
 
+/* Edge causing loop to terminate by computing value used by later conditional.
+   */
+DEF_PREDICTOR (PRED_LOOP_EXTRA_EXIT, "extra loop exit", HITRATE (91),
+	       PRED_FLAG_FIRST_MATCH)
+
 /* Pointers are usually not NULL.  */
 DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (85), 0)
 DEF_PREDICTOR (PRED_TREE_POINTER, "pointer (on trees)", HITRATE (85), 0)

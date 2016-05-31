@@ -1245,7 +1245,8 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
 
   if (predicted_by_p (bb, PRED_LOOP_ITERATIONS_GUESSED)
       || predicted_by_p (bb, PRED_LOOP_ITERATIONS)
-      || predicted_by_p (bb, PRED_LOOP_EXIT))
+      || predicted_by_p (bb, PRED_LOOP_EXIT)
+      || predicted_by_p (bb, PRED_LOOP_EXTRA_EXIT))
     return;
 
   stmt = last_stmt (bb);
@@ -1418,7 +1419,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
    The edge BB7->BB8 is loop exit because BB8 is outside of the loop.
    From the dataflow, we can infer that BB4->BB6 and BB5->BB6 are also loop
    exits. This function takes BB7->BB8 as input, and finds out the extra loop
-   exits to predict them using PRED_LOOP_EXIT.  */
+   exits to predict them using PRED_LOOP_EXTRA_EXIT.  */
 
 static void
 predict_extra_loop_exits (edge exit_edge)
@@ -1474,12 +1475,12 @@ predict_extra_loop_exits (edge exit_edge)
 	continue;
       if (EDGE_COUNT (e->src->succs) != 1)
 	{
-	  predict_paths_leading_to_edge (e, PRED_LOOP_EXIT, NOT_TAKEN);
+	  predict_paths_leading_to_edge (e, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN);
 	  continue;
 	}
 
       FOR_EACH_EDGE (e1, ei, e->src->preds)
-	predict_paths_leading_to_edge (e1, PRED_LOOP_EXIT, NOT_TAKEN);
+	predict_paths_leading_to_edge (e1, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN);
     }
 }
 
