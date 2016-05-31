@@ -1,3 +1,13 @@
+2016-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71248
+	* g++.dg/cpp0x/pr71248.C: New.
+	* g++.dg/cpp0x/auto7.C: Test column numbers too.
+	* g++.dg/cpp0x/constexpr-static8.C: Likewise.
+	* g++.dg/init/new37.C: Likewise.
+	* g++.dg/template/static1.C: Likewise.
+	* g++.dg/template/static2.C: Likewise.
+
 2016-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/avx512vl-vbroadcast-3.c: Scan %\[re\]di
