@@ -13794,7 +13794,7 @@ vdupb_laneq_p8 (poly8x16_t __a, const int __b)
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
-vdupb_laneq_s8 (int8x16_t __a, const int __attribute__ ((unused)) __b)
+vdupb_laneq_s8 (int8x16_t __a, const int __b)
 {
   return __aarch64_vget_lane_any (__a, __b);
 }
