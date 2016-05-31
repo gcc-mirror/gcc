@@ -603,6 +603,9 @@ extern int arm_tune_cortex_a9;
    interworking clean.  */
 extern int arm_cpp_interwork;
 
+/* Nonzero if chip supports Thumb 1.  */
+extern int arm_arch_thumb1;
+
 /* Nonzero if chip supports Thumb 2.  */
 extern int arm_arch_thumb2;
 
