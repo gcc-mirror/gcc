@@ -1,3 +1,10 @@
+2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/rx/rx.md (FETCHOP_NO_MINUS): New code iterator.
+	(atomic_<fetchop_name>_fetchsi): Extract minus operator into ...
+	(atomic_sub_fetchsi): ... this new pattern.
+	(mvtc): Add CC_REG clobber.
+
 2016-05-31  Marek Polacek  <polacek@redhat.com>
 
 	* gimplify.c (gimplify_switch_expr): Also handle GIMPLE_TRY.
