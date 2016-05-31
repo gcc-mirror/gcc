@@ -1,3 +1,7 @@
+2016-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	* dwarf2out.c (cur_line_info_table): Add GTY marker.
+
 2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/constraints.md (b): Remove constraint.
