@@ -8623,7 +8623,7 @@ debug information format adopted by the target, however, it can
 make debugging impossible, since variables no longer stay in
 a ``home register''.
 
-Enabled by default with @option{-funroll-loops} and @option{-fpeel-loops}.
+Enabled by default with @option{-funroll-loops}.
 
 @item -fschedule-fusion
 @opindex fschedule-fusion
