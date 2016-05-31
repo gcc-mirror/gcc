@@ -1,3 +1,7 @@
+2016-05-31  Marek Polacek  <polacek@redhat.com>
+
+	* gimplify.c (gimplify_switch_expr): Also handle GIMPLE_TRY.
+
 2016-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Use

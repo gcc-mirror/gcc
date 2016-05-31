@@ -1,3 +1,8 @@
+2016-05-31  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wswitch-unreachable-3.c: New test.
+	* g++.dg/warn/Wswitch-unreachable-1.C: New test.
+
 2016-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71352
