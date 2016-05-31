@@ -1,5 +1,14 @@
 2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (adddi3, subdi3, negdi2, abs<mode>2): Remove
+	define_expand patterns.
+	(adddi3_compact): Rename to adddi3.
+	(subdi3_compact): Rename to subdi3.
+	(*negdi2): Rename to negdi2.
+	(*abs<mode>2): Rename to abs<mode>2.
+
+2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/rx/rx.md (FETCHOP_NO_MINUS): New code iterator.
 	(atomic_<fetchop_name>_fetchsi): Extract minus operator into ...
 	(atomic_sub_fetchsi): ... this new pattern.
