@@ -1,5 +1,14 @@
 2016-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60095
+	PR c++/69515
+	PR c++/69009
+	* pt.c (instantiate_template_1): Don't put the partial
+	specialization in DECL_TI_TEMPLATE.
+	(partial_specialization_p, impartial_args): Remove.
+	(regenerate_decl_from_template): Add args parm.
+	(instantiate_decl): Look up the partial specialization again.
+
 	PR c++/71227
 	* pt.c (check_explicit_specialization): Give better diagnostic about
 	specializing a hidden friend.
