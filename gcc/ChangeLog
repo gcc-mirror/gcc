@@ -1,3 +1,10 @@
+2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (-frename-registers): Drop -fpeel-loops from list
+	of flags impliying the register renaming.
+	* toplev.c (process_options): Do not imply flag_rename_registers with
+	loop peeling.
+
 2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (ASM_OUTPUT_SYMBOL_REF): Remove macro and use the
