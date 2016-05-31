@@ -1,4 +1,4 @@
-/* xmemdup.c -- Duplicate a memory buffer, using xcalloc.
+/* xmemdup.c -- Duplicate a memory buffer, using xmalloc.
    This trivial function is in the public domain.
    Jeff Garzik, September 1999.  */
 
@@ -34,6 +34,8 @@ allocated, the remaining memory is zeroed.
 PTR
 xmemdup (const PTR input, size_t copy_size, size_t alloc_size)
 {
-  PTR output = xcalloc (1, alloc_size);
+  PTR output = xmalloc (alloc_size);
+  if (alloc_size > copy_size)
+    memset ((char *) output + copy_size, 0, alloc_size - copy_size);
   return (PTR) memcpy (output, input, copy_size);
 }
