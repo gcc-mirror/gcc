@@ -38,4 +38,4 @@ f3 (__m256 x, __v8hi *y)
   *y = (__v8hi) _mm256_cvtps_ph (a, 1);
 }
 
-/* { dg-final { scan-assembler "vcvtps2ph\[^\n\r]*\\\$1\[^\n\r]*%ymm16\[^\n\r]*%rdi" } } */
+/* { dg-final { scan-assembler "vcvtps2ph\[^\n\r]*\\\$1\[^\n\r]*%ymm16\[^\n\r]*%\[re\]di" } } */

@@ -150,9 +150,9 @@ f16 (V2 *x)
   asm volatile ("" : "+v" (a));
 }
 
-/* { dg-final { scan-assembler-times "vbroadcastss\[^\n\r]*%rdi\[^\n\r]*%xmm16" 4 } } */
+/* { dg-final { scan-assembler-times "vbroadcastss\[^\n\r]*%\[re\]di\[^\n\r]*%xmm16" 4 } } */
 /* { dg-final { scan-assembler-times "vbroadcastss\[^\n\r]*%xmm16\[^\n\r]*%ymm16" 3 } } */
-/* { dg-final { scan-assembler-times "vbroadcastss\[^\n\r]*%rdi\[^\n\r]*%ymm16" 3 } } */
+/* { dg-final { scan-assembler-times "vbroadcastss\[^\n\r]*%\[re\]di\[^\n\r]*%ymm16" 3 } } */
 /* { dg-final { scan-assembler-times "vpermilps\[^\n\r]*\\\$0\[^\n\r]*%xmm16\[^\n\r]*%xmm16" 1 } } */
 /* { dg-final { scan-assembler-times "vpermilps\[^\n\r]*\\\$85\[^\n\r]*%xmm16\[^\n\r]*%xmm16" 1 } } */
 /* { dg-final { scan-assembler-times "vpermilps\[^\n\r]*\\\$170\[^\n\r]*%xmm16\[^\n\r]*%xmm16" 1 } } */
