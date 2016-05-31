@@ -1,3 +1,9 @@
+2016-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx512vl-vbroadcast-3.c: Scan %\[re\]di
+	instead of %rdi.
+	* gcc.target/i386/avx512vl-vcvtps2ph-3.c: Likewise.
+
 2016-05-31  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wswitch-unreachable-3.c: New test.
