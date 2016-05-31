@@ -1,3 +1,8 @@
+2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (ASM_OUTPUT_SYMBOL_REF): Remove macro and use the
+	default implementation.
+
 2016-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	* dwarf2out.c (cur_line_info_table): Add GTY marker.
