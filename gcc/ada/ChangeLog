@@ -1,3 +1,14 @@
+2016-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-osinte-kfreebsd-gnu.ads (clock_getres): Define.
+	(Get_Page_Size): Remove duplicate and return int.
+
+2016-05-31  Jan Sommer  <soja-lists@aries.uberspace.de>
+
+	PR ada/71317
+	* s-osinte-rtems.ads (clock_getres): Define.
+	(Get_Page_Size): Remove duplicate and return int.
+
 2016-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
