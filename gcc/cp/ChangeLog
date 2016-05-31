@@ -1,5 +1,7 @@
 2016-05-31  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiate_decl): Avoid recalculation.
+
 	PR c++/60095
 	PR c++/69515
 	PR c++/69009

@@ -21971,7 +21971,6 @@ instantiate_decl (tree d, int defer_ok,
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
       hash_map<tree, tree> *saved_local_specializations;
-      tree subst_decl;
       tree tmpl_parm;
       tree spec_parm;
       tree block = NULL_TREE;
@@ -21994,18 +21993,17 @@ instantiate_decl (tree d, int defer_ok,
 	 access checked at template instantiation time, i.e now. These
 	 types were added to the template at parsing time. Let's get those
 	 and perform the access checks then.  */
-      perform_typedefs_access_check (DECL_TEMPLATE_RESULT (gen_tmpl),
-				     gen_args);
+      perform_typedefs_access_check (DECL_TEMPLATE_RESULT (td),
+				     args);
 
       /* Create substitution entries for the parameters.  */
-      subst_decl = DECL_TEMPLATE_RESULT (template_for_substitution (d));
-      tmpl_parm = DECL_ARGUMENTS (subst_decl);
+      tmpl_parm = DECL_ARGUMENTS (code_pattern);
       spec_parm = DECL_ARGUMENTS (d);
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (d))
 	{
 	  register_local_specialization (spec_parm, tmpl_parm);
 	  spec_parm = skip_artificial_parms_for (d, spec_parm);
-	  tmpl_parm = skip_artificial_parms_for (subst_decl, tmpl_parm);
+	  tmpl_parm = skip_artificial_parms_for (code_pattern, tmpl_parm);
 	}
       for (; tmpl_parm; tmpl_parm = DECL_CHAIN (tmpl_parm))
 	{
