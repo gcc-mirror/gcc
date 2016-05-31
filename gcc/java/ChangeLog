@@ -1,3 +1,11 @@
+2016-05-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* builtins.c (java_builtins): Use popcount* and bswap* builtins to
+	implement bitCount() and reverseBytes() methods in java.lang.Integer
+	and friends.
+	(initialize_builtins): Annotate math builtins with ECF_LEAF.  Call
+	define_builtin for the new popcount* and bswap* builtins.
+
 2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR java/70839

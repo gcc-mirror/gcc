@@ -1,3 +1,8 @@
+2016-05-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* testsuite/libjava.lang/BuiltinBitCount.java: New test case.
+	* testsuite/libjava.lang/BuiltinReverseBytes.java: Likewise.
+
 2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* classpath/config.guess: Revert r235676.

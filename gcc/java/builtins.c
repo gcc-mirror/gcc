@@ -98,6 +98,11 @@ static GTY(()) struct builtin_record java_builtins[] =
   { { "java.lang.Math" }, { "sin" }, NULL, BUILT_IN_SIN },
   { { "java.lang.Math" }, { "sqrt" }, NULL, BUILT_IN_SQRT },
   { { "java.lang.Math" }, { "tan" }, NULL, BUILT_IN_TAN },
+  { { "java.lang.Integer" }, { "bitCount" }, NULL, BUILT_IN_POPCOUNT },
+  { { "java.lang.Integer" }, { "reverseBytes" }, NULL, BUILT_IN_BSWAP32 },
+  { { "java.lang.Long" }, { "bitCount" }, NULL, BUILT_IN_POPCOUNTL },
+  { { "java.lang.Long" }, { "reverseBytes" }, NULL, BUILT_IN_BSWAP64 },
+  { { "java.lang.Short" }, { "reverseBytes" }, NULL, BUILT_IN_BSWAP16 },
   { { "java.lang.Float" }, { "intBitsToFloat" }, convert_real,
     (enum built_in_function) 0 },
   { { "java.lang.Double" }, { "longBitsToDouble" }, convert_real,
@@ -483,6 +488,7 @@ initialize_builtins (void)
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float_float;
   tree boolean_ftype_boolean_boolean;
+  tree int_ftype_int;
   int i;
 
   for (i = 0; java_builtins[i].builtin_code != END_BUILTINS; ++i)
@@ -507,50 +513,77 @@ initialize_builtins (void)
 				double_type_node, double_type_node, NULL_TREE);
 
   define_builtin (BUILT_IN_FMOD, "__builtin_fmod",
-		  double_ftype_double_double, "fmod", ECF_CONST);
+		  double_ftype_double_double, "fmod", ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_FMODF, "__builtin_fmodf",
-		  float_ftype_float_float, "fmodf", ECF_CONST);
+		  float_ftype_float_float, "fmodf", ECF_CONST | ECF_LEAF);
 
   define_builtin (BUILT_IN_ACOS, "__builtin_acos",
 		  double_ftype_double, "_ZN4java4lang4Math4acosEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_ASIN, "__builtin_asin",
 		  double_ftype_double, "_ZN4java4lang4Math4asinEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_ATAN, "__builtin_atan",
 		  double_ftype_double, "_ZN4java4lang4Math4atanEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_ATAN2, "__builtin_atan2",
 		  double_ftype_double_double, "_ZN4java4lang4Math5atan2EJddd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_CEIL, "__builtin_ceil",
 		  double_ftype_double, "_ZN4java4lang4Math4ceilEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_COS, "__builtin_cos",
 		  double_ftype_double, "_ZN4java4lang4Math3cosEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_EXP, "__builtin_exp",
 		  double_ftype_double, "_ZN4java4lang4Math3expEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_FLOOR, "__builtin_floor",
 		  double_ftype_double, "_ZN4java4lang4Math5floorEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_LOG, "__builtin_log",
 		  double_ftype_double, "_ZN4java4lang4Math3logEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_POW, "__builtin_pow",
 		  double_ftype_double_double, "_ZN4java4lang4Math3powEJddd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_SIN, "__builtin_sin",
 		  double_ftype_double, "_ZN4java4lang4Math3sinEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_SQRT, "__builtin_sqrt",
 		  double_ftype_double, "_ZN4java4lang4Math4sqrtEJdd",
-		  ECF_CONST);
+		  ECF_CONST | ECF_LEAF);
   define_builtin (BUILT_IN_TAN, "__builtin_tan",
 		  double_ftype_double, "_ZN4java4lang4Math3tanEJdd",
-		  ECF_CONST);
-  
+		  ECF_CONST | ECF_LEAF);
+
+  int_ftype_int = build_function_type_list (int_type_node,
+                                            int_type_node, NULL_TREE);
+
+  define_builtin (BUILT_IN_POPCOUNT, "__builtin_popcount", int_ftype_int,
+                  "_ZN4java4lang7Integer8bitCountEJii",
+                  ECF_CONST | ECF_LEAF | ECF_NOTHROW);
+  define_builtin (BUILT_IN_BSWAP32, "__builtin_bswap32", int_ftype_int,
+		  "_ZN4java4lang7Integer12reverseBytesEJii",
+                  ECF_CONST | ECF_LEAF | ECF_NOTHROW);
+
+  define_builtin (BUILT_IN_POPCOUNTL, "__builtin_popcountl",
+                  build_function_type_list (int_type_node,
+					    long_type_node, NULL_TREE),
+		  "_ZN4java4lang4Long8bitCountEJix",
+                  ECF_CONST | ECF_LEAF | ECF_NOTHROW);
+  define_builtin (BUILT_IN_BSWAP64, "__builtin_bswap64",
+		  build_function_type_list (long_type_node,
+					    long_type_node, NULL_TREE),
+		  "_ZN4java4lang4Long12reverseBytesEJxx",
+                  ECF_CONST | ECF_LEAF | ECF_NOTHROW);
+                  
+  define_builtin (BUILT_IN_BSWAP16, "__builtin_bswap16",
+		  build_function_type_list (short_type_node,
+					    short_type_node, NULL_TREE),
+		  "_ZN4java4lang5Short12reverseBytesEJss",
+                  ECF_CONST | ECF_LEAF | ECF_NOTHROW);
+
   boolean_ftype_boolean_boolean
     = build_function_type_list (boolean_type_node,
 				boolean_type_node, boolean_type_node,
