@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1997-2011 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2016 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,6 +188,11 @@ package System.OS_Interface is
       tp       : access timespec) return int;
    pragma Import (C, clock_gettime, "clock_gettime");
 
+   function clock_getres
+     (clock_id : clockid_t;
+      res      : access timespec) return int;
+   pragma Import (C, clock_getres, "clock_getres");
+
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
 
@@ -291,8 +296,7 @@ package System.OS_Interface is
    --  These two functions are only needed to share s-taprop.adb with
    --  FSU threads.
 
-   function Get_Page_Size return size_t;
-   function Get_Page_Size return Address;
+   function Get_Page_Size return int;
    pragma Import (C, Get_Page_Size, "getpagesize");
    --  Returns the size of a page
 
