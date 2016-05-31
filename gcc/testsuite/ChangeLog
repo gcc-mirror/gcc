@@ -1,3 +1,8 @@
+2016-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71352
+	* gcc.dg/tree-ssa/reassoc-45.c: New testcase.
+
 2016-05-31  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/armv5_thumb_isa.c: New test.
