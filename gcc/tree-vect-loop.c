@@ -441,7 +441,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		  && is_gimple_assign (stmt)
 		  && gimple_assign_rhs_code (stmt) != COND_EXPR)
 		{
-		  if (STMT_VINFO_RELEVANT_P (stmt_info))
+		  if (STMT_VINFO_RELEVANT_P (stmt_info)
+		      || STMT_VINFO_LIVE_P (stmt_info))
 		    mask_producers.safe_push (stmt_info);
 		  bool_result = true;
 

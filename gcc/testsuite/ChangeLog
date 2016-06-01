@@ -1,3 +1,7 @@
+2016-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt56.ad[sb]: New test.
+
 2016-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66635
