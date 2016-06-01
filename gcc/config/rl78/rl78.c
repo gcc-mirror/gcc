@@ -1378,7 +1378,7 @@ rl78_expand_prologue (void)
   /* Save MDUC registers inside interrupt routine.  */
   if (MUST_SAVE_MDUC_REGISTERS && (!crtl->is_leaf || check_mduc_usage ()))
     {
-      for (int i = 0; i < ARRAY_SIZE (mduc_regs); i++)
+      for (unsigned i = 0; i < ARRAY_SIZE (mduc_regs); i++)
         {
           mduc_reg_type *reg = mduc_regs + i;
           rtx mem_mduc = gen_rtx_MEM (reg->mode, GEN_INT (reg->address));
