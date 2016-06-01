@@ -1,3 +1,14 @@
+2016-06-01  Uros Bizjak  <ubizjak@gmail.com>
+	    Jocelyn Mayer  <l_indien@magic.fr>
+
+	PR target/67310
+	* config/i386/driver-i386.c (host_detect_local_cpu): Correctly
+	detect processor family for signature_CENTAUR_ebx.
+	<case PROCESSOR_I486>: Pass c3, winchip2 or winchip-c6 for
+	signature_CENTAUR_ebx.
+	<case PROCESSOR _PENTIUMPRO>: Pass c3-2 for signature_CENTAUR_ebx.
+	<default>: Pass x86-64 for has_longmode.
+
 2016-06-01  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_assemble_undefined_decl): Reject
