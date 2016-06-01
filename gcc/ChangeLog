@@ -1,3 +1,18 @@
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (comparison_code_p): New predicate.
+	(swap_tree_comparison): New function.
+	(commutate): Add for_vec parameter to append new for entries.
+	Support commutating relational operators by swapping it alongside
+	operands.
+	(lower_commutative): Adjust.
+	(dt_simplify::gen): Do not pass artificial operators to gen
+	functions.
+	(decision_tree::gen): Do not add artificial operators as parameters.
+	(parser::parse_expr): Verify operator commutativity when :c is
+	applied.  Allow :C to override this.
+	* match.pd: Adjust patterns to use :C instead of :c where required.
+
 2016-06-01  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/71077
