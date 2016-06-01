@@ -1,3 +1,8 @@
+2016-06-01  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/71077
+	* gcc.dg/tree-ssa/pr71077.c: New test.
+
 2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.d/predict-lop-exit-1.C: Update template for new predictor name.

@@ -1,3 +1,10 @@
+2016-06-01  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/71077
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition_1): In
+	the combining step, use boolean_false_node and boolean_true_node
+	as the designated false/true return values.
+
 2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.def (PRED_LOOP_EXTRA_EXIT): Define.
