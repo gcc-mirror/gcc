@@ -1,3 +1,14 @@
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71366
+	* tree-ssa-loop-ivcanon.c (edges_to_remove): New global.
+	(unloop_loops): Move removing edges here ...
+	(try_unroll_loop_completely): ... from here.
+	(try_peel_loop): ... and here.
+	(tree_unroll_loops_completely_1): Track parent loops via
+	bitmap of header BBs.
+	(tree_unroll_loops_completely): Adjust for that.
+
 2016-06-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_slv): New macro.

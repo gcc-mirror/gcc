@@ -1,3 +1,9 @@
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71366
+	* gcc.dg/torture/pr71366-1.c: New testcase.
+	* gcc.dg/torture/pr71366-2.c: Likewise.
+
 2016-06-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/vslv-0.c: New test.

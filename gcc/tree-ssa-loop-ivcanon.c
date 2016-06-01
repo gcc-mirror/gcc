@@ -591,9 +591,11 @@ remove_redundant_iv_tests (struct loop *loop)
   return changed;
 }
 
-/* Stores loops that will be unlooped after we process whole loop tree. */
+/* Stores loops that will be unlooped and edges that will be removed
+   after we process whole loop tree. */
 static vec<loop_p> loops_to_unloop;
 static vec<int> loops_to_unloop_nunroll;
+static vec<edge> edges_to_remove;
 /* Stores loops that has been peeled.  */
 static bitmap peeled_loops;
 
@@ -613,6 +615,16 @@ static void
 unloop_loops (bitmap loop_closed_ssa_invalidated,
 	      bool *irred_invalidated)
 {
+  /* First remove edges in peeled copies.  */
+  unsigned i;
+  edge e;
+  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
+    {
+      bool ok = remove_path (e);
+      gcc_assert (ok);
+    }
+  edges_to_remove.release ();
+
   while (loops_to_unloop.length ())
     {
       struct loop *loop = loops_to_unloop.pop ();
@@ -725,10 +737,7 @@ try_unroll_loop_completely (struct loop *loop,
   if (n_unroll)
     {
       sbitmap wont_exit;
-      edge e;
-      unsigned i;
       bool large;
-      vec<edge> to_remove = vNULL;
       if (ul == UL_SINGLE_ITER)
 	return false;
 
@@ -862,7 +871,7 @@ try_unroll_loop_completely (struct loop *loop,
 
       if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 						 n_unroll, wont_exit,
-						 exit, &to_remove,
+						 exit, &edges_to_remove,
 						 DLTHE_FLAG_UPDATE_FREQ
 						 | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
@@ -873,17 +882,9 @@ try_unroll_loop_completely (struct loop *loop,
 	  return false;
 	}
 
-      FOR_EACH_VEC_ELT (to_remove, i, e)
-	{
-	  bool ok = remove_path (e);
-	  gcc_assert (ok);
-	}
-
-      to_remove.release ();
       free (wont_exit);
       free_original_copy_tables ();
     }
-
 
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
@@ -960,9 +961,6 @@ try_peel_loop (struct loop *loop,
   struct loop_size size;
   int peeled_size;
   sbitmap wont_exit;
-  unsigned i;
-  vec<edge> to_remove = vNULL;
-  edge e;
 
   if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
       || !peeled_loops)
@@ -1052,17 +1050,12 @@ try_peel_loop (struct loop *loop,
     }
   if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					     npeel, wont_exit,
-					     exit, &to_remove,
+					     exit, &edges_to_remove,
 					     DLTHE_FLAG_UPDATE_FREQ))
     {
       free_original_copy_tables ();
       free (wont_exit);
       return false;
-    }
-  FOR_EACH_VEC_ELT (to_remove, i, e)
-    {
-      bool ok = remove_path (e);
-      gcc_assert (ok);
     }
   free (wont_exit);
   free_original_copy_tables ();
@@ -1099,6 +1092,7 @@ try_peel_loop (struct loop *loop,
   gcov_type entry_count = 0;
   int entry_freq = 0;
 
+  edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
@@ -1299,8 +1293,7 @@ propagate_constants_for_unrolling (basic_block bb)
 
 static bool
 tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
-				vec<loop_p, va_heap>& father_stack,
-				struct loop *loop)
+				bitmap father_bbs, struct loop *loop)
 {
   struct loop *loop_father;
   bool changed = false;
@@ -1310,7 +1303,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   /* Process inner loops first.  */
   for (inner = loop->inner; inner != NULL; inner = inner->next)
     changed |= tree_unroll_loops_completely_1 (may_increase_size,
-					       unroll_outer, father_stack,
+					       unroll_outer, father_bbs,
 					       inner);
  
   /* If we changed an inner loop we cannot process outer loops in this
@@ -1344,11 +1337,8 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 	 within the new basic blocks to fold away induction variable
 	 computations; otherwise, the size might blow up before the
 	 iteration is complete and the IR eventually cleaned up.  */
-      if (loop_outer (loop_father) && !loop_father->aux)
-	{
-	  father_stack.safe_push (loop_father);
-	  loop_father->aux = loop_father;
-	}
+      if (loop_outer (loop_father))
+	bitmap_set_bit (father_bbs, loop_father->header->index);
 
       return true;
     }
@@ -1363,7 +1353,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
-  auto_vec<loop_p, 16> father_stack;
+  bitmap father_bbs = BITMAP_ALLOC (NULL);
   bool changed;
   int iteration = 0;
   bool irred_invalidated = false;
@@ -1380,20 +1370,12 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
       estimate_numbers_of_iterations ();
 
       changed = tree_unroll_loops_completely_1 (may_increase_size,
-						unroll_outer, father_stack,
+						unroll_outer, father_bbs,
 						current_loops->tree_root);
       if (changed)
 	{
-	  struct loop **iter;
 	  unsigned i;
 
-	  /* Be sure to skip unlooped loops while procesing father_stack
-	     array.  */
-	  FOR_EACH_VEC_ELT (loops_to_unloop, i, iter)
-	    (*iter)->aux = NULL;
-	  FOR_EACH_VEC_ELT (father_stack, i, iter)
-	    if (!(*iter)->aux)
-	      *iter = NULL;
           unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
 
 	  /* We can not use TODO_update_ssa_no_phi because VOPS gets confused.  */
@@ -1404,18 +1386,30 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  else
 	    update_ssa (TODO_update_ssa);
 
+	  /* father_bbs is a bitmap of loop father header BB indices.
+	     Translate that to what non-root loops these BBs belong to now.  */
+	  bitmap_iterator bi;
+	  bitmap fathers = BITMAP_ALLOC (NULL);
+	  EXECUTE_IF_SET_IN_BITMAP (father_bbs, 0, i, bi)
+	    {
+	      basic_block unrolled_loop_bb = BASIC_BLOCK_FOR_FN (cfun, i);
+	      if (! unrolled_loop_bb)
+		continue;
+	      if (loop_outer (unrolled_loop_bb->loop_father))
+		bitmap_set_bit (fathers,
+				unrolled_loop_bb->loop_father->num);
+	    }
+	  bitmap_clear (father_bbs);
 	  /* Propagate the constants within the new basic blocks.  */
-	  FOR_EACH_VEC_ELT (father_stack, i, iter)
-	    if (*iter)
-	      {
-		unsigned j;
-		basic_block *body = get_loop_body_in_dom_order (*iter);
-		for (j = 0; j < (*iter)->num_nodes; j++)
-		  propagate_constants_for_unrolling (body[j]);
-		free (body);
-		(*iter)->aux = NULL;
-	      }
-	  father_stack.truncate (0);
+	  EXECUTE_IF_SET_IN_BITMAP (fathers, 0, i, bi)
+	    {
+	      loop_p father = get_loop (cfun, i);
+	      basic_block *body = get_loop_body_in_dom_order (father);
+	      for (unsigned j = 0; j < father->num_nodes; j++)
+		propagate_constants_for_unrolling (body[j]);
+	      free (body);
+	    }
+	  BITMAP_FREE (fathers);
 
 	  /* This will take care of removing completely unrolled loops
 	     from the loop structures so we can continue unrolling now
@@ -1435,7 +1429,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   while (changed
 	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
 
-  father_stack.release ();
+  BITMAP_FREE (father_bbs);
 
   if (irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
