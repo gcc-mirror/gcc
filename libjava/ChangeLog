@@ -1,3 +1,7 @@
+2016-06-01  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+
 2016-05-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* testsuite/libjava.lang/BuiltinBitCount.java: New test case.
