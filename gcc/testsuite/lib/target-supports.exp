@@ -3494,6 +3494,25 @@ proc check_effective_target_arm_neonv2 { } {
     }
 }
 
+# Return 1 if this is an ARM target with load acquire and store release
+# instructions for 8-, 16- and 32-bit types.
+
+proc check_effective_target_arm_acq_rel { } {
+    return [check_no_compiler_messages arm_acq_rel object {
+	void
+	load_acquire_store_release (void)
+	{
+	  asm ("lda r0, [r1]\n\t"
+	       "stl r0, [r1]\n\t"
+	       "ldah r0, [r1]\n\t"
+	       "stlh r0, [r1]\n\t"
+	       "ldab r0, [r1]\n\t"
+	       "stlb r0, [r1]"
+	       : : : "r0", "memory");
+	}
+    }]
+}
+
 # Return 1 if this a Loongson-2E or -2F target using an ABI that supports
 # the Loongson vector modes.
 
@@ -5725,6 +5744,8 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget aarch64*-*-*]
 	     || [istarget alpha*-*-*] 
 	     || [istarget arm*-*-linux-*] 
+	     || ([istarget arm*-*-*]
+		 && [check_effective_target_arm_acq_rel])
 	     || [istarget bfin*-*linux*]
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
@@ -5758,6 +5779,8 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
 	     || [istarget arm*-*-linux-*] 
+	     || ([istarget arm*-*-*]
+		 && [check_effective_target_arm_acq_rel])
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*]

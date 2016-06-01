@@ -1,3 +1,8 @@
+2016-06-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_acq_rel): New
+	procedure.
+
 2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
 
 	* gcc.dg/cpp/source_date_epoch-1.c: New file, test the proper
