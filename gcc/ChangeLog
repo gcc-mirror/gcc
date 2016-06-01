@@ -1,5 +1,12 @@
 2016-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/sync.md (arm_store_exclusive<mode>):
+	Use 'H' output modifier on operands[2] rather than creating a new
+	entry in out-of-bounds memory of the operands array.
+	(arm_store_release_exclusivedi): Likewise.
+
+2016-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (arm_fusion_enabled_p): New function.
 	* config/arm/arm-protos.h (arm_fusion_enabled_p): Declare prototype.
 	* config/arm/crypto.md (crypto_<crypto_pattern>, CRYPTO_UNARY):
