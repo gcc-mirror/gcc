@@ -1,3 +1,10 @@
+2016-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.c (case_decl): Move ST_OMP_* to ...
+	(case_omp_decl): ... here, new macro.
+	(verify_st_order): For case_omp_decl, complain about
+	p->state >= ORDER_EXEC, but don't change p->state otherwise.
+
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* openmp.c (resolve_omp_clauses): Warn if chunk_size is known not to
