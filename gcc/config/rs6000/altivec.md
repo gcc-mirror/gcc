@@ -58,6 +58,7 @@
    UNSPEC_VSUM2SWS
    UNSPEC_VSUMSWS
    UNSPEC_VPERM
+   UNSPEC_VPERMR
    UNSPEC_VPERM_UNS
    UNSPEC_VRFIN
    UNSPEC_VCFUX
@@ -189,6 +190,13 @@
 			   (KF "FLOAT128_VECTOR_P (KFmode)")
 			   (TF "FLOAT128_VECTOR_P (TFmode)")])
 
+;; Specific iterator for parity which does not have a byte/half-word form, but
+;; does have a quad word form
+(define_mode_iterator VParity [V4SI
+			       V2DI
+			       V1TI
+			       (TI "TARGET_VSX_TIMODE")])
+
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
 (define_mode_attr VI_unit [(V16QI "VECTOR_UNIT_ALTIVEC_P (V16QImode)")
@@ -202,6 +210,9 @@
 (define_mode_attr VP_small [(V2DI "V4SI") (V4SI "V8HI") (V8HI "V16QI")])
 (define_mode_attr VP_small_lc [(V2DI "v4si") (V4SI "v8hi") (V8HI "v16qi")])
 (define_mode_attr VU_char [(V2DI "w") (V4SI "h") (V8HI "b")])
+
+;; Vector negate
+(define_mode_iterator VNEG [V4SI V2DI])
 
 ;; Vector move instructions.
 (define_insn "*altivec_mov<mode>"
@@ -1949,32 +1960,30 @@
 
 ;; Slightly prefer vperm, since the target does not overlap the source
 (define_insn "*altivec_vperm_<mode>_internal"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo,?&wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,0,wo")
-		    (match_operand:VM 2 "register_operand" "v,wo,wo")
-		    (match_operand:V16QI 3 "register_operand" "v,wo,wo")]
+  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,0")
+		    (match_operand:VM 2 "register_operand" "v,wo")
+		    (match_operand:V16QI 3 "register_operand" "v,wo")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
-   xxperm %x0,%x2,%x3
-   xxlor %x0,%x1,%x1\t\t# xxperm fusion\;xxperm %x0,%x2,%x3"
+   xxperm %x0,%x2,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4")])
 
 (define_insn "altivec_vperm_v8hiv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=v,?wo,?&wo")
-	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v,0,wo")
-   	               (match_operand:V8HI 2 "register_operand" "v,wo,wo")
-		       (match_operand:V16QI 3 "register_operand" "v,wo,wo")]
+  [(set (match_operand:V16QI 0 "register_operand" "=v,?wo")
+	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v,0")
+   	               (match_operand:V8HI 2 "register_operand" "v,wo")
+		       (match_operand:V16QI 3 "register_operand" "v,wo")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
-   xxperm %x0,%x2,%x3
-   xxlor %x0,%x1,%x1\t\t# xxperm fusion\;xxperm %x0,%x2,%x3"
+   xxperm %x0,%x2,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4")])
 
 (define_expand "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand" "")
@@ -1992,18 +2001,17 @@
 })
 
 (define_insn "*altivec_vperm_<mode>_uns_internal"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo,?&wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,0,wo")
-		    (match_operand:VM 2 "register_operand" "v,wo,wo")
-		    (match_operand:V16QI 3 "register_operand" "v,wo,wo")]
+  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,0")
+		    (match_operand:VM 2 "register_operand" "v,wo")
+		    (match_operand:V16QI 3 "register_operand" "v,wo")]
 		   UNSPEC_VPERM_UNS))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
-   xxperm %x0,%x2,%x3
-   xxlor %x0,%x1,%x1\t\t# xxperm fusion\;xxperm %x0,%x2,%x3"
+   xxperm %x0,%x2,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4")])
 
 (define_expand "vec_permv16qi"
   [(set (match_operand:V16QI 0 "register_operand" "")
@@ -2031,6 +2039,19 @@
   else
     FAIL;
 })
+
+(define_insn "*altivec_vpermr_<mode>_internal"
+  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,0")
+		    (match_operand:VM 2 "register_operand" "v,wo")
+		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		   UNSPEC_VPERMR))]
+  "TARGET_P9_VECTOR"
+  "@
+   vpermr %0,%1,%2,%3
+   xxpermr %x0,%x2,%x3"
+  [(set_attr "type" "vecperm")
+   (set_attr "length" "4")])
 
 (define_insn "altivec_vrfip"		; ceil
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -2690,20 +2711,28 @@
   DONE;
 })
 
-(define_expand "neg<mode>2"
-  [(use (match_operand:VI 0 "register_operand" ""))
-   (use (match_operand:VI 1 "register_operand" ""))]
-  "TARGET_ALTIVEC"
-  "
-{
-  rtx vzero;
+(define_insn "*p9_neg<mode>2"
+  [(set (match_operand:VNEG 0 "altivec_register_operand" "=v")
+	(neg:VNEG (match_operand:VNEG 1 "altivec_register_operand" "v")))]
+  "TARGET_P9_VECTOR"
+  "vneg<VI_char> %0,%1"
+  [(set_attr "type" "vecsimple")])
 
-  vzero = gen_reg_rtx (GET_MODE (operands[0]));
-  emit_insn (gen_altivec_vspltis<VI_char> (vzero, const0_rtx));
-  emit_insn (gen_sub<mode>3 (operands[0], vzero, operands[1])); 
-  
-  DONE;
-}")
+(define_expand "neg<mode>2"
+  [(set (match_operand:VI2 0 "register_operand" "")
+	(neg:VI2 (match_operand:VI2 1 "register_operand" "")))]
+  "<VI_unit>"
+{
+  if (!TARGET_P9_VECTOR || (<MODE>mode != V4SImode && <MODE>mode != V2DImode))
+    {
+      rtx vzero;
+
+      vzero = gen_reg_rtx (GET_MODE (operands[0]));
+      emit_move_insn (vzero, CONST0_RTX (<MODE>mode));
+      emit_insn (gen_sub<mode>3 (operands[0], vzero, operands[1]));
+      DONE;
+    }
+})
 
 (define_expand "udot_prod<mode>"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
@@ -2791,32 +2820,30 @@
   "")
 
 (define_insn "vperm_v8hiv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=v,?wo,?&wo")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v,0,wo")
-		      (match_operand:V4SI 2 "register_operand" "v,wo,wo")
-		      (match_operand:V16QI 3 "register_operand" "v,wo,wo")]
+  [(set (match_operand:V4SI 0 "register_operand" "=v,?wo")
+        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v,0")
+		      (match_operand:V4SI 2 "register_operand" "v,wo")
+		      (match_operand:V16QI 3 "register_operand" "v,wo")]
                   UNSPEC_VPERMSI))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
-   xxperm %x0,%x2,%x3
-   xxlor %x0,%x1,%x1\t\t# xxperm fusion\;xxperm %x0,%x2,%x3"
+   xxperm %x0,%x2,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4")])
 
 (define_insn "vperm_v16qiv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=v,?wo,?&wo")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v,0,wo")
-		      (match_operand:V8HI 2 "register_operand" "v,wo,wo")
-		      (match_operand:V16QI 3 "register_operand" "v,wo,wo")]
+  [(set (match_operand:V8HI 0 "register_operand" "=v,?wo")
+        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v,0")
+		      (match_operand:V8HI 2 "register_operand" "v,wo")
+		      (match_operand:V16QI 3 "register_operand" "v,wo")]
                   UNSPEC_VPERMHI))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
-   xxperm %x0,%x2,%x3
-   xxlor %x0,%x1,%x1\t\t# xxperm fusion\;xxperm %x0,%x2,%x3"
+   xxperm %x0,%x2,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4")])
 
 
 (define_expand "vec_unpacku_hi_v16qi"
@@ -3353,7 +3380,7 @@
 }")
 
 
-;; Power8 vector instructions encoded as Altivec instructions
+;; Power8/power9 vector instructions encoded as Altivec instructions
 
 ;; Vector count leading zeros
 (define_insn "*p8v_clz<mode>2"
@@ -3364,12 +3391,30 @@
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
 
+;; Vector count trailing zeros
+(define_insn "*p9v_ctz<mode>2"
+  [(set (match_operand:VI2 0 "register_operand" "=v")
+	(ctz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
+  "TARGET_P9_VECTOR"
+  "vctz<wd> %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
 ;; Vector population count
 (define_insn "*p8v_popcount<mode>2"
   [(set (match_operand:VI2 0 "register_operand" "=v")
         (popcount:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P8_VECTOR"
   "vpopcnt<wd> %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+;; Vector parity
+(define_insn "*p9v_parity<mode>2"
+  [(set (match_operand:VParity 0 "register_operand" "=v")
+        (parity:VParity (match_operand:VParity 1 "register_operand" "v")))]
+  "TARGET_P9_VECTOR"
+  "vprtyb<wd> %0,%1"
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
 
