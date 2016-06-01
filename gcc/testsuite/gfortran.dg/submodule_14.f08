@@ -27,7 +27,7 @@ contains
         Call sub1 (x)
     End If
   End Procedure sub1
-  module function fcn1 (x) result(res)
+  recursive module function fcn1 (x) result(res)
     integer, intent (inout) :: x
     integer :: res
     res = x - 1

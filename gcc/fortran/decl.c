@@ -4978,10 +4978,49 @@ error:
 static bool
 copy_prefix (symbol_attribute *dest, locus *where)
 {
-  if (current_attr.pure && !gfc_add_pure (dest, where))
+  if (dest->module_procedure)
+    {
+      if (current_attr.elemental)
+	dest->elemental = 1;
+
+      if (current_attr.pure)
+	dest->pure = 1;
+
+      if (current_attr.recursive)
+	dest->recursive = 1;
+
+      /* Module procedures are unusual in that the 'dest' is copied from
+	 the interface declaration. However, this is an oportunity to
+	 check that the submodule declaration is compliant with the
+	 interface.  */
+      if (dest->elemental && !current_attr.elemental)
+	{
+	  gfc_error ("ELEMENTAL prefix in MODULE PROCEDURE interface is "
+		     "missing at %L", where);
     return false;
+	}
+
+      if (dest->pure && !current_attr.pure)
+	{
+	  gfc_error ("PURE prefix in MODULE PROCEDURE interface is "
+		     "missing at %L", where);
+	  return false;
+	}
+
+      if (dest->recursive && !current_attr.recursive)
+	{
+	  gfc_error ("RECURSIVE prefix in MODULE PROCEDURE interface is "
+		     "missing at %L", where);
+	  return false;
+	}
+
+      return true;
+    }
 
   if (current_attr.elemental && !gfc_add_elemental (dest, where))
+    return false;
+
+  if (current_attr.pure && !gfc_add_pure (dest, where))
     return false;
 
   if (current_attr.recursive && !gfc_add_recursive (dest, where))
