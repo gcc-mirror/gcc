@@ -1390,9 +1390,13 @@ next_statement (void)
 
 #define case_decl case ST_ATTR_DECL: case ST_COMMON: case ST_DATA_DECL: \
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
-  case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE: \
-  case ST_PROCEDURE: case ST_OMP_DECLARE_SIMD: case ST_OMP_DECLARE_REDUCTION: \
-  case ST_OMP_DECLARE_TARGET: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
+  case ST_TYPE: case ST_INTERFACE: case ST_PROCEDURE: case ST_OACC_ROUTINE: \
+  case ST_OACC_DECLARE
+
+/* OpenMP declaration statements.  */
+
+#define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
+  case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2488,6 +2492,14 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
 	p->state = ORDER_SPEC;
       break;
 
+    case_omp_decl:
+      /* The OpenMP directives have to be somewhere in the specification
+	 part, but there are no further requirements on their ordering.
+	 Thus don't adjust p->state, just ignore them.  */
+      if (p->state >= ORDER_EXEC)
+	goto order;
+      break;
+
     case_executable:
     case_exec_markers:
       if (p->state < ORDER_EXEC)
@@ -3563,6 +3575,7 @@ loop:
     case ST_STRUCTURE_DECL:
     case ST_DERIVED_DECL:
     case_decl:
+    case_omp_decl:
 declSt:
       if (!verify_st_order (&ss, st, false))
 	{
