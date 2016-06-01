@@ -1,3 +1,9 @@
+2016-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71371
+	* gimplify.c (gimplify_omp_for): Temporarily clear gimplify_omp_ctxp
+	around creation of the temporary.
+
 2016-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71366
