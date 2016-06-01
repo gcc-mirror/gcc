@@ -1,3 +1,10 @@
+2016-06-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* loop-unroll.c (decide_unroll_constant_iterations,
+	decide_unroll_runtime_iterations, decide_unroll_stupid): Use
+	likely upper bounds.
+	* loop-iv.c (find_simple_exit): Dump likely upper bounds.
+
 2016-06-01  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree-core.h (enum omp_clause_code): Remove

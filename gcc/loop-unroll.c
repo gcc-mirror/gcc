@@ -396,7 +396,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
      of iterations.  */
   if (desc->niter < 2 * nunroll
       || ((get_estimated_loop_iterations (loop, &iterations)
-	   || get_max_loop_iterations (loop, &iterations))
+	   || get_likely_max_loop_iterations (loop, &iterations))
 	  && wi::ltu_p (iterations, 2 * nunroll)))
     {
       if (dump_file)
@@ -706,7 +706,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 
   /* Check whether the loop rolls.  */
   if ((get_estimated_loop_iterations (loop, &iterations)
-       || get_max_loop_iterations (loop, &iterations))
+       || get_likely_max_loop_iterations (loop, &iterations))
       && wi::ltu_p (iterations, 2 * nunroll))
     {
       if (dump_file)
@@ -1162,7 +1162,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
 
   /* Check whether the loop rolls.  */
   if ((get_estimated_loop_iterations (loop, &iterations)
-       || get_max_loop_iterations (loop, &iterations))
+       || get_likely_max_loop_iterations (loop, &iterations))
       && wi::ltu_p (iterations, 2 * nunroll))
     {
       if (dump_file)

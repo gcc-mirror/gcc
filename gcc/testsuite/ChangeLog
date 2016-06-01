@@ -1,3 +1,9 @@
+2016-06-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/unroll-6.c: Update template.
+	* gcc.dg/unroll-7.c: New testcase.
+	* gcc.dg/unroll-8.c: New testcase.
+
 2016-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt56.ad[sb]: New test.
