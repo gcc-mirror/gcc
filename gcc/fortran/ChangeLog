@@ -1,3 +1,12 @@
+2016-06-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71156
+	* decl.c (copy_prefix): Add checks that the module procedure
+	declaration prefixes are compliant with the interface. Invert
+	order of existing elemental and pure checks.
+	* resolve.c (resolve_fl_procedure): Invert order of elemental
+	and pure errors.
+
 2016-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.c (case_decl): Move ST_OMP_* to ...

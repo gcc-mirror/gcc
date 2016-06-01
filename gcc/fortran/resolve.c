@@ -11965,17 +11965,17 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	goto check_formal;
 
       /* Check the procedure characteristics.  */
-      if (sym->attr.pure != iface->attr.pure)
+      if (sym->attr.elemental != iface->attr.elemental)
 	{
-	  gfc_error ("Mismatch in PURE attribute between MODULE "
+	  gfc_error ("Mismatch in ELEMENTAL attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
 		     &sym->declared_at, module_name);
 	  return false;
 	}
 
-      if (sym->attr.elemental != iface->attr.elemental)
+      if (sym->attr.pure != iface->attr.pure)
 	{
-	  gfc_error ("Mismatch in ELEMENTAL attribute between MODULE "
+	  gfc_error ("Mismatch in PURE attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
 		     &sym->declared_at, module_name);
 	  return false;
