@@ -1,3 +1,11 @@
+2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
+
+	* doc/cppenv.texi: Note that the `%s` in `date` is a non-standard
+	extension.
+	* gcc.c (driver_handle_option): Call set_source_date_epoch_envvar.
+	* gcc.c (set_source_date_epoch_envvar): New function, sets
+	the SOURCE_DATE_EPOCH environment variable to the current time.
+
 2016-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Also compute

@@ -358,9 +358,13 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	  struct tm *tb = NULL;
 
 	  /* Set a reproducible timestamp for __DATE__ and __TIME__ macro
-	     usage if SOURCE_DATE_EPOCH is defined.  */
-	  if (pfile->source_date_epoch != (time_t) -1)
-	     tb = gmtime (&pfile->source_date_epoch);
+	     if SOURCE_DATE_EPOCH is defined.  */
+	  if (pfile->source_date_epoch == (time_t) -2
+	      && pfile->cb.get_source_date_epoch != NULL)
+	    pfile->source_date_epoch = pfile->cb.get_source_date_epoch (pfile);
+
+	  if (pfile->source_date_epoch >= (time_t) 0)
+	    tb = gmtime (&pfile->source_date_epoch);
 	  else
 	    {
 	      /* (time_t) -1 is a legitimate value for "number of seconds

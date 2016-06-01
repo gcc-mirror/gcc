@@ -1,3 +1,16 @@
+2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
+
+	* gcc.dg/cpp/source_date_epoch-1.c: New file, test the proper
+	behaviour of the macros __DATE__ and __TIME__ when SOURCE_DATE_EPOCH
+	env var is set.
+	* gcc.dg/cpp/source_date_epoch-2.c: New file, test the error output
+	when parsing the SOURCE_DATE_EPOCH env var, and make sure it is only
+	shown once.
+	* lib/gcc-dg.exp (dg-set-compiler-env-var): New function, set env vars
+	during compilation.
+	* lib/gcc-dg.exp (restore-compiler-env-var): New function, restore env
+	vars set by dg-set-compiler-env-var.
+
 2016-06-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71156

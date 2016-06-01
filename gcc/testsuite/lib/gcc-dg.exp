@@ -451,6 +451,38 @@ proc restore-target-env-var { } {
     }
 }
 
+proc dg-set-compiler-env-var { args } {
+    global set_compiler_env_var
+    global saved_compiler_env_var
+    if { [llength $args] != 3 } {
+	error "dg-set-compiler-env-var: need two arguments"
+	return
+    }
+    set var [lindex $args 1]
+    set value [lindex $args 2]
+    if [info exists ::env($var)] {
+      lappend saved_compiler_env_var [list $var 1 $::env($var)]
+    } else {
+      lappend saved_compiler_env_var [list $var 0]
+    }
+    setenv $var $value
+    lappend set_compiler_env_var [list $var $value]
+}
+
+proc restore-compiler-env-var { } {
+    global saved_compiler_env_var
+    for { set env_vari [llength $saved_compiler_env_var] } {
+          [incr env_vari -1] >= 0 } {} {
+	set env_var [lindex $saved_compiler_env_var $env_vari]
+	set var [lindex $env_var 0]
+	if [lindex $env_var 1] {
+	    setenv $var [lindex $env_var 2]
+	} else {
+	    unsetenv $var
+	}
+    }
+}
+
 # Utility routines.
 
 #
@@ -873,6 +905,11 @@ if { [info procs saved-dg-test] == [list] } {
 	set shouldfail 0
 	if [info exists set_target_env_var] {
 	    unset set_target_env_var
+	}
+	if [info exists set_compiler_env_var] {
+	    restore-compiler-env-var
+	    unset set_compiler_env_var
+	    unset saved_compiler_env_var
 	}
 	if [info exists keep_saved_temps_suffixes] {
 	    unset keep_saved_temps_suffixes

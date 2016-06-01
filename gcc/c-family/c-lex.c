@@ -80,6 +80,7 @@ init_c_lex (void)
   cb->valid_pch = c_common_valid_pch;
   cb->read_pch = c_common_read_pch;
   cb->has_attribute = c_common_has_attribute;
+  cb->get_source_date_epoch = cb_get_source_date_epoch;
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
@@ -389,9 +390,6 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
   enum cpp_ttype type;
   unsigned char add_flags = 0;
   enum overflow_type overflow = OT_NONE;
-  time_t source_date_epoch = get_source_date_epoch ();
-
-  cpp_init_source_date_epoch (parse_in, source_date_epoch);
 
   timevar_push (TV_CPP);
  retry:
