@@ -1,3 +1,8 @@
+2016-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_undefined_decl): Reject
+	undefined weak.
+
 2016-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71261
@@ -109,7 +114,8 @@
 2016-05-31  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/constraints.md (b): Remove constraint.
-	* config/sh/predicates.md (arith_reg_operand): Remove TARGET_REGISTER_P.
+	* config/sh/predicates.md (arith_reg_operand): Remove
+	TARGET_REGISTER_P.
 	* config/sh/sh-modes.def (PDI): Remove.
 	* config/sh/sh.c (sh_target_reg_class,
 	sh_optimize_target_register_callee_saved): Remove functions.
