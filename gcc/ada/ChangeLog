@@ -1,3 +1,10 @@
+2016-06-01  Simon Wright  <simon@pushface.org>
+
+	PR ada/71358
+	* g-comlin.adb (Display_Section_Help): Do not dereference
+	Config.Switches if it's null.
+	(Getopt): Likewise.
+
 2016-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* s-osinte-kfreebsd-gnu.ads (clock_getres): Define.
