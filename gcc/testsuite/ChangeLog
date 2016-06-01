@@ -1,3 +1,10 @@
+2016-06-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vslv-0.c: New test.
+	* gcc.target/powerpc/vslv-1.c: New test.
+	* gcc.target/powerpc/vsrv-0.c: New test.
+	* gcc.target/powerpc/vsrv-1.c: New test.
+
 2016-06-01  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/torture/pr57945.c: Add expected PTX error.

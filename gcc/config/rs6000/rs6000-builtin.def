@@ -1749,6 +1749,14 @@ BU_P8V_OVERLOAD_3 (VADDEUQM,	"vaddeuqm")
 BU_P8V_OVERLOAD_3 (VSUBECUQ,	"vsubecuq")
 BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
 
+/* ISA 3.0 vector overloaded 2-argument functions. */
+BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
+BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
+
+/* ISA 3.0 vector overloaded 2-argument functions. */
+BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
+BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
+
 
 /* 2 argument extended divide functions added in ISA 2.06.  */
 BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)

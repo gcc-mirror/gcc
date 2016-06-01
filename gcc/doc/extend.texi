@@ -14686,8 +14686,8 @@ The @code{__builtin_divde}, @code{__builtin_divdeo},
 64-bit environment support ISA 2.06 or later.
 
 The following built-in functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}
-or @option{-mmodulo}):
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9})
+or with @option{-mmodulo}:
 @smallexample
 long long __builtin_darn (void);
 long long __builtin_darn_raw (void);
@@ -17340,6 +17340,40 @@ vector unsigned long vec_vprtybd (vector unsigned long);
 vector __int128_t vec_vprtybq (vector __int128_t);
 vector __uint128_t vec_vprtybd (vector __uint128_t);
 @end smallexample
+
+The following built-in vector functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9})
+or with @option{-mpower9-vector}:
+@smallexample
+__vector unsigned char
+vec_slv (__vector unsigned char src, __vector unsigned char shift_distance);
+__vector unsigned char
+vec_srv (__vector unsigned char src, __vector unsigned char shift_distance);
+@end smallexample
+
+The @code{vec_slv} and @code{vec_srv} functions operate on
+all of the bytes of their @code{src} and @code{shift_distance}
+arguments in parallel.  The behavior of the @code{vec_slv} is as if
+there existed a temporary array of 17 unsigned characters
+@code{slv_array} within which elements 0 through 15 are the same as
+the entries in the @code{src} array and element 16 equals 0.  The
+result returned from the @code{vec_slv} function is a
+@code{__vector} of 16 unsigned characters within which element
+@code{i} is computed using the C expression
+@code{0xff & (*((unsigned short *)(slv_array + i)) << (0x07 &
+shift_distance[i]))},
+with this resulting value coerced to the @code{unsigned char} type.
+The behavior of the @code{vec_srv} is as if
+there existed a temporary array of 17 unsigned characters
+@code{srv_array} within which element 0 equals zero and
+elements 1 through 16 equal the elements 0 through 15 of
+the @code{src} array.  The
+result returned from the @code{vec_srv} function is a
+@code{__vector} of 16 unsigned characters within which element
+@code{i} is computed using the C expression
+@code{0xff & (*((unsigned short *)(srv_array + i)) >>
+(0x07 & shift_distance[i]))},
+with this resulting value coerced to the @code{unsigned char} type.
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
