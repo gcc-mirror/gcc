@@ -2998,6 +2998,8 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 
 	  fprintf (dump_file, "  upper bound: %li\n",
 		   (long)get_max_loop_iterations_int (loop));
+	  fprintf (dump_file, "  likely upper bound: %li\n",
+		   (long)get_likely_max_loop_iterations_int (loop));
 	  fprintf (dump_file, "  realistic bound: %li\n",
 		   (long)get_estimated_loop_iterations_int (loop));
 	}

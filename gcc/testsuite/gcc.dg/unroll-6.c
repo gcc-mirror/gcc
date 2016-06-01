@@ -28,7 +28,7 @@ int t2()
         abort ();
   return 0;
 }
-/* { dg-final { scan-rtl-dump-times "upper bound: 999999" 1 "loop2_unroll" } } */
+/* { dg-final { scan-rtl-dump-times "  upper bound: 999999" 1 "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump-not "realistic bound: 999999" "loop2_unroll" } } */
-/* { dg-final { scan-rtl-dump-times "upper bound: 2999999" 1 "loop2_unroll" } } */
+/* { dg-final { scan-rtl-dump-times "  upper bound: 2999999" 1 "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump-times "realistic bound: 2999999" 1 "loop2_unroll" } } */
