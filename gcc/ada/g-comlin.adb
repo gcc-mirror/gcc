@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3151,16 +3151,18 @@ package body GNAT.Command_Line is
 
          New_Line;
 
-         if Section /= "" then
+         if Section /= "" and then Config.Switches /= null then
             Put_Line ("Switches after " & Section);
          end if;
 
          --  Compute size of the switches column
 
-         for S in Config.Switches'Range loop
-            Max_Len := Natural'Max
-              (Max_Len, Switch_Name (Config.Switches (S), Section)'Length);
-         end loop;
+         if Config.Switches /= null then
+            for S in Config.Switches'Range loop
+               Max_Len := Natural'Max
+                 (Max_Len, Switch_Name (Config.Switches (S), Section)'Length);
+            end loop;
+         end if;
 
          if Config.Aliases /= null then
             for A in Config.Aliases'Range loop
@@ -3173,25 +3175,27 @@ package body GNAT.Command_Line is
 
          --  Display the switches
 
-         for S in Config.Switches'Range loop
-            declare
-               N : constant String :=
-                     Switch_Name (Config.Switches (S), Section);
+         if Config.Switches /= null then
+            for S in Config.Switches'Range loop
+               declare
+                  N : constant String :=
+                    Switch_Name (Config.Switches (S), Section);
 
-            begin
-               if N /= "" then
-                  Put (" ");
-                  Put (N);
-                  Put ((1 .. Max_Len - N'Length + 1 => ' '));
+               begin
+                  if N /= "" then
+                     Put (" ");
+                     Put (N);
+                     Put ((1 .. Max_Len - N'Length + 1 => ' '));
 
-                  if Config.Switches (S).Help /= null then
-                     Put (Config.Switches (S).Help.all);
+                     if Config.Switches (S).Help /= null then
+                        Put (Config.Switches (S).Help.all);
+                     end if;
+
+                     New_Line;
                   end if;
-
-                  New_Line;
-               end if;
-            end;
-         end loop;
+               end;
+            end loop;
+         end if;
 
          --  Display the aliases
 
@@ -3454,25 +3458,27 @@ package body GNAT.Command_Line is
 
       --  Initialize output values for automatically handled switches
 
-      for S in Config.Switches'Range loop
-         case Config.Switches (S).Typ is
-            when Switch_Untyped =>
-               null;   --  Nothing to do
+      if Config.Switches /= null then
+         for S in Config.Switches'Range loop
+            case Config.Switches (S).Typ is
+               when Switch_Untyped =>
+                  null;   --  Nothing to do
 
-            when Switch_Boolean =>
-               Config.Switches (S).Boolean_Output.all :=
-                 not Config.Switches (S).Boolean_Value;
+               when Switch_Boolean =>
+                  Config.Switches (S).Boolean_Output.all :=
+                    not Config.Switches (S).Boolean_Value;
 
-            when Switch_Integer =>
-               Config.Switches (S).Integer_Output.all :=
-                 Config.Switches (S).Integer_Initial;
+               when Switch_Integer =>
+                  Config.Switches (S).Integer_Output.all :=
+                    Config.Switches (S).Integer_Initial;
 
-            when Switch_String =>
-               if Config.Switches (S).String_Output.all = null then
-                  Config.Switches (S).String_Output.all := new String'("");
-               end if;
-         end case;
-      end loop;
+               when Switch_String =>
+                  if Config.Switches (S).String_Output.all = null then
+                     Config.Switches (S).String_Output.all := new String'("");
+                  end if;
+            end case;
+         end loop;
+      end if;
 
       --  For all sections, and all switches within those sections
 
