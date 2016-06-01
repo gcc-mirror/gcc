@@ -1,3 +1,10 @@
+2016-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_fusion_enabled_p): New function.
+	* config/arm/arm-protos.h (arm_fusion_enabled_p): Declare prototype.
+	* config/arm/crypto.md (crypto_<crypto_pattern>, CRYPTO_UNARY):
+	Add "=w,0" alternative.  Enable it when AES/AESMC fusion is enabled.
+
 2016-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Also take
