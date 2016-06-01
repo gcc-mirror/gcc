@@ -1,3 +1,18 @@
+2016-05-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_splat_<mode>, V2DI/V2DF): Simplify
+	alternatives, eliminating preferred register class.  Add support
+	for the MTVSRDD instruction in ISA 3.0.
+	(vsx_splat_v4si_internal): Use splat_input_operand instead of
+	reg_or_indexed_operand.
+	(vsx_splat_v4sf_internal): Likewise.
+
+2016-05-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71186
+	* config/rs6000/vsx.md (xxspltib_<mode>_nosplit): Add alternatives
+	for loading up all 0's or all 1's.
+
 2016-06-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* doc/sourcebuild.texi (arm_acq_rel): Document new effective target.

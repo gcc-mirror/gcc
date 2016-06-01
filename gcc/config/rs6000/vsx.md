@@ -776,8 +776,8 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "xxspltib_<mode>_nosplit"
-  [(set (match_operand:VSINT_842 0 "vsx_register_operand" "=wa")
-	(match_operand:VSINT_842 1 "xxspltib_constant_nosplit" "wE"))]
+  [(set (match_operand:VSINT_842 0 "vsx_register_operand" "=wa,wa")
+	(match_operand:VSINT_842 1 "xxspltib_constant_nosplit" "jwM,wE"))]
   "TARGET_P9_VECTOR"
 {
   rtx op1 = operands[1];
@@ -2384,18 +2384,15 @@
 
 ;; V2DF/V2DI splat
 (define_insn "vsx_splat_<mode>"
-  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wd,wd,wd,?<VSa>,?<VSa>,?<VSa>")
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSa>,<VSa>,we")
 	(vec_duplicate:VSX_D
-	 (match_operand:<VS_scalar> 1 "splat_input_operand" "<VS_64reg>,f,Z,<VSa>,<VSa>,Z")))]
+	 (match_operand:<VS_scalar> 1 "splat_input_operand" "<VS_64reg>,Z,b")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    xxpermdi %x0,%x1,%x1,0
-   xxpermdi %x0,%x1,%x1,0
    lxvdsx %x0,%y1
-   xxpermdi %x0,%x1,%x1,0
-   xxpermdi %x0,%x1,%x1,0
-   lxvdsx %x0,%y1"
-  [(set_attr "type" "vecperm,vecperm,vecload,vecperm,vecperm,vecload")])
+   mtvsrdd %x0,%1,%1"
+  [(set_attr "type" "vecperm,vecload,mftgpr")])
 
 ;; V4SI splat (ISA 3.0)
 ;; When SI's are allowed in VSX registers, add XXSPLTW support
@@ -2414,7 +2411,7 @@
 (define_insn "*vsx_splat_v4si_internal"
   [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,wa")
 	(vec_duplicate:V4SI
-	 (match_operand:SI 1 "reg_or_indexed_operand" "r,Z")))]
+	 (match_operand:SI 1 "splat_input_operand" "r,Z")))]
   "TARGET_P9_VECTOR"
   "@
    mtvsrws %x0,%1
@@ -2425,7 +2422,7 @@
 (define_insn_and_split "*vsx_splat_v4sf_internal"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,wa")
 	(vec_duplicate:V4SF
-	 (match_operand:SF 1 "reg_or_indexed_operand" "Z,wy,r")))]
+	 (match_operand:SF 1 "splat_input_operand" "Z,wy,r")))]
   "TARGET_P9_VECTOR"
   "@
    lxvwsx %x0,%y1
