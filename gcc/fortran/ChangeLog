@@ -1,3 +1,10 @@
+2016-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/52393
+	* io.c (match_io): For READ, try to match a default character
+	expression. If found, set the dt format expression to this,
+	otherwise go back and try control list.
+
 2016-06-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71156
