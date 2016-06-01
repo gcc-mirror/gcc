@@ -1,5 +1,6 @@
-/* { dg-do compile }  */
+/* { dg-do compile { target { ! { m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* nios2*-*-* } } } }  */
 /* { dg-additional-options "-O2 -fdump-tree-vrp-details" }  */
+/* { dg-additional-options "-mbranch-cost=2" { target mips*-*-* avr-*-* s390*-*-* i?86-*-* x86_64-*-* } }  */
 /* { dg-final { scan-tree-dump-times "Threaded jump" 8 "vrp1" } }  */
 
 void foo (void);
