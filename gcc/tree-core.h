@@ -316,9 +316,6 @@ enum omp_clause_code {
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
 
-  /* OpenACC clause: device_resident (variable_list).  */
-  OMP_CLAUSE_DEVICE_RESIDENT,
-
   /* OpenACC clause: gang [(gang-argument-list)].
      Where
       gang-argument-list: [gang-argument-list, ] gang-argument

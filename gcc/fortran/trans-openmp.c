@@ -1773,9 +1773,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_USE_DEVICE:
 	  clause_code = OMP_CLAUSE_USE_DEVICE_PTR;
 	  goto add_clause;
-	case OMP_LIST_DEVICE_RESIDENT:
-	  clause_code = OMP_CLAUSE_DEVICE_RESIDENT;
-	  goto add_clause;
 
 	add_clause:
 	  omp_clauses
