@@ -1,5 +1,11 @@
 2016-06-01  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR tree-optimization/71314
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Adjust target selector.  Pass
+	-mbranch-cost=2.
+
+2016-06-01  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR tree-optimization/71077
 	* gcc.dg/tree-ssa/pr71077.c: New test.
 
