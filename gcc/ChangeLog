@@ -1,3 +1,8 @@
+2016-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Also compute
+	the factor for live Phi nodes.
+
 2016-06-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* loop-dolop.c (doloop_optimize): Us likely max iteration bound.
