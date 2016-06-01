@@ -18,14 +18,27 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+
+;; When AES/AESMC fusion is enabled we want the register allocation to
+;; look like:
+;;    AESE Vn, _
+;;    AESMC Vn, Vn
+;; So prefer to tie operand 1 to operand 0 when fusing.
+
 (define_insn "crypto_<crypto_pattern>"
-  [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
+  [(set (match_operand:<crypto_mode> 0 "register_operand" "=w,w")
         (unspec:<crypto_mode> [(match_operand:<crypto_mode> 1
-                       "register_operand" "w")]
+                       "register_operand" "0,w")]
          CRYPTO_UNARY))]
   "TARGET_CRYPTO"
   "<crypto_pattern>.<crypto_size_sfx>\\t%q0, %q1"
-  [(set_attr "type" "<crypto_type>")]
+  [(set_attr "type" "<crypto_type>")
+   (set_attr_alternative "enabled"
+     [(if_then_else (match_test
+		       "arm_fusion_enabled_p (tune_params::FUSE_AES_AESMC)")
+		     (const_string "yes" )
+		     (const_string "no"))
+      (const_string "yes")])]
 )
 
 (define_insn "crypto_<crypto_pattern>"

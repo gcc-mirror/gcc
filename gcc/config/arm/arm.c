@@ -29858,6 +29858,13 @@ aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
   return false;
 }
 
+/* Return true iff the instruction fusion described by OP is enabled.  */
+bool
+arm_fusion_enabled_p (tune_params::fuse_ops op)
+{
+  return current_tune->fusible_ops & op;
+}
+
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
 static unsigned HOST_WIDE_INT
