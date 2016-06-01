@@ -1,3 +1,24 @@
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71261
+	* tree-vect-patterns.c (check_bool_pattern): Gather a hash-set
+	of stmts successfully put in the bool pattern.  Remove
+	single-use restriction.
+	(adjust_bool_pattern_cast): Add cast at the use site via the
+	pattern def sequence.
+	(adjust_bool_pattern): Remove recursion, maintain a hash-map
+	of patterned defs.  Use the pattern def seqence instead of
+	multiple independent patterns.
+	(sort_after_uid): New qsort compare function.
+	(adjust_bool_stmts): New function to process stmts in the bool
+	pattern in IL order.
+	(vect_recog_bool_pattern): Adjust.
+	* tree-if-conv.c (ifcvt_split_def_stmt): Remove.
+	(ifcvt_walk_pattern_tree): Likewise.
+	(stmt_is_root_of_bool_pattern): Likewise.
+	(ifcvt_repair_bool_pattern): Likewise.
+	(tree_if_conversion): Do not call ifcvt_repair_bool_pattern.
+
 2016-06-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* loop-unroll.c (decide_unroll_constant_iterations,
