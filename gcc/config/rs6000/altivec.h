@@ -400,6 +400,9 @@
 #ifdef _ARCH_PPC64
 #define vec_vprtybq __builtin_vec_vprtybq
 #endif
+
+#define vec_slv __builtin_vec_vslv
+#define vec_srv __builtin_vec_vsrv
 #endif
 
 /* Predicates.

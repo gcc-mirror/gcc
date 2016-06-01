@@ -4488,6 +4488,13 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
   { P8V_BUILTIN_VEC_VGBBD, P8V_BUILTIN_VGBBD,
     RS6000_BTI_unsigned_V16QI, 0, 0, 0 },
 
+  { P9V_BUILTIN_VEC_VSLV, P9V_BUILTIN_VSLV,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_unsigned_V16QI, 0 },
+  { P9V_BUILTIN_VEC_VSRV, P9V_BUILTIN_VSRV,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_unsigned_V16QI, 0 },
+
   /* Crypto builtins.  */
   { CRYPTO_BUILTIN_VPERMXOR, CRYPTO_BUILTIN_VPERMXOR_V16QI,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
