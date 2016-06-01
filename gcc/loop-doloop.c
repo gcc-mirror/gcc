@@ -638,7 +638,7 @@ doloop_optimize (struct loop *loop)
 
   est_niter = get_estimated_loop_iterations_int (loop);
   if (est_niter == -1)
-    est_niter = get_max_loop_iterations_int (loop);
+    est_niter = get_likely_max_loop_iterations_int (loop);
 
   if (est_niter >= 0 && est_niter < 3)
     {

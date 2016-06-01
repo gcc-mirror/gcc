@@ -3288,7 +3288,7 @@ parallelize_loops (bool oacc_kernels_p)
 
       estimated = estimated_stmt_executions_int (loop);
       if (estimated == -1)
-	estimated = max_stmt_executions_int (loop);
+	estimated = likely_max_stmt_executions_int (loop);
       /* FIXME: Bypass this check as graphite doesn't update the
 	 count and frequency correctly now.  */
       if (!flag_loop_parallelize_all

@@ -224,7 +224,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 	 for unswitching.  */
       iterations = estimated_loop_iterations_int (loop);
       if (iterations < 0)
-        iterations = max_loop_iterations_int (loop);
+        iterations = likely_max_loop_iterations_int (loop);
       if (iterations >= 0 && iterations <= 1)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -442,7 +442,7 @@ tree_unswitch_outer_loop (struct loop *loop)
       for unswitching.  */
   iterations = estimated_loop_iterations_int (loop);
   if (iterations < 0)
-    iterations = max_loop_iterations_int (loop);
+    iterations = likely_max_loop_iterations_int (loop);
   if (iterations >= 0 && iterations <= 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))

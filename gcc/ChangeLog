@@ -1,3 +1,10 @@
+2016-06-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* loop-dolop.c (doloop_optimize): Us likely max iteration bound.
+	* tree-parloops.c (parallelize_loops): likewise.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop,
+	tree_unswitch_outer_loop): likewise.
+
 2016-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71371
