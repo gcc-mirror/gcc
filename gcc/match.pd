@@ -3230,8 +3230,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for op (lt le gt ge)
      ext (min min max max)
  (simplify
-  (bit_and (op:s @0 @1) (op:s @0 @2))
-  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+  (bit_and (op:cs @0 @1) (op:cs @0 @2))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TREE_CODE (@0) != INTEGER_CST)
    (op @0 (ext @1 @2)))))
 
 (simplify

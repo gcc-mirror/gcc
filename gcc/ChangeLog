@@ -1,5 +1,11 @@
 2016-06-01  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71311
+	* match.pd (@0 < @1 && @0 < @2 -> @0 < min(@1,@2)): Add :c and
+	restrict to non-INTEGER_CST @0.
+
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
 	* match.pd ((A & B) - (A & ~B) -> B - (A ^ B)): Add missing :c.
 	(relational patterns): Use :c to avoid pattern duplications.
 
