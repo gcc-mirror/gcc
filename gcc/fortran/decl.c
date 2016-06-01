@@ -608,10 +608,10 @@ cleanup:
 
 /* Like gfc_match_init_expr, but matches a 'clist' (old-style initialization
    list). The difference here is the expression is a list of constants
-   and is surrounded by '/'. 
+   and is surrounded by '/'.
    The typespec ts must match the typespec of the variable which the
    clist is initializing.
-   The arrayspec tells whether this should match a list of constants 
+   The arrayspec tells whether this should match a list of constants
    corresponding to array elements or a scalar (as == NULL).  */
 
 static match
@@ -1848,7 +1848,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
   /* If we are in a nested union/map definition, gfc_add_component will not
      properly find repeated components because:
-       (i) gfc_add_component does a flat search, where components of unions 
+       (i) gfc_add_component does a flat search, where components of unions
            and maps are implicity chained so nested components may conflict.
       (ii) Unions and maps are not linked as components of their parent
            structures until after they are parsed.
@@ -4978,10 +4978,49 @@ error:
 static bool
 copy_prefix (symbol_attribute *dest, locus *where)
 {
-  if (current_attr.pure && !gfc_add_pure (dest, where))
-    return false;
+  if (dest->module_procedure)
+    {
+      if (current_attr.elemental)
+	dest->elemental = 1;
+
+      if (current_attr.pure)
+	dest->pure = 1;
+
+      if (current_attr.recursive)
+	dest->recursive = 1;
+
+      /* Module procedures are unusual in that the 'dest' is copied from
+	 the interface declaration. However, this is an oportunity to
+	 check that the submodule declaration is compliant with the
+	 interface.  */
+      if (dest->elemental && !current_attr.elemental)
+	{
+	  gfc_error ("ELEMENTAL prefix in MODULE PROCEDURE interface is "
+		     "missing at %L", where);
+	  return false;
+	}
+
+      if (dest->pure && !current_attr.pure)
+	{
+	  gfc_error ("PURE prefix in MODULE PROCEDURE interface is "
+		     "missing at %L", where);
+	  return false;
+	}
+
+      if (dest->recursive && !current_attr.recursive)
+	{
+	  gfc_error ("RECURSIVE prefix in MODULE PROCEDURE interface is "
+		     "missing at %L", where);
+	  return false;
+	}
+
+      return true;
+    }
 
   if (current_attr.elemental && !gfc_add_elemental (dest, where))
+    return false;
+
+  if (current_attr.pure && !gfc_add_pure (dest, where))
     return false;
 
   if (current_attr.recursive && !gfc_add_recursive (dest, where))
@@ -8327,7 +8366,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
    does NOT have a generic symbol matching the name given by the user.
    STRUCTUREs can share names with variables and PARAMETERs so we must allow
    for the creation of an independent symbol.
-   Other parameters are a message to prefix errors with, the name of the new 
+   Other parameters are a message to prefix errors with, the name of the new
    type to be created, and the flavor to add to the resulting symbol. */
 
 static bool
@@ -8355,7 +8394,7 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
 
   if (sym->components != NULL || sym->attr.zero_comp)
     {
-      gfc_error ("Type definition of '%s' at %C was already defined at %L", 
+      gfc_error ("Type definition of '%s' at %C was already defined at %L",
                  sym->name, &sym->declared_at);
       return false;
     }

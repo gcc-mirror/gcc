@@ -1,3 +1,10 @@
+2016-06-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71156
+	* gfortran.dg/submodule_14.f08: Add missing recursive prefix
+	to the module procedure declaration.
+	* gfortran.dg/submodule_16.f08: New test.
+
 2016-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71371
@@ -322,7 +329,7 @@
 2016-05-26  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/simd/vmul_elem_1.c: Force result variables to be
-	kept in memory. 
+	kept in memory.
 
 2016-05-25  Jeff Law  <law@redhat.com>
 
