@@ -1,5 +1,10 @@
 2016-06-01  Richard Biener  <rguenther@suse.de>
 
+	* match.pd ((A & B) - (A & ~B) -> B - (A ^ B)): Add missing :c.
+	(relational patterns): Use :c to avoid pattern duplications.
+
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (comparison_code_p): New predicate.
 	(swap_tree_comparison): New function.
 	(commutate): Add for_vec parameter to append new for entries.
