@@ -1,3 +1,8 @@
+2016-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66635
+	* g++.dg/cpp0x/constexpr-ice16.C: New.
+
 2016-06-01  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/71314
@@ -11,9 +16,9 @@
 
 2016-05-31  Jan Hubicka  <hubicka@ucw.cz>
 
-	* g++.d/predict-lop-exit-1.C: Update template for new predictor name.
-	* g++.d/predict-lop-exit-2.C: Update template for new predictor name.
-	* g++.d/predict-lop-exit-2.C: Update template for new predictor name.
+	* g++.dg/predict-lop-exit-1.C: Update template for new predictor name.
+	* g++.dg/predict-lop-exit-2.C: Update template for new predictor name.
+	* g++.dg/predict-lop-exit-2.C: Update template for new predictor name.
 
 2016-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
