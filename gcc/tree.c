@@ -281,7 +281,6 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
   1, /* OMP_CLAUSE_IS_DEVICE_PTR  */
   2, /* OMP_CLAUSE__CACHE_  */
-  1, /* OMP_CLAUSE_DEVICE_RESIDENT  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
   1, /* OMP_CLAUSE_WAIT  */
@@ -353,7 +352,6 @@ const char * const omp_clause_code_name[] =
   "use_device_ptr",
   "is_device_ptr",
   "_cache_",
-  "device_resident",
   "gang",
   "async",
   "wait",
@@ -11764,7 +11762,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 1));
 	  /* FALLTHRU */
 
-	case OMP_CLAUSE_DEVICE_RESIDENT:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_WORKER:

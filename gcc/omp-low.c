@@ -2200,7 +2200,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	    install_var_local (decl, ctx);
 	  break;
 
-	case OMP_CLAUSE_DEVICE_RESIDENT:
 	case OMP_CLAUSE__CACHE_:
 	  sorry ("Clause not supported yet");
 	  break;
@@ -2368,7 +2367,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE__GRIDDIM_:
 	  break;
 
-	case OMP_CLAUSE_DEVICE_RESIDENT:
 	case OMP_CLAUSE__CACHE_:
 	  sorry ("Clause not supported yet");
 	  break;

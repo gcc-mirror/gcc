@@ -1,3 +1,8 @@
+2016-06-01  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-core.h (enum omp_clause_code): Remove
+	OMP_CLAUSE_DEVICE_RESIDENT.  Adjust all users.
+
 2016-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/sync.md (arm_store_exclusive<mode>):
