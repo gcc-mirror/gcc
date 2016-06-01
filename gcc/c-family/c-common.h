@@ -1088,6 +1088,16 @@ extern vec<tree, va_gc> *make_tree_vector_copy (const vec<tree, va_gc> *);
    c_register_builtin_type.  */
 extern GTY(()) tree registered_builtin_types;
 
+/* Read SOURCE_DATE_EPOCH from environment to have a deterministic
+   timestamp to replace embedded current dates to get reproducible
+   results.  Returns -1 if SOURCE_DATE_EPOCH is not defined.  */
+extern time_t cb_get_source_date_epoch (cpp_reader *pfile);
+
+/* The value (as a unix timestamp) corresponds to date
+   "Dec 31 9999 23:59:59 UTC", which is the latest date that __DATE__ and
+   __TIME__ can store.  */
+#define MAX_SOURCE_DATE_EPOCH HOST_WIDE_INT_C (253402300799)
+
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
@@ -1481,10 +1491,5 @@ extern bool valid_array_size_p (location_t, tree, tree);
 
 extern bool cilk_ignorable_spawn_rhs_op (tree);
 extern bool cilk_recognize_spawn (tree, tree *);
-
-/* Read SOURCE_DATE_EPOCH from environment to have a deterministic
-   timestamp to replace embedded current dates to get reproducible
-   results.  Returns -1 if SOURCE_DATE_EPOCH is not defined.  */
-extern time_t get_source_date_epoch (void);
 
 #endif /* ! GCC_C_COMMON_H */

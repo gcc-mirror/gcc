@@ -1,3 +1,18 @@
+2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
+
+	* c-common.c (get_source_date_epoch): Rename to
+	cb_get_source_date_epoch.
+	* c-common.c (cb_get_source_date_epoch): Use a single generic erorr
+	message when the parsing fails.  Use error_at instead of fatal_error.
+	* c-common.h (get_source_date_epoch): Rename to
+	cb_get_source_date_epoch.
+	* c-common.h (cb_get_source_date_epoch): Prototype.
+	* c-common.h (MAX_SOURCE_DATE_EPOCH): Define.
+	* c-common.h (c_omp_region_type): Remove trailing comma.
+	* c-lex.c (init_c_lex): Set cb->get_source_date_epoch callback.
+	* c-lex.c (c_lex_with_flags): Remove initialization of
+	pfile->source_date_epoch.
+
 2016-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71349

@@ -12762,8 +12762,9 @@ valid_array_size_p (location_t loc, tree type, tree name)
 /* Read SOURCE_DATE_EPOCH from environment to have a deterministic
    timestamp to replace embedded current dates to get reproducible
    results.  Returns -1 if SOURCE_DATE_EPOCH is not defined.  */
+
 time_t
-get_source_date_epoch ()
+cb_get_source_date_epoch (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   char *source_date_epoch;
   long long epoch;
@@ -12775,19 +12776,14 @@ get_source_date_epoch ()
 
   errno = 0;
   epoch = strtoll (source_date_epoch, &endptr, 10);
-  if ((errno == ERANGE && (epoch == LLONG_MAX || epoch == LLONG_MIN))
-      || (errno != 0 && epoch == 0))
-    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
-		 "strtoll: %s\n", xstrerror(errno));
-  if (endptr == source_date_epoch)
-    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
-		 "no digits were found: %s\n", endptr);
-  if (*endptr != '\0')
-    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
-		 "trailing garbage: %s\n", endptr);
-  if (epoch < 0)
-    fatal_error (UNKNOWN_LOCATION, "environment variable $SOURCE_DATE_EPOCH: "
-		 "value must be nonnegative: %lld \n", epoch);
+  if (errno != 0 || endptr == source_date_epoch || *endptr != '\0'
+      || epoch < 0 || epoch > MAX_SOURCE_DATE_EPOCH)
+    {
+      error_at (input_location, "environment variable SOURCE_DATE_EPOCH must "
+	        "expand to a non-negative integer less than or equal to %wd",
+		MAX_SOURCE_DATE_EPOCH);
+      return (time_t) -1;
+    }
 
   return (time_t) epoch;
 }

@@ -257,6 +257,9 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   /* Do not force token locations by default.  */
   pfile->forced_token_location_p = NULL;
 
+  /* Initialize source_date_epoch to -2 (not yet set).  */
+  pfile->source_date_epoch = (time_t) -2;
+
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);
 
@@ -531,13 +534,6 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");
-}
-
-/* Initialize the source_date_epoch value.  */
-void
-cpp_init_source_date_epoch (cpp_reader *pfile, time_t source_date_epoch)
-{
-  pfile->source_date_epoch = source_date_epoch; 
 }
 
 /* Sanity-checks are dependent on command-line options, so it is
