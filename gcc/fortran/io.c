@@ -3689,7 +3689,7 @@ match_io (io_kind k)
   gfc_symbol *sym;
   int comma_flag;
   locus where;
-  locus spec_end;
+  locus spec_end, control;
   gfc_dt *dt;
   match m;
 
@@ -3751,21 +3751,56 @@ match_io (io_kind k)
     {
       /* Before issuing an error for a malformed 'print (1,*)' type of
 	 error, check for a default-char-expr of the form ('(I0)').  */
-      if (k == M_PRINT && m == MATCH_YES)
-	{
-	  /* Reset current locus to get the initial '(' in an expression.  */
-	  gfc_current_locus = where;
-	  dt->format_expr = NULL;
-	  m = match_dt_format (dt);
+      if (m == MATCH_YES)
+        {
+	  control = gfc_current_locus;
+	  if (k == M_PRINT)
+	    {
+	      /* Reset current locus to get the initial '(' in an expression.  */
+	      gfc_current_locus = where;
+	      dt->format_expr = NULL;
+	      m = match_dt_format (dt);
 
-	  if (m == MATCH_ERROR)
-	    goto cleanup;
-	  if (m == MATCH_NO || dt->format_expr == NULL)
-	    goto syntax;
+	      if (m == MATCH_ERROR)
+		goto cleanup;
+	      if (m == MATCH_NO || dt->format_expr == NULL)
+		goto syntax;
 
-	  comma_flag = 1;
-	  dt->io_unit = default_unit (k);
-	  goto get_io_list;
+	      comma_flag = 1;
+	      dt->io_unit = default_unit (k);
+	      goto get_io_list;
+	    }
+	  if (k == M_READ)
+	    {
+	      /* Reset current locus to get the initial '(' in an expression.  */
+	      gfc_current_locus = where;
+	      dt->format_expr = NULL;
+	      m = gfc_match_expr (&dt->format_expr);
+	      if (m == MATCH_YES)
+	        {
+		  if (dt->format_expr
+		      && dt->format_expr->ts.type == BT_CHARACTER)
+		    {
+		      comma_flag = 1;
+		      dt->io_unit = default_unit (k);
+		      goto get_io_list;
+		    }
+		  else
+		    {
+		      gfc_free_expr (dt->format_expr);
+		      dt->format_expr = NULL;
+		      gfc_current_locus = control;
+		    }
+		}
+	      else
+	        {
+		  gfc_clear_error ();
+		  gfc_undo_symbols ();
+		  gfc_free_expr (dt->format_expr);
+		  dt->format_expr = NULL;
+		  gfc_current_locus = control;
+		}
+	    }
 	}
     }
 
