@@ -906,7 +906,7 @@
 	* config/rs6000/altivec.md (VNEG iterator): New iterator for
 	VNEGW/VNEGD instructions.
 	(p9_neg<mode>2): New insns for ISA 3.0 VNEGW/VNEGD.
-	(neg<mode>2): Add expander for V2DImode added in ISA 2.06, and
+	(neg<mode>2): Add expander for V2DImode added in ISA 2.07, and
 	support for ISA 3.0 VNEGW/VNEGD instructions.
 
 2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
