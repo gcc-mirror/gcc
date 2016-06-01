@@ -452,14 +452,13 @@
   {
     if (<MODE>mode == DImode)
       {
-	rtx value = operands[2];
 	/* The restrictions on target registers in ARM mode are that the two
 	   registers are consecutive and the first one is even; Thumb is
 	   actually more flexible, but DI should give us this anyway.
-	   Note that the 1st register always gets the lowest word in memory.  */
-	gcc_assert ((REGNO (value) & 1) == 0 || TARGET_THUMB2);
-	operands[3] = gen_rtx_REG (SImode, REGNO (value) + 1);
-	return "strexd%?\t%0, %2, %3, %C1";
+	   Note that the 1st register always gets the
+	   lowest word in memory.  */
+	gcc_assert ((REGNO (operands[2]) & 1) == 0 || TARGET_THUMB2);
+	return "strexd%?\t%0, %2, %H2, %C1";
       }
     return "strex<sync_sfx>%?\t%0, %2, %C1";
   }
@@ -475,11 +474,9 @@
 	  VUNSPEC_SLX))]
   "TARGET_HAVE_LDACQ && ARM_DOUBLEWORD_ALIGN"
   {
-    rtx value = operands[2];
     /* See comment in arm_store_exclusive<mode> above.  */
-    gcc_assert ((REGNO (value) & 1) == 0 || TARGET_THUMB2);
-    operands[3] = gen_rtx_REG (SImode, REGNO (value) + 1);
-    return "stlexd%?\t%0, %2, %3, %C1";
+    gcc_assert ((REGNO (operands[2]) & 1) == 0 || TARGET_THUMB2);
+    return "stlexd%?\t%0, %2, %H2, %C1";
   }
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
