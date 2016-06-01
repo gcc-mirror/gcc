@@ -1,3 +1,8 @@
+2016-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71261
+	* gcc.dg/torture/vect-bool-1.c: New testcase.
+
 2016-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/order-1.f90: New test.
