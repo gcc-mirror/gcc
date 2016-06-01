@@ -5,4 +5,4 @@
 # Note: When changing the version here, please do also update LIBGCJ_SONAME
 # in gcc/config/i386/cygwin.h and gcc/config/i386/mingw32.h.
 # CURRENT:REVISION:AGE
-17:0:0
+18:0:0
