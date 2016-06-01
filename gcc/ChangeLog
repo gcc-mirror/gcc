@@ -1,3 +1,7 @@
+2016-06-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* doc/sourcebuild.texi (arm_acq_rel): Document new effective target.
+
 2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
 
 	* doc/cppenv.texi: Note that the `%s` in `date` is a non-standard
