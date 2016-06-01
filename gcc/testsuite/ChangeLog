@@ -1,3 +1,8 @@
+2016-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/torture/pr57945.c: Add expected PTX error.
+	* gcc.target/nvptx/weak.c: New.
+
 2016-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71261

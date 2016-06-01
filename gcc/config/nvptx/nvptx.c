@@ -1777,6 +1777,12 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   if (DECL_IN_CONSTANT_POOL (decl))
     return;
 
+  /*  We support weak defintions, and hence have the right
+      ASM_WEAKEN_DECL definition.  Diagnose the problem here.  */
+  if (DECL_WEAK (decl))
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "PTX does not support weak declarations"
+	      " (only weak definitions)");
   write_var_marker (file, false, TREE_PUBLIC (decl), name);
 
   fprintf (file, "\t.extern ");
