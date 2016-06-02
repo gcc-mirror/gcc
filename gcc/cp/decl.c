@@ -12793,7 +12793,7 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	       && CLASSTYPE_IS_TEMPLATE (t))
 	{
 	  error ("redeclaration of %qT as a non-template", t);
-	  error ("previous declaration %q+D", t);
+	  inform (location_of (t), "previous declaration %qD", t);
 	  return error_mark_node;
 	}
 
@@ -13149,16 +13149,16 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	{
 	  error_at (input_location, "scoped/unscoped mismatch "
 		    "in enum %q#T", enumtype);
-	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
-		    "previous definition here");
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		  "previous definition here");
 	  enumtype = error_mark_node;
 	}
       else if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) != !! underlying_type)
 	{
 	  error_at (input_location, "underlying type mismatch "
 		    "in enum %q#T", enumtype);
-	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
-		    "previous definition here");
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		  "previous definition here");
 	  enumtype = error_mark_node;
 	}
       else if (underlying_type && ENUM_UNDERLYING_TYPE (enumtype)
@@ -13169,8 +13169,8 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	{
 	  error_at (input_location, "different underlying type "
 		    "in enum %q#T", enumtype);
-	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
-		    "previous definition here");
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		  "previous definition here");
 	  underlying_type = NULL_TREE;
 	}
     }
