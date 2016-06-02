@@ -669,6 +669,11 @@
   (and (match_code "const_int,const_double,const_wide_int,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
+;; Return 1 if operand is constant -1 (scalars and vectors).
+(define_predicate "all_ones_constant"
+  (and (match_code "const_int,const_double,const_wide_int,const_vector")
+       (match_test "op == CONSTM1_RTX (mode) && !FLOAT_MODE_P (mode)")))
+
 ;; Return 1 if operand is 0.0.
 (define_predicate "zero_fp_constant"
   (and (match_code "const_double")
@@ -1068,10 +1073,6 @@
 (define_special_predicate "equality_operator"
   (match_code "eq,ne"))
 
-;; Return true if operand is MIN or MAX operator.
-(define_predicate "min_max_operator"
-  (match_code "smin,smax,umin,umax"))
-
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; instruction.  We check the opcode against the mode of the CC value.
 ;; validate_condition_mode is an assertion.
@@ -1113,6 +1114,11 @@
 (define_predicate "scc_rev_comparison_operator"
   (and (match_operand 0 "branch_comparison_operator")
        (match_code "ne,le,ge,leu,geu,ordered")))
+
+;; Return 1 if OP is a comparison operator suitable for vector/scalar
+;; comparisons that generate a -1/0 mask.
+(define_predicate "fpmask_comparison_operator"
+  (match_code "eq,gt,ge"))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; insn, which is true if the corresponding bit in the CC register is set.
