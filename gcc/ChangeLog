@@ -1,3 +1,12 @@
+2016-06-02  H.J. Lu  <hongjiu.lu@intel.com>
+	    Julia Koval  <julia.koval@intel.com>
+
+	* function.c (assign_parm_setup_stack): Force source into a
+	register if needed.
+	* target.def (function_incoming_arg): Update documentation to
+	allow arbitrary address computation based on hard register.
+	* doc/tm.texi: Regenerated.
+
 2016-06-02  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (combine_predictions_for_bb): Fix first match in

@@ -4468,20 +4468,22 @@ a register.",
        bool named),
  default_function_arg)
 
-/* Likewise, but for machines with register windows.  Return the
-   location where the argument will appear to the callee.  */
 DEFHOOK
 (function_incoming_arg,
- "Define this hook if the target machine has ``register windows'', so\n\
-that the register in which a function sees an arguments is not\n\
-necessarily the same as the one in which the caller passed the\n\
-argument.\n\
+ "Define this hook if the caller and callee on the target have different\n\
+views of where arguments are passed.  Also define this hook if there are\n\
+functions that are never directly called, but are invoked by the hardware\n\
+and which have nonstandard calling conventions.\n\
 \n\
-For such machines, @code{TARGET_FUNCTION_ARG} computes the register in\n\
+In this case @code{TARGET_FUNCTION_ARG} computes the register in\n\
 which the caller passes the value, and\n\
 @code{TARGET_FUNCTION_INCOMING_ARG} should be defined in a similar\n\
 fashion to tell the function being called where the arguments will\n\
 arrive.\n\
+\n\
+@code{TARGET_FUNCTION_INCOMING_ARG} can also return arbitrary address\n\
+computation using hard register, which can be forced into a register,\n\
+so that it can be used to pass special arguments.\n\
 \n\
 If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,\n\
 @code{TARGET_FUNCTION_ARG} serves both purposes.",
