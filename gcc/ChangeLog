@@ -1,3 +1,9 @@
+2016-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/71295
+	* rtlanal.c (subreg_get_info): If taking a subreg at the requested
+	offset would go over the size of the inner mode reject it.
+
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (*vec_concatv4si): Use v=v,v instead of

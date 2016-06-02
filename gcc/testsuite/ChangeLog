@@ -1,3 +1,8 @@
+2016-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/71295
+	* gcc.c-torture/compile/pr71295.c: New test.
+
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512vl-concatv4si-1.c: New test.
