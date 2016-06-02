@@ -17781,10 +17781,8 @@ arm_output_multireg_pop (rtx *operands, bool return_pc, rtx cond, bool reverse,
 
   conditional = reverse ? "%?%D0" : "%?%d0";
   /* Can't use POP if returning from an interrupt.  */
-  if ((regno_base == SP_REGNUM) && !(interrupt_p && return_pc))
-    {
-      sprintf (pattern, "pop%s\t{", conditional);
-    }
+  if ((regno_base == SP_REGNUM) && update && !(interrupt_p && return_pc))
+    sprintf (pattern, "pop%s\t{", conditional);
   else
     {
       /* Output ldmfd when the base register is SP, otherwise output ldmia.
