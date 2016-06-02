@@ -1,3 +1,11 @@
+2016-06-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/70350
+	* trans-expr.c (gfc_trans_assignment_1): Exclude initialization
+	assignments from check on assignment of scalars to unassigned
+	arrays and correct wrong code within the corresponding block.
+
 2016-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk.
