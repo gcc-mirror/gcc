@@ -1,3 +1,9 @@
+2016-06-02  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (combine_predictions_for_bb): Fix first match in
+	cases where a first predictor contains more than one occurence
+	in list of predictors.  Take the best value in such case.
+
 2016-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/71295

@@ -939,7 +939,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 		   pred2; pred2 = pred2->ep_next)
 	       if (pred2 != pred && pred2->ep_predictor == pred->ep_predictor)
 	         {
-	           int probability2 = pred->ep_probability;
+		   int probability2 = pred2->ep_probability;
 
 		   if (pred2->ep_edge != first)
 		     probability2 = REG_BR_PROB_BASE - probability2;

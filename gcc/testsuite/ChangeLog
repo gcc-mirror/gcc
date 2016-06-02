@@ -1,3 +1,7 @@
+2016-06-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/predict-9.c: New test.
+
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/gcc-dg.exp (cleanup-after-saved-dg-test): Add missing
