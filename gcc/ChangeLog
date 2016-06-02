@@ -1,3 +1,7 @@
+2016-06-02  Martin Liska  <mliska@suse.cz>
+
+	* predict.def: Fix typo in PRED_FORTRAN_FAIL_IO display name.
+
 2016-06-02  H.J. Lu  <hongjiu.lu@intel.com>
 	    Julia Koval  <julia.koval@intel.com>
 
