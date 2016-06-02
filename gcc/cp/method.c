@@ -484,6 +484,8 @@ forward_parm (tree parm)
   tree type = TREE_TYPE (parm);
   if (DECL_PACK_P (parm))
     type = PACK_EXPANSION_PATTERN (type);
+  if (TREE_CODE (type) != REFERENCE_TYPE)
+    type = cp_build_reference_type (type, /*rval=*/true);
   exp = build_static_cast (type, exp, tf_warning_or_error);
   if (DECL_PACK_P (parm))
     exp = make_pack_expansion (exp);
