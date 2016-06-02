@@ -22008,8 +22008,8 @@ cp_parser_class_head (cp_parser* parser,
     {
       error_at (type_start_token->location, "redefinition of %q#T",
 		type);
-      error_at (type_start_token->location, "previous definition of %q+#T",
-		type);
+      inform (location_of (type), "previous definition of %q#T",
+	      type);
       type = NULL_TREE;
       goto done;
     }

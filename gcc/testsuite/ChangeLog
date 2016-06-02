@@ -1,3 +1,19 @@
+2016-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/forw_enum10.C: Adjust for dg-message vs dg-error.
+	* g++.dg/cpp0x/forw_enum6.C: Likewise.
+	* g++.dg/cpp0x/forw_enum8.C: Likewise.
+	* g++.dg/cpp0x/override2.C: Likewise.
+	* g++.dg/parse/crash5.C: Likewise.
+	* g++.dg/parse/error16.C: Likewise.
+	* g++.dg/parse/error27.C: Likewise.
+	* g++.dg/template/qualttp15.C: Likewise.
+	* g++.dg/template/redecl4.C: Likewise.
+	* g++.old-deja/g++.other/crash39.C: Likewise.
+	* g++.old-deja/g++.other/struct1.C: Likewise.
+	* g++.old-deja/g++.pt/m9a.C: Likewise.
+	* g++.old-deja/g++.pt/memclass10.C: Likewise.
+
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71372

@@ -38,7 +38,7 @@ int main()
 {
   D3<B1> d;
   D4<B2> d2;
-  struct B2 final{}; // { dg-error "previous definition" }
+  struct B2 final{}; // { dg-message "previous definition" }
   B2 final; // { dg-error "has a previous declaration|previously declared here" }
   B2 final2 = final;
   struct B2 {}; // { dg-error "redefinition" }
@@ -47,7 +47,7 @@ int main()
   struct B2 final {}; // { dg-error "redefinition" }
   struct B2 override {}; // { dg-error "cannot specify 'override' for a class" }
   B2 override{}; // { dg-error "redeclaration" }
-  struct foo final {}; // { dg-error "previous definition" }
+  struct foo final {}; // { dg-message "previous definition" }
   struct foo final {}; // { dg-error "redefinition" }
   foo final; // { dg-error "conflicting declaration" }
 }

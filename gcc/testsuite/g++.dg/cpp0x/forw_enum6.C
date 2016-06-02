@@ -1,18 +1,18 @@
 // { dg-do compile { target c++11 } }
 
-enum class E1 : int; // { dg-error "previous definition" }
+enum class E1 : int; // { dg-message "previous definition" }
 enum E1 : int;  // { dg-error "scoped/unscoped mismatch" }
 
-enum E2 : int; // { dg-error "previous definition" }
+enum E2 : int; // { dg-message "previous definition" }
 enum class E2 : int;  // { dg-error "scoped/unscoped mismatch" }
 
 enum struct E3 : int;
 enum class E3 : int; //ok
 
-enum class E4 : int; // { dg-error "previous definition" }
+enum class E4 : int; // { dg-message "previous definition" }
 enum class E4 : long;  // { dg-error "different underlying type" }
 
-enum E5 : int; // { dg-error "previous definition" }
+enum E5 : int; // { dg-message "previous definition" }
 enum E5 : long;  // { dg-error "different underlying type" }
 
 enum E6 : int;

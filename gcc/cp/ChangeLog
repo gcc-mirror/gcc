@@ -1,3 +1,9 @@
+2016-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (xref_tag_1): Change pairs of errors to error + inform.
+	(start_enum): Likewise.
+	* parser.c (cp_parser_class_head): Likewise.
+
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71372
