@@ -1,5 +1,8 @@
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*vec_concatv4si): Use v=v,v instead of
+	x=x,x and v=v,m instead of x=x,m.
+
 	* config/i386/sse.md (*vec_concatv2si_sse4_1): Add avx512dq v=Yv,rm
 	alternative.  Change x=x,x alternative to v=Yv,Yv and x=rm,C
 	alternative to v=rm,C.
