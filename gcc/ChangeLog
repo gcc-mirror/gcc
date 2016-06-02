@@ -1,3 +1,7 @@
+2016-06-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/dfp.md (trunctddd2): Correct the "length" attribute.
+
 2016-06-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/rl78/rl78.c (rl78_expand_prologue): Convert local

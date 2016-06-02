@@ -173,7 +173,8 @@
    (clobber (match_scratch:TD 2 "=d"))]
   "TARGET_DFP"
   "drdpq %2,%1\;fmr %0,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "length" "8")])
 
 (define_insn "adddd3"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
