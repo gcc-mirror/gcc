@@ -1,3 +1,11 @@
+2016-06-02  Aaron Conole  <aconole@redhat.com>
+
+	* libgcov-driver-system.c (__gcov_error_file): New.
+	(get_gcov_error_file): New.
+	(gcov_error): Use and set __gcov_error_file.
+	(gcov_error_exit): New.
+	* libgcov-driver.c (gcov_exit): Call gcov_error_exit.
+
 2016-05-26  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/free.asm: Delete.
