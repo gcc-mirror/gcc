@@ -1,5 +1,5 @@
 // PR c++/70735
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 int main()
 {
