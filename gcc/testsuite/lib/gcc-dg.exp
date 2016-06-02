@@ -895,6 +895,8 @@ if { [info procs saved-dg-test] == [list] } {
 	global shouldfail
 	global testname_with_flags
 	global set_target_env_var
+	global set_compiler_env_var
+	global saved_compiler_env_var
 	global keep_saved_temps_suffixes
 	global multiline_expected_outputs
 

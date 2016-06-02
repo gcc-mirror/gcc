@@ -1,3 +1,8 @@
+2016-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (cleanup-after-saved-dg-test): Add missing
+	global set_compiler_env_var and global saved_compiler_env_var.
+
 2016-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/71295
