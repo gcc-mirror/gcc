@@ -3624,6 +3624,8 @@ get_branch_target (rtx branch)
         abort ();
       return XEXP (XEXP (call, 0), 0);
     }
+
+  return NULL_RTX;
 }
 
 /* Heuristics to identify where to insert at the
@@ -3650,7 +3652,6 @@ insert_wic_for_ilb_runout (rtx_insn *first)
   int addr_offset = 0;
   int length;
   int wic_addr0 = 128 * 4;
-  int wic_addr1 = 128 * 4;
 
   int first_addr = INSN_ADDRESSES (INSN_UID (first));
 
@@ -3693,7 +3694,7 @@ static void
 insert_wic (void)
 {
   rtx_insn *insn;
-  int i, j;
+  int i;
   basic_block bb, prev = 0;
   rtx branch_target = 0;
 
