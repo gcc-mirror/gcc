@@ -3466,7 +3466,11 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 			   BLOCK_OP_NORMAL);
 	}
       else
-	emit_move_insn (dest, src);
+	{
+	  if (!REG_P (src))
+	    src = force_reg (GET_MODE (src), src);
+	  emit_move_insn (dest, src);
+	}
     }
 
   if (to_conversion)

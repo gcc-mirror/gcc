@@ -3938,16 +3938,20 @@ documentation.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
-Define this hook if the target machine has ``register windows'', so
-that the register in which a function sees an arguments is not
-necessarily the same as the one in which the caller passed the
-argument.
+Define this hook if the caller and callee on the target have different
+views of where arguments are passed.  Also define this hook if there are
+functions that are never directly called, but are invoked by the hardware
+and which have nonstandard calling conventions.
 
-For such machines, @code{TARGET_FUNCTION_ARG} computes the register in
+In this case @code{TARGET_FUNCTION_ARG} computes the register in
 which the caller passes the value, and
 @code{TARGET_FUNCTION_INCOMING_ARG} should be defined in a similar
 fashion to tell the function being called where the arguments will
 arrive.
+
+@code{TARGET_FUNCTION_INCOMING_ARG} can also return arbitrary address
+computation using hard register, which can be forced into a register,
+so that it can be used to pass special arguments.
 
 If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,
 @code{TARGET_FUNCTION_ARG} serves both purposes.
