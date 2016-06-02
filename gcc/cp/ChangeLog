@@ -1,3 +1,8 @@
+2016-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70972
+	* method.c (forward_parm): Use cp_build_reference_type.
+
 2016-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71166
