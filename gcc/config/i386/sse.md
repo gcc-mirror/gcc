@@ -13488,16 +13488,17 @@
 
 (define_insn "*vec_concatv2si_sse4_1"
   [(set (match_operand:V2SI 0 "register_operand"
-	  "=Yr,*x,x, Yr,*x,x, x, *y,*y")
+	  "=Yr,*x, x, v,Yr,*x, v, v, *y,*y")
 	(vec_concat:V2SI
 	  (match_operand:SI 1 "nonimmediate_operand"
-	  "  0, 0,x,  0,0, x,rm,  0,rm")
+	  "  0, 0, x,Yv, 0, 0,Yv,rm,  0,rm")
 	  (match_operand:SI 2 "vector_move_operand"
-	  " rm,rm,rm,Yr,*x,x, C,*ym, C")))]
+	  " rm,rm,rm,rm,Yr,*x,Yv, C,*ym, C")))]
   "TARGET_SSE4_1 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    pinsrd\t{$1, %2, %0|%0, %2, 1}
    pinsrd\t{$1, %2, %0|%0, %2, 1}
+   vpinsrd\t{$1, %2, %1, %0|%0, %1, %2, 1}
    vpinsrd\t{$1, %2, %1, %0|%0, %1, %2, 1}
    punpckldq\t{%2, %0|%0, %2}
    punpckldq\t{%2, %0|%0, %2}
@@ -13505,26 +13506,26 @@
    %vmovd\t{%1, %0|%0, %1}
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
-  [(set_attr "isa" "noavx,noavx,avx,noavx,noavx,avx,*,*,*")
+  [(set_attr "isa" "noavx,noavx,avx,avx512dq,noavx,noavx,avx,*,*,*")
    (set (attr "type")
-     (cond [(eq_attr "alternative" "6")
+     (cond [(eq_attr "alternative" "7")
 	      (const_string "ssemov")
-	    (eq_attr "alternative" "7")
-	      (const_string "mmxcvt")
 	    (eq_attr "alternative" "8")
+	      (const_string "mmxcvt")
+	    (eq_attr "alternative" "9")
 	      (const_string "mmxmov")
 	   ]
 	   (const_string "sselog")))
    (set (attr "prefix_extra")
-     (if_then_else (eq_attr "alternative" "0,1,2")
+     (if_then_else (eq_attr "alternative" "0,1,2,3")
 		   (const_string "1")
 		   (const_string "*")))
    (set (attr "length_immediate")
-     (if_then_else (eq_attr "alternative" "0,1,2")
+     (if_then_else (eq_attr "alternative" "0,1,2,3")
 		   (const_string "1")
 		   (const_string "*")))
-   (set_attr "prefix" "orig,orig,vex,orig,orig,vex,maybe_vex,orig,orig")
-   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,DI,DI")])
+   (set_attr "prefix" "orig,orig,vex,evex,orig,orig,maybe_evex,maybe_vex,orig,orig")
+   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,TI,DI,DI")])
 
 ;; ??? In theory we can match memory for the MMX alternative, but allowing
 ;; nonimmediate_operand for operand 2 and *not* allowing memory for the SSE
