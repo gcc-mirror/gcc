@@ -2,10 +2,10 @@
 /* { dg-set-compiler-env-var SOURCE_DATE_EPOCH "630333296" } */
 
 int
-main(void)
+main ()
 {
-  __builtin_printf ("%s %s\n", __DATE__, __TIME__);
+  if (__builtin_strcmp (__DATE__, "Dec 22 1989") != 0
+      || __builtin_strcmp (__TIME__, "12:34:56") != 0)
+    __builtin_abort ();
   return 0;
 }
-
-/* { dg-output "^Dec 22 1989 12:34:56\n$" } */

@@ -1,3 +1,9 @@
+2016-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/source_date_epoch-1.c (main): Test __DATE__ and
+	__TIME__ strings with __builtin_strcmp instead of printf and
+	dg-output.
+
 2016-06-02  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-9.c: New test.
