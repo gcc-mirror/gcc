@@ -1,3 +1,12 @@
+2016-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71372
+	* cp-gimplify.c (cp_fold): For INDIRECT_REF, if the folded expression
+	is INDIRECT_REF or MEM_REF, copy over TREE_READONLY, TREE_SIDE_EFFECTS
+	and TREE_THIS_VOLATILE flags.  For ARRAY_REF and ARRAY_RANGE_REF, copy
+	over TREE_READONLY, TREE_SIDE_EFFECTS and TREE_THIS_VOLATILE flags
+	to the newly built tree.
+
 2016-05-31  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (instantiate_decl): Avoid recalculation.

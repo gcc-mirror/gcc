@@ -1,5 +1,8 @@
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71372
+	* c-c++-common/pr71372.c: New test.
+
 	* gcc.dg/cpp/source_date_epoch-1.c (main): Test __DATE__ and
 	__TIME__ strings with __builtin_strcmp instead of printf and
 	dg-output.

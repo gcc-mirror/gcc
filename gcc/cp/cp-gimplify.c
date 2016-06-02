@@ -2035,7 +2035,16 @@ cp_fold (tree x)
 	  if (op0 == error_mark_node)
 	    x = error_mark_node;
 	  else
-	    x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	    {
+	      x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	      if (code == INDIRECT_REF
+		  && (INDIRECT_REF_P (x) || TREE_CODE (x) == MEM_REF))
+		{
+		  TREE_READONLY (x) = TREE_READONLY (org_x);
+		  TREE_SIDE_EFFECTS (x) = TREE_SIDE_EFFECTS (org_x);
+		  TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+		}
+	    }
 	}
       else
 	x = fold (x);
@@ -2312,7 +2321,12 @@ cp_fold (tree x)
 	      || op3 == error_mark_node)
 	    x = error_mark_node;
 	  else
-	    x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+	    {
+	      x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+	      TREE_READONLY (x) = TREE_READONLY (org_x);
+	      TREE_SIDE_EFFECTS (x) = TREE_SIDE_EFFECTS (org_x);
+	      TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+	    }
 	}
 
       x = fold (x);
