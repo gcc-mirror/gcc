@@ -1,5 +1,7 @@
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512vl-concatv4si-1.c: New test.
+
 	* gcc.target/i386/avx512dq-concatv2si-1.c: New test.
 	* gcc.target/i386/avx512vl-concatv2si-1.c: New test.
 

@@ -13549,10 +13549,10 @@
    (set_attr "mode" "TI,TI,DI,V4SF,SF,DI,DI")])
 
 (define_insn "*vec_concatv4si"
-  [(set (match_operand:V4SI 0 "register_operand"       "=x,x,x,x,x")
+  [(set (match_operand:V4SI 0 "register_operand"       "=x,v,x,x,v")
 	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " 0,x,0,0,x")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " x,x,x,m,m")))]
+	  (match_operand:V2SI 1 "register_operand"     " 0,v,0,0,v")
+	  (match_operand:V2SI 2 "nonimmediate_operand" " x,v,x,m,m")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t{%2, %0|%0, %2}
@@ -13562,7 +13562,7 @@
    vmovhps\t{%2, %1, %0|%0, %1, %q2}"
   [(set_attr "isa" "sse2_noavx,avx,noavx,noavx,avx")
    (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
-   (set_attr "prefix" "orig,vex,orig,orig,vex")
+   (set_attr "prefix" "orig,maybe_evex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
 ;; movd instead of movq is required to handle broken assemblers.
