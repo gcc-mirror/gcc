@@ -1,5 +1,8 @@
 2016-06-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512dq-concatv2si-1.c: New test.
+	* gcc.target/i386/avx512vl-concatv2si-1.c: New test.
+
 	* gcc.target/i386/avx512dq-concatv2di-1.c: New test.
 	* gcc.target/i386/avx512vl-concatv2di-1.c: New test.
 	* gcc.target/i386/sse2-init-v2di-2.c: Adjust expected vec_concatv2di
