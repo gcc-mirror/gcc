@@ -1,3 +1,8 @@
+2016-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71372
+	* c-c++-common/pr71372.c: New test.
+
 2016-06-02  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Back port from trunk
