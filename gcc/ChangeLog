@@ -1,3 +1,8 @@
+2016-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70830
+	* config/arm/arm.c (arm_output_multireg_pop): Guard "pop" on update.
+
 2016-06-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/dfp.md (trunctddd2): Correct the "length" attribute.
