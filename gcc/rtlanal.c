@@ -3657,6 +3657,16 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	  info->offset = offset / regsize_xmode;
 	  return;
 	}
+      /* It's not valid to extract a subreg of mode YMODE at OFFSET that
+	 would go outside of XMODE.  */
+      if (!rknown
+	  && GET_MODE_SIZE (ymode) + offset > GET_MODE_SIZE (xmode))
+	{
+	  info->representable_p = false;
+	  info->nregs = nregs_ymode;
+	  info->offset = offset / regsize_xmode;
+	  return;
+	}
       /* Quick exit for the simple and common case of extracting whole
 	 subregisters from a multiregister value.  */
       /* ??? It would be better to integrate this into the code below,
