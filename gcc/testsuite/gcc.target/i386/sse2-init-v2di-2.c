@@ -10,4 +10,4 @@ test (long long b)
   return _mm_cvtsi64_si128 (b); 
 }
 
-/* { dg-final { scan-assembler-times "vec_concatv2di/4" 1 } } */
+/* { dg-final { scan-assembler-times "vec_concatv2di/5" 1 } } */

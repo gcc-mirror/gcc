@@ -1,3 +1,10 @@
+2016-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (*vec_concatv2di): Add x86_avx512dq v=Yv,rm
+	alternative.  Change x=xm,C alternative to v=vm,C, x=x,x alternative
+	to v=Yv,Yv and x=x,m to v=v,m.  Use maybe_evex prefix attribute
+	instead of vex for the last two above mentioned alternatives.
+
 2016-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70830
