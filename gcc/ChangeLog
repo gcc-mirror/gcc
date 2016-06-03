@@ -1,3 +1,9 @@
+2016-06-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71328
+	* tree-ssa-threadupdate.c (duplicate_thread_path): Fix off-by-one
+	error when checking for a jump back onto the copied path.  */
+
 2016-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/microblaze/microblaze.c (get_branch_target): Add return

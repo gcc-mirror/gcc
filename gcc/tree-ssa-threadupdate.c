@@ -2298,11 +2298,11 @@ duplicate_thread_path (edge entry, edge exit,
 	}
 
       /* Special case the last block on the path: make sure that it does not
-	 jump back on the copied path.  */
+	 jump back on the copied path, including back to itself.  */
       if (i + 1 == n_region)
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (bb_in_bbs (e->dest, region_copy, n_region - 1))
+	    if (bb_in_bbs (e->dest, region_copy, n_region))
 	      {
 		basic_block orig = get_bb_original (e->dest);
 		if (orig)
