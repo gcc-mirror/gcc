@@ -369,6 +369,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	     != opt_for_fn (to->decl, flag_associative_math)
 	  || opt_for_fn (callee->decl, flag_reciprocal_math)
 	     != opt_for_fn (to->decl, flag_reciprocal_math)
+	  || opt_for_fn (callee->decl, flag_fp_int_builtin_inexact)
+	     != opt_for_fn (to->decl, flag_fp_int_builtin_inexact)
 	  || opt_for_fn (callee->decl, flag_errno_math)
 	     != opt_for_fn (to->decl, flag_errno_math))
 	{
@@ -393,6 +395,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	    = opt_for_fn (callee->decl, flag_associative_math);
 	  opts.x_flag_reciprocal_math
 	    = opt_for_fn (callee->decl, flag_reciprocal_math);
+	  opts.x_flag_fp_int_builtin_inexact
+	    = opt_for_fn (callee->decl, flag_fp_int_builtin_inexact);
 	  opts.x_flag_errno_math
 	    = opt_for_fn (callee->decl, flag_errno_math);
 	  if (dump_file)

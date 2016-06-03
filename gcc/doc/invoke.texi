@@ -370,9 +370,9 @@ Objective-C and Objective-C++ Dialects}.
 -flto-partition=@var{alg} -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants -fno-branch-count-reg @gol
--fno-defer-pop -fno-function-cse -fno-guess-branch-probability @gol
--fno-inline -fno-math-errno -fno-peephole -fno-peephole2 @gol
--fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
+-fno-defer-pop -fno-fp-int-builtin-inexact -fno-function-cse @gol
+-fno-guess-branch-probability -fno-inline -fno-math-errno -fno-peephole @gol
+-fno-peephole2 -fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
 -fno-toplevel-reorder -fno-trapping-math -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer -foptimize-sibling-calls @gol
 -fpartial-inlining -fpeel-loops -fpredictive-commoning @gol
@@ -8531,6 +8531,24 @@ The default is @option{-fno-signaling-nans}.
 
 This option is experimental and does not currently guarantee to
 disable all GCC optimizations that affect signaling NaN behavior.
+
+@item -fno-fp-int-builtin-inexact
+@opindex fno-fp-int-builtin-inexact
+Do not allow the built-in functions @code{ceil}, @code{floor},
+@code{round} and @code{trunc}, and their @code{float} and @code{long
+double} variants, to generate code that raises the ``inexact''
+floating-point exception for noninteger arguments.  ISO C99 and C11
+allow these functions to raise the ``inexact'' exception, but ISO/IEC
+TS 18661-1:2014, the C bindings to IEEE 754-2008, does not allow these
+functions to do so.
+
+The default is @option{-ffp-int-builtin-inexact}, allowing the
+exception to be raised.  This option does nothing unless
+@option{-ftrapping-math} is in effect.
+
+Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
+generate a call to a library function then the ``inexact'' exception
+may be raised if the library implementation does not follow TS 18661.
 
 @item -fsingle-precision-constant
 @opindex fsingle-precision-constant

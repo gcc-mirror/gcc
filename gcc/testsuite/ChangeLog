@@ -1,3 +1,17 @@
+2016-06-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/71276
+	PR target/71277
+	* gcc.dg/torture/builtin-fp-int-inexact.c,
+	gcc.target/i386/387-builtin-fp-int-inexact.c,
+	gcc.target/i386/387-rint-inline-1.c,
+	gcc.target/i386/387-rint-inline-2.c,
+	gcc.target/i386/sse2-builtin-fp-int-inexact.c,
+	gcc.target/i386/sse2-rint-inline-1.c,
+	gcc.target/i386/sse2-rint-inline-2.c,
+	gcc.target/i386/sse4_1-builtin-fp-int-inexact.c,
+	gcc.target/i386/sse4_1-rint-inline.c: New tests.
+
 2016-06-03  H.J. Lu  <hongjiu.lu@intel.com>
 	    Julia Koval  <julia.koval@intel.com>
 

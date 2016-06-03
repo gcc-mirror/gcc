@@ -1,3 +1,34 @@
+2016-06-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/71276
+	PR target/71277
+	* common.opt (ffp-int-builtin-inexact): New option.
+	* doc/invoke.texi (-fno-fp-int-builtin-inexact): Document.
+	* doc/md.texi (floor@var{m}2, btrunc@var{m}2, round@var{m}2)
+	(ceil@var{m}2): Document dependence on this option.
+	* ipa-inline-transform.c (inline_call): Handle
+	flag_fp_int_builtin_inexact.
+	* ipa-inline.c (can_inline_edge_p): Likewise.
+	* config/i386/i386.md (rintxf2): Do not test
+	flag_unsafe_math_optimizations.
+	(rint<mode>2_frndint): New define_insn.
+	(rint<mode>2): Do not test flag_unsafe_math_optimizations for 387
+	or !flag_trapping_math for SSE.  Just use gen_rint<mode>2_frndint
+	for 387 instead of extending and truncating.
+	(frndintxf2_<rounding>): Test flag_fp_int_builtin_inexact ||
+	!flag_trapping_math instead of flag_unsafe_math_optimizations.
+	Change to frndint<mode>2_<rounding>.
+	(frndintxf2_<rounding>_i387): Likewise.  Change to
+	frndint<mode>2_<rounding>_i387.
+	(<rounding_insn>xf2): Likewise.
+	(<rounding_insn><mode>2): Test flag_fp_int_builtin_inexact ||
+	!flag_trapping_math instead of flag_unsafe_math_optimizations for
+	x87.  Test TARGET_ROUND || !flag_trapping_math ||
+	flag_fp_int_builtin_inexact instead of !flag_trapping_math for
+	SSE.  Use ROUND_NO_EXC in constant operand of
+	gen_sse4_1_round<mode>2.  Just use gen_frndint<mode>2_<rounding>
+	for 387 instead of extending and truncating.
+
 2016-06-03  H.J. Lu  <hongjiu.lu@intel.com>
 	    Julia Koval  <julia.koval@intel.com>
 
