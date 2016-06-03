@@ -826,8 +826,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
   counts_to_freqs ();
-  profile_status_for_fn (cfun) = PROFILE_READ;
-  compute_function_frequency ();
 
   if (dump_file)
     {
@@ -1329,8 +1327,13 @@ branch_prob (void)
   values.release ();
   free_edge_list (el);
   coverage_end_function (lineno_checksum, cfg_checksum);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    report_predictor_hitrates ();
+  if (flag_branch_probabilities && profile_info)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	report_predictor_hitrates ();
+      profile_status_for_fn (cfun) = PROFILE_READ;
+      compute_function_frequency ();
+    }
 }
 
 /* Union find algorithm implementation for the basic blocks using

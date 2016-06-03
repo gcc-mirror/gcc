@@ -3757,10 +3757,12 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   maybe_lower_iteration_bound (loop);
 
   /* If we have a measured profile, use it to estimate the number of
-     iterations.  */
-  if (loop->header->count != 0)
+     iterations.  Explicitly check for profile status so we do not report
+     wrong prediction hitrates for guessed loop iterations heuristics.  */
+  if (loop->header->count != 0
+      && profile_status_for_fn (cfun) >= PROFILE_READ)
     {
-      gcov_type nit = expected_loop_iterations_unbounded (loop) + 1;
+      gcov_type nit = expected_loop_iterations_unbounded (loop);
       bound = gcov_type_to_wide_int (nit);
       record_niter_bound (loop, bound, true, false);
     }

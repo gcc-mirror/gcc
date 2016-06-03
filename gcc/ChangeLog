@@ -1,3 +1,10 @@
+2016-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Avoid
+	use of profile unless profile status is PROFILE_READ.
+	* profile.c (compute_branch_probabilities): Set profile status
+	only after reporting predictor hitrates.
+
 2016-06-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/71276
