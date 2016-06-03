@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc64le*-*-* } } } */
 /* { dg-skip-if "do not override mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-options "-mcpu=power9 -O0" } */
+/* { dg-require-effective-target p9vector_hw } */
 /* { dg-final { scan-assembler-times "lxvd2x" 6 } } */
 /* { dg-final { scan-assembler-times "lxvw4x" 6 } } */
 /* { dg-final { scan-assembler-times "lxvh8x" 4 } } */
