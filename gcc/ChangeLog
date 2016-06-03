@@ -1,3 +1,12 @@
+2016-06-03  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+        2016-05-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: Move hard float support for arm*hf*-*-freebsd* into
+	armv6*-*-freebsd* for FreeBSD 11. Eliminate the arm*hf*-*-freebsd*
+	target.
+
 2016-06-03  Richard Biener  <rguenther@suse.de>
 
 	* BASE-VER: Set to 5.4.1.
