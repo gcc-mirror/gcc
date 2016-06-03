@@ -1,3 +1,7 @@
+2016-06-03  Alan Hayward  <alan.hayward@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_call) Remove GOMP_SIMD_LANE code.
+
 2016-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/thumb1.md (*thumb1_mulsi3): Fix typos in comment.
