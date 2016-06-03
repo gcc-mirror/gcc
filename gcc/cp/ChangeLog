@@ -1,3 +1,10 @@
+2016-06-03  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/27100
+	* decl.c (duplicate_decls): Properly copy the
+	DECL_PENDING_INLINE_P, DECL_PENDING_INLINE_INFO and
+	DECL_SAVED_FUNCTION_DATA fields from OLDDECL to NEWDECL.
+
 2016-06-03  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* semantics.c (finish_omp_clauses): Mark OpenACC reduction

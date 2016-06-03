@@ -2351,8 +2351,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	}
       else
 	{
-	  if (DECL_PENDING_INLINE_INFO (newdecl) == 0)
-	    DECL_PENDING_INLINE_INFO (newdecl) = DECL_PENDING_INLINE_INFO (olddecl);
+	  if (DECL_PENDING_INLINE_P (olddecl))
+	    {
+	      DECL_PENDING_INLINE_P (newdecl) = 1;
+	      DECL_PENDING_INLINE_INFO (newdecl)
+		= DECL_PENDING_INLINE_INFO (olddecl);
+	    }
+	  else if (DECL_PENDING_INLINE_P (newdecl))
+	    ;
+	  else if (DECL_SAVED_FUNCTION_DATA (newdecl) == NULL)
+	    DECL_SAVED_FUNCTION_DATA (newdecl)
+	      = DECL_SAVED_FUNCTION_DATA (olddecl);
 
 	  DECL_DECLARED_INLINE_P (newdecl) |= DECL_DECLARED_INLINE_P (olddecl);
 
