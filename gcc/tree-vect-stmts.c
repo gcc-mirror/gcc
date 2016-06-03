@@ -2622,29 +2622,6 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   else
     lhs = gimple_call_lhs (stmt);
 
-  if (gimple_call_internal_p (stmt)
-      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
-    {
-      /* Replace uses of the lhs of GOMP_SIMD_LANE call outside the loop
-	 with vf - 1 rather than 0, that is the last iteration of the
-	 vectorized loop.  */
-      imm_use_iterator iter;
-      use_operand_p use_p;
-      gimple *use_stmt;
-      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-	{
-	  basic_block use_bb = gimple_bb (use_stmt);
-	  if (use_bb
-	      && !flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo), use_bb))
-	    {
-	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		SET_USE (use_p, build_int_cst (TREE_TYPE (lhs),
-					       ncopies * nunits_out - 1));
-	      update_stmt (use_stmt);
-	    }
-	}
-    }
-
   new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
   set_vinfo_for_stmt (new_stmt, stmt_info);
   set_vinfo_for_stmt (stmt, NULL);
