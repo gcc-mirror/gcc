@@ -1305,73 +1305,25 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
   return new_temp;
 }
 
+/* Function vect_get_vec_def_for_operand_1.
 
-/* Function vect_get_vec_def_for_operand.
-
-   OP is an operand in STMT.  This function returns a (vector) def that will be
-   used in the vectorized stmt for STMT.
-
-   In the case that OP is an SSA_NAME which is defined in the loop, then
-   STMT_VINFO_VEC_STMT of the defining stmt holds the relevant def.
-
-   In case OP is an invariant or constant, a new stmt that creates a vector def
-   needs to be introduced.  VECTYPE may be used to specify a required type for
-   vector invariant.  */
+   For a defining stmt DEF_STMT of a scalar stmt, return a vector def with type
+   DT that will be used in the vectorized stmt.  */
 
 tree
-vect_get_vec_def_for_operand (tree op, gimple *stmt, tree vectype)
+vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
 {
   tree vec_oprnd;
   gimple *vec_stmt;
-  gimple *def_stmt;
   stmt_vec_info def_stmt_info = NULL;
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  enum vect_def_type dt;
-  bool is_simple_use;
-  tree vector_type;
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_get_vec_def_for_operand: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, op);
-      dump_printf (MSG_NOTE, "\n");
-    }
-
-  is_simple_use = vect_is_simple_use (op, loop_vinfo, &def_stmt, &dt);
-  gcc_assert (is_simple_use);
-  if (dump_enabled_p ())
-    {
-      int loc_printed = 0;
-      if (def_stmt)
-        {
-          if (loc_printed)
-            dump_printf (MSG_NOTE, "  def_stmt =  ");
-          else
-            dump_printf_loc (MSG_NOTE, vect_location, "  def_stmt =  ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
-        }
-    }
 
   switch (dt)
     {
     /* operand is a constant or a loop invariant.  */
     case vect_constant_def:
     case vect_external_def:
-      {
-	if (vectype)
-	  vector_type = vectype;
-	else if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE
-		 && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
-	  vector_type = build_same_sized_truth_vector_type (stmt_vectype);
-	else
-	  vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-
-	gcc_assert (vector_type);
-        return vect_init_vector (stmt, op, vector_type, NULL);
-      }
+      /* Code should use vect_get_vec_def_for_operand.  */
+      gcc_unreachable ();
 
     /* operand is defined inside the loop.  */
     case vect_internal_def:
@@ -1421,6 +1373,64 @@ vect_get_vec_def_for_operand (tree op, gimple *stmt, tree vectype)
     default:
       gcc_unreachable ();
     }
+}
+
+
+/* Function vect_get_vec_def_for_operand.
+
+   OP is an operand in STMT.  This function returns a (vector) def that will be
+   used in the vectorized stmt for STMT.
+
+   In the case that OP is an SSA_NAME which is defined in the loop, then
+   STMT_VINFO_VEC_STMT of the defining stmt holds the relevant def.
+
+   In case OP is an invariant or constant, a new stmt that creates a vector def
+   needs to be introduced.  VECTYPE may be used to specify a required type for
+   vector invariant.  */
+
+tree
+vect_get_vec_def_for_operand (tree op, gimple *stmt, tree vectype)
+{
+  gimple *def_stmt;
+  enum vect_def_type dt;
+  bool is_simple_use;
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+                       "vect_get_vec_def_for_operand: ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, op);
+      dump_printf (MSG_NOTE, "\n");
+    }
+
+  is_simple_use = vect_is_simple_use (op, loop_vinfo, &def_stmt, &dt);
+  gcc_assert (is_simple_use);
+  if (def_stmt && dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "  def_stmt =  ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
+    }
+
+  if (dt == vect_constant_def || dt == vect_external_def)
+    {
+      tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
+      tree vector_type;
+
+      if (vectype)
+	vector_type = vectype;
+      else if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE
+	       && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
+	vector_type = build_same_sized_truth_vector_type (stmt_vectype);
+      else
+	vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+
+      gcc_assert (vector_type);
+      return vect_init_vector (stmt, op, vector_type, NULL);
+    }
+  else
+    return vect_get_vec_def_for_operand_1 (def_stmt, dt);
 }
 
 
