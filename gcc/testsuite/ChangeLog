@@ -1,3 +1,9 @@
+2016-06-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+        PR tree-optimization/52171
+        * gcc.dg/pr52171.c: New test.
+        * gcc.target/i386/pr52171.c: New test.
+
 2016-06-03  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/tree-ssa/pred-1.C: New testcase

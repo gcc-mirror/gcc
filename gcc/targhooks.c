@@ -1482,25 +1482,40 @@ default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 
   switch (op)
     {
-      case CLEAR_BY_PIECES:
-	max_size = STORE_MAX_PIECES;
-	ratio = CLEAR_RATIO (speed_p);
-	break;
-      case MOVE_BY_PIECES:
-	max_size = MOVE_MAX_PIECES;
-	ratio = get_move_ratio (speed_p);
-	break;
-      case SET_BY_PIECES:
-	max_size = STORE_MAX_PIECES;
-	ratio = SET_RATIO (speed_p);
-	break;
-      case STORE_BY_PIECES:
-	max_size = STORE_MAX_PIECES;
-	ratio = get_move_ratio (speed_p);
-	break;
+    case CLEAR_BY_PIECES:
+      max_size = STORE_MAX_PIECES;
+      ratio = CLEAR_RATIO (speed_p);
+      break;
+    case MOVE_BY_PIECES:
+      max_size = MOVE_MAX_PIECES;
+      ratio = get_move_ratio (speed_p);
+      break;
+    case SET_BY_PIECES:
+      max_size = STORE_MAX_PIECES;
+      ratio = SET_RATIO (speed_p);
+      break;
+    case STORE_BY_PIECES:
+      max_size = STORE_MAX_PIECES;
+      ratio = get_move_ratio (speed_p);
+      break;
+    case COMPARE_BY_PIECES:
+      max_size = COMPARE_MAX_PIECES;
+      /* Pick a likely default, just as in get_move_ratio.  */
+      ratio = speed_p ? 15 : 3;
+      break;
     }
 
-  return move_by_pieces_ninsns (size, alignment, max_size + 1) < ratio;
+  return by_pieces_ninsns (size, alignment, max_size + 1, op) < ratio;
+}
+
+/* This hook controls code generation for expanding a memcmp operation by
+   pieces.  Return 1 for the normal pattern of compare/jump after each pair
+   of loads, or a higher number to reduce the number of branches.  */
+
+int
+default_compare_by_pieces_branch_ratio (machine_mode)
+{
+  return 1;
 }
 
 bool

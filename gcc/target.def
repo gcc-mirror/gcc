@@ -3397,8 +3397,9 @@ Both @var{size} and @var{alignment} are measured in terms of storage\n\
 units.\n\
 \n\
 The parameter @var{op} is one of: @code{CLEAR_BY_PIECES},\n\
-@code{MOVE_BY_PIECES}, @code{SET_BY_PIECES}, @code{STORE_BY_PIECES}.\n\
-These describe the type of memory operation under consideration.\n\
+@code{MOVE_BY_PIECES}, @code{SET_BY_PIECES}, @code{STORE_BY_PIECES} or\n\
+@code{COMPARE_BY_PIECES}.  These describe the type of memory operation\n\
+under consideration.\n\
 \n\
 The parameter @var{speed_p} is true if the code is currently being\n\
 optimized for speed rather than size.\n\
@@ -3416,6 +3417,18 @@ move would be greater than that of a library call.",
  bool, (unsigned HOST_WIDE_INT size, unsigned int alignment,
         enum by_pieces_operation op, bool speed_p),
  default_use_by_pieces_infrastructure_p)
+
+DEFHOOK
+(compare_by_pieces_branch_ratio,
+ "When expanding a block comparison in MODE, gcc can try to reduce the\n\
+number of branches at the expense of more memory operations.  This hook\n\
+allows the target to override the default choice.  It should return the\n\
+factor by which branches should be reduced over the plain expansion with\n\
+one comparison per @var{mode}-sized piece.  A port can also prevent a\n\
+particular mode from being used for block comparisons by returning a\n\
+negative number from this hook.",
+ int, (machine_mode mode),
+ default_compare_by_pieces_branch_ratio)
 
 DEFHOOK
 (optab_supported_p,

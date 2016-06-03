@@ -4653,9 +4653,23 @@ If you don't define this, a reasonable default is used.
 
 @hook TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 
+@hook TARGET_COMPARE_BY_PIECES_BRANCH_RATIO
+
 @defmac MOVE_MAX_PIECES
 A C expression used by @code{move_by_pieces} to determine the largest unit
 a load or store used to copy memory is.  Defaults to @code{MOVE_MAX}.
+@end defmac
+
+@defmac STORE_MAX_PIECES
+A C expression used by @code{store_by_pieces} to determine the largest unit
+a store used to memory is.  Defaults to @code{MOVE_MAX_PIECES}, or two times
+the size of @code{HOST_WIDE_INT}, whichever is smaller.
+@end defmac
+
+@defmac COMPARE_MAX_PIECES
+A C expression used by @code{compare_by_pieces} to determine the largest unit
+a load or store used to compare memory is.  Defaults to
+@code{MOVE_MAX_PIECES}.
 @end defmac
 
 @defmac CLEAR_RATIO (@var{speed})

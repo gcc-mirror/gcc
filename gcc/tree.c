@@ -10601,6 +10601,13 @@ build_common_builtin_nodes (void)
 			BUILT_IN_STACK_RESTORE,
 			"__builtin_stack_restore", ECF_NOTHROW | ECF_LEAF);
 
+  ftype = build_function_type_list (integer_type_node, const_ptr_type_node,
+				    const_ptr_type_node, size_type_node,
+				    NULL_TREE);
+  local_define_builtin ("__builtin_memcmp_eq", ftype, BUILT_IN_MEMCMP_EQ,
+			"__builtin_memcmp_eq",
+			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
+
   /* If there's a possibility that we might use the ARM EABI, build the
     alternate __cxa_end_cleanup node used to resume from C++ and Java.  */
   if (targetm.arm_eabi_unwinder)
