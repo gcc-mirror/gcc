@@ -1,3 +1,7 @@
+2016-06-03  Richard Biener  <rguenther@suse.de>
+
+	* BASE-VER: Set to 5.4.1.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
