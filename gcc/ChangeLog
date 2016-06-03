@@ -1,5 +1,19 @@
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
+	* tree-vect-loop.c (vect_analyze_loop_operations): Allow live stmts.
+	(vectorizable_reduction): Check for new relevant state.
+	(vectorizable_live_operation): vectorize live stmts using
+	BIT_FIELD_REF.  Remove special case for gimple assigns stmts.
+	* tree-vect-stmts.c (is_simple_and_all_uses_invariant): New function.
+	(vect_stmt_relevant_p): Check for stmts which are only used live.
+	(process_use): Use of a stmt does not inherit it's live value.
+	(vect_mark_stmts_to_be_vectorized): Simplify relevance inheritance.
+	(vect_analyze_stmt): Check for new relevant state.
+	* tree-vectorizer.h (vect_relevant): New entry for a stmt which is used
+	outside the loop, but not inside it.
+
+2016-06-03  Alan Hayward  <alan.hayward@arm.com>
+
 	* tree-vectorizer.h (vect_get_vec_def_for_operand_1): New
 	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): New
 	(vect_get_vec_def_for_operand): Split out code.
