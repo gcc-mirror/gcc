@@ -30,6 +30,7 @@
 #include "stor-layout.h"
 #include "c-family/c-pragma.h"
 #include "langhooks.h"
+#include "c/c-tree.h"
 
 
 
@@ -5203,6 +5204,14 @@ assignment for unaligned loads and stores");
 	    arg0 = build1 (NOP_EXPR, sizetype, arg0);
 
 	  tree arg1_type = TREE_TYPE (arg1);
+	  if (TREE_CODE (arg1_type) == ARRAY_TYPE)
+	    {
+	      arg1_type = TYPE_POINTER_TO (TREE_TYPE (arg1_type));
+	      tree const0 = build_int_cstu (sizetype, 0);
+	      tree arg1_elt0 = build_array_ref (loc, arg1, const0);
+	      arg1 = build1 (ADDR_EXPR, arg1_type, arg1_elt0);
+	    }
+
 	  tree addr = fold_build2_loc (loc, POINTER_PLUS_EXPR, arg1_type,
 				       arg1, arg0);
 	  tree aligned = fold_build2_loc (loc, BIT_AND_EXPR, arg1_type, addr,
@@ -5256,6 +5265,14 @@ assignment for unaligned loads and stores");
 	    arg1 = build1 (NOP_EXPR, sizetype, arg1);
 
 	  tree arg2_type = TREE_TYPE (arg2);
+	  if (TREE_CODE (arg2_type) == ARRAY_TYPE)
+	    {
+	      arg2_type = TYPE_POINTER_TO (TREE_TYPE (arg2_type));
+	      tree const0 = build_int_cstu (sizetype, 0);
+	      tree arg2_elt0 = build_array_ref (loc, arg2, const0);
+	      arg2 = build1 (ADDR_EXPR, arg2_type, arg2_elt0);
+	    }
+
 	  tree addr = fold_build2_loc (loc, POINTER_PLUS_EXPR, arg2_type,
 				       arg2, arg1);
 	  tree aligned = fold_build2_loc (loc, BIT_AND_EXPR, arg2_type, addr,
