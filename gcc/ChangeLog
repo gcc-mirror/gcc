@@ -1,3 +1,60 @@
+2016-06-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+        PR tree-optimization/52171
+        * builtins.c (expand_cmpstrn_or_cmpmem): Delete, moved elsewhere.
+        (expand_builtin_memcmp): New arg RESULT_EQ.  All callers changed.
+        Look for constant strings.  Move some code to emit_block_cmp_hints
+        and use it.
+        * builtins.def (BUILT_IN_MEMCMP_EQ): New.
+        * defaults.h (COMPARE_MAX_PIECES): New macro.
+        * expr.c (move_by_pieces_d, store_by_pieces_d): Remove old structs.
+        (move_by_pieces_1, store_by_pieces_1, store_by_pieces_2): Remvoe.
+        (clear_by_pieces_1): Don't declare.  Move definition before use.
+        (can_do_by_pieces): New static function.
+        (can_move_by_pieces): Use it.  Return bool.
+        (by_pieces_ninsns): Renamed from move_by_pieces_ninsns.  New arg
+        OP.  All callers changed.  Handle COMPARE_BY_PIECES.
+        (class pieces_addr); New.
+        (pieces_addr::pieces_addr, pieces_addr::decide_autoinc,
+        pieces_addr::adjust, pieces_addr::increment_address,
+        pieces_addr::maybe_predec, pieces_addr::maybe_postinc): New member
+        functions for it.
+        (class op_by_pieces_d): New.
+        (op_by_pieces_d::op_by_pieces_d, op_by_pieces_d::run): New member
+        functions for it.
+        (class move_by_pieces_d, class compare_by_pieces_d,
+        class store_by_pieces_d): New subclasses of op_by_pieces_d.
+        (move_by_pieces_d::prepare_mode, move_by_pieces_d::generate,
+        move_by_pieces_d::finish_endp, store_by_pieces_d::prepare_mode,
+        store_by_pieces_d::generate, store_by_pieces_d::finish_endp,
+        compare_by_pieces_d::generate, compare_by_pieces_d::prepare_mode,
+        compare_by_pieces_d::finish_mode): New member functions.
+        (compare_by_pieces, emit_block_cmp_via_cmpmem): New static
+        functions.
+        (expand_cmpstrn_or_cmpmem): Moved here from builtins.c.
+        (emit_block_cmp_hints): New function.
+        (move_by_pieces, store_by_pieces, clear_by_pieces): Rewrite to just
+        use the newly defined classes.
+        * expr.h (by_pieces_constfn): New typedef.
+        (can_store_by_pieces, store_by_pieces): Use it in arg declarations.
+        (emit_block_cmp_hints, expand_cmpstrn_or_cmpmem): Declare.
+        (move_by_pieces_ninsns): Don't declare.
+        (can_move_by_pieces): Change return value to bool.
+        * target.def (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Update docs.
+        (compare_by_pieces_branch_ratio): New hook.
+        * target.h (enum by_pieces_operation): Add COMPARE_BY_PIECES.
+        (by_pieces_ninsns): Declare.
+        * targethooks.c (default_use_by_pieces_infrastructure_p): Handle
+        COMPARE_BY_PIECES.
+        (default_compare_by_pieces_branch_ratio): New function.
+        * targhooks.h (default_compare_by_pieces_branch_ratio): Declare.
+        * doc/tm.texi.in (STORE_MAX_PIECES, COMPARE_MAX_PIECES): Document.
+        * doc/tm.texi: Regenerate.
+        * tree-ssa-strlen.c: Include "builtins.h".
+        (handle_builtin_memcmp): New static function.
+        (strlen_optimize_stmt): Call it for BUILT_IN_MEMCMP.
+        * tree.c (build_common_builtin_nodes): Create __builtin_memcmp_eq.
+
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
 	* tree-vect-stmts.c (vect_stmt_relevant_p): Do not vectorize non live

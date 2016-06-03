@@ -3671,53 +3671,24 @@ expand_cmpstr (insn_code icode, rtx target, rtx arg1_rtx, rtx arg2_rtx,
   return NULL_RTX;
 }
 
-/* Try to expand cmpstrn or cmpmem operation ICODE with the given operands.
-   ARG3_TYPE is the type of ARG3_RTX.  Return the result rtx on success,
-   otherwise return null.  */
-
-static rtx
-expand_cmpstrn_or_cmpmem (insn_code icode, rtx target, rtx arg1_rtx,
-			  rtx arg2_rtx, tree arg3_type, rtx arg3_rtx,
-			  HOST_WIDE_INT align)
-{
-  machine_mode insn_mode = insn_data[icode].operand[0].mode;
-
-  if (target && (!REG_P (target) || HARD_REGISTER_P (target)))
-    target = NULL_RTX;
-
-  struct expand_operand ops[5];
-  create_output_operand (&ops[0], target, insn_mode);
-  create_fixed_operand (&ops[1], arg1_rtx);
-  create_fixed_operand (&ops[2], arg2_rtx);
-  create_convert_operand_from (&ops[3], arg3_rtx, TYPE_MODE (arg3_type),
-			       TYPE_UNSIGNED (arg3_type));
-  create_integer_operand (&ops[4], align);
-  if (maybe_expand_insn (icode, 5, ops))
-    return ops[0].value;
-  return NULL_RTX;
-}
-
 /* Expand expression EXP, which is a call to the memcmp built-in function.
    Return NULL_RTX if we failed and the caller should emit a normal call,
-   otherwise try to get the result in TARGET, if convenient.  */
+   otherwise try to get the result in TARGET, if convenient.
+   RESULT_EQ is true if we can relax the returned value to be either zero
+   or nonzero, without caring about the sign.  */
 
 static rtx
-expand_builtin_memcmp (tree exp, rtx target)
+expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 {
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  /* Note: The cmpstrnsi pattern, if it exists, is not suitable for
-     implementing memcmp because it will stop if it encounters two
-     zero bytes.  */
-  insn_code icode = direct_optab_handler (cmpmem_optab, SImode);
-  if (icode == CODE_FOR_nothing)
-    return NULL_RTX;
-
   tree arg1 = CALL_EXPR_ARG (exp, 0);
   tree arg2 = CALL_EXPR_ARG (exp, 1);
   tree len = CALL_EXPR_ARG (exp, 2);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  location_t loc = EXPR_LOCATION (exp);
 
   unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
   unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
@@ -3726,22 +3697,38 @@ expand_builtin_memcmp (tree exp, rtx target)
   if (arg1_align == 0 || arg2_align == 0)
     return NULL_RTX;
 
-  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  location_t loc = EXPR_LOCATION (exp);
   rtx arg1_rtx = get_memory_rtx (arg1, len);
   rtx arg2_rtx = get_memory_rtx (arg2, len);
-  rtx arg3_rtx = expand_normal (fold_convert_loc (loc, sizetype, len));
+  rtx len_rtx = expand_normal (fold_convert_loc (loc, sizetype, len));
 
   /* Set MEM_SIZE as appropriate.  */
-  if (CONST_INT_P (arg3_rtx))
+  if (CONST_INT_P (len_rtx))
     {
-      set_mem_size (arg1_rtx, INTVAL (arg3_rtx));
-      set_mem_size (arg2_rtx, INTVAL (arg3_rtx));
+      set_mem_size (arg1_rtx, INTVAL (len_rtx));
+      set_mem_size (arg2_rtx, INTVAL (len_rtx));
     }
 
-  rtx result = expand_cmpstrn_or_cmpmem (icode, target, arg1_rtx, arg2_rtx,
-					 TREE_TYPE (len), arg3_rtx,
-					 MIN (arg1_align, arg2_align));
+  by_pieces_constfn constfn = NULL;
+
+  const char *src_str = c_getstr (arg1);
+  if (src_str == NULL)
+    src_str = c_getstr (arg2);
+  else
+    std::swap (arg1_rtx, arg2_rtx);
+
+  /* If SRC is a string constant and block move would be done
+     by pieces, we can avoid loading the string from memory
+     and only stored the computed constants.  */
+  if (src_str
+      && CONST_INT_P (len_rtx)
+      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1)
+    constfn = builtin_memcpy_read_str;
+
+  rtx result = emit_block_cmp_hints (arg1_rtx, arg2_rtx, len_rtx,
+				     TREE_TYPE (len), target,
+				     result_eq, constfn,
+				     CONST_CAST (char *, src_str));
+
   if (result)
     {
       /* Return the value in the proper mode for this function.  */
@@ -6073,9 +6060,15 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
-      target = expand_builtin_memcmp (exp, target);
+    case BUILT_IN_MEMCMP_EQ:
+      target = expand_builtin_memcmp (exp, target, fcode == BUILT_IN_MEMCMP_EQ);
       if (target)
 	return target;
+      if (fcode == BUILT_IN_MEMCMP_EQ)
+	{
+	  tree newdecl = builtin_decl_explicit (BUILT_IN_MEMCMP);
+	  TREE_OPERAND (exp, 1) = build_fold_addr_expr (newdecl);
+	}
       break;
 
     case BUILT_IN_SETJMP:

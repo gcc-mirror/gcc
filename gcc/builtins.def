@@ -864,6 +864,10 @@ DEF_BUILTIN_STUB (BUILT_IN_STACK_SAVE, "__builtin_stack_save")
 DEF_BUILTIN_STUB (BUILT_IN_STACK_RESTORE, "__builtin_stack_restore")
 DEF_BUILTIN_STUB (BUILT_IN_ALLOCA_WITH_ALIGN, "__builtin_alloca_with_align")
 
+/* An internal version of memcmp, used when the result is only tested for
+   equality with zero.  */
+DEF_BUILTIN_STUB (BUILT_IN_MEMCMP_EQ, "__builtin_memcmp_eq")
+
 /* Object size checking builtins.  */
 DEF_GCC_BUILTIN	       (BUILT_IN_OBJECT_SIZE, "object_size", BT_FN_SIZE_CONST_PTR_INT, ATTR_PURE_NOTHROW_LEAF_LIST)
 DEF_EXT_LIB_BUILTIN_CHKP (BUILT_IN_MEMCPY_CHK, "__memcpy_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_RET1_NOTHROW_NONNULL_LEAF)

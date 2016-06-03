@@ -1039,6 +1039,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STORE_MAX_PIECES  MIN (MOVE_MAX_PIECES, 2 * sizeof (HOST_WIDE_INT))
 #endif
 
+/* Likewise for block comparisons.  */
+#ifndef COMPARE_MAX_PIECES
+#define COMPARE_MAX_PIECES  MOVE_MAX_PIECES
+#endif
+
 #ifndef MAX_MOVE_MAX
 #define MAX_MOVE_MAX MOVE_MAX
 #endif

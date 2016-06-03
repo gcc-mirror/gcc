@@ -199,6 +199,7 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    unsigned int,
 						    enum by_pieces_operation,
 						    bool);
+extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
 extern bool default_profile_before_prologue (void);
 extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
