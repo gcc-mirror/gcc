@@ -1,3 +1,8 @@
+2016-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* cp-gimplify.c (genericize_continue_stmt): Force addition of
+	predict stmt.
+
 2016-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (xref_tag_1): Change pairs of errors to error + inform.
