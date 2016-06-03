@@ -46,5 +46,4 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vec_stmt_relevant_p: stmt live but not relevant" 1 "vect" } } */
-/* { dg-final { scan-tree-dump "statement is simple and uses invariant.  Leaving in place" "vect" } } */
+/* { dg-final { scan-tree-dump-not "vec_stmt_relevant_p: stmt live but not relevant" "vect" } } */

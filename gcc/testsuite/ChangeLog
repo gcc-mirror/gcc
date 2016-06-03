@@ -1,5 +1,9 @@
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
+	* gcc.dg/vect/vect-live-slp-5.c: Remove dg check.
+
+2016-06-03  Alan Hayward  <alan.hayward@arm.com>
+
 	* gcc.dg/tree-ssa/pr64183.c: Ensure test does not vectorize.
 	* testsuite/gcc.dg/vect/no-scevccp-vect-iv-2.c: Remove xfail.
 	* gcc.dg/vect/vect-live-1.c: New test.
