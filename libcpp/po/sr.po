@@ -4,10 +4,10 @@
 # Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2016.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-6.1-b20160131\n"
+"Project-Id-Version: cpplib-6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2016-03-05 08:37+0200\n"
+"PO-Revision-Date: 2016-05-29 19:20+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
 "Language: sr\n"
@@ -271,7 +271,7 @@ msgstr "„%s“ након „#“ није позитиван цео број"
 #: directives.c:1061
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr ""
+msgstr "датотека „%s“ означавач реда занемаренa због нетачног угњежђавања"
 
 #: directives.c:1120 directives.c:1122 directives.c:1124 directives.c:1710
 #, c-format
@@ -432,10 +432,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "неисправан префикс „0b“ за покретну константу"
 
 #: expr.c:555
-#, fuzzy
-#| msgid "use of C++11 hexadecimal floating constant"
 msgid "use of C++1z hexadecimal floating constant"
-msgstr "употреба Ц+11 хексадецималне покретне константе"
+msgstr "употреба Ц+1z хексадецималне покретне константе"
 
 #: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
