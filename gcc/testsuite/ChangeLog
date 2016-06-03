@@ -1,3 +1,13 @@
+2016-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-live-1.c: Remove dg-options.  Add
+	dg-additional-options with just -fno-tree-scev-cprop in it.
+	* gcc.dg/vect/vect-live-2.c: Likewise.
+	* gcc.dg/vect/vect-live-5.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-2.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-3.c: Likewise.
+
 2016-06-03  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/27100
