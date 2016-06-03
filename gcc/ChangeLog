@@ -1,3 +1,9 @@
+2016-06-03  Alan Hayward  <alan.hayward@arm.com>
+
+	* tree-vectorizer.h (vect_get_vec_def_for_operand_1): New
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): New
+	(vect_get_vec_def_for_operand): Split out code.
+
 2016-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (define_peepholes for two mfcr's): Delete.
