@@ -1,3 +1,8 @@
+2016-06-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Mark OpenACC reduction
+	arguments as addressable when async clause exists.
+
 2016-06-02  Jan Hubicka  <jh@suse.cz>
 
 	* cp-gimplify.c (genericize_continue_stmt): Force addition of
