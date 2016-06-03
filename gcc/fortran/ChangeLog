@@ -1,3 +1,10 @@
+2016-06-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_reduction_list): Add mark_addressable
+	bool parameter, set reduction clause DECLs as addressable when true.
+	(gfc_trans_omp_clauses): Pass clauses->async to
+	gfc_trans_omp_reduction_list, add comment describing OpenACC situation.
+
 2016-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/52393
