@@ -1,3 +1,73 @@
+2016-06-03  H.J. Lu  <hongjiu.lu@intel.com>
+	    Julia Koval  <julia.koval@intel.com>
+
+	PR target/66960
+	PR target/67630
+	PR target/67634
+	PR target/67841
+	PR target/68037
+	PR target/68618
+	PR target/68661
+	PR target/69575
+	PR target/69596
+	PR target/69734
+	* config/i386/i386-protos.h (ix86_epilogue_uses): New prototype.
+	* config/i386/i386.c (ix86_conditional_register_usage): Preserve
+	all registers, except for function return registers if there are
+	no caller-saved registers.
+	(ix86_set_func_type): New function.
+	(ix86_set_current_function): Call ix86_set_func_type to set
+	no_caller_saved_registers and func_type.  Call reinit_regs if
+	caller-saved registers are changed.  Don't allow MPX, SSE, MMX
+	nor x87 instructions in interrupt handler nor function with
+	no_caller_saved_registers attribute.
+	(ix86_function_ok_for_sibcall): Return false if there are no
+	caller-saved registers.
+	(type_natural_mode): Don't warn ABI change for MMX in interrupt
+	handler.
+	(ix86_function_arg_advance): Skip for callee in interrupt
+	handler.
+	(ix86_function_arg): Return special arguments in interrupt
+	handler.
+	(ix86_promote_function_mode): Promote pointer to word_mode only
+	for normal functions.
+	(ix86_can_use_return_insn_p): Don't use `ret' instruction in
+	interrupt handler.
+	(ix86_epilogue_uses): New function.
+	(ix86_hard_regno_scratch_ok): Likewise.
+	(ix86_save_reg): Preserve all registers in interrupt handler
+	after reload.  Preserve all registers, except for function
+	return registers, if there are no caller-saved registers after
+	reload.
+	(find_drap_reg): Always use callee-saved register if there are
+	no caller-saved registers.
+	(ix86_minimum_incoming_stack_boundary): Return MIN_STACK_BOUNDARY
+	for interrupt handler.
+	(ix86_expand_prologue): Don't allow DRAP in interrupt handler.
+	Emit cld instruction if stringops are used in interrupt handler
+	or interrupt handler isn't a leaf function.
+	(ix86_expand_epilogue): Generate interrupt return for interrupt
+	handler and pop the 'ERROR_CODE' off the stack before interrupt
+	return in exception handler.
+	(ix86_expand_call): Disallow calling interrupt handler directly.
+	If there are no caller-saved registers, mark all registers that
+	are clobbered by the call which returns as clobbered.
+	(ix86_handle_no_caller_saved_registers_attribute): New function.
+	(ix86_handle_interrupt_attribute): Likewise.
+	(ix86_attribute_table): Add interrupt and no_caller_saved_registers
+	attributes.
+	(TARGET_HARD_REGNO_SCRATCH_OK): Likewise.
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Use argument
+	accumulation in interrupt function if stack may be realigned to
+	avoid DRAP.
+	(EPILOGUE_USES): New.
+	(function_type): New enum.
+	(machine_function): Add func_type and no_caller_saved_registers.
+	* config/i386/i386.md (UNSPEC_INTERRUPT_RETURN): New.
+	(interrupt_return): New pattern.
+	* doc/extend.texi: Document x86 interrupt and
+	no_caller_saved_registers attributes.
+
 2016-06-03  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR tree-optimization/52171

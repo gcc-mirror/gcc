@@ -1,3 +1,65 @@
+2016-06-03  H.J. Lu  <hongjiu.lu@intel.com>
+	    Julia Koval  <julia.koval@intel.com>
+
+	PR target/66960
+	PR target/67630
+	PR target/67634
+	PR target/67841
+	PR target/68037
+	PR target/68618
+	PR target/68661
+	PR target/69575
+	PR target/69596
+	PR target/69734
+	* gcc.dg/guality/pr68037-1.c: New test.
+	* gcc.dg/guality/pr68037-2.c: Likewise.
+	* gcc.dg/guality/pr68037-3.c: Likewise.
+	* gcc.dg/torture/pr68037-1.c: Likewise.
+	* gcc.dg/torture/pr68037-2.c: Likewise.
+	* gcc.dg/torture/pr68037-3.c: Likewise.
+	* gcc.dg/torture/pr68661-1a.c: Likewise.
+	* gcc.dg/torture/pr68661-1b.c: Likewise.
+	* gcc.target/i386/interrupt-1.c: Likewise.
+	* gcc.target/i386/interrupt-2.c: Likewise.
+	* gcc.target/i386/interrupt-3.c: Likewise.
+	* gcc.target/i386/interrupt-4.c: Likewise.
+	* gcc.target/i386/interrupt-5.c: Likewise.
+	* gcc.target/i386/interrupt-6.c: Likewise.
+	* gcc.target/i386/interrupt-7.c: Likewise.
+	* gcc.target/i386/interrupt-8.c: Likewise.
+	* gcc.target/i386/interrupt-9.c: Likewise.
+	* gcc.target/i386/interrupt-10.c: Likewise.
+	* gcc.target/i386/interrupt-11.c: Likewise.
+	* gcc.target/i386/interrupt-12.c: Likewise.
+	* gcc.target/i386/interrupt-13.c: Likewise.
+	* gcc.target/i386/interrupt-14.c: Likewise.
+	* gcc.target/i386/interrupt-15.c: Likewise.
+	* gcc.target/i386/interrupt-16.c: Likewise.
+	* gcc.target/i386/interrupt-17.c: Likewise.
+	* gcc.target/i386/interrupt-18.c: Likewise.
+	* gcc.target/i386/interrupt-19.c: Likewise.
+	* gcc.target/i386/interrupt-20.c: Likewise.
+	* gcc.target/i386/interrupt-21.c: Likewise.
+	* gcc.target/i386/interrupt-22.c: Likewise.
+	* gcc.target/i386/interrupt-23.c: Likewise.
+	* gcc.target/i386/interrupt-24.c: Likewise.
+	* gcc.target/i386/interrupt-25.c: Likewise.
+	* gcc.target/i386/interrupt-26.c: Likewise.
+	* gcc.target/i386/interrupt-27.c: Likewise.
+	* gcc.target/i386/interrupt-28.c: Likewise.
+	* gcc.target/i386/interrupt-387-err-1.c: Likewise.
+	* gcc.target/i386/interrupt-387-err-2.c: Likewise.
+	* gcc.target/i386/interrupt-bnd-err-1.c: Likewise.
+	* gcc.target/i386/interrupt-bnd-err-2.c: Likewise.
+	* gcc.target/i386/interrupt-iamcu.c: Likewise.
+	* gcc.target/i386/interrupt-mmx-err-1.c: Likewise.
+	* gcc.target/i386/interrupt-mmx-err-2.c: Likewise.
+	* gcc.target/i386/interrupt-redzone-1.c: Likewise.
+	* gcc.target/i386/interrupt-redzone-2.c: Likewise.
+	* gcc.target/i386/interrupt-sibcall-1.c: Likewise.
+	* gcc.target/i386/interrupt-sibcall-2.c: Likewise.
+	* gcc.target/i386/interrupt-switch-abi.c: Likewise.
+
 2016-06-03  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR tree-optimization/52171
