@@ -1,3 +1,10 @@
+2016-06-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/70957
+	* gcc.target/powerpc/vsx-elemrev-2.c: Require p9vector hardware
+	support.
+	* gcc.target/powerpc/vsx-elemrev-4.c: Likewise.
+
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
 	* gcc.dg/vect/vect-live-slp-5.c: Remove dg check.
