@@ -1,3 +1,7 @@
+2016-06-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself. 
+
 2016-05-28  Alan Modra  <amodra@gmail.com>
 
 	* Makefile.tpl (configure): Depend on m4 files included.
