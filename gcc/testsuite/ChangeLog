@@ -1,3 +1,8 @@
+2016-06-03  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/27100
+	* g++.dg/other/friend6.C: New test.
+
 2016-06-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* g++.dg/torture/ppc-ldst-array.C: New.
