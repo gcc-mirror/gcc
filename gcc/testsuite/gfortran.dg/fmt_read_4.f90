@@ -4,10 +4,5 @@ PROGRAM ReadMeTwo
   IMPLICIT NONE
   CHARACTER(10) :: var
   var = "TestStr"
-  PRINT ('(') // 'A)', var 
-  PRINT ('(') // 'A)', var 
-  READ ('(') // 'A)', var  
-  PRINT *, var
-  READ *, var
+  READ ('((') // 'A)', var ! { dg-error "Unexpected end of format" }
 END PROGRAM ReadMeTwo
-
