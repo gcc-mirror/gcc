@@ -1512,8 +1512,20 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
     }
 
+  /* If changing the call to __cxa_pure_virtual or similar noreturn function,
+     adjust gimple_call_fntype too.  */
+  if (gimple_call_noreturn_p (new_stmt)
+      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (e->callee->decl)))
+      && TYPE_ARG_TYPES (TREE_TYPE (e->callee->decl))
+      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (e->callee->decl)))
+	  == void_type_node))
+    gimple_call_set_fntype (new_stmt, TREE_TYPE (e->callee->decl));
+
   /* If the call becomes noreturn, remove the LHS if possible.  */
-  if (gimple_call_noreturn_p (new_stmt) && should_remove_lhs_p (lhs))
+  if (lhs
+      && gimple_call_noreturn_p (new_stmt)
+      && (VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (new_stmt)))
+	  || should_remove_lhs_p (lhs)))
     {
       if (TREE_CODE (lhs) == SSA_NAME)
 	{

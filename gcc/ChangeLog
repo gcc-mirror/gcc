@@ -1,8 +1,16 @@
+2016-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71387
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): If redirecting
+	to noreturn e->callee->decl that has void return type and void
+	arguments, adjust gimple_call_fntype and remove lhs even if it had
+	previously addressable type.
+
 2016-06-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71328
 	* tree-ssa-threadupdate.c (duplicate_thread_path): Fix off-by-one
-	error when checking for a jump back onto the copied path.  */
+	error when checking for a jump back onto the copied path.
 
 2016-06-02  David Malcolm  <dmalcolm@redhat.com>
 
