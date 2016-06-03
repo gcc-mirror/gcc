@@ -1330,6 +1330,10 @@ Enum(fp_contract_mode) String(on) Value(FP_CONTRACT_OFF)
 EnumValue
 Enum(fp_contract_mode) String(fast) Value(FP_CONTRACT_FAST)
 
+ffp-int-builtin-inexact
+Common Report Var(flag_fp_int_builtin_inexact) Init(1) Optimization
+Allow built-in functions ceil, floor, round, trunc to raise \"inexact\" exceptions.
+
 ; Nonzero means don't put addresses of constant functions in registers.
 ; Used for compiling the Unix kernel, where strange substitutions are
 ; done on the assembly output.
