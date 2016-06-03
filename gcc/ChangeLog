@@ -1,5 +1,12 @@
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
+	* tree-vect-stmts.c (vect_stmt_relevant_p): Do not vectorize non live
+	relevant stmts which are simple and invariant.
+	* tree-vect-loop.c (vectorizable_live_operation): Check relevance
+	instead of simple and invariant
+
+2016-06-03  Alan Hayward  <alan.hayward@arm.com>
+
 	* tree-vect-loop.c (vect_analyze_loop_operations): Allow live stmts.
 	(vectorizable_reduction): Check for new relevant state.
 	(vectorizable_live_operation): vectorize live stmts using

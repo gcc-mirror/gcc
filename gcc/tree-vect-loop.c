@@ -6344,11 +6344,12 @@ vectorizable_live_operation (gimple *stmt,
   if (nested_in_vect_loop_p (loop, stmt))
     return false;
 
-  /* If STMT is a simple assignment and its inputs are invariant, then it can
-     remain in place, unvectorized.  The original last scalar value that it
-     computes will be used.  */
-  if (is_simple_and_all_uses_invariant (stmt, loop_vinfo))
+  /* If STMT is not relevant and it is a simple assignment and its inputs are
+     invariant then it can remain in place, unvectorized.  The original last
+     scalar value that it computes will be used.  */
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
     {
+      gcc_assert (is_simple_and_all_uses_invariant (stmt, loop_vinfo));
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "statement is simple and uses invariant.  Leaving in "

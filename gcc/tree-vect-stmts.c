@@ -335,7 +335,8 @@ vect_stmt_relevant_p (gimple *stmt, loop_vec_info loop_vinfo,
 	}
     }
 
-  if (*live_p && *relevant == vect_unused_in_scope)
+  if (*live_p && *relevant == vect_unused_in_scope
+      && !is_simple_and_all_uses_invariant (stmt, loop_vinfo))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
