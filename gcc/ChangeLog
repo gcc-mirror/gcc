@@ -1,3 +1,9 @@
+2016-06-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* rs6000-c.c (c/c-tree.h): Add #include.
+	(altivec_resolve_overloaded_builtin): Handle ARRAY_TYPE arguments
+	in C++ when found in the base position of vec_ld or vec_st.
+
 2016-06-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Avoid

@@ -1,3 +1,7 @@
+2016-06-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* g++.dg/torture/ppc-ldst-array.C: New.
+
 2016-06-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/71276
