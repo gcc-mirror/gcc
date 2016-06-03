@@ -1,3 +1,7 @@
+2016-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (define_peepholes for two mfcr's): Delete.
+
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
 	* tree-vect-stmts.c (vectorizable_call) Remove GOMP_SIMD_LANE code.
