@@ -442,6 +442,9 @@ enum stmt_vec_info_type {
    block.  */
 enum vect_relevant {
   vect_unused_in_scope = 0,
+
+  /* The def is only used outside the loop.  */
+  vect_used_only_live,
   /* The def is in the inner loop, and the use is in the outer loop, and the
      use is a reduction stmt.  */
   vect_used_in_outer_by_reduction,
@@ -1072,7 +1075,7 @@ extern loop_vec_info vect_analyze_loop (struct loop *);
 extern void vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
-					 gimple **);
+					 slp_tree, int, gimple **);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
 				    gimple **, slp_tree);
 extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *, gimple **);
@@ -1098,6 +1101,7 @@ extern void vect_get_slp_defs (vec<tree> , slp_tree,
 			       vec<vec<tree> > *, int);
 extern bool vect_slp_bb (basic_block);
 extern gimple *vect_find_last_scalar_stmt_in_slp (slp_tree);
+extern bool is_simple_and_all_uses_invariant (gimple *, loop_vec_info);
 
 /* In tree-vect-patterns.c.  */
 /* Pattern recognition functions.

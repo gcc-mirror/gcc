@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "gimple-fold.h"
 #include "cgraph.h"
+#include "tree-cfg.h"
 
 /* Loop Vectorization Pass.
 
@@ -1678,15 +1679,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
             }
 
           gcc_assert (stmt_info);
-
-          if (STMT_VINFO_LIVE_P (stmt_info))
-            {
-              /* FORNOW: not yet supported.  */
-              if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "not vectorized: value used after loop.\n");
-              return false;
-            }
 
           if (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_scope
               && STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
@@ -5933,7 +5925,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
    from the vectorized reduction operation generated in the previous iteration.
   */
 
-  if (STMT_VINFO_RELEVANT (stmt_info) == vect_unused_in_scope)
+  if (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
     {
       single_defuse_cycle = true;
       epilog_copies = 1;
@@ -6329,84 +6321,117 @@ vectorizable_induction (gimple *phi,
 bool
 vectorizable_live_operation (gimple *stmt,
 			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
+			     slp_tree slp_node, int slp_index,
 			     gimple **vec_stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree op;
-  gimple *def_stmt;
-  ssa_op_iter iter;
+  imm_use_iterator imm_iter;
+  tree lhs, lhs_type, bitsize, vec_bitsize;
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
+  gimple *use_stmt;
+  auto_vec<tree> vec_oprnds;
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
     return false;
 
-  if (!is_gimple_assign (stmt))
-    {
-      if (gimple_call_internal_p (stmt)
-	  && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE
-	  && gimple_call_lhs (stmt)
-	  && loop->simduid
-	  && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
-	  && loop->simduid
-	     == SSA_NAME_VAR (gimple_call_arg (stmt, 0)))
-	{
-	  edge e = single_exit (loop);
-	  basic_block merge_bb = e->dest;
-	  imm_use_iterator imm_iter;
-	  use_operand_p use_p;
-	  tree lhs = gimple_call_lhs (stmt);
-
-	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-	    {
-	      gimple *use_stmt = USE_STMT (use_p);
-	      if (gimple_code (use_stmt) == GIMPLE_PHI
-		  && gimple_bb (use_stmt) == merge_bb)
-		{
-		  if (vec_stmt)
-		    {
-		      tree vfm1
-			= build_int_cst (unsigned_type_node,
-					 loop_vinfo->vectorization_factor - 1);
-		      SET_PHI_ARG_DEF (use_stmt, e->dest_idx, vfm1);
-		    }
-		  return true;
-		}
-	    }
-	}
-
-      return false;
-    }
-
-  if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
-    return false;
-
-  /* FORNOW. CHECKME. */
+  /* FORNOW.  CHECKME.  */
   if (nested_in_vect_loop_p (loop, stmt))
     return false;
 
-  /* FORNOW: support only if all uses are invariant.  This means
-     that the scalar operations can remain in place, unvectorized.
-     The original last scalar value that they compute will be used.  */
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+  /* If STMT is a simple assignment and its inputs are invariant, then it can
+     remain in place, unvectorized.  The original last scalar value that it
+     computes will be used.  */
+  if (is_simple_and_all_uses_invariant (stmt, loop_vinfo))
     {
-      enum vect_def_type dt = vect_uninitialized_def;
-
-      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &dt))
-        {
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "use not simple.\n");
-          return false;
-        }
-
-      if (dt != vect_external_def && dt != vect_constant_def)
-        return false;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "statement is simple and uses invariant.  Leaving in "
+			 "place.\n");
+      return true;
     }
 
-  /* No transformation is required for the cases we currently support.  */
+  if (!vec_stmt)
+    /* No transformation required.  */
+    return true;
+
+  /* If stmt has a related stmt, then use that for getting the lhs.  */
+  if (is_pattern_stmt_p (stmt_info))
+    stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+
+  lhs = (is_a <gphi *> (stmt)) ? gimple_phi_result (stmt)
+	: gimple_get_lhs (stmt);
+  lhs_type = TREE_TYPE (lhs);
+
+  /* Find all uses of STMT outside the loop - there should be exactly one.  */
+  auto_vec<gimple *, 4> worklist;
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
+    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	worklist.safe_push (use_stmt);
+  gcc_assert (worklist.length () == 1);
+
+  bitsize = TYPE_SIZE (lhs_type);
+  vec_bitsize = TYPE_SIZE (vectype);
+
+  /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
+  tree vec_lhs, bitstart;
+  if (slp_node)
+    {
+      gcc_assert (slp_index >= 0);
+
+      int num_scalar = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      int scalar_per_vec = num_scalar / num_vec;
+
+      /* There are three possibilites here:
+	 1: All scalar stmts fit in a single vector.
+	 2: All scalar stmts fit multiple times into a single vector.
+	    We must choose the last occurence of stmt in the vector.
+	 3: Scalar stmts are split across multiple vectors.
+	    We must choose the correct vector and mod the lane accordingly.  */
+
+      /* Get the correct slp vectorized stmt.  */
+      int vec_entry = slp_index / scalar_per_vec;
+      vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
+
+      /* Get entry to use.  */
+      bitstart = build_int_cst (unsigned_type_node,
+				scalar_per_vec - (slp_index % scalar_per_vec));
+      bitstart = int_const_binop (MULT_EXPR, bitsize, bitstart);
+      bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitstart);
+    }
+  else
+    {
+      enum vect_def_type dt = STMT_VINFO_DEF_TYPE (stmt_info);
+      vec_lhs = vect_get_vec_def_for_operand_1 (stmt, dt);
+
+      /* For multiple copies, get the last copy.  */
+      for (int i = 1; i < ncopies; ++i)
+	vec_lhs = vect_get_vec_def_for_stmt_copy (vect_unknown_def_type,
+						  vec_lhs);
+
+      /* Get the last lane in the vector.  */
+      bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
+    }
+
+  /* Create a new vectorized stmt for the uses of STMT and insert outside the
+     loop.  */
+  tree new_name = make_ssa_name (lhs_type);
+  tree new_tree = build3 (BIT_FIELD_REF, lhs_type, vec_lhs, bitsize, bitstart);
+  gimple *new_stmt = gimple_build_assign (new_name, new_tree);
+  gsi_insert_on_edge_immediate (single_exit (loop), new_stmt);
+
+  /* Replace all uses of the USE_STMT in the worklist with the newly inserted
+     statement.  */
+  use_stmt = worklist.pop ();
+  replace_uses_by (gimple_phi_result (use_stmt), new_name);
+  update_stmt (use_stmt);
+
   return true;
 }
 
