@@ -1,3 +1,7 @@
+2016-06-03  Release Manager
+
+	* GCC 5.4.0 released.
+
 2016-02-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68741

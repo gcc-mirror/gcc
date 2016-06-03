@@ -1,3 +1,7 @@
+2016-06-03  Release Manager
+
+	* GCC 5.4.0 released.
+
 2016-05-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk.

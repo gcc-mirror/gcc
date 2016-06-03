@@ -1,3 +1,7 @@
+2016-06-03  Release Manager
+
+	* GCC 5.4.0 released.
+
 2016-04-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport trunk r234428:

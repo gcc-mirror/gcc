@@ -1,3 +1,7 @@
+2016-06-03  Release Manager
+
+	* GCC 5.4.0 released.
+
 2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r232619.
