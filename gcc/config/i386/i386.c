@@ -6024,6 +6024,15 @@ ix86_conditional_register_usage (void)
 {
   int i, c_mask;
 
+  /* If there are no caller-saved registers, preserve all registers.
+     except fixed_regs and registers used for function return value
+     since aggregate_value_p checks call_used_regs[regno] on return
+     value.  */
+  if (cfun && cfun->machine->no_caller_saved_registers)
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (!fixed_regs[i] && !ix86_function_value_regno_p (i))
+	call_used_regs[i] = 0;
+
   /* For 32-bit targets, squash the REX registers.  */
   if (! TARGET_64BIT)
     {
@@ -6795,6 +6804,40 @@ ix86_reset_previous_fndecl (void)
   ix86_previous_fndecl = NULL_TREE;
 }
 
+/* Set the func_type field from the function FNDECL.  */
+
+static void
+ix86_set_func_type (tree fndecl)
+{
+  if (cfun->machine->func_type == TYPE_UNKNOWN)
+    {
+      if (lookup_attribute ("interrupt",
+			    TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	{
+	  int nargs = 0;
+	  for (tree arg = DECL_ARGUMENTS (fndecl);
+	       arg;
+	       arg = TREE_CHAIN (arg))
+	    nargs++;
+	  cfun->machine->no_caller_saved_registers = true;
+	  cfun->machine->func_type
+	    = nargs == 2 ? TYPE_EXCEPTION : TYPE_INTERRUPT;
+
+	  /* Only dwarf2out.c can handle -WORD(AP) as a pointer argument.  */
+	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
+	    sorry ("Only DWARF debug format is supported for interrupt "
+		   "service routine.");
+	}
+      else
+	{
+	  cfun->machine->func_type = TYPE_NORMAL;
+	  if (lookup_attribute ("no_caller_saved_registers",
+				TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	    cfun->machine->no_caller_saved_registers = true;
+	}
+    }
+}
+
 /* Establish appropriate back-end context for processing the function
    FNDECL.  The argument might be NULL to indicate processing at top
    level, outside of any function scope.  */
@@ -6805,7 +6848,14 @@ ix86_set_current_function (tree fndecl)
      several times in the course of compiling a function, and we don't want to
      slow things down too much or call target_reinit when it isn't safe.  */
   if (fndecl == ix86_previous_fndecl)
-    return;
+    {
+      /* There may be 2 function bodies for the same function FNDECL,
+	 one is extern inline and one isn't.  Call ix86_set_func_type
+	 to set the func_type field.  */
+      if (fndecl != NULL_TREE)
+	ix86_set_func_type (fndecl);
+      return;
+    }
 
   tree old_tree;
   if (ix86_previous_fndecl == NULL_TREE)
@@ -6821,6 +6871,8 @@ ix86_set_current_function (tree fndecl)
 	ix86_reset_previous_fndecl ();
       return;
     }
+
+  ix86_set_func_type (fndecl);
 
   tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
   if (new_tree == NULL_TREE)
@@ -6838,6 +6890,8 @@ ix86_set_current_function (tree fndecl)
     }
   ix86_previous_fndecl = fndecl;
 
+  static bool prev_no_caller_saved_registers;
+
   /* 64-bit MS and SYSV ABI have different set of call used registers.
      Avoid expensive re-initialization of init_regs each time we switch
      function context.  */
@@ -6845,6 +6899,45 @@ ix86_set_current_function (tree fndecl)
       && (call_used_regs[SI_REG]
 	  == (cfun->machine->call_abi == MS_ABI)))
     reinit_regs ();
+  /* Need to re-initialize init_regs if caller-saved registers are
+     changed.  */
+  else if (prev_no_caller_saved_registers
+	   != cfun->machine->no_caller_saved_registers)
+    reinit_regs ();
+
+  if (cfun->machine->func_type != TYPE_NORMAL
+      || cfun->machine->no_caller_saved_registers)
+    {
+      /* Don't allow MPX, SSE, MMX nor x87 instructions since they
+	 may change processor state.  */
+      const char *isa;
+      if (TARGET_MPX)
+	isa = "MPX";
+      else if (TARGET_SSE)
+	isa = "SSE";
+      else if (TARGET_MMX)
+	isa = "MMX/3Dnow";
+      else if (TARGET_80387)
+	isa = "80387";
+      else
+	isa = NULL;
+      if (isa != NULL)
+	{
+	  if (cfun->machine->func_type != TYPE_NORMAL)
+	    sorry ("%s instructions aren't allowed in %s service routine",
+		   isa, (cfun->machine->func_type == TYPE_EXCEPTION
+			 ? "exception" : "interrupt"));
+	  else
+	    sorry ("%s instructions aren't allowed in function with "
+		   "no_caller_saved_registers attribute", isa);
+	  /* Don't issue the same error twice.  */
+	  cfun->machine->func_type = TYPE_NORMAL;
+	  cfun->machine->no_caller_saved_registers = false;
+	}
+    }
+
+  prev_no_caller_saved_registers
+    = cfun->machine->no_caller_saved_registers;
 }
 
 
@@ -7125,6 +7218,11 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   tree type, decl_or_type;
   rtx a, b;
   bool bind_global = decl && !targetm.binds_local_p (decl);
+
+  /* Sibling call isn't OK if there are no caller-saved registers
+     since all registers must be preserved before return.  */
+  if (cfun->machine->no_caller_saved_registers)
+    return false;
 
   /* If we are generating position-independent code, we cannot sibcall
      optimize direct calls to global functions, as the PLT requires
@@ -8294,6 +8392,8 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 		      }
 		  }
 		else if ((size == 8 && !TARGET_64BIT)
+			 && (!cfun
+			     || cfun->machine->func_type == TYPE_NORMAL)
 			 && !TARGET_MMX
 			 && !TARGET_IAMCU)
 		  {
@@ -9272,6 +9372,11 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   HOST_WIDE_INT bytes, words;
   int nregs;
 
+  /* The argument of interrupt handler is a special case and is
+     handled in ix86_function_arg.  */
+  if (!cum->caller && cfun->machine->func_type != TYPE_NORMAL)
+    return;
+
   if (mode == BLKmode)
     bytes = int_size_in_bytes (type);
   else
@@ -9587,6 +9692,36 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
   machine_mode mode = omode;
   HOST_WIDE_INT bytes, words;
   rtx arg;
+
+  if (!cum->caller && cfun->machine->func_type != TYPE_NORMAL)
+    {
+      gcc_assert (type != NULL_TREE);
+      if (POINTER_TYPE_P (type))
+	{
+	  /* This is the pointer argument.  */
+	  gcc_assert (TYPE_MODE (type) == Pmode);
+	  if (cfun->machine->func_type == TYPE_INTERRUPT)
+	    /* -WORD(AP) in the current frame in interrupt handler.  */
+	    arg = plus_constant (Pmode, arg_pointer_rtx,
+				 -UNITS_PER_WORD);
+	  else
+	    /* (AP) in the current frame in exception handler.  */
+	    arg = arg_pointer_rtx;
+	}
+      else
+	{
+	  gcc_assert (cfun->machine->func_type == TYPE_EXCEPTION
+		      && TREE_CODE (type) == INTEGER_TYPE
+		      && TYPE_MODE (type) == word_mode);
+	  /* The integer argument is the error code at -WORD(AP) in
+	     the current frame in exception handler.  */
+	  arg = gen_rtx_MEM (word_mode,
+			     plus_constant (Pmode,
+					    arg_pointer_rtx,
+					    -UNITS_PER_WORD));
+	}
+      return arg;
+    }
 
   /* All pointer bounds arguments are handled separately here.  */
   if ((type && POINTER_BOUNDS_TYPE_P (type))
@@ -10149,14 +10284,16 @@ ix86_function_value_bounds (const_tree valtype,
 }
 
 /* Pointer function arguments and return values are promoted to
-   word_mode.  */
+   word_mode for normal functions.  */
 
 static machine_mode
 ix86_promote_function_mode (const_tree type, machine_mode mode,
 			    int *punsignedp, const_tree fntype,
 			    int for_return)
 {
-  if (type != NULL_TREE && POINTER_TYPE_P (type))
+  if (cfun->machine->func_type == TYPE_NORMAL
+      && type != NULL_TREE
+      && POINTER_TYPE_P (type))
     {
       *punsignedp = POINTERS_EXTEND_UNSIGNED;
       return word_mode;
@@ -11367,7 +11504,10 @@ ix86_can_use_return_insn_p (void)
 {
   struct ix86_frame frame;
 
-  if (! reload_completed || frame_pointer_needed)
+  /* Don't use `ret' instruction in interrupt handler.  */
+  if (! reload_completed
+      || frame_pointer_needed
+      || cfun->machine->func_type != TYPE_NORMAL)
     return 0;
 
   /* Don't allow more than 32k pop, since that's all we can do
@@ -11682,11 +11822,77 @@ ix86_select_alt_pic_regnum (void)
   return INVALID_REGNUM;
 }
 
+/* Return true if REGNO is used by the epilogue.  */
+
+bool
+ix86_epilogue_uses (int regno)
+{
+  /* If there are no caller-saved registers, we preserve all registers,
+     except for MMX and x87 registers which aren't supported when saving
+     and restoring registers.  Don't explicitly save SP register since
+     it is always preserved.  */
+  return (epilogue_completed
+	  && cfun->machine->no_caller_saved_registers
+	  && !fixed_regs[regno]
+	  && !STACK_REGNO_P (regno)
+	  && !MMX_REGNO_P (regno));
+}
+
+/* Return nonzero if register REGNO can be used as a scratch register
+   in peephole2.  */
+
+static bool
+ix86_hard_regno_scratch_ok (unsigned int regno)
+{
+  /* If there are no caller-saved registers, we can't use any register
+     as a scratch register after epilogue and use REGNO as scratch
+     register only if it has been used before to avoid saving and
+     restoring it.  */
+  return (!cfun->machine->no_caller_saved_registers
+	  || (!epilogue_completed
+	      && df_regs_ever_live_p (regno)));
+}
+
 /* Return TRUE if we need to save REGNO.  */
 
 static bool
 ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 {
+  /* If there are no caller-saved registers, we preserve all registers,
+     except for MMX and x87 registers which aren't supported when saving
+     and restoring registers.  Don't explicitly save SP register since
+     it is always preserved.  */
+  if (cfun->machine->no_caller_saved_registers)
+    {
+      /* Don't preserve registers used for function return value.  */
+      rtx reg = crtl->return_rtx;
+      if (reg)
+	{
+	  unsigned int i = REGNO (reg);
+	  unsigned int nregs = hard_regno_nregs[i][GET_MODE (reg)];
+	  while (nregs-- > 0)
+	    if ((i + nregs) == regno)
+	      return false;
+
+	  reg = crtl->return_bnd;
+	  if (reg)
+	    {
+	      i = REGNO (reg);
+	      nregs = hard_regno_nregs[i][GET_MODE (reg)];
+	      while (nregs-- > 0)
+		if ((i + nregs) == regno)
+		  return false;
+	    }
+	}
+
+      return (df_regs_ever_live_p (regno)
+	      && !fixed_regs[regno]
+	      && !STACK_REGNO_P (regno)
+	      && !MMX_REGNO_P (regno)
+	      && (regno != HARD_FRAME_POINTER_REGNUM
+		  || !frame_pointer_needed));
+    }
+
   if (regno == REAL_PIC_OFFSET_TABLE_REGNUM
       && pic_offset_table_rtx)
     {
@@ -12400,13 +12606,17 @@ find_drap_reg (void)
 {
   tree decl = cfun->decl;
 
+  /* Always use callee-saved register if there are no caller-saved
+     registers.  */
   if (TARGET_64BIT)
     {
       /* Use R13 for nested function or function need static chain.
 	 Since function with tail call may use any caller-saved
 	 registers in epilogue, DRAP must not use caller-saved
 	 register in such case.  */
-      if (DECL_STATIC_CHAIN (decl) || crtl->tail_call_emit)
+      if (DECL_STATIC_CHAIN (decl)
+	  || cfun->machine->no_caller_saved_registers
+	  || crtl->tail_call_emit)
 	return R13_REG;
 
       return R10_REG;
@@ -12417,7 +12627,9 @@ find_drap_reg (void)
 	 Since function with tail call may use any caller-saved
 	 registers in epilogue, DRAP must not use caller-saved
 	 register in such case.  */
-      if (DECL_STATIC_CHAIN (decl) || crtl->tail_call_emit)
+      if (DECL_STATIC_CHAIN (decl)
+	  || cfun->machine->no_caller_saved_registers
+	  || crtl->tail_call_emit)
 	return DI_REG;
 
       /* Reuse static chain register if it isn't used for parameter
@@ -12458,8 +12670,12 @@ ix86_minimum_incoming_stack_boundary (bool sibcall)
 {
   unsigned int incoming_stack_boundary;
 
+  /* Stack of interrupt handler is always aligned to MIN_STACK_BOUNDARY.
+   */
+  if (cfun->machine->func_type != TYPE_NORMAL)
+    incoming_stack_boundary = MIN_STACK_BOUNDARY;
   /* Prefer the one specified at command line. */
-  if (ix86_user_incoming_stack_boundary)
+  else if (ix86_user_incoming_stack_boundary)
     incoming_stack_boundary = ix86_user_incoming_stack_boundary;
   /* In 32bit, use MIN_STACK_BOUNDARY for incoming stack boundary
      if -mstackrealign is used, it isn't used for sibcall check and
@@ -13220,6 +13436,12 @@ ix86_expand_prologue (void)
     {
       int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
 
+      /* Can't use DRAP in interrupt function.  */
+      if (cfun->machine->func_type != TYPE_NORMAL)
+	sorry ("Dynamic Realign Argument Pointer (DRAP) not supported "
+	       "in interrupt service routine.  This may be worked "
+	       "around by avoiding functions with aggregate return.");
+
       /* Only need to push parameter pointer reg if it is caller saved.  */
       if (!call_used_regs[REGNO (crtl->drap_reg)])
 	{
@@ -13595,8 +13817,14 @@ ix86_expand_prologue (void)
   if (frame_pointer_needed && frame.red_zone_size)
     emit_insn (gen_memory_blockage ());
 
-  /* Emit cld instruction if stringops are used in the function.  */
-  if (TARGET_CLD && ix86_current_function_needs_cld)
+  /* Emit cld instruction if stringops are used in the function.  Since
+     we can't assume the direction flag in interrupt handler, we must
+     emit cld instruction if stringops are used in interrupt handler or
+     interrupt handler isn't a leaf function.  */
+  if ((TARGET_CLD && ix86_current_function_needs_cld)
+      || (!TARGET_CLD
+	  && cfun->machine->func_type != TYPE_NORMAL
+	  && (ix86_current_function_needs_cld || !crtl->is_leaf)))
     emit_insn (gen_cld ());
 
   /* SEH requires that the prologue end within 256 bytes of the start of
@@ -14079,7 +14307,20 @@ ix86_expand_epilogue (int style)
       return;
     }
 
-  if (crtl->args.pops_args && crtl->args.size)
+  if (cfun->machine->func_type != TYPE_NORMAL)
+    {
+      /* Return with the "IRET" instruction from interrupt handler.
+	 Pop the 'ERROR_CODE' off the stack before the 'IRET'
+	 instruction in exception handler.  */
+      if (cfun->machine->func_type == TYPE_EXCEPTION)
+	{
+	  rtx r = plus_constant (Pmode, stack_pointer_rtx,
+				 UNITS_PER_WORD);
+	  emit_insn (gen_rtx_SET (stack_pointer_rtx, r));
+	}
+      emit_jump_insn (gen_interrupt_return ());
+    }
+  else if (crtl->args.pops_args && crtl->args.size)
     {
       rtx popc = GEN_INT (crtl->args.pops_args);
 
@@ -27399,6 +27640,18 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   rtx vec[3];
   rtx use = NULL, call;
   unsigned int vec_len = 0;
+  tree fndecl;
+
+  if (GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+    {
+      fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
+      if (fndecl
+	  && (lookup_attribute ("interrupt",
+				TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))))
+	error ("interrupt service routine can't be called directly");
+    }
+  else
+    fndecl = NULL_TREE;
 
   if (pop == const0_rtx)
     pop = NULL;
@@ -27535,8 +27788,30 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       vec[vec_len++] = pop;
     }
 
-  if (TARGET_64BIT_MS_ABI
-      && (!callarg2 || INTVAL (callarg2) != -2))
+  if (cfun->machine->no_caller_saved_registers
+      && (!fndecl
+	  || (!TREE_THIS_VOLATILE (fndecl)
+	      && !lookup_attribute ("no_caller_saved_registers",
+				    TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))))
+    {
+      static const char ix86_call_used_regs[] = CALL_USED_REGISTERS;
+      bool is_64bit_ms_abi = (TARGET_64BIT
+			      && ix86_function_abi (fndecl) == MS_ABI);
+      char c_mask = CALL_USED_REGISTERS_MASK (is_64bit_ms_abi);
+
+      /* If there are no caller-saved registers, add all registers
+	 that are clobbered by the call which returns.  */
+      for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (!fixed_regs[i]
+	    && (ix86_call_used_regs[i] == 1
+		|| (ix86_call_used_regs[i] & c_mask))
+	    && !STACK_REGNO_P (i)
+	    && !MMX_REGNO_P (i))
+	  clobber_reg (&use,
+		       gen_rtx_REG (GET_MODE (regno_reg_rtx[i]), i));
+    }
+  else if (TARGET_64BIT_MS_ABI
+	   && (!callarg2 || INTVAL (callarg2) != -2))
     {
       int const cregs_size
 	= ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
@@ -44906,6 +45181,54 @@ ix86_handle_fndecl_attribute (tree *node, tree name, tree, int,
   return NULL_TREE;
 }
 
+static tree
+ix86_handle_no_caller_saved_registers_attribute (tree *, tree, tree,
+						 int, bool *)
+{
+  return NULL_TREE;
+}
+
+static tree
+ix86_handle_interrupt_attribute (tree *node, tree, tree, int, bool *)
+{
+  /* DECL_RESULT and DECL_ARGUMENTS do not exist there yet,
+     but the function type contains args and return type data.  */
+  tree func_type = *node;
+  tree return_type = TREE_TYPE (func_type);
+
+  int nargs = 0;
+  tree current_arg_type = TYPE_ARG_TYPES (func_type);
+  while (current_arg_type
+	 && ! VOID_TYPE_P (TREE_VALUE (current_arg_type)))
+    {
+      if (nargs == 0)
+	{
+	  if (! POINTER_TYPE_P (TREE_VALUE (current_arg_type)))
+	    error ("interrupt service routine should have a pointer "
+		   "as the first argument");
+	}
+      else if (nargs == 1)
+	{
+	  if (TREE_CODE (TREE_VALUE (current_arg_type)) != INTEGER_TYPE
+	      || TYPE_MODE (TREE_VALUE (current_arg_type)) != word_mode)
+	    error ("interrupt service routine should have unsigned %s"
+		   "int as the second argument",
+		   TARGET_64BIT
+		   ? (TARGET_X32 ? "long long " : "long ")
+		   : "");
+	}
+      nargs++;
+      current_arg_type = TREE_CHAIN (current_arg_type);
+    }
+  if (!nargs || nargs > 2)
+    error ("interrupt service routine can only have a pointer argument "
+	   "and an optional integer argument");
+  if (! VOID_TYPE_P (return_type))
+    error ("interrupt service routine can't have non-void return value");
+
+  return NULL_TREE;
+}
+
 static bool
 ix86_ms_bitfield_layout_p (const_tree record_type)
 {
@@ -49121,6 +49444,11 @@ static const struct attribute_spec ix86_attribute_table[] =
     false },
   { "callee_pop_aggregate_return", 1, 1, false, true, true,
     ix86_handle_callee_pop_aggregate_return, true },
+  { "interrupt", 0, 0, false, true, true,
+    ix86_handle_interrupt_attribute, false },
+  { "no_caller_saved_registers", 0, 0, false, true, true,
+    ix86_handle_no_caller_saved_registers_attribute, false },
+
   /* End element.  */
   { NULL,        0, 0, false, false, false, NULL, false }
 };
@@ -55181,6 +55509,9 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 
 #undef TARGET_OPTAB_SUPPORTED_P
 #define TARGET_OPTAB_SUPPORTED_P ix86_optab_supported_p
+
+#undef TARGET_HARD_REGNO_SCRATCH_OK
+#define TARGET_HARD_REGNO_SCRATCH_OK ix86_hard_regno_scratch_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
