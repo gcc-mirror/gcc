@@ -1,3 +1,10 @@
+2016-06-04  Martin Sebor  <msebor@redhat.com>
+	    Marcin Baczyński <marbacz@gmail.com>
+
+	PR c/48116
+	* doc/invoke.texi (-Wreturn-type): Mention not warning on return with
+	a void expression in a void function.
+
 2016-06-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Do not check

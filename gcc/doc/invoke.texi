@@ -4055,8 +4055,12 @@ Warn whenever a function is defined with a return type that defaults
 to @code{int}.  Also warn about any @code{return} statement with no
 return value in a function whose return type is not @code{void}
 (falling off the end of the function body is considered returning
-without a value), and about a @code{return} statement with an
-expression in a function whose return type is @code{void}.
+without a value).
+
+For C only, warn about a @code{return} statement with an expression in a
+function whose return type is @code{void}, unless the expression type is
+also @code{void}.  As a GNU extension, the latter case is accepted
+without a warning unless @option{-Wpedantic} is used.
 
 For C++, a function without return type always produces a diagnostic
 message, even when @option{-Wno-return-type} is specified.  The only
