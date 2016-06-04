@@ -1038,8 +1038,16 @@ sh_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 	      int base_num = true_regnum (base);
 	      int index_num = true_regnum (index);
 
-	      fprintf (stream, "@(r0,%s)",
-		       reg_names[MAX (base_num, index_num)]);
+	      /* If base or index is R0, make sure that it comes first.
+		 Usually one of them will be R0, but the order might be wrong.
+		 If neither base nor index are R0 it's an error and we just
+		 pass it on to the assembler.  This avoids silent wrong code
+		 bugs.  */
+	      if (base_num == 0 && index_num != 0)
+		std::swap (base_num, index_num);
+
+	      fprintf (stream, "@(%s,%s)", reg_names[index_num],
+					   reg_names[base_num]);
 	      break;
 	    }
 

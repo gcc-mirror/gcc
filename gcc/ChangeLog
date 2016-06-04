@@ -1,3 +1,8 @@
+2016-06-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_print_operand_address): Don't use hardcoded 'r0'
+	for reg+reg addressing mode.
+
 2016-06-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* rs6000-c.c (c/c-tree.h): Add #include.
