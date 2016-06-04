@@ -1622,9 +1622,16 @@ execute_update_addresses_taken (void)
 		if (gimple_assign_lhs (stmt) != lhs
 		    && !useless_type_conversion_p (TREE_TYPE (lhs),
 						   TREE_TYPE (rhs)))
-		  rhs = fold_build1 (VIEW_CONVERT_EXPR,
-				     TREE_TYPE (lhs), rhs);
-
+		  {
+		    if (gimple_clobber_p (stmt))
+		      {
+			rhs = build_constructor (TREE_TYPE (lhs), NULL);
+			TREE_THIS_VOLATILE (rhs) = 1;
+		      }
+		    else
+		      rhs = fold_build1 (VIEW_CONVERT_EXPR,
+					 TREE_TYPE (lhs), rhs);
+		  }
 		if (gimple_assign_lhs (stmt) != lhs)
 		  gimple_assign_set_lhs (stmt, lhs);
 

@@ -1,3 +1,8 @@
+2016-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71405
+	* g++.dg/torture/pr71405.C: New test.
+
 2016-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70202
