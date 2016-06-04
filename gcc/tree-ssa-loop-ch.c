@@ -50,33 +50,61 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
   gimple_stmt_iterator bsi;
   gimple *last;
 
-  /* Do not copy one block more than once (we do not really want to do
-     loop peeling here).  */
-  if (header->aux)
-    return false;
+  gcc_assert (!header->aux);
 
   /* Loop header copying usually increases size of the code.  This used not to
      be true, since quite often it is possible to verify that the condition is
      satisfied in the first iteration and therefore to eliminate it.  Jump
      threading handles these cases now.  */
   if (optimize_loop_for_size_p (loop))
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Not duplicating bb %i: optimizing for size.\n",
+		 header->index);
+      return false;
+    }
 
   gcc_assert (EDGE_COUNT (header->succs) > 0);
   if (single_succ_p (header))
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Not duplicating bb %i: it is single succ.\n",
+		 header->index);
+      return false;
+    }
+
   if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest)
       && flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 1)->dest))
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Not duplicating bb %i: both sucessors are in loop.\n",
+		 loop->num);
+      return false;
+    }
 
   /* If this is not the original loop header, we want it to have just
      one predecessor in order to match the && pattern.  */
   if (header != loop->header && !single_pred_p (header))
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Not duplicating bb %i: it has mutiple predecestors.\n",
+		 header->index);
+      return false;
+    }
 
   last = last_stmt (header);
   if (gimple_code (last) != GIMPLE_COND)
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Not duplicating bb %i: it does not end by conditional.\n",
+		 header->index);
+      return false;
+    }
 
   /* Approximately copy the conditions that used to be used in jump.c --
      at most 20 insns and no calls.  */
@@ -91,13 +119,26 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 	continue;
 
       if (is_gimple_call (last))
-	return false;
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  Not duplicating bb %i: it contains call.\n",
+		     header->index);
+	  return false;
+	}
 
       *limit -= estimate_num_insns (last, &eni_size_weights);
       if (*limit < 0)
-	return false;
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  Not duplicating bb %i contains too many insns.\n",
+		     header->index);
+	  return false;
+	}
     }
-
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "    Will duplicate bb %i\n", header->index); 
   return true;
 }
 
@@ -111,13 +152,27 @@ do_while_loop_p (struct loop *loop)
   /* If the latch of the loop is not empty, it is not a do-while loop.  */
   if (stmt
       && gimple_code (stmt) != GIMPLE_LABEL)
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loop %i is not do-while loop: latch is not empty.\n",
+		 loop->num);
+      return false;
+    }
 
   /* If the header contains just a condition, it is not a do-while loop.  */
   stmt = last_and_only_stmt (loop->header);
   if (stmt
       && gimple_code (stmt) == GIMPLE_COND)
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loop %i is not do-while loop: "
+		 "header contains just condition.\n", loop->num);
+      return false;
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Loop %i is do-while loop\n", loop->num);
 
   return true;
 }
@@ -236,6 +291,9 @@ ch_base::copy_headers (function *fun)
     {
       /* Copy at most 20 insns.  */
       int limit = 20;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Analyzing loop %i\n", loop->num);
 
       header = loop->header;
 
@@ -272,8 +330,9 @@ ch_base::copy_headers (function *fun)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "Duplicating header of the loop %d up to edge %d->%d.\n",
-		 loop->num, exit->src->index, exit->dest->index);
+		 "Duplicating header of the loop %d up to edge %d->%d,"
+		 " %i insns.\n",
+		 loop->num, exit->src->index, exit->dest->index, 20 - limit);
 
       /* Ensure that the header will have just the latch as a predecessor
 	 inside the loop.  */

@@ -1,3 +1,11 @@
+2016-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Do not check
+	aux; dump reasons of decisions.
+	(should_duplicate_loop_header_p): Likewise.
+	(do_while_loop_p): Likewise.
+	(ch_base::copy_headers): Dump asi num insns duplicated.
+
 2016-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71405
