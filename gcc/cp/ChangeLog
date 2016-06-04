@@ -1,3 +1,9 @@
+2016-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70202
+	* parser.c (cp_parser_class_head): When xref_basetypes fails and
+	emits an error do not zero the type.
+
 2016-06-03  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/27100

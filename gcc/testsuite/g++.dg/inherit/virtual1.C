@@ -5,8 +5,8 @@ struct A
     virtual ~A() {}
 };
 
-struct B : A, virtual A {};     // { dg-error "duplicate base|forward declaration" }
+struct B : A, virtual A {};     // { dg-error "duplicate base" }
 
-struct C : A, B {};             // { dg-error "duplicate base|invalid use" }
+struct C : A, B {};             // { dg-error "duplicate base" }
 
-C c;                            // { dg-error "aggregate" }
+C c;
