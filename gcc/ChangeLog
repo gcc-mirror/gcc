@@ -1,3 +1,10 @@
+2016-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71405
+	* tree-ssa.c (execute_update_addresses_taken): For clobber with
+	incompatible type, build a new clobber with the right type instead
+	of building a VIEW_CONVERT_EXPR around it.
+
 2016-06-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR tree-optimization/52171
