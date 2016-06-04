@@ -12506,11 +12506,11 @@ sh_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
   switch (op)
     {
       case MOVE_BY_PIECES:
-	return move_by_pieces_ninsns (size, align, MOVE_MAX_PIECES + 1)
+	return by_pieces_ninsns (size, align, MOVE_MAX_PIECES + 1, op)
 	  < (!speed_p ? 2 : (align >= 32) ? 16 : 2);
       case STORE_BY_PIECES:
       case SET_BY_PIECES:
-	return move_by_pieces_ninsns (size, align, STORE_MAX_PIECES + 1)
+	return by_pieces_ninsns (size, align, STORE_MAX_PIECES + 1, op)
 	  < (!speed_p ? 2 : (align >= 32) ? 16 : 2);
       default:
 	return default_use_by_pieces_infrastructure_p (size, align,

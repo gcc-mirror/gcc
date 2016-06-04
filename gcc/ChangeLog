@@ -1,5 +1,11 @@
 2016-06-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR tree-optimization/52171
+	* config/sh/sh.c (sh_use_by_pieces_infrastructure_p): Use
+	by_pieces_ninsns instead of move_by_pieces_ninsns.
+
+2016-06-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.c (sh_print_operand_address): Don't use hardcoded 'r0'
 	for reg+reg addressing mode.
 
