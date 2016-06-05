@@ -1,3 +1,8 @@
+2016-06-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69659
+	* gfortran.dg/class_array_22.f03: New test.
+
 2016-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-prof/peel-1.c: Fix testcase.
