@@ -1215,6 +1215,27 @@ expr_coherent_p (tree t1, tree t2)
     return false;
 }
 
+/* Return true if E is predicted by one of loop heuristics.  */
+
+static bool
+predicted_by_loop_heuristics_p (basic_block bb)
+{
+  struct edge_prediction *i;
+  edge_prediction **preds = bb_predictions->get (bb);
+
+  if (!preds)
+    return false;
+
+  for (i = *preds; i; i = i->ep_next)
+    if (i->ep_predictor == PRED_LOOP_ITERATIONS_GUESSED
+	|| i->ep_predictor == PRED_LOOP_ITERATIONS_MAX
+	|| i->ep_predictor == PRED_LOOP_ITERATIONS
+	|| i->ep_predictor == PRED_LOOP_EXIT
+	|| i->ep_predictor == PRED_LOOP_EXTRA_EXIT)
+      return true;
+  return false;
+}
+
 /* Predict branch probability of BB when BB contains a branch that compares
    an induction variable in LOOP with LOOP_IV_BASE_VAR to LOOP_BOUND_VAR. The
    loop exit is compared using LOOP_BOUND_CODE, with step of LOOP_BOUND_STEP.
@@ -1243,10 +1264,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
   edge then_edge;
   edge_iterator ei;
 
-  if (predicted_by_p (bb, PRED_LOOP_ITERATIONS_GUESSED)
-      || predicted_by_p (bb, PRED_LOOP_ITERATIONS)
-      || predicted_by_p (bb, PRED_LOOP_EXIT)
-      || predicted_by_p (bb, PRED_LOOP_EXTRA_EXIT))
+  if (predicted_by_loop_heuristics_p (bb))
     return;
 
   stmt = last_stmt (bb);
@@ -1484,6 +1502,7 @@ predict_extra_loop_exits (edge exit_edge)
     }
 }
 
+
 /* Predict edge probabilities by exploiting loop structure.  */
 
 static void
@@ -1493,10 +1512,10 @@ predict_loops (void)
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
-  FOR_EACH_LOOP (loop, 0)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       basic_block bb, *bbs;
-      unsigned j, n_exits;
+      unsigned j, n_exits = 0;
       vec<edge> exits;
       struct tree_niter_desc niter_desc;
       edge ex;
@@ -1508,7 +1527,9 @@ predict_loops (void)
       gcond *stmt = NULL;
 
       exits = get_loop_exit_edges (loop);
-      n_exits = exits.length ();
+      FOR_EACH_VEC_ELT (exits, j, ex)
+	if (!(ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL | EDGE_FAKE)))
+	  n_exits ++;
       if (!n_exits)
 	{
           exits.release ();
@@ -1522,7 +1543,14 @@ predict_loops (void)
 	  int max = PARAM_VALUE (PARAM_MAX_PREDICTED_ITERATIONS);
 	  int probability;
 	  enum br_predictor predictor;
+	  widest_int nit;
 
+	  if (ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL | EDGE_FAKE))
+	    continue;
+	  /* Loop heuristics do not expect exit conditional to be inside
+	     inner loop.  We predict from innermost to outermost loop.  */
+	  if (predicted_by_loop_heuristics_p (ex->src))
+	    continue;
 	  predict_extra_loop_exits (ex);
 
 	  if (number_of_iterations_exit (loop, ex, &niter_desc, false, false))
@@ -1543,25 +1571,34 @@ predict_loops (void)
 	  /* If we have just one exit and we can derive some information about
 	     the number of iterations of the loop from the statements inside
 	     the loop, use it to predict this exit.  */
-	  else if (n_exits == 1)
+	  else if (n_exits == 1
+		   && estimated_stmt_executions (loop, &nit))
 	    {
-	      nitercst = estimated_stmt_executions_int (loop);
-	      if (nitercst < 0)
-		continue;
-	      if (nitercst > max)
+	      if (wi::gtu_p (nit, max))
 		nitercst = max;
-
+	      else
+		nitercst = nit.to_shwi ();
 	      predictor = PRED_LOOP_ITERATIONS_GUESSED;
+	    }
+	  /* If we have likely upper bound, trust it for very small iteration
+	     counts.  Such loops would otherwise get mispredicted by standard
+	     LOOP_EXIT heuristics.  */
+	  else if (n_exits == 1
+		   && likely_max_stmt_executions (loop, &nit)
+		   && wi::ltu_p (nit,
+				 RDIV (REG_BR_PROB_BASE,
+				       REG_BR_PROB_BASE
+					 - predictor_info
+						 [PRED_LOOP_EXIT].hitrate)))
+	    {
+	      nitercst = nit.to_shwi ();
+	      predictor = PRED_LOOP_ITERATIONS_MAX;
 	    }
 	  else
 	    continue;
 
-	  /* If the prediction for number of iterations is zero, do not
-	     predict the exit edges.  */
-	  if (nitercst == 0)
-	    continue;
-
-	  probability = ((REG_BR_PROB_BASE + nitercst / 2) / nitercst);
+	  gcc_checking_assert (nitercst);
+	  probability = RDIV (REG_BR_PROB_BASE, nitercst);
 	  predict_edge (ex, predictor, probability);
 	}
       exits.release ();
@@ -1619,8 +1656,7 @@ predict_loops (void)
 	  if (!header_found
 	      /* If we already used more reliable loop exit predictors, do not
 		 bother with PRED_LOOP_EXIT.  */
-	      && !predicted_by_p (bb, PRED_LOOP_ITERATIONS_GUESSED)
-	      && !predicted_by_p (bb, PRED_LOOP_ITERATIONS))
+	      && !predicted_by_loop_heuristics_p (bb))
 	    {
 	      /* For loop with many exits we don't want to predict all exits
 	         with the pretty large probability, because if all exits are

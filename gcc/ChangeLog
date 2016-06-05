@@ -1,4 +1,13 @@
-2016-06-03  Jan Hubicka  <hubicka@ucw.cz>
+2016-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (predicted_by_loop_heuristics_p): New function.
+	(predict_iv_comparison): Use it.
+	(predict_loops): Walk from innermost loops; do not predict edges
+	leaving multiple loops multiple times; implement
+	PRED_LOOP_ITERATIONS_MAX heuristics.
+	* predict.def (PRED_LOOP_ITERATIONS_MAX): New predictor.
+
+2016-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfg.c (check_bb_profile): Do not report mismatched profiles when
 	only edges out of BB are EH edges.

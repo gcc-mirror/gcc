@@ -73,6 +73,10 @@ DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_GUESSED, "guessed loop iterations",
 	       PROB_ALWAYS, PRED_FLAG_FIRST_MATCH)
 
+/* Use number of loop iterations guessed by the contents of the loop.  */
+DEF_PREDICTOR (PRED_LOOP_ITERATIONS_MAX, "guessed loop iterations",
+	       PROB_ALWAYS, PRED_FLAG_FIRST_MATCH)
+
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_CONTINUE, "continue", HITRATE (50), 0)
 

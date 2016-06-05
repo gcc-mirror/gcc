@@ -1,3 +1,7 @@
+2016-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/predict-9.c: Update template.
+
 2016-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/49377
