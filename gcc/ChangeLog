@@ -1,3 +1,10 @@
+2016-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71389
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Copy op1 RTX to avoid invalid sharing.
+	(ix86_expand_vector_move_misalign): Ditto.
+
 2016-06-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* expr.c (move_by_pieces_d::generate): Mark mode parameter with
@@ -121,10 +128,8 @@
 	caller-saved registers.
 	(type_natural_mode): Don't warn ABI change for MMX in interrupt
 	handler.
-	(ix86_function_arg_advance): Skip for callee in interrupt
-	handler.
-	(ix86_function_arg): Return special arguments in interrupt
-	handler.
+	(ix86_function_arg_advance): Skip for callee in interrupt handler.
+	(ix86_function_arg): Return special arguments in interrupt handler.
 	(ix86_promote_function_mode): Promote pointer to word_mode only
 	for normal functions.
 	(ix86_can_use_return_insn_p): Don't use `ret' instruction in
@@ -132,9 +137,8 @@
 	(ix86_epilogue_uses): New function.
 	(ix86_hard_regno_scratch_ok): Likewise.
 	(ix86_save_reg): Preserve all registers in interrupt handler
-	after reload.  Preserve all registers, except for function
-	return registers, if there are no caller-saved registers after
-	reload.
+	after reload.  Preserve all registers, except for function return
+	registers, if there are no caller-saved registers after reload.
 	(find_drap_reg): Always use callee-saved register if there are
 	no caller-saved registers.
 	(ix86_minimum_incoming_stack_boundary): Return MIN_STACK_BOUNDARY
@@ -244,8 +248,8 @@
 
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
-	* tree-vectorizer.h (vect_get_vec_def_for_operand_1): New
-	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): New
+	* tree-vectorizer.h (vect_get_vec_def_for_operand_1): New.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): New.
 	(vect_get_vec_def_for_operand): Split out code.
 
 2016-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
@@ -405,7 +409,7 @@
 	(P9V_BUILTIN_VSRV): Macro expansion to define argument types for
 	new builtin.
 	* doc/extend.texi: Document the new vec_vslv and vec_srv built-in
-	functions. 
+	functions.
 
 2016-06-01  Uros Bizjak  <ubizjak@gmail.com>
 	    Jocelyn Mayer  <l_indien@magic.fr>
