@@ -1,3 +1,10 @@
+2016-06-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69659
+	* trans-array.c (gfc_trans_dummy_array_bias): For class arrays use
+	the address of the _data component to reference the arrays data
+	component.
+
 2016-06-03  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* trans-openmp.c (gfc_trans_omp_reduction_list): Add mark_addressable
