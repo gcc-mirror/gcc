@@ -19552,7 +19552,7 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
       m = adjust_address (op0, mode, 0);
       emit_insn (extract (m, op1, const0_rtx));
       m = adjust_address (op0, mode, 16);
-      emit_insn (extract (m, op1, const1_rtx));
+      emit_insn (extract (m, copy_rtx (op1), const1_rtx));
     }
   else
     gcc_unreachable ();
@@ -19724,7 +19724,7 @@ ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
 	  m = adjust_address (op0, V2SFmode, 0);
 	  emit_insn (gen_sse_storelps (m, op1));
 	  m = adjust_address (op0, V2SFmode, 8);
-	  emit_insn (gen_sse_storehps (m, op1));
+	  emit_insn (gen_sse_storehps (m, copy_rtx (op1)));
 	}
     }
   else
