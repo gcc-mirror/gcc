@@ -1,3 +1,10 @@
+2016-06-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/71404
+	* io.c (match_io): For READ, commit in pending symbols in the
+	current statement before trying to match an expression so that
+	if the match fails and we undo symbols we dont toss good symbols.
+
 2016-06-05  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/69659

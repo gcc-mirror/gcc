@@ -3772,6 +3772,9 @@ match_io (io_kind k)
 	    }
 	  if (k == M_READ)
 	    {
+	      /* Commit any pending symbols now so that when we undo
+		 symbols later we wont lose them.  */
+	      gfc_commit_symbols ();
 	      /* Reset current locus to get the initial '(' in an expression.  */
 	      gfc_current_locus = where;
 	      dt->format_expr = NULL;
