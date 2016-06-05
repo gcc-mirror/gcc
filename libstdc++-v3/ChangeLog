@@ -1,3 +1,12 @@
+2016-06-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Protect allocator-overloads of tuple-from-tuple constructors
+	from cases that would create dangling references.
+	* include/std/tuple (tuple(allocator_arg_t, const _Alloc&,
+	const tuple<_UElements...>&), tuple(allocator_arg_t, const _Alloc&,
+	tuple<_UElements...>&&)): Add a check for _NonNestedTuple.
+	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: Adjust.
+
 2016-05-29  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/backwards_compatibility.xml: Adjust
