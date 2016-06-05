@@ -1,3 +1,8 @@
+2016-06-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* expr.c (move_by_pieces_d::generate): Mark mode parameter with
+	ATTRIBUTE_UNUSED.
+
 2016-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (predicted_by_loop_heuristics_p): New function.
