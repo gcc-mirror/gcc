@@ -1,3 +1,10 @@
+2016-06-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69659
+	* trans-array.c (gfc_trans_dummy_array_bias): For class arrays use
+	the address of the _data component to reference the arrays data
+	component.
+
 2016-06-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71156
