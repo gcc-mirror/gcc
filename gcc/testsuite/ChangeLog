@@ -1,3 +1,8 @@
+2016-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49377
+	* g++.dg/template/pr49377.C: New.
+
 2016-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71405
