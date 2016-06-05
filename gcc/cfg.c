@@ -412,20 +412,31 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
 
   if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))
     {
+      bool found = false;
       FOR_EACH_EDGE (e, ei, bb->succs)
-	sum += e->probability;
-      if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
-	fprintf (file, "%s%sInvalid sum of outgoing probabilities %.1f%%\n",
-		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
-		 sum * 100.0 / REG_BR_PROB_BASE);
-      lsum = 0;
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	lsum += e->count;
-      if (EDGE_COUNT (bb->succs)
-	  && (lsum - bb->count > 100 || lsum - bb->count < -100))
-	fprintf (file, "%s%sInvalid sum of outgoing counts %i, should be %i\n",
-		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
-		 (int) lsum, (int) bb->count);
+	{
+	  if (!(e->flags & EDGE_EH))
+	    found = true;
+	  sum += e->probability;
+	}
+      /* Only report mismatches for non-EH control flow. If there are only EH
+	 edges it means that the BB ends by noreturn call.  Here the control
+	 flow may just terminate.  */
+      if (found)
+	{
+	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
+	    fprintf (file, "%s%sInvalid sum of outgoing probabilities %.1f%%\n",
+		     (flags & TDF_COMMENT) ? ";; " : "", s_indent,
+		     sum * 100.0 / REG_BR_PROB_BASE);
+	  lsum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    lsum += e->count;
+	  if (EDGE_COUNT (bb->succs)
+	      && (lsum - bb->count > 100 || lsum - bb->count < -100))
+	    fprintf (file, "%s%sInvalid sum of outgoing counts %i, should be %i\n",
+		     (flags & TDF_COMMENT) ? ";; " : "", s_indent,
+		     (int) lsum, (int) bb->count);
+	}
     }
     if (bb != ENTRY_BLOCK_PTR_FOR_FN (fun))
     {
