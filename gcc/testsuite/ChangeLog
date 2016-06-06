@@ -1,3 +1,8 @@
+2016-06-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71362
+	* gcc.dg/pr71362.c: New test.
+
 2016-06-06  Jakub Jelinek  <jakub@redhat.com>
 	    Patrick Palka  <ppalka@gcc.gnu.org>
 
