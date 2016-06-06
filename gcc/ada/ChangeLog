@@ -1,5 +1,12 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add support
+	for noinline and noclone attributes.
+	(handle_noinline_attribute): New handler.
+	(handle_noclone_attribute): Likewise.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (process_type): Beef up comment.
 
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
