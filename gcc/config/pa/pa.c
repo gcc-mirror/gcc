@@ -6442,7 +6442,7 @@ branch_to_delay_slot_p (rtx_insn *insn)
 	 the branch is followed by an asm.  */
       if (!insn
 	  || GET_CODE (PATTERN (insn)) == ASM_INPUT
-	  || extract_asm_operands (PATTERN (insn)) != NULL_RTX
+	  || asm_noperands (PATTERN (insn)) >= 0
 	  || get_attr_length (insn) > 0)
 	break;
     }
@@ -6473,7 +6473,7 @@ branch_needs_nop_p (rtx_insn *insn)
 	return TRUE;
 
       if (!(GET_CODE (PATTERN (insn)) == ASM_INPUT
-	   || extract_asm_operands (PATTERN (insn)) != NULL_RTX)
+	   || asm_noperands (PATTERN (insn)) >= 0)
 	  && get_attr_length (insn) > 0)
 	break;
     }
@@ -6497,7 +6497,7 @@ use_skip_p (rtx_insn *insn)
       /* We can't rely on the length of asms, so we can't skip asms.  */
       if (!insn
 	  || GET_CODE (PATTERN (insn)) == ASM_INPUT
-	  || extract_asm_operands (PATTERN (insn)) != NULL_RTX)
+	  || asm_noperands (PATTERN (insn)) >= 0)
 	break;
       if (get_attr_length (insn) == 4
 	  && jump_insn == next_active_insn (insn))

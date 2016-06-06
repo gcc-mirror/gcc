@@ -7581,7 +7581,7 @@ means there is no way to communicate to the compiler what is happening
 inside them.  GCC has no visibility of symbols in the @code{asm} and may
 discard them as unreferenced.  It also does not know about side effects of
 the assembler code, such as modifications to memory or registers.  Unlike
-some compilers, GCC assumes that no changes to either memory or registers
+some compilers, GCC assumes that no changes to general purpose registers
 occur.  This assumption may change in a future release.
 
 To avoid complications from future changes to the semantics and the
@@ -7604,6 +7604,10 @@ all basic @code{asm} blocks use the assembler dialect specified by the
 @option{-masm} command-line option (@pxref{x86 Options}).  
 Basic @code{asm} provides no
 mechanism to provide different assembler strings for different dialects.
+
+For basic @code{asm} with non-empty assembler string GCC assumes
+the assembler block does not change any general purpose registers,
+but it may read or write any globally accessible variable.
 
 Here is an example of basic @code{asm} for i386:
 
