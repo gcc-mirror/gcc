@@ -1,3 +1,11 @@
+2016-06-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Support allocators in tuples of zero size.
+	* include/std/tuple (tuple<>::tuple(),
+	tuple<>::tuple(allocator_arg_t, const _Alloc&),
+	tuple<>::tuple(allocator_arg_t, const _Alloc&, const tuple&)): New.
+	* testsuite/20_util/tuple/cons/allocators.cc: Adjust.
+
 2016-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71320
