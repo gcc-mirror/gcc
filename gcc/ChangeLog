@@ -1,3 +1,10 @@
+2016-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71259
+	* tree-vect-slp.c (vect_get_constant_vectors): For
+	VECTOR_BOOLEAN_TYPE_P, return all ones constant instead of
+	one for constant op, and use COND_EXPR for non-constant.
+
 2016-06-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add function-tests.o,
