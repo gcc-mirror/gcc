@@ -3784,16 +3784,23 @@
   [(set_attr "type" "rbit")]
 )
 
-(define_expand "ctz<mode>2"
-  [(match_operand:GPI 0 "register_operand")
-   (match_operand:GPI 1 "register_operand")]
+;; Split after reload into RBIT + CLZ.  Since RBIT is represented as an UNSPEC
+;; it is unlikely to fold with any other operation, so keep this as a CTZ
+;; expression and split after reload to enable scheduling them apart if
+;; needed.
+
+(define_insn_and_split "ctz<mode>2"
+ [(set (match_operand:GPI           0 "register_operand" "=r")
+       (ctz:GPI (match_operand:GPI  1 "register_operand" "r")))]
   ""
-  {
-    emit_insn (gen_rbit<mode>2 (operands[0], operands[1]));
-    emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
-    DONE;
-  }
-)
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  "
+  emit_insn (gen_rbit<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
+  DONE;
+")
 
 (define_insn "*and<mode>_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
