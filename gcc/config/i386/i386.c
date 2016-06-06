@@ -6823,6 +6823,8 @@ ix86_set_func_type (tree fndecl)
 	  cfun->machine->func_type
 	    = nargs == 2 ? TYPE_EXCEPTION : TYPE_INTERRUPT;
 
+	  ix86_optimize_mode_switching[X86_DIRFLAG] = 1;
+
 	  /* Only dwarf2out.c can handle -WORD(AP) as a pointer argument.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	    sorry ("Only DWARF debug format is supported for interrupt "
@@ -13817,16 +13819,6 @@ ix86_expand_prologue (void)
   if (frame_pointer_needed && frame.red_zone_size)
     emit_insn (gen_memory_blockage ());
 
-  /* Emit cld instruction if stringops are used in the function.  Since
-     we can't assume the direction flag in interrupt handler, we must
-     emit cld instruction if stringops are used in interrupt handler or
-     interrupt handler isn't a leaf function.  */
-  if ((TARGET_CLD && ix86_current_function_needs_cld)
-      || (!TARGET_CLD
-	  && cfun->machine->func_type != TYPE_NORMAL
-	  && (ix86_current_function_needs_cld || !crtl->is_leaf)))
-    emit_insn (gen_cld ());
-
   /* SEH requires that the prologue end within 256 bytes of the start of
      the function.  Prevent instruction schedules that would extend that.
      Further, prevent alloca modifications to the stack pointer from being
@@ -18600,6 +18592,35 @@ output_387_binary_op (rtx insn, rtx *operands)
   return buf;
 }
 
+/* Return needed mode for entity in optimize_mode_switching pass.  */
+
+static int
+ix86_dirflag_mode_needed (rtx_insn *insn)
+{
+  if (CALL_P (insn))
+    {
+      if (cfun->machine->func_type == TYPE_NORMAL)
+	return X86_DIRFLAG_ANY;
+      else
+	/* No need to emit CLD in interrupt handler for TARGET_CLD.  */
+	return TARGET_CLD ? X86_DIRFLAG_ANY : X86_DIRFLAG_RESET;
+    }
+
+  if (recog_memoized (insn) < 0)
+    return X86_DIRFLAG_ANY;
+
+  if (get_attr_type (insn) == TYPE_STR)
+    {
+      /* Emit cld instruction if stringops are used in the function.  */
+      if (cfun->machine->func_type == TYPE_NORMAL)
+	return TARGET_CLD ? X86_DIRFLAG_RESET : X86_DIRFLAG_ANY;
+      else
+	return X86_DIRFLAG_RESET;
+    }
+
+  return X86_DIRFLAG_ANY;
+}
+
 /* Check if a 256bit AVX register is referenced inside of EXP.   */
 
 static bool
@@ -18712,6 +18733,8 @@ ix86_mode_needed (int entity, rtx_insn *insn)
 {
   switch (entity)
     {
+    case X86_DIRFLAG:
+      return ix86_dirflag_mode_needed (insn);
     case AVX_U128:
       return ix86_avx_u128_mode_needed (insn);
     case I387_TRUNC:
@@ -18771,6 +18794,8 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
 {
   switch (entity)
     {
+    case X86_DIRFLAG:
+      return mode;
     case AVX_U128:
       return ix86_avx_u128_mode_after (mode, insn);
     case I387_TRUNC:
@@ -18781,6 +18806,18 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
     default:
       gcc_unreachable ();
     }
+}
+
+static int
+ix86_dirflag_mode_entry (void)
+{
+  /* For TARGET_CLD or in the interrupt handler we can't assume
+     direction flag state at function entry.  */
+  if (TARGET_CLD
+      || cfun->machine->func_type != TYPE_NORMAL)
+    return X86_DIRFLAG_ANY;
+
+  return X86_DIRFLAG_RESET;
 }
 
 static int
@@ -18810,6 +18847,8 @@ ix86_mode_entry (int entity)
 {
   switch (entity)
     {
+    case X86_DIRFLAG:
+      return ix86_dirflag_mode_entry ();
     case AVX_U128:
       return ix86_avx_u128_mode_entry ();
     case I387_TRUNC:
@@ -18843,6 +18882,8 @@ ix86_mode_exit (int entity)
 {
   switch (entity)
     {
+    case X86_DIRFLAG:
+      return X86_DIRFLAG_ANY;
     case AVX_U128:
       return ix86_avx_u128_mode_exit ();
     case I387_TRUNC:
@@ -18986,6 +19027,10 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
 {
   switch (entity)
     {
+    case X86_DIRFLAG:
+      if (mode == X86_DIRFLAG_RESET)
+	emit_insn (gen_cld ());
+      break;
     case AVX_U128:
       if (mode == AVX_U128_CLEAN)
 	ix86_avx_emit_vzeroupper (regs_live);
