@@ -1,3 +1,8 @@
+2016-06-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* gcc.dg/vect/vect-live-1.c: Use additional-options.
+	* gcc.dg/vect/vect-live-3.c: Likewise.
+
 2016-06-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71398

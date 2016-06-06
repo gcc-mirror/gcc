@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-fno-tree-scev-cprop" } */
+/* { dg-additional-options "-fno-tree-scev-cprop" } */
 
 #include "tree-vect.h"
 
