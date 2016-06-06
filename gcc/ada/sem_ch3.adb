@@ -2168,7 +2168,7 @@ package body Sem_Ch3 is
       --  Determine whether Body_Decl denotes the body of a late controlled
       --  primitive (either Initialize, Adjust or Finalize). If this is the
       --  case, add a proper spec if the body lacks one. The spec is inserted
-      --  before Body_Decl and immedately analyzed.
+      --  before Body_Decl and immediately analyzed.
 
       procedure Remove_Visible_Refinements (Spec_Id : Entity_Id);
       --  Spec_Id is the entity of a package that may define abstract states.
@@ -2269,8 +2269,12 @@ package body Sem_Ch3 is
 
          Set_Null_Present (Spec, False);
 
-         Insert_Before_And_Analyze (Body_Decl,
-           Make_Subprogram_Declaration (Loc, Specification => Spec));
+         --  Ensure that the freeze node is inserted after the declaration of
+         --  the primitive since its expansion will freeze the primitive.
+
+         Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
+
+         Insert_Before_And_Analyze (Body_Decl, Decl);
       end Handle_Late_Controlled_Primitive;
 
       --------------------------------
@@ -5246,20 +5250,6 @@ package body Sem_Ch3 is
          Set_Invariant_Procedure (Id, Invariant_Procedure (T));
       end if;
 
-      --  Make sure that generic actual types are properly frozen. The subtype
-      --  is marked as a generic actual type when the enclosing instance is
-      --  analyzed, so here we identify the subtype from the tree structure.
-
-      if Expander_Active
-        and then Is_Generic_Actual_Type (Id)
-        and then In_Instance
-        and then not Comes_From_Source (N)
-        and then Nkind (Subtype_Indication (N)) /= N_Subtype_Indication
-        and then Is_Frozen (T)
-      then
-         Freeze_Before (N, Id);
-      end if;
-
       Set_Optimize_Alignment_Flags (Id);
       Check_Eliminated (Id);
 
@@ -5851,15 +5841,20 @@ package body Sem_Ch3 is
       end if;
 
       --  Insert the new declaration in the nearest enclosing scope. If the
-      --  node is a body and N is its return type, the declaration belongs in
-      --  the enclosing scope.
+      --  parent is a body and N is its return type, the declaration belongs
+      --  in the enclosing scope. Likewise if N is the type of a parameter.
 
       P := Parent (N);
 
-      if Nkind (P) = N_Subprogram_Body
-        and then Nkind (N) = N_Function_Specification
+      if Nkind (N) = N_Function_Specification
+        and then Nkind (P) = N_Subprogram_Body
       then
          P := Parent (P);
+      elsif Nkind (N) = N_Parameter_Specification
+        and then Nkind (P) in N_Subprogram_Specification
+        and then Nkind (Parent (P)) = N_Subprogram_Body
+      then
+         P := Parent (Parent (P));
       end if;
 
       while Present (P) and then not Has_Declarations (P) loop
@@ -5973,6 +5968,11 @@ package body Sem_Ch3 is
 
          begin
             Copy_Node (Pbase, Ibase);
+
+            --  Restore Itype status after Copy_Node
+
+            Set_Is_Itype (Ibase);
+            Set_Associated_Node_For_Itype (Ibase, N);
 
             Set_Chars             (Ibase, Svg_Chars);
             Set_Next_Entity       (Ibase, Svg_Next_E);
