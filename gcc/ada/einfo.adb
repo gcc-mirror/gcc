@@ -432,7 +432,6 @@ package body Einfo is
    --    No_Pool_Assigned                Flag131
    --    Is_Default_Init_Cond_Procedure  Flag132
    --    Has_Inherited_Default_Init_Cond Flag133
-   --    Returns_Limited_View            Flag134
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
    --    Is_Machine_Code_Subprogram      Flag137
@@ -3064,12 +3063,6 @@ package body Einfo is
    begin
       return Flag90 (Id);
    end Returns_By_Ref;
-
-   function Returns_Limited_View (Id : E) return B is
-   begin
-      pragma Assert (Ekind (Id) = E_Function);
-      return Flag134 (Id);
-   end Returns_Limited_View;
 
    function Reverse_Bit_Order (Id : E) return B is
    begin
@@ -6142,12 +6135,6 @@ package body Einfo is
       Set_Flag90 (Id, V);
    end Set_Returns_By_Ref;
 
-   procedure Set_Returns_Limited_View (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind (Id) = E_Function);
-      Set_Flag134 (Id, V);
-   end Set_Returns_Limited_View;
-
    procedure Set_Reverse_Bit_Order (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -9141,7 +9128,6 @@ package body Einfo is
       W ("Requires_Overriding",             Flag213 (Id));
       W ("Return_Present",                  Flag54  (Id));
       W ("Returns_By_Ref",                  Flag90  (Id));
-      W ("Returns_Limited_View",            Flag134 (Id));
       W ("Reverse_Bit_Order",               Flag164 (Id));
       W ("Reverse_Storage_Order",           Flag93  (Id));
       W ("Rewritten_For_C",                 Flag287 (Id));

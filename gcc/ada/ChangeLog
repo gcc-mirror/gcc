@@ -1,5 +1,15 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Returns_Limited_View): Remove.
+	(Set_Returns_Limited_View ): Likewise.
+	* einfo.adb (Returns_Limited_View): Likewise.
+	(Set_Returns_Limited_View ): Likewise.
+	* freeze.adb (Late_Freeze_Subprogram): Remove.
+	(Freeze_Entity): Do not defer the freezing of functions returning an
+	incomplete type coming from a limited context.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (finish_subprog_decl): Add ASM_NAME parameter.
 	* gcc-interface/decl.c (gnu_ext_name_for_subprog): New function.
 	(gnat_to_gnu_entity) <E_Subprogram_Type>: Do not check compatibility

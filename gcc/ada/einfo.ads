@@ -3973,12 +3973,6 @@ package Einfo is
 --       by reference, either because its return type is a by-reference-type
 --       or because the function explicitly uses the secondary stack.
 
---    Returns_Limited_View (Flag134)
---       Defined in function entities. Set if the return type of the function
---       at the point of definition is a limited view. Used to handle the late
---       freezing of the function when it is called in the current semantic
---       unit while it is still unfrozen.
-
 --    Reverse_Bit_Order (Flag164) [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order
 --       aspect (set by an aspect clause or attribute definition clause) that
@@ -5972,7 +5966,6 @@ package Einfo is
    --    Requires_Overriding                 (Flag213)  (non-generic case only)
    --    Return_Present                      (Flag54)
    --    Returns_By_Ref                      (Flag90)
-   --    Returns_Limited_View                (Flag134)  (non-generic case only)
    --    Rewritten_For_C                     (Flag287)  (generate C code only)
    --    Sec_Stack_Needed_For_Return         (Flag167)
    --    SPARK_Pragma_Inherited              (Flag265)
@@ -7174,7 +7167,6 @@ package Einfo is
    function Return_Applies_To                   (Id : E) return N;
    function Return_Present                      (Id : E) return B;
    function Returns_By_Ref                      (Id : E) return B;
-   function Returns_Limited_View                (Id : E) return B;
    function Reverse_Bit_Order                   (Id : E) return B;
    function Reverse_Storage_Order               (Id : E) return B;
    function Rewritten_For_C                     (Id : E) return B;
@@ -7848,7 +7840,6 @@ package Einfo is
    procedure Set_Return_Applies_To               (Id : E; V : N);
    procedure Set_Return_Present                  (Id : E; V : B := True);
    procedure Set_Returns_By_Ref                  (Id : E; V : B := True);
-   procedure Set_Returns_Limited_View            (Id : E; V : B := True);
    procedure Set_Reverse_Bit_Order               (Id : E; V : B := True);
    procedure Set_Reverse_Storage_Order           (Id : E; V : B := True);
    procedure Set_Rewritten_For_C                 (Id : E; V : B := True);
@@ -8678,7 +8669,6 @@ package Einfo is
    pragma Inline (Return_Applies_To);
    pragma Inline (Return_Present);
    pragma Inline (Returns_By_Ref);
-   pragma Inline (Returns_Limited_View);
    pragma Inline (Reverse_Bit_Order);
    pragma Inline (Reverse_Storage_Order);
    pragma Inline (Rewritten_For_C);
@@ -9143,7 +9133,6 @@ package Einfo is
    pragma Inline (Set_Return_Applies_To);
    pragma Inline (Set_Return_Present);
    pragma Inline (Set_Returns_By_Ref);
-   pragma Inline (Set_Returns_Limited_View);
    pragma Inline (Set_Reverse_Bit_Order);
    pragma Inline (Set_Reverse_Storage_Order);
    pragma Inline (Set_Rewritten_For_C);
