@@ -22197,7 +22197,7 @@ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{leon}, @samp{leon3}, @samp{leon3v7}, @samp{sparclite}, @samp{f930},
 @samp{f934}, @samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
 @samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
-@samp{niagara3} and @samp{niagara4}.
+@samp{niagara3}, @samp{niagara4} and @samp{niagara7}.
 
 Native Solaris and GNU/Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
@@ -22225,7 +22225,7 @@ f930, f934, sparclite86x
 tsc701
 
 @item v9
-ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4
+ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4, niagara7
 @end table
 
 By default (unless configured otherwise), GCC generates code for the V7
@@ -22267,7 +22267,9 @@ Sun UltraSPARC T1 chips.  With @option{-mcpu=niagara2}, the compiler
 additionally optimizes it for Sun UltraSPARC T2 chips. With
 @option{-mcpu=niagara3}, the compiler additionally optimizes it for Sun
 UltraSPARC T3 chips.  With @option{-mcpu=niagara4}, the compiler
-additionally optimizes it for Sun UltraSPARC T4 chips.
+additionally optimizes it for Sun UltraSPARC T4 chips.  With
+@option{-mcpu=niagara7}, the compiler additionally optimizes it for
+Oracle SPARC M7 chips.
 
 @item -mtune=@var{cpu_type}
 @opindex mtune
@@ -22277,12 +22279,13 @@ option @option{-mcpu=@var{cpu_type}} does.
 
 The same values for @option{-mcpu=@var{cpu_type}} can be used for
 @option{-mtune=@var{cpu_type}}, but the only useful values are those
-that select a particular CPU implementation.  Those are @samp{cypress},
-@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{leon3},
-@samp{leon3v7}, @samp{f930}, @samp{f934}, @samp{sparclite86x}, @samp{tsc701},
-@samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
-@samp{niagara3} and @samp{niagara4}.  With native Solaris and GNU/Linux
-toolchains, @samp{native} can also be used.
+that select a particular CPU implementation.  Those are
+@samp{cypress}, @samp{supersparc}, @samp{hypersparc}, @samp{leon},
+@samp{leon3}, @samp{leon3v7}, @samp{f930}, @samp{f934},
+@samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
+@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
+@samp{niagara4} and @samp{niagara7}.  With native Solaris and
+GNU/Linux toolchains, @samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus
@@ -22319,6 +22322,16 @@ version 3.0 of the UltraSPARC Visual Instruction Set extensions.  The
 default is @option{-mvis3} when targeting a cpu that supports such
 instructions, such as niagara-3 and later.  Setting @option{-mvis3}
 also sets @option{-mvis2} and @option{-mvis}.
+
+@item -mvis4
+@itemx -mno-vis4
+@opindex mvis4
+@opindex mno-vis4
+With @option{-mvis4}, GCC generates code that takes advantage of
+version 4.0 of the UltraSPARC Visual Instruction Set extensions.  The
+default is @option{-mvis4} when targeting a cpu that supports such
+instructions, such as niagara-7 and later.  Setting @option{-mvis4}
+also sets @option{-mvis3}, @option{-mvis2} and @option{-mvis}.
 
 @item -mcbcond
 @itemx -mno-cbcond

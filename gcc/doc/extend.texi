@@ -18163,6 +18163,45 @@ int64_t __builtin_vis_xmulx (int64_t, int64_t);
 int64_t __builtin_vis_xmulxhi (int64_t, int64_t);
 @end smallexample
 
+When you use the @option{-mvis4} switch, the VIS version 4.0 built-in
+functions also become available:
+
+@smallexample
+v8qi __builtin_vis_fpadd8 (v8qi, v8qi);
+v8qi __builtin_vis_fpadds8 (v8qi, v8qi);
+v8qi __builtin_vis_fpaddus8 (v8qi, v8qi);
+v4hi __builtin_vis_fpaddus16 (v4hi, v4hi);
+
+v8qi __builtin_vis_fpsub8 (v8qi, v8qi);
+v8qi __builtin_vis_fpsubs8 (v8qi, v8qi);
+v8qi __builtin_vis_fpsubus8 (v8qi, v8qi);
+v4hi __builtin_vis_fpsubus16 (v4hi, v4hi);
+
+long __builtin_vis_fpcmple8 (v8qi, v8qi);
+long __builtin_vis_fpcmpgt8 (v8qi, v8qi);
+long __builtin_vis_fpcmpule16 (v4hi, v4hi);
+long __builtin_vis_fpcmpugt16 (v4hi, v4hi);
+long __builtin_vis_fpcmpule32 (v2si, v2si);
+long __builtin_vis_fpcmpugt32 (v2si, v2si);
+
+v8qi __builtin_vis_fpmax8 (v8qi, v8qi);
+v4hi __builtin_vis_fpmax16 (v4hi, v4hi);
+v2si __builtin_vis_fpmax32 (v2si, v2si);
+
+v8qi __builtin_vis_fpmaxu8 (v8qi, v8qi);
+v4hi __builtin_vis_fpmaxu16 (v4hi, v4hi);
+v2si __builtin_vis_fpmaxu32 (v2si, v2si);
+
+
+v8qi __builtin_vis_fpmin8 (v8qi, v8qi);
+v4hi __builtin_vis_fpmin16 (v4hi, v4hi);
+v2si __builtin_vis_fpmin32 (v2si, v2si);
+
+v8qi __builtin_vis_fpminu8 (v8qi, v8qi);
+v4hi __builtin_vis_fpminu16 (v4hi, v4hi);
+v2si __builtin_vis_fpminu32 (v2si, v2si);
+@end smallexample
+
 @node SPU Built-in Functions
 @subsection SPU Built-in Functions
 

@@ -1,3 +1,9 @@
+2016-06-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/sparc/vis4misc.c: New file.
+	* gcc.target/sparc/fpcmp.c: Likewise.
+	* gcc.target/sparc/fpcmpu.c: Likewise.
+
 2016-06-06  Alan Hayward  <alan.hayward@arm.com>
 
 	* gcc.dg/vect/vect-live-1.c: Use additional-options.
