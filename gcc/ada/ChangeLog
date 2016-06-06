@@ -1,5 +1,12 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu): Rework special code dealing
+	with boolean rvalues and set the location directly.  Do not set the
+	location in the other cases for a simple name.
+	(gnat_to_gnu_external): Clear the location on the expression.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Component>: Remove
 	useless 'else' statements and tidy up.
 	<E_Array_Subtype>: Fully deal with the declaration here.
