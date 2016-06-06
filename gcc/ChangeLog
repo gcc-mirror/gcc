@@ -1,3 +1,9 @@
+2016-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71398
+	* tree-ssa-loop-ivcanon.c (unloop_loops): First unloop, then
+	remove edges.
+
 2016-06-05  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/ft32.c (ft32_setup_incoming_varargs,
