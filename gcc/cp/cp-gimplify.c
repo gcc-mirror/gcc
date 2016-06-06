@@ -940,6 +940,17 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   *stmt_p = stmt = cp_fold (*stmt_p);
 
+  if (((hash_set<tree> *) data)->add (stmt))
+    {
+      /* Don't walk subtrees of stmts we've already walked once, otherwise
+	 we can have exponential complexity with e.g. lots of nested
+	 SAVE_EXPRs or TARGET_EXPRs.  cp_fold uses a cache and will return
+	 always the same tree, which the first time cp_fold_r has been
+	 called on it had the subtrees walked.  */
+      *walk_subtrees = 0;
+      return NULL;
+    }
+
   code = TREE_CODE (stmt);
   if (code == OMP_FOR || code == OMP_SIMD || code == OMP_DISTRIBUTE
       || code == OMP_TASKLOOP || code == CILK_FOR || code == CILK_SIMD
@@ -997,7 +1008,8 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 void
 cp_fold_function (tree fndecl)
 {
-  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, NULL, NULL);
+  hash_set<tree> pset;
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &pset, NULL);
 }
 
 /* Perform any pre-gimplification lowering of C++ front end trees to

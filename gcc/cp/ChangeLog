@@ -1,3 +1,15 @@
+2016-06-06  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70847
+	PR c++/71330
+	PR c++/71393
+	* cp-gimplify.c (cp_fold_r): Set *walk_subtrees = 0 and return NULL
+	right after cp_fold call if cp_fold has returned the same stmt
+	already in some earlier cp_fold_r call.
+	(cp_fold_function): Add pset automatic variable, pass its address
+	to cp_walk_tree.
+
 2016-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70202
