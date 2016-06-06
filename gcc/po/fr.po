@@ -122,10 +122,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.1-b20160131\n"
+"Project-Id-Version: gcc 6.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-04-21 15:24+0000\n"
-"PO-Revision-Date: 2016-03-17 00:28+0100\n"
+"PO-Revision-Date: 2016-06-02 00:10+0200\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -1203,10 +1203,9 @@ msgid "function returns address of local variable"
 msgstr "cette fonction retourne l'adresse d'une variable locale"
 
 #: gimple-ssa-isolate-paths.c:442 gimple-ssa-isolate-paths.c:287
-#, fuzzy, gcc-internal-format
-#| msgid "function returns address of local variable"
+#, gcc-internal-format
 msgid "function may return address of local variable"
-msgstr "cette fonction retourne l'adresse d'une variable locale"
+msgstr "cette fonction peut retourner l'adresse d'une variable locale"
 
 #: incpath.c:72
 #, c-format
@@ -1253,10 +1252,8 @@ msgid "function might be candidate for attribute %<%s%>"
 msgstr "fonction peut être une candidate pour l'attribut %<%s%>"
 
 #: ipa-pure-const.c:188
-#, fuzzy
-#| msgid "function might be possible candidate for attribute `noreturn'"
 msgid "function might be candidate for attribute %<%s%> if it is known to return normally"
-msgstr "fonction peut être une possible candidate pour l'attribut « norreturn »"
+msgstr "fonction peut être une candidate possible pour l'attribut %<%s%> si elle connue pour returner normallement"
 
 #: langhooks.c:373
 msgid "At top level:"
@@ -1542,16 +1539,12 @@ msgid "function not inlinable"
 msgstr "fonction ne peut être enligne"
 
 #: cif-code.def:60
-#, fuzzy
-#| msgid "function cannot be inline"
 msgid "function body can be overwritten at link time"
-msgstr "fonction ne pas pas être enligne"
+msgstr "le corps de la fonction peut être remplacé durant l’édition de liaison"
 
 #: cif-code.def:64
-#, fuzzy
-#| msgid "function not inlinable"
 msgid "function not inline candidate"
-msgstr "fonction ne peut être enligne"
+msgstr "la fonction n’est pas une candidate à l'enlignage"
 
 #: cif-code.def:68
 msgid "--param large-function-growth limit reached"
@@ -1610,18 +1603,12 @@ msgid "non-call exception handling mismatch"
 msgstr "Autoriser le traitement des exceptions"
 
 #: cif-code.def:113
-#, fuzzy
-#| msgid ""
-#| "\n"
-#| "Target specific options:\n"
 msgid "target specific option mismatch"
-msgstr "Options spécifiques à la cible:\n"
+msgstr "option spécifique de cible incohérente"
 
 #: cif-code.def:117
-#, fuzzy
-#| msgid "optimization level restored"
 msgid "optimization level attribute mismatch"
-msgstr "niveau d'optimisation restauré"
+msgstr "attribut de niveau d’optimisation incohérent"
 
 #: cif-code.def:121
 msgid "callee refers to comdat-local symbols"
@@ -1629,7 +1616,7 @@ msgstr ""
 
 #: cif-code.def:125
 msgid "function attribute mismatch"
-msgstr ""
+msgstr "attribut de fonction incohérent"
 
 #: cif-code.def:129
 #, fuzzy
@@ -1650,7 +1637,7 @@ msgstr "erreur fatale : "
 #. when reporting fatal signal in the compiler.
 #: diagnostic.def:34 diagnostic.def:50
 msgid "internal compiler error: "
-msgstr "erreur interne du compilateur: "
+msgstr "erreur interne du compilateur : "
 
 #. This one is just for counting DK_WARNING promoted to DK_ERROR
 #. due to -Werror and -Werror=warning.
@@ -1660,7 +1647,7 @@ msgstr "erreur : "
 
 #: diagnostic.def:36
 msgid "sorry, unimplemented: "
-msgstr "désolé, pas implanté: "
+msgstr "désolé, pas implanté : "
 
 #: diagnostic.def:37
 msgid "warning: "
@@ -1794,10 +1781,9 @@ msgid "Maximal growth due to inlining of large function (in percent)."
 msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcentage)."
 
 #: params.def:193
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of translation unit to be considered large."
-msgstr "La taille du corps de la fonction est considéré comme étant grande"
+msgstr "La taille de l’unité de traduction considérée comme étant grande."
 
 #: params.def:197
 #, no-c-format
@@ -1987,10 +1973,9 @@ msgid "Loops iterating at least selected number of iterations will get loop alig
 msgstr ""
 
 #: params.def:417
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions when automatically inlining"
+#, no-c-format
 msgid "The maximum number of loop iterations we predict statically."
-msgstr "Le nombre maximum d'instructions lorsqu'automatiquement de type enligne"
+msgstr "Le nombre maximum d’itérations de boucle à prédire statiquement."
 
 #: params.def:430
 #, no-c-format
@@ -2044,10 +2029,9 @@ msgid "The maximum expansion factor when copying basic blocks."
 msgstr ""
 
 #: params.def:478
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos."
-msgstr "Le nombre maximum d'insns d'une boucle sans branchement"
+msgstr "Le nombre maximum d'insns à dupliquer lors des supressions de goto."
 
 #: params.def:484
 #, no-c-format
@@ -2055,10 +2039,9 @@ msgid "The maximum length of path considered in cse."
 msgstr "La longueur maximale des chemins considérés dans cse."
 
 #: params.def:488
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions for the RTL inliner"
+#, no-c-format
 msgid "The maximum instructions CSE process before flushing."
-msgstr "Le nombre maximum d'instructions pour la fonction d'enlignage RTL"
+msgstr "Le nombre maximum d'instructions de processus CSE avant vidage du buffer."
 
 #: params.def:495
 #, no-c-format
@@ -2133,10 +2116,9 @@ msgid "Target block's relative execution frequency (as a percentage) required to
 msgstr ""
 
 #: params.def:586 params.def:596
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of blocks in a region to be considered for interblock scheduling."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le nombre maximum de blocs dans une région à considérer pour la gestion des interblocages."
 
 #: params.def:591 params.def:601
 #, fuzzy, no-c-format
@@ -2329,10 +2311,9 @@ msgid "size of tiles for loop blocking."
 msgstr ""
 
 #: params.def:842
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop"
+#, no-c-format
 msgid "maximum number of parameters in a SCoP."
-msgstr "Le nombre maximum de passes de réduction d'une boucle simple"
+msgstr "Le nombre maximum de paramètres dans un scope."
 
 #: params.def:849
 #, no-c-format
@@ -2340,10 +2321,9 @@ msgid "maximum number of basic blocks per function to be analyzed by Graphite."
 msgstr ""
 
 #: params.def:856
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop"
+#, no-c-format
 msgid "maximum number of arrays per scop."
-msgstr "Le nombre maximum de passes de réduction d'une boucle simple"
+msgstr "Le nombre maximum de tableaux par scope."
 
 #: params.def:863
 #, no-c-format
@@ -2351,10 +2331,9 @@ msgid "minimal number of loops per function to be analyzed by Graphite."
 msgstr ""
 
 #: params.def:868
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "maximum number of isl operations, 0 means unlimited"
-msgstr "Le nombre maximum d'insns d'une boucle sans branchement"
+msgstr "Le nombre maximum d'opérations isl, 0 pour illimité"
 
 #: params.def:874
 #, no-c-format
@@ -2536,16 +2515,14 @@ msgid "Maximum length of candidate scans for straight-line strength reduction."
 msgstr "Exécuter un réduction en force des optimisations"
 
 #: params.def:1102
-#, fuzzy, no-c-format
-#| msgid "Enable stack probing"
+#, no-c-format
 msgid "Enable asan stack protection."
-msgstr "Autoriser le sondage de la pile"
+msgstr "Autoriser la protection de pile asan"
 
 #: params.def:1107
-#, fuzzy, no-c-format
-#| msgid "Enable parallel instructions"
+#, no-c-format
 msgid "Enable asan globals protection."
-msgstr "Autoriser les instructions parallèles"
+msgstr "Autoriser la protection des constantes asan."
 
 #: params.def:1112
 #, fuzzy, no-c-format
