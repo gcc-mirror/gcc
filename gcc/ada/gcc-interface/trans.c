@@ -9512,7 +9512,9 @@ process_type (Entity_Id gnat_entity)
 
   /* If we saved away a dummy type for this node, it means that this made the
      type that corresponds to the full type of an incomplete type.  Clear that
-     type for now and then update the type in the pointers below.  */
+     type for now and then update the type in the pointers below.  But, if the
+     saved type is not dummy, it very likely means that we have a use before
+     declaration for the type in the tree, what we really cannot handle.  */
   if (gnu_old)
     {
       gcc_assert (TREE_CODE (gnu_old) == TYPE_DECL

@@ -1,5 +1,9 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (process_type): Beef up comment.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_call_alloc_dealloc): Do not substitute
 	placeholder expressions here but...
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Free_Statement>: ...here.
