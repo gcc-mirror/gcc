@@ -3430,6 +3430,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       && c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
     {
       struct c_declarator *inner = build_id_declarator (NULL_TREE);
+      inner->id_loc = c_parser_peek_token (parser)->location;
       return c_parser_direct_declarator_inner (parser, *seen_id, inner);
     }
 

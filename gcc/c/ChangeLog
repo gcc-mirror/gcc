@@ -1,5 +1,10 @@
 2016-06-06  Marek Polacek  <polacek@redhat.com>
 
+	PR c/71362
+	* c-parser.c (c_parser_direct_declarator): Set location.
+
+2016-06-06  Marek Polacek  <polacek@redhat.com>
+
 	* c-typeck.c (comptypes_internal): Handle comparisons of
 	INTEGER_TYPE, FIXED_POINT_TYPE, and REAL_TYPE nodes.  Don't check
 	TYPE_REF_CAN_ALIAS_ALL.
