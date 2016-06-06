@@ -7137,11 +7137,19 @@ gnat_to_gnu (Node_Id gnat_node)
     /***************************/
 
     case N_Subprogram_Declaration:
-      /* Unless there is a freeze node, declare the subprogram.  We consider
-	 this a "definition" even though we're not generating code for
-	 the subprogram because we will be making the corresponding GCC
-	 node here.  */
-
+      /* Unless there is a freeze node, declare the entity.  We consider
+	 this a definition even though we're not generating code for the
+	 subprogram because we will be making the corresponding GCC node.
+	 When there is a freeze node, it is considered the definition of
+	 the subprogram and we do nothing until after it is encountered.
+	 That's an efficiency issue: the types involved in the profile
+	 are far more likely to be frozen between the declaration and
+	 the freeze node than before the declaration, so we save some
+	 updates of the GCC node by waiting until the freeze node.
+	 The counterpart is that we assume that there is no reference
+	 to the subprogram between the declaration and the freeze node
+	 in the expanded code; otherwise, it will be interpreted as an
+	 external reference and very likely give rise to a link failure.  */
       if (No (Freeze_Node (Defining_Entity (Specification (gnat_node)))))
 	gnat_to_gnu_entity (Defining_Entity (Specification (gnat_node)),
 			    NULL_TREE, true);
@@ -7572,7 +7580,6 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Itype_Reference:
       if (!present_gnu_tree (Itype (gnat_node)))
 	process_type (Itype (gnat_node));
-
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -8571,9 +8578,8 @@ process_freeze_entity (Node_Id gnat_node)
 	      && kind == E_Subprogram_Type)))
     return;
 
-  /* If we have a non-dummy type old tree, we have nothing to do, except
-     aborting if this is the public view of a private type whose full view was
-     not delayed, as this node was never delayed as it should have been.  We
+  /* If we have a non-dummy type old tree, we have nothing to do, except for
+     aborting, since this node was never delayed as it should have been.  We
      let this happen for concurrent types and their Corresponding_Record_Type,
      however, because each might legitimately be elaborated before its own
      freeze node, e.g. while processing the other.  */
@@ -8581,10 +8587,7 @@ process_freeze_entity (Node_Id gnat_node)
       && !(TREE_CODE (gnu_old) == TYPE_DECL
 	   && TYPE_IS_DUMMY_P (TREE_TYPE (gnu_old))))
     {
-      gcc_assert ((IN (kind, Incomplete_Or_Private_Kind)
-		   && Present (Full_View (gnat_entity))
-		   && No (Freeze_Node (Full_View (gnat_entity))))
-		  || Is_Concurrent_Type (gnat_entity)
+      gcc_assert (Is_Concurrent_Type (gnat_entity)
 		  || (IN (kind, Record_Kind)
 		      && Is_Concurrent_Record_Type (gnat_entity)));
       return;
@@ -9456,28 +9459,22 @@ addressable_p (tree gnu_expr, tree gnu_type)
     }
 }
 
-/* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
-   a separate Freeze node exists, delay the bulk of the processing.  Otherwise
-   make a GCC type for GNAT_ENTITY and set up the correspondence.  */
+/* Do the processing for the declaration of a GNAT_ENTITY, a type or subtype.
+   If a Freeze node exists for the entity, delay the bulk of the processing.
+   Otherwise make a GCC type for GNAT_ENTITY and set up the correspondence.  */
 
 void
 process_type (Entity_Id gnat_entity)
 {
   tree gnu_old
-    = present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity) : 0;
-  tree gnu_new;
+    = present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity) : NULL_TREE;
 
-  /* If we are to delay elaboration of this type, just do any
-     elaborations needed for expressions within the declaration and
-     make a dummy type entry for this node and its Full_View (if
-     any) in case something points to it.  Don't do this if it
-     has already been done (the only way that can happen is if
-     the private completion is also delayed).  */
-  if (Present (Freeze_Node (gnat_entity))
-      || (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
-	  && Present (Full_View (gnat_entity))
-	  && Present (Freeze_Node (Full_View (gnat_entity)))
-	  && !present_gnu_tree (Full_View (gnat_entity))))
+  /* If we are to delay elaboration of this type, just do any elaboration
+     needed for expressions within the declaration and make a dummy node
+     for it and its Full_View (if any), in case something points to it.
+     Do not do this if it has already been done (the only way that can
+     happen is if the private completion is also delayed).  */
+  if (Present (Freeze_Node (gnat_entity)))
     {
       elaborate_entity (gnat_entity);
 
@@ -9497,10 +9494,9 @@ process_type (Entity_Id gnat_entity)
       return;
     }
 
-  /* If we saved away a dummy type for this node it means that this
-     made the type that corresponds to the full type of an incomplete
-     type.  Clear that type for now and then update the type in the
-     pointers.  */
+  /* If we saved away a dummy type for this node, it means that this made the
+     type that corresponds to the full type of an incomplete type.  Clear that
+     type for now and then update the type in the pointers below.  */
   if (gnu_old)
     {
       gcc_assert (TREE_CODE (gnu_old) == TYPE_DECL
@@ -9510,7 +9506,7 @@ process_type (Entity_Id gnat_entity)
     }
 
   /* Now fully elaborate the type.  */
-  gnu_new = gnat_to_gnu_entity (gnat_entity, NULL_TREE, true);
+  tree gnu_new = gnat_to_gnu_entity (gnat_entity, NULL_TREE, true);
   gcc_assert (TREE_CODE (gnu_new) == TYPE_DECL);
 
   /* If we have an old type and we've made pointers to this type, update those

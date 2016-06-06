@@ -496,8 +496,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   be a FIELD_DECL.  Likewise for discriminants.  If the entity is a
 	   non-girder discriminant (in the case of derived untagged record
 	   types), return the stored discriminant it renames.  */
-	else if (Present (Original_Record_Component (gnat_entity))
-		 && Original_Record_Component (gnat_entity) != gnat_entity)
+	if (Present (Original_Record_Component (gnat_entity))
+	    && Original_Record_Component (gnat_entity) != gnat_entity)
 	  {
 	    gnu_decl
 	      = gnat_to_gnu_entity (Original_Record_Component (gnat_entity),
@@ -509,7 +509,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* Otherwise, if we are not defining this and we have no GCC type
 	   for the containing record, make one for it.  Then we should
 	   have made our own equivalent.  */
-	else if (!definition && !present_gnu_tree (gnat_record))
+	if (!definition && !present_gnu_tree (gnat_record))
 	  {
 	    /* ??? If this is in a record whose scope is a protected
 	       type and we have an Original_Record_Component, use it.
@@ -523,21 +523,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  = gnat_to_gnu_entity (Original_Record_Component
 					(gnat_entity),
 					gnu_expr, false);
-		saved = true;
-		break;
+	      }
+	    else
+	      {
+		gnat_to_gnu_entity (Scope (gnat_entity), NULL_TREE, false);
+		gnu_decl = get_gnu_tree (gnat_entity);
 	      }
 
-	    gnat_to_gnu_entity (Scope (gnat_entity), NULL_TREE, false);
-	    gnu_decl = get_gnu_tree (gnat_entity);
 	    saved = true;
 	    break;
 	  }
 
-	else
-	  /* Here we have no GCC type and this is a reference rather than a
-	     definition.  This should never happen.  Most likely the cause is
-	     reference before declaration in the GNAT tree for gnat_entity.  */
-	  gcc_unreachable ();
+	/* Here we have no GCC type and this is a reference rather than a
+	   definition.  This should never happen.  Most likely the cause is
+	   reference before declaration in the GNAT tree for gnat_entity.  */
+	gcc_unreachable ();
       }
 
     case E_Constant:
@@ -1064,6 +1064,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    gcc_assert (ralign >= align);
 		  }
 
+		/* The expression might not be a DECL so save it manually.  */
 		save_gnu_tree (gnat_entity, gnu_decl, true);
 		saved = true;
 		annotate_object (gnat_entity, gnu_type, NULL_TREE, false);
@@ -2828,8 +2829,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				      NULL_TREE, false);
 	      this_made_decl = true;
 	      gnu_type = TREE_TYPE (gnu_decl);
-
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
+	      save_gnu_tree (gnat_entity, gnu_decl, false);
+	      saved = true;
 
 	      gnu_inner = gnu_type;
 	      while (TREE_CODE (gnu_inner) == RECORD_TYPE
@@ -4356,7 +4358,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnu_decl = TYPE_STUB_DECL (gnu_type);
 	    if (Has_Completion_In_Body (gnat_entity))
 	      DECL_TAFT_TYPE_P (gnu_decl) = 1;
-	    save_gnu_tree (full_view, gnu_decl, 0);
+	    save_gnu_tree (full_view, gnu_decl, false);
 	  }
       }
       break;
@@ -4455,6 +4457,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      handling alignment and possible padding.  */
   if (is_type && (!gnu_decl || this_made_decl))
     {
+      gcc_assert (!TYPE_IS_DUMMY_P (gnu_type));
+
       /* Process the attributes, if not already done.  Note that the type is
 	 already defined so we cannot pass true for IN_PLACE here.  */
       process_attributes (&gnu_type, &attr_list, false, gnat_entity);
@@ -4703,21 +4707,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 	}
 
-      if (!gnu_decl)
-	gnu_decl = create_type_decl (gnu_entity_name, gnu_type,
-				     artificial_p, debug_info_p,
-				     gnat_entity);
-      else
-	{
-	  TREE_TYPE (gnu_decl) = gnu_type;
-	  TYPE_STUB_DECL (gnu_type) = gnu_decl;
-	}
-    }
-
-  if (is_type && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl)))
-    {
-      gnu_type = TREE_TYPE (gnu_decl);
-
       /* If this is a derived type, relate its alias set to that of its parent
 	 to avoid troubles when a call to an inherited primitive is inlined in
 	 a context where a derived object is accessed.  The inlined code works
@@ -4796,8 +4785,23 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
 	}
 
-      /* Back-annotate the Alignment of the type if not already in the
-	 tree.  Likewise for sizes.  */
+      if (!gnu_decl)
+	gnu_decl = create_type_decl (gnu_entity_name, gnu_type,
+				     artificial_p, debug_info_p,
+				     gnat_entity);
+      else
+	{
+	  TREE_TYPE (gnu_decl) = gnu_type;
+	  TYPE_STUB_DECL (gnu_type) = gnu_decl;
+	}
+    }
+
+  /* If we got a type that is not dummy, back-annotate the alignment of the
+     type if not already in the tree.  Likewise for the size, if any.  */
+  if (is_type && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl)))
+    {
+      gnu_type = TREE_TYPE (gnu_decl);
+
       if (Unknown_Alignment (gnat_entity))
 	{
 	  unsigned int double_align, align;
@@ -4883,7 +4887,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    Set_Esize (gnat_entity, annotate_value (gnu_size));
 	}
 
-      if (Unknown_RM_Size (gnat_entity) && rm_size (gnu_type))
+      if (Unknown_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
 	Set_RM_Size (gnat_entity, annotate_value (rm_size (gnu_type)));
     }
 
@@ -5266,22 +5270,22 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 }
 
 /* Return a GCC tree for a parameter corresponding to GNAT_PARAM, to be placed
-   in the parameter list built for GNAT_SUBPROG.  FIRST is true if GNAT_PARAM
-   is the first parameter in the list.  Also set CICO to true if the parameter
-   must use the copy-in copy-out implementation mechanism.
+   in the parameter list of GNAT_SUBPROG.  GNU_PARAM_TYPE is the GCC tree for
+   the type of the parameter.  FIRST is true if this is the first parameter in
+   the list of GNAT_SUBPROG.  Also set CICO to true if the parameter must use
+   the copy-in copy-out implementation mechanism.
 
-   The returned tree is a PARM_DECL, except for those cases where no
-   parameter needs to be actually passed to the subprogram; the type
-   of this "shadow" parameter is then returned instead.  */
+   The returned tree is a PARM_DECL, except for the cases where no parameter
+   needs to be actually passed to the subprogram; the type of this "shadow"
+   parameter is then returned instead.  */
 
 static tree
-gnat_to_gnu_param (Entity_Id gnat_param, bool first, Entity_Id gnat_subprog,
-		   bool *cico)
+gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
+		   Entity_Id gnat_subprog, bool *cico)
 {
   Entity_Id gnat_param_type = Etype (gnat_param);
   Mechanism_Type mech = Mechanism (gnat_param);
   tree gnu_param_name = get_entity_name (gnat_param);
-  tree gnu_param_type = gnat_to_gnu_type (gnat_param_type);
   bool foreign = Has_Foreign_Convention (gnat_subprog);
   bool in_param = (Ekind (gnat_param) == E_In_Parameter);
   /* The parameter can be indirectly modified if its address is taken.  */
@@ -5482,14 +5486,14 @@ gnat_to_gnu_param (Entity_Id gnat_param, bool first, Entity_Id gnat_subprog,
 }
 
 /* Associate GNAT_SUBPROG with GNU_TYPE, which must be a dummy type, so that
-   GNAT_SUBPROG is updated when TYPE is completed.
+   GNAT_SUBPROG is updated when GNU_TYPE is completed.
 
    Ada 2012 (AI05-019) says that freezing a subprogram does not always freeze
    the corresponding profile, which means that, by the time the freeze node
    of the subprogram is encountered, types involved in its profile may still
-   be not frozen yet.  That's why we do not update GNAT_SUBPROG when we see
-   its freeze node but only when we see the freeze node of types involved in
-   its profile, either types of formal parameters or the return type.  */
+   be not yet frozen.  That's why we need to update GNAT_SUBPROG when we see
+   the freeze node of types involved in its profile, either types of formal
+   parameters or the return type.  */
 
 static void
 associate_subprog_with_dummy_type (Entity_Id gnat_subprog, tree gnu_type)
@@ -5648,7 +5652,9 @@ gnat_to_gnu_profile_type (Entity_Id gnat_type)
 	   && ((!in_main_unit
 	        && !present_gnu_tree (gnat_equiv)
 		&& Present (gnat_full)
-		&& (Is_Record_Type (gnat_full) || Is_Array_Type (gnat_full)))
+		&& (Is_Record_Type (gnat_full)
+		    || Is_Array_Type (gnat_full)
+		    || Is_Access_Type (gnat_full)))
 	       || (in_main_unit && Present (Freeze_Node (gnat_rep)))))
     {
       gnu_type = make_dummy_type (gnat_equiv);
@@ -5959,8 +5965,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  else
 	    {
 	      gnu_param
-		= gnat_to_gnu_param (gnat_param, num == 0, gnat_subprog,
-				     &cico);
+		= gnat_to_gnu_param (gnat_param, gnu_param_type, num == 0,
+				     gnat_subprog, &cico);
 
 	      /* We are returned either a PARM_DECL or a type if no parameter
 		 needs to be passed; in either case, adjust the type.  */

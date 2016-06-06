@@ -1,5 +1,21 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Component>: Remove
+	useless 'else' statements and tidy up.
+	<E_Array_Subtype>: Fully deal with the declaration here.
+	<E_Incomplete_Type>: Use properly-typed constant.
+	Assert that we don't apply the special type treatment to dummy types.
+	Separate this treatment from the final back-annotation and simplify
+	the condition for the RM size.
+	(gnat_to_gnu_param): Add GNU_PARAM_TYPE parameter and adjust.
+	(gnat_to_gnu_subprog_type): Ajust call to gnat_to_gnu_param.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Subprogram_Declaration>: Add
+	comment.
+	(process_freeze_entity): Remove obsolete code.
+	(process_type): Minor tweaks.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Returns_Limited_View): Remove.
 	(Set_Returns_Limited_View ): Likewise.
 	* einfo.adb (Returns_Limited_View): Likewise.
