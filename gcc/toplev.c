@@ -87,6 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "xcoffout.h"		/* Needed for external data declarations. */
 #endif
 
+#include "selftest.h"
+
 static void general_init (const char *, bool);
 static void do_compile ();
 static void process_options (void);
@@ -2031,6 +2033,27 @@ toplev::start_timevars ()
   timevar_start (TV_TOTAL);
 }
 
+/* Handle -fself-test.   */
+
+void
+toplev::run_self_tests ()
+{
+#if CHECKING_P
+  /* Reset some state.  */
+  input_location = UNKNOWN_LOCATION;
+  bitmap_obstack_initialize (NULL);
+
+  /* Run the tests; any failures will lead to an abort of the process.
+     Use "make selftests-gdb" to run under the debugger.  */
+  ::selftest::run_tests ();
+
+  /* Cleanup.  */
+  bitmap_obstack_release (NULL);
+#else
+  inform (UNKNOWN_LOCATION, "self-tests are not enabled in this build");
+#endif /* #if CHECKING_P */
+}
+
 /* Entry point of cc1, cc1plus, jc1, f771, etc.
    Exit code is FATAL_EXIT_CODE if can't open files or if there were
    any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
@@ -2097,6 +2120,9 @@ toplev::main (int argc, char **argv)
 
   if (warningcount || errorcount || werrorcount)
     print_ignored_options ();
+
+  if (flag_self_test)
+    run_self_tests ();
 
   /* Invoke registered plugin callbacks if any.  Some plugins could
      emit some diagnostics here.  */

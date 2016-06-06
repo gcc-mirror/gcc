@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "bitmap.h"
+#include "selftest.h"
 
 /* Memory allocation statistics purpose instance.  */
 mem_alloc_description<bitmap_usage> bitmap_mem_desc;
@@ -2162,5 +2163,117 @@ debug (const bitmap_head *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for bitmaps.  */
+
+/* Freshly-created bitmaps ought to be empty.  */
+
+static void
+test_gc_alloc ()
+{
+  bitmap b = bitmap_gc_alloc ();
+  ASSERT_TRUE (bitmap_empty_p (b));
+}
+
+/* Verify bitmap_set_range.  */
+
+static void
+test_set_range ()
+{
+  bitmap b = bitmap_gc_alloc ();
+  ASSERT_TRUE (bitmap_empty_p (b));
+
+  bitmap_set_range (b, 7, 5);
+  ASSERT_FALSE (bitmap_empty_p (b));
+  ASSERT_EQ (5, bitmap_count_bits (b));
+
+  /* Verify bitmap_bit_p at the boundaries.  */
+  ASSERT_FALSE (bitmap_bit_p (b, 6));
+  ASSERT_TRUE (bitmap_bit_p (b, 7));
+  ASSERT_TRUE (bitmap_bit_p (b, 11));
+  ASSERT_FALSE (bitmap_bit_p (b, 12));
+}
+
+/* Verify splitting a range into two pieces using bitmap_clear_bit.  */
+
+static void
+test_clear_bit_in_middle ()
+{
+  bitmap b = bitmap_gc_alloc ();
+
+  /* Set b to [100..200].  */
+  bitmap_set_range (b, 100, 100);
+  ASSERT_EQ (100, bitmap_count_bits (b));
+
+  /* Clear a bit in the middle.  */
+  bool changed = bitmap_clear_bit (b, 150);
+  ASSERT_TRUE (changed);
+  ASSERT_EQ (99, bitmap_count_bits (b));
+  ASSERT_TRUE (bitmap_bit_p (b, 149));
+  ASSERT_FALSE (bitmap_bit_p (b, 150));
+  ASSERT_TRUE (bitmap_bit_p (b, 151));
+}
+
+/* Verify bitmap_copy.  */
+
+static void
+test_copying ()
+{
+  bitmap src = bitmap_gc_alloc ();
+  bitmap_set_range (src, 40, 10);
+
+  bitmap dst = bitmap_gc_alloc ();
+  ASSERT_FALSE (bitmap_equal_p (src, dst));
+  bitmap_copy (dst, src);
+  ASSERT_TRUE (bitmap_equal_p (src, dst));
+
+  /* Verify that we can make them unequal again...  */
+  bitmap_set_range (src, 70, 5);
+  ASSERT_FALSE (bitmap_equal_p (src, dst));
+
+  /* ...and that changing src after the copy didn't affect
+     the other: */
+  ASSERT_FALSE (bitmap_bit_p (dst, 70));
+}
+
+/* Verify bitmap_single_bit_set_p.  */
+
+static void
+test_bitmap_single_bit_set_p ()
+{
+  bitmap b = bitmap_gc_alloc ();
+
+  ASSERT_FALSE (bitmap_single_bit_set_p (b));
+
+  bitmap_set_range (b, 42, 1);
+  ASSERT_TRUE (bitmap_single_bit_set_p (b));
+  ASSERT_EQ (42, bitmap_first_set_bit (b));
+
+  bitmap_set_range (b, 1066, 1);
+  ASSERT_FALSE (bitmap_single_bit_set_p (b));
+  ASSERT_EQ (42, bitmap_first_set_bit (b));
+
+  bitmap_clear_range (b, 0, 100);
+  ASSERT_TRUE (bitmap_single_bit_set_p (b));
+  ASSERT_EQ (1066, bitmap_first_set_bit (b));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+bitmap_c_tests ()
+{
+  test_gc_alloc ();
+  test_set_range ();
+  test_clear_bit_in_middle ();
+  test_copying ();
+  test_bitmap_single_bit_set_p ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P */
 
 #include "gt-bitmap.h"

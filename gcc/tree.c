@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "print-tree.h"
 #include "ipa-utils.h"
+#include "selftest.h"
 
 /* Tree code classes.  */
 
@@ -14202,5 +14203,66 @@ combined_fn_name (combined_fn fn)
   else
     return internal_fn_name (as_internal_fn (fn));
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for tree.  */
+
+/* Verify that integer constants are sane.  */
+
+static void
+test_integer_constants ()
+{
+  ASSERT_TRUE (integer_type_node != NULL);
+  ASSERT_TRUE (build_int_cst (integer_type_node, 0) != NULL);
+
+  tree type = integer_type_node;
+
+  tree zero = build_zero_cst (type);
+  ASSERT_EQ (INTEGER_CST, TREE_CODE (zero));
+  ASSERT_EQ (type, TREE_TYPE (zero));
+
+  tree one = build_int_cst (type, 1);
+  ASSERT_EQ (INTEGER_CST, TREE_CODE (one));
+  ASSERT_EQ (type, TREE_TYPE (zero));
+}
+
+/* Verify identifiers.  */
+
+static void
+test_identifiers ()
+{
+  tree identifier = get_identifier ("foo");
+  ASSERT_EQ (3, IDENTIFIER_LENGTH (identifier));
+  ASSERT_STREQ ("foo", IDENTIFIER_POINTER (identifier));
+}
+
+/* Verify LABEL_DECL.  */
+
+static void
+test_labels ()
+{
+  tree identifier = get_identifier ("err");
+  tree label_decl = build_decl (UNKNOWN_LOCATION, LABEL_DECL,
+				identifier, void_type_node);
+  ASSERT_EQ (-1, LABEL_DECL_UID (label_decl));
+  ASSERT_FALSE (FORCED_LABEL (label_decl));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+tree_c_tests ()
+{
+  test_integer_constants ();
+  test_identifiers ();
+  test_labels ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 #include "gt-tree.h"

@@ -2066,6 +2066,10 @@ fselective-scheduling2
 Common Report Var(flag_selective_scheduling2) Optimization
 Run selective scheduling after reload.
 
+fself-test
+Common Undocumented Var(flag_self_test)
+Run self-tests.
+
 fsel-sched-pipelining
 Common Report Var(flag_sel_sched_pipelining) Init(0) Optimization
 Perform software pipelining of inner loops during selective scheduling.

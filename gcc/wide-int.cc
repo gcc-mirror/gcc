@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "selftest.h"
+#include "wide-int-print.h"
 
 
 #define HOST_BITS_PER_HALF_WIDE_INT 32
@@ -2144,3 +2146,171 @@ template void generic_wide_int <wide_int_ref_storage <false> >::dump () const;
 template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
 template void offset_int::dump () const;
 template void widest_int::dump () const;
+
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for wide ints.  We run these multiple times, once per type.  */
+
+/* Helper function for building a test value.  */
+
+template <class VALUE_TYPE>
+static VALUE_TYPE
+from_int (int i);
+
+/* Specializations of the fixture for each wide-int type.  */
+
+/* Specialization for VALUE_TYPE == wide_int.  */
+
+template <>
+wide_int
+from_int (int i)
+{
+  return wi::shwi (i, 32);
+}
+
+/* Specialization for VALUE_TYPE == offset_int.  */
+
+template <>
+offset_int
+from_int (int i)
+{
+  return offset_int (i);
+}
+
+/* Specialization for VALUE_TYPE == widest_int.  */
+
+template <>
+widest_int
+from_int (int i)
+{
+  return widest_int (i);
+}
+
+/* Verify that print_dec (WI, ..., SGN) gives the expected string
+   representation (using base 10).  */
+
+static void
+assert_deceq (const char *expected, const wide_int_ref &wi, signop sgn)
+{
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  print_dec (wi, buf, sgn);
+  ASSERT_STREQ (expected, buf);
+}
+
+/* Likewise for base 16.  */
+
+static void
+assert_hexeq (const char *expected, const wide_int_ref &wi)
+{
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  print_hex (wi, buf);
+  ASSERT_STREQ (expected, buf);
+}
+
+/* Test cases.  */
+
+/* Verify that print_dec and print_hex work for VALUE_TYPE.  */
+
+template <class VALUE_TYPE>
+static void
+test_printing ()
+{
+  VALUE_TYPE a = from_int<VALUE_TYPE> (42);
+  assert_deceq ("42", a, SIGNED);
+  assert_hexeq ("0x2a", a);
+}
+
+/* Verify that various operations work correctly for VALUE_TYPE,
+   unary and binary, using both function syntax, and
+   overloaded-operators.  */
+
+template <class VALUE_TYPE>
+static void
+test_ops ()
+{
+  VALUE_TYPE a = from_int<VALUE_TYPE> (7);
+  VALUE_TYPE b = from_int<VALUE_TYPE> (3);
+
+  /* Using functions.  */
+  assert_deceq ("-7", wi::neg (a), SIGNED);
+  assert_deceq ("10", wi::add (a, b), SIGNED);
+  assert_deceq ("4", wi::sub (a, b), SIGNED);
+  assert_deceq ("-4", wi::sub (b, a), SIGNED);
+  assert_deceq ("21", wi::mul (a, b), SIGNED);
+
+  /* Using operators.  */
+  assert_deceq ("-7", -a, SIGNED);
+  assert_deceq ("10", a + b, SIGNED);
+  assert_deceq ("4", a - b, SIGNED);
+  assert_deceq ("-4", b - a, SIGNED);
+  assert_deceq ("21", a * b, SIGNED);
+}
+
+/* Verify that various comparisons work correctly for VALUE_TYPE.  */
+
+template <class VALUE_TYPE>
+static void
+test_comparisons ()
+{
+  VALUE_TYPE a = from_int<VALUE_TYPE> (7);
+  VALUE_TYPE b = from_int<VALUE_TYPE> (3);
+
+  /* == */
+  ASSERT_TRUE (wi::eq_p (a, a));
+  ASSERT_FALSE (wi::eq_p (a, b));
+
+  /* != */
+  ASSERT_TRUE (wi::ne_p (a, b));
+  ASSERT_FALSE (wi::ne_p (a, a));
+
+  /* < */
+  ASSERT_FALSE (wi::lts_p (a, a));
+  ASSERT_FALSE (wi::lts_p (a, b));
+  ASSERT_TRUE (wi::lts_p (b, a));
+
+  /* <= */
+  ASSERT_TRUE (wi::les_p (a, a));
+  ASSERT_FALSE (wi::les_p (a, b));
+  ASSERT_TRUE (wi::les_p (b, a));
+
+  /* > */
+  ASSERT_FALSE (wi::gts_p (a, a));
+  ASSERT_TRUE (wi::gts_p (a, b));
+  ASSERT_FALSE (wi::gts_p (b, a));
+
+  /* >= */
+  ASSERT_TRUE (wi::ges_p (a, a));
+  ASSERT_TRUE (wi::ges_p (a, b));
+  ASSERT_FALSE (wi::ges_p (b, a));
+
+  /* comparison */
+  ASSERT_EQ (-1, wi::cmps (b, a));
+  ASSERT_EQ (0, wi::cmps (a, a));
+  ASSERT_EQ (1, wi::cmps (a, b));
+}
+
+/* Run all of the selftests, using the given VALUE_TYPE.  */
+
+template <class VALUE_TYPE>
+static void run_all_wide_int_tests ()
+{
+  test_printing <VALUE_TYPE> ();
+  test_ops <VALUE_TYPE> ();
+  test_comparisons <VALUE_TYPE> ();
+}
+
+/* Run all of the selftests within this file, for all value types.  */
+
+void
+wide_int_cc_tests ()
+{
+ run_all_wide_int_tests <wide_int> ();
+ run_all_wide_int_tests <offset_int> ();
+ run_all_wide_int_tests <widest_int> ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P */

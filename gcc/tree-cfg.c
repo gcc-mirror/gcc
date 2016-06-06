@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "gimplify.h"
 #include "attribs.h"
+#include "selftest.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -9195,3 +9196,280 @@ gt_pch_nx (edge_def *e, gt_pointer_operator op, void *cookie)
     op (&(e->insns.r), cookie);
   op (&(block), cookie);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Helper function for CFG selftests: create a dummy function decl
+   and push it as cfun.  */
+
+static tree
+push_fndecl (const char *name)
+{
+  tree fn_type = build_function_type_array (integer_type_node, 0, NULL);
+  /* FIXME: this uses input_location: */
+  tree fndecl = build_fn_decl (name, fn_type);
+  tree retval = build_decl (UNKNOWN_LOCATION, RESULT_DECL,
+			    NULL_TREE, integer_type_node);
+  DECL_RESULT (fndecl) = retval;
+  push_struct_function (fndecl);
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+  ASSERT_TRUE (fun != NULL);
+  init_empty_tree_cfg_for_function (fun);
+  ASSERT_EQ (2, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+  return fndecl;
+}
+
+/* These tests directly create CFGs.
+   Compare with the static fns within tree-cfg.c:
+     - build_gimple_cfg
+     - make_blocks: calls create_basic_block (seq, bb);
+     - make_edges.   */
+
+/* Verify a simple cfg of the form:
+     ENTRY -> A -> B -> C -> EXIT.  */
+
+static void
+test_linear_chain ()
+{
+  gimple_register_cfg_hooks ();
+
+  tree fndecl = push_fndecl ("cfg_test_linear_chain");
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+
+  /* Create some empty blocks.  */
+  basic_block bb_a = create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  basic_block bb_b = create_empty_bb (bb_a);
+  basic_block bb_c = create_empty_bb (bb_b);
+
+  ASSERT_EQ (5, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+
+  /* Create some edges: a simple linear chain of BBs.  */
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (fun), bb_a, EDGE_FALLTHRU);
+  make_edge (bb_a, bb_b, 0);
+  make_edge (bb_b, bb_c, 0);
+  make_edge (bb_c, EXIT_BLOCK_PTR_FOR_FN (fun), 0);
+
+  /* Verify the edges.  */
+  ASSERT_EQ (4, n_edges_for_fn (fun));
+  ASSERT_EQ (NULL, ENTRY_BLOCK_PTR_FOR_FN (fun)->preds);
+  ASSERT_EQ (1, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs->length ());
+  ASSERT_EQ (1, bb_a->preds->length ());
+  ASSERT_EQ (1, bb_a->succs->length ());
+  ASSERT_EQ (1, bb_b->preds->length ());
+  ASSERT_EQ (1, bb_b->succs->length ());
+  ASSERT_EQ (1, bb_c->preds->length ());
+  ASSERT_EQ (1, bb_c->succs->length ());
+  ASSERT_EQ (1, EXIT_BLOCK_PTR_FOR_FN (fun)->preds->length ());
+  ASSERT_EQ (NULL, EXIT_BLOCK_PTR_FOR_FN (fun)->succs);
+
+  /* Verify the dominance information
+     Each BB in our simple chain should be dominated by the one before
+     it.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_b));
+  ASSERT_EQ (bb_b, get_immediate_dominator (CDI_DOMINATORS, bb_c));
+  vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
+  ASSERT_EQ (1, dom_by_b.length ());
+  ASSERT_EQ (bb_c, dom_by_b[0]);
+  free_dominance_info (CDI_DOMINATORS);
+
+  /* Similarly for post-dominance: each BB in our chain is post-dominated
+     by the one after it.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  ASSERT_EQ (bb_b, get_immediate_dominator (CDI_POST_DOMINATORS, bb_a));
+  ASSERT_EQ (bb_c, get_immediate_dominator (CDI_POST_DOMINATORS, bb_b));
+  vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
+  ASSERT_EQ (1, postdom_by_b.length ());
+  ASSERT_EQ (bb_a, postdom_by_b[0]);
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  pop_cfun ();
+}
+
+/* Verify a simple CFG of the form:
+     ENTRY
+       |
+       A
+      / \
+     /t  \f
+    B     C
+     \   /
+      \ /
+       D
+       |
+      EXIT.  */
+
+static void
+test_diamond ()
+{
+  gimple_register_cfg_hooks ();
+
+  tree fndecl = push_fndecl ("cfg_test_diamond");
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+
+  /* Create some empty blocks.  */
+  basic_block bb_a = create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  basic_block bb_b = create_empty_bb (bb_a);
+  basic_block bb_c = create_empty_bb (bb_a);
+  basic_block bb_d = create_empty_bb (bb_b);
+
+  ASSERT_EQ (6, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+
+  /* Create the edges.  */
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (fun), bb_a, EDGE_FALLTHRU);
+  make_edge (bb_a, bb_b, EDGE_TRUE_VALUE);
+  make_edge (bb_a, bb_c, EDGE_FALSE_VALUE);
+  make_edge (bb_b, bb_d, 0);
+  make_edge (bb_c, bb_d, 0);
+  make_edge (bb_d, EXIT_BLOCK_PTR_FOR_FN (fun), 0);
+
+  /* Verify the edges.  */
+  ASSERT_EQ (6, n_edges_for_fn (fun));
+  ASSERT_EQ (1, bb_a->preds->length ());
+  ASSERT_EQ (2, bb_a->succs->length ());
+  ASSERT_EQ (1, bb_b->preds->length ());
+  ASSERT_EQ (1, bb_b->succs->length ());
+  ASSERT_EQ (1, bb_c->preds->length ());
+  ASSERT_EQ (1, bb_c->succs->length ());
+  ASSERT_EQ (2, bb_d->preds->length ());
+  ASSERT_EQ (1, bb_d->succs->length ());
+
+  /* Verify the dominance information.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_b));
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_c));
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_d));
+  vec<basic_block> dom_by_a = get_dominated_by (CDI_DOMINATORS, bb_a);
+  ASSERT_EQ (3, dom_by_a.length ()); /* B, C, D, in some order.  */
+  vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
+  ASSERT_EQ (0, dom_by_b.length ());
+  free_dominance_info (CDI_DOMINATORS);
+
+  /* Similarly for post-dominance.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_a));
+  ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_b));
+  ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_c));
+  vec<basic_block> postdom_by_d = get_dominated_by (CDI_POST_DOMINATORS, bb_d);
+  ASSERT_EQ (3, postdom_by_d.length ()); /* A, B, C in some order.  */
+  vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
+  ASSERT_EQ (0, postdom_by_b.length ());
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  pop_cfun ();
+}
+
+/* Verify that we can handle a CFG containing a "complete" aka
+   fully-connected subgraph (where A B C D below all have edges
+   pointing to each other node, also to themselves).
+   e.g.:
+     ENTRY  EXIT
+       |    ^
+       |   /
+       |  /
+       | /
+       V/
+       A<--->B
+       ^^   ^^
+       | \ / |
+       |  X  |
+       | / \ |
+       VV   VV
+       C<--->D
+*/
+
+static void
+test_fully_connected ()
+{
+  gimple_register_cfg_hooks ();
+
+  tree fndecl = push_fndecl ("cfg_fully_connected");
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+
+  const int n = 4;
+
+  /* Create some empty blocks.  */
+  auto_vec <basic_block> subgraph_nodes;
+  for (int i = 0; i < n; i++)
+    subgraph_nodes.safe_push (create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (fun)));
+
+  ASSERT_EQ (n + 2, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+
+  /* Create the edges.  */
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (fun), subgraph_nodes[0], EDGE_FALLTHRU);
+  make_edge (subgraph_nodes[0], EXIT_BLOCK_PTR_FOR_FN (fun), 0);
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < n; j++)
+      make_edge (subgraph_nodes[i], subgraph_nodes[j], 0);
+
+  /* Verify the edges.  */
+  ASSERT_EQ (2 + (n * n), n_edges_for_fn (fun));
+  /* The first one is linked to ENTRY/EXIT as well as itself and
+     everything else.  */
+  ASSERT_EQ (n + 1, subgraph_nodes[0]->preds->length ());
+  ASSERT_EQ (n + 1, subgraph_nodes[0]->succs->length ());
+  /* The other ones in the subgraph are linked to everything in
+     the subgraph (including themselves).  */
+  for (int i = 1; i < n; i++)
+    {
+      ASSERT_EQ (n, subgraph_nodes[i]->preds->length ());
+      ASSERT_EQ (n, subgraph_nodes[i]->succs->length ());
+    }
+
+  /* Verify the dominance information.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  /* The initial block in the subgraph should be dominated by ENTRY.  */
+  ASSERT_EQ (ENTRY_BLOCK_PTR_FOR_FN (fun),
+	     get_immediate_dominator (CDI_DOMINATORS,
+				      subgraph_nodes[0]));
+  /* Every other block in the subgraph should be dominated by the
+     initial block.  */
+  for (int i = 1; i < n; i++)
+    ASSERT_EQ (subgraph_nodes[0],
+	       get_immediate_dominator (CDI_DOMINATORS,
+					subgraph_nodes[i]));
+  free_dominance_info (CDI_DOMINATORS);
+
+  /* Similarly for post-dominance.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* The initial block in the subgraph should be postdominated by EXIT.  */
+  ASSERT_EQ (EXIT_BLOCK_PTR_FOR_FN (fun),
+	     get_immediate_dominator (CDI_POST_DOMINATORS,
+				      subgraph_nodes[0]));
+  /* Every other block in the subgraph should be postdominated by the
+     initial block, since that leads to EXIT.  */
+  for (int i = 1; i < n; i++)
+    ASSERT_EQ (subgraph_nodes[0],
+	       get_immediate_dominator (CDI_POST_DOMINATORS,
+					subgraph_nodes[i]));
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  pop_cfun ();
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+tree_cfg_c_tests ()
+{
+  test_linear_chain ();
+  test_diamond ();
+  test_fully_connected ();
+}
+
+} // namespace selftest
+
+/* TODO: test the dominator/postdominator logic with various graphs/nodes:
+   - loop
+   - nested loops
+   - switch statement (a block with many out-edges)
+   - something that jumps to itself
+   - etc  */
+
+#endif /* CHECKING_P */

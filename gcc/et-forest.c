@@ -27,6 +27,7 @@ License along with libiberty; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "alloc-pool.h"
 #include "et-forest.h"
+#include "selftest.h"
 
 /* We do not enable this with CHECKING_P, since it is awfully slow.  */
 #undef DEBUG_ET
@@ -764,3 +765,120 @@ et_root (struct et_node *node)
 
   return r->of;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for et-forest.c.  */
+
+/* Perform sanity checks for a tree consisting of a single node.  */
+
+static void
+test_single_node ()
+{
+  void *test_data = (void *)0xcafebabe;
+
+  et_node *n = et_new_tree (test_data);
+  ASSERT_EQ (n->data, test_data);
+  ASSERT_EQ (n, et_root (n));
+  et_free_tree (n);
+}
+
+/* Test of this tree:
+       a
+      / \
+     /   \
+    b     c
+   / \    |
+  d   e   f.  */
+
+static void
+test_simple_tree ()
+{
+  et_node *a = et_new_tree (NULL);
+  et_node *b = et_new_tree (NULL);
+  et_node *c = et_new_tree (NULL);
+  et_node *d = et_new_tree (NULL);
+  et_node *e = et_new_tree (NULL);
+  et_node *f = et_new_tree (NULL);
+
+  et_set_father (b, a);
+  et_set_father (c, a);
+  et_set_father (d, b);
+  et_set_father (e, b);
+  et_set_father (f, c);
+
+  ASSERT_TRUE (et_below (a, a));
+  ASSERT_TRUE (et_below (b, a));
+  ASSERT_TRUE (et_below (c, a));
+  ASSERT_TRUE (et_below (d, a));
+  ASSERT_TRUE (et_below (e, a));
+  ASSERT_TRUE (et_below (f, a));
+
+  ASSERT_FALSE (et_below (a, b));
+  ASSERT_TRUE (et_below (b, b));
+  ASSERT_FALSE (et_below (c, b));
+  ASSERT_TRUE (et_below (d, b));
+  ASSERT_TRUE (et_below (e, b));
+  ASSERT_FALSE (et_below (f, b));
+
+  ASSERT_FALSE (et_below (a, c));
+  ASSERT_FALSE (et_below (b, c));
+  ASSERT_TRUE (et_below (c, c));
+  ASSERT_FALSE (et_below (d, c));
+  ASSERT_FALSE (et_below (e, c));
+  ASSERT_TRUE (et_below (f, c));
+
+  ASSERT_FALSE (et_below (a, d));
+  ASSERT_FALSE (et_below (b, d));
+  ASSERT_FALSE (et_below (c, d));
+  ASSERT_TRUE (et_below (d, d));
+  ASSERT_FALSE (et_below (e, d));
+  ASSERT_FALSE (et_below (f, d));
+
+  ASSERT_FALSE (et_below (a, e));
+  ASSERT_FALSE (et_below (b, e));
+  ASSERT_FALSE (et_below (c, e));
+  ASSERT_FALSE (et_below (d, e));
+  ASSERT_TRUE (et_below (e, e));
+  ASSERT_FALSE (et_below (f, e));
+
+  ASSERT_FALSE (et_below (a, f));
+  ASSERT_FALSE (et_below (b, f));
+  ASSERT_FALSE (et_below (c, f));
+  ASSERT_FALSE (et_below (d, f));
+  ASSERT_FALSE (et_below (e, f));
+  ASSERT_TRUE (et_below (f, f));
+
+  et_free_tree_force (a);
+}
+
+/* Verify that two disconnected nodes are unrelated.  */
+
+static void
+test_disconnected_nodes ()
+{
+  et_node *a = et_new_tree (NULL);
+  et_node *b = et_new_tree (NULL);
+
+  ASSERT_FALSE (et_below (a, b));
+  ASSERT_FALSE (et_below (b, a));
+
+  et_free_tree (a);
+  et_free_tree (b);
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+et_forest_c_tests ()
+{
+  test_single_node ();
+  test_simple_tree ();
+  test_disconnected_nodes ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
