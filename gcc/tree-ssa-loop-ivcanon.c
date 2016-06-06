@@ -615,16 +615,6 @@ static void
 unloop_loops (bitmap loop_closed_ssa_invalidated,
 	      bool *irred_invalidated)
 {
-  /* First remove edges in peeled copies.  */
-  unsigned i;
-  edge e;
-  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
-    {
-      bool ok = remove_path (e);
-      gcc_assert (ok);
-    }
-  edges_to_remove.release ();
-
   while (loops_to_unloop.length ())
     {
       struct loop *loop = loops_to_unloop.pop ();
@@ -660,6 +650,16 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
     }
   loops_to_unloop.release ();
   loops_to_unloop_nunroll.release ();
+
+  /* Remove edges in peeled copies.  */
+  unsigned i;
+  edge e;
+  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
+    {
+      bool ok = remove_path (e);
+      gcc_assert (ok);
+    }
+  edges_to_remove.release ();
 }
 
 /* Tries to unroll LOOP completely, i.e. NITER times.
