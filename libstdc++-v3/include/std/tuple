@@ -876,6 +876,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       void swap(tuple&) noexcept { /* no-op */ }
+      // We need the default since we're going to define no-op
+      // allocator constructors.
+      tuple() = default;
+      // No-op allocator constructors.
+      template<typename _Alloc>
+	tuple(allocator_arg_t, const _Alloc&) { }
+      template<typename _Alloc>
+	tuple(allocator_arg_t, const _Alloc&, const tuple&) { }
     };
 
   /// Partial specialization, 2-element tuple.

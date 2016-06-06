@@ -162,8 +162,30 @@ void test01()
 
 }
 
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+  using std::allocator_arg;
+  using std::tuple;
+  using std::make_tuple;
+
+  typedef tuple<> test_type;
+
+  MyAlloc a;
+
+  // default construction
+  test_type t1(allocator_arg, a);
+  // copy construction
+  test_type t2(allocator_arg, a, t1);
+  // move construction
+  test_type t3(allocator_arg, a, std::move(t1));
+  // make_tuple
+  test_type empty = make_tuple();
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }
