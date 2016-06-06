@@ -1,5 +1,13 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (Gigi_Equivalent_Type): Make sure equivalent
+	types are present before returning them.  Remove final assertion.
+	(gnat_to_gnu_entity) <E_Access_Protected_Subprogram_Type>: Adjust to
+	above change.
+	<E_Protected_Type>: Likewise.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (elaborate_all_entities_for_package): Also do
 	not elaborate Itypes.
 

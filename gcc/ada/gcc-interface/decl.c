@@ -4009,9 +4009,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
     case E_Access_Protected_Subprogram_Type:
     case E_Anonymous_Access_Protected_Subprogram_Type:
-      /* The run-time representation is the equivalent type.  */
-      if (type_annotate_only && No (gnat_equiv_type))
+      /* If we are just annotating types and have no equivalent record type,
+	 just return ptr_void_type.  */
+      if (type_annotate_only && gnat_equiv_type == gnat_entity)
 	gnu_type = ptr_type_node;
+
+      /* The run-time representation is the equivalent type.  */
       else
 	{
 	  gnu_type = gnat_to_gnu_type (gnat_equiv_type);
@@ -4377,7 +4380,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 just return void_type, except for root types that have discriminants
 	 because the discriminants will very likely be used in the declarative
 	 part of the associated body so they need to be translated.  */
-      if (type_annotate_only && No (gnat_equiv_type))
+      if (type_annotate_only && gnat_equiv_type == gnat_entity)
 	{
 	  if (Has_Discriminants (gnat_entity)
 	      && Root_Type (gnat_entity) == gnat_entity)
@@ -5143,25 +5146,25 @@ Gigi_Equivalent_Type (Entity_Id gnat_entity)
 
     case E_Access_Protected_Subprogram_Type:
     case E_Anonymous_Access_Protected_Subprogram_Type:
-      gnat_equiv = Equivalent_Type (gnat_entity);
+      if (Present (Equivalent_Type (gnat_entity)))
+	gnat_equiv = Equivalent_Type (gnat_entity);
       break;
 
     case E_Class_Wide_Type:
       gnat_equiv = Root_Type (gnat_entity);
       break;
 
-    case E_Task_Type:
-    case E_Task_Subtype:
     case E_Protected_Type:
     case E_Protected_Subtype:
-      gnat_equiv = Corresponding_Record_Type (gnat_entity);
+    case E_Task_Type:
+    case E_Task_Subtype:
+      if (Present (Corresponding_Record_Type (gnat_entity)))
+	gnat_equiv = Corresponding_Record_Type (gnat_entity);
       break;
 
     default:
       break;
     }
-
-  gcc_assert (Present (gnat_equiv) || type_annotate_only);
 
   return gnat_equiv;
 }
