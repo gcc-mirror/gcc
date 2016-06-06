@@ -1,3 +1,8 @@
+2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71281
+	* g++.dg/torture/pr71281.C: New test.
+
 2016-06-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71362

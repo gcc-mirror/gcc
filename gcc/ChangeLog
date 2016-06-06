@@ -1,3 +1,8 @@
+2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71281
+	* tree-ssa-reassoc.c (reassociate_bb): Set uid for negate stmt.
+
 2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (enum ix86_enitity): Add X86_DIRFLAG.
