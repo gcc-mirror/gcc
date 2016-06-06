@@ -5387,6 +5387,7 @@ reassociate_bb (basic_block bb)
 		  gimple_set_lhs (stmt, tmp);
 		  gassign *neg_stmt = gimple_build_assign (lhs, NEGATE_EXPR,
 							   tmp);
+		  gimple_set_uid (neg_stmt, gimple_uid (stmt));
 		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 		  gsi_insert_after (&gsi, neg_stmt, GSI_NEW_STMT);
 		  update_stmt (stmt);
