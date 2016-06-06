@@ -1,3 +1,11 @@
+2016-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71320
+	* src/filesystem/ops.cc (permissions(const path&, perms, error_code&)):
+	Add or remove permissions according to perms argument.
+	* testsuite/experimental/filesystem/operations/permissions.cc: New
+	test.
+
 2016-06-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Protect allocator-overloads of tuple-from-tuple constructors
