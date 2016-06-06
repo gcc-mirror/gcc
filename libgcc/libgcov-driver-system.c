@@ -23,31 +23,32 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#if !IN_GCOV_TOOL
 /* Configured via the GCOV_ERROR_FILE environment variable;
    it will either be stderr, or a file of the user's choosing.
    Non-static to prevent multiple gcov-aware shared objects from
    instantiating their own copies. */
 FILE *__gcov_error_file = NULL;
+#endif
 
 /* A utility function to populate the __gcov_error_file pointer.
    This should NOT be called outside of the gcov system driver code. */
 
 static FILE *
-get_gcov_error_file(void)
+get_gcov_error_file (void)
 {
-#if !IN_GCOV_TOOL
+#if IN_GCOV_TOOL
   return stderr;
 #else
-  char *gcov_error_filename = getenv ("GCOV_ERROR_FILE");
-
-  if (gcov_error_filename)
-    {
-      FILE *openfile = fopen (gcov_error_filename, "a");
-      if (openfile)
-        __gcov_error_file = openfile;
-    }
   if (!__gcov_error_file)
-    __gcov_error_file = stderr;
+    {
+      const char *gcov_error_filename = getenv ("GCOV_ERROR_FILE");
+
+      if (gcov_error_filename)
+	__gcov_error_file = fopen (gcov_error_filename, "a");
+      if (!__gcov_error_file)
+	__gcov_error_file = stderr;
+    }
   return __gcov_error_file;
 #endif
 }
@@ -60,11 +61,8 @@ gcov_error (const char *fmt, ...)
   int ret;
   va_list argp;
 
-  if (!__gcov_error_file)
-    __gcov_error_file = get_gcov_error_file ();
-
   va_start (argp, fmt);
-  ret = vfprintf (__gcov_error_file, fmt, argp);
+  ret = vfprintf (get_gcov_error_file (), fmt, argp);
   va_end (argp);
   return ret;
 }

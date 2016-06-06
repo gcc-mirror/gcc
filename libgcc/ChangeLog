@@ -1,3 +1,12 @@
+2016-06-05  Aaron Conole  <aconole@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	PR libgcc/71400
+	* libgcov-driver-system.c (__gcov_error_file): Disable if IN_GCOV_TOOL.
+	(get_gcov_error_file): Check __gcov_error_file before trying to
+	initialize it.
+	(gcov_error): Always use get_gcov_error_file.
+
 2016-06-02  Aaron Conole  <aconole@redhat.com>
 
 	* libgcov-driver-system.c (__gcov_error_file): New.
