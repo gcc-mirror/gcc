@@ -1,3 +1,10 @@
+2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/37780
+	* gcc.c-torture/execute/pr37780.c: New test.
+	* gcc.target/aarch64/pr37780_1.c: Likewise.
+	* gcc.target/arm/pr37780_1.c: Likewise.
+
 2016-06-06  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/attr-may-alias-1.c: New test.
