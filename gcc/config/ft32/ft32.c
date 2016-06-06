@@ -409,7 +409,7 @@ ft32_compute_frame (void)
       cfun->machine->callee_saved_reg_size += 4;
 
   cfun->machine->size_for_adjusting_sp =
-    crtl->args.pretend_args_size
+    0 // crtl->args.pretend_args_size
     + cfun->machine->local_vars_size
     + (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0);
 }
@@ -434,15 +434,32 @@ ft32_expand_prologue (void)
 
   ft32_compute_frame ();
 
+  int args_to_push = crtl->args.pretend_args_size;
+  if (args_to_push)
+    {
+      int i;
+
+      insn = emit_insn (gen_movsi_pop ((gen_rtx_REG (Pmode, FT32_R29))));
+
+      for (i = 0; i < (args_to_push / 4); i++)
+	{
+	  insn =
+	    emit_insn (gen_movsi_push ((gen_rtx_REG (Pmode, FT32_R5 - i))));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      insn = emit_insn (gen_movsi_push ((gen_rtx_REG (Pmode, FT32_R29))));
+    }
+
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->size_for_adjusting_sp;
 
   if (!must_link () && (cfun->machine->callee_saved_reg_size == 4))
     {
       insn =
-        emit_insn (gen_link
-                   (gen_rtx_REG (Pmode, FT32_R13),
-                    GEN_INT (-cfun->machine->size_for_adjusting_sp)));
+	emit_insn (gen_link
+		   (gen_rtx_REG (Pmode, FT32_R13),
+		    GEN_INT (-cfun->machine->size_for_adjusting_sp)));
       RTX_FRAME_RELATED_P (insn) = 1;
       return;
     }
@@ -450,27 +467,27 @@ ft32_expand_prologue (void)
   if (optimize_size)
     {
       for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0;)
-        {
-          if (!fixed_regs[regno] && !call_used_regs[regno]
-              && df_regs_ever_live_p (regno))
-            {
-              rtx preg = gen_rtx_REG (Pmode, regno);
-              emit_insn (gen_call_prolog (preg));
-              break;
-            }
-        }
+	{
+	  if (!fixed_regs[regno] && !call_used_regs[regno]
+	      && df_regs_ever_live_p (regno))
+	    {
+	      rtx preg = gen_rtx_REG (Pmode, regno);
+	      emit_insn (gen_call_prolog (preg));
+	      break;
+	    }
+	}
     }
   else
     {
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-        {
-          if (!fixed_regs[regno] && df_regs_ever_live_p (regno)
-              && !call_used_regs[regno])
-            {
-              insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode, regno)));
-              RTX_FRAME_RELATED_P (insn) = 1;
-            }
-        }
+	{
+	  if (!fixed_regs[regno] && df_regs_ever_live_p (regno)
+	      && !call_used_regs[regno])
+	    {
+	      insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode, regno)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	}
     }
 
   if (65536 <= cfun->machine->size_for_adjusting_sp)
@@ -481,17 +498,17 @@ ft32_expand_prologue (void)
   if (must_link ())
     {
       insn =
-        emit_insn (gen_link
-                   (gen_rtx_REG (Pmode, FT32_FP),
-                    GEN_INT (-cfun->machine->size_for_adjusting_sp)));
+	emit_insn (gen_link
+		   (gen_rtx_REG (Pmode, FT32_FP),
+		    GEN_INT (-cfun->machine->size_for_adjusting_sp)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else if (cfun->machine->size_for_adjusting_sp > 0)
     {
+      int adj = cfun->machine->size_for_adjusting_sp;
       insn = emit_insn (gen_addsi3 (gen_rtx_REG (SImode, FT32_SP),
-                                    gen_rtx_REG (SImode, FT32_SP),
-                                    GEN_INT (-(cfun->machine->
-                                               size_for_adjusting_sp))));
+				    gen_rtx_REG (SImode, FT32_SP),
+				    GEN_INT (-adj)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 }
@@ -500,6 +517,7 @@ void
 ft32_expand_epilogue (void)
 {
   int regno;
+  int pretend = crtl->args.pretend_args_size;
 
   if (!must_link ()
       && (cfun->machine->size_for_adjusting_sp == 24)
@@ -533,7 +551,7 @@ ft32_expand_epilogue (void)
               && df_regs_ever_live_p (regno))
             {
               rtx preg = gen_rtx_REG (Pmode, regno);
-              if (optimize_size)
+              if (optimize_size && (pretend == 0))
                 {
                   if (epilog24)
                     emit_insn (gen_jump_epilog24 (preg));
@@ -546,7 +564,10 @@ ft32_expand_epilogue (void)
         }
     }
 
-  emit_jump_insn (gen_returner ());
+  if (pretend != 0)
+    emit_jump_insn (gen_pretend_returner (GEN_INT (pretend)));
+  else
+    emit_jump_insn (gen_returner ());
 }
 
 #undef TARGET_FRAME_POINTER_REQUIRED
@@ -602,30 +623,19 @@ ft32_initial_elimination_offset (int from, int to)
 
 static void
 ft32_setup_incoming_varargs (cumulative_args_t cum_v,
-                             enum machine_mode mode ATTRIBUTE_UNUSED,
-                             tree type ATTRIBUTE_UNUSED,
-                             int *pretend_size, int no_rtl)
+			     enum machine_mode mode,
+			     tree type ATTRIBUTE_UNUSED,
+			     int *pretend_size, int no_rtl ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int regno;
-  int regs = 8 - *cum;
+  int named_size =
+    GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (mode);
 
-  *pretend_size = regs < 0 ? 0 : GET_MODE_SIZE (SImode) * regs;
-
-  if (no_rtl)
-    return;
-
-  for (regno = *cum; regno < 8; regno++)
-    {
-      rtx reg = gen_rtx_REG (SImode, regno);
-      rtx slot = gen_rtx_PLUS (Pmode,
-                               gen_rtx_REG (SImode, ARG_POINTER_REGNUM),
-                               GEN_INT (UNITS_PER_WORD * (regno - FT32_R0)));
-
-      emit_move_insn (gen_rtx_MEM (SImode, slot), reg);
-    }
+  if (named_size < 24)
+    *pretend_size = 24 - named_size;
+  else
+    *pretend_size = 0;
 }
-
 
 /* Return the fixed registers used for condition codes.  */
 
