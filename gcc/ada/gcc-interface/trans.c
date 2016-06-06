@@ -7686,10 +7686,11 @@ gnat_to_gnu (Node_Id gnat_node)
     current_function_decl = NULL_TREE;
 
   /* When not optimizing, turn boolean rvalues B into B != false tests
-     so that the code just below can put the location information of the
-     reference to B on the inequality operator for better debug info.  */
+     so that we can put the location information of the reference to B on
+     the inequality operator for better debug info.  */
   if (!optimize
       && TREE_CODE (gnu_result) != INTEGER_CST
+      && TREE_CODE (gnu_result) != TYPE_DECL
       && (kind == N_Identifier
 	  || kind == N_Expanded_Name
 	  || kind == N_Explicit_Dereference
@@ -7698,15 +7699,19 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
       && !lvalue_required_p (gnat_node, gnu_result_type, false, false, false))
-    gnu_result = build_binary_op (NE_EXPR, gnu_result_type,
-				  convert (gnu_result_type, gnu_result),
-				  convert (gnu_result_type,
-					   boolean_false_node));
+    {
+      gnu_result
+	= build_binary_op (NE_EXPR, gnu_result_type,
+			   convert (gnu_result_type, gnu_result),
+			   convert (gnu_result_type, boolean_false_node));
+      if (TREE_CODE (gnu_result) != INTEGER_CST)
+	set_gnu_expr_location_from_node (gnu_result, gnat_node);
+    }
 
-  /* Set the location information on the result.  Note that we may have
-     no result if we tried to build a CALL_EXPR node to a procedure with
-     no side-effects and optimization is enabled.  */
-  if (gnu_result && EXPR_P (gnu_result))
+  /* Set the location information on the result if it's not a simple name.
+     Note that we may have no result if we tried to build a CALL_EXPR node
+     to a procedure with no side-effects and optimization is enabled.  */
+  else if (kind != N_Identifier && gnu_result && EXPR_P (gnu_result))
     set_gnu_expr_location_from_node (gnu_result, gnat_node);
 
   /* If we're supposed to return something of void_type, it means we have
@@ -7857,6 +7862,10 @@ gnat_to_gnu_external (Node_Id gnat_node)
   force_global = save_force_global;
   if (went_into_elab_proc)
     current_function_decl = NULL_TREE;
+
+  /* Do not import locations from external units.  */
+  if (gnu_result && EXPR_P (gnu_result))
+    SET_EXPR_LOCATION (gnu_result, UNKNOWN_LOCATION);
 
   return gnu_result;
 }
