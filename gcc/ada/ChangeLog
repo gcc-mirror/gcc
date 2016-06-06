@@ -1,5 +1,13 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_call_alloc_dealloc): Do not substitute
+	placeholder expressions here but...
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Free_Statement>: ...here.
+	Make an exception to the protection of a CALL_EXPR result with an
+	unconstrained type only in the same cases as Call_to_gnu.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Rework special code dealing
 	with boolean rvalues and set the location directly.  Do not set the
 	location in the other cases for a simple name.

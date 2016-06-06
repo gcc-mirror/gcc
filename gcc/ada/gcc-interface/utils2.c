@@ -2268,8 +2268,6 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, tree gnu_type,
                           Entity_Id gnat_proc, Entity_Id gnat_pool,
                           Node_Id gnat_node)
 {
-  gnu_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_size, gnu_obj);
-
   /* Explicit proc to call ?  This one is assumed to deal with the type
      alignment constraints.  */
   if (Present (gnat_proc))

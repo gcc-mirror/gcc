@@ -7640,10 +7640,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	  else
 	    gnu_actual_obj_type = gnu_obj_type;
 
+	  tree gnu_size = TYPE_SIZE_UNIT (gnu_actual_obj_type);
+	  gnu_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_size, gnu_ptr);
+
 	  gnu_result
-	      = build_call_alloc_dealloc (gnu_ptr,
-					  TYPE_SIZE_UNIT (gnu_actual_obj_type),
-					  gnu_obj_type,
+	      = build_call_alloc_dealloc (gnu_ptr, gnu_size, gnu_obj_type,
 					  Procedure_To_Call (gnat_node),
 					  Storage_Pool (gnat_node),
 					  gnat_node);
@@ -7729,16 +7730,22 @@ gnat_to_gnu (Node_Id gnat_node)
 				    N_Raise_Constraint_Error));
     }
 
-  /* If the result has side-effects and is of an unconstrained type, make a
-     SAVE_EXPR so that we can be sure it will only be referenced once.  But
-     this is useless for a call to a function that returns an unconstrained
-     type with default discriminant, as we cannot compute the size of the
-     actual returned object.  We must do this before any conversions.  */
+  /* If the result has side-effects and is of an unconstrained type, protect
+     the expression in case it will be referenced multiple times, i.e. for
+     its value and to compute the size of an object.  But do it neither for
+     an object nor a renaming declaration, nor a return statement of a call
+     to a function that returns an unconstrained record type with default
+     discriminant, because there is no size to be computed in these cases
+     and this will create a useless temporary.  We must do this before any
+     conversions.  */
   if (TREE_SIDE_EFFECTS (gnu_result)
-      && !(TREE_CODE (gnu_result) == CALL_EXPR
-	   && type_is_padding_self_referential (TREE_TYPE (gnu_result)))
       && (TREE_CODE (gnu_result_type) == UNCONSTRAINED_ARRAY_TYPE
-	  || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type))))
+	  || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type)))
+      && !(TREE_CODE (gnu_result) == CALL_EXPR
+	   && type_is_padding_self_referential (TREE_TYPE (gnu_result))
+	   && (Nkind (Parent (gnat_node)) == N_Object_Declaration
+	       || Nkind (Parent (gnat_node)) == N_Object_Renaming_Declaration
+	       || Nkind (Parent (gnat_node)) == N_Simple_Return_Statement)))
     gnu_result = gnat_protect_expr (gnu_result);
 
   /* Now convert the result to the result type, unless we are in one of the
