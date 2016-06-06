@@ -8460,6 +8460,8 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
 	continue;
       if (IN (kind, Subprogram_Kind) && Is_Intrinsic_Subprogram (gnat_entity))
 	continue;
+      if (Is_Itype (gnat_entity))
+	continue;
 
       /* Skip named numbers.  */
       if (IN (kind, Named_Kind))

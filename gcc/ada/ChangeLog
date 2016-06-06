@@ -1,5 +1,10 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (elaborate_all_entities_for_package): Also do
+	not elaborate Itypes.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_internal_attribute_table): Add support
 	for noinline and noclone attributes.
 	(handle_noinline_attribute): New handler.
