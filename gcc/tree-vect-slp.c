@@ -3056,7 +3056,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		      if (integer_zerop (op))
 			op = build_int_cst (TREE_TYPE (vector_type), 0);
 		      else if (integer_onep (op))
-			op = build_int_cst (TREE_TYPE (vector_type), 1);
+			op = build_all_ones_cst (TREE_TYPE (vector_type));
 		      else
 			gcc_unreachable ();
 		    }
@@ -3071,8 +3071,14 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		  gimple *init_stmt;
 		  if (VECTOR_BOOLEAN_TYPE_P (vector_type))
 		    {
+		      tree true_val
+			= build_all_ones_cst (TREE_TYPE (vector_type));
+		      tree false_val
+			= build_zero_cst (TREE_TYPE (vector_type));
 		      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (op)));
-		      init_stmt = gimple_build_assign (new_temp, NOP_EXPR, op);
+		      init_stmt = gimple_build_assign (new_temp, COND_EXPR,
+						       op, true_val,
+						       false_val);
 		    }
 		  else
 		    {
