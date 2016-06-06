@@ -1203,7 +1203,8 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	    {
 	      if (gimple_assign_rhs1 (stmt) == op)
 		{
-		  propagate_op_to_single_use (op, stmt, def);
+		  tree cst = build_minus_one_cst (TREE_TYPE (op));
+		  propagate_op_to_single_use (cst, stmt, def);
 		  return;
 		}
 	      else if (integer_minus_onep (op)
@@ -1251,7 +1252,8 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	    {
 	      if (gimple_assign_rhs1 (stmt2) == op)
 		{
-		  propagate_op_to_single_use (op, stmt2, def);
+		  tree cst = build_minus_one_cst (TREE_TYPE (op));
+		  propagate_op_to_single_use (cst, stmt2, def);
 		  return;
 		}
 	      else if (integer_minus_onep (op)
