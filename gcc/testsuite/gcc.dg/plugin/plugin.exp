@@ -70,7 +70,6 @@ set plugin_test_list [list \
 	  diagnostic-test-expressions-1.c } \
     { diagnostic_plugin_show_trees.c \
 	  diagnostic-test-show-trees-1.c } \
-    { levenshtein_plugin.c levenshtein-test-1.c } \
     { location_overflow_plugin.c \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c } \

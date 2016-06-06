@@ -42,6 +42,8 @@ private:
 
   void start_timevars ();
 
+  void run_self_tests ();
+
   bool m_use_TV_TOTAL;
   bool m_init_signals;
 };

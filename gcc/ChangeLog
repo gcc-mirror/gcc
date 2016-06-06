@@ -1,3 +1,112 @@
+2016-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add function-tests.o,
+	hash-map-tests.o, hash-set-tests.o, rtl-tests.o,
+	selftest-run-tests.o.
+	(OBJS-libcommon): Add selftest.o.
+	(OBJS-libcommon-target): Add selftest.o.
+	(all.internal): Add "selftest".
+	(all.cross): Likewise.
+	(selftest): New phony target.
+	(s-selftest): New target.
+	(selftest-gdb): New phony target.
+	(COLLECT2_OBJS): Add selftest.o.
+	* bitmap.c: Include "selftest.h".
+	(selftest::test_gc_alloc): New function.
+	(selftest::test_set_range): New function.
+	(selftest::test_clear_bit_in_middle): New function.
+	(selftest::test_copying): New function.
+	(selftest::test_bitmap_single_bit_set_p): New function.
+	(selftest::bitmap_c_tests): New function.
+	* common.opt (fself-test): New.
+	* diagnostic-show-locus.c: Include "selftest.h".
+	(make_range): New function.
+	(test_range_contains_point_for_single_point): New function.
+	(test_range_contains_point_for_single_line): New function.
+	(test_range_contains_point_for_multiple_lines): New function.
+	(assert_eq): New function.
+	(test_get_line_width_without_trailing_whitespace): New function.
+	(selftest::diagnostic_show_locus_c_tests): New function.
+	* et-forest.c: Include "selftest.h".
+	(selftest::test_single_node): New function.
+	(selftest::test_simple_tree): New function.
+	(selftest::test_disconnected_nodes): New function.
+	(selftest::et_forest_c_tests): New function.
+	* fold-const.c: Include "selftest.h".
+	(selftest::assert_binop_folds_to_const): New function.
+	(selftest::assert_binop_folds_to_nonlvalue): New function.
+	(selftest::test_arithmetic_folding): New function.
+	(selftest::fold_const_c_tests): New function.
+	* function-tests.c: New file.
+	* gimple.c: Include "selftest.h".
+	Include "gimple-pretty-print.h".
+	(selftest::verify_gimple_pp): New function.
+	(selftest::test_assign_single): New function.
+	(selftest::test_assign_binop): New function.
+	(selftest::test_nop_stmt): New function.
+	(selftest::test_return_stmt): New function.
+	(selftest::test_return_without_value): New function.
+	(selftest::gimple_c_tests): New function.
+	* hash-map-tests.c: New file.
+	* hash-set-tests.c: New file.
+	* input.c: Include "selftest.h".
+	(selftest::assert_loceq): New function.
+	(selftest::test_accessing_ordinary_linemaps): New function.
+	(selftest::test_unknown_location): New function.
+	(selftest::test_builtins): New function.
+	(selftest::test_reading_source_line): New function.
+	(selftest::input_c_tests): New function.
+	* rtl-tests.c: New file.
+	* selftest-run-tests.c: New file.
+	* selftest.c: New file.
+	* selftest.h: New file.
+	* spellcheck.c: Include "selftest.h".
+	(selftest::levenshtein_distance_unit_test_oneway): New function,
+	adapted from testsuite/gcc.dg/plugin/levenshtein_plugin.c.
+	(selftest::levenshtein_distance_unit_test): Likewise.
+	(selftest::spellcheck_c_tests): Likewise.
+	* toplev.c: Include selftest.h.
+	(toplev::run_self_tests): New.
+	(toplev::main): Handle -fself-test.
+	* toplev.h (toplev::run_self_tests): New.
+	* tree.c: Include "selftest.h".
+	(selftest::test_integer_constants): New function.
+	(selftest::test_identifiers): New function.
+	(selftest::test_labels): New function.
+	(selftest::tree_c_tests): New function.
+	* tree-cfg.c: Include "selftest.h".
+	(selftest::push_fndecl): New function.
+	(selftest::test_linear_chain): New function.
+	(selftest::test_diamond): New function.
+	(selftest::test_fully_connected): New function.
+	(selftest::tree_cfg_c_tests): New function.
+	* vec.c: Include "selftest.h".
+	(selftest::safe_push_range): New function.
+	(selftest::test_quick_push): New function.
+	(selftest::test_safe_push): New function.
+	(selftest::test_truncate): New function.
+	(selftest::test_safe_grow_cleared): New function.
+	(selftest::test_pop): New function.
+	(selftest::test_safe_insert): New function.
+	(selftest::test_ordered_remove): New function.
+	(selftest::test_unordered_remove): New function.
+	(selftest::test_block_remove): New function.
+	(selftest::reverse_cmp): New function.
+	(selftest::test_qsort): New function.
+	(selftest::vec_c_tests): New function.c.
+	* wide-int.cc: Include selftest.h and wide-int-print.h.
+	(selftest::from_int <wide_int>): New function.
+	(selftest::from_int <offset_int>): New function.
+	(selftest::from_int <widest_int>): New function.
+	(selftest::assert_deceq): New function.
+	(selftest::assert_hexeq): New function.
+	(selftest::test_printing <VALUE_TYPE>): New function template.
+	(selftest::test_ops <VALUE_TYPE>): New function template.
+	(selftest::test_comparisons <VALUE_TYPE>): New function template.
+	(selftest::run_all_wide_int_tests <VALUE_TYPE>): New function
+	template.
+	(selftest::wide_int_cc_tests): New function.
+
 2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/37780

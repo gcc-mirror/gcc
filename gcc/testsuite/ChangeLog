@@ -1,3 +1,10 @@
+2016-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/levenshtein-test-1.c: Delete.
+	* gcc.dg/plugin/levenshtein_plugin.c: Delete.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Remove the
+	above.
+
 2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/37780

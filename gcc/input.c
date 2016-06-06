@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "diagnostic-core.h"
+#include "selftest.h"
 
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
@@ -1136,3 +1137,118 @@ dump_location_info (FILE *stream)
   dump_labelled_location_range (stream, "AD-HOC LOCATIONS",
 				MAX_SOURCE_LOCATION + 1, UINT_MAX);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests of location handling.  */
+
+/* Verify the result of LOCATION_FILE/LOCATION_LINE/LOCATION_COLUMN
+   on LOC.  */
+
+static void
+assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
+	      location_t loc)
+{
+  ASSERT_STREQ (exp_filename, LOCATION_FILE (loc));
+  ASSERT_EQ (exp_linenum, LOCATION_LINE (loc));
+  ASSERT_EQ (exp_colnum, LOCATION_COLUMN (loc));
+}
+
+/* Verify basic operation of ordinary linemaps.  */
+
+static void
+test_accessing_ordinary_linemaps ()
+{
+  /* Build a simple linemap describing some locations. */
+  linemap_add (line_table, LC_ENTER, false, "foo.c", 0);
+
+  linemap_line_start (line_table, 1, 100);
+  location_t loc_a = linemap_position_for_column (line_table, 1);
+  location_t loc_b = linemap_position_for_column (line_table, 23);
+
+  linemap_line_start (line_table, 2, 100);
+  location_t loc_c = linemap_position_for_column (line_table, 1);
+  location_t loc_d = linemap_position_for_column (line_table, 17);
+
+  /* Example of a very long line.  */
+  linemap_line_start (line_table, 3, 2000);
+  location_t loc_e = linemap_position_for_column (line_table, 700);
+
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+
+  /* Multiple files.  */
+  linemap_add (line_table, LC_ENTER, false, "bar.c", 0);
+  linemap_line_start (line_table, 1, 200);
+  location_t loc_f = linemap_position_for_column (line_table, 150);
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+
+  /* Verify that we can recover the location info.  */
+  assert_loceq ("foo.c", 1, 1, loc_a);
+  assert_loceq ("foo.c", 1, 23, loc_b);
+  assert_loceq ("foo.c", 2, 1, loc_c);
+  assert_loceq ("foo.c", 2, 17, loc_d);
+  assert_loceq ("foo.c", 3, 700, loc_e);
+  assert_loceq ("bar.c", 1, 150, loc_f);
+
+  ASSERT_FALSE (is_location_from_builtin_token (loc_a));
+}
+
+/* Verify various properties of UNKNOWN_LOCATION.  */
+
+static void
+test_unknown_location ()
+{
+  ASSERT_EQ (NULL, LOCATION_FILE (UNKNOWN_LOCATION));
+  ASSERT_EQ (0, LOCATION_LINE (UNKNOWN_LOCATION));
+  ASSERT_EQ (0, LOCATION_COLUMN (UNKNOWN_LOCATION));
+}
+
+/* Verify various properties of BUILTINS_LOCATION.  */
+
+static void
+test_builtins ()
+{
+  assert_loceq ("<built-in>", 0, 0, BUILTINS_LOCATION);
+  ASSERT_PRED1 (is_location_from_builtin_token, BUILTINS_LOCATION);
+}
+
+/* Verify reading of input files (e.g. for caret-based diagnostics).  */
+
+static void
+test_reading_source_line ()
+{
+  /* We will read *this* source file, using __FILE__.
+     Here is some specific text to read and test for:
+     The quick brown fox jumps over the lazy dog.  */
+  const int linenum_after_test_message = __LINE__;
+  const int linenum = linenum_after_test_message - 1;
+
+  int line_size;
+  const char *source_line = location_get_source_line (__FILE__, linenum, &line_size);
+  ASSERT_TRUE (source_line != NULL);
+  ASSERT_EQ (53, line_size);
+  if (!strncmp ("     The quick brown fox jumps over the lazy dog.  */",
+	       source_line, line_size))
+    ::selftest::pass (__FILE__, __LINE__,
+		      "source_line matched expected value");
+  else
+    ::selftest::fail (__FILE__, __LINE__,
+		      "source_line did not match expected value");
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+input_c_tests ()
+{
+  test_accessing_ordinary_linemaps ();
+  test_unknown_location ();
+  test_builtins ();
+  test_reading_source_line ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

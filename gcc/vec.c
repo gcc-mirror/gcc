@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "hash-table.h"
+#include "selftest.h"
 
 /* vNULL is an empty type with a template cast operation that returns
    a zero-initialized vec<T, A, L> instance.  Use this when you want
@@ -188,3 +189,194 @@ dump_vec_loc_statistics (void)
 {
   vec_mem_desc.dump (VEC_ORIGIN);
 }
+
+#ifndef GENERATOR_FILE
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests.  */
+
+/* Call V.safe_push for all ints from START up to, but not including LIMIT.
+   Helper function for selftests.  */
+
+static void
+safe_push_range (vec <int>&v, int start, int limit)
+{
+  for (int i = start; i < limit; i++)
+    v.safe_push (i);
+}
+
+/* Verify that vec::quick_push works correctly.  */
+
+static void
+test_quick_push ()
+{
+  auto_vec <int> v;
+  ASSERT_EQ (0, v.length ());
+  v.reserve (3);
+  ASSERT_EQ (0, v.length ());
+  ASSERT_TRUE (v.space (3));
+  v.quick_push (5);
+  v.quick_push (6);
+  v.quick_push (7);
+  ASSERT_EQ (3, v.length ());
+  ASSERT_EQ (5, v[0]);
+  ASSERT_EQ (6, v[1]);
+  ASSERT_EQ (7, v[2]);
+}
+
+/* Verify that vec::safe_push works correctly.  */
+
+static void
+test_safe_push ()
+{
+  auto_vec <int> v;
+  ASSERT_EQ (0, v.length ());
+  v.safe_push (5);
+  v.safe_push (6);
+  v.safe_push (7);
+  ASSERT_EQ (3, v.length ());
+  ASSERT_EQ (5, v[0]);
+  ASSERT_EQ (6, v[1]);
+  ASSERT_EQ (7, v[2]);
+}
+
+/* Verify that vec::truncate works correctly.  */
+
+static void
+test_truncate ()
+{
+  auto_vec <int> v;
+  ASSERT_EQ (0, v.length ());
+  safe_push_range (v, 0, 10);
+  ASSERT_EQ (10, v.length ());
+
+  v.truncate (5);
+  ASSERT_EQ (5, v.length ());
+}
+
+/* Verify that vec::safe_grow_cleared works correctly.  */
+
+static void
+test_safe_grow_cleared ()
+{
+  auto_vec <int> v;
+  ASSERT_EQ (0, v.length ());
+  v.safe_grow_cleared (50);
+  ASSERT_EQ (50, v.length ());
+  ASSERT_EQ (0, v[0]);
+  ASSERT_EQ (0, v[49]);
+}
+
+/* Verify that vec::pop works correctly.  */
+
+static void
+test_pop ()
+{
+  auto_vec <int> v;
+  safe_push_range (v, 5, 20);
+  ASSERT_EQ (15, v.length ());
+
+  int last = v.pop ();
+  ASSERT_EQ (19, last);
+  ASSERT_EQ (14, v.length ());
+}
+
+/* Verify that vec::safe_insert works correctly.  */
+
+static void
+test_safe_insert ()
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  v.safe_insert (5, 42);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (42, v[5]);
+  ASSERT_EQ (5, v[6]);
+  ASSERT_EQ (11, v.length ());
+}
+
+/* Verify that vec::ordered_remove works correctly.  */
+
+static void
+test_ordered_remove ()
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  v.ordered_remove (5);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (9, v.length ());
+}
+
+/* Verify that vec::unordered_remove works correctly.  */
+
+static void
+test_unordered_remove ()
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  v.unordered_remove (5);
+  ASSERT_EQ (9, v.length ());
+}
+
+/* Verify that vec::block_remove works correctly.  */
+
+static void
+test_block_remove ()
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  v.block_remove (5, 3);
+  ASSERT_EQ (3, v[3]);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (8, v[5]);
+  ASSERT_EQ (9, v[6]);
+  ASSERT_EQ (7, v.length ());
+}
+
+/* Comparator for use by test_qsort.  */
+
+static int
+reverse_cmp (const void *p_i, const void *p_j)
+{
+  return *(const int *)p_j - *(const int *)p_i;
+}
+
+/* Verify that vec::qsort works correctly.  */
+
+static void
+test_qsort ()
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  v.qsort (reverse_cmp);
+  ASSERT_EQ (9, v[0]);
+  ASSERT_EQ (8, v[1]);
+  ASSERT_EQ (1, v[8]);
+  ASSERT_EQ (0, v[9]);
+  ASSERT_EQ (10, v.length ());
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+vec_c_tests ()
+{
+  test_quick_push ();
+  test_safe_push ();
+  test_truncate ();
+  test_safe_grow_cleared ();
+  test_pop ();
+  test_safe_insert ();
+  test_ordered_remove ();
+  test_unordered_remove ();
+  test_block_remove ();
+  test_qsort ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
+#endif /* #ifndef GENERATOR_FILE */
