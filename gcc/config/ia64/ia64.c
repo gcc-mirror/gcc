@@ -6558,6 +6558,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	    case USE:
 	    case CALL:
 	    case ASM_OPERANDS:
+	    case ASM_INPUT:
 	      need_barrier |= rtx_needs_barrier (pat, flags, pred);
 	      break;
 

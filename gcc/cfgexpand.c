@@ -2674,14 +2674,39 @@ expand_asm_loc (tree string, int vol, location_t locus)
 {
   rtx body;
 
-  if (TREE_CODE (string) == ADDR_EXPR)
-    string = TREE_OPERAND (string, 0);
-
   body = gen_rtx_ASM_INPUT_loc (VOIDmode,
 				ggc_strdup (TREE_STRING_POINTER (string)),
 				locus);
 
   MEM_VOLATILE_P (body) = vol;
+
+  /* Non-empty basic ASM implicitly clobbers memory.  */
+  if (TREE_STRING_LENGTH (string) != 0)
+    {
+      rtx asm_op, clob;
+      unsigned i, nclobbers;
+      auto_vec<rtx> input_rvec, output_rvec;
+      auto_vec<const char *> constraints;
+      auto_vec<rtx> clobber_rvec;
+      HARD_REG_SET clobbered_regs;
+      CLEAR_HARD_REG_SET (clobbered_regs);
+
+      clob = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+      clobber_rvec.safe_push (clob);
+
+      if (targetm.md_asm_adjust)
+	targetm.md_asm_adjust (output_rvec, input_rvec,
+			       constraints, clobber_rvec,
+			       clobbered_regs);
+
+      asm_op = body;
+      nclobbers = clobber_rvec.length ();
+      body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (1 + nclobbers));
+
+      XVECEXP (body, 0, 0) = asm_op;
+      for (i = 0; i < nclobbers; i++)
+	XVECEXP (body, 0, i + 1) = gen_rtx_CLOBBER (VOIDmode, clobber_rvec[i]);
+    }
 
   emit_insn (body);
 }

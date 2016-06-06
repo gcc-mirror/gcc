@@ -1,3 +1,22 @@
+2016-06-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/24414
+	* cfgexpand.c (expand_asm_loc): Remove handling for ADDR_EXPR.
+	Implicitly clobber memory for basic asm with non-empty assembler
+	string.  Use targetm.md_asm_adjust also here.
+	* compare-elim.c (arithmetic_flags_clobber_p): Use asm_noperands here.
+	* final.c (final_scan_insn): Handle basic asm in PARALLEL block.
+	* gimple.c (gimple_asm_clobbers_memory_p): Handle basic asm with
+	non-empty assembler string.
+	* ira.c (compute_regs_asm_clobbered): Use asm_noperands here.
+	* recog.c (asm_noperands): Handle basic asm in PARALLEL block.
+	(decode_asm_operands): Handle basic asm in PARALLEL block.
+	(extract_insn): Handle basic asm in PARALLEL block.
+	* doc/extend.texi: Mention new behavior of basic asm.
+	* config/ia64/ia64 (rtx_needs_barrier): Handle ASM_INPUT here.
+	* config/pa/pa.c (branch_to_delay_slot_p, branch_needs_nop_p,
+	branch_needs_nop_p): Use asm_noperands.
+
 2016-06-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config/sparc/sparc.md (cpu): Add niagara7 cpu type.

@@ -1,3 +1,8 @@
+2016-06-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/24414
+	* gcc.target/i386/pr24414.c: New test.
+
 2016-06-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* gcc.target/sparc/vis4misc.c: New file.

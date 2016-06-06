@@ -2233,7 +2233,7 @@ compute_regs_asm_clobbered (void)
 	{
 	  df_ref def;
 
-	  if (NONDEBUG_INSN_P (insn) && extract_asm_operands (PATTERN (insn)))
+	  if (NONDEBUG_INSN_P (insn) && asm_noperands (PATTERN (insn)) >= 0)
 	    FOR_EACH_INSN_DEF (def, insn)
 	      {
 		unsigned int dregno = DF_REF_REGNO (def);
