@@ -1,6 +1,16 @@
 2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/37780
+	* ifcvt.c (noce_try_ifelse_collapse): New function.
+	Declare prototype.
+	(noce_process_if_block): Call noce_try_ifelse_collapse.
+	* simplify-rtx.c (simplify_cond_clz_ctz): New function.
+	(simplify_ternary_operation): Use the above to simplify
+	conditional CLZ/CTZ expressions.
+
+2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/37780
 	* config/aarch64/aarch64.md (ctz<mode>2): Convert to
 	define_insn_and_split.
 

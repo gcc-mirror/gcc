@@ -817,6 +817,7 @@ struct noce_if_info
 
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
 static int noce_try_move (struct noce_if_info *);
+static int noce_try_ifelse_collapse (struct noce_if_info *);
 static int noce_try_store_flag (struct noce_if_info *);
 static int noce_try_addcc (struct noce_if_info *);
 static int noce_try_store_flag_constants (struct noce_if_info *);
@@ -1119,6 +1120,37 @@ noce_try_move (struct noce_if_info *if_info)
     }
   return FALSE;
 }
+
+/* Try forming an IF_THEN_ELSE (cond, b, a) and collapsing that
+   through simplify_rtx.  Sometimes that can eliminate the IF_THEN_ELSE.
+   If that is the case, emit the result into x.  */
+
+static int
+noce_try_ifelse_collapse (struct noce_if_info * if_info)
+{
+  if (!noce_simple_bbs (if_info))
+    return FALSE;
+
+  machine_mode mode = GET_MODE (if_info->x);
+  rtx if_then_else = simplify_gen_ternary (IF_THEN_ELSE, mode, mode,
+					    if_info->cond, if_info->b,
+					    if_info->a);
+
+  if (GET_CODE (if_then_else) == IF_THEN_ELSE)
+    return FALSE;
+
+  rtx_insn *seq;
+  start_sequence ();
+  noce_emit_move_insn (if_info->x, if_then_else);
+  seq = end_ifcvt_sequence (if_info);
+  if (!seq)
+    return FALSE;
+
+  emit_insn_before_setloc (seq, if_info->jump,
+			  INSN_LOCATION (if_info->insn_a));
+  return TRUE;
+}
+
 
 /* Convert "if (test) x = 1; else x = 0".
 
@@ -3496,6 +3528,8 @@ noce_process_if_block (struct noce_if_info *if_info)
     return FALSE;
 
   if (noce_try_move (if_info))
+    goto success;
+  if (noce_try_ifelse_collapse (if_info))
     goto success;
   if (noce_try_store_flag (if_info))
     goto success;
