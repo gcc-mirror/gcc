@@ -1,4 +1,14 @@
 2016-06-06  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70847
+	PR c++/71330
+	PR c++/71393
+	* g++.dg/opt/pr70847.C: New test.
+	* g++.dg/ubsan/pr70847.C: New test.
+	* g++.dg/ubsan/pr71393.C: New test.
+
+2016-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71259
 	* gcc.dg/vect/pr71259.c: New test.
