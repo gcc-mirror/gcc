@@ -1,6 +1,12 @@
 2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/37780
+	* config/aarch64/aarch64.md (ctz<mode>2): Convert to
+	define_insn_and_split.
+
+2016-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/37780
 	* config/arm/arm.md (ctzsi2): Convert to define_insn_and_split.
 
 2016-06-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
