@@ -1,3 +1,30 @@
+2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum ix86_enitity): Add X86_DIRFLAG.
+	(enum x86_dirflag_state): New enum.
+	(NUM_MODES_FOR_MODE_SWITCHING): Add X86_DIRFLAG_ANY.
+	(machine_function): Remove needs_cld.
+	(ix86_current_function_needs_cld): Remove.
+	* config/i386/i386.c (ix86_set_func_type): Set
+	ix86_optimize_mode_switching[X86_DIRFLAG] to 1.
+	(ix86_expand_prologue): Do not emit CLD here.
+	(ix86_dirflag_mode_needed): New function.
+	(ix86_dirflag_mode_entry): Ditto.
+	(ix86_mode_needed): Handle X86_DIRFLAG entity.
+	(ix86_mode_after): Ditto.
+	(ix86_mode_entry): Ditto.
+	(ix86_mode_exit): Ditto.
+	(ix86_emit_mode_set): Ditto.
+	* config/i386/i386.md (strmov_singleop): Set
+	ix86_optimize_mode_switching[X86_DIRFLAG] to 1 for TARGET_CLD.
+	Do not set ix86_current_function_needs_cld.
+	(rep_mov): Ditto.
+	(strset_singleop): Ditto.
+	(rep_stos): Ditto.
+	(cmpstrnqi_nz_1): Ditto.
+	(cmpstrnqi_1): Ditto.
+	(strlenqi_1): Ditto.
+
 2016-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71259
@@ -229,7 +256,7 @@
 
 	* config/ft32/ft32.c (ft32_setup_incoming_varargs,
 	ft32_expand_prolog, ft32_expand_epilogue):
-        Handle pretend_args.
+	Handle pretend_args.
 	* config/ft32/ft32.h: Remove OUTGOING_REG_PARM_STACK_SPACE.
 	* config/ft32/ft32.md: Add pretend_returner.
 
