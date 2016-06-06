@@ -204,6 +204,7 @@ static tree elaborate_reference (tree, Entity_Id, bool, tree *);
 static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
+static tree gnu_ext_name_for_subprog (Entity_Id, tree);
 static tree change_qualified_type (tree, int);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
@@ -4109,7 +4110,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Function:
     case E_Procedure:
       {
-	tree gnu_ext_name = create_concat_name (gnat_entity, NULL);
+	tree gnu_ext_name
+	  = gnu_ext_name_for_subprog (gnat_entity, gnu_entity_name);
 	enum inline_status_t inline_status
 	  = Has_Pragma_No_Inline (gnat_entity)
 	    ? is_suppressed
@@ -4191,48 +4193,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	gnu_type
 	  = gnat_to_gnu_subprog_type (gnat_entity, definition, debug_info_p,
 				      &gnu_param_list);
-
-	/* If this subprogram is expectedly bound to a GCC builtin, fetch the
-	   corresponding DECL node and check the parameter association.  */
-	if (Convention (gnat_entity) == Convention_Intrinsic
-	    && Present (Interface_Name (gnat_entity)))
+	if (DECL_P (gnu_type))
 	  {
-	    tree gnu_builtin_decl = builtin_decl_for (gnu_ext_name);
-
-	    /* If we have a builtin DECL for that function, use it.  Check if
-	       the profiles are compatible and warn if they are not.  Note that
-	       the checker is expected to post diagnostics in this case.  */
-	    if (gnu_builtin_decl)
-	      {
-		intrin_binding_t inb
-		  = { gnat_entity, gnu_type, TREE_TYPE (gnu_builtin_decl) };
-
-		if (!intrin_profiles_compatible_p (&inb))
-		  post_error
-		    ("?profile of& doesn''t match the builtin it binds!",
-		     gnat_entity);
-
-		gnu_decl = gnu_builtin_decl;
-		gnu_type = TREE_TYPE (gnu_builtin_decl);
-		break;
-	      }
-
-	    /* Inability to find the builtin DECL most often indicates a
-	       genuine mistake, but imports of unregistered intrinsics are
-	       sometimes issued on purpose to allow hooking in alternate
-	       bodies.  We post a warning conditioned on Wshadow in this case,
-	       to let developers be notified on demand without risking false
-	       positives with common default sets of options.  */
-	    else if (warn_shadow)
-	      post_error ("?gcc intrinsic not found for&!", gnat_entity);
+	    gnu_decl = gnu_type;
+	    gnu_type = TREE_TYPE (gnu_decl);
+	    break;
 	  }
-
-	/* If there was no specified Interface_Name and the external and
-	   internal names of the subprogram are the same, only use the
-	   internal name to allow disambiguation of nested subprograms.  */
-	if (No (Interface_Name (gnat_entity))
-	    && gnu_ext_name == gnu_entity_name)
-	  gnu_ext_name = NULL_TREE;
 
 	/* Deal with platform-specific calling conventions.  */
 	if (Has_Stdcall_Convention (gnat_entity))
@@ -5008,6 +4974,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  {
 	    update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
 			       TREE_TYPE (gnu_decl));
+	    if (TYPE_DUMMY_IN_PROFILE_P (p->old_type))
+	      update_profiles_with (p->old_type);
 	    p->old_type = NULL_TREE;
 	  }
     }
@@ -5321,7 +5289,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, bool first, Entity_Id gnat_subprog,
   bool by_return = false, by_component_ptr = false;
   bool by_ref = false;
   bool restricted_aliasing_p = false;
+  location_t saved_location = input_location;
   tree gnu_param;
+
+  /* Make sure to use the proper SLOC for vector ABI warnings.  */
+  if (VECTOR_TYPE_P (gnu_param_type))
+    Sloc_to_locus (Sloc (gnat_subprog), &input_location);
 
   /* Builtins are expanded inline and there is no real call sequence involved.
      So the type expected by the underlying expander is always the type of the
@@ -5454,6 +5427,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, bool first, Entity_Id gnat_subprog,
   else if (!in_param)
     *cico = true;
 
+  input_location = saved_location;
+
   if (mech == By_Copy && (by_ref || by_component_ptr))
     post_error ("?cannot pass & by copy", gnat_param);
 
@@ -5507,7 +5482,14 @@ gnat_to_gnu_param (Entity_Id gnat_param, bool first, Entity_Id gnat_subprog,
 }
 
 /* Associate GNAT_SUBPROG with GNU_TYPE, which must be a dummy type, so that
-   GNAT_SUBPROG is updated when TYPE is completed.  */
+   GNAT_SUBPROG is updated when TYPE is completed.
+
+   Ada 2012 (AI05-019) says that freezing a subprogram does not always freeze
+   the corresponding profile, which means that, by the time the freeze node
+   of the subprogram is encountered, types involved in its profile may still
+   be not frozen yet.  That's why we do not update GNAT_SUBPROG when we see
+   its freeze node but only when we see the freeze node of types involved in
+   its profile, either types of formal parameters or the return type.  */
 
 static void
 associate_subprog_with_dummy_type (Entity_Id gnat_subprog, tree gnu_type)
@@ -5524,8 +5506,15 @@ associate_subprog_with_dummy_type (Entity_Id gnat_subprog, tree gnu_type)
       e->base.from = gnu_type;
       e->to = NULL;
       *slot = e;
-      TYPE_DUMMY_IN_PROFILE_P (gnu_type) = 1;
     }
+
+  /* Even if there is already a slot for GNU_TYPE, we need to set the flag
+     because the vector might have been just emptied by update_profiles_with.
+     This can happen when there are 2 freeze nodes associated with different
+     views of the same type; the type will be really complete only after the
+     second freeze node is encountered.  */
+  TYPE_DUMMY_IN_PROFILE_P (gnu_type) = 1;
+
   vec<Entity_Id, va_gc_atomic> *v = (*slot)->to;
 
   /* Make sure GNAT_SUBPROG is not associated twice with the same dummy type,
@@ -5567,6 +5556,15 @@ update_profile (Entity_Id gnat_subprog)
   tree gnu_type = gnat_to_gnu_subprog_type (gnat_subprog, true,
 					    Needs_Debug_Info (gnat_subprog),
 					    &gnu_param_list);
+  if (DECL_P (gnu_type))
+    {
+      /* Builtins cannot have their address taken so we can reset them.  */
+      gcc_assert (DECL_BUILT_IN (gnu_type));
+      save_gnu_tree (gnat_subprog, NULL_TREE, false);
+      save_gnu_tree (gnat_subprog, gnu_type, false);
+      return;
+    }
+
   tree gnu_subprog = get_gnu_tree (gnat_subprog);
 
   TREE_TYPE (gnu_subprog) = gnu_type;
@@ -5575,8 +5573,12 @@ update_profile (Entity_Id gnat_subprog)
      and needs to be adjusted too.  */
   if (Ekind (gnat_subprog) != E_Subprogram_Type)
     {
+      tree gnu_entity_name = get_entity_name (gnat_subprog);
+      tree gnu_ext_name
+	= gnu_ext_name_for_subprog (gnat_subprog, gnu_entity_name);
+
       DECL_ARGUMENTS (gnu_subprog) = gnu_param_list;
-      finish_subprog_decl (gnu_subprog, gnu_type);
+      finish_subprog_decl (gnu_subprog, gnu_ext_name, gnu_type);
     }
 }
 
@@ -5592,6 +5594,9 @@ update_profiles_with (tree gnu_type)
   gcc_assert (e);
   vec<Entity_Id, va_gc_atomic> *v = e->to;
   e->to = NULL;
+
+  /* The flag needs to be reset before calling update_profile, in case
+     associate_subprog_with_dummy_type is again invoked on GNU_TYPE.  */
   TYPE_DUMMY_IN_PROFILE_P (gnu_type) = 0;
 
   unsigned int i;
@@ -5678,7 +5683,9 @@ gnat_to_gnu_profile_type (Entity_Id gnat_type)
 /* Return a GCC tree for a subprogram type corresponding to GNAT_SUBPROG.
    DEFINITION is true if this is for a subprogram being defined.  DEBUG_INFO_P
    is true if we need to write debug information for other types that we may
-   create in the process.  Also set PARAM_LIST to the list of parameters.  */
+   create in the process.  Also set PARAM_LIST to the list of parameters.
+   If GNAT_SUBPROG is bound to a GCC builtin, return the DECL for the builtin
+   directly instead of its type.  */
 
 static tree
 gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
@@ -5687,6 +5694,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   const Entity_Kind kind = Ekind (gnat_subprog);
   Entity_Id gnat_return_type = Etype (gnat_subprog);
   Entity_Id gnat_param;
+  tree gnu_type = present_gnu_tree (gnat_subprog)
+		  ? TREE_TYPE (get_gnu_tree (gnat_subprog)) : NULL_TREE;
   tree gnu_return_type;
   tree gnu_param_type_list = NULL_TREE;
   tree gnu_param_list = NULL_TREE;
@@ -5698,6 +5707,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      is the PARM_DECL corresponding to that field.  This list will be saved in
      the TYPE_CI_CO_LIST field of the FUNCTION_TYPE node we create.  */
   tree gnu_cico_list = NULL_TREE;
+  tree gnu_cico_return_type = NULL_TREE;
   /* Fields in return type of procedure with copy-in copy-out parameters.  */
   tree gnu_field_list = NULL_TREE;
   /* The semantics of "pure" in Ada essentially matches that of "const"
@@ -5715,10 +5725,22 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   bool incomplete_profile_p = false;
   unsigned int num;
 
-  /* Look into the return type and get its associated GCC tree.  If it is not
-     void, compute various flags for the subprogram type.  */
+  /* Look into the return type and get its associated GCC tree if it is not
+     void, and then compute various flags for the subprogram type.  But make
+     sure not to do this processing multiple times.  */
   if (Ekind (gnat_return_type) == E_Void)
     gnu_return_type = void_type_node;
+
+  else if (gnu_type
+	   && TREE_CODE (gnu_type) == FUNCTION_TYPE
+	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_type)))
+    {
+      gnu_return_type = TREE_TYPE (gnu_type);
+      return_unconstrained_p = TYPE_RETURN_UNCONSTRAINED_P (gnu_type);
+      return_by_direct_ref_p = TYPE_RETURN_BY_DIRECT_REF_P (gnu_type);
+      return_by_invisi_ref_p = TREE_ADDRESSABLE (gnu_type);
+    }
+
   else
     {
       gnu_return_type = gnat_to_gnu_profile_type (gnat_return_type);
@@ -5828,7 +5850,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	 returns by reference, then the return type is only linked indirectly
 	 in the profile, so the profile can be seen as complete since it need
 	 not be further modified, only the reference types need be adjusted;
-	 otherwise the profile itself is incomplete and need be adjusted.  */
+	 otherwise the profile is incomplete and need be adjusted too.  */
       if (TYPE_IS_DUMMY_P (gnu_return_type))
 	{
 	  associate_subprog_with_dummy_type (gnat_subprog, gnu_return_type);
@@ -5858,81 +5880,107 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
        Present (gnat_param);
        gnat_param = Next_Formal_With_Extras (gnat_param), num++)
     {
-      Entity_Id gnat_param_type = Etype (gnat_param);
+      const bool mech_is_by_ref
+	= Mechanism (gnat_param) == By_Reference
+	  && !(num == 0 && Is_Valued_Procedure (gnat_subprog));
       tree gnu_param_name = get_entity_name (gnat_param);
-      tree gnu_param_type = gnat_to_gnu_profile_type (gnat_param_type);
-      tree gnu_param, gnu_field;
+      tree gnu_param, gnu_param_type;
       bool cico = false;
 
-      /* If the parameter type is incomplete, there are 2 cases: if it is
-	 passed by reference, then the type is only linked indirectly in
-	 the profile, so the profile can be seen as complete since it need
-	 not be further modified, only the reference types need be adjusted;
-	 otherwise the profile itself is incomplete and need be adjusted.  */
-      if (TYPE_IS_DUMMY_P (gnu_param_type))
+      /* Fetch an existing parameter with complete type and reuse it.  But we
+	 didn't save the CICO property so we can only do it for In parameters
+	 or parameters passed by reference.  */
+      if ((Ekind (gnat_param) == E_In_Parameter || mech_is_by_ref)
+	  && present_gnu_tree (gnat_param)
+	  && (gnu_param = get_gnu_tree (gnat_param))
+	  && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_param)))
 	{
-	  Node_Id gnat_decl;
-
-	  if (Mechanism (gnat_param) == By_Reference
-	      || (TYPE_REFERENCE_TO (gnu_param_type)
-		  && TYPE_IS_FAT_POINTER_P (TYPE_REFERENCE_TO (gnu_param_type)))
-	      || TYPE_IS_BY_REFERENCE_P (gnu_param_type))
-	    {
-	      gnu_param_type = build_reference_type (gnu_param_type);
-	      gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
-	      TREE_READONLY (gnu_param) = 1;
-	      DECL_BY_REF_P (gnu_param) = 1;
-	      DECL_POINTS_TO_READONLY_P (gnu_param)
-		= (Ekind (gnat_param) == E_In_Parameter
-		   && !Address_Taken (gnat_param));
-	      Set_Mechanism (gnat_param, By_Reference);
-	      Sloc_to_locus (Sloc (gnat_param),
-			     &DECL_SOURCE_LOCATION (gnu_param));
-	    }
-
-	  /* ??? This is a kludge to support null procedures in spec taking a
-	     parameter with an untagged incomplete type coming from a limited
-	     context.  The front-end creates a body without knowing anything
-	     about the non-limited view, which is illegal Ada and cannot be
-	     reasonably supported.  Create a parameter with a fake type.  */
-	  else if (kind == E_Procedure
-		   && (gnat_decl = Parent (gnat_subprog))
-		   && Nkind (gnat_decl) == N_Procedure_Specification
-		   && Null_Present (gnat_decl)
-		   && IN (Ekind (gnat_param_type), Incomplete_Kind))
-	    gnu_param = create_param_decl (gnu_param_name, ptr_type_node);
-
-	  else
-	    {
-	      gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
-	      associate_subprog_with_dummy_type (gnat_subprog, gnu_param_type);
-	      incomplete_profile_p = true;
-	    }
+	  DECL_CHAIN (gnu_param) = NULL_TREE;
+	  gnu_param_type = TREE_TYPE (gnu_param);
 	}
 
+      /* Otherwise translate the parameter type and act accordingly.  */
       else
 	{
-	  gnu_param
-	    = gnat_to_gnu_param (gnat_param, num == 0, gnat_subprog, &cico);
+	  Entity_Id gnat_param_type = Etype (gnat_param);
+	  gnu_param_type = gnat_to_gnu_profile_type (gnat_param_type);
 
-	  /* We are returned either a PARM_DECL or a type if no parameter
-	     needs to be passed; in either case, adjust the type.  */
-	  if (DECL_P (gnu_param))
-	    gnu_param_type = TREE_TYPE (gnu_param);
+	  /* If the parameter type is incomplete, there are 2 cases: if it is
+	     passed by reference, then the type is only linked indirectly in
+	     the profile, so the profile can be seen as complete since it need
+	     not be further modified, only the reference type need be adjusted;
+	     otherwise the profile is incomplete and need be adjusted too.  */
+	  if (TYPE_IS_DUMMY_P (gnu_param_type))
+	    {
+	      Node_Id gnat_decl;
+
+	      if (mech_is_by_ref
+		  || (TYPE_REFERENCE_TO (gnu_param_type)
+		      && TYPE_IS_FAT_POINTER_P
+			 (TYPE_REFERENCE_TO (gnu_param_type)))
+		  || TYPE_IS_BY_REFERENCE_P (gnu_param_type))
+		{
+		  gnu_param_type = build_reference_type (gnu_param_type);
+		  gnu_param
+		    = create_param_decl (gnu_param_name, gnu_param_type);
+		  TREE_READONLY (gnu_param) = 1;
+		  DECL_BY_REF_P (gnu_param) = 1;
+		  DECL_POINTS_TO_READONLY_P (gnu_param)
+		    = (Ekind (gnat_param) == E_In_Parameter
+		       && !Address_Taken (gnat_param));
+		  Set_Mechanism (gnat_param, By_Reference);
+		  Sloc_to_locus (Sloc (gnat_param),
+				 &DECL_SOURCE_LOCATION (gnu_param));
+		}
+
+	      /* ??? This is a kludge to support null procedures in spec taking
+		 a parameter with an untagged incomplete type coming from a
+		 limited context.  The front-end creates a body without knowing
+		 anything about the non-limited view, which is illegal Ada and
+		 cannot be supported.  Create a parameter with a fake type.  */
+	      else if (kind == E_Procedure
+		       && (gnat_decl = Parent (gnat_subprog))
+		       && Nkind (gnat_decl) == N_Procedure_Specification
+		       && Null_Present (gnat_decl)
+		       && IN (Ekind (gnat_param_type), Incomplete_Kind))
+		gnu_param = create_param_decl (gnu_param_name, ptr_type_node);
+
+	      else
+		{
+		  gnu_param
+		    = create_param_decl (gnu_param_name, gnu_param_type);
+		  associate_subprog_with_dummy_type (gnat_subprog,
+						     gnu_param_type);
+		  incomplete_profile_p = true;
+		}
+	    }
+
+	  /* Otherwise build the parameter declaration normally.  */
 	  else
 	    {
-	      gnu_param_type = gnu_param;
-	      gnu_param = NULL_TREE;
+	      gnu_param
+		= gnat_to_gnu_param (gnat_param, num == 0, gnat_subprog,
+				     &cico);
+
+	      /* We are returned either a PARM_DECL or a type if no parameter
+		 needs to be passed; in either case, adjust the type.  */
+	      if (DECL_P (gnu_param))
+		gnu_param_type = TREE_TYPE (gnu_param);
+	      else
+		{
+		  gnu_param_type = gnu_param;
+		  gnu_param = NULL_TREE;
+		}
 	    }
 	}
 
-      /* If we built a GCC tree for the parameter, register it.  */
+      /* If we have a GCC tree for the parameter, register it.  */
+      save_gnu_tree (gnat_param, NULL_TREE, false);
       if (gnu_param)
 	{
 	  gnu_param_type_list
 	    = tree_cons (NULL_TREE, gnu_param_type, gnu_param_type_list);
 	  gnu_param_list = chainon (gnu_param, gnu_param_list);
-	  save_gnu_tree (gnat_param, NULL_TREE, false);
 	  save_gnu_tree (gnat_param, gnu_param, false);
 
 	  /* If a parameter is a pointer, a function may modify memory through
@@ -5950,16 +5998,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	{
 	  if (!gnu_cico_list)
 	    {
-	      tree gnu_new_ret_type = make_node (RECORD_TYPE);
+	      gnu_cico_return_type = make_node (RECORD_TYPE);
 
 	      /* If this is a function, we also need a field for the
 		 return value to be placed.  */
-	      if (TREE_CODE (gnu_return_type) != VOID_TYPE)
+	      if (!VOID_TYPE_P (gnu_return_type))
 		{
-		  gnu_field
+		  tree gnu_field
 		    = create_field_decl (get_identifier ("RETVAL"),
 				         gnu_return_type,
-				         gnu_new_ret_type, NULL_TREE,
+				         gnu_cico_return_type, NULL_TREE,
 				         NULL_TREE, 0, 0);
 		  Sloc_to_locus (Sloc (gnat_subprog),
 			         &DECL_SOURCE_LOCATION (gnu_field));
@@ -5968,17 +6016,18 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 		    = tree_cons (gnu_field, void_type_node, NULL_TREE);
 		}
 
-	      gnu_return_type = gnu_new_ret_type;
-	      TYPE_NAME (gnu_return_type) = get_identifier ("RETURN");
+	      TYPE_NAME (gnu_cico_return_type) = get_identifier ("RETURN");
 	      /* Set a default alignment to speed up accesses.  But we should
 		 not increase the size of the structure too much, lest it does
 		 not fit in return registers anymore.  */
-	      SET_TYPE_ALIGN (gnu_return_type, get_mode_alignment (ptr_mode));
+	      SET_TYPE_ALIGN (gnu_cico_return_type,
+			      get_mode_alignment (ptr_mode));
 	    }
 
-	  gnu_field
+	  tree gnu_field
 	    = create_field_decl (gnu_param_name, gnu_param_type,
-				 gnu_return_type, NULL_TREE, NULL_TREE, 0, 0);
+				 gnu_cico_return_type, NULL_TREE, NULL_TREE,
+				 0, 0);
 	  Sloc_to_locus (Sloc (gnat_param),
 			 &DECL_SOURCE_LOCATION (gnu_field));
 	  DECL_CHAIN (gnu_field) = gnu_field_list;
@@ -5994,22 +6043,23 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
       /* If we have a CICO list but it has only one entry, we convert
 	 this function into a function that returns this object.  */
       if (list_length (gnu_cico_list) == 1)
-	gnu_return_type = TREE_TYPE (TREE_PURPOSE (gnu_cico_list));
+	gnu_cico_return_type = TREE_TYPE (TREE_PURPOSE (gnu_cico_list));
 
       /* Do not finalize the return type if the subprogram is stubbed
 	 since structures are incomplete for the back-end.  */
       else if (Convention (gnat_subprog) != Convention_Stubbed)
 	{
-	  finish_record_type (gnu_return_type, nreverse (gnu_field_list), 0,
-			      false);
+	  finish_record_type (gnu_cico_return_type, nreverse (gnu_field_list),
+			      0, false);
 
 	  /* Try to promote the mode of the return type if it is passed
 	     in registers, again to speed up accesses.  */
-	  if (TYPE_MODE (gnu_return_type) == BLKmode
-	      && !targetm.calls.return_in_memory (gnu_return_type, NULL_TREE))
+	  if (TYPE_MODE (gnu_cico_return_type) == BLKmode
+	      && !targetm.calls.return_in_memory (gnu_cico_return_type,
+						  NULL_TREE))
 	    {
 	      unsigned int size
-		= TREE_INT_CST_LOW (TYPE_SIZE (gnu_return_type));
+		= TREE_INT_CST_LOW (TYPE_SIZE (gnu_cico_return_type));
 	      unsigned int i = BITS_PER_UNIT;
 	      machine_mode mode;
 
@@ -6018,18 +6068,21 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	      mode = mode_for_size (i, MODE_INT, 0);
 	      if (mode != BLKmode)
 		{
-		  SET_TYPE_MODE (gnu_return_type, mode);
-		  SET_TYPE_ALIGN (gnu_return_type, GET_MODE_ALIGNMENT (mode));
-		  TYPE_SIZE (gnu_return_type)
+		  SET_TYPE_MODE (gnu_cico_return_type, mode);
+		  SET_TYPE_ALIGN (gnu_cico_return_type,
+				  GET_MODE_ALIGNMENT (mode));
+		  TYPE_SIZE (gnu_cico_return_type)
 		    = bitsize_int (GET_MODE_BITSIZE (mode));
-		  TYPE_SIZE_UNIT (gnu_return_type)
+		  TYPE_SIZE_UNIT (gnu_cico_return_type)
 		    = size_int (GET_MODE_SIZE (mode));
 		}
 	    }
 
 	  if (debug_info_p)
-	    rest_of_record_type_compilation (gnu_return_type);
+	    rest_of_record_type_compilation (gnu_cico_return_type);
 	}
+
+      gnu_return_type = gnu_cico_return_type;
     }
 
   /* The lists have been built in reverse.  */
@@ -6041,9 +6094,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   /* If the profile is incomplete, we only set the (temporary) return and
      parameter types; otherwise, we build the full type.  In either case,
      we reuse an already existing GCC tree that we built previously here.  */
-  tree gnu_type = present_gnu_tree (gnat_subprog)
-		  ? TREE_TYPE (get_gnu_tree (gnat_subprog)) : NULL_TREE;
-
   if (incomplete_profile_p)
     {
       if (gnu_type && TREE_CODE (gnu_type) == FUNCTION_TYPE)
@@ -6052,6 +6102,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	gnu_type = make_node (FUNCTION_TYPE);
       TREE_TYPE (gnu_type) = gnu_return_type;
       TYPE_ARG_TYPES (gnu_type) = gnu_param_type_list;
+      TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
+      TYPE_RETURN_BY_DIRECT_REF_P (gnu_type) = return_by_direct_ref_p;
+      TREE_ADDRESSABLE (gnu_type) = return_by_invisi_ref_p;
     }
   else
     {
@@ -6091,9 +6144,59 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
       if (No_Return (gnat_subprog))
 	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
+
+      /* If this subprogram is expectedly bound to a GCC builtin, fetch the
+	 corresponding DECL node and check the parameter association.  */
+      if (Convention (gnat_subprog) == Convention_Intrinsic
+	  && Present (Interface_Name (gnat_subprog)))
+	{
+	  tree gnu_ext_name = create_concat_name (gnat_subprog, NULL);
+	  tree gnu_builtin_decl = builtin_decl_for (gnu_ext_name);
+
+	  /* If we have a builtin DECL for that function, use it.  Check if
+	     the profiles are compatible and warn if they are not.  Note that
+	     the checker is expected to post diagnostics in this case.  */
+	  if (gnu_builtin_decl)
+	    {
+	      intrin_binding_t inb
+		= { gnat_subprog, gnu_type, TREE_TYPE (gnu_builtin_decl) };
+
+	      if (!intrin_profiles_compatible_p (&inb))
+		post_error
+		  ("?profile of& doesn''t match the builtin it binds!",
+		   gnat_subprog);
+
+	      return gnu_builtin_decl;
+	    }
+
+	  /* Inability to find the builtin DECL most often indicates a genuine
+	     mistake, but imports of unregistered intrinsics are sometimes used
+	     on purpose to allow hooking in alternate bodies; we post a warning
+	     conditioned on Wshadow in this case, to let developers be notified
+	     on demand without risking false positives with common default sets
+	     of options.  */
+	  if (warn_shadow)
+	    post_error ("?gcc intrinsic not found for&!", gnat_subprog);
+	}
     }
 
   return gnu_type;
+}
+
+/* Return the external name for GNAT_SUBPROG given its entity name.  */
+
+static tree
+gnu_ext_name_for_subprog (Entity_Id gnat_subprog, tree gnu_entity_name)
+{
+  tree gnu_ext_name = create_concat_name (gnat_subprog, NULL);
+
+  /* If there was no specified Interface_Name and the external and
+     internal names of the subprogram are the same, only use the
+     internal name to allow disambiguation of nested subprograms.  */
+  if (No (Interface_Name (gnat_subprog)) && gnu_ext_name == gnu_entity_name)
+    gnu_ext_name = NULL_TREE;
+
+  return gnu_ext_name;
 }
 
 /* Like build_qualified_type, but TYPE_QUALS is added to the existing

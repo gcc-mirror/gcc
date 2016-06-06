@@ -737,9 +737,9 @@ extern tree create_subprog_decl (tree name, tree asm_name, tree type,
 				 bool artificial_p, bool debug_info_p,
 				 struct attrib *attr_list, Node_Id gnat_node);
 
-/* Given a subprogram declaration DECL and its TYPE, finish constructing the
-   subprogram declaration from TYPE.  */
-extern void finish_subprog_decl (tree decl, tree type);
+/* Given a subprogram declaration DECL, its assembler name and its type,
+   finish constructing the subprogram declaration from ASM_NAME and TYPE.  */
+extern void finish_subprog_decl (tree decl, tree asm_name, tree type);
 
 /* Process the attributes in ATTR_LIST for NODE, which is either a DECL or
    a TYPE.  If IN_PLACE is true, the tree pointed to by NODE should not be

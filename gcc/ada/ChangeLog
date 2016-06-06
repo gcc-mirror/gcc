@@ -1,5 +1,28 @@
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (finish_subprog_decl): Add ASM_NAME parameter.
+	* gcc-interface/decl.c (gnu_ext_name_for_subprog): New function.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Do not check compatibility
+	of profiles for builtins here...  Call gnu_ext_name_for_subprog.
+	Also update profiles if pointers to limited_with'ed types are
+	updated.
+	(gnat_to_gnu_param): Restore the correct source location information
+	for vector ABI warnings.
+	(associate_subprog_with_dummy_type): Add comment about AI05-019.
+	Set TYPE_DUMMY_IN_PROFILE_P flag unconditionally.
+	(update_profile): Deal with builtin declarations.
+	Call gnu_ext_name_for_subprog.  Adjust call to finish_subprog_decl.
+	(update_profiles_with): Add comment.
+	(gnat_to_gnu_subprog_type): Reuse the return type if it is complete.
+	Likewise for parameter declarations in most cases.  Do not change
+	the return type for the CICO mechanism if the profile is incomplete.
+	...but here instead.  Always reset the slot for the parameters.
+	* gcc-interface/utils.c (create_subprog_decl): Call
+	gnu_ext_name_for_subprog.  Do not set the assembler name here but...
+	(finish_subprog_decl): ...but here instead.  Add ASM_NAME parameter.
+
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Insert the
 	declaration of the corresponding record type before that of the
 	unprotected version of the subprograms that operate on it.

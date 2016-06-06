@@ -3137,7 +3137,6 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 {
   tree subprog_decl = build_decl (input_location, FUNCTION_DECL, name, type);
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
-  finish_subprog_decl (subprog_decl, type);
 
   DECL_ARTIFICIAL (subprog_decl) = artificial_p;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
@@ -3175,26 +3174,11 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
   process_attributes (&subprog_decl, &attr_list, true, gnat_node);
 
+  /* Once everything is processed, finish the subprogram declaration.  */
+  finish_subprog_decl (subprog_decl, asm_name, type);
+
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (subprog_decl, gnat_node);
-
-  if (asm_name)
-    {
-      /* Let the target mangle the name if this isn't a verbatim asm.  */
-      if (*IDENTIFIER_POINTER (asm_name) != '*')
-	asm_name = targetm.mangle_decl_assembler_name (subprog_decl, asm_name);
-
-      SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
-
-      /* The expand_main_function circuitry expects "main_identifier_node" to
-	 designate the DECL_NAME of the 'main' entry point, in turn expected
-	 to be declared as the "main" function literally by default.  Ada
-	 program entry points are typically declared with a different name
-	 within the binder generated file, exported as 'main' to satisfy the
-	 system expectations.  Force main_identifier_node in this case.  */
-      if (asm_name == main_identifier_node)
-	DECL_NAME (subprog_decl) = main_identifier_node;
-    }
 
   /* Output the assembler code and/or RTL for the declaration.  */
   rest_of_decl_compilation (subprog_decl, global_bindings_p (), 0);
@@ -3202,11 +3186,11 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
   return subprog_decl;
 }
 
-/* Given a subprogram declaration DECL and its TYPE, finish constructing the
-   subprogram declaration from TYPE.  */
+/* Given a subprogram declaration DECL, its assembler name and its type,
+   finish constructing the subprogram declaration from ASM_NAME and TYPE.  */
 
 void
-finish_subprog_decl (tree decl, tree type)
+finish_subprog_decl (tree decl, tree asm_name, tree type)
 {
   tree result_decl
     = build_decl (DECL_SOURCE_LOCATION (decl), RESULT_DECL, NULL_TREE,
@@ -3219,6 +3203,24 @@ finish_subprog_decl (tree decl, tree type)
 
   TREE_READONLY (decl) = TYPE_READONLY (type);
   TREE_SIDE_EFFECTS (decl) = TREE_THIS_VOLATILE (decl) = TYPE_VOLATILE (type);
+
+  if (asm_name)
+    {
+      /* Let the target mangle the name if this isn't a verbatim asm.  */
+      if (*IDENTIFIER_POINTER (asm_name) != '*')
+	asm_name = targetm.mangle_decl_assembler_name (decl, asm_name);
+
+      SET_DECL_ASSEMBLER_NAME (decl, asm_name);
+
+      /* The expand_main_function circuitry expects "main_identifier_node" to
+	 designate the DECL_NAME of the 'main' entry point, in turn expected
+	 to be declared as the "main" function literally by default.  Ada
+	 program entry points are typically declared with a different name
+	 within the binder generated file, exported as 'main' to satisfy the
+	 system expectations.  Force main_identifier_node in this case.  */
+      if (asm_name == main_identifier_node)
+	DECL_NAME (decl) = main_identifier_node;
+    }
 }
 
 /* Set up the framework for generating code for SUBPROG_DECL, a subprogram
