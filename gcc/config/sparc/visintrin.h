@@ -704,6 +704,192 @@ __vis_xmulxhi (__i64 __A, __i64 __B)
 
 #endif /* __VIS__ >= 0x300 */
 
+#if __VIS__ >= 0x400
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadd8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpadd8 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpadds8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpadds8 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpaddus8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpaddus8 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpaddus16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpaddus16 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpcmple8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpcmple8 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpcmpgt8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpcmpgt8 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpcmpule16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpcmpule16 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpcmpugt16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpcmpugt16 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpcmpule32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpcmpule32 (__A, __B);
+}
+
+extern __inline long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpcmpugt32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpcmpugt32 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmax8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpmax8 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmax16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpmax16 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmax32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpmax32 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmaxu8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpmaxu8 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmaxu16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpmaxu16 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmaxu32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpmaxu32 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmin8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpmin8 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmin16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpmin16 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpmin32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpmin32 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpminu8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpminu8 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpminu16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpminu16 (__A, __B);
+}
+
+extern __inline __v2si
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpminu32 (__v2si __A, __v2si __B)
+{
+  return __builtin_vis_fpminu32 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsub8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpsub8 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubs8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpsubs8 (__A, __B);
+}
+
+extern __inline __v8qi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubus8 (__v8qi __A, __v8qi __B)
+{
+  return __builtin_vis_fpsubus8 (__A, __B);
+}
+
+extern __inline __v4hi
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__vis_fpsubus16 (__v4hi __A, __v4hi __B)
+{
+  return __builtin_vis_fpsubus16 (__A, __B);
+}
+
+#endif /* __VIS__ >= 0x400 */
+
 #endif /* __VIS__ */
 
 #endif  /* _VISINTRIN_H_INCLUDED */

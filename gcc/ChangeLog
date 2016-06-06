@@ -1,3 +1,64 @@
+2016-06-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md (cpu): Add niagara7 cpu type.
+	Include the M7 SPARC DFA scheduler.
+	New attribute v3pipe.
+	Annotate insns with v3pipe where appropriate.
+	Define cpu_feature vis4.
+	Add lzd instruction type and set it on clzdi_sp64 and clzsi_sp64.
+	Add (V8QI "8") to vbits.
+	Add insns {add,sub}v8qi3
+	Add insns ss{add,sub}v8qi3
+	Add insns us{add,sub}{v8qi,v4hi}3
+	Add insns {min,max}{v8qi,v4hi,v2si}3
+	Add insns {minu,maxu}{v8qi,v4hi,v2si}3
+	Add insns fpcmp{le,gt,ule,ug,ule,ugt}{8,16,32}_vis.
+	* config/sparc/niagara4.md: Add a comment explaining the
+	discrepancy between the documented latenty numbers and the
+	implemented ones.
+	* config/sparc/niagara7.md: New file.
+	* configure.ac (HAVE_AS_SPARC5_VIS4): Define if the assembler
+	supports SPARC5 and VIS 4.0 instructions.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config.gcc: niagara7 is a supported cpu in sparc*-*-* targets.
+	* config/sparc/sol2.h (ASM_CPU32_DEFAUILT_SPEC): Set for
+	TARGET_CPU_niagara7.
+	(ASM_CPU64_DEFAULT_SPEC): Likewise.
+	(CPP_CPU_SPEC): Handle niagara7.
+	(ASM_CPU_SPEC): Likewise.
+	* config/sparc/sparc-opts.h (processor_type): Add
+	PROCESSOR_NIAGARA7.
+	(mvis4): New option.
+	* config/sparc/sparc.h (TARGET_CPU_niagara7): Define.
+	(AS_NIAGARA7_FLAG): Define.
+	(ASM_CPU64_DEFAULT_SPEC): Set for niagara7.
+	(CPP_CPU64_DEFAULT_SPEC): Likewise.
+	(CPP_CPU_SPEC): Handle niagara7.
+	(ASM_CPU_SPEC): Likewise.
+	* config/sparc/sparc.c (niagara7_costs): Define.
+	(sparc_option_override): Handle niagara7 and adjust cache-related
+	parameters with better values for niagara cpus.  Also support VIS4.
+	(sparc32_initialize_trampoline): Likewise.
+	(sparc_use_sched_lookahead): Likewise.
+	(sparc_issue_rate): Likewise.
+	(sparc_register_move_cost): Likewise.
+	(dump_target_flag_bits): Support VIS4.
+	(sparc_vis_init_builtins): Likewise.
+	(sparc_builtins): Likewise.
+	* config/sparc/sparc-c.c (sparc_target_macros): Define __VIS__ for
+	VIS4 4.0.
+	* config/sparc/driver-sparc.c (cpu_names): Add SPARC-M7 and
+	UltraSparc M7.
+	* config/sparc/sparc.opt (sparc_processor_type): New value
+	niagara7.
+	* config/sparc/visintrin.h (__attribute__): Prototypes for the
+	VIS4 builtins.
+	* doc/invoke.texi (SPARC Options): Document -mcpu=niagara7 and
+	-mvis4.
+	* doc/extend.texi (SPARC VIS Built-in Functions): Document the
+	VIS4 builtins.
+
 2016-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/sourcebuild.texi (Directives): Remove extra closing braces.

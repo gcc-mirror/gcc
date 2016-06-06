@@ -628,6 +628,11 @@
 #undef HAVE_AS_SPARC4
 #endif
 
+/* Define if your assembler supports SPARC5 and VIS4.0 instructions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SPARC5_VIS4
+#endif
+
 
 /* Define if your assembler and linker support GOTDATA_OP relocs. */
 #ifndef USED_FOR_TARGET
