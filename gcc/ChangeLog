@@ -1,3 +1,7 @@
+2016-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/sourcebuild.texi (Directives): Remove extra closing braces.
+
 2016-06-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71398
