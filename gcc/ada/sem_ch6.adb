@@ -2149,6 +2149,7 @@ package body Sem_Ch6 is
       Body_Id      : Entity_Id           := Defining_Entity (Body_Spec);
       Prev_Id      : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
       Exch_Views   : Elist_Id            := No_Elist;
+      Desig_View   : Entity_Id           := Empty;
       Conformant   : Boolean;
       HSS          : Node_Id;
       Prot_Typ     : Entity_Id := Empty;
@@ -2914,13 +2915,10 @@ package body Sem_Ch6 is
       --  Start of processing for Exchange_Limited_Views
 
       begin
-         if No (Subp_Id) then
-            return No_Elist;
-
          --  Do not process subprogram bodies as they already use the non-
          --  limited view of types.
 
-         elsif not Ekind_In (Subp_Id, E_Function, E_Procedure) then
+         if not Ekind_In (Subp_Id, E_Function, E_Procedure) then
             return No_Elist;
          end if;
 
@@ -3665,31 +3663,6 @@ package body Sem_Ch6 is
          Set_SPARK_Pragma_Inherited (Body_Id);
       end if;
 
-      --  If the return type is an anonymous access type whose designated type
-      --  is the limited view of a class-wide type and the non-limited view is
-      --  available, update the return type accordingly.
-
-      if Ada_Version >= Ada_2005 and then Comes_From_Source (N) then
-         declare
-            Etyp : Entity_Id;
-            Rtyp : Entity_Id;
-
-         begin
-            Rtyp := Etype (Current_Scope);
-
-            if Ekind (Rtyp) = E_Anonymous_Access_Type then
-               Etyp := Directly_Designated_Type (Rtyp);
-
-               if Is_Class_Wide_Type (Etyp)
-                 and then From_Limited_With (Etyp)
-               then
-                  Set_Directly_Designated_Type
-                    (Etype (Current_Scope), Available_View (Etyp));
-               end if;
-            end if;
-         end;
-      end if;
-
       --  If this is the proper body of a stub, we must verify that the stub
       --  conforms to the body, and to the previous spec if one was present.
       --  We know already that the body conforms to that spec. This test is
@@ -3918,8 +3891,33 @@ package body Sem_Ch6 is
       --  of a subprogram body may use the parameter and result profile of the
       --  spec, swap any limited views with their non-limited counterpart.
 
-      if Ada_Version >= Ada_2012 then
+      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
          Exch_Views := Exchange_Limited_Views (Spec_Id);
+      end if;
+
+      --  If the return type is an anonymous access type whose designated type
+      --  is the limited view of a class-wide type and the non-limited view is
+      --  available, update the return type accordingly.
+
+      if Ada_Version >= Ada_2005 and then Present (Spec_Id) then
+         declare
+            Etyp : Entity_Id;
+            Rtyp : Entity_Id;
+
+         begin
+            Rtyp := Etype (Spec_Id);
+
+            if Ekind (Rtyp) = E_Anonymous_Access_Type then
+               Etyp := Directly_Designated_Type (Rtyp);
+
+               if Is_Class_Wide_Type (Etyp)
+                 and then From_Limited_With (Etyp)
+               then
+                  Desig_View := Etyp;
+                  Set_Directly_Designated_Type (Rtyp, Available_View (Etyp));
+               end if;
+            end if;
+         end;
       end if;
 
       --  Analyze any aspect specifications that appear on the subprogram body
@@ -4189,6 +4187,10 @@ package body Sem_Ch6 is
 
       if Exch_Views /= No_Elist then
          Restore_Limited_Views (Exch_Views);
+      end if;
+
+      if Present (Desig_View) then
+         Set_Directly_Designated_Type (Etype (Spec_Id), Desig_View);
       end if;
 
       Ghost_Mode := Save_Ghost_Mode;

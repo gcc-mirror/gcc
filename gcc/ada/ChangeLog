@@ -1,3 +1,26 @@
+2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Insert the
+	declaration of the corresponding record type before that of the
+	unprotected version of the subprograms that operate on it.
+	(Expand_Access_Protected_Subprogram_Type): Declare the Equivalent_Type
+	just before the original type.
+	* sem_ch3.adb (Handle_Late_Controlled_Primitive): Point the current
+	declaration to the newly created declaration for the primitive.
+	(Analyze_Subtype_Declaration): Remove obsolete code forcing the
+	freezing of the subtype before its declaration.
+	(Replace_Anonymous_Access_To_Protected_Subprogram): Insert the new
+	declaration in the nearest enclosing scope for formal parameters too.
+	(Build_Derived_Access_Type): Restore the status of the created Itype
+	after it is erased by Copy_Node.
+	* sem_ch6.adb (Exchange_Limited_Views): Remove guard on entry.
+	(Analyze_Subprogram_Body_Helper): Call Exchange_Limited_Views only if
+	the specification is present.
+	Move around the code changing the designated view of the return type
+	and save the original view.  Restore it on exit.
+	* sem_ch13.adb (Build_Predicate_Function_Declaration): Always insert
+	the declaration right after that of the type.
+
 2016-06-01  Simon Wright  <simon@pushface.org>
 
 	PR ada/71358

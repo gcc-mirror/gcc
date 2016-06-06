@@ -9386,11 +9386,7 @@ package body Sem_Ch13 is
       Set_Is_Predicate_Function (SId);
       Set_Predicate_Function (Typ, SId);
 
-      if Comes_From_Source (Typ) then
-         Insert_After (Parent (Typ), FDecl);
-      else
-         Insert_After (Parent (Base_Type (Typ)), FDecl);
-      end if;
+      Insert_After (Parent (Typ), FDecl);
 
       Analyze (FDecl);
 
