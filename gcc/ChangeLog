@@ -1,5 +1,11 @@
 2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/71408
+	* tree-ssa-reassoc.c (zero_one_operation): Fix NEGATE_EXPR operand for
+	propagate_op_to_single_use.
+
+2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/71281
 	* tree-ssa-reassoc.c (reassociate_bb): Set uid for negate stmt.
 

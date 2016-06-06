@@ -1,5 +1,10 @@
 2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/71408
+	* gcc.dg/tree-ssa/pr71408.c: New test.
+
+2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/71281
 	* g++.dg/torture/pr71281.C: New test.
 
