@@ -5301,9 +5301,10 @@ simplify_cond_clz_ctz (rtx x, rtx_code cmp_code, rtx true_val, rtx false_val)
     return NULL_RTX;
 
   HOST_WIDE_INT op_val;
-  machine_mode mode = GET_MODE (on_nonzero);
-  if (((op_code == CLZ && CLZ_DEFINED_VALUE_AT_ZERO (mode, op_val))
-	|| (op_code == CTZ && CTZ_DEFINED_VALUE_AT_ZERO (mode, op_val)))
+  if (((op_code == CLZ
+	&& CLZ_DEFINED_VALUE_AT_ZERO (GET_MODE (on_nonzero), op_val))
+      || (op_code == CTZ
+	  && CTZ_DEFINED_VALUE_AT_ZERO (GET_MODE (on_nonzero), op_val)))
       && op_val == INTVAL (on_zero))
     return on_nonzero;
 
