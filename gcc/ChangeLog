@@ -1,3 +1,8 @@
+2016-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx_vec_concat<mode>): Add v=v,vm and
+	Yv=Yv,C alternatives.
+
 2016-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR c/61564
