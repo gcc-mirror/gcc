@@ -7708,8 +7708,9 @@ c_parser_postfix_expression (c_parser *parser)
 	       accept sub structure and sub array references.  */
 	    if (c_parser_next_token_is (parser, CPP_NAME))
 	      {
+		c_token *comp_tok = c_parser_peek_token (parser);
 		offsetof_ref = build_component_ref
-		  (loc, offsetof_ref, c_parser_peek_token (parser)->value);
+		  (loc, offsetof_ref, comp_tok->value, comp_tok->location);
 		c_parser_consume_token (parser);
 		while (c_parser_next_token_is (parser, CPP_DOT)
 		       || c_parser_next_token_is (parser,
@@ -7735,9 +7736,10 @@ c_parser_postfix_expression (c_parser *parser)
 			    c_parser_error (parser, "expected identifier");
 			    break;
 			  }
+			c_token *comp_tok = c_parser_peek_token (parser);
 			offsetof_ref = build_component_ref
-			  (loc, offsetof_ref,
-			   c_parser_peek_token (parser)->value);
+			  (loc, offsetof_ref, comp_tok->value,
+			   comp_tok->location);
 			c_parser_consume_token (parser);
 		      }
 		    else
@@ -8214,7 +8216,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 {
   struct c_expr orig_expr;
   tree ident, idx;
-  location_t sizeof_arg_loc[3];
+  location_t sizeof_arg_loc[3], comp_loc;
   tree sizeof_arg[3];
   unsigned int literal_zero_mask;
   unsigned int i;
@@ -8328,7 +8330,11 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  c_parser_consume_token (parser);
 	  expr = default_function_array_conversion (expr_loc, expr);
 	  if (c_parser_next_token_is (parser, CPP_NAME))
-	    ident = c_parser_peek_token (parser)->value;
+	    {
+	      c_token *comp_tok = c_parser_peek_token (parser);
+	      ident = comp_tok->value;
+	      comp_loc = comp_tok->location;
+	    }
 	  else
 	    {
 	      c_parser_error (parser, "expected identifier");
@@ -8340,7 +8346,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  start = expr.get_start ();
 	  finish = c_parser_peek_token (parser)->get_finish ();
 	  c_parser_consume_token (parser);
-	  expr.value = build_component_ref (op_loc, expr.value, ident);
+	  expr.value = build_component_ref (op_loc, expr.value, ident,
+					    comp_loc);
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -8360,7 +8367,11 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  c_parser_consume_token (parser);
 	  expr = convert_lvalue_to_rvalue (expr_loc, expr, true, false);
 	  if (c_parser_next_token_is (parser, CPP_NAME))
-	    ident = c_parser_peek_token (parser)->value;
+	    {
+	      c_token *comp_tok = c_parser_peek_token (parser);
+	      ident = comp_tok->value;
+	      comp_loc = comp_tok->location;
+	    }
 	  else
 	    {
 	      c_parser_error (parser, "expected identifier");
@@ -8376,7 +8387,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					    build_indirect_ref (op_loc,
 								expr.value,
 								RO_ARROW),
-					    ident);
+					    ident, comp_loc);
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -10622,9 +10633,12 @@ c_parser_omp_variable_list (c_parser *parser,
 		      t = error_mark_node;
 		      break;
 		    }
-		  tree ident = c_parser_peek_token (parser)->value;
+
+		  c_token *comp_tok = c_parser_peek_token (parser);
+		  tree ident = comp_tok->value;
+		  location_t comp_loc = comp_tok->location;
 		  c_parser_consume_token (parser);
-		  t = build_component_ref (op_loc, t, ident);
+		  t = build_component_ref (op_loc, t, ident, comp_loc);
 		}
 	      /* FALLTHROUGH  */
 	    case OMP_CLAUSE_DEPEND:

@@ -1,3 +1,17 @@
+2016-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression): In __builtin_offsetof
+	and structure element reference, capture the location of the
+	element name token and pass it to build_component_ref.
+	(c_parser_postfix_expression_after_primary): Likewise for
+	structure element dereference.
+	(c_parser_omp_variable_list): Likewise for
+	OMP_CLAUSE_{_CACHE, MAP, FROM, TO},
+	* c-tree.h (build_component_ref): Add location_t param.
+	* c-typeck.c (build_component_ref): Add location_t param
+	COMPONENT_LOC.  Use it, if available, when issuing hints about
+	mispelled member names to provide a fixit replacement hint.
+
 2016-06-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71362

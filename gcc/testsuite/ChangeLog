@@ -1,3 +1,7 @@
+2016-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/spellcheck-fields-2.c: New test case.
+
 2016-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR c/61564

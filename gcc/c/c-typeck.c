@@ -2329,10 +2329,12 @@ should_suggest_deref_p (tree datum_type)
 
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
-   location of the COMPONENT_REF.  */
+   location of the COMPONENT_REF.  COMPONENT_LOC is the location
+   of COMPONENT.  */
 
 tree
-build_component_ref (location_t loc, tree datum, tree component)
+build_component_ref (location_t loc, tree datum, tree component,
+		     location_t component_loc)
 {
   tree type = TREE_TYPE (datum);
   enum tree_code code = TREE_CODE (type);
@@ -2364,8 +2366,24 @@ build_component_ref (location_t loc, tree datum, tree component)
 	{
 	  tree guessed_id = lookup_field_fuzzy (type, component);
 	  if (guessed_id)
-	    error_at (loc, "%qT has no member named %qE; did you mean %qE?",
-		      type, component, guessed_id);
+	    {
+	      /* Attempt to provide a fixit replacement hint, if
+		 we have a valid range for the component.  */
+	      location_t reported_loc
+		= (component_loc != UNKNOWN_LOCATION) ? component_loc : loc;
+	      rich_location rich_loc (line_table, reported_loc);
+	      if (component_loc != UNKNOWN_LOCATION)
+		{
+		  source_range component_range =
+		    get_range_from_loc (line_table, component_loc);
+		  rich_loc.add_fixit_replace (component_range,
+					      IDENTIFIER_POINTER (guessed_id));
+		}
+	      error_at_rich_loc
+		(&rich_loc,
+		 "%qT has no member named %qE; did you mean %qE?",
+		 type, component, guessed_id);
+	    }
 	  else
 	    error_at (loc, "%qT has no member named %qE", type, component);
 	  return error_mark_node;
