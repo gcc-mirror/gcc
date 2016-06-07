@@ -7014,7 +7014,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       op = XEXP (operands[0], 0);
 
       /* Generate indirect long calls to non-local functions. */
-      if (!TARGET_64BIT && TARGET_LONG_CALLS && GET_CODE (op) == SYMBOL_REF)
+      if (TARGET_LONG_CALLS && GET_CODE (op) == SYMBOL_REF)
 	{
 	  tree call_decl = SYMBOL_REF_DECL (op);
 	  if (!(call_decl && targetm.binds_local_p (call_decl)))
@@ -7517,7 +7517,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	    call_powf = true;
 
 	  /* Generate indirect long calls to non-local functions. */
-	  else if (!TARGET_64BIT && TARGET_LONG_CALLS)
+	  else if (TARGET_LONG_CALLS)
 	    {
 	      tree call_decl = SYMBOL_REF_DECL (op);
 	      if (!(call_decl && targetm.binds_local_p (call_decl)))

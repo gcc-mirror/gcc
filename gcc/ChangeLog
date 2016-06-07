@@ -1,5 +1,11 @@
 2016-06-06  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa/pa.md (call): Generate indirect long calls to non-local
+	functions on TARGET_64BIT.
+	(call_value): Likewise.
+
+2016-06-06  John David Anglin  <danglin@gcc.gnu.org>
+
 	* config/pa/pa.md (call_val_reg_64bit): Remove "reg: DI " clobber from
 	pattern and subsequent splitters.
 	(call_val_reg_64bit_post_reload): Likewise.
