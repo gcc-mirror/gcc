@@ -1,3 +1,11 @@
+2016-06-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2016-06-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mhtm and
+	-mno-htm.
+
 2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71389
