@@ -1,7 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
-
-#pragma GCC optimize("no-unit-at-a-time")
+/* { dg-options "-O2 -fno-unit-at-a-time" } */
 
 typedef unsigned char u8;
 typedef unsigned long long u64;

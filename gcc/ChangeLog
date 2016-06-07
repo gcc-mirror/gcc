@@ -1,3 +1,8 @@
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR c/61564
+	* common.opt (ffast-math): Make Optimization.
+
 2016-06-07  Simon Dardis  <simon.dardis@imgtec.com>
 	    Prachi Godbole  <prachi.godbole@imgtec.com>
 
