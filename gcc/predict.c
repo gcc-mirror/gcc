@@ -1357,6 +1357,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
 	  probability = tem.to_uhwi ();
 	}
 
+      /* FIXME: The branch prediction seems broken. It has only 20% hitrate.  */
       if (!overall_overflow)
         predict_edge (then_edge, PRED_LOOP_IV_COMPARE, probability);
 
@@ -2159,7 +2160,7 @@ return_prediction (tree val, enum prediction *prediction)
       if (TREE_CONSTANT (val)
 	  && (!integer_zerop (val) && !integer_onep (val)))
 	{
-	  *prediction = TAKEN;
+	  *prediction = NOT_TAKEN;
 	  return PRED_CONST_RETURN;
 	}
     }
