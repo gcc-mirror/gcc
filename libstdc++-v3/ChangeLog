@@ -1,3 +1,8 @@
+2016-06-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/tuple (_Head_base<>): Default specialization condition at
+	type declaration.
+
 2016-06-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Support allocators in tuples of zero size.
