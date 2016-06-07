@@ -174,11 +174,9 @@ int main (void)
 
   VDUP(vceq_vector2, , poly, p, 64, 1, 0x88);
 
-  fprintf(stderr, "toto\n");
   TEST_VCOMP(vceq, , poly, p, uint, 64, 1);
 
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, vceq_expected, "");
-  fprintf(stderr, "toto\n");
 
   /* vcombine_p64 tests.  */
 #undef TEST_MSG

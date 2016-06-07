@@ -1,3 +1,8 @@
+2016-06-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c: Remove
+	spurious debug code.
+
 2016-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71428
