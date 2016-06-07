@@ -1,3 +1,10 @@
+2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71389
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Copy op1 RTX to avoid invalid sharing.
+	(ix86_expand_vector_move_misalign): Ditto.
+
 2016-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71259
