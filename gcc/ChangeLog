@@ -1,3 +1,9 @@
+2016-06-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (call_val_reg_64bit): Remove "reg: DI " clobber from
+	pattern and subsequent splitters.
+	(call_val_reg_64bit_post_reload): Likewise.
+
 2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71408
