@@ -229,6 +229,7 @@
 #define vec_mladd __builtin_vec_mladd
 #define vec_msum __builtin_vec_msum
 #define vec_msums __builtin_vec_msums
+#define vec_mul __builtin_vec_mul
 #define vec_mule __builtin_vec_mule
 #define vec_mulo __builtin_vec_mulo
 #define vec_nor __builtin_vec_nor

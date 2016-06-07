@@ -1,3 +1,7 @@
+2016-06-07  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-mul.c: New test.
+
 2016-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/spellcheck-fields-2.c: New test case.

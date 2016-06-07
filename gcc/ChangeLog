@@ -1,3 +1,15 @@
+2016-06-07  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h: Add __builtin_vec_mul.
+	* config/rs6000/rs6000-builtin.def (vec_mul): Change vec_mul to a
+	special case Altivec builtin.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
+	VSX_BUILTIN_VEC_MUL (replaced with special case code).
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	code for ALTIVEC_BUILTIN_VEC_MUL.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add definition
+	for __builtin_vec_mul.
+
 2016-06-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mhtm and
