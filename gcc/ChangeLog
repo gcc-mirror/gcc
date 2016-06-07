@@ -1,3 +1,10 @@
+2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71389
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Copy op1 RTX to avoid invalid sharing.
+	(ix86_expand_vector_move_misalign): Ditto.
+
 2016-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
@@ -826,7 +833,7 @@
 
 	Backport from mainline
 	2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-	            Bernd Schmidt  <bschmidt@redhat.com>
+		    Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/67226
 	* calls.c (store_one_arg): Take into account
@@ -838,7 +845,7 @@
 
 	Backport from mainline
 	2015-11-24  Bernd Schmidt <bschmidt@redhat.com>
-	            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+		    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68194
 	PR rtl-optimization/68328
@@ -1974,7 +1981,7 @@
 
 	Backport from mainline r222205
 	2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	            Jakub Jelinek  <jakub@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65787
 	* config/rs6000/rs6000.c (rtx_is_swappable_p): Ensure that a
