@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "gimplify.h"
 #include "target.h"
+#include "builtins.h"
 #include "selftest.h"
 #include "gimple-pretty-print.h"
 
@@ -3023,6 +3024,19 @@ maybe_remove_unused_call_args (struct function *fn, gimple *stmt)
       gimple_set_num_ops (stmt, 3);
       update_stmt_fn (fn, stmt);
     }
+}
+
+/* Return false if STMT will likely expand to real function call.  */
+
+bool
+gimple_inexpensive_call_p (gcall *stmt)
+{
+  if (gimple_call_internal_p (stmt))
+    return true;
+  tree decl = gimple_call_fndecl (stmt);
+  if (decl && is_inexpensive_builtin (decl))
+    return true;
+  return false;
 }
 
 #if CHECKING_P

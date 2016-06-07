@@ -1,3 +1,12 @@
+2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.c: Include builtins.h
+	(gimple_inexpensive_call_p): New function.
+	* gimple.h (gimple_inexpensive_call_p): Declare.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Use it.
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Likewise;
+	fix formatting.
+
 2016-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* diagnostic.c (diagnostic_impl, diagnostic_n_impl): New.

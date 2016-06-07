@@ -207,8 +207,8 @@ constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
    Stop estimating after UPPER_BOUND is met.  Return true in this case.  */
 
 static bool
-tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, struct loop_size *size,
-			 int upper_bound)
+tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel,
+			 struct loop_size *size, int upper_bound)
 {
   basic_block *body = get_loop_body (loop);
   gimple_stmt_iterator gsi;
@@ -236,7 +236,8 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
       else
 	after_exit = false;
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " BB: %i, after_exit: %i\n", body[i]->index, after_exit);
+	fprintf (dump_file, " BB: %i, after_exit: %i\n", body[i]->index,
+		 after_exit);
 
       for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -285,20 +286,24 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	  /* Assignments of IV variables.  */
 	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
 		   && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-		   && constant_after_peeling (gimple_assign_rhs1 (stmt), stmt, loop)
+		   && constant_after_peeling (gimple_assign_rhs1 (stmt), stmt,
+					      loop)
 		   && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
 		       || constant_after_peeling (gimple_assign_rhs2 (stmt),
 		       				  stmt, loop)))
 	    {
 	      size->constant_iv = true;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Constant expression will be folded away.\n");
+	        fprintf (dump_file,
+			 "   Constant expression will be folded away.\n");
 	      likely_eliminated = true;
 	    }
 	  /* Conditionals.  */
 	  else if ((gimple_code (stmt) == GIMPLE_COND
-		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)
+		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt,
+					       loop)
+		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt,
+					       loop)
 		    /* We don't simplify all constant compares so make sure
 		       they are not both constant already.  See PR70288.  */
 		    && (! is_gimple_min_invariant (gimple_cond_lhs (stmt))
@@ -307,8 +312,8 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 		       && constant_after_peeling (gimple_switch_index (
 						    as_a <gswitch *> (stmt)),
 						  stmt, loop)
-		       && ! is_gimple_min_invariant (gimple_switch_index (
-						       as_a <gswitch *> (stmt)))))
+		       && ! is_gimple_min_invariant
+			       (gimple_switch_index (as_a <gswitch *> (stmt)))))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "   Constant conditional.\n");
@@ -339,26 +344,24 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  if (gimple_code (stmt) == GIMPLE_CALL)
+	  if (gimple_code (stmt) == GIMPLE_CALL
+	      && !gimple_inexpensive_call_p (as_a <gcall *>  (stmt)))
 	    {
 	      int flags = gimple_call_flags (stmt);
-	      tree decl = gimple_call_fndecl (stmt);
-
-	      if (decl && DECL_IS_BUILTIN (decl)
-		  && is_inexpensive_builtin (decl))
-		;
-	      else if (flags & (ECF_PURE | ECF_CONST))
+	      if (flags & (ECF_PURE | ECF_CONST))
 		size->num_pure_calls_on_hot_path++;
 	      else
 		size->num_non_pure_calls_on_hot_path++;
 	      size->num_branches_on_hot_path ++;
 	    }
-	  else if (gimple_code (stmt) != GIMPLE_CALL
-		   && gimple_code (stmt) != GIMPLE_DEBUG)
+	  /* Count inexpensive calls as non-calls, because they will likely
+	     expand inline.  */
+	  else if (gimple_code (stmt) != GIMPLE_DEBUG)
 	    size->non_call_stmts_on_hot_path++;
 	  if (((gimple_code (stmt) == GIMPLE_COND
 	        && (!constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		    || constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)))
+		    || constant_after_peeling (gimple_cond_rhs (stmt), stmt,
+					       loop)))
 	       || (gimple_code (stmt) == GIMPLE_SWITCH
 		   && !constant_after_peeling (gimple_switch_index (
 						 as_a <gswitch *> (stmt)),

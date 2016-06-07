@@ -118,7 +118,8 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       if (is_gimple_debug (last))
 	continue;
 
-      if (is_gimple_call (last))
+      if (gimple_code (last) == GIMPLE_CALL
+	  && !gimple_inexpensive_call_p (as_a <gcall *> (last)))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
