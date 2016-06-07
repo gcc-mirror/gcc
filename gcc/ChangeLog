@@ -1,3 +1,8 @@
+2016-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* spellcheck.c (selftest::test_find_closest_string): New function.
+	(spellcheck_c_tests): Call the above.
+
 2016-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* simplify-rtx.c (simplify_cond_clz_ctz): Delete 'mode' local
