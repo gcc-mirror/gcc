@@ -243,7 +243,7 @@
 2016-06-03  Alan Hayward  <alan.hayward@arm.com>
 
 	* gcc.dg/tree-ssa/pr64183.c: Ensure test does not vectorize.
-	* testsuite/gcc.dg/vect/no-scevccp-vect-iv-2.c: Remove xfail.
+	* gcc.dg/vect/no-scevccp-vect-iv-2.c: Remove xfail.
 	* gcc.dg/vect/vect-live-1.c: New test.
 	* gcc.dg/vect/vect-live-2.c: New test.
 	* gcc.dg/vect/vect-live-3.c: New test.
@@ -807,8 +807,8 @@
 
 2016-05-25  Richard Biener  <rguenther@suse.de>
 
-	* gcc/testsuite/gcc.dg/vect/pr58135.c: Rename to ...
-	* gcc/testsuite/gcc.dg/vect/bb-slp-pr58135.c: ... this.
+	* gcc.dg/vect/pr58135.c: Rename to ...
+	* gcc.dg/vect/bb-slp-pr58135.c: ... this.
 
 2016-05-25  Marek Polacek  <polacek@redhat.com>
 
@@ -2251,13 +2251,12 @@
 
 2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-	* gcc/testsuite/gcc.dg/cpp/mac-dir-2.c: Remove pointless duplicate
-	dg-do.
-	* gcc/testsuite/gcc.dg/pr27003.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/cswtch.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/predcom-2.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/predcom-4.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/predcom-5.c: Likewise.
+	* gcc.dg/cpp/mac-dir-2.c: Remove pointless duplicate dg-do.
+	* gcc.dg/pr27003.c: Likewise.
+	* gcc.dg/tree-ssa/cswtch.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-2.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-4.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-5.c: Likewise.
 	* gcc.target/arc/mxy.c: Likewise.
 	* gcc.target/arc/mswape.c: Likewise.
 	* gcc.target/arc/mrtsc.c: Likewise.
@@ -2581,12 +2580,12 @@
 
 2016-04-25  Michael Collison <michael.collison@arm.com>
 
-	* testsuite/gcc.target/arm/neon-vaddws16.c: New test.
-	* testsuite/gcc.target/arm/neon-vaddws32.c: New test.
-	* testsuite/gcc.target/arm/neon-vaddwu16.c: New test.
-	* testsuite/gcc.target/arm/neon-vaddwu32.c: New test.
-	* testsuite/gcc.target/arm/neon-vaddwu8.c: New test.
-	* testsuite/lib/target-supports.exp
+	* gcc.target/arm/neon-vaddws16.c: New test.
+	* gcc.target/arm/neon-vaddws32.c: New test.
+	* gcc.target/arm/neon-vaddwu16.c: New test.
+	* gcc.target/arm/neon-vaddwu32.c: New test.
+	* gcc.target/arm/neon-vaddwu8.c: New test.
+	* lib/target-supports.exp
 	(check_effective_target_vect_widen_sum_hi_to_si_pattern): Indicate
 	that arm neon support vector widen sum of HImode TO SImode.
 
@@ -2766,7 +2765,7 @@
 2016-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/70689
-	* testsuite/gcc.target/i386/pr70689.c: New.
+	* gcc.target/i386/pr70689.c: New.
 
 2016-04-18  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -2887,7 +2886,7 @@
 	* g++.dg/cpp1y/vla13.C: Same.
 	* g++.dg/cpp1y/vla14.C: Same.
 	* g++.dg/cpp1y/vla3.C: Same.
-	* gcc/testsuite/g++.dg/init/array24.C: Same.
+	* g++.dg/init/array24.C: Same.
 	* g++.dg/ubsan/vla-1.C: Same.
 
 2016-04-14  Marek Polacek  <polacek@redhat.com>
@@ -2919,7 +2918,7 @@
 	* g++.dg/cpp1y/vla13.C: New test.
 	* g++.dg/cpp1y/vla14.C: New test.
 	* g++.dg/cpp1y/vla3.C: Restore deleted test.
-	* gcc/testsuite/g++.dg/init/array24.C: Fully brace VLA initializer.
+	* g++.dg/init/array24.C: Fully brace VLA initializer.
 	* g++.dg/ubsan/vla-1.C: Disable exceptions.
 
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
@@ -2947,8 +2946,8 @@
 2016-04-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70436
-	* testsuite/gcc.dg/Wparentheses-12.c: New test.
-	* testsuite/gcc.dg/Wparentheses-13.c: New test.
+	* gcc.dg/Wparentheses-12.c: New test.
+	* gcc.dg/Wparentheses-13.c: New test.
 
 2016-04-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -3195,7 +3194,7 @@
 2016-04-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70398
-	* testsuite/gcc.target/aarch64/pr70398.c: New.
+	* gcc.target/aarch64/pr70398.c: New.
 
 2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
