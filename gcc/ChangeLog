@@ -1,3 +1,12 @@
+2016-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* diagnostic.c (diagnostic_impl, diagnostic_n_impl): New.
+	(inform, inform_at_rich_loc, inform_n, warning, warning_at,
+	warning_at_rich_loc, warning_n, pedwarn, permerror,
+	permerror_at_rich_loc, error, error_n, error_at, error_at_rich_loc,
+	sorry, fatal_error, internal_error, internal_error_no_backtrace):
+	Use the above.
+
 2016-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71428

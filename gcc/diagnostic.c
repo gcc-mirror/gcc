@@ -46,8 +46,12 @@ along with GCC; see the file COPYING3.  If not see
 #define permissive_error_option(DC) ((DC)->opt_permissive)
 
 /* Prototypes.  */
+static bool diagnostic_impl (rich_location *, int, const char *,
+			     va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(3,0);
+static bool diagnostic_n_impl (location_t, int, int, const char *,
+			       const char *, va_list *,
+			       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
-
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
 /* Name of program invoked, sans directories.  */
@@ -913,29 +917,57 @@ diagnostic_append_note (diagnostic_context *context,
   va_end (ap);
 }
 
+/* Implement emit_diagnostic, inform, inform_at_rich_loc, warning, warning_at,
+   warning_at_rich_loc, pedwarn, permerror, permerror_at_rich_loc, error,
+   error_at, error_at_rich_loc, sorry, fatal_error, internal_error, and
+   internal_error_no_backtrace, as documented and defined below.  */
+static bool
+diagnostic_impl (rich_location *richloc, int opt,
+		 const char *gmsgid,
+		 va_list *ap, diagnostic_t kind)
+{
+  diagnostic_info diagnostic;
+  if (kind == DK_PERMERROR)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
+			   permissive_error_kind (global_dc));
+      diagnostic.option_index = permissive_error_option (global_dc);
+    }
+  else
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, ap, richloc, kind);
+      if (kind == DK_WARNING || kind == DK_PEDWARN)
+	diagnostic.option_index = opt;
+    }
+  return report_diagnostic (&diagnostic);
+}
+
+/* Implement inform_n, warning_n, and error_n, as documented and
+   defined below.  */
+static bool
+diagnostic_n_impl (location_t location, int opt, int n,
+		   const char *singular_gmsgid,
+		   const char *plural_gmsgid,
+		   va_list *ap, diagnostic_t kind)
+{
+  diagnostic_info diagnostic;
+  rich_location richloc (line_table, location);
+  diagnostic_set_info_translated (&diagnostic,
+                                  ngettext (singular_gmsgid, plural_gmsgid, n),
+                                  ap, &richloc, kind);
+  if (kind == DK_WARNING)
+    diagnostic.option_index = opt;
+  return report_diagnostic (&diagnostic);
+}
+
 bool
 emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 		 const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-  rich_location richloc (line_table, location);
-
   va_start (ap, gmsgid);
-  if (kind == DK_PERMERROR)
-    {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-			   permissive_error_kind (global_dc));
-      diagnostic.option_index = permissive_error_option (global_dc);
-    }
-  else {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, kind);
-      if (kind == DK_WARNING || kind == DK_PEDWARN)
-	diagnostic.option_index = opt;
-  }
-
-  ret = report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, location);
+  bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, kind);
   va_end (ap);
   return ret;
 }
@@ -945,13 +977,10 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 void
 inform (location_t location, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, location);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_NOTE);
   va_end (ap);
 }
 
@@ -959,12 +988,9 @@ inform (location_t location, const char *gmsgid, ...)
 void
 inform_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, richloc, DK_NOTE);
-  report_diagnostic (&diagnostic);
+  diagnostic_impl (richloc, -1, gmsgid, &ap, DK_NOTE);
   va_end (ap);
 }
 
@@ -974,15 +1000,10 @@ void
 inform_n (location_t location, int n, const char *singular_gmsgid,
           const char *plural_gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, location);
-
   va_start (ap, plural_gmsgid);
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  &ap, &richloc, DK_NOTE);
-  report_diagnostic (&diagnostic);
+  diagnostic_n_impl (location, -1, n, singular_gmsgid, plural_gmsgid,
+		     &ap, DK_NOTE);
   va_end (ap);
 }
 
@@ -992,16 +1013,10 @@ inform_n (location_t location, int n, const char *singular_gmsgid,
 bool
 warning (int opt, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-  rich_location richloc (line_table, input_location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_WARNING);
-  diagnostic.option_index = opt;
-
-  ret = report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, input_location);
+  bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, DK_WARNING);
   va_end (ap);
   return ret;
 }
@@ -1013,15 +1028,10 @@ warning (int opt, const char *gmsgid, ...)
 bool
 warning_at (location_t location, int opt, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-  rich_location richloc (line_table, location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_WARNING);
-  diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, location);
+  bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, DK_WARNING);
   va_end (ap);
   return ret;
 }
@@ -1031,14 +1041,9 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
 bool
 warning_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, richloc, DK_WARNING);
-  diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_WARNING);
   va_end (ap);
   return ret;
 }
@@ -1051,18 +1056,11 @@ bool
 warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
 	   const char *plural_gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-  rich_location richloc (line_table, location);
-
   va_start (ap, plural_gmsgid);
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  &ap, &richloc, DK_WARNING
-);
-  diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  bool ret = diagnostic_n_impl (location, opt, n,
+				singular_gmsgid, plural_gmsgid,
+				&ap, DK_WARNING);
   va_end (ap);
   return ret;
 }
@@ -1083,15 +1081,10 @@ warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
 bool
 pedwarn (location_t location, int opt, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-  rich_location richloc (line_table, location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,  DK_PEDWARN);
-  diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, location);
+  bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, DK_PEDWARN);
   va_end (ap);
   return ret;
 }
@@ -1106,16 +1099,10 @@ pedwarn (location_t location, int opt, const char *gmsgid, ...)
 bool
 permerror (location_t location, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-  rich_location richloc (line_table, location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-                       permissive_error_kind (global_dc));
-  diagnostic.option_index = permissive_error_option (global_dc);
-  ret = report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, location);
+  bool ret = diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_PERMERROR);
   va_end (ap);
   return ret;
 }
@@ -1125,15 +1112,9 @@ permerror (location_t location, const char *gmsgid, ...)
 bool
 permerror_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  bool ret;
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, richloc,
-                       permissive_error_kind (global_dc));
-  diagnostic.option_index = permissive_error_option (global_dc);
-  ret = report_diagnostic (&diagnostic);
+  bool ret = diagnostic_impl (richloc, -1, gmsgid, &ap, DK_PERMERROR);
   va_end (ap);
   return ret;
 }
@@ -1143,13 +1124,10 @@ permerror_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
 void
 error (const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, input_location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, input_location);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_ERROR);
   va_end (ap);
 }
 
@@ -1159,44 +1137,32 @@ void
 error_n (location_t location, int n, const char *singular_gmsgid,
          const char *plural_gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, location);
-
   va_start (ap, plural_gmsgid);
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  &ap, &richloc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  diagnostic_n_impl (location, -1, n, singular_gmsgid, plural_gmsgid,
+		     &ap, DK_ERROR);
   va_end (ap);
 }
 
-/* Same as ebove, but use location LOC instead of input_location.  */
+/* Same as above, but use location LOC instead of input_location.  */
 void
 error_at (location_t loc, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, loc);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, loc);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_ERROR);
   va_end (ap);
 }
 
 /* Same as above, but use RICH_LOC.  */
 
 void
-error_at_rich_loc (rich_location *rich_loc, const char *gmsgid, ...)
+error_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, rich_loc,
-		       DK_ERROR);
-  report_diagnostic (&diagnostic);
+  diagnostic_impl (richloc, -1, gmsgid, &ap, DK_ERROR);
   va_end (ap);
 }
 
@@ -1206,13 +1172,10 @@ error_at_rich_loc (rich_location *rich_loc, const char *gmsgid, ...)
 void
 sorry (const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, input_location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_SORRY);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, input_location);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_SORRY);
   va_end (ap);
 }
 
@@ -1230,13 +1193,10 @@ seen_error (void)
 void
 fatal_error (location_t loc, const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, loc);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_FATAL);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, loc);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_FATAL);
   va_end (ap);
 
   gcc_unreachable ();
@@ -1249,13 +1209,10 @@ fatal_error (location_t loc, const char *gmsgid, ...)
 void
 internal_error (const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, input_location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ICE);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, input_location);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_ICE);
   va_end (ap);
 
   gcc_unreachable ();
@@ -1267,13 +1224,10 @@ internal_error (const char *gmsgid, ...)
 void
 internal_error_no_backtrace (const char *gmsgid, ...)
 {
-  diagnostic_info diagnostic;
   va_list ap;
-  rich_location richloc (line_table, input_location);
-
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_ICE_NOBT);
-  report_diagnostic (&diagnostic);
+  rich_location richloc (line_table, input_location);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_ICE_NOBT);
   va_end (ap);
 
   gcc_unreachable ();
