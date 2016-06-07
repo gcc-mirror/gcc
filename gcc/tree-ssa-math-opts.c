@@ -2164,10 +2164,12 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
   struct symbolic_number *n_start;
 
   tree rhs1 = gimple_assign_rhs1 (source_stmt1);
-  if (TREE_CODE (rhs1) == BIT_FIELD_REF)
+  if (TREE_CODE (rhs1) == BIT_FIELD_REF
+      && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
     rhs1 = TREE_OPERAND (rhs1, 0);
   tree rhs2 = gimple_assign_rhs1 (source_stmt2);
-  if (TREE_CODE (rhs2) == BIT_FIELD_REF)
+  if (TREE_CODE (rhs2) == BIT_FIELD_REF
+      && TREE_CODE (TREE_OPERAND (rhs2, 0)) == SSA_NAME)
     rhs2 = TREE_OPERAND (rhs2, 0);
 
   /* Sources are different, cancel bswap if they are not memory location with

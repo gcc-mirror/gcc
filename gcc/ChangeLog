@@ -1,5 +1,11 @@
 2016-06-07  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71428
+	* tree-ssa-math-opts.c (perform_symbolic_merge): Properly distinguish
+	BIT_FIELD_REF op vs. load.
+
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/71423
 	* match.pd ((X | ~Y) -> Y <= X): Properly invert the comparison
 	for signed ops.
