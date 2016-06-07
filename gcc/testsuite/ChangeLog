@@ -1,3 +1,8 @@
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71423
+	* gcc.dg/torture/pr71423.c: New testcase.
+
 2016-06-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71408

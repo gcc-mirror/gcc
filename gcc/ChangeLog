@@ -1,3 +1,9 @@
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71423
+	* match.pd ((X | ~Y) -> Y <= X): Properly invert the comparison
+	for signed ops.
+
 2016-06-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (call): Generate indirect long calls to non-local
