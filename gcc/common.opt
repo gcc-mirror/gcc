@@ -1287,7 +1287,7 @@ EnumValue
 Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
 
 ffast-math
-Common
+Common Optimization
 
 ffat-lto-objects
 Common Var(flag_fat_lto_objects)

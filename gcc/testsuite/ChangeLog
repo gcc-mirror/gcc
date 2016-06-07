@@ -1,3 +1,11 @@
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR c/61564
+	* gcc.dg/Wpragmas-1.c: New testcase.
+	* gcc.dg/Wattributes-4.c: Likewise.
+	* gcc.dg/ipa/pr70646.c: Drop optimize pragma in favor of dg-option
+	entry.
+
 2016-06-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c: Remove

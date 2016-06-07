@@ -9580,6 +9580,29 @@ parse_optimize_options (tree args, bool attr_p)
   decode_cmdline_options_to_array_default_mask (opt_argc, opt_argv,
 						&decoded_options,
 						&decoded_options_count);
+  /* Drop non-Optimization options.  */
+  unsigned j = 1;
+  for (i = 1; i < decoded_options_count; ++i)
+    {
+      if (! (cl_options[decoded_options[i].opt_index].flags & CL_OPTIMIZATION))
+	{
+	  ret = false;
+	  if (attr_p)
+	    warning (OPT_Wattributes,
+		     "bad option %s to optimize attribute",
+		     decoded_options[i].orig_option_with_args_text);
+	  else
+	    warning (OPT_Wpragmas,
+		     "bad option %s to pragma attribute",
+		     decoded_options[i].orig_option_with_args_text);
+	  continue;
+	}
+      if (i != j)
+	decoded_options[j] = decoded_options[i];
+      j++;
+    }
+  decoded_options_count = j;
+  /* And apply them.  */
   decode_options (&global_options, &global_options_set,
 		  decoded_options, decoded_options_count,
 		  input_location, global_dc);

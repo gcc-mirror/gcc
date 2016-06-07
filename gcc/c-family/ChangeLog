@@ -1,3 +1,9 @@
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR c/61564
+	* c-common.c (parse_optimize_options): Only apply CL_OPTIMIZATION
+	options and warn about others.
+
 2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
 
 	* c-common.c (get_source_date_epoch): Rename to
