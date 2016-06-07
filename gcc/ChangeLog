@@ -1,3 +1,8 @@
+2016-06-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mhtm and
+	-mno-htm.
+
 2016-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* spellcheck.c (selftest::test_find_closest_string): New function.
