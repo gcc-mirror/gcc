@@ -1525,6 +1525,7 @@ extern void preprocess_case_label_vec_for_gimple (vec<tree>, tree, tree *);
 extern void gimple_seq_set_location (gimple_seq, location_t);
 extern void gimple_seq_discard (gimple_seq);
 extern void maybe_remove_unused_call_args (struct function *, gimple *);
+extern bool gimple_inexpensive_call_p (gcall *);
 
 /* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */
