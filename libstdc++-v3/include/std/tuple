@@ -48,7 +48,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-  template<std::size_t _Idx, typename _Head, bool _IsEmptyNotFinal>
+  template<typename... _Elements>
+    class tuple;
+
+  template<typename _Tp>
+    struct __is_empty_non_tuple : is_empty<_Tp> { };
+
+  // Using EBO for elements that are tuples causes ambiguous base errors.
+  template<typename _El0, typename... _El>
+    struct __is_empty_non_tuple<tuple<_El0, _El...>> : false_type { };
+
+  // Use the Empty Base-class Optimization for empty, non-final types.
+  template<typename _Tp>
+    using __empty_not_final
+    = typename conditional<__is_final(_Tp), false_type,
+			   __is_empty_non_tuple<_Tp>>::type;
+
+  template<std::size_t _Idx, typename _Head,
+	   bool = __empty_not_final<_Head>::value>
     struct _Head_base;
 
   template<std::size_t _Idx, typename _Head>
@@ -158,19 +175,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Idx, typename... _Elements>
     struct _Tuple_impl; 
 
-  template<typename _Tp>
-    struct __is_empty_non_tuple : is_empty<_Tp> { };
-
-  // Using EBO for elements that are tuples causes ambiguous base errors.
-  template<typename _El0, typename... _El>
-    struct __is_empty_non_tuple<tuple<_El0, _El...>> : false_type { };
-
-  // Use the Empty Base-class Optimization for empty, non-final types.
-  template<typename _Tp>
-    using __empty_not_final
-    = typename conditional<__is_final(_Tp), false_type,
-			   __is_empty_non_tuple<_Tp>>::type;
-
   /**
    * Recursive tuple implementation. Here we store the @c Head element
    * and derive from a @c Tuple_impl containing the remaining elements
@@ -179,12 +183,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Idx, typename _Head, typename... _Tail>
     struct _Tuple_impl<_Idx, _Head, _Tail...>
     : public _Tuple_impl<_Idx + 1, _Tail...>,
-      private _Head_base<_Idx, _Head, __empty_not_final<_Head>::value>
+      private _Head_base<_Idx, _Head>
     {
       template<std::size_t, typename...> friend class _Tuple_impl;
 
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
-      typedef _Head_base<_Idx, _Head, __empty_not_final<_Head>::value> _Base;
+      typedef _Head_base<_Idx, _Head> _Base;
 
       static constexpr _Head&  
       _M_head(_Tuple_impl& __t) noexcept { return _Base::_M_head(__t); }
@@ -336,11 +340,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Basis case of inheritance recursion.
   template<std::size_t _Idx, typename _Head>
     struct _Tuple_impl<_Idx, _Head>
-    : private _Head_base<_Idx, _Head, __empty_not_final<_Head>::value>
+    : private _Head_base<_Idx, _Head>
     {
       template<std::size_t, typename...> friend class _Tuple_impl;
 
-      typedef _Head_base<_Idx, _Head, __empty_not_final<_Head>::value> _Base;
+      typedef _Head_base<_Idx, _Head> _Base;
 
       static constexpr _Head&
       _M_head(_Tuple_impl& __t) noexcept { return _Base::_M_head(__t); }
@@ -456,9 +460,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	swap(_M_head(*this), _M_head(__in));
       }
     };
-
-  template<typename... _Elements>
-    class tuple;
 
   // Concept utility functions, reused in conditionally-explicit
   // constructors.
