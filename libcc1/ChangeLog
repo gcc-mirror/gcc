@@ -1,3 +1,7 @@
+2016-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Update copyrights.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* plugin.cc (plugin_finish_record_or_union): Use SET_TYPE_ALIGN.
