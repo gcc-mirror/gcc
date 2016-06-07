@@ -1,3 +1,8 @@
+2016-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* objc-act.c (objc_build_component_ref): Update call
+	to build_component_ref for added param, passing UNKNOWN_LOCATION.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* objc-act.c (objc_build_struct): Use SET_DECL_ALIGN.

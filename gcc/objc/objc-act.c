@@ -2654,7 +2654,8 @@ objc_build_component_ref (tree datum, tree component)
   return finish_class_member_access_expr (datum, component, false,
                                           tf_warning_or_error);
 #else
-  return build_component_ref (input_location, datum, component);
+  return build_component_ref (input_location, datum, component,
+			      UNKNOWN_LOCATION);
 #endif
 }
 
