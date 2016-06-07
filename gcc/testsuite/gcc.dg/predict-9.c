@@ -20,4 +20,4 @@ void foo (int base)
 }
 
 /* { dg-final { scan-tree-dump-times "first match heuristics: 2.0%" 3 "profile_estimate"} } */
-/* { dg-final { scan-tree-dump-times "first match heuristics: 4.5%" 1 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "first match heuristics: 4.0%" 1 "profile_estimate"} } */

@@ -1,3 +1,13 @@
+2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/inlinehint-4.c: Disable partial inlining.
+	* gcc.dg/predict-1.c: Update template for new predictor hitrates.
+	* gcc.dg/predict-3.c: Update template.
+	* gcc.dg/predict-5.c: Update template.
+	* gcc.dg/predict-6.c: Update template.
+	* gcc.dg/predict-9.c: Update template.
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Update template.
+
 2016-06-07  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-mul.c: New test.

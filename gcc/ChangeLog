@@ -1,3 +1,26 @@
+2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (predict_iv_comparison): Mention that heuristics is broken.
+	(return_prediction): PRED_CONST_RETURN predict return as not taken.
+	* predict.def (PRED_CONTINUE): Change hitrate 50->67
+	(PRED_LOOP_BRANCH): Document predictor as broken.
+	(PRED_LOOP_EXIT): Change hitrate 91->92.
+	(PRED_LOOP_EXTRA_EXIT): Change hitrate 91->83.
+	(PRED_POINTER, PRED_TREE_POINTER): Change hitrate 85->70.
+	(PRED_OPCODE_POSITIVE): Change hitrate 79->64.
+	(PRED_OPCODE_NONEQUAL): Change hitrate 91->66.
+	(PRED_TREE_OPCODE_POSITIVE): Change hitrate 73->64
+	(PRED_TREE_OPCODE_NONEQUAL): Chnage hitrate 72->66
+	(PRED_CALL): Chane hitrate 71->67.
+	(PRED_TREE_EARLY_RETURN): Document issues, change hitrate 61->54.
+	(PRED_GOTO): Document as unused right now.
+	(PRED_CONST_RETURN): Change hitrate 67->69
+	(PRED_NEGATIVE_RETURN): Change hitrate 96->98
+	(PRED_NULL_RETURN): Change hitrate 91->90.
+	(PRED_LOOP_IV_COMPARE_GUESS): Change hitrate to 98.
+	(PRED_FORTRAN_FAIL_ALLOC): Change hitrate to 62; document issues.
+	(PRED_FORTRAN_SIZE_ZERO): Change hitrate to 99.
+
 2016-06-07  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h: Add __builtin_vec_mul.
