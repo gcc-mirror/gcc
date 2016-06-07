@@ -1,3 +1,8 @@
+2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71389
+	* g++.dg/pr71389.C: New test.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
@@ -31,7 +36,7 @@
 	* gcc.dg/pr69634.c: New.
 
 	2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
- 
+
 	PR c++/70347
 	* g++.dg/cpp1y/nsdmi-union1.C: New test.
 
@@ -42,7 +47,7 @@
 
 	2016-03-24  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/69845
+	PR middle-end/69845
 	* gcc.dg/tree-ssa/pr69845-1.c: New test.
 	* gcc.dg/tree-ssa/pr69845-2.c: New test.
 
@@ -105,8 +110,8 @@
 	PR middle-end/67278
 	* gcc.dg/simd-7.c: Add -w -Wno-psabi to dg-options.
 
- 	PR target/67278
- 	* gcc.dg/simd-8.c: Add -w -Wno-psabi to dg-options.
+	PR target/67278
+	* gcc.dg/simd-8.c: Add -w -Wno-psabi to dg-options.
 
 2016-05-20  Richard Biener  <rguenther@suse.de>
 
@@ -130,13 +135,13 @@
 	* gcc.dg/torture/pr70941.c: New testcase.
 
 	2016-05-06  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR middle-end/70941
 	* gcc.dg/torture/pr70941.c (abort): Remove prototype.
 	(a, b, c, d): Change type from char to signed char.
 	(main): Compare against (signed char) -1634678893 instead of
 	hardcoded -109.  Use __builtin_abort instead of abort.
- 
+
 	2016-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70931

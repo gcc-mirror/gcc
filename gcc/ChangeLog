@@ -1,3 +1,10 @@
+2016-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71389
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Copy op1 RTX to avoid invalid sharing.
+	(ix86_expand_vector_move_misalign): Ditto.
+
 2016-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
@@ -15,7 +22,7 @@
 2016-06-03  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
-        2016-05-30  Andreas Tobler  <andreast@gcc.gnu.org>
+	2016-05-30  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.gcc: Move hard float support for arm*hf*-*-freebsd* into
 	armv6*-*-freebsd* for FreeBSD 11. Eliminate the arm*hf*-*-freebsd*
@@ -61,7 +68,7 @@
 
 	2016-03-24  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/69845
+	PR middle-end/69845
 	* fold-const.c (extract_muldiv_1): Correct test for multiplication
 	overflow.
 
@@ -2219,7 +2226,7 @@
 
 	Backport from mainline
 	2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-	            Bernd Schmidt  <bschmidt@redhat.com>
+		    Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/67226
 	* calls.c (store_one_arg): Take into account
@@ -2279,7 +2286,7 @@
 
 	Backport from mainline
 	2015-11-24  Bernd Schmidt <bschmidt@redhat.com>
-	            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+		    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68194
 	PR rtl-optimization/68328
@@ -2552,7 +2559,7 @@
 
 	Backport from mainline
 	2015-11-16  Oleg Endo  <olegendo@gcc.gnu.org>
-	            Kaz Kojima  <kkojima@gcc.gnu.org>
+		    Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/68277
 	* config/sh/sh.md (addsi3_scr): Handle reg overlap of operands[0] and
@@ -2626,7 +2633,7 @@
 
 	Backport from mainline
 	2015-10-23  Steve Ellcey  <sellcey@imgtec.com>
-	            Andrew Pinski  <apinski@cavium.com>
+		    Andrew Pinski  <apinski@cavium.com>
 
 	PR rtl-optimization/67736
 	* combine.c (simplify_comparison): Use gen_lowpart_or_truncate instead
