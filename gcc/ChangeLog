@@ -1,3 +1,8 @@
+2016-06-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_function_arg_alignment):
+	Rewrite, looking one level down for records and arrays.
+
 2016-06-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.c: Include "selftest.h".

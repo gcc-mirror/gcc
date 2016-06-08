@@ -1961,22 +1961,23 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type)
 {
-  unsigned int alignment;
+  if (!type)
+    return GET_MODE_ALIGNMENT (mode);
+  if (integer_zerop (TYPE_SIZE (type)))
+    return 0;
 
-  if (type)
-    {
-      if (!integer_zerop (TYPE_SIZE (type)))
-	{
-	  if (TYPE_MODE (type) == mode)
-	    alignment = TYPE_ALIGN (type);
-	  else
-	    alignment = GET_MODE_ALIGNMENT (mode);
-	}
-      else
-	alignment = 0;
-    }
-  else
-    alignment = GET_MODE_ALIGNMENT (mode);
+  gcc_assert (TYPE_MODE (type) == mode);
+
+  if (!AGGREGATE_TYPE_P (type))
+    return TYPE_ALIGN (TYPE_MAIN_VARIANT (type));
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return TYPE_ALIGN (TREE_TYPE (type));
+
+  unsigned int alignment = 0;
+
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    alignment = std::max (alignment, DECL_ALIGN (field));
 
   return alignment;
 }
