@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
+#include "params.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
@@ -106,8 +107,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       return false;
     }
 
-  /* Approximately copy the conditions that used to be used in jump.c --
-     at most 20 insns and no calls.  */
+  /* Count number of instructions and punt on calls.  */
   for (bsi = gsi_start_bb (header); !gsi_end_p (bsi); gsi_next (&bsi))
     {
       last = gsi_stmt (bsi);
@@ -290,8 +290,8 @@ ch_base::copy_headers (function *fun)
 
   FOR_EACH_LOOP (loop, 0)
     {
-      /* Copy at most 20 insns.  */
-      int limit = 20;
+      int initial_limit = PARAM_VALUE (PARAM_MAX_LOOP_HEADER_INSNS);
+      int remaining_limit = initial_limit;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Analyzing loop %i\n", loop->num);
@@ -313,7 +313,7 @@ ch_base::copy_headers (function *fun)
 
       exit = NULL;
       n_bbs = 0;
-      while (should_duplicate_loop_header_p (header, loop, &limit))
+      while (should_duplicate_loop_header_p (header, loop, &remaining_limit))
 	{
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
@@ -333,7 +333,8 @@ ch_base::copy_headers (function *fun)
 	fprintf (dump_file,
 		 "Duplicating header of the loop %d up to edge %d->%d,"
 		 " %i insns.\n",
-		 loop->num, exit->src->index, exit->dest->index, 20 - limit);
+		 loop->num, exit->src->index, exit->dest->index,
+		 initial_limit - remaining_limit);
 
       /* Ensure that the header will have just the latch as a predecessor
 	 inside the loop.  */
