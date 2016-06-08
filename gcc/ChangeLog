@@ -1,5 +1,11 @@
 2016-06-08  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_load): Remove restrictions
+	on strided SLP loads and fall back to scalar loads in case
+	we can't chunk them.
+
+2016-06-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71452
 	* tree-ssa.c (non_rewritable_lvalue_p): Make sure that the
 	type used for the SSA rewrite has enough precision to cover
