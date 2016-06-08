@@ -1,3 +1,8 @@
+2016-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst, case TYPENAME_TYPE): Don't delay checking the
+	return value of	tsubst_aggr_type for error_mark_node.
+
 2016-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71442
