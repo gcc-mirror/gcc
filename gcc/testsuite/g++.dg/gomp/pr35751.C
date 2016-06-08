@@ -5,8 +5,8 @@
 void
 foo (int i)
 {
-  extern int a[i];	// { dg-error "storage size of" }
-  static int b[i];	// { dg-error "storage size of" }
+  extern int a[i];	// { dg-error "14:storage size of" }
+  static int b[i];	// { dg-error "14:storage size of" }
 
 #pragma omp parallel
   {

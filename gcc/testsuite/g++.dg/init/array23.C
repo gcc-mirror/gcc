@@ -3,4 +3,4 @@
 //  array
 
 struct A {A();int A::* t;};
-A x[]; // { dg-error "size" }
+A x[]; // { dg-error "3:array size missing" }
