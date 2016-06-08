@@ -3,6 +3,10 @@
 	PR c/71418
 	* c-decl.c (grokdeclarator): Check TYPE_P.
 
+	PR c/71426
+	* c-decl.c (get_parm_info): Don't crash on an assert on invalid
+	code.
+
 2016-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_postfix_expression): In __builtin_offsetof
