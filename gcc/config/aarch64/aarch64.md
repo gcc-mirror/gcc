@@ -75,6 +75,8 @@
     UNSPEC_CRC32H
     UNSPEC_CRC32W
     UNSPEC_CRC32X
+    UNSPEC_FCVTZS
+    UNSPEC_FCVTZU
     UNSPEC_URECPE
     UNSPEC_FRECPE
     UNSPEC_FRECPS
@@ -105,6 +107,7 @@
     UNSPEC_NOP
     UNSPEC_PRLG_STK
     UNSPEC_RBIT
+    UNSPEC_SCVTF
     UNSPEC_SISD_NEG
     UNSPEC_SISD_SSHL
     UNSPEC_SISD_USHL
@@ -122,6 +125,7 @@
     UNSPEC_TLSLE24
     UNSPEC_TLSLE32
     UNSPEC_TLSLE48
+    UNSPEC_UCVTF
     UNSPEC_USHL_2S
     UNSPEC_VSTRUCTDUMMY
     UNSPEC_SP_SET
@@ -4625,6 +4629,36 @@
   "TARGET_FLOAT"
   "<su_optab>cvtf\t%<GPF:s>0, %<w2>1"
   [(set_attr "type" "f_cvti2f")]
+)
+
+;; Convert between fixed-point and floating-point (scalar modes)
+
+(define_insn "<FCVT_F2FIXED:fcvt_fixed_insn><GPF:mode>3"
+  [(set (match_operand:<GPF:FCVT_TARGET> 0 "register_operand" "=r, w")
+	(unspec:<GPF:FCVT_TARGET> [(match_operand:GPF 1 "register_operand" "w, w")
+				   (match_operand:SI 2 "immediate_operand" "i, i")]
+	 FCVT_F2FIXED))]
+  ""
+  "@
+   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<w1>0, %<s>1, #%2
+   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<s>0, %<s>1, #%2"
+  [(set_attr "type" "f_cvtf2i, neon_fp_to_int_<GPF:Vetype>")
+   (set_attr "fp" "yes, *")
+   (set_attr "simd" "*, yes")]
+)
+
+(define_insn "<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>3"
+  [(set (match_operand:<GPI:FCVT_TARGET> 0 "register_operand" "=w, w")
+	(unspec:<GPI:FCVT_TARGET> [(match_operand:GPI 1 "register_operand" "r, w")
+				   (match_operand:SI 2 "immediate_operand" "i, i")]
+	 FCVT_FIXED2F))]
+  ""
+  "@
+   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<s>0, %<w1>1, #%2
+   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<s>0, %<s>1, #%2"
+  [(set_attr "type" "f_cvti2f, neon_int_to_fp_<GPI:Vetype>")
+   (set_attr "fp" "yes, *")
+   (set_attr "simd" "*, yes")]
 )
 
 ;; -------------------------------------------------------------------
