@@ -4124,7 +4124,8 @@ proc check_effective_target_vect_long { } {
               && ![istarget powerpc-*-linux*paired*]) 
               && [check_effective_target_ilp32])
 	 || [check_effective_target_arm32]
-	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32]) } {
+	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32])
+	 || [istarget aarch64*-*-*] } {
 	set answer 1
     } else {
 	set answer 0

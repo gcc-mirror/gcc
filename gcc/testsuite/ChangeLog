@@ -1,3 +1,9 @@
+2016-06-08  Alan Hayward  <alan.hayward@arm.com>
+
+	* gcc.dg/vect/vect-live-2.c: Update effective target.
+	* gcc.dg/vect/vect-live-slp-3.c: Likewise.
+	* lib/target-supports.exp: Add aarch64 to vect_long.
+
 2016-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71418
