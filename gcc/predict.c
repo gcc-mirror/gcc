@@ -3166,6 +3166,7 @@ pass_strip_predict_hints::execute (function *fun)
   basic_block bb;
   gimple *ass_stmt;
   tree var;
+  bool changed = false;
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -3177,6 +3178,7 @@ pass_strip_predict_hints::execute (function *fun)
 	  if (gimple_code (stmt) == GIMPLE_PREDICT)
 	    {
 	      gsi_remove (&bi, true);
+	      changed = true;
 	      continue;
 	    }
 	  else if (is_gimple_call (stmt))
@@ -3191,6 +3193,7 @@ pass_strip_predict_hints::execute (function *fun)
 		      && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT))
 		{
 		  var = gimple_call_lhs (stmt);
+	          changed = true;
 		  if (var)
 		    {
 		      ass_stmt
@@ -3207,7 +3210,7 @@ pass_strip_predict_hints::execute (function *fun)
 	  gsi_next (&bi);
 	}
     }
-  return 0;
+  return changed ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace
