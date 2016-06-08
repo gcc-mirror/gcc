@@ -6440,17 +6440,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
     }
   else if (STMT_VINFO_STRIDED_P (stmt_info))
-    {
-      if (grouped_load
-	  && slp
-	  && (group_size > nunits
-	      || nunits % group_size != 0))
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "unhandled strided group load\n");
-	  return false;
-	}
-    }
+    ;
   else
     {
       negative = tree_int_cst_compare (nested_in_vect_loop
@@ -6744,16 +6734,29 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       running_off = offvar;
       alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (first_dr)), 0);
       int nloads = nunits;
+      int lnel = 1;
       tree ltype = TREE_TYPE (vectype);
       auto_vec<tree> dr_chain;
       if (slp)
 	{
-	  nloads = nunits / group_size;
-	  if (group_size < nunits)
-	    ltype = build_vector_type (TREE_TYPE (vectype), group_size);
-	  else
-	    ltype = vectype;
-	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
+	  if (group_size < nunits
+	      && nunits % group_size == 0)
+	    {
+	      nloads = nunits / group_size;
+	      lnel = group_size;
+	      ltype = build_vector_type (TREE_TYPE (vectype), group_size);
+	      ltype = build_aligned_type (ltype,
+					  TYPE_ALIGN (TREE_TYPE (vectype)));
+	    }
+	  else if (group_size >= nunits
+		   && group_size % nunits == 0)
+	    {
+	      nloads = 1;
+	      lnel = nunits;
+	      ltype = vectype;
+	      ltype = build_aligned_type (ltype,
+					  TYPE_ALIGN (TREE_TYPE (vectype)));
+	    }
 	  /* For SLP permutation support we need to load the whole group,
 	     not only the number of vector stmts the permutation result
 	     fits in.  */
@@ -6765,48 +6768,43 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	}
+      int group_el = 0;
+      unsigned HOST_WIDE_INT
+	elsz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
       for (j = 0; j < ncopies; j++)
 	{
-	  tree vec_inv;
-
 	  if (nloads > 1)
+	    vec_alloc (v, nloads);
+	  for (i = 0; i < nloads; i++)
 	    {
-	      vec_alloc (v, nloads);
-	      for (i = 0; i < nloads; i++)
-		{
-		  tree newref, newoff;
-		  gimple *incr;
-		  newref = build2 (MEM_REF, ltype, running_off, alias_off);
+	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
+					     group_el * elsz);
+	      new_stmt = gimple_build_assign (make_ssa_name (ltype),
+					      build2 (MEM_REF, ltype,
+						      running_off, this_off));
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      if (nloads > 1)
+		CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+					gimple_assign_lhs (new_stmt));
 
-		  newref = force_gimple_operand_gsi (gsi, newref, true,
-						     NULL_TREE, true,
-						     GSI_SAME_STMT);
-		  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, newref);
-		  newoff = copy_ssa_name (running_off);
-		  incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
-					      running_off, stride_step);
+	      group_el += lnel;
+	      if (! slp
+		  || group_el == group_size)
+		{
+		  tree newoff = copy_ssa_name (running_off);
+		  gimple *incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+						      running_off, stride_step);
 		  vect_finish_stmt_generation (stmt, incr, gsi);
 
 		  running_off = newoff;
+		  group_el = 0;
 		}
-
-	      vec_inv = build_constructor (vectype, v);
+	    }
+	  if (nloads > 1)
+	    {
+	      tree vec_inv = build_constructor (vectype, v);
 	      new_temp = vect_init_vector (stmt, vec_inv, vectype, gsi);
 	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-	    }
-	  else
-	    {
-	      new_stmt = gimple_build_assign (make_ssa_name (ltype),
-					      build2 (MEM_REF, ltype,
-						      running_off, alias_off));
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-	      tree newoff = copy_ssa_name (running_off);
-	      gimple *incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
-					  running_off, stride_step);
-	      vect_finish_stmt_generation (stmt, incr, gsi);
-
-	      running_off = newoff;
 	    }
 
 	  if (slp)
