@@ -8225,17 +8225,6 @@ vpadalq_u32 (uint64x2_t a, uint32x4_t b)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vpadd_f32 (float32x2_t a, float32x2_t b)
-{
-  float32x2_t result;
-  __asm__ ("faddp %0.2s,%1.2s,%2.2s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vpaddl_s8 (int8x8_t a)
 {
@@ -8368,28 +8357,6 @@ vpaddlq_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vpaddq_f32 (float32x4_t a, float32x4_t b)
-{
-  float32x4_t result;
-  __asm__ ("faddp %0.4s,%1.4s,%2.4s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vpaddq_f64 (float64x2_t a, float64x2_t b)
-{
-  float64x2_t result;
-  __asm__ ("faddp %0.2d,%1.2d,%2.2d"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vpaddq_s8 (int8x16_t a, int8x16_t b)
 {
@@ -8474,17 +8441,6 @@ vpaddq_u64 (uint64x2_t a, uint64x2_t b)
   __asm__ ("addp %0.2d,%1.2d,%2.2d"
            : "=w"(result)
            : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32_t __attribute__ ((__always_inline__))
-vpadds_f32 (float32x2_t a)
-{
-  float32_t result;
-  __asm__ ("faddp %s0,%1.2s"
-           : "=w"(result)
-           : "w"(a)
            : /* No clobbers */);
   return result;
 }
@@ -18625,6 +18581,24 @@ vnegq_s64 (int64x2_t __a)
 
 /* vpadd  */
 
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vpadd_f32 (float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_faddpv2sf (__a, __b);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vpaddq_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_faddpv4sf (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vpaddq_f64 (float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_faddpv2df (__a, __b);
+}
+
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vpadd_s8 (int8x8_t __a, int8x8_t __b)
 {
@@ -18662,6 +18636,12 @@ vpadd_u32 (uint32x2_t __a, uint32x2_t __b)
 {
   return (uint32x2_t) __builtin_aarch64_addpv2si ((int32x2_t) __a,
 						  (int32x2_t) __b);
+}
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vpadds_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_reduc_plus_scal_v2sf (__a);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
