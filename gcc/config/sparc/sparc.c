@@ -423,6 +423,30 @@ struct processor_costs niagara4_costs = {
   0, /* shift penalty */
 };
 
+static const
+struct processor_costs niagara7_costs = {
+  COSTS_N_INSNS (5), /* int load */
+  COSTS_N_INSNS (5), /* int signed load */
+  COSTS_N_INSNS (5), /* int zeroed load */
+  COSTS_N_INSNS (5), /* float load */
+  COSTS_N_INSNS (11), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (11), /* fadd, fsub */
+  COSTS_N_INSNS (11), /* fcmp */
+  COSTS_N_INSNS (11), /* fmov, fmovr */
+  COSTS_N_INSNS (11), /* fmul */
+  COSTS_N_INSNS (24), /* fdivs */
+  COSTS_N_INSNS (37), /* fdivd */
+  COSTS_N_INSNS (24), /* fsqrts */
+  COSTS_N_INSNS (37), /* fsqrtd */
+  COSTS_N_INSNS (12), /* imul */
+  COSTS_N_INSNS (12), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (51), /* idiv, average of 42 - 61 cycle range */
+  COSTS_N_INSNS (35), /* idivX, average of 26 - 44 cycle range */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
 static const struct processor_costs *sparc_costs = &cypress_costs;
 
 #ifdef HAVE_AS_RELAX_OPTION
@@ -1175,6 +1199,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "VIS2 ");
   if (flags & MASK_VIS3)
     fprintf (stderr, "VIS3 ");
+  if (flags & MASK_VIS4)
+    fprintf (stderr, "VIS4 ");
   if (flags & MASK_CBCOND)
     fprintf (stderr, "CBCOND ");
   if (flags & MASK_DEPRECATED_V8_INSNS)
@@ -1238,6 +1264,7 @@ sparc_option_override (void)
     { TARGET_CPU_niagara2, PROCESSOR_NIAGARA2 },
     { TARGET_CPU_niagara3, PROCESSOR_NIAGARA3 },
     { TARGET_CPU_niagara4, PROCESSOR_NIAGARA4 },
+    { TARGET_CPU_niagara7, PROCESSOR_NIAGARA7 },
     { -1, PROCESSOR_V7 }
   };
   const struct cpu_default *def;
@@ -1287,6 +1314,9 @@ sparc_option_override (void)
     /* UltraSPARC T4 */
     { "niagara4",	MASK_ISA,
       MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF|MASK_CBCOND },
+    /* UltraSPARC M7 */
+    { "niagara7",	MASK_ISA,
+      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_VIS4|MASK_FMAF|MASK_CBCOND },
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -1416,6 +1446,9 @@ sparc_option_override (void)
 #ifndef HAVE_AS_SPARC4
 		   & ~MASK_CBCOND
 #endif
+#ifndef HAVE_AS_SPARC5_VIS4
+		   & ~MASK_VIS4
+#endif
 #ifndef HAVE_AS_LEON
 		   & ~(MASK_LEON | MASK_LEON3)
 #endif
@@ -1434,10 +1467,15 @@ sparc_option_override (void)
   if (TARGET_VIS3)
     target_flags |= MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, or -mfmaf if FPU is
+  /* -mvis4 implies -mvis3, -mvis2 and -mvis */
+  if (TARGET_VIS4)
+    target_flags |= MASK_VIS3 | MASK_VIS2 | MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4 or -mfmaf if FPU is
      disabled.  */
   if (! TARGET_FPU)
-    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_FMAF);
+    target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS4
+		      | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available.
@@ -1471,7 +1509,8 @@ sparc_option_override (void)
 	  || sparc_cpu == PROCESSOR_NIAGARA
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
-	  || sparc_cpu == PROCESSOR_NIAGARA4))
+	  || sparc_cpu == PROCESSOR_NIAGARA4
+	  || sparc_cpu == PROCESSOR_NIAGARA7))
     align_functions = 32;
 
   /* Validate PCC_STRUCT_RETURN.  */
@@ -1535,6 +1574,9 @@ sparc_option_override (void)
     case PROCESSOR_NIAGARA4:
       sparc_costs = &niagara4_costs;
       break;
+    case PROCESSOR_NIAGARA7:
+      sparc_costs = &niagara7_costs;
+      break;
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
     };
@@ -1566,6 +1608,29 @@ sparc_option_override (void)
   if (TARGET_DEBUG_OPTIONS)
     dump_target_flags ("Final target_flags", target_flags);
 
+  /* PARAM_SIMULTANEOUS_PREFETCHES is the number of prefetches that
+     can run at the same time.  More important, it is the threshold
+     defining when additional prefetches will be dropped by the
+     hardware.
+
+     The UltraSPARC-III features a documented prefetch queue with a
+     size of 8.  Additional prefetches issued in the cpu are
+     dropped.
+
+     Niagara processors are different.  In these processors prefetches
+     are handled much like regular loads.  The L1 miss buffer is 32
+     entries, but prefetches start getting affected when 30 entries
+     become occupied.  That occupation could be a mix of regular loads
+     and prefetches though.  And that buffer is shared by all threads.
+     Once the threshold is reached, if the core is running a single
+     thread the prefetch will retry.  If more than one thread is
+     running, the prefetch will be dropped.
+
+     All this makes it very difficult to determine how many
+     simultaneous prefetches can be issued simultaneously, even in a
+     single-threaded program.  Experimental results show that setting
+     this parameter to 32 works well when the number of threads is not
+     high.  */
   maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
 			 ((sparc_cpu == PROCESSOR_ULTRASPARC
 			   || sparc_cpu == PROCESSOR_NIAGARA
@@ -1574,19 +1639,54 @@ sparc_option_override (void)
 			   || sparc_cpu == PROCESSOR_NIAGARA4)
 			  ? 2
 			  : (sparc_cpu == PROCESSOR_ULTRASPARC3
-			     ? 8 : 3)),
+			     ? 8 : (sparc_cpu == PROCESSOR_NIAGARA7
+				    ? 32 : 3))),
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+
+  /* For PARAM_L1_CACHE_LINE_SIZE we use the default 32 bytes (see
+     params.def), so no maybe_set_param_value is needed.
+
+     The Oracle SPARC Architecture (previously the UltraSPARC
+     Architecture) specification states that when a PREFETCH[A]
+     instruction is executed an implementation-specific amount of data
+     is prefetched, and that it is at least 64 bytes long (aligned to
+     at least 64 bytes).
+
+     However, this is not correct.  The M7 (and implementations prior
+     to that) does not guarantee a 64B prefetch into a cache if the
+     line size is smaller.  A single cache line is all that is ever
+     prefetched.  So for the M7, where the L1D$ has 32B lines and the
+     L2D$ and L3 have 64B lines, a prefetch will prefetch 64B into the
+     L2 and L3, but only 32B are brought into the L1D$. (Assuming it
+     is a read_n prefetch, which is the only type which allocates to
+     the L1.)  */
+
+  /* PARAM_L1_CACHE_SIZE is the size of the L1D$ (most SPARC chips use
+     Hardvard level-1 caches) in kilobytes.  Both UltraSPARC and
+     Niagara processors feature a L1D$ of 16KB.  */
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE,
 			 ((sparc_cpu == PROCESSOR_ULTRASPARC
 			   || sparc_cpu == PROCESSOR_ULTRASPARC3
 			   || sparc_cpu == PROCESSOR_NIAGARA
 			   || sparc_cpu == PROCESSOR_NIAGARA2
 			   || sparc_cpu == PROCESSOR_NIAGARA3
-			   || sparc_cpu == PROCESSOR_NIAGARA4)
-			  ? 64 : 32),
+			   || sparc_cpu == PROCESSOR_NIAGARA4
+			   || sparc_cpu == PROCESSOR_NIAGARA7)
+			  ? 16 : 64),
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
+
+
+  /* PARAM_L2_CACHE_SIZE is the size fo the L2 in kilobytes.  Note
+     that 512 is the default in params.def.  */
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE,
+			 (sparc_cpu == PROCESSOR_NIAGARA4
+			  ? 128 : (sparc_cpu == PROCESSOR_NIAGARA7
+				   ? 256 : 512)),
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  
 
   /* Disable save slot sharing for call-clobbered registers by default.
      The IRA sharing algorithm works on single registers only and this
@@ -9178,7 +9278,8 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_NIAGARA
       && sparc_cpu != PROCESSOR_NIAGARA2
       && sparc_cpu != PROCESSOR_NIAGARA3
-      && sparc_cpu != PROCESSOR_NIAGARA4)
+      && sparc_cpu != PROCESSOR_NIAGARA4
+      && sparc_cpu != PROCESSOR_NIAGARA7)
     emit_insn (gen_flushsi (validize_mem (adjust_address (m_tramp, SImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
@@ -9223,7 +9324,8 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_NIAGARA
       && sparc_cpu != PROCESSOR_NIAGARA2
       && sparc_cpu != PROCESSOR_NIAGARA3
-      && sparc_cpu != PROCESSOR_NIAGARA4)
+      && sparc_cpu != PROCESSOR_NIAGARA4
+      && sparc_cpu != PROCESSOR_NIAGARA7)
     emit_insn (gen_flushdi (validize_mem (adjust_address (m_tramp, DImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
@@ -9419,7 +9521,8 @@ sparc_use_sched_lookahead (void)
       || sparc_cpu == PROCESSOR_NIAGARA2
       || sparc_cpu == PROCESSOR_NIAGARA3)
     return 0;
-  if (sparc_cpu == PROCESSOR_NIAGARA4)
+  if (sparc_cpu == PROCESSOR_NIAGARA4
+      || sparc_cpu == PROCESSOR_NIAGARA7)
     return 2;
   if (sparc_cpu == PROCESSOR_ULTRASPARC
       || sparc_cpu == PROCESSOR_ULTRASPARC3)
@@ -9442,6 +9545,7 @@ sparc_issue_rate (void)
     default:
       return 1;
     case PROCESSOR_NIAGARA4:
+    case PROCESSOR_NIAGARA7:
     case PROCESSOR_V9:
       /* Assume V9 processors are capable of at least dual-issue.  */
       return 2;
@@ -10007,6 +10111,34 @@ enum sparc_builtins
   SPARC_BUILTIN_XMULX,
   SPARC_BUILTIN_XMULXHI,
 
+  /* VIS 4.0 builtins.  */
+  SPARC_BUILTIN_FPADD8,
+  SPARC_BUILTIN_FPADDS8,
+  SPARC_BUILTIN_FPADDUS8,
+  SPARC_BUILTIN_FPADDUS16,
+  SPARC_BUILTIN_FPCMPLE8,
+  SPARC_BUILTIN_FPCMPGT8,
+  SPARC_BUILTIN_FPCMPULE16,
+  SPARC_BUILTIN_FPCMPUGT16,
+  SPARC_BUILTIN_FPCMPULE32,
+  SPARC_BUILTIN_FPCMPUGT32,
+  SPARC_BUILTIN_FPMAX8,
+  SPARC_BUILTIN_FPMAX16,
+  SPARC_BUILTIN_FPMAX32,
+  SPARC_BUILTIN_FPMAXU8,
+  SPARC_BUILTIN_FPMAXU16,
+  SPARC_BUILTIN_FPMAXU32,
+  SPARC_BUILTIN_FPMIN8,
+  SPARC_BUILTIN_FPMIN16,
+  SPARC_BUILTIN_FPMIN32,
+  SPARC_BUILTIN_FPMINU8,
+  SPARC_BUILTIN_FPMINU16,
+  SPARC_BUILTIN_FPMINU32,
+  SPARC_BUILTIN_FPSUB8,
+  SPARC_BUILTIN_FPSUBS8,
+  SPARC_BUILTIN_FPSUBUS8,
+  SPARC_BUILTIN_FPSUBUS16,
+  
   SPARC_BUILTIN_MAX
 };
 
@@ -10482,6 +10614,83 @@ sparc_vis_init_builtins (void)
 			 SPARC_BUILTIN_XMULX, di_ftype_di_di);
       def_builtin_const ("__builtin_vis_xmulxhi", CODE_FOR_xmulxhi_vis,
 			 SPARC_BUILTIN_XMULXHI, di_ftype_di_di);
+    }
+
+  if (TARGET_VIS4)
+    {
+      def_builtin_const ("__builtin_vis_fpadd8", CODE_FOR_addv8qi3,
+			 SPARC_BUILTIN_FPADD8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpadds8", CODE_FOR_ssaddv8qi3,
+			 SPARC_BUILTIN_FPADDS8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpaddus8", CODE_FOR_usaddv8qi3,
+			 SPARC_BUILTIN_FPADDUS8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpaddus16", CODE_FOR_usaddv4hi3,
+			 SPARC_BUILTIN_FPADDUS16, v4hi_ftype_v4hi_v4hi);
+
+
+      if (TARGET_ARCH64)
+	{
+	  def_builtin_const ("__builtin_vis_fpcmple8", CODE_FOR_fpcmple8di_vis,
+			     SPARC_BUILTIN_FPCMPLE8, di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fpcmpgt8", CODE_FOR_fpcmpgt8di_vis,
+			     SPARC_BUILTIN_FPCMPGT8, di_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fpcmpule16", CODE_FOR_fpcmpule16di_vis,
+			     SPARC_BUILTIN_FPCMPULE16, di_ftype_v4hi_v4hi);
+	  def_builtin_const ("__builtin_vis_fpcmpugt16", CODE_FOR_fpcmpugt16di_vis,
+			     SPARC_BUILTIN_FPCMPUGT16, di_ftype_v4hi_v4hi);
+	  def_builtin_const ("__builtin_vis_fpcmpule32", CODE_FOR_fpcmpule32di_vis,
+			     SPARC_BUILTIN_FPCMPULE32, di_ftype_v2si_v2si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt32", CODE_FOR_fpcmpugt32di_vis,
+			     SPARC_BUILTIN_FPCMPUGT32, di_ftype_v2si_v2si);
+	}
+      else
+	{
+	  def_builtin_const ("__builtin_vis_fpcmple8", CODE_FOR_fpcmple8si_vis,
+			     SPARC_BUILTIN_FPCMPLE8, si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fpcmpgt8", CODE_FOR_fpcmpgt8si_vis,
+			     SPARC_BUILTIN_FPCMPGT8, si_ftype_v8qi_v8qi);
+	  def_builtin_const ("__builtin_vis_fpcmpule16", CODE_FOR_fpcmpule16si_vis,
+			     SPARC_BUILTIN_FPCMPULE16, si_ftype_v4hi_v4hi);
+	  def_builtin_const ("__builtin_vis_fpcmpugt16", CODE_FOR_fpcmpugt16si_vis,
+			     SPARC_BUILTIN_FPCMPUGT16, si_ftype_v4hi_v4hi);
+	  def_builtin_const ("__builtin_vis_fpcmpule32", CODE_FOR_fpcmpule32si_vis,
+			     SPARC_BUILTIN_FPCMPULE32, di_ftype_v2si_v2si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt32", CODE_FOR_fpcmpugt32si_vis,
+			     SPARC_BUILTIN_FPCMPUGT32, di_ftype_v2si_v2si);
+	}
+      
+      def_builtin_const ("__builtin_vis_fpmax8", CODE_FOR_maxv8qi3,
+			 SPARC_BUILTIN_FPMAX8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpmax16", CODE_FOR_maxv4hi3,
+			 SPARC_BUILTIN_FPMAX16, v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpmax32", CODE_FOR_maxv2si3,
+			 SPARC_BUILTIN_FPMAX32, v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpmaxu8", CODE_FOR_maxuv8qi3,
+			 SPARC_BUILTIN_FPMAXU8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpmaxu16", CODE_FOR_maxuv4hi3,
+			 SPARC_BUILTIN_FPMAXU16, v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpmaxu32", CODE_FOR_maxuv2si3,
+			 SPARC_BUILTIN_FPMAXU32, v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpmin8", CODE_FOR_minv8qi3,
+			 SPARC_BUILTIN_FPMIN8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpmin16", CODE_FOR_minv4hi3,
+			 SPARC_BUILTIN_FPMIN16, v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpmin32", CODE_FOR_minv2si3,
+			 SPARC_BUILTIN_FPMIN32, v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpminu8", CODE_FOR_minuv8qi3,
+			 SPARC_BUILTIN_FPMINU8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpminu16", CODE_FOR_minuv4hi3,
+			 SPARC_BUILTIN_FPMINU16, v4hi_ftype_v4hi_v4hi);
+      def_builtin_const ("__builtin_vis_fpminu32", CODE_FOR_minuv2si3,
+			 SPARC_BUILTIN_FPMINU32, v2si_ftype_v2si_v2si);
+      def_builtin_const ("__builtin_vis_fpsub8", CODE_FOR_subv8qi3,
+			 SPARC_BUILTIN_FPSUB8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpsubs8", CODE_FOR_sssubv8qi3,
+			 SPARC_BUILTIN_FPSUBS8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpsubus8", CODE_FOR_ussubv8qi3,
+			 SPARC_BUILTIN_FPSUBUS8, v8qi_ftype_v8qi_v8qi);
+      def_builtin_const ("__builtin_vis_fpsubus16", CODE_FOR_ussubv4hi3,
+			 SPARC_BUILTIN_FPSUBUS16, v4hi_ftype_v4hi_v4hi);
     }
 }
 
@@ -11042,7 +11251,8 @@ sparc_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	  || sparc_cpu == PROCESSOR_NIAGARA
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
-	  || sparc_cpu == PROCESSOR_NIAGARA4)
+	  || sparc_cpu == PROCESSOR_NIAGARA4
+	  || sparc_cpu == PROCESSOR_NIAGARA7)
 	return 12;
 
       return 6;

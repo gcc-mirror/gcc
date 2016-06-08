@@ -1,3 +1,12 @@
+2016-06-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2016-06-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/sparc/vis4misc.c: New file.
+	* gcc.target/sparc/fpcmp.c: Likewise.
+	* gcc.target/sparc/fpcmpu.c: Likewise.
+
 2016-06-08  Ilya Verbin  <ilya.verbin@intel.com>
 
 	Backport from mainline

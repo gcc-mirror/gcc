@@ -73,6 +73,10 @@ mvis3
 Target Report Mask(VIS3)
 Use UltraSPARC Visual Instruction Set version 3.0 extensions.
 
+mvis4
+Target Report Mask(VIS4)
+Use UltraSPARC Visual Instruction Set version 4.0 extensions.
+
 mcbcond
 Target Report Mask(CBCOND)
 Use UltraSPARC Compare-and-Branch extensions.
@@ -193,6 +197,9 @@ Enum(sparc_processor_type) String(niagara3) Value(PROCESSOR_NIAGARA3)
 
 EnumValue
 Enum(sparc_processor_type) String(niagara4) Value(PROCESSOR_NIAGARA4)
+
+EnumValue
+Enum(sparc_processor_type) String(niagara7) Value(PROCESSOR_NIAGARA7)
 
 mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)

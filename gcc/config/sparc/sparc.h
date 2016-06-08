@@ -142,6 +142,7 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CPU_niagara2	14
 #define TARGET_CPU_niagara3	15
 #define TARGET_CPU_niagara4	16
+#define TARGET_CPU_niagara7	19
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
  || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
@@ -149,7 +150,8 @@ extern enum cmodel sparc_cmodel;
  || TARGET_CPU_DEFAULT == TARGET_CPU_niagara \
  || TARGET_CPU_DEFAULT == TARGET_CPU_niagara2 \
  || TARGET_CPU_DEFAULT == TARGET_CPU_niagara3 \
- || TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
+ || TARGET_CPU_DEFAULT == TARGET_CPU_niagara4 \
+ || TARGET_CPU_DEFAULT == TARGET_CPU_niagara7
 
 #define CPP_CPU32_DEFAULT_SPEC ""
 #define ASM_CPU32_DEFAULT_SPEC ""
@@ -185,6 +187,10 @@ extern enum cmodel sparc_cmodel;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
 #define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
 #define ASM_CPU64_DEFAULT_SPEC AS_NIAGARA4_FLAG
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_niagara7
+#define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
+#define ASM_CPU64_DEFAULT_SPEC AS_NIAGARA7_FLAG
 #endif
 
 #else
@@ -288,6 +294,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=niagara2:-D__sparc_v9__} \
 %{mcpu=niagara3:-D__sparc_v9__} \
 %{mcpu=niagara4:-D__sparc_v9__} \
+%{mcpu=niagara7:-D__sparc_v9__} \
 %{!mcpu*:%(cpp_cpu_default)} \
 "
 #define CPP_ARCH32_SPEC ""
@@ -339,6 +346,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=niagara2:%{!mv8plus:-Av9b}} \
 %{mcpu=niagara3:%{!mv8plus:-Av9" AS_NIAGARA3_FLAG "}} \
 %{mcpu=niagara4:%{!mv8plus:" AS_NIAGARA4_FLAG "}} \
+%{mcpu=niagara7:%{!mv8plus:" AS_NIAGARA7_FLAG "}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
@@ -1775,6 +1783,12 @@ extern int sparc_indent_opcode;
 #define AS_NIAGARA4_FLAG "-xarch=sparc4"
 #else
 #define AS_NIAGARA4_FLAG "-Av9" AS_NIAGARA3_FLAG
+#endif
+
+#ifdef HAVE_AS_SPARC5_VIS4
+#define AS_NIAGARA7_FLAG "-xarch=sparc5"
+#else
+#define AS_NIAGARA7_FLAG AS_NIAGARA4_FLAG
 #endif
 
 #ifdef HAVE_AS_LEON
