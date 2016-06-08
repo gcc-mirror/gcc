@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
+#include "gimple-fold.h"
 
 
 struct target_builtins default_target_builtins;
@@ -7943,18 +7944,28 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 /* Fold __builtin_{,s,u}{add,sub,mul}{,l,ll}_overflow, either into normal
    arithmetics if it can never overflow, or into internal functions that
    return both result of arithmetics and overflowed boolean flag in
-   a complex integer result, or some other check for overflow.  */
+   a complex integer result, or some other check for overflow.
+   Similarly fold __builtin_{add,sub,mul}_overflow_p to just the overflow
+   checking part of that.  */
 
 static tree
 fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 			     tree arg0, tree arg1, tree arg2)
 {
   enum internal_fn ifn = IFN_LAST;
-  tree type = TREE_TYPE (TREE_TYPE (arg2));
-  tree mem_arg2 = build_fold_indirect_ref_loc (loc, arg2);
+  /* The code of the expression corresponding to the type-generic
+     built-in, or ERROR_MARK for the type-specific ones.  */
+  enum tree_code opcode = ERROR_MARK;
+  bool ovf_only = false;
+
   switch (fcode)
     {
+    case BUILT_IN_ADD_OVERFLOW_P:
+      ovf_only = true;
+      /* FALLTHRU */
     case BUILT_IN_ADD_OVERFLOW:
+      opcode = PLUS_EXPR;
+      /* FALLTHRU */
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:
@@ -7963,7 +7974,12 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
     case BUILT_IN_UADDLL_OVERFLOW:
       ifn = IFN_ADD_OVERFLOW;
       break;
+    case BUILT_IN_SUB_OVERFLOW_P:
+      ovf_only = true;
+      /* FALLTHRU */
     case BUILT_IN_SUB_OVERFLOW:
+      opcode = MINUS_EXPR;
+      /* FALLTHRU */
     case BUILT_IN_SSUB_OVERFLOW:
     case BUILT_IN_SSUBL_OVERFLOW:
     case BUILT_IN_SSUBLL_OVERFLOW:
@@ -7972,7 +7988,12 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
     case BUILT_IN_USUBLL_OVERFLOW:
       ifn = IFN_SUB_OVERFLOW;
       break;
+    case BUILT_IN_MUL_OVERFLOW_P:
+      ovf_only = true;
+      /* FALLTHRU */
     case BUILT_IN_MUL_OVERFLOW:
+      opcode = MULT_EXPR;
+      /* FALLTHRU */
     case BUILT_IN_SMUL_OVERFLOW:
     case BUILT_IN_SMULL_OVERFLOW:
     case BUILT_IN_SMULLL_OVERFLOW:
@@ -7984,6 +8005,25 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
     default:
       gcc_unreachable ();
     }
+
+  /* For the "generic" overloads, the first two arguments can have different
+     types and the last argument determines the target type to use to check
+     for overflow.  The arguments of the other overloads all have the same
+     type.  */
+  tree type = ovf_only ? TREE_TYPE (arg2) : TREE_TYPE (TREE_TYPE (arg2));
+
+  /* For the __builtin_{add,sub,mul}_overflow_p builtins, when the first two
+     arguments are constant, attempt to fold the built-in call into a constant
+     expression indicating whether or not it detected an overflow.  */
+  if (ovf_only
+      && TREE_CODE (arg0) == INTEGER_CST
+      && TREE_CODE (arg1) == INTEGER_CST)
+    /* Perform the computation in the target type and check for overflow.  */
+    return omit_one_operand_loc (loc, boolean_type_node,
+				 arith_overflowed_p (opcode, type, arg0, arg1)
+				 ? boolean_true_node : boolean_false_node,
+				 arg2);
+
   tree ctype = build_complex_type (type);
   tree call = build_call_expr_internal_loc (loc, ifn, ctype,
 					    2, arg0, arg1);
@@ -7991,6 +8031,11 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
   tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
   tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
   ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+
+  if (ovf_only)
+    return omit_one_operand_loc (loc, boolean_type_node, ovfres, arg2);
+
+  tree mem_arg2 = build_fold_indirect_ref_loc (loc, arg2);
   tree store
     = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg2, intres);
   return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
@@ -8340,6 +8385,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_ADD_OVERFLOW:
     case BUILT_IN_SUB_OVERFLOW:
     case BUILT_IN_MUL_OVERFLOW:
+    case BUILT_IN_ADD_OVERFLOW_P:
+    case BUILT_IN_SUB_OVERFLOW_P:
+    case BUILT_IN_MUL_OVERFLOW_P:
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:

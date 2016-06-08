@@ -9869,6 +9869,47 @@ functions above, except they perform multiplication, instead of addition.
 
 @end deftypefn
 
+The following built-in functions allow checking if simple arithmetic operation
+would overflow.
+
+@deftypefn {Built-in Function} bool __builtin_add_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+@deftypefnx {Built-in Function} bool __builtin_sub_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+@deftypefnx {Built-in Function} bool __builtin_mul_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+
+These built-in functions are similar to @code{__builtin_add_overflow},
+@code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
+they don't store the result of the arithmetic operation anywhere and the
+last argument is not a pointer, but some integral expression.
+
+The built-in functions promote the first two operands into infinite precision signed type
+and perform addition on those promoted operands. The result is then
+cast to the type of the third argument.  If the cast result is equal to the infinite
+precision result, the built-in functions return false, otherwise they return true.
+The value of the third argument is ignored, just the side-effects in the third argument
+are evaluated, and no integral argument promotions are performed on the last argument.
+
+For example, the following macro can be used to portably check, at
+compile-time, whether or not adding two constant integers will overflow,
+and perform the addition only when it is known to be safe and not to trigger
+a @option{-Woverflow} warning.
+
+@smallexample
+#define INT_ADD_OVERFLOW_P(a, b) \
+   __builtin_add_overflow_p (a, b, (__typeof__ ((a) + (b))) 0)
+
+enum @{
+    A = INT_MAX, B = 3,
+    C = INT_ADD_OVERFLOW_P (A, B) ? 0 : A + B,
+    D = __builtin_add_overflow_p (1, SCHAR_MAX, (signed char) 0)
+@};
+@end smallexample
+
+The compiler will attempt to use hardware instructions to implement
+these built-in functions where possible, like conditional jump on overflow
+after addition, conditional jump on carry etc.
+ 
+@end deftypefn
+
 @node x86 specific memory model extensions for transactional memory
 @section x86-Specific Memory Model Extensions for Transactional Memory
 

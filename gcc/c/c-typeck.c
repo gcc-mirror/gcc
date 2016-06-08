@@ -3186,6 +3186,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
   const bool type_generic = fundecl
     && lookup_attribute ("type generic", TYPE_ATTRIBUTES (TREE_TYPE (fundecl)));
   bool type_generic_remove_excess_precision = false;
+  bool type_generic_overflow_p = false;
   tree selector;
 
   /* Change pointer to function to the function itself for
@@ -3215,8 +3216,15 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  type_generic_remove_excess_precision = true;
 	  break;
 
+	case BUILT_IN_ADD_OVERFLOW_P:
+	case BUILT_IN_SUB_OVERFLOW_P:
+	case BUILT_IN_MUL_OVERFLOW_P:
+	  /* The last argument of these type-generic builtins
+	     should not be promoted.  */
+	  type_generic_overflow_p = true;
+	  break;
+
 	default:
-	  type_generic_remove_excess_precision = false;
 	  break;
 	}
     }
@@ -3466,9 +3474,12 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	      parmval = convert (double_type_node, val);
 	    }
 	}
-      else if (excess_precision && !type_generic)
+      else if ((excess_precision && !type_generic)
+	       || (type_generic_overflow_p && parmnum == 2))
 	/* A "double" argument with excess precision being passed
-	   without a prototype or in variable arguments.  */
+	   without a prototype or in variable arguments.
+	   The last argument of __builtin_*_overflow_p should not be
+	   promoted.  */
 	parmval = convert (valtype, val);
       else if ((invalid_func_diag =
 		targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))

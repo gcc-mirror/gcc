@@ -1,3 +1,16 @@
+2016-06-08  Martin Sebor  <msebor@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70507
+	PR c/68120
+	* constexpr.c: Include gimple-fold.h.
+	(cxx_eval_internal_function): New function.
+	(cxx_eval_call_expression): Call it.
+	(potential_constant_expression_1): Handle integer arithmetic
+	overflow built-ins.
+	* tree.c (builtin_valid_in_constant_expr_p): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW_P.
+
 2016-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (tsubst, case TYPENAME_TYPE): Don't delay checking the

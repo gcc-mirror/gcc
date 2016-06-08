@@ -9989,6 +9989,23 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	}
       return false;
 
+    case BUILT_IN_ADD_OVERFLOW_P:
+    case BUILT_IN_SUB_OVERFLOW_P:
+    case BUILT_IN_MUL_OVERFLOW_P:
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 3))
+	{
+	  unsigned i;
+	  for (i = 0; i < 3; i++)
+	    if (!INTEGRAL_TYPE_P (TREE_TYPE (args[i])))
+	      {
+		error_at (ARG_LOCATION (i), "argument %u in call to function "
+			  "%qE does not have integral type", i + 1, fndecl);
+		return false;
+	      }
+	  return true;
+	}
+      return false;
+
     default:
       return true;
     }
