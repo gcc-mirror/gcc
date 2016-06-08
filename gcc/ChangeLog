@@ -1,5 +1,20 @@
 2016-06-08  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-builtins.def (rsqrte): New builtins for modes
+	VALLF.
+	* config/aarch64/aarch64-simd.md (aarch64_rsqrte_<mode>2): Rename to
+	"aarch64_rsqrte<mode>".
+	* config/aarch64/aarch64.c (get_rsqrte_type): Update gen* name.
+	* config/aarch64/arm_neon.h (vrsqrts_f32): Remove inline assembly.  Use
+	builtin.
+	(vrsqrted_f64): Likewise.
+	(vrsqrte_f32): Likewise.
+	(vrsqrte_f64): Likewise.
+	(vrsqrteq_f32): Likewise.
+	(vrsqrteq_f64): Likewise.
+
+2016-06-08  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-builtins.def (scvtf): Register vector modes.
 	(ucvtf): Likewise.
 	(fcvtzs): Likewise.

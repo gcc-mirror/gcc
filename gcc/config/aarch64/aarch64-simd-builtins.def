@@ -451,3 +451,6 @@
   BUILTIN_VSDQ_SDI (BINOP_SUS, ucvtf, 3)
   BUILTIN_VALLF (BINOP, fcvtzs, 3)
   BUILTIN_VALLF (BINOP_USS, fcvtzu, 3)
+
+  /* Implemented by aarch64_rsqrte<mode>.  */
+  BUILTIN_VALLF (UNOP, rsqrte, 0)
