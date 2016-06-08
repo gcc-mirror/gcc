@@ -1,3 +1,19 @@
+2016-06-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/aapcs64/aapcs64.exp: Also execute rec_*.c
+	* gcc.target/aarch64/aapcs64/rec_align-5.c: New.
+	* gcc.target/aarch64/aapcs64/rec_align-6.c: New.
+	* gcc.target/aarch64/aapcs64/rec_align-7.c: New.
+	* gcc.target/aarch64/aapcs64/rec_align-8.c: New.
+	* gcc.target/aarch64/aapcs64/rec_align-9.c: New.
+	* gcc.target/aarch64/aapcs64/test_align-5.c: New.
+	* gcc.target/aarch64/aapcs64/test_align-6.c: New.
+	* gcc.target/aarch64/aapcs64/test_align-7.c: New.
+	* gcc.target/aarch64/aapcs64/test_align-8.c: New.
+	* gcc.target/aarch64/aapcs64/test_align-9.c: New.
+	* gcc.target/aarch64/aapcs64/rec_vaarg-1.c: New.
+	* gcc.target/aarch64/aapcs64/rec_vaarg-2.c: New.
+
 2016-06-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68558
