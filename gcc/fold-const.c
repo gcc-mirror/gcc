@@ -8527,9 +8527,9 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  if ((offset0 == offset1
 	       || (offset0 && offset1
 		   && operand_equal_p (offset0, offset1, 0)))
-	      && (code == EQ_EXPR
-		  || code == NE_EXPR
-		  || (indirect_base0 && DECL_P (base0))
+	      && (equality_code
+		  || (indirect_base0
+		      && (DECL_P (base0) || CONSTANT_CLASS_P (base0)))
 		  || POINTER_TYPE_OVERFLOW_UNDEFINED))
 
 	    {
@@ -8568,7 +8568,8 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	     6.5.6/8 and /9 with respect to the signed ptrdiff_t.  */
 	  else if (bitpos0 == bitpos1
 		   && (equality_code
-		       || (indirect_base0 && DECL_P (base0))
+		       || (indirect_base0
+			   && (DECL_P (base0) || CONSTANT_CLASS_P (base0)))
 		       || POINTER_TYPE_OVERFLOW_UNDEFINED))
 	    {
 	      /* By converting to signed sizetype we cover middle-end pointer

@@ -1,3 +1,8 @@
+2016-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71448
+	* g++.dg/torture/pr71448.C: New test.
+
 2016-06-08  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR debug/71432
