@@ -1,3 +1,17 @@
+2016-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/init/array42.C: New.
+	* g++.dg/init/array43.C: Likewise.
+	* g++.dg/init/array44.C: Likewise.
+	* g++.dg/init/array45.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice10.C: Test column number too.
+	* g++.dg/cpp0x/constexpr-incomplete1.C: Likewise.
+	* g++.dg/cpp1y/auto-fn27.C: Likewise.
+	* g++.dg/gomp/pr35751.C: Likewise.
+	* g++.dg/init/array23.C: Likewise.
+	* g++.dg/init/brace2.C: Likewise.
+	* g++.dg/init/brace6.C: Likewise.
+
 2016-06-08  Martin Sebor  <msebor@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

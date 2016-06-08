@@ -1,3 +1,12 @@
+2016-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (maybe_deduce_size_from_array_init): Use
+	DECL_SOURCE_LOCATION in error_at.
+	(layout_var_decl): Likewise.
+	(check_array_initializer): Likewise.
+	(check_initializer): Likewise.
+	(duplicate_decls, check_elaborated_type_specifier): Tidy.
+
 2016-06-08  Martin Sebor  <msebor@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
