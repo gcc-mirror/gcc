@@ -382,7 +382,7 @@
   [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_rsqrte_<mode>2"
+(define_insn "aarch64_rsqrte<mode>"
   [(set (match_operand:VALLF 0 "register_operand" "=w")
 	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")]
 		     UNSPEC_RSQRTE))]
