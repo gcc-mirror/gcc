@@ -1,3 +1,8 @@
+2016-06-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/reduction-8.f90: New testcase.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-8.c: New testcase.
+
 2016-06-01  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR c/70688
