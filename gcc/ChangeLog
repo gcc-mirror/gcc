@@ -1,3 +1,17 @@
+2016-06-08  Martin Sebor  <msebor@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70507
+	PR c/68120
+	* builtins.def (BUILT_IN_ADD_OVERFLOW_P, BUILT_IN_SUB_OVERFLOW_P,
+	BUILT_IN_MUL_OVERFLOW_P): New builtins.
+	* builtins.c: Include gimple-fold.h.
+	(fold_builtin_arith_overflow): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW_P.
+	(fold_builtin_3): Likewise.
+	* doc/extend.texi (Integer Overflow Builtins): Document
+	__builtin_{add,sub,mul}_overflow_p.
+
 2016-06-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config/sparc/driver-sparc.c (cpu_names): Fix the entry for the

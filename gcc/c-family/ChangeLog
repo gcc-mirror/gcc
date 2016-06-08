@@ -1,3 +1,11 @@
+2016-06-08  Martin Sebor  <msebor@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70507
+	PR c/68120
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW_P.
+
 2016-06-08  Richard Biener  <rguenther@suse.de>
 
 	* c-common.c (parse_optimize_options): Improve diagnostic messages.

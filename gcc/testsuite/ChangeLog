@@ -1,3 +1,14 @@
+2016-06-08  Martin Sebor  <msebor@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70507
+	PR c/68120
+	* c-c++-common/builtin-arith-overflow-1.c: Add test cases.
+	* c-c++-common/builtin-arith-overflow-2.c: New test.
+	* g++.dg/ext/builtin-arith-overflow-1.C: New test.
+	* g++.dg/cpp0x/constexpr-arith-overflow.C: New test.
+	* g++.dg/cpp1y/constexpr-arith-overflow.C: New test.
+
 2016-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71442

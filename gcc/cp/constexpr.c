@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-inline.h"
 #include "ubsan.h"
+#include "gimple-fold.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1255,6 +1256,69 @@ cx_error_context (void)
   return r;
 }
 
+/* Evaluate a call T to a GCC internal function when possible and return
+   the evaluated result or, under the control of CTX, give an error, set
+   NON_CONSTANT_P, and return the unevaluated call T otherwise.  */
+
+static tree
+cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
+			    bool lval,
+			    bool *non_constant_p, bool *overflow_p)
+{
+  enum tree_code opcode = ERROR_MARK;
+
+  switch (CALL_EXPR_IFN (t))
+    {
+    case IFN_UBSAN_NULL:
+    case IFN_UBSAN_BOUNDS:
+    case IFN_UBSAN_VPTR:
+      return void_node;
+
+    case IFN_ADD_OVERFLOW:
+      opcode = PLUS_EXPR;
+      break;
+    case IFN_SUB_OVERFLOW:
+      opcode = MINUS_EXPR;
+      break;
+    case IFN_MUL_OVERFLOW:
+      opcode = MULT_EXPR;
+      break;
+
+    default:
+      if (!ctx->quiet)
+	error_at (EXPR_LOC_OR_LOC (t, input_location),
+		  "call to internal function %qE", t);
+      *non_constant_p = true;
+      return t;
+    }
+
+  /* Evaluate constant arguments using OPCODE and return a complex
+     number containing the result and the overflow bit.  */
+  tree arg0 = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0), lval,
+					    non_constant_p, overflow_p);
+  tree arg1 = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 1), lval,
+					    non_constant_p, overflow_p);
+
+  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+    {
+      location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+      tree type = TREE_TYPE (TREE_TYPE (t));
+      tree result = fold_binary_loc (loc, opcode, type,
+				     fold_convert_loc (loc, type, arg0),
+				     fold_convert_loc (loc, type, arg1));
+      tree ovf
+	= build_int_cst (type, arith_overflowed_p (opcode, type, arg0, arg1));
+      /* Reset TREE_OVERFLOW to avoid warnings for the overflow.  */
+      if (TREE_OVERFLOW (result))
+	TREE_OVERFLOW (result) = 0;
+
+      return build_complex (TREE_TYPE (t), result, ovf);
+    }
+
+  *non_constant_p = true;
+  return t;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -1270,18 +1334,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   bool depth_ok;
 
   if (fun == NULL_TREE)
-    switch (CALL_EXPR_IFN (t))
-      {
-      case IFN_UBSAN_NULL:
-      case IFN_UBSAN_BOUNDS:
-      case IFN_UBSAN_VPTR:
-	return void_node;
-      default:
-	if (!ctx->quiet)
-	  error_at (loc, "call to internal function");
-	*non_constant_p = true;
-	return t;
-      }
+    return cxx_eval_internal_function (ctx, t, lval,
+				       non_constant_p, overflow_p);
 
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
@@ -4588,6 +4642,10 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 
 	if (fun == NULL_TREE)
 	  {
+	    /* Reset to allow the function to continue past the end
+	       of the block below.  Otherwise return early.  */
+	    bool bail = true;
+
 	    if (TREE_CODE (t) == CALL_EXPR
 		&& CALL_EXPR_FN (t) == NULL_TREE)
 	      switch (CALL_EXPR_IFN (t))
@@ -4598,16 +4656,27 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 		case IFN_UBSAN_BOUNDS:
 		case IFN_UBSAN_VPTR:
 		  return true;
+
+		case IFN_ADD_OVERFLOW:
+		case IFN_SUB_OVERFLOW:
+		case IFN_MUL_OVERFLOW:
+		  bail = false;
+
 		default:
 		  break;
 		}
-	    /* fold_call_expr can't do anything with IFN calls.  */
-	    if (flags & tf_error)
-	      error_at (EXPR_LOC_OR_LOC (t, input_location),
-			"call to internal function");
-	    return false;
+
+	    if (bail)
+	      {
+		/* fold_call_expr can't do anything with IFN calls.  */
+		if (flags & tf_error)
+		  error_at (EXPR_LOC_OR_LOC (t, input_location),
+			    "call to internal function %qE", t);
+		return false;
+	      }
 	  }
-	if (is_overloaded_fn (fun))
+
+	if (fun && is_overloaded_fn (fun))
 	  {
 	    if (TREE_CODE (fun) == FUNCTION_DECL)
 	      {
@@ -4652,7 +4721,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	      i = num_artificial_parms_for (fun);
 	    fun = DECL_ORIGIN (fun);
 	  }
-	else
+	else if (fun)
           {
 	    if (RECUR (fun, rval))
 	      /* Might end up being a constant function pointer.  */;

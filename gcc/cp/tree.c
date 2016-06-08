@@ -352,6 +352,12 @@ builtin_valid_in_constant_expr_p (const_tree decl)
     case BUILT_IN_FUNCTION:
     case BUILT_IN_LINE:
 
+      /* The following built-ins are valid in constant expressions
+	 when their arguments are.  */
+    case BUILT_IN_ADD_OVERFLOW_P:
+    case BUILT_IN_SUB_OVERFLOW_P:
+    case BUILT_IN_MUL_OVERFLOW_P:
+
       /* These have constant results even if their operands are
 	 non-constant.  */
     case BUILT_IN_CONSTANT_P:
