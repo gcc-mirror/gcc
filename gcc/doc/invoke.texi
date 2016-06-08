@@ -9066,6 +9066,10 @@ The maximum number of insns of an unswitched loop.
 @item max-unswitch-level
 The maximum number of branches unswitched in a single loop.
 
+@item max-loop-headers-insns
+The maximum number of insns in loop header duplicated by he copy loop headers
+pass.
+
 @item lim-expensive
 The minimum cost of an expensive expression in the loop invariant motion.
 

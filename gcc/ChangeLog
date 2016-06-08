@@ -1,3 +1,10 @@
+2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* invoke.texi (max-loop-headers-insns): Document.
+	* params.def (PARAM_MAX_LOOP_HEADER_INSNS): New.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Update comment.
+	(ch_base::copy_headers): Use PARAM_MAX_LOOP_HEADER_INSNS.
+
 2016-06-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_load): Remove restrictions
