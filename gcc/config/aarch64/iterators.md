@@ -154,6 +154,12 @@
 ;; Vector modes for S type.
 (define_mode_iterator VDQ_SI [V2SI V4SI])
 
+;; Vector modes for S and D
+(define_mode_iterator VDQ_SDI [V2SI V4SI V2DI])
+
+;; Scalar and Vector modes for S and D
+(define_mode_iterator VSDQ_SDI [V2SI V4SI V2DI SI DI])
+
 ;; Vector modes for Q and H types.
 (define_mode_iterator VDQQH [V8QI V16QI V4HI V8HI])
 
@@ -649,8 +655,10 @@
   [(QI "b") (HI "h") (SI "") (DI "")])
 
 (define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")
+			       (V2DI "v2df") (V4SI "v4sf") (V2SI "v2sf")
 			       (SF "si") (DF "di") (SI "sf") (DI "df")])
 (define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")
+			       (V2DI "V2DF") (V4SI "V4SF") (V2SI "V2SF")
 			       (SF "SI") (DF "DI") (SI "SF") (DI "DF")])
 
 

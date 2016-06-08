@@ -1778,6 +1778,28 @@
   [(set_attr "type" "neon_fp_cvt_widen_s")]
 )
 
+;; Convert between fixed-point and floating-point (vector modes)
+
+(define_insn "<FCVT_F2FIXED:fcvt_fixed_insn><VDQF:mode>3"
+  [(set (match_operand:<VDQF:FCVT_TARGET> 0 "register_operand" "=w")
+	(unspec:<VDQF:FCVT_TARGET> [(match_operand:VDQF 1 "register_operand" "w")
+				    (match_operand:SI 2 "immediate_operand" "i")]
+	 FCVT_F2FIXED))]
+  "TARGET_SIMD"
+  "<FCVT_F2FIXED:fcvt_fixed_insn>\t%<v>0<Vmtype>, %<v>1<Vmtype>, #%2"
+  [(set_attr "type" "neon_fp_to_int_<VDQF:Vetype><q>")]
+)
+
+(define_insn "<FCVT_FIXED2F:fcvt_fixed_insn><VDQ_SDI:mode>3"
+  [(set (match_operand:<VDQ_SDI:FCVT_TARGET> 0 "register_operand" "=w")
+	(unspec:<VDQ_SDI:FCVT_TARGET> [(match_operand:VDQ_SDI 1 "register_operand" "w")
+				       (match_operand:SI 2 "immediate_operand" "i")]
+	 FCVT_FIXED2F))]
+  "TARGET_SIMD"
+  "<FCVT_FIXED2F:fcvt_fixed_insn>\t%<v>0<Vmtype>, %<v>1<Vmtype>, #%2"
+  [(set_attr "type" "neon_int_to_fp_<VDQ_SDI:Vetype><q>")]
+)
+
 ;; ??? Note that the vectorizer usage of the vec_unpacks_[lo/hi] patterns
 ;; is inconsistent with vector ordering elsewhere in the compiler, in that
 ;; the meaning of HI and LO changes depending on the target endianness.

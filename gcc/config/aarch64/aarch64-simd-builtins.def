@@ -447,7 +447,7 @@
   BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlsh_laneq, 0)
 
   /* Implemented by <FCVT_F2FIXED/FIXED2F:fcvt_fixed_insn><*><*>3.  */
-  BUILTIN_GPI (BINOP, scvtf, 3)
-  BUILTIN_GPI (BINOP_SUS, ucvtf, 3)
-  BUILTIN_GPF (BINOP, fcvtzs, 3)
-  BUILTIN_GPF (BINOP_USS, fcvtzu, 3)
+  BUILTIN_VSDQ_SDI (BINOP, scvtf, 3)
+  BUILTIN_VSDQ_SDI (BINOP_SUS, ucvtf, 3)
+  BUILTIN_VALLF (BINOP, fcvtzs, 3)
+  BUILTIN_VALLF (BINOP_USS, fcvtzu, 3)

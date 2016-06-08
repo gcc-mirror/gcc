@@ -6025,150 +6025,6 @@ vaddlvq_u32 (uint32x4_t a)
        result;                                                          \
      })
 
-#define vcvt_n_f32_s32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t a_ = (a);                                              \
-       float32x2_t result;                                              \
-       __asm__ ("scvtf %0.2s, %1.2s, #%2"                               \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvt_n_f32_u32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t a_ = (a);                                             \
-       float32x2_t result;                                              \
-       __asm__ ("ucvtf %0.2s, %1.2s, #%2"                               \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvt_n_s32_f32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x2_t a_ = (a);                                            \
-       int32x2_t result;                                                \
-       __asm__ ("fcvtzs %0.2s, %1.2s, #%2"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvt_n_u32_f32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x2_t a_ = (a);                                            \
-       uint32x2_t result;                                               \
-       __asm__ ("fcvtzu %0.2s, %1.2s, #%2"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_f32_s32(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t a_ = (a);                                              \
-       float32x4_t result;                                              \
-       __asm__ ("scvtf %0.4s, %1.4s, #%2"                               \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_f32_u32(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t a_ = (a);                                             \
-       float32x4_t result;                                              \
-       __asm__ ("ucvtf %0.4s, %1.4s, #%2"                               \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_f64_s64(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x2_t a_ = (a);                                              \
-       float64x2_t result;                                              \
-       __asm__ ("scvtf %0.2d, %1.2d, #%2"                               \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_f64_u64(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x2_t a_ = (a);                                             \
-       float64x2_t result;                                              \
-       __asm__ ("ucvtf %0.2d, %1.2d, #%2"                               \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_s32_f32(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t a_ = (a);                                            \
-       int32x4_t result;                                                \
-       __asm__ ("fcvtzs %0.4s, %1.4s, #%2"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_s64_f64(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t a_ = (a);                                            \
-       int64x2_t result;                                                \
-       __asm__ ("fcvtzs %0.2d, %1.2d, #%2"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_u32_f32(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t a_ = (a);                                            \
-       uint32x4_t result;                                               \
-       __asm__ ("fcvtzu %0.4s, %1.4s, #%2"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcvtq_n_u64_f64(a, b)                                           \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t a_ = (a);                                            \
-       uint64x2_t result;                                               \
-       __asm__ ("fcvtzu %0.2d, %1.2d, #%2"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vcvtx_f32_f64 (float64x2_t a)
 {
@@ -12760,6 +12616,42 @@ vcvts_n_f32_u32 (uint32_t __a, const int __b)
   return __builtin_aarch64_ucvtfsi_sus (__a, __b);
 }
 
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vcvt_n_f32_s32 (int32x2_t __a, const int __b)
+{
+  return __builtin_aarch64_scvtfv2si (__a, __b);
+}
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vcvt_n_f32_u32 (uint32x2_t __a, const int __b)
+{
+  return __builtin_aarch64_ucvtfv2si_sus (__a, __b);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcvtq_n_f32_s32 (int32x4_t __a, const int __b)
+{
+  return __builtin_aarch64_scvtfv4si (__a, __b);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcvtq_n_f32_u32 (uint32x4_t __a, const int __b)
+{
+  return __builtin_aarch64_ucvtfv4si_sus (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vcvtq_n_f64_s64 (int64x2_t __a, const int __b)
+{
+  return __builtin_aarch64_scvtfv2di (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vcvtq_n_f64_u64 (uint64x2_t __a, const int __b)
+{
+  return __builtin_aarch64_ucvtfv2di_sus (__a, __b);
+}
+
 /* vcvt (float -> <u>fixed-point).  */
 
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
@@ -12784,6 +12676,42 @@ __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vcvts_n_u32_f32 (float32_t __a, const int __b)
 {
   return __builtin_aarch64_fcvtzusf_uss (__a, __b);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vcvt_n_s32_f32 (float32x2_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzsv2sf (__a, __b);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vcvt_n_u32_f32 (float32x2_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzuv2sf_uss (__a, __b);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vcvtq_n_s32_f32 (float32x4_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzsv4sf (__a, __b);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vcvtq_n_u32_f32 (float32x4_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzuv4sf_uss (__a, __b);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vcvtq_n_s64_f64 (float64x2_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzsv2df (__a, __b);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vcvtq_n_u64_f64 (float64x2_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzuv2df_uss (__a, __b);
 }
 
 /* vcvt  (<u>int -> float)  */
