@@ -1,3 +1,8 @@
+2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (pass_strip_predict_hints::execute): Cleanup CFG if
+	some statements was removed.
+
 2016-06-08  Alan Hayward  <alan.hayward@arm.com>
 
 	* tree-vect-data-refs.c (vect_analyze_data_refs): Remove debug newline.
