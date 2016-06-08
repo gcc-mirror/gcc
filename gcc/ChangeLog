@@ -1,5 +1,20 @@
 2016-06-08  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-builtins.def (fabd): New builtins for modes
+	VALLF.
+	* config/aarch64/aarch64-simd.md (fabd<mode>_3): Extend modes from VDQF
+	to VALLF.  Rename to "fabd<mode>3".
+	"*fabd_scalar<mode>3): Delete.
+	* config/aarch64/arm_neon.h (vabds_f32): Remove inline assembly.
+	Use builtin.
+	(vabdd_f64): Likewise.
+	(vabd_f32): Likewise.
+	(vabd_f64): Likewise.
+	(vabdq_f32): Likewise.
+	(vabdq_f64): Likewise.
+
+2016-06-08  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-builtins.def (rsqrts): New builtins for modes
 	VALLF.
 	* config/aarch64/aarch64-simd.md (aarch64_rsqrts_<mode>3): Rename to
