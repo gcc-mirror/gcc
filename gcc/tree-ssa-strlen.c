@@ -1867,6 +1867,8 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
     {
       gimple *ustmt = USE_STMT (use_p);
 
+      if (is_gimple_debug (ustmt))
+	continue;
       if (gimple_code (ustmt) == GIMPLE_ASSIGN)
 	{
 	  gassign *asgn = as_a <gassign *> (ustmt);

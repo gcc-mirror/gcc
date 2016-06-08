@@ -1,3 +1,9 @@
+2016-06-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR debug/71432
+	PR ada/71413
+	* g++.dg/debug/pr71432.C: New test.
+
 2016-06-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/vect/section-anchors-vect-70.c: Rename to aligned-section-anchors-vect-71.c.
