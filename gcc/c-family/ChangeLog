@@ -1,3 +1,7 @@
+2016-06-08  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (parse_optimize_options): Improve diagnostic messages.
+
 2016-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR c/61564

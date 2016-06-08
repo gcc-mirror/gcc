@@ -9542,10 +9542,10 @@ parse_optimize_options (tree args, bool attr_p)
 		  ret = false;
 		  if (attr_p)
 		    warning (OPT_Wattributes,
-			     "bad option %s to optimize attribute", p);
+			     "bad option %qs to attribute %<optimize%>", p);
 		  else
 		    warning (OPT_Wpragmas,
-			     "bad option %s to pragma attribute", p);
+			     "bad option %qs to pragma %<optimize%>", p);
 		  continue;
 		}
 
@@ -9589,11 +9589,11 @@ parse_optimize_options (tree args, bool attr_p)
 	  ret = false;
 	  if (attr_p)
 	    warning (OPT_Wattributes,
-		     "bad option %s to optimize attribute",
+		     "bad option %qs to attribute %<optimize%>",
 		     decoded_options[i].orig_option_with_args_text);
 	  else
 	    warning (OPT_Wpragmas,
-		     "bad option %s to pragma attribute",
+		     "bad option %qs to pragma %<optimize%>",
 		     decoded_options[i].orig_option_with_args_text);
 	  continue;
 	}
