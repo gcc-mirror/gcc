@@ -457,3 +457,6 @@
 
   /* Implemented by aarch64_rsqrts<mode>.  */
   BUILTIN_VALLF (BINOP, rsqrts, 0)
+
+  /* Implemented by fabd<mode>3.  */
+  BUILTIN_VALLF (BINOP, fabd, 3)

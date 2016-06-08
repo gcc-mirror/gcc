@@ -474,23 +474,14 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
-(define_insn "fabd<mode>_3"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(abs:VDQF (minus:VDQF
-		   (match_operand:VDQF 1 "register_operand" "w")
-		   (match_operand:VDQF 2 "register_operand" "w"))))]
+(define_insn "fabd<mode>3"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(abs:VALLF
+	  (minus:VALLF
+	    (match_operand:VALLF 1 "register_operand" "w")
+	    (match_operand:VALLF 2 "register_operand" "w"))))]
   "TARGET_SIMD"
-  "fabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_fp_abd_<Vetype><q>")]
-)
-
-(define_insn "*fabd_scalar<mode>3"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (abs:GPF (minus:GPF
-                 (match_operand:GPF 1 "register_operand" "w")
-                 (match_operand:GPF 2 "register_operand" "w"))))]
-  "TARGET_SIMD"
-  "fabd\t%<s>0, %<s>1, %<s>2"
+  "fabd\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "type" "neon_fp_abd_<Vetype><q>")]
 )
 

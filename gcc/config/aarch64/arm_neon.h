@@ -5440,17 +5440,6 @@ vabaq_u32 (uint32x4_t a, uint32x4_t b, uint32x4_t c)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vabd_f32 (float32x2_t a, float32x2_t b)
-{
-  float32x2_t result;
-  __asm__ ("fabd %0.2s, %1.2s, %2.2s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vabd_s8 (int8x8_t a, int8x8_t b)
 {
@@ -5511,17 +5500,6 @@ vabd_u32 (uint32x2_t a, uint32x2_t b)
 {
   uint32x2_t result;
   __asm__ ("uabd %0.2s, %1.2s, %2.2s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64_t __attribute__ ((__always_inline__))
-vabdd_f64 (float64_t a, float64_t b)
-{
-  float64_t result;
-  __asm__ ("fabd %d0, %d1, %d2"
            : "=w"(result)
            : "w"(a), "w"(b)
            : /* No clobbers */);
@@ -5660,28 +5638,6 @@ vabdl_u32 (uint32x2_t a, uint32x2_t b)
   return result;
 }
 
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vabdq_f32 (float32x4_t a, float32x4_t b)
-{
-  float32x4_t result;
-  __asm__ ("fabd %0.4s, %1.4s, %2.4s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vabdq_f64 (float64x2_t a, float64x2_t b)
-{
-  float64x2_t result;
-  __asm__ ("fabd %0.2d, %1.2d, %2.2d"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vabdq_s8 (int8x16_t a, int8x16_t b)
 {
@@ -5742,17 +5698,6 @@ vabdq_u32 (uint32x4_t a, uint32x4_t b)
 {
   uint32x4_t result;
   __asm__ ("uabd %0.4s, %1.4s, %2.4s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32_t __attribute__ ((__always_inline__))
-vabds_f32 (float32_t a, float32_t b)
-{
-  float32_t result;
-  __asm__ ("fabd %s0, %s1, %s2"
            : "=w"(result)
            : "w"(a), "w"(b)
            : /* No clobbers */);
@@ -10234,6 +10179,45 @@ vtbx2_p8 (poly8x8_t r, poly8x8x2_t tab, uint8x8_t idx)
 /* End of temporary inline asm.  */
 
 /* Start of optimal implementations in approved order.  */
+
+/* vabd.  */
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vabds_f32 (float32_t __a, float32_t __b)
+{
+  return __builtin_aarch64_fabdsf (__a, __b);
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vabdd_f64 (float64_t __a, float64_t __b)
+{
+  return __builtin_aarch64_fabddf (__a, __b);
+}
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vabd_f32 (float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_fabdv2sf (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vabd_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return (float64x1_t) {vabdd_f64 (vget_lane_f64 (__a, 0),
+				   vget_lane_f64 (__b, 0))};
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vabdq_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_fabdv4sf (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vabdq_f64 (float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_fabdv2df (__a, __b);
+}
 
 /* vabs  */
 
