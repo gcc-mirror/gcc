@@ -1,3 +1,11 @@
+2016-06-08  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c++/71448
+	* fold-const.c (fold_comparison): Handle CONSTANT_CLASS_P (base0)
+	the same as DECL_P (base0) for indirect_base0.  Use equality_code
+	in one further place.
+
 2016-06-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* expmed.c (store_bit_field_1): Do not restrict a multiword op0
