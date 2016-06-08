@@ -1,3 +1,9 @@
+2016-06-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/vect/section-anchors-vect-70.c: Rename to aligned-section-anchors-vect-71.c.
+	* gcc.dg/vect/section-anchors-vect-71.c: Rename to aligned-section-anchors-vect-72.c.
+	* gcc.dg/vect/section-anchors-vect-72.c: Rename to aligned-section-anchors-vect-72.c.
+
 2016-06-08  Alan Hayward  <alan.hayward@arm.com>
 
 	* gcc.dg/vect/vect-live-2.c: Update effective target.
