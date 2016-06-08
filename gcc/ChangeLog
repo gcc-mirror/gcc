@@ -1,3 +1,38 @@
+2016-06-08  Jiong Wang  <jiong.wang@arm.com>
+
+        * config/aarch64/aarch64-builtins.c (TYPES_BINOP_USS): New
+        (TYPES_BINOP_SUS): Likewise.
+        (aarch64_simd_builtin_data): Update include file name.
+        (aarch64_builtins): Likewise.
+        * config/aarch64/aarch64-simd-builtins.def (scvtf): New entries
+        for conversion between scalar float-point and fixed-point.
+        (ucvtf): Likewise.
+        (fcvtzs): Likewise.
+        (fcvtzu): Likewise.
+        * config/aarch64/aarch64.md
+        (<FCVT_F2FIXED:fcvt_fixed_insn><GPF:mode>3: New
+        pattern for conversion between scalar float to fixed-pointer.
+        (<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>: Likewise.
+        (UNSPEC_FCVTZS): New UNSPEC enumeration.
+        (UNSPEC_FCVTZU): Likewise.
+        (UNSPEC_SCVTF): Likewise.
+        (UNSPEC_UCVTF): Likewise.
+        * config/aarch64/arm_neon.h (vcvtd_n_f64_s64): Remove inline assembly.
+	Use builtin.
+        (vcvtd_n_f64_u64): Likewise.
+        (vcvtd_n_s64_f64): Likewise.
+        (vcvtd_n_u64_f64): Likewise.
+        (vcvtd_n_f32_s32): Likewise.
+        (vcvts_n_f32_u32): Likewise.
+        (vcvtd_n_s32_f32): Likewise.
+        (vcvts_n_u32_f32): Likewise.
+        * config/aarch64/iterators.md (fcvt_target): Support integer to float
+	mapping.
+        (FCVT_TARGET): Likewise.
+        (FCVT_FIXED2F): New iterator.
+        (FCVT_F2FIXED): Likewise.
+        (fcvt_fixed_insn): New define_int_attr.
+
 2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (pass_strip_predict_hints::execute): Cleanup CFG if

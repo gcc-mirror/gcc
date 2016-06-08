@@ -648,8 +648,11 @@
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])
 
-(define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si") (SF "si") (DF "di")])
-(define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI") (SF "SI") (DF "DI")])
+(define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")
+			       (SF "si") (DF "di") (SI "sf") (DI "df")])
+(define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")
+			       (SF "SI") (DF "DI") (SI "SF") (DI "DF")])
+
 
 ;; for the inequal width integer to fp conversions
 (define_mode_attr fcvt_iesize [(SF "di") (DF "si")])
@@ -1002,6 +1005,9 @@
 (define_int_iterator FCVT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
 			    UNSPEC_FRINTA UNSPEC_FRINTN])
 
+(define_int_iterator FCVT_F2FIXED [UNSPEC_FCVTZS UNSPEC_FCVTZU])
+(define_int_iterator FCVT_FIXED2F [UNSPEC_SCVTF UNSPEC_UCVTF])
+
 (define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
 
 (define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
@@ -1137,6 +1143,11 @@
 (define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
 			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")
 			       (UNSPEC_FRINTN "frintn")])
+
+(define_int_attr fcvt_fixed_insn [(UNSPEC_SCVTF "scvtf")
+				  (UNSPEC_UCVTF "ucvtf")
+				  (UNSPEC_FCVTZS "fcvtzs")
+				  (UNSPEC_FCVTZU "fcvtzu")])
 
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
 			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
