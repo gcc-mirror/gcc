@@ -9185,61 +9185,6 @@ vrsqrteq_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrsqrts_f32 (float32x2_t a, float32x2_t b)
-{
-  float32x2_t result;
-  __asm__ ("frsqrts %0.2s,%1.2s,%2.2s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64_t __attribute__ ((__always_inline__))
-vrsqrtsd_f64 (float64_t a, float64_t b)
-{
-  float64_t result;
-  __asm__ ("frsqrts %d0,%d1,%d2"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrsqrtsq_f32 (float32x4_t a, float32x4_t b)
-{
-  float32x4_t result;
-  __asm__ ("frsqrts %0.4s,%1.4s,%2.4s"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrsqrtsq_f64 (float64x2_t a, float64x2_t b)
-{
-  float64x2_t result;
-  __asm__ ("frsqrts %0.2d,%1.2d,%2.2d"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32_t __attribute__ ((__always_inline__))
-vrsqrtss_f32 (float32_t a, float32_t b)
-{
-  float32_t result;
-  __asm__ ("frsqrts %s0,%s1,%s2"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
-}
-
 #define vshrn_high_n_s16(a, b, c)                                       \
   __extension__                                                         \
     ({                                                                  \
@@ -21474,6 +21419,45 @@ __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vrsqrteq_f64 (float64x2_t __a)
 {
   return __builtin_aarch64_rsqrtev2df (__a);
+}
+
+/* vrsqrts.  */
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vrsqrtss_f32 (float32_t __a, float32_t __b)
+{
+  return __builtin_aarch64_rsqrtssf (__a, __b);
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vrsqrtsd_f64 (float64_t __a, float64_t __b)
+{
+  return __builtin_aarch64_rsqrtsdf (__a, __b);
+}
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrsqrts_f32 (float32x2_t __a, float32x2_t __b)
+{
+  return __builtin_aarch64_rsqrtsv2sf (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrsqrts_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return (float64x1_t) {vrsqrtsd_f64 (vget_lane_f64 (__a, 0),
+				      vget_lane_f64 (__b, 0))};
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrsqrtsq_f32 (float32x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_rsqrtsv4sf (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrsqrtsq_f64 (float64x2_t __a, float64x2_t __b)
+{
+  return __builtin_aarch64_rsqrtsv2df (__a, __b);
 }
 
 /* vrsra */
