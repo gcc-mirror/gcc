@@ -1,3 +1,8 @@
+2016-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71442
+	* g++.dg/cpp0x/Wunused-variable-1.C: New test.
+
 2016-06-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/aapcs64/aapcs64.exp: Also execute rec_*.c
