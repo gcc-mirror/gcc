@@ -390,7 +390,7 @@
   "frsqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_fp_rsqrte_<Vetype><q>")])
 
-(define_insn "aarch64_rsqrts_<mode>3"
+(define_insn "aarch64_rsqrts<mode>"
   [(set (match_operand:VALLF 0 "register_operand" "=w")
 	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
 	       (match_operand:VALLF 2 "register_operand" "w")]

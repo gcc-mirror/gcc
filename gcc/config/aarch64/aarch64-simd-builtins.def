@@ -454,3 +454,6 @@
 
   /* Implemented by aarch64_rsqrte<mode>.  */
   BUILTIN_VALLF (UNOP, rsqrte, 0)
+
+  /* Implemented by aarch64_rsqrts<mode>.  */
+  BUILTIN_VALLF (BINOP, rsqrts, 0)

@@ -1,5 +1,20 @@
 2016-06-08  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-builtins.def (rsqrts): New builtins for modes
+	VALLF.
+	* config/aarch64/aarch64-simd.md (aarch64_rsqrts_<mode>3): Rename to
+	"aarch64_rsqrts<mode>".
+	* config/aarch64/aarch64.c (get_rsqrts_type): Update gen* name.
+	* config/aarch64/arm_neon.h (vrsqrtss_f32): Remove inline assembly.  Use
+	builtin.
+	(vrsqrtsd_f64): Likewise.
+	(vrsqrts_f32): Likewise.
+	(vrsqrts_f64): Likewise.
+	(vrsqrtsq_f32): Likewise.
+	(vrsqrtsq_f64): Likewise.
+
+2016-06-08  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-builtins.def (rsqrte): New builtins for modes
 	VALLF.
 	* config/aarch64/aarch64-simd.md (aarch64_rsqrte_<mode>2): Rename to

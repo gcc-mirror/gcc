@@ -7368,11 +7368,11 @@ get_rsqrts_type (machine_mode mode)
 {
   switch (mode)
   {
-    case DFmode:   return gen_aarch64_rsqrts_df3;
-    case SFmode:   return gen_aarch64_rsqrts_sf3;
-    case V2DFmode: return gen_aarch64_rsqrts_v2df3;
-    case V2SFmode: return gen_aarch64_rsqrts_v2sf3;
-    case V4SFmode: return gen_aarch64_rsqrts_v4sf3;
+    case DFmode:   return gen_aarch64_rsqrtsdf;
+    case SFmode:   return gen_aarch64_rsqrtssf;
+    case V2DFmode: return gen_aarch64_rsqrtsv2df;
+    case V2SFmode: return gen_aarch64_rsqrtsv2sf;
+    case V4SFmode: return gen_aarch64_rsqrtsv4sf;
     default: gcc_unreachable ();
   }
 }
