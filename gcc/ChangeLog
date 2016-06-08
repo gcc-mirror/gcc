@@ -1,3 +1,11 @@
+2016-06-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.c (store_bit_field_1): Do not restrict a multiword op0
+	to one word if the field is known to overlap other words.
+	(extract_bit_field_1): Likewise.
+	(store_split_bit_field): Remove compensating code.
+	(extract_split_bit_field): Likewise.
+
 2016-06-08  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR debug/71432
