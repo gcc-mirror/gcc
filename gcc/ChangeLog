@@ -1,3 +1,9 @@
+2016-06-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR debug/71432
+	PR ada/71413
+	* tree-ssa-strlen.c (handle_builtin_memcmp): Ignore debug insns.
+
 2016-06-08  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-builtins.def (faddp): New builtins for modes in
