@@ -1,3 +1,8 @@
+2016-06-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/driver-sparc.c (cpu_names): Fix the entry for the
+	SPARC-M7 and add an entry for SPARC-S7 cpus (Sonoma).
+
 2016-06-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_function_arg_alignment):
