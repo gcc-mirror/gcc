@@ -431,7 +431,6 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_recog_dot_prod_pattern: detected: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   return pattern_stmt;
@@ -667,7 +666,6 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_recog_sad_pattern: detected: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   return pattern_stmt;
@@ -1210,7 +1208,6 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_recog_widen_sum_pattern: detected: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   return pattern_stmt;
@@ -1510,7 +1507,6 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
           dump_printf_loc (MSG_NOTE, vect_location,
                            "created pattern stmt: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-          dump_printf (MSG_NOTE, "\n");
         }
 
       type = gimple_expr_type (stmt);
@@ -1578,7 +1574,6 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_recog_over_widening_pattern: detected: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   return pattern_stmt;
@@ -2717,7 +2712,6 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_recog_divmod_pattern: detected: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   stmts->safe_push (last_stmt);

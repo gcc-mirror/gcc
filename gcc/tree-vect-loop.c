@@ -212,7 +212,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location, "==> examining phi: ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-	      dump_printf (MSG_NOTE, "\n");
 	    }
 
 	  gcc_assert (stmt_info);
@@ -282,7 +281,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      dump_printf_loc (MSG_NOTE, vect_location,
                                "==> examining statement: ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-              dump_printf (MSG_NOTE, "\n");
 	    }
 
 	  gcc_assert (stmt_info);
@@ -304,7 +302,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
                       dump_printf_loc (MSG_NOTE, vect_location,
                                        "==> examining pattern statement: ");
                       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-                      dump_printf (MSG_NOTE, "\n");
                     }
                 }
               else
@@ -355,7 +352,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
                                            "==> examining pattern def stmt: ");
 			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
                                             pattern_def_stmt, 0);
-                          dump_printf (MSG_NOTE, "\n");
 			}
 
 		      stmt = pattern_def_stmt;
@@ -396,7 +392,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
                                    "not vectorized: irregular stmt.");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,  TDF_SLIM, stmt,
                                     0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 	      return false;
 	    }
@@ -408,7 +403,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                                    "not vectorized: vector stmt in loop:");
 	          dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	        }
 	      return false;
 	    }
@@ -625,7 +619,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 				       "for statement, ");
 		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,  TDF_SLIM, stmt,
 					0);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		    }
 		  return false;
 		}
@@ -695,7 +688,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 			       "for statement, ");
 	      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,  TDF_SLIM, stmt,
 				0);
-	      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	    }
 	  return false;
 	}
@@ -799,7 +791,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-          dump_printf (MSG_NOTE, "\n");
 	}
 
       /* Skip virtual phi's.  The data dependences that are associated with
@@ -859,7 +850,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
         {
           dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-          dump_printf (MSG_NOTE, "\n");
         }
 
       gcc_assert (!virtual_operand_p (def)
@@ -1623,7 +1613,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
             {
               dump_printf_loc (MSG_NOTE, vect_location, "examining phi: ");
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-              dump_printf (MSG_NOTE, "\n");
             }
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
@@ -1705,7 +1694,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 				   "not vectorized: relevant phi not "
 				   "supported: ");
                   dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, phi, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
                 }
 	      return false;
             }
@@ -2337,7 +2325,6 @@ report_vect_op (int msg_type, gimple *stmt, const char *msg)
 {
   dump_printf_loc (msg_type, vect_location, "%s", msg);
   dump_gimple_stmt (msg_type, TDF_SLIM, stmt, 0);
-  dump_printf (msg_type, "\n");
 }
 
 
@@ -2508,7 +2495,6 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 		{
 		  dump_printf_loc (MSG_NOTE, vect_location, "swapping oprnds: ");
 		  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, next_stmt, 0);
-                  dump_printf (MSG_NOTE, "\n");
 		}
 
 	      swap_ssa_operands (next_stmt,
@@ -2667,10 +2653,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
   if (!is_gimple_assign (def_stmt) && gimple_code (def_stmt) != GIMPLE_PHI)
     {
       if (dump_enabled_p ())
-        {
-          dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
-          dump_printf (MSG_NOTE, "\n");
-        }
+	dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
       return NULL;
     }
 
@@ -3978,7 +3961,6 @@ get_initial_def_for_induction (gimple *iv_phi)
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "vector of inductions after inner-loop:");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt, 0);
-              dump_printf (MSG_NOTE, "\n");
 	    }
 	}
     }
@@ -3989,10 +3971,8 @@ get_initial_def_for_induction (gimple *iv_phi)
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "transform induction: created def-use cycle: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, induction_phi, 0);
-      dump_printf (MSG_NOTE, "\n");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
 			SSA_NAME_DEF_STMT (vec_def), 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   STMT_VINFO_VEC_STMT (phi_info) = induction_phi;
@@ -4414,9 +4394,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
               dump_printf_loc (MSG_NOTE, vect_location,
 			       "transform reduction: created def-use cycle: ");
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-              dump_printf (MSG_NOTE, "\n");
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, SSA_NAME_DEF_STMT (def), 0);
-              dump_printf (MSG_NOTE, "\n");
             }
         }
     }
@@ -5166,7 +5144,6 @@ vect_finalize_reduction:
                       dump_printf_loc (MSG_NOTE, vect_location,
 				       "created double reduction phi node: ");
                       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, vect_phi, 0);
-                      dump_printf (MSG_NOTE, "\n");
                     }
 
                   vect_phi_res = PHI_RESULT (vect_phi);
@@ -6719,7 +6696,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      dump_printf_loc (MSG_NOTE, vect_location,
                                "------>vectorizing phi: ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-              dump_printf (MSG_NOTE, "\n");
 	    }
 	  stmt_info = vinfo_for_stmt (phi);
 	  if (!stmt_info)
@@ -6772,7 +6748,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "------>vectorizing statement: ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-              dump_printf (MSG_NOTE, "\n");
 	    }
 
 	  stmt_info = vinfo_for_stmt (stmt);
@@ -6847,7 +6822,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 					   "stmt: ");
 			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
 					    pattern_def_stmt, 0);
-                          dump_printf (MSG_NOTE, "\n");
 			}
 
 		      stmt = pattern_def_stmt;

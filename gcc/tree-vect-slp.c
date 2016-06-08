@@ -498,7 +498,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
               dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			       "Build SLP failed: unvectorizable statement ");
               dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
             }
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
@@ -514,7 +513,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 			       "Build SLP failed: not GIMPLE_ASSIGN nor "
 			       "GIMPLE_CALL ");
 	      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	    }
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
@@ -570,7 +568,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 				   "Build SLP failed: unsupported call type ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 				    call_stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 	      /* Fatal mismatch.  */
 	      matches[0] = false;
@@ -686,7 +683,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 				   "Build SLP failed: different shift "
 				   "arguments in ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 	      /* Mismatch.  */
 	      continue;
@@ -707,7 +703,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 				       "Build SLP failed: different calls in ");
 		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 					stmt, 0);
-                      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		    }
 		  /* Mismatch.  */
 		  continue;
@@ -741,7 +736,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 					   "interleaving chains in one node ");
                           dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 					    stmt, 0);
-                          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
                         }
 		      /* Mismatch.  */
 		      continue;
@@ -761,7 +755,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
 				   "Build SLP failed: not grouped load ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 
 	      /* FORNOW: Not grouped loads are not supported.  */
@@ -783,7 +776,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 				   "Build SLP failed: operation");
 		  dump_printf (MSG_MISSED_OPTIMIZATION, " unsupported ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 	      /* Fatal mismatch.  */
 	      matches[0] = false;
@@ -805,7 +797,6 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 				       " operation");
                       dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 					stmt, 0);
-                      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
                     }
 		  /* Mismatch.  */
 		  continue;
@@ -1876,7 +1867,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
 				   "permutation ");
 		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,
 					TDF_SLIM, stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
                 }
               vect_free_slp_instance (new_instance);
               return false;
@@ -3446,7 +3436,6 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 				   "least three vectors ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 				    stmt, 0);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 		}
 	      return false;
 	    }
@@ -3567,7 +3556,6 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       dump_printf_loc (MSG_NOTE,vect_location,
 		       "------>vectorizing SLP node starting from: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
 
   /* Vectorized stmts go before the last scalar stmt which is where
