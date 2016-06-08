@@ -7054,9 +7054,9 @@ get_parm_info (bool ellipsis, tree expr)
 	  break;
 
 	case FUNCTION_DECL:
-	  /*  FUNCTION_DECLs appear when there is an implicit function
-	      declaration in the parameter list.  */
-	  gcc_assert (b->nested);
+	  /* FUNCTION_DECLs appear when there is an implicit function
+	     declaration in the parameter list.  */
+	  gcc_assert (b->nested || seen_error ());
 	  goto set_shadowed;
 
 	case CONST_DECL:
