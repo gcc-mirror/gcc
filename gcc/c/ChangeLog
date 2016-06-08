@@ -1,3 +1,8 @@
+2016-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71418
+	* c-decl.c (grokdeclarator): Check TYPE_P.
+
 2016-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_postfix_expression): In __builtin_offsetof

@@ -1,3 +1,8 @@
+2016-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71418
+	* gcc.dg/noncompile/pr71418.c: New test.
+
 2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/inlinehint-4.c: Disable partial inlining.
