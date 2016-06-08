@@ -967,11 +967,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      If the region spans two words, defer to store_split_bit_field.  */
   if (!MEM_P (op0) && GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
     {
-      op0 = simplify_gen_subreg (word_mode, op0, GET_MODE (op0),
-				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
-      gcc_assert (op0);
-      bitnum %= BITS_PER_WORD;
-      if (bitnum + bitsize > BITS_PER_WORD)
+      if (bitnum % BITS_PER_WORD + bitsize > BITS_PER_WORD)
 	{
 	  if (!fallback_p)
 	    return false;
@@ -980,6 +976,10 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 				 bitregion_end, value, reverse);
 	  return true;
 	}
+      op0 = simplify_gen_subreg (word_mode, op0, GET_MODE (op0),
+				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
+      gcc_assert (op0);
+      bitnum %= BITS_PER_WORD;
     }
 
   /* From here on we can assume that the field to be stored in fits
@@ -1383,25 +1383,8 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 					    bitsdone, NULL_RTX, 1, false);
 	}
 
-      /* If OP0 is a register, then handle OFFSET here.
-
-	 When handling multiword bitfields, extract_bit_field may pass
-	 down a word_mode SUBREG of a larger REG for a bitfield that actually
-	 crosses a word boundary.  Thus, for a SUBREG, we must find
-	 the current word starting from the base register.  */
-      if (GET_CODE (op0) == SUBREG)
-	{
-	  int word_offset = (SUBREG_BYTE (op0) / UNITS_PER_WORD)
-			    + (offset * unit / BITS_PER_WORD);
-	  machine_mode sub_mode = GET_MODE (SUBREG_REG (op0));
-	  if (sub_mode != BLKmode && GET_MODE_SIZE (sub_mode) < UNITS_PER_WORD)
-	    word = word_offset ? const0_rtx : op0;
-	  else
-	    word = operand_subword_force (SUBREG_REG (op0), word_offset,
-					  GET_MODE (SUBREG_REG (op0)));
-	  offset &= BITS_PER_WORD / unit - 1;
-	}
-      else if (REG_P (op0))
+      /* If OP0 is a register, then handle OFFSET here.  */
+      if (SUBREG_P (op0) || REG_P (op0))
 	{
 	  machine_mode op0_mode = GET_MODE (op0);
 	  if (op0_mode != BLKmode && GET_MODE_SIZE (op0_mode) < UNITS_PER_WORD)
@@ -1787,10 +1770,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      If the region spans two words, defer to extract_split_bit_field.  */
   if (!MEM_P (op0) && GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
     {
-      op0 = simplify_gen_subreg (word_mode, op0, GET_MODE (op0),
-				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
-      bitnum %= BITS_PER_WORD;
-      if (bitnum + bitsize > BITS_PER_WORD)
+      if (bitnum % BITS_PER_WORD + bitsize > BITS_PER_WORD)
 	{
 	  if (!fallback_p)
 	    return NULL_RTX;
@@ -1798,6 +1778,9 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 					    reverse);
 	  return convert_extracted_bit_field (target, mode, tmode, unsignedp);
 	}
+      op0 = simplify_gen_subreg (word_mode, op0, GET_MODE (op0),
+				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
+      bitnum %= BITS_PER_WORD;
     }
 
   /* From here on we know the desired field is smaller than a word.
@@ -2109,20 +2092,8 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       thissize = MIN (bitsize - bitsdone, BITS_PER_WORD);
       thissize = MIN (thissize, unit - thispos);
 
-      /* If OP0 is a register, then handle OFFSET here.
-
-	 When handling multiword bitfields, extract_bit_field may pass
-	 down a word_mode SUBREG of a larger REG for a bitfield that actually
-	 crosses a word boundary.  Thus, for a SUBREG, we must find
-	 the current word starting from the base register.  */
-      if (GET_CODE (op0) == SUBREG)
-	{
-	  int word_offset = (SUBREG_BYTE (op0) / UNITS_PER_WORD) + offset;
-	  word = operand_subword_force (SUBREG_REG (op0), word_offset,
-					GET_MODE (SUBREG_REG (op0)));
-	  offset = 0;
-	}
-      else if (REG_P (op0))
+      /* If OP0 is a register, then handle OFFSET here.  */
+      if (SUBREG_P (op0) || REG_P (op0))
 	{
 	  word = operand_subword_force (op0, offset, GET_MODE (op0));
 	  offset = 0;
