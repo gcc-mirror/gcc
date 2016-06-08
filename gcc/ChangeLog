@@ -1,3 +1,16 @@
+2016-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c: Include "selftest.h".
+	(pp_format): Fix comment.
+	(identifier_to_locale): Likewise.
+	(selftest::test_basic_printing): New function.
+	(selftest::assert_pp_format): New function.
+	(selftest::test_pp_format): New function.
+	(selftest::pretty_print_c_tests): New function.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::pretty_print_c_tests.
+	* selftest.h (pretty_print_c_tests): New declaration.
+
 2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* invoke.texi (max-loop-headers-insns): Document.

@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "pretty-print.h"
 #include "diagnostic-color.h"
+#include "selftest.h"
 
 #if HAVE_ICONV
 #include <iconv.h>
@@ -304,7 +305,7 @@ pp_indent (pretty_printer *pp)
 
 /* Formatting phases 1 and 2: render TEXT->format_spec plus
    TEXT->args_ptr into a series of chunks in pp_buffer (PP)->args[].
-   Phase 3 is in pp_format_text.  */
+   Phase 3 is in pp_output_formatted_text.  */
 
 void
 pp_format (pretty_printer *pp, text_info *text)
@@ -1203,3 +1204,164 @@ identifier_to_locale (const char *ident)
     return ret;
   }
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Smoketest for pretty_printer.  */
+
+static void
+test_basic_printing ()
+{
+  pretty_printer pp;
+  pp_string (&pp, "hello");
+  pp_space (&pp);
+  pp_string (&pp, "world");
+
+  ASSERT_STREQ ("hello world", pp_formatted_text (&pp));
+}
+
+/* Helper function for testing pp_format.
+   Verify that pp_format (FMT, ...) followed by pp_output_formatted_text
+   prints EXPECTED, assuming that pp_show_color is SHOW_COLOR.  */
+
+static void
+assert_pp_format_va (const char *expected, bool show_color, const char *fmt,
+		     va_list *ap)
+{
+  pretty_printer pp;
+  text_info ti;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+
+  ti.format_spec = fmt;
+  ti.args_ptr = ap;
+  ti.err_no = 0;
+  ti.x_data = NULL;
+  ti.m_richloc = &rich_loc;
+
+  pp_show_color (&pp) = show_color;
+  pp_format (&pp, &ti);
+  pp_output_formatted_text (&pp);
+  ASSERT_STREQ (expected, pp_formatted_text (&pp));
+}
+
+/* Verify that pp_format (FMT, ...) followed by pp_output_formatted_text
+   prints EXPECTED, with show_color disabled.  */
+
+static void
+assert_pp_format (const char *expected, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  assert_pp_format_va (expected, false, fmt, &ap);
+  va_end (ap);
+}
+
+/* As above, but with colorization enabled.  */
+
+static void
+assert_pp_format_colored (const char *expected, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  assert_pp_format_va (expected, true, fmt, &ap);
+  va_end (ap);
+}
+
+/* Verify that pp_format works, for various format codes.  */
+
+static void
+test_pp_format ()
+{
+  /* Avoid introducing locale-specific differences in the results
+     by hardcoding open_quote and close_quote.  */
+  const char *old_open_quote = open_quote;
+  const char *old_close_quote = close_quote;
+  open_quote = "`";
+  close_quote = "'";
+
+  /* Verify that plain text is passed through unchanged.  */
+  assert_pp_format ("unformatted", "unformatted");
+
+  /* Verify various individual format codes, in the order listed in the
+     comment for pp_format above.  For each code, we append a second
+     argument with a known bit pattern (0x12345678), to ensure that we
+     are consuming arguments correctly.  */
+  assert_pp_format ("-27 12345678", "%d %x", -27, 0x12345678);
+  assert_pp_format ("-5 12345678", "%i %x", -5, 0x12345678);
+  assert_pp_format ("10 12345678", "%u %x", 10, 0x12345678);
+  assert_pp_format ("17 12345678", "%o %x", 15, 0x12345678);
+  assert_pp_format ("cafebabe 12345678", "%x %x", 0xcafebabe, 0x12345678);
+  assert_pp_format ("-27 12345678", "%ld %x", (long)-27, 0x12345678);
+  assert_pp_format ("-5 12345678", "%li %x", (long)-5, 0x12345678);
+  assert_pp_format ("10 12345678", "%lu %x", (long)10, 0x12345678);
+  assert_pp_format ("17 12345678", "%lo %x", (long)15, 0x12345678);
+  assert_pp_format ("cafebabe 12345678", "%lx %x", (long)0xcafebabe,
+		    0x12345678);
+  assert_pp_format ("-27 12345678", "%lld %x", (long long)-27, 0x12345678);
+  assert_pp_format ("-5 12345678", "%lli %x", (long long)-5, 0x12345678);
+  assert_pp_format ("10 12345678", "%llu %x", (long long)10, 0x12345678);
+  assert_pp_format ("17 12345678", "%llo %x", (long long)15, 0x12345678);
+  assert_pp_format ("cafebabe 12345678", "%llx %x", (long long)0xcafebabe,
+		    0x12345678);
+  assert_pp_format ("-27 12345678", "%wd %x", (HOST_WIDE_INT)-27, 0x12345678);
+  assert_pp_format ("-5 12345678", "%wi %x", (HOST_WIDE_INT)-5, 0x12345678);
+  assert_pp_format ("10 12345678", "%wu %x", (unsigned HOST_WIDE_INT)10,
+		    0x12345678);
+  assert_pp_format ("17 12345678", "%wo %x", (HOST_WIDE_INT)15, 0x12345678);
+  assert_pp_format ("0xcafebabe 12345678", "%wx %x", (HOST_WIDE_INT)0xcafebabe,
+		    0x12345678);
+  assert_pp_format ("A 12345678", "%c %x", 'A', 0x12345678);
+  assert_pp_format ("hello world 12345678", "%s %x", "hello world",
+		    0x12345678);
+  assert_pp_format ("0xcafebabe 12345678", "%p %x", (void *)0xcafebabe,
+		    0x12345678);
+  assert_pp_format ("normal colored normal 12345678",
+		    "normal %rcolored%R normal %x",
+		    "error", 0x12345678);
+  /* The following assumes an empty value for GCC_COLORS.  */
+  assert_pp_format_colored
+    ("normal \33[01;31m\33[Kcolored\33[m\33[K normal 12345678",
+     "normal %rcolored%R normal %x", "error", 0x12345678);
+  /* TODO:
+     %m: strerror(text->err_no) - does not consume a value from args_ptr.  */
+  assert_pp_format ("% 12345678", "%% %x", 0x12345678);
+  assert_pp_format ("` 12345678", "%< %x", 0x12345678);
+  assert_pp_format ("' 12345678", "%> %x", 0x12345678);
+  assert_pp_format ("' 12345678", "%' %x", 0x12345678);
+  assert_pp_format ("abc 12345678", "%.*s %x", 3, "abcdef", 0x12345678);
+  assert_pp_format ("abc 12345678", "%.3s %x", "abcdef", 0x12345678);
+
+  /* Verify flag 'q'.  */
+  assert_pp_format ("`foo' 12345678", "%qs %x", "foo", 0x12345678);
+  assert_pp_format_colored ("`\33[01m\33[Kfoo\33[m\33[K' 12345678", "%qs %x",
+			    "foo", 0x12345678);
+
+  /* Verify that combinations work, along with unformatted text.  */
+  assert_pp_format ("the quick brown fox jumps over the lazy dog",
+		    "the %s %s %s jumps over the %s %s",
+		    "quick", "brown", "fox", "lazy", "dog");
+  assert_pp_format ("item 3 of 7", "item %i of %i", 3, 7);
+  assert_pp_format ("problem with `bar' at line 10",
+		    "problem with %qs at line %i", "bar", 10);
+
+  /* Restore old values of open_quote and close_quote.  */
+  open_quote = old_open_quote;
+  close_quote = old_close_quote;
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+pretty_print_c_tests ()
+{
+  test_basic_printing ();
+  test_pp_format ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

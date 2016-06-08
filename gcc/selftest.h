@@ -50,6 +50,7 @@ extern void gimple_c_tests ();
 extern void hash_map_tests_c_tests ();
 extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
+extern void pretty_print_c_tests ();
 extern void rtl_tests_c_tests ();
 extern void spellcheck_c_tests ();
 extern void tree_c_tests ();
