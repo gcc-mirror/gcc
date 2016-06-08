@@ -460,3 +460,6 @@
 
   /* Implemented by fabd<mode>3.  */
   BUILTIN_VALLF (BINOP, fabd, 3)
+
+  /* Implemented by aarch64_faddp<mode>.  */
+  BUILTIN_VDQF (BINOP, faddp, 0)

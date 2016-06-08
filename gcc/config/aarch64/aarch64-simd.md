@@ -1992,6 +1992,16 @@
   }
 )
 
+(define_insn "aarch64_faddp<mode>"
+ [(set (match_operand:VDQF 0 "register_operand" "=w")
+       (unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
+		     (match_operand:VDQF 2 "register_operand" "w")]
+		     UNSPEC_FADDV))]
+ "TARGET_SIMD"
+ "faddp\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
+)
+
 (define_insn "aarch64_reduc_plus_internal<mode>"
  [(set (match_operand:VDQV 0 "register_operand" "=w")
        (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
@@ -2019,15 +2029,6 @@
   [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
 )
 
-(define_insn "aarch64_addpv4sf"
- [(set (match_operand:V4SF 0 "register_operand" "=w")
-       (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "w")]
-		    UNSPEC_FADDV))]
- "TARGET_SIMD"
- "faddp\\t%0.4s, %1.4s, %1.4s"
-  [(set_attr "type" "neon_fp_reduc_add_s_q")]
-)
-
 (define_expand "reduc_plus_scal_v4sf"
  [(set (match_operand:SF 0 "register_operand")
        (unspec:V4SF [(match_operand:V4SF 1 "register_operand")]
@@ -2036,8 +2037,8 @@
 {
   rtx elt = GEN_INT (ENDIAN_LANE_N (V4SFmode, 0));
   rtx scratch = gen_reg_rtx (V4SFmode);
-  emit_insn (gen_aarch64_addpv4sf (scratch, operands[1]));
-  emit_insn (gen_aarch64_addpv4sf (scratch, scratch));
+  emit_insn (gen_aarch64_faddpv4sf (scratch, operands[1], operands[1]));
+  emit_insn (gen_aarch64_faddpv4sf (scratch, scratch, scratch));
   emit_insn (gen_aarch64_get_lanev4sf (operands[0], scratch, elt));
   DONE;
 })
