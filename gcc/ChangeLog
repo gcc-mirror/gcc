@@ -1,3 +1,27 @@
+2016-06-08  Alan Hayward  <alan.hayward@arm.com>
+
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Remove debug newline.
+	* tree-vect-loop-manip.c (slpeel_make_loop_iterate_ntimes): likewise.
+	(vect_can_advance_ivs_p): likewise.
+	(vect_update_ivs_after_vectorizer): likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): likewise.
+	(vect_analyze_scalar_cycles_1): likewise.
+	(vect_analyze_loop_operations): likewise.
+	(report_vect_op): likewise.
+	(vect_is_slp_reduction): likewise.
+	(vect_is_simple_reduction): likewise.
+	(get_initial_def_for_induction): likewise.
+	(vect_transform_loop): likewise.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): likewise.
+	(vect_recog_sad_pattern): likewise.
+	(vect_recog_widen_sum_pattern): likewise.
+	(vect_recog_widening_pattern): likewise.
+	(vect_recog_divmod_pattern): likewise.
+	* tree-vect-slp.c (vect-build-slp_tree_1): likewise.
+	(vect_analyze_slp_instance): likewise.
+	(vect_transform_slp_perm_load): likewise.
+	(vect_schedule_slp_instance): likewise.
+
 2016-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (predict_iv_comparison): Mention that heuristics is broken.

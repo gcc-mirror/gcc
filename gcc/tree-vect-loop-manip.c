@@ -710,7 +710,6 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOCATION_FILE (loop_loc),
 		     LOCATION_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
   loop->nb_iterations = niters;
 }
@@ -1557,7 +1556,6 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	{
           dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-          dump_printf (MSG_NOTE, "\n");
 	}
 
       /* Skip virtual phi's. The data dependences that are associated with
@@ -1678,7 +1676,6 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_update_ivs_after_vectorizer: phi: ");
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-          dump_printf (MSG_NOTE, "\n");
         }
 
       /* Skip virtual phi's.  */
