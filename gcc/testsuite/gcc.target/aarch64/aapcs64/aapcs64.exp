@@ -38,6 +38,16 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
     }
 }
 
+# Test parameter receiving.
+set additional_flags_for_rec $additional_flags
+append additional_flags_for_rec " -fno-inline"
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/rec_*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	    c-torture-execute [list $src] \
+				    $additional_flags_for_rec
+    }
+}
+
 # Test unnamed argument retrieval via the va_arg macro.
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/va_arg-*.c]] {
     if {[runtest_file_p $runtests $src]} {
