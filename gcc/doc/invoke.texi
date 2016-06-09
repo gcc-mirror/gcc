@@ -14069,16 +14069,23 @@ name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
 of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv2a}, @samp{armv3}, @samp{armv3m}, @samp{armv4}, @samp{armv4t},
-@samp{armv5}, @samp{armv5t}, @samp{armv5e}, @samp{armv5te},
-@samp{armv6}, @samp{armv6j},
-@samp{armv6t2}, @samp{armv6z}, @samp{armv6kz}, @samp{armv6-m},
-@samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m}, @samp{armv7e-m},
+@samp{armv5}, @samp{armv5e}, @samp{armv5t}, @samp{armv5te},
+@samp{armv6}, @samp{armv6-m}, @samp{armv6j}, @samp{armv6k},
+@samp{armv6kz}, @samp{armv6s-m},
+@samp{armv6t2}, @samp{armv6z}, @samp{armv6zk},
+@samp{armv7}, @samp{armv7-a}, @samp{armv7-m}, @samp{armv7-r}, @samp{armv7e-m},
 @samp{armv7ve}, @samp{armv8-a}, @samp{armv8-a+crc}, @samp{armv8.1-a},
-@samp{armv8.1-a+crc}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+@samp{armv8.1-a+crc}, @samp{iwmmxt}, @samp{iwmmxt2}.
 
-Architecture revisions older than @option{armv4t} are deprecated.
+Architecture revisions older than @samp{armv4t} are deprecated.
 
-@option{-march=armv7ve} is the armv7-a architecture with virtualization
+@option{-march=armv6s-m} is the @samp{armv6-m} architecture with support for
+the (now mandatory) SVC instruction.
+
+@option{-march=armv6zk} is an alias for @samp{armv6kz}, existing for backwards
+compatibility.
+
+@option{-march=armv7ve} is the @samp{armv7-a} architecture with virtualization
 extensions.
 
 @option{-march=armv8-a+crc} enables code generation for the ARMv8-A
