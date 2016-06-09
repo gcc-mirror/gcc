@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
-  -L%R/usr/lib/w32api \
   %{!shared: %{!mdll: crt0%O%s \
   %{pg:gcrt0%O%s}}}\
   %{shared:crtbeginS.o%s;:crtbegin.o%s} \
