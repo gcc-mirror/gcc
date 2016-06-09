@@ -1,3 +1,8 @@
+2016-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65471
+	* gcc.dg/c11-generic-3.c: New test.
+
 2016-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/init/array42.C: New.
