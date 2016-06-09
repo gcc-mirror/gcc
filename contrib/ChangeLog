@@ -1,3 +1,9 @@
+2016-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* config-list.mk (GCC_SRC_DIR): New variable.
+	(make-log-dir): Use GCC_SRC_DIR.
+	($(LIST)): Likewise.
+
 2016-06-09  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob_spec.py: New file.
