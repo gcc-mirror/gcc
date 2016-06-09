@@ -37,11 +37,12 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
   arm-wrs-vxworks arm-netbsdelf \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi arm-rtems \
-  arm-symbianelf avr-rtems avr-elf \
+  arm-symbianelf avr-rtemsOPT-enable-obsolete avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
-  fr30-elf frv-elf frv-linux ft32-elf h8300-elf h8300-rtems hppa-linux-gnu \
+  fr30-elf frv-elf frv-linux ft32-elf h8300-elf \
+  h8300-rtemsOPT-enable-obsolete hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
   hppa2.0-hpux10.1 hppa64-hpux11.3 \
   hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes hppa2.0-hpux11.9 \
@@ -55,10 +56,11 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
-  lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf m32r-rtems \
+  lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf \
+  m32r-rtemsOPT-enable-obsolete \
   m32r-linux m32rle-linux m68k-elf m68k-netbsdelf \
   m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
-  mcore-elf mep-elf microblaze-linux microblaze-elf \
+  mcore-elf mep-elfOPT-enable-obsolete microblaze-linux microblaze-elf \
   mips-netbsd \
   mips64el-st-linux-gnu mips64octeon-linux mipsisa64r2-linux \
   mipsisa32r2-linux-gnu mipsisa64r2-sde-elf mipsisa32-elfoabi \
