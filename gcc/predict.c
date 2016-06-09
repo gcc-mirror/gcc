@@ -609,6 +609,44 @@ gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
     }
 }
 
+/* Filter edge predictions PREDS by a function FILTER.  DATA are passed
+   to the filter function.  */
+
+void
+filter_predictions (edge_prediction **preds,
+		    bool (*filter) (edge_prediction *, void *), void *data)
+{
+  if (!bb_predictions)
+    return;
+
+  if (preds)
+    {
+      struct edge_prediction **prediction = preds;
+      struct edge_prediction *next;
+
+      while (*prediction)
+	{
+	  if ((*filter) (*prediction, data))
+	    prediction = &((*prediction)->ep_next);
+	  else
+	    {
+	      next = (*prediction)->ep_next;
+	      free (*prediction);
+	      *prediction = next;
+	    }
+	}
+    }
+}
+
+/* Filter function predicate that returns true for a edge predicate P
+   if its edge is equal to DATA.  */
+
+bool
+equal_edge_p (edge_prediction *p, void *data)
+{
+  return p->ep_edge == (edge)data;
+}
+
 /* Remove all predictions on given basic block that are attached
    to edge E.  */
 void
@@ -618,24 +656,7 @@ remove_predictions_associated_with_edge (edge e)
     return;
 
   edge_prediction **preds = bb_predictions->get (e->src);
-
-  if (preds)
-    {
-      struct edge_prediction **prediction = preds;
-      struct edge_prediction *next;
-
-      while (*prediction)
-	{
-	  if ((*prediction)->ep_edge == e)
-	    {
-	      next = (*prediction)->ep_next;
-	      free (*prediction);
-	      *prediction = next;
-	    }
-	  else
-	    prediction = &((*prediction)->ep_next);
-	}
-    }
+  filter_predictions (preds, equal_edge_p, e);
 }
 
 /* Clears the list of predictions stored for BB.  */
