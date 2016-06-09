@@ -29,5 +29,5 @@ fn (void *frame)
 	 "=m" (i12), "=m" (i13), "=m" (c));
 }
 
-/* { dg-final { scan-assembler-times "(?:sub|add)(?:l|q)\[\\t \]*\\\$\[0-9\]*,\[\\t \]*%\[re\]?sp" 2 } } */
+/* { dg-final { scan-assembler "(?:sub|add|lea)(?:l|q)\[\\t \]*.*\\\$?\[0-9\]*.*,\[\\t \]*%\[re\]?sp" } } */
 /* { dg-final { scan-assembler-not "\tcld" } } */
