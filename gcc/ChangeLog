@@ -1,3 +1,10 @@
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (filter_predictions): New function.
+	(remove_predictions_associated_with_edge): Use the filter
+	function.
+	(equal_edge_p): New function.
+
 2016-06-09  Stefan Bruens  <stefan.bruens@rwth-aachen.de>
 
 	* doc/invoke.texi (ARM Options): Use lexicographical ordering.
