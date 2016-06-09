@@ -23,19 +23,19 @@ int test1(struct X x)
 
 int test2(double x)
 {
-  if (x ==  1) return __builtin_fpclassify(1,2,3,4,5); /* { dg-error "not enough arguments" } */
-  if (x ==  2) return __builtin_isfinite(); /* { dg-error "not enough arguments" } */
-  if (x ==  3) return __builtin_isinf_sign(); /* { dg-error "not enough arguments" } */
-  if (x ==  4) return __builtin_isinf(); /* { dg-error "not enough arguments" } */
-  if (x ==  5) return __builtin_isnan(); /* { dg-error "not enough arguments" } */
-  if (x ==  6) return __builtin_isnormal(); /* { dg-error "not enough arguments" } */
-  if (x ==  7) return __builtin_isgreater(x); /* { dg-error "not enough arguments" } */
-  if (x ==  8) return __builtin_isgreaterequal(x); /* { dg-error "not enough arguments" } */
-  if (x ==  9) return __builtin_isless(x); /* { dg-error "not enough arguments" } */
-  if (x == 10) return __builtin_islessequal(x); /* { dg-error "not enough arguments" } */
-  if (x == 11) return __builtin_islessgreater(x); /* { dg-error "not enough arguments" } */
-  if (x == 12) return __builtin_isunordered(x); /* { dg-error "not enough arguments" } */
-  if (x == 13) return __builtin_signbit(); /* { dg-error "not enough arguments" } */
+  if (x ==  1) return __builtin_fpclassify(1,2,3,4,5); /* { dg-error "too few arguments" } */
+  if (x ==  2) return __builtin_isfinite(); /* { dg-error "too few arguments" } */
+  if (x ==  3) return __builtin_isinf_sign(); /* { dg-error "too few arguments" } */
+  if (x ==  4) return __builtin_isinf(); /* { dg-error "too few arguments" } */
+  if (x ==  5) return __builtin_isnan(); /* { dg-error "too few arguments" } */
+  if (x ==  6) return __builtin_isnormal(); /* { dg-error "too few arguments" } */
+  if (x ==  7) return __builtin_isgreater(x); /* { dg-error "too few arguments" } */
+  if (x ==  8) return __builtin_isgreaterequal(x); /* { dg-error "too few arguments" } */
+  if (x ==  9) return __builtin_isless(x); /* { dg-error "too few arguments" } */
+  if (x == 10) return __builtin_islessequal(x); /* { dg-error "too few arguments" } */
+  if (x == 11) return __builtin_islessgreater(x); /* { dg-error "too few arguments" } */
+  if (x == 12) return __builtin_isunordered(x); /* { dg-error "too few arguments" } */
+  if (x == 13) return __builtin_signbit(); /* { dg-error "too few arguments" } */
   return 0;
 }
 

@@ -9828,7 +9828,7 @@ builtin_function_validate_nargs (location_t loc, tree fndecl, int nargs,
 {
   if (nargs < required)
     {
-      error_at (loc, "not enough arguments to function %qE", fndecl);
+      error_at (loc, "too few arguments to function %qE", fndecl);
       return false;
     }
   else if (nargs > required)

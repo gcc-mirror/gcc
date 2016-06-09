@@ -1,3 +1,11 @@
+2016-06-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/70883
+	* c-c++-common/builtin-arith-overflow-1.c: Adjust diagnostic text.
+	* gcc.dg/builtin-constant_p-1.c: Same.
+	* gcc.dg/builtins-error.c: Same.
+	* gcc.dg/pr70859.c: Same.
+
 2016-06-09  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.c-torture/execute/bswap-2.c: Require int32plus.
