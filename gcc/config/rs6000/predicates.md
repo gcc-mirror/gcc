@@ -572,6 +572,38 @@
     }
 })
 
+;; Return 1 if the operand is a CONST_VECTOR or VEC_DUPLICATE of a constant
+;; that can loaded with a XXSPLTIB instruction and then a VUPKHSB, VECSB2W or
+;; VECSB2D instruction.
+
+(define_predicate "xxspltib_constant_split"
+  (match_code "const_vector,vec_duplicate,const_int")
+{
+  int value = 256;
+  int num_insns = -1;
+
+  if (!xxspltib_constant_p (op, mode, &num_insns, &value))
+    return false;
+
+  return num_insns > 1;
+})
+
+
+;; Return 1 if the operand is a CONST_VECTOR that can loaded directly with a
+;; XXSPLTIB instruction.
+
+(define_predicate "xxspltib_constant_nosplit"
+  (match_code "const_vector,vec_duplicate,const_int")
+{
+  int value = 256;
+  int num_insns = -1;
+
+  if (!xxspltib_constant_p (op, mode, &num_insns, &value))
+    return false;
+
+  return num_insns == 1;
+})
+
 ;; Return 1 if the operand is a CONST_VECTOR and can be loaded into a
 ;; vector register without using memory.
 (define_predicate "easy_vector_constant"
@@ -590,7 +622,14 @@
 
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode))
     {
-      if (zero_constant (op, mode))
+      int value = 256;
+      int num_insns = -1;
+
+      if (zero_constant (op, mode) || all_ones_constant (op, mode))
+	return true;
+
+      if (TARGET_P9_VECTOR
+          && xxspltib_constant_p (op, mode, &num_insns, &value))
 	return true;
 
       return easy_altivec_constant (op, mode);
@@ -1036,6 +1075,10 @@
 	mode = V2DFmode;
       else if (mode == DImode)
 	mode = V2DImode;
+      else if (mode == SImode && TARGET_P9_VECTOR)
+	mode = V4SImode;
+      else if (mode == SFmode && TARGET_P9_VECTOR)
+	mode = V4SFmode;
       else
 	gcc_unreachable ();
       return memory_address_addr_space_p (mode, XEXP (op, 0),
