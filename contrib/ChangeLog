@@ -1,5 +1,10 @@
 2016-06-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* config-list.mk (LIST): Add OPT-enable-obsolete to avr-rtems,
+	h8300-rtems, m32r-rtems, mep-elf.
+
+2016-06-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* config-list.mk (GCC_SRC_DIR): New variable.
 	(make-log-dir): Use GCC_SRC_DIR.
 	($(LIST)): Likewise.
