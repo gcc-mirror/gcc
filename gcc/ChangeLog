@@ -1,3 +1,10 @@
+2016-06-09  Stefan Bruens  <stefan.bruens@rwth-aachen.de>
+
+	* doc/invoke.texi (ARM Options): Use lexicographical ordering.
+	Correct usage of @samp vs @option, add @samp where appropriate.
+	Add -march={armv6k,armv6z,arm6zk}, remove -march=ep9312.
+	Add armv6s-m and document it, as it is no official ARM name.
+
 2016-06-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (struct noce_if_info): Add transform_name field.
