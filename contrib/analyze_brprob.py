@@ -122,14 +122,14 @@ if len(sys.argv) != 2:
     exit(1)
 
 profile = Profile(sys.argv[1])
-r = re.compile('  (.*) heuristics: (.*)%.*exec ([0-9]*) hit ([0-9]*)')
+r = re.compile('  (.*) heuristics( of edge [0-9]*->[0-9]*)?( \\(.*\\))?: (.*)%.*exec ([0-9]*) hit ([0-9]*)')
 for l in open(profile.filename).readlines():
     m = r.match(l)
-    if m != None:
+    if m != None and m.group(3) == None:
         name = m.group(1)
-        prediction = float(m.group(2))
-        count = int(m.group(3))
-        hits = int(m.group(4))
+        prediction = float(m.group(4))
+        count = int(m.group(5))
+        hits = int(m.group(6))
 
         profile.add(name, prediction, count, hits)
 

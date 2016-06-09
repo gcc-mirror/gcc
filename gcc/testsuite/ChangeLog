@@ -1,3 +1,16 @@
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/predict-loop-exit-1.C: Scan for a new dump format.
+	* g++.dg/predict-loop-exit-2.C: Likewise.
+	* g++.dg/predict-loop-exit-3.C: Likewise.
+	* gcc.dg/predict-1.c: Likewise.
+	* gcc.dg/predict-2.c: Likewise.
+	* gcc.dg/predict-3.c: Likewise.
+	* gcc.dg/predict-4.c: Likewise.
+	* gcc.dg/predict-5.c: Likewise.
+	* gcc.dg/predict-6.c: Likewise.
+	* gcc.dg/predict-7.c: Likewise.
+
 2016-06-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71462

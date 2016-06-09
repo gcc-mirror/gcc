@@ -9,5 +9,5 @@ void test() {
   return;
 }
 
-/* { dg-final { scan-tree-dump-times "extra loop exit heuristics:" 2 "profile_estimate"} } */
-/* { dg-final { scan-tree-dump-times "loop exit heuristics:" 3 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "extra loop exit heuristics of edge\[^:\]*:" 2 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "loop exit heuristics of edge\[^:\]*:" 3 "profile_estimate"} } */

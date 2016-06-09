@@ -1,3 +1,7 @@
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Cover new dump output format.
+
 2016-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* update-copyright.py (LibMudflapFilter): Remove.
