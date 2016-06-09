@@ -1,3 +1,9 @@
+2016-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71462
+	* tree-ssa-loop-manip.c (find_uses_to_rename): Guard against
+	removed blocks.
+
 2016-06-09  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (filter_predictions): New function.
