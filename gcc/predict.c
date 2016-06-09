@@ -55,13 +55,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
 
+/* Enum with reasons why a predictor is ignored.  */
+
+enum predictor_reason
+{
+  NONE,
+  IGNORED,
+  SINGLE_EDGE_DUPLICATE,
+  EDGE_PAIR_DUPLICATE
+};
+
+/* String messages for the aforementioned enum.  */
+
+static const char *reason_messages[] = {"", " (ignored)",
+    " (single edge duplicate)", " (edge pair duplicate)"};
+
 /* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
 		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
 static sreal real_almost_one, real_br_prob_base,
 	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
 static void combine_predictions_for_insn (rtx_insn *, basic_block);
-static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
+static void dump_prediction (FILE *, enum br_predictor, int, basic_block,
+			     enum predictor_reason, edge);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
 static void predict_paths_leading_to_edge (edge, enum br_predictor, enum prediction);
 static bool can_predict_insn_p (const rtx_insn *);
@@ -723,21 +739,31 @@ invert_br_probabilities (rtx insn)
 
 static void
 dump_prediction (FILE *file, enum br_predictor predictor, int probability,
-		 basic_block bb, int used)
+		 basic_block bb, enum predictor_reason reason = NONE,
+		 edge ep_edge = NULL)
 {
-  edge e;
+  edge e = ep_edge;
   edge_iterator ei;
 
   if (!file)
     return;
 
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (! (e->flags & EDGE_FALLTHRU))
-      break;
+  if (e == NULL)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      if (! (e->flags & EDGE_FALLTHRU))
+	break;
 
-  fprintf (file, "  %s heuristics%s: %.1f%%",
+  char edge_info_str[128];
+  if (ep_edge)
+    sprintf (edge_info_str, " of edge %d->%d", ep_edge->src->index,
+	     ep_edge->dest->index);
+  else
+    edge_info_str[0] = '\0';
+
+  fprintf (file, "  %s heuristics%s%s: %.1f%%",
 	   predictor_info[predictor].name,
-	   used ? "" : " (ignored)", probability * 100.0 / REG_BR_PROB_BASE);
+	   edge_info_str, reason_messages[reason],
+	   probability * 100.0 / REG_BR_PROB_BASE);
 
   if (bb->count)
     {
@@ -834,18 +860,18 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 
   if (!found)
     dump_prediction (dump_file, PRED_NO_PREDICTION,
-		     combined_probability, bb, true);
+		     combined_probability, bb);
   else
     {
       dump_prediction (dump_file, PRED_DS_THEORY, combined_probability,
-		       bb, !first_match);
+		       bb, !first_match ? NONE : IGNORED);
       dump_prediction (dump_file, PRED_FIRST_MATCH, best_probability,
-		       bb, first_match);
+		       bb, first_match ? NONE: IGNORED);
     }
 
   if (first_match)
     combined_probability = best_probability;
-  dump_prediction (dump_file, PRED_COMBINED, combined_probability, bb, true);
+  dump_prediction (dump_file, PRED_COMBINED, combined_probability, bb);
 
   while (*pnote)
     {
@@ -856,7 +882,8 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 	  int probability = INTVAL (XEXP (XEXP (*pnote, 0), 1));
 
 	  dump_prediction (dump_file, predictor, probability, bb,
-			   !first_match || best_predictor == predictor);
+			   (!first_match || best_predictor == predictor)
+			   ? NONE : IGNORED);
 	  *pnote = XEXP (*pnote, 1);
 	}
       else
@@ -885,6 +912,121 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
     }
   else
     single_succ_edge (bb)->probability = REG_BR_PROB_BASE;
+}
+
+/* Edge prediction hash traits.  */
+
+struct predictor_hash: pointer_hash <edge_prediction>
+{
+
+  static inline hashval_t hash (const edge_prediction *);
+  static inline bool equal (const edge_prediction *, const edge_prediction *);
+};
+
+/* Calculate hash value of an edge prediction P based on predictor and
+   normalized probability.  */
+
+inline hashval_t
+predictor_hash::hash (const edge_prediction *p)
+{
+  inchash::hash hstate;
+  hstate.add_int (p->ep_predictor);
+
+  int prob = p->ep_probability;
+  if (prob > REG_BR_PROB_BASE / 2)
+    prob = REG_BR_PROB_BASE - prob;
+
+  hstate.add_int (prob);
+
+  return hstate.end ();
+}
+
+/* Return true whether edge predictions P1 and P2 use the same predictor and
+   have equal (or opposed probability).  */
+
+inline bool
+predictor_hash::equal (const edge_prediction *p1, const edge_prediction *p2)
+{
+  return (p1->ep_predictor == p2->ep_predictor
+	  && (p1->ep_probability == p2->ep_probability
+	      || p1->ep_probability == REG_BR_PROB_BASE - p2->ep_probability));
+}
+
+struct predictor_hash_traits: predictor_hash,
+  typed_noop_remove <edge_prediction *> {};
+
+/* Return true if edge prediction P is not in DATA hash set.  */
+
+static bool
+not_removed_prediction_p (edge_prediction *p, void *data)
+{
+  hash_set<edge_prediction *> *remove = (hash_set<edge_prediction *> *) data;
+  return !remove->contains (p);
+}
+
+/* Prune predictions for a basic block BB.  Currently we do following
+   clean-up steps:
+
+   1) remove duplicate prediction that is guessed with the same probability
+      (different than 1/2) to both edge
+   2) remove duplicates for a prediction that belongs with the same probability
+      to a single edge
+
+  */
+
+static void
+prune_predictions_for_bb (basic_block bb)
+{
+  edge_prediction **preds = bb_predictions->get (bb);
+
+  if (preds)
+    {
+      hash_table <predictor_hash_traits> s (13);
+      hash_set <edge_prediction *> remove;
+
+      /* Step 1: identify predictors that should be removed.  */
+      for (edge_prediction *pred = *preds; pred; pred = pred->ep_next)
+	{
+	  edge_prediction *existing = s.find (pred);
+	  if (existing)
+	    {
+	      if (pred->ep_edge == existing->ep_edge
+		  && pred->ep_probability == existing->ep_probability)
+		{
+		  /* Remove a duplicate predictor.  */
+		  dump_prediction (dump_file, pred->ep_predictor,
+				   pred->ep_probability, bb,
+				   SINGLE_EDGE_DUPLICATE, pred->ep_edge);
+
+		  remove.add (pred);
+		}
+	      else if (pred->ep_edge != existing->ep_edge
+		       && pred->ep_probability == existing->ep_probability
+		       && pred->ep_probability != REG_BR_PROB_BASE / 2)
+		{
+		  /* Remove both predictors as they predict the same
+		     for both edges.  */
+		  dump_prediction (dump_file, existing->ep_predictor,
+				   pred->ep_probability, bb,
+				   EDGE_PAIR_DUPLICATE,
+				   existing->ep_edge);
+		  dump_prediction (dump_file, pred->ep_predictor,
+				   pred->ep_probability, bb,
+				   EDGE_PAIR_DUPLICATE,
+				   pred->ep_edge);
+
+		  remove.add (existing);
+		  remove.add (pred);
+		}
+	    }
+
+	  edge_prediction **slot2 = s.find_slot (pred, INSERT);
+	  *slot2 = pred;
+	}
+
+      /* Step 2: Remove predictors.  */
+      filter_predictions (preds, not_removed_prediction_p, &remove);
+    }
 }
 
 /* Combine predictions into single probability and store them into CFG.
@@ -935,7 +1077,10 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
   if (dump_file)
     fprintf (dump_file, "Predictions for bb %i\n", bb->index);
 
+  prune_predictions_for_bb (bb);
+
   edge_prediction **preds = bb_predictions->get (bb);
+
   if (preds)
     {
       /* We implement "first match" heuristics and use probability guessed
@@ -1001,18 +1146,18 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
     first_match = true;
 
   if (!found)
-    dump_prediction (dump_file, PRED_NO_PREDICTION, combined_probability, bb, true);
+    dump_prediction (dump_file, PRED_NO_PREDICTION, combined_probability, bb);
   else
     {
       dump_prediction (dump_file, PRED_DS_THEORY, combined_probability, bb,
-		       !first_match);
+		       !first_match ? NONE : IGNORED);
       dump_prediction (dump_file, PRED_FIRST_MATCH, best_probability, bb,
-		       first_match);
+		       first_match ? NONE : IGNORED);
     }
 
   if (first_match)
     combined_probability = best_probability;
-  dump_prediction (dump_file, PRED_COMBINED, combined_probability, bb, true);
+  dump_prediction (dump_file, PRED_COMBINED, combined_probability, bb);
 
   if (preds)
     {
@@ -1021,10 +1166,9 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 	  enum br_predictor predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;
 
-	  if (pred->ep_edge != EDGE_SUCC (bb, 0))
-	    probability = REG_BR_PROB_BASE - probability;
 	  dump_prediction (dump_file, predictor, probability, bb,
-			   !first_match || best_predictor == predictor);
+			   (!first_match || best_predictor == predictor)
+			   ? NONE : IGNORED, pred->ep_edge);
 	}
     }
   clear_bb_predictions (bb);

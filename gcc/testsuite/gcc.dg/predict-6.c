@@ -21,4 +21,4 @@ void foo (int base, int bound)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "loop iv compare heuristics: 2.0%" 4 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "loop iv compare heuristics of edge\[^:\]*: 2.0%" 4 "profile_estimate"} } */

@@ -6,6 +6,17 @@
 
 2016-06-09  Martin Liska  <mliska@suse.cz>
 
+	* predict.c (dump_prediction): Add new argument.
+	(enum predictor_reason): New enum.
+	(struct predictor_hash): New struct.
+	(predictor_hash::hash): New function.
+	(predictor_hash::equal): Likewise.
+	(not_removed_prediction_p): New function.
+	(prune_predictions_for_bb): Likewise.
+	(combine_predictions_for_bb): Prune predictions.
+
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
 	* predict.c (filter_predictions): New function.
 	(remove_predictions_associated_with_edge): Use the filter
 	function.
