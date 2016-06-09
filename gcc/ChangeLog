@@ -1,3 +1,11 @@
+2016-06-09 Jonathan Yong  <10walls@gmail.com>
+
+	Revert:
+	2015-09-21  Jonathan Yong  <10walls@gmail.com>
+        * config/i386/cygwin.h (STARTFILE_SPEC): Explicitly search
+        sysroot/usr/lib/32api for additional win32 libraries,
+        fixes failing Cygwin bootstrapping.
+
 2016-06-09  Marcin Baczyński <marbacz@gmail.com>
 
 	* diagnostic.h (diagnostic_line_cutoff, diagnostic_flush_buffer):
