@@ -279,7 +279,7 @@ pp_indent (pretty_printer *pp)
    %wd, %wi, %wo, %wu, %wx: HOST_WIDE_INT versions.
    %c: character.
    %s: string.
-   %p: pointer.
+   %p: pointer (printed in a host-dependent manner).
    %r: if pp_show_color(pp), switch to color identified by const char *.
    %R: if pp_show_color(pp), reset color.
    %m: strerror(text->err_no) - does not consume a value from args_ptr.
@@ -1317,8 +1317,8 @@ test_pp_format ()
   assert_pp_format ("A 12345678", "%c %x", 'A', 0x12345678);
   assert_pp_format ("hello world 12345678", "%s %x", "hello world",
 		    0x12345678);
-  assert_pp_format ("0xcafebabe 12345678", "%p %x", (void *)0xcafebabe,
-		    0x12345678);
+  /* We can't test for %p; the pointer is printed in an implementation-defined
+     manner.  */
   assert_pp_format ("normal colored normal 12345678",
 		    "normal %rcolored%R normal %x",
 		    "error", 0x12345678);
