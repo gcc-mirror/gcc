@@ -1,3 +1,13 @@
+2016-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71465
+	Revert:
+	2016-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70202
+	* parser.c (cp_parser_class_head): When xref_basetypes fails and
+	emits an error do not zero the type.
+
 2016-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (maybe_deduce_size_from_array_init): Use

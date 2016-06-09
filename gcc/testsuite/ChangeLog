@@ -1,3 +1,14 @@
+2016-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71465
+	* g++.dg/inherit/crash5.C: New.
+	Revert:
+	2016-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70202
+	* g++.dg/inherit/crash5.C: New.
+	* g++.dg/inherit/virtual1.C: Adjust.
+
 2016-06-09  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/predict-loop-exit-1.C: Scan for a new dump format.
