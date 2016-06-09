@@ -1,10 +1,6 @@
-// PR c++/70202
+// PR c++/71465
 
-class A
-{
-  virtual void foo () { }
-};
-class B : public A, A { };  // { dg-error "duplicate base type" }
-
-B b1, &b2 = b1;
-A a = b2;
+struct A { virtual void foo () {} };
+struct B : virtual A {};
+struct C : virtual A {}; 
+struct D : C, B, C {};  // { dg-error "duplicate base type" }
