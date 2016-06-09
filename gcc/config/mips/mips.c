@@ -13588,8 +13588,9 @@ mips_output_jump (rtx *operands, int target_opno, int size_opno, bool link_p)
       else
 	s += sprintf (s, "%%*");
 
-      s += sprintf (s, "%s%s%s%s%s\t%%%d%s", insn_name, and_link, reg, compact, short_delay,
-					    target_opno, nop);
+      s += sprintf (s, "%s%s%s%s%s\t%%%d%s",
+		    insn_name, and_link, reg, compact, short_delay,
+		    target_opno, nop);
 
       if (!reg_p && TARGET_ABICALLS_PIC2)
 	s += sprintf (s, "\n\t.option\tpic2");
