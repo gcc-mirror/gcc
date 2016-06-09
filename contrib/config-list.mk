@@ -3,13 +3,32 @@ host_options='--with-mpc=/opt/cfarm/mpc' # gcc10
 TEST=all-gcc
 # Make sure you have a recent enough gcc (with ada support) in your path so
 # that --enable-werror-always will work.
-# To use, create a sibling directory to the gcc sources and cd into this.
+# To use, create a build directory with plenty of free disk space - a build of
+# all configurations can take 450GB.
+# By default, this file assumes the build directory is in a sibling directory
+# to the gcc sources, but you can override GCC_SRC_DIR to specify where to
+# find them.  GCC_SRC_DIR is used in the directory below the build directory,
+# hence the two ".." in the default value; if overriding it, it's easiest to
+# supply an absolute path.
+GCC_SRC_DIR=../../gcc
+
 # Use -j / -l make arguments and nice to assure a smooth resource-efficient
 # load on the build machine, e.g. for 24 cores:
 # svn co svn://gcc.gnu.org/svn/gcc/branches/foo-branch gcc
 # mkdir multi-mk; cd multi-mk
 # nohup nice make -j25 -l36 -f ../gcc/contrib/config-list.mk > make.out 2>&1 &
 #
+# Alternatively, if building against an existing gcc source tree:
+#
+#   cd /somewhere/with/plenty/of/disk/space
+#   mkdir multi-mk; cd multi-mk
+#   nohup nice make \
+#     -j25 -l36 \
+#     -f /path/to/contrib/config-list.mk \
+#     GCC_SRC_DIR=/path/to/gcc/source/tree \
+#     > make.out 2>&1 &
+#
+
 # v850e1-elf is rejected by config.sub
 LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
@@ -91,17 +110,17 @@ show:
 
 empty=
 
-#Check for the presence of the MAINTAINERS file to make sure we are in a
-#suitable current working directory.
-make-log-dir: ../gcc/MAINTAINERS
-	mkdir log
+#Check for the presence of the MAINTAINERS file to make sure we've located
+#the gcc sources.
+make-log-dir: $(GCC_SRC_DIR)/MAINTAINERS
+	-mkdir log
 
 $(LIST): make-log-dir
 	-mkdir $@
 	(											\
 		cd $@ &&									\
 		TGT=`echo $@ | awk 'BEGIN { FS = "OPT" }; { print $$1 }'` &&			\
-		TGT=`../../gcc/config.sub $$TGT` &&						\
+		TGT=`$(GCC_SRC_DIR)/config.sub $$TGT` &&					\
 		case $$TGT in									\
 			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)			\
 				ADDITIONAL_LANGUAGES="";					\
@@ -110,7 +129,7 @@ $(LIST): make-log-dir
 				ADDITIONAL_LANGUAGES=",go";					\
 				;;								\
 		esac &&										\
-		../../gcc/configure								\
+		$(GCC_SRC_DIR)/configure							\
 			--target=$(subst SCRIPTS,`pwd`/../scripts/,$(subst OPT,$(empty) -,$@))	\
 			--enable-werror-always ${host_options}					\
 			--enable-languages=all,ada$$ADDITIONAL_LANGUAGES;			\
