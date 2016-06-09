@@ -1,3 +1,9 @@
+2016-06-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/70883
+	* c-common.c (builtin_function_validate_nargs): Make text of error
+	message consistent with others like it.
+
 2016-06-08  Martin Sebor  <msebor@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

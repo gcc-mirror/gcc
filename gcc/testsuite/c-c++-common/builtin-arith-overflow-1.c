@@ -3,12 +3,12 @@
 int
 f1 (void)
 {
-  int x = __builtin_add_overflow ();	/* { dg-error "not enough arguments to function" } */
-  x += __builtin_sub_overflow ();	/* { dg-error "not enough arguments to function" } */
-  x += __builtin_mul_overflow ();	/* { dg-error "not enough arguments to function" } */
-  x += __builtin_add_overflow_p ();	/* { dg-error "not enough arguments to function" } */
-  x += __builtin_sub_overflow_p ();	/* { dg-error "not enough arguments to function" } */
-  x += __builtin_mul_overflow_p ();	/* { dg-error "not enough arguments to function" } */
+  int x = __builtin_add_overflow ();	/* { dg-error "too few arguments to function" } */
+  x += __builtin_sub_overflow ();	/* { dg-error "too few arguments to function" } */
+  x += __builtin_mul_overflow ();	/* { dg-error "too few arguments to function" } */
+  x += __builtin_add_overflow_p ();	/* { dg-error "too few arguments to function" } */
+  x += __builtin_sub_overflow_p ();	/* { dg-error "too few arguments to function" } */
+  x += __builtin_mul_overflow_p ();	/* { dg-error "too few arguments to function" } */
   return x;
 }
 
@@ -21,7 +21,7 @@ f2 (int a, int b, int *c, int d)
   x += __builtin_add_overflow_p (a, b, d, d);	/* { dg-error "too many arguments to function" } */
   x += __builtin_sub_overflow_p (a, b, d, d, 1, d);	/* { dg-error "too many arguments to function" } */
   x += __builtin_mul_overflow_p (a, b, d, d);	/* { dg-error "too many arguments to function" } */
-  
+
   return x;
 }
 

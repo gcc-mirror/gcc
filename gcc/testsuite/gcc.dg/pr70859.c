@@ -41,19 +41,19 @@ fn0 (int n)
 int
 fn1 (void)
 {
-  if (__builtin_constant_p ()) /* { dg-error "7:not enough" } */
+  if (__builtin_constant_p ()) /* { dg-error "7:too few" } */
     return 0;
   if (__builtin_constant_p (1, 2)) /* { dg-error "7:too many" } */
     return 1;
-  if (__builtin_isfinite ()) /* { dg-error "7:not enough" } */
+  if (__builtin_isfinite ()) /* { dg-error "7:too few" } */
     return 3;
   if (__builtin_isfinite (1, 2)) /* { dg-error "7:too many" } */
     return 4;
-  if (__builtin_isless (0)) /* { dg-error "7:not enough" } */
+  if (__builtin_isless (0)) /* { dg-error "7:too few" } */
     return 5;
   if (__builtin_isless (1, 2, 3)) /* { dg-error "7:too many" } */
     return 6;
-  if (__builtin_fpclassify (1, 2, 3, 4, 5)) /* { dg-error "7:not enough" } */
+  if (__builtin_fpclassify (1, 2, 3, 4, 5)) /* { dg-error "7:too few" } */
     return 7;
   if (__builtin_fpclassify (1, 2, 3, 4, 5, r, 6)) /* { dg-error "7:too many" } */
     return 8;
@@ -61,7 +61,7 @@ fn1 (void)
     return 9;
   if (__builtin_assume_aligned (p, r, p, p)) /* { dg-error "7:too many" } */
     return 10;
-  if (__builtin_add_overflow ()) /* { dg-error "7:not enough" } */
+  if (__builtin_add_overflow ()) /* { dg-error "7:too few" } */
     return 11;
   if (__builtin_add_overflow (1, 2, 3, &r)) /* { dg-error "7:too many" } */
     return 12;
