@@ -1,3 +1,14 @@
+2016-06-09  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/interrupt-12.c: Fix test for -fpic and corei7.
+	* gcc.target/i386/interrupt-13.c: Likewise.
+	* gcc.target/i386/interrupt-15.c: Likewise.
+	* gcc.target/i386/interrupt-14.c: Fix test for -fpic.
+	* gcc.target/i386/interrupt-24.c: Likewise.
+	* gcc.target/i386/interrupt-3.c: Fix test for corei7.
+	* gcc.target/i386/interrupt-9.c: Likewise.
+	* gcc.target/i386/interrupt-redzone-2.c: Likewise.
+
 2016-06-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c/70883

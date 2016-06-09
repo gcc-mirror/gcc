@@ -13,7 +13,7 @@ foo (int i0, int i1, int i2, int i3, int i4, int i5, int i6,
 }
 
 /* { dg-final { scan-assembler-not "movups\[\\t \]*%(x|y|z)mm\[0-9\]+" } } */
-/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(a|b|c|d)x" } } */
+/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(a|b|c|d)x" { target nonpic } } } */
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(d|s)i" } } */
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)bp" } } */
 /* { dg-final { scan-assembler-not "(push|pop)q\[\\t \]*%r\[0-9\]+" { target { ! ia32 } } } } */
