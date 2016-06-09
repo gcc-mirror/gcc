@@ -1,3 +1,10 @@
+2016-06-09  Vladimir Makarov  <vmakarov@redhat.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	PR rtl-optimization/70751
+	* lra-constraints.c (process_alt_operands): Recognize Non-pseudo spilled
+	into memory.
+
 2016-06-09 Jonathan Yong  <10walls@gmail.com>
 
 	Revert:

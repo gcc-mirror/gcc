@@ -2474,14 +2474,27 @@ process_alt_operands (int only_alternative)
 	      /* We are trying to spill pseudo into memory.  It is
 		 usually more costly than moving to a hard register
 		 although it might takes the same number of
-		 reloads.  */
-	      if (no_regs_p && REG_P (op) && hard_regno[nop] >= 0)
+		 reloads.
+
+		 Non-pseudo spill may happen also.  Suppose a target allows both
+		 register and memory in the operand constraint alternatives,
+		 then it's typical that an eliminable register has a substition
+		 of "base + offset" which can either be reloaded by a simple
+		 "new_reg <= base + offset" which will match the register
+		 constraint, or a similar reg addition followed by further spill
+		 to and reload from memory which will match the memory
+		 constraint, but this memory spill will be much more costly
+		 usually.
+
+		 Code below increases the reject for both pseudo and non-pseudo
+		 spill.  */
+	      if (no_regs_p && !(REG_P (op) && hard_regno[nop] < 0))
 		{
 		  if (lra_dump_file != NULL)
 		    fprintf
 		      (lra_dump_file,
-		       "            %d Spill pseudo into memory: reject+=3\n",
-		       nop);
+		       "            %d Spill %spseudo into memory: reject+=3\n",
+		       nop, REG_P (op) ? "" : "Non-");
 		  reject += 3;
 		  if (VECTOR_MODE_P (mode))
 		    {
