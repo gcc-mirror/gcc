@@ -1,5 +1,25 @@
 2016-06-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* ifcvt.c (struct noce_if_info): Add transform_name field.
+	(noce_try_move): Set if_info->transform_name to the function name.
+	(noce_try_ifelse_collapse): Likewise.
+	(noce_try_store_flag): Likewise.
+	(noce_try_inverse_constants): Likewise.
+	(noce_try_store_flag_constants): Likewise.
+	(noce_try_addcc): Likewise.
+	(noce_try_store_flag_mask): Likewise.
+	(noce_try_cmove): Likewise.
+	(noce_try_cmove_arith): Likewise.
+	(noce_try_minmax): Likewise.
+	(noce_try_abs): Likewise.
+	(noce_try_sign_mask): Likewise.
+	(noce_try_bitop): Likewise.
+	(noce_convert_multiple_sets): Likewise.
+	(noce_process_if_block): Print if_info->transform_name to
+	dump_file if transformation succeeded.
+
+2016-06-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/cortex-a57.md (cortex_a57_alu):
 	Handle csel type.
 

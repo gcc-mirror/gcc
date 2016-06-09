@@ -813,6 +813,10 @@ struct noce_if_info
 
   /* Estimated cost of the particular branch instruction.  */
   unsigned int branch_cost;
+
+  /* The name of the noce transform that succeeded in if-converting
+     this structure.  Used for debugging.  */
+  const char *transform_name;
 };
 
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
@@ -1116,6 +1120,7 @@ noce_try_move (struct noce_if_info *if_info)
 	  emit_insn_before_setloc (seq, if_info->jump,
 				   INSN_LOCATION (if_info->insn_a));
 	}
+      if_info->transform_name = "noce_try_move";
       return TRUE;
     }
   return FALSE;
@@ -1148,6 +1153,8 @@ noce_try_ifelse_collapse (struct noce_if_info * if_info)
 
   emit_insn_before_setloc (seq, if_info->jump,
 			  INSN_LOCATION (if_info->insn_a));
+
+  if_info->transform_name = "noce_try_ifelse_collapse";
   return TRUE;
 }
 
@@ -1195,6 +1202,7 @@ noce_try_store_flag (struct noce_if_info *if_info)
 
       emit_insn_before_setloc (seq, if_info->jump,
 			       INSN_LOCATION (if_info->insn_a));
+      if_info->transform_name = "noce_try_store_flag";
       return TRUE;
     }
   else
@@ -1273,6 +1281,7 @@ noce_try_inverse_constants (struct noce_if_info *if_info)
 
       emit_insn_before_setloc (seq, if_info->jump,
 			       INSN_LOCATION (if_info->insn_a));
+      if_info->transform_name = "noce_try_inverse_constants";
       return true;
     }
 
@@ -1493,6 +1502,8 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 
       emit_insn_before_setloc (seq, if_info->jump,
 			       INSN_LOCATION (if_info->insn_a));
+      if_info->transform_name = "noce_try_store_flag_constants";
+
       return TRUE;
     }
 
@@ -1545,6 +1556,8 @@ noce_try_addcc (struct noce_if_info *if_info)
 
 	      emit_insn_before_setloc (seq, if_info->jump,
 				       INSN_LOCATION (if_info->insn_a));
+	      if_info->transform_name = "noce_try_addcc";
+
 	      return TRUE;
 	    }
 	  end_sequence ();
@@ -1585,6 +1598,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 
 	      emit_insn_before_setloc (seq, if_info->jump,
 				       INSN_LOCATION (if_info->insn_a));
+	      if_info->transform_name = "noce_try_addcc";
 	      return TRUE;
 	    }
 	  end_sequence ();
@@ -1649,6 +1663,8 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 
 	  emit_insn_before_setloc (seq, if_info->jump,
 				   INSN_LOCATION (if_info->insn_a));
+	  if_info->transform_name = "noce_try_store_flag_mask";
+
 	  return TRUE;
 	}
 
@@ -1799,6 +1815,8 @@ noce_try_cmove (struct noce_if_info *if_info)
 
 	  emit_insn_before_setloc (seq, if_info->jump,
 				   INSN_LOCATION (if_info->insn_a));
+	  if_info->transform_name = "noce_try_cmove";
+
 	  return TRUE;
 	}
       /* If both a and b are constants try a last-ditch transformation:
@@ -1852,6 +1870,7 @@ noce_try_cmove (struct noce_if_info *if_info)
 
 	      emit_insn_before_setloc (seq, if_info->jump,
 				   INSN_LOCATION (if_info->insn_a));
+	      if_info->transform_name = "noce_try_cmove";
 	      return TRUE;
 	    }
 	  else
@@ -2305,6 +2324,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
   emit_insn_before_setloc (ifcvt_seq, if_info->jump,
 			   INSN_LOCATION (if_info->insn_a));
+  if_info->transform_name = "noce_try_cmove_arith";
   return TRUE;
 
  end_seq_and_fail:
@@ -2561,6 +2581,7 @@ noce_try_minmax (struct noce_if_info *if_info)
   emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
+  if_info->transform_name = "noce_try_minmax";
 
   return TRUE;
 }
@@ -2727,6 +2748,7 @@ noce_try_abs (struct noce_if_info *if_info)
   emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
+  if_info->transform_name = "noce_try_abs";
 
   return TRUE;
 }
@@ -2808,6 +2830,8 @@ noce_try_sign_mask (struct noce_if_info *if_info)
     return FALSE;
 
   emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
+  if_info->transform_name = "noce_try_sign_mask";
+
   return TRUE;
 }
 
@@ -2913,6 +2937,7 @@ noce_try_bitop (struct noce_if_info *if_info)
       emit_insn_before_setloc (seq, if_info->jump,
 			       INSN_LOCATION (if_info->insn_a));
     }
+  if_info->transform_name = "noce_try_bitop";
   return TRUE;
 }
 
@@ -3276,6 +3301,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
     }
 
   num_updated_if_blocks++;
+  if_info->transform_name = "noce_convert_multiple_sets";
   return TRUE;
 }
 
@@ -3372,7 +3398,12 @@ noce_process_if_block (struct noce_if_info *if_info)
       && bb_ok_for_noce_convert_multiple_sets (then_bb, if_info))
     {
       if (noce_convert_multiple_sets (if_info))
-	return TRUE;
+	{
+	  if (dump_file && if_info->transform_name)
+	    fprintf (dump_file, "if-conversion succeeded through %s\n",
+		     if_info->transform_name);
+	  return TRUE;
+	}
     }
 
   if (! bb_valid_for_noce_process_p (then_bb, cond, &if_info->then_cost,
@@ -3571,6 +3602,9 @@ noce_process_if_block (struct noce_if_info *if_info)
   return FALSE;
 
  success:
+  if (dump_file && if_info->transform_name)
+    fprintf (dump_file, "if-conversion succeeded through %s\n",
+	     if_info->transform_name);
 
   /* If we used a temporary, fix it up now.  */
   if (orig_x != x)
