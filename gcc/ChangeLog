@@ -1,3 +1,8 @@
+2016-06-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/cortex-a57.md (cortex_a57_alu):
+	Handle csel type.
+
 2016-06-08  Martin Sebor  <msebor@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
