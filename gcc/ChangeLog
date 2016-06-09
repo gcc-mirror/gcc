@@ -1,3 +1,8 @@
+2016-06-09  Marcin Baczyński <marbacz@gmail.com>
+
+	* diagnostic.h (diagnostic_line_cutoff, diagnostic_flush_buffer):
+	delete.
+
 2016-06-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/71471
