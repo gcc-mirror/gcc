@@ -1,3 +1,7 @@
+2016-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* df-problems.c (df_note_bb_compute): Guard use of DF_INSN_INFO_GET.
+
 2016-06-09  Vladimir Makarov  <vmakarov@redhat.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
