@@ -1,3 +1,14 @@
+2016-06-09  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.c-torture/execute/bswap-2.c: Require int32plus.
+	* gcc.dg/torture/pr68067-1.c: Likewise.
+	* gcc.dg/torture/pr68067-2.c: Likewise.
+
+2016-06-09  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/stack-usage-1.c (SIZE): Consider return address
+	  when setting SIZE.
+
 2016-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71465
