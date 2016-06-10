@@ -352,10 +352,15 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
   /* If no arguments are specified, all pointer arguments should be
      non-null.  Verify a full prototype is given so that the arguments
-     will have the correct types when we actually check them later.  */
+     will have the correct types when we actually check them later.
+     Avoid diagnosing type-generic built-ins since those have no
+     prototype.  */
   if (!args)
     {
-      gcc_assert (prototype_p (type));
+      gcc_assert (prototype_p (type)
+		  || !TYPE_ATTRIBUTES (type)
+		  || lookup_attribute ("type generic", TYPE_ATTRIBUTES (type)));
+
       return NULL_TREE;
     }
 
