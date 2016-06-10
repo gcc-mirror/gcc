@@ -7201,7 +7201,11 @@ place_block_symbol (rtx symbol)
       if ((flag_sanitize & SANITIZE_ADDRESS)
 	  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
 	  && asan_protect_global (DECL_INITIAL (decl)))
-	size += asan_red_zone_size (size);
+	{
+	  size += asan_red_zone_size (size);
+	  alignment = MAX (alignment,
+			   ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+	}
     }
   else
     {
