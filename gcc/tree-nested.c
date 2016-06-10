@@ -1347,7 +1347,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	{
 	  wi->val_only = true;
 	  wi->is_lhs = false;
-	  *handled_ops_p = true;
+	  *handled_ops_p = false;
 	  return NULL_TREE;
 	}
       break;

@@ -1,5 +1,8 @@
 2016-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71494
+	* gcc.c-torture/execute/pr71494.c: New test.
+
 	PR c/68657
 	* gcc.target/i386/pr68657.c: New test.
 
