@@ -2201,9 +2201,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 
 	case OMP_CLAUSE_DEVICE_RESIDENT:
 	case OMP_CLAUSE__CACHE_:
-	  sorry ("Clause not supported yet");
-	  break;
-
 	default:
 	  gcc_unreachable ();
 	}
@@ -2369,9 +2366,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 
 	case OMP_CLAUSE_DEVICE_RESIDENT:
 	case OMP_CLAUSE__CACHE_:
-	  sorry ("Clause not supported yet");
-	  break;
-
 	default:
 	  gcc_unreachable ();
 	}

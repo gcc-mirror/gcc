@@ -1,3 +1,11 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/71381
+	Backport from trunk r237290:
+	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: #include
+	"../../../gcc/testsuite/c-c++-common/goacc/cache-1.c".
+	* testsuite/libgomp.oacc-fortran/cache-1.f95: New file.
+
 2016-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/libgomp.hsa.c/switch-sbr-2.c: New test.

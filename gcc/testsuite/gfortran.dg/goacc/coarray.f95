@@ -24,7 +24,7 @@ contains
     !$acc end parallel loop
     !$acc parallel loop
     do i = 1,5
-      !$acc cache (a)
+      !$acc cache (a) ! { dg-error "" "TODO" { xfail *-*-* } }
     enddo
     !$acc end parallel loop
     !$acc update device (a)
