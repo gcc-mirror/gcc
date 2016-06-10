@@ -1,3 +1,7 @@
+2016-06-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	* match.pd (-1 / B < A): Use :c to avoid pattern duplication.
+
 2016-06-10  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/71480
