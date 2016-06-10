@@ -1,3 +1,11 @@
+2016-06-10  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71407
+	PR tree-optimization/71416
+	* gcc.dg/vect/pr71407.c: New
+	* gcc.dg/vect/pr71416-1.c: New
+	* gcc.dg/vect/pr71416-2.c: New
+
 2016-06-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71477

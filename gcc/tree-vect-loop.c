@@ -6353,7 +6353,7 @@ vectorizable_live_operation (gimple *stmt,
 	worklist.safe_push (use_stmt);
   gcc_assert (worklist.length () == 1);
 
-  bitsize = TYPE_SIZE (lhs_type);
+  bitsize = TYPE_SIZE (TREE_TYPE (vectype));
   vec_bitsize = TYPE_SIZE (vectype);
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
@@ -6399,15 +6399,18 @@ vectorizable_live_operation (gimple *stmt,
 
   /* Create a new vectorized stmt for the uses of STMT and insert outside the
      loop.  */
-  tree new_name = make_ssa_name (lhs_type);
-  tree new_tree = build3 (BIT_FIELD_REF, lhs_type, vec_lhs, bitsize, bitstart);
-  gimple *new_stmt = gimple_build_assign (new_name, new_tree);
-  gsi_insert_on_edge_immediate (single_exit (loop), new_stmt);
+  gimple_seq stmts = NULL;
+  tree new_tree = build3 (BIT_FIELD_REF, TREE_TYPE (vectype), vec_lhs, bitsize,
+			  bitstart);
+  new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree), &stmts,
+				   true, NULL_TREE);
+  if (stmts)
+    gsi_insert_seq_on_edge_immediate (single_exit (loop), stmts);
 
   /* Replace all uses of the USE_STMT in the worklist with the newly inserted
      statement.  */
   use_stmt = worklist.pop ();
-  replace_uses_by (gimple_phi_result (use_stmt), new_name);
+  replace_uses_by (gimple_phi_result (use_stmt), new_tree);
   update_stmt (use_stmt);
 
   return true;

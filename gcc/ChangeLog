@@ -1,3 +1,10 @@
+2016-06-10  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71407
+	PR tree-optimization/71416
+	* tree-vect-loop.c (vectorizable_live_operation): Use vectype for
+	BIT_FIELD_REF type.
+
 2016-06-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71477
