@@ -1,3 +1,7 @@
+2016-06-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* mpxwrap/mpx_wrappers.c (move_bounds): Fix overflow bug.
+
 2016-01-20  Matthias Klose  <doko@ubuntu.com>
 
         * libtool-version: Remove.
