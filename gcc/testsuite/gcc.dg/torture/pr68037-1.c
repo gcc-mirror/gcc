@@ -14,6 +14,8 @@ typedef unsigned int uword_t __attribute__ ((mode (__word__)));
 
 #define STRING(x)	XSTRING(x)
 #define XSTRING(x)	#x
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) XSTRING (prefix) cname
 
 struct interrupt_frame
 {
@@ -53,6 +55,6 @@ main ()
 	push	$" STRING (CS) ";		\
 	push	$" STRING (IP) ";		\
 	push	$" STRING (ERROR) ";		\
-	jmp	fn");
+	jmp	 " ASMNAME ("fn"));
   return 0;
 }
