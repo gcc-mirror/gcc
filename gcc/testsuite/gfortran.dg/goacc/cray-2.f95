@@ -1,7 +1,8 @@
 ! { dg-additional-options "-fcray-pointer" }
-! See also cray-2.f95.
+! See also cray.f95.
 
-module test
+program test
+  call oacc1
 contains
   subroutine oacc1
     implicit none
@@ -52,4 +53,4 @@ contains
     !$acc update host (ptr)
     !$acc update self (ptr)
   end subroutine oacc1
-end module test
+end program test

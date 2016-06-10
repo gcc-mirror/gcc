@@ -1,7 +1,7 @@
-! See also loop-1-2.f95.
+! See also loop-1.f95.
 
-module test
-  implicit none
+program test
+  call test1
 contains
 
 subroutine test1
@@ -173,4 +173,4 @@ subroutine test1
   enddo
 
 end subroutine test1
-end module test
+end program test

@@ -1,4 +1,24 @@
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/71373
+	* gcc.dg/goacc/nested-function-1.c: New file.
+	* gcc.dg/goacc/nested-function-2.c: Likewise.
+	* gcc.dg/goacc/pr71373.c: Likewise.
+	* gfortran.dg/goacc/cray-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-1-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-3-2.f95: Likewise.
+	* gfortran.dg/goacc/cray.f95: Update.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+	* gfortran.dg/goacc/loop-3.f95: Likewise.
+	* gfortran.dg/goacc/subroutines.f90: Update, and rename to...
+	* gfortran.dg/goacc/nested-function-1.f90: ... this new file.
+
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/combined-directives.c: XFAIL tree scanning
+	for OpenACC tile clauses.
+	* gfortran.dg/goacc/combined-directives.f90: Likewise.
 
 	PR c/71381
 	* c-c++-common/goacc/cache-1.c: Update.  Move invalid usage tests
