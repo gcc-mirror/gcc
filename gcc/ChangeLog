@@ -1,3 +1,8 @@
+2016-06-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/arm/arm.h (pool_vector_label,
+	return_used_this_function): Remove.
+
 2016-06-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71335

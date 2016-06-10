@@ -80,11 +80,6 @@ extern arm_cc arm_current_cc;
 extern int arm_target_label;
 extern int arm_ccfsm_state;
 extern GTY(()) rtx arm_target_insn;
-/* The label of the current constant pool.  */
-extern rtx pool_vector_label;
-/* Set to 1 when a return insn is output, this means that the epilogue
-   is not needed.  */
-extern int return_used_this_function;
 /* Callback to output language specific object attributes.  */
 extern void (*arm_lang_output_object_attributes_hook)(void);
 
