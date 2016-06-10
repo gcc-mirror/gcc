@@ -1,4 +1,14 @@
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/71373
+	* libgomp.oacc-c/nested-function-1.c: New file.
+	* libgomp.oacc-c/nested-function-2.c: Likewise.
+	* libgomp.oacc-fortran/nested-function-1.f90: Likewise.
+	* libgomp.oacc-fortran/nested-function-2.f90: Likewise.
+	* libgomp.oacc-fortran/nested-function-3.f90: Likewise.
+
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/71381
 	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: #include
