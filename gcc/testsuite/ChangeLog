@@ -1,3 +1,8 @@
+2016-06-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/must-tail-call-2.c: Remove all details from
+	the various "cannot tail-call: " messages.
+
 2016-06-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pr37780_1.c: Use arm_arch_v6t2 effective target

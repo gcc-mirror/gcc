@@ -14,7 +14,7 @@ returns_struct (int i)
 int __attribute__((noinline,noclone))
 test_1 (int i)
 {
-  return returns_struct (i * 5).i; /* { dg-error "cannot tail-call: callee returns a structure" } */
+  return returns_struct (i * 5).i; /* { dg-error "cannot tail-call: " } */
 }
 
 int __attribute__((noinline,noclone))
@@ -29,14 +29,14 @@ int __attribute__((noinline,noclone))
 test_2_caller (int i)
 {
   struct box b;
-  return test_2_callee (i + 1, b); /* { dg-error "cannot tail-call: callee required more stack slots than the caller" } */
+  return test_2_callee (i + 1, b); /* { dg-error "cannot tail-call: " } */
 }
 
 extern void setjmp (void);
 void
 test_3 (void)
 {
-  setjmp (); /* { dg-error "cannot tail-call: callee returns twice" } */
+  setjmp (); /* { dg-error "cannot tail-call: " } */
 }
 
 void
@@ -45,7 +45,7 @@ test_4 (void)
   void nested (void)
   {
   }
-  nested (); /* { dg-error "cannot tail-call: nested function" } */
+  nested (); /* { dg-error "cannot tail-call: " } */
 }
 
 typedef void (fn_ptr_t) (void);
@@ -54,5 +54,5 @@ volatile fn_ptr_t fn_ptr;
 void
 test_5 (void)
 {
-  fn_ptr (); /* { dg-error "cannot tail-call: callee does not return" } */
+  fn_ptr (); /* { dg-error "cannot tail-call: " } */
 }
