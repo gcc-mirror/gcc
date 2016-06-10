@@ -1,10 +1,13 @@
+/* { dg-do run } */
+/* { dg-options "" } */
+
 int
 __attribute__((noinline, noclone))
 test (double y)
 {
   int a, b;
-  asm ("fistpl (%1)\n\t"
-       "movl (%1), %0"
+  asm ("fistp{l (%1)| DWORD PTR [%1]}\n\t"
+       "mov{l (%1), %0| %0, DWORD PTR [%1]}"
        : "=r" (a)
        : "r" (&b), "t" (y)
        : "st");

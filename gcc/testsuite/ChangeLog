@@ -1,3 +1,9 @@
+2016-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/68843
+	* gcc.target/i386/pr68843-2.c: Add dg-do run and empty dg-options.
+	(test): Add -masm=intel alternatives.
+
 2016-06-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71392
