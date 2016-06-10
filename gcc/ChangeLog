@@ -1,3 +1,14 @@
+2016-06-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71335
+	* tree-ssa-threadbackward.c (profitable_jump_thread_path): Filter out
+	zero length paths here.
+	(convert_and_register_jump_thread_path): Remove hacks related to
+	duplicated blocks in the jump thread path.
+	(fsm_find_control_statement_thread_paths): Avoid putting the same
+	block on the thread path twice, but ensure the thread path is
+	unchanged from the caller's point of view.
+	
 2016-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (predict_loops): Remove PRED_LOOP_BRANCH.
