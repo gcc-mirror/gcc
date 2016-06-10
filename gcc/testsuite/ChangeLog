@@ -1,3 +1,8 @@
+2016-06-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/71392
+	* c-c++-common/builtin-arith-overflow-1.c: Add test cases.
+
 2016-06-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71335

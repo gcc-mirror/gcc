@@ -1,3 +1,9 @@
+2016-06-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/71392
+	* gcc/ada/gcc-interface/utils.c (handle_nonnull_attribute): Accept
+	the nonnull attribute in type-generic builtins.
+
 2016-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (Gigi_Equivalent_Type): Make sure equivalent
