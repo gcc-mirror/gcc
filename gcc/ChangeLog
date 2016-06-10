@@ -1,5 +1,10 @@
 2016-06-10  Richard Biener  <rguenther@suse.de>
 
+	* targhooks.c (default_builtin_vectorization_cost): Adjust
+	vec_construct cost.
+
+2016-06-10  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Make sure
 	to fold the RHS to a constant if possible.
 
