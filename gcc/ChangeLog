@@ -1,3 +1,10 @@
+2016-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile.c: Include cfgloop.h.
+	(branch_prob): Compute estimated number of iterations.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Do not
+	recompute estimate number of iterations from profile.
+
 2016-06-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR inline-asm/68843
