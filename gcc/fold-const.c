@@ -3904,13 +3904,24 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
        return 0;
    }
 
+  /* Don't use a larger mode for reading the bit field than we will
+     use in other places accessing the bit field.  */
+  machine_mode largest_mode = word_mode;
+  if (TREE_CODE (lhs) == COMPONENT_REF)
+    {
+      tree field = TREE_OPERAND (lhs, 1);
+      tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+      if (repr)
+	largest_mode = DECL_MODE (repr);
+    }
+
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
   nmode = get_best_mode (lbitsize, lbitpos, 0, 0,
 			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
 			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
 				TYPE_ALIGN (TREE_TYPE (rinner))),
-			 word_mode, false);
+			 largest_mode, false);
   if (nmode == VOIDmode)
     return 0;
 

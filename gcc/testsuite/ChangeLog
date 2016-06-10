@@ -1,3 +1,8 @@
+2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/71310
+	* gcc.target/powerpc/pr71310.c: New testcase.
+
 2016-06-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71478

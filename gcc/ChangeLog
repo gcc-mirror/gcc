@@ -1,3 +1,10 @@
+2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/71310
+	* fold-const.c (optimize_bit_field_compare): Don't try to use
+	word_mode unconditionally for reading the bit field, look at
+	DECL_BIT_FIELD_REPRESENTATIVE instead.
+
 2016-06-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71478
