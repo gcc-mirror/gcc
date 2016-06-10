@@ -1,3 +1,8 @@
+2016-06-10  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/71480
+	* c-c++-common/asan/pr71480.c: New test.
+
 2016-06-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/guality/pr68037-1.c (ASMNAME): New.

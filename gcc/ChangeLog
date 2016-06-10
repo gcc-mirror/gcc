@@ -1,3 +1,9 @@
+2016-06-10  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/71480
+	* varasm.c (place_block_symbol): Adjust alignment for asan protected
+	STRING_CSTs even if TREE_CONSTANT_POOL_ADDRESS_P.
+
 2016-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile.c: Include cfgloop.h.
