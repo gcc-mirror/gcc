@@ -1270,6 +1270,7 @@ OBJS = \
 	gcse.o \
 	gcse-common.o \
 	ggc-common.o \
+	ggc-tests.o \
 	gimple.o \
 	gimple-builder.o \
 	gimple-expr.o \
@@ -2398,6 +2399,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/emit-rtl.c $(srcdir)/except.h $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/expr.h \
   $(srcdir)/function.c $(srcdir)/except.c \
+  $(srcdir)/ggc-tests.c \
   $(srcdir)/gcse.c $(srcdir)/godump.c \
   $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \

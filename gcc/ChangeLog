@@ -1,3 +1,12 @@
+2016-06-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add ggc-tests.o.
+	(GTFILES): Add ggc-tests.c.
+	* ggc-tests.c: New file.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::ggc_tests_c_tests.
+	* selftest.h (selftest::ggc_tests_c_tests): New prototype.
+
 2016-06-10  Alexander Monakov  <amonakov@ispras.ru>
 
 	* match.pd (-1 / B < A): Use :c to avoid pattern duplication.

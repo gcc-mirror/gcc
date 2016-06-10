@@ -47,6 +47,7 @@ extern void et_forest_c_tests ();
 extern void fold_const_c_tests ();
 extern void function_tests_c_tests ();
 extern void gimple_c_tests ();
+extern void ggc_tests_c_tests ();
 extern void hash_map_tests_c_tests ();
 extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
