@@ -1,5 +1,8 @@
 2016-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/68657
+	* gcc.target/i386/pr68657.c: New test.
+
 	PR inline-asm/68843
 	* gcc.target/i386/pr68843-2.c: Add dg-do run and empty dg-options.
 	(test): Add -masm=intel alternatives.
