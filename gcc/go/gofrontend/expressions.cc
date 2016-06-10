@@ -11463,7 +11463,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 
   if (method != NULL && !is_pointer && !method->is_value_method())
     {
-      error_at(location, "method requires pointer (use %<(*%s).%s)%>",
+      error_at(location, "method requires pointer (use %<(*%s).%s%>)",
 	       nt->message_name().c_str(),
 	       Gogo::message_name(name).c_str());
       return Expression::make_error(location);
