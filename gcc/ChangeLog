@@ -1,3 +1,12 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport trunk r235964:
+	2016-05-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gimple.c (gimple_call_same_target_p): Unique functions are eq.
+	* tree-ssa-tail-merge.c (same_succ::equal): Check pointer eq
+	equality first.
+
 2016-06-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
