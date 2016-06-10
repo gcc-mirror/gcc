@@ -2626,22 +2626,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
    (out (imagpart @2) { build_zero_cst (TREE_TYPE (@0)); }))))
 
-/* For unsigned operands, A > -1 / B checks whether A * B would overflow.
+/* For unsigned operands, -1 / B < A checks whether A * B would overflow.
    Simplify it to __builtin_mul_overflow (A, B, <unused>).  */
-/* -1 / B < A */
 (for cmp (lt ge)
      out (ne eq)
  (simplify
-  (cmp (trunc_div:s integer_all_onesp @1) @0)
-  (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && !VECTOR_TYPE_P (TREE_TYPE (@0)))
-   (with { tree t = TREE_TYPE (@0), cpx = build_complex_type (t); }
-    (out (imagpart (IFN_MUL_OVERFLOW:cpx @0 @1)) { build_zero_cst (t); })))))
-
-/* A > -1 / B */
-(for cmp (gt le)
-     out (ne eq)
- (simplify
-  (cmp @0 (trunc_div:s integer_all_onesp @1))
+  (cmp:c (trunc_div:s integer_all_onesp @1) @0)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && !VECTOR_TYPE_P (TREE_TYPE (@0)))
    (with { tree t = TREE_TYPE (@0), cpx = build_complex_type (t); }
     (out (imagpart (IFN_MUL_OVERFLOW:cpx @0 @1)) { build_zero_cst (t); })))))
