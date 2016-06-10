@@ -265,7 +265,7 @@ C++ ObjC++ Var(warn_abi_tag) Warning
 Warn if a subobject has an abi_tag attribute that the complete object type does not have.
 
 Wpsabi
-C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented LangEnabledBy(C ObjC C++ ObjC++,Wabi)
+C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Warning Undocumented LangEnabledBy(C ObjC C++ ObjC++,Wabi)
 
 Waddress
 C ObjC C++ ObjC++ Var(warn_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
