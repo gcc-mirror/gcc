@@ -1,3 +1,8 @@
+2016-06-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/71478
+	* gcc.dg/pr71478.c: New test.
+
 2016-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71494
