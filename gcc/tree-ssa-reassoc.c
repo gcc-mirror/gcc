@@ -5303,8 +5303,7 @@ reassociate_bb (basic_block bb)
 		  && rhs_code == MULT_EXPR)
 		{
 		  last = ops.last ();
-		  if (((TREE_CODE (last->op) == INTEGER_CST
-			&& integer_minus_onep (last->op))
+		  if ((integer_minus_onep (last->op)
 		       || real_minus_onep (last->op))
 		      && !HONOR_SNANS (TREE_TYPE (lhs))
 		      && (!HONOR_SIGNED_ZEROS (TREE_TYPE (lhs))
