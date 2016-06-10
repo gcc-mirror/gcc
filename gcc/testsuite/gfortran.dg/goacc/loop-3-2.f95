@@ -1,6 +1,9 @@
 ! { dg-additional-options "-std=f2008" }
-! See also loop-3-2.f95.
+! See also loop-3.f95.
 
+program test
+  call test1
+contains
 subroutine test1
   implicit none
   integer :: i, j
@@ -52,3 +55,4 @@ subroutine test1
     end do inner_loop2
   end do outer_loop2
 end subroutine test1
+end program test

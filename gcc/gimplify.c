@@ -8224,7 +8224,13 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_VECTOR:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	  break;
+
 	case OMP_CLAUSE_TILE:
+	  /* We're not yet making use of the information provided by OpenACC
+	     tile clauses.  Discard these here, to simplify later middle end
+	     processing.  */
+	  remove = true;
 	  break;
 
 	default:

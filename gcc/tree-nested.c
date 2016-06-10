@@ -1114,6 +1114,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
 	  /* Several OpenACC clauses have optional arguments.  Check if they
 	     are present.  */
 	  if (OMP_CLAUSE_OPERAND (clause, 0))
@@ -1197,8 +1199,22 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_INDEPENDENT:
+	case OMP_CLAUSE_AUTO:
 	  break;
 
+	case OMP_CLAUSE_TILE:
+	  /* OpenACC tile clauses are discarded during gimplification, so we
+	     don't expect to see anything here.  */
+	  gcc_unreachable ();
+
+	case OMP_CLAUSE__CACHE_:
+	  /* These clauses belong to the OpenACC cache directive, which is
+	     discarded during gimplification, so we don't expect to see
+	     anything here.  */
+	  gcc_unreachable ();
+
+	case OMP_CLAUSE_DEVICE_RESIDENT:
 	default:
 	  gcc_unreachable ();
 	}
@@ -1790,6 +1806,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
 	  /* Several OpenACC clauses have optional arguments.  Check if they
 	     are present.  */
 	  if (OMP_CLAUSE_OPERAND (clause, 0))
@@ -1878,8 +1896,22 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_INDEPENDENT:
+	case OMP_CLAUSE_AUTO:
 	  break;
 
+	case OMP_CLAUSE_TILE:
+	  /* OpenACC tile clauses are discarded during gimplification, so we
+	     don't expect to see anything here.  */
+	  gcc_unreachable ();
+
+	case OMP_CLAUSE__CACHE_:
+	  /* These clauses belong to the OpenACC cache directive, which is
+	     discarded during gimplification, so we don't expect to see
+	     anything here.  */
+	  gcc_unreachable ();
+
+	case OMP_CLAUSE_DEVICE_RESIDENT:
 	default:
 	  gcc_unreachable ();
 	}
