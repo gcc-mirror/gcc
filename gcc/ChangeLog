@@ -1,3 +1,10 @@
+2016-06-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR inline-asm/68843
+	* reg-stack.c (check_asm_stack_operands): Explicit input arguments
+	must be grouped on top of stack.  Don't force early clobber
+	on ordinary reg outputs.
+
 2016-06-10  Richard Biener  <rguenther@suse.de>
 
 	* targhooks.c (default_builtin_vectorization_cost): Adjust

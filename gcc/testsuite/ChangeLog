@@ -1,3 +1,9 @@
+2016-06-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR inline-asm/68843
+	* gcc.target/i386/pr68843-1.c: New test.
+	* gcc.target/i386/pr68843-2.c: New test.
+
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

@@ -97,6 +97,9 @@
 	All implicitly popped input regs must be closer to the top of
 	the reg-stack than any input that is not implicitly popped.
 
+	All explicitly referenced input operands may not "skip" a reg.
+	Otherwise we can have holes in the stack.
+
    3. It is possible that if an input dies in an insn, reload might
       use the input reg for an output reload.  Consider this example:
 
@@ -461,6 +464,7 @@ check_asm_stack_operands (rtx_insn *insn)
 
   char reg_used_as_output[FIRST_PSEUDO_REGISTER];
   char implicitly_dies[FIRST_PSEUDO_REGISTER];
+  char explicitly_used[FIRST_PSEUDO_REGISTER];
 
   rtx *clobber_reg = 0;
   int n_inputs, n_outputs;
@@ -568,6 +572,7 @@ check_asm_stack_operands (rtx_insn *insn)
      popped.  */
 
   memset (implicitly_dies, 0, sizeof (implicitly_dies));
+  memset (explicitly_used, 0, sizeof (explicitly_used));
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
     if (STACK_REG_P (recog_data.operand[i]))
       {
@@ -581,6 +586,8 @@ check_asm_stack_operands (rtx_insn *insn)
 
 	if (j < n_clobbers || op_alt[i].matches >= 0)
 	  implicitly_dies[REGNO (recog_data.operand[i])] = 1;
+	else if (reg_class_size[(int) op_alt[i].cl] == 1)
+	  explicitly_used[REGNO (recog_data.operand[i])] = 1;
       }
 
   /* Search for first non-popped reg.  */
@@ -600,6 +607,23 @@ check_asm_stack_operands (rtx_insn *insn)
       malformed_asm = 1;
     }
 
+  /* Search for first not-explicitly used reg.  */
+  for (i = FIRST_STACK_REG; i < LAST_STACK_REG + 1; i++)
+    if (! implicitly_dies[i] && ! explicitly_used[i])
+      break;
+
+  /* If there are any other explicitly used regs, that's an error.  */
+  for (; i < LAST_STACK_REG + 1; i++)
+    if (explicitly_used[i])
+      break;
+
+  if (i != LAST_STACK_REG + 1)
+    {
+      error_for_asm (insn,
+		     "explicitly used regs must be grouped at top of stack");
+      malformed_asm = 1;
+    }
+
   /* Enforce rule #3: If any input operand uses the "f" constraint, all
      output constraints must use the "&" earlyclobber.
 
@@ -607,7 +631,7 @@ check_asm_stack_operands (rtx_insn *insn)
      record any earlyclobber.  */
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (op_alt[i].matches == -1)
+    if (STACK_REG_P (recog_data.operand[i]) && op_alt[i].matches == -1)
       {
 	int j;
 
