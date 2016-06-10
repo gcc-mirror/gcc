@@ -1,3 +1,14 @@
+2016-06-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/guality/pr68037-1.c (ASMNAME): New.
+	(ASMNAME2): Likewise.
+	(main): Replace fn in asm statement with ASMNAME ("fn").
+	* gcc.dg/guality/pr68037-2.c: Likewise.
+	* gcc.dg/guality/pr68037-3.c: Likewise.
+	* gcc.dg/torture/pr68037-1.c: Likewise.
+	* gcc.dg/torture/pr68037-2.c: Likewise.
+	* gcc.dg/torture/pr68037-3.c: Likewise.
+
 2016-06-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR inline-asm/68843

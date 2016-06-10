@@ -16,6 +16,8 @@ typedef int aligned __attribute__((aligned(64)));
 
 #define STRING(x)	XSTRING(x)
 #define XSTRING(x)	#x
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) XSTRING (prefix) cname
 
 struct interrupt_frame
 {
@@ -65,7 +67,7 @@ main ()
 	push	$" STRING (FLAGS) ";		\
 	push	$" STRING (CS) ";		\
 	push	$" STRING (IP) ";		\
-	jmp	fn");
+	jmp	 " ASMNAME ("fn"));
   return 0;
 }
 
