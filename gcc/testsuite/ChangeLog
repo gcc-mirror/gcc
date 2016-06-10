@@ -1,3 +1,16 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/71381
+	* c-c++-common/goacc/cache-1.c: Update.  Move invalid usage tests
+	to...
+	* c-c++-common/goacc/cache-2.c: ... this new file.
+	* gfortran.dg/goacc/cache-1.f95: Move invalid usage tests to...
+	* gfortran.dg/goacc/cache-2.f95: ... this new file.
+	* gfortran.dg/goacc/coarray.f95: Update OpenACC cache directive
+	usage.
+	* gfortran.dg/goacc/cray.f95: Likewise.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+
 2016-06-10  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71407

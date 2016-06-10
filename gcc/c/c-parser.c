@@ -10613,6 +10613,8 @@ c_parser_omp_variable_list (c_parser *parser,
 	  switch (kind)
 	    {
 	    case OMP_CLAUSE__CACHE_:
+	      /* The OpenACC cache directive explicitly only allows "array
+		 elements or subarrays".  */
 	      if (c_parser_peek_token (parser)->type != CPP_OPEN_SQUARE)
 		{
 		  c_parser_error (parser, "expected %<[%>");
@@ -10676,25 +10678,6 @@ c_parser_omp_variable_list (c_parser *parser,
 		    {
 		      t = error_mark_node;
 		      break;
-		    }
-
-		  if (kind == OMP_CLAUSE__CACHE_)
-		    {
-		      if (TREE_CODE (low_bound) != INTEGER_CST
-			  && !TREE_READONLY (low_bound))
-			{
-			  error_at (clause_loc,
-				    "%qD is not a constant", low_bound);
-			  t = error_mark_node;
-			}
-
-		      if (TREE_CODE (length) != INTEGER_CST
-			  && !TREE_READONLY (length))
-			{
-			  error_at (clause_loc,
-				    "%qD is not a constant", length);
-			  t = error_mark_node;
-			}
 		    }
 
 		  t = tree_cons (low_bound, length, t);

@@ -1,3 +1,9 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/71381
+	* parser.c (cp_parser_omp_var_list_no_open) <OMP_CLAUSE__CACHE_>:
+	Loosen checking.
+
 2016-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71465

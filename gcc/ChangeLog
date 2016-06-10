@@ -1,3 +1,8 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_sharing_clauses): Don't expect
+	OMP_CLAUSE__CACHE_.
+
 2016-06-10  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71407
