@@ -191,7 +191,7 @@ col (){
 	# Combine prefix back with long lines.
 	# Filter out empty lines.
 	local found=false
-	paste -d '' "$tmp2" "$tmp3" \
+	paste -d '\0' "$tmp2" "$tmp3" \
 	    | grep -v '^[0-9][0-9]*:+$' \
 	    > "$tmp" && found=true
 

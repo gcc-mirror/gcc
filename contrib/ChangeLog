@@ -1,3 +1,7 @@
+2016-06-10  Alan Hayward  <alan.hayward@arm.com>
+
+	* check_GNU_style.sh: Fix paste args for BSD
+
 2016-06-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* config-list.mk (LIST): Add OPT-enable-obsolete to avr-rtems,
