@@ -27,6 +27,7 @@
 #include "string.h"
 #include <sys/mman.h>
 #include <stdint.h>
+#include <assert.h>
 #include "mpxrt/mpxrt.h"
 
 void *
@@ -418,7 +419,16 @@ move_bounds (void *dst, const void *src, size_t n)
           else
             elems_to_copy -= src_bt_index_end + 1;
         }
-      src_bd_index_end--;
+      /* Go to previous table but beware of overflow.
+	 We should have copied all required element
+	 in case src_bd_index_end is 0.  */
+      if (src_bd_index_end)
+	src_bd_index_end--;
+      else
+	{
+	  assert (!elems_to_copy);
+	  return;
+	}
       /* For each bounds table we check if there are valid pointers inside.
          If there are some, we copy table in pre-counted portions.  */
       for (; src_bd_index_end > src_bd_index; src_bd_index_end--)
