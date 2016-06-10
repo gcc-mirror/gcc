@@ -1,3 +1,9 @@
+2016-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71494
+	* tree-nested.c (convert_nonlocal_reference_stmt): For GIMPLE_GOTO
+	without LABEL_DECL, set *handled_ops_p to false instead of true.
+
 2016-06-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71392
@@ -12,7 +18,7 @@
 	(BUILT_IN_UADDL_OVERFLOW, BUILT_IN_UADDLL_OVERFLOW): Same.
 	(BUILT_IN_USUB_OVERFLOW, BUILT_IN_USUBL_OVERFLOW): Same.
 	(BUILT_IN_USUBLL_OVERFLOW, BUILT_IN_UMUL_OVERFLOW): Same.
-	(BUILT_IN_UMULL_OVERFLOW, BUILT_IN_UMULLL_OVERFLOW):
+	(BUILT_IN_UMULL_OVERFLOW, BUILT_IN_UMULLL_OVERFLOW): Same.
 
 2016-06-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
@@ -124,7 +130,7 @@
         sysroot/usr/lib/32api for additional win32 libraries,
         fixes failing Cygwin bootstrapping.
 
-2016-06-09  Marcin Baczyński <marbacz@gmail.com>
+2016-06-09  Marcin Baczyński  <marbacz@gmail.com>
 
 	* diagnostic.h (diagnostic_line_cutoff, diagnostic_flush_buffer):
 	delete.
@@ -834,7 +840,7 @@
 	only edges out of BB are EH edges.
 
 2016-06-04  Martin Sebor  <msebor@redhat.com>
-	    Marcin Baczyński <marbacz@gmail.com>
+	    Marcin Baczyński  <marbacz@gmail.com>
 
 	PR c/48116
 	* doc/invoke.texi (-Wreturn-type): Mention not warning on return with
