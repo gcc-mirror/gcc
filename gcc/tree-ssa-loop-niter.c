@@ -3721,8 +3721,26 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
     return;
 
   loop->estimate_state = EST_AVAILABLE;
-  /* Force estimate compuation but leave any existing upper bound in place.  */
-  loop->any_estimate = false;
+
+  /* If we have a measured profile, use it to estimate the number of
+     iterations.  Normally this is recorded by branch_prob right after
+     reading the profile.  In case we however found a new loop, record the
+     information here.
+
+     Explicitly check for profile status so we do not report
+     wrong prediction hitrates for guessed loop iterations heuristics.
+     Do not recompute already recorded bounds - we ought to be better on
+     updating iteration bounds than updating profile in general and thus
+     recomputing iteration bounds later in the compilation process will just
+     introduce random roundoff errors.  */
+  if (!loop->any_estimate
+      && loop->header->count != 0
+      && profile_status_for_fn (cfun) >= PROFILE_READ)
+    {
+      gcov_type nit = expected_loop_iterations_unbounded (loop);
+      bound = gcov_type_to_wide_int (nit);
+      record_niter_bound (loop, bound, true, false);
+    }
 
   /* Ensure that loop->nb_iterations is computed if possible.  If it turns out
      to be constant, we avoid undefined behavior implied bounds and instead
@@ -3755,17 +3773,6 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   discover_iteration_bound_by_body_walk (loop);
 
   maybe_lower_iteration_bound (loop);
-
-  /* If we have a measured profile, use it to estimate the number of
-     iterations.  Explicitly check for profile status so we do not report
-     wrong prediction hitrates for guessed loop iterations heuristics.  */
-  if (loop->header->count != 0
-      && profile_status_for_fn (cfun) >= PROFILE_READ)
-    {
-      gcov_type nit = expected_loop_iterations_unbounded (loop);
-      bound = gcov_type_to_wide_int (nit);
-      record_niter_bound (loop, bound, true, false);
-    }
 
   /* If we know the exact number of iterations of this loop, try to
      not break code with undefined behavior by not recording smaller
