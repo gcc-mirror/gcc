@@ -1,3 +1,8 @@
+2016-06-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr37780_1.c: Use arm_arch_v6t2 effective target
+	and options.
+
 2016-06-10  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/71480

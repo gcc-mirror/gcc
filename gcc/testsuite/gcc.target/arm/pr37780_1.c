@@ -2,8 +2,9 @@
    being defined at zero.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_arch_v5_ok } */
+/* { dg-require-effective-target arm_arch_v6t2_ok } */
 /* { dg-options "-O2" } */
+/* { dg-add-options arm_arch_v6t2 } */
 
 int
 fooctz (int i)
