@@ -158,15 +158,16 @@ subroutine test1
   enddo
 
 
-  !$acc cache (a) ! { dg-error "inside of loop" }
+  !$acc cache (a(1:10)) ! { dg-error "ACC CACHE directive must be inside of loop" }
 
   do i = 1,10
-    !$acc cache(a)
+    !$acc cache(a(i:i+1))
   enddo
 
   do i = 1,10
+    !$acc cache(a(i:i+1))
     a(i) = i
-    !$acc cache(a) 
+    !$acc cache(a(i+2:i+2+1))
   enddo
 
 end subroutine test1

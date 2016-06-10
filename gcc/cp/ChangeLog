@@ -1,3 +1,10 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/71381
+	Backport from trunk r237290:
+	* parser.c (cp_parser_omp_var_list_no_open) <OMP_CLAUSE__CACHE_>:
+	Loosen checking.
+
 2016-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71442

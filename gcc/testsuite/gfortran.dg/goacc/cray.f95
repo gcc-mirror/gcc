@@ -44,7 +44,8 @@ contains
     !$acc end parallel loop
     !$acc parallel loop
     do i = 1,5
-      !$acc cache (ptr) ! TODO: This must fail, as in openacc-1_0-branch
+      !TODO: This must fail, as in openacc-1_0-branch.
+      !$acc cache (ptr) ! { dg-error "" "TODO" { xfail *-*-* } }
     enddo
     !$acc end parallel loop
     !$acc update device (ptr)
