@@ -1,3 +1,7 @@
+/* OpenACC cache directive: valid usage.  */
+/* For execution testing, this file is "#include"d from
+   libgomp/testsuite/libgomp.oacc-c-c++-common/cache-1.c.  */
+
 int
 main (int argc, char **argv)
 {
@@ -21,57 +25,31 @@ main (int argc, char **argv)
         int n = 1;
         const int len = n;
 
-#pragma acc cache /* { dg-error "expected '\\\(' before end of line" } */
-
-#pragma acc cache a[0:N] /* { dg-error "expected '\\\(' before 'a'" } */
-	/* { dg-bogus "expected end of line before 'a'" "" { xfail c++ } 26 } */
-
-#pragma acc cache (a) /* { dg-error "expected '\\\['" } */
-
-#pragma acc cache ( /* { dg-error "expected (identifier|unqualified-id) before end of line" } */
-
-#pragma acc cache () /* { dg-error "expected (identifier|unqualified-id) before '\\\)' token" } */
-
-#pragma acc cache (,) /* { dg-error "expected (identifier|unqualified-id) before '(,|\\\))' token" } */
-
-#pragma acc cache (a[0:N] /* { dg-error "expected '\\\)' before end of line" } */
-
-#pragma acc cache (a[0:N],) /* { dg-error "expected (identifier|unqualified-id) before '(,|\\\))' token" "" { xfail c } } */
-
-#pragma acc cache (a[0:N]) copyin (a[0:N]) /* { dg-error "expected end of line before 'copyin'" } */
-
-#pragma acc cache () /* { dg-error "expected (identifier|unqualified-id) before '\\\)' token" } */
-
-#pragma acc cache (a[0:N] b[0:N]) /* { dg-error "expected '\\\)' before 'b'" } */
-
-#pragma acc cache (a[0:N] b[0:N}) /* { dg-error "expected '\\\)' before 'b'" } */
-	/* { dg-bogus "expected end of line before '\\\}' token" "" { xfail c++ } 47 } */
-
-#pragma acc cache (a[0:N] /* { dg-error "expected '\\\)' before end of line" } */
-
-#pragma acc cache (a[ii]) /* { dg-error "'ii' is not a constant" } */
-
-#pragma acc cache (a[idx:n]) /* { dg-error "'n' is not a constant" } */
-
-#pragma acc cache (a[0:N]) ( /* { dg-error "expected end of line before '\\(' token" } */
-
-#pragma acc cache (a[0:N]) ii /* { dg-error "expected end of line before 'ii'" } */
-
-#pragma acc cache (a[0:N] ii) /* { dg-error "expected '\\)' before 'ii'" } */
-
+	/* Have at it, GCC!  */
 #pragma acc cache (a[0:N])
-
 #pragma acc cache (a[0:N], a[0:N])
-
 #pragma acc cache (a[0:N], b[0:N])
-
 #pragma acc cache (a[0])
-
 #pragma acc cache (a[0], a[1], b[0:N])
-
+#pragma acc cache (a[i - 5])
+#pragma acc cache (a[i + 5:len])
+#pragma acc cache (a[i + 5:len - 1])
+#pragma acc cache (b[i])
+#pragma acc cache (b[i:len])
+#pragma acc cache (a[ii])
+#pragma acc cache (a[ii:len])
+#pragma acc cache (b[ii - 1])
+#pragma acc cache (b[ii - 1:len])
+#pragma acc cache (b[i - ii + 1])
+#pragma acc cache (b[i + ii - 1:len])
+#pragma acc cache (b[i * ii - 1:len + 1])
+#pragma acc cache (a[idx + 2])
+#pragma acc cache (a[idx:len + 2])
 #pragma acc cache (a[idx])
-
 #pragma acc cache (a[idx:len])
+#pragma acc cache (a[idx + 2:len])
+#pragma acc cache (a[idx + 2 + i:len])
+#pragma acc cache (a[idx + 2 + i + ii:len])
 
         b[ii] = a[ii];
     }

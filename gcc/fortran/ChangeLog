@@ -1,3 +1,8 @@
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/71381
+	* openmp.c (gfc_match_oacc_cache): Add comment.
+
 2016-06-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/71404

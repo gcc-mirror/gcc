@@ -1688,6 +1688,10 @@ match
 gfc_match_oacc_cache (void)
 {
   gfc_omp_clauses *c = gfc_get_omp_clauses ();
+  /* The OpenACC cache directive explicitly only allows "array elements or
+     subarrays", which we're currently not checking here.  Either check this
+     after the call of gfc_match_omp_variable_list, or add something like a
+     only_sections variant next to its allow_sections parameter.  */
   match m = gfc_match_omp_variable_list (" (",
 					 &c->lists[OMP_LIST_CACHE], true,
 					 NULL, NULL, true);
