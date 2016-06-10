@@ -88,12 +88,6 @@ DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_VERY_LIKELY,
 DEF_PREDICTOR (PRED_COLD_FUNCTION, "cold function call", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
-/* Loopback edge is taken.
-   FIXME: This is currently disabled because loop_optimizer_init force
-   loops to have simple latches.  */
-DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", HITRATE (86),
-	       PRED_FLAG_FIRST_MATCH)
-
 /* Edge causing loop to terminate is probably not taken.  */
 DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (92),
 	       PRED_FLAG_FIRST_MATCH)

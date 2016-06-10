@@ -1,3 +1,8 @@
+2016-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (predict_loops): Remove PRED_LOOP_BRANCH.
+	* predict.def (PRED_LOOP_BRANCH): Remove.
+
 2016-06-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add ggc-tests.o.

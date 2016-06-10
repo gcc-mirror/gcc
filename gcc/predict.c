@@ -1805,18 +1805,6 @@ predict_loops (void)
 	  if (predicted_by_p (bb, PRED_CONTINUE))
 	    continue;
 
-	  /* Loop branch heuristics - predict an edge back to a
-	     loop's head as taken.  */
-	  if (bb == loop->latch)
-	    {
-	      e = find_edge (loop->latch, loop->header);
-	      if (e)
-		{
-		  header_found = 1;
-		  predict_edge_def (e, PRED_LOOP_BRANCH, TAKEN);
-		}
-	    }
-
 	  /* Loop exit heuristics - predict an edge exiting the loop if the
 	     conditional has no loop header successors as not taken.  */
 	  if (!header_found
