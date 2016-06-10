@@ -1,3 +1,8 @@
+2016-06-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71335
+	* gcc.c-torture/execute/pr71335.c: New test.
+
 2016-06-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/must-tail-call-2.c: Remove all details from
