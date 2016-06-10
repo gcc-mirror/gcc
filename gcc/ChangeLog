@@ -1,3 +1,8 @@
+2016-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71477
+	* cfgloop.c (alloc_loop): Initialize nb_iterations_likely_upper_bound.
+
 2016-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* df-problems.c (df_note_bb_compute): Guard use of DF_INSN_INFO_GET.
