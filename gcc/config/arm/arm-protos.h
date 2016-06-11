@@ -163,6 +163,7 @@ extern const char *arm_output_iwmmxt_shift_immediate (const char *, rtx *, bool)
 extern const char *arm_output_iwmmxt_tinsr (rtx *);
 extern unsigned int arm_sync_loop_insns (rtx , rtx *);
 extern int arm_attr_length_push_multi(rtx, rtx);
+extern int arm_attr_length_pop_multi(rtx *, bool, bool);
 extern void arm_expand_compare_and_swap (rtx op[]);
 extern void arm_split_compare_and_swap (rtx op[]);
 extern void arm_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);

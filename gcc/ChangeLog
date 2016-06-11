@@ -1,3 +1,15 @@
+2016-06-11  Jiong Wang  <jiong.wang@arm.com>
+
+	PR target/71061
+	* config/arm/arm-protos.h (arm_attr_length_pop_multi): New declaration.
+	* config/arm/arm.c (arm_attr_length_pop_multi): New function to return
+	length for pop patterns.
+	(arm_attr_length_push_multi): Update comments.
+	* config/arm/arm.md (*load_multiple_with_writeback): Set "length"
+	attribute.
+	(*pop_multiple_with_writeback_and_return): Likewise.
+	(*pop_multiple_with_return): Likewise.
+
 2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/71310
