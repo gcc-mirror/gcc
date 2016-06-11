@@ -1,3 +1,8 @@
+2016-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not clobber
+	gnat_entity_name with temporary names for XUP and XUT types.
+
 2016-06-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71392

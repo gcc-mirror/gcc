@@ -2335,10 +2335,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  gnat_name = Packed_Array_Impl_Type (gnat_entity);
 	else
 	  gnat_name = gnat_entity;
-	if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
-	  gnu_entity_name = create_concat_name (gnat_name, "XUP");
-	create_type_decl (gnu_entity_name, gnu_fat_type, artificial_p,
-			  debug_info_p, gnat_entity);
+	tree xup_name
+	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+	    ? get_entity_name (gnat_name)
+	    : create_concat_name (gnat_name, "XUP");
+	create_type_decl (xup_name, gnu_fat_type, artificial_p, debug_info_p,
+			  gnat_entity);
 
 	/* Create the type to be designated by thin pointers: a record type for
 	   the array and its template.  We used to shift the fields to have the
@@ -2348,11 +2350,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   Note that GDB can handle standard DWARF information for them, so we
 	   don't have to name them as a GNAT encoding, except if specifically
 	   asked to.  */
-	if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
-	  gnu_entity_name = create_concat_name (gnat_name, "XUT");
-	else
-	  gnu_entity_name = get_entity_name (gnat_name);
-	tem = build_unc_object_type (gnu_template_type, tem, gnu_entity_name,
+	tree xut_name
+	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+	    ? get_entity_name (gnat_name)
+	    : create_concat_name (gnat_name, "XUT");
+	tem = build_unc_object_type (gnu_template_type, tem, xut_name,
 				     debug_info_p);
 
 	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);
