@@ -1,3 +1,7 @@
+2016-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Deal with characters.
+
 2016-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not clobber
