@@ -1,5 +1,11 @@
 2016-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (build_binary_op_trapv): If no operand is a
+	constant, use the generic implementation of the middle-end; otherwise
+	turn the dynamic conditions into static conditions and simplify.
+
+2016-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Case_Statement_to_gnu): Deal with characters.
 
 2016-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
