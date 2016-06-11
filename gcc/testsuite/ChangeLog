@@ -1,3 +1,7 @@
+2016-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/case_character.adb: New test.
+
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/71373
