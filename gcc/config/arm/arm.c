@@ -27793,7 +27793,7 @@ arm_preferred_rename_class (reg_class_t rclass)
     return NO_REGS;
 }
 
-/* Compute the atrribute "length" of insn "*push_multi".
+/* Compute the attribute "length" of insn "*push_multi".
    So this function MUST be kept in sync with that insn pattern.  */
 int
 arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
@@ -27810,6 +27810,11 @@ arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
 
   /* Thumb2 mode.  */
   regno = REGNO (first_op);
+  /* For PUSH/STM under Thumb2 mode, we can use 16-bit encodings if the register
+     list is 8-bit.  Normally this means all registers in the list must be
+     LO_REGS, that is (R0 -R7).  If any HI_REGS used, then we must use 32-bit
+     encodings.  There is one exception for PUSH that LR in HI_REGS can be used
+     with 16-bit encoding.  */
   hi_reg = (REGNO_REG_CLASS (regno) == HI_REGS) && (regno != LR_REGNUM);
   for (i = 1; i < num_saves && !hi_reg; i++)
     {
@@ -27820,6 +27825,56 @@ arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
   if (!hi_reg)
     return 2;
   return 4;
+}
+
+/* Compute the attribute "length" of insn.  Currently, this function is used
+   for "*load_multiple_with_writeback", "*pop_multiple_with_return" and
+   "*pop_multiple_with_writeback_and_return".  OPERANDS is the toplevel PARALLEL
+   rtx, RETURN_PC is true if OPERANDS contains return insn.  WRITE_BACK_P is
+   true if OPERANDS contains insn which explicit updates base register.  */
+
+int
+arm_attr_length_pop_multi (rtx *operands, bool return_pc, bool write_back_p)
+{
+  /* ARM mode.  */
+  if (TARGET_ARM)
+    return 4;
+  /* Thumb1 mode.  */
+  if (TARGET_THUMB1)
+    return 2;
+
+  rtx parallel_op = operands[0];
+  /* Initialize to elements number of PARALLEL.  */
+  unsigned indx = XVECLEN (parallel_op, 0) - 1;
+  /* Initialize the value to base register.  */
+  unsigned regno = REGNO (operands[1]);
+  /* Skip return and write back pattern.
+     We only need register pop pattern for later analysis.  */
+  unsigned first_indx = 0;
+  first_indx += return_pc ? 1 : 0;
+  first_indx += write_back_p ? 1 : 0;
+
+  /* A pop operation can be done through LDM or POP.  If the base register is SP
+     and if it's with write back, then a LDM will be alias of POP.  */
+  bool pop_p = (regno == SP_REGNUM && write_back_p);
+  bool ldm_p = !pop_p;
+
+  /* Check base register for LDM.  */
+  if (ldm_p && REGNO_REG_CLASS (regno) == HI_REGS)
+    return 4;
+
+  /* Check each register in the list.  */
+  for (; indx >= first_indx; indx--)
+    {
+      regno = REGNO (XEXP (XVECEXP (parallel_op, 0, indx), 0));
+      /* For POP, PC in HI_REGS can be used with 16-bit encoding.  See similar
+	 comment in arm_attr_length_push_multi.  */
+      if (REGNO_REG_CLASS (regno) == HI_REGS
+	  && (regno != PC_REGNUM || ldm_p))
+	return 4;
+    }
+
+  return 2;
 }
 
 /* Compute the number of instructions emitted by output_move_double.  */
