@@ -1,3 +1,9 @@
+2016-06-12  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/60751
+	* gfortran.dg/guality/pr41558.f90: Remove extra comma in WRITE
+	statement.
+
 2016-06-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/60751
