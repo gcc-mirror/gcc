@@ -8875,19 +8875,16 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   tree rhs = gnat_protect_expr (right);
   tree type_max = TYPE_MAX_VALUE (gnu_type);
   tree type_min = TYPE_MIN_VALUE (gnu_type);
-  tree zero = build_int_cst (gnu_type, 0);
-  tree gnu_expr, rhs_lt_zero, tmp1, tmp2;
-  tree check_pos, check_neg, check;
+  tree gnu_expr, check;
+  int sgn;
 
   /* Assert that the precision is a power of 2.  */
   gcc_assert ((precision & (precision - 1)) == 0);
 
-  /* Prefer a constant or known-positive rhs to simplify checks.  */
-  if (!TREE_CONSTANT (rhs)
-      && commutative_tree_code (code)
-      && (TREE_CONSTANT (lhs)
-	  || (!tree_expr_nonnegative_p (rhs)
-	      && tree_expr_nonnegative_p (lhs))))
+  /* Prefer a constant on the RHS to simplify checks.  */
+  if (TREE_CODE (rhs) != INTEGER_CST
+      && TREE_CODE (lhs) == INTEGER_CST
+      && (code == PLUS_EXPR || code == MULT_EXPR))
     {
       tree tmp = lhs;
       lhs = rhs;
@@ -8898,150 +8895,148 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 
   /* If we can fold the expression to a constant, just return it.
      The caller will deal with overflow, no need to generate a check.  */
-  if (TREE_CONSTANT (gnu_expr))
+  if (TREE_CODE (gnu_expr) == INTEGER_CST)
     return gnu_expr;
 
-  rhs_lt_zero = tree_expr_nonnegative_p (rhs)
-		? boolean_false_node
-		: build_binary_op (LT_EXPR, boolean_type_node, rhs, zero);
-
-  /* ??? Should use more efficient check for operand_equal_p (lhs, rhs, 0) */
-
-  /* Try a few strategies that may be cheaper than the general
-     code at the end of the function, if the rhs is not known.
-     The strategies are:
-       - Call library function for 64-bit multiplication (complex)
-       - Widen, if input arguments are sufficiently small
-       - Determine overflow using wrapped result for addition/subtraction.  */
-
-  if (!TREE_CONSTANT (rhs))
+  /* If no operand is a constant, we use the generic implementation.  */
+  if (TREE_CODE (lhs) != INTEGER_CST && TREE_CODE (rhs) != INTEGER_CST)
     {
-      /* Even for add/subtract double size to get another base type.  */
-      const unsigned int needed_precision = precision * 2;
-
-      if (code == MULT_EXPR && precision == 64)
+      /* Never inline a 64-bit mult for a 32-bit target, it's way too long.  */
+      if (code == MULT_EXPR && precision == 64 && BITS_PER_WORD < 64)
 	{
-	  tree int_64 = gnat_type_for_size (64, 0);
-
+	  tree int64 = gnat_type_for_size (64, 0);
 	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
-						       convert (int_64, lhs),
-						       convert (int_64, rhs)));
+						       convert (int64, lhs),
+						       convert (int64, rhs)));
 	}
 
-      if (needed_precision <= BITS_PER_WORD
-	  || (code == MULT_EXPR && needed_precision <= LONG_LONG_TYPE_SIZE))
+      enum internal_fn icode;
+
+      switch (code)
 	{
-	  tree wide_type = gnat_type_for_size (needed_precision, 0);
-	  tree wide_result = build_binary_op (code, wide_type,
-					      convert (wide_type, lhs),
-					      convert (wide_type, rhs));
-
-	  check = build_binary_op
-	    (TRUTH_ORIF_EXPR, boolean_type_node,
-	     build_binary_op (LT_EXPR, boolean_type_node, wide_result,
-			      convert (wide_type, type_min)),
-	     build_binary_op (GT_EXPR, boolean_type_node, wide_result,
-			      convert (wide_type, type_max)));
-
-	  return
-	    emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
+	case PLUS_EXPR:
+	  icode = IFN_ADD_OVERFLOW;
+	  break;
+	case MINUS_EXPR:
+	  icode = IFN_SUB_OVERFLOW;
+	  break;
+	case MULT_EXPR:
+	  icode = IFN_MUL_OVERFLOW;
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
 
-      if (code == PLUS_EXPR || code == MINUS_EXPR)
-	{
-	  tree unsigned_type = gnat_type_for_size (precision, 1);
-	  tree wrapped_expr
-	    = convert (gnu_type,
-		       build_binary_op (code, unsigned_type,
-					convert (unsigned_type, lhs),
-					convert (unsigned_type, rhs)));
-
-	  /* Overflow when (rhs < 0) ^ (wrapped_expr < lhs)), for addition
-	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction.  */
-	  check
-	    = build_binary_op (TRUTH_XOR_EXPR, boolean_type_node, rhs_lt_zero,
-			       build_binary_op (code == PLUS_EXPR
-						? LT_EXPR : GT_EXPR,
-					        boolean_type_node,
-						wrapped_expr, lhs));
-
-	  return
-	    emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
-	}
+      tree gnu_ctype = build_complex_type (gnu_type);
+      tree call
+	= build_call_expr_internal_loc (UNKNOWN_LOCATION, icode, gnu_ctype, 2,
+					lhs, rhs);
+      tree tgt = save_expr (call);
+      gnu_expr = build1 (REALPART_EXPR, gnu_type, tgt);
+      check
+	= convert (boolean_type_node, build1 (IMAGPART_EXPR, gnu_type, tgt));
+      return
+	emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
    }
 
+  /* If one operand is a constant, we expose the overflow condition to enable
+     a subsequent simplication or even elimination.  */
   switch (code)
     {
     case PLUS_EXPR:
-      /* When rhs >= 0, overflow when lhs > type_max - rhs.  */
-      check_pos = build_binary_op (GT_EXPR, boolean_type_node, lhs,
-				   build_binary_op (MINUS_EXPR, gnu_type,
-						    type_max, rhs)),
-
-      /* When rhs < 0, overflow when lhs < type_min - rhs.  */
-      check_neg = build_binary_op (LT_EXPR, boolean_type_node, lhs,
-				   build_binary_op (MINUS_EXPR, gnu_type,
-						    type_min, rhs));
+      sgn = tree_int_cst_sgn (rhs);
+      if (sgn > 0)
+	/* When rhs > 0, overflow when lhs > type_max - rhs.  */
+	check = build_binary_op (GT_EXPR, boolean_type_node, lhs,
+				 build_binary_op (MINUS_EXPR, gnu_type,
+						  type_max, rhs));
+      else if (sgn < 0)
+	/* When rhs < 0, overflow when lhs < type_min - rhs.  */
+	check = build_binary_op (LT_EXPR, boolean_type_node, lhs,
+				 build_binary_op (MINUS_EXPR, gnu_type,
+						  type_min, rhs));
+      else
+	return gnu_expr;
       break;
 
     case MINUS_EXPR:
-      /* When rhs >= 0, overflow when lhs < type_min + rhs.  */
-      check_pos = build_binary_op (LT_EXPR, boolean_type_node, lhs,
-				   build_binary_op (PLUS_EXPR, gnu_type,
-						    type_min, rhs)),
-
-      /* When rhs < 0, overflow when lhs > type_max + rhs.  */
-      check_neg = build_binary_op (GT_EXPR, boolean_type_node, lhs,
-				   build_binary_op (PLUS_EXPR, gnu_type,
-						    type_max, rhs));
+      if (TREE_CODE (lhs) == INTEGER_CST)
+	{
+	  sgn = tree_int_cst_sgn (lhs);
+	  if (sgn > 0)
+	    /* When lhs > 0, overflow when rhs < lhs - type_max.  */
+	    check = build_binary_op (LT_EXPR, boolean_type_node, rhs,
+				     build_binary_op (MINUS_EXPR, gnu_type,
+						      lhs, type_max));
+	  else if (sgn < 0)
+	    /* When lhs < 0, overflow when rhs > lhs - type_min.  */
+	    check = build_binary_op (GT_EXPR, boolean_type_node, rhs,
+				     build_binary_op (MINUS_EXPR, gnu_type,
+						      lhs, type_min));
+	  else
+	    return gnu_expr;
+	}
+      else
+	{
+	  sgn = tree_int_cst_sgn (rhs);
+	  if (sgn > 0)
+	    /* When rhs > 0, overflow when lhs < type_min + rhs.  */
+	    check = build_binary_op (LT_EXPR, boolean_type_node, lhs,
+				     build_binary_op (PLUS_EXPR, gnu_type,
+						      type_min, rhs));
+	  else if (sgn < 0)
+	    /* When rhs < 0, overflow when lhs > type_max + rhs.  */
+	    check = build_binary_op (GT_EXPR, boolean_type_node, lhs,
+				     build_binary_op (PLUS_EXPR, gnu_type,
+						      type_max, rhs));
+	  else
+	    return gnu_expr;
+	}
       break;
 
     case MULT_EXPR:
-      /* The check here is designed to be efficient if the rhs is constant,
-	 but it will work for any rhs by using integer division.
-	 Four different check expressions determine whether X * C overflows,
-	 depending on C.
-	   C ==  0  =>  false
-	   C  >  0  =>  X > type_max / C || X < type_min / C
-	   C == -1  =>  X == type_min
-	   C  < -1  =>  X > type_min / C || X < type_max / C */
+      sgn = tree_int_cst_sgn (rhs);
+      if (sgn > 0)
+	{
+	  if (integer_onep (rhs))
+	    return gnu_expr;
 
-      tmp1 = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_max, rhs);
-      tmp2 = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_min, rhs);
+	  tree lb = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_min, rhs);
+	  tree ub = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_max, rhs);
 
-      check_pos
-	= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
-			   build_binary_op (NE_EXPR, boolean_type_node, zero,
-					    rhs),
-			   build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
-					    build_binary_op (GT_EXPR,
-							     boolean_type_node,
-							     lhs, tmp1),
-					    build_binary_op (LT_EXPR,
-							     boolean_type_node,
-							     lhs, tmp2)));
+	  /* When rhs > 1, overflow outside [type_min/rhs; type_max/rhs].  */
+	  check
+	    = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
+			       build_binary_op (LT_EXPR, boolean_type_node,
+						lhs, lb),
+			       build_binary_op (GT_EXPR, boolean_type_node,
+						lhs, ub));
+	}
+      else if (sgn < 0)
+	{
+	  tree lb = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_max, rhs);
+	  tree ub = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_min, rhs);
 
-      check_neg
-	= fold_build3 (COND_EXPR, boolean_type_node,
-		       build_binary_op (EQ_EXPR, boolean_type_node, rhs,
-					build_int_cst (gnu_type, -1)),
-		       build_binary_op (EQ_EXPR, boolean_type_node, lhs,
-					type_min),
-		       build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
-					build_binary_op (GT_EXPR,
-							 boolean_type_node,
-							 lhs, tmp2),
-					build_binary_op (LT_EXPR,
-							 boolean_type_node,
-							 lhs, tmp1)));
+	  if (integer_minus_onep (rhs))
+	    /* When rhs == -1, overflow if lhs == type_min.  */
+	    check
+	      = build_binary_op (EQ_EXPR, boolean_type_node, lhs, type_min);
+	  else
+	    /* When rhs < -1, overflow outside [type_max/rhs; type_min/rhs].  */
+	    check
+	      = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
+				 build_binary_op (LT_EXPR, boolean_type_node,
+						  lhs, lb),
+				 build_binary_op (GT_EXPR, boolean_type_node,
+						  lhs, ub));
+	}
+      else
+	return gnu_expr;
       break;
 
     default:
       gcc_unreachable ();
     }
-
-  check = fold_build3 (COND_EXPR, boolean_type_node, rhs_lt_zero, check_neg,
-		       check_pos);
 
   return emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 }
