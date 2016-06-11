@@ -3007,7 +3007,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
     }
 
   if (dt->extra_comma
-      && !gfc_notify_std (GFC_STD_GNU, "Comma before i/o item list at %L", 
+      && !gfc_notify_std (GFC_STD_LEGACY, "Comma before i/o item list at %L", 
 			  &dt->extra_comma->where))
     return false;
 

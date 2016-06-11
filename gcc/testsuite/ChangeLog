@@ -1,3 +1,14 @@
+2016-06-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/60751
+	* gfortran.dg/comma_IO_extension_1.f90: New test.
+	* gfortran.dg/comma_IO_extension_2.f90: Likewise.
+	* gfortran.dg/array_constructor_49.f90: Remove extra comma in WRITE
+	statement.
+	* gfortran.dg/graphite/pr38083.f90: Likewise.
+	* gfortran.dg/integer_exponentiation_6.F90: Likewise and add
+	missing format.
+
 2016-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/case_character.adb: New test.

@@ -1,3 +1,8 @@
+2016-06-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/60751
+	* io.c (gfc_resolve_dt): Replace GFC_STD_GNU with GFC_STD_LEGACY.
+
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/71381
