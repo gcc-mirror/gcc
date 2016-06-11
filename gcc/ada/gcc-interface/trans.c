@@ -2472,13 +2472,15 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 static tree
 Case_Statement_to_gnu (Node_Id gnat_node)
 {
-  tree gnu_result, gnu_expr, gnu_label;
+  tree gnu_result, gnu_expr, gnu_type, gnu_label;
   Node_Id gnat_when;
   location_t end_locus;
   bool may_fallthru = false;
 
   gnu_expr = gnat_to_gnu (Expression (gnat_node));
   gnu_expr = convert (get_base_type (TREE_TYPE (gnu_expr)), gnu_expr);
+  gnu_expr = maybe_character_value (gnu_expr);
+  gnu_type = TREE_TYPE (gnu_expr);
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
@@ -2548,6 +2550,11 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	  gcc_assert (!gnu_low  || TREE_CODE (gnu_low)  == INTEGER_CST);
 	  gcc_assert (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST);
 
+	  if (gnu_low && TREE_TYPE (gnu_low) != gnu_type)
+	    gnu_low = convert (gnu_type, gnu_low);
+	  if (gnu_high && TREE_TYPE (gnu_high) != gnu_type)
+	    gnu_high = convert (gnu_type, gnu_high);
+
 	  add_stmt_with_node (build_case_label (gnu_low, gnu_high, label),
 			      gnat_choice);
 	  choices_added_p = true;
@@ -2579,8 +2586,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
   /* Now emit a definition of the label the cases branch to, if any.  */
   if (may_fallthru)
     add_stmt (build1 (LABEL_EXPR, void_type_node, gnu_label));
-  gnu_result = build3 (SWITCH_EXPR, TREE_TYPE (gnu_expr), gnu_expr,
-		       end_stmt_group (), NULL_TREE);
+  gnu_result
+    = build3 (SWITCH_EXPR, gnu_type, gnu_expr, end_stmt_group (), NULL_TREE);
 
   return gnu_result;
 }
