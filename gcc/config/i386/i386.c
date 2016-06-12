@@ -38260,7 +38260,7 @@ ix86_init_builtin_types (void)
 static void
 ix86_init_builtins (void)
 {
-  tree t;
+  tree ftype, decl;
 
   ix86_init_builtin_types ();
 
@@ -38273,31 +38273,31 @@ ix86_init_builtins (void)
   def_builtin_const (0, "__builtin_huge_valq",
 		     FLOAT128_FTYPE_VOID, IX86_BUILTIN_HUGE_VALQ);
 
-  t = ix86_get_builtin_func_type (FLOAT128_FTYPE_CONST_STRING);
-  t = add_builtin_function ("__builtin_nanq", t, IX86_BUILTIN_NANQ,
-			    BUILT_IN_MD, "nanq", NULL_TREE);
-  TREE_READONLY (t) = 1;
-  ix86_builtins[(int) IX86_BUILTIN_NANQ] = t;
+  ftype = ix86_get_builtin_func_type (FLOAT128_FTYPE_CONST_STRING);
+  decl = add_builtin_function ("__builtin_nanq", ftype, IX86_BUILTIN_NANQ,
+			       BUILT_IN_MD, "nanq", NULL_TREE);
+  TREE_READONLY (decl) = 1;
+  ix86_builtins[(int) IX86_BUILTIN_NANQ] = decl;
 
-  t = ix86_get_builtin_func_type (FLOAT128_FTYPE_CONST_STRING);
-  t = add_builtin_function ("__builtin_nansq", t, IX86_BUILTIN_NANSQ,
-			    BUILT_IN_MD, "nansq", NULL_TREE);
-  TREE_READONLY (t) = 1;
-  ix86_builtins[(int) IX86_BUILTIN_NANSQ] = t;  
+  decl = add_builtin_function ("__builtin_nansq", ftype, IX86_BUILTIN_NANSQ,
+			       BUILT_IN_MD, "nansq", NULL_TREE);
+  TREE_READONLY (decl) = 1;
+  ix86_builtins[(int) IX86_BUILTIN_NANSQ] = decl;
 
   /* We will expand them to normal call if SSE isn't available since
      they are used by libgcc. */
-  t = ix86_get_builtin_func_type (FLOAT128_FTYPE_FLOAT128);
-  t = add_builtin_function ("__builtin_fabsq", t, IX86_BUILTIN_FABSQ,
-			    BUILT_IN_MD, "__fabstf2", NULL_TREE);
-  TREE_READONLY (t) = 1;
-  ix86_builtins[(int) IX86_BUILTIN_FABSQ] = t;
+  ftype = ix86_get_builtin_func_type (FLOAT128_FTYPE_FLOAT128);
+  decl = add_builtin_function ("__builtin_fabsq", ftype, IX86_BUILTIN_FABSQ,
+			       BUILT_IN_MD, "__fabstf2", NULL_TREE);
+  TREE_READONLY (decl) = 1;
+  ix86_builtins[(int) IX86_BUILTIN_FABSQ] = decl;
 
-  t = ix86_get_builtin_func_type (FLOAT128_FTYPE_FLOAT128_FLOAT128);
-  t = add_builtin_function ("__builtin_copysignq", t, IX86_BUILTIN_COPYSIGNQ,
-			    BUILT_IN_MD, "__copysigntf3", NULL_TREE);
-  TREE_READONLY (t) = 1;
-  ix86_builtins[(int) IX86_BUILTIN_COPYSIGNQ] = t;
+  ftype = ix86_get_builtin_func_type (FLOAT128_FTYPE_FLOAT128_FLOAT128);
+  decl = add_builtin_function ("__builtin_copysignq", ftype,
+			       IX86_BUILTIN_COPYSIGNQ, BUILT_IN_MD,
+			       "__copysigntf3", NULL_TREE);
+  TREE_READONLY (decl) = 1;
+  ix86_builtins[(int) IX86_BUILTIN_COPYSIGNQ] = decl;
 
   ix86_init_tm_builtins ();
   ix86_init_mmx_sse_builtins ();

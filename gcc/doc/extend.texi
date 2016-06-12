@@ -18445,28 +18445,19 @@ integers, these use @code{V4SI}.  Finally, some instructions operate on an
 entire vector register, interpreting it as a 128-bit integer, these use mode
 @code{TI}.
 
-In 64-bit mode, the x86-64 family of processors uses additional built-in
+The x86-32 and x86-64 family of processors use additional built-in
 functions for efficient use of @code{TF} (@code{__float128}) 128-bit
 floating point and @code{TC} 128-bit complex floating-point values.
 
-The following floating-point built-in functions are available in 64-bit
-mode.  All of them implement the function that is part of the name.
+The following floating-point built-in functions are always available.  All
+of them implement the function that is part of the name.
 
 @smallexample
 __float128 __builtin_fabsq (__float128)
 __float128 __builtin_copysignq (__float128, __float128)
 @end smallexample
 
-The following built-in function is always available.
-
-@table @code
-@item void __builtin_ia32_pause (void)
-Generates the @code{pause} machine instruction with a compiler memory
-barrier.
-@end table
-
-The following floating-point built-in functions are made available in the
-64-bit mode.
+The following built-in functions are always available.
 
 @table @code
 @item __float128 __builtin_infq (void)
@@ -18484,6 +18475,14 @@ Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
 @item __float128 __builtin_nansq (void)
 Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
 @findex __builtin_nansq
+@end table
+
+The following built-in function is always available.
+
+@table @code
+@item void __builtin_ia32_pause (void)
+Generates the @code{pause} machine instruction with a compiler memory
+barrier.
 @end table
 
 The following built-in functions are always available and can be used to

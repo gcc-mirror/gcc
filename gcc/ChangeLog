@@ -1,5 +1,12 @@
 2016-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_init_builtins): Calculate
+	FLOAT128_FTYPE_CONST_STRING function type only once.
+	* doc/extend.texi (x86 Built-in Functions): Update text, __float128
+	built-in functions are available for x86-32 and x86-64 targets.
+
+2016-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/71241
 	* config/i386/i386.i386-builtin-types.def (CONST_STRING):
 	New primitive type.
