@@ -1,3 +1,18 @@
+2016-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71241
+	* config/i386/i386.i386-builtin-types.def (CONST_STRING):
+	New primitive type.
+	(FLOAT128_FTYPE_CONST_STRING): New function type.
+	* config/i386/i386.c (enum ix86_builtins) [IX86_BUILTIN_NANQ]: New.
+	[IX86_BUILTIN_NANSQ]: Ditto.
+	(ix86_fold_builtin): Handle IX86_BUILTIN_NANQ and IX86_BUILTIN_NANSQ.
+	(ix86_init_builtin_types) Declare const_string_type_node.
+	Add __builtin_nanq and __builtin_nansq builtin functions.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_NANQ and IX86_BUILTIN_NANSQ.
+	* doc/extend.texi (x86 Built-in Functions): Document
+	__builtin_nanq and __builtin_nansq.
+
 2016-06-11  Jiong Wang  <jiong.wang@arm.com>
 
 	PR target/71061
@@ -60,7 +75,7 @@
 	(fsm_find_control_statement_thread_paths): Avoid putting the same
 	block on the thread path twice, but ensure the thread path is
 	unchanged from the caller's point of view.
-	
+
 2016-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (predict_loops): Remove PRED_LOOP_BRANCH.
@@ -144,21 +159,22 @@
 	    Jiong Wang  <jiong.wang@arm.com>
 
 	PR rtl-optimization/70751
-	* lra-constraints.c (process_alt_operands): Recognize Non-pseudo spilled
-	into memory.
+	* lra-constraints.c (process_alt_operands): Recognize Non-pseudo
+	spilled into memory.
 
-2016-06-09 Jonathan Yong  <10walls@gmail.com>
+2016-06-09  Jonathan Yong  <10walls@gmail.com>
 
 	Revert:
 	2015-09-21  Jonathan Yong  <10walls@gmail.com>
-        * config/i386/cygwin.h (STARTFILE_SPEC): Explicitly search
-        sysroot/usr/lib/32api for additional win32 libraries,
-        fixes failing Cygwin bootstrapping.
+
+	* config/i386/cygwin.h (STARTFILE_SPEC): Explicitly search
+	sysroot/usr/lib/32api for additional win32 libraries,
+	fixes failing Cygwin bootstrapping.
 
 2016-06-09  Marcin Baczyński  <marbacz@gmail.com>
 
 	* diagnostic.h (diagnostic_line_cutoff, diagnostic_flush_buffer):
-	delete.
+	Delete.
 
 2016-06-09  David Malcolm  <dmalcolm@redhat.com>
 
@@ -503,8 +519,7 @@
 
 2016-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-	* simplify-rtx.c (simplify_cond_clz_ctz): Delete 'mode' local
-	variable.
+	* simplify-rtx.c (simplify_cond_clz_ctz): Delete 'mode' local variable.
 
 2016-06-07  Jakub Jelinek  <jakub@redhat.com>
 
