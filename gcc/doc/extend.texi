@@ -18476,6 +18476,14 @@ Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
 @item __float128 __builtin_huge_valq (void)
 Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
 @findex __builtin_huge_valq
+
+@item __float128 __builtin_nanq (void)
+Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
+@findex __builtin_nanq
+
+@item __float128 __builtin_nansq (void)
+Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
+@findex __builtin_nansq
 @end table
 
 The following built-in functions are always available and can be used to
