@@ -6351,7 +6351,7 @@ vectorizable_live_operation (gimple *stmt,
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
     if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
 	worklist.safe_push (use_stmt);
-  gcc_assert (worklist.length () == 1);
+  gcc_assert (worklist.length () >= 1);
 
   bitsize = TYPE_SIZE (TREE_TYPE (vectype));
   vec_bitsize = TYPE_SIZE (vectype);
@@ -6409,9 +6409,12 @@ vectorizable_live_operation (gimple *stmt,
 
   /* Replace all uses of the USE_STMT in the worklist with the newly inserted
      statement.  */
-  use_stmt = worklist.pop ();
-  replace_uses_by (gimple_phi_result (use_stmt), new_tree);
-  update_stmt (use_stmt);
+  while (!worklist.is_empty ())
+    {
+      use_stmt = worklist.pop ();
+      replace_uses_by (gimple_phi_result (use_stmt), new_tree);
+      update_stmt (use_stmt);
+    }
 
   return true;
 }
