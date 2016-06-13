@@ -17493,6 +17493,31 @@ result returned from the @code{vec_srv} function is a
 (0x07 & shift_distance[i]))},
 with this resulting value coerced to the @code{unsigned char} type.
 
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9})
+or with @option{-mpower9-vector}:
+@smallexample
+__vector unsigned char
+vec_absd (__vector unsigned char arg1, __vector unsigned char arg2);
+__vector unsigned short
+vec_absd (__vector unsigned short arg1, __vector unsigned short arg2);
+__vector unsigned int
+vec_absd (__vector unsigned int arg1, __vector unsigned int arg2);
+
+__vector unsigned char
+vec_absdb (__vector unsigned char arg1, __vector unsigned char arg2);
+__vector unsigned short
+vec_absdh (__vector unsigned short arg1, __vector unsigned short arg2);
+__vector unsigned int
+vec_absdw (__vector unsigned int arg1, __vector unsigned int arg2);
+@end smallexample
+
+The @code{vec_absd}, @code{vec_absdb}, @code{vec_absdh}, and
+@code{vec_absdw} built-in functions each computes the absolute
+differences of the pairs of vector elements supplied in its two vector
+arguments, placing the absolute differences into the corresponding
+elements of the vector result.
+
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
 

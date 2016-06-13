@@ -1,3 +1,28 @@
+2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_absd): New macro for vector absolute
+	difference unsigned.
+	(vec_absdb): New macro for vector absolute difference unsigned
+	byte.
+	(vec_absdh): New macro for vector absolute difference unsigned
+	half-word.
+	(vec_absdw): New macro for vector absolute difference unsigned word.
+	* config/rs6000/altivec.md (UNSPEC_VADU): New value.
+	(vadu<mode>3): New insn.
+	(*p9_vadu<mode>3): New insn.
+	* config/rs6000/rs6000-builtin.def (vadub): New built-in
+	definition.
+	(vaduh): New built-in definition.
+	(vaduw): New built-in definition.
+	(vadu): New overloaded built-in definition.
+	(vadub): New overloaded built-in definition.
+	(vaduh): New overloaded built-in definition.
+	(vaduw): New overloaded built-in definition.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	overloaded vector absolute difference unsigned functions.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Document
+	the ISA 3.0 vector absolute difference unsigned built-in functions.
+
 2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Use a uniform test and
