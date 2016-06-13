@@ -1,5 +1,8 @@
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/71498
+	* c-c++-common/ubsan/bounds-13.c: New test.
+
 	PR preprocessor/71183
 	* gcc.dg/cpp/source_date_epoch-3.c: New test.
 
