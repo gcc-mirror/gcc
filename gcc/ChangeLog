@@ -1,3 +1,12 @@
+2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/71379
+	* config/s390/s390.c (s390_expand_builtin): Increase MAX_ARGS by
+	one.
+
 2016-06-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
