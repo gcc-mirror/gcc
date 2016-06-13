@@ -1,3 +1,10 @@
+2016-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (optimize_minmax_comparison): Remove.
+	(fold_comparison): Remove call to the above.
+	* match.pd (MIN (X, Y) == X, MIN (X, 5) == 0, MIN (X, C1) < C2):
+	New transformations.
+
 2016-06-13  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71416
