@@ -1,3 +1,13 @@
+2016-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_initelt): Provide location of name for new
+	location_t param of set_init_label.
+	* c-tree.h (set_init_label): Add location_t param.
+	* c-typeck.c (set_init_index): Add "fieldname_loc" location_t
+	param and use it when issuing error messages about unrecognized
+	field names.  Attempt to provide a fixit hint if appropriate,
+	otherwise update the error message to provide the type name.
+
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/71381
