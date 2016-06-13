@@ -1,3 +1,7 @@
+2016-06-13  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (ISL): Bump version to 0.16.1
+
 2016-06-10  Alan Hayward  <alan.hayward@arm.com>
 
 	* check_GNU_style.sh: Fix paste args for BSD
