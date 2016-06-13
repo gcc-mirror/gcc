@@ -44,4 +44,36 @@ selftest::fail (const char *file, int line, const char *msg)
   abort ();
 }
 
+/* As "fail", but using printf-style formatted output.  */
+
+void
+selftest::fail_formatted (const char *file, int line, const char *fmt, ...)
+{
+  va_list ap;
+
+  fprintf (stderr, "%s:%i: FAIL: ", file, line);
+  /* TODO: add calling function name as well?  */
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  abort ();
+}
+
+/* Implementation detail of ASSERT_STREQ.  */
+
+void
+selftest::assert_streq (const char *file, int line,
+			const char *desc_expected, const char *desc_actual,
+			const char *val_expected, const char *val_actual)
+{
+  if (0 == strcmp (val_expected, val_actual))
+    ::selftest::pass (file, line, "ASSERT_STREQ");
+  else
+    ::selftest::fail_formatted
+	(file, line, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=\"%s\"",
+	 desc_expected, desc_actual, val_expected, val_actual);
+}
+
+
 #endif /* #if CHECKING_P */

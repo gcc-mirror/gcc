@@ -39,6 +39,17 @@ extern void pass (const char *file, int line, const char *msg);
 
 extern void fail (const char *file, int line, const char *msg);
 
+/* As "fail", but using printf-style formatted output.  */
+
+extern void fail_formatted (const char *file, int line, const char *fmt, ...)
+ ATTRIBUTE_PRINTF_3;
+
+/* Implementation detail of ASSERT_STREQ.  */
+
+extern void assert_streq (const char *file, int line,
+			  const char *desc_expected, const char *desc_actual,
+			  const char *val_expected, const char *val_actual);
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();
@@ -123,15 +134,10 @@ extern int num_passes;
    ::selftest::pass if they are equal,
    ::selftest::fail if they are non-equal.  */
 
-#define ASSERT_STREQ(EXPECTED, ACTUAL)			       \
-  SELFTEST_BEGIN_STMT					       \
-  const char *desc = "ASSERT_STREQ (" #EXPECTED ", " #ACTUAL ")"; \
-  const char *expected_ = (EXPECTED);				  \
-  const char *actual_ = (ACTUAL);				  \
-  if (0 == strcmp (expected_, actual_))				  \
-    ::selftest::pass (__FILE__, __LINE__, desc);			       \
-  else							       \
-    ::selftest::fail (__FILE__, __LINE__, desc);			       \
+#define ASSERT_STREQ(EXPECTED, ACTUAL)				    \
+  SELFTEST_BEGIN_STMT						    \
+  ::selftest::assert_streq (__FILE__, __LINE__, #EXPECTED, #ACTUAL, \
+			    (EXPECTED), (ACTUAL));		    \
   SELFTEST_END_STMT
 
 /* Evaluate PRED1 (VAL1), calling ::selftest::pass if it is true,
