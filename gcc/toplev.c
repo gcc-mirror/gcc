@@ -1276,6 +1276,15 @@ process_options (void)
 		    "Address Sanitizer");
 	  flag_check_pointer_bounds = 0;
 	}
+
+      if (flag_sanitize & SANITIZE_BOUNDS)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "-fcheck-pointer-bounds is not supported with "
+		    "-fsanitize=bounds");
+	  flag_check_pointer_bounds = 0;
+	}
+
     }
 
   /* One region RA really helps to decrease the code size.  */

@@ -1,3 +1,9 @@
+2016-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/71458
+	* toplev.c (process_options): Do not enable -fcheck-pointer-bounds
+	w/ -fsanitize=bounds.
+
 2016-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_init_builtins): Calculate
