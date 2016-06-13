@@ -1312,6 +1312,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (minmax (bit_not:s@2 @0) (bit_not:s@3 @1))
   (bit_not (maxmin @0 @1))))
 
+/* MIN (X, Y) == X -> X <= Y  */
+(for minmax (min min max max)
+     cmp    (eq  ne  eq  ne )
+     out    (le  gt  ge  lt )
+ (simplify
+  (cmp:c (minmax:c @0 @1) @0)
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+   (out @0 @1))))
+/* MIN (X, 5) == 0 -> X == 0
+   MIN (X, 5) == 7 -> false  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (min @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (wi::lt_p (@1, @2, TYPE_SIGN (TREE_TYPE (@0))))
+   { constant_boolean_node (cmp == NE_EXPR, type); }
+   (if (wi::gt_p (@1, @2, TYPE_SIGN (TREE_TYPE (@0))))
+    (cmp @0 @2)))))
+(for cmp (eq ne)
+ (simplify
+  (cmp (max @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (wi::gt_p (@1, @2, TYPE_SIGN (TREE_TYPE (@0))))
+   { constant_boolean_node (cmp == NE_EXPR, type); }
+   (if (wi::lt_p (@1, @2, TYPE_SIGN (TREE_TYPE (@0))))
+    (cmp @0 @2)))))
+/* MIN (X, C1) < C2 -> X < C2 || C1 < C2  */
+(for minmax (min     min     max     max     min     min     max     max    )
+     cmp    (lt      le      gt      ge      gt      ge      lt      le     )
+     comb   (bit_ior bit_ior bit_ior bit_ior bit_and bit_and bit_and bit_and)
+ (simplify
+  (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
+  (comb (cmp @0 @2) (cmp @1 @2))))
+
 /* Simplifications of shift and rotates.  */
 
 (for rotate (lrotate rrotate)
