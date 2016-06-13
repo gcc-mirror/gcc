@@ -1,3 +1,9 @@
+2016-06-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70673
+	* frontend-passes.c (realloc_string_callback): Add a call to
+	gfc_dep_compare_expr.
+
 2016-06-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/60751

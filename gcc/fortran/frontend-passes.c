@@ -45,7 +45,7 @@ static void realloc_strings (gfc_namespace *);
 static gfc_expr *create_var (gfc_expr *, const char *vname=NULL);
 static int inline_matmul_assign (gfc_code **, int *, void *);
 static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
-				  locus *, gfc_namespace *, 
+				  locus *, gfc_namespace *,
 				  char *vname=NULL);
 
 /* How deep we are inside an argument list.  */
@@ -108,7 +108,7 @@ static int var_num = 1;
 
 enum matrix_case { none=0, A2B2, A2B1, A1B2, A2B2T };
 
-/* Keep track of the number of expressions we have inserted so far 
+/* Keep track of the number of expressions we have inserted so far
    using create_var.  */
 
 int n_vars;
@@ -142,7 +142,7 @@ gfc_run_passes (gfc_namespace *ns)
 
 /* Callback for each gfc_code node invoked from check_realloc_strings.
    For an allocatable LHS string which also appears as a variable on
-   the RHS, replace 
+   the RHS, replace
 
    a = a(x:y)
 
@@ -173,6 +173,13 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   if (!gfc_check_dependency (expr1, expr2, true))
+    return 0;
+
+  /* gfc_check_dependency doesn't always pick up identical expressions.
+     However, eliminating the above sends the compiler into an infinite
+     loop on valid expressions.  Without this check, the gimplifier emits
+     an ICE for a = a, where a is deferred character length.  */
+  if (!gfc_dep_compare_expr (expr1, expr2))
     return 0;
 
   current_code = c;
@@ -422,7 +429,7 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   /* We don't do character functions with unknown charlens.  */
-  if ((*e)->ts.type == BT_CHARACTER 
+  if ((*e)->ts.type == BT_CHARACTER
       && ((*e)->ts.u.cl == NULL || (*e)->ts.u.cl->length == NULL
 	  || (*e)->ts.u.cl->length->expr_type != EXPR_CONSTANT))
     return 0;
@@ -446,7 +453,7 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   if ((*e)->rank > 0 && (*e)->shape == NULL && !flag_realloc_lhs)
     return 0;
-  
+
   /* Skip the test for pure functions if -faggressive-function-elimination
      is specified.  */
   if ((*e)->value.function.esym)
@@ -528,7 +535,7 @@ constant_string_length (gfc_expr *e)
 	{
 	  res = gfc_get_constant_expr (BT_INTEGER, gfc_charlen_int_kind,
 				       &e->where);
-	  
+
 	  mpz_add_ui (res->value.integer, value, 1);
 	  mpz_clear (value);
 	  return res;
@@ -568,7 +575,7 @@ insert_block ()
       /* If the statement has a label,  make sure it is transferred to
 	 the newly created block.  */
 
-      if ((*current_code)->here) 
+      if ((*current_code)->here)
 	{
 	  inserted_block->here = (*current_code)->here;
 	  (*current_code)->here = NULL;
@@ -640,12 +647,12 @@ create_var (gfc_expr * e, const char *vname)
 	  for (i=0; i<e->rank; i++)
 	    {
 	      gfc_expr *p, *q;
-      
+
 	      p = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 					 &(e->where));
 	      mpz_set_si (p->value.integer, 1);
 	      symbol->as->lower[i] = p;
-	      
+
 	      q = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
 					 &(e->where));
 	      mpz_set (q->value.integer, e->shape[i]);
@@ -812,7 +819,7 @@ cfe_code (gfc_code **c, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       *walk_subtrees = 0;
       return 0;
     }
-  
+
 
   return 0;
 }
@@ -1077,8 +1084,8 @@ optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
 	}
     }
   else if (seen_op && e->expr_type == EXPR_FUNCTION && e->rank > 0
-	   && ! (e->value.function.esym 
-		 && (e->value.function.esym->attr.elemental 
+	   && ! (e->value.function.esym
+		 && (e->value.function.esym->attr.elemental
 		     || e->value.function.esym->attr.allocatable
 		     || e->value.function.esym->ts.type != c->expr1->ts.type
 		     || e->value.function.esym->ts.kind != c->expr1->ts.kind))
@@ -1104,7 +1111,7 @@ optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
       new_expr = gfc_copy_expr (c->expr1);
       c->expr2 = e;
       *rhs = new_expr;
-      
+
       return true;
 
     }
@@ -1337,7 +1344,7 @@ optimize_power (gfc_expr *e)
 				       "_internal_iand", e->where, 2, op2,
 				       gfc_get_int_expr (e->ts.kind,
 							 &e->where, 1));
-				   
+
       ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
 					"_internal_ishft", e->where, 2, iand,
 					gfc_get_int_expr (e->ts.kind,
@@ -1672,7 +1679,7 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 	    case INTRINSIC_EQ:
 	      result = eq == 0;
 	      break;
-	      
+
 	    case INTRINSIC_GE:
 	      result = eq >= 0;
 	      break;
@@ -1692,7 +1699,7 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 	    case INTRINSIC_LT:
 	      result = eq < 0;
 	      break;
-	      
+
 	    default:
 	      gfc_internal_error ("illegal OP in optimize_comparison");
 	      break;
@@ -1876,12 +1883,12 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  FOR_EACH_VEC_ELT (doloop_list, i, cl)
 	    {
 	      gfc_symbol *do_sym;
-	      
+
 	      if (cl == NULL)
 		break;
 
 	      do_sym = cl->ext.iterator->var->symtree->n.sym;
-	      
+
 	      if (a->expr && a->expr->symtree
 		  && a->expr->symtree->n.sym == do_sym)
 		{
@@ -1953,7 +1960,7 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	    break;
 
 	  do_sym = dl->ext.iterator->var->symtree->n.sym;
-	  
+
 	  if (a->expr && a->expr->symtree
 	      && a->expr->symtree->n.sym == do_sym)
 	    {
@@ -2184,7 +2191,7 @@ runtime_error_ne (gfc_expr *e1, gfc_expr *e2, const char *msg)
 /* Handle matrix reallocation.  Caller is responsible to insert into
    the code tree.
 
-   For the two-dimensional case, build 
+   For the two-dimensional case, build
 
   if (allocated(c)) then
      if (size(c,1) /= size(a,1) .or. size(c,2) /= size(b,2)) then
@@ -2277,7 +2284,7 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
 
   /* We need two identical allocate statements in two
      branches of the IF statement.  */
-  
+
   allocate1 = XCNEW (gfc_code);
   allocate1->op = EXEC_ALLOCATE;
   allocate1->ext.alloc.list = gfc_get_alloc ();
@@ -2300,7 +2307,7 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
   deallocate->ext.alloc.list->expr = gfc_copy_expr (c);
   deallocate->next = allocate1;
   deallocate->loc = c->where;
-  
+
   if_size_2 = XCNEW (gfc_code);
   if_size_2->op = EXEC_IF;
   if_size_2->expr1 = cond;
@@ -2580,7 +2587,7 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 
   /* Loop over the indices.  For each index, create the expression
      index * stride + lbound(e, dim).  */
-  
+
   i_index = 0;
   for (i=0; i < ar->dimen; i++)
     {
@@ -2590,9 +2597,9 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 	    {
 	      gfc_expr *lbound, *nindex;
 	      gfc_expr *loopvar;
-	      
-	      loopvar = gfc_copy_expr (index[i_index]); 
-	      
+
+	      loopvar = gfc_copy_expr (index[i_index]);
+
 	      if (ar->stride[i])
 		{
 		  gfc_expr *tmp;
@@ -2610,7 +2617,7 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 		}
 	      else
 		nindex = loopvar;
-	      
+
 	      /* Calculate the lower bound of the expression.  */
 	      if (ar->start[i])
 		{
@@ -2677,12 +2684,12 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 						   i + 1);
 		  gfc_free_expr (lbound_e);
 		}
-	      
+
 	      ar->dimen_type[i] = DIMEN_ELEMENT;
 
 	      gfc_free_expr (ar->start[i]);
 	      ar->start[i] = get_operand (INTRINSIC_PLUS, nindex, lbound);
-	      
+
 	      gfc_free_expr (ar->end[i]);
 	      ar->end[i] = NULL;
 	      gfc_free_expr (ar->stride[i]);
@@ -2781,7 +2788,7 @@ check_conjg_transpose_variable (gfc_expr *e, bool *conjg, bool *transpose)
        end do
      end do
    END BLOCK
-   
+
 */
 
 static int
@@ -3213,7 +3220,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 					matrix_a->where, 1, ascalar);
 
   if (conjg_b)
-    bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg", 
+    bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
 					matrix_b->where, 1, bscalar);
 
   /* First loop comes after the zero assignment.  */
@@ -3586,7 +3593,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      /* This goto serves as a shortcut to avoid code
 		 duplication or a larger if or switch statement.  */
 	      goto check_omp_clauses;
-	      
+
 	    case EXEC_OMP_WORKSHARE:
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
 
