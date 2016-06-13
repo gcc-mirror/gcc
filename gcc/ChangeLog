@@ -1,3 +1,8 @@
+2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Use a uniform test and
+	update shared_lookup_references only once after changing operands.
+
 2016-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/71373
