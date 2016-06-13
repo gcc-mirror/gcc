@@ -1,3 +1,9 @@
+2016-06-13  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71416
+	* tree-vect-loop.c (vectorizable_live_operation): Let worklist have
+	multiple entries
+
 2016-06-13  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (enum predictor_reason): Prefix enum with REASON_.
