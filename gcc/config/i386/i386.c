@@ -32722,6 +32722,7 @@ enum ix86_builtins
   IX86_BUILTIN_NANSQ,
   IX86_BUILTIN_FABSQ,
   IX86_BUILTIN_COPYSIGNQ,
+  IX86_BUILTIN_SIGNBITQ,
 
   /* Vectorizer support builtins.  */
   IX86_BUILTIN_CPYSGNPS,
@@ -33982,6 +33983,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_uminv8hi3, "__builtin_ia32_pminuw128", IX86_BUILTIN_PMINUW128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_mulv2siv2di3, "__builtin_ia32_pmuldq128", IX86_BUILTIN_PMULDQ128, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_mulv4si3, "__builtin_ia32_pmulld128", IX86_BUILTIN_PMULLD128, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_signbittf2, 0, IX86_BUILTIN_SIGNBITQ, UNKNOWN, (int) INT_FTYPE_FLOAT128 },
 
   /* SSE4.1 */
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundpd, "__builtin_ia32_roundpd", IX86_BUILTIN_ROUNDPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_INT },
@@ -38299,6 +38302,13 @@ ix86_init_builtins (void)
   TREE_READONLY (decl) = 1;
   ix86_builtins[(int) IX86_BUILTIN_COPYSIGNQ] = decl;
 
+  ftype = ix86_get_builtin_func_type (INT_FTYPE_FLOAT128);
+  decl = add_builtin_function ("__builtin_signbitq", ftype,
+			       IX86_BUILTIN_SIGNBITQ, BUILT_IN_MD,
+			       "__signbittf2", NULL_TREE);
+  TREE_READONLY (decl) = 1;
+  ix86_builtins[(int) IX86_BUILTIN_SIGNBITQ] = decl;
+
   ix86_init_tm_builtins ();
   ix86_init_mmx_sse_builtins ();
   ix86_init_mpx_builtins ();
@@ -39128,6 +39138,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case INT_FTYPE_V4SF:
     case INT_FTYPE_V2DF:
     case INT_FTYPE_V32QI:
+    case INT_FTYPE_FLOAT128:
     case V16QI_FTYPE_V16QI:
     case V8SI_FTYPE_V8SF:
     case V8SI_FTYPE_V4SI:
@@ -42638,16 +42649,26 @@ rdseed_step:
        i < ARRAY_SIZE (bdesc_args);
        i++, d++)
     if (d->code == fcode)
-      switch (fcode)
-	{
-	case IX86_BUILTIN_FABSQ:
-	case IX86_BUILTIN_COPYSIGNQ:
-	  if (!TARGET_SSE)
-	    /* Emit a normal call if SSE isn't available.  */
-	    return expand_call (exp, target, ignore);
-	default:
-	  return ix86_expand_args_builtin (d, exp, target);
-	}
+      {
+	switch (fcode)
+	  {
+	  case IX86_BUILTIN_FABSQ:
+	  case IX86_BUILTIN_COPYSIGNQ:
+	    if (!TARGET_SSE)
+	      /* Emit a normal call if SSE isn't available.  */
+	      return expand_call (exp, target, ignore);
+	    break;
+	  case IX86_BUILTIN_SIGNBITQ:
+	    if (!TARGET_SSE4_1)
+	      /* Emit a normal call if SSE4_1 isn't available.  */
+	      return expand_call (exp, target, ignore);
+	    break;
+	  default:
+	    break;
+	  }
+
+	return ix86_expand_args_builtin (d, exp, target);
+      }
 
   for (i = 0, d = bdesc_comi; i < ARRAY_SIZE (bdesc_comi); i++, d++)
     if (d->code == fcode)

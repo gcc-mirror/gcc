@@ -15212,6 +15212,19 @@
      (const_string "*")))
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "ptesttf2"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC [(match_operand:TF 0 "register_operand" "Yr, *x, x")
+		    (match_operand:TF 1 "vector_operand" "YrBm, *xBm, xm")]
+		   UNSPEC_PTEST))]
+  "TARGET_SSE4_1"
+  "%vptest\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssecomi")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "TI")])
+
 (define_insn "<sse4_1>_round<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256

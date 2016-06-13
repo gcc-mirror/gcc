@@ -1,3 +1,16 @@
+2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin-types.def (INT_FTYPE_FLOAT128):
+	New function type.
+	* config/i386/i386.c (enum ix86_builtins) [IX86_BUILTIN_SIGNBITQ]: New.
+	(ix86_init_builtins): Add __builtin_signbitq function.
+	(ix86_expand_args_builtin): Handle INT_FTYPE_FLOAT128.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_SIGNBITQ.
+	* config/i386/i386.md (signbittf2): New expander.
+	* config/i386/sse.md (ptesttf2): New insn pattern.
+	* doc/extend.texi (x86 Built-in Functions): Document
+	__builtin_signbitq.
+
 2016-06-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/71481
@@ -201,8 +214,9 @@
 	* config/i386/i386.c (enum ix86_builtins) [IX86_BUILTIN_NANQ]: New.
 	[IX86_BUILTIN_NANSQ]: Ditto.
 	(ix86_fold_builtin): Handle IX86_BUILTIN_NANQ and IX86_BUILTIN_NANSQ.
-	(ix86_init_builtin_types) Declare const_string_type_node.
-	Add __builtin_nanq and __builtin_nansq builtin functions.
+	(ix86_init_builtin_types): Declare const_string_type_node.
+	(ix86_init_builtins): Add __builtin_nanq and __builtin_nansq
+	builtin functions.
 	(ix86_expand_builtin): Handle IX86_BUILTIN_NANQ and IX86_BUILTIN_NANSQ.
 	* doc/extend.texi (x86 Built-in Functions): Document
 	__builtin_nanq and __builtin_nansq.

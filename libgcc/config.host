@@ -1361,9 +1361,7 @@ i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-freebsd* | x86_64-*-freebsd* | \
   i[34567]86-*-openbsd* | x86_64-*-openbsd*)
   	tmake_file="${tmake_file} t-softfp-tf"
-	if test "${host_address}" = 32; then
-		tmake_file="${tmake_file} i386/${host_address}/t-softfp"
-	fi
+	tmake_file="${tmake_file} i386/${host_address}/t-softfp"
 	tmake_file="${tmake_file} i386/t-softfp t-softfp"
 	;;
 esac
