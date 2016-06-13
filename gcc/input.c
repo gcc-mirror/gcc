@@ -1219,23 +1219,34 @@ test_builtins ()
 static void
 test_reading_source_line ()
 {
-  /* We will read *this* source file, using __FILE__.
-     Here is some specific text to read and test for:
-     The quick brown fox jumps over the lazy dog.  */
-  const int linenum_after_test_message = __LINE__;
-  const int linenum = linenum_after_test_message - 1;
+  /* Create a tempfile and write some text to it.  */
+  char *filename = make_temp_file (".txt");
+  ASSERT_NE (filename, NULL);
+  FILE *out = fopen (filename, "w");
+  if (!out)
+    ::selftest::fail_formatted (SELFTEST_LOCATION,
+				"unable to open tempfile: %s", filename);
+  fprintf (out,
+	   "01234567890123456789\n"
+	   "This is the test text\n"
+	   "This is the 3rd line\n");
+  fclose (out);
 
+  /* Read back a specific line from the tempfile.  */
   int line_size;
-  const char *source_line = location_get_source_line (__FILE__, linenum, &line_size);
+  const char *source_line = location_get_source_line (filename, 2, &line_size);
   ASSERT_TRUE (source_line != NULL);
-  ASSERT_EQ (53, line_size);
-  if (!strncmp ("     The quick brown fox jumps over the lazy dog.  */",
-	       source_line, line_size))
+  ASSERT_EQ (21, line_size);
+  if (!strncmp ("This is the test text",
+		source_line, line_size))
     ::selftest::pass (SELFTEST_LOCATION,
 		      "source_line matched expected value");
   else
     ::selftest::fail (SELFTEST_LOCATION,
 		      "source_line did not match expected value");
+
+  unlink (filename);
+  free (filename);
 }
 
 /* Run all of the selftests within this file.  */

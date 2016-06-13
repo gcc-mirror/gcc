@@ -1,5 +1,12 @@
 2016-06-13  David Malcolm  <dmalcolm@redhat.com>
 
+	PR bootstrap/71481
+	* input.c (selftest::test_reading_source_line): Avoid reading from
+	__FILE__ by creating a tempfile with known content and reading
+	from that instead.
+
+2016-06-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* pretty-print.c (assert_pp_format_colored): Skip the test if
 	GCC_COLORS is set.
 	(test_pp_format): Remove comment about GCC_COLORS.
