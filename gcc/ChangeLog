@@ -1,3 +1,9 @@
+2016-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71505
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Make
+	assert match comment.
+
 2016-06-13  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/71476
