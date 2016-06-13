@@ -192,6 +192,7 @@ struct cpu_branch_cost
 /* Allowed modes for approximations.  */
 struct cpu_approx_modes
 {
+  const unsigned int division;		/* Division.  */
   const unsigned int sqrt;		/* Square root.  */
   const unsigned int recip_sqrt;	/* Reciprocal square root.  */
 };
@@ -303,6 +304,7 @@ int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_constant_address_p (rtx);
+bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
 bool aarch64_expand_movmem (rtx *);
 bool aarch64_float_const_zero_rtx_p (rtx);

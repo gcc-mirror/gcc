@@ -396,6 +396,7 @@ static const struct cpu_branch_cost cortexa57_branch_cost =
 /* Generic approximation modes.  */
 static const cpu_approx_modes generic_approx_modes =
 {
+  AARCH64_APPROX_NONE,	/* division  */
   AARCH64_APPROX_NONE,	/* sqrt  */
   AARCH64_APPROX_NONE	/* recip_sqrt  */
 };
@@ -403,6 +404,7 @@ static const cpu_approx_modes generic_approx_modes =
 /* Approximation modes for Exynos M1.  */
 static const cpu_approx_modes exynosm1_approx_modes =
 {
+  AARCH64_APPROX_NONE,	/* division  */
   AARCH64_APPROX_ALL,	/* sqrt  */
   AARCH64_APPROX_ALL	/* recip_sqrt  */
 };
@@ -410,6 +412,7 @@ static const cpu_approx_modes exynosm1_approx_modes =
 /* Approximation modes for X-Gene 1.  */
 static const cpu_approx_modes xgene1_approx_modes =
 {
+  AARCH64_APPROX_NONE,	/* division  */
   AARCH64_APPROX_NONE,	/* sqrt  */
   AARCH64_APPROX_ALL	/* recip_sqrt  */
 };
@@ -7485,6 +7488,95 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
   /* Finalize the approximation.  */
   emit_set_insn (dst, gen_rtx_MULT (mode, xdst, x1));
 
+  return true;
+}
+
+typedef rtx (*recpe_type) (rtx, rtx);
+
+/* Select reciprocal initial estimate insn depending on machine mode.  */
+
+static recpe_type
+get_recpe_type (machine_mode mode)
+{
+  switch (mode)
+  {
+    case SFmode:   return (gen_aarch64_frecpesf);
+    case V2SFmode: return (gen_aarch64_frecpev2sf);
+    case V4SFmode: return (gen_aarch64_frecpev4sf);
+    case DFmode:   return (gen_aarch64_frecpedf);
+    case V2DFmode: return (gen_aarch64_frecpev2df);
+    default:       gcc_unreachable ();
+  }
+}
+
+typedef rtx (*recps_type) (rtx, rtx, rtx);
+
+/* Select reciprocal series step insn depending on machine mode.  */
+
+static recps_type
+get_recps_type (machine_mode mode)
+{
+  switch (mode)
+  {
+    case SFmode:   return (gen_aarch64_frecpssf);
+    case V2SFmode: return (gen_aarch64_frecpsv2sf);
+    case V4SFmode: return (gen_aarch64_frecpsv4sf);
+    case DFmode:   return (gen_aarch64_frecpsdf);
+    case V2DFmode: return (gen_aarch64_frecpsv2df);
+    default:       gcc_unreachable ();
+  }
+}
+
+/* Emit the instruction sequence to compute the approximation for the division
+   of NUM by DEN in QUO and return whether the sequence was emitted or not.  */
+
+bool
+aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
+{
+  machine_mode mode = GET_MODE (quo);
+  bool use_approx_division_p = (flag_mlow_precision_div
+			        || (aarch64_tune_params.approx_modes->division
+				    & AARCH64_APPROX_MODE (mode)));
+
+  if (!flag_finite_math_only
+      || flag_trapping_math
+      || !flag_unsafe_math_optimizations
+      || optimize_function_for_size_p (cfun)
+      || !use_approx_division_p)
+    return false;
+
+  /* Estimate the approximate reciprocal.  */
+  rtx xrcp = gen_reg_rtx (mode);
+  emit_insn ((*get_recpe_type (mode)) (xrcp, den));
+
+  /* Iterate over the series twice for SF and thrice for DF.  */
+  int iterations = (GET_MODE_INNER (mode) == DFmode) ? 3 : 2;
+
+  /* Optionally iterate over the series once less for faster performance,
+     while sacrificing the accuracy.  */
+  if (flag_mlow_precision_div)
+    iterations--;
+
+  /* Iterate over the series to calculate the approximate reciprocal.  */
+  rtx xtmp = gen_reg_rtx (mode);
+  while (iterations--)
+    {
+      emit_insn ((*get_recps_type (mode)) (xtmp, xrcp, den));
+
+      if (iterations > 0)
+	emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xtmp));
+    }
+
+  if (num != CONST1_RTX (mode))
+    {
+      /* As the approximate reciprocal of DEN is already calculated, only
+	 calculate the approximate division when NUM is not 1.0.  */
+      rtx xnum = force_reg (mode, num);
+      emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xnum));
+    }
+
+  /* Finalize the approximation.  */
+  emit_set_insn (quo, gen_rtx_MULT (mode, xrcp, xtmp));
   return true;
 }
 
