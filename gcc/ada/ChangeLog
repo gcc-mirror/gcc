@@ -1,5 +1,12 @@
 2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_subprog_type): Build only a minimal
+	PARM_DECL when the parameter type is dummy.
+	* gcc-interface/trans.c (Call_to_gnu): Translate formal types before
+	formal objects.
+
+2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Deal with
 	PLUS_EXPR in the expression of a renaming.
 
