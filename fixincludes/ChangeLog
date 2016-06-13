@@ -1,3 +1,15 @@
+2016-06-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_stdlib_malloc): New fix.
+	(aix_stdlib_realloc): New fix.
+	(aix_stdlib_calloc): New fix.
+	(aix_stdlib_valloc): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/stdlib.h [AIX_STDLIB_MALLOC]: New test.
+	[AIX_STDLIB_REALLOC]: New test.
+	[AIX_STDLIB_CALLOC]: New test.
+	[AIX_STDLIB_VALLOC]: New test.
+
 2016-01-31  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68741
