@@ -13022,7 +13022,7 @@ corresponding flag to the linker.
 @item -mno-low-precision-recip-sqrt
 @opindex mlow-precision-recip-sqrt
 @opindex mno-low-precision-recip-sqrt
-Enable or disable reciprocal square root approximation.
+Enable or disable the reciprocal square root approximation.
 This option only has an effect if @option{-ffast-math} or
 @option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
 precision of reciprocal square root results to about 16 bits for

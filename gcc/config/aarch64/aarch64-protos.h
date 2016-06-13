@@ -178,6 +178,23 @@ struct cpu_branch_cost
   const int unpredictable;  /* Unpredictable branch or optimizing for speed.  */
 };
 
+/* Control approximate alternatives to certain FP operators.  */
+#define AARCH64_APPROX_MODE(MODE) \
+  ((MIN_MODE_FLOAT <= (MODE) && (MODE) <= MAX_MODE_FLOAT) \
+   ? (1 << ((MODE) - MIN_MODE_FLOAT)) \
+   : (MIN_MODE_VECTOR_FLOAT <= (MODE) && (MODE) <= MAX_MODE_VECTOR_FLOAT) \
+     ? (1 << ((MODE) - MIN_MODE_VECTOR_FLOAT \
+	      + MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1)) \
+     : (0))
+#define AARCH64_APPROX_NONE (0)
+#define AARCH64_APPROX_ALL (-1)
+
+/* Allowed modes for approximations.  */
+struct cpu_approx_modes
+{
+  const unsigned int recip_sqrt; /* Reciprocal square root.  */
+};
+
 struct tune_params
 {
   const struct cpu_cost_table *insn_extra_cost;
@@ -185,6 +202,7 @@ struct tune_params
   const struct cpu_regmove_cost *regmove_cost;
   const struct cpu_vector_cost *vec_costs;
   const struct cpu_branch_cost *branch_costs;
+  const struct cpu_approx_modes *approx_modes;
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
