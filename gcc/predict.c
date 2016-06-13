@@ -59,10 +59,10 @@ along with GCC; see the file COPYING3.  If not see
 
 enum predictor_reason
 {
-  NONE,
-  IGNORED,
-  SINGLE_EDGE_DUPLICATE,
-  EDGE_PAIR_DUPLICATE
+  REASON_NONE,
+  REASON_IGNORED,
+  REASON_SINGLE_EDGE_DUPLICATE,
+  REASON_EDGE_PAIR_DUPLICATE
 };
 
 /* String messages for the aforementioned enum.  */
@@ -739,7 +739,7 @@ invert_br_probabilities (rtx insn)
 
 static void
 dump_prediction (FILE *file, enum br_predictor predictor, int probability,
-		 basic_block bb, enum predictor_reason reason = NONE,
+		 basic_block bb, enum predictor_reason reason = REASON_NONE,
 		 edge ep_edge = NULL)
 {
   edge e = ep_edge;
@@ -864,9 +864,9 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
   else
     {
       dump_prediction (dump_file, PRED_DS_THEORY, combined_probability,
-		       bb, !first_match ? NONE : IGNORED);
+		       bb, !first_match ? REASON_NONE : REASON_IGNORED);
       dump_prediction (dump_file, PRED_FIRST_MATCH, best_probability,
-		       bb, first_match ? NONE: IGNORED);
+		       bb, first_match ? REASON_NONE : REASON_IGNORED);
     }
 
   if (first_match)
@@ -883,7 +883,7 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 
 	  dump_prediction (dump_file, predictor, probability, bb,
 			   (!first_match || best_predictor == predictor)
-			   ? NONE : IGNORED);
+			   ? REASON_NONE : REASON_IGNORED);
 	  *pnote = XEXP (*pnote, 1);
 	}
       else
@@ -996,7 +996,7 @@ prune_predictions_for_bb (basic_block bb)
 		  /* Remove a duplicate predictor.  */
 		  dump_prediction (dump_file, pred->ep_predictor,
 				   pred->ep_probability, bb,
-				   SINGLE_EDGE_DUPLICATE, pred->ep_edge);
+				   REASON_SINGLE_EDGE_DUPLICATE, pred->ep_edge);
 
 		  remove.add (pred);
 		}
@@ -1008,11 +1008,11 @@ prune_predictions_for_bb (basic_block bb)
 		     for both edges.  */
 		  dump_prediction (dump_file, existing->ep_predictor,
 				   pred->ep_probability, bb,
-				   EDGE_PAIR_DUPLICATE,
+				   REASON_EDGE_PAIR_DUPLICATE,
 				   existing->ep_edge);
 		  dump_prediction (dump_file, pred->ep_predictor,
 				   pred->ep_probability, bb,
-				   EDGE_PAIR_DUPLICATE,
+				   REASON_EDGE_PAIR_DUPLICATE,
 				   pred->ep_edge);
 
 		  remove.add (existing);
@@ -1150,9 +1150,9 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
   else
     {
       dump_prediction (dump_file, PRED_DS_THEORY, combined_probability, bb,
-		       !first_match ? NONE : IGNORED);
+		       !first_match ? REASON_NONE : REASON_IGNORED);
       dump_prediction (dump_file, PRED_FIRST_MATCH, best_probability, bb,
-		       first_match ? NONE : IGNORED);
+		       first_match ? REASON_NONE : REASON_IGNORED);
     }
 
   if (first_match)
@@ -1168,7 +1168,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 
 	  dump_prediction (dump_file, predictor, probability, bb,
 			   (!first_match || best_predictor == predictor)
-			   ? NONE : IGNORED, pred->ep_edge);
+			   ? REASON_NONE : REASON_IGNORED, pred->ep_edge);
 	}
     }
   clear_bb_predictions (bb);
