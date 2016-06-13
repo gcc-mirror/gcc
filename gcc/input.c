@@ -1231,10 +1231,10 @@ test_reading_source_line ()
   ASSERT_EQ (53, line_size);
   if (!strncmp ("     The quick brown fox jumps over the lazy dog.  */",
 	       source_line, line_size))
-    ::selftest::pass (__FILE__, __LINE__,
+    ::selftest::pass (SELFTEST_LOCATION,
 		      "source_line matched expected value");
   else
-    ::selftest::fail (__FILE__, __LINE__,
+    ::selftest::fail (SELFTEST_LOCATION,
 		      "source_line did not match expected value");
 }
 
