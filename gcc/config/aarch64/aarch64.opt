@@ -161,3 +161,9 @@ Enable the square root approximation.  Enabling this reduces
 precision of square root results to about 16 bits for
 single precision and to 32 bits for double precision.
 If enabled, it implies -mlow-precision-recip-sqrt.
+
+mlow-precision-div
+Common Var(flag_mlow_precision_div) Optimization
+Enable the division approximation.  Enabling this reduces
+precision of division results to about 16 bits for
+single precision and to 32 bits for double precision.
