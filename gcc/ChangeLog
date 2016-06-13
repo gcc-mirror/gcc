@@ -1,5 +1,11 @@
 2016-06-13  David Malcolm  <dmalcolm@redhat.com>
 
+	* pretty-print.c (assert_pp_format_colored): Skip the test if
+	GCC_COLORS is set.
+	(test_pp_format): Remove comment about GCC_COLORS.
+
+2016-06-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* input.c (test_reading_source_line): Use SELFTEST_LOCATION.
 	* pretty-print.c (assert_pp_format_va): Add location param and use
 	it with ASSERT_STREQ_AT.
