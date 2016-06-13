@@ -1,3 +1,18 @@
+2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/vadsdu-0.c: New test.
+	* gcc.target/powerpc/vadsdu-1.c: New test.
+	* gcc.target/powerpc/vadsdu-2.c: New test.
+	* gcc.target/powerpc/vadsdu-3.c: New test.
+	* gcc.target/powerpc/vadsdu-4.c: New test.
+	* gcc.target/powerpc/vadsdu-5.c: New test.
+	* gcc.target/powerpc/vadsdub-1.c: New test.
+	* gcc.target/powerpc/vadsdub-2.c: New test.
+	* gcc.target/powerpc/vadsduh-1.c: New test.
+	* gcc.target/powerpc/vadsduh-2.c: New test.
+	* gcc.target/powerpc/vadsduw-1.c: New test.
+	* gcc.target/powerpc/vadsduw-2.c: New test.
+
 2016-06-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/c99-init-2.c (c): Update expected error message.

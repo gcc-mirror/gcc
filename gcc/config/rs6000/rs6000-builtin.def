@@ -1757,6 +1757,17 @@ BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
 BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
 BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
 
+/* 2 argument vector functions added in ISA 3.0 (power9). */
+BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)
+BU_P9V_AV_2 (VADUH,		"vaduh",		CONST,  vaduv8hi3)
+BU_P9V_AV_2 (VADUW,		"vaduw",		CONST,  vaduv4si3)
+
+/* ISA 3.0 vector overloaded 2 argument functions. */
+BU_P9V_OVERLOAD_2 (VADU,	"vadu")
+BU_P9V_OVERLOAD_2 (VADUB,	"vadub")
+BU_P9V_OVERLOAD_2 (VADUH,	"vaduh")
+BU_P9V_OVERLOAD_2 (VADUW,	"vaduw")
+
 
 /* 2 argument extended divide functions added in ISA 2.06.  */
 BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)
