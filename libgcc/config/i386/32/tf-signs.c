@@ -37,7 +37,6 @@ union _FP_UNION_Q
 
 __float128 __copysigntf3 (__float128, __float128);
 __float128 __fabstf2 (__float128);
-int __signbittf2 (__float128);
 
 __float128
 __copysigntf3 (__float128 a, __float128 b)
@@ -60,14 +59,4 @@ __fabstf2 (__float128 a)
   A.bits.sign = 0;
 
   return A.flt;
-}
-
-int
-__signbittf2 (__float128 a)
-{
-  union _FP_UNION_Q A;
-
-  A.flt = a;
-
-  return A.bits.sign;
 }

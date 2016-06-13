@@ -1,4 +1,5 @@
-# Provide fallbacks for __builtin_copysignq and __builtin_fabsq.
+# Provide fallbacks for __builtin_copysignq, __builtin_fabsq
+# and __builtin_signbitq.
 LIB2ADD += $(srcdir)/config/ia64/tf-signs.c
 
 LIB2ADD += $(srcdir)/config/ia64/sfp-exceptions.c

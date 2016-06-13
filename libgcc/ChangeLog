@@ -1,15 +1,3 @@
-2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
-
-	* config.host (i[34567]86-*-* | x86_64-*-*): Always include
-	i386/${host_address}/t-softfp in tmake_file.
-	* config/i386/32/t-softfp: Update comment for __builtin_copysignq.
-	* config/i386/32/tf-signs.c: Add __signbittf2 fallback function.
-	* config/i386/64/t-softfp: New file.
-	* config/i386/64/tf-signs.c: Ditto.
-	* config/i386/libgcc-bsd.ver: Add __signbittf2.
-	* config/i386/libgcc-glibc.ver: Ditto.
-	* config/i386/libgcc-sol2.ver: Ditto.
-
 2016-06-05  Aaron Conole  <aconole@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 

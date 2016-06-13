@@ -1,2 +1,0 @@
-# Provide fallbacks for __builtin_signbitq
-LIB2ADD += $(srcdir)/config/i386/64/tf-signs.c
