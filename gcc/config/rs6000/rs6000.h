@@ -2694,6 +2694,7 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_VSX			\
 				 | RS6000_BTM_P8_VECTOR			\
 				 | RS6000_BTM_P9_VECTOR			\
+				 | RS6000_BTM_MODULO                    \
 				 | RS6000_BTM_CRYPTO			\
 				 | RS6000_BTM_FRE			\
 				 | RS6000_BTM_FRES			\

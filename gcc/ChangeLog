@@ -1,5 +1,11 @@
 2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
+	* config/rs6000/rs6000.h (RS6000_BTM_COMMON): Add the
+	RS6000_BTM_MODULO flag into the set of flags that are considered
+	to be part of the common configuration.
+
+2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
 	* config/rs6000/altivec.h (vec_absd): New macro for vector absolute
 	difference unsigned.
 	(vec_absdb): New macro for vector absolute difference unsigned
