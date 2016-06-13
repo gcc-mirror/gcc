@@ -1,5 +1,39 @@
 2016-06-13  David Malcolm  <dmalcolm@redhat.com>
 
+	* input.c (test_reading_source_line): Use SELFTEST_LOCATION.
+	* pretty-print.c (assert_pp_format_va): Add location param and use
+	it with ASSERT_STREQ_AT.
+	(assert_pp_format): Add location param and pass it to
+	assert_pp_format_va.
+	(assert_pp_format_colored): Likewise.
+	(ASSERT_PP_FORMAT_1): New.
+	(ASSERT_PP_FORMAT_2): New.
+	(ASSERT_PP_FORMAT_3): New.
+	(test_pp_format): Provide SELFTEST_LOCATION throughout, either
+	explicitly, or implicitly via the above macros.
+	* selftest.c (selftest::pass): Use a selftest::location rather
+	than file and line.
+	(selftest::fail): Likewise.  Print the function name.
+	(selftest::fail_formatted): Likewise.
+	(selftest::assert_streq): Use a selftest::location rather than
+	file and line.
+	* selftest.h (selftest::location): New struct.
+	(SELFTEST_LOCATION): New macro.
+	(selftest::pass): Accept a const location & rather than file
+	and line.
+	(selftest::fail): Likewise.
+	(selftest::fail_formatted): Likewise.
+	(selftest::assert_streq): Likewise.
+	(ASSERT_TRUE): Update for above changes, using SELFTEST_LOCATION.
+	(ASSERT_FALSE): Likewise.
+	(ASSERT_EQ): Likewise.
+	(ASSERT_NE): Likewise.
+	(ASSERT_STREQ): Likewise.
+	(ASSERT_PRED1): Likewise.
+	(ASSERT_STREQ_AT): New macro.
+
+2016-06-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* selftest.c (selftest::fail_formatted): New function.
 	(selftest::assert_streq): New function.
 	* selftest.h (selftests::fail_formatted): New decl.
