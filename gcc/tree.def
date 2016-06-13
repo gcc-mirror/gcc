@@ -949,7 +949,7 @@ DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 3)
    Operand 1 is CASE_HIGH.  If it is NULL_TREE, the label is a simple
      (one-value) case label.  If it is non-NULL_TREE, the case is a range.
    Operand 2 is CASE_LABEL, which is is the corresponding LABEL_DECL.
-   Operand 4 is CASE_CHAIN.  This operand is only used in tree-cfg.c to
+   Operand 3 is CASE_CHAIN.  This operand is only used in tree-cfg.c to
      speed up the lookup of case labels which use a particular edge in
      the control flow graph.  */
 DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 4)
