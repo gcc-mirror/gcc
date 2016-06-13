@@ -1,5 +1,9 @@
 2016-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR middle-end/71373
+	* tree-nested.c (convert_nonlocal_omp_clauses)
+	(convert_local_omp_clauses): Document missing OMP_CLAUSE_*.
+
 	* tree-cfg.c (edge_to_cases_cleanup): Fix CASE_CHAIN typo.
 	* tree.def (CASE_LABEL_EXPR): Likewise.
 
