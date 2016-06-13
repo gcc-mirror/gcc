@@ -1,3 +1,11 @@
+2016-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (selftest::fail_formatted): New function.
+	(selftest::assert_streq): New function.
+	* selftest.h (selftests::fail_formatted): New decl.
+	(selftest::assert_streq): New decl.
+	(ASSERT_STREQ): Reimplement in terms of selftest::assert_streq.
+
 2016-06-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71403
