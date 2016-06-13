@@ -1,3 +1,8 @@
+2016-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/71183
+	* gcc.dg/cpp/source_date_epoch-3.c: New test.
+
 2016-06-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71403

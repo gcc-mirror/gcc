@@ -1,3 +1,9 @@
+2016-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/71183
+	* c-ppoutput.c (init_pp_output): Set cb->get_source_date_epoch
+	to cb_get_source_date_epoch.
+
 2016-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68657
