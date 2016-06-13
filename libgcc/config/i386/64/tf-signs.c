@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,41 +26,14 @@ union _FP_UNION_Q
    __float128 flt;
    struct 
    {
-      unsigned long frac0 : 32;
-      unsigned long frac1 : 32;
-      unsigned long frac2 : 32;
-      unsigned long frac3 : 16;
+      unsigned long long frac0 : 64;
+      unsigned long long frac1 : 48;
       unsigned exp : 15;
       unsigned sign : 1;
    } bits __attribute__((packed));
 };
 
-__float128 __copysigntf3 (__float128, __float128);
-__float128 __fabstf2 (__float128);
-int __signbittf2 (__float128);
-
-__float128
-__copysigntf3 (__float128 a, __float128 b)
-{
-  union _FP_UNION_Q A, B;
-
-  A.flt = a;
-  B.flt = b;
-  A.bits.sign = B.bits.sign;
-
-  return A.flt;
-}
-
-__float128
-__fabstf2 (__float128 a)
-{
-  union _FP_UNION_Q A;
-
-  A.flt = a;
-  A.bits.sign = 0;
-
-  return A.flt;
-}
+int __signbittf3 (__float128);
 
 int
 __signbittf2 (__float128 a)

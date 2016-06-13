@@ -1,3 +1,15 @@
+2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.host (i[34567]86-*-* | x86_64-*-*): Always include
+	i386/${host_address}/t-softfp in tmake_file.
+	* config/i386/32/t-softfp: Update comment for __builtin_copysignq.
+	* config/i386/32/tf-signs.c: Add __signbittf2 fallback function.
+	* config/i386/64/t-softfp: New file.
+	* config/i386/64/tf-signs.c: Ditto.
+	* config/i386/libgcc-bsd.ver: Add __signbittf2.
+	* config/i386/libgcc-glibc.ver: Ditto.
+	* config/i386/libgcc-sol2.ver: Ditto.
+
 2016-06-05  Aaron Conole  <aconole@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 
@@ -30,7 +42,7 @@
 
 2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* config.host [x86_64-*-cygwin*]: Handle tmake_eh_file for mixed 
+	* config.host [x86_64-*-cygwin*]: Handle tmake_eh_file for mixed
 	dw2/seh configuration.
 	[x86_64-*-mingw*]: Likewise.
 
@@ -104,7 +116,7 @@
 
 2016-03-28  James Bowman  <james.bowman@ftdichip.com>
 
-        * libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
+	* libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
 
 2016-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -519,7 +531,7 @@
 
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/cpuinfo.c (processor_features): Add
+	* config/i386/cpuinfo.c (processor_features): Add
 	FEATURE_AVX512VBMI and FEATURE_AVX512VBMI.
 
 2015-09-28  Joseph Myers  <joseph@codesourcery.com>
@@ -884,10 +896,10 @@
 
 2015-05-15  Martin Galvan  <martin.galvan@tallertechnologies.com>
 
-        * config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
-        New macros.
-        * config/arm/ieee754-df.S: Add CFI directives.
-        * config/arm/ieee754-sf.S: Add CFI directives.
+	* config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
+	New macros.
+	* config/arm/ieee754-df.S: Add CFI directives.
+	* config/arm/ieee754-sf.S: Add CFI directives.
 
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 

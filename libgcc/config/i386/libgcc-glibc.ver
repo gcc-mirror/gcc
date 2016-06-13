@@ -152,6 +152,10 @@ GCC_4.8.0 {
   __cpu_model
   __cpu_indicator_init
 }
+
+GCC_7.0.0 {
+  __signbittf2
+}
 %else
 GCC_4.4.0 {
   __addtf3
@@ -192,5 +196,9 @@ GCC_4.5.0 {
 GCC_4.8.0 {
   __cpu_model
   __cpu_indicator_init
+}
+
+GCC_7.0.0 {
+  __signbittf2
 }
 %endif

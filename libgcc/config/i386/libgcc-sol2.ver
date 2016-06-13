@@ -111,3 +111,7 @@ GCC_4.8.0 {
   __cpu_model
   __cpu_indicator_init
 }
+
+GCC_7.0.0 {
+  __signbittf2
+}
