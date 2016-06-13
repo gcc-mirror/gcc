@@ -1,5 +1,9 @@
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/71498
+	* c-gimplify.c (ubsan_walk_array_refs_r): Set *walk_subtrees = 0 on
+	all BIND_EXPRs, and on all BIND_EXPRs recurse also on BIND_EXPR_BODY.
+
 	PR preprocessor/71183
 	* c-ppoutput.c (init_pp_output): Set cb->get_source_date_epoch
 	to cb_get_source_date_epoch.

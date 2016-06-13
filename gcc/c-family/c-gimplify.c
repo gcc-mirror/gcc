@@ -67,23 +67,23 @@ ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
 {
   hash_set<tree> *pset = (hash_set<tree> *) data;
 
-  /* Since walk_tree doesn't call the callback function on the decls
-     in BIND_EXPR_VARS, we have to walk them manually.  */
   if (TREE_CODE (*tp) == BIND_EXPR)
     {
+      /* Since walk_tree doesn't call the callback function on the decls
+	 in BIND_EXPR_VARS, we have to walk them manually, so we can avoid
+	 instrumenting DECL_INITIAL of TREE_STATIC vars.  */
+      *walk_subtrees = 0;
       for (tree decl = BIND_EXPR_VARS (*tp); decl; decl = DECL_CHAIN (decl))
 	{
 	  if (TREE_STATIC (decl))
-	    {
-	      *walk_subtrees = 0;
-	      continue;
-	    }
+	    continue;
 	  walk_tree (&DECL_INITIAL (decl), ubsan_walk_array_refs_r, pset,
 		     pset);
 	  walk_tree (&DECL_SIZE (decl), ubsan_walk_array_refs_r, pset, pset);
 	  walk_tree (&DECL_SIZE_UNIT (decl), ubsan_walk_array_refs_r, pset,
 		     pset);
 	}
+      walk_tree (&BIND_EXPR_BODY (*tp), ubsan_walk_array_refs_r, pset, pset);
     }
   else if (TREE_CODE (*tp) == ADDR_EXPR
 	   && TREE_CODE (TREE_OPERAND (*tp, 0)) == ARRAY_REF)
