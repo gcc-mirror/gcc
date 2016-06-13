@@ -396,18 +396,21 @@ static const struct cpu_branch_cost cortexa57_branch_cost =
 /* Generic approximation modes.  */
 static const cpu_approx_modes generic_approx_modes =
 {
+  AARCH64_APPROX_NONE,	/* sqrt  */
   AARCH64_APPROX_NONE	/* recip_sqrt  */
 };
 
 /* Approximation modes for Exynos M1.  */
 static const cpu_approx_modes exynosm1_approx_modes =
 {
+  AARCH64_APPROX_ALL,	/* sqrt  */
   AARCH64_APPROX_ALL	/* recip_sqrt  */
 };
 
 /* Approximation modes for X-Gene 1.  */
 static const cpu_approx_modes xgene1_approx_modes =
 {
+  AARCH64_APPROX_NONE,	/* sqrt  */
   AARCH64_APPROX_ALL	/* recip_sqrt  */
 };
 
@@ -7370,10 +7373,10 @@ aarch64_builtin_reciprocal (tree fndecl)
 
 typedef rtx (*rsqrte_type) (rtx, rtx);
 
-/* Select reciprocal square root initial estimate
-   insn depending on machine mode.  */
+/* Select reciprocal square root initial estimate insn depending on machine
+   mode.  */
 
-rsqrte_type
+static rsqrte_type
 get_rsqrte_type (machine_mode mode)
 {
   switch (mode)
@@ -7389,10 +7392,9 @@ get_rsqrte_type (machine_mode mode)
 
 typedef rtx (*rsqrts_type) (rtx, rtx, rtx);
 
-/* Select reciprocal square root Newton-Raphson step
-   insn depending on machine mode.  */
+/* Select reciprocal square root series step insn depending on machine mode.  */
 
-rsqrts_type
+static rsqrts_type
 get_rsqrts_type (machine_mode mode)
 {
   switch (mode)
@@ -7406,46 +7408,84 @@ get_rsqrts_type (machine_mode mode)
   }
 }
 
-/* Emit instruction sequence to compute the reciprocal square root using the
-   Newton-Raphson series.  Iterate over the series twice for SF
-   and thrice for DF.  */
+/* Emit instruction sequence to compute either the approximate square root
+   or its approximate reciprocal, depending on the flag RECP, and return
+   whether the sequence was emitted or not.  */
 
-void
-aarch64_emit_approx_rsqrt (rtx dst, rtx src)
+bool
+aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
 {
-  machine_mode mode = GET_MODE (src);
-  gcc_assert (
-    mode == SFmode || mode == V2SFmode || mode == V4SFmode
-	|| mode == DFmode || mode == V2DFmode);
+  machine_mode mode = GET_MODE (dst);
+  machine_mode mmsk = mode_for_vector
+		        (int_mode_for_mode (GET_MODE_INNER (mode)),
+			 GET_MODE_NUNITS (mode));
+  bool use_approx_sqrt_p = (!recp
+			    && (flag_mlow_precision_sqrt
+			        || (aarch64_tune_params.approx_modes->sqrt
+				    & AARCH64_APPROX_MODE (mode))));
+  bool use_approx_rsqrt_p = (recp
+			     && (flag_mrecip_low_precision_sqrt
+				 || (aarch64_tune_params.approx_modes->recip_sqrt
+				     & AARCH64_APPROX_MODE (mode))));
 
-  rtx xsrc = gen_reg_rtx (mode);
-  emit_move_insn (xsrc, src);
-  rtx x0 = gen_reg_rtx (mode);
+  if (!flag_finite_math_only
+      || flag_trapping_math
+      || !flag_unsafe_math_optimizations
+      || !(use_approx_sqrt_p || use_approx_rsqrt_p)
+      || optimize_function_for_size_p (cfun))
+    return false;
 
-  emit_insn ((*get_rsqrte_type (mode)) (x0, xsrc));
+  rtx xmsk = gen_reg_rtx (mmsk);
+  if (!recp)
+    /* When calculating the approximate square root, compare the argument with
+       0.0 and create a mask.  */
+    emit_insn (gen_rtx_SET (xmsk, gen_rtx_NEG (mmsk, gen_rtx_EQ (mmsk, src,
+							  CONST0_RTX (mode)))));
 
-  bool double_mode = (mode == DFmode || mode == V2DFmode);
+  /* Estimate the approximate reciprocal square root.  */
+  rtx xdst = gen_reg_rtx (mode);
+  emit_insn ((*get_rsqrte_type (mode)) (xdst, src));
 
-  int iterations = double_mode ? 3 : 2;
+  /* Iterate over the series twice for SF and thrice for DF.  */
+  int iterations = (GET_MODE_INNER (mode) == DFmode) ? 3 : 2;
 
-  /* Optionally iterate over the series one less time than otherwise.  */
-  if (flag_mrecip_low_precision_sqrt)
+  /* Optionally iterate over the series once less for faster performance
+     while sacrificing the accuracy.  */
+  if ((recp && flag_mrecip_low_precision_sqrt)
+      || (!recp && flag_mlow_precision_sqrt))
     iterations--;
 
-  for (int i = 0; i < iterations; ++i)
+  /* Iterate over the series to calculate the approximate reciprocal square
+     root.  */
+  rtx x1 = gen_reg_rtx (mode);
+  while (iterations--)
     {
-      rtx x1 = gen_reg_rtx (mode);
       rtx x2 = gen_reg_rtx (mode);
-      rtx x3 = gen_reg_rtx (mode);
-      emit_set_insn (x2, gen_rtx_MULT (mode, x0, x0));
+      emit_set_insn (x2, gen_rtx_MULT (mode, xdst, xdst));
 
-      emit_insn ((*get_rsqrts_type (mode)) (x3, xsrc, x2));
+      emit_insn ((*get_rsqrts_type (mode)) (x1, src, x2));
 
-      emit_set_insn (x1, gen_rtx_MULT (mode, x0, x3));
-      x0 = x1;
+      if (iterations > 0)
+	emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, x1));
     }
 
-  emit_move_insn (dst, x0);
+  if (!recp)
+    {
+      /* Qualify the approximate reciprocal square root when the argument is
+	 0.0 by squashing the intermediary result to 0.0.  */
+      rtx xtmp = gen_reg_rtx (mmsk);
+      emit_set_insn (xtmp, gen_rtx_AND (mmsk, gen_rtx_NOT (mmsk, xmsk),
+					      gen_rtx_SUBREG (mmsk, xdst, 0)));
+      emit_move_insn (xdst, gen_rtx_SUBREG (mode, xtmp, 0));
+
+      /* Calculate the approximate square root.  */
+      emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, src));
+    }
+
+  /* Finalize the approximation.  */
+  emit_set_insn (dst, gen_rtx_MULT (mode, xdst, x1));
+
+  return true;
 }
 
 /* Return the number of instructions that can be issued per cycle.  */
@@ -7975,6 +8015,12 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
       && (aarch64_cmodel == AARCH64_CMODEL_TINY
 	  || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC))
     aarch64_nopcrelative_literal_loads = false;
+
+  /* When enabling the lower precision Newton series for the square root, also
+     enable it for the reciprocal square root, since the latter is an
+     intermediary step for the former.  */
+  if (flag_mlow_precision_sqrt)
+    flag_mrecip_low_precision_sqrt = true;
 }
 
 /* 'Unpack' up the internal tuning structs and update the options
