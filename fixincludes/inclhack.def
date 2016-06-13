@@ -911,6 +911,48 @@ fix = {
     test_text = "#ifdef __cplusplus\n}\n\n#ifdef ferror";
 };
 
+/*
+ * stdlib.h on AIX uses #define on malloc and friends.
+ */
+fix = {
+    hackname  = aix_stdlib_malloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+malloc[ \t]+__linux_malloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *malloc(size_t) __asm__(\"__linux_malloc\");";
+    test_text = "#define malloc __linux_malloc";
+};
+
+fix = {
+    hackname  = aix_stdlib_realloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+realloc[ \t]+__linux_realloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *realloc(void *, size_t) __asm__(\"__linux_realloc\");";
+    test_text = "#define realloc __linux_realloc";
+};
+
+fix = {
+    hackname  = aix_stdlib_calloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+calloc[ \t]+__linux_calloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *calloc(size_t, size_t) __asm__(\"__linux_calloc\");";
+    test_text = "#define calloc __linux_calloc";
+};
+
+fix = {
+    hackname  = aix_stdlib_valloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+valloc[ \t]+__linux_valloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *valloc(size_t) __asm__(\"__linux_valloc\");";
+    test_text = "#define valloc __linux_valloc";
+};
 
 /*
  * stdlib.h on AIX 4.3 declares strtof() with a non-const first argument.
