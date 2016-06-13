@@ -405,7 +405,7 @@
 		     UNSPEC_RSQRT))]
   "TARGET_SIMD"
 {
-  aarch64_emit_approx_rsqrt (operands[0], operands[1]);
+  aarch64_emit_approx_sqrt (operands[0], operands[1], true);
   DONE;
 })
 
@@ -4298,7 +4298,16 @@
 
 ;; sqrt
 
-(define_insn "sqrt<mode>2"
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:VDQF 0 "register_operand")
+	(sqrt:VDQF (match_operand:VDQF 1 "register_operand")))]
+  "TARGET_SIMD"
+{
+  if (aarch64_emit_approx_sqrt (operands[0], operands[1], false))
+    DONE;
+})
+
+(define_insn "*sqrt<mode>2"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
         (sqrt:VDQF (match_operand:VDQF 1 "register_operand" "w")))]
   "TARGET_SIMD"

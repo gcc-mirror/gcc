@@ -192,7 +192,8 @@ struct cpu_branch_cost
 /* Allowed modes for approximations.  */
 struct cpu_approx_modes
 {
-  const unsigned int recip_sqrt; /* Reciprocal square root.  */
+  const unsigned int sqrt;		/* Square root.  */
+  const unsigned int recip_sqrt;	/* Reciprocal square root.  */
 };
 
 struct tune_params
@@ -302,6 +303,7 @@ int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_constant_address_p (rtx);
+bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
 bool aarch64_expand_movmem (rtx *);
 bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
@@ -383,7 +385,6 @@ void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 void aarch64_save_restore_target_globals (tree);
-void aarch64_emit_approx_rsqrt (rtx, rtx);
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);

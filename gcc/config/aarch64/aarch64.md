@@ -4733,7 +4733,16 @@
   [(set_attr "type" "ffarith<s>")]
 )
 
-(define_insn "sqrt<mode>2"
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:GPF 0 "register_operand")
+        (sqrt:GPF (match_operand:GPF 1 "register_operand")))]
+  "TARGET_FLOAT"
+{
+  if (aarch64_emit_approx_sqrt (operands[0], operands[1], false))
+    DONE;
+})
+
+(define_insn "*sqrt<mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
         (sqrt:GPF (match_operand:GPF 1 "register_operand" "w")))]
   "TARGET_FLOAT"

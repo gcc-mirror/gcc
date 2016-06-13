@@ -151,5 +151,13 @@ PC relative literal loads.
 
 mlow-precision-recip-sqrt
 Common Var(flag_mrecip_low_precision_sqrt) Optimization
-When calculating the reciprocal square root approximation,
-uses one less step than otherwise, thus reducing latency and precision.
+Enable the reciprocal square root approximation.  Enabling this reduces
+precision of reciprocal square root results to about 16 bits for
+single precision and to 32 bits for double precision.
+
+mlow-precision-sqrt
+Common Var(flag_mlow_precision_sqrt) Optimization
+Enable the square root approximation.  Enabling this reduces
+precision of square root results to about 16 bits for
+single precision and to 32 bits for double precision.
+If enabled, it implies -mlow-precision-recip-sqrt.

@@ -576,6 +576,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
 -mfix-cortex-a53-843419  -mno-fix-cortex-a53-843419 @gol
 -mlow-precision-recip-sqrt -mno-low-precision-recip-sqrt@gol
+-mlow-precision-sqrt -mno-low-precision-sqrt@gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
 
 @emph{Adapteva Epiphany Options}
@@ -13027,6 +13028,17 @@ This option only has an effect if @option{-ffast-math} or
 @option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
 precision of reciprocal square root results to about 16 bits for
 single precision and to 32 bits for double precision.
+
+@item -mlow-precision-sqrt
+@item -mno-low-precision-sqrt
+@opindex -mlow-precision-sqrt
+@opindex -mno-low-precision-sqrt
+Enable or disable the square root approximation.
+This option only has an effect if @option{-ffast-math} or
+@option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
+precision of square root results to about 16 bits for
+single precision and to 32 bits for double precision.
+If enabled, it implies @option{-mlow-precision-recip-sqrt}.
 
 @item -march=@var{name}
 @opindex march
