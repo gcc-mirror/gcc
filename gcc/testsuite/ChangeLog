@@ -1,3 +1,13 @@
+2016-06-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/predict-1.c: Distinguish between "loop iv compare"
+	and "guess loop iv compared" heuristics.
+	* gcc.dg/predict-2.c: Likewise.
+	* gcc.dg/predict-3.c: Likewise.
+	* gcc.dg/predict-4.c: Likewise.
+	* gcc.dg/predict-5.c: Likewise.
+	* gcc.dg/predict-6.c: Likewise.
+
 2016-06-13  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/71476
