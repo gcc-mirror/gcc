@@ -1,3 +1,7 @@
+2016-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Fix typo in pedwarn text.
+
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/71381

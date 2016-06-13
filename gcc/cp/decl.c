@@ -11365,7 +11365,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    if (storage_class == sc_static)
 	      pedwarn (input_location, OPT_Wpedantic, 
-		       "%<static%> specified invalid for function %qs "
+		       "%<static%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	    else
 	      pedwarn (input_location, OPT_Wpedantic, 
