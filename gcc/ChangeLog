@@ -1,3 +1,8 @@
+2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Change builtin type naming
+	scheme to match builtin-types.def.
+
 2016-06-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (optimize_minmax_comparison): Remove.
