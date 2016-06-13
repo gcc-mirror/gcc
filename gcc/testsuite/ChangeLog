@@ -1,3 +1,7 @@
+2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming10.ad[sb]: New test.
+
 2016-06-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/70673
