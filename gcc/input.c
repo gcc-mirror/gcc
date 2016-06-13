@@ -1210,7 +1210,7 @@ test_unknown_location ()
 static void
 test_builtins ()
 {
-  assert_loceq ("<built-in>", 0, 0, BUILTINS_LOCATION);
+  assert_loceq (_("<built-in>"), 0, 0, BUILTINS_LOCATION);
   ASSERT_PRED1 (is_location_from_builtin_token, BUILTINS_LOCATION);
 }
 
