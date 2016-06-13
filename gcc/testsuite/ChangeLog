@@ -1,3 +1,10 @@
+2016-06-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71403
+	* c-c++-common/ubsan/pr71403-1.c: New test.
+	* c-c++-common/ubsan/pr71403-2.c: New test.
+	* c-c++-common/ubsan/pr71403-3.c: New test.
+
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71478
