@@ -1,3 +1,10 @@
+2016-06-13  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/71476
+	* c-c++-common/Wswitch-unreachable-4.c: New test.
+	* gcc.dg/Wswitch-unreachable-2.c: New test.
+	* g++.dg/tm/jump1.C: Move dg-warning.
+
 2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/renaming10.ad[sb]: New test.

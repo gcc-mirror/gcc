@@ -1,3 +1,10 @@
+2016-06-13  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/71476
+	* gimplify.c (maybe_warn_switch_unreachable): Factored out of
+	gimplify_switch_expr.
+	(warn_switch_unreachable_r): New function.
+
 2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/71379
