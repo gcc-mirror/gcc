@@ -1,3 +1,7 @@
+2016-06-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr71458.c: New test.
+
 2016-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71241
