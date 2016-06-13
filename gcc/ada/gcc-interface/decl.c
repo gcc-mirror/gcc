@@ -5959,8 +5959,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
 	      else
 		{
+		  /* Build a minimal PARM_DECL without DECL_ARG_TYPE so that
+		     Call_to_gnu will stop if it encounters the PARM_DECL.  */
 		  gnu_param
-		    = create_param_decl (gnu_param_name, gnu_param_type);
+		    = build_decl (input_location, PARM_DECL, gnu_param_name,
+				  gnu_param_type);
 		  associate_subprog_with_dummy_type (gnat_subprog,
 						     gnu_param_type);
 		  incomplete_profile_p = true;

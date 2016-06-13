@@ -4341,9 +4341,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
        gnat_actual = Next_Actual (gnat_actual))
     {
       Entity_Id gnat_formal_type = Etype (gnat_formal);
+      tree gnu_formal_type = gnat_to_gnu_type (gnat_formal_type);
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
-      tree gnu_formal_type = gnat_to_gnu_type (gnat_formal_type);
       const bool is_true_formal_parm
 	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
       const bool is_by_ref_formal_parm
