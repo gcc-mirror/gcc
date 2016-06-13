@@ -1,3 +1,9 @@
+2016-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64516
+	* fold-const.c (fold_unary_loc): Preserve alignment when
+	folding a VIEW_CONVERT_EXPR into a MEM_REF.
+
 2016-06-13  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/71458
