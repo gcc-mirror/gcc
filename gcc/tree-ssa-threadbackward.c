@@ -378,7 +378,7 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
    register the path.   */
 
 static void
-convert_and_register_jump_thread_path (vec<basic_block, va_gc> *&path,
+convert_and_register_jump_thread_path (vec<basic_block, va_gc> *path,
 				       edge taken_edge)
 {
   vec<jump_thread_edge *> *jump_thread_path = new vec<jump_thread_edge *> ();
@@ -402,9 +402,6 @@ convert_and_register_jump_thread_path (vec<basic_block, va_gc> *&path,
 
   register_jump_thread (jump_thread_path);
   --max_threaded_paths;
-
-  /* Remove BBI from the path.  */
-  path->pop ();
 }
 
 /* We trace the value of the SSA_NAME NAME back through any phi nodes looking
@@ -459,6 +456,9 @@ fsm_find_control_statement_thread_paths (tree name,
       seen_loop_phi = true;
     }
 
+  if (bb_loop_depth (last_bb_in_path) > bb_loop_depth (var_bb))
+    return;
+
   /* Following the chain of SSA_NAME definitions, we jumped from a definition in
      LAST_BB_IN_PATH to a definition in VAR_BB.  When these basic blocks are
      different, append to PATH the blocks from LAST_BB_IN_PATH to VAR_BB.  */
@@ -505,7 +505,9 @@ fsm_find_control_statement_thread_paths (tree name,
 	 NEXT_PATH.  Don't add them here to avoid pollution.  */
       for (unsigned int i = 0; i < next_path->length () - 1; i++)
 	{
-	  if (visited_bbs->contains ((*next_path)[i]))
+	  if (visited_bbs->contains ((*next_path)[i])
+	      || (bb_loop_depth (last_bb_in_path)
+		  > bb_loop_depth ((*next_path)[i])))
 	    {
 	      vec_free (next_path);
 	      return;
@@ -557,7 +559,12 @@ fsm_find_control_statement_thread_paths (tree name,
 	     into the canonical form and register it.  */
 	  edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg);
 	  if (taken_edge)
-	    convert_and_register_jump_thread_path (path, taken_edge);
+	    {
+	      if (bb_loop_depth (taken_edge->src)
+		  >= bb_loop_depth (taken_edge->dest))
+		convert_and_register_jump_thread_path (path, taken_edge);
+	      path->pop ();
+	    }
 	}
     }
   else if (gimple_code (def_stmt) == GIMPLE_ASSIGN)
@@ -578,7 +585,12 @@ fsm_find_control_statement_thread_paths (tree name,
 	  edge taken_edge = profitable_jump_thread_path (path, var_bb,
 						     name, arg);
 	  if (taken_edge)
-	    convert_and_register_jump_thread_path (path, taken_edge);
+	    {
+	      if (bb_loop_depth (taken_edge->src)
+		  >= bb_loop_depth (taken_edge->dest))
+		convert_and_register_jump_thread_path (path, taken_edge);
+	      path->pop ();
+	    }
 
 	  /* And put the current block back onto the path so that the
 	     state of the stack is unchanged when we leave.  */

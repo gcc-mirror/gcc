@@ -1,3 +1,13 @@
+2016-06-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71403
+	* tree-ssa-threadbackward.c
+	(convert_and_register_jump_thread_path): No longer accept reference
+	to path.  Do not pop items off the path anymore.
+	(fsm_find_control_statement_thread_paths): Do not allow threading
+	to a deeper loop nest.  Pop the last item off the path here rather
+	than in convert_and_register_jump_thread_path.
+
 2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000.h (RS6000_BTM_COMMON): Add the
