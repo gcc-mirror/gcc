@@ -1,3 +1,9 @@
+2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/71379
+	* config/s390/s390.c (s390_expand_builtin): Increase MAX_ARGS by
+	one.
+
 2016-06-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64516
