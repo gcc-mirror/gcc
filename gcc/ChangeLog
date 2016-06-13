@@ -1,3 +1,7 @@
+2016-06-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* input.c (test_builtins): Fix an assertion.
+
 2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (paritydi2): Use ix86_expand_setcc.
