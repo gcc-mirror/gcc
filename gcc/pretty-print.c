@@ -1266,6 +1266,12 @@ static void
 assert_pp_format_colored (const location &loc, const char *expected,
 			  const char *fmt, ...)
 {
+  /* The tests of colorization assume the default color scheme.
+     If GCC_COLORS is set, then the colors have potentially been
+     overridden; skip the test.  */
+  if (getenv ("GCC_COLORS"))
+    return;
+
   va_list ap;
 
   va_start (ap, fmt);
@@ -1347,7 +1353,6 @@ test_pp_format ()
   ASSERT_PP_FORMAT_2 ("normal colored normal 12345678",
 		      "normal %rcolored%R normal %x",
 		      "error", 0x12345678);
-  /* The following assumes an empty value for GCC_COLORS.  */
   assert_pp_format_colored
     (SELFTEST_LOCATION,
      "normal \33[01;31m\33[Kcolored\33[m\33[K normal 12345678",
