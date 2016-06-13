@@ -1,3 +1,9 @@
+2016-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71478
+	* gcc.dg/pr71478.c: Remove dg-require-effective-target vect_int.
+	Add -Wno-psabi -w to dg-options.
+
 2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/vadsdu-0.c: New test.
