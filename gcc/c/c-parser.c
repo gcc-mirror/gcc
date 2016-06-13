@@ -4397,6 +4397,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
       /* Old-style structure member designator.  */
       set_init_label (c_parser_peek_token (parser)->location,
 		      c_parser_peek_token (parser)->value,
+		      c_parser_peek_token (parser)->location,
 		      braced_init_obstack);
       /* Use the colon as the error location.  */
       pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_Wpedantic,
@@ -4426,6 +4427,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	      if (c_parser_next_token_is (parser, CPP_NAME))
 		{
 		  set_init_label (des_loc, c_parser_peek_token (parser)->value,
+				  c_parser_peek_token (parser)->location,
 				  braced_init_obstack);
 		  c_parser_consume_token (parser);
 		}

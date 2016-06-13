@@ -1,3 +1,9 @@
+2016-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/c99-init-2.c (c): Update expected error message.
+	* gcc.dg/init-bad-8.c (foo): Likewise.
+	* gcc.dg/spellcheck-fields-3.c: New test case.
+
 2016-06-13  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-1.c: Distinguish between "loop iv compare"

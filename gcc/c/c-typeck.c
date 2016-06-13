@@ -8211,7 +8211,7 @@ set_init_index (location_t loc, tree first, tree last,
 /* Within a struct initializer, specify the next field to be initialized.  */
 
 void
-set_init_label (location_t loc, tree fieldname,
+set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 		struct obstack *braced_init_obstack)
 {
   tree field;
@@ -8230,7 +8230,24 @@ set_init_label (location_t loc, tree fieldname,
   field = lookup_field (constructor_type, fieldname);
 
   if (field == 0)
-    error_at (loc, "unknown field %qE specified in initializer", fieldname);
+    {
+      tree guessed_id = lookup_field_fuzzy (constructor_type, fieldname);
+      if (guessed_id)
+	{
+	  rich_location rich_loc (line_table, fieldname_loc);
+	  source_range component_range =
+	    get_range_from_loc (line_table, fieldname_loc);
+	  rich_loc.add_fixit_replace (component_range,
+				      IDENTIFIER_POINTER (guessed_id));
+	  error_at_rich_loc
+	    (&rich_loc,
+	     "%qT has no member named %qE; did you mean %qE?",
+	     constructor_type, fieldname, guessed_id);
+	}
+      else
+	error_at (fieldname_loc, "%qT has no member named %qE",
+		  constructor_type, fieldname);
+    }
   else
     do
       {
