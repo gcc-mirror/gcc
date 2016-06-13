@@ -48,7 +48,7 @@ ln -sf $MPC mpc || exit 1
 
 # Necessary to build GCC with the Graphite loop optimizations.
 if [ "$GRAPHITE_LOOP_OPT" = "yes" ] ; then
-  ISL=isl-0.15
+  ISL=isl-0.16.1
 
   wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL.tar.bz2 || exit 1
   tar xjf $ISL.tar.bz2  || exit 1
