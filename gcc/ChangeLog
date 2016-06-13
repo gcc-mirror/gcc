@@ -1,3 +1,8 @@
+2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ggc-tests.c (test_finalization): Only test need_finalization_p
+	for GCC_VERSION >= 4003.
+
 2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vecintrin.h: Fix file description in comment.
