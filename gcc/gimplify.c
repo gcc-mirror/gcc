@@ -1559,6 +1559,73 @@ gimplify_statement_list (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Callback for walk_gimple_seq.  */
+
+static tree
+warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
+			   struct walk_stmt_info *wi)
+{
+  gimple *stmt = gsi_stmt (*gsi_p);
+
+  *handled_ops_p = true;
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_TRY:
+      /* A compiler-generated cleanup or a user-written try block.
+	 If it's empty, don't dive into it--that would result in
+	 worse location info.  */
+      if (gimple_try_eval (stmt) == NULL)
+	{
+	  wi->info = stmt;
+	  return integer_zero_node;
+	}
+      /* Fall through.  */
+    case GIMPLE_BIND:
+    case GIMPLE_CATCH:
+    case GIMPLE_EH_FILTER:
+    case GIMPLE_TRANSACTION:
+      /* Walk the sub-statements.  */
+      *handled_ops_p = false;
+      break;
+    default:
+      /* Save the first "real" statement (not a decl/lexical scope/...).  */
+      wi->info = stmt;
+      return integer_zero_node;
+    }
+  return NULL_TREE;
+}
+
+/* Possibly warn about unreachable statements between switch's controlling
+   expression and the first case.  SEQ is the body of a switch expression.  */
+
+static void
+maybe_warn_switch_unreachable (gimple_seq seq)
+{
+  if (!warn_switch_unreachable
+      /* This warning doesn't play well with Fortran when optimizations
+	 are on.  */
+      || lang_GNU_Fortran ()
+      || seq == NULL)
+    return;
+
+  struct walk_stmt_info wi;
+  memset (&wi, 0, sizeof (wi));
+  walk_gimple_seq (seq, warn_switch_unreachable_r, NULL, &wi);
+  gimple *stmt = (gimple *) wi.info;
+
+  if (stmt && gimple_code (stmt) != GIMPLE_LABEL)
+    {
+      if (gimple_code (stmt) == GIMPLE_GOTO
+	  && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
+	  && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
+	/* Don't warn for compiler-generated gotos.  These occur
+	   in Duff's devices, for example.  */;
+      else
+	warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
+		    "statement will never be executed");
+    }
+}
+
 
 /* Gimplify a SWITCH_EXPR, and collect the vector of labels it can
    branch to.  */
@@ -1596,39 +1663,8 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 
       gimplify_stmt (&SWITCH_BODY (switch_expr), &switch_body_seq);
 
-      /* Possibly warn about unreachable statements between switch's
-	 controlling expression and the first case.  */
-      if (warn_switch_unreachable
-	  /* This warning doesn't play well with Fortran when optimizations
-	     are on.  */
-	  && !lang_GNU_Fortran ()
-	  && switch_body_seq != NULL)
-	{
-	  gimple_seq seq = switch_body_seq;
-	  /* Look into the innermost lexical scope.  */
-	  while (gimple_code (seq) == GIMPLE_BIND)
-	    seq = gimple_bind_body (as_a <gbind *> (seq));
-	  gimple *stmt = gimple_seq_first_stmt (seq);
-	  if (gimple_code (stmt) == GIMPLE_TRY)
-	    {
-	      /* A compiler-generated cleanup or a user-written try block.
-		 Try to get the first statement in its try-block, for better
-		 location.  */
-	      if ((seq = gimple_try_eval (stmt)))
-		stmt = gimple_seq_first_stmt (seq);
-	    }
-	  if (gimple_code (stmt) != GIMPLE_LABEL)
-	    {
-	      if (gimple_code (stmt) == GIMPLE_GOTO
-		  && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
-		  && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
-		/* Don't warn for compiler-generated gotos.  These occur
-		   in Duff's devices, for example.  */;
-	      else
-		warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
-			    "statement will never be executed");
-	    }
-	}
+      maybe_warn_switch_unreachable (switch_body_seq);
+
       labels = gimplify_ctxp->case_labels;
       gimplify_ctxp->case_labels = saved_labels;
 
