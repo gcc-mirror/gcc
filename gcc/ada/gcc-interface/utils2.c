@@ -171,6 +171,10 @@ known_alignment (tree exp)
 
     case CALL_EXPR:
       {
+	tree func = get_callee_fndecl (exp);
+	if (func && DECL_IS_MALLOC (func))
+	  return get_target_system_allocator_alignment () * BITS_PER_UNIT;
+
 	tree t = maybe_inline_call_in_expr (exp);
 	if (t)
 	  return known_alignment (t);

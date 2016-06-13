@@ -1,3 +1,8 @@
+2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (known_alignment) <CALL_EXPR>: Deal specially
+	with calls to malloc.
+
 2016-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (build_binary_op_trapv): If no operand is a
