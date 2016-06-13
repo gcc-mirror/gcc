@@ -190,8 +190,10 @@ int test_struct_with_dtor::dtor_call_count;
 static void
 test_finalization ()
 {
+#if GCC_VERSION >= 4003
   ASSERT_FALSE (need_finalization_p <test_struct> ());
   ASSERT_TRUE (need_finalization_p <test_struct_with_dtor> ());
+#endif
 
   /* Create some garbage.  */
   const int count = 10;
