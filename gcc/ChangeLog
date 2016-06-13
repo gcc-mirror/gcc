@@ -1,5 +1,12 @@
 2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (paritydi2): Use ix86_expand_setcc.
+	(paritysi2): Ditto.
+	(isinfxf2): Ditto.
+	(isinf<mode>2): Ditto.
+
+2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
 	* ggc-tests.c (test_finalization): Only test need_finalization_p
 	for GCC_VERSION >= 4003.
 
