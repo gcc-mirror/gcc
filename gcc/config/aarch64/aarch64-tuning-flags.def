@@ -29,5 +29,3 @@
      AARCH64_TUNE_ to give an enum name. */
 
 AARCH64_EXTRA_TUNING_OPTION ("rename_fma_regs", RENAME_FMA_REGS)
-AARCH64_EXTRA_TUNING_OPTION ("approx_rsqrt", APPROX_RSQRT)
-

@@ -393,6 +393,24 @@ static const struct cpu_branch_cost cortexa57_branch_cost =
   3   /* Unpredictable.  */
 };
 
+/* Generic approximation modes.  */
+static const cpu_approx_modes generic_approx_modes =
+{
+  AARCH64_APPROX_NONE	/* recip_sqrt  */
+};
+
+/* Approximation modes for Exynos M1.  */
+static const cpu_approx_modes exynosm1_approx_modes =
+{
+  AARCH64_APPROX_ALL	/* recip_sqrt  */
+};
+
+/* Approximation modes for X-Gene 1.  */
+static const cpu_approx_modes xgene1_approx_modes =
+{
+  AARCH64_APPROX_ALL	/* recip_sqrt  */
+};
+
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
@@ -400,6 +418,7 @@ static const struct tune_params generic_tunings =
   &generic_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
+  &generic_approx_modes,
   4, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
@@ -424,6 +443,7 @@ static const struct tune_params cortexa35_tunings =
   &cortexa53_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
+  &generic_approx_modes,
   4, /* memmov_cost  */
   1, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -449,6 +469,7 @@ static const struct tune_params cortexa53_tunings =
   &cortexa53_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
+  &generic_approx_modes,
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -474,6 +495,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
   &cortexa57_branch_cost,
+  &generic_approx_modes,
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -499,6 +521,7 @@ static const struct tune_params cortexa72_tunings =
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
   &generic_branch_cost,
+  &generic_approx_modes,
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -524,6 +547,7 @@ static const struct tune_params exynosm1_tunings =
   &exynosm1_regmove_cost,
   &exynosm1_vector_cost,
   &generic_branch_cost,
+  &exynosm1_approx_modes,
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
@@ -538,7 +562,7 @@ static const struct tune_params exynosm1_tunings =
   48,	/* max_case_values.  */
   64,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_WEAK, /* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_APPROX_RSQRT) /* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NONE) /* tune_flags.  */
 };
 
 static const struct tune_params thunderx_tunings =
@@ -548,6 +572,7 @@ static const struct tune_params thunderx_tunings =
   &thunderx_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
+  &generic_approx_modes,
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
@@ -572,6 +597,7 @@ static const struct tune_params xgene1_tunings =
   &xgene1_regmove_cost,
   &xgene1_vector_cost,
   &generic_branch_cost,
+  &xgene1_approx_modes,
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
@@ -586,7 +612,7 @@ static const struct tune_params xgene1_tunings =
   0,	/* max_case_values.  */
   0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_APPROX_RSQRT)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -7320,12 +7346,12 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
    to optimize 1.0/sqrt.  */
 
 static bool
-use_rsqrt_p (void)
+use_rsqrt_p (machine_mode mode)
 {
   return (!flag_trapping_math
 	  && flag_unsafe_math_optimizations
-	  && ((aarch64_tune_params.extra_tuning_flags
-	       & AARCH64_EXTRA_TUNE_APPROX_RSQRT)
+	  && ((aarch64_tune_params.approx_modes->recip_sqrt
+	       & AARCH64_APPROX_MODE (mode))
 	      || flag_mrecip_low_precision_sqrt));
 }
 
@@ -7335,7 +7361,9 @@ use_rsqrt_p (void)
 static tree
 aarch64_builtin_reciprocal (tree fndecl)
 {
-  if (!use_rsqrt_p ())
+  machine_mode mode = TYPE_MODE (TREE_TYPE (fndecl));
+
+  if (!use_rsqrt_p (mode))
     return NULL_TREE;
   return aarch64_builtin_rsqrt (DECL_FUNCTION_CODE (fndecl));
 }
@@ -13731,13 +13759,13 @@ aarch64_promoted_type (const_tree t)
 /* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */
 
 static bool
-aarch64_optab_supported_p (int op, machine_mode, machine_mode,
+aarch64_optab_supported_p (int op, machine_mode mode1, machine_mode,
 			   optimization_type opt_type)
 {
   switch (op)
     {
     case rsqrt_optab:
-      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p ();
+      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p (mode1);
 
     default:
       return true;
