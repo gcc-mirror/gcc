@@ -18480,7 +18480,6 @@ of them implement the function that is part of the name.
 @smallexample
 __float128 __builtin_fabsq (__float128)
 __float128 __builtin_copysignq (__float128, __float128)
-int __builtin_signbitq (__float128)
 @end smallexample
 
 The following built-in functions are always available.

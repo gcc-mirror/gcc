@@ -1,6 +1,5 @@
 # Omit TImode functions
 softfp_int_modes := si di
 
-# Provide fallbacks for __builtin_copysignq, __builtin_fabsq
-# and __builtin_signbitq.
+# Provide fallbacks for __builtin_copysignq and __builtin_fabsq.
 LIB2ADD += $(srcdir)/config/i386/32/tf-signs.c

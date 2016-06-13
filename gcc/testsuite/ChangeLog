@@ -1,10 +1,3 @@
-2016-06-13  Uros Bizjak  <ubizjak@gmail.com>
-
-	* gcc.target/i386/float128-3.c: New test.
-	* gcc.target/i386/quad-sse4.c: Ditto.
-	* gcc.target/i386/quad-sse.c: Use -msse instead of -msse2.
-	Update scan strings.
-
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/71498
