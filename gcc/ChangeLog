@@ -1,3 +1,14 @@
+2015-06-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_mask_and_shift_for_ubfiz_p):
+	New function.
+	(aarch64_rtx_costs): Use it.  Rewrite CONST_INT_P (op1) case to handle
+	mask+shift version.
+	* config/aarch64/aarch64-protos.h (aarch64_mask_and_shift_for_ubfiz_p):
+	New prototype.
+	* config/aarch64/aarch64.md (*andim_ashift<mode>_bfiz): Replace
+	matching condition with aarch64_mask_and_shift_for_ubfiz_p.
+
 2016-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71522

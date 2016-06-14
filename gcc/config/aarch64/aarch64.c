@@ -6050,6 +6050,19 @@ aarch64_extend_bitfield_pattern_p (rtx x)
   return op;
 }
 
+/* Return true if the mask and a shift amount from an RTX of the form
+   (x << SHFT_AMNT) & MASK are valid to combine into a UBFIZ instruction of
+   mode MODE.  See the *andim_ashift<mode>_bfiz pattern.  */
+
+bool
+aarch64_mask_and_shift_for_ubfiz_p (machine_mode mode, rtx mask, rtx shft_amnt)
+{
+  return CONST_INT_P (mask) && CONST_INT_P (shft_amnt)
+	 && INTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
+	 && exact_log2 ((INTVAL (mask) >> INTVAL (shft_amnt)) + 1) >= 0
+	 && (INTVAL (mask) & ((1 << INTVAL (shft_amnt)) - 1)) == 0;
+}
+
 /* Calculate the cost of calculating X, storing it in *COST.  Result
    is true if the total cost of the operation has now been calculated.  */
 static bool
@@ -6624,17 +6637,31 @@ cost_plus:
 
       if (GET_MODE_CLASS (mode) == MODE_INT)
 	{
-	  /* We possibly get the immediate for free, this is not
-	     modelled.  */
-	  if (CONST_INT_P (op1)
-	      && aarch64_bitmask_imm (INTVAL (op1), mode))
+	  if (CONST_INT_P (op1))
 	    {
-	      *cost += rtx_cost (op0, mode, (enum rtx_code) code, 0, speed);
+	      /* We have a mask + shift version of a UBFIZ
+		 i.e. the *andim_ashift<mode>_bfiz pattern.  */
+	      if (GET_CODE (op0) == ASHIFT
+		  && aarch64_mask_and_shift_for_ubfiz_p (mode, op1,
+							  XEXP (op0, 1)))
+		{
+		  *cost += rtx_cost (XEXP (op0, 0), mode,
+				     (enum rtx_code) code, 0, speed);
+		  if (speed)
+		    *cost += extra_cost->alu.bfx;
 
-	      if (speed)
-		*cost += extra_cost->alu.logical;
+		  return true;
+		}
+	      else if (aarch64_bitmask_imm (INTVAL (op1), mode))
+		{
+		/* We possibly get the immediate for free, this is not
+		   modelled.  */
+		  *cost += rtx_cost (op0, mode, (enum rtx_code) code, 0, speed);
+		  if (speed)
+		    *cost += extra_cost->alu.logical;
 
-	      return true;
+		  return true;
+		}
 	    }
 	  else
 	    {
