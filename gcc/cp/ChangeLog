@@ -1,3 +1,9 @@
+2016-06-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck.c: Include "gcc-rich-location.h".
+	(finish_class_member_access_expr): Simplify fixit code by
+	using gcc_rich_location::add_fixit_misspelled_id.
+
 2016-06-14  Jason Merrill  <jason@redhat.com>
 
 	P0145R2: Refining Expression Order for C++.

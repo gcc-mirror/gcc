@@ -1,3 +1,10 @@
+2016-06-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-rich-location.c
+	(gcc_rich_location::add_fixit_misspelled_id): New method.
+	* gcc-rich-location.h
+	(gcc_rich_location::add_fixit_misspelled_id): Add decl.
+
 2016-06-14  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/arm/freebsd.h: Only enable unaligned access for armv6 on

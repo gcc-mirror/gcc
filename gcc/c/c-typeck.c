@@ -2371,14 +2371,9 @@ build_component_ref (location_t loc, tree datum, tree component,
 		 we have a valid range for the component.  */
 	      location_t reported_loc
 		= (component_loc != UNKNOWN_LOCATION) ? component_loc : loc;
-	      rich_location rich_loc (line_table, reported_loc);
+	      gcc_rich_location rich_loc (reported_loc);
 	      if (component_loc != UNKNOWN_LOCATION)
-		{
-		  source_range component_range =
-		    get_range_from_loc (line_table, component_loc);
-		  rich_loc.add_fixit_replace (component_range,
-					      IDENTIFIER_POINTER (guessed_id));
-		}
+		rich_loc.add_fixit_misspelled_id (component_loc, guessed_id);
 	      error_at_rich_loc
 		(&rich_loc,
 		 "%qT has no member named %qE; did you mean %qE?",
@@ -8234,11 +8229,8 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
       tree guessed_id = lookup_field_fuzzy (constructor_type, fieldname);
       if (guessed_id)
 	{
-	  rich_location rich_loc (line_table, fieldname_loc);
-	  source_range component_range =
-	    get_range_from_loc (line_table, fieldname_loc);
-	  rich_loc.add_fixit_replace (component_range,
-				      IDENTIFIER_POINTER (guessed_id));
+	  gcc_rich_location rich_loc (fieldname_loc);
+	  rich_loc.add_fixit_misspelled_id (fieldname_loc, guessed_id);
 	  error_at_rich_loc
 	    (&rich_loc,
 	     "%qT has no member named %qE; did you mean %qE?",

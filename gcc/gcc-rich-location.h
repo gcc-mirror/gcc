@@ -42,6 +42,9 @@ class gcc_rich_location : public rich_location
 
   void
   maybe_add_expr (tree t);
+
+  void add_fixit_misspelled_id (location_t misspelled_token_loc,
+				tree hint_id);
 };
 
 #endif /* GCC_RICH_LOCATION_H */
