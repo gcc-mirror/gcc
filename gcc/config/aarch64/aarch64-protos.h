@@ -318,6 +318,7 @@ bool aarch64_is_noplt_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);
 void aarch64_declare_function_name (FILE *, const char*, tree);
 bool aarch64_legitimate_pic_operand_p (rtx);
+bool aarch64_mask_and_shift_for_ubfiz_p (machine_mode, rtx, rtx);
 bool aarch64_modes_tieable_p (machine_mode mode1,
 			      machine_mode mode2);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
