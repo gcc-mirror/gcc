@@ -1,3 +1,22 @@
+2016-06-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Adding assertion.
+	(Analyze_Attribute [Attribute_Old]): Generating C handle
+	analysis of 'old in inlined postconditions.
+	(Analyze_Attribute [Attribute_Result]): Generating C handle analysis
+	of 'result in inlined postconditions.
+	* exp_attr.adb (Expand_N_Attribute_Reference [Attribute_Old]):
+	Generating C handle expansion of 'old in inlined postconditions.
+	* inline.adb (Declare_Postconditions_Result): New subprogram.
+	* sem_ch12.adb (Copy_Generic_Node): Copy pragmas generated from
+	aspects when generating C code since pre/post conditions are
+	inlined and the frontend inlining relies on this routine to
+	perform inlining.
+	* exp_ch6.adb (Inlined_Subprogram): Replace Generate_C_Code
+	by Modify_Tree_For_C.
+	* exp_unst.adb (Visit_Node): Searching for up-level references
+	skip entities defined in inlined subprograms.
+
 2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch7.adb, sem_ch12.adb, freeze.adb, lib-xref.ads, exp_ch3.adb:

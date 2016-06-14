@@ -1379,10 +1379,13 @@ package body Sem_Attr is
          --  Hence, in this context, the spec_id of _postconditions is the
          --  enclosing scope.
 
-         if Generate_C_Code
+         if Modify_Tree_For_C
            and then Chars (Spec_Id) = Name_uParent
            and then Chars (Scope (Spec_Id)) = Name_uPostconditions
          then
+            --  This situation occurs only when preanalyzing the inlined body
+            pragma Assert (not Full_Analysis);
+
             Spec_Id := Scope (Spec_Id);
             pragma Assert (Is_Inlined (Spec_Id));
          end if;
@@ -4886,7 +4889,16 @@ package body Sem_Attr is
          --  the case, then the aspect or pragma is illegal. Return as analysis
          --  cannot be carried out.
 
-         if not Legal then
+         --  The exception to this rule is when generating C since in this case
+         --  postconditions are inlined.
+
+         if No (Spec_Id)
+           and then Modify_Tree_For_C
+           and then In_Inlined_Body
+         then
+            Spec_Id := Entity (P);
+
+         elsif not Legal then
             return;
          end if;
 
@@ -5297,7 +5309,16 @@ package body Sem_Attr is
          --  the case, then the aspect or pragma is illegal. Return as analysis
          --  cannot be carried out.
 
-         if not Legal then
+         --  The exception to this rule is when generating C since in this case
+         --  postconditions are inlined.
+
+         if No (Spec_Id)
+           and then Modify_Tree_For_C
+           and then In_Inlined_Body
+         then
+            Spec_Id := Entity (P);
+
+         elsif not Legal then
             return;
          end if;
 

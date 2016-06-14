@@ -4357,10 +4357,24 @@ package body Exp_Attr is
          Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
+         Ins_Nod : Node_Id;
          Subp    : Node_Id;
          Temp    : Entity_Id;
 
       begin
+         --  Generating C code we don't need to expand this attribute when
+         --  we are analyzing the internally built nested postconditions
+         --  procedure since it will be expanded inline (and later it will
+         --  be removed by Expand_N_Subprogram_Body). It this expansion is
+         --  performed in such case then the compiler generates unreferenced
+         --  extra temporaries.
+
+         if Modify_Tree_For_C
+           and then Chars (Current_Scope) = Name_uPostconditions
+         then
+            return;
+         end if;
+
          --  Climb the parent chain looking for subprogram _Postconditions
 
          Subp := N;
@@ -4381,9 +4395,11 @@ package body Exp_Attr is
          end loop;
 
          --  'Old can only appear in a postcondition, the generated body of
-         --  _Postconditions must be in the tree.
+         --  _Postconditions must be in the tree (or inlined if we are
+         --  generating C code).
 
-         pragma Assert (Present (Subp));
+         pragma Assert (Present (Subp)
+           or else (Modify_Tree_For_C and then In_Inlined_Body));
 
          Temp := Make_Temporary (Loc, 'T', Pref);
 
@@ -4397,7 +4413,35 @@ package body Exp_Attr is
          --  resides as this ensures that the object will be analyzed in the
          --  proper context.
 
-         Push_Scope (Scope (Defining_Entity (Subp)));
+         if Present (Subp) then
+            Push_Scope (Scope (Defining_Entity (Subp)));
+
+         --  No need to push the scope when generating C code since the
+         --  _Postcondition procedure has been inlined.
+
+         else pragma Assert (Modify_Tree_For_C);
+            pragma Assert (In_Inlined_Body);
+            null;
+         end if;
+
+         --  Locate the insertion place of the internal temporary that saves
+         --  the 'Old value.
+
+         if Present (Subp) then
+            Ins_Nod := Subp;
+
+         --  Generating C, the postcondition procedure has been inlined and the
+         --  temporary is added before the first declaration of the enclosing
+         --  subprogram.
+
+         else pragma Assert (Modify_Tree_For_C);
+            Ins_Nod := N;
+            while Nkind (Ins_Nod) /= N_Subprogram_Body loop
+               Ins_Nod := Parent (Ins_Nod);
+            end loop;
+
+            Ins_Nod := First (Declarations (Ins_Nod));
+         end if;
 
          --  Preserve the tag of the prefix by offering a specific view of the
          --  class-wide version of the prefix.
@@ -4410,7 +4454,7 @@ package body Exp_Attr is
             CW_Temp := Make_Temporary (Loc, 'T');
             CW_Typ  := Class_Wide_Type (Typ);
 
-            Insert_Before_And_Analyze (Subp,
+            Insert_Before_And_Analyze (Ins_Nod,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => CW_Temp,
                 Constant_Present    => True,
@@ -4421,7 +4465,7 @@ package body Exp_Attr is
             --  Generate:
             --    Temp : Typ renames Typ (CW_Temp);
 
-            Insert_Before_And_Analyze (Subp,
+            Insert_Before_And_Analyze (Ins_Nod,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
@@ -4434,7 +4478,7 @@ package body Exp_Attr is
             --  Generate:
             --    Temp : constant Typ := Pref;
 
-            Insert_Before_And_Analyze (Subp,
+            Insert_Before_And_Analyze (Ins_Nod,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Constant_Present    => True,
@@ -4442,7 +4486,9 @@ package body Exp_Attr is
                 Expression          => Relocate_Node (Pref)));
          end if;
 
-         Pop_Scope;
+         if Present (Subp) then
+            Pop_Scope;
+         end if;
 
          --  Ensure that the prefix of attribute 'Old is valid. The check must
          --  be inserted after the expansion of the attribute has taken place
