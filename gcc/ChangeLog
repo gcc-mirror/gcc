@@ -1,3 +1,9 @@
+2016-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71520
+	* tree-ssa-tail-merge.c (find_duplicate): Handle labels.
+	(replace_block_by): Move user labels from bb1 to bb2.
+
 2016-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71310
