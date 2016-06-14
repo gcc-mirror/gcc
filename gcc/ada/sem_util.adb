@@ -13643,7 +13643,8 @@ package body Sem_Util is
 
       elsif Nkind (Context) = N_Attribute_Reference
         and then Prefix (Context) = Obj_Ref
-        and then Nam_In (Attribute_Name (Context), Name_Alignment,
+        and then Nam_In (Attribute_Name (Context), Name_Address,
+                                                   Name_Alignment,
                                                    Name_Component_Size,
                                                    Name_First_Bit,
                                                    Name_Last_Bit,

@@ -830,10 +830,24 @@ package body Sem_Ch5 is
                --  warnings when an assignment is rewritten as another
                --  assignment, and gets tied up with itself.
 
+               --  There may have been a previous reference to a component of
+               --  the variable, which in general removes the Last_Assignment
+               --  field of the variable to indicate a relevant use of the
+               --  previous assignment. However, if the assignment is to a
+               --  subcomponent the reference may not have registered, because
+               --  it is not possible to determine whether the context is an
+               --  assignment. In those cases we generate a Deferred_Reference,
+               --  to be used at the end of compilation to generate the right
+               --  kind of reference, and we suppress a potential warning for
+               --  a useless assignment, which might be premature. This may
+               --  lose a warning in rare cases, but seems preferable to a
+               --  misleading warning.
+
                if Warn_On_Modified_Unread
                  and then Is_Assignable (Ent)
                  and then Comes_From_Source (N)
                  and then In_Extended_Main_Source_Unit (Ent)
+                 and then not Has_Deferred_Reference (Ent)
                then
                   Warn_On_Useless_Assignment (Ent, N);
                end if;

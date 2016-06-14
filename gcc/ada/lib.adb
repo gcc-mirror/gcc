@@ -70,10 +70,12 @@ package body Lib is
      (S                : Source_Ptr;
       Unwind_Instances : Boolean;
       Unwind_Subunits  : Boolean) return Unit_Number_Type;
-   --  Common code for Get_Code_Unit (get unit of instantiation for
-   --  location) Get_Source_Unit (get unit of template for location) and
-   --  Get_Top_Level_Code_Unit (same as Get_Code_Unit but not stopping at
-   --  subunits).
+   --  Common processing for routines Get_Code_Unit, Get_Source_Unit, and
+   --  Get_Top_Level_Code_Unit. Unwind_Instances is True when the unit for the
+   --  top-level instantiation should be returned instead of the unit for the
+   --  template, in the case of an instantiation. Unwind_Subunits is True when
+   --  the corresponding top-level unit should be returned instead of a
+   --  subunit, in the case of a subunit.
 
    --------------------------------------------
    -- Access Functions for Unit Table Fields --
@@ -635,8 +637,11 @@ package body Lib is
 
    function Get_Code_Unit (S : Source_Ptr) return Unit_Number_Type is
    begin
-      return Get_Code_Or_Source_Unit (Top_Level_Location (S),
-        Unwind_Instances => False, Unwind_Subunits => False);
+      return
+        Get_Code_Or_Source_Unit
+          (Top_Level_Location (S),
+           Unwind_Instances => False,
+           Unwind_Subunits  => False);
    end Get_Code_Unit;
 
    function Get_Code_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
@@ -652,7 +657,6 @@ package body Lib is
    begin
       if N <= Compilation_Switches.Last then
          return Compilation_Switches.Table (N);
-
       else
          return null;
       end if;
@@ -711,8 +715,9 @@ package body Lib is
 
    function Get_Source_Unit (S : Source_Ptr) return Unit_Number_Type is
    begin
-      return Get_Code_Or_Source_Unit (S,
-        Unwind_Instances => True, Unwind_Subunits => False);
+      return
+        Get_Code_Or_Source_Unit
+          (S, Unwind_Instances => True, Unwind_Subunits => False);
    end Get_Source_Unit;
 
    function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
@@ -726,8 +731,11 @@ package body Lib is
 
    function Get_Top_Level_Code_Unit (S : Source_Ptr) return Unit_Number_Type is
    begin
-      return Get_Code_Or_Source_Unit (Top_Level_Location (S),
-        Unwind_Instances => False, Unwind_Subunits => True);
+      return
+        Get_Code_Or_Source_Unit
+          (Top_Level_Location (S),
+           Unwind_Instances => False,
+           Unwind_Subunits  => True);
    end Get_Top_Level_Code_Unit;
 
    function Get_Top_Level_Code_Unit

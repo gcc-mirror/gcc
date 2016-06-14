@@ -3077,15 +3077,11 @@ package body Checks is
       --  Floating-point case
       --  In the floating-point case, we only do range checks if the type is
       --  constrained. We definitely do NOT want range checks for unconstrained
-      --  types, since we want to have infinities
+      --  types, since we want to have infinities, except when
+      --  Check_Float_Overflow is set.
 
       elsif Is_Floating_Point_Type (S_Typ) then
-
-      --  Normally, we only do range checks if the type is constrained. We do
-      --  NOT want range checks for unconstrained types, since we want to have
-      --  infinities.
-
-         if Is_Constrained (S_Typ) then
+         if Is_Constrained (S_Typ) or else Check_Float_Overflow then
             Enable_Range_Check (Expr);
          end if;
 

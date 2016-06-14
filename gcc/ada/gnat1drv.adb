@@ -634,11 +634,9 @@ procedure Gnat1drv is
       if Debug_Flag_Dot_LL then
          Back_End_Handles_Limited_Types := True;
 
-      --  If no debug flag, usage off for AAMP, SCIL cases
+      --  If no debug flag, usage off for SCIL cases
 
-      elsif AAMP_On_Target
-        or else Generate_SCIL
-      then
+      elsif Generate_SCIL then
          Back_End_Handles_Limited_Types := False;
 
       --  Otherwise normal gcc back end, for now still turn flag off by
@@ -667,20 +665,16 @@ procedure Gnat1drv is
          --  back end some day, it would not be true for this test, but it
          --  would be non-GCC, so this is a bit troublesome ???
 
-         Front_End_Inlining := AAMP_On_Target or Generate_C_Code;
+         Front_End_Inlining := Generate_C_Code;
       end if;
 
       --  Set back-end inlining indication
 
       Back_End_Inlining :=
 
-        --  No back-end inlining available on AAMP
-
-        not AAMP_On_Target
-
         --  No back-end inlining available on C generation
 
-        and then not Generate_C_Code
+        not Generate_C_Code
 
         --  No back-end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.

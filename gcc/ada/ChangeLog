@@ -1,3 +1,49 @@
+2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib.adb: Minor reformatting.
+	* sem_util.adb (Is_OK_Volatile_Context): Do
+	include Address in the supported attributes.
+
+2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression):
+	Code cleanup. Finalize any transient controlled
+	objects on exit from a case expression alternative.
+	(Expand_N_If_Expression): Code cleanup.
+	(Process_Actions): Removed.
+	(Process_If_Case_Statements): New routine.
+	(Process_Transient_Object): Change the name of formal Rel_Node to
+	N and update all occurrences. Update the comment on usage. When
+	the type of the context is Boolean, the proper insertion point
+	for the finalization call is after the last declaration.
+
+2016-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.ads, lib-xref.adb (Has_Deferred_Reference): new
+	predicate to determine whether an entity appears in a context
+	for which a Deferred_Reference was created, because it is not
+	possible to determine when reference is analyzed whether it
+	appears in a context in which the entity is modified.
+	* sem_ch5.adb (Analyze_Statement): Do not emit a useless warning
+	on assignment for an entity that has a deferred_reference.
+
+2016-06-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Generate a reference to actuals that
+	come from source. Previously the reference was generated only if the
+	call comes from source but the call may be rewritten by the expander
+	thus causing the notification of spurious warnings.
+
+2016-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Remove further references to AAMP.
+	* checks.adb (Apply_Scalar_Range_Check): Take
+	Check_Float_Overflow info account.
+	* live.ads, live.adb Added subprogram headers and
+	start-of-processing-for comments.
+	* sem_ch12.adb (Instantiate_Package_Body): Do not suppress
+	checks when instantiating runtime units in CodePeer mode.
+
 2016-06-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Only consider
