@@ -2578,7 +2578,7 @@ class Label
  public:
   Label(const std::string& name)
     : name_(name), location_(Linemap::unknown_location()), snapshot_(NULL),
-      refs_(), is_used_(false), blabel_(NULL)
+      refs_(), is_used_(false), blabel_(NULL), depth_(DEPTH_UNKNOWN)
   { }
 
   // Return the label's name.
@@ -2600,6 +2600,26 @@ class Label
   void
   set_is_used()
   { this->is_used_ = true; }
+
+  // Return whether this label is looping.
+  bool
+  looping() const
+  { return this->depth_ == DEPTH_LOOPING; }
+
+  // Set this label as looping.
+  void
+  set_looping()
+  { this->depth_ = DEPTH_LOOPING; }
+
+  // Return whether this label is nonlooping.
+  bool
+  nonlooping() const
+  { return this->depth_ == DEPTH_NONLOOPING; }
+
+  // Set this label as nonlooping.
+  void
+  set_nonlooping()
+  { this->depth_ = DEPTH_NONLOOPING; }
 
   // Return the location of the definition.
   Location
@@ -2660,6 +2680,16 @@ class Label
   is_dummy_label() const
   { return this->name_ == "_"; }
 
+  // A classification of a label's looping depth.
+  enum Loop_depth
+  {
+    DEPTH_UNKNOWN,
+    // A label never jumped to.
+    DEPTH_NONLOOPING,
+    // A label jumped to.
+    DEPTH_LOOPING
+  };
+
  private:
   // The name of the label.
   std::string name_;
@@ -2675,6 +2705,8 @@ class Label
   bool is_used_;
   // The backend representation.
   Blabel* blabel_;
+  // The looping depth of this label, for escape analysis.
+  Loop_depth depth_;
 };
 
 // An unnamed label.  These are used when lowering loops.
