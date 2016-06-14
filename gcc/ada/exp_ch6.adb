@@ -3919,7 +3919,7 @@ package body Exp_Ch6 is
 
                   --  Inline calls to _postconditions when generating C code
 
-                  elsif Generate_C_Code
+                  elsif Modify_Tree_For_C
                     and then In_Same_Extended_Unit (Sloc (Bod), Loc)
                     and then Chars (Name (N)) = Name_uPostconditions
                   then

@@ -2269,6 +2269,10 @@ package body Inline is
       --  If the type returned by the function is unconstrained and the call
       --  can be inlined, special processing is required.
 
+      procedure Declare_Postconditions_Result;
+      --  When generating C code, declare _Result, which may be used in the
+      --  inlined _Postconditions procedure to verify the return value.
+
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements,
       --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
@@ -2304,6 +2308,45 @@ package body Inline is
 
       function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean;
       --  Determine whether a formal parameter is used only once in Orig_Bod
+
+      -----------------------------------
+      -- Declare_Postconditions_Result --
+      -----------------------------------
+
+      procedure Declare_Postconditions_Result is
+         Enclosing_Subp : constant Entity_Id := Scope (Subp);
+
+      begin
+         pragma Assert
+           (Modify_Tree_For_C
+             and then Is_Subprogram (Enclosing_Subp)
+             and then Present (Postconditions_Proc (Enclosing_Subp)));
+
+         if Ekind (Enclosing_Subp) = E_Function then
+            if Nkind (First (Parameter_Associations (N)))
+              in N_Numeric_Or_String_Literal
+            then
+               Append_To (Declarations (Blk),
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Name_uResult),
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Etype (Enclosing_Subp), Loc),
+                   Expression          =>
+                     New_Copy_Tree (First (Parameter_Associations (N)))));
+            else
+               Append_To (Declarations (Blk),
+                 Make_Object_Renaming_Declaration (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Name_uResult),
+                   Subtype_Mark        =>
+                     New_Occurrence_Of (Etype (Enclosing_Subp), Loc),
+                   Name                =>
+                     New_Copy_Tree (First (Parameter_Associations (N)))));
+            end if;
+         end if;
+      end Declare_Postconditions_Result;
 
       ---------------------
       -- Make_Exit_Label --
@@ -2832,6 +2875,16 @@ package body Inline is
 
             if No (Declarations (Bod)) then
                Set_Declarations (Blk, New_List);
+            end if;
+
+            --  When generating C code, declare _Result, which may be used to
+            --  verify the return value.
+
+            if Modify_Tree_For_C
+              and then Nkind (N) = N_Procedure_Call_Statement
+              and then Chars (Name (N)) = Name_uPostconditions
+            then
+               Declare_Postconditions_Result;
             end if;
 
             --  For the unconstrained case, capture the name of the local

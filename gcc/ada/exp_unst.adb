@@ -636,6 +636,10 @@ package body Exp_Unst is
 
                if not Is_Library_Level_Entity (Ent)
                  and then Scope_Within_Or_Same (Scope (Ent), Subp)
+
+                  --  Skip entities defined in inlined subprograms
+
+                 and then Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
                  and then
 
                    --  Constants and variables are interesting
