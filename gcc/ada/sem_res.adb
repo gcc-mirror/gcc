@@ -3704,7 +3704,7 @@ package body Sem_Res is
 
          if Present (A)
            and then Is_Entity_Name (A)
-           and then Comes_From_Source (N)
+           and then Comes_From_Source (A)
          then
             Orig_A := Entity (A);
 

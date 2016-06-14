@@ -11001,8 +11001,12 @@ package body Sem_Ch12 is
             --  Note that we do NOT apply this criterion to children of GNAT
             --  The latter units must suppress checks explicitly if needed.
 
-            if Is_Predefined_File_Name
-                 (Unit_File_Name (Get_Source_Unit (Gen_Decl)))
+            --  We also do not suppress checks in CodePeer mode where we are
+            --  interested in finding possible runtime errors.
+
+            if not CodePeer_Mode
+              and then Is_Predefined_File_Name
+                         (Unit_File_Name (Get_Source_Unit (Gen_Decl)))
             then
                Analyze (Act_Body, Suppress => All_Checks);
             else

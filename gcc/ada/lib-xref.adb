@@ -1218,6 +1218,21 @@ package body Lib.Xref is
       return E;
    end Get_Key;
 
+   ----------------------------
+   -- Has_Deferred_Reference --
+   ----------------------------
+
+   function Has_Deferred_Reference (Ent : Entity_Id) return Boolean is
+   begin
+      for J in Deferred_References.First .. Deferred_References.Last loop
+         if Deferred_References.Table (J).E = Ent then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Has_Deferred_Reference;
+
    ----------
    -- Hash --
    ----------

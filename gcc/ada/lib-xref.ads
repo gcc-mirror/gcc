@@ -613,6 +613,11 @@ package Lib.Xref is
    procedure Process_Deferred_References;
    --  This procedure is called from Frontend to process these table entries
 
+   function Has_Deferred_Reference (Ent : Entity_Id) return Boolean;
+   --  This function determines whether an entity has a pending reference, in
+   --  order to suppress premature warnings about useless assignments. See
+   --  comments in Analyze_Assignment in sem-ch5.adb.
+
    -----------------------------
    -- SPARK Xrefs Information --
    -----------------------------

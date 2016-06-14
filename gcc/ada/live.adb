@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,10 +36,10 @@ package body Live is
 
    --  Name_Set
 
-   --  The Name_Set type is used to store the temporary mark bits
-   --  used by the garbage collection of entities. Using a separate
-   --  array prevents using up any valuable per-node space and possibly
-   --  results in better locality and cache usage.
+   --  The Name_Set type is used to store the temporary mark bits used by the
+   --  garbage collection of entities. Using a separate array prevents using up
+   --  any valuable per-node space and possibly results in better locality and
+   --  cache usage.
 
    type Name_Set is array (Node_Id range <>) of Boolean;
    pragma Pack (Name_Set);
@@ -66,14 +66,13 @@ package body Live is
    --  The Mark phase is split into two phases:
 
    procedure Init_Marked (Root : Node_Id; Marks : out Name_Set);
-   --  For all subprograms, reset Is_Public flag if a pragma Eliminate
-   --  applies to the entity, and set the Marked flag to Is_Public
+   --  For all subprograms, reset Is_Public flag if a pragma Eliminate applies
+   --  to the entity, and set the Marked flag to Is_Public.
 
    procedure Trace_Marked (Root : Node_Id; Marks : in out Name_Set);
-   --  Traverse the tree skipping any unmarked subprogram bodies.
-   --  All visited entities are marked, as well as entities denoted
-   --  by a visited identifier or operator. When an entity is first
-   --  marked it is traced as well.
+   --  Traverse the tree skipping any unmarked subprogram bodies. All visited
+   --  entities are marked, as well as entities denoted by a visited identifier
+   --  or operator. When an entity is first marked it is traced as well.
 
    --  Local functions
 
@@ -136,6 +135,10 @@ package body Live is
 
       function Process (N : Node_Id) return Traverse_Result;
       procedure Traverse is new Traverse_Proc (Process);
+
+      -------------
+      -- Process --
+      -------------
 
       function Process (N : Node_Id) return Traverse_Result is
       begin
@@ -233,6 +236,10 @@ package body Live is
       function Process (N : Node_Id) return Traverse_Result;
       procedure Traverse is new Traverse_Proc (Process);
 
+      -------------
+      -- Process --
+      -------------
+
       function Process (N : Node_Id) return Traverse_Result is
       begin
          case Nkind (N) is
@@ -263,6 +270,8 @@ package body Live is
          return OK;
       end Process;
 
+   --  Start of processing for Sweep
+
    begin
       Traverse (Root);
    end Sweep;
@@ -276,6 +285,10 @@ package body Live is
       function  Process (N : Node_Id) return Traverse_Result;
       procedure Process (N : Node_Id);
       procedure Traverse is new Traverse_Proc (Process);
+
+      -------------
+      -- Process --
+      -------------
 
       procedure Process (N : Node_Id) is
          Result : Traverse_Result;
