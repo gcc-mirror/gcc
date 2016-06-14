@@ -1,6 +1,11 @@
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71448
+	* g++.dg/torture/pr71448.C: New test.
+
 	2016-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71405
