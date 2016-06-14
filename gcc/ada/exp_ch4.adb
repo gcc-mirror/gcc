@@ -230,13 +230,18 @@ package body Exp_Ch4 is
    --  generates code to clean them up when the context of the expression is
    --  evaluated or elaborated.
 
-   procedure Process_Transient_Object (Decl : Node_Id; N : Node_Id);
+   procedure Process_Transient_Object
+     (Decl  : Node_Id;
+      N     : Node_Id;
+      Stmts : List_Id);
    --  Subsidiary routine to the expansion of expression_with_actions, if and
    --  case expressions. Generate all necessary code to finalize a transient
    --  controlled object when the enclosing context is elaborated or evaluated.
    --  Decl denotes the declaration of the transient controlled object which is
    --  usually the result of a controlled function call. N denotes the related
-   --  expression_with_actions, if expression, or case expression.
+   --  expression_with_actions, if expression, or case expression node. Stmts
+   --  denotes the statement list which contains Decl, either at the top level
+   --  or within a nested construct.
 
    procedure Rewrite_Comparison (N : Node_Id);
    --  If N is the node for a comparison whose outcome can be determined at
@@ -4992,7 +4997,7 @@ package body Exp_Ch4 is
          if Nkind (Act) = N_Object_Declaration
            and then Is_Finalizable_Transient (Act, N)
          then
-            Process_Transient_Object (Act, N);
+            Process_Transient_Object (Act, N, Acts);
             return Abandon;
 
          --  Avoid processing temporary function results multiple times when
@@ -5037,7 +5042,7 @@ package body Exp_Ch4 is
       --  do not leak to the expression of the expression_with_actions node:
 
       --    do
-      --       Trans_Id : Ctrl_Typ : ...;
+      --       Trans_Id : Ctrl_Typ := ...;
       --       Alias : ... := Trans_Id;
       --    in ... Alias ... end;
 
@@ -5047,7 +5052,7 @@ package body Exp_Ch4 is
       --  reference to the Alias within the actions list:
 
       --    do
-      --       Trans_Id : Ctrl_Typ : ...;
+      --       Trans_Id : Ctrl_Typ := ...;
       --       Alias : ... := Trans_Id;
       --       Val : constant Boolean := ... Alias ...;
       --       <finalize Trans_Id>
@@ -12909,7 +12914,7 @@ package body Exp_Ch4 is
          if Nkind (Decl) = N_Object_Declaration
            and then Is_Finalizable_Transient (Decl, N)
          then
-            Process_Transient_Object (Decl, N);
+            Process_Transient_Object (Decl, N, Stmts);
          end if;
 
          Next (Decl);
@@ -12920,7 +12925,11 @@ package body Exp_Ch4 is
    -- Process_Transient_Object --
    ------------------------------
 
-   procedure Process_Transient_Object (Decl : Node_Id; N : Node_Id) is
+   procedure Process_Transient_Object
+     (Decl  : Node_Id;
+      N     : Node_Id;
+      Stmts : List_Id)
+   is
       Loc     : constant Source_Ptr := Sloc (Decl);
       Obj_Id  : constant Entity_Id  := Defining_Identifier (Decl);
       Obj_Typ : constant Node_Id    := Etype (Obj_Id);
@@ -12940,8 +12949,32 @@ package body Exp_Ch4 is
       --  transient controlled object.
 
    begin
+      pragma Assert (Nkind_In (N, N_Case_Expression,
+                                  N_Expression_With_Actions,
+                                  N_If_Expression));
+
+      --  When the context is a Boolean evaluation, all three nodes capture the
+      --  result of their computation in a local temporary:
+
+      --    do
+      --       Trans_Id : Ctrl_Typ := ...;
+      --       Result : constant Boolean := ... Trans_Id ...;
+      --       <finalize Trans_Id>
+      --    in Result end;
+
+      --  As a result, the finalization of any transient controlled objects can
+      --  safely take place after the result capture.
+
+      --  ??? could this be extended to elementary types?
+
       if Is_Boolean_Type (Etype (N)) then
-         Fin_Context := Last (List_Containing (Decl));
+         Fin_Context := Last (Stmts);
+
+      --  Otherwise the immediate context may not be safe enough to carry out
+      --  transient controlled object finalization due to aliasing and nesting
+      --  of constructs. Insert calls to [Deep_]Finalize after the innermost
+      --  enclosing non-transient construct.
+
       else
          Fin_Context := Hook_Context;
       end if;

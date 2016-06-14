@@ -9581,6 +9581,65 @@ package body Sem_Util is
           and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
    end Has_Non_Null_Refinement;
 
+   -------------------
+   -- Has_Null_Body --
+   -------------------
+
+   function Has_Null_Body (Proc_Id : Entity_Id) return Boolean is
+      Body_Id : Entity_Id;
+      Decl    : Node_Id;
+      Spec    : Node_Id;
+      Stmt1   : Node_Id;
+      Stmt2   : Node_Id;
+
+   begin
+      Spec := Parent (Proc_Id);
+      Decl := Parent (Spec);
+
+      --  Retrieve the entity of the procedure body (e.g. invariant proc).
+
+      if Nkind (Spec) = N_Procedure_Specification
+        and then Nkind (Decl) = N_Subprogram_Declaration
+      then
+         Body_Id := Corresponding_Body (Decl);
+
+      --  The body acts as a spec
+
+      else
+         Body_Id := Proc_Id;
+      end if;
+
+      --  The body will be generated later
+
+      if No (Body_Id) then
+         return False;
+      end if;
+
+      Spec := Parent (Body_Id);
+      Decl := Parent (Spec);
+
+      pragma Assert
+        (Nkind (Spec) = N_Procedure_Specification
+          and then Nkind (Decl) = N_Subprogram_Body);
+
+      Stmt1 := First (Statements (Handled_Statement_Sequence (Decl)));
+
+      --  Look for a null statement followed by an optional return
+      --  statement.
+
+      if Nkind (Stmt1) = N_Null_Statement then
+         Stmt2 := Next (Stmt1);
+
+         if Present (Stmt2) then
+            return Nkind (Stmt2) = N_Simple_Return_Statement;
+         else
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end Has_Null_Body;
+
    ------------------------
    -- Has_Null_Exclusion --
    ------------------------

@@ -3714,9 +3714,9 @@ package body Exp_Ch3 is
          Sel_Comp : Node_Id;
          Typ      : Entity_Id;
          Call     : Node_Id;
+         Proc     : Entity_Id;
 
       begin
-         Invariant_Found := True;
          Typ := Etype (Comp);
 
          Sel_Comp :=
@@ -3744,10 +3744,16 @@ package body Exp_Ch3 is
 
          --  The aspect is type-specific, so retrieve it from the base type
 
+         Proc := Invariant_Procedure (Base_Type (Typ));
+
+         if Has_Null_Body (Proc) then
+            return Make_Null_Statement (Loc);
+         end if;
+
+         Invariant_Found := True;
          Call :=
            Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (Invariant_Procedure (Base_Type (Typ)), Loc),
+             Name                   => New_Occurrence_Of (Proc, Loc),
              Parameter_Associations => New_List (Sel_Comp));
 
          if Is_Access_Type (Etype (Comp)) then
