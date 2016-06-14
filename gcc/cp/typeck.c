@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
 #include "params.h"
+#include "gcc-rich-location.h"
 
 static tree cp_build_addr_expr_strict (tree, tsubst_flags_t);
 static tree cp_build_function_call (tree, tree, tsubst_flags_t);
@@ -2831,12 +2832,9 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 		  if (guessed_id)
 		    {
 		      location_t bogus_component_loc = input_location;
-		      rich_location rich_loc (line_table, bogus_component_loc);
-		      source_range bogus_component_range =
-			get_range_from_loc (line_table, bogus_component_loc);
-		      rich_loc.add_fixit_replace
-			(bogus_component_range,
-			 IDENTIFIER_POINTER (guessed_id));
+		      gcc_rich_location rich_loc (bogus_component_loc);
+		      rich_loc.add_fixit_misspelled_id (bogus_component_loc,
+							guessed_id);
 		      error_at_rich_loc
 			(&rich_loc,
 			 "%q#T has no member named %qE; did you mean %qE?",

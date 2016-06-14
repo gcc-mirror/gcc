@@ -60,3 +60,17 @@ gcc_rich_location::maybe_add_expr (tree t)
   if (EXPR_P (t))
     add_expr (t);
 }
+
+/* Add a fixit hint suggesting replacing the range at MISSPELLED_TOKEN_LOC
+   with the identifier HINT_ID.  */
+
+void
+gcc_rich_location::add_fixit_misspelled_id (location_t misspelled_token_loc,
+					    tree hint_id)
+{
+  gcc_assert (TREE_CODE (hint_id) == IDENTIFIER_NODE);
+
+  source_range misspelled_token_range
+    = get_range_from_loc (line_table, misspelled_token_loc);
+  add_fixit_replace (misspelled_token_range, IDENTIFIER_POINTER (hint_id));
+}
