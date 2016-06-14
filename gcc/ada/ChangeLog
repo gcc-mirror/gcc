@@ -1,3 +1,14 @@
+2016-06-14  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): Do nothing if the callee is
+	(or is in) an instance, and the caller is outside.  Misc cleanup.
+
+2016-06-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression):
+	Generating C code avoid spurious warning on loop variable of
+	inlinined postconditions.
+
 2016-06-14  Javier Miranda  <miranda@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute_Old_Result): Adding assertion.

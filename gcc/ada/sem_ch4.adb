@@ -3917,7 +3917,16 @@ package body Sem_Ch4 is
       if Warn_On_Suspicious_Contract
         and then not Referenced (Loop_Id, Cond)
       then
-         Error_Msg_N ("?T?unused variable &", Loop_Id);
+         --  Generating C this check causes spurious warnings on inlined
+         --  postconditions; we can safely disable it because this check
+         --  was previously performed when analying the internally built
+         --  postconditions procedure.
+
+         if Modify_Tree_For_C and then In_Inlined_Body then
+            null;
+         else
+            Error_Msg_N ("?T?unused variable &", Loop_Id);
+         end if;
       end if;
 
       --  Diagnose a possible misuse of the SOME existential quantifier. When

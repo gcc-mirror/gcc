@@ -516,11 +516,11 @@ package body Sem_Elab is
       Access_Case : constant Boolean := Nkind (N) = N_Attribute_Reference;
       --  Indicates if we have Access attribute case
 
-      Variable_Case : constant Boolean :=
-                        Nkind (N) in N_Has_Entity
-                          and then Present (Entity (N))
-                          and then Ekind (Entity (N)) = E_Variable;
-      --  Indicates if we have variable reference case
+      function Call_To_Instance_From_Outside
+        (Ent : Entity_Id) return Boolean;
+      --  True if we're calling an instance of a generic subprogram, or a
+      --  subprogram in an instance of a generic package, and the call is
+      --  outside that instance.
 
       procedure Elab_Warning
         (Msg_D : String;
@@ -530,6 +530,36 @@ package body Sem_Elab is
        --  dynamic or static elaboration model), N and Ent. Msg_D is a real
        --  warning (output if Msg_D is non-null and Elab_Warnings is set),
        --  Msg_S is an info message (output if Elab_Info_Messages is set.
+
+      function Find_W_Scope return Entity_Id;
+      --  Find top level scope for called entity (not following renamings
+      --  or derivations). This is where the Elaborate_All will go if it is
+      --  needed. We start with the called entity, except in the case of an
+      --  initialization procedure outside the current package, where the init
+      --  proc is in the root package, and we start from the entity of the name
+      --  in the call.
+
+      -----------------------------------
+      -- Call_To_Instance_From_Outside --
+      -----------------------------------
+
+      function Call_To_Instance_From_Outside
+        (Ent : Entity_Id) return Boolean is
+
+         X : Entity_Id := Ent;
+      begin
+         loop
+            if X = Standard_Standard then
+               return False;
+            end if;
+
+            if Is_Generic_Instance (X) then
+               return not In_Open_Scopes (X);
+            end if;
+
+            X := Scope (X);
+         end loop;
+      end Call_To_Instance_From_Outside;
 
       ------------------
       -- Elab_Warning --
@@ -565,7 +595,38 @@ package body Sem_Elab is
          end if;
       end Elab_Warning;
 
-      --  Local variables
+      ------------------
+      -- Find_W_Scope --
+      ------------------
+
+      function Find_W_Scope return Entity_Id is
+         Refed_Ent : constant Entity_Id := Get_Referenced_Ent (N);
+         W_Scope   : Entity_Id;
+      begin
+         if Is_Init_Proc (Refed_Ent)
+           and then not In_Same_Extended_Unit (N, Refed_Ent)
+         then
+            W_Scope := Scope (Refed_Ent);
+         else
+            W_Scope := E;
+         end if;
+
+         --  Now loop through scopes to get to the enclosing compilation unit
+
+         while not Is_Compilation_Unit (W_Scope) loop
+            W_Scope := Scope (W_Scope);
+         end loop;
+
+         return W_Scope;
+      end Find_W_Scope;
+
+      --  Locals
+
+      Variable_Case : constant Boolean :=
+                        Nkind (N) in N_Has_Entity
+                          and then Present (Entity (N))
+                          and then Ekind (Entity (N)) = E_Variable;
+      --  Indicates if we have variable reference case
 
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -605,7 +666,7 @@ package body Sem_Elab is
       Issue_In_SPARK : Boolean;
       --  Flag set when a source entity is called during elaboration in SPARK
 
-      W_Scope : Entity_Id;
+      W_Scope : constant Entity_Id := Find_W_Scope;
       --  Top level scope of directly called entity for subprogram. This
       --  differs from E_Scope in the case where renamings or derivations
       --  are involved, since it does not follow these links. W_Scope is
@@ -717,17 +778,11 @@ package body Sem_Elab is
            and then (Is_Child_Unit (E_Scope)
                       or else Scope (E_Scope) = Standard_Standard);
 
-         --  If we did not find a compilation unit, other than standard,
-         --  then nothing to check (happens in some instantiation cases)
+         pragma Assert (E_Scope /= Standard_Standard);
 
-         if E_Scope = Standard_Standard then
-            return;
+         --  Move up a scope looking for compilation unit
 
-         --  Otherwise move up a scope looking for compilation unit
-
-         else
-            E_Scope := Scope (E_Scope);
-         end if;
+         E_Scope := Scope (E_Scope);
       end loop;
 
       --  No checks needed for pure or preelaborated compilation units
@@ -754,29 +809,6 @@ package body Sem_Elab is
       if Ekind (Ent) = E_Generic_Package and then not Has_Generic_Body (N) then
          return;
       end if;
-
-      --  Find top level scope for called entity (not following renamings
-      --  or derivations). This is where the Elaborate_All will go if it is
-      --  needed. We start with the called entity, except in the case of an
-      --  initialization procedure outside the current package, where the init
-      --  proc is in the root package, and we start from the entity of the name
-      --  in the call.
-
-      declare
-         Ent : constant Entity_Id := Get_Referenced_Ent (N);
-      begin
-         if Is_Init_Proc (Ent) and then not In_Same_Extended_Unit (N, Ent) then
-            W_Scope := Scope (Ent);
-         else
-            W_Scope := E;
-         end if;
-      end;
-
-      --  Now loop through scopes to get to the enclosing compilation unit
-
-      while not Is_Compilation_Unit (W_Scope) loop
-         W_Scope := Scope (W_Scope);
-      end loop;
 
       --  Case of entity is in same unit as call or instantiation. In the
       --  instantiation case, W_Scope may be different from E_Scope; we want
@@ -806,11 +838,11 @@ package body Sem_Elab is
          return;
       end if;
 
-      --  Nothing to do for a generic instance, because in this case the
-      --  checking was at the point of instantiation of the generic However,
-      --  this shortcut is only applicable in static mode.
+      --  Nothing to do for a generic instance, because a call to an instance
+      --  cannot fail the elaboration check, because the body of the instance
+      --  is always elaborated immediately after the spec.
 
-      if Is_Generic_Instance (Ent) and not Dynamic_Elaboration_Checks then
+      if Call_To_Instance_From_Outside (Ent) then
          return;
       end if;
 
