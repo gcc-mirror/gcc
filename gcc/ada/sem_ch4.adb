@@ -3917,9 +3917,9 @@ package body Sem_Ch4 is
       if Warn_On_Suspicious_Contract
         and then not Referenced (Loop_Id, Cond)
       then
-         --  Generating C this check causes spurious warnings on inlined
+         --  Generating C, this check causes spurious warnings on inlined
          --  postconditions; we can safely disable it because this check
-         --  was previously performed when analying the internally built
+         --  was previously performed when analyzing the internally built
          --  postconditions procedure.
 
          if Modify_Tree_For_C and then In_Inlined_Body then

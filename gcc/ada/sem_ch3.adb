@@ -4514,7 +4514,7 @@ package body Sem_Ch3 is
       Set_Default_SSO      (T);
 
       Set_Etype            (T,                Parent_Base);
-      Propagate_Type_Has_Flags (T, Parent_Base);
+      Propagate_Concurrent_Flags (T, Parent_Base);
 
       Set_Convention       (T, Convention     (Parent_Type));
       Set_First_Rep_Item   (T, First_Rep_Item (Parent_Type));
@@ -5573,7 +5573,7 @@ package body Sem_Ch3 is
 
          Set_First_Index       (Implicit_Base, First_Index (T));
          Set_Component_Type    (Implicit_Base, Element_Type);
-         Propagate_Type_Has_Flags (Implicit_Base, Element_Type);
+         Propagate_Concurrent_Flags (Implicit_Base, Element_Type);
          Set_Component_Size    (Implicit_Base, Uint_0);
          Set_Packed_Array_Impl_Type (Implicit_Base, Empty);
          Set_Has_Controlled_Component (Implicit_Base,
@@ -5599,7 +5599,7 @@ package body Sem_Ch3 is
          Set_Is_Constrained           (T, False);
          Set_First_Index              (T, First (Subtype_Marks (Def)));
          Set_Has_Delayed_Freeze       (T, True);
-         Propagate_Type_Has_Flags     (T, Element_Type);
+         Propagate_Concurrent_Flags   (T, Element_Type);
          Set_Has_Controlled_Component (T, Has_Controlled_Component
                                                         (Element_Type)
                                             or else
@@ -8948,9 +8948,9 @@ package body Sem_Ch3 is
 
       Set_Scope                (Derived_Type, Current_Scope);
 
-      Set_Etype                (Derived_Type,                Parent_Base);
-      Set_Ekind                (Derived_Type, Ekind         (Parent_Base));
-      Propagate_Type_Has_Flags (Derived_Type, Parent_Base);
+      Set_Etype                  (Derived_Type,        Parent_Base);
+      Set_Ekind                  (Derived_Type, Ekind (Parent_Base));
+      Propagate_Concurrent_Flags (Derived_Type,        Parent_Base);
 
       Set_Size_Info          (Derived_Type,                     Parent_Type);
       Set_RM_Size            (Derived_Type, RM_Size            (Parent_Type));
@@ -13707,7 +13707,7 @@ package body Sem_Ch3 is
       Set_Component_Size           (T1, Component_Size           (T2));
       Set_Has_Controlled_Component (T1, Has_Controlled_Component (T2));
       Set_Has_Non_Standard_Rep     (T1, Has_Non_Standard_Rep     (T2));
-      Propagate_Type_Has_Flags     (T1, T2);
+      Propagate_Concurrent_Flags   (T1, T2);
       Set_Is_Packed                (T1, Is_Packed                (T2));
       Set_Has_Aliased_Components   (T1, Has_Aliased_Components   (T2));
       Set_Has_Atomic_Components    (T1, Has_Atomic_Components    (T2));
@@ -19924,7 +19924,7 @@ package body Sem_Ch3 is
                Set_Class_Wide_Type
                  (Base_Type (Full_T), Class_Wide_Type (Priv_T));
 
-               Propagate_Type_Has_Flags (Class_Wide_Type (Priv_T), Full_T);
+               Propagate_Concurrent_Flags (Class_Wide_Type (Priv_T), Full_T);
             end if;
          end;
       end if;
@@ -21280,7 +21280,7 @@ package body Sem_Ch3 is
             Init_Component_Location (Component);
          end if;
 
-         Propagate_Type_Has_Flags (T, Etype (Component));
+         Propagate_Concurrent_Flags (T, Etype (Component));
 
          if Ekind (Component) /= E_Component then
             null;

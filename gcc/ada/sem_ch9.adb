@@ -1938,7 +1938,7 @@ package body Sem_Ch9 is
          if Ekind_In (E, E_Function, E_Procedure) then
             Set_Convention (E, Convention_Protected);
          else
-            Propagate_Type_Has_Flags (Current_Scope, Etype (E));
+            Propagate_Concurrent_Flags (Current_Scope, Etype (E));
          end if;
 
          Next_Entity (E);
