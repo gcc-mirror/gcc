@@ -4795,7 +4795,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
    If the access does not need to be restricted, 0 is returned in both
    *BITSTART and *BITEND.  */
 
-static void
+void
 get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 	       unsigned HOST_WIDE_INT *bitend,
 	       tree exp,
