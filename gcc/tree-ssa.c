@@ -1300,6 +1300,10 @@ non_rewritable_lvalue_p (tree lhs)
 	      || (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 		  && (TYPE_PRECISION (TREE_TYPE (decl))
 		      >= TYPE_PRECISION (TREE_TYPE (lhs)))))
+	  /* Make sure we are not re-writing non-float copying into float
+	     copying as that can incur normalization.  */
+	  && (! FLOAT_TYPE_P (TREE_TYPE (decl))
+	      || types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (decl)))
 	  && (TREE_THIS_VOLATILE (decl) == TREE_THIS_VOLATILE (lhs)))
 	return false;
 

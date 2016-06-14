@@ -1,3 +1,9 @@
+2016-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71522
+	* tree-ssa.c (non_rewritable_lvalue_p): Do not rewrite non-float
+	copying into float copying.
+
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71520
