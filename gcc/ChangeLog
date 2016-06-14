@@ -1,3 +1,10 @@
+2016-06-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (commentary): Typo.
+	(BU_P9_MISC_1): Likewise.
+	(BU_P9_64BIT_MISC_0): Likewise.
+	(BU_P9_MISC_0): Likewise.
+
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-rich-location.c
