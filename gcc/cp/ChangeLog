@@ -1,5 +1,9 @@
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71528
+	* decl.c (duplicate_decls): For DECL_INITIALIZED_P non-external
+	olddecl vars, preserve their TREE_READONLY bit.
+
 	PR c++/71516
 	* decl.c (complete_vars): Handle gracefully type == error_mark_node.
 
