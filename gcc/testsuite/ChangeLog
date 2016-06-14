@@ -1,3 +1,8 @@
+2016-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71526
+	* gfortran.dg/pr71526.f90: New testcase.
+
 2016-06-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.dg/zero_bits_compound-1.c: Support aarch64.
