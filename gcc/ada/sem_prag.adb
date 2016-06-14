@@ -22821,12 +22821,12 @@ package body Sem_Prag is
 
                Error_Msg_Sloc := Sloc (Over_Id);
                Error_Msg_N
-                 ("\& declared # with Volatile_Function value `False`",
+                 ("\& declared # with Volatile_Function value False",
                   Spec_Id);
 
                Error_Msg_Sloc := Sloc (Spec_Id);
                Error_Msg_N
-                 ("\overridden # with Volatile_Function value `True`",
+                 ("\overridden # with Volatile_Function value True",
                   Spec_Id);
             end if;
 
