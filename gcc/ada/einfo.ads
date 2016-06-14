@@ -2050,6 +2050,12 @@ package Einfo is
 --       such an object must create the required tasks. Note: the flag is not
 --       set on access types, even if they designate an object that Has_Task.
 
+--    Has_Timing_Event (Flag289) [base type only]
+--       Defined in all type entities. Set on language defined type
+--       Ada.Real_Time.Timing_Events.Timing_Event, and also (recursively) on
+--       any composite type which has a component for which Has_Timing_Event
+--       is set. Used for the No_Local_Timing_Event restriction.
+
 --    Has_Thunks (Flag228)
 --       Applies to E_Constant entities marked Is_Tag. True for secondary tag
 --       referencing a dispatch table whose contents are pointers to thunks.
@@ -5507,6 +5513,7 @@ package Einfo is
    --    Has_Static_Predicate                (Flag269)
    --    Has_Static_Predicate_Aspect         (Flag259)
    --    Has_Task                            (Flag30)   (base type only)
+   --    Has_Timing_Event                    (Flag289)  (base type only)
    --    Has_Unchecked_Union                 (Flag123)  (base type only)
    --    Has_Volatile_Components             (Flag87)   (base type only)
    --    In_Use                              (Flag8)
@@ -6960,6 +6967,7 @@ package Einfo is
    function Has_Storage_Size_Clause             (Id : E) return B;
    function Has_Stream_Size_Clause              (Id : E) return B;
    function Has_Task                            (Id : E) return B;
+   function Has_Timing_Event                    (Id : E) return B;
    function Has_Thunks                          (Id : E) return B;
    function Has_Unchecked_Union                 (Id : E) return B;
    function Has_Unknown_Discriminants           (Id : E) return B;
@@ -7629,6 +7637,7 @@ package Einfo is
    procedure Set_Has_Storage_Size_Clause         (Id : E; V : B := True);
    procedure Set_Has_Stream_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Task                        (Id : E; V : B := True);
+   procedure Set_Has_Timing_Event                (Id : E; V : B := True);
    procedure Set_Has_Thunks                      (Id : E; V : B := True);
    procedure Set_Has_Unchecked_Union             (Id : E; V : B := True);
    procedure Set_Has_Unknown_Discriminants       (Id : E; V : B := True);
@@ -8413,6 +8422,7 @@ package Einfo is
    pragma Inline (Has_Storage_Size_Clause);
    pragma Inline (Has_Stream_Size_Clause);
    pragma Inline (Has_Task);
+   pragma Inline (Has_Timing_Event);
    pragma Inline (Has_Thunks);
    pragma Inline (Has_Unchecked_Union);
    pragma Inline (Has_Unknown_Discriminants);
@@ -8922,6 +8932,7 @@ package Einfo is
    pragma Inline (Set_Has_Storage_Size_Clause);
    pragma Inline (Set_Has_Stream_Size_Clause);
    pragma Inline (Set_Has_Task);
+   pragma Inline (Set_Has_Timing_Event);
    pragma Inline (Set_Has_Thunks);
    pragma Inline (Set_Has_Unchecked_Union);
    pragma Inline (Set_Has_Unknown_Discriminants);

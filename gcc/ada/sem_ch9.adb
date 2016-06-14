@@ -1937,16 +1937,8 @@ package body Sem_Ch9 is
       while Present (E) loop
          if Ekind_In (E, E_Function, E_Procedure) then
             Set_Convention (E, Convention_Protected);
-
-         elsif Is_Task_Type (Etype (E))
-           or else Has_Task (Etype (E))
-         then
-            Set_Has_Task (Current_Scope);
-
-         elsif Is_Protected_Type (Etype (E))
-           or else Has_Protected (Etype (E))
-         then
-            Set_Has_Protected (Current_Scope);
+         else
+            Propagate_Type_Has_Flags (Current_Scope, Etype (E));
          end if;
 
          Next_Entity (E);

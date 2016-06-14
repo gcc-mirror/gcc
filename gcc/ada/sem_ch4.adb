@@ -812,6 +812,14 @@ package body Sem_Ch4 is
          Check_Restriction (No_Local_Protected_Objects, N);
       end if;
 
+      --  Likewise for No_Local_Timing_Events
+
+      if Has_Timing_Event (Designated_Type (Acc_Type))
+        and then not Is_Library_Level_Entity (Acc_Type)
+      then
+         Check_Restriction (No_Local_Timing_Events, N);
+      end if;
+
       --  If the No_Streams restriction is set, check that the type of the
       --  object is not, and does not contain, any subtype derived from
       --  Ada.Streams.Root_Stream_Type. Note that we guard the call to

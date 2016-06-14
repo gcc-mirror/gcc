@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,7 +122,7 @@
 --        xx : x := y * z;
 --      end record;
 
---      for x'small use 0.25
+--      for x'small use 0.25;
 
 --  The expander is in charge of dealing with fixed-point, and of course the
 --  small declaration, which is not too late, since the declaration of type q

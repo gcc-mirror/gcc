@@ -601,10 +601,21 @@ package body Einfo is
    --    Is_Exception_Handler            Flag286
    --    Rewritten_For_C                 Flag287
    --    Predicates_Ignored              Flag288
+   --    Has_Timing_Event                Flag289
 
-   --    (unused)                        Flag289
+   --    (unused)                        Flag290
+
+   --    (unused)                        Flag291
+   --    (unused)                        Flag292
+   --    (unused)                        Flag293
+   --    (unused)                        Flag294
+   --    (unused)                        Flag295
+   --    (unused)                        Flag296
+   --    (unused)                        Flag297
+   --    (unused)                        Flag298
+   --    (unused)                        Flag299
+
    --    (unused)                        Flag300
-
    --    (unused)                        Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
@@ -1878,6 +1889,11 @@ package body Einfo is
    begin
       return Flag228 (Id);
    end Has_Thunks;
+
+   function Has_Timing_Event (Id : E) return B is
+   begin
+      return Flag289 (Base_Type (Id));
+   end Has_Timing_Event;
 
    function Has_Unchecked_Union (Id : E) return B is
    begin
@@ -4866,6 +4882,11 @@ package body Einfo is
       pragma Assert (Is_Tag (Id));
       Set_Flag228 (Id, V);
    end Set_Has_Thunks;
+
+   procedure Set_Has_Timing_Event (Id : E; V : B := True) is
+   begin
+      Set_Flag289 (Id, V);
+   end Set_Has_Timing_Event;
 
    procedure Set_Has_Unchecked_Union (Id : E; V : B := True) is
    begin
@@ -8972,6 +8993,7 @@ package body Einfo is
       W ("Has_Storage_Size_Clause",         Flag23  (Id));
       W ("Has_Stream_Size_Clause",          Flag184 (Id));
       W ("Has_Task",                        Flag30  (Id));
+      W ("Has_Timing_Event",                Flag289 (Id));
       W ("Has_Thunks",                      Flag228 (Id));
       W ("Has_Unchecked_Union",             Flag123 (Id));
       W ("Has_Unknown_Discriminants",       Flag72  (Id));

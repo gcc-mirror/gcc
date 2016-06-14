@@ -2003,6 +2003,15 @@ package Sem_Util is
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
 
+   procedure Propagate_Type_Has_Flags
+     (Typ      : Entity_Id;
+      Comp_Typ : Entity_Id);
+   --  Set Has_Task, Has_Protected and Has_Timing_Event on Typ when the flags
+   --  are set on Comp_Typ. This follows the definition of these flags which
+   --  are set (recursively) on any composite type which has a component marked
+   --  by one of these flags. This procedure can only set flags for Typ, and
+   --  never clear them. Comp_Typ is the type of a component or a parent.
+
    procedure Record_Possible_Part_Of_Reference
      (Var_Id : Entity_Id;
       Ref    : Node_Id);
