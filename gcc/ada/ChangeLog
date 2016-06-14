@@ -1,3 +1,22 @@
+2016-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Set_Actual_Subtypes): Do not generate actual
+	subtypes for unconstrained formals when analyzing the generated
+	body of an expression function, because it may lead to premature
+	and misplaced freezing of the types of formals.
+
+2016-06-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_elab.adb, sem_ch4.adb: Minor reformatting and typo fix.
+
+2016-06-14  Tristan Gingold  <gingold@adacore.com>
+
+	* einfo.adb (Set_Has_Timing_Event): Add assertion.
+	* sem_util.ads, sem_util.adb (Propagate_Concurrent_Flags): New
+	name for Propagate_Type_Has_Flags.
+	* exp_ch3.adb, sem_ch3.adb, sem_ch7.adb, sem_ch9.adb: Adjust after
+	renaming.
+
 2016-06-14  Bob Duff  <duff@adacore.com>
 
 	* sem_elab.adb (Check_A_Call): Do nothing if the callee is

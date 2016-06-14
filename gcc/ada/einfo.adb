@@ -4885,6 +4885,7 @@ package body Einfo is
 
    procedure Set_Has_Timing_Event (Id : E; V : B := True) is
    begin
+      pragma Assert (Id = Base_Type (Id));
       Set_Flag289 (Id, V);
    end Set_Has_Timing_Event;
 

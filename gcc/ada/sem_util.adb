@@ -18359,11 +18359,11 @@ package body Sem_Util is
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
 
-   ------------------------------
-   -- Propagate_Type_Has_Flags --
-   ------------------------------
+   --------------------------------
+   -- Propagate_Concurrent_Flags --
+   --------------------------------
 
-   procedure Propagate_Type_Has_Flags
+   procedure Propagate_Concurrent_Flags
      (Typ      : Entity_Id;
       Comp_Typ : Entity_Id) is
    begin
@@ -18378,7 +18378,7 @@ package body Sem_Util is
       if Has_Timing_Event (Comp_Typ) then
          Set_Has_Timing_Event (Typ);
       end if;
-   end Propagate_Type_Has_Flags;
+   end Propagate_Concurrent_Flags;
 
    ---------------------------------------
    -- Record_Possible_Part_Of_Reference --

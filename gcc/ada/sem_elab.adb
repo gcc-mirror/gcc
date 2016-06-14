@@ -128,7 +128,7 @@ package body Sem_Elab is
      Table_Name           => "Delay_Check");
 
    C_Scope : Entity_Id;
-   --  Top level scope of current scope. Compute this only once at the outer
+   --  Top-level scope of current scope. Compute this only once at the outer
    --  level, i.e. for a call to Check_Elab_Call from outside this unit.
 
    Outer_Level_Sloc : Source_Ptr;
@@ -532,7 +532,7 @@ package body Sem_Elab is
        --  Msg_S is an info message (output if Elab_Info_Messages is set.
 
       function Find_W_Scope return Entity_Id;
-      --  Find top level scope for called entity (not following renamings
+      --  Find top-level scope for called entity (not following renamings
       --  or derivations). This is where the Elaborate_All will go if it is
       --  needed. We start with the called entity, except in the case of an
       --  initialization procedure outside the current package, where the init
@@ -653,7 +653,7 @@ package body Sem_Elab is
       --  we ignore this flag.
 
       E_Scope : Entity_Id;
-      --  Top level scope of entity for called subprogram. This value includes
+      --  Top-level scope of entity for called subprogram. This value includes
       --  following renamings and derivations, so this scope can be in a
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
@@ -667,7 +667,7 @@ package body Sem_Elab is
       --  Flag set when a source entity is called during elaboration in SPARK
 
       W_Scope : constant Entity_Id := Find_W_Scope;
-      --  Top level scope of directly called entity for subprogram. This
+      --  Top-level scope of directly called entity for subprogram. This
       --  differs from E_Scope in the case where renamings or derivations
       --  are involved, since it does not follow these links. W_Scope is
       --  generally in a visible unit, and it is this scope that may require
@@ -1587,7 +1587,7 @@ package body Sem_Elab is
 
                      --  Static model, call is not in elaboration code, we
                      --  never need to worry, because in the static model the
-                     --  top level caller always takes care of things.
+                     --  top-level caller always takes care of things.
 
                      else
                         return;

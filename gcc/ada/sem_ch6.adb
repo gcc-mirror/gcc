@@ -11150,6 +11150,16 @@ package body Sem_Ch6 is
          return;
       end if;
 
+      --  The subtype declarations may freeze the formals. The body generated
+      --  for an expression function is not a freeze point, so do not emit
+      --  these declarations (small loss of efficiency in rare cases).
+
+      if Nkind (N) = N_Subprogram_Body
+        and then Was_Expression_Function (N)
+      then
+         return;
+      end if;
+
       Formal := First_Formal (Subp);
       while Present (Formal) loop
          T := Etype (Formal);

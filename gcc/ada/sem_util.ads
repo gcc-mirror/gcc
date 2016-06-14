@@ -2008,7 +2008,7 @@ package Sem_Util is
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
 
-   procedure Propagate_Type_Has_Flags
+   procedure Propagate_Concurrent_Flags
      (Typ      : Entity_Id;
       Comp_Typ : Entity_Id);
    --  Set Has_Task, Has_Protected and Has_Timing_Event on Typ when the flags
