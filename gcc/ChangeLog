@@ -122,6 +122,79 @@
 	to a deeper loop nest.  Pop the last item off the path here rather
 	than in convert_and_register_jump_thread_path.
 
+2016-06-13  Evandro Menezes  <e.menezes@samsung.com>
+	    Wilco Dijkstra  <Wilco.Dijkstra@arm.com>
+
+	[AArch64] Emit division using the Newton series
+
+	* config/aarch64/aarch64-protos.h
+	(cpu_approx_modes): Add new member "division".
+	(aarch64_emit_approx_div): Declare new function.
+	* config/aarch64/aarch64.c
+	(generic_approx_modes): New member "division".
+	(exynosm1_approx_modes): Likewise.
+	(xgene1_approx_modes): Likewise.
+	(aarch64_emit_approx_div): Define new function.
+	* config/aarch64/aarch64.md ("div<mode>3"): New expansion.
+	* config/aarch64/aarch64-simd.md ("div<mode>3"): Likewise.
+	* config/aarch64/aarch64.opt (-mlow-precision-div): Add new option.
+	* doc/invoke.texi (-mlow-precision-div): Describe new option.
+
+2016-06-13  Evandro Menezes  <e.menezes@samsung.com>
+	    Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	[AArch64] Emit square root using the Newton series
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_emit_approx_rsqrt): Replace with new function
+	"aarch64_emit_approx_sqrt".
+	(cpu_approx_modes): New member "sqrt".
+	* config/aarch64/aarch64.c
+	(generic_approx_modes): New member "sqrt".
+	(exynosm1_approx_modes): Likewise.
+	(xgene1_approx_modes): Likewise.
+	(aarch64_emit_approx_rsqrt): Replace with new function
+	"aarch64_emit_approx_sqrt".
+	(aarch64_override_options_after_change_1): Handle new option.
+	* config/aarch64/aarch64-simd.md
+	(rsqrt<mode>2): Use new function instead.
+	(sqrt<mode>2): New expansion and insn definitions.
+	* config/aarch64/aarch64.md: Likewise.
+	* config/aarch64/aarch64.opt
+	(mlow-precision-sqrt): Add new option description.
+	* doc/invoke.texi (mlow-precision-sqrt): Likewise.
+
+2016-06-13  Evandro Menezes  <e.menezes@samsung.com>
+
+	[AArch64] Add more choices for the reciprocal square root approximation
+
+	Allow a target to prefer such operation depending on the operation mode.
+
+	* config/aarch64/aarch64-protos.h
+	(AARCH64_APPROX_MODE): New macro.
+	(AARCH64_APPROX_{NONE,ALL}): Likewise.
+	(cpu_approx_modes): New structure.
+	(tune_params): New member "approx_modes".
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNE_APPROX_RSQRT): Remove macro.
+	* config/aarch64/aarch64.c
+	(generic_approx_modes): New core "cpu_approx_modes" structure.
+	(exynosm1_approx_modes): Likewise.
+	(xgene1_approx_modes): Likewise.
+	(generic_tunings): New member "approx_modes".
+	(cortexa35_tunings): Likewise.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(cortexa72_tunings): Likewise.
+	(exynosm1_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+	(use_rsqrt_p): New argument for the mode and use new member from
+	"tune_params".
+	(aarch64_builtin_reciprocal): Devise mode from builtin.
+	(aarch64_optab_supported_p): New argument for the mode.
+	* doc/invoke.texi (-mlow-precision-recip-sqrt): Reword description.
+
 2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000.h (RS6000_BTM_COMMON): Add the
