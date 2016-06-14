@@ -1,5 +1,8 @@
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71528
+	* g++.dg/opt/pr71528.C: New test.
+
 	PR c++/71516
 	* g++.dg/init/pr71516.C: New test.
 
