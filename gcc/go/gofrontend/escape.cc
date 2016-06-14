@@ -245,7 +245,8 @@ Node::note_inout_flows(int e, int index, Level level)
 
 Escape_context::Escape_context(Gogo* gogo, bool recursive)
   : gogo_(gogo), current_function_(NULL), recursive_(recursive),
-    sink_(Node::make_node(Named_object::make_sink())), loop_depth_(0)
+    sink_(Node::make_node(Named_object::make_sink())), loop_depth_(0),
+    flood_id_(0), pdepth_(0)
 {
   // The sink always escapes to heap and strictly lives outside of the
   // current function i.e. loop_depth == -1.
@@ -1827,13 +1828,370 @@ Gogo::assign_connectivity(Escape_context* context, Named_object* fn)
   context->set_loop_depth(save_depth);
 }
 
-// Propagate escape information across the nodes modeled in this Analysis_set.
+class Escape_analysis_flood
+{
+ public:
+  Escape_analysis_flood(Escape_context* context)
+    : context_(context)
+  { }
+
+  // Use the escape information in dst to update the escape information in src
+  // and src's upstream.
+  void
+  flood(Level, Node* dst, Node* src, int);
+
+ private:
+  // The escape context for the group of functions being flooded.
+  Escape_context* context_;
+};
+
+// Whenever we hit a dereference node, the level goes up by one, and whenever
+// we hit an address-of, the level goes down by one. as long as we're on a
+// level > 0 finding an address-of just means we're following the upstream
+// of a dereference, so this address doesn't leak (yet).
+// If level == 0, it means the /value/ of this node can reach the root of this
+// flood so if this node is an address-of, its argument should be marked as
+// escaping iff its current function and loop depth are different from the
+// flood's root.
+// Once an object has been moved to the heap, all of its upstream should be
+// considered escaping to the global scope.
+// This is an implementation of gc/esc.go:escwalkBody.
 
 void
-Gogo::propagate_escape(Escape_context*, Node*)
+Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
+			     int extra_loop_depth)
 {
-  // TODO(cmang): Do a breadth-first traversal of a node's upstream, adjusting
-  // the Level appropriately.
+  // No need to flood src if it is a literal.
+  if (src->expr() != NULL)
+    {
+      switch (src->expr()->classification())
+        {
+	case Expression::EXPRESSION_BOOLEAN:
+	case Expression::EXPRESSION_STRING:
+	case Expression::EXPRESSION_INTEGER:
+	case Expression::EXPRESSION_FLOAT:
+	case Expression::EXPRESSION_COMPLEX:
+	case Expression::EXPRESSION_NIL:
+	case Expression::EXPRESSION_IOTA:
+	  return;
+
+	default:
+	  break;
+        }
+    }
+
+  Node::Escape_state* src_state = src->state(this->context_, NULL);
+  if (src_state->flood_id == this->context_->flood_id())
+    {
+      // Esclevels are vectors, do not compare as integers,
+      // and must use "min" of old and new to guarantee
+      // convergence.
+      level = level.min(src_state->level);
+      if (level == src_state->level)
+	{
+	  // Have we been here already with an extraloopdepth,
+	  // or is the extraloopdepth provided no improvement on
+	  // what's already been seen?
+	  if (src_state->max_extra_loop_depth >= extra_loop_depth
+	      || src_state->loop_depth >= extra_loop_depth)
+	    return;
+	  src_state->max_extra_loop_depth = extra_loop_depth;
+	}
+    }
+  else
+    src_state->max_extra_loop_depth = -1;
+
+  src_state->flood_id = this->context_->flood_id();
+  src_state->level = level;
+  int mod_loop_depth = std::max(extra_loop_depth, src_state->loop_depth);
+
+  this->context_->increase_pdepth();
+
+  // Input parameter flowing into output parameter?
+  Named_object* src_no = NULL;
+  if (src->expr() != NULL && src->expr()->var_expression() != NULL)
+    src_no = src->expr()->var_expression()->named_object();
+  else
+    src_no = src->object();
+  bool src_is_param = (src_no != NULL
+		       && src_no->is_variable()
+		       && src_no->var_value()->is_parameter());
+
+  Named_object* dst_no = NULL;
+  if (dst->expr() != NULL && dst->expr()->var_expression() != NULL)
+    dst_no = dst->expr()->var_expression()->named_object();
+  else
+    dst_no = dst->object();
+  bool dst_is_result = dst_no != NULL && dst_no->is_result_variable();
+
+  if (src_is_param
+      && dst_is_result
+      && (src->encoding() & ESCAPE_MASK) < int(Node::ESCAPE_SCOPE)
+      && dst->encoding() != Node::ESCAPE_HEAP)
+    {
+      // This case handles:
+      // 1. return in
+      // 2. return &in
+      // 3. tmp := in; return &tmp
+      // 4. return *in
+      if ((src->encoding() & ESCAPE_MASK) != Node::ESCAPE_RETURN)
+	{
+	  int enc =
+	    Node::ESCAPE_RETURN | (src->encoding() & ESCAPE_CONTENT_ESCAPES);
+	  src->set_encoding(enc);
+	}
+
+      int enc = Node::note_inout_flows(src->encoding(),
+				       dst_no->result_var_value()->index(),
+				       level);
+      src->set_encoding(enc);
+
+      // In gc/esc.go:escwalkBody, this is a goto to the label for recursively
+      // flooding the connection graph.  Inlined here for convenience.
+      level = level.copy();
+      for (std::set<Node*>::const_iterator p = src_state->flows.begin();
+	   p != src_state->flows.end();
+	   ++p)
+	this->flood(level, dst, *p, extra_loop_depth);
+      return;
+    }
+
+  // If parameter content escape to heap, set ESCAPE_CONTENT_ESCAPES.
+  // Note minor confusion around escape from pointer-to-struct vs
+  // escape from struct.
+  if (src_is_param
+      && dst->encoding() == Node::ESCAPE_HEAP
+      && (src->encoding() & ESCAPE_MASK) < int(Node::ESCAPE_SCOPE)
+      && level.value() > 0)
+    {
+      int enc =
+	Node::max_encoding((src->encoding() | ESCAPE_CONTENT_ESCAPES),
+			   Node::ESCAPE_NONE);
+      src->set_encoding(enc);
+    }
+
+  // A src object leaks if its value or address is assigned to a dst object
+  // in a different scope (at a different loop depth).
+  Node::Escape_state* dst_state = dst->state(this->context_, NULL);
+  bool src_leaks = (level.value() <= 0
+		    && level.suffix_value() <= 0
+		    && dst_state->loop_depth < mod_loop_depth);
+
+  if (src_is_param
+      && (src_leaks || dst_state->loop_depth < 0)
+      && (src->encoding() & ESCAPE_MASK) < int(Node::ESCAPE_SCOPE))
+    {
+      if (level.suffix_value() > 0)
+	{
+	  int enc =
+	    Node::max_encoding((src->encoding() | ESCAPE_CONTENT_ESCAPES),
+			       Node::ESCAPE_NONE);
+	  src->set_encoding(enc);
+	}
+      else
+	{
+	  src->set_encoding(Node::ESCAPE_SCOPE);
+	}
+    }
+  else if (src->expr() != NULL)
+    {
+      Expression* e = src->expr();
+      if (e->enclosed_var_expression() != NULL)
+	{
+	  Node* enclosed_node =
+	    Node::make_node(e->enclosed_var_expression()->variable());
+	  this->flood(level, dst, enclosed_node, -1);
+	}
+      else if (e->heap_expression() != NULL
+	  || (e->unary_expression() != NULL
+	      && e->unary_expression()->op() == OPERATOR_AND))
+	{
+	  // Pointer literals and address-of expressions.
+	  Expression* underlying;
+	  if (e->heap_expression())
+	    underlying = e->heap_expression()->expr();
+	  else
+	    underlying = e->unary_expression()->operand();
+	  Node* underlying_node = Node::make_node(underlying);
+
+	  // If the address leaks, the underyling object must be moved
+	  // to the heap.
+	  underlying->address_taken(src_leaks);
+	  if (src_leaks)
+	    {
+	      src->set_encoding(Node::ESCAPE_HEAP);
+	      this->flood(level.decrease(), dst,
+			  underlying_node, mod_loop_depth);
+	      extra_loop_depth = mod_loop_depth;
+	    }
+	  else
+	    {
+	      // Decrease the level each time we take the address of the object.
+	      this->flood(level.decrease(), dst, underlying_node, -1);
+	    }
+	}
+      else if (e->slice_literal() != NULL)
+	{
+	  Slice_construction_expression* slice = e->slice_literal();
+	  if (slice->vals() != NULL)
+	    {
+	      for (Expression_list::const_iterator p = slice->vals()->begin();
+		   p != slice->vals()->end();
+		   ++p)
+		{
+		  if ((*p) != NULL)
+		    this->flood(level.decrease(), dst, Node::make_node(*p), -1);
+		}
+	    }
+	  if (src_leaks)
+	    {
+	      src->set_encoding(Node::ESCAPE_HEAP);
+	      extra_loop_depth = mod_loop_depth;
+	    }
+	}
+      else if (e->call_expression() != NULL)
+	{
+	  Call_expression* call = e->call_expression();
+	  if (call->fn()->func_expression() != NULL)
+	    {
+	      Func_expression* func = call->fn()->func_expression();
+	      if (func->is_runtime_function())
+		{
+		  switch (func->runtime_code())
+		    {
+		    case Runtime::APPEND:
+		      {
+			// Propagate escape information to appendee.
+			Expression* appendee = call->args()->front();
+			this->flood(level, dst, Node::make_node(appendee), -1);
+		      }
+		      break;
+
+		    case Runtime::MAKECHAN:
+		    case Runtime::MAKECHANBIG:
+		    case Runtime::MAKEMAP:
+		    case Runtime::MAKEMAPBIG:
+		    case Runtime::MAKESLICE1:
+		    case Runtime::MAKESLICE2:
+		    case Runtime::MAKESLICE1BIG:
+		    case Runtime::MAKESLICE2BIG:
+		    case Runtime::BYTE_ARRAY_TO_STRING:
+		    case Runtime::INT_ARRAY_TO_STRING:
+		    case Runtime::STRING_TO_BYTE_ARRAY:
+		    case Runtime::STRING_TO_INT_ARRAY:
+		    case Runtime::STRING_PLUS:
+		    case Runtime::CONSTRUCT_MAP:
+		    case Runtime::INT_TO_STRING:
+		    case Runtime::CONVERT_INTERFACE:
+		      // All runtime calls that involve allocation of memory
+		      // except new.  Runtime::NEW gets lowered into an
+		      // allocation expression.
+		      if (src_leaks)
+			{
+			  src->set_encoding(Node::ESCAPE_HEAP);
+			  extra_loop_depth = mod_loop_depth;
+			}
+		      break;
+
+		    default:
+		      break;
+		    }
+		}
+	      else if (src_leaks
+		       && (func->closure() != NULL
+			   || func->bound_method_expression() != NULL))
+		{
+		  // A closure or bound method; we lost track of actual function
+		  // so if this leaks, this call must be done on the heap.
+		  src->set_encoding(Node::ESCAPE_HEAP);
+		}
+	    }
+	}
+      else if (e->allocation_expression() != NULL && src_leaks)
+	{
+	  // Calls to Runtime::NEW get lowered into an allocation expression.
+	  src->set_encoding(Node::ESCAPE_HEAP);
+	}
+      else if ((e->field_reference_expression() != NULL
+		&& e->field_reference_expression()->expr()->unary_expression() == NULL)
+	       || e->type_guard_expression() != NULL
+	       || (e->array_index_expression() != NULL
+		   && e->type()->is_slice_type())
+	       || (e->string_index_expression() != NULL
+		   && e->type()->is_slice_type()))
+	{
+	  Expression* underlying;
+	  if (e->field_reference_expression() != NULL)
+	    underlying = e->field_reference_expression()->expr();
+	  else if (e->type_guard_expression() != NULL)
+	    underlying = e->type_guard_expression()->expr();
+	  else if (e->array_index_expression() != NULL)
+	    underlying = e->array_index_expression()->array();
+	  else
+	    underlying = e->string_index_expression()->string();
+
+	  Node* underlying_node = Node::make_node(underlying);
+	  this->flood(level, dst, underlying_node, -1);
+	}
+      else if ((e->field_reference_expression() != NULL
+		&& e->field_reference_expression()->expr()->unary_expression() != NULL)
+	       || e->array_index_expression() != NULL
+	       || e->map_index_expression() != NULL
+	       || (e->unary_expression() != NULL
+		   && e->unary_expression()->op() == OPERATOR_MULT))
+	{
+	  Expression* underlying;
+	  if (e->field_reference_expression() != NULL)
+	    {
+	      underlying = e->field_reference_expression()->expr();
+	      underlying = underlying->unary_expression()->operand();
+	    }
+	  else if (e->array_index_expression() != NULL)
+	    {
+	      underlying = e->array_index_expression()->array();
+	      if (!underlying->type()->is_slice_type())
+		{
+		  Node* underlying_node = Node::make_node(underlying);
+		  this->flood(level, dst, underlying_node, 1);
+		}
+	    }
+	  else if (e->map_index_expression() != NULL)
+	    underlying = e->map_index_expression()->map();
+	  else
+	    underlying = e->unary_expression()->operand();
+
+	  // Increase the level for a dereference.
+	  Node* underlying_node = Node::make_node(underlying);
+	  this->flood(level.increase(), dst, underlying_node, -1);
+	}
+
+      // TODO(cmang): Add case for Issue #10466.
+    }
+
+  level = level.copy();
+  for (std::set<Node*>::const_iterator p = src_state->flows.begin();
+       p != src_state->flows.end();
+       ++p)
+    this->flood(level, dst, *p, extra_loop_depth);
+
+  this->context_->decrease_pdepth();
+}
+
+// Propagate escape information across the nodes modeled in this Analysis_set.
+// This is an implementation of gc/esc.go:escflood.
+
+void
+Gogo::propagate_escape(Escape_context* context, Node* dst)
+{
+  Node::Escape_state* state = dst->state(context, NULL);
+  Escape_analysis_flood eaf(context);
+  for (std::set<Node*>::const_iterator p = state->flows.begin();
+       p != state->flows.end();
+       ++p)
+    {
+      context->increase_flood_id();
+      eaf.flood(Level::From(0), dst, *p, -1);
+    }
 }
 
 
