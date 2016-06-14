@@ -1265,6 +1265,10 @@ find_duplicate (same_succ *same_succ, basic_block bb1, basic_block bb2)
       gimple *stmt1 = gsi_stmt (gsi1);
       gimple *stmt2 = gsi_stmt (gsi2);
 
+      if (gimple_code (stmt1) == GIMPLE_LABEL
+	  && gimple_code (stmt2) == GIMPLE_LABEL)
+	break;
+
       if (!gimple_equal_p (same_succ, stmt1, stmt2))
 	return;
 
@@ -1277,6 +1281,20 @@ find_duplicate (same_succ *same_succ, basic_block bb1, basic_block bb2)
       gsi_advance_bw_nondebug_nonlocal (&gsi2, &vuse2, &vuse_escaped);
     }
 
+  while (!gsi_end_p (gsi1) && gimple_code (gsi_stmt (gsi1)) == GIMPLE_LABEL)
+    {
+      tree label = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi1)));
+      if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
+	return;
+      gsi_prev (&gsi1);
+    }
+  while (!gsi_end_p (gsi2) && gimple_code (gsi_stmt (gsi2)) == GIMPLE_LABEL)
+    {
+      tree label = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi2)));
+      if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
+	return;
+      gsi_prev (&gsi2);
+    }
   if (!(gsi_end_p (gsi1) && gsi_end_p (gsi2)))
     return;
 
@@ -1553,6 +1571,23 @@ replace_block_by (basic_block bb1, basic_block bb2)
   FOR_EACH_EDGE (e2, ei, bb2->succs)
     {
       e2->probability = GCOV_COMPUTE_SCALE (e2->count, out_sum);
+    }
+
+  /* Move over any user labels from bb1 after the bb2 labels.  */
+  gimple_stmt_iterator gsi1 = gsi_start_bb (bb1);
+  if (!gsi_end_p (gsi1) && gimple_code (gsi_stmt (gsi1)) == GIMPLE_LABEL)
+    {
+      gimple_stmt_iterator gsi2 = gsi_after_labels (bb2);
+      while (!gsi_end_p (gsi1)
+	     && gimple_code (gsi_stmt (gsi1)) == GIMPLE_LABEL)
+	{
+	  tree label = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi1)));
+	  gcc_assert (!DECL_NONLOCAL (label) && !FORCED_LABEL (label));
+	  if (DECL_ARTIFICIAL (label))
+	    gsi_next (&gsi1);
+	  else
+	    gsi_move_before (&gsi1, &gsi2);
+	}
     }
 
   /* Clear range info from all stmts in BB2 -- this transformation
