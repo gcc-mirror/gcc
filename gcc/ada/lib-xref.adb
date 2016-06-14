@@ -1075,11 +1075,11 @@ package body Lib.Xref is
               ((Ent       => Ent,
                 Loc       => Ref,
                 Typ       => Actual_Typ,
-                Eun       => Get_Code_Unit (Def),
-                Lun       => Get_Code_Unit (Ref),
+                Eun       => Get_Top_Level_Code_Unit (Def),
+                Lun       => Get_Top_Level_Code_Unit (Ref),
                 Ref_Scope => Ref_Scope,
                 Ent_Scope => Ent_Scope),
-               Ent_Scope_File => Get_Code_Unit (Ent));
+               Ent_Scope_File => Get_Top_Level_Code_Unit (Ent));
 
          else
             Ref := Original_Location (Sloc (Nod));

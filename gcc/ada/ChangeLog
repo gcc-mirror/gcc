@@ -1,3 +1,36 @@
+2016-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Only consider
+	nodes from sources.
+
+2016-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb, gnat1drv.adb (Adjust_Global_Switches): Only disable
+	simple value propagation in CodePeer mode when warnings are disabled.
+	(Scan_Front_End_Switches): Enable relevant front-end switches
+	when using -gnateC.
+
+2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_OK_Volatile_Context): A
+	reference to a volatile object is considered OK if appears as
+	the prefix of attributes Address, Alignment, Component_Size,
+	First_Bit, Last_Bit, Position, Size, Storage_Size.
+
+2016-06-14  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_File): Do not traverse
+	subunits directly, as they are already traversed as part of the
+	top-level unit to which they belong.
+	(Add_SPARK_Xrefs): Add assertions to ensure correct sorting.
+	(Generate_Dereference): Use unique definition place for special
+	variable __HEAP, to ensure correct sorting of references.
+	* lib-xref.adb (Generate_Reference): Use top-level unit in case
+	of subunits.
+	* lib.adb, lib.ads (Get_Top_Level_Code_Unit): New functions that
+	compute the top-level code unit for a source location of AST node,
+	that go past subunits.
+
 2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_subprog_type): Build only a minimal
