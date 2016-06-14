@@ -1,3 +1,9 @@
+2016-06-14  Jason Merrill  <jason@redhat.com>
+
+	P0145R2: Refining Expression Order for C++.
+	* c.opt (fargs-in-order): New.
+	* c-opts.c (c_common_post_options): Adjust flag_args_in_order.
+
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/71498

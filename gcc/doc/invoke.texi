@@ -189,7 +189,8 @@ in the following sections.
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
-@gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
+@gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
+-fargs-in-order=@var{n} -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
@@ -2232,6 +2233,14 @@ option is used for the warning.
 @opindex fno-access-control
 Turn off all access checking.  This switch is mainly useful for working
 around bugs in the access control code.
+
+@item -fargs-in-order
+@opindex fargs-in-order
+Evaluate function arguments and operands of some binary expressions in
+left-to-right order, and evaluate the right side of an assignment
+before the left side, as proposed in P0145R2.  Enabled by default with
+@option{-std=c++1z}.  @option{-fargs-in-order=1} implements all of the
+ordering requirements except function arguments.
 
 @item -fcheck-new
 @opindex fcheck-new

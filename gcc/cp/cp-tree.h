@@ -179,19 +179,21 @@ operator == (const cp_expr &lhs, tree rhs)
       IDENTIFIER_CTOR_OR_DTOR_P (in IDENTIFIER_NODE)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
-      CALL_EXPR_LIST_INIT_P (in CALL_EXPR, AGGR_INIT_EXPR)
+      CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
-	  or FIELD_DECL).
+	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
+      CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       DECL_CONSTRUCTION_VTABLE_P (in VAR_DECL)
       TYPE_MARKED_P (in _TYPE)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
+      CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
@@ -3379,6 +3381,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define DELETE_EXPR_USE_VEC(NODE) \
   TREE_LANG_FLAG_1 (DELETE_EXPR_CHECK (NODE))
 
+#define CALL_OR_AGGR_INIT_CHECK(NODE) \
+  TREE_CHECK2 ((NODE), CALL_EXPR, AGGR_INIT_EXPR)
+
 /* Indicates that this is a non-dependent COMPOUND_EXPR which will
    resolve to a function call.  */
 #define COMPOUND_EXPR_OVERLOADED(NODE) \
@@ -3388,9 +3393,20 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    should be performed at instantiation time.  */
 #define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (CALL_EXPR_CHECK (NODE))
 
-/* True if CALL_EXPR expresses list-initialization of an object.  */
-#define CALL_EXPR_LIST_INIT_P(NODE) \
-  TREE_LANG_FLAG_3 (TREE_CHECK2 ((NODE),CALL_EXPR,AGGR_INIT_EXPR))
+/* True if the arguments to NODE should be evaluated in left-to-right
+   order regardless of PUSH_ARGS_REVERSED.  */
+#define CALL_EXPR_ORDERED_ARGS(NODE) \
+  TREE_LANG_FLAG_3 (CALL_OR_AGGR_INIT_CHECK (NODE))
+
+/* True if the arguments to NODE should be evaluated in right-to-left
+   order regardless of PUSH_ARGS_REVERSED.  */
+#define CALL_EXPR_REVERSE_ARGS(NODE) \
+  TREE_LANG_FLAG_5 (CALL_OR_AGGR_INIT_CHECK (NODE))
+
+/* True if CALL_EXPR was written as an operator expression, not a function
+   call.  */
+#define CALL_EXPR_OPERATOR_SYNTAX(NODE) \
+  TREE_LANG_FLAG_6 (CALL_OR_AGGR_INIT_CHECK (NODE))
 
 /* Indicates whether a string literal has been parenthesized. Such
    usages are disallowed in certain circumstances.  */
@@ -5542,6 +5558,7 @@ extern bool null_ptr_cst_p			(tree);
 extern bool null_member_pointer_value_p		(tree);
 extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
+extern tree extract_call_expr			(tree);
 extern tree build_user_type_conversion		(tree, tree, int,
 						 tsubst_flags_t);
 extern tree build_new_function_call		(tree, vec<tree, va_gc> **, bool, 

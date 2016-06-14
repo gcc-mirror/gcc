@@ -1,3 +1,17 @@
+2016-06-14  Jason Merrill  <jason@redhat.com>
+
+	P0145R2: Refining Expression Order for C++.
+	* cp-tree.h (CALL_EXPR_OPERATOR_SYNTAX, CALL_EXPR_ORDERED_ARGS)
+	(CALL_EXPR_REVERSE_ARGS): New.
+	* call.c (build_new_op_1): Set them.
+	(extract_call_expr, op_is_ordered): New.
+	(build_over_call): Set CALL_EXPR_ORDERED_ARGS.
+	* cp-gimplify.c (cp_gimplify_expr) [CALL_EXPR]: Handle new flags.
+	* pt.c (tsubst_copy_and_build): Copy new flags.
+	* semantics.c (simplify_aggr_init_expr): Likewise.
+	* tree.c (build_aggr_init_expr): Likewise.
+	(build_min_non_dep_op_overload): Likewise.
+
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71528
