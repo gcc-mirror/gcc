@@ -1,3 +1,7 @@
+2016-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck2.c (digest_init_r): Use EXPR_LOC_OR_LOC on init.
+
 2016-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Fix typo in pedwarn text.

@@ -1,3 +1,7 @@
+2016-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/init/array46.C: New.
+
 2016-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
         * gcc.target/i386/float128-3.c: New test.
