@@ -4612,13 +4612,12 @@ package body Exp_Ch3 is
          --  been a private type at the point of definition. Same if component
          --  type is controlled or contains protected objects.
 
-         Set_Has_Task       (Base, Has_Task      (Comp_Typ));
-         Set_Has_Protected  (Base, Has_Protected (Comp_Typ));
+         Propagate_Type_Has_Flags (Base, Comp_Typ);
          Set_Has_Controlled_Component
-                            (Base, Has_Controlled_Component
+                              (Base, Has_Controlled_Component
                                                  (Comp_Typ)
-                                     or else
-                                   Is_Controlled (Comp_Typ));
+                                       or else
+                                     Is_Controlled (Comp_Typ));
 
          if No (Init_Proc (Base)) then
 
@@ -5185,13 +5184,7 @@ package body Exp_Ch3 is
       while Present (Comp) loop
          Comp_Typ := Etype (Comp);
 
-         if Has_Task (Comp_Typ) then
-            Set_Has_Task (Typ);
-         end if;
-
-         if Has_Protected (Comp_Typ) then
-            Set_Has_Protected (Typ);
-         end if;
+         Propagate_Type_Has_Flags (Typ, Comp_Typ);
 
          --  Do not set Has_Controlled_Component on a class-wide equivalent
          --  type. See Make_CW_Equivalent_Type.

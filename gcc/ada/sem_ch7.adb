@@ -47,6 +47,7 @@ with Nlists;    use Nlists;
 with Opt;       use Opt;
 with Output;    use Output;
 with Restrict;  use Restrict;
+with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
 with Sem_Cat;   use Sem_Cat;
@@ -2446,6 +2447,12 @@ package body Sem_Ch7 is
          Set_Is_Limited_Record           (Id, Limited_Present (Def));
          Set_Has_Delayed_Freeze          (Id, True);
 
+         --  Recognize Ada.Real_Time.Timing_Events.Timing_Events here
+
+         if Is_RTE (Id, RE_Timing_Event) then
+            Set_Has_Timing_Event (Id);
+         end if;
+
          --  Create a class-wide type with the same attributes
 
          Make_Class_Wide_Type (Id);
@@ -2578,8 +2585,8 @@ package body Sem_Ch7 is
             Set_Finalize_Storage_Only
                               (Priv, Finalize_Storage_Only
                                                    (Base_Type (Full)));
-            Set_Has_Task      (Priv, Has_Task      (Base_Type (Full)));
-            Set_Has_Protected (Priv, Has_Protected (Base_Type (Full)));
+            Propagate_Type_Has_Flags
+                              (Priv, Base_Type (Full));
             Set_Has_Controlled_Component
                               (Priv, Has_Controlled_Component
                                                    (Base_Type (Full)));

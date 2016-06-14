@@ -1,3 +1,30 @@
+2016-06-14  Tristan Gingold  <gingold@adacore.com>
+
+	* einfo.adb, einfo.ads (Has_Timing_Event,
+	Set_Has_Timing_Event): Add Has_Timing_Event flag.
+	(Write_Entity_Flags): Display * sem_util.ads, sem_util.adb:
+	(Propagate_Type_Has_Flags): New procedure to factorize code.
+	* exp_ch3.adb (Expand_Freeze_Array_Type,
+	Expand_Freeze_Record_Type): Call Propagate_Type_Has_Flags.
+	* sem_ch3.adb (Access_Type_Decalaration): Initialize
+	Has_Timing_Event flag.	(Analyze_Object_Declaration):
+	Move code that check No_Local_Timing_Events near
+	the code that check No_Local_Protected_Objects.
+	(Analyze_Private_Extension_Declaration, Array_Type_Declaration)
+	(Build_Derived_Type, Copy_Array_Base_Type_Attributes,
+	Process_Full_View) (Record_Type_Definition): Call
+	Propagate_Type_Has_Flags.
+	* sem_ch4.adb (Analyze_Allocator): Check No_Local_Timing_Events.
+	* sem_ch7.adb (New_Private_Type): Set Has_Timing_Event on the
+	Timing_Event type.
+	(Uninstall_Declaration): Call Propagate_Type_Has_Flags.
+	* sem_ch9.adb (Analyze_Protected_Definition): Call
+	Propagate_Type_Has_Flags.
+
+2016-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem.ads: Minor style fix.
+
 2016-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Analyze_Associations): An actual parameter

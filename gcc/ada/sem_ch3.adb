@@ -1437,8 +1437,9 @@ package body Sem_Ch3 is
       --  and to Has_Protected.
 
       Set_Has_Task                 (T, False);
-      Set_Has_Controlled_Component (T, False);
       Set_Has_Protected            (T, False);
+      Set_Has_Timing_Event         (T, False);
+      Set_Has_Controlled_Component (T, False);
 
       --  Initialize field Finalization_Master explicitly to Empty, to avoid
       --  problems where an incomplete view of this entity has been previously
@@ -3585,6 +3586,12 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Check for violation of No_Local_Timing_Events
+
+      if Has_Timing_Event (T) and then not Is_Library_Level_Entity (Id) then
+         Check_Restriction (No_Local_Timing_Events, Id);
+      end if;
+
       --  The actual subtype of the object is the nominal subtype, unless
       --  the nominal one is unconstrained and obtained from the expression.
 
@@ -4362,15 +4369,6 @@ package body Sem_Ch3 is
          Set_In_Private_Part (Id);
       end if;
 
-      --  Check for violation of No_Local_Timing_Events
-
-      if Restriction_Check_Required (No_Local_Timing_Events)
-        and then not Is_Library_Level_Entity (Id)
-        and then Is_RTE (Etype (Id), RE_Timing_Event)
-      then
-         Check_Restriction (No_Local_Timing_Events, N);
-      end if;
-
    <<Leave>>
       --  Initialize the refined state of a variable here because this is a
       --  common destination for legal and illegal object declarations.
@@ -4515,9 +4513,8 @@ package body Sem_Ch3 is
       Init_Size_Align      (T);
       Set_Default_SSO      (T);
 
-      Set_Etype            (T,            Parent_Base);
-      Set_Has_Task         (T, Has_Task  (Parent_Base));
-      Set_Has_Protected    (T, Has_Task  (Parent_Base));
+      Set_Etype            (T,                Parent_Base);
+      Propagate_Type_Has_Flags (T, Parent_Base);
 
       Set_Convention       (T, Convention     (Parent_Type));
       Set_First_Rep_Item   (T, First_Rep_Item (Parent_Type));
@@ -5576,8 +5573,7 @@ package body Sem_Ch3 is
 
          Set_First_Index       (Implicit_Base, First_Index (T));
          Set_Component_Type    (Implicit_Base, Element_Type);
-         Set_Has_Task          (Implicit_Base, Has_Task (Element_Type));
-         Set_Has_Protected     (Implicit_Base, Has_Protected (Element_Type));
+         Propagate_Type_Has_Flags (Implicit_Base, Element_Type);
          Set_Component_Size    (Implicit_Base, Uint_0);
          Set_Packed_Array_Impl_Type (Implicit_Base, Empty);
          Set_Has_Controlled_Component (Implicit_Base,
@@ -5603,8 +5599,7 @@ package body Sem_Ch3 is
          Set_Is_Constrained           (T, False);
          Set_First_Index              (T, First (Subtype_Marks (Def)));
          Set_Has_Delayed_Freeze       (T, True);
-         Set_Has_Task                 (T, Has_Task      (Element_Type));
-         Set_Has_Protected            (T, Has_Protected (Element_Type));
+         Propagate_Type_Has_Flags     (T, Element_Type);
          Set_Has_Controlled_Component (T, Has_Controlled_Component
                                                         (Element_Type)
                                             or else
@@ -8951,12 +8946,11 @@ package body Sem_Ch3 is
    begin
       --  Set common attributes
 
-      Set_Scope              (Derived_Type, Current_Scope);
+      Set_Scope                (Derived_Type, Current_Scope);
 
-      Set_Etype              (Derived_Type,                Parent_Base);
-      Set_Ekind              (Derived_Type, Ekind         (Parent_Base));
-      Set_Has_Task           (Derived_Type, Has_Task      (Parent_Base));
-      Set_Has_Protected      (Derived_Type, Has_Protected (Parent_Base));
+      Set_Etype                (Derived_Type,                Parent_Base);
+      Set_Ekind                (Derived_Type, Ekind         (Parent_Base));
+      Propagate_Type_Has_Flags (Derived_Type, Parent_Base);
 
       Set_Size_Info          (Derived_Type,                     Parent_Type);
       Set_RM_Size            (Derived_Type, RM_Size            (Parent_Type));
@@ -13713,8 +13707,7 @@ package body Sem_Ch3 is
       Set_Component_Size           (T1, Component_Size           (T2));
       Set_Has_Controlled_Component (T1, Has_Controlled_Component (T2));
       Set_Has_Non_Standard_Rep     (T1, Has_Non_Standard_Rep     (T2));
-      Set_Has_Protected            (T1, Has_Protected            (T2));
-      Set_Has_Task                 (T1, Has_Task                 (T2));
+      Propagate_Type_Has_Flags     (T1, T2);
       Set_Is_Packed                (T1, Is_Packed                (T2));
       Set_Has_Aliased_Components   (T1, Has_Aliased_Components   (T2));
       Set_Has_Atomic_Components    (T1, Has_Atomic_Components    (T2));
@@ -19931,9 +19924,7 @@ package body Sem_Ch3 is
                Set_Class_Wide_Type
                  (Base_Type (Full_T), Class_Wide_Type (Priv_T));
 
-               Set_Has_Task (Class_Wide_Type (Priv_T), Has_Task      (Full_T));
-               Set_Has_Protected
-                            (Class_Wide_Type (Priv_T), Has_Protected (Full_T));
+               Propagate_Type_Has_Flags (Class_Wide_Type (Priv_T), Full_T);
             end if;
          end;
       end if;
@@ -21289,13 +21280,7 @@ package body Sem_Ch3 is
             Init_Component_Location (Component);
          end if;
 
-         if Has_Task (Etype (Component)) then
-            Set_Has_Task (T);
-         end if;
-
-         if Has_Protected (Etype (Component)) then
-            Set_Has_Protected (T);
-         end if;
+         Propagate_Type_Has_Flags (T, Etype (Component));
 
          if Ekind (Component) /= E_Component then
             null;

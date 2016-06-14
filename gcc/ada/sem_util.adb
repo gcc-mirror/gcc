@@ -18300,6 +18300,27 @@ package body Sem_Util is
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
 
+   ------------------------------
+   -- Propagate_Type_Has_Flags --
+   ------------------------------
+
+   procedure Propagate_Type_Has_Flags
+     (Typ      : Entity_Id;
+      Comp_Typ : Entity_Id) is
+   begin
+      if Has_Task (Comp_Typ) then
+         Set_Has_Task (Typ);
+      end if;
+
+      if Has_Protected (Comp_Typ) then
+         Set_Has_Protected (Typ);
+      end if;
+
+      if Has_Timing_Event (Comp_Typ) then
+         Set_Has_Timing_Event (Typ);
+      end if;
+   end Propagate_Type_Has_Flags;
+
    ---------------------------------------
    -- Record_Possible_Part_Of_Reference --
    ---------------------------------------
