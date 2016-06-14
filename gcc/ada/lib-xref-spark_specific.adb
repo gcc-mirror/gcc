@@ -150,6 +150,15 @@ package body SPARK_Specific is
          return;
       end if;
 
+      --  Subunits are traversed as part of the top-level unit to which they
+      --  belong.
+
+      if Present (Cunit (Ubody))
+        and then Nkind (Unit (Cunit (Ubody))) = N_Subunit
+      then
+         return;
+      end if;
+
       From := SPARK_Scope_Table.Last + 1;
 
       --  Unit might not have an associated compilation unit, as seen in code
@@ -610,6 +619,8 @@ package body SPARK_Specific is
             --  Both entities must be equal at this point
 
             pragma Assert (T1.Key.Ent = T2.Key.Ent);
+            pragma Assert (T1.Key.Ent_Scope = T2.Key.Ent_Scope);
+            pragma Assert (T1.Ent_Scope_File = T2.Ent_Scope_File);
 
             --  Fourth test: if reference is in same unit as entity definition,
             --  sort first.
@@ -1210,18 +1221,20 @@ package body SPARK_Specific is
             Deref.Loc := Loc;
             Deref.Typ := Typ;
 
-            --  It is as if the special "Heap" was defined in every scope where
-            --  it is referenced.
+            --  It is as if the special "Heap" was defined in the main unit,
+            --  in the scope of the entity for the main unit. This single
+            --  definition point is required to ensure that sorting cross
+            --  references works for "Heap" references as well.
 
-            Deref.Eun := Get_Code_Unit (Loc);
-            Deref.Lun := Get_Code_Unit (Loc);
+            Deref.Eun := Main_Unit;
+            Deref.Lun := Get_Top_Level_Code_Unit (Loc);
 
             Deref.Ref_Scope := Ref_Scope;
-            Deref.Ent_Scope := Ref_Scope;
+            Deref.Ent_Scope := Cunit_Entity (Main_Unit);
 
             Deref_Entry.Def := No_Location;
 
-            Deref_Entry.Ent_Scope_File := Get_Code_Unit (N);
+            Deref_Entry.Ent_Scope_File := Main_Unit;
          end;
       end if;
    end Generate_Dereference;

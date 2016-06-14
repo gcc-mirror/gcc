@@ -13637,6 +13637,22 @@ package body Sem_Util is
       then
          return True;
 
+      --  The volatile object appears as the prefix of attributes Address,
+      --  Alignment, Component_Size, First_Bit, Last_Bit, Position, Size,
+      --  Storage_Size.
+
+      elsif Nkind (Context) = N_Attribute_Reference
+        and then Prefix (Context) = Obj_Ref
+        and then Nam_In (Attribute_Name (Context), Name_Alignment,
+                                                   Name_Component_Size,
+                                                   Name_First_Bit,
+                                                   Name_Last_Bit,
+                                                   Name_Position,
+                                                   Name_Size,
+                                                   Name_Storage_Size)
+      then
+         return True;
+
       --  The volatile object appears as the expression of a type conversion
       --  occurring in a non-interfering context.
 

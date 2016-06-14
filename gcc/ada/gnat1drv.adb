@@ -296,8 +296,7 @@ procedure Gnat1drv is
          Debug_Generated_Code := False;
 
          --  Turn cross-referencing on in case it was disabled (e.g. by -gnatD)
-         --  Do we really need to spend time generating xref in CodePeer
-         --  mode??? Consider setting Xref_Active to False.
+         --  to support source navigation.
 
          Xref_Active := True;
 
@@ -318,24 +317,15 @@ procedure Gnat1drv is
 
          Assertions_Enabled := True;
 
-         --  Disable all simple value propagation. This is an optimization
-         --  which is valuable for code optimization, and also for generation
-         --  of compiler warnings, but these are being turned off by default,
-         --  and CodePeer generates better messages (referencing original
-         --  variables) this way.
-
-         Debug_Flag_MM := True;
-
-         --  Set normal RM validity checking, and checking of IN OUT parameters
-         --  (this might give CodePeer more useful checks to analyze, to be
-         --  confirmed???). All other validity checking is turned off, since
-         --  this can generate very complex trees that only confuse CodePeer
-         --  and do not bring enough useful info.
+         --  Set normal RM validity checking and checking of copies (to catch
+         --  e.g.  wrong values used in unchecked conversions).
+         --  All other validity checking is turned off, since this can generate
+         --  very complex trees that only confuse CodePeer and do not bring
+         --  enough useful info.
 
          Reset_Validity_Check_Options;
          Validity_Check_Default       := True;
-         Validity_Check_In_Out_Params := True;
-         Validity_Check_In_Params     := True;
+         Validity_Check_Copies        := True;
 
          --  Turn off style check options and ignore any style check pragmas
          --  since we are not interested in any front-end warnings when we are
@@ -356,6 +346,18 @@ procedure Gnat1drv is
          --  This is useful when using CodePeer mode with other compilers.
 
          Relaxed_RM_Semantics := True;
+
+         --  Disable all simple value propagation. This is an optimization
+         --  which is valuable for code optimization, and also for generation
+         --  of compiler warnings, but these are being turned off by default,
+         --  and CodePeer generates better messages (referencing original
+         --  variables) this way.
+         --  Do this only is -gnatws is set (the default with -gnatcC), so that
+         --  if warnings are enabled, we'll get better messages from GNAT.
+
+         if Warning_Mode = Suppress then
+            Debug_Flag_MM := True;
+         end if;
       end if;
 
       --  Enable some individual switches that are implied by relaxed RM

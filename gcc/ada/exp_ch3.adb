@@ -6868,6 +6868,7 @@ package body Exp_Ch3 is
             --  from previous instantiation errors.
 
             if Validity_Checks_On
+              and then Comes_From_Source (N)
               and then Validity_Check_Copies
               and then not Is_Generic_Type (Etype (Def_Id))
             then
