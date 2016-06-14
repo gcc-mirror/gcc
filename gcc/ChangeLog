@@ -1,3 +1,7 @@
+2016-06-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (signbittf2): Emit sse_movmskps for TARGET_SSE.
+
 2016-06-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* expmed.h: Close parenthesis in "at your option" in copyright
