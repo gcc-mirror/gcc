@@ -1,3 +1,9 @@
+2016-06-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-elemrev-2.c: Change effective target
+	requirements, and disable for AIX for now.
+	* gcc.target/powerpc/vsx-elemrev-4.c: Likewise.
+
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71528
