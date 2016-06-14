@@ -1,3 +1,29 @@
+2016-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): An actual parameter
+	with a box must be included in the count of actuals, to detect
+	possible superfluous named actuals that do not match any of the
+	formals of the generic unit in a formal package declaration.
+
+2016-06-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Fix formatting
+	of error output related to SPARK RM 6.1.7(3) and pragma
+	Extensions_Visible.
+	* sem_ch4.adb (Analyze_Type_Conversion): Fix formatting of error
+	output related to SPARK RM 6.1.7(3) and pragma Extensions_Visible.
+	* sem_prag.adb (Analyze_Pragma): Fix formatting of error output
+	related to SPARK RM 7.1.2(15) and pragma Volatile_Function
+	so that the values True and False are no longer surrounded by
+	double quotes.
+	* sem_res.adb (Resolve_Actuals): Fix formatting of error output
+	related to SPARK RM 6.1.7(3) and pragma Extensions_Visible.
+
+2016-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Enable access checks
+	in codepeer mode.
+	* freeze.adb: Minor grammar fix in comment.
 2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib.adb: Minor reformatting.

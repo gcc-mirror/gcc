@@ -5246,8 +5246,8 @@ package body Sem_Ch4 is
         and then Is_EVF_Expression (Expr)
       then
          Error_Msg_N
-           ("formal parameter with Extensions_Visible False cannot be "
-            & "converted to class-wide type", Expr);
+           ("formal parameter cannot be converted to class-wide type when "
+            & "Extensions_Visible is False", Expr);
       end if;
    end Analyze_Type_Conversion;
 

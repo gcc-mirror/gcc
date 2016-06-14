@@ -267,8 +267,7 @@ procedure Gnat1drv is
          --  Enable all other language checks
 
          Suppress_Options.Suppress :=
-           (Access_Check      => True,
-            Alignment_Check   => True,
+           (Alignment_Check   => True,
             Division_Check    => True,
             Elaboration_Check => True,
             others            => False);
