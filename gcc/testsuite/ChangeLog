@@ -1,3 +1,11 @@
+2016-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71405
+	* g++.dg/torture/pr71405.C: New test.
+
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/71498

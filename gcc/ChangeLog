@@ -1,3 +1,13 @@
+2016-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71405
+	* tree-ssa.c (execute_update_addresses_taken): For clobber with
+	incompatible type, build a new clobber with the right type instead
+	of building a VIEW_CONVERT_EXPR around it.
+
 2016-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Use a uniform test and
