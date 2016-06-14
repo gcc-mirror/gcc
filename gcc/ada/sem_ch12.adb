@@ -1500,9 +1500,8 @@ package body Sem_Ch12 is
          --  correspond to some formal in the generic.
 
          if Nkind (Named) /= N_Others_Choice
-           and then
-             (Present (Explicit_Generic_Actual_Parameter (Named))
-               or else Box_Present (Named))
+           and then (Present (Explicit_Generic_Actual_Parameter (Named))
+                      or else Box_Present (Named))
          then
             Num_Actuals := Num_Actuals + 1;
          end if;

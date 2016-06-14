@@ -1161,10 +1161,12 @@ package body Freeze is
       ADC              : Node_Id;
       Comp_ADC_Present : out Boolean)
    is
-      Encl_Base : Entity_Id;
       Comp_Base : Entity_Id;
       Comp_ADC  : Node_Id;
+      Encl_Base : Entity_Id;
       Err_Node  : Node_Id;
+
+      Component_Aliased : Boolean;
 
       Comp_Byte_Aligned : Boolean;
       --  Set for the record case, True if Comp starts on a byte boundary
@@ -1173,8 +1175,6 @@ package body Freeze is
       Comp_SSO_Differs  : Boolean;
       --  Set True when the component is a nested composite, and it does not
       --  have the same scalar storage order as Encl_Type.
-
-      Component_Aliased : Boolean;
 
    begin
       --  Record case
@@ -1226,9 +1226,9 @@ package body Freeze is
          Comp_Base := Underlying_Type (Comp_Base);
       end if;
 
-      Comp_ADC := Get_Attribute_Definition_Clause
-                    (First_Subtype (Comp_Base),
-                     Attribute_Scalar_Storage_Order);
+      Comp_ADC :=
+        Get_Attribute_Definition_Clause
+          (First_Subtype (Comp_Base), Attribute_Scalar_Storage_Order);
       Comp_ADC_Present := Present (Comp_ADC);
 
       --  Case of record or array component: check storage order compatibility.
@@ -1240,9 +1240,8 @@ package body Freeze is
         or else Is_Array_Type (Comp_Base)
       then
          Comp_SSO_Differs :=
-           Reverse_Storage_Order (Encl_Base)
-             /=
-           Reverse_Storage_Order (Comp_Base);
+           Reverse_Storage_Order (Encl_Base) /=
+             Reverse_Storage_Order (Comp_Base);
 
          --  Parent and extension must have same storage order
 
