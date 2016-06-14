@@ -1,6 +1,11 @@
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68657
+	* gcc.target/i386/pr68657.c: New test.
+
 	2016-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71448
