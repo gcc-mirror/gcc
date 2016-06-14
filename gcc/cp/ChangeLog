@@ -1,3 +1,8 @@
+2016-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71516
+	* decl.c (complete_vars): Handle gracefully type == error_mark_node.
+
 2016-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck2.c (digest_init_r): Use EXPR_LOC_OR_LOC on init.
