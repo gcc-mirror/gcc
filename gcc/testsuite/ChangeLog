@@ -1,5 +1,8 @@
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71516
+	* g++.dg/init/pr71516.C: New test.
+
 	Backported from mainline
 	2016-06-10  Jakub Jelinek  <jakub@redhat.com>
 
