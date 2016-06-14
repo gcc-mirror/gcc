@@ -3700,28 +3700,28 @@ package body Exp_Ch3 is
       --  Recursive procedure that generates a list of checks for components
       --  that need it, and recurses through variant parts when present.
 
-      function Build_Component_Invariant_Call (Comp : Entity_Id)
-      return Node_Id;
-      --  Build call to invariant procedure for a record component.
+      function Build_Component_Invariant_Call
+        (Comp : Entity_Id) return Node_Id;
+      --  Build call to invariant procedure for a record component
 
       ------------------------------------
       -- Build_Component_Invariant_Call --
       ------------------------------------
 
-      function Build_Component_Invariant_Call (Comp : Entity_Id)
-      return Node_Id
+      function Build_Component_Invariant_Call
+        (Comp : Entity_Id) return Node_Id
       is
-         Sel_Comp : Node_Id;
-         Typ      : Entity_Id;
          Call     : Node_Id;
          Proc     : Entity_Id;
+         Sel_Comp : Node_Id;
+         Typ      : Entity_Id;
 
       begin
          Typ := Etype (Comp);
 
          Sel_Comp :=
            Make_Selected_Component (Loc,
-             Prefix      => New_Occurrence_Of (Object_Entity, Loc),
+             Prefix        => New_Occurrence_Of (Object_Entity, Loc),
              Selector_Name => New_Occurrence_Of (Comp, Loc));
 
          if Is_Access_Type (Typ) then
@@ -3759,13 +3759,14 @@ package body Exp_Ch3 is
          if Is_Access_Type (Etype (Comp)) then
             Call :=
               Make_If_Statement (Loc,
-                Condition =>
+                Condition       =>
                   Make_Op_Ne (Loc,
                     Left_Opnd   => Make_Null (Loc),
                     Right_Opnd  =>
-                       Make_Selected_Component (Loc,
-                         Prefix      => New_Occurrence_Of (Object_Entity, Loc),
-                         Selector_Name => New_Occurrence_Of (Comp, Loc))),
+                      Make_Selected_Component (Loc,
+                        Prefix        =>
+                          New_Occurrence_Of (Object_Entity, Loc),
+                        Selector_Name => New_Occurrence_Of (Comp, Loc))),
                 Then_Statements => New_List (Call));
          end if;
 
@@ -4620,10 +4621,8 @@ package body Exp_Ch3 is
 
          Propagate_Type_Has_Flags (Base, Comp_Typ);
          Set_Has_Controlled_Component
-                              (Base, Has_Controlled_Component
-                                                 (Comp_Typ)
-                                       or else
-                                     Is_Controlled (Comp_Typ));
+           (Base, Has_Controlled_Component (Comp_Typ)
+                    or else Is_Controlled (Comp_Typ));
 
          if No (Init_Proc (Base)) then
 

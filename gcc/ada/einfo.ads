@@ -2675,13 +2675,14 @@ package Einfo is
 
 --    Is_Intrinsic_Subprogram (Flag64)
 --       Defined in functions and procedures. It is set if a valid pragma
---       Interface or Import is present for this subprogram specifying pragma
---       Intrinsic. Valid means that the name and profile of the subprogram
---       match the requirements of one of the recognized intrinsic subprograms
---       (see package Sem_Intr for details). Note: the value of Convention for
---       such an entity will be set to Convention_Intrinsic, but it is the
---       setting of Is_Intrinsic_Subprogram, NOT simply having convention set
---       to intrinsic, which causes intrinsic code to be generated.
+--       Interface or Import is present for this subprogram specifying
+--       convention Intrinsic. Valid means that the name and profile of the
+--       subprogram match the requirements of one of the recognized intrinsic
+--       subprograms (see package Sem_Intr for details). Note: the value of
+--       Convention for such an entity will be set to Convention_Intrinsic,
+--       but it is the setting of Is_Intrinsic_Subprogram, NOT simply having
+--       convention set to intrinsic, which causes intrinsic code to be
+--       generated.
 
 --    Is_Invariant_Procedure (Flag257)
 --       Defined in functions and procedures. Set for a generated invariant

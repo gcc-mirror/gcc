@@ -1,3 +1,13 @@
+2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch7.adb, sem_ch12.adb, freeze.adb, lib-xref.ads, exp_ch3.adb:
+	Minor reformatting.
+
+2016-06-14  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb: Do nothing if the callee is intrinsic.
+	* sinfo.ads, einfo.ads: Minor comment fixes.
+
 2016-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* contracts.adb (Has_Null_Body): Move to sem_util, for general

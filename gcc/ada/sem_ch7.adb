@@ -2586,7 +2586,7 @@ package body Sem_Ch7 is
                               (Priv, Finalize_Storage_Only
                                                    (Base_Type (Full)));
             Propagate_Type_Has_Flags
-                              (Priv, Base_Type (Full));
+                              (Priv,                Base_Type (Full));
             Set_Has_Controlled_Component
                               (Priv, Has_Controlled_Component
                                                    (Base_Type (Full)));

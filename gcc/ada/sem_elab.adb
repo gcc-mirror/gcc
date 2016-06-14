@@ -641,6 +641,13 @@ package body Sem_Elab is
          return;
       end if;
 
+      --  Intrinsics such as instances of Unchecked_Deallocation do not have
+      --  any body, so elaboration checking is not needed, and would be wrong.
+
+      if Is_Intrinsic_Subprogram (E) then
+         return;
+      end if;
+
       --  Proceed with check
 
       Ent := E;
