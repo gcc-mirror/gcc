@@ -242,6 +242,10 @@ extern rtx push_block (rtx, int, int);
 extern bool emit_push_insn (rtx, machine_mode, tree, rtx, unsigned int,
 			    int, rtx, int, rtx, rtx, int, rtx, bool);
 
+/* Extract the accessible bit-range from a COMPONENT_REF.  */
+extern void get_bit_range (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
+			   tree, HOST_WIDE_INT *, tree *);
+
 /* Expand an assignment that stores the value of FROM into TO.  */
 extern void expand_assignment (tree, tree, bool);
 
