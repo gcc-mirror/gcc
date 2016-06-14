@@ -1,3 +1,30 @@
+2016-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* contracts.adb (Has_Null_Body): Move to sem_util, for general
+	availability.
+	* sem_util.ads, sem_util.adb (Has_Null_Body): Predicate to
+	determine when an internal procedure created for some assertion
+	checking (e.g. type invariant) is a null procedure. Used to
+	eliminate redundant calls to such procedures when they apply to
+	components of composite types.
+	* exp_ch3.adb (Build_Component_Invariant_Call): Do not add call
+	if invariant procedure has a null body.
+
+2016-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads (Check_Selector): Clarify effect on IN OUT socket
+	set parameters.
+
+2016-06-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Process_Action): Pass the action
+	list to Process_Transient_Object.
+	(Process_If_Case_Statements): Pass the action list to
+	Process_Transient_Object.
+	(Process_Transient_Object): Add new parameter Stmts and update the
+	comment on usage. When the context is a Boolean evaluation, insert
+	any finalization calls after the last statement of the construct.
+
 2016-06-14  Tristan Gingold  <gingold@adacore.com>
 
 	* einfo.adb, einfo.ads (Has_Timing_Event,
