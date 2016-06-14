@@ -6,8 +6,7 @@
 2016-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71521
-	* tree-vrp.c (extract_range_from_binary_expr_1): Guard
-	division int_const_binop against zero divisor.
+	* gcc.dg/tree-ssa/vrp101.c: New testcase.
 
 2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
