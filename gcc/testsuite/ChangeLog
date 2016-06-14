@@ -1,3 +1,8 @@
+2016-06-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/zero_bits_compound-1.c: Support aarch64.
+	* gcc.dg/zero_bits_compound-1.c: Likewise.
+
 2016-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71522
