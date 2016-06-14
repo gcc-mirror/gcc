@@ -524,7 +524,9 @@ build_aggr_init_expr (tree type, tree init)
       TREE_SIDE_EFFECTS (rval) = 1;
       AGGR_INIT_VIA_CTOR_P (rval) = is_ctor;
       TREE_NOTHROW (rval) = TREE_NOTHROW (init);
-      CALL_EXPR_LIST_INIT_P (rval) = CALL_EXPR_LIST_INIT_P (init);
+      CALL_EXPR_OPERATOR_SYNTAX (rval) = CALL_EXPR_OPERATOR_SYNTAX (init);
+      CALL_EXPR_ORDERED_ARGS (rval) = CALL_EXPR_ORDERED_ARGS (init);
+      CALL_EXPR_REVERSE_ARGS (rval) = CALL_EXPR_REVERSE_ARGS (init);
     }
   else
     rval = init;
@@ -2854,8 +2856,7 @@ build_min_non_dep_op_overload (enum tree_code op,
   tree fn, call;
   vec<tree, va_gc> *args;
 
-  if (REFERENCE_REF_P (non_dep))
-    non_dep = TREE_OPERAND (non_dep, 0);
+  non_dep = extract_call_expr (non_dep);
 
   nargs = call_expr_nargs (non_dep);
 
@@ -2897,10 +2898,11 @@ build_min_non_dep_op_overload (enum tree_code op,
   call = build_min_non_dep_call_vec (non_dep, fn, args);
   release_tree_vector (args);
 
-  tree call_expr = call;
-  if (REFERENCE_REF_P (call_expr))
-    call_expr = TREE_OPERAND (call_expr, 0);
+  tree call_expr = extract_call_expr (call);
   KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
+  CALL_EXPR_OPERATOR_SYNTAX (call_expr) = true;
+  CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (non_dep);
+  CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (non_dep);
 
   return call;
 }

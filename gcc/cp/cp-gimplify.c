@@ -565,6 +565,7 @@ int
 cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 {
   int saved_stmts_are_full_exprs_p = 0;
+  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
   enum tree_code code = TREE_CODE (*expr_p);
   enum gimplify_status ret;
 
@@ -752,21 +753,45 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
 	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	}
-      /* DR 1030 says that we need to evaluate the elements of an
-	 initializer-list in forward order even when it's used as arguments to
-	 a constructor.  So if the target wants to evaluate them in reverse
-	 order and there's more than one argument other than 'this', gimplify
-	 them in order.  */
       ret = GS_OK;
-      if (PUSH_ARGS_REVERSED && CALL_EXPR_LIST_INIT_P (*expr_p)
-	  && call_expr_nargs (*expr_p) > 2)
+      if (!CALL_EXPR_FN (*expr_p))
+	/* Internal function call.  */;
+      else if (CALL_EXPR_REVERSE_ARGS (*expr_p))
 	{
-	  int nargs = call_expr_nargs (*expr_p);
-	  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
-	  for (int i = 1; i < nargs; ++i)
+	  /* This is a call to a (compound) assignment operator that used
+	     the operator syntax; gimplify the RHS first.  */
+	  gcc_assert (call_expr_nargs (*expr_p) == 2);
+	  gcc_assert (!CALL_EXPR_ORDERED_ARGS (*expr_p));
+	  enum gimplify_status t
+	    = gimplify_arg (&CALL_EXPR_ARG (*expr_p, 1), pre_p, loc);
+	  if (t == GS_ERROR)
+	    ret = GS_ERROR;
+	}
+      else if (CALL_EXPR_ORDERED_ARGS (*expr_p))
+	{
+	  /* Leave the last argument for gimplify_call_expr, to avoid problems
+	     with __builtin_va_arg_pack().  */
+	  int nargs = call_expr_nargs (*expr_p) - 1;
+	  for (int i = 0; i < nargs; ++i)
 	    {
 	      enum gimplify_status t
 		= gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p, loc);
+	      if (t == GS_ERROR)
+		ret = GS_ERROR;
+	    }
+	}
+      else if (flag_args_in_order == 1
+	       && !CALL_EXPR_OPERATOR_SYNTAX (*expr_p))
+	{
+	  /* If flag_args_in_order == 1, we don't force an order on all
+	     function arguments, but do evaluate the object argument first.  */
+	  tree fntype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
+	  if (POINTER_TYPE_P (fntype))
+	    fntype = TREE_TYPE (fntype);
+	  if (TREE_CODE (fntype) == METHOD_TYPE)
+	    {
+	      enum gimplify_status t
+		= gimplify_arg (&CALL_EXPR_ARG (*expr_p, 0), pre_p, loc);
 	      if (t == GS_ERROR)
 		ret = GS_ERROR;
 	    }

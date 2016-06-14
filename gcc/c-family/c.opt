@@ -1043,6 +1043,14 @@ falt-external-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 No longer supported.
 
+fargs-in-order
+C++ ObjC++ Alias(fargs-in-order=, 2, 0)
+Always evaluate function arguments in left-to-right order.
+
+fargs-in-order=
+C++ ObjC++ Var(flag_args_in_order) Joined UInteger Init(-1)
+Always evaluate function arguments in left-to-right order.
+
 fasm
 C ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword.
