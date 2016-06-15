@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "spellcheck.h"
+#include "selftest.h"
+#include "stringpool.h"
 
 /* Calculate Levenshtein distance between two identifiers.  */
 
@@ -78,3 +80,50 @@ find_closest_identifier (tree target, const auto_vec<tree> *candidates)
 
   return best_identifier;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests.  */
+
+/* Verify that find_closest_identifier is sane.  */
+
+static void
+test_find_closest_identifier ()
+{
+  auto_vec<tree> candidates;
+
+  /* Verify that it can handle an empty vec.  */
+  ASSERT_EQ (NULL, find_closest_identifier (get_identifier (""), &candidates));
+
+  /* Verify that it works sanely for non-empty vecs.  */
+  tree apple = get_identifier ("apple");
+  tree banana = get_identifier ("banana");
+  tree cherry = get_identifier ("cherry");
+  candidates.safe_push (apple);
+  candidates.safe_push (banana);
+  candidates.safe_push (cherry);
+
+  ASSERT_EQ (apple, find_closest_identifier (get_identifier ("app"),
+					     &candidates));
+  ASSERT_EQ (banana, find_closest_identifier (get_identifier ("banyan"),
+					      &candidates));;
+  ASSERT_EQ (cherry, find_closest_identifier (get_identifier ("berry"),
+					      &candidates));
+  ASSERT_EQ (NULL,
+	     find_closest_identifier (get_identifier ("not like the others"),
+				      &candidates));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+spellcheck_tree_c_tests ()
+{
+  test_find_closest_identifier ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
