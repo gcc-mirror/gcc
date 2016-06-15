@@ -1,3 +1,7 @@
+2016-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/ref-qual17.C: New test.
+
 2016-06-15  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/71529
