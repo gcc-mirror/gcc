@@ -1,5 +1,13 @@
 2016-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* decl.c (wrapup_globals_for_namespace): Use DECL_SOURCE_LOCATION and
+	"%qF" in warning_at instead of "%q+F" in warning.
+	(check_redeclaration_exception_specification): Likewise in pedwarn
+	(and error, inform, for consistency).
+	* call.c (joust): Likewise.
+
+2016-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/70202
 	* decl.c (xref_basetypes): Revert r117839 changes; add fix-up
 	code at the end of the for loop; also revert r159637 changes,

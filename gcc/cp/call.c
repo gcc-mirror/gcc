@@ -9495,10 +9495,10 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 				     "default argument mismatch in "
 				     "overload resolution"))
 			{
-			  inform (input_location,
-				  " candidate 1: %q+#F", cand1->fn);
-			  inform (input_location,
-				  " candidate 2: %q+#F", cand2->fn);
+			  inform (DECL_SOURCE_LOCATION (cand1->fn),
+				  " candidate 1: %q#F", cand1->fn);
+			  inform (DECL_SOURCE_LOCATION (cand2->fn),
+				  " candidate 2: %q#F", cand2->fn);
 			}
 		    }
 		  else
