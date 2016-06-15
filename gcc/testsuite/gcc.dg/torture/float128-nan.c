@@ -5,8 +5,7 @@
 
 #include <fenv.h>
 #include <stdbool.h>
-
-typedef unsigned long long int uint64_t;
+#include <stdint.h>
 
 typedef union
 {

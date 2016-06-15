@@ -1,3 +1,7 @@
+2016-06-15  Uros Bizjak  <ubizjak@gmail.com>
+
+        * gcc.dg/torture/float128-nan.c: Include stdint.h to define uint64_t.
+
 2016-06-15  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71439
