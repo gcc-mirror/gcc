@@ -1,3 +1,11 @@
+2016-06-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Do
+	not consider dependences between accesses that belong to the
+	same group.
+	(vect_analyze_data_ref_dependences): Do not analyze read-read
+	or self-dependences.
+
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* spellcheck-tree.c: Include spellcheck-tree.h rather than

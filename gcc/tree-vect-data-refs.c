@@ -227,6 +227,12 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       || (DR_IS_READ (dra) && DR_IS_READ (drb)))
     return false;
 
+  /* We do not have to consider dependences between accesses that belong
+     to the same group.  */
+  if (GROUP_FIRST_ELEMENT (stmtinfo_a)
+      && GROUP_FIRST_ELEMENT (stmtinfo_a) == GROUP_FIRST_ELEMENT (stmtinfo_b))
+    return false;
+
   /* Even if we have an anti-dependence then, as the vectorized loop covers at
      least two scalar iterations, there is always also a true dependence.
      As the vectorizer does not re-order loads and stores we can ignore
@@ -469,7 +475,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo, int *max_vf)
   LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = true;
   if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
 				&LOOP_VINFO_DDRS (loop_vinfo),
-				LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
+				LOOP_VINFO_LOOP_NEST (loop_vinfo), false))
     return false;
 
   FOR_EACH_VEC_ELT (LOOP_VINFO_DDRS (loop_vinfo), i, ddr)
