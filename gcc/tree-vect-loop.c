@@ -1669,7 +1669,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 
           gcc_assert (stmt_info);
 
-          if (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_scope
+          if ((STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_scope
+               || STMT_VINFO_LIVE_P (stmt_info))
               && STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
             {
               /* A scalar-dependence cycle that we don't support.  */
@@ -1685,6 +1686,9 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
                 ok = vectorizable_induction (phi, NULL, NULL);
             }
+
+	  if (ok && STMT_VINFO_LIVE_P (stmt_info))
+	    ok = vectorizable_live_operation (phi, NULL, NULL, -1, NULL);
 
           if (!ok)
             {
