@@ -1,3 +1,18 @@
+2016-06-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::spellcheck_tree_c_tests.
+	* selftest.h (selftest::spellcheck_tree_c_tests): New decl.
+	* spellcheck-tree.c: Include selftest.h and stringpool.h.
+	(selftest::test_find_closest_identifier): New function.
+	(selftest::spellcheck_tree_c_tests): New function.
+	* spellcheck.c (selftest::test_find_closest_string): Verify that
+	the order of the vec does not affect the results for this case.
+	(selftest::test_data): New array.
+	(selftest::test_metric_conditions): New function.
+	(selftest::spellcheck_c_tests): Add a test of case-comparison.
+	Call selftest::test_metric_conditions.
+
 2016-06-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (commentary): Typo.
