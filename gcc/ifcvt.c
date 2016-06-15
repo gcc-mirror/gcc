@@ -3339,9 +3339,15 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb,
       rtx src = SET_SRC (set);
 
       /* We can possibly relax this, but for now only handle REG to REG
-	 moves.  This avoids any issues that might come from introducing
-	 loads/stores that might violate data-race-freedom guarantees.  */
-      if (!(REG_P (src) && REG_P (dest)))
+	 (including subreg) moves.  This avoids any issues that might come
+	 from introducing loads/stores that might violate data-race-freedom
+	 guarantees.  */
+      if (!REG_P (dest))
+	return false;
+
+      if (!(REG_P (src)
+	   || (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src))
+	       && subreg_lowpart_p (src))))
 	return false;
 
       /* Destination must be appropriate for a conditional write.  */
