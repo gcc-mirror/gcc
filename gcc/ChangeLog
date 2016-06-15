@@ -1,3 +1,9 @@
+2016-06-15  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	PR target/67353
+	* config/avr/avr.c (avr_set_current_function): Warn misspelled
+	interrupt/ signal handler if -Wmisspelled-isr flag is enabled.
+
 2016-06-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_<sur>shll_n<mode>): Clean
