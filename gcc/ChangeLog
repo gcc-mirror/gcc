@@ -1,5 +1,22 @@
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* spellcheck-tree.c: Include spellcheck-tree.h rather than
+	spellcheck.h.
+	(find_closest_identifier): Reimplement in terms of
+	best_match<tree,tree>.
+	* spellcheck-tree.h: New file.
+	* spellcheck.c (struct edit_distance_traits<const char *>): New
+	struct.
+	(find_closest_string): Reimplement in terms of
+	best_match<const char *, const char *>.
+	* spellcheck.h (levenshtein_distance): Move prototype of tree-based
+	overload to spellcheck-tree.h.
+	(find_closest_identifier): Likewise.
+	(struct edit_distance_traits<T>): New template.
+	(class best_match): New class.
+
+2016-06-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* selftest-run-tests.c (selftest::run_tests): Call
 	selftest::spellcheck_tree_c_tests.
 	* selftest.h (selftest::spellcheck_tree_c_tests): New decl.

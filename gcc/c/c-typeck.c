@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
 #include "gomp-constants.h"
-#include "spellcheck.h"
+#include "spellcheck-tree.h"
 #include "gcc-rich-location.h"
 
 /* Possible cases of implicit bad conversions.  Used to select

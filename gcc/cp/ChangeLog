@@ -1,5 +1,9 @@
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* search.c: Include spellcheck-tree.h rather than spellcheck.h.
+
+2016-06-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* typeck.c: Include "gcc-rich-location.h".
 	(finish_class_member_access_expr): Simplify fixit code by
 	using gcc_rich_location::add_fixit_misspelled_id.
