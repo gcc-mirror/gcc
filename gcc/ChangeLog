@@ -1,3 +1,9 @@
+2016-06-15  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71529
+	* ipa-chkp.c (chkp_build_instrumented_fndecl): Fix
+	DECL_CONTEXT for copied arguments.
+
 2016-06-15  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71483
