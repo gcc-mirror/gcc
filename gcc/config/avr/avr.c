@@ -754,8 +754,8 @@ avr_set_current_function (tree decl)
          when the user misspells the vector name.  */
 
       if (!STR_PREFIX_P (name, "__vector"))
-        warning_at (loc, 0, "%qs appears to be a misspelled %s handler",
-                    name, isr);
+        warning_at (loc, OPT_Wmisspelled_isr, "%qs appears to be a misspelled "
+                           "%s handler, missing __vector prefix", name, isr);
     }
 
   /* Don't print the above diagnostics more than once.  */
