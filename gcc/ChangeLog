@@ -1,3 +1,58 @@
+2016-06-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (VSINT_84): Add DImode to enable loading
+	DImode constants with XXSPLTIB in vector registers.
+	(vsx_extract_<mode>, V2DImode/V2DFmode): Combine both
+	vsx_extract_<mode>_internal{1,2} into a single insn that handles
+	direct move (both ISA 2.07 and ISA 3.0 versions), and optimizes
+	extraction of the element at the top of the register as a scalar
+	value.
+	(vsx_extract_<mode>_internal1): Likewise.
+	(vsx_extract_<mode>_internal2): Likewise.
+	* config/rs6000/constraints.md (wi constraint): Remove a comment
+	about DImode not being allowed in Altivec registers.
+	(wB constraint): New constraint for constants that can be
+	generated in Altivec registers with VSPLTISW/VUPKHSW.
+	* config/rs6000/predicates.md (xxspltib_constant_split): Update
+	comments.
+	(xxspltib_constant_nosplit): Likewise.
+	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Add
+	support for -mupper-regs-di to enable DImode to go into Altivec
+	registers.
+	(POWERPC_MASKS): Likewise.
+	(power7 cpu): Likewise.
+	* config/rs6000/rs6000.opt (-mupper-regs-di): Likewise.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Add support
+	for DImode being allowed in Altivec registers.  Update wi/wj
+	constraints.  Set scalar_in_vmx_p flag.
+	(rs6000_option_override_internal): Add checks for -mupper-regs-di.
+	(xxspltib_constant_p): Allow CONST_INT's with VOIDmode.  Don't
+	return true if we could use VSPLTISW/VUPKHSW instead of XXSPLTIB.
+	(rs6000_opt_masks): Add -mupper-regs-di.
+	* config/rs6000/rs6000.md (lfiwax): Update clobbers that don't use
+	direct move to use wi and not wj.
+	(lfiwzx): Likewise.
+	(floatsi<mode>2_lfiwax_mem): Combine alternatives into a single
+	alternative.
+	(floatunssi<mode>2_lfiwzx_mem): Likewise.
+	(fix_trunc<mode>di2_fctidz): Change second alternative to allow
+	any VSX register, instead of just Altivec registers, to allow
+	either operand to be an Altivec register or both.
+	(fixuns_trunc<mode>di2_fctiduz): Likewise.
+	(movdi_internal32): Add support for -mupper-regs-di.  Add support
+	to load constants via XXSPLTIB or VSPLTISW.  Add spacing to allow
+	the alternatives and attributes to be lined up to be easier to
+	read.
+	(movdi_internal64): Likewise.
+	(64-bit DImode splitters): Change predicates to only split loading
+	up GPR registers.  Add splits for using XXSPLTIB or VSPLTISW to
+	load constants in ISA 3.0 or ISA 2.07 respectively.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mupper-regs-di.  Update -mupper-regs-df and -mupper-regs-sf to
+	mention -mcpu=power9 sets these options.
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document the
+	wB constraint.
+
 2016-06-15  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	PR target/67353

@@ -565,9 +565,8 @@
     }
 })
 
-;; Return 1 if the operand is a CONST_VECTOR or VEC_DUPLICATE of a constant
-;; that can loaded with a XXSPLTIB instruction and then a VUPKHSB, VECSB2W or
-;; VECSB2D instruction.
+;; Return 1 if the operand is a constant that can loaded with a XXSPLTIB
+;; instruction and then a VUPKHSB, VECSB2W or VECSB2D instruction.
 
 (define_predicate "xxspltib_constant_split"
   (match_code "const_vector,vec_duplicate,const_int")
@@ -582,8 +581,8 @@
 })
 
 
-;; Return 1 if the operand is a CONST_VECTOR that can loaded directly with a
-;; XXSPLTIB instruction.
+;; Return 1 if the operand is constant that can loaded directly with a XXSPLTIB
+;; instruction.
 
 (define_predicate "xxspltib_constant_nosplit"
   (match_code "const_vector,vec_duplicate,const_int")

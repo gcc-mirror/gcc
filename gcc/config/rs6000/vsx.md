@@ -260,7 +260,7 @@
 			    (V2DI	"wi")])
 
 ;; Iterators for loading constants with xxspltib
-(define_mode_iterator VSINT_84  [V4SI V2DI])
+(define_mode_iterator VSINT_84  [V4SI V2DI DI])
 (define_mode_iterator VSINT_842 [V8HI V4SI V2DI])
 
 ;; Constants for creating unspecs
@@ -2095,77 +2095,69 @@
   [(set_attr "type" "vecperm")])
 
 ;; Extract a DF/DI element from V2DF/V2DI
-(define_expand "vsx_extract_<mode>"
-  [(set (match_operand:<VS_scalar> 0 "register_operand" "")
-	(vec_select:<VS_scalar> (match_operand:VSX_D 1 "register_operand" "")
-		       (parallel
-			[(match_operand:QI 2 "u5bit_cint_operand" "")])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "")
-
 ;; Optimize cases were we can do a simple or direct move.
 ;; Or see if we can avoid doing the move at all
-(define_insn "*vsx_extract_<mode>_internal1"
-  [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,<VS_64reg>,r,r")
+
+;; There are some unresolved problems with reload that show up if an Altivec
+;; register was picked.  Limit the scalar value to FPRs for now.
+
+(define_insn "vsx_extract_<mode>"
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand"
+            "=d,     wm,      wo,    d")
+
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "register_operand" "d,<VS_64reg>,<VS_64dm>,<VS_64dm>")
+	 (match_operand:VSX_D 1 "gpc_reg_operand"
+            "<VSa>, <VSa>,  <VSa>,  <VSa>")
+
 	 (parallel
-	  [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD,wL")])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_POWERPC64 && TARGET_DIRECT_MOVE"
+	  [(match_operand:QI 2 "const_0_to_1_operand"
+            "wD,    wD,     wL,     n")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
+  int element = INTVAL (operands[2]);
   int op0_regno = REGNO (operands[0]);
   int op1_regno = REGNO (operands[1]);
-
-  if (op0_regno == op1_regno)
-    return "nop";
-
-  if (INT_REGNO_P (op0_regno))
-    return ((INTVAL (operands[2]) == VECTOR_ELEMENT_MFVSRLD_64BIT)
-	    ? "mfvsrdl %0,%x1"
-	    : "mfvsrd %0,%x1");
-
-  if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
-    return "fmr %0,%1";
-
-  return "xxlor %x0,%x1,%x1";
-}
-  [(set_attr "type" "fp,vecsimple,mftgpr,mftgpr")
-   (set_attr "length" "4")])
-
-(define_insn "*vsx_extract_<mode>_internal2"
-  [(set (match_operand:<VS_scalar> 0 "vsx_register_operand" "=d,<VS_64reg>,<VS_64reg>")
-	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "vsx_register_operand" "d,wd,wd")
-	 (parallel [(match_operand:QI 2 "u5bit_cint_operand" "wD,wD,i")])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)
-   && (!TARGET_POWERPC64 || !TARGET_DIRECT_MOVE
-       || INTVAL (operands[2]) != VECTOR_ELEMENT_SCALAR_64BIT)"
-{
   int fldDM;
-  gcc_assert (UINTVAL (operands[2]) <= 1);
 
-  if (INTVAL (operands[2]) == VECTOR_ELEMENT_SCALAR_64BIT)
+  gcc_assert (IN_RANGE (element, 0, 1));
+  gcc_assert (VSX_REGNO_P (op1_regno));
+
+  if (element == VECTOR_ELEMENT_SCALAR_64BIT)
     {
-      int op0_regno = REGNO (operands[0]);
-      int op1_regno = REGNO (operands[1]);
-
       if (op0_regno == op1_regno)
-	return "nop";
+	return ASM_COMMENT_START " vec_extract to same register";
 
-      if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
+      else if (INT_REGNO_P (op0_regno) && TARGET_DIRECT_MOVE
+	       && TARGET_POWERPC64)
+	return "mfvsrd %0,%x1";
+
+      else if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
 	return "fmr %0,%1";
 
-      return "xxlor %x0,%x1,%x1";
+      else if (VSX_REGNO_P (op0_regno))
+	return "xxlor %x0,%x1,%x1";
+
+      else
+	gcc_unreachable ();
     }
 
-  fldDM = INTVAL (operands[2]) << 1;
-  if (!BYTES_BIG_ENDIAN)
-    fldDM = 3 - fldDM;
-  operands[3] = GEN_INT (fldDM);
-  return "xxpermdi %x0,%x1,%x1,%3";
+  else if (element == VECTOR_ELEMENT_MFVSRLD_64BIT && INT_REGNO_P (op0_regno)
+	   && TARGET_P9_VECTOR && TARGET_POWERPC64 && TARGET_DIRECT_MOVE)
+    return "mfvsrdl %0,%x1";
+
+  else if (VSX_REGNO_P (op0_regno))
+    {
+      fldDM = element << 1;
+      if (!BYTES_BIG_ENDIAN)
+	fldDM = 3 - fldDM;
+      operands[3] = GEN_INT (fldDM);
+      return "xxpermdi %x0,%x1,%x1,%3";
+    }
+
+  else
+    gcc_unreachable ();
 }
-  [(set_attr "type" "fp,vecsimple,vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecsimple,mftgpr,mftgpr,vecperm")])
 
 ;; Optimize extracting a single scalar element from memory if the scalar is in
 ;; the correct location to use a single load.

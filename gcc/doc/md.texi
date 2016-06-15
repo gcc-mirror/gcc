@@ -3211,6 +3211,9 @@ FP or VSX register to perform ISA 2.07 float ops or NO_REGS.
 @item wz
 Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
+@item wB
+Signed 5-bit constant integer that can be loaded into an altivec register.
+
 @item wD
 Int constant that is the element number of the 64-bit scalar in a vector.
 

@@ -77,8 +77,6 @@
 (define_register_constraint "wh" "rs6000_constraints[RS6000_CONSTRAINT_wh]"
   "Floating point register if direct moves are available, or NO_REGS.")
 
-;; At present, DImode is not allowed in the Altivec registers.  If in the
-;; future it is allowed, wi/wj can be set to VSX_REGS instead of FLOAT_REGS.
 (define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wi]"
   "FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.")
 
@@ -134,6 +132,13 @@
 
 (define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
   "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
+
+;; wB needs ISA 2.07 VUPKHSW
+(define_constraint "wB"
+  "Signed 5-bit constant integer that can be loaded into an altivec register."
+  (and (match_code "const_int")
+       (and (match_test "TARGET_P8_VECTOR")
+	    (match_operand 0 "s5bit_cint_operand"))))
 
 (define_constraint "wD"
   "Int constant that is the element number of the 64-bit scalar in a vector."

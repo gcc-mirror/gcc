@@ -597,6 +597,10 @@ mupper-regs
 Target Report Var(TARGET_UPPER_REGS) Init(-1) Save
 Allow float/double variables in upper registers if cpu allows it.
 
+mupper-regs-di
+Target Report Mask(UPPER_REGS_DI) Var(rs6000_isa_flags)
+Allow 64-bit integer variables in upper registers with -mcpu=power7 or -mvsx.
+
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
