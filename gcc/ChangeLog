@@ -3,6 +3,10 @@
 	PR target/67353
 	* config/avr/avr.c (avr_set_current_function): Warn misspelled
 	interrupt/ signal handler if -Wmisspelled-isr flag is enabled.
+	* config/avr/avr.opt (Wmisspelled-isr): New warning flag. Enabled
+	by default to warn misspelled interrupt/ signal handler.
+	* doc/invoke.texi (AVR Options): Document it. Update description
+	for -nodevicelib option.
 
 2016-06-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
