@@ -119,7 +119,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    {
 	      const_iterator __mid = __x.begin() + difference_type(__len);
 	      std::copy(__x.begin(), __mid, this->_M_impl._M_start);
-	      insert(this->_M_impl._M_finish, __mid, __x.end());
+	      _M_range_insert_aux(this->_M_impl._M_finish, __mid, __x.end(),
+				  std::random_access_iterator_tag());
 	    }
 	}
       return *this;
@@ -280,7 +281,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         if (__first == __last)
           _M_erase_at_end(__cur);
         else
-          insert(end(), __first, __last);
+          _M_range_insert_aux(end(), __first, __last,
+			      std::__iterator_category(__first));
       }
 
   template <typename _Tp, typename _Alloc>
