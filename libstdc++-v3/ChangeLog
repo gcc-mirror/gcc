@@ -1,3 +1,27 @@
+2016-06-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_deque.h
+	(std::deque<>::operator=): Call _M_assign_aux.
+	(std::deque<>::assign(initializer_list<>)): Likewise.
+	(std::deque<>::resize(size_t, const value_type&)): Call _M_fill_insert.
+	(std::deque<>::insert(const_iterator, initializer_list<>)):
+	Call _M_range_insert_aux.
+	(std::deque<>::_M_assign_aux<It>(It, It, std::forward_iterator_tag):
+	Likewise.
+	(std::deque<>::_M_fill_assign): Call _M_fill_insert.
+	(std::deque<>::_M_move_assign2): Call _M_assign_aux.
+	* include/bits/deque.tcc
+	(std::deque<>::operator=): Call _M_range_insert_aux.
+	(std::deque<>::_M_assign_aux<It>(It, It, std::input_iterator_tag)):
+	Likewise.
+	* include/bits/stl_vector.h
+	(std::vector<>::operator=): Call _M_assign_aux.
+	(std::vector<>::assign(initializer_list<>)): Likewise.
+	(std::vector<>::resize(size_t, const value_type&)): Call _M_fill_insert.
+	(std::vector<>::insert(const_iterator, initializer_list<>)):
+	Call _M_range_insert.
+	* include/bits/vector.tcc (std::vector<>::_M_assign_aux): Likewise.
+
 2016-06-07  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/std/tuple (_Head_base<>): Default specialization condition at

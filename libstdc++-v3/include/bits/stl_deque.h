@@ -1081,7 +1081,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       deque&
       operator=(initializer_list<value_type> __l)
       {
-	this->assign(__l.begin(), __l.end());
+	_M_assign_aux(__l.begin(), __l.end(),
+		      random_access_iterator_tag());
 	return *this;
       }
 #endif
@@ -1142,7 +1143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       assign(initializer_list<value_type> __l)
-      { this->assign(__l.begin(), __l.end()); }
+      { _M_assign_aux(__l.begin(), __l.end(), random_access_iterator_tag()); }
 #endif
 
       /// Get a copy of the memory allocation object.
@@ -1306,7 +1307,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	const size_type __len = size();
 	if (__new_size > __len)
-	  insert(this->_M_impl._M_finish, __new_size - __len, __x);
+	  _M_fill_insert(this->_M_impl._M_finish, __new_size - __len, __x);
 	else if (__new_size < __len)
 	  _M_erase_at_end(this->_M_impl._M_start
 			  + difference_type(__new_size));
@@ -1328,7 +1329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	const size_type __len = size();
 	if (__new_size > __len)
-	  insert(this->_M_impl._M_finish, __new_size - __len, __x);
+	  _M_fill_insert(this->_M_impl._M_finish, __new_size - __len, __x);
 	else if (__new_size < __len)
 	  _M_erase_at_end(this->_M_impl._M_start
 			  + difference_type(__new_size));
@@ -1645,7 +1646,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       iterator
       insert(const_iterator __p, initializer_list<value_type> __l)
-      { return this->insert(__p, __l.begin(), __l.end()); }
+      {
+	auto __offset = __p - cbegin();
+	_M_range_insert_aux(__p._M_const_cast(), __l.begin(), __l.end(),
+			    std::random_access_iterator_tag());
+	return begin() + __offset;
+      }
 #endif
 
 #if __cplusplus >= 201103L
@@ -1819,9 +1825,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
 			       __false_type)
         {
-	  typedef typename std::iterator_traits<_InputIterator>::
-	    iterator_category _IterCategory;
-	  _M_range_initialize(__first, __last, _IterCategory());
+	  _M_range_initialize(__first, __last,
+			      std::__iterator_category(__first));
 	}
 
       // called by the second initialize_dispatch above
@@ -1884,11 +1889,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         void
         _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
 			   __false_type)
-        {
-	  typedef typename std::iterator_traits<_InputIterator>::
-	    iterator_category _IterCategory;
-	  _M_assign_aux(__first, __last, _IterCategory());
-	}
+	{ _M_assign_aux(__first, __last, std::__iterator_category(__first)); }
 
       // called by the second assign_dispatch above
       template<typename _InputIterator>
@@ -1908,7 +1909,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      _ForwardIterator __mid = __first;
 	      std::advance(__mid, size());
 	      std::copy(__first, __mid, begin());
-	      insert(end(), __mid, __last);
+	      _M_range_insert_aux(end(), __mid, __last,
+				  std::__iterator_category(__first));
 	    }
 	  else
 	    _M_erase_at_end(std::copy(__first, __last, begin()));
@@ -1922,7 +1924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (__n > size())
 	  {
 	    std::fill(begin(), end(), __val);
-	    insert(end(), __n - size(), __val);
+	    _M_fill_insert(end(), __n - size(), __val);
 	  }
 	else
 	  {
@@ -1970,9 +1972,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			   _InputIterator __first, _InputIterator __last,
 			   __false_type)
         {
-	  typedef typename std::iterator_traits<_InputIterator>::
-	    iterator_category _IterCategory;
-          _M_range_insert_aux(__pos, __first, __last, _IterCategory());
+          _M_range_insert_aux(__pos, __first, __last,
+			      std::__iterator_category(__first));
 	}
 
       // called by the second insert_dispatch above
@@ -2196,8 +2197,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  {
 	    // The rvalue's allocator cannot be moved and is not equal,
 	    // so we need to individually move each element.
-	    this->assign(std::__make_move_if_noexcept_iterator(__x.begin()),
-			 std::__make_move_if_noexcept_iterator(__x.end()));
+	    _M_assign_aux(std::__make_move_if_noexcept_iterator(__x.begin()),
+			  std::__make_move_if_noexcept_iterator(__x.end()),
+			  std::random_access_iterator_tag());
 	    __x.clear();
 	  }
       }
