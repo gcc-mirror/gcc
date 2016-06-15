@@ -143,6 +143,7 @@ VMS			Tristan Gingold		<tgingold@free.fr>
 VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
 windows, cygwin, mingw	Kai Tietz		<ktietz70@googlemail.com>
 windows, cygwin, mingw	Dave Korn		<dave.korn.cygwin@gmail.com>
+cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 
 			Language Front Ends Maintainers
 
