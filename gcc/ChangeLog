@@ -1,3 +1,9 @@
+2016-06-15  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71483
+	* tree-vect-loop.c (vectorizable_live_operation): Pick correct index
+	for slp
+
 2016-06-15  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (tree_predict_by_opcode): Call predict_edge_def

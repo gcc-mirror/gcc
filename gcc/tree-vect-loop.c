@@ -6368,24 +6368,20 @@ vectorizable_live_operation (gimple *stmt,
 
       int num_scalar = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-      int scalar_per_vec = num_scalar / num_vec;
 
-      /* There are three possibilites here:
-	 1: All scalar stmts fit in a single vector.
-	 2: All scalar stmts fit multiple times into a single vector.
-	    We must choose the last occurence of stmt in the vector.
-	 3: Scalar stmts are split across multiple vectors.
-	    We must choose the correct vector and mod the lane accordingly.  */
+      /* Get the last occurrence of the scalar index from the concatenation of
+	 all the slp vectors. Calculate which slp vector it is and the index
+	 within.  */
+      int pos = (num_vec * nunits) - num_scalar + slp_index;
+      int vec_entry = pos / nunits;
+      int vec_index = pos % nunits;
 
       /* Get the correct slp vectorized stmt.  */
-      int vec_entry = slp_index / scalar_per_vec;
       vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
 
       /* Get entry to use.  */
-      bitstart = build_int_cst (unsigned_type_node,
-				scalar_per_vec - (slp_index % scalar_per_vec));
+      bitstart = build_int_cst (unsigned_type_node, vec_index);
       bitstart = int_const_binop (MULT_EXPR, bitsize, bitstart);
-      bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitstart);
     }
   else
     {
