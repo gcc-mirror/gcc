@@ -1,3 +1,10 @@
+2016-06-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	Backport from mainline
+	2016-04-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Handle -fcilkplus.
+
 2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
