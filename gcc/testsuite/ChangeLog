@@ -1,5 +1,7 @@
 2016-06-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/compile/20160615-1.c: New test.
+
 	* g++.dg/cpp0x/ref-qual17.C: New test.
 
 2016-06-15  Ilya Enkovich  <ilya.enkovich@intel.com>
