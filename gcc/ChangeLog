@@ -1,3 +1,11 @@
+2016-06-15  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backported from mainline
+	2016-06-14  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/arm/freebsd.h: Only enable unaligned access for armv6 on
+	FreeBSD 11 and above.
+
 2016-06-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71505
