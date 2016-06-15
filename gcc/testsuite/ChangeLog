@@ -1,3 +1,12 @@
+2016-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70202
+	* g++.dg/inherit/crash6.C: New.
+	* g++.dg/inherit/union2.C: Likewise.
+	* g++.dg/inherit/virtual12.C: Likewise.
+	* g++.dg/inherit/virtual13.C: Likewise.
+	* g++.dg/inherit/virtual1.C: Tweak dg-* tests.
+
 2016-06-15  Uros Bizjak  <ubizjak@gmail.com>
 
         * gcc.dg/torture/float128-nan.c: Include stdint.h to define uint64_t.

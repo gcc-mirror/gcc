@@ -1,12 +1,12 @@
-//PR c++/27952
+// PR c++/27952
 
 struct A
 {
     virtual ~A() {}
 };
 
-struct B : A, virtual A {};     // { dg-error "duplicate base|forward declaration" }
+struct B : A, virtual A {};     // { dg-error "duplicate base" }
 
-struct C : A, B {};             // { dg-error "duplicate base|invalid use" }
+struct C : A, B {};             // { dg-message "direct base 'A' inaccessible" }
 
-C c;                            // { dg-error "aggregate" }
+C c;

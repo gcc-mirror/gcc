@@ -1,3 +1,12 @@
+2016-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70202
+	* decl.c (xref_basetypes): Revert r117839 changes; add fix-up
+	code at the end of the for loop; also revert r159637 changes,
+	add back the gcc_assert.
+	* cp-tree.h (xref_basetypes): Adjust declaration.
+	* parser.c (cp_parser_class_head): Adjust xref_basetypes call.
+
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* search.c: Include spellcheck-tree.h rather than spellcheck.h.
