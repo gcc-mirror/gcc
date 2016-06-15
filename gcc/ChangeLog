@@ -1,5 +1,10 @@
 2016-06-15  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_store): Remove strided grouped
+	store restrictions.
+
+2016-06-15  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Do
 	not consider dependences between accesses that belong to the
 	same group.

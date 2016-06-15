@@ -5234,6 +5234,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   enum vect_def_type scatter_idx_dt = vect_unknown_def_type;
   enum vect_def_type scatter_src_dt = vect_unknown_def_type;
   gimple *new_stmt;
+  int vf;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -5270,7 +5271,12 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
+    {
+      loop = LOOP_VINFO_LOOP (loop_vinfo);
+      vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+    }
+  else
+    vf = 1;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
@@ -5363,16 +5369,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    store_lanes_p = true;
 	  else if (!vect_grouped_store_supported (vectype, group_size))
 	    return false;
-	}
-
-      if (STMT_VINFO_STRIDED_P (stmt_info)
-	  && slp
-	  && (group_size > nunits
-	      || nunits % group_size != 0))
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "unhandled strided group store\n");
-	  return false;
 	}
 
       if (first_stmt == stmt)
@@ -5653,23 +5649,31 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
          */
 
       unsigned nstores = nunits;
+      unsigned lnel = 1;
       tree ltype = elem_type;
       if (slp)
 	{
-	  nstores = nunits / group_size;
-	  if (group_size < nunits)
-	    ltype = build_vector_type (elem_type, group_size);
-	  else
-	    ltype = vectype;
+	  if (group_size < nunits
+	      && nunits % group_size == 0)
+	    {
+	      nstores = nunits / group_size;
+	      lnel = group_size;
+	      ltype = build_vector_type (elem_type, group_size);
+	    }
+	  else if (group_size >= nunits
+		   && group_size % nunits == 0)
+	    {
+	      nstores = 1;
+	      lnel = nunits;
+	      ltype = vectype;
+	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
 	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	  group_size = 1;
 	}
 
       ivstep = stride_step;
       ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (ivstep), ivstep,
-			    build_int_cst (TREE_TYPE (ivstep),
-					   ncopies * nstores));
+			    build_int_cst (TREE_TYPE (ivstep), vf));
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
@@ -5700,6 +5704,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      vect_finish_stmt_generation (stmt, incr, gsi);
 	      running_off = newoff;
 	    }
+	  unsigned int group_el = 0;
+	  unsigned HOST_WIDE_INT
+	    elsz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
 	  for (j = 0; j < ncopies; j++)
 	    {
 	      /* We've set op and dt above, from gimple_assign_rhs1(stmt),
@@ -5745,19 +5752,27 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 						   NULL_TREE, true,
 						   GSI_SAME_STMT);
 
+		  tree this_off = build_int_cst (TREE_TYPE (alias_off),
+						 group_el * elsz);
 		  newref = build2 (MEM_REF, ltype,
-				   running_off, alias_off);
+				   running_off, this_off);
 
 		  /* And store it to *running_off.  */
 		  assign = gimple_build_assign (newref, elem);
 		  vect_finish_stmt_generation (stmt, assign, gsi);
 
-		  newoff = copy_ssa_name (running_off, NULL);
-		  incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
-					      running_off, stride_step);
-		  vect_finish_stmt_generation (stmt, incr, gsi);
+		  group_el += lnel;
+		  if (! slp
+		      || group_el == group_size)
+		    {
+		      newoff = copy_ssa_name (running_off, NULL);
+		      incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+						  running_off, stride_step);
+		      vect_finish_stmt_generation (stmt, incr, gsi);
 
-		  running_off = newoff;
+		      running_off = newoff;
+		      group_el = 0;
+		    }
 		  if (g == group_size - 1
 		      && !slp)
 		    {
@@ -5771,6 +5786,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		}
 	    }
 	  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+	  if (slp)
+	    break;
 	}
       return true;
     }
