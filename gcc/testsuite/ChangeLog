@@ -1,3 +1,7 @@
+2016-06-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pattern-2.c: Disable loop vectorization.
+
 2016-06-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-elemrev-2.c: Change effective target
