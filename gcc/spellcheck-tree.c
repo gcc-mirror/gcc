@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "spellcheck.h"
+#include "spellcheck-tree.h"
 #include "selftest.h"
 #include "stringpool.h"
 
@@ -53,32 +53,16 @@ find_closest_identifier (tree target, const auto_vec<tree> *candidates)
 {
   gcc_assert (TREE_CODE (target) == IDENTIFIER_NODE);
 
+  best_match<tree, tree> bm (target);
   int i;
   tree identifier;
-  tree best_identifier = NULL_TREE;
-  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
   FOR_EACH_VEC_ELT (*candidates, i, identifier)
     {
       gcc_assert (TREE_CODE (identifier) == IDENTIFIER_NODE);
-      edit_distance_t dist = levenshtein_distance (target, identifier);
-      if (dist < best_distance)
-	{
-	  best_distance = dist;
-	  best_identifier = identifier;
-	}
+      bm.consider (identifier);
     }
 
-  /* If more than half of the letters were misspelled, the suggestion is
-     likely to be meaningless.  */
-  if (best_identifier)
-    {
-      unsigned int cutoff = MAX (IDENTIFIER_LENGTH (target),
-				 IDENTIFIER_LENGTH (best_identifier)) / 2;
-      if (best_distance > cutoff)
-	return NULL_TREE;
-    }
-
-  return best_identifier;
+  return bm.get_best_meaningful_candidate ();
 }
 
 #if CHECKING_P

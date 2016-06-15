@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "intl.h"
 #include "toplev.h"
-#include "spellcheck.h"
+#include "spellcheck-tree.h"
 
 static int is_subobject_of_p (tree, tree);
 static tree dfs_lookup_base (tree, void *);

@@ -1,5 +1,9 @@
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-typeck.c: Include spellcheck-tree.h rather than spellcheck.h.
+
+2016-06-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-typeck.c (build_component_ref): Simplify fixit code by
 	using gcc_rich_location::add_fixit_misspelled_id.
 	(set_init_label): Likewise.
