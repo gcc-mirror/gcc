@@ -3950,15 +3950,12 @@
 			   "aarch64_simd_shift_imm_bitsize_<ve_mode>" "i")]
                          VSHLL))]
   "TARGET_SIMD"
-  "*
-  int bit_width = GET_MODE_UNIT_SIZE (<MODE>mode) * BITS_PER_UNIT;
-  if (INTVAL (operands[2]) == bit_width)
   {
-    return \"shll\\t%0.<Vwtype>, %1.<Vtype>, %2\";
+    if (INTVAL (operands[2]) == GET_MODE_UNIT_BITSIZE (<MODE>mode))
+      return "shll\\t%0.<Vwtype>, %1.<Vtype>, %2";
+    else
+      return "<sur>shll\\t%0.<Vwtype>, %1.<Vtype>, %2";
   }
-  else {
-    return \"<sur>shll\\t%0.<Vwtype>, %1.<Vtype>, %2\";
-  }"
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
@@ -3970,15 +3967,12 @@
 			 (match_operand:SI 2 "immediate_operand" "i")]
                          VSHLL))]
   "TARGET_SIMD"
-  "*
-  int bit_width = GET_MODE_UNIT_SIZE (<MODE>mode) * BITS_PER_UNIT;
-  if (INTVAL (operands[2]) == bit_width)
   {
-    return \"shll2\\t%0.<Vwtype>, %1.<Vtype>, %2\";
+    if (INTVAL (operands[2]) == GET_MODE_UNIT_BITSIZE (<MODE>mode))
+      return "shll2\\t%0.<Vwtype>, %1.<Vtype>, %2";
+    else
+      return "<sur>shll2\\t%0.<Vwtype>, %1.<Vtype>, %2";
   }
-  else {
-    return \"<sur>shll2\\t%0.<Vwtype>, %1.<Vtype>, %2\";
-  }"
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
