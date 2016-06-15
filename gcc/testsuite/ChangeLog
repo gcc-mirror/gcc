@@ -1,3 +1,8 @@
+2016-06-15  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71483
+	* g++.dg/vect/pr71483.c: New
+
 2016-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70202
