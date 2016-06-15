@@ -1,3 +1,8 @@
+2016-06-15  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (tree_predict_by_opcode): Call predict_edge_def
+	instead of predict_edge w/o a probability.
+
 2016-06-15  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71439
