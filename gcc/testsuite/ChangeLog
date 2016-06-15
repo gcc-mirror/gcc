@@ -1,3 +1,8 @@
+2016-06-15  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71439
+	* gcc.dg/vect/pr71439.c: New
+
 2016-06-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/ifcvt_multiple_sets_subreg_1.c: New test.

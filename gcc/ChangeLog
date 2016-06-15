@@ -1,3 +1,9 @@
+2016-06-15  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71439
+	* tree-vect-loop.c (vect_analyze_loop_operations): Additional check for
+	live PHIs.
+
 2016-06-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (bb_ok_for_noce_multiple_sets): Allow simple lowpart
