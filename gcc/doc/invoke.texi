@@ -1009,6 +1009,7 @@ See RS/6000 and PowerPC Options.
 -mquad-memory-atomic -mno-quad-memory-atomic @gol
 -mcompat-align-parm -mno-compat-align-parm @gol
 -mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
+-mupper-regs-di -mno-upper-regs-di @gol
 -mupper-regs -mno-upper-regs -mmodulo -mno-modulo @gol
 -mfloat128 -mno-float128 -mfloat128-hardware -mno-float128-hardware @gol
 -mpower9-fusion -mno-mpower9-fusion -mpower9-vector -mno-power9-vector @gol
@@ -20255,6 +20256,17 @@ Generate code that uses (does not use) the atomic quad word memory
 instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
 
+@item -mupper-regs-di
+@itemx -mno-upper-regs-di
+@opindex mupper-regs-di
+@opindex mno-upper-regs-di
+Generate code that uses (does not use) the scalar instructions that
+target all 64 registers in the vector/scalar floating point register
+set that were added in version 2.06 of the PowerPC ISA when processing
+integers.  @option{-mupper-regs-di} is turned on by default if you use
+any of the @option{-mcpu=power7}, @option{-mcpu=power8},
+@option{-mcpu=power9}, or @option{-mvsx} options.
+
 @item -mupper-regs-df
 @itemx -mno-upper-regs-df
 @opindex mupper-regs-df
@@ -20263,8 +20275,8 @@ Generate code that uses (does not use) the scalar double precision
 instructions that target all 64 registers in the vector/scalar
 floating point register set that were added in version 2.06 of the
 PowerPC ISA.  @option{-mupper-regs-df} is turned on by default if you
-use any of the @option{-mcpu=power7}, @option{-mcpu=power8}, or
-@option{-mvsx} options.
+use any of the @option{-mcpu=power7}, @option{-mcpu=power8},
+@option{-mcpu=power9}, or @option{-mvsx} options.
 
 @item -mupper-regs-sf
 @itemx -mno-upper-regs-sf
@@ -20274,8 +20286,8 @@ Generate code that uses (does not use) the scalar single precision
 instructions that target all 64 registers in the vector/scalar
 floating point register set that were added in version 2.07 of the
 PowerPC ISA.  @option{-mupper-regs-sf} is turned on by default if you
-use either of the @option{-mcpu=power8} or @option{-mpower8-vector}
-options.
+use either of the @option{-mcpu=power8}, @option{-mpower8-vector}, or
+@option{-mpower9} options.
 
 @item -mupper-regs
 @itemx -mno-upper-regs
