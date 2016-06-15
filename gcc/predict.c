@@ -2192,8 +2192,8 @@ tree_predict_by_opcode (basic_block bb)
 	  predict_edge (then_edge, PRED_BUILTIN_EXPECT, HITRATE (percent));
 	}
       else
-	predict_edge (then_edge, predictor,
-		      integer_zerop (val) ? NOT_TAKEN : TAKEN);
+	predict_edge_def (then_edge, predictor,
+			  integer_zerop (val) ? NOT_TAKEN : TAKEN);
     }
   /* Try "pointer heuristic."
      A comparison ptr == 0 is predicted as false.
