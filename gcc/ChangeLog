@@ -1,3 +1,9 @@
+2016-06-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>shll_n<mode>): Clean
+	up parentheses.  Use GET_MODE_UNIT_BITSIZE.
+	(aarch64_<sur>shll2_n<mode>): Likewise.
+
 2016-06-15  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/71529
