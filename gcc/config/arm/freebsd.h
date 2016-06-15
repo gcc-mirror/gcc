@@ -120,6 +120,9 @@
 #define SUBTARGET_CPU_DEFAULT   TARGET_CPU_arm9
 #endif
 
+/* FreeBSD 10 does not support unaligned access for armv6 and up.
+   Unaligned access support was added in FreeBSD 11.  */
+#if FBSD_MAJOR < 11
 #define SUBTARGET_OVERRIDE_INTERNAL_OPTIONS				\
 do {									\
     if (opts_set->x_unaligned_access == 1)				\
@@ -127,6 +130,7 @@ do {									\
     if (opts->x_unaligned_access)					\
 	opts->x_unaligned_access = 0;					\
 } while (0)
+#endif
 
 #undef MAX_SYNC_LIBFUNC_SIZE
 #define MAX_SYNC_LIBFUNC_SIZE 4 /* UNITS_PER_WORD not defined yet.  */
