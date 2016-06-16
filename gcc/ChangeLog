@@ -1,3 +1,7 @@
+2016-06-16  Martin Liska  <mliska@suse.cz>
+
+	* predict.def: Define a new predictor.
+
 2016-06-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.opt (mtp-regno): Update text.

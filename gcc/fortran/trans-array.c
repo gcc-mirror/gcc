@@ -5553,7 +5553,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			  build_int_cst (TREE_TYPE (status), 0));
       gfc_add_expr_to_block (&se->pre,
 		 fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				  gfc_likely (cond, PRED_FORTRAN_FAIL_ALLOC),
+				  cond,
 				  set_descriptor,
 				  build_empty_stmt (input_location)));
     }

@@ -672,9 +672,6 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
   gfc_start_block (&on_error);
   if (status != NULL_TREE)
     {
-      gfc_add_expr_to_block (&on_error,
-			     build_predict_expr (PRED_FORTRAN_FAIL_ALLOC,
-						 NOT_TAKEN));
       tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type, status,
 			     build_int_cst (status_type, LIBERROR_ALLOCATION));
       gfc_add_expr_to_block (&on_error, tmp);
@@ -693,7 +690,8 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
 				boolean_type_node, pointer,
 				build_int_cst (prvoid_type_node, 0));
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			 error_cond, gfc_finish_block (&on_error),
+			 gfc_unlikely (error_cond, PRED_FORTRAN_FAIL_ALLOC),
+			 gfc_finish_block (&on_error),
 			 build_empty_stmt (input_location));
 
   gfc_add_expr_to_block (block, tmp);
@@ -796,7 +794,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree token,
   null_mem = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
 					    boolean_type_node, mem,
 					    build_int_cst (type, 0)),
-			   PRED_FORTRAN_FAIL_ALLOC);
+			   PRED_FORTRAN_REALLOC);
 
   /* If mem is NULL, we call gfc_allocate_using_malloc or
      gfc_allocate_using_lib.  */
@@ -1385,7 +1383,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 				   stat, build_zero_cst (TREE_TYPE (stat)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 gfc_unlikely (cond2, PRED_FORTRAN_FAIL_ALLOC),
+				 gfc_unlikely (cond2, PRED_FORTRAN_REALLOC),
 				 tmp, build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&non_null, tmp);
 	}
