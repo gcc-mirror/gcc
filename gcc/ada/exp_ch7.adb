@@ -2100,16 +2100,21 @@ package body Exp_Ch7 is
                   null;
 
                --  The object is of the form:
-               --    Obj : Typ [:= Expr];
+               --    Obj : [constant] Typ [:= Expr];
 
-               --  Do not process the incomplete view of a deferred constant.
-               --  Do not consider tag-to-class-wide conversions.
+               --  Do not process tag-to-class-wide conversions because they do
+               --  not yield an object. Do not process the incomplete view of a
+               --  deferred constant. Note that an object initialized by means
+               --  of a build-in-place function call may appear as a deferred
+               --  constant after expansion activities. These kinds of objects
+               --  must be finalized.
 
                elsif not Is_Imported (Obj_Id)
                  and then Needs_Finalization (Obj_Typ)
-                 and then not (Ekind (Obj_Id) = E_Constant
-                                and then not Has_Completion (Obj_Id))
                  and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
+                 and then not (Ekind (Obj_Id) = E_Constant
+                                and then not Has_Completion (Obj_Id)
+                                and then No (BIP_Initialization_Call (Obj_Id)))
                then
                   Processing_Actions;
 
@@ -2757,48 +2762,9 @@ package body Exp_Ch7 is
 
             Stmt := Next_Suitable_Statement (Decl);
 
-            --  A limited controlled object initialized by a function call uses
-            --  the build-in-place machinery to obtain its value.
+            --  Nothing to do for an object with suppressed initialization
 
-            --    Obj : Lim_Controlled_Type := Func_Call;
-
-            --  is expanded into
-
-            --    Obj  : Lim_Controlled_Type;
-            --    type Ptr_Typ is access Lim_Controlled_Type;
-            --    Temp : constant Ptr_Typ :=
-            --             Func_Call
-            --               (BIPalloc  => 1,
-            --                BIPaccess => Obj'Unrestricted_Access)'reference;
-
-            --  In this scenario the declaration of the temporary acts as the
-            --  last initialization statement.
-
-            if Is_Limited_Type (Obj_Typ)
-              and then Has_Init_Expression (Decl)
-              and then No (Expression (Decl))
-            then
-               while Present (Stmt) loop
-                  if Nkind (Stmt) = N_Object_Declaration
-                    and then Present (Expression (Stmt))
-                    and then Is_Object_Access_BIP_Func_Call
-                               (Expr   => Expression (Stmt),
-                                Obj_Id => Obj_Id)
-                  then
-                     Last_Init := Stmt;
-                     exit;
-                  end if;
-
-                  Next (Stmt);
-               end loop;
-
-            --  Nothing to do for an object with supporessed initialization.
-            --  Note that this check is not performed at the beginning of the
-            --  routine because a declaration marked with No_Initialization
-            --  may still be initialized by a build-in-place call (the case
-            --  above).
-
-            elsif No_Initialization (Decl) then
+            if No_Initialization (Decl) then
                return;
 
             --  In all other cases the initialization calls follow the related
@@ -2937,18 +2903,33 @@ package body Exp_Ch7 is
              Expression => Make_Integer_Literal (Loc, Counter_Val));
 
          --  Insert the counter after all initialization has been done. The
-         --  place of insertion depends on the context. If an object is being
-         --  initialized via an aggregate, then the counter must be inserted
-         --  after the last aggregate assignment.
+         --  place of insertion depends on the context.
 
-         if Ekind_In (Obj_Id, E_Constant, E_Variable)
-           and then Present (Last_Aggregate_Assignment (Obj_Id))
-         then
-            Count_Ins := Last_Aggregate_Assignment (Obj_Id);
-            Body_Ins  := Empty;
+         if Ekind_In (Obj_Id, E_Constant, E_Variable) then
+
+            --  The object is initialized by a build-in-place function call.
+            --  The counter insertion point is after the function call.
+
+            if Present (BIP_Initialization_Call (Obj_Id)) then
+               Count_Ins := BIP_Initialization_Call (Obj_Id);
+               Body_Ins  := Empty;
+
+            --  The object is initialized by an aggregate. Insert the counter
+            --  after the last aggregate assignment.
+
+            elsif Present (Last_Aggregate_Assignment (Obj_Id)) then
+               Count_Ins := Last_Aggregate_Assignment (Obj_Id);
+               Body_Ins  := Empty;
+
+            --  In all other cases the counter is inserted after the last call
+            --  to either [Deep_]Initialize or the type-specific init proc.
+
+            else
+               Find_Last_Init (Count_Ins, Body_Ins);
+            end if;
 
          --  In all other cases the counter is inserted after the last call to
-         --  either [Deep_]Initialize or the type specific init proc.
+         --  either [Deep_]Initialize or the type-specific init proc.
 
          else
             Find_Last_Init (Count_Ins, Body_Ins);

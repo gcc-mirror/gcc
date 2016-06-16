@@ -1,3 +1,37 @@
+2016-06-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Entry_Contracts): New procedure, subsidiary
+	of Analyze_Declarations, that performs pre-analysis of
+	pre/postconditions on entry declarations before full analysis
+	is performed after entries have been converted into procedures.
+	Done solely to capture semantic errors.
+	* sem_attr.adb (Analyze_Attribute, case 'Result): Add guard to
+	call to Denote_Same_Function.
+
+2016-06-16  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb: Fix minor memory leak in GNAT.Command_Line.
+
+2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Last_Init): Remove obsolete code. The
+	logic is now performed by Process_Object_Declaration.
+	(Process_Declarations): Recognize a controlled deferred
+	constant which is in fact initialized by means of a
+	build-in-place function call as needing finalization actions.
+	(Process_Object_Declaration): Insert the counter after the
+	build-in-place initialization call for a controlled object. This
+	was previously done in Find_Last_Init.
+	* exp_util.adb (Requires_Cleanup_Actions): Recognize a controlled
+	deferred constant which is in fact initialized by means of a
+	build-in-place function call as needing finalization actions.
+
+2016-06-16  Justin Squirek  <squirek@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Minor comment changes and
+	additional style fixes.
+	* exp_ch7.adb: Minor typo fixes and reformatting.
+
 2016-06-16  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Add a missing check

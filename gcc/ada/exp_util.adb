@@ -2948,10 +2948,9 @@ package body Exp_Util is
                                           N_Discriminant_Association,
                                           N_Parameter_Association,
                                           N_Pragma_Argument_Association)
-              and then not Nkind_In
-                             (Parent (Par), N_Function_Call,
-                                            N_Procedure_Call_Statement,
-                                            N_Entry_Call_Statement)
+              and then not Nkind_In (Parent (Par), N_Function_Call,
+                                                   N_Procedure_Call_Statement,
+                                                   N_Entry_Call_Statement)
 
             then
                return Par;
@@ -8279,16 +8278,21 @@ package body Exp_Util is
                return False;
 
             --  The object is of the form:
-            --    Obj : Typ [:= Expr];
+            --    Obj : [constant] Typ [:= Expr];
             --
-            --  Do not process the incomplete view of a deferred constant. Do
-            --  not consider tag-to-class-wide conversions.
+            --  Do not process tag-to-class-wide conversions because they do
+            --  not yield an object. Do not process the incomplete view of a
+            --  deferred constant. Note that an object initialized by means
+            --  of a build-in-place function call may appear as a deferred
+            --  constant after expansion activities. These kinds of objects
+            --  must be finalized.
 
             elsif not Is_Imported (Obj_Id)
               and then Needs_Finalization (Obj_Typ)
-              and then not (Ekind (Obj_Id) = E_Constant
-                             and then not Has_Completion (Obj_Id))
               and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
+              and then not (Ekind (Obj_Id) = E_Constant
+                             and then not Has_Completion (Obj_Id)
+                             and then No (BIP_Initialization_Call (Obj_Id)))
             then
                return True;
 

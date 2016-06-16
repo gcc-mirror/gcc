@@ -5348,7 +5348,9 @@ package body Sem_Attr is
             if Is_Entity_Name (P) then
                Pref_Id := Entity (P);
 
-               if Ekind_In (Pref_Id, E_Function, E_Generic_Function) then
+               if Ekind_In (Pref_Id, E_Function, E_Generic_Function)
+                 and then Ekind (Spec_Id) = Ekind (Pref_Id)
+               then
                   if Denote_Same_Function (Pref_Id, Spec_Id) then
 
                      --  Correct the prefix of the attribute when the context

@@ -2165,6 +2165,13 @@ package body Sem_Ch3 is
       --  (They have the sloc of the label as found in the source, and that
       --  is ahead of the current declarative part).
 
+      procedure Check_Entry_Contracts;
+      --  Perform a pre-analysis of the pre- and postconditions of an entry
+      --  declaration. This must be done before full resolution and creation
+      --  of the parameter block, etc. to catch illegal uses within the
+      --  contract expression. Full analysis of the expression is done when
+      --  the contract is processed.
+
       procedure Handle_Late_Controlled_Primitive (Body_Decl : Node_Id);
       --  Determine whether Body_Decl denotes the body of a late controlled
       --  primitive (either Initialize, Adjust or Finalize). If this is the
@@ -2188,6 +2195,56 @@ package body Sem_Ch3 is
             Prev (Decl);
          end loop;
       end Adjust_Decl;
+
+      ---------------------------
+      -- Check_Entry_Contracts --
+      ---------------------------
+
+      procedure Check_Entry_Contracts is
+         ASN : Node_Id;
+         Ent : Entity_Id;
+         Exp : Node_Id;
+
+      begin
+         Ent := First_Entity (Current_Scope);
+         while Present (Ent) loop
+
+            --  This only concerns entries with pre/postconditions
+
+            if Ekind (Ent) = E_Entry
+              and then Present (Contract (Ent))
+              and then Present (Pre_Post_Conditions (Contract (Ent)))
+            then
+               ASN := Pre_Post_Conditions (Contract (Ent));
+               Push_Scope (Ent);
+               Install_Formals (Ent);
+
+               --  Pre/postconditions are rewritten as Check pragmas. Analysis
+               --  is performed on a copy of the pragma expression, to prevent
+               --  modifying the original expression.
+
+               while Present (ASN) loop
+                  if Nkind (ASN) = N_Pragma then
+                     Exp :=
+                       New_Copy_Tree
+                         (Expression
+                           (First (Pragma_Argument_Associations (ASN))));
+                     Set_Parent (Exp, ASN);
+
+                     --  ??? why not Preanalyze_Assert_Expression
+
+                     Preanalyze (Exp);
+                  end if;
+
+                  ASN := Next_Pragma (ASN);
+               end loop;
+
+               End_Scope;
+            end if;
+
+            Next_Entity (Ent);
+         end loop;
+      end Check_Entry_Contracts;
 
       --------------------------------------
       -- Handle_Late_Controlled_Primitive --
@@ -2349,11 +2406,13 @@ package body Sem_Ch3 is
          --  (This is needed in any case for early instantiations ???).
 
          if No (Next_Decl) then
-            if Nkind_In (Parent (L), N_Component_List,
-                                     N_Task_Definition,
-                                     N_Protected_Definition)
-            then
+            if Nkind (Parent (L)) = N_Component_List then
                null;
+
+            elsif Nkind_In (Parent (L), N_Protected_Definition,
+                                        N_Task_Definition)
+            then
+               Check_Entry_Contracts;
 
             elsif Nkind (Parent (L)) /= N_Package_Specification then
                if Nkind (Parent (L)) = N_Package_Body then

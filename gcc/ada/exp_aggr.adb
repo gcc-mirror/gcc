@@ -5517,20 +5517,21 @@ package body Exp_Aggr is
       --  object. (Note: we don't use a block statement because this would
       --  cause generated freeze nodes to be elaborated in the wrong scope).
 
-      --  Should document these individual tests ???
+      --  Do not perform in-place expansion for SPARK 05 because aggregates are
+      --  expected to appear in qualified form. In-place expansion eliminates
+      --  the qualification and eventually violates this SPARK 05 restiction.
+
+      --  Should document the rest of the guards ???
 
       if not Has_Default_Init_Comps (N)
-         and then Comes_From_Source (Parent_Node)
-         and then Parent_Kind = N_Object_Declaration
-         and then not
-           Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
-         and then Present (Expression (Parent_Node))
-         and then not Has_Controlled_Component (Typ)
-         and then not Is_Bit_Packed_Array (Typ)
-
-         --  ??? the test for SPARK 05 needs documentation
-
-         and then not Restriction_Check_Required (SPARK_05)
+        and then Comes_From_Source (Parent_Node)
+        and then Parent_Kind = N_Object_Declaration
+        and then Present (Expression (Parent_Node))
+        and then not
+          Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
+        and then not Has_Controlled_Component (Typ)
+        and then not Is_Bit_Packed_Array (Typ)
+        and then not Restriction_Check_Required (SPARK_05)
       then
          In_Place_Assign_OK_For_Declaration := True;
          Tmp := Defining_Identifier (Parent_Node);
