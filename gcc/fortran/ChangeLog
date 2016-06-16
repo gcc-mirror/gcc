@@ -1,3 +1,13 @@
+2016-06-16  Martin Liska  <mliska@suse.cz>
+
+	* trans-array.c (gfc_array_allocate): Do not generate expect
+	stmt.
+	* trans.c (gfc_allocate_using_malloc): Properly set FAIL_ALLOC
+	predictor for malloc return value.
+	(gfc_allocate_allocatable): Use REALLOC predictor instead of
+	FAIL_ALLOC.
+	(gfc_deallocate_with_status): Likewise.
+
 2016-06-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/70673
