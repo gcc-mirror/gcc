@@ -209,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       virtual streamsize
       showmanyc()
-      { 
+      {
 	streamsize __ret = -1;
 	if (_M_mode & ios_base::in)
 	  {
@@ -248,10 +248,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    // that an external char_type array of length __n exists
 	    // and has been pre-allocated. If this is not the case,
 	    // things will quickly blow up.
-	    
+
 	    // Step 1: Destroy the current internal array.
 	    _M_string.clear();
-	    
+
 	    // Step 2: Use the external array.
 	    _M_sync(__s, __n, 0);
 	  }

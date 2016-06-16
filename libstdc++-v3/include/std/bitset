@@ -245,7 +245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      _M_w[__n] = _M_w[__n - __wshift];
 	  else
 	    {
-	      const size_t __sub_offset = (_GLIBCXX_BITSET_BITS_PER_WORD 
+	      const size_t __sub_offset = (_GLIBCXX_BITSET_BITS_PER_WORD
 					   - __offset);
 	      for (size_t __n = _Nw - 1; __n > __wshift; --__n)
 		_M_w[__n] = ((_M_w[__n - __wshift] << __offset)
@@ -279,7 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			     | (_M_w[__n + __wshift + 1] << __sub_offset));
 	      _M_w[__limit] = _M_w[_Nw-1] >> __offset;
 	    }
-	  
+
 	  std::fill(_M_w + __limit + 1, _M_w + _Nw, static_cast<_WordT>(0));
 	}
     }
@@ -556,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _WordT&
       _M_getword(size_t) _GLIBCXX_NOEXCEPT
       {
-	__throw_out_of_range(__N("_Base_bitset::_M_getword")); 
+	__throw_out_of_range(__N("_Base_bitset::_M_getword"));
 	return *new _WordT;
       }
 
@@ -659,7 +659,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef unsigned long _WordT;
 
       static void
-      _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { } 
+      _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { }
     };
 
 #if __cplusplus >= 201103L
@@ -773,7 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       void
       _M_do_sanitize() _GLIBCXX_NOEXCEPT
-      { 
+      {
 	typedef _Sanitize<_Nb % _GLIBCXX_BITSET_BITS_PER_WORD> __sanitize_type;
 	__sanitize_type::_S_do_sanitize(this->_M_hiword());
       }
@@ -801,10 +801,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	_WordT*	_M_wp;
 	size_t 	_M_bpos;
-	
+
 	// left undefined
 	reference();
-	
+
       public:
 	reference(bitset& __b, size_t __pos) _GLIBCXX_NOEXCEPT
 	{
@@ -981,7 +981,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
       //@}
-      
+
       //@{
       /**
        *  Operations on bitsets.
@@ -1015,7 +1015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
       //@}
-      
+
       //@{
       /**
        *  These versions of single-bit set, reset, flip, and test are
@@ -1058,7 +1058,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return ((this->_M_getword(__pos) & _Base::_S_maskbit(__pos))
 		!= static_cast<_WordT>(0)); }
       //@}
-      
+
       // Set, reset, and flip.
       /**
        *  @brief Sets every bit to true.
@@ -1107,7 +1107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_check(__position, __N("bitset::reset"));
 	return _Unchecked_reset(__position);
       }
-      
+
       /**
        *  @brief Toggles every bit to its opposite value.
        */
@@ -1130,7 +1130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_check(__position, __N("bitset::flip"));
 	return _Unchecked_flip(__position);
       }
-      
+
       /// See the no-argument flip().
       bitset<_Nb>
       operator~() const _GLIBCXX_NOEXCEPT
@@ -1159,7 +1159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator[](size_t __position) const
       { return _Unchecked_test(__position); }
       //@}
-      
+
       /**
        *  @brief Returns a numerical interpretation of the %bitset.
        *  @return  The integral equivalent of the bits.
@@ -1302,7 +1302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator!=(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_equal(__rhs); }
       //@}
-      
+
       /**
        *  @brief Tests the value of a bit.
        *  @param  __position  The index of a bit.
@@ -1352,7 +1352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator>>(size_t __position) const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this) >>= __position; }
       //@}
-      
+
       /**
        *  @brief  Finds the index of the first "on" bit.
        *  @return  The index of the first bit set, or size() if not found.
@@ -1482,7 +1482,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      for (size_t __i = _Nb; __i > 0; --__i)
 		{
 		  static typename _Traits::int_type __eof = _Traits::eof();
-		  
+
 		  typename _Traits::int_type __c1 = __is.rdbuf()->sbumpc();
 		  if (_Traits::eq_int_type(__c1, __eof))
 		    {
@@ -1508,7 +1508,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
-	      __is._M_setstate(__ios_base::badbit);		
+	      __is._M_setstate(__ios_base::badbit);
 	      __throw_exception_again;
 	    }
 	  __catch(...)

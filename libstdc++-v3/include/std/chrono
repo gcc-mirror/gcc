@@ -72,7 +72,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.11.4.3 specialization of common_type (for duration, sfinae-friendly)
-  
+
   template<typename _CT, typename _Period1, typename _Period2>
     struct __duration_common_type_wrapper
     {
@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // 20.11.4.3 specialization of common_type (for time_point, sfinae-friendly)
-  
+
   template<typename _CT, typename _Clock>
     struct __timepoint_common_type_wrapper
     {
@@ -625,11 +625,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	typename common_type<duration<_Rep1, _Period1>, _Dur2>::type>
       operator+(const duration<_Rep1, _Period1>& __lhs,
 		const time_point<_Clock, _Dur2>& __rhs)
-      { 
+      {
 	typedef duration<_Rep1, _Period1>			__dur1;
 	typedef typename common_type<__dur1,_Dur2>::type	__ct;
 	typedef time_point<_Clock, __ct> 			__time_point;
-	return __time_point(__rhs.time_since_epoch() + __lhs); 
+	return __time_point(__rhs.time_since_epoch() + __lhs);
       }
 
     template<typename _Clock, typename _Dur1,
@@ -638,11 +638,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	typename common_type<_Dur1, duration<_Rep2, _Period2>>::type>
       operator-(const time_point<_Clock, _Dur1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
-      { 
+      {
 	typedef duration<_Rep2, _Period2>			__dur2;
 	typedef typename common_type<_Dur1,__dur2>::type	__ct;
 	typedef time_point<_Clock, __ct> 			__time_point;
-	return __time_point(__lhs.time_since_epoch() -__rhs); 
+	return __time_point(__lhs.time_since_epoch() -__rhs);
       }
 
     template<typename _Clock, typename _Dur1, typename _Dur2>
@@ -688,9 +688,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
       { return !(__lhs < __rhs); }
 
 
-    // Clocks. 
+    // Clocks.
 
-    // Why nanosecond resolution as the default?  
+    // Why nanosecond resolution as the default?
     // Why have std::system_clock always count in the higest
     // resolution (ie nanoseconds), even if on some OSes the low 3
     // or 9 decimal digits will be always zero? This allows later

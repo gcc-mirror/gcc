@@ -3,14 +3,14 @@
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the 
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // Under Section 7 of GPL version 3, you are granted additional
@@ -94,11 +94,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static const uintmax_t __b0 = __static_abs<_Qn>::value % __c;
       static const uintmax_t __b1 = __static_abs<_Qn>::value / __c;
 
-      static_assert(__a1 == 0 || __b1 == 0, 
+      static_assert(__a1 == 0 || __b1 == 0,
 		    "overflow in multiplication");
-      static_assert(__a0 * __b1 + __b0 * __a1 < (__c >> 1), 
+      static_assert(__a0 * __b1 + __b0 * __a1 < (__c >> 1),
 		    "overflow in multiplication");
-      static_assert(__b0 * __a0 <= __INTMAX_MAX__, 
+      static_assert(__b0 * __a0 <= __INTMAX_MAX__,
 		    "overflow in multiplication");
       static_assert((__a0 * __b1 + __b0 * __a1) * __c
 		    <= __INTMAX_MAX__ -  __b0 * __a0,
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *    std::ratio<7,-21>::num == -1;
    *    std::ratio<7,-21>::den == 3;
    *  @endcode
-   *  
+   *
   */
   template<intmax_t _Num, intmax_t _Den = 1>
     struct ratio
@@ -340,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct ratio_equal
     : integral_constant<bool, _R1::num == _R2::num && _R1::den == _R2::den>
     { };
-  
+
   /// ratio_not_equal
   template<typename _R1, typename _R2>
     struct ratio_not_equal
@@ -354,7 +354,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __ratio_less_impl_1
     : integral_constant<bool, __big_less<_Left::__hi, _Left::__lo,
            _Right::__hi, _Right::__lo>::value>
-    { }; 
+    { };
 
   template<typename _R1, typename _R2,
 	   bool = (_R1::num == 0 || _R2::num == 0
@@ -382,13 +382,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct ratio_less
     : __ratio_less_impl<_R1, _R2>::type
     { };
-    
+
   /// ratio_less_equal
   template<typename _R1, typename _R2>
     struct ratio_less_equal
     : integral_constant<bool, !ratio_less<_R2, _R1>::value>
     { };
-  
+
   /// ratio_greater
   template<typename _R1, typename _R2>
     struct ratio_greater

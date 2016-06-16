@@ -1906,7 +1906,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
        *  type @c T1, @c T2, ..., @c TN and returns a value convertible
        *  to @c Res.
        *
-       *  The newly-created %function object will target a copy of 
+       *  The newly-created %function object will target a copy of
        *  @a __f. If @a __f is @c reference_wrapper<F>, then this function
        *  object will contain a reference to the function object @c
        *  __f.get(). If @a __f is a NULL function pointer or NULL

@@ -1,5 +1,31 @@
 2016-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/array: Remove trailing whitespace.
+	* include/std/atomic: Likewise.
+	* include/std/bitset: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/complex: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/functional: Likewise.
+	* include/std/future: Likewise.
+	* include/std/iomanip: Likewise.
+	* include/std/iosfwd: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/limits: Likewise.
+	* include/std/ratio: Likewise.
+	* include/std/scoped_allocator: Likewise.
+	* include/std/sstream: Likewise.
+	* include/std/stdexcept: Likewise.
+	* include/std/string: Likewise.
+	* include/std/system_error: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/tuple: Likewise.
+	* include/std/type_traits: Likewise.
+	* include/std/utility: Likewise.
+	* include/std/valarray: Likewise.
+	* include/std/vector: Likewise.
+
 	* include/bits/stl_vector.h (vector::_S_insert_aux_assign): Define
 	new overloaded functions.
 	* include/bits/vector.tcc (vector::_M_insert_aux): Use new functions

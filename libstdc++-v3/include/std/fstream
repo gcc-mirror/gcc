@@ -386,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Common code for seekoff, seekpos, and overflow
       pos_type
       _M_seek(off_type __off, ios_base::seekdir __way, __state_type __state);
-      
+
       int
       _M_get_ext_pos(__state_type &__state);
 

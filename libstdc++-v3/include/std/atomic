@@ -198,11 +198,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return load(); }
 
       _Tp
-      operator=(_Tp __i) noexcept 
+      operator=(_Tp __i) noexcept
       { store(__i); return __i; }
 
       _Tp
-      operator=(_Tp __i) volatile noexcept 
+      operator=(_Tp __i) volatile noexcept
       { store(__i); return __i; }
 
       bool
@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept
-      { 
+      {
         _Tp tmp;
 	__atomic_load(std::__addressof(_M_i), std::__addressof(tmp), __m);
 	return tmp;
@@ -239,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
-      { 
+      {
         _Tp tmp;
 	__atomic_load(std::__addressof(_M_i), std::__addressof(tmp), __m);
 	return tmp;
@@ -247,7 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tp
       exchange(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { 
+      {
         _Tp tmp;
 	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
 			  std::__addressof(tmp), __m);
@@ -255,9 +255,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _Tp
-      exchange(_Tp __i, 
+      exchange(_Tp __i,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
-      { 
+      {
         _Tp tmp;
 	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
 			  std::__addressof(tmp), __m);
@@ -265,7 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) noexcept
       {
 	return __atomic_compare_exchange(std::__addressof(_M_i),
@@ -275,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) volatile noexcept
       {
 	return __atomic_compare_exchange(std::__addressof(_M_i),
@@ -297,7 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __cmpexch_failure_order(__m)); }
 
       bool
-      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) noexcept
       {
 	return __atomic_compare_exchange(std::__addressof(_M_i),
@@ -307,7 +307,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) volatile noexcept
       {
 	return __atomic_compare_exchange(std::__addressof(_M_i),
