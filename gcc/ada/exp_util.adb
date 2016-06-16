@@ -4721,8 +4721,8 @@ package body Exp_Util is
 
       begin
          --  When a function call appears in Object.Operation format, the
-         --  original representation has three possible forms depending on the
-         --  availability and form of actual parameters:
+         --  original representation has several possible forms depending on
+         --  the availability and form of actual parameters:
 
          --    Obj.Func                    N_Selected_Component
          --    Obj.Func (Actual)           N_Indexed_Component

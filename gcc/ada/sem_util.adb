@@ -10391,39 +10391,49 @@ package body Sem_Util is
    ----------------------------------
 
    procedure Replace_Null_By_Null_Address (N : Node_Id) is
+      procedure Replace_Null_Operand (Op : Node_Id; Other_Op : Node_Id);
+      --  Replace operand Op with a reference to Null_Address when the operand
+      --  denotes a null Address. Other_Op denotes the other operand.
+
+      --------------------------
+      -- Replace_Null_Operand --
+      --------------------------
+
+      procedure Replace_Null_Operand (Op : Node_Id; Other_Op : Node_Id) is
+      begin
+         --  Check the type of the complementary operand since the N_Null node
+         --  has not been decorated yet.
+
+         if Nkind (Op) = N_Null
+           and then Is_Descendant_Of_Address (Etype (Other_Op))
+         then
+            Rewrite (Op, New_Occurrence_Of (RTE (RE_Null_Address), Sloc (Op)));
+         end if;
+      end Replace_Null_Operand;
+
+   --  Start of processing for Replace_Null_By_Null_Address
+
    begin
       pragma Assert (Relaxed_RM_Semantics);
-      pragma Assert
-        (Nkind (N) = N_Null
-          or else Nkind_In (N, N_Op_Eq, N_Op_Ne)
-          or else Nkind_In (N, N_Op_Lt, N_Op_Le, N_Op_Gt, N_Op_Ge));
+      pragma Assert (Nkind_In (N, N_Null,
+                                  N_Op_Eq,
+                                  N_Op_Ge,
+                                  N_Op_Gt,
+                                  N_Op_Le,
+                                  N_Op_Lt,
+                                  N_Op_Ne));
 
       if Nkind (N) = N_Null then
-         Rewrite (N,
-           New_Occurrence_Of (RTE (RE_Null_Address), Sloc (N)));
+         Rewrite (N, New_Occurrence_Of (RTE (RE_Null_Address), Sloc (N)));
 
       else
          declare
-            L : constant Node_Id := Left_Opnd (N);
+            L : constant Node_Id := Left_Opnd  (N);
             R : constant Node_Id := Right_Opnd (N);
 
          begin
-            --  We check the Etype of the complementary operand since the
-            --  N_Null node is not decorated at this stage.
-
-            if Nkind (L) = N_Null
-              and then Is_Descendant_Of_Address (Etype (R))
-            then
-               Rewrite (L,
-                 New_Occurrence_Of (RTE (RE_Null_Address), Sloc (L)));
-            end if;
-
-            if Nkind (R) = N_Null
-              and then Is_Descendant_Of_Address (Etype (L))
-            then
-               Rewrite (R,
-                 New_Occurrence_Of (RTE (RE_Null_Address), Sloc (R)));
-            end if;
+            Replace_Null_Operand (L, Other_Op => R);
+            Replace_Null_Operand (R, Other_Op => L);
          end;
       end if;
    end Replace_Null_By_Null_Address;
@@ -17535,7 +17545,8 @@ package body Sem_Util is
 
    function Null_To_Null_Address_Convert_OK
      (N   : Node_Id;
-      Typ : Entity_Id := Empty) return Boolean is
+      Typ : Entity_Id := Empty) return Boolean
+   is
    begin
       if not Relaxed_RM_Semantics then
          return False;
@@ -17544,8 +17555,7 @@ package body Sem_Util is
       if Nkind (N) = N_Null then
          return Present (Typ) and then Is_Descendant_Of_Address (Typ);
 
-      elsif Nkind_In (N, N_Op_Eq, N_Op_Ne)
-         or else Nkind_In (N, N_Op_Lt, N_Op_Le, N_Op_Gt, N_Op_Ge)
+      elsif Nkind_In (N, N_Op_Eq, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt, N_Op_Ne)
       then
          declare
             L : constant Node_Id := Left_Opnd (N);

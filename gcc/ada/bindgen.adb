@@ -931,11 +931,12 @@ package body Bindgen is
       Gen_Elab_Calls;
 
       if not CodePeer_Mode then
+
          --  Call System.Elaboration_Allocators.Mark_Start_Of_Elaboration if
          --  restriction No_Standard_Allocators_After_Elaboration is active.
 
          if Cumulative_Restrictions.Set
-           (No_Standard_Allocators_After_Elaboration)
+              (No_Standard_Allocators_After_Elaboration)
          then
             WBI
               ("      System.Elaboration_Allocators.Mark_End_Of_Elaboration;");
