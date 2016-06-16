@@ -1149,7 +1149,7 @@ See RS/6000 and PowerPC Options.
 -mtune-ctrl=@var{feature-list} -mdump-tune-features -mno-default @gol
 -mfpmath=@var{unit} @gol
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
--mno-fp-ret-in-387  -msoft-float @gol
+-mnofp-ret-in-387 -m80387 -mhard-float -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
@@ -23544,7 +23544,15 @@ Control whether or not the compiler uses IEEE floating-point
 comparisons.  These correctly handle the case where the result of a
 comparison is unordered.
 
+@item -m80387
+@item -mhard-float
+@opindex 80387
+@opindex mhard-float
+Generate output containing 80387 instructions for floating point.
+
+@item -mno-80387
 @item -msoft-float
+@opindex no-80387
 @opindex msoft-float
 Generate output containing library calls for floating point.
 
