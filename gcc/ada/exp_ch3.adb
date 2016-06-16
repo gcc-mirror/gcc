@@ -6960,8 +6960,7 @@ package body Exp_Ch3 is
 
       if Comes_From_Source (Def_Id)
         and then (Has_Default_Init_Cond (Typ)
-                    or else
-                  Has_Inherited_Default_Init_Cond (Typ))
+                   or else Has_Inherited_Default_Init_Cond (Typ))
         and then not Has_Init_Expression (N)
         and then Present (Default_Init_Cond_Procedure (Typ))
       then
