@@ -1,3 +1,11 @@
+2016-06-16  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (combine_predictions_for_insn): When we find a first
+	match predictor, we should consider just predictors with
+	PRED_FLAG_FIRST_MATCH.  Print either first match (if any) or
+	DS theory predictor.
+	(combine_predictions_for_bb): Likewise.
+
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Handle COMPONENT_REFs
