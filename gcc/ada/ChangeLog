@@ -1,5 +1,15 @@
 2016-06-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_util.adb (May_Be_Lvalue): An actual in an unexpanded
+	attribute reference 'Read is an assignment and must be considered
+	a modification of the object.
+
+2016-06-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.adb: Minor editorial.
+
+2016-06-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_prag.adb (Overridden_Ancestor): Clean up code to use
 	controlling type of desired primitive rather than its scope,
 	because the primitive that inherits the classwide condition may

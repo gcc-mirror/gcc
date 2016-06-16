@@ -1231,12 +1231,16 @@ package body Sem_Util is
          pragma Assert (Has_Default_Init_Cond (Typ));
          pragma Assert (Present (Prag));
 
-         --  No action needed if the spec was not built or if the body was
-         --  already built.
+         --  Nothing to do if the slec was not built. This occurs when the
+         --  expression of the Default_Initial_Condition is missing or is
+         --  null.
 
-         if No (Proc_Id)
-           or else
-             Present (Corresponding_Body (Unit_Declaration_Node (Proc_Id)))
+         if No (Proc_Id) then
+            return;
+
+         --  Nothing to do if the body was already built
+
+         elsif Present (Corresponding_Body (Unit_Declaration_Node (Proc_Id)))
          then
             return;
          end if;
@@ -1368,6 +1372,7 @@ package body Sem_Util is
 
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
+      Args    : List_Id;
       Proc_Id : Entity_Id;
 
    begin
@@ -1378,20 +1383,23 @@ package body Sem_Util is
       pragma Assert (Has_Default_Init_Cond (Typ));
       pragma Assert (Present (Prag));
 
+      Args := Pragma_Argument_Associations (Prag);
+
       --  Nothing to do if default initial condition procedure already built
 
       if Present (Default_Init_Cond_Procedure (Typ)) then
          return;
 
-      --  The procedure must not be generated when DIC has one of these two
-      --  forms: 1. Default_Initial_Condition => null
-      --         2. Default_Initial_Condition
+      --  Nothing to do if the default initial condition appears without an
+      --  expression.
 
-      elsif No (Pragma_Argument_Associations (Prag))
-        or else
-          Nkind (Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag))))
-            = N_Null
-      then
+      elsif No (Args) then
+         return;
+
+      --  Nothing to do if the expression of the default initial condition is
+      --  null.
+
+      elsif Nkind (Get_Pragma_Arg (First (Args))) = N_Null then
          return;
       end if;
 
@@ -15744,11 +15752,15 @@ package body Sem_Util is
             return N = Name (P);
 
          --  Test prefix of component or attribute. Note that the prefix of an
-         --  explicit or implicit dereference cannot be an l-value.
+         --  explicit or implicit dereference cannot be an l-value. In the case
+         --  of a 'Read attribute, the reference can be an actual in the
+         --  argument list of the attribute.
 
          when N_Attribute_Reference =>
-            return N = Prefix (P)
-              and then Name_Implies_Lvalue_Prefix (Attribute_Name (P));
+            return (N = Prefix (P)
+                     and then Name_Implies_Lvalue_Prefix (Attribute_Name (P)))
+                 or else
+                   Attribute_Name (P) = Name_Read;
 
          --  For an expanded name, the name is an lvalue if the expanded name
          --  is an lvalue, but the prefix is never an lvalue, since it is just
