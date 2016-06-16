@@ -1,5 +1,8 @@
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (setcc + movzbl peephole2): Use reg_set_p.
+	(setcc + and peephole2): Likewise.
+
 	PR rtl-optimization/71532
 	* cse.c (cse_insn): For const/pure calls, invalidate argument passing
 	memory slots.
