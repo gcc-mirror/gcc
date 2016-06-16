@@ -1,3 +1,27 @@
+2016-06-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb: Minor typo fix.
+
+2016-06-16  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb: Further fix for invalid index in GNAT.Regexp.
+
+2016-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Validate_Address_Clauses): Use the same logic to
+	issue the warning on the offset for the size as for the alignment
+	and tweak the wording for the sake of consistency.
+
+2016-06-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Class_Wide_COndition): New procedure,
+	subsidiary of Analyze_Pre_Post_ Condition_In_Decl_Part, to
+	check legality rules that follow from the revised semantics of
+	class-wide pre/postconditions described in AI12-0113.
+	(Build_Pragma_Check_Equivalent): Abstract subprogram declarations
+	must be included in list of overriding primitives of a derived
+	type.
+
 2016-06-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (May_Be_Lvalue): An actual in an unexpanded

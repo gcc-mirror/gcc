@@ -1231,7 +1231,7 @@ package body Sem_Util is
          pragma Assert (Has_Default_Init_Cond (Typ));
          pragma Assert (Present (Prag));
 
-         --  Nothing to do if the slec was not built. This occurs when the
+         --  Nothing to do if the spec was not built. This occurs when the
          --  expression of the Default_Initial_Condition is missing or is
          --  null.
 

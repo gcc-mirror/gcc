@@ -13730,9 +13730,9 @@ package body Sem_Ch13 is
                   Error_Msg_Uint_1 := Y_Size;
                   Error_Msg_NE ("\??size of & is ^", ACCR.N, ACCR.Y);
 
-                  if X_Offs /= Uint_0 then
+                  if Y_Size >= X_Size then
                      Error_Msg_Uint_1 := X_Offs;
-                     Error_Msg_NE ("\??and offset of & is ^", ACCR.N, ACCR.X);
+                     Error_Msg_NE ("\??but offset of & is ^", ACCR.N, ACCR.X);
                   end if;
 
                --  Check for inadequate alignment, both of the base object
