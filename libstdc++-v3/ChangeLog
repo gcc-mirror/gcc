@@ -1,3 +1,24 @@
+2016-06-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h
+	(__glibcxx_requires_non_empty_range, __glibcxx_requires_nonempty)
+	(__glibcxx_requires_subscript): Move...
+	* include/debug/assertions.h: ...here and add __builtin_expect.
+	(_GLIBCXX_DEBUG_ONLY): Remove ; value.
+	* include/bits/stl_deque.h
+	(std::deque<>::operator[]): Add __glibcxx_requires_subscript check.
+	(std::deque<>::front()): Add __glibcxx_requires_nonempty check.
+	(std::deque<>::back()): Likewise.
+	(std::deque<>::pop_front()): Likewise.
+	(std::deque<>::pop_back()): Likewise.
+	(std::deque<>::swap(deque&)): Add allocator check.
+	* include/bits/stl_vector.h
+	(std::vector<>::operator[]): Add __glibcxx_requires_subscript check.
+	(std::vector<>::front()): Add __glibcxx_requires_nonempty check.
+	(std::vector<>::back()): Likewise.
+	(std::vector<>::pop_back()): Likewise.
+	(std::vector<>::swap(vector&)): Add allocator check.
+
 2016-06-16  Daniel Kruegler  <daniel.kruegler@gmail.com>
 
 	Provide swappable traits (p0185r1)
