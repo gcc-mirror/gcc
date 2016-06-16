@@ -1,3 +1,9 @@
+2016-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/71532
+	* cse.c (cse_insn): For const/pure calls, invalidate argument passing
+	memory slots.
+
 2016-06-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (VSINT_84): Add DImode to enable loading

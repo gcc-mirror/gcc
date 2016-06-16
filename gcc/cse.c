@@ -5751,6 +5751,13 @@ cse_insn (rtx_insn *insn)
     {
       if (!(RTL_CONST_OR_PURE_CALL_P (insn)))
 	invalidate_memory ();
+      else
+	/* For const/pure calls, invalidate any argument slots, because
+	   those are owned by the callee.  */
+	for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+	  if (GET_CODE (XEXP (tem, 0)) == USE
+	      && MEM_P (XEXP (XEXP (tem, 0), 0)))
+	    invalidate (XEXP (XEXP (tem, 0), 0), VOIDmode);
       invalidate_for_call ();
     }
 
