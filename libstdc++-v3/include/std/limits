@@ -296,7 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /** See std::float_round_style for more information.  This is only
 	meaningful for floating types; integer types will all be
 	round_toward_zero.  */
-    static _GLIBCXX_USE_CONSTEXPR float_round_style round_style = 
+    static _GLIBCXX_USE_CONSTEXPR float_round_style round_style =
 						    round_toward_zero;
   };
 
@@ -384,10 +384,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       min() _GLIBCXX_USE_NOEXCEPT { return false; }
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       max() _GLIBCXX_USE_NOEXCEPT { return true; }
 
 #if __cplusplus >= 201103L
@@ -404,10 +404,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       epsilon() _GLIBCXX_USE_NOEXCEPT { return false; }
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       round_error() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -418,20 +418,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       infinity() _GLIBCXX_USE_NOEXCEPT { return false; }
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return false; }
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return false; }
 
-      static _GLIBCXX_CONSTEXPR bool 
+      static _GLIBCXX_CONSTEXPR bool
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -443,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // promotion semantics.
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -453,14 +453,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min(char); }
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max(char); }
 
 #if __cplusplus >= 201103L
-      static constexpr char 
+      static constexpr char
       lowest() noexcept { return min(); }
 #endif
 
@@ -474,10 +474,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -488,20 +488,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR 
+      static _GLIBCXX_CONSTEXPR
       char infinity() _GLIBCXX_USE_NOEXCEPT { return char(); }
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return char(); }
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return char(); }
 
-      static _GLIBCXX_CONSTEXPR char 
+      static _GLIBCXX_CONSTEXPR char
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<char>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -510,7 +510,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -520,19 +520,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       min() _GLIBCXX_USE_NOEXCEPT { return -__SCHAR_MAX__ - 1; }
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       max() _GLIBCXX_USE_NOEXCEPT { return __SCHAR_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr signed char 
+      static constexpr signed char
       lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (signed char);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (signed char);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -542,10 +542,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -556,21 +556,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<signed char>(0); }
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<signed char>(0); }
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<signed char>(0); }
 
-      static _GLIBCXX_CONSTEXPR signed char 
+      static _GLIBCXX_CONSTEXPR signed char
       denorm_min() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<signed char>(0); }
 
@@ -580,7 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -590,20 +590,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       max() _GLIBCXX_USE_NOEXCEPT { return __SCHAR_MAX__ * 2U + 1; }
 
 #if __cplusplus >= 201103L
-      static constexpr unsigned char 
+      static constexpr unsigned char
       lowest() noexcept { return min(); }
 #endif
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
+      static _GLIBCXX_USE_CONSTEXPR int digits
        = __glibcxx_digits (unsigned char);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (unsigned char);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -613,10 +613,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -627,23 +627,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       infinity() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned char>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned char>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned char>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned char 
+      static _GLIBCXX_CONSTEXPR unsigned char
       denorm_min() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned char>(0); }
 
@@ -653,7 +653,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -663,10 +663,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min (wchar_t); }
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (wchar_t); }
 
 #if __cplusplus >= 201103L
@@ -675,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (wchar_t);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (wchar_t);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -685,10 +685,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -699,20 +699,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       infinity() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
-      static _GLIBCXX_CONSTEXPR wchar_t 
+      static _GLIBCXX_CONSTEXPR wchar_t
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -721,7 +721,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -732,13 +732,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static constexpr bool is_specialized = true;
 
-      static constexpr char16_t 
+      static constexpr char16_t
       min() noexcept { return __glibcxx_min (char16_t); }
 
-      static constexpr char16_t 
+      static constexpr char16_t
       max() noexcept { return __glibcxx_max (char16_t); }
 
-      static constexpr char16_t 
+      static constexpr char16_t
       lowest() noexcept { return min(); }
 
       static constexpr int digits = __glibcxx_digits (char16_t);
@@ -749,10 +749,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool is_exact = true;
       static constexpr int radix = 2;
 
-      static constexpr char16_t 
+      static constexpr char16_t
       epsilon() noexcept { return 0; }
 
-      static constexpr char16_t 
+      static constexpr char16_t
       round_error() noexcept { return 0; }
 
       static constexpr int min_exponent = 0;
@@ -766,16 +766,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr float_denorm_style has_denorm = denorm_absent;
       static constexpr bool has_denorm_loss = false;
 
-      static constexpr char16_t 
+      static constexpr char16_t
       infinity() noexcept { return char16_t(); }
 
-      static constexpr char16_t 
+      static constexpr char16_t
       quiet_NaN() noexcept { return char16_t(); }
 
-      static constexpr char16_t 
+      static constexpr char16_t
       signaling_NaN() noexcept { return char16_t(); }
 
-      static constexpr char16_t 
+      static constexpr char16_t
       denorm_min() noexcept { return char16_t(); }
 
       static constexpr bool is_iec559 = false;
@@ -793,13 +793,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static constexpr bool is_specialized = true;
 
-      static constexpr char32_t 
+      static constexpr char32_t
       min() noexcept { return __glibcxx_min (char32_t); }
 
-      static constexpr char32_t 
+      static constexpr char32_t
       max() noexcept { return __glibcxx_max (char32_t); }
 
-      static constexpr char32_t 
+      static constexpr char32_t
       lowest() noexcept { return min(); }
 
       static constexpr int digits = __glibcxx_digits (char32_t);
@@ -810,10 +810,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool is_exact = true;
       static constexpr int radix = 2;
 
-      static constexpr char32_t 
+      static constexpr char32_t
       epsilon() noexcept { return 0; }
 
-      static constexpr char32_t 
+      static constexpr char32_t
       round_error() noexcept { return 0; }
 
       static constexpr int min_exponent = 0;
@@ -827,16 +827,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr float_denorm_style has_denorm = denorm_absent;
       static constexpr bool has_denorm_loss = false;
 
-      static constexpr char32_t 
+      static constexpr char32_t
       infinity() noexcept { return char32_t(); }
 
-      static constexpr char32_t 
+      static constexpr char32_t
       quiet_NaN() noexcept { return char32_t(); }
 
-      static constexpr char32_t 
+      static constexpr char32_t
       signaling_NaN() noexcept { return char32_t(); }
 
-      static constexpr char32_t 
+      static constexpr char32_t
       denorm_min() noexcept { return char32_t(); }
 
       static constexpr bool is_iec559 = false;
@@ -855,14 +855,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       min() _GLIBCXX_USE_NOEXCEPT { return -__SHRT_MAX__ - 1; }
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       max() _GLIBCXX_USE_NOEXCEPT { return __SHRT_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr short 
+      static constexpr short
       lowest() noexcept { return min(); }
 #endif
 
@@ -876,10 +876,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -890,20 +890,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       infinity() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
-      static _GLIBCXX_CONSTEXPR short 
+      static _GLIBCXX_CONSTEXPR short
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -912,7 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -922,20 +922,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       max() _GLIBCXX_USE_NOEXCEPT { return __SHRT_MAX__ * 2U + 1; }
 
 #if __cplusplus >= 201103L
-      static constexpr unsigned short 
+      static constexpr unsigned short
       lowest() noexcept { return min(); }
 #endif
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
+      static _GLIBCXX_USE_CONSTEXPR int digits
        = __glibcxx_digits (unsigned short);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (unsigned short);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -945,10 +945,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -959,23 +959,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       infinity() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned short>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned short>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned short>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned short 
+      static _GLIBCXX_CONSTEXPR unsigned short
       denorm_min() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned short>(0); }
 
@@ -985,7 +985,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -995,14 +995,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       min() _GLIBCXX_USE_NOEXCEPT { return -__INT_MAX__ - 1; }
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       max() _GLIBCXX_USE_NOEXCEPT { return __INT_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr int 
+      static constexpr int
       lowest() noexcept { return min(); }
 #endif
 
@@ -1016,10 +1016,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1030,20 +1030,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
-      static _GLIBCXX_CONSTEXPR int 
+      static _GLIBCXX_CONSTEXPR int
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -1052,7 +1052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -1062,20 +1062,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       max() _GLIBCXX_USE_NOEXCEPT { return __INT_MAX__ * 2U + 1; }
 
 #if __cplusplus >= 201103L
-      static constexpr unsigned int 
+      static constexpr unsigned int
       lowest() noexcept { return min(); }
 #endif
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
+      static _GLIBCXX_USE_CONSTEXPR int digits
        = __glibcxx_digits (unsigned int);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (unsigned int);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -1085,10 +1085,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1099,22 +1099,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<unsigned int>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned int>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned int>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned int 
+      static _GLIBCXX_CONSTEXPR unsigned int
       denorm_min() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned int>(0); }
 
@@ -1124,7 +1124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -1137,11 +1137,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_CONSTEXPR long
       min() _GLIBCXX_USE_NOEXCEPT { return -__LONG_MAX__ - 1; }
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       max() _GLIBCXX_USE_NOEXCEPT { return __LONG_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr long 
+      static constexpr long
       lowest() noexcept { return min(); }
 #endif
 
@@ -1155,10 +1155,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1169,20 +1169,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
-      static _GLIBCXX_CONSTEXPR long 
+      static _GLIBCXX_CONSTEXPR long
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -1191,7 +1191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -1201,20 +1201,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       max() _GLIBCXX_USE_NOEXCEPT { return __LONG_MAX__ * 2UL + 1; }
 
 #if __cplusplus >= 201103L
-      static constexpr unsigned long 
+      static constexpr unsigned long
       lowest() noexcept { return min(); }
 #endif
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
+      static _GLIBCXX_USE_CONSTEXPR int digits
        = __glibcxx_digits (unsigned long);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (unsigned long);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -1224,10 +1224,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1238,23 +1238,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       infinity() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned long 
+      static _GLIBCXX_CONSTEXPR unsigned long
       denorm_min() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long>(0); }
 
@@ -1264,7 +1264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -1274,20 +1274,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       min() _GLIBCXX_USE_NOEXCEPT { return -__LONG_LONG_MAX__ - 1; }
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       max() _GLIBCXX_USE_NOEXCEPT { return __LONG_LONG_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr long long 
+      static constexpr long long
       lowest() noexcept { return min(); }
 #endif
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
+      static _GLIBCXX_USE_CONSTEXPR int digits
        = __glibcxx_digits (long long);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (long long);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -1297,10 +1297,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1311,21 +1311,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<long long>(0); }
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<long long>(0); }
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<long long>(0); }
 
-      static _GLIBCXX_CONSTEXPR long long 
+      static _GLIBCXX_CONSTEXPR long long
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<long long>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
@@ -1334,7 +1334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -1344,20 +1344,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       max() _GLIBCXX_USE_NOEXCEPT { return __LONG_LONG_MAX__ * 2ULL + 1; }
 
 #if __cplusplus >= 201103L
-      static constexpr unsigned long long 
+      static constexpr unsigned long long
       lowest() noexcept { return min(); }
 #endif
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
+      static _GLIBCXX_USE_CONSTEXPR int digits
        = __glibcxx_digits (unsigned long long);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
+      static _GLIBCXX_USE_CONSTEXPR int digits10
        = __glibcxx_digits10 (unsigned long long);
 #if __cplusplus >= 201103L
       static constexpr int max_digits10 = 0;
@@ -1367,10 +1367,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
@@ -1381,23 +1381,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
+      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
        = denorm_absent;
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       infinity() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long long>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long long>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long long>(0); }
 
-      static _GLIBCXX_CONSTEXPR unsigned long long 
+      static _GLIBCXX_CONSTEXPR unsigned long long
       denorm_min() _GLIBCXX_USE_NOEXCEPT
       { return static_cast<unsigned long long>(0); }
 
@@ -1407,7 +1407,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_toward_zero;
     };
 
@@ -1595,14 +1595,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       min() _GLIBCXX_USE_NOEXCEPT { return __FLT_MIN__; }
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       max() _GLIBCXX_USE_NOEXCEPT { return __FLT_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr float 
+      static constexpr float
       lowest() noexcept { return -__FLT_MAX__; }
 #endif
 
@@ -1617,10 +1617,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
       static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       epsilon() _GLIBCXX_USE_NOEXCEPT { return __FLT_EPSILON__; }
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5F; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = __FLT_MIN_EXP__;
@@ -1633,19 +1633,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = has_quiet_NaN;
       static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
 	= bool(__FLT_HAS_DENORM__) ? denorm_present : denorm_absent;
-      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss 
+      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
        = __glibcxx_float_has_denorm_loss;
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_valf(); }
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nanf(""); }
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nansf(""); }
 
-      static _GLIBCXX_CONSTEXPR float 
+      static _GLIBCXX_CONSTEXPR float
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return __FLT_DENORM_MIN__; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559
@@ -1654,9 +1654,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_float_traps;
-      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before 
+      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before
        = __glibcxx_float_tinyness_before;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_to_nearest;
     };
 
@@ -1670,14 +1670,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       min() _GLIBCXX_USE_NOEXCEPT { return __DBL_MIN__; }
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       max() _GLIBCXX_USE_NOEXCEPT { return __DBL_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr double 
+      static constexpr double
       lowest() noexcept { return -__DBL_MAX__; }
 #endif
 
@@ -1692,10 +1692,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
       static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       epsilon() _GLIBCXX_USE_NOEXCEPT { return __DBL_EPSILON__; }
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = __DBL_MIN_EXP__;
@@ -1708,19 +1708,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = has_quiet_NaN;
       static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm
 	= bool(__DBL_HAS_DENORM__) ? denorm_present : denorm_absent;
-      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss 
+      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
         = __glibcxx_double_has_denorm_loss;
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_val(); }
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nan(""); }
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nans(""); }
 
-      static _GLIBCXX_CONSTEXPR double 
+      static _GLIBCXX_CONSTEXPR double
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return __DBL_DENORM_MIN__; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559
@@ -1729,9 +1729,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_double_traps;
-      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before 
+      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before
        = __glibcxx_double_tinyness_before;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
        = round_to_nearest;
     };
 
@@ -1745,14 +1745,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       min() _GLIBCXX_USE_NOEXCEPT { return __LDBL_MIN__; }
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       max() _GLIBCXX_USE_NOEXCEPT { return __LDBL_MAX__; }
 
 #if __cplusplus >= 201103L
-      static constexpr long double 
+      static constexpr long double
       lowest() noexcept { return -__LDBL_MAX__; }
 #endif
 
@@ -1767,10 +1767,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
       static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       epsilon() _GLIBCXX_USE_NOEXCEPT { return __LDBL_EPSILON__; }
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5L; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = __LDBL_MIN_EXP__;
@@ -1786,16 +1786,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss
 	= __glibcxx_long_double_has_denorm_loss;
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_vall(); }
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nanl(""); }
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nansl(""); }
 
-      static _GLIBCXX_CONSTEXPR long double 
+      static _GLIBCXX_CONSTEXPR long double
       denorm_min() _GLIBCXX_USE_NOEXCEPT { return __LDBL_DENORM_MIN__; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559
@@ -1804,9 +1804,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false;
 
       static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_long_double_traps;
-      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = 
+      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before =
 					 __glibcxx_long_double_tinyness_before;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style = 
+      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style =
 						      round_to_nearest;
     };
 

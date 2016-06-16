@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef _Res result_type;
 
 	_Result() noexcept : _M_initialized() { }
-	
+
 	~_Result()
 	{
 	  if (_M_initialized)
@@ -263,7 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         explicit
 	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _Alloc(__a)
 	{ }
-	
+
       private:
 	void _M_destroy()
 	{

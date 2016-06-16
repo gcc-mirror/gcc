@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// cv_status
   enum class cv_status { no_timeout, timeout };
-  
+
   /// condition_variable
   class condition_variable
   {
@@ -250,7 +250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	unique_lock<mutex> __my_lock2(std::move(__my_lock));
 	_M_cond.wait(__my_lock2);
       }
-      
+
 
     template<typename _Lock, typename _Predicate>
       void

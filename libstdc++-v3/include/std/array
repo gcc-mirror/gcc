@@ -134,19 +134,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       end() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      reverse_iterator 
+      reverse_iterator
       rbegin() noexcept
       { return reverse_iterator(end()); }
 
-      const_reverse_iterator 
+      const_reverse_iterator
       rbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      reverse_iterator 
+      reverse_iterator
       rend() noexcept
       { return reverse_iterator(begin()); }
 
-      const_reverse_iterator 
+      const_reverse_iterator
       rend() const noexcept
       { return const_reverse_iterator(begin()); }
 
@@ -158,22 +158,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       cend() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      const_reverse_iterator 
+      const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      const_reverse_iterator 
+      const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
 
       // Capacity.
-      constexpr size_type 
+      constexpr size_type
       size() const noexcept { return _Nm; }
 
-      constexpr size_type 
+      constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      constexpr bool 
+      constexpr bool
       empty() const noexcept { return size() == 0; }
 
       // Element access.
@@ -207,22 +207,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
-      reference 
+      reference
       front() noexcept
       { return *begin(); }
 
-      constexpr const_reference 
+      constexpr const_reference
       front() const noexcept
       { return _AT_Type::_S_ref(_M_elems, 0); }
 
-      reference 
+      reference
       back() noexcept
       { return _Nm ? *(end() - 1) : *end(); }
 
-      constexpr const_reference 
+      constexpr const_reference
       back() const noexcept
-      { 
-	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1) 
+      {
+	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
  	           : _AT_Type::_S_ref(_M_elems, 0);
       }
 
@@ -237,7 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   // Array comparisons.
   template<typename _Tp, std::size_t _Nm>
-    inline bool 
+    inline bool
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
@@ -249,9 +249,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, std::size_t _Nm>
     inline bool
     operator<(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
-    { 
+    {
       return std::lexicographical_compare(__a.begin(), __a.end(),
-					  __b.begin(), __b.end()); 
+					  __b.begin(), __b.end());
     }
 
   template<typename _Tp, std::size_t _Nm>
@@ -312,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Tuple interface to class template array.
 
   /// tuple_size
-  template<typename _Tp> 
+  template<typename _Tp>
     class tuple_size;
 
   /// Partial specialization for std::array
