@@ -1,3 +1,7 @@
+2016-06-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/invoke.texi (x86 Options): Fix -mno-fp-ret-in-387 typo.
+
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (combine_predictions_for_insn): When we find a first
