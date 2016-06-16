@@ -1,5 +1,5 @@
 /* Test __float128 NaN generation.  */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-options "" } */
 

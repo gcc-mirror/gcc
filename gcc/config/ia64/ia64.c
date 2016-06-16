@@ -323,6 +323,7 @@ static void ia64_trampoline_init (rtx, tree, rtx);
 static void ia64_override_options_after_change (void);
 static bool ia64_member_type_forces_blk (const_tree, machine_mode);
 
+static tree ia64_fold_builtin (tree, int, tree *, bool);
 static tree ia64_builtin_decl (unsigned, bool);
 
 static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
@@ -371,6 +372,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS ia64_init_builtins
+
+#undef TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN ia64_fold_builtin
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ia64_expand_builtin
@@ -10325,6 +10329,8 @@ enum ia64_builtins
   IA64_BUILTIN_FLUSHRS,
   IA64_BUILTIN_INFQ,
   IA64_BUILTIN_HUGE_VALQ,
+  IA64_BUILTIN_NANQ,
+  IA64_BUILTIN_NANSQ,
   IA64_BUILTIN_max
 };
 
@@ -10353,6 +10359,9 @@ ia64_init_builtins (void)
   if (!TARGET_HPUX)
     {
       tree ftype;
+      tree const_string_type
+	= build_pointer_type (build_qualified_type
+			      (char_type_node, TYPE_QUAL_CONST));
       tree float128_type = make_node (REAL_TYPE);
 
       TYPE_PRECISION (float128_type) = 128;
@@ -10370,6 +10379,21 @@ ia64_init_builtins (void)
 				   IA64_BUILTIN_HUGE_VALQ, BUILT_IN_MD,
 				   NULL, NULL_TREE);
       ia64_builtins[IA64_BUILTIN_HUGE_VALQ] = decl;
+
+      ftype = build_function_type_list (float128_type,
+					const_string_type,
+					NULL_TREE);
+      decl = add_builtin_function ("__builtin_nanq", ftype,
+				   IA64_BUILTIN_NANQ, BUILT_IN_MD,
+				   "nanq", NULL_TREE);
+      TREE_READONLY (decl) = 1;
+      ia64_builtins[IA64_BUILTIN_NANQ] = decl;
+
+      decl = add_builtin_function ("__builtin_nansq", ftype,
+				   IA64_BUILTIN_NANSQ, BUILT_IN_MD,
+				   "nansq", NULL_TREE);
+      TREE_READONLY (decl) = 1;
+      ia64_builtins[IA64_BUILTIN_NANSQ] = decl;
 
       ftype = build_function_type_list (float128_type,
 					float128_type,
@@ -10427,6 +10451,41 @@ ia64_init_builtins (void)
     }
 }
 
+static tree
+ia64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
+		   tree *args, bool ignore ATTRIBUTE_UNUSED)
+{
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    {
+      enum ia64_builtins fn_code = (enum ia64_builtins)
+				   DECL_FUNCTION_CODE (fndecl);
+      switch (fn_code)
+	{
+	case IA64_BUILTIN_NANQ:
+	case IA64_BUILTIN_NANSQ:
+	  {
+	    tree type = TREE_TYPE (TREE_TYPE (fndecl));
+	    const char *str = c_getstr (*args);
+	    int quiet = fn_code == IA64_BUILTIN_NANQ;
+	    REAL_VALUE_TYPE real;
+
+	    if (str && real_nan (&real, str, quiet, TYPE_MODE (type)))
+	      return build_real (type, real);
+	    return NULL_TREE;
+	  }
+
+	default:
+	  break;
+	}
+    }
+
+#ifdef SUBTARGET_FOLD_BUILTIN
+  return SUBTARGET_FOLD_BUILTIN (fndecl, n_args, args, ignore);
+#endif
+
+  return NULL_TREE;
+}
+
 rtx
 ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		     machine_mode mode ATTRIBUTE_UNUSED,
@@ -10469,6 +10528,8 @@ ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	return target;
       }
 
+    case IA64_BUILTIN_NANQ:
+    case IA64_BUILTIN_NANSQ:
     case IA64_BUILTIN_FABSQ:
     case IA64_BUILTIN_COPYSIGNQ:
       return expand_call (exp, target, ignore);

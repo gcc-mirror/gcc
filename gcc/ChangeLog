@@ -1,3 +1,14 @@
+2016-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71242
+	* config/ia64/ia64.c (enum ia64_builtins) [IA64_BUILTIN_NANQ]: New.
+	[IA64_BUILTIN_NANSQ]: Ditto.
+	(ia64_fold_builtin): New function.
+	(TARGET_FOLD_BUILTIN): New define.
+	(ia64_init_builtins) Declare const_string_type node.
+	Add __builtin_nanq and __builtin_nansq builtin functions.
+	(ia64_expand_builtin): Handle IA64_BUILTIN_NANQ and IA64_BUILTIN_NANSQ.
+
 2016-06-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430-opts.h (msp430_hwmult_types): Add
