@@ -1,3 +1,11 @@
+2016-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_var_list_no_open): Call
+	convert_from_reference before cp_parser_postfix_dot_deref_expression.
+	* semantics.c (finish_omp_clauses): Don't ICE when
+	processing_template_decl when checking for bitfields and unions.
+	Look through REFERENCE_REF_P as base of COMPONENT_REF.
+
 2016-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (wrapup_globals_for_namespace): Use DECL_SOURCE_LOCATION and
