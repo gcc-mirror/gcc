@@ -1996,9 +1996,10 @@ package body Sem_Ch9 is
       --  unless the protected type is declared in a private part of a package
       --  of the runtime. With this exception, the Suspension_Object from
       --  Ada.Synchronous_Task_Control can be implemented using a protected
-      --  without triggering violations of No_Local_Protected_Objects when the
-      --  user locally declares such an object. This may look like a trick but
-      --  the user doesn't have to know how Suspension_Object is implemented.
+      --  object without triggering violations of No_Local_Protected_Objects
+      --  when the user locally declares such an object. This may look like a
+      --  trick, but the user doesn't have to know how Suspension_Object is
+      --  implemented.
 
       if In_Private_Part (Current_Scope)
         and then Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
