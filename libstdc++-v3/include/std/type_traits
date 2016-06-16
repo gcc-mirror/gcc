@@ -2631,7 +2631,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static false_type __test(...);
     };
 
-  }
+  } // namespace __swappable_details
 
   template<typename _Tp>
     struct __is_swappable_impl
@@ -2656,6 +2656,116 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nothrow_swappable
     : public __is_nothrow_swappable_impl<_Tp>::type
     { };
+
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#define __cpp_lib_is_swappable 201603
+  /// Metafunctions used for detecting swappable types: p0185r1
+
+  /// is_swappable
+  template<typename _Tp>
+    struct is_swappable
+    : public __is_swappable_impl<_Tp>::type
+    { };
+
+  /// is_nothrow_swappable
+  template<typename _Tp>
+    struct is_nothrow_swappable
+    : public __is_nothrow_swappable_impl<_Tp>::type
+    { };
+
+#if __cplusplus >= 201402L
+  /// is_swappable_v
+  template<typename _Tp>
+    constexpr bool is_swappable_v = is_swappable<_Tp>::value;
+
+  /// is_nothrow_swappable_v
+  template<typename _Tp>
+    constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<_Tp>::value;
+#endif // __cplusplus >= 201402L
+
+  namespace __swappable_with_details {
+    using std::swap;
+
+    struct __do_is_swappable_with_impl
+    {
+      template<typename _Tp, typename _Up, typename
+               = decltype(swap(std::declval<_Tp>(), std::declval<_Up>())),
+               typename
+               = decltype(swap(std::declval<_Up>(), std::declval<_Tp>()))>
+        static true_type __test(int);
+
+      template<typename, typename>
+        static false_type __test(...);
+    };
+
+    struct __do_is_nothrow_swappable_with_impl
+    {
+      template<typename _Tp, typename _Up>
+        static __bool_constant<
+          noexcept(swap(std::declval<_Tp>(), std::declval<_Up>()))
+          &&
+          noexcept(swap(std::declval<_Up>(), std::declval<_Tp>()))
+        > __test(int);
+
+      template<typename, typename>
+        static false_type __test(...);
+    };
+
+  } // namespace __swappable_with_details
+
+  template<typename _Tp, typename _Up>
+    struct __is_swappable_with_impl
+    : public __swappable_with_details::__do_is_swappable_with_impl
+    {
+      typedef decltype(__test<_Tp, _Up>(0)) type;
+    };
+
+  // Optimization for the homogenous lvalue case, not required:
+  template<typename _Tp>
+    struct __is_swappable_with_impl<_Tp&, _Tp&>
+    : public __swappable_details::__do_is_swappable_impl
+    {
+      typedef decltype(__test<_Tp&>(0)) type;
+    };
+
+  template<typename _Tp, typename _Up>
+    struct __is_nothrow_swappable_with_impl
+    : public __swappable_with_details::__do_is_nothrow_swappable_with_impl
+    {
+      typedef decltype(__test<_Tp, _Up>(0)) type;
+    };
+
+  // Optimization for the homogenous lvalue case, not required:
+  template<typename _Tp>
+    struct __is_nothrow_swappable_with_impl<_Tp&, _Tp&>
+    : public __swappable_details::__do_is_nothrow_swappable_impl
+    {
+      typedef decltype(__test<_Tp&>(0)) type;
+    };
+
+  /// is_swappable_with
+  template<typename _Tp, typename _Up>
+    struct is_swappable_with
+    : public __is_swappable_with_impl<_Tp, _Up>::type
+    { };
+
+  /// is_nothrow_swappable_with
+  template<typename _Tp, typename _Up>
+    struct is_nothrow_swappable_with
+    : public __is_nothrow_swappable_with_impl<_Tp, _Up>::type
+    { };
+
+#if __cplusplus >= 201402L
+  /// is_swappable_with_v
+  template<typename _Tp, typename _Up>
+    constexpr bool is_swappable_with_v = is_swappable_with<_Tp, _Up>::value;
+
+  /// is_nothrow_swappable_with_v
+  template<typename _Tp, typename _Up>
+    constexpr bool is_nothrow_swappable_with_v =
+      is_nothrow_swappable_with<_Tp, _Up>::value;
+#endif // __cplusplus >= 201402L
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

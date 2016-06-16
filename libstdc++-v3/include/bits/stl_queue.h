@@ -274,12 +274,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(queue& __q)
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+      noexcept(__is_nothrow_swappable<_Sequence>::value)
+#else
       noexcept(__is_nothrow_swappable<_Tp>::value)
+#endif
       {
 	using std::swap;
 	swap(c, __q.c);
       }
-#endif
+#endif // __cplusplus >= 201103L
     };
 
   /**
@@ -342,7 +346,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Seq>
-    inline void
+    inline
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+    // Constrained free swap overload, see p0185r1
+    typename enable_if<__is_swappable<_Seq>::value>::type
+#else
+    void
+#endif
     swap(queue<_Tp, _Seq>& __x, queue<_Tp, _Seq>& __y)
     noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
@@ -350,7 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Seq, typename _Alloc>
     struct uses_allocator<queue<_Tp, _Seq>, _Alloc>
     : public uses_allocator<_Seq, _Alloc>::type { };
-#endif
+#endif // __cplusplus >= 201103L
 
   /**
    *  @brief  A standard container automatically sorting its contents.
@@ -603,21 +613,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(priority_queue& __pq)
-      noexcept(__is_nothrow_swappable<_Tp>::value
-               && __is_nothrow_swappable<_Compare>::value)
+      noexcept(__and_<
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+                 __is_nothrow_swappable<_Sequence>,
+#else
+                 __is_nothrow_swappable<_Tp>,
+#endif
+                 __is_nothrow_swappable<_Compare>
+               >::value)
       {
 	using std::swap;
 	swap(c, __pq.c);
 	swap(comp, __pq.comp);
       }
-#endif
+#endif // __cplusplus >= 201103L
     };
 
   // No equality/comparison operators are provided for priority_queue.
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Sequence, typename _Compare>
-    inline void
+    inline
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+    // Constrained free swap overload, see p0185r1
+    typename enable_if<__and_<__is_swappable<_Sequence>,
+                              __is_swappable<_Compare>>::value>::type
+#else
+    void
+#endif
     swap(priority_queue<_Tp, _Sequence, _Compare>& __x,
 	 priority_queue<_Tp, _Sequence, _Compare>& __y)
     noexcept(noexcept(__x.swap(__y)))
@@ -627,7 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Alloc>
     struct uses_allocator<priority_queue<_Tp, _Sequence, _Compare>, _Alloc>
     : public uses_allocator<_Sequence, _Alloc>::type { };
-#endif
+#endif // __cplusplus >= 201103L
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

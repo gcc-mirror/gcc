@@ -1569,7 +1569,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// swap
   template<typename... _Elements>
-    inline void
+    inline
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+    // Constrained free swap overload, see p0185r1
+    typename enable_if<__and_<__is_swappable<_Elements>...>::value
+      >::type
+#else
+    void
+#endif
     swap(tuple<_Elements...>& __x, tuple<_Elements...>& __y)
     noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }

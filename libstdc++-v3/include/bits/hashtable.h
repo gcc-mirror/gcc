@@ -475,8 +475,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(_Hashtable&)
-      noexcept(__is_nothrow_swappable<_H1>::value
-	       && __is_nothrow_swappable<_Equal>::value);
+      noexcept(__and_<__is_nothrow_swappable<_H1>,
+	                  __is_nothrow_swappable<_Equal>>::value);
 
       // Basic container operations
       iterator
@@ -1236,8 +1236,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     swap(_Hashtable& __x)
-    noexcept(__is_nothrow_swappable<_H1>::value
-	     && __is_nothrow_swappable<_Equal>::value)
+    noexcept(__and_<__is_nothrow_swappable<_H1>,
+	                __is_nothrow_swappable<_Equal>>::value)
     {
       // The only base class with member variables is hash_code_base.
       // We define _Hash_code_base::_M_swap because different
