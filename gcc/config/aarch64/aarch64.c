@@ -4982,7 +4982,7 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
     {
       rtx base = XEXP (x, 0);
-      rtx offset_rtx XEXP (x, 1);
+      rtx offset_rtx = XEXP (x, 1);
       HOST_WIDE_INT offset = INTVAL (offset_rtx);
 
       if (GET_CODE (base) == PLUS)
