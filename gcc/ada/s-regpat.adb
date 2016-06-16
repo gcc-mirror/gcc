@@ -2614,16 +2614,28 @@ package body System.Regpat is
                   exit State_Machine when Input_Pos /= BOL_Pos;
 
                when EOL =>
-                  exit State_Machine when Input_Pos <= Last_In_Data
-                    and then ((Self.Flags and Multiple_Lines) = 0
-                               or else Data (Input_Pos) /= ASCII.LF);
+                  --  A combination of MEOL and SEOL
+                  if (Self.Flags and Multiple_Lines) = 0 then
+                     --  single line mode
+                     exit State_Machine when Input_Pos <= Data'Last;
+                  elsif Input_Pos <= Last_In_Data then
+                     exit State_Machine when Data (Input_Pos) /= ASCII.LF;
+                  else
+                     exit State_Machine when Last_In_Data /= Data'Last;
+                  end if;
 
                when MEOL =>
-                  exit State_Machine when Input_Pos <= Last_In_Data
-                    and then Data (Input_Pos) /= ASCII.LF;
+                  if Input_Pos <= Last_In_Data then
+                     exit State_Machine when Data (Input_Pos) /= ASCII.LF;
+                  else
+                     exit State_Machine when Last_In_Data /= Data'Last;
+                  end if;
 
                when SEOL =>
-                  exit State_Machine when Input_Pos <= Last_In_Data;
+                  --  If we have a character before Data'Last (even if
+                  --  Last_In_Data stops before then), we can't have
+                  --  the end of the line.
+                  exit State_Machine when Input_Pos <= Data'Last;
 
                when BOUND | NBOUND =>
 
