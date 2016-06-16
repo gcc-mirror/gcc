@@ -1,3 +1,14 @@
+2016-06-16  Jocelyn Mayer  <l_indien@magic.fr>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Set
+	PROCESSOR_K8 for signature_CENTAUR_ebx with has_longmode.
+	<case PROCESSOR_K8>: Pass nano-3000, nano, eden-x2 or k8 for
+	signature_CENTAUR_ebx.
+	* config/i386/i386.c (ix86_option_override_internal): Add
+	definitions for VIA c7, samuel-2, nehemiah, esther, eden-x2, eden-x4,
+	nano, nano-1000, nano-2000, nano-3000, nano-x2 and nano-x4.
+	* doc/invoke.texi: Document new VIA -march entries.
+
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
 	* predict.def: Add fortran loop preheader predictor.

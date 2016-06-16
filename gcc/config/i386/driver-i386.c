@@ -651,7 +651,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  break;
 
 	case 6:
-	  if (model > 9 || has_longmode)
+	  if (has_longmode)
+	    processor = PROCESSOR_K8;
+	  else if (model > 9)
 	    /* Use the default detection procedure.  */
 	    ;
 	  else if (model == 9)
@@ -869,9 +871,30 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	cpu = "athlon";
       break;
     case PROCESSOR_K8:
-      if (arch && has_sse3)
-	cpu = "k8-sse3";
+      if (arch)
+	{
+	  if (vendor == signature_CENTAUR_ebx)
+	    {
+	      if (has_sse4_1)
+		/* Nano 3000 | Nano dual / quad core | Eden X4 */
+		cpu = "nano-3000";
+	      else if (has_ssse3)
+		/* Nano 1000 | Nano 2000 */
+		cpu = "nano";
+	      else if (has_sse3)
+		/* Eden X2 */
+		cpu = "eden-x2";
+	      else
+		/* Default to k8 */
+		cpu = "k8";
+	    }
+	  else if (has_sse3)
+	    cpu = "k8-sse3";
+	  else
+	    cpu = "k8";
+	}
       else
+	/* For -mtune, we default to -mtune=k8 */
 	cpu = "k8";
       break;
     case PROCESSOR_AMDFAM10:
