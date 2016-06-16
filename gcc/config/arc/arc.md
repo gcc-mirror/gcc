@@ -102,6 +102,7 @@
 ;;  UNSPEC_GOT       4        symbol to be rerenced through the GOT
 ;;  UNSPEC_GOTOFF    5        Local symbol.To be referenced relative to the
 ;;                            GOTBASE.(Referenced as @GOTOFF)
+;;  UNSPEC_GOTOFFPC  6        Local symbol.  To be referenced pc-relative.
 ;;  ----------------------------------------------------------------------------
 
 (define_c_enum "unspec" [
@@ -111,6 +112,7 @@
   ARC_UNSPEC_PLT
   ARC_UNSPEC_GOT
   ARC_UNSPEC_GOTOFF
+  ARC_UNSPEC_GOTOFFPC
   UNSPEC_TLS_GD
   UNSPEC_TLS_LD
   UNSPEC_TLS_IE
@@ -725,7 +727,7 @@
    * return INTVAL (operands[1]) & 0xffffff ? \"movbi.cl %0,%1 >> %p1,%p1,8;8\" : \"movbi.cl %0,%L1 >> 24,24,8;9\";
    mov%? %0,%1		;10
    add %0,%S1		;11
-   * return arc_get_unalign () ? \"add %0,pcl,%1-.+2\" : \"add %0,pcl,%1-.\";
+   add %0,pcl,%1@pcl    ;12
    mov%? %0,%S1%&	;13
    mov%? %0,%S1		;14
    ld%? %0,%1%&		;15
@@ -5155,7 +5157,7 @@
 	  /* ??? Can do better for when a scratch register
 	     is known.  But that would require extra testing.  */
 	  arc_clear_unalign ();
-	  return ".p2align 2\;push_s r0\;add r0,pcl,24\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1-.+2\;sr r0,[3]; LP_END\;pop_s r0";
+	  return ".p2align 2\;push_s r0\;add r0,pcl,24\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1@pcl\;sr r0,[3]; LP_END\;pop_s r0";
 	}
       output_asm_insn ((size < 2048
 			? "lp .L__GCC__LP%1" : "sr .L__GCC__LP%1,[3]; LP_END"),

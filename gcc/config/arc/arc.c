@@ -3528,7 +3528,8 @@ arc_print_operand_address (FILE *file , rtx addr)
 		 || XINT (c, 1) == UNSPEC_TLS_IE))
 	    || (GET_CODE (c) == PLUS
 		&& GET_CODE (XEXP (c, 0)) == UNSPEC
-		&& (XINT (XEXP (c, 0), 1) == UNSPEC_TLS_OFF)))
+		&& (XINT (XEXP (c, 0), 1) == UNSPEC_TLS_OFF
+		    || XINT (XEXP (c, 0), 1) == ARC_UNSPEC_GOTOFFPC)))
 	  {
 	    arc_output_pic_addr_const (file, c, 0);
 	    break;
@@ -4636,6 +4637,7 @@ arc_needs_pcl_p (rtx x)
     switch (XINT (x, 1))
       {
       case ARC_UNSPEC_GOT:
+      case ARC_UNSPEC_GOTOFFPC:
       case UNSPEC_TLS_GD:
       case UNSPEC_TLS_IE:
 	return true;
@@ -4698,9 +4700,10 @@ arc_legitimate_pic_addr_p (rtx addr)
       || XVECLEN (addr, 0) != 1)
     return false;
 
-  /* Must be one of @GOT, @GOTOFF, @tlsgd, tlsie.  */
+  /* Must be one of @GOT, @GOTOFF, @GOTOFFPC, @tlsgd, tlsie.  */
   if (XINT (addr, 1) != ARC_UNSPEC_GOT
       && XINT (addr, 1) != ARC_UNSPEC_GOTOFF
+      && XINT (addr, 1) != ARC_UNSPEC_GOTOFFPC
       && XINT (addr, 1) != UNSPEC_TLS_GD
       && XINT (addr, 1) != UNSPEC_TLS_IE)
     return false;
@@ -4917,26 +4920,15 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
       else if (!flag_pic)
 	return orig;
       else if (CONSTANT_POOL_ADDRESS_P (addr) || SYMBOL_REF_LOCAL_P (addr))
-	{
-	  /* This symbol may be referenced via a displacement from the
-	     PIC base address (@GOTOFF).  */
+	return gen_rtx_CONST (Pmode,
+			      gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+			      ARC_UNSPEC_GOTOFFPC));
 
-	  /* FIXME: if we had a way to emit pc-relative adds that
-	     don't create a GOT entry, we could do without the use of
-	     the gp register.  */
-	  crtl->uses_pic_offset_table = 1;
-	  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOTOFF);
-	  pat = gen_rtx_CONST (Pmode, pat);
-	  pat = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pat);
-	}
-      else
-	{
-	  /* This symbol must be referenced via a load from the
-	     Global Offset Table (@GOTPC).  */
-	  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOT);
-	  pat = gen_rtx_CONST (Pmode, pat);
-	  pat = gen_const_mem (Pmode, pat);
-	}
+      /* This symbol must be referenced via a load from the Global
+	 Offset Table (@GOTPC).  */
+      pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOT);
+      pat = gen_rtx_CONST (Pmode, pat);
+      pat = gen_const_mem (Pmode, pat);
 
       if (oldx == NULL)
 	oldx = gen_reg_rtx (Pmode);
@@ -4952,6 +4944,7 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 	  if (GET_CODE (addr) == UNSPEC)
 	    {
 	      /* Check that the unspec is one of the ones we generate?  */
+	      return orig;
 	    }
 	  else
 	    gcc_assert (GET_CODE (addr) == PLUS);
@@ -5104,6 +5097,9 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
 	  break;
 	case ARC_UNSPEC_GOTOFF:
 	  suffix = "@gotoff";
+	  break;
+	case ARC_UNSPEC_GOTOFFPC:
+	  suffix = "@pcl",   pcrel = true;
 	  break;
 	case ARC_UNSPEC_PLT:
 	  suffix = "@plt";
@@ -5389,6 +5385,7 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
 	  {
 	  case ARC_UNSPEC_PLT:
 	  case ARC_UNSPEC_GOTOFF:
+	  case ARC_UNSPEC_GOTOFFPC:
 	  case ARC_UNSPEC_GOT:
 	  case UNSPEC_TLS_GD:
 	  case UNSPEC_TLS_IE:
@@ -7648,7 +7645,7 @@ arc_output_libcall (const char *fname)
      || (TARGET_MEDIUM_CALLS && arc_ccfsm_cond_exec_p ()))
     {
       if (flag_pic)
-	sprintf (buf, "add r12,pcl,@%s-(.&-4)\n\tjl%%!%%* [r12]", fname);
+	sprintf (buf, "add r12,pcl,@%s@pcl\n\tjl%%!%%* [r12]", fname);
       else
 	sprintf (buf, "jl%%! @%s", fname);
     }
@@ -8578,13 +8575,21 @@ arc_legitimize_address (rtx orig_x, rtx oldx, machine_mode mode)
 static rtx
 arc_delegitimize_address_0 (rtx x)
 {
-  rtx u, gp;
+  rtx u, gp, p;
 
   if (GET_CODE (x) == CONST && GET_CODE (u = XEXP (x, 0)) == UNSPEC)
     {
-      if (XINT (u, 1) == ARC_UNSPEC_GOT)
+      if (XINT (u, 1) == ARC_UNSPEC_GOT
+	  || XINT (u, 1) == ARC_UNSPEC_GOTOFFPC)
 	return XVECEXP (u, 0, 0);
     }
+  else if (GET_CODE (x) == CONST && GET_CODE (p = XEXP (x, 0)) == PLUS
+	   && GET_CODE (u = XEXP (p, 0)) == UNSPEC
+	   && (XINT (u, 1) == ARC_UNSPEC_GOT
+	       || XINT (u, 1) == ARC_UNSPEC_GOTOFFPC))
+    return gen_rtx_CONST
+	    (GET_MODE (x),
+	     gen_rtx_PLUS (GET_MODE (p), XVECEXP (u, 0, 0), XEXP (p, 1)));
   else if (GET_CODE (x) == PLUS
 	   && ((REG_P (gp = XEXP (x, 0))
 		&& REGNO (gp) == PIC_OFFSET_TABLE_REGNUM)
