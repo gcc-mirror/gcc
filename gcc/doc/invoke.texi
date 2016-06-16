@@ -1149,7 +1149,7 @@ See RS/6000 and PowerPC Options.
 -mtune-ctrl=@var{feature-list} -mdump-tune-features -mno-default @gol
 -mfpmath=@var{unit} @gol
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
--mnofp-ret-in-387 -m80387 -mhard-float -msoft-float @gol
+-mno-fp-ret-in-387 -m80387 -mhard-float -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
