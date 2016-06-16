@@ -317,7 +317,7 @@ procedure Gnat1drv is
          Assertions_Enabled := True;
 
          --  Set normal RM validity checking and checking of copies (to catch
-         --  e.g.  wrong values used in unchecked conversions).
+         --  e.g. wrong values used in unchecked conversions).
          --  All other validity checking is turned off, since this can generate
          --  very complex trees that only confuse CodePeer and do not bring
          --  enough useful info.

@@ -1,5 +1,32 @@
 2016-06-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_prag.adb (Overridden_Ancestor): Clean up code to use
+	controlling type of desired primitive rather than its scope,
+	because the primitive that inherits the classwide condition may
+	comes from several derivation steps.
+
+2016-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (Set_Default_Init_Cond_Procedure): Allow calls setting
+	this attribute to Empty (only if the attribute has not been set).
+	* sem_util.adb (Build_Default_Init_Cond_Procedure_Body):
+	No action needed if the spec was not built.
+	(Build_Default_Init_Cond_Procedure_Declaration): The spec is
+	not built if DIC is set to NULL or no condition was specified.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Check availability
+	of the Init_Cond procedure before generating code to call it.
+
+2016-06-16  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb: Fix invalid index check when matching end-of-line
+	on substrings.
+
+2016-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Minor reformatting.
+
+2016-06-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Check_Entry_Contracts): New procedure, subsidiary
 	of Analyze_Declarations, that performs pre-analysis of
 	pre/postconditions on entry declarations before full analysis

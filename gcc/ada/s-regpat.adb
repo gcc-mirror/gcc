@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2015, AdaCore                    --
+--                      Copyright (C) 1999-2016, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2614,16 +2614,16 @@ package body System.Regpat is
                   exit State_Machine when Input_Pos /= BOL_Pos;
 
                when EOL =>
-                  exit State_Machine when Input_Pos <= Data'Last
+                  exit State_Machine when Input_Pos <= Last_In_Data
                     and then ((Self.Flags and Multiple_Lines) = 0
                                or else Data (Input_Pos) /= ASCII.LF);
 
                when MEOL =>
-                  exit State_Machine when Input_Pos <= Data'Last
+                  exit State_Machine when Input_Pos <= Last_In_Data
                     and then Data (Input_Pos) /= ASCII.LF;
 
                when SEOL =>
-                  exit State_Machine when Input_Pos <= Data'Last;
+                  exit State_Machine when Input_Pos <= Last_In_Data;
 
                when BOUND | NBOUND =>
 

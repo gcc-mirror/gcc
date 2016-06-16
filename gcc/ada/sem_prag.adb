@@ -26342,13 +26342,18 @@ package body Sem_Prag is
             -------------------------
 
             function Overridden_Ancestor (S : Entity_Id) return Entity_Id is
+               Par : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
                Anc : Entity_Id;
 
             begin
                Anc := S;
+
+               --  Locate the ancestor subprogram with the proper controlling
+               --  type.
+
                while Present (Overridden_Operation (Anc)) loop
-                  exit when Scope (Anc) = Scope (Inher_Id);
                   Anc := Overridden_Operation (Anc);
+                  exit when Find_Dispatching_Type (Anc) = Par;
                end loop;
 
                return Anc;
