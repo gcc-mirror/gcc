@@ -1,3 +1,8 @@
+2016-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Fix estimation
+	of comparsions in the last iteration.
+
 2016-06-16  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
