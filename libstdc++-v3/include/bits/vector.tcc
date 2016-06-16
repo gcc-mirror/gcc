@@ -343,7 +343,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus < 201103L
 	  *__position = __x_copy;
 #else
-	  *__position = _Tp(std::forward<_Args>(__args)...);
+	  _S_insert_aux_assign(__position, std::forward<_Args>(__args)...);
 #endif
 	}
       else

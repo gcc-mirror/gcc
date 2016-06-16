@@ -1,3 +1,12 @@
+2016-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector::_S_insert_aux_assign): Define
+	new overloaded functions.
+	* include/bits/vector.tcc (vector::_M_insert_aux): Use new functions
+	to avoid creating a redundant temporary.
+	* testsuite/23_containers/vector/modifiers/insert_vs_emplace.cc: New
+	test.
+
 2016-06-15  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_deque.h
