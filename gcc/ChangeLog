@@ -1,3 +1,12 @@
+2016-06-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_pic_pcrel_sequence): New.
+	(pa_output_lbranch): Use pa_output_pic_pcrel_sequence.
+	(pa_output_millicode_call): Likewise.
+	(pa_output_call): Likewise.
+	(pa_output_indirect_call): Likewise.
+	(pa_asm_output_mi_thunk): Likewise.
+
 2016-06-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* doc/invoke.texi (x86 Options): Fix -mno-fp-ret-in-387 typo.
