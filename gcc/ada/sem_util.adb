@@ -1214,9 +1214,9 @@ package body Sem_Util is
          Prag      : constant Node_Id    :=
                        Get_Pragma (Typ, Pragma_Default_Initial_Condition);
          Proc_Id   : constant Entity_Id  := Default_Init_Cond_Procedure (Typ);
-         Spec_Decl : constant Node_Id    := Unit_Declaration_Node (Proc_Id);
          Body_Decl : Node_Id;
          Expr      : Node_Id;
+         Spec_Decl : Node_Id;
          Stmt      : Node_Id;
 
          Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
@@ -1230,11 +1230,14 @@ package body Sem_Util is
 
          pragma Assert (Has_Default_Init_Cond (Typ));
          pragma Assert (Present (Prag));
-         pragma Assert (Present (Proc_Id));
 
-         --  Nothing to do if the body was already built
+         --  No action needed if the spec was not built or if the body was
+         --  already built.
 
-         if Present (Corresponding_Body (Spec_Decl)) then
+         if No (Proc_Id)
+           or else
+             Present (Corresponding_Body (Unit_Declaration_Node (Proc_Id)))
+         then
             return;
          end if;
 
@@ -1293,6 +1296,7 @@ package body Sem_Util is
          --       <Stmt>;
          --    end <Typ>Default_Init_Cond;
 
+         Spec_Decl := Unit_Declaration_Node (Proc_Id);
          Body_Decl :=
            Make_Subprogram_Body (Loc,
              Specification              =>
@@ -1377,6 +1381,17 @@ package body Sem_Util is
       --  Nothing to do if default initial condition procedure already built
 
       if Present (Default_Init_Cond_Procedure (Typ)) then
+         return;
+
+      --  The procedure must not be generated when DIC has one of these two
+      --  forms: 1. Default_Initial_Condition => null
+      --         2. Default_Initial_Condition
+
+      elsif No (Pragma_Argument_Associations (Prag))
+        or else
+          Nkind (Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag))))
+            = N_Null
+      then
          return;
       end if;
 

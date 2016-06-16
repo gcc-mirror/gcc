@@ -6963,6 +6963,7 @@ package body Exp_Ch3 is
                     or else
                   Has_Inherited_Default_Init_Cond (Typ))
         and then not Has_Init_Expression (N)
+        and then Present (Default_Init_Cond_Procedure (Typ))
       then
          declare
             DIC_Call : constant Node_Id :=
