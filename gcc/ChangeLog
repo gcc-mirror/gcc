@@ -1,3 +1,8 @@
+2016-06-16  Martin Liska  <mliska@suse.cz>
+
+	* predict.def: Add 'Fortran' to display text of all
+	PRED_FORTRAN_* predictors.
+
 2016-06-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71242
