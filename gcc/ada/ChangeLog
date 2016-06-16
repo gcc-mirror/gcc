@@ -1,3 +1,19 @@
+2016-06-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Add a missing check
+	for optimized aggregate arrays with qualified expressions.
+	* exp_aggr.adb (Expand_Array_Aggregate): Fix block and
+	conditional statement in charge of deciding whether to perform
+	in-place expansion. Specifically, use Parent_Node to jump over
+	the qualified expression to the object declaration node. Also,
+	a check has been inserted to skip the optimization if SPARK 2005
+	is being used in strict adherence to RM 4.3(5).
+
+2016-06-16  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Simplify code
+	for Pragma_Priority.
+
 2016-06-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_util.ads (Indexed_Component_Bit_Offset): Declare.

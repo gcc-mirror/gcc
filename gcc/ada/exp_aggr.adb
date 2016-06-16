@@ -5433,8 +5433,8 @@ package body Exp_Aggr is
 
       --  STEP 3
 
-      --  Delay expansion for nested aggregates: it will be taken care of
-      --  when the parent aggregate is expanded.
+      --  Delay expansion for nested aggregates: it will be taken care of when
+      --  the parent aggregate is expanded.
 
       Parent_Node := Parent (N);
       Parent_Kind := Nkind (Parent_Node);
@@ -5524,14 +5524,18 @@ package body Exp_Aggr is
          and then Parent_Kind = N_Object_Declaration
          and then not
            Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
-         and then N = Expression (Parent_Node)
-         and then not Is_Bit_Packed_Array (Typ)
+         and then Present (Expression (Parent_Node))
          and then not Has_Controlled_Component (Typ)
+         and then not Is_Bit_Packed_Array (Typ)
+
+         --  ??? the test for SPARK 05 needs documentation
+
+         and then not Restriction_Check_Required (SPARK_05)
       then
          In_Place_Assign_OK_For_Declaration := True;
-         Tmp := Defining_Identifier (Parent (N));
-         Set_No_Initialization (Parent (N));
-         Set_Expression (Parent (N), Empty);
+         Tmp := Defining_Identifier (Parent_Node);
+         Set_No_Initialization (Parent_Node);
+         Set_Expression (Parent_Node, Empty);
 
          --  Set kind and type of the entity, for use in the analysis
          --  of the subsequent assignments. If the nominal type is not
@@ -5544,10 +5548,10 @@ package body Exp_Aggr is
          if not Is_Constrained (Typ) then
             Build_Constrained_Type (Positional => False);
 
-         elsif Is_Entity_Name (Object_Definition (Parent (N)))
-           and then Is_Constrained (Entity (Object_Definition (Parent (N))))
+         elsif Is_Entity_Name (Object_Definition (Parent_Node))
+           and then Is_Constrained (Entity (Object_Definition (Parent_Node)))
          then
-            Set_Etype (Tmp, Entity (Object_Definition (Parent (N))));
+            Set_Etype (Tmp, Entity (Object_Definition (Parent_Node)));
 
          else
             Set_Size_Known_At_Compile_Time (Typ, False);

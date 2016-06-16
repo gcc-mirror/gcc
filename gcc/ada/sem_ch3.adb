@@ -3471,7 +3471,7 @@ package body Sem_Ch3 is
 
          --  In case of aggregates we must also take care of the correct
          --  initialization of nested aggregates bug this is done at the
-         --  point of the analysis of the aggregate (see sem_aggr.adb).
+         --  point of the analysis of the aggregate (see sem_aggr.adb) ???
 
          if Present (Expression (N))
            and then Nkind (Expression (N)) = N_Aggregate
@@ -4038,7 +4038,10 @@ package body Sem_Ch3 is
 
       elsif Is_Array_Type (T)
         and then No_Initialization (N)
-        and then Nkind (Original_Node (E)) = N_Aggregate
+        and then (Nkind (Original_Node (E)) = N_Aggregate
+                   or else (Nkind (Original_Node (E)) = N_Qualified_Expression
+                             and then Nkind (Original_Node (Expression
+                                        (Original_Node (E)))) = N_Aggregate))
       then
          if not Is_Entity_Name (Object_Definition (N)) then
             Act_T := Etype (E);

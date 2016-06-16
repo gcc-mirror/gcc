@@ -18903,22 +18903,15 @@ package body Sem_Prag is
                --  where we ignore the value if out of range.
 
                else
-                  declare
-                     Val : constant Uint := Expr_Value (Arg);
-                  begin
-                     if not Relaxed_RM_Semantics
-                       and then
-                         (Val < 0
-                           or else Val > Expr_Value (Expression
-                                           (Parent (RTE (RE_Max_Priority)))))
-                     then
-                        Error_Pragma_Arg
-                          ("main subprogram priority is out of range", Arg1);
-                     else
-                        Set_Main_Priority
-                          (Current_Sem_Unit, UI_To_Int (Expr_Value (Arg)));
-                     end if;
-                  end;
+                  if not Relaxed_RM_Semantics
+                    and then not Is_In_Range (Arg, RTE (RE_Priority))
+                  then
+                     Error_Pragma_Arg
+                       ("main subprogram priority is out of range", Arg1);
+                  else
+                     Set_Main_Priority
+                       (Current_Sem_Unit, UI_To_Int (Expr_Value (Arg)));
+                  end if;
                end if;
 
                --  Load an arbitrary entity from System.Tasking.Stages or
