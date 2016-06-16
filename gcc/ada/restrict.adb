@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -759,9 +759,16 @@ package body Restrict is
             Ent  := Entity (N);
             Expr := NE_Ent.Entity;
             loop
-               --  Here if at outer level of entity name in reference
+               --  Here if at outer level of entity name in reference (handle
+               --  also the direct use of Text_IO in the pragma). For example:
+               --  pragma Restrictions (No_Use_Of_Entity => Text_IO.Put);
 
-               if Scope (Ent) = Standard_Standard then
+               if Scope (Ent) = Standard_Standard
+                 or else (Nkind (Expr) = N_Identifier
+                           and then Chars (Ent) = Name_Text_IO
+                           and then Chars (Scope (Ent)) = Name_Ada
+                           and then Scope (Scope (Ent)) = Standard_Standard)
+               then
                   if Nkind_In (Expr, N_Identifier, N_Operator_Symbol)
                     and then Chars (Ent) = Chars (Expr)
                   then
@@ -774,22 +781,19 @@ package body Restrict is
                      return;
 
                   else
-                     goto Continue;
+                     exit;
                   end if;
 
                --  Here if at outer level of entity name in table
 
                elsif Nkind_In (Expr, N_Identifier, N_Operator_Symbol) then
-                  goto Continue;
+                  exit;
 
                --  Here if neither at the outer level
 
                else
                   pragma Assert (Nkind (Expr) = N_Selected_Component);
-
-                  if Chars (Selector_Name (Expr)) /= Chars (Ent) then
-                     goto Continue;
-                  end if;
+                  exit when Chars (Selector_Name (Expr)) /= Chars (Ent);
                end if;
 
                --  Move up a level
@@ -800,10 +804,6 @@ package body Restrict is
                end loop;
 
                Expr := Prefix (Expr);
-
-               --  Entry did not match
-
-               <<Continue>> null;
             end loop;
          end;
       end loop;

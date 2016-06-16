@@ -347,7 +347,7 @@ begin
    --  Line for -gnato switch
 
    Write_Switch_Char ("o0");
-   Write_Line ("Disable overflow checking (on by default)");
+   Write_Line ("Disable overflow checking");
 
    Write_Switch_Char ("o");
    Write_Line ("Enable overflow checking in STRICT (-gnato1) mode (default)");

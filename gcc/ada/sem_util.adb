@@ -4239,7 +4239,11 @@ package body Sem_Util is
             Full_T := Full_View (Typ);
 
             if Ekind (Full_T) = E_Record_Subtype then
-               Full_T := Full_View (Etype (Typ));
+               Full_T := Etype (Typ);
+
+               if Present (Full_View (Full_T)) then
+                  Full_T := Full_View (Full_T);
+               end if;
             end if;
          end if;
 

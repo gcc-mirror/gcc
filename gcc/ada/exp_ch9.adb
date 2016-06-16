@@ -14142,7 +14142,7 @@ package body Exp_Ch9 is
          --  or, in the case of Ravenscar:
 
          --  Install_Restricted_Handlers
-         --    (Prio, (Expr1, Proc1'access), ...., (ExprN, ProcN'access));
+         --    (Prio, ((Expr1, Proc1'access), ...., (ExprN, ProcN'access)));
 
          declare
             Args  : constant List_Id := New_List;

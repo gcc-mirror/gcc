@@ -1384,6 +1384,7 @@ package body Sem_Attr is
            and then Chars (Scope (Spec_Id)) = Name_uPostconditions
          then
             --  This situation occurs only when preanalyzing the inlined body
+
             pragma Assert (not Full_Analysis);
 
             Spec_Id := Scope (Spec_Id);

@@ -6224,6 +6224,8 @@ package body Sem_Ch8 is
       if Is_Overloadable (Id) and then not Is_Overloaded (N) then
          Generate_Reference (Id, N);
       end if;
+
+      Check_Restriction_No_Use_Of_Entity (N);
    end Find_Expanded_Name;
 
    -------------------------
