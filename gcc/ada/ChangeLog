@@ -1,3 +1,8 @@
+2016-06-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch9.adb, sem_util.ads, sem_res.adb: Minor reformatting and typo
+	fixes.
+
 2016-06-16  Javier Miranda  <miranda@adacore.com>
 
 	* sem_res.adb (Resolve): Under relaxed RM semantics silently

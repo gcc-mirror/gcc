@@ -2686,7 +2686,7 @@ package body Sem_Res is
                return;
 
             --  Under relaxed RM semantics silently replace occurrences of null
-            --  by System.Address_Null
+            --  by System.Address_Null.
 
             elsif Null_To_Null_Address_Convert_OK (N, Typ) then
                Replace_Null_By_Null_Address (N);
@@ -2694,7 +2694,7 @@ package body Sem_Res is
                return;
             end if;
 
-            --  That special Allow_Integer_Address check did not appply, so we
+            --  That special Allow_Integer_Address check did not apply, so we
             --  have a real type error. If an error message was issued already,
             --  Found got reset to True, so if it's still False, issue standard
             --  Wrong_Type message.

@@ -1937,8 +1937,8 @@ package Sem_Util is
      (N   : Node_Id;
       Typ : Entity_Id := Empty) return Boolean;
    --  Return True if we are compiling in relaxed RM semantics mode and:
-   --   1) N is a N_Null node and Typ is a decendant of System.Address, or
-   --   2) N is a comparison operator, one of the operands is null and the
+   --   1) N is a N_Null node and Typ is a descendant of System.Address, or
+   --   2) N is a comparison operator, one of the operands is null, and the
    --      type of the other operand is a descendant of System.Address.
 
    function Object_Access_Level (Obj : Node_Id) return Uint;
@@ -2037,8 +2037,8 @@ package Sem_Util is
    --  Determine whether entity Id is referenced within expression Expr
 
    function References_Generic_Formal_Type (N : Node_Id) return Boolean;
-   --  Returns True if the expression Expr contains any references to a
-   --  generic type. This can only happen within a generic template.
+   --  Returns True if the expression Expr contains any references to a generic
+   --  type. This can only happen within a generic template.
 
    procedure Remove_Homonym (E : Entity_Id);
    --  Removes E from the homonym chain
@@ -2054,7 +2054,7 @@ package Sem_Util is
 
    procedure Replace_Null_By_Null_Address (N : Node_Id);
    --  N is N_Null or a binary comparison operator, we are compiling in relaxed
-   --  RM semantics mode and one of the operands is null. Replace null by
+   --  RM semantics mode, and one of the operands is null. Replace null with
    --  System.Null_Address.
 
    function Rep_To_Pos_Flag (E : Entity_Id; Loc : Source_Ptr) return Node_Id;
