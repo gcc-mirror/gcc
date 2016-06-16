@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,13 +21,16 @@
 #include <type_traits>
 
 #ifndef __cpp_lib_is_swappable
-# error "Feature-test macro for is_nothrow_swappable missing"
+# error "Feature-test macro for is_swappable_with missing"
 #elif __cpp_lib_is_swappable != 201603
-# error "Feature-test macro for is_nothrow_swappable has wrong value"
+# error "Feature-test macro for is_swappable_with has wrong value"
 #endif
 
 namespace std
 {
   typedef short test_type;
-  template struct is_nothrow_swappable<test_type>;
+  typedef double test_type_2;
+  template struct is_swappable_with<test_type, test_type>;
+  template struct is_swappable_with<test_type, test_type_2>;
+  template struct is_swappable_with<test_type_2, test_type_2>;
 }

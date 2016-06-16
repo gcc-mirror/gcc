@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++17" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
@@ -20,14 +20,8 @@
 
 #include <type_traits>
 
-#ifndef __cpp_lib_is_swappable
-# error "Feature-test macro for is_nothrow_swappable missing"
-#elif __cpp_lib_is_swappable != 201603
-# error "Feature-test macro for is_nothrow_swappable has wrong value"
-#endif
-
 namespace std
 {
   typedef short test_type;
-  template struct is_nothrow_swappable<test_type>;
+  template struct __is_nothrow_swappable<test_type>;
 }

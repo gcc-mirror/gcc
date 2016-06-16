@@ -635,7 +635,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp, typename _Dp>
-    inline void
+    inline
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+    // Constrained free swap overload, see p0185r1
+    typename enable_if<__is_swappable<_Dp>::value>::type
+#else
+    void
+#endif
     swap(unique_ptr<_Tp, _Dp>& __x,
 	 unique_ptr<_Tp, _Dp>& __y) noexcept
     { __x.swap(__y); }

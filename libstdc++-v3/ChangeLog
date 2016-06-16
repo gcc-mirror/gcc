@@ -1,3 +1,51 @@
+2016-06-16  Daniel Kruegler  <daniel.kruegler@gmail.com>
+
+	Provide swappable traits (p0185r1)
+	* include/std/type_traits (is_swappable, is_nothrow_swappable,
+	is_swappable_with, is_nothrow_swappable_with, is_swappable_v,
+	is_nothrow_swappable_v, is_swappable_with_v,
+	is_nothrow_swappable_with_v): New.
+	* include/bits/stl_pair.h: Use it as per p0185r1.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* include/std/tuple: Likewise.
+	* include/std/array: Likewise. Fix zero-size member swap.
+	* include/bits/hashtable.h: Use __and_.
+	* testsuite/20_util/is_nothrow_swappable/requirements/
+	explicit_instantiation.cc: Change test options to std=gnu++17.
+	* testsuite/20_util/is_nothrow_swappable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/value.cc: Likewise.
+	* testsuite/20_util/is_swappable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_swappable/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_swappable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_swappable/requirements/
+	explicit_instantiation_ext.cc: New.
+	* testsuite/20_util/is_nothrow_swappable/requirements/typedefs_ext.cc:
+	New.
+	* testsuite/20_util/is_nothrow_swappable/value.h: New.
+	* testsuite/20_util/is_nothrow_swappable/value_ext.cc: New.
+	* testsuite/20_util/is_nothrow_swappable_with/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_nothrow_swappable_with/requirements/typedefs.cc:
+	New.
+	* testsuite/20_util/is_nothrow_swappable_with/value.cc: New.
+	* testsuite/20_util/is_swappable/requirements/
+	explicit_instantiation_ext.cc: New.
+	* testsuite/20_util/is_swappable/requirements/typedefs_ext.cc: New.
+	* testsuite/20_util/is_swappable/value.h: New.
+	* testsuite/20_util/is_swappable/value_ext.cc: New.
+	* testsuite/20_util/is_swappable_with/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_swappable_with/requirements/typedefs.cc: New.
+	* testsuite/20_util/is_swappable_with/value.cc: New.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
 2016-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/array: Remove trailing whitespace.

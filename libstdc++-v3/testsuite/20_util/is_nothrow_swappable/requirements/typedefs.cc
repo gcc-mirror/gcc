@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++17" }
 // { dg-do compile }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
@@ -20,11 +20,16 @@
 
 #include <type_traits>
 
+#ifndef __cpp_lib_is_swappable
+# error "Feature-test macro for is_nothrow_swappable missing"
+#elif __cpp_lib_is_swappable != 201603
+# error "Feature-test macro for is_nothrow_swappable has wrong value"
+#endif
 
 void test01()
 {
   // Check for required typedefs
-  typedef std::__is_nothrow_swappable<int>          test_type;
+  typedef std::is_nothrow_swappable<int>            test_type;
   typedef test_type::value_type                     value_type;
   typedef test_type::type                           type;
   typedef test_type::type::value_type               type_value_type;
