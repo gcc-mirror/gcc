@@ -1,3 +1,7 @@
+2016-06-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.opt (mtp-regno): Update text.
+
 2016-06-16  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_legitimize_address): Fix a typo.
