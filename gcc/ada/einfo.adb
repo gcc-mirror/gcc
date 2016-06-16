@@ -8567,7 +8567,7 @@ package body Einfo is
       Subp_Id  : Entity_Id;
 
    begin
-      --  Once set this attribute it cannot be reset
+      --  Once set, this attribute cannot be reset
 
       if No (V) then
          pragma Assert (No (Default_Init_Cond_Procedure (Id)));
