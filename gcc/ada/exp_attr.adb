@@ -4398,8 +4398,9 @@ package body Exp_Attr is
          --  _Postconditions must be in the tree (or inlined if we are
          --  generating C code).
 
-         pragma Assert (Present (Subp)
-           or else (Modify_Tree_For_C and then In_Inlined_Body));
+         pragma Assert
+           (Present (Subp)
+             or else (Modify_Tree_For_C and then In_Inlined_Body));
 
          Temp := Make_Temporary (Loc, 'T', Pref);
 

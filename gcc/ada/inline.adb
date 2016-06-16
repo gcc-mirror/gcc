@@ -2323,8 +2323,8 @@ package body Inline is
              and then Present (Postconditions_Proc (Enclosing_Subp)));
 
          if Ekind (Enclosing_Subp) = E_Function then
-            if Nkind (First (Parameter_Associations (N)))
-              in N_Numeric_Or_String_Literal
+            if Nkind (First (Parameter_Associations (N))) in
+                 N_Numeric_Or_String_Literal
             then
                Append_To (Declarations (Blk),
                  Make_Object_Declaration (Loc,

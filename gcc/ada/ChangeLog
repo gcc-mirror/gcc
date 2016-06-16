@@ -1,3 +1,37 @@
+2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, inline.adb, sem_attr.adb, sem_elab.adb: Minor
+	reformatting.
+
+2016-06-16  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Collect): Avoid Empty Full_T. Otherwise Etype
+	(Full_T) crashes when assertions are on.
+	* sem_ch12.adb (Matching_Actual): Correctly handle the case where
+	"others => <>" appears in a generic formal package, other than
+	by itself.
+
+2016-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb: Remove confusing comment in usage line.
+	* bindgen.adb: Fix binder generated file in codepeer mode wrt
+	recent additions.
+
+2016-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* restrict.adb (Check_Restriction_No_Use_Of_Entity): Avoid
+	never-ending loop, code cleanup; adding also support for Text_IO.
+	* sem_ch8.adb (Find_Expanded_Name): Invoke
+	Check_Restriction_No_Use_Entity.
+
+2016-06-16  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb: Minor comment fix.
+	* einfo.ads (Has_Protected): Clarify comment.
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Do not
+	consider private protected types declared in the runtime for
+	the No_Local_Protected_Types restriction.
+
 2016-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Set_Actual_Subtypes): Do not generate actual

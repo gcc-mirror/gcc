@@ -516,8 +516,7 @@ package body Sem_Elab is
       Access_Case : constant Boolean := Nkind (N) = N_Attribute_Reference;
       --  Indicates if we have Access attribute case
 
-      function Call_To_Instance_From_Outside
-        (Ent : Entity_Id) return Boolean;
+      function Call_To_Instance_From_Outside (Id : Entity_Id) return Boolean;
       --  True if we're calling an instance of a generic subprogram, or a
       --  subprogram in an instance of a generic package, and the call is
       --  outside that instance.
@@ -543,21 +542,20 @@ package body Sem_Elab is
       -- Call_To_Instance_From_Outside --
       -----------------------------------
 
-      function Call_To_Instance_From_Outside
-        (Ent : Entity_Id) return Boolean is
+      function Call_To_Instance_From_Outside (Id : Entity_Id) return Boolean is
+         Scop : Entity_Id := Id;
 
-         X : Entity_Id := Ent;
       begin
          loop
-            if X = Standard_Standard then
+            if Scop = Standard_Standard then
                return False;
             end if;
 
-            if Is_Generic_Instance (X) then
-               return not In_Open_Scopes (X);
+            if Is_Generic_Instance (Scop) then
+               return not In_Open_Scopes (Scop);
             end if;
 
-            X := Scope (X);
+            Scop := Scope (Scop);
          end loop;
       end Call_To_Instance_From_Outside;
 
@@ -602,6 +600,7 @@ package body Sem_Elab is
       function Find_W_Scope return Entity_Id is
          Refed_Ent : constant Entity_Id := Get_Referenced_Ent (N);
          W_Scope   : Entity_Id;
+
       begin
          if Is_Init_Proc (Refed_Ent)
            and then not In_Same_Extended_Unit (N, Refed_Ent)

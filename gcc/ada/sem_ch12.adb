@@ -1112,7 +1112,7 @@ package body Sem_Ch12 is
       --  Find actual that corresponds to a given a formal parameter. If the
       --  actuals are positional, return the next one, if any. If the actuals
       --  are named, scan the parameter associations to find the right one.
-      --  A_F is the corresponding entity in the analyzed generic,which is
+      --  A_F is the corresponding entity in the analyzed generic, which is
       --  placed on the selector name for ASIS use.
       --
       --  In Ada 2005, a named association may be given with a box, in which
@@ -1257,7 +1257,7 @@ package body Sem_Ch12 is
 
          elsif No (Selector_Name (Actual)) then
             Found_Assoc := Actual;
-            Act := Explicit_Generic_Actual_Parameter (Actual);
+            Act         := Explicit_Generic_Actual_Parameter (Actual);
             Num_Matched := Num_Matched + 1;
             Next (Actual);
 
@@ -1271,12 +1271,17 @@ package body Sem_Ch12 is
             Prev        := Empty;
 
             while Present (Actual) loop
-               if Chars (Selector_Name (Actual)) = Chars (F) then
+               if Nkind (Actual) = N_Others_Choice then
+                  Found_Assoc := Empty;
+                  Act         := Empty;
+
+               elsif Chars (Selector_Name (Actual)) = Chars (F) then
                   Set_Entity (Selector_Name (Actual), A_F);
                   Set_Etype  (Selector_Name (Actual), Etype (A_F));
                   Generate_Reference (A_F, Selector_Name (Actual));
+
                   Found_Assoc := Actual;
-                  Act := Explicit_Generic_Actual_Parameter (Actual);
+                  Act         := Explicit_Generic_Actual_Parameter (Actual);
                   Num_Matched := Num_Matched + 1;
                   exit;
                end if;

@@ -32,8 +32,10 @@ with Einfo;     use Einfo;
 with Errout;    use Errout;
 with Exp_Ch9;   use Exp_Ch9;
 with Elists;    use Elists;
+with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Layout;    use Layout;
+with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
 with Namet;     use Namet;
 with Nlists;    use Nlists;
@@ -1985,11 +1987,26 @@ package body Sem_Ch9 is
 
       Set_Ekind              (T, E_Protected_Type);
       Set_Is_First_Subtype   (T, True);
-      Set_Has_Protected      (T, True);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Mark this type as a protected type for the sake of restrictions,
+      --  unless the protected type is declared in a private part of a package
+      --  of the runtime. With this exception, the Suspension_Object from
+      --  Ada.Synchronous_Task_Control can be implemented using a protected
+      --  without triggering violations of No_Local_Protected_Objects when the
+      --  user locally declares such an object. This may look like a trick but
+      --  the user doesn't have to know how Suspension_Object is implemented.
+
+      if In_Private_Part (Current_Scope)
+        and then Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+      then
+         Set_Has_Protected   (T, False);
+      else
+         Set_Has_Protected   (T, True);
+      end if;
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
       --  with an explicit pragma).

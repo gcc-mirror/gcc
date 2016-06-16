@@ -1936,10 +1936,10 @@ package Einfo is
 --    Has_Protected (Flag271) [base type only]
 --       Defined in all type entities. Set on protected types themselves, and
 --       also (recursively) on any composite type which has a component for
---       which Has_Protected is set. The meaning is that an allocator for
---       or declaration of such an object must create the required protected
---       objects. Note: the flag is not set on access types, even if they
---       designate an object that Has_Protected.
+--       which Has_Protected is set, unless the protected type is declared in
+--       the private part of an internal unit. The meaning is that restrictions
+--       for protected types apply to this type. Note: the flag is not set on
+--       access types, even if they designate an object that Has_Protected.
 
 --    Has_Qualified_Name (Flag161)
 --       Defined in all entities. Set if the name in the Chars field has
