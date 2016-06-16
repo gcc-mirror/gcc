@@ -1,3 +1,8 @@
+2016-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/71242
+	* testsuite/gcc.dg/torture/float128-nan.c: Also run on ia64-*-*.
+
 2016-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/vect/pr36648.cc: Disable cunrolli
