@@ -30001,6 +30001,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		    = cp_lexer_peek_token (parser->lexer)->location;
 		  cp_id_kind idk = CP_ID_KIND_NONE;
 		  cp_lexer_consume_token (parser->lexer);
+		  decl = convert_from_reference (decl);
 		  decl
 		    = cp_parser_postfix_dot_deref_expression (parser, CPP_DOT,
 							      decl, false,

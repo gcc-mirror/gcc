@@ -1,3 +1,8 @@
+2016-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Handle COMPONENT_REFs
+	with base of reference to struct.
+
 2016-06-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (x86 Options): Document -m80387 and -mhard-float.

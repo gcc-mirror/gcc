@@ -6664,7 +6664,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (type_dependent_expression_p (t))
 		break;
-	      if (DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+	      if (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
+		  && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "bit-field %qE in %qs clause",
@@ -6680,8 +6681,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      while (TREE_CODE (t) == COMPONENT_REF)
 		{
-		  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
-		      == UNION_TYPE)
+		  if (TREE_TYPE (TREE_OPERAND (t, 0))
+		      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
+			  == UNION_TYPE))
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
 				"%qE is a member of a union", t);
@@ -6692,6 +6694,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      if (remove)
 		break;
+	      if (REFERENCE_REF_P (t))
+		t = TREE_OPERAND (t, 0);
 	      if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 		{
 		  if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
