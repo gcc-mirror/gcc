@@ -199,3 +199,9 @@ DEF_PREDICTOR (PRED_FORTRAN_INVALID_BOUND, "Fortran invalid bound", \
    which in turn has an optional argument.  */
 DEF_PREDICTOR (PRED_FORTRAN_ABSENT_DUMMY, "Fortran absent dummy", \
 	       HITRATE (60), 0)
+
+/* Fortran DO statement generates a pre-header guard:
+   empty = (step > 0 ? to < from : to > from), which can be predicted
+   to be very likely.  */
+DEF_PREDICTOR (PRED_FORTRAN_LOOP_PREHEADER, "Fortran loop preheader", \
+	       HITRATE (99), 0)

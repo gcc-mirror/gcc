@@ -5250,6 +5250,14 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 	      case IFN_UBSAN_CHECK_MUL:
 		subcode = MULT_EXPR;
 		break;
+	      case IFN_BUILTIN_EXPECT:
+		  {
+		    tree arg0 = gimple_call_arg (stmt, 0);
+		    tree op0 = (*valueize) (arg0);
+		    if (TREE_CODE (op0) == INTEGER_CST)
+		      return op0;
+		    return NULL_TREE;
+		  }
 	      default:
 		return NULL_TREE;
 	      }

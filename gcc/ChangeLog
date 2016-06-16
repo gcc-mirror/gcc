@@ -1,5 +1,11 @@
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
+	* predict.def: Add fortran loop preheader predictor.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Properly
+	fold IFN_BUILTIN_EXPECT with a known constant argument.
+
+2016-06-16  Martin Liska  <mliska@suse.cz>
+
 	* predict.def: Add 'Fortran' to display text of all
 	PRED_FORTRAN_* predictors.
 

@@ -1938,7 +1938,9 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   else
     cond = fold_build2_loc (loc, GE_EXPR, boolean_type_node, dovar,
 			    to);
-  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node, cond, tmp,
+
+  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
+			 gfc_likely (cond, PRED_FORTRAN_LOOP_PREHEADER), tmp,
 			 build_empty_stmt (loc));
   gfc_add_expr_to_block (pblock, tmp);
 
