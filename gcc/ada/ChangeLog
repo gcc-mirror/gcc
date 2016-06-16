@@ -1,3 +1,19 @@
+2016-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve): Under relaxed RM semantics silently
+	replace occurrences of null by System.Null_Address.
+	* sem_ch4.adb (Analyze_One_Call, Operator_Check): Under
+	relaxed RM semantics silently replace occurrences of null by
+	System.Null_Address.
+	* sem_util.ad[sb] (Null_To_Null_Address_Convert_OK): New subprogram.
+	(Replace_Null_By_Null_Address): New subprogram.
+
+2016-06-16  Bob Duff  <duff@adacore.com>
+
+	* exp_util.adb (Is_Controlled_Function_Call):
+	This was missing the case where the call is in prefix format,
+	with named notation, as in Obj.Func (Formal => Actual).
+
 2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_attr.adb, inline.adb, sem_attr.adb, sem_elab.adb: Minor
