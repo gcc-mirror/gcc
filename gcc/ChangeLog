@@ -1,3 +1,7 @@
+2016-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi (x86 Options): Document -m80387 and -mhard-float.
+
 2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr.c (avr_asm_init_sections): Remove setup of
@@ -16,7 +20,7 @@
 	* config/i386/i386.c (ix86_option_override_internal): Add
 	definitions for VIA c7, samuel-2, nehemiah, esther, eden-x2, eden-x4,
 	nano, nano-1000, nano-2000, nano-3000, nano-x2 and nano-x4.
-	* doc/invoke.texi: Document new VIA -march entries.
+	* doc/invoke.texi (x86 Options): Document new VIA -march entries.
 
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
@@ -2588,7 +2592,7 @@
 	x87 instructions if only general registers are allowed.
 	(ix86_target_string): Add ix86_flags argument. Handle additional
 	flags options through ix86_flags argument.  Update all callers.
-	* doc/invoke.texi: Document -mgeneral-regs-only.
+	* doc/invoke.texi (x86 Options): Document -mgeneral-regs-only.
 
 2016-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
