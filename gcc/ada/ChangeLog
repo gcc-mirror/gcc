@@ -1,3 +1,14 @@
+2016-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Indexed_Component_Bit_Offset): Declare.
+	* sem_util.adb (Indexed_Component_Bit_Offset): New
+	function returning the offset of an indexed component.
+	(Has_Compatible_Alignment_Internal): Call it.
+	* sem_ch13.adb (Offset_Value): New function returning the offset of an
+	Address attribute reference from the underlying entity.
+	(Validate_Address_Clauses): Call it and take the offset into
+	account for the size warning.
+
 2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindgen.adb, exp_util.adb, sem_ch9.adb, sem_util.adb: Minor

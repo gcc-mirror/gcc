@@ -1232,6 +1232,12 @@ package Sem_Util is
    --  partial view of the same entity. Note that Id may not have a partial
    --  view in which case the function returns Empty.
 
+   function Indexed_Component_Bit_Offset (N : Node_Id) return Uint;
+   --  Given an N_Indexed_Component node, return the first bit position of the
+   --  component if it is known at compile time. A value of No_Uint means that
+   --  either the value is not yet known before back-end processing or it is
+   --  not known at compile time after back-end processing.
+
    procedure Inherit_Default_Init_Cond_Procedure (Typ : Entity_Id);
    --  Inherit the default initial condition procedure from the parent type of
    --  derived type Typ.
