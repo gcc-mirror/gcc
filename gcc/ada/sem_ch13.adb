@@ -13626,6 +13626,53 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Validate_Address_Clauses is
+      function Offset_Value (Expr : Node_Id) return Uint;
+      --  Given an Address attribute reference, return the value in bits of its
+      --  offset from the first bit of the underlying entity, or 0 if it is not
+      --  known at compile time.
+
+      ------------------
+      -- Offset_Value --
+      ------------------
+
+      function Offset_Value (Expr : Node_Id) return Uint is
+         N   : Node_Id := Prefix (Expr);
+         Off : Uint;
+         Val : Uint := Uint_0;
+
+      begin
+         --  Climb the prefix chain and compute the cumulative offset
+
+         loop
+            if Is_Entity_Name (N) then
+               return Val;
+
+            elsif Nkind (N) = N_Selected_Component then
+               Off := Component_Bit_Offset (Entity (Selector_Name (N)));
+               if Off /= No_Uint and then Off >= Uint_0 then
+                  Val := Val + Off;
+                  N   := Prefix (N);
+               else
+                  return Uint_0;
+               end if;
+
+            elsif Nkind (N) = N_Indexed_Component then
+               Off := Indexed_Component_Bit_Offset (N);
+               if Off /= No_Uint then
+                  Val := Val + Off;
+                  N   := Prefix (N);
+               else
+                  return Uint_0;
+               end if;
+
+            else
+               return Uint_0;
+            end if;
+         end loop;
+      end Offset_Value;
+
+   --  Start of processing for Validate_Address_Clauses
+
    begin
       for J in Address_Clause_Checks.First .. Address_Clause_Checks.Last loop
          declare
@@ -13640,6 +13687,8 @@ package body Sem_Ch13 is
             X_Size : Uint;
             Y_Size : Uint;
 
+            X_Offs : Uint;
+
          begin
             --  Skip processing of this entry if warning already posted
 
@@ -13651,16 +13700,25 @@ package body Sem_Ch13 is
                X_Alignment := Alignment (ACCR.X);
                Y_Alignment := Alignment (ACCR.Y);
 
-               --  Similarly obtain sizes
+               --  Similarly obtain sizes and offset
 
                X_Size := Esize (ACCR.X);
                Y_Size := Esize (ACCR.Y);
+
+               if ACCR.Off
+                 and then Nkind (Expr) = N_Attribute_Reference
+                 and then Attribute_Name (Expr) = Name_Address
+               then
+                  X_Offs := Offset_Value (Expr);
+               else
+                  X_Offs := Uint_0;
+               end if;
 
                --  Check for large object overlaying smaller one
 
                if Y_Size > Uint_0
                  and then X_Size > Uint_0
-                 and then X_Size > Y_Size
+                 and then X_Offs + X_Size > Y_Size
                then
                   Error_Msg_NE ("??& overlays smaller object", ACCR.N, ACCR.X);
                   Error_Msg_N
@@ -13671,6 +13729,11 @@ package body Sem_Ch13 is
 
                   Error_Msg_Uint_1 := Y_Size;
                   Error_Msg_NE ("\??size of & is ^", ACCR.N, ACCR.Y);
+
+                  if X_Offs /= Uint_0 then
+                     Error_Msg_Uint_1 := X_Offs;
+                     Error_Msg_NE ("\??and offset of & is ^", ACCR.N, ACCR.X);
+                  end if;
 
                --  Check for inadequate alignment, both of the base object
                --  and of the offset, if any. We only do this check if the

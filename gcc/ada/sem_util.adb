@@ -8780,7 +8780,6 @@ package body Sem_Util is
          elsif Nkind (Expr) = N_Indexed_Component then
             declare
                Typ : constant Entity_Id := Etype (Prefix (Expr));
-               Ind : constant Node_Id   := First_Index (Typ);
 
             begin
                --  Packing generates unknown alignment if layout is not done
@@ -8789,22 +8788,12 @@ package body Sem_Util is
                   Set_Result (Unknown);
                end if;
 
-               --  Check prefix and component offset
+               --  Check prefix and component offset (or at least size)
 
                Check_Prefix;
-               Offs := Component_Size (Typ);
-
-               --  Small optimization: compute the full offset when possible
-
-               if Offs /= No_Uint
-                 and then Offs > Uint_0
-                 and then Present (Ind)
-                 and then Nkind (Ind) = N_Range
-                 and then Compile_Time_Known_Value (Low_Bound (Ind))
-                 and then Compile_Time_Known_Value (First (Expressions (Expr)))
-               then
-                  Offs := Offs * (Expr_Value (First (Expressions (Expr)))
-                                    - Expr_Value (Low_Bound ((Ind))));
+               Offs := Indexed_Component_Bit_Offset (Expr);
+               if Offs = No_Uint then
+                  Offs := Component_Size (Typ);
                end if;
             end;
          end if;
@@ -11063,6 +11052,59 @@ package body Sem_Util is
 
       return Empty;
    end Incomplete_Or_Partial_View;
+
+   ----------------------------------
+   -- Indexed_Component_Bit_Offset --
+   ----------------------------------
+
+   function Indexed_Component_Bit_Offset (N : Node_Id) return Uint is
+      Exp : constant Node_Id   := First (Expressions (N));
+      Typ : constant Entity_Id := Etype (Prefix (N));
+      Off : constant Uint      := Component_Size (Typ);
+      Ind : Node_Id;
+
+   begin
+      --  Return early if the component size is not known or variable
+
+      if Off = No_Uint or else Off < Uint_0 then
+         return No_Uint;
+      end if;
+
+      --  Deal with the degenerate case of an empty component
+
+      if Off = Uint_0 then
+         return Off;
+      end if;
+
+      --  Check that both the index value and the low bound are known
+
+      if not Compile_Time_Known_Value (Exp) then
+         return No_Uint;
+      end if;
+
+      Ind := First_Index (Typ);
+      if No (Ind) then
+         return No_Uint;
+      end if;
+
+      if Nkind (Ind) = N_Subtype_Indication then
+         Ind := Constraint (Ind);
+
+         if Nkind (Ind) = N_Range_Constraint then
+            Ind := Range_Expression (Ind);
+         end if;
+      end if;
+
+      if Nkind (Ind) /= N_Range
+        or else not Compile_Time_Known_Value (Low_Bound (Ind))
+      then
+         return No_Uint;
+      end if;
+
+      --  Return the scaled offset
+
+      return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound ((Ind))));
+   end Indexed_Component_Bit_Offset;
 
    -----------------------------------------
    -- Inherit_Default_Init_Cond_Procedure --
