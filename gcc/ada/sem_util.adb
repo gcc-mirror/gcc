@@ -10386,6 +10386,48 @@ package body Sem_Util is
       return Name_Find;
    end Remove_Suffix;
 
+   ----------------------------------
+   -- Replace_Null_By_Null_Address --
+   ----------------------------------
+
+   procedure Replace_Null_By_Null_Address (N : Node_Id) is
+   begin
+      pragma Assert (Relaxed_RM_Semantics);
+      pragma Assert
+        (Nkind (N) = N_Null
+          or else Nkind_In (N, N_Op_Eq, N_Op_Ne)
+          or else Nkind_In (N, N_Op_Lt, N_Op_Le, N_Op_Gt, N_Op_Ge));
+
+      if Nkind (N) = N_Null then
+         Rewrite (N,
+           New_Occurrence_Of (RTE (RE_Null_Address), Sloc (N)));
+
+      else
+         declare
+            L : constant Node_Id := Left_Opnd (N);
+            R : constant Node_Id := Right_Opnd (N);
+
+         begin
+            --  We check the Etype of the complementary operand since the
+            --  N_Null node is not decorated at this stage.
+
+            if Nkind (L) = N_Null
+              and then Is_Descendant_Of_Address (Etype (R))
+            then
+               Rewrite (L,
+                 New_Occurrence_Of (RTE (RE_Null_Address), Sloc (L)));
+            end if;
+
+            if Nkind (R) = N_Null
+              and then Is_Descendant_Of_Address (Etype (L))
+            then
+               Rewrite (R,
+                 New_Occurrence_Of (RTE (RE_Null_Address), Sloc (R)));
+            end if;
+         end;
+      end if;
+   end Replace_Null_By_Null_Address;
+
    --------------------------
    -- Has_Tagged_Component --
    --------------------------
@@ -12469,9 +12511,6 @@ package body Sem_Util is
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
    begin
       if Is_Entity_Name (N) then
-         return Is_Effectively_Volatile (Entity (N));
-
-      elsif Nkind (N) = N_Expanded_Name then
          return Is_Effectively_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Indexed_Component then
@@ -17489,6 +17528,44 @@ package body Sem_Util is
          null;
       end loop;
    end Note_Possible_Modification;
+
+   --------------------------------------
+   --  Null_To_Null_Address_Convert_OK --
+   --------------------------------------
+
+   function Null_To_Null_Address_Convert_OK
+     (N   : Node_Id;
+      Typ : Entity_Id := Empty) return Boolean is
+   begin
+      if not Relaxed_RM_Semantics then
+         return False;
+      end if;
+
+      if Nkind (N) = N_Null then
+         return Present (Typ) and then Is_Descendant_Of_Address (Typ);
+
+      elsif Nkind_In (N, N_Op_Eq, N_Op_Ne)
+         or else Nkind_In (N, N_Op_Lt, N_Op_Le, N_Op_Gt, N_Op_Ge)
+      then
+         declare
+            L : constant Node_Id := Left_Opnd (N);
+            R : constant Node_Id := Right_Opnd (N);
+
+         begin
+            --  We check the Etype of the complementary operand since the
+            --  N_Null node is not decorated at this stage.
+
+            return
+              ((Nkind (L) = N_Null
+                 and then Is_Descendant_Of_Address (Etype (R)))
+              or else
+               (Nkind (R) = N_Null
+                 and then Is_Descendant_Of_Address (Etype (L))));
+         end;
+      end if;
+
+      return False;
+   end Null_To_Null_Address_Convert_OK;
 
    -------------------------
    -- Object_Access_Level --

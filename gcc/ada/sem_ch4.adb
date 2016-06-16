@@ -3397,6 +3397,18 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  Under relaxed RM semantics silently replace occurrences of
+               --  null by System.Address_Null. We only do this if we know that
+               --  an error will otherwise be issued.
+
+               elsif Null_To_Null_Address_Convert_OK (Actual, Etype (Formal))
+                 and then (Report and not Is_Indexed and not Is_Indirect)
+               then
+                  Replace_Null_By_Null_Address (Actual);
+                  Analyze_And_Resolve (Actual, Etype (Formal));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
                --  For an Ada 2012 predicate or invariant, a call may mention
                --  an incomplete type, while resolution of the corresponding
                --  predicate function may see the full view, as a consequence
@@ -6806,6 +6818,20 @@ package body Sem_Ch4 is
 
                      return;
                   end;
+
+               --  Under relaxed RM semantics silently replace occurrences of
+               --  null by System.Address_Null.
+
+               elsif Null_To_Null_Address_Convert_OK (N) then
+                  Replace_Null_By_Null_Address (N);
+
+                  if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                     Analyze_Comparison_Op (N);
+                  else
+                     Analyze_Arithmetic_Op (N);
+                  end if;
+
+                  return;
                end if;
 
             --  Comparisons on A'Access are common enough to deserve a
@@ -6873,6 +6899,14 @@ package body Sem_Ch4 is
                if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
                   Rewrite (R,
                     Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                  Analyze_Equality_Op (N);
+                  return;
+
+               --  Under relaxed RM semantics silently replace occurrences of
+               --  null by System.Address_Null.
+
+               elsif Null_To_Null_Address_Convert_OK (N) then
+                  Replace_Null_By_Null_Address (N);
                   Analyze_Equality_Op (N);
                   return;
                end if;

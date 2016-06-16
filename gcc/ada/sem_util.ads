@@ -1933,6 +1933,14 @@ package Sem_Util is
    --  (e.g. target of assignment, or out parameter), and to False if the
    --  modification is only potential (e.g. address of entity taken).
 
+   function Null_To_Null_Address_Convert_OK
+     (N   : Node_Id;
+      Typ : Entity_Id := Empty) return Boolean;
+   --  Return True if we are compiling in relaxed RM semantics mode and:
+   --   1) N is a N_Null node and Typ is a decendant of System.Address, or
+   --   2) N is a comparison operator, one of the operands is null and the
+   --      type of the other operand is a descendant of System.Address.
+
    function Object_Access_Level (Obj : Node_Id) return Uint;
    --  Return the accessibility level of the view of the object Obj. For
    --  convenience, qualified expressions applied to object names are also
@@ -2043,6 +2051,11 @@ package Sem_Util is
 
    function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
    --  Returns the name of E without Suffix
+
+   procedure Replace_Null_By_Null_Address (N : Node_Id);
+   --  N is N_Null or a binary comparison operator, we are compiling in relaxed
+   --  RM semantics mode and one of the operands is null. Replace null by
+   --  System.Null_Address.
 
    function Rep_To_Pos_Flag (E : Entity_Id; Loc : Source_Ptr) return Node_Id;
    --  This is used to construct the second argument in a call to Rep_To_Pos

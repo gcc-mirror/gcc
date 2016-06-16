@@ -4720,25 +4720,41 @@ package body Exp_Util is
          Expr : Node_Id := Original_Node (N);
 
       begin
-         if Nkind (Expr) = N_Function_Call then
-            Expr := Name (Expr);
-
          --  When a function call appears in Object.Operation format, the
-         --  original representation has two possible forms depending on the
-         --  availability of actual parameters:
+         --  original representation has three possible forms depending on the
+         --  availability and form of actual parameters:
 
-         --    Obj.Func_Call           N_Selected_Component
-         --    Obj.Func_Call (Param)   N_Indexed_Component
+         --    Obj.Func                    N_Selected_Component
+         --    Obj.Func (Actual)           N_Indexed_Component
+         --    Obj.Func (Formal => Actual) N_Function_Call, whose Name is an
+         --                                N_Selected_Component
 
-         else
-            if Nkind (Expr) = N_Indexed_Component then
+         case Nkind (Expr) is
+            when N_Function_Call =>
+               Expr := Name (Expr);
+
+               --  Check for "Obj.Func (Formal => Actual)" case
+
+               if Nkind (Expr) = N_Selected_Component then
+                  Expr := Selector_Name (Expr);
+               end if;
+
+            --  "Obj.Func (Actual)" case
+
+            when N_Indexed_Component =>
                Expr := Prefix (Expr);
-            end if;
 
-            if Nkind (Expr) = N_Selected_Component then
+               if Nkind (Expr) = N_Selected_Component then
+                  Expr := Selector_Name (Expr);
+               end if;
+
+            --  "Obj.Func" case
+
+            when N_Selected_Component =>
                Expr := Selector_Name (Expr);
-            end if;
-         end if;
+
+            when others => null;
+         end case;
 
          return
            Nkind_In (Expr, N_Expanded_Name, N_Identifier)
