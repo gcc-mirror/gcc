@@ -203,9 +203,6 @@ static GTY(()) rtx xstring_e;
 /* Current architecture.  */
 const avr_arch_t *avr_arch;
 
-/* Section to put switch tables in.  */
-static GTY(()) section *progmem_swtable_section;
-
 /* Unnamed sections associated to __attribute__((progmem)) aka. PROGMEM
    or to address space __flash* or __memx.  Only used as singletons inside
    avr_asm_select_section, but it must not be local there because of GTY.  */
@@ -9461,89 +9458,12 @@ avr_output_progmem_section_asm_op (const void *data)
 static void
 avr_asm_init_sections (void)
 {
-  /* Set up a section for jump tables.  Alignment is handled by
-     ASM_OUTPUT_BEFORE_CASE_LABEL.  */
-
-  if (AVR_HAVE_JMP_CALL)
-    {
-      progmem_swtable_section
-        = get_unnamed_section (0, output_section_asm_op,
-                               "\t.section\t.progmem.gcc_sw_table"
-                               ",\"a\",@progbits");
-    }
-  else
-    {
-      progmem_swtable_section
-        = get_unnamed_section (SECTION_CODE, output_section_asm_op,
-                               "\t.section\t.progmem.gcc_sw_table"
-                               ",\"ax\",@progbits");
-    }
-
   /* Override section callbacks to keep track of `avr_need_clear_bss_p'
      resp. `avr_need_copy_data_p'.  */
 
   readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
   data_section->unnamed.callback = avr_output_data_section_asm_op;
   bss_section->unnamed.callback = avr_output_bss_section_asm_op;
-}
-
-
-/* Implement `TARGET_ASM_FUNCTION_RODATA_SECTION'.  */
-
-static section*
-avr_asm_function_rodata_section (tree decl)
-{
-  /* If a function is unused and optimized out by -ffunction-sections
-     and --gc-sections, ensure that the same will happen for its jump
-     tables by putting them into individual sections.  */
-
-  unsigned int flags;
-  section * frodata;
-
-  /* Get the frodata section from the default function in varasm.c
-     but treat function-associated data-like jump tables as code
-     rather than as user defined data.  AVR has no constant pools.  */
-  {
-    int fdata = flag_data_sections;
-
-    flag_data_sections = flag_function_sections;
-    frodata = default_function_rodata_section (decl);
-    flag_data_sections = fdata;
-    flags = frodata->common.flags;
-  }
-
-  if (frodata != readonly_data_section
-      && flags & SECTION_NAMED)
-    {
-      /* Adjust section flags and replace section name prefix.  */
-
-      unsigned int i;
-
-      static const char* const prefix[] =
-        {
-          ".rodata",          ".progmem.gcc_sw_table",
-          ".gnu.linkonce.r.", ".gnu.linkonce.t."
-        };
-
-      for (i = 0; i < sizeof (prefix) / sizeof (*prefix); i += 2)
-        {
-          const char * old_prefix = prefix[i];
-          const char * new_prefix = prefix[i+1];
-          const char * name = frodata->named.name;
-
-          if (STR_PREFIX_P (name, old_prefix))
-            {
-              const char *rname = ACONCAT ((new_prefix,
-                                            name + strlen (old_prefix), NULL));
-              flags &= ~SECTION_CODE;
-              flags |= AVR_HAVE_JMP_CALL ? 0 : SECTION_CODE;
-
-              return get_section (rname, flags, frodata->named.decl);
-            }
-        }
-    }
-
-  return progmem_swtable_section;
 }
 
 
@@ -13746,9 +13666,6 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_FOLD_BUILTIN
 #define TARGET_FOLD_BUILTIN avr_fold_builtin
-
-#undef  TARGET_ASM_FUNCTION_RODATA_SECTION
-#define TARGET_ASM_FUNCTION_RODATA_SECTION avr_asm_function_rodata_section
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P avr_scalar_mode_supported_p

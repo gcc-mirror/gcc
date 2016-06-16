@@ -1,3 +1,12 @@
+2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr.c (avr_asm_init_sections): Remove setup of
+	progmem_swtable_section.
+	(progmem_swtable_section): Remove.
+	(avr_asm_function_rodata_section): Remove.
+	(TARGET_ASM_FUNCTION_RODATA_SECTION): Remove.
+	* config/avr/avr.h (JUMP_TABLES_IN_TEXT_SECTION: Define to 1.
+
 2016-06-16  Jocelyn Mayer  <l_indien@magic.fr>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Set

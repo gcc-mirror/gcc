@@ -1,3 +1,15 @@
+2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.target/avr/pr71151-1.c: New test.
+	* gcc.target/avr/pr71151-2.c: New test.
+	* gcc.target/avr/pr71151-3.c: New test.
+	* gcc.target/avr/pr71151-4.c: New test.
+	* gcc.target/avr/pr71151-5.c: New test.
+	* gcc.target/avr/pr71151-6.c: New test.
+	* gcc.target/avr/pr71151-7.c: New test.
+	* gcc.target/avr/pr71151-8.c: New test.
+	* gcc.target/avr/pr71151-common.h: New test.
+
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
 	* gfortran.dg/predict-1.f90: New test.
