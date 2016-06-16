@@ -6710,6 +6710,57 @@ pa_output_cbranch (rtx *operands, int negated, rtx_insn *insn)
   return buf;
 }
 
+/* Output a PIC pc-relative instruction sequence to load the address of
+   OPERANDS[0] to register OPERANDS[2].  OPERANDS[0] is a symbol ref
+   or a code label.  OPERANDS[1] specifies the register to use to load
+   the program counter.  OPERANDS[3] may be used for label generation
+   The sequence is always three instructions in length.  The program
+   counter recorded for PA 1.X is eight bytes more than that for PA 2.0.
+   Register %r1 is clobbered.  */
+
+static void
+pa_output_pic_pcrel_sequence (rtx *operands)
+{
+  gcc_assert (SYMBOL_REF_P (operands[0]) || LABEL_P (operands[0]));
+  if (TARGET_PA_20)
+    {
+      /* We can use mfia to determine the current program counter.  */
+      if (TARGET_SOM || !TARGET_GAS)
+	{
+	  operands[3] = gen_label_rtx ();
+	  targetm.asm_out.internal_label (asm_out_file, "L",
+					  CODE_LABEL_NUMBER (operands[3]));
+	  output_asm_insn ("mfia %1", operands);
+	  output_asm_insn ("addil L'%0-%l3,%1", operands);
+	  output_asm_insn ("ldo R'%0-%l3(%%r1),%2", operands);
+	}
+      else
+	{
+	  output_asm_insn ("mfia %1", operands);
+	  output_asm_insn ("addil L'%0-$PIC_pcrel$0+12,%1", operands);
+	  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+16(%%r1),%2", operands);
+	}
+    }
+  else
+    {
+      /* We need to use a branch to determine the current program counter.  */
+      output_asm_insn ("{bl|b,l} .+8,%1", operands);
+      if (TARGET_SOM || !TARGET_GAS)
+	{
+	  operands[3] = gen_label_rtx ();
+	  output_asm_insn ("addil L'%0-%l3,%1", operands);
+	  targetm.asm_out.internal_label (asm_out_file, "L",
+					  CODE_LABEL_NUMBER (operands[3]));
+	  output_asm_insn ("ldo R'%0-%l3(%%r1),%2", operands);
+	}
+      else
+	{
+	  output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%1", operands);
+	  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%2", operands);
+	}
+    }
+}
+
 /* This routine handles output of long unconditional branches that
    exceed the maximum range of a simple branch instruction.  Since
    we don't have a register available for the branch, we save register
@@ -6730,7 +6781,7 @@ pa_output_cbranch (rtx *operands, int negated, rtx_insn *insn)
 const char *
 pa_output_lbranch (rtx dest, rtx_insn *insn, int xdelay)
 {
-  rtx xoperands[2];
+  rtx xoperands[4];
  
   xoperands[0] = dest;
 
@@ -6800,20 +6851,9 @@ pa_output_lbranch (rtx dest, rtx_insn *insn, int xdelay)
     }
   else if (flag_pic)
     {
-      output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
-      if (TARGET_SOM || !TARGET_GAS)
-	{
-	  xoperands[1] = gen_label_rtx ();
-	  output_asm_insn ("addil L'%l0-%l1,%%r1", xoperands);
-	  targetm.asm_out.internal_label (asm_out_file, "L",
-					  CODE_LABEL_NUMBER (xoperands[1]));
-	  output_asm_insn ("ldo R'%l0-%l1(%%r1),%%r1", xoperands);
-	}
-      else
-	{
-	  output_asm_insn ("addil L'%l0-$PIC_pcrel$0+4,%%r1", xoperands);
-	  output_asm_insn ("ldo R'%l0-$PIC_pcrel$0+8(%%r1),%%r1", xoperands);
-	}
+      xoperands[1] = gen_rtx_REG (Pmode, 1);
+      xoperands[2] = xoperands[1];
+      pa_output_pic_pcrel_sequence (xoperands);
       output_asm_insn ("bv %%r0(%%r1)", xoperands);
     }
   else
@@ -7642,10 +7682,9 @@ pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 {
   int attr_length = get_attr_length (insn);
   int seq_length = dbr_sequence_length ();
-  rtx xoperands[3];
+  rtx xoperands[4];
 
   xoperands[0] = call_dest;
-  xoperands[2] = gen_rtx_REG (Pmode, TARGET_64BIT ? 2 : 31);
 
   /* Handle the common case where we are sure that the branch will
      reach the beginning of the $CODE$ subspace.  The within reach
@@ -7657,7 +7696,8 @@ pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 	  || (attr_length == 28
 	      && get_attr_type (insn) == TYPE_SH_FUNC_ADRS)))
     {
-      output_asm_insn ("{bl|b,l} %0,%2", xoperands);
+      xoperands[1] = gen_rtx_REG (Pmode, TARGET_64BIT ? 2 : 31);
+      output_asm_insn ("{bl|b,l} %0,%1", xoperands);
     }
   else
     {
@@ -7668,22 +7708,9 @@ pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 	     this doesn't work in shared libraries and other dynamically
 	     loaded objects.  Using a pc-relative sequence also avoids
 	     problems related to the implicit use of the gp register.  */
-	  output_asm_insn ("b,l .+8,%%r1", xoperands);
-
-	  if (TARGET_GAS)
-	    {
-	      output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%%r1", xoperands);
-	      output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%%r1", xoperands);
-	    }
-	  else
-	    {
-	      xoperands[1] = gen_label_rtx ();
-	      output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
-	      targetm.asm_out.internal_label (asm_out_file, "L",
-					 CODE_LABEL_NUMBER (xoperands[1]));
-	      output_asm_insn ("ldo R'%0-%l1(%%r1),%%r1", xoperands);
-	    }
-
+	  xoperands[1] = gen_rtx_REG (Pmode, 1);
+	  xoperands[2] = xoperands[1];
+	  pa_output_pic_pcrel_sequence (xoperands);
 	  output_asm_insn ("bve,l (%%r1),%%r2", xoperands);
 	}
       else if (TARGET_PORTABLE_RUNTIME)
@@ -7713,27 +7740,12 @@ pa_output_millicode_call (rtx_insn *insn, rtx call_dest)
 	}
       else
 	{
-	  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
-	  output_asm_insn ("addi 16,%%r1,%%r31", xoperands);
+	  xoperands[1] = gen_rtx_REG (Pmode, 31);
+	  xoperands[2] = gen_rtx_REG (Pmode, 1);
+	  pa_output_pic_pcrel_sequence (xoperands);
 
-	  if (TARGET_SOM || !TARGET_GAS)
-	    {
-	      /* The HP assembler can generate relocations for the
-		 difference of two symbols.  GAS can do this for a
-		 millicode symbol but not an arbitrary external
-		 symbol when generating SOM output.  */
-	      xoperands[1] = gen_label_rtx ();
-	      targetm.asm_out.internal_label (asm_out_file, "L",
-					 CODE_LABEL_NUMBER (xoperands[1]));
-	      output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
-	      output_asm_insn ("ldo R'%0-%l1(%%r1),%%r1", xoperands);
-	    }
-	  else
-	    {
-	      output_asm_insn ("addil L'%0-$PIC_pcrel$0+8,%%r1", xoperands);
-	      output_asm_insn ("ldo R'%0-$PIC_pcrel$0+12(%%r1),%%r1",
-			       xoperands);
-	    }
+	  /* Adjust return address.  */
+	  output_asm_insn ("ldo {16|24}(%%r31),%%r31", xoperands);
 
 	  /* Jump to our target address in %r1.  */
 	  output_asm_insn ("bv %%r0(%%r1)", xoperands);
@@ -7811,8 +7823,7 @@ pa_attr_length_call (rtx_insn *insn, int sibcall)
 
   /* long pc-relative branch sequence.  */
   else if (TARGET_LONG_PIC_SDIFF_CALL
-	   || (TARGET_GAS && !TARGET_SOM
-	       && (TARGET_LONG_PIC_PCREL_CALL || local_call)))
+	   || (TARGET_GAS && !TARGET_SOM && local_call))
     {
       length += 20;
 
@@ -7854,7 +7865,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
   int seq_length = dbr_sequence_length ();
   tree call_decl = SYMBOL_REF_DECL (call_dest);
   int local_call = call_decl && targetm.binds_local_p (call_decl);
-  rtx xoperands[2];
+  rtx xoperands[4];
 
   xoperands[0] = call_dest;
 
@@ -7918,8 +7929,7 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
              they don't allow an instruction in the delay slot.  */
 	  if (!((TARGET_LONG_ABS_CALL || local_call) && !flag_pic)
 	      && !TARGET_LONG_PIC_SDIFF_CALL
-	      && !(TARGET_GAS && !TARGET_SOM
-		   && (TARGET_LONG_PIC_PCREL_CALL || local_call))
+	      && !(TARGET_GAS && !TARGET_SOM && local_call)
 	      && !TARGET_64BIT)
 	    indirect_call = 1;
 
@@ -7964,33 +7974,23 @@ pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 	    }
 	  else
 	    {
-	      if (TARGET_LONG_PIC_SDIFF_CALL)
+	      /* The HP assembler and linker can handle relocations for
+		 the difference of two symbols.  The HP assembler
+		 recognizes the sequence as a pc-relative call and
+		 the linker provides stubs when needed.  */
+
+	      /* GAS currently can't generate the relocations that
+		 are needed for the SOM linker under HP-UX using this
+		 sequence.  The GNU linker doesn't generate the stubs
+		 that are needed for external calls on TARGET_ELF32
+		 with this sequence.  For now, we have to use a longer
+	         plabel sequence when using GAS for non local calls.  */
+	      if (TARGET_LONG_PIC_SDIFF_CALL
+		  || (TARGET_GAS && !TARGET_SOM && local_call))
 		{
-		  /* The HP assembler and linker can handle relocations
-		     for the difference of two symbols.  The HP assembler
-		     recognizes the sequence as a pc-relative call and
-		     the linker provides stubs when needed.  */
-		  xoperands[1] = gen_label_rtx ();
-		  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
-		  output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
-		  targetm.asm_out.internal_label (asm_out_file, "L",
-					     CODE_LABEL_NUMBER (xoperands[1]));
-		  output_asm_insn ("ldo R'%0-%l1(%%r1),%%r1", xoperands);
-		}
-	      else if (TARGET_GAS && !TARGET_SOM
-		       && (TARGET_LONG_PIC_PCREL_CALL || local_call))
-		{
-		  /*  GAS currently can't generate the relocations that
-		      are needed for the SOM linker under HP-UX using this
-		      sequence.  The GNU linker doesn't generate the stubs
-		      that are needed for external calls on TARGET_ELF32
-		      with this sequence.  For now, we have to use a
-		      longer plabel sequence when using GAS.  */
-		  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
-		  output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%%r1",
-				   xoperands);
-		  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%%r1",
-				   xoperands);
+		  xoperands[1] = gen_rtx_REG (Pmode, 1);
+		  xoperands[2] = xoperands[1];
+		  pa_output_pic_pcrel_sequence (xoperands);
 		}
 	      else
 		{
@@ -8131,7 +8131,7 @@ pa_attr_length_indirect_call (rtx_insn *insn)
 const char *
 pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
 {
-  rtx xoperands[1];
+  rtx xoperands[4];
 
   if (TARGET_64BIT)
     {
@@ -8171,25 +8171,12 @@ pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
     return "ldil L'$$dyncall,%%r31\n\tldo R'$$dyncall(%%r31),%%r31\n\tblr %%r0,%%r2\n\tbv,n %%r0(%%r31)";
 
   /* We need a long PIC call to $$dyncall.  */
-  xoperands[0] = NULL_RTX;
-  output_asm_insn ("{bl|b,l} .+8,%%r2", xoperands);
-  if (TARGET_SOM || !TARGET_GAS)
-    {
-      xoperands[0] = gen_label_rtx ();
-      output_asm_insn ("addil L'$$dyncall-%0,%%r2", xoperands);
-      targetm.asm_out.internal_label (asm_out_file, "L",
-				      CODE_LABEL_NUMBER (xoperands[0]));
-      output_asm_insn ("ldo R'$$dyncall-%0(%%r1),%%r1", xoperands);
-    }
-  else
-    {
-      output_asm_insn ("addil L'$$dyncall-$PIC_pcrel$0+4,%%r2", xoperands);
-      output_asm_insn ("ldo R'$$dyncall-$PIC_pcrel$0+8(%%r1),%%r1",
-		       xoperands);
-    }
+  xoperands[0] = gen_rtx_SYMBOL_REF (Pmode, "$$dyncall");
+  xoperands[1] = gen_rtx_REG (Pmode, 2);
+  xoperands[2] = gen_rtx_REG (Pmode, 1);
+  pa_output_pic_pcrel_sequence (xoperands);
   output_asm_insn ("bv %%r0(%%r1)", xoperands);
-  output_asm_insn ("ldo 12(%%r2),%%r2", xoperands);
-  return "";
+  return "ldo {12|20}(%%r2),%%r2";
 }
 
 /* In HPUX 8.0's shared library scheme, special relocations are needed
@@ -8333,6 +8320,8 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
     }
   else if (TARGET_64BIT)
     {
+      rtx xop[4];
+
       /* We only have one call-clobbered scratch register, so we can't
          make use of the delay slot if delta doesn't fit in 14 bits.  */
       if (!val_14)
@@ -8341,18 +8330,11 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
 	}
 
-      output_asm_insn ("b,l .+8,%%r1", xoperands);
-
-      if (TARGET_GAS)
-	{
-	  output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%%r1", xoperands);
-	  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%%r1", xoperands);
-	}
-      else
-	{
-	  xoperands[3] = GEN_INT (val_14 ? 8 : 16);
-	  output_asm_insn ("addil L'%0-%1-%3,%%r1", xoperands);
-	}
+      /* Load function address into %r1.  */
+      xop[0] = xoperands[0];
+      xop[1] = gen_rtx_REG (Pmode, 1);
+      xop[2] = xop[1];
+      pa_output_pic_pcrel_sequence (xop);
 
       if (val_14)
 	{
@@ -8372,7 +8354,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
       output_asm_insn ("ldo R'%0(%%r1),%%r22", xoperands);
 
       if (!val_14)
-	output_asm_insn ("addil L'%2,%%r26", xoperands);
+	output_asm_insn ("ldil L'%2,%%r26", xoperands);
 
       output_asm_insn ("bv %%r0(%%r22)", xoperands);
 
@@ -8383,7 +8365,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 	}
       else
 	{
-	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
+	  output_asm_insn ("ldo R'%2(%%r26),%%r26", xoperands);
 	  nbytes += 20;
 	}
     }
@@ -8435,18 +8417,13 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
     }
   else if (flag_pic)
     {
-      output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
+      rtx xop[4];
 
-      if (TARGET_SOM || !TARGET_GAS)
-	{
-	  output_asm_insn ("addil L'%0-%1-8,%%r1", xoperands);
-	  output_asm_insn ("ldo R'%0-%1-8(%%r1),%%r22", xoperands);
-	}
-      else
-	{
-	  output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%%r1", xoperands);
-	  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%%r22", xoperands);
-	}
+      /* Load function address into %r22.  */
+      xop[0] = xoperands[0];
+      xop[1] = gen_rtx_REG (Pmode, 1);
+      xop[2] = gen_rtx_REG (Pmode, 22);
+      pa_output_pic_pcrel_sequence (xop);
 
       if (!val_14)
 	output_asm_insn ("addil L'%2,%%r26", xoperands);
