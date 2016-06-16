@@ -3073,6 +3073,7 @@ package body GNAT.Command_Line is
                Free (Config.Switches (S).Long_Switch);
                Free (Config.Switches (S).Help);
                Free (Config.Switches (S).Section);
+               Free (Config.Switches (S).Argument);
             end loop;
 
             Unchecked_Free (Config.Switches);
