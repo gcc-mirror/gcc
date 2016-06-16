@@ -1412,6 +1412,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_insert_aux(iterator __position, const value_type& __x);
 #else
       template<typename... _Args>
+	static void
+	_S_insert_aux_assign(iterator __pos, _Args&&... __args)
+	{ *__pos =  _Tp(std::forward<_Args>(__args)...); }
+
+      static void
+      _S_insert_aux_assign(iterator __pos, _Tp&& __arg)
+      { *__pos = std::move(__arg); }
+
+      template<typename... _Args>
 	void
 	_M_insert_aux(iterator __position, _Args&&... __args);
 
