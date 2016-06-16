@@ -1,3 +1,7 @@
+2016-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/vect/pr36648.cc: Disable cunrolli
+
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71554
