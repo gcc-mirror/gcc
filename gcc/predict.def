@@ -159,40 +159,43 @@ DEF_PREDICTOR (PRED_COLD_LABEL, "cold label", PROB_VERY_LIKELY,
 /* The following predictors are used in Fortran. */
 
 /* Branch leading to an integer overflow are extremely unlikely.  */
-DEF_PREDICTOR (PRED_FORTRAN_OVERFLOW, "overflow", PROB_ALWAYS,
+DEF_PREDICTOR (PRED_FORTRAN_OVERFLOW, "Fortran overflow", PROB_ALWAYS,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Branch leading to a failure status are unlikely.  This can occur for out
    of memory.  This predictor only occurs when the user explicitly asked
    for a return status.  By default, the code aborts,
    which is handled via PRED_NORETURN.  */
-DEF_PREDICTOR (PRED_FORTRAN_FAIL_ALLOC, "fail alloc", PROB_VERY_LIKELY, 0)
+DEF_PREDICTOR (PRED_FORTRAN_FAIL_ALLOC, "Fortran fail alloc", PROB_VERY_LIKELY, 0)
 
 /* Predictor is used for an allocation of an already allocated memory or
    deallocating an already deallocated allocatable.  */
-DEF_PREDICTOR (PRED_FORTRAN_REALLOC, "repeated allocation/deallocation", \
-	       PROB_LIKELY, 0)
+DEF_PREDICTOR (PRED_FORTRAN_REALLOC, \
+	       "Fortran repeated allocation/deallocation", PROB_LIKELY, 0)
 
 /* Branch leading to an I/O failure status are unlikely.  This predictor is
    used for I/O failures such as for invalid unit numbers.  This predictor
    only occurs when the user explicitly asked for a return status.  By default,
    the code aborts, which is handled via PRED_NORETURN.  */
-DEF_PREDICTOR (PRED_FORTRAN_FAIL_IO, "fail IO", HITRATE (85), 0)
+DEF_PREDICTOR (PRED_FORTRAN_FAIL_IO, "Fortran fail IO", HITRATE (85), 0)
 
 /* Branch leading to a run-time warning message which is printed only once
    are unlikely.  The print-warning branch itself can be likely or unlikely.  */
-DEF_PREDICTOR (PRED_FORTRAN_WARN_ONCE, "warn once", HITRATE (75), 0)
+DEF_PREDICTOR (PRED_FORTRAN_WARN_ONCE, "Fortran warn once", HITRATE (75), 0)
 
 /* Branch belonging to a zero-sized array.  */
-DEF_PREDICTOR (PRED_FORTRAN_SIZE_ZERO, "zero-sized array", HITRATE(99), 0)
+DEF_PREDICTOR (PRED_FORTRAN_SIZE_ZERO, "Fortran zero-sized array", \
+	       HITRATE (99), 0)
 
 /* Branch belonging to an invalid bound index, in a context where it is
    standard conform and well defined but rather pointless and, hence, rather
    unlikely to occur.  */
-DEF_PREDICTOR (PRED_FORTRAN_INVALID_BOUND, "zero-sized array", HITRATE(90), 0)
+DEF_PREDICTOR (PRED_FORTRAN_INVALID_BOUND, "Fortran invalid bound", \
+	       HITRATE (90), 0)
 
 /* Branch belonging to the handling of absent optional arguments.  This
    predictor is used when an optional dummy argument, associated with an
    absent argument, is passed on as actual argument to another procedure,
    which in turn has an optional argument.  */
-DEF_PREDICTOR (PRED_FORTRAN_ABSENT_DUMMY, "absent dummy", HITRATE(60), 0)
+DEF_PREDICTOR (PRED_FORTRAN_ABSENT_DUMMY, "Fortran absent dummy", \
+	       HITRATE (60), 0)
