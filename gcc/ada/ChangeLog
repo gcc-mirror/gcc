@@ -1,3 +1,8 @@
+2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindgen.adb, exp_util.adb, sem_ch9.adb, sem_util.adb: Minor
+	reformatting.
+
 2016-06-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch9.adb, sem_util.ads, sem_res.adb: Minor reformatting and typo

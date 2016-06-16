@@ -1986,10 +1986,10 @@ package body Sem_Ch9 is
       end if;
 
       Set_Ekind              (T, E_Protected_Type);
-      Set_Is_First_Subtype   (T, True);
+      Set_Is_First_Subtype   (T);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
-      Set_Has_Delayed_Freeze (T, True);
+      Set_Has_Delayed_Freeze (T);
       Set_Stored_Constraint  (T, No_Elist);
 
       --  Mark this type as a protected type for the sake of restrictions,
@@ -2004,9 +2004,9 @@ package body Sem_Ch9 is
       if In_Private_Part (Current_Scope)
         and then Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
       then
-         Set_Has_Protected   (T, False);
+         Set_Has_Protected (T, False);
       else
-         Set_Has_Protected   (T, True);
+         Set_Has_Protected (T);
       end if;
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
