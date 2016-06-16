@@ -63,6 +63,8 @@
 #include <initializer_list>
 #endif
 
+#include <debug/assertions.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
@@ -784,7 +786,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       reference
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
-      { return *(this->_M_impl._M_start + __n); }
+      {
+	__glibcxx_requires_subscript(__n);
+	return *(this->_M_impl._M_start + __n);
+      }
 
       /**
        *  @brief  Subscript access to the data contained in the %vector.
@@ -799,7 +804,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       const_reference
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
-      { return *(this->_M_impl._M_start + __n); }
+      {
+	__glibcxx_requires_subscript(__n);
+	return *(this->_M_impl._M_start + __n);
+      }
 
     protected:
       /// Safety check used only from at().
@@ -856,7 +864,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       reference
       front() _GLIBCXX_NOEXCEPT
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the first
@@ -864,7 +875,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       const_reference
       front() const _GLIBCXX_NOEXCEPT
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       /**
        *  Returns a read/write reference to the data at the last
@@ -872,7 +886,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       reference
       back() _GLIBCXX_NOEXCEPT
-      { return *(end() - 1); }
+      {
+	__glibcxx_requires_nonempty();
+	return *(end() - 1);
+      }
       
       /**
        *  Returns a read-only (constant) reference to the data at the
@@ -880,7 +897,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       const_reference
       back() const _GLIBCXX_NOEXCEPT
-      { return *(end() - 1); }
+      {
+	__glibcxx_requires_nonempty();
+	return *(end() - 1);
+      }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 464. Suggestion for new member functions in standard containers.
@@ -955,6 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       pop_back() _GLIBCXX_NOEXCEPT
       {
+	__glibcxx_requires_nonempty();
 	--this->_M_impl._M_finish;
 	_Alloc_traits::destroy(this->_M_impl, this->_M_impl._M_finish);
       }
@@ -1205,6 +1226,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       swap(vector& __x) _GLIBCXX_NOEXCEPT
       {
+#if __cplusplus >= 201103L
+	__glibcxx_assert(_Alloc_traits::propagate_on_container_swap::value
+			 || _M_get_Tp_allocator() == __x._M_get_Tp_allocator());
+#endif
 	this->_M_impl._M_swap_data(__x._M_impl);
 	_Alloc_traits::_S_on_swap(_M_get_Tp_allocator(),
 				  __x._M_get_Tp_allocator());
