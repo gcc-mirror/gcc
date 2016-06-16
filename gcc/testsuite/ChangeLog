@@ -1,5 +1,8 @@
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/71554
+	* gcc.c-torture/execute/pr71554.c: New test.
+
 	PR rtl-optimization/71532
 	* gcc.dg/torture/pr71532.c: New test.
 
