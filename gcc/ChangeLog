@@ -1,3 +1,19 @@
+2016-06-16  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.c (arc_print_operand_address): Handle pc-relative
+	addresses.
+	(arc_needs_pcl_p): Add GOTOFFPC.
+	(arc_legitimate_pic_addr_p): Likewise.
+	(arc_output_pic_addr_const): Likewise.
+	(arc_legitimize_pic_address): Generate a pc-relative address using
+	GOTOFFPC.
+	(arc_output_libcall): Use @pcl syntax.
+	(arc_delegitimize_address_0): Delegitimize ARC_UNSPEC_GOTOFFPC.
+	* config/arc/arc.md ("unspec"): Add ARC_UNSPEC_GOTOFFPC.
+	(*movsi_insn): Use @pcl syntax.
+	(doloop_begin_i): Likewise.
+
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
 	* predict.def: Define a new predictor.
