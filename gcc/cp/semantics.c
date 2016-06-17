@@ -4487,7 +4487,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM)
 	  && !type_dependent_expression_p (t))
 	{
-	  if (DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+	  if (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
+	      && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"bit-field %qE in %qs clause",
@@ -4496,7 +4497,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	    }
 	  while (TREE_CODE (t) == COMPONENT_REF)
 	    {
-	      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+	      if (TREE_TYPE (TREE_OPERAND (t, 0))
+		  && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qE is a member of a union", t);
@@ -4504,6 +4506,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		}
 	      t = TREE_OPERAND (t, 0);
 	    }
+	  if (REFERENCE_REF_P (t))
+	    t = TREE_OPERAND (t, 0);
 	}
       if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
@@ -6622,6 +6626,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		    {
 		      while (TREE_CODE (t) == COMPONENT_REF)
+			t = TREE_OPERAND (t, 0);
+		      if (REFERENCE_REF_P (t))
 			t = TREE_OPERAND (t, 0);
 		      if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
 			break;
