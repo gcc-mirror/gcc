@@ -1,3 +1,7 @@
+2016-06-17  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix columns of script output.
+
 2016-06-13  Richard Biener  <rguenther@suse.de>
 
 	* download_prerequisites (ISL): Bump version to 0.16.1

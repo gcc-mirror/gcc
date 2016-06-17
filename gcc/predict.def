@@ -89,7 +89,7 @@ DEF_PREDICTOR (PRED_COLD_FUNCTION, "cold function call", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Edge causing loop to terminate is probably not taken.  */
-DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (92),
+DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (85),
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Edge causing loop to terminate by computing value used by later
