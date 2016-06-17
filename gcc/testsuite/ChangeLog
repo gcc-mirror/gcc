@@ -1,3 +1,7 @@
+2016-06-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/predict-9.c: Fix dump scanning.
+
 2016-06-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/71354

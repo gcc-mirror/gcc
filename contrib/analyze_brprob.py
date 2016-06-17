@@ -119,10 +119,10 @@ class Profile:
         elif sorting == 'coverage':
             sorter = lambda x: x[1].count
 
-        print('%-36s %8s %6s  %-16s %14s %8s %6s' % ('HEURISTICS', 'BRANCHES', '(REL)',
+        print('%-40s %8s %6s  %-16s %14s %8s %6s' % ('HEURISTICS', 'BRANCHES', '(REL)',
               'HITRATE', 'COVERAGE', 'COVERAGE', '(REL)'))
         for (k, v) in sorted(self.heuristics.items(), key = sorter):
-            print('%-36s %8i %5.1f%% %6.2f%% / %6.2f%% %14i %8s %5.1f%%' %
+            print('%-40s %8i %5.1f%% %6.2f%% / %6.2f%% %14i %8s %5.1f%%' %
             (k, v.branches, percentage(v.branches, self.branches_max ()),
              percentage(v.hits, v.count), percentage(v.fits, v.count),
              v.count, v.count_formatted(), percentage(v.count, self.count_max()) ))

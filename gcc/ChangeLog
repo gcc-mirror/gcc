@@ -1,3 +1,7 @@
+2016-06-17  Martin Liska  <mliska@suse.cz>
+
+	* predict.def: PRED_LOOP_EXIT from 92 to 85.
+
 2016-06-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm_neon.h (vadd_f32): replace __FAST_MATH with
