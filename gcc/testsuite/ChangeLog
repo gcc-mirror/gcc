@@ -1,5 +1,10 @@
 2016-06-17  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/71354
+	* gcc.dg/vect/vect-23.c: Use vect_condition instead of vect_cond.
+
+2016-06-17  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/71347
 	* gcc.dg/tree-ssa/pr71347.c: New test.
 

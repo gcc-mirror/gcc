@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-require-effective-target vect_cond } */
+/* { dg-require-effective-target vect_condition } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
