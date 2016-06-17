@@ -1807,7 +1807,7 @@ transform_add_to_multiply (vec<operand_entry *> *ops)
   tree op = NULL_TREE;
   int j;
   int i, start = -1, end = 0, count = 0;
-  vec<std::pair <int, int> > indxs = vNULL;
+  auto_vec<std::pair <int, int> > indxs;
   bool changed = false;
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE ((*ops)[0]->op))

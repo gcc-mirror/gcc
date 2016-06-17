@@ -1,5 +1,9 @@
 2016-06-17  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-reassoc.c (transform_add_to_multiply): Use auto_vec.
+
+2016-06-17  Martin Liska  <mliska@suse.cz>
+
 	* predict.def: PRED_LOOP_EXIT from 92 to 85.
 
 2016-06-17  James Greenhalgh  <james.greenhalgh@arm.com>
