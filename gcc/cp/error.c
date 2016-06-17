@@ -1486,6 +1486,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   int show_return = flags & TFF_RETURN_TYPE || flags & TFF_DECL_SPECIFIERS;
   int do_outer_scope = ! (flags & TFF_UNQUALIFIED_NAME);
   tree exceptions;
+  bool constexpr_p;
 
   flags &= ~(TFF_UNQUALIFIED_NAME | TFF_TEMPLATE_NAME);
   if (TREE_CODE (t) == TEMPLATE_DECL)
@@ -1494,6 +1495,9 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   /* Save the exceptions, in case t is a specialization and we are
      emitting an error about incompatible specifications.  */
   exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (t));
+
+  /* Likewise for the constexpr specifier, in case t is a specialization.  */
+  constexpr_p = DECL_DECLARED_CONSTEXPR_P (t);
 
   /* Pretty print template instantiations only.  */
   if (DECL_USE_TEMPLATE (t) && DECL_TEMPLATE_INFO (t)
@@ -1529,7 +1533,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
       else if (DECL_VIRTUAL_P (t))
 	pp_cxx_ws_string (pp, "virtual");
 
-      if (DECL_DECLARED_CONSTEXPR_P (t))
+      if (constexpr_p)
 	pp_cxx_ws_string (pp, "constexpr");
     }
 

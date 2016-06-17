@@ -1281,8 +1281,11 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
 	  && DECL_TEMPLATE_SPECIALIZATION (new_decl))
 	return true;
 
-      error ("redeclaration %q+D differs in %<constexpr%>", new_decl);
-      error ("from previous declaration %q+D", old_decl);
+      error_at (DECL_SOURCE_LOCATION (new_decl),
+		"redeclaration %qD differs in %<constexpr%> "
+		"from previous declaration", new_decl);
+      inform (DECL_SOURCE_LOCATION (old_decl),
+	      "previous declaration %qD", old_decl);
       return false;
     }
   return true;
