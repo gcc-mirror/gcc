@@ -341,7 +341,8 @@ cp_stabilize_reference (tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
-  if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl)))
+  if (!(TREE_CODE (decl) == FUNCTION_DECL
+	&& DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL))
     /* Not a built-in.  */
     return false;
   switch (DECL_FUNCTION_CODE (decl))
@@ -2536,7 +2537,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
       /* builtin_LINE and builtin_FILE get the location where the default
 	 argument is expanded, not where the call was written.  */
       tree callee = get_callee_fndecl (*tp);
-      if (callee && DECL_BUILT_IN (callee))
+      if (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_FILE:

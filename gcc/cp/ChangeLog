@@ -1,3 +1,11 @@
+2016-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (builtin_valid_in_constant_expr_p): Test for
+	DECL_BUILT_IN_CLASS equal to BUILT_IN_NORMAL instead of just
+	DECL_BUILT_IN.
+	(bot_manip): Likewise.
+	* call.c (magic_varargs_p): Likewise.
+
 2016-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokfndecl): Change pair of errors to error + inform.
