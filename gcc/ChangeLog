@@ -1,3 +1,9 @@
+2016-06-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/71347
+	* tree-ssa-loop-ivopts.c (determine_group_iv_cost_address): Compute
+	cost for all uses in group.
+
 2016-06-17 Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Only
