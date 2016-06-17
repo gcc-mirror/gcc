@@ -1,3 +1,7 @@
+2016-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/defaulted31.C: Adjust for dg-message vs dg-error.
+
 2016-06-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp

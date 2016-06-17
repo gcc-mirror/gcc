@@ -8295,7 +8295,8 @@ grokfndecl (tree ctype,
 	  else if (DECL_DEFAULTED_FN (old_decl))
 	    {
 	      error ("definition of explicitly-defaulted %q+D", decl);
-	      error ("%q+#D explicitly defaulted here", old_decl);
+	      inform (DECL_SOURCE_LOCATION (old_decl),
+		      "%q#D explicitly defaulted here", old_decl);
 	      return NULL_TREE;
 	    }
 
