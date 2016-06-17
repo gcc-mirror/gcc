@@ -1,3 +1,12 @@
+2016-06-17  DJ Delorie  <dj@redhat.com>
+
+	PR target/71338
+	* config/rl78/rl78-expand.c (umulqihi3): Enable for G10.
+	* config/rl78/rl78-virtual.c (umulhi3_shift_virt): Likewise.
+	(umulqihi3_virt): Likewise.
+	* config/rl78/rl78-real.c (umulhi3_shift_real): Likewise.
+	(umulqihi3_real): Likewise.
+
 2016-06-17  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-reassoc.c (transform_add_to_multiply): Use auto_vec.

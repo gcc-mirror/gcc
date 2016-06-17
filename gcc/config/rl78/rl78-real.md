@@ -179,7 +179,7 @@
   [(set (match_operand:HI 0 "register_operand" "=A,A")
         (mult:HI (match_operand:HI 1 "rl78_nonfar_operand" "0,0")
                  (match_operand:HI 2 "rl78_24_operand" "N,i")))]
-  "rl78_real_insns_ok () && !TARGET_G10"
+  "rl78_real_insns_ok ()"
   "@
    shlw\t%0, 1
    shlw\t%0, 2"
@@ -189,7 +189,7 @@
   [(set (match_operand:HI 0 "nonimmediate_operand" "=A")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "general_operand" "%a"))
                  (zero_extend:HI (match_operand:QI 2 "general_operand" "x"))))]
-  "rl78_real_insns_ok () && !TARGET_G10"
+  "rl78_real_insns_ok ()"
   "mulu\t%2"
 )
 
