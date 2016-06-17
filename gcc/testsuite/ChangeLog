@@ -1,5 +1,10 @@
 2016-06-17  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/71354
+	* gcc.dg/vect/vect-23.c: Add VECT_COND requirement.
+
+2016-06-17  Bin Cheng  <bin.cheng@arm.com>
+
 	* gcc.dg/vect/vect-alias-check-1.c: New test.
 
 2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
