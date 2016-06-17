@@ -7140,7 +7140,7 @@ magic_varargs_p (tree fn)
   if (flag_cilkplus && is_cilkplus_reduce_builtin (fn) != BUILT_IN_NONE)
     return 2;
 
-  if (DECL_BUILT_IN (fn))
+  if (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fn))
       {
       case BUILT_IN_CLASSIFY_TYPE:
