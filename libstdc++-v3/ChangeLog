@@ -1,3 +1,17 @@
+2016-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71545
+	* include/bits/stl_algobase.h (lower_bound, lexicographical_compare):
+	Remove irreflexive checks.
+	* include/bits/stl_algo.h (lower_bound, upper_bound, equal_range,
+	binary_search): Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc: New test.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: New test.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: New test.
+	* testsuite/util/testsuite_iterators.h (__gnu_test::test_container):
+	Add constructor from array.
+
 2016-06-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/debug.h

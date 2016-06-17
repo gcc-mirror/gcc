@@ -2026,7 +2026,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_partitioned_lower_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__lower_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_comp_val(__comp));
@@ -2080,7 +2079,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanOpConcept<
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__upper_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__val_less_iter());
@@ -2112,7 +2110,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__upper_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__val_comp_iter(__comp));
@@ -2186,7 +2183,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__equal_range(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_less_val(),
@@ -2225,7 +2221,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__equal_range(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_comp_val(__comp),
@@ -2255,7 +2250,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       _ForwardIterator __i
 	= std::__lower_bound(__first, __last, __val,
@@ -2291,7 +2285,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       _ForwardIterator __i
 	= std::__lower_bound(__first, __last, __val,
