@@ -1,3 +1,7 @@
+2016-06-17  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/geniterators.sh: Handle parenthesised conditions.
+
 2016-06-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_pic_pcrel_sequence): New.
