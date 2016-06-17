@@ -2797,6 +2797,8 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	    return error_mark_node;
 	  if (!access_path)
 	    {
+	      if (any_dependent_bases_p (object_type))
+		goto dependent;
 	      if (complain & tf_error)
 		error ("%qT is not a base of %qT", scope, object_type);
 	      return error_mark_node;
