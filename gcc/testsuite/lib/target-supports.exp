@@ -2990,23 +2990,25 @@ proc check_effective_target_arm_crc_ok { } {
 
 proc check_effective_target_arm_neon_fp16_ok_nocache { } {
     global et_arm_neon_fp16_flags
+    global et_arm_neon_flags
     set et_arm_neon_fp16_flags ""
-    if { [check_effective_target_arm32] } {
+    if { [check_effective_target_arm32]
+	 && [check_effective_target_arm_neon_ok] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-fp16"
 		       "-mfpu=neon-fp16 -mfloat-abi=softfp"
 		       "-mfp16-format=ieee"
 		       "-mfloat-abi=softfp -mfp16-format=ieee"
 		       "-mfpu=neon-fp16 -mfp16-format=ieee"
 		       "-mfpu=neon-fp16 -mfloat-abi=softfp -mfp16-format=ieee"} {
-	    if { [check_no_compiler_messages_nocache arm_neon_fp_16_ok object {
+	    if { [check_no_compiler_messages_nocache arm_neon_fp16_ok object {
 		#include "arm_neon.h"
 		float16x4_t
 		foo (float32x4_t arg)
 		{
                   return vcvt_f16_f32 (arg);
 		}
-	    } "$flags"] } {
-		set et_arm_neon_fp16_flags $flags
+	    } "$et_arm_neon_flags $flags"] } {
+		set et_arm_neon_fp16_flags [concat $et_arm_neon_flags $flags]
 		return 1
 	    }
 	}
@@ -3085,8 +3087,10 @@ proc check_effective_target_arm_v8_neon_ok { } {
 
 proc check_effective_target_arm_neonv2_ok_nocache { } {
     global et_arm_neonv2_flags
+    global et_arm_neon_flags
     set et_arm_neonv2_flags ""
-    if { [check_effective_target_arm32] } {
+    if { [check_effective_target_arm32]
+	 && [check_effective_target_arm_neon_ok] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-vfpv4" "-mfpu=neon-vfpv4 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_neonv2_ok object {
 		#include "arm_neon.h"
@@ -3095,8 +3099,8 @@ proc check_effective_target_arm_neonv2_ok_nocache { } {
                 {
                   return vfma_f32 (a, b, c);
                 }
-	    } "$flags"] } {
-		set et_arm_neonv2_flags $flags
+	    } "$et_arm_neon_flags $flags"] } {
+		set et_arm_neonv2_flags [concat $et_arm_neon_flags $flags]
 		return 1
 	    }
 	}

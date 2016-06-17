@@ -1,3 +1,11 @@
+2016-06-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_fp16_ok_nocache): Call
+	arm_neon_ok and merge flags.  Fix temporary test name.
+	(check_effective_target_arm_neonv2_ok_nocache): Call arm_neon_ok
+	and merge flags.
+
 2016-06-17  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-9.c: Fix dump scanning.
