@@ -1,3 +1,9 @@
+2016-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (validate_constexpr_redeclaration): Change pair of errors
+	to error + inform.
+	* error.c (dump_function_decl): Save the constexpr specifier too.
+
 2016-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (builtin_valid_in_constant_expr_p): Test for

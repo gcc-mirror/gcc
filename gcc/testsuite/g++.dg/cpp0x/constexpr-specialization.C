@@ -3,10 +3,10 @@
 
 template<typename T> constexpr int foo(T);
 template<> int foo(int);
-template<> int foo(int);            // { dg-error "previous" }
-template<> constexpr int foo(int);  // { dg-error "redeclaration" }
+template<> int foo(int);            // { dg-message "previous declaration 'int foo" }
+template<> constexpr int foo(int);  // { dg-error "redeclaration 'constexpr int foo" }
 
 template<typename T> int bar(T);
 template<> constexpr int bar(int);
-template<> constexpr int bar(int);  // { dg-error "previous" }
-template<> int bar(int);            // { dg-error "redeclaration" }
+template<> constexpr int bar(int);  // { dg-message "previous declaration 'constexpr int bar" }
+template<> int bar(int);            // { dg-error "redeclaration 'int bar" }
