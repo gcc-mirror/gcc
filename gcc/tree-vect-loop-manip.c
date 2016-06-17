@@ -2238,11 +2238,16 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
       const dr_with_seg_len& dr_b = comp_alias_ddrs[i].second;
       tree segment_length_a = dr_a.seg_len;
       tree segment_length_b = dr_b.seg_len;
+      tree addr_base_a = DR_BASE_ADDRESS (dr_a.dr);
+      tree addr_base_b = DR_BASE_ADDRESS (dr_b.dr);
+      tree offset_a = DR_OFFSET (dr_a.dr), offset_b = DR_OFFSET (dr_b.dr);
 
-      tree addr_base_a
-	= fold_build_pointer_plus (DR_BASE_ADDRESS (dr_a.dr), dr_a.offset);
-      tree addr_base_b
-	= fold_build_pointer_plus (DR_BASE_ADDRESS (dr_b.dr), dr_b.offset);
+      offset_a = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_a),
+			      offset_a, DR_INIT (dr_a.dr));
+      offset_b = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_b),
+			      offset_b, DR_INIT (dr_b.dr));
+      addr_base_a = fold_build_pointer_plus (addr_base_a, offset_a);
+      addr_base_b = fold_build_pointer_plus (addr_base_b, offset_b);
 
       if (dump_enabled_p ())
 	{
