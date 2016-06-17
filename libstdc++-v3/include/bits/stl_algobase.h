@@ -989,7 +989,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanOpConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__lower_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_less_val());
@@ -1214,9 +1213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)
       __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_irreflexive2(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
-      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return std::__lexicographical_compare_aux(std::__niter_base(__first1),
 						std::__niter_base(__last1),
@@ -1246,9 +1243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_InputIteratorConcept<_II1>)
       __glibcxx_function_requires(_InputIteratorConcept<_II2>)
       __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
       __glibcxx_requires_valid_range(__first2, __last2);
-      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return std::__lexicographical_compare_impl
 	(__first1, __last1, __first2, __last2,

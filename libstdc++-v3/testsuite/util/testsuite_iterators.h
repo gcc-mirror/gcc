@@ -542,6 +542,13 @@ namespace __gnu_test
     test_container(T* _first, T* _last):bounds(_first, _last)
     { }
 
+#if __cplusplus >= 201103L
+      template<std::size_t N>
+	explicit
+	test_container(T (&arr)[N]) : test_container(arr, arr+N)
+	{ }
+#endif
+
     ItType<T>
     it(int pos)
     {
