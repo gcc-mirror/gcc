@@ -1,3 +1,17 @@
+2016-06-17  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (match_acc): New generic function to parse OpenACC
+	directives.
+	(gfc_match_oacc_parallel_loop): Use it.
+	(gfc_match_oacc_parallel): Likewise.
+	(gfc_match_oacc_kernels_loop): Likewise.
+	(gfc_match_oacc_kernels): Likewise.
+	(gfc_match_oacc_data): Likewise.
+	(gfc_match_oacc_host_data): Likewise.
+	(gfc_match_oacc_loop): Likewise.
+	(gfc_match_oacc_enter_data): Likewise.
+	(gfc_match_oacc_exit_data): Likewise.
+
 2016-06-16  Martin Liska  <mliska@suse.cz>
 
 	* trans-stmt.c (gfc_trans_simple_do): Predict the edge.
