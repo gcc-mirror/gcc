@@ -530,7 +530,7 @@ vadd_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vadd_f32 (float32x2_t __a, float32x2_t __b)
 {
-#ifdef __FAST_MATH
+#ifdef __FAST_MATH__
   return __a + __b;
 #else
   return (float32x2_t) __builtin_neon_vaddv2sf (__a, __b);
@@ -594,7 +594,7 @@ vaddq_s64 (int64x2_t __a, int64x2_t __b)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vaddq_f32 (float32x4_t __a, float32x4_t __b)
 {
-#ifdef __FAST_MATH
+#ifdef __FAST_MATH__
   return __a + __b;
 #else
   return (float32x4_t) __builtin_neon_vaddv4sf (__a, __b);
@@ -1030,7 +1030,7 @@ vmul_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vmul_f32 (float32x2_t __a, float32x2_t __b)
 {
-#ifdef __FAST_MATH
+#ifdef __FAST_MATH__
   return __a * __b;
 #else
   return (float32x2_t) __builtin_neon_vmulfv2sf (__a, __b);
@@ -1077,7 +1077,7 @@ vmulq_s32 (int32x4_t __a, int32x4_t __b)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vmulq_f32 (float32x4_t __a, float32x4_t __b)
 {
-#ifdef __FAST_MATH
+#ifdef __FAST_MATH__
   return __a * __b;
 #else
   return (float32x4_t) __builtin_neon_vmulfv4sf (__a, __b);
@@ -1678,7 +1678,7 @@ vsub_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vsub_f32 (float32x2_t __a, float32x2_t __b)
 {
-#ifdef __FAST_MATH
+#ifdef __FAST_MATH__
   return __a - __b;
 #else
   return (float32x2_t) __builtin_neon_vsubv2sf (__a, __b);
@@ -1742,7 +1742,7 @@ vsubq_s64 (int64x2_t __a, int64x2_t __b)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vsubq_f32 (float32x4_t __a, float32x4_t __b)
 {
-#ifdef __FAST_MATH
+#ifdef __FAST_MATH__
   return __a - __b;
 #else
   return (float32x4_t) __builtin_neon_vsubv4sf (__a, __b);

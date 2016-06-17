@@ -1,3 +1,13 @@
+2016-06-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm_neon.h (vadd_f32): replace __FAST_MATH with
+	__FAST_MATH__.
+	(vaddq_f32): Likewise.
+	(vmul_f32): Likewise.
+	(vmulq_f32): Likewise.
+	(vsub_f32): Likewise.
+	(vsubq_f32): Likewise.
+
 2016-06-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/71347
