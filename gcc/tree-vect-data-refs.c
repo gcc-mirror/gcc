@@ -2851,7 +2851,8 @@ operator == (const dr_with_seg_len& d1,
 {
   return operand_equal_p (DR_BASE_ADDRESS (d1.dr),
 			  DR_BASE_ADDRESS (d2.dr), 0)
-	   && compare_tree (d1.offset, d2.offset) == 0
+	   && compare_tree (DR_OFFSET (d1.dr), DR_OFFSET (d2.dr)) == 0
+	   && compare_tree (DR_INIT (d1.dr), DR_INIT (d2.dr)) == 0
 	   && compare_tree (d1.seg_len, d2.seg_len) == 0;
 }
 
@@ -2861,15 +2862,12 @@ operator == (const dr_with_seg_len& d1,
    so that we can combine aliasing checks in one scan.  */
 
 static int
-comp_dr_with_seg_len_pair (const void *p1_, const void *p2_)
+comp_dr_with_seg_len_pair (const void *pa_, const void *pb_)
 {
-  const dr_with_seg_len_pair_t* p1 = (const dr_with_seg_len_pair_t *) p1_;
-  const dr_with_seg_len_pair_t* p2 = (const dr_with_seg_len_pair_t *) p2_;
-
-  const dr_with_seg_len &p11 = p1->first,
-			&p12 = p1->second,
-			&p21 = p2->first,
-			&p22 = p2->second;
+  const dr_with_seg_len_pair_t* pa = (const dr_with_seg_len_pair_t *) pa_;
+  const dr_with_seg_len_pair_t* pb = (const dr_with_seg_len_pair_t *) pb_;
+  const dr_with_seg_len &a1 = pa->first, &a2 = pa->second;
+  const dr_with_seg_len &b1 = pb->first, &b2 = pb->second;
 
   /* For DR pairs (a, b) and (c, d), we only consider to merge the alias checks
      if a and c have the same basic address snd step, and b and d have the same
@@ -2877,19 +2875,23 @@ comp_dr_with_seg_len_pair (const void *p1_, const void *p2_)
      and step, we don't care the order of those two pairs after sorting.  */
   int comp_res;
 
-  if ((comp_res = compare_tree (DR_BASE_ADDRESS (p11.dr),
-				DR_BASE_ADDRESS (p21.dr))) != 0)
+  if ((comp_res = compare_tree (DR_BASE_ADDRESS (a1.dr),
+				DR_BASE_ADDRESS (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_BASE_ADDRESS (p12.dr),
-				DR_BASE_ADDRESS (p22.dr))) != 0)
+  if ((comp_res = compare_tree (DR_BASE_ADDRESS (a2.dr),
+				DR_BASE_ADDRESS (b2.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_STEP (p11.dr), DR_STEP (p21.dr))) != 0)
+  if ((comp_res = compare_tree (DR_STEP (a1.dr), DR_STEP (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_STEP (p12.dr), DR_STEP (p22.dr))) != 0)
+  if ((comp_res = compare_tree (DR_STEP (a2.dr), DR_STEP (b2.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (p11.offset, p21.offset)) != 0)
+  if ((comp_res = compare_tree (DR_OFFSET (a1.dr), DR_OFFSET (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (p12.offset, p22.offset)) != 0)
+  if ((comp_res = compare_tree (DR_INIT (a1.dr), DR_INIT (b1.dr))) != 0)
+    return comp_res;
+  if ((comp_res = compare_tree (DR_OFFSET (a2.dr), DR_OFFSET (b2.dr))) != 0)
+    return comp_res;
+  if ((comp_res = compare_tree (DR_INIT (a2.dr), DR_INIT (b2.dr))) != 0)
     return comp_res;
 
   return 0;
@@ -2992,6 +2994,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   /* First, we collect all data ref pairs for aliasing checks.  */
   FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
+      int comp_res;
       struct data_reference *dr_a, *dr_b;
       gimple *dr_group_first_a, *dr_group_first_b;
       tree segment_length_a, segment_length_b;
@@ -3026,7 +3029,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	  (dr_with_seg_len (dr_a, segment_length_a),
 	   dr_with_seg_len (dr_b, segment_length_b));
 
-      if (compare_tree (DR_BASE_ADDRESS (dr_a), DR_BASE_ADDRESS (dr_b)) > 0)
+      /* Canonicalize pairs by sorting the two DR members.  */
+      comp_res = compare_tree (DR_BASE_ADDRESS (dr_a), DR_BASE_ADDRESS (dr_b));
+      if (comp_res > 0
+          || (comp_res == 0
+              && compare_tree (DR_OFFSET (dr_a), DR_OFFSET (dr_b)) > 0))
 	std::swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
 
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
@@ -3082,21 +3089,21 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	    }
 
 	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),
-				DR_BASE_ADDRESS (dr_a2->dr),
-				0)
-	      || !tree_fits_shwi_p (dr_a1->offset)
-	      || !tree_fits_shwi_p (dr_a2->offset))
+				DR_BASE_ADDRESS (dr_a2->dr), 0)
+	      || !operand_equal_p (DR_OFFSET (dr_a1->dr),
+				   DR_OFFSET (dr_a2->dr), 0)
+	      || !tree_fits_shwi_p (DR_INIT (dr_a1->dr))
+	      || !tree_fits_shwi_p (DR_INIT (dr_a2->dr)))
 	    continue;
 
 	  /* Make sure dr_a1 starts left of dr_a2.  */
-	  if (tree_int_cst_lt (dr_a2->offset, dr_a1->offset))
+	  if (tree_int_cst_lt (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr)))
 	    std::swap (*dr_a1, *dr_a2);
 
-	  unsigned HOST_WIDE_INT diff
-	    = tree_to_shwi (dr_a2->offset) - tree_to_shwi (dr_a1->offset);
-
-
 	  bool do_remove = false;
+	  unsigned HOST_WIDE_INT diff
+	    = (tree_to_shwi (DR_INIT (dr_a2->dr))
+               - tree_to_shwi (DR_INIT (dr_a1->dr)));
 
 	  /* If the left segment does not extend beyond the start of the
 	     right segment the new segment length is that of the right
@@ -3124,7 +3131,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
 	     DIFF - SEGMENT_LENGTH_A < SEGMENT_LENGTH_B
 
-	     where DIFF = DR_A2->OFFSET - DR_A1->OFFSET.  However,
+	     where DIFF = DR_A2_INIT - DR_A1_INIT.  However,
 	     SEGMENT_LENGTH_A or SEGMENT_LENGTH_B may not be constant so we
 	     have to make a best estimation.  We can get the minimum value
 	     of SEGMENT_LENGTH_B as a constant, represented by MIN_SEG_LEN_B,

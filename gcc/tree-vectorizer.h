@@ -146,19 +146,15 @@ typedef struct _slp_instance {
 
 
 /* This struct is used to store the information of a data reference,
-   including the data ref itself, the access offset (calculated by summing its
-   offset and init) and the segment length for aliasing checks.
-   This is used to merge alias checks.  */
+   including the data ref itself and the segment length for aliasing
+   checks.  This is used to merge alias checks.  */
 
 struct dr_with_seg_len
 {
   dr_with_seg_len (data_reference_p d, tree len)
-    : dr (d),
-      offset (size_binop (PLUS_EXPR, DR_OFFSET (d), DR_INIT (d))),
-      seg_len (len) {}
+    : dr (d), seg_len (len) {}
 
   data_reference_p dr;
-  tree offset;
   tree seg_len;
 };
 

@@ -1,3 +1,15 @@
+2016-06-17  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vectorizer.h (struct dr_with_seg_len): Remove class
+	member OFFSET.
+	* tree-vect-data-refs.c (operator ==): Handle DR_OFFSET directly,
+	rather than OFFSET.
+	(comp_dr_with_seg_len_pair): Ditto.
+	(vect_prune_runtime_alias_test_list): Ditto.  Also Canonicalize
+	struct dr_with_seg_len_pair against DR_OFFSET.
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): Handle
+	DR_OFFSET directly.
+
 2016-06-17  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/geniterators.sh: Handle parenthesised conditions.
