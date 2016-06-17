@@ -4353,7 +4353,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gimple_seq stmts;
       vec_init_def = force_gimple_operand (vec_initial_defs[i], &stmts,
 					   true, NULL_TREE);
-      gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      if (stmts)
+	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+
       def = vect_defs[i];
       for (j = 0; j < ncopies; j++)
         {
