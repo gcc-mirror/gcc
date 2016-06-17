@@ -159,7 +159,7 @@
   [(set (match_operand:HI 0 "register_operand")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand"))
                  (zero_extend:HI (match_operand:QI 2 "register_operand"))))]
-  "!TARGET_G10"
+  ""
   ""
 )
 
