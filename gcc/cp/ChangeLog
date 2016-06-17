@@ -1,3 +1,11 @@
+2016-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (handle_omp_array_sections_1): Don't ICE when
+	processing_template_decl when checking for bitfields and unions.
+	Look through REFERENCE_REF_P as base of COMPONENT_REF.
+	(finish_omp_clauses): Look through REFERENCE_REF_P even for
+	array sections with COMPONENT_REF bases.
+
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_var_list_no_open): Call
