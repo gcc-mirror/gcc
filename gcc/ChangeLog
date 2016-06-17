@@ -1,3 +1,8 @@
+2016-06-17 Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Only
+	insert gimple seq if it's not empty.
+
 2016-06-17  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vectorizer.h (struct dr_with_seg_len): Remove class
