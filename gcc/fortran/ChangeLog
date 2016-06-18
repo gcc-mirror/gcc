@@ -1,3 +1,7 @@
+2016-06-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-types.c (gfc_typenode_for_spec): Commentary typo fix.
+
 2016-06-17  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* openmp.c (match_acc): New generic function to parse OpenACC

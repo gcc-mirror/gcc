@@ -1052,7 +1052,7 @@ gfc_get_character_type (int kind, gfc_charlen * cl)
   return gfc_get_character_type_len (kind, len);
 }
 
-/* Covert a basic type.  This will be an array for character types.  */
+/* Convert a basic type.  This will be an array for character types.  */
 
 tree
 gfc_typenode_for_spec (gfc_typespec * spec)
