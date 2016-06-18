@@ -1,3 +1,7 @@
+2018-06-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (TARGET_LONG_PIC_PCREL_CALL): Remove.
+
 2016-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/71435
