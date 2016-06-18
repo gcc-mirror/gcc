@@ -1,3 +1,8 @@
+2016-06-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Don't set
+	least-significant bit in function pointer for fixup.
+
 2016-06-05  Aaron Conole  <aconole@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 
