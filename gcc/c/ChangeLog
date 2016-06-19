@@ -1,3 +1,9 @@
+2016-06-19 Martin Sebor  <msebor@redhat.com>
+
+	PR c/69507
+	* c-parser.c (c_parser_alignof_expression): Avoid diagnosing
+	__alignof__ (expression).
+
 2016-06-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-typeck.c: Include spellcheck-tree.h rather than spellcheck.h.
