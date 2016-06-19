@@ -1148,11 +1148,11 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
       final_expr = gfc_copy_expr (expr);
       gfc_add_vptr_component (final_expr);
-      gfc_add_component_ref (final_expr, "_final");
+      gfc_add_final_component (final_expr);
 
       elem_size = gfc_copy_expr (expr);
       gfc_add_vptr_component (elem_size);
-      gfc_add_component_ref (elem_size, "_size");
+      gfc_add_size_component (elem_size);
     }
 
   gcc_assert (final_expr->expr_type == EXPR_VARIABLE);

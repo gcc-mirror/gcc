@@ -257,7 +257,7 @@ gfc_add_class_array_ref (gfc_expr *e)
   int rank = CLASS_DATA (e)->as->rank;
   gfc_array_spec *as = CLASS_DATA (e)->as;
   gfc_ref *ref = NULL;
-  gfc_add_component_ref (e, "_data");
+  gfc_add_data_component (e);
   e->rank = rank;
   for (ref = e->ref; ref; ref = ref->next)
     if (!ref->next)
@@ -582,7 +582,7 @@ gfc_get_len_component (gfc_expr *e)
       ref = ref->next;
     }
   /* And replace if with a ref to the _len component.  */
-  gfc_add_component_ref (ptr, "_len");
+  gfc_add_len_component (ptr);
   return ptr;
 }
 
