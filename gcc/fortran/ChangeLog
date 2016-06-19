@@ -1,3 +1,15 @@
+2016-06-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* class.c (gfc_add_class_array_ref): Call gfc_add_data_component()
+	instead of gfc_add_component_ref().
+	(gfc_get_len_component): Call gfc_add_len_component() instead of
+	gfc_add_component_ref().
+	* trans-intrinsic.c (gfc_conv_intrinsic_loc): Call
+	gfc_add_data_component() instead of gfc_add_component_ref().
+	* trans.c (gfc_add_finalizer_call): Call
+	gfc_add_final_component() and gfc_add_size_component() instead
+	of gfc_add_component_ref.
+
 2016-06-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* trans-types.c (gfc_typenode_for_spec): Commentary typo fix.

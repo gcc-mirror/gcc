@@ -7137,7 +7137,7 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
   if (arg_expr->rank == 0)
     {
       if (arg_expr->ts.type == BT_CLASS)
-	gfc_add_component_ref (arg_expr, "_data");
+	gfc_add_data_component (arg_expr);
       gfc_conv_expr_reference (se, arg_expr);
     }
   else
