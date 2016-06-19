@@ -1,3 +1,8 @@
+2016-06-19 Martin Sebor  <msebor@redhat.com>
+
+	PR c/69507
+	* gcc.dg/alignof.c: New test.
+
 2016-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/constexpr-specialization.C: Adjust for dg-message

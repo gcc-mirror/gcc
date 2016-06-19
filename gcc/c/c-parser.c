@@ -7091,9 +7091,10 @@ c_parser_alignof_expression (c_parser *parser)
       mark_exp_read (expr.value);
       c_inhibit_evaluation_warnings--;
       in_alignof--;
-      pedwarn (start_loc,
-	       OPT_Wpedantic, "ISO C does not allow %<%E (expression)%>",
-	       alignof_spelling);
+      if (is_c11_alignof)
+	pedwarn (start_loc,
+		 OPT_Wpedantic, "ISO C does not allow %<%E (expression)%>",
+		 alignof_spelling);
       ret.value = c_alignof_expr (start_loc, expr.value);
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
