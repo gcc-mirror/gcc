@@ -726,7 +726,7 @@
 
 (define_insn_reservation "cortex_a57_fp_cpys" 4
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "fmov"))
+       (eq_attr "type" "fmov,fcsel"))
   "(ca57_cx1|ca57_cx2)")
 
 (define_insn_reservation "cortex_a57_fp_divs" 12
