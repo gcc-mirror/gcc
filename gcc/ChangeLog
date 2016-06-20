@@ -1,3 +1,8 @@
+2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): Make FP
+	costs relative to the cost of a register move.
+
 2016-06-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_modes_tieable_p):
