@@ -1,3 +1,10 @@
+2016-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_string_literal): Convert non-standard
+	concatenation error to directly use a rich_location, and
+	use that to add the location of the first literal to the
+	diagnostic.
+
 2016-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (validate_constexpr_redeclaration): Change pair of errors
