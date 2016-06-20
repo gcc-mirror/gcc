@@ -12447,6 +12447,20 @@ vcvt_n_f32_u32 (uint32x2_t __a, const int __b)
   return __builtin_aarch64_ucvtfv2si_sus (__a, __b);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vcvt_n_f64_s64 (int64x1_t __a, const int __b)
+{
+  return (float64x1_t)
+    { __builtin_aarch64_scvtfdi (vget_lane_s64 (__a, 0), __b) };
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vcvt_n_f64_u64 (uint64x1_t __a, const int __b)
+{
+  return (float64x1_t)
+    { __builtin_aarch64_ucvtfdi_sus (vget_lane_u64 (__a, 0), __b) };
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vcvtq_n_f32_s32 (int32x4_t __a, const int __b)
 {
@@ -12509,6 +12523,20 @@ vcvt_n_u32_f32 (float32x2_t __a, const int __b)
   return __builtin_aarch64_fcvtzuv2sf_uss (__a, __b);
 }
 
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcvt_n_s64_f64 (float64x1_t __a, const int __b)
+{
+  return (int64x1_t)
+    { __builtin_aarch64_fcvtzsdf (vget_lane_f64 (__a, 0), __b) };
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcvt_n_u64_f64 (float64x1_t __a, const int __b)
+{
+  return (uint64x1_t)
+    { __builtin_aarch64_fcvtzudf_uss (vget_lane_f64 (__a, 0), __b) };
+}
+
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vcvtq_n_s32_f32 (float32x4_t __a, const int __b)
 {
@@ -12569,6 +12597,18 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vcvt_f32_u32 (uint32x2_t __a)
 {
   return __builtin_aarch64_floatunsv2siv2sf ((int32x2_t) __a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vcvt_f64_s64 (int64x1_t __a)
+{
+  return (float64x1_t) { vget_lane_s64 (__a, 0) };
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vcvt_f64_u64 (uint64x1_t __a)
+{
+  return (float64x1_t) { vget_lane_u64 (__a, 0) };
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
@@ -20659,6 +20699,12 @@ vrecpe_f32 (float32x2_t __a)
   return __builtin_aarch64_frecpev2sf (__a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrecpe_f64 (float64x1_t __a)
+{
+  return (float64x1_t) { vrecped_f64 (vget_lane_f64 (__a, 0)) };
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vrecpeq_f32 (float32x4_t __a)
 {
@@ -20689,6 +20735,13 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vrecps_f32 (float32x2_t __a, float32x2_t __b)
 {
   return __builtin_aarch64_frecpsv2sf (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrecps_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return (float64x1_t) { vrecpsd_f64 (vget_lane_f64 (__a, 0),
+				      vget_lane_f64 (__b, 0)) };
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
