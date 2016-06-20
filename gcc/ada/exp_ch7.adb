@@ -4622,7 +4622,16 @@ package body Exp_Ch7 is
 
       Set_Ghost_Mode_From_Entity (Work_Typ);
 
+      --  Emulate the environment of the invariant procedure by installing
+      --  its scope and formal parameters. Note that this is not need, but
+      --  having the scope of the invariant procedure installed helps with
+      --  the detection of invariant-related errors.
+
+      Push_Scope (Proc_Id);
+      Install_Formals (Proc_Id);
+
       Obj_Id := First_Formal (Proc_Id);
+      pragma Assert (Present (Obj_Id));
 
       --  The "partial" invariant procedure verifies the invariants of the
       --  partial view only.
@@ -4631,22 +4640,12 @@ package body Exp_Ch7 is
          pragma Assert (Present (Priv_Typ));
          Freeze_Typ := Priv_Typ;
 
-         --  Emulate the environment of the invariant procedure by installing
-         --  its scope and formal parameters. Note that this is not need, but
-         --  having the scope of the invariant procedure installed helps with
-         --  the detection of invariant-related errors.
-
-         Push_Scope (Proc_Id);
-         Install_Formals (Proc_Id);
-
          Add_Type_Invariants
            (Priv_Typ => Priv_Typ,
             Full_Typ => Empty,
             CRec_Typ => Empty,
             Obj_Id   => Obj_Id,
             Checks   => Stmts);
-
-         End_Scope;
 
       --  Otherwise the "full" invariant procedure verifies the invariants of
       --  the full view, all array or record components, as well as class-wide
@@ -4744,6 +4743,8 @@ package body Exp_Ch7 is
          Add_Interface_Invariants (Full_Typ, Obj_Id, Stmts);
       end if;
 
+      End_Scope;
+
       --  At this point there should be at least one invariant check. If this
       --  is not the case, then the invariant-related flags were not properly
       --  set, or there is a missing invariant procedure on one of the array
@@ -4759,6 +4760,12 @@ package body Exp_Ch7 is
          Stmts := New_List (Make_Null_Statement (Loc));
       end if;
 
+      --  Generate:
+      --    procedure <Work_Typ>[Partial_]Invariant (_object : <Work_Typ>) is
+      --    begin
+      --       <Stmts>
+      --    end <Work_Typ>[Partial_]Invariant;
+
       Proc_Body :=
         Make_Subprogram_Body (Loc,
           Specification                =>
@@ -4769,16 +4776,30 @@ package body Exp_Ch7 is
                 Statements => Stmts));
       Proc_Body_Id := Defining_Entity (Proc_Body);
 
+      --  Perform minor decoration in case the body is not analyzed
+
       Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
       Set_Etype (Proc_Body_Id, Standard_Void_Type);
-      Set_Scope (Proc_Body_Id, Scope (Typ));
+      Set_Scope (Proc_Body_Id, Current_Scope);
 
       --  Link both spec and body to avoid generating duplicates
 
       Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
-      Append_Freeze_Action (Freeze_Typ, Proc_Body);
+      --  The body should not be inserted into the tree when the context is a
+      --  generic unit because it is not part of the template. Note that the
+      --  body must still be generated in order to resolve the invariants.
+
+      if Inside_A_Generic then
+         null;
+
+      --  Otherwise the body is part of the freezing actions of the type
+
+      else
+         Append_Freeze_Action (Freeze_Typ, Proc_Body);
+      end if;
+
       Ghost_Mode := Save_Ghost_Mode;
    end Build_Invariant_Procedure_Body;
 
@@ -4794,8 +4815,10 @@ package body Exp_Ch7 is
 
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
-      Proc_Id  : Entity_Id;
-      Typ_Decl : Node_Id;
+      Proc_Decl : Node_Id;
+      Proc_Id   : Entity_Id;
+      Proc_Nam  : Name_Id;
+      Typ_Decl  : Node_Id;
 
       CRec_Typ : Entity_Id;
       --  The corresponding record type of Full_Typ
@@ -4869,24 +4892,27 @@ package body Exp_Ch7 is
       --  procedure.
 
       if Partial_Invariant then
-         Proc_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars =>
-               New_External_Name (Chars (Work_Typ), "Partial_Invariant"));
-
-         Set_Ekind (Proc_Id, E_Procedure);
-         Set_Is_Partial_Invariant_Procedure (Proc_Id);
-         Set_Partial_Invariant_Procedure (Work_Typ, Proc_Id);
+         Proc_Nam := New_External_Name (Chars (Work_Typ), "Partial_Invariant");
 
       --  Otherwise the caller requests the declaration of the "full" invariant
       --  procedure.
 
       else
-         Proc_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (Work_Typ), "Invariant"));
+         Proc_Nam := New_External_Name (Chars (Work_Typ), "Invariant");
+      end if;
 
-         Set_Ekind (Proc_Id, E_Procedure);
+      Proc_Id := Make_Defining_Identifier (Loc, Chars => Proc_Nam);
+
+      --  Perform minor decoration in case the declaration is not analyzed
+
+      Set_Ekind (Proc_Id, E_Procedure);
+      Set_Etype (Proc_Id, Standard_Void_Type);
+      Set_Scope (Proc_Id, Current_Scope);
+
+      if Partial_Invariant then
+         Set_Is_Partial_Invariant_Procedure (Proc_Id);
+         Set_Partial_Invariant_Procedure (Work_Typ, Proc_Id);
+      else
          Set_Is_Invariant_Procedure (Proc_Id);
          Set_Invariant_Procedure (Work_Typ, Proc_Id);
       end if;
@@ -4938,12 +4964,19 @@ package body Exp_Ch7 is
       --  of the current type instance.
 
       Obj_Id := Make_Defining_Identifier (Loc, Chars => Name_uObject);
+
+      --  Perform minor decoration in case the declaration is not analyzed
+
       Set_Ekind (Obj_Id, E_In_Parameter);
+      Set_Etype (Obj_Id, Work_Typ);
+      Set_Scope (Obj_Id, Proc_Id);
+
+      Set_First_Entity (Proc_Id, Obj_Id);
 
       --  Generate:
       --    procedure <Work_Typ>[Partial_]Invariant (_object : <Work_Typ>);
 
-      Insert_After_And_Analyze (Typ_Decl,
+      Proc_Decl :=
         Make_Subprogram_Declaration (Loc,
           Specification =>
             Make_Procedure_Specification (Loc,
@@ -4952,7 +4985,20 @@ package body Exp_Ch7 is
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier => Obj_Id,
                   Parameter_Type      =>
-                    New_Occurrence_Of (Work_Typ, Loc))))));
+                    New_Occurrence_Of (Work_Typ, Loc)))));
+
+      --  The declaration should not be inserted into the tree when the context
+      --  is a generic unit because it is not part of the template.
+
+      if Inside_A_Generic then
+         null;
+
+      --  Otherwise insert the declaration
+
+      else
+         pragma Assert (Present (Typ_Decl));
+         Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
+      end if;
 
       Ghost_Mode := Save_Ghost_Mode;
    end Build_Invariant_Procedure_Declaration;

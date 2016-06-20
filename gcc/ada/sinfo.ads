@@ -7618,6 +7618,10 @@ package Sinfo is
       --  source, or because a Pre (resp. Post) aspect specification has been
       --  broken into AND THEN sections. See Split_PPC for details.
 
+      --  In GNATprove mode, the inherited classwide pre- and postconditions
+      --  (suitably specialized for the specific type of the overriding
+      --  operation) are also in this list.
+
       --  Contract_Test_Cases contains a collection of pragmas that correspond
       --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
       --  list is in LIFO fashion.

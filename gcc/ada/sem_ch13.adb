@@ -12312,13 +12312,10 @@ package body Sem_Ch13 is
 
       function Replace_Type_Ref (N : Node_Id) return Traverse_Result is
          Loc : constant Source_Ptr := Sloc (N);
-         C   : Entity_Id;
-         S   : Entity_Id;
-         P   : Node_Id;
 
          procedure Add_Prefix (Ref : Node_Id; Comp : Entity_Id);
-         --  Add the proper prefix to a reference to a component of the
-         --  type when it is not already a selected component.
+         --  Add the proper prefix to a reference to a component of the type
+         --  when it is not already a selected component.
 
          ----------------
          -- Add_Prefix --
@@ -12328,10 +12325,16 @@ package body Sem_Ch13 is
          begin
             Rewrite (Ref,
               Make_Selected_Component (Loc,
-                Prefix => New_Occurrence_Of (T, Loc),
+                Prefix        => New_Occurrence_Of (T, Loc),
                 Selector_Name => New_Occurrence_Of (Comp, Loc)));
             Replace_Type_Reference (Prefix (Ref));
          end Add_Prefix;
+
+         --  Local variables
+
+         Comp : Entity_Id;
+         Pref : Node_Id;
+         Scop : Entity_Id;
 
       --  Start of processing for Replace_Type_Ref
 
@@ -12363,17 +12366,17 @@ package body Sem_Ch13 is
                elsif Nkind (Parent (N)) = N_Indexed_Component
                  and then N = Prefix (Parent (N))
                then
-                  C := Visible_Component (Chars (N));
+                  Comp := Visible_Component (Chars (N));
 
-                  if Present (C) and then Is_Array_Type (Etype (C)) then
-                     Add_Prefix (N, C);
+                  if Present (Comp) and then Is_Array_Type (Etype (Comp)) then
+                     Add_Prefix (N, Comp);
                   end if;
 
                else
-                  C := Visible_Component (Chars (N));
+                  Comp := Visible_Component (Chars (N));
 
-                  if Present (C) then
-                     Add_Prefix (N, C);
+                  if Present (Comp) then
+                     Add_Prefix (N, Comp);
                   end if;
                end if;
 
@@ -12404,20 +12407,20 @@ package body Sem_Ch13 is
             else
                --  Loop through scopes and prefixes, doing comparison
 
-               S := Current_Scope;
-               P := Prefix (N);
+               Scop := Current_Scope;
+               Pref := Prefix (N);
                loop
                   --  Continue if no more scopes or scope with no name
 
-                  if No (S) or else Nkind (S) not in N_Has_Chars then
+                  if No (Scop) or else Nkind (Scop) not in N_Has_Chars then
                      return OK;
                   end if;
 
                   --  Do replace if prefix is an identifier matching the scope
                   --  that we are currently looking at.
 
-                  if Nkind (P) = N_Identifier
-                    and then Chars (P) = Chars (S)
+                  if Nkind (Pref) = N_Identifier
+                    and then Chars (Pref) = Chars (Scop)
                   then
                      Replace_Type_Reference (N);
                      return Skip;
@@ -12427,12 +12430,12 @@ package body Sem_Ch13 is
                   --  of a selected component, whose selector matches the scope
                   --  we are currently looking at.
 
-                  if Nkind (P) = N_Selected_Component
-                    and then Nkind (Selector_Name (P)) = N_Identifier
-                    and then Chars (Selector_Name (P)) = Chars (S)
+                  if Nkind (Pref) = N_Selected_Component
+                    and then Nkind (Selector_Name (Pref)) = N_Identifier
+                    and then Chars (Selector_Name (Pref)) = Chars (Scop)
                   then
-                     S := Scope (S);
-                     P := Prefix (P);
+                     Scop := Scope (Scop);
+                     Pref := Prefix (Pref);
 
                   --  For anything else, we don't have a match, so keep on
                   --  going, there are still some weird cases where we may
@@ -12451,12 +12454,15 @@ package body Sem_Ch13 is
          end if;
       end Replace_Type_Ref;
 
+      procedure Replace_Type_Refs is new Traverse_Proc (Replace_Type_Ref);
+
       -----------------------
       -- Visible_Component --
       -----------------------
 
       function Visible_Component (Comp : Name_Id) return Entity_Id is
          E : Entity_Id;
+
       begin
          if Ekind (T) /= E_Record_Type then
             return Empty;
@@ -12464,9 +12470,7 @@ package body Sem_Ch13 is
          else
             E := First_Entity (T);
             while Present (E) loop
-               if Comes_From_Source (E)
-                 and then Chars (E) = Comp
-               then
+               if Comes_From_Source (E) and then Chars (E) = Comp then
                   return E;
                end if;
 
@@ -12477,7 +12481,7 @@ package body Sem_Ch13 is
          end if;
       end Visible_Component;
 
-      procedure Replace_Type_Refs is new Traverse_Proc (Replace_Type_Ref);
+   --  Start of processing for Replace_Type_References_Generic
 
    begin
       Replace_Type_Refs (N);

@@ -12626,7 +12626,7 @@ package body Sem_Util is
             return True;
 
          --  An array type is effectively volatile when it is subject to pragma
-         --  Atomic_Components or Volatile_Components or its compolent type is
+         --  Atomic_Components or Volatile_Components or its component type is
          --  effectively volatile.
 
          elsif Is_Array_Type (Id) then

@@ -26277,9 +26277,10 @@ package body Sem_Prag is
    -----------------------------------
 
    function Build_Pragma_Check_Equivalent
-     (Prag     : Node_Id;
-      Subp_Id  : Entity_Id := Empty;
-      Inher_Id : Entity_Id := Empty) return Node_Id
+     (Prag           : Node_Id;
+      Subp_Id        : Entity_Id := Empty;
+      Inher_Id       : Entity_Id := Empty;
+      Keep_Pragma_Id : Boolean := False) return Node_Id
    is
       Map : Elist_Id;
       --  List containing the following mappings
@@ -26359,6 +26360,15 @@ package body Sem_Prag is
                Error_Msg_NE
                  ("cannot call abstract subprogram in inherited condition "
                    & "for&#", N, Current_Scope);
+            end if;
+
+            --  Update type of function call node, which should be the same as
+            --  the function's return type.
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+            then
+               Set_Etype (Parent (N), Etype (Entity (N)));
             end if;
 
          --  The whole expression will be reanalyzed
@@ -26595,7 +26605,6 @@ package body Sem_Prag is
 
       Set_Analyzed          (Check_Prag, False);
       Set_Comes_From_Source (Check_Prag, False);
-      Set_Class_Present     (Check_Prag, False);
 
       --  The tree of the original pragma may contain references to the
       --  formal parameters of the related subprogram. At the same time
@@ -26621,15 +26630,20 @@ package body Sem_Prag is
          Nam := Prag_Nam;
       end if;
 
-      --  Convert the copy into pragma Check by correcting the name and adding
-      --  a check_kind argument.
+      --  Unless Keep_Pragma_Id is True in order to keep the identifier of
+      --  the copied pragma in the newly created pragma, convert the copy into
+      --  pragma Check by correcting the name and adding a check_kind argument.
 
-      Set_Pragma_Identifier
-        (Check_Prag, Make_Identifier (Loc, Name_Check));
+      if not Keep_Pragma_Id then
+         Set_Class_Present (Check_Prag, False);
 
-      Prepend_To (Pragma_Argument_Associations (Check_Prag),
-        Make_Pragma_Argument_Association (Loc,
-          Expression => Make_Identifier (Loc, Nam)));
+         Set_Pragma_Identifier
+           (Check_Prag, Make_Identifier (Loc, Name_Check));
+
+         Prepend_To (Pragma_Argument_Associations (Check_Prag),
+           Make_Pragma_Argument_Association (Loc,
+             Expression => Make_Identifier (Loc, Nam)));
+      end if;
 
       --  Update the error message when the pragma is inherited
 
@@ -27154,7 +27168,8 @@ package body Sem_Prag is
                end if;
 
                New_Prag :=
-                 Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp);
+                 Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp,
+                                                Keep_Pragma_Id => True);
                Insert_After (Unit_Declaration_Node (Subp), New_Prag);
                Preanalyze (New_Prag);
 
