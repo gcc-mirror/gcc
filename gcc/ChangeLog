@@ -1,3 +1,10 @@
+2016-06-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/71571
+	* config/cris/cris.c (cris_asm_output_mi_thunk): Add missing "ba"
+	delay-slot "nop" for PIC with CRIS v32.  Also add missing leading
+	space for PIC with non-v32 and the common non-PIC "jump".
+
 2016-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71559
