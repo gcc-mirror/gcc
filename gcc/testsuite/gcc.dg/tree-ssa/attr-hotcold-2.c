@@ -18,8 +18,8 @@ void f(int x, int y)
   return;
 }
 
-/* { dg-final { scan-tree-dump-times 1 "hot label heuristics" 1 "profile_estimate" } } */
-/* { dg-final { scan-tree-dump-times 1 "cold label heuristics" 1 "profile_estimate" } } */
+/* { dg-final { scan-tree-dump-times "hot label heuristics" 1 "profile_estimate" } } */
+/* { dg-final { scan-tree-dump-times "cold label heuristics" 1 "profile_estimate" } } */
 /* { dg-final { scan-tree-dump-times "block 4, loop depth 0, count 0, freq \[1-4\]\[^0-9\]" 1 "profile_estimate" } } */
 
 /* Note: we're attempting to match some number > 6000, i.e. > 60%.
