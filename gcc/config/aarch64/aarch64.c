@@ -152,7 +152,7 @@ enum aarch64_processor aarch64_tune = cortexa53;
 unsigned long aarch64_tune_flags = 0;
 
 /* Global flag for PC relative loads.  */
-bool aarch64_nopcrelative_literal_loads;
+bool aarch64_pcrelative_literal_loads;
 
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
@@ -1725,7 +1725,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	     we need to expand the literal pool access carefully.
 	     This is something that needs to be done in a number
 	     of places, so could well live as a separate function.  */
-	  if (aarch64_nopcrelative_literal_loads)
+	  if (!aarch64_pcrelative_literal_loads)
 	    {
 	      gcc_assert (can_create_pseudo_p ());
 	      base = gen_reg_rtx (ptr_mode);
@@ -4066,7 +4066,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  return ((GET_CODE (sym) == LABEL_REF
 		   || (GET_CODE (sym) == SYMBOL_REF
 		       && CONSTANT_POOL_ADDRESS_P (sym)
-		       && !aarch64_nopcrelative_literal_loads)));
+		       && aarch64_pcrelative_literal_loads)));
 	}
       return false;
 
@@ -5097,7 +5097,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   if (MEM_P (x) && GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x)
       && (SCALAR_FLOAT_MODE_P (GET_MODE (x))
 	  || targetm.vector_mode_supported_p (GET_MODE (x)))
-      && aarch64_nopcrelative_literal_loads)
+      && !aarch64_pcrelative_literal_loads)
     {
       sri->icode = aarch64_constant_pool_reload_icode (mode);
       return NO_REGS;
@@ -5431,7 +5431,7 @@ aarch64_uxt_size (int shift, HOST_WIDE_INT mask)
 static inline bool
 aarch64_can_use_per_function_literal_pools_p (void)
 {
-  return (!aarch64_nopcrelative_literal_loads
+  return (aarch64_pcrelative_literal_loads
 	  || aarch64_cmodel == AARCH64_CMODEL_LARGE);
 }
 
@@ -8108,32 +8108,31 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
 	opts->x_align_functions = aarch64_tune_params.function_align;
     }
 
-  /* If nopcrelative_literal_loads is set on the command line, this
-     implies that the user asked for PC relative literal loads.  */
-  if (opts->x_nopcrelative_literal_loads == 1)
-    aarch64_nopcrelative_literal_loads = false;
+  /* We default to no pc-relative literal loads.  */
 
-  /* If it is not set on the command line, we default to no pc
-     relative literal loads, unless the workaround for Cortex-A53
-     erratum 843419 is in effect.  */
+  aarch64_pcrelative_literal_loads = false;
+
+  /* If -mpc-relative-literal-loads is set on the command line, this
+     implies that the user asked for PC relative literal loads.  */
+  if (opts->x_pcrelative_literal_loads == 1)
+    aarch64_pcrelative_literal_loads = true;
+
   /* This is PR70113. When building the Linux kernel with
      CONFIG_ARM64_ERRATUM_843419, support for relocations
      R_AARCH64_ADR_PREL_PG_HI21 and R_AARCH64_ADR_PREL_PG_HI21_NC is
      removed from the kernel to avoid loading objects with possibly
-     offending sequences. With nopcrelative_literal_loads, we would
+     offending sequences.  Without -mpc-relative-literal-loads we would
      generate such relocations, preventing the kernel build from
      succeeding.  */
-  if (opts->x_nopcrelative_literal_loads == 2
-      && !TARGET_FIX_ERR_A53_843419)
-    aarch64_nopcrelative_literal_loads = true;
+  if (opts->x_pcrelative_literal_loads == 2
+      && TARGET_FIX_ERR_A53_843419)
+    aarch64_pcrelative_literal_loads = true;
 
-  /* In the tiny memory model it makes no sense
-     to disallow non PC relative literal pool loads
-     as many other things will break anyway.  */
-  if (opts->x_nopcrelative_literal_loads
-      && (aarch64_cmodel == AARCH64_CMODEL_TINY
-	  || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC))
-    aarch64_nopcrelative_literal_loads = false;
+  /* In the tiny memory model it makes no sense to disallow PC relative
+     literal pool loads.  */
+  if (aarch64_cmodel == AARCH64_CMODEL_TINY
+      || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC)
+    aarch64_pcrelative_literal_loads = true;
 
   /* When enabling the lower precision Newton series for the square root, also
      enable it for the reciprocal square root, since the latter is an
@@ -9341,18 +9340,6 @@ aarch64_classify_symbol (rtx x, rtx offset)
 
   if (GET_CODE (x) == SYMBOL_REF)
     {
-      if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
-	{
-	  /* This is alright even in PIC code as the constant
-	     pool reference is always PC relative and within
-	     the same translation unit.  */
-	  if (nopcrelative_literal_loads
-	      && CONSTANT_POOL_ADDRESS_P (x))
-	    return SYMBOL_SMALL_ABSOLUTE;
-	  else
-	    return SYMBOL_FORCE_TO_MEM;
-	}
-
       if (aarch64_tls_symbol_p (x))
 	return aarch64_classify_tls_symbol (x);
 
@@ -9392,6 +9379,15 @@ aarch64_classify_symbol (rtx x, rtx offset)
 	    return (aarch64_cmodel == AARCH64_CMODEL_SMALL_SPIC
 		    ?  SYMBOL_SMALL_GOT_28K : SYMBOL_SMALL_GOT_4G);
 	  return SYMBOL_SMALL_ABSOLUTE;
+
+	case AARCH64_CMODEL_LARGE:
+	  /* This is alright even in PIC code as the constant
+	     pool reference is always PC relative and within
+	     the same translation unit.  */
+	  if (CONSTANT_POOL_ADDRESS_P (x))
+	    return SYMBOL_SMALL_ABSOLUTE;
+	  else
+	    return SYMBOL_FORCE_TO_MEM;
 
 	default:
 	  gcc_unreachable ();
