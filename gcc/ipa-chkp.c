@@ -207,7 +207,13 @@ chkp_build_instrumented_fndecl (tree fndecl)
   /* For functions with body versioning will make a copy of arguments.
      For functions with no body we need to do it here.  */
   if (!gimple_has_body_p (fndecl))
-    DECL_ARGUMENTS (new_decl) = copy_list (DECL_ARGUMENTS (fndecl));
+    {
+      tree arg;
+
+      DECL_ARGUMENTS (new_decl) = copy_list (DECL_ARGUMENTS (fndecl));
+      for (arg = DECL_ARGUMENTS (new_decl); arg; arg = DECL_CHAIN (arg))
+	DECL_CONTEXT (arg) = new_decl;
+    }
 
   /* We are going to modify attributes list and therefore should
      make own copy.  */
