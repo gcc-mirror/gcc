@@ -1,3 +1,8 @@
+2016-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* exp_util.adb (Safe_Unchecked_Type_Conversion): Use "alignment"
+	instead of "alignement".
+
 2016-06-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_util.adb: Minor typo fix.

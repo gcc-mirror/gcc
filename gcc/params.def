@@ -405,7 +405,7 @@ DEFPARAM (PARAM_ALIGN_THRESHOLD,
 
 DEFPARAM (PARAM_ALIGN_LOOP_ITERATIONS,
 	  "align-loop-iterations",
-	  "Loops iterating at least selected number of iterations will get loop alignement..",
+	  "Loops iterating at least selected number of iterations will get loop alignment..",
 	  4, 0, 0)
 
 /* For guessed profiles, the loops having unknown number of iterations

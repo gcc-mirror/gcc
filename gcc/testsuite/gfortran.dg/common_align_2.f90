@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-pedantic-errors -mdalign" { target sh*-*-* } }
-! Tests the fix for PR37614, in which the alignement of commons followed
+! Tests the fix for PR37614, in which the alignment of commons followed
 ! g77 rather than the standard or other compilers.
 !
 ! Contributed by Tobias Burnus  <burnus@gcc.gnu.org>
