@@ -1,5 +1,8 @@
 2016-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71581
+	* gcc.dg/pr71581.c: New test.
+
 	PR rtl-optimization/71591
 	* gcc.dg/cpp/pr71591.c: New test.
 

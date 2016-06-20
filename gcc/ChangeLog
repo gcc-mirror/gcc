@@ -1,5 +1,12 @@
 2016-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71581
+	* tree-ssa-uninit.c (warn_uninit): If EXPR and VAR are NULL,
+	see if T isn't anonymous SSA_NAME with COMPLEX_EXPR created
+	for conversion of scalar user var to complex type and use the
+	underlying SSA_NAME_VAR in that case.  If EXPR is still NULL,
+	punt.
+
 	PR rtl-optimization/71591
 	* toplev.c (toplev::run_self_tests): If no_backend, complain and
 	don't run any tests.
