@@ -1,3 +1,8 @@
+2016-06-20   David B. Robins  <gcc@davidrobins.net>
+
+	PR target/71571
+	* g++.dg/torture/pr71571.C: New test.
+
 2016-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71559
