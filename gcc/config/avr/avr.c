@@ -2170,7 +2170,7 @@ avr_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      fprintf (file, ptrreg_to_str (REGNO (addr)));
+      fprintf (file, "%s", ptrreg_to_str (REGNO (addr)));
       break;
 
     case PRE_DEC:
@@ -2284,12 +2284,12 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (code == 'E' || code == 'F')
     {
       rtx op = XEXP(x, 0);
-      fprintf (file, reg_names[REGNO (op) + ef]);
+      fprintf (file, "%s", reg_names[REGNO (op) + ef]);
     }
   else if (code == 'I' || code == 'J')
     {
       rtx op = XEXP(XEXP(x, 0), 0);
-      fprintf (file, reg_names[REGNO (op) + ij]);
+      fprintf (file, "%s", reg_names[REGNO (op) + ij]);
     }
   else if (REG_P (x))
     {
@@ -2298,7 +2298,7 @@ avr_print_operand (FILE *file, rtx x, int code)
       else if (code == 'r' && REGNO (x) < 32)
         fprintf (file, "%d", (int) REGNO (x));
       else
-        fprintf (file, reg_names[REGNO (x) + abcd]);
+        fprintf (file, "%s", reg_names[REGNO (x) + abcd]);
     }
   else if (CONST_INT_P (x))
     {
