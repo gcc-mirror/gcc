@@ -4769,6 +4769,10 @@ package body Exp_Ch7 is
                 Statements => Stmts));
       Proc_Body_Id := Defining_Entity (Proc_Body);
 
+      Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
+      Set_Etype (Proc_Body_Id, Standard_Void_Type);
+      Set_Scope (Proc_Body_Id, Scope (Typ));
+
       --  Link both spec and body to avoid generating duplicates
 
       Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);

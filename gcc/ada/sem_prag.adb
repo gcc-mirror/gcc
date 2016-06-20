@@ -23304,6 +23304,82 @@ package body Sem_Prag is
      (N         : Node_Id;
       Freeze_Id : Entity_Id := Empty)
    is
+      Disp_Typ : Entity_Id;
+      --  The dispatching type of the subprogram subject to the pre- or
+      --  postcondition.
+
+      function Check_References (Nod : Node_Id) return Traverse_Result;
+      --  Check that expression Nod does not mention non-primitives of the
+      --  type, global objects of the type, or other illegalities described
+      --  and implied by AI12-0113.
+
+      ----------------------
+      -- Check_References --
+      ----------------------
+
+      function Check_References (Nod : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (Nod) = N_Function_Call
+           and then Is_Entity_Name (Name (Nod))
+         then
+            declare
+               Func : constant Entity_Id := Entity (Name (Nod));
+               Form : Entity_Id;
+
+            begin
+               --  An operation of the type must be a primitive
+
+               if No (Find_Dispatching_Type (Func)) then
+                  Form := First_Formal (Func);
+                  while Present (Form) loop
+                     if Etype (Form) = Disp_Typ then
+                        Error_Msg_NE
+                          ("operation in class-wide condition must be "
+                           & "primitive of &", Nod, Disp_Typ);
+                     end if;
+
+                     Next_Formal (Form);
+                  end loop;
+
+                  --  A return object of the type is illegal as well
+
+                  if Etype (Func) = Disp_Typ
+                    or else Etype (Func) = Class_Wide_Type (Disp_Typ)
+                  then
+                     Error_Msg_NE
+                       ("operation in class-wide condition must be primitive "
+                        & "of &", Nod, Disp_Typ);
+                  end if;
+               end if;
+            end;
+
+         elsif Is_Entity_Name (Nod)
+           and then
+             (Etype (Nod) = Disp_Typ
+               or else Etype (Nod) = Class_Wide_Type (Disp_Typ))
+           and then Ekind_In (Entity (Nod), E_Constant, E_Variable)
+         then
+            Error_Msg_NE
+              ("object in class-wide condition must be formal of type &",
+                Nod, Disp_Typ);
+
+         elsif Nkind (Nod) = N_Explicit_Dereference
+           and then (Etype (Nod) = Disp_Typ
+                      or else Etype (Nod) = Class_Wide_Type (Disp_Typ))
+           and then (not Is_Entity_Name (Prefix (Nod))
+                      or else not Is_Formal (Entity (Prefix (Nod))))
+         then
+            Error_Msg_NE
+              ("operation in class-wide condition must be primitive of &",
+               Nod, Disp_Typ);
+         end if;
+
+         return OK;
+      end Check_References;
+
+      procedure Check_Class_Wide_Condition is
+        new Traverse_Proc (Check_References);
+
       --  Local variables
 
       Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
@@ -23313,76 +23389,7 @@ package body Sem_Prag is
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       Errors        : Nat;
-      Disp_Typ      : Entity_Id;
       Restore_Scope : Boolean := False;
-
-      function Check_References (N : Node_Id) return Traverse_Result;
-      --  Check that the expression does not mention non-primitives of
-      --  the type, global objects of the type, or other illegalities
-      --  described and implied by AI12-0113.
-
-      ----------------------
-      -- Check_References --
-      ----------------------
-
-      function Check_References (N : Node_Id) return Traverse_Result is
-      begin
-         if Nkind (N) = N_Function_Call
-           and then Is_Entity_Name (Name (N))
-         then
-            declare
-               Func : constant Entity_Id := Entity (Name (N));
-               Form : Entity_Id;
-            begin
-
-               --  An operation of the type must be a primitive.
-
-               if No (Find_Dispatching_Type (Func)) then
-                  Form := First_Formal (Func);
-                  while Present (Form) loop
-                     if Etype (Form) = Disp_Typ then
-                        Error_Msg_NE ("operation in class-wide condition "
-                          & "must be primitive of&", N, Disp_Typ);
-                     end if;
-                     Next_Formal (Form);
-                  end loop;
-
-                  --  A return object of the type is illegal as well.
-
-                  if Etype (Func) = Disp_Typ
-                    or else Etype (Func) = Class_Wide_Type (Disp_Typ)
-                  then
-                     Error_Msg_NE ("operation in class-wide condition "
-                       & "must be primitive of&", N, Disp_Typ);
-                  end if;
-               end if;
-            end;
-
-         elsif Is_Entity_Name (N)
-           and then
-             (Etype (N) = Disp_Typ
-               or else Etype (N) = Class_Wide_Type (Disp_Typ))
-           and then Ekind_In (Entity (N),  E_Variable, E_Constant)
-         then
-            Error_Msg_NE
-              ("object in class-wide condition must be formal of type&",
-                N, Disp_Typ);
-
-         elsif Nkind (N) = N_Explicit_Dereference
-           and then (Etype (N) = Disp_Typ
-               or else Etype (N) = Class_Wide_Type (Disp_Typ))
-           and then (not Is_Entity_Name (Prefix (N))
-             or else not Is_Formal (Entity (Prefix (N))))
-         then
-            Error_Msg_NE ("operation in class-wide condition "
-              & "must be primitive of&", N, Disp_Typ);
-         end if;
-
-         return OK;
-      end Check_References;
-
-      procedure Check_Class_Wide_Condition is new
-        Traverse_Proc (Check_References);
 
    --  Start of processing for Analyze_Pre_Post_Condition_In_Decl_Part
 
@@ -23451,9 +23458,9 @@ package body Sem_Prag is
                   & "of a tagged type", N);
             end if;
 
-         else
-            --  Remaining semantic checks require a full tree traversal.
+         --  Remaining semantic checks require a full tree traversal
 
+         else
             Check_Class_Wide_Condition (Expr);
          end if;
 
@@ -26490,8 +26497,8 @@ package body Sem_Prag is
             --  overridings between them.
 
             while Present (Decl) loop
-               if Nkind_In (Decl,
-                  N_Subprogram_Declaration, N_Abstract_Subprogram_Declaration)
+               if Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                                  N_Subprogram_Declaration)
                then
                   Prim := Defining_Entity (Decl);
 

@@ -555,8 +555,8 @@ package body Pprint is
 
                if not Is_Scalar_Type (Etype (Expr))
                  or else not Is_Scalar_Type (Etype (Expression (Expr)))
-                 or else Is_Modular_Integer_Type (Etype (Expr))
-                         /= Is_Modular_Integer_Type (Etype (Expression (Expr)))
+                 or else Is_Modular_Integer_Type (Etype (Expr)) /=
+                           Is_Modular_Integer_Type (Etype (Expression (Expr)))
                then
                   return Expr_Name (Subtype_Mark (Expr)) &
                     "(" & Expr_Name (Expression (Expr)) & ")";

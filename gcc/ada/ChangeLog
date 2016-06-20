@@ -1,3 +1,30 @@
+2016-06-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-regpat.adb, sem_prag.adb, pprint.adb, sem_ch13.adb: Minor
+	reformatting.
+
+2016-06-20  Tristan Gingold  <gingold@adacore.com>
+
+	* make.adb (Check_Standard_Library): Consider system.ads
+	if s-stalib.adb is not available.
+	* gnatbind.adb (Add_Artificial_ALI_File): New procedure extracted from
+	gnatbind.
+
+2016-06-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Is_IP_Address): A string consisting in digits only is
+	not a dotted quad.
+
+2016-06-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch7.adb (Build_Invariant_Procedure_Body):
+	decorate invariant procedure body with typical properties of
+	procedure entityes.
+
+2016-06-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-exetim-darwin.adb: New file.
+
 2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* atree.ads, atree.adb (Elist29): New routine.

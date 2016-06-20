@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,6 +89,9 @@ procedure Gnatbind is
    --  Table to record the sources in the closure, to avoid duplications. Used
    --  only with switch -R.
 
+   procedure Add_Artificial_ALI_File (Name : String);
+   --  Artificially add ALI file Name in the closure.
+
    function Gnatbind_Supports_Auto_Init return Boolean;
    --  Indicates if automatic initialization of elaboration procedure
    --  through the constructor mechanism is possible on the platform.
@@ -112,6 +115,30 @@ procedure Gnatbind is
 
    function Is_Cross_Compiler return Boolean;
    --  Returns True iff this is a cross-compiler
+
+   -----------------------------
+   -- Add_Artificial_ALI_File --
+   -----------------------------
+
+   procedure Add_Artificial_ALI_File (Name : String) is
+      Id : ALI_Id;
+      pragma Warnings (Off, Id);
+   begin
+      Name_Len := Name'Length;
+      Name_Buffer (1 .. Name_Len) := Name;
+      Std_Lib_File := Name_Find;
+      Text := Read_Library_Info (Std_Lib_File, True);
+
+      Id :=
+        Scan_ALI
+          (F             => Std_Lib_File,
+           T             => Text,
+           Ignore_ED     => False,
+           Err           => False,
+           Ignore_Errors => Debug_Flag_I);
+
+      Free (Text);
+   end Add_Artificial_ALI_File;
 
    ---------------------------------
    -- Gnatbind_Supports_Auto_Init --
@@ -740,29 +767,15 @@ begin
 
       --  Add System.Standard_Library to list to ensure that these files are
       --  included in the bind, even if not directly referenced from Ada code
-      --  This is suppressed if the appropriate targparm switch is set.
+      --  This is suppressed if the appropriate targparm switch is set. Be sure
+      --  in any case that System is in the closure, as it may contains linker
+      --  options. Note that it will be automatically added if s-stalib is
+      --  added.
 
       if not Suppress_Standard_Library_On_Target then
-         Name_Buffer (1 .. 12) := "s-stalib.ali";
-         Name_Len := 12;
-         Std_Lib_File := Name_Find;
-         Text := Read_Library_Info (Std_Lib_File, True);
-
-         declare
-            Id : ALI_Id;
-            pragma Warnings (Off, Id);
-
-         begin
-            Id :=
-              Scan_ALI
-                (F             => Std_Lib_File,
-                 T             => Text,
-                 Ignore_ED     => False,
-                 Err           => False,
-                 Ignore_Errors => Debug_Flag_I);
-         end;
-
-         Free (Text);
+         Add_Artificial_ALI_File ("s-stalib.ali");
+      else
+         Add_Artificial_ALI_File ("system.ali");
       end if;
 
       --  Load ALIs for all dependent units
