@@ -26,21 +26,7 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::__detail::_Power2_rehash_policy policy;
-  VERIFY( policy._M_next_bkt(1) == 2 );
-  VERIFY( policy._M_next_bkt(2) == 4 );
-  VERIFY( policy._M_next_bkt(3) == 4 );
-  VERIFY( policy._M_next_bkt(5) == 8 );
-  VERIFY( policy._M_next_bkt(33) == 64 );
-  VERIFY( policy._M_next_bkt((std::size_t(1) << (sizeof(std::size_t) * 8 - 2)) + 1)
-	  == (std::size_t(1) << (sizeof(std::size_t) * 8 - 1)) );
-}
-
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::__detail::_Power2_rehash_policy policy;
+  std::__detail::_Prime_rehash_policy policy;
 
   for (std::size_t i = 1;;)
     {
@@ -49,7 +35,7 @@ void test02()
       if (nxt == i)
 	{
 	  // Equals only when reaching max.
-	  constexpr auto mx = std::numeric_limits<std::size_t>::max();
+	  constexpr auto mx = std::numeric_limits<std::size_t>::max() - 1;
 	  VERIFY( nxt == policy._M_next_bkt(mx) );
 	  break;
 	}
@@ -62,6 +48,5 @@ void test02()
 int main()
 {
   test01();
-  test02();
   return 0;
 }

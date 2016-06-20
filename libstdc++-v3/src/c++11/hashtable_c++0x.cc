@@ -46,22 +46,38 @@ namespace __detail
   {
     // Optimize lookups involving the first elements of __prime_list.
     // (useful to speed-up, eg, constructors)
-    static const unsigned char __fast_bkt[12]
-      = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
+    static const unsigned char __fast_bkt[13]
+      = { 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11, 13, 13 };
 
-    if (__n <= 11)
+    if (__n <= 12)
       {
 	_M_next_resize =
 	  __builtin_ceil(__fast_bkt[__n] * (long double)_M_max_load_factor);
 	return __fast_bkt[__n];
       }
 
+    // Number of primes (without sentinel).
     constexpr auto __n_primes
       = sizeof(__prime_list) / sizeof(unsigned long) - 1;
+
+    // Don't include the last prime in the search, so that anything
+    // higher than the second-to-last prime returns a past-the-end
+    // iterator that can be dereferenced to get the last prime.
+    constexpr auto __last_prime = __prime_list + __n_primes - 1;
+
+    // Look for 'n + 1' to make sure returned value will be greater than n.
     const unsigned long* __next_bkt =
-      std::lower_bound(__prime_list + 5, __prime_list + __n_primes, __n);
-    _M_next_resize =
-      __builtin_ceil(*__next_bkt * (long double)_M_max_load_factor);
+      std::lower_bound(__prime_list + 6, __last_prime, __n + 1);
+
+    if (__next_bkt == __last_prime)
+      // Set next resize to the max value so that we never try to rehash again
+      // as we already reach the biggest possible bucket number.
+      // Note that it might result in max_load_factor not being respected.
+      _M_next_resize = std::size_t(-1);
+    else
+      _M_next_resize =
+	__builtin_ceil(*__next_bkt * (long double)_M_max_load_factor);
+
     return *__next_bkt;
   }
 
