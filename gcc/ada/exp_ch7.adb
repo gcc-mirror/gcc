@@ -55,12 +55,15 @@ with Sinfo;    use Sinfo;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -3437,6 +3440,1518 @@ package body Exp_Ch7 is
       Analyze (At_End_Proc (HSS));
       Expand_At_End_Handler (HSS, Empty);
    end Build_Finalizer_Call;
+
+   ------------------------------------
+   -- Build_Invariant_Procedure_Body --
+   ------------------------------------
+
+   procedure Build_Invariant_Procedure_Body
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False)
+   is
+      Loc : constant Source_Ptr := Sloc (Typ);
+
+      Pragmas_Seen : Elist_Id := No_Elist;
+      --  This list contains all invariant pragmas processed so far. The list
+      --  is used to avoid generating redundant invariant checks.
+
+      Produced_Check : Boolean := False;
+      --  This flag tracks whether the type has produced at least one invariant
+      --  check. The flag is used as a sanity check at the end of the routine.
+
+      --  NOTE: most of the routines in Build_Invariant_Procedure_Body are
+      --  intentionally unnested to avoid deep indentation of code.
+
+      --  NOTE: all Add_xxx_Invariants routines are reactive. In other words
+      --  they emit checks, loops (for arrays) and case statements (for record
+      --  variant parts) only when there are invariants to verify. This keeps
+      --  the body of the invariant procedure free from useless code.
+
+      procedure Add_Array_Component_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id);
+      --  Generate an invariant check for each component of array type T.
+      --  Obj_Id denotes the entity of the _object formal parameter of the
+      --  invariant procedure. All created checks are added to list Checks.
+
+      procedure Add_Interface_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id);
+      --  Generate an invariant check for each inherited class-wide invariant
+      --  coming from all interfaces implemented by type T. Obj_Id denotes the
+      --  entity of the _object formal parameter of the invariant procedure.
+      --  All created checks are added to list Checks.
+
+      procedure Add_Parent_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id);
+      --  Generate an invariant check for each inherited class-wide invariant
+      --  coming from all parent types of type T. Obj_Id denotes the entity of
+      --  the _object formal parameter of the invariant procedure. All created
+      --  checks are added to list Checks.
+
+      procedure Add_Record_Component_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id);
+      --  Generate an invariant check for each component of record type T.
+      --  Obj_Id denotes the entity of the _object formal parameter of the
+      --  invariant procedure. All created checks are added to list Checks.
+
+      procedure Add_Type_Invariants
+        (Priv_Typ  : Entity_Id;
+         Full_Typ  : Entity_Id;
+         CRec_Typ  : Entity_Id;
+         Obj_Id    : Entity_Id;
+         Checks    : in out List_Id;
+         Inherit   : Boolean := False;
+         Priv_Item : Node_Id := Empty);
+      --  Generate an invariant check for each invariant found in one of the
+      --  following types (if available):
+      --
+      --    Priv_Typ - the partial view of a type
+      --    Full_Typ - the full view of a type
+      --    CRec_Typ - the corresponding record of a protected or a task type
+      --
+      --  Obj_Id denotes the entity of the _object formal parameter of the
+      --  invariant procedure. All created checks are added to list Checks.
+      --  Flag Inherit should be set when generating invariant checks for
+      --  inherited class-wide invariants. Priv_Item denotes the first rep
+      --  item of the private type.
+
+      procedure Create_Append (L : in out List_Id; N : Node_Id);
+      --  Append arbitrary node N to list L. If there is no list, create one.
+
+      function Is_Untagged_Private_Derivation
+        (Priv_Typ : Entity_Id;
+         Full_Typ : Entity_Id) return Boolean;
+      --  Determine whether private type Priv_Typ and its full view Full_Typ
+      --  represent an untagged derivation from a private parent.
+
+      ------------------------------------
+      -- Add_Array_Component_Invariants --
+      ------------------------------------
+
+      procedure Add_Array_Component_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id)
+      is
+         Comp_Typ : constant Entity_Id := Component_Type (T);
+         Dims     : constant Pos       := Number_Dimensions (T);
+
+         procedure Process_Array_Component
+           (Indices     : List_Id;
+            Comp_Checks : in out List_Id);
+         --  Generate an invariant check for an array component identified by
+         --  the indices in list Indices. All created checks are added to list
+         --  Comp_Checks.
+
+         procedure Process_One_Dimension
+           (Dim        : Pos;
+            Indices    : List_Id;
+            Dim_Checks : in out List_Id);
+         --  Generate a loop over the Nth dimension Dim of an array type. List
+         --  Indices contains all array indices for the dimension. All created
+         --  checks are added to list Dim_Checks.
+
+         -----------------------------
+         -- Process_Array_Component --
+         -----------------------------
+
+         procedure Process_Array_Component
+           (Indices     : List_Id;
+            Comp_Checks : in out List_Id)
+         is
+            Proc_Id : Entity_Id;
+
+         begin
+            if Has_Invariants (Comp_Typ) then
+               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
+
+               --  The component type should have an invariant procedure if it
+               --  has invariants of its own or inherits class-wide invariants
+               --  from parent or interface types.
+
+               pragma Assert (Present (Proc_Id));
+
+               --  Generate:
+               --    <Comp_Typ>Invariant (_object (<Indices>));
+
+               --  Note that the invariant procedure may have a null body if
+               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  effect.
+
+               if not Has_Null_Body (Proc_Id) then
+                  Create_Append (Comp_Checks,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (Proc_Id, Loc),
+                      Parameter_Associations => New_List (
+                        Make_Indexed_Component (Loc,
+                          Prefix      => New_Occurrence_Of (Obj_Id, Loc),
+                          Expressions => New_Copy_List (Indices)))));
+               end if;
+
+               Produced_Check := True;
+            end if;
+
+            --  In a rare case the designated type of an access component may
+            --  have an invariant. In this case verify the dereference of the
+            --  component.
+
+            if Is_Access_Type (Comp_Typ)
+              and then Has_Invariants (Designated_Type (Comp_Typ))
+            then
+               Proc_Id :=
+                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
+
+               --  The designated type should have an invariant procedure if it
+               --  has invariants of its own or inherits class-wide invariants
+               --  from parent or interface types.
+
+               pragma Assert (Present (Proc_Id));
+
+               --  Generate:
+               --    if _object (<Indexes>) /= null then
+               --       <Desig_Comp_Typ>Invariant (_object (<Indices>).all);
+               --    end if;
+
+               --  Note that the invariant procedure may have a null body if
+               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  effect.
+
+               if not Has_Null_Body (Proc_Id) then
+                  Create_Append (Comp_Checks,
+                    Make_If_Statement (Loc,
+                      Condition       =>
+                        Make_Op_Ne (Loc,
+                          Left_Opnd  =>
+                            Make_Indexed_Component (Loc,
+                              Prefix      => New_Occurrence_Of (Obj_Id, Loc),
+                              Expressions => New_Copy_List (Indices)),
+                          Right_Opnd => Make_Null (Loc)),
+
+                      Then_Statements => New_List (
+                        Make_Procedure_Call_Statement (Loc,
+                          Name                   =>
+                            New_Occurrence_Of (Proc_Id, Loc),
+
+                          Parameter_Associations => New_List (
+                            Make_Explicit_Dereference (Loc,
+                              Prefix =>
+                                Make_Indexed_Component (Loc,
+                                  Prefix      =>
+                                    New_Occurrence_Of (Obj_Id, Loc),
+                                  Expressions =>
+                                    New_Copy_List (Indices))))))));
+               end if;
+
+               Produced_Check := True;
+            end if;
+         end Process_Array_Component;
+
+         ---------------------------
+         -- Process_One_Dimension --
+         ---------------------------
+
+         procedure Process_One_Dimension
+           (Dim        : Pos;
+            Indices    : List_Id;
+            Dim_Checks : in out List_Id)
+         is
+            Comp_Checks : List_Id := No_List;
+            Index       : Entity_Id;
+
+         begin
+            --  Generate the invariant checks for the array component after all
+            --  dimensions have produced their respective loops.
+
+            if Dim > Dims then
+               Process_Array_Component
+                 (Indices     => Indices,
+                  Comp_Checks => Dim_Checks);
+
+            --  Otherwise create a loop for the current dimension
+
+            else
+               --  Create a new loop variable for each dimension
+
+               Index :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name ('I', Dim));
+               Append_To (Indices, New_Occurrence_Of (Index, Loc));
+
+               Process_One_Dimension
+                 (Dim        => Dim + 1,
+                  Indices    => Indices,
+                  Dim_Checks => Comp_Checks);
+
+               --  Generate:
+               --    for I<Dim> in _object'Range (<Dim>) loop
+               --       <Comp_Checks>
+               --    end loop;
+
+               --  Note that the invariant procedure may have a null body if
+               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  effect.
+
+               if Present (Comp_Checks) then
+                  Create_Append (Dim_Checks,
+                    Make_Implicit_Loop_Statement (T,
+                      Identifier       => Empty,
+                      Iteration_Scheme =>
+                        Make_Iteration_Scheme (Loc,
+                          Loop_Parameter_Specification =>
+                            Make_Loop_Parameter_Specification (Loc,
+                              Defining_Identifier         => Index,
+                              Discrete_Subtype_Definition =>
+                                Make_Attribute_Reference (Loc,
+                                  Prefix         =>
+                                    New_Occurrence_Of (Obj_Id, Loc),
+                                  Attribute_Name => Name_Range,
+                                  Expressions    => New_List (
+                                    Make_Integer_Literal (Loc, Dim))))),
+
+                      Statements => Comp_Checks));
+               end if;
+            end if;
+         end Process_One_Dimension;
+
+      --  Start of processing for Add_Array_Component_Invariants
+
+      begin
+         Process_One_Dimension
+           (Dim        => 1,
+            Indices    => New_List,
+            Dim_Checks => Checks);
+      end Add_Array_Component_Invariants;
+
+      ------------------------------
+      -- Add_Interface_Invariants --
+      ------------------------------
+
+      procedure Add_Interface_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id)
+      is
+         Iface_Elmt : Elmt_Id;
+         Ifaces     : Elist_Id;
+
+      begin
+         if Is_Tagged_Type (T) then
+            Collect_Interfaces (T, Ifaces);
+
+            --  Process the class-wide invariants of all implemented interfaces
+
+            Iface_Elmt := First_Elmt (Ifaces);
+            while Present (Iface_Elmt) loop
+               Add_Type_Invariants
+                 (Priv_Typ => Empty,
+                  Full_Typ => Node (Iface_Elmt),
+                  CRec_Typ => Empty,
+                  Obj_Id   => Obj_Id,
+                  Checks   => Checks,
+                  Inherit  => True);
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end if;
+      end Add_Interface_Invariants;
+
+      ---------------------------
+      -- Add_Parent_Invariants --
+      ---------------------------
+
+      procedure Add_Parent_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id)
+      is
+         Dummy_1 : Entity_Id;
+         Dummy_2 : Entity_Id;
+
+         Curr_Typ : Entity_Id;
+         --  The entity of the current type being examined
+
+         Full_Typ : Entity_Id;
+         --  The full view of Par_Typ
+
+         Par_Typ : Entity_Id;
+         --  The entity of the parent type
+
+         Priv_Typ : Entity_Id;
+         --  The partial view of Par_Typ
+
+      begin
+         --  Climb the parent type chain
+
+         Curr_Typ := T;
+         loop
+            --  Do not consider subtypes as they inherit the invariants from
+            --  their base types.
+
+            Par_Typ := Base_Type (Etype (Curr_Typ));
+
+            --  Stop the climb once the root of the parent chain is reached
+
+            exit when Curr_Typ = Par_Typ;
+
+            --  Process the class-wide invariants of the parent type
+
+            Get_Views (Par_Typ, Priv_Typ, Full_Typ, Dummy_1, Dummy_2);
+
+            Add_Type_Invariants
+              (Priv_Typ => Priv_Typ,
+               Full_Typ => Full_Typ,
+               CRec_Typ => Empty,
+               Obj_Id   => Obj_Id,
+               Checks   => Checks,
+               Inherit  => True);
+
+            Curr_Typ := Par_Typ;
+         end loop;
+      end Add_Parent_Invariants;
+
+      -------------------------------------
+      -- Add_Record_Component_Invariants --
+      -------------------------------------
+
+      procedure Add_Record_Component_Invariants
+        (T      : Entity_Id;
+         Obj_Id : Entity_Id;
+         Checks : in out List_Id)
+      is
+         procedure Process_Component_List
+           (Comp_List : Node_Id;
+            CL_Checks : in out List_Id);
+         --  Generate invariant checks for all record components found in
+         --  component list Comp_List, including variant parts. All created
+         --  checks are added to list CL_Checks.
+
+         procedure Process_Record_Component
+           (Comp_Id     : Entity_Id;
+            Comp_Checks : in out List_Id);
+         --  Generate an invariant check for a record component identified by
+         --  Comp_Id. All created checks are added to list Comp_Checks.
+
+         ----------------------------
+         -- Process_Component_List --
+         ----------------------------
+
+         procedure Process_Component_List
+           (Comp_List : Node_Id;
+            CL_Checks : in out List_Id)
+         is
+            Comp       : Node_Id;
+            Var        : Node_Id;
+            Var_Alts   : List_Id := No_List;
+            Var_Checks : List_Id := No_List;
+            Var_Stmts  : List_Id;
+
+            Produced_Variant_Check : Boolean := False;
+            --  This flag tracks whether the component has produced at least
+            --  one invariant check.
+
+         begin
+            --  Traverse the component items
+
+            Comp := First (Component_Items (Comp_List));
+            while Present (Comp) loop
+               if Nkind (Comp) = N_Component_Declaration then
+
+                  --  Generate the component invariant check
+
+                  Process_Record_Component
+                    (Comp_Id     => Defining_Entity (Comp),
+                     Comp_Checks => CL_Checks);
+               end if;
+
+               Next (Comp);
+            end loop;
+
+            --  Traverse the variant part
+
+            if Present (Variant_Part (Comp_List)) then
+               Var := First (Variants (Variant_Part (Comp_List)));
+               while Present (Var) loop
+                  Var_Checks := No_List;
+
+                  --  Generate invariant checks for all components and variant
+                  --  parts that qualify.
+
+                  Process_Component_List
+                    (Comp_List => Component_List (Var),
+                     CL_Checks => Var_Checks);
+
+                  --  The components of the current variant produced at least
+                  --  one invariant check.
+
+                  if Present (Var_Checks) then
+                     Var_Stmts := Var_Checks;
+                     Produced_Variant_Check := True;
+
+                  --  Otherwise there are either no components with invariants,
+                  --  assertions are disabled, or Assertion_Policy Ignore is in
+                  --  effect.
+
+                  else
+                     Var_Stmts := New_List (Make_Null_Statement (Loc));
+                  end if;
+
+                  Create_Append (Var_Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Discrete_Choices =>
+                        New_Copy_List (Discrete_Choices (Var)),
+                      Statements       => Var_Stmts));
+
+                  Next (Var);
+               end loop;
+
+               --  Create a case statement which verifies the invariant checks
+               --  of a particular component list depending on the discriminant
+               --  values only when there is at least one real invariant check.
+
+               if Produced_Variant_Check then
+                  Create_Append (CL_Checks,
+                    Make_Case_Statement (Loc,
+                      Expression   =>
+                        Make_Selected_Component (Loc,
+                          Prefix        => New_Occurrence_Of (Obj_Id, Loc),
+                          Selector_Name =>
+                            New_Occurrence_Of
+                              (Entity (Name (Variant_Part (Comp_List))), Loc)),
+                      Alternatives => Var_Alts));
+               end if;
+            end if;
+         end Process_Component_List;
+
+         ------------------------------
+         -- Process_Record_Component --
+         ------------------------------
+
+         procedure Process_Record_Component
+           (Comp_Id     : Entity_Id;
+            Comp_Checks : in out List_Id)
+         is
+            Comp_Typ : constant Entity_Id := Etype (Comp_Id);
+            Proc_Id  : Entity_Id;
+
+            Produced_Component_Check : Boolean := False;
+            --  This flag tracks whether the component has produced at least
+            --  one invariant check.
+
+         begin
+            --  Nothing to do for internal component _parent. Note that it is
+            --  not desirable to check whether the component comes from source
+            --  because protected type components are relocated to an internal
+            --  corresponding record, but still need processing.
+
+            if Chars (Comp_Id) = Name_uParent then
+               return;
+            end if;
+
+            --  Verify the invariant of the component. Note that an access
+            --  type may have an invariant when it acts as the full view of a
+            --  private type and the invariant appears on the partial view. In
+            --  this case verify the access value itself.
+
+            if Has_Invariants (Comp_Typ) then
+               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
+
+               --  The component type should have an invariant procedure if it
+               --  has invariants of its own or inherits class-wide invariants
+               --  from parent or interface types.
+
+               pragma Assert (Present (Proc_Id));
+
+               --  Generate:
+               --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
+
+               --  Note that the invariant procedure may have a null body if
+               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  effect.
+
+               if not Has_Null_Body (Proc_Id) then
+                  Create_Append (Comp_Checks,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (Proc_Id, Loc),
+                      Parameter_Associations => New_List (
+                        Make_Selected_Component (Loc,
+                          Prefix        =>
+                            Unchecked_Convert_To
+                              (T, New_Occurrence_Of (Obj_Id, Loc)),
+                          Selector_Name =>
+                            New_Occurrence_Of (Comp_Id, Loc)))));
+               end if;
+
+               Produced_Check           := True;
+               Produced_Component_Check := True;
+            end if;
+
+            --  In a rare case the designated type of an access component may
+            --  have a invariant. In this case verify the dereference of the
+            --  component.
+
+            if Is_Access_Type (Comp_Typ)
+              and then Has_Invariants (Designated_Type (Comp_Typ))
+            then
+               Proc_Id :=
+                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
+
+               --  The designated type should have an invariant procedure if it
+               --  has invariants of its own or inherits class-wide invariants
+               --  from parent or interface types.
+
+               pragma Assert (Present (Proc_Id));
+
+               --  Generate:
+               --    if T (_object).<Comp_Id> /= null then
+               --       <Desig_Comp_Typ>Invariant (T (_object).<Comp_Id>.all);
+               --    end if;
+
+               --  Note that the invariant procedure may have a null body if
+               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  effect.
+
+               if not Has_Null_Body (Proc_Id) then
+                  Create_Append (Comp_Checks,
+                    Make_If_Statement (Loc,
+                      Condition       =>
+                        Make_Op_Ne (Loc,
+                          Left_Opnd  =>
+                            Make_Selected_Component (Loc,
+                              Prefix        =>
+                                Unchecked_Convert_To
+                                  (T, New_Occurrence_Of (Obj_Id, Loc)),
+                              Selector_Name =>
+                                New_Occurrence_Of (Comp_Id, Loc)),
+                          Right_Opnd => Make_Null (Loc)),
+
+                      Then_Statements => New_List (
+                        Make_Procedure_Call_Statement (Loc,
+                          Name                   =>
+                            New_Occurrence_Of (Proc_Id, Loc),
+
+                          Parameter_Associations => New_List (
+                            Make_Explicit_Dereference (Loc,
+                              Prefix =>
+                                Make_Selected_Component (Loc,
+                                  Prefix        =>
+                                    Unchecked_Convert_To
+                                      (T, New_Occurrence_Of (Obj_Id, Loc)),
+                                  Selector_Name =>
+                                    New_Occurrence_Of (Comp_Id, Loc))))))));
+               end if;
+
+               Produced_Check           := True;
+               Produced_Component_Check := True;
+            end if;
+
+            if Produced_Component_Check and then Has_Unchecked_Union (T) then
+               Error_Msg_NE
+                 ("invariants cannot be checked on components of "
+                  & "unchecked_union type &?", Comp_Id, T);
+            end if;
+         end Process_Record_Component;
+
+         --  Local variables
+
+         Comps : Node_Id;
+         Def   : Node_Id;
+
+      --  Start of processing for Add_Record_Component_Invariants
+
+      begin
+         --  An untagged derived type inherits the components of its parent
+         --  type. In order to avoid creating redundant invariant checks, do
+         --  not process the components now. Instead wait until the ultimate
+         --  parent of the untagged derivation chain is reached.
+
+         if not Is_Untagged_Derivation (T) then
+            Def := Type_Definition (Parent (T));
+
+            if Nkind (Def) = N_Derived_Type_Definition then
+               Def := Record_Extension_Part (Def);
+            end if;
+
+            pragma Assert (Nkind (Def) = N_Record_Definition);
+            Comps := Component_List (Def);
+
+            if Present (Comps) then
+               Process_Component_List
+                 (Comp_List => Comps,
+                  CL_Checks => Checks);
+            end if;
+         end if;
+      end Add_Record_Component_Invariants;
+
+      -------------------------
+      -- Add_Type_Invariants --
+      -------------------------
+
+      procedure Add_Type_Invariants
+        (Priv_Typ  : Entity_Id;
+         Full_Typ  : Entity_Id;
+         CRec_Typ  : Entity_Id;
+         Obj_Id    : Entity_Id;
+         Checks    : in out List_Id;
+         Inherit   : Boolean := False;
+         Priv_Item : Node_Id := Empty)
+      is
+         procedure Add_Invariant (Prag : Node_Id);
+         --  Create a runtime check to verify the invariant exression of pragma
+         --  Prag. All generated code is added to list Checks.
+
+         procedure Process_Type (T : Entity_Id; Stop_Item : Node_Id := Empty);
+         --  Generate invariant checks for type T by inspecting the rep item
+         --  chain of the type. Stop_Item denotes a rep item which once seen
+         --  will stop the inspection.
+
+         -------------------
+         -- Add_Invariant --
+         -------------------
+
+         procedure Add_Invariant (Prag : Node_Id) is
+            Rep_Typ : Entity_Id;
+            --  The replacement type used in the substitution of the current
+            --  instance of a type with the _object formal parameter.
+
+            procedure Replace_Type_Ref (N : Node_Id);
+            --  Substitute the occurrence of a type name denoted by N with a
+            --  reference to the _object formal parameter.
+
+            ----------------------
+            -- Replace_Type_Ref --
+            ----------------------
+
+            procedure Replace_Type_Ref (N : Node_Id) is
+               Nloc : constant Source_Ptr := Sloc (N);
+               Ref  : Node_Id;
+
+            begin
+               --  Decorate the reference to Ref_Typ even though it may be
+               --  rewritten further down. This is done for two reasons:
+
+               --    1) ASIS has all necessary semantic information in the
+               --    original tree.
+
+               --    2) Routines which examine properties of the Original_Node
+               --    have some semantic information.
+
+               if Nkind (N) = N_Identifier then
+                  Set_Entity (N, Rep_Typ);
+                  Set_Etype  (N, Rep_Typ);
+
+               elsif Nkind (N) = N_Selected_Component then
+                  Analyze (Prefix (N));
+                  Set_Entity (Selector_Name (N), Rep_Typ);
+                  Set_Etype  (Selector_Name (N), Rep_Typ);
+               end if;
+
+               --  Do not alter the tree for ASIS. As a result all references
+               --  to Ref_Typ remain as is, but they have sufficent semantic
+               --  information.
+
+               if not ASIS_Mode then
+
+                  --  Perform the following substitution:
+
+                  --    Ref_Typ  -->  _object
+
+                  Ref := Make_Identifier (Nloc, Chars (Obj_Id));
+                  Set_Entity (Ref, Obj_Id);
+                  Set_Etype  (Ref, Rep_Typ);
+
+                  --  When the pragma denotes a class-wide invariant, perform
+                  --  the following substitution:
+
+                  --    Rep_Typ  -->  Rep_Typ'Class (_object)
+
+                  if Class_Present (Prag) then
+                     Ref :=
+                       Make_Type_Conversion (Nloc,
+                         Subtype_Mark =>
+                           Make_Attribute_Reference (Nloc,
+                             Prefix         =>
+                               New_Occurrence_Of (Rep_Typ, Nloc),
+                             Attribute_Name => Name_Class),
+                         Expression   => Ref);
+                  end if;
+
+                  Rewrite (N, Ref);
+                  Set_Comes_From_Source (N, True);
+               end if;
+            end Replace_Type_Ref;
+
+            procedure Replace_Type_Refs is
+              new Replace_Type_References_Generic (Replace_Type_Ref);
+
+            --  Local variables
+
+            Asp  : constant Node_Id    := Corresponding_Aspect (Prag);
+            Nam  : constant Name_Id    := Original_Aspect_Pragma_Name (Prag);
+            Ploc : constant Source_Ptr := Sloc (Prag);
+
+            Arg1      : Node_Id;
+            Arg2      : Node_Id;
+            Arg3      : Node_Id;
+            ASIS_Expr : Node_Id;
+            Assoc     : List_Id;
+            Expr      : Node_Id;
+            Str       : String_Id;
+
+         --  Start of processing for Add_Invariant
+
+         begin
+            --  Nothing to do if the pragma was already processed
+
+            if Contains (Pragmas_Seen, Prag) then
+               return;
+            end if;
+
+            --  Extract the arguments of the invariant pragma
+
+            Arg1 := First (Pragma_Argument_Associations (Prag));
+            Arg2 := Next (Arg1);
+            Arg3 := Next (Arg2);
+
+            Arg1 := Get_Pragma_Arg (Arg1);
+            Arg2 := Get_Pragma_Arg (Arg2);
+
+            --  The pragma applies to the partial view
+
+            if Present (Priv_Typ) and then Entity (Arg1) = Priv_Typ then
+               Rep_Typ := Priv_Typ;
+
+            --  The pragma applies to the full view
+
+            elsif Present (Full_Typ) and then Entity (Arg1) = Full_Typ then
+               Rep_Typ := Full_Typ;
+
+            --  Otherwise the pragma applies to a parent type in which case it
+            --  will be processed at a later stage by Add_Parent_Invariants or
+            --  Add_Interface_Invariants.
+
+            else
+               return;
+            end if;
+
+            --  Nothing to do when the caller requests the processing of all
+            --  inherited class-wide invariants, but the pragma does not fall
+            --  in this category.
+
+            if Inherit and then not Class_Present (Prag) then
+               return;
+            end if;
+
+            Expr := New_Copy_Tree (Arg2);
+
+            --  Substitute all references to type Rep_Typ with references to
+            --  the _object formal parameter.
+
+            Replace_Type_Refs (Expr, Rep_Typ);
+
+            --  Additional processing for non-class-wide invariants
+
+            if not Inherit then
+
+               --  Preanalyze the invariant expression to detect errors and at
+               --  the same time capture the visibility of the proper package
+               --  part.
+
+               --  Historical note: the old implementation of invariants used
+               --  node N as the parent, but a package specification as parent
+               --  of an expression is bizarre.
+
+               Set_Parent (Expr, Parent (Arg2));
+               Preanalyze_Assert_Expression (Expr, Any_Boolean);
+
+               --  If the pragma comes from an aspect specification, replace
+               --  the saved expression because all type references must be
+               --  substituted for the call to Preanalyze_Spec_Expression in
+               --  Check_Aspect_At_xxx routines.
+
+               if Present (Asp) then
+                  Set_Entity (Identifier (Asp), New_Copy_Tree (Expr));
+               end if;
+
+               --  Analyze the original invariant expression for ASIS
+
+               if ASIS_Mode then
+                  ASIS_Expr := Empty;
+
+                  if Comes_From_Source (Prag) then
+                     ASIS_Expr := Arg2;
+                  elsif Present (Asp) then
+                     ASIS_Expr := Expression (Asp);
+                  end if;
+
+                  if Present (ASIS_Expr) then
+                     Replace_Type_Refs (ASIS_Expr, Rep_Typ);
+                     Preanalyze_Assert_Expression (ASIS_Expr, Any_Boolean);
+                  end if;
+               end if;
+
+               --  A class-wide invariant may be inherited in a separate unit,
+               --  where the corresponding expression cannot be resolved by
+               --  visibility, because it refers to a local function. Propagate
+               --  semantic information to the original representation item, to
+               --  be used when an invariant procedure for a derived type is
+               --  constructed.
+
+               --  ??? Unclear how to handle class-wide invariants that are not
+               --  function calls.
+
+               if Class_Present (Prag)
+                 and then Nkind (Expr) = N_Function_Call
+                 and then Nkind (Arg2) = N_Indexed_Component
+               then
+                  Rewrite (Arg2,
+                    Make_Function_Call (Ploc,
+                      Name                   =>
+                        New_Occurrence_Of (Entity (Name (Expr)), Ploc),
+                      Parameter_Associations => Expressions (Arg2)));
+               end if;
+            end if;
+
+            --  The invariant is ignored, nothing left to do
+
+            if Is_Ignored (Prag) then
+               null;
+
+            --  Otherwise the invariant is checked. Build a Check pragma to
+            --  verify the expression at runtime.
+
+            else
+               Assoc := New_List (
+                 Make_Pragma_Argument_Association (Ploc,
+                   Expression => Make_Identifier (Ploc, Nam)),
+                 Make_Pragma_Argument_Association (Ploc,
+                   Expression => Expr));
+
+               --  Handle the String argument (if any)
+
+               if Present (Arg3) then
+                  Str := Strval (Get_Pragma_Arg (Arg3));
+
+                  --  When inheriting an invariant, modify the message from
+                  --  "failed invariant" to "failed inherited invariant".
+
+                  if Inherit then
+                     String_To_Name_Buffer (Str);
+
+                     if Name_Buffer (1 .. 16) = "failed invariant" then
+                        Insert_Str_In_Name_Buffer ("inherited ", 8);
+                        Str := String_From_Name_Buffer;
+                     end if;
+                  end if;
+
+                  Append_To (Assoc,
+                    Make_Pragma_Argument_Association (Ploc,
+                      Expression => Make_String_Literal (Ploc, Str)));
+               end if;
+
+               --  Generate:
+               --    pragma Check (<Nam>, <Expr>, <Str>);
+
+               Create_Append (Checks,
+                 Make_Pragma (Ploc,
+                   Pragma_Identifier            =>
+                     Make_Identifier (Ploc, Name_Check),
+                   Pragma_Argument_Associations => Assoc));
+            end if;
+
+            --  Output an info message when inheriting an invariant and the
+            --  listing option is enabled.
+
+            if Inherit and Opt.List_Inherited_Aspects then
+               Error_Msg_Sloc := Sloc (Prag);
+               Error_Msg_N
+                 ("info: & inherits `Invariant''Class` aspect from #?L?", Typ);
+            end if;
+
+            --  Add the pragma to the list of processed pragmas
+
+            Append_New_Elmt (Prag, Pragmas_Seen);
+            Produced_Check := True;
+         end Add_Invariant;
+
+         ------------------
+         -- Process_Type --
+         ------------------
+
+         procedure Process_Type
+           (T         : Entity_Id;
+            Stop_Item : Node_Id := Empty)
+         is
+            Rep_Item : Node_Id;
+
+         begin
+            Rep_Item := First_Rep_Item (T);
+            while Present (Rep_Item) loop
+               if Nkind (Rep_Item) = N_Pragma
+                 and then Pragma_Name (Rep_Item) = Name_Invariant
+               then
+                  --  Stop the traversal of the rep item chain once a specific
+                  --  item is encountered.
+
+                  if Present (Stop_Item) and then Rep_Item = Stop_Item then
+                     exit;
+
+                  --  Otherwise generate an invariant check
+
+                  else
+                     Add_Invariant (Rep_Item);
+                  end if;
+               end if;
+
+               Next_Rep_Item (Rep_Item);
+            end loop;
+         end Process_Type;
+
+      --  Start of processing for Add_Type_Invariants
+
+      begin
+         --  Process the invariants of the partial view
+
+         if Present (Priv_Typ) then
+            Process_Type (Priv_Typ);
+         end if;
+
+         --  Process the invariants of the full view
+
+         if Present (Full_Typ) then
+            Process_Type (Full_Typ, Stop_Item => Priv_Item);
+
+            --  Process the elements of an array type
+
+            if Is_Array_Type (Full_Typ) then
+               Add_Array_Component_Invariants (Full_Typ, Obj_Id, Checks);
+
+            --  Process the components of a record type
+
+            elsif Ekind (Full_Typ) = E_Record_Type then
+               Add_Record_Component_Invariants (Full_Typ, Obj_Id, Checks);
+            end if;
+         end if;
+
+         --  Process the components of a corresponding record type
+
+         if Present (CRec_Typ) then
+            Add_Record_Component_Invariants (CRec_Typ, Obj_Id, Checks);
+         end if;
+      end Add_Type_Invariants;
+
+      -------------------
+      -- Create_Append --
+      -------------------
+
+      procedure Create_Append (L : in out List_Id; N : Node_Id) is
+      begin
+         if No (L) then
+            L := New_List;
+         end if;
+
+         Append_To (L, N);
+      end Create_Append;
+
+      ------------------------------------
+      -- Is_Untagged_Private_Derivation --
+      ------------------------------------
+
+      function Is_Untagged_Private_Derivation
+        (Priv_Typ : Entity_Id;
+         Full_Typ : Entity_Id) return Boolean
+      is
+      begin
+         return
+           Present (Priv_Typ)
+             and then Is_Untagged_Derivation (Priv_Typ)
+             and then Is_Private_Type (Etype (Priv_Typ))
+             and then Present (Full_Typ)
+             and then Is_Itype (Full_Typ);
+      end Is_Untagged_Private_Derivation;
+
+      --  Local variables
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      Dummy        : Entity_Id;
+      Priv_Item    : Node_Id;
+      Proc_Body    : Node_Id;
+      Proc_Body_Id : Entity_Id;
+      Proc_Decl    : Node_Id;
+      Proc_Id      : Entity_Id;
+      Stmts        : List_Id := No_List;
+
+      CRec_Typ : Entity_Id;
+      --  The corresponding record type of Full_Typ
+
+      Full_Proc : Entity_Id;
+      --  The entity of the "full" invariant procedure
+
+      Full_Typ : Entity_Id;
+      --  The full view of the working type
+
+      Freeze_Typ : Entity_Id;
+      --  The freeze type whose freeze node carries the invariant procedure
+      --  body. This is either the partial or the full view of the working
+      --  type.
+
+      Obj_Id : Entity_Id;
+      --  The _object formal parameter of the invariant procedure
+
+      Part_Proc : Entity_Id;
+      --  The entity of the "partial" invariant procedure
+
+      Priv_Typ : Entity_Id;
+      --  The partial view of the working type
+
+      Work_Typ : Entity_Id;
+      --  The working type
+
+   --  Start of processing for Build_Invariant_Procedure_Body
+
+   begin
+      Work_Typ := Typ;
+
+      --  The input type denotes the implementation base type of a constrained
+      --  array type. Work with the first subtype as all invariant pragmas are
+      --  on its rep item chain.
+
+      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+         Work_Typ := First_Subtype (Work_Typ);
+
+      --  The input type denotes the corresponding record type of a protected
+      --  or task type. Work with the concurrent type because the corresponding
+      --  record type may not be visible to clients of the type.
+
+      elsif Ekind (Work_Typ) = E_Record_Type
+        and then Is_Concurrent_Record_Type (Work_Typ)
+      then
+         Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
+      end if;
+
+      --  The type must either have invariants of its own, inherit class-wide
+      --  invariants from parent types or interfaces, or be an array or record
+      --  type whose components have invariants.
+
+      pragma Assert (Has_Invariants (Work_Typ));
+
+      --  Nothing to do for interface types as their class-wide invariants are
+      --  inherited by implementing types.
+
+      if Is_Interface (Work_Typ) then
+         return;
+      end if;
+
+      --  Obtain both views of the type
+
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Dummy, CRec_Typ);
+
+      --  The caller requests a body for the partial invariant procedure
+
+      if Partial_Invariant then
+         Full_Proc := Invariant_Procedure (Work_Typ);
+         Proc_Id   := Partial_Invariant_Procedure (Work_Typ);
+
+         --  The "full" invariant procedure body was already created
+
+         if Present (Full_Proc)
+           and then Present
+                      (Corresponding_Body (Unit_Declaration_Node (Full_Proc)))
+         then
+            --  This scenario happens only when the type is an untagged
+            --  derivation from a private parent and the underlying full
+            --  view was processed before the partial view.
+
+            pragma Assert
+              (Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ));
+
+            --  Nothing to do because the processing of the underlying full
+            --  view already checked the invariants of the partial view.
+
+            return;
+         end if;
+
+         --  Create a declaration for the "partial" invariant procedure if it
+         --  is not available.
+
+         if No (Proc_Id) then
+            Build_Invariant_Procedure_Declaration
+              (Typ               => Work_Typ,
+               Partial_Invariant => True);
+
+            Proc_Id := Partial_Invariant_Procedure (Work_Typ);
+         end if;
+
+      --  The caller requests a body for the "full" invariant procedure
+
+      else
+         Proc_Id   := Invariant_Procedure (Work_Typ);
+         Part_Proc := Partial_Invariant_Procedure (Work_Typ);
+
+         --  Create a declaration for the "full" invariant procedure if it is
+         --  not available.
+
+         if No (Proc_Id) then
+            Build_Invariant_Procedure_Declaration (Work_Typ);
+            Proc_Id := Invariant_Procedure (Work_Typ);
+         end if;
+      end if;
+
+      --  At this point there should be an invariant procedure declaration
+
+      pragma Assert (Present (Proc_Id));
+      Proc_Decl := Unit_Declaration_Node (Proc_Id);
+
+      --  Nothing to do if the invariant procedure already has a body
+
+      if Present (Corresponding_Body (Proc_Decl)) then
+         return;
+      end if;
+
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode_From_Entity (Work_Typ);
+
+      Obj_Id := First_Formal (Proc_Id);
+
+      --  The "partial" invariant procedure verifies the invariants of the
+      --  partial view only.
+
+      if Partial_Invariant then
+         pragma Assert (Present (Priv_Typ));
+         Freeze_Typ := Priv_Typ;
+
+         --  Emulate the environment of the invariant procedure by installing
+         --  its scope and formal parameters. Note that this is not need, but
+         --  having the scope of the invariant procedure installed helps with
+         --  the detection of invariant-related errors.
+
+         Push_Scope (Proc_Id);
+         Install_Formals (Proc_Id);
+
+         Add_Type_Invariants
+           (Priv_Typ => Priv_Typ,
+            Full_Typ => Empty,
+            CRec_Typ => Empty,
+            Obj_Id   => Obj_Id,
+            Checks   => Stmts);
+
+         End_Scope;
+
+      --  Otherwise the "full" invariant procedure verifies the invariants of
+      --  the full view, all array or record components, as well as class-wide
+      --  invariants inherited from parent types or interfaces. In addition, it
+      --  indirectly verifies the invariants of the partial view by calling the
+      --  "partial" invariant procedure.
+
+      else
+         pragma Assert (Present (Full_Typ));
+         Freeze_Typ := Full_Typ;
+
+         --  Check the invariants of the partial view by calling the "partial"
+         --  invariant procedure. Generate:
+
+         --    <Work_Typ>Partial_Invariant (_object);
+
+         if Present (Part_Proc) then
+            Create_Append (Stmts,
+              Make_Procedure_Call_Statement (Loc,
+                Name                   => New_Occurrence_Of (Part_Proc, Loc),
+                Parameter_Associations => New_List (
+                  New_Occurrence_Of (Obj_Id, Loc))));
+
+            Produced_Check := True;
+         end if;
+
+         Priv_Item := Empty;
+
+         --  Derived subtypes do not have a partial view
+
+         if Present (Priv_Typ) then
+
+            --  The processing of the "full" invariant procedure intentionally
+            --  skips the partial view because a) this may result in changes of
+            --  visibility and b) lead to duplicate checks. However, when the
+            --  full view is the underlying full view of an untagged derived
+            --  type whose parent type is private, partial invariants appear on
+            --  the rep item chain of the partial view only.
+
+            --    package Pack_1 is
+            --       type Root ... is private;
+            --    private
+            --       <full view of Root>
+            --    end Pack_1;
+
+            --    with Pack_1;
+            --    package Pack_2 is
+            --       type Child is new Pack_1.Root with Type_Invariant => ...;
+            --       <underlying full view of Child>
+            --    end Pack_2;
+
+            --  As a result, the processing of the full view must also consider
+            --  all invariants of the partial view.
+
+            if Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ) then
+               null;
+
+            --  Otherwise the invariants of the partial view are ignored
+
+            else
+               --  Note that the rep item chain is shared between the partial
+               --  and full views of a type. To avoid processing the invariants
+               --  of the partial view, signal the logic to stop when the first
+               --  rep item of the partial view has been reached.
+
+               Priv_Item := First_Rep_Item (Priv_Typ);
+
+               --  Ignore the invariants of the partial view by eliminating the
+               --  view.
+
+               Priv_Typ := Empty;
+            end if;
+         end if;
+
+         --  Process the invariants of the full view and in certain cases those
+         --  of the partial view. This also handles any invariants on array or
+         --  record components.
+
+         Add_Type_Invariants
+           (Priv_Typ  => Priv_Typ,
+            Full_Typ  => Full_Typ,
+            CRec_Typ  => CRec_Typ,
+            Obj_Id    => Obj_Id,
+            Checks    => Stmts,
+            Priv_Item => Priv_Item);
+
+         --  Process the inherited class-wide invariants of all parent types.
+         --  This also handles any invariants on record components.
+
+         Add_Parent_Invariants (Full_Typ, Obj_Id, Stmts);
+
+         --  Process the inherited class-wide invariants of all implemented
+         --  interface types.
+
+         Add_Interface_Invariants (Full_Typ, Obj_Id, Stmts);
+      end if;
+
+      --  At this point there should be at least one invariant check. If this
+      --  is not the case, then the invariant-related flags were not properly
+      --  set, or there is a missing invariant procedure on one of the array
+      --  or record components.
+
+      pragma Assert (Produced_Check);
+
+      --  Account for the case where assertions are disabled or all invariant
+      --  checks are subject to Assertion_Policy Ignore. Produce a completing
+      --  empty body.
+
+      if No (Stmts) then
+         Stmts := New_List (Make_Null_Statement (Loc));
+      end if;
+
+      Proc_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification                =>
+            Copy_Subprogram_Spec (Parent (Proc_Id)),
+          Declarations                 => Empty_List,
+            Handled_Statement_Sequence =>
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => Stmts));
+      Proc_Body_Id := Defining_Entity (Proc_Body);
+
+      --  Link both spec and body to avoid generating duplicates
+
+      Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
+      Set_Corresponding_Spec (Proc_Body, Proc_Id);
+
+      Append_Freeze_Action (Freeze_Typ, Proc_Body);
+      Ghost_Mode := Save_Ghost_Mode;
+   end Build_Invariant_Procedure_Body;
+
+   -------------------------------------------
+   -- Build_Invariant_Procedure_Declaration --
+   -------------------------------------------
+
+   procedure Build_Invariant_Procedure_Declaration
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False)
+   is
+      Loc : constant Source_Ptr := Sloc (Typ);
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      Proc_Id  : Entity_Id;
+      Typ_Decl : Node_Id;
+
+      CRec_Typ : Entity_Id;
+      --  The corresponding record type of Full_Typ
+
+      Full_Base : Entity_Id;
+      --  The base type of Full_Typ
+
+      Full_Typ : Entity_Id;
+      --  The full view of working type
+
+      Obj_Id : Entity_Id;
+      --  The _object formal parameter of the invariant procedure
+
+      Priv_Typ : Entity_Id;
+      --  The partial view of working type
+
+      Work_Typ : Entity_Id;
+      --  The working type
+
+   begin
+      Work_Typ := Typ;
+
+      --  The input type denotes the implementation base type of a constrained
+      --  array type. Work with the first subtype as all invariant pragmas are
+      --  on its rep item chain.
+
+      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+         Work_Typ := First_Subtype (Work_Typ);
+
+      --  The input denotes the corresponding record type of a protected or a
+      --  task type. Work with the concurrent type because the corresponding
+      --  record type may not be visible to clients of the type.
+
+      elsif Ekind (Work_Typ) = E_Record_Type
+        and then Is_Concurrent_Record_Type (Work_Typ)
+      then
+         Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
+      end if;
+
+      --  The type must either have invariants of its own, inherit class-wide
+      --  invariants from parent or interface types, or be an array or record
+      --  type whose components have invariants.
+
+      pragma Assert (Has_Invariants (Work_Typ));
+
+      --  Nothing to do for interface types as their class-wide invariants are
+      --  inherited by implementing types.
+
+      if Is_Interface (Work_Typ) then
+         return;
+
+      --  Nothing to do if the type already has a "partial" invariant procedure
+
+      elsif Partial_Invariant then
+         if Present (Partial_Invariant_Procedure (Work_Typ)) then
+            return;
+         end if;
+
+      --  Nothing to do if the type already has a "full" invariant procedure
+
+      elsif Present (Invariant_Procedure (Work_Typ)) then
+         return;
+      end if;
+
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode_From_Entity (Work_Typ);
+
+      --  The caller requests the declaration of the "partial" invariant
+      --  procedure.
+
+      if Partial_Invariant then
+         Proc_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars =>
+               New_External_Name (Chars (Work_Typ), "Partial_Invariant"));
+
+         Set_Ekind (Proc_Id, E_Procedure);
+         Set_Is_Partial_Invariant_Procedure (Proc_Id);
+         Set_Partial_Invariant_Procedure (Work_Typ, Proc_Id);
+
+      --  Otherwise the caller requests the declaration of the "full" invariant
+      --  procedure.
+
+      else
+         Proc_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Work_Typ), "Invariant"));
+
+         Set_Ekind (Proc_Id, E_Procedure);
+         Set_Is_Invariant_Procedure (Proc_Id);
+         Set_Invariant_Procedure (Work_Typ, Proc_Id);
+      end if;
+
+      --  The invariant procedure requires debug info when the invariants are
+      --  subject to Source Coverage Obligations.
+
+      if Opt.Generate_SCO then
+         Set_Needs_Debug_Info (Proc_Id);
+      end if;
+
+      --  Mark the invariant procedure explicitly as Ghost because it does not
+      --  come from source.
+
+      if Ghost_Mode > None then
+         Set_Is_Ghost_Entity (Proc_Id);
+      end if;
+
+      --  Obtain all views of the input type
+
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+
+      --  Associate the invariant procedure with all views
+
+      Propagate_Invariant_Attributes (Priv_Typ,  From_Typ => Work_Typ);
+      Propagate_Invariant_Attributes (Full_Typ,  From_Typ => Work_Typ);
+      Propagate_Invariant_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_Invariant_Attributes (CRec_Typ,  From_Typ => Work_Typ);
+
+      --  The declaration of the invariant procedure is inserted after the
+      --  declaration of the partial view as this allows for proper external
+      --  visibility.
+
+      if Present (Priv_Typ) then
+         Typ_Decl := Declaration_Node (Priv_Typ);
+
+      --  Derived types with the full view as parent do not have a partial
+      --  view. Insert the invariant procedure after the derived type.
+
+      else
+         Typ_Decl := Declaration_Node (Full_Typ);
+      end if;
+
+      --  The type should have a declarative node
+
+      pragma Assert (Present (Typ_Decl));
+
+      --  Create the formal parameter which emulates the variable-like behavior
+      --  of the current type instance.
+
+      Obj_Id := Make_Defining_Identifier (Loc, Chars => Name_uObject);
+      Set_Ekind (Obj_Id, E_In_Parameter);
+
+      --  Generate:
+      --    procedure <Work_Typ>[Partial_]Invariant (_object : <Work_Typ>);
+
+      Insert_After_And_Analyze (Typ_Decl,
+        Make_Subprogram_Declaration (Loc,
+          Specification =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name       => Proc_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier => Obj_Id,
+                  Parameter_Type      =>
+                    New_Occurrence_Of (Work_Typ, Loc))))));
+
+      Ghost_Mode := Save_Ghost_Mode;
+   end Build_Invariant_Procedure_Declaration;
 
    ---------------------
    -- Build_Late_Proc --

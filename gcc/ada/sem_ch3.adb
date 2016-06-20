@@ -4475,6 +4475,8 @@ package body Sem_Ch3 is
    procedure Analyze_Private_Extension_Declaration (N : Node_Id) is
       Indic       : constant Node_Id   := Subtype_Indication (N);
       T           : constant Entity_Id := Defining_Identifier (N);
+      Iface       : Entity_Id;
+      Iface_Elmt  : Elmt_Id;
       Parent_Base : Entity_Id;
       Parent_Type : Entity_Id;
 
@@ -4540,8 +4542,8 @@ package body Sem_Ch3 is
 
       elsif Is_Concurrent_Type (Parent_Type) then
          Error_Msg_N
-           ("parent type of a private extension cannot be "
-            & "a synchronized tagged type (RM 3.9.1 (3/1))", N);
+           ("parent type of a private extension cannot be a synchronized "
+            & "tagged type (RM 3.9.1 (3/1))", N);
 
          Set_Etype              (T, Any_Type);
          Set_Ekind              (T, E_Limited_Private_Type);
@@ -4562,7 +4564,6 @@ package body Sem_Ch3 is
       if (not Is_Package_Or_Generic_Package (Current_Scope)
            and then Nkind (Parent (N)) /= N_Generic_Subprogram_Declaration)
         or else In_Private_Part (Current_Scope)
-
       then
          Error_Msg_N ("invalid context for private extension", N);
       end if;
@@ -4589,13 +4590,26 @@ package body Sem_Ch3 is
 
       Build_Derived_Record_Type (N, Parent_Type, T);
 
-      --  Propagate inherited invariant information. The new type has
-      --  invariants, if the parent type has inheritable invariants,
-      --  and these invariants can in turn be inherited.
+      --  A private extension inherits any class-wide invariants coming from a
+      --  parent type or an interface. Note that the invariant procedure of the
+      --  parent type should not be inherited because the private extension may
+      --  define invariants of its own.
 
       if Has_Inheritable_Invariants (Parent_Type) then
-         Set_Has_Inheritable_Invariants (T);
-         Set_Has_Invariants (T);
+         Set_Has_Inherited_Invariants (T);
+
+      elsif Present (Interfaces (T)) then
+         Iface_Elmt := First_Elmt (Interfaces (T));
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+
+            if Has_Inheritable_Invariants (Iface) then
+               Set_Has_Inherited_Invariants (T);
+               exit;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
       end if;
 
       --  Ada 2005 (AI-443): Synchronized private extension or a rewritten
@@ -4617,33 +4631,29 @@ package body Sem_Ch3 is
                 (not Is_Interface (Parent_Type)
                   or else not Is_Synchronized_Interface (Parent_Type))
             then
-               Error_Msg_NE ("parent type of & must be tagged limited " &
-                             "or synchronized", N, T);
+               Error_Msg_NE
+                 ("parent type of & must be tagged limited or synchronized",
+                  N, T);
             end if;
 
             --  The progenitors (if any) must be limited or synchronized
             --  interfaces.
 
             if Present (Interfaces (T)) then
-               declare
-                  Iface      : Entity_Id;
-                  Iface_Elmt : Elmt_Id;
+               Iface_Elmt := First_Elmt (Interfaces (T));
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
 
-               begin
-                  Iface_Elmt := First_Elmt (Interfaces (T));
-                  while Present (Iface_Elmt) loop
-                     Iface := Node (Iface_Elmt);
+                  if not Is_Limited_Interface (Iface)
+                    and then not Is_Synchronized_Interface (Iface)
+                  then
+                     Error_Msg_NE
+                       ("progenitor & must be limited or synchronized",
+                        N, Iface);
+                  end if;
 
-                     if not Is_Limited_Interface (Iface)
-                       and then not Is_Synchronized_Interface (Iface)
-                     then
-                        Error_Msg_NE ("progenitor & must be limited " &
-                                      "or synchronized", N, Iface);
-                     end if;
-
-                     Next_Elmt (Iface_Elmt);
-                  end loop;
-               end;
+                  Next_Elmt (Iface_Elmt);
+               end loop;
             end if;
 
          --  Regular derived extension, the parent must be a limited or
@@ -5154,10 +5164,9 @@ package body Sem_Ch3 is
 
       if Has_Predicates (T)
         and then Present (Predicate_Function (T))
-
-         and then
-           ((In_Instance and then not Comes_From_Source (N))
-              or else No (Aspect_Specifications (N)))
+        and then
+          ((In_Instance and then not Comes_From_Source (N))
+             or else No (Aspect_Specifications (N)))
       then
          Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
 
@@ -5166,6 +5175,11 @@ package body Sem_Ch3 is
             Set_Static_Discrete_Predicate (Id, Static_Discrete_Predicate (T));
          end if;
       end if;
+
+      --  Propagate invariant-related attributes from the base type to the
+      --  subtype.
+
+      Propagate_Invariant_Attributes (Id, From_Typ => Base_Type (T));
 
       --  Remaining processing depends on characteristics of base type
 
@@ -5228,9 +5242,9 @@ package body Sem_Ch3 is
 
       if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
          if Is_Scalar_Type (Etype (Id))
-            and then Scalar_Range (Id) /=
-                     Scalar_Range (Etype (Subtype_Mark
-                                           (Subtype_Indication (N))))
+           and then Scalar_Range (Id) /=
+                    Scalar_Range
+                      (Etype (Subtype_Mark (Subtype_Indication (N))))
          then
             Apply_Range_Check
               (Scalar_Range (Id),
@@ -5299,14 +5313,6 @@ package body Sem_Ch3 is
                Set_Has_Dynamic_Range_Check (N, Has_Dyn_Chk);
             end;
          end if;
-      end if;
-
-      --  A type invariant applies to any subtype in its scope, in particular
-      --  to a generic actual.
-
-      if Has_Invariants (T) and then In_Open_Scopes (Scope (T)) then
-         Set_Has_Invariants (Id);
-         Set_Invariant_Procedure (Id, Invariant_Procedure (T));
       end if;
 
       Set_Optimize_Alignment_Flags (Id);
@@ -5633,16 +5639,20 @@ package body Sem_Ch3 is
 
          --  Complete setup of implicit base type
 
-         Set_First_Index       (Implicit_Base, First_Index (T));
-         Set_Component_Type    (Implicit_Base, Element_Type);
+         Set_Component_Size (Implicit_Base, Uint_0);
+         Set_Component_Type (Implicit_Base, Element_Type);
+         Set_Finalize_Storage_Only
+                            (Implicit_Base,
+                              Finalize_Storage_Only (Element_Type));
+         Set_First_Index    (Implicit_Base, First_Index (T));
+         Set_Has_Controlled_Component
+                            (Implicit_Base,
+                              Has_Controlled_Component (Element_Type)
+                                or else Is_Controlled_Active  (Element_Type));
+         Set_Packed_Array_Impl_Type
+                            (Implicit_Base, Empty);
+
          Propagate_Concurrent_Flags (Implicit_Base, Element_Type);
-         Set_Component_Size    (Implicit_Base, Uint_0);
-         Set_Packed_Array_Impl_Type (Implicit_Base, Empty);
-         Set_Has_Controlled_Component (Implicit_Base,
-           Has_Controlled_Component (Element_Type)
-             or else Is_Controlled_Active  (Element_Type));
-         Set_Finalize_Storage_Only (Implicit_Base,
-           Finalize_Storage_Only (Element_Type));
 
          --  Inherit the "ghostness" from the constrained array type
 
@@ -8786,31 +8796,35 @@ package body Sem_Ch3 is
                   end;
                end if;
 
-               --  Propagate inherited invariant information of parents
-               --  and progenitors
+               --  A derived type inherits any class-wide invariants coming
+               --  from a parent type or an interface. Note that the invariant
+               --  procedure of the parent type should not be inherited because
+               --  the derived type may define invariants of its own.
 
                if Ada_Version >= Ada_2012
                  and then not Is_Interface (Derived_Type)
                then
-                  if Has_Inheritable_Invariants (Parent_Type) then
-                     Set_Has_Invariants (Derived_Type);
-                     Set_Has_Inheritable_Invariants (Derived_Type);
+                  if Has_Inherited_Invariants (Parent_Type)
+                    or else Has_Inheritable_Invariants (Parent_Type)
+                  then
+                     Set_Has_Inherited_Invariants (Derived_Type);
 
                   elsif not Is_Empty_Elmt_List (Ifaces_List) then
                      declare
-                        AI : Elmt_Id;
+                        Iface      : Entity_Id;
+                        Iface_Elmt : Elmt_Id;
 
                      begin
-                        AI := First_Elmt (Ifaces_List);
-                        while Present (AI) loop
-                           if Has_Inheritable_Invariants (Node (AI)) then
-                              Set_Has_Invariants (Derived_Type);
-                              Set_Has_Inheritable_Invariants (Derived_Type);
+                        Iface_Elmt := First_Elmt (Ifaces_List);
+                        while Present (Iface_Elmt) loop
+                           Iface := Node (Iface_Elmt);
 
+                           if Has_Inheritable_Invariants (Iface) then
+                              Set_Has_Inherited_Invariants (Derived_Type);
                               exit;
                            end if;
 
-                           Next_Elmt (AI);
+                           Next_Elmt (Iface_Elmt);
                         end loop;
                      end;
                   end if;
@@ -16427,63 +16441,93 @@ package body Sem_Ch3 is
 
    function Find_Type_Name (N : Node_Id) return Entity_Id is
       Id       : constant Entity_Id := Defining_Identifier (N);
-      Prev     : Entity_Id;
       New_Id   : Entity_Id;
+      Prev     : Entity_Id;
       Prev_Par : Node_Id;
 
       procedure Check_Duplicate_Aspects;
       --  Check that aspects specified in a completion have not been specified
-      --  already in the partial view. Type_Invariant and others can be
-      --  specified on either view but never on both.
+      --  already in the partial view.
 
       procedure Tag_Mismatch;
-      --  Diagnose a tagged partial view whose full view is untagged.
-      --  We post the message on the full view, with a reference to
-      --  the previous partial view. The partial view can be private
-      --  or incomplete, and these are handled in a different manner,
-      --  so we determine the position of the error message from the
-      --  respective slocs of both.
+      --  Diagnose a tagged partial view whose full view is untagged. We post
+      --  the message on the full view, with a reference to the previous
+      --  partial view. The partial view can be private or incomplete, and
+      --  these are handled in a different manner, so we determine the position
+      --  of the error message from the respective slocs of both.
 
       -----------------------------
       -- Check_Duplicate_Aspects --
       -----------------------------
 
       procedure Check_Duplicate_Aspects is
-         Prev_Aspects   : constant List_Id := Aspect_Specifications (Prev_Par);
-         Full_Aspects   : constant List_Id := Aspect_Specifications (N);
-         F_Spec, P_Spec : Node_Id;
+         function Get_Partial_View_Aspect (Asp : Node_Id) return Node_Id;
+         --  Return the corresponding aspect of the partial view which matches
+         --  the aspect id of Asp. Return Empty is no such aspect exists.
+
+         -----------------------------
+         -- Get_Partial_View_Aspect --
+         -----------------------------
+
+         function Get_Partial_View_Aspect (Asp : Node_Id) return Node_Id is
+            Asp_Id    : constant Aspect_Id := Get_Aspect_Id (Asp);
+            Prev_Asps : constant List_Id   := Aspect_Specifications (Prev_Par);
+            Prev_Asp  : Node_Id;
+
+         begin
+            if Present (Prev_Asps) then
+               Prev_Asp := First (Prev_Asps);
+               while Present (Prev_Asp) loop
+                  if Get_Aspect_Id (Prev_Asp) = Asp_Id then
+                     return Prev_Asp;
+                  end if;
+
+                  Next (Prev_Asp);
+               end loop;
+            end if;
+
+            return Empty;
+         end Get_Partial_View_Aspect;
+
+         --  Local variables
+
+         Full_Asps : constant List_Id := Aspect_Specifications (N);
+         Full_Asp  : Node_Id;
+         Part_Asp  : Node_Id;
+
+      --  Start of processing for Check_Duplicate_Aspects
 
       begin
-         if Present (Full_Aspects) then
-            F_Spec := First (Full_Aspects);
-            while Present (F_Spec) loop
-               if Present (Prev_Aspects) then
-                  P_Spec := First (Prev_Aspects);
-                  while Present (P_Spec) loop
-                     if Chars (Identifier (P_Spec)) =
-                       Chars (Identifier (F_Spec))
-                     then
-                        Error_Msg_N
-                          ("aspect already specified in private declaration",
-                            F_Spec);
-                        Remove (F_Spec);
-                        return;
-                     end if;
+         if Present (Full_Asps) then
+            Full_Asp := First (Full_Asps);
+            while Present (Full_Asp) loop
+               Part_Asp := Get_Partial_View_Aspect (Full_Asp);
 
-                     Next (P_Spec);
-                  end loop;
+               --  An aspect and its class-wide counterpart are two distinct
+               --  aspects and may apply to both views of an entity.
+
+               if Present (Part_Asp)
+                 and then Class_Present (Part_Asp) = Class_Present (Full_Asp)
+               then
+                  Error_Msg_N
+                    ("aspect already specified in private declaration",
+                     Full_Asp);
+
+                  Remove (Full_Asp);
+                  return;
                end if;
 
                if Has_Discriminants (Prev)
                  and then not Has_Unknown_Discriminants (Prev)
-                 and then Chars (Identifier (F_Spec)) =
-                   Name_Implicit_Dereference
+                 and then Get_Aspect_Id (Full_Asp) =
+                            Aspect_Implicit_Dereference
                then
-                  Error_Msg_N ("cannot specify aspect " &
-                    "if partial view has known discriminants", F_Spec);
+                  Error_Msg_N
+                    ("cannot specify aspect if partial view has known "
+                     & "discriminants", Full_Asp);
                end if;
 
-               Next (F_Spec);
+               Next (Full_Asp);
             end loop;
          end if;
       end Check_Duplicate_Aspects;
@@ -19573,8 +19617,8 @@ package body Sem_Ch3 is
            and then not Is_Ancestor (Base_Type (Priv_Parent), Full_Parent)
          then
             Error_Msg_N
-              ("parent of full type must descend from parent"
-                  & " of private extension", Full_Indic);
+              ("parent of full type must descend from parent of private "
+               & "extension", Full_Indic);
 
          --  First check a formal restriction, and then proceed with checking
          --  Ada rules. Since the formal restriction is not a serious error, we
@@ -19628,9 +19672,9 @@ package body Sem_Ch3 is
                   while Present (Priv_Discr) and then Present (Full_Discr) loop
                      if Original_Record_Component (Priv_Discr) =
                         Original_Record_Component (Full_Discr)
-                       or else
-                         Corresponding_Discriminant (Priv_Discr) =
-                         Corresponding_Discriminant (Full_Discr)
+                          or else
+                        Corresponding_Discriminant (Priv_Discr) =
+                        Corresponding_Discriminant (Full_Discr)
                      then
                         null;
                      else
@@ -19643,8 +19687,8 @@ package body Sem_Ch3 is
 
                   if Present (Priv_Discr) or else Present (Full_Discr) then
                      Error_Msg_N
-                       ("full view must inherit discriminants of the parent"
-                        & " type used in the private extension", Full_Indic);
+                       ("full view must inherit discriminants of the parent "
+                        & "type used in the private extension", Full_Indic);
 
                   elsif Priv_Constr and then not Full_Constr then
                      Error_Msg_N
@@ -19662,13 +19706,13 @@ package body Sem_Ch3 is
                --  known or unknown discriminants, then the full type
                --  declaration shall define a definite subtype.
 
-            elsif      not Has_Unknown_Discriminants (Priv_T)
+            elsif not Has_Unknown_Discriminants (Priv_T)
               and then not Has_Discriminants (Priv_T)
               and then not Is_Constrained (Full_T)
             then
                Error_Msg_N
-                 ("full view must define a constrained type if partial view"
-                  & " has no discriminants", Full_T);
+                 ("full view must define a constrained type if partial view "
+                  & "has no discriminants", Full_T);
             end if;
 
             --  ??????? Do we implement the following properly ?????
@@ -20095,42 +20139,33 @@ package body Sem_Ch3 is
          Mark_Full_View_As_Ghost (Priv_T, Full_T);
       end if;
 
-      --  Propagate invariants to full type
+      --  Propagate invariant-related attributes from the private view to the
+      --  full view and its base type.
 
-      if Has_Invariants (Priv_T) then
-         Set_Has_Invariants (Full_T);
-         Set_Invariant_Procedure (Full_T, Invariant_Procedure (Priv_T));
-      end if;
+      Propagate_Invariant_Attributes (Full_T, From_Typ => Priv_T);
+      Propagate_Invariant_Attributes (Base_Type (Full_T), From_Typ => Priv_T);
 
-      if Has_Inheritable_Invariants (Priv_T) then
-         Set_Has_Inheritable_Invariants (Full_T);
-      end if;
+      --  AI12-0041: Detect an attempt to inherit a class-wide type invariant
+      --  in the full view without advertising the inheritance in the partial
+      --  view. This can only occur when the partial view has no parent type
+      --  and the full view has an interface as a parent. Any other scenarios
+      --  are illegal because implemented interfaces must match between the
+      --  two views.
 
-      --  Check hidden inheritance of class-wide type invariants
-
-      if Ada_Version >= Ada_2012
-        and then not Has_Inheritable_Invariants (Full_T)
-        and then In_Private_Part (Current_Scope)
-        and then Has_Interfaces (Full_T)
-      then
+      if Is_Tagged_Type (Priv_T) and then Is_Tagged_Type (Full_T) then
          declare
-            Ifaces : Elist_Id;
-            AI     : Elmt_Id;
+            Full_Par : constant Entity_Id := Etype (Full_T);
+            Priv_Par : constant Entity_Id := Etype (Priv_T);
 
          begin
-            Collect_Interfaces (Full_T, Ifaces, Exclude_Parents => True);
-
-            AI := First_Elmt (Ifaces);
-            while Present (AI) loop
-               if Has_Inheritable_Invariants (Node (AI)) then
-                  Error_Msg_N
-                    ("hidden inheritance of class-wide type invariants " &
-                     "not allowed", N);
-                  exit;
-               end if;
-
-               Next_Elmt (AI);
-            end loop;
+            if not Is_Interface (Priv_Par)
+              and then Is_Interface (Full_Par)
+              and then Has_Inheritable_Invariants (Full_Par)
+            then
+               Error_Msg_N
+                 ("hidden inheritance of class-wide type invariants not "
+                  & "allowed", N);
+            end if;
          end;
       end if;
 
@@ -20952,34 +20987,31 @@ package body Sem_Ch3 is
       Private_To_Full_View : Boolean := False)
    is
       procedure Remove_Default_Init_Cond_Procedure (Typ : Entity_Id);
-      --  Remove the default initial procedure (if any) from the rep chain of
-      --  type Typ.
+      --  Remove the default initial condition procedure (if any) from the
+      --  Subprograms_For_Type chain of type Typ.
 
       ----------------------------------------
       -- Remove_Default_Init_Cond_Procedure --
       ----------------------------------------
 
       procedure Remove_Default_Init_Cond_Procedure (Typ : Entity_Id) is
-         Found : Boolean := False;
-         Prev  : Entity_Id;
-         Subp  : Entity_Id;
+         Subps     : constant Elist_Id := Subprograms_For_Type (Typ);
+         Subp_Elmt : Elmt_Id;
+         Subp_Id   : Entity_Id;
 
       begin
-         Prev := Typ;
-         Subp := Subprograms_For_Type (Typ);
-         while Present (Subp) loop
-            if Is_Default_Init_Cond_Procedure (Subp) then
-               Found := True;
-               exit;
-            end if;
+         if Present (Subps) then
+            Subp_Elmt := First_Elmt (Subps);
+            while Present (Subp_Elmt) loop
+               Subp_Id := Node (Subp_Elmt);
 
-            Prev := Subp;
-            Subp := Subprograms_For_Type (Subp);
-         end loop;
+               if Is_Default_Init_Cond_Procedure (Subp_Id) then
+                  Remove_Elmt (Subps, Subp_Elmt);
+                  exit;
+               end if;
 
-         if Found then
-            Set_Subprograms_For_Type (Prev, Subprograms_For_Type (Subp));
-            Set_Subprograms_For_Type (Subp, Empty);
+               Next_Elmt (Subp_Elmt);
+            end loop;
          end if;
       end Remove_Default_Init_Cond_Procedure;
 

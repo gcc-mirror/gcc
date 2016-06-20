@@ -245,7 +245,7 @@ package body Einfo is
    --    Underlying_Record_View          Node28
 
    --    BIP_Initialization_Call         Node29
-   --    Subprograms_For_Type            Node29
+   --    Subprograms_For_Type            Elist29
 
    --    Anonymous_Object                Node30
    --    Corresponding_Equality          Node30
@@ -539,7 +539,7 @@ package body Einfo is
    --    Has_Pragma_Inline_Always        Flag230
 
    --    Renamed_In_Spec                 Flag231
-   --    Has_Invariants                  Flag232
+   --    Has_Own_Invariants              Flag232
    --    Has_Pragma_Unmodified           Flag233
    --    Is_Dispatch_Table_Entity        Flag234
    --    Is_Trivial_Subprogram           Flag235
@@ -603,10 +603,11 @@ package body Einfo is
    --    Predicates_Ignored              Flag288
    --    Has_Timing_Event                Flag289
 
-   --    (unused)                        Flag290
+   --    (unused)                        Flag290  --  ??? flag breaks einfo.h
 
-   --    (unused)                        Flag291
-   --    (unused)                        Flag292
+   --    Has_Inherited_Invariants        Flag291
+   --    Is_Partial_Invariant_Procedure  Flag292
+
    --    (unused)                        Flag293
    --    (unused)                        Flag294
    --    (unused)                        Flag295
@@ -614,8 +615,8 @@ package body Einfo is
    --    (unused)                        Flag297
    --    (unused)                        Flag298
    --    (unused)                        Flag299
-
    --    (unused)                        Flag300
+
    --    (unused)                        Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
@@ -1610,17 +1611,17 @@ package body Einfo is
       return Flag133 (Base_Type (Id));
    end Has_Inherited_Default_Init_Cond;
 
+   function Has_Inherited_Invariants (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag291 (Id);
+   end Has_Inherited_Invariants;
+
    function Has_Initial_Value (Id : E) return B is
    begin
       pragma Assert (Ekind (Id) = E_Variable or else Is_Formal (Id));
       return Flag219 (Id);
    end Has_Initial_Value;
-
-   function Has_Invariants (Id : E) return B is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Flag232 (Id);
-   end Has_Invariants;
 
    function Has_Loop_Entry_Attributes (Id : E) return B is
    begin
@@ -1674,6 +1675,12 @@ package body Einfo is
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       return Flag110 (Id);
    end Has_Out_Or_In_Out_Parameter;
+
+   function Has_Own_Invariants (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag232 (Id);
+   end Has_Own_Invariants;
 
    function Has_Per_Object_Constraint (Id : E) return B is
    begin
@@ -2387,6 +2394,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       return Flag215 (Base_Type (Id));
    end Is_Param_Block_Component_Type;
+
+   function Is_Partial_Invariant_Procedure (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      return Flag292 (Id);
+   end Is_Partial_Invariant_Procedure;
 
    function Is_Potentially_Use_Visible (Id : E) return B is
    begin
@@ -3314,10 +3327,10 @@ package body Einfo is
       return Node18 (Id);
    end String_Literal_Low_Bound;
 
-   function Subprograms_For_Type (Id : E) return E is
+   function Subprograms_For_Type (Id : E) return L is
    begin
-      pragma Assert (Is_Type (Id) or else Is_Subprogram (Id));
-      return Node29 (Id);
+      pragma Assert (Is_Type (Id));
+      return Elist29 (Id);
    end Subprograms_For_Type;
 
    function Subps_Index (Id : E) return U is
@@ -4596,17 +4609,17 @@ package body Einfo is
       Set_Flag133 (Base_Type (Id), V);
    end Set_Has_Inherited_Default_Init_Cond;
 
+   procedure Set_Has_Inherited_Invariants (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag291 (Id, V);
+   end Set_Has_Inherited_Invariants;
+
    procedure Set_Has_Initial_Value (Id : E; V : B := True) is
    begin
       pragma Assert (Ekind_In (Id, E_Variable, E_Out_Parameter));
       Set_Flag219 (Id, V);
    end Set_Has_Initial_Value;
-
-   procedure Set_Has_Invariants (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag232 (Id, V);
-   end Set_Has_Invariants;
 
    procedure Set_Has_Loop_Entry_Attributes (Id : E; V : B := True) is
    begin
@@ -4661,6 +4674,12 @@ package body Einfo is
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Flag110 (Id, V);
    end Set_Has_Out_Or_In_Out_Parameter;
+
+   procedure Set_Has_Own_Invariants (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag232 (Id, V);
+   end Set_Has_Own_Invariants;
 
    procedure Set_Has_Per_Object_Constraint (Id : E; V : B := True) is
    begin
@@ -5442,6 +5461,12 @@ package body Einfo is
       Set_Flag215 (Id, V);
    end Set_Is_Param_Block_Component_Type;
 
+   procedure Set_Is_Partial_Invariant_Procedure (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure);
+      Set_Flag292 (Id, V);
+   end Set_Is_Partial_Invariant_Procedure;
+
    procedure Set_Is_Potentially_Use_Visible (Id : E; V : B := True) is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -5450,7 +5475,7 @@ package body Einfo is
 
    procedure Set_Is_Predicate_Function (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      pragma Assert (Ekind (Id) = E_Function);
       Set_Flag255 (Id, V);
    end Set_Is_Predicate_Function;
 
@@ -6404,10 +6429,10 @@ package body Einfo is
       Set_Node18 (Id, V);
    end Set_String_Literal_Low_Bound;
 
-   procedure Set_Subprograms_For_Type (Id : E; V : E) is
+   procedure Set_Subprograms_For_Type (Id : E; V : L) is
    begin
-      pragma Assert (Is_Type (Id) or else Is_Subprogram (Id));
-      Set_Node29 (Id, V);
+      pragma Assert (Is_Type (Id));
+      Set_Elist29 (Id, V);
    end Set_Subprograms_For_Type;
 
    procedure Set_Subps_Index (Id : E; V : U) is
@@ -6945,22 +6970,30 @@ package body Einfo is
    ---------------------------------
 
    function Default_Init_Cond_Procedure (Id : E) return E is
-      Subp_Id : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
 
    begin
       pragma Assert
         (Is_Type (Id)
           and then (Has_Default_Init_Cond (Id)
-                     or Has_Inherited_Default_Init_Cond (Id)));
+                     or else Has_Inherited_Default_Init_Cond (Id)));
 
-      Subp_Id := Subprograms_For_Type (Base_Type (Id));
-      while Present (Subp_Id) loop
-         if Is_Default_Init_Cond_Procedure (Subp_Id) then
-            return Subp_Id;
-         end if;
+      Subps := Subprograms_For_Type (Base_Type (Id));
 
-         Subp_Id := Subprograms_For_Type (Subp_Id);
-      end loop;
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Is_Default_Init_Cond_Procedure (Subp_Id) then
+               return Subp_Id;
+            end if;
+
+            Next_Elmt (Subp_Elmt);
+         end loop;
+      end if;
 
       return Empty;
    end Default_Init_Cond_Procedure;
@@ -7370,6 +7403,15 @@ package body Einfo is
       return False;
    end Has_Interrupt_Handler;
 
+   --------------------
+   -- Has_Invariants --
+   --------------------
+
+   function Has_Invariants (Id : E) return B is
+   begin
+      return Has_Own_Invariants (Id) or else Has_Inherited_Invariants (Id);
+   end Has_Invariants;
+
    --------------------------
    -- Has_Non_Limited_View --
    --------------------------
@@ -7533,26 +7575,29 @@ package body Einfo is
    -------------------------
 
    function Invariant_Procedure (Id : E) return E is
-      S : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
 
    begin
-      pragma Assert (Is_Type (Id) and then Has_Invariants (Id));
+      pragma Assert (Is_Type (Id));
 
-      if No (Subprograms_For_Type (Id)) then
-         return Empty;
+      Subps := Subprograms_For_Type (Id);
 
-      else
-         S := Subprograms_For_Type (Id);
-         while Present (S) loop
-            if Is_Invariant_Procedure (S) then
-               return S;
-            else
-               S := Subprograms_For_Type (S);
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Is_Invariant_Procedure (Subp_Id) then
+               return Subp_Id;
             end if;
-         end loop;
 
-         return Empty;
+            Next_Elmt (Subp_Elmt);
+         end loop;
       end if;
+
+      return Empty;
    end Invariant_Procedure;
 
    ----------------------
@@ -8261,46 +8306,81 @@ package body Einfo is
       return Ekind (Id);
    end Parameter_Mode;
 
+   ---------------------------------
+   -- Partial_Invariant_Procedure --
+   ---------------------------------
+
+   function Partial_Invariant_Procedure (Id : E) return E is
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
+
+   begin
+      pragma Assert (Is_Type (Id));
+
+      Subps := Subprograms_For_Type (Id);
+
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Is_Partial_Invariant_Procedure (Subp_Id) then
+               return Subp_Id;
+            end if;
+
+            Next_Elmt (Subp_Elmt);
+         end loop;
+      end if;
+
+      return Empty;
+   end Partial_Invariant_Procedure;
+
    ------------------------
    -- Predicate_Function --
    ------------------------
 
    function Predicate_Function (Id : E) return E is
-      S : Entity_Id;
-      T : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
+      Typ       : Entity_Id;
 
    begin
       pragma Assert (Is_Type (Id));
 
-      --  If type is private and has a completion, predicate may be defined
-      --  on the full view.
+      --  If type is private and has a completion, predicate may be defined on
+      --  the full view.
 
       if Is_Private_Type (Id)
          and then
            (not Has_Predicates (Id) or else No (Subprograms_For_Type (Id)))
          and then Present (Full_View (Id))
       then
-         T := Full_View (Id);
+         Typ := Full_View (Id);
 
       else
-         T := Id;
+         Typ := Id;
       end if;
 
-      if No (Subprograms_For_Type (T)) then
-         return Empty;
+      Subps := Subprograms_For_Type (Typ);
 
-      else
-         S := Subprograms_For_Type (T);
-         while Present (S) loop
-            if Is_Predicate_Function (S) then
-               return S;
-            else
-               S := Subprograms_For_Type (S);
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Ekind (Subp_Id) = E_Function
+              and then Is_Predicate_Function (Subp_Id)
+            then
+               return Subp_Id;
             end if;
-         end loop;
 
-         return Empty;
+            Next_Elmt (Subp_Elmt);
+         end loop;
       end if;
+
+      return Empty;
    end Predicate_Function;
 
    --------------------------
@@ -8308,36 +8388,46 @@ package body Einfo is
    --------------------------
 
    function Predicate_Function_M (Id : E) return E is
-      S : Entity_Id;
-      T : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
+      Typ       : Entity_Id;
 
    begin
       pragma Assert (Is_Type (Id));
 
-      --  If type is private and has a completion, predicate may be defined
-      --  on the full view.
+      --  If type is private and has a completion, predicate may be defined on
+      --  the full view.
 
-      if Is_Private_Type (Id) and then Present (Full_View (Id)) then
-         T := Full_View (Id);
+      if Is_Private_Type (Id)
+         and then
+           (not Has_Predicates (Id) or else No (Subprograms_For_Type (Id)))
+         and then Present (Full_View (Id))
+      then
+         Typ := Full_View (Id);
+
       else
-         T := Id;
+         Typ := Id;
       end if;
 
-      if No (Subprograms_For_Type (T)) then
-         return Empty;
+      Subps := Subprograms_For_Type (Typ);
 
-      else
-         S := Subprograms_For_Type (T);
-         while Present (S) loop
-            if Is_Predicate_Function_M (S) then
-               return S;
-            else
-               S := Subprograms_For_Type (S);
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Ekind (Subp_Id) = E_Function
+              and then Is_Predicate_Function_M (Subp_Id)
+            then
+               return Subp_Id;
             end if;
-         end loop;
 
-         return Empty;
+            Next_Elmt (Subp_Elmt);
+         end loop;
       end if;
+
+      return Empty;
    end Predicate_Function_M;
 
    -------------------------
@@ -8563,8 +8653,10 @@ package body Einfo is
    -------------------------------------
 
    procedure Set_Default_Init_Cond_Procedure (Id : E; V : E) is
-      Base_Typ : Entity_Id;
-      Subp_Id  : Entity_Id;
+      Base_Typ  : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
 
    begin
       --  Once set, this attribute cannot be reset
@@ -8577,21 +8669,29 @@ package body Einfo is
       pragma Assert
         (Is_Type (Id)
           and then (Has_Default_Init_Cond (Id)
-                     or Has_Inherited_Default_Init_Cond (Id)));
+                     or else Has_Inherited_Default_Init_Cond (Id)));
+
       Base_Typ := Base_Type (Id);
+      Subps    := Subprograms_For_Type (Base_Typ);
 
-      Subp_Id := Subprograms_For_Type (Base_Typ);
-      Set_Subprograms_For_Type (Base_Typ, V);
-      Set_Subprograms_For_Type (V, Subp_Id);
+      if No (Subps) then
+         Subps := New_Elmt_List;
+         Set_Subprograms_For_Type (Base_Typ, Subps);
+      end if;
 
-      --  Check for a duplicate procedure
+      Subp_Elmt := First_Elmt (Subps);
+      Prepend_Elmt (V, Subps);
 
-      while Present (Subp_Id) loop
+      --  Check for a duplicate default initial condition procedure
+
+      while Present (Subp_Elmt) loop
+         Subp_Id := Node (Subp_Elmt);
+
          if Is_Default_Init_Cond_Procedure (Subp_Id) then
             raise Program_Error;
          end if;
 
-         Subp_Id := Subprograms_For_Type (Subp_Id);
+         Next_Elmt (Subp_Elmt);
       end loop;
    end Set_Default_Init_Cond_Procedure;
 
@@ -8600,46 +8700,105 @@ package body Einfo is
    -----------------------------
 
    procedure Set_Invariant_Procedure (Id : E; V : E) is
-      S : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
 
    begin
-      pragma Assert (Is_Type (Id) and then Has_Invariants (Id));
+      pragma Assert (Is_Type (Id));
 
-      S := Subprograms_For_Type (Id);
-      Set_Subprograms_For_Type (Id, V);
-      Set_Subprograms_For_Type (V, S);
+      Subps := Subprograms_For_Type (Id);
 
-      --  Check for duplicate entry
+      if No (Subps) then
+         Subps := New_Elmt_List;
+         Set_Subprograms_For_Type (Id, Subps);
+      end if;
 
-      while Present (S) loop
-         if Is_Invariant_Procedure (S) then
+      Subp_Elmt := First_Elmt (Subps);
+      Prepend_Elmt (V, Subps);
+
+      --  Check for a duplicate invariant procedure
+
+      while Present (Subp_Elmt) loop
+         Subp_Id := Node (Subp_Elmt);
+
+         if Is_Invariant_Procedure (Subp_Id) then
             raise Program_Error;
-         else
-            S := Subprograms_For_Type (S);
          end if;
+
+         Next_Elmt (Subp_Elmt);
       end loop;
    end Set_Invariant_Procedure;
+
+   -------------------------------------
+   -- Set_Partial_Invariant_Procedure --
+   -------------------------------------
+
+   procedure Set_Partial_Invariant_Procedure (Id : E; V : E) is
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
+
+   begin
+      pragma Assert (Is_Type (Id));
+
+      Subps := Subprograms_For_Type (Id);
+
+      if No (Subps) then
+         Subps := New_Elmt_List;
+         Set_Subprograms_For_Type (Id, Subps);
+      end if;
+
+      Subp_Elmt := First_Elmt (Subps);
+      Prepend_Elmt (V, Subps);
+
+      --  Check for a duplicate partial invariant procedure
+
+      while Present (Subp_Elmt) loop
+         Subp_Id := Node (Subp_Elmt);
+
+         if Is_Partial_Invariant_Procedure (Subp_Id) then
+            raise Program_Error;
+         end if;
+
+         Next_Elmt (Subp_Elmt);
+      end loop;
+   end Set_Partial_Invariant_Procedure;
 
    ----------------------------
    -- Set_Predicate_Function --
    ----------------------------
 
    procedure Set_Predicate_Function (Id : E; V : E) is
-      S : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
 
    begin
       pragma Assert (Is_Type (Id) and then Has_Predicates (Id));
 
-      S := Subprograms_For_Type (Id);
-      Set_Subprograms_For_Type (Id, V);
-      Set_Subprograms_For_Type (V, S);
+      Subps := Subprograms_For_Type (Id);
 
-      while Present (S) loop
-         if Is_Predicate_Function (S) then
+      if No (Subps) then
+         Subps := New_Elmt_List;
+         Set_Subprograms_For_Type (Id, Subps);
+      end if;
+
+      Subp_Elmt := First_Elmt (Subps);
+      Prepend_Elmt (V, Subps);
+
+      --  Check for a duplicate predication function
+
+      while Present (Subp_Elmt) loop
+         Subp_Id := Node (Subp_Elmt);
+
+         if Ekind (Subp_Id) = E_Function
+           and then Is_Predicate_Function (Subp_Id)
+         then
             raise Program_Error;
-         else
-            S := Subprograms_For_Type (S);
          end if;
+
+         Next_Elmt (Subp_Elmt);
       end loop;
    end Set_Predicate_Function;
 
@@ -8648,23 +8807,35 @@ package body Einfo is
    ------------------------------
 
    procedure Set_Predicate_Function_M (Id : E; V : E) is
-      S : Entity_Id;
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
 
    begin
       pragma Assert (Is_Type (Id) and then Has_Predicates (Id));
 
-      S := Subprograms_For_Type (Id);
-      Set_Subprograms_For_Type (Id, V);
-      Set_Subprograms_For_Type (V, S);
+      Subps := Subprograms_For_Type (Id);
 
-      --  Check for duplicates
+      if No (Subps) then
+         Subps := New_Elmt_List;
+         Set_Subprograms_For_Type (Id, Subps);
+      end if;
 
-      while Present (S) loop
-         if Is_Predicate_Function_M (S) then
+      Subp_Elmt := First_Elmt (Subps);
+      Prepend_Elmt (V, Subps);
+
+      --  Check for a duplicate predication function
+
+      while Present (Subp_Elmt) loop
+         Subp_Id := Node (Subp_Elmt);
+
+         if Ekind (Subp_Id) = E_Function
+           and then Is_Predicate_Function_M (Subp_Id)
+         then
             raise Program_Error;
-         else
-            S := Subprograms_For_Type (S);
          end if;
+
+         Next_Elmt (Subp_Elmt);
       end loop;
    end Set_Predicate_Function_M;
 
@@ -8952,8 +9123,8 @@ package body Einfo is
       W ("Has_Independent_Components",      Flag34  (Id));
       W ("Has_Inheritable_Invariants",      Flag248 (Id));
       W ("Has_Inherited_Default_Init_Cond", Flag133 (Id));
+      W ("Has_Inherited_Invariants",        Flag291 (Id));
       W ("Has_Initial_Value",               Flag219 (Id));
-      W ("Has_Invariants",                  Flag232 (Id));
       W ("Has_Loop_Entry_Attributes",       Flag260 (Id));
       W ("Has_Machine_Radix_Clause",        Flag83  (Id));
       W ("Has_Master_Entity",               Flag21  (Id));
@@ -8963,6 +9134,7 @@ package body Einfo is
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
       W ("Has_Out_Or_In_Out_Parameter",     Flag110 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
+      W ("Has_Own_Invariants",              Flag232 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
       W ("Has_Pragma_Controlled",           Flag27  (Id));
       W ("Has_Pragma_Elaborate_Body",       Flag150 (Id));
@@ -9086,6 +9258,7 @@ package body Einfo is
       W ("Is_Packed",                       Flag51  (Id));
       W ("Is_Packed_Array_Impl_Type",       Flag138 (Id));
       W ("Is_Param_Block_Component_Type",   Flag215 (Id));
+      W ("Is_Partial_Invariant_Procedure",  Flag292 (Id));
       W ("Is_Potentially_Use_Visible",      Flag9   (Id));
       W ("Is_Predicate_Function",           Flag255 (Id));
       W ("Is_Predicate_Function_M",         Flag256 (Id));

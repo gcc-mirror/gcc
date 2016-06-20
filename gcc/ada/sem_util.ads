@@ -1005,6 +1005,20 @@ package Sem_Util is
    --  For a type entity, return the entity of the primitive equality function
    --  for the type if it exists, otherwise return Empty.
 
+   procedure Get_Views
+     (Typ       : Entity_Id;
+      Priv_Typ  : out Entity_Id;
+      Full_Typ  : out Entity_Id;
+      Full_Base : out Entity_Id;
+      CRec_Typ  : out Entity_Id);
+   --  Obtain the partial and full view of type Typ and in addition any extra
+   --  types the full view may have. The return entities are as follows:
+   --
+   --    Priv_Typ  - the partial view (a private type)
+   --    Full_Typ  - the full view
+   --    Full_Base - the base type of the full view
+   --    CRec_Typ  - the corresponding record type of the full view
+
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a component
    --  (at any recursive level) that is an access type. This is a conservative
@@ -2021,6 +2035,12 @@ package Sem_Util is
    --  (e for spec, t for body, see Lib.Xref spec for details). The
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
+
+   procedure Propagate_Invariant_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id);
+   --  Inherit all invariant-related attributes form type From_Typ. Typ is the
+   --  destination type.
 
    procedure Propagate_Concurrent_Flags
      (Typ      : Entity_Id;

@@ -6405,30 +6405,19 @@ package body Exp_Util is
    -------------------------
 
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (Expr);
-      Typ : Entity_Id;
+      Loc     : constant Source_Ptr := Sloc (Expr);
+      Typ     : constant Entity_Id  := Base_Type (Etype (Expr));
+      Proc_Id : Entity_Id;
 
    begin
-      Typ := Etype (Expr);
+      pragma Assert (Has_Invariants (Typ));
 
-      --  Subtypes may be subject to invariants coming from their respective
-      --  base types. The subtype may be fully or partially private.
-
-      if Ekind_In (Typ, E_Array_Subtype,
-                        E_Private_Subtype,
-                        E_Record_Subtype,
-                        E_Record_Subtype_With_Private)
-      then
-         Typ := Base_Type (Typ);
-      end if;
-
-      pragma Assert
-        (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
+      Proc_Id := Invariant_Procedure (Typ);
+      pragma Assert (Present (Proc_Id));
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name                   =>
-            New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
+          Name                   => New_Occurrence_Of (Proc_Id, Loc),
           Parameter_Associations => New_List (Relocate_Node (Expr)));
    end Make_Invariant_Call;
 

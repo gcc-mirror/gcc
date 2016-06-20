@@ -8622,6 +8622,76 @@ package body Sem_Util is
       return Empty;
    end Get_User_Defined_Eq;
 
+   ---------------
+   -- Get_Views --
+   ---------------
+
+   procedure Get_Views
+     (Typ       : Entity_Id;
+      Priv_Typ  : out Entity_Id;
+      Full_Typ  : out Entity_Id;
+      Full_Base : out Entity_Id;
+      CRec_Typ  : out Entity_Id)
+   is
+   begin
+      --  Assume that none of the views can be recovered
+
+      Priv_Typ  := Empty;
+      Full_Typ  := Empty;
+      Full_Base := Empty;
+      CRec_Typ  := Empty;
+
+      --  The input type is private
+
+      if Is_Private_Type (Typ) then
+         Priv_Typ := Typ;
+         Full_Typ := Full_View (Priv_Typ);
+
+         if Present (Full_Typ) then
+            Full_Base := Base_Type (Full_Typ);
+
+            if Ekind_In (Full_Typ, E_Protected_Type, E_Task_Type) then
+               CRec_Typ := Corresponding_Record_Type (Full_Typ);
+            end if;
+         end if;
+
+      --  The input type is the corresponding record type of a protected or a
+      --  task type.
+
+      elsif Ekind (Typ) = E_Record_Type
+        and then Is_Concurrent_Record_Type (Typ)
+      then
+         CRec_Typ  := Typ;
+         Full_Typ  := Corresponding_Concurrent_Type (CRec_Typ);
+         Full_Base := Base_Type (Full_Typ);
+         Priv_Typ  := Incomplete_Or_Partial_View (Full_Typ);
+
+      --  Otherwise the input type could be the full view of a private type
+
+      else
+         Full_Typ  := Typ;
+         Full_Base := Base_Type (Full_Typ);
+
+         if Ekind_In (Full_Typ, E_Protected_Type, E_Task_Type) then
+            CRec_Typ := Corresponding_Record_Type (Full_Typ);
+         end if;
+
+         --  The type is the full view of a private type, obtain the partial
+         --  view.
+
+         if Has_Private_Declaration (Full_Typ)
+           and then not Is_Private_Type (Full_Typ)
+         then
+            Priv_Typ := Incomplete_Or_Partial_View (Full_Typ);
+
+            --  The full view of a private type should always have a partial
+            --  view.
+
+            pragma Assert (Present (Priv_Typ));
+         end if;
+      end if;
+   end Get_Views;
+
    -----------------------
    -- Has_Access_Values --
    -----------------------
@@ -10988,20 +11058,31 @@ package body Sem_Util is
          while Present (Decl) loop
             Match := Empty;
 
+            --  The partial view of a Taft-amendment type is an incomplete
+            --  type.
+
             if Taft then
                if Nkind (Decl) = N_Incomplete_Type_Declaration then
                   Match := Defining_Identifier (Decl);
                end if;
 
-            else
-               if Nkind_In (Decl, N_Private_Extension_Declaration,
+            --  Otherwise look for a private type whose full view matches the
+            --  input type. Note that this checks full_type_declaration nodes
+            --  to account for derivations from a private type where the type
+            --  declaration hold the partial view and the full view is an
+            --  itype.
+
+            elsif Nkind_In (Decl, N_Full_Type_Declaration,
+                                  N_Private_Extension_Declaration,
                                   N_Private_Type_Declaration)
-               then
-                  Match := Defining_Identifier (Decl);
-               end if;
+            then
+               Match := Defining_Identifier (Decl);
             end if;
 
+            --  Guard against unanalyzed entities
+
             if Present (Match)
+              and then Is_Type (Match)
               and then Present (Full_View (Match))
               and then Full_View (Match) = Id
             then
@@ -11040,7 +11121,9 @@ package body Sem_Util is
          Pkg_Decl : Node_Id := Pkg;
 
       begin
-         if Present (Pkg) and then Ekind (Pkg) = E_Package then
+         if Present (Pkg)
+           and then Ekind_In (Pkg, E_Generic_Package, E_Package)
+         then
             while Nkind (Pkg_Decl) /= N_Package_Specification loop
                Pkg_Decl := Parent (Pkg_Decl);
             end loop;
@@ -18519,13 +18602,71 @@ package body Sem_Util is
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
 
+   ------------------------------------
+   -- Propagate_Invariant_Attributes --
+   ------------------------------------
+
+   procedure Propagate_Invariant_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id)
+   is
+      Full_IP : Entity_Id;
+      Part_IP : Entity_Id;
+
+   begin
+      if Present (Typ) and then Present (From_Typ) then
+         pragma Assert (Is_Type (Typ) and then Is_Type (From_Typ));
+
+         --  Nothing to do if both the source and the destination denote the
+         --  same type.
+
+         if From_Typ = Typ then
+            return;
+         end if;
+
+         Full_IP := Invariant_Procedure (From_Typ);
+         Part_IP := Partial_Invariant_Procedure (From_Typ);
+
+         --  The setting of the attributes is intentionally conservative. This
+         --  prevents accidental clobbering of enabled attributes.
+
+         if Has_Inheritable_Invariants (From_Typ)
+           and then not Has_Inheritable_Invariants (Typ)
+         then
+            Set_Has_Inheritable_Invariants (Typ, True);
+         end if;
+
+         if Has_Inherited_Invariants (From_Typ)
+           and then not Has_Inherited_Invariants (Typ)
+         then
+            Set_Has_Inherited_Invariants (Typ, True);
+         end if;
+
+         if Has_Own_Invariants (From_Typ)
+           and then not Has_Own_Invariants (Typ)
+         then
+            Set_Has_Own_Invariants (Typ, True);
+         end if;
+
+         if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
+            Set_Invariant_Procedure (Typ, Full_IP);
+         end if;
+
+         if Present (Part_IP) and then No (Partial_Invariant_Procedure (Typ))
+         then
+            Set_Partial_Invariant_Procedure (Typ, Part_IP);
+         end if;
+      end if;
+   end Propagate_Invariant_Attributes;
+
    --------------------------------
    -- Propagate_Concurrent_Flags --
    --------------------------------
 
    procedure Propagate_Concurrent_Flags
      (Typ      : Entity_Id;
-      Comp_Typ : Entity_Id) is
+      Comp_Typ : Entity_Id)
+   is
    begin
       if Has_Task (Comp_Typ) then
          Set_Has_Task (Typ);
