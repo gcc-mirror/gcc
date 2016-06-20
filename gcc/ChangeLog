@@ -1,3 +1,12 @@
+2016-06-20  Georg-Johann Lay  <avr@gjlay.de>
+	    Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	Backport from 2016-06-20 trunk r237589, r236558.
+
+	PR target/71103
+	* config/avr/avr.md (movqi): Handle loading subreg:qi (const,
+	symbol_ref,label_ref).
+
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71554

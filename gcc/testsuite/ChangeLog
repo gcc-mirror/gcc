@@ -1,3 +1,12 @@
+2016-06-20  Georg-Johann Lay  <avr@gjlay.de>
+	    Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	Backport from 2016-06-20 trunk r237589, r236558.
+
+	PR target/71103
+	* gcc.target/avr/pr71103.c: New test.
+	* gcc.target/avr/torture/pr71103-2.c: New test.
+
 2016-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71554
