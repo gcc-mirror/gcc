@@ -1698,18 +1698,21 @@ package Einfo is
 --       usual manner.
 
 --    Has_Inheritable_Invariants (Flag248)
---       Defined in all type entities. Set in private types from which one
---       or more Invariant'Class aspects will be inherited if a another type is
---       derived from the type (i.e. those types which have an Invariant'Class
---       aspect, or which inherit one or more Invariant'Class aspects). Also
---       set in the corresponding full types. Note that it might be the full
---       type which has inheritable invariants, and in this case the flag will
---       also be set in the private type.
+--       Defined in all type entities. Set on private types and interface types
+--       which define at least one class-wide invariant. Such invariants must
+--       be inherited by derived types. The flag is also set on the full view
+--       of a private type for completeness.
 
 --    Has_Inherited_Default_Init_Cond (Flag133) [base type only]
 --       Defined in all type entities. Set when a derived type inherits pragma
 --       Default_Initial_Condition from its parent type. This flag is mutually
 --       exclusive with flag Has_Default_Init_Cond.
+
+--    Has_Inherited_Invariants (Flag291)
+--       Defined in all type entities. Set on private extensions and derived
+--       types which inherit at least on class-wide invariant from a parent or
+--       an interface type. The flag is also set on the full view of a private
+--       extension for completeness.
 
 --    Has_Initial_Value (Flag219)
 --       Defined in entities for variables and out parameters. Set if there
@@ -1725,15 +1728,10 @@ package Einfo is
 --       definition contains at least one procedure to which a pragma
 --       Interrupt_Handler applies.
 
---    Has_Invariants (Flag232)
---       Defined in all type entities and in subprogram entities. Set in
---       private types if an Invariant or Invariant'Class aspect applies to the
---       type, or if the type inherits one or more Invariant'Class aspects.
---       Also set in the corresponding full type. Note: if this flag is set
---       True, then usually the Invariant_Procedure attribute is set once the
---       type is frozen, however this may not be true in some error situations.
---       Note that it might be the full type which has inheritable invariants,
---       and then the flag will also be set in the private type.
+--    Has_Invariants (synthesized)
+--       Defined in all type entities. True if the type defines at least one
+--       invariant of its own or inherits at least one class-wide invariant
+--       from a parent type or an interface.
 
 --    Has_Loop_Entry_Attributes (Flag260)
 --       Defined in E_Loop entities. Set when the loop is subject to at least
@@ -1808,6 +1806,11 @@ package Einfo is
 --       Present in subprograms, generic subprograms, entries, and entry
 --       families. Set if they have at least one OUT or IN OUT parameter
 --       (allowed for functions only in Ada 2012).
+
+--    Has_Own_Invariants (Flag232)
+--       Defined in all type entities. Set on any type which defines at least
+--       one invariant of its own. The flag is also set on the full view of a
+--       private extension or a private type for completeness.
 
 --    Has_Per_Object_Constraint (Flag154)
 --       Defined in E_Component entities. Set if the subtype of the component
@@ -2189,15 +2192,18 @@ package Einfo is
 --       ancestors (Ada 2005: AI-251).
 
 --    Invariant_Procedure (synthesized)
---       Defined in types and subtypes. Set for private types if one or more
---       Invariant, or Invariant'Class, or inherited Invariant'Class aspects
---       apply to the type. Points to the entity for a procedure which checks
---       the invariant. This invariant procedure takes a single argument of the
---       given type, and returns if the invariant holds, or raises exception
---       Assertion_Error with an appropriate message if it does not hold. This
---       attribute is defined but always empty for private subtypes. This
---       attribute is also set for the corresponding full type.
---
+--       Defined in types and subtypes. Set for private types and their full
+--       views if one or more [class-wide] invariants apply to the type, or
+--       when the type inherits class-wide invariants from a parent type or
+--       an interface, or when the type is an array and its component type is
+--       subject to an invariant, or when the type is record and contains a
+--       component subject to an invariant (property is recursive). Points to
+--       to the entity for a procedure which checks all these invariants. The
+--       invariant procedure takes a single argument of the given type, and
+--       returns if the invariant holds, or raises exception Assertion_Error
+--       with an appropriate message if it does not hold. This attribute is
+--       defined but always Empty for private subtypes.
+
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
 
@@ -2267,7 +2273,7 @@ package Einfo is
 --       applies to both the partial view and the full view.
 
 --    Is_Base_Type (synthesized)
---       Applies to type and subtype entities. True if entity is a base type
+--       Applies to type and subtype entities. True if entity is a base type.
 
 --    Is_Bit_Packed_Array (Flag122) [implementation base type only]
 --       Defined in all entities. This flag is set for a packed array type that
@@ -2325,9 +2331,9 @@ package Einfo is
 --       which are not Completely_Hidden (e.g. discriminants of a root type).
 
 --    Is_Composite_Type (synthesized)
---       Applies to all entities, true for all composite types and
---       subtypes. Either Is_Composite_Type or Is_Elementary_Type (but
---       not both) is true of any type.
+--       Applies to all entities, true for all composite types and subtypes.
+--       Either Is_Composite_Type or Is_Elementary_Type (but not both) is true
+--       of any type.
 
 --    Is_Concurrent_Record_Type (Flag20)
 --       Defined in record types and subtypes. Set if the type was created
@@ -2686,7 +2692,9 @@ package Einfo is
 
 --    Is_Invariant_Procedure (Flag257)
 --       Defined in functions and procedures. Set for a generated invariant
---       procedure to identify it easily.
+--       procedure which verifies the invariants of both the partial and full
+--       views of a private type or private extension as well as any inherited
+--       class-wide invariants from parent types or interfaces.
 
 --    Is_Itype (Flag91)
 --       Defined in all entities. Set to indicate that a type is an Itype,
@@ -2911,6 +2919,11 @@ package Einfo is
 --       Defined in access types. Set to indicate that a type is the type of a
 --       component of the parameter block record type generated by the compiler
 --       for an entry or a select statement. Read by CodePeer.
+
+--    Is_Partial_Invariant_Procedure (Flag292)
+--       Defined in functions and procedures. Set for a generated invariant
+--       procedure which verifies the invariants of the partial view of a
+--       private type or private extension.
 
 --    Is_Potentially_Use_Visible (Flag9)
 --       Defined in all entities. Set if entity is potentially use visible,
@@ -3738,6 +3751,18 @@ package Einfo is
 --       of a single protected/task type, the references are examined as they
 --       must appear only within the type defintion and the corresponding body.
 
+--    Partial_Invariant_Procedure (synthesized)
+--       Defined in types and subtypes. Set for private types when one or more
+--       [class-wide] type invariants apply to them. Points to the entity for a
+--       procedure which checks the invariant. This invariant procedure takes a
+--       single argument of the given type, and returns if the invariant holds,
+--       or raises exception Assertion_Error with an appropriate message if it
+--       does not hold. This attribute is defined but always Empty for private
+--       subtypes. This attribute is also set for the corresponding full type.
+--
+--       Note: the reason this is marked as a synthesized attribute is that the
+--       way this is stored is as an element of the Subprograms_For_Type field.
+
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
 --       has unknown discriminants. A default initialization of an object of
@@ -4263,15 +4288,14 @@ package Einfo is
 --       the low bound of the applicable index constraint if there is one,
 --       or a copy of the low bound of the index base type if not.
 
---    Subprograms_For_Type (Node29)
---       Defined in all type and subprogram entities. This is used to hold
---       a list of subprogram entities for subprograms associated with the
---       type, linked through the Subprograms_For_Type field of the subprogram
---       entity. Basically this is a way of multiplexing the single field to
---       hold more than one entity (since we ran out of space in some type
---       entities). This is currently used for Invariant_Procedure and also
---       for Predicate_Function, and clients will always use the latter two
---       names to access entries in this list.
+--    Subprograms_For_Type (Elist29)
+--       Defined in all types. The list may contain the entities of the default
+--       initial condition procedure, invariant procedure, and the two versions
+--       of the predicate function.
+--
+--       Historical note: This attribute used to be a direct linked list of
+--       entities rather than an Elist. The Elist allows greater flexibility
+--       in inheritance of subprograms between views of the same type.
 
 --    Subps_Index (Uint24)
 --       Present in subprogram entries. Set if the subprogram contains nested
@@ -5471,7 +5495,7 @@ package Einfo is
    --    Pending_Access_Types                (Elist15)
    --    Related_Expression                  (Node24)
    --    Current_Use_Clause                  (Node27)
-   --    Subprograms_For_Type                (Node29)
+   --    Subprograms_For_Type                (Elist29)
    --    Derived_Type_Link                   (Node31)
    --    No_Tagged_Streams_Pragma            (Node32)
    --    Linker_Section_Pragma               (Node33)
@@ -5495,11 +5519,12 @@ package Einfo is
    --    Has_Discriminants                   (Flag5)
    --    Has_Dynamic_Predicate_Aspect        (Flag258)
    --    Has_Independent_Components          (Flag34)   (base type only)
-   --    Has_Inheritable_Invariants          (Flag248)
+   --    Has_Inheritable_Invariants          (Flag248)  (base type only)
    --    Has_Inherited_Default_Init_Cond     (Flag133)  (base type only)
-   --    Has_Invariants                      (Flag232)
+   --    Has_Inherited_Invariants            (Flag291)  (base type only)
    --    Has_Non_Standard_Rep                (Flag75)   (base type only)
    --    Has_Object_Size_Clause              (Flag172)
+   --    Has_Own_Invariants                  (Flag232)  (base type only)
    --    Has_Pragma_Preelab_Init             (Flag221)
    --    Has_Pragma_Unreferenced_Objects     (Flag212)
    --    Has_Predicates                      (Flag250)
@@ -5553,11 +5578,13 @@ package Einfo is
    --    Alignment_Clause                    (synth)
    --    Base_Type                           (synth)
    --    Default_Init_Cond_Procedure         (synth)
+   --    Has_Invariants                      (synth)
    --    Implementation_Base_Type            (synth)
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
    --    Is_Atomic_Or_VFA                    (synth)
    --    Is_Controlled_Active                (synth)
+   --    Partial_Invariant_Procedure         (synth)
    --    Predicate_Function                  (synth)
    --    Predicate_Function_M                (synth)
    --    Root_Type                           (synth)
@@ -5921,7 +5948,6 @@ package Einfo is
    --    Overridden_Operation                (Node26)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
-   --    Subprograms_For_Type                (Node29)
    --    Corresponding_Equality              (Node30)   (implicit /= only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
    --    Corresponding_Procedure             (Node32)   (generate C code only)
@@ -5942,7 +5968,6 @@ package Einfo is
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
    --    Has_Expanded_Contract               (Flag240)  (non-generic case only)
-   --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Missing_Return                  (Flag142)
    --    Has_Nested_Block_With_Handler       (Flag101)
@@ -5952,6 +5977,7 @@ package Einfo is
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
+   --    Is_Default_Init_Cond_Procedure      (Flag132)  (non-generic case only)
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Eliminated                       (Flag124)
@@ -5962,6 +5988,7 @@ package Einfo is
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
+   --    Is_Partial_Invariant_Procedure      (Flag292)  (non-generic case only)
    --    Is_Predicate_Function               (Flag255)  (non-generic case only)
    --    Is_Predicate_Function_M             (Flag256)  (non-generic case only)
    --    Is_Primitive                        (Flag218)
@@ -6094,13 +6121,11 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Subps_Index                         (Uint24)
    --    Overridden_Operation                (Node26)
-   --    Subprograms_For_Type                (Node29)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)
    --    SPARK_Pragma                        (Node40)
    --    Default_Expressions_Processed       (Flag108)
-   --    Has_Invariants                      (Flag232)
    --    Has_Nested_Subprogram               (Flag282)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Machine_Code_Subprogram          (Flag137)
@@ -6254,7 +6279,6 @@ package Einfo is
    --    Discard_Names                       (Flag88)
    --    Has_Completion                      (Flag26)
    --    Has_Expanded_Contract               (Flag240)  (non-generic case only)
-   --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Nested_Subprogram               (Flag282)
@@ -6273,6 +6297,7 @@ package Einfo is
    --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
    --    Is_Null_Init_Proc                   (Flag178)
+   --    Is_Partial_Invariant_Procedure      (Flag292)  (non-generic case only)
    --    Is_Predicate_Function               (Flag255)  (non-generic case only)
    --    Is_Predicate_Function_M             (Flag256)  (non-generic case only)
    --    Is_Primitive                        (Flag218)
@@ -6918,6 +6943,7 @@ package Einfo is
    function Has_Independent_Components          (Id : E) return B;
    function Has_Inheritable_Invariants          (Id : E) return B;
    function Has_Inherited_Default_Init_Cond     (Id : E) return B;
+   function Has_Inherited_Invariants            (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
    function Has_Invariants                      (Id : E) return B;
@@ -6930,6 +6956,7 @@ package Einfo is
    function Has_Non_Standard_Rep                (Id : E) return B;
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Out_Or_In_Out_Parameter         (Id : E) return B;
+   function Has_Own_Invariants                  (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
    function Has_Pragma_Controlled               (Id : E) return B;
    function Has_Pragma_Elaborate_Body           (Id : E) return B;
@@ -7058,6 +7085,7 @@ package Einfo is
    function Is_Packed_Array_Impl_Type           (Id : E) return B;
    function Is_Potentially_Use_Visible          (Id : E) return B;
    function Is_Param_Block_Component_Type       (Id : E) return B;
+   function Is_Partial_Invariant_Procedure      (Id : E) return B;
    function Is_Predicate_Function               (Id : E) return B;
    function Is_Predicate_Function_M             (Id : E) return B;
    function Is_Preelaborated                    (Id : E) return B;
@@ -7208,7 +7236,7 @@ package Einfo is
    function Strict_Alignment                    (Id : E) return B;
    function String_Literal_Length               (Id : E) return U;
    function String_Literal_Low_Bound            (Id : E) return N;
-   function Subprograms_For_Type                (Id : E) return E;
+   function Subprograms_For_Type                (Id : E) return L;
    function Subps_Index                         (Id : E) return U;
    function Suppress_Elaboration_Warnings       (Id : E) return B;
    function Suppress_Initialization             (Id : E) return B;
@@ -7589,8 +7617,8 @@ package Einfo is
    procedure Set_Has_Independent_Components      (Id : E; V : B := True);
    procedure Set_Has_Inheritable_Invariants      (Id : E; V : B := True);
    procedure Set_Has_Inherited_Default_Init_Cond (Id : E; V : B := True);
+   procedure Set_Has_Inherited_Invariants        (Id : E; V : B := True);
    procedure Set_Has_Initial_Value               (Id : E; V : B := True);
-   procedure Set_Has_Invariants                  (Id : E; V : B := True);
    procedure Set_Has_Loop_Entry_Attributes       (Id : E; V : B := True);
    procedure Set_Has_Machine_Radix_Clause        (Id : E; V : B := True);
    procedure Set_Has_Master_Entity               (Id : E; V : B := True);
@@ -7600,6 +7628,7 @@ package Einfo is
    procedure Set_Has_Non_Standard_Rep            (Id : E; V : B := True);
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Out_Or_In_Out_Parameter     (Id : E; V : B := True);
+   procedure Set_Has_Own_Invariants              (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
    procedure Set_Has_Pragma_Controlled           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Elaborate_Body       (Id : E; V : B := True);
@@ -7732,6 +7761,7 @@ package Einfo is
    procedure Set_Is_Packed                       (Id : E; V : B := True);
    procedure Set_Is_Packed_Array_Impl_Type       (Id : E; V : B := True);
    procedure Set_Is_Param_Block_Component_Type   (Id : E; V : B := True);
+   procedure Set_Is_Partial_Invariant_Procedure  (Id : E; V : B := True);
    procedure Set_Is_Potentially_Use_Visible      (Id : E; V : B := True);
    procedure Set_Is_Predicate_Function           (Id : E; V : B := True);
    procedure Set_Is_Predicate_Function_M         (Id : E; V : B := True);
@@ -7882,7 +7912,7 @@ package Einfo is
    procedure Set_Strict_Alignment                (Id : E; V : B := True);
    procedure Set_String_Literal_Length           (Id : E; V : U);
    procedure Set_String_Literal_Low_Bound        (Id : E; V : N);
-   procedure Set_Subprograms_For_Type            (Id : E; V : E);
+   procedure Set_Subprograms_For_Type            (Id : E; V : L);
    procedure Set_Subps_Index                     (Id : E; V : U);
    procedure Set_Suppress_Elaboration_Warnings   (Id : E; V : B := True);
    procedure Set_Suppress_Initialization         (Id : E; V : B := True);
@@ -7911,11 +7941,13 @@ package Einfo is
 
    function Default_Init_Cond_Procedure         (Id : E) return E;
    function Invariant_Procedure                 (Id : E) return E;
+   function Partial_Invariant_Procedure         (Id : E) return E;
    function Predicate_Function                  (Id : E) return E;
    function Predicate_Function_M                (Id : E) return E;
 
    procedure Set_Default_Init_Cond_Procedure    (Id : E; V : E);
    procedure Set_Invariant_Procedure            (Id : E; V : E);
+   procedure Set_Partial_Invariant_Procedure    (Id : E; V : E);
    procedure Set_Predicate_Function             (Id : E; V : E);
    procedure Set_Predicate_Function_M           (Id : E; V : E);
 
@@ -8374,8 +8406,8 @@ package Einfo is
    pragma Inline (Has_Independent_Components);
    pragma Inline (Has_Inheritable_Invariants);
    pragma Inline (Has_Inherited_Default_Init_Cond);
+   pragma Inline (Has_Inherited_Invariants);
    pragma Inline (Has_Initial_Value);
-   pragma Inline (Has_Invariants);
    pragma Inline (Has_Loop_Entry_Attributes);
    pragma Inline (Has_Machine_Radix_Clause);
    pragma Inline (Has_Master_Entity);
@@ -8385,6 +8417,7 @@ package Einfo is
    pragma Inline (Has_Non_Standard_Rep);
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Out_Or_In_Out_Parameter);
+   pragma Inline (Has_Own_Invariants);
    pragma Inline (Has_Per_Object_Constraint);
    pragma Inline (Has_Pragma_Controlled);
    pragma Inline (Has_Pragma_Elaborate_Body);
@@ -8550,6 +8583,7 @@ package Einfo is
    pragma Inline (Is_Packed);
    pragma Inline (Is_Packed_Array_Impl_Type);
    pragma Inline (Is_Param_Block_Component_Type);
+   pragma Inline (Is_Partial_Invariant_Procedure);
    pragma Inline (Is_Potentially_Use_Visible);
    pragma Inline (Is_Predicate_Function);
    pragma Inline (Is_Predicate_Function_M);
@@ -8884,8 +8918,8 @@ package Einfo is
    pragma Inline (Set_Has_Independent_Components);
    pragma Inline (Set_Has_Inheritable_Invariants);
    pragma Inline (Set_Has_Inherited_Default_Init_Cond);
+   pragma Inline (Set_Has_Inherited_Invariants);
    pragma Inline (Set_Has_Initial_Value);
-   pragma Inline (Set_Has_Invariants);
    pragma Inline (Set_Has_Loop_Entry_Attributes);
    pragma Inline (Set_Has_Machine_Radix_Clause);
    pragma Inline (Set_Has_Master_Entity);
@@ -8895,6 +8929,7 @@ package Einfo is
    pragma Inline (Set_Has_Non_Standard_Rep);
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Out_Or_In_Out_Parameter);
+   pragma Inline (Set_Has_Own_Invariants);
    pragma Inline (Set_Has_Per_Object_Constraint);
    pragma Inline (Set_Has_Pragma_Controlled);
    pragma Inline (Set_Has_Pragma_Elaborate_Body);
@@ -9026,6 +9061,7 @@ package Einfo is
    pragma Inline (Set_Is_Packed);
    pragma Inline (Set_Is_Packed_Array_Impl_Type);
    pragma Inline (Set_Is_Param_Block_Component_Type);
+   pragma Inline (Set_Is_Partial_Invariant_Procedure);
    pragma Inline (Set_Is_Potentially_Use_Visible);
    pragma Inline (Set_Is_Predicate_Function);
    pragma Inline (Set_Is_Predicate_Function_M);

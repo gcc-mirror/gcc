@@ -1,3 +1,131 @@
+2016-06-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.ads, atree.adb (Elist29): New routine.
+	(Set_Elist29): New routine.
+	* atree.h New definition for Elist29.
+	* einfo.adb Subprograms_For_Type is now an Elist rather than
+	a node. Has_Invariants is now a synthesized attribute
+	and does not require a flag. Has_Own_Invariants
+	is now Flag232. Has_Inherited_Invariants is
+	Flag291. Is_Partial_Invariant_Procedure is Flag292.
+	(Default_Init_Cond_Procedure): Reimplemented.
+	(Has_Inherited_Invariants): New routine.
+	(Has_Invariants): Reimplemented.
+	(Has_Own_Invariants): New routine.
+	(Invariant_Procedure): Reimplemented.
+	(Is_Partial_Invariant_Procedure): New routine.
+	(Partial_Invariant_Procedure): Reimplemented.
+	(Predicate_Function): Reimplemented.
+	(Predicate_Function_M): Reimplemented.
+	(Set_Default_Init_Cond_Procedure): Reimplemented.
+	(Set_Has_Inherited_Invariants): New routine.
+	(Set_Has_Invariants): Removed.
+	(Set_Has_Own_Invariants): New routine.
+	(Set_Invariant_Procedure): Reimplemented.
+	(Set_Is_Partial_Invariant_Procedure): New routine.
+	(Set_Partial_Invariant_Procedure): Reimplemented.
+	(Set_Predicate_Function): Reimplemented.
+	(Set_Predicate_Function_M): Reimplemented.
+	(Set_Subprograms_For_Type): Reimplemented.
+	(Subprograms_For_Type): Reimplemented.
+	(Write_Entity_Flags): Output Flag232 and Flag291.
+	* einfo.ads Add new attributes Has_Inherited_Invariants
+	Has_Own_Invariants Is_Partial_Invariant_Procedure
+	Partial_Invariant_Procedure Change the documentation
+	of attributes Has_Inheritable_Invariants Has_Invariants
+	Invariant_Procedure Is_Invariant_Procedure Subprograms_For_Type
+	(Has_Inherited_Invariants): New routine along with pragma Inline.
+	(Has_Own_Invariants): New routine along with pragma Inline.
+	(Is_Partial_Invariant_Procedure): New routine along with pragma Inline.
+	(Partial_Invariant_Procedure): New routine.
+	(Set_Has_Inherited_Invariants): New routine along with pragma Inline.
+	(Set_Has_Invariants): Removed along with pragma Inline.
+	(Set_Has_Own_Invariants): New routine along with pragma Inline.
+	(Set_Is_Partial_Invariant_Procedure): New routine
+	along with pragma Inline.
+	(Set_Partial_Invariant_Procedure): New routine.
+	(Set_Subprograms_For_Type): Update the signature.
+	(Subprograms_For_Type): Update the signature.
+	* exp_ch3.adb Remove with and use clauses for Sem_Ch13.
+	(Build_Array_Invariant_Proc): Removed.
+	(Build_Record_Invariant_Proc): Removed.
+	(Freeze_Type): Build the body of the invariant procedure.
+	(Insert_Component_Invariant_Checks): Removed.
+	* exp_ch7.adb Add with and use clauses for Sem_Ch6, Sem_Ch13,
+	and Stringt.
+	(Build_Invariant_Procedure_Body): New routine.
+	(Build_Invariant_Procedure_Declaration): New routine.
+	* exp_ch7.ads (Build_Invariant_Procedure_Body): New routine.
+	(Build_Invariant_Procedure_Declaration): New routine.
+	* exp_ch9.adb (Build_Corresponding_Record): Do not propagate
+	attributes related to invariants to the corresponding record
+	when building the corresponding record. This is done by
+	Build_Invariant_Procedure_Declaration.
+	* exp_util.adb (Make_Invariant_Call): Reimplemented.
+	* freeze.adb (Freeze_Array_Type): An array type requires an
+	invariant procedure when its component type has invariants.
+	(Freeze_Record_Type): A record type requires an invariant
+	procedure when at least one of its components has an invariant.
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Inherit
+	invariant-related attributes.
+	(Analyze_Subtype_Declaration):
+	Inherit invariant-related attributes.
+	(Build_Derived_Record_Type): Inherit invariant-related attributes.
+	(Check_Duplicate_Aspects): Reimplemented.
+	(Get_Partial_View_Aspect): New routine.
+	(Process_Full_View): Inherit invariant-related attributes. Reimplement
+	the check on hidden inheritance of class-wide invariants.
+	(Remove_Default_Init_Cond_Procedure): Reimplemented.
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Do not modify
+	the controlling type for an invariant procedure declaration
+	or body.
+	(Is_Invariant_Procedure_Or_Body): New routine.
+	* sem_ch7.adb (Analyze_Package_Specification): Build the partial
+	invariant body in order to preanalyze and resolve all invariants
+	of a private type at the end of the visible declarations. Build
+	the full invariant body in order to preanalyze and resolve
+	all invariants of a private type's full view at the end of
+	the private declarations.
+	(Preserve_Full_Attributes): Inherit invariant-related attributes.
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Ensure that
+	aspects are analyzed with the proper view when the protected type
+	is a completion of a private type. Inherit invariant-related attributes.
+	(Analyze_Task_Type_Declaration): Ensure that
+	aspects are analyzed with the proper view when the task type
+	is a completion of a private type. Inherit invariant-related
+	attributes.
+	* sem_ch13.adb Remove with and use clauses for Stringt.
+	(Build_Invariant_Procedure_Declaration): Removed.
+	(Build_Invariant_Procedure): Removed.
+	(Freeze_Entity_Checks): Do not build the body of the invariant
+	procedure here.
+	The body is built when the type is frozen in Freeze_Type.
+	(Inherit_Aspects_At_Freeze_Point): Do not inherit any attributes
+	related to invariants here because this leads to erroneous
+	inheritance.
+	(Replace_Node): Rename to Replace_Type_Ref.
+	* sem_ch13.ads (Build_Invariant_Procedure_Declaration): Removed.
+	(Build_Invariant_Procedure): Removed.
+	* sem_prag.adb Add with and use clauses for Exp_Ch7.
+	(Analyze_Pragma): Reimplement the analysis of pragma Invariant.
+	* sem_res.adb (Resolve_Actuals): Emit a specialized error when
+	the context is an invariant.
+	* sem_util.adb (Get_Views): New routine.
+	(Incomplete_Or_Partial_View): Consider generic packages when
+	examining declarations.
+	(Inspect_Decls): Consider full type
+	declarations because they may denote a derivation from a
+	private type.
+	(Propagate_Invariant_Attributes): New routine.
+	* sem_util.ads (Get_Views): New routine.
+	(Propagate_Invariant_Attributes): New routine.
+
+2016-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.adb (Expression_Image): Add better handling of UCs,
+	we don't want to strip them all for clarity.
+
+
 2016-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* exp_util.adb (Safe_Unchecked_Type_Conversion): Use "alignment"

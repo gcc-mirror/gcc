@@ -1526,12 +1526,6 @@ package body Exp_Ch9 is
       Set_Stored_Constraint             (Rec_Ent, No_Elist);
       Cdecls := New_List;
 
-      --  Propagate type invariants to the corresponding record type
-
-      Set_Has_Invariants                (Rec_Ent, Has_Invariants (Ctyp));
-      Set_Has_Inheritable_Invariants    (Rec_Ent,
-        Has_Inheritable_Invariants (Ctyp));
-
       --  Use discriminals to create list of discriminants for record, and
       --  create new discriminals for use in default expressions, etc. It is
       --  worth noting that a task discriminant gives rise to 5 entities;

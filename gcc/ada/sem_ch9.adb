@@ -2037,11 +2037,21 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
-      --  If aspects are present, analyze them now. They can make references
-      --  to the discriminants of the type, but not to any components.
+      --  If aspects are present, analyze them now. They can make references to
+      --  the discriminants of the type, but not to any components.
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
+
+         --  The protected type is the full view of a private type. Analyze the
+         --  aspects with the entity of the private type to ensure that after
+         --  both views are exchanged, the aspect are actually associated with
+         --  the full view.
+
+         if T /= Def_Id and then Is_Private_Type (Def_Id) then
+            Analyze_Aspect_Specifications (N, T);
+         else
+            Analyze_Aspect_Specifications (N, Def_Id);
+         end if;
       end if;
 
       Analyze (Protected_Definition (N));
@@ -2193,6 +2203,11 @@ package body Sem_Ch9 is
          if Known_To_Have_Preelab_Init (Def_Id) then
             Set_Must_Have_Preelab_Init (T);
          end if;
+
+         --  Propagate invariant-related attributes from the private type to
+         --  the protected type.
+
+         Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.
@@ -3071,7 +3086,17 @@ package body Sem_Ch9 is
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
+
+         --  The task type is the full view of a private type. Analyze the
+         --  aspects with the entity of the private type to ensure that after
+         --  both views are exchanged, the aspect are actually associated with
+         --  the full view.
+
+         if T /= Def_Id and then Is_Private_Type (Def_Id) then
+            Analyze_Aspect_Specifications (N, T);
+         else
+            Analyze_Aspect_Specifications (N, Def_Id);
+         end if;
       end if;
 
       if Present (Task_Definition (N)) then
@@ -3102,9 +3127,8 @@ package body Sem_Ch9 is
 
       --  Case of a completion of a private declaration
 
-      if T /= Def_Id
-        and then Is_Private_Type (Def_Id)
-      then
+      if T /= Def_Id and then Is_Private_Type (Def_Id) then
+
          --  Deal with preelaborable initialization. Note that this processing
          --  is done by Process_Full_View, but as can be seen below, in this
          --  case the call to Process_Full_View is skipped if any serious
@@ -3113,6 +3137,11 @@ package body Sem_Ch9 is
          if Known_To_Have_Preelab_Init (Def_Id) then
             Set_Must_Have_Preelab_Init (T);
          end if;
+
+         --  Propagate invariant-related attributes from the private type to
+         --  task type.
+
+         Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.

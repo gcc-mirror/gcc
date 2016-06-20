@@ -35,6 +35,7 @@ with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Elists;    use Elists;
 with Errout;    use Errout;
+with Exp_Ch7;   use Exp_Ch7;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
@@ -1457,15 +1458,17 @@ package body Sem_Ch7 is
                Inherit_Default_Init_Cond_Procedure (E);
             end if;
 
-            --  If invariants are present, build the invariant procedure for a
-            --  private type, but not any of its subtypes or interface types.
+            --  Preanalyze and resolve the invariants of a private type at the
+            --  end of the visible declarations to catch potential errors. Note
+            --  that inherited class-wide invariants are not considered because
+            --  they have already been resolved.
 
-            if Has_Invariants (E) then
-               if Ekind (E) = E_Private_Subtype then
-                  null;
-               else
-                  Build_Invariant_Procedure (E, N);
-               end if;
+            if Ekind_In (E, E_Limited_Private_Type,
+                            E_Private_Type,
+                            E_Record_Type_With_Private)
+              and then Has_Own_Invariants (E)
+            then
+               Build_Invariant_Procedure_Body (E, Partial_Invariant => True);
             end if;
          end if;
 
@@ -1473,7 +1476,7 @@ package body Sem_Ch7 is
       end loop;
 
       if Is_Remote_Call_Interface (Id)
-         and then Nkind (Parent (Parent (N))) = N_Compilation_Unit
+        and then Nkind (Parent (Parent (N))) = N_Compilation_Unit
       then
          Validate_RCI_Declarations (Id);
       end if;
@@ -1544,7 +1547,6 @@ package body Sem_Ch7 is
       if Is_Compilation_Unit (Id) then
          Install_Private_With_Clauses (Id);
       else
-
          --  The current compilation unit may include private with_clauses,
          --  which are visible in the private part of the current nested
          --  package, and have to be installed now. This is not done for
@@ -1636,48 +1638,18 @@ package body Sem_Ch7 is
               ("full view of & does not have preelaborable initialization", E);
          end if;
 
-         --  An invariant may appear on a full view of a type
+         --  Preanalyze and resolve the invariants of a private type's full
+         --  view at the end of the private declarations in case freezing did
+         --  not take place either due to errors or because the context is a
+         --  generic unit.
 
          if Is_Type (E)
+           and then not Is_Private_Type (E)
            and then Has_Private_Declaration (E)
-           and then Nkind (Parent (E)) = N_Full_Type_Declaration
+           and then Has_Invariants (E)
+           and then Serious_Errors_Detected > 0
          then
-            declare
-               IP_Built : Boolean := False;
-
-            begin
-               if Has_Aspects (Parent (E)) then
-                  declare
-                     ASN : Node_Id;
-
-                  begin
-                     ASN := First (Aspect_Specifications (Parent (E)));
-                     while Present (ASN) loop
-                        if Nam_In (Chars (Identifier (ASN)),
-                             Name_Invariant,
-                             Name_Type_Invariant)
-                        then
-                           Build_Invariant_Procedure (E, N);
-                           IP_Built := True;
-                           exit;
-                        end if;
-
-                        Next (ASN);
-                     end loop;
-                  end;
-               end if;
-
-               --  Invariants may have been inherited from progenitors
-
-               if not IP_Built
-                 and then Has_Interfaces (E)
-                 and then Has_Inheritable_Invariants (E)
-                 and then not Is_Interface (E)
-                 and then not Is_Class_Wide_Type (E)
-               then
-                  Build_Invariant_Procedure (E, N);
-               end if;
-            end;
+            Build_Invariant_Procedure_Body (E);
          end if;
 
          Next_Entity (E);
@@ -2543,7 +2515,7 @@ package body Sem_Ch7 is
       Priv_Elmt : Elmt_Id;
       Priv_Sub  : Entity_Id;
 
-      procedure Preserve_Full_Attributes (Priv, Full : Entity_Id);
+      procedure Preserve_Full_Attributes (Priv : Entity_Id; Full : Entity_Id);
       --  Copy to the private declaration the attributes of the full view that
       --  need to be available for the partial view also.
 
@@ -2554,12 +2526,16 @@ package body Sem_Ch7 is
       -- Preserve_Full_Attributes --
       ------------------------------
 
-      procedure Preserve_Full_Attributes (Priv, Full : Entity_Id) is
-         Priv_Is_Base_Type : constant Boolean := Is_Base_Type (Priv);
+      procedure Preserve_Full_Attributes
+        (Priv : Entity_Id;
+         Full : Entity_Id)
+      is
+         Full_Base         : constant Entity_Id := Base_Type (Full);
+         Priv_Is_Base_Type : constant Boolean   := Is_Base_Type (Priv);
 
       begin
-         Set_Size_Info (Priv, (Full));
-         Set_RM_Size                 (Priv, RM_Size (Full));
+         Set_Size_Info               (Priv,                             Full);
+         Set_RM_Size                 (Priv, RM_Size                    (Full));
          Set_Size_Known_At_Compile_Time
                                      (Priv, Size_Known_At_Compile_Time (Full));
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
@@ -2581,26 +2557,30 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled (Priv, Is_Controlled (Base_Type (Full)));
+            Set_Is_Controlled (Priv, Is_Controlled            (Full_Base));
             Set_Finalize_Storage_Only
-                              (Priv, Finalize_Storage_Only
-                                                   (Base_Type (Full)));
-            Propagate_Concurrent_Flags
-                              (Priv,                Base_Type (Full));
+                              (Priv, Finalize_Storage_Only    (Full_Base));
             Set_Has_Controlled_Component
-                              (Priv, Has_Controlled_Component
-                                                   (Base_Type (Full)));
+                              (Priv, Has_Controlled_Component (Full_Base));
+
+            Propagate_Concurrent_Flags (Priv, Base_Type (Full));
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
-         --  Propagate information of type invariants, which may be specified
-         --  for the full view.
+         --  Propagate invariant-related attributes from the base type of the
+         --  full view to the full view and vice versa. This may seem strange,
+         --  but is necessary depending on which type triggered the generation
+         --  of the invariant procedure body. As a result, both the full view
+         --  and its base type carry the same invariant-related information.
 
-         if Has_Invariants (Full) and not Has_Invariants (Priv) then
-            Set_Has_Invariants (Priv);
-            Set_Subprograms_For_Type (Priv, Subprograms_For_Type (Full));
-         end if;
+         Propagate_Invariant_Attributes (Full, From_Typ => Full_Base);
+         Propagate_Invariant_Attributes (Full_Base, From_Typ => Full);
+
+         --  Propagate invariant-related attributes from the full view to the
+         --  private view.
+
+         Propagate_Invariant_Attributes (Priv, From_Typ => Full);
 
          if Is_Tagged_Type (Priv)
            and then Is_Tagged_Type (Full)
@@ -2943,7 +2923,7 @@ package body Sem_Ch7 is
                   if Is_Overloadable (Subp) and then Is_Primitive (Subp) then
                      Error_Msg_NE
                        ("type& must be completed in the private part",
-                         Parent (Subp), Id);
+                        Parent (Subp), Id);
 
                   --  The result type of an access-to-function type cannot be a
                   --  Taft-amendment type, unless the version is Ada 2012 or

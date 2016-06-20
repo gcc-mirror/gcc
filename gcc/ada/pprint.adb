@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -542,12 +542,27 @@ package body Pprint is
             when N_Parameter_Association =>
                return Expr_Name (Explicit_Actual_Parameter (Expr));
 
-            when N_Type_Conversion | N_Unchecked_Type_Conversion =>
+            when N_Type_Conversion =>
 
                --  Most conversions are not very interesting (used inside
                --  expanded checks to convert to larger ranges), so skip them.
 
                return Expr_Name (Expression (Expr));
+
+            when N_Unchecked_Type_Conversion =>
+
+               --  Only keep the type conversion in complex cases
+
+               if not Is_Scalar_Type (Etype (Expr))
+                 or else not Is_Scalar_Type (Etype (Expression (Expr)))
+                 or else Is_Modular_Integer_Type (Etype (Expr))
+                         /= Is_Modular_Integer_Type (Etype (Expression (Expr)))
+               then
+                  return Expr_Name (Subtype_Mark (Expr)) &
+                    "(" & Expr_Name (Expression (Expr)) & ")";
+               else
+                  return Expr_Name (Expression (Expr));
+               end if;
 
             when N_Indexed_Component =>
                if Take_Prefix then

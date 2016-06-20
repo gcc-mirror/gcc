@@ -4428,6 +4428,34 @@ package body Sem_Ch6 is
    --  both subprogram bodies and subprogram declarations (specs).
 
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id is
+      function Is_Invariant_Procedure_Or_Body (E : Entity_Id) return Boolean;
+      --  Determine whether entity E denotes the spec or body of an invariant
+      --  procedure.
+
+      ------------------------------------
+      -- Is_Invariant_Procedure_Or_Body --
+      ------------------------------------
+
+      function Is_Invariant_Procedure_Or_Body (E : Entity_Id) return Boolean is
+         Decl : constant Node_Id := Unit_Declaration_Node (E);
+         Spec : Entity_Id;
+
+      begin
+         if Nkind (Decl) = N_Subprogram_Body then
+            Spec := Corresponding_Spec (Decl);
+         else
+            Spec := E;
+         end if;
+
+         return
+           Present (Spec)
+             and then Ekind (Spec) = E_Procedure
+             and then (Is_Partial_Invariant_Procedure (Spec)
+                        or else Is_Invariant_Procedure (Spec));
+      end Is_Invariant_Procedure_Or_Body;
+
+      --  Local variables
+
       Designator : constant Entity_Id := Defining_Entity (N);
       Formals    : constant List_Id   := Parameter_Specifications (N);
 
@@ -4487,7 +4515,27 @@ package body Sem_Ch6 is
          --  Same processing for an access parameter whose designated type is
          --  derived from a synchronized interface.
 
-         if Ada_Version >= Ada_2005 then
+         --  This modification is not done for invariant procedures because
+         --  the corresponding record may not necessarely be visible when the
+         --  concurrent type acts as the full view of a private type.
+
+         --    package Pack is
+         --       type Prot is private with Type_Invariant => ...;
+         --       procedure ConcInvariant (Obj : Prot);
+         --    private
+         --       protected type Prot is ...;
+         --       type Concurrent_Record_Prot is record ...;
+         --       procedure ConcInvariant (Obj : Prot) is
+         --          ...
+         --       end ConcInvariant;
+         --    end Pack;
+
+         --  In the example above, both the spec and body of the invariant
+         --  procedure must utilize the private type as the controlling type.
+
+         if Ada_Version >= Ada_2005
+           and then not Is_Invariant_Procedure_Or_Body (Designator)
+         then
             declare
                Formal     : Entity_Id;
                Formal_Typ : Entity_Id;
