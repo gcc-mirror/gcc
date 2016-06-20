@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,39 +22,26 @@
 #include <testsuite_hooks.h>
 
 template<typename _USet>
-  void test()
+  void test(int threshold)
   {
     bool test __attribute__((unused)) = true;
     _USet us;
-    typedef typename _USet::size_type size_type;
-    bool rehashed = false;
-    for (int i = 0; i != 100000; ++i)
+    auto nb_reserved = us.bucket_count();
+    us.reserve(nb_reserved);
+    auto bkts = us.bucket_count();
+    for (int i = 0; i != threshold; ++i)
       {
-	size_type bkt_count = us.bucket_count();
-	us.insert(i);
-	if (bkt_count != us.bucket_count())
+	if (i == nb_reserved)
 	  {
-	    // Container has been rehashed, lets check that it won't be rehash
-	    // again if we remove and restore the last 2 inserted elements:
-	    rehashed = true;
-	    bkt_count = us.bucket_count();
-	    VERIFY( us.erase(i) == 1 );
-	    VERIFY( bkt_count == us.bucket_count() );
-	    if (i > 0)
-	      {
-		VERIFY( us.erase(i - 1) == 1 );
-		VERIFY( bkt_count == us.bucket_count() );
-
-		VERIFY( us.insert(i - 1).second );
-		VERIFY( bkt_count == us.bucket_count() );
-	      }
-	    VERIFY( us.insert(i).second );
-	    VERIFY( bkt_count == us.bucket_count() );
+	    nb_reserved = bkts;
+	    us.reserve(nb_reserved);
+	    bkts = us.bucket_count();
 	  }
-      }
 
-    // At lest we check a rehash once:
-    VERIFY( rehashed );
+	us.insert(i);
+
+	VERIFY( us.bucket_count() == bkts );
+      }
   }
 
 template<typename _Value>
@@ -70,7 +57,7 @@ template<typename _Value>
 
 int main()
 {
-  test<std::unordered_set<int>>();
-  test<unordered_set_power2_rehash<int>>();
+  test<std::unordered_set<int>>(150);
+  test<unordered_set_power2_rehash<int>>(150);
   return 0;
 }

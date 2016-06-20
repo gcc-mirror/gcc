@@ -1,3 +1,23 @@
+2016-06-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/71181
+	* include/tr1/hashtable_policy.h
+	(_Prime_rehash_policy::_M_next_bkt): Make past-the-end iterator
+	dereferenceable to avoid check on lower_bound result.
+	(_Prime_rehash_policy::_M_bkt_for_elements): Call latter.
+	(_Prime_rehash_policy::_M_need_rehash): Likewise.
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
+	Always return a value greater than input value. Set _M_next_resize to
+	max value when reaching highest prime number.
+	* src/shared/hashtable-aux.cc (__prime_list): Add comment about sentinel
+	being now useless.
+	* testsuite/23_containers/unordered_set/hash_policy/71181.cc: New.
+	* testsuite/23_containers/unordered_set/hash_policy/power2_rehash.cc
+	(test02): New.
+	* testsuite/23_containers/unordered_set/hash_policy/prime_rehash.cc: New.
+	* testsuite/23_containers/unordered_set/hash_policy/rehash.cc:
+	Fix indentation.
+
 2016-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71545
