@@ -1,3 +1,9 @@
+2016-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	fortran/71194
+	* trans-expr.c (gfc_trans_pointer_assignment): Correctly handle
+	RHS pointer functions.
+
 2016-06-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* class.c (gfc_add_class_array_ref): Call gfc_add_data_component()
