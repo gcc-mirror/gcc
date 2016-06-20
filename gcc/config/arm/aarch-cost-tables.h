@@ -294,35 +294,35 @@ const struct cpu_cost_table cortexa57_extra_costs =
   {
     /* FP SFmode */
     {
-      COSTS_N_INSNS (17),      /* div.  */
-      COSTS_N_INSNS (5),       /* mult.  */
-      COSTS_N_INSNS (9),       /* mult_addsub. */
-      COSTS_N_INSNS (9),       /* fma.  */
-      COSTS_N_INSNS (4),       /* addsub.  */
-      COSTS_N_INSNS (2),       /* fpconst. */
-      COSTS_N_INSNS (2),       /* neg.  */
-      COSTS_N_INSNS (2),       /* compare.  */
-      COSTS_N_INSNS (4),       /* widen.  */
-      COSTS_N_INSNS (4),       /* narrow.  */
-      COSTS_N_INSNS (4),       /* toint.  */
-      COSTS_N_INSNS (4),       /* fromint.  */
-      COSTS_N_INSNS (4)        /* roundint.  */
+      COSTS_N_INSNS (6),      /* div.  */
+      COSTS_N_INSNS (1),       /* mult.  */
+      COSTS_N_INSNS (2),       /* mult_addsub.  */
+      COSTS_N_INSNS (2),       /* fma.  */
+      COSTS_N_INSNS (1),       /* addsub.  */
+      0,		       /* fpconst.  */
+      0,		       /* neg.  */
+      0,		       /* compare.  */
+      COSTS_N_INSNS (1),       /* widen.  */
+      COSTS_N_INSNS (1),       /* narrow.  */
+      COSTS_N_INSNS (1),       /* toint.  */
+      COSTS_N_INSNS (1),       /* fromint.  */
+      COSTS_N_INSNS (1)        /* roundint.  */
     },
     /* FP DFmode */
     {
-      COSTS_N_INSNS (31),      /* div.  */
-      COSTS_N_INSNS (5),       /* mult.  */
-      COSTS_N_INSNS (9),       /* mult_addsub.  */
-      COSTS_N_INSNS (9),       /* fma.  */
-      COSTS_N_INSNS (4),       /* addsub.  */
-      COSTS_N_INSNS (2),       /* fpconst.  */
-      COSTS_N_INSNS (2),       /* neg.  */
-      COSTS_N_INSNS (2),       /* compare.  */
-      COSTS_N_INSNS (4),       /* widen.  */
-      COSTS_N_INSNS (4),       /* narrow.  */
-      COSTS_N_INSNS (4),       /* toint.  */
-      COSTS_N_INSNS (4),       /* fromint.  */
-      COSTS_N_INSNS (4)        /* roundint.  */
+      COSTS_N_INSNS (11),      /* div.  */
+      COSTS_N_INSNS (1),       /* mult.  */
+      COSTS_N_INSNS (2),       /* mult_addsub.  */
+      COSTS_N_INSNS (2),       /* fma.  */
+      COSTS_N_INSNS (1),       /* addsub.  */
+      0,		       /* fpconst.  */
+      0,		       /* neg.  */
+      0,		       /* compare.  */
+      COSTS_N_INSNS (1),       /* widen.  */
+      COSTS_N_INSNS (1),       /* narrow.  */
+      COSTS_N_INSNS (1),       /* toint.  */
+      COSTS_N_INSNS (1),       /* fromint.  */
+      COSTS_N_INSNS (1)        /* roundint.  */
     }
   },
   /* Vector */
