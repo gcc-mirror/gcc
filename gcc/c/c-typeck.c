@@ -4846,6 +4846,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	       || code2 == COMPLEX_TYPE))
     {
       result_type = c_common_type (type1, type2);
+      if (result_type == error_mark_node)
+	return error_mark_node;
       do_warn_double_promotion (result_type, type1, type2,
 				"implicit conversion from %qT to %qT to "
 				"match other result of conditional",
