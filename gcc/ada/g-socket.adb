@@ -150,7 +150,7 @@ package body GNAT.Sockets is
    --  Output an array of inet address components in hex or decimal mode
 
    function Is_IP_Address (Name : String) return Boolean;
-   --  Return true when Name is an IP address in standard dot notation
+   --  Return true when Name is an IPv4 address in dotted quad notation
 
    procedure Netdb_Lock;
    pragma Inline (Netdb_Lock);
@@ -996,7 +996,8 @@ package body GNAT.Sockets is
 
    function Get_Host_By_Name (Name : String) return Host_Entry_Type is
    begin
-      --  Detect IP address name and redirect to Inet_Addr
+      --  If the given name actually is the string representation of
+      --  an IP address, use Get_Host_By_Address instead.
 
       if Is_IP_Address (Name) then
          return Get_Host_By_Address (Inet_Addr (Name));
@@ -1503,16 +1504,37 @@ package body GNAT.Sockets is
    -------------------
 
    function Is_IP_Address (Name : String) return Boolean is
+      Dots : Natural := 0;
    begin
+      --  Perform a cursory check for a dotted quad: we must have 1 to 3
+      --  dots, and there must be at least one digit around each.
+
       for J in Name'Range loop
-         if Name (J) /= '.'
-           and then Name (J) not in '0' .. '9'
-         then
+         if Name (J) = '.' then
+
+            --  Check that the dot is not in first or last position, and
+            --  that it is followed by a digit. Note that we already know
+            --  that it is preceded by a digit, or we would have returned
+            --  earlier on.
+
+            if J in Name'First + 1 .. Name'Last - 1
+              and then Name (J + 1) in '0' .. '9'
+            then
+               Dots := Dots + 1;
+
+            else
+
+               --  Definitely not a proper dotted quad
+
+               return False;
+            end if;
+
+         elsif Name (J) not in '0' .. '9' then
             return False;
          end if;
       end loop;
 
-      return True;
+      return Dots in 1 .. 3;
    end Is_IP_Address;
 
    -------------

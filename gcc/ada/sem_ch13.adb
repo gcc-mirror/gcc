@@ -13721,10 +13721,10 @@ package body Sem_Ch13 is
          declare
             T : UC_Entry renames Unchecked_Conversions.Table (N);
 
+            Act_Unit : constant Entity_Id  := T.Act_Unit;
             Eloc     : constant Source_Ptr := T.Eloc;
             Source   : constant Entity_Id  := T.Source;
             Target   : constant Entity_Id  := T.Target;
-            Act_Unit : constant Entity_Id  := T.Act_Unit;
 
             Source_Siz : Uint;
             Target_Siz : Uint;
