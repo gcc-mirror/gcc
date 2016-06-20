@@ -12819,7 +12819,14 @@ aarch64_reverse_mask (enum machine_mode mode)
   return force_reg (V16QImode, mask);
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement MODES_TIEABLE_P.  In principle we should always return true.
+   However due to issues with register allocation it is preferable to avoid
+   tieing integer scalar and FP scalar modes.  Executing integer operations
+   in general registers is better than treating them as scalar vector
+   operations.  This reduces latency and avoids redundant int<->FP moves.
+   So tie modes if they are either the same class, or vector modes with
+   other vector modes, vector structs or any scalar mode.
+*/
 
 bool
 aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
@@ -12830,9 +12837,12 @@ aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   /* We specifically want to allow elements of "structure" modes to
      be tieable to the structure.  This more general condition allows
      other rarer situations too.  */
-  if (TARGET_SIMD
-      && aarch64_vector_mode_p (mode1)
-      && aarch64_vector_mode_p (mode2))
+  if (aarch64_vector_mode_p (mode1) && aarch64_vector_mode_p (mode2))
+    return true;
+
+  /* Also allow any scalar modes with vectors.  */
+  if (aarch64_vector_mode_supported_p (mode1)
+      || aarch64_vector_mode_supported_p (mode2))
     return true;
 
   return false;
