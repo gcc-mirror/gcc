@@ -1,3 +1,12 @@
+2016-06-20  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r237484.
+	2016-06-15  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71529
+	* ipa-chkp.c (chkp_build_instrumented_fndecl): Fix
+	DECL_CONTEXT for copied arguments.
+
 2016-06-20  Georg-Johann Lay  <avr@gjlay.de>
 	    Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
