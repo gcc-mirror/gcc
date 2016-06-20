@@ -12298,17 +12298,44 @@ package body Sem_Ch13 is
       --  Processes a single node in the traversal procedure below, checking
       --  if node N should be replaced, and if so, doing the replacement.
 
+      function Visible_Component (Comp : Name_Id) return Entity_Id;
+      --  Given an identifier in the expression, check whether there is a
+      --  discriminant or component of the type that is directy visible, and
+      --  rewrite it as the corresponding selected component of the formal of
+      --  the subprogram. The entity is located by a sequential search, which
+      --  seems acceptable given the typical size of component lists and check
+      --  expressions. Possible optimization ???
+
       ----------------------
       -- Replace_Type_Ref --
       ----------------------
 
       function Replace_Type_Ref (N : Node_Id) return Traverse_Result is
-         S : Entity_Id;
-         P : Node_Id;
+         Loc : constant Source_Ptr := Sloc (N);
+         C   : Entity_Id;
+         S   : Entity_Id;
+         P   : Node_Id;
+
+         procedure Add_Prefix (Ref : Node_Id; Comp : Entity_Id);
+         --  Add the proper prefix to a reference to a component of the
+         --  type when it is not already a selected component.
+
+         ----------------
+         -- Add_Prefix --
+         ----------------
+
+         procedure Add_Prefix (Ref : Node_Id; Comp : Entity_Id) is
+         begin
+            Rewrite (Ref,
+              Make_Selected_Component (Loc,
+                Prefix => New_Occurrence_Of (T, Loc),
+                Selector_Name => New_Occurrence_Of (Comp, Loc)));
+            Replace_Type_Reference (Prefix (Ref));
+         end Add_Prefix;
+
+      --  Start of processing for Replace_Type_Ref
 
       begin
-         --  Case of identifier
-
          if Nkind (N) = N_Identifier then
 
             --  If not the type name, check whether it is a reference to some
@@ -12321,6 +12348,33 @@ package body Sem_Ch13 is
                   and then Is_Type (Current_Entity (N))
                then
                   Freeze_Before (Freeze_Node (T), Current_Entity (N));
+               end if;
+
+               --  The components of the type are directly visible and can
+               --  be referenced without a prefix.
+
+               if Nkind (Parent (N)) = N_Selected_Component then
+                  null;
+
+               --  In expression C (I), C may be a directly visible function
+               --  or a visible component that has an array type. Disambiguate
+               --  by examining the component type.
+
+               elsif Nkind (Parent (N)) = N_Indexed_Component
+                 and then N = Prefix (Parent (N))
+               then
+                  C := Visible_Component (Chars (N));
+
+                  if Present (C) and then Is_Array_Type (Etype (C)) then
+                     Add_Prefix (N, C);
+                  end if;
+
+               else
+                  C := Visible_Component (Chars (N));
+
+                  if Present (C) then
+                     Add_Prefix (N, C);
+                  end if;
                end if;
 
                return Skip;
@@ -12396,6 +12450,32 @@ package body Sem_Ch13 is
             return OK;
          end if;
       end Replace_Type_Ref;
+
+      -----------------------
+      -- Visible_Component --
+      -----------------------
+
+      function Visible_Component (Comp : Name_Id) return Entity_Id is
+         E : Entity_Id;
+      begin
+         if Ekind (T) /= E_Record_Type then
+            return Empty;
+
+         else
+            E := First_Entity (T);
+            while Present (E) loop
+               if Comes_From_Source (E)
+                 and then Chars (E) = Comp
+               then
+                  return E;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+
+            return Empty;
+         end if;
+      end Visible_Component;
 
       procedure Replace_Type_Refs is new Traverse_Proc (Replace_Type_Ref);
 

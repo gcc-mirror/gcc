@@ -1,3 +1,12 @@
+2016-06-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Visible_Component): New procedure, subsidiary
+	of Replace_Type_References_ Generic, to determine whether an
+	identifier in a predicate or invariant expression is a visible
+	component of the type to which the predicate or invariant
+	applies. Implements the visibility rule stated in RM 13.1.1
+	(12/3).
+
 2016-06-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* s-regpat.adb, sem_prag.adb, pprint.adb, sem_ch13.adb: Minor
