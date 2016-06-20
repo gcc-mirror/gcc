@@ -2703,7 +2703,6 @@ package body Make is
       procedure Check_Standard_Library is
       begin
          Need_To_Check_Standard_Library := False;
-
          Name_Len := 0;
 
          if not Targparm.Suppress_Standard_Library_On_Target then
@@ -2713,8 +2712,8 @@ package body Make is
          end if;
 
          declare
-            Sfile  : File_Name_Type;
             Add_It : Boolean := True;
+            Sfile  : File_Name_Type;
 
          begin
             Sfile := Name_Enter;

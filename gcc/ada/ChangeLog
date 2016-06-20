@@ -1,3 +1,32 @@
+2016-06-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* make.adb, gnatbind.adb, g-socket.adb, sem_ch13.adb: Minor
+	reformatting.
+	* lib.ads, sem_util.adb: Minor typo in comment.
+
+2016-06-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, sem_prag.ads (Build_Pragma_Check_Equivalent):
+	Add parameter Keep_Pragma_Id to optionally keep
+	the identifier of the pragma instead of converting
+	to pragma Check. Also set type of new function call
+	appropriately.	(Collect_Inherited_Class_Wide_Conditions):
+	Call Build_Pragma_Check_Equivalent with the new parameter
+	Keep_Pragma_Id set to True to keep the identifier of the copied
+	pragma.
+	* sinfo.ads: Add comment.
+
+2016-06-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Invariant_Procedure_Body):
+	Always install the scope of the invariant procedure
+	in order to produce better error messages. Do not
+	insert the body when the context is a generic unit.
+	(Build_Invariant_Procedure_Declaration): Perform minimal
+	decoration of the invariant procedure and its formal parameter
+	in case they are not analyzed.	Do not insert the declaration
+	when the context is a generic unit.
+
 2016-06-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Visible_Component): New procedure, subsidiary

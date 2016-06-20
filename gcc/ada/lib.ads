@@ -261,7 +261,7 @@ package Lib is
    -----------------
 
    --  The units table has an entry for each unit (source file) read in by the
-   --  current compilation. The table is indexed by the unit number value,
+   --  current compilation. The table is indexed by the unit number value.
    --  The first entry in the table, subscript Main_Unit, is for the main file.
    --  Each entry in this units table contains the following data.
 
@@ -286,7 +286,7 @@ package Lib is
    --    Dynamic_Elab
    --      A flag indicating if this unit was compiled with dynamic elaboration
    --      checks specified (as the result of using the -gnatE compilation
-   --      option or a pragma Elaboration_Checks (Dynamic).
+   --      option or a pragma Elaboration_Checks (Dynamic)).
 
    --    Error_Location
    --      This is copied from the Sloc field of the Enode argument passed

@@ -90,7 +90,7 @@ procedure Gnatbind is
    --  only with switch -R.
 
    procedure Add_Artificial_ALI_File (Name : String);
-   --  Artificially add ALI file Name in the closure.
+   --  Artificially add ALI file Name in the closure
 
    function Gnatbind_Supports_Auto_Init return Boolean;
    --  Indicates if automatic initialization of elaboration procedure
@@ -123,6 +123,7 @@ procedure Gnatbind is
    procedure Add_Artificial_ALI_File (Name : String) is
       Id : ALI_Id;
       pragma Warnings (Off, Id);
+
    begin
       Name_Len := Name'Length;
       Name_Buffer (1 .. Name_Len) := Name;
