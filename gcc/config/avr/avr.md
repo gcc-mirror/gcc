@@ -638,15 +638,23 @@
     rtx dest = operands[0];
     rtx src  = avr_eval_addr_attrib (operands[1]);
 
-    if (SUBREG_P(src) && (GET_CODE(XEXP(src,0)) == SYMBOL_REF) &&
-        can_create_pseudo_p())
-      {
-        rtx symbol_ref = XEXP(src, 0);
-        XEXP (src, 0) = copy_to_mode_reg (GET_MODE(symbol_ref), symbol_ref);
-      }
-
     if (avr_mem_flash_p (dest))
       DONE;
+
+    if (QImode == <MODE>mode
+        && SUBREG_P (src)
+        && CONSTANT_ADDRESS_P (SUBREG_REG (src)))
+    {
+        // store_bitfield may want to store a SYMBOL_REF or CONST in a
+        // structure that's represented as PSImode.  As the upper 16 bits
+        // of PSImode cannot be expressed as an HImode subreg, the rhs is
+        // decomposed into QImode (word_mode) subregs of SYMBOL_REF,
+        // CONST or LABEL_REF; cf. PR71103.
+
+        rtx const_addr = SUBREG_REG (src);
+        operands[1] = src = copy_rtx (src);
+        SUBREG_REG (src) = copy_to_mode_reg (GET_MODE (const_addr), const_addr);
+      }
 
     /* One of the operands has to be in a register.  */
     if (!register_operand (dest, <MODE>mode)
