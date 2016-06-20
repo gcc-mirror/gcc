@@ -1868,7 +1868,7 @@ extern machine_mode element_mode (const_tree t);
 
 /* The alignment necessary for objects of this type.
    The value is an int, measured in bits and must be a power of two.
-   We support also an "alignement" of zero.  */
+   We support also an "alignment" of zero.  */
 #define TYPE_ALIGN(NODE) \
     (TYPE_CHECK (NODE)->type_common.align \
      ? ((unsigned)1) << ((NODE)->type_common.align - 1) : 0)

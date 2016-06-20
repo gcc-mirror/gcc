@@ -1,3 +1,8 @@
+2016-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gfortran.dg/common_align_2.f90: Use "alignment" instead of
+	"alignement".
+
 2016-06-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/71103

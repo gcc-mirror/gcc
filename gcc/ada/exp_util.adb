@@ -8645,7 +8645,7 @@ package body Exp_Util is
       --  alignment is known to be at least the maximum alignment for the
       --  target or if both alignments are known and the output type's
       --  alignment is no stricter than the input's. We can use the component
-      --  type alignement for an array if a type is an unpacked array type.
+      --  type alignment for an array if a type is an unpacked array type.
 
       if Present (Alignment_Clause (Otyp)) then
          Oalign := Expr_Value (Expression (Alignment_Clause (Otyp)));

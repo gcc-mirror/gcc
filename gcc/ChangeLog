@@ -1,3 +1,9 @@
+2016-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* params.def (PARAM_ALIGN_LOOP_ITERATIONS): Use "alignment" instead of
+	"alignement".
+	* tree.h (TYPE_ALIGN): Likewise.
+
 2016-06-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/71103
