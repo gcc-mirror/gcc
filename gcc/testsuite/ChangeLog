@@ -1,3 +1,11 @@
+2016-06-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/69507
+	* gnu89-const-expr-1.c: Avoid diagnosing __alignof__ as not conforming.
+	* gnu90-const-expr-1.c: Same.
+	* gnu99-const-expr-1.c: Same.
+	* gnu99-static-1.c: Same.
+
 2016-06-20  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.dg/tree-ssa/attr-hotcold-2.c: Fix syntax errors.

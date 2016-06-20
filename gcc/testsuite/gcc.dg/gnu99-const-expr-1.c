@@ -23,7 +23,7 @@ f (void)
     E5 = __imag__ 0,
     /* __alignof__ always constant.  */
     E6 = __alignof__ (int[n]),
-    E7 = __alignof__ (a), /* { dg-error "__alignof__ \\(expression\\)" } */
+    E7 = __alignof__ (a),
     /* __extension__ ignored for constant expression purposes.  */
     E8 = __extension__ (1 ? 0 : i++), /* { dg-error "constant expression" } */
     E9 = __extension__ 0,
