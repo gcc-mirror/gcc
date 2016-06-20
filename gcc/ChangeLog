@@ -1,5 +1,10 @@
 2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_costs): Make FP
+	costs relative to the cost of a register move.
+
+2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/arm_neon.h (vcvt_n_f64_s64): New.
 	(vcvt_n_f64_u64): Likewise.
 	(vcvt_n_s64_f64): Likewise.

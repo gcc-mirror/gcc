@@ -191,35 +191,35 @@ const struct cpu_cost_table cortexa53_extra_costs =
   {
     /* FP SFmode */
     {
-      COSTS_N_INSNS (15),	/* div.  */
-      COSTS_N_INSNS (3),	/* mult.  */
-      COSTS_N_INSNS (7),	/* mult_addsub. */
-      COSTS_N_INSNS (7),	/* fma.  */
-      COSTS_N_INSNS (3),	/* addsub.  */
-      COSTS_N_INSNS (1),	/* fpconst. */
-      COSTS_N_INSNS (2),	/* neg.  */
-      COSTS_N_INSNS (1),	/* compare.  */
-      COSTS_N_INSNS (3),	/* widen.  */
-      COSTS_N_INSNS (3),	/* narrow.  */
-      COSTS_N_INSNS (3),	/* toint.  */
-      COSTS_N_INSNS (3),	/* fromint.  */
-      COSTS_N_INSNS (3)		/* roundint.  */
+      COSTS_N_INSNS (5),	/* div.  */
+      COSTS_N_INSNS (1),	/* mult.  */
+      COSTS_N_INSNS (2),	/* mult_addsub.  */
+      COSTS_N_INSNS (2),	/* fma.  */
+      COSTS_N_INSNS (1),	/* addsub.  */
+      0,			/* fpconst.  */
+      COSTS_N_INSNS (1),	/* neg.  */
+      0,			/* compare.  */
+      COSTS_N_INSNS (1),	/* widen.  */
+      COSTS_N_INSNS (1),	/* narrow.  */
+      COSTS_N_INSNS (1),	/* toint.  */
+      COSTS_N_INSNS (1),	/* fromint.  */
+      COSTS_N_INSNS (1)		/* roundint.  */
     },
     /* FP DFmode */
     {
-      COSTS_N_INSNS (30),	/* div.  */
-      COSTS_N_INSNS (3),	/* mult.  */
-      COSTS_N_INSNS (7),	/* mult_addsub.  */
-      COSTS_N_INSNS (7),	/* fma.  */
-      COSTS_N_INSNS (3),	/* addsub.  */
-      COSTS_N_INSNS (1),	/* fpconst.  */
-      COSTS_N_INSNS (2),	/* neg.  */
-      COSTS_N_INSNS (1),	/* compare.  */
-      COSTS_N_INSNS (3),	/* widen.  */
-      COSTS_N_INSNS (3),	/* narrow.  */
-      COSTS_N_INSNS (3),	/* toint.  */
-      COSTS_N_INSNS (3),	/* fromint.  */
-      COSTS_N_INSNS (3)		/* roundint.  */
+      COSTS_N_INSNS (10),	/* div.  */
+      COSTS_N_INSNS (1),	/* mult.  */
+      COSTS_N_INSNS (2),	/* mult_addsub.  */
+      COSTS_N_INSNS (2),	/* fma.  */
+      COSTS_N_INSNS (1),	/* addsub.  */
+      0,			/* fpconst.  */
+      COSTS_N_INSNS (1),	/* neg.  */
+      0,			/* compare.  */
+      COSTS_N_INSNS (1),	/* widen.  */
+      COSTS_N_INSNS (1),	/* narrow.  */
+      COSTS_N_INSNS (1),	/* toint.  */
+      COSTS_N_INSNS (1),	/* fromint.  */
+      COSTS_N_INSNS (1)		/* roundint.  */
     }
   },
   /* Vector */
