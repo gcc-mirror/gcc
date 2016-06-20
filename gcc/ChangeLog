@@ -1,3 +1,9 @@
+2016-06-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_print_operand): Fix "format not a string
+	literal" build warnings.
+	(avr_print_operand_address): Dito.
+
 2016-06-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/71375
