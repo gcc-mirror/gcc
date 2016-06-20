@@ -1,3 +1,9 @@
+2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vcvt_f64_1.c: New.
+	* gcc.target/aarch64/vcvt_n_f64_1.c: New.
+	* gcc.target/aarch64/vrecp_f64_1.c: New.
+
 2016-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gfortran.dg/common_align_2.f90: Use "alignment" instead of
