@@ -1,3 +1,10 @@
+2016-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/71559
+	* config/i386/i386.c (ix86_fp_cmp_code_to_pcmp_immediate): Fix up
+	returned values and add UN*/LTGT/*ORDERED cases with values matching
+	D operand modifier on vcmp for AVX.
+
 2016-06-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.opt
