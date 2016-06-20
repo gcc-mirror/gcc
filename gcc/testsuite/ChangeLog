@@ -1,3 +1,7 @@
+2016-06-20  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Fix syntax errors.
+
 2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vcvt_f64_1.c: New.
