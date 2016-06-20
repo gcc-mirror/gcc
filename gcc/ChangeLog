@@ -1,5 +1,10 @@
 2016-06-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_modes_tieable_p):
+	Allow scalar/single vector modes to be tieable.
+
+2016-06-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/arm/cortex-a57.md (cortex_a57_fp_cpys): Add fcsel.
 
 2016-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
