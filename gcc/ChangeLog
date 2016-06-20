@@ -1,4 +1,10 @@
-2018-06-18  John David Anglin  <danglin@gcc.gnu.org>
+2016-06-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/71375
+	* config/rs6000/aix51.h (TARGET_EXTRA_BUILTINS): Define as 0.
+	* config/rs6000/aix43.h (TARGET_EXTRA_BUILTINS): Same.
+
+2016-06-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (TARGET_LONG_PIC_PCREL_CALL): Remove.
 

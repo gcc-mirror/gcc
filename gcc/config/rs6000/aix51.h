@@ -100,6 +100,9 @@ do {									\
 #define TARGET_ALTIVEC 0
 #undef  TARGET_ALTIVEC_ABI
 #define TARGET_ALTIVEC_ABI 0
+#undef  TARGET_EXTRA_BUILTINS
+#define TARGET_EXTRA_BUILTINS 0
+
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
