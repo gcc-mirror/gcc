@@ -1,3 +1,7 @@
+2016-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/string-literal-concat.C: New test case.
+
 2016-06-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/69507
