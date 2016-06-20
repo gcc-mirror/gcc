@@ -1,3 +1,9 @@
+2016-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/71591
+	* toplev.c (toplev::run_self_tests): If no_backend, complain and
+	don't run any tests.
+
 2016-06-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/71571

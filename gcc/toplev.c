@@ -2047,6 +2047,11 @@ toplev::start_timevars ()
 void
 toplev::run_self_tests ()
 {
+  if (no_backend)
+    {
+      error_at (UNKNOWN_LOCATION, "self-tests incompatible with -E");
+      return;
+    }
 #if CHECKING_P
   /* Reset some state.  */
   input_location = UNKNOWN_LOCATION;
