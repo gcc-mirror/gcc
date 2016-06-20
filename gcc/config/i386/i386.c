@@ -23622,17 +23622,33 @@ ix86_fp_cmp_code_to_pcmp_immediate (enum rtx_code code)
   switch (code)
     {
     case EQ:
-      return 0x08;
+      return 0x00;
     case NE:
       return 0x04;
     case GT:
-      return 0x16;
+      return 0x0e;
     case LE:
-      return 0x1a;
+      return 0x02;
     case GE:
-      return 0x15;
+      return 0x0d;
     case LT:
-      return 0x19;
+      return 0x01;
+    case UNLE:
+      return 0x0a;
+    case UNLT:
+      return 0x09;
+    case UNGE:
+      return 0x05;
+    case UNGT:
+      return 0x06;
+    case UNEQ:
+      return 0x18;
+    case LTGT:
+      return 0x0c;
+    case ORDERED:
+      return 0x07;
+    case UNORDERED:
+      return 0x03;
     default:
       gcc_unreachable ();
     }

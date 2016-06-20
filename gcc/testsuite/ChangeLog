@@ -1,3 +1,10 @@
+2016-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/71559
+	* gcc.target/i386/sse2-pr71559.c: New test.
+	* gcc.target/i386/avx-pr71559.c: New test.
+	* gcc.target/i386/avx512f-pr71559.c: New test.
+
 2016-06-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/71194
