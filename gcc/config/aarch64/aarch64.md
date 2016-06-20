@@ -4638,8 +4638,8 @@
 	 FCVT_F2FIXED))]
   ""
   "@
-   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<w1>0, %<s>1, #%2
-   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<s>0, %<s>1, #%2"
+   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:w1>0, %<GPF:s>1, #%2
+   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:s>0, %<GPF:s>1, #%2"
   [(set_attr "type" "f_cvtf2i, neon_fp_to_int_<GPF:Vetype>")
    (set_attr "fp" "yes, *")
    (set_attr "simd" "*, yes")]
@@ -4652,8 +4652,8 @@
 	 FCVT_FIXED2F))]
   ""
   "@
-   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<s>0, %<w1>1, #%2
-   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<s>0, %<s>1, #%2"
+   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:w>1, #%2
+   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:v>1, #%2"
   [(set_attr "type" "f_cvti2f, neon_int_to_fp_<GPI:Vetype>")
    (set_attr "fp" "yes, *")
    (set_attr "simd" "*, yes")]

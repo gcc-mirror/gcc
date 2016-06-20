@@ -1,5 +1,25 @@
 2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md
+	(<FCVT_F2FIXED:fcvt_fixed_insn><GPF:mode>3): Add attributes to
+	iterators.
+	(<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>3): Likewise.  Correct
+	attributes.
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_binop_uss_qualifiers): Delete.
+	(TYPES_BINOP_USS): Likewise.
+	(aarch64_types_binop_sus_qualifiers): Likewise.
+	(TYPES_BINOP_SUS): Likewise.
+	(aarch64_types_fcvt_from_unsigned_qualifiers): New.
+	(TYPES_FCVTIMM_SUS): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (scvtf): Use SHIFTIMM
+	rather than BINOP.
+	(ucvtf): Use FCVTIMM_SUS rather than BINOP_SUS.
+	(fcvtzs): Use SHIFTIMM rather than BINOP.
+	(fcvtzu): Use SHIFTIMM_USS rather than BINOP_USS.
+
+2016-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): Make FP
 	costs relative to the cost of a register move.
 
