@@ -1,3 +1,8 @@
+2016-06-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/71601
+	* gcc.dg/dfp/usual-arith-conv-bad-3.c: New test.
+
 2016-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71581

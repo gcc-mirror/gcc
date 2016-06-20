@@ -1,3 +1,9 @@
+2016-06-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/71601
+	* c-typeck.c (build_conditional_expr): Return error_mark_node if
+	c_common_type returns error_mark_node.
+
 2016-06-19 Martin Sebor  <msebor@redhat.com>
 
 	PR c/69507
