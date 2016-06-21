@@ -3139,6 +3139,7 @@ class timode_scalar_chain : public scalar_chain
 
  private:
   void mark_dual_mode_def (df_ref def);
+  void fix_debug_reg_uses (rtx reg);
   void convert_insn (rtx_insn *insn);
   /* We don't convert registers to difference size.  */
   void convert_registers () {}
@@ -3790,6 +3791,39 @@ dimode_scalar_chain::convert_insn (rtx_insn *insn)
   df_insn_rescan (insn);
 }
 
+/* Fix uses of converted REG in debug insns.  */
+
+void
+timode_scalar_chain::fix_debug_reg_uses (rtx reg)
+{
+  if (!flag_var_tracking)
+    return;
+
+  df_ref ref;
+  for (ref = DF_REG_USE_CHAIN (REGNO (reg));
+       ref;
+       ref = DF_REF_NEXT_REG (ref))
+    {
+      rtx_insn *insn = DF_REF_INSN (ref);
+      if (DEBUG_INSN_P (insn))
+	{
+	  /* It may be a debug insn with a TImode variable in
+	     register.  */
+	  rtx val = PATTERN (insn);
+	  if (GET_MODE (val) != TImode)
+	    continue;
+	  gcc_assert (GET_CODE (val) == VAR_LOCATION);
+	  rtx loc = PAT_VAR_LOCATION_LOC (val);
+	  gcc_assert (REG_P (loc)
+		      && GET_MODE (loc) == V1TImode);
+	  /* Convert V1TImode register, which has been updated by a SET
+	     insn before, to SUBREG TImode.  */
+	  PAT_VAR_LOCATION_LOC (val) = gen_rtx_SUBREG (TImode, loc, 0);
+	  df_insn_rescan (insn);
+	}
+    }
+}
+
 /* Convert INSN from TImode to V1T1mode.  */
 
 void
@@ -3806,8 +3840,10 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	rtx tmp = find_reg_equal_equiv_note (insn);
 	if (tmp)
 	  PUT_MODE (XEXP (tmp, 0), V1TImode);
+	PUT_MODE (dst, V1TImode);
+	fix_debug_reg_uses (dst);
       }
-      /* FALLTHRU */
+      break;
     case MEM:
       PUT_MODE (dst, V1TImode);
       break;
