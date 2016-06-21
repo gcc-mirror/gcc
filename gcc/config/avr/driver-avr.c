@@ -101,7 +101,7 @@ avr_device_to_data_start (int argc, const char **argv)
   snprintf (data_section_start_str, sizeof(data_section_start_str) - 1,
             "0x%lX", data_section_start);
   
-  return concat ("-Tdata ", data_section_start_str, NULL);    
+  return concat ("%{!Tdata:-Tdata ", data_section_start_str, "}", NULL);
 }
 
 /* Returns command line parameters that describe the device startfile.  */
