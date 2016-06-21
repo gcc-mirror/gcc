@@ -27,7 +27,7 @@
 
 #include "avr-devices.c"
 
-// Get rid of "defaults.h".  We just need tm.h for `WITH_AVRLIBS' and
+// Get rid of "defaults.h".  We just need tm.h for `WITH_AVRLIBC' and
 // and `WITH_RTEMS'.  */
 #define GCC_DEFAULTS_H
 
@@ -242,12 +242,13 @@ print_mcu (const avr_mcu_t *mcu)
       fprintf (f, "*link_data_start:\n");
       if (mcu->data_section_start
           != arch->default_data_section_start)
-        fprintf (f, "\t-Tdata 0x%lX", 0x800000UL + mcu->data_section_start);
+        fprintf (f, "\t%%{!Tdata:-Tdata 0x%lX}",
+                 0x800000UL + mcu->data_section_start);
       fprintf (f, "\n\n");
 
       fprintf (f, "*link_text_start:\n");
       if (mcu->text_section_start != 0x0)
-        fprintf (f, "\t-Ttext 0x%lX", 0UL + mcu->text_section_start);
+        fprintf (f, "\t%%{!Ttext:-Ttext 0x%lX}", 0UL + mcu->text_section_start);
       fprintf (f, "\n\n");
     }
 
