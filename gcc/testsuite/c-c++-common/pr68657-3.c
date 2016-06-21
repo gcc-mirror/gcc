@@ -1,5 +1,6 @@
 /* PR c/68657 */
 /* { dg-do compile } */
+/* { dg-require-effective-target ptr32plus } */
 
 #pragma GCC diagnostic error "-Wlarger-than=65536"
 int a[131072];	/* { dg-error "size of 'a' is \[1-9]\[0-9]* bytes" } */

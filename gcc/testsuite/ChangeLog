@@ -1,3 +1,14 @@
+2016-06-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-c++-common/pr68657-1.c: Require ptr32plus support.
+	* c-c++-common/pr68657-2.c: Likewise.
+	* c-c++-common/pr68657-3.c: Likewise.
+	* gcc.dg/torture/pr69714.c: Require int32plus support.
+	* gcc.dg/torture/pr70025.c: Likewise.
+	* gcc.dg/torture/pr70083.c: Likewise.
+	* gcc.dg/torture/pr70542.c: Likewise.
+	* gcc.dg/torture/pr70935.c: Require ptr32plus support.
+
 2016-06-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/71601
