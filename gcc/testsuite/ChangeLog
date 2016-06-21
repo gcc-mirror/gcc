@@ -1,3 +1,7 @@
+2016-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gfortran.dg/vect/vect-8.f90 (vectorized loops): Set to 21.
+
 2016-06-21  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* gcc.target/i386/avx512er-vrsqrt28ps-3.c: New test.
