@@ -1,3 +1,8 @@
+2016-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/71549
+	* gcc.target/i386/pr71549.c: New test.
+
 2016-06-21  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/vadsdu-0.c: Replace
