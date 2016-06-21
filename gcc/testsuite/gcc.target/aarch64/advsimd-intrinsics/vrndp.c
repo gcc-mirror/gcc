@@ -1,4 +1,4 @@
-/* { dg-require-effective-target arm_v8_neon_ok } */
+/* { dg-require-effective-target arm_v8_neon_hw } */
 /* { dg-add-options arm_v8_neon } */
 
 #include <arm_neon.h>

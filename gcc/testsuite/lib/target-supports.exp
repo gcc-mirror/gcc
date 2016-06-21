@@ -3417,11 +3417,17 @@ proc check_effective_target_arm_v8_neon_hw { } {
 	int
 	main (void)
 	{
-	  float32x2_t a;
+	  float32x2_t a = { 1.0f, 2.0f };
+	  #ifdef __ARM_ARCH_ISA_A64
+	  asm ("frinta %0.2s, %1.2s"
+	      : "=w" (a)
+	      : "w" (a));
+	  #else
 	  asm ("vrinta.f32 %P0, %P1"
 	       : "=w" (a)
 	       : "0" (a));
-	  return 0;
+	  #endif
+	  return a[0] == 2.0f;
 	}
     } [add_options_for_arm_v8_neon ""]]
 }
