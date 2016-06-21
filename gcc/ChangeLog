@@ -1,3 +1,9 @@
+2016-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* stor-layout.c (layout_type): Move setting complex MODE to
+	layout_type, instead of setting it ahead of time by the caller.
+	* tree.c (build_complex_type): Likewise.
+
 2016-06-21  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (force_edge_cold): Replace imposisble with

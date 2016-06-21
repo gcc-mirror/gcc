@@ -828,7 +828,6 @@ gfc_build_complex_type (tree scalar_type)
 
   new_type = make_node (COMPLEX_TYPE);
   TREE_TYPE (new_type) = scalar_type;
-  SET_TYPE_MODE (new_type, GET_MODE_COMPLEX_MODE (TYPE_MODE (scalar_type)));
   layout_type (new_type);
   return new_type;
 }

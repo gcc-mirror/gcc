@@ -2146,12 +2146,8 @@ layout_type (tree type)
 
     case COMPLEX_TYPE:
       TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
-
-      /* build_complex_type and fortran's gfc_build_complex_type have set the
-	 expected mode to allow having multiple complex types for multiple
-	 floating point types that have the same size such as the PowerPC with
-	 __ibm128 and __float128.  */
-      gcc_assert (TYPE_MODE (type) != VOIDmode);
+      SET_TYPE_MODE (type,
+		     GET_MODE_COMPLEX_MODE (TYPE_MODE (TREE_TYPE (type))));
 
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
