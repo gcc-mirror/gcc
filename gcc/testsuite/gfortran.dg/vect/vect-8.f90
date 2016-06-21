@@ -703,4 +703,4 @@ CALL track('KERNEL  ')
 RETURN
 END SUBROUTINE kernel
 
-! { dg-final { scan-tree-dump-times "vectorized 20 loops" 1 "vect" } }
+! { dg-final { scan-tree-dump-times "vectorized 21 loops" 1 "vect" } }
