@@ -1,5 +1,8 @@
 2016-06-21  Jason Merrill  <jason@redhat.com>
 
+	* constraint.cc (constraints_satisfied_p): Keep as many levels of
+	args as our template has levels of parms.
+
 	* pt.c (template_parm_outer_level, uses_outer_template_parms): New.
 	(type_dependent_expression_p): Use uses_outer_template_parms.
 

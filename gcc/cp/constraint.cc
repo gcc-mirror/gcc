@@ -2122,8 +2122,10 @@ constraints_satisfied_p (tree decl)
   tree args = NULL_TREE;
   if (tree ti = DECL_TEMPLATE_INFO (decl))
     {
-      ci = get_constraints (TI_TEMPLATE (ti));
-      args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
+      tree tmpl = TI_TEMPLATE (ti);
+      ci = get_constraints (tmpl);
+      int depth = TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl));
+      args = get_innermost_template_args (TI_ARGS (ti), depth);
     }
   else
     {
