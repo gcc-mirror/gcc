@@ -48726,8 +48726,19 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 
   /* x0 = rcp(b) estimate */
   if (mode == V16SFmode || mode == V8DFmode)
-    emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
-						UNSPEC_RCP14)));
+    {
+      if (TARGET_AVX512ER)
+	{
+	  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
+						      UNSPEC_RCP28)));
+	  /* res = a * x0 */
+	  emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, a, x0)));
+	  return;
+	}
+      else
+	emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
+						    UNSPEC_RCP14)));
+    }
   else
     emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
 						UNSPEC_RCP)));
