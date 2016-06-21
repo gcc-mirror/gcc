@@ -1,3 +1,9 @@
+2016-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (canon_asm_operands): New function extracted from...
+	(canonicalize_insn): ...here.  Call it to canonicalize an ASM_OPERANDS
+	either standalone or member of a PARALLEL.
+
 2016-06-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/30417
