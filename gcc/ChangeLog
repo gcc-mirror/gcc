@@ -1,5 +1,12 @@
 2016-06-21  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/30417
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu):
+	[*link_data_start]: Wrap -Tdata into %{!Tdata:...}.
+	[*link_text_start]: Wrap -Ttext into %{!Ttext:...}.
+
+2016-06-21  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/71103
 	* config/avr/avr.md (movqi): Only handle loading subreg:qi of
 	constant addresses if can_create_pseudo_p.
