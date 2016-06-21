@@ -1,3 +1,9 @@
+2016-06-21  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.h: Add conditional preprocessing directives
+	to disable Power9-specific compiler features if HAVE_AS_POWER9 is
+	not defined.
+
 2016-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (verify_type_variant): Skip TYPE_SIZE and TYPE_SIZE_UNIT if
