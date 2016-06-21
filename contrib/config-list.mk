@@ -37,7 +37,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
   arm-wrs-vxworks arm-netbsdelf \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi arm-rtems \
-  arm-symbianelf avr-rtemsOPT-enable-obsolete avr-elf \
+  arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \

@@ -23,7 +23,6 @@ no_remove = [ "system.h", "coretypes.h", "config.h" , "bconfig.h", "backend.h" ]
 target_priority = [
     "aarch64-linux-gnu",
     "arm-netbsdelf",
-    "avr-rtems",
     "c6x-elf",
     "epiphany-elf",
     "hppa2.0-hpux10.1",

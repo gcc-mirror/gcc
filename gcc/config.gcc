@@ -236,8 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- avr-*rtems*				\
- | mep-*				\
+ mep-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -1113,13 +1112,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h vxworks-dummy.h arm/arm.h"
-	;;
-avr-*-rtems*)
-	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h avr/specs.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
-	tm_defines="${tm_defines} WITH_RTEMS"
-	tmake_file="${tmake_file} avr/t-avr avr/t-multilib avr/t-rtems"
-	extra_gcc_objs="driver-avr.o avr-devices.o"
-	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h avr/specs.h dbxelf.h avr/avr-stdint.h"

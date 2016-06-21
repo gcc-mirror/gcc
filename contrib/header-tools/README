@@ -203,7 +203,7 @@ reduce-headers
   these targets.  They are also known to the tool.  When building targets it
   will check those targets before the rest.  
   This coverage can be achieved by building config-list.mk with :
-  LIST="aarch64-linux-gnu arm-netbsdelf avr-rtems c6x-elf epiphany-elf hppa2.0-hpux10.1 i686-mingw32crt i686-pc-msdosdjgpp mipsel-elf powerpc-eabisimaltivec rs6000-ibm-aix5.1.0 sh-superh-elf sparc64-elf spu-elf"
+  LIST="aarch64-linux-gnu arm-netbsdelf c6x-elf epiphany-elf hppa2.0-hpux10.1 i686-mingw32crt i686-pc-msdosdjgpp mipsel-elf powerpc-eabisimaltivec rs6000-ibm-aix5.1.0 sh-superh-elf sparc64-elf spu-elf"
 
   -b specifies the native bootstrapped build root directory
   -t specifies a target build root directory that config-list.mk was run from

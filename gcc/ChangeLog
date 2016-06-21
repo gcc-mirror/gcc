@@ -1,5 +1,12 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config.gcc: Remove support for avr-rtems.
+	* config/avr/gen-avr-mmcu-specs.c: Likewise.
+	* config/avr/rtems.h: Remove.
+	* config/avr/t-rtems: Remove.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.gcc: Remove m32r-rtems support.
 	* config/m32r/rtems.h: Remove.
 
