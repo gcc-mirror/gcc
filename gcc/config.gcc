@@ -237,8 +237,6 @@ md_file=
 # Obsolete configurations.
 case ${target} in
  *-knetbsd-*				\
- | *-openbsd2*				\
- | *-openbsd3*				\
  | avr-*rtems*				\
  | h8300-*rtems*			\
  | m32r-*rtems*			\
@@ -803,10 +801,6 @@ case ${target} in
     yes)
       thread_file='posix'
       ;;
-  esac
-  case ${target} in
-    *-*-openbsd2.*|*-*-openbsd3.[012])
-      tm_defines="${tm_defines} HAS_LIBC_R=1" ;;
   esac
   case ${target} in
     *-*-openbsd4.[3-9]|*-*-openbsd[5-9]*)
@@ -1450,14 +1444,6 @@ i[34567]86-*-netbsdelf*)
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
-	;;
-i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
-	tm_file="i386/i386.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h i386/openbsd.h"
-	extra_options="${extra_options} openbsd.opt"
-	# needed to unconfuse gdb
-	tmake_file="${tmake_file} t-openbsd i386/t-openbsd"
-	# we need collect2 until our bug is fixed...
-	use_collect2=yes
 	;;
 i[34567]86-*-openbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h"

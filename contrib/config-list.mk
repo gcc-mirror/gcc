@@ -49,9 +49,8 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
   i686-netbsdelf9 i686-knetbsd-gnuOPT-enable-obsolete \
-  i686-openbsd i686-openbsd3.0OPT-enable-obsolete \
-  i686-elf i686-kopensolaris-gnu i686-symbolics-gnu i686-pc-msdosdjgpp \
-  i686-lynxos i686-nto-qnx \
+  i686-openbsd i686-elf i686-kopensolaris-gnu i686-symbolics-gnu \
+  i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.10 i686-wrs-vxworks \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
