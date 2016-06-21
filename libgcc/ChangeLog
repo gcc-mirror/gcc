@@ -1,5 +1,9 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config.host: Remove support for knetbsd.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.host: Remove support for openbsd 2 and 3.
 
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

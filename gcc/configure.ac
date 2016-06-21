@@ -5495,7 +5495,7 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
        *-*-musl*)
 	 # All versions of musl provide stack protector
 	 gcc_cv_libc_provides_ssp=yes;;
-       *-*-linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
+       *-*-linux* | *-*-kfreebsd*-gnu)
       # glibc 2.4 and later provides __stack_chk_fail and
       # either __stack_chk_guard, or TLS access to stack guard canary.
       GCC_GLIBC_VERSION_GTE_IFELSE([2], [4], [gcc_cv_libc_provides_ssp=yes], [

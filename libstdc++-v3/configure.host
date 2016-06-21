@@ -265,7 +265,7 @@ case "${host_os}" in
   linux-musl*)
     os_include_dir="os/generic"
     ;;
-  gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+  gnu* | linux* | kfreebsd*-gnu)
     if [ "$uclibc" = "yes" ]; then
       os_include_dir="os/uclibc"
     elif [ "$bionic" = "yes" ]; then

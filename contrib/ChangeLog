@@ -1,5 +1,9 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config-list.mk: stop testing knetbsd.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config-list.mk: Stop testing openbsd3.0.
 
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

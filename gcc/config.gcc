@@ -236,8 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- *-knetbsd-*				\
- | avr-*rtems*				\
+ avr-*rtems*				\
  | h8300-*rtems*			\
  | m32r-*rtems*			\
  | mep-*				\
@@ -707,7 +706,7 @@ case ${target} in
   esac
   use_gcc_stdint=wrap
   ;;
-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
   extra_options="$extra_options gnu-user.opt"
   gas=yes
   gnu_ld=yes
@@ -716,7 +715,7 @@ case ${target} in
   esac
   tmake_file="t-slibgcc"
   case $target in
-    *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-kopensolaris*-gnu)
+    *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-kopensolaris*-gnu)
       :;;
     *-*-gnu*)
       native_system_header_dir=/include
@@ -1459,7 +1458,7 @@ x86_64-*-openbsd*)
 	gas=yes
 	gnu_ld=yes
 	;;
-i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
+i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 			# Intel 80386's running GNU/*
 			# with ELF format using glibc 2
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h"
@@ -1515,9 +1514,6 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux-common.h i386/linux.h"
 		fi
 		;;
-	i[34567]86-*-knetbsd*-gnu)
-		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h knetbsd-gnu.h i386/knetbsd-gnu.h"
-		;;
 	i[34567]86-*-kfreebsd*-gnu)
 		tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h kfreebsd-gnu.h i386/kfreebsd-gnu.h"
 		;;
@@ -1529,7 +1525,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 		;;
 	esac
 	;;
-x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
+x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h \
 		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
 	case ${target} in
@@ -1547,9 +1543,6 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	  	;;
 	x86_64-*-kfreebsd*-gnu)
 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
-		;;
-	x86_64-*-knetbsd*-gnu)
-		tm_file="${tm_file} knetbsd-gnu.h i386/knetbsd-gnu64.h"
 		;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64"
