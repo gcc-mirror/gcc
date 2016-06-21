@@ -1,5 +1,9 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config-list.mk: Stop testing openbsd3.0.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config-list.mk: Remove interix target.
 
 2016-06-21  David Edelsohn  <dje.gcc@gmail.com>

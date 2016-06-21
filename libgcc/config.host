@@ -603,8 +603,6 @@ i[34567]86-*-netbsdelf*)
 x86_64-*-netbsd*)
 	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
-i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
-	;;
 i[34567]86-*-openbsd*)
 	;;
 x86_64-*-openbsd*)

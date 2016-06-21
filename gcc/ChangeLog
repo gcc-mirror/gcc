@@ -1,5 +1,10 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config.gcc: Remove support for openbsd 2 and 3.
+	* config/openbsd-oldgas.h: Remove.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.gcc: Remove interix support.
 	* config/i386/i386-interix.h: Remove.
 	* config/i386/interix.opt: Remove.
