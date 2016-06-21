@@ -5064,6 +5064,24 @@ template_parm_this_level_p (tree t, void* data)
   return level == this_level;
 }
 
+/* Worker for uses_outer_template_parms, called via for_each_template_parm.
+   DATA is really an int, indicating the innermost outer level of parameters.
+   If T is a template parameter of that level or further out, return
+   nonzero.  */
+
+static int
+template_parm_outer_level (tree t, void *data)
+{
+  int this_level = *(int *)data;
+  int level;
+
+  if (TREE_CODE (t) == TEMPLATE_PARM_INDEX)
+    level = TEMPLATE_PARM_LEVEL (t);
+  else
+    level = TEMPLATE_TYPE_LEVEL (t);
+  return level <= this_level;
+}
+
 /* Creates a TEMPLATE_DECL for the indicated DECL using the template
    parameters given by current_template_args, or reuses a
    previously existing one, if appropriate.  Returns the DECL, or an
@@ -9030,6 +9048,33 @@ uses_template_parms_level (tree t, int level)
 {
   return for_each_template_parm (t, template_parm_this_level_p, &level, NULL,
 				 /*include_nondeduced_p=*/true);
+}
+
+/* Returns true if the signature of DECL depends on any template parameter from
+   its enclosing class.  */
+
+bool
+uses_outer_template_parms (tree decl)
+{
+  int depth = template_class_depth (CP_DECL_CONTEXT (decl));
+  if (depth == 0)
+    return false;
+  if (for_each_template_parm (TREE_TYPE (decl), template_parm_outer_level,
+			      &depth, NULL, /*include_nondeduced_p=*/true))
+    return true;
+  if (PRIMARY_TEMPLATE_P (decl)
+      && for_each_template_parm (INNERMOST_TEMPLATE_PARMS
+				 (DECL_TEMPLATE_PARMS (decl)),
+				 template_parm_outer_level,
+				 &depth, NULL, /*include_nondeduced_p=*/true))
+    return true;
+  tree ci = get_constraints (decl);
+  if (ci)
+    ci = CI_NORMALIZED_CONSTRAINTS (ci);
+  if (ci && for_each_template_parm (ci, template_parm_outer_level,
+				    &depth, NULL, /*nondeduced*/true))
+    return true;
+  return false;
 }
 
 /* Returns TRUE iff INST is an instantiation we don't need to do in an
@@ -23008,7 +23053,7 @@ type_dependent_expression_p (tree expression)
 
   if (TREE_CODE (expression) == TEMPLATE_DECL
       && !DECL_TEMPLATE_TEMPLATE_PARM_P (expression))
-    return false;
+    return uses_outer_template_parms (expression);
 
   if (TREE_CODE (expression) == STMT_EXPR)
     expression = stmt_expr_value_expr (expression);
