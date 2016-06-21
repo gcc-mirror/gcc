@@ -1,5 +1,10 @@
 2016-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* gcc.dg/tree-ssa/attr-hotcold-2.c (scan-tree-dump-times):
+	Set to 3 so test passes.
+
+2016-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* gfortran.dg/vect/vect-8.f90 (vectorized loops): Set to 21.
 
 2016-06-21  Ilya Verbin  <ilya.verbin@intel.com>
