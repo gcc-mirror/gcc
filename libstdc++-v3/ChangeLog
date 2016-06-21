@@ -1,5 +1,9 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* configure.host: Remove mep-* support.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* configure: Regenerate.
 	* configure.host: Remove support for knetbsd.
 	* crossconfig.m4: Likewise.

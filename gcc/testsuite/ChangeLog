@@ -1,5 +1,23 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gcc.dg/tree-ssa/forwprop-28.c: Remove mep-* support.
+	* gcc.dg/tree-ssa/reassoc-32.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-33.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+	* lib/target-supports.exp: Likewise.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gcc.dg/attr-ms_struct-1.c: Stop testing interix.
 	* gcc.dg/attr-ms_struct-2.c: Likewise.
 	* gcc.dg/attr-ms_struct-packed1.c: Likewise.

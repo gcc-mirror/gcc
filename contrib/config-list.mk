@@ -57,7 +57,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf \
   m32r-linux m32rle-linux m68k-elf m68k-netbsdelf \
   m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
-  mcore-elf mep-elfOPT-enable-obsolete microblaze-linux microblaze-elf \
+  mcore-elf microblaze-linux microblaze-elf \
   mips-netbsd \
   mips64el-st-linux-gnu mips64octeon-linux mipsisa64r2-linux \
   mipsisa32r2-linux-gnu mipsisa64r2-sde-elf mipsisa32-elfoabi \

@@ -3338,8 +3338,6 @@ information have to.
 @item
 @uref{#m68k-uclinux,,m68k-uclinux}
 @item
-@uref{#mep-x-elf,,mep-*-elf}
-@item
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
@@ -4239,14 +4237,6 @@ GCC 4.3 changed the uClinux configuration so that it uses the
 @samp{m68k-linux-gnu} ABI rather than the @samp{m68k-elf} ABI.
 It also added improved support for C++ and flat shared libraries,
 both of which were ABI changes.
-
-@html
-<hr />
-@end html
-@anchor{mep-x-elf}
-@heading mep-*-elf
-Toshiba Media embedded Processor.
-This configuration is intended for embedded systems.
 
 @html
 <hr />

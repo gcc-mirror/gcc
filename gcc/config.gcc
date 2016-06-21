@@ -236,7 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- mep-*				\
+ nothing				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -1917,17 +1917,6 @@ mcore-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} mcore/mcore-elf.h"
 	tmake_file=mcore/t-mcore
 	inhibit_libc=true
-	;;
-mep-*-*)
-	tm_file="dbxelf.h elfos.h ${tm_file} newlib-stdint.h"
-	tmake_file=mep/t-mep
-	c_target_objs="mep-pragma.o"
-	cxx_target_objs="mep-pragma.o"
-	if test -d "${srcdir}/../newlib/libc/include" &&
-	   test "x$with_headers" = x; then
-		with_headers=yes
-	fi
-	use_gcc_stdint=wrap
 	;;
 microblaze*-linux*)
 	case $target in
