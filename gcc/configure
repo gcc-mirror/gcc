@@ -5033,10 +5033,6 @@ case "${target}" in
 	;;
     i[34567]86-*-mingw* | x86_64-*-mingw*)
 	;;
-    i[34567]86-*-interix[3-9]*)
-	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
-	# Instead, we relocate shared libraries at runtime.
-	;;
     i[34567]86-*-nto-qnx*)
 	# QNX uses GNU C++, but need to define -shared option too, otherwise
 	# it will coredump.
@@ -18479,7 +18475,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18482 "configure"
+#line 18478 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18585,7 +18581,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18588 "configure"
+#line 18584 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28517,7 +28513,7 @@ else
        *-*-musl*)
 	 # All versions of musl provide stack protector
 	 gcc_cv_libc_provides_ssp=yes;;
-       *-*-linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
+       *-*-linux* | *-*-kfreebsd*-gnu)
       # glibc 2.4 and later provides __stack_chk_fail and
       # either __stack_chk_guard, or TLS access to stack guard canary.
 
