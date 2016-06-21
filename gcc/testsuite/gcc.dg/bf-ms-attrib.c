@@ -3,7 +3,7 @@
    posted to GCC-patches
    http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */ 
 
-/* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* } } */
+/* { dg-do run { target *-*-mingw* *-*-cygwin* } } */
 
 /* We don't want the default "pedantic-errors" in this case, since we're
    testing nonstandard stuff to begin with. */

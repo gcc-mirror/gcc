@@ -236,8 +236,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- *-interix*				\
- | *-knetbsd-*				\
+ *-knetbsd-*				\
  | *-openbsd2*				\
  | *-openbsd3*				\
  | avr-*rtems*				\
@@ -1777,19 +1776,6 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 		*mingw32msv* | *mingw*)
 			;;
 	esac
-	;;
-i[34567]86-*-interix[3-9]*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h"
-	tmake_file="${tmake_file} i386/t-interix"
-	extra_options="${extra_options} rpath.opt i386/interix.opt"
-	extra_objs="winnt.o winnt-stubs.o"
-	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
-	if test x$enable_threads = xyes ; then
-		thread_file='posix'
-	fi
-	if test x$stabs = xyes ; then
-		tm_file="${tm_file} dbxcoff.h"
-	fi
 	;;
 ia64*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h ia64/sysv4.h ia64/elf.h"

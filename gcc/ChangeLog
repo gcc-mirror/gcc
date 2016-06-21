@@ -1,3 +1,13 @@
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.gcc: Remove interix support.
+	* config/i386/i386-interix.h: Remove.
+	* config/i386/interix.opt: Remove.
+	* config/i386/t-interix: Remove.
+	* configure: Regenerate.
+	* configure.ac: Remove interix support.
+	* doc/install.texi: Remove interix documentation.
+
 2016-06-21  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000.h: Add conditional preprocessing directives

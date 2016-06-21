@@ -5,7 +5,7 @@
    posted to GCC-patches
    http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */
 
-/* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* i?86-*-darwin } } */
+/* { dg-do run { target *-*-mingw* *-*-cygwin* i?86-*-darwin } } */
 /* { dg-options "-mno-ms-bitfields" } */
 
 #include <stddef.h>
