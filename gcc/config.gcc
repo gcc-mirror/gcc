@@ -237,7 +237,6 @@ md_file=
 # Obsolete configurations.
 case ${target} in
  avr-*rtems*				\
- | m32r-*rtems*			\
  | mep-*				\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -1829,10 +1828,6 @@ m32r-*-elf*)
 m32rle-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
 	;;
-m32r-*-rtems*)
-	tm_file="dbxelf.h elfos.h ${tm_file} m32r/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="${tmake_file} m32r/t-m32r"
- 	;;
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
 	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
