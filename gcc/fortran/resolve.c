@@ -2923,6 +2923,13 @@ resolve_function (gfc_expr *expr)
   if (gfc_is_proc_ptr_comp (expr))
     return true;
 
+  /* Avoid re-resolving the arguments of caf_get, which can lead to inserting
+     another caf_get.  */
+  if (sym && sym->attr.intrinsic
+      && (sym->intmod_sym_id == GFC_ISYM_CAF_GET
+	  || sym->intmod_sym_id == GFC_ISYM_CAF_SEND))
+    return true;
+
   if (sym && sym->attr.intrinsic
       && !gfc_resolve_intrinsic (sym, &expr->where))
     return false;
@@ -14494,6 +14501,10 @@ check_data_variable (gfc_data_variable *var, locus *where)
   ar = NULL;
   mpz_init_set_si (offset, 0);
   e = var->expr;
+
+  if (e->expr_type == EXPR_FUNCTION && e->value.function.isym
+      && e->value.function.isym->id == GFC_ISYM_CAF_GET)
+    e = e->value.function.actual->expr;
 
   if (e->expr_type != EXPR_VARIABLE)
     gfc_internal_error ("check_data_variable(): Bad expression");
