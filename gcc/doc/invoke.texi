@@ -13097,8 +13097,8 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
 @samp{cortex-a72}, @samp{exynos-m1}, @samp{qdf24xx}, @samp{thunderx},
-@samp{xgene1}, @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
-@samp{native}.
+@samp{xgene1}, @samp{vulcan}, @samp{cortex-a57.cortex-a53},
+@samp{cortex-a72.cortex-a53}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}
 specify that GCC should tune for a big.LITTLE system.

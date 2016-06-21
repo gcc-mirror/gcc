@@ -49,6 +49,10 @@ AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AA
 AARCH64_CORE("thunderx",    thunderx,  thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  "0x43", "0x0a1")
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, "0x50", "0x000")
 
+/* V8.1 Architecture Processors.  */
+
+AARCH64_CORE("vulcan",  vulcan, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, cortexa57, "0x42", "0x516")
+
 /* V8 big.LITTLE implementations.  */
 
 AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07.0xd03")
