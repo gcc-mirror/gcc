@@ -1,5 +1,11 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config.gcc: Remove h8300-rtems support.
+	* config/h8300/rtems.h: Remove.
+	* config/h8300/t-rtems: Remove.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.gcc: Remove support for knetbsd.
 	* configure.ac: Likewise.
 	* config/i386/knetbsd-gnu.h: Remove.  * config/i386/knetbsd-gnu64.h: Remove.
