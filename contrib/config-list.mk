@@ -55,7 +55,6 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf \
-  m32r-rtemsOPT-enable-obsolete \
   m32r-linux m32rle-linux m68k-elf m68k-netbsdelf \
   m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf mep-elfOPT-enable-obsolete microblaze-linux microblaze-elf \
