@@ -1,3 +1,10 @@
+2016-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71588
+	* tree-ssa-strlen.c (valid_builtin_call): New function.
+	(adjust_last_stmt, handle_builtin_memset, strlen_optimize_stmt): Use
+	it.
+
 2016-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71581
