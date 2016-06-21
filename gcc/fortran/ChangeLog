@@ -1,6 +1,12 @@
+2016-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/71068
+	* resolve.c (resolve_function): Don't resolve caf_get/caf_send.
+	(check_data_variable): Strip-off caf_get before checking.
+
 2016-06-20  Tobias Burnus  <burnus@net-b.de>
 
-	fortran/71194
+	PR fortran/71194
 	* trans-expr.c (gfc_trans_pointer_assignment): Correctly handle
 	RHS pointer functions.
 

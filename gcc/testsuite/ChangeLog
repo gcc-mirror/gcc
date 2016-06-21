@@ -1,3 +1,8 @@
+2016-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/71068
+	* gfortran.dg/coarray/data_1.f90: New.
+
 2016-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vrnd.c
