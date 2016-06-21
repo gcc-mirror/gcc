@@ -1,6 +1,14 @@
 2016-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_var_list_no_open): Call
+	convert_from_reference before cp_parser_postfix_dot_deref_expression.
+	* semantics.c (finish_omp_clauses): Don't ICE when
+	processing_template_decl when checking for bitfields and unions.
+	Look through REFERENCE_REF_P as base of COMPONENT_REF.
+
 	2016-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71528
