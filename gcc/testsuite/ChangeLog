@@ -1,3 +1,18 @@
+2016-06-21  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/darn-0.c: Add dejagnu directives to disable
+	test if effective-target is not powerpc_p9vector_ok, or if a -mcpu
+	override other than -mcpu=power9 command-line option is specified,
+	or if the target operating system is aix.
+	* gcc.target/powerpc/darn-1.c: Likewise.
+	* gcc.target/powerpc/darn-2.c: Likewise.
+	* gcc.target/powerpc/vslv-0.c: Add dejagnu directives to disable
+	test if effective-target is not powerpc_p9vector_ok or if the
+	target operating system is not defined.
+	* gcc.target/powerpc/vslv-1.c: Likewise.
+	* gcc.target/powerpc/vsrv-0.c: Likewise.
+	* gcc.target/powerpc/vsrv-1.c: Likewise.
+
 2016-06-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/71068
