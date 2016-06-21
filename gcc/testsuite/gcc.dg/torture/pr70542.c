@@ -1,5 +1,6 @@
 /* PR rtl-optimization/70542 */
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 int a[113], d[113];
 short b[113], c[113], e[113];
