@@ -789,24 +789,11 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 		   || TREE_CODE (t) == POINTER_TYPE
 		   || TYPE_IS_FAT_POINTER_P (t)))
 	{
-	  tree tt;
-	  /* ??? Copy and original type are not supposed to be variant but we
-	     really need a variant for the placeholder machinery to work.  */
-	  if (TYPE_IS_FAT_POINTER_P (t))
-	    tt = build_variant_type_copy (t);
-	  else
-	    {
-	      /* TYPE_NEXT_PTR_TO is a chain of main variants.  */
-	      tt = build_distinct_type_copy (TYPE_MAIN_VARIANT (t));
-	      if (TREE_CODE (t) == POINTER_TYPE)
-		TYPE_NEXT_PTR_TO (TYPE_MAIN_VARIANT (t)) = tt;
-	      tt = build_qualified_type (tt, TYPE_QUALS (t));
-	    }
+	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
 	  defer_or_set_type_context (tt,
 				     DECL_CONTEXT (decl),
 				     deferred_decl_context);
-	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
 	  if (TYPE_NAME (t)
 	      && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
