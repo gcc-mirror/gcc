@@ -1,3 +1,8 @@
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove interix support.
+	* config/i386/t-interix: Remove.
+
 2016-06-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Don't set

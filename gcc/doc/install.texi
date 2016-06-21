@@ -3418,8 +3418,6 @@ information have to.
 @item
 @uref{#x-x-cygwin,,*-*-cygwin}
 @item
-@uref{#x-x-interix,,*-*-interix}
-@item
 @uref{#x-x-mingw32,,*-*-mingw32}
 @item
 @uref{#os2,,OS/2}
@@ -4841,8 +4839,6 @@ and which C libraries are used.
 @itemize
 @item Cygwin @uref{#x-x-cygwin,,*-*-cygwin}: Cygwin provides a user-space
 Linux API emulation layer in the Win32 subsystem.
-@item Interix @uref{#x-x-interix,,*-*-interix}: The Interix subsystem
-provides native support for POSIX.
 @item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for
 the Win32 subsystem that provides a subset of POSIX.
 @item MKS i386-pc-mks: NuTCracker from MKS.  See
@@ -4889,16 +4885,6 @@ cpu architecture desired; the default is i686-pc-cygwin.  It should be
 used with as up-to-date a version of binutils as possible; use either
 the latest official GNU binutils release in the Cygwin distribution,
 or version 2.20 or above if building your own.
-
-@html
-<hr />
-@end html
-@anchor{x-x-interix}
-@heading *-*-interix
-The Interix target is used by OpenNT, Interix, Services For UNIX (SFU),
-and Subsystem for UNIX-based Applications (SUA).  Applications compiled
-with this target run in the Interix subsystem, which is separate from
-the Win32 subsystem.  This target was last known to work in GCC 3.3.
 
 @html
 <hr />

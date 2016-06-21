@@ -752,9 +752,6 @@ x86_64-*-mingw*)
 		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
 	fi
 	;;
-i[34567]86-*-interix[3-9]*)
-	tmake_file="$tmake_file i386/t-interix i386/t-chkstk"
-	;;
 ia64*-*-elf*)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtfastmath.o"
 	tmake_file="ia64/t-ia64 ia64/t-ia64-elf ia64/t-eh-ia64 t-crtfm"

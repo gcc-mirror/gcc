@@ -1,3 +1,17 @@
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* gcc.dg/attr-ms_struct-1.c: Stop testing interix.
+	* gcc.dg/attr-ms_struct-2.c: Likewise.
+	* gcc.dg/attr-ms_struct-packed1.c: Likewise.
+	* gcc.dg/bf-ms-attrib.c: Likewise.
+	* gcc.dg/bf-ms-layout-2.c: Likewise.
+	* gcc.dg/bf-ms-layout-3.c: Likewise.
+	* gcc.dg/bf-ms-layout.c: Likewise.
+	* gcc.dg/bf-no-ms-layout.c: Likewise.
+	* gcc.target/i386/bitfield1.c: Likewise.
+	* gcc.target/i386/bitfield2.c: Likewise.
+	* gcc.target/i386/bitfield3.c: Likewise.
+
 2016-06-21  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/darn-0.c: Add dejagnu directives to disable
