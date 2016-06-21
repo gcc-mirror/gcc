@@ -20,10 +20,9 @@ void f(int x, int y)
 
 /* { dg-final { scan-tree-dump-times "hot label heuristics" 1 "profile_estimate" } } */
 /* { dg-final { scan-tree-dump-times "cold label heuristics" 1 "profile_estimate" } } */
-/* { dg-final { scan-tree-dump-times "block 4, loop depth 0, count 0, freq \[1-4\]\[^0-9\]" 1 "profile_estimate" } } */
+/* { dg-final { scan-tree-dump-times "block 4, loop depth 0, count 0, freq \[1-4\]\[^0-9\]" 3 "profile_estimate" } } */
 
 /* Note: we're attempting to match some number > 6000, i.e. > 60%.
    The exact number ought to be tweekable without having to juggle
    the testcase around too much.  */
-/* { dg-final { scan-tree-dump-times "block 5, loop depth 0, count 0, freq \[6-9\]\[0-9\]\[0-9\]\[0-9\]" 1 "profile_estimate" } } */
-
+/* { dg-final { scan-tree-dump-times "block 5, loop depth 0, count 0, freq \[6-9\]\[0-9\]\[0-9\]\[0-9\]" 3 "profile_estimate" } } */
