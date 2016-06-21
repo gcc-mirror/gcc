@@ -623,8 +623,9 @@
 
     if (QImode == <MODE>mode
         && SUBREG == GET_CODE (src)
-        && CONSTANT_ADDRESS_P (SUBREG_REG (src)))
-    {
+        && CONSTANT_ADDRESS_P (SUBREG_REG (src))
+        && can_create_pseudo_p())
+      {
         // store_bitfield may want to store a SYMBOL_REF or CONST in a
         // structure that's represented as PSImode.  As the upper 16 bits
         // of PSImode cannot be expressed as an HImode subreg, the rhs is
