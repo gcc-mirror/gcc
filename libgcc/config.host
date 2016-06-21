@@ -422,12 +422,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	extra_parts="$extra_parts crtfastmath.o"
 	unwind_header=config/arm/unwind-arm.h
 	;;
-avr-*-rtems*)
-	tmake_file="$tmake_file avr/t-avr avr/t-rtems t-fpbit"
-	tm_file="$tm_file avr/avr-lib.h"
-	# Don't use default.
-	extra_parts=
-	;;
 avr-*-*)
 	# Make HImode functions for AVR
 	tmake_file="${cpu_type}/t-avr t-fpbit"

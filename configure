@@ -3762,8 +3762,6 @@ case "${target}" in
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
-  avr-*-rtems*)
-    ;;
   avr-*-*)
     if test x${with_avrlibc} != xno; then
       noconfigdirs="$noconfigdirs target-newlib target-libgloss"
@@ -6128,7 +6126,7 @@ target_elf=no
 case $target in
   *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
   *-msdosdjgpp* | *-vms* | *-wince* | *-*-pe* | \
-  alpha*-dec-osf* | *-interix* | hppa[12]*-*-hpux* | \
+  alpha*-dec-osf* | hppa[12]*-*-hpux* | \
   nvptx-*-none)
     target_elf=no
     ;;

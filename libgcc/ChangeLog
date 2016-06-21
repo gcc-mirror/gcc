@@ -1,5 +1,10 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config.host: Remove support for avr-rtems.
+	* config/avr/t-rtems: Remove.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.host: Remove m32r-rtems support.
 
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

@@ -1,2 +1,0 @@
-# RTEMS uses _exit from newlib
-LIB1ASMFUNCS := $(filter-out _exit,$(LIB1ASMFUNCS))
