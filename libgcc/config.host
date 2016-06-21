@@ -495,11 +495,6 @@ ft32-*-elf)
 	tmake_file="ft32/t-ft32 t-softfp-sfdf t-softfp-excl t-softfp"
 	extra_parts="$extra_parts crti.o crti-hw.o crtn.o"
 	;;
-h8300-*-rtems*)
-	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
-	tm_file="$tm_file h8300/h8300-lib.h"
-	extra_parts="$extra_parts crti.o crtn.o"
-	;;
 h8300-*-elf*)
 	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
 	tm_file="$tm_file h8300/h8300-lib.h"

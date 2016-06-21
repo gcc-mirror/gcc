@@ -1,7 +1,0 @@
-# Custom multilibs for RTEMS
-
-# -mn is not applicable to RTEMS (-mn implies 16bit void*)
-
-MULTILIB_OPTIONS = mh/ms/msx mint32
-MULTILIB_DIRNAMES = h8300h h8300s h8sx int32
-MULTILIB_EXCEPTIONS = mint32
