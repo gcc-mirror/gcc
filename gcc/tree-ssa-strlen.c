@@ -860,6 +860,66 @@ find_equal_ptrs (tree ptr, int idx)
     }
 }
 
+/* Return true if STMT is a call to a builtin function with the right
+   arguments and attributes that should be considered for optimization
+   by this pass.  */
+
+static bool
+valid_builtin_call (gimple *stmt)
+{
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    return false;
+
+  tree callee = gimple_call_fndecl (stmt);
+  switch (DECL_FUNCTION_CODE (callee))
+    {
+    case BUILT_IN_MEMCMP:
+    case BUILT_IN_MEMCMP_EQ:
+    case BUILT_IN_STRCHR:
+    case BUILT_IN_STRCHR_CHKP:
+    case BUILT_IN_STRLEN:
+    case BUILT_IN_STRLEN_CHKP:
+      /* The above functions should be pure.  Punt if they aren't.  */
+      if (gimple_vdef (stmt) || gimple_vuse (stmt) == NULL_TREE)
+	return false;
+      break;
+
+    case BUILT_IN_CALLOC:
+    case BUILT_IN_MALLOC:
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMCPY_CHK:
+    case BUILT_IN_MEMCPY_CHKP:
+    case BUILT_IN_MEMCPY_CHK_CHKP:
+    case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMPCPY_CHK:
+    case BUILT_IN_MEMPCPY_CHKP:
+    case BUILT_IN_MEMPCPY_CHK_CHKP:
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_STPCPY:
+    case BUILT_IN_STPCPY_CHK:
+    case BUILT_IN_STPCPY_CHKP:
+    case BUILT_IN_STPCPY_CHK_CHKP:
+    case BUILT_IN_STRCAT:
+    case BUILT_IN_STRCAT_CHK:
+    case BUILT_IN_STRCAT_CHKP:
+    case BUILT_IN_STRCAT_CHK_CHKP:
+    case BUILT_IN_STRCPY:
+    case BUILT_IN_STRCPY_CHK:
+    case BUILT_IN_STRCPY_CHKP:
+    case BUILT_IN_STRCPY_CHK_CHKP:
+      /* The above functions should be neither const nor pure.  Punt if they
+	 aren't.  */
+      if (gimple_vdef (stmt) == NULL_TREE || gimple_vuse (stmt) == NULL_TREE)
+	return false;
+      break;
+
+    default:
+      break;
+    }
+
+  return true;
+}
+
 /* If the last .MEM setter statement before STMT is
    memcpy (x, y, strlen (y) + 1), the only .MEM use of it is STMT
    and STMT is known to overwrite x[strlen (x)], adjust the last memcpy to
@@ -935,7 +995,7 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
       return;
     }
 
-  if (!gimple_call_builtin_p (last.stmt, BUILT_IN_NORMAL))
+  if (!valid_builtin_call (last.stmt))
     return;
 
   callee = gimple_call_fndecl (last.stmt);
@@ -1811,7 +1871,7 @@ handle_builtin_memset (gimple_stmt_iterator *gsi)
   if (!stmt1 || !is_gimple_call (stmt1))
     return true;
   tree callee1 = gimple_call_fndecl (stmt1);
-  if (!gimple_call_builtin_p (stmt1, BUILT_IN_NORMAL))
+  if (!valid_builtin_call (stmt1))
     return true;
   enum built_in_function code1 = DECL_FUNCTION_CODE (callee1);
   tree size = gimple_call_arg (stmt2, 2);
@@ -2140,7 +2200,7 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
   if (is_gimple_call (stmt))
     {
       tree callee = gimple_call_fndecl (stmt);
-      if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+      if (valid_builtin_call (stmt))
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_STRLEN:
