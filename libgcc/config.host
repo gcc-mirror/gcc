@@ -136,8 +136,6 @@ m32r*-*-*)
         ;;
 m68k-*-*)
 	;;
-mep*-*-*)
-	;;
 microblaze*-*-*)
 	cpu_type=microblaze
 	;;
@@ -1296,10 +1294,6 @@ am33_2.0-*-linux*)
 m32c-*-elf*|m32c-*-rtems*)
 	tmake_file="$tmake_file m32c/t-m32c"
  	;;
-mep*-*-*)
-	tmake_file="mep/t-mep t-fdpbit"
-	extra_parts="crtbegin.o crtend.o"
-	;;
 nvptx-*)
 	tmake_file="$tmake_file nvptx/t-nvptx"
 	extra_parts="crt0.o"

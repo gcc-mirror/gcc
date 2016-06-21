@@ -1,5 +1,32 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* common/config/mep/mep-common.c: Remove.
+	* config.gcc: Remove mep-* support.
+	* config/mep/constraints.md: Remove.
+	* config/mep/default.h: Remove.
+	* config/mep/intrinsics.h: Remove.
+	* config/mep/intrinsics.md: Remove.
+	* config/mep/ivc2-template.h: Remove.
+	* config/mep/mep-c5.cpu: Remove.
+	* config/mep/mep-core.cpu: Remove.
+	* config/mep/mep-default.cpu: Remove.
+	* config/mep/mep-ext-cop.cpu: Remove.
+	* config/mep/mep-intrin.h: Remove.
+	* config/mep/mep-ivc2.cpu: Remove.
+	* config/mep/mep-pragma.c: Remove.
+	* config/mep/mep-protos.h: Remove.
+	* config/mep/mep.c: Remove.
+	* config/mep/mep.cpu: Remove.
+	* config/mep/mep.h: Remove.
+	* config/mep/mep.md: Remove.
+	* config/mep/mep.opt: Remove.
+	* config/mep/predicates.md: Remove.
+	* config/mep/t-mep: Remove.
+	* doc/install.texi: Remove mep-* documentation.
+	* doc/md.texi: Likewise.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.gcc: Remove support for avr-rtems.
 	* config/avr/gen-avr-mmcu-specs.c: Likewise.
 	* config/avr/rtems.h: Remove.

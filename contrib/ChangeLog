@@ -1,5 +1,9 @@
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config-list.mk: Stop testing mep-elf.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config-list.mk: Stop testing avr-rtems.
 
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
