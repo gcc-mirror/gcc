@@ -1559,6 +1559,17 @@
   DONE;
 })
 
+(define_expand "rsqrtv16sf2"
+  [(set (match_operand:V16SF 0 "register_operand")
+	(unspec:V16SF
+	  [(match_operand:V16SF 1 "vector_operand")]
+	  UNSPEC_RSQRT28))]
+  "TARGET_SSE_MATH && TARGET_AVX512ER"
+{
+  ix86_emit_swsqrtsf (operands[0], operands[1], V16SFmode, true);
+  DONE;
+})
+
 (define_insn "<sse>_rsqrt<mode>2"
   [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
 	(unspec:VF1_128_256
