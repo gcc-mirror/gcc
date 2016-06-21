@@ -1,3 +1,8 @@
+2016-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (verify_type_variant): Skip TYPE_SIZE and TYPE_SIZE_UNIT if
+	they are both PLACEHOLDER_EXPRs.
+
 2016-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* stor-layout.c (layout_type): Move setting complex MODE to

@@ -206,6 +206,8 @@ static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
 static tree change_qualified_type (tree, int);
+static void set_nonaliased_component_on_array_type (tree);
+static void set_reverse_storage_order_on_array_type (tree);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
@@ -2265,12 +2267,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	for (index = ndim - 1; index >= 0; index--)
 	  {
 	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
-	    if (index == ndim - 1)
-	      TYPE_REVERSE_STORAGE_ORDER (tem)
-		= Reverse_Storage_Order (gnat_entity);
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
+	    TYPE_CONVENTION_FORTRAN_P (tem) = convention_fortran_p;
+	    if (index == ndim - 1 && Reverse_Storage_Order (gnat_entity))
+	      set_reverse_storage_order_on_array_type (tem);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
-	      TYPE_NONALIASED_COMPONENT (tem) = 1;
+	      set_nonaliased_component_on_array_type (tem);
 	  }
 
 	/* If an alignment is specified, use it if valid.  But ignore it
@@ -2286,8 +2288,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    if (Present (Alignment_Clause (gnat_entity)))
 	      TYPE_USER_ALIGN (tem) = 1;
 	  }
-
-	TYPE_CONVENTION_FORTRAN_P (tem) = convention_fortran_p;
 
 	/* Tag top-level ARRAY_TYPE nodes for packed arrays and their
 	   implementation types as such so that the debug information back-end
@@ -2651,12 +2651,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    {
 	      gnu_type = build_nonshared_array_type (gnu_type,
 						     gnu_index_types[index]);
-	      if (index == ndim - 1)
-		TYPE_REVERSE_STORAGE_ORDER (gnu_type)
-		  = Reverse_Storage_Order (gnat_entity);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
+	      TYPE_CONVENTION_FORTRAN_P (gnu_type) = convention_fortran_p;
+	      if (index == ndim - 1 && Reverse_Storage_Order (gnat_entity))
+		set_reverse_storage_order_on_array_type (gnu_type);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
-		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
+		set_nonaliased_component_on_array_type (gnu_type);
 	    }
 
 	  /* Strip the ___XP suffix for standard DWARF.  */
@@ -2764,7 +2764,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		}
 	    }
 
-	  TYPE_CONVENTION_FORTRAN_P (gnu_type) = convention_fortran_p;
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
 	    = (Is_Packed_Array_Impl_Type (gnat_entity)
 	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
@@ -2932,7 +2931,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					(Component_Type (gnat_entity)),
 					gnu_index_type);
 	if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
-	  TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
+	  set_nonaliased_component_on_array_type (gnu_type);
 	relate_alias_sets (gnu_type, gnu_string_type, ALIAS_SET_COPY);
       }
       break;
@@ -6223,6 +6222,26 @@ change_qualified_type (tree type, int type_quals)
   return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
 }
 
+/* Set TYPE_NONALIASED_COMPONENT on an array type built by means of
+   build_nonshared_array_type.  */
+
+static void
+set_nonaliased_component_on_array_type (tree type)
+{
+  TYPE_NONALIASED_COMPONENT (type) = 1;
+  TYPE_NONALIASED_COMPONENT (TYPE_CANONICAL (type)) = 1;
+}
+
+/* Set TYPE_REVERSE_STORAGE_ORDER on an array type built by means of
+   build_nonshared_array_type.  */
+
+static void
+set_reverse_storage_order_on_array_type (tree type)
+{
+  TYPE_REVERSE_STORAGE_ORDER (type) = 1;
+  TYPE_REVERSE_STORAGE_ORDER (TYPE_CANONICAL (type)) = 1;
+}
+
 /* Return true if DISCR1 and DISCR2 represent the same discriminant.  */
 
 static bool
@@ -9262,9 +9281,12 @@ substitute_in_type (tree t, tree f, tree r)
 	SET_TYPE_MODE (nt, TYPE_MODE (t));
 	TYPE_SIZE (nt) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
 	TYPE_SIZE_UNIT (nt) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
-	TYPE_NONALIASED_COMPONENT (nt) = TYPE_NONALIASED_COMPONENT (t);
 	TYPE_MULTI_ARRAY_P (nt) = TYPE_MULTI_ARRAY_P (t);
 	TYPE_CONVENTION_FORTRAN_P (nt) = TYPE_CONVENTION_FORTRAN_P (t);
+	if (TYPE_REVERSE_STORAGE_ORDER (t))
+	  set_reverse_storage_order_on_array_type (nt);
+	if (TYPE_NONALIASED_COMPONENT (t))
+	  set_nonaliased_component_on_array_type (nt);
 	return nt;
       }
 

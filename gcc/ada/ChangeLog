@@ -1,3 +1,15 @@
+2016-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (set_nonaliased_component_on_array_type): New
+	function.
+	(set_reverse_storage_order_on_array_type): Likewise.
+	(gnat_to_gnu_entity) <E_Array_Type>: Call them to set the flags.
+	<E_Array_Subtype>: Likewise.
+	<E_String_Literal_Subtype>: Likewise.
+	(substitute_in_type) <ARRAY_TYPE>: Likewise.
+	* gcc-interface/utils.c (gnat_pushdecl): Always create a variant for
+	the DECL_ORIGINAL_TYPE of a type.
+
 2016-06-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* make.adb, gnatbind.adb, g-socket.adb, sem_ch13.adb: Minor
