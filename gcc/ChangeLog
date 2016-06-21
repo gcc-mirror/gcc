@@ -1,3 +1,9 @@
+2016-06-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/71103
+	* config/avr/avr.md (movqi): Only handle loading subreg:qi of
+	constant addresses if can_create_pseudo_p.
+
 2016-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71588
