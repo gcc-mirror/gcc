@@ -1,3 +1,8 @@
+2016-06-21  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (force_edge_cold): Replace imposisble with
+	impossible.
+
 2016-06-21  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* config/i386/i386.c (ix86_emit_swsqrtsf): Emit vrsqrt28ps.
