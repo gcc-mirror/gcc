@@ -1,5 +1,10 @@
 2016-06-21  Ilya Verbin  <ilya.verbin@intel.com>
 
+	* config/i386/i386.c (ix86_emit_swsqrtsf): Emit vrsqrt28ps.
+	* config/i386/sse.md (define_expand "rsqrtv16sf2"): New.
+
+2016-06-21  Ilya Verbin  <ilya.verbin@intel.com>
+
 	* config/i386/i386.c (ix86_emit_swdivsf): Emit vrcp28ps.
 
 2016-06-21  H.J. Lu  <hongjiu.lu@intel.com>

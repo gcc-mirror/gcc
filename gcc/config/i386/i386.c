@@ -48774,6 +48774,24 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
   e2 = gen_reg_rtx (mode);
   e3 = gen_reg_rtx (mode);
 
+  if (TARGET_AVX512ER && mode == V16SFmode)
+    {
+      if (recip)
+	/* res = rsqrt28(a) estimate */
+	emit_insn (gen_rtx_SET (res, gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
+						     UNSPEC_RSQRT28)));
+      else
+	{
+	  /* x0 = rsqrt28(a) estimate */
+	  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
+						      UNSPEC_RSQRT28)));
+	  /* res = rcp28(x0) estimate */
+	  emit_insn (gen_rtx_SET (res, gen_rtx_UNSPEC (mode, gen_rtvec (1, x0),
+						       UNSPEC_RCP28)));
+	}
+      return;
+    }
+
   real_from_integer (&r, VOIDmode, -3, SIGNED);
   mthree = const_double_from_real_value (r, SFmode);
 
