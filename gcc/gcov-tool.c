@@ -232,7 +232,7 @@ do_merge (int argc, char **argv)
    Otherwise, multiply the all counters by SCALE.  */
 
 static int
-profile_rewrite (const char *d1, const char *out, long long n_val,
+profile_rewrite (const char *d1, const char *out, int64_t n_val,
                  float scale, int n, int d)
 {
   struct gcov_info * d1_profile;
@@ -261,7 +261,7 @@ print_rewrite_usage_message (int error_p)
   fnotice (file, "    -v, --verbose                       Verbose mode\n");
   fnotice (file, "    -o, --output <dir>                  Output directory\n");
   fnotice (file, "    -s, --scale <float or simple-frac>  Scale the profile counters\n");
-  fnotice (file, "    -n, --normalize <long long>         Normalize the profile\n");
+  fnotice (file, "    -n, --normalize <int64_t>           Normalize the profile\n");
 }
 
 static const struct option rewrite_options[] =
@@ -291,11 +291,7 @@ do_rewrite (int argc, char **argv)
   int opt;
   int ret;
   const char *output_dir = 0;
-#ifdef HAVE_LONG_LONG
-  long long normalize_val = 0;
-#else
   int64_t normalize_val = 0;
-#endif
   float scale = 0.0;
   int numerator = 1;
   int denominator = 1;
@@ -315,12 +311,10 @@ do_rewrite (int argc, char **argv)
           break;
         case 'n':
           if (!do_scaling)
-#if defined(HAVE_LONG_LONG)
-	    normalize_val = strtoll (optarg, (char **)NULL, 10);
-#elif defined(INT64_T_IS_LONG)
+#if defined(INT64_T_IS_LONG)
 	    normalize_val = strtol (optarg, (char **)NULL, 10);
 #else
-	    sscanf (optarg, "%" SCNd64, &normalize_val);
+	    normalize_val = strtoll (optarg, (char **)NULL, 10);
 #endif
           else
             fnotice (stderr, "scaling cannot co-exist with normalization,"

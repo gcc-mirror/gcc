@@ -12811,7 +12811,7 @@ time_t
 cb_get_source_date_epoch (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   char *source_date_epoch;
-  long long epoch;
+  int64_t epoch;
   char *endptr;
 
   source_date_epoch = getenv ("SOURCE_DATE_EPOCH");
@@ -12819,7 +12819,11 @@ cb_get_source_date_epoch (cpp_reader *pfile ATTRIBUTE_UNUSED)
     return (time_t) -1;
 
   errno = 0;
+#if defined(INT64_T_IS_LONG)
+  epoch = strtol (source_date_epoch, &endptr, 10);
+#else
   epoch = strtoll (source_date_epoch, &endptr, 10);
+#endif
   if (errno != 0 || endptr == source_date_epoch || *endptr != '\0'
       || epoch < 0 || epoch > MAX_SOURCE_DATE_EPOCH)
     {

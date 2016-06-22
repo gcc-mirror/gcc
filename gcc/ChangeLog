@@ -1,3 +1,8 @@
+2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcov-tool.c (profile_rewrite): Use int64_t instead of long long.
+	(do_rewrite): likewise.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* common/config/mep/mep-common.c: Remove.

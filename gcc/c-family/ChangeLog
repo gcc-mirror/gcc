@@ -1,3 +1,7 @@
+2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-common.c (get_source_date_epoch): Use int64_t instead of long long.
+
 2016-06-14  Jason Merrill  <jason@redhat.com>
 
 	P0145R2: Refining Expression Order for C++.
