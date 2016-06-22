@@ -1,5 +1,20 @@
 2016-06-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.c (arm_cortex_a73_tune): New struct.
+	* config/arm/arm-cores.def (cortex-a73): New entry.
+	(cortex-a73.cortex-a35): Likewise.
+	(cortex-a73.cortex-a53): Likewise.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Handle mcpu=cortex-a73,
+	mcpu=cortex-a73.cortex-a35 and mcpu=cortex-a73.cortex-a53.
+	* config/arm/t-aprofile: Handle mcpu=cortex-a73,
+	mcpu=cortex-a73.cortex-a35 and mcpu=cortex-a73.cortex-a53.
+	* doc/invoke.texi (ARM Options): Document cortex-a73,
+	cortex-a73.cortex-a35 and cortex-a73.cortex-a53.
+
+2016-06-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (cortexa73_tunings): New struct.
 	* config/aarch64/aarch64-cores.def (cortex-a73): New entry.
 	(cortex-a73.cortex-a35): Likewise.
