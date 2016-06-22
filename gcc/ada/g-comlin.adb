@@ -56,7 +56,7 @@ package body GNAT.Command_Line is
      (Variable : out Parameter_Type;
       Arg_Num  : Positive;
       First    : Positive;
-      Last     : Positive;
+      Last     : Natural;
       Extra    : Character := ASCII.NUL);
    pragma Inline (Set_Parameter);
    --  Set the parameter that will be returned by Parameter below
@@ -621,7 +621,7 @@ package body GNAT.Command_Line is
          --  If we are on a new item, test if this might be a switch
 
          if Parser.Current_Index = Arg'First then
-            if Arg (Arg'First) /= Parser.Switch_Character then
+            if Arg = "" or else Arg (Arg'First) /= Parser.Switch_Character then
 
                --  If it isn't a switch, return it immediately. We also know it
                --  isn't the parameter to a previous switch, since that has
@@ -705,7 +705,7 @@ package body GNAT.Command_Line is
                  (if Concatenate then Parser.Current_Index else Arg'Last);
             end if;
 
-            if Switches (Switches'First) = '*' then
+            if Switches /= "" and then Switches (Switches'First) = '*' then
 
                --  Always prepend the switch character, so that users know
                --  that this comes from a switch on the command line. This
@@ -1061,7 +1061,9 @@ package body GNAT.Command_Line is
          Section_Num := Section_Num + 1;
 
          for Index in 1 .. Parser.Arg_Count loop
-            if Argument (Parser, Index)(1) = Parser.Switch_Character
+            pragma Assert (Argument (Parser, Index)'First = 1);
+            if Argument (Parser, Index) /= ""
+              and then Argument (Parser, Index)(1) = Parser.Switch_Character
               and then
                 Argument (Parser, Index) = Parser.Switch_Character &
                                              Section_Delimiters
@@ -1127,7 +1129,7 @@ package body GNAT.Command_Line is
      (Variable : out Parameter_Type;
       Arg_Num  : Positive;
       First    : Positive;
-      Last     : Positive;
+      Last     : Natural;
       Extra    : Character := ASCII.NUL)
    is
    begin

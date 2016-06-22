@@ -1,3 +1,17 @@
+2016-06-22  Bob Duff  <duff@adacore.com>
+
+	* g-comlin.ads (Parameter_Type): Change subtype of Last to
+	Natural.
+	* g-comlin.adb (Set_Parameter): Change subtype of Last to
+	Natural.
+	(Getopt): Check for Arg = "", and Switches /= "".
+	(Internal_Initialize_Option_Scan): Check for Argument (Parser,
+	Index) /= "".
+
+2016-06-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb, sem_ch8.adb: Minor reformatting.
+
 2016-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb (Is_Actual_Subtype): New flag, defined

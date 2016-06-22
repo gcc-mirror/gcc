@@ -5061,7 +5061,7 @@ package body Sem_Prag is
          end if;
 
          --  An expression cannot be considered static if its resolution failed
-         --  or if it erroneous. Stop the analysis of the related pragma.
+         --  or if it's erroneous. Stop the analysis of the related pragma.
 
          if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
             raise Pragma_Exit;
