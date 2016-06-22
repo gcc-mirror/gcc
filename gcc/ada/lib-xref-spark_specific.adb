@@ -929,7 +929,40 @@ package body SPARK_Specific is
            and then Cunit_Entity (Sdep_Table (D1)) =
                     Cunit_Entity (Sdep_Table (D1 + 1))
          then
-            D2 := D1 + 1;
+            declare
+               Cunit1 : Node_Id renames Cunit (Sdep_Table (D1));
+               Cunit2 : Node_Id renames Cunit (Sdep_Table (D1 + 1));
+            begin
+               --  Both Cunit point to compilation unit nodes
+               pragma Assert (Nkind (Cunit1) = N_Compilation_Unit
+                                and then
+                              Nkind (Cunit2) = N_Compilation_Unit);
+
+               --  Do not depend on the sorting order, which is based on
+               --  Unit_Name and for library-level instances of nested
+               --  generic-packages they are equal.
+
+               --  If declaration comes before the body then just set D2
+               if Nkind (Unit (Cunit1)) = N_Package_Declaration
+                 and then
+                  Nkind (Unit (Cunit2)) = N_Package_Body
+               then
+                  D2 := D1 + 1;
+
+               --  If body comes before declaration then set D2 and adjust D1
+
+               elsif Nkind (Unit (Cunit1)) = N_Package_Body
+                       and then
+                     Nkind (Unit (Cunit2)) = N_Package_Declaration
+               then
+                  D2 := D1;
+                  D1 := D1 + 1;
+
+               else
+
+                  raise Program_Error;
+               end if;
+            end;
          else
             D2 := D1;
          end if;
@@ -945,7 +978,7 @@ package body SPARK_Specific is
                Dspec => D2);
          end if;
 
-         D1 := D2 + 1;
+         D1 := Pos'Max (D1, D2) + 1;
       end loop;
 
       --  Fill in the spec information when relevant
@@ -1164,9 +1197,7 @@ package body SPARK_Specific is
 
       --  Local variables
 
-      Loc       : constant Source_Ptr := Sloc (N);
-      Index     : Nat;
-      Ref_Scope : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (N);
 
    --  Start of processing for Generate_Dereference
 
@@ -1174,18 +1205,15 @@ package body SPARK_Specific is
 
       if Loc > No_Location then
          Drefs.Increment_Last;
-         Index := Drefs.Last;
 
          declare
-            Deref_Entry : Xref_Entry renames Drefs.Table (Index);
+            Deref_Entry : Xref_Entry renames Drefs.Table (Drefs.Last);
             Deref       : Xref_Key   renames Deref_Entry.Key;
 
          begin
             if No (Heap) then
                Create_Heap;
             end if;
-
-            Ref_Scope := Enclosing_Subprogram_Or_Library_Package (N);
 
             Deref.Ent := Heap;
             Deref.Loc := Loc;
@@ -1199,7 +1227,7 @@ package body SPARK_Specific is
             Deref.Eun := Main_Unit;
             Deref.Lun := Get_Top_Level_Code_Unit (Loc);
 
-            Deref.Ref_Scope := Ref_Scope;
+            Deref.Ref_Scope := Enclosing_Subprogram_Or_Library_Package (N);
             Deref.Ent_Scope := Cunit_Entity (Main_Unit);
 
             Deref_Entry.Def := No_Location;
