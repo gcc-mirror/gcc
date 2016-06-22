@@ -3942,8 +3942,8 @@ package body Exp_Disp is
 
                         if Present (Thunk_Id) then
                            Append_To (Result, Thunk_Code);
-                           Prim_Table (UI_To_Int (DT_Position (Prim)))
-                             := Thunk_Id;
+                           Prim_Table (UI_To_Int (DT_Position (Prim))) :=
+                             Thunk_Id;
                         end if;
                      end if;
                   end if;

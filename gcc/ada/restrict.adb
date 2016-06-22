@@ -1113,8 +1113,7 @@ package body Restrict is
    --  Note: body of this function must be coordinated with list of renaming
    --  declarations in System.Rident.
 
-   function Process_Restriction_Synonyms (N : Node_Id) return Name_Id
-   is
+   function Process_Restriction_Synonyms (N : Node_Id) return Name_Id is
       Old_Name : constant Name_Id := Chars (N);
       New_Name : Name_Id;
 

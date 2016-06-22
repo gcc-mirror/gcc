@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2012, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -345,14 +345,12 @@ package body System.Tasking.Protected_Objects.Operations is
       elsif Entry_Call.Mode /= Conditional_Call
         or else not Entry_Call.With_Abort
       then
-
          if Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
-              and then
-            Run_Time_Restrictions.Value (Max_Entry_Queue_Length) <=
-              Queuing.Count_Waiting (Object.Entry_Queues (E))
+           and then Run_Time_Restrictions.Value (Max_Entry_Queue_Length) <=
+                      Queuing.Count_Waiting (Object.Entry_Queues (E))
          then
-            --  This violates the Max_Entry_Queue_Length restriction,
-            --  raise Program_Error.
+            --  This violates the Max_Entry_Queue_Length restriction, raise
+            --  Program_Error.
 
             Entry_Call.Exception_To_Raise := Program_Error'Identity;
 

@@ -931,74 +931,77 @@ package body SPARK_Specific is
       Sdep := 1;
       while Sdep <= Num_Sdep loop
 
+         --  Skip dependencies with no entity node, e.g. configuration files
+         --  with pragmas (.adc) or target description (.atp), since they
+         --  present no interest for SPARK cross references.
+
+         if No (Cunit_Entity (Sdep_Table (Sdep))) then
+            Sdep_Next := Sdep + 1;
+
          --  For library-level instantiation of a generic, two consecutive
          --  units refer to the same compilation unit node and entity (one to
          --  body, one to spec). In that case, treat them as a single unit for
          --  the sake of SPARK cross references by passing to Add_SPARK_File.
 
-         if Sdep < Num_Sdep
-           and then Cunit_Entity (Sdep_Table (Sdep)) =
-                    Cunit_Entity (Sdep_Table (Sdep + 1))
-         then
-            declare
-               Cunit1 : Node_Id renames Cunit (Sdep_Table (Sdep));
-               Cunit2 : Node_Id renames Cunit (Sdep_Table (Sdep + 1));
-
-            begin
-               --  Both Cunit point to compilation unit nodes
-
-               pragma Assert
-                 (Nkind (Cunit1) = N_Compilation_Unit
-                   and then Nkind (Cunit2) = N_Compilation_Unit);
-
-               --  Do not depend on the sorting order, which is based on
-               --  Unit_Name and for library-level instances of nested
-               --  generic-packages they are equal.
-
-               --  If declaration comes before the body
-
-               if Nkind (Unit (Cunit1)) = N_Package_Declaration
-                 and then Nkind (Unit (Cunit2)) = N_Package_Body
-               then
-                  Uspec := Sdep_Table (Sdep);
-                  Ubody := Sdep_Table (Sdep + 1);
-
-                  Sdep_File := Sdep + 1;
-
-               --  If body comes before declaration
-
-               elsif Nkind (Unit (Cunit1)) = N_Package_Body
-                 and then Nkind (Unit (Cunit2)) = N_Package_Declaration
-               then
-                  Uspec := Sdep_Table (Sdep + 1);
-                  Ubody := Sdep_Table (Sdep);
-
-                  Sdep_File := Sdep;
-
-               --  Otherwise it is an error
-
-               else
-                  raise Program_Error;
-               end if;
-
-               Sdep_Next := Sdep + 2;
-            end;
-
-         --  ??? otherwise?
-
          else
-            Uspec := Sdep_Table (Sdep);
-            Ubody := No_Unit;
+            if Sdep < Num_Sdep
+              and then Cunit_Entity (Sdep_Table (Sdep)) =
+                       Cunit_Entity (Sdep_Table (Sdep + 1))
+            then
+               declare
+                  Cunit1 : Node_Id renames Cunit (Sdep_Table (Sdep));
+                  Cunit2 : Node_Id renames Cunit (Sdep_Table (Sdep + 1));
 
-            Sdep_File := Sdep;
-            Sdep_Next := Sdep + 1;
-         end if;
+               begin
+                  --  Both Cunits point to compilation unit nodes
 
-         --  Skip dependencies with no entity node, e.g. configuration files
-         --  with pragmas (.adc) or target description (.atp), since they
-         --  present no interest for SPARK cross references.
+                  pragma Assert
+                    (Nkind (Cunit1) = N_Compilation_Unit
+                      and then Nkind (Cunit2) = N_Compilation_Unit);
 
-         if Present (Cunit_Entity (Uspec)) then
+                  --  Do not depend on the sorting order, which is based on
+                  --  Unit_Name, and for library-level instances of nested
+                  --  generic packages they are equal.
+
+                  --  If declaration comes before the body
+
+                  if Nkind (Unit (Cunit1)) = N_Package_Declaration
+                    and then Nkind (Unit (Cunit2)) = N_Package_Body
+                  then
+                     Uspec := Sdep_Table (Sdep);
+                     Ubody := Sdep_Table (Sdep + 1);
+
+                     Sdep_File := Sdep + 1;
+
+                  --  If body comes before declaration
+
+                  elsif Nkind (Unit (Cunit1)) = N_Package_Body
+                    and then Nkind (Unit (Cunit2)) = N_Package_Declaration
+                  then
+                     Uspec := Sdep_Table (Sdep + 1);
+                     Ubody := Sdep_Table (Sdep);
+
+                     Sdep_File := Sdep;
+
+                  --  Otherwise it is an error
+
+                  else
+                     raise Program_Error;
+                  end if;
+
+                  Sdep_Next := Sdep + 2;
+               end;
+
+            --  ??? otherwise?
+
+            else
+               Uspec := Sdep_Table (Sdep);
+               Ubody := No_Unit;
+
+               Sdep_File := Sdep;
+               Sdep_Next := Sdep + 1;
+            end if;
+
             Add_SPARK_File
               (Uspec => Uspec,
                Ubody => Ubody,

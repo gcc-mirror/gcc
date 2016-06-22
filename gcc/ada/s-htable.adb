@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 1995-2015, AdaCore                      --
+--                    Copyright (C) 1995-2016, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,7 +258,7 @@ package body System.HTable is
       -- Get --
       ---------
 
-      function  Get (K : Key) return Element is
+      function Get (K : Key) return Element is
          Tmp : constant Elmt_Ptr := Tab.Get (K);
       begin
          if Tmp = null then

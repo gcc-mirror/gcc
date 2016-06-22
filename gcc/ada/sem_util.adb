@@ -16273,9 +16273,9 @@ package body Sem_Util is
 
    function New_Copy_Tree
      (Source    : Node_Id;
-      Map       : Elist_Id := No_Elist;
+      Map       : Elist_Id   := No_Elist;
       New_Sloc  : Source_Ptr := No_Location;
-      New_Scope : Entity_Id := Empty) return Node_Id
+      New_Scope : Entity_Id  := Empty) return Node_Id
    is
       Actual_Map : Elist_Id := Map;
       --  This is the actual map for the copy. It is initialized with the
