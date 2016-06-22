@@ -3763,7 +3763,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 
   if (rhs_code != BIT_IOR_EXPR
       && rhs_code != BIT_XOR_EXPR
-      && rhs_code != BIT_AND_EXPR)
+      && rhs_code != BIT_AND_EXPR
+      && TREE_CODE_CLASS (rhs_code) != tcc_comparison)
     return NULL;
 
   rhs2 = gimple_assign_rhs2 (last_stmt);
