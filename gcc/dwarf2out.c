@@ -12605,7 +12605,7 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
     return NULL;
 
   if (dwarf_strict
-      && (GET_MODE_CLASS (op_mode) != MODE_INT
+      && (!SCALAR_INT_MODE_P (op_mode)
 	  || GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE))
     return NULL;
 
@@ -12617,7 +12617,7 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
   if (op0 == NULL || op1 == NULL)
     return NULL;
 
-  if (GET_MODE_CLASS (op_mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (op_mode)
       || GET_MODE_SIZE (op_mode) == DWARF2_ADDR_SIZE)
     return compare_loc_descriptor (op, op0, op1);
 
@@ -12712,7 +12712,7 @@ ucompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
     op_mode = GET_MODE (XEXP (rtl, 1));
   if (op_mode == VOIDmode)
     return NULL;
-  if (GET_MODE_CLASS (op_mode) != MODE_INT)
+  if (!SCALAR_INT_MODE_P (op_mode))
     return NULL;
 
   if (dwarf_strict && GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE)
@@ -12779,7 +12779,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref bra_node, drop_node;
 
   if (dwarf_strict
-      && (GET_MODE_CLASS (mode) != MODE_INT
+      && (!SCALAR_INT_MODE_P (mode)
 	  || GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE))
     return NULL;
 
@@ -12812,7 +12812,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
 	  add_loc_descr (&op1, new_loc_descr (DW_OP_plus_uconst, bias, 0));
 	}
     }
-  else if (GET_MODE_CLASS (mode) == MODE_INT
+  else if (!SCALAR_INT_MODE_P (mode)
 	   && GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE)
     {
       int shift = (DWARF2_ADDR_SIZE - GET_MODE_SIZE (mode)) * BITS_PER_UNIT;
@@ -12821,7 +12821,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
       add_loc_descr (&op1, int_loc_descriptor (shift));
       add_loc_descr (&op1, new_loc_descr (DW_OP_shl, 0, 0));
     }
-  else if (GET_MODE_CLASS (mode) == MODE_INT
+  else if (SCALAR_INT_MODE_P (mode)
 	   && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
     {
       dw_die_ref type_die = base_type_for_mode (mode, 0);
@@ -12855,7 +12855,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
   bra_node->dw_loc_oprnd1.val_class = dw_val_class_loc;
   bra_node->dw_loc_oprnd1.v.val_loc = drop_node;
   if ((GET_CODE (rtl) == SMIN || GET_CODE (rtl) == SMAX)
-      && GET_MODE_CLASS (mode) == MODE_INT
+      && SCALAR_INT_MODE_P (mode)
       && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
     ret = convert_descriptor_to_mode (mode, ret);
   return ret;
@@ -12934,7 +12934,7 @@ clz_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l4jump, l4label;
   rtx msb;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (mode)
       || GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
@@ -13042,7 +13042,7 @@ popcount_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l1jump, l1label;
   dw_loc_descr_ref l2jump, l2label;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (mode)
       || GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
@@ -13103,7 +13103,7 @@ bswap_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l1jump, l1label;
   dw_loc_descr_ref l2jump, l2label;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (mode)
       || BITS_PER_UNIT != 8
       || (GET_MODE_BITSIZE (mode) != 32
 	  &&  GET_MODE_BITSIZE (mode) != 64))
@@ -13188,7 +13188,7 @@ rotate_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
   int i;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  if (!SCALAR_INT_MODE_P (mode))
     return NULL;
 
   if (GET_MODE (rtlop1) != VOIDmode
@@ -13337,8 +13337,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case TRUNCATE:
       if (inner == NULL_RTX)
         inner = XEXP (rtl, 0);
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_CLASS (GET_MODE (inner)) == MODE_INT
+      if (SCALAR_INT_MODE_P (mode)
+	  && SCALAR_INT_MODE_P (GET_MODE (inner))
 	  && (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      || (mode == Pmode && mem_mode != VOIDmode)
@@ -13356,8 +13356,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (inner)))
 	break;
       if (GET_MODE_SIZE (mode) != GET_MODE_SIZE (GET_MODE (inner))
-	  && (GET_MODE_CLASS (mode) != MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (inner)) != MODE_INT))
+	  && (!SCALAR_INT_MODE_P (mode)
+	      || !SCALAR_INT_MODE_P (GET_MODE (inner))))
 	break;
       else
 	{
@@ -13369,8 +13369,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 					       mem_mode, initialized);
 	  if (mem_loc_result == NULL)
 	    break;
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    {
 	      mem_loc_result = NULL;
@@ -13385,7 +13384,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
 	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  add_loc_descr (&mem_loc_result, cvt);
-	  if (GET_MODE_CLASS (mode) == MODE_INT
+	  if (SCALAR_INT_MODE_P (mode)
 	      && GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE)
 	    {
 	      /* Convert it to untyped afterwards.  */
@@ -13396,7 +13395,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       break;
 
     case REG:
-      if (GET_MODE_CLASS (mode) != MODE_INT
+      if (! SCALAR_INT_MODE_P (mode)
 	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
 	      && rtl != arg_pointer_rtx
 	      && rtl != frame_pointer_rtx
@@ -13412,15 +13411,14 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	    break;
 	  if (REGNO (rtl) > FIRST_PSEUDO_REGISTER)
 	    break;
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    break;
 
 	  dbx_regnum = dbx_reg_number (rtl);
 	  if (dbx_regnum == IGNORED_DWARF_REGNUM)
 	    break;
-	  mem_loc_result = new_loc_descr (DW_OP_GNU_regval_type,
+          mem_loc_result = new_loc_descr (DW_OP_GNU_regval_type,
 					  dbx_regnum, 0);
 	  mem_loc_result->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	  mem_loc_result->dw_loc_oprnd2.v.val_die_ref.die = type_die;
@@ -13456,7 +13454,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (!SCALAR_INT_MODE_P (mode))
 	break;
       op0 = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (XEXP (rtl, 0)),
 				mem_mode, VAR_INIT_STATUS_INITIALIZED);
@@ -13537,7 +13535,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (mem_loc_result != NULL)
 	{
 	  if (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
-	      || GET_MODE_CLASS (mode) != MODE_INT)
+	      || !SCALAR_INT_MODE_P(mode))
 	    {
 	      dw_die_ref type_die;
 	      dw_loc_descr_ref deref;
@@ -13545,7 +13543,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      if (dwarf_strict)
 		return NULL;
 	      type_die
-		= base_type_for_mode (mode, GET_MODE_CLASS (mode) == MODE_INT);
+		= base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	      if (type_die == NULL)
 		return NULL;
 	      deref = new_loc_descr (DW_OP_GNU_deref_type,
@@ -13573,8 +13571,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
-      if ((GET_MODE_CLASS (mode) != MODE_INT
-	   && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
+      if (!SCALAR_INT_MODE_P (mode)
 	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      && (mode != Pmode || mem_mode == VOIDmode)
@@ -13624,7 +13621,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	return NULL;
       if (REG_P (ENTRY_VALUE_EXP (rtl)))
 	{
-	  if (GET_MODE_CLASS (mode) != MODE_INT
+	  if (!SCALAR_INT_MODE_P (mode)
 	      || GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
 	    op0 = mem_loc_descriptor (ENTRY_VALUE_EXP (rtl), mode,
 				      VOIDmode, VAR_INIT_STATUS_INITIALIZED);
@@ -13682,7 +13679,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  && (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
 	      || XEXP (rtl, 0) == arg_pointer_rtx
 	      || XEXP (rtl, 0) == frame_pointer_rtx)
-	  && GET_MODE_CLASS (mode) == MODE_INT)
+	  && SCALAR_INT_MODE_P (mode))
 	mem_loc_result = based_loc_descr (XEXP (rtl, 0),
 					  INTVAL (XEXP (rtl, 1)),
 					  VAR_INIT_STATUS_INITIALIZED);
@@ -13721,7 +13718,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case DIV:
       if (!dwarf_strict
-	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && SCALAR_INT_MODE_P (mode)
 	  && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
 	{
 	  mem_loc_result = typed_binop (DW_OP_div, rtl,
@@ -13749,7 +13746,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       goto do_shift;
 
     do_shift:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (!SCALAR_INT_MODE_P (mode))
 	break;
       op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
@@ -13824,7 +13821,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       break;
 
     case UDIV:
-      if (!dwarf_strict && GET_MODE_CLASS (mode) == MODE_INT)
+      if (!dwarf_strict && SCALAR_INT_MODE_P (mode))
 	{
 	  if (GET_MODE_CLASS (mode) > DWARF2_ADDR_SIZE)
 	    {
@@ -13932,8 +13929,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      || (GET_MODE (rtl) == VOIDmode
 		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
 	    break;
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    return NULL;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0, 0);
@@ -13968,8 +13964,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	{
 	  dw_die_ref type_die;
 
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    return NULL;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0, 0);
@@ -14025,7 +14020,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case UMIN:
     case UMAX:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (!SCALAR_INT_MODE_P (mode))
 	break;
       /* FALLTHRU */
     case SMIN:
@@ -14040,7 +14035,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  && ((unsigned) INTVAL (XEXP (rtl, 1))
 	      + (unsigned) INTVAL (XEXP (rtl, 2))
 	      <= GET_MODE_BITSIZE (mode))
-	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && SCALAR_INT_MODE_P (mode)
 	  && GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
 	  && GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) <= DWARF2_ADDR_SIZE)
 	{
@@ -14117,7 +14112,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 				    mem_mode, VAR_INIT_STATUS_INITIALIZED);
 	  if (op0 == NULL)
 	    break;
-	  if (GET_MODE_CLASS (GET_MODE (XEXP (rtl, 0))) == MODE_INT
+	  if (SCALAR_INT_MODE_P (GET_MODE (XEXP (rtl, 0)))
 	      && (GET_CODE (rtl) == FLOAT
 		  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0)))
 		     <= DWARF2_ADDR_SIZE))
@@ -14140,7 +14135,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
 	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  add_loc_descr (&op0, cvt);
-	  if (GET_MODE_CLASS (mode) == MODE_INT
+	  if (SCALAR_INT_MODE_P (mode)
 	      && (GET_CODE (rtl) == FIX
 		  || GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE))
 	    {
@@ -14570,7 +14565,8 @@ loc_descriptor (rtx rtl, machine_mode mode,
       /* FALLTHRU */
     do_default:
     default:
-      if ((GET_MODE_CLASS (mode) == MODE_INT && GET_MODE (rtl) == mode
+      if ((SCALAR_INT_MODE_P (mode)
+	   && GET_MODE (rtl) == mode
 	   && GET_MODE_SIZE (GET_MODE (rtl)) <= DWARF2_ADDR_SIZE
 	   && dwarf_version >= 4)
 	  || (!dwarf_strict && mode != VOIDmode && mode != BLKmode))
