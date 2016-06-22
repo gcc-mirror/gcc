@@ -1,3 +1,8 @@
+2016-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref-spark_specific.adb (Generate_Dereference): Assignment to not
+	commented local variables replaced with direct uses of their values.
+
 2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Add_Invariant): Replace the
