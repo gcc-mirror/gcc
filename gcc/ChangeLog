@@ -1,3 +1,14 @@
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70339
+	* diagnostic-core.h (pedwarn_at_rich_loc): New prototype.
+	* diagnostic.c (pedwarn_at_rich_loc): New function.
+	* spellcheck.h (best_match::best_match): Add a
+	"best_distance_so_far" optional parameter.
+	(best_match::set_best_so_far): New method.
+	(best_match::get_best_distance): New accessor.
+	(best_match::get_best_candidate_length): New accessor.
+
 2016-06-22  Nick Clifton  <nickc@redhat.com>
 
 	* dwarf2out.c (scompare_loc_descriptor): Use SCALAR_INT_MODE_P() in

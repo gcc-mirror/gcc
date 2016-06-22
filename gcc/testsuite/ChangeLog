@@ -1,5 +1,17 @@
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/70339
+	* c-c++-common/attributes-1.c: Update dg-prune-output to include
+	hint.
+	* gcc.dg/diagnostic-token-ranges.c (undeclared_identifier): Update
+	expected results due to builtin "nanl" now being suggested for
+	"name".
+	* gcc.dg/pr67580.c: Update expected messages.
+	* gcc.dg/spellcheck-identifiers.c: New testcase.
+	* gcc.dg/spellcheck-typenames.c: New testcase.
+
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/plugin/diagnostic-test-show-locus-parseable-fixits.c: New
 	file.
 	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add

@@ -482,6 +482,7 @@ enum c_inline_static_type {
 
 /* in c-parser.c */
 extern void c_parse_init (void);
+extern bool c_keyword_starts_typename (enum rid keyword);
 
 /* in c-aux-info.c */
 extern void gen_aux_info_record (tree, int, int, int);

@@ -1,3 +1,9 @@
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70339
+	* c-common.h (enum lookup_name_fuzzy_kind): New enum.
+	(lookup_name_fuzzy): New prototype.
+
 2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* c-common.c (get_source_date_epoch): Use int64_t instead of long long.

@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ada-spec.h"
 #include "cilk.h"
 #include "builtins.h"
+#include "spellcheck-tree.h"
+#include "gcc-rich-location.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -3086,13 +3088,36 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
   if (warn_implicit_function_declaration)
     {
       bool warned;
+      tree hint = NULL_TREE;
+      if (!olddecl)
+	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
 
       if (flag_isoc99)
-	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
-			  "implicit declaration of function %qE", id);
+	if (hint)
+	  {
+	    gcc_rich_location richloc (loc);
+	    richloc.add_fixit_misspelled_id (loc, hint);
+	    warned = pedwarn_at_rich_loc
+	      (&richloc, OPT_Wimplicit_function_declaration,
+	       "implicit declaration of function %qE; did you mean %qE?",
+	       id, hint);
+	  }
+	else
+	  warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
+			    "implicit declaration of function %qE", id);
       else
-	warned = warning_at (loc, OPT_Wimplicit_function_declaration,
-			     G_("implicit declaration of function %qE"), id);
+	if (hint)
+	  {
+	    gcc_rich_location richloc (loc);
+	    richloc.add_fixit_misspelled_id (loc, hint);
+	    warned = warning_at_rich_loc
+	      (&richloc, OPT_Wimplicit_function_declaration,
+	       G_("implicit declaration of function %qE;did you mean %qE?"),
+	       id, hint);
+	  }
+	else
+	  warned = warning_at (loc, OPT_Wimplicit_function_declaration,
+			       G_("implicit declaration of function %qE"), id);
       if (olddecl && warned)
 	locate_old_decl (olddecl);
     }
@@ -3408,13 +3433,38 @@ undeclared_variable (location_t loc, tree id)
 
   if (current_function_decl == 0)
     {
-      error_at (loc, "%qE undeclared here (not in a function)", id);
+      tree guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+      if (guessed_id)
+	{
+	  gcc_rich_location richloc (loc);
+	  richloc.add_fixit_misspelled_id (loc, guessed_id);
+	  error_at_rich_loc (&richloc,
+			     "%qE undeclared here (not in a function);"
+			     " did you mean %qE?",
+			     id, guessed_id);
+	}
+      else
+	error_at (loc, "%qE undeclared here (not in a function)", id);
       scope = current_scope;
     }
   else
     {
       if (!objc_diagnose_private_ivar (id))
-        error_at (loc, "%qE undeclared (first use in this function)", id);
+	{
+	  tree guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+	  if (guessed_id)
+	    {
+	      gcc_rich_location richloc (loc);
+	      richloc.add_fixit_misspelled_id (loc, guessed_id);
+	      error_at_rich_loc
+		(&richloc,
+		 "%qE undeclared (first use in this function);"
+		 " did you mean %qE?",
+		 id, guessed_id);
+	    }
+	  else
+	    error_at (loc, "%qE undeclared (first use in this function)", id);
+	}
       if (!already)
 	{
           inform (loc, "each undeclared identifier is reported only"
@@ -3904,6 +3954,134 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
       return b->decl;
   return NULL_TREE;
 }
+
+/* Specialization of edit_distance_traits for preprocessor macros.  */
+
+template <>
+struct edit_distance_traits<cpp_hashnode *>
+{
+  static size_t get_length (cpp_hashnode *hashnode)
+  {
+    return hashnode->ident.len;
+  }
+
+  static const char *get_string (cpp_hashnode *hashnode)
+  {
+    return (const char *)hashnode->ident.str;
+  }
+};
+
+/* Specialization of best_match<> for finding the closest preprocessor
+   macro to a given identifier.  */
+
+typedef best_match<tree, cpp_hashnode *> best_macro_match;
+
+/* A callback for cpp_forall_identifiers, for use by lookup_name_fuzzy.
+   Process HASHNODE and update the best_macro_match instance pointed to be
+   USER_DATA.  */
+
+static int
+find_closest_macro_cpp_cb (cpp_reader *, cpp_hashnode *hashnode,
+			   void *user_data)
+{
+  if (hashnode->type != NT_MACRO)
+    return 1;
+
+  best_macro_match *bmm = (best_macro_match *)user_data;
+  bmm->consider (hashnode);
+
+  /* Keep iterating.  */
+  return 1;
+}
+
+/* Look for the closest match for NAME within the currently valid
+   scopes.
+
+   This finds the identifier with the lowest Levenshtein distance to
+   NAME.  If there are multiple candidates with equal minimal distance,
+   the first one found is returned.  Scopes are searched from innermost
+   outwards, and within a scope in reverse order of declaration, thus
+   benefiting candidates "near" to the current scope.
+
+   The function also looks for similar macro names to NAME, since a
+   misspelled macro name will not be expanded, and hence looks like an
+   identifier to the C frontend.
+
+   It also looks for start_typename keywords, to detect "singed" vs "signed"
+   typos.  */
+
+tree
+lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
+{
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  best_match<tree, tree> bm (name);
+
+  /* Look within currently valid scopes.  */
+  for (c_scope *scope = current_scope; scope; scope = scope->outer)
+    for (c_binding *binding = scope->bindings; binding; binding = binding->prev)
+      {
+	if (!binding->id)
+	  continue;
+	/* Don't use bindings from implicitly declared functions,
+	   as they were likely misspellings themselves.  */
+	if (TREE_CODE (binding->decl) == FUNCTION_DECL)
+	  if (C_DECL_IMPLICIT (binding->decl))
+	    continue;
+	if (kind == FUZZY_LOOKUP_TYPENAME)
+	  if (TREE_CODE (binding->decl) != TYPE_DECL)
+	    continue;
+	bm.consider (binding->id);
+      }
+
+  /* Consider macros: if the user misspelled a macro name e.g. "SOME_MACRO"
+     as:
+       x = SOME_OTHER_MACRO (y);
+     then "SOME_OTHER_MACRO" will survive to the frontend and show up
+     as a misspelled identifier.
+
+     Use the best distance so far so that a candidate is only set if
+     a macro is better than anything so far.  This allows early rejection
+     (without calculating the edit distance) of macro names that must have
+     distance >= bm.get_best_distance (), and means that we only get a
+     non-NULL result for best_macro_match if it's better than any of
+     the identifiers already checked, which avoids needless creation
+     of identifiers for macro hashnodes.  */
+  best_macro_match bmm (name, bm.get_best_distance ());
+  cpp_forall_identifiers (parse_in, find_closest_macro_cpp_cb, &bmm);
+  cpp_hashnode *best_macro = bmm.get_best_meaningful_candidate ();
+  /* If a macro is the closest so far to NAME, use it, creating an
+     identifier tree node for it.  */
+  if (best_macro)
+    {
+      const char *id = (const char *)best_macro->ident.str;
+      tree macro_as_identifier
+	= get_identifier_with_length (id, best_macro->ident.len);
+      bm.set_best_so_far (macro_as_identifier,
+			  bmm.get_best_distance (),
+			  bmm.get_best_candidate_length ());
+    }
+
+  /* Try the "start_typename" keywords to detect
+     "singed" vs "signed" typos.  */
+  if (kind == FUZZY_LOOKUP_TYPENAME)
+    {
+      for (unsigned i = 0; i < num_c_common_reswords; i++)
+	{
+	  const c_common_resword *resword = &c_common_reswords[i];
+	  if (!c_keyword_starts_typename (resword->rid))
+	    continue;
+	  tree resword_identifier = ridpointers [resword->rid];
+	  if (!resword_identifier)
+	    continue;
+	  gcc_assert (TREE_CODE (resword_identifier) == IDENTIFIER_NODE);
+	  bm.consider (resword_identifier);
+	}
+    }
+
+  return bm.get_best_meaningful_candidate ();
+}
+
 
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *) 0).
