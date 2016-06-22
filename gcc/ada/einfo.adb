@@ -607,8 +607,8 @@ package body Einfo is
 
    --    Has_Inherited_Invariants        Flag291
    --    Is_Partial_Invariant_Procedure  Flag292
+   --    Is_Actual_Subtype               Flag293
 
-   --    (unused)                        Flag293
    --    (unused)                        Flag294
    --    (unused)                        Flag295
    --    (unused)                        Flag296
@@ -2013,6 +2013,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       return Flag69 (Id);
    end Is_Access_Constant;
+
+   function Is_Actual_Subtype (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag293 (Id);
+   end Is_Actual_Subtype;
 
    function Is_Ada_2005_Only (Id : E) return B is
    begin
@@ -5035,6 +5041,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       Set_Flag69 (Id, V);
    end Set_Is_Access_Constant;
+
+   procedure Set_Is_Actual_Subtype (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag293 (Id, V);
+   end Set_Is_Actual_Subtype;
 
    procedure Set_Is_Ada_2005_Only (Id : E; V : B := True) is
    begin
@@ -9186,6 +9198,7 @@ package body Einfo is
       W ("Is_Abstract_Subprogram",          Flag19  (Id));
       W ("Is_Abstract_Type",                Flag146 (Id));
       W ("Is_Access_Constant",              Flag69  (Id));
+      W ("Is_Actual_Subtype",               Flag293 (Id));
       W ("Is_Ada_2005_Only",                Flag185 (Id));
       W ("Is_Ada_2012_Only",                Flag199 (Id));
       W ("Is_Aliased",                      Flag15  (Id));

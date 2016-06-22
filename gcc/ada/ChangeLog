@@ -1,3 +1,26 @@
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Actual_Subtype): New flag, defined
+	on subtypes that are created within subprogram bodies to handle
+	unconstrained composite formals.
+	* checks.adb (Apply_Predicate_Check): Do not generate a check on
+	an object whose type is an actual subtype.
+	* sem_ch6.adb (Set_Actual_Subtypes): Do not generate an
+	actual subtype for a formal whose base type is private.
+	Set Is_Actual_Subtype on corresponding entity after analyzing
+	its declaration.
+
+2016-06-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Check_Expr_Is_OK_Static_Expression): Fix ordering
+	of if-block and add in a condition to test for errors during
+	resolution.
+	* sem_res.adb (Resolution_Failed): Add comment to explain why
+	the type of a node which failed to resolve is set to the desired
+	type instead of Any_Type.
+	* sem_ch8.adb (Analyze_Object_Renaming): Add a check for Any_Type
+	to prevent crashes on Is_Access_Constant.
+
 2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-xref-spark_specific.adb, checks.adb, sem_ch13.adb: Minor

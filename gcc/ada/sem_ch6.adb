@@ -11226,9 +11226,12 @@ package body Sem_Ch6 is
 
          --  At this stage we have an unconstrained type that may need an
          --  actual subtype. For sure the actual subtype is needed if we have
-         --  an unconstrained array type.
+         --  an unconstrained array type. However, in an instance, the type
+         --  may appear as a subtype of the full view, while the actual is
+         --  in fact private (in which case no actual subtype is needed) so
+         --  check the kind of the base type.
 
-         elsif Is_Array_Type (T) then
+         elsif Is_Array_Type (Base_Type (T)) then
             AS_Needed := True;
 
          --  The only other case needing an actual subtype is an unconstrained
@@ -11299,6 +11302,7 @@ package body Sem_Ch6 is
             --  therefore needs no constraint checks.
 
             Analyze (Decl, Suppress => All_Checks);
+            Set_Is_Actual_Subtype (Defining_Identifier (Decl));
 
             --  We need to freeze manually the generated type when it is
             --  inserted anywhere else than in a declarative part.

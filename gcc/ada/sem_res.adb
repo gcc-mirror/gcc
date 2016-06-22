@@ -1974,7 +1974,12 @@ package body Sem_Res is
       procedure Resolution_Failed is
       begin
          Patch_Up_Value (N, Typ);
+
+         --  Set the type to the desired one to minimize cascaded errors. Note
+         --  that this is an approximation and does not work in all cases.
+
          Set_Etype (N, Typ);
+
          Debug_A_Exit ("resolving  ", N, " (done, resolution failed)");
          Set_Is_Overloaded (N, False);
 
