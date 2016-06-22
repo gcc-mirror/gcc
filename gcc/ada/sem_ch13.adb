@@ -13204,11 +13204,11 @@ package body Sem_Ch13 is
                --  Get alignments, sizes and offset, if any
 
                X_Alignment := Alignment (ACCR.X);
-               X_Size := Esize (ACCR.X);
+               X_Size      := Esize (ACCR.X);
 
                if Present (ACCR.Y) then
                   Y_Alignment := Alignment (ACCR.Y);
-                  Y_Size := Esize (ACCR.Y);
+                  Y_Size      := Esize (ACCR.Y);
                end if;
 
                if ACCR.Off

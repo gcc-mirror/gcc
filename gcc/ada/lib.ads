@@ -548,6 +548,12 @@ package Lib is
    --  This is like Get_Code_Unit, except that in the case of subunits, it
    --  returns the top-level unit to which the subunit belongs instead of
    --  the subunit.
+   --
+   --  Note: for nodes and slocs in declarations of library-level instances of
+   --  generics these routines wrongly return the unit number corresponding to
+   --  the body of the instance. In effect, locations of SPARK references in
+   --  ALI files are bogus. However, fixing this is not worth the effort, since
+   --  these references are only used for debugging.
 
    function In_Extended_Main_Code_Unit
      (N : Node_Or_Entity_Id) return Boolean;

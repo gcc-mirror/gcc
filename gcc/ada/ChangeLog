@@ -1,3 +1,22 @@
+2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref-spark_specific.adb, checks.adb, sem_ch13.adb: Minor
+	reformatting.
+	* exp_ch7.adb: Minor typo fix.
+	* lib.ads (Get_Top_Level_Code_Unit): Add comment.
+
+2016-06-22  Bob Duff  <duff@adacore.com>
+
+	* s-tassta.adb (Task_Wrapper): Fix handling of Fall_Back_Handler
+	wrt independent tasks.
+
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension): Propagate dimension for
+	explicit_dereference nodes when they do not come from source,
+	to handle correctly dimensional analysis on iterators over
+	containers whose elements have declared dimensions.
+
 2016-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* spark_xrefs.ads (Scope_Num): type refined to positive integers.

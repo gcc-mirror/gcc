@@ -54,9 +54,9 @@ package body SPARK_Specific is
    --  True for each reference type used in SPARK
 
    SPARK_References : constant array (Character) of Boolean :=
-     ('m' => True,
-      'r' => True,
-      's' => True,
+     ('m'    => True,
+      'r'    => True,
+      's'    => True,
       others => False);
 
    type Entity_Hashed_Range is range 0 .. 255;
@@ -102,9 +102,9 @@ package body SPARK_Specific is
    generic
       with procedure Process (N : Node_Id) is <>;
    procedure Traverse_Compilation_Unit (CU : Node_Id; Inside_Stubs : Boolean);
-   --  Call Process on all declarations in compilation unit CU. If
-   --  Inside_Stubs is True, then the body of stubs is also traversed.
-   --  Generic declarations are ignored.
+   --  Call Process on all declarations within compilation unit CU. If flag
+   --  Inside_Stubs is True, then the body of stubs is also traversed. Generic
+   --  declarations are ignored.
 
    --------------------
    -- Add_SPARK_File --
@@ -113,9 +113,6 @@ package body SPARK_Specific is
    procedure Add_SPARK_File (Uspec, Ubody : Unit_Number_Type; Dspec : Nat) is
       File : constant Source_File_Index := Source_Index (Uspec);
       From : constant Scope_Index       := SPARK_Scope_Table.Last + 1;
-
-      File_Name      : String_Ptr;
-      Unit_File_Name : String_Ptr;
 
       Scope_Id : Pos := 1;
 
@@ -147,49 +144,46 @@ package body SPARK_Specific is
          end if;
 
          case Ekind (E) is
-         when E_Entry
-            | E_Entry_Family
-            | E_Generic_Function
-            | E_Generic_Package
-            | E_Generic_Procedure
-            | E_Package
-            | E_Protected_Type
-            | E_Task_Type
-            =>
-            Typ := Xref_Entity_Letters (Ekind (E));
-
-         when E_Function
-            | E_Procedure
-            =>
-            --  In SPARK we need to distinguish protected functions and
-            --  procedures from ordinary subprograms, but there are no special
-            --  Xref letters for them. Since this distiction is only needed to
-            --  detect protected calls, we pretend that such calls are entry
-            --  calls.
-
-            if Ekind (Scope (E)) = E_Protected_Type then
-               Typ := Xref_Entity_Letters (E_Entry);
-            else
+            when E_Entry             |
+                 E_Entry_Family      |
+                 E_Generic_Function  |
+                 E_Generic_Package   |
+                 E_Generic_Procedure |
+                 E_Package           |
+                 E_Protected_Type    |
+                 E_Task_Type         =>
                Typ := Xref_Entity_Letters (Ekind (E));
-            end if;
 
-         when E_Package_Body
-            | E_Protected_Body
-            | E_Subprogram_Body
-            | E_Task_Body
-            =>
-            Typ := Xref_Entity_Letters (Ekind (Unique_Entity (E)));
+            when E_Function | E_Procedure =>
 
-         when E_Void =>
+               --  In SPARK we need to distinguish protected functions and
+               --  procedures from ordinary subprograms, but there are no
+               --  special Xref letters for them. Since this distiction is
+               --  only needed to detect protected calls, we pretend that
+               --  such calls are entry calls.
 
-            --  Compilation of prj-attr.adb with -gnatn creates a node with
-            --  entity E_Void for the package defined at a-charac.ads16:13.
-            --  ??? TBD
+               if Ekind (Scope (E)) = E_Protected_Type then
+                  Typ := Xref_Entity_Letters (E_Entry);
+               else
+                  Typ := Xref_Entity_Letters (Ekind (E));
+               end if;
 
-            return;
+            when E_Package_Body    |
+                 E_Protected_Body  |
+                 E_Subprogram_Body |
+                 E_Task_Body       =>
+               Typ := Xref_Entity_Letters (Ekind (Unique_Entity (E)));
 
-         when others =>
-            raise Program_Error;
+            when E_Void =>
+
+               --  Compilation of prj-attr.adb with -gnatn creates a node with
+               --  entity E_Void for the package defined at a-charac.ads16:13.
+               --  ??? TBD
+
+               return;
+
+            when others =>
+               raise Program_Error;
          end case;
 
          --  File_Num and Scope_Num are filled later. From_Xref and To_Xref
@@ -218,24 +212,32 @@ package body SPARK_Specific is
 
       procedure Detect_And_Add_SPARK_Scope (N : Node_Id) is
       begin
-         if Nkind_In (N, N_Entry_Body,             --  entries
-                      N_Entry_Declaration)
-           or else
-             Nkind_In (N, N_Package_Body,           --  packages
-                       N_Package_Body_Stub,
-                       N_Package_Declaration)
-           or else
-             Nkind_In (N, N_Protected_Body,         --  protected objects
-                       N_Protected_Body_Stub,
-                       N_Protected_Type_Declaration)
-           or else
-             Nkind_In (N, N_Subprogram_Body,        --  subprograms
-                       N_Subprogram_Body_Stub,
-                       N_Subprogram_Declaration)
-           or else
-             Nkind_In (N, N_Task_Body,              --  tasks
-                       N_Task_Body_Stub,
-                       N_Task_Type_Declaration)
+         --  Entries
+
+         if Nkind_In (N, N_Entry_Body, N_Entry_Declaration)
+
+           --  Packages
+
+           or else Nkind_In (N, N_Package_Body,
+                                N_Package_Body_Stub,
+                                N_Package_Declaration)
+           --  Protected units
+
+           or else Nkind_In (N, N_Protected_Body,
+                                N_Protected_Body_Stub,
+                                N_Protected_Type_Declaration)
+
+           --  Subprograms
+
+           or else Nkind_In (N, N_Subprogram_Body,
+                                N_Subprogram_Body_Stub,
+                                N_Subprogram_Declaration)
+
+           --  Task units
+
+           or else Nkind_In (N, N_Task_Body,
+                                N_Task_Body_Stub,
+                                N_Task_Type_Declaration)
          then
             Add_SPARK_Scope (N);
          end if;
@@ -243,6 +245,11 @@ package body SPARK_Specific is
 
       procedure Traverse_Scopes is new
         Traverse_Compilation_Unit (Detect_And_Add_SPARK_Scope);
+
+      --  Local variables
+
+      File_Name      : String_Ptr;
+      Unit_File_Name : String_Ptr;
 
    --  Start of processing for Add_SPARK_File
 
@@ -307,6 +314,9 @@ package body SPARK_Specific is
       function Get_Entity_Type (E : Entity_Id) return Character;
       --  Return a character representing the type of entity
 
+      function Get_Scope_Num (N : Entity_Id) return Nat;
+      --  Return the scope number associated to entity N
+
       function Is_Constant_Object_Without_Variable_Input
         (E : Entity_Id) return Boolean;
       --  Return True if E is known to have no variable input, as defined in
@@ -333,6 +343,9 @@ package body SPARK_Specific is
       procedure Move (From : Natural; To : Natural);
       --  Move procedure for Sort call
 
+      procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
+      --  Associate entity N to scope number Num
+
       procedure Update_Scope_Range
         (S    : Scope_Index;
          From : Xref_Index;
@@ -340,12 +353,6 @@ package body SPARK_Specific is
       --  Update the scope which maps to S with the new range From .. To
 
       package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
-
-      function Get_Scope_Num (N : Entity_Id) return Nat;
-      --  Return the scope number associated to entity N
-
-      procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
-      --  Associate entity N to scope number Num
 
       No_Scope : constant Nat := 0;
       --  Initial scope counter
@@ -551,7 +558,7 @@ package body SPARK_Specific is
       -- Lt --
       --------
 
-      function Lt (Op1, Op2 : Natural) return Boolean is
+      function Lt (Op1 : Natural; Op2 : Natural) return Boolean is
          T1 : constant Xref_Entry := Xrefs.Table (Rnums (Nat (Op1)));
          T2 : constant Xref_Entry := Xrefs.Table (Rnums (Nat (Op2)));
 
@@ -767,9 +774,7 @@ package body SPARK_Specific is
          Nrefs     := 1;
 
          for Index in 2 .. Ref_Count loop
-            if Xrefs.Table (Rnums (Index)) /=
-               Xrefs.Table (Rnums (Nrefs))
-            then
+            if Xrefs.Table (Rnums (Index)) /= Xrefs.Table (Rnums (Nrefs)) then
                Nrefs := Nrefs + 1;
                Rnums (Nrefs) := Rnums (Index);
             end if;
@@ -900,7 +905,8 @@ package body SPARK_Specific is
      (Sdep_Table : Unit_Ref_Table;
       Num_Sdep   : Nat)
    is
-      Sdep, Sdep_Next : Pos;
+      Sdep      : Pos;
+      Sdep_Next : Pos;
       --  Index of the current and next source dependency
 
       Sdep_File : Pos;
@@ -908,7 +914,8 @@ package body SPARK_Specific is
       --  library-level instances of generic units this points to the unit
       --  of the body, because this is where references are assigned to.
 
-      Uspec, Ubody : Unit_Number_Type;
+      Ubody : Unit_Number_Type;
+      Uspec : Unit_Number_Type;
       --  Unit numbers for the dependency spec and possibly its body (only in
       --  the case of library-level instance of a generic package).
 
@@ -936,20 +943,22 @@ package body SPARK_Specific is
             declare
                Cunit1 : Node_Id renames Cunit (Sdep_Table (Sdep));
                Cunit2 : Node_Id renames Cunit (Sdep_Table (Sdep + 1));
+
             begin
                --  Both Cunit point to compilation unit nodes
-               pragma Assert (Nkind (Cunit1) = N_Compilation_Unit
-                                and then
-                              Nkind (Cunit2) = N_Compilation_Unit);
+
+               pragma Assert
+                 (Nkind (Cunit1) = N_Compilation_Unit
+                   and then Nkind (Cunit2) = N_Compilation_Unit);
 
                --  Do not depend on the sorting order, which is based on
                --  Unit_Name and for library-level instances of nested
                --  generic-packages they are equal.
 
                --  If declaration comes before the body
+
                if Nkind (Unit (Cunit1)) = N_Package_Declaration
-                 and then
-                  Nkind (Unit (Cunit2)) = N_Package_Body
+                 and then Nkind (Unit (Cunit2)) = N_Package_Body
                then
                   Uspec := Sdep_Table (Sdep);
                   Ubody := Sdep_Table (Sdep + 1);
@@ -959,8 +968,7 @@ package body SPARK_Specific is
                --  If body comes before declaration
 
                elsif Nkind (Unit (Cunit1)) = N_Package_Body
-                       and then
-                     Nkind (Unit (Cunit2)) = N_Package_Declaration
+                 and then Nkind (Unit (Cunit2)) = N_Package_Declaration
                then
                   Uspec := Sdep_Table (Sdep + 1);
                   Ubody := Sdep_Table (Sdep);
@@ -970,18 +978,19 @@ package body SPARK_Specific is
                --  Otherwise it is an error
 
                else
-
                   raise Program_Error;
                end if;
 
                Sdep_Next := Sdep + 2;
             end;
+
+         --  ??? otherwise?
+
          else
             Uspec := Sdep_Table (Sdep);
             Ubody := No_Unit;
 
             Sdep_File := Sdep;
-
             Sdep_Next := Sdep + 1;
          end if;
 
@@ -1191,7 +1200,6 @@ package body SPARK_Specific is
    --  Start of processing for Generate_Dereference
 
    begin
-
       if Loc > No_Location then
          Drefs.Increment_Last;
 
@@ -1234,11 +1242,9 @@ package body SPARK_Specific is
      (CU           : Node_Id;
       Inside_Stubs : Boolean)
    is
-      Lu : Node_Id;
-
       procedure Traverse_Block                      (N : Node_Id);
-      procedure Traverse_Declarations_And_HSS       (N : Node_Id);
       procedure Traverse_Declaration_Or_Statement   (N : Node_Id);
+      procedure Traverse_Declarations_And_HSS       (N : Node_Id);
       procedure Traverse_Declarations_Or_Statements (L : List_Id);
       procedure Traverse_Handled_Statement_Sequence (N : Node_Id);
       procedure Traverse_Package_Body               (N : Node_Id);
@@ -1260,133 +1266,129 @@ package body SPARK_Specific is
       -- Traverse_Declaration_Or_Statement --
       ---------------------------------------
 
-      procedure Traverse_Declaration_Or_Statement (N : Node_Id)
-      is
+      procedure Traverse_Declaration_Or_Statement (N : Node_Id) is
       begin
          case Nkind (N) is
-         when N_Package_Declaration =>
-            Traverse_Visible_And_Private_Parts (Specification (N));
+            when N_Package_Declaration =>
+               Traverse_Visible_And_Private_Parts (Specification (N));
 
-         when N_Package_Body =>
-            if Ekind (Defining_Entity (N)) /= E_Generic_Package then
-               Traverse_Package_Body (N);
-            end if;
+            when N_Package_Body =>
+               if Ekind (Defining_Entity (N)) /= E_Generic_Package then
+                  Traverse_Package_Body (N);
+               end if;
 
-         when N_Package_Body_Stub =>
-            if Present (Library_Unit (N)) then
-               declare
-                  Body_N : constant Node_Id := Get_Body_From_Stub (N);
-               begin
-                  if Inside_Stubs
-                    and then
-                      Ekind (Defining_Entity (Body_N)) /= E_Generic_Package
-                  then
-                     Traverse_Package_Body (Body_N);
-                  end if;
-               end;
-            end if;
+            when N_Package_Body_Stub =>
+               if Present (Library_Unit (N)) then
+                  declare
+                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
+                  begin
+                     if Inside_Stubs
+                       and then Ekind (Defining_Entity (Body_N)) /=
+                                  E_Generic_Package
+                     then
+                        Traverse_Package_Body (Body_N);
+                     end if;
+                  end;
+               end if;
 
-         when N_Subprogram_Body =>
-            if not Is_Generic_Subprogram (Defining_Entity (N)) then
+            when N_Subprogram_Body =>
+               if not Is_Generic_Subprogram (Defining_Entity (N)) then
+                  Traverse_Subprogram_Body (N);
+               end if;
+
+            when N_Entry_Body =>
                Traverse_Subprogram_Body (N);
-            end if;
 
-         when N_Entry_Body =>
-            Traverse_Subprogram_Body (N);
+            when N_Subprogram_Body_Stub =>
+               if Present (Library_Unit (N)) then
+                  declare
+                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
+                  begin
+                     if Inside_Stubs
+                       and then
+                         not Is_Generic_Subprogram (Defining_Entity (Body_N))
+                     then
+                        Traverse_Subprogram_Body (Body_N);
+                     end if;
+                  end;
+               end if;
 
-         when N_Subprogram_Body_Stub =>
-            if Present (Library_Unit (N)) then
-               declare
-                  Body_N : constant Node_Id := Get_Body_From_Stub (N);
-               begin
-                  if Inside_Stubs
-                    and then
-                      not Is_Generic_Subprogram (Defining_Entity (Body_N))
-                  then
-                     Traverse_Subprogram_Body (Body_N);
-                  end if;
-               end;
-            end if;
+            when N_Protected_Body =>
+               Traverse_Protected_Body (N);
 
-         when N_Protected_Body =>
-            Traverse_Protected_Body (N);
-
-         when N_Protected_Body_Stub =>
-            if Present (Library_Unit (N)) then
-               if Inside_Stubs then
+            when N_Protected_Body_Stub =>
+               if Present (Library_Unit (N)) and then Inside_Stubs then
                   Traverse_Protected_Body (Get_Body_From_Stub (N));
                end if;
-            end if;
 
-         when N_Protected_Type_Declaration | N_Single_Protected_Declaration =>
-            Traverse_Visible_And_Private_Parts (Protected_Definition (N));
+            when N_Protected_Type_Declaration   |
+                 N_Single_Protected_Declaration =>
+               Traverse_Visible_And_Private_Parts (Protected_Definition (N));
 
-         when N_Task_Definition =>
-            Traverse_Visible_And_Private_Parts (N);
+            when N_Task_Definition =>
+               Traverse_Visible_And_Private_Parts (N);
 
-         when N_Task_Body =>
-            Traverse_Task_Body (N);
+            when N_Task_Body =>
+               Traverse_Task_Body (N);
 
-         when N_Task_Body_Stub =>
-            if Present (Library_Unit (N)) then
-               if Inside_Stubs then
+            when N_Task_Body_Stub =>
+               if Present (Library_Unit (N)) and then Inside_Stubs then
                   Traverse_Task_Body (Get_Body_From_Stub (N));
                end if;
-            end if;
 
-         when N_Block_Statement =>
-            Traverse_Block (N);
+            when N_Block_Statement =>
+               Traverse_Block (N);
 
-         when N_If_Statement =>
+            when N_If_Statement =>
 
-            --  Traverse the statements in the THEN part
+               --  Traverse the statements in the THEN part
 
-            Traverse_Declarations_Or_Statements (Then_Statements (N));
+               Traverse_Declarations_Or_Statements (Then_Statements (N));
 
-            --  Loop through ELSIF parts if present
+               --  Loop through ELSIF parts if present
 
-            if Present (Elsif_Parts (N)) then
+               if Present (Elsif_Parts (N)) then
+                  declare
+                     Elif : Node_Id := First (Elsif_Parts (N));
+
+                  begin
+                     while Present (Elif) loop
+                        Traverse_Declarations_Or_Statements
+                          (Then_Statements (Elif));
+                        Next (Elif);
+                     end loop;
+                  end;
+               end if;
+
+               --  Finally traverse the ELSE statements if present
+
+               Traverse_Declarations_Or_Statements (Else_Statements (N));
+
+            when N_Case_Statement =>
+
+               --  Process case branches
+
                declare
-                  Elif : Node_Id := First (Elsif_Parts (N));
-
+                  Alt : Node_Id;
                begin
-                  while Present (Elif) loop
-                     Traverse_Declarations_Or_Statements
-                       (Then_Statements (Elif));
-                     Next (Elif);
+                  Alt := First (Alternatives (N));
+                  while Present (Alt) loop
+                     Traverse_Declarations_Or_Statements (Statements (Alt));
+                     Next (Alt);
                   end loop;
                end;
-            end if;
 
-            --  Finally traverse the ELSE statements if present
+            when N_Extended_Return_Statement =>
+               Traverse_Handled_Statement_Sequence
+                 (Handled_Statement_Sequence (N));
 
-            Traverse_Declarations_Or_Statements (Else_Statements (N));
+            when N_Loop_Statement =>
+               Traverse_Declarations_Or_Statements (Statements (N));
 
-         when N_Case_Statement =>
+               --  Generic declarations are ignored
 
-            --  Process case branches
-
-            declare
-               Alt : Node_Id;
-            begin
-               Alt := First (Alternatives (N));
-               while Present (Alt) loop
-                  Traverse_Declarations_Or_Statements (Statements (Alt));
-                  Next (Alt);
-               end loop;
-            end;
-
-         when N_Extended_Return_Statement =>
-            Traverse_Handled_Statement_Sequence
-              (Handled_Statement_Sequence (N));
-
-         when N_Loop_Statement =>
-            Traverse_Declarations_Or_Statements (Statements (N));
-
-            --  Generic declarations are ignored
-
-         when others =>
-            null;
+            when others =>
+               null;
          end case;
       end Traverse_Declaration_Or_Statement;
 
@@ -1394,8 +1396,7 @@ package body SPARK_Specific is
       -- Traverse_Declarations_And_HSS --
       -----------------------------------
 
-      procedure Traverse_Declarations_And_HSS (N : Node_Id)
-      is
+      procedure Traverse_Declarations_And_HSS (N : Node_Id) is
       begin
          Traverse_Declarations_Or_Statements (Declarations (N));
          Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
@@ -1405,8 +1406,7 @@ package body SPARK_Specific is
       -- Traverse_Declarations_Or_Statements --
       -----------------------------------------
 
-      procedure Traverse_Declarations_Or_Statements (L : List_Id)
-      is
+      procedure Traverse_Declarations_Or_Statements (L : List_Id) is
          N : Node_Id;
 
       begin
@@ -1414,13 +1414,12 @@ package body SPARK_Specific is
 
          N := First (L);
          while Present (N) loop
+
             --  Call Process on all declarations
 
             if Nkind (N) in N_Declaration
-              or else
-                Nkind (N) in N_Later_Decl_Item
-              or else
-                Nkind (N) = N_Entry_Body
+              or else Nkind (N) in N_Later_Decl_Item
+              or else Nkind (N) = N_Entry_Body
             then
                Process (N);
             end if;
@@ -1435,8 +1434,7 @@ package body SPARK_Specific is
       -- Traverse_Handled_Statement_Sequence --
       -----------------------------------------
 
-      procedure Traverse_Handled_Statement_Sequence (N : Node_Id)
-      is
+      procedure Traverse_Handled_Statement_Sequence (N : Node_Id) is
          Handler : Node_Id;
 
       begin
@@ -1483,11 +1481,19 @@ package body SPARK_Specific is
       procedure Traverse_Task_Body (N : Node_Id) renames
         Traverse_Declarations_And_HSS;
 
+      ----------------------------------------
+      -- Traverse_Visible_And_Private_Parts --
+      ----------------------------------------
+
       procedure Traverse_Visible_And_Private_Parts (N : Node_Id) is
       begin
          Traverse_Declarations_Or_Statements (Visible_Declarations (N));
          Traverse_Declarations_Or_Statements (Private_Declarations (N));
       end Traverse_Visible_And_Private_Parts;
+
+      --  Local variables
+
+      Lu : Node_Id;
 
    --  Start of processing for Traverse_Compilation_Unit
 
