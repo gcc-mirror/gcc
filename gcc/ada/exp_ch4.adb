@@ -6107,18 +6107,60 @@ package body Exp_Ch4 is
       --  (the check is only done when the right operand is a subtype; see
       --  RM12-4.5.2 (28.1/3-30/3)).
 
-      declare
+      Predicate_Check : declare
+         function In_Range_Check return Boolean;
+         --  Within an expanded range check that may raise Constraint_Error do
+         --  not generate a predicate check as well. It is redundant because
+         --  the context will add an explicit predicate check, and it will
+         --  raise the wrong exception if it fails.
+
+         --------------------
+         -- In_Range_Check --
+         --------------------
+
+         function In_Range_Check return Boolean is
+            P : Node_Id;
+         begin
+            P := Parent (N);
+            while Present (P) loop
+               if Nkind (P) = N_Raise_Constraint_Error then
+                  return True;
+
+               elsif Nkind (P) in N_Statement_Other_Than_Procedure_Call
+                 or else Nkind (P) = N_Procedure_Call_Statement
+                 or else Nkind (P) in N_Declaration
+               then
+                  return False;
+               end if;
+
+               P := Parent (P);
+            end loop;
+
+            return False;
+         end In_Range_Check;
+
+         --  Local variables
+
          PFunc : constant Entity_Id := Predicate_Function (Rtyp);
+         R_Op  : Node_Id;
+
+      --  Start of processing for Predicate_Check
 
       begin
          if Present (PFunc)
            and then Current_Scope /= PFunc
            and then Nkind (Rop) /= N_Range
          then
+            if not In_Range_Check then
+               R_Op := Make_Predicate_Call (Rtyp, Lop, Mem => True);
+            else
+               R_Op := New_Occurrence_Of (Standard_True, Loc);
+            end if;
+
             Rewrite (N,
               Make_And_Then (Loc,
                 Left_Opnd  => Relocate_Node (N),
-                Right_Opnd => Make_Predicate_Call (Rtyp, Lop, Mem => True)));
+                Right_Opnd => R_Op));
 
             --  Analyze new expression, mark left operand as analyzed to
             --  avoid infinite recursion adding predicate calls. Similarly,
@@ -6131,7 +6173,7 @@ package body Exp_Ch4 is
 
             return;
          end if;
-      end;
+      end Predicate_Check;
    end Expand_N_In;
 
    --------------------------------

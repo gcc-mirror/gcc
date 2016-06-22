@@ -1,3 +1,13 @@
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (In_Range_Chec)): New predicate, subsidiary of
+	Expand_N_In: within an expanded range check that might raise
+	Constraint_Error do not generate a predicate check as well. It
+	is redundant because the context will add an explicit predicate
+	check, and it will raise the wrong exception if it fails.
+	* lib-xref-spark_specific.adb (Add_SPARK_File): Remove useless checks
+	since dependency units always have an associated compilation unit.
+
 2016-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib.ads: Code cleanup.

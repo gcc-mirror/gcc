@@ -153,35 +153,26 @@ package body SPARK_Specific is
       --  Subunits are traversed as part of the top-level unit to which they
       --  belong.
 
-      if Present (Cunit (Ubody))
-        and then Nkind (Unit (Cunit (Ubody))) = N_Subunit
-      then
+      if Nkind (Unit (Cunit (Ubody))) = N_Subunit then
          return;
       end if;
 
       From := SPARK_Scope_Table.Last + 1;
 
-      --  Unit might not have an associated compilation unit, as seen in code
-      --  filling Sdep_Table in Write_ALI.
-
-      if Present (Cunit (Ubody)) then
-         Traverse_Compilation_Unit
-           (CU           => Cunit (Ubody),
-            Process      => Detect_And_Add_SPARK_Scope'Access,
-            Inside_Stubs => True);
-      end if;
+      Traverse_Compilation_Unit
+        (CU           => Cunit (Ubody),
+         Process      => Detect_And_Add_SPARK_Scope'Access,
+         Inside_Stubs => True);
 
       --  When two units are present for the same compilation unit, as it
       --  happens for library-level instantiations of generics, then add all
       --  scopes to the same SPARK file.
 
       if Ubody /= Uspec then
-         if Present (Cunit (Uspec)) then
-            Traverse_Compilation_Unit
-              (CU           => Cunit (Uspec),
-               Process      => Detect_And_Add_SPARK_Scope'Access,
-               Inside_Stubs => True);
-         end if;
+         Traverse_Compilation_Unit
+           (CU           => Cunit (Uspec),
+            Process      => Detect_And_Add_SPARK_Scope'Access,
+            Inside_Stubs => True);
       end if;
 
       --  Update scope numbers
@@ -209,8 +200,7 @@ package body SPARK_Specific is
       --  For subunits, also retrieve the file name of the unit. Only do so if
       --  unit has an associated compilation unit.
 
-      if Present (Cunit (Uspec))
-        and then Present (Cunit (Unit (File)))
+      if Present (Cunit (Unit (File)))
         and then Nkind (Unit (Cunit (Unit (File)))) = N_Subunit
       then
          Get_Name_String (Reference_Name (Main_Source_File));
