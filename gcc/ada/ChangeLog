@@ -1,3 +1,8 @@
+2016-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb: Revert unwanted change in previous commit,
+	only keep message fix.
+
 2016-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.ads (Build_Classwide_Expression): new procedure to
