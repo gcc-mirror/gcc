@@ -285,7 +285,7 @@ package SPARK_Xrefs is
       File_Num : Nat;
       --  Set to the file dependency number for the scope
 
-      Scope_Num : Nat;
+      Scope_Num : Pos;
       --  Set to the scope number for the scope
 
       Spec_File_Num : Nat;

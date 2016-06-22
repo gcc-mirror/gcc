@@ -639,16 +639,6 @@ package Lib.Xref is
       --  This procedure is called to record a dereference. N is the location
       --  of the dereference.
 
-      type Node_Processing is access procedure (N : Node_Id);
-
-      procedure Traverse_Compilation_Unit
-        (CU           : Node_Id;
-         Process      : Node_Processing;
-         Inside_Stubs : Boolean);
-      --  Call Process on all declarations in compilation unit CU. If
-      --  Inside_Stubs is True, then the body of stubs is also traversed.
-      --  Generic declarations are ignored.
-
       procedure Collect_SPARK_Xrefs
         (Sdep_Table : Unit_Ref_Table;
          Num_Sdep   : Nat);
