@@ -1,5 +1,45 @@
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* directives.c (do_include_common): Pass on "location" to
+	_cpp_stack_include.
+	* errors.c (cpp_diagnostic): Reimplement in terms of...
+	(cpp_diagnostic_at): New function.
+	(cpp_error_at): New function.
+	(cpp_errno_filename): Add "loc" param and use it by using
+	cpp_error_at rather than cpp_error.
+	* files.c (find_file_in_dir): Add "loc" param and pass it to
+	open_file_failed.
+	(_cpp_find_file): Add "loc" param.  Use it to convert calls to
+	cpp_error to cpp_error_at, and pass it to find_file_in_dir and
+	open_file_failed.
+	(read_file_guts): Add "loc" param.  Use it to convert calls to
+	cpp_error to cpp_error_at.  Pass it to cpp_errno_filename.
+	(read_file): Add "loc" param.  Pass it to open_file_failed and
+	read_file_guts.
+	(should_stack_file): Add "loc" param.  Pass it to read_file.
+	(_cpp_stack_file): Add "loc" param.  Pass it to should_stack_file.
+	(_cpp_stack_include): Add "loc" param.  Pass it to
+	_cpp_find_file and _cpp_stack_file.
+	(open_file_failed): Add "loc" param.  Pass it to
+	cpp_errno_filename.
+	(_cpp_fake_include): Add 0 as a source_location in call to
+	_cpp_find_file.
+	(_cpp_compare_file_date): Likewise.
+	(cpp_push_include): Likewise for call to _cpp_stack_include.
+	(cpp_push_default_include): Likewise.
+	(_cpp_save_file_entries): Likewise for call to open_file_failed.
+	(_cpp_has_header): Likewise for call to _cpp_find_file.
+	* include/cpplib.h (cpp_errno_filename): Add source_location
+	param.
+	(cpp_error_at): New declaration.
+	* init.c (cpp_read_main_file): Add 0 as a source_location in calls
+	to _cpp_find_file and _cpp_stack_file.
+	* internal.h (_cpp_find_file): Add source_location param.
+	(_cpp_stack_file): Likewise.
+	(_cpp_stack_include): Likewise.
+
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* include/line-map.h (fixit_hint::get_start_loc): New pure virtual
 	function.
 	(fixit_hint::maybe_get_end_loc): Likewise.
