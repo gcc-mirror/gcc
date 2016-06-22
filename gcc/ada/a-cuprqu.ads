@@ -123,10 +123,10 @@ package Ada.Containers.Unbounded_Priority_Queues is
       overriding function Peak_Use return Count_Type;
 
    private
-      Q_Elems              : Set;
+      Q_Elems : Set;
       --  Elements of the queue
 
-      Max_Length           : Count_Type := 0;
+      Max_Length : Count_Type := 0;
       --  The current length of the queue is the Length of Q_Elems. This is the
       --  maximum value of that, so far. Updated by Enqueue.
 

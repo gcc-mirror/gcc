@@ -65,6 +65,9 @@ package Sem_Util is
    --  and one of the types is (a descendant of) System.Address (and this type
    --  is private), and the other type is any integer type.
 
+   function Address_Value (N : Node_Id) return Node_Id;
+   --  Return the underlying value of the expression N of an address clause
+
    function Addressable (V : Uint) return Boolean;
    function Addressable (V : Int)  return Boolean;
    pragma Inline (Addressable);
