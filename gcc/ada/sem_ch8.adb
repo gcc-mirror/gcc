@@ -1037,8 +1037,8 @@ package body Sem_Ch8 is
            and then not Is_Access_Constant (Etype (Nam))
          then
             Error_Msg_N
-               ("(Ada 2005): the renamed object is not access-to-constant "
-                & "(RM 8.5.1(6))", N);
+              ("(Ada 2005): the renamed object is not access-to-constant "
+               & "(RM 8.5.1(6))", N);
 
          elsif not Constant_Present (Access_Definition (N))
            and then Is_Access_Constant (Etype (Nam))
