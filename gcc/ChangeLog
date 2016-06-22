@@ -1,3 +1,17 @@
+2016-06-22  Nick Clifton  <nickc@redhat.com>
+
+	* dwarf2out.c (scompare_loc_descriptor): Use SCALAR_INT_MODE_P() in
+	place of GET_MODE_CLASS() == MODE_INT, so that partial integer
+	modes are accepted as well.
+	(ucompare_loc_descriptor): Likewise.
+	(minmax_loc_descriptor): Likewise.
+	(clz_loc_descriptor): Likewise.
+	(popcount_loc_descriptor): Likewise.
+	(bswap_loc_descriptor): Likewise.
+	(rotate_loc_descriptor): Likewise.
+	(mem_loc_descriptor): Likewise.
+	(loc_descriptor): Likewise.
+
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-parseable-fixits): New option.
