@@ -8192,10 +8192,22 @@ package body Sem_Ch8 is
          SST.Save_Default_SSO              := Default_SSO;
          SST.Save_Uneval_Old               := Uneval_Old;
 
+         --  Each new scope pushed onto the scope stack inherits the component
+         --  alignment of the previous scope. This emulates the "visibility"
+         --  semantics of pragma Component_Alignment.
+
          if Scope_Stack.Last > Scope_Stack.First then
             SST.Component_Alignment_Default := Scope_Stack.Table
                                                  (Scope_Stack.Last - 1).
                                                    Component_Alignment_Default;
+
+         --  Otherwise, this is the first scope being pushed on the scope
+         --  stack. Inherit the component alignment from the configuration
+         --  form of pragma Component_Alignment (if any).
+
+         else
+            SST.Component_Alignment_Default :=
+              Configuration_Component_Alignment;
          end if;
 
          SST.Last_Subprogram_Name           := null;

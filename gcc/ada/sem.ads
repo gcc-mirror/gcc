@@ -461,6 +461,11 @@ package Sem is
    --  Transient blocks have three associated actions list, to be inserted
    --  before and after the block's statements, and as cleanup actions.
 
+   Configuration_Component_Alignment : Component_Alignment_Kind :=
+                                         Calign_Default;
+   --  Used for handling the pragma Component_Alignment in the context of a
+   --  configuration file.
+
    type Scope_Stack_Entry is record
       Entity : Entity_Id;
       --  Entity representing the scope

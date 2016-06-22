@@ -12787,9 +12787,21 @@ package body Sem_Prag is
                  ("invalid Form parameter for pragma%", Form);
             end if;
 
+            --  The pragma appears in a configuration file
+
+            if No (Parent (N)) then
+               Check_Valid_Configuration_Pragma;
+
+               --  Capture the component alignment in a global variable when
+               --  the pragma appears in a configuration file. Note that the
+               --  scope stack is empty at this point and cannot be used to
+               --  store the alignment value.
+
+               Configuration_Component_Alignment := Atype;
+
             --  Case with no name, supplied, affects scope table entry
 
-            if No (Name) then
+            elsif No (Name) then
                Scope_Stack.Table
                  (Scope_Stack.Last).Component_Alignment_Default := Atype;
 
@@ -20901,7 +20913,7 @@ package body Sem_Prag is
             Mode_Id := Get_SPARK_Mode_Type (Mode);
             Context := Parent (N);
 
-            --  The pragma appears in a configuration pragmas file
+            --  The pragma appears in a configuration file
 
             if No (Context) then
                Check_Valid_Configuration_Pragma;

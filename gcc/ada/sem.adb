@@ -1355,7 +1355,8 @@ package body Sem is
          Outer_Generic_Scope := Empty;
          Scope_Suppress      := Suppress_Options;
          Scope_Stack.Table
-           (Scope_Stack.Last).Component_Alignment_Default := Calign_Default;
+           (Scope_Stack.Last).Component_Alignment_Default :=
+             Configuration_Component_Alignment;
          Scope_Stack.Table
            (Scope_Stack.Last).Is_Active_Stack_Base := True;
 
