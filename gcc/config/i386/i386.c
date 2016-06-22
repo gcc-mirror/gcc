@@ -17246,9 +17246,14 @@ print_reg (rtx x, int code, FILE *file)
 
   gcc_assert (regno != ARG_POINTER_REGNUM
 	      && regno != FRAME_POINTER_REGNUM
-	      && regno != FLAGS_REG
 	      && regno != FPSR_REG
 	      && regno != FPCR_REG);
+
+  if (regno == FLAGS_REG)
+    {
+      output_operand_lossage ("invalid use of asm flag output");
+      return;
+    }
 
   duplicated = code == 'd' && TARGET_AVX;
 
