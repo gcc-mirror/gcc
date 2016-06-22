@@ -4616,7 +4616,7 @@ package body Exp_Ch7 is
       Set_Ghost_Mode_From_Entity (Work_Typ);
 
       --  Emulate the environment of the invariant procedure by installing
-      --  its scope and formal parameters. Note that this is not need, but
+      --  its scope and formal parameters. Note that this is not needed, but
       --  having the scope of the invariant procedure installed helps with
       --  the detection of invariant-related errors.
 
