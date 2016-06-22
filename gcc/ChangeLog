@@ -1,3 +1,21 @@
+2016-06-23  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67400
+	* config/i386/i386-protos.h (ix86_force_load_from_GOT_p): New.
+	* config/i386/i386.c (ix86_force_load_from_GOT_p): New function.
+	(ix86_legitimate_constant_p): Do not allow UNSPEC_GOTPCREL if
+	ix86_force_load_from_GOT_p returns true.
+	(ix86_legitimate_address_p): Allow UNSPEC_GOTPCREL if
+	ix86_force_load_from_GOT_p returns true.
+	(ix86_print_operand_address_as): Support UNSPEC_GOTPCREL if
+	ix86_force_load_from_GOT_p returns true.
+	(ix86_expand_move): Load the external function address via the
+	GOT slot if ix86_force_load_from_GOT_p returns true.
+	* config/i386/predicates.md (x86_64_immediate_operand): Return
+	false for SYMBOL_REFs where ix86_force_load_from_GOT_p returns true.
+	(x86_64_zext_immediate_operand): Ditto.
+
 2016-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_move): Simplify SYMBOL_REF handling.

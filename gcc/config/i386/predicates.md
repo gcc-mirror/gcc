@@ -160,13 +160,18 @@
         return trunc_int_for_mode (val, SImode) == val;
       }
     case SYMBOL_REF:
+      /* TLS symbols are not constant.  */
+      if (SYMBOL_REF_TLS_MODEL (op))
+	return false;
+
+      /* Load the external function address via the GOT slot.  */
+      if (ix86_force_load_from_GOT_p (op))
+	return false;
+
       /* For certain code models, the symbolic references are known to fit.
 	 in CM_SMALL_PIC model we know it fits if it is local to the shared
 	 library.  Don't count TLS SYMBOL_REFs here, since they should fit
 	 only if inside of UNSPEC handled below.  */
-      /* TLS symbols are not constant.  */
-      if (SYMBOL_REF_TLS_MODEL (op))
-	return false;
       return (ix86_cmodel == CM_SMALL || ix86_cmodel == CM_KERNEL
 	      || (ix86_cmodel == CM_MEDIUM && !SYMBOL_REF_FAR_ADDR_P (op)));
 
@@ -207,6 +212,11 @@
 	      /* TLS symbols are not constant.  */
 	      if (SYMBOL_REF_TLS_MODEL (op1))
 		return false;
+
+	      /* Load the external function address via the GOT slot.  */
+	      if (ix86_force_load_from_GOT_p (op1))
+	        return false;
+
 	      /* For CM_SMALL assume that latest object is 16MB before
 		 end of 31bits boundary.  We may also accept pretty
 		 large negative constants knowing that all objects are
@@ -273,10 +283,15 @@
       return !(INTVAL (op) & ~(HOST_WIDE_INT) 0xffffffff);
 
     case SYMBOL_REF:
-      /* For certain code models, the symbolic references are known to fit.  */
       /* TLS symbols are not constant.  */
       if (SYMBOL_REF_TLS_MODEL (op))
 	return false;
+
+      /* Load the external function address via the GOT slot.  */
+      if (ix86_force_load_from_GOT_p (op))
+	return false;
+
+     /* For certain code models, the symbolic references are known to fit.  */
       return (ix86_cmodel == CM_SMALL
 	      || (ix86_cmodel == CM_MEDIUM
 		  && !SYMBOL_REF_FAR_ADDR_P (op)));
@@ -301,6 +316,11 @@
 	      /* TLS symbols are not constant.  */
 	      if (SYMBOL_REF_TLS_MODEL (op1))
 		return false;
+
+	      /* Load the external function address via the GOT slot.  */
+	      if (ix86_force_load_from_GOT_p (op1))
+	        return false;
+
 	      /* For small code model we may accept pretty large positive
 		 offsets, since one bit is available for free.  Negative
 		 offsets are limited by the size of NULL pointer area
