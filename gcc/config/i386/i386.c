@@ -19393,50 +19393,62 @@ void
 ix86_expand_move (machine_mode mode, rtx operands[])
 {
   rtx op0, op1;
+  rtx tmp, addend = NULL_RTX;
   enum tls_model model;
 
   op0 = operands[0];
   op1 = operands[1];
 
-  if (GET_CODE (op1) == SYMBOL_REF)
+  switch (GET_CODE (op1))
     {
-      rtx tmp;
+    case CONST:
+      tmp = XEXP (op1, 0);
 
+      if (GET_CODE (tmp) != PLUS
+	  || GET_CODE (XEXP (tmp, 0)) != SYMBOL_REF)
+	break;
+
+      op1 = XEXP (tmp, 0);
+      addend = XEXP (tmp, 1);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
       model = SYMBOL_REF_TLS_MODEL (op1);
-      if (model)
-	{
-	  op1 = legitimize_tls_address (op1, model, true);
-	  op1 = force_operand (op1, op0);
-	  if (op1 == op0)
-	    return;
-	  op1 = convert_to_mode (mode, op1, 1);
-	}
-      else if ((tmp = legitimize_pe_coff_symbol (op1, false)) != NULL_RTX)
-	op1 = tmp;
-    }
-  else if (GET_CODE (op1) == CONST
-	   && GET_CODE (XEXP (op1, 0)) == PLUS
-	   && GET_CODE (XEXP (XEXP (op1, 0), 0)) == SYMBOL_REF)
-    {
-      rtx addend = XEXP (XEXP (op1, 0), 1);
-      rtx symbol = XEXP (XEXP (op1, 0), 0);
-      rtx tmp;
 
-      model = SYMBOL_REF_TLS_MODEL (symbol);
       if (model)
-	tmp = legitimize_tls_address (symbol, model, true);
+	op1 = legitimize_tls_address (op1, model, true);
       else
-        tmp = legitimize_pe_coff_symbol (symbol, true);
-
-      if (tmp)
 	{
-	  tmp = force_operand (tmp, NULL);
-	  tmp = expand_simple_binop (Pmode, PLUS, tmp, addend,
-				     op0, 1, OPTAB_DIRECT);
-	  if (tmp == op0)
-	    return;
-	  op1 = convert_to_mode (mode, tmp, 1);
+	  tmp = legitimize_pe_coff_symbol (op1, addend != NULL_RTX);
+	  if (tmp)
+	    {
+	      op1 = tmp;
+	      if (!addend)
+		break;
+	    }
+	  else
+	    {
+	      op1 = operands[1];
+	      break;
+	    }
 	}
+
+      if (addend)
+	{
+	  op1 = force_operand (op1, NULL_RTX);
+	  op1 = expand_simple_binop (Pmode, PLUS, op1, addend,
+				     op0, 1, OPTAB_DIRECT);
+	}
+      else
+	op1 = force_operand (op1, op0);
+
+      if (op1 == op0)
+	return;
+
+      op1 = convert_to_mode (mode, op1, 1);
+
+    default:
+      break;
     }
 
   if ((flag_pic || MACHOPIC_INDIRECT)

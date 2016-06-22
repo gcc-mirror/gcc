@@ -1,3 +1,7 @@
+2016-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_move): Simplify SYMBOL_REF handling.
+
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70339
