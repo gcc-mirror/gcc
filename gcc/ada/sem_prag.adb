@@ -26348,8 +26348,8 @@ package body Sem_Prag is
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
             end if;
 
-            --  Check that there are no calls left to abstract operations
-            --  if the current subprogram is not abstract.
+            --  Check that there are no calls left to abstract operations if
+            --  the current subprogram is not abstract.
 
             if Nkind (Parent (N)) = N_Function_Call
               and then N = Name (Parent (N))
@@ -27168,8 +27168,9 @@ package body Sem_Prag is
                end if;
 
                New_Prag :=
-                 Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp,
-                                                Keep_Pragma_Id => True);
+                 Build_Pragma_Check_Equivalent
+                   (Prag, Subp, Parent_Subp, Keep_Pragma_Id => True);
+
                Insert_After (Unit_Declaration_Node (Subp), New_Prag);
                Preanalyze (New_Prag);
 
