@@ -5060,11 +5060,14 @@ package body Sem_Prag is
             Analyze_And_Resolve (Expr);
          end if;
 
-         if Is_OK_Static_Expression (Expr) then
-            return;
+         --  An expression cannot be considered static if its resolution failed
+         --  or if it erroneous. Stop the analysis of the related pragma.
 
-         elsif Etype (Expr) = Any_Type then
+         if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
             raise Pragma_Exit;
+
+         elsif Is_OK_Static_Expression (Expr) then
+            return;
 
          --  An interesting special case, if we have a string literal and we
          --  are in Ada 83 mode, then we allow it even though it will not be
@@ -5076,12 +5079,6 @@ package body Sem_Prag is
            and then Nkind (Expr) = N_String_Literal
          then
             return;
-
-         --  Static expression that raises Constraint_Error. This has already
-         --  been flagged, so just exit from pragma processing.
-
-         elsif Is_OK_Static_Expression (Expr) then
-            raise Pragma_Exit;
 
          --  Finally, we have a real error
 

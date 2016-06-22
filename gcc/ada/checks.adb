@@ -2650,7 +2650,17 @@ package body Checks is
 
             Check_Expression_Against_Static_Predicate (N, Typ);
 
-            if Is_Entity_Name (N) then
+            if not Expander_Active then
+               return;
+            end if;
+
+            --  For an entity of the type, generate a call to the predicate
+            --  function, unless its type is an actual subtype, which is not
+            --  visible outside of the enclosing subprogram.
+
+            if Is_Entity_Name (N)
+              and then not Is_Actual_Subtype (Typ)
+            then
                Insert_Action (N,
                  Make_Predicate_Check
                    (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
