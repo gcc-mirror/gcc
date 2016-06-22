@@ -418,25 +418,25 @@ package Lib is
       --  but tools can use this status (e.g. ASIS looking at the generated
       --  tree) to know that a fatal error was detected.
 
-   function Cunit             (U : Unit_Number_Type) return Node_Id;
-   function Cunit_Entity      (U : Unit_Number_Type) return Entity_Id;
-   function Dependency_Num    (U : Unit_Number_Type) return Nat;
-   function Dynamic_Elab      (U : Unit_Number_Type) return Boolean;
-   function Error_Location    (U : Unit_Number_Type) return Source_Ptr;
-   function Expected_Unit     (U : Unit_Number_Type) return Unit_Name_Type;
-   function Fatal_Error       (U : Unit_Number_Type) return Fatal_Type;
-   function Generate_Code     (U : Unit_Number_Type) return Boolean;
-   function Ident_String      (U : Unit_Number_Type) return Node_Id;
-   function Has_RACW          (U : Unit_Number_Type) return Boolean;
-   function Loading           (U : Unit_Number_Type) return Boolean;
-   function Main_CPU          (U : Unit_Number_Type) return Int;
-   function Main_Priority     (U : Unit_Number_Type) return Int;
-   function Munit_Index       (U : Unit_Number_Type) return Nat;
-   function No_Elab_Code_All  (U : Unit_Number_Type) return Boolean;
-   function OA_Setting        (U : Unit_Number_Type) return Character;
-   function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
-   function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
-   function Unit_Name         (U : Unit_Number_Type) return Unit_Name_Type;
+   function Cunit            (U : Unit_Number_Type) return Node_Id;
+   function Cunit_Entity     (U : Unit_Number_Type) return Entity_Id;
+   function Dependency_Num   (U : Unit_Number_Type) return Nat;
+   function Dynamic_Elab     (U : Unit_Number_Type) return Boolean;
+   function Error_Location   (U : Unit_Number_Type) return Source_Ptr;
+   function Expected_Unit    (U : Unit_Number_Type) return Unit_Name_Type;
+   function Fatal_Error      (U : Unit_Number_Type) return Fatal_Type;
+   function Generate_Code    (U : Unit_Number_Type) return Boolean;
+   function Ident_String     (U : Unit_Number_Type) return Node_Id;
+   function Has_RACW         (U : Unit_Number_Type) return Boolean;
+   function Loading          (U : Unit_Number_Type) return Boolean;
+   function Main_CPU         (U : Unit_Number_Type) return Int;
+   function Main_Priority    (U : Unit_Number_Type) return Int;
+   function Munit_Index      (U : Unit_Number_Type) return Nat;
+   function No_Elab_Code_All (U : Unit_Number_Type) return Boolean;
+   function OA_Setting       (U : Unit_Number_Type) return Character;
+   function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
+   function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
+   function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
 
    procedure Set_Cunit            (U : Unit_Number_Type; N : Node_Id);
@@ -485,7 +485,7 @@ package Lib is
 
    function Exact_Source_Name (Loc : Source_Ptr) return String;
    --  Return name of entity at location Loc exactly as written in the source.
-   --  this includes copying the wide character encodings exactly as they were
+   --  This includes copying the wide character encodings exactly as they were
    --  used in the source, so the caller must be aware of the possibility of
    --  such encodings.
 

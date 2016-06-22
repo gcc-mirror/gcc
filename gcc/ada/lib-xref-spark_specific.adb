@@ -201,27 +201,6 @@ package body SPARK_Specific is
          end loop;
       end;
 
-      --  Remove those scopes previously marked for removal
-
-      declare
-         Scope_Id : Scope_Index;
-
-      begin
-         Scope_Id := From;
-         for Index in From .. SPARK_Scope_Table.Last loop
-            declare
-               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
-            begin
-               if S.Scope_Num /= 0 then
-                  SPARK_Scope_Table.Table (Scope_Id) := S;
-                  Scope_Id := Scope_Id + 1;
-               end if;
-            end;
-         end loop;
-
-         SPARK_Scope_Table.Set_Last (Scope_Id - 1);
-      end;
-
       --  Make entry for new file in file table
 
       Get_Name_String (Reference_Name (File));
@@ -236,6 +215,8 @@ package body SPARK_Specific is
       then
          Get_Name_String (Reference_Name (Main_Source_File));
          Unit_File_Name := new String'(Name_Buffer (1 .. Name_Len));
+      else
+         Unit_File_Name := null;
       end if;
 
       SPARK_File_Table.Append (
