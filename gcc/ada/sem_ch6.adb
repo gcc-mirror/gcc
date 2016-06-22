@@ -10535,13 +10535,6 @@ package body Sem_Ch6 is
                         Set_Convention (S, Convention (E));
                         Check_Dispatching_Operation (S, E);
 
-                        --  In GNATprove_Mode, create the pragmas corresponding
-                        --  to inherited class-wide conditions.
-
-                        if GNATprove_Mode then
-                           Collect_Inherited_Class_Wide_Conditions (S);
-                        end if;
-
                      else
                         Check_Dispatching_Operation (S, Empty);
                      end if;

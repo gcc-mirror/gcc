@@ -1,3 +1,30 @@
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.ads (Build_Classwide_Expression): new procedure to
+	build the expression for an inherited classwide condition, and
+	to validate such expressions when they apply to an inherited
+	operation that is not overridden.
+	* sem_prag.adb (Primitives_Mapping): new data structure to
+	handle the mapping between operations of a root type and the
+	corresponding overriding operations of a type extension. Used
+	to construct the expression for an inherited classwide condition.
+	(Update_Primitives_Mapping): add to Primitives_Mapping the links
+	between primitive operations of a root type and those of a given
+	type extension.
+	(Build_Pragma_Check_Equivalent): use Primitives_Mapping.
+	* sem_ch6.adb (New_Overloaded_Entity): Remove call to
+	Collect_Iherited_Class_Wide_Conditions in GNATprove_Mode. This
+	needs to be done at freeze point of the type.
+	* freeze.adb (Check_Inherited_Conditions): new procedure to
+	verify the legality of inherited classwide conditions. In normal
+	compilation mode the procedure determines whether an inherited
+	operation needs a wrapper to handle an inherited condition that
+	differs from the condition of the root type.  In SPARK mode
+	the routine invokes Collect_Inherited_Class_Wide_Conditions to
+	produce the SPARK version of these inherited conditions.
+	(Freeze_Record_Type): For a type extension, call
+	Check_Inherited_Conditions.
+
 2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, sem_type.adb, sem.adb, freeze.adb, sem_util.adb,
