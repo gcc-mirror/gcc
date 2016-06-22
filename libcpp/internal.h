@@ -645,13 +645,14 @@ extern void _cpp_destroy_hashtable (cpp_reader *);
 /* In files.c */
 typedef struct _cpp_file _cpp_file;
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
-				  bool, int, bool);
+				  bool, int, bool, source_location);
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
-extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool);
+extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool,
+			     source_location);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
-				enum include_type);
+				enum include_type, source_location);
 extern int _cpp_compare_file_date (cpp_reader *, const char *, int);
 extern void _cpp_report_missing_guards (cpp_reader *);
 extern void _cpp_init_files (cpp_reader *);

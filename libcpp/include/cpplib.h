@@ -992,7 +992,8 @@ extern bool cpp_warning_syshdr (cpp_reader *, int, const char *msgid, ...)
 extern bool cpp_errno (cpp_reader *, int, const char *msgid);
 /* Similarly, but with "FILENAME: " instead of "MSGID: ", where
    the filename is not localized.  */
-extern bool cpp_errno_filename (cpp_reader *, int, const char *filename);
+extern bool cpp_errno_filename (cpp_reader *, int, const char *filename,
+				source_location loc);
 
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
@@ -1009,6 +1010,10 @@ extern bool cpp_pedwarning_with_line (cpp_reader *, int, source_location,
 extern bool cpp_warning_with_line_syshdr (cpp_reader *, int, source_location,
                                           unsigned, const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
+
+extern bool cpp_error_at (cpp_reader * pfile, int level,
+			  source_location src_loc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */
 extern int cpp_ideq (const cpp_token *, const char *);

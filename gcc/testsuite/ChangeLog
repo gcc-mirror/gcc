@@ -1,5 +1,12 @@
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-c++-common/missing-header-1.c: New test case.
+	* c-c++-common/missing-header-2.c: New test case.
+	* c-c++-common/missing-header-3.c: New test case.
+	* c-c++-common/missing-header-4.c: New test case.
+
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c/70339
 	* c-c++-common/attributes-1.c: Update dg-prune-output to include
 	hint.
