@@ -15120,6 +15120,19 @@ darwin_local_data_pic (rtx disp)
 	  && XINT (disp, 1) == UNSPEC_MACHOPIC_OFFSET);
 }
 
+/* True if operand X should be loaded from GOT.  */
+
+bool
+ix86_force_load_from_GOT_p (rtx x)
+{
+  return (TARGET_64BIT && !TARGET_PECOFF && !TARGET_MACHO
+	  && !flag_plt && !flag_pic
+	  && ix86_cmodel != CM_LARGE
+	  && GET_CODE (x) == SYMBOL_REF
+	  && SYMBOL_REF_FUNCTION_P (x)
+	  && !SYMBOL_REF_LOCAL_P (x));
+}
+
 /* Determine if a given RTX is a valid constant.  We already know this
    satisfies CONSTANT_P.  */
 
@@ -15188,6 +15201,12 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
       if (MACHO_DYNAMIC_NO_PIC_P)
 	return machopic_symbol_defined_p (x);
 #endif
+
+      /* External function address should be loaded
+	 via the GOT slot to avoid PLT.  */
+      if (ix86_force_load_from_GOT_p (x))
+	return false;
+
       break;
 
     CASE_CONST_SCALAR_INT:
@@ -15596,6 +15615,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
 	    return false;
 
 	  case UNSPEC_GOTPCREL:
+	    if (ix86_force_load_from_GOT_p (XVECEXP (XEXP (disp, 0), 0, 0)))
+	      goto is_legitimate_pic;
+	    /* FALLTHRU */
 	  case UNSPEC_PCREL:
 	    gcc_assert (flag_pic);
 	    goto is_legitimate_pic;
@@ -18169,6 +18191,12 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	    fputs ("ds:", file);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (disp));
 	}
+      /* Load the external function address via the GOT slot to avoid PLT.  */
+      else if (GET_CODE (disp) == CONST
+	       && GET_CODE (XEXP (disp, 0)) == UNSPEC
+	       && XINT (XEXP (disp, 0), 1) == UNSPEC_GOTPCREL
+	       && ix86_force_load_from_GOT_p (XVECEXP (XEXP (disp, 0), 0, 0)))
+	output_pic_addr_const (file, disp, 0);
       else if (flag_pic)
 	output_pic_addr_const (file, disp, 0);
       else
@@ -19417,6 +19445,15 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 
       if (model)
 	op1 = legitimize_tls_address (op1, model, true);
+      else if (ix86_force_load_from_GOT_p (op1))
+	{
+	  /* Load the external function address via GOT slot to avoid PLT.  */
+	  op1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op1),
+				UNSPEC_GOTPCREL);
+	  op1 = gen_rtx_CONST (Pmode, op1);
+	  op1 = gen_const_mem (Pmode, op1);
+	  set_mem_alias_set (op1, ix86_GOT_alias_set ());
+	}
       else
 	{
 	  tmp = legitimize_pe_coff_symbol (op1, addend != NULL_RTX);
