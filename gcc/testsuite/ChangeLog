@@ -1,13 +1,13 @@
 2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67400
-        * gcc.target/i386/pr67400-1.c: New test.
-        * gcc.target/i386/pr67400-2.c: Likewise.
-        * gcc.target/i386/pr67400-3.c: Likewise.
-        * gcc.target/i386/pr67400-4.c: Likewise.
-        * gcc.target/i386/pr67400-5.c: Likewise.
-        * gcc.target/i386/pr67400-6.c: Likewise.
-        * gcc.target/i386/pr67400-7.c: Likewise.
+	* gcc.target/i386/pr67400-1.c: New test.
+	* gcc.target/i386/pr67400-2.c: Likewise.
+	* gcc.target/i386/pr67400-3.c: Likewise.
+	* gcc.target/i386/pr67400-4.c: Likewise.
+	* gcc.target/i386/pr67400-5.c: Likewise.
+	* gcc.target/i386/pr67400-6.c: Likewise.
+	* gcc.target/i386/pr67400-7.c: Likewise.
 
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
