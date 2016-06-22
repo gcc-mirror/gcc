@@ -4812,9 +4812,9 @@ package body Sem_Ch8 is
                 or else
               Name_Buffer (3 .. 5) = "aux";
 
-         --  If not an internal file, then entity is definitely known,
-         --  even if it is in a private part (the message generated will
-         --  note that it is in a private part)
+         --  If not an internal file, then entity is definitely known, even if
+         --  it is in a private part (the message generated will note that it
+         --  is in a private part).
 
          else
             return True;
@@ -6104,8 +6104,8 @@ package body Sem_Ch8 is
             null;
          else
             Error_Msg_N
-              ("limited withed package can only be used to access "
-               & "incomplete types", N);
+              ("limited withed package can only be used to access incomplete "
+               & "types", N);
          end if;
       end if;
 

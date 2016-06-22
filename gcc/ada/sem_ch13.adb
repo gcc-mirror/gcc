@@ -12367,7 +12367,7 @@ package body Sem_Ch13 is
 
             if Chars (N) /= TName then
                if Present (Current_Entity (N))
-                  and then Is_Type (Current_Entity (N))
+                 and then Is_Type (Current_Entity (N))
                then
                   Freeze_Before (Freeze_Node (T), Current_Entity (N));
                end if;

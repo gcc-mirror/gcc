@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,7 +440,6 @@ package body Exp_Ch11 is
       --  expansion as described above.
 
       procedure Expand_Local_Exception_Handlers is
-
          procedure Add_Exception_Label (H : Node_Id);
          --  H is an exception handler. First check for an Exception_Label
          --  already allocated for H. If none, allocate one, set the field in

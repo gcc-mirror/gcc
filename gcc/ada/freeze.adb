@@ -108,6 +108,14 @@ package body Freeze is
    --  Comp_ADC_Present is set True if the component has a Scalar_Storage_Order
    --  attribute definition clause.
 
+   procedure Check_Debug_Info_Needed (T : Entity_Id);
+   --  As each entity is frozen, this routine is called to deal with the
+   --  setting of Debug_Info_Needed for the entity. This flag is set if
+   --  the entity comes from source, or if we are in Debug_Generated_Code
+   --  mode or if the -gnatdV debug flag is set. However, it never sets
+   --  the flag if Debug_Info_Off is set. This procedure also ensures that
+   --  subsidiary entities have the flag set as required.
+
    procedure Check_Expression_Function (N : Node_Id; Nam : Entity_Id);
    --  When an expression function is frozen by a use of it, the expression
    --  itself is frozen. Check that the expression does not include references
@@ -185,14 +193,6 @@ package body Freeze is
    --  Typ is a record or array type that is being frozen. This routine sets
    --  the default component alignment from the scope stack values if the
    --  alignment is otherwise not specified.
-
-   procedure Check_Debug_Info_Needed (T : Entity_Id);
-   --  As each entity is frozen, this routine is called to deal with the
-   --  setting of Debug_Info_Needed for the entity. This flag is set if
-   --  the entity comes from source, or if we are in Debug_Generated_Code
-   --  mode or if the -gnatdV debug flag is set. However, it never sets
-   --  the flag if Debug_Info_Off is set. This procedure also ensures that
-   --  subsidiary entities have the flag set as required.
 
    procedure Set_SSO_From_Default (T : Entity_Id);
    --  T is a record or array type that is being frozen. If it is a base type,
@@ -2458,6 +2458,7 @@ package body Freeze is
                      --  Bit packing is never needed for 8, 16, 32, 64
 
                      if Addressable (Csiz) then
+
                         --  If the Esize of the component is known and equal to
                         --  the component size then even packing is not needed.
 

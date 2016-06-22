@@ -67,8 +67,17 @@ package body System.Memory is
 
    function Alloc (Size : size_t) return System.Address is
       Result : System.Address;
-
    begin
+      --  A previous version moved the check for size_t'Last below, into the
+      --  "if Result = System.Null_Address...". So malloc(size_t'Last) should
+      --  return Null_Address, and then we can check for that special value.
+      --  However, that doesn't work on VxWorks, because malloc(size_t'Last)
+      --  prints an unwanted warning message before returning Null_Address.
+
+      if Size = size_t'Last then
+         raise Storage_Error with "object too large";
+      end if;
+
       if Parameters.No_Abort then
          Result := c_malloc (System.CRTL.size_t (Size));
       else
@@ -96,10 +105,6 @@ package body System.Memory is
 
          if Size = 0 then
             return Alloc (1);
-         end if;
-
-         if Size = size_t'Last then
-            raise Storage_Error with "object too large";
          end if;
 
          raise Storage_Error with "heap exhausted";
@@ -134,6 +139,10 @@ package body System.Memory is
    is
       Result      : System.Address;
    begin
+      if Size = size_t'Last then
+         raise Storage_Error with "object too large";
+      end if;
+
       if Parameters.No_Abort then
          Result := c_realloc (Ptr, System.CRTL.size_t (Size));
       else
@@ -143,10 +152,6 @@ package body System.Memory is
       end if;
 
       if Result = System.Null_Address then
-         if Size = size_t'Last then
-            raise Storage_Error with "object too large";
-         end if;
-
          raise Storage_Error with "heap exhausted";
       end if;
 

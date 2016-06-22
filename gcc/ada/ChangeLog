@@ -1,3 +1,21 @@
+2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, sem_type.adb, sem.adb, freeze.adb, sem_util.adb,
+	s-htable.adb, exp_ch11.adb, s-secsta.adb, restrict.adb, exp_disp.adb,
+	sem_ch8.adb, s-tpobop.adb, exp_aggr.ads, sem_ch13.adb: Minor
+	reformatting.
+
+2016-06-22  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Collect_SPARK_Xrefs): Inverse order of
+	treatments so that files without compilation unit are simply skipped
+	before more elaborate treatments.
+
+2016-06-22  Bob Duff  <duff@adacore.com>
+
+	* s-memory.ads: Minor typo fixes in comments.
+	* s-memory.adb: Code cleanup.
+
 2016-05-22  Olivier Hainque  <hainque@adacore.com>
 
 	* vxworks-crtbe-link.spec: Removed, no longer used.
