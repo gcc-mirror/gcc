@@ -352,3 +352,54 @@ proc gcc-set-multilib-library-path { compiler } {
 
     return $libpath
 }
+
+# A list of all uses of dg-regexp, each entry of the form:
+#   line-number regexp
+# This is cleared at the end of each test by gcc-dg.exp's wrapper for dg-test.
+set freeform_regexps []
+
+# Directive for looking for a regexp, without any line numbers or other
+# prefixes.
+
+proc dg-regexp { args } {
+    verbose "dg-regexp: args: $args" 2
+
+    global freeform_regexps
+    lappend freeform_regexps $args
+}
+
+# Hook to be called by prune.exp's prune_gcc_output to
+# look for the expected dg-regexp expressions, pruning them,
+# reporting PASS for those that are found, and FAIL for
+# those that weren't found.
+#
+# It returns a pruned version of its output.
+
+proc handle-dg-regexps { text } {
+    global freeform_regexps
+    global testname_with_flags
+
+    foreach entry $freeform_regexps {
+	verbose "  entry: $entry" 3
+
+	set linenum [lindex $entry 0]
+	set rexp [lindex $entry 1]
+
+	# Escape newlines in $rexp so that we can print them in
+	# pass/fail results.
+	set escaped_regex [string map {"\n" "\\n"} $rexp]
+	verbose "escaped_regex: ${escaped_regex}" 4
+
+	set title "$testname_with_flags dg-regexp $linenum"
+
+	# Use "regsub" to attempt to prune the pattern from $text
+	if {[regsub -line $rexp $text "" text]} {
+	    # Success; the multiline pattern was pruned.
+	    pass "$title was found: \"$escaped_regex\""
+	} else {
+	    fail "$title not found: \"$escaped_regex\""
+	}
+    }
+
+    return $text
+}

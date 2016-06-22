@@ -1185,6 +1185,10 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
+fdiagnostics-parseable-fixits
+Common Var(flag_diagnostics_parseable_fixits)
+Print fixit hints in machine-readable form.
+
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.

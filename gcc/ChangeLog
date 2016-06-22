@@ -1,3 +1,29 @@
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-parseable-fixits): New option.
+	* diagnostic.c: Include "selftest.h".
+	(print_escaped_string): New function.
+	(print_parseable_fixits): New function.
+	(diagnostic_report_diagnostic): Call print_parseable_fixits.
+	(selftest::assert_print_escaped_string): New function.
+	(ASSERT_PRINT_ESCAPED_STRING_STREQ): New macro.
+	(selftest::test_print_escaped_string): New function.
+	(selftest::test_print_parseable_fixits_none): New function.
+	(selftest::test_print_parseable_fixits_insert): New function.
+	(selftest::test_print_parseable_fixits_remove): New function.
+	(selftest::test_print_parseable_fixits_replace): New function.
+	(selftest::diagnostic_c_tests): New function.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"parseable_fixits_p".
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fdiagnostics-parseable-fixits.
+	(-fdiagnostics-parseable-fixits): New option.
+	* opts.c (common_handle_option): Handle
+	-fdiagnostics-parseable-fixits.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::diagnostic_c_tests.
+	* selftest.h (selftest::diagnostic_c_tests): New prototype.
+
 2016-06-22  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/71488

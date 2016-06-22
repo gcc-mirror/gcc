@@ -65,7 +65,8 @@ set plugin_test_list [list \
     { wide-int_plugin.c wide-int-test-1.c } \
     { diagnostic_plugin_test_show_locus.c \
 	  diagnostic-test-show-locus-bw.c \
-	  diagnostic-test-show-locus-color.c } \
+	  diagnostic-test-show-locus-color.c \
+	  diagnostic-test-show-locus-parseable-fixits.c } \
     { diagnostic_plugin_test_tree_expression_range.c \
 	  diagnostic-test-expressions-1.c } \
     { diagnostic_plugin_show_trees.c \

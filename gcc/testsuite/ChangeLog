@@ -1,3 +1,17 @@
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-parseable-fixits.c: New
+	file.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-show-locus-parseable-fixits.c to sources for
+	diagnostic_plugin_test_show_locus.c.
+	* lib/gcc-defs.exp (freeform_regexps): New global.
+	(dg-regexp): New function.
+	(handle-dg-regexps): New function.
+	* lib/gcc-dg.exp (cleanup-after-saved-dg-test): Reset
+	freeform_regexps to the empty list.
+	* lib/prune.exp (prune_gcc_output): Call handle-dg-regexps.
+
 2016-06-22  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/71488
