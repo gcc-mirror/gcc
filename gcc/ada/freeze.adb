@@ -1392,11 +1392,11 @@ package body Freeze is
 
    procedure Check_Inherited_Conditions (R : Entity_Id) is
       Prim_Ops : constant Elist_Id := Primitive_Operations (R);
-      Op_Node  : Elmt_Id;
-      Prim     : Entity_Id;
-      Par_Prim : Entity_Id;
-      A_Pre    : Node_Id;
       A_Post   : Node_Id;
+      A_Pre    : Node_Id;
+      Op_Node  : Elmt_Id;
+      Par_Prim : Entity_Id;
+      Prim     : Entity_Id;
 
    begin
       Op_Node := First_Elmt (Prim_Ops);
@@ -1405,31 +1405,31 @@ package body Freeze is
 
          --  In SPARK mode this is where we can collect the inherited
          --  conditions, because we do not create the Check pragmas that
-         --  normally convey the the modified classwide conditions on
-         --  overriding operations.
+         --  normally convey the modified classwide conditions on overriding
+         --  operations.
 
          if SPARK_Mode = On
-            and then Comes_From_Source (Prim)
-            and then Present (Overridden_Operation (Prim))
+           and then Comes_From_Source (Prim)
+           and then Present (Overridden_Operation (Prim))
          then
             Collect_Inherited_Class_Wide_Conditions (Prim);
          end if;
 
-         --  In normal mode, we examine inherited operations to check
-         --  whether they require a wrapper to handle inherited conditions
-         --  that call other primitives.
+         --  In normal mode, we examine inherited operations to check whether
+         --  they require a wrapper to handle inherited conditions that call
+         --  other primitives.
          --  Wrapper construction TBD.
 
-         if not Comes_From_Source (Prim)
-           and then Present (Alias (Prim))
-         then
+         if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
-            A_Pre  := Find_Aspect (Par_Prim, Aspect_Pre);
+            A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
+
             if Present (A_Pre) and then Class_Present (A_Pre) then
                Build_Classwide_Expression (Expression (A_Pre), Prim);
             end if;
 
             A_Post := Find_Aspect (Par_Prim, Aspect_Post);
+
             if Present (A_Post) and then Class_Present (A_Post) then
                Build_Classwide_Expression (Expression (A_Post), Prim);
             end if;
@@ -1710,13 +1710,10 @@ package body Freeze is
               and then not Is_Frozen (E)
             then
                Push_Scope (E);
+
                Install_Visible_Declarations (E);
                Install_Private_Declarations (E);
-
                Freeze_All (First_Entity (E), After);
-
-               --  Analyze_Pending_Bodies (Visible_Declarations (E));
-               --  Analyze_Pending_Bodies (Private_Declarations (E));
 
                End_Package_Scope (E);
 
@@ -1728,8 +1725,8 @@ package body Freeze is
                end if;
 
             elsif Ekind (E) in Task_Kind
-              and then Nkind_In (Parent (E), N_Task_Type_Declaration,
-                                             N_Single_Task_Declaration)
+              and then Nkind_In (Parent (E), N_Single_Task_Declaration,
+                                             N_Task_Type_Declaration)
             then
                Push_Scope (E);
                Freeze_All (First_Entity (E), After);
