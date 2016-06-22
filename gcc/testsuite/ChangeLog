@@ -1,3 +1,9 @@
+2016-06-22  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/71488
+	* g++.dg/pr71488.C: New test.
+	* gcc.dg/vect/vect-bool-cmp.c: New test.
+
 2016-06-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/guality/param-5.c: New test.

@@ -7756,7 +7756,7 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   enum vect_def_type dts[2] = {vect_unknown_def_type, vect_unknown_def_type};
   unsigned nunits;
   int ncopies;
-  enum tree_code code;
+  enum tree_code code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   stmt_vec_info prev_stmt_info = NULL;
   int i, j;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
@@ -7829,11 +7829,74 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   else if (nunits != TYPE_VECTOR_SUBPARTS (vectype))
     return false;
 
+  /* Can't compare mask and non-mask types.  */
+  if (vectype1 && vectype2
+      && (VECTOR_BOOLEAN_TYPE_P (vectype1) ^ VECTOR_BOOLEAN_TYPE_P (vectype2)))
+    return false;
+
+  /* Boolean values may have another representation in vectors
+     and therefore we prefer bit operations over comparison for
+     them (which also works for scalar masks).  We store opcodes
+     to use in bitop1 and bitop2.  Statement is vectorized as
+       BITOP2 (rhs1 BITOP1 rhs2) or
+       rhs1 BITOP2 (BITOP1 rhs2)
+     depending on bitop1 and bitop2 arity.  */
+  if (VECTOR_BOOLEAN_TYPE_P (vectype))
+    {
+      if (code == GT_EXPR)
+	{
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_AND_EXPR;
+	}
+      else if (code == GE_EXPR)
+	{
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_IOR_EXPR;
+	}
+      else if (code == LT_EXPR)
+	{
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_AND_EXPR;
+	  std::swap (rhs1, rhs2);
+	}
+      else if (code == LE_EXPR)
+	{
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_IOR_EXPR;
+	  std::swap (rhs1, rhs2);
+	}
+      else
+	{
+	  bitop1 = BIT_XOR_EXPR;
+	  if (code == EQ_EXPR)
+	    bitop2 = BIT_NOT_EXPR;
+	}
+    }
+
   if (!vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
-      vect_model_simple_cost (stmt_info, ncopies, dts, NULL, NULL);
-      return expand_vec_cmp_expr_p (vectype, mask_type);
+      vect_model_simple_cost (stmt_info, ncopies * (1 + (bitop2 != NOP_EXPR)),
+			      dts, NULL, NULL);
+      if (bitop1 == NOP_EXPR)
+	return expand_vec_cmp_expr_p (vectype, mask_type);
+      else
+	{
+	  machine_mode mode = TYPE_MODE (vectype);
+	  optab optab;
+
+	  optab = optab_for_tree_code (bitop1, vectype, optab_default);
+	  if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+	    return false;
+
+	  if (bitop2 != NOP_EXPR)
+	    {
+	      optab = optab_for_tree_code (bitop2, vectype, optab_default);
+	      if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+		return false;
+	    }
+	  return true;
+	}
     }
 
   /* Transform.  */
@@ -7890,8 +7953,31 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 	  vec_rhs2 = vec_oprnds1[i];
 
 	  new_temp = make_ssa_name (mask);
-	  new_stmt = gimple_build_assign (new_temp, code, vec_rhs1, vec_rhs2);
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  if (bitop1 == NOP_EXPR)
+	    {
+	      new_stmt = gimple_build_assign (new_temp, code,
+					      vec_rhs1, vec_rhs2);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	    }
+	  else
+	    {
+	      if (bitop1 == BIT_NOT_EXPR)
+		new_stmt = gimple_build_assign (new_temp, bitop1, vec_rhs2);
+	      else
+		new_stmt = gimple_build_assign (new_temp, bitop1, vec_rhs1,
+						vec_rhs2);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      if (bitop2 != NOP_EXPR)
+		{
+		  tree res = make_ssa_name (mask);
+		  if (bitop2 == BIT_NOT_EXPR)
+		    new_stmt = gimple_build_assign (res, bitop2, new_temp);
+		  else
+		    new_stmt = gimple_build_assign (res, bitop2, vec_rhs1,
+						    new_temp);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		}
+	    }
 	  if (slp_node)
 	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 	}
