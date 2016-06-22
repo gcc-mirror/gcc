@@ -3868,7 +3868,7 @@ package body Inline is
    --  the body is an internal error.
 
    procedure Instantiate_Bodies is
-      J    : Int;
+      J    : Nat;
       Info : Pending_Body_Info;
 
    begin
