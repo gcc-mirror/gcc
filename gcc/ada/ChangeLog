@@ -1,3 +1,15 @@
+2016-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* spark_xrefs.ads (Scope_Num): type refined to positive integers.
+	* lib-xref-spark_specific.adb (Detect_And_Add_SPARK_Scope):
+	moved into scope of Collect_SPARK_Xrefs.
+	(Add_SPARK_Scope): moved into scope of Collect_SPARK_Xrefs;
+	now uses Dspec and Scope_Id from Collect_SPARK_Xrefs.
+	(Collect_SPARK_Xrefs): refactored to avoid retraversing the list
+	of scopes.
+	(Traverse_Compilation_Unit): refactored as a generic procedure.
+	* types.ads (Unit_Number_Type): range refined.
+
 2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-xref-spark_specific.adb, a-cuprqu.ads, sem_ch6.adb: Minor
