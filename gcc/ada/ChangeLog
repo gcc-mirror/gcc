@@ -1,3 +1,28 @@
+2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref-spark_specific.adb, a-cuprqu.ads, sem_ch6.adb: Minor
+	reformatting.
+
+2016-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Address_Value): Declare new function.
+	* sem_util.adb (Address_Value): New function extracted
+	unmodified from Apply_Address_Clause_Check, which returns the
+	underlying value of the expression of an address clause.
+	* checks.adb (Compile_Time_Bad_Alignment): Delete.
+	(Apply_Address_Clause_Check): Call Address_Value on
+	the expression.  Do not issue the main warning here and
+	issue the secondary warning only when the value of the
+	expression is not known at compile time.
+	* sem_ch13.adb (Address_Clause_Check_Record): Add A component and
+	adjust the description.
+	(Analyze_Attribute_Definition_Clause): In the case
+	of an address, move up the code creating an entry in the table of
+	address clauses.  Also create an entry for an absolute address.
+	(Validate_Address_Clauses): Issue the warning for absolute
+	addresses here too.  Tweak condition associated with overlays
+	for consistency.
+
 2016-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Is_Predicate_Static): An inherited predicate

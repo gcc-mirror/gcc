@@ -286,6 +286,49 @@ package body Sem_Util is
       end if;
    end Address_Integer_Convert_OK;
 
+   -------------------
+   -- Address_Value --
+   -------------------
+
+   function Address_Value (N : Node_Id) return Node_Id is
+      Expr : Node_Id := N;
+
+   begin
+      loop
+         --  For constant, get constant expression
+
+         if Is_Entity_Name (Expr)
+           and then Ekind (Entity (Expr)) = E_Constant
+         then
+            Expr := Constant_Value (Entity (Expr));
+
+         --  For unchecked conversion, get result to convert
+
+         elsif Nkind (Expr) = N_Unchecked_Type_Conversion then
+            Expr := Expression (Expr);
+
+         --  For (common case) of To_Address call, get argument
+
+         elsif Nkind (Expr) = N_Function_Call
+           and then Is_Entity_Name (Name (Expr))
+           and then Is_RTE (Entity (Name (Expr)), RE_To_Address)
+         then
+            Expr := First (Parameter_Associations (Expr));
+
+            if Nkind (Expr) = N_Parameter_Association then
+               Expr := Explicit_Actual_Parameter (Expr);
+            end if;
+
+         --  We finally have the real expression
+
+         else
+            exit;
+         end if;
+      end loop;
+
+      return Expr;
+   end Address_Value;
+
    -----------------
    -- Addressable --
    -----------------

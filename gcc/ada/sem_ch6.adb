@@ -10808,8 +10808,8 @@ package body Sem_Ch6 is
                     and then not Is_Class_Wide_Type (Formal_Type)
                   then
                      if not Nkind_In
-                       (Parent (T), N_Access_Function_Definition,
-                                    N_Access_Procedure_Definition)
+                              (Parent (T), N_Access_Function_Definition,
+                                           N_Access_Procedure_Definition)
                      then
                         Append_Elmt (Current_Scope,
                           Private_Dependents (Base_Type (Formal_Type)));

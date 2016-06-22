@@ -932,34 +932,34 @@ package body SPARK_Specific is
             declare
                Cunit1 : Node_Id renames Cunit (Sdep_Table (D1));
                Cunit2 : Node_Id renames Cunit (Sdep_Table (D1 + 1));
+
             begin
                --  Both Cunit point to compilation unit nodes
-               pragma Assert (Nkind (Cunit1) = N_Compilation_Unit
-                                and then
-                              Nkind (Cunit2) = N_Compilation_Unit);
+
+               pragma Assert
+                 (Nkind (Cunit1) = N_Compilation_Unit
+                   and then Nkind (Cunit2) = N_Compilation_Unit);
 
                --  Do not depend on the sorting order, which is based on
                --  Unit_Name and for library-level instances of nested
                --  generic-packages they are equal.
 
                --  If declaration comes before the body then just set D2
+
                if Nkind (Unit (Cunit1)) = N_Package_Declaration
-                 and then
-                  Nkind (Unit (Cunit2)) = N_Package_Body
+                 and then Nkind (Unit (Cunit2)) = N_Package_Body
                then
                   D2 := D1 + 1;
 
                --  If body comes before declaration then set D2 and adjust D1
 
                elsif Nkind (Unit (Cunit1)) = N_Package_Body
-                       and then
-                     Nkind (Unit (Cunit2)) = N_Package_Declaration
+                 and then Nkind (Unit (Cunit2)) = N_Package_Declaration
                then
                   D2 := D1;
                   D1 := D1 + 1;
 
                else
-
                   raise Program_Error;
                end if;
             end;
@@ -977,6 +977,8 @@ package body SPARK_Specific is
                Uspec => Sdep_Table (D2),
                Dspec => D2);
          end if;
+
+         --  ??? this needs a comment
 
          D1 := Pos'Max (D1, D2) + 1;
       end loop;
