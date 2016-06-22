@@ -1,3 +1,7 @@
+2016-05-22  Olivier Hainque  <hainque@adacore.com>
+
+	* vxworks-crtbe-link.spec: Removed, no longer used.
+
 2016-06-22  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch8.adb (Push_Scope): Add a check for when the
