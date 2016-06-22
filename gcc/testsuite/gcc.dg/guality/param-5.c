@@ -12,7 +12,7 @@ clear_stack (void)
 {
   char a[128 * 1024 + 128];
 
-  __builtin_memset (a, 0, 128);
+  __builtin_memset (a + 128 * 1024, 0, 128);
 }
 
 __attribute__((noinline, noclone)) void
