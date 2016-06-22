@@ -355,12 +355,15 @@ package body Exp_Util is
                return;
 
             --  Otherwise we perform a conversion from the current type, which
-            --  must be Standard.Boolean, to the desired type.
+            --  must be Standard.Boolean, to the desired type. Use the base
+            --  type to prevent spurious constraint checks that are extraneous
+            --  to the transformation. The type and its base have the same
+            --  representation, standard or otherwise.
 
             else
                Set_Analyzed (N);
-               Rewrite (N, Convert_To (T, N));
-               Analyze_And_Resolve (N, T);
+               Rewrite (N, Convert_To (Base_Type (T), N));
+               Analyze_And_Resolve (N, Base_Type (T));
             end if;
          end;
       end if;

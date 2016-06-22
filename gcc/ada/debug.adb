@@ -105,7 +105,7 @@ package body Debug is
    --  d.l  Use Ada 95 semantics for limited function returns
    --  d.m  For -gnatl, print full source only for main unit
    --  d.n  Print source file names
-   --  d.o
+   --  d.o  Conservative elaboration order for indirect calls
    --  d.p
    --  d.q
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
@@ -555,6 +555,9 @@ package body Debug is
    --  d.n  Print source file names as they are loaded. This is useful if the
    --       compiler has a bug -- these are the files that need to be included
    --       in a bug report.
+
+   --  d.o  Conservative elaboration order for indirect calls. This causes
+   --       P'Access to be treated as a call in more cases.
 
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.

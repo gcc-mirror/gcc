@@ -8552,8 +8552,7 @@ package body Sem_Ch13 is
                         Expression => Expr))));
 
             --  If declaration has not been analyzed yet, Insert declaration
-            --  before freeze node.
-            --  Insert body after freeze node.
+            --  before freeze node.  Insert body itself after freeze node.
 
             if not Analyzed (FDecl) then
                Insert_Before_And_Analyze (N, FDecl);
@@ -11644,9 +11643,11 @@ package body Sem_Ch13 is
       --  to specify a static predicate for a subtype which is inheriting a
       --  dynamic predicate, so the static predicate validation here ignores
       --  the inherited predicate even if it is dynamic.
+      --  In all cases, a static predicate can only apply to a scalar type.
 
       elsif Nkind (Expr) = N_Function_Call
         and then Is_Predicate_Function (Entity (Name (Expr)))
+        and then Is_Scalar_Type (Etype (First_Entity (Entity (Name (Expr)))))
       then
          return True;
 
