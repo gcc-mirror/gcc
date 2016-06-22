@@ -6314,6 +6314,7 @@ package body Sem_Util is
          Encl_Unit := Library_Unit (Encl_Unit);
       end loop;
 
+      pragma Assert (Nkind (Encl_Unit) = N_Compilation_Unit);
       return Encl_Unit;
    end Enclosing_Lib_Unit_Node;
 

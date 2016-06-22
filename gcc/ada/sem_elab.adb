@@ -2139,7 +2139,8 @@ package body Sem_Elab is
       --  node comes from source.
 
       if Nkind (N) = N_Attribute_Reference
-        and then (not Warn_On_Elab_Access or else not Comes_From_Source (N))
+        and then ((not Warn_On_Elab_Access and then not Debug_Flag_Dot_O)
+                    or else not Comes_From_Source (N))
       then
          return;
 

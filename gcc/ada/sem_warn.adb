@@ -3367,7 +3367,7 @@ package body Sem_Warn is
          P := Parent (C);
          loop
             --  If tree is not attached, do not issue warning (this is very
-            --  peculiar, and probably arises from some other error condition)
+            --  peculiar, and probably arises from some other error condition).
 
             if No (P) then
                return;

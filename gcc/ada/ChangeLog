@@ -1,3 +1,42 @@
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Is_Predicate_Static): An inherited predicate
+	can be static only if it applies to a scalar type.
+
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Adjust_Result_Type): Convert operand to base
+	type to prevent spurious constraint checks on subtypes of Boolean.
+
+2016-06-22  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Document debug switch -gnatd.o.
+	* sem_elab.adb (Check_Internal_Call): Debug switch -gnatd.o
+	now causes a more conservative treatment of indirect calls,
+	treating P'Access as a call to P in more cases. We Can't make
+	this the default, because it breaks common idioms, for example
+	the soft links.
+	* sem_util.adb: Add an Assert.
+
+2016-06-22  Bob Duff  <duff@adacore.com>
+
+	* a-cuprqu.ads, a-cuprqu.adb: Completely rewrite this package. Use
+	red-black trees, which gives O(lg N) worst-case performance on
+	Enqueue and Dequeue. The previous version had O(N) Enqueue in
+	the worst case.
+
+2016-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_warn.adb: minor style fix in comment.
+	* spark_xrefs.ads (Scope_Num): type refined to positive integers.
+	* lib-xref-spark_specific.adb (Detect_And_Add_SPARK_Scope):
+	moved into scope of Collect_SPARK_Xrefs.
+	(Add_SPARK_Scope): moved into scope of Collect_SPARK_Xrefs;
+	now uses Dspec and Scope_Id from Collect_SPARK_Xrefs.
+	(Collect_SPARK_Xrefs): refactored to avoid retraversing the list
+	of scopes.
+	* sem_ch3.adb (Build_Discriminal): Set Parent of the discriminal.
+
 2016-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib-xref-spark_specific.adb (Generate_Dereference): Assignment to not
