@@ -127,6 +127,11 @@ package body Freeze is
    --  Attribute references to outer types are freeze points for those types;
    --  this routine generates the required freeze nodes for them.
 
+   procedure Check_Inherited_Conditions (R : Entity_Id);
+   --  For a tagged derived type, create wrappers for inherited operations
+   --  that have a classwide condition, so it can be properly rewritten if
+   --  it involves calls to other overriding primitives.
+
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
    --  or tagged or contains something this is aliased or tagged, set
@@ -1381,6 +1386,59 @@ package body Freeze is
       end if;
    end Check_Expression_Function;
 
+   --------------------------------
+   -- Check_Inherited_Conditions --
+   --------------------------------
+
+   procedure Check_Inherited_Conditions (R : Entity_Id) is
+      Prim_Ops : constant Elist_Id := Primitive_Operations (R);
+      Op_Node  : Elmt_Id;
+      Prim     : Entity_Id;
+      Par_Prim : Entity_Id;
+      A_Pre    : Node_Id;
+      A_Post   : Node_Id;
+
+   begin
+      Op_Node := First_Elmt (Prim_Ops);
+      while Present (Op_Node) loop
+         Prim := Node (Op_Node);
+
+         --  In SPARK mode this is where we can collect the inherited
+         --  conditions, because we do not create the Check pragmas that
+         --  normally convey the the modified classwide conditions on
+         --  overriding operations.
+
+         if SPARK_Mode = On
+            and then Comes_From_Source (Prim)
+            and then Present (Overridden_Operation (Prim))
+         then
+            Collect_Inherited_Class_Wide_Conditions (Prim);
+         end if;
+
+         --  In normal mode, we examine inherited operations to check
+         --  whether they require a wrapper to handle inherited conditions
+         --  that call other primitives.
+         --  Wrapper construction TBD.
+
+         if not Comes_From_Source (Prim)
+           and then Present (Alias (Prim))
+         then
+            Par_Prim := Alias (Prim);
+            A_Pre  := Find_Aspect (Par_Prim, Aspect_Pre);
+            if Present (A_Pre) and then Class_Present (A_Pre) then
+               Build_Classwide_Expression (Expression (A_Pre), Prim);
+            end if;
+
+            A_Post := Find_Aspect (Par_Prim, Aspect_Post);
+            if Present (A_Post) and then Class_Present (A_Post) then
+               Build_Classwide_Expression (Expression (A_Post), Prim);
+            end if;
+         end if;
+
+         Next_Elmt (Op_Node);
+      end loop;
+   end Check_Inherited_Conditions;
+
    ----------------------------
    -- Check_Strict_Alignment --
    ----------------------------
@@ -1656,6 +1714,9 @@ package body Freeze is
                Install_Private_Declarations (E);
 
                Freeze_All (First_Entity (E), After);
+
+               --  Analyze_Pending_Bodies (Visible_Declarations (E));
+               --  Analyze_Pending_Bodies (Private_Declarations (E));
 
                End_Package_Scope (E);
 
@@ -4572,6 +4633,13 @@ package body Freeze is
                   Next_Elmt (Elmt);
                end loop;
             end;
+         end if;
+
+         --  For a derived tagged type, check whether inherited primitives
+         --  might require a wrapper to handle classwide conditions.
+
+         if Is_Tagged_Type (Rec) and then Is_Derived_Type (Rec) then
+            Check_Inherited_Conditions (Rec);
          end if;
       end Freeze_Record_Type;
 
