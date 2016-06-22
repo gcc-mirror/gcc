@@ -1,3 +1,7 @@
+2016-06-21  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* bb-reorder.c (pass_partition_blocks::gate): Update comment.
+
 2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcov-tool.c (profile_rewrite): Use int64_t instead of long long.
