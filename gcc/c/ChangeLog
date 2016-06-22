@@ -1,3 +1,29 @@
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70339
+	* c-decl.c: Include spellcheck-tree.h and gcc-rich-location.h.
+	(implicit_decl_warning): When issuing warnings for implicit
+	declarations, attempt to provide a suggestion via
+	lookup_name_fuzzy.
+	(undeclared_variable): Likewise when issuing errors.
+	(lookup_name_in_scope): Likewise.
+	(struct edit_distance_traits<cpp_hashnode *>): New struct.
+	(best_macro_match): New typedef.
+	(find_closest_macro_cpp_cb): New function.
+	(lookup_name_fuzzy): New function.
+	* c-parser.c: Include gcc-rich-location.h.
+	(c_token_starts_typename): Split out case CPP_KEYWORD into...
+	(c_keyword_starts_typename): ...this new function.
+	(c_parser_declaration_or_fndef): When issuing errors about
+	missing "struct" etc, add a fixit.  For other kinds of errors,
+	attempt to provide a suggestion via lookup_name_fuzzy.
+	(c_parser_parms_declarator): When looking ahead to detect typos in
+	type names, also reject CPP_KEYWORD.
+	(c_parser_parameter_declaration): When issuing errors about
+	unknown type names, attempt to provide a suggestion via
+	lookup_name_fuzzy.
+	* c-tree.h (c_keyword_starts_typename): New prototype.
+
 2016-06-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/71601

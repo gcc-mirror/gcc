@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-indentation.h"
 #include "gimple-expr.h"
 #include "context.h"
+#include "gcc-rich-location.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -518,6 +519,48 @@ c_parser_peek_nth_token (c_parser *parser, unsigned int n)
   return &parser->tokens[n - 1];
 }
 
+bool
+c_keyword_starts_typename (enum rid keyword)
+{
+  switch (keyword)
+    {
+    case RID_UNSIGNED:
+    case RID_LONG:
+    case RID_SHORT:
+    case RID_SIGNED:
+    case RID_COMPLEX:
+    case RID_INT:
+    case RID_CHAR:
+    case RID_FLOAT:
+    case RID_DOUBLE:
+    case RID_VOID:
+    case RID_DFLOAT32:
+    case RID_DFLOAT64:
+    case RID_DFLOAT128:
+    case RID_BOOL:
+    case RID_ENUM:
+    case RID_STRUCT:
+    case RID_UNION:
+    case RID_TYPEOF:
+    case RID_CONST:
+    case RID_ATOMIC:
+    case RID_VOLATILE:
+    case RID_RESTRICT:
+    case RID_ATTRIBUTE:
+    case RID_FRACT:
+    case RID_ACCUM:
+    case RID_SAT:
+    case RID_AUTO_TYPE:
+      return true;
+    default:
+      if (keyword >= RID_FIRST_INT_N
+	  && keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	  && int_n_enabled_p[keyword - RID_FIRST_INT_N])
+	return true;
+      return false;
+    }
+}
+
 /* Return true if TOKEN can start a type name,
    false otherwise.  */
 static bool
@@ -541,43 +584,7 @@ c_token_starts_typename (c_token *token)
 	  gcc_unreachable ();
 	}
     case CPP_KEYWORD:
-      switch (token->keyword)
-	{
-	case RID_UNSIGNED:
-	case RID_LONG:
-	case RID_SHORT:
-	case RID_SIGNED:
-	case RID_COMPLEX:
-	case RID_INT:
-	case RID_CHAR:
-	case RID_FLOAT:
-	case RID_DOUBLE:
-	case RID_VOID:
-	case RID_DFLOAT32:
-	case RID_DFLOAT64:
-	case RID_DFLOAT128:
-	case RID_BOOL:
-	case RID_ENUM:
-	case RID_STRUCT:
-	case RID_UNION:
-	case RID_TYPEOF:
-	case RID_CONST:
-	case RID_ATOMIC:
-	case RID_VOLATILE:
-	case RID_RESTRICT:
-	case RID_ATTRIBUTE:
-	case RID_FRACT:
-	case RID_ACCUM:
-	case RID_SAT:
-	case RID_AUTO_TYPE:
-	  return true;
-	default:
-	  if (token->keyword >= RID_FIRST_INT_N
-	      && token->keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
-	      && int_n_enabled_p[token->keyword - RID_FIRST_INT_N])
-	    return true;
-	  return false;
-	}
+      return c_keyword_starts_typename (token->keyword);
     case CPP_LESS:
       if (c_dialect_objc ())
 	return true;
@@ -1655,15 +1662,50 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       && (!nested || !lookup_name (c_parser_peek_token (parser)->value)))
     {
       tree name = c_parser_peek_token (parser)->value;
-      error_at (here, "unknown type name %qE", name);
-      /* Give a hint to the user.  This is not C++ with its implicit
-	 typedef.  */
+
+      /* Issue a warning about NAME being an unknown type name, perhaps
+	 with some kind of hint.
+	 If the user forgot a "struct" etc, suggest inserting
+	 it.  Otherwise, attempt to look for misspellings.  */
+      gcc_rich_location richloc (here);
       if (tag_exists_p (RECORD_TYPE, name))
-	inform (here, "use %<struct%> keyword to refer to the type");
+	{
+	  /* This is not C++ with its implicit typedef.  */
+	  richloc.add_fixit_insert (here, "struct");
+	  error_at_rich_loc (&richloc,
+			     "unknown type name %qE;"
+			     " use %<struct%> keyword to refer to the type",
+			     name);
+	}
       else if (tag_exists_p (UNION_TYPE, name))
-	inform (here, "use %<union%> keyword to refer to the type");
+	{
+	  richloc.add_fixit_insert (here, "union");
+	  error_at_rich_loc (&richloc,
+			     "unknown type name %qE;"
+			     " use %<union%> keyword to refer to the type",
+			     name);
+	}
       else if (tag_exists_p (ENUMERAL_TYPE, name))
-	inform (here, "use %<enum%> keyword to refer to the type");
+	{
+	  richloc.add_fixit_insert (here, "enum");
+	  error_at_rich_loc (&richloc,
+			     "unknown type name %qE;"
+			     " use %<enum%> keyword to refer to the type",
+			     name);
+	}
+      else
+	{
+	  tree hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME);
+	  if (hint)
+	    {
+	      richloc.add_fixit_misspelled_id (here, hint);
+	      error_at_rich_loc (&richloc,
+				 "unknown type name %qE; did you mean %qE?",
+				 name, hint);
+	    }
+	  else
+	    error_at (here, "unknown type name %qE", name);
+	}
 
       /* Parse declspecs normally to get a correct pointer type, but avoid
          a further "fails to be a type name" error.  Refuse nested functions
@@ -3632,7 +3674,8 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
       && c_parser_peek_2nd_token (parser)->type != CPP_NAME
       && c_parser_peek_2nd_token (parser)->type != CPP_MULT
       && c_parser_peek_2nd_token (parser)->type != CPP_OPEN_PAREN
-      && c_parser_peek_2nd_token (parser)->type != CPP_OPEN_SQUARE)
+      && c_parser_peek_2nd_token (parser)->type != CPP_OPEN_SQUARE
+      && c_parser_peek_2nd_token (parser)->type != CPP_KEYWORD)
     {
       tree list = NULL_TREE, *nextp = &list;
       while (c_parser_next_token_is (parser, CPP_NAME)
@@ -3807,7 +3850,18 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
-	  error_at (token->location, "unknown type name %qE", token->value);
+	  tree hint = lookup_name_fuzzy (token->value, FUZZY_LOOKUP_TYPENAME);
+	  if (hint)
+	    {
+	      gcc_assert (TREE_CODE (hint) == IDENTIFIER_NODE);
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_misspelled_id (token->location, hint);
+	      error_at_rich_loc (&richloc,
+				 "unknown type name %qE; did you mean %qE?",
+				 token->value, hint);
+	    }
+	  else
+	    error_at (token->location, "unknown type name %qE", token->value);
 	  parser->error = true;
 	}
       /* ??? In some Objective-C cases '...' isn't applicable so there

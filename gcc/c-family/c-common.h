@@ -990,6 +990,15 @@ extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
 
+enum lookup_name_fuzzy_kind {
+  /* Names of types.  */
+  FUZZY_LOOKUP_TYPENAME,
+
+  /* Any name.  */
+  FUZZY_LOOKUP_NAME
+};
+extern tree lookup_name_fuzzy (tree, enum lookup_name_fuzzy_kind);
+
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);

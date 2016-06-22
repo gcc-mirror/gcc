@@ -6,11 +6,12 @@
 
 void undeclared_identifier (void)
 {
-  name; /* { dg-error "'name' undeclared" } */
+  name; /* { dg-error "'name' undeclared .first use in this function.; did you mean .nanl." } */
 /*
 { dg-begin-multiline-output "" }
    name;
    ^~~~
+   nanl
 { dg-end-multiline-output "" }
 */
 }

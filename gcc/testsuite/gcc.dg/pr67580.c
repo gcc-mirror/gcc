@@ -8,12 +8,9 @@ enum E { A };
 void
 f (void)
 {
-  S s; /* { dg-error "unknown type name" } */
-/* { dg-message "use .struct. keyword to refer to the type" "" { target *-*-* } 11 } */
-  U u; /* { dg-error "unknown type name" } */
-/* { dg-message "use .union. keyword to refer to the type" "" { target *-*-* } 13 } */
-  E e; /* { dg-error "unknown type name" } */
-/* { dg-message "use .enum. keyword to refer to the type" "" { target *-*-* } 15 } */
+  S s; /* { dg-error "unknown type name .S.; use .struct. keyword to refer to the type" } */
+  U u; /* { dg-error "unknown type name .U.; use .union. keyword to refer to the type" } */
+  E e; /* { dg-error "unknown type name .E.; use .enum. keyword to refer to the type" } */
 }
 
 void
@@ -22,10 +19,7 @@ g (void)
   struct T { int i; };
   union V { int i; };
   enum F { J };
-  T t; /* { dg-error "unknown type name" } */
-/* { dg-message "use .struct. keyword to refer to the type" "" { target *-*-* } 25 } */
-  V v; /* { dg-error "unknown type name" } */
-/* { dg-message "use .union. keyword to refer to the type" "" { target *-*-* } 27 } */
-  F f; /* { dg-error "unknown type name" } */
-/* { dg-message "use .enum. keyword to refer to the type" "" { target *-*-* } 29 } */
+  T t; /* { dg-error "unknown type name .T.; use .struct. keyword to refer to the type" } */
+  V v; /* { dg-error "unknown type name .V.; use .union. keyword to refer to the type" } */
+  F f; /* { dg-error "unknown type name .F.; use .enum. keyword to refer to the type" } */
 }

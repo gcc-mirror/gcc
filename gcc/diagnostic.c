@@ -1201,6 +1201,18 @@ pedwarn (location_t location, int opt, const char *gmsgid, ...)
   return ret;
 }
 
+/* Same as pedwarn, but using RICHLOC.  */
+
+bool
+pedwarn_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_PEDWARN);
+  va_end (ap);
+  return ret;
+}
+
 /* A "permissive" error at LOCATION: issues an error unless
    -fpermissive was given on the command line, in which case it issues
    a warning.  Use this for things that really should be errors but we
