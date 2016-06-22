@@ -14158,7 +14158,7 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8},
 @samp{cortex-a9}, @samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a17},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
-@samp{cortex-a72}, @samp{cortex-r4},
+@samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-r4},
 @samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
 @samp{cortex-m7},
 @samp{cortex-m4},
@@ -14180,7 +14180,8 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
 @samp{cortex-a15.cortex-a7}, @samp{cortex-a17.cortex-a7},
-@samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}.
+@samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
+@samp{cortex-a72.cortex-a35}, @samp{cortex-a73.cortex-a53}.
 
 @option{-mtune=generic-@var{arch}} specifies that GCC should tune the
 performance for a blend of processors within architecture @var{arch}.

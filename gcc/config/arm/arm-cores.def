@@ -171,6 +171,7 @@ ARM_CORE("cortex-a35",	cortexa35, cortexa53,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED 
 ARM_CORE("cortex-a53",	cortexa53, cortexa53,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a53)
 ARM_CORE("cortex-a57",	cortexa57, cortexa57,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a57)
 ARM_CORE("cortex-a72",	cortexa72, cortexa57,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a57)
+ARM_CORE("cortex-a73",	cortexa73, cortexa57,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a73)
 ARM_CORE("exynos-m1",	exynosm1,  exynosm1,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), exynosm1)
 ARM_CORE("qdf24xx",	qdf24xx,   cortexa57,	8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a57)
 ARM_CORE("xgene1",      xgene1,    xgene1,      8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_FOR_ARCH8A),            xgene1)
@@ -178,3 +179,6 @@ ARM_CORE("xgene1",      xgene1,    xgene1,      8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCH
 /* V8 big.LITTLE implementations */
 ARM_CORE("cortex-a57.cortex-a53", cortexa57cortexa53, cortexa53, 8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a57)
 ARM_CORE("cortex-a72.cortex-a53", cortexa72cortexa53, cortexa53, 8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a57)
+ARM_CORE("cortex-a73.cortex-a35", cortexa73cortexa35, cortexa53, 8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a73)
+ARM_CORE("cortex-a73.cortex-a53", cortexa73cortexa53, cortexa53, 8A,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_CRC32 | FL_FOR_ARCH8A), cortex_a73)
+
