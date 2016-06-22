@@ -118,7 +118,7 @@ package System is
 
 private
 
-   pragma Linker_Options ("--specs=vxworks-crtbe-link.spec");
+   pragma Linker_Options ("--specs=vxworks-gnat-crtbe-link.spec");
    --  Pull in crtbegin/crtend objects and register exceptions for ZCX.
    --  This is commented out by our Makefile for SJLJ runtimes.
 
