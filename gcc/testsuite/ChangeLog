@@ -1,3 +1,7 @@
+2016-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-5.c: New test.
+
 2016-06-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.target/i386/asm-flag-7.c: New test.

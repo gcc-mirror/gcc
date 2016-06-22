@@ -1,3 +1,7 @@
+2016-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (assign_parm_setup_reg): Prevent sharing in another case.
+
 2016-06-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/i386/i386.c (print_reg): Emit an error message on attempt to
