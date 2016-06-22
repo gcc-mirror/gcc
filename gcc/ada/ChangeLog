@@ -1,3 +1,22 @@
+2016-06-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Add_Invariant): Replace the
+	current type instance with the _object parameter even in ASIS mode.
+	(Build_Invariant_Procedure_Body): Do not insert the
+	invariant procedure body into the tree for ASIS and GNATprove.
+	(Build_Invariant_Procedure_Declaration): Do not insert the
+	invariant procedure declaration into the tree for ASIS and
+	GNATprove.
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Update comment.
+
+2016-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Set_Actual_Subtypes): If the type of the actual
+	has predicates, the actual subtype must be frozen properly
+	because of the generated tests that may follow.  The predicate
+	may be specified by an explicit aspect, or may be inherited in
+	a derivation.
+
 2016-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (In_Range_Chec)): New predicate, subsidiary of

@@ -934,10 +934,9 @@ package body SPARK_Specific is
             D2 := D1;
          end if;
 
-         --  Some files do not correspond to Ada units, and as such present no
-         --  interest for SPARK cross references. Skip these files, as printing
-         --  their name may require printing the full name with spaces, which
-         --  is not handled in the code doing I/O of SPARK cross references.
+         --  Skip dependencies with no entity node, e.g. configuration files
+         --  with pragmas (.adc) or target description (.atp), since they
+         --  present no interest for SPARK cross references.
 
          if Present (Cunit_Entity (Sdep_Table (D1))) then
             Add_SPARK_File

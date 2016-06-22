@@ -4154,39 +4154,32 @@ package body Exp_Ch7 is
                   Set_Etype  (Selector_Name (N), Rep_Typ);
                end if;
 
-               --  Do not alter the tree for ASIS. As a result all references
-               --  to Ref_Typ remain as is, but they have sufficent semantic
-               --  information.
+               --  Perform the following substitution:
 
-               if not ASIS_Mode then
+               --    Ref_Typ  -->  _object
 
-                  --  Perform the following substitution:
+               Ref := Make_Identifier (Nloc, Chars (Obj_Id));
+               Set_Entity (Ref, Obj_Id);
+               Set_Etype  (Ref, Rep_Typ);
 
-                  --    Ref_Typ  -->  _object
+               --  When the pragma denotes a class-wide invariant, perform the
+               --  following substitution:
 
-                  Ref := Make_Identifier (Nloc, Chars (Obj_Id));
-                  Set_Entity (Ref, Obj_Id);
-                  Set_Etype  (Ref, Rep_Typ);
+               --    Rep_Typ  -->  Rep_Typ'Class (_object)
 
-                  --  When the pragma denotes a class-wide invariant, perform
-                  --  the following substitution:
-
-                  --    Rep_Typ  -->  Rep_Typ'Class (_object)
-
-                  if Class_Present (Prag) then
-                     Ref :=
-                       Make_Type_Conversion (Nloc,
-                         Subtype_Mark =>
-                           Make_Attribute_Reference (Nloc,
-                             Prefix         =>
-                               New_Occurrence_Of (Rep_Typ, Nloc),
-                             Attribute_Name => Name_Class),
-                         Expression   => Ref);
-                  end if;
-
-                  Rewrite (N, Ref);
-                  Set_Comes_From_Source (N, True);
+               if Class_Present (Prag) then
+                  Ref :=
+                    Make_Type_Conversion (Nloc,
+                      Subtype_Mark =>
+                        Make_Attribute_Reference (Nloc,
+                          Prefix         =>
+                            New_Occurrence_Of (Rep_Typ, Nloc),
+                          Attribute_Name => Name_Class),
+                      Expression   => Ref);
                end if;
+
+               Rewrite (N, Ref);
+               Set_Comes_From_Source (N, True);
             end Replace_Type_Ref;
 
             procedure Replace_Type_Refs is
@@ -4787,11 +4780,12 @@ package body Exp_Ch7 is
       Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
-      --  The body should not be inserted into the tree when the context is a
-      --  generic unit because it is not part of the template. Note that the
-      --  body must still be generated in order to resolve the invariants.
+      --  The body should not be inserted into the tree when the context is
+      --  ASIS, GNATprove or a generic unit because it is not part of the
+      --  template. Note that the body must still be generated in order to
+      --  resolve the invariants.
 
-      if Inside_A_Generic then
+      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
          null;
 
       --  Otherwise the body is part of the freezing actions of the type
@@ -4988,9 +4982,10 @@ package body Exp_Ch7 is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is a generic unit because it is not part of the template.
+      --  is ASIS, GNATprove or a generic unit because it is not part of the
+      --  template.
 
-      if Inside_A_Generic then
+      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
          null;
 
       --  Otherwise insert the declaration

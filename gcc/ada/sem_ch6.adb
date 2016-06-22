@@ -11308,9 +11308,10 @@ package body Sem_Ch6 is
                  Freeze_Entity (Defining_Identifier (Decl), N));
 
             --  Ditto if the type has a dynamic predicate, because the
-            --  generated function will mention the actual subtype.
+            --  generated function will mention the actual subtype. The
+            --  predicate may come from an explicit aspect of be inherited.
 
-            elsif Has_Dynamic_Predicate_Aspect (T) then
+            elsif Has_Predicates (T) then
                Insert_List_Before_And_Analyze (Decl,
                  Freeze_Entity (Defining_Identifier (Decl), N));
             end if;
