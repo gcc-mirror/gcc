@@ -371,7 +371,6 @@ unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
 void aarch64_cpu_cpp_builtins (cpp_reader *);
-void aarch64_elf_asm_named_section (const char *, unsigned, tree);
 const char * aarch64_gen_far_branch (rtx *, int, const char *, const char *);
 const char * aarch64_output_probe_stack_range (rtx, rtx);
 void aarch64_err_no_fpadvsimd (machine_mode, const char *);
