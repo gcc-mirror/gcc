@@ -416,6 +416,7 @@
 
 2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
+	PR target/71151
 	* config/avr/avr.c (avr_asm_init_sections): Remove setup of
 	progmem_swtable_section.
 	(progmem_swtable_section): Remove.

@@ -258,6 +258,7 @@
 
 2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
+	PR target/71151
 	* gcc.target/avr/pr71151-1.c: New test.
 	* gcc.target/avr/pr71151-2.c: New test.
 	* gcc.target/avr/pr71151-3.c: New test.
