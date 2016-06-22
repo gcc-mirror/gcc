@@ -899,6 +899,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global saved_compiler_env_var
 	global keep_saved_temps_suffixes
 	global multiline_expected_outputs
+	global freeform_regexps
 
 	set additional_files ""
 	set additional_sources ""
@@ -924,6 +925,7 @@ if { [info procs saved-dg-test] == [list] } {
 	    unset testname_with_flags
 	}
 	set multiline_expected_outputs []
+	set freeform_regexps []
     }
 
     proc dg-test { args } {

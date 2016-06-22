@@ -1871,6 +1871,10 @@ common_handle_option (struct gcc_options *opts,
       diagnostic_color_init (dc, value);
       break;
 
+    case OPT_fdiagnostics_parseable_fixits:
+      dc->parseable_fixits_p = value;
+      break;
+
     case OPT_fdiagnostics_show_option:
       dc->show_option_requested = value;
       break;

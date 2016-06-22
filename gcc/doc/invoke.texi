@@ -246,7 +246,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
--fno-diagnostics-show-option -fno-diagnostics-show-caret}
+-fno-diagnostics-show-option -fno-diagnostics-show-caret @gol
+-fdiagnostics-parseable-fixits}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -3388,6 +3389,37 @@ information.  The source line is truncated to @var{n} characters, if
 the @option{-fmessage-length=n} option is given.  When the output is done
 to the terminal, the width is limited to the width given by the
 @env{COLUMNS} environment variable or, if not set, to the terminal width.
+
+@item -fdiagnostics-parseable-fixits
+@opindex fdiagnostics-parseable-fixits
+Emit fix-it hints in a machine-parseable format, suitable for consumption
+by IDEs.  For each fix-it, a line will be printed after the relevant
+diagnostic, starting with the string ``fix-it:''.  For example:
+
+@smallexample
+fix-it:"test.c":@{45:3-45:21@}:"gtk_widget_show_all"
+@end smallexample
+
+The location is expressed as a half-open range, expressed as a count of
+bytes, starting at byte 1 for the initial column.  In the above example,
+bytes 3 through 20 of line 45 of ``test.c'' are to be replaced with the
+given string:
+
+@smallexample
+00000000011111111112222222222
+12345678901234567890123456789
+  gtk_widget_showall (dlg);
+  ^^^^^^^^^^^^^^^^^^
+  gtk_widget_show_all
+@end smallexample
+
+The filename and replacement string escape backslash as ``\\", tab as ``\t'',
+newline as ``\n'', double quotes as ``\"'', non-printable characters as octal
+(e.g. vertical tab as ``\013'').
+
+An empty replacement string indicates that the given range is to be removed.
+An empty range (e.g. ``45:3-45:3'') indicates that the string is to
+be inserted at the given position.
 
 @end table
 

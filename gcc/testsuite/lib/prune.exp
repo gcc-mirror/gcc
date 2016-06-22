@@ -73,6 +73,9 @@ proc prune_gcc_output { text } {
     # Call into multiline.exp to handle any multiline output directives.
     set text [handle-multiline-outputs $text]
 
+    # Handle any freeform regexps.
+    set text [handle-dg-regexps $text]
+
     #send_user "After:$text\n"
 
     return $text

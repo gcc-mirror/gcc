@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "selftest.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -667,6 +668,112 @@ diagnostic_pop_diagnostics (diagnostic_context *context, location_t where)
   context->n_classification_history ++;
 }
 
+/* Helper function for print_parseable_fixits.  Print TEXT to PP, obeying the
+   escaping rules for -fdiagnostics-parseable-fixits.  */
+
+static void
+print_escaped_string (pretty_printer *pp, const char *text)
+{
+  gcc_assert (pp);
+  gcc_assert (text);
+
+  pp_character (pp, '"');
+  for (const char *ch = text; *ch; ch++)
+    {
+      switch (*ch)
+	{
+	case '\\':
+	  /* Escape backslash as two backslashes.  */
+	  pp_string (pp, "\\\\");
+	  break;
+	case '\t':
+	  /* Escape tab as "\t".  */
+	  pp_string (pp, "\\t");
+	  break;
+	case '\n':
+	  /* Escape newline as "\n".  */
+	  pp_string (pp, "\\n");
+	  break;
+	case '"':
+	  /* Escape doublequotes as \".  */
+	  pp_string (pp, "\\\"");
+	  break;
+	default:
+	  if (ISPRINT (*ch))
+	    pp_character (pp, *ch);
+	  else
+	    /* Use octal for non-printable chars.  */
+	    {
+	      unsigned char c = (*ch & 0xff);
+	      pp_printf (pp, "\\%o%o%o", (c / 64), (c / 8) & 007, c & 007);
+	    }
+	  break;
+	}
+    }
+  pp_character (pp, '"');
+}
+
+/* Implementation of -fdiagnostics-parseable-fixits.  Print a
+   machine-parseable version of all fixits in RICHLOC to PP.  */
+
+static void
+print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
+{
+  gcc_assert (pp);
+  gcc_assert (richloc);
+
+  for (unsigned i = 0; i < richloc->get_num_fixit_hints (); i++)
+    {
+      const fixit_hint *hint = richloc->get_fixit_hint (i);
+      source_location start_loc = hint->get_start_loc ();
+      expanded_location start_exploc = expand_location (start_loc);
+      pp_string (pp, "fix-it:");
+      print_escaped_string (pp, start_exploc.file);
+      source_location end_loc;
+
+      /* For compatibility with clang, print as a half-open range.  */
+      if (hint->maybe_get_end_loc (&end_loc))
+	{
+	  expanded_location end_exploc = expand_location (end_loc);
+	  pp_printf (pp, ":{%i:%i-%i:%i}:",
+		     start_exploc.line, start_exploc.column,
+		     end_exploc.line, end_exploc.column + 1);
+	}
+      else
+	{
+	  pp_printf (pp, ":{%i:%i-%i:%i}:",
+		     start_exploc.line, start_exploc.column,
+		     start_exploc.line, start_exploc.column);
+	}
+      switch (hint->get_kind ())
+	{
+	  case fixit_hint::INSERT:
+	    {
+	      const fixit_insert *insert
+		= static_cast <const fixit_insert *> (hint);
+	      print_escaped_string (pp, insert->get_string ());
+	    }
+	    break;
+
+	  case fixit_hint::REMOVE:
+	    print_escaped_string (pp, "");
+	    break;
+
+	  case fixit_hint::REPLACE:
+	    {
+	      const fixit_replace *replace
+		= static_cast <const fixit_replace *> (hint);
+	      print_escaped_string (pp, replace->get_string ());
+	    }
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+      pp_newline (pp);
+    }
+}
+
 /* Report a diagnostic message (an error or a warning) as specified by
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
@@ -828,6 +935,11 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
   (*diagnostic_finalizer (context)) (context, diagnostic);
+  if (context->parseable_fixits_p)
+    {
+      print_parseable_fixits (context->printer, diagnostic->richloc);
+      pp_flush (context->printer);
+    }
   diagnostic_action_after_output (context, diagnostic->kind);
   diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
@@ -1290,3 +1402,149 @@ real_abort (void)
 {
   abort ();
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Helper function for test_print_escaped_string.  */
+
+static void
+assert_print_escaped_string (const location &loc, const char *expected_output,
+			     const char *input)
+{
+  pretty_printer pp;
+  print_escaped_string (&pp, input);
+  ASSERT_STREQ_AT (loc, expected_output, pp_formatted_text (&pp));
+}
+
+#define ASSERT_PRINT_ESCAPED_STRING_STREQ(EXPECTED_OUTPUT, INPUT) \
+    assert_print_escaped_string (SELFTEST_LOCATION, EXPECTED_OUTPUT, INPUT)
+
+/* Tests of print_escaped_string.  */
+
+static void
+test_print_escaped_string ()
+{
+  /* Empty string.  */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"\"", "");
+
+  /* Non-empty string.  */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"hello world\"", "hello world");
+
+  /* Various things that need to be escaped:  */
+  /* Backslash.  */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"before\\\\after\"",
+				     "before\\after");
+  /* Tab.  */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"before\\tafter\"",
+				     "before\tafter");
+  /* Newline.  */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"before\\nafter\"",
+				     "before\nafter");
+  /* Double quote.  */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"before\\\"after\"",
+				     "before\"after");
+
+  /* Non-printable characters: BEL: '\a': 0x07 */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"before\\007after\"",
+				     "before\aafter");
+  /* Non-printable characters: vertical tab: '\v': 0x0b */
+  ASSERT_PRINT_ESCAPED_STRING_STREQ ("\"before\\013after\"",
+				     "before\vafter");
+}
+
+/* Tests of print_parseable_fixits.  */
+
+/* Verify that print_parseable_fixits emits the empty string if there
+   are no fixits.  */
+
+static void
+test_print_parseable_fixits_none ()
+{
+  pretty_printer pp;
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+
+  print_parseable_fixits (&pp, &richloc);
+  ASSERT_STREQ ("", pp_formatted_text (&pp));
+}
+
+/* Verify that print_parseable_fixits does the right thing if there
+   is an insertion fixit hint.  */
+
+static void
+test_print_parseable_fixits_insert ()
+{
+  pretty_printer pp;
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+
+  linemap_add (line_table, LC_ENTER, false, "test.c", 0);
+  linemap_line_start (line_table, 5, 100);
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+  location_t where = linemap_position_for_column (line_table, 10);
+  richloc.add_fixit_insert (where, "added content");
+
+  print_parseable_fixits (&pp, &richloc);
+  ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:10}:\"added content\"\n",
+		pp_formatted_text (&pp));
+}
+
+/* Verify that print_parseable_fixits does the right thing if there
+   is an removal fixit hint.  */
+
+static void
+test_print_parseable_fixits_remove ()
+{
+  pretty_printer pp;
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+
+  linemap_add (line_table, LC_ENTER, false, "test.c", 0);
+  linemap_line_start (line_table, 5, 100);
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+  source_range where;
+  where.m_start = linemap_position_for_column (line_table, 10);
+  where.m_finish = linemap_position_for_column (line_table, 20);
+  richloc.add_fixit_remove (where);
+
+  print_parseable_fixits (&pp, &richloc);
+  ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:21}:\"\"\n",
+		pp_formatted_text (&pp));
+}
+
+/* Verify that print_parseable_fixits does the right thing if there
+   is an replacement fixit hint.  */
+
+static void
+test_print_parseable_fixits_replace ()
+{
+  pretty_printer pp;
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+
+  linemap_add (line_table, LC_ENTER, false, "test.c", 0);
+  linemap_line_start (line_table, 5, 100);
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+  source_range where;
+  where.m_start = linemap_position_for_column (line_table, 10);
+  where.m_finish = linemap_position_for_column (line_table, 20);
+  richloc.add_fixit_replace (where, "replacement");
+
+  print_parseable_fixits (&pp, &richloc);
+  ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:21}:\"replacement\"\n",
+		pp_formatted_text (&pp));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+diagnostic_c_tests ()
+{
+  test_print_escaped_string ();
+  test_print_parseable_fixits_none ();
+  test_print_parseable_fixits_insert ();
+  test_print_parseable_fixits_remove ();
+  test_print_parseable_fixits_replace ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

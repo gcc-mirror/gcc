@@ -1,3 +1,21 @@
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (fixit_hint::get_start_loc): New pure virtual
+	function.
+	(fixit_hint::maybe_get_end_loc): Likewise.
+	(fixit_insert::get_start_loc): New function, implementing
+	fixit_hint::get_start_loc.
+	(fixit_insert::maybe_get_end_loc): New function, implementing
+	fixit_hint::maybe_get_end_loc.
+	(fixit_remove::get_start_loc): New function, implementing
+	fixit_hint::get_start_loc.
+	(fixit_remove::maybe_get_end_loc): New function, implementing
+	fixit_hint::maybe_get_end_loc.
+	(fixit_replace::get_start_loc): New function, implementing
+	fixit_hint::get_start_loc.
+	(fixit_replace::maybe_get_end_loc): New function, implementing
+	fixit_hint::maybe_get_end_loc.
+
 2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* line-map.c (location_adhoc_data_update): Use int64_t instead of

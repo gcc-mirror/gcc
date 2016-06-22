@@ -72,6 +72,7 @@ extern void assert_streq (const location &loc,
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();
+extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void et_forest_c_tests ();
 extern void fold_const_c_tests ();
