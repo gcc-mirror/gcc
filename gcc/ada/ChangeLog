@@ -1,3 +1,24 @@
+2016-06-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Push_Scope): Add a check for when the
+	scope table is empty to assign the global variable
+	Configuration_Component_Alignment.
+	* sem.adb (Do_Analyze): Add Configuration_Component_Alignment
+	to be assigned when the environment is cleaned instead of the
+	default.
+	* sem.ads Add a global variable Configuration_Component_Alignment
+	to store the value given by pragma Component_Alignment in the
+	context of a configuration file.
+	* sem_prag.adb (Analyze_Pragma): Correct the case for
+	Component_Alignment so that the pragma is verified and add
+	comments to explain how it is applied to the scope stack.
+
+2016-06-22  Justin Squirek  <squirek@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Add check in
+	the case of an N_Object_Declaration when evaluating an expression
+	to properly ignore errors.
+
 2016-06-22  Bob Duff  <duff@adacore.com>
 
 	* g-comlin.ads (Parameter_Type): Change subtype of Last to
