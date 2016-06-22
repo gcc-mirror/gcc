@@ -1,3 +1,9 @@
+2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* line-map.c (location_adhoc_data_update): Use int64_t instead of
+	long long.
+	(get_combined_adhoc_loc): Likewise.
+
 2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
 
 	* include/cpplib.h (cpp_callbacks): Add get_source_date_epoch
