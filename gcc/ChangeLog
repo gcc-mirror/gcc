@@ -1,3 +1,8 @@
+2016-06-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/i386/i386.c (print_reg): Emit an error message on attempt to
+	print FLAGS_REG.
+
 2016-06-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_cortex_a73_tune): New struct.
