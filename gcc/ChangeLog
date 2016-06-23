@@ -1,3 +1,7 @@
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/gcc-auto-profile: New file.
+
 2016-06-23  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/71619
