@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-vect-details" } */
+/* { dg-additional-options "-O3" } */
 
 #define COLS         8
 #define ROWS         8

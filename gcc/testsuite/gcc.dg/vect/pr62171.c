@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details" } */
 /* { dg-require-effective-target vect_double } */
 
 struct omp_data_i

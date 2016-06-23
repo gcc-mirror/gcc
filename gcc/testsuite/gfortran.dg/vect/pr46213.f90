@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -fno-tree-loop-ivcanon -ftree-vectorize -fno-tree-ccp -fno-tree-ch -finline-small-functions" }
+! { dg-additional-options "-O -fno-tree-loop-ivcanon -fno-tree-ccp -fno-tree-ch -finline-small-functions" }
 
 module foo
   INTEGER, PARAMETER :: ONE = 1
