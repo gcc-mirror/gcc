@@ -4164,13 +4164,13 @@ tls_ld:
 
     # Enforce 32-bit output with gas and gld.
     if test x$gas = xyes; then
-      as_ix86_gas_opt="--32"
+      as_ix86_gas_32_opt="--32"
     fi
     if echo "$ld_ver" | grep GNU > /dev/null; then
       if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
-        ld_ix86_gld_opt="-melf_i386_sol2"
+        ld_ix86_gld_32_opt="-melf_i386_sol2"
       else
-        ld_ix86_gld_opt="-melf_i386"
+        ld_ix86_gld_32_opt="-melf_i386"
       fi
     fi
     conftest_s='
@@ -4186,10 +4186,10 @@ _start:
 value:'
     gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM reloc],
         gcc_cv_as_ix86_tlsldm,,
-	[$as_ix86_gas_opt],
+	[$as_ix86_gas_32_opt],
 	[$conftest_s],
 	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
-	    && $gcc_cv_ld $ld_ix86_gld_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
 	   if $gcc_cv_objdump -d conftest 2>/dev/null | grep nop > /dev/null \
 	      || dis conftest 2>/dev/null | grep nop > /dev/null; then
 	     gcc_cv_as_ix86_tlsldm=yes
@@ -4211,13 +4211,13 @@ _start:
 	 jmp *_start@GOT'
     gcc_GAS_CHECK_FEATURE([R_386_GOT32X reloc],
         gcc_cv_as_ix86_got32x,,
-	[$as_ix86_gas_opt],
+	[$as_ix86_gas_32_opt],
 	[$conftest_s],
 	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
 	    && test x$gcc_cv_readelf != x \
 	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
 	       | grep R_386_GOT32X > /dev/null 2>&1 \
-	    && $gcc_cv_ld $ld_ix86_gld_opt -o conftest conftest.o > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o > /dev/null 2>&1; then
 	   if $gcc_cv_objdump -dw conftest 2>&1 \
 	      | grep 0xffffff > /dev/null 2>&1; then
 	     gcc_cv_as_ix86_got32x=no
