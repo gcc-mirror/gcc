@@ -1,3 +1,7 @@
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* Make-lang.in: Add support for autofdo.
+
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70339
