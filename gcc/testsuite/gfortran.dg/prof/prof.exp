@@ -53,4 +53,11 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.f*]] {
     profopt-execute $src
 }
 
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.f*]] {
+    if ![runtest_file_p $runtests $src] then {
+        continue
+    }
+    auto-profopt-execute $src
+}
+
 set PROFOPT_OPTIONS $treeprof_save_profopt_options
