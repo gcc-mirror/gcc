@@ -7012,6 +7012,57 @@ proc check_effective_target_pie_copyreloc { } {
     return $pie_copyreloc_available_saved
 }
 
+# Return 1 if the x86 target supports R_386_GOT32X relocation, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_got32x_reloc { } {
+    global got32x_reloc_available_saved
+    global tool
+    global GCC_UNDER_TEST
+
+    if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	return 0
+    }
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    if [info exists got32x_reloc_available_saved] {
+	verbose "check_effective_target_got32x_reloc returning saved $got32x_reloc_available_saved" 2
+    } else {
+	# Include the current process ID in the file names to prevent
+	# conflicts with invocations for multiple testsuites.
+
+	set src got32x[pid].c
+	set obj got32x[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_AS_IX86_GOT32X == 0"
+	puts $f "# error Assembler does not support R_386_GOT32X."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_got32x_reloc compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_got32x_reloc testfile compilation passed" 2
+	    set got32x_reloc_available_saved 1
+	} else {
+	    verbose "check_effective_target_got32x_reloc testfile compilation failed" 2
+	    set got32x_reloc_available_saved 0
+	}
+    }
+
+    return $got32x_reloc_available_saved
+}
+
 # Return 1 if the target uses comdat groups.
 
 proc check_effective_target_comdat_group {} {
