@@ -126,7 +126,7 @@
 
 2016-06-22  Ilya Enkovich  <ilya.enkovich@intel.com>
 
-	PR middle-end/71488
+	PR tree-optimization/71488
 	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Support
 	comparison of boolean vectors.
 	* tree-vect-stmts.c (vectorizable_comparison): Vectorize comparison

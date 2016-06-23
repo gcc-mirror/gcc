@@ -1,3 +1,17 @@
+2016-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/71488
+	* gcc.target/i386/i386.exp (check_effective_target_sse4): Move to ...
+	* lib/target-supports.exp: ... here.
+	(check_sse4_hw_available): New procedure.
+	(check_effective_target_sse4_runtime): Ditto.
+	* g++.dg/pr71488.C (dg-additional-options): Use -msse4 instead of
+	-march=westmere for sse4_runtime targets.
+	* gcc.dg/vect/vect-bool-cmp.c: Include "tree-vect.h".
+	(dg-additional-options): Use for sse4_runtime targets.
+	(main): Call check_vect ().
+	(dg-final): Perform scan only for sse4_runtime targets.
+
 2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66232
@@ -13,8 +27,7 @@
 	* gcc.target/i386/pr67400-4.c: Likewise.
 	* gcc.target/i386/pr67400-6.c: Likewise.
 	* gcc.target/i386/pr67400-7.c: Likewise.
-	* lib/target-supports.exp (check_effective_target_got32x_reloc):
-	New.
+	* lib/target-supports.exp (check_effective_target_got32x_reloc): New.
 
 2016-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -83,7 +96,7 @@
 
 2016-06-22  Ilya Enkovich  <ilya.enkovich@intel.com>
 
-	PR middle-end/71488
+	PR tree-optimization/71488
 	* g++.dg/pr71488.C: New test.
 	* gcc.dg/vect/vect-bool-cmp.c: New test.
 

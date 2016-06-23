@@ -1,7 +1,7 @@
-// PR middle-end/71488
+// PR tree-optimization/71488
 // { dg-do run }
 // { dg-options "-O3 -std=c++11" }
-// { dg-additional-options "-march=westmere" { target i?86-*-* x86_64-*-* } }
+// { dg-additional-options "-msse4" { target sse4_runtime } }
 // { dg-require-effective-target c++11 }
 
 #include <valarray>

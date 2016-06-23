@@ -1608,6 +1608,29 @@ proc check_sse2_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing SSE4 instructions, 0
+# otherwise.  Cache the result.
+
+proc check_sse4_hw_available { } {
+    return [check_cached_effective_target sse4_hw_available {
+	# If this is not the right target then we can skip the test.
+	if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	    expr 0
+	} else {
+	    check_runtime_nocache sse4_hw_available {
+		#include "cpuid.h"
+		int main ()
+		{
+		  unsigned int eax, ebx, ecx, edx;
+		  if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+		    return !(ecx & bit_SSE4_2);
+		  return 1;
+		}
+	    } ""
+	}
+    }]
+}
+
 # Return 1 if the target supports executing AVX instructions, 0
 # otherwise.  Cache the result.
 
@@ -1648,6 +1671,17 @@ proc check_effective_target_sse_runtime { } {
 proc check_effective_target_sse2_runtime { } {
     if { [check_effective_target_sse2]
 	 && [check_sse2_hw_available]
+	 && [check_sse_os_support_available] } {
+	return 1
+    }
+    return 0
+}
+
+# Return 1 if the target supports running SSE4 executables, 0 otherwise.
+
+proc check_effective_target_sse4_runtime { } {
+    if { [check_effective_target_sse4]
+	 && [check_sse4_hw_available]
 	 && [check_sse_os_support_available] } {
 	return 1
     }
@@ -6388,6 +6422,20 @@ proc check_effective_target_sse2 { } {
 	    return (__m128i)__builtin_ia32_psrldqi128 (__A, 8);
 	}
     } "-O2 -msse2" ]
+}
+
+# Return 1 if sse4.1 instructions can be compiled.
+proc check_effective_target_sse4 { } {
+    return [check_no_compiler_messages sse4.1 object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef int __v4si __attribute__ ((__vector_size__ (16)));
+
+	__m128i _mm_mullo_epi32 (__m128i __X, __m128i __Y)
+	{
+	    return (__m128i) __builtin_ia32_pmulld128 ((__v4si)__X,
+						       (__v4si)__Y);
+	}
+    } "-O2 -msse4.1" ]
 }
 
 # Return 1 if F16C instructions can be compiled.
