@@ -1,3 +1,7 @@
+2016-06-23  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/pr71619.c: New test.
+
 2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67400

@@ -1,3 +1,9 @@
+2016-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/71619
+	* predict.c (predict_loops): Revert the hunk that was removed
+	in r237103.
+
 2016-06-23  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
 	* config.gcc: Add support for arm*-*-phoenix* targets.

@@ -1769,7 +1769,11 @@ predict_loops (void)
 	  else
 	    continue;
 
-	  gcc_checking_assert (nitercst);
+	  /* If the prediction for number of iterations is zero, do not
+	     predict the exit edges.  */
+	  if (nitercst == 0)
+	    continue;
+
 	  probability = RDIV (REG_BR_PROB_BASE, nitercst);
 	  predict_edge (ex, predictor, probability);
 	}
