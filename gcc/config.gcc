@@ -804,6 +804,11 @@ case ${target} in
       ;;
   esac
   ;;
+*-*-phoenix*)
+  gas=yes
+  gnu_ld=yes
+  default_use_cxa_atexit=yes
+  ;;
 *-*-rtems*)
   case ${enable_threads} in
     "" | yes | rtems) thread_file='rtems' ;;
@@ -1085,6 +1090,12 @@ arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
+	;;
+arm*-*-phoenix*)
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
+	tm_file="${tm_file} newlib-stdint.h phoenix.h"
+	tm_file="${tm_file} arm/aout.h arm/arm.h"
+	tmake_file="${tmake_file} arm/t-arm arm/t-bpabi arm/t-phoenix"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	case ${target} in
