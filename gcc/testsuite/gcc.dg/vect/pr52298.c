@@ -1,4 +1,6 @@
-/* { dg-options "-O1 -ftree-vectorize -fno-tree-pre -fno-tree-loop-im" } */
+/* { dg-additional-options "-O1 -fno-tree-pre -fno-tree-loop-im" } */
+
+#include "tree-vect.h"
 
 extern void abort (void);
 int c[80];
@@ -19,6 +21,7 @@ int
 main ()
 {
   int i;
+  check_vect ();
   for (i = 0; i < 60; i++)
     c[i] = 1;
   for (; i < 64; i++)

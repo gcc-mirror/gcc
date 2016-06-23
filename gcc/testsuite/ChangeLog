@@ -1,3 +1,42 @@
+2016-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/vect/pr33834_2.cc: Use dg-additional-options instead of
+	dg-options and remove default vector testsuite compile flags.
+	* g++.dg/vect/pr33860a.cc: Ditto.
+	* g++.dg/vect/pr45470-a.cc: Ditto.
+	* g++.dg/vect/pr45470-b.cc: Ditto.
+	* g++.dg/vect/pr60896.cc: Ditto.
+	* gcc.dg/vect/no-tree-pre-pr45241.c: Ditto.
+	* gcc.dg/vect/pr18308.c: Ditto.
+	* gcc.dg/vect/pr24049.c: Ditto.
+	* gcc.dg/vect/pr33373.c: Ditto.
+	* gcc.dg/vect/pr36228.c: Ditto.
+	* gcc.dg/vect/pr42395.c: Ditto.
+	* gcc.dg/vect/pr42604.c: Ditto.
+	* gcc.dg/vect/pr46663.c: Ditto.
+	* gcc.dg/vect/pr48765.c: Ditto.
+	* gcc.dg/vect/pr49093.c: Ditto.
+	* gcc.dg/vect/pr49352.c: Ditto.
+	* gcc.dg/vect/pr52298.c: Ditto.
+	* gcc.dg/vect/pr52870.c: Ditto.
+	* gcc.dg/vect/pr53185.c: Ditto.
+	* gcc.dg/vect/pr53773.c: Ditto.
+	* gcc.dg/vect/pr56695.c: Ditto.
+	* gcc.dg/vect/pr62171.c: Ditto.
+	* gcc.dg/vect/pr63530.c: Ditto.
+	* gcc.dg/vect/pr68339.c: Ditto.
+	* gcc.dg/vect/pr71259.c: Ditto.
+	* gcc.dg/vect/vect-82_64.c: Ditto.
+	* gcc.dg/vect/vect-83_64.c: Ditto.
+	* gcc.dg/vect/vect-debug-pr41926.c: Ditto.
+	* gcc.dg/vect/vect-shift-2-big-array.c: Ditto.
+	* gcc.dg/vect/vect-shift-2.c: Ditto.
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Ditto.
+	* gfortran.dg/vect/pr39318.f90: Ditto.
+	* gfortran.dg/vect/pr45714-a.f: Ditto.
+	* gfortran.dg/vect/pr45714-b.f: Ditto.
+	* gfortran.dg/vect/pr46213.f90: Ditto.
+
 2016-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

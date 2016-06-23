@@ -1,6 +1,6 @@
 /* PR tree-optimization/71259 */
 /* { dg-do run } */
-/* { dg-options "-O3" } */
+/* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 
 #include "tree-vect.h"
