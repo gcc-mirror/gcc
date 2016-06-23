@@ -86,7 +86,7 @@ namespace __debug
 
       void
       swap(array& __other)
-      noexcept(__is_nothrow_swappable<_Tp>::value)
+      noexcept(_AT_Type::_Is_nothrow_swappable::value)
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
@@ -168,9 +168,8 @@ namespace __debug
       at(size_type __n)
       {
 	if (__n >= _Nm)
-	  std::__throw_out_of_range_fmt(__N("array::at: __n "
-				            "(which is %zu) >= _Nm "
-					    "(which is %zu)"),
+	  std::__throw_out_of_range_fmt(__N("array::at: __n (which is %zu) "
+					    ">= _Nm (which is %zu)"),
 					__n, _Nm);
 	return _AT_Type::_S_ref(_M_elems, __n);
       }

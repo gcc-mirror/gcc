@@ -1,3 +1,8 @@
+2016-06-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array (array<>::swap): Fix noexcept qualificaton for
+	zero-size array.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* configure.host: Remove mep-* support.
