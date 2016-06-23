@@ -1,3 +1,8 @@
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* gen_autofdo_event.py: New file to regenerate
+	gcc-auto-profile.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config-list.mk: Stop testing mep-elf.
