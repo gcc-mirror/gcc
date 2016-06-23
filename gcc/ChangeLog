@@ -1,3 +1,16 @@
+2016-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (splat_input_operand): Rework.
+	Don't allow constants, since the insns that use this predicate
+	don't support constants.  Constants are handled by other insns
+	that are created via combine.  During and after register
+	allocation, only allow indexed or indirect addresses, and not
+	general addresses.  Only allow modes supported by the hardware.
+	* config/rs6000/rs6000.c (xxsplitb_constant_p): Update usage
+	comment.  Move check for using VSPLTIS<x> to a common location,
+	instead of doing it in two different places.
+
 2016-06-23  Jocelyn Mayer  <l_indien@magic.fr>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Set
