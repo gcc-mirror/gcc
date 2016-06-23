@@ -1,3 +1,10 @@
+2016-06-23  Jocelyn Mayer  <l_indien@magic.fr>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Set
+	PROCESSOR_PENTIUMPRO for signature_CENTAUR_ebx family >= 9.
+	<case PROCESSOR_PENTIMUMPRO>: Pass c7 or nehemiah for
+	signature_CENTAUR_ebx.
+
 2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66232

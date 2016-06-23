@@ -653,10 +653,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 6:
 	  if (has_longmode)
 	    processor = PROCESSOR_K8;
-	  else if (model > 9)
-	    /* Use the default detection procedure.  */
-	    ;
-	  else if (model == 9)
+	  else if (model >= 9)
 	    processor = PROCESSOR_PENTIUMPRO;
 	  else if (model >= 6)
 	    processor = PROCESSOR_I486;
@@ -818,15 +815,27 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		   as all the CPUs below are 32-bit only.  */
 		cpu = "x86-64";
 	      else if (has_sse3)
-		/* It is Core Duo.  */
-		cpu = "pentium-m";
+		{
+		  if (vendor == signature_CENTAUR_ebx)
+		    /* C7 / Eden "Esther" */
+		    cpu = "c7";
+		  else
+		    /* It is Core Duo.  */
+		    cpu = "pentium-m";
+		}
 	      else if (has_sse2)
 		/* It is Pentium M.  */
 		cpu = "pentium-m";
 	      else if (has_sse)
 		{
 		  if (vendor == signature_CENTAUR_ebx)
-		    cpu = "c3-2";
+		    {
+		      if (model >= 9)
+			/* Eden "Nehemiah" */
+			cpu = "nehemiah";
+		      else
+			cpu = "c3-2";
+		    }
 		  else
 		    /* It is Pentium III.  */
 		    cpu = "pentium3";
