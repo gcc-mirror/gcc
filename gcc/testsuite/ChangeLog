@@ -1,3 +1,21 @@
+2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66232
+	PR target/67400
+	* gcc.target/i386/pr66232-14.c: New file.
+	* gcc.target/i386/pr66232-15.c: Likewise.
+	* gcc.target/i386/pr66232-16.c: Likewise.
+	* gcc.target/i386/pr66232-17.c: Likewise.
+	* gcc.target/i386/pr67400-1.c: Don't disable for ia32.  Scan for
+	ia32 if R_386_GOT32X relocation is supported.
+	* gcc.target/i386/pr67400-2.c: Likewise.
+	* gcc.target/i386/pr67400-3.c: Likewise.
+	* gcc.target/i386/pr67400-4.c: Likewise.
+	* gcc.target/i386/pr67400-6.c: Likewise.
+	* gcc.target/i386/pr67400-7.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_got32x_reloc):
+	New.
+
 2016-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48852

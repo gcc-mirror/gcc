@@ -1,3 +1,31 @@
+2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66232
+	PR target/67400
+	* configure.ac (as_ix86_tls_ldm_opt): Renamed to ...
+	(as_ix86_gas_32_opt): This.
+	(ld_ix86_tls_ldm_opt): Renamed to ...
+	(ld_ix86_gld_32_opt): This.
+	(R_386_TLS_LDM reloc): Updated.
+	(R_386_GOT32X reloc): New assembler/linker check.
+	(HAVE_AS_IX86_GOT32X): New.  Defined to 1 if 32-bit assembler and
+	linker support "jmp *_start@GOT" and "cmpl $0, bar@GOT".  Otherise,
+	defined to 0.
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* config/i386/i386.c (ix86_force_load_from_GOT_p): Return
+	true if HAVE_AS_IX86_GOT32X is 1 in 32-bit mode.
+	(ix86_legitimate_address_p): Allow UNSPEC_GOT for -fno-plt
+	if ix86_force_load_from_GOT_p returns true.
+	(ix86_print_operand_address_as): Also support UNSPEC_GOT if
+	ix86_force_load_from_GOT_p returns true.
+	(ix86_expand_move): Generate UNSPEC_GOT in 32-bit mode to load
+	the external function address via the GOT slot.
+	(ix86_nopic_noplt_attribute_p): Check both TARGET_64BIT and
+	HAVE_AS_IX86_GOT32X before returning false.
+	(ix86_output_call_insn): Generate "%!jmp/call\t*%p0@GOT" in
+	32-bit mode if ix86_nopic_noplt_attribute_p returns true.
+
 2016-06-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (remap_decl): Preserve DECL_ORIGINAL_TYPE invariant.

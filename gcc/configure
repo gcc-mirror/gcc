@@ -25899,13 +25899,13 @@ _ACEOF
 
     # Enforce 32-bit output with gas and gld.
     if test x$gas = xyes; then
-      as_ix86_tls_ldm_opt="--32"
+      as_ix86_gas_opt="--32"
     fi
     if echo "$ld_ver" | grep GNU > /dev/null; then
       if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
-        ld_ix86_tls_ldm_opt="-melf_i386_sol2"
+        ld_ix86_gld_opt="-melf_i386_sol2"
       else
-        ld_ix86_tls_ldm_opt="-melf_i386"
+        ld_ix86_gld_opt="-melf_i386"
       fi
     fi
     conftest_s='
@@ -25927,7 +25927,7 @@ else
   gcc_cv_as_ix86_tlsldm=no
   if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_tls_ldm_opt -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gas_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -25935,7 +25935,7 @@ else
   test $ac_status = 0; }; }
     then
 	if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
-	    && $gcc_cv_ld $ld_ix86_tls_ldm_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_ix86_gld_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
 	   if $gcc_cv_objdump -d conftest 2>/dev/null | grep nop > /dev/null \
 	      || dis conftest 2>/dev/null | grep nop > /dev/null; then
 	     gcc_cv_as_ix86_tlsldm=yes
@@ -25957,6 +25957,58 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_AS_IX86_TLSLDM `if test $gcc_cv_as_ix86_tlsldm = yes; then echo 1; else echo 0; fi`
 _ACEOF
 
+
+    conftest_s='
+	.data
+bar:
+	.byte 1
+	.text
+	.global _start
+_start:
+	 cmpl $0, bar@GOT
+	 jmp *_start@GOT'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for R_386_GOT32X reloc" >&5
+$as_echo_n "checking assembler for R_386_GOT32X reloc... " >&6; }
+if test "${gcc_cv_as_ix86_got32x+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_ix86_got32x=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gas_opt -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	    && test x$gcc_cv_readelf != x \
+	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
+	       | grep R_386_GOT32X > /dev/null 2>&1 \
+	    && $gcc_cv_ld $ld_ix86_gld_opt -o conftest conftest.o > /dev/null 2>&1; then
+	   if $gcc_cv_objdump -dw conftest 2>&1 \
+	      | grep 0xffffff > /dev/null 2>&1; then
+	     gcc_cv_as_ix86_got32x=no
+	   else
+	     gcc_cv_as_ix86_got32x=yes
+	   fi
+	 fi
+	 rm -f conftest
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_got32x" >&5
+$as_echo "$gcc_cv_as_ix86_got32x" >&6; }
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_IX86_GOT32X `if test x"$gcc_cv_as_ix86_got32x" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
 
     ;;
 

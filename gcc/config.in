@@ -425,6 +425,12 @@
 #endif
 
 
+/* Define 0/1 if your assembler and linker support @GOT. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_GOT32X
+#endif
+
+
 /* Define if your assembler supports HLE prefixes. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_HLE
@@ -628,7 +634,8 @@
 #undef HAVE_AS_SPARC4
 #endif
 
-/* Define if your assembler supports SPARC5 and VIS4.0 instructions. */
+
+/* Define if your assembler supports SPARC5 and VIS 4.0 instructions. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC5_VIS4
 #endif
