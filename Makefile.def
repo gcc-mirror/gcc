@@ -639,3 +639,10 @@ bootstrap_stage = {
 bootstrap_stage = {
 	id=feedback ; prev=profile ;
 	bootstrap_target=profiledbootstrap ; };
+bootstrap_stage = {
+	id=autoprofile ; prev=1 ;
+        autoprofile="$$s/gcc/config/i386/$(AUTO_PROFILE)" ; };
+bootstrap_stage = {
+	id=autofeedback ; prev=autoprofile ;
+	bootstrap_target=autoprofiledbootstrap ;
+	profile_data="PERF_DATA=perf.data" ; };

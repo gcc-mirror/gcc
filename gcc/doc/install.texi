@@ -2776,6 +2776,17 @@ Unlike standard bootstrap, several additional restrictions apply.  The
 compiler used to build @code{stage1} needs to support a 64-bit integral type.
 It is recommended to only use GCC for this.
 
+On Linux/x86_64 hosts with some restrictions (no virtualization) it is
+also possible to do autofdo build with @samp{make
+autoprofiledback}. This uses Linux perf to sample branches in the
+binary and then rebuild it with feedback derived from the profile.
+Linux perf and the @code{autofdo} toolkit needs to be installed for
+this.
+
+Only the profile from the current build is used, so when an error
+occurs it is recommended to clean before restarting. Otherwise
+the code quality may be much worse.
+
 @html
 <hr />
 <p>

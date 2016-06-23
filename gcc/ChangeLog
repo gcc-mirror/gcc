@@ -1,5 +1,10 @@
 2016-06-23  Andi Kleen  <ak@linux.intel.com>
 
+	* Makefile.in: Regenerate.
+	* doc/install.texi: Document autoprofiledbootstrap.
+
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
 	* config/i386/gcc-auto-profile: New file.
 
 2016-06-23  Martin Liska  <mliska@suse.cz>

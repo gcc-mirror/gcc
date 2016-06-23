@@ -60,6 +60,11 @@ c_OBJS = $(C_OBJS) cc1-checksum.o c/gccspec.o
 # Use strict warnings for this front end.
 c-warn = $(STRICT_WARN)
 
+ifeq ($(shell cat ../stage_current),stageautofeedback)
+$(C_OBJS): ALL_COMPILERFLAGS += -fauto-profile=cc1.fda
+$(C_OBJS): cc1.fda
+endif
+
 # compute checksum over all object files and the options
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
@@ -77,6 +82,10 @@ cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
 	  cc1-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+cc1.fda: ../stage1-gcc/cc1$(exeext) ../prev-gcc/$(PERF_DATA)
+	$(CREATE_GCOV) -binary ../stage1-gcc/cc1$(exeext) -gcov cc1.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1
+
 #
 # Build hooks:
 
@@ -126,6 +135,7 @@ c.mostlyclean:
 	-rm -f cc1$(exeext)
 	-rm -f c/*$(objext)
 	-rm -f c/*$(coverageexts)
+	-rm -f cc1.fda
 c.clean:
 c.distclean:
 	-rm -f c/config.status c/Makefile
@@ -146,3 +156,7 @@ c.stageprofile: stageprofile-start
 	-mv c/*$(objext) stageprofile/c
 c.stagefeedback: stagefeedback-start
 	-mv c/*$(objext) stagefeedback/c
+c.autostageprofile: autostageprofile-start
+	-mv c/*$(objext) autostageprofile/c
+c.autostagefeedback: autostagefeedback-start
+	-mv c/*$(objext) autostagefeedback/c

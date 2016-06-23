@@ -1,3 +1,9 @@
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.def: Add autoprofiledbootstrap.
+	* Makefile.tpl: Dito.
+	* Makefile.in: Regenerate.
+
 2016-06-23  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
     * configure.ac: Disable libgcj and libgloss for Phoenix-RTOS targets.

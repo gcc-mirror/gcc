@@ -81,6 +81,11 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/vtable-class-hierarchy.o cp/constexpr.o cp/cp-ubsan.o \
  cp/constraint.o cp/logic.o $(CXX_C_OBJS)
 
+ifeq ($(shell cat ../stage_current),stageautofeedback)
+$(CXX_AND_OBJCXX_OBJS): CFLAGS += -fauto-profile=cc1plus.fda
+$(CXX_AND_OBJCXX_OBJS): cc1plus.fda
+endif
+
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 
@@ -121,6 +126,9 @@ $(srcdir)/cp/cfns.h:
 endif
 	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L C++ \
 		$(srcdir)/cp/cfns.gperf --output-file $(srcdir)/cp/cfns.h
+
+cc1plus.fda: ../stage1-gcc/cc1plus$(exeext) ../prev-gcc/$(PERF_DATA)
+	$(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov cc1plus.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1
 
 #
 # Build hooks:
@@ -235,7 +243,7 @@ c++.mostlyclean:
 	-rm -f doc/g++.1
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
-	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext)
+	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext) cc1plus.fda
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
@@ -257,3 +265,7 @@ c++.stageprofile: stageprofile-start
 	-mv cp/*$(objext) stageprofile/cp
 c++.stagefeedback: stagefeedback-start
 	-mv cp/*$(objext) stagefeedback/cp
+c++.autostageprofile: stageprofile-start
+	-mv cp/*$(objext) autostageprofile/cp
+c++.autostagefeedback: stagefeedback-start
+	-mv cp/*$(objext) autostagefeedback/cp

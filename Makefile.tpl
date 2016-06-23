@@ -382,6 +382,8 @@ MAKEINFO = @MAKEINFO@
 EXPECT = @EXPECT@
 RUNTEST = @RUNTEST@
 
+AUTO_PROFILE = gcc-auto-profile -c 1000000
+
 # This just becomes part of the MAKEINFO definition passed down to
 # sub-makes.  It lets flags be given on the command line while still
 # using the makeinfo from the object tree.
@@ -417,6 +419,8 @@ LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 GOCFLAGS = $(CFLAGS)
+
+CREATE_GCOV = create_gcov
 
 TFLAGS =
 
@@ -461,6 +465,12 @@ STAGEprofile_TFLAGS = $(STAGE2_TFLAGS)
 
 STAGEfeedback_CFLAGS = $(STAGE3_CFLAGS) -fprofile-use
 STAGEfeedback_TFLAGS = $(STAGE3_TFLAGS)
+
+STAGEautoprofile_CFLAGS = $(STAGE2_CFLAGS) -g
+STAGEautoprofile_TFLAGS = $(STAGE2_TFLAGS)
+
+STAGEautofeedback_CFLAGS = $(STAGE3_CFLAGS)
+STAGEautofeedback_TFLAGS = $(STAGE3_TFLAGS)
 
 do-compare = @do_compare@
 do-compare3 = $(do-compare)
@@ -617,7 +627,8 @@ EXTRA_HOST_FLAGS = \
 	'READELF=$(READELF)' \
 	'STRIP=$(STRIP)' \
 	'WINDRES=$(WINDRES)' \
-	'WINDMC=$(WINDMC)'
+	'WINDMC=$(WINDMC)' \
+	'CREATE_GCOV=$(CREATE_GCOV)'
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
 
@@ -1147,6 +1158,7 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 	[+exports+][+ IF prev +] \
 	[+poststage1_exports+][+ ENDIF prev +] [+extra_exports+] \
 	cd [+subdir+]/[+module+] && \
+	[+autoprofile+] \
 	$(MAKE) $(BASE_FLAGS_TO_PASS)[+ IF prefix +] \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -1160,7 +1172,7 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		[+args+] [+IF prev +][+poststage1_args+][+ ELSE prev +] \
 		[+stage1_args+][+ ENDIF prev +] [+extra_make_flags+] \
-		TFLAGS="$(STAGE[+id+]_TFLAGS)" \
+		TFLAGS="$(STAGE[+id+]_TFLAGS)" [+profile_data+] \
 		$(TARGET-stage[+id+]-[+prefix+][+module+])
 
 maybe-clean-stage[+id+]-[+prefix+][+module+]: clean-stage[+id+]-[+prefix+][+module+]

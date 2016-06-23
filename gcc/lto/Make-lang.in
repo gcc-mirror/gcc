@@ -25,6 +25,15 @@ LTO_EXE = lto1$(exeext)
 LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o
 lto_OBJS = $(LTO_OBJS)
 
+# this is only useful in a LTO bootstrap, but this does not work right
+# now. Should reenable after this is fixed, but only when LTO bootstrap
+# is enabled.
+
+#ifeq ($(shell cat ../stage_current),stageautofeedback)
+#$(LTO_OBJS): CFLAGS += -fauto-profile=lto1.fda
+#$(LTO_OBJS): lto1.fda
+#endif
+
 # Rules
 
 # These hooks are used by the main GCC Makefile.  Consult that
@@ -50,7 +59,7 @@ lto.srcinfo:
 lto.install-plugin:
 
 lto.mostlyclean:
-	rm -f $(LTO_OBJS) $(LTO_EXE)
+	rm -f $(LTO_OBJS) $(LTO_EXE) lto1.fda
 
 lto.clean:
 lto.distclean:
@@ -70,6 +79,9 @@ lto-warn = $(STRICT_WARN)
 $(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
+
+lto1.fda: ../prev-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
+	$(CREATE_GCOV) -binary ../prev-gcc/lto1$(exeext) -gcov lto1.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:
