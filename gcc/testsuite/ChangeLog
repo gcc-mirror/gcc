@@ -1,3 +1,10 @@
+2016-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48852
+	* gfortran.dg/char4_iunit_1.f03: Update test.
+	* gfortran.dg/f2003_io_5.f03: Update test.
+	* gfortran.dg/real_const_3.f90: Update test.
+
 2016-06-23  Andi Kleen  <ak@linux.intel.com>
 
 	* g++.dg/bprob/bprob.exp: Support autofdo.

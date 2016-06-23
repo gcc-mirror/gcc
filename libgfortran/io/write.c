@@ -1101,42 +1101,6 @@ write_z (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
     }
 }
 
-
-void
-write_d (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
-{
-  write_float (dtp, f, p, len, 0);
-}
-
-
-void
-write_e (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
-{
-  write_float (dtp, f, p, len, 0);
-}
-
-
-void
-write_f (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
-{
-  write_float (dtp, f, p, len, 0);
-}
-
-
-void
-write_en (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
-{
-  write_float (dtp, f, p, len, 0);
-}
-
-
-void
-write_es (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
-{
-  write_float (dtp, f, p, len, 0);
-}
-
-
 /* Take care of the X/TR descriptor.  */
 
 void
@@ -1380,6 +1344,119 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
     }
 }
 
+/* Floating point helper functions.  */
+
+#define BUF_STACK_SZ 256
+
+static int
+get_precision (st_parameter_dt *dtp, const fnode *f, const char *source, int kind)
+{
+  if (f->format != FMT_EN)
+    return determine_precision (dtp, f, kind);
+  else
+    return determine_en_precision (dtp, f, source, kind);
+}
+
+static char *
+select_buffer (int precision, char *buf, size_t *size)
+{
+  char *result;
+  *size = BUF_STACK_SZ / 2 + precision;
+  if (*size > BUF_STACK_SZ)
+     result = xmalloc (*size);
+  else
+     result = buf;
+  return result;
+}
+
+static char *
+select_string (const fnode *f, char *buf, size_t *size)
+{
+  char *result;
+  *size = f->u.real.w + 1;
+  if (*size > BUF_STACK_SZ)
+     result = xmalloc (*size);
+  else
+     result = buf;
+  return result;
+}
+
+static void
+write_float_string (st_parameter_dt *dtp, char *fstr, size_t len)
+{
+  char *p = write_block (dtp, len);
+  if (p == NULL)
+    return;
+
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      gfc_char4_t *p4 = (gfc_char4_t *) p;
+      memcpy4 (p4, fstr, len);
+      return;
+    }
+  memcpy (p, fstr, len);
+}
+
+static void
+write_float_0 (st_parameter_dt *dtp, const fnode *f, const char *source, int kind)
+{
+  char buf_stack[BUF_STACK_SZ];
+  char str_buf[BUF_STACK_SZ];
+  char *buffer, *result;
+  size_t buf_size, res_len;
+
+  /* Precision for snprintf call.  */
+  int precision = get_precision (dtp, f, source, kind);
+  
+  /* String buffer to hold final result.  */
+  result = select_string (f, str_buf, &res_len);
+  
+  buffer = select_buffer (precision, buf_stack, &buf_size);
+  
+  get_float_string (dtp, f, source , kind, 0, buffer,
+                           precision, buf_size, result, &res_len);
+  write_float_string (dtp, result, res_len);
+
+  if (buf_size > BUF_STACK_SZ)
+    free (buffer);
+  if (res_len > BUF_STACK_SZ)
+    free (result);
+}
+
+void
+write_d (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_float_0 (dtp, f, p, len);
+}
+
+
+void
+write_e (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_float_0 (dtp, f, p, len);
+}
+
+
+void
+write_f (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_float_0 (dtp, f, p, len);
+}
+
+
+void
+write_en (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_float_0 (dtp, f, p, len);
+}
+
+
+void
+write_es (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_float_0 (dtp, f, p, len);
+}
+
 
 /* Set an fnode to default format.  */
 
@@ -1422,12 +1499,12 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
     }
 }
 
-/* Output a real number with default format.  To guarantee that a
-   binary -> decimal -> binary roundtrip conversion recovers the
-   original value, IEEE 754-2008 requires 9, 17, 21 and 36 significant
-   digits for REAL kinds 4, 8, 10, and 16, respectively. Thus, we use
-   1PG16.9E2 for REAL(4), 1PG25.17E3 for REAL(8), 1PG30.21E4 for
-   REAL(10) and 1PG45.36E4 for REAL(16). The exception is that the
+/* Output a real number with default format.
+   To guarantee that a binary -> decimal -> binary roundtrip conversion
+   recovers the original value, IEEE 754-2008 requires 9, 17, 21 and 36
+   significant digits for REAL kinds 4, 8, 10, and 16, respectively.
+   Thus, we use 1PG16.9E2 for REAL(4), 1PG25.17E3 for REAL(8), 1PG30.21E4
+   for REAL(10) and 1PG45.36E4 for REAL(16). The exception is that the
    Fortran standard requires outputting an extra digit when the scale
    factor is 1 and when the magnitude of the value is such that E
    editing is used. However, gfortran compensates for this, and thus
@@ -1435,25 +1512,51 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
    generated both when using F and E editing.  */
 
 void
-write_real (st_parameter_dt *dtp, const char *source, int length)
+write_real (st_parameter_dt *dtp, const char *source, int kind)
 {
   fnode f ;
-  int org_scale = dtp->u.p.scale_factor;
+  char buf_stack[BUF_STACK_SZ];
+  char str_buf[BUF_STACK_SZ];
+  char *buffer, *result;
+  size_t buf_size, res_len;
+  int orig_scale = dtp->u.p.scale_factor;
   dtp->u.p.scale_factor = 1;
-  set_fnode_default (dtp, &f, length);
-  write_float (dtp, &f, source , length, 1);
-  dtp->u.p.scale_factor = org_scale;
+  set_fnode_default (dtp, &f, kind);
+
+  /* Precision for snprintf call.  */
+  int precision = get_precision (dtp, &f, source, kind);
+  
+  /* String buffer to hold final result.  */
+  result = select_string (&f, str_buf, &res_len);
+
+  /* scratch buffer to hold final result.  */
+  buffer = select_buffer (precision, buf_stack, &buf_size);
+  
+  get_float_string (dtp, &f, source , kind, 1, buffer,
+                           precision, buf_size, result, &res_len);
+  write_float_string (dtp, result, res_len);
+
+  dtp->u.p.scale_factor = orig_scale;
+  if (buf_size > BUF_STACK_SZ)
+    free (buffer);
+  if (res_len > BUF_STACK_SZ)
+    free (result);
 }
 
 /* Similar to list formatted REAL output, for kPG0 where k > 0 we
    compensate for the extra digit.  */
 
 void
-write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
+write_real_g0 (st_parameter_dt *dtp, const char *source, int kind, int d)
 {
   fnode f;
+  char buf_stack[BUF_STACK_SZ];
+  char str_buf[BUF_STACK_SZ];
+  char *buffer, *result;
+  size_t buf_size, res_len;
   int comp_d; 
-  set_fnode_default (dtp, &f, length);
+  set_fnode_default (dtp, &f, kind);
+
   if (d > 0)
     f.u.real.d = d;
 
@@ -1464,8 +1567,24 @@ write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
   else
     comp_d = 0;
   dtp->u.p.g0_no_blanks = 1;
-  write_float (dtp, &f, source , length, comp_d);
+
+  /* Precision for snprintf call.  */
+  int precision = get_precision (dtp, &f, source, kind);
+  
+  /* String buffer to hold final result.  */
+  result = select_string (&f, str_buf, &res_len);
+
+  buffer = select_buffer (precision, buf_stack, &buf_size);
+
+  get_float_string (dtp, &f, source , kind, comp_d, buffer,
+                           precision, buf_size, result, &res_len);
+  write_float_string (dtp, result, res_len);
+
   dtp->u.p.g0_no_blanks = 0;
+  if (buf_size > BUF_STACK_SZ)
+    free (buffer);
+  if (res_len > BUF_STACK_SZ)
+    free (result);
 }
 
 
@@ -1475,15 +1594,58 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
   char semi_comma =
 	dtp->u.p.current_unit->decimal_status == DECIMAL_POINT ? ',' : ';';
 
-  if (write_char (dtp, '('))
-    return;
-  write_real (dtp, source, kind);
+  /* Set for no blanks so we get a string result with no leading
+     blanks.  We will pad left later.  */
+  dtp->u.p.g0_no_blanks = 1;
 
-  if (write_char (dtp, semi_comma))
-    return;
-  write_real (dtp, source + size / 2, kind);
+  fnode f ;
+  char buf_stack[BUF_STACK_SZ];
+  char str1_buf[BUF_STACK_SZ];
+  char str2_buf[BUF_STACK_SZ];
+  char *buffer, *result1, *result2;
+  size_t buf_size, res_len1, res_len2;
+  int width, lblanks, orig_scale = dtp->u.p.scale_factor;
 
+  dtp->u.p.scale_factor = 1;
+  set_fnode_default (dtp, &f, kind);
+  
+  /* Set width for two values, parenthesis, and comma.  */
+  width = 2 * f.u.real.w + 3;
+
+  /* Set for no blanks so we get a string result with no leading
+     blanks.  We will pad left later.  */
+  dtp->u.p.g0_no_blanks = 1;
+  
+  /* Precision for snprintf call.  */
+  int precision = get_precision (dtp, &f, source, kind);
+  
+  /* String buffers to hold final result.  */
+  result1 = select_string (&f, str1_buf, &res_len1);
+  result2 = select_string (&f, str2_buf, &res_len2);
+
+  buffer = select_buffer (precision, buf_stack, &buf_size);
+  
+  get_float_string (dtp, &f, source , kind, 0, buffer,
+                           precision, buf_size, result1, &res_len1);
+  get_float_string (dtp, &f, source + size / 2 , kind, 0, buffer,
+                           precision, buf_size, result2, &res_len2);
+  lblanks = width - res_len1 - res_len2 - 3;
+  
+  write_x (dtp, lblanks, lblanks);
+  write_char (dtp, '(');
+  write_float_string (dtp, result1, res_len1);
+  write_char (dtp, semi_comma);
+  write_float_string (dtp, result2, res_len2);
   write_char (dtp, ')');
+  
+  dtp->u.p.scale_factor = orig_scale;
+  dtp->u.p.g0_no_blanks = 0;
+  if (buf_size > BUF_STACK_SZ)
+    free (buffer);
+  if (res_len1 > BUF_STACK_SZ)
+    free (result1);
+  if (res_len2 > BUF_STACK_SZ)
+    free (result2);
 }
 
 
