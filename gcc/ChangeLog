@@ -1,3 +1,7 @@
+2016-06-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (remap_decl): Preserve DECL_ORIGINAL_TYPE invariant.
+
 2016-06-23  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in: Regenerate.

@@ -367,7 +367,20 @@ remap_decl (tree decl, copy_body_data *id)
       /* Remap types, if necessary.  */
       TREE_TYPE (t) = remap_type (TREE_TYPE (t), id);
       if (TREE_CODE (t) == TYPE_DECL)
-        DECL_ORIGINAL_TYPE (t) = remap_type (DECL_ORIGINAL_TYPE (t), id);
+	{
+	  DECL_ORIGINAL_TYPE (t) = remap_type (DECL_ORIGINAL_TYPE (t), id);
+
+	  /* Preserve the invariant that DECL_ORIGINAL_TYPE != TREE_TYPE,
+	     which is enforced in gen_typedef_die when DECL_ABSTRACT_ORIGIN
+	     is not set on the TYPE_DECL, for example in LTO mode.  */
+	  if (DECL_ORIGINAL_TYPE (t) == TREE_TYPE (t))
+	    {
+	      tree x = build_variant_type_copy (TREE_TYPE (t));
+	      TYPE_STUB_DECL (x) = TYPE_STUB_DECL (TREE_TYPE (t));
+	      TYPE_NAME (x) = t;
+	      DECL_ORIGINAL_TYPE (t) = x;
+	    }
+	}
 
       /* Remap sizes as necessary.  */
       walk_tree (&DECL_SIZE (t), copy_tree_body_r, id, NULL);
