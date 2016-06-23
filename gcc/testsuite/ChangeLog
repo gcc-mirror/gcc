@@ -1,3 +1,13 @@
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* g++.dg/bprob/bprob.exp: Support autofdo.
+	* g++.dg/tree-prof/tree-prof.exp: dito.
+	* gcc.dg/tree-prof/tree-prof.exp: dito.
+	* gcc.misc-tests/bprob.exp: dito.
+	* gfortran.dg/prof/prof.exp: dito.
+	* lib/profopt.exp: dito.
+	* lib/target-supports.exp: Check for autofdo.
+
 2016-06-23  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/pr71619.c: New test.

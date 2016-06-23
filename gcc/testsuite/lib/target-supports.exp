@@ -508,6 +508,13 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     return 0
 }
 
+# Return the autofdo profile wrapper
+
+proc profopt-perf-wrapper { } {
+    global srcdir
+    return "$srcdir/../config/i386/gcc-auto-profile -o perf.data "
+}
+
 # Return true if profiling is supported on the target.
 
 proc check_profiling_available { test_what } {
@@ -523,6 +530,36 @@ proc check_profiling_available { test_what } {
 	if { ![check_effective_target_tls_runtime] } {
 	    return 0
 	}
+    }
+
+    if { $test_what == "-fauto-profile" } {
+	if { ! ([istarget x86_64-*-linux*] || [istarget i?86-*-linux*]) } {
+            verbose "autofdo only supported on linux"
+            return 0
+        }
+	# not cross compiling?
+	if { ![isnative] } {
+	    verbose "autofdo not supported for non native builds"
+	    return 0
+	}
+	set event [profopt-perf-wrapper]
+	if {$event == "" } {
+	    verbose "autofdo not supported"
+	    return 0
+	}
+        global srcdir
+	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "true -v >/dev/null"]
+	if { [lindex $status 0] != 0 } {
+	    verbose "autofdo not supported because perf does not work"
+	    return 0
+	}
+
+	# no good way to check this in advance -- check later instead.
+	#set status [remote_exec host "create_gcov" "2>/dev/null"]
+	#if { [lindex $status 0] != 255 } {
+        #    verbose "autofdo not supported due to missing create_gcov"
+        #    return 0
+        #}
     }
 
     # Support for -p on solaris2 relies on mcrt1.o which comes with the
