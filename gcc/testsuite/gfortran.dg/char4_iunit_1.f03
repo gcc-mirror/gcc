@@ -30,5 +30,5 @@ program char4_iunit_1
   write(string, '(10x,f3.1,3x,f9.1)') nan, inf
   if (string .ne. 4_"          NaN    Infinity             ") call abort
   write(string, *) (1.2, 3.4 )
-  if (string .ne. 4_" (  1.20000005    ,  3.40000010    )  ") call abort
+  if (string .ne. 4_"             (1.20000005,3.40000010)") call abort
 end program char4_iunit_1

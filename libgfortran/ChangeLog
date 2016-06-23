@@ -1,3 +1,30 @@
+2016-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48852
+	* io/write.c: Cleaned up whitespace.
+	(write_d, write_e, write_f, write_es, write_en): Use new helper function
+	write_float_0. (write_float_0): New helper function.
+	(get_precision, select_buffer, select_string, write_float_string): New
+	helper functions used in remaining float writing functions. Helper function
+	write_float_string now contains code for writing to kind=4 character
+	internal units.
+	(write_real): Modified to establish working buffers at this level and to
+	use new helper functions.
+	(write_real_g0): Likewise modified.
+	(write_complex): Likewise modified. Gets both float strings before
+	output so that final lengths can be determined which allows right
+	justifying the complex number with no intervening spaces.
+	* io/write_float.def (build_float_string): Renamed from previosly
+	output_float, modified to use buffers passed in from higher functions,
+	builds a null terminated string of the floating point value. Character
+	kind=4 code eliminated.
+	(write_infnan): Likewise modified to use incoming buffers and eliminate
+	kind=4 related code.
+	(OUTPUT_FLOAT_FMT_G): Deleted, functionality moved into FORMAT_FLOAT.
+	(FORMAT_FLOAT): Renamed macro from WRITE_FLOAT. Use build_float_string.
+	(get_float_string): Renamed from write_float, uses FORMAT_FLOAT macro.
+	Buffer allocation removed, now at higher level.
+
 2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/71123
