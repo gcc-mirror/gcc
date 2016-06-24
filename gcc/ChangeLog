@@ -1,3 +1,9 @@
+2016-06-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (int_log2): Delete definition and prototype.
+	(shift_op): Use exact_log2 instead of int_log2.
+	(vfp3_const_double_for_fract_bits): Likewise.
+
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* internal-fn.c (expand_arith_set_overflow): New function.
