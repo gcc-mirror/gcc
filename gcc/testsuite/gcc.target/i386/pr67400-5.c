@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -fno-pic -fno-plt" } */
 
 extern void foo (void);

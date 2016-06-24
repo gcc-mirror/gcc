@@ -1,3 +1,17 @@
+2016-06-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/noplt-1.c: Don't disable for ia32.  Scan for
+	ia32 if R_386_GOT32X relocation is supported.
+	* gcc.target/i386/noplt-3.c: Likewise.
+	* gcc.target/i386/noplt-2.c: Likewise.
+	(main): Renamed to ...
+	(bar): This.
+	* gcc.target/i386/noplt-4.c: Likewise.
+	(main): Renamed to ...
+	(bar): This.
+	* gcc.target/i386/pr67400-3.c: Don't disable for ia32.
+	* gcc.target/i386/pr67400-5.c: Likewise.
+
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/torture/builtin-arith-overflow-p-19.c: Run for C++ too.

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-fno-pic -fno-plt" } */
 
 void foo();
@@ -9,4 +9,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler "call\[ \t\]\\*.*foo.*@GOTPCREL\\(%rip\\)" } } */ 
+/* { dg-final { scan-assembler "call\[ \t\]*.foo@GOTPCREL" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "call\[ \t\]*.foo@GOT" { target { ia32 && got32x_reloc } } } } */
