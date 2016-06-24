@@ -4098,24 +4098,6 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_DIFF_SECT_DELTA, 1,
         [Define if your assembler supports the subtraction of symbols in different sections.])])
 
-    # These two are used unconditionally by i386.[ch]; it is to be defined
-    # to 1 if the feature is present, 0 otherwise.
-    as_ix86_gotoff_in_data_opt=
-    if test x$gas = xyes; then
-      as_ix86_gotoff_in_data_opt="--32"
-    fi
-    gcc_GAS_CHECK_FEATURE([GOTOFF in data],
-      gcc_cv_as_ix86_gotoff_in_data, [2,11,0],
-      [$as_ix86_gotoff_in_data_opt],
-[	.text
-.L0:
-	nop
-	.data
-	.long .L0@GOTOFF])
-    AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
-      [`if test $gcc_cv_as_ix86_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
-      [Define true if the assembler supports '.long foo@GOTOFF'.])
-
     gcc_GAS_CHECK_FEATURE([rep and lock prefix],
         gcc_cv_as_ix86_rep_lock_prefix,,,
 	[rep movsl
@@ -4134,34 +4116,6 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_UD2, 1,
 	[Define if your assembler supports the 'ud2' mnemonic.])])
 
-    gcc_GAS_CHECK_FEATURE([R_386_TLS_GD_PLT reloc],
-        gcc_cv_as_ix86_tlsgdplt,,,
-	[call    tls_gd@tlsgdplt],
-	[if test x$gcc_cv_ld != x \
-	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
-	   gcc_cv_as_ix86_tlsgdplt=yes
-	 fi
-	 rm -f conftest],
-      [AC_DEFINE(HAVE_AS_IX86_TLSGDPLT, 1,
-        [Define if your assembler and linker support @tlsgdplt.])])
-
-    conftest_s='
-	.section .tdata,"aw'$tls_section_flag'",@progbits
-tls_ld:
-	.section .text,"ax",@progbits
-	 call    tls_ld@tlsldmplt'
-    gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM_PLT reloc],
-        gcc_cv_as_ix86_tlsldmplt,,,
-	[$conftest_s],
-	[if test x$gcc_cv_ld != x \
-	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
-	   gcc_cv_as_ix86_tlsldmplt=yes
-	 fi
-	 rm -f conftest])
-    AC_DEFINE_UNQUOTED(HAVE_AS_IX86_TLSLDMPLT,
-      [`if test $gcc_cv_as_ix86_tlsldmplt = yes; then echo 1; else echo 0; fi`],
-      [Define to 1 if your assembler and linker support @tlsldmplt.])
-
     # Enforce 32-bit output with gas and gld.
     if test x$gas = xyes; then
       as_ix86_gas_32_opt="--32"
@@ -4173,6 +4127,38 @@ tls_ld:
         ld_ix86_gld_32_opt="-melf_i386"
       fi
     fi
+
+    gcc_GAS_CHECK_FEATURE([R_386_TLS_GD_PLT reloc],
+        gcc_cv_as_ix86_tlsgdplt,,
+	[$as_ix86_gas_32_opt],
+	[call    tls_gd@tlsgdplt],
+	[if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsgdplt=yes
+	 fi
+	 rm -f conftest],
+      [AC_DEFINE(HAVE_AS_IX86_TLSGDPLT, 1,
+        [Define if your assembler and linker support @tlsgdplt.])])
+
+    conftest_s='
+	.section .tdata,"aw'$tls_section_flag'",@progbits
+tls_ld:
+	.section .text,"ax",@progbits
+	 call    tls_ld@tlsldmplt'
+
+    gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM_PLT reloc],
+        gcc_cv_as_ix86_tlsldmplt,,
+	[$as_ix86_gas_32_opt],
+	[$conftest_s],
+	[if test x$gcc_cv_ld != x \
+	 && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tlsldmplt=yes
+	 fi
+	 rm -f conftest])
+    AC_DEFINE_UNQUOTED(HAVE_AS_IX86_TLSLDMPLT,
+      [`if test $gcc_cv_as_ix86_tlsldmplt = yes; then echo 1; else echo 0; fi`],
+      [Define to 1 if your assembler and linker support @tlsldmplt.])
+
     conftest_s='
 	.section .text,"ax",@progbits
         .globl  _start
@@ -4229,6 +4215,19 @@ _start:
     AC_DEFINE_UNQUOTED(HAVE_AS_IX86_GOT32X,
       [`if test x"$gcc_cv_as_ix86_got32x" = xyes; then echo 1; else echo 0; fi`],
       [Define 0/1 if your assembler and linker support @GOT.])
+
+    gcc_GAS_CHECK_FEATURE([GOTOFF in data],
+      gcc_cv_as_ix86_gotoff_in_data, [2,11,0],
+      [$as_ix86_gas_32_opt],
+[	.text
+.L0:
+	nop
+	.data
+	.long .L0@GOTOFF])
+    AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
+      [`if test $gcc_cv_as_ix86_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
+      [Define true if the assembler supports '.long foo@GOTOFF'.])
+
     ;;
 
   ia64*-*-*)

@@ -25707,52 +25707,6 @@ $as_echo "#define HAVE_AS_IX86_DIFF_SECT_DELTA 1" >>confdefs.h
 
 fi
 
-    # These two are used unconditionally by i386.[ch]; it is to be defined
-    # to 1 if the feature is present, 0 otherwise.
-    as_ix86_gotoff_in_data_opt=
-    if test x$gas = xyes; then
-      as_ix86_gotoff_in_data_opt="--32"
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for GOTOFF in data" >&5
-$as_echo_n "checking assembler for GOTOFF in data... " >&6; }
-if test "${gcc_cv_as_ix86_gotoff_in_data+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_ix86_gotoff_in_data=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
-  then gcc_cv_as_ix86_gotoff_in_data=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo '	.text
-.L0:
-	nop
-	.data
-	.long .L0@GOTOFF' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gotoff_in_data_opt -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_ix86_gotoff_in_data=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_gotoff_in_data" >&5
-$as_echo "$gcc_cv_as_ix86_gotoff_in_data" >&6; }
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_AS_GOTOFF_IN_DATA `if test $gcc_cv_as_ix86_gotoff_in_data = yes; then echo 1; else echo 0; fi`
-_ACEOF
-
-
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for rep and lock prefix" >&5
 $as_echo_n "checking assembler for rep and lock prefix... " >&6; }
 if test "${gcc_cv_as_ix86_rep_lock_prefix+set}" = set; then :
@@ -25821,6 +25775,18 @@ $as_echo "#define HAVE_AS_IX86_UD2 1" >>confdefs.h
 
 fi
 
+    # Enforce 32-bit output with gas and gld.
+    if test x$gas = xyes; then
+      as_ix86_gas_32_opt="--32"
+    fi
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
+        ld_ix86_gld_32_opt="-melf_i386_sol2"
+      else
+        ld_ix86_gld_32_opt="-melf_i386"
+      fi
+    fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for R_386_TLS_GD_PLT reloc" >&5
 $as_echo_n "checking assembler for R_386_TLS_GD_PLT reloc... " >&6; }
 if test "${gcc_cv_as_ix86_tlsgdplt+set}" = set; then :
@@ -25829,7 +25795,7 @@ else
   gcc_cv_as_ix86_tlsgdplt=no
   if test x$gcc_cv_as != x; then
     $as_echo 'call    tls_gd@tlsgdplt' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gas_32_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -25837,7 +25803,7 @@ else
   test $ac_status = 0; }; }
     then
 	if test x$gcc_cv_ld != x \
-	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	 && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsgdplt=yes
 	 fi
 	 rm -f conftest
@@ -25861,6 +25827,7 @@ fi
 tls_ld:
 	.section .text,"ax",@progbits
 	 call    tls_ld@tlsldmplt'
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for R_386_TLS_LDM_PLT reloc" >&5
 $as_echo_n "checking assembler for R_386_TLS_LDM_PLT reloc... " >&6; }
 if test "${gcc_cv_as_ix86_tlsldmplt+set}" = set; then :
@@ -25869,7 +25836,7 @@ else
   gcc_cv_as_ix86_tlsldmplt=no
   if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gas_32_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -25877,7 +25844,7 @@ else
   test $ac_status = 0; }; }
     then
 	if test x$gcc_cv_ld != x \
-	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	 && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsldmplt=yes
 	 fi
 	 rm -f conftest
@@ -25897,17 +25864,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-    # Enforce 32-bit output with gas and gld.
-    if test x$gas = xyes; then
-      as_ix86_gas_32_opt="--32"
-    fi
-    if echo "$ld_ver" | grep GNU > /dev/null; then
-      if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
-        ld_ix86_gld_32_opt="-melf_i386_sol2"
-      else
-        ld_ix86_gld_32_opt="-melf_i386"
-      fi
-    fi
     conftest_s='
 	.section .text,"ax",@progbits
         .globl  _start
@@ -26009,6 +25965,47 @@ $as_echo "$gcc_cv_as_ix86_got32x" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define HAVE_AS_IX86_GOT32X `if test x"$gcc_cv_as_ix86_got32x" = xyes; then echo 1; else echo 0; fi`
 _ACEOF
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for GOTOFF in data" >&5
+$as_echo_n "checking assembler for GOTOFF in data... " >&6; }
+if test "${gcc_cv_as_ix86_gotoff_in_data+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_ix86_gotoff_in_data=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
+  then gcc_cv_as_ix86_gotoff_in_data=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '	.text
+.L0:
+	nop
+	.data
+	.long .L0@GOTOFF' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gas_32_opt -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_ix86_gotoff_in_data=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_gotoff_in_data" >&5
+$as_echo "$gcc_cv_as_ix86_gotoff_in_data" >&6; }
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_GOTOFF_IN_DATA `if test $gcc_cv_as_ix86_gotoff_in_data = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 
     ;;
 
