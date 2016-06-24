@@ -1,3 +1,5 @@
+#include "tree-vect.h"
+
 extern void abort (void);
 
 typedef struct giga
@@ -20,6 +22,7 @@ int main ()
   struct giga g[8];
   unsigned int n = 1;
   int i, j;
+  check_vect ();
   for (i = 0; i < 8; ++i)
     for (j = 0; j < 16; ++j)
       {

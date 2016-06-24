@@ -1,5 +1,7 @@
 /* { dg-require-effective-target vect_condition } */
 
+#include "tree-vect.h"
+
 extern void abort (void) __attribute__ ((noreturn));
 
 #define N 254
@@ -28,6 +30,8 @@ main (void)
   31, 32
   };
   __builtin_memset (a+32, 43, N-32);
+
+  check_vect ();
 
   unsigned char ret = condition_reduction (a, 16);
 

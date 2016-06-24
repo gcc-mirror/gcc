@@ -1,3 +1,5 @@
+#include "tree-vect.h"
+
 void __attribute__((noinline,noclone))
 fn1 (int * __restrict f, int * __restrict d, unsigned short a, int c)
 {
@@ -12,6 +14,7 @@ int main ()
 {
   int a[32], b[3 * 32];
   int i, off;
+  check_vect ();
   for (i = 0; i < 3 * 32; ++i)
     b[i] = i;
   for (off = 0; off < 8; ++off)

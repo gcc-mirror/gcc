@@ -33,6 +33,8 @@ int main1 ()
 
 int main (void)
 { 
+  check_vect ();
+
   return main1 ();
 } 
 

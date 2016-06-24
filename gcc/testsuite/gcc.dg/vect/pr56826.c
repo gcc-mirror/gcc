@@ -1,3 +1,5 @@
+#include "tree-vect.h"
+
 extern void abort (void);
 
 typedef struct {
@@ -23,6 +25,7 @@ bar (int *A, t1 *B, int n)
 int main()
 {
   int i;
+  check_vect ();
   for (i=0; i<100; i++) 
     {
       B[i].num = i;

@@ -1,5 +1,7 @@
 /* { dg-require-effective-target vect_condition } */
 
+#include "tree-vect.h"
+
 extern void abort (void) __attribute__ ((noreturn));
 
 #define N 43
@@ -39,6 +41,8 @@ main (void)
   31, -32, 33, 34, -35, 36, 37, 56, 54, 22,
   73, 2, 87
   };
+
+  check_vect ();
 
   int ret = condition_reduction (a, 16, b);
 

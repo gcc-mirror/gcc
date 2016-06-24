@@ -1,3 +1,4 @@
+#include "tree-vect.h"
 
 extern void abort (void);
 
@@ -37,6 +38,8 @@ int main(void)
   int out[49] = {0};
   int out2[49] = {0};
   int s;
+
+  check_vect ();
 
   foo (out + 2, lp + 1, 48);
   foo_novec (out2 + 2, lp + 1, 48);

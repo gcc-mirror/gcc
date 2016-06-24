@@ -29,6 +29,8 @@ main (void)
   int a[MAX];
   int i;
 
+  check_vect ();
+
   int ret = liveloop (START, MAX, a);
 
   if (ret != MAX + START)

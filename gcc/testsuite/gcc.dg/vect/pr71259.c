@@ -1,5 +1,4 @@
 /* PR tree-optimization/71259 */
-/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 

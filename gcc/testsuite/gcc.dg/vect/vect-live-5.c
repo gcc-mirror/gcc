@@ -32,6 +32,8 @@ main (void)
   int b = 99;
   int i;
 
+  check_vect ();
+
   int ret = liveloop (START, MAX, a, &b);
 
   if (ret != 99)
