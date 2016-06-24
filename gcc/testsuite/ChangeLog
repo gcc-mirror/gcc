@@ -1,3 +1,7 @@
+2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/torture/float128-cmp-invalid.c (main): Use __builtin_nanq.
+
 2016-06-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/noplt-1.c: Don't disable for ia32.  Scan for
