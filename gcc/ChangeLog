@@ -1,3 +1,8 @@
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgloop.c (flow_loop_dump): Cast nit to uint64_t and print it using
+	PRIu64 instead of lu.
+
 2016-06-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/71642
