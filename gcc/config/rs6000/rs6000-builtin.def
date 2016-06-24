@@ -652,6 +652,22 @@
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+/* IEEE 128-bit floating-point builtins.  */
+#define BU_FLOAT128_2(ENUM, NAME, ATTR, ICODE)                          \
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128,                /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_BINARY),                              \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
+#define BU_FLOAT128_1(ENUM, NAME, ATTR, ICODE)                          \
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128,                /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_UNARY),                               \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
 
 /* Miscellaneous builtins for instructions added in ISA 3.0.  These
    instructions don't require either the DFP or VSX options, just the basic
@@ -1814,6 +1830,11 @@ BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
 BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
 BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
 
+/* 1 argument IEEE 128-bit floating-point functions.  */
+BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)
+
+/* 2 argument IEEE 128-bit floating-point functions.  */
+BU_FLOAT128_2 (COPYSIGNQ,	"copysignq",   CONST, copysignkf3)
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
@@ -2190,6 +2211,18 @@ BU_SPECIAL_X (RS6000_BUILTIN_CPU_IS, "__builtin_cpu_is",
 
 BU_SPECIAL_X (RS6000_BUILTIN_CPU_SUPPORTS, "__builtin_cpu_supports",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+
+BU_SPECIAL_X (RS6000_BUILTIN_NANQ, "__builtin_nanq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
+
+BU_SPECIAL_X (RS6000_BUILTIN_NANSQ, "__builtin_nansq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
+
+BU_SPECIAL_X (RS6000_BUILTIN_INFQ, "__builtin_infq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
+
+BU_SPECIAL_X (RS6000_BUILTIN_HUGE_VALQ, "__builtin_huge_valq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
 
 /* Darwin CfString builtin.  */
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,

@@ -1,3 +1,34 @@
+2016-06-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_2): New #define.
+	(BU_FLOAT128_1): Likewise.
+	(FABSQ): Likewise.
+	(COPYSIGNQ): Likewise.
+	(RS6000_BUILTIN_NANQ): Likewise.
+	(RS6000_BUILTIN_NANSQ): Likewise.
+	(RS6000_BUILTIN_INFQ): Likewise.
+	(RS6000_BUILTIN_HUGE_VALQ): Likewise.
+	* config/rs6000/rs6000.c (rs6000_fold_builtin): New prototype.
+	(TARGET_FOLD_BUILTIN): New #define.
+	(rs6000_builtin_mask_calculate): Add TARGET_FLOAT128 entry.
+	(rs6000_invalid_builtin): Add handling for RS6000_BTM_FLOAT128.
+	(rs6000_fold_builtin): New target hook implementation, handling
+	folding of 128-bit NaNs and infinities.
+	(rs6000_init_builtins): Initialize const_str_type_node; ensure all
+	entries are filled in to avoid problems during bootstrap
+	self-test; define builtins for 128-bit NaNs and infinities.
+	(rs6000_opt_mask): Add entry for float128.
+	* config/rs6000/rs6000.h (RS6000_BTM_FLOAT128): New #define.
+	(RS6000_BTM_COMMON): Include RS6000_BTM_FLOAT128.
+	(rs6000_builtin_type_index): Add RS6000_BTI_const_str.
+	(const_str_type_node): New #define.
+	* config/rs6000/rs6000.md (copysign<mode>3 for IEEE128): Convert
+	to a define_expand that dispatches to either copysign<mode>3_soft
+	or copysign<mode>3_hard.
+	(copysign<mode>3_hard): Rename from copysign<mode>3.
+	(copysign<mode>3_soft): New define_insn.
+	* doc/extend.texi: Document new builtins.
+
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgloop.c (flow_loop_dump): Cast nit to uint64_t and print it using

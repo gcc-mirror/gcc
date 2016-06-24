@@ -1,3 +1,10 @@
+2016-06-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/abs128-1.c: New.
+	* gcc.target/powerpc/copysign128-1.c: New.
+	* gcc.target/powerpc/inf128-1.c: New.
+	* gcc.target/powerpc/nan128-1.c: New.
+
 2016-06-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gfortran.dg/pr71642.f90: New test.
