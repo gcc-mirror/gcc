@@ -1,3 +1,9 @@
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* call.c (magic_varargs_p): Return 3 for __builtin_*_overflow_p.
+	(build_over_call): For magic == 3, do no conversion only on 3rd
+	argument.
+
 2016-06-23  Andi Kleen  <ak@linux.intel.com>
 
 	* Make-lang.in: Add support for autofdo.

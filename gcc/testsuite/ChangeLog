@@ -1,5 +1,8 @@
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/torture/builtin-arith-overflow-p-19.c: Run for C++ too.
+	* g++.dg/ext/builtin-arith-overflow-2.C: New test.
+
 	* c-c++-common/builtin-arith-overflow-1.c (generic_wrong_type, f3,
 	f4): Adjust expected diagnostics.
 	* c-c++-common/torture/builtin-arith-overflow.h (TP): New macro.

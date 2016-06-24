@@ -7132,7 +7132,8 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
    which just decay_conversion or no conversions at all should be done.
    This is true for some builtins which don't act like normal functions.
    Return 2 if no conversions at all should be done, 1 if just
-   decay_conversion.  */
+   decay_conversion.  Return 3 for special treatment of the 3rd argument
+   for __builtin_*_overflow_p.  */
 
 int
 magic_varargs_p (tree fn)
@@ -7148,6 +7149,11 @@ magic_varargs_p (tree fn)
       case BUILT_IN_NEXT_ARG:
       case BUILT_IN_VA_START:
 	return 1;
+
+      case BUILT_IN_ADD_OVERFLOW_P:
+      case BUILT_IN_SUB_OVERFLOW_P:
+      case BUILT_IN_MUL_OVERFLOW_P:
+	return 3;
 
       default:;
 	return lookup_attribute ("type generic",
@@ -7606,14 +7612,14 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   for (; arg_index < vec_safe_length (args); ++arg_index)
     {
       tree a = (*args)[arg_index];
-      if (magic == 2)
+      if ((magic == 3 && arg_index == 2) || magic == 2)
 	{
 	  /* Do no conversions for certain magic varargs.  */
 	  a = mark_type_use (a);
 	  if (TREE_CODE (a) == FUNCTION_DECL && reject_gcc_builtin (a))
 	    return error_mark_node;
 	}
-      else if (magic == 1)
+      else if (magic != 0)
 	/* For other magic varargs only do decay_conversion.  */
 	a = decay_conversion (a, complain);
       else if (DECL_CONSTRUCTOR_P (fn)
