@@ -1,5 +1,7 @@
 /* { dg-require-effective-target vect_int } */
 
+#include "tree-vect.h"
+
 int a[32];
 
 void __attribute__((noinline))
@@ -41,6 +43,11 @@ test1(void)
   a[21] = 0;
 }
 
-int main() { test1(); return a[21]; }
+int main()
+{ 
+  check_vect ();
+  test1();
+  return a[21];
+}
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" } } */

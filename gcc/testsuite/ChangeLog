@@ -1,5 +1,90 @@
 2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/vect/vect-nb-iter-ub-1.c: Remove default vector
+	testsuite compile flags.
+	* gcc.dg/vect/vect-nb-iter-ub-2.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-3.c: Ditto.
+
+2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++dg/vect/pr36684.cc: Add dg-do compile.
+	* gcc.dg/vect/O3-pr70130.c: Remove dg-do run.
+	* gcc.dg/vect/pr70021.c: Ditto.
+	* gcc.dg/vect/pr70138-1.c: Ditto.
+	* gcc.dg/vect/pr70138-2.c: Ditto.
+	* gcc.dg/vect/pr70354-1.c: Ditto.
+	* gcc.dg/vect/pr70354-2.c: Ditto.
+	* gcc.dg/vect/pr71259.c: Ditto.
+	* gcc.dg/vect/pr71416-1.c: Ditto.
+	* gcc.dg/vect/slp-43.c: Ditto.
+	* gcc.dg/vect/slp-45.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-1.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-2.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-3.c: Ditto.
+	* gfortran.dg/vect/pr69980.f90: Ditto.
+
+2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/O3-pr70130.c: Include tree-vect.h and call check_vect.
+	* gcc.dg/vect/bb-slp-30.c: Ditto.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Ditto.
+	* gcc.dg/vect/fast-math-bb-slp-call-3.c: Ditto.
+	* gcc.dg/vect/pr45902.c: Ditto.
+	* gcc.dg/vect/pr48172.c: Ditto.
+	* gcc.dg/vect/pr48377.c: Ditto.
+	* gcc.dg/vect/pr49038.c: Ditto.
+	* gcc.dg/vect/pr49771.c: Ditto.
+	* gcc.dg/vect/pr52091.c: Ditto.
+	* gcc.dg/vect/pr53185-2.c: Ditto.
+	* gcc.dg/vect/pr56826.c: Ditto.
+	* gcc.dg/vect/pr60276.c: Ditto.
+	* gcc.dg/vect/pr62021.c: Ditto.
+	* gcc.dg/vect/pr63530.c: Ditto.
+	* gcc.dg/vect/pr65518.c: Ditto.
+	* gcc.dg/vect/pr65947-1.c: Ditto.
+	* gcc.dg/vect/pr65947-10.c: Ditto.
+	* gcc.dg/vect/pr65947-11.c: Ditto.
+	* gcc.dg/vect/pr65947-12.c: Ditto.
+	* gcc.dg/vect/pr65947-13.c: Ditto.
+	* gcc.dg/vect/pr65947-2.c: Ditto.
+	* gcc.dg/vect/pr65947-3.c: Ditto.
+	* gcc.dg/vect/pr65947-4.c: Ditto.
+	* gcc.dg/vect/pr65947-5.c: Ditto.
+	* gcc.dg/vect/pr65947-6.c: Ditto.
+	* gcc.dg/vect/pr65947-7.c: Ditto.
+	* gcc.dg/vect/pr65947-8.c: Ditto.
+	* gcc.dg/vect/pr65947-9.c: Ditto.
+	* gcc.dg/vect/pr71416-1.c: Ditto.
+	* gcc.dg/vect/pr71439.c: Ditto.
+	* gcc.dg/vect/slp-widen-mult-half.c: Ditto.
+	* gcc.dg/vect/vect-bswap16.c: Ditto.
+	* gcc.dg/vect/vect-bswap32.c: Ditto.
+	* gcc.dg/vect/vect-bswap64.c: Ditto.
+	* gcc.dg/vect/vect-live-1.c: Ditto.
+	* gcc.dg/vect/vect-live-2.c: Ditto.
+	* gcc.dg/vect/vect-live-3.c: Ditto.
+	* gcc.dg/vect/vect-live-4.c: Ditto.
+	* gcc.dg/vect/vect-live-5.c: Ditto.
+	* gcc.dg/vect/vect-live-slp-1.c: Ditto.
+	* gcc.dg/vect/vect-live-slp-2.c: Ditto.
+	* gcc.dg/vect/vect-live-slp-3.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-1.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-2.c: Ditto.
+	* gcc.dg/vect/vect-nb-iter-ub-3.c: Ditto.
+	* gcc.dg/vect/vect-neg-store-1.c: Ditto.
+	* gcc.dg/vect/vect-neg-store-2.c: Ditto.
+	* gcc.dg/vect/vect-outer-pr69720.c: Ditto.
+	* gcc.dg/vect/vect-reduc-mul_1.c: Ditto.
+	* gcc.dg/vect/vect-reduc-mul_2.c: Ditto.
+	* gcc.dg/vect/vect-reduc-or_1.c: Ditto.
+	* gcc.dg/vect/vect-reduc-or_2.c: Ditto.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Ditto.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Ditto.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Ditto.
+	* gcc.dg/vect/vect-widen-mult-half.c: Ditto.
+
+2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/torture/float128-cmp-invalid.c (main): Use __builtin_nanq.
 
 2016-06-24  H.J. Lu  <hongjiu.lu@intel.com>

@@ -42,6 +42,8 @@ main (void)
   long b[MAX*4];
   int i;
 
+  check_vect ();
+
   for (i=0; i<MAX*4; i++)
     {
       __asm__ volatile ("");
