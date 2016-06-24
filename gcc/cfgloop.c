@@ -141,7 +141,8 @@ flow_loop_dump (const struct loop *loop, FILE *file,
       bool read_profile_p;
       gcov_type nit = expected_loop_iterations_unbounded (loop, &read_profile_p);
       if (read_profile_p && !loop->any_estimate)
-	fprintf (file, ";;  profile-based iteration count: %lu\n", nit);
+	fprintf (file, ";;  profile-based iteration count: %" PRIu64 "\n",
+		 (uint64_t) nit);
     }
 
   fprintf (file, ";;  nodes:");
