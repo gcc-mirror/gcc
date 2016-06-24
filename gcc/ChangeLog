@@ -1,3 +1,12 @@
+2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (HAVE_AS_GOTOF_IN_DATA): Use $as_ix86_gas_32_opt to
+	assemble for 32bit target.
+	(HAVE_AS_IX86_TLSGDPLT): Use $as_ix86_gas_32_opt to assemble
+	and $ld_ix86_gld_32_opt to link for 32bit target.
+	(HAVE_AS_IX86_TLSLDMPLT): Ditto.
+	* configure: Regenerate.
+
 2016-06-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (int_log2): Delete definition and prototype.
