@@ -1,3 +1,10 @@
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71647
+	* omp-low.c (lower_rec_input_clauses): Convert
+	omp_clause_aligned_alignment (c) to size_type_node for the
+	last argument of __builtin_assume_aligned.
+
 2016-06-24  Martin Liska  <mliska@suse.cz>
 
 	* cfgloop.c (flow_loop_dump): Dump average number of loop iterations.
