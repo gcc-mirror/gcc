@@ -188,7 +188,9 @@
 	-march=westmere for sse4_runtime targets.
 	* gcc.dg/vect/tree-vect.h (check_vect): Handle __SSE4_2__.
 	* gcc.dg/vect/vect-bool-cmp.c: Include "tree-vect.h".
+	(dg-additional-options): Use for sse4_runtime targets.
 	(main): Call check_vect ().
+	(dg-final): Perform scan only for sse4_runtime targets.
 
 2016-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
