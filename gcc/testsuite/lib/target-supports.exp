@@ -7111,6 +7111,57 @@ proc check_effective_target_got32x_reloc { } {
     return $got32x_reloc_available_saved
 }
 
+# Return 1 if the x86 target supports calling ___tls_get_addr via GOT,
+# 0 otherwise.  Cache the result.
+
+proc check_effective_target_tls_get_addr_via_got { } {
+    global tls_get_addr_via_got_available_saved
+    global tool
+    global GCC_UNDER_TEST
+
+    if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	return 0
+    }
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    if [info exists tls_get_addr_via_got_available_saved] {
+	verbose "check_effective_target_tls_get_addr_via_got returning saved $tls_get_addr_via_got_available_saved" 2
+    } else {
+	# Include the current process ID in the file names to prevent
+	# conflicts with invocations for multiple testsuites.
+
+	set src tls_get_addr_via_got[pid].c
+	set obj tls_get_addr_via_got[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_AS_IX86_TLS_GET_ADDR_GOT == 0"
+	puts $f "# error Assembler/linker do not support calling ___tls_get_addr via GOT."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_tls_get_addr_via_got compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_tls_get_addr_via_got testfile compilation passed" 2
+	    set tls_get_addr_via_got_available_saved 1
+	} else {
+	    verbose "check_effective_target_tls_get_addr_via_got testfile compilation failed" 2
+	    set tls_get_addr_via_got_available_saved 0
+	}
+    }
+
+    return $tls_get_addr_via_got_available_saved
+}
+
 # Return 1 if the target uses comdat groups.
 
 proc check_effective_target_comdat_group {} {

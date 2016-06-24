@@ -104,6 +104,10 @@
 ;;  m	MMX inter-unit moves to MMX register enabled
 ;;  n	MMX inter-unit moves from MMX register enabled
 ;;  a	Integer register when zero extensions with AND are disabled
+;;  b	Any register that can be used as the GOT base when calling
+;;	___tls_get_addr: that is, any general register except EAX
+;;	and ESP, for -fno-plt if linker supports it.  Otherwise,
+;;	EBX.
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  f	x87 register when 80387 floating point arithmetic is enabled
 ;;  r	SSE regs not requiring REX prefix when prefixes avoidance is enabled
@@ -136,6 +140,13 @@
  "TARGET_ZERO_EXTEND_WITH_AND && optimize_function_for_speed_p (cfun)
   ? NO_REGS : GENERAL_REGS"
  "@internal Any integer register when zero extensions with AND are disabled.")
+
+(define_register_constraint "Yb"
+ "(!flag_plt && HAVE_AS_IX86_TLS_GET_ADDR_GOT) ? TLS_GOTBASE_REGS : BREG"
+ "@internal Any register that can be used as the GOT base when calling
+  ___tls_get_addr: that is, any general register except @code{a} and
+  @code{sp} registers, for -fno-plt if linker supports it.  Otherwise,
+  @code{b} register.")
 
 (define_register_constraint "Yf"
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
