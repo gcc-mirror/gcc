@@ -1,5 +1,8 @@
 2016-06-24  Jason Merrill  <jason@redhat.com>
 
+	P0145R2: Refining Expression Order for C++.
+	* typeck.c (cp_build_modify_expr): Leave COMPOUND_EXPR on LHS.
+
 	* tree.c (get_target_expr_sfinae): Handle bit-fields.
 	(build_target_expr): Call mark_rvalue_use.
 

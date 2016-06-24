@@ -7515,7 +7515,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
   if (error_operand_p (lhs) || error_operand_p (rhs))
     return error_mark_node;
 
-  /* Handle control structure constructs used as "lvalues".  */
+  /* Handle control structure constructs used as "lvalues".  Note that we
+     leave COMPOUND_EXPR on the LHS because it is sequenced after the RHS.  */
   switch (TREE_CODE (lhs))
     {
       /* Handle --foo = 5; as these are valid constructs in C++.  */
@@ -7525,31 +7526,16 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
 		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
 		      TREE_OPERAND (lhs, 1));
-      newrhs = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 0),
-				     modifycode, rhs, complain);
-      if (newrhs == error_mark_node)
-	return error_mark_node;
-      return build2 (COMPOUND_EXPR, lhstype, lhs, newrhs);
-
-      /* Handle (a, b) used as an "lvalue".  */
-    case COMPOUND_EXPR:
-      newrhs = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
-				     modifycode, rhs, complain);
-      if (newrhs == error_mark_node)
-	return error_mark_node;
-      return build2 (COMPOUND_EXPR, lhstype,
-		     TREE_OPERAND (lhs, 0), newrhs);
+      lhs = build2 (COMPOUND_EXPR, lhstype, lhs, TREE_OPERAND (lhs, 0));
+      break;
 
     case MODIFY_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
 	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
 		      cp_stabilize_reference (TREE_OPERAND (lhs, 0)),
 		      TREE_OPERAND (lhs, 1));
-      newrhs = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 0), modifycode,
-				     rhs, complain);
-      if (newrhs == error_mark_node)
-	return error_mark_node;
-      return build2 (COMPOUND_EXPR, lhstype, lhs, newrhs);
+      lhs = build2 (COMPOUND_EXPR, lhstype, lhs, TREE_OPERAND (lhs, 0));
+      break;
 
     case MIN_EXPR:
     case MAX_EXPR:
