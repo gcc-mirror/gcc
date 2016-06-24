@@ -377,7 +377,7 @@ remap_decl (tree decl, copy_body_data *id)
 	    {
 	      tree x = build_variant_type_copy (TREE_TYPE (t));
 	      TYPE_STUB_DECL (x) = TYPE_STUB_DECL (TREE_TYPE (t));
-	      TYPE_NAME (x) = t;
+	      TYPE_NAME (x) = TYPE_NAME (TREE_TYPE (t));
 	      DECL_ORIGINAL_TYPE (t) = x;
 	    }
 	}

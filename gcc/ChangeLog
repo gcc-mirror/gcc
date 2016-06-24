@@ -1,3 +1,9 @@
+2016-06-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/71642
+	* tree-inline.c (remap_decl): When fixing up DECL_ORIGINAL_TYPE, just
+	copy the type name.
+
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71647
