@@ -9,7 +9,7 @@
 int
 main (void)
 {
-  volatile __float128 a = __builtin_nan (""), b = 0;
+  volatile __float128 a = __builtin_nanq (""), b = 0.0q;
   volatile int r = a < b;
   if (!fetestexcept (FE_INVALID))
     abort ();
