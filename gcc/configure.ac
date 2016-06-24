@@ -4228,6 +4228,36 @@ _start:
       [`if test $gcc_cv_as_ix86_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
       [Define true if the assembler supports '.long foo@GOTOFF'.])
 
+    conftest_s='
+	.section .text,"ax",@progbits
+	.globl  _start
+	.type   _start, @function
+_start:
+	leal	ld@tlsldm(%ecx), %eax
+	call	*___tls_get_addr@GOT(%ecx)
+	leal	gd@tlsgd(%ecx), %eax
+	call	*___tls_get_addr@GOT(%ecx)
+
+	.section .tdata,"aw'$tls_section_flag'",@progbits
+	.type	ld, @object
+ld:
+	.byte 0
+	.globl  gd
+	.type	gd, @object
+gd:
+	.byte 0'
+    gcc_GAS_CHECK_FEATURE([calling ___tls_get_addr via GOT],
+        gcc_cv_as_ix86_tls_get_addr_via_got,,
+	[$as_ix86_gas_32_opt],
+	[$conftest_s],
+	[if test x$gcc_cv_ld != x \
+	    && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o > /dev/null 2>&1; then
+	   gcc_cv_as_ix86_tls_get_addr_via_got=yes
+	 fi
+	 rm -f conftest])
+    AC_DEFINE_UNQUOTED(HAVE_AS_IX86_TLS_GET_ADDR_GOT,
+      [`if test x"$gcc_cv_as_ix86_tls_get_addr_via_got" = xyes; then echo 1; else echo 0; fi`],
+      [Define 0/1 if your assembler and linker support calling ___tls_get_addr via GOT.])
     ;;
 
   ia64*-*-*)

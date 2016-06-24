@@ -485,6 +485,13 @@
 #endif
 
 
+/* Define 0/1 if your assembler and linker support calling ___tls_get_addr via
+   GOT. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_TLS_GET_ADDR_GOT
+#endif
+
+
 /* Define if your assembler supports the 'ud2' mnemonic. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_UD2
