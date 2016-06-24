@@ -1,3 +1,10 @@
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (check_builtin_function_arguments): Require last
+	argument of BUILT_IN_*_OVERFLOW_P to have INTEGER_TYPE type.
+	Adjust wording of diagnostics for BUILT_IN_*_OVERLFLOW
+	if the last argument is pointer to enumerated or boolean type.
+
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70339

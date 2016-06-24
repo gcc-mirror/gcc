@@ -90,5 +90,70 @@ t##n##b (void)					\
   if (r2 != (tr) (vr) || v != 7 * o)		\
     __builtin_abort ();				\
 }
+#define TP(n, t1, t2, er, v1, v2, b, o) \
+__attribute__((noinline, noclone)) void		\
+t##n##_1##b (t1 x, t2 y)			\
+{						\
+  if (__builtin_##b##_overflow_p (x, y, er))	\
+    bar ();					\
+}						\
+						\
+__attribute__((noinline, noclone)) void		\
+t##n##_2##b (t2 y)				\
+{						\
+  t1 x = (v1);					\
+  if (__builtin_##b##_overflow_p (x, y, er))	\
+    bar ();					\
+}						\
+						\
+__attribute__((noinline, noclone)) void		\
+t##n##_3##b (t2 y)				\
+{						\
+  if (__builtin_##b##_overflow_p ((t1) (v1), y,	\
+				  er))		\
+    bar ();					\
+}						\
+						\
+__attribute__((noinline, noclone)) void		\
+t##n##_4##b (t1 x)				\
+{						\
+  t2 y = (v2);					\
+  if (__builtin_##b##_overflow_p (x, y, er))	\
+    bar ();					\
+}						\
+						\
+__attribute__((noinline, noclone)) void		\
+t##n##_5##b (t1 x)				\
+{						\
+  if (__builtin_##b##_overflow_p (x, (t2) (v2),	\
+				  er))		\
+    bar ();					\
+}						\
+						\
+__attribute__((noinline, noclone)) void		\
+t##n##b (void)					\
+{						\
+  t1 x = (v1);					\
+  t2 y = (v2);					\
+  v = 0;					\
+  t##n##_1##b (x, y);				\
+  t##n##_2##b (y);				\
+  t##n##_3##b (y);				\
+  t##n##_4##b (x);				\
+  t##n##_5##b (x);				\
+  if (__builtin_##b##_overflow_p (x, y, er))	\
+    bar ();					\
+  if (__builtin_##b##_overflow_p ((t1) (v1),	\
+				  (t2) (v2),	\
+				  er))		\
+    bar ();					\
+  if (v != 7 * o)				\
+    __builtin_abort ();				\
+}
+#ifdef OVFP
+#undef T
+#define T(n, t1, t2, tr, v1, v2, vr, b, o) \
+TP(n, t1, t2, (tr) 0, v1, v2, b, o)
+#endif
 #define ST(n, t, v1, v2, vr, b, o) \
 T (n, t, t, t, v1, v2, vr, b, o)

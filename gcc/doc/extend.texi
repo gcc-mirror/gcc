@@ -9833,8 +9833,8 @@ performed in infinite signed precision, these built-in functions have fully defi
 behavior for all argument values.
 
 The first built-in function allows arbitrary integral types for operands and
-the result type must be pointer to some integer type, the rest of the built-in
-functions have explicit integer types.
+the result type must be pointer to some integral type other than enumerated or
+Boolean type, the rest of the built-in functions have explicit integer types.
 
 The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
@@ -9879,7 +9879,8 @@ would overflow.
 These built-in functions are similar to @code{__builtin_add_overflow},
 @code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
 they don't store the result of the arithmetic operation anywhere and the
-last argument is not a pointer, but some integral expression.
+last argument is not a pointer, but some expression with integral type other
+than enumerated or Boolean type.
 
 The built-in functions promote the first two operands into infinite precision signed type
 and perform addition on those promoted operands. The result is then

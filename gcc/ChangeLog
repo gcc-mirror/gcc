@@ -1,3 +1,17 @@
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal-fn.c (expand_arith_set_overflow): New function.
+	(expand_addsub_overflow, expand_neg_overflow, expand_mul_overflow):
+	Use it.
+	(expand_arith_overflow_result_store): Likewise.  Handle precision
+	smaller than mode precision.
+	* tree-vrp.c (extract_range_basic): For imag part, handle
+	properly signed 1-bit precision result.
+	* doc/extend.texi (__builtin_add_overflow): Document that last
+	argument can't be pointer to enumerated or boolean type.
+	(__builtin_add_overflow_p): Document that last argument can't
+	have enumerated or boolean type.
+
 2016-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

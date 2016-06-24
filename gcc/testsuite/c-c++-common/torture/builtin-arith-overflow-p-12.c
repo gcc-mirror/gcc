@@ -1,7 +1,8 @@
-/* Test __builtin_{add,sub,mul}_overflow.  */
+/* Test __builtin_{add,sub,mul}_overflow_p.  */
 /* { dg-do run } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 
+#define OVFP
 #include "builtin-arith-overflow-12.h"
 
 TESTS (int, INT_MIN, INT_MAX)

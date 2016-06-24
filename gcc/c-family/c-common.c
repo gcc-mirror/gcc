@@ -9983,10 +9983,22 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 		return false;
 	      }
 	  if (TREE_CODE (TREE_TYPE (args[2])) != POINTER_TYPE
-	      || TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) != INTEGER_TYPE)
+	      || !INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (args[2]))))
 	    {
 	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
-			"does not have pointer to integer type", fndecl);
+			"does not have pointer to integral type", fndecl);
+	      return false;
+	    }
+	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) == ENUMERAL_TYPE)
+	    {
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
+			"has pointer to enumerated type", fndecl);
+	      return false;
+	    }
+	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (args[2]))) == BOOLEAN_TYPE)
+	    {
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
+			"has pointer to boolean type", fndecl);
 	      return false;
 	    }
 	  return true;
@@ -10006,6 +10018,18 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 			  "%qE does not have integral type", i + 1, fndecl);
 		return false;
 	      }
+	  if (TREE_CODE (TREE_TYPE (args[2])) == ENUMERAL_TYPE)
+	    {
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function "
+			"%qE has enumerated type", fndecl);
+	      return false;
+	    }
+	  else if (TREE_CODE (TREE_TYPE (args[2])) == BOOLEAN_TYPE)
+	    {
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function "
+			"%qE has boolean type", fndecl);
+	      return false;
+	    }
 	  return true;
 	}
       return false;
