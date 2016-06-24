@@ -1,3 +1,8 @@
+2016-06-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (get_target_expr_sfinae): Handle bit-fields.
+	(build_target_expr): Call mark_rvalue_use.
+
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* call.c (magic_varargs_p): Return 3 for __builtin_*_overflow_p.

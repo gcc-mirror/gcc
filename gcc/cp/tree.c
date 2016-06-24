@@ -377,6 +377,8 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   tree t;
   tree type = TREE_TYPE (decl);
 
+  value = mark_rvalue_use (value);
+
   gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (value))
 		       || TREE_TYPE (decl) == TREE_TYPE (value)
 		       /* On ARM ctors return 'this'.  */
@@ -729,7 +731,10 @@ get_target_expr_sfinae (tree init, tsubst_flags_t complain)
   else if (TREE_CODE (init) == VEC_INIT_EXPR)
     return build_target_expr (VEC_INIT_EXPR_SLOT (init), init, complain);
   else
-    return build_target_expr_with_type (init, TREE_TYPE (init), complain);
+    {
+      init = convert_bitfield_to_declared_type (init);
+      return build_target_expr_with_type (init, TREE_TYPE (init), complain);
+    }
 }
 
 tree
