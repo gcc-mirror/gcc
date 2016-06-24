@@ -1,3 +1,32 @@
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-arith-overflow-1.c (generic_wrong_type, f3,
+	f4): Adjust expected diagnostics.
+	* c-c++-common/torture/builtin-arith-overflow.h (TP): New macro.
+	(T): If OVFP is defined, redefine to TP.
+	* c-c++-common/torture/builtin-arith-overflow-12.c: Adjust comment.
+	* c-c++-common/torture/builtin-arith-overflow-p-1.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-2.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-3.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-4.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-5.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-6.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-7.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-8.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-9.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-10.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-11.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-12.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-13.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-14.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-15.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-16.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-17.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-18.c: New test.
+	* c-c++-common/torture/builtin-arith-overflow-p-19.c: New test.
+	* g++.dg/ext/builtin-arith-overflow-1.C: Pass 0 instead of C
+	as last argument to __builtin_add_overflow_p.
+
 2016-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/vect/pr33834_2.cc: Use dg-additional-options instead of

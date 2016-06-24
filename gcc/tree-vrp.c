@@ -4016,6 +4016,9 @@ extract_range_basic (value_range *vr, gimple *stmt)
 			set_value_range_to_value (vr,
 						  build_int_cst (type, ovf),
 						  NULL);
+		      else if (TYPE_PRECISION (type) == 1
+			       && !TYPE_UNSIGNED (type))
+			set_value_range_to_varying (vr);
 		      else
 			set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
 					 build_int_cst (type, 1), NULL);
