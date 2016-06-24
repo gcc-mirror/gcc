@@ -1,7 +1,7 @@
 /* PR tree-optimization/71488 */
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_pack_trunc } */
-/* { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-msse4" { target sse4_runtime } } */
 
 #include "tree-vect.h"
 
@@ -253,4 +253,4 @@ main (int argc, char **argv)
   check (res, ne);
 }
 
-/* { dg-final { scan-tree-dump-times "VECTORIZED" 18 "vect" { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "VECTORIZED" 18 "vect" { target sse4_runtime } } } */
