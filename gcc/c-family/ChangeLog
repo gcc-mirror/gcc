@@ -1,3 +1,9 @@
+2016-06-24  Jason Merrill  <jason@redhat.com>
+
+	P0145R2: Refining Expression Order for C++.
+	* c-common.c (verify_tree) [COMPOUND_EXPR]: Fix handling on LHS of
+	MODIFY_EXPR.
+
 2016-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (check_builtin_function_arguments): Require last
