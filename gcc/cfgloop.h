@@ -319,7 +319,8 @@ extern void verify_loop_structure (void);
 
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
-gcov_type expected_loop_iterations_unbounded (struct loop *);
+gcov_type expected_loop_iterations_unbounded (const struct loop *,
+					      bool *read_profile_p = NULL);
 extern unsigned expected_loop_iterations (struct loop *);
 extern rtx doloop_condition_get (rtx);
 
@@ -778,10 +779,10 @@ loop_outermost (struct loop *loop)
 
 extern void record_niter_bound (struct loop *, const widest_int &, bool, bool);
 extern HOST_WIDE_INT get_estimated_loop_iterations_int (struct loop *);
-extern HOST_WIDE_INT get_max_loop_iterations_int (struct loop *);
+extern HOST_WIDE_INT get_max_loop_iterations_int (const struct loop *);
 extern HOST_WIDE_INT get_likely_max_loop_iterations_int (struct loop *);
 extern bool get_estimated_loop_iterations (struct loop *loop, widest_int *nit);
-extern bool get_max_loop_iterations (struct loop *loop, widest_int *nit);
+extern bool get_max_loop_iterations (const struct loop *loop, widest_int *nit);
 extern bool get_likely_max_loop_iterations (struct loop *loop, widest_int *nit);
 extern int bb_loop_depth (const_basic_block);
 

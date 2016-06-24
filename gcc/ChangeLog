@@ -1,3 +1,12 @@
+2016-06-24  Martin Liska  <mliska@suse.cz>
+
+	* cfgloop.c (flow_loop_dump): Dump average number of loop iterations.
+	* cfgloop.h: Change 'struct loop' to 'const struct loop' for a
+	few functions.
+	* cfgloopanal.c (expected_loop_iterations_unbounded): Set a new
+	argument to true if the expected number of iterations is
+	loop-based.
+
 2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (HAVE_AS_GOTOF_IN_DATA): Use $as_ix86_gas_32_opt to
