@@ -42,6 +42,8 @@ check_vect (void)
     want_level = 7, want_b = bit_AVX2;
 # elif defined(__AVX__)
     want_level = 1, want_c = bit_AVX;
+# elif defined(__SSE4_2__)
+    want_level = 1, want_c = bit_SSE4_2;
 # elif defined(__SSE4_1__)
     want_level = 1, want_c = bit_SSE4_1;
 # elif defined(__SSSE3__)
