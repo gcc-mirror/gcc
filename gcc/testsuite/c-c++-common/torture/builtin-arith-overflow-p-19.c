@@ -1,5 +1,5 @@
 /* Test __builtin_{add,sub,mul}_overflow_p.  */
-/* { dg-do run { target c } } */
+/* { dg-do run } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 
 #include "builtin-arith-overflow.h"
