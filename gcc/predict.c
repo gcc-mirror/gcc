@@ -79,8 +79,12 @@ static sreal real_almost_one, real_br_prob_base,
 static void combine_predictions_for_insn (rtx_insn *, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block,
 			     enum predictor_reason, edge);
-static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
-static void predict_paths_leading_to_edge (edge, enum br_predictor, enum prediction);
+static void predict_paths_leading_to (basic_block, enum br_predictor,
+				      enum prediction,
+				      struct loop *in_loop = NULL);
+static void predict_paths_leading_to_edge (edge, enum br_predictor,
+					   enum prediction,
+					   struct loop *in_loop = NULL);
 static bool can_predict_insn_p (const rtx_insn *);
 
 /* Information we hold about each branch predictor.
@@ -1853,6 +1857,74 @@ predict_loops (void)
 				   tree_to_shwi (loop_bound_step));
 	}
 
+      /* In the following code
+	 for (loop1)
+	   if (cond)
+	     for (loop2)
+	       body;
+	 guess that cond is unlikely.  */
+      if (loop_outer (loop)->num)
+	{
+	  basic_block bb = NULL;
+	  edge preheader_edge = loop_preheader_edge (loop);
+
+	  if (single_pred_p (preheader_edge->src)
+	      && single_succ_p (preheader_edge->src))
+	    preheader_edge = single_pred_edge (preheader_edge->src);
+
+	  gimple *stmt = last_stmt (preheader_edge->src);
+	  /* Pattern match fortran loop preheader:
+	     _16 = BUILTIN_EXPECT (_15, 1, PRED_FORTRAN_LOOP_PREHEADER);
+	     _17 = (logical(kind=4)) _16;
+	     if (_17 != 0)
+	       goto <bb 11>;
+	     else
+	       goto <bb 13>;
+
+	     Loop guard branch prediction says nothing about duplicated loop
+	     headers produced by fortran frontend and in this case we want
+	     to predict paths leading to this preheader.  */
+
+	  if (stmt
+	      && gimple_code (stmt) == GIMPLE_COND
+	      && gimple_cond_code (stmt) == NE_EXPR
+	      && TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME
+	      && integer_zerop (gimple_cond_rhs (stmt)))
+	     {
+	       gimple *call_stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
+	       if (gimple_code (call_stmt) == GIMPLE_ASSIGN
+		   && gimple_expr_code (call_stmt) == NOP_EXPR
+		   && TREE_CODE (gimple_assign_rhs1 (call_stmt)) == SSA_NAME)
+		 call_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (call_stmt));
+	       if (gimple_code (call_stmt) == GIMPLE_CALL
+		   && gimple_call_internal_p (call_stmt)
+		   && gimple_call_internal_fn (call_stmt) == IFN_BUILTIN_EXPECT
+		   && TREE_CODE (gimple_call_arg (call_stmt, 2)) == INTEGER_CST
+		   && tree_fits_uhwi_p (gimple_call_arg (call_stmt, 2))
+		   && tree_to_uhwi (gimple_call_arg (call_stmt, 2))
+			== PRED_FORTRAN_LOOP_PREHEADER)
+		 bb = preheader_edge->src;
+	     }
+	  if (!bb)
+	    {
+	      if (!dominated_by_p (CDI_DOMINATORS,
+				   loop_outer (loop)->latch, loop->header))
+		predict_paths_leading_to_edge (loop_preheader_edge (loop),
+					       PRED_LOOP_GUARD,
+					       NOT_TAKEN,
+					       loop_outer (loop));
+	    }
+	  else
+	    {
+	      if (!dominated_by_p (CDI_DOMINATORS,
+				   loop_outer (loop)->latch, bb))
+		predict_paths_leading_to (bb,
+					  PRED_LOOP_GUARD,
+					  NOT_TAKEN,
+					  loop_outer (loop));
+	    }
+	}
+
       /* Free basic blocks from get_loop_body.  */
       free (bbs);
     }
@@ -2606,11 +2678,18 @@ static void
 predict_paths_for_bb (basic_block cur, basic_block bb,
 		      enum br_predictor pred,
 		      enum prediction taken,
-		      bitmap visited)
+		      bitmap visited, struct loop *in_loop = NULL)
 {
   edge e;
   edge_iterator ei;
   basic_block son;
+
+  /* If we exited the loop or CUR is unconditional in the loop, there is
+     nothing to do.  */
+  if (in_loop
+      && (!flow_bb_inside_loop_p (in_loop, cur)
+	  || dominated_by_p (CDI_DOMINATORS, in_loop->latch, cur)))
+    return;
 
   /* We are looking for all edges forming edge cut induced by
      set of all blocks postdominated by BB.  */
@@ -2628,11 +2707,12 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
       gcc_assert (bb == cur || dominated_by_p (CDI_POST_DOMINATORS, cur, bb));
 
       /* See if there is an edge from e->src that is not abnormal
-	 and does not lead to BB.  */
+	 and does not lead to BB and does not exit the loop.  */
       FOR_EACH_EDGE (e2, ei2, e->src->succs)
 	if (e2 != e
 	    && !(e2->flags & (EDGE_EH | EDGE_FAKE))
-	    && !dominated_by_p (CDI_POST_DOMINATORS, e2->dest, bb))
+	    && !dominated_by_p (CDI_POST_DOMINATORS, e2->dest, bb)
+	    && (!in_loop || !loop_exit_edge_p (in_loop, e2)))
 	  {
 	    found = true;
 	    break;
@@ -2651,12 +2731,12 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
             predict_edge_def (e, pred, taken);
 	}
       else if (bitmap_set_bit (visited, e->src->index))
-	predict_paths_for_bb (e->src, e->src, pred, taken, visited);
+	predict_paths_for_bb (e->src, e->src, pred, taken, visited, in_loop);
     }
   for (son = first_dom_son (CDI_POST_DOMINATORS, cur);
        son;
        son = next_dom_son (CDI_POST_DOMINATORS, son))
-    predict_paths_for_bb (son, bb, pred, taken, visited);
+    predict_paths_for_bb (son, bb, pred, taken, visited, in_loop);
 }
 
 /* Sets branch probabilities according to PREDiction and
@@ -2664,10 +2744,10 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 
 static void
 predict_paths_leading_to (basic_block bb, enum br_predictor pred,
-			  enum prediction taken)
+			  enum prediction taken, struct loop *in_loop)
 {
   bitmap visited = BITMAP_ALLOC (NULL);
-  predict_paths_for_bb (bb, bb, pred, taken, visited);
+  predict_paths_for_bb (bb, bb, pred, taken, visited, in_loop);
   BITMAP_FREE (visited);
 }
 
@@ -2675,7 +2755,7 @@ predict_paths_leading_to (basic_block bb, enum br_predictor pred,
 
 static void
 predict_paths_leading_to_edge (edge e, enum br_predictor pred,
-			       enum prediction taken)
+			       enum prediction taken, struct loop *in_loop)
 {
   bool has_nonloop_edge = false;
   edge_iterator ei;
@@ -2693,7 +2773,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
   if (!has_nonloop_edge)
     {
       bitmap visited = BITMAP_ALLOC (NULL);
-      predict_paths_for_bb (bb, bb, pred, taken, visited);
+      predict_paths_for_bb (bb, bb, pred, taken, visited, in_loop);
       BITMAP_FREE (visited);
     }
   else

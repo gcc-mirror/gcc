@@ -151,6 +151,14 @@ DEF_PREDICTOR (PRED_LOOP_IV_COMPARE_GUESS, "guess loop iv compare",
 DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
+/* In the following code
+   for (loop1)
+     if (cond)
+       for (loop2)
+	 body;
+   guess that cond is unlikely.  */
+DEF_PREDICTOR (PRED_LOOP_GUARD, "loop guard", HITRATE (66), 0)
+
 /* Branches to hot labels are likely.  */
 DEF_PREDICTOR (PRED_HOT_LABEL, "hot label", HITRATE (85), 0)
 
