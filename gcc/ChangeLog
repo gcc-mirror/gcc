@@ -1,3 +1,12 @@
+2016-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71631
+	* tree-ssa-reassoc.c (reassociate_bb): Pass true as last argument
+	to rewrite_expr_tree even if negate_result, move new_lhs var
+	declaration and initialization earlier, for powi_result set afterwards
+	new_lhs to lhs.  For negate_result, use new_lhs instead of tmp
+	if new_lhs != lhs, and don't shadow gsi var.
+
 2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (predict_paths_leading_to, predict_paths_leading_to_edge):

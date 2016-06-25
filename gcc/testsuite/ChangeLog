@@ -1,3 +1,8 @@
+2016-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71631
+	* gcc.c-torture/execute/pr71631.c: New test.
+
 2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/predict-11.c: New testcase.

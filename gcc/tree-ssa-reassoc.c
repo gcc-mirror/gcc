@@ -5314,6 +5314,7 @@ reassociate_bb (basic_block bb)
 		    }
 		}
 
+	      tree new_lhs = lhs;
 	      /* If the operand vector is now empty, all operands were 
 		 consumed by the __builtin_powi optimization.  */
 	      if (ops.length () == 0)
@@ -5337,7 +5338,6 @@ reassociate_bb (basic_block bb)
 		  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
 		  int ops_num = ops.length ();
 		  int width = get_reassociation_width (ops_num, rhs_code, mode);
-		  tree new_lhs = lhs;
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file,
@@ -5357,7 +5357,8 @@ reassociate_bb (basic_block bb)
                         swap_ops_for_binary_stmt (ops, len - 3, stmt);
 
 		      new_lhs = rewrite_expr_tree (stmt, 0, ops,
-						   powi_result != NULL);
+						   powi_result != NULL
+						   || negate_result);
                     }
 
 		  /* If we combined some repeated factors into a 
@@ -5372,7 +5373,10 @@ reassociate_bb (basic_block bb)
 		      gimple_set_lhs (lhs_stmt, target_ssa);
 		      update_stmt (lhs_stmt);
 		      if (lhs != new_lhs)
-			target_ssa = new_lhs;
+			{
+			  target_ssa = new_lhs;
+			  new_lhs = lhs;
+			}
 		      mul_stmt = gimple_build_assign (lhs, MULT_EXPR,
 						      powi_result, target_ssa);
 		      gimple_set_location (mul_stmt, gimple_location (stmt));
@@ -5386,10 +5390,11 @@ reassociate_bb (basic_block bb)
 		  stmt = SSA_NAME_DEF_STMT (lhs);
 		  tree tmp = make_ssa_name (TREE_TYPE (lhs));
 		  gimple_set_lhs (stmt, tmp);
+		  if (lhs != new_lhs)
+		    tmp = new_lhs;
 		  gassign *neg_stmt = gimple_build_assign (lhs, NEGATE_EXPR,
 							   tmp);
 		  gimple_set_uid (neg_stmt, gimple_uid (stmt));
-		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 		  gsi_insert_after (&gsi, neg_stmt, GSI_NEW_STMT);
 		  update_stmt (stmt);
 		}
