@@ -1,5 +1,8 @@
 2016-06-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/71643
+	* g++.dg/opt/pr71643.C: New test.
+
 	PR tree-optimization/71631
 	* gcc.c-torture/execute/pr71631.c: New test.
 

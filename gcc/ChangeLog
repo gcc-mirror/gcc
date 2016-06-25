@@ -1,5 +1,12 @@
 2016-06-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/71643
+	* tree-ssa-tail-merge.c (find_clusters_1): Ignore basic blocks with
+	EH preds.
+
+	* tree-ssa-tail-merge.c (deps_ok_for_redirect_from_bb_to_bb): Don't
+	leak a bitmap if dep_bb is NULL.
+
 	PR tree-optimization/71631
 	* tree-ssa-reassoc.c (reassociate_bb): Pass true as last argument
 	to rewrite_expr_tree even if negate_result, move new_lhs var

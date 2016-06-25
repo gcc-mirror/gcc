@@ -1398,11 +1398,11 @@ deps_ok_for_redirect_from_bb_to_bb (basic_block from, basic_block to)
   basic_block cd, dep_bb = BB_DEP_BB (to);
   edge_iterator ei;
   edge e;
-  bitmap from_preds = BITMAP_ALLOC (NULL);
 
   if (dep_bb == NULL)
     return true;
 
+  bitmap from_preds = BITMAP_ALLOC (NULL);
   FOR_EACH_EDGE (e, ei, from->preds)
     bitmap_set_bit (from_preds, e->src->index);
   cd = nearest_common_dominator_for_set (CDI_DOMINATORS, from_preds);
@@ -1446,7 +1446,7 @@ find_clusters_1 (same_succ *same_succ)
       /* TODO: handle blocks with phi-nodes.  We'll have to find corresponding
 	 phi-nodes in bb1 and bb2, with the same alternatives for the same
 	 preds.  */
-      if (bb_has_non_vop_phi (bb1))
+      if (bb_has_non_vop_phi (bb1) || bb_has_eh_pred (bb1))
 	continue;
 
       nr_comparisons = 0;
@@ -1454,7 +1454,7 @@ find_clusters_1 (same_succ *same_succ)
 	{
 	  bb2 = BASIC_BLOCK_FOR_FN (cfun, j);
 
-	  if (bb_has_non_vop_phi (bb2))
+	  if (bb_has_non_vop_phi (bb2) || bb_has_eh_pred (bb2))
 	    continue;
 
 	  if (BB_CLUSTER (bb1) != NULL && BB_CLUSTER (bb1) == BB_CLUSTER (bb2))
