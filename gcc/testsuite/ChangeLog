@@ -31,6 +31,17 @@
 	PR tree-optimization/71647
 	* gcc.target/i386/pr71647.c: New test.
 
+2016-06-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/noplt-gd-1.c: New test.
+	* gcc.target/i386/noplt-gd-2.c: Likewise.
+	* gcc.target/i386/noplt-gd-3.c: Likewise.
+	* gcc.target/i386/noplt-ld-1.c: Likewise.
+	* gcc.target/i386/noplt-ld-2.c: Likewise.
+	* gcc.target/i386/noplt-ld-3.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_tls_get_addr_via_got): New.
+
 2016-06-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-nb-iter-ub-1.c: Remove default vector
