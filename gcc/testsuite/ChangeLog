@@ -1,5 +1,10 @@
 2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gcc.dg/predict-11.c: New testcase.
+	* gfortran.dg/predict-2.f90: New testcase.
+
+2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gcc.dg/predict-10.c: New test.
 
 2016-06-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>

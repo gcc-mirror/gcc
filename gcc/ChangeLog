@@ -1,5 +1,12 @@
 2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (predict_paths_leading_to, predict_paths_leading_to_edge):
+	Add in_loop parameter.
+	(predict_loops): Add loop guard heuristics.
+	* predict.def (PRED_LOOP_GUARD): New heuristics.
+
+2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c: Include ipa-utils.h
 	(tree_bb_level_prediction): Predict recursive calls.
 	(tree_estimate_probability_bb): Skip inexpensive calls for call
