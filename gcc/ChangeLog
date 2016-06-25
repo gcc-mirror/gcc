@@ -1,3 +1,11 @@
+2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c: Include ipa-utils.h
+	(tree_bb_level_prediction): Predict recursive calls.
+	(tree_estimate_probability_bb): Skip inexpensive calls for call
+	predictor.
+	* predict.def (PRED_RECURSIVE_CALL): New.
+
 2016-06-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_2): New #define.
