@@ -1,3 +1,7 @@
+2016-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/predict-10.c: New test.
+
 2016-06-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/abs128-1.c: New.

@@ -112,6 +112,9 @@ DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (67), 0)
 
+/* Recursive calls are usually not taken or the function will recurse indefinitely.  */
+DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", HITRATE (75), 0)
+
 /* Branch causing function to terminate is probably not taken. 
    FIXME: early return currently predicts code:
    int foo (int a)

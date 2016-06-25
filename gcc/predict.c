@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "ipa-utils.h"
 
 /* Enum with reasons why a predictor is ignored.  */
 
@@ -2425,6 +2426,9 @@ tree_bb_level_predictions (void)
 				       DECL_ATTRIBUTES (decl)))
 		predict_paths_leading_to (bb, PRED_COLD_FUNCTION,
 					  NOT_TAKEN);
+	      if (decl && recursive_call_p (current_function_decl, decl))
+		predict_paths_leading_to (bb, PRED_RECURSIVE_CALL,
+					  NOT_TAKEN);
 	    }
 	  else if (gimple_code (stmt) == GIMPLE_PREDICT)
 	    {
@@ -2539,6 +2543,7 @@ tree_estimate_probability_bb (basic_block bb)
 	    {
 	      gimple *stmt = gsi_stmt (bi);
 	      if (is_gimple_call (stmt)
+		  && !gimple_inexpensive_call_p (as_a <gcall *>  (stmt))
 		  /* Constant and pure calls are hardly used to signalize
 		     something exceptional.  */
 		  && gimple_has_side_effects (stmt))
