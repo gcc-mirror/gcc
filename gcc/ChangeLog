@@ -78,6 +78,28 @@
 	omp_clause_aligned_alignment (c) to size_type_node for the
 	last argument of __builtin_assume_aligned.
 
+2016-06-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (calling ___tls_get_addr via GOT): New
+	assembler/linker check.
+	(HAVE_AS_IX86_TLS_GET_ADDR_GOT): New.  Defined to 1 if 32-bit
+	assembler and linker supports calling ___tls_get_addr via GOT.
+	Otherise, defined to 0.
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* config/i386/constraints.md (Yb): New constraint.
+	* config/i386/i386.h (reg_class): Add TLS_GOTBASE_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Replace
+	the b constraint with the Yb constraint.  Call ___tls_get_addr
+	via GOT for GNU TLS with -fno-plt if HAVE_AS_IX86_TLS_GET_ADDR_GOT
+	is 1.
+	(*tls_local_dynamic_base_32_gnu): Likewise.
+	(*tls_global_dynamic_64_<mode>): Call _tls_get_addr via GOT for
+	GNU TLS with -fno-plt if HAVE_AS_IX86_TLS_GET_ADDR_GOT is 1.
+	(*tls_local_dynamic_base_64_<mode>): Likewise.
+
 2016-06-24  Martin Liska  <mliska@suse.cz>
 
 	* cfgloop.c (flow_loop_dump): Dump average number of loop iterations.
