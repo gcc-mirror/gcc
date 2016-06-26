@@ -92,6 +92,10 @@ DEF_PREDICTOR (PRED_COLD_FUNCTION, "cold function call", PROB_VERY_LIKELY,
 DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (85),
 	       PRED_FLAG_FIRST_MATCH)
 
+/* Same as LOOP_EXIT but for loops containing recursive call.  */
+DEF_PREDICTOR (PRED_LOOP_EXIT_WITH_RECURSION, "loop exit with recursion",
+	       HITRATE (72), PRED_FLAG_FIRST_MATCH)
+
 /* Edge causing loop to terminate by computing value used by later
    conditional.  */
 DEF_PREDICTOR (PRED_LOOP_EXTRA_EXIT, "extra loop exit", HITRATE (83),
@@ -105,14 +109,17 @@ DEF_PREDICTOR (PRED_TREE_POINTER, "pointer (on trees)", HITRATE (70), 0)
 DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (64), 0)
 DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (66), 0)
 DEF_PREDICTOR (PRED_FPOPCODE, "fp_opcode", HITRATE (90), 0)
-DEF_PREDICTOR (PRED_TREE_OPCODE_POSITIVE, "opcode values positive (on trees)", HITRATE (64), 0)
-DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)", HITRATE (66), 0)
+DEF_PREDICTOR (PRED_TREE_OPCODE_POSITIVE, "opcode values positive (on trees)",
+	       HITRATE (64), 0)
+DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)",
+	       HITRATE (66), 0)
 DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (67), 0)
 
-/* Recursive calls are usually not taken or the function will recurse indefinitely.  */
+/* Recursive calls are usually not taken or the function will recurse
+   indefinitely.  */
 DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", HITRATE (75), 0)
 
 /* Branch causing function to terminate is probably not taken. 
@@ -158,6 +165,10 @@ DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
 	 body;
    guess that cond is unlikely.  */
 DEF_PREDICTOR (PRED_LOOP_GUARD, "loop guard", HITRATE (66), 0)
+
+/* Same but for loops containing recursion.  */
+DEF_PREDICTOR (PRED_LOOP_GUARD_WITH_RECURSION, "loop guard with recursion",
+	       HITRATE (85), 0)
 
 /* Branches to hot labels are likely.  */
 DEF_PREDICTOR (PRED_HOT_LABEL, "hot label", HITRATE (85), 0)

@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
+#include "gimple-pretty-print.h"
 
 /* Enum with reasons why a predictor is ignored.  */
 
@@ -1407,6 +1408,7 @@ predicted_by_loop_heuristics_p (basic_block bb)
 	|| i->ep_predictor == PRED_LOOP_ITERATIONS_MAX
 	|| i->ep_predictor == PRED_LOOP_ITERATIONS
 	|| i->ep_predictor == PRED_LOOP_EXIT
+	|| i->ep_predictor == PRED_LOOP_EXIT_WITH_RECURSION
 	|| i->ep_predictor == PRED_LOOP_EXTRA_EXIT)
       return true;
   return false;
@@ -1686,6 +1688,24 @@ static void
 predict_loops (void)
 {
   struct loop *loop;
+  basic_block bb;
+  hash_set <struct loop *> with_recursion(10);
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gimple_stmt_iterator gsi;
+      tree decl;
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	if (is_gimple_call (gsi_stmt (gsi))
+	    && (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
+	    && recursive_call_p (current_function_decl, decl))
+	  {
+	    loop = bb->loop_father;
+	    while (loop && !with_recursion.add (loop))
+	      loop = loop_outer (loop);
+	  }
+    }
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
@@ -1702,6 +1722,7 @@ predict_loops (void)
       tree loop_bound_var = NULL;
       tree loop_iv_base = NULL;
       gcond *stmt = NULL;
+      bool recursion = with_recursion.contains (loop);
 
       exits = get_loop_exit_edges (loop);
       FOR_EACH_VEC_ELT (exits, j, ex)
@@ -1711,6 +1732,23 @@ predict_loops (void)
 	{
           exits.release ();
 	  continue;
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predicting loop %i%s with %i exits.\n",
+		 loop->num, recursion ? " (with recursion)":"", n_exits);
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && max_loop_iterations_int (loop) >= 0)
+	{
+	  fprintf (dump_file,
+		   "Loop %d iterates at most %i times.\n", loop->num,
+		   (int)max_loop_iterations_int (loop));
+	}
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && likely_max_loop_iterations_int (loop) >= 0)
+	{
+	  fprintf (dump_file, "Loop %d likely iterates at most %i times.\n",
+		   loop->num, (int)likely_max_loop_iterations_int (loop));
 	}
 
       FOR_EACH_VEC_ELT (exits, j, ex)
@@ -1727,13 +1765,28 @@ predict_loops (void)
 	  /* Loop heuristics do not expect exit conditional to be inside
 	     inner loop.  We predict from innermost to outermost loop.  */
 	  if (predicted_by_loop_heuristics_p (ex->src))
-	    continue;
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Skipping exit %i->%i because "
+			 "it is already predicted.\n",
+			 ex->src->index, ex->dest->index);
+	      continue;
+	    }
 	  predict_extra_loop_exits (ex);
 
 	  if (number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	    niter = niter_desc.niter;
 	  if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
 	    niter = loop_niter_by_eval (loop, ex);
+	  if (dump_file && (dump_flags & TDF_DETAILS)
+	      && TREE_CODE (niter) == INTEGER_CST)
+	    {
+	      fprintf (dump_file, "Exit %i->%i %d iterates ",
+		       ex->src->index, ex->dest->index,
+		       loop->num);
+	      print_generic_expr (dump_file, niter, TDF_SLIM);
+	      fprintf (dump_file, " times.\n");
+	    }
 
 	  if (TREE_CODE (niter) == INTEGER_CST)
 	    {
@@ -1766,14 +1819,24 @@ predict_loops (void)
 				 RDIV (REG_BR_PROB_BASE,
 				       REG_BR_PROB_BASE
 					 - predictor_info
-						 [PRED_LOOP_EXIT].hitrate)))
+						 [recursion
+						  ? PRED_LOOP_EXIT_WITH_RECURSION
+						  : PRED_LOOP_EXIT].hitrate)))
 	    {
 	      nitercst = nit.to_shwi ();
 	      predictor = PRED_LOOP_ITERATIONS_MAX;
 	    }
 	  else
-	    continue;
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Nothing known about exit %i->%i.\n",
+			 ex->src->index, ex->dest->index);
+	      continue;
+	    }
 
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Recording prediction to %i iterations by %s.\n",
+		     (int)nitercst, predictor_info[predictor].name);
 	  /* If the prediction for number of iterations is zero, do not
 	     predict the exit edges.  */
 	  if (nitercst == 0)
@@ -1807,7 +1870,6 @@ predict_loops (void)
 
       for (j = 0; j < loop->num_nodes; j++)
 	{
-	  int header_found = 0;
 	  edge e;
 	  edge_iterator ei;
 
@@ -1818,14 +1880,16 @@ predict_loops (void)
 	     in the source language and are better to be handled
 	     separately.  */
 	  if (predicted_by_p (bb, PRED_CONTINUE))
-	    continue;
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "BB %i predicted by continue.\n",
+			 bb->index);
+	      continue;
+	    }
 
-	  /* Loop exit heuristics - predict an edge exiting the loop if the
-	     conditional has no loop header successors as not taken.  */
-	  if (!header_found
-	      /* If we already used more reliable loop exit predictors, do not
-		 bother with PRED_LOOP_EXIT.  */
-	      && !predicted_by_loop_heuristics_p (bb))
+	  /* If we already used more reliable loop exit predictors, do not
+	     bother with PRED_LOOP_EXIT.  */
+	  if (!predicted_by_loop_heuristics_p (bb))
 	    {
 	      /* For loop with many exits we don't want to predict all exits
 	         with the pretty large probability, because if all exits are
@@ -1842,14 +1906,25 @@ predict_loops (void)
 		 a wide loop.  */
 
 	      int probability = ((REG_BR_PROB_BASE
-		                  - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
+		                  - predictor_info
+				     [recursion
+				      ? PRED_LOOP_EXIT_WITH_RECURSION
+				      : PRED_LOOP_EXIT].hitrate)
 				 / n_exits);
 	      if (probability < HITRATE (2))
 		probability = HITRATE (2);
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (e->dest->index < NUM_FIXED_BLOCKS
 		    || !flow_bb_inside_loop_p (loop, e->dest))
-		  predict_edge (e, PRED_LOOP_EXIT, probability);
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      fprintf (dump_file,
+			       "Predicting exit %i->%i with prob %i.\n",
+			       e->src->index, e->dest->index, probability);
+		    predict_edge (e,
+				  recursion ? PRED_LOOP_EXIT_WITH_RECURSION
+			          : PRED_LOOP_EXIT, probability);
+		  }
 	    }
 	  if (loop_bound_var)
 	    predict_iv_comparison (loop, bb, loop_bound_var, loop_iv_base,
@@ -1910,7 +1985,9 @@ predict_loops (void)
 	      if (!dominated_by_p (CDI_DOMINATORS,
 				   loop_outer (loop)->latch, loop->header))
 		predict_paths_leading_to_edge (loop_preheader_edge (loop),
-					       PRED_LOOP_GUARD,
+					       recursion
+					       ? PRED_LOOP_GUARD_WITH_RECURSION
+					       : PRED_LOOP_GUARD,
 					       NOT_TAKEN,
 					       loop_outer (loop));
 	    }
@@ -1919,7 +1996,9 @@ predict_loops (void)
 	      if (!dominated_by_p (CDI_DOMINATORS,
 				   loop_outer (loop)->latch, bb))
 		predict_paths_leading_to (bb,
-					  PRED_LOOP_GUARD,
+					  recursion
+					  ? PRED_LOOP_GUARD_WITH_RECURSION
+					  : PRED_LOOP_GUARD,
 					  NOT_TAKEN,
 					  loop_outer (loop));
 	    }
@@ -3367,6 +3446,15 @@ pass_profile::execute (function *fun)
     gimple_dump_cfg (dump_file, dump_flags);
  if (profile_status_for_fn (fun) == PROFILE_ABSENT)
     profile_status_for_fn (fun) = PROFILE_GUESSED;
+ if (dump_file && (dump_flags & TDF_DETAILS))
+   {
+     struct loop *loop;
+     FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+       if (loop->header->frequency)
+         fprintf (dump_file, "Loop got predicted %d to iterate %i times.\n",
+       	   loop->num,
+       	   (int)expected_loop_iterations_unbounded (loop));
+   }
   return 0;
 }
 
