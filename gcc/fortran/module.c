@@ -6159,9 +6159,11 @@ create_intrinsic_function (const char *name, int id,
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
   if (tmp_symtree)
     {
-      if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
-        return;
-      gfc_error ("Symbol %qs already declared", name);
+      if (tmp_symtree->n.sym && tmp_symtree->n.sym->module
+	  && strcmp (modname, tmp_symtree->n.sym->module) == 0)
+	return;
+      gfc_error ("Symbol %qs at %C already declared", name);
+      return;
     }
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
