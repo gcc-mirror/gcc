@@ -5,8 +5,8 @@
 	PR target/71555
 	PR target/71596
 	PR target/71657
-	* config/i386/i386.c (TARGET_SPILL_CLASS): #if 0 out the definition.
-	(ix86_spill_class): Disable to always return NO_REGS.
+	* config/i386/i386.c (ix86_spill_class): Disable condition to
+	always return NO_REGS.
 
 2016-06-26  Jan Hubicka  <hubicka@ucw.cz>
 
