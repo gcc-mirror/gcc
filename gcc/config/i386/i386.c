@@ -54583,10 +54583,13 @@ ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
 /* Return class of registers which could be used for pseudo of MODE
    and of class RCLASS for spilling instead of memory.  Return NO_REGS
    if it is not possible or non-profitable.  */
+
+/* Disabled due to PRs 70902, 71453, 71555, 71596 and 71657.  */
+
 static reg_class_t
 ix86_spill_class (reg_class_t rclass, machine_mode mode)
 {
-  if (TARGET_GENERAL_REGS_SSE_SPILL
+  if (0 && TARGET_GENERAL_REGS_SSE_SPILL
       && TARGET_SSE2
       && TARGET_INTER_UNIT_MOVES_TO_VEC
       && TARGET_INTER_UNIT_MOVES_FROM_VEC
@@ -55700,8 +55703,11 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 #undef TARGET_LOOP_UNROLL_ADJUST
 #define TARGET_LOOP_UNROLL_ADJUST ix86_loop_unroll_adjust
 
+#if 0
+/* Disabled due to PRs 70902, 71453, 71555, 71596 and 71657.  */
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS ix86_spill_class
+#endif
 
 #undef TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
 #define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \

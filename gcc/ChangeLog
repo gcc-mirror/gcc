@@ -1,3 +1,13 @@
+2016-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70902
+	PR target/71453
+	PR target/71555
+	PR target/71596
+	PR target/71657
+	* config/i386/i386.c (TARGET_SPILL_CLASS): #if 0 out the definition.
+	(ix86_spill_class): Disable to always return NO_REGS.
+
 2016-06-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c: Include gimple-pretty-print.h
