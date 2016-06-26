@@ -1,3 +1,9 @@
+2016-06-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/71649
+	* module.c (create_intrinsic_function): Check for NULL values and
+	return after giving error.
+
 2016-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* trans-types.c (gfc_build_complex_type): Move setting complex
