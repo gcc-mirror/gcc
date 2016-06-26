@@ -55703,11 +55703,9 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 #undef TARGET_LOOP_UNROLL_ADJUST
 #define TARGET_LOOP_UNROLL_ADJUST ix86_loop_unroll_adjust
 
-#if 0
 /* Disabled due to PRs 70902, 71453, 71555, 71596 and 71657.  */
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS ix86_spill_class
-#endif
 
 #undef TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
 #define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \
