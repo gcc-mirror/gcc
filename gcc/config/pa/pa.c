@@ -8111,72 +8111,148 @@ pa_attr_length_indirect_call (rtx_insn *insn)
   if (TARGET_64BIT)
     return 12;
 
-  if (TARGET_FAST_INDIRECT_CALLS
-      || (!TARGET_LONG_CALLS
-	  && !TARGET_PORTABLE_RUNTIME
-	  && ((TARGET_PA_20 && !TARGET_SOM && distance < 7600000)
-	      || distance < MAX_PCREL17F_OFFSET)))
+  if (TARGET_FAST_INDIRECT_CALLS)
     return 8;
-
-  if (flag_pic)
-    return 20;
 
   if (TARGET_PORTABLE_RUNTIME)
     return 16;
 
+  /* Inline version of $$dyncall.  */
+  if ((TARGET_NO_SPACE_REGS || TARGET_PA_20) && !optimize_size)
+    return 20;
+
+  if (!TARGET_LONG_CALLS
+      && ((TARGET_PA_20 && !TARGET_SOM && distance < 7600000)
+	  || distance < MAX_PCREL17F_OFFSET))
+    return 8;
+
   /* Out of reach, can use ble.  */
-  return 12;
+  if (!flag_pic)
+    return 12;
+
+  /* Inline version of $$dyncall.  */
+  if (TARGET_NO_SPACE_REGS || TARGET_PA_20)
+    return 20;
+
+  if (!optimize_size)
+    return 36;
+
+  /* Long PIC pc-relative call.  */
+  return 20;
 }
 
 const char *
 pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
 {
   rtx xoperands[4];
+  int length;
 
   if (TARGET_64BIT)
     {
       xoperands[0] = call_dest;
-      output_asm_insn ("ldd 16(%0),%%r2", xoperands);
-      output_asm_insn ("bve,l (%%r2),%%r2\n\tldd 24(%0),%%r27", xoperands);
+      output_asm_insn ("ldd 16(%0),%%r2\n\t"
+		       "bve,l (%%r2),%%r2\n\t"
+		       "ldd 24(%0),%%r27", xoperands);
       return "";
     }
 
   /* First the special case for kernels, level 0 systems, etc.  */
   if (TARGET_FAST_INDIRECT_CALLS)
-    return "ble 0(%%sr4,%%r22)\n\tcopy %%r31,%%r2"; 
+    {
+      pa_output_arg_descriptor (insn);
+      if (TARGET_PA_20)
+	return "bve,l,n (%%r22),%%r2\n\tnop";
+      return "ble 0(%%sr4,%%r22)\n\tcopy %%r31,%%r2"; 
+    }
+
+  if (TARGET_PORTABLE_RUNTIME)
+    {
+      output_asm_insn ("ldil L'$$dyncall,%%r31\n\t"
+		       "ldo R'$$dyncall(%%r31),%%r31", xoperands);
+      pa_output_arg_descriptor (insn);
+      return "blr %%r0,%%r2\n\tbv,n %%r0(%%r31)";
+    }
+
+  /* Maybe emit a fast inline version of $$dyncall.  */
+  if ((TARGET_NO_SPACE_REGS || TARGET_PA_20) && !optimize_size)
+    {
+      output_asm_insn ("bb,>=,n %%r22,30,.+12\n\t"
+		       "ldw 2(%%r22),%%r19\n\t"
+		       "ldw -2(%%r22),%%r22", xoperands);
+      pa_output_arg_descriptor (insn);
+      if (TARGET_NO_SPACE_REGS)
+	{
+	  if (TARGET_PA_20)
+	    return "bve,l,n (%%r22),%%r2\n\tnop";
+	  return "ble 0(%%sr4,%%r22)\n\tcopy %%r31,%%r2";
+	}
+      return "bve,l (%%r22),%%r2\n\tstw %%r2,-24(%%sp)";
+    }
 
   /* Now the normal case -- we can reach $$dyncall directly or
      we're sure that we can get there via a long-branch stub. 
 
      No need to check target flags as the length uniquely identifies
      the remaining cases.  */
-  if (pa_attr_length_indirect_call (insn) == 8)
+  length = pa_attr_length_indirect_call (insn);
+  if (length == 8)
     {
+      pa_output_arg_descriptor (insn);
+
       /* The HP linker sometimes substitutes a BLE for BL/B,L calls to
 	 $$dyncall.  Since BLE uses %r31 as the link register, the 22-bit
 	 variant of the B,L instruction can't be used on the SOM target.  */
       if (TARGET_PA_20 && !TARGET_SOM)
-	return ".CALL\tARGW0=GR\n\tb,l $$dyncall,%%r2\n\tcopy %%r2,%%r31";
+	return "b,l,n $$dyncall,%%r2\n\tnop";
       else
-	return ".CALL\tARGW0=GR\n\tbl $$dyncall,%%r31\n\tcopy %%r31,%%r2";
+	return "bl $$dyncall,%%r31\n\tcopy %%r31,%%r2";
     }
 
   /* Long millicode call, but we are not generating PIC or portable runtime
      code.  */
-  if (pa_attr_length_indirect_call (insn) == 12)
-    return ".CALL\tARGW0=GR\n\tldil L'$$dyncall,%%r2\n\tble R'$$dyncall(%%sr4,%%r2)\n\tcopy %%r31,%%r2";
+  if (length == 12)
+    {
+      output_asm_insn ("ldil L'$$dyncall,%%r2", xoperands);
+      pa_output_arg_descriptor (insn);
+      return "ble R'$$dyncall(%%sr4,%%r2)\n\tcopy %%r31,%%r2";
+    }
 
-  /* Long millicode call for portable runtime.  */
-  if (pa_attr_length_indirect_call (insn) == 16)
-    return "ldil L'$$dyncall,%%r31\n\tldo R'$$dyncall(%%r31),%%r31\n\tblr %%r0,%%r2\n\tbv,n %%r0(%%r31)";
-
+  /* Maybe emit a fast inline version of $$dyncall.  The long PIC
+     pc-relative call sequence is five instructions.  The inline PA 2.0
+     version of $$dyncall is also five instructions.  The PA 1.X versions
+     are longer but still an overall win.  */
+  if (TARGET_NO_SPACE_REGS || TARGET_PA_20 || !optimize_size)
+    {
+      output_asm_insn ("bb,>=,n %%r22,30,.+12\n\t"
+		       "ldw 2(%%r22),%%r19\n\t"
+		       "ldw -2(%%r22),%%r22", xoperands);
+      if (TARGET_NO_SPACE_REGS)
+	{
+	  pa_output_arg_descriptor (insn);
+	  if (TARGET_PA_20)
+	    return "bve,l,n (%%r22),%%r2\n\tnop";
+	  return "ble 0(%%sr4,%%r22)\n\tcopy %%r31,%%r2";
+	}
+      if (TARGET_PA_20)
+	{
+	  pa_output_arg_descriptor (insn);
+	  return "bve,l (%%r22),%%r2\n\tstw %%r2,-24(%%sp)";
+	}
+      output_asm_insn ("bl .+8,%%r2\n\t"
+		       "ldo 16(%%r2),%%r2\n\t"
+		       "ldsid (%%r22),%%r1\n\t"
+		       "mtsp %%r1,%%sr0", xoperands);
+      pa_output_arg_descriptor (insn);
+      return "be 0(%%sr0,%%r22)\n\tstw %%r2,-24(%%sp)";
+    }
+ 
   /* We need a long PIC call to $$dyncall.  */
   xoperands[0] = gen_rtx_SYMBOL_REF (Pmode, "$$dyncall");
   xoperands[1] = gen_rtx_REG (Pmode, 2);
   xoperands[2] = gen_rtx_REG (Pmode, 1);
   pa_output_pic_pcrel_sequence (xoperands);
-  output_asm_insn ("bv %%r0(%%r1)", xoperands);
-  return "ldo {12|20}(%%r2),%%r2";
+  pa_output_arg_descriptor (insn);
+  return "bv %%r0(%%r1)\n\tldo {12|20}(%%r2),%%r2";
 }
 
 /* In HPUX 8.0's shared library scheme, special relocations are needed

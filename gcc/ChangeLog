@@ -1,3 +1,11 @@
+2016-06-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_indirect_call): Rework to combine
+	output_asm_insn calls and shorten long lines.  Output .CALL
+	argument descriptor using pa_output_arg_descriptor.  Add various
+	inline $$dyncall and other optimizations.
+	(pa_attr_length_indirect_call): Adjust ordering and lengths.
+
 2016-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71643
