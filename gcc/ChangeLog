@@ -1,3 +1,14 @@
+2016-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c: Include gimple-pretty-print.h
+	(predicted_by_loop_heuristics_p): Check also
+	PRED_LOOP_EXIT_WITH_RECURSION
+	(predict_loops): Find self recursive calls and use special purpose
+	predictors for them; dump log about decisions.
+	(pass_profile::execute): Dump info about #of iterations.
+	* predict.def (PRED_LOOP_EXIT_WITH_RECURSION,
+	(PRED_LOOP_GUARD_WITH_RECURSION): New predictors.
+
 2016-06-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_indirect_call): Rework to combine
