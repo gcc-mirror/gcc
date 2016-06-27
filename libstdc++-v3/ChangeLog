@@ -1,3 +1,9 @@
+2016-06-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/71640
+	* include/bits/hashtable.h: Remove _Unique_keya parameter in _Insert
+	friend declaration.
+
 2016-06-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/array (array<>::swap): Fix noexcept qualificaton for
