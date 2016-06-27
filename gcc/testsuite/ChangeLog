@@ -1,3 +1,25 @@
+2016-06-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vget_lane.c: Add ifdef
+	around fp16 code.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p64.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f16_indices_1.c:
+	Add arm_neon_fp16_ok effective target.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f16_indices_1.c: Likewise.
+
 2016-06-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/predict-12.c: New testcase.

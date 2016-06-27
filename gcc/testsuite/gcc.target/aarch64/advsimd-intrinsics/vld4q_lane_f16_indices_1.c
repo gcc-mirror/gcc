@@ -2,6 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
+/* { dg-require-effective-target arm_neon_fp16_ok { target { arm*-*-* } } } */
 
 float16x8x4_t
 f_vld4q_lane_f16 (float16_t * p, float16x8x4_t v)

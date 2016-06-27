@@ -256,7 +256,9 @@ VECT_VAR_DECL_INIT(buffer_vld2_lane, uint, 32, 2);
 VECT_VAR_DECL_INIT(buffer_vld2_lane, uint, 64, 2);
 VECT_VAR_DECL_INIT(buffer_vld2_lane, poly, 8, 2);
 VECT_VAR_DECL_INIT(buffer_vld2_lane, poly, 16, 2);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT(buffer_vld2_lane, float, 16, 2);
+#endif
 VECT_VAR_DECL_INIT(buffer_vld2_lane, float, 32, 2);
 
 /* Input buffers for vld3_lane.  */
@@ -270,7 +272,9 @@ VECT_VAR_DECL_INIT(buffer_vld3_lane, uint, 32, 3);
 VECT_VAR_DECL_INIT(buffer_vld3_lane, uint, 64, 3);
 VECT_VAR_DECL_INIT(buffer_vld3_lane, poly, 8, 3);
 VECT_VAR_DECL_INIT(buffer_vld3_lane, poly, 16, 3);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT(buffer_vld3_lane, float, 16, 3);
+#endif
 VECT_VAR_DECL_INIT(buffer_vld3_lane, float, 32, 3);
 
 /* Input buffers for vld4_lane.  */
@@ -284,7 +288,9 @@ VECT_VAR_DECL_INIT(buffer_vld4_lane, uint, 32, 4);
 VECT_VAR_DECL_INIT(buffer_vld4_lane, uint, 64, 4);
 VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 8, 4);
 VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 16, 4);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 VECT_VAR_DECL_INIT(buffer_vld4_lane, float, 16, 4);
+#endif
 VECT_VAR_DECL_INIT(buffer_vld4_lane, float, 32, 4);
 
 void exec_vstX_lane (void)
