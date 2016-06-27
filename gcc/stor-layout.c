@@ -2147,10 +2147,8 @@ layout_type (tree type)
     case COMPLEX_TYPE:
       TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
       SET_TYPE_MODE (type,
-		     mode_for_size (2 * TYPE_PRECISION (TREE_TYPE (type)),
-				    (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
-				     ? MODE_COMPLEX_FLOAT : MODE_COMPLEX_INT),
-				     0));
+		     GET_MODE_COMPLEX_MODE (TYPE_MODE (TREE_TYPE (type))));
+
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;

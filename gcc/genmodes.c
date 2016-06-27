@@ -66,6 +66,7 @@ struct mode_data
 				   this mode as a component.  */
   struct mode_data *next_cont;  /* Next mode in that list.  */
 
+  struct mode_data *complex;	/* complex type with mode as component.  */
   const char *file;		/* file and line of definition, */
   unsigned int line;		/* for error reporting */
   unsigned int counter;		/* Rank ordering of modes */
@@ -83,7 +84,7 @@ static struct mode_data *void_mode;
 static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1U, -1U, -1U, -1U,
-  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0,
   "<unknown>", 0, 0, 0, 0, false, 0
 };
 
@@ -472,6 +473,7 @@ make_complex_modes (enum mode_class cl,
 
       c = new_mode (cclass, buf, file, line);
       c->component = m;
+      m->complex = c;
     }
 }
 
@@ -1381,6 +1383,22 @@ emit_mode_wider (void)
 }
 
 static void
+emit_mode_complex (void)
+{
+  int c;
+  struct mode_data *m;
+
+  print_decl ("unsigned char", "mode_complex", "NUM_MACHINE_MODES");
+
+  for_all_modes (c, m)
+    tagged_printf ("%smode",
+		   m->complex ? m->complex->name : void_mode->name,
+		   m->name);
+
+  print_closer ();
+}
+
+static void
 emit_mode_mask (void)
 {
   int c;
@@ -1745,6 +1763,7 @@ emit_insn_modes_c (void)
   emit_mode_size ();
   emit_mode_nunits ();
   emit_mode_wider ();
+  emit_mode_complex ();
   emit_mode_mask ();
   emit_mode_inner ();
   emit_mode_unit_size ();
