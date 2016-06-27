@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename _ExtractKeya, typename _Equala,
 	       typename _H1a, typename _H2a, typename _Hasha,
 	       typename _RehashPolicya, typename _Traitsa,
-	       bool _Constant_iteratorsa, bool _Unique_keysa>
+	       bool _Constant_iteratorsa>
 	friend struct __detail::_Insert;
 
     public:
