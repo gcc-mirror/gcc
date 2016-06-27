@@ -269,6 +269,10 @@ extern const unsigned char mode_wider[NUM_MACHINE_MODES];
 extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
 #define GET_MODE_2XWIDER_MODE(MODE) ((machine_mode) mode_2xwider[MODE])
 
+/* Get the complex mode from the component mode.  */
+extern const unsigned char mode_complex[NUM_MACHINE_MODES];
+#define GET_MODE_COMPLEX_MODE(MODE) ((machine_mode) mode_complex[MODE])
+
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */
