@@ -665,9 +665,11 @@ void exec_vreinterpret (void)
 
   /* Initialize input "vector" from "buffer".  */
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VLOAD(vector, buffer, , float, f, 16, 4);
-  VLOAD(vector, buffer, , float, f, 32, 2);
   VLOAD(vector, buffer, q, float, f, 16, 8);
+#endif
+  VLOAD(vector, buffer, , float, f, 32, 2);
   VLOAD(vector, buffer, q, float, f, 32, 4);
 
   /* vreinterpret_s8_xx.  */
@@ -680,7 +682,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, int, s, 8, 8, uint, u, 64, 1, expected_s8_7);
   TEST_VREINTERPRET(, int, s, 8, 8, poly, p, 8, 8, expected_s8_8);
   TEST_VREINTERPRET(, int, s, 8, 8, poly, p, 16, 4, expected_s8_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, int, s, 8, 8, float, f, 16, 4, expected_s8_10);
+#endif
 
   /* vreinterpret_s16_xx.  */
   TEST_VREINTERPRET(, int, s, 16, 4, int, s, 8, 8, expected_s16_1);
@@ -692,7 +696,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, int, s, 16, 4, uint, u, 64, 1, expected_s16_7);
   TEST_VREINTERPRET(, int, s, 16, 4, poly, p, 8, 8, expected_s16_8);
   TEST_VREINTERPRET(, int, s, 16, 4, poly, p, 16, 4, expected_s16_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, int, s, 16, 4, float, f, 16, 4, expected_s16_10);
+#endif
 
   /* vreinterpret_s32_xx.  */
   TEST_VREINTERPRET(, int, s, 32, 2, int, s, 8, 8, expected_s32_1);
@@ -704,7 +710,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, int, s, 32, 2, uint, u, 64, 1, expected_s32_7);
   TEST_VREINTERPRET(, int, s, 32, 2, poly, p, 8, 8, expected_s32_8);
   TEST_VREINTERPRET(, int, s, 32, 2, poly, p, 16, 4, expected_s32_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, int, s, 32, 2, float, f, 16, 4, expected_s32_10);
+#endif
 
   /* vreinterpret_s64_xx.  */
   TEST_VREINTERPRET(, int, s, 64, 1, int, s, 8, 8, expected_s64_1);
@@ -716,7 +724,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, int, s, 64, 1, uint, u, 64, 1, expected_s64_7);
   TEST_VREINTERPRET(, int, s, 64, 1, poly, p, 8, 8, expected_s64_8);
   TEST_VREINTERPRET(, int, s, 64, 1, poly, p, 16, 4, expected_s64_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, int, s, 64, 1, float, f, 16, 4, expected_s64_10);
+#endif
 
   /* vreinterpret_u8_xx.  */
   TEST_VREINTERPRET(, uint, u, 8, 8, int, s, 8, 8, expected_u8_1);
@@ -728,7 +738,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, uint, u, 8, 8, uint, u, 64, 1, expected_u8_7);
   TEST_VREINTERPRET(, uint, u, 8, 8, poly, p, 8, 8, expected_u8_8);
   TEST_VREINTERPRET(, uint, u, 8, 8, poly, p, 16, 4, expected_u8_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, uint, u, 8, 8, float, f, 16, 4, expected_u8_10);
+#endif
 
   /* vreinterpret_u16_xx.  */
   TEST_VREINTERPRET(, uint, u, 16, 4, int, s, 8, 8, expected_u16_1);
@@ -740,7 +752,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, uint, u, 16, 4, uint, u, 64, 1, expected_u16_7);
   TEST_VREINTERPRET(, uint, u, 16, 4, poly, p, 8, 8, expected_u16_8);
   TEST_VREINTERPRET(, uint, u, 16, 4, poly, p, 16, 4, expected_u16_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, uint, u, 16, 4, float, f, 16, 4, expected_u16_10);
+#endif
 
   /* vreinterpret_u32_xx.  */
   TEST_VREINTERPRET(, uint, u, 32, 2, int, s, 8, 8, expected_u32_1);
@@ -752,7 +766,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, uint, u, 32, 2, uint, u, 64, 1, expected_u32_7);
   TEST_VREINTERPRET(, uint, u, 32, 2, poly, p, 8, 8, expected_u32_8);
   TEST_VREINTERPRET(, uint, u, 32, 2, poly, p, 16, 4, expected_u32_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, uint, u, 32, 2, float, f, 16, 4, expected_u32_10);
+#endif
 
   /* vreinterpret_u64_xx.  */
   TEST_VREINTERPRET(, uint, u, 64, 1, int, s, 8, 8, expected_u64_1);
@@ -764,7 +780,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, uint, u, 64, 1, uint, u, 32, 2, expected_u64_7);
   TEST_VREINTERPRET(, uint, u, 64, 1, poly, p, 8, 8, expected_u64_8);
   TEST_VREINTERPRET(, uint, u, 64, 1, poly, p, 16, 4, expected_u64_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(, uint, u, 64, 1, float, f, 16, 4, expected_u64_10);
+#endif
 
   /* vreinterpret_p8_xx.  */
   TEST_VREINTERPRET_POLY(, poly, p, 8, 8, int, s, 8, 8, expected_p8_1);
@@ -776,7 +794,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_POLY(, poly, p, 8, 8, uint, u, 32, 2, expected_p8_7);
   TEST_VREINTERPRET_POLY(, poly, p, 8, 8, uint, u, 64, 1, expected_p8_8);
   TEST_VREINTERPRET_POLY(, poly, p, 8, 8, poly, p, 16, 4, expected_p8_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_POLY(, poly, p, 8, 8, float, f, 16, 4, expected_p8_10);
+#endif
 
   /* vreinterpret_p16_xx.  */
   TEST_VREINTERPRET_POLY(, poly, p, 16, 4, int, s, 8, 8, expected_p16_1);
@@ -788,7 +808,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_POLY(, poly, p, 16, 4, uint, u, 32, 2, expected_p16_7);
   TEST_VREINTERPRET_POLY(, poly, p, 16, 4, uint, u, 64, 1, expected_p16_8);
   TEST_VREINTERPRET_POLY(, poly, p, 16, 4, poly, p, 8, 8, expected_p16_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_POLY(, poly, p, 16, 4, float, f, 16, 4, expected_p16_10);
+#endif
 
   /* vreinterpretq_s8_xx.  */
   TEST_VREINTERPRET(q, int, s, 8, 16, int, s, 16, 8, expected_q_s8_1);
@@ -800,7 +822,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, int, s, 8, 16, uint, u, 64, 2, expected_q_s8_7);
   TEST_VREINTERPRET(q, int, s, 8, 16, poly, p, 8, 16, expected_q_s8_8);
   TEST_VREINTERPRET(q, int, s, 8, 16, poly, p, 16, 8, expected_q_s8_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, int, s, 8, 16, float, f, 16, 8, expected_q_s8_10);
+#endif
 
   /* vreinterpretq_s16_xx.  */
   TEST_VREINTERPRET(q, int, s, 16, 8, int, s, 8, 16, expected_q_s16_1);
@@ -812,7 +836,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, int, s, 16, 8, uint, u, 64, 2, expected_q_s16_7);
   TEST_VREINTERPRET(q, int, s, 16, 8, poly, p, 8, 16, expected_q_s16_8);
   TEST_VREINTERPRET(q, int, s, 16, 8, poly, p, 16, 8, expected_q_s16_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, int, s, 16, 8, float, f, 16, 8, expected_q_s16_10);
+#endif
 
   /* vreinterpretq_s32_xx.  */
   TEST_VREINTERPRET(q, int, s, 32, 4, int, s, 8, 16, expected_q_s32_1);
@@ -824,7 +850,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, int, s, 32, 4, uint, u, 64, 2, expected_q_s32_7);
   TEST_VREINTERPRET(q, int, s, 32, 4, poly, p, 8, 16, expected_q_s32_8);
   TEST_VREINTERPRET(q, int, s, 32, 4, poly, p, 16, 8, expected_q_s32_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, int, s, 32, 4, float, f, 16, 8, expected_q_s32_10);
+#endif
 
   /* vreinterpretq_s64_xx.  */
   TEST_VREINTERPRET(q, int, s, 64, 2, int, s, 8, 16, expected_q_s64_1);
@@ -836,7 +864,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, int, s, 64, 2, uint, u, 64, 2, expected_q_s64_7);
   TEST_VREINTERPRET(q, int, s, 64, 2, poly, p, 8, 16, expected_q_s64_8);
   TEST_VREINTERPRET(q, int, s, 64, 2, poly, p, 16, 8, expected_q_s64_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, int, s, 64, 2, float, f, 16, 8, expected_q_s64_10);
+#endif
 
   /* vreinterpretq_u8_xx.  */
   TEST_VREINTERPRET(q, uint, u, 8, 16, int, s, 8, 16, expected_q_u8_1);
@@ -848,7 +878,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, uint, u, 8, 16, uint, u, 64, 2, expected_q_u8_7);
   TEST_VREINTERPRET(q, uint, u, 8, 16, poly, p, 8, 16, expected_q_u8_8);
   TEST_VREINTERPRET(q, uint, u, 8, 16, poly, p, 16, 8, expected_q_u8_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, uint, u, 8, 16, float, f, 16, 8, expected_q_u8_10);
+#endif
 
   /* vreinterpretq_u16_xx.  */
   TEST_VREINTERPRET(q, uint, u, 16, 8, int, s, 8, 16, expected_q_u16_1);
@@ -860,7 +892,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, uint, u, 16, 8, uint, u, 64, 2, expected_q_u16_7);
   TEST_VREINTERPRET(q, uint, u, 16, 8, poly, p, 8, 16, expected_q_u16_8);
   TEST_VREINTERPRET(q, uint, u, 16, 8, poly, p, 16, 8, expected_q_u16_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, uint, u, 16, 8, float, f, 16, 8, expected_q_u16_10);
+#endif
 
   /* vreinterpretq_u32_xx.  */
   TEST_VREINTERPRET(q, uint, u, 32, 4, int, s, 8, 16, expected_q_u32_1);
@@ -872,7 +906,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, uint, u, 32, 4, uint, u, 64, 2, expected_q_u32_7);
   TEST_VREINTERPRET(q, uint, u, 32, 4, poly, p, 8, 16, expected_q_u32_8);
   TEST_VREINTERPRET(q, uint, u, 32, 4, poly, p, 16, 8, expected_q_u32_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, uint, u, 32, 4, float, f, 16, 8, expected_q_u32_10);
+#endif
 
   /* vreinterpretq_u64_xx.  */
   TEST_VREINTERPRET(q, uint, u, 64, 2, int, s, 8, 16, expected_q_u64_1);
@@ -884,7 +920,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, uint, u, 64, 2, uint, u, 32, 4, expected_q_u64_7);
   TEST_VREINTERPRET(q, uint, u, 64, 2, poly, p, 8, 16, expected_q_u64_8);
   TEST_VREINTERPRET(q, uint, u, 64, 2, poly, p, 16, 8, expected_q_u64_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET(q, uint, u, 64, 2, float, f, 16, 8, expected_q_u64_10);
+#endif
 
   /* vreinterpretq_p8_xx.  */
   TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, int, s, 8, 16, expected_q_p8_1);
@@ -896,7 +934,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, uint, u, 32, 4, expected_q_p8_7);
   TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, uint, u, 64, 2, expected_q_p8_8);
   TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, poly, p, 16, 8, expected_q_p8_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, float, f, 16, 8, expected_q_p8_10);
+#endif
 
   /* vreinterpretq_p16_xx.  */
   TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, int, s, 8, 16, expected_q_p16_1);
@@ -908,7 +948,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, uint, u, 32, 4, expected_q_p16_7);
   TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, uint, u, 64, 2, expected_q_p16_8);
   TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, poly, p, 8, 16, expected_q_p16_9);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, float, f, 16, 8, expected_q_p16_10);
+#endif
 
   /* vreinterpret_f32_xx.  */
   TEST_VREINTERPRET_FP(, float, f, 32, 2, int, s, 8, 8, expected_f32_1);
@@ -921,7 +963,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_FP(, float, f, 32, 2, uint, u, 64, 1, expected_f32_8);
   TEST_VREINTERPRET_FP(, float, f, 32, 2, poly, p, 8, 8, expected_f32_9);
   TEST_VREINTERPRET_FP(, float, f, 32, 2, poly, p, 16, 4, expected_f32_10);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP(, float, f, 32, 2, float, f, 16, 4, expected_f32_11);
+#endif
 
   /* vreinterpretq_f32_xx.  */
   TEST_VREINTERPRET_FP(q, float, f, 32, 4, int, s, 8, 16, expected_q_f32_1);
@@ -934,7 +978,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_FP(q, float, f, 32, 4, uint, u, 64, 2, expected_q_f32_8);
   TEST_VREINTERPRET_FP(q, float, f, 32, 4, poly, p, 8, 16, expected_q_f32_9);
   TEST_VREINTERPRET_FP(q, float, f, 32, 4, poly, p, 16, 8, expected_q_f32_10);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP(q, float, f, 32, 4, float, f, 16, 8, expected_q_f32_11);
+#endif
 
   /* vreinterpret_xx_f32.  */
   TEST_VREINTERPRET(, int, s, 8, 8, float, f, 32, 2, expected_xx_f32_1);
@@ -947,7 +993,9 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(, uint, u, 64, 1, float, f, 32, 2, expected_xx_f32_8);
   TEST_VREINTERPRET_POLY(, poly, p, 8, 8, float, f, 32, 2, expected_xx_f32_9);
   TEST_VREINTERPRET_POLY(, poly, p, 16, 4, float, f, 32, 2, expected_xx_f32_10);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP(, float, f, 16, 4, float, f, 32, 2, expected_xx_f32_11);
+#endif
 
   /* vreinterpretq_xx_f32.  */
   TEST_VREINTERPRET(q, int, s, 8, 16, float, f, 32, 4, expected_q_xx_f32_1);
@@ -960,6 +1008,7 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET(q, uint, u, 64, 2, float, f, 32, 4, expected_q_xx_f32_8);
   TEST_VREINTERPRET_POLY(q, poly, p, 8, 16, float, f, 32, 4, expected_q_xx_f32_9);
   TEST_VREINTERPRET_POLY(q, poly, p, 16, 8, float, f, 32, 4, expected_q_xx_f32_10);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP(q, float, f, 16, 8, float, f, 32, 4, expected_q_xx_f32_11);
 
   /* vreinterpret_f16_xx.  */
@@ -985,6 +1034,7 @@ void exec_vreinterpret (void)
   TEST_VREINTERPRET_FP(q, float, f, 16, 8, uint, u, 64, 2, expected_q_f16_8);
   TEST_VREINTERPRET_FP(q, float, f, 16, 8, poly, p, 8, 16, expected_q_f16_9);
   TEST_VREINTERPRET_FP(q, float, f, 16, 8, poly, p, 16, 8, expected_q_f16_10);
+#endif
 }
 
 int main (void)

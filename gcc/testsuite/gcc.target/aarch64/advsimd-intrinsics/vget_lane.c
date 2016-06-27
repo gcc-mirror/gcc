@@ -54,10 +54,12 @@ void exec_vget_lane (void)
     uint32_t var_int32;
     float32_t var_float32;
   } var_int32_float32;
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   union {
     uint16_t var_int16;
     float16_t var_float16;
   } var_int16_float16;
+#endif
 
 #define TEST_VGET_LANE_FP(Q, T1, T2, W, N, L)				   \
   VAR(var, T1, W) = vget##Q##_lane_##T2##W(VECT_VAR(vector, T1, W, N), L); \

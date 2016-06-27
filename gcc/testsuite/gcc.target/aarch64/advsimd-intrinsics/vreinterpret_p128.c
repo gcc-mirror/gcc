@@ -86,7 +86,9 @@ int main (void)
 
   TEST_MACRO_128BITS_VARIANTS_2_5(VLOAD, vreint_vector, buffer);
   VLOAD(vreint_vector, buffer, q, poly, p, 64, 2);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   VLOAD(vreint_vector, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vreint_vector, buffer, q, float, f, 32, 4);
 
   /* vreinterpretq_p128_* tests.  */
@@ -115,7 +117,9 @@ int main (void)
   TEST_VREINTERPRET128(q, poly, p, 128, 1, uint, u, 64, 2, vreint_expected_q_p128_u64);
   TEST_VREINTERPRET128(q, poly, p, 128, 1, poly, p, 8, 16, vreint_expected_q_p128_p8);
   TEST_VREINTERPRET128(q, poly, p, 128, 1, poly, p, 16, 8, vreint_expected_q_p128_p16);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET128(q, poly, p, 128, 1, float, f, 16, 8, vreint_expected_q_p128_f16);
+#endif
   TEST_VREINTERPRET128(q, poly, p, 128, 1, float, f, 32, 4, vreint_expected_q_p128_f32);
 
   /* vreinterpretq_*_p128 tests.  */
@@ -153,7 +157,9 @@ int main (void)
   TEST_VREINTERPRET_FROM_P128(q, uint, u, 64, 2, poly, p, 128, 1, vreint_expected_q_u64_p128);
   TEST_VREINTERPRET_FROM_P128(q, poly, p, 8, 16, poly, p, 128, 1, vreint_expected_q_p8_p128);
   TEST_VREINTERPRET_FROM_P128(q, poly, p, 16, 8, poly, p, 128, 1, vreint_expected_q_p16_p128);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP_FROM_P128(q, float, f, 16, 8, poly, p, 128, 1, vreint_expected_q_f16_p128);
+#endif
   TEST_VREINTERPRET_FP_FROM_P128(q, float, f, 32, 4, poly, p, 128, 1, vreint_expected_q_f32_p128);
 
   return 0;
