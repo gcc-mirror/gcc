@@ -55,12 +55,23 @@
 /* For __clear_cache in libgcc2.c.  */
 #ifdef IN_LIBGCC2
 
-#include <arch/icache.h>
-
 /* Use the minimum page size of 4K.  Alternatively we can call
-   getpagesize() but it introduces a libc dependence.  */
+   getpagesize() but it introduces a libc dependence.
+   See Linux arch/tile/include/uapi/arch/icache.h for more commentary.  */
 #undef CLEAR_INSN_CACHE
-#define CLEAR_INSN_CACHE(beg, end) invalidate_icache (beg, end - beg, 4096)
+#define CLEAR_INSN_CACHE(BEG, END)                                      \
+{                                                                       \
+  long size = (long) (END) - (long) (BEG);                              \
+  if (size)                                                             \
+    {                                                                   \
+      const char *p = (const char *) ((unsigned long) (BEG) & -64L);    \
+      const char *end = p + (size < 4096 ? size : 4096) - 1;            \
+      __insn_mf ();                                                     \
+      for (; p <= end; p += 64)                                         \
+        __insn_icoh (p);                                                \
+      __insn_drain ();                                                  \
+    }                                                                   \
+}
 
 #else
 

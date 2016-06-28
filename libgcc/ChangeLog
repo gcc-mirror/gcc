@@ -1,3 +1,12 @@
+2016-06-28  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.h: Do not include arch/spr_def.h and
+	asm/unistd.h.
+	(SPR_CMPEXCH_VALUE): Define for tilegx.
+	(__NR_FAST_cmpxchg): Define for tilepro.
+	(__NR_FAST_atomic_update): Define for tilepro.
+	(__NR_FAST_cmpxchg64): Define for tilepro.
+
 2016-06-23  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
    * config.host: Add suport for arm*-*-phoenix* targets.

@@ -1,3 +1,10 @@
+2016-06-28  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/linux.h: Do not include arch/icache.h
+	(CLEAR_INSN_CACHE): Provide inlined definition directly.
+	* config/tilepro/linux.h: Do not include arch/icache.h
+	(CLEAR_INSN_CACHE): Provide inlined definition directly.
+
 2016-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Adjust bitnumbering
