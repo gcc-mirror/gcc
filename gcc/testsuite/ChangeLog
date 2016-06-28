@@ -1,3 +1,8 @@
+2016-06-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71656
+	* gcc.target/powerpc/pr71656-2.c: Fix syntax errors.
+
 2016-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/71670
