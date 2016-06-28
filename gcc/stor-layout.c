@@ -1808,6 +1808,11 @@ start_bitfield_representative (tree field)
   DECL_SIZE_UNIT (repr) = DECL_SIZE_UNIT (field);
   DECL_PACKED (repr) = DECL_PACKED (field);
   DECL_CONTEXT (repr) = DECL_CONTEXT (field);
+  /* There are no indirect accesses to this field.  If we introduce
+     some then they have to use the record alias set.  This makes
+     sure to properly conflict with [indirect] accesses to addressable
+     fields of the bitfield group.  */
+  DECL_NONADDRESSABLE_P (repr) = 1;
   return repr;
 }
 

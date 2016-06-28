@@ -929,13 +929,20 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
 	 goto may_overlap;
 
-      /* Different fields of the same record type cannot overlap.
-	 ??? Bitfields can overlap at RTL level so punt on them.  */
       if (field1 != field2)
 	{
 	  component_refs1.release ();
 	  component_refs2.release ();
-	  return !(DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2));
+	  /* A field and its representative need to be considered the
+	     same.  */
+	  if (DECL_BIT_FIELD_REPRESENTATIVE (field1) == field2
+	      || DECL_BIT_FIELD_REPRESENTATIVE (field2) == field1)
+	    return false;
+	  /* Different fields of the same record type cannot overlap.
+	     ??? Bitfields can overlap at RTL level so punt on them.  */
+	  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
+	    return false;
+	  return true;
 	}
     }
 
@@ -1031,9 +1038,20 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
       if (typex == typey)
 	{
 	  /* We're left with accessing different fields of a structure,
-	     no possible overlap, unless they are both bitfields.  */
+	     no possible overlap.  */
 	  if (fieldx != fieldy)
-	    return !(DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy));
+	    {
+	      /* A field and its representative need to be considered the
+		 same.  */
+	      if (DECL_BIT_FIELD_REPRESENTATIVE (fieldx) == fieldy
+		  || DECL_BIT_FIELD_REPRESENTATIVE (fieldy) == fieldx)
+		return false;
+	      /* Different fields of the same record type cannot overlap.
+		 ??? Bitfields can overlap at RTL level so punt on them.  */
+	      if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
+		return false;
+	      return true;
+	    }
 	}
       if (TYPE_UID (typex) < TYPE_UID (typey))
 	{
