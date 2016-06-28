@@ -1569,7 +1569,8 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
 
 # for anything that is shared use the cc1plus profile data, as that
 # is likely the most exercised during the build
-ifeq ($(shell cat ../stage_current),stageautofeedback)
+ifeq ($(if $(wildcard ../stage_current),$(shell cat \
+  ../stage_current)),stageautofeedback)
 $(ALL_HOST_BACKEND_OBJS): ALL_COMPILERFLAGS += -fauto-profile=cc1plus.fda
 $(ALL_HOST_BACKEND_OBJS): cc1plus.fda
 endif

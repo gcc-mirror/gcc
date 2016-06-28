@@ -1,5 +1,7 @@
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in: Don't cat ../stage_current if it does not exist.
+
 	* doc/extend.texi (__builtin_add_overflow_p): Clarify behavior when
 	last argument is a bit-field.
 

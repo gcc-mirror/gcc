@@ -60,7 +60,8 @@ c_OBJS = $(C_OBJS) cc1-checksum.o c/gccspec.o
 # Use strict warnings for this front end.
 c-warn = $(STRICT_WARN)
 
-ifeq ($(shell cat ../stage_current),stageautofeedback)
+ifeq ($(if $(wildcard ../stage_current),$(shell cat \
+  ../stage_current)),stageautofeedback)
 $(C_OBJS): ALL_COMPILERFLAGS += -fauto-profile=cc1.fda
 $(C_OBJS): cc1.fda
 endif

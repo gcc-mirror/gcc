@@ -29,7 +29,8 @@ lto_OBJS = $(LTO_OBJS)
 # now. Should reenable after this is fixed, but only when LTO bootstrap
 # is enabled.
 
-#ifeq ($(shell cat ../stage_current),stageautofeedback)
+#ifeq ($(if $(wildcard ../stage_current),$(shell cat \
+#  ../stage_current)),stageautofeedback)
 #$(LTO_OBJS): CFLAGS += -fauto-profile=lto1.fda
 #$(LTO_OBJS): lto1.fda
 #endif
