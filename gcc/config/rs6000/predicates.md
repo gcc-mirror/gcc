@@ -740,7 +740,7 @@
   if (GET_MODE_SIZE (mode) != 16 || !MEM_P (op) || MEM_ALIGN (op) < 128)
     return false;
 
-  return quad_address_p (XEXP (op, 0), mode, true);
+  return quad_address_p (XEXP (op, 0), mode, false);
 })
 
 ;; Return 1 if the operand is suitable for load/store to vector registers with

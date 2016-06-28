@@ -61,14 +61,14 @@
 				 | OPTION_MASK_UPPER_REGS_SF)
 
 /* Add ISEL back into ISA 3.0, since it is supposed to be a win.  Do not add
-   P9_MINMAX until the hardware that supports it is available. Do not add
-   P9_DFORM_VECTOR until LRA is the default register allocator.  */
+   P9_MINMAX until the hardware that supports it is available.  */
 #define ISA_3_0_MASKS_SERVER	(ISA_2_7_MASKS_SERVER			\
 				 | OPTION_MASK_FLOAT128_HW		\
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_P9_FUSION		\
 				 | OPTION_MASK_P9_DFORM_SCALAR		\
+				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_VECTOR)
 
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)

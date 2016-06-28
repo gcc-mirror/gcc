@@ -1,3 +1,9 @@
+2016-06-27  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71656
+	* gcc.target/powerpc/pr71656-1.c: New test.
+	* gcc.target/powerpc/pr71656-2.c: New test.
+
 2016-06-27  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vget_lane.c: Add ifdef
