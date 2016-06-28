@@ -1,3 +1,10 @@
+2016-06-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/abs128-1.c: Require VSX.
+	* gcc.target/powerpc/copysign128-1.c: Likewise.
+	* gcc.target/powerpc/inf128-1.c: Likewise.
+	* gcc.target/powerpc/nan128-1.c: Likewise.
+
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71626
