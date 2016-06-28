@@ -9888,6 +9888,9 @@ cast to the type of the third argument.  If the cast result is equal to the infi
 precision result, the built-in functions return false, otherwise they return true.
 The value of the third argument is ignored, just the side-effects in the third argument
 are evaluated, and no integral argument promotions are performed on the last argument.
+If the third argument is a bit-field, the type used for the result cast has the
+precision and signedness of the given bit-field, rather than precision and signedness
+of the underlying type.
 
 For example, the following macro can be used to portably check, at
 compile-time, whether or not adding two constant integers will overflow,

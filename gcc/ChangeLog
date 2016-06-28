@@ -1,5 +1,8 @@
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/extend.texi (__builtin_add_overflow_p): Clarify behavior when
+	last argument is a bit-field.
+
 	PR rtl-optimization/71673
 	* internal-fn.c (expand_arith_overflow_result_store): Use
 	OPTAB_LIB_WIDEN instead of OPTAB_DIRECT as last argument to
