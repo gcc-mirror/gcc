@@ -8754,6 +8754,22 @@ output_init_element (location_t loc, tree value, tree origtype,
   if (!maybe_const)
     constructor_nonconst = 1;
 
+  /* Digest the initializer and issue any errors about incompatible
+     types before issuing errors about non-constant initializers.  */
+  tree new_value = value;
+  if (semantic_type)
+    new_value = build1 (EXCESS_PRECISION_EXPR, semantic_type, value);
+  new_value = digest_init (loc, type, new_value, origtype, npc, strict_string,
+			   require_constant_value);
+  if (new_value == error_mark_node)
+    {
+      constructor_erroneous = 1;
+      return;
+    }
+  if (require_constant_value || require_constant_elements)
+    constant_expression_warning (new_value);
+
+  /* Proceed to check the constness of the original initializer.  */
   if (!initializer_constant_valid_p (value, TREE_TYPE (value)))
     {
       if (require_constant_value)
@@ -8798,17 +8814,8 @@ output_init_element (location_t loc, tree value, tree origtype,
 		  || DECL_CHAIN (field)))))
     return;
 
-  if (semantic_type)
-    value = build1 (EXCESS_PRECISION_EXPR, semantic_type, value);
-  value = digest_init (loc, type, value, origtype, npc, strict_string,
-		       require_constant_value);
-  if (value == error_mark_node)
-    {
-      constructor_erroneous = 1;
-      return;
-    }
-  if (require_constant_value || require_constant_elements)
-    constant_expression_warning (value);
+  /* Finally, set VALUE to the initializer value digested above.  */
+  value = new_value;
 
   /* If this element doesn't come next in sequence,
      put it on constructor_pending_elts.  */

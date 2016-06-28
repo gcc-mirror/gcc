@@ -1,3 +1,8 @@
+2016-06-28 Martin Sebor  <msebor@redhat.com>
+
+	PR c/71552
+	* gcc.dg/init-bad-9.c: New test.
+
 2016-06-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/abs128-1.c: Require VSX.
