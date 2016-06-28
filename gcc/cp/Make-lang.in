@@ -81,7 +81,8 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/vtable-class-hierarchy.o cp/constexpr.o cp/cp-ubsan.o \
  cp/constraint.o cp/logic.o $(CXX_C_OBJS)
 
-ifeq ($(shell cat ../stage_current),stageautofeedback)
+ifeq ($(if $(wildcard ../stage_current),$(shell cat \
+  ../stage_current)),stageautofeedback)
 $(CXX_AND_OBJCXX_OBJS): CFLAGS += -fauto-profile=cc1plus.fda
 $(CXX_AND_OBJCXX_OBJS): cc1plus.fda
 endif
