@@ -1,3 +1,10 @@
+2016-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71626
+	* config/i386/i386.c (ix86_expand_vector_move): For SUBREG of
+	a constant, force its SUBREG_REG into memory or register instead
+	of whole op1.
+
 2016-06-28  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	PR target/58655
