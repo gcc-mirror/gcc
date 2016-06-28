@@ -293,6 +293,7 @@
    UNSPEC_VSX_XVCVDPSXDS
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
+   UNSPEC_P9_MEMORY
   ])
 
 ;; VSX moves
@@ -2705,7 +2706,7 @@
   "vextsb2<wd> %0,%1"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "*vsx_sign_extend_hi_<mode>"
+(define_insn "vsx_sign_extend_hi_<mode>"
   [(set (match_operand:VSINT_84 0 "vsx_register_operand" "=v")
 	(unspec:VSINT_84
 	 [(match_operand:V8HI 1 "vsx_register_operand" "v")]
@@ -2721,3 +2722,24 @@
   "TARGET_P9_VECTOR"
   "vextsw2d %0,%1"
   [(set_attr "type" "vecsimple")])
+
+
+;; ISA 3.0 memory operations
+(define_insn "p9_lxsi<wd>zx"
+  [(set (match_operand:DI 0 "vsx_register_operand" "=wi")
+	(unspec:DI [(zero_extend:DI
+		     (match_operand:QHI 1 "indexed_or_indirect_operand" "Z"))]
+		   UNSPEC_P9_MEMORY))]
+  "TARGET_P9_VECTOR"
+  "lxsi<wd>zx %x0,%y1"
+  [(set_attr "type" "fpload")])
+
+(define_insn "p9_stxsi<wd>x"
+  [(set (match_operand:QHI 0 "reg_or_indexed_operand" "=r,Z")
+	(unspec:QHI [(match_operand:DI 1 "vsx_register_operand" "wi,wi")]
+		    UNSPEC_P9_MEMORY))]
+  "TARGET_P9_VECTOR"
+  "@
+   mfvsrd %0,%x1
+   stxsi<wd>x %x1,%y0"
+  [(set_attr "type" "mffgpr,fpstore")])
