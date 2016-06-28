@@ -1,3 +1,12 @@
+2016-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p):
+	Properly handle DECL_BIT_FIELD_REPRESENTATIVE occuring as
+	COMPONENT_REF operand.
+	(nonoverlapping_component_refs_p): Likewise.
+	* stor-layout.c (start_bitfield_representative): Mark
+	DECL_BIT_FIELD_REPRESENTATIVE as DECL_NONADDRESSABLE_P.
+
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in: Don't cat ../stage_current if it does not exist.
