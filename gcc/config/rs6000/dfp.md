@@ -89,7 +89,7 @@
 	(neg:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fneg %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpsimple")])
 
 (define_expand "absdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "")
@@ -102,14 +102,14 @@
 	(abs:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fabs %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpsimple")])
 
 (define_insn "*nabsdd2_fpr"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
 	(neg:DD (abs:DD (match_operand:DD 1 "gpc_reg_operand" "d"))))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fnabs %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpsimple")])
 
 (define_expand "negtd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "")
@@ -124,7 +124,7 @@
   "@
    fneg %0,%1
    fneg %0,%1\;fmr %L0,%L1"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
 (define_expand "abstd2"
@@ -140,7 +140,7 @@
   "@
    fabs %0,%1
    fabs %0,%1\;fmr %L0,%L1"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
 (define_insn "*nabstd2_fpr"
@@ -150,7 +150,7 @@
   "@
    fnabs %0,%1
    fnabs %0,%1\;fmr %L0,%L1"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
 ;; Hardware support for decimal floating point operations.

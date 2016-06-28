@@ -30171,7 +30171,9 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
           switch (attr_type)
             {
             case TYPE_FP:
-              if (get_attr_type (dep_insn) == TYPE_FP)
+            case TYPE_FPSIMPLE:
+              if (get_attr_type (dep_insn) == TYPE_FP
+		  || get_attr_type (dep_insn) == TYPE_FPSIMPLE)
                 return 1;
               break;
             case TYPE_FPLOAD:

@@ -1,3 +1,73 @@
+2016-06-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.md ('type' attribute): Add
+	veclogical,veccmpfx,vecexts,vecmove insn types.
+	(*abs<mode>2_fpr, *nabs<mode>2_fpr, *neg<mode>2_fpr, *extendsfdf2_fpr,
+	copysign<mode>3_fcpsgn, trunc<mode>df2_internal1, neg<mode>2_internal,
+	p8_fmrgow_<mode>, pack<mode>): Change type to fpsimple.
+	(*xxsel<mode>, copysign<mode>3_hard, neg<mode>2_hw, abs<mode>2_hw,
+	*nabs<mode>2_hw): Change type to vecmove.
+	(*and<mode>3_internal, *bool<mode>3_internal, *boolc<mode>3_internal,
+	*boolcc<mode>3_internal, *eqv<mode>3_internal,
+	*one_cmpl<mode>3_internal, *ieee_128bit_vsx_neg<mode>2_internal,
+	*ieee_128bit_vsx_abs<mode>2_internal,
+	*ieee_128bit_vsx_nabs<mode>2_internal, extendkftf2, trunctfkf2,
+	*ieee128_mfvsrd_64bit, *ieee128_mfvsrd_32bit, *ieee128_mtvsrd_64bit,
+	*ieee128_mtvsrd_32bit): Change type to veclogical.
+	(mov<mode>_hardfloat, *mov<mode>_hardfloat32, *mov<mode>_hardfloat64,
+	*movdi_internal32, *movdi_internal64): Update insn types.
+	* config/rs6000/vsx.md (*vsx_le_undo_permute_<mode>,
+	vsx_extract_<mode>): Change type to veclogical.
+	(*vsx_xxsel<mode>, *vsx_xxsel<mode>_uns): Change type to vecmove.
+	(vsx_sign_extend_qi_<mode>, *vsx_sign_extend_hi_<mode>,
+	*vsx_sign_extend_si_v2di): Change type to vecexts.
+	* config/rs6000/altivec.md (*altivec_mov<mode>, *altivec_movti): Change
+	type to veclogical.
+	(*altivec_eq<mode>, *altivec_gt<mode>, *altivec_gtu<mode>,
+	*altivec_vcmpequ<VI_char>_p, *altivec_vcmpgts<VI_char>_p,
+	*altivec_vcmpgtu<VI_char>_p): Change type to veccmpfx.
+	(*altivec_vsel<mode>, *altivec_vsel<mode>_uns): Change type to vecmove.
+	* config/rs6000/dfp.md (*negdd2_fpr, *absdd2_fpr, *nabsdd2_fpr,
+	negtd2, *abstd2_fpr, *nabstd2_fpr): Change type to fpsimple.
+	* config/rs6000/40x.md (ppc405-float): Add fpsimple.
+	* config/rs6000/440.md (ppc440-fp): Add fpsimple.
+	* config/rs6000/476.md (ppc476-fp): Add fpsimple.
+	* config/rs6000/601.md (ppc601-fp): Add fpsimple.
+	* config/rs6000/603.md (ppc603-fp): Add fpsimple.
+	* config/rs6000/6xx.md (ppc604-fp): Add fpsimple.
+	* config/rs6000/7xx.md (ppc750-fp): Add fpsimple.
+	(ppc7400-vecsimple): Add veclogical, vecmove, veccmpfx.
+	* config/rs6000/7450.md (ppc7450-fp): Add fpsimple.
+	(ppc7450-vecsimple): Add veclogical, vecmove.
+	(ppc7450-veccmp): Add veccmpfx.
+	* config/rs6000/8540.md (ppc8540_simple_vector): Add veclogical,
+	vecmove.
+	(ppc8540_vector_compare): Add veccmpfx.
+	* config/rs6000/a2.md (ppca2-fp): Add fpsimple.
+	* config/rs6000/cell.md (cell-fp): Add fpsimple.
+	(cell-vecsimple): Add veclogical, vecmove.
+	(cell-veccmp): Add veccmpfx.
+	* config/rs6000/e300c2c3.md (ppce300c3_fp): Add fpsimple.
+	* config/rs6000/e6500.md (e6500_vecsimple): Add veclogical, vecmove,
+	veccmpfx.
+	* config/rs6000/mpc.md (mpccore-fp): Add fpsimple.
+	* config/rs6000/power4.md (power4-fp): Add fpsimple.
+	(power4-vecsimple): Add veclogical, vecmove.
+	(power4-veccmp): Add veccmpfx.
+	* config/rs6000/power5.md (power5-fp): Add fpsimple.
+	* config/rs6000/power6.md (power6-fp): Add fpsimple.
+	(power6-vecsimple): Add veclogical, vecmove.
+	(power6-veccmp): Add veccmpfx.
+	* config/rs6000/power7.md (power7-fp): Add fpsimple.
+	(power7-vecsimple): Add veclogical, vecmove, veccmpfx.
+	* config/rs6000/power8.md (power8-fp): Add fpsimple.
+	(power8-vecsimple): Add veclogical, vecmove, veccmpfx.
+	* config/rs6000/rs64.md (rs64a-fp): Add fpsimple.
+	* config/rs6000/titan.md (titan_fp): Add fpsimple.
+	* config/rs6000/xfpu.md (fp-default, fp-addsub-s, fp-addsub-d): Add
+	fpsimple.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Add TYPE_FPSIMPLE.
+
 2016-06-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/71656

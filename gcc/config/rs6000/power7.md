@@ -292,7 +292,7 @@
 
 ; VS Unit (includes FP/VSX/VMX/DFP)
 (define_insn_reservation "power7-fp" 6
-  (and (eq_attr "type" "fp,dmul")
+  (and (eq_attr "type" "fp,fpsimple,dmul")
        (eq_attr "cpu" "power7"))
   "DU_power7,VSU_power7")
 
@@ -324,7 +324,7 @@
   "DU_power7,VSU_power7")
 
 (define_insn_reservation "power7-vecsimple" 2
-  (and (eq_attr "type" "vecsimple,veccmp")
+  (and (eq_attr "type" "vecsimple,veclogical,vecmove,veccmp,veccmpfx")
        (eq_attr "cpu" "power7"))
   "DU_power7,vsu1_power7")
 

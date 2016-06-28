@@ -306,7 +306,7 @@
 
 ; Basic FP latency is 10 cycles, thoughput is 1/cycle
 (define_insn_reservation "cell-fp" 10
-  (and (eq_attr "type" "fp,dmul")
+  (and (eq_attr "type" "fp,fpsimple,dmul")
        (eq_attr "cpu" "cell"))
   "slot01,vsu1_cell,vsu1_cell*8")
 
@@ -329,7 +329,7 @@
 
 ; VMX
 (define_insn_reservation "cell-vecsimple" 4
-  (and (eq_attr "type" "vecsimple")
+  (and (eq_attr "type" "vecsimple,veclogical,vecmove")
        (eq_attr "cpu" "cell"))
   "slot01,vsu1_cell,vsu1_cell*2")
 
@@ -341,7 +341,7 @@
 
 ;; TODO: add support for recording instructions
 (define_insn_reservation "cell-veccmp" 4
-  (and (eq_attr "type" "veccmp")
+  (and (eq_attr "type" "veccmp,veccmpfx")
        (eq_attr "cpu" "cell"))
   "slot01,vsu1_cell,vsu1_cell*2")
 

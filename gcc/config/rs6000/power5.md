@@ -322,7 +322,7 @@
 
 ; Basic FP latency is 6 cycles
 (define_insn_reservation "power5-fp" 6
-  (and (eq_attr "type" "fp,dmul")
+  (and (eq_attr "type" "fp,fpsimple,dmul")
        (eq_attr "cpu" "power5"))
   "fpq_power5")
 
