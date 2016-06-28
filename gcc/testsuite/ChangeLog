@@ -1,4 +1,9 @@
-2016-06-28 Martin Sebor  <msebor@redhat.com>
+2016-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71685
+	* gcc.dg/pr71685.c: New test.
+
+2016-06-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71552
 	* gcc.dg/init-bad-9.c: New test.

@@ -13676,7 +13676,8 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
 		   : build_qualified_type (type, type_quals));
   /* A variant type does not inherit the list of incomplete vars from the
      type main variant.  */
-  if (RECORD_OR_UNION_TYPE_P (var_type))
+  if (RECORD_OR_UNION_TYPE_P (var_type)
+      && TYPE_MAIN_VARIANT (var_type) != var_type)
     C_TYPE_INCOMPLETE_VARS (var_type) = 0;
   return var_type;
 }
