@@ -2185,6 +2185,14 @@ expand_ATOMIC_BIT_TEST_AND_RESET (internal_fn, gcall *call)
   expand_ifn_atomic_bit_test_and (call);
 }
 
+/* Expand atomic bit test and set.  */
+
+static void
+expand_ATOMIC_COMPARE_EXCHANGE (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_compare_exchange (call);
+}
+
 /* Expand a call to FN using the operands in STMT.  FN has a single
    output operand and NARGS input operands.  */
 

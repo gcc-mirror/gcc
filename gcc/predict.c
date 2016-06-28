@@ -2134,6 +2134,25 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
       if (TREE_CONSTANT (op0))
 	return op0;
 
+      if (code == IMAGPART_EXPR)
+	{
+	  if (TREE_CODE (TREE_OPERAND (op0, 0)) == SSA_NAME)
+	    {
+	      def = SSA_NAME_DEF_STMT (TREE_OPERAND (op0, 0));
+	      if (is_gimple_call (def)
+		  && gimple_call_internal_p (def)
+		  && (gimple_call_internal_fn (def)
+		      == IFN_ATOMIC_COMPARE_EXCHANGE))
+		{
+		  /* Assume that any given atomic operation has low contention,
+		     and thus the compare-and-swap operation succeeds.  */
+		  if (predictor)
+		    *predictor = PRED_COMPARE_AND_SWAP;
+		  return build_one_cst (TREE_TYPE (op0));
+		}
+	    }
+	}
+
       if (code != SSA_NAME)
 	return NULL_TREE;
 

@@ -1414,8 +1414,21 @@ execute_update_addresses_taken (void)
 	  enum gimple_code code = gimple_code (stmt);
 	  tree decl;
 
-	  /* Note all addresses taken by the stmt.  */
-	  gimple_ior_addresses_taken (addresses_taken, stmt);
+	  if (code == GIMPLE_CALL
+	      && optimize_atomic_compare_exchange_p (stmt))
+	    {
+	      /* For __atomic_compare_exchange_N if the second argument
+		 is &var, don't mark var addressable;
+		 if it becomes non-addressable, we'll rewrite it into
+		 ATOMIC_COMPARE_EXCHANGE call.  */
+	      tree arg = gimple_call_arg (stmt, 1);
+	      gimple_call_set_arg (stmt, 1, null_pointer_node);
+	      gimple_ior_addresses_taken (addresses_taken, stmt);
+	      gimple_call_set_arg (stmt, 1, arg);
+	    }
+	  else
+	    /* Note all addresses taken by the stmt.  */
+	    gimple_ior_addresses_taken (addresses_taken, stmt);
 
 	  /* If we have a call or an assignment, see if the lhs contains
 	     a local decl that requires not to be a gimple register.  */
@@ -1657,6 +1670,16 @@ execute_update_addresses_taken (void)
 	    else if (gimple_code (stmt) == GIMPLE_CALL)
 	      {
 		unsigned i;
+		if (optimize_atomic_compare_exchange_p (stmt))
+		  {
+		    tree expected = gimple_call_arg (stmt, 1);
+		    if (bitmap_bit_p (suitable_for_renaming,
+				      DECL_UID (TREE_OPERAND (expected, 0))))
+		      {
+			fold_builtin_atomic_compare_exchange (&gsi);
+			continue;
+		      }
+		  }
 		for (i = 0; i < gimple_call_num_args (stmt); ++i)
 		  {
 		    tree *argp = gimple_call_arg_ptr (stmt, i);

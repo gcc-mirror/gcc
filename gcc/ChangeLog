@@ -1,3 +1,25 @@
+2016-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66867
+	* builtins.c (expand_ifn_atomic_compare_exchange_into_call,
+	expand_ifn_atomic_compare_exchange): New functions.
+	* internal-fn.c (expand_ATOMIC_COMPARE_EXCHANGE): New function.
+	* tree.h (build_call_expr_internal_loc): Rename to ...
+	(build_call_expr_internal_loc_array): ... this.  Fix up type of
+	last argument.
+	* internal-fn.def (ATOMIC_COMPARE_EXCHANGE): New internal fn.
+	* predict.c (expr_expected_value_1): Handle IMAGPART_EXPR of
+	ATOMIC_COMPARE_EXCHANGE result.
+	* builtins.h (expand_ifn_atomic_compare_exchange): New prototype.
+	* gimple-fold.h (optimize_atomic_compare_exchange_p,
+	fold_builtin_atomic_compare_exchange): New prototypes.
+	* gimple-fold.c (optimize_atomic_compare_exchange_p,
+	fold_builtin_atomic_compare_exchange): New functions..
+	* tree-ssa.c (execute_update_addresses_taken): If
+	optimize_atomic_compare_exchange_p, ignore &var in 2nd argument
+	of call when finding addressable vars, and if such var becomes
+	non-addressable, call fold_builtin_atomic_compare_exchange.
+
 2016-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/71670

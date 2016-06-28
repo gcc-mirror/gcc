@@ -2953,6 +2953,133 @@ fold_internal_goacc_dim (const gimple *call)
   return result;
 }
 
+/* Return true if stmt is __atomic_compare_exchange_N call which is suitable
+   for conversion into ATOMIC_COMPARE_EXCHANGE if the second argument is
+   &var where var is only addressable because of such calls.  */
+
+bool
+optimize_atomic_compare_exchange_p (gimple *stmt)
+{
+  if (gimple_call_num_args (stmt) != 6
+      || !flag_inline_atomics
+      || !optimize
+      || (flag_sanitize & (SANITIZE_THREAD | SANITIZE_ADDRESS)) != 0
+      || !gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
+      || !gimple_vdef (stmt)
+      || !gimple_vuse (stmt))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
+      break;
+    default:
+      return false;
+    }
+
+  tree expected = gimple_call_arg (stmt, 1);
+  if (TREE_CODE (expected) != ADDR_EXPR
+      || !SSA_VAR_P (TREE_OPERAND (expected, 0))
+      || !is_gimple_reg_type (TREE_TYPE (TREE_OPERAND (expected, 0)))
+      || !auto_var_in_fn_p (TREE_OPERAND (expected, 0), current_function_decl)
+      || TREE_THIS_VOLATILE (TREE_TYPE (TREE_OPERAND (expected, 0)))
+      || TREE_CODE (TREE_TYPE (TREE_OPERAND (expected, 0))) == VECTOR_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_OPERAND (expected, 0))) == COMPLEX_TYPE)
+    return false;
+
+  tree weak = gimple_call_arg (stmt, 3);
+  if (!integer_zerop (weak) && !integer_onep (weak))
+    return false;
+
+  tree parmt = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  tree itype = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (parmt)));
+  machine_mode mode = TYPE_MODE (itype);
+
+  if (direct_optab_handler (atomic_compare_and_swap_optab, mode)
+      == CODE_FOR_nothing
+      && optab_handler (sync_compare_and_swap_optab, mode) == CODE_FOR_nothing)
+    return false;
+
+  if (int_size_in_bytes (TREE_TYPE (TREE_OPERAND (expected, 0)))
+      != GET_MODE_SIZE (mode))
+    return false;
+
+  return true;
+}
+
+/* Fold
+     r = __atomic_compare_exchange_N (p, &e, d, w, s, f);
+   into
+     _Complex uintN_t t = ATOMIC_COMPARE_EXCHANGE (p, e, d, w * 256 + N, s, f);
+     i = IMAGPART_EXPR <t>;
+     r = (_Bool) i;
+     e = REALPART_EXPR <t>;  */
+
+void
+fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree fndecl = gimple_call_fndecl (stmt);
+  tree parmt = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  tree itype = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (parmt)));
+  tree ctype = build_complex_type (itype);
+  tree expected = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
+  gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (expected)),
+				   expected);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  gimple_stmt_iterator gsiret = gsi_for_stmt (g);
+  if (!useless_type_conversion_p (itype, TREE_TYPE (expected)))
+    {
+      g = gimple_build_assign (make_ssa_name (itype), VIEW_CONVERT_EXPR,
+			       build1 (VIEW_CONVERT_EXPR, itype,
+				       gimple_assign_lhs (g)));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+    }
+  int flag = (integer_onep (gimple_call_arg (stmt, 3)) ? 256 : 0)
+	     + int_size_in_bytes (itype);
+  g = gimple_build_call_internal (IFN_ATOMIC_COMPARE_EXCHANGE, 6,
+				  gimple_call_arg (stmt, 0),
+				  gimple_assign_lhs (g),
+				  gimple_call_arg (stmt, 2),
+				  build_int_cst (integer_type_node, flag),
+				  gimple_call_arg (stmt, 4),
+				  gimple_call_arg (stmt, 5));
+  tree lhs = make_ssa_name (ctype);
+  gimple_call_set_lhs (g, lhs);
+  gimple_set_vdef (g, gimple_vdef (stmt));
+  gimple_set_vuse (g, gimple_vuse (stmt));
+  SSA_NAME_DEF_STMT (gimple_vdef (g)) = g;
+  if (gimple_call_lhs (stmt))
+    {
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (make_ssa_name (itype), IMAGPART_EXPR,
+			       build1 (IMAGPART_EXPR, itype, lhs));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (gimple_call_lhs (stmt), NOP_EXPR,
+			       gimple_assign_lhs (g));
+    }
+  gsi_replace (gsi, g, true);
+  g = gimple_build_assign (make_ssa_name (itype), REALPART_EXPR,
+			   build1 (REALPART_EXPR, itype, lhs));
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+  if (!useless_type_conversion_p (TREE_TYPE (expected), itype))
+    {
+      g = gimple_build_assign (make_ssa_name (TREE_TYPE (expected)),
+			       VIEW_CONVERT_EXPR,
+			       build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expected),
+				       gimple_assign_lhs (g)));
+      gsi_insert_after (gsi, g, GSI_NEW_STMT);
+    }
+  g = gimple_build_assign (expected, SSA_NAME, gimple_assign_lhs (g));
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+  *gsi = gsiret;
+}
+
 /* Return true if ARG0 CODE ARG1 in infinite signed precision operation
    doesn't fit into TYPE.  The test for overflow should be regardless of
    -fwrapv, and even for unsigned types.  */
