@@ -17,7 +17,7 @@ double h[6];
 void func1 (vec);
 
 void
-func2 (double *)
+func2 (double *b)
 {
   for (; k; k--)
     for (; j <= k;)
@@ -33,7 +33,7 @@ func2 (double *)
 void
 func3 (void)
 {
-  vec_t d;
+  struct vec_t d;
   func1 (d.y);
   func2 (&b);
   for (; a;)
