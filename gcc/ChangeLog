@@ -1,3 +1,9 @@
+2016-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/71670
+	* config/rs6000/rs6000.md (ashdi3_extswsli_dot): Use
+	gen_ashdi3_extswsli_dot2 instead of gen_ashdi3_extswsli_dot.
+
 2016-06-27  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.md ('type' attribute): Add
