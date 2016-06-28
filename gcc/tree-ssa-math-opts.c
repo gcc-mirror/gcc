@@ -2307,6 +2307,10 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 	  && bitsize % BITS_PER_UNIT == 0
 	  && init_symbolic_number (n, TREE_OPERAND (rhs1, 0)))
 	{
+	  /* Handle big-endian bit numbering in BIT_FIELD_REF.  */
+	  if (BYTES_BIG_ENDIAN)
+	    bitpos = TYPE_PRECISION (n->type) - bitpos - bitsize;
+
 	  /* Shift.  */
 	  if (!do_shift_rotate (RSHIFT_EXPR, n, bitpos))
 	    return NULL;
