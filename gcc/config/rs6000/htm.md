@@ -72,7 +72,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort. %0"
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_expand "tabort<wd>c"
@@ -98,7 +98,7 @@
    (set (match_operand:BLK 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort<wd>c. %0,%1,%2"
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_expand "tabort<wd>ci"
@@ -124,7 +124,7 @@
    (set (match_operand:BLK 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort<wd>ci. %0,%1,%2"
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_expand "tbegin"
@@ -208,7 +208,7 @@
    (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "trechkpt."
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_expand "treclaim"
@@ -230,7 +230,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "treclaim. %0"
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_expand "tsr"
@@ -252,7 +252,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tsr. %0"
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_expand "ttest"
@@ -272,7 +272,7 @@
    (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabortwci. 0,1,0"
-  [(set_attr "type" "htm")
+  [(set_attr "type" "htmsimple")
    (set_attr "length" "4")])
 
 (define_insn "htm_mfspr_<mode>"

@@ -107,4 +107,4 @@
 			UNSPEC_VSHASIGMA))]
   "TARGET_CRYPTO"
   "vshasigma<CR_char> %0,%1,%2,%3"
-  [(set_attr "type" "crypto")])
+  [(set_attr "type" "vecsimple")])
