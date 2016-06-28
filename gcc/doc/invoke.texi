@@ -644,8 +644,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
 -mcall-prologues -mint8 -mn_flash=@var{size} -mno-interrupts @gol
--mrelax -mrmw -mstrict-X -mtiny-stack -nodevicelib -Waddr-space-convert @gol
--Wmisspelled-isr}
+-mrelax -mrmw -mstrict-X -mtiny-stack -mfract-convert-truncate -nodevicelib @gol
+-Waddr-space-convert -Wmisspelled-isr}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -14620,6 +14620,10 @@ sbiw r26, const   ; X -= const
 @item -mtiny-stack
 @opindex mtiny-stack
 Only change the lower 8@tie{}bits of the stack pointer.
+
+@item -mfract-convert-truncate
+@opindex mfract-convert-truncate
+Allow to use truncation instead of rounding towards zero for fractional fixed-point types.
 
 @item -nodevicelib
 @opindex nodevicelib
