@@ -1,3 +1,23 @@
+2016-06-27  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71656
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Add
+	OPTION_MASK_P9_DFORM_VECTOR.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Do not
+	disable -mpower9-dform-vector when using reload.
+	(quad_address_p): Remove 'gpr_p' argument and all associated code.
+	New 'strict' argument.  Update all callers.  Add strict addressing
+	support.
+	(rs6000_legitimate_offset_address_p): Remove call to
+	virtual_stack_registers_memory_p.
+	(rs6000_legitimize_reload_address): Add quad address support.
+	(rs6000_legitimate_address_p): Move call to quad_address_p above
+	call to virtual_stack_registers_memory_p.  Adjust quad_address_p args
+	to account for new strict usage.
+	(rs6000_output_move_128bit): Adjust quad_address_p args to account
+	for new strict usage.
+	* config/rs6000/predicates.md (quad_memory_operand): Likewise.
+
 2016-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70902
