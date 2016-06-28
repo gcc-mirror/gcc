@@ -454,7 +454,7 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
 	    = immed_wide_int_const (wi::shifted_mask (0, prec, false, tgtprec),
 				    tgtmode);
 	  lres = expand_simple_binop (tgtmode, AND, res, mask, NULL_RTX,
-				      true, OPTAB_DIRECT);
+				      true, OPTAB_LIB_WIDEN);
 	}
       else
 	{
