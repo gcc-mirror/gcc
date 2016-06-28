@@ -1,3 +1,8 @@
+2016-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/71670
+	* gcc.target/powerpc/pr71670.c: New testcase.
+
 2016-06-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/71656
