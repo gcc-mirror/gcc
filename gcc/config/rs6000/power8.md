@@ -317,7 +317,7 @@
 
 ; VS Unit (includes FP/VSX/VMX/DFP/Crypto)
 (define_insn_reservation "power8-fp" 6
-  (and (eq_attr "type" "fp,fpsimple,dmul")
+  (and (eq_attr "type" "fp,fpsimple,dmul,dfp")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,VSU_power8")
 

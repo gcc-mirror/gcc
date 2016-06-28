@@ -1,3 +1,54 @@
+2016-06-28  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.md ('type' attribute): Add htmsimple/dfp types.
+	('size' attribute): Add '128'.
+	Include power9.md.
+	(*mov<mode>_hardfloat32, *mov<mode>_hardfloat64, *movdi_internal32,
+	*movdi_internal64, *movdf_update1): Set size attribute to '64'.
+	(add<mode>3, sub<mode>3, mul<mode>3, div<mode>3, sqrt<mode>2,
+	copysign<mode>3, neg<mode>2_hw, abs<mode>2_hw, *nabs<mode>2_hw,
+	*fma<mode>4_hw, *fms<mode>4_hw, *nfma<mode>4_hw, *nfms<mode>4_hw,
+	extend<SFDF:mode><IEEE128:mode>2_hw, trunc<mode>df2_hw,
+	*xscvqp<su>wz_<mode>, *xscvqp<su>dz_<mode>, *xscv<su>dqp_<mode>,
+	*trunc<mode>df2_odd): Set size attribute to '128'.
+	(*cmp<mode>_hw): Change type to veccmp and set size attribute to '128'.
+	* config/rs6000/power6.md (power6-fp): Include dfp type.
+	* config/rs6000/power7.md (power7-fp): Likewise.
+	* config/rs6000/power8.md (power8-fp): Likewise.
+	* config/rs6000/power9.md: New file.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add power9.md.
+	* config/rs6000/htm.md (*tabort, *tabort<wd>c, *tabort<wd>ci,
+	*trechkpt, *treclaim, *tsr, *ttest): Change type attribute to
+	htmsimple.
+	* config/rs6000/dfp.md (extendsddd2, truncddsd2, extendddtd2,
+	trunctddd2, adddd3, addtd3, subdd3, subtd3, muldd3, multd3, divdd3,
+	divtd3, *cmpdd_internal1, *cmptd_internal1, floatdidd2, floatditd2,
+	ftruncdd2, fixdddi2, ftrunctd2, fixtddi2, dfp_ddedpd_<mode>,
+	dfp_denbcd_<mode>, dfp_dxex_<mode>, dfp_diex_<mode>, dfp_dscli_<mode>,
+	dfp_dscri_<mode>): Change type attribute to dfp.
+	* config/rs6000/crypto.md (crypto_vshasigma<CR_char>): Change type
+	attribute to vecsimple.
+	* config/rs6000/rs6000.c (power9_cost): Update costs, cache size
+	and prefetch streams.
+	(rs6000_option_override_internal): Remove temporary code setting
+	tuning to power8.  Don't set rs6000_sched_groups for power9.
+	(last_scheduled_insn): Change to rtx_insn *.
+	(divide_cnt, vec_load_pendulum): New variables.
+	(rs6000_adjust_cost): Add Power9 to test for store->load separation.
+	(rs6000_issue_rate): Set issue rate for Power9.
+	(is_power9_pairable_vec_type): New.
+	(power9_sched_reorder2): New.
+	(rs6000_sched_reorder2): Call new function for Power9 specific
+	reordering.
+	(insn_must_be_first_in_group): Remove Power9.
+	(insn_must_be_last_in_group): Likewise.
+	(force_new_group): Likewise.
+	(rs6000_sched_init): Fix initialization of last_scheduled_insn.
+	Initialize divide_cnt/vec_load_pendulum.
+	(_rs6000_sched_context, rs6000_init_sched_context,
+	rs6000_set_sched_context): Handle context save/restore of new
+	variables.
+
 2016-06-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p):

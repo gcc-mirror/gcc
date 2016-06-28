@@ -1104,16 +1104,16 @@ struct processor_costs power9_cost = {
   COSTS_N_INSNS (3),	/* mulsi_const */
   COSTS_N_INSNS (3),	/* mulsi_const9 */
   COSTS_N_INSNS (3),	/* muldi */
-  COSTS_N_INSNS (19),	/* divsi */
-  COSTS_N_INSNS (35),	/* divdi */
+  COSTS_N_INSNS (8),	/* divsi */
+  COSTS_N_INSNS (12),	/* divdi */
   COSTS_N_INSNS (3),	/* fp */
   COSTS_N_INSNS (3),	/* dmul */
-  COSTS_N_INSNS (14),	/* sdiv */
-  COSTS_N_INSNS (17),	/* ddiv */
+  COSTS_N_INSNS (13),	/* sdiv */
+  COSTS_N_INSNS (18),	/* ddiv */
   128,			/* cache line size */
   32,			/* l1 cache */
-  256,			/* l2 cache */
-  12,			/* prefetch streams */
+  512,			/* l2 cache */
+  8,			/* prefetch streams */
   COSTS_N_INSNS (3),	/* SF->DF convert */
 };
 
@@ -3846,22 +3846,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (rs6000_tune_index >= 0)
     tune_index = rs6000_tune_index;
   else if (have_cpu)
-    {
-      /* Until power9 tuning is available, use power8 tuning if -mcpu=power9.  */
-      if (processor_target_table[cpu_index].processor != PROCESSOR_POWER9)
-	rs6000_tune_index = tune_index = cpu_index;
-      else
-	{
-	  size_t i;
-	  tune_index = -1;
-	  for (i = 0; i < ARRAY_SIZE (processor_target_table); i++)
-	    if (processor_target_table[i].processor == PROCESSOR_POWER8)
-	      {
-		rs6000_tune_index = tune_index = i;
-		break;
-	      }
-	}
-    }
+    rs6000_tune_index = tune_index = cpu_index;
   else
     {
       size_t i;
@@ -4623,8 +4608,7 @@ rs6000_option_override_internal (bool global_init_p)
   rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
 			 || rs6000_cpu == PROCESSOR_POWER5
 			 || rs6000_cpu == PROCESSOR_POWER7
-			 || rs6000_cpu == PROCESSOR_POWER8
-			 || rs6000_cpu == PROCESSOR_POWER9);
+			 || rs6000_cpu == PROCESSOR_POWER8);
   rs6000_align_branch_targets = (rs6000_cpu == PROCESSOR_POWER4
 				 || rs6000_cpu == PROCESSOR_POWER5
 				 || rs6000_cpu == PROCESSOR_POWER6
@@ -29864,12 +29848,19 @@ output_function_profiler (FILE *file, int labelno)
 
 /* The following variable value is the last issued insn.  */
 
-static rtx last_scheduled_insn;
+static rtx_insn *last_scheduled_insn;
 
 /* The following variable helps to balance issuing of load and
    store instructions */
 
 static int load_store_pendulum;
+
+/* The following variable helps pair divide insns during scheduling.  */
+static int divide_cnt;
+/* The following variable helps pair and alternate vector and vector load
+   insns during scheduling.  */
+static int vec_load_pendulum;
+
 
 /* Power4 load update and store update instructions are cracked into a
    load or store and an integer insn which are executed in the same cycle.
@@ -29945,7 +29936,7 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 	   some cycles later.  */
 
 	/* Separate a load from a narrower, dependent store.  */
-	if (rs6000_sched_groups
+	if ((rs6000_sched_groups || rs6000_cpu_attr == CPU_POWER9)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && GET_CODE (XEXP (PATTERN (insn), 1)) == MEM
@@ -30185,6 +30176,8 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
               break;
             }
         }
+      /* Fall through, no cost for output dependency.  */
+
     case REG_DEP_ANTI:
       /* Anti dependency; DEP_INSN reads a register that INSN writes some
 	 cycles later.  */
@@ -30557,8 +30550,9 @@ rs6000_issue_rate (void)
   case CPU_POWER7:
     return 5;
   case CPU_POWER8:
-  case CPU_POWER9:
     return 7;
+  case CPU_POWER9:
+    return 6;
   default:
     return 1;
   }
@@ -30716,6 +30710,28 @@ is_store_insn (rtx insn, rtx *str_mem)
   return is_store_insn1 (PATTERN (insn), str_mem);
 }
 
+/* Return whether TYPE is a Power9 pairable vector instruction type.  */
+
+static bool
+is_power9_pairable_vec_type (enum attr_type type)
+{
+  switch (type)
+    {
+      case TYPE_VECSIMPLE:
+      case TYPE_VECCOMPLEX:
+      case TYPE_VECDIV:
+      case TYPE_VECCMP:
+      case TYPE_VECPERM:
+      case TYPE_VECFLOAT:
+      case TYPE_VECFDIV:
+      case TYPE_VECDOUBLE:
+	return true;
+      default:
+	break;
+    }
+  return false;
+}
+
 /* Returns whether the dependence between INSN and NEXT is considered
    costly by the given target.  */
 
@@ -30790,6 +30806,229 @@ get_next_active_insn (rtx_insn *insn, rtx_insn *tail)
 	break;
     }
   return insn;
+}
+
+/* Do Power9 specific sched_reorder2 reordering of ready list.  */
+
+static int
+power9_sched_reorder2 (rtx_insn **ready, int lastpos)
+{
+  int pos;
+  int i;
+  rtx_insn *tmp;
+  enum attr_type type;
+
+  type = get_attr_type (last_scheduled_insn);
+
+  /* Try to issue fixed point divides back-to-back in pairs so they will be
+     routed to separate execution units and execute in parallel.  */
+  if (type == TYPE_DIV && divide_cnt == 0)
+    {
+      /* First divide has been scheduled.  */
+      divide_cnt = 1;
+
+      /* Scan the ready list looking for another divide, if found move it
+	 to the end of the list so it is chosen next.  */
+      pos = lastpos;
+      while (pos >= 0)
+	{
+	  if (recog_memoized (ready[pos]) >= 0
+	      && get_attr_type (ready[pos]) == TYPE_DIV)
+	    {
+	      tmp = ready[pos];
+	      for (i = pos; i < lastpos; i++)
+		ready[i] = ready[i + 1];
+	      ready[lastpos] = tmp;
+	      break;
+	    }
+	  pos--;
+	}
+    }
+  else
+    {
+      /* Last insn was the 2nd divide or not a divide, reset the counter.  */
+      divide_cnt = 0;
+
+      /* Power9 can execute 2 vector operations and 2 vector loads in a single
+	 cycle.  So try to pair up and alternate groups of vector and vector
+	 load instructions.
+
+	 To aid this formation, a counter is maintained to keep track of
+	 vec/vecload insns issued.  The value of vec_load_pendulum maintains
+	 the current state with the following values:
+
+	     0  : Initial state, no vec/vecload group has been started.
+
+	     -1 : 1 vector load has been issued and another has been found on
+		  the ready list and moved to the end.
+
+	     -2 : 2 vector loads have been issued and a vector operation has
+		  been found and moved to the end of the ready list.
+
+	     -3 : 2 vector loads and a vector insn have been issued and a
+		  vector operation has been found and moved to the end of the
+		  ready list.
+
+	     1  : 1 vector insn has been issued and another has been found and
+		  moved to the end of the ready list.
+
+	     2  : 2 vector insns have been issued and a vector load has been
+		  found and moved to the end of the ready list.
+
+	     3  : 2 vector insns and a vector load have been issued and another
+		  vector load has been found and moved to the end of the ready
+		  list.	 */
+      if (type == TYPE_VECLOAD)
+	{
+	  /* Issued a vecload.  */
+	  if (vec_load_pendulum == 0)
+	    {
+	      /* We issued a single vecload, look for another and move it to
+		 the end of the ready list so it will be scheduled next.
+		 Set pendulum if found.  */
+	      pos = lastpos;
+	      while (pos >= 0)
+		{
+		  if (recog_memoized (ready[pos]) >= 0
+		      && get_attr_type (ready[pos]) == TYPE_VECLOAD)
+		    {
+		      tmp = ready[pos];
+		      for (i = pos; i < lastpos; i++)
+			ready[i] = ready[i + 1];
+		      ready[lastpos] = tmp;
+		      vec_load_pendulum = -1;
+		      return cached_can_issue_more;
+		    }
+		  pos--;
+		}
+	    }
+	  else if (vec_load_pendulum == -1)
+	    {
+	      /* This is the second vecload we've issued, search the ready
+	         list for a vector operation so we can try to schedule a
+	         pair of those next.  If found move to the end of the ready
+	         list so it is scheduled next and set the pendulum.  */
+	      pos = lastpos;
+	      while (pos >= 0)
+		{
+		  if (recog_memoized (ready[pos]) >= 0
+		      && is_power9_pairable_vec_type (
+			   get_attr_type (ready[pos])))
+		    {
+		      tmp = ready[pos];
+		      for (i = pos; i < lastpos; i++)
+			ready[i] = ready[i + 1];
+		      ready[lastpos] = tmp;
+		      vec_load_pendulum = -2;
+		      return cached_can_issue_more;
+		    }
+		  pos--;
+		}
+	    }
+	  else if (vec_load_pendulum == 2)
+	    {
+	      /* Two vector ops have been issued and we've just issued a
+		 vecload, look for another vecload and move to end of ready
+		 list if found.  */
+	      pos = lastpos;
+	      while (pos >= 0)
+	        {
+		  if (recog_memoized (ready[pos]) >= 0
+		      && get_attr_type (ready[pos]) == TYPE_VECLOAD)
+		    {
+		      tmp = ready[pos];
+		      for (i = pos; i < lastpos; i++)
+			ready[i] = ready[i + 1];
+		      ready[lastpos] = tmp;
+		      /* Set pendulum so that next vecload will be seen as
+			 finishing a group, not start of one.  */
+		      vec_load_pendulum = 3;
+		      return cached_can_issue_more;
+		    }
+		  pos--;
+		}
+	    }
+	}
+      else if (is_power9_pairable_vec_type (type))
+	{
+	  /* Issued a vector operation.  */
+	  if (vec_load_pendulum == 0)
+	    /* We issued a single vec op, look for another and move it
+	       to the end of the ready list so it will be scheduled next.
+	       Set pendulum if found.  */
+	    {
+	      pos = lastpos;
+	      while (pos >= 0)
+		{
+		  if (recog_memoized (ready[pos]) >= 0
+		      && is_power9_pairable_vec_type (
+			   get_attr_type (ready[pos])))
+		    {
+		      tmp = ready[pos];
+		      for (i = pos; i < lastpos; i++)
+			ready[i] = ready[i + 1];
+		      ready[lastpos] = tmp;
+		      vec_load_pendulum = 1;
+		      return cached_can_issue_more;
+		    }
+		  pos--;
+		}
+	    }
+	  else if (vec_load_pendulum == 1)
+	    {
+	      /* This is the second vec op we've issued, search the ready
+		 list for a vecload operation so we can try to schedule a
+		 pair of those next.  If found move to the end of the ready
+		 list so it is scheduled next and set the pendulum.  */
+	      pos = lastpos;
+	      while (pos >= 0)
+		{
+		  if (recog_memoized (ready[pos]) >= 0
+		      && get_attr_type (ready[pos]) == TYPE_VECLOAD)
+		    {
+		      tmp = ready[pos];
+		      for (i = pos; i < lastpos; i++)
+			ready[i] = ready[i + 1];
+		      ready[lastpos] = tmp;
+		      vec_load_pendulum = 2;
+		      return cached_can_issue_more;
+		    }
+		  pos--;
+		}
+	    }
+	  else if (vec_load_pendulum == -2)
+	    {
+	      /* Two vecload ops have been issued and we've just issued a
+		 vec op, look for another vec op and move to end of ready
+	  	 list if found.  */
+	      pos = lastpos;
+	      while (pos >= 0)
+		{
+		  if (recog_memoized (ready[pos]) >= 0
+		      && is_power9_pairable_vec_type (
+			   get_attr_type (ready[pos])))
+		    {
+		      tmp = ready[pos];
+		      for (i = pos; i < lastpos; i++)
+			ready[i] = ready[i + 1];
+		      ready[lastpos] = tmp;
+		      /* Set pendulum so that next vec op will be seen as
+			 finishing a group, not start of one.  */
+		      vec_load_pendulum = -3;
+		      return cached_can_issue_more;
+		    }
+		  pos--;
+		}
+	    }
+	}
+
+      /* We've either finished a vec/vecload group, couldn't find an insn to
+	 continue the current group, or the last insn had nothing to do with
+	 with a group.  In any case, reset the pendulum.  */
+      vec_load_pendulum = 0;
+    }
+
+  return cached_can_issue_more;
 }
 
 /* We are about to begin issuing insns for this clock cycle. */
@@ -31023,6 +31262,11 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
         }
     }
 
+  /* Do Power9 dependent reordering if necessary.  */
+  if (rs6000_cpu == PROCESSOR_POWER9 && last_scheduled_insn
+      && recog_memoized (last_scheduled_insn) >= 0)
+    return power9_sched_reorder2 (ready, *pn_ready - 1);
+
   return cached_can_issue_more;
 }
 
@@ -31191,7 +31435,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
         }
       break;
     case PROCESSOR_POWER8:
-    case PROCESSOR_POWER9:
       type = get_attr_type (insn);
 
       switch (type)
@@ -31322,7 +31565,6 @@ insn_must_be_last_in_group (rtx_insn *insn)
     }
     break;
   case PROCESSOR_POWER8:
-  case PROCESSOR_POWER9:
     type = get_attr_type (insn);
 
     switch (type)
@@ -31441,7 +31683,7 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
 
       /* Do we have a special group ending nop? */
       if (rs6000_cpu_attr == CPU_POWER6 || rs6000_cpu_attr == CPU_POWER7
-	  || rs6000_cpu_attr == CPU_POWER8 || rs6000_cpu_attr == CPU_POWER9)
+	  || rs6000_cpu_attr == CPU_POWER8)
 	{
 	  nop = gen_group_ending_nop ();
 	  emit_insn_before (nop, next_insn);
@@ -31695,8 +31937,10 @@ rs6000_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 		     int sched_verbose ATTRIBUTE_UNUSED,
 		     int max_ready ATTRIBUTE_UNUSED)
 {
-  last_scheduled_insn = NULL_RTX;
+  last_scheduled_insn = NULL;
   load_store_pendulum = 0;
+  divide_cnt = 0;
+  vec_load_pendulum = 0;
 }
 
 /* The following function is called at the end of scheduling BB.
@@ -31737,14 +31981,16 @@ rs6000_sched_finish (FILE *dump, int sched_verbose)
     }
 }
 
-struct _rs6000_sched_context
+struct rs6000_sched_context
 {
   short cached_can_issue_more;
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
   int load_store_pendulum;
+  int divide_cnt;
+  int vec_load_pendulum;
 };
 
-typedef struct _rs6000_sched_context rs6000_sched_context_def;
+typedef struct rs6000_sched_context rs6000_sched_context_def;
 typedef rs6000_sched_context_def *rs6000_sched_context_t;
 
 /* Allocate store for new scheduling context.  */
@@ -31764,14 +32010,18 @@ rs6000_init_sched_context (void *_sc, bool clean_p)
   if (clean_p)
     {
       sc->cached_can_issue_more = 0;
-      sc->last_scheduled_insn = NULL_RTX;
+      sc->last_scheduled_insn = NULL;
       sc->load_store_pendulum = 0;
+      sc->divide_cnt = 0;
+      sc->vec_load_pendulum = 0;
     }
   else
     {
       sc->cached_can_issue_more = cached_can_issue_more;
       sc->last_scheduled_insn = last_scheduled_insn;
       sc->load_store_pendulum = load_store_pendulum;
+      sc->divide_cnt = divide_cnt;
+      sc->vec_load_pendulum = vec_load_pendulum;
     }
 }
 
@@ -31786,6 +32036,8 @@ rs6000_set_sched_context (void *_sc)
   cached_can_issue_more = sc->cached_can_issue_more;
   last_scheduled_insn = sc->last_scheduled_insn;
   load_store_pendulum = sc->load_store_pendulum;
+  divide_cnt = sc->divide_cnt;
+  vec_load_pendulum = sc->vec_load_pendulum;
 }
 
 /* Free _SC.  */
