@@ -1,3 +1,9 @@
+2016-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71626
+	* gcc.c-torture/execute/pr71626-1.c: New test.
+	* gcc.c-torture/execute/pr71626-2.c: New test.
+
 2016-06-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/71656
