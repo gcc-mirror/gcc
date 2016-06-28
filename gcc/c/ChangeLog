@@ -1,4 +1,10 @@
-2016-06-28 Martin Sebor  <msebor@redhat.com>
+2016-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71685
+	* c-typeck.c (c_build_qualified_type): Don't clear
+	C_TYPE_INCOMPLETE_VARS for the main variant.
+
+2016-06-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71552
 	* c-typeck.c (output_init_element): Diagnose incompatible types
