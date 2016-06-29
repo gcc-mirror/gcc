@@ -1,3 +1,12 @@
+2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_pragma) <PRAGMA_OMP_CANCELLATION_POINT>:
+	Move pragma context checking into...
+	(c_parser_omp_cancellation_point): ... here, and improve
+	diagnostic messages.
+	* c-typeck.c (c_finish_omp_cancel)
+	(c_finish_omp_cancellation_point): Improve diagnostic messages.
+
 2016-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71685

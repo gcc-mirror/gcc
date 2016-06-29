@@ -455,3 +455,18 @@ f3 (void)
       }
     }
 }
+
+#pragma omp cancellation point /* { dg-error "expected declaration specifiers before end of line" } */
+
+void
+f4 (void)
+{
+  if (0)
+#pragma omp cancellation EKAHI /* { dg-error "expected .point. before .EKAHI." } */
+    ;
+#pragma omp cancellation HO OKAHI /* { dg-error "expected .point. before .HO." } */
+  if (0)
+#pragma omp cancellation point /* { dg-error ".pragma omp cancellation point. may only be used in compound statements" } */
+    ;
+#pragma omp cancellation point /* { dg-error ".pragma omp cancellation point. must specify one of" } */
+}

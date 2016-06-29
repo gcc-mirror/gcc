@@ -1358,11 +1358,11 @@ static tree c_parser_omp_for_loop (location_t, c_parser *, enum tree_code,
 static void c_parser_omp_taskwait (c_parser *);
 static void c_parser_omp_taskyield (c_parser *);
 static void c_parser_omp_cancel (c_parser *);
-static void c_parser_omp_cancellation_point (c_parser *);
 
 enum pragma_context { pragma_external, pragma_struct, pragma_param,
 		      pragma_stmt, pragma_compound };
 static bool c_parser_pragma (c_parser *, enum pragma_context, bool *);
+static void c_parser_omp_cancellation_point (c_parser *, enum pragma_context);
 static bool c_parser_omp_target (c_parser *, enum pragma_context, bool *);
 static void c_parser_omp_end_declare_target (c_parser *);
 static void c_parser_omp_declare (c_parser *, enum pragma_context);
@@ -10187,14 +10187,7 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       return false;
 
     case PRAGMA_OMP_CANCELLATION_POINT:
-      if (context != pragma_compound)
-	{
-	  if (context == pragma_stmt)
-	    c_parser_error (parser, "%<#pragma omp cancellation point%> may "
-				    "only be used in compound statements");
-	  goto bad_stmt;
-	}
-      c_parser_omp_cancellation_point (parser);
+      c_parser_omp_cancellation_point (parser, context);
       return false;
 
     case PRAGMA_OMP_THREADPRIVATE:
@@ -15668,7 +15661,7 @@ c_parser_omp_cancel (c_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TASKGROUP))
 
 static void
-c_parser_omp_cancellation_point (c_parser *parser)
+c_parser_omp_cancellation_point (c_parser *parser, enum pragma_context context)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   tree clauses;
@@ -15688,6 +15681,17 @@ c_parser_omp_cancellation_point (c_parser *parser)
     {
       c_parser_error (parser, "expected %<point%>");
       c_parser_skip_to_pragma_eol (parser);
+      return;
+    }
+
+  if (context != pragma_compound)
+    {
+      if (context == pragma_stmt)
+	error_at (loc, "%<#pragma omp cancellation point%> may only be used in"
+		  " compound statements");
+      else
+	c_parser_error (parser, "expected declaration specifiers");
+      c_parser_skip_to_pragma_eol (parser, false);
       return;
     }
 
