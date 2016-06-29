@@ -7858,12 +7858,14 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_AND_EXPR;
 	  std::swap (rhs1, rhs2);
+	  std::swap (dts[0], dts[1]);
 	}
       else if (code == LE_EXPR)
 	{
 	  bitop1 = BIT_NOT_EXPR;
 	  bitop2 = BIT_IOR_EXPR;
 	  std::swap (rhs1, rhs2);
+	  std::swap (dts[0], dts[1]);
 	}
       else
 	{
