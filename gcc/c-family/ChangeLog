@@ -1,3 +1,9 @@
+2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-pragma.h (enum pragma_kind): Rename
+	PRAGMA_OMP_DECLARE_REDUCTION to PRAGMA_OMP_DECLARE.  Adjust all
+	users.
+
 2016-06-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71002
