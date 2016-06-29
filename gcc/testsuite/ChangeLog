@@ -1,3 +1,8 @@
+2016-06-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/70729
+	* g++.dg/vect/pr70729.cc: New test.
+
 2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/gomp/cancel-1.c: Extend.
