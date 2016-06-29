@@ -2221,19 +2221,19 @@ Common RejectNegative Joined Var(common_deferred_options) Defer
 -fstack-limit-symbol=<name>	Trap if the stack goes past symbol <name>.
 
 fstack-protector
-Common Report Var(flag_stack_protect, 1) Init(-1)
+Common Report Var(flag_stack_protect, 1) Init(-1) Optimization
 Use propolice as a stack protection method.
 
 fstack-protector-all
-Common Report RejectNegative Var(flag_stack_protect, 2) Init(-1)
+Common Report RejectNegative Var(flag_stack_protect, 2) Init(-1) Optimization
 Use a stack protection method for every function.
 
 fstack-protector-strong
-Common Report RejectNegative Var(flag_stack_protect, 3) Init(-1)
+Common Report RejectNegative Var(flag_stack_protect, 3) Init(-1) Optimization
 Use a smart stack protection method for certain functions.
 
 fstack-protector-explicit
-Common Report RejectNegative Var(flag_stack_protect, 4)
+Common Report RejectNegative Var(flag_stack_protect, 4) Optimization
 Use stack protection method only for functions with the stack_protect attribute.
 
 fstack-usage

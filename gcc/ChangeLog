@@ -1,3 +1,11 @@
+2016-06-29  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/71585
+	* common.opt (flag_stack_protect): Mark the flag as optimization
+	flag.
+	* ipa-inline-transform.c (inline_call): Remove unnecessary call
+	of build_optimization_node.
+
 2016-06-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/70729

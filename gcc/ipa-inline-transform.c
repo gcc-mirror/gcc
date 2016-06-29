@@ -342,10 +342,10 @@ inline_call (struct cgraph_edge *e, bool update_original,
       if (dump_file)
 	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
 		 to->name (), to->order);
-      build_optimization_node (&opts);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
     }
+
   inline_summary *caller_info = inline_summaries->get (to);
   inline_summary *callee_info = inline_summaries->get (callee);
   if (!caller_info->fp_expressions && callee_info->fp_expressions)
@@ -402,7 +402,6 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	  if (dump_file)
 	    fprintf (dump_file, "Copying FP flags from %s:%i to %s:%i\n",
 		     callee->name (), callee->order, to->name (), to->order);
-	  build_optimization_node (&opts);
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	     = build_optimization_node (&opts);
 	}
