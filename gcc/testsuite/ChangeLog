@@ -1,3 +1,8 @@
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/15256
+	* gcc.dg/tree-ssa/forwprop-34.c: New testcase.
+
 2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/aapcs/neon-vect10.c: Require
