@@ -1,3 +1,9 @@
+2016-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/asyncwait-2.f95: Updated expected diagnostics.
+	* gfortran.dg/goacc/asyncwait-3.f95: Likewise.
+	* gfortran.dg/goacc/asyncwait-4.f95: Add test coverage.
+
 2016-06-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/15256
