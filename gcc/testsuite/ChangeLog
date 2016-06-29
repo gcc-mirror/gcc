@@ -1,3 +1,8 @@
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* g++.dg/torture/pr71002.C: Adjust testcase.
+
 2016-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71685

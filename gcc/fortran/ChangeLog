@@ -1,3 +1,9 @@
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* f95-lang.c (LANG_HOOKS_GET_ALIAS_SET): Remove (un-)define.
+	(gfc_get_alias_set): Remove.
+
 2016-06-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/71649

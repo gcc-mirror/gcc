@@ -16,11 +16,6 @@ struct long_t
   char* pointer;
 };
 
-union long_raw_t {
-  unsigned char data[sizeof(long_t)];
-  struct __attribute__((aligned(alignof(long_t)))) { } align;
-};
-
 struct short_header
 {
   unsigned char is_short : 1;
@@ -35,20 +30,20 @@ struct short_t
 
 union repr_t
 {
-  long_raw_t  r;
+  long_t      r;
   short_t     s;
 
   const short_t& short_repr() const
   { return s; }
 
   const long_t& long_repr() const
-  { return *static_cast<const long_t*>(static_cast<const void*>(&r)); }
+  { return r; }
 
   short_t& short_repr()
   { return s;  }
 
   long_t& long_repr()
-  { return *static_cast<long_t*>(static_cast<void*>(&r)); }
+  { return r; }
 };
 
 class string
