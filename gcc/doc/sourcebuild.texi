@@ -1555,6 +1555,16 @@ options.  Some multilibs may be incompatible with these options.
 ARM Target supports @code{-mfpu=neon-vfpv4 -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
 
+@item arm_fp16_ok
+@anchor{arm_fp16_ok}
+Target supports options to generate VFP half-precision floating-point
+instructions.  Some multilibs may be incompatible with these
+options.  This test is valid for ARM only.
+
+@item arm_fp16_hw
+Target supports executing VFP half-precision floating-point
+instructions.  This test is valid for ARM only.
+
 @item arm_neon_fp16_ok
 @anchor{arm_neon_fp16_ok}
 ARM Target supports @code{-mfpu=neon-fp16 -mfloat-abi=softfp} or compatible
@@ -2073,6 +2083,28 @@ keyword}.
 @item arm_neon
 NEON support.  Only ARM targets support this feature, and only then
 in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target
+keyword}.
+
+@item arm_fp16
+VFP half-precision floating point support.  This does not select the
+FP16 format; for that, use @ref{arm_fp16_ieee,,arm_fp16_ieee} or
+@ref{arm_fp16_alternative,,arm_fp16_alternative} instead.  This
+feature is only supported by ARM targets and then only in certain
+modes; see the @ref{arm_fp16_ok,,arm_fp16_ok effective target
+keyword}.
+
+@item arm_fp16_ieee
+@anchor{arm_fp16_ieee}
+ARM IEEE 754-2008 format VFP half-precision floating point support.
+This feature is only supported by ARM targets and then only in certain
+modes; see the @ref{arm_fp16_ok,,arm_fp16_ok effective target
+keyword}.
+
+@item arm_fp16_alternative
+@anchor{arm_fp16_alternative}
+ARM Alternative format VFP half-precision floating point support.
+This feature is only supported by ARM targets and then only in certain
+modes; see the @ref{arm_fp16_ok,,arm_fp16_ok effective target
 keyword}.
 
 @item arm_neon_fp16

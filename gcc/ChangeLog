@@ -1,3 +1,10 @@
+2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* doc/sourcebuild.texi (Effective-Target keywords): Add entries
+	for arm_fp16_ok and arm_fp16_hw.
+	(Add Options): Add entries for arm_fp16, arm_fp16_ieee and
+	arm_fp16_alternative.
+
 2016-06-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR tree-optimization/71655
