@@ -1,3 +1,12 @@
+2016-06-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (call_symref_64bit_post_reload): Don't call
+	pa_output_arg_descriptor.
+	(call_val_symref_64bit_post_reload): Likewise.
+	(call_val_powf_64bit_post_reload): Likewise.
+	(sibcall_internal_symref_64bit): Likewise.
+	(sibcall_value_internal_symref_64bit): Likewise.
+
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71626
