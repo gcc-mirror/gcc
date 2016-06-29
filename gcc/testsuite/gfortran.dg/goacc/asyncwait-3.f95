@@ -11,17 +11,17 @@ program asyncwait
   a(:) = 3.0
   b(:) = 0.0
 
-  !$acc wait (1 2) ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait (1 2) ! { dg-error "Syntax error in OpenACC expression list at" }
 
-  !$acc wait (1,) ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait (1,) ! { dg-error "Syntax error in OpenACC expression list at" }
 
-  !$acc wait (,1) ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait (,1) ! { dg-error "Syntax error in OpenACC expression list at" }
 
-  !$acc wait (1, 2, ) ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait (1, 2, ) ! { dg-error "Syntax error in OpenACC expression list at" }
 
-  !$acc wait (1, 2, ,) ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait (1, 2, ,) ! { dg-error "Syntax error in OpenACC expression list at" }
 
-  !$acc wait (1 ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait (1 ! { dg-error "Syntax error in OpenACC expression list at" }
 
   !$acc wait (1, *) ! { dg-error "Invalid argument to \\\$\\\!ACC WAIT" }
 
@@ -33,9 +33,9 @@ program asyncwait
 
   !$acc wait (1.0) ! { dg-error "WAIT clause at \\\(1\\\) requires a scalar INTEGER expression" }
 
-  !$acc wait 1 ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait 1 ! { dg-error "Unclassifiable OpenACC directive" }
 
-  !$acc wait N ! { dg-error "Unexpected junk in \\\!\\\$ACC WAIT at" }
+  !$acc wait N ! { dg-error "Unclassifiable OpenACC directive" }
 
   !$acc wait (1)
 end program asyncwait
