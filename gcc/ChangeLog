@@ -1,3 +1,9 @@
+2016-06-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR tree-optimization/71655
+	* tree-vect-stmts.c (vectorizable_comparison): Swap definition
+	types when swapping operands.
+
 2016-06-29  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/71585
