@@ -1,3 +1,24 @@
+2016-06-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (const_0_to_7_operand): New
+	predicate, recognize 0..7.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Add
+	support for doing extracts from V16QImode, V8HImode, V4SImode
+	under ISA 3.0.
+	* config/rs6000/vsx.md (VSX_EXTRACT_I): Mode iterator for ISA 3.0
+	vector extract support.
+	(VSX_EXTRACT_PREDICATE): Mode attribute to validate element number
+	for ISA 3.0 vector extract.
+	(VSX_EX): Constraints to use for ISA 3.0 vector extract.
+	(vsx_extract_<mode>, VSX_EXTRACT_I): Add support for doing
+	extracts of a constant element number from small integer vectors
+	on 64-bit ISA 3.0 systems.
+	(vsx_extract_<mode>_di): Likewise.
+	* config/rs6000/rs6000.h (TARGET_VEXTRACTUB): New target macro to
+	say when we can do ISA 3.0 vector extracts.
+	* config/rs6000/rs6000.md (stfiwx): Allow DImode in Altivec
+	registers, using the stxsiwx instruction.
+
 2016-06-29  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64-cores.def (qdf24xx): Use qdf24xx tuning.
