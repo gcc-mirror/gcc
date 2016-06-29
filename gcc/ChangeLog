@@ -1,3 +1,8 @@
+2016-07-29  Richard Biener  <rguenther@suse.de>
+
+	* match.pd ((T)(T2)x -> (T)x): Remove restriction on final
+	precision not matching mode precision.
+
 2016-06-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (call_symref_64bit_post_reload): Don't call
