@@ -1,3 +1,12 @@
+2016-06-29  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (qdf24xx): Use qdf24xx tuning.
+	* config/aarch64/aarch64.c (qdf24xx_addrcost_table,
+	qdf24xx_regmove_cost, qdf24xx_tunings): New.
+	* config/arm/aarch64-cost-tables.h (qdf24xx_extra_costs): New.
+	* config/arm/arm-cores.def (qdf24xx): Use qdf24xx tuning.
+	* config/arm/arm.c (arm_qdf24xx_tune): New.
+
 2016-06-29  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (cortexa53_tunings):

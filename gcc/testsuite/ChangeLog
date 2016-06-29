@@ -1,3 +1,7 @@
+2016-06-29  Jim Wilson  <jim.wilson@linaro.org>
+
+	* gcc.dg/asr_div1.c: Add aarch64 specific dg-options.
+
 2016-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.dg/goacc/asyncwait-2.f95: Updated expected diagnostics.
