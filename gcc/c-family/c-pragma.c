@@ -1286,7 +1286,7 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "threadprivate", PRAGMA_OMP_THREADPRIVATE }
 };
 static const struct omp_pragma_def omp_pragmas_simd[] = {
-  { "declare", PRAGMA_OMP_DECLARE_REDUCTION },
+  { "declare", PRAGMA_OMP_DECLARE },
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
   { "parallel", PRAGMA_OMP_PARALLEL },

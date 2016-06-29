@@ -10215,7 +10215,7 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
       return false;
 
-    case PRAGMA_OMP_DECLARE_REDUCTION:
+    case PRAGMA_OMP_DECLARE:
       c_parser_omp_declare (parser, context);
       return false;
 
@@ -16381,7 +16381,7 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
   while (c_parser_next_token_is (parser, CPP_PRAGMA))
     {
       if (c_parser_peek_token (parser)->pragma_kind
-	  != PRAGMA_OMP_DECLARE_REDUCTION
+	  != PRAGMA_OMP_DECLARE
 	  || c_parser_peek_2nd_token (parser)->type != CPP_NAME
 	  || strcmp (IDENTIFIER_POINTER
 				(c_parser_peek_2nd_token (parser)->value),
