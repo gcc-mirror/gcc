@@ -1,3 +1,8 @@
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* c-common.c (c_common_get_alias_set): Remove union type punning case.
+
 2016-06-24  Jason Merrill  <jason@redhat.com>
 
 	P0145R2: Refining Expression Order for C++.

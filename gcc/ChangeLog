@@ -1,3 +1,10 @@
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* alias.c (component_uses_parent_alias_set_from): Handle
+	type punning through union accesses by using the union alias set.
+	* gimple.c (gimple_get_alias_set): Remove union type punning case.
+
 2016-07-29  Richard Biener  <rguenther@suse.de>
 
 	* match.pd ((T)(T2)x -> (T)x): Remove restriction on final

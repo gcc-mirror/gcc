@@ -2400,21 +2400,6 @@ gimple_signed_type (tree type)
 alias_set_type
 gimple_get_alias_set (tree t)
 {
-  tree u;
-
-  /* Permit type-punning when accessing a union, provided the access
-     is directly through the union.  For example, this code does not
-     permit taking the address of a union member and then storing
-     through it.  Even the type-punning allowed here is a GCC
-     extension, albeit a common and useful one; the C standard says
-     that such accesses have implementation-defined behavior.  */
-  for (u = t;
-       TREE_CODE (u) == COMPONENT_REF || TREE_CODE (u) == ARRAY_REF;
-       u = TREE_OPERAND (u, 0))
-    if (TREE_CODE (u) == COMPONENT_REF
-	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
-      return 0;
-
   /* That's all the expressions we handle specially.  */
   if (!TYPE_P (t))
     return -1;

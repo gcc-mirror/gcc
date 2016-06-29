@@ -619,6 +619,14 @@ component_uses_parent_alias_set_from (const_tree t)
 	case COMPONENT_REF:
 	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
 	    found = t;
+	  /* Permit type-punning when accessing a union, provided the access
+	     is directly through the union.  For example, this code does not
+	     permit taking the address of a union member and then storing
+	     through it.  Even the type-punning allowed here is a GCC
+	     extension, albeit a common and useful one; the C standard says
+	     that such accesses have implementation-defined behavior.  */
+	  else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+	    found = t;
 	  break;
 
 	case ARRAY_REF:
