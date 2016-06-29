@@ -1,3 +1,13 @@
+2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* lib/target-supports.exp (add_options_for_arm_fp16): Reword
+	comment.
+	(add_options_for_arm_fp16_ieee): New.
+	(add_options_for_arm_fp16_alternative): New.
+	(effective_target_arm_fp16_ok_nocache): Add to comment.  Fix a
+	long-line.
+	(effective_target_arm_fp16_hw): New.
+
 2016-06-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR tree-optimization/71655

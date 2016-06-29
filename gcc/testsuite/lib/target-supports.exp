@@ -3184,9 +3184,9 @@ proc check_effective_target_arm_neonv2_ok { } {
 		check_effective_target_arm_neonv2_ok_nocache]
 }
 
-# Add the options needed for NEON.  We need either -mfloat-abi=softfp
-# or -mfloat-abi=hard, but if one is already specified by the
-# multilib, use it.
+# Add the options needed for VFP FP16 support.  We need either
+# -mfloat-abi=softfp or -mfloat-abi=hard.  If one is already specified by
+# the multilib, use it.
 
 proc add_options_for_arm_fp16 { flags } {
     if { ! [check_effective_target_arm_fp16_ok] } {
@@ -3196,9 +3196,32 @@ proc add_options_for_arm_fp16 { flags } {
     return "$flags $et_arm_fp16_flags"
 }
 
+# Add the options needed to enable support for IEEE format
+# half-precision support.  This is valid for ARM targets.
+
+proc add_options_for_arm_fp16_ieee { flags } {
+    if { ! [check_effective_target_arm_fp16_ok] } {
+	return "$flags"
+    }
+    global et_arm_fp16_flags
+    return "$flags $et_arm_fp16_flags -mfp16-format=ieee"
+}
+
+# Add the options needed to enable support for ARM Alternative format
+# half-precision support.  This is valid for ARM targets.
+
+proc add_options_for_arm_fp16_alternative { flags } {
+    if { ! [check_effective_target_arm_fp16_ok] } {
+	return "$flags"
+    }
+    global et_arm_fp16_flags
+    return "$flags $et_arm_fp16_flags -mfp16-format=alternative"
+}
+
 # Return 1 if this is an ARM target that can support a VFP fp16 variant.
 # Skip multilibs that are incompatible with these options and set
-# et_arm_fp16_flags to the best options to add.
+# et_arm_fp16_flags to the best options to add.  This test is valid for
+# ARM only.
 
 proc check_effective_target_arm_fp16_ok_nocache { } {
     global et_arm_fp16_flags
@@ -3206,7 +3229,10 @@ proc check_effective_target_arm_fp16_ok_nocache { } {
     if { ! [check_effective_target_arm32] } {
 	return 0;
     }
-    if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "-mfpu=*fp16*" "-mfpu=*fpv[4-9]*" "-mfpu=*fpv[1-9][0-9]*" } ]] {
+    if [check-flags \
+	    [list "" { *-*-* } { "-mfpu=*" } \
+		 { "-mfpu=*fp16*" "-mfpu=*fpv[4-9]*" \
+		       "-mfpu=*fpv[1-9][0-9]*" "-mfpu=*fp-armv8*" } ]] {
 	# Multilib flags would override -mfpu.
 	return 0
     }
@@ -3240,6 +3266,28 @@ proc check_effective_target_arm_fp16_ok_nocache { } {
 proc check_effective_target_arm_fp16_ok { } {
     return [check_cached_effective_target arm_fp16_ok \
 		check_effective_target_arm_fp16_ok_nocache]
+}
+
+# Return 1 if the target supports executing VFP FP16 instructions, 0
+# otherwise.  This test is valid for ARM only.
+
+proc check_effective_target_arm_fp16_hw { } {
+    if {! [check_effective_target_arm_fp16_ok] } {
+	return 0
+    }
+    global et_arm_fp16_flags
+    check_runtime_nocache arm_fp16_hw {
+	int
+	main (int argc, char **argv)
+	{
+	  __fp16 a = 1.0;
+	  float r;
+	  asm ("vcvtb.f32.f16 %0, %1"
+	       : "=w" (r) : "w" (a)
+	       : /* No clobbers.  */);
+	  return (r == 1.0) ? 0 : 1;
+	}
+    } "$et_arm_fp16_flags -mfp16-format=ieee"
 }
 
 # Creates a series of routines that return 1 if the given architecture
