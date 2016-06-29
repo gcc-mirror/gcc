@@ -3498,12 +3498,12 @@ df_note_bb_compute (unsigned int bb_index,
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
+      if (!INSN_P (insn))
+	continue;
+
       df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       df_mw_hardreg *mw;
       int debug_insn;
-
-      if (!INSN_P (insn))
-	continue;
 
       debug_insn = DEBUG_INSN_P (insn);
 
