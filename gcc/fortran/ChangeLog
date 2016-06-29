@@ -1,3 +1,15 @@
+2016-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (match_oacc_clause_gang): Rename to ...
+	(match_oacc_clause_gwv): this.  Add support for OpenACC worker and
+	vector clauses.
+	(gfc_match_omp_clauses): Use match_oacc_clause_gwv for
+	OMP_CLAUSE_{GANG,WORKER,VECTOR}.  Propagate any MATCH_ERRORs for
+	invalid OMP_CLAUSE_{ASYNC,WAIT,GANG,WORKER,VECTOR} clauses.
+	(gfc_match_oacc_wait): Propagate MATCH_ERROR for invalid
+	oacc_expr_lists.  Adjust the first and needs_space arguments to
+	gfc_match_omp_clauses.
+
 2016-06-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71002
