@@ -1,3 +1,9 @@
+2016-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/71686
+	* scanner.c (gfc_next_char_literal): Only decrement nextc if it
+	is not NULL.
+
 2016-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* openmp.c (match_oacc_clause_gang): Rename to ...
