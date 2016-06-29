@@ -1,5 +1,10 @@
 2016-06-29  Richard Biener  <rguenther@suse.de>
 
+	PR rtl-optimization/68961
+	* simplify-rtx.c (simplify_subreg): Handle VEC_CONCAT like CONCAT.
+
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/71002
 	* alias.c (component_uses_parent_alias_set_from): Handle
 	type punning through union accesses by using the union alias set.
