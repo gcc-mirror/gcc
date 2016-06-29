@@ -1,3 +1,9 @@
+2016-06-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/pr71585.c: New test.
+	* gcc.dg/pr71585-2.c: New test.
+	* gcc.dg/pr71585-3.c: New test.
+
 2016-06-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/70729
