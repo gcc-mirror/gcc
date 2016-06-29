@@ -5432,15 +5432,6 @@ static tree c_global_trees[CTI_MAX];
 #define intmax_type_node  void_type_node
 #define uintmax_type_node void_type_node
 
-/* Build the void_list_node (void_type_node having been created).  */
-
-static tree
-build_void_list_node (void)
-{
-  tree t = build_tree_list (NULL_TREE, void_type_node);
-  return t;
-}
-
 /* Used to help initialize the builtin-types.def table.  When a type of
    the correct size doesn't exist, use error_mark_node instead of NULL.
    The later results in segfaults even when a decl using the type doesn't
@@ -5461,7 +5452,6 @@ install_builtin_elementary_types (void)
 {
   signed_size_type_node = gnat_signed_type_for (size_type_node);
   pid_type_node = integer_type_node;
-  void_list_node = build_void_list_node ();
 
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node

@@ -1,5 +1,26 @@
 2016-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/48835
+	PR ada/61954
+	* gcc-interface/gigi.h (enum standard_datatypes): Add ADT_realloc_decl
+	(realloc_decl): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Use local
+	variable for the entity type and translate it as void pointer if the
+	entity has convention C.
+	(gnat_to_gnu_entity) <E_Function>: If this is not a definition and the
+	external name matches that of malloc_decl or realloc_decl, return the
+	correspoding node directly.
+	(gnat_to_gnu_subprog_type): Likewise for parameter and return types.
+	* gcc-interface/trans.c (gigi): Initialize void_list_node here, not...
+	Initialize realloc_decl.
+	* gcc-interface/utils.c (install_builtin_elementary_types): ...here.
+	(build_void_list_node): Delete.
+	* gcc-interface/utils2.c (known_alignment) <CALL_EXPR>: Return the
+	alignment of the system allocator for malloc_decl and realloc_decl.
+	Do not take alignment from void pointer types either.
+
+2016-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL): Reorder.
 	(LANG_HOOKS_INIT_TS): Likewise.
 

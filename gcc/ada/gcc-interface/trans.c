@@ -387,14 +387,13 @@ gigi (Node_Id gnat_root,
 		       true, false, NULL, gnat_literal);
   save_gnu_tree (gnat_literal, t, false);
 
+  /* Declare the building blocks of function nodes.  */
+  void_list_node = build_tree_list (NULL_TREE, void_type_node);
   void_ftype = build_function_type_list (void_type_node, NULL_TREE);
   ptr_void_ftype = build_pointer_type (void_ftype);
 
   /* Now declare run-time functions.  */
   ftype = build_function_type_list (ptr_type_node, sizetype, NULL_TREE);
-
-  /* malloc is a function declaration tree for a function to allocate
-     memory.  */
   malloc_decl
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
 			   ftype,
@@ -402,12 +401,18 @@ gigi (Node_Id gnat_root,
 			   NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
-  /* free is a function declaration tree for a function to free memory.  */
+  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
-			   build_function_type_list (void_type_node,
-						     ptr_type_node,
-						     NULL_TREE),
+			   ftype,
+			   NULL_TREE, is_disabled, true, true, true, false,
+			   NULL, Empty);
+
+  ftype = build_function_type_list (ptr_type_node, ptr_type_node, sizetype,
+				    NULL_TREE);
+  realloc_decl
+    = create_subprog_decl (get_identifier ("__gnat_realloc"), NULL_TREE,
+			   ftype,
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   NULL, Empty);
 

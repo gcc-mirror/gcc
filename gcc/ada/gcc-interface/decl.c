@@ -603,6 +603,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Out_Parameter:
     case E_Variable:
       {
+	const Entity_Id gnat_type = Etype (gnat_entity);
 	/* Always create a variable for volatile objects and variables seen
 	   constant but with a Linker_Section pragma.  */
 	bool const_flag
@@ -643,14 +644,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
+	if (Convention (gnat_entity) == Convention_C
+	    && Is_Descendant_Of_Address (gnat_type))
+	  gnu_type = ptr_type_node;
+	else
+	  {
+	    gnu_type = gnat_to_gnu_type (gnat_type);
 
-	/* If this is a standard exception definition, then use the standard
-	   exception type.  This is necessary to make sure that imported and
-	   exported views of exceptions are properly merged in LTO mode.  */
-	if (TREE_CODE (TYPE_NAME (gnu_type)) == TYPE_DECL
-	    && DECL_NAME (TYPE_NAME (gnu_type)) == exception_data_name_id)
-	  gnu_type = except_type_node;
+	    /* If this is a standard exception definition, use the standard
+	       exception type.  This is necessary to make sure that imported
+	       and exported views of exceptions are merged in LTO mode.  */
+	    if (TREE_CODE (TYPE_NAME (gnu_type)) == TYPE_DECL
+		&& DECL_NAME (TYPE_NAME (gnu_type)) == exception_data_name_id)
+	      gnu_type = except_type_node;
+	  }
 
 	/* For a debug renaming declaration, build a debug-only entity.  */
 	if (Present (Debug_Renaming_Link (gnat_entity)))
@@ -812,7 +819,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     || (TYPE_SIZE (gnu_type)
 		 && integer_zerop (TYPE_SIZE (gnu_type))
 		 && !TREE_OVERFLOW (TYPE_SIZE (gnu_type))))
-	    && !Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
+	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
 	    && No (Renamed_Object (gnat_entity))
 	    && No (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
@@ -828,8 +835,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		|| (!Optimize_Alignment_Space (gnat_entity)
 		    && kind != E_Exception
 		    && kind != E_Out_Parameter
-		    && Is_Composite_Type (Etype (gnat_entity))
-		    && !Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
+		    && Is_Composite_Type (gnat_type)
+		    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
 		    && !Is_Exported (gnat_entity)
 		    && !imported_p
 		    && No (Renamed_Object (gnat_entity))
@@ -895,12 +902,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If this is an aliased object with an unconstrained array nominal
 	   subtype, make a type that includes the template.  We will either
 	   allocate or create a variable of that type, see below.  */
-	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
+	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
+	    && Is_Array_Type (Underlying_Type (gnat_type))
 	    && !type_annotate_only)
 	  {
-	    tree gnu_array
-	      = gnat_to_gnu_type (Base_Type (Etype (gnat_entity)));
+	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_type));
 	    gnu_type
 	      = build_unc_object_type_from_ptr (TREE_TYPE (gnu_array),
 						gnu_type,
@@ -914,7 +920,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   without pessimizing the allocation.  This is a kludge necessary
 	   because we don't support dynamic alignment.  */
 	if (align == 0
-	    && Ekind (Etype (gnat_entity)) == E_Class_Wide_Subtype
+	    && Ekind (gnat_type) == E_Class_Wide_Subtype
 	    && No (Renamed_Object (gnat_entity))
 	    && No (Address_Clause (gnat_entity)))
 	  align = get_target_system_allocator_alignment () * BITS_PER_UNIT;
@@ -1194,8 +1200,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    /* If this is an aliased object with an unconstrained array nominal
 	       subtype, then it can overlay only another aliased object with an
 	       unconstrained array nominal subtype and compatible template.  */
-	    if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-		&& Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
+	    if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
+		&& Is_Array_Type (Underlying_Type (gnat_type))
 		&& !type_annotate_only)
 	      {
 		tree rec_type = TREE_TYPE (gnu_type);
@@ -1408,8 +1414,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   This is aimed to make it easier for the debugger to decode the
 	   object.  Note that we have to do it this late because of the
 	   couple of allocation adjustments that might be made above.  */
-	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
+	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
+	    && Is_Array_Type (Underlying_Type (gnat_type))
 	    && !type_annotate_only)
 	  {
 	    /* In case the object with the template has already been allocated
@@ -1436,8 +1442,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		gnu_size = NULL_TREE;
 	      }
 
-	    tree gnu_array
-	      = gnat_to_gnu_type (Base_Type (Etype (gnat_entity)));
+	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_type));
 	    gnu_type
 	      = build_reference_type (TYPE_OBJECT_RECORD_TYPE (gnu_array));
 	  }
@@ -1523,7 +1528,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    && No (Address_Clause (gnat_entity)))
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
-		|| Is_Aliased (Etype (gnat_entity))))
+		|| Is_Aliased (gnat_type)))
 	  {
 	    tree gnu_corr_var
 	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
@@ -4269,6 +4274,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    DECL_BY_REF_P (gnu_decl) = 1;
 	  }
 
+	/* If this is a mere subprogram type, just create the declaration.  */
 	else if (kind == E_Subprogram_Type)
 	  {
 	    process_attributes (&gnu_type, &attr_list, false, gnat_entity);
@@ -4278,17 +4284,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				  debug_info_p, gnat_entity);
 	  }
 
+	/* Otherwise create the subprogram declaration with the external name,
+	   the type and the parameter list.  However, if this a reference to
+	   the allocation routines, reuse the canonical declaration nodes as
+	   they come with special properties.  */
 	else
 	  {
-	    gnu_decl
-	      = create_subprog_decl (gnu_entity_name, gnu_ext_name, gnu_type,
-				     gnu_param_list, inline_status,
-				     public_flag, extern_flag,
-				     artificial_p, debug_info_p,
-				     attr_list, gnat_entity);
+	    if (extern_flag && gnu_ext_name == DECL_NAME (malloc_decl))
+	      gnu_decl = malloc_decl;
+	    else if (extern_flag && gnu_ext_name == DECL_NAME (realloc_decl))
+	      gnu_decl = realloc_decl;
+	    else
+	      {
+		gnu_decl
+		  = create_subprog_decl (gnu_entity_name, gnu_ext_name,
+					 gnu_type, gnu_param_list,
+					 inline_status, public_flag,
+					 extern_flag, artificial_p,
+					 debug_info_p, attr_list, gnat_entity);
 
-	    DECL_STUBBED_P (gnu_decl)
-	      = (Convention (gnat_entity) == Convention_Stubbed);
+		DECL_STUBBED_P (gnu_decl)
+		  = (Convention (gnat_entity) == Convention_Stubbed);
+	      }
 	  }
       }
       break;
@@ -5754,7 +5771,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   else
     {
-      gnu_return_type = gnat_to_gnu_profile_type (gnat_return_type);
+      if (Convention (gnat_subprog) == Convention_C
+	  && Is_Descendant_Of_Address (gnat_return_type))
+	gnu_return_type = ptr_type_node;
+      else
+	gnu_return_type = gnat_to_gnu_profile_type (gnat_return_type);
 
       /* If this function returns by reference, make the actual return type
 	 the reference type and make a note of that.  */
@@ -5914,7 +5935,12 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
       else
 	{
 	  Entity_Id gnat_param_type = Etype (gnat_param);
-	  gnu_param_type = gnat_to_gnu_profile_type (gnat_param_type);
+
+	  if (Convention (gnat_subprog) == Convention_C
+	      && Is_Descendant_Of_Address (gnat_param_type))
+	    gnu_param_type = ptr_type_node;
+	  else
+	    gnu_param_type = gnat_to_gnu_profile_type (gnat_param_type);
 
 	  /* If the parameter type is incomplete, there are 2 cases: if it is
 	     passed by reference, then the type is only linked indirectly in
