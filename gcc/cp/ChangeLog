@@ -1,3 +1,12 @@
+2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_pragma) <PRAGMA_OMP_CANCELLATION_POINT>:
+	Move pragma context checking into...
+	(cp_parser_omp_cancellation_point): ... here, and improve
+	diagnostic messages.
+	* semantics.c (finish_omp_cancel, finish_omp_cancellation_point):
+	Improve diagnostic messages.
+
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in: Don't cat ../stage_current if it does not exist.

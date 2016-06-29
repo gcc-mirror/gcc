@@ -1,3 +1,7 @@
+2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/cancel-1.c: Extend.
+
 2016-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71625

@@ -11933,7 +11933,7 @@ c_finish_omp_cancel (location_t loc, tree clauses)
     mask = 8;
   else
     {
-      error_at (loc, "%<#pragma omp cancel must specify one of "
+      error_at (loc, "%<#pragma omp cancel%> must specify one of "
 		     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> "
 		     "clauses");
       return;
@@ -11972,7 +11972,7 @@ c_finish_omp_cancellation_point (location_t loc, tree clauses)
     mask = 8;
   else
     {
-      error_at (loc, "%<#pragma omp cancellation point must specify one of "
+      error_at (loc, "%<#pragma omp cancellation point%> must specify one of "
 		     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> "
 		     "clauses");
       return;
