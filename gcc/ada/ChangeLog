@@ -1,3 +1,8 @@
+2016-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL): Reorder.
+	(LANG_HOOKS_INIT_TS): Likewise.
+
 2016-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb: Revert unwanted change in previous commit,

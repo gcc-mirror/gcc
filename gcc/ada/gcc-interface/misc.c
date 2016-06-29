@@ -1370,6 +1370,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
 #undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
+#undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL hook_bool_const_tree_false
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 #undef  LANG_HOOKS_PRINT_DECL
@@ -1403,20 +1405,17 @@ get_lang_specific (tree node)
 #undef  LANG_HOOKS_GET_DEBUG_TYPE
 #define LANG_HOOKS_GET_DEBUG_TYPE	gnat_get_debug_type
 #undef  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO
-#define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO \
-					gnat_get_fixed_point_type_info
+#define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO gnat_get_fixed_point_type_info
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
+#undef  LANG_HOOKS_INIT_TS
+#define LANG_HOOKS_INIT_TS		gnat_init_ts
 #undef  LANG_HOOKS_EH_PERSONALITY
 #define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
 #undef  LANG_HOOKS_DEEP_UNSHARING
 #define LANG_HOOKS_DEEP_UNSHARING	true
-#undef  LANG_HOOKS_INIT_TS
-#define LANG_HOOKS_INIT_TS		gnat_init_ts
-#undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
-#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL hook_bool_const_tree_false
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
