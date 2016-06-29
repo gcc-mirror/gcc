@@ -2128,6 +2128,17 @@ ref_indep_loop_p_1 (struct loop *loop, im_mem_ref *ref, bool stored_p)
   if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
     return false;
 
+  if (loop->safelen > 0)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf(dump_file,"Consider REF independent in loop#%d\n", loop->num);
+	  print_generic_expr(dump_file, ref->mem.ref, TDF_SLIM);
+	  fprintf(dump_file, "\n");
+	}
+      return true;
+    }
+
   EXECUTE_IF_SET_IN_BITMAP (refs_to_check, 0, i, bi)
     {
       aref = memory_accesses.refs_list[i];

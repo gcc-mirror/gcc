@@ -1,3 +1,11 @@
+2016-06-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/70729
+	* tree-ssa-loop-im.c (ref_indep_loop_p_1): Consider memory reference as
+	independent in loops having positive safelen value.
+	* tree-vect-loop.c (vect_transform_loop): Clear-up safelen value since
+	it may be not valid after vectorization.
+
 2016-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71625
