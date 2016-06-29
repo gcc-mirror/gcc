@@ -1,8 +1,9 @@
-/* Test AAPCS layout (VFP variant) */
+/* Test AAPCS layout (VFP variant)  */
 
 /* { dg-do run { target arm_eabi } }  */
-/* { dg-require-effective-target arm_neon_fp16_ok } */
-/* { dg-options "-O -mfpu=vfp -mfloat-abi=hard -mfp16-format=ieee" } */
+/* { dg-require-effective-target arm_hard_vfp_ok }  */
+/* { dg-require-effective-target arm_fp16_hw }  */
+/* { dg-add-options arm_fp16_ieee }  */
 
 #ifndef IN_FRAMEWORK
 #define VFP

@@ -1,5 +1,18 @@
 2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/arm/aapcs/neon-vect10.c: Require
+	-mfloat-ab=hard.  Replace arm_neon_fp16_ok with arm_neon_fp16_hw.
+	* gcc.target/arm/aapcs/neon-vect9.c: Likewise.
+	* gcc.target/arm/aapcs/vfp18.c: Likewise.
+	* gcc.target/arm/aapcs/vfp19.c: Likewise.
+	* gcc.target/arm/aapcs/vfp20.c: Likewise.
+	* gcc.target/arm/aapcs/vfp21.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-1.c: Require
+	-mfloat-ab=hard.  Also simplify the test.
+	* gcc.target/arm/fp16-aapcs-2.c: New.
+
+2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* lib/target-supports.exp (add_options_for_arm_fp16): Reword
 	comment.
 	(add_options_for_arm_fp16_ieee): New.
