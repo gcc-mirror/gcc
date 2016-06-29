@@ -1,3 +1,12 @@
+2016-06-29  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (cortexa53_tunings):
+	Increase loop alignment to 8.  Set function alignment to 16.
+	(cortexa35_tunings): Likewise.
+	(cortexa57_tunings): Increase loop alignment to 8.
+	(cortexa72_tunings): Likewise.
+	(cortexa73_tunings): Likewise.
+
 2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* doc/sourcebuild.texi (Effective-Target keywords): Add entries
