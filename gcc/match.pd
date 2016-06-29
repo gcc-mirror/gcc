@@ -1652,14 +1652,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        float or both integer, we don't need the middle conversion if the
        former is wider than the latter and doesn't change the signedness
        (for integers).  Avoid this if the final type is a pointer since
-       then we sometimes need the middle conversion.  Likewise if the
-       final type has a precision not equal to the size of its mode.  */
+       then we sometimes need the middle conversion.  */
     (if (((inter_int && inside_int) || (inter_float && inside_float))
 	 && (final_int || final_float)
 	 && inter_prec >= inside_prec
-	 && (inter_float || inter_unsignedp == inside_unsignedp)
-	 && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
-	       && TYPE_MODE (type) == TYPE_MODE (inter_type)))
+	 && (inter_float || inter_unsignedp == inside_unsignedp))
      (ocvt @0))
 
     /* If we have a sign-extension of a zero-extended value, we can
@@ -1692,9 +1689,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && ((inter_unsignedp && inter_prec > inside_prec)
 	     == (final_unsignedp && final_prec > inter_prec))
 	 && ! (inside_ptr && inter_prec != final_prec)
-	 && ! (final_ptr && inside_prec != inter_prec)
-	 && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
-	       && TYPE_MODE (type) == TYPE_MODE (inter_type)))
+	 && ! (final_ptr && inside_prec != inter_prec))
      (ocvt @0))
 
     /* A truncation to an unsigned type (a zero-extension) should be
