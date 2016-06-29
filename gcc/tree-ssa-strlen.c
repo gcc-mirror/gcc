@@ -159,10 +159,10 @@ get_strinfo (int idx)
 /* Helper function for get_stridx.  */
 
 static int
-get_addr_stridx (tree exp)
+get_addr_stridx (tree exp, tree ptr)
 {
   HOST_WIDE_INT off;
-  struct stridxlist *list;
+  struct stridxlist *list, *last = NULL;
   tree base;
 
   if (!decl_to_stridxlist_htab)
@@ -180,9 +180,22 @@ get_addr_stridx (tree exp)
     {
       if (list->offset == off)
 	return list->idx;
+      if (list->offset > off)
+	return 0;
+      last = list;
       list = list->next;
     }
   while (list);
+
+  if (ptr && last && last->idx > 0)
+    {
+      strinfo *si = get_strinfo (last->idx);
+      if (si
+	  && si->length
+	  && TREE_CODE (si->length) == INTEGER_CST
+	  && compare_tree_int (si->length, off - last->offset) != -1)
+	return get_stridx_plus_constant (si, off - last->offset, ptr);
+    }
   return 0;
 }
 
@@ -234,7 +247,7 @@ get_stridx (tree exp)
 
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
-      int idx = get_addr_stridx (TREE_OPERAND (exp, 0));
+      int idx = get_addr_stridx (TREE_OPERAND (exp, 0), exp);
       if (idx != 0)
 	return idx;
     }
@@ -304,15 +317,29 @@ addr_stridxptr (tree exp)
   if (existed)
     {
       int i;
-      for (i = 0; i < 16; i++)
+      stridxlist *before = NULL;
+      for (i = 0; i < 32; i++)
 	{
 	  if (list->offset == off)
 	    return &list->idx;
+	  if (list->offset > off && before == NULL)
+	    before = list;
 	  if (list->next == NULL)
 	    break;
+	  list = list->next;
 	}
-      if (i == 16)
+      if (i == 32)
 	return NULL;
+      if (before)
+	{
+	  list = before;
+	  before = XOBNEW (&stridx_obstack, struct stridxlist);
+	  *before = *list;
+	  list->next = before;
+	  list->offset = off;
+	  list->idx = 0;
+	  return &list->idx;
+	}
       list->next = XOBNEW (&stridx_obstack, struct stridxlist);
       list = list->next;
     }
@@ -613,9 +640,7 @@ verify_related_strinfos (strinfo *origsi)
 static int
 get_stridx_plus_constant (strinfo *basesi, HOST_WIDE_INT off, tree ptr)
 {
-  gcc_checking_assert (TREE_CODE (ptr) == SSA_NAME);
-
-  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr))
+  if (TREE_CODE (ptr) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr))
     return 0;
 
   if (basesi->length == NULL_TREE
@@ -633,7 +658,8 @@ get_stridx_plus_constant (strinfo *basesi, HOST_WIDE_INT off, tree ptr)
       || TREE_CODE (si->length) != INTEGER_CST)
     return 0;
 
-  if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
+  if (TREE_CODE (ptr) == SSA_NAME
+      && ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
     ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
 
   gcc_checking_assert (compare_tree_int (si->length, off) != -1);
@@ -651,6 +677,7 @@ get_stridx_plus_constant (strinfo *basesi, HOST_WIDE_INT off, tree ptr)
 	{
 	  if (r == 0)
 	    {
+	      gcc_assert (TREE_CODE (ptr) == SSA_NAME);
 	      ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] = si->idx;
 	      return si->idx;
 	    }
@@ -2063,7 +2090,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	}
     }
   else
-    idx = get_addr_stridx (lhs);
+    idx = get_addr_stridx (lhs, NULL_TREE);
 
   if (idx > 0)
     {

@@ -1,3 +1,18 @@
+2016-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71625
+	* tree-ssa-strlen.c (get_addr_stridx): Add PTR argument.  Assume list
+	is sorted by ascending list->offset.  If PTR is non-NULL and there is
+	previous strinfo, call get_stridx_plus_constant.
+	(get_stridx): Pass exp as second argument to get_addr_stridx.
+	(addr_stridxptr): Add missing list = list->next, so that there can be
+	more than one entries in the list.  Bump limit from 16 to 32.  Ensure
+	the list is sorted by ascending list->offset.
+	(get_stridx_plus_constant): Adjust so that it can be also called with
+	ADDR_EXPR instead of SSA_NAME as PTR.
+	(handle_char_store): Pass NULL_TREE as second argument to
+	get_addr_stridx.
+
 2016-06-29  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/68961
