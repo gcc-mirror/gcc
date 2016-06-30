@@ -1,5 +1,8 @@
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/71707
+	* gcc.dg/strlenopt-29.c: New test.
+
 	PR fortran/71704
 	* gfortran.dg/gomp/pr71704.f90: New test.
 

@@ -1,3 +1,9 @@
+2016-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71707
+	* tree-ssa-strlen.c (get_stridx_plus_constant): Handle already present
+	strinfo even for ADDR_EXPR ptr.
+
 2016-06-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.md (darn_32): Change the condition to
