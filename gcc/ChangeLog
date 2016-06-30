@@ -1,3 +1,15 @@
+2016-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* opts.c (handle_param): Use find_param_fuzzy to offer suggestions
+	for misspelled param names.
+	* params.c: Include spellcheck.h.
+	(find_param_fuzzy): New function.
+	* params.h (find_param_fuzzy): New prototype.
+	* spellcheck.c (struct edit_distance_traits<const char *>): Move
+	to...
+	* spellcheck.h (struct edit_distance_traits<const char *>):
+	...here.
+
 2016-06-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/predicates.md (const_0_to_7_operand): New

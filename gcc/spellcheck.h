@@ -48,6 +48,24 @@ find_closest_string (const char *target,
 template <typename TYPE>
 struct edit_distance_traits {};
 
+/* Specialization of edit_distance_traits for C-style strings.  */
+
+template <>
+struct edit_distance_traits<const char *>
+{
+  static size_t get_length (const char *str)
+  {
+    gcc_assert (str);
+    return strlen (str);
+  }
+
+  static const char *get_string (const char *str)
+  {
+    gcc_assert (str);
+    return str;
+  }
+};
+
 /* A type for use when determining the best match against a string,
    expressed as a template so that we can match against various
    string-like types (const char *, frontend identifiers, and preprocessor

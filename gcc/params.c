@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "params-enum.h"
 #include "diagnostic-core.h"
+#include "spellcheck.h"
 
 /* An array containing the compiler parameters and their current
    values.  */
@@ -140,6 +141,19 @@ find_param (const char *name, enum compiler_param *index)
       }
 
   return false;
+}
+
+/* Look for the closest match for NAME in the parameter table, returning it
+   if it is a reasonable suggestion for a misspelling.  Return NULL
+   otherwise.  */
+
+const char *
+find_param_fuzzy (const char *name)
+{
+  best_match <const char *, const char *> bm (name);
+  for (size_t i = 0; i < num_compiler_params; ++i)
+    bm.consider (compiler_params[i].option);
+  return bm.get_best_meaningful_candidate ();
 }
 
 /* Return true if param with entry index INDEX should be defined using strings.

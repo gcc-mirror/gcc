@@ -121,24 +121,6 @@ levenshtein_distance (const char *s, const char *t)
   return levenshtein_distance (s, strlen (s), t, strlen (t));
 }
 
-/* Specialization of edit_distance_traits for C-style strings.  */
-
-template <>
-struct edit_distance_traits<const char *>
-{
-  static size_t get_length (const char *str)
-  {
-    gcc_assert (str);
-    return strlen (str);
-  }
-
-  static const char *get_string (const char *str)
-  {
-    gcc_assert (str);
-    return str;
-  }
-};
-
 /* Given TARGET, a non-NULL string, and CANDIDATES, a non-NULL ptr to
    an autovec of non-NULL strings, determine which element within
    CANDIDATES has the lowest edit distance to TARGET.  If there are
