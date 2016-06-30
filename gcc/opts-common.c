@@ -374,8 +374,9 @@ static const struct option_map option_map[] =
    to specific options.  We want to do the reverse: to find all the ways
    that a user could validly spell an option.
 
-   Given valid OPT_TEXT (with a leading dash), add it and all of its valid
-   variant spellings to CANDIDATES, each without a leading dash.
+   Given valid OPT_TEXT (with a leading dash) for OPTION, add it and all
+   of its valid variant spellings to CANDIDATES, each without a leading
+   dash.
 
    For example, given "-Wabi-tag", the following are added to CANDIDATES:
      "Wabi-tag"
@@ -387,9 +388,11 @@ static const struct option_map option_map[] =
 
 void
 add_misspelling_candidates (auto_vec<char *> *candidates,
+			    const struct cl_option *option,
 			    const char *opt_text)
 {
   gcc_assert (candidates);
+  gcc_assert (option);
   gcc_assert (opt_text);
   candidates->safe_push (xstrdup (opt_text + 1));
   for (unsigned i = 0; i < ARRAY_SIZE (option_map); i++)
@@ -397,6 +400,9 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
       const char *opt0 = option_map[i].opt0;
       const char *new_prefix = option_map[i].new_prefix;
       size_t new_prefix_len = strlen (new_prefix);
+
+      if (option->cl_reject_negative && option_map[i].negated)
+	continue;
 
       if (strncmp (opt_text, new_prefix, new_prefix_len) == 0)
 	{

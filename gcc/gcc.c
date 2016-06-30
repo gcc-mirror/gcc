@@ -7700,12 +7700,14 @@ driver::build_option_suggestions (void)
 	      for (unsigned j = 0; e->values[j].arg != NULL; j++)
 		{
 		  char *with_arg = concat (opt_text, e->values[j].arg, NULL);
-		  add_misspelling_candidates (m_option_suggestions, with_arg);
+		  add_misspelling_candidates (m_option_suggestions, option,
+					      with_arg);
 		  free (with_arg);
 		}
 	    }
 	  else
-	    add_misspelling_candidates (m_option_suggestions, opt_text);
+	    add_misspelling_candidates (m_option_suggestions, option,
+					opt_text);
 	  break;
 
 	case OPT_fsanitize_:
@@ -7729,7 +7731,8 @@ driver::build_option_suggestions (void)
 		/* Add with_arg and all of its variant spellings e.g.
 		   "-fno-sanitize=address" to candidates (albeit without
 		   leading dashes).  */
-		add_misspelling_candidates (m_option_suggestions, with_arg);
+		add_misspelling_candidates (m_option_suggestions, option,
+					    with_arg);
 		free (with_arg);
 	      }
 	  }

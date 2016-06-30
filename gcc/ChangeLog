@@ -1,3 +1,13 @@
+2016-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/71651
+	* gcc.c (driver::build_option_suggestions): Pass "option" to
+	add_misspelling_candidates.
+	* opts-common.c (add_misspelling_candidates): Add "option" param;
+	use it to avoid adding negated forms for options marked with
+	RejectNegative.
+	* opts.h (add_misspelling_candidates): Add "option" param.
+
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71693
