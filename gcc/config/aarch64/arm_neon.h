@@ -5814,162 +5814,6 @@ vaddlvq_u32 (uint32x4_t a)
   return result;
 }
 
-#define vcopyq_lane_f32(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t c_ = (c);                                            \
-       float32x4_t a_ = (a);                                            \
-       float32x4_t result;                                              \
-       __asm__ ("ins %0.s[%2], %3.s[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_f64(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t c_ = (c);                                            \
-       float64x2_t a_ = (a);                                            \
-       float64x2_t result;                                              \
-       __asm__ ("ins %0.d[%2], %3.d[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_p8(a, b, c, d)                                      \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x16_t c_ = (c);                                             \
-       poly8x16_t a_ = (a);                                             \
-       poly8x16_t result;                                               \
-       __asm__ ("ins %0.b[%2], %3.b[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_p16(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x8_t c_ = (c);                                             \
-       poly16x8_t a_ = (a);                                             \
-       poly16x8_t result;                                               \
-       __asm__ ("ins %0.h[%2], %3.h[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_s8(a, b, c, d)                                      \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x16_t c_ = (c);                                              \
-       int8x16_t a_ = (a);                                              \
-       int8x16_t result;                                                \
-       __asm__ ("ins %0.b[%2], %3.b[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_s16(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t c_ = (c);                                              \
-       int16x8_t a_ = (a);                                              \
-       int16x8_t result;                                                \
-       __asm__ ("ins %0.h[%2], %3.h[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_s32(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t c_ = (c);                                              \
-       int32x4_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("ins %0.s[%2], %3.s[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_s64(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x2_t c_ = (c);                                              \
-       int64x2_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("ins %0.d[%2], %3.d[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_u8(a, b, c, d)                                      \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x16_t c_ = (c);                                             \
-       uint8x16_t a_ = (a);                                             \
-       uint8x16_t result;                                               \
-       __asm__ ("ins %0.b[%2], %3.b[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_u16(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t c_ = (c);                                             \
-       uint16x8_t a_ = (a);                                             \
-       uint16x8_t result;                                               \
-       __asm__ ("ins %0.h[%2], %3.h[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_u32(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t c_ = (c);                                             \
-       uint32x4_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("ins %0.s[%2], %3.s[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vcopyq_lane_u64(a, b, c, d)                                     \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x2_t c_ = (c);                                             \
-       uint64x2_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("ins %0.d[%2], %3.d[%4]"                                \
-                : "=w"(result)                                          \
-                : "0"(a_), "i"(b), "w"(c_), "i"(d)                      \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vcvtx_f32_f64 (float64x2_t a)
 {
@@ -12354,6 +12198,398 @@ __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vcntq_u8 (uint8x16_t __a)
 {
   return (uint8x16_t) __builtin_aarch64_popcountv16qi ((int8x16_t) __a);
+}
+
+/* vcopy_lane.  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vcopy_lane_f32 (float32x2_t __a, const int __lane1,
+		float32x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vcopy_lane_f64 (float64x1_t __a, const int __lane1,
+		float64x1_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vcopy_lane_p8 (poly8x8_t __a, const int __lane1,
+	       poly8x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				 __a, __lane1);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vcopy_lane_p16 (poly16x4_t __a, const int __lane1,
+		poly16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vcopy_lane_s8 (int8x8_t __a, const int __lane1,
+	       int8x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				 __a, __lane1);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcopy_lane_s16 (int16x4_t __a, const int __lane1,
+		int16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vcopy_lane_s32 (int32x2_t __a, const int __lane1,
+		int32x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcopy_lane_s64 (int64x1_t __a, const int __lane1,
+		int64x1_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vcopy_lane_u8 (uint8x8_t __a, const int __lane1,
+	       uint8x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				 __a, __lane1);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcopy_lane_u16 (uint16x4_t __a, const int __lane1,
+		uint16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vcopy_lane_u32 (uint32x2_t __a, const int __lane1,
+		uint32x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcopy_lane_u64 (uint64x1_t __a, const int __lane1,
+		uint64x1_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+/* vcopy_laneq.  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vcopy_laneq_f32 (float32x2_t __a, const int __lane1,
+		 float32x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vcopy_laneq_f64 (float64x1_t __a, const int __lane1,
+		 float64x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vcopy_laneq_p8 (poly8x8_t __a, const int __lane1,
+		poly8x16_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				 __a, __lane1);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vcopy_laneq_p16 (poly16x4_t __a, const int __lane1,
+		 poly16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vcopy_laneq_s8 (int8x8_t __a, const int __lane1,
+		int8x16_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				 __a, __lane1);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcopy_laneq_s16 (int16x4_t __a, const int __lane1,
+		 int16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vcopy_laneq_s32 (int32x2_t __a, const int __lane1,
+		 int32x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcopy_laneq_s64 (int64x1_t __a, const int __lane1,
+		 int64x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vcopy_laneq_u8 (uint8x8_t __a, const int __lane1,
+		uint8x16_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				 __a, __lane1);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcopy_laneq_u16 (uint16x4_t __a, const int __lane1,
+		 uint16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vcopy_laneq_u32 (uint32x2_t __a, const int __lane1,
+		 uint32x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcopy_laneq_u64 (uint64x1_t __a, const int __lane1,
+		 uint64x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+/* vcopyq_lane.  */
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcopyq_lane_f32 (float32x4_t __a, const int __lane1,
+		 float32x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vcopyq_lane_f64 (float64x2_t __a, const int __lane1,
+		 float64x1_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vcopyq_lane_p8 (poly8x16_t __a, const int __lane1,
+		poly8x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vcopyq_lane_p16 (poly16x8_t __a, const int __lane1,
+		 poly16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vcopyq_lane_s8 (int8x16_t __a, const int __lane1,
+		int8x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcopyq_lane_s16 (int16x8_t __a, const int __lane1,
+		 int16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vcopyq_lane_s32 (int32x4_t __a, const int __lane1,
+		 int32x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vcopyq_lane_s64 (int64x2_t __a, const int __lane1,
+		 int64x1_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vcopyq_lane_u8 (uint8x16_t __a, const int __lane1,
+		uint8x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcopyq_lane_u16 (uint16x8_t __a, const int __lane1,
+		 uint16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vcopyq_lane_u32 (uint32x4_t __a, const int __lane1,
+		 uint32x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vcopyq_lane_u64 (uint64x2_t __a, const int __lane1,
+		 uint64x1_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+/* vcopyq_laneq.  */
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcopyq_laneq_f32 (float32x4_t __a, const int __lane1,
+		  float32x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vcopyq_laneq_f64 (float64x2_t __a, const int __lane1,
+		  float64x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vcopyq_laneq_p8 (poly8x16_t __a, const int __lane1,
+		 poly8x16_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vcopyq_laneq_p16 (poly16x8_t __a, const int __lane1,
+		  poly16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vcopyq_laneq_s8 (int8x16_t __a, const int __lane1,
+		 int8x16_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcopyq_laneq_s16 (int16x8_t __a, const int __lane1,
+		  int16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vcopyq_laneq_s32 (int32x4_t __a, const int __lane1,
+		  int32x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vcopyq_laneq_s64 (int64x2_t __a, const int __lane1,
+		  int64x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vcopyq_laneq_u8 (uint8x16_t __a, const int __lane1,
+		 uint8x16_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcopyq_laneq_u16 (uint16x8_t __a, const int __lane1,
+		  uint16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vcopyq_laneq_u32 (uint32x4_t __a, const int __lane1,
+		  uint32x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vcopyq_laneq_u64 (uint64x2_t __a, const int __lane1,
+		  uint64x2_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				   __a, __lane1);
 }
 
 /* vcvt (double -> float).  */
