@@ -1,3 +1,8 @@
+2016-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/spellcheck-params.c: New testcase.
+	* gcc.dg/spellcheck-params-2.c: New testcase.
+
 2016-06-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-extract-1.c: New file to test ISA 3.0
