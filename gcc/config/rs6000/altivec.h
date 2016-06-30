@@ -399,6 +399,11 @@
 #ifdef _ARCH_PPC64
 #define vec_vprtybq __builtin_vec_vprtybq
 #endif
+
+#define vec_absd __builtin_vec_vadu
+#define vec_absdb __builtin_vec_vadub
+#define vec_absdh __builtin_vec_vaduh
+#define vec_absdw __builtin_vec_vaduw
 #endif
 
 /* Predicates.
