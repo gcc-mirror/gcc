@@ -1,3 +1,8 @@
+2016-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71693
+	* gcc.c-torture/compile/pr71693.c: New test.
+
 2016-06-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/spellcheck-params.c: New testcase.
