@@ -1,3 +1,8 @@
+2016-06-30  James Greenhalgh  <james.greenhalgh@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/vget_set_lane_1.c: New test.
+
 2016-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/71651

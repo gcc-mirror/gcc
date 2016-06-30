@@ -1,3 +1,10 @@
+2016-06-30  James Greenhalgh  <james.greenhalgh@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_vec_copy_lane<mode>):
+	New define_insn.
+	(*aarch64_simd_vec_copy_lane_<vswap_width_name><mode>): Likewise.
+
 2016-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/71651

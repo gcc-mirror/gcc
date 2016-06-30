@@ -546,6 +546,49 @@
   [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_1reg<q>")]
 )
 
+(define_insn "*aarch64_simd_vec_copy_lane<mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(vec_merge:VALL
+	    (vec_duplicate:VALL
+	      (vec_select:<VEL>
+		(match_operand:VALL 3 "register_operand" "w")
+		(parallel
+		  [(match_operand:SI 4 "immediate_operand" "i")])))
+	    (match_operand:VALL 1 "register_operand" "0")
+	    (match_operand:SI 2 "immediate_operand" "i")))]
+  "TARGET_SIMD"
+  {
+    int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
+    operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
+    operands[4] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[4])));
+
+    return "ins\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
+  }
+  [(set_attr "type" "neon_ins<q>")]
+)
+
+(define_insn "*aarch64_simd_vec_copy_lane_<vswap_width_name><mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(vec_merge:VALL
+	    (vec_duplicate:VALL
+	      (vec_select:<VEL>
+		(match_operand:<VSWAP_WIDTH> 3 "register_operand" "w")
+		(parallel
+		  [(match_operand:SI 4 "immediate_operand" "i")])))
+	    (match_operand:VALL 1 "register_operand" "0")
+	    (match_operand:SI 2 "immediate_operand" "i")))]
+  "TARGET_SIMD"
+  {
+    int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
+    operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
+    operands[4] = GEN_INT (ENDIAN_LANE_N (<VSWAP_WIDTH>mode,
+			   INTVAL (operands[4])));
+
+    return "ins\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
+  }
+  [(set_attr "type" "neon_ins<q>")]
+)
+
 (define_insn "aarch64_simd_lshr<mode>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (lshiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
