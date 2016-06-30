@@ -1,5 +1,8 @@
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/71704
+	* gfortran.dg/gomp/pr71704.f90: New test.
+
 	PR fortran/71705
 	* gfortran.dg/gomp/pr71705.f90: New test.
 

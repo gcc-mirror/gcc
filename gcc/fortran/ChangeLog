@@ -1,5 +1,18 @@
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/71704
+	* parse.c (matchs, matcho): Move right before decode_omp_directive.
+	If spec_only, only gfc_match the keyword and if successful, goto
+	do_spec_only.
+	(matchds, matchdo): Define.
+	(decode_omp_directive): Add spec_only local var and set it.
+	Use matchds or matchdo macros instead of matchs or matcho
+	for declare target, declare simd, declare reduction and threadprivate
+	directives.  Return ST_GET_FCN_CHARACTERISTICS if a non-declarative
+	directive could be matched.
+	(next_statement): For ST_GET_FCN_CHARACTERISTICS restore
+	gfc_current_locus from old_locus even if there is no label.
+
 	PR fortran/71705
 	* trans-openmp.c (gfc_trans_omp_clauses): Set TREE_ADDRESSABLE on
 	decls in to/from clauses.
