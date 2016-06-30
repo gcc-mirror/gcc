@@ -334,7 +334,6 @@ inline_call (struct cgraph_edge *e, bool update_original,
       if (dump_file)
 	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
 		 to->name (), to->order);
-      build_optimization_node (&opts);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
     }
