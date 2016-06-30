@@ -1,3 +1,11 @@
+2016-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71693
+	* fold-const.c (fold_binary_loc) <case RROTATE_EXPR>: Cast
+	TREE_OPERAND (arg0, 0) and TREE_OPERAND (arg0, 1) to type
+	first when permuting bitwise operation with rotate.  Cast
+	TREE_OPERAND (arg0, 0) to type when cancelling two rotations.
+
 2016-06-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* opts.c (handle_param): Use find_param_fuzzy to offer suggestions
