@@ -1,3 +1,19 @@
+2016-06-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71677
+	* config/rs6000/constraints.md (wY constraint): New constraint to
+	match the requirements for the LXSD and STXSD instructions.
+	* config/rs6000/predicates.md (offsettable_mem_14bit_operand): New
+	predicate to match the requirements for the LXSD and STXSD
+	instructions.
+	* config/rs6000/rs6000.md (mov<mode>_hardfloat32, FMOVE64 case):
+	Use constaint wY for LXSD/STXSD instructions instead of 'o' or 'Y'
+	to make sure that the bottom 2 bits of offset are 0, the address
+	form is offsettable, and no updating is done in the address mode.
+	(mov<mode>_hardfloat64, FMOVE64 case): Likewise.
+	(movdi_internal32): Likewise
+	(movdi_internal64): Likewise.
+
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71707
