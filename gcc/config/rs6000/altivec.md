@@ -3680,21 +3680,21 @@
 (define_insn "darn_32"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(const_int 0)] UNSPEC_DARN_32))]
-  "TARGET_MODULO"
+  "TARGET_P9_MISC"
   "darn %0,0"
   [(set_attr "type" "integer")])
 
 (define_insn "darn_raw"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(const_int 0)] UNSPEC_DARN_RAW))]
-  "TARGET_MODULO && TARGET_64BIT"
+  "TARGET_P9_MISC && TARGET_64BIT"
   "darn %0,2"
   [(set_attr "type" "integer")])
 
 (define_insn "darn"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(const_int 0)] UNSPEC_DARN))]
-  "TARGET_MODULO && TARGET_64BIT"
+  "TARGET_P9_MISC && TARGET_64BIT"
   "darn %0,1"
   [(set_attr "type" "integer")])
 

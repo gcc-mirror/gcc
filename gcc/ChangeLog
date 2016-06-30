@@ -1,3 +1,75 @@
+2016-06-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.md (darn_32): Change the condition to
+	TARGET_P9_MISC instead of TARGET_MODULO.
+	(darn_raw): Replace TARGET_MODULO with TARGET_P9_MISC in the
+	condition expression.
+	(darn): Replace TARGET_MODULO with TARGET_P9_MISC in the
+	condition expression.
+	* config/rs6000/dfp.md (UNSPEC_DTSTSFI): New unspec constant.
+	(DFP_TEST): New code iterator.
+	(dfptstsfi_<code>_mode>): New define_expand.
+	(*dfp_sgnfcnc_<mode>): New define_insn.
+	* config/rs6000/rs6000-builtin.def (BU_P9_MISC_0): Move this macro
+	definition next to BU_P9_MISC_1 definition and change the MASK
+	value to RS6000_BTM_P9_MISC.
+	(BU_P9_MISC_1): Change the MASK value to RS6000_BTM_P9_MISC.
+	(BU_P9_64BIT_MISC_0): Likewise.
+	(BU_P9_DFP_MISC_0): New macro definition.
+	(BU_P9_DFP_MISC_1): New macro definition.
+	(BU_P9_DFP_MISC_2): New macro definition.
+	(BU_P9_DFP_OVERLOAD_1): New macro definition.
+	(BU_P9_DFP_OVERLOAD_2): New macro definition.
+	(BU_P9_DFP_OVERLOAD_3): New macro definition.
+	(TSTSFI_LT_DD): New BU_P9_DFP_MISC_2.
+	(TSTSFI_LT_TD): Likewise.
+	(TSTSFI_EQ_DD): Likewise.
+	(TSTSFI_EQ_TD): Likewise.
+	(TSTSFI_GT_DD): Likewise.
+	(TSTSFI_GT_TD): Likewise.
+	(TSTSFI_OV_DD): Likewise.
+	(TSTSFI_OV_TD): Likewise.
+	(TSTSFI_LT): New BU_P9_DFP_OVERLOAD_2.
+	(TSTSFI_LT_DD): Likewise.
+	(TSTSFI_LT_TD): Likewise.
+	(TSTSFI_EQ): Likewise.
+	(TSTSFI_EQ_DD): Likewise.
+	(TSTSFI_EQ_TD): Likewise.
+	(TSTSFI_GT): Likewise.
+	(TSTSFI_GT_DD): Likewise.
+	(TSTSFI_GT_TD): Likewise.
+	(TSTSFI_OV): Likewise.
+	(TSTSFI_OV_DD): Likewise.
+	(TSTSFI_OV_TD): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	overloaded test significance functions.
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Add
+	OPTION_MASK_P9_MISC into the representation of this mask.
+	(POWERPC_MASKS): Add OPTION_MASK_P9_MISC into the representation
+	of this mask.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Set the
+	RS6000_BTM_P9_MISC flag in the return value if TARGET_P9_MISC is
+	non-zero.
+	(rs6000_expand_binop_builtin): Enforce that argument 0 of the exp
+	argument is a 6-bit unsigned literal value if the icode argument
+	represents a DFP test significance built-in call.
+	(rs6000_invalid_builtin): Add support for the RS6000_BTM_P9_MISC
+	flag used independently and in combination with the
+	RS6000_BTM_64BIT flag.
+	(rs6000_opt_masks): Add entry for power9-misc command-line option.
+	(rs6000_builtin_mask_names): Add entry for power9-misc
+	command-line option.
+	* config/rs6000/rs6000.h: Redefine TARGET_P9_MISC as 0 if
+	HAVE_AS_POWER9 is not a defined macro.  Define MASK_P9_MISC and
+	RS6000_BTM_P9_MISC macros.
+	* config/rs6000/rs6000.opt: Add support for the -mpower9-misc
+	option and change the description of the -mpower9-vector option to
+	enable only vector instructions, removing its erroneously claimed
+	support for scalar instructions.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Document
+	the ISA 3.0 digital floating point test significance built-in
+	functions.
+
 2016-06-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (cortexa35_tunings):
