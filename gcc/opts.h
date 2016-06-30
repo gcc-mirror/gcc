@@ -417,6 +417,7 @@ extern const struct sanitizer_opts_s
 } sanitizer_opts[];
 
 extern void add_misspelling_candidates (auto_vec<char *> *candidates,
+					const struct cl_option *option,
 					const char *base_option);
 
 #endif
