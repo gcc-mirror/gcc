@@ -319,7 +319,10 @@
    UNSPEC_DXEX
    UNSPEC_DIEX
    UNSPEC_DSCLI
+   UNSPEC_DTSTSFI
    UNSPEC_DSCRI])
+
+(define_code_iterator DFP_TEST [eq lt gt unordered])
 
 (define_mode_iterator D64_D128 [DD TD])
 
@@ -360,6 +363,42 @@
   "TARGET_DFP"
   "diex<dfp_suffix> %0,%1,%2"
   [(set_attr "type" "dfp")])
+
+(define_expand "dfptstsfi_<code>_<mode>"
+  [(set (match_dup 3)
+	(compare:CCFP
+         (unspec:D64_D128
+	  [(match_operand:SI 1 "const_int_operand" "n")
+	   (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+	  UNSPEC_DTSTSFI)
+	 (match_dup 4)))
+   (set (match_operand:SI 0 "register_operand" "")
+   	(DFP_TEST:SI (match_dup 3)
+		     (const_int 0)))
+  ]
+  "TARGET_P9_MISC"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+  operands[4] = const0_rtx;
+})
+
+(define_insn "*dfp_sgnfcnc_<mode>"
+  [(set (match_operand:CCFP 0 "" "=y")
+        (compare:CCFP
+	 (unspec:D64_D128 [(match_operand:SI 1 "const_int_operand" "n")
+	 	           (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+          UNSPEC_DTSTSFI)
+	 (match_operand:SI 3 "zero_constant" "j")))]
+  "TARGET_P9_MISC"
+{
+  /* If immediate operand is greater than 63, it will behave as if
+     the value had been 63.  The code generator does not support
+     immediate operand values greater than 63.  */
+  if (!(IN_RANGE (INTVAL (operands[1]), 0, 63)))
+    operands[1] = GEN_INT (63);
+  return "dtstsfi<dfp_suffix> %0,%1,%2";
+}
+  [(set_attr "type" "fp")])
 
 (define_insn "dfp_dscli_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")

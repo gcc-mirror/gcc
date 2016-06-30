@@ -14842,12 +14842,31 @@ The @code{__builtin_divde}, @code{__builtin_divdeo},
 64-bit environment support ISA 2.06 or later.
 
 The following built-in functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9})
-or with @option{-mmodulo}:
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
 @smallexample
 long long __builtin_darn (void);
 long long __builtin_darn_raw (void);
 int __builtin_darn_32 (void);
+
+int __builtin_dfp_dtstsfi_lt (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_lt (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_lt_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_lt_td (unsigned int comparison, _Decimal128 value);
+
+int __builtin_dfp_dtstsfi_gt (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_gt (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_gt_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_gt_td (unsigned int comparison, _Decimal128 value);
+
+int __builtin_dfp_dtstsfi_eq (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_eq (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_eq_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_eq_td (unsigned int comparison, _Decimal128 value);
+
+int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_ov_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_ov_td (unsigned int comparison, _Decimal128 value);
 @end smallexample
 
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
@@ -14857,6 +14876,38 @@ The @code{__builtin_darn} function provides a 64-bit conditioned
 random number.  The @code{__builtin_darn_raw} function provides a
 64-bit raw random number.  The @code{__builtin_darn_32} function
 provides a 32-bit random number.
+
+The @code{__builtin_dfp_dtstsfi_lt} function returns a non-zero value
+if and only if the number of signficant digits of its @code{value} argument
+is less than its @code{comparison} argument.  The
+@code{__builtin_dfp_dtstsfi_lt_dd} and
+@code{__builtin_dfp_dtstsfi_lt_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_dfp_dtstsfi_gt} function returns a non-zero value
+if and only if the number of signficant digits of its @code{value} argument
+is greater than its @code{comparison} argument.  The
+@code{__builtin_dfp_dtstsfi_gt_dd} and
+@code{__builtin_dfp_dtstsfi_gt_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_dfp_dtstsfi_eq} function returns a non-zero value
+if and only if the number of signficant digits of its @code{value} argument
+equals its @code{comparison} argument.  The
+@code{__builtin_dfp_dtstsfi_eq_dd} and
+@code{__builtin_dfp_dtstsfi_eq_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_dfp_dtstsfi_ov} function returns a non-zero value
+if and only if its @code{value} argument has an undefined number of
+significant digits, such as when @code{value} is an encoding of @code{NaN}.
+The @code{__builtin_dfp_dtstsfi_ov_dd} and
+@code{__builtin_dfp_dtstsfi_ov_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
 
 The following built-in functions are available for the PowerPC family
 of processors when hardware decimal floating point

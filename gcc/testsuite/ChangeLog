@@ -1,3 +1,87 @@
+2016-06-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/dfp/dfp.exp: New dejagnu test script.
+	* gcc.target/powerpc/dfp/dtstsfi-0.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-1.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-10.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-11.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-12.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-13.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-14.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-15.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-16.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-17.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-18.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-19.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-2.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-20.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-21.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-22.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-23.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-24.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-25.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-26.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-27.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-28.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-29.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-3.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-30.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-31.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-32.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-33.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-34.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-35.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-36.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-37.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-38.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-39.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-4.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-40.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-41.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-42.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-43.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-44.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-45.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-46.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-47.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-48.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-49.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-5.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-50.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-51.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-52.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-53.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-54.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-55.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-56.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-57.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-58.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-59.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-6.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-60.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-61.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-62.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-63.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-64.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-65.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-66.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-67.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-68.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-69.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-7.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-70.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-71.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-72.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-73.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-74.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-75.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-76.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-77.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-78.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-79.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-8.c: New test.
+	* gcc.target/powerpc/dfp/dtstsfi-9.c: New test.
+
 2016-06-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             James Greenhalgh  <james.greenhalgh@arm.com>
 

@@ -314,12 +314,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #undef  TARGET_P9_MINMAX
 #undef  TARGET_P9_DFORM_SCALAR
 #undef  TARGET_P9_DFORM_VECTOR
+#undef  TARGET_P9_MISC
 #define TARGET_FLOAT128_HW 0
 #define TARGET_MODULO 0
 #define TARGET_P9_VECTOR 0
 #define TARGET_P9_MINMAX 0
 #define TARGET_P9_DFORM_SCALAR 0
 #define TARGET_P9_DFORM_VECTOR 0
+#define TARGET_P9_MISC 0
 #endif
 
 /* Define TARGET_LWSYNC_INSTRUCTION if the assembler knows about lwsync.  If
@@ -648,6 +650,7 @@ extern int rs6000_vector_align[];
 #define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
 #define MASK_P8_VECTOR			OPTION_MASK_P8_VECTOR
 #define MASK_P9_VECTOR			OPTION_MASK_P9_VECTOR
+#define MASK_P9_MISC			OPTION_MASK_P9_MISC
 #define MASK_POPCNTB			OPTION_MASK_POPCNTB
 #define MASK_POPCNTD			OPTION_MASK_POPCNTD
 #define MASK_PPC_GFXOPT			OPTION_MASK_PPC_GFXOPT
@@ -2698,6 +2701,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
 #define RS6000_BTM_P8_VECTOR	MASK_P8_VECTOR	/* ISA 2.07 vector.  */
 #define RS6000_BTM_P9_VECTOR	MASK_P9_VECTOR	/* ISA 3.0 vector.  */
+#define RS6000_BTM_P9_MISC	MASK_P9_MISC	/* ISA 3.0 misc. non-vector */
 #define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
 #define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
 #define RS6000_BTM_SPE		MASK_STRING	/* E500 */
@@ -2718,6 +2722,7 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_VSX			\
 				 | RS6000_BTM_P8_VECTOR			\
 				 | RS6000_BTM_P9_VECTOR			\
+				 | RS6000_BTM_P9_MISC			\
 				 | RS6000_BTM_MODULO                    \
 				 | RS6000_BTM_CRYPTO			\
 				 | RS6000_BTM_FRE			\
