@@ -12746,11 +12746,15 @@ fold_binary_loc (location_t loc,
 	      || TREE_CODE (arg0) == BIT_IOR_EXPR
 	      || TREE_CODE (arg0) == BIT_XOR_EXPR)
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	return fold_build2_loc (loc, TREE_CODE (arg0), type,
-			    fold_build2_loc (loc, code, type,
-					 TREE_OPERAND (arg0, 0), arg1),
-			    fold_build2_loc (loc, code, type,
-					 TREE_OPERAND (arg0, 1), arg1));
+	{
+	  tree arg00 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+	  tree arg01 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
+	  return fold_build2_loc (loc, TREE_CODE (arg0), type,
+				  fold_build2_loc (loc, code, type,
+						   arg00, arg1),
+				  fold_build2_loc (loc, code, type,
+						   arg01, arg1));
+	}
 
       /* Two consecutive rotates adding up to the precision of the
 	 type can be ignored.  */
@@ -12762,7 +12766,7 @@ fold_binary_loc (location_t loc,
 	  && ((TREE_INT_CST_LOW (arg1)
 	       + TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)))
 	      == prec))
-	return TREE_OPERAND (arg0, 0);
+	return fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
 
       /* Fold (X & C2) << C1 into (X << C1) & (C2 << C1)
 	      (X & C2) >> C1 into (X >> C1) & (C2 >> C1)
