@@ -1,3 +1,12 @@
+2016-06-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (cortexa35_tunings):
+	Enable AES fusion.  Use cortexa57_branch_cost.
+	(cortexa53_tunings): Use cortexa57_branch_cost.
+	(cortexa72_tunings): Use cortexa57_branch_cost.
+	Use AUTOPREFETCHER_WEAK.
+	(cortexa73_tunings): Use cortexa57_branch_cost.
+
 2016-06-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             James Greenhalgh  <james.greenhalgh@arm.com>
 
