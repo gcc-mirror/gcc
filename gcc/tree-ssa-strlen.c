@@ -677,8 +677,14 @@ get_stridx_plus_constant (strinfo *basesi, HOST_WIDE_INT off, tree ptr)
 	{
 	  if (r == 0)
 	    {
-	      gcc_assert (TREE_CODE (ptr) == SSA_NAME);
-	      ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] = si->idx;
+	      if (TREE_CODE (ptr) == SSA_NAME)
+		ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] = si->idx;
+	      else
+		{
+		  int *pidx = addr_stridxptr (TREE_OPERAND (ptr, 0));
+		  if (pidx != NULL && *pidx == 0)
+		    *pidx = si->idx;
+		}
 	      return si->idx;
 	    }
 	  break;
