@@ -185,6 +185,11 @@
   "Vector constant that can be loaded with XXSPLTIB & sign extension."
   (match_test "xxspltib_constant_split (op, mode)"))
 
+;; ISA 3.0 D-form instruction that has the bottom 2 bits 0 (LXSD or STXSD).
+(define_memory_constraint "wY"
+  "Offsettable memory operand, with bottom 2 bits 0"
+  (match_operand 0 "offsettable_mem_14bit_operand"))
+
 ;; Altivec style load/store that ignores the bottom bits of the address
 (define_memory_constraint "wZ"
   "Indexed or indirect memory operand, ignoring the bottom 4 bits"
