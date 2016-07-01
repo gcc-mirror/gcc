@@ -2512,9 +2512,8 @@
   [(set (match_dup 0)
 	(unspec:V4SF [(match_dup 1)] UNSPEC_VSX_CVDPSPN))
    (set (match_dup 0)
-	(vec_duplicate:V4SF
-	 (vec_select:SF (match_dup 0)
-			(parallel [(const_int 0)]))))]
+	(unspec:V4SF [(match_dup 0)
+		      (const_int 0)] UNSPEC_VSX_XXSPLTW))]
   ""
   [(set_attr "type" "vecload,vecperm,mftgpr")
    (set_attr "length" "4,8,4")])

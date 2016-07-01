@@ -1,3 +1,10 @@
+2016-07-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71720
+	* config/rs6000/vsx.md (vsx_splat_v4sf_internal): When splitting
+	the insns, use vsx_xxspltw_v4sf_direct which does not check for
+	little endian.
+
 2016-07-01  Jan Beulich  <jbeulich@suse.com>
 
 	* varasm.c (get_variable_section): Validate initializer in
