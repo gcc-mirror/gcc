@@ -1150,7 +1150,18 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 
   resolve_unique_section (decl, reloc, flag_data_sections);
   if (IN_NAMED_SECTION (decl))
-    return get_named_section (decl, NULL, reloc);
+    {
+      section *sect = get_named_section (decl, NULL, reloc);
+
+      if ((sect->common.flags & SECTION_BSS) && !bss_initializer_p (decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "only zero initializers are allowed in section %qs",
+		    sect->named.name);
+	  DECL_INITIAL (decl) = error_mark_node;
+	}
+      return sect;
+    }
 
   if (ADDR_SPACE_GENERIC_P (as)
       && !DECL_THREAD_LOCAL_P (decl)
