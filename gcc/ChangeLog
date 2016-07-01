@@ -2,8 +2,8 @@
 
 	PR target/71720
 	* config/rs6000/vsx.md (vsx_splat_v4sf_internal): When splitting
-	the insns, use vsx_xxspltw_v4sf_direct which does not check for
-	little endian.
+	the insns, use an insn form that does not adjust the offset on
+	little endian systems.
 
 2016-07-01  Jan Beulich  <jbeulich@suse.com>
 
