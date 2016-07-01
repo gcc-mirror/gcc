@@ -1,3 +1,8 @@
+2016-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71687
+	* gfortran.dg/gomp/pr71687.f90: New test.
+
 2016-07-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/const-float128-ped.c: Require __float128 effective

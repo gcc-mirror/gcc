@@ -286,6 +286,9 @@ binding_level {
   tree blocks;
   /* The binding level containing this one (the enclosing binding level).  */
   struct binding_level *level_chain;
+  /* True if nreverse has been already called on names; if false, names
+     are ordered from newest declaration to oldest one.  */
+  bool reversed;
 };
 
 /* The binding level currently in effect.  */
@@ -296,7 +299,7 @@ static GTY(()) struct binding_level *current_binding_level = NULL;
 static GTY(()) struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
-static struct binding_level clear_binding_level = { NULL, NULL, NULL };
+static struct binding_level clear_binding_level = { NULL, NULL, NULL, false };
 
 
 /* Return true if we are in the global binding level.  */
@@ -310,6 +313,11 @@ global_bindings_p (void)
 tree
 getdecls (void)
 {
+  if (!current_binding_level->reversed)
+    {
+      current_binding_level->reversed = true;
+      current_binding_level->names = nreverse (current_binding_level->names);
+    }
   return current_binding_level->names;
 }
 
@@ -347,7 +355,7 @@ poplevel (int keep, int functionbody)
      binding level that we are about to exit and which is returned by this
      routine.  */
   tree block_node = NULL_TREE;
-  tree decl_chain = current_binding_level->names;
+  tree decl_chain = getdecls ();
   tree subblock_chain = current_binding_level->blocks;
   tree subblock_node;
 
