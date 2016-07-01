@@ -1,5 +1,14 @@
 2016-07-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/71687
+	* f95-lang.c (struct binding_level): Add reversed field.
+	(clear_binding_level): Adjust initializer.
+	(getdecls): If reversed is clear, set it and nreverse the names
+	chain before returning it.
+	(poplevel): Use getdecls.
+	* trans-decl.c (gfc_generate_function_code, gfc_process_block_locals):
+	Use nreverse to pushdecl decls in the declaration order.
+
 	PR fortran/71717
 	* trans-openmp.c (gfc_omp_privatize_by_reference): Return false
 	for GFC_DECL_ASSOCIATE_VAR_P with POINTER_TYPE.
