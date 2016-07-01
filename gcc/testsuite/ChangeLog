@@ -1,3 +1,7 @@
+2016-07-01  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.dg/bss.c: New.
+
 2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/71698
