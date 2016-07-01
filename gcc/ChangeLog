@@ -1,3 +1,12 @@
+2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from trunk
+	2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71698
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_simple_move): Disallow
+	TDmode values.
+
 2016-07-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from trunk r236992
@@ -16,7 +25,7 @@
 	(P9V_BUILTIN_VSRV): Macro expansion to define argument types for
 	new builtin.
 	* doc/extend.texi: Document the new vec_vslv and vec_srv built-in
-	functions. 
+	functions.
 
 2016-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
