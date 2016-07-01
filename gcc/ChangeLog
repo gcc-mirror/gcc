@@ -1,3 +1,9 @@
+2016-07-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/70729
+	* tree-vectorizer.c (adjust_simduid_builtins): Nullify safelen field
+	of loop since it can be not valid after transformation.
+
 2016-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (thumb_reload_in_hi): Delete.
