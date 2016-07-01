@@ -1,3 +1,9 @@
+2016-07-01  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/71709
+	* ira-lives.c (find_call_crossed_cheap_reg): Exit loop on arg reg
+	being set, not referenced.
+
 2016-07-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/70729
