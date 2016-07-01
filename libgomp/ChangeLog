@@ -1,3 +1,8 @@
+2016-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71717
+	* testsuite/libgomp.fortran/associate3.f90: New test.
+
 2016-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/target-21.C: New test.
