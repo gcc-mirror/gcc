@@ -1,3 +1,9 @@
+2016-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71717
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Return false
+	for GFC_DECL_ASSOCIATE_VAR_P with POINTER_TYPE.
+
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71704
