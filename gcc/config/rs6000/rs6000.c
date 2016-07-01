@@ -19194,7 +19194,8 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
      simple move insns are issued.  At present, 32-bit integers are not allowed
      in FPR/VSX registers.  Single precision binary floating is not a simple
      move because we need to convert to the single precision memory layout.
-     The 4-byte SDmode can be moved.  */
+     The 4-byte SDmode can be moved.  TDmode values are disallowed since they
+     need special direct move handling, which we do not support yet.  */
   size = GET_MODE_SIZE (mode);
   if (TARGET_DIRECT_MOVE
       && ((mode == SDmode) || (TARGET_POWERPC64 && size == 8))
@@ -19202,7 +19203,7 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
 	  || (to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)))
     return true;
 
-  else if (TARGET_DIRECT_MOVE_128 && size == 16
+  else if (TARGET_DIRECT_MOVE_128 && size == 16 && mode != TDmode
 	   && ((to_type == VSX_REG_TYPE && from_type == GPR_REG_TYPE)
 	       || (to_type == GPR_REG_TYPE && from_type == VSX_REG_TYPE)))
     return true;
