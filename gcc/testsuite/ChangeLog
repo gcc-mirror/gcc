@@ -1,3 +1,7 @@
+2016-07-01  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/pr65105-2.c: Add -msse2.
+
 2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71707
