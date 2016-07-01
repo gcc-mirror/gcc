@@ -1,3 +1,8 @@
+2016-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (thumb_reload_in_hi): Delete.
+	* config/arm/arm-protos.h (thumb_reload_in_hi): Delete prototype.
+
 2016-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_function_ok_for_sibcall): Add another check
