@@ -1,3 +1,9 @@
+2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71698
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_simple_move): Disallow
+	TDmode values.
+
 2016-07-01  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/71709

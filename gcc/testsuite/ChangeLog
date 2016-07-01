@@ -1,3 +1,8 @@
+2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71698
+	* gcc.target/powerpc/pr71698.c: New test.
+
 2016-07-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/71151
