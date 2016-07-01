@@ -1,3 +1,22 @@
+2016-07-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/const-float128-ped.c: Require __float128 effective
+	target and options.
+	* gcc.dg/const-float128.c: Likewise.
+	* gcc.dg/torture/float128-cmp-invalid.c: Require
+	__float128 and base_quadfloat_support effective targets, and
+	__float128 options.
+	* gcc.dg/torture/float128-div-underflow.c: Likewise.
+	* gcc.dg/torture/float128-extend-nan.c: Likewise.
+	* gcc.dg/torture/float128-nan.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-float128-timode-2.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-float128-timode-3.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-float128-timode.c: Likewise.
+	* lib/target-supports.exp (check_effective_target___float128):
+	New.
+	(add_options_for___float128): New.
+	(check_effective_target_base_quadword_support): New.
+
 2016-07-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71720

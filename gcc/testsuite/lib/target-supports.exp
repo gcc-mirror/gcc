@@ -2370,6 +2370,40 @@ proc check_effective_target_has_q_floating_suffix { } {
 	float dummy = 1.0q;
     } "$opts"]
 }
+
+# Return 1 if the target supports __float128,
+# 0 otherwise.
+
+proc check_effective_target___float128 { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_ppc_float128_sw_available]
+    }
+    if { [istarget ia64-*-*]
+	 || [istarget i?86-*-*]
+	 || [istarget x86_64-*-*] } {
+	return 1
+    }
+    return 0
+}
+
+proc add_options_for___float128 { flags } {
+    if { [istarget powerpc*-*-*] } {
+	return "$flags -mfloat128 -mvsx"
+    }
+    return "$flags"
+}
+
+# Return 1 if the target supports any special run-time requirements
+# for __float128 or _Float128,
+# 0 otherwise.
+
+proc check_effective_target_base_quadfloat_support { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_vsx_hw_available]
+    }
+    return 1
+}
+
 # Return 1 if the target supports compiling fixed-point,
 # 0 otherwise.
 
