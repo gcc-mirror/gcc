@@ -5,6 +5,8 @@
    flash address for loading jump table entry, 2 byte entry, after
    removing the special section placement hook. */
 
+#define SECTION_NAME ".foo"
+
 #include "exit-abort.h"
 #include "pr71151-common.h"
 

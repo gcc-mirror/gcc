@@ -1,3 +1,17 @@
+2016-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/71151
+	* gcc.target/avr/pr71151-common.h (foo): Use macro SECTION_NAME
+	instead of ".foo" for its section name.
+	* gcc.target/avr/pr71151-2.c (SECTION_NAME): Define appropriately
+	depending on MCU's flash size.
+	* gcc.target/avr/pr71151-3.c (SECTION_NAME): Dito.
+	* gcc.target/avr/pr71151-4.c (SECTION_NAME): Dito.
+	* gcc.target/avr/pr71151-5.c (SECTION_NAME): Dito.
+	* gcc.target/avr/pr71151-6.c (SECTION_NAME): Dito.
+	* gcc.target/avr/pr71151-7.c (SECTION_NAME): Dito.
+	* gcc.target/avr/pr71151-8.c (SECTION_NAME): Dito.
+
 2016-07-01  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.target/i386/pr65105-2.c: Add -msse2.
