@@ -204,6 +204,10 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 	  gcc_assert (TREE_CODE (arg) == SSA_NAME);
 	  simduid_to_vf *p = NULL, data;
 	  data.simduid = DECL_UID (SSA_NAME_VAR (arg));
+	  /* Need to nullify loop safelen field since it's value is not
+	     valid after transformation.  */
+	  if (bb->loop_father && bb->loop_father->safelen > 0)
+	    bb->loop_father->safelen = 0;
 	  if (htab)
 	    {
 	      p = htab->find (&data);
