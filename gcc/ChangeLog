@@ -1,3 +1,9 @@
+2016-07-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.md (*altivec_vpermr_<mode>_internal):
+	Exchange the order of the second and third operands in the vpermr
+	instruction tmeplate.
+
 2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/71698
