@@ -1,3 +1,8 @@
+2016-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_function_ok_for_sibcall): Add another check
+	for NULL decl.
+
 2016-06-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71677
