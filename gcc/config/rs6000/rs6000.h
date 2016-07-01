@@ -302,6 +302,26 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_P8_VECTOR 0
 #endif
 
+/* Define the ISA 3.0 flags as 0 if the target assembler does not support
+   Power9 instructions.  Allow -mpower9-fusion, since it does not add new
+   instructions.  Allow -misel, since it predates ISA 3.0 and does
+   not require any Power9 features.  */
+
+#ifndef HAVE_AS_POWER9
+#undef  TARGET_FLOAT128_HW
+#undef  TARGET_MODULO
+#undef  TARGET_P9_VECTOR
+#undef  TARGET_P9_MINMAX
+#undef  TARGET_P9_DFORM_SCALAR
+#undef  TARGET_P9_DFORM_VECTOR
+#define TARGET_FLOAT128_HW 0
+#define TARGET_MODULO 0
+#define TARGET_P9_VECTOR 0
+#define TARGET_P9_MINMAX 0
+#define TARGET_P9_DFORM_SCALAR 0
+#define TARGET_P9_DFORM_VECTOR 0
+#endif
+
 /* Define TARGET_LWSYNC_INSTRUCTION if the assembler knows about lwsync.  If
    not, generate the lwsync code as an integer constant.  */
 #ifdef HAVE_AS_LWSYNC
