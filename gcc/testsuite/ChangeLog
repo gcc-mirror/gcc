@@ -1,3 +1,11 @@
+2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from trunk
+	2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/71698
+	* gcc.target/powerpc/pr71698.c: New test.
+
 2016-07-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from trunk r236992
