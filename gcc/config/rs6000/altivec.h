@@ -400,6 +400,9 @@
 #define vec_vprtybq __builtin_vec_vprtybq
 #endif
 
+#define vec_slv __builtin_vec_vslv
+#define vec_srv __builtin_vec_vsrv
+
 #define vec_absd __builtin_vec_vadu
 #define vec_absdb __builtin_vec_vadub
 #define vec_absdh __builtin_vec_vaduh
