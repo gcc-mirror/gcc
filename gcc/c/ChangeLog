@@ -1,3 +1,8 @@
+2016-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71719
+	* c-typeck.c (mark_exp_read): Handle VIEW_CONVERT_EXPR.
+
 2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_pragma) <PRAGMA_OMP_CANCELLATION_POINT>:

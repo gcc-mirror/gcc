@@ -1,3 +1,8 @@
+2016-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71719
+	* c-c++-common/Wunused-var-15.c: New test.
+
 2016-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71687
