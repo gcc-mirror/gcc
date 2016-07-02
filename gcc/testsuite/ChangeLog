@@ -1,6 +1,11 @@
 2016-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71687
+	* gfortran.dg/gomp/pr71687.f90: New test.
+
 	2016-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71704
