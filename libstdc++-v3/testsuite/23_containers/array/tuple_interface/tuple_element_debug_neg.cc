@@ -23,4 +23,4 @@
 
 typedef std::tuple_element<1, std::array<int, 1>>::type type;
 
-// { dg-error "static assertion failed" "" { target *-*-* } 309 }
+// { dg-error "static assertion failed" "" { target *-*-* } 308 }

@@ -1,3 +1,12 @@
+2016-07-02  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/debug/
+	irreflexive_neg.cc: Remove.
+
 2016-06-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* testsuite/29_atomics/atomic/65913.cc: Require atomic-builtins rather
