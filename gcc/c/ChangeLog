@@ -1,3 +1,12 @@
+2016-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71685
+	* c-typeck.c (c_build_qualified_type): Don't clear
+	C_TYPE_INCOMPLETE_VARS for the main variant.
+
 2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/71381
