@@ -589,28 +589,6 @@ decode_statement (void)
   return ST_NONE;
 }
 
-/* Like match, but set a flag simd_matched if keyword matched.  */
-#define matchs(keyword, subr, st)				\
-    do {							\
-      if (match_word_omp_simd (keyword, subr, &old_locus,	\
-			       &simd_matched) == MATCH_YES)	\
-	return st;						\
-      else							\
-	undo_new_statement ();				  	\
-    } while (0);
-
-/* Like match, but don't match anything if not -fopenmp.  */
-#define matcho(keyword, subr, st)				\
-    do {							\
-      if (!flag_openmp)						\
-	;							\
-      else if (match_word (keyword, subr, &old_locus)		\
-	       == MATCH_YES)					\
-	return st;						\
-      else							\
-	undo_new_statement ();				  	\
-    } while (0);
-
 static gfc_statement
 decode_oacc_directive (void)
 {
@@ -702,12 +680,63 @@ decode_oacc_directive (void)
   return ST_NONE;
 }
 
+/* Like match, but set a flag simd_matched if keyword matched
+   and if spec_only, goto do_spec_only without actually matching.  */
+#define matchs(keyword, subr, st)				\
+    do {							\
+      if (spec_only && gfc_match (keyword) == MATCH_YES)	\
+	goto do_spec_only;					\
+      if (match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched) == MATCH_YES)	\
+	return st;						\
+      else							\
+	undo_new_statement ();				  	\
+    } while (0);
+
+/* Like match, but don't match anything if not -fopenmp
+   and if spec_only, goto do_spec_only without actually matching.  */
+#define matcho(keyword, subr, st)				\
+    do {							\
+      if (!flag_openmp)						\
+	;							\
+      else if (spec_only && gfc_match (keyword) == MATCH_YES)	\
+	goto do_spec_only;					\
+      else if (match_word (keyword, subr, &old_locus)		\
+	       == MATCH_YES)					\
+	return st;						\
+      else							\
+	undo_new_statement ();				  	\
+    } while (0);
+
+/* Like match, but set a flag simd_matched if keyword matched.  */
+#define matchds(keyword, subr, st)				\
+    do {							\
+      if (match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched) == MATCH_YES)	\
+	return st;						\
+      else							\
+	undo_new_statement ();				  	\
+    } while (0);
+
+/* Like match, but don't match anything if not -fopenmp.  */
+#define matchdo(keyword, subr, st)				\
+    do {							\
+      if (!flag_openmp)						\
+	;							\
+      else if (match_word (keyword, subr, &old_locus)		\
+	       == MATCH_YES)					\
+	return st;						\
+      else							\
+	undo_new_statement ();				  	\
+    } while (0);
+
 static gfc_statement
 decode_omp_directive (void)
 {
   locus old_locus;
   char c;
   bool simd_matched = false;
+  bool spec_only = false;
 
   gfc_enforce_clean_symbol_state ();
 
@@ -721,6 +750,10 @@ decode_omp_directive (void)
       gfc_error_recovery ();
       return ST_NONE;
     }
+
+  if (gfc_current_state () == COMP_FUNCTION
+      && gfc_current_block ()->result->ts.kind == -1)
+    spec_only = true;
 
   gfc_unset_implicit_pure (NULL);
 
@@ -750,12 +783,12 @@ decode_omp_directive (void)
       matcho ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
       break;
     case 'd':
-      matchs ("declare reduction", gfc_match_omp_declare_reduction,
-	      ST_OMP_DECLARE_REDUCTION);
-      matchs ("declare simd", gfc_match_omp_declare_simd,
-	      ST_OMP_DECLARE_SIMD);
-      matcho ("declare target", gfc_match_omp_declare_target,
-	      ST_OMP_DECLARE_TARGET);
+      matchds ("declare reduction", gfc_match_omp_declare_reduction,
+	       ST_OMP_DECLARE_REDUCTION);
+      matchds ("declare simd", gfc_match_omp_declare_simd,
+	       ST_OMP_DECLARE_SIMD);
+      matchdo ("declare target", gfc_match_omp_declare_target,
+	       ST_OMP_DECLARE_TARGET);
       matchs ("distribute parallel do simd",
 	      gfc_match_omp_distribute_parallel_do_simd,
 	      ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD);
@@ -875,8 +908,8 @@ decode_omp_directive (void)
       matcho ("teams distribute", gfc_match_omp_teams_distribute,
 	      ST_OMP_TEAMS_DISTRIBUTE);
       matcho ("teams", gfc_match_omp_teams, ST_OMP_TEAMS);
-      matcho ("threadprivate", gfc_match_omp_threadprivate,
-	      ST_OMP_THREADPRIVATE);
+      matchdo ("threadprivate", gfc_match_omp_threadprivate,
+	       ST_OMP_THREADPRIVATE);
       break;
     case 'w':
       matcho ("workshare", gfc_match_omp_workshare, ST_OMP_WORKSHARE);
@@ -899,6 +932,13 @@ decode_omp_directive (void)
   gfc_error_recovery ();
 
   return ST_NONE;
+
+ do_spec_only:
+  reject_statement ();
+  gfc_clear_error ();
+  gfc_buffer_error (false);
+  gfc_current_locus = old_locus;
+  return ST_GET_FCN_CHARACTERISTICS;
 }
 
 static gfc_statement
@@ -1319,10 +1359,13 @@ next_statement (void)
 
   gfc_buffer_error (false);
 
-  if (st == ST_GET_FCN_CHARACTERISTICS && gfc_statement_label != NULL)
+  if (st == ST_GET_FCN_CHARACTERISTICS)
     {
-      gfc_free_st_label (gfc_statement_label);
-      gfc_statement_label = NULL;
+      if (gfc_statement_label != NULL)
+	{
+	  gfc_free_st_label (gfc_statement_label);
+	  gfc_statement_label = NULL;
+	}
       gfc_current_locus = old_locus;
     }
 
