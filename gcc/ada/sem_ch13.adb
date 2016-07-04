@@ -11941,7 +11941,9 @@ package body Sem_Ch13 is
       --  at the freeze point, and we must generate only a completion of this
       --  declaration. We do the same for private types, because the full view
       --  might be tagged. Otherwise we generate a declaration at the point of
-      --  the attribute definition clause.
+      --  the attribute definition clause. If the attribute definition comes
+      --  from an aspect specification the declaration is part of the freeze
+      --  actions of the type.
 
       function Build_Spec return Node_Id;
       --  Used for declaration and renaming declaration, so that this is
@@ -12033,8 +12035,16 @@ package body Sem_Ch13 is
              Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc));
       end if;
 
-      Insert_Action (N, Subp_Decl);
-      Set_Entity (N, Subp_Id);
+      if not Defer_Declaration
+        and then From_Aspect_Specification (N)
+        and then Has_Delayed_Freeze (Ent)
+      then
+         Append_Freeze_Action (Ent, Subp_Decl);
+
+      else
+         Insert_Action (N, Subp_Decl);
+         Set_Entity (N, Subp_Id);
+      end if;
 
       Subp_Decl :=
         Make_Subprogram_Renaming_Declaration (Loc,
@@ -12043,8 +12053,15 @@ package body Sem_Ch13 is
 
       if Defer_Declaration then
          Set_TSS (Base_Type (Ent), Subp_Id);
+
       else
-         Insert_Action (N, Subp_Decl);
+         if From_Aspect_Specification (N) then
+            Append_Freeze_Action (Ent, Subp_Decl);
+
+         else
+            Insert_Action (N, Subp_Decl);
+         end if;
+
          Copy_TSS (Subp_Id, Base_Type (Ent));
       end if;
    end New_Stream_Subprogram;

@@ -7119,6 +7119,7 @@ package body Sem_Res is
             --  read as it simply establishes an alias.
 
             if Ekind (E) = E_Variable
+              and then Dynamic_Elaboration_Checks
               and then Nkind (Par) /= N_Object_Renaming_Declaration
             then
                Check_Elab_Call (N);

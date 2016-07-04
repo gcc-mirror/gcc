@@ -415,11 +415,6 @@ procedure Gnat1drv is
 
          Suppress_Options.Suppress := (others => False);
 
-         --  Turn off dynamic elaboration checks. SPARK mode depends on the
-         --  use of the static elaboration mode.
-
-         Dynamic_Elaboration_Checks := False;
-
          --  Detect overflow on unconstrained floating-point types, such as
          --  the predefined types Float, Long_Float and Long_Long_Float from
          --  package Standard. Not necessary if float overflows are checked

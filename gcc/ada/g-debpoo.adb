@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1908,7 +1908,7 @@ package body GNAT.Debug_Pools is
          --  Sorted array for the biggest memory users
 
       begin
-         New_Line;
+         Put_Line ("");
          case Sort is
             when Memory_Usage | All_Reports  =>
                Put_Line (Size'Img & " biggest memory users at this time:");
@@ -2010,10 +2010,10 @@ package body GNAT.Debug_Pools is
             end;
 
             for J in Max (M).Traceback'Range loop
-               Put (Image_C (PC_For (Max (M).Traceback (J))));
+               Put (" " & Image_C (PC_For (Max (M).Traceback (J))));
             end loop;
 
-            New_Line;
+            Put_Line ("");
          end loop;
       end Do_Report;
 
