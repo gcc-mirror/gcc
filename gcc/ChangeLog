@@ -1,3 +1,10 @@
+2016-07-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/63874
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Fix
+	typo in comment.  Only force to memory if it is a weak
+	external reference.
+
 2016-07-04  Matthew Wahab  <matthew.wahab@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 

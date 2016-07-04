@@ -9423,15 +9423,18 @@ aarch64_classify_symbol (rtx x, rtx offset)
       switch (aarch64_cmodel)
 	{
 	case AARCH64_CMODEL_TINY:
-	  /* When we retreive symbol + offset address, we have to make sure
+	  /* When we retrieve symbol + offset address, we have to make sure
 	     the offset does not cause overflow of the final address.  But
 	     we have no way of knowing the address of symbol at compile time
 	     so we can't accurately say if the distance between the PC and
 	     symbol + offset is outside the addressible range of +/-1M in the
 	     TINY code model.  So we rely on images not being greater than
 	     1M and cap the offset at 1M and anything beyond 1M will have to
-	     be loaded using an alternative mechanism.  */
-	  if (SYMBOL_REF_WEAK (x)
+	     be loaded using an alternative mechanism.  Furthermore if the
+	     symbol is a weak reference to something that isn't known to
+	     resolve to a symbol in this module, then force to memory.  */
+	  if ((SYMBOL_REF_WEAK (x)
+	       && !aarch64_symbol_binds_local_p (x))
 	      || INTVAL (offset) < -1048575 || INTVAL (offset) > 1048575)
 	    return SYMBOL_FORCE_TO_MEM;
 	  return SYMBOL_TINY_ABSOLUTE;
@@ -9439,7 +9442,8 @@ aarch64_classify_symbol (rtx x, rtx offset)
 	case AARCH64_CMODEL_SMALL:
 	  /* Same reasoning as the tiny code model, but the offset cap here is
 	     4G.  */
-	  if (SYMBOL_REF_WEAK (x)
+	  if ((SYMBOL_REF_WEAK (x)
+	       && !aarch64_symbol_binds_local_p (x))
 	      || !IN_RANGE (INTVAL (offset), HOST_WIDE_INT_C (-4294967263),
 			    HOST_WIDE_INT_C (4294967264)))
 	    return SYMBOL_FORCE_TO_MEM;
