@@ -5454,7 +5454,8 @@ match_procedure_interface (gfc_symbol **proc_if)
       /* Resolve interface if possible. That way, attr.procedure is only set
 	 if it is declared by a later procedure-declaration-stmt, which is
 	 invalid per F08:C1216 (cf. resolve_procedure_interface).  */
-      while ((*proc_if)->ts.interface)
+      while ((*proc_if)->ts.interface
+	     && *proc_if != (*proc_if)->ts.interface)
 	*proc_if = (*proc_if)->ts.interface;
 
       if ((*proc_if)->attr.flavor == FL_UNKNOWN
