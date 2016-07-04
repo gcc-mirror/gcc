@@ -244,16 +244,21 @@ package Sem_Prag is
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
    --  Perform preanalysis of pragma Test_Case
 
-   procedure Build_Classwide_Expression (Prag : Node_Id; Subp : Entity_Id);
+   procedure Build_Classwide_Expression
+     (Prag        : Node_Id;
+      Subp        : Entity_Id;
+      Adjust_Sloc : Boolean);
    --  Build the expression for an inherited classwide condition. Prag is
    --  the pragma constructed from the corresponding aspect of the parent
-   --  subprogram, and Subp is the overridding operation.
-   --  The routine is also called to check whether an inherited operation
-   --  that is not overridden but has inherited conditions need a wrapper,
-   --  because the inherited condition includes calls to other primitives that
-   --  have been overridden. In that case the first argument is the expression
-   --  of the original classwide aspect. In SPARK_Mode, such operation which
-   --  are just inherited but have modified pre/postconditions are illegal.
+   --  subprogram, and Subp is the overridding operation. Adjust_Sloc is True
+   --  when the sloc of nodes traversed should be adjusted for the inherited
+   --  pragma. The routine is also called to check whether an inherited
+   --  operation that is not overridden but has inherited conditions need
+   --  a wrapper, because the inherited condition includes calls to other
+   --  primitives that have been overridden. In that case the first argument
+   --  is the expression of the original classwide aspect. In SPARK_Mode, such
+   --  operation which are just inherited but have modified pre/postconditions
+   --  are illegal.
 
    function Build_Pragma_Check_Equivalent
      (Prag           : Node_Id;

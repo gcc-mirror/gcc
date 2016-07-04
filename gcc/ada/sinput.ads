@@ -269,6 +269,11 @@ package Sinput is
    --    an instance of an inlined body.
    --    ??? Redundant, always equal to (Inlined_Call /= No_Location)
 
+   --  Inherited_Pragma : Boolean;
+   --    This can only be set True if Instantiation has a value other than
+   --    No_Location. If true it indicates that the instantiation is actually
+   --    an inherited class-wide pre- or postcondition.
+
    --  Template : Source_File_Index; (read-only)
    --    Source file index of the source file containing the template if this
    --    is a generic instantiation. Set to No_Source_File for the normal case
@@ -298,6 +303,7 @@ package Sinput is
    function Full_Ref_Name     (S : SFI) return File_Name_Type;
    function Identifier_Casing (S : SFI) return Casing_Type;
    function Inlined_Body      (S : SFI) return Boolean;
+   function Inherited_Pragma  (S : SFI) return Boolean;
    function Inlined_Call      (S : SFI) return Source_Ptr;
    function Instance          (S : SFI) return Instance_Id;
    function Keyword_Casing    (S : SFI) return Casing_Type;
@@ -644,6 +650,13 @@ package Sinput is
    --  from instantiation of generics, since Instantiation_Location returns a
    --  valid location in both cases.
 
+   function Comes_From_Inherited_Pragma (S : Source_Ptr) return Boolean;
+   pragma Inline (Comes_From_Inherited_Pragma);
+   --  Given a source pointer S, returns whether it comes from an inherited
+   --  pragma. This allows distinguishing these source pointers from those
+   --  that come from instantiation of generics, since Instantiation_Location
+   --  returns a valid location in both cases.
+
    function Top_Level_Location (S : Source_Ptr) return Source_Ptr;
    --  Given a source pointer S, returns the argument unchanged if it is
    --  not in an instantiation. If S is in an instantiation, then it returns
@@ -759,6 +772,7 @@ private
    pragma Inline (Identifier_Casing);
    pragma Inline (Inlined_Call);
    pragma Inline (Inlined_Body);
+   pragma Inline (Inherited_Pragma);
    pragma Inline (Template);
    pragma Inline (Unit);
 
@@ -824,6 +838,7 @@ private
       File_Type         : Type_Of_File;
       Inlined_Call      : Source_Ptr;
       Inlined_Body      : Boolean;
+      Inherited_Pragma  : Boolean;
       License           : License_Type;
       Keyword_Casing    : Casing_Type;
       Identifier_Casing : Casing_Type;
@@ -881,7 +896,8 @@ private
       Time_Stamp          at 60 range 0 .. 8 * Time_Stamp_Length - 1;
       File_Type           at 74 range 0 .. 7;
       Inlined_Call        at 88 range 0 .. 31;
-      Inlined_Body        at 75 range 0 .. 7;
+      Inlined_Body        at 75 range 0 .. 0;
+      Inherited_Pragma    at 75 range 1 .. 1;
       License             at 76 range 0 .. 7;
       Keyword_Casing      at 77 range 0 .. 7;
       Identifier_Casing   at 78 range 0 .. 15;

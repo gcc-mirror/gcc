@@ -83,19 +83,22 @@ package Sinput.L is
    --  calls to Adjust_Instantiation_Sloc.
 
    procedure Create_Instantiation_Source
-     (Inst_Node    : Entity_Id;
-      Template_Id  : Entity_Id;
-      Inlined_Body : Boolean;
-      A            : out Sloc_Adjustment);
+     (Inst_Node        : Entity_Id;
+      Template_Id      : Entity_Id;
+      A                : out Sloc_Adjustment;
+      Inlined_Body     : Boolean := False;
+      Inherited_Pragma : Boolean := False);
    --  This procedure creates the source table entry for an instantiation.
    --  Inst_Node is the instantiation node, and Template_Id is the defining
    --  identifier of the generic declaration or body unit as appropriate.
    --  A is set to an adjustment factor to be used in subsequent calls to
    --  Adjust_Instantiation_Sloc. The instantiation mechanism is also used
-   --  for inlined function and procedure calls. The parameter Inlined_Body
-   --  is set to True in such cases, and False for a generic instantiation.
-   --  This is used for generating error messages that distinguish these
-   --  two cases, otherwise the two cases are handled identically.
+   --  for inlined function and procedure calls. The parameter Inlined_Body is
+   --  set to True in such cases. This is used for generating error messages
+   --  that distinguish these two cases, otherwise the two cases are handled
+   --  identically. Similarly, the instantiation mechanism is also used
+   --  for inherited class-wide pre- and postconditions. The parameter
+   --  Inherited_Pragma is set to True in such cases.
 
    procedure Adjust_Instantiation_Sloc (N : Node_Id; A : Sloc_Adjustment);
    --  The instantiation tree is created by copying the tree of the generic

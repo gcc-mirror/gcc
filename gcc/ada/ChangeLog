@@ -1,3 +1,53 @@
+2016-07-04  Bob Duff  <duff@adacore.com>
+
+	* xref_lib.adb (Parse_X_Filename, Parse_Identifier_Info): Ignore
+	unknown files. Check that File_Nr is in the range of files we
+	know about. The previous code was checking the lower bound,
+	but not the upper bound.
+
+2016-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* tracebak.c: Minor reformatting.
+
+2016-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb, sem_ch12.ads Update calls to
+	Create_Instantiation_Source to use default argument.
+	(Adjust_Inherited_Pragma_Sloc): New function to adjust sloc
+	of inherited pragma.
+	(Set_Copied_Sloc_For_Inherited_Pragma):
+	New function that wraps call to Create_Instantiation_Source for
+	copying an inherited pragma.
+	(Set_Copied_Sloc_For_Inlined_Body): Update call to
+	Create_Instantiation_Source with new arguments.
+	* sem_prag.adb (Build_Pragma_Check_Equivalent): In the case
+	of inherited pragmas, use the generic machinery to get chained
+	locations for the pragma and its sub-expressions.
+	* sinput-c.adb: Adapt to new type Source_File_Record.
+	* sinput-l.adb, sinput-l.ads (Create_Instantiation_Source):
+	Add parameter Inherited_Pragma and make parameter Inlined_Body
+	optional.
+	* sinput.adb, sinput.ads (Comes_From_Inherited_Pragma): New
+	function to return when a location comes from an inherited pragma.
+	(Inherited_Pragma): New function to detect when a location comes
+	from an inherited pragma.
+	(Source_File_Record): New component Inherited_Pragma.
+
+2016-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_elab.adb: Register existence of quickfix for error message.
+
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Resolve_One_Call): In the context of a predicate
+	function the formal and the actual in a call may have different
+	views of the same type, because of the delayed analysis of
+	predicates aspects. Extend the patch that handles this potential
+	discrepancy to handle private and full views as well.
+	* sem_ch8.adb (Find_Selected_Component): Refine predicate that
+	produces additional error when an illegal selected component
+	looks like a prefixed call whose first formal is untagged.
+
 2016-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* einfo.adb (Has_Pragma_Unused): Create this function as a setter

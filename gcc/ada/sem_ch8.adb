@@ -6983,7 +6983,8 @@ package body Sem_Ch8 is
             elsif Nkind (P) /= N_Attribute_Reference then
 
                --  This may have been meant as a prefixed call to a primitive
-               --  of an untagged type.
+               --  of an untagged type. If it is a function call check type of
+               --  its first formal and add explanation.
 
                declare
                   F : constant Entity_Id :=
@@ -6992,8 +6993,7 @@ package body Sem_Ch8 is
                   if Present (F)
                     and then Is_Overloadable (F)
                     and then Present (First_Entity (F))
-                    and then Etype (First_Entity (F)) = Etype (P)
-                    and then not Is_Tagged_Type (Etype (P))
+                    and then not Is_Tagged_Type (Etype (First_Entity (F)))
                   then
                      Error_Msg_N
                        ("prefixed call is only allowed for objects "

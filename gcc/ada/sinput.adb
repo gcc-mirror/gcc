@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -299,6 +299,17 @@ package body Sinput is
             raise Program_Error;
       end case;
    end Check_For_BOM;
+
+   ---------------------------------
+   -- Comes_From_Inherited_Pragma --
+   ---------------------------------
+
+   function Comes_From_Inherited_Pragma (S : Source_Ptr) return Boolean is
+      SIE : Source_File_Record renames
+              Source_File.Table (Get_Source_File_Index (S));
+   begin
+      return SIE.Inherited_Pragma;
+   end Comes_From_Inherited_Pragma;
 
    -----------------------------
    -- Comes_From_Inlined_Body --
@@ -1189,6 +1200,11 @@ package body Sinput is
    begin
       return Source_File.Table (S).Identifier_Casing;
    end Identifier_Casing;
+
+   function Inherited_Pragma (S : SFI) return Boolean is
+   begin
+      return Source_File.Table (S).Inherited_Pragma;
+   end Inherited_Pragma;
 
    function Inlined_Body (S : SFI) return Boolean is
    begin

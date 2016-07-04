@@ -1440,13 +1440,15 @@ package body Freeze is
             A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
 
             if Present (A_Pre) and then Class_Present (A_Pre) then
-               Build_Classwide_Expression (Expression (A_Pre), Prim);
+               Build_Classwide_Expression (Expression (A_Pre), Prim,
+                                           Adjust_Sloc => False);
             end if;
 
             A_Post := Find_Aspect (Par_Prim, Aspect_Post);
 
             if Present (A_Post) and then Class_Present (A_Post) then
-               Build_Classwide_Expression (Expression (A_Post), Prim);
+               Build_Classwide_Expression (Expression (A_Post), Prim,
+                                           Adjust_Sloc => False);
             end if;
          end if;
 
