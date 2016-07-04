@@ -1,4 +1,11 @@
 2016-07-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.md: Add "z13" cpu_facility.
+	("*mov<mode>cc"): Add support for z13 instructions lochi and locghi.
+	* config/s390/predicates.md ("loc_operand"): New predicate for "load on
+	condition" type instructions.
+
+2016-07-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 	    Jeff Law  <law@redhat.com>
 
 	* explow.c (allocate_dynamic_stack_space): Simplify knowing that

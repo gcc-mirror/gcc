@@ -182,6 +182,13 @@
   return s390_contiguous_bitmask_p (INTVAL (op), GET_MODE_BITSIZE (mode), NULL, NULL);
 })
 
+;; Return true if OP is ligitimate for any LOC instruction.
+
+(define_predicate "loc_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+      (and (match_code "const_int")
+	   (match_test "INTVAL (op) <= 32767 && INTVAL (op) >= -32768"))))
+
 ;; operators --------------------------------------------------------------
 
 ;; Return nonzero if OP is a valid comparison operator
