@@ -1,3 +1,29 @@
+2016-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Analyze_Unmodified_Or_Unused and
+	Analyze_Unreferenced_Or_Unused): Change warning message to be
+	more clear about pragma duplicates.
+
+2016-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sinput-l.adb (Create_Instantiation_Source): Set component
+	Inlined_Call for inherited pragma case.
+	* sinput.adb, sinput.ads (Instantiation): Return component
+	Inlined_Call for inherited pragma case.
+
+2016-07-04  Bob Duff  <duff@adacore.com>
+
+	* sem_type.adb (Remove_Conversions): Protect
+	the call to Left_Opnd by checking for Nkind in N_Unary_Op --
+	unary operators do not have a left operand.
+
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): A declaration of a
+	constant in a protected operation may be a homonym of a private
+	component of the enclosing protected type. This declaration hides
+	the component renaming constructed within the protected operation.
+
 2016-07-04  Bob Duff  <duff@adacore.com>
 
 	* xref_lib.adb (Parse_X_Filename, Parse_Identifier_Info): Ignore

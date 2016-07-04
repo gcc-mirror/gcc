@@ -151,15 +151,11 @@ package body Sinput.L is
          Snew.Template         := Xold;
 
          --  For a genuine generic instantiation, assign new instance id. For
-         --  inlined bodies, we retain that of the template, but we save the
-         --  call location. For inherited pragmas, we simply retain that of
-         --  the template.
+         --  inlined bodies or inherited pragmas, we retain that of the
+         --  template, but we save the call location.
 
-         if Inlined_Body then
+         if Inlined_Body or Inherited_Pragma then
             Snew.Inlined_Call := Sloc (Inst_Node);
-
-         elsif Inherited_Pragma then
-            null;
 
          else
             --  If the spec has been instantiated already, and we are now

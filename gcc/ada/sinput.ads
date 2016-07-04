@@ -260,14 +260,13 @@ package Sinput is
 
    --  Inlined_Call : Source_Ptr;
    --    Source file location of the subprogram call if this source file entry
-   --    represents an inlined body. Set to No_Location otherwise.
-   --    This field is read-only for clients.
+   --    represents an inlined body or an inherited pragma. Set to No_Location
+   --    otherwise. This field is read-only for clients.
 
    --  Inlined_Body : Boolean;
    --    This can only be set True if Instantiation has a value other than
    --    No_Location. If true it indicates that the instantiation is actually
    --    an instance of an inlined body.
-   --    ??? Redundant, always equal to (Inlined_Call /= No_Location)
 
    --  Inherited_Pragma : Boolean;
    --    This can only be set True if Instantiation has a value other than
@@ -426,9 +425,11 @@ package Sinput is
 
    function Instantiation (S : SFI) return Source_Ptr;
    --  For a source file entry that represents an inlined body, source location
-   --  of the inlined call. Otherwise, for a source file entry that represents
-   --  a generic instantiation, source location of the instantiation. Returns
-   --  No_Location in all other cases.
+   --  of the inlined call. For a source file entry that represents an
+   --  inherited pragma, source location of the declaration to which the
+   --  overriding subprogram for the inherited pragma is attached. Otherwise,
+   --  for a source file entry that represents a generic instantiation, source
+   --  location of the instantiation. Returns No_Location in all other cases.
 
    -----------------
    -- Global Data --

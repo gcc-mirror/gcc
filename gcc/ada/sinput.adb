@@ -493,7 +493,7 @@ package body Sinput is
    function Instantiation (S : SFI) return Source_Ptr is
       SIE : Source_File_Record renames Source_File.Table (S);
    begin
-      if SIE.Inlined_Body then
+      if SIE.Inlined_Body or SIE.Inherited_Pragma then
          return SIE.Inlined_Call;
       else
          return Instances.Table (SIE.Instance);

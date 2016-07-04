@@ -4568,10 +4568,12 @@ package body Sem_Prag is
                elsif Has_Pragma_Unmodified (Arg_Id) then
                   if Has_Pragma_Unused (Arg_Id) then
                      Error_Msg_NE
-                       ("??pragma Unused given for &!", Arg_Expr, Arg_Id);
+                       ("??pragma Unused already given for &!", Arg_Expr,
+                         Arg_Id);
                   else
                      Error_Msg_NE
-                       ("??pragma Unmodified given for &!", Arg_Expr, Arg_Id);
+                       ("??pragma Unmodified already given for &!", Arg_Expr,
+                         Arg_Id);
                   end if;
 
                --  Otherwise the pragma referenced an illegal entity
@@ -4674,11 +4676,12 @@ package body Sem_Prag is
                   if Has_Pragma_Unreferenced (Arg_Id) then
                      if Has_Pragma_Unused (Arg_Id) then
                         Error_Msg_NE
-                          ("??pragma Unused given for &!", Arg_Expr, Arg_Id);
+                          ("??pragma Unused already given for &!", Arg_Expr,
+                            Arg_Id);
                      else
                         Error_Msg_NE
-                          ("??pragma Unreferenced given for &!", Arg_Expr,
-                           Arg_Id);
+                          ("??pragma Unreferenced already given for &!",
+                            Arg_Expr, Arg_Id);
                      end if;
 
                   --  Apply Unreferenced to the entity
