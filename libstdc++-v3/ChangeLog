@@ -1,3 +1,26 @@
+2016-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (emplace(const_iterator, _Args&&...)):
+	Define inline. Forward to _M_emplace_aux.
+	(insert(const_iterator, value_type&&)): Forward to _M_insert_rval.
+	(_M_insert_rval, _M_emplace_aux): Declare new functions.
+	(_Temporary_value): New RAII type using allocator to construct/destroy.
+	(_S_insert_aux_assign): Remove.
+	(_M_insert_aux): Make non-variadic.
+	* include/bits/vector.tcc (insert(const_iterator, const value_type&)):
+	Use _Temporary_value.
+	(emplace(const_iterator, _Args&&...)): Remove definition.
+	(_M_insert_rval, _M_emplace_aux): Define.
+	(_M_insert_aux): Make non-variadic, stop using _S_insert_aux_assign.
+	(_M_fill_insert): Use _Temporary_value.
+	* testsuite/23_containers/vector/allocator/construction.cc: New test.
+	* testsuite/23_containers/vector/modifiers/insert_vs_emplace.cc:
+	Adjust expected results for emplacing an lvalue with reallocation.
+	* testsuite/23_containers/vector/check_construct_destroy.cc: Adjust
+	expected results to account for construction/destruction of temporary
+	using allocator.
+	* testsuite/backward/hash_set/check_construct_destroy.cc: Likewise.
+
 2016-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/71313
