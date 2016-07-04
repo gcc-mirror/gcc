@@ -1,3 +1,12 @@
+2016-07-04  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.h: Rename "ARMv8.1" to "ARMv8.1-A".
+	* config/aarch64/aarch64_neon.h: Likewise.
+	* config/aarch64/arm_neon.h: Likewise.
+	* config/aarch64/atomics.md: Likewise.
+	* config/aarch64/aarch64-simd-builtins.def: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2016-07-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md: Add "z13" cpu_facility.

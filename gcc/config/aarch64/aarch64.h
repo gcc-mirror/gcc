@@ -132,9 +132,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FP         (1 << 1)	/* Has FP.  */
 #define AARCH64_FL_CRYPTO     (1 << 2)	/* Has crypto.  */
 #define AARCH64_FL_CRC        (1 << 3)	/* Has CRC.  */
-/* ARMv8.1 architecture extensions.  */
+/* ARMv8.1-A architecture extensions.  */
 #define AARCH64_FL_LSE	      (1 << 4)  /* Has Large System Extensions.  */
-#define AARCH64_FL_V8_1	      (1 << 5)  /* Has ARMv8.1 extensions.  */
+#define AARCH64_FL_V8_1	      (1 << 5)  /* Has ARMv8.1-A extensions.  */
 /* ARMv8.2-A architecture extensions.  */
 #define AARCH64_FL_V8_2	      (1 << 8)  /* Has ARMv8.2-A features.  */
 #define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
@@ -204,7 +204,7 @@ extern unsigned aarch64_architecture_version;
   ((aarch64_fix_a53_err843419 == 2)	\
   ? TARGET_FIX_ERR_A53_843419_DEFAULT : aarch64_fix_a53_err843419)
 
-/* ARMv8.1 Adv.SIMD support.  */
+/* ARMv8.1-A Adv.SIMD support.  */
 #define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_ISA_RDMA)
 
 /* Standard register usage.  */
