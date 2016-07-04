@@ -1,3 +1,22 @@
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute_Old_Result): The attributes can
+	appear in the postcondition of a subprogram renaming declaration,
+	when the renamed entity is an attribute reference that is a
+	function (such as 'Value).
+	* sem_attr.adb (Eval_Attribute): It doesn't
+	need to be static, just known at compile time, so use
+	Compile_Time_Known_Value instead of Is_Static_Expression.
+	This is an efficiency improvement over the previous bug fix.
+	* sem_ch13.adb (Analyze_One_Aspect): Use Original_Node to detect
+	illegal aspects on subprogram renaming declarations that may
+	have been rewritten as bodies.
+
+2016-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_intr.adb (Errint): Do not emit error message in
+	Relaxed_RM_Semantics mode.
+
 2016-07-04  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (Eval_Attribute): The code was assuming

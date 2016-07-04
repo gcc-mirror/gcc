@@ -31,6 +31,7 @@ with Errout;   use Errout;
 with Fname;    use Fname;
 with Lib;      use Lib;
 with Namet;    use Namet;
+with Opt;      use Opt;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
@@ -466,8 +467,13 @@ package body Sem_Intr is
 
    procedure Errint (Msg : String; S : Node_Id; N : Node_Id) is
    begin
-      Error_Msg_N (Msg, S);
-      Error_Msg_N ("incorrect intrinsic subprogram, see spec", N);
+      --  Ignore errors on Intrinsic in Relaxed_RM_Semantics mode where we can
+      --  be more liberal.
+
+      if not Relaxed_RM_Semantics then
+         Error_Msg_N (Msg, S);
+         Error_Msg_N ("incorrect intrinsic subprogram, see spec", N);
+      end if;
    end Errint;
 
 end Sem_Intr;

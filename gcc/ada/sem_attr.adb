@@ -1354,14 +1354,17 @@ package body Sem_Attr is
          --  The aspect or pragma where the attribute resides should be
          --  associated with a subprogram declaration or a body. If this is not
          --  the case, then the aspect or pragma is illegal. Return as analysis
-         --  cannot be carried out.
+         --  cannot be carried out. Note that it is legal to have the aspect
+         --  appear on a subprogram renaming, when the renamed entity is an
+         --  attribute reference.
 
          if not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
                                      N_Entry_Declaration,
                                      N_Generic_Subprogram_Declaration,
                                      N_Subprogram_Body,
                                      N_Subprogram_Body_Stub,
-                                     N_Subprogram_Declaration)
+                                     N_Subprogram_Declaration,
+                                     N_Subprogram_Renaming_Declaration)
          then
             return;
          end if;
@@ -7427,11 +7430,12 @@ package body Sem_Attr is
                declare
                   Enum_Expr : Node_Id;
                   --  The enumeration-type expression of interest
+
                begin
                   --  P'Enum_Rep case
 
-                  if Ekind_In
-                    (Entity (P), E_Constant, E_Enumeration_Literal)
+                  if Ekind_In (Entity (P), E_Constant,
+                                           E_Enumeration_Literal)
                   then
                      Enum_Expr := P;
 
@@ -7449,7 +7453,8 @@ package body Sem_Attr is
                   end if;
 
                   --  We can fold if the expression is an enumeration
-                  --  literal, or if it denotes a static constant.
+                  --  literal, or if it denotes a constant whose value
+                  --  is known at compile time.
 
                   if Nkind (Enum_Expr) in N_Has_Entity
                     and then (Ekind (Entity (Enum_Expr)) =
@@ -7458,7 +7463,7 @@ package body Sem_Attr is
                        (Ekind (Entity (Enum_Expr)) = E_Constant
                           and then Nkind (Parent (Entity (Enum_Expr))) =
                                      N_Object_Declaration
-                          and then Is_Static_Expression
+                          and then Compile_Time_Known_Value
                                      (Expression (Parent (Entity (P))))))
                   then
                      P_Entity := Etype (P);
