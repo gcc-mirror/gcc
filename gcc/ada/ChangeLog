@@ -1,3 +1,21 @@
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Compatible_Types_In_Predicate): New function
+	to handle cases where a formal of a predicate function and the
+	corresponding actual have different views of the same type.
+
+2016-07-04  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb (Free_Blocks) free blocks also until
+	Logically_Deallocated less than Maximum_Logically_Freed_Memory
+	(Dump) add dump of number of traceback & validity elements
+	already allocated.
+
+2016-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Add
+	a guard to ignore Itypes which fail when installing primitives.
+
 2016-07-04  Bob Duff  <duff@adacore.com>
 
 	* sem_eval.adb (Decompose_Expr): Set 'out' parameters
