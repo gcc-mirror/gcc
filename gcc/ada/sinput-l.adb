@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,10 +121,11 @@ package body Sinput.L is
    ---------------------------------
 
    procedure Create_Instantiation_Source
-     (Inst_Node    : Entity_Id;
-      Template_Id  : Entity_Id;
-      Inlined_Body : Boolean;
-      A            : out Sloc_Adjustment)
+     (Inst_Node        : Entity_Id;
+      Template_Id      : Entity_Id;
+      A                : out Sloc_Adjustment;
+      Inlined_Body     : Boolean := False;
+      Inherited_Pragma : Boolean := False)
    is
       Dnod : constant Node_Id := Declaration_Node (Template_Id);
       Xold : Source_File_Index;
@@ -145,15 +146,20 @@ package body Sinput.L is
          Inst_Spec : Node_Id;
 
       begin
-         Snew.Inlined_Body  := Inlined_Body;
-         Snew.Template      := Xold;
+         Snew.Inlined_Body     := Inlined_Body;
+         Snew.Inherited_Pragma := Inherited_Pragma;
+         Snew.Template         := Xold;
 
-         --  For a genuine generic instantiation, assign new instance id.
-         --  For inlined bodies, we retain that of the template, but we
-         --  save the call location.
+         --  For a genuine generic instantiation, assign new instance id. For
+         --  inlined bodies, we retain that of the template, but we save the
+         --  call location. For inherited pragmas, we simply retain that of
+         --  the template.
 
          if Inlined_Body then
             Snew.Inlined_Call := Sloc (Inst_Node);
+
+         elsif Inherited_Pragma then
+            null;
 
          else
             --  If the spec has been instantiated already, and we are now
@@ -509,6 +515,7 @@ package body Sinput.L is
                   Identifier_Casing   => Unknown,
                   Inlined_Call        => No_Location,
                   Inlined_Body        => False,
+                  Inherited_Pragma    => False,
                   Keyword_Casing      => Unknown,
                   Last_Source_Line    => 1,
                   License             => Unknown,

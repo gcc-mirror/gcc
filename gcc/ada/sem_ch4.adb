@@ -3413,9 +3413,17 @@ package body Sem_Ch4 is
                --  an incomplete type, while resolution of the corresponding
                --  predicate function may see the full view, as a consequence
                --  of the delayed resolution of the corresponding expressions.
+               --  This can occur in the body of a predicate function, or in
+               --  a call to such.
 
-               elsif Ekind (Etype (Formal)) = E_Incomplete_Type
-                 and then Full_View (Etype (Formal)) = Etype (Actual)
+               elsif ((Ekind (Current_Scope) = E_Function
+                       and then Is_Predicate_Function (Current_Scope))
+                     or else (Ekind (Nam) = E_Function
+                       and then Is_Predicate_Function (Nam)))
+                  and then
+                   (Base_Type (Underlying_Type (Etype (Formal))) =
+                     Base_Type (Underlying_Type (Etype (Actual))))
+                  and then Serious_Errors_Detected = 0
                then
                   Set_Etype (Formal, Etype (Actual));
                   Next_Actual (Actual);

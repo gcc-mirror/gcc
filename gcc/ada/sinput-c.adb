@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,6 +183,7 @@ package body Sinput.C is
                Identifier_Casing   => Unknown,
                Inlined_Call        => No_Location,
                Inlined_Body        => False,
+               Inherited_Pragma    => False,
                Keyword_Casing      => Unknown,
                Last_Source_Line    => 1,
                License             => Unknown,

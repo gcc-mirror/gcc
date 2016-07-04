@@ -1097,7 +1097,8 @@ package body Sem_Elab is
          --  is an error, so give an error message.
 
          if Issue_In_SPARK then
-            Error_Msg_NE ("\Elaborate_All pragma required for&", N, W_Scope);
+            Error_Msg_NE -- CODEFIX
+              ("\Elaborate_All pragma required for&", N, W_Scope);
 
          --  Otherwise we generate an implicit pragma. For a subprogram
          --  instantiation, Elaborate is good enough, since no transitive

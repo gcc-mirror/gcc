@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -890,8 +890,12 @@ package body Xref_Lib is
 
       Parse_Token (Ali, Ptr, E_Name);
 
-      --  Exit if the symbol does not match
-      --  or if we have a local symbol and we do not want it
+      --  Exit if the symbol does not match or if we have a local
+      --  symbol and we do not want it or if the file is unknown.
+
+      if File.X_File = Empty_File then
+         return;
+      end if;
 
       if (not Local_Symbols and not E_Global)
         or else (Pattern.Initialized
@@ -1261,8 +1265,12 @@ package body Xref_Lib is
          Ptr := Ptr + 1;
          Parse_Number (Ali, Ptr, File_Nr);
 
-         if File_Nr > 0 then
+         --  If the referenced file is unknown, we simply ignore it
+
+         if File_Nr in Dependencies_Tables.First .. Last (File.Dep) then
             File.X_File := File.Dep.Table (File_Nr);
+         else
+            File.X_File := Empty_File;
          end if;
 
          Parse_EOL (Ali, Ptr);

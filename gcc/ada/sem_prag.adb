@@ -26395,7 +26395,11 @@ package body Sem_Prag is
    -- Build_Classwide_Expression --
    --------------------------------
 
-   procedure Build_Classwide_Expression (Prag : Node_Id; Subp : Entity_Id) is
+   procedure Build_Classwide_Expression
+     (Prag        : Node_Id;
+      Subp        : Entity_Id;
+      Adjust_Sloc : Boolean)
+   is
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
@@ -26410,6 +26414,10 @@ package body Sem_Prag is
          New_E : Entity_Id;
 
       begin
+         if Adjust_Sloc then
+            Adjust_Inherited_Pragma_Sloc (N);
+         end if;
+
          if Nkind (N) = N_Identifier
            and then Present (Entity (N))
            and then
@@ -26576,15 +26584,22 @@ package body Sem_Prag is
             Next_Formal (Inher_Formal);
             Next_Formal (Subp_Formal);
          end loop;
-      end if;
 
-      --  Copy the original pragma while performing substitutions (if
-      --  applicable).
+         --  Use generic machinery to copy inherited pragma, as if it were an
+         --  instantiation, resetting source locations appropriately, so that
+         --  expressions inside the inherited pragma use chained locations.
+         --  This is used in particular in GNATprove to locate precisely
+         --  messages on a given inherited pragma.
 
-      Check_Prag := New_Copy_Tree (Source => Prag);
+         Set_Copied_Sloc_For_Inherited_Pragma
+           (Unit_Declaration_Node (Subp_Id), Inher_Id);
+         Check_Prag := New_Copy_Tree (Source => Prag);
+         Build_Classwide_Expression (Check_Prag, Subp_Id, Adjust_Sloc => True);
 
-      if Present (Inher_Id) then
-         Build_Classwide_Expression (Check_Prag, Subp_Id);
+      --  Otherwise simply copy the original pragma
+
+      else
+         Check_Prag := New_Copy_Tree (Source => Prag);
       end if;
 
       --  Mark the pragma as being internally generated and reset the Analyzed

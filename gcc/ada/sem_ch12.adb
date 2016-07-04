@@ -1052,6 +1052,15 @@ package body Sem_Ch12 is
           SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
    end Add_Pending_Instantiation;
 
+   ----------------------------------
+   -- Adjust_Inherited_Pragma_Sloc --
+   ----------------------------------
+
+   procedure Adjust_Inherited_Pragma_Sloc (N : Node_Id) is
+   begin
+      Adjust_Instantiation_Sloc (N, S_Adjustment);
+   end Adjust_Inherited_Pragma_Sloc;
+
    --------------------------
    -- Analyze_Associations --
    --------------------------
@@ -2641,7 +2650,7 @@ package body Sem_Ch12 is
       end if;
 
       Formal := New_Copy (Pack_Id);
-      Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
+      Create_Instantiation_Source (N, Gen_Unit, S_Adjustment);
 
       --  Make local generic without formals. The formals will be replaced with
       --  internal declarations.
@@ -3786,7 +3795,7 @@ package body Sem_Ch12 is
          --  validate an actual package, the instantiation environment is that
          --  of the enclosing instance.
 
-         Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
+         Create_Instantiation_Source (N, Gen_Unit, S_Adjustment);
 
          --  Copy original generic tree, to produce text for instantiation
 
@@ -5138,7 +5147,7 @@ package body Sem_Ch12 is
          Generic_Renamings.Set_Last (0);
          Generic_Renamings_HTable.Reset;
 
-         Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
+         Create_Instantiation_Source (N, Gen_Unit, S_Adjustment);
 
          --  Copy original generic tree, to produce text for instantiation
 
@@ -7646,7 +7655,6 @@ package body Sem_Ch12 is
                Create_Instantiation_Source
                  (Instantiation_Node,
                   Defining_Entity (N),
-                  False,
                   S_Adjustment);
             end if;
 
@@ -10888,7 +10896,7 @@ package body Sem_Ch12 is
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);
 
          Create_Instantiation_Source
-           (Inst_Node, Gen_Body_Id, False, S_Adjustment);
+           (Inst_Node, Gen_Body_Id, S_Adjustment);
 
          Act_Body :=
            Copy_Generic_Node
@@ -11229,7 +11237,6 @@ package body Sem_Ch12 is
          Create_Instantiation_Source
            (Inst_Node,
             Gen_Body_Id,
-            False,
             S_Adjustment);
 
          Act_Body :=
@@ -15139,13 +15146,30 @@ package body Sem_Ch12 is
       end loop;
    end Save_Global_References_In_Aspects;
 
+   ------------------------------------------
+   -- Set_Copied_Sloc_For_Inherited_Pragma --
+   ------------------------------------------
+
+   procedure Set_Copied_Sloc_For_Inherited_Pragma
+     (N : Node_Id;
+      E : Entity_Id) is
+   begin
+      Create_Instantiation_Source (N, E,
+        Inlined_Body     => False,
+        Inherited_Pragma => True,
+        A                => S_Adjustment);
+   end Set_Copied_Sloc_For_Inherited_Pragma;
+
    --------------------------------------
    -- Set_Copied_Sloc_For_Inlined_Body --
    --------------------------------------
 
    procedure Set_Copied_Sloc_For_Inlined_Body (N : Node_Id; E : Entity_Id) is
    begin
-      Create_Instantiation_Source (N, E, True, S_Adjustment);
+      Create_Instantiation_Source (N, E,
+        Inlined_Body     => True,
+        Inherited_Pragma => False,
+        A                => S_Adjustment);
    end Set_Copied_Sloc_For_Inlined_Body;
 
    ---------------------

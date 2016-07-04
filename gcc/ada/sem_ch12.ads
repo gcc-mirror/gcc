@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -171,6 +171,32 @@ package Sem_Ch12 is
    --  subprogram in question. The resulting Sloc adjustment factor is
    --  saved as part of the internal state of the Sem_Ch12 package for use
    --  in subsequent calls to copy nodes.
+
+   procedure Set_Copied_Sloc_For_Inherited_Pragma
+     (N : Node_Id;
+      E : Entity_Id);
+   --  This procedure is used when a class-wide pre- or postcondition is
+   --  inherited. This process shares the same circuitry as the creation of
+   --  an instantiated copy of a generic template. The call to this procedure
+   --  establishes a new source file entry representing the inherited pragma
+   --  as an instantiation, marked as an inherited pragma (so that errout can
+   --  distinguish cases for generating error messages, otherwise the treatment
+   --  is identical). In this call N is the subprogram declaration from
+   --  which the pragma is inherited and E is the defining identifier of
+   --  the overridding subprogram (when the subprogram is redefined) or the
+   --  defining identifier of the extension type (when the subprogram is
+   --  inherited). The resulting Sloc adjustment factor is saved as part of the
+   --  internal state of the Sem_Ch12 package for use in subsequent calls to
+   --  copy nodes.
+
+   procedure Adjust_Inherited_Pragma_Sloc (N : Node_Id);
+   --  This procedure is used when a class-wide pre- or postcondition
+   --  is inherited. It is called on each node of the pragma expression
+   --  to adjust its sloc. These call should be preceded by a call to
+   --  Set_Copied_Sloc_For_Inherited_Pragma that sets the required sloc
+   --  adjustment. This is done directly, instead of using Copy_Generic_Node
+   --  to copy nodes and adjust slocs, as Copy_Generic_Node expects a specific
+   --  structure to be in place, which is not the case for inherited pragmas.
 
    procedure Save_Env
      (Gen_Unit : Entity_Id;
