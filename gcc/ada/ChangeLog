@@ -1,3 +1,10 @@
+2016-07-04  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): The code was assuming
+	that X'Enum_Rep, where X denotes a constant, can be constant
+	folded. Fix it so it makes that assumption only when X denotes
+	a STATIC constant.
+
 2016-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Compatible_Types_In_Predicate): New function

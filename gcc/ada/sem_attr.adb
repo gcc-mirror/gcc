@@ -7424,35 +7424,49 @@ package body Sem_Attr is
          elsif Id = Attribute_Enum_Rep then
             if Is_Entity_Name (P) then
 
-               --  The prefix denotes a constant or an enumeration literal, the
-               --  attribute can be folded. A generated loop variable for an
-               --  iterator is a constant, but cannot be constant-folded.
+               declare
+                  Enum_Expr : Node_Id;
+                  --  The enumeration-type expression of interest
+               begin
+                  --  P'Enum_Rep case
 
-               if Ekind (Entity (P)) = E_Enumeration_Literal
-                 or else
-                   (Ekind (Entity (P)) = E_Constant
-                     and then Ekind (Scope (Entity (P))) /= E_Loop)
-               then
-                  P_Entity := Etype (P);
+                  if Ekind_In
+                    (Entity (P), E_Constant, E_Enumeration_Literal)
+                  then
+                     Enum_Expr := P;
 
-               --  The prefix denotes an enumeration type. Folding can occur
-               --  when the argument is a constant or an enumeration literal.
+                  --  Enum_Type'Enum_Rep (E1) case
 
-               elsif Is_Enumeration_Type (Entity (P))
-                 and then Present (E1)
-                 and then Is_Entity_Name (E1)
-                 and then Ekind_In (Entity (E1), E_Constant,
-                                                 E_Enumeration_Literal)
-               then
-                  P_Entity := Etype (P);
+                  elsif Is_Enumeration_Type (Entity (P)) then
+                     Enum_Expr := E1;
 
-               --  Otherwise the attribute must be expanded into a conversion
-               --  and evaluated at run time.
+                  --  Otherwise the attribute must be expanded into a
+                  --  conversion and evaluated at run time.
 
-               else
-                  Check_Expressions;
-                  return;
-               end if;
+                  else
+                     Check_Expressions;
+                     return;
+                  end if;
+
+                  --  We can fold if the expression is an enumeration
+                  --  literal, or if it denotes a static constant.
+
+                  if Nkind (Enum_Expr) in N_Has_Entity
+                    and then (Ekind (Entity (Enum_Expr)) =
+                                E_Enumeration_Literal
+                      or else
+                       (Ekind (Entity (Enum_Expr)) = E_Constant
+                          and then Nkind (Parent (Entity (Enum_Expr))) =
+                                     N_Object_Declaration
+                          and then Is_Static_Expression
+                                     (Expression (Parent (Entity (P))))))
+                  then
+                     P_Entity := Etype (P);
+                  else
+                     Check_Expressions;
+                     return;
+                  end if;
+               end;
 
             --  Otherwise the attribute is illegal, do not attempt to perform
             --  any kind of folding.
