@@ -1607,7 +1607,7 @@ package body Sem_Type is
                   Act1 := Left_Opnd (N);
                   Act2 := Right_Opnd (N);
 
-                  --  Use the type of tye second formal, so as to include
+                  --  Use the type of the second formal, so as to include
                   --  exponentiation, where the exponent may be ambiguous and
                   --  the result non-universal.
 
