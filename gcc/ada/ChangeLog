@@ -1,3 +1,7 @@
+2016-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Cleanups.
+
 2016-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute_Old_Result): The attributes can
