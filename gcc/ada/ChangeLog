@@ -1,3 +1,16 @@
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Check_Inherited_Conditions): Perform two passes over
+	the primitive operations of the type: one over source overridings
+	to build the primitives mapping, and one over inherited operations
+	to check for the need to create wrappers, and to check legality
+	of inherited condition in SPARK.
+	* sem_prag.ads (Update_Primitive_Mapping): Make public, for use
+	in freeze actions.
+	* sem_prag.adb (Build_Pragma_Check_Equivalent): Refine error
+	message in the case of an inherited condition in SPARK that
+	includes a call to some other overriding primitive.
+
 2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb (Ctrl_Init_Expression): New routine.
