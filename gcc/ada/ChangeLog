@@ -1,3 +1,8 @@
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* ghost.adb (Prune_Node): A freeze node for an ignored ghost
+	entity must be pruned as well.
+
 2016-07-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_type.adb, einfo.ads, freeze.adb, exp_ch6.adb: Minor reformatting
