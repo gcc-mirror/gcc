@@ -19,6 +19,9 @@ This chapter describes a number of utility programs:
   * :ref:`The_Body_Stub_Generator_gnatstub`
   * :ref:`The_Unit_Test_Generator_gnattest`
 
+  It also describes how several of these tools can be used in conjunction
+  with project files: :ref:`Using_Project_Files_with_GNAT_Tools`
+
 .. only:: FSF
 
   * :ref:`The_File_Cleanup_Utility_gnatclean`
@@ -629,7 +632,8 @@ The following switches are available for *gnatxref*:
 .. index:: -pFILE (gnatxref)
 
 :samp:`p{FILE}`
-  Specify a project file to use :ref:`GNAT_Project_Manager`.
+  Specify a project file to use (see the *GNAT_Project_Manager*
+  chapter in the *GPRbuild User's Guide*).
   If you need to use the :file:`.gpr`
   project files, you should use gnatxref through the GNAT driver
   (*gnat xref -Pproject*).
@@ -832,7 +836,8 @@ The following switches are available:
 .. index:: -pFILE (gnatfind)
 
 :samp:`p{FILE}`
-  Specify a project file (:ref:`GNAT_Project_Manager`) to use.
+  Specify a project file (see the *GNAT_Project_Manager* chapter in the
+  *GPRbuild User's Guide*).
   By default, `gnatxref` and `gnatfind` will try to locate a
   project file in the current directory.
 
@@ -1379,6 +1384,11 @@ Alternatively, you may run the script using the following command line:
   The *gnat2xml* tool is an ASIS-based utility that converts
   Ada source code into XML.
 
+  *gnat2xml* is a project-aware tool
+  (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+  the project-related switches).  The project file package that can specify
+  *gnat2xml* switches is named ``gnat2xml``.
+
   .. _Switches_for_*gnat2xml*:
 
   Switches for *gnat2xml*
@@ -1823,15 +1833,12 @@ Alternatively, you may run the script using the following command line:
   The *gnatcheck* tool is an ASIS-based utility that checks properties
   of Ada source files according to a given set of semantic rules.
 
-  In order to check compliance with a given rule, *gnatcheck* has to
-  semantically analyze the Ada sources.
-  Therefore, checks can only be performed on
-  legal Ada units. Moreover, when a unit depends semantically upon units located
-  outside the current directory, the source search path has to be provided when
-  calling *gnatcheck*, either through a specified project file or
-  through *gnatcheck* switches.
+  *gnatcheck* is a project-aware tool
+  (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+  the project-related switches).  The project file package that can specify
+  *gnatcheck* switches is named ``Check``.
 
-  For full details, refer to :title:`GNATcheck Reference Manual`.
+  For full details, plese refer to :title:`GNATcheck Reference Manual`.
 
 
 
@@ -1850,6 +1857,11 @@ Alternatively, you may run the script using the following command line:
   It takes an Ada source file as input and generates a file containing the
   metrics data as output. Various switches control which
   metrics are computed and output.
+
+  *gnatmetric* is a project-aware tool
+  (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+  the project-related switches).  The project file package that can specify
+  *gnatmetric* switches is named ``Metrics``.
 
   To compute program metrics, *gnatmetric* invokes the Ada
   compiler and generates and uses the ASIS tree for the input source;
@@ -2095,71 +2107,71 @@ Alternatively, you may run the script using the following command line:
   .. index:: --no-lines (gnatmetric)
 
 
-  :samp:`-lines-all`
+  :samp:`--lines-all`
     Report all the line metrics
 
 
-  :samp:`-no-lines-all`
+  :samp:`--no-lines-all`
     Do not report any of line metrics
 
 
-  :samp:`-lines`
+  :samp:`--lines`
     Report the number of all lines
 
 
-  :samp:`-no-lines`
+  :samp:`--no-lines`
     Do not report the number of all lines
 
 
-  :samp:`-lines-code`
+  :samp:`--lines-code`
     Report the number of code lines
 
 
-  :samp:`-no-lines-code`
+  :samp:`--no-lines-code`
     Do not report the number of code lines
 
 
-  :samp:`-lines-comment`
+  :samp:`--lines-comment`
     Report the number of comment lines
 
 
-  :samp:`-no-lines-comment`
+  :samp:`--no-lines-comment`
     Do not report the number of comment lines
 
 
-  :samp:`-lines-eol-comment`
+  :samp:`--lines-eol-comment`
     Report the number of code lines containing
     end-of-line comments
 
 
-  :samp:`-no-lines-eol-comment`
+  :samp:`--no-lines-eol-comment`
     Do not report the number of code lines containing
     end-of-line comments
 
 
-  :samp:`-lines-ratio`
+  :samp:`--lines-ratio`
     Report the comment percentage in the program text
 
 
-  :samp:`-no-lines-ratio`
+  :samp:`--no-lines-ratio`
     Do not report the comment percentage in the program text
 
 
-  :samp:`-lines-blank`
+  :samp:`--lines-blank`
     Report the number of blank lines
 
 
-  :samp:`-no-lines-blank`
+  :samp:`--no-lines-blank`
     Do not report the number of blank lines
 
 
-  :samp:`-lines-average`
+  :samp:`--lines-average`
     Report the average number of code lines in subprogram bodies, task bodies,
     entry bodies and statement sequences in package bodies. The metric is computed
     and reported for the whole set of processed Ada sources only.
 
 
-  :samp:`-no-lines-average`
+  :samp:`--no-lines-average`
     Do not report the average number of code lines in subprogram bodies,
     task bodies, entry bodies and statement sequences in package bodies.
 
@@ -2203,6 +2215,15 @@ Alternatively, you may run the script using the following command line:
       This corresponds to the notion of the
       maximum nesting level in the GNAT built-in style checks
       (see :ref:`Style_Checking`)
+
+  * *Number of formal parameters*
+      Number of formal parameters of a subprogram; if a subprogram does have
+      parameters, then numbers of "in", "out" and "in out" parameters are also
+      reported. This metric is reported for subprogram specifications and for
+      subprogram instantiations. For subprogram bodies, expression functions
+      and null procedures this metric is reported if the construct acts as a
+      subprogram declaration but is not a completion of previous declaration.
+      This metric is not reported for generic and formal subprograms.
 
   For the outermost unit in the file, *gnatmetric* additionally computes
   the following metrics:
@@ -2263,76 +2284,83 @@ Alternatively, you may run the script using the following command line:
   .. index:: --no-syntax (gnatmetric)
 
 
-  :samp:`-syntax-all`
+  :samp:`--syntax-all`
     Report all the syntax metrics
 
 
-  :samp:`-no-syntax-all`
+  :samp:`--no-syntax-all`
     Do not report any of syntax metrics
 
 
-  :samp:`-declarations`
+  :samp:`--declarations`
     Report the total number of declarations
 
 
-  :samp:`-no-declarations`
+  :samp:`--no-declarations`
     Do not report the total number of declarations
 
 
-  :samp:`-statements`
+  :samp:`--statements`
     Report the total number of statements
 
 
-  :samp:`-no-statements`
+  :samp:`--no-statements`
     Do not report the total number of statements
 
 
-  :samp:`-public-subprograms`
+  :samp:`--public-subprograms`
     Report the number of public subprograms in a compilation unit
 
 
-  :samp:`-no-public-subprograms`
+  :samp:`--no-public-subprograms`
     Do not report the number of public subprograms in a compilation unit
 
 
-  :samp:`-all-subprograms`
+  :samp:`--all-subprograms`
     Report the number of all the subprograms in a compilation unit
 
 
-  :samp:`-no-all-subprograms`
+  :samp:`--no-all-subprograms`
     Do not report the number of all the subprograms in a compilation unit
 
 
-  :samp:`-public-types`
+  :samp:`--public-types`
     Report the number of public types in a compilation unit
 
 
-  :samp:`-no-public-types`
+  :samp:`--no-public-types`
     Do not report the number of public types in a compilation unit
 
 
-  :samp:`-all-types`
+  :samp:`--all-types`
     Report the number of all the types in a compilation unit
 
 
-  :samp:`-no-all-types`
+  :samp:`--no-all-types`
     Do not report the number of all the types in a compilation unit
 
 
-  :samp:`-unit-nesting`
+  :samp:`--unit-nesting`
     Report the maximal program unit nesting level
 
 
-  :samp:`-no-unit-nesting`
+  :samp:`--no-unit-nesting`
     Do not report the maximal program unit nesting level
 
 
-  :samp:`-construct-nesting`
+  :samp:`--construct-nesting`
     Report the maximal construct nesting level
 
 
-  :samp:`-no-construct-nesting`
+  :samp:`--no-construct-nesting`
     Do not report the maximal construct nesting level
+
+  :samp:`--param-number`
+    Report the number of subprogram parameters
+
+
+  :samp:`--no-param-number`
+    Do not report the number of subprogram parameters
 
 
   .. _Complexity_Metrics_Control:
@@ -2420,31 +2448,31 @@ Alternatively, you may run the script using the following command line:
   .. index:: --no-complexity (gnatmetric)
 
 
-  :samp:`-complexity-all`
+  :samp:`--complexity-all`
     Report all the complexity metrics
 
 
-  :samp:`-no-complexity-all`
+  :samp:`--no-complexity-all`
     Do not report any of complexity metrics
 
 
-  :samp:`-complexity-cyclomatic`
+  :samp:`--complexity-cyclomatic`
     Report the McCabe Cyclomatic Complexity
 
 
-  :samp:`-no-complexity-cyclomatic`
+  :samp:`--no-complexity-cyclomatic`
     Do not report the McCabe Cyclomatic Complexity
 
 
-  :samp:`-complexity-essential`
+  :samp:`--complexity-essential`
     Report the Essential Complexity
 
 
-  :samp:`-no-complexity-essential`
+  :samp:`--no-complexity-essential`
     Do not report the Essential Complexity
 
 
-  :samp:`-loop-nesting`
+  :samp:`--loop-nesting`
     Report maximal loop nesting level
 
 
@@ -2452,14 +2480,14 @@ Alternatively, you may run the script using the following command line:
     Do not report maximal loop nesting level
 
 
-  :samp:`-complexity-average`
+  :samp:`--complexity-average`
     Report the average McCabe Cyclomatic Complexity for all the subprogram bodies,
     task bodies, entry bodies and statement sequences in package bodies.
     The metric is computed and reported for whole set of processed Ada sources
     only.
 
 
-  :samp:`-no-complexity-average`
+  :samp:`--no-complexity-average`
     Do not report the average McCabe Cyclomatic Complexity for all the subprogram
     bodies, task bodies, entry bodies and statement sequences in package bodies
 
@@ -2473,11 +2501,11 @@ Alternatively, you may run the script using the following command line:
   .. index:: --no-static-loop (gnatmetric)
 
 
-  :samp:`-no-static-loop`
+  :samp:`--no-static-loop`
     Do not consider static loops when computing cyclomatic complexity
 
 
-  :samp:`-extra-exit-points`
+  :samp:`--extra-exit-points`
     Report the extra exit points for subprogram bodies. As an exit point, this
     metric counts `return` statements and raise statements in case when the
     raised exception is not handled in the same body. In case of a function this
@@ -2485,7 +2513,7 @@ Alternatively, you may run the script using the following command line:
     must contain at least one `return` statement.
 
 
-  :samp:`-no-extra-exit-points`
+  :samp:`--no-extra-exit-points`
     Do not report the extra exit points for subprogram bodies
 
 
@@ -2678,39 +2706,39 @@ Alternatively, you may run the script using the following command line:
   .. index:: --unit-coupling (gnatmetric)
   .. index:: --control-coupling (gnatmetric)
 
-  :samp:`-coupling-all`
+  :samp:`--coupling-all`
     Report all the coupling metrics
 
 
-  :samp:`-tagged-coupling-out`
+  :samp:`--tagged-coupling-out`
     Report tagged (class) fan-out coupling
 
 
-  :samp:`-tagged-coupling-in`
+  :samp:`--tagged-coupling-in`
     Report tagged (class) fan-in coupling
 
 
-  :samp:`-hierarchy-coupling-out`
+  :samp:`--hierarchy-coupling-out`
     Report hierarchy (category) fan-out coupling
 
 
-  :samp:`-hierarchy-coupling-in`
+  :samp:`--hierarchy-coupling-in`
     Report hierarchy (category) fan-in coupling
 
 
-  :samp:`-unit-coupling-out`
+  :samp:`--unit-coupling-out`
     Report unit fan-out coupling
 
 
-  :samp:`-unit-coupling-in`
+  :samp:`--unit-coupling-in`
     Report unit fan-in coupling
 
 
-  :samp:`-control-coupling-out`
+  :samp:`--control-coupling-out`
     Report control fan-out coupling
 
 
-  :samp:`-control-coupling-in`
+  :samp:`--control-coupling-in`
     Report control fan-in coupling
 
 
@@ -2724,13 +2752,13 @@ Alternatively, you may run the script using the following command line:
 
   .. index:: --version (gnatmetric)
 
-  :samp:`-version`
+  :samp:`--version`
     Display Copyright and version, then exit disregarding all other options.
 
 
   .. index:: --help (gnatmetric)
 
-  :samp:`-help`
+  :samp:`--help`
     Display usage, then exit disregarding all other options.
 
 
@@ -2768,14 +2796,14 @@ Alternatively, you may run the script using the following command line:
 
   .. index:: --RTS (gnatmetric)
 
-  :samp:`-RTS={rts-path}`
+  :samp:`--RTS={rts-path}`
     Specifies the default location of the runtime library. Same meaning as the
     equivalent *gnatmake* flag (see :ref:`Switches_for_gnatmake`).
 
 
   .. index:: --subdirs=dir (gnatmetric)
 
-  :samp:`-subdirs={dir}`
+  :samp:`--subdirs={dir}`
     Use the specified subdirectory of the project objects file (or of the
     project file directory if the project does not specify an object directory)
     for tool output files. Has no effect if no project is specified as
@@ -2784,7 +2812,7 @@ Alternatively, you may run the script using the following command line:
 
   .. index:: --no_objects_dir (gnatmetric)
 
-  :samp:`-no_objects_dir`
+  :samp:`--no_objects_dir`
     Place all the result files into the current directory instead of
     project objects directory. This corresponds to the *gnatcheck*
     behavior when it is called with the project file from the
@@ -2851,6 +2879,11 @@ Alternatively, you may run the script using the following command line:
    version as output.
    You can specify various style directives via switches; e.g.,
    identifier case conventions, rules of indentation, and comment layout.
+
+   *gnatpp* is a project-aware tool
+   (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+   the project-related switches).  The project file package that can specify
+   *gnatpp* switches is named ``Pretty_Printer``.
 
    To produce a reformatted file, *gnatpp* invokes the Ada
    compiler and generates and uses the ASIS tree for the input source;
@@ -3142,6 +3175,13 @@ Alternatively, you may run the script using the following command line:
 
    :samp:`--comments-only`
      Format just the comments.
+
+   .. index:: --no-end-id (gnatpp)
+
+
+   :samp:`--no-end-id`
+     Do not insert the name of a unit after `end`; leave whatever comes
+     after `end`, if anything, alone.
 
    .. index:: --no-separate-is (gnatpp)
 
@@ -3849,6 +3889,15 @@ Alternatively, you may run the script using the following command line:
   for library unit declarations, and empty but compilable
   subunit for body stubs.
 
+  *gnatstub* is a project-aware tool.
+  (See :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+  the project-related switches but note that *gnatstub* does not support
+  the :samp:`-U`, :samp:`-U {main_unit}`, :samp:`--subdirs={dir}`, or
+  :samp:`--no_objects_dir` switches.)
+  The project file package that can specify
+  *gnatstub* switches is named ``gnatstub``.
+
+
   To create a body or a subunit, *gnatstub* invokes the Ada
   compiler and generates and uses the ASIS tree for the input source;
   thus the input must be legal Ada code, and the tool should have all the
@@ -4336,9 +4385,10 @@ Alternatively, you may run the script using the following command line:
 
     .. index:: --separate-drivers (gnattest)
 
-  :samp:`--separate-drivers`
-    Generates a separate test driver for each test, rather than a single
-    executable incorporating all tests.
+  :samp:`--separate-drivers[={val}]`
+    Generates a separate test driver for each test or unit under test, rather
+    than a single executable incorporating all tests. `val` can be "unit" or
+    "test", or may be omitted, which defaults to "unit".
 
 
     .. index:: --stub (gnattest)
@@ -4400,6 +4450,16 @@ Alternatively, you may run the script using the following command line:
     recreated for each project in their object directories and test packages are
     placed accordingly.
 
+
+    .. index:: --exclude-from-stubbing (gnattest)
+
+  :samp:`--exclude-from-stubbing={filename}`
+    Disables stubbing of units listed in `filename`. The file should contain
+    corresponding spec files, one per line.
+
+  :samp:`--exclude-from-stubbing:{unit}={filename}`
+    Same as above, but corresponding units will not be stubbed only when testing
+    specified `unit`.
 
     .. index:: --validate-type-extensions (gnattest)
 
@@ -4530,6 +4590,15 @@ Alternatively, you may run the script using the following command line:
        is used to specify the default behavior of test skeletons, otherwise
        specified by ``--skeleton-default`` option. The value of this attribute
        should be either ``pass`` or ``fail``.
+
+  * ``Default_Stub_Exclusion_List``
+       is used to specify the file with list of units whose bodies should not
+       be stubbed, otherwise specified by ``--exclude-from-stubbing=filename``.
+
+  * ``Stub_Exclusion_List ("unit")``
+       is used to specify the file with list of units whose bodies should not
+       be stubbed when testing "unit", otherwise specified by
+       ``--exclude-from-stubbing:unit=filename``.
 
   Each of those attributes can be overridden from the command line if needed.
   Other *gnattest* switches can also be passed via the project
@@ -4877,12 +4946,12 @@ Alternatively, you may run the script using the following command line:
 
   By default, *gnattest* generates a monolithic test driver that
   aggregates the individual tests into a single executable. It is also possible
-  to generate separate executables for each test, by passing the switch
-  ``--separate-drivers``. This approach scales better for large testing
-  campaigns, especially involving target architectures with limited resources
-  typical for embedded development. It can also provide a major performance
-  benefit on multi-core systems by allowing simultaneous execution of multiple
-  tests.
+  to generate separate executables for each test or each unit under test, by
+  passing the switch ``--separate-drivers`` with corresponding parameter. This
+  approach scales better for large testing campaigns, especially involving target
+  architectures with limited resources typical for embedded development. It can
+  also provide a major performance benefit on multi-core systems by allowing
+  simultaneous execution of multiple tests.
 
   *gnattest* can take charge of executing the individual tests; for this,
   instead of passing a project file, a text file containing the list of
@@ -4923,7 +4992,8 @@ Alternatively, you may run the script using the following command line:
 
   Due to the nature of stubbing process, this mode implies the switch
   ``--separate-drivers``, i.e. an individual test driver (with the
-  corresponding hierarchy of extending projects) is generated for each test.
+  corresponding hierarchy of extending projects) is generated for each unit under
+  test.
 
   .. note::
 
@@ -4965,5 +5035,90 @@ Alternatively, you may run the script using the following command line:
   * pragma *No_Secondary_Stack* is not supported;
   * if pragmas for interfacing with foreign languages are used, manual
     adjustments might be necessary to make the test harness compilable;
-  * use of elaboration control pragmas may result in elaboration circularities
-    in the generated harness.
+  * use of some constructs, such as elaboration-control pragmas, Type_Invariant
+    aspects, and complex variable initializations that use Subprogram'Access,
+    may result in elaboration circularities in the generated harness.
+
+.. only:: PRO or GPL
+
+   .. _Using_Project_Files_with_GNAT_Tools:
+
+   Using Project Files with GNAT Tools
+   ===================================
+
+   This section describes how project files can be used in conjunction
+   with a number of GNAT tools.
+   For a comprehensive description of project files and the overall
+   GNAT Project Manager facility, please refer to the
+   *GNAT Project Manager* chapter in the 
+   *GPRbuild and GPR Companion Tools User's Guide*.
+
+   .. index:: Project-aware tool
+
+   If a tool can take a project file as an option and extract the needed
+   information, such a tool is called a *project-aware* tool.
+
+   .. _Switches_Related_to_Project_Files:
+
+   Switches Related to Project Files
+   ---------------------------------
+
+   The following switches are used by the project-aware GNAT tools:
+
+   :samp:`-P{project_file}`
+      Indicates the name of the project file whose source files are to
+      be processed. The exact set of sources depends on other options
+      specified, see below.
+
+   :samp:`-U`
+      If a project file is supplied, say for project ``proj``,
+      but no sources are specified for ``proj`` (either by a 
+      project attribute or through a tool option that provides a list
+      of the files to be used), process all the source files
+      from projects imported either directly or indirectly by ``proj``.
+      Otherwise this option has no effect.
+
+   :samp:`-U {main_unit}`
+      Similar to :samp:`-U`, but if no sources are specified then
+      process only those source files for units in the closure of
+      `main_unit`.
+
+   :samp:`-X{name}={val}`
+      Indicates that the external variable ``name`` in the project has the
+      value ``val``. Has no effect if no project has been specified.
+
+   :samp:`--subdirs={dir}`
+      Use the `dir` subdirectory of the project's object directory (or the `dir`
+      subdirectory of the project file directory if the project does not specify
+      an object directory) for tool output files. Has no effect if no project
+      has been specified or if :samp:`--no_objects_dir` is specified.
+
+   :samp:`--no_objects_dir`
+      Place all the result files into the current directory (i.e., the directory
+      from which the tool invocation command is issued) instead of the project's
+      object directory. Has no effect if no project has been specified.
+
+   :samp:`-eL`
+      Follow all symbolic links when processing project files.
+
+   If a project file is specified and there is neither a :samp:`-U` option,
+   nor a :samp:`-U {main_unit}` option, nor some other explicit option to
+   specify the source files, then the sources to be processed are the
+   immediate sources of the specified project (i.e., the source files directly
+   defined by that project, either implicitly by residing in the project
+   source directories, or explicitly through any of the source-related
+   attributes).
+  
+   .. _Tool-specific_packages_in_project files:
+
+   Tool-specific packages in project files
+   ---------------------------------------
+
+   Each project-aware tool may have a corresponding package in a project file;
+   the package names are given elsewhere in this manual, in the sections that describe
+   the respective tools.
+
+   A tool-specific package in a project file may define the ``Default_Switches``
+   attribute indexed by "ada" (as language name). The value of this attribute
+   is a list of switches that will be supplied at tool invocation.
+   Project-specific switches cannot be specified through this attribute. 

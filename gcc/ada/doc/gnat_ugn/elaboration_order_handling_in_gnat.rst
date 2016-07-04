@@ -75,7 +75,7 @@ of that unit before elaborating the unit doing the |withing|:
 
      with Unit_1;
      package Unit_2 is ...
-  
+
 would require that both the body and spec of `Unit_1` be elaborated
 before the spec of `Unit_2`. However, a rule like that would be far too
 restrictive. In particular, it would make it impossible to have routines
@@ -94,7 +94,7 @@ of the body of `Unit_1`:
 .. code-block:: ada
 
      Sqrt_1 : Float := Sqrt (0.1);
-  
+
 The elaboration code of the body of `Unit_1` also contains:
 
 .. code-block:: ada
@@ -111,7 +111,7 @@ the body `Unit_2`:
 .. code-block:: ada
 
       Sqrt_2 : Float := Sqrt (0.1);
-  
+
 The elaboration code of the body of `Unit_2` also contains:
 
 .. code-block:: ada
@@ -119,7 +119,7 @@ The elaboration code of the body of `Unit_2` also contains:
      if expression_2 = 2 then
         Q := Unit_1.Func_1;
      end if;
-  
+
 Now the question is, which of the following orders of elaboration is
 acceptable:
 
@@ -129,7 +129,7 @@ acceptable:
      Spec of Unit_2
      Body of Unit_1
      Body of Unit_2
-  
+
 or
 
 ::
@@ -138,7 +138,7 @@ or
      Spec of Unit_1
      Body of Unit_2
      Body of Unit_1
-  
+
 If you carefully analyze the flow here, you will see that you cannot tell
 at compile time the answer to this question.
 If `expression_1` is not equal to 1,
@@ -378,7 +378,7 @@ order of elaboration of the servers on which they depend:
 
         Unit A |withs| unit B and calls B.Func in elab code
         Unit B |withs| unit C, and B.Func calls C.Func
-    
+
 
   Now if we put a pragma `Elaborate (B)`
   in unit `A`, this ensures that the
@@ -481,14 +481,14 @@ example writing:
 .. code-block:: ada
 
      function One return Float;
- 
+
      Q : Float := One;
-  
+
      function One return Float is
      begin
           return 1.0;
      end One;
-  
+
 will obviously raise `Program_Error` at run time, because function
 One will be called before its body is elaborated. In this case GNAT will
 generate a warning that the call will raise `Program_Error`::
@@ -510,7 +510,7 @@ generate a warning that the call will raise `Program_Error`::
     11. begin
     12.    null;
     13. end;
-  
+
 
 Note that in this particular case, it is likely that the call is safe, because
 the function `One` does not access any global variables.
@@ -527,7 +527,7 @@ would prevent this reordering, and if we write:
 .. code-block:: ada
 
      function One return Float;
- 
+
      function One return Float is
      begin
           return 1.0;
@@ -586,7 +586,7 @@ raised at the point of the call. Let's look at the warning::
     13. begin
     14.    null;
     15. end;
-  
+
 
 Note that the message here says 'may raise', instead of the direct case,
 where the message says 'will be raised'. That's because whether
@@ -677,7 +677,7 @@ Consider the following:
       begin
          ...
       end Main;
-  
+
 where `Main` is the main program. When this program is executed, the
 elaboration code must first be executed, and one of the jobs of the
 binder is to determine the order in which the units of a program are
@@ -813,7 +813,7 @@ switch, then the compiler outputs an information message::
                           |
         >>> info: call to "r" may raise Program_Error
         >>> info: missing pragma Elaborate_All for "k"
-   
+
      4. end;
 
 and these messages can be used as a guide for supplying manually
@@ -840,7 +840,7 @@ the *-gnatE* switch on the compiler (*gcc* or
 .. code-block:: ada
 
       pragma Elaboration_Checks (DYNAMIC);
-  
+
 Either approach will cause the unit affected to be compiled using the
 standard dynamic run-time elaboration checks described in the Ada
 Reference Manual. The static model is generally preferable, since it
@@ -976,7 +976,7 @@ the following example
       begin
          Decls.Lib_Task.Start;
       end;
-  
+
 If the above example is compiled in the default static elaboration
 mode, then a circularity occurs. The circularity comes from the call
 `Utils.Put_Val` in the task body of `Decls.Lib_Task`. Since
@@ -1112,7 +1112,7 @@ We have four possible answers to this question:
       begin
          Decls1.Lib_Task.Start;
       end;
-    
+
 
   All we have done is to split `Decls` into two packages, one
   containing the library task, and one containing everything else. Now
@@ -1179,7 +1179,7 @@ We have four possible answers to this question:
       begin
          Declst.Lib_Task.Start;
       end;
-    
+
 
   What we have done here is to replace the `task` declaration in
   package `Decls` with a `task type` declaration. Then we
@@ -1227,7 +1227,7 @@ We have four possible answers to this question:
   .. code-block:: ada
 
       pragma Restrictions (No_Entry_Calls_In_Elaboration_Code);
-    
+
   This pragma can be placed in the :file:`gnat.adc` file in the usual
   manner. If we take our original unmodified program and compile it
   in the presence of a :file:`gnat.adc` containing the above pragma,
@@ -1288,7 +1288,7 @@ similar to that in the following example::
 
      warning: "x.ads" has dynamic elaboration checks and with's
      warning:   "y.ads" which has static elaboration checks
- 
+
 These warnings indicate that the rule has been violated, and that as a result
 elaboration checks may be missed in the resulting executable file.
 This warning may be suppressed using the *-ws* binder switch
@@ -1456,7 +1456,7 @@ Faced with a circularity of this kind, you have three different options.
         begin
           Ada.Text_IO.Put_Line(Pack1.X1'Img); -- 101
         end Proc3;
-    
+
   In the absence of any pragmas, an attempt to bind this program produces
   the following diagnostics::
 
@@ -1473,7 +1473,7 @@ Faced with a circularity of this kind, you have three different options.
        info:          "pack2 (spec)"
        info:             which is withed by:
        info:          "pack1 (body)"
-    
+
   The sources of the circularity are the two calls to `Pack2.Pure` and
   `Pack2.F2` in the body of `Pack1`. We can see that the call to
   F2 is safe, even though F2 calls F1, because the call appears after the
@@ -1541,19 +1541,24 @@ fall back to run-time checks; premature calls to any primitive
 operation of a tagged type before the body of the operation has been
 elaborated will raise `Program_Error`.
 
-Access-to-subprogram types, however, are handled conservatively, and
-do not require run-time checks. This was not true in earlier versions
-of the compiler; you can use the *-gnatd.U* debug switch to
-revert to the old behavior if the new conservative behavior causes
-elaboration cycles. Here, 'conservative' means that if you do
-`P'Access` during elaboration, the compiler will assume that you
-might call `P` indirectly during elaboration, so it adds an
-implicit `pragma Elaborate_All` on the library unit containing
-`P`. The *-gnatd.U* switch is safe if you know there are
-no such calls. If the program worked before, it will continue to work
-with *-gnatd.U*. But beware that code modifications such as
-adding an indirect call can cause erroneous behavior in the presence
-of *-gnatd.U*.
+Access-to-subprogram types, however, are handled conservatively in many
+cases. This was not true in earlier versions of the compiler; you can use
+the *-gnatd.U* debug switch to revert to the old behavior if the new
+conservative behavior causes elaboration cycles. Here, 'conservative' means
+that if you do `P'Access` during elaboration, the compiler will normally
+assume that you might call `P` indirectly during elaboration, so it adds an
+implicit `pragma Elaborate_All` on the library unit containing `P`. The
+*-gnatd.U* switch is safe if you know there are no such calls. If the
+program worked before, it will continue to work with *-gnatd.U*. But beware
+that code modifications such as adding an indirect call can cause erroneous
+behavior in the presence of *-gnatd.U*.
+
+These implicit Elaborate_All pragmas are not added in all cases, because
+they cause elaboration cycles in certain common code patterns. If you want
+even more conservative handling of P'Access, you can use the *-gnatd.o*
+switch.
+
+See `debug.adb` for documentation on the *-gnatd...* debug switches.
 
 
 .. _Summary_of_Procedures_for_Elaboration_Control:
@@ -1564,7 +1569,7 @@ Summary of Procedures for Elaboration Control
 .. index:: Elaboration control
 
 First, compile your program with the default options, using none of
-the special elaboration control switches. If the binder successfully
+the special elaboration-control switches. If the binder successfully
 binds your program, then you can be confident that, apart from issues
 raised by the use of access-to-subprogram types and dynamic dispatching,
 the program is free of elaboration errors. If it is important that the
@@ -1621,7 +1626,7 @@ requirements. Consider this example:
      package Init_Constants is
         procedure P; --* require a body*
      end Init_Constants;
- 
+
      with Constants;
      package body Init_Constants is
         procedure P is begin null; end;
@@ -1641,7 +1646,7 @@ requirements. Consider this example:
      begin
         Put_Line (Calc.Z'Img);
      end Main;
-  
+
 In this example, there is more than one valid order of elaboration. For
 example both the following are correct orders::
 
@@ -1654,13 +1659,13 @@ example both the following are correct orders::
 and
 
 ::
-  
+
     Init_Constants spec
     Init_Constants body
     Constants spec
     Calc spec
     Main body
-  
+
 There is no language rule to prefer one or the other, both are correct
 from an order of elaboration point of view. But the programmatic effects
 of the two orders are very different. In the first, the elaboration routine
@@ -1684,7 +1689,7 @@ case, that could have been achieved by adding to the spec of Calc:
 .. code-block:: ada
 
      pragma Elaborate_All (Constants);
-  
+
 which requires that the body (if any) and spec of `Constants`,
 as well as the body and spec of any unit |withed| by
 `Constants` be elaborated before `Calc` is elaborated.
@@ -1719,7 +1724,7 @@ following output:
      $ gnatmake -f -q main -bargs -p
      $ main
       0
-  
+
 It is of course quite unlikely that both these results are correct, so
 it is up to you in a case like this to investigate the source of the
 difference, by looking at the two elaboration orders that are chosen,
@@ -1768,7 +1773,7 @@ the last part of the file:`b~xxx.adb` binder output file. Here is an example::
      Ada.Text_Io'Elab_Spec;
      Ada.Text_Io'Elab_Body;
      E07 := True;
-  
+
 Here Elab_Spec elaborates the spec
 and Elab_Body elaborates the body. The assignments to the :samp:`E{xx}` flags
 flag that the corresponding body is now elaborated.

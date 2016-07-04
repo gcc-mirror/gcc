@@ -156,6 +156,31 @@ For example on x86-linux::
    --           |
    --           +--- adalib
 
+.. only:: html or latex
+
+  .. image:: rtlibrary-structure.png
+
+.. only:: not (html or latex) 
+
+   ::
+
+                      $(target-dir)
+                     __/ /      \ \___
+             _______/   /        \    \_________________
+            /          /          \                     \
+           /          /            \                     \
+       ADAINCLUDE  ADALIB      rts-native             rts-sjlj
+          :          :            /    \                 /   \
+          :          :           /      \               /     \
+          :          :          /        \             /       \
+          :          :         /          \           /         \
+          +-------------> adainclude     adalib   adainclude   adalib
+                     :                     ^
+                     :                     :
+                     +---------------------+
+
+                     Run-Time Library Directory Structure
+          (Upper-case names and dotted/dashed arrows represent soft links)
 
 If the *rts-sjlj* library is to be selected on a permanent basis,
 these soft links can be modified with the following commands:
@@ -486,7 +511,58 @@ file will be created. This is particularly useful in networked
 environments where you may not have write access to some
 directories.
 
+Disabling Command Line Argument Expansion
+-----------------------------------------
 
+.. index:: Command Line Argument Expansion
+
+By default, an executable compiled for the **Windows** platform will do
+the following postprocessing on the arguments passed on the command
+line:
+
+* If the argument contains the characters ``*`` and/or ``?``, then
+  file expansion will be attempted. For example, if the current directory
+  contains :file:`a.txt` and :file:`b.txt`, then when calling::
+
+      $ my_ada_program *.txt
+
+  The following arguments will effectively be passed to the main program
+  (for example when using ``Ada.Command_Line.Argument``)::
+
+      Ada.Command_Line.Argument (1) -> "a.txt"
+      Ada.Command_Line.Argument (2) -> "b.txt"
+
+* Filename expansion can be disabled for a given argument by using single
+  quotes. Thus, calling::
+
+      $ my_ada_program '*.txt'
+
+  will result in::
+
+      Ada.Command_Line.Argument (1) -> "*.txt"
+
+Note that if the program is launched from a shell such as **Cygwin** **Bash**
+then quote removal might be performed by the shell.
+
+In some contexts it might be useful to disable this feature (for example if
+the program performs its own argument expansion). In order to do this, a C
+symbol needs to be defined and set to ``0``. You can do this by
+adding the following code fragment in one of your **Ada** units:
+
+.. code-block:: ada
+
+   Do_Argv_Expansion : Integer := 0;
+   pragma Export (C, Do_Argv_Expansion, "__gnat_do_argv_expansion");
+
+The results of previous examples will be respectively::
+
+   Ada.Command_Line.Argument (1) -> "*.txt"
+
+and::
+
+   Ada.Command_Line.Argument (1) -> "'*.txt'"
+
+   
 .. _Mixed-Language_Programming_on_Windows:
 
 Mixed-Language Programming on Windows
@@ -1033,7 +1109,8 @@ Building DLLs with GNAT Project files
 .. index:: DLLs, building
 
 There is nothing specific to Windows in the build process.
-:ref:`Library_Projects`.
+See the *Library Projects* section in the *GNAT Project Manager*
+chapter of the *GPRbuild User's Guide*.
 
 Due to a system limitation, it is not possible under Windows to create threads
 when inside the `DllMain` routine which is used for auto-initialization
@@ -1149,7 +1226,9 @@ Note that a relocatable DLL stripped using the `strip`
 binutils tool will not be relocatable anymore. To build a DLL without
 debug information pass `-largs -s` to `gnatdll`. This
 restriction does not apply to a DLL built using a Library Project.
-See :ref:`Library_Projects`.
+See the *Library Projects* section in the *GNAT Project Manager*
+chapter of the *GPRbuild User's Guide*.
+
 
 .. Limitations_When_Using_Ada_DLLs_from Ada:
 

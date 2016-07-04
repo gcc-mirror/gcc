@@ -966,9 +966,6 @@ types. This may be overridden for the derived type by giving an explicit scalar
 storage order for the derived type. For a record extension, the derived type
 must have the same scalar storage order as the parent type.
 
-If a component of `T` is of a record or array type, then that type must
-also have a `Scalar_Storage_Order` attribute definition clause.
-
 A component of a record or array type that is a bit-packed array, or that
 does not start on a byte boundary, must have the same scalar storage order
 as the enclosing record or array type.
@@ -1004,6 +1001,11 @@ If no scalar storage order is specified for a type (either directly, or by
 inheritance in the case of a derived type), then the default is normally
 the native ordering of the target, but this default can be overridden using
 pragma `Default_Scalar_Storage_Order`.
+
+Note that if a component of `T` is itself of a record or array type,
+the specfied `Scalar_Storage_Order` does *not* apply to that nested type:
+an explicit attribute definition clause must be provided for the component
+type as well if desired.
 
 Note that the scalar storage order only affects the in-memory data
 representation. It has no effect on the representation used by stream
