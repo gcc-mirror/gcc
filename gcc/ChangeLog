@@ -1,3 +1,7 @@
+2016-07-04  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.c (default_compilers["@c-header"]): Conditionalize "-o".
+
 2016-07-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71720

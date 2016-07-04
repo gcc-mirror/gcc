@@ -1,3 +1,8 @@
+2016-07-04  Jan Beulich  <jbeulich@suse.com>
+
+	* g++.dg/header.c: New.
+	* gcc.dg/header.c: New.
+
 2016-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71719
