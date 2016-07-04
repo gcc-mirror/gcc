@@ -1,4 +1,10 @@
 2016-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/66575
+	* decl.c (match_procedure_interface): Exit loop if procedure
+	interface refers to itself.
+
+2016-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/35849
