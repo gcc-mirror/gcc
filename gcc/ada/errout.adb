@@ -1125,6 +1125,7 @@ package body Errout is
                   --  without any further processing.
 
                   pragma Assert (not Continuation);
+
                   Last_Killed := True;
                   return;
                end if;
