@@ -445,20 +445,6 @@ No_Implicit_Heap_Allocations
 
 [RM D.7] No constructs are allowed to cause implicit heap allocation.
 
-No_Implicit_Loops
------------------
-.. index:: No_Implicit_Loops
-
-[GNAT] This restriction ensures that the generated code does not contain any
-implicit `for` loops, either by modifying
-the generated code where possible,
-or by rejecting any construct that would otherwise generate an implicit
-`for` loop. If this restriction is active, it is possible to build
-large array aggregates with all static components without generating an
-intermediate temporary, and without generating a loop to initialize individual
-components. Otherwise, a loop is created for arrays larger than about 5000
-scalar components.
-
 No_Implicit_Protected_Object_Allocations
 ----------------------------------------
 .. index:: No_Implicit_Protected_Object_Allocations
@@ -968,6 +954,20 @@ the 'Unrestricted_Access attribute for objects. Note: the reason that
 Unrestricted_Access is forbidden is that it would require the prefix
 to be aliased, and in such cases, it can always be replaced by
 the standard attribute Unchecked_Access which is preferable.
+
+No_Implicit_Loops
+-----------------
+.. index:: No_Implicit_Loops
+
+[GNAT] This restriction ensures that the generated code of the unit marked
+with this restriction does not contain any implicit `for` loops, either by
+modifying the generated code where possible, or by rejecting any construct
+that would otherwise generate an implicit `for` loop. If this restriction is
+active, it is possible to build large array aggregates with all static
+components without generating an intermediate temporary, and without generating
+a loop to initialize individual components. Otherwise, a loop is created for
+arrays larger than about 5000 scalar components. Note that if this restriction
+is set in the spec of a package, it will not apply to its body.
 
 No_Obsolescent_Features
 -----------------------

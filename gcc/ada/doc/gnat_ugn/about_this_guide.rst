@@ -37,12 +37,6 @@ This guide contains the following chapters:
   main GNAT tools to build executable programs, and it also gives examples of
   using the GNU make utility with GNAT.
 
-* :ref:`GNAT_Project_Manager` describes how to use project files
-  to organize large projects.
-  
-* :ref:`Tools_Supporting_Project_Files` described how to use the project
-  facility in conjunction with various GNAT tools.
-
 * :ref:`GNAT_Utility_Programs` explains the various utility programs that
   are included in the GNAT environment
 

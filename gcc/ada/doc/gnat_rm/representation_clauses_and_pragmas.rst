@@ -53,9 +53,9 @@ values are as follows:
   For arrays, the alignment is equal to the alignment of the component type
   for the normal case where no packing or component size is given.  If the
   array is packed, and the packing is effective (see separate section on
-  packed arrays), then the alignment will be either 4, 2 or 1 for long packed
+  packed arrays), then the alignment will be either 4, 2, or 1 for long packed
   arrays or arrays whose length is not known at compile time, depending on
-  whether the component size is divisible by 4, 2 or is odd.  For short packed
+  whether the component size is divisible by 4, 2, or is odd.  For short packed
   arrays, which are handled internally as modular types, the alignment
   will be as described for elementary types, e.g. a packed array of length
   31 bits will have an object size of four bytes, and an alignment of 4.
@@ -490,7 +490,7 @@ discrete types are as follows:
   The `Object_Size` for base subtypes reflect the natural hardware
   size in bits (run the compiler with *-gnatS* to find those values
   for numeric types). Enumeration types and fixed-point base subtypes have
-  8, 16, 32 or 64 bits for this size, depending on the range of values
+  8, 16, 32, or 64 bits for this size, depending on the range of values
   to be stored.
 
 *
@@ -1187,7 +1187,7 @@ taken by components.  We distinguish between *packable* components and
 Components of the following types are considered packable:
 
 * Components of an elementary type are packable unless they are aliased,
-  independent or of an atomic type.
+  independent, or of an atomic type.
 
 * Small packed arrays, where the size is statically known, are represented
   internally as modular integers, and so they are also packable.

@@ -196,7 +196,7 @@ Ada 83, Ada 95, or Ada 2005 programs.
 The one argument form, which is not a configuration pragma,
 is used for managing the transition from Ada
 2005 to Ada 2012 in the run-time library. If an entity is marked
-as Ada_201 only, then referencing the entity in any pre-Ada_2012
+as Ada_2012 only, then referencing the entity in any pre-Ada_2012
 mode will generate a warning. In addition, in any pre-Ada_2012
 mode, a preference rule is established which does not choose
 such an entity unless it is unambiguously specified. This avoids
@@ -6820,6 +6820,40 @@ processing of valid Ada 95 or Ada 2005 programs.  This is intended to aid in
 the handling of existing code which depends on the interpretation of Size
 as implemented in the VADS compiler.  See description of the VADS_Size
 attribute for further details.
+
+.. _Pragma-Unused:
+
+Pragma Unused
+=============
+.. index:: Warnings, unused
+
+Syntax:
+
+
+::
+
+  pragma Unused (LOCAL_NAME {, LOCAL_NAME});
+
+
+This pragma signals that the assignable entities (variables,
+`out` parameters, and `in out` parameters) whose names are listed
+deliberately do not get assigned or referenced in the current source unit
+after the occurrence of the pragma in the current source unit. This
+suppresses warnings about the entities that are unreferenced and/or not
+assigned, and, in addition, a warning will be generated if one of these
+entities gets assigned or subsequently referenced in the same unit as the
+pragma (in the corresponding body or one of its subunits).
+
+This is particularly useful for clearly signaling that a particular
+parameter is not modified or referenced, even though the spec suggests
+that it might be.
+
+For the variable case, warnings are never given for unreferenced
+variables whose name contains one of the substrings
+`DISCARD, DUMMY, IGNORE, JUNK, UNUSED` in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use `pragma Unmodified` for such
+variables, though it is harmless to do so. 
 
 Pragma Validity_Checks
 ======================
