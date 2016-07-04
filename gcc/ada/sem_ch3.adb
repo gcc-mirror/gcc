@@ -3470,13 +3470,13 @@ package body Sem_Ch3 is
 
                --  The entity may be a homonym of a private component of the
                --  enclosing protected object, for which we create a local
-               --  renaming declaration. The declaration is legal, even
-               --  if useless when it just captures that component.
+               --  renaming declaration. The declaration is legal, even if
+               --  useless when it just captures that component.
 
                or else
-                  (Ekind (Scope (Current_Scope)) = E_Protected_Type
-                  and then Nkind (Parent (Prev_Entity)) =
-                     N_Object_Renaming_Declaration))
+                 (Ekind (Scope (Current_Scope)) = E_Protected_Type
+                   and then Nkind (Parent (Prev_Entity)) =
+                              N_Object_Renaming_Declaration))
          then
             Prev_Entity := Empty;
          end if;

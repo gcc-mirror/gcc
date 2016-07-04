@@ -1607,9 +1607,9 @@ package body Sem_Type is
                   Act1 := Left_Opnd (N);
                   Act2 := Right_Opnd (N);
 
-                  --  Use type of second formal, so as to include
-                  --  exponentiation, where the exponent may be
-                  --  ambiguous and the result non-universal.
+                  --  Use the type of tye second formal, so as to include
+                  --  exponentiation, where the exponent may be ambiguous and
+                  --  the result non-universal.
 
                   Next_Formal (F1);
 
@@ -1619,10 +1619,10 @@ package body Sem_Type is
 
                if Nkind (Act1) in N_Op
                  and then Is_Overloaded (Act1)
-                 and then (Nkind (Act1) in N_Unary_Op
-                             or else Nkind_In
-                               (Left_Opnd (Act1), N_Integer_Literal,
-                                                  N_Real_Literal))
+                 and then
+                   (Nkind (Act1) in N_Unary_Op
+                     or else Nkind_In (Left_Opnd (Act1), N_Integer_Literal,
+                                                         N_Real_Literal))
                  and then Nkind_In (Right_Opnd (Act1), N_Integer_Literal,
                                                        N_Real_Literal)
                  and then Has_Compatible_Type (Act1, Standard_Boolean)

@@ -15152,12 +15152,13 @@ package body Sem_Ch12 is
 
    procedure Set_Copied_Sloc_For_Inherited_Pragma
      (N : Node_Id;
-      E : Entity_Id) is
+      E : Entity_Id)
+   is
    begin
       Create_Instantiation_Source (N, E,
         Inlined_Body     => False,
         Inherited_Pragma => True,
-        A                => S_Adjustment);
+        Factor           => S_Adjustment);
    end Set_Copied_Sloc_For_Inherited_Pragma;
 
    --------------------------------------
@@ -15169,7 +15170,7 @@ package body Sem_Ch12 is
       Create_Instantiation_Source (N, E,
         Inlined_Body     => True,
         Inherited_Pragma => False,
-        A                => S_Adjustment);
+        Factor           => S_Adjustment);
    end Set_Copied_Sloc_For_Inlined_Body;
 
    ---------------------

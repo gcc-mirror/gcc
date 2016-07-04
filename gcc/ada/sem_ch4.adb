@@ -3418,12 +3418,13 @@ package body Sem_Ch4 is
 
                elsif ((Ekind (Current_Scope) = E_Function
                        and then Is_Predicate_Function (Current_Scope))
-                     or else (Ekind (Nam) = E_Function
+                   or else
+                     (Ekind (Nam) = E_Function
                        and then Is_Predicate_Function (Nam)))
-                  and then
+                 and then
                    (Base_Type (Underlying_Type (Etype (Formal))) =
-                     Base_Type (Underlying_Type (Etype (Actual))))
-                  and then Serious_Errors_Detected = 0
+                    Base_Type (Underlying_Type (Etype (Actual))))
+                 and then Serious_Errors_Detected = 0
                then
                   Set_Etype (Formal, Etype (Actual));
                   Next_Actual (Actual);

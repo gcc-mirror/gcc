@@ -6996,8 +6996,8 @@ package body Sem_Ch8 is
                     and then not Is_Tagged_Type (Etype (First_Entity (F)))
                   then
                      Error_Msg_N
-                       ("prefixed call is only allowed for objects "
-                        & "of a tagged type", N);
+                       ("prefixed call is only allowed for objects of a "
+                        & "tagged type", N);
                   end if;
                end;
 

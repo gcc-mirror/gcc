@@ -890,8 +890,8 @@ package body Xref_Lib is
 
       Parse_Token (Ali, Ptr, E_Name);
 
-      --  Exit if the symbol does not match or if we have a local
-      --  symbol and we do not want it or if the file is unknown.
+      --  Exit if the symbol does not match or if we have a local symbol and we
+      --  do not want it or if the file is unknown.
 
       if File.X_File = Empty_File then
          return;

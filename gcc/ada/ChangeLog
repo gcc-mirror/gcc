@@ -1,3 +1,9 @@
+2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, sem_type.adb, sem_ch12.adb, xref_lib.adb,
+	freeze.adb, sinput-l.adb, sinput-l.ads, sem_ch4.adb, sem_ch8.adb:
+	Minor reformatting.
+
 2016-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* sem_prag.adb (Analyze_Unmodified_Or_Unused and
