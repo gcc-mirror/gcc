@@ -1,3 +1,7 @@
+2016-07-04  Jan Beulich  <jbeulich@suse.com>
+
+	* lang-specs.h ("@c++-header"): Conditionalize "-o".
+
 2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parser.c (cp_parser_pragma) <PRAGMA_OMP_CANCELLATION_POINT>:
