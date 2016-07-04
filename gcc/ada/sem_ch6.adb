@@ -774,9 +774,8 @@ package body Sem_Ch6 is
          --  If the return object is of an anonymous access type, then report
          --  an error if the function's result type is not also anonymous.
 
-         elsif R_Stm_Type_Is_Anon_Access
-           and then not R_Type_Is_Anon_Access
-         then
+         elsif R_Stm_Type_Is_Anon_Access then
+            pragma Assert (not R_Type_Is_Anon_Access);
             Error_Msg_N ("anonymous access not allowed for function with "
                          & "named access result", Subtype_Ind);
 

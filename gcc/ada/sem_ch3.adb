@@ -14501,7 +14501,7 @@ package body Sem_Ch3 is
    -----------------------
 
    procedure Derive_Subprogram
-     (New_Subp     : in out Entity_Id;
+     (New_Subp     : out Entity_Id;
       Parent_Subp  : Entity_Id;
       Derived_Type : Entity_Id;
       Parent_Type  : Entity_Id;
@@ -15082,7 +15082,7 @@ package body Sem_Ch3 is
       --  the list of primitives of Derived_Type exactly in the same order.
 
       procedure Derive_Interface_Subprogram
-        (New_Subp    : in out Entity_Id;
+        (New_Subp    : out Entity_Id;
          Subp        : Entity_Id;
          Actual_Subp : Entity_Id);
       --  Derive New_Subp from the ultimate alias of the parent subprogram Subp
@@ -15168,7 +15168,7 @@ package body Sem_Ch3 is
       ---------------------------------
 
       procedure Derive_Interface_Subprogram
-        (New_Subp    : in out Entity_Id;
+        (New_Subp    : out Entity_Id;
          Subp        : Entity_Id;
          Actual_Subp : Entity_Id)
       is

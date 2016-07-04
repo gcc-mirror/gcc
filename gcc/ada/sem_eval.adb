@@ -3224,6 +3224,11 @@ package body Sem_Eval is
                   begin
                      Ent := Empty;
 
+                     --  Ignored values:
+
+                     Kind := '?';
+                     Cons := No_Uint;
+
                      if Nkind (Expr) = N_Op_Add
                        and then Compile_Time_Known_Value (Right_Opnd (Expr))
                      then
@@ -3311,8 +3316,8 @@ package body Sem_Eval is
                     (Original_Node (Type_High_Bound (T)), Ent2, Kind2, Cons2);
 
                   if Present (Ent1)
-                    and then Kind1 = Kind2
                     and then Ent1 = Ent2
+                    and then Kind1 = Kind2
                   then
                      Len := Cons2 - Cons1 + 1;
                   else

@@ -269,8 +269,8 @@ package body Sem_Ch10 is
          procedure Process_Body_Clauses
           (Context_List      : List_Id;
            Clause            : Node_Id;
-           Used              : in out Boolean;
-           Used_Type_Or_Elab : in out Boolean);
+           Used              : out Boolean;
+           Used_Type_Or_Elab : out Boolean);
          --  Examine the context clauses of a package body, trying to match the
          --  name entity of Clause with any list element. If the match occurs
          --  on a use package clause set Used to True, for a use type clause or
@@ -279,8 +279,8 @@ package body Sem_Ch10 is
          procedure Process_Spec_Clauses
           (Context_List : List_Id;
            Clause       : Node_Id;
-           Used         : in out Boolean;
-           Withed       : in out Boolean;
+           Used         : out Boolean;
+           Withed       : out Boolean;
            Exit_On_Self : Boolean := False);
          --  Examine the context clauses of a package spec, trying to match
          --  the name entity of Clause with any list element. If the match
@@ -298,8 +298,8 @@ package body Sem_Ch10 is
          procedure Process_Body_Clauses
           (Context_List      : List_Id;
            Clause            : Node_Id;
-           Used              : in out Boolean;
-           Used_Type_Or_Elab : in out Boolean)
+           Used              : out Boolean;
+           Used_Type_Or_Elab : out Boolean)
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
             Cont_Item : Node_Id;
@@ -419,8 +419,8 @@ package body Sem_Ch10 is
          procedure Process_Spec_Clauses
           (Context_List : List_Id;
            Clause       : Node_Id;
-           Used         : in out Boolean;
-           Withed       : in out Boolean;
+           Used         : out Boolean;
+           Withed       : out Boolean;
            Exit_On_Self : Boolean := False)
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
@@ -515,10 +515,10 @@ package body Sem_Ch10 is
 
                if Present (Spec_Context_Items) then
                   declare
-                     Used_In_Body      : Boolean := False;
-                     Used_In_Spec      : Boolean := False;
-                     Used_Type_Or_Elab : Boolean := False;
-                     Withed_In_Spec    : Boolean := False;
+                     Used_In_Body      : Boolean;
+                     Used_In_Spec      : Boolean;
+                     Used_Type_Or_Elab : Boolean;
+                     Withed_In_Spec    : Boolean;
 
                   begin
                      Process_Spec_Clauses
@@ -1834,9 +1834,8 @@ package body Sem_Ch10 is
             --  Give message if we did not get the unit Emit warning even if
             --  missing subunit is not within main unit, to simplify debugging.
 
-            if Original_Operating_Mode = Generate_Code
-              and then Unum = No_Unit
-            then
+            pragma Assert (Original_Operating_Mode = Generate_Code);
+            if Unum = No_Unit then
                Error_Msg_Unit_1 := Subunit_Name;
                Error_Msg_File_1 :=
                  Get_File_Name (Subunit_Name, Subunit => True);

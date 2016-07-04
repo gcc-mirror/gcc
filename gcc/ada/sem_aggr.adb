@@ -647,9 +647,9 @@ package body Sem_Aggr is
 
    begin
       --  All the components of List are matched against Component and a count
-      --  is maintained of possible misspellings. When at the end of the the
+      --  is maintained of possible misspellings. When at the end of the
       --  analysis there are one or two (not more) possible misspellings,
-      --  these misspellings will be suggested as possible correction.
+      --  these misspellings will be suggested as possible corrections.
 
       Component_Elmt := First_Elmt (Elements);
       while Nr_Of_Suggestions <= Max_Suggestions
@@ -664,7 +664,7 @@ package body Sem_Aggr is
             case Nr_Of_Suggestions is
                when 1      => Suggestion_1 := Node (Component_Elmt);
                when 2      => Suggestion_2 := Node (Component_Elmt);
-               when others => exit;
+               when others => null;
             end case;
          end if;
 
@@ -1094,18 +1094,6 @@ package body Sem_Aggr is
                     Index_Constr   => First_Index (Typ),
                     Component_Typ  => Component_Type (Typ),
                     Others_Allowed => True);
-
-            elsif not Expander_Active
-              and then Pkind = N_Assignment_Statement
-            then
-               Aggr_Resolved :=
-                 Resolve_Array_Aggregate
-                   (N,
-                    Index          => First_Index (Aggr_Typ),
-                    Index_Constr   => First_Index (Typ),
-                    Component_Typ  => Component_Type (Typ),
-                    Others_Allowed => True);
-
             else
                Aggr_Resolved :=
                  Resolve_Array_Aggregate

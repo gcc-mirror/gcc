@@ -4865,7 +4865,7 @@ package body Sem_Util is
          Msgl := Msg'Length;
 
          for J in 1 .. Msgl loop
-            if Msg (J) = '?' and then (J = 1 or else Msg (J) /= ''') then
+            if Msg (J) = '?' and then (J = 1 or else Msg (J - 1) /= ''') then
                Msgc (J) := '<';
             else
                Msgc (J) := Msg (J);

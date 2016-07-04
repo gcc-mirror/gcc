@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1998,8 +1998,10 @@ package body Treepr is
 
             --  Don't bother with a missing list, empty list or error list
 
-            if D = Union_Id (No_List)
-              or else D = Union_Id (Error_List)
+            pragma Assert (D /= Union_Id (No_List));
+            --  Because No_List = Empty, which is in Node_Range above
+
+            if D = Union_Id (Error_List)
               or else Is_Empty_List (List_Id (D))
             then
                return;

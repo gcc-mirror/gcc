@@ -410,9 +410,12 @@ begin
 
          --  Comment needed for ASIS mode test and GNATprove mode test???
 
+         pragma Assert
+           (Operating_Mode = Generate_Code
+              or else Operating_Mode = Check_Semantics);
+
          if Operating_Mode = Generate_Code
-           or else (Operating_Mode = Check_Semantics
-                     and then (ASIS_Mode or GNATprove_Mode))
+           or else (ASIS_Mode or GNATprove_Mode)
          then
             Instantiate_Bodies;
          end if;

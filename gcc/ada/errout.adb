@@ -1082,8 +1082,7 @@ package body Errout is
             end loop;
          end if;
 
-         --  Now we insert the new message in the error chain. The insertion
-         --  point for the message is after Prev_Msg and before Next_Msg.
+         --  Now we insert the new message in the error chain.
 
          --  The possible insertion point for the new message is after Prev_Msg
          --  and before Next_Msg. However, this is where we do a special check
@@ -1101,7 +1100,7 @@ package body Errout is
            and then not All_Errors_Mode
          then
             --  Don't delete unconditional messages and at this stage, don't
-            --  delete continuation lines (we attempted to delete those earlier
+            --  delete continuation lines; we attempted to delete those earlier
             --  if the parent message was deleted.
 
             if not Errors.Table (Cur_Msg).Uncond
@@ -1125,10 +1124,8 @@ package body Errout is
                   --  All tests passed, delete the message by simply returning
                   --  without any further processing.
 
-                  if not Continuation then
-                     Last_Killed := True;
-                  end if;
-
+                  pragma Assert (not Continuation);
+                  Last_Killed := True;
                   return;
                end if;
             end if;
