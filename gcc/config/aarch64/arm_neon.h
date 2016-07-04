@@ -10360,7 +10360,7 @@ vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
   return __builtin_aarch64_simd_bslv2di_uuuu (__a, __b, __c);
 }
 
-/* ARMv8.1 instrinsics.  */
+/* ARMv8.1-A instrinsics.  */
 #pragma GCC push_options
 #pragma GCC target ("arch=armv8.1-a")
 

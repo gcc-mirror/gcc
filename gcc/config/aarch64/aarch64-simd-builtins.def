@@ -432,7 +432,7 @@
   VAR1 (TERNOP, qtbx4, 0, v8qi)
   VAR1 (TERNOP, qtbx4, 0, v16qi)
 
-  /* Builtins for ARMv8.1 Adv.SIMD instructions.  */
+  /* Builtins for ARMv8.1-A Adv.SIMD instructions.  */
 
   /* Implemented by aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode>.  */
   BUILTIN_VSDQ_HSI (TERNOP, sqrdmlah, 0)

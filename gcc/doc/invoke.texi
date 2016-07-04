@@ -13107,7 +13107,7 @@ The value @samp{armv8.2-a} implies @samp{armv8.1-a} and enables compiler
 support for the ARMv8.2-A architecture extensions.
 
 The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
-support for the ARMv8.1 architecture extension.  In particular, it
+support for the ARMv8.1-A architecture extension.  In particular, it
 enables the @samp{+crc} and @samp{+lse} features.
 
 The value @samp{native} is available on native AArch64 GNU/Linux and

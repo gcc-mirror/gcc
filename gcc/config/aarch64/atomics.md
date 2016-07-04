@@ -583,7 +583,7 @@
   }
 )
 
-;; ARMv8.1 LSE instructions.
+;; ARMv8.1-A LSE instructions.
 
 ;; Atomic swap with memory.
 (define_insn "aarch64_atomic_swp<mode>"
