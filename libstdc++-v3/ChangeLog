@@ -1,3 +1,11 @@
+2016-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/71313
+	* src/filesystem/ops.cc (remove_all(const path&, error_code&)):
+	Call remove_all for children of a directory.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Adjust.
+
 2016-07-02  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Adjust
