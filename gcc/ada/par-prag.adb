@@ -1487,6 +1487,7 @@ begin
            Pragma_Unreferenced_Objects           |
            Pragma_Unreserve_All_Interrupts       |
            Pragma_Unsuppress                     |
+           Pragma_Unused                         |
            Pragma_Use_VADS_Size                  |
            Pragma_Volatile                       |
            Pragma_Volatile_Components            |

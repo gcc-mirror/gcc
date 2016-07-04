@@ -841,6 +841,8 @@ package body Lib.Xref is
 
          --  Check for pragma Unreferenced given and reference is within
          --  this source unit (occasion for possible warning to be issued).
+         --  Note that the entity may be marked as unreferenced by pragma
+         --  Unused.
 
          if Has_Unreferenced (E)
            and then In_Same_Extended_Unit (E, N)
@@ -875,8 +877,13 @@ package body Lib.Xref is
                   BE := First_Entity (Current_Scope);
                   while Present (BE) loop
                      if Chars (BE) = Chars (E) then
-                        Error_Msg_NE -- CODEFIX
-                          ("??pragma Unreferenced given for&!", N, BE);
+                        if Has_Pragma_Unused (E) then
+                           Error_Msg_NE -- CODEFIX
+                             ("??pragma Unused given for&!", N, BE);
+                        else
+                           Error_Msg_NE -- CODEFIX
+                             ("??pragma Unreferenced given for&!", N, BE);
+                        end if;
                         exit;
                      end if;
 
@@ -886,6 +893,9 @@ package body Lib.Xref is
 
             --  Here we issue the warning, since this is a real reference
 
+            elsif Has_Pragma_Unused (E) then
+               Error_Msg_NE -- CODEFIX
+                 ("??pragma Unused given for&!", N, E);
             else
                Error_Msg_NE -- CODEFIX
                  ("??pragma Unreferenced given for&!", N, E);
