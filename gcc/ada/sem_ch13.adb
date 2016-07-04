@@ -12049,7 +12049,7 @@ package body Sem_Ch13 is
       Subp_Decl :=
         Make_Subprogram_Renaming_Declaration (Loc,
           Specification => Build_Spec,
-          Name => New_Occurrence_Of (Subp, Loc));
+          Name          => New_Occurrence_Of (Subp, Loc));
 
       if Defer_Declaration then
          Set_TSS (Base_Type (Ent), Subp_Id);
@@ -12057,7 +12057,6 @@ package body Sem_Ch13 is
       else
          if From_Aspect_Specification (N) then
             Append_Freeze_Action (Ent, Subp_Decl);
-
          else
             Insert_Action (N, Subp_Decl);
          end if;

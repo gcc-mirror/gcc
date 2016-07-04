@@ -1,3 +1,28 @@
+2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb, ghost.adb, sem_ch13.adb: Minor reformatting.
+
+2016-07-04  Pascal Obry  <obry@adacore.com>
+
+	* g-forstr.ads: More documentation for the Formatted_String
+	support.
+
+2016-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch7.adb (Install_Parent_Private_Declarations): When
+	instantiating a child unit, do not install private declaration of
+	a non-generic ancestor of the generic that is also an ancestor
+	of the current unit: its private part will be installed when
+	private part of ancestor itself is analyzed.
+
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): In SPARK mode add a guard
+	to verify that the actual is an object reference before checking
+	for volatility.
+	(Check_Generic_Child_Unit): Prevent cascaded errors when prefix
+	is illegal.
+
 2016-07-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch12.ads, freeze.adb: Minor reformatting and typo fixes.
