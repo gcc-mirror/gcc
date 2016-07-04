@@ -1403,8 +1403,8 @@ package body Freeze is
       while Present (Op_Node) loop
          Prim := Node (Op_Node);
 
-         --  Map the overridden primitive to the overriding one. This
-         --  takes care of all overridings and is done only once.
+         --  Map the overridden primitive to the overriding one. This takes
+         --  care of all overridings and is done only once.
 
          if Present (Overridden_Operation (Prim))
             and then Comes_From_Source (Prim)
