@@ -1,3 +1,10 @@
+2016-07-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/vector/modifiers/emplace/self_emplace.cc:
+	New test.
+	* testsuite/23_containers/vector/modifiers/insert/self_insert.cc: New
+	test.
+
 2016-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (emplace(const_iterator, _Args&&...)):
