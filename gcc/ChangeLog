@@ -1,3 +1,12 @@
+2016-07-04  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_vec_perm): Add handle one-operand
+	permutation for TARGET_AVX512F.
+	(ix86_expand_vec_one_operand_perm_avx512): New function.
+	(expand_vec_perm_1): Invoke introduced function.
+	* tree-vect-loop.c (vect_transform_loop): Clear-up safelen value since
+	it may be not valid after vectorization.
+
 2016-07-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/63874

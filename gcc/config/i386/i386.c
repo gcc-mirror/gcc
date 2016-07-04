@@ -24307,6 +24307,33 @@ ix86_expand_vec_perm (rtx operands[])
   e = GET_MODE_UNIT_SIZE (mode);
   gcc_assert (w <= 64);
 
+  if (TARGET_AVX512F && one_operand_shuffle)
+    {
+      rtx (*gen) (rtx, rtx, rtx) = NULL;
+      switch (mode)
+	{
+	case V16SImode:
+	  gen =gen_avx512f_permvarv16si;
+	  break;
+	case V16SFmode:
+	  gen = gen_avx512f_permvarv16sf;
+	  break;
+	case V8DImode:
+	  gen = gen_avx512f_permvarv8di;
+	  break;
+	case V8DFmode:
+	  gen = gen_avx512f_permvarv8df;
+	  break;
+	default:
+	  break;
+	}
+      if (gen != NULL)
+	{
+	  emit_insn (gen (target, op0, mask));
+	  return;
+	}
+    }
+
   if (ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1, NULL))
     return;
 
@@ -50444,6 +50471,52 @@ canonicalize_vector_int_perm (const struct expand_vec_perm_d *d,
   return true;
 }
 
+/* Try to expand one-operand permutation with constant mask.  */
+
+static bool
+ix86_expand_vec_one_operand_perm_avx512 (struct expand_vec_perm_d *d)
+{
+  machine_mode mode = GET_MODE (d->op0);
+  machine_mode maskmode = mode;
+  rtx (*gen) (rtx, rtx, rtx) = NULL;
+  rtx target, op0, mask;
+  rtx vec[64];
+
+  if (!rtx_equal_p (d->op0, d->op1))
+    return false;
+
+  if (!TARGET_AVX512F)
+    return false;
+
+  switch (mode)
+    {
+    case V16SImode:
+      gen = gen_avx512f_permvarv16si;
+      break;
+    case V16SFmode:
+      gen = gen_avx512f_permvarv16sf;
+      maskmode = V16SImode;
+      break;
+    case V8DImode:
+      gen = gen_avx512f_permvarv8di;
+      break;
+    case V8DFmode:
+      gen = gen_avx512f_permvarv8df;
+      maskmode = V8DImode;
+      break;
+    default:
+      return false;
+    }
+
+  target = d->target;
+  op0 = d->op0;
+  for (int i = 0; i < d->nelt; ++i)
+    vec[i] = GEN_INT (d->perm[i]);
+  mask = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (d->nelt, vec));
+  emit_insn (gen (target, op0, force_reg (maskmode, mask)));
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to instantiate D
    in a single instruction.  */
 
@@ -50609,6 +50682,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try the AVX2 vpalignr instruction.  */
   if (expand_vec_perm_palignr (d, true))
+    return true;
+
+  /* Try the AVX512F vperm{s,d} instructions.  */
+  if (ix86_expand_vec_one_operand_perm_avx512 (d))
     return true;
 
   /* Try the AVX512F vpermi2 instructions.  */
