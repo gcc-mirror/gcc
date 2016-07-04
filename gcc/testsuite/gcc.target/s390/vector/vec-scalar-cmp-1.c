@@ -8,8 +8,8 @@
 /* { dg-final { scan-assembler-times "wfchedbs\t%v\[0-9\]*,%v2,%v0" 1 } } */
 /* { dg-final { scan-assembler-times "wfchdbs\t%v\[0-9\]*,%v2,%v0" 1 } } */
 /* { dg-final { scan-assembler-times "wfchedbs\t%v\[0-9\]*,%v2,%v0" 1 } } */
-/* { dg-final { scan-assembler-times "locrne" 5 } } */
-/* { dg-final { scan-assembler-times "locrno" 1 } } */
+/* { dg-final { scan-assembler-times "lochine" 5 } } */
+/* { dg-final { scan-assembler-times "lochino" 1 } } */
 
 
 int

@@ -1,3 +1,9 @@
+2016-07-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Expect lochi instead of
+	locr.
+	* gcc.target/s390/loc-1.c: New test.
+
 2016-07-04  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* gcc/testsuite/gcc.target/i386/avx512f-vect-perm-1.c: New test.
