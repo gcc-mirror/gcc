@@ -1,3 +1,14 @@
+2016-07-04  Olivier Hainque  <hainque@adacore.com>
+
+	* g-sercom-mingw.adb (Set): Fix port configuration for the
+	non-blocking + null-timeout case, request of immediate return.
+
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Is_Non_Overriding_Operation): Add guard to test
+	of generic parent type when operation is a parameterless function
+	that may dispatch on result.
+
 2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb, ghost.adb, sem_ch13.adb: Minor reformatting.
