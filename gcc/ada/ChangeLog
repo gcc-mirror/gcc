@@ -1,3 +1,25 @@
+2016-07-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch12.ads, freeze.adb: Minor reformatting and typo fixes.
+
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (New_Stream_Subprogram): If the attribute
+	definition clause comes from an aspect specification, place the
+	generated subprogram renaming in the freeze actions of the type.
+
+2016-07-04  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb (Dump.Do_Report) - add space prefix to backtrace
+	address dump - avoid new line sent directly to stdout.
+
+2016-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb, sem_ch12.adb, sem_elab.adb, sem_prag.adb, sem_res.adb:
+	Relax elaboration checks in SPARK_Mode so that we rely on the
+	static elaboration model (if used). We'll have a more precise
+	check performed in flow analysis of gnat2why.
+
 2016-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* ghost.adb (Prune_Node): A freeze node for an ignored ghost

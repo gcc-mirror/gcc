@@ -1018,7 +1018,9 @@ package body Sem_Elab is
       --  expression, which in turn may have side effects.
 
       Issue_In_SPARK :=
-        SPARK_Mode = On and (Comes_From_Source (Ent) or Is_DIC_Proc);
+        SPARK_Mode = On
+          and then Dynamic_Elaboration_Checks
+          and then (Comes_From_Source (Ent) or Is_DIC_Proc);
 
       --  Now check if an Elaborate_All (or dynamic check) is needed
 

@@ -14489,8 +14489,7 @@ package body Sem_Prag is
             --  checks in SPARK mode).
 
             Dynamic_Elaboration_Checks :=
-              (Chars (Get_Pragma_Arg (Arg1)) = Name_Dynamic)
-                and then SPARK_Mode /= On;
+              Chars (Get_Pragma_Arg (Arg1)) = Name_Dynamic;
 
          ---------------
          -- Eliminate --
@@ -21200,10 +21199,6 @@ package body Sem_Prag is
             begin
                SPARK_Mode := Mode_Id;
                SPARK_Mode_Pragma := N;
-
-               if SPARK_Mode = On then
-                  Dynamic_Elaboration_Checks := False;
-               end if;
             end Set_SPARK_Context;
 
             --  Local variables

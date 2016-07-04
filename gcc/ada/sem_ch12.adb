@@ -4356,10 +4356,6 @@ package body Sem_Ch12 is
       SPARK_Mode_Pragma        := Save_SMP;
       Style_Check              := Save_Style_Check;
 
-      if SPARK_Mode = On then
-         Dynamic_Elaboration_Checks := False;
-      end if;
-
       --  Check that if N is an instantiation of System.Dim_Float_IO or
       --  System.Dim_Integer_IO, the formal type has a dimension system.
 
@@ -4396,10 +4392,6 @@ package body Sem_Ch12 is
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
          Style_Check              := Save_Style_Check;
-
-         if SPARK_Mode = On then
-            Dynamic_Elaboration_Checks := False;
-         end if;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -5328,10 +5320,6 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
-
-         if SPARK_Mode = On then
-            Dynamic_Elaboration_Checks := False;
-         end if;
       end if;
 
    <<Leave>>
@@ -5352,10 +5340,6 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
-
-         if SPARK_Mode = On then
-            Dynamic_Elaboration_Checks := False;
-         end if;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -15247,12 +15231,6 @@ package body Sem_Ch12 is
 
          SPARK_Mode := Save_SPARK_Mode;
          SPARK_Mode_Pragma := Save_SPARK_Mode_Pragma;
-
-         --  Make sure dynamic elaboration checks are off in SPARK Mode
-
-         if SPARK_Mode = On then
-            Dynamic_Elaboration_Checks := False;
-         end if;
       end if;
 
       Current_Instantiated_Parent :=

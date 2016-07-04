@@ -181,9 +181,9 @@ package Sem_Ch12 is
    --  establishes a new source file entry representing the inherited pragma
    --  as an instantiation, marked as an inherited pragma (so that errout can
    --  distinguish cases for generating error messages, otherwise the treatment
-   --  is identical). In this call N is the subprogram declaration from
+   --  is identical). In this call, N is the subprogram declaration from
    --  which the pragma is inherited and E is the defining identifier of
-   --  the overridding subprogram (when the subprogram is redefined) or the
+   --  the overriding subprogram (when the subprogram is redefined) or the
    --  defining identifier of the extension type (when the subprogram is
    --  inherited). The resulting Sloc adjustment factor is saved as part of the
    --  internal state of the Sem_Ch12 package for use in subsequent calls to

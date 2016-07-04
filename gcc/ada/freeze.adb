@@ -4413,9 +4413,9 @@ package body Freeze is
 
            --  We want to implicitly pack if the specified size of the record
            --  is less than the sum of the object sizes (no point in packing
-           --  if this is not the case) if we can compute it, i.e. if we have
+           --  if this is not the case), if we can compute it, i.e. if we have
            --  only elementary components. Otherwise, we have at least one
-           --  composite component and we want to implicit pack only if bit
+           --  composite component and we want to implicitly pack only if bit
            --  packing is required for it, as we are sure in this case that
            --  the back end cannot do the expected layout without packing.
 
