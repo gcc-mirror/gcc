@@ -1834,7 +1834,7 @@ package body Exp_Ch6 is
             then
                Add_Call_By_Copy_Code;
 
-            --  References to components of bit packed arrays are expanded
+            --  References to components of bit-packed arrays are expanded
             --  at this point, rather than at the point of analysis of the
             --  actuals, to handle the expansion of the assignment to
             --  [in] out parameters.
@@ -1858,7 +1858,7 @@ package body Exp_Ch6 is
             then
                Add_Simple_Call_By_Copy_Code;
 
-            --  References to slices of bit packed arrays are expanded
+            --  References to slices of bit-packed arrays are expanded
 
             elsif Is_Ref_To_Bit_Packed_Slice (Actual) then
                Add_Call_By_Copy_Code;
@@ -2038,7 +2038,7 @@ package body Exp_Ch6 is
          --  Processing for IN parameters
 
          else
-            --  For IN parameters in the bit packed array case, we expand an
+            --  For IN parameters in the bit-packed array case, we expand an
             --  indexed component (the circuit in Exp_Ch4 deliberately left
             --  indexed components appearing as actuals untouched, so that
             --  the special processing above for the OUT and IN OUT cases
@@ -2052,7 +2052,7 @@ package body Exp_Ch6 is
                Reset_Packed_Prefix;
                Expand_Packed_Element_Reference (Actual);
 
-            --  If we have a reference to a bit packed array, we copy it, since
+            --  If we have a reference to a bit-packed array, we copy it, since
             --  the actual must be byte aligned.
 
             --  Is this really necessary in all cases???

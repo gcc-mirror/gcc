@@ -2288,7 +2288,7 @@ package Einfo is
 
 --    Is_Bit_Packed_Array (Flag122) [implementation base type only]
 --       Defined in all entities. This flag is set for a packed array type that
---       is bit packed (i.e. the component size is known by the front end and
+--       is bit-packed (i.e. the component size is known by the front end and
 --       is in the range 1-7, 9-15, 17-31, or 33-63). Is_Packed is always set
 --       if Is_Bit_Packed_Array is set, but it is possible for Is_Packed to be
 --       set without Is_Bit_Packed_Array if the component size is not known by
@@ -2907,7 +2907,7 @@ package Einfo is
 --       out that the component size doesn't require packing, the Is_Packed
 --       flag gets turned off.
 
---       In the bit packed array case (i.e. component size is known at compile
+--       In the bit-packed array case (i.e. component size is known at compile
 --       time and is 1-7, 9-15, 17-31 or 33-63), Is_Bit_Packed_Array will be
 --       set once the array type is frozen.
 --
@@ -2917,7 +2917,7 @@ package Einfo is
 --    Is_Packed_Array_Impl_Type (Flag138)
 --       Defined in all entities. This flag is set on the entity for the type
 --       used to implement a packed array (either a modular type or a subtype
---       of Packed_Bytes{1,2,4} in the bit packed array case, a regular array
+--       of Packed_Bytes{1,2,4} in the bit-packed array case, a regular array
 --       in the non-standard enumeration index case). It is set if and only
 --       if the type appears in the Packed_Array_Impl_Type field of some other
 --       entity. It is used by the back end to activate the special processing
@@ -3731,10 +3731,10 @@ package Einfo is
 --    Packed_Array_Impl_Type (Node23)
 --       Defined in array types and subtypes, except for the string literal
 --       subtype case, if the corresponding type is packed and implemented
---       specially (either bit packed or packed to eliminate holes in the
+--       specially (either bit-packed or packed to eliminate holes in the
 --       non-contiguous enumeration index types). References the type used to
 --       represent the packed array, which is either a modular type for short
---       static arrays or an array of System.Unsigned in the bit packed case,
+--       static arrays or an array of System.Unsigned in the bit-packed case,
 --       or a regular array in the non-standard enumeration index case). Note
 --       that in some situations (internal types and references to fields of
 --       variant records), it is not always possible to construct this type in

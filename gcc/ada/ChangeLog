@@ -1,3 +1,8 @@
+2016-07-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_type.adb, einfo.ads, freeze.adb, exp_ch6.adb: Minor reformatting
+	and typo fix.
+
 2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, sem_type.adb, sem_ch12.adb, xref_lib.adb,

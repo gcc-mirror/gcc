@@ -2779,7 +2779,7 @@ package body Freeze is
 
          if Is_Bit_Packed_Array (Arr) then
 
-            --  Check number of elements for bit packed arrays that come from
+            --  Check number of elements for bit-packed arrays that come from
             --  source and have compile time known ranges. The bit-packed
             --  arrays circuitry does not support arrays with more than
             --  Integer'Last + 1 elements, and when this restriction is
@@ -2861,7 +2861,7 @@ package body Freeze is
 
          --  If any of the index types was an enumeration type with a non-
          --  standard rep clause, then we indicate that the array type is
-         --  always packed (even if it is not bit packed).
+         --  always packed (even if it is not bit-packed).
 
          if Non_Standard_Enum then
             Set_Has_Non_Standard_Rep (Base_Type (Arr));
@@ -2870,7 +2870,7 @@ package body Freeze is
 
          Set_Component_Alignment_If_Not_Set (Arr);
 
-         --  If the array is packed and bit packed or packed to eliminate holes
+         --  If the array is packed and bit-packed or packed to eliminate holes
          --  in the non-contiguous enumeration index types, we must create the
          --  packed array type to be used to actually implement the type. This
          --  is only needed for real array types (not for string literal types,
@@ -4329,7 +4329,7 @@ package body Freeze is
          --  component clauses, where we must check the size. This is not done
          --  till the freeze point since for fixed-point types, we do not know
          --  the size until the type is frozen. Similar processing applies to
-         --  bit packed arrays.
+         --  bit-packed arrays.
 
          if Is_First_Subtype (Rec) then
             Comp := First_Component (Rec);
