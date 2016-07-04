@@ -1177,6 +1177,8 @@ package body Ghost is
             --  A freeze node for an ignored ghost entity must be pruned as
             --  well, to prevent meaningless references in the back end.
 
+            --  ??? the freeze node itself should be ignored ghost
+
             elsif Nkind (N) = N_Freeze_Entity
               and then Is_Ignored_Ghost_Entity (Entity (N))
             then

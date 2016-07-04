@@ -144,7 +144,12 @@ package GNAT.Formatted_String is
    use Ada;
 
    type Formatted_String (<>) is private;
-   --  A format string as defined for printf routine
+   --  A format string as defined for printf routine. This string is the
+   --  actual format for all the parameters added with the "&" routines below.
+   --  Note that a Formatted_String object can't be reused as it serves as
+   --  recipient for the final result. That is, each use of "&" will build
+   --  incrementally the final result string which can be retrieved with
+   --  the "-" routine below.
 
    Format_Error : exception;
    --  Raised for every mismatch between the parameter and the expected format

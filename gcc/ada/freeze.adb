@@ -3561,31 +3561,10 @@ package body Freeze is
          Junk : Boolean;
          pragma Warnings (Off, Junk);
 
-         Rec_Pushed : Boolean := False;
-         --  Set True if the record type scope Rec has been pushed on the scope
-         --  stack. Needed for the analysis of delayed aspects specified to the
-         --  components of Rec.
-
-         SSO_ADC : Node_Id;
-         --  Scalar_Storage_Order attribute definition clause for the record
-
-         Unplaced_Component : Boolean := False;
-         --  Set True if we find at least one component with no component
-         --  clause (used to warn about useless Pack pragmas).
-
-         Placed_Component : Boolean := False;
-         --  Set True if we find at least one component with a component
-         --  clause (used to warn about useless Bit_Order pragmas, and also
-         --  to detect cases where Implicit_Packing may have an effect).
-
          Aliased_Component : Boolean := False;
          --  Set True if we find at least one component which is aliased. This
          --  is used to prevent Implicit_Packing of the record, since packing
          --  cannot modify the size of alignment of an aliased component.
-
-         SSO_ADC_Component : Boolean := False;
-         --  Set True if we find at least one component whose type has a
-         --  Scalar_Storage_Order attribute definition clause.
 
          All_Elem_Components : Boolean := True;
          --  Set False if we encounter a component of a composite type
@@ -3601,9 +3580,30 @@ package body Freeze is
          --  Accumulates total Esize values of all elementary components. Used
          --  for processing of Implicit_Packing.
 
+         Placed_Component : Boolean := False;
+         --  Set True if we find at least one component with a component
+         --  clause (used to warn about useless Bit_Order pragmas, and also
+         --  to detect cases where Implicit_Packing may have an effect).
+
+         Rec_Pushed : Boolean := False;
+         --  Set True if the record type scope Rec has been pushed on the scope
+         --  stack. Needed for the analysis of delayed aspects specified to the
+         --  components of Rec.
+
          Sized_Component_Total_RM_Size : Uint := Uint_0;
          --  Accumulates total RM_Size values of all sized components. Used
          --  for processing of Implicit_Packing.
+
+         SSO_ADC : Node_Id;
+         --  Scalar_Storage_Order attribute definition clause for the record
+
+         SSO_ADC_Component : Boolean := False;
+         --  Set True if we find at least one component whose type has a
+         --  Scalar_Storage_Order attribute definition clause.
+
+         Unplaced_Component : Boolean := False;
+         --  Set True if we find at least one component with no component
+         --  clause (used to warn about useless Pack pragmas).
 
          function Check_Allocator (N : Node_Id) return Node_Id;
          --  If N is an allocator, possibly wrapped in one or more level of
@@ -4419,10 +4419,12 @@ package body Freeze is
            --  packing is required for it, as we are sure in this case that
            --  the back end cannot do the expected layout without packing.
 
-           and then ((All_Elem_Components
-                       and then RM_Size (Rec) < Elem_Component_Total_Esize)
-                     or else (not All_Elem_Components
-                               and then not All_Storage_Unit_Components))
+           and then
+              ((All_Elem_Components
+                 and then RM_Size (Rec) < Elem_Component_Total_Esize)
+             or else
+               (not All_Elem_Components
+                 and then not All_Storage_Unit_Components))
 
            --  And the total RM size cannot be greater than the specified size
            --  since otherwise packing will not get us where we have to be.
@@ -5461,20 +5463,21 @@ package body Freeze is
                      --  the RM_Size of the component type.
 
                      if RM_Size (E) = Num_Elmts * Rsiz then
+
                         --  For implicit packing mode, just set the component
                         --  size and Freeze_Array_Type will do the rest.
 
                         if Implicit_Packing then
                            Set_Component_Size (Btyp, Rsiz);
 
-                           --  Otherwise give an error message
+                        --  Otherwise give an error message
 
                         else
                            Error_Msg_NE
                              ("size given for& too small", SZ, E);
                            Error_Msg_N -- CODEFIX
-                             ("\use explicit pragma Pack "
-                              & "or use pragma Implicit_Packing", SZ);
+                             ("\use explicit pragma Pack or use pragma "
+                              & "Implicit_Packing", SZ);
                         end if;
                      end if;
                   end if;

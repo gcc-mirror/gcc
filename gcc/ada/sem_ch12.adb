@@ -6695,17 +6695,23 @@ package body Sem_Ch12 is
 
       elsif Nkind (Gen_Id) = N_Expanded_Name then
 
-         --  Entity already present, analyze prefix, whose meaning may be
-         --  an instance in the current context. If it is an instance of
-         --  a relative within another, the proper parent may still have
-         --  to be installed, if they are not of the same generation.
+         --  Entity already present, analyze prefix, whose meaning may be an
+         --  instance in the current context. If it is an instance of a
+         --  relative within another, the proper parent may still have to be
+         --  installed, if they are not of the same generation.
 
          Analyze (Prefix (Gen_Id));
 
-         --  In the unlikely case that a local declaration hides the name
-         --  of the parent package, locate it on the homonym chain. If the
-         --  context is an instance of the parent, the renaming entity is
-         --  flagged as such.
+         --  Prevent cascaded errors
+
+         if Etype (Prefix (Gen_Id)) = Any_Type then
+            return;
+         end if;
+
+         --  In the unlikely case that a local declaration hides the name of
+         --  the parent package, locate it on the homonym chain. If the context
+         --  is an instance of the parent, the renaming entity is flagged as
+         --  such.
 
          Inst_Par := Entity (Prefix (Gen_Id));
          while Present (Inst_Par)
@@ -10681,10 +10687,11 @@ package body Sem_Ch12 is
       --  An effectively volatile object cannot be used as an actual in a
       --  generic instantiation (SPARK RM 7.1.3(7)). The following check is
       --  relevant only when SPARK_Mode is on as it is not a standard Ada
-      --  legality rule.
+      --  legality rule, and also verifies that the actual is an object.
 
       if SPARK_Mode = On
         and then Present (Actual)
+        and then Is_Object_Reference (Actual)
         and then Is_Effectively_Volatile_Object (Actual)
       then
          Error_Msg_N
