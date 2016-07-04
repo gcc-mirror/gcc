@@ -135,6 +135,9 @@ extern unsigned aarch64_architecture_version;
 /* ARMv8.1 architecture extensions.  */
 #define AARCH64_FL_LSE	      (1 << 4)  /* Has Large System Extensions.  */
 #define AARCH64_FL_V8_1	      (1 << 5)  /* Has ARMv8.1 extensions.  */
+/* ARMv8.2-A architecture extensions.  */
+#define AARCH64_FL_V8_2	      (1 << 8)  /* Has ARMv8.2-A features.  */
+#define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -146,6 +149,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8       (AARCH64_FL_FPSIMD)
 #define AARCH64_FL_FOR_ARCH8_1			       \
   (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_CRC | AARCH64_FL_V8_1)
+#define AARCH64_FL_FOR_ARCH8_2			\
+  (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2)
 
 /* Macros to test ISA flags.  */
 
@@ -155,6 +160,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
 #define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_V8_1)
+#define AARCH64_ISA_V8_2	   (aarch64_isa_flags & AARCH64_FL_V8_2)
+#define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -164,6 +171,10 @@ extern unsigned aarch64_architecture_version;
 
 /* Atomic instructions that can be enabled through the +lse extension.  */
 #define TARGET_LSE (AARCH64_ISA_LSE)
+
+/* ARMv8.2-A FP16 support that can be enabled through the +fp16 extension.  */
+#define TARGET_FP_F16INST (TARGET_FLOAT && AARCH64_ISA_F16)
+#define TARGET_SIMD_F16INST (TARGET_SIMD && AARCH64_ISA_F16)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

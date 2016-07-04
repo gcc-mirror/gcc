@@ -13101,7 +13101,10 @@ more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
 The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a} or @var{native}.
+@samp{armv8.1-a}, @samp{armv8.2-a} or @var{native}.
+
+The value @samp{armv8.2-a} implies @samp{armv8.1-a} and enables compiler
+support for the ARMv8.2-A architecture extensions.
 
 The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
 support for the ARMv8.1 architecture extension.  In particular, it
@@ -13208,6 +13211,8 @@ instructions.  This is on by default for all possible values for options
 @item lse
 Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
+@item fp16
+Enable FP16 extension.  This also enables floating-point instructions.
 
 @end table
 
