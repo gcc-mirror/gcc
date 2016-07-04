@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2013, AdaCore                      --
+--                    Copyright (C) 2007-2016, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,11 +248,27 @@ package body GNAT.Serial_Communications is
          Raise_Error ("cannot set comm state");
       end if;
 
-      --  Set the timeout status
+      --  Set the timeout status, to honor our spec with respect to
+      --  read timeouts. Always disconnect write timeouts.
 
       if Block then
+
+         --  Blocking reads - no timeout at all
+
          Com_Time_Out := (others => 0);
+      elsif Timeout = 0.0 then
+
+         --  Non-blocking reads and null timeout - immediate return
+         --  with what we have - set ReadIntervalTimeout to MAXDWORD.
+
+         Com_Time_Out :=
+           (ReadIntervalTimeout => DWORD'Last,
+            others              => 0);
       else
+
+         --  Non-blocking reads with timeout - set total read timeout
+         --  accordingly
+
          Com_Time_Out :=
            (ReadTotalTimeoutConstant => DWORD (1000 * Timeout),
             others                   => 0);

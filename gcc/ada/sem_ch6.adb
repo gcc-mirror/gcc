@@ -9077,6 +9077,8 @@ package body Sem_Ch6 is
          --  tested.
 
          Formal := First_Formal (Prev_E);
+         F_Typ  := Empty;
+
          while Present (Formal) loop
             F_Typ := Base_Type (Etype (Formal));
 
@@ -9089,6 +9091,8 @@ package body Sem_Ch6 is
 
             Next_Formal (Formal);
          end loop;
+
+         --  If the function dispatches on result check the result type.
 
          if No (G_Typ) and then Ekind (Prev_E) = E_Function then
             G_Typ := Get_Generic_Parent_Type (Base_Type (Etype (Prev_E)));
@@ -9168,7 +9172,7 @@ package body Sem_Ch6 is
                --  private part of the instance. Emit a warning now, which will
                --  make the subsequent error message easier to understand.
 
-               if not Is_Abstract_Type (F_Typ)
+               if Present (F_Typ) and then not Is_Abstract_Type (F_Typ)
                  and then Is_Abstract_Subprogram (Prev_E)
                  and then In_Private_Part (Current_Scope)
                then
