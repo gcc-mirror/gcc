@@ -1,3 +1,8 @@
+2016-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71739
+	* g++.dg/cpp0x/pr71739.C: New test.
+
 2016-07-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* c-c++-common/asan/clone-test-1.c (main): Handle clone() failure.

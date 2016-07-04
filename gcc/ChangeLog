@@ -1,3 +1,9 @@
+2016-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71739
+	* tree.c (attribute_value_equal): Use get_attribute_name instead of
+	directly using TREE_PURPOSE.
+
 2016-07-04  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.h: Rename "ARMv8.1" to "ARMv8.1-A".
