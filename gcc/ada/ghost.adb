@@ -1174,6 +1174,15 @@ package body Ghost is
                Prune (N);
                return Skip;
 
+            --  A freeze node for an ignored ghost entity must be pruned as
+            --  well, to prevent meaningless references in the back end.
+
+            elsif Nkind (N) = N_Freeze_Entity
+              and then Is_Ignored_Ghost_Entity (Entity (N))
+            then
+               Prune (N);
+               return Skip;
+
             --  Scoping constructs such as blocks, packages, subprograms and
             --  bodies offer some flexibility with respect to pruning.
 
