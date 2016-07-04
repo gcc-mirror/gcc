@@ -44,6 +44,7 @@ with Exp_Dist;  use Exp_Dist;
 with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
+with Gnatvsn;   use Gnatvsn;
 with Lib;       use Lib;
 with Lib.Writ;  use Lib.Writ;
 with Lib.Xref;  use Lib.Xref;
@@ -17623,28 +17624,38 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (0);
 
-            No_Run_Time_Mode           := True;
-            Configurable_Run_Time_Mode := True;
+            --  Remove backward compatibility if Build_Type is FSF or GPL and
+            --  generate a warning.
 
-            --  Set Duration to 32 bits if word size is 32
+            declare
+               Ignore : constant Boolean := Build_Type in FSF .. GPL;
+            begin
+               if Ignore then
+                  Error_Pragma ("pragma% is ignored, has no effect??");
+               else
+                  No_Run_Time_Mode           := True;
+                  Configurable_Run_Time_Mode := True;
 
-            if Ttypes.System_Word_Size = 32 then
-               Duration_32_Bits_On_Target := True;
-            end if;
+                  --  Set Duration to 32 bits if word size is 32
 
-            --  Set appropriate restrictions
+                  if Ttypes.System_Word_Size = 32 then
+                     Duration_32_Bits_On_Target := True;
+                  end if;
 
-            Set_Restriction (No_Finalization, N);
-            Set_Restriction (No_Exception_Handlers, N);
-            Set_Restriction (Max_Tasks, N, 0);
-            Set_Restriction (No_Tasking, N);
+                  --  Set appropriate restrictions
 
-            -----------------------
-            -- No_Tagged_Streams --
-            -----------------------
+                  Set_Restriction (No_Finalization, N);
+                  Set_Restriction (No_Exception_Handlers, N);
+                  Set_Restriction (Max_Tasks, N, 0);
+                  Set_Restriction (No_Tasking, N);
+               end if;
+            end;
 
-            --  pragma No_Tagged_Streams;
-            --  pragma No_Tagged_Streams ([Entity => ]tagged_type_local_NAME);
+         -----------------------
+         -- No_Tagged_Streams --
+         -----------------------
+
+         --  pragma No_Tagged_Streams [([Entity => ]tagged_type_local_NAME)];
 
          when Pragma_No_Tagged_Streams => No_Tagged_Strms : declare
             E    : Entity_Id;
@@ -22338,22 +22349,7 @@ package body Sem_Prag is
 
          when Pragma_Universal_Data =>
             GNAT_Pragma;
-
-            --  If this is a configuration pragma, then set the universal
-            --  addressing option, otherwise confirm that the pragma satisfies
-            --  the requirements of library unit pragma placement and leave it
-            --  to the GNAAMP back end to detect the pragma (avoids transitive
-            --  setting of the option due to withed units).
-
-            if Is_Configuration_Pragma then
-               Universal_Addressing_On_AAMP := True;
-            else
-               Check_Valid_Library_Unit_Pragma;
-            end if;
-
-            if not AAMP_On_Target then
-               Error_Pragma ("??pragma% ignored (applies only to AAMP)");
-            end if;
+            Error_Pragma ("??pragma% ignored (applies only to AAMP)");
 
          ----------------
          -- Unmodified --

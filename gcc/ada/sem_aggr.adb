@@ -1821,6 +1821,25 @@ package body Sem_Aggr is
          end if;
 
          Step_2 : declare
+            function Empty_Range (A : Node_Id) return Boolean;
+            --  If an association covers an empty range, some warnings on the
+            --  expression of the association can be disabled.
+
+            -----------------
+            -- Empty_Range --
+            -----------------
+
+            function Empty_Range (A : Node_Id) return Boolean is
+               R : constant Node_Id := First (Choices (A));
+            begin
+               return No (Next (R))
+                 and then Nkind (R) = N_Range
+                 and then Compile_Time_Compare
+                            (Low_Bound (R), High_Bound (R), False) = GT;
+            end Empty_Range;
+
+            --  Local variables
+
             Low  : Node_Id;
             High : Node_Id;
             --  Denote the lowest and highest values in an aggregate choice
@@ -1844,23 +1863,6 @@ package body Sem_Aggr is
 
             Errors_Posted_On_Choices : Boolean := False;
             --  Keeps track of whether any choices have semantic errors
-
-            function Empty_Range (A : Node_Id) return Boolean;
-            --  If an association covers an empty range, some warnings on the
-            --  expression of the association can be disabled.
-
-            -----------------
-            -- Empty_Range --
-            -----------------
-
-            function Empty_Range (A : Node_Id) return Boolean is
-               R : constant Node_Id := First (Choices (A));
-            begin
-               return No (Next (R))
-                 and then Nkind (R) = N_Range
-                 and then Compile_Time_Compare
-                            (Low_Bound (R), High_Bound (R), False) = GT;
-            end Empty_Range;
 
          --  Start of processing for Step_2
 
@@ -3429,10 +3431,6 @@ package body Sem_Aggr is
       -----------------------
 
       procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id) is
-         Expr_Type : Entity_Id := Empty;
-         New_C     : Entity_Id := Component;
-         New_Expr  : Node_Id;
-
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean;
          --  If the expression is an aggregate (possibly qualified) then its
          --  expansion is delayed until the enclosing aggregate is expanded
@@ -3441,15 +3439,6 @@ package body Sem_Aggr is
          --  wise force a copy (to remove side-effects) that would leave a
          --  dynamic-sized aggregate in the code, something that gigi cannot
          --  handle.
-
-         Relocate : Boolean;
-         --  Set to True if the resolved Expr node needs to be relocated when
-         --  attached to the newly created association list. This node need not
-         --  be relocated if its parent pointer is not set. In fact in this
-         --  case Expr is the output of a New_Copy_Tree call. If Relocate is
-         --  True then we have analyzed the expression node in the original
-         --  aggregate and hence it needs to be relocated when moved over to
-         --  the new association list.
 
          ---------------------------
          -- Has_Expansion_Delayed --
@@ -3465,6 +3454,21 @@ package body Sem_Aggr is
               or else (Kind = N_Qualified_Expression
                         and then Has_Expansion_Delayed (Expression (Expr)));
          end Has_Expansion_Delayed;
+
+         --  Local variables
+
+         Expr_Type : Entity_Id := Empty;
+         New_C     : Entity_Id := Component;
+         New_Expr  : Node_Id;
+
+         Relocate : Boolean;
+         --  Set to True if the resolved Expr node needs to be relocated when
+         --  attached to the newly created association list. This node need not
+         --  be relocated if its parent pointer is not set. In fact in this
+         --  case Expr is the output of a New_Copy_Tree call. If Relocate is
+         --  True then we have analyzed the expression node in the original
+         --  aggregate and hence it needs to be relocated when moved over to
+         --  the new association list.
 
       --  Start of processing for Resolve_Aggr_Expr
 

@@ -776,8 +776,7 @@ package Opt is
    GNAT_Encodings : Int;
    pragma Import (C, GNAT_Encodings, "gnat_encodings");
    --  Constant controlling the balance between GNAT encodings and standard
-   --  DWARF to emit in the debug information. See aamissing.c for definitions
-   --  for the GNAAMP back end. It accepts the following values.
+   --  DWARF to emit in the debug information. It accepts the following values.
 
    DWARF_GNAT_Encodings_All     : constant Int := 0;
    DWARF_GNAT_Encodings_GDB     : constant Int := 1;
@@ -1194,13 +1193,11 @@ package Opt is
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
    --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
-   --  See e.g. aamissing.c for definitions for the GNAAMP back end.
 
    Optimize_Size : Int;
    pragma Import (C, Optimize_Size, "optimize_size");
    --  Constant reflecting setting of -Os (optimize for size). Set to nonzero
-   --  in -Os mode and set to zero otherwise. See aamissing.c for definition
-   --  of "optimize_size" for the GNAAMP backend.
+   --  in -Os mode and set to zero otherwise.
 
    Output_File_Name_Present : Boolean := False;
    --  GNATBIND, GNAT, GNATMAKE
@@ -1575,13 +1572,6 @@ package Opt is
    Unnest_Subprogram_Mode : Boolean := False;
    --  If true, activates the circuitry for unnesting subprograms (see the spec
    --  of Exp_Unst for full details). Currently set only by use of -gnatd.1.
-
-   Universal_Addressing_On_AAMP : Boolean := False;
-   --  GNAAMP
-   --  Indicates if library-level objects should be accessed and updated using
-   --  universal addressing instructions on the AAMP architecture. This flag is
-   --  set to True when pragma Universal_Data is given as a configuration
-   --  pragma.
 
    Unreserve_All_Interrupts : Boolean := False;
    --  GNAT, GNATBIND

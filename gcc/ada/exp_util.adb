@@ -7693,14 +7693,23 @@ package body Exp_Util is
         and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
       then
          return;
-      end if;
 
       --  Cannot generate temporaries if the invocation to remove side effects
       --  was issued too early and the type of the expression is not resolved
       --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
       --  Remove_Side_Effects).
 
-      if No (Exp_Type) or else Ekind (Exp_Type) = E_Access_Attribute_Type then
+      elsif No (Exp_Type)
+        or else Ekind (Exp_Type) = E_Access_Attribute_Type
+      then
+         return;
+
+      --  Nothing to do if prior expansion determined that a function call does
+      --  not require side effect removal.
+
+      elsif Nkind (Exp) = N_Function_Call
+        and then No_Side_Effect_Removal (Exp)
+      then
          return;
 
       --  No action needed for side-effect free expressions

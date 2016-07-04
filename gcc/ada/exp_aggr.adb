@@ -1017,18 +1017,19 @@ package body Exp_Aggr is
       ----------------
 
       function Gen_Assign (Ind : Node_Id; Expr : Node_Id) return List_Id is
-         L : constant List_Id := New_List;
-         A : Node_Id;
-
-         New_Indexes  : List_Id;
-         Indexed_Comp : Node_Id;
-         Expr_Q       : Node_Id;
-         Comp_Type    : Entity_Id := Empty;
-
          function Add_Loop_Actions (Lis : List_Id) return List_Id;
          --  Collect insert_actions generated in the construction of a
          --  loop, and prepend them to the sequence of assignments to
          --  complete the eventual body of the loop.
+
+         function Ctrl_Init_Expression
+           (Comp_Typ : Entity_Id;
+            Stmts    : List_Id) return Node_Id;
+         --  Perform in-place side effect removal if expression Expr denotes a
+         --  controlled function call. Return a reference to the entity which
+         --  captures the result of the call. Comp_Typ is the expected type of
+         --  the component. Stmts is the list of initialization statmenets. Any
+         --  generated code is added to Stmts.
 
          ----------------------
          -- Add_Loop_Actions --
@@ -1056,6 +1057,91 @@ package body Exp_Aggr is
                return Lis;
             end if;
          end Add_Loop_Actions;
+
+         --------------------------
+         -- Ctrl_Init_Expression --
+         --------------------------
+
+         function Ctrl_Init_Expression
+           (Comp_Typ : Entity_Id;
+            Stmts    : List_Id) return Node_Id
+         is
+            Init_Expr : Node_Id;
+            Obj_Id    : Entity_Id;
+            Ptr_Typ   : Entity_Id;
+
+         begin
+            Init_Expr := New_Copy_Tree (Expr);
+
+            --  Perform a preliminary analysis and resolution to determine
+            --  what the expression denotes. Note that a function call may
+            --  appear as an identifier or an indexed component.
+
+            Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
+
+            --  The initialization expression is a controlled function call.
+            --  Perform in-place removal of side effects to avoid creating a
+            --  transient scope. In the end the temporary function result is
+            --  finalized by the general finalization machinery.
+
+            if Nkind (Init_Expr) = N_Function_Call then
+
+               --  Suppress the removal of side effects by generatal analysis
+               --  because this behavior is emulated here.
+
+               Set_No_Side_Effect_Removal (Init_Expr);
+
+               --  Generate:
+               --    type Ptr_Typ is access all Comp_Typ;
+
+               Ptr_Typ := Make_Temporary (Loc, 'A');
+
+               Append_To (Stmts,
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => Ptr_Typ,
+                   Type_Definition     =>
+                     Make_Access_To_Object_Definition (Loc,
+                       All_Present        => True,
+                       Subtype_Indication =>
+                         New_Occurrence_Of (Comp_Typ, Loc))));
+
+               --  Generate:
+               --    Obj : constant Ptr_Typ := Init_Expr'Reference;
+
+               Obj_Id := Make_Temporary (Loc, 'R');
+
+               Append_To (Stmts,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Obj_Id,
+                   Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+                   Expression          => Make_Reference (Loc, Init_Expr)));
+
+               --  Generate:
+               --    Obj.all;
+
+               return
+                 Make_Explicit_Dereference (Loc,
+                   Prefix => New_Occurrence_Of (Obj_Id, Loc));
+
+            --  Otherwise the initialization expression denotes a controlled
+            --  object. There is nothing special to be done here as there is
+            --  no possible transient scope involvement.
+
+            else
+               return Init_Expr;
+            end if;
+         end Ctrl_Init_Expression;
+
+         --  Local variables
+
+         Stmts : constant List_Id := New_List;
+
+         Comp_Typ     : Entity_Id := Empty;
+         Expr_Q       : Node_Id;
+         Indexed_Comp : Node_Id;
+         New_Indexes  : List_Id;
+         Stmt         : Node_Id;
+         Stmt_Expr    : Node_Id;
 
       --  Start of processing for Gen_Assign
 
@@ -1102,8 +1188,8 @@ package body Exp_Aggr is
          end if;
 
          if Present (Etype (N)) and then Etype (N) /= Any_Composite then
-            Comp_Type := Component_Type (Etype (N));
-            pragma Assert (Comp_Type = Ctype); --  AI-287
+            Comp_Typ := Component_Type (Etype (N));
+            pragma Assert (Comp_Typ = Ctype); --  AI-287
 
          elsif Present (Next (First (New_Indexes))) then
 
@@ -1129,7 +1215,7 @@ package body Exp_Aggr is
                      if Nkind (P) = N_Aggregate
                        and then Present (Etype (P))
                      then
-                        Comp_Type := Component_Type (Etype (P));
+                        Comp_Typ := Component_Type (Etype (P));
                         exit;
 
                      else
@@ -1137,7 +1223,7 @@ package body Exp_Aggr is
                      end if;
                   end loop;
 
-                  pragma Assert (Comp_Type = Ctype); --  AI-287
+                  pragma Assert (Comp_Typ = Ctype); --  AI-287
                end;
             end if;
          end if;
@@ -1155,8 +1241,8 @@ package body Exp_Aggr is
             --  the analysis of non-array aggregates now in order to get the
             --  value of Expansion_Delayed flag for the inner aggregate ???
 
-            if Present (Comp_Type) and then not Is_Array_Type (Comp_Type) then
-               Analyze_And_Resolve (Expr_Q, Comp_Type);
+            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
+               Analyze_And_Resolve (Expr_Q, Comp_Typ);
             end if;
 
             if Is_Delayed_Aggregate (Expr_Q) then
@@ -1171,9 +1257,9 @@ package body Exp_Aggr is
                --  generated in the usual fashion, and sliding will take place.
 
                if Nkind (Parent (N)) = N_Assignment_Statement
-                 and then Is_Array_Type (Comp_Type)
+                 and then Is_Array_Type (Comp_Typ)
                  and then Present (Component_Associations (Expr_Q))
-                 and then Must_Slide (Comp_Type, Etype (Expr_Q))
+                 and then Must_Slide (Comp_Typ, Etype (Expr_Q))
                then
                   Set_Expansion_Delayed (Expr_Q, False);
                   Set_Analyzed (Expr_Q, False);
@@ -1201,7 +1287,7 @@ package body Exp_Aggr is
             if Present (Base_Init_Proc (Base_Type (Ctype)))
               or else Has_Task (Base_Type (Ctype))
             then
-               Append_List_To (L,
+               Append_List_To (Stmts,
                  Build_Initialization_Call (Loc,
                    Id_Ref            => Indexed_Comp,
                    Typ               => Ctype,
@@ -1214,28 +1300,81 @@ package body Exp_Aggr is
 
                if Has_Invariants (Ctype) then
                   Set_Etype (Indexed_Comp, Ctype);
-                  Append_To (L, Make_Invariant_Call (Indexed_Comp));
+                  Append_To (Stmts, Make_Invariant_Call (Indexed_Comp));
                end if;
 
             elsif Is_Access_Type (Ctype) then
-               Append_To (L,
+               Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name       => Indexed_Comp,
+                   Name       => New_Copy_Tree (Indexed_Comp),
                    Expression => Make_Null (Loc)));
             end if;
 
             if Needs_Finalization (Ctype) then
-               Append_To (L,
+               Append_To (Stmts,
                  Make_Init_Call
                    (Obj_Ref => New_Copy_Tree (Indexed_Comp),
                     Typ     => Ctype));
             end if;
 
          else
-            A :=
+            --  Handle an initialization expression of a controlled type in
+            --  case it denotes a function call. In general such a scenario
+            --  will produce a transient scope, but this will lead to wrong
+            --  order of initialization, adjustment, and finalization in the
+            --  context of aggregates.
+
+            --    Arr_Comp (1) := Ctrl_Func_Call;
+
+            --    begin                                  --  transient scope
+            --       Trans_Obj : ... := Ctrl_Func_Call;  --  transient object
+            --       Arr_Comp (1) := Trans_Obj;
+            --       Finalize (Trans_Obj);
+            --    end;
+            --    Arr_Comp (1)._tag := ...;
+            --    Adjust (Arr_Comp (1));
+
+            --  In the example above, the call to Finalize occurs too early
+            --  and as a result it may leave the array component in a bad
+            --  state. Finalization of the transient object should really
+            --  happen after adjustment.
+
+            --  To avoid this scenario, perform in-place side effect removal
+            --  of the function call. This eliminates the transient property
+            --  of the function result and ensures correct order of actions.
+            --  Note that the function result behaves as a source controlled
+            --  object and is finalized by the general finalization mechanism.
+
+            --    begin
+            --       Res : ... := Ctrl_Func_Call;
+            --       Arr_Comp (1) := Res;
+            --       Arr_Comp (1)._tag := ...;
+            --       Adjust (Arr_Comp (1));
+            --    at end
+            --       Finalize (Res);
+            --    end;
+
+            --  There is no need to perform this kind of light expansion when
+            --  the component type is limited controlled because everything is
+            --  already done in place.
+
+            if Present (Comp_Typ)
+              and then Needs_Finalization (Comp_Typ)
+              and then not Is_Limited_Type (Comp_Typ)
+              and then Nkind (Expr) /= N_Aggregate
+            then
+               Stmt_Expr := Ctrl_Init_Expression (Comp_Typ, Stmts);
+
+            --  Otherwise use the initialization expression directly
+
+            else
+               Stmt_Expr := New_Copy_Tree (Expr);
+            end if;
+
+            Stmt :=
               Make_OK_Assignment_Statement (Loc,
-                Name       => Indexed_Comp,
-                Expression => New_Copy_Tree (Expr));
+                Name       => New_Copy_Tree (Indexed_Comp),
+                Expression => Stmt_Expr);
 
             --  The target of the assignment may not have been initialized,
             --  so it is not possible to call Finalize as expected in normal
@@ -1248,7 +1387,7 @@ package body Exp_Aggr is
             --  actions are done manually with the proper finalization list
             --  coming from the context.
 
-            Set_No_Ctrl_Actions (A);
+            Set_No_Ctrl_Actions (Stmt);
 
             --  If this is an aggregate for an array of arrays, each
             --  subaggregate will be expanded as well, and even with
@@ -1260,33 +1399,31 @@ package body Exp_Aggr is
             --  that finalization takes place for each subaggregate we wrap the
             --  assignment in a block.
 
-            if Present (Comp_Type)
-              and then Needs_Finalization (Comp_Type)
-              and then Is_Array_Type (Comp_Type)
+            if Present (Comp_Typ)
+              and then Needs_Finalization (Comp_Typ)
+              and then Is_Array_Type (Comp_Typ)
               and then Present (Expr)
             then
-               A :=
+               Stmt :=
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (A)));
+                       Statements => New_List (Stmt)));
             end if;
 
-            Append_To (L, A);
+            Append_To (Stmts, Stmt);
 
-            --  Adjust the tag if tagged (because of possible view
-            --  conversions), unless compiling for a VM where tags
-            --  are implicit.
+            --  Adjust the tag due to a possible view conversion
 
-            if Present (Comp_Type)
-              and then Is_Tagged_Type (Comp_Type)
+            if Present (Comp_Typ)
+              and then Is_Tagged_Type (Comp_Typ)
               and then Tagged_Type_Expansion
             then
                declare
-                  Full_Typ : constant Entity_Id := Underlying_Type (Comp_Type);
+                  Full_Typ : constant Entity_Id := Underlying_Type (Comp_Typ);
 
                begin
-                  A :=
+                  Append_To (Stmts,
                     Make_OK_Assignment_Statement (Loc,
                       Name       =>
                         Make_Selected_Component (Loc,
@@ -1299,9 +1436,7 @@ package body Exp_Aggr is
                         Unchecked_Convert_To (RTE (RE_Tag),
                           New_Occurrence_Of
                             (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
-                             Loc)));
-
-                  Append_To (L, A);
+                             Loc))));
                end;
             end if;
 
@@ -1316,22 +1451,22 @@ package body Exp_Aggr is
             --  (see comments above, concerning the creation of a block to hold
             --  inner finalization actions).
 
-            if Present (Comp_Type)
-              and then Needs_Finalization (Comp_Type)
-              and then not Is_Limited_Type (Comp_Type)
+            if Present (Comp_Typ)
+              and then Needs_Finalization (Comp_Typ)
+              and then not Is_Limited_Type (Comp_Typ)
               and then not
-                (Is_Array_Type (Comp_Type)
-                  and then Is_Controlled (Component_Type (Comp_Type))
+                (Is_Array_Type (Comp_Typ)
+                  and then Is_Controlled (Component_Type (Comp_Typ))
                   and then Nkind (Expr) = N_Aggregate)
             then
-               Append_To (L,
+               Append_To (Stmts,
                  Make_Adjust_Call
                    (Obj_Ref => New_Copy_Tree (Indexed_Comp),
-                    Typ     => Comp_Type));
+                    Typ     => Comp_Typ));
             end if;
          end if;
 
-         return Add_Loop_Actions (L);
+         return Add_Loop_Actions (Stmts);
       end Gen_Assign;
 
       --------------
