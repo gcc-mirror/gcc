@@ -531,12 +531,10 @@ package Sem_Prag is
    procedure Update_Primitives_Mapping
      (Inher_Id : Entity_Id;
       Subp_Id  : Entity_Id);
-
-   --  map primitive operations of the parent type to the corresponding
-   --  operations of the descendant. note that the descendant type may
-   --  not be frozen yet, so we cannot use the dispatch table directly.
-   --  This is called when elaborating a contract for a subprogram, and
-   --  when freezing a type extension to verify legality rules on inherited
-   --  conditions.
+   --  Map primitive operations of the parent type to the corresponding
+   --  operations of the descendant. Note that the descendant type may not be
+   --  frozen yet, so we cannot use the dispatch table directly. This is called
+   --  when elaborating a contract for a subprogram, and when freezing a type
+   --  extension to verify legality rules on inherited conditions.
 
 end Sem_Prag;
