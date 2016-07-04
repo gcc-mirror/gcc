@@ -1,3 +1,9 @@
+2016-07-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+	    Jeff Law  <law@redhat.com>
+
+	* explow.c (allocate_dynamic_stack_space): Simplify knowing that
+	MUST_ALIGN was always true and extra_align ist always BITS_PER_UNIT.
+
 2016-07-04  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_vec_perm): Add handle one-operand

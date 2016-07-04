@@ -1174,8 +1174,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   HOST_WIDE_INT stack_usage_size = -1;
   rtx_code_label *final_label;
   rtx final_target, target;
-  unsigned extra_align = 0;
-  bool must_align;
+  unsigned extra;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
@@ -1246,48 +1245,21 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
   /* We will need to ensure that the address we return is aligned to
-     REQUIRED_ALIGN.  If STACK_DYNAMIC_OFFSET is defined, we don't
-     always know its final value at this point in the compilation (it
-     might depend on the size of the outgoing parameter lists, for
-     example), so we must align the value to be returned in that case.
-     (Note that STACK_DYNAMIC_OFFSET will have a default nonzero value if
-     STACK_POINTER_OFFSET or ACCUMULATE_OUTGOING_ARGS are defined).
-     We must also do an alignment operation on the returned value if
-     the stack pointer alignment is less strict than REQUIRED_ALIGN.
+     REQUIRED_ALIGN.  At this point in the compilation, we don't always
+     know the final value of the STACK_DYNAMIC_OFFSET used in function.c
+     (it might depend on the size of the outgoing parameter lists, for
+     example), so we must preventively align the value.  We leave space
+     in SIZE for the hole that might result from the alignment operation.  */
 
-     If we have to align, we must leave space in SIZE for the hole
-     that might result from the alignment operation.  */
+  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
+  size = plus_constant (Pmode, size, extra);
+  size = force_operand (size, NULL_RTX);
 
-  must_align = (crtl->preferred_stack_boundary < required_align);
-  if (must_align)
-    {
-      if (required_align > PREFERRED_STACK_BOUNDARY)
-	extra_align = PREFERRED_STACK_BOUNDARY;
-      else if (required_align > STACK_BOUNDARY)
-	extra_align = STACK_BOUNDARY;
-      else
-	extra_align = BITS_PER_UNIT;
-    }
+  if (flag_stack_usage_info)
+    stack_usage_size += extra;
 
-  /* ??? STACK_POINTER_OFFSET is always defined now.  */
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
-  must_align = true;
-  extra_align = BITS_PER_UNIT;
-#endif
-
-  if (must_align)
-    {
-      unsigned extra = (required_align - extra_align) / BITS_PER_UNIT;
-
-      size = plus_constant (Pmode, size, extra);
-      size = force_operand (size, NULL_RTX);
-
-      if (flag_stack_usage_info)
-	stack_usage_size += extra;
-
-      if (extra && size_align > extra_align)
-	size_align = extra_align;
-    }
+  if (extra && size_align > BITS_PER_UNIT)
+    size_align = BITS_PER_UNIT;
 
   /* Round the size to a multiple of the required stack alignment.
      Since the stack if presumed to be rounded before this allocation,
@@ -1361,13 +1333,10 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       if (MALLOC_ABI_ALIGNMENT >= required_align)
 	ask = size;
       else
-	{
-	  ask = expand_binop (Pmode, add_optab, size,
-			      gen_int_mode (required_align / BITS_PER_UNIT - 1,
-					    Pmode),
-			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	  must_align = true;
-	}
+	ask = expand_binop (Pmode, add_optab, size,
+			    gen_int_mode (required_align / BITS_PER_UNIT - 1,
+					  Pmode),
+			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
       func = init_one_libfunc ("__morestack_allocate_stack_space");
 
@@ -1478,24 +1447,19 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       target = final_target;
     }
 
-  if (must_align)
-    {
-      /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
-	 but we know it can't.  So add ourselves and then do
-	 TRUNC_DIV_EXPR.  */
-      target = expand_binop (Pmode, add_optab, target,
-			     gen_int_mode (required_align / BITS_PER_UNIT - 1,
-					   Pmode),
-			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
-      target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
-			      gen_int_mode (required_align / BITS_PER_UNIT,
-					    Pmode),
-			      NULL_RTX, 1);
-      target = expand_mult (Pmode, target,
-			    gen_int_mode (required_align / BITS_PER_UNIT,
-					  Pmode),
-			    NULL_RTX, 1);
-    }
+  /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
+     but we know it can't.  So add ourselves and then do
+     TRUNC_DIV_EXPR.  */
+  target = expand_binop (Pmode, add_optab, target,
+			 gen_int_mode (required_align / BITS_PER_UNIT - 1,
+				       Pmode),
+			 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
+			  gen_int_mode (required_align / BITS_PER_UNIT, Pmode),
+			  NULL_RTX, 1);
+  target = expand_mult (Pmode, target,
+			gen_int_mode (required_align / BITS_PER_UNIT, Pmode),
+			NULL_RTX, 1);
 
   /* Now that we've committed to a return value, mark its alignment.  */
   mark_reg_pointer (target, required_align);
