@@ -1,3 +1,38 @@
+2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Ctrl_Init_Expression): New routine.
+	(Gen_Assign): Code cleanup. Perform in-place side effect removal when
+	the expression denotes a controlled function call.
+	* exp_util.adb (Remove_Side_Effects): Do not remove side effects
+	on a function call which has this behavior suppressed.
+	* sem_aggr.adb Code cleanup.
+	* sinfo.adb (No_Side_Effect_Removal): New routine.
+	(Set_Side_Effect_Removal): New routine.
+	* sinfo.ads New attribute No_Side_Effect_Removal along with
+	occurences in nodes.
+	(No_Side_Effect_Removal): New routine along with pragma Inline.
+	(Set_Side_Effect_Removal): New routine along with pragma Inline.
+
+2016-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads, sem_prag.adb (Universal_Addressing_On_AAMP): Removed.
+	Remove support for pragma No_Run_Time. Update comments.
+
+2016-07-04  Pascal Obry  <obry@adacore.com>
+
+	* g-forstr.ads: More documentation for the Formatted_String
+	support.
+
+2016-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case
+	'Address): If the address comes from an aspect specification
+	and not a source attribute definition clause, do not remove
+	side effects from the expression, because the expression must
+	be elaborated at the freeze point of the object and not at the
+	object declaration, because of the delayed analysis of aspect
+	specifications.
+
 2016-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/48835

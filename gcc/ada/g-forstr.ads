@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--           Copyright (C) 2014-2016, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package add support for formatted string as supported by C printf().
+--  This package add support for formatted string as supported by C printf()
 
 --  A simple usage is:
-
+--
+--     Put_Line (-(+"%s" & "a string"));
+--
+--  or with a constant for the format:
+--
+--     declare
+--       Format : constant Formatted_String := +"%s";
+--     begin
+--       Put_Line (-(Format & "a string"));
+--     end;
+--
+--  Finally a more complex example:
+--
 --     declare
 --        F : Formatted_String := +"['%c' ; %10d]";
 --        C : Character := 'v';

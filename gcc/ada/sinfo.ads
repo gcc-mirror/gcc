@@ -1946,6 +1946,12 @@ package Sinfo is
    --    It is used to indicate that processing for extended overflow checking
    --    modes is not required (this is used to prevent infinite recursion).
 
+   --  No_Side_Effect_Removal (Flag1-Sem)
+   --    Present in N_Function_Call nodes. Set when a function call does not
+   --    require side effect removal. This attribute suppresses the generation
+   --    of a temporary to capture the result of the function which eventually
+   --    replaces the function call.
+
    --  No_Truncation (Flag17-Sem)
    --    Present in N_Unchecked_Type_Conversion node. This flag has an effect
    --    only if the RM_Size of the source is greater than the RM_Size of the
@@ -5296,6 +5302,7 @@ package Sinfo is
       --   actual parameter part)
       --  First_Named_Actual (Node4-Sem)
       --  Controlling_Argument (Node1-Sem) (set to Empty if not dispatching)
+      --  No_Side_Effect_Removal (Flag1-Sem)
       --  Is_Expanded_Build_In_Place_Call (Flag11-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  No_Elaboration_Check (Flag14-Sem)
@@ -9540,6 +9547,9 @@ package Sinfo is
    function No_Minimize_Eliminate
      (N : Node_Id) return Boolean;    -- Flag17
 
+   function No_Side_Effect_Removal
+     (N : Node_Id) return Boolean;    -- Flag1
+
    function No_Truncation
      (N : Node_Id) return Boolean;    -- Flag17
 
@@ -10580,6 +10590,9 @@ package Sinfo is
 
    procedure Set_No_Minimize_Eliminate
      (N : Node_Id; Val : Boolean := True);    -- Flag17
+
+   procedure Set_No_Side_Effect_Removal
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
 
    procedure Set_No_Truncation
      (N : Node_Id; Val : Boolean := True);    -- Flag17
@@ -12877,6 +12890,7 @@ package Sinfo is
    pragma Inline (No_Entities_Ref_In_Spec);
    pragma Inline (No_Initialization);
    pragma Inline (No_Minimize_Eliminate);
+   pragma Inline (No_Side_Effect_Removal);
    pragma Inline (No_Truncation);
    pragma Inline (Non_Aliased_Prefix);
    pragma Inline (Null_Present);
@@ -13220,6 +13234,7 @@ package Sinfo is
    pragma Inline (Set_No_Entities_Ref_In_Spec);
    pragma Inline (Set_No_Initialization);
    pragma Inline (Set_No_Minimize_Eliminate);
+   pragma Inline (Set_No_Side_Effect_Removal);
    pragma Inline (Set_No_Truncation);
    pragma Inline (Set_Non_Aliased_Prefix);
    pragma Inline (Set_Null_Excluding_Subtype);

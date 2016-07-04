@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,9 +136,16 @@ package body Exp_Ch13 is
                --  has a delayed freeze, but the address expression itself
                --  must be elaborated at the point it appears. If the object
                --  is controlled, additional checks apply elsewhere.
+               --  If the attribute comes from an aspect specification it
+               --  is being elaborated at the freeze point and side effects
+               --  need not be removed (and shouldn't, if the expression
+               --  depends on other entities that have delayed freeze).
+               --  This is another consequence of the delayed analysis of
+               --  aspects, and a real semantic difference.
 
                elsif Nkind (Decl) = N_Object_Declaration
                  and then not Needs_Constant_Address (Decl, Typ)
+                 and then not From_Aspect_Specification (N)
                then
                   Remove_Side_Effects (Exp);
                end if;
