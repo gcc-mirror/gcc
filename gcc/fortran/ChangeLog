@@ -1,3 +1,10 @@
+2016-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/35849
+	* simplify.c (gfc_simplify_ishftc): Check that absolute value of
+	SHIFT is less than or equal to SIZE.
+
 2016-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71687
