@@ -5009,7 +5009,7 @@ attribute_value_equal (const_tree attr1, const_tree attr2)
       && TREE_CODE (TREE_VALUE (attr2)) == TREE_LIST)
     {
       /* Handle attribute format.  */
-      if (is_attribute_p ("format", TREE_PURPOSE (attr1)))
+      if (is_attribute_p ("format", get_attribute_name (attr1)))
 	{
 	  attr1 = TREE_VALUE (attr1);
 	  attr2 = TREE_VALUE (attr2);
