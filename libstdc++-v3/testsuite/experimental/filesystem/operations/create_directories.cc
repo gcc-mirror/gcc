@@ -65,7 +65,8 @@ test01()
   VERIFY( b );
   VERIFY( is_directory(p/"./d4/../d5") );
 
-  remove_all(p, ec);
+  std::uintmax_t count = remove_all(p, ec);
+  VERIFY( count == 6 );
 }
 
 int

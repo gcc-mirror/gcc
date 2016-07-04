@@ -1194,7 +1194,7 @@ fs::remove_all(const path& p, error_code& ec) noexcept
   uintmax_t count = 0;
   if (ec.value() == 0 && fs.type() == file_type::directory)
     for (directory_iterator d(p, ec), end; ec.value() == 0 && d != end; ++d)
-      count += fs::remove(d->path(), ec);
+      count += fs::remove_all(d->path(), ec);
   if (ec.value())
     return -1;
   return fs::remove(p, ec) ? ++count : -1;  // fs:remove() calls ec.clear()
