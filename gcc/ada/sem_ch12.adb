@@ -10932,6 +10932,7 @@ package body Sem_Ch12 is
             E := First_Entity (Act_Decl_Id);
             while Present (E) loop
                if Is_Type (E)
+                 and then not Is_Itype (E)
                  and then Is_Generic_Actual_Type (E)
                  and then Is_Tagged_Type (E)
                then
@@ -12855,10 +12856,11 @@ package body Sem_Ch12 is
       --  or in the declaration of the main unit, which in this last case must
       --  be a body.
 
-      return Current_Unit = Cunit (Main_Unit)
-        or else Current_Unit = Library_Unit (Cunit (Main_Unit))
-        or else (Present (Library_Unit (Current_Unit))
-                  and then Is_In_Main_Unit (Library_Unit (Current_Unit)));
+      return
+        Current_Unit = Cunit (Main_Unit)
+          or else Current_Unit = Library_Unit (Cunit (Main_Unit))
+          or else (Present (Library_Unit (Current_Unit))
+                    and then Is_In_Main_Unit (Library_Unit (Current_Unit)));
    end Is_In_Main_Unit;
 
    ----------------------------

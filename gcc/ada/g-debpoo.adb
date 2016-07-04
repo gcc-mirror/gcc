@@ -101,6 +101,9 @@ package body GNAT.Debug_Pools is
    --  If True, protects Deallocate against releasing memory allocated before
    --  System_Memory_Debug_Pool_Enabled was set.
 
+   Traceback_Count : Byte_Count := 0;
+   --  Total number of traceback elements
+
    ---------------------------
    -- Back Trace Hash Table --
    ---------------------------
@@ -332,6 +335,10 @@ package body GNAT.Debug_Pools is
       pragma Inline (Set_Valid);
       --  Mark the address Storage as being under control of the memory pool
       --  (if Value is True), or not (if Value is False).
+
+      Validity_Count : Byte_Count := 0;
+      --  Total number of validity elements
+
    end Validity;
 
    use Validity;
@@ -630,6 +637,7 @@ package body GNAT.Debug_Pools is
                      Frees       => 0,
                      Total_Frees => 0,
                      Next        => null);
+            Traceback_Count := Traceback_Count + 1;
             Backtrace_Htable.Set (Elem);
 
          else
@@ -845,6 +853,7 @@ package body GNAT.Debug_Pools is
 
             if Value then
                Ptr := new Validity_Bits;
+               Validity_Count := Validity_Count + 1;
                Ptr.Valid :=
                  To_Pointer (Alloc (size_t (Max_Validity_Byte_Index)));
                Validy_Htable.Set (Block_Number, Ptr);
@@ -1180,7 +1189,10 @@ package body GNAT.Debug_Pools is
 
       begin
          while Tmp /= System.Null_Address
-           and then Total_Freed < Pool.Minimum_To_Free
+           and then
+             not (Total_Freed > Pool.Minimum_To_Free
+                   and Pool.Logically_Deallocated <
+                         Byte_Count (Pool.Maximum_Logically_Freed_Memory))
          loop
             Header := Header_Of (Tmp);
 
@@ -1188,12 +1200,12 @@ package body GNAT.Debug_Pools is
             --  referenced anywhere, we can free it physically.
 
             if Ignore_Marks or else not Marked (Tmp) then
-
                declare
                   pragma Suppress (All_Checks);
                   --  Suppress the checks on this section. If they are overflow
                   --  errors, it isn't critical, and we'd rather avoid a
                   --  Constraint_Error in that case.
+
                begin
                   --  Note that block_size < zero for freed blocks
 
@@ -1238,7 +1250,7 @@ package body GNAT.Debug_Pools is
                   Header_Of (Previous).Next := Next;
                end if;
 
-               Tmp  := Next;
+               Tmp := Next;
 
             else
                Previous := Tmp;
@@ -2018,6 +2030,9 @@ package body GNAT.Debug_Pools is
       end Do_Report;
 
    begin
+      Put_Line ("Traceback elements allocated: " & Traceback_Count'Img);
+      Put_Line ("Validity elements allocated: " & Validity_Count'Img);
+      Put_Line ("");
 
       Put_Line ("Ada Allocs:" & Pool.Allocated'Img
                 & " bytes in" & Pool.Alloc_Count'Img & " chunks");

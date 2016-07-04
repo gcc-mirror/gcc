@@ -3087,6 +3087,21 @@ package body Sem_Ch4 is
       Subp_Type   : constant Entity_Id := Etype (Nam);
       Norm_OK     : Boolean;
 
+      function Compatible_Types_In_Predicate
+        (T1 : Entity_Id;
+         T2 : Entity_Id) return Boolean;
+      --  For an Ada 2012 predicate or invariant, a call may mention an
+      --  incomplete type, while resolution of the corresponding predicate
+      --  function may see the full view, as a consequence of the delayed
+      --  resolution of the corresponding expressions. This may occur in
+      --  the body of a predicate function, or in a call to such. Anomalies
+      --  involving private and full views can also happen. In each case,
+      --  rewrite node or add conversions to remove spurious type errors.
+
+      procedure Indicate_Name_And_Type;
+      --  If candidate interpretation matches, indicate name and type of result
+      --  on call node.
+
       function Operator_Hidden_By (Fun : Entity_Id) return Boolean;
       --  There may be a user-defined operator that hides the current
       --  interpretation. We must check for this independently of the
@@ -3100,9 +3115,59 @@ package body Sem_Ch4 is
       --  Finally, The abstract operations on address do not hide the
       --  predefined operator (this is the purpose of making them abstract).
 
-      procedure Indicate_Name_And_Type;
-      --  If candidate interpretation matches, indicate name and type of
-      --  result on call node.
+      -----------------------------------
+      -- Compatible_Types_In_Predicate --
+      -----------------------------------
+
+      function Compatible_Types_In_Predicate
+        (T1 : Entity_Id;
+         T2 : Entity_Id) return Boolean
+      is
+         function Common_Type (T : Entity_Id) return Entity_Id;
+         --  Find non-private full view if any, without going to ancestor type
+         --  (as opposed to Underlying_Type).
+
+         -----------------
+         -- Common_Type --
+         -----------------
+
+         function Common_Type (T : Entity_Id) return Entity_Id is
+         begin
+            if Is_Private_Type (T) and then Present (Full_View (T)) then
+               return Base_Type (Full_View (T));
+            else
+               return Base_Type (T);
+            end if;
+         end Common_Type;
+
+      --  Start of processing for Compatible_Types_In_Predicate
+
+      begin
+         if (Ekind (Current_Scope) = E_Function
+              and then Is_Predicate_Function (Current_Scope))
+           or else
+            (Ekind (Nam) = E_Function
+              and then Is_Predicate_Function (Nam))
+         then
+            if Is_Incomplete_Type (T1)
+              and then Present (Full_View (T1))
+              and then Full_View (T1) = T2
+            then
+               Set_Etype (Formal, Etype (Actual));
+               return True;
+
+            elsif Common_Type (T1) = Common_Type (T2) then
+               Rewrite (Actual, Unchecked_Convert_To (Etype (Formal), Actual));
+               return True;
+
+            else
+               return False;
+            end if;
+
+         else
+            return False;
+         end if;
+      end Compatible_Types_In_Predicate;
 
       ----------------------------
       -- Indicate_Name_And_Type --
@@ -3409,24 +3474,9 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
-               --  For an Ada 2012 predicate or invariant, a call may mention
-               --  an incomplete type, while resolution of the corresponding
-               --  predicate function may see the full view, as a consequence
-               --  of the delayed resolution of the corresponding expressions.
-               --  This can occur in the body of a predicate function, or in
-               --  a call to such.
-
-               elsif ((Ekind (Current_Scope) = E_Function
-                       and then Is_Predicate_Function (Current_Scope))
-                   or else
-                     (Ekind (Nam) = E_Function
-                       and then Is_Predicate_Function (Nam)))
-                 and then
-                   (Base_Type (Underlying_Type (Etype (Formal))) =
-                    Base_Type (Underlying_Type (Etype (Actual))))
-                 and then Serious_Errors_Detected = 0
+               elsif Compatible_Types_In_Predicate
+                       (Etype (Formal), Etype (Actual))
                then
-                  Set_Etype (Formal, Etype (Actual));
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
