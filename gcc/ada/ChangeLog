@@ -1,3 +1,7 @@
+2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-sercom-mingw.adb, sem_ch6.adb: Minor reformatting.
+
 2016-07-04  Olivier Hainque  <hainque@adacore.com>
 
 	* g-sercom-mingw.adb (Set): Fix port configuration for the
