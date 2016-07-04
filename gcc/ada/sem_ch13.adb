@@ -1937,9 +1937,11 @@ package body Sem_Ch13 is
             if not Implementation_Defined_Aspect (A_Id) then
                Error_Msg_Name_1 := Nam;
 
-               --  Not allowed for renaming declarations
+               --  Not allowed for renaming declarations. Examine original
+               --  node because a subprogram renaming may have been rewritten
+               --  as a body.
 
-               if Nkind (N) in N_Renaming_Declaration then
+               if Nkind (Original_Node (N)) in N_Renaming_Declaration then
                   Error_Msg_N
                     ("aspect % not allowed for renaming declaration",
                      Aspect);
