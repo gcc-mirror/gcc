@@ -1403,24 +1403,39 @@ package body Freeze is
       while Present (Op_Node) loop
          Prim := Node (Op_Node);
 
-         --  In SPARK mode this is where we can collect the inherited
-         --  conditions, because we do not create the Check pragmas that
-         --  normally convey the modified classwide conditions on overriding
-         --  operations.
+         --  Map the overridden primitive to the overriding one. This
+         --  takes care of all overridings and is done only once.
 
-         if SPARK_Mode = On
-           and then Comes_From_Source (Prim)
-           and then Present (Overridden_Operation (Prim))
+         if Present (Overridden_Operation (Prim))
+            and then Comes_From_Source (Prim)
          then
-            Collect_Inherited_Class_Wide_Conditions (Prim);
+            Update_Primitives_Mapping (Overridden_Operation (Prim), Prim);
+
+            --  In SPARK mode this is where we can collect the inherited
+            --  conditions, because we do not create the Check pragmas that
+            --  normally convey the the modified classwide conditions on
+            --  overriding operations.
+
+            if SPARK_Mode = On then
+               Collect_Inherited_Class_Wide_Conditions (Prim);
+            end if;
          end if;
 
-         --  In normal mode, we examine inherited operations to check whether
-         --  they require a wrapper to handle inherited conditions that call
-         --  other primitives.
-         --  Wrapper construction TBD.
+         Next_Elmt (Op_Node);
+      end loop;
 
-         if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
+      --  In all cases, we examine inherited operations to check whether they
+      --  require a wrapper to handle inherited conditions that call other
+      --  primitives, so that LSP can be verified/enforced.
+
+      --  Wrapper construction TBD.
+
+      Op_Node := First_Elmt (Prim_Ops);
+      while Present (Op_Node) loop
+         Prim := Node (Op_Node);
+         if not Comes_From_Source (Prim)
+           and then Present (Alias (Prim))
+         then
             Par_Prim := Alias (Prim);
             A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
 

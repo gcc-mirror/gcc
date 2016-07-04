@@ -322,13 +322,6 @@ package body Sem_Prag is
    --  pragma. Entity name for unit and its parents is taken from item in
    --  previous with_clause that mentions the unit.
 
-   procedure Update_Primitives_Mapping
-     (Inher_Id : Entity_Id;
-      Subp_Id  : Entity_Id);
-   --  Map primitive operations of the parent type to the corresponding
-   --  operations of the descendant. Note that the descendant type may
-   --  not be frozen yet, so we cannot use the dispatch table directly.
-
    Dummy : Integer := 0;
    pragma Volatile (Dummy);
    --  Dummy volatile integer used in bodies of ip/rv to prevent optimization
@@ -26380,13 +26373,25 @@ package body Sem_Prag is
                     ("cannot call abstract subprogram in inherited condition "
                       & "for&#", N, Current_Scope);
 
+               --  In SPARK mode, reject an inherited condition for an
+               --  inherited operation if it contains a call to an overriding
+               --  operation, because this implies that the pre/postcondition
+               --  of the inherited operation have changed silently.
+
                elsif SPARK_Mode = On
                  and then Warn_On_Suspicious_Contract
                  and then Present (Alias (Subp))
+                 and then Present (New_E)
+                 and then Comes_From_Source (New_E)
                then
+                  Error_Msg_N
+                    ("cannot modify inherited condition (SPARK RM 6.1.1(1))",
+                      Parent (Subp));
+                  Error_Msg_Sloc := Sloc (New_E);
+                  Error_Msg_Node_2 := Subp;
                   Error_Msg_NE
-                    ("?inherited condition is modified, build a wrapper "
-                     & "for&", Parent (Subp), Subp);
+                    ("\overriding of&# forces overriding of&",
+                     Parent (Subp), New_E);
                end if;
             end if;
 
