@@ -248,27 +248,25 @@ package body GNAT.Serial_Communications is
          Raise_Error ("cannot set comm state");
       end if;
 
-      --  Set the timeout status, to honor our spec with respect to
-      --  read timeouts. Always disconnect write timeouts.
+      --  Set the timeout status, to honor our spec with respect to read
+      --  timeouts. Always disconnect write timeouts.
+
+      --  Blocking reads - no timeout at all
 
       if Block then
-
-         --  Blocking reads - no timeout at all
-
          Com_Time_Out := (others => 0);
+
+      --  Non-blocking reads and null timeout - immediate return with what we
+      --  have - set ReadIntervalTimeout to MAXDWORD.
+
       elsif Timeout = 0.0 then
-
-         --  Non-blocking reads and null timeout - immediate return
-         --  with what we have - set ReadIntervalTimeout to MAXDWORD.
-
          Com_Time_Out :=
            (ReadIntervalTimeout => DWORD'Last,
             others              => 0);
+
+      --  Non-blocking reads with timeout - set total read timeout accordingly
+
       else
-
-         --  Non-blocking reads with timeout - set total read timeout
-         --  accordingly
-
          Com_Time_Out :=
            (ReadTotalTimeoutConstant => DWORD (1000 * Timeout),
             others                   => 0);
