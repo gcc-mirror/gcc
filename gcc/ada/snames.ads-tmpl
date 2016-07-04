@@ -653,6 +653,7 @@ package Snames is
    Name_Unreferenced                   : constant Name_Id := N + $; -- GNAT
    Name_Unreferenced_Objects           : constant Name_Id := N + $; -- GNAT
    Name_Unreserve_All_Interrupts       : constant Name_Id := N + $; -- GNAT
+   Name_Unused                         : constant Name_Id := N + $; -- GNAT
    Name_Volatile                       : constant Name_Id := N + $;
    Name_Volatile_Components            : constant Name_Id := N + $;
    Name_Volatile_Full_Access           : constant Name_Id := N + $; -- GNAT
@@ -1965,6 +1966,7 @@ package Snames is
       Pragma_Unreferenced,
       Pragma_Unreferenced_Objects,
       Pragma_Unreserve_All_Interrupts,
+      Pragma_Unused,
       Pragma_Volatile,
       Pragma_Volatile_Components,
       Pragma_Volatile_Full_Access,

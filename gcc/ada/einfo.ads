@@ -1902,12 +1902,19 @@ package Einfo is
 --       that clients should generally not test this flag directly, but instead
 --       use function Has_Unreferenced.
 
+--  ??? this real description was clobbered
+
 --    Has_Pragma_Unreferenced_Objects (Flag212)
---       Defined in type and subtype entities. Set if a valid pragma
---       Unreferenced_Objects applies to the type, indicating that no warning
---       should be given for objects of such a type for being unreferenced
---       (but unlike the case with pragma Unreferenced, it is ok to reference
---       such an object and no warning is generated.
+--       Defined in all entities. Set if a valid pragma Unused applies to an
+--       entity, indicating that warnings should be given if the entity is
+--       modified or referenced. This pragma is equivalent to a pair of
+--       Unmodified and Unreferenced pragmas.
+
+--    Has_Pragma_Unused (Flag294)
+--       Defined in all entries. Set if a valid pragma Unused applies to a
+--       variable or entity, indicating that warnings should not be given if
+--       it is never modified or referenced. Note: This pragma is exactly
+--       equivalent Unmodified and Unreference combined.
 
 --    Has_Predicates (Flag250)
 --       Defined in type and subtype entities. Set if a pragma Predicate or
@@ -5397,6 +5404,7 @@ package Einfo is
    --    Has_Pragma_Thread_Local_Storage     (Flag169)
    --    Has_Pragma_Unmodified               (Flag233)
    --    Has_Pragma_Unreferenced             (Flag180)
+   --    Has_Pragma_Unused                   (Flag294)
    --    Has_Private_Declaration             (Flag155)
    --    Has_Qualified_Name                  (Flag161)
    --    Has_Stream_Size_Clause              (Flag184)
@@ -6976,6 +6984,7 @@ package Einfo is
    function Has_Pragma_Unmodified               (Id : E) return B;
    function Has_Pragma_Unreferenced             (Id : E) return B;
    function Has_Pragma_Unreferenced_Objects     (Id : E) return B;
+   function Has_Pragma_Unused                   (Id : E) return B;
    function Has_Predicates                      (Id : E) return B;
    function Has_Primitive_Operations            (Id : E) return B;
    function Has_Private_Ancestor                (Id : E) return B;
@@ -7649,6 +7658,7 @@ package Einfo is
    procedure Set_Has_Pragma_Unmodified           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced         (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced_Objects (Id : E; V : B := True);
+   procedure Set_Has_Pragma_Unused               (Id : E; V : B := True);
    procedure Set_Has_Predicates                  (Id : E; V : B := True);
    procedure Set_Has_Primitive_Operations        (Id : E; V : B := True);
    procedure Set_Has_Private_Ancestor            (Id : E; V : B := True);
@@ -8439,6 +8449,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Unmodified);
    pragma Inline (Has_Pragma_Unreferenced);
    pragma Inline (Has_Pragma_Unreferenced_Objects);
+   pragma Inline (Has_Pragma_Unused);
    pragma Inline (Has_Predicates);
    pragma Inline (Has_Primitive_Operations);
    pragma Inline (Has_Private_Ancestor);

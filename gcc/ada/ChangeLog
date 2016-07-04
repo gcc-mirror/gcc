@@ -1,3 +1,29 @@
+2016-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.adb (Has_Pragma_Unused): Create this function as a setter
+	for a new flag294 (Set_Has_Pragma_Unused): Create this procedure
+	as a getter for flag294 (Write_Entity_Flags): Register the new
+	flag with an alias
+	* einfo.ads Add comment documenting Has_Pragma_Unused (flag294)
+	and subsequent getter and setter declarations.
+	* lib-xref.adb (Generate_Reference): Recognize Has_Pragma_Unused
+	flag to print appropriate warning messages.
+	* par-prag.adb (Prag): Classify Pragma_Unused into "All Other
+	Pragmas."
+	* snames.ads-tmpl Add a new name to the name constants and a
+	new pramga to Pragma_Id for pramga Unused.
+	* sem_prag.adb (Analyze_Pragma): Create case for Pragma_Unused
+	and move the block for Pragma_Unmodified and Pragma_Unreferenced
+	out and into local subprograms.
+	(Analyze_Unmodified, Analyze_Unreferenced): From the old pragma blocks
+	that have been separated in to local subprograms add a parameter to
+	indicate the if they are being called in the context of Pragma_Unused
+	and handle it accordingly.
+	(Is_Non_Significant_Pragma_Reference): Add an entry for Pragma_Unused
+	and correct the position of Pragma_Unevaluated_Use_Of_Old.
+	* sem_util.adb (Note_Possible_Modification): Recognize
+	Has_Pragma_Unused flag to print appropriate warning messages.
+
 2016-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Check_Inherited_Conditions): Perform two passes over

@@ -17618,11 +17618,20 @@ package body Sem_Util is
                if Comes_From_Source (Exp)
                  or else Modification_Comes_From_Source
                then
-                  --  Give warning if pragma unmodified given and we are
+                  --  Give warning if pragma unmodified is given and we are
                   --  sure this is a modification.
 
                   if Has_Pragma_Unmodified (Ent) and then Sure then
-                     Error_Msg_NE ("??pragma Unmodified given for &!", N, Ent);
+
+                     --  Note that the entity may be present only as a result
+                     --  of pragma Unused.
+
+                     if Has_Pragma_Unused (Ent) then
+                        Error_Msg_NE ("??pragma Unused given for &!", N, Ent);
+                     else
+                        Error_Msg_NE
+                          ("??pragma Unmodified given for &!", N, Ent);
+                     end if;
                   end if;
 
                   Set_Never_Set_In_Source (Ent, False);

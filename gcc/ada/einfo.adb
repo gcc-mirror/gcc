@@ -608,8 +608,8 @@ package body Einfo is
    --    Has_Inherited_Invariants        Flag291
    --    Is_Partial_Invariant_Procedure  Flag292
    --    Is_Actual_Subtype               Flag293
+   --    Has_Pragma_Unused               Flag294
 
-   --    (unused)                        Flag294
    --    (unused)                        Flag295
    --    (unused)                        Flag296
    --    (unused)                        Flag297
@@ -1760,6 +1760,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag212 (Id);
    end Has_Pragma_Unreferenced_Objects;
+
+   function Has_Pragma_Unused (Id : E) return B is
+   begin
+      return Flag294 (Id);
+   end Has_Pragma_Unused;
 
    function Has_Predicates (Id : E) return B is
    begin
@@ -4767,6 +4772,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag212 (Id, V);
    end Set_Has_Pragma_Unreferenced_Objects;
+
+   procedure Set_Has_Pragma_Unused (Id : E; V : B := True) is
+   begin
+      Set_Flag294 (Id, V);
+   end Set_Has_Pragma_Unused;
 
    procedure Set_Has_Predicates (Id : E; V : B := True) is
    begin
@@ -9162,6 +9172,7 @@ package body Einfo is
       W ("Has_Pragma_Unmodified",           Flag233 (Id));
       W ("Has_Pragma_Unreferenced",         Flag180 (Id));
       W ("Has_Pragma_Unreferenced_Objects", Flag212 (Id));
+      W ("Has_Pragma_Unused",               Flag294 (Id));
       W ("Has_Predicates",                  Flag250 (Id));
       W ("Has_Primitive_Operations",        Flag120 (Id));
       W ("Has_Private_Ancestor",            Flag151 (Id));

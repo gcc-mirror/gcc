@@ -3502,6 +3502,16 @@ package body Sem_Prag is
       --  related subprogram. Body_Id is the entity of the subprogram body.
       --  Flag Legal is set when the pragma is legal.
 
+      procedure Analyze_Unmodified_Or_Unused (Is_Unused : Boolean := False);
+      --  Perform full analysis of pragma Unmodified and the write aspect of
+      --  pragma Unused. Flag Is_Unused should be set when verifying the
+      --  semantics of pragma Unused.
+
+      procedure Analyze_Unreferenced_Or_Unused (Is_Unused : Boolean := False);
+      --  Perform full analysis of pragma Unreferenced and the read aspect of
+      --  pragma Unused. Flag Is_Unused should be set when verifying the
+      --  semantics of pragma Unused.
+
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
       --  83 mode (used for language pragmas that are not a standard part of
@@ -4464,6 +4474,274 @@ package body Sem_Prag is
             Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
          end if;
       end Analyze_Refined_Depends_Global_Post;
+
+      ----------------------------------
+      -- Analyze_Unmodified_Or_Unused --
+      ----------------------------------
+
+      procedure Analyze_Unmodified_Or_Unused (Is_Unused : Boolean := False) is
+         Arg      : Node_Id;
+         Arg_Expr : Node_Id;
+         Arg_Id   : Entity_Id;
+
+         Ghost_Error_Posted : Boolean := False;
+         --  Flag set when an error concerning the illegal mix of Ghost and
+         --  non-Ghost variables is emitted.
+
+         Ghost_Id : Entity_Id := Empty;
+         --  The entity of the first Ghost variable encountered while
+         --  processing the arguments of the pragma.
+
+      begin
+         GNAT_Pragma;
+         Check_At_Least_N_Arguments (1);
+
+         --  Loop through arguments
+
+         Arg := Arg1;
+         while Present (Arg) loop
+            Check_No_Identifier (Arg);
+
+            --  Note: the analyze call done by Check_Arg_Is_Local_Name will
+            --  in fact generate reference, so that the entity will have a
+            --  reference, which will inhibit any warnings about it not
+            --  being referenced, and also properly show up in the ali file
+            --  as a reference. But this reference is recorded before the
+            --  Has_Pragma_Unreferenced flag is set, so that no warning is
+            --  generated for this reference.
+
+            Check_Arg_Is_Local_Name (Arg);
+            Arg_Expr := Get_Pragma_Arg (Arg);
+
+            if Is_Entity_Name (Arg_Expr) then
+               Arg_Id := Entity (Arg_Expr);
+
+               --  Skip processing the argument if already flagged
+
+               if Is_Assignable (Arg_Id)
+                 and then not Has_Pragma_Unmodified (Arg_Id)
+                 and then not Has_Pragma_Unused (Arg_Id)
+               then
+                  Set_Has_Pragma_Unmodified (Arg_Id);
+
+                  if Is_Unused then
+                     Set_Has_Pragma_Unused (Arg_Id);
+                  end if;
+
+                  --  A pragma that applies to a Ghost entity becomes Ghost for
+                  --  the purposes of legality checks and removal of ignored
+                  --  Ghost code.
+
+                  Mark_Pragma_As_Ghost (N, Arg_Id);
+
+                  --  Capture the entity of the first Ghost variable being
+                  --  processed for error detection purposes.
+
+                  if Is_Ghost_Entity (Arg_Id) then
+                     if No (Ghost_Id) then
+                        Ghost_Id := Arg_Id;
+                     end if;
+
+                  --  Otherwise the variable is non-Ghost. It is illegal to mix
+                  --  references to Ghost and non-Ghost entities
+                  --  (SPARK RM 6.9).
+
+                  elsif Present (Ghost_Id)
+                    and then not Ghost_Error_Posted
+                  then
+                     Ghost_Error_Posted := True;
+
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_N
+                       ("pragma % cannot mention ghost and non-ghost "
+                        & "variables", N);
+
+                     Error_Msg_Sloc := Sloc (Ghost_Id);
+                     Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
+
+                     Error_Msg_Sloc := Sloc (Arg_Id);
+                     Error_Msg_NE ("\& # declared as non-ghost", N, Arg_Id);
+                  end if;
+
+               --  Warn if already flagged as Unused or Unmodified
+
+               elsif Has_Pragma_Unmodified (Arg_Id) then
+                  if Has_Pragma_Unused (Arg_Id) then
+                     Error_Msg_NE
+                       ("??pragma Unused given for &!", Arg_Expr, Arg_Id);
+                  else
+                     Error_Msg_NE
+                       ("??pragma Unmodified given for &!", Arg_Expr, Arg_Id);
+                  end if;
+
+               --  Otherwise the pragma referenced an illegal entity
+
+               else
+                  Error_Pragma_Arg
+                    ("pragma% can only be applied to a variable", Arg_Expr);
+               end if;
+            end if;
+
+            Next (Arg);
+         end loop;
+      end Analyze_Unmodified_Or_Unused;
+
+      -----------------------------------
+      -- Analyze_Unreference_Or_Unused --
+      -----------------------------------
+
+      procedure Analyze_Unreferenced_Or_Unused
+        (Is_Unused : Boolean := False)
+      is
+         Arg      : Node_Id;
+         Arg_Expr : Node_Id;
+         Arg_Id   : Entity_Id;
+         Citem    : Node_Id;
+
+         Ghost_Error_Posted : Boolean := False;
+         --  Flag set when an error concerning the illegal mix of Ghost and
+         --  non-Ghost names is emitted.
+
+         Ghost_Id : Entity_Id := Empty;
+         --  The entity of the first Ghost name encountered while processing
+         --  the arguments of the pragma.
+
+      begin
+         GNAT_Pragma;
+         Check_At_Least_N_Arguments (1);
+
+         --  Check case of appearing within context clause
+
+         if not Is_Unused and then Is_In_Context_Clause then
+
+            --  The arguments must all be units mentioned in a with clause in
+            --  the same context clause. Note that Par.Prag already checked
+            --  that the arguments are either identifiers or selected
+            --  components.
+
+            Arg := Arg1;
+            while Present (Arg) loop
+               Citem := First (List_Containing (N));
+               while Citem /= N loop
+                  Arg_Expr := Get_Pragma_Arg (Arg);
+
+                  if Nkind (Citem) = N_With_Clause
+                    and then Same_Name (Name (Citem), Arg_Expr)
+                  then
+                     Set_Has_Pragma_Unreferenced
+                       (Cunit_Entity
+                         (Get_Source_Unit
+                           (Library_Unit (Citem))));
+                     Set_Elab_Unit_Name (Arg_Expr, Name (Citem));
+                     exit;
+                  end if;
+
+                  Next (Citem);
+               end loop;
+
+               if Citem = N then
+                  Error_Pragma_Arg
+                    ("argument of pragma% is not withed unit", Arg);
+               end if;
+
+               Next (Arg);
+            end loop;
+
+         --  Case of not in list of context items
+
+         else
+            Arg := Arg1;
+            while Present (Arg) loop
+               Check_No_Identifier (Arg);
+
+               --  Note: the analyze call done by Check_Arg_Is_Local_Name will
+               --  in fact generate reference, so that the entity will have a
+               --  reference, which will inhibit any warnings about it not
+               --  being referenced, and also properly show up in the ali file
+               --  as a reference. But this reference is recorded before the
+               --  Has_Pragma_Unreferenced flag is set, so that no warning is
+               --  generated for this reference.
+
+               Check_Arg_Is_Local_Name (Arg);
+               Arg_Expr := Get_Pragma_Arg (Arg);
+
+               if Is_Entity_Name (Arg_Expr) then
+                  Arg_Id := Entity (Arg_Expr);
+
+                  --  Warn if already flagged as Unused or Unreferenced and
+                  --  skip processing the argument.
+
+                  if Has_Pragma_Unreferenced (Arg_Id) then
+                     if Has_Pragma_Unused (Arg_Id) then
+                        Error_Msg_NE
+                          ("??pragma Unused given for &!", Arg_Expr, Arg_Id);
+                     else
+                        Error_Msg_NE
+                          ("??pragma Unreferenced given for &!", Arg_Expr,
+                           Arg_Id);
+                     end if;
+
+                  --  Apply Unreferenced to the entity
+
+                  else
+                     --  If the entity is overloaded, the pragma applies to the
+                     --  most recent overloading, as documented. In this case,
+                     --  name resolution does not generate a reference, so it
+                     --  must be done here explicitly.
+
+                     if Is_Overloaded (Arg_Expr) then
+                        Generate_Reference (Arg_Id, N);
+                     end if;
+
+                     Set_Has_Pragma_Unreferenced (Arg_Id);
+
+                     if Is_Unused then
+                        Set_Has_Pragma_Unused (Arg_Id);
+                     end if;
+
+                     --  A pragma that applies to a Ghost entity becomes Ghost
+                     --  for the purposes of legality checks and removal of
+                     --  ignored Ghost code.
+
+                     Mark_Pragma_As_Ghost (N, Arg_Id);
+
+                     --  Capture the entity of the first Ghost name being
+                     --  processed for error detection purposes.
+
+                     if Is_Ghost_Entity (Arg_Id) then
+                        if No (Ghost_Id) then
+                           Ghost_Id := Arg_Id;
+                        end if;
+
+                     --  Otherwise the name is non-Ghost. It is illegal to mix
+                     --  references to Ghost and non-Ghost entities
+                     --  (SPARK RM 6.9).
+
+                     elsif Present (Ghost_Id)
+                       and then not Ghost_Error_Posted
+                     then
+                        Ghost_Error_Posted := True;
+
+                        Error_Msg_Name_1 := Pname;
+                        Error_Msg_N
+                          ("pragma % cannot mention ghost and non-ghost "
+                           & "names", N);
+
+                        Error_Msg_Sloc := Sloc (Ghost_Id);
+                        Error_Msg_NE
+                          ("\& # declared as ghost", N, Ghost_Id);
+
+                        Error_Msg_Sloc := Sloc (Arg_Id);
+                        Error_Msg_NE
+                          ("\& # declared as non-ghost", N, Arg_Id);
+                     end if;
+                  end if;
+               end if;
+
+               Next (Arg);
+            end loop;
+         end if;
+      end Analyze_Unreferenced_Or_Unused;
 
       --------------------------
       -- Check_Ada_83_Warning --
@@ -22270,6 +22548,30 @@ package body Sem_Prag is
             Set_Is_Unchecked_Union  (Base_Type (Typ));
          end Unchecked_Union;
 
+         ----------------------------
+         -- Unevaluated_Use_Of_Old --
+         ----------------------------
+
+         --  pragma Unevaluated_Use_Of_Old (Error | Warn | Allow);
+
+         when Pragma_Unevaluated_Use_Of_Old =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+            Check_Arg_Is_One_Of (Arg1, Name_Error, Name_Warn, Name_Allow);
+
+            --  Suppress/Unsuppress can appear as a configuration pragma, or in
+            --  a declarative part or a package spec.
+
+            if not Is_Configuration_Pragma then
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+            end if;
+
+            --  Store proper setting of Uneval_Old
+
+            Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
+            Uneval_Old := Fold_Upper (Name_Buffer (1));
+
          ------------------------
          -- Unimplemented_Unit --
          ------------------------
@@ -22281,10 +22583,9 @@ package body Sem_Prag is
          --  body, not in the spec).
 
          when Pragma_Unimplemented_Unit => Unimplemented_Unit : declare
-            Cunitent : constant Entity_Id :=
+            Cunitent : constant Entity_Id   :=
                          Cunit_Entity (Get_Source_Unit (Loc));
-            Ent_Kind : constant Entity_Kind :=
-                         Ekind (Cunitent);
+            Ent_Kind : constant Entity_Kind := Ekind (Cunitent);
 
          begin
             GNAT_Pragma;
@@ -22350,92 +22651,8 @@ package body Sem_Prag is
 
          --  pragma Unmodified (LOCAL_NAME {, LOCAL_NAME});
 
-         when Pragma_Unmodified => Unmodified : declare
-            Arg      : Node_Id;
-            Arg_Expr : Node_Id;
-            Arg_Id   : Entity_Id;
-
-            Ghost_Error_Posted : Boolean := False;
-            --  Flag set when an error concerning the illegal mix of Ghost and
-            --  non-Ghost variables is emitted.
-
-            Ghost_Id : Entity_Id := Empty;
-            --  The entity of the first Ghost variable encountered while
-            --  processing the arguments of the pragma.
-
-         begin
-            GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-
-            --  Loop through arguments
-
-            Arg := Arg1;
-            while Present (Arg) loop
-               Check_No_Identifier (Arg);
-
-               --  Note: the analyze call done by Check_Arg_Is_Local_Name will
-               --  in fact generate reference, so that the entity will have a
-               --  reference, which will inhibit any warnings about it not
-               --  being referenced, and also properly show up in the ali file
-               --  as a reference. But this reference is recorded before the
-               --  Has_Pragma_Unreferenced flag is set, so that no warning is
-               --  generated for this reference.
-
-               Check_Arg_Is_Local_Name (Arg);
-               Arg_Expr := Get_Pragma_Arg (Arg);
-
-               if Is_Entity_Name (Arg_Expr) then
-                  Arg_Id := Entity (Arg_Expr);
-
-                  if Is_Assignable (Arg_Id) then
-                     Set_Has_Pragma_Unmodified (Arg_Id);
-
-                     --  A pragma that applies to a Ghost entity becomes Ghost
-                     --  for the purposes of legality checks and removal of
-                     --  ignored Ghost code.
-
-                     Mark_Pragma_As_Ghost (N, Arg_Id);
-
-                     --  Capture the entity of the first Ghost variable being
-                     --  processed for error detection purposes.
-
-                     if Is_Ghost_Entity (Arg_Id) then
-                        if No (Ghost_Id) then
-                           Ghost_Id := Arg_Id;
-                        end if;
-
-                     --  Otherwise the variable is non-Ghost. It is illegal
-                     --  to mix references to Ghost and non-Ghost entities
-                     --  (SPARK RM 6.9).
-
-                     elsif Present (Ghost_Id)
-                       and then not Ghost_Error_Posted
-                     then
-                        Ghost_Error_Posted := True;
-
-                        Error_Msg_Name_1 := Pname;
-                        Error_Msg_N
-                          ("pragma % cannot mention ghost and non-ghost "
-                           & "variables", N);
-
-                        Error_Msg_Sloc := Sloc (Ghost_Id);
-                        Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-                        Error_Msg_Sloc := Sloc (Arg_Id);
-                        Error_Msg_NE ("\& # declared as non-ghost", N, Arg_Id);
-                     end if;
-
-                  --  Otherwise the pragma referenced an illegal entity
-
-                  else
-                     Error_Pragma_Arg
-                       ("pragma% can only be applied to a variable", Arg_Expr);
-                  end if;
-               end if;
-
-               Next (Arg);
-            end loop;
-         end Unmodified;
+         when Pragma_Unmodified =>
+            Analyze_Unmodified_Or_Unused;
 
          ------------------
          -- Unreferenced --
@@ -22447,133 +22664,8 @@ package body Sem_Prag is
 
          --  pragma Unreferenced (library_unit_NAME {, library_unit_NAME}
 
-         when Pragma_Unreferenced => Unreferenced : declare
-            Arg      : Node_Id;
-            Arg_Expr : Node_Id;
-            Arg_Id   : Entity_Id;
-            Citem    : Node_Id;
-
-            Ghost_Error_Posted : Boolean := False;
-            --  Flag set when an error concerning the illegal mix of Ghost and
-            --  non-Ghost names is emitted.
-
-            Ghost_Id : Entity_Id := Empty;
-            --  The entity of the first Ghost name encountered while processing
-            --  the arguments of the pragma.
-
-         begin
-            GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-
-            --  Check case of appearing within context clause
-
-            if Is_In_Context_Clause then
-
-               --  The arguments must all be units mentioned in a with clause
-               --  in the same context clause. Note we already checked (in
-               --  Par.Prag) that the arguments are either identifiers or
-               --  selected components.
-
-               Arg := Arg1;
-               while Present (Arg) loop
-                  Citem := First (List_Containing (N));
-                  while Citem /= N loop
-                     Arg_Expr := Get_Pragma_Arg (Arg);
-
-                     if Nkind (Citem) = N_With_Clause
-                       and then Same_Name (Name (Citem), Arg_Expr)
-                     then
-                        Set_Has_Pragma_Unreferenced
-                          (Cunit_Entity
-                             (Get_Source_Unit
-                                (Library_Unit (Citem))));
-                        Set_Elab_Unit_Name (Arg_Expr, Name (Citem));
-                        exit;
-                     end if;
-
-                     Next (Citem);
-                  end loop;
-
-                  if Citem = N then
-                     Error_Pragma_Arg
-                       ("argument of pragma% is not withed unit", Arg);
-                  end if;
-
-                  Next (Arg);
-               end loop;
-
-            --  Case of not in list of context items
-
-            else
-               Arg := Arg1;
-               while Present (Arg) loop
-                  Check_No_Identifier (Arg);
-
-                  --  Note: the analyze call done by Check_Arg_Is_Local_Name
-                  --  will in fact generate reference, so that the entity will
-                  --  have a reference, which will inhibit any warnings about
-                  --  it not being referenced, and also properly show up in the
-                  --  ali file as a reference. But this reference is recorded
-                  --  before the Has_Pragma_Unreferenced flag is set, so that
-                  --  no warning is generated for this reference.
-
-                  Check_Arg_Is_Local_Name (Arg);
-                  Arg_Expr := Get_Pragma_Arg (Arg);
-
-                  if Is_Entity_Name (Arg_Expr) then
-                     Arg_Id := Entity (Arg_Expr);
-
-                     --  If the entity is overloaded, the pragma applies to the
-                     --  most recent overloading, as documented. In this case,
-                     --  name resolution does not generate a reference, so it
-                     --  must be done here explicitly.
-
-                     if Is_Overloaded (Arg_Expr) then
-                        Generate_Reference (Arg_Id, N);
-                     end if;
-
-                     Set_Has_Pragma_Unreferenced (Arg_Id);
-
-                     --  A pragma that applies to a Ghost entity becomes Ghost
-                     --  for the purposes of legality checks and removal of
-                     --  ignored Ghost code.
-
-                     Mark_Pragma_As_Ghost (N, Arg_Id);
-
-                     --  Capture the entity of the first Ghost name being
-                     --  processed for error detection purposes.
-
-                     if Is_Ghost_Entity (Arg_Id) then
-                        if No (Ghost_Id) then
-                           Ghost_Id := Arg_Id;
-                        end if;
-
-                     --  Otherwise the name is non-Ghost. It is illegal to mix
-                     --  references to Ghost and non-Ghost entities
-                     --  (SPARK RM 6.9).
-
-                     elsif Present (Ghost_Id)
-                       and then not Ghost_Error_Posted
-                     then
-                        Ghost_Error_Posted := True;
-
-                        Error_Msg_Name_1 := Pname;
-                        Error_Msg_N
-                          ("pragma % cannot mention ghost and non-ghost names",
-                           N);
-
-                        Error_Msg_Sloc := Sloc (Ghost_Id);
-                        Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-                        Error_Msg_Sloc := Sloc (Arg_Id);
-                        Error_Msg_NE ("\& # declared as non-ghost", N, Arg_Id);
-                     end if;
-                  end if;
-
-                  Next (Arg);
-               end loop;
-            end if;
-         end Unreferenced;
+         when Pragma_Unreferenced =>
+            Analyze_Unreferenced_Or_Unused;
 
          --------------------------
          -- Unreferenced_Objects --
@@ -22681,29 +22773,15 @@ package body Sem_Prag is
             Ada_2005_Pragma;
             Process_Suppress_Unsuppress (Suppress_Case => False);
 
-         ----------------------------
-         -- Unevaluated_Use_Of_Old --
-         ----------------------------
+         ------------
+         -- Unused --
+         ------------
 
-         --  pragma Unevaluated_Use_Of_Old (Error | Warn | Allow);
+         --  pragma Unused (LOCAL_NAME {, LOCAL_NAME});
 
-         when Pragma_Unevaluated_Use_Of_Old =>
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_Error, Name_Warn, Name_Allow);
-
-            --  Suppress/Unsuppress can appear as a configuration pragma, or in
-            --  a declarative part or a package spec.
-
-            if not Is_Configuration_Pragma then
-               Check_Is_In_Decl_Part_Or_Package_Spec;
-            end if;
-
-            --  Store proper setting of Uneval_Old
-
-            Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
-            Uneval_Old := Fold_Upper (Name_Buffer (1));
+         when Pragma_Unused =>
+            Analyze_Unmodified_Or_Unused   (Is_Unused => True);
+            Analyze_Unreferenced_Or_Unused (Is_Unused => True);
 
          -------------------
          -- Use_VADS_Size --
@@ -26386,8 +26464,8 @@ package body Sem_Prag is
                then
                   Error_Msg_N
                     ("cannot modify inherited condition (SPARK RM 6.1.1(1))",
-                      Parent (Subp));
-                  Error_Msg_Sloc := Sloc (New_E);
+                     Parent (Subp));
+                  Error_Msg_Sloc   := Sloc (New_E);
                   Error_Msg_Node_2 := Subp;
                   Error_Msg_NE
                     ("\overriding of&# forces overriding of&",
@@ -28378,6 +28456,7 @@ package body Sem_Prag is
       Pragma_Type_Invariant                 => -1,
       Pragma_Type_Invariant_Class           => -1,
       Pragma_Unchecked_Union                =>  0,
+      Pragma_Unevaluated_Use_Of_Old         =>  0,
       Pragma_Unimplemented_Unit             =>  0,
       Pragma_Universal_Aliasing             =>  0,
       Pragma_Universal_Data                 =>  0,
@@ -28386,7 +28465,7 @@ package body Sem_Prag is
       Pragma_Unreferenced_Objects           =>  0,
       Pragma_Unreserve_All_Interrupts       =>  0,
       Pragma_Unsuppress                     =>  0,
-      Pragma_Unevaluated_Use_Of_Old         =>  0,
+      Pragma_Unused                         =>  0,
       Pragma_Use_VADS_Size                  =>  0,
       Pragma_Validity_Checks                =>  0,
       Pragma_Volatile                       =>  0,
