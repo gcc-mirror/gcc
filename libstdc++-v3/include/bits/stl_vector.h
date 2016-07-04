@@ -995,7 +995,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       template<typename... _Args>
 	iterator
-	emplace(const_iterator __position, _Args&&... __args);
+	emplace(const_iterator __position, _Args&&... __args)
+	{ return _M_emplace_aux(__position, std::forward<_Args>(__args)...); }
 
       /**
        *  @brief  Inserts given value into %vector before specified iterator.
@@ -1040,7 +1041,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       iterator
       insert(const_iterator __position, value_type&& __x)
-      { return emplace(__position, std::move(__x)); }
+      { return _M_insert_rval(__position, std::move(__x)); }
 
       /**
        *  @brief  Inserts an initializer_list into the %vector.
@@ -1431,30 +1432,65 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_shrink_to_fit();
 #endif
 
-      // Called by insert(p,x)
 #if __cplusplus < 201103L
+      // Called by insert(p,x)
       void
       _M_insert_aux(iterator __position, const value_type& __x);
 #else
-      template<typename... _Args>
-	static void
-	_S_insert_aux_assign(iterator __pos, _Args&&... __args)
-	{ *__pos =  _Tp(std::forward<_Args>(__args)...); }
+      // A value_type object constructed with _Alloc_traits::construct()
+      // and destroyed with _Alloc_traits::destroy().
+      struct _Temporary_value
+      {
+	template<typename... _Args>
+	  explicit
+	  _Temporary_value(vector* __vec, _Args&&... __args) : _M_this(__vec)
+	  {
+	    _Alloc_traits::construct(_M_this->_M_impl, _M_ptr(),
+				     std::forward<_Args>(__args)...);
+	  }
 
-      static void
-      _S_insert_aux_assign(iterator __pos, _Tp&& __arg)
-      { *__pos = std::move(__arg); }
+	~_Temporary_value()
+	{ _Alloc_traits::destroy(_M_this->_M_impl, _M_ptr()); }
 
-      template<typename... _Args>
+	value_type&
+	_M_val() { return *reinterpret_cast<_Tp*>(&__buf); }
+
+      private:
+	pointer
+	_M_ptr() { return pointer_traits<pointer>::pointer_to(_M_val()); }
+
+	vector* _M_this;
+	typename aligned_storage<sizeof(_Tp), alignof(_Tp)>::type __buf;
+      };
+
+      // Called by insert(p,x) and other functions when insertion needs to
+      // reallocate or move existing elements. _Arg is either _Tp& or _Tp.
+      template<typename _Arg>
 	void
-	_M_insert_aux(iterator __position, _Args&&... __args);
+	_M_insert_aux(iterator __position, _Arg&& __arg);
 
+      // Either move-construct at the end, or forward to _M_insert_aux.
+      iterator
+      _M_insert_rval(const_iterator __position, value_type&& __v);
+
+      // Called by push_back(x) and emplace_back(args) when they need to
+      // reallocate.
       template<typename... _Args>
 	void
 	_M_emplace_back_aux(_Args&&... __args);
+
+      // Try to emplace at the end, otherwise forward to _M_insert_aux.
+      template<typename... _Args>
+	iterator
+	_M_emplace_aux(const_iterator __position, _Args&&... __args);
+
+      // Emplacing an rvalue of the correct type can use _M_insert_rval.
+      iterator
+      _M_emplace_aux(const_iterator __position, value_type&& __v)
+      { return _M_insert_rval(__position, std::move(__v)); }
 #endif
 
-      // Called by the latter.
+      // Called by _M_fill_insert, _M_insert_aux etc.
       size_type
       _M_check_len(size_type __n, const char* __s) const
       {

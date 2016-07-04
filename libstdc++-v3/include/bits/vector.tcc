@@ -124,8 +124,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  const auto __pos = begin() + (__position - cbegin());
 	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	    {
-	      _Tp __x_copy = __x;
-	      _M_insert_aux(__pos, std::move(__x_copy));
+	      // __x could be an existing element of this vector, so make a
+	      // copy of it before _M_insert_aux moves elements around.
+	      _Temporary_value __x_copy(this, __x);
+	      _M_insert_aux(__pos, std::move(__x_copy._M_val()));
 	    }
 	  else
 	    _M_insert_aux(__pos, __x);
@@ -297,30 +299,49 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
+    auto
+    vector<_Tp, _Alloc>::
+    _M_insert_rval(const_iterator __position, value_type&& __v) -> iterator
+    {
+      const auto __n = __position - cbegin();
+      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
+	  && __position == cend())
+	{
+	  _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
+				   std::move(__v));
+	  ++this->_M_impl._M_finish;
+	}
+      else
+	_M_insert_aux(begin() + __n, std::move(__v));
+      return iterator(this->_M_impl._M_start + __n);
+    }
+
+  template<typename _Tp, typename _Alloc>
     template<typename... _Args>
-      typename vector<_Tp, _Alloc>::iterator
+      auto
       vector<_Tp, _Alloc>::
-      emplace(const_iterator __position, _Args&&... __args)
+      _M_emplace_aux(const_iterator __position, _Args&&... __args)
+      -> iterator
       {
-	const size_type __n = __position - begin();
-	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
-	    && __position == end())
-	  {
-	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
-				     std::forward<_Args>(__args)...);
-	    ++this->_M_impl._M_finish;
-	  }
+	const auto __n = __position - cbegin();
+	if (__position == cend())
+	  emplace_back(std::forward<_Args>(__args)...);
 	else
-	  _M_insert_aux(begin() + (__position - cbegin()),
-			std::forward<_Args>(__args)...);
+	  {
+	    // We need to construct a temporary because something in __args...
+	    // could alias one of the elements of the container and so we
+	    // need to use it before _M_insert_aux moves elements around.
+	    _Temporary_value __tmp(this, std::forward<_Args>(__args)...);
+	    _M_insert_aux(begin() + __n, std::move(__tmp._M_val()));
+	  }
 	return iterator(this->_M_impl._M_start + __n);
       }
 
   template<typename _Tp, typename _Alloc>
-    template<typename... _Args>
+    template<typename _Arg>
       void
       vector<_Tp, _Alloc>::
-      _M_insert_aux(iterator __position, _Args&&... __args)
+      _M_insert_aux(iterator __position, _Arg&& __arg)
 #else
   template<typename _Tp, typename _Alloc>
     void
@@ -343,7 +364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus < 201103L
 	  *__position = __x_copy;
 #else
-	  _S_insert_aux_assign(__position, std::forward<_Args>(__args)...);
+	  *__position = std::forward<_Arg>(__arg);
 #endif
 	}
       else
@@ -355,14 +376,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  pointer __new_finish(__new_start);
 	  __try
 	    {
-	      // The order of the three operations is dictated by the C++0x
+	      // The order of the three operations is dictated by the C++11
 	      // case, where the moves could alter a new element belonging
 	      // to the existing vector.  This is an issue only for callers
-	      // taking the element by const lvalue ref (see 23.1/13).
+	      // taking the element by lvalue ref (see last bullet of C++11
+	      // [res.on.arguments]).
 	      _Alloc_traits::construct(this->_M_impl,
 		                       __new_start + __elems_before,
 #if __cplusplus >= 201103L
-				       std::forward<_Args>(__args)...);
+				       std::forward<_Arg>(__arg));
 #else
 	                               __x);
 #endif
@@ -455,7 +477,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if (size_type(this->_M_impl._M_end_of_storage
 			- this->_M_impl._M_finish) >= __n)
 	    {
+#if __cplusplus < 201103L
 	      value_type __x_copy = __x;
+#else
+	      _Temporary_value __tmp(this, __x);
+	      value_type& __x_copy = __tmp._M_val();
+#endif
 	      const size_type __elems_after = end() - __position;
 	      pointer __old_finish(this->_M_impl._M_finish);
 	      if (__elems_after > __n)
