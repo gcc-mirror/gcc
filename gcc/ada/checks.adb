@@ -3243,9 +3243,7 @@ package body Checks is
             --  on, then we want to delete the check, since it is not needed.
             --  We do this by replacing the if statement by a null statement
 
-            --  Why are we even generating checks if checks are turned off ???
-
-            elsif Do_Static or else not Checks_On then
+            elsif Do_Static then
                Remove_Warning_Messages (R_Cno);
                Rewrite (R_Cno, Make_Null_Statement (Loc));
             end if;
@@ -9650,8 +9648,8 @@ package body Checks is
 
             LB         : Node_Id := Low_Bound (Ck_Node);
             HB         : Node_Id := High_Bound (Ck_Node);
-            Known_LB   : Boolean;
-            Known_HB   : Boolean;
+            Known_LB   : Boolean := False;
+            Known_HB   : Boolean := False;
 
             Null_Range     : Boolean;
             Out_Of_Range_L : Boolean;
@@ -9673,9 +9671,6 @@ package body Checks is
                then
                   LB := T_LB;
                   Known_LB := True;
-
-               else
-                  Known_LB := False;
                end if;
 
                --  Likewise for the high bound
@@ -9688,8 +9683,6 @@ package body Checks is
                then
                   HB := T_HB;
                   Known_HB := True;
-               else
-                  Known_HB := False;
                end if;
             end if;
 

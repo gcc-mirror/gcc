@@ -12855,8 +12855,7 @@ package body Sem_Ch12 is
       --  or in the declaration of the main unit, which in this last case must
       --  be a body.
 
-      return Unum = Main_Unit
-        or else Current_Unit = Cunit (Main_Unit)
+      return Current_Unit = Cunit (Main_Unit)
         or else Current_Unit = Library_Unit (Cunit (Main_Unit))
         or else (Present (Library_Unit (Current_Unit))
                   and then Is_In_Main_Unit (Library_Unit (Current_Unit)));
@@ -14575,7 +14574,10 @@ package body Sem_Ch12 is
             end if;
 
          elsif D in List_Range then
-            if D = Union_Id (No_List) or else Is_Empty_List (List_Id (D)) then
+            pragma Assert (D /= Union_Id (No_List));
+            --  Because No_List = Empty, which is in Node_Range above
+
+            if Is_Empty_List (List_Id (D)) then
                null;
 
             else

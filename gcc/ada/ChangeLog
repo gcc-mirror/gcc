@@ -1,3 +1,53 @@
+2016-07-04  Bob Duff  <duff@adacore.com>
+
+	* sem_eval.adb (Decompose_Expr): Set 'out' parameters
+	Kind and Cons to valid values, to avoid use of uninit vars.
+	(Extract_Length): Reorder the check to make it clearer that
+	we're depending on BOTH Ent1 and Ent2 to be Present.
+	* sem_aggr.adb (Resolve_Aggregate): Remove dead code.
+	(Check_Misspelled_Component): Remove exit statement, because
+	it's covered by the 'while' condition.
+	* checks.adb (Apply_Selected_Range_Checks): Remove useless
+	condition "or else not Checks_On".
+	(Selected_Range_Checks):
+	Initialize Known_LB and Known_HB to False, because they are
+	tested unconditionally; avoid use of uninit vars.
+	* frontend.adb (Frontend): Removed useless condition
+	"Operating_Mode = Check_Semantics and then", and added an Assert
+	to clarify why it was useless.
+	* prep.adb (Preprocess): Remove redundant condition. Add an
+	assertion.
+	* sem_ch10.adb (Analyze_Proper_Body): Moved redundant condition
+	"Original_Operating_Mode = Generate_Code" to an Assert.
+	(Process_Spec_Clauses, Process_Body_Clauses): Change parameters
+	from 'in out' to 'out', and don't initialize actuals.
+	* sem_ch12.adb (Is_In_Main_Unit): Removed useless condition
+	"Unum = Main_Unit or else".
+	(Save_Global_Descendant): Moved
+	redundant condition "D = Union_Id (No_List)" to an Assert.
+	* sem_ch4.adb (Check_Misspelled_Selector): Remove exit
+	statement, because it's covered by the 'while' condition.
+	(Analyze_Case_Expression): Initialize Wrong_Alt to Empty,
+	because it looks like it is used uninitialized otherwise.
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Moved redundant
+	condition "not R_Type_Is_Anon_Access" to an Assert.
+	* sem_elim.adb (Line_Num_Match): Moved redundant condition
+	"Sloc_Trace (Idx) = '['" to an Assert.
+	* sem_util.adb (Compile_Time_Constraint_Error): Change "J" to
+	"J - 1". This code is trying to replace "?" with "<", but not if
+	the "?" is quoted, as in "'?", so we want to check the PREVIOUS
+	character for '''.
+	* snames.adb-tmpl (Is_Pragma_Name): Remove useless condition
+	"or else N = Name_Relative_Deadline". It's useless because
+	Name_Relative_Deadline is in the range First_Pragma_Name
+	.. Last_Pragma_Name.
+	* treepr.adb (Visit_Node): Moved redundant condition "D =
+	Union_Id (No_List)" to an Assert.
+	* sem_ch3.adb (Derive_Subprogram, Derive_Subprograms): Change
+	parameters from 'in out' to 'out'.
+	* errout.adb (Error_Msg_Internal): Replace redundant test with Assert.
+	* inline.adb (Add_Inlined_Body): Code cleanup.
+
 2016-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* g-sercom-mingw.adb, sem_ch6.adb: Minor reformatting.

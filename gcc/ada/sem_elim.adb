@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -599,9 +599,8 @@ package body Sem_Elim is
                               Idx := Idx + 1;
                            end loop;
 
-                           if Idx <= Last and then
-                             Sloc_Trace (Idx) = '['
-                           then
+                           if Idx <= Last then
+                              pragma Assert (Sloc_Trace (Idx) = '[');
                               Idx := Idx + 1;
                               Idx := Skip_Spaces;
                            else

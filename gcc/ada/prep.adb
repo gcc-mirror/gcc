@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1562,14 +1562,12 @@ package body Prep is
          --  so we have to deduct Start_Of_Processing from the token pointer.
 
          if Token = Tok_End_Of_Line then
-            if (Sinput.Source (Token_Ptr) = ASCII.CR
-                  and then Sinput.Source (Token_Ptr + 1) = ASCII.LF)
-              or else
-               (Sinput.Source (Token_Ptr) = ASCII.CR
-                  and then Sinput.Source (Token_Ptr + 1) = ASCII.LF)
+            if Sinput.Source (Token_Ptr) = ASCII.CR
+              and then Sinput.Source (Token_Ptr + 1) = ASCII.LF
             then
                Start_Of_Processing := Token_Ptr + 2;
             else
+               pragma Assert (Sinput.Source (Token_Ptr) = ASCII.LF);
                Start_Of_Processing := Token_Ptr + 1;
             end if;
          end if;

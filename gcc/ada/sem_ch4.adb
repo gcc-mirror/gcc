@@ -1490,7 +1490,7 @@ package body Sem_Ch4 is
       Others_Present : Boolean;
       --  Indicates if Others was present
 
-      Wrong_Alt : Node_Id;
+      Wrong_Alt : Node_Id := Empty;
       --  For error reporting
 
    --  Start of processing for Analyze_Case_Expression
@@ -5696,7 +5696,7 @@ package body Sem_Ch4 is
                case Nr_Of_Suggestions is
                   when 1      => Suggestion_1 := Comp;
                   when 2      => Suggestion_2 := Comp;
-                  when others => exit;
+                  when others => null;
                end case;
             end if;
          end if;
