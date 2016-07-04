@@ -1,3 +1,20 @@
+2016-07-04  Matthew Wahab  <matthew.wahab@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Add "armv8.2-a".
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_2): New.
+	(AARCH64_FL_F16): New.
+	(AARCH64_FL_FOR_ARCH8_2): New.
+	(AARCH64_ISA_8_2): New.
+	(AARCH64_ISA_F16): New.
+	(TARGET_FP_F16INST): New.
+	(TARGET_SIMD_F16INST): New.
+	* config/aarch64/aarch64-option-extensions.def ("fp16"): New entry.
+	("fp"): Disabling "fp" also disables "fp16".
+	* config/aarch64/aarch64-c.c (arch64_update_cpp_builtins): Conditionally define
+	__ARM_FEATURE_FP16_SCALAR_ARITHMETIC and __ARM_FEATURE_FP16_VECTOR_ARITHMETIC.
+	* doc/invoke.texi (AArch64 Options): Document "armv8.2-a" and "fp16".
+
 2016-07-04  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.c (default_compilers["@c-header"]): Conditionalize "-o".
