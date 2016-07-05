@@ -3309,6 +3309,91 @@ scev_reset (void)
     }
 }
 
+/* Return true if the IV calculation in TYPE can overflow based on the knowledge
+   of the upper bound on the number of iterations of LOOP, the BASE and STEP
+   of IV.
+
+   We do not use information whether TYPE can overflow so it is safe to
+   use this test even for derived IVs not computed every iteration or
+   hypotetical IVs to be inserted into code.  */
+
+static bool
+iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
+{
+  widest_int nit;
+  wide_int base_min, base_max, step_min, step_max, type_min, type_max;
+  signop sgn = TYPE_SIGN (type);
+
+  if (integer_zerop (step))
+    return false;
+
+  if (TREE_CODE (base) == INTEGER_CST)
+    base_min = base_max = base;
+  else if (TREE_CODE (base) == SSA_NAME
+	   && INTEGRAL_TYPE_P (TREE_TYPE (base))
+	   && get_range_info (base, &base_min, &base_max) == VR_RANGE)
+    ;
+  else
+    return true;
+
+  if (TREE_CODE (step) == INTEGER_CST)
+    step_min = step_max = step;
+  else if (TREE_CODE (step) == SSA_NAME
+	   && INTEGRAL_TYPE_P (TREE_TYPE (step))
+	   && get_range_info (step, &step_min, &step_max) == VR_RANGE)
+    ;
+  else
+    return true;
+
+  if (!get_max_loop_iterations (loop, &nit))
+    return true;
+
+  type_min = wi::min_value (type);
+  type_max = wi::max_value (type);
+
+  /* Just sanity check that we don't see values out of the range of the type.
+     In this case the arithmetics bellow would overflow.  */
+  gcc_checking_assert (wi::ge_p (base_min, type_min, sgn)
+		       && wi::le_p (base_max, type_max, sgn));
+
+  /* Account the possible increment in the last ieration.  */
+  bool overflow = false;
+  nit = wi::add (nit, 1, SIGNED, &overflow);
+  if (overflow)
+    return true;
+
+  /* NIT is typeless and can exceed the precision of the type.  In this case
+     overflow is always possible, because we know STEP is non-zero.  */
+  if (wi::min_precision (nit, UNSIGNED) > TYPE_PRECISION (type))
+    return true;
+  wide_int nit2 = wide_int::from (nit, TYPE_PRECISION (type), UNSIGNED);
+
+  /* If step can be positive, check that nit*step <= type_max-base.
+     This can be done by unsigned arithmetic and we only need to watch overflow
+     in the multiplication. The right hand side can always be represented in
+     the type.  */
+  if (sgn == UNSIGNED || !wi::neg_p (step_max))
+    {
+      bool overflow = false;
+      if (wi::gtu_p (wi::mul (step_max, nit2, UNSIGNED, &overflow),
+		     type_max - base_max)
+	  || overflow)
+	return true;
+    }
+  /* If step can be negative, check that nit*(-step) <= base_min-type_min.  */
+  if (sgn == SIGNED && wi::neg_p (step_min))
+    {
+      bool overflow = false, overflow2 = false;
+      if (wi::gtu_p (wi::mul (wi::neg (step_min, &overflow2),
+		     nit2, UNSIGNED, &overflow),
+		     base_min - type_min)
+	  || overflow || overflow2)
+        return true;
+    }
+
+  return false;
+}
+
 /* Checks whether use of OP in USE_LOOP behaves as a simple affine iv with
    respect to WRTO_LOOP and returns its base and step in IV if possible
    (see analyze_scalar_evolution_in_loop for more details on USE_LOOP
@@ -3376,6 +3461,10 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
     return false;
 
   iv->no_overflow = !folded_casts && nowrap_type_p (type);
+
+  if (!iv->no_overflow
+      && !iv_can_overflow_p (wrto_loop, type, iv->base, iv->step))
+    iv->no_overflow = true;
 
   /* Try to simplify iv base:
 

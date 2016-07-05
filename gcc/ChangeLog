@@ -1,5 +1,10 @@
 2016-07-05  Jan Hubicka  <jh@suse.cz>
 
+	* tree-scalar-evolution.c (iv_can_overflow_p): New function.
+	(simple_iv): Use it.
+
+2016-07-05  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-loop-niter.c (nowrap_type_p): Use ANY_INTEGRAL_TYPE_P.
 
 2016-07-05  Jiong Wang  <jiong.wang@arm.com>
