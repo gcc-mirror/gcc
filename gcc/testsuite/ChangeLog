@@ -1,3 +1,7 @@
+2016-07-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/scev-14.c: new testcase.
+
 2016-07-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62314
