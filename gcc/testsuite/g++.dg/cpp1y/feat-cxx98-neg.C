@@ -42,8 +42,8 @@
 #  error "__cpp_attributes" // { dg-error "error" }
 #endif
 
-#ifndef __cpp_rvalue_reference
-#  error "__cpp_rvalue_reference" // { dg-error "error" }
+#ifndef __cpp_rvalue_references
+#  error "__cpp_rvalue_references" // { dg-error "error" }
 #endif
 
 #ifndef __cpp_variadic_templates
