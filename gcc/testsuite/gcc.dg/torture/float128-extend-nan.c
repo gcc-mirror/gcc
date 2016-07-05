@@ -1,7 +1,10 @@
 /* Test extensions to __float128 quiet signaling NaNs.  */
-/* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-fsignaling-nans" } */
+/* { dg-require-effective-target __float128 } */
+/* { dg-require-effective-target base_quadfloat_support } */
 /* { dg-require-effective-target fenv_exceptions } */
+/* { dg-add-options __float128 } */
 
 #include <fenv.h>
 #include <float.h>
