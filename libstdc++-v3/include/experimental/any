@@ -158,11 +158,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Construct with a copy of @p __value as the contained object.
     template <typename _ValueType, typename _Tp = _Decay<_ValueType>,
-	      typename _Mgr = _Manager<_Tp>>
+	      typename _Mgr = _Manager<_Tp>,
+              typename enable_if<is_constructible<_Tp, _ValueType&&>::value,
+                                 bool>::type = true>
       any(_ValueType&& __value)
       : _M_manager(&_Mgr::_S_manage)
       {
         _Mgr::_S_create(_M_storage, std::forward<_ValueType>(__value));
+	static_assert(is_copy_constructible<_Tp>::value,
+		      "The contained object must be CopyConstructible");
+      }
+
+    /// Construct with a copy of @p __value as the contained object.
+    template <typename _ValueType, typename _Tp = _Decay<_ValueType>,
+	      typename _Mgr = _Manager<_Tp>,
+              typename enable_if<!is_constructible<_Tp, _ValueType&&>::value,
+                                 bool>::type = false>
+      any(_ValueType&& __value)
+      : _M_manager(&_Mgr::_S_manage)
+      {
+        _Mgr::_S_create(_M_storage, __value);
 	static_assert(is_copy_constructible<_Tp>::value,
 		      "The contained object must be CopyConstructible");
       }
@@ -377,7 +392,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __throw_bad_any_cast();
     }
 
-  template<typename _ValueType>
+  template<typename _ValueType,
+           typename enable_if<!is_move_constructible<_ValueType>::value
+                              || is_lvalue_reference<_ValueType>::value,
+                              bool>::type = true>
     inline _ValueType any_cast(any&& __any)
     {
       static_assert(any::__is_valid_cast<_ValueType>(),
@@ -385,6 +403,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
       if (__p)
 	return *__p;
+      __throw_bad_any_cast();
+    }
+
+  template<typename _ValueType,
+           typename enable_if<is_move_constructible<_ValueType>::value
+                              && !is_lvalue_reference<_ValueType>::value,
+                              bool>::type = false>
+    inline _ValueType any_cast(any&& __any)
+    {
+      static_assert(any::__is_valid_cast<_ValueType>(),
+	  "Template argument must be a reference or CopyConstructible type");
+      auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
+      if (__p)
+	return std::move(*__p);
       __throw_bad_any_cast();
     }
   // @}

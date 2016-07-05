@@ -1,3 +1,14 @@
+2016-07-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2509,
+	any_cast doesn't work with rvalue reference targets and cannot
+	move with a value target.
+	* include/experimental/any (any(_ValueType&&)): Constrain and
+	add an overload that doesn't forward.
+	(any_cast(any&&)): Constrain and add an overload that moves.
+	* testsuite/experimental/any/misc/any_cast.cc: Add tests for
+	the functionality added by LWG 2509.
+
 2016-07-04  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/vector/modifiers/emplace/self_emplace.cc:
