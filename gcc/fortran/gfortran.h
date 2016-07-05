@@ -1814,6 +1814,7 @@ typedef struct gfc_array_ref
   int dimen;			/* # of components in the reference */
   int codimen;
   bool in_allocate;		/* For coarray checks. */
+  gfc_expr *stat;
   locus where;
   gfc_array_spec *as;
 
@@ -3065,7 +3066,7 @@ bool gfc_is_coarray (gfc_expr *);
 int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
-
+gfc_expr* gfc_find_stat_co (gfc_expr *);
 gfc_expr* gfc_build_intrinsic_call (gfc_namespace *, gfc_isym_id, const char*,
 				    locus, unsigned, ...);
 bool gfc_check_vardef_context (gfc_expr*, bool, bool, bool, const char*);

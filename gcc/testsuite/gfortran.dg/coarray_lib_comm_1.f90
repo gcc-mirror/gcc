@@ -38,9 +38,8 @@ B(1:5) = B(3:7)
 if (any (A-B /= 0)) call abort
 end
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 0\\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 1\\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &p, 4, 4, 1\\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.1, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) b, 1, &parm.\[0-9\]+, 0B, &p, 4, 4, 0\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 0, 0B\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 1, 0B\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &p, 4, 4, 1, 0B\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.1, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) b, 1, &parm.\[0-9\]+, 0B, &p, 4, 4, 0, 0B\\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_sendget \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, 4, 4, 0\\\);" 1 "original" } }
-
