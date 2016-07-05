@@ -1,5 +1,12 @@
 2016-07-05  Richard Biener  <rguenther@suse.de>
 
+	* gimple-ssa-split-paths.c (find_block_to_duplicate_for_splitting_pa):
+	Handle empty else block.
+	(is_feasible_trace): Likewise.
+	(split_paths): Likewise.
+
+2016-07-05  Richard Biener  <rguenther@suse.de>
+
 	* tree-loop-distribution.c (distribute_loop): Fix issue with
 	the cost model loop.
 
