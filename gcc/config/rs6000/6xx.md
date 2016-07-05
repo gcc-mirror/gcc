@@ -160,7 +160,7 @@
   "fpu_6xx")
 
 (define_insn_reservation "ppc604-fp" 3
-  (and (eq_attr "type" "fp")
+  (and (eq_attr "type" "fp,fpsimple")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620"))
   "fpu_6xx")
 

@@ -685,7 +685,7 @@
     }
 }
   [(set_attr "length" "0,4")
-   (set_attr "type" "vecsimple")])
+   (set_attr "type" "veclogical")])
 
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>")
@@ -1492,7 +1492,7 @@
 	 (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxsel %x0,%x3,%x2,%x1"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecmove")])
 
 (define_insn "*vsx_xxsel<mode>_uns"
   [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?<VSa>")
@@ -1503,7 +1503,7 @@
 	 (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,<VSa>")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxsel %x0,%x3,%x2,%x1"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecmove")])
 
 ;; Copy sign
 (define_insn "vsx_copysign<mode>3"
@@ -2129,7 +2129,7 @@
 
   return "xxlor %x0,%x1,%x1";
 }
-  [(set_attr "type" "fp,vecsimple,mftgpr,mftgpr")
+  [(set_attr "type" "fpsimple,veclogical,mftgpr,mftgpr")
    (set_attr "length" "4")])
 
 (define_insn "*vsx_extract_<mode>_internal2"
@@ -2164,7 +2164,7 @@
   operands[3] = GEN_INT (fldDM);
   return "xxpermdi %x0,%x1,%x1,%3";
 }
-  [(set_attr "type" "fp,vecsimple,vecperm")
+  [(set_attr "type" "fpsimple,veclogical,vecperm")
    (set_attr "length" "4")])
 
 ;; Optimize extracting a single scalar element from memory if the scalar is in
@@ -2711,7 +2711,7 @@
 	 UNSPEC_VSX_SIGN_EXTEND))]
   "TARGET_P9_VECTOR"
   "vextsb2<wd> %0,%1"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecexts")])
 
 (define_insn "*vsx_sign_extend_hi_<mode>"
   [(set (match_operand:VSINT_84 0 "vsx_register_operand" "=v")
@@ -2720,7 +2720,7 @@
 	 UNSPEC_VSX_SIGN_EXTEND))]
   "TARGET_P9_VECTOR"
   "vextsh2<wd> %0,%1"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecexts")])
 
 (define_insn "*vsx_sign_extend_si_v2di"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v")
@@ -2728,4 +2728,4 @@
 		     UNSPEC_VSX_SIGN_EXTEND))]
   "TARGET_P9_VECTOR"
   "vextsw2d %0,%1"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecexts")])
