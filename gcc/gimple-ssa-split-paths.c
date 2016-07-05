@@ -76,14 +76,19 @@ find_block_to_duplicate_for_splitting_paths (basic_block latch)
 	    return NULL;
 
 	  /* And that BB's immediate dominator's successors are the
-	     predecessors of BB.  */
-	  if (!find_edge (bb_idom, EDGE_PRED (bb, 0)->src)
-	      || !find_edge (bb_idom, EDGE_PRED (bb, 1)->src))
+	     predecessors of BB or BB itself.  */
+	  if (!(EDGE_PRED (bb, 0)->src == bb_idom
+		|| find_edge (bb_idom, EDGE_PRED (bb, 0)->src))
+	      || !(EDGE_PRED (bb, 1)->src == bb_idom
+		   || find_edge (bb_idom, EDGE_PRED (bb, 1)->src)))
 	    return NULL;
 
-	  /* And that the predecessors of BB each have a single successor.  */
-	  if (!single_succ_p (EDGE_PRED (bb, 0)->src)
-	      || !single_succ_p (EDGE_PRED (bb, 1)->src))
+	  /* And that the predecessors of BB each have a single successor
+	     or are BB's immediate domiator itself.  */
+	  if (!(EDGE_PRED (bb, 0)->src == bb_idom
+		|| single_succ_p (EDGE_PRED (bb, 0)->src))
+	      || !(EDGE_PRED (bb, 1)->src == bb_idom
+		   || single_succ_p (EDGE_PRED (bb, 1)->src)))
 	    return NULL;
 
 	  /* So at this point we have a simple diamond for an IF-THEN-ELSE
@@ -148,8 +153,10 @@ is_feasible_trace (basic_block bb)
   basic_block pred1 = EDGE_PRED (bb, 0)->src;
   basic_block pred2 = EDGE_PRED (bb, 1)->src;
   int num_stmts_in_join = count_stmts_in_block (bb);
-  int num_stmts_in_pred1 = count_stmts_in_block (pred1);
-  int num_stmts_in_pred2 = count_stmts_in_block (pred2);
+  int num_stmts_in_pred1
+    = EDGE_COUNT (pred1->succs) == 1 ? count_stmts_in_block (pred1) : 0;
+  int num_stmts_in_pred2
+    = EDGE_COUNT (pred2->succs) == 1 ? count_stmts_in_block (pred2) : 0;
 
   /* This is meant to catch cases that are likely opportunities for
      if-conversion.  Essentially we look for the case where
@@ -292,6 +299,8 @@ split_paths ()
 		     "Duplicating join block %d into predecessor paths\n",
 		     bb->index);
 	  basic_block pred0 = EDGE_PRED (bb, 0)->src;
+	  if (EDGE_COUNT (pred0->succs) != 1)
+	    pred0 = EDGE_PRED (bb, 1)->src;
 	  transform_duplicate (pred0, bb);
 	  changed = true;
 
