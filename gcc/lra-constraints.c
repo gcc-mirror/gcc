@@ -2488,7 +2488,9 @@ process_alt_operands (int only_alternative)
 
 		 Code below increases the reject for both pseudo and non-pseudo
 		 spill.  */
-	      if (no_regs_p && !(REG_P (op) && hard_regno[nop] < 0))
+	      if (no_regs_p
+		  && !(MEM_P (op) && offmemok)
+		  && !(REG_P (op) && hard_regno[nop] < 0))
 		{
 		  if (lra_dump_file != NULL)
 		    fprintf
