@@ -1,3 +1,11 @@
+2016-07-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62314
+	* parser.c (cp_parser_class_specifier_1): When reporting
+	missing semicolons, use a fixit-hint to suggest insertion
+	of a semicolon immediately after the closing brace,
+	offsetting the reported column accordingly.
+
 2016-07-04  Jan Beulich  <jbeulich@suse.com>
 
 	* lang-specs.h ("@c++-header"): Conditionalize "-o".

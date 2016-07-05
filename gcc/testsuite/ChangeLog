@@ -1,3 +1,10 @@
+2016-07-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62314
+	* gcc/testsuite/g++.dg/parse/error5.C: Update column
+	number of missing semicolon error.
+	* g++.dg/pr62314-2.C: New test case.
+
 2016-07-05  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* gfortran.dg/coarray_stat_function.f90: New test.
