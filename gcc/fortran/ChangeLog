@@ -1,3 +1,9 @@
+2016-07-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/71623
+	* trans-stmt.c (gfc_trans_allocate): Add code of pre block of typespec
+	in allocate to parent block.
+
 2016-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/66575

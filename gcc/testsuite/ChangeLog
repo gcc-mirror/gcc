@@ -1,3 +1,8 @@
+2016-07-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/71623
+	* gfortran.dg/deferred_character_17.f90: New test.
+
 2016-07-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/neon/polytypes.c: Move to ...
