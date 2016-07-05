@@ -1,3 +1,18 @@
+2016-07-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_split_signbit): New
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_split_signbit): New function.
+	* config/rs6000/rs6000.md (UNSPEC_SIGNBIT): New constant.
+	(SIGNBIT): New mode iterator.
+	(Fsignbit): New mode attribute.
+	(signbit<mode>2): Change operand1 to match FLOAT128 instead of
+	IBM128; dispatch to gen_signbit{kf,tf}2_dm for __float128
+	when direct moves are available.
+	(signbit<mode>2_dm): New define_insn_and_split).
+	(signbit<mode>2_dm2): New define_insn.
+
 2016-07-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/71594
