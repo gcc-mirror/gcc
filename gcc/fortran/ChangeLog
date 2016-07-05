@@ -1,3 +1,16 @@
+2016-07-05  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* array.c (gfc_match_array_ref): Add parsing support for
+	STAT= attribute in CAF reference.
+	* expr.c (gfc_find_stat_co): New function that returns
+	the STAT= assignment.
+	* gfortran.h (gfc_array_ref): New member.
+	* trans-decl.c (gfc_build_builtin_function_decls):
+	new attribute for caf_get and caf_send functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Passing
+	the stat attribute to external function.
+	(gfc_conv_intrinsic_caf_send): Ditto.
+
 2016-07-05  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/71623

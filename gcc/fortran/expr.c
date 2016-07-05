@@ -4428,6 +4428,23 @@ gfc_ref_this_image (gfc_ref *ref)
   return true;
 }
 
+gfc_expr *
+gfc_find_stat_co(gfc_expr *e)
+{
+  gfc_ref *ref;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+      return ref->u.ar.stat;
+
+  if(e->value.function.actual->expr)
+    for(ref = e->value.function.actual->expr->ref; ref;
+	ref = ref->next)
+      if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+	return ref->u.ar.stat;
+
+  return NULL;
+}
 
 bool
 gfc_is_coindexed (gfc_expr *e)
