@@ -13,7 +13,7 @@ class Foo { int foo() return 0; } };
 // need make cp_parser_error() report more accurate column numbers.
 // { dg-error "30:expected '\{' at end of input" "brace" { target *-*-* } 4 }
 
-// { dg-error "33:expected ';' after class definition" "semicolon" {target *-*-* } 4 }
+// { dg-error "34:expected ';' after class definition" "semicolon" {target *-*-* } 4 }
 
 // { dg-error "35:expected declaration before '\}' token" "declaration" {target *-*-* } 4 }
 

@@ -21450,17 +21450,30 @@ cp_parser_class_specifier_1 (cp_parser* parser)
        closing brace.  */
     if (closing_brace && TYPE_P (type) && want_semicolon)
       {
+	/* Locate the closing brace.  */
 	cp_token_position prev
 	  = cp_lexer_previous_token_position (parser->lexer);
 	cp_token *prev_token = cp_lexer_token_at (parser->lexer, prev);
 	location_t loc = prev_token->location;
 
+	/* We want to suggest insertion of a ';' immediately *after* the
+	   closing brace, so, if we can, offset the location by 1 column.  */
+	location_t next_loc = loc;
+	if (!linemap_location_from_macro_expansion_p (line_table, loc))
+	  next_loc = linemap_position_for_loc_and_offset (line_table, loc, 1);
+
+	rich_location richloc (line_table, next_loc);
+	richloc.add_fixit_insert (next_loc, ";");
+
 	if (CLASSTYPE_DECLARED_CLASS (type))
-	  error_at (loc, "expected %<;%> after class definition");
+	  error_at_rich_loc (&richloc,
+			     "expected %<;%> after class definition");
 	else if (TREE_CODE (type) == RECORD_TYPE)
-	  error_at (loc, "expected %<;%> after struct definition");
+	  error_at_rich_loc (&richloc,
+			     "expected %<;%> after struct definition");
 	else if (TREE_CODE (type) == UNION_TYPE)
-	  error_at (loc, "expected %<;%> after union definition");
+	  error_at_rich_loc (&richloc,
+			     "expected %<;%> after union definition");
 	else
 	  gcc_unreachable ();
 
