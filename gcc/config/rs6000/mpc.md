@@ -81,7 +81,7 @@
   "fpu_mpc,bpu_mpc")
 
 (define_insn_reservation "mpccore-fp" 4
-  (and (eq_attr "type" "fp")
+  (and (eq_attr "type" "fp,fpsimple")
        (eq_attr "cpu" "mpccore"))
   "fpu_mpc*2")
 

@@ -242,7 +242,7 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,vecsimple,*,*")
+  [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*,*")
    (set_attr "length" "4,4,4,20,20,20,4,8,32")])
 
 ;; Unlike other altivec moves, allow the GPRs, since a normal use of TImode
@@ -268,7 +268,7 @@
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,vecsimple,*")])
+  [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*")])
 
 ;; Load up a vector with the most significant bit set by loading up -1 and
 ;; doing a shift left
@@ -603,7 +603,7 @@
 		(match_operand:VI2 2 "altivec_register_operand" "v")))]
   "<VI_unit>"
   "vcmpequ<VI_char> %0,%1,%2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_gt<mode>"
   [(set (match_operand:VI2 0 "altivec_register_operand" "=v")
@@ -611,7 +611,7 @@
 		(match_operand:VI2 2 "altivec_register_operand" "v")))]
   "<VI_unit>"
   "vcmpgts<VI_char> %0,%1,%2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_gtu<mode>"
   [(set (match_operand:VI2 0 "altivec_register_operand" "=v")
@@ -619,7 +619,7 @@
 		 (match_operand:VI2 2 "altivec_register_operand" "v")))]
   "<VI_unit>"
   "vcmpgtu<VI_char> %0,%1,%2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_eqv4sf"
   [(set (match_operand:V4SF 0 "altivec_register_operand" "=v")
@@ -654,7 +654,7 @@
 	 (match_operand:VM 3 "altivec_register_operand" "v")))]
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
   "vsel %0,%3,%2,%1"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecmove")])
 
 (define_insn "*altivec_vsel<mode>_uns"
   [(set (match_operand:VM 0 "altivec_register_operand" "=v")
@@ -665,7 +665,7 @@
 	 (match_operand:VM 3 "altivec_register_operand" "v")))]
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
   "vsel %0,%3,%2,%1"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecmove")])
 
 ;; Fused multiply add.
 
@@ -2283,7 +2283,7 @@
 		(match_dup 2)))]
   "<VI_unit>"
   "vcmpequ<VI_char>. %0,%1,%2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpgts<VI_char>_p"
   [(set (reg:CC 74)
@@ -2295,7 +2295,7 @@
 		(match_dup 2)))]
   "<VI_unit>"
   "vcmpgts<VI_char>. %0,%1,%2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpgtu<VI_char>_p"
   [(set (reg:CC 74)
@@ -2307,7 +2307,7 @@
 		 (match_dup 2)))]
   "<VI_unit>"
   "vcmpgtu<VI_char>. %0,%1,%2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpeqfp_p"
   [(set (reg:CC 74)

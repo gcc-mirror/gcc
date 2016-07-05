@@ -381,7 +381,7 @@
 
 ; Basic FP latency is 6 cycles
 (define_insn_reservation "power4-fp" 6
-  (and (eq_attr "type" "fp,dmul")
+  (and (eq_attr "type" "fp,fpsimple,dmul")
        (eq_attr "cpu" "power4"))
   "fpq_power4")
 
@@ -410,7 +410,7 @@
 
 ; VMX
 (define_insn_reservation "power4-vecsimple" 2
-  (and (eq_attr "type" "vecsimple")
+  (and (eq_attr "type" "vecsimple,veclogical,vecmove")
        (eq_attr "cpu" "power4"))
   "vq_power4")
 
@@ -421,7 +421,7 @@
 
 ; vecfp compare
 (define_insn_reservation "power4-veccmp" 8
-  (and (eq_attr "type" "veccmp")
+  (and (eq_attr "type" "veccmp,veccmpfx")
        (eq_attr "cpu" "power4"))
   "vq_power4")
 
