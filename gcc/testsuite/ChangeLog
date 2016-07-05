@@ -1,3 +1,20 @@
+2016-07-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/neon/polytypes.c: Move to ...
+	* gcc.target/arm/polytypes.c: ... here.
+	* gcc.target/arm/neon/pr51534.c: Move to ...
+	* gcc.target/arm/pr51534.c: ... here.
+	* gcc.target/arm/neon/vect-vcvt.c: Move to ...
+	* gcc.target/arm/vect-vcvt.c: ... here.
+	* gcc.target/arm/neon/vect-vcvtq.c: Move to ...
+	* gcc.target/arm/vect-vcvtq.c: ... here.
+	* gcc.target/arm/neon/vfp-shift-a2t2.c: Move to ...
+	* gcc.target/arm/vfp-shift-a2t2.c: ... here.
+	* gcc.target/arm/neon/vst1Q_laneu64-1.c: Move to ...
+	* gcc.target/arm/vst1Q_laneu64-1.c: ... here. Fix foo() prototype.
+	* gcc.target/arm/neon/neon.exp: Delete.
+	* gcc.target/arm/neon/: Delete.
+
 2016-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/65575
