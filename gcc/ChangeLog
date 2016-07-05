@@ -1,3 +1,8 @@
+2016-07-05  Jan Hubicka  <jh@suse.cz>
+
+	* tree-scalar-evoluiton.c (simple_iv): Use nowrap_type to check if
+	IV can overflow.
+
 2016-07-05  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-split-paths.c (find_block_to_duplicate_for_splitting_pa):

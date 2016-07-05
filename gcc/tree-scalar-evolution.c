@@ -3375,8 +3375,7 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   if (tree_contains_chrecs (iv->base, NULL))
     return false;
 
-  iv->no_overflow = (!folded_casts && ANY_INTEGRAL_TYPE_P (type)
-		     && TYPE_OVERFLOW_UNDEFINED (type));
+  iv->no_overflow = !folded_casts && nowrap_type_p (type);
 
   /* Try to simplify iv base:
 
