@@ -4105,7 +4105,7 @@ n_of_executions_at_most (gimple *stmt,
 bool
 nowrap_type_p (tree type)
 {
-  if (INTEGRAL_TYPE_P (type)
+  if (ANY_INTEGRAL_TYPE_P (type)
       && TYPE_OVERFLOW_UNDEFINED (type))
     return true;
 

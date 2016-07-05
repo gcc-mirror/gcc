@@ -1,3 +1,7 @@
+2016-07-05  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.c (nowrap_type_p): Use ANY_INTEGRAL_TYPE_P.
+
 2016-07-05  Jiong Wang  <jiong.wang@arm.com>
 
 	* lra-constraints.c (process_alt_operands): Don't add spilling cost for
