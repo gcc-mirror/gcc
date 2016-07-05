@@ -1,3 +1,12 @@
+2016-07-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline r237391
+	2016-06-13  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.h (RS6000_BTM_COMMON): Add the
+	RS6000_BTM_MODULO flag into the set of flags that are considered
+	to be part of the common configuration.
+
 2016-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71739
