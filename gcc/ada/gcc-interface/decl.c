@@ -798,10 +798,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		mutable_p = true;
 	      }
 
-	    /* If we are at global level and the size isn't constant, call
+	    /* If the size isn't constant and we are at global level, call
 	       elaborate_expression_1 to make a variable for it rather than
 	       calculating it each time.  */
-	    if (global_bindings_p () && !TREE_CONSTANT (gnu_size))
+	    if (!TREE_CONSTANT (gnu_size) && global_bindings_p ())
 	      gnu_size = elaborate_expression_1 (gnu_size, gnat_entity,
 						 "SIZE", definition, false);
 	  }
@@ -1366,10 +1366,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   than the largest stack alignment the back-end can honor, resort to
 	   a variable of "aligning type".  */
 	if (definition
-	    && !global_bindings_p ()
-	    && !static_flag
+	    && TYPE_ALIGN (gnu_type) > BIGGEST_ALIGNMENT
 	    && !imported_p
-	    && TYPE_ALIGN (gnu_type) > BIGGEST_ALIGNMENT)
+	    && !static_flag
+	    && !global_bindings_p ())
 	  {
 	    /* Create the new variable.  No need for extra room before the
 	       aligned field as this is in automatic storage.  */
@@ -2679,10 +2679,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  TYPE_STUB_DECL (gnu_type)
 	    = create_type_stub_decl (gnu_entity_name, gnu_type);
 
-	  /* If we are at file level and this is a multi-dimensional array,
+	  /* If this is a multi-dimensional array and we are at global level,
 	     we need to make a variable corresponding to the stride of the
 	     inner dimensions.   */
-	  if (global_bindings_p () && ndim > 1)
+	  if (ndim > 1 && global_bindings_p ())
 	    {
 	      tree gnu_arr_type;
 
@@ -4587,10 +4587,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 a constant or self-referential, call elaborate_expression_1 to
 	 make a variable for the size rather than calculating it each time.
 	 Handle both the RM size and the actual size.  */
-      if (global_bindings_p ()
-	  && TYPE_SIZE (gnu_type)
+      if (TYPE_SIZE (gnu_type)
 	  && !TREE_CONSTANT (TYPE_SIZE (gnu_type))
-	  && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
+	  && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type))
+	  && global_bindings_p ())
 	{
 	  tree size = TYPE_SIZE (gnu_type);
 
@@ -4672,11 +4672,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 	}
 
-      /* If this is a record type or subtype, call elaborate_expression_2 on
-	 any field position.  Do this for both global and local types.
-	 Skip any fields that we haven't made trees for to avoid problems with
-	 class wide types.  */
-      if (IN (kind, Record_Kind))
+      /* Similarly, if this is a record type or subtype at global level, call
+	 elaborate_expression_2 on any field position.  Skip any fields that
+	 we haven't made trees for to avoid problems with class-wide types.  */
+      if (IN (kind, Record_Kind) && global_bindings_p ())
 	for (gnat_temp = First_Entity (gnat_entity); Present (gnat_temp);
 	     gnat_temp = Next_Entity (gnat_temp))
 	  if (Ekind (gnat_temp) == E_Component && present_gnu_tree (gnat_temp))
@@ -4685,7 +4684,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	      /* ??? For now, store the offset as a multiple of the alignment
 		 in bytes so that we can see the alignment from the tree.  */
-	      if (!CONTAINS_PLACEHOLDER_P (DECL_FIELD_OFFSET (gnu_field)))
+	      if (!TREE_CONSTANT (DECL_FIELD_OFFSET (gnu_field))
+		  && !CONTAINS_PLACEHOLDER_P (DECL_FIELD_OFFSET (gnu_field)))
 		{
 		  DECL_FIELD_OFFSET (gnu_field)
 		    = elaborate_expression_2 (DECL_FIELD_OFFSET (gnu_field),
@@ -4696,8 +4696,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  /* ??? The context of gnu_field is not necessarily gnu_type
 		     so the MULT_EXPR node built above may not be marked by
 		     the call to create_type_decl below.  */
-		  if (global_bindings_p ())
-		    MARK_VISITED (DECL_FIELD_OFFSET (gnu_field));
+		  MARK_VISITED (DECL_FIELD_OFFSET (gnu_field));
 		}
 	    }
 
