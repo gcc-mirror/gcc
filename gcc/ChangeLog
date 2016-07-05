@@ -1,3 +1,8 @@
+2016-07-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (distribute_loop): Fix issue with
+	the cost model loop.
+
 2016-07-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/neon-testgen.ml: Delete.

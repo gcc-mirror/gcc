@@ -1504,6 +1504,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
      memory accesses.  */
   for (i = 0; partitions.iterate (i, &into); ++i)
     {
+      bool changed = false;
       if (partition_builtin_p (into))
 	continue;
       for (int j = i + 1;
@@ -1524,8 +1525,15 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	      partitions.unordered_remove (j);
 	      partition_free (partition);
 	      j--;
+	      changed = true;
 	    }
 	}
+      /* If we fused 0 1 2 in step 1 to 0,2 1 as 0 and 2 have similar
+         accesses when 1 and 2 have similar accesses but not 0 and 1
+	 then in the next iteration we will fail to consider merging
+	 1 into 0,2.  So try again if we did any merging into 0.  */
+      if (changed)
+	i--;
     }
 
   /* Build the partition dependency graph.  */
