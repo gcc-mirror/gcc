@@ -52,6 +52,14 @@ along with GCC; see the file COPYING3.  If not see
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
 
+/* Says whether a statement is a load, a store of a vectorized statement
+   result, or a store of an invariant value.  */
+enum vec_load_store_type {
+  VLS_LOAD,
+  VLS_STORE,
+  VLS_STORE_INVARIANT
+};
+
 /* Return the vectorized type for the given statement.  */
 
 tree
@@ -873,8 +881,8 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
 
 void
 vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
-		       bool store_lanes_p, enum vect_def_type dt,
-		       slp_tree slp_node,
+		       vect_memory_access_type memory_access_type,
+		       enum vect_def_type dt, slp_tree slp_node,
 		       stmt_vector_for_cost *prologue_cost_vec,
 		       stmt_vector_for_cost *body_cost_vec)
 {
@@ -903,14 +911,9 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   /* We assume that the cost of a single store-lanes instruction is
      equivalent to the cost of GROUP_SIZE separate stores.  If a grouped
      access is instead being provided by a permute-and-store operation,
-     include the cost of the permutes.
-
-     For SLP, the caller has already counted the permutation, if any.  */
-  if (grouped_access_p
-      && first_stmt_p
-      && !store_lanes_p
-      && !STMT_VINFO_STRIDED_P (stmt_info)
-      && !slp_node)
+     include the cost of the permutes.  */
+  if (first_stmt_p
+      && memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
     {
       /* Uses a high and low interleave or shuffle operations for each
 	 needed permute.  */
@@ -927,17 +930,16 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   /* Costs of the stores.  */
-  if (STMT_VINFO_STRIDED_P (stmt_info) && !slp_node)
-    {
-      /* N scalar stores plus extracting the elements.  */
-      inside_cost += record_stmt_cost (body_cost_vec,
-				       ncopies * TYPE_VECTOR_SUBPARTS (vectype),
-				       scalar_store, stmt_info, 0, vect_body);
-    }
+  if (memory_access_type == VMAT_ELEMENTWISE)
+    /* N scalar stores plus extracting the elements.  */
+    inside_cost += record_stmt_cost (body_cost_vec,
+				     ncopies * TYPE_VECTOR_SUBPARTS (vectype),
+				     scalar_store, stmt_info, 0, vect_body);
   else
     vect_get_store_cost (dr, ncopies, &inside_cost, body_cost_vec);
 
-  if (STMT_VINFO_STRIDED_P (stmt_info))
+  if (memory_access_type == VMAT_ELEMENTWISE
+      || memory_access_type == VMAT_STRIDED_SLP)
     inside_cost += record_stmt_cost (body_cost_vec,
 				     ncopies * TYPE_VECTOR_SUBPARTS (vectype),
 				     vec_to_scalar, stmt_info, 0, vect_body);
@@ -1011,7 +1013,8 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
 void
 vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
-		      bool load_lanes_p, slp_tree slp_node,
+		      vect_memory_access_type memory_access_type,
+		      slp_tree slp_node,
 		      stmt_vector_for_cost *prologue_cost_vec,
 		      stmt_vector_for_cost *body_cost_vec)
 {
@@ -1036,14 +1039,9 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
   /* We assume that the cost of a single load-lanes instruction is
      equivalent to the cost of GROUP_SIZE separate loads.  If a grouped
      access is instead being provided by a load-and-permute operation,
-     include the cost of the permutes.
-
-     For SLP, the caller has already counted the permutation, if any.  */
-  if (grouped_access_p
-      && first_stmt_p
-      && !load_lanes_p
-      && !STMT_VINFO_STRIDED_P (stmt_info)
-      && !slp_node)
+     include the cost of the permutes.  */
+  if (first_stmt_p
+      && memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
     {
       /* Uses an even and odd extract operations or shuffle operations
 	 for each needed permute.  */
@@ -1059,7 +1057,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* The loads themselves.  */
-  if (STMT_VINFO_STRIDED_P (stmt_info) && !slp_node)
+  if (memory_access_type == VMAT_ELEMENTWISE)
     {
       /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -1071,7 +1069,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
     vect_get_load_cost (dr, ncopies, first_stmt_p,
 			&inside_cost, &prologue_cost, 
 			prologue_cost_vec, body_cost_vec, true);
-  if (STMT_VINFO_STRIDED_P (stmt_info))
+  if (memory_access_type == VMAT_ELEMENTWISE
+      || memory_access_type == VMAT_STRIDED_SLP)
     inside_cost += record_stmt_cost (body_cost_vec, ncopies, vec_construct,
 				     stmt_info, 0, vect_body);
 
@@ -1674,6 +1673,209 @@ static tree permute_vec_elements (tree, tree, tree, gimple *,
 				  gimple_stmt_iterator *);
 
 
+/* A subroutine of get_load_store_type, with a subset of the same
+   arguments.  Handle the case where STMT is part of a grouped load
+   or store.
+
+   For stores, the statements in the group are all consecutive
+   and there is no gap at the end.  For loads, the statements in the
+   group might not be consecutive; there can be gaps between statements
+   as well as at the end.  */
+
+static bool
+get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
+			   vec_load_store_type vls_type,
+			   vect_memory_access_type *memory_access_type)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_info *vinfo = stmt_info->vinfo;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
+  gimple *first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+  unsigned int group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+  bool single_element_p = (stmt == first_stmt
+			   && !GROUP_NEXT_ELEMENT (stmt_info));
+  unsigned HOST_WIDE_INT gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
+  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+  /* True if the vectorized statements would access beyond the last
+     statement in the group.  */
+  bool overrun_p = false;
+
+  /* True if we can cope with such overrun by peeling for gaps, so that
+     there is at least one final scalar iteration after the vector loop.  */
+  bool can_overrun_p = (vls_type == VLS_LOAD && loop_vinfo && !loop->inner);
+
+  /* There can only be a gap at the end of the group if the stride is
+     known at compile time.  */
+  gcc_assert (!STMT_VINFO_STRIDED_P (stmt_info) || gap == 0);
+
+  /* Stores can't yet have gaps.  */
+  gcc_assert (slp || vls_type == VLS_LOAD || gap == 0);
+
+  if (slp)
+    {
+      if (STMT_VINFO_STRIDED_P (stmt_info))
+	{
+	  /* Try to use consecutive accesses of GROUP_SIZE elements,
+	     separated by the stride, until we have a complete vector.
+	     Fall back to scalar accesses if that isn't possible.  */
+	  if (nunits % group_size == 0)
+	    *memory_access_type = VMAT_STRIDED_SLP;
+	  else
+	    *memory_access_type = VMAT_ELEMENTWISE;
+	}
+      else
+	{
+	  overrun_p = loop_vinfo && gap != 0;
+	  if (overrun_p && vls_type != VLS_LOAD)
+	    {
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "Grouped store with gaps requires"
+			       " non-consecutive accesses\n");
+	      return false;
+	    }
+	  if (overrun_p && !can_overrun_p)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Peeling for outer loop is not supported\n");
+	      return false;
+	    }
+	  *memory_access_type = VMAT_CONTIGUOUS;
+	}
+    }
+  else
+    {
+      /* We can always handle this case using elementwise accesses,
+	 but see if something more efficient is available.  */
+      *memory_access_type = VMAT_ELEMENTWISE;
+
+      /* If there is a gap at the end of the group then these optimizations
+	 would access excess elements in the last iteration.  */
+      bool would_overrun_p = (gap != 0);
+      if (!STMT_VINFO_STRIDED_P (stmt_info)
+	  && (can_overrun_p || !would_overrun_p))
+	{
+	  /* First try using LOAD/STORE_LANES.  */
+	  if (vls_type == VLS_LOAD
+	      ? vect_load_lanes_supported (vectype, group_size)
+	      : vect_store_lanes_supported (vectype, group_size))
+	    {
+	      *memory_access_type = VMAT_LOAD_STORE_LANES;
+	      overrun_p = would_overrun_p;
+	    }
+
+	  /* If that fails, try using permuting loads.  */
+	  if (*memory_access_type == VMAT_ELEMENTWISE
+	      && (vls_type == VLS_LOAD
+		  ? vect_grouped_load_supported (vectype, single_element_p,
+						 group_size)
+		  : vect_grouped_store_supported (vectype, group_size)))
+	    {
+	      *memory_access_type = VMAT_CONTIGUOUS_PERMUTE;
+	      overrun_p = would_overrun_p;
+	    }
+	}
+    }
+
+  if (vls_type != VLS_LOAD && first_stmt == stmt)
+    {
+      /* STMT is the leader of the group. Check the operands of all the
+	 stmts of the group.  */
+      gimple *next_stmt = GROUP_NEXT_ELEMENT (stmt_info);
+      while (next_stmt)
+	{
+	  gcc_assert (gimple_assign_single_p (next_stmt));
+	  tree op = gimple_assign_rhs1 (next_stmt);
+	  gimple *def_stmt;
+	  enum vect_def_type dt;
+	  if (!vect_is_simple_use (op, vinfo, &def_stmt, &dt))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "use not simple.\n");
+	      return false;
+	    }
+	  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+	}
+    }
+
+  if (overrun_p)
+    {
+      gcc_assert (can_overrun_p);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Data access with gaps requires scalar "
+			 "epilogue loop\n");
+      LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
+    }
+
+  return true;
+}
+
+/* Analyze load or store statement STMT of type VLS_TYPE.  Return true
+   if there is a memory access type that the vectorized form can use,
+   storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
+   or scatters, fill in GS_INFO accordingly.
+
+   SLP says whether we're performing SLP rather than loop vectorization.
+   VECTYPE is the vector type that the vectorized statements will use.  */
+
+static bool
+get_load_store_type (gimple *stmt, tree vectype, bool slp,
+		     vec_load_store_type vls_type,
+		     vect_memory_access_type *memory_access_type,
+		     gather_scatter_info *gs_info)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_info *vinfo = stmt_info->vinfo;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    {
+      *memory_access_type = VMAT_GATHER_SCATTER;
+      gimple *def_stmt;
+      if (!vect_check_gather_scatter (stmt, loop_vinfo, gs_info))
+	gcc_unreachable ();
+      else if (!vect_is_simple_use (gs_info->offset, vinfo, &def_stmt,
+				    &gs_info->offset_dt,
+				    &gs_info->offset_vectype))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "%s index use not simple.\n",
+			     vls_type == VLS_LOAD ? "gather" : "scatter");
+	  return false;
+	}
+    }
+  else if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    {
+      if (!get_group_load_store_type (stmt, vectype, slp, vls_type,
+				      memory_access_type))
+	return false;
+    }
+  else if (STMT_VINFO_STRIDED_P (stmt_info))
+    {
+      gcc_assert (!slp);
+      *memory_access_type = VMAT_ELEMENTWISE;
+    }
+  else
+    *memory_access_type = VMAT_CONTIGUOUS;
+
+  /* FIXME: At the moment the cost model seems to underestimate the
+     cost of using elementwise accesses.  This check preserves the
+     traditional behavior until that can be fixed.  */
+  if (*memory_access_type == VMAT_ELEMENTWISE
+      && !STMT_VINFO_STRIDED_P (stmt_info))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not falling back to elementwise accesses\n");
+      return false;
+    }
+  return true;
+}
+
 /* Function vectorizable_mask_load_store.
 
    Check if STMT performs a conditional load or store that can be vectorized.
@@ -1705,7 +1907,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   int i, j;
   bool inv_p;
   gather_scatter_info gs_info;
-  bool is_store;
+  vec_load_store_type vls_type;
   tree mask;
   gimple *def_stmt;
   enum vect_def_type dt;
@@ -1716,7 +1918,6 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
   gcc_assert (ncopies >= 1);
 
-  is_store = gimple_call_internal_fn (stmt) == IFN_MASK_STORE;
   mask = gimple_call_arg (stmt, 2);
 
   if (TREE_CODE (TREE_TYPE (mask)) != BOOLEAN_TYPE)
@@ -1743,12 +1944,6 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 
   elem_type = TREE_TYPE (vectype);
 
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    return false;
-
-  if (STMT_VINFO_STRIDED_P (stmt_info))
-    return false;
-
   if (TREE_CODE (mask) != SSA_NAME)
     return false;
 
@@ -1762,27 +1957,26 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
       || TYPE_VECTOR_SUBPARTS (mask_vectype) != TYPE_VECTOR_SUBPARTS (vectype))
     return false;
 
-  if (is_store)
+  if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
     {
       tree rhs = gimple_call_arg (stmt, 3);
       if (!vect_is_simple_use (rhs, loop_vinfo, &def_stmt, &dt, &rhs_vectype))
 	return false;
+      if (dt == vect_constant_def || dt == vect_external_def)
+	vls_type = VLS_STORE_INVARIANT;
+      else
+	vls_type = VLS_STORE;
     }
+  else
+    vls_type = VLS_LOAD;
 
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+  vect_memory_access_type memory_access_type;
+  if (!get_load_store_type (stmt, vectype, false, vls_type,
+			    &memory_access_type, &gs_info))
+    return false;
+
+  if (memory_access_type == VMAT_GATHER_SCATTER)
     {
-      gimple *def_stmt;
-      if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
-	gcc_unreachable ();
-      if (!vect_is_simple_use (gs_info.offset, loop_vinfo, &def_stmt,
-			       &gs_info.offset_dt, &gs_info.offset_vectype))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "gather index use not simple.");
-	  return false;
-	}
-
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree masktype
 	= TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
@@ -1794,6 +1988,14 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	  return false;
 	}
     }
+  else if (memory_access_type != VMAT_CONTIGUOUS)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unsupported access type for masked %s.\n",
+			 vls_type == VLS_LOAD ? "load" : "store");
+      return false;
+    }
   else if (tree_int_cst_compare (nested_in_vect_loop
 				 ? STMT_VINFO_DR_STEP (stmt_info)
 				 : DR_STEP (dr), size_zero_node) <= 0)
@@ -1801,25 +2003,28 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   else if (!VECTOR_MODE_P (TYPE_MODE (vectype))
 	   || !can_vec_mask_load_store_p (TYPE_MODE (vectype),
 					  TYPE_MODE (mask_vectype),
-					  !is_store)
+					  vls_type == VLS_LOAD)
 	   || (rhs_vectype
 	       && !useless_type_conversion_p (vectype, rhs_vectype)))
     return false;
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
-      if (is_store)
-	vect_model_store_cost (stmt_info, ncopies, false, dt,
-			       NULL, NULL, NULL);
+      if (vls_type == VLS_LOAD)
+	vect_model_load_cost (stmt_info, ncopies, memory_access_type,
+			      NULL, NULL, NULL);
       else
-	vect_model_load_cost (stmt_info, ncopies, false, NULL, NULL, NULL);
+	vect_model_store_cost (stmt_info, ncopies, memory_access_type,
+			       dt, NULL, NULL, NULL);
       return true;
     }
+  gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
 
   /** Transform.  **/
 
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+  if (memory_access_type == VMAT_GATHER_SCATTER)
     {
       tree vec_oprnd0 = NULL_TREE, op;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
@@ -1993,7 +2198,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
       gsi_replace (gsi, new_stmt, true);
       return true;
     }
-  else if (is_store)
+  else if (vls_type != VLS_LOAD)
     {
       tree vec_rhs = NULL_TREE, vec_mask = NULL_TREE;
       prev_stmt_info = NULL;
@@ -2102,7 +2307,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
     }
 
-  if (!is_store)
+  if (vls_type == VLS_LOAD)
     {
       /* Ensure that even with -fno-tree-dce the scalar MASK_LOAD is removed
 	 from the IL.  */
@@ -5188,9 +5393,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gimple *ptr_incr = NULL;
   int ncopies;
   int j;
-  gimple *next_stmt, *first_stmt = NULL;
-  bool grouped_store = false;
-  bool store_lanes_p = false;
+  gimple *next_stmt, *first_stmt;
+  bool grouped_store;
   unsigned int group_size, i;
   vec<tree> dr_chain = vNULL;
   vec<tree> oprnds = vNULL;
@@ -5208,6 +5412,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   enum vect_def_type scatter_src_dt = vect_unknown_def_type;
   gimple *new_stmt;
   int vf;
+  vec_load_store_type vls_type;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -5280,6 +5485,11 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       return false;
     }
 
+  if (dt == vect_constant_def || dt == vect_external_def)
+    vls_type = VLS_STORE_INVARIANT;
+  else
+    vls_type = VLS_STORE;
+
   if (rhs_vectype && !useless_type_conversion_p (vectype, rhs_vectype))
     return false;
 
@@ -5309,7 +5519,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
       if (negative)
 	{
-	  gcc_assert (!grouped_store);
 	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
 	  if (alignment_support_scheme != dr_aligned
 	      && alignment_support_scheme != dr_unaligned_supported)
@@ -5331,70 +5540,28 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
     }
 
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      grouped_store = true;
-      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-      if (!slp && !STMT_VINFO_STRIDED_P (stmt_info))
-	{
-	  if (vect_store_lanes_supported (vectype, group_size))
-	    store_lanes_p = true;
-	  else if (!vect_grouped_store_supported (vectype, group_size))
-	    return false;
-	}
-
-      if (first_stmt == stmt)
-	{
-          /* STMT is the leader of the group. Check the operands of all the
-             stmts of the group.  */
-          next_stmt = GROUP_NEXT_ELEMENT (stmt_info);
-          while (next_stmt)
-            {
-	      gcc_assert (gimple_assign_single_p (next_stmt));
-	      op = gimple_assign_rhs1 (next_stmt);
-              if (!vect_is_simple_use (op, vinfo, &def_stmt, &dt))
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                     "use not simple.\n");
-                  return false;
-                }
-              next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
-            }
-        }
-    }
-
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-    {
-      gimple *def_stmt;
-      if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
-	gcc_unreachable ();
-      if (!vect_is_simple_use (gs_info.offset, vinfo, &def_stmt,
-			       &gs_info.offset_dt, &gs_info.offset_vectype))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "scatter index use not simple.");
-	  return false;
-	}
-    }
+  vect_memory_access_type memory_access_type;
+  if (!get_load_store_type (stmt, vectype, slp, vls_type,
+			    &memory_access_type, &gs_info))
+    return false;
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
       if (!PURE_SLP_STMT (stmt_info))
-	vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt,
+	vect_model_store_cost (stmt_info, ncopies, memory_access_type, dt,
 			       NULL, NULL, NULL);
       return true;
     }
+  gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
 
   /** Transform.  **/
 
   ensure_base_align (stmt_info, dr);
 
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+  if (memory_access_type == VMAT_GATHER_SCATTER)
     {
       tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE, op, src;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
@@ -5534,8 +5701,10 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       return true;
     }
 
+  grouped_store = STMT_VINFO_GROUPED_ACCESS (stmt_info);
   if (grouped_store)
     {
+      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
 
@@ -5581,7 +5750,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     dump_printf_loc (MSG_NOTE, vect_location,
                      "transform store. ncopies = %d\n", ncopies);
 
-  if (STMT_VINFO_STRIDED_P (stmt_info))
+  if (memory_access_type == VMAT_ELEMENTWISE
+      || memory_access_type == VMAT_STRIDED_SLP)
     {
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
@@ -5773,14 +5943,14 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gcc_assert (alignment_support_scheme);
   /* Targets with store-lane instructions must not require explicit
      realignment.  */
-  gcc_assert (!store_lanes_p
+  gcc_assert (memory_access_type != VMAT_LOAD_STORE_LANES
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
   if (negative)
     offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
-  if (store_lanes_p)
+  if (memory_access_type == VMAT_LOAD_STORE_LANES)
     aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
   else
     aggr_type = vectype;
@@ -5918,7 +6088,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					   TYPE_SIZE_UNIT (aggr_type));
 	}
 
-      if (store_lanes_p)
+      if (memory_access_type == VMAT_LOAD_STORE_LANES)
 	{
 	  tree vec_array;
 
@@ -6202,7 +6372,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gphi *phi = NULL;
   vec<tree> dr_chain = vNULL;
   bool grouped_load = false;
-  bool load_lanes_p = false;
   gimple *first_stmt;
   gimple *first_stmt_for_drptr = NULL;
   bool inv_p;
@@ -6311,48 +6480,11 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     {
       grouped_load = true;
       /* FORNOW */
-      gcc_assert (!nested_in_vect_loop && !STMT_VINFO_GATHER_SCATTER_P (stmt_info));
+      gcc_assert (!nested_in_vect_loop);
+      gcc_assert (!STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-      bool single_element_p = (first_stmt == stmt
-			       && !GROUP_NEXT_ELEMENT (stmt_info));
-
-      if (!slp && !STMT_VINFO_STRIDED_P (stmt_info))
-	{
-	  if (vect_load_lanes_supported (vectype, group_size))
-	    load_lanes_p = true;
-	  else if (!vect_grouped_load_supported (vectype, single_element_p,
-						 group_size))
-	    return false;
-	}
-
-      if (single_element_p)
-	{
-	  /* Single-element interleaving requires peeling for gaps.  */
-	  gcc_assert (GROUP_GAP (stmt_info));
-	}
-
-      /* If there is a gap in the end of the group then we access excess
-	 elements in the last iteration and thus need to peel that off.  */
-      if (loop_vinfo
-	  && ! STMT_VINFO_STRIDED_P (stmt_info)
-	  && GROUP_GAP (vinfo_for_stmt (first_stmt)) != 0)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Data access with gaps requires scalar "
-			     "epilogue loop\n");
-	  if (loop->inner)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Peeling for outer loop is not supported\n");
-	      return false;
-	    }
-
-	  LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
-	}
 
       if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	slp_perm = true;
@@ -6398,24 +6530,13 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
     }
 
+  vect_memory_access_type memory_access_type;
+  if (!get_load_store_type (stmt, vectype, slp, VLS_LOAD,
+			    &memory_access_type, &gs_info))
+    return false;
 
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-    {
-      gimple *def_stmt;
-      if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
-	gcc_unreachable ();
-      if (!vect_is_simple_use (gs_info.offset, vinfo, &def_stmt,
-			       &gs_info.offset_dt, &gs_info.offset_vectype))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "gather index use not simple.\n");
-	  return false;
-	}
-    }
-  else if (STMT_VINFO_STRIDED_P (stmt_info))
-    ;
-  else
+  if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+      && !STMT_VINFO_STRIDED_P (stmt_info))
     {
       negative = tree_int_cst_compare (nested_in_vect_loop
 				       ? STMT_VINFO_DR_STEP (stmt_info)
@@ -6461,13 +6582,19 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      if (!slp)
+	STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
       if (!PURE_SLP_STMT (stmt_info))
-	vect_model_load_cost (stmt_info, ncopies, load_lanes_p,
+	vect_model_load_cost (stmt_info, ncopies, memory_access_type,
 			      NULL, NULL, NULL);
       return true;
     }
+
+  if (!slp)
+    gcc_assert (memory_access_type
+		== STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -6477,7 +6604,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   ensure_base_align (stmt_info, dr);
 
-  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+  if (memory_access_type == VMAT_GATHER_SCATTER)
     {
       tree vec_oprnd0 = NULL_TREE, op;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
@@ -6644,7 +6771,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
       return true;
     }
-  else if (STMT_VINFO_STRIDED_P (stmt_info))
+
+  if (memory_access_type == VMAT_ELEMENTWISE
+      || memory_access_type == VMAT_STRIDED_SLP)
     {
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
@@ -6711,26 +6840,23 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       int lnel = 1;
       tree ltype = TREE_TYPE (vectype);
       auto_vec<tree> dr_chain;
-      if (slp)
+      if (memory_access_type == VMAT_STRIDED_SLP)
 	{
-	  if (group_size < nunits
-	      && nunits % group_size == 0)
+	  nloads = nunits / group_size;
+	  if (group_size < nunits)
 	    {
-	      nloads = nunits / group_size;
 	      lnel = group_size;
 	      ltype = build_vector_type (TREE_TYPE (vectype), group_size);
-	      ltype = build_aligned_type (ltype,
-					  TYPE_ALIGN (TREE_TYPE (vectype)));
 	    }
-	  else if (group_size >= nunits
-		   && group_size % nunits == 0)
+	  else
 	    {
-	      nloads = 1;
 	      lnel = nunits;
 	      ltype = vectype;
-	      ltype = build_aligned_type (ltype,
-					  TYPE_ALIGN (TREE_TYPE (vectype)));
 	    }
+	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
+	}
+      if (slp)
+	{
 	  /* For SLP permutation support we need to load the whole group,
 	     not only the number of vector stmts the permutation result
 	     fits in.  */
@@ -6862,7 +6988,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gcc_assert (alignment_support_scheme);
   /* Targets with load-lane instructions must not require explicit
      realignment.  */
-  gcc_assert (!load_lanes_p
+  gcc_assert (memory_access_type != VMAT_LOAD_STORE_LANES
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
@@ -6997,7 +7123,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (negative)
     offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
-  if (load_lanes_p)
+  if (memory_access_type == VMAT_LOAD_STORE_LANES)
     aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
   else
     aggr_type = vectype;
@@ -7060,7 +7186,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (grouped_load || slp_perm)
 	dr_chain.create (vec_num);
 
-      if (load_lanes_p)
+      if (memory_access_type == VMAT_LOAD_STORE_LANES)
 	{
 	  tree vec_array;
 
@@ -7330,7 +7456,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
         {
           if (grouped_load)
   	    {
-	      if (!load_lanes_p)
+	      if (memory_access_type != VMAT_LOAD_STORE_LANES)
 		vect_transform_grouped_load (stmt, dr_chain, group_size, gsi);
 	      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 	    }

@@ -1,5 +1,25 @@
 2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_memory_access_type): New enum.
+	(_stmt_vec_info): Add a memory_access_type field.
+	(STMT_VINFO_MEMORY_ACCESS_TYPE): New macro.
+	(vect_model_store_cost): Take an access type instead of a boolean.
+	(vect_model_load_cost): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_cost_1): Update calls to
+	vect_model_store_cost and vect_model_load_cost.
+	* tree-vect-stmts.c (vec_load_store_type): New enum.
+	(vect_model_store_cost): Take an access type instead of a
+	store_lanes_p boolean.  Simplify tests.
+	(vect_model_load_cost): Likewise, but for load_lanes_p.
+	(get_group_load_store_type, get_load_store_type): New functions.
+	(vectorizable_store): Use get_load_store_type.  Record the access
+	type in STMT_VINFO_MEMORY_ACCESS_TYPE.
+	(vectorizable_load): Likewise.
+	(vectorizable_mask_load_store): Likewise.  Replace is_store
+	variable with vls_type.
+
+2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_grouped_load_supported): Add a
 	single_element_p parameter.
 	* tree-vect-data-refs.c (vect_grouped_load_supported): Likewise.

@@ -481,6 +481,33 @@ enum slp_vect_type {
   hybrid
 };
 
+/* Describes how we're going to vectorize an individual load or store,
+   or a group of loads or stores.  */
+enum vect_memory_access_type {
+  /* A simple contiguous access.  */
+  VMAT_CONTIGUOUS,
+
+  /* A simple contiguous access in which the elements need to be permuted
+     after loading or before storing.  Only used for loop vectorization;
+     SLP uses separate permutes.  */
+  VMAT_CONTIGUOUS_PERMUTE,
+
+  /* An access that uses IFN_LOAD_LANES or IFN_STORE_LANES.  */
+  VMAT_LOAD_STORE_LANES,
+
+  /* An access in which each scalar element is loaded or stored
+     individually.  */
+  VMAT_ELEMENTWISE,
+
+  /* A hybrid of VMAT_CONTIGUOUS and VMAT_ELEMENTWISE, used for grouped
+     SLP accesses.  Each unrolled iteration uses a contiguous load
+     or store for the whole group, but the groups from separate iterations
+     are combined in the same way as for VMAT_ELEMENTWISE.  */
+  VMAT_STRIDED_SLP,
+
+  /* The access uses gather loads or scatter stores.  */
+  VMAT_GATHER_SCATTER
+};
 
 typedef struct data_reference *dr_p;
 
@@ -598,6 +625,10 @@ typedef struct _stmt_vec_info {
   /* True if this is an access with loop-invariant stride.  */
   bool strided_p;
 
+  /* Classifies how the load or store is going to be implemented
+     for loop vectorization.  */
+  vect_memory_access_type memory_access_type;
+
   /* For both loads and stores.  */
   bool simd_lane_access_p;
 
@@ -655,6 +686,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
 #define STMT_VINFO_GATHER_SCATTER_P(S)	   (S)->gather_scatter_p
 #define STMT_VINFO_STRIDED_P(S)	   	   (S)->strided_p
+#define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 
@@ -1002,12 +1034,12 @@ extern void free_stmt_vec_info (gimple *stmt);
 extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *,
                                     stmt_vector_for_cost *,
 				    stmt_vector_for_cost *);
-extern void vect_model_store_cost (stmt_vec_info, int, bool,
+extern void vect_model_store_cost (stmt_vec_info, int, vect_memory_access_type,
 				   enum vect_def_type, slp_tree,
 				   stmt_vector_for_cost *,
 				   stmt_vector_for_cost *);
-extern void vect_model_load_cost (stmt_vec_info, int, bool, slp_tree,
-				  stmt_vector_for_cost *,
+extern void vect_model_load_cost (stmt_vec_info, int, vect_memory_access_type,
+				  slp_tree, stmt_vector_for_cost *,
 				  stmt_vector_for_cost *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
