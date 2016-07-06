@@ -2371,6 +2371,8 @@ package body Exp_Ch5 is
                   AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
 
                begin
+                  Set_Is_Abort_Block (N);
+
                   Set_Scope (Blk, Current_Scope);
                   Set_Etype (Blk, Standard_Void_Type);
                   Set_Identifier (N, New_Occurrence_Of (Blk, Sloc (N)));

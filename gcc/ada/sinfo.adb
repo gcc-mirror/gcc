@@ -1752,6 +1752,14 @@ package body Sinfo is
       return Uint3 (N);
    end Intval;
 
+   function Is_Abort_Block
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      return Flag4 (N);
+   end Is_Abort_Block;
+
    function Is_Accessibility_Actual
      (N : Node_Id) return Boolean is
    begin
@@ -5014,6 +5022,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Integer_Literal);
       Set_Uint3 (N, Val);
    end Set_Intval;
+
+   procedure Set_Is_Abort_Block
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      Set_Flag4 (N, Val);
+   end Set_Is_Abort_Block;
 
    procedure Set_Is_Accessibility_Actual
       (N : Node_Id; Val : Boolean := True) is

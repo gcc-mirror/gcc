@@ -34,6 +34,7 @@ with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_Ch11; use Exp_Ch11;
 with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
@@ -724,7 +725,7 @@ package body Exp_Util is
          --  For deallocation of class-wide types we obtain the value of
          --  alignment from the Type Specific Record of the deallocated object.
          --  This is needed because the frontend expansion of class-wide types
-         --  into equivalent types confuses the backend.
+         --  into equivalent types confuses the back end.
 
          else
             --  Generate:
@@ -929,6 +930,59 @@ package body Exp_Util is
          end if;
       end;
    end Build_Allocate_Deallocate_Proc;
+
+   -------------------------------
+   -- Build_Abort_Undefer_Block --
+   -------------------------------
+
+   function Build_Abort_Undefer_Block
+     (Loc     : Source_Ptr;
+      Stmts   : List_Id;
+      Context : Node_Id) return Node_Id
+   is
+      Exceptions_OK : constant Boolean :=
+                        not Restriction_Active (No_Exception_Propagation);
+
+      AUD    : Entity_Id;
+      Blk    : Node_Id;
+      Blk_Id : Entity_Id;
+      HSS    : Node_Id;
+
+   begin
+      --  The block should be generated only when undeferring abort in the
+      --  context of a potential exception.
+
+      pragma Assert (Abort_Allowed and Exceptions_OK);
+
+      --  Generate:
+      --    begin
+      --       <Stmts>
+      --    at end
+      --       Abort_Undefer_Direct;
+      --    end;
+
+      AUD := RTE (RE_Abort_Undefer_Direct);
+
+      HSS :=
+        Make_Handled_Sequence_Of_Statements (Loc,
+          Statements  => Stmts,
+          At_End_Proc => New_Occurrence_Of (AUD, Loc));
+
+      Blk :=
+        Make_Block_Statement (Loc,
+          Handled_Statement_Sequence => HSS);
+      Set_Is_Abort_Block (Blk);
+
+      Add_Block_Identifier  (Blk, Blk_Id);
+      Expand_At_End_Handler (HSS, Blk_Id);
+
+      --  Present the Abort_Undefer_Direct function to the back end to inline
+      --  the call to the routine.
+
+      Add_Inlined_Body (AUD, Context);
+
+      return Blk;
+   end Build_Abort_Undefer_Block;
 
    --------------------------
    -- Build_Procedure_Form --
@@ -2441,7 +2495,7 @@ package body Exp_Util is
       --  If the type of the expression is an internally generated type it
       --  may not be necessary to create a new subtype. However there are two
       --  exceptions: references to the current instances, and aliased array
-      --  object declarations for which the backend needs to create a template.
+      --  object declarations for which the back end has to create a template.
 
       elsif Is_Constrained (Exp_Typ)
         and then not Is_Class_Wide_Type (Unc_Type)
@@ -9227,7 +9281,7 @@ package body Exp_Util is
       --  Note on checks that could raise Constraint_Error. Strictly, if we
       --  take advantage of 11.6, these checks do not count as side effects.
       --  However, we would prefer to consider that they are side effects,
-      --  since the backend CSE does not work very well on expressions which
+      --  since the back end CSE does not work very well on expressions which
       --  can raise Constraint_Error. On the other hand if we don't consider
       --  them to be side effect free, then we get some awkward expansions
       --  in -gnato mode, resulting in code insertions at a point where we

@@ -3480,6 +3480,61 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  In a complex case where an enclosing generic and a nested
+               --  generic package, both declared with partially parameterized
+               --  formal subprograms with the same names, are instantiated
+               --  with the same type, the types of the actual parameter and
+               --  that of the formal may appear incompatible at first sight.
+
+               --   generic
+               --      type Outer_T is private;
+               --      with function Func (Formal : Outer_T)
+               --                         return ... is <>;
+
+               --   package Outer_Gen is
+               --      generic
+               --         type Inner_T is private;
+               --         with function Func (Formal : Inner_T)   --  (1)
+               --                            return ... is <>;
+
+               --      package Inner_Gen is
+               --         function Inner_Func (Formal : Inner_T)  --  (2)
+               --                             return ... is (Func (Formal));
+               --      end Inner_Gen;
+               --   end Outer_Generic;
+
+               --   package Outer_Inst is new Outer_Gen (Actual_T);
+               --   package Inner_Inst is new Outer_Inst.Inner_Gen (Actual_T);
+
+               --  In the example above, the type of parameter
+               --  Inner_Func.Formal at (2) is incompatible with the type of
+               --  Func.Formal at (1) in the context of instantiations
+               --  Outer_Inst and Inner_Inst. In reality both types are
+               --  generic actual subtypes renaming base type Actual_T as
+               --  part of the generic prologues for the instantiations.
+
+               --  Recognize this case and add a type conversion to allow
+               --  this kind of generic actual subtype conformance. Note that
+               --  this is done only when the call is non-overloaded because
+               --  the resolution mechanism already has the means to
+               --  disambiguate similar cases.
+
+               elsif not Is_Overloaded (Name (N))
+                 and then Is_Type (Etype (Actual))
+                 and then Is_Type (Etype (Formal))
+                 and then Is_Generic_Actual_Type (Etype (Actual))
+                 and then Is_Generic_Actual_Type (Etype (Formal))
+                 and then Base_Type (Etype (Actual)) =
+                          Base_Type (Etype (Formal))
+               then
+                  Rewrite (Actual,
+                    Convert_To (Etype (Formal), Relocate_Node (Actual)));
+                  Analyze_And_Resolve (Actual, Etype (Formal));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
+               --  Handle failed type check
+
                else
                   if Debug_Flag_E then
                      Write_Str (" type checking fails in call ");

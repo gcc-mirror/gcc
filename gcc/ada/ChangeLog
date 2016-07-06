@@ -1,5 +1,39 @@
 2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_aggr.adb Remove with and use clauses for Exp_Ch11 and Inline.
+	(Initialize_Array_Component): Protect the initialization
+	statements in an abort defer / undefer block when the associated
+	component is controlled.
+	(Initialize_Record_Component): Protect the initialization statements
+	in an abort defer / undefer block when the associated component is
+	controlled.
+	(Process_Transient_Component_Completion): Use Build_Abort_Undefer_Block
+	to create an abort defer / undefer block.
+	* exp_ch3.adb Remove with and use clauses for Exp_ch11 and Inline.
+	(Default_Initialize_Object): Use Build_Abort_Undefer_Block to
+	create an abort defer / undefer block.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Mark an abort
+	defer / undefer block as such.
+	* exp_ch9.adb (Find_Enclosing_Context): Do not consider an abort
+	defer / undefer block as a suitable context for an activation
+	chain or a master.
+	* exp_util.adb Add with and use clauses for Exp_Ch11.
+	(Build_Abort_Undefer_Block): New routine.
+	* exp_util.ads (Build_Abort_Undefer_Block): New routine.
+	* sinfo.adb (Is_Abort_Block): New routine.
+	(Set_Is_Abort_Block): New routine.
+	* sinfo.ads New attribute Is_Abort_Block along with occurrences
+	in nodes.
+	(Is_Abort_Block): New routine along with pragma Inline.
+	(Set_Is_Abort_Block): New routine along with pragma Inline.
+
+2016-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Add a conditional to handle
+	disambiguation.
+
+2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb Flag252 is now used as Is_Finalized_Transient. Flag295
 	is now used as Is_Ignored_Transient.
 	(Is_Finalized_Transient): New routine.
