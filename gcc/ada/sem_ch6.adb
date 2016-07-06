@@ -486,6 +486,15 @@ package body Sem_Ch6 is
 
          Set_Is_Inlined (Defining_Entity (N));
 
+         --  If the expression function is Ghost, mark its body entity as
+         --  Ghost too. This avoids spurious errors on unanalyzed body entities
+         --  of expression functions, which are not yet marked as ghost, yet
+         --  identified as the Corresponding_Body of the ghost declaration.
+
+         if Is_Ghost_Entity (Def_Id) then
+            Set_Is_Ghost_Entity (Defining_Entity (New_Body));
+         end if;
+
          --  Establish the linkages between the spec and the body. These are
          --  used when the expression function acts as the prefix of attribute
          --  'Access in order to freeze the original expression which has been
