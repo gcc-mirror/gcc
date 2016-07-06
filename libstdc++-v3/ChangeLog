@@ -1,3 +1,24 @@
+2016-07-07  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement std::any.
+	* include/Makefile.am: Add any and c++17_warning.h to exported headers.
+	* include/Makefile.in: Likewise.
+	* include/std/any: New.
+	* testsuite/20_util/any/assign/1.cc: Likewise.
+	* testsuite/20_util/any/assign/2.cc: Likewise.
+	* testsuite/20_util/any/assign/self.cc: Likewise.
+	* testsuite/20_util/any/cons/1.cc: Likewise.
+	* testsuite/20_util/any/cons/2.cc: Likewise.
+	* testsuite/20_util/any/cons/aligned.cc: Likewise.
+	* testsuite/20_util/any/cons/nontrivial.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast_no_rtti.cc: Likewise.
+	* testsuite/20_util/any/misc/swap.cc: Likewise.
+	* testsuite/20_util/any/modifiers/1.cc: Likewise.
+	* testsuite/20_util/any/observers/type.cc: Likewise.
+	* testsuite/20_util/any/typedefs.cc: Likewise.
+
 2016-07-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Add a new header for diagnosing the use of C++17 facilities
