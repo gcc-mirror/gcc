@@ -1,5 +1,11 @@
 2016-07-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Add a new header for diagnosing the use of C++17 facilities
+	in pre-C++17 modes.
+	* include/bits/c++17_warning.h:	New.
+
+2016-07-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement LWG 2451, optional<T> should 'forward' T's
 	implicit conversions.
 	* include/experimental/optional (__is_optional_impl, __is_optional):
