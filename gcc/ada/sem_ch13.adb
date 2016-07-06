@@ -1937,7 +1937,7 @@ package body Sem_Ch13 is
             if not Implementation_Defined_Aspect (A_Id) then
                Error_Msg_Name_1 := Nam;
 
-               --  Not allowed for renaming declarations. Examine original
+               --  Not allowed for renaming declarations. Examine the original
                --  node because a subprogram renaming may have been rewritten
                --  as a body.
 

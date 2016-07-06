@@ -38,6 +38,7 @@ with Csets;    use Csets;
 with Einfo;    use Einfo;
 with Fname;    use Fname;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Output;   use Output;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -259,18 +260,22 @@ package body Lib is
    ------------------------------
 
    function Check_Same_Extended_Unit (S1, S2 : Source_Ptr) return SEU_Result is
-      Sloc1  : Source_Ptr;
-      Sloc2  : Source_Ptr;
-      Sind1  : Source_File_Index;
-      Sind2  : Source_File_Index;
-      Inst1  : Source_Ptr;
-      Inst2  : Source_Ptr;
-      Unum1  : Unit_Number_Type;
-      Unum2  : Unit_Number_Type;
-      Unit1  : Node_Id;
-      Unit2  : Node_Id;
-      Depth1 : Nat;
-      Depth2 : Nat;
+      Max_Iterations : constant Nat := Maximum_Instantiations * 2;
+      --  Limit to prevent a potential infinite loop
+
+      Counter : Nat := 0;
+      Depth1  : Nat;
+      Depth2  : Nat;
+      Inst1   : Source_Ptr;
+      Inst2   : Source_Ptr;
+      Sind1   : Source_File_Index;
+      Sind2   : Source_File_Index;
+      Sloc1   : Source_Ptr;
+      Sloc2   : Source_Ptr;
+      Unit1   : Node_Id;
+      Unit2   : Node_Id;
+      Unum1   : Unit_Number_Type;
+      Unum2   : Unit_Number_Type;
 
    begin
       if S1 = No_Location or else S2 = No_Location then
@@ -435,7 +440,13 @@ package body Lib is
          return No;
 
          <<Continue>>
-            null;
+         Counter := Counter + 1;
+
+         --  Prevent looping forever
+
+         if Counter > Max_Iterations then
+            raise Program_Error;
+         end if;
       end loop;
    end Check_Same_Extended_Unit;
 

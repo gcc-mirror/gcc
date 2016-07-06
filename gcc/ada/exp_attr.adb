@@ -3009,9 +3009,10 @@ package body Exp_Attr is
 
       when Attribute_Enum_Rep => Enum_Rep : declare
          Expr : Node_Id;
+
       begin
-         --  Get the expression, which is X for Enum_Type'Enum_Rep (X)
-         --  or X'Enum_Rep.
+         --  Get the expression, which is X for Enum_Type'Enum_Rep (X) or
+         --  X'Enum_Rep.
 
          if Is_Non_Empty_List (Exprs) then
             Expr := First (Exprs);
@@ -3019,8 +3020,8 @@ package body Exp_Attr is
             Expr := Pref;
          end if;
 
-         --  If the expression is an enumeration literal, it is
-         --  replaced by the literal value.
+         --  If the expression is an enumeration literal, it is replaced by the
+         --  literal value.
 
          if Nkind (Expr) in N_Has_Entity
            and then Ekind (Entity (Expr)) = E_Enumeration_Literal
@@ -3029,8 +3030,8 @@ package body Exp_Attr is
               Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
 
          --  If this is a renaming of a literal, recover the representation
-         --  of the original. If it renames an expression there is nothing
-         --  to fold.
+         --  of the original. If it renames an expression there is nothing to
+         --  fold.
 
          elsif Nkind (Expr) in N_Has_Entity
            and then Ekind (Entity (Expr)) = E_Constant
@@ -3056,8 +3057,7 @@ package body Exp_Attr is
          --  might be an illegal conversion.
 
          else
-            Rewrite (N,
-              OK_Convert_To (Typ, Relocate_Node (Expr)));
+            Rewrite (N, OK_Convert_To (Typ, Relocate_Node (Expr)));
          end if;
 
          Set_Etype (N, Typ);
