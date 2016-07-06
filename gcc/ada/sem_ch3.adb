@@ -4802,6 +4802,24 @@ package body Sem_Ch3 is
       then
          Set_Has_Predicates (Id);
          Set_Has_Delayed_Freeze (Id);
+
+         --  Generated subtypes inherit the predicate function from the parent
+         --  (no aspects to examine on the generated declaration).
+
+         if not Comes_From_Source (N) then
+            Set_Ekind (Id, Ekind (T));
+
+            if Present (Predicate_Function (T)) then
+               Set_Predicate_Function (Id, Predicate_Function (T));
+
+            elsif Present (Ancestor_Subtype (T))
+              and then Has_Predicates (Ancestor_Subtype (T))
+              and then Present (Predicate_Function (Ancestor_Subtype (T)))
+            then
+               Set_Predicate_Function (Id,
+                 Predicate_Function (Ancestor_Subtype (T)));
+            end if;
+         end if;
       end if;
 
       --  Subtype of Boolean cannot have a constraint in SPARK

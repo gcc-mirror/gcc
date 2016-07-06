@@ -2930,7 +2930,7 @@ package body Sem_Aggr is
          end if;
 
       else
-         Error_Msg_N ("no unique type for this aggregate",  A);
+         Error_Msg_N ("no unique type for this aggregate", A);
       end if;
 
       Check_Function_Writable_Actuals (N);
@@ -2941,25 +2941,9 @@ package body Sem_Aggr is
    ------------------------------
 
    procedure Resolve_Record_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Assoc : Node_Id;
-      --  N_Component_Association node belonging to the input aggregate N
-
-      Expr            : Node_Id;
-      Positional_Expr : Node_Id;
-      Component       : Entity_Id;
-      Component_Elmt  : Elmt_Id;
-
-      Components : constant Elist_Id := New_Elmt_List;
-      --  Components is the list of the record components whose value must be
-      --  provided in the aggregate. This list does include discriminants.
-
       New_Assoc_List : constant List_Id := New_List;
-      New_Assoc      : Node_Id;
       --  New_Assoc_List is the newly built list of N_Component_Association
-      --  nodes. New_Assoc is one such N_Component_Association node in it.
-      --  Note that while Assoc and New_Assoc contain the same kind of nodes,
-      --  they are used to iterate over two different N_Component_Association
-      --  lists.
+      --  nodes.
 
       Others_Etype : Entity_Id := Empty;
       --  This variable is used to save the Etype of the last record component
@@ -2975,7 +2959,6 @@ package body Sem_Aggr is
       Box_Node       : Node_Id;
       Is_Box_Present : Boolean := False;
       Others_Box     : Integer := 0;
-
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
@@ -2983,9 +2966,9 @@ package body Sem_Aggr is
       --  (which may be a sub-aggregate of a larger one) that are default-
       --  initialized. A value of One indicates that an others_box is present.
       --  Any larger value indicates that the others_box is not redundant.
-      --  These variables, similar to Others_Etype, are also updated as a
-      --  side effect of function Get_Value.
-      --  Box_Node is used to place a warning on a redundant others_box.
+      --  These variables, similar to Others_Etype, are also updated as a side
+      --  effect of function Get_Value. Box_Node is used to place a warning on
+      --  a redundant others_box.
 
       procedure Add_Association
         (Component      : Entity_Id;
@@ -2997,14 +2980,23 @@ package body Sem_Aggr is
       --  either New_Assoc_List, or the association being built for an inner
       --  aggregate.
 
-      function Discr_Present (Discr : Entity_Id) return Boolean;
+      procedure Add_Discriminant_Values
+        (New_Aggr   : Node_Id;
+         Assoc_List : List_Id);
+      --  The constraint to a component may be given by a discriminant of the
+      --  enclosing type, in which case we have to retrieve its value, which is
+      --  part of the enclosing aggregate. Assoc_List provides the discriminant
+      --  associations of the current type or of some enclosing record.
+
+      function Discriminant_Present (Input_Discr : Entity_Id) return Boolean;
       --  If aggregate N is a regular aggregate this routine will return True.
-      --  Otherwise, if N is an extension aggregate, Discr is a discriminant
-      --  whose value may already have been specified by N's ancestor part.
-      --  This routine checks whether this is indeed the case and if so returns
-      --  False, signaling that no value for Discr should appear in N's
-      --  aggregate part. Also, in this case, the routine appends to
-      --  New_Assoc_List the discriminant value specified in the ancestor part.
+      --  Otherwise, if N is an extension aggregate, then Input_Discr denotes
+      --  a discriminant whose value may already have been specified by N's
+      --  ancestor part. This routine checks whether this is indeed the case
+      --  and if so returns False, signaling that no value for Input_Discr
+      --  should appear in N's aggregate part. Also, in this case, the routine
+      --  appends to New_Assoc_List the discriminant value specified in the
+      --  ancestor part.
       --
       --  If the aggregate is in a context with expansion delayed, it will be
       --  reanalyzed. The inherited discriminant values must not be reinserted
@@ -3012,11 +3004,16 @@ package body Sem_Aggr is
       --  present on first analysis to build the proper subtype indications.
       --  The flag Inherited_Discriminant is used to prevent the re-insertion.
 
+      function Find_Private_Ancestor (Typ : Entity_Id) return Entity_Id;
+      --  AI05-0115: Find earlier ancestor in the derivation chain that is
+      --  derived from private view Typ. Whether the aggregate is legal depends
+      --  on the current visibility of the type as well as that of the parent
+      --  of the ancestor.
+
       function Get_Value
         (Compon                 : Node_Id;
          From                   : List_Id;
-         Consider_Others_Choice : Boolean := False)
-         return                   Node_Id;
+         Consider_Others_Choice : Boolean := False) return Node_Id;
       --  Given a record component stored in parameter Compon, this function
       --  returns its value as it appears in the list From, which is a list
       --  of N_Component_Association nodes.
@@ -3041,7 +3038,14 @@ package body Sem_Aggr is
       --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
       --  also copies the dimensions of Source to the returned node.
 
-      procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id);
+      procedure Propagate_Discriminants
+        (Aggr       : Node_Id;
+         Assoc_List : List_Id);
+      --  Nested components may themselves be discriminated types constrained
+      --  by outer discriminants, whose values must be captured before the
+      --  aggregate is expanded into assignments.
+
+      procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Entity_Id);
       --  Analyzes and resolves expression Expr against the Etype of the
       --  Component. This routine also applies all appropriate checks to Expr.
       --  It finally saves a Expr in the newly created association list that
@@ -3059,13 +3063,12 @@ package body Sem_Aggr is
          Assoc_List     : List_Id;
          Is_Box_Present : Boolean := False)
       is
-         Loc : Source_Ptr;
          Choice_List : constant List_Id := New_List;
-         New_Assoc   : Node_Id;
+         Loc         : Source_Ptr;
 
       begin
-         --  If this is a box association the expression is missing, so
-         --  use the Sloc of the aggregate itself for the new association.
+         --  If this is a box association the expression is missing, so use the
+         --  Sloc of the aggregate itself for the new association.
 
          if Present (Expr) then
             Loc := Sloc (Expr);
@@ -3073,34 +3076,97 @@ package body Sem_Aggr is
             Loc := Sloc (N);
          end if;
 
-         Append (New_Occurrence_Of (Component, Loc), Choice_List);
-         New_Assoc :=
+         Append_To (Choice_List, New_Occurrence_Of (Component, Loc));
+
+         Append_To (Assoc_List,
            Make_Component_Association (Loc,
              Choices     => Choice_List,
              Expression  => Expr,
-             Box_Present => Is_Box_Present);
-         Append (New_Assoc, Assoc_List);
+             Box_Present => Is_Box_Present));
       end Add_Association;
 
-      -------------------
-      -- Discr_Present --
-      -------------------
+      -----------------------------
+      -- Add_Discriminant_Values --
+      -----------------------------
 
-      function Discr_Present (Discr : Entity_Id) return Boolean is
+      procedure Add_Discriminant_Values
+        (New_Aggr   : Node_Id;
+         Assoc_List : List_Id)
+      is
+         Assoc      : Node_Id;
+         Discr      : Entity_Id;
+         Discr_Elmt : Elmt_Id;
+         Discr_Val  : Node_Id;
+         Val        : Entity_Id;
+
+      begin
+         Discr      := First_Discriminant (Etype (New_Aggr));
+         Discr_Elmt := First_Elmt (Discriminant_Constraint (Etype (New_Aggr)));
+         while Present (Discr_Elmt) loop
+            Discr_Val := Node (Discr_Elmt);
+
+            --  If the constraint is given by a discriminant then it is a
+            --  discriminant of an enclosing record, and its value has already
+            --  been placed in the association list.
+
+            if Is_Entity_Name (Discr_Val)
+              and then Ekind (Entity (Discr_Val)) = E_Discriminant
+            then
+               Val := Entity (Discr_Val);
+
+               Assoc := First (Assoc_List);
+               while Present (Assoc) loop
+                  if Present (Entity (First (Choices (Assoc))))
+                    and then Entity (First (Choices (Assoc))) = Val
+                  then
+                     Discr_Val := Expression (Assoc);
+                     exit;
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+            end if;
+
+            Add_Association
+              (Discr, New_Copy_Tree (Discr_Val),
+               Component_Associations (New_Aggr));
+
+            --  If the discriminant constraint is a current instance, mark the
+            --  current aggregate so that the self-reference can be expanded
+            --  later. The constraint may refer to the subtype of aggregate, so
+            --  use base type for comparison.
+
+            if Nkind (Discr_Val) = N_Attribute_Reference
+              and then Is_Entity_Name (Prefix (Discr_Val))
+              and then Is_Type (Entity (Prefix (Discr_Val)))
+              and then Base_Type (Etype (N)) = Entity (Prefix (Discr_Val))
+            then
+               Set_Has_Self_Reference (N);
+            end if;
+
+            Next_Elmt (Discr_Elmt);
+            Next_Discriminant (Discr);
+         end loop;
+      end Add_Discriminant_Values;
+
+      --------------------------
+      -- Discriminant_Present --
+      --------------------------
+
+      function Discriminant_Present (Input_Discr : Entity_Id) return Boolean is
          Regular_Aggr : constant Boolean := Nkind (N) /= N_Extension_Aggregate;
+
+         Ancestor_Is_Subtyp : Boolean;
 
          Loc : Source_Ptr;
 
          Ancestor     : Node_Id;
-         Comp_Assoc   : Node_Id;
-         Discr_Expr   : Node_Id;
-
          Ancestor_Typ : Entity_Id;
+         Comp_Assoc   : Node_Id;
+         Discr        : Entity_Id;
+         Discr_Expr   : Node_Id;
+         Discr_Val    : Elmt_Id := No_Elmt;
          Orig_Discr   : Entity_Id;
-         D            : Entity_Id;
-         D_Val        : Elmt_Id := No_Elmt; -- stop junk warning
-
-         Ancestor_Is_Subtyp : Boolean;
 
       begin
          if Regular_Aggr then
@@ -3157,41 +3223,66 @@ package body Sem_Aggr is
          --  Now look to see if Discr was specified in the ancestor part
 
          if Ancestor_Is_Subtyp then
-            D_Val := First_Elmt (Discriminant_Constraint (Entity (Ancestor)));
+            Discr_Val :=
+              First_Elmt (Discriminant_Constraint (Entity (Ancestor)));
          end if;
 
-         Orig_Discr := Original_Record_Component (Discr);
+         Orig_Discr := Original_Record_Component (Input_Discr);
 
-         D := First_Discriminant (Ancestor_Typ);
-         while Present (D) loop
+         Discr := First_Discriminant (Ancestor_Typ);
+         while Present (Discr) loop
 
             --  If Ancestor has already specified Disc value then insert its
             --  value in the final aggregate.
 
-            if Original_Record_Component (D) = Orig_Discr then
+            if Original_Record_Component (Discr) = Orig_Discr then
                if Ancestor_Is_Subtyp then
-                  Discr_Expr := New_Copy_Tree (Node (D_Val));
+                  Discr_Expr := New_Copy_Tree (Node (Discr_Val));
                else
                   Discr_Expr :=
                     Make_Selected_Component (Loc,
                       Prefix        => Duplicate_Subexpr (Ancestor),
-                      Selector_Name => New_Occurrence_Of (Discr, Loc));
+                      Selector_Name => New_Occurrence_Of (Input_Discr, Loc));
                end if;
 
-               Resolve_Aggr_Expr (Discr_Expr, Discr);
+               Resolve_Aggr_Expr (Discr_Expr, Input_Discr);
                Set_Inherited_Discriminant (Last (New_Assoc_List));
                return False;
             end if;
 
-            Next_Discriminant (D);
+            Next_Discriminant (Discr);
 
             if Ancestor_Is_Subtyp then
-               Next_Elmt (D_Val);
+               Next_Elmt (Discr_Val);
             end if;
          end loop;
 
          return True;
-      end Discr_Present;
+      end Discriminant_Present;
+
+      ---------------------------
+      -- Find_Private_Ancestor --
+      ---------------------------
+
+      function Find_Private_Ancestor (Typ : Entity_Id) return Entity_Id is
+         Par : Entity_Id;
+
+      begin
+         Par := Typ;
+         loop
+            if Has_Private_Ancestor (Par)
+              and then not Has_Private_Ancestor (Etype (Base_Type (Par)))
+            then
+               return Par;
+
+            elsif not Is_Derived_Type (Par) then
+               return Empty;
+
+            else
+               Par := Etype (Base_Type (Par));
+            end if;
+         end loop;
+      end Find_Private_Ancestor;
 
       ---------------
       -- Get_Value --
@@ -3200,8 +3291,7 @@ package body Sem_Aggr is
       function Get_Value
         (Compon                 : Node_Id;
          From                   : List_Id;
-         Consider_Others_Choice : Boolean := False)
-         return                   Node_Id
+         Consider_Others_Choice : Boolean := False) return Node_Id
       is
          Typ           : constant Entity_Id := Etype (Compon);
          Assoc         : Node_Id;
@@ -3266,14 +3356,14 @@ package body Sem_Aggr is
                               null;
                            else
                               Error_Msg_N
-                                ("components in OTHERS choice must "
-                                 & "have same type", Selector_Name);
+                                ("components in OTHERS choice must have same "
+                                 & "type", Selector_Name);
                            end if;
                         end if;
 
                         Others_Etype := Typ;
 
-                        --  Copy expression so that it is resolved
+                        --  Copy the expression so that it is resolved
                         --  independently for each component, This is needed
                         --  for accessibility checks on compoents of anonymous
                         --  access types, even in compile_only mode.
@@ -3414,11 +3504,110 @@ package body Sem_Aggr is
          return New_Copy;
       end New_Copy_Tree_And_Copy_Dimensions;
 
+      -----------------------------
+      -- Propagate_Discriminants --
+      -----------------------------
+
+      procedure Propagate_Discriminants
+        (Aggr       : Node_Id;
+         Assoc_List : List_Id)
+      is
+         Loc : constant Source_Ptr := Sloc (N);
+
+         Needs_Box : Boolean := False;
+
+         procedure Process_Component (Comp : Entity_Id);
+         --  Add one component with a box association to the inner aggregate,
+         --  and recurse if component is itself composite.
+
+         -----------------------
+         -- Process_Component --
+         -----------------------
+
+         procedure Process_Component (Comp : Entity_Id) is
+            T        : constant Entity_Id := Etype (Comp);
+            New_Aggr : Node_Id;
+
+         begin
+            if Is_Record_Type (T) and then Has_Discriminants (T) then
+               New_Aggr := Make_Aggregate (Loc, New_List, New_List);
+               Set_Etype (New_Aggr, T);
+
+               Add_Association
+                 (Comp, New_Aggr, Component_Associations (Aggr));
+
+               --  Collect discriminant values and recurse
+
+               Add_Discriminant_Values (New_Aggr, Assoc_List);
+               Propagate_Discriminants (New_Aggr, Assoc_List);
+
+            else
+               Needs_Box := True;
+            end if;
+         end Process_Component;
+
+         --  Local variables
+
+         Aggr_Type  : constant Entity_Id := Base_Type (Etype (Aggr));
+         Components : constant Elist_Id  := New_Elmt_List;
+         Def_Node   : constant Node_Id   :=
+                       Type_Definition (Declaration_Node (Aggr_Type));
+
+         Comp      : Node_Id;
+         Comp_Elmt : Elmt_Id;
+         Errors    : Boolean;
+
+      --  Start of processing for Propagate_Discriminants
+
+      begin
+         --  The component type may be a variant type. Collect the components
+         --  that are ruled by the known values of the discriminants. Their
+         --  values have already been inserted into the component list of the
+         --  current aggregate.
+
+         if Nkind (Def_Node) = N_Record_Definition
+           and then Present (Component_List (Def_Node))
+           and then Present (Variant_Part (Component_List (Def_Node)))
+         then
+            Gather_Components (Aggr_Type,
+              Component_List (Def_Node),
+              Governed_By   => Component_Associations (Aggr),
+              Into          => Components,
+              Report_Errors => Errors);
+
+            Comp_Elmt := First_Elmt (Components);
+            while Present (Comp_Elmt) loop
+               if Ekind (Node (Comp_Elmt)) /= E_Discriminant then
+                  Process_Component (Node (Comp_Elmt));
+               end if;
+
+               Next_Elmt (Comp_Elmt);
+            end loop;
+
+            --  No variant part, iterate over all components
+
+         else
+            Comp := First_Component (Etype (Aggr));
+            while Present (Comp) loop
+               Process_Component (Comp);
+               Next_Component (Comp);
+            end loop;
+         end if;
+
+         if Needs_Box then
+            Append_To (Component_Associations (Aggr),
+              Make_Component_Association (Loc,
+                Choices     => New_List (Make_Others_Choice (Loc)),
+                Expression  => Empty,
+                Box_Present => True));
+         end if;
+      end Propagate_Discriminants;
+
       -----------------------
       -- Resolve_Aggr_Expr --
       -----------------------
 
-      procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id) is
+      procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Entity_Id) is
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean;
          --  If the expression is an aggregate (possibly qualified) then its
          --  expansion is delayed until the enclosing aggregate is expanded
@@ -3433,14 +3622,15 @@ package body Sem_Aggr is
          ---------------------------
 
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean is
-            Kind : constant Node_Kind := Nkind (Expr);
          begin
-            return (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate)
-                     and then Present (Etype (Expr))
-                     and then Is_Record_Type (Etype (Expr))
-                     and then Expansion_Delayed (Expr))
-              or else (Kind = N_Qualified_Expression
-                        and then Has_Expansion_Delayed (Expression (Expr)));
+            return
+               (Nkind_In (Expr, N_Aggregate, N_Extension_Aggregate)
+                 and then Present (Etype (Expr))
+                 and then Is_Record_Type (Etype (Expr))
+                 and then Expansion_Delayed (Expr))
+              or else
+                (Nkind (Expr) = N_Qualified_Expression
+                  and then Has_Expansion_Delayed (Expression (Expr)));
          end Has_Expansion_Delayed;
 
          --  Local variables
@@ -3580,6 +3770,8 @@ package body Sem_Aggr is
             Generate_Range_Check (Expr, Expr_Type, CE_Range_Check_Failed);
          end if;
 
+         --  Add association Component => Expr if the caller requests it
+
          if Relocate then
             New_Expr := Relocate_Node (Expr);
 
@@ -3595,6 +3787,17 @@ package body Sem_Aggr is
          Add_Association (New_C, New_Expr, New_Assoc_List);
       end Resolve_Aggr_Expr;
 
+      --  Local variables
+
+      Components : constant Elist_Id := New_Elmt_List;
+      --  Components is the list of the record components whose value must be
+      --  provided in the aggregate. This list does include discriminants.
+
+      Expr            : Node_Id;
+      Component       : Entity_Id;
+      Component_Elmt  : Elmt_Id;
+      Positional_Expr : Node_Id;
+
    --  Start of processing for Resolve_Record_Aggregate
 
    begin
@@ -3607,7 +3810,6 @@ package body Sem_Aggr is
       if Present (Component_Associations (N))
         and then Present (First (Component_Associations (N)))
       then
-
          if Present (Expressions (N)) then
             Check_SPARK_05_Restriction
               ("named association cannot follow positional one",
@@ -3678,8 +3880,9 @@ package body Sem_Aggr is
       --  STEP 2: Verify aggregate structure
 
       Step_2 : declare
-         Selector_Name : Node_Id;
+         Assoc         : Node_Id;
          Bad_Aggregate : Boolean := False;
+         Selector_Name : Node_Id;
 
       begin
          if Present (Component_Associations (N)) then
@@ -3774,7 +3977,7 @@ package body Sem_Aggr is
          --  First find the discriminant values in the positional components
 
          while Present (Discrim) and then Present (Positional_Expr) loop
-            if Discr_Present (Discrim) then
+            if Discriminant_Present (Discrim) then
                Resolve_Aggr_Expr (Positional_Expr, Discrim);
 
                --  Ada 2005 (AI-231)
@@ -3802,7 +4005,7 @@ package body Sem_Aggr is
          while Present (Discrim) loop
             Expr := Get_Value (Discrim, Component_Associations (N), True);
 
-            if not Discr_Present (Discrim) then
+            if not Discriminant_Present (Discrim) then
                if Present (Expr) then
                   Error_Msg_NE
                     ("more than one value supplied for discriminant &",
@@ -3850,17 +4053,17 @@ package body Sem_Aggr is
                   and then Present (Underlying_Record_View (Typ)))
       then
          Build_Constrained_Itype : declare
+            Constrs     : constant List_Id    := New_List;
             Loc         : constant Source_Ptr := Sloc (N);
-            Indic       : Node_Id;
-            Subtyp_Decl : Node_Id;
             Def_Id      : Entity_Id;
-
-            C : constant List_Id := New_List;
+            Indic       : Node_Id;
+            New_Assoc   : Node_Id;
+            Subtyp_Decl : Node_Id;
 
          begin
             New_Assoc := First (New_Assoc_List);
             while Present (New_Assoc) loop
-               Append (Duplicate_Subexpr (Expression (New_Assoc)), To => C);
+               Append_To (Constrs, Duplicate_Subexpr (Expression (New_Assoc)));
                Next (New_Assoc);
             end loop;
 
@@ -3872,14 +4075,16 @@ package body Sem_Aggr is
                    Subtype_Mark =>
                      New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
                    Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc, C));
+                     Make_Index_Or_Discriminant_Constraint (Loc,
+                       Constraints => Constrs));
             else
                Indic :=
                  Make_Subtype_Indication (Loc,
                    Subtype_Mark =>
                      New_Occurrence_Of (Base_Type (Typ), Loc),
                    Constraint   =>
-                     Make_Index_Or_Discriminant_Constraint (Loc, C));
+                     Make_Index_Or_Discriminant_Constraint (Loc,
+                       Constraints => Constrs));
             end if;
 
             Def_Id := Create_Itype (Ekind (Typ), N);
@@ -3906,45 +4111,13 @@ package body Sem_Aggr is
       --  STEP 5: Get remaining components according to discriminant values
 
       Step_5 : declare
+         Dnode           : Node_Id;
+         Errors_Found    : Boolean := False;
          Record_Def      : Node_Id;
          Parent_Typ      : Entity_Id;
-         Root_Typ        : Entity_Id;
          Parent_Typ_List : Elist_Id;
          Parent_Elmt     : Elmt_Id;
-         Errors_Found    : Boolean := False;
-         Dnode           : Node_Id;
-
-         function Find_Private_Ancestor return Entity_Id;
-         --  AI05-0115: Find earlier ancestor in the derivation chain that is
-         --  derived from a private view. Whether the aggregate is legal
-         --  depends on the current visibility of the type as well as that
-         --  of the parent of the ancestor.
-
-         ---------------------------
-         -- Find_Private_Ancestor --
-         ---------------------------
-
-         function Find_Private_Ancestor return Entity_Id is
-            Par : Entity_Id;
-
-         begin
-            Par := Typ;
-            loop
-               if Has_Private_Ancestor (Par)
-                 and then not Has_Private_Ancestor (Etype (Base_Type (Par)))
-               then
-                  return Par;
-
-               elsif not Is_Derived_Type (Par) then
-                  return Empty;
-
-               else
-                  Par := Etype (Base_Type (Par));
-               end if;
-            end loop;
-         end Find_Private_Ancestor;
-
-      --  Start of processing for Step_5
+         Root_Typ        : Entity_Id;
 
       begin
          if Is_Derived_Type (Typ) and then Is_Tagged_Type (Typ) then
@@ -3959,19 +4132,20 @@ package body Sem_Aggr is
                Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
 
             else
-               --  AI05-0115:  check legality of aggregate for type with
-               --  aa private ancestor.
+               --  AI05-0115: check legality of aggregate for type with a
+               --  private ancestor.
 
                Root_Typ := Root_Type (Typ);
                if Has_Private_Ancestor (Typ) then
                   declare
                      Ancestor      : constant Entity_Id :=
-                       Find_Private_Ancestor;
+                                       Find_Private_Ancestor (Typ);
                      Ancestor_Unit : constant Entity_Id :=
-                       Cunit_Entity (Get_Source_Unit (Ancestor));
+                                       Cunit_Entity
+                                         (Get_Source_Unit (Ancestor));
                      Parent_Unit   : constant Entity_Id :=
-                       Cunit_Entity
-                         (Get_Source_Unit (Base_Type (Etype (Ancestor))));
+                                       Cunit_Entity (Get_Source_Unit
+                                         (Base_Type (Etype (Ancestor))));
                   begin
                      --  Check whether we are in a scope that has full view
                      --  over the private ancestor and its parent. This can
@@ -4189,8 +4363,7 @@ package body Sem_Aggr is
                --  object of the aggregate.
 
                if Present (Parent (Component))
-                 and then
-                   Nkind (Parent (Component)) = N_Component_Declaration
+                 and then Nkind (Parent (Component)) = N_Component_Declaration
                  and then Present (Expression (Parent (Component)))
                then
                   Expr :=
@@ -4213,26 +4386,18 @@ package body Sem_Aggr is
                elsif Present (Underlying_Type (Ctyp))
                  and then Is_Access_Type (Underlying_Type (Ctyp))
                then
-                  if not Is_Private_Type (Ctyp) then
-                     Expr := Make_Null (Sloc (N));
-                     Set_Etype (Expr, Ctyp);
-                     Add_Association
-                       (Component  => Component,
-                        Expr       => Expr,
-                        Assoc_List => New_Assoc_List);
-
                   --  If the component's type is private with an access type as
                   --  its underlying type then we have to create an unchecked
                   --  conversion to satisfy type checking.
 
-                  else
+                  if Is_Private_Type (Ctyp) then
                      declare
                         Qual_Null : constant Node_Id :=
                                       Make_Qualified_Expression (Sloc (N),
                                         Subtype_Mark =>
                                           New_Occurrence_Of
                                             (Underlying_Type (Ctyp), Sloc (N)),
-                                        Expression => Make_Null (Sloc (N)));
+                                        Expression   => Make_Null (Sloc (N)));
 
                         Convert_Null : constant Node_Id :=
                                          Unchecked_Convert_To
@@ -4245,6 +4410,17 @@ package body Sem_Aggr is
                            Expr       => Convert_Null,
                            Assoc_List => New_Assoc_List);
                      end;
+
+                  --  Otherwise the component type is non-private
+
+                  else
+                     Expr := Make_Null (Sloc (N));
+                     Set_Etype (Expr, Ctyp);
+
+                     Add_Association
+                       (Component  => Component,
+                        Expr       => Expr,
+                        Assoc_List => New_Assoc_List);
                   end if;
 
                --  Ada 2012: If component is scalar with default value, use it
@@ -4254,8 +4430,9 @@ package body Sem_Aggr is
                then
                   Add_Association
                     (Component  => Component,
-                     Expr       => Default_Aspect_Value
-                                     (First_Subtype (Underlying_Type (Ctyp))),
+                     Expr       =>
+                       Default_Aspect_Value
+                         (First_Subtype (Underlying_Type (Ctyp))),
                      Assoc_List => New_Assoc_List);
 
                elsif Has_Non_Null_Base_Init_Proc (Ctyp)
@@ -4270,8 +4447,8 @@ package body Sem_Aggr is
                      --  for the rest, if other components are present.
 
                      --  The type of the aggregate is the known subtype of
-                     --  the component. The capture of discriminants must
-                     --  be recursive because subcomponents may be constrained
+                     --  the component. The capture of discriminants must be
+                     --  recursive because subcomponents may be constrained
                      --  (transitively) by discriminants of enclosing types.
                      --  For a private type with discriminants, a call to the
                      --  initialization procedure will be generated, and no
@@ -4280,206 +4457,6 @@ package body Sem_Aggr is
                      Capture_Discriminants : declare
                         Loc  : constant Source_Ptr := Sloc (N);
                         Expr : Node_Id;
-
-                        procedure Add_Discriminant_Values
-                          (New_Aggr   : Node_Id;
-                           Assoc_List : List_Id);
-                        --  The constraint to a component may be given by a
-                        --  discriminant of the enclosing type, in which case
-                        --  we have to retrieve its value, which is part of the
-                        --  enclosing aggregate. Assoc_List provides the
-                        --  discriminant associations of the current type or
-                        --  of some enclosing record.
-
-                        procedure Propagate_Discriminants
-                          (Aggr       : Node_Id;
-                           Assoc_List : List_Id);
-                        --  Nested components may themselves be discriminated
-                        --  types constrained by outer discriminants, whose
-                        --  values must be captured before the aggregate is
-                        --  expanded into assignments.
-
-                        -----------------------------
-                        -- Add_Discriminant_Values --
-                        -----------------------------
-
-                        procedure Add_Discriminant_Values
-                          (New_Aggr   : Node_Id;
-                           Assoc_List : List_Id)
-                        is
-                           Assoc      : Node_Id;
-                           Discr      : Entity_Id;
-                           Discr_Elmt : Elmt_Id;
-                           Discr_Val  : Node_Id;
-                           Val        : Entity_Id;
-
-                        begin
-                           Discr := First_Discriminant (Etype (New_Aggr));
-                           Discr_Elmt :=
-                             First_Elmt
-                               (Discriminant_Constraint (Etype (New_Aggr)));
-                           while Present (Discr_Elmt) loop
-                              Discr_Val := Node (Discr_Elmt);
-
-                              --  If the constraint is given by a discriminant
-                              --  it is a discriminant of an enclosing record,
-                              --  and its value has already been placed in the
-                              --  association list.
-
-                              if Is_Entity_Name (Discr_Val)
-                                and then
-                                  Ekind (Entity (Discr_Val)) = E_Discriminant
-                              then
-                                 Val := Entity (Discr_Val);
-
-                                 Assoc := First (Assoc_List);
-                                 while Present (Assoc) loop
-                                    if Present
-                                         (Entity (First (Choices (Assoc))))
-                                      and then
-                                        Entity (First (Choices (Assoc))) = Val
-                                    then
-                                       Discr_Val := Expression (Assoc);
-                                       exit;
-                                    end if;
-
-                                    Next (Assoc);
-                                 end loop;
-                              end if;
-
-                              Add_Association
-                                (Discr, New_Copy_Tree (Discr_Val),
-                                 Component_Associations (New_Aggr));
-
-                              --  If the discriminant constraint is a current
-                              --  instance, mark the current aggregate so that
-                              --  the self-reference can be expanded later.
-                              --  The constraint may refer to the subtype of
-                              --  aggregate, so use base type for comparison.
-
-                              if Nkind (Discr_Val) = N_Attribute_Reference
-                                and then Is_Entity_Name (Prefix (Discr_Val))
-                                and then Is_Type (Entity (Prefix (Discr_Val)))
-                                and then Base_Type (Etype (N)) =
-                                           Entity (Prefix (Discr_Val))
-                              then
-                                 Set_Has_Self_Reference (N);
-                              end if;
-
-                              Next_Elmt (Discr_Elmt);
-                              Next_Discriminant (Discr);
-                           end loop;
-                        end Add_Discriminant_Values;
-
-                        -----------------------------
-                        -- Propagate_Discriminants --
-                        -----------------------------
-
-                        procedure Propagate_Discriminants
-                          (Aggr       : Node_Id;
-                           Assoc_List : List_Id)
-                        is
-                           Aggr_Type : constant Entity_Id :=
-                                         Base_Type (Etype (Aggr));
-                           Def_Node  : constant Node_Id :=
-                                         Type_Definition
-                                           (Declaration_Node (Aggr_Type));
-
-                           Comp       : Node_Id;
-                           Comp_Elmt  : Elmt_Id;
-                           Components : constant Elist_Id := New_Elmt_List;
-                           Needs_Box  : Boolean := False;
-                           Errors     : Boolean;
-
-                           procedure Process_Component (Comp : Entity_Id);
-                           --  Add one component with a box association to the
-                           --  inner aggregate, and recurse if component is
-                           --  itself composite.
-
-                           -----------------------
-                           -- Process_Component --
-                           -----------------------
-
-                           procedure Process_Component (Comp : Entity_Id) is
-                              T        : constant Entity_Id := Etype (Comp);
-                              New_Aggr : Node_Id;
-
-                           begin
-                              if Is_Record_Type (T)
-                                and then Has_Discriminants (T)
-                              then
-                                 New_Aggr :=
-                                   Make_Aggregate (Loc, New_List, New_List);
-                                 Set_Etype (New_Aggr, T);
-                                 Add_Association
-                                   (Comp, New_Aggr,
-                                     Component_Associations (Aggr));
-
-                                 --  Collect discriminant values and recurse
-
-                                 Add_Discriminant_Values
-                                   (New_Aggr, Assoc_List);
-                                 Propagate_Discriminants
-                                   (New_Aggr, Assoc_List);
-
-                              else
-                                 Needs_Box := True;
-                              end if;
-                           end Process_Component;
-
-                        --  Start of processing for Propagate_Discriminants
-
-                        begin
-                           --  The component type may be a variant type, so
-                           --  collect the components that are ruled by the
-                           --  known values of the discriminants. Their values
-                           --  have already been inserted into the component
-                           --  list of the current aggregate.
-
-                           if Nkind (Def_Node) = N_Record_Definition
-                             and then Present (Component_List (Def_Node))
-                             and then
-                               Present
-                                 (Variant_Part (Component_List (Def_Node)))
-                           then
-                              Gather_Components (Aggr_Type,
-                                Component_List (Def_Node),
-                                Governed_By   => Component_Associations (Aggr),
-                                Into          => Components,
-                                Report_Errors => Errors);
-
-                              Comp_Elmt := First_Elmt (Components);
-                              while Present (Comp_Elmt) loop
-                                 if Ekind (Node (Comp_Elmt)) /=
-                                      E_Discriminant
-                                 then
-                                    Process_Component (Node (Comp_Elmt));
-                                 end if;
-
-                                 Next_Elmt (Comp_Elmt);
-                              end loop;
-
-                           --  No variant part, iterate over all components
-
-                           else
-                              Comp := First_Component (Etype (Aggr));
-                              while Present (Comp) loop
-                                 Process_Component (Comp);
-                                 Next_Component (Comp);
-                              end loop;
-                           end if;
-
-                           if Needs_Box then
-                              Append_To (Component_Associations (Aggr),
-                                Make_Component_Association (Loc,
-                                  Choices     =>
-                                    New_List (Make_Others_Choice (Loc)),
-                                  Expression  => Empty,
-                                  Box_Present => True));
-                           end if;
-                        end Propagate_Discriminants;
-
-                     --  Start of processing for Capture_Discriminants
 
                      begin
                         Expr := Make_Aggregate (Loc, New_List, New_List);
@@ -4498,9 +4475,9 @@ package body Sem_Aggr is
 
                         elsif Has_Discriminants (Ctyp) then
                            Add_Discriminant_Values
-                              (Expr, Component_Associations (Expr));
+                             (Expr, Component_Associations (Expr));
                            Propagate_Discriminants
-                              (Expr, Component_Associations (Expr));
+                             (Expr, Component_Associations (Expr));
 
                         else
                            declare
@@ -4523,6 +4500,7 @@ package body Sem_Aggr is
                                             Expression  => Empty,
                                             Box_Present => True));
                                     end if;
+
                                     exit;
                                  end if;
 
@@ -4536,6 +4514,9 @@ package body Sem_Aggr is
                            Expr       => Expr,
                            Assoc_List => New_Assoc_List);
                      end Capture_Discriminants;
+
+                  --  Otherwise the component type is not a record, or it has
+                  --  not discriminants, or it is private.
 
                   else
                      Add_Association
@@ -4576,6 +4557,9 @@ package body Sem_Aggr is
       --  STEP 7: check for invalid components + check type in choice list
 
       Step_7 : declare
+         Assoc     : Node_Id;
+         New_Assoc : Node_Id;
+
          Selectr : Node_Id;
          --  Selector name
 
@@ -4651,7 +4635,7 @@ package body Sem_Aggr is
                               if Nkind (N) /= N_Extension_Aggregate
                                 or else
                                   Scope (Original_Record_Component (C)) /=
-                                                     Etype (Ancestor_Part (N))
+                                    Etype (Ancestor_Part (N))
                               then
                                  exit;
                               end if;

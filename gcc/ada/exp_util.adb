@@ -1653,6 +1653,133 @@ package body Exp_Util is
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Record_Image;
 
+   ---------------------------------------
+   -- Build_Transient_Object_Statements --
+   ---------------------------------------
+
+   procedure Build_Transient_Object_Statements
+     (Obj_Decl     : Node_Id;
+      Fin_Call     : out Node_Id;
+      Hook_Assign  : out Node_Id;
+      Hook_Clear   : out Node_Id;
+      Hook_Decl    : out Node_Id;
+      Ptr_Decl     : out Node_Id;
+      Finalize_Obj : Boolean := True)
+   is
+      Loc     : constant Source_Ptr := Sloc (Obj_Decl);
+      Obj_Id  : constant Entity_Id  := Defining_Entity (Obj_Decl);
+      Obj_Typ : constant Entity_Id  := Base_Type (Etype (Obj_Id));
+
+      Desig_Typ : Entity_Id;
+      Hook_Expr : Node_Id;
+      Hook_Id   : Entity_Id;
+      Obj_Ref   : Node_Id;
+      Ptr_Typ   : Entity_Id;
+
+   begin
+      --  Recover the type of the object
+
+      Desig_Typ := Obj_Typ;
+
+      if Is_Access_Type (Desig_Typ) then
+         Desig_Typ := Available_View (Designated_Type (Desig_Typ));
+      end if;
+
+      --  Create an access type which provides a reference to the transient
+      --  object. Generate:
+
+      --    type Ptr_Typ is access all Desig_Typ;
+
+      Ptr_Typ := Make_Temporary (Loc, 'A');
+      Set_Ekind (Ptr_Typ, E_General_Access_Type);
+      Set_Directly_Designated_Type (Ptr_Typ, Desig_Typ);
+
+      Ptr_Decl :=
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Ptr_Typ,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              All_Present        => True,
+              Subtype_Indication => New_Occurrence_Of (Desig_Typ, Loc)));
+
+      --  Create a temporary check which acts as a hook to the transient
+      --  object. Generate:
+
+      --    Hook : Ptr_Typ := null;
+
+      Hook_Id := Make_Temporary (Loc, 'T');
+      Set_Ekind (Hook_Id, E_Variable);
+      Set_Etype (Hook_Id, Ptr_Typ);
+
+      Hook_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Hook_Id,
+          Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+          Expression          => Make_Null (Loc));
+
+      --  Mark the temporary as a hook. This signals the machinery in
+      --  Build_Finalizer to recognize this special case.
+
+      Set_Status_Flag_Or_Transient_Decl (Hook_Id, Obj_Decl);
+
+      --  Hook the transient object to the temporary. Generate:
+
+      --    Hook := Ptr_Typ (Obj_Id);
+      --      <or>
+      --    Hool := Obj_Id'Unrestricted_Access;
+
+      if Is_Access_Type (Obj_Typ) then
+         Hook_Expr :=
+           Unchecked_Convert_To (Ptr_Typ, New_Occurrence_Of (Obj_Id, Loc));
+      else
+         Hook_Expr :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Occurrence_Of (Obj_Id, Loc),
+             Attribute_Name => Name_Unrestricted_Access);
+      end if;
+
+      Hook_Assign :=
+        Make_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (Hook_Id, Loc),
+          Expression => Hook_Expr);
+
+      --  Crear the hook prior to finalizing the object. Generate:
+
+      --    Hook := null;
+
+      Hook_Clear :=
+        Make_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (Hook_Id, Loc),
+          Expression => Make_Null (Loc));
+
+      --  Finalize the object. Generate:
+
+      --    [Deep_]Finalize (Obj_Ref[.all]);
+
+      if Finalize_Obj then
+         Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
+
+         if Is_Access_Type (Obj_Typ) then
+            Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+            Set_Etype (Obj_Ref, Desig_Typ);
+         end if;
+
+         Fin_Call := Make_Final_Call (Obj_Ref, Desig_Typ);
+
+      --  Otherwise finalize the hook. Generate:
+
+      --    [Deep_]Finalize (Hook.all);
+
+      else
+         Fin_Call :=
+           Make_Final_Call (
+             Obj_Ref =>
+               Make_Explicit_Dereference (Loc,
+                 Prefix => New_Occurrence_Of (Hook_Id, Loc)),
+             Typ     => Desig_Typ);
+      end if;
+   end Build_Transient_Object_Statements;
+
    -----------------------------
    -- Check_Float_Op_Overflow --
    -----------------------------
@@ -5067,7 +5194,7 @@ package body Exp_Util is
          --  explicit aliases of it:
 
          --    do
-         --       Trans_Id : Ctrl_Typ ...;  --  controlled transient object
+         --       Trans_Id : Ctrl_Typ ...;  --  transient object
          --       Alias : ... := Trans_Id;  --  object is aliased
          --       Val : constant Boolean :=
          --               ... Alias ...;    --  aliasing ends
@@ -5235,6 +5362,10 @@ package body Exp_Util is
           and then Needs_Finalization (Desig)
           and then Requires_Transient_Scope (Desig)
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
+
+          --  Do not consider a transient object that was already processed
+
+          and then not Is_Finalized_Transient (Obj_Id)
 
           --  Do not consider renamed or 'reference-d transient objects because
           --  the act of renaming extends the object's lifetime.
@@ -8255,11 +8386,19 @@ package body Exp_Util is
             if Lib_Level and then Finalize_Storage_Only (Obj_Typ) then
                null;
 
-            --  Transient variables are treated separately in order to minimize
-            --  the size of the generated code. See Exp_Ch7.Process_Transient_
-            --  Objects.
+            --  Finalization of transient objects are treated separately in
+            --  order to handle sensitive cases. These include:
 
-            elsif Is_Processed_Transient (Obj_Id) then
+            --    * Aggregate expansion
+            --    * If, case, and expression with actions expansion
+            --    * Transient scopes
+
+            --  If one of those contexts has marked the transient object as
+            --  ignored, do not generate finalization actions for it.
+
+            elsif Is_Finalized_Transient (Obj_Id)
+              or else Is_Ignored_Transient (Obj_Id)
+            then
                null;
 
             --  Ignored Ghost objects do not need any cleanup actions because
@@ -8315,8 +8454,8 @@ package body Exp_Util is
             then
                return True;
 
-            --  Processing for "hook" objects generated for controlled
-            --  transients declared inside an Expression_With_Actions.
+            --  Processing for "hook" objects generated for transient objects
+            --  declared inside an Expression_With_Actions.
 
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
@@ -8464,7 +8603,7 @@ package body Exp_Util is
          elsif Nkind (Decl) = N_Block_Statement
            and then
 
-           --  Handle a rare case caused by a controlled transient variable
+           --  Handle a rare case caused by a controlled transient object
            --  created as part of a record init proc. The variable is wrapped
            --  in a block, but the block is not associated with a transient
            --  scope.
