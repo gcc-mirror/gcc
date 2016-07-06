@@ -3187,12 +3187,12 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   return true;
 }
 
-/* Check whether a non-affine read or write in stmt is suitable for gather load
-   or scatter store and if so, return a builtin decl for that operation.  */
+/* Return true if a non-affine read or write in STMT is suitable for a
+   gather load or scatter store.  Describe the operation in *INFO if so.  */
 
-tree
-vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
-			   tree *offp, int *scalep)
+bool
+vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
+			   gather_scatter_info *info)
 {
   HOST_WIDE_INT scale = 1, pbitpos, pbitsize;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -3266,7 +3266,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
   if (!expr_invariant_in_loop_p (loop, base))
     {
       if (!integer_zerop (off))
-	return NULL_TREE;
+	return false;
       off = base;
       base = size_int (pbitpos / BITS_PER_UNIT);
     }
@@ -3292,7 +3292,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (off);
 
 	  if (expr_invariant_in_loop_p (loop, off))
-	    return NULL_TREE;
+	    return false;
 
 	  if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
 	    break;
@@ -3304,7 +3304,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
       else
 	{
 	  if (get_gimple_rhs_class (TREE_CODE (off)) == GIMPLE_TERNARY_RHS)
-	    return NULL_TREE;
+	    return false;
 	  code = TREE_CODE (off);
 	  extract_ops_from_tree (off, &code, &op0, &op1);
 	}
@@ -3379,7 +3379,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
      defined in the loop, punt.  */
   if (TREE_CODE (off) != SSA_NAME
       || expr_invariant_in_loop_p (loop, off))
-    return NULL_TREE;
+    return false;
 
   if (offtype == NULL_TREE)
     offtype = TREE_TYPE (off);
@@ -3392,15 +3392,15 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
 					      offtype, scale);
 
   if (decl == NULL_TREE)
-    return NULL_TREE;
+    return false;
 
-  if (basep)
-    *basep = base;
-  if (offp)
-    *offp = off;
-  if (scalep)
-    *scalep = scale;
-  return decl;
+  info->decl = decl;
+  info->base = base;
+  info->offset = off;
+  info->offset_dt = vect_unknown_def_type;
+  info->offset_vectype = NULL_TREE;
+  info->scale = scale;
+  return true;
 }
 
 /* Function vect_analyze_data_refs.
@@ -3878,10 +3878,10 @@ again:
 
       if (gatherscatter != SG_NONE)
 	{
-	  tree off;
+	  gather_scatter_info gs_info;
 	  if (!vect_check_gather_scatter (stmt, as_a <loop_vec_info> (vinfo),
-					  NULL, &off, NULL)
-	      || get_vectype_for_scalar_type (TREE_TYPE (off)) == NULL_TREE)
+					  &gs_info)
+	      || !get_vectype_for_scalar_type (TREE_TYPE (gs_info.offset)))
 	    {
 	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
 	      free_data_ref (dr);
