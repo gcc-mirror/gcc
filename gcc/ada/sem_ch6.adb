@@ -2665,6 +2665,12 @@ package body Sem_Ch6 is
                        (Specification (Decl), Plist);
                   end if;
 
+                  --  Move aspects to the new spec
+
+                  if Has_Aspects (N) then
+                     Move_Aspects (N, To => Decl);
+                  end if;
+
                   Insert_Before (N, Decl);
                   Analyze (Decl);
                   Analyze (Prag);
