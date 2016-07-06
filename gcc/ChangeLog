@@ -1,5 +1,12 @@
 2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vect_cost_group_size): Delete.
+	(vect_model_store_cost): Avoid calling it.  Use first_stmt_p
+	variable to indicate when once-per-group costs are being used.
+	(vect_model_load_cost): Likewise.  Fix comment and misindented code.
+
+2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_load): Remove unnecessary
 	peeling-for-gaps condition.
 

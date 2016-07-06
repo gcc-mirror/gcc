@@ -865,24 +865,6 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
                      "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
-/* Function vect_cost_group_size
-
-   For grouped load or store, return the group_size only if it is the first
-   load or store of a group, else return 1.  This ensures that group size is
-   only returned once per group.  */
-
-static int
-vect_cost_group_size (stmt_vec_info stmt_info)
-{
-  gimple *first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-
-  if (first_stmt == STMT_VINFO_STMT (stmt_info))
-    return GROUP_SIZE (stmt_info);
-
-  return 1;
-}
-
-
 /* Function vect_model_store_cost
 
    Models cost for stores.  In the case of grouped accesses, one access
@@ -895,47 +877,43 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 		       stmt_vector_for_cost *prologue_cost_vec,
 		       stmt_vector_for_cost *body_cost_vec)
 {
-  int group_size;
   unsigned int inside_cost = 0, prologue_cost = 0;
-  struct data_reference *first_dr;
-  gimple *first_stmt;
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  gimple *first_stmt = STMT_VINFO_STMT (stmt_info);
+  bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
   if (dt == vect_constant_def || dt == vect_external_def)
     prologue_cost += record_stmt_cost (prologue_cost_vec, 1, scalar_to_vec,
 				       stmt_info, 0, vect_prologue);
 
-  /* Grouped access?  */
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+  /* Grouped stores update all elements in the group at once,
+     so we want the DR for the first statement.  */
+  if (!slp_node && grouped_access_p)
     {
-      if (slp_node)
-        {
-          first_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[0];
-          group_size = 1;
-        }
-      else
-        {
-          first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-          group_size = vect_cost_group_size (stmt_info);
-        }
+      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
+    }
 
-      first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-    }
-  /* Not a grouped access.  */
-  else
-    {
-      group_size = 1;
-      first_dr = STMT_VINFO_DATA_REF (stmt_info);
-    }
+  /* True if we should include any once-per-group costs as well as
+     the cost of the statement itself.  For SLP we only get called
+     once per group anyhow.  */
+  bool first_stmt_p = (first_stmt == STMT_VINFO_STMT (stmt_info));
 
   /* We assume that the cost of a single store-lanes instruction is
      equivalent to the cost of GROUP_SIZE separate stores.  If a grouped
      access is instead being provided by a permute-and-store operation,
-     include the cost of the permutes.  */
-  if (!store_lanes_p && group_size > 1
-      && !STMT_VINFO_STRIDED_P (stmt_info))
+     include the cost of the permutes.
+
+     For SLP, the caller has already counted the permutation, if any.  */
+  if (grouped_access_p
+      && first_stmt_p
+      && !store_lanes_p
+      && !STMT_VINFO_STRIDED_P (stmt_info)
+      && !slp_node)
     {
       /* Uses a high and low interleave or shuffle operations for each
 	 needed permute.  */
+      int group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
       int nstmts = ncopies * ceil_log2 (group_size) * group_size;
       inside_cost = record_stmt_cost (body_cost_vec, nstmts, vec_perm,
 				      stmt_info, 0, vect_body);
@@ -957,7 +935,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 				       scalar_store, stmt_info, 0, vect_body);
     }
   else
-    vect_get_store_cost (first_dr, ncopies, &inside_cost, body_cost_vec);
+    vect_get_store_cost (dr, ncopies, &inside_cost, body_cost_vec);
 
   if (STMT_VINFO_STRIDED_P (stmt_info))
     inside_cost += record_stmt_cost (body_cost_vec,
@@ -1026,8 +1004,8 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
 /* Function vect_model_load_cost
 
-   Models cost for loads.  In the case of grouped accesses, the last access
-   has the overhead of the grouped access attributed to it.  Since unaligned
+   Models cost for loads.  In the case of grouped accesses, one access has
+   the overhead of the grouped access attributed to it.  Since unaligned
    accesses are supported for loads, we also account for the costs of the
    access scheme chosen.  */
 
@@ -1037,34 +1015,39 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
 		      stmt_vector_for_cost *prologue_cost_vec,
 		      stmt_vector_for_cost *body_cost_vec)
 {
-  int group_size;
-  gimple *first_stmt;
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr;
+  gimple *first_stmt = STMT_VINFO_STMT (stmt_info);
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   unsigned int inside_cost = 0, prologue_cost = 0;
+  bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
-  /* Grouped accesses?  */
-  first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info) && first_stmt && !slp_node)
+  /* Grouped loads read all elements in the group at once,
+     so we want the DR for the first statement.  */
+  if (!slp_node && grouped_access_p)
     {
-      group_size = vect_cost_group_size (stmt_info);
-      first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
+      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
     }
-  /* Not a grouped access.  */
-  else
-    {
-      group_size = 1;
-      first_dr = dr;
-    }
+
+  /* True if we should include any once-per-group costs as well as
+     the cost of the statement itself.  For SLP we only get called
+     once per group anyhow.  */
+  bool first_stmt_p = (first_stmt == STMT_VINFO_STMT (stmt_info));
 
   /* We assume that the cost of a single load-lanes instruction is
      equivalent to the cost of GROUP_SIZE separate loads.  If a grouped
      access is instead being provided by a load-and-permute operation,
-     include the cost of the permutes.  */
-  if (!load_lanes_p && group_size > 1
-      && !STMT_VINFO_STRIDED_P (stmt_info))
+     include the cost of the permutes.
+
+     For SLP, the caller has already counted the permutation, if any.  */
+  if (grouped_access_p
+      && first_stmt_p
+      && !load_lanes_p
+      && !STMT_VINFO_STRIDED_P (stmt_info)
+      && !slp_node)
     {
       /* Uses an even and odd extract operations or shuffle operations
 	 for each needed permute.  */
+      int group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
       int nstmts = ncopies * ceil_log2 (group_size) * group_size;
       inside_cost = record_stmt_cost (body_cost_vec, nstmts, vec_perm,
 				      stmt_info, 0, vect_body);
@@ -1086,14 +1069,12 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
 				       scalar_load, stmt_info, 0, vect_body);
     }
   else
-    vect_get_load_cost (first_dr, ncopies,
-			((!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-			 || group_size > 1 || slp_node),
+    vect_get_load_cost (dr, ncopies, first_stmt_p,
 			&inside_cost, &prologue_cost, 
 			prologue_cost_vec, body_cost_vec, true);
   if (STMT_VINFO_STRIDED_P (stmt_info))
-      inside_cost += record_stmt_cost (body_cost_vec, ncopies, vec_construct,
-				       stmt_info, 0, vect_body);
+    inside_cost += record_stmt_cost (body_cost_vec, ncopies, vec_construct,
+				     stmt_info, 0, vect_body);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
