@@ -39,6 +39,7 @@ with Exp_Ch7;   use Exp_Ch7;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
+with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
@@ -1502,7 +1503,20 @@ package body Sem_Ch7 is
          declare
             Orig_Spec : constant Node_Id := Specification (Orig_Decl);
             Save_Priv : constant List_Id := Private_Declarations (Orig_Spec);
+
          begin
+            --  Insert the freezing nodes after the visible declarations to
+            --  ensure that we analyze its aspects; needed to ensure that
+            --  global entities referenced in the aspects are properly handled.
+
+            if Ada_Version >= Ada_2012
+              and then Is_Non_Empty_List (Vis_Decls)
+              and then Is_Empty_List (Priv_Decls)
+            then
+               Insert_List_After_And_Analyze
+                 (Last (Vis_Decls), Freeze_Entity (Id, Last (Vis_Decls)));
+            end if;
+
             Set_Private_Declarations (Orig_Spec, Empty_List);
             Save_Global_References   (Orig_Decl);
             Set_Private_Declarations (Orig_Spec, Save_Priv);
@@ -1690,6 +1704,17 @@ package body Sem_Ch7 is
                           Generic_Formal_Declarations (Orig_Decl);
 
          begin
+            --  Insert the freezing nodes after the private declarations to
+            --  ensure that we analyze its aspects; needed to ensure that
+            --  global entities referenced in the aspects are properly handled.
+
+            if Ada_Version >= Ada_2012
+              and then Is_Non_Empty_List (Priv_Decls)
+            then
+               Insert_List_After_And_Analyze
+                 (Last (Priv_Decls), Freeze_Entity (Id, Last (Priv_Decls)));
+            end if;
+
             Set_Visible_Declarations        (Orig_Spec, Empty_List);
             Set_Generic_Formal_Declarations (Orig_Decl, Empty_List);
             Save_Global_References          (Orig_Decl);

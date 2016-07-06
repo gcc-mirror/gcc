@@ -14860,14 +14860,41 @@ package body Sem_Ch12 is
             --  The node did not undergo a transformation
 
             if Nkind (N) = Nkind (Get_Associated_Node (N)) then
+               declare
+                  Aux_N2         : constant Node_Id := Get_Associated_Node (N);
+                  Orig_N2_Parent : constant Node_Id :=
+                                     Original_Node (Parent (Aux_N2));
+               begin
+                  --  The parent of this identifier is a selected component
+                  --  which denotes a named number that was constant folded.
+                  --  Preserve the original name for ASIS and link the parent
+                  --  with its expanded name. The constant folding will be
+                  --  repeated in the instance.
 
-               --  If this is a discriminant reference, always save it. It is
-               --  used in the instance to find the corresponding discriminant
-               --  positionally rather than by name.
+                  if Nkind (Parent (N)) = N_Selected_Component
+                    and then Nkind_In (Parent (Aux_N2), N_Integer_Literal,
+                                                        N_Real_Literal)
+                    and then Is_Entity_Name (Orig_N2_Parent)
+                    and then Ekind (Entity (Orig_N2_Parent)) in Named_Kind
+                    and then Is_Global (Entity (Orig_N2_Parent))
+                  then
+                     N2 := Aux_N2;
+                     Set_Associated_Node (Parent (N),
+                       Original_Node (Parent (N2)));
 
-               Set_Original_Discriminant
-                 (N, Original_Discriminant (Get_Associated_Node (N)));
-               Reset_Entity (N);
+                  --  Common case
+
+                  else
+                     --  If this is a discriminant reference, always save it.
+                     --  It is used in the instance to find the corresponding
+                     --  discriminant positionally rather than by name.
+
+                     Set_Original_Discriminant
+                       (N, Original_Discriminant (Get_Associated_Node (N)));
+                  end if;
+
+                  Reset_Entity (N);
+               end;
 
             --  The analysis of the generic copy transformed the identifier
             --  into another construct. Propagate the changes to the template.

@@ -4945,6 +4945,12 @@ package body Freeze is
          Ghost_Mode := Save_Ghost_Mode;
          return No_List;
 
+      elsif Ekind (E) = E_Generic_Package then
+         Result := Freeze_Generic_Entities (E);
+
+         Ghost_Mode := Save_Ghost_Mode;
+         return Result;
+
       --  It is improper to freeze an external entity within a generic because
       --  its freeze node will appear in a non-valid context. The entity will
       --  be frozen in the proper scope after the current generic is analyzed.
@@ -5054,12 +5060,6 @@ package body Freeze is
                return No_List;
             end if;
          end;
-
-      elsif Ekind (E) = E_Generic_Package then
-         Result := Freeze_Generic_Entities (E);
-
-         Ghost_Mode := Save_Ghost_Mode;
-         return Result;
       end if;
 
       --  Add checks to detect proper initialization of scalars that may appear
