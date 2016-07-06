@@ -314,6 +314,11 @@ package body Sem_Warn is
             elsif Is_Suspicious_Function_Name (Entity (Name (N))) then
                return;
 
+            --  Forget it if function is marked Volatile_Function
+
+            elsif Is_Volatile_Function (Entity (Name (N))) then
+               return;
+
             --  Forget it if warnings are suppressed on function entity
 
             elsif Has_Warnings_Off (Entity (Name (N))) then

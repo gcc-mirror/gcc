@@ -445,7 +445,14 @@ package body Lib is
          --  Prevent looping forever
 
          if Counter > Max_Iterations then
-            raise Program_Error;
+            --  ??? Not quite right, but return a value to be able to generate
+            --  SCIL files and hope for the best.
+
+            if CodePeer_Mode then
+               return No;
+            else
+               raise Program_Error;
+            end if;
          end if;
       end loop;
    end Check_Same_Extended_Unit;

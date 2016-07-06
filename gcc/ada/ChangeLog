@@ -1,3 +1,46 @@
+2016-07-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib.adb (Check_Same_Extended_Unit): Complete previous change.
+	* sem_intr.adb (Errint): New parameter Relaxed. Refine previous
+	change to only disable errors selectively.
+	* sem_util.adb: minor style fix in object declaration
+
+2016-07-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning.Find_Var): Special case a
+	call to a volatile function, so that it does not lead to a warning in
+	that case.
+
+2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb, sem_ch4.adb, sem_ch6.adb: Minor reformatting.
+
+2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat1drv.adb: Code clean up. Do not emit any
+	code generation errors when the unit is ignored Ghost.
+
+2016-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Check_Non_Static_Context): If the expression
+	is a real literal of a floating point type that is part of a
+	larger expression and is not a static expression, transform it
+	into a machine number now so that the rest of the computation,
+	even if other components are static, is not evaluated with
+	extra precision.
+
+2016-07-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Freeze_Entity_Checks): Undo previous patch and move the
+	needed functionality to Analyze_Freeze_Generic_Entity.
+	(Analyze_Freeze_Generic_Entity): If the entity is not already frozen
+	and has delayed aspects then analyze them.
+
+2016-07-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma.Process_Inline.Set_Inline_Flags):
+	Special case for unanalyzed body entity of ghost expression function.
+
 2016-07-06  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch7.adb (Analyze_Package_Specification): Insert its

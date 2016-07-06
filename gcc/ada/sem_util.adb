@@ -11500,7 +11500,7 @@ package body Sem_Util is
    ------------------------------------------
 
    procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
-      Decl   : Node_Id;
+      Decl : Node_Id;
 
    begin
       Decl := First (Decls);

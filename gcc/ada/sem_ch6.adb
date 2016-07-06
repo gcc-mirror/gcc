@@ -2143,17 +2143,18 @@ package body Sem_Ch6 is
    --  the subprogram, or to perform conformance checks.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id) is
-      Loc          : constant Source_Ptr := Sloc (N);
-      Body_Spec    : Node_Id             := Specification (N);
-      Body_Id      : Entity_Id           := Defining_Entity (Body_Spec);
-      Prev_Id      : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
-      Exch_Views   : Elist_Id            := No_Elist;
-      Desig_View   : Entity_Id           := Empty;
-      Conformant   : Boolean;
-      HSS          : Node_Id;
-      Prot_Typ     : Entity_Id := Empty;
-      Spec_Id      : Entity_Id;
-      Spec_Decl    : Node_Id   := Empty;
+      Body_Spec : Node_Id             := Specification (N);
+      Body_Id   : Entity_Id           := Defining_Entity (Body_Spec);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Prev_Id   : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
+
+      Conformant : Boolean;
+      Desig_View : Entity_Id := Empty;
+      Exch_Views : Elist_Id  := No_Elist;
+      HSS        : Node_Id;
+      Prot_Typ   : Entity_Id := Empty;
+      Spec_Decl  : Node_Id   := Empty;
+      Spec_Id    : Entity_Id;
 
       Last_Real_Spec_Entity : Entity_Id := Empty;
       --  When we analyze a separate spec, the entity chain ends up containing

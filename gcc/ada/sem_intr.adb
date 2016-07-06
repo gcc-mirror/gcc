@@ -62,11 +62,14 @@ package body Sem_Intr is
    --  as for Check_Intrinsic_Subprogram (i.e. the entity of the subprogram
    --  declaration, and the node for the pragma argument, used for messages).
 
-   procedure Errint (Msg : String; S : Node_Id; N : Node_Id);
+   procedure Errint
+     (Msg : String; S : Node_Id; N : Node_Id; Relaxed : Boolean := False);
    --  Post error message for bad intrinsic, the message itself is posted
    --  on the appropriate spec node and another message is placed on the
    --  pragma itself, referring to the spec. S is the node in the spec on
    --  which the message is to be placed, and N is the pragma argument node.
+   --  Relaxed is True if the message should not be emitted in
+   --  Relaxed_RM_Semantics mode.
 
    ------------------------------
    -- Check_Exception_Function --
@@ -432,7 +435,7 @@ package body Sem_Intr is
       then
          Errint
            ("first argument for shift must have size 8, 16, 32 or 64",
-            Ptyp1, N);
+            Ptyp1, N, Relaxed => True);
          return;
 
       elsif Non_Binary_Modulus (Typ1) then
@@ -450,7 +453,7 @@ package body Sem_Intr is
       then
          Errint
            ("modular type for shift must have modulus of 2'*'*8, "
-            & "2'*'*16, 2'*'*32, or 2'*'*64", Ptyp1, N);
+            & "2'*'*16, 2'*'*32, or 2'*'*64", Ptyp1, N, Relaxed => True);
 
       elsif Etype (Arg1) /= Etype (E) then
          Errint
@@ -465,12 +468,13 @@ package body Sem_Intr is
    -- Errint --
    ------------
 
-   procedure Errint (Msg : String; S : Node_Id; N : Node_Id) is
+   procedure Errint
+     (Msg : String; S : Node_Id; N : Node_Id; Relaxed : Boolean := False) is
    begin
       --  Ignore errors on Intrinsic in Relaxed_RM_Semantics mode where we can
       --  be more liberal.
 
-      if not Relaxed_RM_Semantics then
+      if not (Relaxed and Relaxed_RM_Semantics) then
          Error_Msg_N (Msg, S);
          Error_Msg_N ("incorrect intrinsic subprogram, see spec", N);
       end if;
