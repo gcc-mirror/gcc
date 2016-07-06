@@ -6373,13 +6373,11 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  gcc_assert (GROUP_GAP (stmt_info));
 	}
 
-      /* If there is a gap in the end of the group or the group size cannot
-         be made a multiple of the vector element count then we access excess
+      /* If there is a gap in the end of the group then we access excess
 	 elements in the last iteration and thus need to peel that off.  */
       if (loop_vinfo
 	  && ! STMT_VINFO_STRIDED_P (stmt_info)
-	  && (GROUP_GAP (vinfo_for_stmt (first_stmt)) != 0
-	      || (!slp && !load_lanes_p && vf % group_size != 0)))
+	  && GROUP_GAP (vinfo_for_stmt (first_stmt)) != 0)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
