@@ -926,8 +926,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   /* Costs of the stores.  */
-  if (STMT_VINFO_STRIDED_P (stmt_info)
-      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+  if (STMT_VINFO_STRIDED_P (stmt_info) && !slp_node)
     {
       /* N scalar stores plus extracting the elements.  */
       inside_cost += record_stmt_cost (body_cost_vec,
@@ -1059,8 +1058,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* The loads themselves.  */
-  if (STMT_VINFO_STRIDED_P (stmt_info)
-      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+  if (STMT_VINFO_STRIDED_P (stmt_info) && !slp_node)
     {
       /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
