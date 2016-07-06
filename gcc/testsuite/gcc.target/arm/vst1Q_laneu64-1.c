@@ -11,7 +11,7 @@
 unsigned char dummy_store[1000];
 
 void
-foo (char* addr)
+foo (unsigned char* addr)
 {
   uint8x16_t vdata = vld1q_u8 (addr);
   vst1q_lane_u64 ((uint64_t*) &dummy_store, vreinterpretq_u64_u8 (vdata), 0);
