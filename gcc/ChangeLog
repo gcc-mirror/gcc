@@ -1,3 +1,13 @@
+2016-07-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/cortex-a53.md: Use final_presence_set for in-order.
+	(cortex_a53_shift): Add mov_shift.
+	(cortex_a53_shift_reg): Add new reservation for register shifts.
+	(cortex_a53_alu): Remove bfm.
+	(cortex_a53_alu_shift): Add bfm, remove mov_shift.
+	(cortex_a53_alu_extr): Add new reservation for EXTR.
+	(bypasses): Improve bypass modelling.
+
 2016-07-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/50739	

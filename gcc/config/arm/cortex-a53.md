@@ -30,6 +30,7 @@
 
 (define_cpu_unit "cortex_a53_slot0" "cortex_a53")
 (define_cpu_unit "cortex_a53_slot1" "cortex_a53")
+(final_presence_set "cortex_a53_slot1" "cortex_a53_slot0")
 
 (define_reservation "cortex_a53_slot_any"
 		    "cortex_a53_slot0\
@@ -71,41 +72,43 @@
 
 (define_insn_reservation "cortex_a53_shift" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "adr,shift_imm,shift_reg,mov_imm,mvn_imm"))
+       (eq_attr "type" "adr,shift_imm,mov_imm,mvn_imm,mov_shift"))
   "cortex_a53_slot_any")
 
-(define_insn_reservation "cortex_a53_alu_rotate_imm" 2
+(define_insn_reservation "cortex_a53_shift_reg" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "rotate_imm"))
-  "(cortex_a53_slot1)
-   | (cortex_a53_single_issue)")
+       (eq_attr "type" "shift_reg,mov_shift_reg"))
+  "cortex_a53_slot_any+cortex_a53_hazard")
 
 (define_insn_reservation "cortex_a53_alu" 3
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,
 			alu_sreg,alus_sreg,logic_reg,logics_reg,
 			adc_imm,adcs_imm,adc_reg,adcs_reg,
-			bfm,csel,clz,rbit,rev,alu_dsp_reg,
-			mov_reg,mvn_reg,
-			mrs,multiple,no_insn"))
+			csel,clz,rbit,rev,alu_dsp_reg,
+			mov_reg,mvn_reg,mrs,multiple,no_insn"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift" 3
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "alu_shift_imm,alus_shift_imm,
 			crc,logic_shift_imm,logics_shift_imm,
-			alu_ext,alus_ext,
-			extend,mov_shift,mvn_shift"))
+			alu_ext,alus_ext,bfm,extend,mvn_shift"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift_reg" 3
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "alu_shift_reg,alus_shift_reg,
 			logic_shift_reg,logics_shift_reg,
-			mov_shift_reg,mvn_shift_reg"))
+			mvn_shift_reg"))
   "cortex_a53_slot_any+cortex_a53_hazard")
 
-(define_insn_reservation "cortex_a53_mul" 3
+(define_insn_reservation "cortex_a53_alu_extr" 3
+  (and (eq_attr "tune" "cortexa53")
+       (eq_attr "type" "rotate_imm"))
+  "cortex_a53_slot1|cortex_a53_single_issue")
+
+(define_insn_reservation "cortex_a53_mul" 4
   (and (eq_attr "tune" "cortexa53")
        (ior (eq_attr "mul32" "yes")
 	    (eq_attr "mul64" "yes")))
@@ -189,49 +192,43 @@
 (define_insn_reservation "cortex_a53_branch" 0
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "branch,call"))
-  "cortex_a53_slot_any,cortex_a53_branch")
+  "cortex_a53_slot_any+cortex_a53_branch")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; General-purpose register bypasses
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Model bypasses for unshifted operands to ALU instructions.
+;; Model bypasses for ALU to ALU instructions.
 
-(define_bypass 1 "cortex_a53_shift"
-		 "cortex_a53_shift")
-
-(define_bypass 1 "cortex_a53_alu,
-		  cortex_a53_alu_shift*,
-		  cortex_a53_alu_rotate_imm,
-		  cortex_a53_shift"
+(define_bypass 0 "cortex_a53_shift*"
 		 "cortex_a53_alu")
 
-(define_bypass 2 "cortex_a53_alu,
-		  cortex_a53_alu_shift*"
+(define_bypass 1 "cortex_a53_shift*"
+		 "cortex_a53_shift*,cortex_a53_alu_*")
+
+(define_bypass 1 "cortex_a53_alu*"
+		 "cortex_a53_alu")
+
+(define_bypass 1 "cortex_a53_alu*"
 		 "cortex_a53_alu_shift*"
 		 "aarch_forward_to_shift_is_not_shifted_reg")
 
-;; In our model, we allow any general-purpose register operation to
-;; bypass to the accumulator operand of an integer MADD-like operation.
+(define_bypass 2 "cortex_a53_alu*"
+		 "cortex_a53_alu_*,cortex_a53_shift*")
 
-(define_bypass 1 "cortex_a53_alu*,
-		  cortex_a53_load*,
-		  cortex_a53_mul"
+;; Model a bypass from MUL/MLA to MLA instructions.
+
+(define_bypass 1 "cortex_a53_mul"
 		 "cortex_a53_mul"
 		 "aarch_accumulator_forwarding")
 
-;; Model a bypass from MLA/MUL to many ALU instructions.
+;; Model a bypass from MUL/MLA to ALU instructions.
 
 (define_bypass 2 "cortex_a53_mul"
-		 "cortex_a53_alu,
-		  cortex_a53_alu_shift*")
+		 "cortex_a53_alu")
 
-;; We get neater schedules by allowing an MLA/MUL to feed an
-;; early load address dependency to a load.
-
-(define_bypass 2 "cortex_a53_mul"
-		 "cortex_a53_load*"
-		 "arm_early_load_addr_dep")
+(define_bypass 3 "cortex_a53_mul"
+		 "cortex_a53_alu_*,cortex_a53_shift*")
 
 ;; Model bypasses for loads which are to be consumed by the ALU.
 
@@ -239,47 +236,37 @@
 		 "cortex_a53_alu")
 
 (define_bypass 3 "cortex_a53_load1"
-		 "cortex_a53_alu_shift*")
+		 "cortex_a53_alu_*,cortex_a53_shift*")
+
+(define_bypass 3 "cortex_a53_load2"
+		 "cortex_a53_alu")
 
 ;; Model a bypass for ALU instructions feeding stores.
 
-(define_bypass 1 "cortex_a53_alu*"
-		 "cortex_a53_store1,
-		  cortex_a53_store2,
-		  cortex_a53_store3plus"
+(define_bypass 0 "cortex_a53_alu*,cortex_a53_shift*"
+		 "cortex_a53_store*"
 		 "arm_no_early_store_addr_dep")
 
 ;; Model a bypass for load and multiply instructions feeding stores.
 
-(define_bypass 2 "cortex_a53_mul,
-		  cortex_a53_load1,
-		  cortex_a53_load2,
-		  cortex_a53_load3plus"
-		 "cortex_a53_store1,
-		  cortex_a53_store2,
-		  cortex_a53_store3plus"
+(define_bypass 1 "cortex_a53_mul,
+		  cortex_a53_load*"
+		 "cortex_a53_store*"
 		 "arm_no_early_store_addr_dep")
 
 ;; Model a GP->FP register move as similar to stores.
 
-(define_bypass 1 "cortex_a53_alu*"
+(define_bypass 0 "cortex_a53_alu*,cortex_a53_shift*"
 		 "cortex_a53_r2f")
 
-(define_bypass 2 "cortex_a53_mul,
-		  cortex_a53_load1,
-		  cortex_a53_load2,
-		  cortex_a53_load3plus"
+(define_bypass 1 "cortex_a53_mul,
+		  cortex_a53_load*"
 		 "cortex_a53_r2f")
 
-;; Shifts feeding Load/Store addresses may not be ready in time.
+;; Model flag forwarding to branches.
 
-(define_bypass 3 "cortex_a53_shift"
-		 "cortex_a53_load*"
-		 "arm_early_load_addr_dep")
-
-(define_bypass 3 "cortex_a53_shift"
-		 "cortex_a53_store*"
-		 "arm_early_store_addr_dep")
+(define_bypass 0 "cortex_a53_alu*,cortex_a53_shift*"
+		 "cortex_a53_branch")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Floating-point/Advanced SIMD.
