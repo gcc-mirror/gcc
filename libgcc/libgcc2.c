@@ -2309,8 +2309,7 @@ SYMBOL__MAIN (void)
    must be in the bss/common section.
 
    Long term no port should use those extensions.  But many still do.  */
-#if !defined(__LIBGCC_INIT_SECTION_ASM_OP__) \
-    && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
+#if !defined(__LIBGCC_INIT_SECTION_ASM_OP__)
 #if defined (TARGET_ASM_CONSTRUCTOR) || defined (USE_COLLECT2)
 func_ptr __CTOR_LIST__[2] = {0, 0};
 func_ptr __DTOR_LIST__[2] = {0, 0};
@@ -2318,6 +2317,6 @@ func_ptr __DTOR_LIST__[2] = {0, 0};
 func_ptr __CTOR_LIST__[2];
 func_ptr __DTOR_LIST__[2];
 #endif
-#endif /* no __LIBGCC_INIT_SECTION_ASM_OP__ and not CTOR_LISTS_DEFINED_EXTERNALLY */
+#endif /* no __LIBGCC_INIT_SECTION_ASM_OP__ */
 #endif /* L_ctors */
 #endif /* LIBGCC2_UNITS_PER_WORD <= MIN_UNITS_PER_WORD */

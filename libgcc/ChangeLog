@@ -1,3 +1,8 @@
+2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* libgcc2.c (SYMBOL__MAIN): Remove checks for
+	CTOR_LISTS_DEFINED_EXTERNALLY.
+
 2016-06-28  Walter Lee  <walt@tilera.com>
 
 	* config/tilepro/atomic.h: Do not include arch/spr_def.h and
