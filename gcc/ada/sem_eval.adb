@@ -445,11 +445,24 @@ package body Sem_Eval is
       --  that an infinity will result.
 
       if not Is_Static_Expression (N) then
-         if Is_Floating_Point_Type (T)
-           and then Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True)
-         then
-            Error_Msg_N
-              ("??float value out of range, infinity will be generated", N);
+         if Is_Floating_Point_Type (T) then
+            if Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True) then
+               Error_Msg_N
+                 ("??float value out of range, infinity will be generated", N);
+
+            --  The literal may be the result of constant-folding of a non-
+            --  static subexpression of a larger expression (e.g. a conversion
+            --  of a non-static variable whose value happens to be known). At
+            --  this point we must reduce the value of the subexpression to a
+            --  machine number (RM 4.9 (38/2)).
+
+            elsif Nkind (N) = N_Real_Literal
+              and then Nkind (Parent (N)) in N_Subexpr
+            then
+               Rewrite (N, New_Copy (N));
+               Set_Realval
+                 (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+            end if;
          end if;
 
          return;

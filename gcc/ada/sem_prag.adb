@@ -9080,6 +9080,14 @@ package body Sem_Prag is
                   Ghost_Id := Subp;
                end if;
 
+            --  Do not issue an error on an unanalyzed subprogram body entity.
+            --  It may lead to spurious errors on unanalyzed body entities of
+            --  expression functions, which are not yet marked as ghost, yet
+            --  identified as the Corresponding_Body of the ghost declaration.
+
+            elsif Ekind (Subp) = E_Void then
+               null;
+
             --  Otherwise the subprogram is non-Ghost. It is illegal to mix
             --  references to Ghost and non-Ghost entities (SPARK RM 6.9).
 

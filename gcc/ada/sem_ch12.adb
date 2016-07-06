@@ -14879,8 +14879,8 @@ package body Sem_Ch12 is
                     and then Is_Global (Entity (Orig_N2_Parent))
                   then
                      N2 := Aux_N2;
-                     Set_Associated_Node (Parent (N),
-                       Original_Node (Parent (N2)));
+                     Set_Associated_Node
+                       (Parent (N), Original_Node (Parent (N2)));
 
                   --  Common case
 

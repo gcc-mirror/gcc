@@ -3495,11 +3495,11 @@ package body Sem_Ch4 is
                --      generic
                --         type Inner_T is private;
                --         with function Func (Formal : Inner_T)   --  (1)
-               --                            return ... is <>;
+               --           return ... is <>;
 
                --      package Inner_Gen is
                --         function Inner_Func (Formal : Inner_T)  --  (2)
-               --                             return ... is (Func (Formal));
+               --           return ... is (Func (Formal));
                --      end Inner_Gen;
                --   end Outer_Generic;
 
@@ -3509,15 +3509,15 @@ package body Sem_Ch4 is
                --  In the example above, the type of parameter
                --  Inner_Func.Formal at (2) is incompatible with the type of
                --  Func.Formal at (1) in the context of instantiations
-               --  Outer_Inst and Inner_Inst. In reality both types are
-               --  generic actual subtypes renaming base type Actual_T as
-               --  part of the generic prologues for the instantiations.
+               --  Outer_Inst and Inner_Inst. In reality both types are generic
+               --  actual subtypes renaming base type Actual_T as part of the
+               --  generic prologues for the instantiations.
 
-               --  Recognize this case and add a type conversion to allow
-               --  this kind of generic actual subtype conformance. Note that
-               --  this is done only when the call is non-overloaded because
-               --  the resolution mechanism already has the means to
-               --  disambiguate similar cases.
+               --  Recognize this case and add a type conversion to allow this
+               --  kind of generic actual subtype conformance. Note that this
+               --  is done only when the call is non-overloaded because the
+               --  resolution mechanism already has the means to disambiguate
+               --  similar cases.
 
                elsif not Is_Overloaded (Name (N))
                  and then Is_Type (Etype (Actual))
