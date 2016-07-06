@@ -8,4 +8,3 @@ void t(unsigned int n)
      a[i]++;
 }
 /* { dg-final { scan-tree-dump "Overflowness wrto loop niter:	No-overflow"  "ivopts" } } */
-/* { dg-final { scan-tree-dump-not "Overflowness wrto loop niter:	Overflow" "ivopts" } } */
