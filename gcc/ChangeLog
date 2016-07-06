@@ -1,5 +1,13 @@
 2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gcse.c (struct ls_expr): Remove loads field.
+	(ldst_entry): Adjust.
+	(free_ldst_entry): Likewise.
+	(print_ldst_list): Likewise.
+	(compute_ld_motion_mems): Likewise.
+
+2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* store-motion.c (struct st_expr): Make antic_stores a vector.
 	(st_expr_entry): Adjust.
 	(free_st_expr_entry): Likewise.

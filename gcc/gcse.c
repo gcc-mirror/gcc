@@ -342,7 +342,6 @@ struct ls_expr
   struct gcse_expr * expr;	/* Gcse expression reference for LM.  */
   rtx pattern;			/* Pattern of this mem.  */
   rtx pattern_regs;		/* List of registers mentioned by the mem.  */
-  rtx_insn_list *loads;		/* INSN list of loads seen.  */
   rtx_insn_list *stores;	/* INSN list of stores seen.  */
   struct ls_expr * next;	/* Next in the list.  */
   int invalid;			/* Invalid for some reason.  */
@@ -3605,7 +3604,6 @@ ldst_entry (rtx x)
   ptr->expr         = NULL;
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
-  ptr->loads        = NULL;
   ptr->stores       = NULL;
   ptr->reaching_reg = NULL_RTX;
   ptr->invalid      = 0;
@@ -3622,7 +3620,6 @@ ldst_entry (rtx x)
 static void
 free_ldst_entry (struct ls_expr * ptr)
 {
-  free_INSN_LIST_list (& ptr->loads);
   free_INSN_LIST_list (& ptr->stores);
 
   free (ptr);
@@ -3662,13 +3659,6 @@ print_ldst_list (FILE * file)
       fprintf (file, "  Pattern (%3d): ", ptr->index);
 
       print_rtl (file, ptr->pattern);
-
-      fprintf (file, "\n	 Loads : ");
-
-      if (ptr->loads)
-	print_rtl (file, ptr->loads);
-      else
-	fprintf (file, "(nil)");
 
       fprintf (file, "\n	Stores : ");
 
@@ -3801,9 +3791,7 @@ compute_ld_motion_mems (void)
 		  if (MEM_P (src) && simple_mem (src))
 		    {
 		      ptr = ldst_entry (src);
-		      if (REG_P (dest))
-			ptr->loads = alloc_INSN_LIST (insn, ptr->loads);
-		      else
+		      if (!REG_P (dest))
 			ptr->invalid = 1;
 		    }
 		  else
