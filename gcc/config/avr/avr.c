@@ -9641,7 +9641,9 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
             {
               const char *sname = ACONCAT ((new_prefix,
                                             name + strlen (old_prefix), NULL));
-              return get_section (sname, sect->common.flags, sect->named.decl);
+              return get_section (sname,
+                                  sect->common.flags & ~SECTION_DECLARED,
+                                  sect->named.decl);
             }
         }
 
