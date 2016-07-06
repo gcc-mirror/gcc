@@ -143,6 +143,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "print-rtl.h"
 #include "regs.h"
 #include "ira.h"
 #include "recog.h"
@@ -342,7 +343,7 @@ struct ls_expr
   struct gcse_expr * expr;	/* Gcse expression reference for LM.  */
   rtx pattern;			/* Pattern of this mem.  */
   rtx pattern_regs;		/* List of registers mentioned by the mem.  */
-  rtx_insn_list *stores;	/* INSN list of stores seen.  */
+  vec<rtx_insn *> stores;	/* INSN list of stores seen.  */
   struct ls_expr * next;	/* Next in the list.  */
   int invalid;			/* Invalid for some reason.  */
   int index;			/* If it maps to a bitmap index.  */
@@ -3604,7 +3605,7 @@ ldst_entry (rtx x)
   ptr->expr         = NULL;
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
-  ptr->stores       = NULL;
+  ptr->stores.create (0);
   ptr->reaching_reg = NULL_RTX;
   ptr->invalid      = 0;
   ptr->index        = 0;
@@ -3620,7 +3621,7 @@ ldst_entry (rtx x)
 static void
 free_ldst_entry (struct ls_expr * ptr)
 {
-  free_INSN_LIST_list (& ptr->stores);
+  ptr->stores.release ();
 
   free (ptr);
 }
@@ -3661,11 +3662,7 @@ print_ldst_list (FILE * file)
       print_rtl (file, ptr->pattern);
 
       fprintf (file, "\n	Stores : ");
-
-      if (ptr->stores)
-	print_rtl (file, ptr->stores);
-      else
-	fprintf (file, "(nil)");
+      print_rtx_insn_vec (file, ptr->stores);
 
       fprintf (file, "\n\n");
     }
@@ -3822,7 +3819,7 @@ compute_ld_motion_mems (void)
 			     returns 0 for all REGs.  */
 			  && can_assign_to_reg_without_clobbers_p (src,
 								    src_mode))
-			ptr->stores = alloc_INSN_LIST (insn, ptr->stores);
+			ptr->stores.safe_push (insn);
 		      else
 			ptr->invalid = 1;
 		    }
@@ -3915,11 +3912,10 @@ update_ld_motion_stores (struct gcse_expr * expr)
 	 where reg is the reaching reg used in the load.  We checked in
 	 compute_ld_motion_mems that we can replace (set mem expr) with
 	 (set reg expr) in that insn.  */
-      rtx list = mem_ptr->stores;
-
-      for ( ; list != NULL_RTX; list = XEXP (list, 1))
+      rtx_insn *insn;
+      unsigned int i;
+      FOR_EACH_VEC_ELT_REVERSE (mem_ptr->stores, i, insn)
 	{
-	  rtx_insn *insn = as_a <rtx_insn *> (XEXP (list, 0));
 	  rtx pat = PATTERN (insn);
 	  rtx src = SET_SRC (pat);
 	  rtx reg = expr->reaching_reg;
