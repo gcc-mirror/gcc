@@ -238,6 +238,15 @@ package Exp_Util is
    --  must be a free statement. If flag Is_Allocate is set, the generated
    --  routine is allocate, deallocate otherwise.
 
+   function Build_Abort_Undefer_Block
+     (Loc     : Source_Ptr;
+      Stmts   : List_Id;
+      Context : Node_Id) return Node_Id;
+   --  Wrap statements Stmts in a block where the AT END handler contains a
+   --  call to Abort_Undefer_Direct. Context is the node which prompted the
+   --  inlining of the abort undefer routine. Note that this routine does
+   --  not install a call to Abort_Defer.
+
    procedure Build_Procedure_Form (N : Node_Id);
    --  Create a procedure declaration which emulates the behavior of a function
    --  that returns an array type, for C-compatible generation.

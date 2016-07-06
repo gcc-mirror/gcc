@@ -1535,6 +1535,10 @@ package Sinfo is
    --    to the node for the spec of the instance, inserted as part of the
    --    semantic processing for instantiations in Sem_Ch12.
 
+   --  Is_Abort_Block (Flag4-Sem)
+   --    Present in N_Block_Statement nodes. True if the block protects a list
+   --    of statements with an Abort_Defer / Abort_Undefer_Direct pair.
+
    --  Is_Accessibility_Actual (Flag13-Sem)
    --    Present in N_Parameter_Association nodes. True if the parameter is
    --    an extra actual that carries the accessibility level of the actual
@@ -4937,6 +4941,7 @@ package Sinfo is
       --  Declarations (List2) (set to No_List if no DECLARE part)
       --  Handled_Statement_Sequence (Node4)
       --  Cleanup_Actions (List5-Sem)
+      --  Is_Abort_Block (Flag4-Sem)
       --  Is_Task_Master (Flag5-Sem)
       --  Activation_Chain_Entity (Node3-Sem)
       --  Has_Created_Identifier (Flag15)
@@ -9331,6 +9336,9 @@ package Sinfo is
    function Intval
      (N : Node_Id) return Uint;       -- Uint3
 
+   function Is_Abort_Block
+     (N : Node_Id) return Boolean;    -- Flag4
+
    function Is_Accessibility_Actual
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -10374,6 +10382,9 @@ package Sinfo is
 
    procedure Set_Intval
      (N : Node_Id; Val : Uint);               -- Uint3
+
+   procedure Set_Is_Abort_Block
+     (N : Node_Id; Val : Boolean := True);    -- Flag4
 
    procedure Set_Is_Accessibility_Actual
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -12819,6 +12830,7 @@ package Sinfo is
    pragma Inline (Instance_Spec);
    pragma Inline (Intval);
    pragma Inline (Iterator_Specification);
+   pragma Inline (Is_Abort_Block);
    pragma Inline (Is_Accessibility_Actual);
    pragma Inline (Is_Analyzed_Pragma);
    pragma Inline (Is_Asynchronous_Call_Block);
@@ -13162,6 +13174,7 @@ package Sinfo is
    pragma Inline (Set_Interface_List);
    pragma Inline (Set_Interface_Present);
    pragma Inline (Set_Intval);
+   pragma Inline (Set_Is_Abort_Block);
    pragma Inline (Set_Is_Accessibility_Actual);
    pragma Inline (Set_Is_Analyzed_Pragma);
    pragma Inline (Set_Is_Asynchronous_Call_Block);

@@ -34,7 +34,6 @@ with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
-with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
@@ -44,7 +43,6 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
-with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -5519,16 +5517,12 @@ package body Exp_Ch3 is
          Exceptions_OK : constant Boolean :=
                            not Restriction_Active (No_Exception_Propagation);
 
-         Abrt_Blk    : Node_Id;
-         Abrt_Blk_Id : Entity_Id;
-         Abrt_HSS    : Node_Id;
-         Aggr_Init   : Node_Id;
-         AUD         : Entity_Id;
-         Comp_Init   : List_Id := No_List;
-         Fin_Call    : Node_Id;
-         Init_Stmts  : List_Id := No_List;
-         Obj_Init    : Node_Id := Empty;
-         Obj_Ref     : Node_Id;
+         Aggr_Init  : Node_Id;
+         Comp_Init  : List_Id := No_List;
+         Fin_Call   : Node_Id;
+         Init_Stmts : List_Id := No_List;
+         Obj_Init   : Node_Id := Empty;
+         Obj_Ref    : Node_Id;
 
       --  Start of processing for Default_Initialize_Object
 
@@ -5726,26 +5720,10 @@ package body Exp_Ch3 is
             --    end;
 
             if Exceptions_OK then
-               AUD := RTE (RE_Abort_Undefer_Direct);
-
-               Abrt_HSS :=
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements  => Init_Stmts,
-                   At_End_Proc => New_Occurrence_Of (AUD, Loc));
-
-               Abrt_Blk :=
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence => Abrt_HSS);
-
-               Add_Block_Identifier  (Abrt_Blk, Abrt_Blk_Id);
-               Expand_At_End_Handler (Abrt_HSS, Abrt_Blk_Id);
-
-               --  Present the Abort_Undefer_Direct function to the backend so
-               --  that it can inline the call to the function.
-
-               Add_Inlined_Body (AUD, N);
-
-               Init_Stmts := New_List (Abrt_Blk);
+               Init_Stmts := New_List (
+                 Build_Abort_Undefer_Block (Loc,
+                   Stmts   => Init_Stmts,
+                   Context => N));
 
             --  Otherwise exceptions are not propagated. Generate:
 

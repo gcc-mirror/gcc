@@ -35,12 +35,10 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
-with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
-with Inline;   use Inline;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Namet;    use Namet;
@@ -1121,10 +1119,39 @@ package body Exp_Aggr is
             Init_Expr : Node_Id;
             Stmts     : List_Id)
          is
+            Exceptions_OK : constant Boolean :=
+                              not Restriction_Active
+                                    (No_Exception_Propagation);
+
+            Finalization_OK : constant Boolean :=
+                                Present (Comp_Typ)
+                                  and then Needs_Finalization (Comp_Typ);
+
             Full_Typ  : constant Entity_Id := Underlying_Type (Comp_Typ);
+            Blk_Stmts : List_Id;
             Init_Stmt : Node_Id;
 
          begin
+            --  Protect the initialization statements from aborts. Generate:
+
+            --    Abort_Defer;
+
+            if Finalization_OK and Abort_Allowed then
+               if Exceptions_OK then
+                  Blk_Stmts := New_List;
+               else
+                  Blk_Stmts := Stmts;
+               end if;
+
+               Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+
+            --  Otherwise aborts are not allowed. All generated code is added
+            --  directly to the input list.
+
+            else
+               Blk_Stmts := Stmts;
+            end if;
+
             --  Initialize the array element. Generate:
 
             --    Arr_Comp := Init_Expr;
@@ -1148,10 +1175,7 @@ package body Exp_Aggr is
             --       Arr_Comp := Init_Expr;
             --    end;
 
-            if Present (Comp_Typ)
-              and then Needs_Finalization (Comp_Typ)
-              and then Is_Array_Type (Comp_Typ)
-            then
+            if Finalization_OK and then Is_Array_Type (Comp_Typ) then
                Init_Stmt :=
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
@@ -1159,7 +1183,7 @@ package body Exp_Aggr is
                        Statements => New_List (Init_Stmt)));
             end if;
 
-            Append_To (Stmts, Init_Stmt);
+            Append_To (Blk_Stmts, Init_Stmt);
 
             --  Adjust the tag due to a possible view conversion. Generate:
 
@@ -1169,7 +1193,7 @@ package body Exp_Aggr is
               and then Present (Comp_Typ)
               and then Is_Tagged_Type (Comp_Typ)
             then
-               Append_To (Stmts,
+               Append_To (Blk_Stmts,
                  Make_OK_Assignment_Statement (Loc,
                    Name       =>
                      Make_Selected_Component (Loc,
@@ -1191,18 +1215,53 @@ package body Exp_Aggr is
 
             --    [Deep_]Adjust (Arr_Comp);
 
-            if Present (Comp_Typ)
-              and then Needs_Finalization (Comp_Typ)
+            if Finalization_OK
               and then not Is_Limited_Type (Comp_Typ)
               and then not
                 (Is_Array_Type (Comp_Typ)
                   and then Is_Controlled (Component_Type (Comp_Typ))
                   and then Nkind (Expr) = N_Aggregate)
             then
-               Append_To (Stmts,
+               Append_To (Blk_Stmts,
                  Make_Adjust_Call
                    (Obj_Ref => New_Copy_Tree (Arr_Comp),
                     Typ     => Comp_Typ));
+            end if;
+
+            --  Complete the protection of the initialization statements
+
+            if Finalization_OK and Abort_Allowed then
+
+               --  Wrap the initialization statements in a block to catch a
+               --  potential exception. Generate:
+
+               --    begin
+               --       Abort_Defer;
+               --       Arr_Comp := Init_Expr;
+               --       Arr_Comp._tag := Full_TypP;
+               --       [Deep_]Adjust (Arr_Comp);
+               --    at end
+               --       Abort_Undefer_Direct;
+               --    end;
+
+               if Exceptions_OK then
+                  Append_To (Stmts,
+                    Build_Abort_Undefer_Block (Loc,
+                      Stmts   => Blk_Stmts,
+                      Context => N));
+
+               --  Otherwise exceptions are not propagated. Generate:
+
+               --    Abort_Defer;
+               --    Arr_Comp := Init_Expr;
+               --    Arr_Comp._tag := Full_TypP;
+               --    [Deep_]Adjust (Arr_Comp);
+               --    Abort_Undefer;
+
+               else
+                  Append_To (Blk_Stmts,
+                    Build_Runtime_Call (Loc, RE_Abort_Undefer));
+               end if;
             end if;
          end Initialize_Array_Component;
 
@@ -2772,10 +2831,36 @@ package body Exp_Aggr is
          Init_Expr : Node_Id;
          Stmts     : List_Id)
       is
+         Exceptions_OK : constant Boolean :=
+                           not Restriction_Active (No_Exception_Propagation);
+
+         Finalization_OK : constant Boolean := Needs_Finalization (Comp_Typ);
+
          Full_Typ  : constant Entity_Id := Underlying_Type (Comp_Typ);
+         Blk_Stmts : List_Id;
          Init_Stmt : Node_Id;
 
       begin
+         --  Protect the initialization statements from aborts. Generate:
+
+         --    Abort_Defer;
+
+         if Finalization_OK and Abort_Allowed then
+            if Exceptions_OK then
+               Blk_Stmts := New_List;
+            else
+               Blk_Stmts := Stmts;
+            end if;
+
+            Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+
+         --  Otherwise aborts are not allowed. All generated code is added
+         --  directly to the input list.
+
+         else
+            Blk_Stmts := Stmts;
+         end if;
+
          --  Initialize the record component. Generate:
 
          --    Rec_Comp := Init_Expr;
@@ -2789,14 +2874,14 @@ package body Exp_Aggr is
              Expression => Init_Expr);
          Set_No_Ctrl_Actions (Init_Stmt);
 
-         Append_To (Stmts, Init_Stmt);
+         Append_To (Blk_Stmts, Init_Stmt);
 
          --  Adjust the tag due to a possible view conversion. Generate:
 
          --    Rec_Comp._tag := Full_TypeP;
 
          if Tagged_Type_Expansion and then Is_Tagged_Type (Comp_Typ) then
-            Append_To (Stmts,
+            Append_To (Blk_Stmts,
               Make_OK_Assignment_Statement (Loc,
                 Name       =>
                   Make_Selected_Component (Loc,
@@ -2816,13 +2901,47 @@ package body Exp_Aggr is
 
          --    [Deep_]Adjust (Rec_Comp);
 
-         if Needs_Finalization (Comp_Typ)
-           and then not Is_Limited_Type (Comp_Typ)
-         then
-            Append_To (Stmts,
+         if Finalization_OK and then not Is_Limited_Type (Comp_Typ) then
+            Append_To (Blk_Stmts,
               Make_Adjust_Call
                 (Obj_Ref => New_Copy_Tree (Rec_Comp),
                  Typ     => Comp_Typ));
+         end if;
+
+         --  Complete the protection of the initialization statements
+
+         if Finalization_OK and Abort_Allowed then
+
+            --  Wrap the initialization statements in a block to catch a
+            --  potential exception. Generate:
+
+            --    begin
+            --       Abort_Defer;
+            --       Rec_Comp := Init_Expr;
+            --       Rec_Comp._tag := Full_TypP;
+            --       [Deep_]Adjust (Rec_Comp);
+            --    at end
+            --       Abort_Undefer_Direct;
+            --    end;
+
+            if Exceptions_OK then
+               Append_To (Stmts,
+                 Build_Abort_Undefer_Block (Loc,
+                   Stmts   => Blk_Stmts,
+                   Context => N));
+
+            --  Otherwise exceptions are not propagated. Generate:
+
+            --    Abort_Defer;
+            --    Rec_Comp := Init_Expr;
+            --    Rec_Comp._tag := Full_TypP;
+            --    [Deep_]Adjust (Rec_Comp);
+            --    Abort_Undefer;
+
+            else
+               Append_To (Blk_Stmts,
+                 Build_Runtime_Call (Loc, RE_Abort_Undefer));
+            end if;
          end if;
       end Initialize_Record_Component;
 
@@ -7804,43 +7923,22 @@ package body Exp_Aggr is
       --       Hook := null;
       --       [Deep_]Finalize (Res.all);
       --    at end
-      --       Abort_Undefer;
+      --       Abort_Undefer_Direct;
       --    end;
 
       elsif Abort_Allowed then
          Abort_Only : declare
             Blk_Stmts : constant List_Id := New_List;
 
-            AUD     : Entity_Id;
-            Blk     : Node_Id;
-            Blk_HSS : Node_Id;
-            Blk_Id  : Entity_Id;
-
          begin
             Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
             Append_To (Blk_Stmts, Hook_Clear);
             Append_To (Blk_Stmts, Fin_Call);
 
-            AUD := RTE (RE_Abort_Undefer_Direct);
-
-            Blk_HSS :=
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements  => Blk_Stmts,
-                At_End_Proc => New_Occurrence_Of (AUD, Loc));
-
-            Blk :=
-              Make_Block_Statement (Loc,
-                Handled_Statement_Sequence => Blk_HSS);
-
-            Add_Block_Identifier (Blk, Blk_Id);
-            Expand_At_End_Handler (Blk_HSS, Blk_Id);
-
-            --  Present the Abort_Undefer_Direct function to the back end so
-            --  that it can inline the call to the function.
-
-            Add_Inlined_Body (AUD, Aggr);
-
-            Append_To (Stmts, Blk);
+            Append_To (Stmts,
+              Build_Abort_Undefer_Block (Loc,
+                Stmts   => Blk_Stmts,
+                Context => Aggr));
          end Abort_Only;
 
       --  Otherwise generate:
