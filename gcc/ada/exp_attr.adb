@@ -3007,11 +3007,46 @@ package body Exp_Attr is
       -- Enum_Rep --
       --------------
 
-      when Attribute_Enum_Rep => Enum_Rep :
+      when Attribute_Enum_Rep => Enum_Rep : declare
+         Expr : Node_Id;
       begin
-         --  X'Enum_Rep (Y) expands to
+         --  Get the expression, which is X for Enum_Type'Enum_Rep (X)
+         --  or X'Enum_Rep.
 
-         --    target-type (Y)
+         if Is_Non_Empty_List (Exprs) then
+            Expr := First (Exprs);
+         else
+            Expr := Pref;
+         end if;
+
+         --  If the expression is an enumeration literal, it is
+         --  replaced by the literal value.
+
+         if Nkind (Expr) in N_Has_Entity
+           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
+         then
+            Rewrite (N,
+              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
+
+         --  If this is a renaming of a literal, recover the representation
+         --  of the original. If it renames an expression there is nothing
+         --  to fold.
+
+         elsif Nkind (Expr) in N_Has_Entity
+           and then Ekind (Entity (Expr)) = E_Constant
+           and then Present (Renamed_Object (Entity (Expr)))
+           and then Is_Entity_Name (Renamed_Object (Entity (Expr)))
+           and then Ekind (Entity (Renamed_Object (Entity (Expr)))) =
+                      E_Enumeration_Literal
+         then
+            Rewrite (N,
+              Make_Integer_Literal (Loc,
+                Enumeration_Rep (Entity (Renamed_Object (Entity (Expr))))));
+
+         --  If not constant-folded above, Enum_Type'Enum_Rep (X) or
+         --  X'Enum_Rep expands to
+
+         --    target-type (X)
 
          --  This is simply a direct conversion from the enumeration type to
          --  the target integer type, which is treated by the back end as a
@@ -3020,37 +3055,9 @@ package body Exp_Attr is
          --  make sure that the analyzer does not complain about what otherwise
          --  might be an illegal conversion.
 
-         if Is_Non_Empty_List (Exprs) then
-            Rewrite (N,
-              OK_Convert_To (Typ, Relocate_Node (First (Exprs))));
-
-         --  X'Enum_Rep where X is an enumeration literal is replaced by
-         --  the literal value.
-
-         elsif Ekind (Entity (Pref)) = E_Enumeration_Literal then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Pref))));
-
-         --  If this is a renaming of a literal, recover the representation
-         --  of the original. If it renames an expression there is nothing
-         --  to fold.
-
-         elsif Ekind (Entity (Pref)) = E_Constant
-           and then Present (Renamed_Object (Entity (Pref)))
-           and then Is_Entity_Name (Renamed_Object (Entity (Pref)))
-           and then Ekind (Entity (Renamed_Object (Entity (Pref)))) =
-                      E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Enumeration_Rep (Entity (Renamed_Object (Entity (Pref))))));
-
-         --  X'Enum_Rep where X is an object does a direct unchecked conversion
-         --  of the object value, as described for the type case above.
-
          else
             Rewrite (N,
-              OK_Convert_To (Typ, Relocate_Node (Pref)));
+              OK_Convert_To (Typ, Relocate_Node (Expr)));
          end if;
 
          Set_Etype (N, Typ);

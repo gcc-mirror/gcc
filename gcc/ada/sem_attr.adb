@@ -3742,16 +3742,8 @@ package body Sem_Attr is
             Check_E1;
             Check_Discrete_Type;
             Resolve (E1, P_Base_Type);
-
-         else
-            if not Is_Entity_Name (P)
-              or else (not Is_Object (Entity (P))
-                        and then Ekind (Entity (P)) /= E_Enumeration_Literal)
-            then
-               Error_Attr_P
-                 ("prefix of % attribute must be " &
-                  "discrete type/object or enum literal");
-            end if;
+         elsif not Is_Discrete_Type (Etype (P)) then
+            Error_Attr_P ("prefix of % attribute must be of discrete type");
          end if;
 
          Set_Etype (N, Universal_Integer);
