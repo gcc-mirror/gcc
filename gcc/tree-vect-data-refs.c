@@ -5144,13 +5144,30 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
 
 /* Function vect_grouped_load_supported.
 
-   Returns TRUE if even and odd permutations are supported,
-   and FALSE otherwise.  */
+   COUNT is the size of the load group (the number of statements plus the
+   number of gaps).  SINGLE_ELEMENT_P is true if there is actually
+   only one statement, with a gap of COUNT - 1.
+
+   Returns true if a suitable permute exists.  */
 
 bool
-vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
+vect_grouped_load_supported (tree vectype, bool single_element_p,
+			     unsigned HOST_WIDE_INT count)
 {
   machine_mode mode = TYPE_MODE (vectype);
+
+  /* If this is single-element interleaving with an element distance
+     that leaves unused vector loads around punt - we at least create
+     very sub-optimal code in that case (and blow up memory,
+     see PR65518).  */
+  if (single_element_p && count > TYPE_VECTOR_SUBPARTS (vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "single-element interleaving not supported "
+			 "for not adjacent vector loads\n");
+      return false;
+    }
 
   /* vect_permute_load_chain requires the group size to be equal to 3 or
      be a power of two.  */

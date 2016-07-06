@@ -1,5 +1,14 @@
 2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_grouped_load_supported): Add a
+	single_element_p parameter.
+	* tree-vect-data-refs.c (vect_grouped_load_supported): Likewise.
+	Check the PR65518 case here rather than in vectorizable_load.
+	* tree-vect-loop.c (vect_analyze_loop_2): Update call accordignly.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+
+2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (gather_scatter_info): New structure.
 	(vect_check_gather_scatter): Return a bool rather than a decl.
 	Replace return-by-pointer arguments with a single
