@@ -1,5 +1,12 @@
 2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* var-tracking.c (struct adjust_mem_data): Make side_effects a vector.
+	(adjust_mems): Adjust.
+	(adjust_insn): Likewise.
+	(prepare_call_arguments): Likewise.
+
+2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gcse.c (struct ls_expr): Make stores field a vector.
 	(ldst_entry): Adjust.
 	(free_ldst_entry): Likewise.
