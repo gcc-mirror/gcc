@@ -16,6 +16,16 @@ mpx_test (int, const char **);
 
 #define DEBUG
 
+#define XSTATE_BNDREGS (1 << 3)
+
+/* This should be an intrinsic, but isn't.  */
+static int xgetbv (unsigned x)
+{
+   unsigned eax, edx;
+   asm ("xgetbv" : "=a" (eax), "=d" (edx) : "c" (x)); 
+   return eax;
+}
+
 int
 main (int argc, const char **argv)
 {
@@ -27,7 +37,7 @@ main (int argc, const char **argv)
   __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
   /* Run MPX test only if host has MPX support.  */
-  if (ebx & bit_MPX)
+  if ((ebx & bit_MPX) && (xgetbv (0) & XSTATE_BNDREGS))
     mpx_test (argc, argv);
   else
     {
