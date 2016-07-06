@@ -1,3 +1,9 @@
+2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71518
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Adjust
+	misalign also for outer loops with negative step.
+
 2016-07-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/cortex-a53.md: Use final_presence_set for in-order.
