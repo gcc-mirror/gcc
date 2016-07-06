@@ -1,3 +1,8 @@
+2016-07-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/driver-arm.c (arm_cpu_table): Add entries for cortex-a32,
+	cortex-a35, cortex-a53, cortex-a57, cortex-a72, cortex-a73.
+
 2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71518
