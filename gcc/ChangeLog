@@ -1,3 +1,15 @@
+2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* store-motion.c (struct st_expr): Make antic_stores a vector.
+	(st_expr_entry): Adjust.
+	(free_st_expr_entry): Likewise.
+	(print_store_motion_mems): Likewise.
+	(find_moveable_store): Likewise.
+	(compute_store_table): Likewise.
+	(remove_reachable_equiv_notes): Likewise.
+	(replace_store_insn): Likewise.
+	(build_store_vectors): Likewise.
+
 2016-07-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/driver-arm.c (arm_cpu_table): Add entries for cortex-a32,
