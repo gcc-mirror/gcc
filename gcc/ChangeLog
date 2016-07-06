@@ -1,3 +1,8 @@
+2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_load): Remove unnecessary
+	peeling-for-gaps condition.
+
 2016-07-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_expand_vec_init): Force initializer
