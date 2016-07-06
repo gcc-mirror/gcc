@@ -1,3 +1,21 @@
+2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, sem_attr.adb, sem_ch13.adb: Minor reformatting.
+
+2016-07-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib.adb (Check_Same_Extended_Unit): Prevent looping forever.
+	* gnatbind.adb: Disable some consistency checks in codepeer mode,
+	which are not needed.
+
+2016-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Fixed_Point_Actual): Add a warning when
+	a formal fixed point type is instantiated with a type that has
+	a user-defined arithmetic operations, but the generic has no
+	corresponding formal functions. This is worth a warning because
+	of the special semantics of fixed-point operators.
+
 2016-07-06  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Allow any expression of

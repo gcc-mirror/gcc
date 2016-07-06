@@ -855,12 +855,15 @@ begin
          end;
       end if;
 
-      --  Perform consistency and correctness checks
+      --  Perform consistency and correctness checks. Disable these in CodePeer
+      --  mode where we want to be more flexible.
 
-      Check_Duplicated_Subunits;
-      Check_Versions;
-      Check_Consistency;
-      Check_Configuration_Consistency;
+      if not CodePeer_Mode then
+         Check_Duplicated_Subunits;
+         Check_Versions;
+         Check_Consistency;
+         Check_Configuration_Consistency;
+      end if;
 
       --  List restrictions that could be applied to this partition
 

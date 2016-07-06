@@ -1105,6 +1105,12 @@ package body Sem_Ch12 is
       --  In Ada 2005, indicates partial parameterization of a formal
       --  package. As usual an other association must be last in the list.
 
+      procedure Check_Fixed_Point_Actual (Actual : Node_Id);
+      --  Warn if an actual fixed-point type has user-defined arithmetic
+      --  operations, but there is no corresponding formal in the generic,
+      --  in which case the predefined operations will be used. This merits
+      --  a warning because of the special semantics of fixed point ops.
+
       procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id);
       --  Apply RM 12.3(9): if a formal subprogram is overloaded, the instance
       --  cannot have a named association for it. AI05-0025 extends this rule
@@ -1185,6 +1191,52 @@ package body Sem_Ch12 is
             Next (Temp_Formal);
          end loop;
       end Check_Overloaded_Formal_Subprogram;
+
+      -------------------------------
+      --  Check_Fixed_Point_Actual --
+      -------------------------------
+
+      procedure Check_Fixed_Point_Actual (Actual : Node_Id) is
+         Typ    : constant Entity_Id := Entity (Actual);
+         Prims  : constant Elist_Id  := Collect_Primitive_Operations (Typ);
+         Elem   : Elmt_Id;
+         Formal : Node_Id;
+
+      begin
+         --  Locate primitive operations of the type that are arithmetic
+         --  operations.
+
+         Elem := First_Elmt (Prims);
+         while Present (Elem) loop
+            if Nkind (Node (Elem)) = N_Defining_Operator_Symbol then
+
+               --  Check whether the generic unit has a formal subprogram of
+               --  the same name. This does not check types but is good enough
+               --  to justify a warning.
+
+               Formal := First_Non_Pragma (Formals);
+               while Present (Formal) loop
+                  if Nkind (Formal) = N_Formal_Concrete_Subprogram_Declaration
+                    and then Chars (Defining_Entity (Formal)) =
+                               Chars (Node (Elem))
+                  then
+                     exit;
+                  end if;
+
+                  Next (Formal);
+               end loop;
+
+               if No (Formal) then
+                  Error_Msg_Sloc := Sloc (Node (Elem));
+                  Error_Msg_NE
+                    ("?instance does not use primitive operation&#",
+                      Actual, Node (Elem));
+               end if;
+            end if;
+
+            Next_Elmt (Elem);
+         end loop;
+      end Check_Fixed_Point_Actual;
 
       -------------------------------
       -- Has_Fully_Defined_Profile --
@@ -1612,6 +1664,10 @@ package body Sem_Ch12 is
                        (Instantiate_Type
                           (Formal, Match, Analyzed_Formal, Assoc),
                         Assoc);
+
+                     if Is_Fixed_Point_Type (Entity (Match)) then
+                        Check_Fixed_Point_Actual (Match);
+                     end if;
 
                      --  An instantiation is a freeze point for the actuals,
                      --  unless this is a rewritten formal package, or the

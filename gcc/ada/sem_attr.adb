@@ -3742,6 +3742,7 @@ package body Sem_Attr is
             Check_E1;
             Check_Discrete_Type;
             Resolve (E1, P_Base_Type);
+
          elsif not Is_Discrete_Type (Etype (P)) then
             Error_Attr_P ("prefix of % attribute must be of discrete type");
          end if;
