@@ -9951,10 +9951,10 @@ package body Sem_Res is
 
    begin
       --  Ensure all actions associated with the left operand (e.g.
-      --  finalization of transient controlled objects) are fully evaluated
-      --  locally within an expression with actions. This is particularly
-      --  helpful for coverage analysis. However this should not happen in
-      --  generics or if Minimize_Expression_With_Actions is set.
+      --  finalization of transient objects) are fully evaluated locally within
+      --  an expression with actions. This is particularly helpful for coverage
+      --  analysis. However this should not happen in generics or if option
+      --  Minimize_Expression_With_Actions is set.
 
       if Expander_Active and not Minimize_Expression_With_Actions then
          declare

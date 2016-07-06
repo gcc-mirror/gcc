@@ -561,7 +561,7 @@ package body Einfo is
    --    Has_Predicates                  Flag250
 
    --    Has_Implicit_Dereference        Flag251
-   --    Is_Processed_Transient          Flag252
+   --    Is_Finalized_Transient          Flag252
    --    Disable_Controlled              Flag253
    --    Is_Implementation_Defined       Flag254
    --    Is_Predicate_Function           Flag255
@@ -609,8 +609,8 @@ package body Einfo is
    --    Is_Partial_Invariant_Procedure  Flag292
    --    Is_Actual_Subtype               Flag293
    --    Has_Pragma_Unused               Flag294
+   --    Is_Ignored_Transient            Flag295
 
-   --    (unused)                        Flag295
    --    (unused)                        Flag296
    --    (unused)                        Flag297
    --    (unused)                        Flag298
@@ -2185,6 +2185,12 @@ package body Einfo is
       return Flag99 (Id);
    end Is_Exported;
 
+   function Is_Finalized_Transient (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      return Flag252 (Id);
+   end Is_Finalized_Transient;
+
    function Is_First_Subtype (Id : E) return B is
    begin
       return Flag70 (Id);
@@ -2249,6 +2255,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       return Flag278 (Id);
    end Is_Ignored_Ghost_Entity;
+
+   function Is_Ignored_Transient (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      return Flag295 (Id);
+   end Is_Ignored_Transient;
 
    function Is_Immediately_Visible (Id : E) return B is
    begin
@@ -2465,12 +2477,6 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       return Flag245 (Id);
    end Is_Private_Primitive;
-
-   function Is_Processed_Transient (Id : E) return B is
-   begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
-      return Flag252 (Id);
-   end Is_Processed_Transient;
 
    function Is_Public (Id : E) return B is
    begin
@@ -5248,6 +5254,12 @@ package body Einfo is
       Set_Flag99 (Id, V);
    end Set_Is_Exported;
 
+   procedure Set_Is_Finalized_Transient (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      Set_Flag252 (Id, V);
+   end Set_Is_Finalized_Transient;
+
    procedure Set_Is_First_Subtype (Id : E; V : B := True) is
    begin
       Set_Flag70 (Id, V);
@@ -5328,6 +5340,12 @@ package body Einfo is
         or else Ekind (Id) = E_Void);
       Set_Flag278 (Id, V);
    end Set_Is_Ignored_Ghost_Entity;
+
+   procedure Set_Is_Ignored_Transient (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
+      Set_Flag295 (Id, V);
+   end Set_Is_Ignored_Transient;
 
    procedure Set_Is_Immediately_Visible (Id : E; V : B := True) is
    begin
@@ -5542,12 +5560,6 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       Set_Flag245 (Id, V);
    end Set_Is_Private_Primitive;
-
-   procedure Set_Is_Processed_Transient (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
-      Set_Flag252 (Id, V);
-   end Set_Is_Processed_Transient;
 
    procedure Set_Is_Public (Id : E; V : B := True) is
    begin
@@ -9241,6 +9253,7 @@ package body Einfo is
       W ("Is_Entry_Formal",                 Flag52  (Id));
       W ("Is_Exception_Handler",            Flag286 (Id));
       W ("Is_Exported",                     Flag99  (Id));
+      W ("Is_Finalized_Transient",          Flag252 (Id));
       W ("Is_First_Subtype",                Flag70  (Id));
       W ("Is_For_Access_Subtype",           Flag118 (Id));
       W ("Is_Formal_Subprogram",            Flag111 (Id));
@@ -9253,6 +9266,7 @@ package body Einfo is
       W ("Is_Hidden_Non_Overridden_Subpgm", Flag2   (Id));
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
       W ("Is_Ignored_Ghost_Entity",         Flag278 (Id));
+      W ("Is_Ignored_Transient",            Flag295 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Implementation_Defined",       Flag254 (Id));
       W ("Is_Imported",                     Flag24  (Id));
@@ -9292,7 +9306,6 @@ package body Einfo is
       W ("Is_Private_Composite",            Flag107 (Id));
       W ("Is_Private_Descendant",           Flag53  (Id));
       W ("Is_Private_Primitive",            Flag245 (Id));
-      W ("Is_Processed_Transient",          Flag252 (Id));
       W ("Is_Public",                       Flag10  (Id));
       W ("Is_Pure",                         Flag44  (Id));
       W ("Is_Pure_Unit_Access_Type",        Flag189 (Id));

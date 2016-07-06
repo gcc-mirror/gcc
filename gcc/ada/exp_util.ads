@@ -280,6 +280,35 @@ package Exp_Util is
    --  is false, the call is for a stand-alone object, and the generated
    --  function itself must do its own cleanups.
 
+   procedure Build_Transient_Object_Statements
+     (Obj_Decl     : Node_Id;
+      Fin_Call     : out Node_Id;
+      Hook_Assign  : out Node_Id;
+      Hook_Clear   : out Node_Id;
+      Hook_Decl    : out Node_Id;
+      Ptr_Decl     : out Node_Id;
+      Finalize_Obj : Boolean := True);
+   --  Subsidiary to the processing of transient objects in transient scopes,
+   --  if expressions, case expressions, expression_with_action nodes, array
+   --  aggregates, and record aggregates. Obj_Decl denotes the declaration of
+   --  the transient object. Generate the following nodes:
+   --
+   --    * Fin_Call - the call to [Deep_]Finalize which cleans up the transient
+   --    object if flag Finalize_Obj is set to True, or finalizes the hook when
+   --    the flag is False.
+   --
+   --    * Hook_Assign - the assignment statement which captures a reference to
+   --    the transient object in the hook.
+   --
+   --    * Hook_Clear - the assignment statement which resets the hook to null
+   --
+   --    * Hook_Decl - the declaration of the hook object
+   --
+   --    * Ptr_Decl - the full type declaration of the hook type
+   --
+   --  These nodes are inserted in specific places depending on the context by
+   --  the various Process_Transient_xxx routines.
+
    procedure Check_Float_Op_Overflow (N : Node_Id);
    --  Called where we could have a floating-point binary operator where we
    --  must check for infinities if we are operating in Check_Float_Overflow

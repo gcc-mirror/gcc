@@ -226,22 +226,21 @@ package body Exp_Ch4 is
 
    procedure Process_If_Case_Statements (N : Node_Id; Stmts : List_Id);
    --  Inspect and process statement list Stmt of if or case expression N for
-   --  transient controlled objects. If such objects are found, the routine
-   --  generates code to clean them up when the context of the expression is
-   --  evaluated or elaborated.
+   --  transient objects. If such objects are found, the routine generates code
+   --  to clean them up when the context of the expression is evaluated.
 
-   procedure Process_Transient_Object
-     (Decl  : Node_Id;
-      N     : Node_Id;
-      Stmts : List_Id);
+   procedure Process_Transient_In_Expression
+     (Obj_Decl : Node_Id;
+      Expr     : Node_Id;
+      Stmts    : List_Id);
    --  Subsidiary routine to the expansion of expression_with_actions, if and
    --  case expressions. Generate all necessary code to finalize a transient
-   --  controlled object when the enclosing context is elaborated or evaluated.
-   --  Decl denotes the declaration of the transient controlled object which is
-   --  usually the result of a controlled function call. N denotes the related
-   --  expression_with_actions, if expression, or case expression node. Stmts
-   --  denotes the statement list which contains Decl, either at the top level
-   --  or within a nested construct.
+   --  object when the enclosing context is elaborated or evaluated. Obj_Decl
+   --  denotes the declaration of the transient object, which is usually the
+   --  result of a controlled function call. Expr denotes the expression with
+   --  actions, if expression, or case expression node. Stmts denotes the
+   --  statement list which contains Decl, either at the top level or within a
+   --  nested construct.
 
    procedure Rewrite_Comparison (N : Node_Id);
    --  If N is the node for a comparison whose outcome can be determined at
@@ -4866,11 +4865,10 @@ package body Exp_Ch4 is
                Prepend_List (Actions (Alt), Stmts);
             end if;
 
-            --  Finalize any transient controlled objects on exit from the
-            --  alternative. This is done only in the return optimization case
-            --  because otherwise the case expression is converted into an
-            --  expression with actions which already contains this form of
-            --  processing.
+            --  Finalize any transient objects on exit from the alternative.
+            --  This is done only in the return optimization case because
+            --  otherwise the case expression is converted into an expression
+            --  with actions which already contains this form of processing.
 
             if Optimize_Return_Stmt then
                Process_If_Case_Statements (N, Stmts);
@@ -4952,9 +4950,9 @@ package body Exp_Ch4 is
 
       function Process_Action (Act : Node_Id) return Traverse_Result;
       --  Inspect and process a single action of an expression_with_actions for
-      --  transient controlled objects. If such objects are found, the routine
-      --  generates code to clean them up when the context of the expression is
-      --  evaluated or elaborated.
+      --  transient objects. If such objects are found, the routine generates
+      --  code to clean them up when the context of the expression is evaluated
+      --  or elaborated.
 
       ------------------------------
       -- Force_Boolean_Evaluation --
@@ -4997,7 +4995,7 @@ package body Exp_Ch4 is
          if Nkind (Act) = N_Object_Declaration
            and then Is_Finalizable_Transient (Act, N)
          then
-            Process_Transient_Object (Act, N, Acts);
+            Process_Transient_In_Expression (Act, N, Acts);
             return Abandon;
 
          --  Avoid processing temporary function results multiple times when
@@ -5038,8 +5036,8 @@ package body Exp_Ch4 is
          null;
 
       --  Force the evaluation of the expression by capturing its value in a
-      --  temporary. This ensures that aliases of transient controlled objects
-      --  do not leak to the expression of the expression_with_actions node:
+      --  temporary. This ensures that aliases of transient objects do not leak
+      --  to the expression of the expression_with_actions node:
 
       --    do
       --       Trans_Id : Ctrl_Typ := ...;
@@ -5059,12 +5057,12 @@ package body Exp_Ch4 is
       --    in Val end;
 
       --  Once this transformation is performed, it is safe to finalize the
-      --  transient controlled object at the end of the actions list.
+      --  transient object at the end of the actions list.
 
       --  Note that Force_Evaluation does not remove side effects in operators
       --  because it assumes that all operands are evaluated and side effect
       --  free. This is not the case when an operand depends implicitly on the
-      --  transient controlled object through the use of access types.
+      --  transient object through the use of access types.
 
       elsif Is_Boolean_Type (Etype (Expression (N))) then
          Force_Boolean_Evaluation (Expression (N));
@@ -5077,8 +5075,8 @@ package body Exp_Ch4 is
          Force_Evaluation (Expression (N));
       end if;
 
-      --  Process all transient controlled objects found within the actions of
-      --  the EWA node.
+      --  Process all transient objects found within the actions of the EWA
+      --  node.
 
       Act := First (Acts);
       while Present (Act) loop
@@ -12956,44 +12954,44 @@ package body Exp_Ch4 is
          if Nkind (Decl) = N_Object_Declaration
            and then Is_Finalizable_Transient (Decl, N)
          then
-            Process_Transient_Object (Decl, N, Stmts);
+            Process_Transient_In_Expression (Decl, N, Stmts);
          end if;
 
          Next (Decl);
       end loop;
    end Process_If_Case_Statements;
 
-   ------------------------------
-   -- Process_Transient_Object --
-   ------------------------------
+   -------------------------------------
+   -- Process_Transient_In_Expression --
+   -------------------------------------
 
-   procedure Process_Transient_Object
-     (Decl  : Node_Id;
-      N     : Node_Id;
-      Stmts : List_Id)
+   procedure Process_Transient_In_Expression
+     (Obj_Decl : Node_Id;
+      Expr     : Node_Id;
+      Stmts    : List_Id)
    is
-      Loc     : constant Source_Ptr := Sloc (Decl);
-      Obj_Id  : constant Entity_Id  := Defining_Identifier (Decl);
-      Obj_Typ : constant Node_Id    := Etype (Obj_Id);
+      Loc    : constant Source_Ptr := Sloc (Obj_Decl);
+      Obj_Id : constant Entity_Id  := Defining_Identifier (Obj_Decl);
 
-      Desig_Typ   : Entity_Id;
-      Expr        : Node_Id;
-      Hook_Id     : Entity_Id;
-      Hook_Insert : Node_Id;
-      Ptr_Id      : Entity_Id;
-
-      Hook_Context : constant Node_Id := Find_Hook_Context (N);
+      Hook_Context : constant Node_Id := Find_Hook_Context (Expr);
       --  The node on which to insert the hook as an action. This is usually
       --  the innermost enclosing non-transient construct.
 
+      Fin_Call    : Node_Id;
+      Hook_Assign : Node_Id;
+      Hook_Clear  : Node_Id;
+      Hook_Decl   : Node_Id;
+      Hook_Insert : Node_Id;
+      Ptr_Decl    : Node_Id;
+
       Fin_Context : Node_Id;
       --  The node after which to insert the finalization actions of the
-      --  transient controlled object.
+      --  transient object.
 
    begin
-      pragma Assert (Nkind_In (N, N_Case_Expression,
-                                  N_Expression_With_Actions,
-                                  N_If_Expression));
+      pragma Assert (Nkind_In (Expr, N_Case_Expression,
+                                     N_Expression_With_Actions,
+                                     N_If_Expression));
 
       --  When the context is a Boolean evaluation, all three nodes capture the
       --  result of their computation in a local temporary:
@@ -13004,102 +13002,63 @@ package body Exp_Ch4 is
       --       <finalize Trans_Id>
       --    in Result end;
 
-      --  As a result, the finalization of any transient controlled objects can
-      --  safely take place after the result capture.
+      --  As a result, the finalization of any transient objects can safely
+      --  take place after the result capture.
 
       --  ??? could this be extended to elementary types?
 
-      if Is_Boolean_Type (Etype (N)) then
+      if Is_Boolean_Type (Etype (Expr)) then
          Fin_Context := Last (Stmts);
 
-      --  Otherwise the immediate context may not be safe enough to carry out
-      --  transient controlled object finalization due to aliasing and nesting
-      --  of constructs. Insert calls to [Deep_]Finalize after the innermost
+      --  Otherwise the immediate context may not be safe enough to carry
+      --  out transient object finalization due to aliasing and nesting of
+      --  constructs. Insert calls to [Deep_]Finalize after the innermost
       --  enclosing non-transient construct.
 
       else
          Fin_Context := Hook_Context;
       end if;
 
-      --  Step 1: Create the access type which provides a reference to the
-      --  transient controlled object.
+      --  Mark the transient object as successfully processed to avoid double
+      --  finalization.
 
-      if Is_Access_Type (Obj_Typ) then
-         Desig_Typ := Directly_Designated_Type (Obj_Typ);
-      else
-         Desig_Typ := Obj_Typ;
-      end if;
+      Set_Is_Finalized_Transient (Obj_Id);
 
-      Desig_Typ := Base_Type (Desig_Typ);
+      --  Construct all the pieces necessary to hook and finalize a transient
+      --  object.
 
+      Build_Transient_Object_Statements
+        (Obj_Decl     => Obj_Decl,
+         Fin_Call     => Fin_Call,
+         Hook_Assign  => Hook_Assign,
+         Hook_Clear   => Hook_Clear,
+         Hook_Decl    => Hook_Decl,
+         Ptr_Decl     => Ptr_Decl,
+         Finalize_Obj => False);
+
+      --  Add the access type which provides a reference to the transient
+      --  object. Generate:
+
+      --    type Ptr_Typ is access all Desig_Typ;
+
+      Insert_Action (Hook_Context, Ptr_Decl);
+
+      --  Add the temporary which acts as a hook to the transient object.
       --  Generate:
-      --    Ann : access [all] <Desig_Typ>;
-
-      Ptr_Id := Make_Temporary (Loc, 'A');
-
-      Insert_Action (Hook_Context,
-        Make_Full_Type_Declaration (Loc,
-          Defining_Identifier => Ptr_Id,
-          Type_Definition     =>
-            Make_Access_To_Object_Definition (Loc,
-              All_Present        => Ekind (Obj_Typ) = E_General_Access_Type,
-              Subtype_Indication => New_Occurrence_Of (Desig_Typ, Loc))));
-
-      --  Step 2: Create a temporary which acts as a hook to the transient
-      --  controlled object. Generate:
 
       --    Hook : Ptr_Id := null;
 
-      Hook_Id := Make_Temporary (Loc, 'T');
+      Insert_Action (Hook_Context, Hook_Decl);
 
-      Insert_Action (Hook_Context,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Hook_Id,
-          Object_Definition   => New_Occurrence_Of (Ptr_Id, Loc)));
+      --  When the transient object is initialized by an aggregate, the hook
+      --  must capture the object after the last aggregate assignment takes
+      --  place. Only then is the object considered initialized. Generate:
 
-      --  Mark the hook as created for the purposes of exporting the transient
-      --  controlled object out of the expression_with_action or if expression.
-      --  This signals the machinery in Build_Finalizer to treat this case in
-      --  a special manner.
-
-      Set_Status_Flag_Or_Transient_Decl (Hook_Id, Decl);
-
-      --  Step 3: Associate the transient object to the hook
-
-      --  This must be inserted right after the object declaration, so that
-      --  the assignment is executed if, and only if, the object is actually
-      --  created (whereas the declaration of the hook pointer, and the
-      --  finalization call, may be inserted at an outer level, and may
-      --  remain unused for some executions, if the actual creation of
-      --  the object is conditional).
-
-      --  The use of unchecked conversion / unrestricted access is needed to
-      --  avoid an accessibility violation. Note that the finalization code is
-      --  structured in such a way that the "hook" is processed only when it
-      --  points to an existing object.
-
-      if Is_Access_Type (Obj_Typ) then
-         Expr :=
-           Unchecked_Convert_To
-             (Typ  => Ptr_Id,
-              Expr => New_Occurrence_Of (Obj_Id, Loc));
-      else
-         Expr :=
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Occurrence_Of (Obj_Id, Loc),
-             Attribute_Name => Name_Unrestricted_Access);
-      end if;
-
-      --  Generate:
-      --    Hook := Ptr_Id (Obj_Id);
+      --    Hook := Ptr_Typ (Obj_Id);
       --      <or>
       --    Hook := Obj_Id'Unrestricted_Access;
 
-      --  When the transient object is initialized by an aggregate, the hook
-      --  must capture the object after the last component assignment takes
-      --  place. Only then is the object fully initialized.
-
-      if Ekind (Obj_Id) = E_Variable
+      if Ekind_In (Obj_Id, E_Constant, E_Variable)
         and then Present (Last_Aggregate_Assignment (Obj_Id))
       then
          Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
@@ -13107,54 +13066,42 @@ package body Exp_Ch4 is
       --  Otherwise the hook seizes the related object immediately
 
       else
-         Hook_Insert := Decl;
+         Hook_Insert := Obj_Decl;
       end if;
 
-      Insert_After_And_Analyze (Hook_Insert,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Hook_Id, Loc),
-          Expression => Expr));
+      Insert_After_And_Analyze (Hook_Insert, Hook_Assign);
 
-      --  Step 4: Finalize the hook after the context has been evaluated or
-      --  elaborated. Generate:
+      --  When the node is part of a return statement, there is no need to
+      --  insert a finalization call, as the general finalization mechanism
+      --  (see Build_Finalizer) would take care of the transient object on
+      --  subprogram exit. Note that it would also be impossible to insert the
+      --  finalization code after the return statement as this will render it
+      --  unreachable.
+
+      if Nkind (Fin_Context) = N_Simple_Return_Statement then
+         null;
+
+      --  Finalize the hook after the context has been evaluated. Generate:
 
       --    if Hook /= null then
       --       [Deep_]Finalize (Hook.all);
       --       Hook := null;
       --    end if;
 
-      --  When the node is part of a return statement, there is no need to
-      --  insert a finalization call, as the general finalization mechanism
-      --  (see Build_Finalizer) would take care of the transient controlled
-      --  object on subprogram exit. Note that it would also be impossible to
-      --  insert the finalization code after the return statement as this will
-      --  render it unreachable.
-
-      if Nkind (Fin_Context) = N_Simple_Return_Statement then
-         null;
-
-      --  Otherwise finalize the hook
-
       else
          Insert_Action_After (Fin_Context,
-           Make_Implicit_If_Statement (Decl,
+           Make_Implicit_If_Statement (Obj_Decl,
              Condition =>
                Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Hook_Id, Loc),
+                 Left_Opnd  =>
+                   New_Occurrence_Of (Defining_Entity (Hook_Decl), Loc),
                  Right_Opnd => Make_Null (Loc)),
 
              Then_Statements => New_List (
-               Make_Final_Call
-                 (Obj_Ref =>
-                    Make_Explicit_Dereference (Loc,
-                      Prefix => New_Occurrence_Of (Hook_Id, Loc)),
-                  Typ     => Desig_Typ),
-
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Hook_Id, Loc),
-                 Expression => Make_Null (Loc)))));
+               Fin_Call,
+               Hook_Clear)));
       end if;
-   end Process_Transient_Object;
+   end Process_Transient_In_Expression;
 
    ------------------------
    -- Rewrite_Comparison --

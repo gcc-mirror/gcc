@@ -4115,10 +4115,6 @@ package body Exp_Ch6 is
              and then Present (Generalized_Indexing (Ref));
       end Is_Element_Reference;
 
-      --  Local variables
-
-      Is_Elem_Ref : constant Boolean := Is_Element_Reference (N);
-
    --  Start of processing for Expand_Ctrl_Function_Call
 
    begin
@@ -4142,20 +4138,24 @@ package body Exp_Ch6 is
 
       Remove_Side_Effects (N);
 
-      --  When the temporary function result appears inside a case expression
-      --  or an if expression, its lifetime must be extended to match that of
-      --  the context. If not, the function result will be finalized too early
-      --  and the evaluation of the expression could yield incorrect result. An
-      --  exception to this rule are references to Ada 2012 container elements.
+      --  The side effect removal of the function call produced a temporary.
+      --  When the context is a case expression, if expression, or expression
+      --  with actions, the lifetime of the temporary must be extended to match
+      --  that of the context. Otherwise the function result will be finalized
+      --  too early and affect the result of the expression. To prevent this
+      --  unwanted effect, the temporary should not be considered for clean up
+      --  actions by the general finalization machinery.
+
+      --  Exception to this rule are references to Ada 2012 container elements.
       --  Such references must be finalized at the end of each iteration of the
       --  related quantified expression, otherwise the container will remain
       --  busy.
 
-      if not Is_Elem_Ref
+      if Nkind (N) = N_Explicit_Dereference
         and then Within_Case_Or_If_Expression (N)
-        and then Nkind (N) = N_Explicit_Dereference
+        and then not Is_Element_Reference (N)
       then
-         Set_Is_Processed_Transient (Entity (Prefix (N)));
+         Set_Is_Ignored_Transient (Entity (Prefix (N)));
       end if;
    end Expand_Ctrl_Function_Call;
 

@@ -1,5 +1,67 @@
 2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb Flag252 is now used as Is_Finalized_Transient. Flag295
+	is now used as Is_Ignored_Transient.
+	(Is_Finalized_Transient): New routine.
+	(Is_Ignored_Transient): New routine.
+	(Is_Processed_Transient): Removed.
+	(Set_Is_Finalized_Transient): New routine.
+	(Set_Is_Ignored_Transient): New routine.
+	(Set_Is_Processed_Transient): Removed.
+	(Write_Entity_Flags): Output Flag252 and Flag295.
+	* einfo.ads: New attributes Is_Finalized_Transient
+	and Is_Ignored_Transient along with occurrences in
+	entities. Remove attribute Is_Processed_Transient.
+	(Is_Finalized_Transient): New routine along with pragma Inline.
+	(Is_Ignored_Transient): New routine along with pragma Inline.
+	(Is_Processed_Transient): Removed along with pragma Inline.
+	(Set_Is_Finalized_Transient): New routine along with pragma Inline.
+	(Set_Is_Ignored_Transient): New routine along with pragma Inline.
+	(Set_Is_Processed_Transient): Removed along with pragma Inline.
+	* exp_aggr.adb Add with and use clauses for Exp_Ch11 and Inline.
+	(Build_Record_Aggr_Code): Change the handling
+	of controlled record components.
+	(Ctrl_Init_Expression): Removed.
+	(Gen_Assign): Add new formal parameter In_Loop
+	along with comment on usage.  Remove local variables Stmt and
+	Stmt_Expr. Change the handling of controlled array components.
+	(Gen_Loop): Update the call to Gen_Assign.
+	(Gen_While): Update the call to Gen_Assign.
+	(Initialize_Array_Component): New routine.
+	(Initialize_Ctrl_Array_Component): New routine.
+	(Initialize_Ctrl_Record_Component): New routine.
+	(Initialize_Record_Component): New routine.
+	(Process_Transient_Component): New routine.
+	(Process_Transient_Component_Completion): New routine.
+	* exp_ch4.adb (Process_Transient_In_Expression): New routine.
+	(Process_Transient_Object): Removed. Replace all existing calls
+	to this routine with calls to Process_Transient_In_Expression.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Remove local constant
+	Is_Elem_Ref. Update the comment on ignoring transients.
+	* exp_ch7.adb (Process_Declarations): Do not process ignored
+	or finalized transient objects.
+	(Process_Transient_In_Scope): New routine.
+	(Process_Transients_In_Scope): New routine.
+	(Process_Transient_Objects): Removed. Replace all existing calls
+	to this routine with calls to Process_Transients_In_Scope.
+	* exp_util.adb (Build_Transient_Object_Statements): New routine.
+	(Is_Finalizable_Transient): Do not consider a transient object
+	which has been finalized.
+	(Requires_Cleanup_Actions): Do not consider ignored or finalized
+	transient objects.
+	* exp_util.ads (Build_Transient_Object_Statements): New routine.
+	* sem_aggr.adb: Major code clean up.
+	* sem_res.adb: Update documentation.
+
+2016-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): For generated
+	subtypes, such as actual subtypes of unconstrained formals,
+	inherit predicate functions, if any, from the parent type rather
+	than creating redundant new ones.
+
+2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_attr.adb, sem_attr.adb, sem_ch13.adb: Minor reformatting.
 
 2016-07-06  Arnaud Charlet  <charlet@adacore.com>
