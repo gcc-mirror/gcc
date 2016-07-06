@@ -2152,10 +2152,12 @@ again:
 	{
 	  vinfo = vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);
 	  vinfo = vinfo_for_stmt (STMT_VINFO_GROUP_FIRST_ELEMENT (vinfo));
+	  bool single_element_p = !STMT_VINFO_GROUP_NEXT_ELEMENT (vinfo);
 	  size = STMT_VINFO_GROUP_SIZE (vinfo);
 	  vectype = STMT_VINFO_VECTYPE (vinfo);
 	  if (! vect_load_lanes_supported (vectype, size)
-	      && ! vect_grouped_load_supported (vectype, size))
+	      && ! vect_grouped_load_supported (vectype, single_element_p,
+						size))
 	    return false;
 	}
     }

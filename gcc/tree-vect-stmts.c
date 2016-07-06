@@ -6315,31 +6315,20 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      bool single_element_p = (first_stmt == stmt
+			       && !GROUP_NEXT_ELEMENT (stmt_info));
 
       if (!slp && !STMT_VINFO_STRIDED_P (stmt_info))
 	{
 	  if (vect_load_lanes_supported (vectype, group_size))
 	    load_lanes_p = true;
-	  else if (!vect_grouped_load_supported (vectype, group_size))
+	  else if (!vect_grouped_load_supported (vectype, single_element_p,
+						 group_size))
 	    return false;
 	}
 
-      /* If this is single-element interleaving with an element distance
-         that leaves unused vector loads around punt - we at least create
-	 very sub-optimal code in that case (and blow up memory,
-	 see PR65518).  */
-      if (first_stmt == stmt
-	  && !GROUP_NEXT_ELEMENT (stmt_info))
+      if (single_element_p)
 	{
-	  if (GROUP_SIZE (stmt_info) > TYPE_VECTOR_SUBPARTS (vectype))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "single-element interleaving not supported "
-				 "for not adjacent vector loads\n");
-	      return false;
-	    }
-
 	  /* Single-element interleaving requires peeling for gaps.  */
 	  gcc_assert (GROUP_GAP (stmt_info));
 	}
