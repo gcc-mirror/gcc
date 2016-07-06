@@ -1,3 +1,8 @@
+2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71518
+        * gcc.dg/pr71518.c: New test.
+
 2016-07-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/arm/vst1Q_laneu64-1.c (foo): Use unsigned char*.
