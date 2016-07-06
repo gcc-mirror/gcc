@@ -1,5 +1,20 @@
 2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_memory_access_type): Add
+	VMAT_INVARIANT, VMAT_CONTIGUOUS_DOWN and VMAT_CONTIGUOUS_REVERSED.
+	* tree-vect-stmts.c (compare_step_with_zero): New function.
+	(perm_mask_for_reverse): Move further up file.
+	(get_group_load_store_type): Stick to VMAT_ELEMENTWISE if the
+	step is negative.
+	(get_negative_load_store_type): New function.
+	(get_load_store_type): Call it.  Add an ncopies argument.
+	(vectorizable_mask_load_store): Update call accordingly and
+	remove tests for negative steps.
+	(vectorizable_store, vectorizable_load): Likewise.  Handle new
+	memory_access_types.
+
+2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_memory_access_type): New enum.
 	(_stmt_vec_info): Add a memory_access_type field.
 	(STMT_VINFO_MEMORY_ACCESS_TYPE): New macro.

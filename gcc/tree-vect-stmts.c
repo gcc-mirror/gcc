@@ -1672,6 +1672,42 @@ vectorizable_internal_function (combined_fn cfn, tree fndecl,
 static tree permute_vec_elements (tree, tree, tree, gimple *,
 				  gimple_stmt_iterator *);
 
+/* STMT is a non-strided load or store, meaning that it accesses
+   elements with a known constant step.  Return -1 if that step
+   is negative, 0 if it is zero, and 1 if it is greater than zero.  */
+
+static int
+compare_step_with_zero (gimple *stmt)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  tree step;
+  if (loop_vinfo && nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt))
+    step = STMT_VINFO_DR_STEP (stmt_info);
+  else
+    step = DR_STEP (STMT_VINFO_DATA_REF (stmt_info));
+  return tree_int_cst_compare (step, size_zero_node);
+}
+
+/* If the target supports a permute mask that reverses the elements in
+   a vector of type VECTYPE, return that mask, otherwise return null.  */
+
+static tree
+perm_mask_for_reverse (tree vectype)
+{
+  int i, nunits;
+  unsigned char *sel;
+
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  sel = XALLOCAVEC (unsigned char, nunits);
+
+  for (i = 0; i < nunits; ++i)
+    sel[i] = nunits - 1 - i;
+
+  if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+    return NULL_TREE;
+  return vect_gen_perm_mask_checked (vectype, sel);
+}
 
 /* A subroutine of get_load_store_type, with a subset of the same
    arguments.  Handle the case where STMT is part of a grouped load
@@ -1755,7 +1791,8 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
 	 would access excess elements in the last iteration.  */
       bool would_overrun_p = (gap != 0);
       if (!STMT_VINFO_STRIDED_P (stmt_info)
-	  && (can_overrun_p || !would_overrun_p))
+	  && (can_overrun_p || !would_overrun_p)
+	  && compare_step_with_zero (stmt) > 0)
 	{
 	  /* First try using LOAD/STORE_LANES.  */
 	  if (vls_type == VLS_LOAD
@@ -1814,17 +1851,69 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
   return true;
 }
 
+/* A subroutine of get_load_store_type, with a subset of the same
+   arguments.  Handle the case where STMT is a load or store that
+   accesses consecutive elements with a negative step.  */
+
+static vect_memory_access_type
+get_negative_load_store_type (gimple *stmt, tree vectype,
+			      vec_load_store_type vls_type,
+			      unsigned int ncopies)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  dr_alignment_support alignment_support_scheme;
+
+  if (ncopies > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "multiple types with negative step.\n");
+      return VMAT_ELEMENTWISE;
+    }
+
+  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  if (alignment_support_scheme != dr_aligned
+      && alignment_support_scheme != dr_unaligned_supported)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "negative step but alignment required.\n");
+      return VMAT_ELEMENTWISE;
+    }
+
+  if (vls_type == VLS_STORE_INVARIANT)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "negative step with invariant source;"
+			 " no permute needed.\n");
+      return VMAT_CONTIGUOUS_DOWN;
+    }
+
+  if (!perm_mask_for_reverse (vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "negative step and reversing not supported.\n");
+      return VMAT_ELEMENTWISE;
+    }
+
+  return VMAT_CONTIGUOUS_REVERSE;
+}
+
 /* Analyze load or store statement STMT of type VLS_TYPE.  Return true
    if there is a memory access type that the vectorized form can use,
    storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
    or scatters, fill in GS_INFO accordingly.
 
    SLP says whether we're performing SLP rather than loop vectorization.
-   VECTYPE is the vector type that the vectorized statements will use.  */
+   VECTYPE is the vector type that the vectorized statements will use.
+   NCOPIES is the number of vector statements that will be needed.  */
 
 static bool
 get_load_store_type (gimple *stmt, tree vectype, bool slp,
-		     vec_load_store_type vls_type,
+		     vec_load_store_type vls_type, unsigned int ncopies,
 		     vect_memory_access_type *memory_access_type,
 		     gather_scatter_info *gs_info)
 {
@@ -1860,7 +1949,19 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp,
       *memory_access_type = VMAT_ELEMENTWISE;
     }
   else
-    *memory_access_type = VMAT_CONTIGUOUS;
+    {
+      int cmp = compare_step_with_zero (stmt);
+      if (cmp < 0)
+	*memory_access_type = get_negative_load_store_type
+	  (stmt, vectype, vls_type, ncopies);
+      else if (cmp == 0)
+	{
+	  gcc_assert (vls_type == VLS_LOAD);
+	  *memory_access_type = VMAT_INVARIANT;
+	}
+      else
+	*memory_access_type = VMAT_CONTIGUOUS;
+    }
 
   /* FIXME: At the moment the cost model seems to underestimate the
      cost of using elementwise accesses.  This check preserves the
@@ -1971,7 +2072,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
     vls_type = VLS_LOAD;
 
   vect_memory_access_type memory_access_type;
-  if (!get_load_store_type (stmt, vectype, false, vls_type,
+  if (!get_load_store_type (stmt, vectype, false, vls_type, ncopies,
 			    &memory_access_type, &gs_info))
     return false;
 
@@ -1996,10 +2097,6 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 			 vls_type == VLS_LOAD ? "load" : "store");
       return false;
     }
-  else if (tree_int_cst_compare (nested_in_vect_loop
-				 ? STMT_VINFO_DR_STEP (stmt_info)
-				 : DR_STEP (dr), size_zero_node) <= 0)
-    return false;
   else if (!VECTOR_MODE_P (TYPE_MODE (vectype))
 	   || !can_vec_mask_load_store_p (TYPE_MODE (vectype),
 					  TYPE_MODE (mask_vectype),
@@ -5340,27 +5437,6 @@ ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
 }
 
 
-/* Given a vector type VECTYPE returns the VECTOR_CST mask that implements
-   reversal of the vector elements.  If that is impossible to do,
-   returns NULL.  */
-
-static tree
-perm_mask_for_reverse (tree vectype)
-{
-  int i, nunits;
-  unsigned char *sel;
-
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  sel = XALLOCAVEC (unsigned char, nunits);
-
-  for (i = 0; i < nunits; ++i)
-    sel[i] = nunits - 1 - i;
-
-  if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
-    return NULL_TREE;
-  return vect_gen_perm_mask_checked (vectype, sel);
-}
-
 /* Function vectorizable_store.
 
    Check if STMT defines a non scalar data-ref (array/pointer/structure) that
@@ -5400,7 +5476,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   vec<tree> oprnds = vNULL;
   vec<tree> result_chain = vNULL;
   bool inv_p;
-  bool negative = false;
   tree offset = NULL_TREE;
   vec<tree> vec_oprnds = vNULL;
   bool slp = (slp_node != NULL);
@@ -5504,44 +5579,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  if (!STMT_VINFO_STRIDED_P (stmt_info))
-    {
-      negative = 
-	  tree_int_cst_compare (loop && nested_in_vect_loop_p (loop, stmt)
-				? STMT_VINFO_DR_STEP (stmt_info) : DR_STEP (dr),
-				size_zero_node) < 0;
-      if (negative && ncopies > 1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "multiple types with negative step.\n");
-	  return false;
-	}
-      if (negative)
-	{
-	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
-	  if (alignment_support_scheme != dr_aligned
-	      && alignment_support_scheme != dr_unaligned_supported)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "negative step but alignment required.\n");
-	      return false;
-	    }
-	  if (dt != vect_constant_def 
-	      && dt != vect_external_def
-	      && !perm_mask_for_reverse (vectype))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "negative step and reversing not supported.\n");
-	      return false;
-	    }
-	}
-    }
-
   vect_memory_access_type memory_access_type;
-  if (!get_load_store_type (stmt, vectype, slp, vls_type,
+  if (!get_load_store_type (stmt, vectype, slp, vls_type, ncopies,
 			    &memory_access_type, &gs_info))
     return false;
 
@@ -5947,7 +5986,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
-  if (negative)
+  if (memory_access_type == VMAT_CONTIGUOUS_DOWN
+      || memory_access_type == VMAT_CONTIGUOUS_REVERSE)
     offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
@@ -6169,9 +6209,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
 					misalign);
 
-	      if (negative
-		  && dt != vect_constant_def 
-		  && dt != vect_external_def)
+	      if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 		{
 		  tree perm_mask = perm_mask_for_reverse (vectype);
 		  tree perm_dest 
@@ -6375,7 +6413,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gimple *first_stmt;
   gimple *first_stmt_for_drptr = NULL;
   bool inv_p;
-  bool negative = false;
   bool compute_in_loop = false;
   struct loop *at_loop;
   int vec_num;
@@ -6531,54 +6568,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     }
 
   vect_memory_access_type memory_access_type;
-  if (!get_load_store_type (stmt, vectype, slp, VLS_LOAD,
+  if (!get_load_store_type (stmt, vectype, slp, VLS_LOAD, ncopies,
 			    &memory_access_type, &gs_info))
     return false;
-
-  if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info)
-      && !STMT_VINFO_STRIDED_P (stmt_info))
-    {
-      negative = tree_int_cst_compare (nested_in_vect_loop
-				       ? STMT_VINFO_DR_STEP (stmt_info)
-				       : DR_STEP (dr),
-				       size_zero_node) < 0;
-      if (negative && ncopies > 1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "multiple types with negative step.\n");
-	  return false;
-	}
-
-      if (negative)
-	{
-	  if (grouped_load)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "negative step for group load not supported"
-                                 "\n");
-	      return false;
-	    }
-	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
-	  if (alignment_support_scheme != dr_aligned
-	      && alignment_support_scheme != dr_unaligned_supported)
-	    {
-              if (dump_enabled_p ())
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "negative step but alignment required.\n");
-	      return false;
-	    }
-	  if (!perm_mask_for_reverse (vectype))
-	    {
-              if (dump_enabled_p ())
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "negative step and reversing not supported."
-                                 "\n");
-	      return false;
-	    }
-	}
-    }
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -7120,7 +7112,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   else
     at_loop = loop;
 
-  if (negative)
+  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
     offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
@@ -7409,7 +7401,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		    }
 		}
 
-	      if (negative)
+	      if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 		{
 		  tree perm_mask = perm_mask_for_reverse (vectype);
 		  new_temp = permute_vec_elements (new_temp, new_temp,

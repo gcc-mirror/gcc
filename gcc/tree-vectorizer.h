@@ -484,13 +484,25 @@ enum slp_vect_type {
 /* Describes how we're going to vectorize an individual load or store,
    or a group of loads or stores.  */
 enum vect_memory_access_type {
+  /* An access to an invariant address.  This is used only for loads.  */
+  VMAT_INVARIANT,
+
   /* A simple contiguous access.  */
   VMAT_CONTIGUOUS,
+
+  /* A contiguous access that goes down in memory rather than up,
+     with no additional permutation.  This is used only for stores
+     of invariants.  */
+  VMAT_CONTIGUOUS_DOWN,
 
   /* A simple contiguous access in which the elements need to be permuted
      after loading or before storing.  Only used for loop vectorization;
      SLP uses separate permutes.  */
   VMAT_CONTIGUOUS_PERMUTE,
+
+  /* A simple contiguous access in which the elements need to be reversed
+     after loading or before storing.  */
+  VMAT_CONTIGUOUS_REVERSE,
 
   /* An access that uses IFN_LOAD_LANES or IFN_STORE_LANES.  */
   VMAT_LOAD_STORE_LANES,
