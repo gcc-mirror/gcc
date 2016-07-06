@@ -1490,9 +1490,13 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
   stmt_info = vinfo_for_stmt (stmt);
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
+      vect_memory_access_type memory_access_type
+	= (STMT_VINFO_STRIDED_P (stmt_info)
+	   ? VMAT_STRIDED_SLP
+	   : VMAT_CONTIGUOUS);
       if (DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
-	vect_model_store_cost (stmt_info, ncopies_for_cost, false,
-			       vect_uninitialized_def,
+	vect_model_store_cost (stmt_info, ncopies_for_cost,
+			       memory_access_type, vect_uninitialized_def,
 			       node, prologue_cost_vec, body_cost_vec);
       else
 	{
@@ -1515,8 +1519,9 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	      ncopies_for_cost *= SLP_INSTANCE_UNROLLING_FACTOR (instance);
 	    }
 	  /* Record the cost for the vector loads.  */
-	  vect_model_load_cost (stmt_info, ncopies_for_cost, false,
-				node, prologue_cost_vec, body_cost_vec);
+	  vect_model_load_cost (stmt_info, ncopies_for_cost,
+				memory_access_type, node, prologue_cost_vec,
+				body_cost_vec);
 	  return;
 	}
     }
