@@ -1,5 +1,19 @@
 2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (gather_scatter_info): New structure.
+	(vect_check_gather_scatter): Return a bool rather than a decl.
+	Replace return-by-pointer arguments with a single
+	gather_scatter_info *.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Likewise.
+	(vect_analyze_data_refs): Update call accordingly.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): Likewise.
+	(vectorizable_mask_load_store): Likewise.  Also record the
+	offset dt and vectype in the gather_scatter_info.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2016-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vect_model_store_cost): For non-SLP
 	strided groups, use the cost of N scalar accesses instead
 	of ncopies vector accesses.

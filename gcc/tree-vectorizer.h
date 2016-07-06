@@ -608,6 +608,28 @@ typedef struct _stmt_vec_info {
   unsigned int num_slp_uses;
 } *stmt_vec_info;
 
+/* Information about a gather/scatter call.  */
+struct gather_scatter_info {
+  /* The FUNCTION_DECL for the built-in gather/scatter function.  */
+  tree decl;
+
+  /* The loop-invariant base value.  */
+  tree base;
+
+  /* The original scalar offset, which is a non-loop-invariant SSA_NAME.  */
+  tree offset;
+
+  /* Each offset element should be multiplied by this amount before
+     being added to the base.  */
+  int scale;
+
+  /* The definition type for the vectorized offset.  */
+  enum vect_def_type offset_dt;
+
+  /* The type of the vectorized offset.  */
+  tree offset_vectype;
+};
+
 /* Access Functions.  */
 #define STMT_VINFO_TYPE(S)                 (S)->type
 #define STMT_VINFO_STMT(S)                 (S)->stmt
@@ -1031,8 +1053,8 @@ extern bool vect_verify_datarefs_alignment (loop_vec_info);
 extern bool vect_slp_analyze_and_verify_instance_alignment (slp_instance);
 extern bool vect_analyze_data_ref_accesses (vec_info *);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
-extern tree vect_check_gather_scatter (gimple *, loop_vec_info, tree *, tree *,
-				       int *);
+extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
+				       gather_scatter_info *);
 extern bool vect_analyze_data_refs (vec_info *, int *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,

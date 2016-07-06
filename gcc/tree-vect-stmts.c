@@ -772,10 +772,11 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo))
 	{
-	  tree off;
-	  tree decl = vect_check_gather_scatter (stmt, loop_vinfo, NULL, &off, NULL);
-	  gcc_assert (decl);
-	  if (!process_use (stmt, off, loop_vinfo, relevant, &worklist, true))
+	  gather_scatter_info gs_info;
+	  if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
+	    gcc_unreachable ();
+	  if (!process_use (stmt, gs_info.offset, loop_vinfo, relevant,
+			    &worklist, true))
 	    return false;
 	}
     } /* while worklist */
@@ -1703,10 +1704,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   int ncopies;
   int i, j;
   bool inv_p;
-  tree gather_base = NULL_TREE, gather_off = NULL_TREE;
-  tree gather_off_vectype = NULL_TREE, gather_decl = NULL_TREE;
-  int gather_scale = 1;
-  enum vect_def_type gather_dt = vect_unknown_def_type;
+  gather_scatter_info gs_info;
   bool is_store;
   tree mask;
   gimple *def_stmt;
@@ -1774,11 +1772,10 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       gimple *def_stmt;
-      gather_decl = vect_check_gather_scatter (stmt, loop_vinfo, &gather_base,
-				       &gather_off, &gather_scale);
-      gcc_assert (gather_decl);
-      if (!vect_is_simple_use (gather_off, loop_vinfo, &def_stmt, &gather_dt,
-			       &gather_off_vectype))
+      if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
+	gcc_unreachable ();
+      if (!vect_is_simple_use (gs_info.offset, loop_vinfo, &def_stmt,
+			       &gs_info.offset_dt, &gs_info.offset_vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1786,7 +1783,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	  return false;
 	}
 
-      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
+      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree masktype
 	= TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
       if (TREE_CODE (masktype) == INTEGER_TYPE)
@@ -1825,7 +1822,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       tree vec_oprnd0 = NULL_TREE, op;
-      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
+      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
       tree ptr, vec_mask = NULL_TREE, mask_op = NULL_TREE, var, scale;
       tree perm_mask = NULL_TREE, prev_res = NULL_TREE;
@@ -1834,9 +1831,9 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
-      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gather_off_vectype);
+      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
 
-      rettype = TREE_TYPE (TREE_TYPE (gather_decl));
+      rettype = TREE_TYPE (TREE_TYPE (gs_info.decl));
       srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
@@ -1855,7 +1852,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel[i] = i | nunits;
 
-	  perm_mask = vect_gen_perm_mask_checked (gather_off_vectype, sel);
+	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype, sel);
 	}
       else if (nunits == gather_off_nunits * 2)
 	{
@@ -1877,7 +1874,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 
       vec_dest = vect_create_destination_var (gimple_call_lhs (stmt), vectype);
 
-      ptr = fold_convert (ptrtype, gather_base);
+      ptr = fold_convert (ptrtype, gs_info.base);
       if (!is_gimple_min_invariant (ptr))
 	{
 	  ptr = force_gimple_operand (ptr, &seq, true, NULL_TREE);
@@ -1885,7 +1882,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	  gcc_assert (!new_bb);
 	}
 
-      scale = build_int_cst (scaletype, gather_scale);
+      scale = build_int_cst (scaletype, gs_info.scale);
 
       prev_stmt_info = NULL;
       for (j = 0; j < ncopies; ++j)
@@ -1895,10 +1892,10 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 				       perm_mask, stmt, gsi);
 	  else if (j == 0)
 	    op = vec_oprnd0
-	      = vect_get_vec_def_for_operand (gather_off, stmt);
+	      = vect_get_vec_def_for_operand (gs_info.offset, stmt);
 	  else
 	    op = vec_oprnd0
-	      = vect_get_vec_def_for_stmt_copy (gather_dt, vec_oprnd0);
+	      = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt, vec_oprnd0);
 
 	  if (!useless_type_conversion_p (idxtype, TREE_TYPE (op)))
 	    {
@@ -1940,7 +1937,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	    }
 
 	  new_stmt
-	    = gimple_build_call (gather_decl, 5, mask_op, ptr, op, mask_op,
+	    = gimple_build_call (gs_info.decl, 5, mask_op, ptr, op, mask_op,
 				 scale);
 
 	  if (!useless_type_conversion_p (vectype, rettype))
@@ -5207,10 +5204,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
   tree aggr_type;
-  tree scatter_base = NULL_TREE, scatter_off = NULL_TREE;
-  tree scatter_off_vectype = NULL_TREE, scatter_decl = NULL_TREE;
-  int scatter_scale = 1;
-  enum vect_def_type scatter_idx_dt = vect_unknown_def_type;
+  gather_scatter_info gs_info;
   enum vect_def_type scatter_src_dt = vect_unknown_def_type;
   gimple *new_stmt;
   int vf;
@@ -5374,11 +5368,10 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       gimple *def_stmt;
-      scatter_decl = vect_check_gather_scatter (stmt, loop_vinfo, &scatter_base,
-						&scatter_off, &scatter_scale);
-      gcc_assert (scatter_decl);
-      if (!vect_is_simple_use (scatter_off, vinfo, &def_stmt, &scatter_idx_dt,
-			       &scatter_off_vectype))
+      if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
+	gcc_unreachable ();
+      if (!vect_is_simple_use (gs_info.offset, vinfo, &def_stmt,
+			       &gs_info.offset_dt, &gs_info.offset_vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5404,14 +5397,14 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE, op, src;
-      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (scatter_decl));
+      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
       tree ptr, mask, var, scale, perm_mask = NULL_TREE;
       edge pe = loop_preheader_edge (loop);
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
-      int scatter_off_nunits = TYPE_VECTOR_SUBPARTS (scatter_off_vectype);
+      int scatter_off_nunits = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
 
       if (nunits == (unsigned int) scatter_off_nunits)
 	modifier = NONE;
@@ -5423,7 +5416,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  for (i = 0; i < (unsigned int) scatter_off_nunits; ++i)
 	    sel[i] = i | nunits;
 
-	  perm_mask = vect_gen_perm_mask_checked (scatter_off_vectype, sel);
+	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype, sel);
 	  gcc_assert (perm_mask != NULL_TREE);
 	}
       else if (nunits == (unsigned int) scatter_off_nunits * 2)
@@ -5441,7 +5434,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       else
 	gcc_unreachable ();
 
-      rettype = TREE_TYPE (TREE_TYPE (scatter_decl));
+      rettype = TREE_TYPE (TREE_TYPE (gs_info.decl));
       ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
@@ -5451,7 +5444,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       gcc_checking_assert (TREE_CODE (masktype) == INTEGER_TYPE
 			   && TREE_CODE (rettype) == VOID_TYPE);
 
-      ptr = fold_convert (ptrtype, scatter_base);
+      ptr = fold_convert (ptrtype, gs_info.base);
       if (!is_gimple_min_invariant (ptr))
 	{
 	  ptr = force_gimple_operand (ptr, &seq, true, NULL_TREE);
@@ -5464,7 +5457,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       mask = build_int_cst (masktype, -1);
       mask = vect_init_vector (stmt, mask, masktype, NULL);
 
-      scale = build_int_cst (scaletype, scatter_scale);
+      scale = build_int_cst (scaletype, gs_info.scale);
 
       prev_stmt_info = NULL;
       for (j = 0; j < ncopies; ++j)
@@ -5474,7 +5467,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      src = vec_oprnd1
 		= vect_get_vec_def_for_operand (gimple_assign_rhs1 (stmt), stmt);
 	      op = vec_oprnd0
-		= vect_get_vec_def_for_operand (scatter_off, stmt);
+		= vect_get_vec_def_for_operand (gs_info.offset, stmt);
 	    }
 	  else if (modifier != NONE && (j & 1))
 	    {
@@ -5490,7 +5483,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  src = permute_vec_elements (vec_oprnd1, vec_oprnd1, perm_mask,
 					      stmt, gsi);
 		  op = vec_oprnd0
-		    = vect_get_vec_def_for_stmt_copy (scatter_idx_dt, vec_oprnd0);
+		    = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
+						      vec_oprnd0);
 		}
 	      else
 		gcc_unreachable ();
@@ -5500,7 +5494,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      src = vec_oprnd1
 		= vect_get_vec_def_for_stmt_copy (scatter_src_dt, vec_oprnd1);
 	      op = vec_oprnd0
-		= vect_get_vec_def_for_stmt_copy (scatter_idx_dt, vec_oprnd0);
+		= vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
+						  vec_oprnd0);
 	    }
 
 	  if (!useless_type_conversion_p (srctype, TREE_TYPE (src)))
@@ -5526,7 +5521,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 
 	  new_stmt
-	    = gimple_build_call (scatter_decl, 5, ptr, mask, op, src, scale);
+	    = gimple_build_call (gs_info.decl, 5, ptr, mask, op, src, scale);
 
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
@@ -6221,10 +6216,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
   tree aggr_type;
-  tree gather_base = NULL_TREE, gather_off = NULL_TREE;
-  tree gather_off_vectype = NULL_TREE, gather_decl = NULL_TREE;
-  int gather_scale = 1;
-  enum vect_def_type gather_dt = vect_unknown_def_type;
+  gather_scatter_info gs_info;
   vec_info *vinfo = stmt_info->vinfo;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
@@ -6421,11 +6413,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       gimple *def_stmt;
-      gather_decl = vect_check_gather_scatter (stmt, loop_vinfo, &gather_base,
-					       &gather_off, &gather_scale);
-      gcc_assert (gather_decl);
-      if (!vect_is_simple_use (gather_off, vinfo, &def_stmt, &gather_dt,
-			       &gather_off_vectype))
+      if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info))
+	gcc_unreachable ();
+      if (!vect_is_simple_use (gs_info.offset, vinfo, &def_stmt,
+			       &gs_info.offset_dt, &gs_info.offset_vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6500,14 +6491,14 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       tree vec_oprnd0 = NULL_TREE, op;
-      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
+      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
       tree ptr, mask, var, scale, merge, perm_mask = NULL_TREE, prev_res = NULL_TREE;
       edge pe = loop_preheader_edge (loop);
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
-      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gather_off_vectype);
+      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
 
       if (nunits == gather_off_nunits)
 	modifier = NONE;
@@ -6519,7 +6510,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel[i] = i | nunits;
 
-	  perm_mask = vect_gen_perm_mask_checked (gather_off_vectype, sel);
+	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype, sel);
 	}
       else if (nunits == gather_off_nunits * 2)
 	{
@@ -6536,7 +6527,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       else
 	gcc_unreachable ();
 
-      rettype = TREE_TYPE (TREE_TYPE (gather_decl));
+      rettype = TREE_TYPE (TREE_TYPE (gs_info.decl));
       srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
@@ -6546,7 +6537,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
-      ptr = fold_convert (ptrtype, gather_base);
+      ptr = fold_convert (ptrtype, gs_info.base);
       if (!is_gimple_min_invariant (ptr))
 	{
 	  ptr = force_gimple_operand (ptr, &seq, true, NULL_TREE);
@@ -6578,7 +6569,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       else
 	gcc_unreachable ();
 
-      scale = build_int_cst (scaletype, gather_scale);
+      scale = build_int_cst (scaletype, gs_info.scale);
 
       if (TREE_CODE (TREE_TYPE (rettype)) == INTEGER_TYPE)
 	merge = build_int_cst (TREE_TYPE (rettype), 0);
@@ -6604,10 +6595,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 				       perm_mask, stmt, gsi);
 	  else if (j == 0)
 	    op = vec_oprnd0
-	      = vect_get_vec_def_for_operand (gather_off, stmt);
+	      = vect_get_vec_def_for_operand (gs_info.offset, stmt);
 	  else
 	    op = vec_oprnd0
-	      = vect_get_vec_def_for_stmt_copy (gather_dt, vec_oprnd0);
+	      = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt, vec_oprnd0);
 
 	  if (!useless_type_conversion_p (idxtype, TREE_TYPE (op)))
 	    {
@@ -6622,7 +6613,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 
 	  new_stmt
-	    = gimple_build_call (gather_decl, 5, merge, ptr, op, mask, scale);
+	    = gimple_build_call (gs_info.decl, 5, merge, ptr, op, mask, scale);
 
 	  if (!useless_type_conversion_p (vectype, rettype))
 	    {
