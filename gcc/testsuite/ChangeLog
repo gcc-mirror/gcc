@@ -1,3 +1,7 @@
+2016-07-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/arm/vst1Q_laneu64-1.c (foo): Use unsigned char*.
+
 2016-07-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/50739	
