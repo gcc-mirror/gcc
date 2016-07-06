@@ -2194,15 +2194,103 @@ Gogo::propagate_escape(Escape_context* context, Node* dst)
     }
 }
 
+class Escape_analysis_tag
+{
+ public:
+  Escape_analysis_tag(Escape_context* context)
+    : context_(context)
+  { }
+
+  // Add notes to the function's type about the escape information of its
+  // input parameters.
+  void
+  tag(Named_object* fn);
+
+ private:
+  Escape_context* context_;
+};
+
+void
+Escape_analysis_tag::tag(Named_object* fn)
+{
+  // External functions are assumed unsafe
+  // unless //go:noescape is given before the declaration.
+  if (fn->package() != NULL || !fn->is_function())
+    {
+      // TODO(cmang): Implement //go:noescape directive for external functions;
+      // mark input parameters as not escaping.
+      return;
+    }
+
+  Function_type* fntype = fn->func_value()->type();
+  Bindings* bindings = fn->func_value()->block()->bindings();
+
+  if (fntype->is_method()
+      && !fntype->receiver()->name().empty()
+      && !Gogo::is_sink_name(fntype->receiver()->name()))
+    {
+      Named_object* rcvr_no = bindings->lookup(fntype->receiver()->name());
+      go_assert(rcvr_no != NULL);
+      Node* rcvr_node = Node::make_node(rcvr_no);
+      switch ((rcvr_node->encoding() & ESCAPE_MASK))
+	{
+	case Node::ESCAPE_NONE: // not touched by flood
+	case Node::ESCAPE_RETURN:
+	  if (fntype->receiver()->type()->has_pointer())
+	    // Don't bother tagging for scalars.
+	    fntype->add_receiver_note(rcvr_node->encoding());
+	  break;
+
+	case Node::ESCAPE_HEAP: // flooded, moved to heap.
+	case Node::ESCAPE_SCOPE: // flooded, value leaves scope.
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  int i = 0;
+  if (fntype->parameters() != NULL)
+    {
+      const Typed_identifier_list* til = fntype->parameters();
+      for (Typed_identifier_list::const_iterator p = til->begin();
+	   p != til->end();
+	   ++p, ++i)
+	{
+	  if (p->name().empty() || Gogo::is_sink_name(p->name()))
+	    continue;
+
+	  Named_object* param_no = bindings->lookup(p->name());
+	  go_assert(param_no != NULL);
+	  Node* param_node = Node::make_node(param_no);
+	  switch ((param_node->encoding() & ESCAPE_MASK))
+	    {
+	    case Node::ESCAPE_NONE: // not touched by flood
+	    case Node::ESCAPE_RETURN:
+	      if (p->type()->has_pointer())
+		// Don't bother tagging for scalars.
+		fntype->add_parameter_note(i, param_node->encoding());
+	      break;
+
+	    case Node::ESCAPE_HEAP: // flooded, moved to heap.
+	    case Node::ESCAPE_SCOPE: // flooded, value leaves scope.
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
+  fntype->set_is_tagged();
+}
 
 // Tag each top-level function with escape information that will be used to
 // retain analysis results across imports.
 
 void
-Gogo::tag_function(Escape_context*, Named_object*)
+Gogo::tag_function(Escape_context* context, Named_object* fn)
 {
-  // TODO(cmang): Create escape information notes for each input and output
-  // parameter in a given function.
-  // Escape_analysis_tag eat(context, fn);
-  // this->traverse(&eat);
+  Escape_analysis_tag eat(context);
+  eat.tag(fn);
 }
