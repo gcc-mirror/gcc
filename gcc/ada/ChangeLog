@@ -1,3 +1,16 @@
+2016-07-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Specification): Insert its
+	freezing nodes after the last declaration. Needed to ensure
+	that global entities referenced in aspects of frozen types are
+	properly handled.
+	* freeze.adb (Freeze_Entity): Minor code reorganization to ensure
+	that freezing nodes of generic packages are handled.
+	* sem_ch13.adb (Freeze_Entity_Checks): Handle N_Freeze_Generic nodes.
+	* sem_ch12.adb (Save_References_In_Identifier): Handle selected
+	components which denote a named number that is constant folded
+	in the analyzed copy of the tree.
+
 2016-07-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb Remove with and use clauses for Exp_Ch11 and Inline.

@@ -10789,10 +10789,20 @@ package body Sem_Ch13 is
       --  the subtype name in the saved expression so that they will not cause
       --  trouble in the preanalysis.
 
-      --  This is also not needed in the generic case
+      --  Case 1: Generic case. For freezing nodes of types defined in generics
+      --  we must perform the analysis of its aspects; needed to ensure that
+      --  they have the minimum decoration needed by ASIS.
 
-      if Non_Generic_Case
-        and then Has_Delayed_Aspects (E)
+      if not Non_Generic_Case then
+         if Has_Delayed_Aspects (E) then
+            Push_Scope (Scope (E));
+            Analyze_Aspects_At_Freeze_Point (E);
+            Pop_Scope;
+         end if;
+
+      --  Case 2: Non-generic case
+
+      elsif Has_Delayed_Aspects (E)
         and then Scope (E) = Current_Scope
       then
          --  Retrieve the visibility to the discriminants in order to properly
