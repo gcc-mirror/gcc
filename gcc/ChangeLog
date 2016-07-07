@@ -1,5 +1,9 @@
 2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-protos.h: Reindent FL_FOR_* macro definitions.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm-arches.def (armv8-m.base): Define new architecture.
 	(armv8-m.main): Likewise.
 	(armv8-m.main+dsp): Likewise.
