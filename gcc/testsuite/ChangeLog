@@ -1,3 +1,9 @@
+2016-07-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/70098
+	PR target/71763
+	* gcc.target/powerpc/pr71763.c: New file.
+
 2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71518
