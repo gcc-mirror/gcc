@@ -1,3 +1,11 @@
+2016-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64280
+	* g++.dg/torture/pr64280.C: New testcase.
+
 2016-07-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
