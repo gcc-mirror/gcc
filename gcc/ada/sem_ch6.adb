@@ -3731,7 +3731,7 @@ package body Sem_Ch6 is
          return;
       end if;
 
-      --  Handle front-end inlining
+      --  Handle inlining
 
       --  Note: Normally we don't do any inlining if expansion is off, since
       --  we won't generate code in any case. An exception arises in GNATprove
@@ -3748,15 +3748,14 @@ package body Sem_Ch6 is
 
          if not Back_End_Inlining then
             if (Has_Pragma_Inline_Always (Spec_Id)
-                  and then not Opt.Disable_FE_Inline_Always)
-              or else
-              (Has_Pragma_Inline (Spec_Id) and then Front_End_Inlining
-                 and then not Opt.Disable_FE_Inline)
+                 and then not Opt.Disable_FE_Inline_Always)
+              or else (Front_End_Inlining
+                        and then not Opt.Disable_FE_Inline)
             then
                Build_Body_To_Inline (N, Spec_Id);
             end if;
 
-         --  New implementation (relying on backend inlining)
+         --  New implementation (relying on back-end inlining)
 
          else
             if Has_Pragma_Inline_Always (Spec_Id)
