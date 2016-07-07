@@ -3932,7 +3932,7 @@ package body Sem_Prag is
       --    Enabled:    inlining is requested/required for the subprogram
 
       procedure Process_Inline (Status : Inline_Status);
-      --  Common processing for Inline, Inline_Always and No_Inline. Parameter
+      --  Common processing for No_Inline, Inline and Inline_Always. Parameter
       --  indicates the inline status specified by the pragma.
 
       procedure Process_Interface_Name
@@ -8791,21 +8791,20 @@ package body Sem_Prag is
          --  processing the arguments of the pragma.
 
          procedure Make_Inline (Subp : Entity_Id);
-         --  Subp is the defining unit name of the subprogram declaration. Set
-         --  the flag, as well as the flag in the corresponding body, if there
-         --  is one present.
+         --  Subp is the defining unit name of the subprogram declaration. If
+         --  the pragma is valid, call Set_Inline_Flags on Subp, as well as on
+         --  the corresponding body, if there is one present.
 
          procedure Set_Inline_Flags (Subp : Entity_Id);
-         --  Sets Is_Inlined and Has_Pragma_Inline flags for Subp and also
-         --  Has_Pragma_Inline_Always for the Inline_Always case.
+         --  Set Has_Pragma_{No_Inline,Inline,Inline_Always} flag on Subp.
+         --  Also set or clear Is_Inlined flag on Subp depending on Status.
 
          function Inlining_Not_Possible (Subp : Entity_Id) return Boolean;
          --  Returns True if it can be determined at this stage that inlining
          --  is not possible, for example if the body is available and contains
          --  exception handlers, we prevent inlining, since otherwise we can
          --  get undefined symbols at link time. This function also emits a
-         --  warning if front-end inlining is enabled and the pragma appears
-         --  too late.
+         --  warning if the pragma appears too late.
          --
          --  ??? is business with link symbols still valid, or does it relate
          --  to front end ZCX which is being phased out ???
@@ -8827,9 +8826,7 @@ package body Sem_Prag is
             elsif Nkind (Decl) = N_Subprogram_Declaration
               and then Present (Corresponding_Body (Decl))
             then
-               if Front_End_Inlining
-                 and then Analyzed (Corresponding_Body (Decl))
-               then
+               if Analyzed (Corresponding_Body (Decl)) then
                   Error_Msg_N ("pragma appears too late, ignored??", N);
                   return True;
 
@@ -8879,6 +8876,7 @@ package body Sem_Prag is
             --  If inlining is not possible, for now do not treat as an error
 
             elsif Status /= Suppressed
+              and then Front_End_Inlining
               and then Inlining_Not_Possible (Subp)
             then
                Applies := True;
@@ -9048,9 +9046,7 @@ package body Sem_Prag is
                   end if;
                end if;
 
-               if not Has_Pragma_Inline (Subp) then
-                  Set_Has_Pragma_Inline (Subp);
-               end if;
+               Set_Has_Pragma_Inline (Subp);
             end if;
 
             --  Then adjust the Is_Inlined flag. It can never be set if the
@@ -16398,7 +16394,23 @@ package body Sem_Prag is
 
             if not GNATprove_Mode then
 
-               --  Inline status is Enabled if inlining option is active
+               --  Inline status is Enabled if option -gnatn is specified.
+               --  However this status determines only the value of the
+               --  Is_Inlined flag on the subprogram and does not prevent
+               --  the pragma itself from being recorded for later use,
+               --  in particular for a later modification of Is_Inlined
+               --  independently of the -gnatn option.
+
+               --  In other words, if -gnatn is specified for a unit, then
+               --  all Inline pragmas processed for the compilation of this
+               --  unit, including those in the spec of other units, are
+               --  activated, so subprograms will be inlined across units.
+
+               --  If -gnatn is not specified, no Inline pragma is activated
+               --  here, which means that subprograms will not be inlined
+               --  across units. The Is_Inlined flag will nevertheless be
+               --  set later when bodies are analyzed, so subprograms will
+               --  be inlined within the unit.
 
                if Inline_Active then
                   Process_Inline (Enabled);
