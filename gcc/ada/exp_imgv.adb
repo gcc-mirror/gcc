@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -694,7 +694,7 @@ package body Exp_Imgv is
 
             if Ttyp = Standard_Integer_8 then
                Func := RE_Value_Enumeration_8;
-            elsif Ttyp = Standard_Integer_16  then
+            elsif Ttyp = Standard_Integer_16 then
                Func := RE_Value_Enumeration_16;
             else
                Func := RE_Value_Enumeration_32;
@@ -1278,7 +1278,7 @@ package body Exp_Imgv is
             when Normal =>
                if Ttyp = Standard_Integer_8 then
                   XX := RE_Width_Enumeration_8;
-               elsif Ttyp = Standard_Integer_16  then
+               elsif Ttyp = Standard_Integer_16 then
                   XX := RE_Width_Enumeration_16;
                else
                   XX := RE_Width_Enumeration_32;
@@ -1287,7 +1287,7 @@ package body Exp_Imgv is
             when Wide =>
                if Ttyp = Standard_Integer_8 then
                   XX := RE_Wide_Width_Enumeration_8;
-               elsif Ttyp = Standard_Integer_16  then
+               elsif Ttyp = Standard_Integer_16 then
                   XX := RE_Wide_Width_Enumeration_16;
                else
                   XX := RE_Wide_Width_Enumeration_32;
@@ -1296,7 +1296,7 @@ package body Exp_Imgv is
             when Wide_Wide =>
                if Ttyp = Standard_Integer_8 then
                   XX := RE_Wide_Wide_Width_Enumeration_8;
-               elsif Ttyp = Standard_Integer_16  then
+               elsif Ttyp = Standard_Integer_16 then
                   XX := RE_Wide_Wide_Width_Enumeration_16;
                else
                   XX := RE_Wide_Wide_Width_Enumeration_32;

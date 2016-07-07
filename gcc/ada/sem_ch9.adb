@@ -1875,7 +1875,9 @@ package body Sem_Ch9 is
       --  composite types with inner components, we traverse recursively
       --  the private components of the protected type, and indicate that
       --  all itypes within are frozen. This ensures that no freeze nodes
-      --  will be generated for them.
+      --  will be generated for them. In the case of itypes that are access
+      --  types we need to complete their representation by calling layout,
+      --  which would otherwise be invoked when freezing a type.
       --
       --  On the other hand, components of the corresponding record are
       --  frozen (or receive itype references) as for other records.
@@ -1902,6 +1904,10 @@ package body Sem_Ch9 is
             then
                Set_Has_Delayed_Freeze (Comp, False);
                Set_Is_Frozen (Comp);
+
+               if Is_Access_Type (Comp) then
+                  Layout_Type (Comp);
+               end if;
 
                if Is_Record_Type (Comp)
                  or else Is_Protected_Type (Comp)

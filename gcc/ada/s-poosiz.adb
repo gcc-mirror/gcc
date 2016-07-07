@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,7 +148,7 @@ package body System.Pool_Size is
    -- Initialize --
    ----------------
 
-   procedure Initialize  (Pool : in out Stack_Bounded_Pool) is
+   procedure Initialize (Pool : in out Stack_Bounded_Pool) is
 
       --  Define the appropriate alignment for allocations. This is the
       --  maximum of the requested alignment, and the alignment required
@@ -180,7 +180,7 @@ package body System.Pool_Size is
    -- Storage_Size --
    ------------------
 
-   function  Storage_Size
+   function Storage_Size
      (Pool : Stack_Bounded_Pool) return SSE.Storage_Count
    is
    begin

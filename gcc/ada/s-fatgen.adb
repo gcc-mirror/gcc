@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,7 +84,7 @@ package body System.Fat_Gen is
    --  the sign of the exponent. The absolute value of Frac is in the range
    --  0.0 <= Frac < 1.0. If Frac = 0.0 or -0.0, then Expo is always zero.
 
-   function Gradual_Scaling  (Adjustment : UI) return T;
+   function Gradual_Scaling (Adjustment : UI) return T;
    --  Like Scaling with a first argument of 1.0, but returns the smallest
    --  denormal rather than zero when the adjustment is smaller than
    --  Machine_Emin. Used for Succ and Pred.
@@ -368,7 +368,7 @@ package body System.Fat_Gen is
       Result := Truncation (abs X);
       Tail   := abs X - Result;
 
-      if Tail >= 0.5  then
+      if Tail >= 0.5 then
          Result := Result + 1.0;
       end if;
 
@@ -553,7 +553,7 @@ package body System.Fat_Gen is
       Result := Truncation (abs X);
       Tail   := abs X - Result;
 
-      if Tail >= 0.5  then
+      if Tail >= 0.5 then
          Result := Result + 1.0;
       end if;
 
@@ -775,7 +775,7 @@ package body System.Fat_Gen is
       Result := Truncation (Abs_X);
       Tail   := Abs_X - Result;
 
-      if Tail > 0.5  then
+      if Tail > 0.5 then
          Result := Result + 1.0;
 
       elsif Tail = 0.5 then

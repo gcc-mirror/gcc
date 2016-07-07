@@ -5502,7 +5502,7 @@ package Einfo is
 
    --  The following list of access functions applies to all entities for
    --  types and subtypes. References to this list appear subsequently as
-   --  as "(plus type attributes)" for each appropriate Entity_Kind.
+   --  "(plus type attributes)" for each appropriate Entity_Kind.
 
    --    Associated_Node_For_Itype           (Node8)
    --    Class_Wide_Type                     (Node9)
