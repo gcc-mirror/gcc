@@ -1256,10 +1256,11 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
   gimple *init_stmt;
   tree new_temp;
 
-  if (TREE_CODE (type) == VECTOR_TYPE
-      && TREE_CODE (TREE_TYPE (val)) != VECTOR_TYPE)
+  /* We abuse this function to push sth to a SSA name with initial 'val'.  */
+  if (! useless_type_conversion_p (type, TREE_TYPE (val)))
     {
-      if (!types_compatible_p (TREE_TYPE (type), TREE_TYPE (val)))
+      gcc_assert (TREE_CODE (type) == VECTOR_TYPE);
+      if (! types_compatible_p (TREE_TYPE (type), TREE_TYPE (val)))
 	{
 	  /* Scalar boolean value should be transformed into
 	     all zeros or all ones value before building a vector.  */
@@ -1284,7 +1285,13 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 	  else
 	    {
 	      new_temp = make_ssa_name (TREE_TYPE (type));
-	      init_stmt = gimple_build_assign (new_temp, NOP_EXPR, val);
+	      if (! INTEGRAL_TYPE_P (TREE_TYPE (val)))
+		init_stmt = gimple_build_assign (new_temp,
+						 fold_build1 (VIEW_CONVERT_EXPR,
+							      TREE_TYPE (type),
+							      val));
+	      else
+		init_stmt = gimple_build_assign (new_temp, NOP_EXPR, val);
 	      vect_init_vector_1 (stmt, init_stmt, gsi);
 	      val = new_temp;
 	    }

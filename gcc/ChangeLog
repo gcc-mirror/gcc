@@ -1,3 +1,37 @@
+2016-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71264
+	* tree-vect-stmts.c (vect_init_vector): Properly deal with
+	vector type val.
+
+	2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71423
+	* match.pd ((X | ~Y) -> Y <= X): Properly invert the comparison
+	for signed ops.
+
+	2016-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71521
+	* tree-vrp.c (extract_range_from_binary_expr_1): Guard
+	division int_const_binop against zero divisor.
+
+	2016-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71452
+	* tree-ssa.c (non_rewritable_lvalue_p): Make sure that the
+	type used for the SSA rewrite has enough precision to cover
+	the dynamic type of the location.
+
+	2016-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71522
+	* tree-ssa.c (non_rewritable_lvalue_p): Do not rewrite non-float
+	copying into float copying.
+
 2016-07-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from mainline
