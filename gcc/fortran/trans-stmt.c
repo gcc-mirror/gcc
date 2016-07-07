@@ -2109,7 +2109,8 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       pos = build2 (COMPOUND_EXPR, void_type_node,
 		    fold_build2 (MODIFY_EXPR, void_type_node,
 				 countm1, tmp2),
-		    build3_loc (loc, COND_EXPR, void_type_node, tmp,
+		    build3_loc (loc, COND_EXPR, void_type_node,
+				gfc_unlikely (tmp, PRED_FORTRAN_LOOP_PREHEADER),
 				build1_loc (loc, GOTO_EXPR, void_type_node,
 					    exit_label), NULL_TREE));
 
@@ -2123,7 +2124,8 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       neg = build2 (COMPOUND_EXPR, void_type_node,
 		    fold_build2 (MODIFY_EXPR, void_type_node,
 				 countm1, tmp2),
-		    build3_loc (loc, COND_EXPR, void_type_node, tmp,
+		    build3_loc (loc, COND_EXPR, void_type_node,
+				gfc_unlikely (tmp, PRED_FORTRAN_LOOP_PREHEADER),
 				build1_loc (loc, GOTO_EXPR, void_type_node,
 					    exit_label), NULL_TREE));
 
