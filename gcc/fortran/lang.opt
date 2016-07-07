@@ -309,6 +309,10 @@ Wtabs
 Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall || Wpedantic)
 Permit nonconforming uses of the tab character.
 
+Wundefined-do-loop
+Fortran Warning Var(warn_undefined_do_loop) LangEnabledBy(Fortran,Wall)
+Warn about an invalid DO loop.
+
 Wunderflow
 Fortran Warning Var(warn_underflow) Init(1)
 Warn about underflow of numerical constant expressions.

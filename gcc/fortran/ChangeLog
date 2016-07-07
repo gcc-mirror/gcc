@@ -1,5 +1,13 @@
 2016-07-07  Martin Liska  <mliska@suse.cz>
 
+	* lang.opt (Wundefined-do-loop): New option.
+        * resolve.c (gfc_resolve_iterator): Warn for Wundefined-do-loop.
+	(gfc_trans_simple_do): Generate a c-style loop.
+	(gfc_trans_do): Fix GNU coding style.
+	* invoke.texi: Mention the new warning.
+
+2016-07-07  Martin Liska  <mliska@suse.cz>
+
 	* trans-stmt.c (gfc_trans_do): Add expect builtin for DO
 	loops with step bigger than +-1.
 

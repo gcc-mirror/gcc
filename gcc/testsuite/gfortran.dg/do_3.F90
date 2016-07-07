@@ -48,11 +48,9 @@ program test
   TEST_LOOP(i, 17, 0, -4, 5, test_i, -3)
   TEST_LOOP(i, 17, 0, -5, 4, test_i, -3)
 
-  TEST_LOOP(i1, -huge(i1)-1_1, huge(i1), 1_1, int(huge(i1))*2+2, test_i1, huge(i1)+1_1)
   TEST_LOOP(i1, -huge(i1)-1_1, huge(i1), 2_1, int(huge(i1))+1, test_i1, huge(i1)+1_1)
   TEST_LOOP(i1, -huge(i1)-1_1, huge(i1), huge(i1), 3, test_i1, 2_1*huge(i1)-1_1)
 
-  TEST_LOOP(i1, huge(i1), -huge(i1)-1_1, -1_1, int(huge(i1))*2+2, test_i1, -huge(i1)-2_1)
   TEST_LOOP(i1, huge(i1), -huge(i1)-1_1, -2_1, int(huge(i1))+1, test_i1, -huge(i1)-2_1)
   TEST_LOOP(i1, huge(i1), -huge(i1)-1_1, -huge(i1), 3, test_i1, -2_1*huge(i1))
   TEST_LOOP(i1, huge(i1), -huge(i1)-1_1, -huge(i1)-1_1, 2, test_i1, -huge(i1)-2_1)

@@ -1,5 +1,14 @@
 2016-07-07  Martin Liska  <mliska@suse.cz>
 
+	* gfortran.dg/do_1.f90: Remove a corner case that triggers
+	an undefined behavior.
+	* gfortran.dg/do_3.F90: Likewise.
+	* gfortran.dg/do_check_11.f90: New test.
+	* gfortran.dg/do_check_12.f90: New test.
+	* gfortran.dg/do_corner_warn.f90: New test.
+
+2016-07-07  Martin Liska  <mliska@suse.cz>
+
 	* gfortran.dg/predict-1.f90: Ammend the test.
 	* gfortran.dg/predict-2.f90: Likewise.
 
