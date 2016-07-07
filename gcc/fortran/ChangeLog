@@ -1,3 +1,12 @@
+2016-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71705
+	* trans-openmp.c (gfc_trans_omp_clauses): Set TREE_ADDRESSABLE on
+	decls in to/from clauses.
+
 2016-06-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/70673
