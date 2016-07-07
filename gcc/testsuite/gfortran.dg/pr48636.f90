@@ -34,5 +34,5 @@ program main
 end program main
 
 ! { dg-final { scan-ipa-dump "bar\[^\\n\]*inline copy in MAIN" "inline" } }
-! { dg-final { scan-ipa-dump-times "phi predicate:" 5 "inline" } }
+! { dg-final { scan-ipa-dump-times "phi predicate:" 3 "inline" } }
 ! { dg-final { scan-ipa-dump "inline hints: loop_iterations" "inline" } }

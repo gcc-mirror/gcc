@@ -764,7 +764,8 @@ This currently includes @option{-Waliasing}, @option{-Wampersand},
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wc-binding-type},
 @option{-Wintrinsics-std}, @option{-Wtabs}, @option{-Wintrinsic-shadow},
 @option{-Wline-truncation}, @option{-Wtarget-lifetime},
-@option{-Winteger-division}, @option{-Wreal-q-constant} and @option{-Wunused}.
+@option{-Winteger-division}, @option{-Wreal-q-constant}, @option{-Wunused}
+and @option{-Wundefined-do-loop}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -923,6 +924,12 @@ by a digit between 1 and 9 is supported.  @option{-Wtabs} will cause
 a warning to be issued if a tab is encountered. Note, @option{-Wtabs}
 is active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @option{-std=f2008}, @option{-std=f2008ts} and @option{-Wall}.
+
+@item -Wundefined-do-loop
+@opindex @code{Wundefined-do-loop}
+@cindex warnings, undefined do loop
+Warn if a DO loop with step either 1 or -1 yields an underflow or an overflow
+during iteration of an induction variable of the loop.  Enabled by default.
 
 @item -Wunderflow
 @opindex @code{Wunderflow}

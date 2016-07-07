@@ -6546,6 +6546,29 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 		     &iter->step->where);
     }
 
+  if (iter->end->expr_type == EXPR_CONSTANT
+      && iter->end->ts.type == BT_INTEGER
+      && iter->step->expr_type == EXPR_CONSTANT
+      && iter->step->ts.type == BT_INTEGER
+      && (mpz_cmp_si (iter->step->value.integer, -1L) == 0
+	  || mpz_cmp_si (iter->step->value.integer, 1L) == 0))
+    {
+      bool is_step_positive = mpz_cmp_ui (iter->step->value.integer, 1) == 0;
+      int k = gfc_validate_kind (BT_INTEGER, iter->end->ts.kind, false);
+
+      if (is_step_positive
+	  && mpz_cmp (iter->end->value.integer, gfc_integer_kinds[k].huge) == 0)
+	gfc_warning (OPT_Wundefined_do_loop,
+		     "DO loop at %L is undefined as it overflows",
+		     &iter->step->where);
+      else if (!is_step_positive
+	       && mpz_cmp (iter->end->value.integer,
+			   gfc_integer_kinds[k].min_int) == 0)
+	gfc_warning (OPT_Wundefined_do_loop,
+		     "DO loop at %L is undefined as it underflows",
+		     &iter->step->where);
+    }
+
   return true;
 }
 

@@ -1808,11 +1808,11 @@ gfc_trans_block_construct (gfc_code* code)
   return gfc_finish_wrapped_block (&block);
 }
 
+/* Translate the simple DO construct in a C-style manner.
+   This is where the loop variable has integer type and step +-1.
+   Following code will generate infinite loop in case where TO is INT_MAX
+   (for +1 step) or INT_MIN (for -1 step)
 
-/* Translate the simple DO construct.  This is where the loop variable has
-   integer type and step +-1.  We can't use this in the general case
-   because integer overflow and floating point errors could give incorrect
-   results.
    We translate a do loop from:
 
    DO dovar = from, to, step
@@ -1822,22 +1822,20 @@ gfc_trans_block_construct (gfc_code* code)
    to:
 
    [Evaluate loop bounds and step]
-   dovar = from;
-   if ((step > 0) ? (dovar <= to) : (dovar => to))
-    {
-      for (;;)
-        {
-	  body;
-   cycle_label:
-	  cond = (dovar == to);
-	  dovar += step;
-	  if (cond) goto end_label;
-	}
+    dovar = from;
+    for (;;)
+      {
+	if (dovar > to)
+	  goto end_label;
+	body;
+	cycle_label:
+	dovar += step;
       }
-   end_label:
+    end_label:
 
-   This helps the optimizers by avoiding the extra induction variable
-   used in the general case.  */
+   This helps the optimizers by avoiding the extra pre-header condition and
+   we save a register as we just compare the updated IV (not a value in
+   previous step).  */
 
 static tree
 gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
@@ -1851,14 +1849,14 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   tree cycle_label;
   tree exit_label;
   location_t loc;
-
   type = TREE_TYPE (dovar);
+  bool is_step_positive = tree_int_cst_sgn (step) > 0;
 
   loc = code->ext.iterator->start->where.lb->location;
 
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify_loc (loc, pblock, dovar,
-		      fold_convert (TREE_TYPE(dovar), from));
+		      fold_convert (TREE_TYPE (dovar), from));
 
   /* Save value for do-tinkering checking.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
@@ -1871,12 +1869,52 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   cycle_label = gfc_build_label_decl (NULL_TREE);
   exit_label = gfc_build_label_decl (NULL_TREE);
 
-  /* Put the labels where they can be found later. See gfc_trans_do().  */
+  /* Put the labels where they can be found later.  See gfc_trans_do().  */
   code->cycle_label = cycle_label;
   code->exit_label = exit_label;
 
   /* Loop body.  */
   gfc_start_block (&body);
+
+  /* Exit the loop if there is an I/O result condition or error.  */
+  if (exit_cond)
+    {
+      tmp = build1_v (GOTO_EXPR, exit_label);
+      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
+			     exit_cond, tmp,
+			     build_empty_stmt (loc));
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* Evaluate the loop condition.  */
+  if (is_step_positive)
+    cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node, dovar,
+			    fold_convert (type, to));
+  else
+    cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, dovar,
+			    fold_convert (type, to));
+
+  cond = gfc_evaluate_now_loc (loc, cond, &body);
+
+  /* The loop exit.  */
+  tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
+  TREE_USED (exit_label) = 1;
+  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
+			 cond, tmp, build_empty_stmt (loc));
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Check whether the induction variable is equal to INT_MAX
+     (respectively to INT_MIN).  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    {
+      tree boundary = is_step_positive ? TYPE_MAX_VALUE (type)
+	: TYPE_MIN_VALUE (type);
+
+      tmp = fold_build2_loc (loc, EQ_EXPR, boolean_type_node,
+			     dovar, boundary);
+      gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
+			       "Loop iterates infinitely");
+    }
 
   /* Main loop body.  */
   tmp = gfc_trans_code_cond (code->block->next, exit_cond);
@@ -1898,21 +1936,6 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
 			       "Loop variable has been modified");
     }
 
-  /* Exit the loop if there is an I/O result condition or error.  */
-  if (exit_cond)
-    {
-      tmp = build1_v (GOTO_EXPR, exit_label);
-      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
-			     exit_cond, tmp,
-			     build_empty_stmt (loc));
-      gfc_add_expr_to_block (&body, tmp);
-    }
-
-  /* Evaluate the loop condition.  */
-  cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, dovar,
-			  to);
-  cond = gfc_evaluate_now_loc (loc, cond, &body);
-
   /* Increment the loop variable.  */
   tmp = fold_build2_loc (loc, PLUS_EXPR, type, dovar, step);
   gfc_add_modify_loc (loc, &body, dovar, tmp);
@@ -1920,28 +1943,10 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     gfc_add_modify_loc (loc, &body, saved_dovar, dovar);
 
-  /* The loop exit.  */
-  tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
-  TREE_USED (exit_label) = 1;
-  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
-			 cond, tmp, build_empty_stmt (loc));
-  gfc_add_expr_to_block (&body, tmp);
-
   /* Finish the loop body.  */
   tmp = gfc_finish_block (&body);
   tmp = fold_build1_loc (loc, LOOP_EXPR, void_type_node, tmp);
 
-  /* Only execute the loop if the number of iterations is positive.  */
-  if (tree_int_cst_sgn (step) > 0)
-    cond = fold_build2_loc (loc, LE_EXPR, boolean_type_node, dovar,
-			    to);
-  else
-    cond = fold_build2_loc (loc, GE_EXPR, boolean_type_node, dovar,
-			    to);
-
-  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
-			 gfc_likely (cond, PRED_FORTRAN_LOOP_PREHEADER), tmp,
-			 build_empty_stmt (loc));
   gfc_add_expr_to_block (pblock, tmp);
 
   /* Add the exit label.  */
@@ -2044,8 +2049,8 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   if (TREE_CODE (type) == INTEGER_TYPE
       && (integer_onep (step)
 	|| tree_int_cst_equal (step, integer_minus_one_node)))
-    return gfc_trans_simple_do (code, &block, dovar, from, to, step, exit_cond);
-
+    return gfc_trans_simple_do (code, &block, dovar, from, to, step,
+				exit_cond);
 
   if (TREE_CODE (type) == INTEGER_TYPE)
     utype = unsigned_type_for (type);
