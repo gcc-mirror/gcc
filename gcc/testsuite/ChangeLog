@@ -1,6 +1,11 @@
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69802
+	* gcc.dg/pr69802.c: New test.
+
 	2016-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69797
