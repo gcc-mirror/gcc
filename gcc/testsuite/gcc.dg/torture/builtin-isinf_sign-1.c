@@ -24,6 +24,7 @@ foo (float f, double d, long double ld)
       != (__builtin_isinf(ld) ? (__builtin_signbitl(ld) ? -1 : 1) : 0))
     link_error (__LINE__);
 
+#ifdef __OPTIMIZE__
   /* In boolean contexts, GCC will fold the inner conditional
      expression to 1.  So isinf_sign folds to plain isinf.  */
 
@@ -33,6 +34,7 @@ foo (float f, double d, long double ld)
     link_error (__LINE__);
   if ((_Bool)__builtin_isinf_sign(ld) != (__builtin_isinf(ld) != 0))
     link_error (__LINE__);
+#endif
 
   if ((__builtin_isinf_sign(f) != 0) != (__builtin_isinf(f) != 0))
     link_error (__LINE__);

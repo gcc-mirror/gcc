@@ -754,7 +754,8 @@ along with GCC; see the file COPYING3.  If not see
 
    /* A truncation to an unsigned type (a zero-extension) should be
       canonicalized as bitwise and of a mask.  */
-   (if (final_int && inter_int && inside_int
+   (if (GIMPLE /* PR70366: doing this in GENERIC breaks -Wconversion.  */
+	&& final_int && inter_int && inside_int
 	&& final_prec == inside_prec
 	&& final_prec > inter_prec
 	&& inter_unsignedp)
