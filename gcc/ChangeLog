@@ -1,6 +1,13 @@
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70222
+	* combine.c (simplify_shift_const_1): For A >> B >> C LSHIFTRT
+	optimization if mode is different from result_mode, queue up masking
+	of the result in outer_op.  Formatting fix.
+
 	2016-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70169
