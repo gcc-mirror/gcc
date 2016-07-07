@@ -14148,7 +14148,8 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-m}, @samp{armv7-r}, @samp{armv7e-m},
 @samp{armv7ve}, @samp{armv8-a}, @samp{armv8-a+crc}, @samp{armv8.1-a},
-@samp{armv8.1-a+crc}, @samp{iwmmxt}, @samp{iwmmxt2}.
+@samp{armv8.1-a+crc}, @samp{armv8-m.base}, @samp{armv8-m.main},
+@samp{armv8-m.main+dsp}, @samp{iwmmxt}, @samp{iwmmxt2}.
 
 Architecture revisions older than @samp{armv4t} are deprecated.
 
@@ -14460,10 +14461,10 @@ generating these instructions.  This option is enabled by default when
 @opindex mno-unaligned-access
 Enables (or disables) reading and writing of 16- and 32- bit values
 from addresses that are not 16- or 32- bit aligned.  By default
-unaligned access is disabled for all pre-ARMv6 and all ARMv6-M
-architectures, and enabled for all other architectures.  If unaligned
-access is not enabled then words in packed data structures are
-accessed a byte at a time.
+unaligned access is disabled for all pre-ARMv6, all ARMv6-M and for
+ARMv8-M Baseline architectures, and enabled for all other
+architectures.  If unaligned access is not enabled then words in packed
+data structures are accessed a byte at a time.
 
 The ARM attribute @code{Tag_CPU_unaligned_access} is set in the
 generated object file to either true or false, depending upon the

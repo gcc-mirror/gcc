@@ -108,7 +108,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __ARM_ARCH__ 7
 #endif
 
-#if defined(__ARM_ARCH_8A__)
+#if defined(__ARM_ARCH_8A__) || defined(__ARM_ARCH_8M_BASE__) \
+	|| defined(__ARM_ARCH_8M_MAIN__)
 # define __ARM_ARCH__ 8
 #endif
 

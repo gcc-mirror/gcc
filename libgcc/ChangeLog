@@ -1,5 +1,9 @@
 2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Define to 8 for ARMv8-M.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/lib1funcs.S (HAVE_ARM_CLZ): Define for ARMv6* or later
 	and ARMv5t* rather than for a fixed list of architectures.
 
