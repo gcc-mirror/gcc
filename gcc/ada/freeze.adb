@@ -23,51 +23,52 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Disp; use Exp_Disp;
-with Exp_Pakd; use Exp_Pakd;
-with Exp_Util; use Exp_Util;
-with Exp_Tss;  use Exp_Tss;
-with Fname;    use Fname;
-with Ghost;    use Ghost;
-with Layout;   use Layout;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
-with Warnsw;   use Warnsw;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Errout;    use Errout;
+with Exp_Ch3;   use Exp_Ch3;
+with Exp_Ch7;   use Exp_Ch7;
+with Exp_Disp;  use Exp_Disp;
+with Exp_Pakd;  use Exp_Pakd;
+with Exp_Util;  use Exp_Util;
+with Exp_Tss;   use Exp_Tss;
+with Fname;     use Fname;
+with Ghost;     use Ghost;
+with Layout;    use Layout;
+with Lib;       use Lib;
+with Namet;     use Namet;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Opt;       use Opt;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Cat;   use Sem_Cat;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch7;   use Sem_Ch7;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Mech;  use Sem_Mech;
+with Sem_Prag;  use Sem_Prag;
+with Sem_Res;   use Sem_Res;
+with Sem_Util;  use Sem_Util;
+with Sinfo;     use Sinfo;
+with Snames;    use Snames;
+with Stand;     use Stand;
+with Targparm;  use Targparm;
+with Tbuild;    use Tbuild;
+with Ttypes;    use Ttypes;
+with Uintp;     use Uintp;
+with Urealp;    use Urealp;
+with Warnsw;    use Warnsw;
 
 package body Freeze is
 
@@ -1417,6 +1418,16 @@ package body Freeze is
             --  overriding operations.
 
             if SPARK_Mode = On then
+
+               --  Analyze the contract items of the parent operation, before
+               --  they are rewritten when inherited.
+
+               Analyze_Entry_Or_Subprogram_Contract
+                 (Overridden_Operation (Prim));
+
+               --  Now verify the legality of inherited contracts for LSP
+               --  conformance.
+
                Collect_Inherited_Class_Wide_Conditions (Prim);
             end if;
          end if;
@@ -1440,15 +1451,15 @@ package body Freeze is
             A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
 
             if Present (A_Pre) and then Class_Present (A_Pre) then
-               Build_Classwide_Expression (Expression (A_Pre), Prim,
-                                           Adjust_Sloc => False);
+               Build_Classwide_Expression
+                 (Expression (A_Pre), Prim, Par_Prim, Adjust_Sloc => False);
             end if;
 
             A_Post := Find_Aspect (Par_Prim, Aspect_Post);
 
             if Present (A_Post) and then Class_Present (A_Post) then
-               Build_Classwide_Expression (Expression (A_Post), Prim,
-                                           Adjust_Sloc => False);
+               Build_Classwide_Expression
+                 (Expression (A_Post), Prim, Par_Prim, Adjust_Sloc => False);
             end if;
          end if;
 

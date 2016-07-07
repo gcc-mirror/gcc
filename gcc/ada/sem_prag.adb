@@ -26396,8 +26396,12 @@ package body Sem_Prag is
    procedure Build_Classwide_Expression
      (Prag        : Node_Id;
       Subp        : Entity_Id;
+      Par_Subp    : Entity_Id;
       Adjust_Sloc : Boolean)
    is
+      Par_Formal  : Entity_Id;
+      Subp_Formal : Entity_Id;
+
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
@@ -26503,6 +26507,17 @@ package body Sem_Prag is
    --  Start of processing for Build_Classwide_Expression
 
    begin
+      --  Add mapping from old formals to new formals.
+
+      Par_Formal := First_Formal (Par_Subp);
+      Subp_Formal  := First_Formal (Subp);
+
+      while Present (Par_Formal) and then Present (Subp_Formal) loop
+         Primitives_Mapping.Set (Par_Formal, Subp_Formal);
+         Next_Formal (Par_Formal);
+         Next_Formal (Subp_Formal);
+      end loop;
+
       Replace_Condition_Entities (Prag);
    end Build_Classwide_Expression;
 
@@ -26555,10 +26570,8 @@ package body Sem_Prag is
       Loc          : constant Source_Ptr := Sloc (Prag);
       Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
       Check_Prag   : Node_Id;
-      Inher_Formal : Entity_Id;
       Msg_Arg      : Node_Id;
       Nam          : Name_Id;
-      Subp_Formal  : Entity_Id;
 
    --  Start of processing for Build_Pragma_Check_Equivalent
 
@@ -26573,16 +26586,6 @@ package body Sem_Prag is
 
          Update_Primitives_Mapping (Inher_Id, Subp_Id);
 
-         --  Add mapping from old formals to new formals.
-
-         Inher_Formal := First_Formal (Inher_Id);
-         Subp_Formal  := First_Formal (Subp_Id);
-         while Present (Inher_Formal) and then Present (Subp_Formal) loop
-            Primitives_Mapping.Set (Inher_Formal, Subp_Formal);
-            Next_Formal (Inher_Formal);
-            Next_Formal (Subp_Formal);
-         end loop;
-
          --  Use generic machinery to copy inherited pragma, as if it were an
          --  instantiation, resetting source locations appropriately, so that
          --  expressions inside the inherited pragma use chained locations.
@@ -26592,9 +26595,13 @@ package body Sem_Prag is
          Set_Copied_Sloc_For_Inherited_Pragma
            (Unit_Declaration_Node (Subp_Id), Inher_Id);
          Check_Prag := New_Copy_Tree (Source => Prag);
-         Build_Classwide_Expression (Check_Prag, Subp_Id, Adjust_Sloc => True);
 
-      --  Otherwise simply copy the original pragma
+         --  Build the inherited classwide condition.
+
+         Build_Classwide_Expression
+           (Check_Prag, Subp_Id, Inher_Id, Adjust_Sloc => True);
+
+      --  If not an inherited condition simply copy the original pragma
 
       else
          Check_Prag := New_Copy_Tree (Source => Prag);
@@ -29301,7 +29308,8 @@ package body Sem_Prag is
       Subp_Id  : Entity_Id)
    is
       function Overridden_Ancestor (S : Entity_Id) return Entity_Id;
-      --  ??? what does this routine do?
+      --  Locate the primitive operation with the name of S whose controlling
+      --  type is the dispatching type of Inher_Id.
 
       -------------------------
       -- Overridden_Ancestor --
@@ -29333,7 +29341,7 @@ package body Sem_Prag is
       Old_Prim : Entity_Id;
       Prim     : Entity_Id;
 
-   --  Start of processing for Primitive_Mapping
+   --  Start of processing for Update_Primitives_Mapping
 
    begin
       --  If the types are already in the map, it has been previously built for

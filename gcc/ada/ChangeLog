@@ -1,3 +1,31 @@
+2016-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.ads, sem_prag.adb (Build_Classwide_Expression): Include
+	overridden operation as parameter, in order to map formals of
+	the overridden and overring operation properly prior to rewriting
+	the inherited condition.
+	* freeze.adb (Check_Inherited_Cnonditions): Change call to
+	Build_Class_Wide_Expression accordingly.  In Spark_Mode, add
+	call to analyze the contract of the parent operation, prior to
+	mapping formals between operations.
+
+2016-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* adabkend.adb (Scan_Back_End_Switches): Ignore -o/-G switches
+	as done in back_end.adb.
+	(Scan_Compiler_Args): Remove special case for CodePeer/SPARK, no longer
+	needed, and prevents proper handling of multi-unit sources.
+
+2016-07-07  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sechas.adb, g-sechas.ads (GNAT.Secure_Hashes.H): Add Hash_Stream
+	type with Write primitive calling Update on the underlying context
+	(and dummy Read primitive raising P_E).
+
+2016-07-07  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
 2016-07-07  Thomas Quinot  <quinot@adacore.com>
 
 	* g-socket.ads: Document performance consideration for stream

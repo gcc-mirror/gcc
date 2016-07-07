@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -341,6 +341,20 @@ package body GNAT.Secure_Hashes is
          end return;
       end HMAC_Initial_Context;
 
+      ----------
+      -- Read --
+      ----------
+
+      procedure Read
+        (Stream : in out Hash_Stream;
+         Item   : out Stream_Element_Array;
+         Last   : out Stream_Element_Offset)
+      is
+         pragma Unreferenced (Stream, Item, Last);
+      begin
+         raise Program_Error with "Hash_Stream is write-only";
+      end Read;
+
       ------------
       -- Update --
       ------------
@@ -364,7 +378,6 @@ package body GNAT.Secure_Hashes is
                C.M_State.Last := 0;
             end if;
          end loop;
-
       end Update;
 
       ------------
@@ -421,6 +434,18 @@ package body GNAT.Secure_Hashes is
          Wide_Update (C, W);
          return Digest (C);
       end Wide_Digest;
+
+      -----------
+      -- Write --
+      -----------
+
+      procedure Write
+         (Stream : in out Hash_Stream;
+          Item   : Stream_Element_Array)
+      is
+      begin
+         Update (Stream.C.all, Item);
+      end Write;
 
    end H;
 
