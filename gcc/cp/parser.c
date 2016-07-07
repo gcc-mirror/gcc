@@ -22047,7 +22047,8 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 static tree
 cp_parser_std_attribute_spec_seq (cp_parser *parser)
 {
-  tree attr_specs = NULL;
+  tree attr_specs = NULL_TREE;
+  tree attr_last = NULL_TREE;
 
   while (true)
     {
@@ -22057,11 +22058,13 @@ cp_parser_std_attribute_spec_seq (cp_parser *parser)
       if (attr_spec == error_mark_node)
 	return error_mark_node;
 
-      TREE_CHAIN (attr_spec) = attr_specs;
-      attr_specs = attr_spec;
+      if (attr_last)
+	TREE_CHAIN (attr_last) = attr_spec;
+      else
+	attr_specs = attr_last = attr_spec;
+      attr_last = tree_last (attr_last);
     }
 
-  attr_specs = nreverse (attr_specs);
   return attr_specs;
 }
 
