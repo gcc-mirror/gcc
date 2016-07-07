@@ -1,3 +1,10 @@
+2016-07-07  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Set ghost flag
+	on formal entities of ghost subprograms.
+	* ghost.adb (Check_Ghost_Context.Is_OK_Ghost_Context): Accept ghost
+	entities in use type clauses.
+
 2016-07-06  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Check_Inline_Pragma): if the subprogram has no spec
