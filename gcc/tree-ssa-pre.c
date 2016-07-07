@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "tree-cfgcleanup.h"
 #include "langhooks.h"
+#include "alias.h"
 
 /* TODO:
 
@@ -3724,12 +3725,19 @@ compute_avail (void)
 
 		  case VN_REFERENCE:
 		    {
+		      tree rhs1 = gimple_assign_rhs1 (stmt);
+		      alias_set_type set = get_alias_set (rhs1);
+		      vec<vn_reference_op_s> operands
+			= vn_reference_operands_for_lookup (rhs1);
 		      vn_reference_t ref;
-		      vn_reference_lookup (gimple_assign_rhs1 (stmt),
-					   gimple_vuse (stmt),
-					   VN_WALK, &ref, true);
+		      vn_reference_lookup_pieces (gimple_vuse (stmt), set,
+						  TREE_TYPE (rhs1),
+						  operands, &ref, VN_WALK);
 		      if (!ref)
-			continue;
+			{
+			  operands.release ();
+			  continue;
+			}
 
 		      /* If the value of the reference is not invalidated in
 			 this block until it is computed, add the expression
@@ -3753,7 +3761,68 @@ compute_avail (void)
 				= SSA_NAME_DEF_STMT (gimple_vuse (def_stmt));
 			    }
 			  if (!ok)
-			    continue;
+			    {
+			      operands.release ();
+			      continue;
+			    }
+			}
+
+		      /* If the load was value-numbered to another
+			 load make sure we do not use its expression
+			 for insertion if it wouldn't be a valid
+			 replacement.  */
+		      /* At the momemt we have a testcase
+			 for hoist insertion of aligned vs. misaligned
+			 variants in gcc.dg/torture/pr65270-1.c thus
+			 with just alignment to be considered we can
+			 simply replace the expression in the hashtable
+			 with the most conservative one.  */
+		      vn_reference_op_t ref1 = &ref->operands.last ();
+		      while (ref1->opcode != TARGET_MEM_REF
+			     && ref1->opcode != MEM_REF
+			     && ref1 != &ref->operands[0])
+			--ref1;
+		      vn_reference_op_t ref2 = &operands.last ();
+		      while (ref2->opcode != TARGET_MEM_REF
+			     && ref2->opcode != MEM_REF
+			     && ref2 != &operands[0])
+			--ref2;
+		      if ((ref1->opcode == TARGET_MEM_REF
+			   || ref1->opcode == MEM_REF)
+			  && (TYPE_ALIGN (ref1->type)
+			      > TYPE_ALIGN (ref2->type)))
+			{
+			  ref->operands.release ();
+			  ref->operands = operands;
+			  ref1 = ref2;
+			}
+		      else
+			operands.release ();
+		      /* TBAA behavior is an obvious part so make sure
+		         that the hashtable one covers this as well
+			 by adjusting the ref alias set and its base.  */
+		      if (ref->set == set
+			  || alias_set_subset_of (set, ref->set))
+			;
+		      else if (alias_set_subset_of (ref->set, set))
+			{
+			  ref->set = set;
+			  if (ref1->opcode == MEM_REF)
+			    ref1->op0 = fold_convert (TREE_TYPE (ref2->op0),
+						      ref1->op0);
+			  else
+			    ref1->op2 = fold_convert (TREE_TYPE (ref2->op2),
+						      ref1->op2);
+			}
+		      else
+			{
+			  ref->set = 0;
+			  if (ref1->opcode == MEM_REF)
+			    ref1->op0 = fold_convert (ptr_type_node,
+						      ref1->op0);
+			  else
+			    ref1->op2 = fold_convert (ptr_type_node,
+						      ref1->op2);
 			}
 
 		      result = pre_expr_pool.allocate ();
