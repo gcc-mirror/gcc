@@ -1,3 +1,11 @@
+2016-07-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/70098
+	PR target/71763
+	* config/rs6000/rs6000.md (*ctr<mode>_internal1, *ctr<mode>_internal2,
+	*ctr<mode>_internal5, *ctr<mode>_internal6): Add *wi to the output
+	constraint.
+
 2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* var-tracking.c (struct adjust_mem_data): Make side_effects a vector.
