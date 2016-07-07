@@ -38,6 +38,7 @@ extern unsigned int scev_const_prop (void);
 extern bool expression_expensive_p (tree);
 extern bool simple_iv (struct loop *, struct loop *, tree, struct affine_iv *,
 		       bool);
+extern bool iv_can_overflow_p (struct loop *, tree, tree, tree);
 extern tree compute_overall_effect_of_inner_loop (struct loop *, tree);
 
 /* Returns the basic block preceding LOOP, or the CFG entry block when
