@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,8 @@ package Osint.C is
    procedure Set_File_Name (Ext : String);
    --  Sets a default file name from the main compiler source name. Ext is the
    --  extension, e.g. "ali" for a library information file. The name is in
-   --  Name_Buffer (with length in Name_Len) on return.
+   --  Name_Buffer (with length in Name_Len) on return, with
+   --  Name_Buffer (Name_Len) always set to ASCII.NUL.
 
    --------------------------------
    -- Library Information Output --

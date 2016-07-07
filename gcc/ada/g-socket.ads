@@ -1005,7 +1005,11 @@ package GNAT.Sockets is
    --  Same interface as Ada.Streams.Stream_IO
 
    function Stream (Socket : Socket_Type) return Stream_Access;
-   --  Create a stream associated with an already connected stream-based socket
+   --  Create a stream associated with a connected stream-based socket.
+   --  Note: keep in mind that the default stream attributes for composite
+   --  types perform separate Read/Write operations for each component,
+   --  recursively. If performance is an issue, you may want to consider
+   --  introducing a buffering stage.
 
    function Stream
      (Socket  : Socket_Type;
