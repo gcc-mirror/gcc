@@ -5702,7 +5702,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "nonimmediate_operand" "0")
 		   (match_operand:SI 2 "general_operand"      "i")))]
-  "arm_arch_thumb2 && arm_valid_symbolic_address_p (operands[2])"
+  "TARGET_HAVE_MOVT && arm_valid_symbolic_address_p (operands[2])"
   "movt%?\t%0, #:upper16:%c2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
@@ -5762,7 +5762,8 @@
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
 	(const:SI (plus:SI (match_operand:SI 1 "general_operand" "")
 			   (match_operand:SI 2 "const_int_operand" ""))))]
-  "TARGET_THUMB2
+  "TARGET_THUMB
+   && TARGET_HAVE_MOVT
    && arm_disable_literal_pool
    && reload_completed
    && GET_CODE (operands[1]) == SYMBOL_REF"
@@ -5793,8 +5794,7 @@
 (define_split
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
        (match_operand:SI 1 "general_operand" ""))]
-  "TARGET_32BIT
-   && TARGET_USE_MOVT && GET_CODE (operands[1]) == SYMBOL_REF
+  "TARGET_USE_MOVT && GET_CODE (operands[1]) == SYMBOL_REF
    && !flag_pic && !target_word_relocations
    && !arm_tls_referenced_p (operands[1])"
   [(clobber (const_int 0))]
@@ -10975,7 +10975,7 @@
                    (const_int 16)
                    (const_int 16))
         (match_operand:SI 1 "const_int_operand" ""))]
-  "arm_arch_thumb2"
+  "TARGET_HAVE_MOVT"
   "movt%?\t%0, %L1"
  [(set_attr "predicable" "yes")
   (set_attr "predicable_short_it" "no")
