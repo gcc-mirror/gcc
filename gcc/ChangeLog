@@ -1,3 +1,13 @@
+2016-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c: Include alias.h.
+	(compute_avail): If we have multiple VN_REFERENCEs with the
+	same hashtable entry adjust that to make it a valid replacement
+	for all of them with respect to alignment and aliasing
+	when doing insertion.
+	* tree-ssa-sccvn.h (vn_reference_operands_for_lookup): Declare.
+	* tree-ssa-sccvn.c (vn_reference_operands_for_lookup): New function.
+
 2016-07-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/70098

@@ -2285,6 +2285,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   return (void *)-1;
 }
 
+/* Return a reference op vector from OP that can be used for
+   vn_reference_lookup_pieces.  The caller is responsible for releasing
+   the vector.  */
+
+vec<vn_reference_op_s>
+vn_reference_operands_for_lookup (tree op)
+{
+  bool valueized;
+  return valueize_shared_reference_ops_from_ref (op, &valueized).copy ();
+}
+
 /* Lookup a reference operation by it's parts, in the current hash table.
    Returns the resulting value number if it exists in the hash table,
    NULL_TREE otherwise.  VNRESULT will be filled in with the actual
