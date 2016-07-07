@@ -1,3 +1,13 @@
+2016-07-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from the trunk
+	2016-07-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71720
+	* config/rs6000/vsx.md (vsx_splat_v4sf_internal): When splitting
+	the insns, use an insn form that does not adjust the offset on
+	little endian systems.
+
 2016-07-07  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline r237885
