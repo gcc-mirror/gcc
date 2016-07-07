@@ -1,6 +1,11 @@
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71494
+	* gcc.c-torture/execute/pr71494.c: New test.
+
 	2016-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/71498
