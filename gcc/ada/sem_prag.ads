@@ -247,10 +247,12 @@ package Sem_Prag is
    procedure Build_Classwide_Expression
      (Prag        : Node_Id;
       Subp        : Entity_Id;
+      Par_Subp    : Entity_Id;
       Adjust_Sloc : Boolean);
    --  Build the expression for an inherited classwide condition. Prag is
    --  the pragma constructed from the corresponding aspect of the parent
-   --  subprogram, and Subp is the overridding operation. Adjust_Sloc is True
+   --  subprogram, and Subp is the overridding operation and Par_Subp is
+   --  the overridden operation that has the condition. Adjust_Sloc is True
    --  when the sloc of nodes traversed should be adjusted for the inherited
    --  pragma. The routine is also called to check whether an inherited
    --  operation that is not overridden but has inherited conditions need

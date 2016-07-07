@@ -3823,8 +3823,8 @@ package body Sem_Ch13 is
       U_Ent : Entity_Id;
       --  The underlying entity to which the attribute applies. Generally this
       --  is the Underlying_Type of Ent, except in the case where the clause
-      --  applies to full view of incomplete type or private type in which case
-      --  U_Ent is just a copy of Ent.
+      --  applies to the full view of an incomplete or private type, in which
+      --  case U_Ent is just a copy of Ent.
 
       FOnly : Boolean := False;
       --  Reset to True for subtype specific attribute (Alignment, Size)
