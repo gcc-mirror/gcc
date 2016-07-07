@@ -1,6 +1,12 @@
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
+		    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/69891
+	* gcc.target/i386/pr69891.c: New test.
+
 	2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67767

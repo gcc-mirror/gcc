@@ -2582,6 +2582,8 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		      active_local_stores = insn_info;
 		    }
 		}
+	      else
+		clear_rhs_from_active_local_stores ();
 	    }
 	}
 
