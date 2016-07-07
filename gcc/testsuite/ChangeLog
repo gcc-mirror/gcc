@@ -1,3 +1,8 @@
+2016-07-07  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.dg/predict-1.f90: Ammend the test.
+	* gfortran.dg/predict-2.f90: Likewise.
+
 2016-07-07  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR ipa/71624
