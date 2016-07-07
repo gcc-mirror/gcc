@@ -1,3 +1,10 @@
+2016-07-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR ipa/71624
+	* ipa-inline-analysis.c (compute_inline_parameters): Set
+	local.can_change_signature to false for intrumentation
+	thunk callees.
+
 2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.h (TARGET_USE_MOVT): Check MOVT/MOVW availability

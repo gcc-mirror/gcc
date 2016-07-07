@@ -3017,6 +3017,16 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
 	       node->local.can_change_signature = !e;
 	     }
 	 }
+       /* Functions called by instrumentation thunk can't change signature
+	  because instrumentation thunk modification is not supported.  */
+       if (node->local.can_change_signature)
+	 for (e = node->callers; e; e = e->next_caller)
+	   if (e->caller->thunk.thunk_p
+	       && e->caller->thunk.add_pointer_bounds_args)
+	     {
+	       node->local.can_change_signature = false;
+	       break;
+	     }
        estimate_function_body_sizes (node, early);
        pop_cfun ();
      }
