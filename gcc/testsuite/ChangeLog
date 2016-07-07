@@ -1,5 +1,11 @@
 2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* lib/target-supports.exp: Generate add_options_for_arm_arch_FUNC and
+	check_effective_target_arm_arch_FUNC_multilib for ARMv8-M Baseline and
+	ARMv8-M Mainline architectures.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* lib/target-supports.exp (check_effective_target_arm_cortex_m): Use
 	__ARM_ARCH_ISA_ARM to test for Cortex-M devices.
 

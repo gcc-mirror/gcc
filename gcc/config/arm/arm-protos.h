@@ -421,6 +421,8 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
 #define FL_FOR_ARCH8A	(FL_FOR_ARCH7VE | FL_ARCH8)
 #define FL2_FOR_ARCH8_1A	FL2_ARCH8_1
+#define FL_FOR_ARCH8M_BASE	(FL_FOR_ARCH6M | FL_ARCH8 | FL_THUMB_DIV)
+#define FL_FOR_ARCH8M_MAIN	(FL_FOR_ARCH7M | FL_ARCH8)
 
 /* There are too many feature bits to fit in a single word so the set of cpu and
    fpu capabilities is a structure.  A feature set is created and manipulated

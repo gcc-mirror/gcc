@@ -1,5 +1,28 @@
 2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-arches.def (armv8-m.base): Define new architecture.
+	(armv8-m.main): Likewise.
+	(armv8-m.main+dsp): Likewise.
+	* config/arm/arm-protos.h (FL_FOR_ARCH8M_BASE): Define.
+	(FL_FOR_ARCH8M_MAIN): Likewise.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/bpabi.h: Add armv8-m.base, armv8-m.main and
+	armv8-m.main+dsp to BE8_LINK_SPEC.
+	* config/arm/arm.h (TARGET_HAVE_LDACQ): Exclude ARMv8-M.
+	(enum base_architecture): Add BASE_ARCH_8M_BASE and BASE_ARCH_8M_MAIN.
+	* config/arm/arm.c (arm_arch_name): Increase size to work with ARMv8-M
+	Baseline and Mainline.
+	(arm_option_override_internal): Also disable arm_restrict_it when
+	!arm_arch_notm.  Update comment for -munaligned-access to also cover
+	ARMv8-M Baseline.
+	(arm_file_start): Increase buffer size for printing architecture name.
+	* doc/invoke.texi: Document architectures armv8-m.base, armv8-m.main
+	and armv8-m.main+dsp.
+	(mno-unaligned-access): Clarify that this is disabled by default for
+	ARMv8-M Baseline architectures as well.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/elf.h: Use __ARM_ARCH_ISA_THUMB and __ARM_ARCH_ISA_ARM to
 	decide whether to prevent some libgcc routines being included for some
 	multilibs rather than __ARM_ARCH_6M__ and add comment to indicate the

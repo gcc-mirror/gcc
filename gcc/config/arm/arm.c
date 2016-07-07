@@ -2307,9 +2307,11 @@ static const struct processors *arm_selected_arch;
 static const struct processors *arm_selected_cpu;
 static const struct processors *arm_selected_tune;
 
-/* The name of the preprocessor macro to define for this architecture.  */
+/* The name of the preprocessor macro to define for this architecture.  PROFILE
+   is replaced by the architecture name (eg. 8A) in arm_option_override () and
+   is thus chosen to be big enough to hold the longest architecture name.  */
 
-char arm_arch_name[] = "__ARM_ARCH_0UNK__";
+char arm_arch_name[] = "__ARM_ARCH_PROFILE__";
 
 /* Available values for -mfpu=.  */
 
@@ -2950,7 +2952,8 @@ arm_option_override_internal (struct gcc_options *opts,
   if (! opts_set->x_arm_restrict_it)
     opts->x_arm_restrict_it = arm_arch8;
 
-  if (!TARGET_THUMB2_P (opts->x_target_flags))
+  /* ARM execution state and M profile don't have [restrict] IT.  */
+  if (!TARGET_THUMB2_P (opts->x_target_flags) || !arm_arch_notm)
     opts->x_arm_restrict_it = 0;
 
   /* Enable -munaligned-access by default for
@@ -2961,7 +2964,8 @@ arm_option_override_internal (struct gcc_options *opts,
 
      Disable -munaligned-access by default for
      - all pre-ARMv6 architecture-based processors
-     - ARMv6-M architecture-based processors.  */
+     - ARMv6-M architecture-based processors
+     - ARMv8-M Baseline processors.  */
 
   if (! opts_set->x_unaligned_access)
     {
@@ -26005,7 +26009,7 @@ arm_file_start (void)
 	      const char* pos = strchr (arm_selected_arch->name, '+');
 	      if (pos)
 		{
-		  char buf[15];
+		  char buf[32];
 		  gcc_assert (strlen (arm_selected_arch->name)
 			      <= sizeof (buf) / sizeof (*pos));
 		  strncpy (buf, arm_selected_arch->name,

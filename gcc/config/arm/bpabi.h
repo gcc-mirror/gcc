@@ -93,6 +93,9 @@
    |march=armv8-a+crc					\
    |march=armv8.1-a					\
    |march=armv8.1-a+crc					\
+   |march=armv8-m.base					\
+   |march=armv8-m.main					\
+   |march=armv8-m.main+dsp				\
    :%{!r:--be8}}}"
 #else
 #define BE8_LINK_SPEC \
@@ -127,6 +130,9 @@
    |march=armv8-a+crc					\
    |march=armv8.1-a					\
    |march=armv8.1-a+crc					\
+   |march=armv8-m.base					\
+   |march=armv8-m.main					\
+   |march=armv8-m.main+dsp				\
    :%{!r:--be8}}}"
 #endif
 
