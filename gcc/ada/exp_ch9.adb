@@ -6219,16 +6219,17 @@ package body Exp_Ch9 is
 
    procedure Expand_Access_Protected_Subprogram_Type (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
-      Comps  : List_Id;
       T      : constant Entity_Id  := Defining_Identifier (N);
       D_T    : constant Entity_Id  := Designated_Type (T);
       D_T2   : constant Entity_Id  := Make_Temporary (Loc, 'D');
       E_T    : constant Entity_Id  := Make_Temporary (Loc, 'E');
-      P_List : constant List_Id    := Build_Protected_Spec
-                                        (N, RTE (RE_Address), D_T, False);
-      Decl1  : Node_Id;
-      Decl2  : Node_Id;
-      Def1   : Node_Id;
+      P_List : constant List_Id    :=
+                 Build_Protected_Spec (N, RTE (RE_Address), D_T, False);
+
+      Comps : List_Id;
+      Decl1 : Node_Id;
+      Decl2 : Node_Id;
+      Def1  : Node_Id;
 
    begin
       --  Create access to subprogram with full signature
