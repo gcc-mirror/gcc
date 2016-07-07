@@ -1512,9 +1512,10 @@ LSYM(Lover12):
 
 #endif /* __symbian__ */
 
-#if ((__ARM_ARCH__ > 5) && !defined(__ARM_ARCH_6M__)) \
-    || defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
-    || defined(__ARM_ARCH_5TEJ__)
+#if (__ARM_ARCH_ISA_THUMB == 2	\
+     || (__ARM_ARCH_ISA_ARM	\
+	 && (__ARM_ARCH__ > 5	\
+	     || (__ARM_ARCH__ == 5 && __ARM_ARCH_ISA_THUMB))))
 #define HAVE_ARM_CLZ 1
 #endif
 
