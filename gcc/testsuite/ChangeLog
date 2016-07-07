@@ -1,6 +1,11 @@
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68062
+	* c-c++-common/vector-compare-4.c: Add -Wno-psabi to dg-options.
+
 	2016-02-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* c-c++-common/vector-compare-4.c: Prune "non-standard ABI extension"
