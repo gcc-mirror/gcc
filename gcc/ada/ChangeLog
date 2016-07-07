@@ -1,3 +1,18 @@
+2016-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb, sem_prag.adb, sem_prag.ads, prj-ext.adb, freeze.adb,
+	sem_attr.adb: Minor reformatting, fix typos.
+
+2016-07-07  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (In_Same_Scope): Created this function to check
+	a generic package definition against an instantiation for scope
+	dependancies.
+	(Install_Body): Add function In_Same_Scope and
+	amend conditional in charge of delaying the package instance.
+	(Is_In_Main_Unit): Add guard to check if parent is present in
+	assignment of Current_Unit.
+
 2016-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Remove redundant test,

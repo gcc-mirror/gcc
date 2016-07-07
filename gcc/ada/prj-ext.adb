@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,7 +116,7 @@ package body Prj.Ext is
             then
                if not Silent then
                   Debug_Output
-                    ("Not overridding existing external reference '"
+                    ("Not overriding existing external reference '"
                      & External_Name & "', value was defined in "
                      & N.Source'Img);
                end if;

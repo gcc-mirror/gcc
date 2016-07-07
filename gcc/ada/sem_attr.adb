@@ -3377,9 +3377,9 @@ package body Sem_Attr is
                P_Type := Underlying_Type (P_Type);
             end if;
 
-            --  Must have discriminants or be an access type designating
-            --  a type with discriminants. If it is a classwide type it
-            --  has unknown discriminants.
+            --  Must have discriminants or be an access type designating a type
+            --  with discriminants. If it is a class-wide type it has unknown
+            --  discriminants.
 
             if Has_Discriminants (P_Type)
               or else Has_Unknown_Discriminants (P_Type)
@@ -5909,7 +5909,7 @@ package body Sem_Attr is
 
          else
             Error_Attr_P
-              ("prefix of% attribute must be remote access to classwide");
+              ("prefix of% attribute must be remote access-to-class-wide");
          end if;
 
       ----------

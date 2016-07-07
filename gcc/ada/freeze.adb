@@ -130,7 +130,7 @@ package body Freeze is
 
    procedure Check_Inherited_Conditions (R : Entity_Id);
    --  For a tagged derived type, create wrappers for inherited operations
-   --  that have a classwide condition, so it can be properly rewritten if
+   --  that have a class-wide condition, so it can be properly rewritten if
    --  it involves calls to other overriding primitives.
 
    procedure Check_Strict_Alignment (E : Entity_Id);
@@ -1414,7 +1414,7 @@ package body Freeze is
 
             --  In SPARK mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
-            --  normally convey the the modified classwide conditions on
+            --  normally convey the the modified class-wide conditions on
             --  overriding operations.
 
             if SPARK_Mode = On then
@@ -1451,14 +1451,14 @@ package body Freeze is
             A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
 
             if Present (A_Pre) and then Class_Present (A_Pre) then
-               Build_Classwide_Expression
+               Build_Class_Wide_Expression
                  (Expression (A_Pre), Prim, Par_Prim, Adjust_Sloc => False);
             end if;
 
             A_Post := Find_Aspect (Par_Prim, Aspect_Post);
 
             if Present (A_Post) and then Class_Present (A_Post) then
-               Build_Classwide_Expression
+               Build_Class_Wide_Expression
                  (Expression (A_Post), Prim, Par_Prim, Adjust_Sloc => False);
             end if;
          end if;
@@ -4663,7 +4663,7 @@ package body Freeze is
          end if;
 
          --  For a derived tagged type, check whether inherited primitives
-         --  might require a wrapper to handle classwide conditions.
+         --  might require a wrapper to handle class-wide conditions.
 
          if Is_Tagged_Type (Rec) and then Is_Derived_Type (Rec) then
             Check_Inherited_Conditions (Rec);
