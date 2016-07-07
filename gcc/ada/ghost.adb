@@ -469,6 +469,14 @@ package body Ghost is
          if Ghost_Mode > None then
             return True;
 
+         --  A Ghost type may be referenced in a use_type clause
+         --  (SPARK RM 6.9.10).
+
+         elsif Present (Parent (Context))
+           and then Nkind (Parent (Context)) = N_Use_Type_Clause
+         then
+            return True;
+
          --  Routine Expand_Record_Extension creates a parent subtype without
          --  inserting it into the tree. There is no good way of recognizing
          --  this special case as there is no parent. Try to approximate the

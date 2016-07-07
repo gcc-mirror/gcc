@@ -10975,6 +10975,13 @@ package body Sem_Ch6 is
 
          Set_Etype (Formal, Formal_Type);
 
+         --  A formal parameter declared within a Ghost region is automatically
+         --  Ghost (SPARK RM 6.9(2)).
+
+         if Ghost_Mode > None then
+            Set_Is_Ghost_Entity (Formal);
+         end if;
+
          --  Deal with default expression if present
 
          Default := Expression (Param_Spec);
