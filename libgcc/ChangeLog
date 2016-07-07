@@ -1,3 +1,29 @@
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/bpabi-v6m.S: Clarify what architectures is the
+	implementation suitable for.
+	* config/arm/lib1funcs.S (__prefer_thumb__): Define among other cases
+	for all Thumb-1 only targets.
+	(NOT_ISA_TARGET_32BIT): Define for Thumb-1 only targets.
+	(THUMB_LDIV0): Test for NOT_ISA_TARGET_32BIT rather than
+	__ARM_ARCH_6M__.
+	(EQUIV): Likewise.
+	(ARM_FUNC_ALIAS): Likewise.
+	(umodsi3): Add check to __ARM_ARCH_ISA_THUMB != 1 to guard the idiv
+	version.
+	(modsi3): Likewise.
+	(clzsi2): Test for NOT_ISA_TARGET_32BIT rather than __ARM_ARCH_6M__.
+	(clzdi2): Likewise.
+	(ctzsi2): Likewise.
+	(L_interwork_call_via_rX): Test for __ARM_ARCH_ISA_ARM rather than
+	__ARM_ARCH_6M__ in guard for checking whether it is defined.
+	(final includes): Test for NOT_ISA_TARGET_32BIT rather than
+	__ARM_ARCH_6M__ and add comment to indicate the connection between
+	this condition and the one in gcc/config/arm/elf.h.
+	* config/arm/libunwind.S: Test for __ARM_ARCH_ISA_THUMB and
+	__ARM_ARCH_ISA_ARM rather than __ARM_ARCH_6M__.
+	* config/arm/t-softfp: Likewise.
+
 2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* libgcc2.c (SYMBOL__MAIN): Remove checks for

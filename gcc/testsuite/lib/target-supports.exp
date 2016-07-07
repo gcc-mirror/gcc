@@ -3476,10 +3476,8 @@ proc check_effective_target_arm_cortex_m { } {
 	return 0
     }
     return [check_no_compiler_messages arm_cortex_m assembly {
-	#if !defined(__ARM_ARCH_7M__) \
-            && !defined (__ARM_ARCH_7EM__) \
-            && !defined (__ARM_ARCH_6M__)
-	#error !__ARM_ARCH_7M__ && !__ARM_ARCH_7EM__ && !__ARM_ARCH_6M__
+	#if defined(__ARM_ARCH_ISA_ARM)
+	#error __ARM_ARCH_ISA_ARM is defined
 	#endif
 	int i;
     } "-mthumb"]

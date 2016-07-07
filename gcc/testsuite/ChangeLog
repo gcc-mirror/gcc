@@ -1,3 +1,8 @@
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_cortex_m): Use
+	__ARM_ARCH_ISA_ARM to test for Cortex-M devices.
+
 2016-07-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/70098

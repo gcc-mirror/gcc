@@ -1,3 +1,11 @@
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/elf.h: Use __ARM_ARCH_ISA_THUMB and __ARM_ARCH_ISA_ARM to
+	decide whether to prevent some libgcc routines being included for some
+	multilibs rather than __ARM_ARCH_6M__ and add comment to indicate the
+	link between this condition and the one in
+	libgcc/config/arm/lib1func.S.
+
 2016-07-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c: Include alias.h.

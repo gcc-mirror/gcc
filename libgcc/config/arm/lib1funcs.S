@@ -124,8 +124,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      && !defined(__thumb2__)		\
      && (!defined(__THUMB_INTERWORK__)	\
 	 || defined (__OPTIMIZE_SIZE__)	\
-	 || defined(__ARM_ARCH_6M__)))
+	 || !__ARM_ARCH_ISA_ARM))
 # define __prefer_thumb__
+#endif
+
+#if !__ARM_ARCH_ISA_ARM && __ARM_ARCH_ISA_THUMB == 1
+#define NOT_ISA_TARGET_32BIT 1
 #endif
 
 /* How to return from a function call depends on the architecture variant.  */
@@ -305,7 +309,7 @@ LSYM(Lend_fde):
 
 #ifdef __ARM_EABI__
 .macro THUMB_LDIV0 name signed
-#if defined(__ARM_ARCH_6M__)
+#ifdef NOT_ISA_TARGET_32BIT
 	.ifc \signed, unsigned
 	cmp	r0, #0
 	beq	1f
@@ -478,7 +482,7 @@ _L__\name:
 
 #else /* !(__INTERWORKING_STUBS__ || __thumb2__) */
 
-#ifdef __ARM_ARCH_6M__
+#ifdef NOT_ISA_TARGET_32BIT
 #define EQUIV .thumb_set
 #else
 .macro	ARM_FUNC_START name sp_section=
@@ -510,7 +514,7 @@ SYM (__\name):
 #endif
 .endm
 
-#ifndef __ARM_ARCH_6M__
+#ifndef NOT_ISA_TARGET_32BIT
 .macro	ARM_FUNC_ALIAS new old
 	.globl	SYM (__\new)
 	EQUIV	SYM (__\new), SYM (__\old)
@@ -1054,7 +1058,7 @@ ARM_FUNC_START aeabi_uidivmod
 /* ------------------------------------------------------------------------ */
 #ifdef L_umodsi3
 
-#ifdef __ARM_ARCH_EXT_IDIV__
+#if defined(__ARM_ARCH_EXT_IDIV__) && __ARM_ARCH_ISA_THUMB != 1
 
 	ARM_FUNC_START umodsi3
 
@@ -1240,7 +1244,7 @@ ARM_FUNC_START aeabi_idivmod
 /* ------------------------------------------------------------------------ */
 #ifdef L_modsi3
 
-#if defined(__ARM_ARCH_EXT_IDIV__)
+#if defined(__ARM_ARCH_EXT_IDIV__) && __ARM_ARCH_ISA_THUMB != 1
 
 	ARM_FUNC_START modsi3
 
@@ -1515,7 +1519,7 @@ LSYM(Lover12):
 #endif
 
 #ifdef L_clzsi2
-#if defined(__ARM_ARCH_6M__)
+#ifdef NOT_ISA_TARGET_32BIT
 FUNC_START clzsi2
 	mov	r1, #28
 	mov	r3, #1
@@ -1576,7 +1580,7 @@ ARM_FUNC_START clzsi2
 #ifdef L_clzdi2
 #if !defined(HAVE_ARM_CLZ)
 
-# if defined(__ARM_ARCH_6M__)
+# ifdef NOT_ISA_TARGET_32BIT
 FUNC_START clzdi2
 	push	{r4, lr}
 # else
@@ -1601,7 +1605,7 @@ ARM_FUNC_START clzdi2
 	bl	__clzsi2
 # endif
 2:
-# if defined(__ARM_ARCH_6M__)
+# ifdef NOT_ISA_TARGET_32BIT
 	pop	{r4, pc}
 # else
 	RETLDM	r4
@@ -1623,7 +1627,7 @@ ARM_FUNC_START clzdi2
 #endif /* L_clzdi2 */
 
 #ifdef L_ctzsi2
-#if defined(__ARM_ARCH_6M__)
+#ifdef NOT_ISA_TARGET_32BIT
 FUNC_START ctzsi2
 	neg	r1, r0
 	and	r0, r0, r1
@@ -1738,7 +1742,7 @@ ARM_FUNC_START ctzsi2
 
 /* Don't bother with the old interworking routines for Thumb-2.  */
 /* ??? Maybe only omit these on "m" variants.  */
-#if !defined(__thumb2__) && !defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__) && __ARM_ARCH_ISA_ARM
 
 #if defined L_interwork_call_via_rX
 
@@ -1983,11 +1987,12 @@ LSYM(Lchange_\register):
 .endm
 
 #ifndef __symbian__
-#ifndef __ARM_ARCH_6M__
+/* The condition here must match the one in gcc/config/arm/elf.h.  */
+#ifndef NOT_ISA_TARGET_32BIT
 #include "ieee754-df.S"
 #include "ieee754-sf.S"
 #include "bpabi.S"
-#else /* __ARM_ARCH_6M__ */
+#else /* NOT_ISA_TARGET_32BIT */
 #include "bpabi-v6m.S"
-#endif /* __ARM_ARCH_6M__ */
+#endif /* NOT_ISA_TARGET_32BIT */
 #endif /* !__symbian__ */
