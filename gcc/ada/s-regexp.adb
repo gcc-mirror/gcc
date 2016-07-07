@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2015, AdaCore                     --
+--                     Copyright (C) 1999-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -551,7 +551,7 @@ package body System.Regexp is
                     ("Incorrect character ']' in regular expression", J);
 
                when '\' =>
-                  if J < S'Last  then
+                  if J < S'Last then
                      J := J + 1;
                      Add_In_Map (S (J));
 

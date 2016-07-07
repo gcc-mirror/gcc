@@ -1,3 +1,27 @@
+2016-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Internal_Init_Call): Subsidiary procedure
+	to Expand_Protected_ Subprogram_Call, to handle properly a
+	call to a protected function that provides the initialization
+	expression for a private component of the same protected type.
+	* sem_ch9.adb (Analyze_Protected_Definition): Layout must be
+	applied to itypes generated for a private operation of a protected
+	type that has a formal of an anonymous access to subprogram,
+	because these itypes have no freeze nodes and are frozen in place.
+	* sem_ch4.adb (Analyze_Selected_Component): If prefix is a
+	protected type and it is not a current instance, do not examine
+	the first private component of the type.
+
+2016-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_imgv.adb, g-dynhta.adb, s-regexp.adb, s-fatgen.adb, s-poosiz.adb:
+	Minor removal of extra whitespace.
+	* einfo.ads: minor removal of repeated "as" in comment
+
+2016-07-07  Vadim Godunko  <godunko@adacore.com>
+
+	* adaint.c: Complete previous change.
+
 2016-07-07  Vadim Godunko  <godunko@adacore.com>
 
 	* adainit.h, adainit.c (__gnat_is_read_accessible_file): New

@@ -5945,12 +5945,43 @@ package body Exp_Ch6 is
    is
       Rec   : Node_Id;
 
+      procedure Expand_Internal_Init_Call;
+      --  A call to an operation of the type may occur in the initialization
+      --  of a private component. In that case the prefix of the call is an
+      --  entity name and the call is treated as internal even though it
+      --  appears in code outside of the protected type.
+
       procedure Freeze_Called_Function;
       --  If it is a function call it can appear in elaboration code and
       --  the called entity must be frozen before the call. This must be
       --  done before the call is expanded, as the expansion may rewrite it
       --  to something other than a call (e.g. a temporary initialized in a
       --  transient block).
+
+      -------------------------------
+      -- Expand_Internal_Init_Call --
+      -------------------------------
+
+      procedure Expand_Internal_Init_Call is
+      begin
+         --  If the context is a protected object (rather than a protected
+         --  type) the call itself is bound to raise program_error because
+         --  the protected body will not have been elaborated yet. This is
+         --  diagnosed subsequently in Sem_Elab.
+
+         Freeze_Called_Function;
+
+         --  The target of the internal call is the first formal of the
+         --  enclosing initialization procedure.
+
+         Rec := New_Occurrence_Of (First_Formal (Current_Scope), Sloc (N));
+         Build_Protected_Subprogram_Call (N,
+           Name     => Name (N),
+           Rec      => Rec,
+           External => False);
+         Analyze (N);
+         Resolve (N, Etype (Subp));
+      end Expand_Internal_Init_Call;
 
       ----------------------------
       -- Freeze_Called_Function --
@@ -5975,14 +6006,24 @@ package body Exp_Ch6 is
       --  case this must be handled as an inter-object call.
 
       if not In_Open_Scopes (Scop)
-        or else not Is_Entity_Name (Name (N))
+          or else (not Is_Entity_Name (Name (N)))
       then
          if Nkind (Name (N)) = N_Selected_Component then
             Rec := Prefix (Name (N));
 
-         else
-            pragma Assert (Nkind (Name (N)) = N_Indexed_Component);
+         elsif Nkind (Name (N)) = N_Indexed_Component then
             Rec := Prefix (Prefix (Name (N)));
+
+         else
+            --  If the context is the initialization procedure for a protected
+            --  type, the call is legal because the called entity must be a
+            --  function of that enclosing type, and this is treated as an
+            --  internal call.
+
+            pragma Assert (Is_Entity_Name (Name (N))
+                             and then Inside_Init_Proc);
+            Expand_Internal_Init_Call;
+            return;
          end if;
 
          Freeze_Called_Function;

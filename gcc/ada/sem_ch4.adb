@@ -4804,8 +4804,14 @@ package body Sem_Ch4 is
          In_Scope := In_Open_Scopes (Prefix_Type);
 
          while Present (Comp) loop
+            --  Do not examine private operations of the type if not within
+            --  its scope.
+
             if Chars (Comp) = Chars (Sel) then
-               if Is_Overloadable (Comp) then
+               if Is_Overloadable (Comp)
+                 and then (In_Scope
+                            or else Comp /= First_Private_Entity (Type_To_Use))
+               then
                   Add_One_Interp (Sel, Comp, Etype (Comp));
 
                   --  If the prefix is tagged, the correct interpretation may

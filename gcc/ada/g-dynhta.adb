@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2015, AdaCore                     --
+--                     Copyright (C) 2002-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,8 +57,8 @@ package body GNAT.Dynamic_HTables is
       -- Get --
       ---------
 
-      function  Get (T : Instance; K : Key) return Elmt_Ptr is
-         Elmt  : Elmt_Ptr;
+      function Get (T : Instance; K : Key) return Elmt_Ptr is
+         Elmt : Elmt_Ptr;
 
       begin
          if T = null then
@@ -224,7 +224,7 @@ package body GNAT.Dynamic_HTables is
       -- Get --
       ---------
 
-      function  Get (T : Instance; K : Key) return Element is
+      function Get (T : Instance; K : Key) return Element is
          Tmp : Elmt_Ptr;
 
       begin
