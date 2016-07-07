@@ -8939,8 +8939,9 @@ package body Sem_Ch12 is
 
       Must_Delay : Boolean;
 
-      function In_Same_Enclosing_Subp return Boolean;
-      --  Check whether instance and generic body are within same subprogram.
+      function In_Same_Scope (Generic_Id, Actual_Id : Node_Id) return Boolean;
+      --  Check if the generic definition's scope tree and the instantiation's
+      --  scope tree share a dependency.
 
       function True_Sloc (N : Node_Id) return Source_Ptr;
       --  If the instance is nested inside a generic unit, the Sloc of the
@@ -8950,39 +8951,26 @@ package body Sem_Ch12 is
       --  origin of a node by finding the maximum sloc of any ancestor node.
       --  Why is this not equivalent to Top_Level_Location ???
 
-      ----------------------------
-      -- In_Same_Enclosing_Subp --
-      ----------------------------
+      -------------------
+      -- In_Same_Scope --
+      -------------------
 
-      function In_Same_Enclosing_Subp return Boolean is
-         Scop : Entity_Id;
-         Subp : Entity_Id;
-
+      function In_Same_Scope (Generic_Id, Actual_Id : Node_Id) return Boolean
+      is
+         Act_Scop : Entity_Id := Scope (Actual_Id);
+         Gen_Scop : Entity_Id := Scope (Generic_Id);
       begin
-         Scop := Scope (Act_Id);
-         while Scop /= Standard_Standard
-           and then not Is_Overloadable (Scop)
+         while Scope_Depth_Value (Act_Scop) > 0
+           and then Scope_Depth_Value (Gen_Scop) > 0
          loop
-            Scop := Scope (Scop);
-         end loop;
-
-         if Scop = Standard_Standard then
-            return False;
-         else
-            Subp := Scop;
-         end if;
-
-         Scop := Scope (Gen_Id);
-         while Scop /= Standard_Standard loop
-            if Scop = Subp then
+            if Act_Scop = Gen_Scop then
                return True;
-            else
-               Scop := Scope (Scop);
             end if;
+            Act_Scop := Scope (Act_Scop);
+            Gen_Scop := Scope (Gen_Scop);
          end loop;
-
          return False;
-      end In_Same_Enclosing_Subp;
+      end In_Same_Scope;
 
       ---------------
       -- True_Sloc --
@@ -9071,9 +9059,8 @@ package body Sem_Ch12 is
                                         N_Generic_Package_Declaration)
                      or else (Gen_Unit = Body_Unit
                                and then True_Sloc (N) < Sloc (Orig_Body)))
-          and then Is_In_Main_Unit (Gen_Unit)
-          and then (Scope (Act_Id) = Scope (Gen_Id)
-                     or else In_Same_Enclosing_Subp));
+          and then Is_In_Main_Unit (Original_Node (Gen_Unit))
+          and then (In_Same_Scope (Gen_Id, Act_Id)));
 
       --  If this is an early instantiation, the freeze node is placed after
       --  the generic body. Otherwise, if the generic appears in an instance,
@@ -12901,6 +12888,7 @@ package body Sem_Ch12 is
       end if;
 
       Current_Unit := Parent (N);
+
       while Present (Current_Unit)
         and then Nkind (Current_Unit) /= N_Compilation_Unit
       loop
@@ -12915,7 +12903,8 @@ package body Sem_Ch12 is
       return
         Current_Unit = Cunit (Main_Unit)
           or else Current_Unit = Library_Unit (Cunit (Main_Unit))
-          or else (Present (Library_Unit (Current_Unit))
+          or else (Present (Current_Unit)
+                    and then Present (Library_Unit (Current_Unit))
                     and then Is_In_Main_Unit (Library_Unit (Current_Unit)));
    end Is_In_Main_Unit;
 

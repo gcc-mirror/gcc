@@ -166,11 +166,11 @@ package body Sem_Prag is
      Table_Increment      => 100,
      Table_Name           => "Name_Externals");
 
-   --------------------------------------------------------
-   -- Handling of inherited classwide pre/postconditions --
-   --------------------------------------------------------
+   ---------------------------------------------------------
+   -- Handling of inherited class-wide pre/postconditions --
+   ---------------------------------------------------------
 
-   --  Following AI12-0113, the expression for a classwide condition is
+   --  Following AI12-0113, the expression for a class-wide condition is
    --  transformed for a subprogram that inherits it, by replacing calls
    --  to primitive operations of the original controlling type into the
    --  corresponding overriding operations of the derived type. The following
@@ -20339,7 +20339,7 @@ package body Sem_Prag is
 
             else
                Error_Pragma_Arg
-                 ("pragma% applies only to formal access to classwide types",
+                 ("pragma% applies only to formal access-to-class-wide types",
                   Arg1);
             end if;
          end Remote_Access_Type;
@@ -26401,11 +26401,11 @@ package body Sem_Prag is
       return False;
    end Appears_In;
 
-   --------------------------------
-   -- Build_Classwide_Expression --
-   --------------------------------
+   ---------------------------------
+   -- Build_Class_Wide_Expression --
+   ---------------------------------
 
-   procedure Build_Classwide_Expression
+   procedure Build_Class_Wide_Expression
      (Prag        : Node_Id;
       Subp        : Entity_Id;
       Par_Subp    : Entity_Id;
@@ -26417,7 +26417,7 @@ package body Sem_Prag is
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
-      --  when constructing the classwide condition of an overridding
+      --  when constructing the class-wide condition of an overriding
       --  subprogram.
 
       --------------------
@@ -26516,10 +26516,10 @@ package body Sem_Prag is
       procedure Replace_Condition_Entities is
         new Traverse_Proc (Replace_Entity);
 
-   --  Start of processing for Build_Classwide_Expression
+   --  Start of processing for Build_Class_Wide_Expression
 
    begin
-      --  Add mapping from old formals to new formals.
+      --  Add mapping from old formals to new formals
 
       Par_Formal := First_Formal (Par_Subp);
       Subp_Formal  := First_Formal (Subp);
@@ -26531,7 +26531,7 @@ package body Sem_Prag is
       end loop;
 
       Replace_Condition_Entities (Prag);
-   end Build_Classwide_Expression;
+   end Build_Class_Wide_Expression;
 
    -----------------------------------
    -- Build_Pragma_Check_Equivalent --
@@ -26608,9 +26608,9 @@ package body Sem_Prag is
            (Unit_Declaration_Node (Subp_Id), Inher_Id);
          Check_Prag := New_Copy_Tree (Source => Prag);
 
-         --  Build the inherited classwide condition.
+         --  Build the inherited class-wide condition
 
-         Build_Classwide_Expression
+         Build_Class_Wide_Expression
            (Check_Prag, Subp_Id, Inher_Id, Adjust_Sloc => True);
 
       --  If not an inherited condition simply copy the original pragma

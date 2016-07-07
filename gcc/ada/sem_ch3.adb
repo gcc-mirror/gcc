@@ -1415,7 +1415,7 @@ package body Sem_Ch3 is
       elsif Is_Class_Wide_Type (Full_Desig) and then Etype (Full_Desig) = T
       then
          Error_Msg_N
-           ("access type cannot designate its own classwide type", S);
+           ("access type cannot designate its own class-wide type", S);
 
          --  Clean up indication of tagged status to prevent cascaded errors
 
@@ -4394,7 +4394,7 @@ package body Sem_Ch3 is
       --  type, rewrite the declaration as a renaming of the result of the
       --  call. The exceptions below are cases where the copy is expected,
       --  either by the back end (Aliased case) or by the semantics, as for
-      --  initializing controlled types or copying tags for classwide types.
+      --  initializing controlled types or copying tags for class-wide types.
 
       if Present (E)
         and then Nkind (E) = N_Explicit_Dereference
@@ -16679,9 +16679,9 @@ package body Sem_Ch3 is
                Set_Ekind (Id, Ekind (Prev));         --  will be reset later
                Set_Class_Wide_Type (Id, Class_Wide_Type (Prev));
 
-               --  The type of the classwide type is the current Id. Previously
+               --  Type of the class-wide type is the current Id. Previously
                --  this was not done for private declarations because of order-
-               --  of elaboration issues in the back-end, but gigi now handles
+               --  of-elaboration issues in the back end, but gigi now handles
                --  this properly.
 
                Set_Etype (Class_Wide_Type (Id), Id);
