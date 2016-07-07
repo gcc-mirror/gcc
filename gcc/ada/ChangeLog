@@ -1,3 +1,17 @@
+2016-07-07  Vadim Godunko  <godunko@adacore.com>
+
+	* adainit.h, adainit.c (__gnat_is_read_accessible_file): New
+	subprogram.
+	(__gnat_is_write_accessible_file): New subprogram.
+	* s-os_lib.ads, s-os_lib.adb (Is_Read_Accessible_File): New subprogram.
+	(Is_Write_Accessible_File): New subprogram.
+
+2016-07-07  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (Install_Body): Minor refactoring in the order
+	of local functions.
+	(In_Same_Scope): Change loop condition to be more expressive.
+
 2016-07-07  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb, sem_prag.adb, sem_prag.ads, prj-ext.adb, freeze.adb,

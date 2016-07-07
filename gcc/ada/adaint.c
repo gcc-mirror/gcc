@@ -1912,6 +1912,20 @@ __gnat_is_readable_file_attr (char* name, struct file_attributes* attr)
 }
 
 int
+__gnat_is_read_accessible_file (char *name)
+{
+#if defined (_WIN32)
+   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+   return !_access (wname, 4);
+#else
+   return !access (name, R_OK);
+#endif
+}
+
+int
 __gnat_is_readable_file (char *name)
 {
    struct file_attributes attr;
@@ -1959,6 +1973,20 @@ __gnat_is_writable_file (char *name)
 
    __gnat_reset_attributes (&attr);
    return __gnat_is_writable_file_attr (name, &attr);
+}
+
+int
+__gnat_is_write_accessible_file (char *name)
+{
+#if defined (_WIN32)
+   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+   return !_access (wname, 2);
+#else
+   return !access (name, W_OK);
+#endif
 }
 
 int
