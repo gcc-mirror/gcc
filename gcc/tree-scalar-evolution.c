@@ -3317,7 +3317,7 @@ scev_reset (void)
    use this test even for derived IVs not computed every iteration or
    hypotetical IVs to be inserted into code.  */
 
-static bool
+bool
 iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
 {
   widest_int nit;

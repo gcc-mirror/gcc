@@ -1181,6 +1181,10 @@ alloc_iv (struct ivopts_data *data, tree base, tree step,
   iv->biv_p = false;
   iv->nonlin_use = NULL;
   iv->ssa_name = NULL_TREE;
+  if (!no_overflow
+       && !iv_can_overflow_p (data->current_loop, TREE_TYPE (base),
+			      base, step))
+    no_overflow = true;
   iv->no_overflow = no_overflow;
   iv->have_address_use = false;
 
