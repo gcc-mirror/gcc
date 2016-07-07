@@ -3,6 +3,9 @@
 	Backported from mainline
 	2016-04-13  Jakub Jelinek  <jakub@redhat.com>
  
+	PR c++/70641
+	* g++.dg/opt/pr70641.C: New test.
+
 	PR middle-end/70633
 	* gcc.c-torture/compile/pr70633.c: New test.
 

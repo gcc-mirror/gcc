@@ -3,6 +3,11 @@
 	Backported from mainline
 	2016-04-13  Jakub Jelinek  <jakub@redhat.com>
  
+	PR c++/70641
+	* ipa-pure-const.c (pass_nothrow::execute): Call maybe_clean_eh_stmt
+	on all recursive call stmts.  Return TODO_cleanup_cfg if any dead
+	eh edges have been purged.
+
 	PR middle-end/70633
 	* gimplify.c (gimplify_init_constructor): Clear TREE_STATIC if
 	gimplification turns some element into non-constant.
