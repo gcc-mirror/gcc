@@ -1495,6 +1495,21 @@ package body System.OS_Lib is
       return Is_Directory (F_Name'Address);
    end Is_Directory;
 
+   -----------------------------
+   -- Is_Read_Accessible_File --
+   -----------------------------
+
+   function Is_Read_Accessible_File (Name : String) return Boolean is
+      function Is_Read_Accessible_File (Name : Address) return Integer;
+      pragma Import
+        (C, Is_Read_Accessible_File, "__gnat_is_read_accessible_file");
+      F_Name : String (1 .. Name'Length + 1);
+   begin
+      F_Name (1 .. Name'Length) := Name;
+      F_Name (F_Name'Last)      := ASCII.NUL;
+      return Is_Read_Accessible_File (F_Name'Address) /= 0;
+   end Is_Read_Accessible_File;
+
    ----------------------
    -- Is_Readable_File --
    ----------------------
@@ -1570,6 +1585,21 @@ package body System.OS_Lib is
       F_Name (F_Name'Last)      := ASCII.NUL;
       return Is_Symbolic_Link (F_Name'Address);
    end Is_Symbolic_Link;
+
+   ------------------------------
+   -- Is_Write_Accessible_File --
+   ------------------------------
+
+   function Is_Write_Accessible_File (Name : String) return Boolean is
+      function Is_Write_Accessible_File (Name : Address) return Integer;
+      pragma Import
+        (C, Is_Write_Accessible_File, "__gnat_is_write_accessible_file");
+      F_Name : String (1 .. Name'Length + 1);
+   begin
+      F_Name (1 .. Name'Length) := Name;
+      F_Name (F_Name'Last)      := ASCII.NUL;
+      return Is_Write_Accessible_File (F_Name'Address) /= 0;
+   end Is_Write_Accessible_File;
 
    ----------------------
    -- Is_Writable_File --
