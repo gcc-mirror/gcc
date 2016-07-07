@@ -234,7 +234,7 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3644.pdf">
 	  N3644
@@ -338,26 +338,25 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3916.pdf">
 	  N3916
 	</link>
       </entry>
       <entry>Polymorphic memory resources</entry>
-      <entry>N</entry>
+      <entry>Partial</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3920.html">
 	  N3920
 	</link>
       </entry>
       <entry>Extending shared_ptr to support arrays</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 
