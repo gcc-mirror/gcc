@@ -3947,7 +3947,7 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
     {
     case SET:
       /* See if we can use movw.  */
-      if (arm_arch_thumb2 && (i & 0xffff0000) == 0)
+      if (TARGET_HAVE_MOVT && (i & 0xffff0000) == 0)
 	return 1;
       else
 	/* Otherwise, try mvn.  */
