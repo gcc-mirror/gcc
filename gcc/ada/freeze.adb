@@ -5140,13 +5140,7 @@ package body Freeze is
 
             --  This processing doesn't apply to internal entities (see below)
 
-            --  Disable this mechanism for now, to fix regressions in ASIS and
-            --  various ACATS tests. Implementation of AI05-019 remains
-            --  unsolved ???
-
-            if not Is_Internal (E)
-              and then (Do_Freeze_Profile or else True)
-            then
+            if not Is_Internal (E) and then Do_Freeze_Profile then
                if not Freeze_Profile (E) then
                   Ghost_Mode := Save_Ghost_Mode;
                   return Result;
