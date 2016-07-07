@@ -1,3 +1,7 @@
+2016-07-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/pr71432.C: Fail on AIX.
+
 2016-07-07  Martin Liska  <mliska@suse.cz>
 
 	* gfortran.dg/do_1.f90: Remove a corner case that triggers
