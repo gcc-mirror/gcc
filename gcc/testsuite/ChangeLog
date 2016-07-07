@@ -1,6 +1,11 @@
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70022
+	* gcc.dg/pr70022.c: Add -w -Wno-psabi to dg-options.
+
 	2014-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64280
