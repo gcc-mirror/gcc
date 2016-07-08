@@ -1,3 +1,7 @@
+2016-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/modifiers/insert/aliasing.cc: New.
+
 2016-07-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2014.xml: Update LFTS status table.
