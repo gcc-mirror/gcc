@@ -2237,14 +2237,6 @@ option is used for the warning.
 Turn off all access checking.  This switch is mainly useful for working
 around bugs in the access control code.
 
-@item -fargs-in-order
-@opindex fargs-in-order
-Evaluate function arguments and operands of some binary expressions in
-left-to-right order, and evaluate the right side of an assignment
-before the left side, as proposed in P0145R2.  Enabled by default with
-@option{-std=c++1z}.  @option{-fargs-in-order=1} implements all of the
-ordering requirements except function arguments.
-
 @item -fcheck-new
 @opindex fcheck-new
 Check that the pointer returned by @code{operator new} is non-null
@@ -2482,6 +2474,15 @@ defined in the C++ standard; basically, a value that can be
 represented in the minimum number of bits needed to represent all the
 enumerators).  This assumption may not be valid if the program uses a
 cast to convert an arbitrary integer value to the enumerated type.
+
+@item -fstrong-eval-order
+@opindex fstrong-eval-order
+Evaluate member access, array subscripting, and shift expressions in
+left-to-right order, and evaluate assignment in right-to-left order,
+as adopted for C++17.  Enabled by default with @option{-std=c++1z}.
+@option{-fstrong-eval-order=some} enables just the ordering of member
+access and shift expressions, and is the default without
+@option{-std=c++1z}.
 
 @item -ftemplate-backtrace-limit=@var{n}
 @opindex ftemplate-backtrace-limit

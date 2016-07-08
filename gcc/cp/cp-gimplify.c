@@ -780,11 +780,10 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		ret = GS_ERROR;
 	    }
 	}
-      else if (flag_args_in_order == 1
+      else if (flag_strong_eval_order
 	       && !CALL_EXPR_OPERATOR_SYNTAX (*expr_p))
 	{
-	  /* If flag_args_in_order == 1, we don't force an order on all
-	     function arguments, but do evaluate the object argument first.  */
+	  /* If flag_strong_eval_order, evaluate the object argument first.  */
 	  tree fntype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 	  if (POINTER_TYPE_P (fntype))
 	    fntype = TREE_TYPE (fntype);

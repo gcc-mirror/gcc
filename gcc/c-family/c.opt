@@ -1043,14 +1043,6 @@ falt-external-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 No longer supported.
 
-fargs-in-order
-C++ ObjC++ Alias(fargs-in-order=, 2, 0)
-Always evaluate function arguments in left-to-right order.
-
-fargs-in-order=
-C++ ObjC++ Var(flag_args_in_order) Joined UInteger Init(-1)
-Always evaluate function arguments in left-to-right order.
-
 fasm
 C ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword.
@@ -1517,6 +1509,28 @@ Assume that values of enumeration type are always within the minimum range of th
 
 fstrict-prototype
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+
+fstrong-eval-order
+C++ ObjC++ Common Alias(fstrong-eval-order=, all, none)
+Follow the C++17 evaluation order requirements for assignment expressions,
+shift, member function calls, etc.
+
+fstrong-eval-order=
+C++ ObjC++ Common Var(flag_strong_eval_order) Joined Enum(strong_eval_order) Init(-1)
+Follow the C++17 evaluation order requirements for assignment expressions,
+shift, member function calls, etc.
+
+Enum
+Name(strong_eval_order) Type(int)
+
+EnumValue
+Enum(strong_eval_order) String(none) Value(0)
+
+EnumValue
+Enum(strong_eval_order) String(some) Value(1)
+
+EnumValue
+Enum(strong_eval_order) String(all) Value(2)
 
 ftabstop=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
