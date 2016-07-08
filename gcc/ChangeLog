@@ -1,3 +1,11 @@
+2016-07-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/71297
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Allow standard error handling to take over when a wrong number
+	of arguments is presented to __builtin_vec_ld () or
+	__builtin_vec_st ().
+
 2016-07-08  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (smax): Remove float

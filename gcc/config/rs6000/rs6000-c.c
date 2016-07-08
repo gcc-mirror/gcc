@@ -5281,10 +5281,11 @@ assignment for unaligned loads and stores");
      are able to honor __restrict__, for example.  We may want to
      consider this for all memory access built-ins.
 
-     When -maltivec=be is specified, simply punt to existing
-     built-in processing.  */
+     When -maltivec=be is specified, or the wrong number of arguments
+     is provided, simply punt to existing built-in processing.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_LD
-      && (BYTES_BIG_ENDIAN || !VECTOR_ELT_ORDER_BIG))
+      && (BYTES_BIG_ENDIAN || !VECTOR_ELT_ORDER_BIG)
+      && nargs == 2)
     {
       tree arg0 = (*arglist)[0];
       tree arg1 = (*arglist)[1];
@@ -5354,7 +5355,8 @@ assignment for unaligned loads and stores");
 
   /* Similarly for stvx.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_ST
-      && (BYTES_BIG_ENDIAN || !VECTOR_ELT_ORDER_BIG))
+      && (BYTES_BIG_ENDIAN || !VECTOR_ELT_ORDER_BIG)
+      && nargs == 3)
     {
       tree arg0 = (*arglist)[0];
       tree arg1 = (*arglist)[1];
