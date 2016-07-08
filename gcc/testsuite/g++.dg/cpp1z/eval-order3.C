@@ -31,6 +31,13 @@ struct A
   A& operator+=(int i) { return *this; }
 };
 
+struct B
+{
+  int _i;
+  B(): _i(0) {}
+  B(int i): _i(f(i)) { }
+};
+
 int operator>>(A&, int i) { }
 
 A a(0);
@@ -44,6 +51,18 @@ A& aref(int i)
 {
   f(i);
   return a;
+}
+
+B b;
+B bval(int i)
+{
+  return B(i);
+}
+
+B& bref(int i)
+{
+  f(i);
+  return b;
 }
 
 static int si;
@@ -84,9 +103,17 @@ template <class T> void f()
 
   // b @= a
   aref(19)=A(18);
-  //iref(21)=f(20);
+  iref(21)=f(20);
   aref(23)+=f(22);
+  bref(25)=bval(24);
+  (f(27), b) = bval(26);
   last = 0;
+
+  int ar[4] = {};
+  int i = 0;
+  ar[i++] = i;
+  if (ar[0] != 0)
+    __builtin_abort();
 
   // a[b]
   afn(20)[f(21)-21].memfn(f(22),23);
@@ -123,9 +150,17 @@ void g()
 
   // b @= a
   aref(19)=A(18);
-  //iref(21)=f(20);
+  iref(21)=f(20);
   aref(23)+=f(22);
+  bref(25)=bval(24);
+  (f(27), b) = bval(26);
   last = 0;
+
+  int ar[4] = {};
+  int i = 0;
+  ar[i++] = i;
+  if (ar[0] != 0)
+    __builtin_abort();
 
   // a[b]
   afn(20)[f(21)-21].memfn(f(22),23);

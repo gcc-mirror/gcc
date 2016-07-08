@@ -4080,6 +4080,13 @@ diagnosed by this option, and it may give an occasional false positive
 result, but in general it has been found fairly effective at detecting
 this sort of problem in programs.
 
+The C++17 standard will define the order of evaluation of operands in
+more cases: in particular it requires that the right-hand side of an
+assignment be evaluated before the left-hand side, so the above
+examples are no longer undefined.  But this warning will still warn
+about them, to help people avoid writing code that is undefined in C
+and earlier revisions of C++.
+
 The standard is worded confusingly, therefore there is some debate
 over the precise meaning of the sequence point rules in subtle cases.
 Links to discussions of the problem, including proposed formal

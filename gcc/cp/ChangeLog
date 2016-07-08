@@ -1,6 +1,8 @@
 2016-07-08  Jason Merrill  <jason@redhat.com>
 
 	P0145R2: Refining Expression Order for C++.
+	* cp-gimplify.c (lvalue_has_side_effects): New.
+	(cp_gimplify_expr): Implement assignment ordering.
 	* call.c (op_is_ordered, build_over_call): Adjust for
 	-fargs-in-order renaming to -fstrong-eval-order.
 	* cp-gimplify.c (cp_gimplify_expr): Likewise.
