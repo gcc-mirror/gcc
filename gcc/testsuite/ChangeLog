@@ -1,3 +1,8 @@
+2016-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/71764
+	* gfortran.dg/pr71764.f90: New test.
+
 2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 	    Kai Tietz  <ktietz70@googlemail.com>
 
