@@ -1,3 +1,18 @@
+2016-07-08  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (smax): Remove float
+	variants.
+	(smin): Likewise.
+	(fmax): New entry.
+	(fmin): Likewise.
+	* config/aarch64/arm_neon.h (vmaxnm_f32): Use
+	__builtin_aarch64_fmaxv2sf.
+	(vmaxnmq_f32): Likewise.
+	(vmaxnmq_f64): Likewise.
+	(vminnm_f32): Likewise.
+	(vminnmq_f32): Likewise.
+	(vminnmq_f64): Likewise.
+
 2016-07-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71806

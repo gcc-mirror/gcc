@@ -244,12 +244,16 @@
   /* Implemented by <maxmin><mode>3.
      smax variants map to fmaxnm,
      smax_nan variants map to fmax.  */
-  BUILTIN_VDQIF (BINOP, smax, 3)
-  BUILTIN_VDQIF (BINOP, smin, 3)
+  BUILTIN_VDQ_BHSI (BINOP, smax, 3)
+  BUILTIN_VDQ_BHSI (BINOP, smin, 3)
   BUILTIN_VDQ_BHSI (BINOP, umax, 3)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3)
   BUILTIN_VDQF (BINOP, smax_nan, 3)
   BUILTIN_VDQF (BINOP, smin_nan, 3)
+
+  /* Implemented by <fmaxmin><mode>3.  */
+  BUILTIN_VDQF (BINOP, fmax, 3)
+  BUILTIN_VDQF (BINOP, fmin, 3)
 
   /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, smaxp, 0)
