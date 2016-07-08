@@ -1126,7 +1126,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       fcode = TREE_CODE (from);
       conv = build_conv (ck_lvalue, from, conv);
     }
-  else if (fromref || (expr && lvalue_p (expr)))
+  /* Wrapping a ck_rvalue around a class prvalue (as a result of using
+     obvalue_p) seems odd, since it's already a prvalue, but that's how we
+     express the copy constructor call required by copy-initialization.  */
+  else if (fromref || (expr && obvalue_p (expr)))
     {
       if (expr)
 	{

@@ -3332,7 +3332,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), init_preeval_expr, rval);
 
   /* A new-expression is never an lvalue.  */
-  gcc_assert (!lvalue_p (rval));
+  gcc_assert (!obvalue_p (rval));
 
   return convert (pointer_type, rval);
 }

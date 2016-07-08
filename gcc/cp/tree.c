@@ -266,6 +266,14 @@ real_lvalue_p (const_tree ref)
     return kind;
 }
 
+/* Defined for c-common; the front end should use real_lvalue_p.  */
+
+bool
+(lvalue_p) (const_tree t)
+{
+  return real_lvalue_p (t);
+}
+
 /* This differs from real_lvalue_p in that xvalues are included.  */
 
 bool
@@ -281,7 +289,7 @@ glvalue_p (const_tree ref)
 /* This differs from glvalue_p in that class prvalues are included.  */
 
 bool
-lvalue_p (const_tree ref)
+obvalue_p (const_tree ref)
 {
   return (lvalue_kind (ref) != clk_none);
 }
