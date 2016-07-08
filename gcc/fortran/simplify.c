@@ -6183,8 +6183,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
     }
   else
     {
-      gfc_error ("Simplification of SPREAD at %L not yet implemented",
-		 &source->where);
+      gfc_error ("Simplification of SPREAD at %C not yet implemented");
       return &gfc_bad_expr;
     }
 

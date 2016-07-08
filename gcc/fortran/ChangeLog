@@ -1,3 +1,8 @@
+2016-07-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68426
+	* simplify (gfc_simplify_spread): Adjust locus.
+
 2016-07-08  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parse.c (matcha): Define.
