@@ -3813,6 +3813,18 @@ rhs_predicate_for (tree lhs)
     return is_gimple_mem_rhs_or_call;
 }
 
+/* Return the initial guess for an appropriate RHS predicate for this LHS,
+   before the LHS has been gimplified.  */
+
+static gimple_predicate
+initial_rhs_predicate_for (tree lhs)
+{
+  if (is_gimple_reg_type (TREE_TYPE (lhs)))
+    return is_gimple_reg_rhs_or_call;
+  else
+    return is_gimple_mem_rhs_or_call;
+}
+
 /* Gimplify a C99 compound literal expression.  This just means adding
    the DECL_EXPR before the current statement and using its anonymous
    decl instead.  */
@@ -4778,10 +4790,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      that is what we must do here.  */
   maybe_with_size_expr (from_p);
 
-  ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
-  if (ret == GS_ERROR)
-    return ret;
-
   /* As a special case, we have to temporarily allow for assignments
      with a CALL_EXPR on the RHS.  Since in GIMPLE a function call is
      a toplevel statement, when gimplifying the GENERIC expression
@@ -4794,10 +4802,27 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      reaches the CALL_EXPR.  On return from gimplify_expr, the newly
      created GIMPLE_CALL <foo> will be the last statement in *PRE_P
      and all we need to do here is set 'a' to be its LHS.  */
-  ret = gimplify_expr (from_p, pre_p, post_p, rhs_predicate_for (*to_p),
-		       fb_rvalue);
+
+  /* Gimplify the RHS first for C++17 and bug 71104.  */
+  gimple_predicate initial_pred = initial_rhs_predicate_for (*to_p);
+  ret = gimplify_expr (from_p, pre_p, post_p, initial_pred, fb_rvalue);
   if (ret == GS_ERROR)
     return ret;
+
+  /* Then gimplify the LHS.  */
+  ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
+  if (ret == GS_ERROR)
+    return ret;
+
+  /* Now that the LHS is gimplified, re-gimplify the RHS if our initial
+     guess for the predicate was wrong.  */
+  gimple_predicate final_pred = rhs_predicate_for (*to_p);
+  if (final_pred != initial_pred)
+    {
+      ret = gimplify_expr (from_p, pre_p, post_p, final_pred, fb_rvalue);
+      if (ret == GS_ERROR)
+	return ret;
+    }
 
   /* In case of va_arg internal fn wrappped in a WITH_SIZE_EXPR, add the type
      size as argument to the call.  */

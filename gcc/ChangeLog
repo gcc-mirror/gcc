@@ -1,3 +1,10 @@
+2016-06-25  Jason Merrill  <jason@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	P0145: Refining Expression Order for C++.
+	* gimplify.c (initial_rhs_predicate_for): New.
+	(gimplfy_modify_expr): Gimplify RHS before LHS.
+
 2016-07-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/71297
