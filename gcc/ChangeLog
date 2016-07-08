@@ -1,3 +1,8 @@
+2016-07-08  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71667
+	* tree-vect-loop.c (vectorizable_live_operation): ignore DEBUG stmts
+
 2016-07-08  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/71606

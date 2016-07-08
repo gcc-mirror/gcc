@@ -1,3 +1,8 @@
+2016-07-08  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71667
+	* gcc.dg/vect/pr71667.c: New
+
 2016-07-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/torture/pr71606.c: New test.
