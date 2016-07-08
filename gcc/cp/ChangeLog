@@ -1,5 +1,11 @@
 2016-07-08  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (obvalue_p): Rename from lvalue_p.
+	(lvalue_p): Define for c-common.
+	* call.c, cp-tree.h, cvt.c, init.c: Adjust.
+	* typeck.c: Adjust.
+	(cp_build_addr_expr_1): Remove obsolete code.
+
 	* tree.c (glvalue_p): Rename from lvalue_or_rvalue_with_address_p.
 	* call.c, cp-tree.h, typeck.c: Adjust.
 

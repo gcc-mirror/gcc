@@ -1987,7 +1987,7 @@ decay_conversion (tree exp,
 			 TREE_OPERAND (exp, 0), op1);
 	}
 
-      if (!lvalue_p (exp)
+      if (!obvalue_p (exp)
 	  && ! (TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
 	{
 	  if (complain & tf_error)
@@ -5678,16 +5678,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
-      /* Even if we're not being pedantic, we cannot allow this
-	 extension when we're instantiating in a SFINAE
-	 context.  */
-      if (! lvalue_p (arg) && complain == tf_none)
-	{
-	  if (complain & tf_error)
-	    permerror (input_location, "ISO C++ forbids taking the address of a cast to a non-lvalue expression");
-	  else
-	    return error_mark_node;
-	}
+      /* We should have handled this above in the lvalue_kind check.  */
+      gcc_unreachable ();
       break;
 
     case BASELINK:
@@ -7240,9 +7232,7 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
       reference_type = dst_type;
       if (!TYPE_REF_IS_RVALUE (dst_type)
 	  ? real_lvalue_p (expr)
-	  : (CLASS_TYPE_P (TREE_TYPE (dst_type))
-	     ? lvalue_p (expr)
-	     : glvalue_p (expr)))
+	  : obvalue_p (expr))
 	/* OK.  */;
       else
 	{

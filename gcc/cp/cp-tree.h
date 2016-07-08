@@ -6516,6 +6516,11 @@ extern int member_p				(const_tree);
 extern cp_lvalue_kind real_lvalue_p		(const_tree);
 extern cp_lvalue_kind lvalue_kind		(const_tree);
 extern bool glvalue_p				(const_tree);
+/* obvalue_p used to be named lvalue_p, but that didn't match the C++
+   definition of lvalue.  For now, let's not use the name lvalue_p in the front
+   end; later we can rename real_lvalue_p to lvalue_p.  */
+#define lvalue_p(T) syntax error, use real_lvalue_p
+extern bool obvalue_p				(const_tree);
 extern bool xvalue_p	                        (const_tree);
 extern tree cp_stabilize_reference		(tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
