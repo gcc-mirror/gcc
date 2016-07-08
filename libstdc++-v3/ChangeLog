@@ -1,3 +1,14 @@
+2016-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/ext/lwg-active.html: Update to R93.
+	* doc/html/ext/lwg-closed.html: Likewise.
+	* doc/html/ext/lwg-defects.html: Likewise.
+	* doc/html/manual/*: Regenerate.
+	* doc/xml/manual/intro.xml: Document status of several DRs.
+
 2016-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline

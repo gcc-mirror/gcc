@@ -259,6 +259,9 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#438" target="_top">438</a>:
 	<span class="emphasis"><em>Ambiguity in the "do the right thing" clause</em></span>
     </span></dt><dd><p>Implement the resolution, basically cast less.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#445" target="_top">445</a>:
+	<span class="emphasis"><em>iterator_traits::reference unspecified for some iterator categories</em></span>
+    </span></dt><dd><p>Change <code class="code">istreambuf_iterator::reference</code> in C++11 mode.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#453" target="_top">453</a>:
 	<span class="emphasis"><em>basic_stringbuf::seekoff need not always fail for an empty stream</em></span>
     </span></dt><dd><p>Don't fail if the next pointer is null and newoff is zero.
@@ -269,6 +272,9 @@
 	<span class="emphasis"><em>Suggestion for new member functions in standard containers</em></span>
     </span></dt><dd><p>Add <code class="code">data()</code> to <code class="code">std::vector</code> and
 	<code class="code">at(const key_type&amp;)</code> to <code class="code">std::map</code>.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#467" target="_top">467</a>:
+	<span class="emphasis"><em>char_traits::lt(), compare(), and memcmp()</em></span>
+    </span></dt><dd><p>Change <code class="code">lt</code>.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#508" target="_top">508</a>:
 	<span class="emphasis"><em>Bad parameters for ranlux64_base_01</em></span>
     </span></dt><dd><p>Fix the parameters.
@@ -348,4 +354,65 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#1339" target="_top">1339</a>:
        <span class="emphasis"><em>uninitialized_fill_n should return the end of its range</em></span>
     </span></dt><dd><p>Return the end of the filled range.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2049" target="_top">2049</a>:
+	<span class="emphasis"><em><code class="code">is_destructible</code> underspecified</em></span>
+    </span></dt><dd><p>Handle non-object types.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2056" target="_top">2056</a>:
+	<span class="emphasis"><em>future_errc enums start with value 0 (invalid value for broken_promise)</em></span>
+    </span></dt><dd><p>Reorder enumerators.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2059" target="_top">2059</a>:
+	<span class="emphasis"><em>C++0x ambiguity problem with map::erase</em></span>
+    </span></dt><dd><p>Add additional overloads.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2067" target="_top">2067</a>:
+	<span class="emphasis"><em>packaged_task should have deleted copy c'tor with const parameter</em></span>
+    </span></dt><dd><p>Fix signatures.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2101" target="_top">2101</a>:
+	<span class="emphasis"><em>Some transformation types can produce impossible types</em></span>
+    </span></dt><dd><p>Use the referenceable type concept.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2106" target="_top">2106</a>:
+	<span class="emphasis"><em>move_iterator wrapping iterators returning prvalues</em></span>
+    </span></dt><dd><p>Change the <code class="code">reference</code> type.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2132" target="_top">2132</a>:
+	<span class="emphasis"><em><code class="code">std::function</code> ambiguity</em></span>
+    </span></dt><dd><p>Constrain the constructor to only accept callable types.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2141" target="_top">2141</a>:
+	<span class="emphasis"><em><code class="code">common_type</code> trait produces reference types</em></span>
+    </span></dt><dd><p>Use <code class="code">decay</code> for the result type.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2144" target="_top">2144</a>:
+	<span class="emphasis"><em>Missing <code class="code">noexcept</code> specification in <code class="code">type_index</code></em></span>
+    </span></dt><dd><p>Add <code class="code">noexcept</code>
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2145" target="_top">2145</a>:
+	<span class="emphasis"><em><code class="code">error_category</code> default constructor</em></span>
+    </span></dt><dd><p>Declare a public constexpr constructor.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2162" target="_top">2162</a>:
+	<span class="emphasis"><em><code class="code">allocator_traits::max_size</code> missing <code class="code">noexcept</code></em></span>
+    </span></dt><dd><p>Add <code class="code">noexcept</code>.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2187" target="_top">2187</a>:
+	<span class="emphasis"><em><code class="code">vector&lt;bool&gt;</code> is missing <code class="code">emplace</code> and <code class="code">emplace_back</code> member functions</em></span>
+    </span></dt><dd><p>Add <code class="code">emplace</code> and <code class="code">emplace_back</code> member functions.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2196" target="_top">2196</a>:
+	<span class="emphasis"><em>Specification of <code class="code">is_*[copy/move]_[constructible/assignable]</code> unclear for non-referencable types</em></span>
+    </span></dt><dd><p>Use the referenceable type concept.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2313" target="_top">2313</a>:
+	<span class="emphasis"><em><code class="code">tuple_size</code> should always derive from <code class="code">integral_constant&lt;size_t, N&gt;</code></em></span>
+    </span></dt><dd><p>Update definitions of the partial specializations for const and volatile types.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2329" target="_top">2329</a>:
+       <span class="emphasis"><em><code class="code">regex_match()/regex_search()</code> with <code class="code">match_results</code> should forbid temporary strings</em></span>
+    </span></dt><dd><p>Add deleted overloads for rvalue strings.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2332" target="_top">2332</a>:
+       <span class="emphasis"><em><code class="code">regex_iterator/regex_token_iterator</code> should forbid temporary regexes</em></span>
+    </span></dt><dd><p>Add deleted constructors.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2399" target="_top">2399</a>:
+	<span class="emphasis"><em><code class="code">shared_ptr</code>'s constructor from <code class="code">unique_ptr</code> should be constrained</em></span>
+    </span></dt><dd><p>Constrain the constructor to require convertibility.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2400" target="_top">2400</a>:
+	<span class="emphasis"><em><code class="code">shared_ptr</code>'s <code class="code">get_deleter()</code> should use <code class="code">addressof()</code></em></span>
+    </span></dt><dd><p>Use <code class="code">addressof</code>.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2401" target="_top">2401</a>:
+	<span class="emphasis"><em><code class="code">std::function</code> needs more <code class="code">noexcept</code></em></span>
+    </span></dt><dd><p>Add <code class="code">noexcept</code> to the assignment and comparisons.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2455" target="_top">2455</a>:
+       <span class="emphasis"><em>Allocator default construction should be allowed to throw
+       </em></span>
+    </span></dt><dd><p>Make <code class="code">noexcept</code> specifications conditional.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>

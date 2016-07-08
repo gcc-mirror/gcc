@@ -640,6 +640,12 @@ requirements of the license of GCC.
     <listitem><para>Implement the resolution, basically cast less.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#445">445</link>:
+	<emphasis>iterator_traits::reference unspecified for some iterator categories</emphasis>
+    </term>
+    <listitem><para>Change <code>istreambuf_iterator::reference</code> in C++11 mode.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#453">453</link>:
 	<emphasis>basic_stringbuf::seekoff need not always fail for an empty stream</emphasis>
     </term>
@@ -657,6 +663,12 @@ requirements of the license of GCC.
     </term>
     <listitem><para>Add <code>data()</code> to <code>std::vector</code> and
 	<code>at(const key_type&amp;)</code> to <code>std::map</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#467">467</link>:
+	<emphasis>char_traits::lt(), compare(), and memcmp()</emphasis>
+    </term>
+    <listitem><para>Change <code>lt</code>.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#508">508</link>:
@@ -809,6 +821,128 @@ requirements of the license of GCC.
     </term>
     <listitem><para>Return the end of the filled range.
     </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2049">2049</link>:
+	<emphasis><code>is_destructible</code> underspecified</emphasis>
+    </term>
+    <listitem><para>Handle non-object types.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2056">2056</link>:
+	<emphasis>future_errc enums start with value 0 (invalid value for broken_promise)</emphasis>
+    </term>
+    <listitem><para>Reorder enumerators.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2059">2059</link>:
+	<emphasis>C++0x ambiguity problem with map::erase</emphasis>
+    </term>
+    <listitem><para>Add additional overloads.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2067">2067</link>:
+	<emphasis>packaged_task should have deleted copy c'tor with const parameter</emphasis>
+    </term>
+    <listitem><para>Fix signatures.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2101">2101</link>:
+	<emphasis>Some transformation types can produce impossible types</emphasis>
+    </term>
+    <listitem><para>Use the referenceable type concept.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2106">2106</link>:
+	<emphasis>move_iterator wrapping iterators returning prvalues</emphasis>
+    </term>
+    <listitem><para>Change the <code>reference</code> type.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2132">2132</link>:
+	<emphasis><code>std::function</code> ambiguity</emphasis>
+    </term>
+    <listitem><para>Constrain the constructor to only accept callable types.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2141">2141</link>:
+	<emphasis><code>common_type</code> trait produces reference types</emphasis>
+    </term>
+    <listitem><para>Use <code>decay</code> for the result type.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2144">2144</link>:
+	<emphasis>Missing <code>noexcept</code> specification in <code>type_index</code></emphasis>
+    </term>
+    <listitem><para>Add <code>noexcept</code>
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2145">2145</link>:
+	<emphasis><code>error_category</code> default constructor</emphasis>
+    </term>
+    <listitem><para>Declare a public constexpr constructor.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2162">2162</link>:
+	<emphasis><code>allocator_traits::max_size</code> missing <code>noexcept</code></emphasis>
+    </term>
+    <listitem><para>Add <code>noexcept</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2187">2187</link>:
+	<emphasis><code>vector&lt;bool&gt;</code> is missing <code>emplace</code> and <code>emplace_back</code> member functions</emphasis>
+    </term>
+    <listitem><para>Add <code>emplace</code> and <code>emplace_back</code> member functions.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2196">2196</link>:
+	<emphasis>Specification of <code>is_*[copy/move]_[constructible/assignable]</code> unclear for non-referencable types</emphasis>
+    </term>
+    <listitem><para>Use the referenceable type concept.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2313">2313</link>:
+	<emphasis><code>tuple_size</code> should always derive from <code>integral_constant&lt;size_t, N&gt;</code></emphasis>
+    </term>
+    <listitem><para>Update definitions of the partial specializations for const and volatile types.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2329">2329</link>:
+       <emphasis><code>regex_match()/regex_search()</code> with <code>match_results</code> should forbid temporary strings</emphasis>
+    </term>
+    <listitem><para>Add deleted overloads for rvalue strings.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2332">2332</link>:
+       <emphasis><code>regex_iterator/regex_token_iterator</code> should forbid temporary regexes</emphasis>
+    </term>
+    <listitem><para>Add deleted constructors.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2399">2399</link>:
+	<emphasis><code>shared_ptr</code>'s constructor from <code>unique_ptr</code> should be constrained</emphasis>
+    </term>
+    <listitem><para>Constrain the constructor to require convertibility.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2400">2400</link>:
+	<emphasis><code>shared_ptr</code>'s <code>get_deleter()</code> should use <code>addressof()</code></emphasis>
+    </term>
+    <listitem><para>Use <code>addressof</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2401">2401</link>:
+	<emphasis><code>std::function</code> needs more <code>noexcept</code></emphasis>
+    </term>
+    <listitem><para>Add <code>noexcept</code> to the assignment and comparisons.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2455">2455</link>:
+       <emphasis>Allocator default construction should be allowed to throw
+       </emphasis>
+    </term>
+    <listitem><para>Make <code>noexcept</code> specifications conditional.
+    </para></listitem></varlistentry>
+
 
   </variablelist>
 
