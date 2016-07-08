@@ -929,7 +929,8 @@ is active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @opindex @code{Wundefined-do-loop}
 @cindex warnings, undefined do loop
 Warn if a DO loop with step either 1 or -1 yields an underflow or an overflow
-during iteration of an induction variable of the loop.  Enabled by default.
+during iteration of an induction variable of the loop.
+This option is implied by @option{-Wall}.
 
 @item -Wunderflow
 @opindex @code{Wunderflow}
