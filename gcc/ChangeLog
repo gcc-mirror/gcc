@@ -1,3 +1,9 @@
+2016-07-08  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/71606
+	* fold-const.c (fold_convertible_p): As COMPLEX_TYPE
+	folding produces SAVE_EXPRs, thus return false for the type.
+
 2016-07-07  Martin Liska  <mliska@suse.cz>
 
 	* file-find.c (remove_prefix): New function.

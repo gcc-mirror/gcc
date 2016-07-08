@@ -1,3 +1,7 @@
+2016-07-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/torture/pr71606.c: New test.
+
 2016-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/71764
