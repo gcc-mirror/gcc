@@ -904,6 +904,8 @@ maybe_add_lambda_conv_op (tree type)
   tree optype = TREE_TYPE (callop);
   tree fn_result = TREE_TYPE (optype);
 
+  tree thisarg = build_nop (TREE_TYPE (DECL_ARGUMENTS (callop)),
+			    null_pointer_node);
   if (generic_lambda_p)
     {
       /* Prepare the dependent member call for the static member function
@@ -911,7 +913,8 @@ maybe_add_lambda_conv_op (tree type)
 	 return expression for a deduced return call op to allow for simple
 	 implementation of the conversion operator.  */
 
-      tree instance = build_nop (type, null_pointer_node);
+      tree instance = cp_build_indirect_ref (thisarg, RO_NULL,
+					     tf_warning_or_error);
       tree objfn = build_min (COMPONENT_REF, NULL_TREE,
 			      instance, DECL_NAME (callop), NULL_TREE);
       int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
@@ -923,9 +926,7 @@ maybe_add_lambda_conv_op (tree type)
   else
     {
       direct_argvec = make_tree_vector ();
-      direct_argvec->quick_push (build1 (NOP_EXPR,
-					 TREE_TYPE (DECL_ARGUMENTS (callop)),
-					 null_pointer_node));
+      direct_argvec->quick_push (thisarg);
     }
 
   /* Copy CALLOP's argument list (as per 'copy_list') as FN_ARGS in order to
