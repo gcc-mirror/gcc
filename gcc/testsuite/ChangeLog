@@ -1,3 +1,10 @@
+2016-07-08  Martin Liska  <mliska@suse.cz>
+
+	Backported from mainline
+	2016-07-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/torture/pr71606.c: New test.
+
 2016-07-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/69019
