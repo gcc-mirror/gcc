@@ -4381,24 +4381,27 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128 | OPTION_MASK_FLOAT128_HW);
     }
 
+  /* If we have -mfloat128 and full ISA 3.0 support, enable -mfloat128-hardware
+     by default.  */
+  if (TARGET_FLOAT128 && !TARGET_FLOAT128_HW
+      && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) == ISA_3_0_MASKS_IEEE
+      && !(rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW))
+    {
+      rs6000_isa_flags |= OPTION_MASK_FLOAT128_HW;
+      if ((rs6000_isa_flags & OPTION_MASK_FLOAT128) != 0)
+	rs6000_isa_flags_explicit |= OPTION_MASK_FLOAT128_HW;
+    }
+
   /* IEEE 128-bit floating point hardware instructions imply enabling
      __float128.  */
   if (TARGET_FLOAT128_HW
-      && (rs6000_isa_flags & (OPTION_MASK_P9_VECTOR
-			      | OPTION_MASK_DIRECT_MOVE
-			      | OPTION_MASK_UPPER_REGS_DI
-			      | OPTION_MASK_UPPER_REGS_DF
-			      | OPTION_MASK_UPPER_REGS_SF)) == 0)
+      && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) != ISA_3_0_MASKS_IEEE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
 	error ("-mfloat128-hardware requires full ISA 3.0 support");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
-
-  else if (TARGET_P9_VECTOR && !TARGET_FLOAT128_HW
-	   && (rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) == 0)
-    rs6000_isa_flags |= OPTION_MASK_FLOAT128_HW;
 
   if (TARGET_FLOAT128_HW
       && (rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128) == 0)

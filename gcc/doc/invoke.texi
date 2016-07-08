@@ -20355,8 +20355,13 @@ hardware instructions.
 
 The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7}, or
 @option{-mcpu=power8}) must be enabled to use the @option{-mfloat128}
-option.  The @code{-mfloat128} option only works on PowerPC 64-bit
+option.  The @option{-mfloat128} option only works on PowerPC 64-bit
 Linux systems.
+
+If you use the ISA 3.0 instruction set (@option{-mcpu=power9}), the
+@option{-mfloat128} option will also enable the generation of ISA 3.0
+IEEE 128-bit floating point instructions.  Otherwise, IEEE 128-bit
+floating point will be done with software emulation.
 
 @item -mfloat128-hardware
 @itemx -mno-float128-hardware
@@ -20364,6 +20369,13 @@ Linux systems.
 @opindex mno-float128-hardware
 Enable/disable using ISA 3.0 hardware instructions to support the
 @var{__float128} data type.
+
+If you use @option{-mfloat128-hardware}, it will enable the option
+@option{-mfloat128} as well.
+
+If you select ISA 3.0 instructions with @option{-mcpu=power9}, but do
+not use either @option{-mfloat128} or @option{-mfloat128-hardware},
+the IEEE 128-bit floating point support will not be enabled.
 
 @item -mmodulo
 @itemx -mno-modulo
