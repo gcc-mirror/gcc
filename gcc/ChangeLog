@@ -1,3 +1,11 @@
+2016-07-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (BU_P9_MISC_1): Remove
+	redundant and erroneous definition of this macro accidentally
+	inserted during backporting.
+	(BU_P9_64BIT_MISC_0): Likewise.
+	(BU_P9_MISC_0): Likewise.
+
 2016-07-08  Jiong Wang  <jiong.wang@arm.com>
 
 	Back port from the trunk
