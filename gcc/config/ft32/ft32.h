@@ -506,4 +506,14 @@ do { \
 
 extern int ft32_is_mem_pm(rtx o);
 
+#define ASM_OUTPUT_SYMBOL_REF(stream, sym) \
+  do { \
+    assemble_name (stream, XSTR (sym, 0)); \
+    int section_debug = in_section && \
+      (SECTION_STYLE (in_section) == SECTION_NAMED) && \
+      (in_section->named.common.flags & SECTION_DEBUG); \
+    if (!section_debug && SYMBOL_REF_FLAGS (sym) & 0x1000) \
+      asm_fprintf (stream, "-0x800000"); \
+  } while (0)
+
 #endif /* GCC_FT32_H */
