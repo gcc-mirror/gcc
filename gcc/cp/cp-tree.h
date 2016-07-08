@@ -6515,7 +6515,7 @@ extern tree copy_binfo				(tree, tree, tree,
 extern int member_p				(const_tree);
 extern cp_lvalue_kind real_lvalue_p		(const_tree);
 extern cp_lvalue_kind lvalue_kind		(const_tree);
-extern bool lvalue_or_rvalue_with_address_p	(const_tree);
+extern bool glvalue_p				(const_tree);
 extern bool xvalue_p	                        (const_tree);
 extern tree cp_stabilize_reference		(tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);

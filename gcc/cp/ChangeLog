@@ -1,5 +1,8 @@
 2016-07-08  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (glvalue_p): Rename from lvalue_or_rvalue_with_address_p.
+	* call.c, cp-tree.h, typeck.c: Adjust.
+
 	* lambda.c (maybe_add_lambda_conv_op): Fix null object argument.
 
 	P0145R2: Refining Expression Order for C++.

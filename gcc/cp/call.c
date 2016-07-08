@@ -4549,7 +4549,7 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
      If E2 is an xvalue: E1 can be converted to match E2 if E1 can be
      implicitly converted to the type "rvalue reference to T2", subject to
      the constraint that the reference must bind directly.  */
-  if (lvalue_or_rvalue_with_address_p (e2))
+  if (glvalue_p (e2))
     {
       tree rtype = cp_build_reference_type (t2, !real_lvalue_p (e2));
       conv = implicit_conversion (rtype,
@@ -4882,8 +4882,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	    && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)
 		|| (same_type_ignoring_top_level_qualifiers_p (arg2_type,
 							       arg3_type)
-		    && lvalue_or_rvalue_with_address_p (arg2)
-		    && lvalue_or_rvalue_with_address_p (arg3)
+		    && glvalue_p (arg2) && glvalue_p (arg3)
 		    && real_lvalue_p (arg2) == real_lvalue_p (arg3))))
     {
       conversion *conv2;
