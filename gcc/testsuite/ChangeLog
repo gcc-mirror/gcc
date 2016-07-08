@@ -1,3 +1,8 @@
+2016-07-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/71297
+	* gcc.target/powerpc/pr71297.c: New.
+
 2016-07-08  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/simd/vminmaxnm_1.c: New.
