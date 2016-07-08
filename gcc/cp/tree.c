@@ -266,20 +266,10 @@ real_lvalue_p (const_tree ref)
     return kind;
 }
 
-/* This differs from real_lvalue_p in that class rvalues are considered
-   lvalues.  */
+/* This differs from real_lvalue_p in that xvalues are included.  */
 
 bool
-lvalue_p (const_tree ref)
-{
-  return (lvalue_kind (ref) != clk_none);
-}
-
-/* This differs from real_lvalue_p in that rvalues formed by dereferencing
-   rvalue references are considered rvalues.  */
-
-bool
-lvalue_or_rvalue_with_address_p (const_tree ref)
+glvalue_p (const_tree ref)
 {
   cp_lvalue_kind kind = lvalue_kind (ref);
   if (kind & clk_class)
@@ -288,7 +278,16 @@ lvalue_or_rvalue_with_address_p (const_tree ref)
     return (kind != clk_none);
 }
 
-/* Returns true if REF is an xvalue, false otherwise.  */
+/* This differs from glvalue_p in that class prvalues are included.  */
+
+bool
+lvalue_p (const_tree ref)
+{
+  return (lvalue_kind (ref) != clk_none);
+}
+
+/* Returns true if REF is an xvalue (the result of dereferencing an rvalue
+   reference), false otherwise.  */
 
 bool
 xvalue_p (const_tree ref)
@@ -781,7 +780,7 @@ rvalue (tree expr)
 
   /* We need to do this for rvalue refs as well to get the right answer
      from decltype; see c++/36628.  */
-  if (!processing_template_decl && lvalue_or_rvalue_with_address_p (expr))
+  if (!processing_template_decl && glvalue_p (expr))
     expr = build1 (NON_LVALUE_EXPR, type, expr);
   else if (type != TREE_TYPE (expr))
     expr = build_nop (type, expr);
@@ -4260,7 +4259,7 @@ stabilize_expr (tree exp, tree* initp)
      arguments with such a type; just treat it as a pointer.  */
   else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
 	   || SCALAR_TYPE_P (TREE_TYPE (exp))
-	   || !lvalue_or_rvalue_with_address_p (exp))
+	   || !glvalue_p (exp))
     {
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
@@ -4388,7 +4387,7 @@ stabilize_init (tree init, tree *initp)
       && TREE_CODE (t) != CONSTRUCTOR
       && TREE_CODE (t) != AGGR_INIT_EXPR
       && (SCALAR_TYPE_P (TREE_TYPE (t))
-	  || lvalue_or_rvalue_with_address_p (t)))
+	  || glvalue_p (t)))
     {
       TREE_OPERAND (init, 1) = stabilize_expr (t, initp);
       return true;

@@ -6302,8 +6302,7 @@ build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2,
       tree min = build_min_non_dep (COND_EXPR, expr,
 				    orig_ifexp, orig_op1, orig_op2);
       /* Remember that the result is an lvalue or xvalue.  */
-      if (lvalue_or_rvalue_with_address_p (expr)
-	  && !lvalue_or_rvalue_with_address_p (min))
+      if (glvalue_p (expr) && !glvalue_p (min))
 	TREE_TYPE (min) = cp_build_reference_type (TREE_TYPE (min),
 						   !real_lvalue_p (expr));
       expr = convert_from_reference (min);
@@ -7243,7 +7242,7 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 	  ? real_lvalue_p (expr)
 	  : (CLASS_TYPE_P (TREE_TYPE (dst_type))
 	     ? lvalue_p (expr)
-	     : lvalue_or_rvalue_with_address_p (expr)))
+	     : glvalue_p (expr)))
 	/* OK.  */;
       else
 	{
