@@ -1,6 +1,6 @@
 // P0145R2: Refining Expression Order for C++
 // { dg-do run }
-// { dg-options "-std=c++1z -fargs-in-order=1" }
+// { dg-options "-std=c++1z" }
 
 extern "C" int printf (const char *, ...);
 void sink(...) { }

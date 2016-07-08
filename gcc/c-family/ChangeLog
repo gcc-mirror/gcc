@@ -1,3 +1,9 @@
+2016-07-08  Jason Merrill  <jason@redhat.com>
+
+	P0145: Refining Expression Order for C++.
+	* c.opts (-fargs-in-order): Rename to -fstrong-eval-order.
+	* c-opts.c: Adjust.
+
 2016-07-05  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR c++/71214

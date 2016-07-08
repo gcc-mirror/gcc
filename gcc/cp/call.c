@@ -5378,14 +5378,15 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 static int
 op_is_ordered (tree_code code)
 {
-  if (!flag_args_in_order)
-    return 0;
-
   switch (code)
     {
       // 5. b @= a
     case MODIFY_EXPR:
-      return -1;
+      return (flag_strong_eval_order > 1 ? -1 : 0);
+
+      // 6. a[b]
+    case ARRAY_REF:
+      return (flag_strong_eval_order > 1 ? 1 : 0);
 
       // 1. a.b
       // Not overloadable (yet).
@@ -5393,13 +5394,11 @@ op_is_ordered (tree_code code)
       // Only one argument.
       // 3. a->*b
     case MEMBER_REF:
-      // 6. a[b]
-    case ARRAY_REF:
       // 7. a << b
     case LSHIFT_EXPR:
       // 8. a >> b
     case RSHIFT_EXPR:
-      return 1;
+      return (flag_strong_eval_order ? 1 : 0);
 
     default:
       return 0;
@@ -7830,9 +7829,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
   tree call = build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
   if (call != error_mark_node
-      && !magic
-      && (flag_args_in_order > 1
-	  || (cand->flags & LOOKUP_LIST_INIT_CTOR)))
+      && cand->flags & LOOKUP_LIST_INIT_CTOR)
     {
       tree c = extract_call_expr (call);
       /* build_new_op_1 will clear this when appropriate.  */
