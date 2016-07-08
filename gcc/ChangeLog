@@ -1,3 +1,12 @@
+2016-07-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline r237912
+	2016-07-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.md (*altivec_vpermr_<mode>_internal):
+	Exchange the order of the second and third operands in the vpermr
+	instruction tmeplate.
+
 2016-07-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from the trunk

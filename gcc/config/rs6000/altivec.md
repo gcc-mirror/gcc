@@ -2072,7 +2072,7 @@
 		   UNSPEC_VPERMR))]
   "TARGET_P9_VECTOR"
   "@
-   vpermr %0,%1,%2,%3
+   vpermr %0,%2,%1,%3
    xxpermr %x0,%x2,%x3"
   [(set_attr "type" "vecperm")
    (set_attr "length" "4")])
