@@ -1,5 +1,10 @@
 2016-07-08  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h: Unpoison lvalue_p.
+	* call.c, class.c, constexpr.c, cvt.c, init.c, lambda.c, pt.c,
+	tree.c, typeck.c, typeck2.c: Use lvalue_p instead of
+	real_lvalue_p.
+
 	* tree.c (obvalue_p): Rename from lvalue_p.
 	(lvalue_p): Define for c-common.
 	* call.c, cp-tree.h, cvt.c, init.c: Adjust.

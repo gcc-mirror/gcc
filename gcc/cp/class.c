@@ -347,7 +347,7 @@ build_base_path (enum tree_code code,
 
   if (!want_pointer)
     {
-      rvalue = !real_lvalue_p (expr);
+      rvalue = !lvalue_p (expr);
       /* This must happen before the call to save_expr.  */
       expr = cp_build_addr_expr (expr, complain);
     }

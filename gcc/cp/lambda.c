@@ -489,7 +489,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
       if (by_reference_p)
 	{
 	  type = build_reference_type (type);
-	  if (!dependent_type_p (type) && !real_lvalue_p (initializer))
+	  if (!dependent_type_p (type) && !lvalue_p (initializer))
 	    error ("cannot capture %qE by reference", initializer);
 	}
       else

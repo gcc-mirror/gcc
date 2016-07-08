@@ -3750,7 +3750,7 @@ static bool
 vec_copy_assign_is_trivial (tree inner_elt_type, tree init)
 {
   tree fromtype = inner_elt_type;
-  if (real_lvalue_p (init))
+  if (lvalue_p (init))
     fromtype = cp_build_reference_type (fromtype, /*rval*/false);
   return is_trivially_xible (MODIFY_EXPR, inner_elt_type, fromtype);
 }

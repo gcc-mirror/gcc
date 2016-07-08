@@ -2925,7 +2925,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 
 	  if (code == COND_EXPR)
 	    {
-	      if (real_lvalue_p (args[i]))
+	      if (lvalue_p (args[i]))
 		vec_safe_push (types[i], build_reference_type (argtypes[i]));
 
 	      vec_safe_push (types[i], TYPE_MAIN_VARIANT (argtypes[i]));
@@ -2962,7 +2962,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	}
       else
 	{
-	  if (code == COND_EXPR && real_lvalue_p (args[i]))
+	  if (code == COND_EXPR && lvalue_p (args[i]))
 	    vec_safe_push (types[i], build_reference_type (argtypes[i]));
 	  type = non_reference (argtypes[i]);
 	  if (i != 0 || ! ref1)
@@ -4554,7 +4554,7 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
      the constraint that the reference must bind directly.  */
   if (glvalue_p (e2))
     {
-      tree rtype = cp_build_reference_type (t2, !real_lvalue_p (e2));
+      tree rtype = cp_build_reference_type (t2, !lvalue_p (e2));
       conv = implicit_conversion (rtype,
 				  t1,
 				  e1,
@@ -4619,7 +4619,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   tree arg3_type;
   tree result = NULL_TREE;
   tree result_type = NULL_TREE;
-  bool lvalue_p = true;
+  bool is_lvalue = true;
   struct z_candidate *candidates = 0;
   struct z_candidate *cand;
   void *p;
@@ -4636,7 +4636,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 		 "ISO C++ forbids omitting the middle term of a ?: expression");
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
-      if (real_lvalue_p (arg1))
+      if (lvalue_p (arg1))
 	arg2 = arg1 = cp_stabilize_reference (arg1);
       else
 	arg2 = arg1 = save_expr (arg1);
@@ -4871,7 +4871,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  return error_mark_node;
 	}
 
-      lvalue_p = false;
+      is_lvalue = false;
       goto valid_operands;
     }
   /* [expr.cond]
@@ -4886,7 +4886,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 		|| (same_type_ignoring_top_level_qualifiers_p (arg2_type,
 							       arg3_type)
 		    && glvalue_p (arg2) && glvalue_p (arg3)
-		    && real_lvalue_p (arg2) == real_lvalue_p (arg3))))
+		    && lvalue_p (arg2) == lvalue_p (arg3))))
     {
       conversion *conv2;
       conversion *conv3;
@@ -4984,7 +4984,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
      If the second and third operands are glvalues of the same value
      category and have the same type, the result is of that type and
      value category.  */
-  if (((real_lvalue_p (arg2) && real_lvalue_p (arg3))
+  if (((lvalue_p (arg2) && lvalue_p (arg3))
        || (xvalue_p (arg2) && xvalue_p (arg3)))
       && same_type_p (arg2_type, arg3_type))
     {
@@ -5001,7 +5001,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
      cv-qualified) class type, overload resolution is used to
      determine the conversions (if any) to be applied to the operands
      (_over.match.oper_, _over.built_).  */
-  lvalue_p = false;
+  is_lvalue = false;
   if (!same_type_p (arg2_type, arg3_type)
       && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)))
     {
@@ -5187,7 +5187,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 
-  if (!lvalue_p)
+  if (!is_lvalue)
     {
       /* Expand both sides into the same slot, hopefully the target of
 	 the ?: expression.  We used to check for TARGET_EXPRs here,
@@ -6694,10 +6694,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  {
 	    tree extype = TREE_TYPE (expr);
 	    if (TYPE_REF_IS_RVALUE (ref_type)
-		&& real_lvalue_p (expr))
+		&& lvalue_p (expr))
 	      error_at (loc, "cannot bind %qT lvalue to %qT",
 			extype, totype);
-	    else if (!TYPE_REF_IS_RVALUE (ref_type) && !real_lvalue_p (expr)
+	    else if (!TYPE_REF_IS_RVALUE (ref_type) && !lvalue_p (expr)
 		     && !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (ref_type)))
 	      error_at (loc, "invalid initialization of non-const reference of "
 			"type %qT from an rvalue of type %qT", totype, extype);
@@ -10042,7 +10042,7 @@ initialize_reference (tree type, tree expr,
 	    convert_like (conv, expr, complain);
 	  else if (!CP_TYPE_CONST_P (TREE_TYPE (type))
 		   && !TYPE_REF_IS_RVALUE (type)
-		   && !real_lvalue_p (expr))
+		   && !lvalue_p (expr))
 	    error_at (loc, "invalid initialization of non-const reference of "
 		      "type %qT from an rvalue of type %qT",
 		      type, TREE_TYPE (expr));
