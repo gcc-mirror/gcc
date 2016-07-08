@@ -1,5 +1,7 @@
 2016-07-08  Jason Merrill  <jason@redhat.com>
 
+	* lambda.c (maybe_add_lambda_conv_op): Fix null object argument.
+
 	P0145R2: Refining Expression Order for C++.
 	* cp-gimplify.c (lvalue_has_side_effects): New.
 	(cp_gimplify_expr): Implement assignment ordering.
