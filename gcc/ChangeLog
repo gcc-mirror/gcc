@@ -1,3 +1,9 @@
+2016-07-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/71621
+	* lra-constraints.c (process_alt_operands): Check combination of
+	reg class and mode.
+
 2016-06-25  Jason Merrill  <jason@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
