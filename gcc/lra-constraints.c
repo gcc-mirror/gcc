@@ -2261,6 +2261,41 @@ process_alt_operands (int only_alternative)
 		  goto fail;
 		}
 
+	      if (this_alternative != NO_REGS)
+		{
+		  HARD_REG_SET available_regs;
+		  
+		  COPY_HARD_REG_SET (available_regs,
+				     reg_class_contents[this_alternative]);
+		  AND_COMPL_HARD_REG_SET
+		    (available_regs,
+		     ira_prohibited_class_mode_regs[this_alternative][mode]);
+		  AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
+		  if (hard_reg_set_empty_p (available_regs))
+		    {
+		      /* There are no hard regs holding a value of given
+			 mode.  */
+		      if (offmemok)
+			{
+			  this_alternative = NO_REGS;
+			  if (lra_dump_file != NULL)
+			    fprintf (lra_dump_file,
+				     "            %d Using memory because of"
+				     " a bad mode: reject+=2\n",
+				     nop);
+			  reject += 2;
+			}
+		      else
+			{
+			  if (lra_dump_file != NULL)
+			    fprintf (lra_dump_file,
+				     "            alt=%d: Wrong mode -- refuse\n",
+				     nalt);
+			  goto fail;
+			}
+		    }
+		}
+
 	      /* If not assigned pseudo has a class which a subset of
 		 required reg class, it is a less costly alternative
 		 as the pseudo still can get a hard reg of necessary
