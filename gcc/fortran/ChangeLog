@@ -1,3 +1,11 @@
+2016-07-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parse.c (matcha): Define.
+	(decode_oacc_directive): Add spec_only local var and set it.  Use
+	matcha to parse acc directives except for routine and declare.  Return
+	ST_GET_FCN_CHARACTERISTICS if a non-declarative directive could be
+	matched.
+
 2016-07-08  Martin Liska  <mliska@suse.cz>
 
 	* invoke.texi (Wundefined-do-loop): Enhance documentation.
