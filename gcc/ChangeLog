@@ -1,3 +1,17 @@
+2016-07-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71806
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Do not
+	enable -mfloat128-hardware by default.
+	(ISA_3_0_MASKS_IEEE): New macro to give all of the VSX options
+	that IEEE 128-bit hardware support needs.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If
+	-mcpu=power9 -mfloat128, enable -mfloat128-hardware by default.
+	Use ISA_3_0_MASKS_IEEE as the set of options that IEEE 128-bit
+	floating point requires.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mfloat128 and -mfloat128-hardware changes.
+
 2016-07-08  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71667
