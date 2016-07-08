@@ -1,3 +1,8 @@
+2016-07-08  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/ft32.c (ft32_elf_encode_section_info): New function.
+	* config/ft32/ft32.h (ASM_OUTPUT_SYMBOL_REF): New function.
+
 2016-07-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/71621
