@@ -559,6 +559,33 @@ simple_empty_class_p (tree type, tree op)
     && is_really_empty_class (type);
 }
 
+/* Returns true if evaluating E as an lvalue has side-effects;
+   specifically, a volatile lvalue has TREE_SIDE_EFFECTS, but it doesn't really
+   have side-effects until there is a read or write through it.  */
+
+static bool
+lvalue_has_side_effects (tree e)
+{
+  if (!TREE_SIDE_EFFECTS (e))
+    return false;
+  while (handled_component_p (e))
+    {
+      if (TREE_CODE (e) == ARRAY_REF
+	  && TREE_SIDE_EFFECTS (TREE_OPERAND (e, 1)))
+	return true;
+      e = TREE_OPERAND (e, 0);
+    }
+  if (DECL_P (e))
+    /* Just naming a variable has no side-effects.  */
+    return false;
+  else if (INDIRECT_REF_P (e))
+    /* Similarly, indirection has no side-effects.  */
+    return TREE_SIDE_EFFECTS (TREE_OPERAND (e, 0));
+  else
+    /* For anything else, trust TREE_SIDE_EFFECTS.  */
+    return TREE_SIDE_EFFECTS (e);
+}
+
 /* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
 
 int
@@ -659,8 +686,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    /* Remove any copies of empty classes.  Also drop volatile
 	       variables on the RHS to avoid infinite recursion from
 	       gimplify_expr trying to load the value.  */
-	    gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-			   is_gimple_lvalue, fb_lvalue);
 	    if (TREE_SIDE_EFFECTS (op1))
 	      {
 		if (TREE_THIS_VOLATILE (op1)
@@ -669,8 +694,29 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
 		gimplify_and_add (op1, pre_p);
 	      }
+	    gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
+			   is_gimple_lvalue, fb_lvalue);
 	    *expr_p = TREE_OPERAND (*expr_p, 0);
 	  }
+	/* P0145 says that the RHS is sequenced before the LHS.
+	   gimplify_modify_expr gimplifies the RHS before the LHS, but that
+	   isn't quite strong enough in two cases:
+
+	   1) gimplify.c wants to leave a CALL_EXPR on the RHS, which would
+	   mean it's evaluated after the LHS.
+
+	   2) the value calculation of the RHS is also sequenced before the
+	   LHS, so for scalar assignment we need to preevaluate if the
+	   RHS could be affected by LHS side-effects even if it has no
+	   side-effects of its own.  We don't need this for classes because
+	   class assignment takes its RHS by reference.  */
+       else if (flag_strong_eval_order > 1
+                && TREE_CODE (*expr_p) == MODIFY_EXPR
+                && lvalue_has_side_effects (op0)
+		&& (TREE_CODE (op1) == CALL_EXPR
+		    || (SCALAR_TYPE_P (TREE_TYPE (op1))
+			&& !TREE_CONSTANT (op1))))
+	 TREE_OPERAND (*expr_p, 1) = get_formal_tmp_var (op1, pre_p);
       }
       ret = GS_OK;
       break;
