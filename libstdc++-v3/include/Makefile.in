@@ -343,6 +343,7 @@ std_headers = \
 	${std_srcdir}/memory \
 	${std_srcdir}/mutex \
 	${std_srcdir}/numeric \
+	${std_srcdir}/optional \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
