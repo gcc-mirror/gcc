@@ -1,3 +1,9 @@
+2016-07-11  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (UNSPEC_DOLOOP): New unspec.
+	(ctr<mode>): Add unspec.
+	(ctr<mode>_internal*): Likewise.
+
 2016-07-08  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/ft32.c (ft32_elf_encode_section_info): New function.
