@@ -1,3 +1,19 @@
+2016-07-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_vector.h (push_back(const value_type&)): Forward
+	to _M_realloc_insert.
+	(insert(const_iterator, value_type&&)): Forward to _M_insert_rval.
+	(_M_realloc_insert): Declare new function.
+	(_M_emplace_back_aux): Remove definition.
+	* include/bits/vector.tcc (emplace_back(_Args...)):
+	Use _M_realloc_insert.
+	(insert(const_iterator, const value_type&)): Likewise.
+	(_M_insert_rval, _M_emplace_aux): Likewise.
+	(_M_emplace_back_aux): Remove declaration.
+	(_M_realloc_insert): Define.
+	* testsuite/23_containers/vector/modifiers/insert_vs_emplace.cc:
+	Adjust expected results for emplacing an lvalue with reallocation.
+
 2016-07-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement std::optional.
