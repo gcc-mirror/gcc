@@ -946,11 +946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    ++this->_M_impl._M_finish;
 	  }
 	else
-#if __cplusplus >= 201103L
-	  _M_emplace_back_aux(__x);
-#else
-	  _M_insert_aux(end(), __x);
-#endif
+	  _M_realloc_insert(end(), __x);
       }
 
 #if __cplusplus >= 201103L
@@ -1436,6 +1432,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Called by insert(p,x)
       void
       _M_insert_aux(iterator __position, const value_type& __x);
+
+      void
+      _M_realloc_insert(iterator __position, const value_type& __x);
 #else
       // A value_type object constructed with _Alloc_traits::construct()
       // and destroyed with _Alloc_traits::destroy().
@@ -1469,15 +1468,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	_M_insert_aux(iterator __position, _Arg&& __arg);
 
+      template<typename... _Args>
+	void
+	_M_realloc_insert(iterator __position, _Args&&... __args);
+
       // Either move-construct at the end, or forward to _M_insert_aux.
       iterator
       _M_insert_rval(const_iterator __position, value_type&& __v);
-
-      // Called by push_back(x) and emplace_back(args) when they need to
-      // reallocate.
-      template<typename... _Args>
-	void
-	_M_emplace_back_aux(_Args&&... __args);
 
       // Try to emplace at the end, otherwise forward to _M_insert_aux.
       template<typename... _Args>

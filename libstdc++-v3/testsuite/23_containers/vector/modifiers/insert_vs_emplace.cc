@@ -223,8 +223,7 @@ test03()
 void
 test04()
 {
-  const X::special expected_ins{ 0, 3, 1, 0, 3, 0 };
-  const X::special expected_emp{ 0, 4, 1, 0, 4, 0 };
+  const X::special expected{ 0, 3, 1, 0, 3, 0 };
   X::special ins, emp;
   {
     std::vector<X> v;
@@ -254,8 +253,8 @@ test04()
     // std::cout << "----\n";
     emp = X::sp;
   }
-  VERIFY( ins == expected_ins );
-  VERIFY( emp == expected_emp );
+  VERIFY( ins == emp );
+  VERIFY( ins == expected );
 }
 
 // insert vs emplace xvalue reallocation
