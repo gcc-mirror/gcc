@@ -1,3 +1,9 @@
+2016-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/71817
+	* adaint.c (__gnat_is_read_accessible_file): Add parentheses.
+	(__gnat_is_write_accessible_file): Likewise.
+
 2016-07-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Internal_Init_Call): Subsidiary procedure

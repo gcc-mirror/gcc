@@ -1924,7 +1924,7 @@ __gnat_is_read_accessible_file (char *name)
 #elif defined (__vxworks)
    int fd;
 
-   if (fd = open (name, O_RDONLY, 0) < 0)
+   if ((fd = open (name, O_RDONLY, 0)) < 0)
      return 0;
    close (fd);
    return 1;
@@ -1997,7 +1997,7 @@ __gnat_is_write_accessible_file (char *name)
 #elif defined (__vxworks)
    int fd;
 
-   if (fd = open (name, O_WRONLY, 0) < 0)
+   if ((fd = open (name, O_WRONLY, 0)) < 0)
      return 0;
    close (fd);
    return 1;
