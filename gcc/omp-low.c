@@ -13350,9 +13350,15 @@ expand_omp_target (struct omp_region *region)
       make_edge (else_bb, new_bb, EDGE_FALLTHRU);
 
       device = tmp_var;
+      gsi = gsi_last_bb (new_bb);
+    }
+  else
+    {
+      gsi = gsi_last_bb (new_bb);
+      device = force_gimple_operand_gsi (&gsi, device, true, NULL_TREE,
+					 true, GSI_SAME_STMT);
     }
 
-  gsi = gsi_last_bb (new_bb);
   t = gimple_omp_target_data_arg (entry_stmt);
   if (t == NULL)
     {
