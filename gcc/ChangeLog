@@ -1,3 +1,14 @@
+2016-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (selftest-valgrind): New phony target.
+	* function-tests.c (selftest::build_cfg): Delete pass instances
+	created by the test.
+	(selftest::convert_to_ssa): Likewise.
+	(selftest::test_expansion_to_rtl): Likewise.
+	* tree-cfg.c (selftest::test_linear_chain): Release dominator
+	vectors.
+	(selftest::test_diamond): Likewise.
+
 2016-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71816
