@@ -2430,8 +2430,9 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
      and may be used for scalars in general but not for aggregates.  */
   tree var_decl
     = build_decl (input_location,
-		  (constant_p && const_decl_allowed_p
-		   && !AGGREGATE_TYPE_P (type)) ? CONST_DECL : VAR_DECL,
+		  (constant_p
+		   && const_decl_allowed_p
+		   && !AGGREGATE_TYPE_P (type) ? CONST_DECL : VAR_DECL),
 		  name, type);
 
   /* Detect constants created by the front-end to hold 'reference to function
@@ -2456,9 +2457,20 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
      constant initialization and save any variable elaborations for the
      elaboration routine.  If we are just annotating types, throw away the
      initialization if it isn't a constant.  */
-  if ((extern_flag && !constant_p)
+  if ((extern_flag && init && !constant_p)
       || (type_annotate_only && init && !TREE_CONSTANT (init)))
-    init = NULL_TREE;
+    {
+      init = NULL_TREE;
+
+      /* In LTO mode, also clear TREE_READONLY the same way add_decl_expr
+	 would do it if the initializer was not thrown away here, as the
+	 WPA phase requires a consistent view across compilation units.  */
+      if (const_flag && flag_generate_lto)
+	{
+	  const_flag = false;
+	  DECL_READONLY_ONCE_ELAB (var_decl) = 1;
+	}
+    }
 
   /* At the global level, a non-constant initializer generates elaboration
      statements.  Check that such statements are allowed, that is to say,

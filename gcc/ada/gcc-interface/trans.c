@@ -8012,7 +8012,7 @@ void
 add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 {
   tree type = TREE_TYPE (gnu_decl);
-  tree gnu_stmt, gnu_init, t;
+  tree gnu_stmt, gnu_init;
 
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
@@ -8059,15 +8059,6 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	      && !initializer_constant_valid_p (gnu_init,
 						TREE_TYPE (gnu_init)))))
     {
-      /* If GNU_DECL has a padded type, convert it to the unpadded
-	 type so the assignment is done properly.  */
-      if (TYPE_IS_PADDING_P (type))
-	t = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
-      else
-	t = gnu_decl;
-
-      gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, t, gnu_init);
-
       DECL_INITIAL (gnu_decl) = NULL_TREE;
       if (TREE_READONLY (gnu_decl))
 	{
@@ -8075,6 +8066,12 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	  DECL_READONLY_ONCE_ELAB (gnu_decl) = 1;
 	}
 
+      /* If GNU_DECL has a padded type, convert it to the unpadded
+	 type so the assignment is done properly.  */
+      if (TYPE_IS_PADDING_P (type))
+	gnu_decl = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
+
+      gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
       add_stmt_with_node (gnu_stmt, gnat_entity);
     }
 }
