@@ -1,5 +1,12 @@
 2016-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (add_decl_expr): Minor tweak.
+	* gcc-interface/utils.c (create_var_decl): For an external variable,
+	also clear TREE_READONLY in LTO mode if the initializer is not a valid
+	constant and set DECL_READONLY_ONCE_ELAB instead.
+
+2016-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/71817
 	* adaint.c (__gnat_is_read_accessible_file): Add parentheses.
 	(__gnat_is_write_accessible_file): Likewise.
