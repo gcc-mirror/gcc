@@ -398,7 +398,8 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *fun)
     {
-      return flag_tree_loop_vectorize || fun->has_force_vectorize_loops;
+      return ((flag_tree_loop_vectorize || fun->has_force_vectorize_loops) 
+	      && !flag_tree_loop_vectorize_unified);
     }
 
   virtual unsigned int execute (function *);

@@ -136,16 +136,9 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
   return scalar_type;
 }
 
-
-/* Insert DDR into LOOP_VINFO list of ddrs that may alias and need to be
-   tested at run-time.  Return TRUE if DDR was successfully inserted.
-   Return false if versioning is not supported.  */
-
-static bool
-vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
+bool
+vect_mark_for_runtime_alias_test_1 (ddr_p ddr, loop *loop)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-
   if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
     return false;
 
@@ -189,8 +182,25 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
       return false;
     }
 
-  LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).safe_push (ddr);
   return true;
+}
+
+
+
+/* Insert DDR into LOOP_VINFO list of ddrs that may alias and need to be
+   tested at run-time.  Return TRUE if DDR was successfully inserted.
+   Return false if versioning is not supported.  */
+
+static bool
+vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  bool is_alias;
+
+  is_alias = vect_mark_for_runtime_alias_test_1 (ddr, loop);
+  if (is_alias)
+    LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).safe_push (ddr);
+  return is_alias;
 }
 
 
@@ -3199,16 +3209,35 @@ bool
 vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
 			   gather_scatter_info *info)
 {
-  HOST_WIDE_INT scale = 1, pbitpos, pbitsize;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  tree base;
+  bool is_read;
+  tree vec_type;
+
+  base = DR_REF (dr);
+  is_read = DR_IS_READ (dr);
+  vec_type = STMT_VINFO_VECTYPE (stmt_info);
+
+  return vect_check_gather_scatter_1 (stmt, base, is_read, loop, vec_type,
+				       basep, offp, scalep);
+}
+
+/* Check whether a non-affine read or write in stmt is suitable for gather load
+   or scatter store and if so, return a builtin decl for that operation.  */
+
+tree
+vect_check_gather_scatter_1 (gimple *stmt, tree base, bool is_read,
+			     struct loop *loop, tree vec_type, tree *basep,
+			     tree *offp, int *scalep)
+{
+  HOST_WIDE_INT scale = 1, pbitpos, pbitsize;
   tree offtype = NULL_TREE;
-  tree decl, base, off;
+  tree decl, off;
   machine_mode pmode;
   int punsignedp, reversep, pvolatilep = 0;
 
-  base = DR_REF (dr);
   /* For masked loads/stores, DR_REF (dr) is an artificial MEM_REF,
      see if we can use the def stmt of the address.  */
   if (is_gimple_call (stmt)
@@ -3389,12 +3418,10 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   if (offtype == NULL_TREE)
     offtype = TREE_TYPE (off);
 
-  if (DR_IS_READ (dr))
-    decl = targetm.vectorize.builtin_gather (STMT_VINFO_VECTYPE (stmt_info),
-					     offtype, scale);
+  if (is_read)
+    decl = targetm.vectorize.builtin_gather (vec_type, offtype, scale);
   else
-    decl = targetm.vectorize.builtin_scatter (STMT_VINFO_VECTYPE (stmt_info),
-					      offtype, scale);
+    decl = targetm.vectorize.builtin_scatter (vec_type, offtype, scale);
 
   if (decl == NULL_TREE)
     return false;

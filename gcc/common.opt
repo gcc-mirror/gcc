@@ -2582,6 +2582,10 @@ ftree-loop-vectorize
 Common Report Var(flag_tree_loop_vectorize) Optimization
 Enable loop vectorization on trees.
 
+ftree-loop-vectorize-unified
+Common Report Var(flag_tree_loop_vectorize_unified) Optimization
+Enable loop vectorization using unified representation on trees.
+
 ftree-slp-vectorize
 Common Report Var(flag_tree_slp_vectorize) Optimization
 Enable basic block vectorization (SLP) on trees.

@@ -798,7 +798,7 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
 
 /* Return the earlier statement between STMT1 and STMT2.  */
 
-static inline gimple *
+inline gimple *
 get_earlier_stmt (gimple *stmt1, gimple *stmt2)
 {
   unsigned int uid1, uid2;
@@ -1099,6 +1099,9 @@ extern bool vect_analyze_data_ref_accesses (vec_info *);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
 				       gather_scatter_info *);
+extern tree vect_check_gather_scatter_1 (gimple *, tree, bool, struct loop *,
+					 tree, tree *, tree *, int *);
+
 extern bool vect_analyze_data_refs (vec_info *, int *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
@@ -1125,6 +1128,7 @@ extern tree vect_get_new_ssa_name (tree, enum vect_var_kind,
 extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
 						  tree, struct loop *,
 						  tree = NULL_TREE);
+extern bool vect_mark_for_runtime_alias_test_1 (ddr_p, loop *);
 
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */
@@ -1136,6 +1140,8 @@ extern loop_vec_info vect_analyze_loop (struct loop *);
 /* Drive for loop transformation stage.  */
 extern void vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
+extern bool vect_analyze_loop_form_1 (struct loop *, gcond **, tree *, tree *,
+				      gcond **);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
 					 slp_tree, int, gimple **);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
@@ -1147,6 +1153,7 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
 					stmt_vector_for_cost *,
 					stmt_vector_for_cost *);
+extern bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *);
 
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);
@@ -1177,5 +1184,7 @@ void vect_pattern_recog (vec_info *);
 unsigned vectorize_loops (void);
 void vect_destroy_datarefs (vec_info *);
 bool vect_stmt_in_region_p (vec_info *, gimple *);
+extern void fold_loop_vectorized_call (gimple *, tree);
+extern gimple *vect_loop_vectorized_call (struct loop *);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

@@ -704,7 +704,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
    FORNOW: A simple evolution of an induction variables in the loop is
    considered a polynomial evolution.  */
 
-static bool
+bool
 vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
                              tree * step)
 {

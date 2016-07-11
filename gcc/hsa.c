@@ -840,6 +840,7 @@ hsa_summary_t::link_functions (cgraph_node *gpu, cgraph_node *host,
     fn_opts = optimization_default_node;
   fn_opts = copy_node (fn_opts);
   TREE_OPTIMIZATION (fn_opts)->x_flag_tree_loop_vectorize = false;
+  TREE_OPTIMIZATION (fn_opts)->x_flag_tree_loop_vectorize_unified = false;
   TREE_OPTIMIZATION (fn_opts)->x_flag_tree_slp_vectorize = false;
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (gdecl) = fn_opts;
 

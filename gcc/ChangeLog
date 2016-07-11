@@ -1,3 +1,74 @@
+2016-07-08  Sameera Deshpande <sameera.deshpande@imgtec.com>
+
+	* Makefile.in: Add tree-vect-unified.o in OBJS.
+	* common.opt (ftree-loop-vectorize-unified): New option.
+	* hsa.c (x_flag_tree_loop_vectorize_unified): Initialize.
+	* passes.def (pass_unified_vectorize): New pass.
+	* tree-pass.h (make_pass_unified_vectorize): New function declaration.
+	* tree-ssa-loop.c (gate): Change gate condition for tree loop
+	  vectorization.
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test): Split
+	  (vect_mark_for_runtime_alias_test_1): Into this.
+	  (vect_mark_for_runtime_alias_test): And this.
+	  (vect_check_gather_scatter): Split.
+	  (vect_check_gather_scatter_1): Into this.
+	  (vect_check_gather_scatter): And this.
+	* tree-vect-loop.c (vect_is_simple_iv_evolution): export.
+	* tree-vect-unified.c: New file to add lOOP Vectorization using unified
+	  representation.
+	  (pass_data_unified_vectorize): New DS for pass.
+	  (pass_unified_vectorize): New pass.
+	  (new_iter_node): New function.
+	  (destroy_iter_node_info): Likewise.
+	  (new_stmt_attr): Likewise.
+	  (vect_populate_iter_node_from_loop): Likewise.
+	  (vect_analyze_dataref_access): Likewise.
+	  (vect_analyze_dataref_accesses): Likewise.
+	  (vect_analyze_datarefs): Likewise.
+	  (is_raw_dependence): Likewise.
+	  (vect_analyze_dataref_dependence): Likewise.
+	  (vect_analyze_dataref_dependences): Likewise.
+	  (mark_addr_index_stmt): Likewise.
+	  (classify_loop_stmt): Likewise.
+	  (classify_loop_stmts): Likewise.
+	  (mark_probable_root_nodes): Likewise.
+	  (vect_is_simple_use): Likewise.
+	  (normalize_base_addr): Likewise.
+	  (init_primop_node): Likewise.
+	  (populate_prim_node): Likewise.
+	  (exists_primTree_with_memref): Likewise.
+	  (create_primTree_memref): Likewise.
+	  (create_primTree_combine): Likewise.
+	  (create_primTree_partition): Likewise.
+	  (add_child_at_index): Likewise.
+	  (get_child_at_index): Likewise.
+	  (vectorizable_store): Likewise.
+	  (vectorizable_load): Likewise.
+	  (analyze_and_create_ptree): Likewise.
+	  (is_ptree_complete): Likewise.
+	  (create_ptree): Likewise.
+	  (vect_analyze_loop_with_prim_tree_2): Likewise.
+	  (pretty_print_gimple_vec): Likewise.
+	  (pp_primop_tree): Likewise.
+	  (pretty_print_ptree_vec): Likewise.
+	  (pretty_print_iter_node): Likewise.
+	  (dump_iter_node): Likewise.
+	  (vectorize_loops_using_uniop): Likewise.
+	* tree-vect-unified.h: New header file.
+	  (struct ITER_node): New data structure.
+	  (struct stmt_attr): Likewise.
+	  (struct primop_tree): Likewise.
+	  (enum primop_code): New enum.
+	  (stmt_use_type): Likewise.
+	* tree-vectorizer.h:
+	  (vect_mark_for_runtime_alias_test_1): Declare.
+	  (vect_check_gather_scatter_1): Likewise.
+	  (vect_analyze_loop_form_1): Likewise.
+	  (vect_is_simple_iv_evolution): Likewise.
+	* tree-vectorizer.c:
+	  (vect_loop_vectorized_call): Extern.
+	  (fold_loop_vectorized_call): Likewise.
+
 2016-07-08  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/71606

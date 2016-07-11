@@ -278,6 +278,11 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_expand_omp_ssa);
 	  NEXT_PASS (pass_ch_vect);
 	  NEXT_PASS (pass_if_conversion);
+	  NEXT_PASS (pass_unified_vectorize);
+          PUSH_INSERT_PASSES_WITHIN (pass_unified_vectorize)
+	      NEXT_PASS (pass_dce);
+          POP_INSERT_PASSES ()
+
 	  /* pass_vectorize must immediately follow pass_if_conversion.
 	     Please do not add any other passes in between.  */
 	  NEXT_PASS (pass_vectorize);

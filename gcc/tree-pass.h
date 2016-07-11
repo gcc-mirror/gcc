@@ -375,6 +375,7 @@ extern gimple_opt_pass *make_pass_record_bounds (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_graphite (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_graphite_transforms (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_if_conversion (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_unified_vectorize (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_loop_distribution (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_vectorize (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_simduid_cleanup (gcc::context *ctxt);

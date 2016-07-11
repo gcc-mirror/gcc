@@ -399,7 +399,7 @@ vect_stmt_in_region_p (vec_info *vinfo, gimple *stmt)
 /* If LOOP has been versioned during ifcvt, return the internal call
    guarding it.  */
 
-static gimple *
+gimple *
 vect_loop_vectorized_call (struct loop *loop)
 {
   basic_block bb = loop_preheader_edge (loop)->src;
@@ -435,7 +435,7 @@ vect_loop_vectorized_call (struct loop *loop)
 /* Fold LOOP_VECTORIZED internal call G to VALUE and
    update any immediate uses of it's LHS.  */
 
-static void
+void
 fold_loop_vectorized_call (gimple *g, tree value)
 {
   tree lhs = gimple_call_lhs (g);
