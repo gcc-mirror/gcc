@@ -2045,7 +2045,7 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
       int unsignedp, volatilep, preversep;
 
       ref = get_inner_reference (ref, &bitsize, &bitpos, &varoffset, &mode,
-				 &unsignedp, &preversep, &volatilep, false);
+				 &unsignedp, &preversep, &volatilep);
 
       offset = bitpos;
       offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);

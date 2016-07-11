@@ -5230,7 +5230,7 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	  machine_mode mode;
 	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
-			       &unsignedp, &reversep, &volatilep, false);
+			       &unsignedp, &reversep, &volatilep);
 	  if (bitpos % BITS_PER_UNIT)
 	    {
 	      iscc->bad_arg_alignment = true;

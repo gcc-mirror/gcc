@@ -13204,7 +13204,6 @@ verify_type_variant (const_tree t, tree tv)
     verify_variant_match (TYPE_REF_CAN_ALIAS_ALL);
   /* FIXME: TYPE_SIZES_GIMPLIFIED may differs for Ada build.  */
   verify_variant_match (TYPE_UNSIGNED);
-  verify_variant_match (TYPE_ALIGN_OK);
   verify_variant_match (TYPE_PACKED);
   if (TREE_CODE (t) == REFERENCE_TYPE)
     verify_variant_match (TYPE_REF_IS_RVALUE);

@@ -199,6 +199,9 @@ do {							 \
    alignment value the type ought to have.  */
 #define TYPE_MAX_ALIGN(NODE) (TYPE_PRECISION (RECORD_OR_UNION_CHECK (NODE)))
 
+/* True if objects of tagged types are guaranteed to be properly aligned.  */
+#define TYPE_ALIGN_OK(NODE) TYPE_LANG_FLAG_7 (NODE)
+
 /* For an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
    template and the object.
 

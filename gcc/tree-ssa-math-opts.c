@@ -2097,7 +2097,7 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
     return false;
 
   base_addr = get_inner_reference (ref, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &reversep, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep);
 
   if (TREE_CODE (base_addr) == MEM_REF)
     {
@@ -2640,7 +2640,7 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
 	  tree offset;
 
 	  get_inner_reference (src, &bitsize, &bitpos, &offset, &mode,
-			       &unsignedp, &reversep, &volatilep, false);
+			       &unsignedp, &reversep, &volatilep);
 	  if (n->range < (unsigned HOST_WIDE_INT) bitsize)
 	    {
 	      load_offset = (bitsize - n->range) / BITS_PER_UNIT;

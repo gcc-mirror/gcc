@@ -1929,16 +1929,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		  type = strip_array_types (type);
 
 		  if (POINTER_TYPE_P (type))
-		    {
-		      int align;
-
-		      type = TREE_TYPE (type);
-		      /* Using TYPE_ALIGN_OK is rather conservative as
-			 only the ada frontend actually sets it.  */
-		      align = (TYPE_ALIGN_OK (type) ? TYPE_ALIGN (type)
-			       : BITS_PER_UNIT);
-		      mark_reg_pointer (operand0, align);
-		    }
+		    mark_reg_pointer (operand0, BITS_PER_UNIT);
 		}
 	    }
 

@@ -105,7 +105,7 @@ pass_laddress::execute (function *fun)
 	  int volatilep = 0, reversep, unsignedp = 0;
 	  base = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize,
 				      &bitpos, &offset, &mode, &unsignedp,
-				      &reversep, &volatilep, false);
+				      &reversep, &volatilep);
 	  gcc_assert (base != NULL_TREE && (bitpos % BITS_PER_UNIT) == 0);
 	  if (offset != NULL_TREE)
 	    {
