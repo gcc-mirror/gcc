@@ -1419,7 +1419,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
 	      inner = get_inner_reference (operand, &bitsize, &bitpos, &offset,
 					   &mode, &unsignedp, &reversep,
-					   &volatilep, false);
+					   &volatilep);
 
 	      /* If INNER is a padding type whose field has a self-referential
 		 size, convert to that inner type.  We know the offset is zero

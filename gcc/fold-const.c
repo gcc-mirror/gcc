@@ -3880,7 +3880,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
      do anything if the inner expression is a PLACEHOLDER_EXPR since we
      then will no longer be able to replace it.  */
   linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
-				&lunsignedp, &lreversep, &lvolatilep, false);
+				&lunsignedp, &lreversep, &lvolatilep);
   if (linner == lhs || lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
       || offset != 0 || TREE_CODE (linner) == PLACEHOLDER_EXPR || lvolatilep)
     return 0;
@@ -3893,7 +3893,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 	sizes, signedness and storage order are the same.  */
      rinner
        = get_inner_reference (rhs, &rbitsize, &rbitpos, &offset, &rmode,
-			      &runsignedp, &rreversep, &rvolatilep, false);
+			      &runsignedp, &rreversep, &rvolatilep);
 
      if (rinner == rhs || lbitpos != rbitpos || lbitsize != rbitsize
 	 || lunsignedp != runsignedp || lreversep != rreversep || offset != 0
@@ -4075,7 +4075,7 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
     }
 
   inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
-			       punsignedp, preversep, pvolatilep, false);
+			       punsignedp, preversep, pvolatilep);
   if ((inner == exp && and_mask == 0)
       || *pbitsize < 0 || offset != 0
       || TREE_CODE (inner) == PLACEHOLDER_EXPR)
@@ -7730,7 +7730,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  tree base
 	    = get_inner_reference (TREE_OPERAND (op0, 0), &bitsize, &bitpos,
 				   &offset, &mode, &unsignedp, &reversep,
-				   &volatilep, false);
+				   &volatilep);
 	  /* If the reference was to a (constant) zero offset, we can use
 	     the address of the base if it has the same base type
 	     as the result type and the pointer type is unqualified.  */
@@ -8334,7 +8334,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  base0
 	    = get_inner_reference (TREE_OPERAND (arg0, 0),
 				   &bitsize, &bitpos0, &offset0, &mode,
-				   &unsignedp, &reversep, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep);
 	  if (TREE_CODE (base0) == INDIRECT_REF)
 	    base0 = TREE_OPERAND (base0, 0);
 	  else
@@ -8349,8 +8349,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      base0
 		= get_inner_reference (TREE_OPERAND (base0, 0),
 				       &bitsize, &bitpos0, &offset0, &mode,
-				       &unsignedp, &reversep, &volatilep,
-				       false);
+				       &unsignedp, &reversep, &volatilep);
 	      if (TREE_CODE (base0) == INDIRECT_REF)
 		base0 = TREE_OPERAND (base0, 0);
 	      else
@@ -8381,7 +8380,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  base1
 	    = get_inner_reference (TREE_OPERAND (arg1, 0),
 				   &bitsize, &bitpos1, &offset1, &mode,
-				   &unsignedp, &reversep, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep);
 	  if (TREE_CODE (base1) == INDIRECT_REF)
 	    base1 = TREE_OPERAND (base1, 0);
 	  else
@@ -8396,8 +8395,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      base1
 		= get_inner_reference (TREE_OPERAND (base1, 0),
 				       &bitsize, &bitpos1, &offset1, &mode,
-				       &unsignedp, &reversep, &volatilep,
-				       false);
+				       &unsignedp, &reversep, &volatilep);
 	      if (TREE_CODE (base1) == INDIRECT_REF)
 		base1 = TREE_OPERAND (base1, 0);
 	      else
@@ -14295,7 +14293,7 @@ split_address_to_core_and_offset (tree exp,
     {
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
 				  poffset, &mode, &unsignedp, &reversep,
-				  &volatilep, false);
+				  &volatilep);
       core = build_fold_addr_expr_loc (loc, core);
     }
   else

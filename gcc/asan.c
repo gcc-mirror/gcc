@@ -1793,7 +1793,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
-				    &unsignedp, &reversep, &volatilep, false);
+				    &unsignedp, &reversep, &volatilep);
 
   if (TREE_CODE (t) == COMPONENT_REF
       && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)) != NULL_TREE)

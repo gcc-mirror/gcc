@@ -7071,7 +7071,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		    base = TREE_OPERAND (base, 0);
 		  base = get_inner_reference (base, &bitsize, &bitpos, &offset,
 					      &mode, &unsignedp, &reversep,
-					      &volatilep, false);
+					      &volatilep);
 		  tree orig_base = base;
 		  if ((TREE_CODE (base) == INDIRECT_REF
 		       || (TREE_CODE (base) == MEM_REF
@@ -7207,8 +7207,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			    base = get_inner_reference (base, &bitsize2,
 							&bitpos2, &offset2,
 							&mode, &unsignedp,
-							&reversep, &volatilep,
-							false);
+							&reversep, &volatilep);
 			    if ((TREE_CODE (base) == INDIRECT_REF
 				 || (TREE_CODE (base) == MEM_REF
 				     && integer_zerop (TREE_OPERAND (base,

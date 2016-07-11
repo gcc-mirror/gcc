@@ -2181,7 +2181,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 			  && TREE_CODE (gnu_prefix) == FIELD_DECL));
 
 	get_inner_reference (gnu_prefix, &bitsize, &bitpos, &gnu_offset,
-			     &mode, &unsignedp, &reversep, &volatilep, false);
+			     &mode, &unsignedp, &reversep, &volatilep);
 
 	if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
 	  {

@@ -316,7 +316,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   if (TREE_USED (node))
     fputs (" used", file);
   if (TREE_NOTHROW (node))
-    fputs (TYPE_P (node) ? " align-ok" : " nothrow", file);
+    fputs (" nothrow", file);
   if (TREE_PUBLIC (node))
     fputs (" public", file);
   if (TREE_PRIVATE (node))
@@ -601,6 +601,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fputs (" type_5", file);
       if (TYPE_LANG_FLAG_6 (node))
 	fputs (" type_6", file);
+      if (TYPE_LANG_FLAG_7 (node))
+	fputs (" type_7", file);
 
       mode = TYPE_MODE (node);
       fprintf (file, " %s", GET_MODE_NAME (mode));

@@ -1,3 +1,53 @@
+2016-07-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Convert TYPE_ALIGN_OK to a TYPE_LANG_FLAG.
+	* tree-core.h (tree_base::nothrow_flag): Adjust comment.
+	(tree_type_common::lang_flag_7): New.
+	(tree_type_common::spare): Reduce size.
+	* tree.h (TYPE_ALIGN_OK): Remove.
+	(TYPE_LANG_FLAG_7): New.
+	(get_inner_reference): Adjust header.
+	* print-tree.c (print_node): Adjust.
+	* expr.c (get_inner_reference): Remove parameter keep_aligning.
+	(get_bit_range, expand_assignment, expand_expr_addr_expr_1): Adjust
+	calls to get_inner_reference.
+	(expand_expr_real_1): Adjust call to get_inner_reference.  Remove
+	handling of TYPE_ALIGN_OK.
+	* builtins.c (get_object_alignment_2): Adjust call to
+	get_inner_reference.  Remove handling of VIEW_CONVERT_EXPR.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove handling of
+	TYPE_ALIGN_OK.
+	* asan.c (instrument_derefs): Adjust calls to get_inner_reference.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* dbxout.c (dbxout_expand_expr): Likewise.
+	* dwarf2out.c (loc_list_for_address_of_addr_expr_of_indirect_ref,
+	loc_list_from_tree, fortran_common): Likewise.
+	* fold-const.c (optimize_bit_field_compare,
+	decode_field_reference, fold_unary_loc, fold_comparison,
+	split_address_to_core_and_offset): Likewise.
+	* gimple-laddress.c (execute): Likewise.
+	* gimple-ssa-strength-reduction.c (slsr_process_ref): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses): Likewise.
+	* hsa-gen.c (gen_hsa_addr): Likewise.
+	* simplifx-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* tsan.c (instrument_expr): Likewise.
+	* ubsan.c (instrument_bool_enum_load, instrument_object_size): Likewise.
+	* tree.c (verify_type_variant): Remove handling of TYPE_ALIGN_OK.
+	* tree-affine.c (tree_to_aff_combination,
+	get_inner_reference_aff): Adjust calls to get_inner_reference.
+	* tree-data-ref.c (split_constant_offset_1,
+	dr_analyze_innermost): Likewise.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Likewise.
+	* tree-sra.c (ipa_sra_check_caller): Likewise.
+	* tree-ssa-loop-ivopts.c (split_address_cost): Likewise.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_load,
+	bswap_replace): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather,
+	vect_analyze_data_refs): Likewise.
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Likewise.
+	* config/pa/pa.c (pa_emit_move_sequence): Remove handling of
+	TYPE_ALIGN_OK.
+
 2016-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (selftest-valgrind): New phony target.
@@ -32,7 +82,7 @@
 	* lra-constraints.c (process_alt_operands): Check combination of
 	reg class and mode.
 
-2016-06-25  Jason Merrill  <jason@redhat.com>
+2016-07-08  Jason Merrill  <jason@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
 	P0145: Refining Expression Order for C++.

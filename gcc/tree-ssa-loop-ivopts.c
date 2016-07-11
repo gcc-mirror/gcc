@@ -4526,7 +4526,7 @@ split_address_cost (struct ivopts_data *data,
   int unsignedp, reversep, volatilep;
 
   core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &reversep, &volatilep, false);
+			      &unsignedp, &reversep, &volatilep);
 
   if (toffset != 0
       || bitpos % BITS_PER_UNIT != 0

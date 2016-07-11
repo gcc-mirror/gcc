@@ -618,7 +618,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	op0 = TREE_OPERAND (op0, 0);
 	base
 	  = get_inner_reference (op0, &pbitsize, &pbitpos, &poffset, &pmode,
-				 &punsignedp, &preversep, &pvolatilep, false);
+				 &punsignedp, &preversep, &pvolatilep);
 
 	if (pbitpos % BITS_PER_UNIT != 0)
 	  return false;
@@ -771,7 +771,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     fprintf (dump_file, "analyze_innermost: ");
 
   base = get_inner_reference (ref, &pbitsize, &pbitpos, &poffset, &pmode,
-			      &punsignedp, &preversep, &pvolatilep, false);
+			      &punsignedp, &preversep, &pvolatilep);
   gcc_assert (base != NULL_TREE);
 
   if (pbitpos % BITS_PER_UNIT != 0)
