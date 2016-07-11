@@ -1,3 +1,11 @@
+2016-07-11  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	Backport from mainline r238055.
+	2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71518
+        * gcc.dg/pr71518.c: New test.
+
 2016-07-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk:
