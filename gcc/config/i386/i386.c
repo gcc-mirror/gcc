@@ -3814,6 +3814,9 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
 	    continue;
 	  gcc_assert (GET_CODE (val) == VAR_LOCATION);
 	  rtx loc = PAT_VAR_LOCATION_LOC (val);
+	  /* It may have been converted to TImode already.  */
+	  if (GET_MODE (loc) == TImode)
+	    continue;
 	  gcc_assert (REG_P (loc)
 		      && GET_MODE (loc) == V1TImode);
 	  /* Convert V1TImode register, which has been updated by a SET
