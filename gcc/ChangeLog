@@ -1,3 +1,9 @@
+2016-07-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (x86_64_immediate_operand) <case CONST>:
+	Hoist common subexpressions.
+	(x86_64_zext_immediate_operand) <case CONST>: Ditto.
+
 2016-07-11  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/71800
@@ -327,7 +333,7 @@
 
 2016-07-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	PR target/50739	
+	PR target/50739
 	* config/avr/avr.c (avr_asm_select_section): Strip off
 	SECTION_DECLARED from flags when calling get_section.
 
@@ -528,8 +534,9 @@
 	(TARGET_SIMD_F16INST): New.
 	* config/aarch64/aarch64-option-extensions.def ("fp16"): New entry.
 	("fp"): Disabling "fp" also disables "fp16".
-	* config/aarch64/aarch64-c.c (arch64_update_cpp_builtins): Conditionally define
-	__ARM_FEATURE_FP16_SCALAR_ARITHMETIC and __ARM_FEATURE_FP16_VECTOR_ARITHMETIC.
+	* config/aarch64/aarch64-c.c (arch64_update_cpp_builtins):
+	Conditionally define __ARM_FEATURE_FP16_SCALAR_ARITHMETIC
+	and __ARM_FEATURE_FP16_VECTOR_ARITHMETIC.
 	* doc/invoke.texi (AArch64 Options): Document "armv8.2-a" and "fp16".
 
 2016-07-04  Jan Beulich  <jbeulich@suse.com>
@@ -557,8 +564,8 @@
 2016-07-01  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/71698
-	* config/rs6000/rs6000.c (rs6000_secondary_reload_simple_move): Disallow
-	TDmode values.
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_simple_move):
+	Disallow TDmode values.
 
 2016-07-01  Alan Modra  <amodra@gmail.com>
 
@@ -686,7 +693,7 @@
 	(cortexa73_tunings): Use cortexa57_branch_cost.
 
 2016-06-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vcopyq_lane_f32, vcopyq_lane_f64,
 	vcopyq_lane_p8, vcopyq_lane_p16, vcopyq_lane_s8, vcopyq_lane_s16,
@@ -704,7 +711,7 @@
 	New intrinsics.
 
 2016-06-30  James Greenhalgh  <james.greenhalgh@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_vec_copy_lane<mode>):
 	New define_insn.
@@ -735,8 +742,7 @@
 	* params.c: Include spellcheck.h.
 	(find_param_fuzzy): New function.
 	* params.h (find_param_fuzzy): New prototype.
-	* spellcheck.c (struct edit_distance_traits<const char *>): Move
-	to...
+	* spellcheck.c (struct edit_distance_traits<const char *>): Move to...
 	* spellcheck.h (struct edit_distance_traits<const char *>):
 	...here.
 
@@ -795,8 +801,7 @@
 2016-06-29  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/71585
-	* common.opt (flag_stack_protect): Mark the flag as optimization
-	flag.
+	* common.opt (flag_stack_protect): Mark the flag as optimization flag.
 	* ipa-inline-transform.c (inline_call): Remove unnecessary call
 	of build_optimization_node.
 
