@@ -1,3 +1,9 @@
+2016-07-11  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/71800
+	* config/rs6000/rs6000.md (stfiwx): Change constraint to 'wu' to
+	prevent generation of 'stxsiwx' on pre Power8 hardware.
+
 2016-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c: Include cpplib.h.
