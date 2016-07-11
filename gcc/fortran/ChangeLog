@@ -1,3 +1,10 @@
+2016-07-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk:
+	PR fortran/71783
+	* frontend-passes.c (create_var):  Always allocate a charlen
+	for character variables.
+
 2016-07-08  Cesar Philippidis  <cesar@codesourcery.com>
 
 	Backport from trunk:
