@@ -1,5 +1,8 @@
 2016-07-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71758
+	* omp-low.c (expand_omp_target): Gimplify device.
+
 	PR tree-optimization/71823
 	* tree-vect-stmts.c (vectorizable_operation): Use vect_get_vec_defs
 	to get vec_oprnds2 from op2.

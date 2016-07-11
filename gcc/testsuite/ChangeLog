@@ -1,5 +1,9 @@
 2016-07-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71758
+	* c-c++-common/gomp/pr71758.c: New test.
+	* gfortran.dg/gomp/pr71758.f90: New test.
+
 	PR tree-optimization/71823
 	* gcc.dg/vect/pr71823.c: New test.
 
