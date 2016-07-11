@@ -87,11 +87,11 @@ plugin_init (struct plugin_name_args *plugin_info,
   original_finalizer = diagnostic_finalizer (global_dc);
   switch (base_location)
     {
-    case 0x50000001:
+    case LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 1:
       diagnostic_finalizer (global_dc) = verify_unpacked_ranges;
       break;
 
-    case 0x60000001:
+    case LINE_MAP_MAX_LOCATION_WITH_COLS + 1:
       diagnostic_finalizer (global_dc) = verify_no_columns;
       break;
 

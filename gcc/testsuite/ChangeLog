@@ -1,3 +1,9 @@
+2016-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/location_overflow_plugin.c (plugin_init): Avoid
+	hardcoding the values of LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES
+	and LINE_MAP_MAX_LOCATION_WITH_COLS.
+
 2016-07-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/71801

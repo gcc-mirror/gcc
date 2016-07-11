@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic-core.h"
 #include "selftest.h"
+#include "cpplib.h"
 
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
@@ -1144,6 +1145,74 @@ namespace selftest {
 
 /* Selftests of location handling.  */
 
+/* A class for writing out a temporary sourcefile for use in selftests
+   of input handling.  */
+
+class temp_source_file
+{
+ public:
+  temp_source_file (const location &loc, const char *suffix,
+		    const char *content);
+  ~temp_source_file ();
+
+  const char *get_filename () const { return m_filename; }
+
+ private:
+  char *m_filename;
+};
+
+/* Constructor.  Create a tempfile using SUFFIX, and write CONTENT to
+   it.  Abort if anything goes wrong, using LOC as the effective
+   location in the problem report.  */
+
+temp_source_file::temp_source_file (const location &loc, const char *suffix,
+				    const char *content)
+{
+  m_filename = make_temp_file (suffix);
+  ASSERT_NE (m_filename, NULL);
+
+  FILE *out = fopen (m_filename, "w");
+  if (!out)
+    ::selftest::fail_formatted (loc, "unable to open tempfile: %s",
+				m_filename);
+  fprintf (out, content);
+  fclose (out);
+}
+
+/* Destructor.  Delete the tempfile.  */
+
+temp_source_file::~temp_source_file ()
+{
+  unlink (m_filename);
+  free (m_filename);
+}
+
+/* Helper function for verifying location data: when location_t
+   values are > LINE_MAP_MAX_LOCATION_WITH_COLS, they are treated
+   as having column 0.  */
+
+static bool
+should_have_column_data_p (location_t loc)
+{
+  if (IS_ADHOC_LOC (loc))
+    loc = get_location_from_adhoc_loc (line_table, loc);
+  if (loc > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return false;
+  return true;
+}
+
+/* Selftest for should_have_column_data_p.  */
+
+static void
+test_should_have_column_data_p ()
+{
+  ASSERT_TRUE (should_have_column_data_p (RESERVED_LOCATION_COUNT));
+  ASSERT_TRUE
+    (should_have_column_data_p (LINE_MAP_MAX_LOCATION_WITH_COLS));
+  ASSERT_FALSE
+    (should_have_column_data_p (LINE_MAP_MAX_LOCATION_WITH_COLS + 1));
+}
+
 /* Verify the result of LOCATION_FILE/LOCATION_LINE/LOCATION_COLUMN
    on LOC.  */
 
@@ -1153,14 +1222,87 @@ assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
 {
   ASSERT_STREQ (exp_filename, LOCATION_FILE (loc));
   ASSERT_EQ (exp_linenum, LOCATION_LINE (loc));
-  ASSERT_EQ (exp_colnum, LOCATION_COLUMN (loc));
+  /* If location_t values are sufficiently high, then column numbers
+     will be unavailable and LOCATION_COLUMN (loc) will be 0.
+     When close to the threshold, column numbers *may* be present: if
+     the final linemap before the threshold contains a line that straddles
+     the threshold, locations in that line have column information.  */
+  if (should_have_column_data_p (loc))
+    ASSERT_EQ (exp_colnum, LOCATION_COLUMN (loc));
+}
+
+/* Various selftests in this file involve constructing a line table
+   and one or more line maps within it.
+
+   For maximum test coverage we want to run these tests with a variety
+   of situations:
+   - line_table->default_range_bits: some frontends use a non-zero value
+   and others use zero
+   - the fallback modes within line-map.c: there are various threshold
+   values for source_location/location_t beyond line-map.c changes
+   behavior (disabling of the range-packing optimization, disabling
+   of column-tracking).  We can exercise these by starting the line_table
+   at interesting values at or near these thresholds.
+
+   The following struct describes a particular case within our test
+   matrix.  */
+
+struct line_table_case
+{
+  line_table_case (int default_range_bits, int base_location)
+  : m_default_range_bits (default_range_bits),
+    m_base_location (base_location)
+  {}
+
+  int m_default_range_bits;
+  int m_base_location;
+};
+
+/* A class for overriding the global "line_table" within a selftest,
+   restoring its value afterwards.  */
+
+class temp_line_table
+{
+ public:
+  temp_line_table (const line_table_case &);
+  ~temp_line_table ();
+
+ private:
+  line_maps *m_old_line_table;
+};
+
+/* Constructor.  Store the old value of line_table, and create a new
+   one, using the sitation described in CASE_.  */
+
+temp_line_table::temp_line_table (const line_table_case &case_)
+  : m_old_line_table (line_table)
+{
+  line_table = ggc_alloc<line_maps> ();
+  linemap_init (line_table, BUILTINS_LOCATION);
+  line_table->reallocator = m_old_line_table->reallocator;
+  line_table->round_alloc_size = m_old_line_table->round_alloc_size;
+  line_table->default_range_bits = case_.m_default_range_bits;
+  if (case_.m_base_location)
+    {
+      line_table->highest_location = case_.m_base_location;
+      line_table->highest_line = case_.m_base_location;
+    }
+}
+
+/* Destructor.  Restore the old value of line_table.  */
+
+temp_line_table::~temp_line_table ()
+{
+  line_table = m_old_line_table;
 }
 
 /* Verify basic operation of ordinary linemaps.  */
 
 static void
-test_accessing_ordinary_linemaps ()
+test_accessing_ordinary_linemaps (const line_table_case &case_)
 {
+  temp_line_table tmp_lt (case_);
+
   /* Build a simple linemap describing some locations. */
   linemap_add (line_table, LC_ENTER, false, "foo.c", 0);
 
@@ -1220,21 +1362,15 @@ static void
 test_reading_source_line ()
 {
   /* Create a tempfile and write some text to it.  */
-  char *filename = make_temp_file (".txt");
-  ASSERT_NE (filename, NULL);
-  FILE *out = fopen (filename, "w");
-  if (!out)
-    ::selftest::fail_formatted (SELFTEST_LOCATION,
-				"unable to open tempfile: %s", filename);
-  fprintf (out,
-	   "01234567890123456789\n"
-	   "This is the test text\n"
-	   "This is the 3rd line\n");
-  fclose (out);
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt",
+			"01234567890123456789\n"
+			"This is the test text\n"
+			"This is the 3rd line\n");
 
   /* Read back a specific line from the tempfile.  */
   int line_size;
-  const char *source_line = location_get_source_line (filename, 2, &line_size);
+  const char *source_line = location_get_source_line (tmp.get_filename (),
+						      2, &line_size);
   ASSERT_TRUE (source_line != NULL);
   ASSERT_EQ (21, line_size);
   if (!strncmp ("This is the test text",
@@ -1245,18 +1381,172 @@ test_reading_source_line ()
     ::selftest::fail (SELFTEST_LOCATION,
 		      "source_line did not match expected value");
 
-  unlink (filename);
-  free (filename);
 }
+
+/* Tests of lexing.  */
+
+/* Verify that token TOK from PARSER has cpp_token_as_text
+   equal to EXPECTED_TEXT.  */
+
+#define ASSERT_TOKEN_AS_TEXT_EQ(PARSER, TOK, EXPECTED_TEXT)		\
+  SELFTEST_BEGIN_STMT							\
+    unsigned char *actual_txt = cpp_token_as_text ((PARSER), (TOK));	\
+    ASSERT_STREQ ((EXPECTED_TEXT), (const char *)actual_txt);		\
+  SELFTEST_END_STMT
+
+/* Verify that TOK's src_loc is within EXP_FILENAME at EXP_LINENUM,
+   and ranges from EXP_START_COL to EXP_FINISH_COL.
+   Use LOC as the effective location of the selftest.  */
+
+static void
+assert_token_loc_eq (const location &loc,
+		     const cpp_token *tok,
+		     const char *exp_filename, int exp_linenum,
+		     int exp_start_col, int exp_finish_col)
+{
+  location_t tok_loc = tok->src_loc;
+  ASSERT_STREQ_AT (loc, exp_filename, LOCATION_FILE (tok_loc));
+  ASSERT_EQ_AT (loc, exp_linenum, LOCATION_LINE (tok_loc));
+
+  /* If location_t values are sufficiently high, then column numbers
+     will be unavailable.  */
+  if (!should_have_column_data_p (tok_loc))
+    return;
+
+  ASSERT_EQ_AT (loc, exp_start_col, LOCATION_COLUMN (tok_loc));
+  source_range tok_range = get_range_from_loc (line_table, tok_loc);
+  ASSERT_EQ_AT (loc, exp_start_col, LOCATION_COLUMN (tok_range.m_start));
+  ASSERT_EQ_AT (loc, exp_finish_col, LOCATION_COLUMN (tok_range.m_finish));
+}
+
+/* Use assert_token_loc_eq to verify the TOK->src_loc, using
+   SELFTEST_LOCATION as the effective location of the selftest.  */
+
+#define ASSERT_TOKEN_LOC_EQ(TOK, EXP_FILENAME, EXP_LINENUM, \
+			    EXP_START_COL, EXP_FINISH_COL) \
+  assert_token_loc_eq (SELFTEST_LOCATION, (TOK), (EXP_FILENAME), \
+		       (EXP_LINENUM), (EXP_START_COL), (EXP_FINISH_COL))
+
+/* Test of lexing a file using libcpp, verifying tokens and their
+   location information.  */
+
+static void
+test_lexer (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.  */
+  const char *content =
+    /*00000000011111111112222222222333333.3333444444444.455555555556
+      12345678901234567890123456789012345.6789012345678.901234567890.  */
+    ("test_name /* c-style comment */\n"
+     "                                  \"test literal\"\n"
+     " // test c++-style comment\n"
+     "   42\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt", content);
+
+  temp_line_table tmp_lt (case_);
+
+  cpp_reader *parser = cpp_create_reader (CLK_GNUC89, NULL, line_table);
+
+  const char *fname = cpp_read_main_file (parser, tmp.get_filename ());
+  ASSERT_NE (fname, NULL);
+
+  /* Verify that we get the expected tokens back, with the correct
+     location information.  */
+
+  location_t loc;
+  const cpp_token *tok;
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_NAME);
+  ASSERT_TOKEN_AS_TEXT_EQ (parser, tok, "test_name");
+  ASSERT_TOKEN_LOC_EQ (tok, tmp.get_filename (), 1, 1, 9);
+
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (parser, tok, "\"test literal\"");
+  ASSERT_TOKEN_LOC_EQ (tok, tmp.get_filename (), 2, 35, 48);
+
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_NUMBER);
+  ASSERT_TOKEN_AS_TEXT_EQ (parser, tok, "42");
+  ASSERT_TOKEN_LOC_EQ (tok, tmp.get_filename (), 4, 4, 5);
+
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_EOF);
+
+  cpp_finish (parser, NULL);
+  cpp_destroy (parser);
+}
+
+/* A table of interesting location_t values, giving one axis of our test
+   matrix.  */
+
+static const location_t boundary_locations[] = {
+  /* Zero means "don't override the default values for a new line_table".  */
+  0,
+
+  /* An arbitrary non-zero value that isn't close to one of
+     the boundary values below.  */
+  0x10000,
+
+  /* Values near LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES.  */
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES - 0x100,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES - 1,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 1,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 0x100,
+
+  /* Values near LINE_MAP_MAX_LOCATION_WITH_COLS.  */
+  LINE_MAP_MAX_LOCATION_WITH_COLS - 0x100,
+  LINE_MAP_MAX_LOCATION_WITH_COLS - 1,
+  LINE_MAP_MAX_LOCATION_WITH_COLS,
+  LINE_MAP_MAX_LOCATION_WITH_COLS + 1,
+  LINE_MAP_MAX_LOCATION_WITH_COLS + 0x100,
+};
 
 /* Run all of the selftests within this file.  */
 
 void
 input_c_tests ()
 {
-  test_accessing_ordinary_linemaps ();
+  test_should_have_column_data_p ();
   test_unknown_location ();
   test_builtins ();
+
+  /* As noted above in the description of struct line_table_case,
+     we want to explore a test matrix of interesting line_table
+     situations, running various selftests for each case within the
+     matrix.  */
+
+  /* Run all tests with:
+     (a) line_table->default_range_bits == 0, and
+     (b) line_table->default_range_bits == 5.  */
+  int num_cases_tested = 0;
+  for (int default_range_bits = 0; default_range_bits <= 5;
+       default_range_bits += 5)
+    {
+      /* ...and use each of the "interesting" location values as
+	 the starting location within line_table.  */
+      const int num_boundary_locations
+	= sizeof (boundary_locations) / sizeof (boundary_locations[0]);
+      for (int loc_idx = 0; loc_idx < num_boundary_locations; loc_idx++)
+	{
+	  line_table_case c (default_range_bits, boundary_locations[loc_idx]);
+
+	  /* Run all tests for the given case within the test matrix.  */
+	  test_accessing_ordinary_linemaps (c);
+	  test_lexer (c);
+
+	  num_cases_tested++;
+	}
+    }
+
+  /* Verify that we fully covered the test matrix.  */
+  ASSERT_EQ (num_cases_tested, 2 * 12);
+
   test_reading_source_line ();
 }
 
