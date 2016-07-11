@@ -1,3 +1,8 @@
+2016-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71823
+	* gcc.dg/vect/pr71823.c: New test.
+
 2016-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/location_overflow_plugin.c (plugin_init): Avoid
