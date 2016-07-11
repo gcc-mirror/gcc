@@ -1,3 +1,9 @@
+2016-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71816
+	* tree-ssa-pre.c (compute_avail): Adjust alignment of ref rather
+	than replacing all of its operands.
+
 2016-07-11  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.md (UNSPEC_DOLOOP): New unspec.

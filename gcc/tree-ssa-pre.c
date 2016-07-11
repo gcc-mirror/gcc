@@ -3791,13 +3791,9 @@ compute_avail (void)
 			   || ref1->opcode == MEM_REF)
 			  && (TYPE_ALIGN (ref1->type)
 			      > TYPE_ALIGN (ref2->type)))
-			{
-			  ref->operands.release ();
-			  ref->operands = operands;
-			  ref1 = ref2;
-			}
-		      else
-			operands.release ();
+			ref1->type
+			  = build_aligned_type (ref1->type,
+						TYPE_ALIGN (ref2->type));
 		      /* TBAA behavior is an obvious part so make sure
 		         that the hashtable one covers this as well
 			 by adjusting the ref alias set and its base.  */
@@ -3824,6 +3820,7 @@ compute_avail (void)
 			    ref1->op2 = fold_convert (ptr_type_node,
 						      ref1->op2);
 			}
+		      operands.release ();
 
 		      result = pre_expr_pool.allocate ();
 		      result->kind = REFERENCE;
