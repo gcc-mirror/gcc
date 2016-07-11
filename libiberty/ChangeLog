@@ -1,3 +1,8 @@
+2016-06-12  Brooks Moses  <bmoses@google.com>
+
+	* cp-demangle.c (cplus_demangle_print_callback): Avoid zero-length
+	  VLAs.
+
 2016-05-31  Alan Modra  <amodra@gmail.com>
 
 	* xmemdup.c (xmemdup): Use xmalloc rather than xcalloc.
