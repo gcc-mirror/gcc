@@ -1869,6 +1869,12 @@ s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
 selftest-gdb: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
 	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test -wrapper gdb,--args
 
+# Convenience method for running selftests under valgrind:
+.PHONY: selftest-valgrind
+selftest-valgrind: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
+	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test \
+	  -wrapper valgrind,--leak-check=full
+
 # Recompile all the language-independent object files.
 # This is used only if the user explicitly asks for it.
 compilations: $(BACKEND)

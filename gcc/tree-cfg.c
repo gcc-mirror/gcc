@@ -9276,6 +9276,7 @@ test_linear_chain ()
   ASSERT_EQ (1, dom_by_b.length ());
   ASSERT_EQ (bb_c, dom_by_b[0]);
   free_dominance_info (CDI_DOMINATORS);
+  dom_by_b.release ();
 
   /* Similarly for post-dominance: each BB in our chain is post-dominated
      by the one after it.  */
@@ -9286,6 +9287,7 @@ test_linear_chain ()
   ASSERT_EQ (1, postdom_by_b.length ());
   ASSERT_EQ (bb_a, postdom_by_b[0]);
   free_dominance_info (CDI_POST_DOMINATORS);
+  postdom_by_b.release ();
 
   pop_cfun ();
 }
@@ -9346,8 +9348,10 @@ test_diamond ()
   ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_d));
   vec<basic_block> dom_by_a = get_dominated_by (CDI_DOMINATORS, bb_a);
   ASSERT_EQ (3, dom_by_a.length ()); /* B, C, D, in some order.  */
+  dom_by_a.release ();
   vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
   ASSERT_EQ (0, dom_by_b.length ());
+  dom_by_b.release ();
   free_dominance_info (CDI_DOMINATORS);
 
   /* Similarly for post-dominance.  */
@@ -9357,8 +9361,10 @@ test_diamond ()
   ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_c));
   vec<basic_block> postdom_by_d = get_dominated_by (CDI_POST_DOMINATORS, bb_d);
   ASSERT_EQ (3, postdom_by_d.length ()); /* A, B, C in some order.  */
+  postdom_by_d.release ();
   vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
   ASSERT_EQ (0, postdom_by_b.length ());
+  postdom_by_b.release ();
   free_dominance_info (CDI_POST_DOMINATORS);
 
   pop_cfun ();

@@ -296,6 +296,7 @@ build_cfg (tree fndecl)
   push_cfun (fun);
   lower_cf_pass->execute (fun);
   pop_cfun ();
+  delete lower_cf_pass;
 
   /* We can now convert to CFG form; for our trivial test function this
      gives us:
@@ -310,6 +311,7 @@ build_cfg (tree fndecl)
   push_cfun (fun);
   build_cfg_pass->execute (fun);
   pop_cfun ();
+  delete build_cfg_pass;
 }
 
 /* Convert a gimple+CFG function to SSA form.  */
@@ -325,6 +327,7 @@ convert_to_ssa (tree fndecl)
   push_cfun (fun);
   build_ssa_pass->execute (fun);
   pop_cfun ();
+  delete build_ssa_pass;
 }
 
 /* Assuming we have a simple 3-block CFG like this:
@@ -594,6 +597,7 @@ test_expansion_to_rtl ()
   init_function_start (fndecl);
   expand_pass->execute (fun);
   pop_cfun ();
+  delete expand_pass;
 
   /* On x86_64, I get this:
        (note 3 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
