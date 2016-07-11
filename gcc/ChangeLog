@@ -1,3 +1,33 @@
+2016-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c: Include cpplib.h.
+	(selftest::temp_source_file): New class.
+	(selftest::temp_source_file::temp_source_file): New ctor.
+	(selftest::temp_source_file::~temp_source_file): New dtor.
+	(selftest::should_have_column_data_p): New function.
+	(selftest::test_should_have_column_data_p): New function.
+	(selftest::temp_line_table): New class.
+	(selftest::temp_line_table::temp_line_table): New ctor.
+	(selftest::temp_line_table::~temp_line_table): New dtor.
+	(selftest::test_accessing_ordinary_linemaps): Add case_ param; use
+	it to create a temp_line_table.
+	(selftest::assert_loceq): Only verify LOCATION_COLUMN for
+	locations that are known to have column data.
+	(selftest::line_table_case): New struct.
+	(selftest::test_reading_source_line): Move tempfile handling
+	to class temp_source_file.
+	(ASSERT_TOKEN_AS_TEXT_EQ): New macro.
+	(selftest::assert_token_loc_eq): New function.
+	(ASSERT_TOKEN_LOC_EQ): New macro.
+	(selftest::test_lexer): New function.
+	(selftest::boundary_locations): New array.
+	(selftest::input_c_tests): Call test_should_have_column_data_p.
+	Loop over a test matrix of interesting values of location and
+	default_range_bits, calling test_lexer on each case in the matrix.
+	Move call to test_accessing_ordinary_linemaps into the matrix.
+	* selftest.h (ASSERT_EQ): Reimplement in terms of...
+	(ASSERT_EQ_AT): New macro.
+
 2016-07-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/71801
