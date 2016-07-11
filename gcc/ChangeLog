@@ -1,3 +1,9 @@
+2016-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71823
+	* tree-vect-stmts.c (vectorizable_operation): Use vect_get_vec_defs
+	to get vec_oprnds2 from op2.
+
 2016-07-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (x86_64_immediate_operand) <case CONST>:

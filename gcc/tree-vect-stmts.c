@@ -5362,11 +5362,8 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
 			       slp_node, -1);
 	  if (op_type == ternary_op)
-	    {
-	      vec_oprnds2.create (1);
-	      vec_oprnds2.quick_push (vect_get_vec_def_for_operand (op2,
-		                                                    stmt));
-	    }
+	    vect_get_vec_defs (op2, NULL_TREE, stmt, &vec_oprnds2, NULL,
+			       slp_node, -1);
 	}
       else
 	{
