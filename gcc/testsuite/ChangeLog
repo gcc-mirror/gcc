@@ -1,3 +1,8 @@
+2016-07-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/divkc3-1.c: New.
+	* gcc.target/powerpc/mulkc3-1.c: New.
+
 2016-07-12  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/params/blocksort-part.c: New test.

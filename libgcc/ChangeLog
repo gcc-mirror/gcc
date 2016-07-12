@@ -1,3 +1,12 @@
+2016-07-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/_divkc3.c: New.
+	* config/rs6000/_mulkc3.c: New.
+	* config/rs6000/quad-float128.h: Define TFtype; declare _mulkc3
+	and _divkc3.
+	* config/rs6000/t-float128: Add _mulkc3 and _divkc3 to
+	fp128_ppc_funcs.
+
 2016-07-11  Hale Wang  <hale.wang@arm.com>
 	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
