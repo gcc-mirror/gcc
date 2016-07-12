@@ -156,7 +156,7 @@
     {
     case CONST_INT:
       {
-        HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (op), DImode);
+        HOST_WIDE_INT val = INTVAL (op);
         return trunc_int_for_mode (val, SImode) == val;
       }
     case SYMBOL_REF:
@@ -199,14 +199,13 @@
 	{
 	  rtx op1 = XEXP (XEXP (op, 0), 0);
 	  rtx op2 = XEXP (XEXP (op, 0), 1);
-	  HOST_WIDE_INT offset;
 
 	  if (ix86_cmodel == CM_LARGE)
 	    return false;
 	  if (!CONST_INT_P (op2))
 	    return false;
 
-	  offset = trunc_int_for_mode (INTVAL (op2), DImode);
+	  HOST_WIDE_INT offset = INTVAL (op2);
 	  if (trunc_int_for_mode (offset, SImode) != offset)
 	    return false;
 
@@ -306,14 +305,13 @@
 	{
 	  rtx op1 = XEXP (XEXP (op, 0), 0);
 	  rtx op2 = XEXP (XEXP (op, 0), 1);
-	  HOST_WIDE_INT offset;
 
 	  if (ix86_cmodel == CM_LARGE)
 	    return false;
 	  if (!CONST_INT_P (op2))
 	    return false;
 
-	  offset = trunc_int_for_mode (INTVAL (op2), DImode);
+	  HOST_WIDE_INT offset = INTVAL (op2);
 	  if (trunc_int_for_mode (offset, SImode) != offset)
 	    return false;
 
