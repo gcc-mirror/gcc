@@ -934,6 +934,14 @@ requirements of the license of GCC.
     <listitem><para>Use the referenceable type concept.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2212">2212</link>:
+	<emphasis><code>tuple_size</code> for <code>const pair</code> request <code>&lt;tuple&gt;</code> header</emphasis>
+    </term>
+    <listitem><para>The <code>tuple_size</code> and <code>tuple_element</code>
+    partial specializations are defined in <code>&lt;utility&gt;</code> which
+    is included by <code>&lt;array&gt;</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2313">2313</link>:
 	<emphasis><code>tuple_size</code> should always derive from <code>integral_constant&lt;size_t, N&gt;</code></emphasis>
     </term>
