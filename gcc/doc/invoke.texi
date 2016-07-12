@@ -9150,6 +9150,9 @@ If the number of candidates in the set is smaller than this value,
 always try to remove unnecessary ivs from the set
 when adding a new one.
 
+@item avg-loop-niter
+Average number of iterations of a loop.
+
 @item scev-max-expr-size
 Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.
