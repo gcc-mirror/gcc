@@ -4794,6 +4794,7 @@ Function::export_func_with_type(Export* exp, const std::string& name,
       exp->write_c_string("(");
       const Typed_identifier* receiver = fntype->receiver();
       exp->write_name(receiver->name());
+      exp->write_escape(receiver->note());
       exp->write_c_string(" ");
       exp->write_type(receiver->type());
       exp->write_c_string(") ");
@@ -4817,6 +4818,7 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 	  else
 	    exp->write_c_string(", ");
 	  exp->write_name(p->name());
+	  exp->write_escape(p->note());
 	  exp->write_c_string(" ");
 	  if (!is_varargs || p + 1 != parameters->end())
 	    exp->write_type(p->type());
@@ -4850,6 +4852,7 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 	      else
 		exp->write_c_string(", ");
 	      exp->write_name(p->name());
+	      exp->write_escape(p->note());
 	      exp->write_c_string(" ");
 	      exp->write_type(p->type());
 	    }
@@ -4875,9 +4878,11 @@ Function::import_func(Import* imp, std::string* pname,
     {
       imp->require_c_string("(");
       std::string name = imp->read_name();
+      std::string escape_note = imp->read_escape();
       imp->require_c_string(" ");
       Type* rtype = imp->read_type();
       *preceiver = new Typed_identifier(name, rtype, imp->location());
+      (*preceiver)->set_note(escape_note);
       imp->require_c_string(") ");
     }
 
@@ -4894,6 +4899,7 @@ Function::import_func(Import* imp, std::string* pname,
       while (true)
 	{
 	  std::string name = imp->read_name();
+	  std::string escape_note = imp->read_escape();
 	  imp->require_c_string(" ");
 
 	  if (imp->match_c_string("..."))
@@ -4905,8 +4911,9 @@ Function::import_func(Import* imp, std::string* pname,
 	  Type* ptype = imp->read_type();
 	  if (*is_varargs)
 	    ptype = Type::make_array_type(ptype, NULL);
-	  parameters->push_back(Typed_identifier(name, ptype,
-						 imp->location()));
+	  Typed_identifier t = Typed_identifier(name, ptype, imp->location());
+	  t.set_note(escape_note);
+	  parameters->push_back(t);
 	  if (imp->peek_char() != ',')
 	    break;
 	  go_assert(!*is_varargs);
@@ -4934,10 +4941,13 @@ Function::import_func(Import* imp, std::string* pname,
 	  while (true)
 	    {
 	      std::string name = imp->read_name();
+	      std::string note = imp->read_escape();
 	      imp->require_c_string(" ");
 	      Type* rtype = imp->read_type();
-	      results->push_back(Typed_identifier(name, rtype,
-						  imp->location()));
+	      Typed_identifier t = Typed_identifier(name, rtype,
+						    imp->location());
+	      t.set_note(note);
+	      results->push_back(t);
 	      if (imp->peek_char() != ',')
 		break;
 	      imp->require_c_string(", ");
