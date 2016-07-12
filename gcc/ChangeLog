@@ -1,3 +1,24 @@
+2016-07-12  Steven Bosscher  <steven@gcc.gnu.org>
+	Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/23286
+	PR tree-optimization/70159
+	* doc/invoke.texi: Document -fcode-hoisting.
+	* common.opt (fcode-hoisting): New flag.
+	* opts.c (default_options_table): Enable -fcode-hoisting at -O2+.
+	* tree-ssa-pre.c (pre_stats): Add hoist_insert.
+	(do_regular_insertion): Rename to ...
+	(do_pre_regular_insertion): ... this and amend general comments
+	on insertion strathegy.
+	(do_partial_partial_insertion): Rename to ...
+	(do_pre_partial_partial_insertion): ... this.
+	(do_hoist_insertion): New function.
+	(insert_aux): Take flags on whether to do PRE and/or hoist insertion
+	and call do_hoist_insertion properly.
+	(insert): Adjust.
+	(pass_pre::gate): Enable also if -fcode-hoisting is enabled.
+	(pass_pre::execute): Register hoist_insert stats.
+
 2016-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71716

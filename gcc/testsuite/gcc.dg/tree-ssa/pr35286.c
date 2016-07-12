@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fno-code-hoisting -fdump-tree-pre-stats" } */
 int g2;
 struct A {
     int a; int b;

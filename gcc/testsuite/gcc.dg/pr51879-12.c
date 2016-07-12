@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-tail-merge -fdump-tree-pre" } */
+/* { dg-options "-O2 -ftree-tail-merge -fdump-tree-pre -fno-code-hoisting" } */
 
 __attribute__((pure)) int bar (int);
 __attribute__((pure)) int bar2 (int);
