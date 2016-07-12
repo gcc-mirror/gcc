@@ -3346,6 +3346,20 @@ arm_option_override (void)
 	}
     }
 
+  if (TARGET_VXWORKS_RTP)
+    {
+      if (!global_options_set.x_arm_pic_data_is_text_relative)
+	arm_pic_data_is_text_relative = 0;
+    }
+  else if (flag_pic
+	   && !arm_pic_data_is_text_relative
+	   && !(global_options_set.x_target_flags & MASK_SINGLE_PIC_BASE))
+    /* When text & data segments don't have a fixed displacement, the
+       intended use is with a single, read only, pic base register.
+       Unless the user explicitly requested not to do that, set
+       it.  */
+    target_flags |= MASK_SINGLE_PIC_BASE;
+
   /* If stack checking is disabled, we can use r10 as the PIC register,
      which keeps r9 available.  The EABI specifies r9 as the PIC register.  */
   if (flag_pic && TARGET_SINGLE_PIC_BASE)
@@ -3376,10 +3390,6 @@ arm_option_override (void)
       else
 	arm_pic_register = pic_register;
     }
-
-  if (TARGET_VXWORKS_RTP
-      && !global_options_set.x_arm_pic_data_is_text_relative)
-    arm_pic_data_is_text_relative = 0;
 
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
