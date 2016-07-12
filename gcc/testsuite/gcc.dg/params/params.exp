@@ -1,0 +1,64 @@
+# Copyright (C) 2016 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+proc param_run_test { param_name param_value } {
+    global srcdir
+    global subdir
+
+    dg-runtest $srcdir/$subdir/blocksort-part.c "" "-O3 --param $param_name=$param_value"
+}
+
+set fd [open "$objdir/../../params.options" r]
+set text [read $fd]
+close $fd
+
+# Main loop.
+foreach params [split $text "\n"] {
+    set parts [split $params "="]
+    set name [string trim [lindex $parts 0] '"']
+    set values [split [lindex $parts 1] ","]
+    if { [llength $values] == 3 } {
+	set default [lindex $values 0]
+	set min [lindex $values 1]
+	set max [lindex $values 2]
+	set int_max "INT_MAX"
+
+	if { $min != -1 } {
+	    param_run_test $name $min
+	}
+	if { $max != $min && $max > 0 && $max != $int_max } {
+	    param_run_test $name $max
+	}
+    }
+    if { [llength $values] == 5 } {
+	foreach v $values {
+	    param_run_test $name $v
+	}
+    }
+}
+
+# All done.
+dg-finish

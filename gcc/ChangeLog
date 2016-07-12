@@ -6,6 +6,11 @@
 
 2016-07-12  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Append rule for params-options.h.
+	* params-options.h: New file.
+
+2016-07-12  Martin Liska  <mliska@suse.cz>
+
 	* ira-build.c (mark_loops_for_removal): Properly iterate
 	loops.
 

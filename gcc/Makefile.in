@@ -2502,7 +2502,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       c-family/c-target-hooks-def.h params.list case-cfn-macros.h \
+       c-family/c-target-hooks-def.h params.list params.options case-cfn-macros.h \
        cfn-operators.pd
 
 #
@@ -3333,6 +3333,13 @@ s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
 	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
 	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
 	$(STAMP) s-params.list
+
+params.options: s-params.options; @true
+s-params.options: $(srcdir)/params-options.h $(srcdir)/params.def
+	$(CPP) $(srcdir)/params-options.h | sed 's/^#.*//;/^$$/d' > tmp-params.options
+	$(SHELL) $(srcdir)/../move-if-change tmp-params.options params.options
+	$(STAMP) s-params.options
+
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \
