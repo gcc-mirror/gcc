@@ -36,18 +36,19 @@
 
 namespace __gnu_debug
 {
-  /// Class std::basic_string with safety/checking/debug instrumentation.
-  template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
-	   typename _Allocator = std::allocator<_CharT> >
-    class basic_string
-    : public __gnu_debug::_Safe_container<
-	basic_string<_CharT, _Traits, _Allocator>,
-	_Allocator, _Safe_sequence, false>,
-      public std::basic_string<_CharT, _Traits, _Allocator>
-    {
-      typedef std::basic_string<_CharT, _Traits, _Allocator>	_Base;
-      typedef __gnu_debug::_Safe_container<
-	basic_string, _Allocator, _Safe_sequence, false>	_Safe;
+/// Class std::basic_string with safety/checking/debug instrumentation.
+template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
+	 typename _Allocator = std::allocator<_CharT> >
+  class basic_string
+  : public __gnu_debug::_Safe_container<
+      basic_string<_CharT, _Traits, _Allocator>,
+      _Allocator, _Safe_sequence, bool(_GLIBCXX_USE_CXX11_ABI)>,
+    public std::basic_string<_CharT, _Traits, _Allocator>
+  {
+    typedef std::basic_string<_CharT, _Traits, _Allocator>	_Base;
+    typedef __gnu_debug::_Safe_container<
+      basic_string, _Allocator, _Safe_sequence, bool(_GLIBCXX_USE_CXX11_ABI)>
+      _Safe;
 
   public:
     // types:
@@ -71,9 +72,15 @@ namespace __gnu_debug
 
     using _Base::npos;
 
+    basic_string()
+#if __cplusplus >= 201103L
+    noexcept(std::is_nothrow_default_constructible<_Base>::value)
+#endif
+    : _Base() { }
+
     // 21.3.1 construct/copy/destroy:
-    explicit basic_string(const _Allocator& __a = _Allocator())
-    // _GLIBCXX_NOEXCEPT
+    explicit
+    basic_string(const _Allocator& __a) _GLIBCXX_NOEXCEPT
     : _Base(__a) { }
 
 #if __cplusplus < 201103L
@@ -90,7 +97,19 @@ namespace __gnu_debug
     : _Base(__l, __a)
     { }
 
+#if _GLIBCXX_USE_CXX11_ABI
+    basic_string(const basic_string& __s, const _Allocator& __a)
+    : _Base(__s, __a) { }
+
+    basic_string(basic_string&& __s, const _Allocator& __a)
+    : _Base(std::move(__s), __a) { }
+#endif
+
     ~basic_string() = default;
+
+    // Provides conversion from a normal-mode string to a debug-mode string
+    basic_string(_Base&& __base) noexcept
+    : _Base(std::move(__base)) { }
 #endif // C++11
 
     // Provides conversion from a normal-mode string to a debug-mode string
@@ -277,7 +296,7 @@ namespace __gnu_debug
     reference
     operator[](size_type __pos) // _GLIBCXX_NOEXCEPT
     {
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
+#if __cplusplus < 201103L && defined(_GLIBCXX_DEBUG_PEDANTIC)
       __glibcxx_check_subscript(__pos);
 #else
       // as an extension v3 allows s[s.size()] when s is non-const.
@@ -406,6 +425,7 @@ namespace __gnu_debug
 #if __cplusplus >= 201103L
     basic_string&
     assign(basic_string&& __x)
+    noexcept(noexcept(std::declval<_Base&>().assign(std::move(__x))))
     {
       _Base::assign(std::move(__x));
       this->_M_invalidate_all();
@@ -701,6 +721,9 @@ namespace __gnu_debug
 
     void
     swap(basic_string& __x)
+#if _GLIBCXX_USE_CXX11_ABI
+    _GLIBCXX_NOEXCEPT
+#endif
     {
       _Safe::_M_swap(__x);
       _Base::swap(__x);

@@ -61,11 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (this == &__s)
 	return;
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 431. Swapping containers with unequal allocators.
-      // TODO propagation traits
-      std::__alloc_swap<allocator_type>::_S_do_it(_M_get_allocator(),
-						  __s._M_get_allocator());
+      _Alloc_traits::_S_on_swap(_M_get_allocator(), __s._M_get_allocator());
 
       if (_M_is_local())
 	if (__s._M_is_local())
@@ -404,7 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__new_size <= this->capacity())
 	{
-	  _CharT* __p = this->_M_data() + __pos1;
+	  pointer __p = this->_M_data() + __pos1;
 
 	  const size_type __how_much = __old_size - __pos1 - __n1;
 	  if (__how_much && __n1 != __n2)
@@ -433,7 +429,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__new_size <= this->capacity())
 	{
-	  _CharT* __p = this->_M_data() + __pos;
+	  pointer __p = this->_M_data() + __pos;
 
 	  const size_type __how_much = __old_size - __pos - __len1;
 	  if (_M_disjunct(__s))

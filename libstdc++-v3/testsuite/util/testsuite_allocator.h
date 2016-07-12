@@ -119,6 +119,8 @@ namespace __gnu_test
       tracker_allocator() = default;
       tracker_allocator(const tracker_allocator&) = default;
       tracker_allocator(tracker_allocator&&) = default;
+      tracker_allocator& operator=(const tracker_allocator&) = default;
+      tracker_allocator& operator=(tracker_allocator&&) = default;
 
       // Perfect forwarding constructor.
       template<typename... _Args>

@@ -840,6 +840,18 @@ requirements of the license of GCC.
     <listitem><para>Add additional overloads.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2063">2063</link>:
+	<emphasis>Contradictory requirements for string move assignment</emphasis>
+    </term>
+    <listitem><para>Respect propagation trait for move assignment.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2064">2064</link>:
+	<emphasis>More noexcept issues in basic_string</emphasis>
+    </term>
+    <listitem><para>Add noexcept to the comparison operators.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2067">2067</link>:
 	<emphasis>packaged_task should have deleted copy c'tor with const parameter</emphasis>
     </term>
