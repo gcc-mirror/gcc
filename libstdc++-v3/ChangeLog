@@ -1,3 +1,8 @@
+2016-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/modifiers/emplace/self_emplace.cc:
+	Add testcase from LWG 2164.
+
 2016-07-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_vector.h (push_back(const value_type&)): Forward
