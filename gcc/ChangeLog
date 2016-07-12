@@ -1,3 +1,8 @@
+2016-07-12  Martin Liska  <mliska@suse.cz>
+
+	* ira-build.c (mark_loops_for_removal): Properly iterate
+	loops.
+
 2016-07-12  Steven Bosscher  <steven@gcc.gnu.org>
 	Richard Biener  <rguenther@suse.de>
 
