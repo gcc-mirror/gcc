@@ -2984,12 +2984,19 @@ optimize_atomic_compare_exchange_p (gimple *stmt)
 
   tree expected = gimple_call_arg (stmt, 1);
   if (TREE_CODE (expected) != ADDR_EXPR
-      || !SSA_VAR_P (TREE_OPERAND (expected, 0))
-      || !is_gimple_reg_type (TREE_TYPE (TREE_OPERAND (expected, 0)))
+      || !SSA_VAR_P (TREE_OPERAND (expected, 0)))
+    return false;
+
+  tree etype = TREE_TYPE (TREE_OPERAND (expected, 0));
+  if (!is_gimple_reg_type (etype)
       || !auto_var_in_fn_p (TREE_OPERAND (expected, 0), current_function_decl)
-      || TREE_THIS_VOLATILE (TREE_TYPE (TREE_OPERAND (expected, 0)))
-      || TREE_CODE (TREE_TYPE (TREE_OPERAND (expected, 0))) == VECTOR_TYPE
-      || TREE_CODE (TREE_TYPE (TREE_OPERAND (expected, 0))) == COMPLEX_TYPE)
+      || TREE_THIS_VOLATILE (etype)
+      || VECTOR_TYPE_P (etype)
+      || TREE_CODE (etype) == COMPLEX_TYPE
+      /* Don't optimize floating point expected vars, VIEW_CONVERT_EXPRs
+	 might not preserve all the bits.  See PR71716.  */
+      || SCALAR_FLOAT_TYPE_P (etype)
+      || TYPE_PRECISION (etype) != GET_MODE_BITSIZE (TYPE_MODE (etype)))
     return false;
 
   tree weak = gimple_call_arg (stmt, 3);
@@ -3005,8 +3012,7 @@ optimize_atomic_compare_exchange_p (gimple *stmt)
       && optab_handler (sync_compare_and_swap_optab, mode) == CODE_FOR_nothing)
     return false;
 
-  if (int_size_in_bytes (TREE_TYPE (TREE_OPERAND (expected, 0)))
-      != GET_MODE_SIZE (mode))
+  if (int_size_in_bytes (etype) != GET_MODE_SIZE (mode))
     return false;
 
   return true;

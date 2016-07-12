@@ -1,3 +1,10 @@
+2016-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71716
+	* gimple-fold.c (optimize_atomic_compare_exchange_p): Return false
+	for SCALAR_FLOAT_TYPE_P type of expected var, or if TYPE_PRECISION
+	is different from mode's bitsize.  Small cleanup.
+
 2016-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/68961
