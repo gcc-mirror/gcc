@@ -5,7 +5,7 @@
 	Only include <array>.
 	* testsuite/23_containers/array/tuple_interface/tuple_size.cc:
 	Likewise.
-	* doc/xml/manual/intro.xml; Document LWG 2212 support.
+	* doc/xml/manual/intro.xml: Document LWG 2212 support.
 	* doc/html*: Regenerate.
 
 	* testsuite/23_containers/vector/modifiers/emplace/self_emplace.cc:
