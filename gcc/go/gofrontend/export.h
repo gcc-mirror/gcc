@@ -161,6 +161,11 @@ class Export : public String_dump
   void
   write_type(const Type*);
 
+  // Write the escape note to the export stream.  If NOTE is NULL, write
+  // nothing.
+  void
+  write_escape(std::string* note);
+
  private:
   Export(const Export&);
   Export& operator=(const Export&);

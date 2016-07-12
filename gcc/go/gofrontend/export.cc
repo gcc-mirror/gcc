@@ -436,6 +436,21 @@ Export::write_type(const Type* type)
     this->type_refs_[type] = index;
 }
 
+// Export escape note.
+
+void
+Export::write_escape(std::string* note)
+{
+  if (note != NULL && *note != "esc:0x0")
+    {
+      this->write_c_string(" ");
+      char buf[50];
+      go_assert(note->find("esc:") != std::string::npos);
+      snprintf(buf, sizeof buf, "<%s>", note->c_str());
+      this->write_c_string(buf);
+    }
+}
+
 // Add the builtin types to the export table.
 
 void

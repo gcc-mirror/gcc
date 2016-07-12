@@ -197,6 +197,10 @@ class Import
   Type*
   read_type();
 
+  // Read an escape note.
+  std::string
+  read_escape();
+
  private:
   static Stream*
   try_package_in_directory(const std::string&, Location);

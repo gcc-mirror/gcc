@@ -762,6 +762,42 @@ Import::read_type()
   return type;
 }
 
+// Read an escape note.
+
+std::string
+Import::read_escape()
+{
+  if (this->match_c_string(" <esc:"))
+    {
+      Stream* stream = this->stream_;
+      this->require_c_string(" <esc:");
+
+      std::string escape = "esc:";
+      int c;
+      while (true)
+	{
+	  c = stream->get_char();
+	  if (c != 'x' && !ISXDIGIT(c))
+	    break;
+	  escape += c;
+	}
+
+      if (c != '>')
+	{
+	  error_at(this->location(),
+		   "error in import data at %d: expect %< %> or %<>%>, got %c",
+		   stream->pos(), c);
+	  stream->set_saw_error();
+	  stream->advance(1);
+	  escape = Escape_note::make_tag(Node::ESCAPE_UNKNOWN);
+	}
+      return escape;
+    }
+  else
+    return Escape_note::make_tag(Node::ESCAPE_UNKNOWN);
+}
+
+
 // Register the builtin types.
 
 void
