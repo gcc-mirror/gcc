@@ -1,5 +1,13 @@
 2016-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/pair/astuple/astuple.cc: Only include <utility>.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc:
+	Only include <array>.
+	* testsuite/23_containers/array/tuple_interface/tuple_size.cc:
+	Likewise.
+	* doc/xml/manual/intro.xml; Document LWG 2212 support.
+	* doc/html*: Regenerate.
+
 	* testsuite/23_containers/vector/modifiers/emplace/self_emplace.cc:
 	Add testcase from LWG 2164.
 
