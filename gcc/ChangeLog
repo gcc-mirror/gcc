@@ -1,3 +1,9 @@
+2016-07-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/71700
+	* expr.c (store_constructor): Mask sign-extended bits when widening
+	sub-word constructor element at the start of a word.
+
 2016-07-12  Martin Liska  <mliska@suse.cz>
 
 	* ira-build.c (mark_loops_for_removal): Properly iterate
