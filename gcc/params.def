@@ -527,6 +527,11 @@ DEFPARAM(PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND,
 	 "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization.",
 	 10, 0, 0)
 
+DEFPARAM(PARAM_AVG_LOOP_NITER,
+	 "avg-loop-niter",
+	 "Average number of iterations of a loop.",
+	 10, 1, 0)
+
 DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
  	 "scev-max-expr-size",
 	 "Bound on size of expressions used in the scalar evolutions analyzer.",
