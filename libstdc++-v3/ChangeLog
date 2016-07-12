@@ -1,5 +1,9 @@
 2016-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new: Remove nothrow sized deletes (LWG 2458).
+	* doc/xml/manual/intro.xml: Document DR 2458 status.
+	* doc/html*: Regenerate.
+
 	* testsuite/20_util/pair/astuple/astuple.cc: Only include <utility>.
 	* testsuite/23_containers/array/tuple_interface/tuple_element.cc:
 	Only include <array>.
