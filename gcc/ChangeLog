@@ -1,3 +1,9 @@
+2016-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/68961
+	* fwprop.c (propagate_rtx): Allow SUBREGs of VEC_CONCAT and CONCAT
+	to simplify to a non-constant.
+
 2016-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71758
