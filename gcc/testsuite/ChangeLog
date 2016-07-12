@@ -1,3 +1,35 @@
+2016-07-12  Steven Bosscher  <steven@gcc.gnu.org>
+	Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/23286
+	PR tree-optimization/70159
+	* gcc.dg/tree-ssa/ssa-pre-11.c: Disable code hosting.
+	* gcc.dg/tree-ssa/ssa-pre-27.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-28.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr35286.c: Likewise.
+	* gcc.dg/tree-ssa/pr35287.c: Likewise.
+	* gcc.dg/hoist-register-pressure-1.c: Likewise.
+	* gcc.dg/hoist-register-pressure-2.c: Likewise.
+	* gcc.dg/hoist-register-pressure-3.c: Likewise.
+	* gcc.dg/pr51879-12.c: Likewise.
+	* gcc.dg/strlenopt-9.c: Likewise.
+	* gcc.dg/tree-ssa/pr47392.c: Likewise.
+	* gcc.dg/tree-ssa/pr68619-4.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-5.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-35.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-36.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre3.c: Adjust so hosting doesn't apply.
+	* gcc.dg/tree-ssa/pr43491.c: Scan optimized dump for desired result.
+	* gcc.dg/tree-ssa/ssa-pre-31.c: Adjust expected outcome for hoisting.
+	* gcc.dg/tree-ssa/ssa-hoist-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-hoist-2.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-hoist-3.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-hoist-4.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-hoist-5.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-hoist-6.c: New testcase.
+	* gfortran.dg/pr43984.f90: Adjust expected outcome.
+
 2016-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/68961

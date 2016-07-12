@@ -1,4 +1,4 @@
-/* SSA-PRE for trees.
+/* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
    Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
@@ -55,11 +55,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "alias.h"
 
+/* Even though this file is called tree-ssa-pre.c, we actually
+   implement a bit more than just PRE here.  All of them piggy-back
+   on GVN which is implemented in tree-ssa-sccvn.c.
+
+     1. Full Redundancy Elimination (FRE)
+	This is the elimination phase of GVN.
+
+     2. Partial Redundancy Elimination (PRE)
+	This is adds computation of AVAIL_OUT and ANTIC_IN and
+	doing expression insertion to form GVN-PRE.
+
+     3. Code hoisting
+	This optimization uses the ANTIC_IN sets computed for PRE
+	to move expressions further up than PRE would do, to make
+	multiple computations of the same value fully redundant.
+	This pass is explained below (after the explanation of the
+	basic algorithm for PRE).
+*/
+
 /* TODO:
 
    1. Avail sets can be shared by making an avail_find_leader that
       walks up the dominator tree and looks in those avail sets.
       This might affect code optimality, it's unclear right now.
+      Currently the AVAIL_OUT sets are the remaining quadraticness in
+      memory of GVN-PRE.
    2. Strength reduction can be performed by anticipating expressions
       we can repair later on.
    3. We can do back-substitution or smarter value numbering to catch
@@ -71,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
    represent the actual statement containing the expressions we care about,
    and we cache the value number by putting it in the expression.  */
 
-/* Basic algorithm
+/* Basic algorithm for Partial Redundancy Elimination:
 
    First we walk the statements to generate the AVAIL sets, the
    EXP_GEN sets, and the tmp_gen sets.  EXP_GEN sets represent the
@@ -111,16 +132,74 @@ along with GCC; see the file COPYING3.  If not see
    In order to make it fully redundant, we insert the expression into
    the predecessors where it is not available, but is ANTIC.
 
+   When optimizing for size, we only eliminate the partial redundancy
+   if we need to insert in only one predecessor.  This avoids almost
+   completely the code size increase that PRE usually causes.
+
    For the partial anticipation case, we only perform insertion if it
    is partially anticipated in some block, and fully available in all
    of the predecessors.
 
-   insert/insert_aux/do_regular_insertion/do_partial_partial_insertion
-   performs these steps.
+   do_pre_regular_insertion/do_pre_partial_partial_insertion
+   performs these steps, driven by insert/insert_aux.
 
    Fourth, we eliminate fully redundant expressions.
    This is a simple statement walk that replaces redundant
    calculations with the now available values.  */
+
+/* Basic algorithm for Code Hoisting:
+
+   Code hoisting is: Moving value computations up in the control flow
+   graph to make multiple copies redundant.  Typically this is a size
+   optimization, but there are cases where it also is helpful for speed.
+
+   A simple code hoisting algorithm is implemented that piggy-backs on
+   the PRE infrastructure.  For code hoisting, we have to know ANTIC_OUT
+   which is effectively ANTIC_IN - AVAIL_OUT.  The latter two have to be
+   computed for PRE, and we can use them to perform a limited version of
+   code hoisting, too.
+
+   For the purpose of this implementation, a value is hoistable to a basic
+   block B if the following properties are met:
+
+   1. The value is in ANTIC_IN(B) -- the value will be computed on all
+      paths from B to function exit and it can be computed in B);
+
+   2. The value is not in AVAIL_OUT(B) -- there would be no need to
+      compute the value again and make it available twice;
+
+   3. All successors of B are dominated by B -- makes sure that inserting
+      a computation of the value in B will make the remaining
+      computations fully redundant;
+
+   4. At least one successor has the value in AVAIL_OUT -- to avoid
+      hoisting values up too far;
+
+   5. There are at least two successors of B -- hoisting in straight
+      line code is pointless.
+
+   The third condition is not strictly necessary, but it would complicate
+   the hoisting pass a lot.  In fact, I don't know of any code hoisting
+   algorithm that does not have this requirement.  Fortunately, experiments
+   have show that most candidate hoistable values are in regions that meet
+   this condition (e.g. diamond-shape regions).
+
+   The forth condition is necessary to avoid hoisting things up too far
+   away from the uses of the value.  Nothing else limits the algorithm
+   from hoisting everything up as far as ANTIC_IN allows.  Experiments
+   with SPEC and CSiBE have shown that hoisting up too far results in more
+   spilling, less benefits for code size, and worse benchmark scores.
+   Fortunately, in practice most of the interesting hoisting opportunities
+   are caught despite this limitation.
+
+   For hoistable values that meet all conditions, expressions are inserted
+   to make the calculation of the hoistable value fully redundant.  We
+   perform code hoisting insertions after each round of PRE insertions,
+   because code hoisting never exposes new PRE opportunities, but PRE can
+   create new code hoisting opportunities.
+
+   The code hoisting algorithm is implemented in do_hoist_insert, driven
+   by insert/insert_aux.  */
 
 /* Representations of value numbers:
 
@@ -446,6 +525,9 @@ static struct
   /* The number of inserts found due to partial anticipation  */
   int pa_insert;
 
+  /* The number of inserts made for code hoisting.  */
+  int hoist_insert;
+
   /* The number of new PHI nodes added by PRE.  */
   int phis;
 } pre_stats;
@@ -455,6 +537,7 @@ static pre_expr bitmap_find_leader (bitmap_set_t, unsigned int);
 static void bitmap_value_insert_into_set (bitmap_set_t, pre_expr);
 static void bitmap_value_replace_in_set (bitmap_set_t, pre_expr);
 static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
+static void bitmap_set_and (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
 static void bitmap_insert_into_set_1 (bitmap_set_t, pre_expr,
@@ -3104,7 +3187,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 
 
 
-/* Perform insertion of partially redundant values.
+/* Perform insertion of partially redundant or hoistable values.
    For BLOCK, do the following:
    1.  Propagate the NEW_SETS of the dominator into the current block.
    If the block has multiple predecessors,
@@ -3115,15 +3198,20 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
        2c. Insert a new PHI merging the values of the predecessors.
        2d. Insert the new PHI, and the new expressions, into the
 	   NEW_SETS set.
-   3. Recursively call ourselves on the dominator children of BLOCK.
+   If the block has multiple successors,
+       3a. Iterate over the ANTIC values for the block to see if
+	   any of them are good candidates for hoisting.
+       3b. If so, insert expressions computing the values in BLOCK,
+	   and add the new expressions into the NEW_SETS set.
+   4. Recursively call ourselves on the dominator children of BLOCK.
 
-   Steps 1, 2a, and 3 are done by insert_aux. 2b, 2c and 2d are done by
-   do_regular_insertion and do_partial_insertion.
-
+   Steps 1, 2a, and 4 are done by insert_aux. 2b, 2c and 2d are done by
+   do_pre_regular_insertion and do_partial_insertion.  3a and 3b are
+   done in do_hoist_insertion.
 */
 
 static bool
-do_regular_insertion (basic_block block, basic_block dom)
+do_pre_regular_insertion (basic_block block, basic_block dom)
 {
   bool new_stuff = false;
   vec<pre_expr> exprs;
@@ -3292,9 +3380,8 @@ do_regular_insertion (basic_block block, basic_block dom)
    In this case, we know that putting it earlier will enable us to
    remove the later computation.  */
 
-
 static bool
-do_partial_partial_insertion (basic_block block, basic_block dom)
+do_pre_partial_partial_insertion (basic_block block, basic_block dom)
 {
   bool new_stuff = false;
   vec<pre_expr> exprs;
@@ -3423,8 +3510,138 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   return new_stuff;
 }
 
+/* Insert expressions in BLOCK to compute hoistable values up.
+   Return TRUE if something was inserted, otherwise return FALSE.
+   The caller has to make sure that BLOCK has at least two successors.  */
+
 static bool
-insert_aux (basic_block block)
+do_hoist_insertion (basic_block block)
+{
+  edge e;
+  edge_iterator ei;
+  bool new_stuff = false;
+  unsigned i;
+  gimple_stmt_iterator last;
+
+  /* At least two successors, or else...  */
+  gcc_assert (EDGE_COUNT (block->succs) >= 2);
+
+  /* Check that all successors of BLOCK are dominated by block.
+     We could use dominated_by_p() for this, but actually there is a much
+     quicker check: any successor that is dominated by BLOCK can't have
+     more than one predecessor edge.  */
+  FOR_EACH_EDGE (e, ei, block->succs)
+    if (! single_pred_p (e->dest))
+      return false;
+
+  /* Determine the insertion point.  If we cannot safely insert before
+     the last stmt if we'd have to, bail out.  */
+  last = gsi_last_bb (block);
+  if (!gsi_end_p (last)
+      && !is_ctrl_stmt (gsi_stmt (last))
+      && stmt_ends_bb_p (gsi_stmt (last)))
+    return false;
+
+  /* Compute the set of hoistable expressions from ANTIC_IN.  First compute
+     hoistable values.  */
+  bitmap_set hoistable_set;
+
+  /* A hoistable value must be in ANTIC_IN(block)
+     but not in AVAIL_OUT(BLOCK).  */
+  bitmap_initialize (&hoistable_set.values, &grand_bitmap_obstack);
+  bitmap_and_compl (&hoistable_set.values,
+		    &ANTIC_IN (block)->values, &AVAIL_OUT (block)->values);
+
+  /* Short-cut for a common case: hoistable_set is empty.  */
+  if (bitmap_empty_p (&hoistable_set.values))
+    return false;
+
+  /* Compute which of the hoistable values is in AVAIL_OUT of
+     at least one of the successors of BLOCK.  */
+  bitmap_head availout_in_some;
+  bitmap_initialize (&availout_in_some, &grand_bitmap_obstack);
+  FOR_EACH_EDGE (e, ei, block->succs)
+    /* Do not consider expressions solely because their availability
+       on loop exits.  They'd be ANTIC-IN throughout the whole loop
+       and thus effectively hoisted across loops by combination of
+       PRE and hoisting.  */
+    if (! loop_exit_edge_p (block->loop_father, e))
+      bitmap_ior_and_into (&availout_in_some, &hoistable_set.values,
+			   &AVAIL_OUT (e->dest)->values);
+  bitmap_clear (&hoistable_set.values);
+
+  /* Short-cut for a common case: availout_in_some is empty.  */
+  if (bitmap_empty_p (&availout_in_some))
+    return false;
+
+  /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
+  hoistable_set.values = availout_in_some;
+  hoistable_set.expressions = ANTIC_IN (block)->expressions;
+
+  /* Now finally construct the topological-ordered expression set.  */
+  vec<pre_expr> exprs = sorted_array_from_bitmap_set (&hoistable_set);
+
+  bitmap_clear (&hoistable_set.values);
+
+  /* If there are candidate values for hoisting, insert expressions
+     strategically to make the hoistable expressions fully redundant.  */
+  pre_expr expr;
+  FOR_EACH_VEC_ELT (exprs, i, expr)
+    {
+      /* While we try to sort expressions topologically above the
+         sorting doesn't work out perfectly.  Catch expressions we
+	 already inserted.  */
+      unsigned int value_id = get_expr_value_id (expr);
+      if (bitmap_set_contains_value (AVAIL_OUT (block), value_id))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file,
+		       "Already inserted expression for ");
+	      print_pre_expr (dump_file, expr);
+	      fprintf (dump_file, " (%04d)\n", value_id);
+	    }
+	  continue;
+	}
+
+      /* OK, we should hoist this value.  Perform the transformation.  */
+      pre_stats.hoist_insert++;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   "Inserting expression in block %d for code hoisting: ",
+		   block->index);
+	  print_pre_expr (dump_file, expr);
+	  fprintf (dump_file, " (%04d)\n", value_id);
+	}
+
+      gimple_seq stmts = NULL;
+      tree res = create_expression_by_pieces (block, expr, &stmts,
+					      get_expr_type (expr));
+      if (gsi_end_p (last) || is_ctrl_stmt (gsi_stmt (last)))
+	gsi_insert_seq_before (&last, stmts, GSI_SAME_STMT);
+      else
+	gsi_insert_seq_after (&last, stmts, GSI_NEW_STMT);
+
+      /* Make sure to not return true if expression creation ultimately
+         failed but also make sure to insert any stmts produced as they
+	 are tracked in inserted_exprs.  */
+      if (! res)
+	continue;
+
+      new_stuff = true;
+    }
+
+  exprs.release ();
+
+  return new_stuff;
+}
+
+/* Do a dominator walk on the control flow graph, and insert computations
+   of values as necessary for PRE and hoisting.  */
+
+static bool
+insert_aux (basic_block block, bool do_pre, bool do_hoist)
 {
   basic_block son;
   bool new_stuff = false;
@@ -3437,7 +3654,11 @@ insert_aux (basic_block block)
 	{
 	  unsigned i;
 	  bitmap_iterator bi;
-	  bitmap_set_t newset = NEW_SETS (dom);
+	  bitmap_set_t newset;
+
+	  /* First, update the AVAIL_OUT set with anything we may have
+	     inserted higher up in the dominator tree.  */
+	  newset = NEW_SETS (dom);
 	  if (newset)
 	    {
 	      /* Note that we need to value_replace both NEW_SETS, and
@@ -3451,25 +3672,31 @@ insert_aux (basic_block block)
 		  bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
 		}
 	    }
-	  if (!single_pred_p (block))
+
+	  /* Insert expressions for partial redundancies.  */
+	  if (do_pre && !single_pred_p (block))
 	    {
-	      new_stuff |= do_regular_insertion (block, dom);
+	      new_stuff |= do_pre_regular_insertion (block, dom);
 	      if (do_partial_partial)
-		new_stuff |= do_partial_partial_insertion (block, dom);
+		new_stuff |= do_pre_partial_partial_insertion (block, dom);
 	    }
+
+	  /* Insert expressions for hoisting.  */
+	  if (do_hoist && EDGE_COUNT (block->succs) >= 2)
+	    new_stuff |= do_hoist_insertion (block);
 	}
     }
   for (son = first_dom_son (CDI_DOMINATORS, block);
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
     {
-      new_stuff |= insert_aux (son);
+      new_stuff |= insert_aux (son, do_pre, do_hoist);
     }
 
   return new_stuff;
 }
 
-/* Perform insertion of partially redundant values.  */
+/* Perform insertion of partially redundant and hoistable values.  */
 
 static void
 insert (void)
@@ -3486,7 +3713,8 @@ insert (void)
       num_iterations++;
       if (dump_file && dump_flags & TDF_DETAILS)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
-      new_stuff = insert_aux (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+      new_stuff = insert_aux (ENTRY_BLOCK_PTR_FOR_FN (cfun), flag_tree_pre,
+			      flag_code_hoisting);
 
       /* Clear the NEW sets before the next iteration.  We have already
          fully propagated its contents.  */
@@ -4813,7 +5041,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_pre != 0; }
+  virtual bool gate (function *)
+    { return flag_tree_pre != 0 || flag_code_hoisting != 0; }
   virtual unsigned int execute (function *);
 
 }; // class pass_pre
@@ -4868,6 +5097,7 @@ pass_pre::execute (function *fun)
 
   statistics_counter_event (fun, "Insertions", pre_stats.insertions);
   statistics_counter_event (fun, "PA inserted", pre_stats.pa_insert);
+  statistics_counter_event (fun, "HOIST inserted", pre_stats.hoist_insert);
   statistics_counter_event (fun, "New PHIs", pre_stats.phis);
   statistics_counter_event (fun, "Eliminated", pre_stats.eliminations);
 

@@ -404,7 +404,7 @@ Objective-C and Objective-C++ Dialects}.
 -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-vars -ftree-copy-prop -ftree-dce -ftree-dominator-opts @gol
--ftree-dse -ftree-forwprop -ftree-fre -ftree-loop-if-convert @gol
+-ftree-dse -ftree-forwprop -ftree-fre -fcode-hoisting -ftree-loop-if-convert @gol
 -ftree-loop-if-convert-stores -ftree-loop-im @gol
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
@@ -6380,6 +6380,7 @@ also turns on the following optimization flags:
 -fstrict-aliasing -fstrict-overflow @gol
 -ftree-builtin-call-dce @gol
 -ftree-switch-conversion -ftree-tail-merge @gol
+-fcode-hoisting @gol
 -ftree-pre @gol
 -ftree-vrp @gol
 -fipa-ra}
@@ -7272,6 +7273,14 @@ and the @option{large-stack-frame-growth} parameter to 400.
 @opindex ftree-reassoc
 Perform reassociation on trees.  This flag is enabled by default
 at @option{-O} and higher.
+
+@item -fcode-hoisting
+@opindex fcode-hoisting
+Perform code hoisting.  Code hoisting tries to move the
+evaluation of expressions executed on all paths to the function exit
+as early as possible.  This is especially useful as a code size
+optimization, but it often helps for code speed as well.
+This flag is enabled by defailt at @option{-O2} and higher.
 
 @item -ftree-pre
 @opindex ftree-pre
@@ -12230,8 +12239,8 @@ Dump each function after STORE-CCP@.  The file name is made by appending
 
 @item pre
 @opindex fdump-tree-pre
-Dump trees after partial redundancy elimination.  The file name is made
-by appending @file{.pre} to the source file name.
+Dump trees after partial redundancy elimination and/or code hoisting.
+The file name is made by appending @file{.pre} to the source file name.
 
 @item fre
 @opindex fdump-tree-fre

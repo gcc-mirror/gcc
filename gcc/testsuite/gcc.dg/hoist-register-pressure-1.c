@@ -1,4 +1,4 @@
-/* { dg-options "-Os -fdump-rtl-hoist" }  */
+/* { dg-options "-Os -fdump-rtl-hoist -fno-code-hoisting" }  */
 /* The rtl hoist pass requires that the expression to be hoisted can
    be assigned without clobbering cc.  For a PLUS rtx on S/390 this
    requires a load address instruction which is fine on 64 bit but
