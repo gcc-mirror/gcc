@@ -135,6 +135,20 @@ test04()
   VERIFY( va[0]._i == 1 );
 }
 
+void
+test05()
+{
+  // LWG DR 2164
+  std::vector<int> v;
+  v.reserve(4);
+  v = { 1, 2, 3 };
+  v.emplace(v.begin(), v.back());
+  VERIFY( v[0] == 3 );
+  VERIFY( v[1] == 1 );
+  VERIFY( v[2] == 2 );
+  VERIFY( v[3] == 3 );
+}
+
 int main()
 {
   test01();
