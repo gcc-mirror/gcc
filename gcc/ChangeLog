@@ -1,3 +1,9 @@
+2016-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/68961
+	* config/i386/sse.md (movsd/movhpd to movupd peephole2s): Add new
+	peephole variant.  Use sse_reg_operand predicates.
+
 2016-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (x86_64_immediate_operand)
@@ -41,7 +47,7 @@
 	loops.
 
 2016-07-12  Steven Bosscher  <steven@gcc.gnu.org>
-	Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/23286
 	PR tree-optimization/70159
