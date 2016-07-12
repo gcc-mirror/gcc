@@ -1019,6 +1019,13 @@ requirements of the license of GCC.
     <listitem><para>Make <code>noexcept</code> specifications conditional.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2458">2458</link>:
+       <emphasis>N3778 and new library deallocation signatures
+       </emphasis>
+    </term>
+    <listitem><para>Remove unused overloads.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2459">2459</link>:
        <emphasis><code>std::polar</code> should require a non-negative rho
        </emphasis>
