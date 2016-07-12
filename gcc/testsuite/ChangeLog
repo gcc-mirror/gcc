@@ -1,3 +1,8 @@
+2016-07-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/71700
+	* gcc.c-torture/execute/pr71700.c: New test.
+
 2016-07-12  Steven Bosscher  <steven@gcc.gnu.org>
 	Richard Biener  <rguenther@suse.de>
 

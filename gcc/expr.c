@@ -6281,6 +6281,13 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 		    type = lang_hooks.types.type_for_mode
 		      (word_mode, TYPE_UNSIGNED (type));
 		    value = fold_convert (type, value);
+		    /* Make sure the bits beyond the original bitsize are zero
+		       so that we can correctly avoid extra zeroing stores in
+		       later constructor elements.  */
+		    tree bitsize_mask
+		      = wide_int_to_tree (type, wi::mask (bitsize, false,
+							   BITS_PER_WORD));
+		    value = fold_build2 (BIT_AND_EXPR, type, value, bitsize_mask);
 		  }
 
 		if (BYTES_BIG_ENDIAN)
