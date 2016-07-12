@@ -1,3 +1,15 @@
+2016-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71805
+	* config/rs6000/altivec.md (altivec_vperm_<mode>_internal):
+	The xxperm and xxpermr instructions require that the 2nd input
+	operand overlap with the output operand, and not the 1st.
+	(altivec_vperm_v8hiv16qi): Likewise.
+	(altivec_vperm_<mode>_uns_internal): Likewise.
+	(altivec_vpermr_<mode>_internal): Likewise.
+	(vperm_v8hiv4si): Likewise.
+	(vperm_v16qiv8hi): Likewise.
+
 2016-07-12  Martin Liska  <mliska@suse.cz>
 
 	* params.def: Add avg-loop niter.
