@@ -1,3 +1,12 @@
+2016-07-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from mainline
+	2016-07-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/70098
+	PR target/71763
+	* gcc.target/powerpc/pr71763.c: New file.
+
 2016-07-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk:
