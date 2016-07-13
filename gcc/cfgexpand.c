@@ -2012,7 +2012,7 @@ static rtx_insn *
 expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
-  vec<tree> maybe_local_decls = vNULL;
+  auto_vec<tree> maybe_local_decls;
   rtx_insn *var_end_seq = NULL;
   unsigned i;
   unsigned len;
@@ -2253,7 +2253,6 @@ expand_used_vars (void)
       if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
 	add_local_decl (cfun, var);
     }
-  maybe_local_decls.release ();
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
   if (STACK_ALIGNMENT_NEEDED)

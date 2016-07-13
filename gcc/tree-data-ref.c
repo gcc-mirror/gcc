@@ -3942,8 +3942,7 @@ bool
 loop_nest_has_data_refs (loop_p loop)
 {
   basic_block *bbs = get_loop_body (loop);
-  vec<data_ref_loc> references;
-  references.create (3);
+  auto_vec<data_ref_loc, 3> references;
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
     {
@@ -3957,13 +3956,11 @@ loop_nest_has_data_refs (loop_p loop)
 	  if (references.length ())
 	    {
 	      free (bbs);
-	      references.release ();
 	      return true;
 	    }
 	}
     }
   free (bbs);
-  references.release ();
 
   if (loop->inner)
     {

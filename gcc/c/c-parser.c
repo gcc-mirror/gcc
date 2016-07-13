@@ -7243,7 +7243,6 @@ struct c_generic_association
 static struct c_expr
 c_parser_generic_selection (c_parser *parser)
 {
-  vec<c_generic_association> associations = vNULL;
   struct c_expr selector, error_expr;
   tree selector_type;
   struct c_generic_association matched_assoc;
@@ -7300,6 +7299,7 @@ c_parser_generic_selection (c_parser *parser)
       return error_expr;
     }
 
+  auto_vec<c_generic_association> associations;
   while (1)
     {
       struct c_generic_association assoc, *iter;
@@ -7320,13 +7320,13 @@ c_parser_generic_selection (c_parser *parser)
 	  if (type_name == NULL)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	      goto error_exit;
+	      return error_expr;
 	    }
 	  assoc.type = groktypename (type_name, NULL, NULL);
 	  if (assoc.type == error_mark_node)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	      goto error_exit;
+	      return error_expr;
 	    }
 
 	  if (TREE_CODE (assoc.type) == FUNCTION_TYPE)
@@ -7345,14 +7345,14 @@ c_parser_generic_selection (c_parser *parser)
       if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	  goto error_exit;
+	  return error_expr;
 	}
 
       assoc.expression = c_parser_expr_no_commas (parser, NULL);
       if (assoc.expression.value == error_mark_node)
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	  goto error_exit;
+	  return error_expr;
 	}
 
       for (ix = 0; associations.iterate (ix, &iter); ++ix)
@@ -7408,8 +7408,6 @@ c_parser_generic_selection (c_parser *parser)
       c_parser_consume_token (parser);
     }
 
-  associations.release ();
-
   if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
     {
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
@@ -7425,10 +7423,6 @@ c_parser_generic_selection (c_parser *parser)
     }
 
   return matched_assoc.expression;
-
- error_exit:
-  associations.release ();
-  return error_expr;
 }
 
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2).
@@ -16366,14 +16360,13 @@ check_clauses:
 static void
 c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
 {
-  vec<c_token> clauses = vNULL;
+  auto_vec<c_token> clauses;
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
       c_token *token = c_parser_peek_token (parser);
       if (token->type == CPP_EOF)
 	{
 	  c_parser_skip_to_pragma_eol (parser);
-	  clauses.release ();
 	  return;
 	}
       clauses.safe_push (*token);
@@ -16395,7 +16388,6 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
 			  "%<#pragma omp declare simd%> must be followed by "
 			  "function declaration or definition or another "
 			  "%<#pragma omp declare simd%>");
-	  clauses.release ();
 	  return;
 	}
       c_parser_consume_pragma (parser);
@@ -16405,7 +16397,6 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
 	  if (token->type == CPP_EOF)
 	    {
 	      c_parser_skip_to_pragma_eol (parser);
-	      clauses.release ();
 	      return;
 	    }
 	  clauses.safe_push (*token);
@@ -16477,7 +16468,6 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
     default:
       gcc_unreachable ();
     }
-  clauses.release ();
 }
 
 /* Finalize #pragma omp declare simd clauses after FNDECL has been parsed,

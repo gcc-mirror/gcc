@@ -1,5 +1,11 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* c-parser.c (c_parser_generic_selection): Make type of variable
+	auto_vec.
+	(c_parser_omp_declare_simd): Likewise.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* c-decl.c (struct c_struct_parse_info): Change member types
 	from vec to auto_vec.
 	(start_struct): Adjust.

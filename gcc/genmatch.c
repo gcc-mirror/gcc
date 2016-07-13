@@ -1416,8 +1416,7 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 	    {
 	      operand *match_op = s->match;
 	      operand *result_op = s->result;
-	      vec<std::pair<user_id *, id_base *> > subst;
-	      subst.create (n_ids);
+	      auto_vec<std::pair<user_id *, id_base *> > subst (n_ids);
 	      bool skip = false;
 	      for (unsigned i = 0; i < n_ids; ++i)
 		{
@@ -1437,18 +1436,15 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 		    result_op = replace_id (result_op, id, oper);
 		}
 	      if (skip)
-		{
-		  subst.release ();
-		  continue;
-		}
+		continue;
+
 	      simplify *ns = new simplify (s->kind, match_op, result_op,
 					   vNULL, s->capture_ids);
 	      ns->for_subst_vec.safe_splice (s->for_subst_vec);
 	      if (result_op
 		  && can_delay_subst)
 		ns->for_subst_vec.safe_splice (subst);
-	      else
-		subst.release ();
+
 	      worklist.safe_push (ns);
 	    }
 	}
