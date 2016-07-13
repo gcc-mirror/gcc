@@ -1,3 +1,9 @@
+2016-07-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR ipa/71633
+	* ipa-inline-transform.c (inline_call): Support
+	instrumented thunks.
+
 2016-07-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.h (TARGET_HAVE_CBZ): Define.

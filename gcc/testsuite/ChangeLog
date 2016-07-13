@@ -1,3 +1,8 @@
+2016-07-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR ipa/71633
+	* g++.dg/pr71633.C: New test.
+
 2016-07-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_thumb1_cbz_ok):

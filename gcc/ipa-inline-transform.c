@@ -319,10 +319,14 @@ inline_call (struct cgraph_edge *e, bool update_original,
     to = to->global.inlined_to;
   if (to->thunk.thunk_p)
     {
+      struct cgraph_node *target = to->callees->callee;
       if (in_lto_p)
 	to->get_untransformed_body ();
       to->expand_thunk (false, true);
-      e = to->callees;
+      /* When thunk is instrumented we may have multiple callees.  */
+      for (e = to->callees; e && e->callee != target; e = e->next_callee)
+	;
+      gcc_assert (e);
     }
 
 
