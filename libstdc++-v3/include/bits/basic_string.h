@@ -155,11 +155,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
       }
 
-      // Get a raw pointer (rather than _Alloc::pointer).
-      _CharT*
-      _M_c_str() const
-      { return std::__addressof(*_M_dataplus._M_p); }
-
       void
       _M_capacity(size_type __capacity)
       { _M_allocated_capacity = __capacity; }
@@ -290,8 +285,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       bool
       _M_disjunct(const _CharT* __s) const _GLIBCXX_NOEXCEPT
       {
-	return (less<const _CharT*>()(__s, data())
-		|| less<const _CharT*>()(data() + this->size(), __s));
+	return (less<const _CharT*>()(__s, _M_data())
+		|| less<const _CharT*>()(_M_data() + this->size(), __s));
       }
 
       // When __n = 1 way faster than the general multichar
@@ -416,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		   size_type __n = npos)
       : _M_dataplus(_M_local_data())
       {
-	const _CharT* __start = __str.data()
+	const _CharT* __start = __str._M_data()
 	  + __str._M_check(__pos, "basic_string::basic_string");
 	_M_construct(__start, __start + __str._M_limit(__pos, __n));
       }
@@ -432,8 +427,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		   size_type __n, const _Alloc& __a)
       : _M_dataplus(_M_local_data(), __a)
       {
-	const _CharT* __start = __str.data()
-	  + __str._M_check(__pos, "basic_string::basic_string");
+	const _CharT* __start
+	  = __str._M_data() + __str._M_check(__pos, "string::string");
 	_M_construct(__start, __start + __str._M_limit(__pos, __n));
       }
 
@@ -1071,7 +1066,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_string&
       append(const basic_string& __str)
-      { return _M_append(__str.data(), __str.size()); }
+      { return _M_append(__str._M_data(), __str.size()); }
 
       /**
        *  @brief  Append a substring.
@@ -1088,7 +1083,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_string&
       append(const basic_string& __str, size_type __pos, size_type __n)
-      { return _M_append(__str.data()
+      { return _M_append(__str._M_data()
 			 + __str._M_check(__pos, "basic_string::append"),
 			 __str._M_limit(__pos, __n)); }
 
@@ -1221,7 +1216,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_string&
       assign(const basic_string& __str, size_type __pos, size_type __n)
-      { return _M_replace(size_type(0), this->size(), __str.data()
+      { return _M_replace(size_type(0), this->size(), __str._M_data()
 			  + __str._M_check(__pos, "basic_string::assign"),
 			  __str._M_limit(__pos, __n)); }
 
@@ -1418,7 +1413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       insert(size_type __pos1, const basic_string& __str)
       { return this->replace(__pos1, size_type(0),
-			     __str.data(), __str.size()); }
+			     __str._M_data(), __str.size()); }
 
       /**
        *  @brief  Insert a substring.
@@ -1441,7 +1436,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       insert(size_type __pos1, const basic_string& __str,
 	     size_type __pos2, size_type __n)
-      { return this->replace(__pos1, size_type(0), __str.data()
+      { return this->replace(__pos1, size_type(0), __str._M_data()
 			     + __str._M_check(__pos2, "basic_string::insert"),
 			     __str._M_limit(__pos2, __n)); }
 
@@ -1624,7 +1619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_string&
       replace(size_type __pos, size_type __n, const basic_string& __str)
-      { return this->replace(__pos, __n, __str.data(), __str.size()); }
+      { return this->replace(__pos, __n, __str._M_data(), __str.size()); }
 
       /**
        *  @brief  Replace characters with value from another string.
@@ -1647,7 +1642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       replace(size_type __pos1, size_type __n1, const basic_string& __str,
 	      size_type __pos2, size_type __n2)
-      { return this->replace(__pos1, __n1, __str.data()
+      { return this->replace(__pos1, __n1, __str._M_data()
 			     + __str._M_check(__pos2, "basic_string::replace"),
 			     __str._M_limit(__pos2, __n2)); }
 
@@ -1739,7 +1734,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       replace(__const_iterator __i1, __const_iterator __i2,
 	      const basic_string& __str)
-      { return this->replace(__i1, __i2, __str.data(), __str.size()); }
+      { return this->replace(__i1, __i2, __str._M_data(), __str.size()); }
 
       /**
        *  @brief  Replace range of characters with C substring.
@@ -1980,29 +1975,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       const _CharT*
       c_str() const _GLIBCXX_NOEXCEPT
-      { return _M_c_str(); }
+      { return _M_data(); }
 
       /**
        *  @brief  Return const pointer to contents.
        *
-       *  This is a pointer to internal data.  Do not modify or dire things may
+       *  This is a handle to internal data.  Do not modify or dire things may
        *  happen.
       */
       const _CharT*
       data() const _GLIBCXX_NOEXCEPT
-      { return _M_c_str(); }
-
-#if __cplusplus > 201402L
-      /**
-       *  @brief  Return non-const pointer to contents.
-       *
-       *  This is a pointer to the character sequence held by the string.
-       *  Modifying the characters in the sequence is allowed.
-      */
-      _CharT*
-      data() noexcept
-      { return _M_c_str(); }
-#endif
+      { return _M_data(); }
 
       /**
        *  @brief  Return copy of allocator used to construct this string.
@@ -2422,7 +2405,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	const size_type __osize = __str.size();
 	const size_type __len = std::min(__size, __osize);
 
-	int __r = traits_type::compare(data(), __str.data(), __len);
+	int __r = traits_type::compare(_M_data(), __str.data(), __len);
 	if (!__r)
 	  __r = _S_compare(__size, __osize);
 	return __r;
@@ -4377,12 +4360,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
       const _CharT*
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
-
-#if __cplusplus > 201402L
-      _CharT*
-      data() noexcept
-      { return _M_data(); }
-#endif
 
       /**
        *  @brief  Return copy of allocator used to construct this string.
