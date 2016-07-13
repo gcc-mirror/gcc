@@ -1,3 +1,7 @@
+2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert "Add non-const overload of std::string::data()".
+
 2016-07-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0307R2, Making Optional Greater Equal Again.
