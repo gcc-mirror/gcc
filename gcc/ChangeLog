@@ -1,5 +1,11 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfgexpand.c (struct stack_vars_data): Make type of fields
+	auto_vec.
+	(expand_used_vars): Adjust.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* ipa.c (record_cdtor_fn): Adjust.
 	(build_cdtor_fns): Likewise.
 	(ipa_cdtor_merge): Make static_ctors and static_dtors local
