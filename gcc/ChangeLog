@@ -1,3 +1,10 @@
+2016-07-13  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* genrecog.c (special_predicate_operand_p): New function.
+	(predicate_name): Move function.
+	(validate_pattern): Don't warn about missing mode for all
+	define_special_predicate predicates.
+
 2016-07-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-data-refs.c (vect_no_alias_p): New function.

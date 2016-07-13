@@ -463,6 +463,38 @@ constraints_supported_in_insn_p (rtx insn)
 	   || GET_CODE (insn) == DEFINE_PEEPHOLE2);
 }
 
+/* Return the name of the predicate matched by MATCH_RTX.  */
+
+static const char *
+predicate_name (rtx match_rtx)
+{
+  if (GET_CODE (match_rtx) == MATCH_SCRATCH)
+    return "scratch_operand";
+  else
+    return XSTR (match_rtx, 1);
+}
+
+/* Return true if OPERAND is a MATCH_OPERAND using a special predicate
+   function.  */
+
+static bool
+special_predicate_operand_p (rtx operand)
+{
+  if (GET_CODE (operand) == MATCH_OPERAND)
+    {
+      const char *pred_name = predicate_name (operand);
+      if (pred_name[0] != 0)
+	{
+	  const struct pred_data *pred;
+
+	  pred = lookup_predicate (pred_name);
+	  return pred != NULL && pred->special;
+	}
+    }
+
+  return false;
+}
+
 /* Check for various errors in PATTERN, which is part of INFO.
    SET is nonnull for a destination, and is the complete set pattern.
    SET_CODE is '=' for normal sets, and '+' within a context that
@@ -651,10 +683,9 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	dmode = GET_MODE (dest);
 	smode = GET_MODE (src);
 
-	/* The mode of an ADDRESS_OPERAND is the mode of the memory
-	   reference, not the mode of the address.  */
-	if (GET_CODE (src) == MATCH_OPERAND
-	    && ! strcmp (XSTR (src, 1), "address_operand"))
+	/* Mode checking is not performed for special predicates.  */
+	if (special_predicate_operand_p (src)
+	    || special_predicate_operand_p (dest))
 	  ;
 
         /* The operands of a SET must have the same mode unless one
@@ -3786,17 +3817,6 @@ operator < (const pattern_pos &e1, const pattern_pos &e2)
   int diff = compare_positions (e1.pos, e2.pos);
   gcc_assert (diff != 0 || e1.pattern == e2.pattern);
   return diff < 0;
-}
-
-/* Return the name of the predicate matched by MATCH_RTX.  */
-
-static const char *
-predicate_name (rtx match_rtx)
-{
-  if (GET_CODE (match_rtx) == MATCH_SCRATCH)
-    return "scratch_operand";
-  else
-    return XSTR (match_rtx, 1);
 }
 
 /* Add new decisions to S that check whether the rtx at position POS
