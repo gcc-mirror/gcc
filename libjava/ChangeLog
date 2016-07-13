@@ -1,5 +1,17 @@
 2016-07-13  Matthew Fortune  <matthew.fortune@imgtec.com>
 
+	* java/lang/reflect/natVMProxy.cc (unbox): Use ffi_arg for
+	integer return types smaller than a word.
+	* testsuite/libjava.jar/ReturnInvocationHandler.java: New file.
+	* testsuite/libjava.jar/ReturnProxyTest.jar: Likewise.
+	* testsuite/libjava.jar/ReturnProxyTest.java: Likewise.
+	* testsuite/libjava.jar/ReturnProxyTest.out: Likewise.
+	* testsuite/libjava.jar/ReturnProxyTest.xfail: Likewise.
+	* testsuite/libjava.jar/ReturnTypes.java: Likewise.
+	* testsuite/libjava.jar/ReturnTypesImpl.java: Likewise.
+
+2016-07-13  Matthew Fortune  <matthew.fortune@imgtec.com>
+
 	* interpret-run.cc: Use ffi_arg for FFI integer return types.
 	* testsuite/libjava.jar/arraysort.java: New file.
 	* testsuite/libjava.jar/arraysort.jar: New file.
