@@ -574,15 +574,15 @@ struct c_struct_parse_info
 {
   /* If warn_cxx_compat, a list of types defined within this
      struct.  */
-  vec<tree> struct_types;
+  auto_vec<tree> struct_types;
   /* If warn_cxx_compat, a list of field names which have bindings,
      and which are defined in this struct, but which are not defined
      in any enclosing struct.  This is used to clear the in_struct
      field of the c_bindings structure.  */
-  vec<c_binding_ptr> fields;
+  auto_vec<c_binding_ptr> fields;
   /* If warn_cxx_compat, a list of typedef names used when defining
      fields in this struct.  */
-  vec<tree> typedefs_seen;
+  auto_vec<tree> typedefs_seen;
 };
 
 /* Information for the struct or union currently being parsed, or
@@ -7443,10 +7443,7 @@ start_struct (location_t loc, enum tree_code code, tree name,
     TYPE_PACKED (v) = flag_pack_struct;
 
   *enclosing_struct_parse_info = struct_parse_info;
-  struct_parse_info = XNEW (struct c_struct_parse_info);
-  struct_parse_info->struct_types.create (0);
-  struct_parse_info->fields.create (0);
-  struct_parse_info->typedefs_seen.create (0);
+  struct_parse_info = new c_struct_parse_info ();
 
   /* FIXME: This will issue a warning for a use of a type defined
      within a statement expr used within sizeof, et. al.  This is not
@@ -8088,10 +8085,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   if (warn_cxx_compat)
     warn_cxx_compat_finish_struct (fieldlist, TREE_CODE (t), loc);
 
-  struct_parse_info->struct_types.release ();
-  struct_parse_info->fields.release ();
-  struct_parse_info->typedefs_seen.release ();
-  XDELETE (struct_parse_info);
+  delete struct_parse_info;
 
   struct_parse_info = enclosing_struct_parse_info;
 
