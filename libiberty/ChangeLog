@@ -1,3 +1,12 @@
+2016-07-13  Marcel BÃhme  <boehme.marcel@gmail.com>
+
+	PR c++/70926
+	* cplus-dem.c: Handle large values and overflow when demangling
+	length variables.
+	(demangle_template_value_parm): Read only until end of mangled string.
+	(do_hpacc_template_literal): Likewise.
+	(do_type): Handle overflow when demangling array indices.
+
 2016-06-12  Brooks Moses  <bmoses@google.com>
 
 	* cp-demangle.c (cplus_demangle_print_callback): Avoid zero-length
