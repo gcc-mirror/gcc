@@ -1,3 +1,11 @@
+2016-07-13  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* interpret-run.cc: Use ffi_arg for FFI integer return types.
+	* testsuite/libjava.jar/arraysort.java: New file.
+	* testsuite/libjava.jar/arraysort.jar: New file.
+	* testsuite/libjava.jar/arraysort.out: New file.
+	* testsuite/libjava.jar/arraysort.xfail: New file.
+
 2016-06-01  Matthias Klose  <doko@ubuntu.com>
 
 	* libtool-version: Bump soversion.

@@ -1838,7 +1838,7 @@ details.  */
       return;
 
     insn_ireturn:
-      *(jint *) retp = POPI ();
+      *(ffi_arg *) retp = POPI ();
       return;
 
     insn_return:
