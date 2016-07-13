@@ -4455,8 +4455,7 @@ class sccvn_dom_walker : public dom_walker
 {
 public:
   sccvn_dom_walker ()
-    : dom_walker (CDI_DOMINATORS, true), fail (false), cond_stack (vNULL) {}
-  ~sccvn_dom_walker ();
+    : dom_walker (CDI_DOMINATORS, true), fail (false), cond_stack (0) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -4467,14 +4466,9 @@ public:
 		     enum tree_code code, tree lhs, tree rhs, bool value);
 
   bool fail;
-  vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
+  auto_vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
     cond_stack;
 };
-
-sccvn_dom_walker::~sccvn_dom_walker ()
-{
-  cond_stack.release ();
-}
 
 /* Record a temporary condition for the BB and its dominated blocks.  */
 
