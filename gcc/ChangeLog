@@ -1,3 +1,13 @@
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree.c (struct free_lang_data_d): Add constructor and change
+	types of members to ones that automatically manage resources.
+	(fld_worklist_push): Adjust.
+	(find_decls_types): Likewise.
+	(find_decls_types_in_eh_region): Likewise.
+	(free_lang_data_in_cgraph): Stop manually creating and
+	destroying members of free_lang_data_d.
+
 2016-07-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/68961
