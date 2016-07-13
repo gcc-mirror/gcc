@@ -234,7 +234,7 @@ namespace __gnu_parallel
                         break;
                       }
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 		  _GLIBCXX_PARALLEL_ASSERT(__swapstart != -1);
 #endif
 
@@ -257,7 +257,7 @@ namespace __gnu_parallel
                         break;
                       }
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 		  _GLIBCXX_PARALLEL_ASSERT(__swapstart != -1);
 #endif
 
@@ -265,7 +265,7 @@ namespace __gnu_parallel
 				   __begin + __thread_right_border
 				   + __chunk_size, __begin + __swapstart);
 	      }
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 #             pragma omp barrier
 
 #             pragma omp single

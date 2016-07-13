@@ -414,7 +414,7 @@ namespace std
 
 // Debug Mode implies checking assertions.
 #ifdef _GLIBCXX_DEBUG
-# define _GLIBCXX_ASSERTIONS
+# define _GLIBCXX_ASSERTIONS 1
 #endif
 
 // Disable std::string explicit instantiation declarations in order to assert.

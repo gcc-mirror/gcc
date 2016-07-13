@@ -51,8 +51,11 @@
 #include <parallel/random_number.h>
 #include <parallel/queue.h>
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 #include <parallel/checkers.h>
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #endif
 
 namespace __gnu_parallel
@@ -110,7 +113,7 @@ namespace __gnu_parallel
 	__median_of_three_iterators(__begin, __begin + (__end - __begin) / 2,
 				    __end  - 1, __comp);
 
-#if defined(_GLIBCXX_ASSERTIONS)
+#if defined(_GLIBCXX_PARALLEL_ASSERTIONS)
       // Must be in between somewhere.
       _DifferenceType __n = __end - __begin;
 
@@ -147,7 +150,7 @@ namespace __gnu_parallel
       std::iter_swap(__begin + __split_pos, __pivot_pos);
       __pivot_pos = __begin + __split_pos;
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
       _RAIter __r;
       for (__r = __begin; __r != __pivot_pos; ++__r)
 	_GLIBCXX_PARALLEL_ASSERT(__comp(*__r, *__pivot_pos));
@@ -194,7 +197,7 @@ namespace __gnu_parallel
       _DifferenceType __split_pos =
 	__qsb_divide(__begin, __end, __comp, __num_threads);
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
       _GLIBCXX_PARALLEL_ASSERT(0 <= __split_pos &&
                                __split_pos < (__end - __begin));
 #endif
@@ -267,7 +270,7 @@ namespace __gnu_parallel
       _Piece __current = __tl._M_initial;
 
       _DifferenceType __elements_done = 0;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
       _DifferenceType __total_elements_done = 0;
 #endif
 
@@ -297,7 +300,7 @@ namespace __gnu_parallel
 							 __pred);
 
               // Left side: < __pivot_pos; __right side: >= __pivot_pos.
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
               _GLIBCXX_PARALLEL_ASSERT(__begin <= __split_pos1
                                        && __split_pos1 < __end);
 #endif
@@ -328,7 +331,7 @@ namespace __gnu_parallel
 
               // Elements equal to pivot are done.
               __elements_done += (__split_pos2 - __split_pos1);
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
               __total_elements_done += (__split_pos2 - __split_pos1);
 #endif
               // Always push larger part onto stack.
@@ -359,7 +362,7 @@ namespace __gnu_parallel
             {
               __gnu_sequential::sort(__begin, __end, __comp);
               __elements_done += __n;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
               __total_elements_done += __n;
 #endif
 
@@ -372,7 +375,7 @@ namespace __gnu_parallel
 
               __elements_done = 0;
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
               double __search_start = omp_get_wtime();
 #endif
 
@@ -380,7 +383,7 @@ namespace __gnu_parallel
               bool __successfully_stolen = false;
               while (__wait && *__tl._M_elements_leftover > 0
                      && !__successfully_stolen
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
                       // Possible dead-lock.
                      && (omp_get_wtime() < (__search_start + 1.0))
 #endif
@@ -399,7 +402,7 @@ namespace __gnu_parallel
 #endif
         	}
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
               if (omp_get_wtime() >= (__search_start + 1.0))
         	{
                   sleep(1);
@@ -409,7 +412,7 @@ namespace __gnu_parallel
 #endif
               if (!__successfully_stolen)
         	{
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
                   _GLIBCXX_PARALLEL_ASSERT(*__tl._M_elements_leftover == 0);
 #endif
                   return;
@@ -475,7 +478,7 @@ namespace __gnu_parallel
       __qsb_conquer(__tls, __begin, __begin + __n, __comp, 0,
 		    __num_threads, true);
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
       // All stack must be empty.
       _Piece __dummy;
       for (_ThreadIndex __i = 1; __i < __num_threads; ++__i)
