@@ -1,5 +1,21 @@
 2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71856
+	* include/bits/c++config (_GLIBCXX_ASSERTIONS): Define to 1 not empty.
+	* include/parallel/compiletime_settings.h (_GLIBCXX_ASSERTIONS):
+	Rename to _GLIBCXX_PARALLEL_ASSERTIONS and make default value depend
+	on _GLIBCXX_ASSERTIONS.
+	* include/parallel/balanced_quicksort.h: Rename _GLIBCXX_ASSERTIONS.
+	Include <unistd.h> for sleep.
+	* include/parallel/losertree.h: Rename _GLIBCXX_ASSERTIONS.
+	* include/parallel/merge.h: Likewise.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/partition.h: Likewise.
+	* include/parallel/queue.h: Likewise.
+	* include/parallel/sort.h: Likewise.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_assert.cc: New.
+
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
 	(replace(__const_iterator, __const_iterator, initializer_list<C>)):
 	Forward to different overload.

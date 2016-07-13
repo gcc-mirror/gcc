@@ -113,7 +113,7 @@ namespace __gnu_parallel
       typedef typename std::iterator_traits<_RAIter2>::value_type
         _ValueType2;
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
       _GLIBCXX_PARALLEL_ASSERT(__max_length >= 0);
 #endif
 

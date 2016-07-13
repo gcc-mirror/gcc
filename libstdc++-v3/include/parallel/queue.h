@@ -86,7 +86,7 @@ namespace __gnu_parallel
         int __former_front, __former_back;
         __decode2(__former_borders, __former_front, __former_back);
         *(_M_base + __former_front % _M_max_size) = __t;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
         // Otherwise: front - back > _M_max_size eventually.
         _GLIBCXX_PARALLEL_ASSERT(((__former_front + 1) - __former_back)
                                  <= _M_max_size);
