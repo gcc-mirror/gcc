@@ -69,10 +69,12 @@ static struct code_ptr *peepholes;
 
 struct accum_extract
 {
-  vec<locstr> oplocs;
-  vec<locstr> duplocs;
-  vec<int> dupnums;
-  vec<char> pathstr;
+  accum_extract () : oplocs (10), duplocs (10), dupnums (10), pathstr (20) {}
+
+  auto_vec<locstr> oplocs;
+  auto_vec<locstr> duplocs;
+  auto_vec<int> dupnums;
+  auto_vec<char> pathstr;
 };
 
 /* Forward declarations.  */
@@ -86,11 +88,6 @@ gen_insn (md_rtx_info *info)
   struct extraction *p;
   struct code_ptr *link;
   struct accum_extract acc;
-
-  acc.oplocs.create (10);
-  acc.duplocs.create (10);
-  acc.dupnums.create (10);
-  acc.pathstr.create (20);
 
   /* Walk the insn's pattern, remembering at all times the path
      down to the walking point.  */
@@ -142,7 +139,7 @@ gen_insn (md_rtx_info *info)
       /* This extraction is the same as ours.  Just link us in.  */
       link->next = p->insns;
       p->insns = link;
-      goto done;
+      return;
     }
 
   /* Otherwise, make a new extraction method.  We stash the arrays
@@ -166,12 +163,6 @@ gen_insn (md_rtx_info *info)
   memcpy (p->oplocs, acc.oplocs.address (), op_count * sizeof (locstr));
   memcpy (p->duplocs, acc.duplocs.address (), dup_count * sizeof (locstr));
   memcpy (p->dupnums, acc.dupnums.address (), dup_count * sizeof (int));
-
- done:
-  acc.oplocs.release ();
-  acc.duplocs.release ();
-  acc.dupnums.release ();
-  acc.pathstr.release ();
 }
 
 /* Helper subroutine of walk_rtx: given a vec<locstr>, an index, and a
