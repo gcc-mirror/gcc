@@ -1912,7 +1912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_string& replace(const_iterator __i1, const_iterator __i2,
 			    initializer_list<_CharT> __l)
-      { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
+      { return this->replace(__i1, __i2, __l.begin(), __l.size()); }
 #endif // C++11
 
     private:
