@@ -257,3 +257,82 @@ int main()
     static_assert( *o == 33, "" );
   }
 }
+
+using std::void_t;
+using std::declval;
+using std::true_type;
+using std::false_type;
+
+template <class T, class = void>
+struct is_eq_comparable : false_type {};
+template <class T>
+struct is_eq_comparable<T, void_t<decltype(declval<T>() == declval<T>())>>
+: true_type {};
+
+template <class T, class = void>
+struct is_neq_comparable : false_type {};
+template <class T>
+struct is_neq_comparable<T, void_t<decltype(declval<T>() != declval<T>())>>
+: true_type {};
+
+template <class T, class = void>
+struct is_lt_comparable : false_type {};
+template <class T>
+struct is_lt_comparable<T, void_t<decltype(declval<T>() < declval<T>())>>
+: true_type {};
+
+template <class T, class = void>
+struct is_gt_comparable : false_type {};
+template <class T>
+struct is_gt_comparable<T, void_t<decltype(declval<T>() > declval<T>())>>
+: true_type {};
+
+template <class T, class = void>
+struct is_le_comparable : false_type {};
+template <class T>
+struct is_le_comparable<T, void_t<decltype(declval<T>() <= declval<T>())>>
+: true_type {};
+
+template <class T, class = void>
+struct is_ge_comparable : false_type {};
+template <class T>
+struct is_ge_comparable<T, void_t<decltype(declval<T>() >= declval<T>())>>
+: true_type {};
+
+using std::optional;
+
+static_assert(is_eq_comparable<optional<int>>::value, "");
+static_assert(is_neq_comparable<optional<int>>::value, "");
+static_assert(is_lt_comparable<optional<int>>::value, "");
+static_assert(is_gt_comparable<optional<int>>::value, "");
+static_assert(is_le_comparable<optional<int>>::value, "");
+static_assert(is_ge_comparable<optional<int>>::value, "");
+
+struct JustEq {};
+bool operator==(const JustEq&, const JustEq&);
+
+static_assert(is_eq_comparable<optional<JustEq>>::value, "");
+static_assert(!is_neq_comparable<optional<JustEq>>::value, "");
+static_assert(!is_lt_comparable<optional<JustEq>>::value, "");
+static_assert(!is_gt_comparable<optional<JustEq>>::value, "");
+static_assert(!is_le_comparable<optional<JustEq>>::value, "");
+static_assert(!is_ge_comparable<optional<JustEq>>::value, "");
+
+struct JustLt {};
+bool operator<(const JustLt&, const JustLt&);
+
+static_assert(!is_eq_comparable<optional<JustLt>>::value, "");
+static_assert(!is_neq_comparable<optional<JustLt>>::value, "");
+static_assert(is_lt_comparable<optional<JustLt>>::value, "");
+static_assert(!is_gt_comparable<optional<JustLt>>::value, "");
+static_assert(!is_le_comparable<optional<JustLt>>::value, "");
+static_assert(!is_ge_comparable<optional<JustLt>>::value, "");
+
+static_assert(!std::is_assignable<optional<JustEq>&,
+	      optional<JustLt>>::value, "");
+static_assert(!std::is_assignable<optional<JustEq>&,
+	      JustLt>::value, "");
+static_assert(!std::is_assignable<optional<JustEq>&,
+	      optional<JustLt>&>::value, "");
+static_assert(!std::is_assignable<optional<JustEq>&,
+	      JustLt&>::value, "");
