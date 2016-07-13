@@ -272,17 +272,17 @@ unbox (jobject o, jclass klass, void *rvalue, FFI_TYPE type)
   if (klass == JvPrimClass (byte))
     {
       _Jv_CheckCast (&Byte::class$, o);
-      *(jbyte*)rvalue = ((Byte*)o)->byteValue();
+      *(ffi_arg*)rvalue = ((Byte*)o)->byteValue();
     }
   else if (klass == JvPrimClass (short))
     {
       _Jv_CheckCast (&Short::class$, o);
-      *(jshort*)rvalue = ((Short*)o)->shortValue();
+      *(ffi_arg*)rvalue = ((Short*)o)->shortValue();
     }
   else if (klass == JvPrimClass (int))
     {
       _Jv_CheckCast (&Integer::class$, o);
-      *(jint*)rvalue = ((Integer*)o)->intValue();
+      *(ffi_arg*)rvalue = ((Integer*)o)->intValue();
     }
   else if (klass == JvPrimClass (long))
     {
@@ -302,12 +302,12 @@ unbox (jobject o, jclass klass, void *rvalue, FFI_TYPE type)
   else if (klass == JvPrimClass (boolean))
     {
       _Jv_CheckCast (&Boolean::class$, o);
-      *(jboolean*)rvalue = ((Boolean*)o)->booleanValue();
+      *(ffi_arg*)rvalue = ((Boolean*)o)->booleanValue();
     }
   else if (klass == JvPrimClass (char))
     {
       _Jv_CheckCast (&Character::class$, o);
-      *(jchar*)rvalue = ((Character*)o)->charValue();
+      *(ffi_arg*)rvalue = ((Character*)o)->charValue();
     }
   else
     JvFail ("Bad ffi type in proxy");
