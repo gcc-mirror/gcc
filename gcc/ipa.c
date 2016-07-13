@@ -989,11 +989,6 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   cgraph_build_static_cdtor_1 (which, body, priority, false);
 }
 
-/* A vector of FUNCTION_DECLs declared as static constructors.  */
-static vec<tree> static_ctors;
-/* A vector of FUNCTION_DECLs declared as static destructors.  */
-static vec<tree> static_dtors;
-
 /* When target does not have ctors and dtors, we call all constructor
    and destructor by special initialization/destruction function
    recognized by collect2.
@@ -1002,12 +997,12 @@ static vec<tree> static_dtors;
    destructors and turn them into normal functions.  */
 
 static void
-record_cdtor_fn (struct cgraph_node *node)
+record_cdtor_fn (struct cgraph_node *node, vec<tree> *ctors, vec<tree> *dtors)
 {
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
-    static_ctors.safe_push (node->decl);
+    ctors->safe_push (node->decl);
   if (DECL_STATIC_DESTRUCTOR (node->decl))
-    static_dtors.safe_push (node->decl);
+    dtors->safe_push (node->decl);
   node = cgraph_node::get (node->decl);
   DECL_DISREGARD_INLINE_LIMITS (node->decl) = 1;
 }
@@ -1018,7 +1013,7 @@ record_cdtor_fn (struct cgraph_node *node)
    they are destructors.  */
 
 static void
-build_cdtor (bool ctor_p, vec<tree> cdtors)
+build_cdtor (bool ctor_p, const vec<tree> &cdtors)
 {
   size_t i,j;
   size_t len = cdtors.length ();
@@ -1135,20 +1130,20 @@ compare_dtor (const void *p1, const void *p2)
    functions have magic names which are detected by collect2.  */
 
 static void
-build_cdtor_fns (void)
+build_cdtor_fns (vec<tree> *ctors, vec<tree> *dtors)
 {
-  if (!static_ctors.is_empty ())
+  if (!ctors->is_empty ())
     {
       gcc_assert (!targetm.have_ctors_dtors || in_lto_p);
-      static_ctors.qsort (compare_ctor);
-      build_cdtor (/*ctor_p=*/true, static_ctors);
+      ctors->qsort (compare_ctor);
+      build_cdtor (/*ctor_p=*/true, *ctors);
     }
 
-  if (!static_dtors.is_empty ())
+  if (!dtors->is_empty ())
     {
       gcc_assert (!targetm.have_ctors_dtors || in_lto_p);
-      static_dtors.qsort (compare_dtor);
-      build_cdtor (/*ctor_p=*/false, static_dtors);
+      dtors->qsort (compare_dtor);
+      build_cdtor (/*ctor_p=*/false, *dtors);
     }
 }
 
@@ -1161,14 +1156,16 @@ build_cdtor_fns (void)
 static unsigned int
 ipa_cdtor_merge (void)
 {
+  /* A vector of FUNCTION_DECLs declared as static constructors.  */
+  auto_vec<tree, 20> ctors;
+  /* A vector of FUNCTION_DECLs declared as static destructors.  */
+  auto_vec<tree, 20> dtors;
   struct cgraph_node *node;
   FOR_EACH_DEFINED_FUNCTION (node)
     if (DECL_STATIC_CONSTRUCTOR (node->decl)
 	|| DECL_STATIC_DESTRUCTOR (node->decl))
-       record_cdtor_fn (node);
-  build_cdtor_fns ();
-  static_ctors.release ();
-  static_dtors.release ();
+       record_cdtor_fn (node, &ctors, &dtors);
+  build_cdtor_fns (&ctors, &dtors);
   return 0;
 }
 
