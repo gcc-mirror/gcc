@@ -3485,6 +3485,23 @@ proc check_effective_target_arm_cortex_m { } {
     } "-mthumb"]
 }
 
+# Return 1 if this is an ARM target where -mthumb causes Thumb-1 to be
+# used and MOVT/MOVW instructions to be available.
+
+proc check_effective_target_arm_thumb1_movt_ok {} {
+    if [check_effective_target_arm_thumb1_ok] {
+	return [check_no_compiler_messages arm_movt object {
+	    int
+	    foo (void)
+	    {
+	      asm ("movt r0, #42");
+	    }
+	} "-mthumb"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this compilation turns on string_ops_prefer_neon on.
 
 proc check_effective_target_arm_tune_string_ops_prefer_neon { } {

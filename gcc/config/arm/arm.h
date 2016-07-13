@@ -263,8 +263,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Nonzero if this chip supports load-acquire and store-release.  */
 #define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8 && arm_arch_notm)
 
-/* Nonzero if this chip provides the MOVW and MOVW instructions.  */
-#define TARGET_HAVE_MOVT	(arm_arch_thumb2)
+/* Nonzero if this chip provides the MOVW and MOVT instructions.  */
+#define TARGET_HAVE_MOVT	(arm_arch_thumb2 || arm_arch8)
 
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV	((TARGET_ARM && arm_arch_arm_hwdiv)	\

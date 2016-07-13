@@ -590,8 +590,8 @@
 ;;; ??? The 'i' constraint looks funny, but it should always be replaced by
 ;;; thumb_reorg with a memory reference.
 (define_insn "*thumb1_movdi_insn"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=l,l,l,l,>,l, m,*r")
-	(match_operand:DI 1 "general_operand"      "l, I,J,>,l,mi,l,*r"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=l,l,l,r,l,>,l, m,*r")
+	(match_operand:DI 1 "general_operand"      "l, I,J,j,>,l,mi,l,*r"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
@@ -610,36 +610,41 @@
       operands[1] = GEN_INT (- INTVAL (operands[1]));
       return \"movs\\t%Q0, %1\;rsbs\\t%Q0, %Q0, #0\;asrs\\t%R0, %Q0, #31\";
     case 3:
-      return \"ldmia\\t%1, {%0, %H0}\";
+      gcc_assert (TARGET_HAVE_MOVT);
+      return \"movw\\t%Q0, %L1\;movs\\tR0, #0\";
     case 4:
-      return \"stmia\\t%0, {%1, %H1}\";
+      return \"ldmia\\t%1, {%0, %H0}\";
     case 5:
-      return thumb_load_double_from_address (operands);
+      return \"stmia\\t%0, {%1, %H1}\";
     case 6:
+      return thumb_load_double_from_address (operands);
+    case 7:
       operands[2] = gen_rtx_MEM (SImode,
 			     plus_constant (Pmode, XEXP (operands[0], 0), 4));
       output_asm_insn (\"str\\t%1, %0\;str\\t%H1, %2\", operands);
       return \"\";
-    case 7:
+    case 8:
       if (REGNO (operands[1]) == REGNO (operands[0]) + 1)
 	return \"mov\\t%0, %1\;mov\\t%H0, %H1\";
       return \"mov\\t%H0, %H1\;mov\\t%0, %1\";
     }
   }"
-  [(set_attr "length" "4,4,6,2,2,6,4,4")
-   (set_attr "type" "multiple,multiple,multiple,load2,store2,load2,store2,multiple")
-   (set_attr "pool_range" "*,*,*,*,*,1018,*,*")]
+  [(set_attr "length" "4,4,6,6,2,2,6,4,4")
+   (set_attr "type" "multiple,multiple,multiple,multiple,load2,store2,load2,store2,multiple")
+   (set_attr "arch" "t1,t1,t1,v8mb,t1,t1,t1,t1,t1")
+   (set_attr "pool_range" "*,*,*,*,*,*,1018,*,*")]
 )
 
 (define_insn "*thumb1_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=l,l,l,l,l,>,l, m,*l*h*k")
-	(match_operand:SI 1 "general_operand"      "l, I,J,K,>,l,mi,l,*l*h*k"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=l,l,r,l,l,l,>,l, m,*l*h*k")
+	(match_operand:SI 1 "general_operand"      "l, I,j,J,K,>,l,mi,l,*l*h*k"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
    movs	%0, %1
    movs	%0, %1
+   movw	%0, %1
    #
    #
    ldmia\\t%1, {%0}
@@ -647,10 +652,11 @@
    ldr\\t%0, %1
    str\\t%1, %0
    mov\\t%0, %1"
-  [(set_attr "length" "2,2,4,4,2,2,2,2,2")
-   (set_attr "type" "mov_reg,mov_imm,multiple,multiple,load1,store1,load1,store1,mov_reg")
-   (set_attr "pool_range" "*,*,*,*,*,*,1018,*,*")
-   (set_attr "conds" "set,clob,*,*,nocond,nocond,nocond,nocond,nocond")])
+  [(set_attr "length" "2,2,4,4,4,2,2,2,2,2")
+   (set_attr "type" "mov_reg,mov_imm,mov_imm,multiple,multiple,load1,store1,load1,store1,mov_reg")
+   (set_attr "pool_range" "*,*,*,*,*,*,*,1018,*,*")
+   (set_attr "arch" "t1,t1,v8mb,t1,t1,t1,t1,t1,t1,t1")
+   (set_attr "conds" "set,clob,nocond,*,*,nocond,nocond,nocond,nocond,nocond")])
 
 ; Split the load of 64-bit constant into two loads for high and low 32-bit parts respectively
 ; to see if we can load them in fewer instructions or fewer cycles.
@@ -687,7 +693,8 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]
-  "TARGET_THUMB1 && satisfies_constraint_K (operands[1])"
+  "TARGET_THUMB1 && satisfies_constraint_K (operands[1])
+   && !(TARGET_HAVE_MOVT && satisfies_constraint_j (operands[1]))"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (ashift:SI (match_dup 2) (match_dup 3)))]
   "
@@ -714,7 +721,8 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]
-  "TARGET_THUMB1 && satisfies_constraint_Pe (operands[1])"
+  "TARGET_THUMB1 && satisfies_constraint_Pe (operands[1])
+   && !(TARGET_HAVE_MOVT && satisfies_constraint_j (operands[1]))"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (plus:SI (match_dup 2) (match_dup 3)))]
   "
@@ -726,8 +734,8 @@
 )
 
 (define_insn "*thumb1_movhi_insn"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=l,l,m,l*r,*h,l")
-	(match_operand:HI 1 "general_operand"       "l,m,l,k*h,*r,I"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=l,l,m,l*r,*h,l,r")
+	(match_operand:HI 1 "general_operand"       "l,m,l,k*h,*r,I,n"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
@@ -739,6 +747,8 @@
     case 3: return \"mov	%0, %1\";
     case 4: return \"mov	%0, %1\";
     case 5: return \"movs	%0, %1\";
+    case 6: gcc_assert (TARGET_HAVE_MOVT);
+	    return \"movw	%0, %L1\";
     default: gcc_unreachable ();
     case 1:
       /* The stack pointer can end up being taken as an index register.
@@ -758,9 +768,10 @@
 	}
       return \"ldrh	%0, %1\";
     }"
-  [(set_attr "length" "2,4,2,2,2,2")
-   (set_attr "type" "alus_imm,load1,store1,mov_reg,mov_reg,mov_imm")
-   (set_attr "conds" "clob,nocond,nocond,nocond,nocond,clob")])
+  [(set_attr "length" "2,4,2,2,2,2,4")
+   (set_attr "type" "alus_imm,load1,store1,mov_reg,mov_reg,mov_imm,mov_imm")
+   (set_attr "arch" "t1,t1,t1,t1,t1,t1,v8mb")
+   (set_attr "conds" "clob,nocond,nocond,nocond,nocond,clob,nocond")])
 
 (define_expand "thumb_movhi_clobber"
   [(set (match_operand:HI     0 "memory_operand"   "")

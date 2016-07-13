@@ -1,3 +1,34 @@
+2016-07-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.h (TARGET_HAVE_MOVT): Include ARMv8-M as having MOVT.
+	* config/arm/arm.c (arm_arch_name): (const_ok_for_op): Check MOVT/MOVW
+	availability with TARGET_HAVE_MOVT.
+	(thumb_legitimate_constant_p): Strip the high part of a label_ref.
+	(thumb1_rtx_costs): Also return 0 if setting a half word constant and
+	MOVW is available and replace (unsigned HOST_WIDE_INT) INTVAL by
+	UINTVAL.
+	(thumb1_size_rtx_costs): Make set of half word constant also cost 1
+	extra instruction if MOVW is available.  Use a cost variable
+	incremented by COSTS_N_INSNS (1) when the condition match rather than
+	returning an arithmetic expression based on COSTS_N_INSNS.  Make
+	constant with bottom half word zero cost 2 instruction if MOVW is
+	available.
+	* config/arm/arm.md (define_attr "arch"): Add v8mb.
+	(define_attr "arch_enabled"): Set to yes if arch value is v8mb and
+	target is ARMv8-M Baseline.
+	(arm_movt): New unpredicable alternative for ARMv8-M Baseline.
+	(arm_movtas_ze): Likewise.
+	* config/arm/thumb1.md (thumb1_movdi_insn): Add ARMv8-M Baseline only
+	alternative for constants satisfying j constraint.
+	(thumb1_movsi_insn): Likewise.
+	(movsi splitter for K alternative): Tighten condition to not trigger
+	if movt is available and j constraint is satisfied.
+	(Pe immediate splitter): Likewise.
+	(thumb1_movhi_insn): Add ARMv8-M Baseline only alternative for
+	constant fitting in an halfword to use MOVW.
+	* doc/sourcebuild.texi (arm_thumb1_movt_ok): Document new ARM
+	effective target.
+
 2016-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71104
