@@ -21,7 +21,9 @@ int main1 ()
     }
 
   /* Dependence analysis fails cause s.a and s.b may overlap.
-     Use runtime aliasing test with versioning.  */
+     Try to use runtime aliasing test with versioning, and
+     later versioning/vectorization are skipped because the
+     overlap is proven at compilation time.  */
   for (i = 0; i < N; i++)
     {
       s.a[i] = s.b[i] + 1;
@@ -45,5 +47,5 @@ int main (void)
 }
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"  { xfail { ia64-*-* sparc*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "can't determine dependence between" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { xfail { ia64-*-* sparc*-*-* } } } } */
+/* { dg-final { scan-tree-dump "can't determine dependence between" "vect" } } */
