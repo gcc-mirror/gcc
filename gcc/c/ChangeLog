@@ -1,3 +1,10 @@
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* c-decl.c (struct c_struct_parse_info): Change member types
+	from vec to auto_vec.
+	(start_struct): Adjust.
+	(finish_struct): Likewise.
+
 2016-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71719
