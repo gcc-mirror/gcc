@@ -266,9 +266,12 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Nonzero if this chip provides the MOVW and MOVT instructions.  */
 #define TARGET_HAVE_MOVT	(arm_arch_thumb2 || arm_arch8)
 
+/* Nonzero if this chip provides the CBZ and CBNZ instructions.  */
+#define TARGET_HAVE_CBZ		(arm_arch_thumb2 || arm_arch8)
+
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV	((TARGET_ARM && arm_arch_arm_hwdiv)	\
-			 || (TARGET_THUMB2 && arm_arch_thumb_hwdiv))
+			 || (TARGET_THUMB && arm_arch_thumb_hwdiv))
 
 /* Nonzero if disallow volatile memory access in IT block.  */
 #define TARGET_NO_VOLATILE_CE		(arm_arch_no_volatile_ce)

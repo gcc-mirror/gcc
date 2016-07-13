@@ -3502,6 +3502,23 @@ proc check_effective_target_arm_thumb1_movt_ok {} {
     }
 }
 
+# Return 1 if this is an ARM target where -mthumb causes Thumb-1 to be
+# used and CBZ and CBNZ instructions are available.
+
+proc check_effective_target_arm_thumb1_cbz_ok {} {
+    if [check_effective_target_arm_thumb1_ok] {
+	return [check_no_compiler_messages arm_movt object {
+	    int
+	    foo (void)
+	    {
+	      asm ("cbz r0, 2f\n2:");
+	    }
+	} "-mthumb"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this compilation turns on string_ops_prefer_neon on.
 
 proc check_effective_target_arm_tune_string_ops_prefer_neon { } {

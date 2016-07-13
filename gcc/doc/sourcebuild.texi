@@ -1618,6 +1618,10 @@ ARM target prefers @code{LDRD} and @code{STRD} instructions over
 ARM target generates Thumb-1 code for @code{-mthumb} with @code{MOVW}
 and @code{MOVT} instructions available.
 
+@item arm_thumb1_cbz_ok
+ARM target generates Thumb-1 code for @code{-mthumb} with
+@code{CBZ} and @code{CBNZ} instructions available.
+
 @end table
 
 @subsubsection AArch64-specific attributes
