@@ -1,3 +1,5 @@
+2016-07-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement P0307R2, Making Optional Greater Equal Again.
 	* include/experimental/optional (_Has_addressof): Fix the comment.
 	* include/std/optional (_Has_addressof): Likewise.
