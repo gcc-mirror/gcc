@@ -1,5 +1,11 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* genextract.c (struct accum_extract): Add constructor and make
+	members auto_vec.
+	(gen_insn): Adjust.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (struct free_lang_data_d): Add constructor and change
 	types of members to ones that automatically manage resources.
 	(fld_worklist_push): Adjust.
