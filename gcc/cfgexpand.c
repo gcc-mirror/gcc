@@ -1030,10 +1030,10 @@ struct stack_vars_data
   /* Vector of offset pairs, always end of some padding followed
      by start of the padding that needs Address Sanitizer protection.
      The vector is in reversed, highest offset pairs come first.  */
-  vec<HOST_WIDE_INT> asan_vec;
+  auto_vec<HOST_WIDE_INT> asan_vec;
 
   /* Vector of partition representative decls in between the paddings.  */
-  vec<tree> asan_decl_vec;
+  auto_vec<tree> asan_decl_vec;
 
   /* Base pseudo register for Address Sanitizer protected automatic vars.  */
   rtx asan_base;
@@ -2179,8 +2179,6 @@ expand_used_vars (void)
     {
       struct stack_vars_data data;
 
-      data.asan_vec = vNULL;
-      data.asan_decl_vec = vNULL;
       data.asan_base = NULL_RTX;
       data.asan_alignb = 0;
 
@@ -2239,9 +2237,6 @@ expand_used_vars (void)
 	}
 
       expand_stack_vars (NULL, &data);
-
-      data.asan_vec.release ();
-      data.asan_decl_vec.release ();
     }
 
   fini_vars_expansion ();
