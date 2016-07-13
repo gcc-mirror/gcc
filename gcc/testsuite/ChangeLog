@@ -1,3 +1,10 @@
+2016-07-13  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.dg/ldist-1.f90: Revert change introduces in r238114.
+	* gfortran.dg/vect/pr62283.f: Add -fno-ipa-icf to additional
+	options.
+	* gfortran.dg/pr42108.f90: Update expected dump scan.
+
 2016-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/24574
