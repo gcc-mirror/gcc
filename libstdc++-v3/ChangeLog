@@ -1,5 +1,10 @@
 2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocated_ptr.h (__allocated_ptr::_S_raw_ptr): Make
+	static.
+
+2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
 	Revert "Add non-const overload of std::string::data()".
 
 2016-07-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
