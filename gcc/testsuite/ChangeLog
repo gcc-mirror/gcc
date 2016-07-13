@@ -1,3 +1,13 @@
+2016-07-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_thumb1_movt_ok):
+	Define effective target.
+	* gcc.target/arm/pr42574.c: Require arm_thumb1_ok and
+	!arm_thumb1_movt_ok to exclude ARMv8-M Baseline.
+	* gcc.target/arm/movhi_movw.c: New test.
+	* gcc.target/arm/movsi_movw.c: Likewise.
+	* gcc.target/arm/movdi_movw.c: Likewise.
+
 2016-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71104

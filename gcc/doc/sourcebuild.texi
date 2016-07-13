@@ -1614,6 +1614,10 @@ ARM target supports acquire-release instructions.
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
 
+@item arm_thumb1_movt_ok
+ARM target generates Thumb-1 code for @code{-mthumb} with @code{MOVW}
+and @code{MOVT} instructions available.
+
 @end table
 
 @subsubsection AArch64-specific attributes
