@@ -1,3 +1,13 @@
+2016-07-13  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-c++-common/Wduplicated-cond-3.c (fn10): Use smaller 
+	const literal.
+	* c-c++-common/builtin-arith-overflow-2.c: Skip for avr.
+	* c-c++-common/pr68833-1.c: Require int32plus.
+	* gcc.dg/ipa/pr63551.c: Likewise.
+	* gcc.dg/ipa/pr63595.c: Require ptr32plus.
+	* gcc.dg/ipa/pr64041.c: Require int32plus.
+
 2016-07-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR ipa/71633

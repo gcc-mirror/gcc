@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-icf-details"  } */
+/* { dg-require-effective-target ptr32plus } */
 
 typedef int size_t;
 

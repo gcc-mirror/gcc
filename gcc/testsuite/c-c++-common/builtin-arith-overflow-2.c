@@ -1,6 +1,7 @@
 /* PR c/68120 - can't easily deal with integer overflow at compile time */
 /* { dg-do run } */
 /* { dg-additional-options "-Wno-long-long" } */
+/* { dg-skip-if "Program too big" { "avr-*-*" } } */
 
 #define SCHAR_MAX    __SCHAR_MAX__
 #define SHRT_MAX     __SHRT_MAX__
