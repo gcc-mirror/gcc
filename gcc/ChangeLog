@@ -1,3 +1,10 @@
+2016-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71104
+	* gimplify.c (gimplify_modify_expr): Gimplify the RHS before
+	gimplifying the LHS.  Make sure to gimplify a returning twice
+	call LHS without using SSA names.
+
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* tree-data-ref.c (find_data_references_in_stmt): Remove
