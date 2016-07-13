@@ -1,5 +1,12 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* ipa.c (record_cdtor_fn): Adjust.
+	(build_cdtor_fns): Likewise.
+	(ipa_cdtor_merge): Make static_ctors and static_dtors local
+	variables.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* genextract.c (struct accum_extract): Add constructor and make
 	members auto_vec.
 	(gen_insn): Adjust.
