@@ -7686,9 +7686,6 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if (!masked)
 		vec_oprnds1 = vec_defs.pop ();
 	      vec_oprnds0 = vec_defs.pop ();
-
-              ops.release ();
-              vec_defs.release ();
             }
           else
             {

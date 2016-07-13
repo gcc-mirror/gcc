@@ -1,5 +1,13 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-data-ref.c (find_data_references_in_stmt): Remove
+	unnecessary call to vec::release.
+	(graphite_find_data_references_in_stmt): Likewise.
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p): Likewise.
+	* tree-vect-stmts.c (vectorizable_condition): Likewise.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfgexpand.c (expand_used_vars): Make the type of a local variable auto_vec.
 	* genmatch.c (lower_for): Likewise.
 	* haifa-sched.c (haifa_sched_init): Likewise.
