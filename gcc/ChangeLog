@@ -1,3 +1,13 @@
+2016-07-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (vect_no_alias_p): New function.
+	(vect_prune_runtime_alias_test_list): Call vect_no_alias_p to
+	resolve alias checks which are known at compilation time.
+	Truncate vector LOOP_VINFO_MAY_ALIAS_DDRS(loop_vinfo) if all
+	alias checks are resolved.  Move dump info for too many runtime
+	alias checks to here...
+	* tree-vect-loop.c (vect_analyze_loop_2): ...From here.
+
 2016-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/24574

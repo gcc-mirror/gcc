@@ -1,3 +1,9 @@
+2016-07-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/vect-35-big-array.c: Refine comment and test.
+	* gcc.dg/vect/vect-35.c: Ditto.
+	* gcc.dg/vect/vect-alias-check-2.c: New test.
+
 2016-07-13  Martin Liska  <mliska@suse.cz>
 
 	* gfortran.dg/ldist-1.f90: Revert change introduces in r238114.
