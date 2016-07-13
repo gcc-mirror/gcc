@@ -4330,23 +4330,29 @@
 
 ;; Division instructions
 (define_insn "divsi3"
-  [(set (match_operand:SI	  0 "s_register_operand" "=r")
-	(div:SI (match_operand:SI 1 "s_register_operand"  "r")
-		(match_operand:SI 2 "s_register_operand"  "r")))]
+  [(set (match_operand:SI	  0 "s_register_operand" "=r,r")
+	(div:SI (match_operand:SI 1 "s_register_operand"  "r,r")
+		(match_operand:SI 2 "s_register_operand"  "r,r")))]
   "TARGET_IDIV"
-  "sdiv%?\t%0, %1, %2"
-  [(set_attr "predicable" "yes")
+  "@
+   sdiv%?\t%0, %1, %2
+   sdiv\t%0, %1, %2"
+  [(set_attr "arch" "32,v8mb")
+   (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "sdiv")]
 )
 
 (define_insn "udivsi3"
-  [(set (match_operand:SI	   0 "s_register_operand" "=r")
-	(udiv:SI (match_operand:SI 1 "s_register_operand"  "r")
-		 (match_operand:SI 2 "s_register_operand"  "r")))]
+  [(set (match_operand:SI	   0 "s_register_operand" "=r,r")
+	(udiv:SI (match_operand:SI 1 "s_register_operand"  "r,r")
+		 (match_operand:SI 2 "s_register_operand"  "r,r")))]
   "TARGET_IDIV"
-  "udiv%?\t%0, %1, %2"
-  [(set_attr "predicable" "yes")
+  "@
+   udiv%?\t%0, %1, %2
+   udiv\t%0, %1, %2"
+  [(set_attr "arch" "32,v8mb")
+   (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "udiv")]
 )

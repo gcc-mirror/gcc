@@ -974,6 +974,91 @@
   DONE;
 })
 
+;; A pattern for the CB(N)Z instruction added in ARMv8-M Baseline profile,
+;; adapted from cbranchsi4_insn.  Modifying cbranchsi4_insn instead leads to
+;; code generation difference for ARMv6-M because the minimum length of the
+;; instruction becomes 2 even for ARMv6-M due to a limitation in genattrtab's
+;; handling of PC in the length condition.
+(define_insn "thumb1_cbz"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "equality_operator"
+	       [(match_operand:SI 1 "s_register_operand" "l")
+		(const_int 0)])
+	      (label_ref (match_operand 2 "" ""))
+	      (pc)))]
+  "TARGET_THUMB1 && TARGET_HAVE_CBZ"
+{
+  if (get_attr_length (insn) == 2)
+    {
+      if (GET_CODE (operands[0]) == EQ)
+	return "cbz\t%1, %l2";
+      else
+	return "cbnz\t%1, %l2";
+    }
+  else
+    {
+      rtx t = cfun->machine->thumb1_cc_insn;
+      if (t != NULL_RTX)
+	{
+	  if (!rtx_equal_p (cfun->machine->thumb1_cc_op0, operands[1])
+	      || !rtx_equal_p (cfun->machine->thumb1_cc_op1, operands[2]))
+	    t = NULL_RTX;
+	  if (cfun->machine->thumb1_cc_mode == CC_NOOVmode)
+	    {
+	      if (!noov_comparison_operator (operands[0], VOIDmode))
+		t = NULL_RTX;
+	    }
+	  else if (cfun->machine->thumb1_cc_mode != CCmode)
+	    t = NULL_RTX;
+	}
+      if (t == NULL_RTX)
+	{
+	  output_asm_insn ("cmp\t%1, #0", operands);
+	  cfun->machine->thumb1_cc_insn = insn;
+	  cfun->machine->thumb1_cc_op0 = operands[1];
+	  cfun->machine->thumb1_cc_op1 = operands[2];
+	  cfun->machine->thumb1_cc_mode = CCmode;
+	}
+      else
+	/* Ensure we emit the right type of condition code on the jump.  */
+	XEXP (operands[0], 0) = gen_rtx_REG (cfun->machine->thumb1_cc_mode,
+					     CC_REGNUM);
+
+      switch (get_attr_length (insn))
+	{
+	case 4:  return "b%d0\t%l2";
+	case 6:  return "b%D0\t.LCB%=;b\t%l2\t%@long jump\n.LCB%=:";
+	case 8:  return "b%D0\t.LCB%=;bl\t%l2\t%@far jump\n.LCB%=:";
+	default: gcc_unreachable ();
+	}
+    }
+}
+  [(set (attr "far_jump")
+	(if_then_else
+	    (eq_attr "length" "8")
+	    (const_string "yes")
+	    (const_string "no")))
+   (set (attr "length")
+	(if_then_else
+	    (and (ge (minus (match_dup 2) (pc)) (const_int 2))
+		 (le (minus (match_dup 2) (pc)) (const_int 128)))
+	    (const_int 2)
+	    (if_then_else
+		(and (ge (minus (match_dup 2) (pc)) (const_int -250))
+		     (le (minus (match_dup 2) (pc)) (const_int 256)))
+		(const_int 4)
+		(if_then_else
+		    (and (ge (minus (match_dup 2) (pc)) (const_int -2040))
+			 (le (minus (match_dup 2) (pc)) (const_int 2048)))
+		    (const_int 6)
+		    (const_int 8)))))
+   (set (attr "type")
+	(if_then_else
+	    (eq_attr "length" "2")
+	    (const_string "branch")
+	    (const_string "multiple")))]
+)
+
 (define_insn "cbranchsi4_insn"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"

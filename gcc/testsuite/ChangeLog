@@ -1,5 +1,11 @@
 2016-07-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* lib/target-supports.exp (check_effective_target_arm_thumb1_cbz_ok):
+	Add new arm_thumb1_cbz_ok effective target.
+	* gcc.target/arm/cbz.c: New test.
+
+2016-07-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* lib/target-supports.exp (check_effective_target_arm_thumb1_movt_ok):
 	Define effective target.
 	* gcc.target/arm/pr42574.c: Require arm_thumb1_ok and
