@@ -1,5 +1,9 @@
 2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(replace(__const_iterator, __const_iterator, initializer_list<C>)):
+	Forward to different overload.
+
 	* include/bits/allocated_ptr.h (__allocated_ptr::_S_raw_ptr): Make
 	static.
 
