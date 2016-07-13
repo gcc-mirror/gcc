@@ -1,5 +1,10 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-ssa-sccvn.c (sccvn_dom_walker::~sccvn_dom_walker): remove.
+	(sccvn_dom_walker): make cond_stack an auto_vec.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* ree.c (struct ext_state): Make type of members auto_vec.
 	(find_and_remove_re): Adjust.
 
