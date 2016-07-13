@@ -54,6 +54,18 @@ namespace ns
   operator<(value_type const& lhs, value_type const& rhs)
   { return (lhs.i < rhs.i) || (!(rhs.i < lhs.i) && strrel(lhs.s, rhs.s)); }
 
+  constexpr bool
+  operator>(value_type const& lhs, value_type const& rhs)
+  { return rhs < lhs; }
+
+  constexpr bool
+  operator<=(value_type const& lhs, value_type const& rhs)
+  { return lhs < rhs || lhs == rhs; }
+
+  constexpr bool
+  operator>=(value_type const& lhs, value_type const& rhs)
+  { return lhs > rhs || lhs == rhs; }
+
 } // namespace ns
 
 int main()

@@ -131,8 +131,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * @brief Trait that detects the presence of an overloaded unary operator&.
     *
     * Practically speaking this detects the presence of such an operator when
-    * called on a const-qualified lvalue (i.e.
-    * declval<_Tp * const&>().operator&()).
+    * called on a const-qualified lvalue (e.g.
+    * declval<const _Tp&>().operator&()).
     */
   template<typename _Tp>
     struct _Has_addressof
@@ -577,16 +577,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up,
                enable_if_t<__and_<
+			   is_constructible<_Tp, _Up>,
+			   is_assignable<_Tp&, _Up>,
 			   __not_<is_same<_Up, nullopt_t>>,
 			   __not_<__is_optional<_Up>>>::value,
 			 bool> = true>
         optional&
         operator=(_Up&& __u)
         {
-          static_assert(__and_<is_constructible<_Tp, _Up>,
-			       is_assignable<_Tp&, _Up>>(),
-                        "Cannot assign to value type from argument");
-
           if (this->_M_is_engaged())
             this->_M_get() = std::forward<_Up>(__u);
           else
@@ -597,15 +595,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up,
                enable_if_t<__and_<
-		 __not_<is_same<_Tp, _Up>>>::value,
-			   bool> = true>
+		           is_constructible<_Tp, _Up>,
+		           is_assignable<_Tp&, _Up>,
+		           __not_<is_same<_Tp, _Up>>>::value,
+			 bool> = true>
         optional&
         operator=(const optional<_Up>& __u)
         {
-          static_assert(__and_<is_constructible<_Tp, _Up>,
-			       is_assignable<_Tp&, _Up>>(),
-                        "Cannot assign to value type from argument");
-
           if (__u)
             {
               if (this->_M_is_engaged())
@@ -621,16 +617,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
 
       template<typename _Up,
-               enable_if_t<__and_<
-		 __not_<is_same<_Tp, _Up>>>::value,
-			   bool> = true>
+	       enable_if_t<__and_<
+			   is_constructible<_Tp, _Up>,
+			   is_assignable<_Tp&, _Up>,
+			   __not_<is_same<_Tp, _Up>>>::value,
+			 bool> = true>
         optional&
         operator=(optional<_Up>&& __u)
         {
-          static_assert(__and_<is_constructible<_Tp, _Up>,
-			       is_assignable<_Tp&, _Up>>(),
-                        "Cannot assign to value type from argument");
-
           if (__u)
             {
               if (this->_M_is_engaged())
@@ -785,41 +779,60 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
+  template<typename _Tp>
+    using __optional_relop_t =
+    enable_if_t<is_convertible<_Tp, bool>::value, bool>;
+
   // [X.Y.8] Comparisons between optional values.
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator==(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Tp>())>
     {
       return static_cast<bool>(__lhs) == static_cast<bool>(__rhs)
 	     && (!__lhs || *__lhs == *__rhs);
     }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator!=(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
-    { return !(__lhs == __rhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Tp>())>
+    {
+      return static_cast<bool>(__lhs) != static_cast<bool>(__rhs)
+	|| (static_cast<bool>(__lhs) && *__lhs != *__rhs);
+    }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator<(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Tp>())>
     {
       return static_cast<bool>(__rhs) && (!__lhs || *__lhs < *__rhs);
     }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator>(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
-    { return __rhs < __lhs; }
+    -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Tp>())>
+    {
+      return static_cast<bool>(__lhs) && (!__rhs || *__lhs > *__rhs);
+    }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator<=(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
-    { return !(__rhs < __lhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Tp>())>
+    {
+      return !__lhs || (static_cast<bool>(__rhs) && *__lhs <= *__rhs);
+    }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator>=(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
-    { return !(__lhs < __rhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Tp>())>
+    {
+      return !__rhs || (static_cast<bool>(__lhs) && *__lhs >= *__rhs);
+    }
 
   // [X.Y.9] Comparisons with nullopt.
   template<typename _Tp>
@@ -884,64 +897,76 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [X.Y.10] Comparisons with value type.
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator==(const optional<_Tp>& __lhs, const _Tp& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Tp>())>
     { return __lhs && *__lhs == __rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator==(const _Tp& __lhs, const optional<_Tp>& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Tp>())>
     { return __rhs && __lhs == *__rhs; }
 
   template<typename _Tp>
-    constexpr bool
-    operator!=(const optional<_Tp>& __lhs, _Tp const& __rhs)
-    { return !__lhs || !(*__lhs == __rhs); }
+    constexpr auto
+    operator!=(const optional<_Tp>& __lhs, const _Tp& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Tp>())>
+    { return !__lhs || *__lhs != __rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator!=(const _Tp& __lhs, const optional<_Tp>& __rhs)
-    { return !__rhs || !(__lhs == *__rhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Tp>())>
+    { return !__rhs || __lhs != *__rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator<(const optional<_Tp>& __lhs, const _Tp& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Tp>())>
     { return !__lhs || *__lhs < __rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator<(const _Tp& __lhs, const optional<_Tp>& __rhs)
+    -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Tp>())>
     { return __rhs && __lhs < *__rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator>(const optional<_Tp>& __lhs, const _Tp& __rhs)
-    { return __lhs && __rhs < *__lhs; }
+    -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Tp>())>
+    { return __lhs && *__lhs > __rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator>(const _Tp& __lhs, const optional<_Tp>& __rhs)
-    { return !__rhs || *__rhs < __lhs; }
+    -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Tp>())>
+    { return !__rhs || __lhs > *__rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator<=(const optional<_Tp>& __lhs, const _Tp& __rhs)
-    { return !__lhs || !(__rhs < *__lhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Tp>())>
+    { return !__lhs || *__lhs <= __rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator<=(const _Tp& __lhs, const optional<_Tp>& __rhs)
-    { return __rhs && !(*__rhs < __lhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Tp>())>
+    { return __rhs && __lhs <= *__rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator>=(const optional<_Tp>& __lhs, const _Tp& __rhs)
-    { return __lhs && !(*__lhs < __rhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Tp>())>
+    { return __lhs && *__lhs >= __rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    constexpr auto
     operator>=(const _Tp& __lhs, const optional<_Tp>& __rhs)
-    { return !__rhs || !(__lhs < *__rhs); }
+    -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Tp>())>
+    { return !__rhs || __lhs >= *__rhs; }
 
   // [X.Y.11]
   template<typename _Tp>

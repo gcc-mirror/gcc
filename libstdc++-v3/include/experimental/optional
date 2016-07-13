@@ -155,8 +155,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * @brief Trait that detects the presence of an overloaded unary operator&.
     *
     * Practically speaking this detects the presence of such an operator when
-    * called on a const-qualified lvalue (i.e.
-    * declval<_Tp * const&>().operator&()).
+    * called on a const-qualified lvalue (e.g.
+    * declval<const _Tp&>().operator&()).
     */
   template<typename _Tp>
     struct _Has_addressof

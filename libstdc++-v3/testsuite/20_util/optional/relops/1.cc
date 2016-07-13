@@ -37,8 +37,24 @@ namespace ns
   { return std::tie(lhs.i, lhs.s) == std::tie(rhs.i, rhs.s); }
 
   bool
+  operator!=(value_type const& lhs, value_type const& rhs)
+  { return std::tie(lhs.i, lhs.s) != std::tie(rhs.i, rhs.s); }
+
+  bool
   operator<(value_type const& lhs, value_type const& rhs)
   { return std::tie(lhs.i, lhs.s) < std::tie(rhs.i, rhs.s); }
+
+  bool
+  operator>(value_type const& lhs, value_type const& rhs)
+  { return std::tie(lhs.i, lhs.s) > std::tie(rhs.i, rhs.s); }
+
+  bool
+  operator<=(value_type const& lhs, value_type const& rhs)
+  { return std::tie(lhs.i, lhs.s) <= std::tie(rhs.i, rhs.s); }
+
+  bool
+  operator>=(value_type const& lhs, value_type const& rhs)
+  { return std::tie(lhs.i, lhs.s) >= std::tie(rhs.i, rhs.s); }
 
 } // namespace ns
 
