@@ -1,5 +1,10 @@
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* ree.c (struct ext_state): Make type of members auto_vec.
+	(find_and_remove_re): Adjust.
+
+2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfgexpand.c (struct stack_vars_data): Make type of fields
 	auto_vec.
 	(expand_used_vars): Adjust.
