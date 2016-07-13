@@ -1,3 +1,35 @@
+2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI] (_M_c_str):
+	New function.
+	(_M_disjunct, basic_string(const basic_string&, size_t)): Use data()
+	instead of _M_data().
+	(basic_string(const basic_string&, size_t, size_t, const _Alloc&)):
+	Likewise.
+	(append(const basic_string&)): Likewise.
+	(append(const basic_string&, size_type, size_type)): Likewise.
+	(assign(const basic_string&, size_type, size_type)): Likewise.
+	(insert(size_type, const basic_string&)): Likewise.
+	(insert(size_type, const basic_string&, size_type, size_type)):
+	Likewise.
+	(replace(size_type, size_type, const basic_string&, size_type,
+	size_type)): Likewise.
+	(replace(__const_iterator, __const_iterator, const basic_string&)):
+	Likewise.
+	(c_str(), data()): Use c_str() instead of _M_data().
+	(data()): Add non-const overload as per LWG 2391 and P0272R1.
+	(compare(const basic_string&)): Use data() instead of _M_data().
+	[!_GLIBCXX_USE_CXX11_ABI] (data()): Add non-const overload.
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI] (_M_mutate):
+	Pass raw pointers to _S_copy.
+	(_M_erase, _M_replace_aux): Pass raw pointers to _S_move and
+	_S_assign.
+	(find(const _CharT*, size_type, size_type)): Use data instead of
+	_M_data().
+	* testsuite/21_strings/basic_string/allocator/char/ext_ptr.cc: New.
+	* testsuite/21_strings/basic_string/operations/data/char/2.cc: New.
+	* testsuite/21_strings/basic_string/operations/data/wchar_t/2.cc: New.
+
 2016-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new: Remove nothrow sized deletes (LWG 2458).

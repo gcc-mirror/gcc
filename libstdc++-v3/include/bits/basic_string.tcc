@@ -315,14 +315,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type __new_capacity = length() + __len2 - __len1;
       pointer __r = _M_create(__new_capacity, capacity());
+      _CharT* __p = std::__addressof(*__r);
 
       if (__pos)
-	this->_S_copy(__r, _M_data(), __pos);
+	this->_S_copy(__p, _M_c_str(), __pos);
       if (__s && __len2)
-	this->_S_copy(__r + __pos, __s, __len2);
+	this->_S_copy(__p + __pos, __s, __len2);
       if (__how_much)
-	this->_S_copy(__r + __pos + __len2,
-		      _M_data() + __pos + __len1, __how_much);
+	this->_S_copy(__p + __pos + __len2,
+		      _M_c_str() + __pos + __len1, __how_much);
 
       _M_dispose();
       _M_data(__r);
@@ -336,8 +337,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       const size_type __how_much = length() - __pos - __n;
 
+      _CharT* __p = _M_c_str();
       if (__how_much && __n)
-	this->_S_move(_M_data() + __pos, _M_data() + __pos + __n, __how_much);
+	this->_S_move(__p + __pos, __p + __pos + __n, __how_much);
 
       _M_set_length(length() - __n);
     }
@@ -400,7 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__new_size <= this->capacity())
 	{
-	  pointer __p = this->_M_data() + __pos1;
+	  _CharT* __p = this->_M_c_str() + __pos1;
 
 	  const size_type __how_much = __old_size - __pos1 - __n1;
 	  if (__how_much && __n1 != __n2)
@@ -410,7 +412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->_M_mutate(__pos1, __n1, 0, __n2);
 
       if (__n2)
-	this->_S_assign(this->_M_data() + __pos1, __n2, __c);
+	this->_S_assign(this->_M_c_str() + __pos1, __n2, __c);
 
       this->_M_set_length(__new_size);
       return *this;
@@ -1179,7 +1181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __glibcxx_requires_string_len(__s, __n);
       const size_type __size = this->size();
-      const _CharT* __data = _M_data();
+      const _CharT* __data = data();
 
       if (__n == 0)
 	return __pos <= __size ? __pos : npos;
