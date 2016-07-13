@@ -1,3 +1,8 @@
+2016-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/24574
+	* gcc.dg/pr24574.c: New testcase.
+
 2016-07-13  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* c-c++-common/Wduplicated-cond-3.c (fn10): Use smaller 
