@@ -3149,8 +3149,7 @@ handle_missing_profiles (void)
 {
   struct cgraph_node *node;
   int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
-  vec<struct cgraph_node *> worklist;
-  worklist.create (64);
+  auto_vec<struct cgraph_node *, 64> worklist;
 
   /* See if 0 count function has non-0 count callers.  In this case we
      lost some profile.  Drop its function profile to PROFILE_GUESSED.  */
@@ -3207,7 +3206,6 @@ handle_missing_profiles (void)
             }
         }
     }
-  worklist.release ();
 }
 
 /* Convert counts measured by profile driven feedback to frequencies.

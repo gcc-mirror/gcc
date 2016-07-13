@@ -3911,7 +3911,6 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
   int multi_step_cvt = 0;
-  vec<tree> vec_dsts = vNULL;
   vec<tree> interm_types = vNULL;
   tree last_oprnd, intermediate_type, cvt_type = NULL_TREE;
   int op_type;
@@ -4210,7 +4209,7 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
      We create vector destinations for the intermediate type (TYPES) received
      from supportable_*_operation, and store them in the correct order
      for future use in vect_create_vectorized_*_stmts ().  */
-  vec_dsts.create (multi_step_cvt + 1);
+  auto_vec<tree> vec_dsts (multi_step_cvt + 1);
   vec_dest = vect_create_destination_var (scalar_dest,
 					  (cvt_type && modifier == WIDEN)
 					  ? cvt_type : vectype_out);
@@ -4461,7 +4460,6 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
-  vec_dsts.release ();
   interm_types.release ();
 
   return true;
@@ -5469,7 +5467,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gimple *next_stmt, *first_stmt;
   bool grouped_store;
   unsigned int group_size, i;
-  vec<tree> dr_chain = vNULL;
   vec<tree> oprnds = vNULL;
   vec<tree> result_chain = vNULL;
   bool inv_p;
@@ -5972,7 +5969,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       return true;
     }
 
-  dr_chain.create (group_size);
+  auto_vec<tree> dr_chain (group_size);
   oprnds.create (group_size);
 
   alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
@@ -6246,7 +6243,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	}
     }
 
-  dr_chain.release ();
   oprnds.release ();
   result_chain.release ();
   vec_oprnds.release ();

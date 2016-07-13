@@ -7416,20 +7416,16 @@ haifa_sched_init (void)
   /* Initialize luids, dependency caches, target and h_i_d for the
      whole function.  */
   {
-    bb_vec_t bbs;
-    bbs.create (n_basic_blocks_for_fn (cfun));
-    basic_block bb;
-
     sched_init_bbs ();
 
+    auto_vec<basic_block> bbs (n_basic_blocks_for_fn (cfun));
+    basic_block bb;
     FOR_EACH_BB_FN (bb, cfun)
       bbs.quick_push (bb);
     sched_init_luids (bbs);
     sched_deps_init (true);
     sched_extend_target ();
     haifa_init_h_i_d (bbs);
-
-    bbs.release ();
   }
 
   sched_init_only_bb = haifa_init_only_bb;
@@ -7996,7 +7992,6 @@ add_to_speculative_block (rtx_insn *insn)
   sd_iterator_def sd_it;
   dep_t dep;
   rtx_insn_list *twins = NULL;
-  rtx_vec_t priorities_roots;
 
   ts = TODO_SPEC (insn);
   gcc_assert (!(ts & ~BE_IN_SPEC));
@@ -8029,7 +8024,7 @@ add_to_speculative_block (rtx_insn *insn)
 	sd_iterator_next (&sd_it);
     }
 
-  priorities_roots.create (0);
+  auto_vec<rtx_insn *> priorities_roots;
   clear_priorities (insn, &priorities_roots);
 
   while (1)
@@ -8124,7 +8119,6 @@ add_to_speculative_block (rtx_insn *insn)
     }
 
   calc_priorities (priorities_roots);
-  priorities_roots.release ();
 }
 
 /* Extends and fills with zeros (only the new part) array pointed to by P.  */
@@ -8620,11 +8614,10 @@ create_check_block_twin (rtx_insn *insn, bool mutate_p)
     /* Fix priorities.  If MUTATE_P is nonzero, this is not necessary,
        because it'll be done later in add_to_speculative_block.  */
     {
-      rtx_vec_t priorities_roots = rtx_vec_t ();
+      auto_vec<rtx_insn *> priorities_roots;
 
       clear_priorities (twin, &priorities_roots);
       calc_priorities (priorities_roots);
-      priorities_roots.release ();
     }
 }
 

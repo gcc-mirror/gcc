@@ -4120,8 +4120,8 @@ extract_and_process_scc_for_name (tree name)
 static bool
 DFS (tree name)
 {
-  vec<ssa_op_iter> itervec = vNULL;
-  vec<tree> namevec = vNULL;
+  auto_vec<ssa_op_iter> itervec;
+  auto_vec<tree> namevec;
   use_operand_p usep = NULL;
   gimple *defstmt;
   tree use;
@@ -4158,19 +4158,11 @@ start_over:
 	  /* See if we found an SCC.  */
 	  if (VN_INFO (name)->low == VN_INFO (name)->dfsnum)
 	    if (!extract_and_process_scc_for_name (name))
-	      {
-		namevec.release ();
-		itervec.release ();
-		return false;
-	      }
+	      return false;
 
 	  /* Check if we are done.  */
 	  if (namevec.is_empty ())
-	    {
-	      namevec.release ();
-	      itervec.release ();
-	      return true;
-	    }
+	    return true;
 
 	  /* Restore the last use walker and continue walking there.  */
 	  use = name;
