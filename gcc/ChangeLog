@@ -1,3 +1,13 @@
+2016-07-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r238086.
+	2016-07-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR ipa/71624
+	* ipa-inline-analysis.c (compute_inline_parameters): Set
+	local.can_change_signature to false for intrumentation
+	thunk callees.
+
 2016-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
