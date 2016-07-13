@@ -3999,7 +3999,7 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }
-  references.release ();
+
   return ret;
 }
 
@@ -4029,7 +4029,6 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
       datarefs->safe_push (dr);
     }
 
-  references.release ();
   return ret;
 }
 
