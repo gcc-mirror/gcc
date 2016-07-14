@@ -28,14 +28,14 @@ void test01()
   any x(1);
   any y;
   x.swap(y);
-  VERIFY( x.empty() );
-  VERIFY( !y.empty() );
+  VERIFY( !x.has_value() );
+  VERIFY( y.has_value() );
   x.swap(y);
-  VERIFY( !x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( x.has_value() );
+  VERIFY( !y.has_value() );
 
-  x.clear();
-  VERIFY( x.empty() );
+  x.reset();
+  VERIFY( !x.has_value() );
 }
 
 int main()

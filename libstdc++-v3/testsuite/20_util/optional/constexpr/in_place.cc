@@ -24,9 +24,6 @@
 int main()
 {
   // [20.5.5] In-place construction
-  static_assert( std::is_same<decltype(std::in_place), const std::in_place_t>(), "" );
-  static_assert( std::is_empty<std::in_place_t>(), "" );
-
   {
     constexpr std::optional<int> o { std::in_place };
     static_assert( o, "" );

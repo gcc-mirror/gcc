@@ -57,13 +57,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class optional;
 
-  // [X.Y.5]
-  /// Tag type for in-place construction.
-  struct in_place_t { };
-
-  /// Tag for in-place construction.
-  constexpr in_place_t in_place { };
-
   // [X.Y.6]
   /// Tag type to disengage optional objects.
   struct nullopt_t
@@ -91,9 +84,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   class bad_optional_access : public logic_error
   {
+    // XXX See LEWG 72, https://issues.isocpp.org/show_bug.cgi?id=72
   public:
     bad_optional_access() : logic_error("bad optional access") { }
-
     // XXX This constructor is non-standard. Should not be inline
     explicit bad_optional_access(const char* __arg) : logic_error(__arg) { }
 
@@ -641,18 +634,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
 
       template<typename... _Args>
-	void
+	enable_if_t<is_constructible<_Tp, _Args&&...>::value>
 	emplace(_Args&&... __args)
 	{
-	  static_assert(is_constructible<_Tp, _Args&&...>(),
-			"Cannot emplace value type from arguments");
-
 	  this->_M_reset();
 	  this->_M_construct(std::forward<_Args>(__args)...);
 	}
 
       template<typename _Up, typename... _Args>
-        enable_if_t<is_constructible<_Tp, initializer_list<_Up>&,
+	enable_if_t<is_constructible<_Tp, initializer_list<_Up>&,
 				     _Args&&...>::value>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
@@ -710,6 +700,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::move(this->_M_get()); }
 
       constexpr explicit operator bool() const noexcept
+      { return this->_M_is_engaged(); }
+
+      constexpr bool has_value() const noexcept
       { return this->_M_is_engaged(); }
 
       constexpr const _Tp&
@@ -777,6 +770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ? std::move(this->_M_get())
 	    : static_cast<_Tp>(std::forward<_Up>(__u));
 	}
+      void reset() { this->_M_reset(); }
     };
 
   template<typename _Tp>
@@ -979,6 +973,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr optional<decay_t<_Tp>>
     make_optional(_Tp&& __t)
     { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
+
+  template<typename _Tp, typename ..._Args>
+    constexpr optional<_Tp>
+    make_optional(_Args&&... __args)
+    { return optional<_Tp> { in_place, std::forward<_Args>(__args)... }; }
+
+  template<typename _Tp, typename _Up, typename ..._Args>
+    constexpr optional<_Tp>
+    make_optional(initializer_list<_Up> __il, _Args&&... __args)
+    { return optional<_Tp> { in_place, __il, std::forward<_Args>(__args)... }; }
 
   // [X.Y.12]
   template<typename _Tp>
