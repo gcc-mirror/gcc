@@ -3,9 +3,9 @@
 ! Check whether empty contains are allowd
 ! PR fortran/29806
 module x
- contains
-end module x ! { dg-error "CONTAINS statement without FUNCTION or SUBROUTINE statement" }
+ contains ! { dg-error "CONTAINS statement without FUNCTION or SUBROUTINE statement" }
+end module x
 
 program y
-  contains
-end program y ! { dg-error "CONTAINS statement without FUNCTION or SUBROUTINE statement" }
+  contains  ! { dg-error "CONTAINS statement without FUNCTION or SUBROUTINE statement" }
+end program y

@@ -1,3 +1,11 @@
+2016-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/29819
+	* gfortran.dg/bind_c_usage_9.f03: Move dg-error.
+	* gfortran.dg/contains.f90: Ditto.
+	* gfortran.dg/contains_empty_1.f03: Ditto.
+	* gfortran.dg/submodule_3.f08: Ditto.
+
 2016-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/71865

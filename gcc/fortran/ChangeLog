@@ -1,3 +1,8 @@
+2016-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/29819
+	* parse.c (parse_contained): Use proper locus.
+ 
 2016-07-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70842

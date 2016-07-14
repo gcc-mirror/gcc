@@ -5321,6 +5321,7 @@ parse_contained (int module)
   gfc_statement st;
   gfc_symbol *sym;
   gfc_entry_list *el;
+  locus old_loc;
   int contains_statements = 0;
   int seen_error = 0;
 
@@ -5337,6 +5338,7 @@ parse_contained (int module)
  next:
       /* Process the next available statement.  We come here if we got an error
 	 and rejected the last statement.  */
+      old_loc = gfc_current_locus;
       st = next_statement ();
 
       switch (st)
@@ -5442,7 +5444,7 @@ parse_contained (int module)
   pop_state ();
   if (!contains_statements)
     gfc_notify_std (GFC_STD_F2008, "CONTAINS statement without "
-		    "FUNCTION or SUBROUTINE statement at %C");
+		    "FUNCTION or SUBROUTINE statement at %L", &old_loc);
 }
 
 
