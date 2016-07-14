@@ -1,3 +1,8 @@
+2016-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* expmed.c (mult_variant, choose_mult_variant): Move declaration to...
+	* expmed.h: ... Here.
+
 2016-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gimple.h (stmt_can_terminate_bb_p): New function.

@@ -2482,16 +2482,8 @@ expand_variable_shift (enum tree_code code, machine_mode mode, rtx shifted,
 }
 
 
-/* Indicates the type of fixup needed after a constant multiplication.
-   BASIC_VARIANT means no fixup is needed, NEGATE_VARIANT means that
-   the result should be negated, and ADD_VARIANT means that the
-   multiplicand should be added to the result.  */
-enum mult_variant {basic_variant, negate_variant, add_variant};
-
 static void synth_mult (struct algorithm *, unsigned HOST_WIDE_INT,
 			const struct mult_cost *, machine_mode mode);
-static bool choose_mult_variant (machine_mode, HOST_WIDE_INT,
-				 struct algorithm *, enum mult_variant *, int);
 static rtx expand_mult_const (machine_mode, rtx, HOST_WIDE_INT, rtx,
 			      const struct algorithm *, enum mult_variant);
 static unsigned HOST_WIDE_INT invert_mod2n (unsigned HOST_WIDE_INT, int);
@@ -2981,7 +2973,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
    Return true if the cheapest of these cost less than MULT_COST,
    describing the algorithm in *ALG and final fixup in *VARIANT.  */
 
-static bool
+bool
 choose_mult_variant (machine_mode mode, HOST_WIDE_INT val,
 		     struct algorithm *alg, enum mult_variant *variant,
 		     int mult_cost)
