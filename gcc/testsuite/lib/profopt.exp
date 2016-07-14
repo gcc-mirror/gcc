@@ -417,7 +417,7 @@ proc profopt-execute { src } {
 	    }
 	    set orig_ld_library_path "[getenv LD_LIBRARY_PATH]"
 	    setenv LD_LIBRARY_PATH "$ld_library_path:$orig_ld_library_path"
-	    verbose "Running $profile_wrapper $execname1"
+	    verbose -log "Running $profile_wrapper $execname1"
 	    set id [remote_spawn "" "$profile_wrapper $execname1" "readonly"]
 	    setenv LD_LIBRARY_PATH $orig_ld_library_path
 	    if { $id < 0 } {
