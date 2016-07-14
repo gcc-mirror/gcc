@@ -566,8 +566,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __list  A %forward_list of identical element and allocator
        *                types.
        *
-       *  All the elements of @a __list are copied, but unlike the copy
-       *  constructor, the allocator object is not copied.
+       *  All the elements of @a __list are copied.
+       *
+       *  Whether the allocator is copied depends on the allocator traits.
        */
       forward_list&
       operator=(const forward_list& __list);
@@ -579,7 +580,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  The contents of @a __list are moved into this %forward_list
        *  (without copying, if the allocators permit it).
-       *  @a __list is a valid, but unspecified %forward_list
+       *
+       *  Afterwards @a __list is a valid, but unspecified %forward_list
+       *
+       *  Whether the allocator is moved depends on the allocator traits.
        */
       forward_list&
       operator=(forward_list&& __list)
@@ -617,7 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %forward_list and
        *  that the number of elements of the resulting %forward_list is the
-       *  same as the number of elements assigned.  Old data is lost.
+       *  same as the number of elements assigned.
        */
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
@@ -636,7 +640,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  This function fills a %forward_list with @a __n copies of the
        *  given value.  Note that the assignment completely changes the
        *  %forward_list, and that the resulting %forward_list has __n
-       *  elements.  Old data is lost.
+       *  elements.
        */
       void
       assign(size_type __n, const _Tp& __val)
@@ -991,6 +995,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  time.  Note that the global std::swap() function is
        *  specialized such that std::swap(l1,l2) will feed to this
        *  function.
+       *
+       *  Whether the allocators are swapped depends on the allocator traits.
        */
       void
       swap(forward_list& __list) noexcept

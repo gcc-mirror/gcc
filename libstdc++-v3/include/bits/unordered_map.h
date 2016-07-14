@@ -274,7 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %unordered_map and
        *  that the resulting %unordered_map's size is the same as the number
-       *  of elements assigned.  Old data may be lost.
+       *  of elements assigned.
        */
       unordered_map&
       operator=(initializer_list<value_type> __l)
@@ -283,8 +283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
-      ///  Returns the allocator object with which the %unordered_map was
-      ///  constructed.
+      ///  Returns the allocator object used by the %unordered_map.
       allocator_type
       get_allocator() const noexcept
       { return _M_h.get_allocator(); }
@@ -1258,12 +1257,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Unordered_multimap list assignment operator.
        *  @param  __l  An initializer_list.
        *
-       *  This function fills an %unordered_multimap with copies of the elements
-       *  in the initializer list @a __l.
+       *  This function fills an %unordered_multimap with copies of the
+       *  elements in the initializer list @a __l.
        *
        *  Note that the assignment completely changes the %unordered_multimap
        *  and that the resulting %unordered_multimap's size is the same as the
-       *  number of elements assigned.  Old data may be lost.
+       *  number of elements assigned.
        */
       unordered_multimap&
       operator=(initializer_list<value_type> __l)
@@ -1272,8 +1271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
-      ///  Returns the allocator object with which the %unordered_multimap was
-      ///  constructed.
+      ///  Returns the allocator object used by the %unordered_multimap.
       allocator_type
       get_allocator() const noexcept
       { return _M_h.get_allocator(); }

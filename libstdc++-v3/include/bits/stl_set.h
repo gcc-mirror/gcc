@@ -193,8 +193,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Set copy constructor.
        *  @param  __x  A %set of identical element and allocator types.
        *
-       *  The newly-created %set uses a copy of the allocation object used
-       *  by @a __x.
+       *  The newly-created %set uses a copy of the allocator object used
+       *  by @a __x (unless the allocator traits dictate a different object).
        */
       set(const set& __x)
       : _M_t(__x._M_t) { }
@@ -259,8 +259,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Set assignment operator.
        *  @param  __x  A %set of identical element and allocator types.
        *
-       *  All the elements of @a __x are copied, but unlike the copy
-       *  constructor, the allocator object is not copied.
+       *  All the elements of @a __x are copied.
+       *
+       *  Whether the allocator is copied depends on the allocator traits.
        */
       set&
       operator=(const set& __x)
@@ -283,7 +284,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %set and
        *  that the resulting %set's size is the same as the number
-       *  of elements assigned.  Old data may be lost.
+       *  of elements assigned.
        */
       set&
       operator=(initializer_list<value_type> __l)
@@ -407,6 +408,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  stateless and empty), so it should be quite fast.)  Note
        *  that the global std::swap() function is specialized such
        *  that std::swap(s1,s2) will feed to this function.
+       *
+       *  Whether the allocators are swapped depends on the allocator traits.
        */
       void
       swap(set& __x)
