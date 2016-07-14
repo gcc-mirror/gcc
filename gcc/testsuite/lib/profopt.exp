@@ -518,6 +518,7 @@ proc profopt-execute { src } {
 	foreach ext $prof_ext {
 	    profopt-target-cleanup $tmpdir $base $ext
 	    profopt-target-cleanup $tmpdir perf data
+	    profopt-target-cleanup $tmpdir $base "gcda.imports"
 	}
 
 	if { $status != "pass" } {
