@@ -1,5 +1,8 @@
 2016-07-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/functional/searchers.cc: Include <algorithm>
+	for std::search.
+
 	PR libstdc++/70716
 	* include/bits/forward_list.h (forward_list): Update doxygen comments
 	to reflect allocator propagation semantics. Remove ambiguous
