@@ -645,6 +645,12 @@ gimple_value_profile_transformations (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   bool changed = false;
+
+  /* Autofdo does its own transformations for indirect calls,
+     and otherwise does not support value profiling.  */
+  if (flag_auto_profile)
+    return false;
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
