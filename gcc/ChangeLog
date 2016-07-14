@@ -1,3 +1,17 @@
+2016-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71866
+	* tree-ssa-pre.c (get_constant_for_value_id): Remove.
+	(do_hoist_insertion): Avoid endless recursion when we
+	didn't insert anything because we managed to simplify
+	things down to a constant or SSA name.
+	(fully_constant_expression): Re-write in terms of ...
+	* tree-ssa-sccvn.h (vn_nary_simplify): ... this.  Declare.
+	* tree-ssa-sccvn.c (vn_nary_simplify): New wrapper around
+	vn_nary_build_or_lookup_1.
+	(vn_nary_build_or_lookup_1): Added flag and renamed from ...
+	(vn_nary_build_or_lookup): ... this which now wraps it.
+
 2016-07-14  Alan Modra  <amodra@gmail.com>
 
 	PR target/71733

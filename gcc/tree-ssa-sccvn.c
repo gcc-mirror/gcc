@@ -1625,10 +1625,12 @@ vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops)
 }
 
 /* Return a value-number for RCODE OPS... either by looking up an existing
-   value-number for the simplified result or by inserting the operation.  */
+   value-number for the simplified result or by inserting the operation if
+   INSERT is true.  */
 
 static tree
-vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
+vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
+			   bool insert)
 {
   tree result = NULL_TREE;
   /* We will be creating a value number for
@@ -1658,7 +1660,7 @@ vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
   else
     {
       tree val = vn_lookup_simplify_result (rcode, type, ops);
-      if (!val)
+      if (!val && insert)
 	{
 	  gimple_seq stmts = NULL;
 	  result = maybe_push_res_to_seq (rcode, type, ops, &stmts);
@@ -1718,6 +1720,29 @@ vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
     }
   return result;
 }
+
+/* Return a value-number for RCODE OPS... either by looking up an existing
+   value-number for the simplified result or by inserting the operation.  */
+
+static tree
+vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
+{
+  return vn_nary_build_or_lookup_1 (rcode, type, ops, true);
+}
+
+/* Try to simplify the expression RCODE OPS... of type TYPE and return
+   its value if present.  */
+
+tree
+vn_nary_simplify (vn_nary_op_t nary)
+{
+  if (nary->length > 3)
+    return NULL_TREE;
+  tree ops[3];
+  memcpy (ops, nary->op, sizeof (tree) * nary->length);
+  return vn_nary_build_or_lookup_1 (nary->opcode, nary->type, ops, false);
+}
+
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
    from the statement defining VUSE and if not successful tries to
