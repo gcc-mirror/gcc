@@ -1,3 +1,8 @@
+2016-07-14  Alan Modra  <amodra@gmail.com>
+
+	PR target/71733
+	* gcc.target/powerpc/p9-novsx.c: New.
+
 2016-07-13  Andi Kleen  <ak@linux.intel.com>
 
 	* g++.dg/tree-prof/indir-call-prof.C: Basic fixes for autofdo.

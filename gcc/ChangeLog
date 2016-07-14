@@ -1,3 +1,9 @@
+2016-07-14  Alan Modra  <amodra@gmail.com>
+
+	PR target/71733
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Deal
+	with p9_vector override before power9-dform override.
+
 2016-07-13  Andi Kleen  <ak@linux.intel.com>
 
 	* value-prof.c (gimple_value_profile_transformations): Don't run
