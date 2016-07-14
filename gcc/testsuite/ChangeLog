@@ -1,3 +1,36 @@
+2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Rename into ...
+	* gcc.target/arm/atomic-comp-swap-release-acquire-1.c: This.
+	* gcc.target/arm/atomic-op-acq_rel.c: Rename into ...
+	* gcc.target/arm/atomic-op-acq_rel-1.c: This.
+	* gcc.target/arm/atomic-op-acquire.c: Rename into ...
+	* gcc.target/arm/atomic-op-acquire-1.c: This.
+	* gcc.target/arm/atomic-op-char.c: Rename into ...
+	* gcc.target/arm/atomic-op-char-1.c: This.
+	* gcc.target/arm/atomic-op-consume.c: Rename into ...
+	* gcc.target/arm/atomic-op-consume-1.c: This.
+	* gcc.target/arm/atomic-op-int.c: Rename into ...
+	* gcc.target/arm/atomic-op-int-1.c: This.
+	* gcc.target/arm/atomic-op-relaxed.c: Rename into ...
+	* gcc.target/arm/atomic-op-relaxed-1.c: This.
+	* gcc.target/arm/atomic-op-release.c: Rename into ...
+	* gcc.target/arm/atomic-op-release-1.c: This.
+	* gcc.target/arm/atomic-op-seq_cst.c: Rename into ...
+	* gcc.target/arm/atomic-op-seq_cst-1.c: This.
+	* gcc.target/arm/atomic-op-short.c: Rename into ...
+	* gcc.target/arm/atomic-op-short-1.c: This.
+	* gcc.target/arm/atomic-comp-swap-release-acquire-2.c: New test.
+	* gcc.target/arm/atomic-op-acq_rel-2.c: Likewise.
+	* gcc.target/arm/atomic-op-acquire-2.c: Likewise.
+	* gcc.target/arm/atomic-op-char-2.c: Likewise.
+	* gcc.target/arm/atomic-op-consume-2.c: Likewise.
+	* gcc.target/arm/atomic-op-int-2.c: Likewise.
+	* gcc.target/arm/atomic-op-relaxed-2.c: Likewise.
+	* gcc.target/arm/atomic-op-release-2.c: Likewise.
+	* gcc.target/arm/atomic-op-seq_cst-2.c: Likewise.
+	* gcc.target/arm/atomic-op-short-2.c: Likewise.
+
 2016-07-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70842

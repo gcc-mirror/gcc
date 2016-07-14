@@ -117,7 +117,7 @@
   [(match_operand:DI 0 "s_register_operand")		;; val out
    (match_operand:DI 1 "mem_noofs_operand")		;; memory
    (match_operand:SI 2 "const_int_operand")]		;; model
-  "(TARGET_HAVE_LDREXD || TARGET_HAVE_LPAE || TARGET_HAVE_LDACQ)
+  "(TARGET_HAVE_LDREXD || TARGET_HAVE_LPAE || TARGET_HAVE_LDACQEXD)
    && ARM_DOUBLEWORD_ALIGN"
 {
   memmodel model = memmodel_from_int (INTVAL (operands[2]));
@@ -125,7 +125,7 @@
   /* For ARMv8-A we can use an LDAEXD to atomically load two 32-bit registers
      when acquire or stronger semantics are needed.  When the relaxed model is
      used this can be relaxed to a normal LDRD.  */
-  if (TARGET_HAVE_LDACQ)
+  if (TARGET_HAVE_LDACQEXD)
     {
       if (is_mm_relaxed (model))
 	emit_insn (gen_arm_atomic_loaddi2_ldrd (operands[0], operands[1]));
@@ -436,7 +436,7 @@
 	(unspec_volatile:DI
 	  [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
 	  VUNSPEC_LAX))]
-  "TARGET_HAVE_LDACQ && ARM_DOUBLEWORD_ALIGN"
+  "TARGET_HAVE_LDACQEXD && ARM_DOUBLEWORD_ALIGN"
   "ldaexd%?\t%0, %H0, %C1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
@@ -472,7 +472,7 @@
 	(unspec_volatile:DI
 	  [(match_operand:DI 2 "s_register_operand" "r")]
 	  VUNSPEC_SLX))]
-  "TARGET_HAVE_LDACQ && ARM_DOUBLEWORD_ALIGN"
+  "TARGET_HAVE_LDACQEXD && ARM_DOUBLEWORD_ALIGN"
   {
     /* See comment in arm_store_exclusive<mode> above.  */
     gcc_assert ((REGNO (operands[2]) & 1) == 0 || TARGET_THUMB2);

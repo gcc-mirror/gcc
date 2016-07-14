@@ -261,7 +261,12 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 			     || arm_arch7) && arm_arch_notm)
 
 /* Nonzero if this chip supports load-acquire and store-release.  */
-#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8 && arm_arch_notm)
+#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8 && TARGET_32BIT)
+
+/* Nonzero if this chip supports LDAEXD and STLEXD.  */
+#define TARGET_HAVE_LDACQEXD	(TARGET_ARM_ARCH >= 8	\
+				 && TARGET_32BIT	\
+				 && arm_arch_notm)
 
 /* Nonzero if this chip provides the MOVW and MOVT instructions.  */
 #define TARGET_HAVE_MOVT	(arm_arch_thumb2 || arm_arch8)
