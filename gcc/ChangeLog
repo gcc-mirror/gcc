@@ -1,3 +1,11 @@
+2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR rtl-optimization/71878
+	* lra-constraints.c (match_reload): Pass information about other
+	output operands.  Create new unique register value if matching input
+	operand shares same register value as output operand being considered.
+	(curr_insn_transform): Record output operands already processed.
+
 2016-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65951
