@@ -1,3 +1,44 @@
+2016-07-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement P0307R2, Making Optional Greater Equal Again.
+	* include/experimental/optional (_Has_addressof): Fix the comment.
+	* include/std/optional (_Has_addressof): Likewise.
+	(operator=(_Up&&)): Constrain.
+	(operator=(const optional<_Up>&)): Likewise.
+	(operator=(optional<_Up>&&)): Likewise.
+	(__optional_relop_t): New.
+	(operator==(const optional<_Tp>&, const optional<_Tp>&)): Constrain.
+	(operator!=(const optional<_Tp>&, const optional<_Tp>&)):
+	Constrain and make transparent.
+	(operator<(const optional<_Tp>&, const optional<_Tp>&)): Constrain.
+	(operator>(const optional<_Tp>&, const optional<_Tp>&)):
+	Constrain and make transparent.
+	(operator<=(const optional<_Tp>&, const optional<_Tp>&)): Likewise.
+	(operator>=(const optional<_Tp>&, const optional<_Tp>&)): Likewise.
+	(operator==(const optional<_Tp>&, const _Tp&): Constrain.
+	(operator==(const _Tp&, const optional<_Tp>&)): Likewise.
+	(operator!=(const optional<_Tp>&, _Tp const&)):
+	Constrain and make transparent.
+	(operator!=(const _Tp&, const optional<_Tp>&)): Likewise.
+	(operator<(const optional<_Tp>&, const _Tp&)): Constrain.
+	(operator<(const _Tp&, const optional<_Tp>&)): Likewise.
+	(operator>(const optional<_Tp>&, const _Tp&)):
+	Constrain and make transparent.
+	(operator>(const _Tp&, const optional<_Tp>&)): Likewise.
+	(operator<=(const optional<_Tp>&, const _Tp&)): Likewise.
+	(operator<=(const _Tp&, const optional<_Tp>&)): Likewise.
+	(operator>=(const optional<_Tp>&, const _Tp&)): Likewise.
+	(operator>=(const _Tp&, const optional<_Tp>&)): Likewise.
+	* testsuite/20_util/optional/constexpr/relops/2.cc: Adjust.
+	* testsuite/20_util/optional/constexpr/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/requirements.cc: Add tests to verify
+	that optional's relops are transparent and don't synthesize
+	operators. Also test that assignment sfinaes.
+
 2016-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71856
