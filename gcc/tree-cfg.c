@@ -7919,14 +7919,19 @@ gimple_block_ends_with_condjump_p (const_basic_block bb)
 }
 
 
-/* Return true if we need to add fake edge to exit at statement T.
-   Helper function for gimple_flow_call_edges_add.  */
+/* Return true if statement T may terminate execution of BB in ways not
+   explicitly represtented in the CFG.  */
 
-static bool
-need_fake_edge_p (gimple *t)
+bool
+stmt_can_terminate_bb_p (gimple *t)
 {
   tree fndecl = NULL_TREE;
   int call_flags = 0;
+
+  /* Eh exception not handled internally terminates execution of the whole
+     function.  */
+  if (stmt_can_throw_external (t))
+    return true;
 
   /* NORETURN and LONGJMP calls already have an edge to exit.
      CONST and PURE calls do not need one.
@@ -7960,6 +7965,13 @@ need_fake_edge_p (gimple *t)
       edge e;
       basic_block bb;
 
+      if (call_flags & (ECF_PURE | ECF_CONST)
+	  && !(call_flags & ECF_LOOPING_CONST_OR_PURE))
+	return false;
+
+      /* Function call may do longjmp, terminate program or do other things.
+	 Special case noreturn that have non-abnormal edges out as in this case
+	 the fact is sufficiently represented by lack of edges out of T.  */
       if (!(call_flags & ECF_NORETURN))
 	return true;
 
@@ -8024,7 +8036,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
       if (!gsi_end_p (gsi))
 	t = gsi_stmt (gsi);
 
-      if (t && need_fake_edge_p (t))
+      if (t && stmt_can_terminate_bb_p (t))
 	{
 	  edge e;
 
@@ -8059,7 +8071,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
 	  do
 	    {
 	      stmt = gsi_stmt (gsi);
-	      if (need_fake_edge_p (stmt))
+	      if (stmt_can_terminate_bb_p (stmt))
 		{
 		  edge e;
 
