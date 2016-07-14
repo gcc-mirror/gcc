@@ -1,3 +1,8 @@
+2016-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71858
+	* c-decl.c (lookup_name_fuzzy): Ignore binding->invisible.
+
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* c-parser.c (c_parser_generic_selection): Make type of variable

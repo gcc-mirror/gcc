@@ -4021,7 +4021,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
   for (c_scope *scope = current_scope; scope; scope = scope->outer)
     for (c_binding *binding = scope->bindings; binding; binding = binding->prev)
       {
-	if (!binding->id)
+	if (!binding->id || binding->invisible)
 	  continue;
 	/* Don't use bindings from implicitly declared functions,
 	   as they were likely misspellings themselves.  */

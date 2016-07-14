@@ -2,6 +2,8 @@
 
 /* Verify that various diagnostics show source code ranges.  */
 
+long double nanl (const char *);
+
 /* These ones merely use token ranges; they don't use tree ranges.  */
 
 void undeclared_identifier (void)

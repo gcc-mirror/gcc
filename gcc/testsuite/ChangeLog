@@ -1,5 +1,13 @@
 2016-07-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/71858
+	* gcc.dg/spellcheck-identifiers.c (snprintf): Declare.
+	* gcc.dg/spellcheck-identifiers-2.c: New test.
+	* gcc.dg/diagnostic-token-ranges.c (nanl): Declare.
+	* c-c++-common/attributes-1.c: Adjust dg-prune-output.
+
+2016-07-14  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/71872
 	* gcc.c-torture/compile/pr71872.c: New test.
 
