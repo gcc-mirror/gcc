@@ -1,3 +1,8 @@
+2016-07-13  Andi Kleen  <ak@linux.intel.com>
+
+	* lib/profopt.exp (dg-final-scan-autofdo,
+	dg-final-scan-not-autofdo): New functions.
+
 2016-07-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/vect/vect-35-big-array.c: Refine comment and test.
