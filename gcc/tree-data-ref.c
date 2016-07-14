@@ -3868,7 +3868,8 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
       if (DECL_P (op1)
 	  || (REFERENCE_CLASS_P (op1)
 	      && (base = get_base_address (op1))
-	      && TREE_CODE (base) != SSA_NAME))
+	      && TREE_CODE (base) != SSA_NAME
+	      && !is_gimple_min_invariant (base)))
 	{
 	  ref.ref = op1;
 	  ref.is_read = true;

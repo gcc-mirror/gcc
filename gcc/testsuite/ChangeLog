@@ -1,3 +1,8 @@
+2016-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71872
+	* gcc.c-torture/compile/pr71872.c: New test.
+
 2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Rename into ...
