@@ -72,4 +72,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final-use { scan-tree-dump-not "Invalid sum" "dom2"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-not "Invalid sum" "dom2"} } */

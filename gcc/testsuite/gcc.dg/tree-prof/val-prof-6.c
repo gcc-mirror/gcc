@@ -15,5 +15,6 @@ main()
     t(i);
   return 0;
 }
-/* { dg-final-use { scan-tree-dump "Average value sum:499500" "optimized"} } */
-/* { dg-final-use { scan-tree-dump "IOR value" "optimized"} } */
+/* autofdo does not do value profiling so far */
+/* { dg-final-use-not-autofdo { scan-tree-dump "Average value sum:499500" "optimized"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump "IOR value" "optimized"} } */

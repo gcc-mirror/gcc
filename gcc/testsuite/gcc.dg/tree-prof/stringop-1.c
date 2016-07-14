@@ -14,8 +14,9 @@ main()
     }
    return 0;
 }
-/* { dg-final-use { scan-ipa-dump "Single value 4 stringop" "profile"} } */
+/* autofdo doesn't support value profiling for now: */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 4 stringop" "profile"} } */
 /* Really this ought to simplify into assignment, but we are not there yet.  */
 /* a[0] = b[0] is what we fold the resulting memcpy into.  */
-/* { dg-final-use { scan-tree-dump " = MEM.*&b" "optimized"} } */
-/* { dg-final-use { scan-tree-dump "MEM.*&a\\\] = " "optimized"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump " = MEM.*&b" "optimized"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump "MEM.*&a\\\] = " "optimized"} } */

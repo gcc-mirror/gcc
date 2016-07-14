@@ -22,4 +22,4 @@ int main() {
   return 0;
 }
 
-/* { dg-final-use { scan-ipa-dump "Single value 8 stringop transformation on bzero" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on bzero" "profile" } } */
