@@ -1,3 +1,8 @@
+2016-07-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70842
+	* gfortran.dg/select_type_35.f03: New test.
+
 2016-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65951
