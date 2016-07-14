@@ -1,3 +1,21 @@
+2016-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70716
+	* include/bits/forward_list.h (forward_list): Update doxygen comments
+	to reflect allocator propagation semantics. Remove ambiguous
+	statements about data being lost.
+	* include/bits/stl_deque.h (deque): Likewise.
+	* include/bits/stl_list.h (list): Likewise.
+	* include/bits/stl_map.h (map): Likewise.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	Likewise.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+
 2016-07-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0032R3, Homogeneous interface for variant, any and optional,

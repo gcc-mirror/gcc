@@ -939,8 +939,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Deque copy constructor.
        *  @param  __x  A %deque of identical element and allocator types.
        *
-       *  The newly-created %deque uses a copy of the allocation object used
-       *  by @a __x.
+       *  The newly-created %deque uses a copy of the allocator object used
+       *  by @a __x (unless the allocator traits dictate a different object).
        */
       deque(const deque& __x)
       : _Base(_Alloc_traits::_S_select_on_copy(__x._M_get_Tp_allocator()),
@@ -1046,8 +1046,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Deque assignment operator.
        *  @param  __x  A %deque of identical element and allocator types.
        *
-       *  All the elements of @a x are copied, but unlike the copy constructor,
-       *  the allocator object is not copied.
+       *  All the elements of @a x are copied.
+       *
+       *  The newly-created %deque uses a copy of the allocator object used
+       *  by @a __x (unless the allocator traits dictate a different object).
        */
       deque&
       operator=(const deque& __x);
@@ -1078,7 +1080,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %deque and that the
        *  resulting %deque's size is the same as the number of elements
-       *  assigned.  Old data may be lost.
+       *  assigned.
        */
       deque&
       operator=(initializer_list<value_type> __l)
@@ -1097,7 +1099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  This function fills a %deque with @a n copies of the given
        *  value.  Note that the assignment completely changes the
        *  %deque and that the resulting %deque's size is the same as
-       *  the number of elements assigned.  Old data may be lost.
+       *  the number of elements assigned.
        */
       void
       assign(size_type __n, const value_type& __val)
@@ -1113,7 +1115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %deque and that the
        *  resulting %deque's size is the same as the number of elements
-       *  assigned.  Old data may be lost.
+       *  assigned.
        */
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
@@ -1141,7 +1143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %deque and that the
        *  resulting %deque's size is the same as the number of elements
-       *  assigned.  Old data may be lost.
+       *  assigned.
        */
       void
       assign(initializer_list<value_type> __l)
@@ -1803,6 +1805,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  (Four pointers, so it should be quite fast.)
        *  Note that the global std::swap() function is specialized such that
        *  std::swap(d1,d2) will feed to this function.
+       *
+       *  Whether the allocators are swapped depends on the allocator traits.
        */
       void
       swap(deque& __x) _GLIBCXX_NOEXCEPT
