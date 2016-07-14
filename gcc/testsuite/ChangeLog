@@ -1,3 +1,12 @@
+2016-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65951
+	PR tree-optimization/70923
+	* gcc.dg/vect/vect-mult-const-pattern-1.c: New test.
+	* gcc.dg/vect/vect-mult-const-pattern-2.c: Likewise.
+	* gcc.dg/vect/pr65951.c: Likewise.
+	* gcc.dg/vect/vect-iv-9.c: Remove ! vect_int_mult-specific scan.
+
 2016-07-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* c-c++-common/pr60226.c: Expect maximum object file alignment
