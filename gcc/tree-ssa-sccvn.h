@@ -234,6 +234,7 @@ unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
 tree fully_constant_vn_reference_p (vn_reference_t);
+tree vn_nary_simplify (vn_nary_op_t);
 
 /* Valueize NAME if it is an SSA name, otherwise just return it.  */
 
