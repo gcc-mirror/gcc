@@ -20,6 +20,18 @@
 
 #include <optional>
 #include <testsuite_hooks.h>
+#include <vector>
+#include <tuple>
+
+struct combined {
+  std::vector<int> v;
+  std::tuple<int, int> t;
+  template<class... Args>
+  combined(std::initializer_list<int> il, Args&&... args)
+    : v(il), t(std::forward<Args>(args)...)
+  {
+  }
+};
 
 int main()
 {
@@ -28,4 +40,22 @@ int main()
   static_assert( std::is_same<decltype(o), std::optional<int>>(), "" );
   VERIFY( o && *o == 42 );
   VERIFY( &*o != &i );
+  auto o2 = std::make_optional<std::tuple<int, int>>(1, 2);
+  static_assert( std::is_same<decltype(o2),
+		 std::optional<std::tuple<int, int>>>(), "" );
+  VERIFY( o2 && std::get<0>(*o2) == 1 && std::get<1>(*o2) == 2);
+  auto o3 = std::make_optional<std::vector<int>>({42, 666});
+  static_assert( std::is_same<decltype(o3),
+		 std::optional<std::vector<int>>>(), "" );
+  VERIFY(o3 && (*o3)[0] == 42 && (*o3)[1] == 666);
+  auto o4 = std::make_optional<combined>({42, 666});
+  static_assert( std::is_same<decltype(o4),
+		 std::optional<combined>>(), "" );
+  VERIFY(o4 && (o4->v)[0] == 42 && (o4->v)[1] == 666
+	 && std::get<0>(o4->t) == 0 && std::get<1>(o4->t) == 0 );
+  auto o5 = std::make_optional<combined>({1, 2}, 3, 4);
+  static_assert( std::is_same<decltype(o5),
+		 std::optional<combined>>(), "" );
+  VERIFY(o4 && (o5->v)[0] == 1 && (o5->v)[1] == 2
+	 && std::get<0>(o5->t) == 3 && std::get<1>(o5->t) == 4 );
 }

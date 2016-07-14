@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do run }
+// { dg-do compile }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -14,25 +14,20 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License along
+// You should have received a moved_to of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
 #include <any>
 #include <testsuite_hooks.h>
 
+#include <memory>
+
 using std::any;
+using std::unique_ptr;
 
-void test01()
-{
-  any x(1);
-  any y;
-  swap(x, y);
-  VERIFY( !x.has_value() );
-  VERIFY( y.has_value() );
-}
+static_assert(std::is_assignable<any&, int>::value);
+static_assert(!std::is_assignable<any&, unique_ptr<int>>::value);
+static_assert(std::is_constructible<any, int>::value);
+static_assert(!std::is_constructible<any, unique_ptr<int>>::value);
 
-int main()
-{
-  test01();
-}

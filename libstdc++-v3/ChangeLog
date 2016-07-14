@@ -1,3 +1,62 @@
+2016-07-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement P0032R3, Homogeneous interface for variant, any and optional,
+	for the parts concerning any and optional.
+	* include/std/any (_Storage()): Make constexpr and have it
+	initialize _M_ptr.
+	(any()): Make constexpr.
+	(any(const any&)): Adjust.
+	(any(any&&)): Likewise.
+	(__any_constructible_t): New.
+	(any(_ValueType&&)): Constrain.
+	(any(in_place_type_t<_Tp>, _Args&&...)): New.
+	(any(in_place_type_t<_Tp>, initializer_list<_Up>, _Args&&...)):
+	Likewise.
+	(~any()): Adjust.
+	(operator=(const any&)): Likewise.
+	(operator=(any&&)): Likewise.
+	(operator=(_ValueType&&)): Constrain.
+	(emplace(_Args&&...)): New.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	(clear()): Remove.
+	(reset()): New.
+	(swap(any&)): Adjust.
+	(empty()): Remove.
+	(has_value()): New.
+	(type()): Adjust.
+	(_Manager_internal::_S_create(_Storage&, _Args&&...)): New.
+	(_Manager_external::_S_create(_Storage&, _Args&&...)): Likewise.
+	(make_any(_Args&&...)): Likewise.
+	(make_any(initializer_list<_Up>, _Args&&...)): Likewise.
+	* include/std/optional (in_place_t, in_place): Remove.
+	(bad_optional_access): Add a comment referring to LEWG 72.
+	(emplace(_Args&&...)): Constrain.
+	(has_value()): New.
+	(reset()): Likewise.
+	(make_optional(_Args&&...)): Likewise.
+	(make_optional(initializer_list<_Up>, _Args&&...)): Likewise.
+	* include/std/utility (in_place_tag): New.
+	(__in_place, __in_place_type, __in_place_index): Likewise.
+	(in_place_t, in_place_type_t, in_place_index_t): Likewise.
+	(in_place(__in_place*)): Likewise.
+	(in_place(__in_place_type<_Tp>*)): Likewise.
+	(in_place(__in_place_index<_Idx>*)): Likewise.
+	* testsuite/20_util/any/assign/1.cc: Adjust.
+	* testsuite/20_util/any/assign/emplace.cc: New.
+	* testsuite/20_util/any/assign/self.cc: Adjust.
+	* testsuite/20_util/any/cons/1.cc: Likewise.
+	* testsuite/20_util/any/cons/in_place.cc: New.
+	* testsuite/20_util/any/make_any.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust.
+	* testsuite/20_util/any/misc/swap.cc: Likewise.
+	* testsuite/20_util/any/modifiers/1.cc: Likewise.
+	* testsuite/20_util/any/requirements.cc: New.
+	* testsuite/20_util/in_place/requirements.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/in_place.cc: Adjust.
+	* testsuite/20_util/optional/in_place.cc: Likewise.
+	* testsuite/20_util/optional/make_optional.cc: Add tests for
+	the new overloads of make_optional.
+
 2016-07-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0307R2, Making Optional Greater Equal Again.
