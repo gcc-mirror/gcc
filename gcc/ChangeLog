@@ -1,3 +1,8 @@
+2016-07-13  Andi Kleen  <ak@linux.intel.com>
+
+	* auto-profile.c (update_inlined_ind_target,
+	afdo_indirect_call): Print information to dump file.
+
 2016-07-13  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* genrecog.c (special_predicate_operand_p): New function.
