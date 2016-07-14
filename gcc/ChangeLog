@@ -1,5 +1,10 @@
 2016-07-13  Andi Kleen  <ak@linux.intel.com>
 
+	* value-prof.c (gimple_value_profile_transformations): Don't run
+	when auto_profile is on.
+
+2016-07-13  Andi Kleen  <ak@linux.intel.com>
+
 	* auto-profile.c (update_inlined_ind_target,
 	afdo_indirect_call): Print information to dump file.
 
