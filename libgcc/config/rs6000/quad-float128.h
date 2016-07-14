@@ -33,6 +33,10 @@
    This define forces it to use KFmode (aka, ieee 128-bit floating point).  */
 #define TF KF
 
+/* We also need TCtype to represent complex ieee 128-bit float for
+   __mulkc3 and __divkc3.  */
+typedef __complex float TCtype __attribute__ ((mode (KC)));
+
 /* Force the use of the VSX instruction set.  */
 #if defined(_ARCH_PPC) && (!defined(__VSX__) || !defined(__FLOAT128__))
 #pragma GCC target ("vsx,float128")
@@ -153,6 +157,10 @@ extern TFtype __floatunsikf (USItype_ppc);
 extern TFtype __floatundikf (UDItype_ppc);
 extern IBM128_TYPE __extendkftf2 (TFtype);
 extern TFtype __trunctfkf2 (IBM128_TYPE);
+
+/* Complex __float128 built on __float128 interfaces.  */
+extern TCtype __mulkc3 (TFtype, TFtype, TFtype, TFtype);
+extern TCtype __divkc3 (TFtype, TFtype, TFtype, TFtype);
 
 /* Implementation of conversions between __ibm128 and __float128, to allow the
    same code to be used on systems with IEEE 128-bit emulation and with IEEE
