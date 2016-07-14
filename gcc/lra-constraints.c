@@ -871,15 +871,18 @@ regno_val_use_in (unsigned int regno, rtx x)
 }
 
 /* Generate reloads for matching OUT and INS (array of input operand
-   numbers with end marker -1) with reg class GOAL_CLASS.  Add input
-   and output reloads correspondingly to the lists *BEFORE and *AFTER.
-   OUT might be negative.  In this case we generate input reloads for
-   matched input operands INS.  EARLY_CLOBBER_P is a flag that the
-   output operand is early clobbered for chosen alternative.  */
+   numbers with end marker -1) with reg class GOAL_CLASS, considering
+   output operands OUTS (similar array to INS) needing to be in different
+   registers.  Add input and output reloads correspondingly to the lists
+   *BEFORE and *AFTER.  OUT might be negative.  In this case we generate
+   input reloads for matched input operands INS.  EARLY_CLOBBER_P is a flag
+   that the output operand is early clobbered for chosen alternative.  */
 static void
-match_reload (signed char out, signed char *ins, enum reg_class goal_class,
-	      rtx_insn **before, rtx_insn **after, bool early_clobber_p)
+match_reload (signed char out, signed char *ins, signed char *outs,
+	      enum reg_class goal_class, rtx_insn **before,
+	      rtx_insn **after, bool early_clobber_p)
 {
+  bool out_conflict;
   int i, in;
   rtx new_in_reg, new_out_reg, reg;
   machine_mode inmode, outmode;
@@ -968,12 +971,32 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	 We don't care about eliminable hard regs here as we are
 	 interesting only in pseudos.  */
 
+      /* Matching input's register value is the same as one of the other
+	 output operand.  Output operands in a parallel insn must be in
+	 different registers.  */
+      out_conflict = false;
+      if (REG_P (in_rtx))
+	{
+	  for (i = 0; outs[i] >= 0; i++)
+	    {
+	      rtx other_out_rtx = *curr_id->operand_loc[outs[i]];
+	      if (REG_P (other_out_rtx)
+		  && (regno_val_use_in (REGNO (in_rtx), other_out_rtx)
+		      != NULL_RTX))
+		{
+		  out_conflict = true;
+		  break;
+		}
+	    }
+	}
+
       new_in_reg = new_out_reg
 	= (! early_clobber_p && ins[1] < 0 && REG_P (in_rtx)
 	   && (int) REGNO (in_rtx) < lra_new_regno_start
 	   && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
 	   && (out < 0
 	       || regno_val_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
+	   && !out_conflict
 	   ? lra_create_new_reg (inmode, in_rtx, goal_class, "")
 	   : lra_create_new_reg_with_unique_value (outmode, out_rtx,
 						   goal_class, ""));
@@ -3469,9 +3492,11 @@ curr_insn_transform (bool check_only_p)
   int i, j, k;
   int n_operands;
   int n_alternatives;
+  int n_outputs;
   int commutative;
   signed char goal_alt_matched[MAX_RECOG_OPERANDS][MAX_RECOG_OPERANDS];
   signed char match_inputs[MAX_RECOG_OPERANDS + 1];
+  signed char outputs[MAX_RECOG_OPERANDS + 1];
   rtx_insn *before, *after;
   bool alt_p = false;
   /* Flag that the insn has been changed through a transformation.  */
@@ -3881,6 +3906,8 @@ curr_insn_transform (bool check_only_p)
 	  }
       }
 
+  n_outputs = 0;
+  outputs[0] = -1;
   for (i = 0; i < n_operands; i++)
     {
       int regno;
@@ -4038,7 +4065,7 @@ curr_insn_transform (bool check_only_p)
 	  /* generate reloads for input and matched outputs.  */
 	  match_inputs[0] = i;
 	  match_inputs[1] = -1;
-	  match_reload (goal_alt_matched[i][0], match_inputs,
+	  match_reload (goal_alt_matched[i][0], match_inputs, outputs,
 			goal_alt[i], &before, &after,
 			curr_static_id->operand_alternative
 			[goal_alt_number * n_operands + goal_alt_matched[i][0]]
@@ -4048,9 +4075,9 @@ curr_insn_transform (bool check_only_p)
 	       && (curr_static_id->operand[goal_alt_matched[i][0]].type
 		   == OP_IN))
 	/* Generate reloads for output and matched inputs.  */
-	match_reload (i, goal_alt_matched[i], goal_alt[i], &before, &after,
-		      curr_static_id->operand_alternative
-		      [goal_alt_number * n_operands + i].earlyclobber);
+	match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
+		      &after, curr_static_id->operand_alternative
+			      [goal_alt_number * n_operands + i].earlyclobber);
       else if (curr_static_id->operand[i].type == OP_IN
 	       && (curr_static_id->operand[goal_alt_matched[i][0]].type
 		   == OP_IN))
@@ -4060,12 +4087,22 @@ curr_insn_transform (bool check_only_p)
 	  for (j = 0; (k = goal_alt_matched[i][j]) >= 0; j++)
 	    match_inputs[j + 1] = k;
 	  match_inputs[j + 1] = -1;
-	  match_reload (-1, match_inputs, goal_alt[i], &before, &after, false);
+	  match_reload (-1, match_inputs, outputs, goal_alt[i], &before,
+			&after, false);
 	}
       else
 	/* We must generate code in any case when function
 	   process_alt_operands decides that it is possible.  */
 	gcc_unreachable ();
+
+      /* Memorise processed outputs so that output remaining to be processed
+	 can avoid using the same register value (see match_reload).  */
+      if (curr_static_id->operand[i].type == OP_OUT)
+	{
+	  outputs[n_outputs++] = i;
+	  outputs[n_outputs] = -1;
+	}
+
       if (optional_p)
 	{
 	  lra_assert (REG_P (op));
