@@ -1,3 +1,8 @@
+2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/pr42574.c: Add missing target keyword for the dg-do
+	selector and enclose boolean expression in curly braces.
+
 2016-07-14  Alan Modra  <amodra@gmail.com>
 
 	PR target/71733
