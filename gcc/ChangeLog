@@ -1,5 +1,14 @@
 2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.h (TARGET_HAVE_LDACQ): Enable for ARMv8-M Mainline.
+	(TARGET_HAVE_LDACQD): New macro.
+	* config/arm/sync.md (atomic_loaddi): Use TARGET_HAVE_LDACQD rather
+	than TARGET_HAVE_LDACQ.
+	(arm_load_acquire_exclusivedi): Likewise.
+	(arm_store_release_exclusivedi): Likewise.
+
+2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	PR rtl-optimization/71878
 	* lra-constraints.c (match_reload): Pass information about other
 	output operands.  Create new unique register value if matching input
