@@ -1,5 +1,10 @@
 2016-07-13  Andi Kleen  <ak@linux.intel.com>
 
+	* lib/profopt.exp (profopt-execute): Always log profiler
+	command line.
+
+2016-07-13  Andi Kleen  <ak@linux.intel.com>
+
 	* lib/profopt.exp (dg-final-scan-autofdo,
 	dg-final-scan-not-autofdo): New functions.
 
