@@ -1,3 +1,9 @@
+2016-07-14  Alan Modra  <amodra@gmail.com>
+
+	* gcc/config/rs6000/altivec.md (altivec_mov<mode>): Disparage
+	gpr alternatives.  Correct '*' placement on Y,r alternative.
+	Add '*' on operand 1 of r,r alternative.
+
 2016-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* expmed.c (mult_variant, choose_mult_variant): Move declaration to...
