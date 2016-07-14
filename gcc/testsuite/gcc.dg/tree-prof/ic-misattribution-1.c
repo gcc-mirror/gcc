@@ -15,4 +15,4 @@ caller(void (*func) (void))
   func ();
 }
 
-/* { dg-final-use { scan-ipa-dump "hist->count 1 hist->all 1" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "hist->count 1 hist->all 1" "profile" } } */
