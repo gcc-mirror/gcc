@@ -1,3 +1,9 @@
+2016-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71872
+	* tree-data-ref.c (get_references_in_stmt): Ignore references
+	with is_gimple_constant get_base_address.
+
 2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.h (TARGET_HAVE_LDACQ): Enable for ARMv8-M Mainline.
