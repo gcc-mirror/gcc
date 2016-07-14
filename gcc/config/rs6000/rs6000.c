@@ -4256,6 +4256,14 @@ rs6000_option_override_internal (bool global_init_p)
       && !(rs6000_isa_flags_explicit & OPTION_MASK_TOC_FUSION))
     rs6000_isa_flags |= OPTION_MASK_TOC_FUSION;
 
+  /* ISA 3.0 vector instructions include ISA 2.07.  */
+  if (TARGET_P9_VECTOR && !TARGET_P8_VECTOR)
+    {
+      if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
+	error ("-mpower9-vector requires -mpower8-vector");
+      rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
+    }
+
   /* -mpower9-dform turns on both -mpower9-dform-scalar and
       -mpower9-dform-vector.  */
   if (TARGET_P9_DFORM_BOTH > 0)
@@ -4296,14 +4304,6 @@ rs6000_option_override_internal (bool global_init_p)
       if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_SF)
 	error ("-mpower9-dform requires -mupper-regs-sf");
       rs6000_isa_flags &= ~OPTION_MASK_P9_DFORM_SCALAR;
-    }
-
-  /* ISA 3.0 vector instructions include ISA 2.07.  */
-  if (TARGET_P9_VECTOR && !TARGET_P8_VECTOR)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
-	error ("-mpower9-vector requires -mpower8-vector");
-      rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
     }
 
   /* There have been bugs with -mvsx-timode that don't show up with -mlra,
