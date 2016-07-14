@@ -1,3 +1,8 @@
+2016-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/pr60226.c: Expect maximum object file alignment
+	error on AIX.
+
 2016-07-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71866
