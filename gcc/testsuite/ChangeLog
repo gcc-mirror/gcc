@@ -1,5 +1,10 @@
 2016-07-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/71865
+	* gcc.dg/diagnostic-token-ranges.c: Add -std=c11 to dg-options.
+	(wide_string_literal_in_asm): Use __asm instead of asm, adjust
+	expected diagnostics.
+
 	PR c/71858
 	* gcc.dg/spellcheck-identifiers.c (snprintf): Declare.
 	* gcc.dg/spellcheck-identifiers-2.c: New test.
