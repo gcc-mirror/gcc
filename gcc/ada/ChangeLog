@@ -1,6 +1,15 @@
+2016-07-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Also use
+	the void pointer type if the designated type is incomplete and has no
+	full view in LTO mode.
+	<E_Access_Protected_Subprogram_Type>: Adjust comment.
+	<E_Incomplete_Type>: Likewise.
+	* gcc-interface/trans.c (Call_to_gnu): Do not convert to the type of
+	the actual if it is a dummy type.
+
 2016-07-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-	Convert TYPE_ALIGN_OK to a TYPE_LANG_FLAG.
 	* gcc-interface/ada-tree.h (TYPE_ALIGN_OK): Define.
 	* gcc-interface/trans.c (Attribute_to_gnu): Adjust call to
 	get_inner_reference.

@@ -3928,8 +3928,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* If expansion is disabled, the equivalent type of a concurrent type
-	   is absent, so build a dummy pointer type.  */
+	   is absent, so we use the void pointer type.  */
 	else if (type_annotate_only && No (gnat_desig_equiv))
+	  gnu_type = ptr_type_node;
+
+	/* If the ultimately designated type is an incomplete type with no full
+	   view, we use the void pointer type in LTO mode to avoid emitting a
+	   dummy type in the GIMPLE IR.  We cannot do that in regular mode as
+	   the name of the dummy type in used by GDB for a global lookup.  */
+	else if (Ekind (gnat_desig_rep) == E_Incomplete_Type
+		 && No (Full_View (gnat_desig_rep))
+		 && flag_generate_lto)
 	  gnu_type = ptr_type_node;
 
 	/* Finally, handle the default case where we can just elaborate our
@@ -4017,7 +4026,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Access_Protected_Subprogram_Type:
     case E_Anonymous_Access_Protected_Subprogram_Type:
       /* If we are just annotating types and have no equivalent record type,
-	 just return ptr_void_type.  */
+	 just use the void pointer type.  */
       if (type_annotate_only && gnat_equiv_type == gnat_entity)
 	gnu_type = ptr_type_node;
 
@@ -4336,8 +4345,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		: Empty;
 
 	/* If this is an incomplete type with no full view, it must be a Taft
-	   Amendment type, in which case we return a dummy type.  Otherwise,
-	   just get the type from its Etype.  */
+	   Amendment type or an incomplete type coming from a limited context,
+	   in which cases we return a dummy type.  Otherwise, we just get the
+	   type from its Etype.  */
 	if (No (full_view))
 	  {
 	    if (kind == E_Incomplete_Type)
