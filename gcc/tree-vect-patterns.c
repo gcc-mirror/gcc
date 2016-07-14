@@ -2131,32 +2131,313 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
   return pattern_stmt;
 }
 
-/* Detect multiplication by constant which are postive or negatives of power 2,
-   and convert them to shift patterns.
+/* Return true iff the target has a vector optab implementing the operation
+   CODE on type VECTYPE.  */
 
-   Mult with constants that are postive power of two.
-   type a_t;
-   type b_t
-   S1: b_t = a_t * n
+static bool
+target_has_vecop_for_code (tree_code code, tree vectype)
+{
+  optab voptab = optab_for_tree_code (code, vectype, optab_vector);
+  return voptab
+	 && optab_handler (voptab, TYPE_MODE (vectype)) != CODE_FOR_nothing;
+}
 
-   or
+/* Verify that the target has optabs of VECTYPE to perform all the steps
+   needed by the multiplication-by-immediate synthesis algorithm described by
+   ALG and VAR.  If SYNTH_SHIFT_P is true ensure that vector addition is
+   present.  Return true iff the target supports all the steps.  */
 
-   Mult with constants that are negative power of two.
-   S2: b_t = a_t * -n
+static bool
+target_supports_mult_synth_alg (struct algorithm *alg, mult_variant var,
+				 tree vectype, bool synth_shift_p)
+{
+  if (alg->op[0] != alg_zero && alg->op[0] != alg_m)
+    return false;
+
+  bool supports_vminus = target_has_vecop_for_code (MINUS_EXPR, vectype);
+  bool supports_vplus = target_has_vecop_for_code (PLUS_EXPR, vectype);
+
+  if (var == negate_variant
+      && !target_has_vecop_for_code (NEGATE_EXPR, vectype))
+    return false;
+
+  /* If we must synthesize shifts with additions make sure that vector
+     addition is available.  */
+  if ((var == add_variant || synth_shift_p) && !supports_vplus)
+    return false;
+
+  for (int i = 1; i < alg->ops; i++)
+    {
+      switch (alg->op[i])
+	{
+	case alg_shift:
+	  break;
+	case alg_add_t_m2:
+	case alg_add_t2_m:
+	case alg_add_factor:
+	  if (!supports_vplus)
+	    return false;
+	  break;
+	case alg_sub_t_m2:
+	case alg_sub_t2_m:
+	case alg_sub_factor:
+	  if (!supports_vminus)
+	    return false;
+	  break;
+	case alg_unknown:
+	case alg_m:
+	case alg_zero:
+	case alg_impossible:
+	  return false;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  return true;
+}
+
+/* Synthesize a left shift of OP by AMNT bits using a series of additions and
+   putting the final result in DEST.  Append all statements but the last into
+   VINFO.  Return the last statement.  */
+
+static gimple *
+synth_lshift_by_additions (tree dest, tree op, HOST_WIDE_INT amnt,
+			   stmt_vec_info vinfo)
+{
+  HOST_WIDE_INT i;
+  tree itype = TREE_TYPE (op);
+  tree prev_res = op;
+  gcc_assert (amnt >= 0);
+  for (i = 0; i < amnt; i++)
+    {
+      tree tmp_var = (i < amnt - 1) ? vect_recog_temp_ssa_var (itype, NULL)
+		      : dest;
+      gimple *stmt
+        = gimple_build_assign (tmp_var, PLUS_EXPR, prev_res, prev_res);
+      prev_res = tmp_var;
+      if (i < amnt - 1)
+	append_pattern_def_seq (vinfo, stmt);
+      else
+	return stmt;
+    }
+  gcc_unreachable ();
+  return NULL;
+}
+
+/* Helper for vect_synth_mult_by_constant.  Apply a binary operation
+   CODE to operands OP1 and OP2, creating a new temporary SSA var in
+   the process if necessary.  Append the resulting assignment statements
+   to the sequence in STMT_VINFO.  Return the SSA variable that holds the
+   result of the binary operation.  If SYNTH_SHIFT_P is true synthesize
+   left shifts using additions.  */
+
+static tree
+apply_binop_and_append_stmt (tree_code code, tree op1, tree op2,
+			     stmt_vec_info stmt_vinfo, bool synth_shift_p)
+{
+  if (integer_zerop (op2)
+      && (code == LSHIFT_EXPR
+	  || code == PLUS_EXPR))
+    {
+      gcc_assert (TREE_CODE (op1) == SSA_NAME);
+      return op1;
+    }
+
+  gimple *stmt;
+  tree itype = TREE_TYPE (op1);
+  tree tmp_var = vect_recog_temp_ssa_var (itype, NULL);
+
+  if (code == LSHIFT_EXPR
+      && synth_shift_p)
+    {
+      stmt = synth_lshift_by_additions (tmp_var, op1, TREE_INT_CST_LOW (op2),
+					 stmt_vinfo);
+      append_pattern_def_seq (stmt_vinfo, stmt);
+      return tmp_var;
+    }
+
+  stmt = gimple_build_assign (tmp_var, code, op1, op2);
+  append_pattern_def_seq (stmt_vinfo, stmt);
+  return tmp_var;
+}
+
+/* Synthesize a multiplication of OP by an INTEGER_CST VAL using shifts
+   and simple arithmetic operations to be vectorized.  Record the statements
+   produced in STMT_VINFO and return the last statement in the sequence or
+   NULL if it's not possible to synthesize such a multiplication.
+   This function mirrors the behavior of expand_mult_const in expmed.c but
+   works on tree-ssa form.  */
+
+static gimple *
+vect_synth_mult_by_constant (tree op, tree val,
+			     stmt_vec_info stmt_vinfo)
+{
+  tree itype = TREE_TYPE (op);
+  machine_mode mode = TYPE_MODE (itype);
+  struct algorithm alg;
+  mult_variant variant;
+  if (!tree_fits_shwi_p (val))
+    return NULL;
+
+  /* Multiplication synthesis by shifts, adds and subs can introduce
+     signed overflow where the original operation didn't.  Perform the
+     operations on an unsigned type and cast back to avoid this.
+     In the future we may want to relax this for synthesis algorithms
+     that we can prove do not cause unexpected overflow.  */
+  bool cast_to_unsigned_p = !TYPE_OVERFLOW_WRAPS (itype);
+
+  tree multtype = cast_to_unsigned_p ? unsigned_type_for (itype) : itype;
+
+  /* Targets that don't support vector shifts but support vector additions
+     can synthesize shifts that way.  */
+  bool synth_shift_p = !vect_supportable_shift (LSHIFT_EXPR, multtype);
+
+  HOST_WIDE_INT hwval = tree_to_shwi (val);
+  /* Use MAX_COST here as we don't want to limit the sequence on rtx costs.
+     The vectorizer's benefit analysis will decide whether it's beneficial
+     to do this.  */
+  bool possible = choose_mult_variant (mode, hwval, &alg,
+					&variant, MAX_COST);
+  if (!possible)
+    return NULL;
+
+  tree vectype = get_vectype_for_scalar_type (multtype);
+
+  if (!vectype
+      || !target_supports_mult_synth_alg (&alg, variant,
+					   vectype, synth_shift_p))
+    return NULL;
+
+  tree accumulator;
+
+  /* Clear out the sequence of statements so we can populate it below.  */
+  STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo) = NULL;
+  gimple *stmt = NULL;
+
+  if (cast_to_unsigned_p)
+    {
+      tree tmp_op = vect_recog_temp_ssa_var (multtype, NULL);
+      stmt = gimple_build_assign (tmp_op, CONVERT_EXPR, op);
+      append_pattern_def_seq (stmt_vinfo, stmt);
+      op = tmp_op;
+    }
+
+  if (alg.op[0] == alg_zero)
+    accumulator = build_int_cst (multtype, 0);
+  else
+    accumulator = op;
+
+  bool needs_fixup = (variant == negate_variant)
+		      || (variant == add_variant);
+
+  for (int i = 1; i < alg.ops; i++)
+    {
+      tree shft_log = build_int_cst (multtype, alg.log[i]);
+      tree accum_tmp = vect_recog_temp_ssa_var (multtype, NULL);
+      tree tmp_var = NULL_TREE;
+
+      switch (alg.op[i])
+	{
+	case alg_shift:
+	  if (synth_shift_p)
+	    stmt
+	      = synth_lshift_by_additions (accum_tmp, accumulator, alg.log[i],
+					    stmt_vinfo);
+	  else
+	    stmt = gimple_build_assign (accum_tmp, LSHIFT_EXPR, accumulator,
+					 shft_log);
+	  break;
+	case alg_add_t_m2:
+	  tmp_var
+	    = apply_binop_and_append_stmt (LSHIFT_EXPR, op, shft_log,
+					    stmt_vinfo, synth_shift_p);
+	  stmt = gimple_build_assign (accum_tmp, PLUS_EXPR, accumulator,
+				       tmp_var);
+	  break;
+	case alg_sub_t_m2:
+	  tmp_var = apply_binop_and_append_stmt (LSHIFT_EXPR, op,
+						  shft_log, stmt_vinfo,
+						  synth_shift_p);
+	  /* In some algorithms the first step involves zeroing the
+	     accumulator.  If subtracting from such an accumulator
+	     just emit the negation directly.  */
+	  if (integer_zerop (accumulator))
+	    stmt = gimple_build_assign (accum_tmp, NEGATE_EXPR, tmp_var);
+	  else
+	    stmt = gimple_build_assign (accum_tmp, MINUS_EXPR, accumulator,
+					tmp_var);
+	  break;
+	case alg_add_t2_m:
+	  tmp_var
+	    = apply_binop_and_append_stmt (LSHIFT_EXPR, accumulator, shft_log,
+					   stmt_vinfo, synth_shift_p);
+	  stmt = gimple_build_assign (accum_tmp, PLUS_EXPR, tmp_var, op);
+	  break;
+	case alg_sub_t2_m:
+	  tmp_var
+	    = apply_binop_and_append_stmt (LSHIFT_EXPR, accumulator, shft_log,
+					   stmt_vinfo, synth_shift_p);
+	  stmt = gimple_build_assign (accum_tmp, MINUS_EXPR, tmp_var, op);
+	  break;
+	case alg_add_factor:
+	  tmp_var
+	    = apply_binop_and_append_stmt (LSHIFT_EXPR, accumulator, shft_log,
+					    stmt_vinfo, synth_shift_p);
+	  stmt = gimple_build_assign (accum_tmp, PLUS_EXPR, accumulator,
+				       tmp_var);
+	  break;
+	case alg_sub_factor:
+	  tmp_var
+	    = apply_binop_and_append_stmt (LSHIFT_EXPR, accumulator, shft_log,
+					   stmt_vinfo, synth_shift_p);
+	  stmt = gimple_build_assign (accum_tmp, MINUS_EXPR, tmp_var,
+				      accumulator);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      /* We don't want to append the last stmt in the sequence to stmt_vinfo
+	 but rather return it directly.  */
+
+      if ((i < alg.ops - 1) || needs_fixup || cast_to_unsigned_p)
+	append_pattern_def_seq (stmt_vinfo, stmt);
+      accumulator = accum_tmp;
+    }
+  if (variant == negate_variant)
+    {
+      tree accum_tmp = vect_recog_temp_ssa_var (multtype, NULL);
+      stmt = gimple_build_assign (accum_tmp, NEGATE_EXPR, accumulator);
+      accumulator = accum_tmp;
+      if (cast_to_unsigned_p)
+	append_pattern_def_seq (stmt_vinfo, stmt);
+    }
+  else if (variant == add_variant)
+    {
+      tree accum_tmp = vect_recog_temp_ssa_var (multtype, NULL);
+      stmt = gimple_build_assign (accum_tmp, PLUS_EXPR, accumulator, op);
+      accumulator = accum_tmp;
+      if (cast_to_unsigned_p)
+	append_pattern_def_seq (stmt_vinfo, stmt);
+    }
+  /* Move back to a signed if needed.  */
+  if (cast_to_unsigned_p)
+    {
+      tree accum_tmp = vect_recog_temp_ssa_var (itype, NULL);
+      stmt = gimple_build_assign (accum_tmp, CONVERT_EXPR, accumulator);
+    }
+
+  return stmt;
+}
+
+/* Detect multiplication by constant and convert it into a sequence of
+   shifts and additions, subtractions, negations.  We reuse the
+   choose_mult_variant algorithms from expmed.c
 
    Input/Output:
 
    STMTS: Contains a stmt from which the pattern search begins,
-   i.e. the mult stmt.  Convert the mult operation to LSHIFT if
-   constant operand is a power of 2.
-   type a_t, b_t
-   S1': b_t = a_t << log2 (n)
-
-   Convert the mult operation to LSHIFT and followed by a NEGATE
-   if constant operand is a negative power of 2.
-   type a_t, b_t, res_T;
-   S2': b_t = a_t << log2 (n)
-   S3': res_T  = - (b_t)
+   i.e. the mult stmt.
 
  Output:
 
@@ -2164,8 +2445,8 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 
   * TYPE_OUT: The type of the output of this pattern.
 
-  * Return value: A new stmt that will be used to replace the multiplication
-    S1 or S2 stmt.  */
+  * Return value: A new stmt that will be used to replace
+    the multiplication.  */
 
 static gimple *
 vect_recog_mult_pattern (vec<gimple *> *stmts,
@@ -2173,11 +2454,8 @@ vect_recog_mult_pattern (vec<gimple *> *stmts,
 {
   gimple *last_stmt = stmts->pop ();
   tree oprnd0, oprnd1, vectype, itype;
-  gimple *pattern_stmt, *def_stmt;
-  optab optab;
+  gimple *pattern_stmt;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
-  int power2_val, power2_neg_val;
-  tree shift;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -2201,52 +2479,17 @@ vect_recog_mult_pattern (vec<gimple *> *stmts,
 
   /* If the target can handle vectorized multiplication natively,
      don't attempt to optimize this.  */
-  optab = optab_for_tree_code (MULT_EXPR, vectype, optab_default);
-  if (optab != unknown_optab)
+  optab mul_optab = optab_for_tree_code (MULT_EXPR, vectype, optab_default);
+  if (mul_optab != unknown_optab)
     {
       machine_mode vec_mode = TYPE_MODE (vectype);
-      int icode = (int) optab_handler (optab, vec_mode);
+      int icode = (int) optab_handler (mul_optab, vec_mode);
       if (icode != CODE_FOR_nothing)
-	return NULL;
+       return NULL;
     }
 
-  /* If target cannot handle vector left shift then we cannot
-     optimize and bail out.  */
-  optab = optab_for_tree_code (LSHIFT_EXPR, vectype, optab_vector);
-  if (!optab
-      || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
-    return NULL;
-
-  power2_val = wi::exact_log2 (oprnd1);
-  power2_neg_val = wi::exact_log2 (wi::neg (oprnd1));
-
-  /* Handle constant operands that are postive or negative powers of 2.  */
-  if (power2_val != -1)
-    {
-      shift = build_int_cst (itype, power2_val);
-      pattern_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-			       LSHIFT_EXPR, oprnd0, shift);
-    }
-  else if (power2_neg_val != -1)
-    {
-      /* If the target cannot handle vector NEGATE then we cannot
-	 do the optimization.  */
-      optab = optab_for_tree_code (NEGATE_EXPR, vectype, optab_vector);
-      if (!optab
-	  || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
-	return NULL;
-
-      shift = build_int_cst (itype, power2_neg_val);
-      def_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-			       LSHIFT_EXPR, oprnd0, shift);
-      new_pattern_def_seq (stmt_vinfo, def_stmt);
-      pattern_stmt
-	 = gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-				NEGATE_EXPR, gimple_assign_lhs (def_stmt));
-    }
-  else
+  pattern_stmt = vect_synth_mult_by_constant (oprnd0, oprnd1, stmt_vinfo);
+  if (!pattern_stmt)
     return NULL;
 
   /* Pattern detected.  */

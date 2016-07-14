@@ -1,3 +1,16 @@
+2016-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65951
+	PR tree-optimization/70923
+	* tree-vect-patterns.c: Include mult-synthesis.h.
+	(target_supports_mult_synth_alg): New function.
+	(synth_lshift_by_additions): Likewise.
+	(apply_binop_and_append_stmt): Likewise.
+	(vect_synth_mult_by_constant): Likewise.
+	(target_has_vecop_for_code): Likewise.
+	(vect_recog_mult_pattern): Use above functions to synthesize vector
+	multiplication by integer constants.
+
 2016-07-14  Alan Modra  <amodra@gmail.com>
 
 	* gcc/config/rs6000/altivec.md (altivec_mov<mode>): Disparage
