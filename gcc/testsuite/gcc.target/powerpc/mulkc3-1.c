@@ -1,4 +1,5 @@
 /* { dg-do run { target { powerpc64*-*-* && vsx_hw } } } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mfloat128 -mvsx" } */
 
 void abort ();
