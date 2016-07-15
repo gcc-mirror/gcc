@@ -1,3 +1,9 @@
+2016-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71858
+	* c-common.h (enum lookup_name_fuzzy_kind): Add
+	FUZZY_LOOKUP_FUNCTION_NAME.
+
 2016-07-08  Jason Merrill  <jason@redhat.com>
 
 	P0145: Refining Expression Order for C++.

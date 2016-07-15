@@ -1,3 +1,11 @@
+2016-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71858
+	* c-decl.c (implicit_decl_warning): Use FUZZY_LOOKUP_FUNCTION_NAME
+	instead of FUZZY_LOOKUP_NAME.
+	(lookup_name_fuzzy): For FUZZY_LOOKUP_FUNCTION_NAME consider
+	FUNCTION_DECLs, {VAR,PARM}_DECLs function pointers and macros.
+
 2016-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71858
