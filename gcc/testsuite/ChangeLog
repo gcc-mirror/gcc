@@ -1,3 +1,7 @@
+2016-07-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/scev-8.c: Update test string.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.dg/goacc/vector_length.f90: New test.
