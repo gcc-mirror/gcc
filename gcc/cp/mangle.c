@@ -3145,6 +3145,29 @@ write_expression (tree expr)
 			 "cannot be mangled");
 		  continue;
 		}
+	      else if (FOLD_EXPR_P (expr))
+		{
+		  /* The first 'operand' of a fold-expression is the operator
+		     that it folds over.  */
+		  if (i == 0)
+		    {
+		      int fcode = TREE_INT_CST_LOW (operand);
+		      write_string (operator_name_info[fcode].mangled_name);
+		      continue;
+		    }
+		  else if (code == BINARY_LEFT_FOLD_EXPR)
+		    {
+		      /* The order of operands of the binary left and right
+			 folds is the same, but we want to mangle them in
+			 lexical order, i.e. non-pack first.  */
+		      if (i == 1)
+			operand = FOLD_EXPR_INIT (expr);
+		      else
+			operand = FOLD_EXPR_PACK (expr);
+		    }
+		  if (PACK_EXPANSION_P (operand))
+		    operand = PACK_EXPANSION_PATTERN (operand);
+		}
 	      write_expression (operand);
 	    }
 	}
