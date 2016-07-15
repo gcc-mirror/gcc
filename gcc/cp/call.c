@@ -6640,7 +6640,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       expr = decay_conversion (expr, complain);
       if (expr == error_mark_node)
 	{
-	  if (complain)
+	  if (complain & tf_error)
 	    {
 	      maybe_print_user_conv_context (convs);
 	      if (fn)

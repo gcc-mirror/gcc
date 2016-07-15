@@ -2245,7 +2245,7 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
       if (!fn)
 	{
 	  /* The unqualified name could not be resolved.  */
-	  if (complain)
+	  if (complain & tf_error)
 	    fn = unqualified_fn_lookup_error (cp_expr (identifier, loc));
 	  else
 	    fn = identifier;
