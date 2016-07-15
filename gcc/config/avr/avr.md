@@ -1175,7 +1175,7 @@
 	inc %0\;inc %0
 	dec %0\;dec %0"
   [(set_attr "length" "1,1,1,1,2,2")
-   (set_attr "cc" "set_czn,set_czn,set_vzn,set_vzn,set_vzn,set_vzn")])
+   (set_attr "cc" "set_czn,set_czn,set_vzn,set_vzn,set_zn,set_zn")])
 
 ;; "addhi3"
 ;; "addhq3" "adduhq3"
@@ -1240,6 +1240,33 @@
   [(set_attr "length" "5")
    (set_attr "cc" "clobber")])
 
+(define_insn "*addhi3_zero_extend.const"
+  [(set (match_operand:HI 0 "register_operand"                         "=d")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "0"))
+                 (match_operand:HI 2 "const_m255_to_m1_operand"         "Cn8")))]
+  ""
+  "subi %A0,%n2\;sbc %B0,%B0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "set_czn")])
+
+(define_insn "*usum_widenqihi3"
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
+                 (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))]
+  ""
+  "add %A0,%2\;clr %B0\;rol %B0"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*udiff_widenqihi3"
+  [(set (match_operand:HI 0 "register_operand"                           "=r")
+        (minus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
+                  (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))]
+  ""
+  "sub %A0,%2\;sbc %B0,%B0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "set_czn")])
+    
 (define_insn "*addhi3_sp"
   [(set (match_operand:HI 1 "stack_register_operand"           "=q")
         (plus:HI (match_operand:HI 2 "stack_register_operand"   "q")
@@ -3102,15 +3129,16 @@
 ; and
 
 (define_insn "andqi3"
-  [(set (match_operand:QI 0 "register_operand"       "=??r,d")
-        (and:QI (match_operand:QI 1 "register_operand" "%0,0")
-                (match_operand:QI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
+        (and:QI (match_operand:QI 1 "register_operand" "%0,0,0")
+                (match_operand:QI 2 "nonmemory_operand" "r,i,Ca1")))]
   ""
   "@
 	and %0,%2
-	andi %0,lo8(%2)"
-  [(set_attr "length" "1,1")
-   (set_attr "cc" "set_zn,set_zn")])
+	andi %0,lo8(%2)
+	* return avr_out_bitop (insn, operands, NULL);"
+  [(set_attr "length" "1,1,2")
+   (set_attr "cc" "set_zn,set_zn,none")])
 
 (define_insn "andhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
@@ -3184,15 +3212,16 @@
 ;; ior
 
 (define_insn "iorqi3"
-  [(set (match_operand:QI 0 "register_operand"       "=??r,d")
-        (ior:QI (match_operand:QI 1 "register_operand" "%0,0")
-                (match_operand:QI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
+        (ior:QI (match_operand:QI 1 "register_operand" "%0,0,0")
+                (match_operand:QI 2 "nonmemory_operand" "r,i,Co1")))]
   ""
   "@
 	or %0,%2
-	ori %0,lo8(%2)"
-  [(set_attr "length" "1,1")
-   (set_attr "cc" "set_zn,set_zn")])
+	ori %0,lo8(%2)
+        * return avr_out_bitop (insn, operands, NULL);"
+  [(set_attr "length" "1,1,2")
+   (set_attr "cc" "set_zn,set_zn,none")])
 
 (define_insn "iorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
@@ -4606,6 +4635,25 @@
   "cpi %0,lo8(%1)"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
+
+
+(define_insn "*cmphi.zero-extend.0"
+  [(set (cc0)
+        (compare (zero_extend:HI (match_operand:QI 0 "register_operand" "r"))
+                 (match_operand:HI 1 "register_operand" "r")))]
+  ""
+  "cp %0,%A1\;cpc __zero_reg__,%B1"
+  [(set_attr "cc" "compare")
+   (set_attr "length" "2")])
+
+(define_insn "*cmphi.zero-extend.1"
+  [(set (cc0)
+        (compare (match_operand:HI 0 "register_operand" "r")
+                 (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))))]
+  ""
+  "cp %A0,%1\;cpc %B0,__zero_reg__"
+  [(set_attr "cc" "compare")
+   (set_attr "length" "2")])
 
 ;; "*cmphi"
 ;; "*cmphq" "*cmpuhq"
