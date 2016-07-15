@@ -5346,6 +5346,34 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
         }
     }
 
+  /* Comparisons == -1 and != -1 of a d-register that's used after the
+     comparison.  (If it's unused after we use CPI / SBCI or ADIW sequence
+     from below.)  Instead of  CPI Rlo,-1 / LDI Rx,-1 / CPC Rhi,Rx  we can
+     use  CPI Rlo,-1 / CPC Rhi,Rlo  which is 1 instruction shorter:
+     If CPI is true then Rlo contains -1 and we can use Rlo instead of Rx
+     when CPC'ing the high part.  If CPI is false then CPC cannot render
+     the result to true.  This also works for the more generic case where
+     the constant is of the form 0xabab.  */
+
+  if (n_bytes == 2
+      && xval != 0
+      && test_hard_reg_class (LD_REGS, xreg)
+      && compare_eq_p (insn)
+      && !reg_unused_after (insn, xreg))
+    {
+      rtx xlo8 = simplify_gen_subreg (QImode, xval, mode, 0);
+      rtx xhi8 = simplify_gen_subreg (QImode, xval, mode, 1);
+
+      if (INTVAL (xlo8) == INTVAL (xhi8))
+        {
+          xop[0] = xreg;
+          xop[1] = xlo8;
+
+          return avr_asm_len ("cpi %A0,%1"  CR_TAB
+                              "cpc %B0,%A0", xop, plen, 2);
+        }
+    }
+
   for (i = 0; i < n_bytes; i++)
     {
       /* We compare byte-wise.  */
@@ -7687,11 +7715,11 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
 
   /* op[0]: 8-bit destination register
      op[1]: 8-bit const int
-     op[2]: 8-bit clobber register or SCRATCH
+     op[2]: 8-bit clobber register, SCRATCH or NULL_RTX.
      op[3]: 8-bit register containing 0xff or NULL_RTX  */
   rtx op[4];
 
-  op[2] = xop[3];
+  op[2] = QImode == mode ? NULL_RTX : xop[3];
   op[3] = NULL_RTX;
 
   if (plen)

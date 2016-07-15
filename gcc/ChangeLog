@@ -1,3 +1,17 @@
+2016-07-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/predicates.md (const_m255_to_m1_operand): New.
+	* config/avr/constraints.md (Cn8, Ca1, Co1, Yx2): New constraints.
+	* config/avr/avr.md (add<mode>3) <ALL1>: Make "r,0,r" more
+	expensive.
+	(*cmphi.zero-extend.0, *cmphi.zero-extend.1)
+	(*usum_widenqihi3, *udiff_widenqihi3)
+	(*addhi3_zero_extend.const): New combiner insns.
+	(andqi3, iorqi3): Provide "l" (NO_LD_REGS) alternative if
+	just 1 bit is affected.
+	* config/avr/avr.c (avr_out_bitop) <QImode>: Don't access xop[3].
+	(avr_out_compare) [EQ,NE]: Tweak comparing d-regs against -1.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* omp-low.c (lower_omp_target): Mark data clauses with

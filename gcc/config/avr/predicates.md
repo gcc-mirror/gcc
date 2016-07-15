@@ -114,6 +114,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 2, 6)")))
 
+;; Return 1 if OP is constant integer -255..-1.
+(define_predicate "const_m255_to_m1_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -255, -1)")))
+
 ;; Returns true if OP is either the constant zero or a register.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
