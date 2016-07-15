@@ -1,5 +1,9 @@
 2016-07-15  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.dg/tree-ssa/loop-41.c: New test.
+
+2016-07-15  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/71347
 	* gcc.dg/tree-ssa/pr71347.c: XFAIL on ia64, arm, m68k and sparc.
 
