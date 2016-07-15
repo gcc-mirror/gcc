@@ -1,3 +1,10 @@
+2016-07-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_operators): Add sP and sZ.
+	(d_print_comp_inner): Handle them.
+	(d_template_args_1): Split out from d_template_args.
+	(d_args_length): New.
+
 2016-07-13  Marcel BÃhme  <boehme.marcel@gmail.com>
 
 	PR c++/70926
