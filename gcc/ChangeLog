@@ -1,3 +1,12 @@
+2016-07-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* cgraphunit.c (cgraph_order_sort_kind): New entry ORDER_VAR_UNDEF.
+	(output_in_order): Loop over undefined variables too.  Output them
+	via assemble_undefined_decl.  Skip variables that correspond to hard
+	registers or have value-exprs.
+	* varpool.c (symbol_table::output_variables): Handle undefined
+	variables together with defined ones.
+
 2016-07-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (get_representative_for): Make sure to return

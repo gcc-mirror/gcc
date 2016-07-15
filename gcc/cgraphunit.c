@@ -2141,6 +2141,7 @@ enum cgraph_order_sort_kind
   ORDER_UNDEFINED = 0,
   ORDER_FUNCTION,
   ORDER_VAR,
+  ORDER_VAR_UNDEF,
   ORDER_ASM
 };
 
@@ -2187,16 +2188,20 @@ output_in_order (bool no_reorder)
 	}
     }
 
-  FOR_EACH_DEFINED_VARIABLE (pv)
-    if (!DECL_EXTERNAL (pv->decl))
-      {
-	if (no_reorder && !pv->no_reorder)
-	    continue;
-	i = pv->order;
-	gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-	nodes[i].kind = ORDER_VAR;
-	nodes[i].u.v = pv;
-      }
+  /* There is a similar loop in symbol_table::output_variables.
+     Please keep them in sync.  */
+  FOR_EACH_VARIABLE (pv)
+    {
+      if (no_reorder && !pv->no_reorder)
+	continue;
+      if (DECL_HARD_REGISTER (pv->decl)
+	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
+	continue;
+      i = pv->order;
+      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
+      nodes[i].kind = pv->definition ? ORDER_VAR : ORDER_VAR_UNDEF;
+      nodes[i].u.v = pv;
+    }
 
   for (pa = symtab->first_asm_symbol (); pa; pa = pa->next)
     {
@@ -2222,14 +2227,11 @@ output_in_order (bool no_reorder)
 	  break;
 
 	case ORDER_VAR:
-#ifdef ACCEL_COMPILER
-	  /* Do not assemble "omp declare target link" vars.  */
-	  if (DECL_HAS_VALUE_EXPR_P (nodes[i].u.v->decl)
-	      && lookup_attribute ("omp declare target link",
-				   DECL_ATTRIBUTES (nodes[i].u.v->decl)))
-	    break;
-#endif
 	  nodes[i].u.v->assemble_decl ();
+	  break;
+
+	case ORDER_VAR_UNDEF:
+	  assemble_undefined_decl (nodes[i].u.v->decl);
 	  break;
 
 	case ORDER_ASM:
