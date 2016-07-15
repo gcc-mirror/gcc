@@ -1,3 +1,16 @@
+2016-07-15  Virendra Pathak  <virendra.pathak@broadcom.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config/aarch64/aarch64-cores.def: Update vulcan COSTS.
+	* config/aarch64/aarch64-cost-tables.h
+	(vulcan_extra_costs): New variable.
+	* config/aarch64/aarch64.c
+	(vulcan_addrcost_table): Likewise.
+	(vulcan_regmove_cost): Likewise.
+	(vulcan_vector_cost): Likewise.
+	(vulcan_branch_cost): Likewise.
+	(vulcan_tunings): Likewise.
+
 2016-07-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	* cgraphunit.c (cgraph_order_sort_kind): New entry ORDER_VAR_UNDEF.
