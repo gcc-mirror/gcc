@@ -537,6 +537,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
       break;
 
     case TYPENAME_TYPE:
+    case DECLTYPE_TYPE:
       emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of dependent type %qT", type);
       break;
