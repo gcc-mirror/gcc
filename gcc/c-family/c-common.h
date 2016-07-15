@@ -994,6 +994,9 @@ enum lookup_name_fuzzy_kind {
   /* Names of types.  */
   FUZZY_LOOKUP_TYPENAME,
 
+  /* Names of function decls.  */
+  FUZZY_LOOKUP_FUNCTION_NAME,
+
   /* Any name.  */
   FUZZY_LOOKUP_NAME
 };

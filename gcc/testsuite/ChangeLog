@@ -1,3 +1,8 @@
+2016-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71858
+	* gcc.dg/spellcheck-identifiers-3.c: New test.
+
 2016-07-15  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/71807

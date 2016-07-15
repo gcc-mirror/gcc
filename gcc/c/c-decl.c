@@ -3090,7 +3090,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
       bool warned;
       tree hint = NULL_TREE;
       if (!olddecl)
-	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_FUNCTION_NAME);
 
       if (flag_isoc99)
 	if (hint)
@@ -4028,9 +4028,30 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 	if (TREE_CODE (binding->decl) == FUNCTION_DECL)
 	  if (C_DECL_IMPLICIT (binding->decl))
 	    continue;
-	if (kind == FUZZY_LOOKUP_TYPENAME)
-	  if (TREE_CODE (binding->decl) != TYPE_DECL)
-	    continue;
+	switch (kind)
+	  {
+	  case FUZZY_LOOKUP_TYPENAME:
+	    if (TREE_CODE (binding->decl) != TYPE_DECL)
+	      continue;
+	    break;
+
+	  case FUZZY_LOOKUP_FUNCTION_NAME:
+	    if (TREE_CODE (binding->decl) != FUNCTION_DECL)
+	      {
+		/* Allow function pointers.  */
+		if ((VAR_P (binding->decl)
+		     || TREE_CODE (binding->decl) == PARM_DECL)
+		    && TREE_CODE (TREE_TYPE (binding->decl)) == POINTER_TYPE
+		    && (TREE_CODE (TREE_TYPE (TREE_TYPE (binding->decl)))
+			== FUNCTION_TYPE))
+		  break;
+		continue;
+	      }
+	    break;
+
+	  default:
+	    break;
+	  }
 	bm.consider (binding->id);
       }
 
