@@ -1,5 +1,8 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71718
+	* pt.c (push_tinst_level_loc): Set at_eof before fatal_error.
+
 	PR c++/70824
 	* init.c (constant_value_1): Don't instantiated DECL_INITIAL of
 	artificial variables.
