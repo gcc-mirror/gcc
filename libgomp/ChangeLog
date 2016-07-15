@@ -47,7 +47,7 @@
 2016-06-01  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR c/70688
-	* pr70688.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/pr70688.c: New file.
 
 2016-05-26  Jakub Jelinek  <jakub@redhat.com>
 
