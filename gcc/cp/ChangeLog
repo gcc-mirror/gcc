@@ -1,5 +1,8 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71814
+	* mangle.c (write_expression): Handle sizeof... an argument pack.
+
 	PR c++/71718
 	* pt.c (push_tinst_level_loc): Set at_eof before fatal_error.
 

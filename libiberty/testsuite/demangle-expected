@@ -4536,6 +4536,12 @@ void baz<int>(A<sizeof (foo((int)(), (floatcomplex )00000000_00000000))>*)
 --format=gnu-v3
 _Z3fooI1FEN1XIXszdtcl1PclcvT__EEE5arrayEE4TypeEv
 X<sizeof ((P(((F)())())).array)>::Type foo<F>()
+
+_Z1fIJidEEv1AIXsZT_EE
+void f<int, double>(A<2>)
+
+_ZN1A1fIJiiEiJiiiEEEvRAsPDpT_T0_DpT1_E_iS3_S5_
+void A::f<int, int, int, int, int, int>(int (&) [6], int, int, int, int)
 #
 # Tests a use-after-free problem PR70481
 
