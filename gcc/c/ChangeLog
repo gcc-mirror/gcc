@@ -1,3 +1,11 @@
+2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_declare): Don't scan for
+	GOMP_MAP_POINTER.
+	* c-typeck.c (handle_omp_array_sections): Mark data clauses with
+	GOMP_MAP_FORCE_{PRESENT,TO,FROM,TOFROM} as potentially having
+	zero-length subarrays.
+
 2016-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71858

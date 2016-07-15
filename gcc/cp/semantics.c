@@ -5002,6 +5002,10 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      case GOMP_MAP_ALWAYS_TOFROM:
 	      case GOMP_MAP_RELEASE:
 	      case GOMP_MAP_DELETE:
+	      case GOMP_MAP_FORCE_TO:
+	      case GOMP_MAP_FORCE_FROM:
+	      case GOMP_MAP_FORCE_TOFROM:
+	      case GOMP_MAP_FORCE_PRESENT:
 		OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
 		break;
 	      default:
