@@ -887,15 +887,15 @@ c_common_post_options (const char **pfilename)
     }
   else if (flag_abi_compat_version == -1)
     {
-      /* Generate compatibility aliases for ABI v8 (5.1) by default. */
+      /* Generate compatibility aliases for ABI v10 (6.1) by default. */
       flag_abi_compat_version
-	= (flag_abi_version == 0 ? 8 : 0);
+	= (flag_abi_version == 0 ? 10 : 0);
     }
 
   /* Change flag_abi_version to be the actual current ABI level for the
      benefit of c_cpp_builtins.  */
   if (flag_abi_version == 0)
-    flag_abi_version = 10;
+    flag_abi_version = 11;
 
   if (cxx_dialect >= cxx11)
     {

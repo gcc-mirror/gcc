@@ -1,3 +1,7 @@
+2016-07-15  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Update -fabi-version default to 11.
+
 2016-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71858
