@@ -1,3 +1,11 @@
+2016-07-15  Alan Modra  <amodra@gmail.com>
+
+	Apply from mainline
+	2016-07-11  Alan Modra  <amodra@gmail.com>
+	* config/rs6000/rs6000.md (UNSPEC_DOLOOP): New unspec.
+	(ctr<mode>): Add unspec.
+	(ctr<mode>_internal*): Likewise.
+
 2016-07-14  Alan Modra  <amodra@gmail.com>
 
 	PR target/71733
