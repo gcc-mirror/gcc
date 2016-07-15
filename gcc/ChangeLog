@@ -1,3 +1,8 @@
+2016-07-15  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Adjust
+	vec_construct cost.
+
 2016-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71872
