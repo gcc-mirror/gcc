@@ -1,5 +1,15 @@
 2016-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/algorithmfwd.h: Change C++0x to C++11 in comments.
+	* include/bits/move.h: Likewise.
+	* include/bits/postypes.h: Likewise.
+	* include/debug/bitset: Likewise.
+	* include/ext/pb_ds/detail/type_utils.hpp: Likewise.
+	* include/ext/string_conversions.h: Change C++0x to __cxx11 in
+	comment.
+	* testsuite/27_io/fpos/14320-1.cc: Change C++0x to C++11 in comment.
+	* testsuite/util/thread/all.h: Likewise.
+
 	* include/bits/stl_algo.h (for_each): Remove redundant _GLIBCXX_MOVE
 	and adjust comment.
 

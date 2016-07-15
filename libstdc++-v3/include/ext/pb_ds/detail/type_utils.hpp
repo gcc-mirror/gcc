@@ -131,7 +131,7 @@ namespace __gnu_pbds
 	};
     };
 
-    // Use C++0x's static_assert if possible.
+    // Use C++11's static_assert if possible.
 #if __cplusplus >= 201103L
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)  static_assert(E, #UNIQUE)
 #else

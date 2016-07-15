@@ -50,7 +50,7 @@ namespace __debug
       typedef _GLIBCXX_STD_C::bitset<_Nb> _Base;
 
     public:
-      // In C++0x we rely on normal reference type to preserve the property
+      // In C++11 we rely on normal reference type to preserve the property
       // of bitset to be use as a literal.
       // TODO: Find another solution.
 #if __cplusplus >= 201103L
