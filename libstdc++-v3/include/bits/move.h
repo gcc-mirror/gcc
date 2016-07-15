@@ -1,4 +1,4 @@
-// Move, forward and identity for C++0x + swap -*- C++ -*-
+// Move, forward and identity for C++11 + swap -*- C++ -*-
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //

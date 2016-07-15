@@ -36,7 +36,7 @@ void test01()
 
   bool found = false;
   // The C++ standard didn't originally have "long long", however that
-  // type will be in the C++0x standard and testing for it allows
+  // type is in the C++11 standard and testing for it allows
   // ilp32 targets to pass this test when `Distance' is 64 bits.
   if (typeid(Distance) == typeid(long long int))
     found = true;

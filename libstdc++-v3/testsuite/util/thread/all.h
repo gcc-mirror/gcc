@@ -26,7 +26,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-// C++0x only.
+// C++11 only.
 namespace __gnu_test
 {
   // Assume _Tp::native_handle_type.

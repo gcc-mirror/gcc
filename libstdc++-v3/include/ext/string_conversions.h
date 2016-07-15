@@ -100,8 +100,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 __builtin_va_list), std::size_t __n,
 		 const _CharT* __fmt, ...)
     {
-      // XXX Eventually the result will be constructed in place in
-      // the C++0x string, likely with the help of internal hooks.
+      // XXX Eventually the result should be constructed in-place in
+      // the __cxx11 string, likely with the help of internal hooks.
       _CharT* __s = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							  * __n));
 

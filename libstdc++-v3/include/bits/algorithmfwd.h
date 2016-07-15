@@ -45,14 +45,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /*
     adjacent_find
-    all_of (C++0x)
-    any_of (C++0x)
+    all_of (C++11)
+    any_of (C++11)
     binary_search
     clamp (C++17)
     copy
     copy_backward
-    copy_if (C++0x)
-    copy_n (C++0x)
+    copy_if (C++11)
+    copy_n (C++11)
     count
     count_if
     equal
@@ -63,17 +63,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     find_end
     find_first_of
     find_if
-    find_if_not (C++0x)
+    find_if_not (C++11)
     for_each
     generate
     generate_n
     includes
     inplace_merge
-    is_heap (C++0x)
-    is_heap_until (C++0x)
-    is_partitioned (C++0x)
-    is_sorted (C++0x)
-    is_sorted_until (C++0x)
+    is_heap (C++11)
+    is_heap_until (C++11)
+    is_partitioned (C++11)
+    is_sorted (C++11)
+    is_sorted_until (C++11)
     iter_swap
     lexicographical_compare
     lower_bound
@@ -83,17 +83,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     merge
     min
     min_element
-    minmax (C++0x)
-    minmax_element (C++0x)
+    minmax (C++11)
+    minmax_element (C++11)
     mismatch
     next_permutation
-    none_of (C++0x)
+    none_of (C++11)
     nth_element
     partial_sort
     partial_sort_copy
     partition
-    partition_copy (C++0x)
-    partition_point (C++0x)
+    partition_copy (C++11)
+    partition_point (C++11)
     pop_heap
     prev_permutation
     push_heap
@@ -116,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     set_intersection
     set_symmetric_difference
     set_union
-    shuffle (C++0x)
+    shuffle (C++11)
     sort
     sort_heap
     stable_partition
