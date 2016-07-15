@@ -1,3 +1,8 @@
+2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Scan for clause vector_length
+	before vector.
+
 2016-07-15  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/71807

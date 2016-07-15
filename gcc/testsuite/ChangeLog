@@ -1,3 +1,7 @@
+2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/vector_length.f90: New test.
+
 2016-07-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71881
