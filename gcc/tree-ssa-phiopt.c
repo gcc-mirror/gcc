@@ -812,7 +812,7 @@ neutral_element_p (tree_code code, tree arg, bool right)
 /* Returns true if ARG is an absorbing element for operation CODE.  */
 
 static bool
-absorbing_element_p (tree_code code, tree arg, bool right)
+absorbing_element_p (tree_code code, tree arg, bool right, tree rval)
 {
   switch (code)
     {
@@ -827,6 +827,8 @@ absorbing_element_p (tree_code code, tree arg, bool right)
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
+      return !right && integer_zerop (arg);
+
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
@@ -836,7 +838,9 @@ absorbing_element_p (tree_code code, tree arg, bool right)
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
-      return !right && integer_zerop (arg);
+      return (!right
+	      && integer_zerop (arg)
+	      && tree_single_nonzero_warnv_p (rval, NULL));
 
     default:
       return false;
@@ -1010,9 +1014,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	      && neutral_element_p (code_def, cond_rhs, false))
 	  || (operand_equal_for_phi_arg_p (arg1, cond_rhs)
 	      && ((operand_equal_for_phi_arg_p (rhs2, cond_lhs)
-		   && absorbing_element_p (code_def, cond_rhs, true))
+		   && absorbing_element_p (code_def, cond_rhs, true, rhs2))
 		  || (operand_equal_for_phi_arg_p (rhs1, cond_lhs)
-		      && absorbing_element_p (code_def, cond_rhs, false))))))
+		      && absorbing_element_p (code_def,
+					      cond_rhs, false, rhs2))))))
     {
       gsi = gsi_for_stmt (cond);
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
