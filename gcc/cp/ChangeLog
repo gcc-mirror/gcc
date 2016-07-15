@@ -1,3 +1,9 @@
+2016-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70824
+	* init.c (constant_value_1): Don't instantiated DECL_INITIAL of
+	artificial variables.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_declare): Don't scan for
