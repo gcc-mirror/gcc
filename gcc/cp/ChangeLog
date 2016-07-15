@@ -1,5 +1,8 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71513
+	* pt.c (tsubst_attributes): Fix loop logic.
+
 	PR c++/71604
 	PR c++/54430
 	* parser.c (cp_parser_range_for): Modify IDENTIFIER_BINDING directly.

@@ -9713,20 +9713,23 @@ tsubst_attributes (tree attributes, tree args,
       }
 
   if (last_dep)
-    for (tree *p = &attributes; *p; p = &TREE_CHAIN (*p))
+    for (tree *p = &attributes; *p; )
       {
 	tree t = *p;
 	if (ATTR_IS_DEPENDENT (t))
 	  {
 	    tree subst = tsubst_attribute (t, NULL, args, complain, in_decl);
-	    if (subst == t)
-	      continue;
-	    *p = subst;
-	    do
-	      p = &TREE_CHAIN (*p);
-	    while (*p);
-	    *p = TREE_CHAIN (t);
+	    if (subst != t)
+	      {
+		*p = subst;
+		do
+		  p = &TREE_CHAIN (*p);
+		while (*p);
+		*p = TREE_CHAIN (t);
+		continue;
+	      }
 	  }
+	p = &TREE_CHAIN (*p);
       }
 
   return attributes;
