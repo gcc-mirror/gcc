@@ -1,5 +1,8 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71511
+	* typeck2.c (cxx_incomplete_type_diagnostic): Handle DECLTYPE_TYPE.
+
 	PR c++/71513
 	* pt.c (tsubst_attributes): Fix loop logic.
 
