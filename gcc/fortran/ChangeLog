@@ -1,3 +1,9 @@
+2016-07-15  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/71807
+	* trans-expr.c (gfc_trans_subcomponent_assign): Special casing
+	when allocatable component is set to null() in initializer.
+
 2016-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/29819
