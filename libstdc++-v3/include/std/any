@@ -238,9 +238,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     /// Store a copy of @p __rhs as the contained object.
-    template<typename _ValueType>
-    enable_if_t<__and_<__not_<is_same<any, decay_t<_ValueType>>>,
-		       is_copy_constructible<_ValueType>>::value, any&>
+    template<typename _ValueType,
+	     typename _Tp = _Decay<_ValueType>>
+    enable_if_t<is_copy_constructible<_Tp>::value, any&>
       operator=(_ValueType&& __rhs)
       {
 	*this = any(std::forward<_ValueType>(__rhs));

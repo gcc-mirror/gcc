@@ -1,3 +1,12 @@
+2016-07-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix the constraints for any's assignment operator template to properly
+	reject assignment from a non-copyable lvalue.
+	* include/std/any (operator=(_ValueType&&)): Constrain the decayed
+	type for is_copy_constructible,
+	* testsuite/20_util/any/requirements.cc: Add a test for
+	non-copyable lvalues.
+
 2016-07-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/functional: Include <parallel/algorithm> in
