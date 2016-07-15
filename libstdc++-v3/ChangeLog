@@ -1,5 +1,8 @@
 2016-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_algo.h (for_each): Remove redundant _GLIBCXX_MOVE
+	and adjust comment.
+
 	PR c++/58796
 	* libsupc++/pbase_type_info.cc (__pbase_type_info::__do_catch): Make
 	nullptr match handlers of pointer type.

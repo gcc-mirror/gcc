@@ -3791,7 +3791,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __first  An input iterator.
    *  @param  __last   An input iterator.
    *  @param  __f      A unary function object.
-   *  @return   @p __f (std::move(@p __f) in C++0x).
+   *  @return   @p __f
    *
    *  Applies the function object @p __f to each element in the range
    *  @p [first,last).  @p __f must not modify the order of the sequence.
@@ -3806,7 +3806,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first, __last);
       for (; __first != __last; ++__first)
 	__f(*__first);
-      return _GLIBCXX_MOVE(__f);
+      return __f; // N.B. [alg.foreach] says std::move(f) but it's redundant.
     }
 
   /**
