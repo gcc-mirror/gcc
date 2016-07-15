@@ -1338,6 +1338,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
 	    continue;
 	  break;
 	case 'v':
+	  /* VECTOR_LENGTH must be matched before VECTOR, because the latter
+	     doesn't unconditionally match '('.  */
+	  if ((mask & OMP_CLAUSE_VECTOR_LENGTH)
+	      && c->vector_length_expr == NULL
+	      && (gfc_match ("vector_length ( %e )", &c->vector_length_expr)
+		  == MATCH_YES))
+	    continue;
 	  if ((mask & OMP_CLAUSE_VECTOR)
 	      && !c->vector
 	      && gfc_match ("vector") == MATCH_YES)
@@ -1353,11 +1360,6 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
 		needs_space = true;
 	      continue;
 	    }
-	  if ((mask & OMP_CLAUSE_VECTOR_LENGTH)
-	      && c->vector_length_expr == NULL
-	      && (gfc_match ("vector_length ( %e )", &c->vector_length_expr)
-		  == MATCH_YES))
-	    continue;
 	  break;
 	case 'w':
 	  if ((mask & OMP_CLAUSE_WAIT)
