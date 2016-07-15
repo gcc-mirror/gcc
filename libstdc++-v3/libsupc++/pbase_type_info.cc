@@ -38,6 +38,31 @@ __do_catch (const type_info *thr_type,
     return true;      // same type
 
 #if __cpp_rtti
+  if (*thr_type == typeid (nullptr))
+    {
+      // A catch handler for any pointer type matches nullptr_t.
+      if (typeid (*this) == typeid(__pointer_type_info))
+        {
+          *thr_obj = nullptr;
+          return true;
+        }
+      else if (typeid (*this) == typeid(__pointer_to_member_type_info))
+        {
+          if (__pointee->__is_function_p ())
+            {
+              // A pointer-to-member-function is two words <ptr,adj> but the
+              // nullptr_t exception object at *(nullptr_t*)*thr_obj is only
+              // one word, so we can't safely return it as a PMF. FIXME.
+              return false;
+            }
+          else
+            {
+              *(ptrdiff_t*)*thr_obj = -1; // null pointer to data member
+              return true;
+            }
+        }
+    }
+
   if (typeid (*this) != typeid (*thr_type))
     return false;     // not both same kind of pointers
 #endif
