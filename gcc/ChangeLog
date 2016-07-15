@@ -1,5 +1,11 @@
 2016-07-15  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71881
+	* tree-loop-distribution.c (destroy_loop): Remove blocks in
+	reverse DOM order to make debug temp generation happy.
+
+2016-07-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71887
 	* tree-ssa-phiopt.c (absorbing_element_p): Add rhs arg and
 	verify it is not zero for division / modulo handling.

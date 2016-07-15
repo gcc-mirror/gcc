@@ -888,13 +888,15 @@ destroy_loop (struct loop *loop)
   cancel_loop_tree (loop);
   rescan_loop_exit (exit, false, true);
 
-  for (i = 0; i < nbbs; i++)
+  i = nbbs;
+  do
     {
       /* We have made sure to not leave any dangling uses of SSA
          names defined in the loop.  With the exception of virtuals.
 	 Make sure we replace all uses of virtual defs that will remain
 	 outside of the loop with the bare symbol as delete_basic_block
 	 will release them.  */
+      --i;
       for (gphi_iterator gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -912,6 +914,8 @@ destroy_loop (struct loop *loop)
 	}
       delete_basic_block (bbs[i]);
     }
+  while (i != 0);
+
   free (bbs);
 
   set_immediate_dominator (CDI_DOMINATORS, dest,
