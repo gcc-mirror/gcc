@@ -1365,7 +1365,7 @@ get_representative_for (const pre_expr e)
   switch (e->kind)
     {
     case NAME:
-      return PRE_EXPR_NAME (e);
+      return VN_INFO (PRE_EXPR_NAME (e))->valnum;
     case CONSTANT:
       return PRE_EXPR_CONSTANT (e);
     case NARY:
@@ -1380,7 +1380,7 @@ get_representative_for (const pre_expr e)
 	  {
 	    pre_expr rep = expression_for_id (i);
 	    if (rep->kind == NAME)
-	      return PRE_EXPR_NAME (rep);
+	      return VN_INFO (PRE_EXPR_NAME (rep))->valnum;
 	    else if (rep->kind == CONSTANT)
 	      return PRE_EXPR_CONSTANT (rep);
 	  }
@@ -1448,12 +1448,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		leader = find_leader_in_sets (op_val_id, set1, set2);
                 result = phi_translate (leader, set1, set2, pred, phiblock);
 		if (result && result != leader)
-		  {
-		    tree name = get_representative_for (result);
-		    if (!name)
-		      return NULL;
-		    newnary->op[i] = name;
-		  }
+		  newnary->op[i] = get_representative_for (result);
 		else if (!result)
 		  return NULL;
 
@@ -1543,19 +1538,15 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  }
 		op_val_id = VN_INFO (op[n])->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-		if (!leader)
-		  break;
 		opresult = phi_translate (leader, set1, set2, pred, phiblock);
-		if (!opresult)
-		  break;
-		if (opresult != leader)
+		if (opresult && opresult != leader)
 		  {
 		    tree name = get_representative_for (opresult);
-		    if (!name)
-		      break;
 		    changed |= name != op[n];
 		    op[n] = name;
 		  }
+		else if (!opresult)
+		  break;
 	      }
 	    if (n != 3)
 	      {
@@ -3198,7 +3189,6 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 		  break;
 		}
 
-	      eprime = fully_constant_expression (eprime);
 	      vprime = get_expr_value_id (eprime);
 	      edoubleprime = bitmap_find_leader (AVAIL_OUT (bprime),
 						 vprime);
@@ -3357,7 +3347,6 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
 		  break;
 		}
 
-	      eprime = fully_constant_expression (eprime);
 	      vprime = get_expr_value_id (eprime);
 	      edoubleprime = bitmap_find_leader (AVAIL_OUT (bprime), vprime);
 	      avail[pred->dest_idx] = edoubleprime;
