@@ -1,5 +1,11 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71604
+	PR c++/54430
+	* parser.c (cp_parser_range_for): Modify IDENTIFIER_BINDING directly.
+	(cp_parser_simple_declaration): Diagnose type definition in
+	for-range-declaration.
+
 	PR c++/71711
 	* operators.def: Add *_FOLD_EXPR.
 	* cp-tree.h (FOLD_EXPR_P): Parenthesize.
