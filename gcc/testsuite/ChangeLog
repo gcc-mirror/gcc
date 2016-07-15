@@ -1,3 +1,9 @@
+2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Marco Restelli <mrestelli@gmail.com>
+
+	PR fortran/62125
+	* gfortran.dg/pr62125.f90: New test.
+
 2016-07-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/divkc3-1.c: Require p8vector support.

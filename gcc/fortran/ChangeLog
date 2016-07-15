@@ -1,3 +1,10 @@
+2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Marco Restelli <mrestelli@gmail.com>
+
+	PR fortran/62125
+	* symbol.c (select_type_insert_tmp): Recursively call self to take care
+	of nested select type.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* openmp.c (gfc_match_omp_clauses): Scan for clause vector_length

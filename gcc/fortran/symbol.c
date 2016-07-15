@@ -2930,7 +2930,11 @@ select_type_insert_tmp (gfc_symtree **st)
   gfc_select_type_stack *stack = select_type_stack;
   for (; stack; stack = stack->prev)
     if ((*st)->n.sym == stack->selector && stack->tmp)
-      *st = stack->tmp;
+      {
+        *st = stack->tmp;
+        select_type_insert_tmp (st);
+        return;
+      }
 }
 
 
