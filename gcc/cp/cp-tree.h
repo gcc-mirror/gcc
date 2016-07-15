@@ -3334,11 +3334,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   TREE_CHECK2 (NODE, BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
 
 /* True if NODE is UNARY_FOLD_EXPR or a BINARY_FOLD_EXPR */
-#define FOLD_EXPR_P(NODE) \
-  TREE_CODE (NODE) == UNARY_LEFT_FOLD_EXPR \
-    || TREE_CODE (NODE) == UNARY_RIGHT_FOLD_EXPR \
-    || TREE_CODE (NODE) == BINARY_LEFT_FOLD_EXPR \
-    || TREE_CODE (NODE) == BINARY_RIGHT_FOLD_EXPR
+#define FOLD_EXPR_P(NODE)				\
+  (TREE_CODE (NODE) == UNARY_LEFT_FOLD_EXPR		\
+   || TREE_CODE (NODE) == UNARY_RIGHT_FOLD_EXPR		\
+   || TREE_CODE (NODE) == BINARY_LEFT_FOLD_EXPR		\
+   || TREE_CODE (NODE) == BINARY_RIGHT_FOLD_EXPR)
 
 /* True when NODE is a fold over a compound assignment operator. */
 #define FOLD_EXPR_MODIFY_P(NODE) \

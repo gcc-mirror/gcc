@@ -1,5 +1,13 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71711
+	* operators.def: Add *_FOLD_EXPR.
+	* cp-tree.h (FOLD_EXPR_P): Parenthesize.
+	* mangle.c (write_expression): Handle fold-expressions.
+	* pt.c (tsubst_unary_left_fold, tsubst_binary_left_fold)
+	(tsubst_unary_right_fold, tsubst_binary_right_fold): Handle
+	partial instantiation.
+
 	PR c++/71814
 	* mangle.c (write_expression): Handle sizeof... an argument pack.
 
