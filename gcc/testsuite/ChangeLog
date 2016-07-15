@@ -1,3 +1,8 @@
+2016-07-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/divkc3-1.c: Require p8vector support.
+	* gcc.target/powerpc/mulkc3-1.c: Likewise.
+
 2016-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/58796
