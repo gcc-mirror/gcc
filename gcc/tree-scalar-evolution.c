@@ -3393,6 +3393,55 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
   return false;
 }
 
+/* Given EV with form of "(type) {inner_base, inner_step}_loop", this
+   function tries to derive condition under which it can be simplified
+   into "{(type)inner_base, (type)inner_step}_loop".  The condition is
+   the maximum number that inner iv can iterate.  */
+
+static tree
+derive_simple_iv_with_niters (tree ev, tree *niters)
+{
+  if (!CONVERT_EXPR_P (ev))
+    return ev;
+
+  tree inner_ev = TREE_OPERAND (ev, 0);
+  if (TREE_CODE (inner_ev) != POLYNOMIAL_CHREC)
+    return ev;
+
+  tree init = CHREC_LEFT (inner_ev);
+  tree step = CHREC_RIGHT (inner_ev);
+  if (TREE_CODE (init) != INTEGER_CST
+      || TREE_CODE (step) != INTEGER_CST || integer_zerop (step))
+    return ev;
+
+  tree type = TREE_TYPE (ev);
+  tree inner_type = TREE_TYPE (inner_ev);
+  if (TYPE_PRECISION (inner_type) >= TYPE_PRECISION (type))
+    return ev;
+
+  /* Type conversion in "(type) {inner_base, inner_step}_loop" can be
+     folded only if inner iv won't overflow.  We compute the maximum
+     number the inner iv can iterate before overflowing and return the
+     simplified affine iv.  */
+  tree delta;
+  init = fold_convert (type, init);
+  step = fold_convert (type, step);
+  ev = build_polynomial_chrec (CHREC_VARIABLE (inner_ev), init, step);
+  if (tree_int_cst_sign_bit (step))
+    {
+      tree bound = lower_bound_in_type (inner_type, inner_type);
+      delta = fold_build2 (MINUS_EXPR, type, init, fold_convert (type, bound));
+      step = fold_build1 (NEGATE_EXPR, type, step);
+    }
+  else
+    {
+      tree bound = upper_bound_in_type (inner_type, inner_type);
+      delta = fold_build2 (MINUS_EXPR, type, fold_convert (type, bound), init);
+    }
+  *niters = fold_build2 (FLOOR_DIV_EXPR, type, delta, step);
+  return ev;
+}
+
 /* Checks whether use of OP in USE_LOOP behaves as a simple affine iv with
    respect to WRTO_LOOP and returns its base and step in IV if possible
    (see analyze_scalar_evolution_in_loop for more details on USE_LOOP
@@ -3410,13 +3459,29 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
    not wrap by some other argument.  Otherwise, this might introduce undefined
    behavior, and
 
-   for (i = iv->base; ; i = (type) ((unsigned type) i + (unsigned type) iv->step))
+   i = iv->base;
+   for (; ; i = (type) ((unsigned type) i + (unsigned type) iv->step))
 
-   must be used instead.  */
+   must be used instead.
+
+   When IV_NITERS is not NULL, this function also checks case in which OP
+   is a conversion of an inner simple iv of below form:
+
+     (outer_type){inner_base, inner_step}_loop.
+
+   If type of inner iv has smaller precision than outer_type, it can't be
+   folded into {(outer_type)inner_base, (outer_type)inner_step}_loop because
+   the inner iv could overflow/wrap.  In this case, we derive a condition
+   under which the inner iv won't overflow/wrap and do the simplification.
+   The derived condition normally is the maximum number the inner iv can
+   iterate, and will be stored in IV_NITERS.  This is useful in loop niter
+   analysis, to derive break conditions when a loop must terminate, when is
+   infinite.  */
 
 bool
-simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
-	   affine_iv *iv, bool allow_nonconstant_step)
+simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
+		       tree op, affine_iv *iv, tree *iv_niters,
+		       bool allow_nonconstant_step)
 {
   enum tree_code code;
   tree type, ev, base, e, stop;
@@ -3446,8 +3511,14 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
       return true;
     }
 
-  if (TREE_CODE (ev) != POLYNOMIAL_CHREC
-      || CHREC_VARIABLE (ev) != (unsigned) wrto_loop->num)
+  /* If we can derive valid scalar evolution with assumptions.  */
+  if (iv_niters && TREE_CODE (ev) != POLYNOMIAL_CHREC)
+    ev = derive_simple_iv_with_niters (ev, iv_niters);
+
+  if (TREE_CODE (ev) != POLYNOMIAL_CHREC)
+    return false;
+
+  if (CHREC_VARIABLE (ev) != (unsigned) wrto_loop->num)
     return false;
 
   iv->step = CHREC_RIGHT (ev);
@@ -3542,6 +3613,17 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
 
   iv->base = fold_build2 (code, TREE_TYPE (base), base, iv->step);
   return true;
+}
+
+/* Like simple_iv_with_niters, but return TRUE when OP behaves as a simple
+   affine iv unconditionally.  */
+
+bool
+simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
+	   affine_iv *iv, bool allow_nonconstant_step)
+{
+  return simple_iv_with_niters (wrto_loop, use_loop, op, iv,
+				NULL, allow_nonconstant_step);
 }
 
 /* Finalize the scalar evolution analysis.  */

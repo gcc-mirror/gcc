@@ -1,3 +1,15 @@
+2016-07-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-scalar-evolution.c (simple_iv_with_niters): New funcion.
+	(derive_simple_iv_with_niters): New function.
+	(simple_iv): Rewrite using simple_iv_with_niters.
+	* tree-scalar-evolution.h (simple_iv_with_niters): New decl.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions): New
+	function.
+	(number_of_iterations_exit): Rewrite using above function.
+	* tree-ssa-loop-niter.h (number_of_iterations_exit_assumptions): New
+	Decl.
+
 2016-07-15  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386.c (ix86_builtin_vectorization_cost): Adjust

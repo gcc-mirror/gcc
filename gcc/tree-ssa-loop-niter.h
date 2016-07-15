@@ -27,6 +27,9 @@ extern bool loop_only_exit_p (const struct loop *, const_edge);
 extern bool number_of_iterations_exit (struct loop *, edge,
 				       struct tree_niter_desc *niter, bool,
 				       bool every_iteration = true);
+extern bool number_of_iterations_exit_assumptions (struct loop *, edge,
+						   struct tree_niter_desc *,
+						   bool = true);
 extern tree find_loop_niter (struct loop *, edge *);
 extern bool finite_loop_p (struct loop *);
 extern tree loop_niter_by_eval (struct loop *, edge);
