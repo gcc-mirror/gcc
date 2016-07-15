@@ -48,6 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     all_of (C++0x)
     any_of (C++0x)
     binary_search
+    clamp (C++17)
     copy
     copy_backward
     copy_if (C++0x)
@@ -207,6 +208,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _FIter, typename _Tp, typename _Compare>
     bool 
     binary_search(_FIter, _FIter, const _Tp&, _Compare);
+
+#if __cplusplus > 201402L
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
+    const _Tp&
+    clamp(const _Tp&, const _Tp&, const _Tp&);
+
+  template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
+    const _Tp&
+    clamp(const _Tp&, const _Tp&, const _Tp&, _Compare);
+#endif
 
   template<typename _IIter, typename _OIter>
     _OIter 
