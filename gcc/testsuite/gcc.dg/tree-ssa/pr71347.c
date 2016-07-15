@@ -14,4 +14,4 @@ void foo (void)
 }
 
 /* Load of X[i - i] can be omitted by reusing X[i] in previous iteration.  */
-/* { dg-final { scan-tree-dump-not ".* = MEM.*;" "optimized"} } */
+/* { dg-final { scan-tree-dump-not ".* = MEM.*;" "optimized" { xfail { ia64-*-* arm*-*-* m68k*-*-* sparc*-*-* } } } } */
