@@ -1,3 +1,12 @@
+2016-07-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_representative_for): Make sure to return
+	the value number of SSA names.
+	(phi_translate_1): get_representative_for cannot return NULL.
+	(do_pre_regular_insertion): Remove redundant call to
+	fully_constant_expression.
+	(do_pre_partial_partial_insertion): Likewise.
+
 2016-07-15  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-scalar-evolution.c (simple_iv_with_niters): New funcion.
