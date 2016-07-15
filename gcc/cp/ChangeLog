@@ -1,5 +1,9 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71092
+	* constexpr.c (cxx_eval_call_expression): Fail quietly when cgraph
+	threw away DECL_SAVED_TREE.
+
 	PR c++/71117
 	Core 2189
 	* call.c (add_template_conv_candidate): Disable if there are
