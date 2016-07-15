@@ -733,11 +733,6 @@ symbol_table::output_variables (void)
 
   timevar_push (TV_VAROUT);
 
-  FOR_EACH_VARIABLE (node)
-    if (!node->definition
-	&& !DECL_HAS_VALUE_EXPR_P (node->decl)
- 	&& !DECL_HARD_REGISTER (node->decl))
-      assemble_undefined_decl (node->decl);
   FOR_EACH_DEFINED_VARIABLE (node)
     {
       /* Handled in output_in_order.  */
@@ -747,20 +742,19 @@ symbol_table::output_variables (void)
       node->finalize_named_section_flags ();
     }
 
-  FOR_EACH_DEFINED_VARIABLE (node)
+  /* There is a similar loop in output_in_order.  Please keep them in sync.  */
+  FOR_EACH_VARIABLE (node)
     {
       /* Handled in output_in_order.  */
       if (node->no_reorder)
 	continue;
-#ifdef ACCEL_COMPILER
-      /* Do not assemble "omp declare target link" vars.  */
-      if (DECL_HAS_VALUE_EXPR_P (node->decl)
-	  && lookup_attribute ("omp declare target link",
-			       DECL_ATTRIBUTES (node->decl)))
+      if (DECL_HARD_REGISTER (node->decl)
+	  || DECL_HAS_VALUE_EXPR_P (node->decl))
 	continue;
-#endif
-      if (node->assemble_decl ())
-        changed = true;
+      if (node->definition)
+	changed |= node->assemble_decl ();
+      else
+	assemble_undefined_decl (node->decl);
     }
   timevar_pop (TV_VAROUT);
   return changed;
