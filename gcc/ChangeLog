@@ -1,3 +1,9 @@
+2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Mark data clauses with
+	GOMP_MAP_FORCE_{PRESENT,TO,FROM,TOFROM} as potentially having
+	zero-length subarrays.
+
 2016-07-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71881

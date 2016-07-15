@@ -1,3 +1,11 @@
+2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_declare): Don't scan for
+	GOMP_MAP_POINTER.
+	* semantics.c (handle_omp_array_sections): Mark data clauses with
+	GOMP_MAP_FORCE_{PRESENT,TO,FROM,TOFROM} as potentially having
+	zero-length subarrays.
+
 2016-07-11  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (store_parm_decls): Remove check for void parm.
