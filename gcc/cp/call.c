@@ -3204,6 +3204,12 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
 			     tree return_type, tree access_path,
 			     tree conversion_path, tsubst_flags_t complain)
 {
+  /* Making this work broke PR 71117, so until the committee resolves core
+     issue 2189, let's disable this candidate if there are any viable call
+     operators.  */
+  if (any_strictly_viable (*candidates))
+    return NULL;
+
   return
     add_template_candidate_real (candidates, tmpl, NULL_TREE, NULL_TREE,
 				 NULL_TREE, arglist, return_type, access_path,

@@ -1,5 +1,10 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71117
+	Core 2189
+	* call.c (add_template_conv_candidate): Disable if there are
+	viable candidates.
+
 	PR c++/71511
 	* typeck2.c (cxx_incomplete_type_diagnostic): Handle DECLTYPE_TYPE.
 
