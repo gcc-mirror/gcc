@@ -2,8 +2,7 @@
 
 	* config/avr/predicates.md (const_m255_to_m1_operand): New.
 	* config/avr/constraints.md (Cn8, Ca1, Co1, Yx2): New constraints.
-	* config/avr/avr.md (add<mode>3) <ALL1>: Make "r,0,r" more
-	expensive.
+	* config/avr/avr.md (add<mode>3) <ALL1>: Fix set_vzn for +/-2.
 	(*cmphi.zero-extend.0, *cmphi.zero-extend.1)
 	(*usum_widenqihi3, *udiff_widenqihi3)
 	(*addhi3_zero_extend.const): New combiner insns.
