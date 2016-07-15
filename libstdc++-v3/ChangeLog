@@ -1,3 +1,16 @@
+2016-07-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++17 P0025 clamp.
+	* include/bits/algorithmfwd.h: Declare clamp overloads.
+	* include/bits/stl_algo.h: Implement clamp.  Feature __cpp_lib_clamp.
+	* testsuite/25_algorithms/clamp/1.cc: New test.
+	* testsuite/25_algorithms/clamp/2.cc: New test.
+	* testsuite/25_algorithms/clamp/constexpr.cc: New test.
+	* testsuite/25_algorithms/clamp/requirements/explicit_instantiation/
+	1.cc: New test.
+	* testsuite/25_algorithms/clamp/requirements/explicit_instantiation/
+	pod.cc: New test.
+
 2016-07-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix the constraints for any's assignment operator template to properly

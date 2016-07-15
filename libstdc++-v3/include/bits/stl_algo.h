@@ -3698,7 +3698,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__is_permutation(__first1, __last1, __first2, __last2,
 				   __gnu_cxx::__ops::__iter_comp_iter(__pred));
     }
-#endif
+
+#if __cplusplus > 201402L
+
+#define __cpp_lib_clamp 201603
+
+  /**
+   *  @brief  Returns the value clamped between lo and hi.
+   *  @ingroup sorting_algorithms
+   *  @param  __val  A value of arbitrary type.
+   *  @param  __lo   A lower limit of arbitrary type.
+   *  @param  __hi   An upper limit of arbitrary type.
+   *  @return max(__val, __lo) if __val < __hi or min(__val, __hi) otherwise.
+   */
+  template<typename _Tp>
+    constexpr const _Tp&
+    clamp(const _Tp& __val, const _Tp& __lo, const _Tp& __hi)
+    {
+      __glibcxx_assert(!(__hi < __lo));
+      return (__val < __lo) ? __lo : (__hi < __val) ? __hi : __val;
+    }
+
+  /**
+   *  @brief  Returns the value clamped between lo and hi.
+   *  @ingroup sorting_algorithms
+   *  @param  __val   A value of arbitrary type.
+   *  @param  __lo    A lower limit of arbitrary type.
+   *  @param  __hi    An upper limit of arbitrary type.
+   *  @param  __comp  A comparison functor.
+   *  @return max(__val, __lo, __comp) if __comp(__val, __hi)
+   *	      or min(__val, __hi, __comp) otherwise.
+   */
+  template<typename _Tp, typename _Compare>
+    constexpr const _Tp&
+    clamp(const _Tp& __val, const _Tp& __lo, const _Tp& __hi, _Compare __comp)
+    {
+      __glibcxx_assert(!__comp(__hi, __lo));
+      return __comp(__val, __lo) ? __lo : __comp(__hi, __val) ? __hi : __val;
+    }
+#endif // C++17
+#endif // C++14
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /**
