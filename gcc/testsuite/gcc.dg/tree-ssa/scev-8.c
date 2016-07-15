@@ -59,4 +59,4 @@ foo4 (unsigned char s, unsigned char l)
 }
 
 /* Address of array references are not scevs.  */
-/* { dg-final { scan-tree-dump-not "use \[0-9\]\n  address" "ivopts" } } */
+/* { dg-final { scan-tree-dump-not "  Type:\\tADDRESS\n  Use \[0-9\].\[0-9\]:" "ivopts" } } */
