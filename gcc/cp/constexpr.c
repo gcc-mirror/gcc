@@ -1504,9 +1504,19 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
   else
     {
-      if (!result || result == error_mark_node)
+      if (result && result != error_mark_node)
+	/* OK */;
+      else if (!DECL_SAVED_TREE (fun))
 	{
-	  gcc_assert (DECL_SAVED_TREE (fun));
+	  /* When at_eof >= 2, cgraph has started throwing away
+	     DECL_SAVED_TREE, so fail quietly.  FIXME we get here because of
+	     late code generation for VEC_INIT_EXPR, which needs to be
+	     completely reconsidered.  */
+	  gcc_assert (at_eof >= 2 && ctx->quiet);
+	  *non_constant_p = true;
+	}
+      else
+	{
 	  tree body, parms, res;
 
 	  /* Reuse or create a new unshared copy of this function's body.  */
