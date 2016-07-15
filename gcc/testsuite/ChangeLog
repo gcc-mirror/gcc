@@ -1,3 +1,9 @@
+2016-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/58796
+	* g++.dg/cpp0x/nullptr21.C: Remove void* handlers.
+	* g++.dg/cpp0x/nullptr35.C: New test.
+
 2016-07-15  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/scev-8.c: Update test string.
