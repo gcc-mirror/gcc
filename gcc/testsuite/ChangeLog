@@ -1,3 +1,8 @@
+2016-07-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/71347
+	* gcc.dg/tree-ssa/pr71347.c: XFAIL on ia64, arm, m68k and sparc.
+
 2016-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/29819
