@@ -11,7 +11,7 @@ int result = 0;
 void __attribute__((noinline))
 caught(int bit)
 {
-  result &= bit;
+  result |= bit;
 }
 
 struct A { };
