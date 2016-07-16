@@ -1,3 +1,7 @@
+2016-07-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cpp0x/nullptr35.C (caught): Fix typo.
+
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Marco Restelli <mrestelli@gmail.com>
 
