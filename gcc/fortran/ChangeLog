@@ -1,3 +1,9 @@
+2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk:
+	PR fortran/71764
+	* trans-expr.c (gfc_trans_structure_assign): Remove assert.
+
 2016-07-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:

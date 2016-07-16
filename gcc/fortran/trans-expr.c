@@ -7358,7 +7358,6 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init)
     {
       gfc_se se, lse;
 
-      gcc_assert (cm->backend_decl == NULL);
       gfc_init_se (&se, NULL);
       gfc_init_se (&lse, NULL);
       gfc_conv_expr (&se, gfc_constructor_first (expr->value.constructor)->expr);
