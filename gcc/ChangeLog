@@ -1,3 +1,16 @@
+2016-07-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (hppa_profile_hook): Allocate stack space for
+	register parameters.  Remove code to initialize argument pointer
+	on TARGET_64BIT.  Optimize call to _mcount when it can be reached
+	using a pc-relative branch.  Cleanup conditional code.
+	* config/pa/pa.md (call_mcount): New expander.
+	(call_mcount_nonpic): New insn.
+	(call_mcount_pic): New insn and split.
+	(call_mcount_pic_post_reload): New insn.
+	(call_mcount_64bit): New insn and split.
+	(call_mcount_64bit_post_reload): New insn.
+
 2016-07-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/predicates.md (const_m255_to_m1_operand): New.
