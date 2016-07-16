@@ -8207,6 +8207,170 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 12)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
+/* Expand special pc-relative call to _mcount.  */
+
+(define_expand "call_mcount"
+  [(parallel [(call (match_operand:SI 0 "" "")
+		    (match_operand 1 "" ""))
+	      (set (reg:SI 25)
+		   (plus:SI (reg:SI 2)
+			    (minus:SI (match_operand 2 "" "")
+				      (plus:SI (pc) (const_int 4)))))
+	      (clobber (reg:SI 2))])]
+  "!TARGET_PORTABLE_RUNTIME"
+  "
+{
+  rtx op = XEXP (operands[0], 0);
+  rtx nb = operands[1];
+  rtx lab = operands[2];
+
+  if (TARGET_64BIT)
+    {
+      rtx r4 = gen_rtx_REG (word_mode, 4);
+      emit_move_insn (arg_pointer_rtx,
+		      gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
+				    GEN_INT (64)));
+      emit_call_insn (gen_call_mcount_64bit (op, nb, lab, r4));
+    }
+  else
+    {
+      if (flag_pic)
+	{
+	  rtx r4 = gen_rtx_REG (word_mode, 4);
+	  emit_call_insn (gen_call_mcount_pic (op, nb, lab, r4));
+	}
+      else
+	emit_call_insn (gen_call_mcount_nonpic (op, nb, lab));
+    }
+
+  DONE;
+}")
+
+(define_insn "call_mcount_nonpic"
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" "i"))
+   (set (reg:SI 25)
+	(plus:SI (reg:SI 2)
+		 (minus:SI (match_operand 2 "" "")
+			   (plus:SI (pc) (const_int 4)))))
+   (clobber (reg:SI 2))]
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
+  "*
+{
+  pa_output_arg_descriptor (insn);
+  return \"{bl|b,l} %0,%%r2\;ldo %2-.-4(%%r2),%%r25\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "call_mcount_pic"
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" "i"))
+   (set (reg:SI 25)
+	(plus:SI (reg:SI 2)
+		 (minus:SI (match_operand 2 "" "")
+			   (plus:SI (pc) (const_int 4)))))
+   (clobber (reg:SI 2))
+   (clobber (match_operand 3))
+   (use (reg:SI 19))]
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
+  "#")
+
+(define_split
+  [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+		    (match_operand 1 "" ""))
+	      (set (reg:SI 25)
+		   (plus:SI (reg:SI 2)
+			    (minus:SI (match_operand 2 "" "")
+				      (plus:SI (pc) (const_int 4)))))
+	      (clobber (reg:SI 2))
+	      (clobber (match_operand 3))
+	      (use (reg:SI 19))])]
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT && reload_completed"
+  [(set (match_dup 3) (reg:SI 19))
+   (parallel [(call (mem:SI (match_dup 0))
+		    (match_dup 1))
+	      (set (reg:SI 25)
+		   (plus:SI (reg:SI 2)
+			    (minus:SI (match_dup 2)
+				      (plus:SI (pc) (const_int 4)))))
+	      (clobber (reg:SI 2))
+	      (use (reg:SI 19))])
+   (set (reg:SI 19) (match_dup 3))]
+  "")
+
+(define_insn "*call_mcount_pic_post_reload"
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" "i"))
+   (set (reg:SI 25)
+	(plus:SI (reg:SI 2)
+		 (minus:SI (match_operand 2 "" "")
+			   (plus:SI (pc) (const_int 4)))))
+   (clobber (reg:SI 2))
+   (use (reg:SI 19))]
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
+  "*
+{
+  pa_output_arg_descriptor (insn);
+  return \"{bl|b,l} %0,%%r2\;ldo %2-.-4(%%r2),%%r25\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "call_mcount_64bit"
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" "i"))
+   (set (reg:SI 25)
+	(plus:SI (reg:SI 2)
+		 (minus:SI (match_operand 2 "" "")
+			   (plus:SI (pc) (const_int 4)))))
+   (clobber (reg:DI 2))
+   (clobber (match_operand 3))
+   (use (reg:DI 27))
+   (use (reg:DI 29))]
+  "TARGET_64BIT"
+  "#")
+
+(define_split
+  [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+		    (match_operand 1 "" ""))
+	      (set (reg:SI 25)
+		   (plus:SI (reg:SI 2)
+			    (minus:SI (match_operand 2 "" "")
+				      (plus:SI (pc) (const_int 4)))))
+	      (clobber (reg:DI 2))
+	      (clobber (match_operand 3))
+	      (use (reg:DI 27))
+	      (use (reg:DI 29))])]
+  "TARGET_64BIT && reload_completed"
+  [(set (match_dup 3) (reg:DI 27))
+   (parallel [(call (mem:SI (match_dup 0))
+		    (match_dup 1))
+	      (set (reg:SI 25)
+		   (plus:SI (reg:SI 2)
+			    (minus:SI (match_dup 2)
+				      (plus:SI (pc) (const_int 4)))))
+	      (clobber (reg:DI 2))
+	      (use (reg:DI 27))
+	      (use (reg:DI 29))])
+   (set (reg:DI 27) (match_dup 3))]
+  "")
+
+(define_insn "*call_mcount_64bit_post_reload"
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" "i"))
+   (set (reg:SI 25)
+	(plus:SI (reg:SI 2)
+		 (minus:SI (match_operand 2 "" "")
+			   (plus:SI (pc) (const_int 4)))))
+   (clobber (reg:DI 2))
+   (use (reg:DI 27))
+   (use (reg:DI 29))]
+  "TARGET_64BIT"
+  "{bl|b,l} %0,%%r2\;ldo %2-.-4(%%r2),%%r25"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 ;; Call subroutine returning any type.
 
 (define_expand "untyped_call"
