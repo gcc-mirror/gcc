@@ -1,3 +1,9 @@
+2016-07-17  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/71523
+	* gfortran.dg/pr71523_1.f90: New test.
+	* gfortran.dg/pr71523_2.f90: New test.
+
 2016-07-16  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/cpp0x/nullptr35.C (caught): Fix typo.
