@@ -1,3 +1,9 @@
+2016-07-17  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/71523
+	* trans-decl.c (gfc_finish_var_decl): Replace automatic initializer with
+	a static one.
+
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Marco Restelli <mrestelli@gmail.com>
 
