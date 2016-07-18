@@ -1146,6 +1146,122 @@ record_new_stack_level (void)
     update_sjlj_context ();
 }
 
+/* Return an rtx doing runtime alignment to REQUIRED_ALIGN on TARGET.  */
+static rtx
+align_dynamic_address (rtx target, unsigned required_align)
+{
+  /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
+     but we know it can't.  So add ourselves and then do
+     TRUNC_DIV_EXPR.  */
+  target = expand_binop (Pmode, add_optab, target,
+			 gen_int_mode (required_align / BITS_PER_UNIT - 1,
+				       Pmode),
+			 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
+			  gen_int_mode (required_align / BITS_PER_UNIT,
+					Pmode),
+			  NULL_RTX, 1);
+  target = expand_mult (Pmode, target,
+			gen_int_mode (required_align / BITS_PER_UNIT,
+				      Pmode),
+			NULL_RTX, 1);
+
+  return target;
+}
+
+/* Return an rtx through *PSIZE, representing the size of an area of memory to
+   be dynamically pushed on the stack.
+
+   *PSIZE is an rtx representing the size of the area.
+
+   SIZE_ALIGN is the alignment (in bits) that we know SIZE has.  This
+   parameter may be zero.  If so, a proper value will be extracted
+   from SIZE if it is constant, otherwise BITS_PER_UNIT will be assumed.
+
+   REQUIRED_ALIGN is the alignment (in bits) required for the region
+   of memory.
+
+   If PSTACK_USAGE_SIZE is not NULL it points to a value that is increased for
+   the additional size returned.  */
+void
+get_dynamic_stack_size (rtx *psize, unsigned size_align,
+			unsigned required_align,
+			HOST_WIDE_INT *pstack_usage_size)
+{
+  unsigned extra = 0;
+  rtx size = *psize;
+
+  /* Ensure the size is in the proper mode.  */
+  if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
+    size = convert_to_mode (Pmode, size, 1);
+
+  if (CONST_INT_P (size))
+    {
+      unsigned HOST_WIDE_INT lsb;
+
+      lsb = INTVAL (size);
+      lsb &= -lsb;
+
+      /* Watch out for overflow truncating to "unsigned".  */
+      if (lsb > UINT_MAX / BITS_PER_UNIT)
+	size_align = 1u << (HOST_BITS_PER_INT - 1);
+      else
+	size_align = (unsigned)lsb * BITS_PER_UNIT;
+    }
+  else if (size_align < BITS_PER_UNIT)
+    size_align = BITS_PER_UNIT;
+
+  /* We can't attempt to minimize alignment necessary, because we don't
+     know the final value of preferred_stack_boundary yet while executing
+     this code.  */
+  if (crtl->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+
+  /* We will need to ensure that the address we return is aligned to
+     REQUIRED_ALIGN.  At this point in the compilation, we don't always
+     know the final value of the STACK_DYNAMIC_OFFSET used in function.c
+     (it might depend on the size of the outgoing parameter lists, for
+     example), so we must preventively align the value.  We leave space
+     in SIZE for the hole that might result from the alignment operation.  */
+
+  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
+  size = plus_constant (Pmode, size, extra);
+  size = force_operand (size, NULL_RTX);
+
+  if (flag_stack_usage_info && pstack_usage_size)
+    *pstack_usage_size += extra;
+
+  if (extra && size_align > BITS_PER_UNIT)
+    size_align = BITS_PER_UNIT;
+
+  /* Round the size to a multiple of the required stack alignment.
+     Since the stack if presumed to be rounded before this allocation,
+     this will maintain the required alignment.
+
+     If the stack grows downward, we could save an insn by subtracting
+     SIZE from the stack pointer and then aligning the stack pointer.
+     The problem with this is that the stack pointer may be unaligned
+     between the execution of the subtraction and alignment insns and
+     some machines do not allow this.  Even on those that do, some
+     signal handlers malfunction if a signal should occur between those
+     insns.  Since this is an extremely rare event, we have no reliable
+     way of knowing which systems have this problem.  So we avoid even
+     momentarily mis-aligning the stack.  */
+  if (size_align % MAX_SUPPORTED_STACK_ALIGNMENT != 0)
+    {
+      size = round_push (size);
+
+      if (flag_stack_usage_info && pstack_usage_size)
+	{
+	  int align = crtl->preferred_stack_boundary / BITS_PER_UNIT;
+	  *pstack_usage_size =
+	    (*pstack_usage_size + align - 1) / align * align;
+	}
+    }
+
+  *psize = size;
+}
+
 /* Return an rtx representing the address of an area of memory dynamically
    pushed on the stack.
 
@@ -1154,7 +1270,7 @@ record_new_stack_level (void)
    SIZE is an rtx representing the size of the area.
 
    SIZE_ALIGN is the alignment (in bits) that we know SIZE has.  This
-   parameter may be zero.  If so, a proper value will be extracted 
+   parameter may be zero.  If so, a proper value will be extracted
    from SIZE if it is constant, otherwise BITS_PER_UNIT will be assumed.
 
    REQUIRED_ALIGN is the alignment (in bits) required for the region
@@ -1174,7 +1290,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   HOST_WIDE_INT stack_usage_size = -1;
   rtx_code_label *final_label;
   rtx final_target, target;
-  unsigned extra;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
@@ -1217,73 +1332,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	}
     }
 
-  /* Ensure the size is in the proper mode.  */
-  if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
-    size = convert_to_mode (Pmode, size, 1);
-
-  /* Adjust SIZE_ALIGN, if needed.  */
-  if (CONST_INT_P (size))
-    {
-      unsigned HOST_WIDE_INT lsb;
-
-      lsb = INTVAL (size);
-      lsb &= -lsb;
-
-      /* Watch out for overflow truncating to "unsigned".  */
-      if (lsb > UINT_MAX / BITS_PER_UNIT)
-	size_align = 1u << (HOST_BITS_PER_INT - 1);
-      else
-	size_align = (unsigned)lsb * BITS_PER_UNIT;
-    }
-  else if (size_align < BITS_PER_UNIT)
-    size_align = BITS_PER_UNIT;
-
-  /* We can't attempt to minimize alignment necessary, because we don't
-     know the final value of preferred_stack_boundary yet while executing
-     this code.  */
-  if (crtl->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
-    crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
-
-  /* We will need to ensure that the address we return is aligned to
-     REQUIRED_ALIGN.  At this point in the compilation, we don't always
-     know the final value of the STACK_DYNAMIC_OFFSET used in function.c
-     (it might depend on the size of the outgoing parameter lists, for
-     example), so we must preventively align the value.  We leave space
-     in SIZE for the hole that might result from the alignment operation.  */
-
-  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
-  size = plus_constant (Pmode, size, extra);
-  size = force_operand (size, NULL_RTX);
-
-  if (flag_stack_usage_info)
-    stack_usage_size += extra;
-
-  if (extra && size_align > BITS_PER_UNIT)
-    size_align = BITS_PER_UNIT;
-
-  /* Round the size to a multiple of the required stack alignment.
-     Since the stack if presumed to be rounded before this allocation,
-     this will maintain the required alignment.
-
-     If the stack grows downward, we could save an insn by subtracting
-     SIZE from the stack pointer and then aligning the stack pointer.
-     The problem with this is that the stack pointer may be unaligned
-     between the execution of the subtraction and alignment insns and
-     some machines do not allow this.  Even on those that do, some
-     signal handlers malfunction if a signal should occur between those
-     insns.  Since this is an extremely rare event, we have no reliable
-     way of knowing which systems have this problem.  So we avoid even
-     momentarily mis-aligning the stack.  */
-  if (size_align % MAX_SUPPORTED_STACK_ALIGNMENT != 0)
-    {
-      size = round_push (size);
-
-      if (flag_stack_usage_info)
-	{
-	  int align = crtl->preferred_stack_boundary / BITS_PER_UNIT;
-	  stack_usage_size = (stack_usage_size + align - 1) / align * align;
-	}
-    }
+  get_dynamic_stack_size (&size, size_align, required_align, &stack_usage_size);
 
   target = gen_reg_rtx (Pmode);
 
@@ -1447,25 +1496,45 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       target = final_target;
     }
 
-  /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
-     but we know it can't.  So add ourselves and then do
-     TRUNC_DIV_EXPR.  */
-  target = expand_binop (Pmode, add_optab, target,
-			 gen_int_mode (required_align / BITS_PER_UNIT - 1,
-				       Pmode),
-			 NULL_RTX, 1, OPTAB_LIB_WIDEN);
-  target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
-			  gen_int_mode (required_align / BITS_PER_UNIT, Pmode),
-			  NULL_RTX, 1);
-  target = expand_mult (Pmode, target,
-			gen_int_mode (required_align / BITS_PER_UNIT, Pmode),
-			NULL_RTX, 1);
+  target = align_dynamic_address (target, required_align);
 
   /* Now that we've committed to a return value, mark its alignment.  */
   mark_reg_pointer (target, required_align);
 
   /* Record the new stack level.  */
   record_new_stack_level ();
+
+  return target;
+}
+
+/* Return an rtx representing the address of an area of memory already
+   statically pushed onto the stack in the virtual stack vars area.  (It is
+   assumed that the area is allocated in the function prologue.)
+
+   Any required stack pointer alignment is preserved.
+
+   OFFSET is the offset of the area into the virtual stack vars area.
+
+   REQUIRED_ALIGN is the alignment (in bits) required for the region
+   of memory.  */
+
+rtx
+get_dynamic_stack_base (HOST_WIDE_INT offset, unsigned required_align)
+{
+  rtx target;
+
+  if (crtl->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+
+  target = gen_reg_rtx (Pmode);
+  emit_move_insn (target, virtual_stack_vars_rtx);
+  target = expand_binop (Pmode, add_optab, target,
+			 gen_int_mode (offset, Pmode),
+			 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  target = align_dynamic_address (target, required_align);
+
+  /* Now that we've committed to a return value, mark its alignment.  */
+  mark_reg_pointer (target, required_align);
 
   return target;
 }

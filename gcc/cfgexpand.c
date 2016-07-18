@@ -1053,6 +1053,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
   HOST_WIDE_INT large_size = 0, large_alloc = 0;
   rtx large_base = NULL;
   unsigned large_align = 0;
+  bool large_allocation_done = false;
   tree decl;
 
   /* Determine if there are any variables requiring "large" alignment.
@@ -1096,11 +1097,6 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	  large_size &= -(HOST_WIDE_INT)alignb;
 	  large_size += stack_vars[i].size;
 	}
-
-      /* If there were any, allocate space.  */
-      if (large_size > 0)
-	large_base = allocate_dynamic_stack_space (GEN_INT (large_size), 0,
-						   large_align, true);
     }
 
   for (si = 0; si < n; ++si)
@@ -1186,6 +1182,22 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	  /* Large alignment is only processed in the last pass.  */
 	  if (pred)
 	    continue;
+
+	  /* If there were any variables requiring "large" alignment, allocate
+	     space.  */
+	  if (large_size > 0 && ! large_allocation_done)
+	    {
+	      HOST_WIDE_INT loffset;
+	      rtx large_allocsize;
+
+	      large_allocsize = GEN_INT (large_size);
+	      get_dynamic_stack_size (&large_allocsize, 0, large_align, NULL);
+	      loffset = alloc_stack_frame_space
+		(INTVAL (large_allocsize),
+		 PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT);
+	      large_base = get_dynamic_stack_base (loffset, large_align);
+	      large_allocation_done = true;
+	    }
 	  gcc_assert (large_base != NULL);
 
 	  large_alloc += alignb - 1;
