@@ -1,5 +1,8 @@
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71826
+	* g++.dg/template/pr71826.C: New test.
+
 	PR c++/71822
 	* g++.dg/template/defarg21.C: New test.
 
