@@ -621,6 +621,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 				  init, VEC_INIT_EXPR_VALUE_INIT (*expr_p),
 				  from_array,
 				  tf_warning_or_error);
+	hash_set<tree> pset;
+	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
 	cp_genericize_tree (expr_p);
 	ret = GS_OK;
 	input_location = loc;

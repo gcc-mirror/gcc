@@ -1,5 +1,9 @@
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71822
+	* cp-gimplify.c (cp_gimplify_expr) <case VEC_INIT_EXPR>: Recursively
+	fold *expr_p before genericizing it.
+
 	PR c++/71871
 	* typeck.c (build_x_conditional_expr): Revert the 2012-10-25 change.
 
