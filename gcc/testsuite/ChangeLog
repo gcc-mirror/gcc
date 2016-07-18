@@ -1,3 +1,10 @@
+2016-07-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-07-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/nolrl-1.c: New test.
+
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk:
