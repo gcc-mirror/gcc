@@ -1,3 +1,16 @@
+2016-07-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* cfgexpand.c (expand_stack_vars): Implement synamic stack space
+	allocation in the prologue.
+	* explow.c (get_dynamic_stack_base): New function to return an address
+	expression for the dynamic stack base.
+	(get_dynamic_stack_size): New function to do the required dynamic stack
+	space size calculations.
+	(allocate_dynamic_stack_space): Use new functions.
+	(align_dynamic_address): Move some code from
+	allocate_dynamic_stack_space to new function.
+	* explow.h (get_dynamic_stack_base, get_dynamic_stack_size): Export.
+
 2016-07-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_encode_section_info): Always set
