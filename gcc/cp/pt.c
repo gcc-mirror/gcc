@@ -13767,7 +13767,8 @@ tsubst_baselink (tree baselink, tree object_type,
 		  BASELINK_FUNCTIONS (baselink),
 		  template_args);
     /* Update the conversion operator type.  */
-    BASELINK_OPTYPE (baselink) = optype;
+    if (BASELINK_P (baselink))
+      BASELINK_OPTYPE (baselink) = optype;
 
     if (!object_type)
       object_type = current_class_type;

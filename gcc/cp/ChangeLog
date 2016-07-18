@@ -1,5 +1,8 @@
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71826
+	* pt.c (tsubst_baselink): Only set BASELINK_OPTYPE for BASELINK_P.
+
 	PR c++/71822
 	* cp-gimplify.c (cp_gimplify_expr) <case VEC_INIT_EXPR>: Recursively
 	fold *expr_p before genericizing it.
