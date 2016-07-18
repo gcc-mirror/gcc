@@ -51,13 +51,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-  // All subsequent [X.Y.n] references are against n3793.
-
-  // [X.Y.4]
   template<typename _Tp>
     class optional;
 
-  // [X.Y.6]
   /// Tag type to disengage optional objects.
   struct nullopt_t
   {
@@ -72,11 +68,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit constexpr nullopt_t(_Construct) { }
   };
 
-  // [X.Y.6]
   /// Tag to disengage optional objects.
   constexpr nullopt_t nullopt { nullopt_t::_Construct::_Token };
 
-  // [X.Y.7]
   /**
    *  @brief Exception class thrown when a disengaged optional object is
    *  dereferenced.
@@ -172,7 +166,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Stored_type = remove_const_t<_Tp>;
 
     public:
-      // [X.Y.4.1] Constructors.
 
       // Constructors for disengaged optionals.
       constexpr _Optional_base() noexcept
@@ -217,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           this->_M_construct(std::move(__other._M_get()));
       }
 
-      // [X.Y.4.3] (partly) Assignment.
+      // Assignment operators.
       _Optional_base&
       operator=(const _Optional_base& __other)
       {
@@ -251,7 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      // [X.Y.4.2] Destructor.
+      // Destructor.
       ~_Optional_base()
       {
         if (this->_M_engaged)
@@ -560,7 +553,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit constexpr optional(optional<_Up>&& __t)
         : _Base(__t ? optional<_Tp>(std::move(*__t)) : optional<_Tp>()) { }
 
-      // [X.Y.4.3] (partly) Assignment.
+      // Assignment operators.
       optional&
       operator=(nullopt_t) noexcept
       {
@@ -650,9 +643,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->_M_construct(__il, std::forward<_Args>(__args)...);
 	}
 
-      // [X.Y.4.2] Destructor is implicit, implemented in _Optional_base.
+      // Destructor is implicit, implemented in _Optional_base.
 
-      // [X.Y.4.4] Swap.
+      // Swap.
       void
       swap(optional& __other)
       noexcept(is_nothrow_move_constructible<_Tp>()
@@ -674,7 +667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-      // [X.Y.4.5] Observers.
+      // Observers.
       constexpr const _Tp*
       operator->() const
       { return __constexpr_addressof(this->_M_get()); }
@@ -777,7 +770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __optional_relop_t =
     enable_if_t<is_convertible<_Tp, bool>::value, bool>;
 
-  // [X.Y.8] Comparisons between optional values.
+  // Comparisons between optional values.
   template<typename _Tp>
     constexpr auto
     operator==(const optional<_Tp>& __lhs, const optional<_Tp>& __rhs)
@@ -828,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return !__rhs || (static_cast<bool>(__lhs) && *__lhs >= *__rhs);
     }
 
-  // [X.Y.9] Comparisons with nullopt.
+  // Comparisons with nullopt.
   template<typename _Tp>
     constexpr bool
     operator==(const optional<_Tp>& __lhs, nullopt_t) noexcept
@@ -889,7 +882,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(nullopt_t, const optional<_Tp>& __rhs) noexcept
     { return !__rhs; }
 
-  // [X.Y.10] Comparisons with value type.
+  // Comparisons with value type.
   template<typename _Tp>
     constexpr auto
     operator==(const optional<_Tp>& __lhs, const _Tp& __rhs)
@@ -962,7 +955,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Tp>())>
     { return !__rhs || __lhs >= *__rhs; }
 
-  // [X.Y.11]
+  // Swap and creation functions.
   template<typename _Tp>
     inline void
     swap(optional<_Tp>& __lhs, optional<_Tp>& __rhs)
@@ -984,7 +977,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_optional(initializer_list<_Up> __il, _Args&&... __args)
     { return optional<_Tp> { in_place, __il, std::forward<_Args>(__args)... }; }
 
-  // [X.Y.12]
+  // Hash.
   template<typename _Tp>
     struct hash<optional<_Tp>>
     {
