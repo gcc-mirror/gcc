@@ -1,3 +1,7 @@
+2016-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr70017.c: Do not check for warning on alpha*-*-*.
+
 2016-07-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71734
@@ -204,8 +208,7 @@
 
 2016-07-13  Andi Kleen  <ak@linux.intel.com>
 
-	* lib/profopt.exp (profopt-execute): Always log profiler
-	command line.
+	* lib/profopt.exp (profopt-execute): Always log profiler command line.
 
 2016-07-13  Andi Kleen  <ak@linux.intel.com>
 
@@ -221,8 +224,7 @@
 2016-07-13  Martin Liska  <mliska@suse.cz>
 
 	* gfortran.dg/ldist-1.f90: Revert change introduces in r238114.
-	* gfortran.dg/vect/pr62283.f: Add -fno-ipa-icf to additional
-	options.
+	* gfortran.dg/vect/pr62283.f: Add -fno-ipa-icf to additional options.
 	* gfortran.dg/pr42108.f90: Update expected dump scan.
 
 2016-07-13  Richard Biener  <rguenther@suse.de>
@@ -232,8 +234,7 @@
 
 2016-07-13  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	* c-c++-common/Wduplicated-cond-3.c (fn10): Use smaller 
-	const literal.
+	* c-c++-common/Wduplicated-cond-3.c (fn10): Use smaller const literal.
 	* c-c++-common/builtin-arith-overflow-2.c: Skip for avr.
 	* c-c++-common/pr68833-1.c: Require int32plus.
 	* gcc.dg/ipa/pr63551.c: Likewise.
@@ -443,7 +444,7 @@
 2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71518
-        * gcc.dg/pr71518.c: New test.
+	* gcc.dg/pr71518.c: New test.
 
 2016-07-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
@@ -451,7 +452,7 @@
 
 2016-07-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	PR target/50739	
+	PR target/50739
 	* gcc.target/avr/pr50739.c: New test.
 
 2016-07-05  Jan Hubicka  <jh@suse.cz>
@@ -587,8 +588,7 @@
 	* gcc.dg/torture/fp-int-convert-float128-timode-2.c: Likewise.
 	* gcc.dg/torture/fp-int-convert-float128-timode-3.c: Likewise.
 	* gcc.dg/torture/fp-int-convert-float128-timode.c: Likewise.
-	* lib/target-supports.exp (check_effective_target___float128):
-	New.
+	* lib/target-supports.exp (check_effective_target___float128): New.
 	(add_options_for___float128): New.
 	(check_effective_target_base_quadword_support): New.
 
@@ -720,12 +720,12 @@
 	* gcc.target/powerpc/dfp/dtstsfi-9.c: New test.
 
 2016-06-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect_copy_lane_1.c: New test.
 
 2016-06-30  James Greenhalgh  <james.greenhalgh@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/vget_set_lane_1.c: New test.
 
@@ -786,8 +786,7 @@
 
 2016-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
-	* lib/target-supports.exp (add_options_for_arm_fp16): Reword
-	comment.
+	* lib/target-supports.exp (add_options_for_arm_fp16): Reword comment.
 	(add_options_for_arm_fp16_ieee): New.
 	(add_options_for_arm_fp16_alternative): New.
 	(effective_target_arm_fp16_ok_nocache): Add to comment.  Fix a
@@ -873,17 +872,28 @@
 	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f16_indices_1.c:
 	Add arm_neon_fp16_ok effective target.
-	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f16_indices_1.c: Likewise.
-	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f16_indices_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f16_indices_1.c:
+	Likewise.
 
 2016-06-26  Jan Hubicka  <hubicka@ucw.cz>
 
