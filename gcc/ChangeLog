@@ -1,3 +1,13 @@
+2016-07-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71734
+	* tree-ssa-loop-im.c (ref_indep_loop_p_1): Add REF_LOOP argument which
+	contains REF, use it to check safelen, assume that safelen value
+	must be greater 1, fix style.
+	(ref_indep_loop_p_2): Add REF_LOOP argument.
+	(ref_indep_loop_p): Pass LOOP as additional argument to
+	ref_indep_loop_p_2.
+
 2016-07-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* cfgexpand.c (expand_stack_vars): Implement synamic stack space

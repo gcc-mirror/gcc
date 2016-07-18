@@ -1,14 +1,13 @@
 // { dg-do compile }
-// { dg-require-effective-target vect_simd_clones }
-// { dg-additional-options "-Ofast" }
-// { dg-additional-options "-mavx2 -fopenmp-simd" { target x86_64-*-* i?86-*-* } }
+// { dg-additional-options "-ffast-math -fopenmp-simd" }
+// { dg-additional-options "-msse2" { target x86_64-*-* i?86-*-* } }
 
 
 #include <string.h>
 #include <xmmintrin.h>
 
-inline void* my_alloc(size_t bytes) {return _mm_malloc(bytes, 128);}
-inline void my_free(void* memory) {_mm_free(memory);}
+inline void* my_alloc (size_t bytes) {return _mm_malloc (bytes, 128);}
+inline void my_free (void* memory) {_mm_free (memory);}
 
 template <typename T>
 class Vec
@@ -18,13 +17,13 @@ class Vec
 
 public:
 
-  Vec (int n) : isize(n) {data = (T*)my_alloc(isize*sizeof(T));}
+  Vec (int n) : isize (n) {data = (T*)my_alloc (isize*sizeof (T));}
   ~Vec () {my_free(data);}
 
   Vec& operator = (const Vec& other)	
     {
       if (this != &other)
-	memcpy(data, other.data, isize*sizeof(T));
+	memcpy (data, other.data, isize*sizeof (T));
       return *this;
     }
 
@@ -67,7 +66,7 @@ struct Ss
 void Ss::foo (float *in, float w)
 {
 #pragma omp simd
-  for (int i=0; i<S_n; i++)
+  for (int i = 0; i < S_n; i++)
     {
       float w1 = C2[S_n + i] * w;
       v1.v_i[i] += (int)w1;
@@ -75,4 +74,4 @@ void Ss::foo (float *in, float w)
     }
 }
  
-// { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } }
+// { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target x86_64-*-* i?86-*-* } } }
