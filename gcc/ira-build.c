@@ -2251,7 +2251,7 @@ mark_loops_for_removal (void)
 	     );
       }
   qsort (sorted_loops, n, sizeof (ira_loop_tree_node_t), loop_compare_func);
-  for (i = 0; n - i + 1 > IRA_MAX_LOOPS_NUM; i++)
+  for (i = 0; i < n - IRA_MAX_LOOPS_NUM; i++)
     {
       sorted_loops[i]->to_remove_p = true;
       if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
