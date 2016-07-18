@@ -1,3 +1,10 @@
+2016-07-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Clean up optional's comments.
+	* include/std/optional: Remove incorrect section headers
+	from comments when redundant, replace bare section
+	headers with more descriptive comments.
+
 2016-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/algorithmfwd.h: Change C++0x to C++11 in comments.
