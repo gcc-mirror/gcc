@@ -344,7 +344,7 @@ struct d_print_info
   /* Set to 1 if we saw a demangling error.  */
   int demangle_failure;
   /* The current index into any template argument packs we are using
-     for printing.  */
+     for printing, or -1 to print the whole pack.  */
   int pack_index;
   /* Number of d_print_flush calls so far.  */
   unsigned long int flush_count;
@@ -1762,6 +1762,10 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "eO", NL ("^="),        2 },
   { "eo", NL ("^"),         2 },
   { "eq", NL ("=="),        2 },
+  { "fL", NL ("..."),       3 },
+  { "fR", NL ("..."),       3 },
+  { "fl", NL ("..."),       2 },
+  { "fr", NL ("..."),       2 },
   { "ge", NL (">="),        2 },
   { "gs", NL ("::"),	    1 },
   { "gt", NL (">"),         2 },
@@ -3305,6 +3309,9 @@ d_expression_1 (struct d_info *di)
 	      return NULL;
 	    if (op_is_new_cast (op))
 	      left = cplus_demangle_type (di);
+	    else if (code[0] == 'f')
+	      /* fold-expression.  */
+	      left = d_operator_name (di);
 	    else
 	      left = d_expression_1 (di);
 	    if (!strcmp (code, "cl"))
@@ -3336,6 +3343,13 @@ d_expression_1 (struct d_info *di)
 	      {
 		/* ?: expression.  */
 		first = d_expression_1 (di);
+		second = d_expression_1 (di);
+		third = d_expression_1 (di);
+	      }
+	    else if (code[0] == 'f')
+	      {
+		/* fold-expression.  */
+		first = d_operator_name (di);
 		second = d_expression_1 (di);
 		third = d_expression_1 (di);
 	      }
@@ -4196,12 +4210,16 @@ cplus_demangle_print (int options, const struct demangle_component *dc,
 }
 
 /* Returns the I'th element of the template arglist ARGS, or NULL on
-   failure.  */
+   failure.  If I is negative, return the entire arglist.  */
 
 static struct demangle_component *
 d_index_template_argument (struct demangle_component *args, int i)
 {
   struct demangle_component *a;
+
+  if (i < 0)
+    /* Print the whole argument pack.  */
+    return args;
 
   for (a = args;
        a != NULL;
@@ -4400,6 +4418,70 @@ d_get_saved_scope (struct d_print_info *dpi,
       return &dpi->saved_scopes[i];
 
   return NULL;
+}
+
+/* If DC is a C++17 fold-expression, print it and return true; otherwise
+   return false.  */
+
+static int
+d_maybe_print_fold_expression (struct d_print_info *dpi, int options,
+			       const struct demangle_component *dc)
+{
+  const struct demangle_component *ops, *operator_, *op1, *op2;
+  int save_idx;
+
+  const char *fold_code = d_left (dc)->u.s_operator.op->code;
+  if (fold_code[0] != 'f')
+    return 0;
+
+  ops = d_right (dc);
+  operator_ = d_left (ops);
+  op1 = d_right (ops);
+  op2 = 0;
+  if (op1->type == DEMANGLE_COMPONENT_TRINARY_ARG2)
+    {
+      op2 = d_right (op1);
+      op1 = d_left (op1);
+    }
+
+  /* Print the whole pack.  */
+  save_idx = dpi->pack_index;
+  dpi->pack_index = -1;
+
+  switch (fold_code[1])
+    {
+      /* Unary left fold, (... + X).  */
+    case 'l':
+      d_append_string (dpi, "(...");
+      d_print_expr_op (dpi, options, operator_);
+      d_print_subexpr (dpi, options, op1);
+      d_append_char (dpi, ')');
+      break;
+
+      /* Unary right fold, (X + ...).  */
+    case 'r':
+      d_append_char (dpi, '(');
+      d_print_subexpr (dpi, options, op1);
+      d_print_expr_op (dpi, options, operator_);
+      d_append_string (dpi, "...)");
+      break;
+
+      /* Binary left fold, (42 + ... + X).  */
+    case 'L':
+      /* Binary right fold, (X + ... + 42).  */
+    case 'R':
+      d_append_char (dpi, '(');
+      d_print_subexpr (dpi, options, op1);
+      d_print_expr_op (dpi, options, operator_);
+      d_append_string (dpi, "...");
+      d_print_expr_op (dpi, options, operator_);
+      d_print_subexpr (dpi, options, op2);
+      d_append_char (dpi, ')');
+      break;
+    }
+
+  dpi->pack_index = save_idx;
+  return 1;
 }
 
 /* Subroutine to handle components.  */
@@ -5218,6 +5300,9 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	  return;
 	}
 
+      if (d_maybe_print_fold_expression (dpi, options, dc))
+	return;
+
       /* We wrap an expression which uses the greater-than operator in
 	 an extra layer of parens so that it does not get confused
 	 with the '>' which ends the template parameters.  */
@@ -5273,6 +5358,8 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	  d_print_error (dpi);
 	  return;
 	}
+      if (d_maybe_print_fold_expression (dpi, options, dc))
+	return;
       {
 	struct demangle_component *op = d_left (dc);
 	struct demangle_component *first = d_left (d_right (dc));

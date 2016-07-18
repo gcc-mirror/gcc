@@ -1,5 +1,11 @@
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
+	* cp-demangle.c (cplus_demangle_operators): Add f[lrLR].
+	(d_expression_1): Handle them.
+	(d_maybe_print_fold_expression): New.
+	(d_print_comp_inner): Use it.
+	(d_index_template_argument): Handle negative index.
+
 	* cp-demangle.c (cplus_demangle_operators): Add sP and sZ.
 	(d_print_comp_inner): Handle them.
 	(d_template_args_1): Split out from d_template_args.
