@@ -1,5 +1,12 @@
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70869
+	PR c++/71054
+	* cp-gimplify.c (cp_genericize_r): Revert the 2016-07-07 change.
+	* tree.c (cp_walk_subtrees): For DECL_EXPR on DECL_ARTIFICIAL
+	non-static VAR_DECL, walk the decl's DECL_INITIAL, DECL_SIZE and
+	DECL_SIZE_UNIT.
+
 	PR c++/71835
 	* call.c (build_op_call_1): Use convert_like_with_context only
 	if cand->fn is a decl.
