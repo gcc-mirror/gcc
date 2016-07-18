@@ -1,5 +1,9 @@
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71835
+	* call.c (build_op_call_1): Use convert_like_with_context only
+	if cand->fn is a decl.
+
 	PR c++/71828
 	* constexpr.c (cxx_eval_constant_expression) <case REALPART_EXPR>:
 	For lval don't use cxx_eval_unary_expression and instead recurse

@@ -4412,8 +4412,11 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	result = build_over_call (cand, LOOKUP_NORMAL, complain);
       else
 	{
-	  obj = convert_like_with_context (cand->convs[0], obj, cand->fn, -1,
-					   complain);
+	  if (DECL_P (cand->fn))
+	    obj = convert_like_with_context (cand->convs[0], obj, cand->fn,
+					     -1, complain);
+	  else
+	    obj = convert_like (cand->convs[0], obj, complain);
 	  obj = convert_from_reference (obj);
 	  result = cp_build_function_call_vec (obj, args, complain);
 	}
