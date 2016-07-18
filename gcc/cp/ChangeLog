@@ -1,5 +1,10 @@
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71828
+	* constexpr.c (cxx_eval_constant_expression) <case REALPART_EXPR>:
+	For lval don't use cxx_eval_unary_expression and instead recurse
+	and if needed rebuild the reference.
+
 	PR c++/71826
 	* pt.c (tsubst_baselink): Only set BASELINK_OPTYPE for BASELINK_P.
 
