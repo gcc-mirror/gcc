@@ -1,3 +1,8 @@
+2016-07-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71734
+	* g++.dg/vect/pr70729.cc: Delete redundant dg options, fix style.
+
 2016-07-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/warn-dynamicstack-1.c: New test.

@@ -2109,11 +2109,12 @@ record_dep_loop (struct loop *loop, im_mem_ref *ref, bool stored_p)
     loop = loop_outer (loop);
 }
 
-/* Returns true if REF is independent on all other memory references in
-   LOOP.  */
+/* Returns true if REF in REF_LOOP is independent on all other memory
+   references in LOOP.  */
 
 static bool
-ref_indep_loop_p_1 (struct loop *loop, im_mem_ref *ref, bool stored_p)
+ref_indep_loop_p_1 (struct loop *ref_loop, struct loop *loop,
+		    im_mem_ref *ref, bool stored_p)
 {
   bitmap refs_to_check;
   unsigned i;
@@ -2128,13 +2129,14 @@ ref_indep_loop_p_1 (struct loop *loop, im_mem_ref *ref, bool stored_p)
   if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
     return false;
 
-  if (loop->safelen > 0)
+  if (ref_loop->safelen > 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf(dump_file,"Consider REF independent in loop#%d\n", loop->num);
-	  print_generic_expr(dump_file, ref->mem.ref, TDF_SLIM);
-	  fprintf(dump_file, "\n");
+	  fprintf (dump_file,"REF is independent in ref_loop#%d\n",
+		   ref_loop->num);
+	  print_generic_expr (dump_file, ref->mem.ref, TDF_SLIM);
+	  fprintf (dump_file, "\n");
 	}
       return true;
     }
@@ -2149,11 +2151,13 @@ ref_indep_loop_p_1 (struct loop *loop, im_mem_ref *ref, bool stored_p)
   return true;
 }
 
-/* Returns true if REF is independent on all other memory references in
-   LOOP.  Wrapper over ref_indep_loop_p_1, caching its results.  */
+/* Returns true if REF in REF_LOOP is independent on all other memory
+   references in LOOP.  Wrapper over ref_indep_loop_p_1, caching its
+   results.  */
 
 static bool
-ref_indep_loop_p_2 (struct loop *loop, im_mem_ref *ref, bool stored_p)
+ref_indep_loop_p_2 (struct loop *ref_loop, struct loop *loop,
+		    im_mem_ref *ref, bool stored_p)
 {
   stored_p |= (ref->stored && bitmap_bit_p (ref->stored, loop->num));
 
@@ -2165,12 +2169,12 @@ ref_indep_loop_p_2 (struct loop *loop, im_mem_ref *ref, bool stored_p)
   struct loop *inner = loop->inner;
   while (inner)
     {
-      if (!ref_indep_loop_p_2 (inner, ref, stored_p))
+      if (!ref_indep_loop_p_2 (ref_loop, inner, ref, stored_p))
 	return false;
       inner = inner->next;
     }
 
-  bool indep_p = ref_indep_loop_p_1 (loop, ref, stored_p);
+  bool indep_p = ref_indep_loop_p_1 (ref_loop, loop, ref, stored_p);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Querying dependencies of ref %u in loop %d: %s\n",
@@ -2209,7 +2213,7 @@ ref_indep_loop_p (struct loop *loop, im_mem_ref *ref)
 {
   gcc_checking_assert (MEM_ANALYZABLE (ref));
 
-  return ref_indep_loop_p_2 (loop, ref, false);
+  return ref_indep_loop_p_2 (loop, loop, ref, false);
 }
 
 /* Returns true if we can perform store motion of REF from LOOP.  */
