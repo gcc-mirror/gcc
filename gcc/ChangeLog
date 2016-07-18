@@ -1,3 +1,9 @@
+2016-07-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_encode_section_info): Always set
+	notaligned marker if mode size is 0 or no MEM_ALIGN info could be
+	found.
+
 2016-07-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71893
