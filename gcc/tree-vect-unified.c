@@ -129,6 +129,7 @@ new_iter_node (struct loop *loop)
   ITER_NODE_PEELING_FOR_GAPS (res) = false;
   ITER_NODE_PEELING_FOR_NITER (res) = false;
   ITER_NODE_EPILOGUE (res) = vNULL;
+  ITER_NODE_PROBABLE_ROOT_NODES (res) = vNULL;
 
   bbs = get_loop_body (loop);
 
@@ -170,6 +171,8 @@ destroy_iter_node_info (struct ITER_node *inode)
     ITER_NODE_LOOP_BODY (inode).release ();
   if (ITER_NODE_EPILOGUE (inode) != vNULL)
     ITER_NODE_EPILOGUE (inode).release ();
+  if (ITER_NODE_PROBABLE_ROOT_NODES (inode) != vNULL)
+    ITER_NODE_PROBABLE_ROOT_NODES (inode).release ();
 
   bbs = get_loop_body (ITER_NODE_LOOP (inode));
   for (i = 0; i < ITER_NODE_LOOP (inode)->num_nodes; i++)
@@ -1145,7 +1148,7 @@ classify_loop_stmt (gimple *stmt, struct loop * loop)
 */
 
 static bool
-classify_loop_stmts (struct ITER_node *inode, vec<gimple *> *probable_roots)
+classify_loop_stmts (struct ITER_node *inode)
 {
   basic_block *bbs;
   int nbbs;
@@ -1160,7 +1163,7 @@ classify_loop_stmts (struct ITER_node *inode, vec<gimple *> *probable_roots)
 		       "==== classify_loop_stmts ====\n");
     }
 
-  /* Mark phi node*/
+  /* Mark phi node.  */
   for (gphi_iterator si = gsi_start_phis (loop->header);
        !gsi_end_p (si); gsi_next (&si))
     {
@@ -1247,7 +1250,8 @@ classify_loop_stmts (struct ITER_node *inode, vec<gimple *> *probable_roots)
     }
 #endif
 
-  worklist = (*probable_roots).copy ();
+  worklist = ITER_NODE_PROBABLE_ROOT_NODES (inode).copy ();
+
   while (worklist.length () > 0)
     {
       gimple *stmt = worklist.pop ();
@@ -1280,8 +1284,7 @@ classify_loop_stmts (struct ITER_node *inode, vec<gimple *> *probable_roots)
 */
 
 static void
-mark_probable_root_nodes (struct ITER_node *inode,
-			  vec<gimple *> *probable_roots)
+mark_probable_root_nodes (struct ITER_node *inode)
 {
   int i;
   gimple *stmt;
@@ -1316,7 +1319,7 @@ mark_probable_root_nodes (struct ITER_node *inode,
        	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
       				 "  : Memory def.\n");
-	      probable_roots->safe_push (stmt);
+	      ITER_NODE_PROBABLE_ROOT_NODES (inode).safe_push (stmt);
 	      STMT_ATTR_PROOT (stmt) = true;
 	    }
 
@@ -1340,7 +1343,7 @@ mark_probable_root_nodes (struct ITER_node *inode,
 		      gcc_assert (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI);
 	  	      gcc_assert (bb == single_exit (loop)->dest);
 
-		      probable_roots->safe_push (stmt);
+		      ITER_NODE_PROBABLE_ROOT_NODES (inode).safe_push (stmt);
 		      STMT_ATTR_PROOT (stmt) = true;
 	    	    }
 		}
@@ -1808,7 +1811,7 @@ vectorizable_store (gimple *stmt, struct ITER_node *inode,
       pnode = create_primTree_memref (base, step, false, num, inode, NULL);
       ITER_NODE_LOOP_BODY (inode).safe_push (pnode);
       pchild1 =  create_primTree_combine (POP_ILV, stmt,
-			tree_to_uhwi (step) / num, inode, parent);
+			tree_to_uhwi (step) / num, inode, pnode);
       add_child_at_index (pnode, pchild1, 0);
     }
   else
@@ -2067,22 +2070,24 @@ create_ptree (struct ITER_node *inode)
   auto_vec<gimple *, 64> worklist;
   bool is_ok;
 
-  mark_probable_root_nodes (inode, &worklist);
+  mark_probable_root_nodes (inode);
 
-  if (worklist.length () == 0)
+  if (ITER_NODE_PROBABLE_ROOT_NODES (inode).length () == 0)
     {
       dump_printf (MSG_MISSED_OPTIMIZATION,
 	"Not vectorizable: no probable root nodes.\n");
       return false;
     }
 
-  is_ok = classify_loop_stmts (inode, &worklist);
+  is_ok = classify_loop_stmts (inode);
   if (! is_ok)
     {
       dump_printf (MSG_MISSED_OPTIMIZATION,
 	"Not vectorizable: Classification failed.\n");
       return false;
     }
+
+  worklist = ITER_NODE_PROBABLE_ROOT_NODES (inode).copy ();
 
   while (worklist.length () > 0)
     {

@@ -72,6 +72,11 @@ struct ITER_node {
 
   /* All data dependences within the loop.  */
   vec<ddr_p> ddrs;
+
+  /* List of all statements within the loop which have side effects beyond loop
+     body.  probable root nodes are accumulated for loop by
+     mark_probable_root_nodes.  */
+  vec<gimple *> probable_roots;
 };
 
 #define ITER_NODE_NITERS(x) (x)->num_iter
@@ -86,6 +91,7 @@ struct ITER_node {
 #define ITER_NODE_PEELING_FOR_NITER(x) (x)->peeling_for_niter
 #define ITER_NODE_DATA_REFS(x) (x)->datarefs
 #define ITER_NODE_DATA_DEPS(x) (x)->ddrs
+#define ITER_NODE_PROBABLE_ROOT_NODES(x) (x)->probable_roots
 
 enum stmt_use_type {
   stmt_use_type_undef,
