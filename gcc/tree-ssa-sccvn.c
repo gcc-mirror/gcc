@@ -810,6 +810,9 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  /* Always record lower bounds and element size.  */
 	  temp.op1 = array_ref_low_bound (ref);
 	  temp.op2 = array_ref_element_size (ref);
+	  /* array_ref_element_size forces the result to sizetype
+	     even if that is the same as bitsizetype.  */
+	  STRIP_USELESS_TYPE_CONVERSION (temp.op2);
 	  if (TREE_CODE (temp.op0) == INTEGER_CST
 	      && TREE_CODE (temp.op1) == INTEGER_CST
 	      && TREE_CODE (temp.op2) == INTEGER_CST)

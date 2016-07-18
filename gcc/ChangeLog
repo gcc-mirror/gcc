@@ -1,3 +1,10 @@
+2016-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71893
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Compensate
+	for sizetype cast added by array_ref_element_size.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+
 2016-07-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (hppa_profile_hook): Allocate stack space for
