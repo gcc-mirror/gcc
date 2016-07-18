@@ -1,3 +1,8 @@
+2016-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71871
+	* g++.dg/ext/vector31.C: New test.
+
 2016-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr70017.c: Do not check for warning on alpha*-*-*.

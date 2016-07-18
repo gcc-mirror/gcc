@@ -1,3 +1,8 @@
+2016-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71871
+	* typeck.c (build_x_conditional_expr): Revert the 2012-10-25 change.
+
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71495
