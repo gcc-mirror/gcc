@@ -1,3 +1,9 @@
+2016-07-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/71855
+	* dwarf2out.c (gen_subprogram_die): Only call
+	gen_unspecified_parameters_die while dumping early dwarf.
+
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71874
