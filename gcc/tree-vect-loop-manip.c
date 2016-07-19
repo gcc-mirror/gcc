@@ -1735,6 +1735,10 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
    iterates NITERS times, the new epilog loop iterates
    NITERS % VECTORIZATION_FACTOR times.
 
+   If CHECK_PROFITABILITY is 1 then profitability check is generated
+   using TH as a cost model profitability threshold of iterations for
+   vectorization.
+
    The original loop will later be made to iterate
    NITERS / VECTORIZATION_FACTOR times (this value is placed into RATIO).
 
@@ -1993,7 +1997,11 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
    'niters' is set to the misalignment of one of the data references in the
    loop, thereby forcing it to refer to an aligned location at the beginning
    of the execution of this loop.  The data reference for which we are
-   peeling is recorded in LOOP_VINFO_UNALIGNED_DR.  */
+   peeling is recorded in LOOP_VINFO_UNALIGNED_DR.
+
+   If CHECK_PROFITABILITY is 1 then profitability check is generated
+   using TH as a cost model profitability threshold of iterations for
+   vectorization.  */
 
 void
 vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
@@ -2313,7 +2321,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 
    The test generated to check which version of loop is executed
    is modified to also check for profitability as indicated by the
-   cost model initially.
+   cost model threshold TH.
 
    The versioning precondition(s) are placed in *COND_EXPR and
    *COND_EXPR_STMT_LIST.  */
