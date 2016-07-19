@@ -3,6 +3,11 @@
 	Backported from mainline
 	2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71828
+	* constexpr.c (cxx_eval_constant_expression) <case REALPART_EXPR>:
+	For lval don't use cxx_eval_unary_expression and instead recurse
+	and if needed rebuild the reference.
+
 	PR c++/71822
 	* cp-gimplify.c (cp_gimplify_expr) <case VEC_INIT_EXPR>: Recursively
 	fold *expr_p before genericizing it.
