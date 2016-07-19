@@ -1,5 +1,8 @@
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71874
+	* g++.dg/torture/pr71874.C: New test.
+
 	PR middle-end/71734
 	* g++.dg/vect/pr70729.cc: Don't include string.h or xmmintrin.h.
 	(my_alloc): Rewritten to use __builtin_posix_memalign and

@@ -1,3 +1,9 @@
+2016-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71874
+	* gimple-fold.c (fold_builtin_memory_op): Use
+	get_addr_base_and_unit_offset instead of get_ref_base_and_extent.
+
 2016-07-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* builtins.c: Use HOST_WIDE_INT_1 instead of (HOST_WIDE_INT) 1,

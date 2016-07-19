@@ -796,22 +796,21 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	    {
 	      tree src_base, dest_base, fn;
 	      HOST_WIDE_INT src_offset = 0, dest_offset = 0;
-	      HOST_WIDE_INT size = -1;
-	      HOST_WIDE_INT maxsize = -1;
-	      bool reverse;
+	      HOST_WIDE_INT maxsize;
 
 	      srcvar = TREE_OPERAND (src, 0);
-	      src_base = get_ref_base_and_extent (srcvar, &src_offset,
-						  &size, &maxsize, &reverse);
+	      src_base = get_addr_base_and_unit_offset (srcvar, &src_offset);
+	      if (src_base == NULL)
+		src_base = srcvar;
 	      destvar = TREE_OPERAND (dest, 0);
-	      dest_base = get_ref_base_and_extent (destvar, &dest_offset,
-						   &size, &maxsize, &reverse);
+	      dest_base = get_addr_base_and_unit_offset (destvar,
+							 &dest_offset);
+	      if (dest_base == NULL)
+		dest_base = destvar;
 	      if (tree_fits_uhwi_p (len))
 		maxsize = tree_to_uhwi (len);
 	      else
 		maxsize = -1;
-	      src_offset /= BITS_PER_UNIT;
-	      dest_offset /= BITS_PER_UNIT;
 	      if (SSA_VAR_P (src_base)
 		  && SSA_VAR_P (dest_base))
 		{
