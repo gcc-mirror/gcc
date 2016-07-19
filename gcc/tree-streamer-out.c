@@ -807,14 +807,17 @@ write_ts_block_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   /* Stream BLOCK_ABSTRACT_ORIGIN for the limited cases we can handle - those
      that represent inlined function scopes.
-     For the rest them on the floor instead of ICEing in dwarf2out.c.  */
+     For the rest them on the floor instead of ICEing in dwarf2out.c, but
+     keep the notion of whether the block is an inlined block by refering
+     to itself for the sake of tree_nonartificial_location.  */
   if (inlined_function_outer_scope_p (expr))
     {
       tree ultimate_origin = block_ultimate_origin (expr);
       stream_write_tree (ob, ultimate_origin, ref_p);
     }
   else
-    stream_write_tree (ob, NULL_TREE, ref_p);
+    stream_write_tree (ob, (BLOCK_ABSTRACT_ORIGIN (expr)
+			    ? expr : NULL_TREE), ref_p);
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */

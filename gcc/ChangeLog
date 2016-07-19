@@ -1,3 +1,11 @@
+2016-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/71907
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): For blocks
+	with an abstract origin that is not an inlined function outer
+	scope add a self-reference as abstract origin.
+	* tree-streamer-out.c (write_ts_block_tree_pointers): Likewise.
+
 2016-07-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71493
