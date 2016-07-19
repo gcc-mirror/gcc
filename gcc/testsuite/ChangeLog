@@ -1,6 +1,11 @@
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71871
+	* g++.dg/ext/vector31.C: New test.
+
 	2016-07-07  Jakub Jelinek  <jakub@redhat.com>
 		    Kai Tietz  <ktietz70@googlemail.com>
 
