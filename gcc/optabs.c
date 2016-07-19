@@ -4903,7 +4903,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	  expand_fix (to, target, 0);
 	  target = expand_binop (GET_MODE (to), xor_optab, to,
 				 gen_int_mode
-				 ((HOST_WIDE_INT) 1 << (bitsize - 1),
+				 (HOST_WIDE_INT_1 << (bitsize - 1),
 				  GET_MODE (to)),
 				 to, 1, OPTAB_LIB_WIDEN);
 

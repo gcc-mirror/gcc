@@ -1613,7 +1613,7 @@ implies_p (rtx a, rtx b)
 	  && CONST_INT_P (XEXP (opb0, 1))
 	  /* Avoid overflows.  */
 	  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
-	      != ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
+	      != (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1)))
 	  && rtx_equal_p (XEXP (opb0, 0), op0))
 	return INTVAL (op1) == -INTVAL (XEXP (opb0, 1));
       if (GET_CODE (b) == GEU
@@ -1622,7 +1622,7 @@ implies_p (rtx a, rtx b)
 	  && CONST_INT_P (XEXP (opb0, 1))
 	  /* Avoid overflows.  */
 	  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
-	      != ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
+	      != (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1)))
 	  && rtx_equal_p (XEXP (opb0, 0), op0))
 	return INTVAL (op1) == -INTVAL (XEXP (opb0, 1));
     }

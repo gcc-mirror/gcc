@@ -226,7 +226,7 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 #endif /* GCC_VERSION >= 3004 */
 
 #define HOST_WIDE_INT_MIN (HOST_WIDE_INT) \
-  ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
+  (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1))
 #define HOST_WIDE_INT_MAX (~(HOST_WIDE_INT_MIN))
 
 extern HOST_WIDE_INT abs_hwi (HOST_WIDE_INT);
@@ -276,7 +276,7 @@ zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
   else
     {
       gcc_checking_assert (prec < HOST_BITS_PER_WIDE_INT);
-      return src & (((unsigned HOST_WIDE_INT) 1 << prec) - 1);
+      return src & ((HOST_WIDE_INT_1U << prec) - 1);
     }
 }
 

@@ -2488,14 +2488,14 @@ compute_max_addr_offset (struct iv_use *use)
 
   for (i = width; i > 0; i--)
     {
-      off = ((unsigned HOST_WIDE_INT) 1 << i) - 1;
+      off = (HOST_WIDE_INT_1U << i) - 1;
       XEXP (addr, 1) = gen_int_mode (off, addr_mode);
       if (memory_address_addr_space_p (mem_mode, addr, as))
 	break;
 
       /* For some strict-alignment targets, the offset must be naturally
 	 aligned.  Try an aligned offset if mem_mode is not QImode.  */
-      off = ((unsigned HOST_WIDE_INT) 1 << i);
+      off = (HOST_WIDE_INT_1U << i);
       if (off > GET_MODE_SIZE (mem_mode) && mem_mode != QImode)
 	{
 	  off -= GET_MODE_SIZE (mem_mode);
@@ -4002,7 +4002,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = width; i >= 0; i--)
 	{
-	  off = -((unsigned HOST_WIDE_INT) 1 << i);
+	  off = -(HOST_WIDE_INT_1U << i);
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
@@ -4011,14 +4011,14 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = width; i >= 0; i--)
 	{
-	  off = ((unsigned HOST_WIDE_INT) 1 << i) - 1;
+	  off = (HOST_WIDE_INT_1U << i) - 1;
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
 	  /* For some strict-alignment targets, the offset must be naturally
 	     aligned.  Try an aligned offset if mem_mode is not QImode.  */
 	  off = mem_mode != QImode
-		? ((unsigned HOST_WIDE_INT) 1 << i)
+		? (HOST_WIDE_INT_1U << i)
 		    - GET_MODE_SIZE (mem_mode)
 		: 0;
 	  if (off > 0)

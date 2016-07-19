@@ -777,7 +777,7 @@ canonicalize_address_mult (rtx x)
 	{
 	  HOST_WIDE_INT shift = INTVAL (XEXP (sub, 1));
 	  PUT_CODE (sub, MULT);
-	  XEXP (sub, 1) = gen_int_mode ((HOST_WIDE_INT) 1 << shift,
+	  XEXP (sub, 1) = gen_int_mode (HOST_WIDE_INT_1 << shift,
 					GET_MODE (sub));
 	  iter.skip_subrtxes ();
 	}

@@ -474,7 +474,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  unsigned HOST_WIDE_INT mh;
 	  unsigned HOST_WIDE_INT d = TREE_INT_CST_LOW (cst) & mask;
 
-	  if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
+	  if (d >= (HOST_WIDE_INT_1U << (prec - 1)))
 	    /* FIXME: Can transform this into op0 >= op1 ? 1 : 0.  */
 	    return NULL_TREE;
 
@@ -558,7 +558,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  /* n rem d = n rem -d */
 	  if (code == TRUNC_MOD_EXPR && d < 0)
 	    d = abs_d;
-	  else if (abs_d == (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	  else if (abs_d == HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      /* This case is not handled correctly below.  */
 	      mode = -2;
@@ -572,7 +572,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 
 	  choose_multiplier (abs_d, prec, prec - 1, &ml,
 			     &post_shift, &dummy_int);
-	  if (ml >= (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	  if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      this_mode = 4 + (d < 0);
 	      ml |= (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
@@ -640,7 +640,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      cond = build2 (LT_EXPR, mask_type, op0, zero);
 	      for (i = 0; i < nunits; i++)
 		vec[i] = build_int_cst (TREE_TYPE (type),
-					((unsigned HOST_WIDE_INT) 1
+					(HOST_WIDE_INT_1U
 					 << shifts[i]) - 1);
 	      cst = build_vector (type, vec);
 	      addend = make_ssa_name (type);
@@ -678,7 +678,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  tree mask;
 	  for (i = 0; i < nunits; i++)
 	    vec[i] = build_int_cst (TREE_TYPE (type),
-				    ((unsigned HOST_WIDE_INT) 1
+				    (HOST_WIDE_INT_1U
 				     << shifts[i]) - 1);
 	  mask = build_vector (type, vec);
 	  op = optab_for_tree_code (BIT_AND_EXPR, type, optab_default);

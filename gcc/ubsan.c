@@ -1827,7 +1827,7 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
   unsigned HOST_WIDE_INT size = compute_builtin_object_size (base_addr, 0);
-  if (size != (unsigned HOST_WIDE_INT) -1)
+  if (size != HOST_WIDE_INT_M1U)
     sizet = build_int_cst (sizetype, size);
   else if (optimize)
     {

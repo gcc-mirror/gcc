@@ -120,7 +120,7 @@ print_hex (const wide_int_ref &wi, char *buf)
 	     we do not print a '-' with hex.  */
 	  buf += sprintf (buf, "0x");
 	  for (j = BLOCKS_NEEDED (wi.get_precision ()); j > i; j--)
-	    buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, (HOST_WIDE_INT) -1);
+	    buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, HOST_WIDE_INT_M1);
 
 	}
       else

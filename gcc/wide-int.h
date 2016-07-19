@@ -2116,7 +2116,7 @@ wi::set_bit (const T &x, unsigned int bit)
   WIDE_INT_REF_FOR (T) xi (x, precision);
   if (precision <= HOST_BITS_PER_WIDE_INT)
     {
-      val[0] = xi.ulow () | ((unsigned HOST_WIDE_INT) 1 << bit);
+      val[0] = xi.ulow () | (HOST_WIDE_INT_1U << bit);
       result.set_len (1);
     }
   else

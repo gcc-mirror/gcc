@@ -2058,7 +2058,7 @@ fold_convert_const_fixed_from_int (tree type, const_tree arg1)
 
   di.low = TREE_INT_CST_ELT (arg1, 0);
   if (TREE_INT_CST_NUNITS (arg1) == 1)
-    di.high = (HOST_WIDE_INT) di.low < 0 ? (HOST_WIDE_INT) -1 : 0;
+    di.high = (HOST_WIDE_INT) di.low < 0 ? HOST_WIDE_INT_M1 : 0;
   else
     di.high = TREE_INT_CST_ELT (arg1, 1);
 

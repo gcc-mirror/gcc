@@ -85,7 +85,7 @@ mask_rtx (machine_mode mode, int bitpos, int bitsize, bool complement)
 
 /* Test whether a value is zero of a power of two.  */
 #define EXACT_POWER_OF_2_OR_ZERO_P(x) \
-  (((x) & ((x) - (unsigned HOST_WIDE_INT) 1)) == 0)
+  (((x) & ((x) - HOST_WIDE_INT_1U)) == 0)
 
 struct init_expmed_rtl
 {
@@ -235,7 +235,7 @@ init_expmed (void)
   memset (&all, 0, sizeof all);
   for (m = 1; m < MAX_BITS_PER_WORD; m++)
     {
-      all.pow2[m] = GEN_INT ((HOST_WIDE_INT) 1 << m);
+      all.pow2[m] = GEN_INT (HOST_WIDE_INT_1 << m);
       all.cint[m] = GEN_INT (m);
     }
 
@@ -1197,14 +1197,14 @@ store_fixed_bit_field_1 (rtx op0, unsigned HOST_WIDE_INT bitsize,
       unsigned HOST_WIDE_INT v = UINTVAL (value);
 
       if (bitsize < HOST_BITS_PER_WIDE_INT)
-	v &= ((unsigned HOST_WIDE_INT) 1 << bitsize) - 1;
+	v &= (HOST_WIDE_INT_1U << bitsize) - 1;
 
       if (v == 0)
 	all_zero = 1;
       else if ((bitsize < HOST_BITS_PER_WIDE_INT
-		&& v == ((unsigned HOST_WIDE_INT) 1 << bitsize) - 1)
+		&& v == (HOST_WIDE_INT_1U << bitsize) - 1)
 	       || (bitsize == HOST_BITS_PER_WIDE_INT
-		   && v == (unsigned HOST_WIDE_INT) -1))
+		   && v == HOST_WIDE_INT_M1U))
 	all_one = 1;
 
       value = lshift_value (mode, v, bitnum);
@@ -1349,7 +1349,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> (bitsize - bitsdone - thissize))
-			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
+			    & ((HOST_WIDE_INT_1 << thissize) - 1));
           /* Likewise, but the source is little-endian.  */
           else if (reverse)
 	    part = extract_fixed_bit_field (word_mode, value, thissize,
@@ -1372,7 +1372,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> bitsdone)
-			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
+			    & ((HOST_WIDE_INT_1 << thissize) - 1));
 	  /* Likewise, but the source is big-endian.  */
           else if (reverse)
 	    part = extract_fixed_bit_field (word_mode, value, thissize,
@@ -2805,7 +2805,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
     {
       unsigned HOST_WIDE_INT d;
 
-      d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
+      d = (HOST_WIDE_INT_1U << m) + 1;
       if (t % d == 0 && t > d && m < maxm
 	  && (!cache_hit || cache_alg == alg_add_factor))
 	{
@@ -2835,7 +2835,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	  break;
 	}
 
-      d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
+      d = (HOST_WIDE_INT_1U << m) - 1;
       if (t % d == 0 && t > d && m < maxm
 	  && (!cache_hit || cache_alg == alg_sub_factor))
 	{
@@ -3104,14 +3104,14 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	  tem = expand_shift (LSHIFT_EXPR, mode, op0, log, NULL_RTX, 0);
 	  accum = force_operand (gen_rtx_PLUS (mode, accum, tem),
 				 add_target ? add_target : accum_target);
-	  val_so_far += (HOST_WIDE_INT) 1 << log;
+	  val_so_far += HOST_WIDE_INT_1 << log;
 	  break;
 
 	case alg_sub_t_m2:
 	  tem = expand_shift (LSHIFT_EXPR, mode, op0, log, NULL_RTX, 0);
 	  accum = force_operand (gen_rtx_MINUS (mode, accum, tem),
 				 add_target ? add_target : accum_target);
-	  val_so_far -= (HOST_WIDE_INT) 1 << log;
+	  val_so_far -= HOST_WIDE_INT_1 << log;
 	  break;
 
 	case alg_add_t2_m:
@@ -3485,7 +3485,7 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   *lgup_ptr = lgup;
   if (n < HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT mask = ((unsigned HOST_WIDE_INT) 1 << n) - 1;
+      unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << n) - 1;
       *multiplier_ptr = mhigh.to_uhwi () & mask;
       return mhigh.to_uhwi () >= mask;
     }
@@ -3514,7 +3514,7 @@ invert_mod2n (unsigned HOST_WIDE_INT x, int n)
 
   mask = (n == HOST_BITS_PER_WIDE_INT
 	  ? ~(unsigned HOST_WIDE_INT) 0
-	  : ((unsigned HOST_WIDE_INT) 1 << n) - 1);
+	  : (HOST_WIDE_INT_1U << n) - 1);
 
   while (nbit < n)
     {
@@ -3776,7 +3776,7 @@ expand_smod_pow2 (machine_mode mode, rtx op0, HOST_WIDE_INT d)
 				      mode, 0, -1);
       if (signmask)
 	{
-	  HOST_WIDE_INT masklow = ((HOST_WIDE_INT) 1 << logd) - 1;
+	  HOST_WIDE_INT masklow = (HOST_WIDE_INT_1 << logd) - 1;
 	  signmask = force_reg (mode, signmask);
 	  shift = GEN_INT (GET_MODE_BITSIZE (mode) - logd);
 
@@ -4180,7 +4180,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		    if (rem_flag)
 		      {
 			unsigned HOST_WIDE_INT mask
-			  = ((unsigned HOST_WIDE_INT) 1 << pre_shift) - 1;
+			  = (HOST_WIDE_INT_1U << pre_shift) - 1;
 			remainder
 			  = expand_binop (compute_mode, and_optab, op0,
 					  gen_int_mode (mask, compute_mode),
@@ -4194,7 +4194,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		  }
 		else if (size <= HOST_BITS_PER_WIDE_INT)
 		  {
-		    if (d >= ((unsigned HOST_WIDE_INT) 1 << (size - 1)))
+		    if (d >= (HOST_WIDE_INT_1U << (size - 1)))
 		      {
 			/* Most significant bit of divisor is set; emit an scc
 			   insn.  */
@@ -4315,7 +4315,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		  quotient = expand_unop (compute_mode, neg_optab, op0,
 					  tquotient, 0);
 		else if (HOST_BITS_PER_WIDE_INT >= size
-			 && abs_d == (unsigned HOST_WIDE_INT) 1 << (size - 1))
+			 && abs_d == HOST_WIDE_INT_1U << (size - 1))
 		  {
 		    /* This case is not handled correctly below.  */
 		    quotient = emit_store_flag (tquotient, EQ, op0, op1,
@@ -4365,7 +4365,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		      {
 			insn = get_last_insn ();
 			if (insn != last
-			    && abs_d < ((unsigned HOST_WIDE_INT) 1
+			    && abs_d < (HOST_WIDE_INT_1U
 					<< (HOST_BITS_PER_WIDE_INT - 1)))
 			  set_dst_reg_note (insn, REG_EQUAL,
 					    gen_rtx_DIV (compute_mode, op0,
@@ -4382,7 +4382,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		  {
 		    choose_multiplier (abs_d, size, size - 1,
 				       &ml, &post_shift, &lgup);
-		    if (ml < (unsigned HOST_WIDE_INT) 1 << (size - 1))
+		    if (ml < HOST_WIDE_INT_1U << (size - 1))
 		      {
 			rtx t1, t2, t3;
 
@@ -4488,7 +4488,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		    if (rem_flag)
 		      {
 			unsigned HOST_WIDE_INT mask
-			  = ((unsigned HOST_WIDE_INT) 1 << pre_shift) - 1;
+			  = (HOST_WIDE_INT_1U << pre_shift) - 1;
 			remainder = expand_binop
 			  (compute_mode, and_optab, op0,
 			   gen_int_mode (mask, compute_mode),

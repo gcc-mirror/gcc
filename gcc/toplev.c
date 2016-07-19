@@ -561,14 +561,14 @@ compile_file (void)
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
 				      "__gnu_lto_v1",
-				      (unsigned HOST_WIDE_INT) 1, 8);
+				      HOST_WIDE_INT_1U, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
       ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_v1",
-				 (unsigned HOST_WIDE_INT) 1, 8);
+				 HOST_WIDE_INT_1U, 8);
 #else
       ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_v1",
-			 (unsigned HOST_WIDE_INT) 1,
-			 (unsigned HOST_WIDE_INT) 1);
+			 HOST_WIDE_INT_1U,
+			 HOST_WIDE_INT_1U);
 #endif
     }
 
@@ -578,14 +578,14 @@ compile_file (void)
     {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE, "__gnu_lto_slim",
-				      (unsigned HOST_WIDE_INT) 1, 8);
+				      HOST_WIDE_INT_1U, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
       ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
-				 (unsigned HOST_WIDE_INT) 1, 8);
+				 HOST_WIDE_INT_1U, 8);
 #else
       ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
-			 (unsigned HOST_WIDE_INT) 1,
-			 (unsigned HOST_WIDE_INT) 1);
+			 HOST_WIDE_INT_1U,
+			 HOST_WIDE_INT_1U);
 #endif
     }
 

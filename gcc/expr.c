@@ -4764,7 +4764,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
       binop = code == BIT_IOR_EXPR ? ior_optab : xor_optab;
       if (bitpos + bitsize != str_bitsize)
 	{
-	  rtx mask = gen_int_mode (((unsigned HOST_WIDE_INT) 1 << bitsize) - 1,
+	  rtx mask = gen_int_mode ((HOST_WIDE_INT_1U << bitsize) - 1,
 				   str_mode);
 	  value = expand_and (str_mode, value, mask, NULL_RTX);
 	}
@@ -7586,7 +7586,7 @@ highest_pow2_factor (const_tree exp)
   int trailing_zeros = tree_ctz (exp);
   if (trailing_zeros >= HOST_BITS_PER_WIDE_INT)
     return BIGGEST_ALIGNMENT;
-  ret = (unsigned HOST_WIDE_INT) 1 << trailing_zeros;
+  ret = HOST_WIDE_INT_1U << trailing_zeros;
   if (ret > BIGGEST_ALIGNMENT)
     return BIGGEST_ALIGNMENT;
   return ret;
@@ -10324,7 +10324,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
 		    if (TYPE_UNSIGNED (TREE_TYPE (field)))
 		      {
-			op1 = gen_int_mode (((HOST_WIDE_INT) 1 << bitsize) - 1,
+			op1 = gen_int_mode ((HOST_WIDE_INT_1 << bitsize) - 1,
 					    imode);
 			op0 = expand_and (imode, op0, op1, target);
 		      }

@@ -7497,7 +7497,7 @@ elf_record_gcc_switches (print_switch_type type, const char * name)
     {
     case SWITCH_TYPE_PASSED:
       ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name));
-      ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
+      ASM_OUTPUT_SKIP (asm_out_file, HOST_WIDE_INT_1U);
       break;
 
     case SWITCH_TYPE_DESCRIPTIVE:

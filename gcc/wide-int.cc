@@ -60,7 +60,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 
 /* Quantities to deal with values that hold half of a wide int.  Used
    in multiply and divide.  */
-#define HALF_INT_MASK (((HOST_WIDE_INT) 1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
+#define HALF_INT_MASK ((HOST_WIDE_INT_1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
 
 #define BLOCK_OF(TARGET) ((TARGET) / HOST_BITS_PER_WIDE_INT)
 #define BLOCKS_NEEDED(PREC) \
@@ -73,7 +73,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 static unsigned HOST_WIDE_INT
 safe_uhwi (const HOST_WIDE_INT *val, unsigned int len, unsigned int i)
 {
-  return i < len ? val[i] : val[len - 1] < 0 ? (HOST_WIDE_INT) -1 : 0;
+  return i < len ? val[i] : val[len - 1] < 0 ? HOST_WIDE_INT_M1 : 0;
 }
 
 /* Convert the integer in VAL to canonical form, returning its new length.
@@ -698,7 +698,7 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
       unsigned int len = block + 1;
       for (unsigned int i = 0; i < len; i++)
 	val[i] = safe_uhwi (xval, xlen, i);
-      val[block] |= (unsigned HOST_WIDE_INT) 1 << subbit;
+      val[block] |= HOST_WIDE_INT_1U << subbit;
 
       /* If the bit we just set is at the msb of the block, make sure
 	 that any higher bits are zeros.  */
@@ -710,7 +710,7 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
     {
       for (unsigned int i = 0; i < xlen; i++)
 	val[i] = xval[i];
-      val[block] |= (unsigned HOST_WIDE_INT) 1 << subbit;
+      val[block] |= HOST_WIDE_INT_1U << subbit;
       return canonize (val, xlen, precision);
     }
 }
@@ -779,7 +779,7 @@ wi::mask (HOST_WIDE_INT *val, unsigned int width, bool negate,
   unsigned int shift = width & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift != 0)
     {
-      HOST_WIDE_INT last = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
+      HOST_WIDE_INT last = (HOST_WIDE_INT_1U << shift) - 1;
       val[i++] = negate ? ~last : last;
     }
   else
@@ -812,12 +812,12 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   unsigned int shift = start & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift)
     {
-      HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
+      HOST_WIDE_INT block = (HOST_WIDE_INT_1U << shift) - 1;
       shift += width;
       if (shift < HOST_BITS_PER_WIDE_INT)
 	{
 	  /* case 000111000 */
-	  block = ((unsigned HOST_WIDE_INT) 1 << shift) - block - 1;
+	  block = (HOST_WIDE_INT_1U << shift) - block - 1;
 	  val[i++] = negate ? ~block : block;
 	  return i;
 	}
@@ -834,7 +834,7 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   if (shift != 0)
     {
       /* 000011111 */
-      HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
+      HOST_WIDE_INT block = (HOST_WIDE_INT_1U << shift) - 1;
       val[i++] = negate ? ~block : block;
     }
   else if (end < prec)

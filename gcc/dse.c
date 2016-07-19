@@ -1201,7 +1201,7 @@ set_position_unneeded (store_info *s_info, int pos)
     }
   else
     s_info->positions_needed.small_bitmask
-      &= ~(((unsigned HOST_WIDE_INT) 1) << pos);
+      &= ~(HOST_WIDE_INT_1U << pos);
 }
 
 /* Mark the whole store S_INFO as unneeded.  */
@@ -1744,7 +1744,7 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	{
 	  unsigned HOST_WIDE_INT c
 	    = INTVAL (store_info->rhs)
-	      & (((HOST_WIDE_INT) 1 << BITS_PER_UNIT) - 1);
+	      & ((HOST_WIDE_INT_1 << BITS_PER_UNIT) - 1);
 	  int shift = BITS_PER_UNIT;
 	  while (shift < HOST_BITS_PER_WIDE_INT)
 	    {
