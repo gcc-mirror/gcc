@@ -53,6 +53,9 @@
 
 #if _GLIBCXX_ASSERTIONS
 #include <parallel/checkers.h>
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #endif
 
 namespace __gnu_parallel

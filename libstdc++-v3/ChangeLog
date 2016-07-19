@@ -1,5 +1,11 @@
 2016-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71856
+	* include/bits/c++config (_GLIBCXX_ASSERTIONS): Define to 1 not empty.
+	* include/parallel/balanced_quicksort.h: Include <unistd.h> for sleep.
+	* include/parallel/compiletime_settings.h (_GLIBCXX_ASSERTIONS):
+	Do not define here.
+
 	Backport from mainline
 	2016-06-06  Jonathan Wakely  <jwakely@redhat.com>
 

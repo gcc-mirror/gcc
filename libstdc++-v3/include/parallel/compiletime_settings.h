@@ -55,12 +55,6 @@
 #define _GLIBCXX_SCALE_DOWN_FPU 0
 #endif
 
-#ifndef _GLIBCXX_ASSERTIONS
-/** @brief Switch on many _GLIBCXX_PARALLEL_ASSERTions in parallel code.
- *  Should be switched on only locally. */
-#define _GLIBCXX_ASSERTIONS 0
-#endif
-
 #ifndef _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1
 /** @brief Switch on many _GLIBCXX_PARALLEL_ASSERTions in parallel code.
  *  Consider the size of the L1 cache for
