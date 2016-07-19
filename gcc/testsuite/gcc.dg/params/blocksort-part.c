@@ -21,8 +21,13 @@
 typedef char            Char;
 typedef unsigned char   Bool;
 typedef unsigned char   UChar;
+#if __SIZEOF_INT__ == 2
+typedef long             Int32;
+typedef unsigned long    UInt32;
+#else
 typedef int             Int32;
 typedef unsigned int    UInt32;
+#endif
 typedef short           Int16;
 typedef unsigned short  UInt16;
 
