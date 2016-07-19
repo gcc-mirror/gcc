@@ -2570,15 +2570,14 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	       here as the element alignment may be not visible.  See
 	       PR43783.  Simply drop the element size for constant
 	       sizes.  */
-	    if (tree_int_cst_equal (genop3, TYPE_SIZE_UNIT (elmt_type)))
+	    if (TREE_CODE (genop3) == INTEGER_CST
+		&& TREE_CODE (TYPE_SIZE_UNIT (elmt_type)) == INTEGER_CST
+		&& wi::eq_p (wi::to_offset (TYPE_SIZE_UNIT (elmt_type)),
+			     (wi::to_offset (genop3)
+			      * vn_ref_op_align_unit (currop))))
 	      genop3 = NULL_TREE;
 	    else
 	      {
-		genop3 = size_binop (EXACT_DIV_EXPR, genop3,
-				     size_int (TYPE_ALIGN_UNIT (elmt_type)));
-		/* We may have a useless conversion added by
-		   array_ref_element_size via copy_reference_opts_from_ref.  */
-		STRIP_USELESS_TYPE_CONVERSION (genop3);
 		genop3 = find_or_generate_expression (block, genop3, stmts);
 		if (!genop3)
 		  return NULL_TREE;

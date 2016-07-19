@@ -81,22 +81,29 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 typedef struct vn_reference_op_struct
 {
   ENUM_BITFIELD(tree_code) opcode : 16;
-  /* 1 for instrumented calls.  */
-  unsigned with_bounds : 1;
   /* Dependence info, used for [TARGET_]MEM_REF only.  */
   unsigned short clique;
   unsigned short base;
+  /* 1 for instrumented calls.  */
+  unsigned with_bounds : 1;
+  unsigned reverse : 1;
+  /* For storing TYPE_ALIGN for array ref element size computation.  */
+  unsigned align : 6;
   /* Constant offset this op adds or -1 if it is variable.  */
   HOST_WIDE_INT off;
   tree type;
   tree op0;
   tree op1;
   tree op2;
-  bool reverse;
 } vn_reference_op_s;
 typedef vn_reference_op_s *vn_reference_op_t;
 typedef const vn_reference_op_s *const_vn_reference_op_t;
 
+inline unsigned
+vn_ref_op_align_unit (vn_reference_op_t op)
+{
+  return op->align ? ((unsigned)1 << (op->align - 1)) / BITS_PER_UNIT : 0;
+}
 
 /* A reference operation in the hashtable is representation as
    the vuse, representing the memory state at the time of

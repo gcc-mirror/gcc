@@ -805,24 +805,30 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  break;
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
-	  /* Record index as operand.  */
-	  temp.op0 = TREE_OPERAND (ref, 1);
-	  /* Always record lower bounds and element size.  */
-	  temp.op1 = array_ref_low_bound (ref);
-	  temp.op2 = array_ref_element_size (ref);
-	  /* array_ref_element_size forces the result to sizetype
-	     even if that is the same as bitsizetype.  */
-	  STRIP_USELESS_TYPE_CONVERSION (temp.op2);
-	  if (TREE_CODE (temp.op0) == INTEGER_CST
-	      && TREE_CODE (temp.op1) == INTEGER_CST
-	      && TREE_CODE (temp.op2) == INTEGER_CST)
-	    {
-	      offset_int off = ((wi::to_offset (temp.op0)
-				 - wi::to_offset (temp.op1))
-				* wi::to_offset (temp.op2));
-	      if (wi::fits_shwi_p (off))
-		temp.off = off.to_shwi();
-	    }
+	  {
+	    tree eltype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (ref, 0)));
+	    /* Record index as operand.  */
+	    temp.op0 = TREE_OPERAND (ref, 1);
+	    /* Always record lower bounds and element size.  */
+	    temp.op1 = array_ref_low_bound (ref);
+	    /* But record element size in units of the type alignment.  */
+	    temp.op2 = TREE_OPERAND (ref, 3);
+	    temp.align = eltype->type_common.align;
+	    if (! temp.op2)
+	      temp.op2 = size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (eltype),
+				     size_int (TYPE_ALIGN_UNIT (eltype)));
+	    if (TREE_CODE (temp.op0) == INTEGER_CST
+		&& TREE_CODE (temp.op1) == INTEGER_CST
+		&& TREE_CODE (temp.op2) == INTEGER_CST)
+	      {
+		offset_int off = ((wi::to_offset (temp.op0)
+				   - wi::to_offset (temp.op1))
+				  * wi::to_offset (temp.op2)
+				  * vn_ref_op_align_unit (&temp));
+		if (wi::fits_shwi_p (off))
+		  temp.off = off.to_shwi();
+	      }
+	  }
 	  break;
 	case VAR_DECL:
 	  if (DECL_HARD_REGISTER (ref))
@@ -1021,7 +1027,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      offset_int woffset
 		= wi::sext (wi::to_offset (op->op0) - wi::to_offset (op->op1),
 			    TYPE_PRECISION (TREE_TYPE (op->op0)));
-	      woffset *= wi::to_offset (op->op2);
+	      woffset *= wi::to_offset (op->op2) * vn_ref_op_align_unit (op);
 	      woffset <<= LOG2_BITS_PER_UNIT;
 	      offset += woffset;
 	    }
@@ -1471,7 +1477,8 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	{
 	  offset_int off = ((wi::to_offset (vro->op0)
 			     - wi::to_offset (vro->op1))
-			    * wi::to_offset (vro->op2));
+			    * wi::to_offset (vro->op2)
+			    * vn_ref_op_align_unit (vro));
 	  if (wi::fits_shwi_p (off))
 	    vro->off = off.to_shwi ();
 	}
