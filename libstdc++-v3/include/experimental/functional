@@ -42,6 +42,9 @@
 #include <vector>
 #include <array>
 #include <bits/stl_algo.h>
+#ifdef _GLIBCXX_PARALLEL
+# include <parallel/algorithm> // For std::__parallel::search
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
