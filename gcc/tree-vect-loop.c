@@ -3065,7 +3065,15 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
 
    Return the number of iterations required for the vector version of the
    loop to be profitable relative to the cost of the scalar version of the
-   loop.  */
+   loop.
+
+   *RET_MIN_PROFITABLE_NITERS is a cost model profitability threshold
+   of iterations for vectorization.  -1 value means loop vectorization
+   is not profitable.  This returned value may be used for dynamic
+   profitability check.
+
+   *RET_MIN_PROFITABLE_ESTIMATE is a profitability threshold to be used
+   for static check against estimated number of iterations.  */
 
 static void
 vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,

@@ -1,3 +1,11 @@
+2016-07-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer): Update
+	comment.
+	(vect_update_inits_of_drs): Likewise.
+	(vect_create_cond_for_alias_checks): Likewise.
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Likewise.
+
 2016-07-19  Richard Biener  <rguenther@suse.de>
 
 	PR lto/71907
