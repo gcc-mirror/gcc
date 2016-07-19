@@ -1,3 +1,8 @@
+2016-07-19  Nick Clifton  <nickc@redhat.com>
+
+	* config.host (m32r): Add m32r/t-m32r to tmake_file.
+	Add crtinit.o and crtfini.o to extra_parts.
+
 2016-07-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/_divkc3.c: New.
