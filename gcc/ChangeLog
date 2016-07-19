@@ -1,3 +1,8 @@
+2016-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (selftest::assert_streq): Handle NULL values of
+	val_actual and val_expected.
+
 2016-07-19  Martin Jambor  <mjambor@suse.cz>
 
         PR fortran/71688

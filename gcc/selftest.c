@@ -60,13 +60,25 @@ selftest::fail_formatted (const location &loc, const char *fmt, ...)
   abort ();
 }
 
-/* Implementation detail of ASSERT_STREQ.  */
+/* Implementation detail of ASSERT_STREQ.
+   Compare val_expected and val_actual with strcmp.  They ought
+   to be non-NULL; fail gracefully if either are NULL.  */
 
 void
 selftest::assert_streq (const location &loc,
 			const char *desc_expected, const char *desc_actual,
 			const char *val_expected, const char *val_actual)
 {
+  /* If val_expected is NULL, the test is buggy.  Fail gracefully.  */
+  if (val_expected == NULL)
+    ::selftest::fail_formatted
+	(loc, "ASSERT_STREQ (%s, %s) expected=NULL",
+	 desc_expected, desc_actual);
+  /* If val_actual is NULL, fail with a custom error message.  */
+  if (val_actual == NULL)
+    ::selftest::fail_formatted
+	(loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=NULL",
+	 desc_expected, desc_actual, val_expected);
   if (0 == strcmp (val_expected, val_actual))
     ::selftest::pass (loc, "ASSERT_STREQ");
   else
