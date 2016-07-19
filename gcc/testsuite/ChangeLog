@@ -1,3 +1,8 @@
+2016-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71902
+	* gfortran.dg/dependency_47.f90:  New test.
+
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/71916
