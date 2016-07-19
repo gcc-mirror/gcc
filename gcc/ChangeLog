@@ -1,3 +1,9 @@
+2016-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/71916
+	* cfgrtl.c (contains_no_active_insn_p): Return false also for
+	bb which have a single succ fake edge.
+
 2016-07-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/71855
