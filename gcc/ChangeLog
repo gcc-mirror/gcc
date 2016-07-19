@@ -1,3 +1,8 @@
+2016-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.c (selftest::verify_three_block_rtl_cfg): Verify
+	the flags of the exit block and bb2, not just the entry block.
+
 2016-07-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71901
