@@ -787,7 +787,8 @@ lm32-*-uclinux*)
         tmake_file="lm32/t-lm32 lm32/t-uclinux t-libgcc-pic t-softfp-sfdf t-softfp"
 	;;	
 m32r-*-elf*)
-	tmake_file=t-fdpbit
+	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
+	extra_parts="$extra_parts crtinit.o crtfini.o"
  	;;
 m32rle-*-elf*)
 	tmake_file=t-fdpbit
