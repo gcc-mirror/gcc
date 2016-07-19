@@ -1,3 +1,13 @@
+2016-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71902
+	* dependency.c (gfc_check_dependency): Use dep_ref.  Handle case
+	if identical is true and two array element references differ.
+	(gfc_dep_resovler):  Move most of the code to dep_ref.
+	(dep_ref):  New function.
+	* frontend-passes.c (realloc_string_callback):  Name temporary
+	variable "realloc_string".
+
 2016-07-17  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/71523
