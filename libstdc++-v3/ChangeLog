@@ -1,5 +1,11 @@
 2016-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2016-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/functional/searchers.cc: Include <algorithm>
+	for std::search.
+
 	PR libstdc++/71856
 	* include/bits/c++config (_GLIBCXX_ASSERTIONS): Define to 1 not empty.
 	* include/parallel/balanced_quicksort.h: Include <unistd.h> for sleep.
