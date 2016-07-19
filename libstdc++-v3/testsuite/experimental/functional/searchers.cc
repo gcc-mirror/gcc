@@ -22,6 +22,7 @@
 #ifdef _GLIBCXX_USE_WCHAR_T
 # include <cwchar>
 #endif
+#include <algorithm>
 #include <testsuite_hooks.h>
 
 using std::experimental::make_default_searcher;
