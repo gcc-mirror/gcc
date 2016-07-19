@@ -1,5 +1,8 @@
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/71874
+	* g++.dg/torture/pr71874.C: New test.
+
 	Backported from mainline
 	2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
