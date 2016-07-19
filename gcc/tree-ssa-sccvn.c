@@ -1337,6 +1337,11 @@ fully_constant_vn_reference_p (vn_reference_t ref)
       unsigned i;
       for (i = 0; i < operands.length (); ++i)
 	{
+	  if (TREE_CODE_CLASS (operands[i].opcode) == tcc_constant)
+	    {
+	      ++i;
+	      break;
+	    }
 	  if (operands[i].off == -1)
 	    return NULL_TREE;
 	  off += operands[i].off;

@@ -1,3 +1,8 @@
+2016-07-19  Richard Biener  <rguenther@suse.de>
+
+	* c-c++-common/vector-subscript-6.c: New testcase.
+	* c-c++-common/vector-subscript-7.c: Likewise.
+
 2016-07-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/params/blocksort-part.c: Conditionally define Int32 
