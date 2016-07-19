@@ -1,4 +1,16 @@
-2016-07-18  Richard Biener  <rguenther@suse.de>
+2016-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71901
+	* tree-ssa-sccvn.h (struct vn_reference_op_struct): Add
+	align member, group stuff with the bitfield.
+	(vn_ref_op_align_unit): New inline.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): For ARRAY_REFs
+	record element alignment and operand 3 unchanged.
+	(ao_ref_init_from_vn_reference): Adjust.
+	(valueize_refs_1): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise.
+
+2016-07-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71908
 	* tree-ssa-structalias.c (get_constraint_for_component_ref): Handle
