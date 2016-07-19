@@ -890,12 +890,16 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* Follow BLOCK_ABSTRACT_ORIGIN for the limited cases we can
 	 handle - those that represent inlined function scopes.
 	 For the drop rest them on the floor instead of ICEing
-	 in dwarf2out.c.  */
+	 in dwarf2out.c, but keep the notion of whether the block
+	 is an inlined block by refering to itself for the sake of
+	 tree_nonartificial_location.  */
       if (inlined_function_outer_scope_p (expr))
 	{
 	  tree ultimate_origin = block_ultimate_origin (expr);
 	  DFS_follow_tree_edge (ultimate_origin);
 	}
+      else if (BLOCK_ABSTRACT_ORIGIN (expr))
+	DFS_follow_tree_edge (expr);
       /* Do not follow BLOCK_NONLOCALIZED_VARS.  We cannot handle debug
 	 information for early inlined BLOCKs so drop it on the floor instead
 	 of ICEing in dwarf2out.c.  */
