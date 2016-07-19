@@ -5778,7 +5778,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	 function has already called cgraph_create_node, which also created
 	 the cgraph node for this function.  */
       if (!has_coarray_vars || gfc_option.coarray != GFC_FCOARRAY_LIB)
-	(void) cgraph_create_node (fndecl);
+	(void) cgraph_get_create_node (fndecl);
     }
   else
     cgraph_finalize_function (fndecl, true);
