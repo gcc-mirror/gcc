@@ -574,8 +574,10 @@ contains_no_active_insn_p (const_basic_block bb)
 {
   rtx_insn *insn;
 
-  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
-      || !single_succ_p (bb))
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+      || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || !single_succ_p (bb)
+      || (single_succ_edge (bb)->flags & EDGE_FAKE) != 0)
     return false;
 
   for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
