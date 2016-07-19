@@ -1,3 +1,12 @@
+2016-07-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from mainline
+	2016-07-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71493
+	* gcc.target/powerpc/pr71493-1.c: New test.
+	* gcc.target/powerpc/pr71493-2.c: Likewise.
+
 2016-07-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
