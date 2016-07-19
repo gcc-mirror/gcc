@@ -1,3 +1,8 @@
+2016-07-19  Martin Jambor  <mjambor@suse.cz>
+
+        PR fortran/71688
+        * gfortran.dg/pr71688.f90: New test.
+
 2016-07-19  Richard Biener  <rguenther@suse.de>
 
 	* c-c++-common/vector-subscript-6.c: New testcase.

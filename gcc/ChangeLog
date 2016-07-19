@@ -1,3 +1,9 @@
+2016-07-19  Martin Jambor  <mjambor@suse.cz>
+
+        PR fortran/71688
+        * trans-decl.c (gfc_generate_function_code): Use cgraph_get_create_node
+        rather than cgraph_create_node to get a call graph node.
+
 2016-07-19  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (get_base_constructor): Add VIEW_CONVERT case,
