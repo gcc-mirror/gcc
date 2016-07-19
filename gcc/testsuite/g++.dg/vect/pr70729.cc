@@ -2,12 +2,8 @@
 // { dg-additional-options "-ffast-math -fopenmp-simd" }
 // { dg-additional-options "-msse2" { target x86_64-*-* i?86-*-* } }
 
-
-#include <string.h>
-#include <xmmintrin.h>
-
-inline void* my_alloc (size_t bytes) {return _mm_malloc (bytes, 128);}
-inline void my_free (void* memory) {_mm_free (memory);}
+inline void* my_alloc (__SIZE_TYPE__ bytes) {void *ptr; __builtin_posix_memalign (&ptr, bytes, 128);}
+inline void my_free (void* memory) {__builtin_free (memory);}
 
 template <typename T>
 class Vec
@@ -23,7 +19,7 @@ public:
   Vec& operator = (const Vec& other)	
     {
       if (this != &other)
-	memcpy (data, other.data, isize*sizeof (T));
+	__builtin_memcpy (data, other.data, isize*sizeof (T));
       return *this;
     }
 
