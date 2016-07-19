@@ -3211,6 +3211,20 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
 
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize, &reverse);
 
+  /* We can end up here for component references on a
+     VIEW_CONVERT_EXPR <>(&foobar) or things like a
+     BIT_FIELD_REF <&MEM[(void *)&b + 4B], ...>.  So for
+     symbolic constants simply give up.  */
+  if (TREE_CODE (t) == ADDR_EXPR)
+    {
+      constraint_expr result;
+      result.type = SCALAR;
+      result.var = anything_id;
+      result.offset = 0;
+      results->safe_push (result);
+      return;
+    }
+
   /* Pretend to take the address of the base, we'll take care of
      adding the required subset of sub-fields below.  */
   get_constraint_for_1 (t, results, true, lhs_p);
@@ -3300,8 +3314,8 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
     }
   else if (result.type == ADDRESSOF)
     {
-      /* We can end up here for component references on a
-         VIEW_CONVERT_EXPR <>(&foobar).  */
+      /* We can end up here for component references on constants like
+	 VIEW_CONVERT_EXPR <>({ 0, 1, 2, 3 })[i].  */
       result.type = SCALAR;
       result.var = anything_id;
       result.offset = 0;

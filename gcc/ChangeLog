@@ -1,3 +1,9 @@
+2016-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71908
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Handle
+	symbolic constants in a more reliable way.
+
 2016-07-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer): Update
