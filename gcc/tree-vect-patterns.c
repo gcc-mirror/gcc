@@ -2724,7 +2724,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 				  & GET_MODE_MASK (TYPE_MODE (itype)));
       tree t1, t2, t3, t4;
 
-      if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
+      if (d >= (HOST_WIDE_INT_1U << (prec - 1)))
 	/* FIXME: Can transform this into oprnd0 >= oprnd1 ? 1 : 0.  */
 	return NULL;
 
@@ -2853,12 +2853,12 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 	  oprnd1 = build_int_cst (itype, abs_d);
 	}
       else if (HOST_BITS_PER_WIDE_INT >= prec
-	       && abs_d == (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	       && abs_d == HOST_WIDE_INT_1U << (prec - 1))
 	/* This case is not handled correctly below.  */
 	return NULL;
 
       choose_multiplier (abs_d, prec, prec - 1, &ml, &post_shift, &dummy_int);
-      if (ml >= (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+      if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	{
 	  add = true;
 	  ml |= (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);

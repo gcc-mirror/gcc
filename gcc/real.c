@@ -1395,7 +1395,7 @@ real_to_integer (const REAL_VALUE_TYPE *r)
     case rvc_inf:
     case rvc_nan:
     overflow:
-      i = (unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1);
+      i = HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1);
       if (!r->sign)
 	i--;
       return i;
@@ -4903,7 +4903,7 @@ real_powi (REAL_VALUE_TYPE *r, format_helper fmt,
     neg = false;
 
   t = *x;
-  bit = (unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1);
+  bit = HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1);
   for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
     {
       if (init)

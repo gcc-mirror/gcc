@@ -4882,7 +4882,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  rtx dest = XEXP (SET_DEST (x), 0);
 	  machine_mode mode = GET_MODE (dest);
 	  unsigned HOST_WIDE_INT mask
-	    = ((unsigned HOST_WIDE_INT) 1 << len) - 1;
+	    = (HOST_WIDE_INT_1U << len) - 1;
 	  rtx or_mask;
 
 	  if (BITS_BIG_ENDIAN)
@@ -5016,7 +5016,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  if (unsignedp && len <= 8)
 	    {
 	      unsigned HOST_WIDE_INT mask
-		= ((unsigned HOST_WIDE_INT) 1 << len) - 1;
+		= (HOST_WIDE_INT_1U << len) - 1;
 	      SUBST (SET_SRC (x),
 		     gen_rtx_AND (mode,
 				  gen_rtx_LSHIFTRT
@@ -5852,7 +5852,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	  && ((GET_CODE (XEXP (XEXP (x, 0), 0)) == AND
 	       && CONST_INT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
 	       && (UINTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))
-		   == ((unsigned HOST_WIDE_INT) 1 << (i + 1)) - 1))
+		   == (HOST_WIDE_INT_1U << (i + 1)) - 1))
 	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
 		  && (GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)))
 		      == (unsigned int) i + 1))))
@@ -6168,7 +6168,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
       else if (SHIFT_COUNT_TRUNCATED && !REG_P (XEXP (x, 1)))
 	SUBST (XEXP (x, 1),
 	       force_to_mode (XEXP (x, 1), GET_MODE (XEXP (x, 1)),
-			      ((unsigned HOST_WIDE_INT) 1
+			      (HOST_WIDE_INT_1U
 			       << exact_log2 (GET_MODE_BITSIZE (GET_MODE (x))))
 			      - 1,
 			      0));
@@ -7134,7 +7134,7 @@ expand_compound_operation (rtx x)
 				  simplify_shift_const (NULL_RTX, LSHIFTRT,
 							GET_MODE (x),
 							XEXP (x, 0), pos),
-				  ((unsigned HOST_WIDE_INT) 1 << len) - 1);
+				  (HOST_WIDE_INT_1U << len) - 1);
   else
     /* Any other cases we can't handle.  */
     return x;
@@ -7261,7 +7261,7 @@ expand_field_assignment (const_rtx x)
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
-      mask = gen_int_mode (((unsigned HOST_WIDE_INT) 1 << len) - 1,
+      mask = gen_int_mode ((HOST_WIDE_INT_1U << len) - 1,
 			   compute_mode);
       cleared = simplify_gen_binary (AND, compute_mode,
 				     simplify_gen_unary (NOT, compute_mode,
@@ -7447,7 +7447,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	new_rtx = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
 			     ? ~(unsigned HOST_WIDE_INT) 0
-			     : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
+			     : (HOST_WIDE_INT_1U << len) - 1,
 			     0);
 
       /* If this extraction is going into the destination of a SET,
@@ -7636,7 +7636,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 			     pos_rtx
 			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT
 			     ? ~(unsigned HOST_WIDE_INT) 0
-			     : ((((unsigned HOST_WIDE_INT) 1 << len) - 1)
+			     : (((HOST_WIDE_INT_1U << len) - 1)
 				<< orig_pos),
 			     0);
     }
@@ -7724,7 +7724,7 @@ extract_left_shift (rtx x, int count)
 	 make a new operation.  */
       if (CONST_INT_P (XEXP (x, 1))
 	  && (UINTVAL (XEXP (x, 1))
-	      & ((((unsigned HOST_WIDE_INT) 1 << count)) - 1)) == 0
+	      & (((HOST_WIDE_INT_1U << count)) - 1)) == 0
 	  && (tem = extract_left_shift (XEXP (x, 0), count)) != 0)
 	{
 	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1)) >> count;
@@ -7793,7 +7793,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	  && SCALAR_INT_MODE_P (mode))
 	{
 	  HOST_WIDE_INT count = INTVAL (XEXP (x, 1));
-	  HOST_WIDE_INT multval = (HOST_WIDE_INT) 1 << count;
+	  HOST_WIDE_INT multval = HOST_WIDE_INT_1 << count;
 
 	  new_rtx = make_compound_operation (XEXP (x, 0), next_code);
 	  if (GET_CODE (new_rtx) == NEG)
@@ -8389,10 +8389,10 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
   /* When we have an arithmetic operation, or a shift whose count we
      do not know, we need to assume that all bits up to the highest-order
      bit in MASK will be needed.  This is how we form such a mask.  */
-  if (mask & ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
+  if (mask & (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1)))
     fuller_mask = ~(unsigned HOST_WIDE_INT) 0;
   else
-    fuller_mask = (((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1))
+    fuller_mask = ((HOST_WIDE_INT_1U << (floor_log2 (mask) + 1))
 		   - 1);
 
   /* Determine what bits of X are guaranteed to be (non)zero.  */
@@ -9497,7 +9497,7 @@ make_field_assignment (rtx x)
   src = force_to_mode (src, mode,
 		       GET_MODE_PRECISION (mode) >= HOST_BITS_PER_WIDE_INT
 		       ? ~(unsigned HOST_WIDE_INT) 0
-		       : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
+		       : (HOST_WIDE_INT_1U << len) - 1,
 		       0);
 
   /* If SRC is masked by an AND that does not make a difference in
@@ -9508,7 +9508,7 @@ make_field_assignment (rtx x)
       && GET_CODE (src) == AND
       && CONST_INT_P (XEXP (src, 1))
       && UINTVAL (XEXP (src, 1))
-	 == ((unsigned HOST_WIDE_INT) 1 << INTVAL (XEXP (assign, 1))) - 1)
+	 == (HOST_WIDE_INT_1U << INTVAL (XEXP (assign, 1))) - 1)
     src = XEXP (src, 0);
 
   return gen_rtx_SET (assign, src);
@@ -10433,7 +10433,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		  /* C3 has the low-order C1 bits zero.  */
 
 		  mask = GET_MODE_MASK (mode)
-			 & ~(((unsigned HOST_WIDE_INT) 1 << first_count) - 1);
+			 & ~((HOST_WIDE_INT_1U << first_count) - 1);
 
 		  varop = simplify_and_const_int (NULL_RTX, result_mode,
 						  XEXP (varop, 0), mask);
@@ -11377,7 +11377,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       else if (const_op == 0
 	       && mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (nonzero_bits (op0, mode)
-		   & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
+		   & (HOST_WIDE_INT_1U << (mode_width - 1)))
 	       == 0)
 	code = EQ;
       break;
@@ -11406,7 +11406,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       else if (const_op == 0
 	       && mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (nonzero_bits (op0, mode)
-		   & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
+		   & (HOST_WIDE_INT_1U << (mode_width - 1)))
 	       == 0)
 	code = NE;
       break;
@@ -11422,7 +11422,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) < 0x80000000 is equivalent to >= 0.  */
       else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
-	       == (unsigned HOST_WIDE_INT) 1 << (mode_width - 1))
+	       == HOST_WIDE_INT_1U << (mode_width - 1))
 	{
 	  const_op = 0;
 	  code = GE;
@@ -11438,7 +11438,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) <= 0x7fffffff is equivalent to >= 0.  */
       else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
-	       == ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)) - 1)
+	       == (HOST_WIDE_INT_1U << (mode_width - 1)) - 1)
 	{
 	  const_op = 0;
 	  code = GE;
@@ -11457,7 +11457,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) >= 0x80000000 is equivalent to < 0.  */
       else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
-	       == (unsigned HOST_WIDE_INT) 1 << (mode_width - 1))
+	       == HOST_WIDE_INT_1U << (mode_width - 1))
 	{
 	  const_op = 0;
 	  code = LT;
@@ -11473,7 +11473,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) > 0x7fffffff is equivalent to < 0.  */
       else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
-	       == ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)) - 1)
+	       == (HOST_WIDE_INT_1U << (mode_width - 1)) - 1)
 	{
 	  const_op = 0;
 	  code = LT;
@@ -11691,7 +11691,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	 MODE, say that we will only be needing the sign bit of OP0.  */
       if (sign_bit_comparison_p && HWI_COMPUTABLE_MODE_P (mode))
 	op0 = force_to_mode (op0, mode,
-			     (unsigned HOST_WIDE_INT) 1
+			     HOST_WIDE_INT_1U
 			     << (GET_MODE_PRECISION (mode) - 1),
 			     0);
 
@@ -11778,7 +11778,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && (GET_CODE (XEXP (op0, 0)) == ABS
 		  || (mode_width <= HOST_BITS_PER_WIDE_INT
 		      && (nonzero_bits (XEXP (op0, 0), mode)
-			  & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
+			  & (HOST_WIDE_INT_1U << (mode_width - 1)))
 			 == 0)))
 	    {
 	      op0 = XEXP (op0, 0);
@@ -11816,7 +11816,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && mode_width <= HOST_BITS_PER_WIDE_INT)
 	    {
 	      op0 = simplify_and_const_int (NULL_RTX, mode, XEXP (op0, 0),
-					    ((unsigned HOST_WIDE_INT) 1
+					    (HOST_WIDE_INT_1U
 					     << (mode_width - 1
 						 - INTVAL (XEXP (op0, 1)))));
 	      code = (code == LT ? NE : EQ);
@@ -11888,7 +11888,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	      if ((c1 > 0
 		   && (unsigned HOST_WIDE_INT) c1
-		       < (unsigned HOST_WIDE_INT) 1 << (mode_width - 1)
+		       < HOST_WIDE_INT_1U << (mode_width - 1)
 		   && (equality_comparison_p || unsigned_comparison_p)
 		   /* (A - C1) zero-extends if it is positive and sign-extends
 		      if it is negative, C2 both zero- and sign-extends.  */
@@ -11902,7 +11902,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 					     - mode_width)
 			   && const_op < 0)))
 		  || ((unsigned HOST_WIDE_INT) c1
-		       < (unsigned HOST_WIDE_INT) 1 << (mode_width - 2)
+		       < HOST_WIDE_INT_1U << (mode_width - 2)
 		      /* (A - C1) always sign-extends, like C2.  */
 		      && num_sign_bit_copies (a, inner_mode)
 			 > (unsigned int) (GET_MODE_PRECISION (inner_mode)
@@ -12111,7 +12111,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && CONST_INT_P (XEXP (op0, 1))
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && ((INTVAL (XEXP (op0, 1)) & GET_MODE_MASK (mode))
-		  == (unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
+		  == HOST_WIDE_INT_1U << (mode_width - 1)))
 	    {
 	      op0 = XEXP (op0, 0);
 	      code = (code == EQ ? GE : LT);
@@ -12214,7 +12214,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		      && CONST_INT_P (shift_count)
 		      && HWI_COMPUTABLE_MODE_P (mode)
 		      && (UINTVAL (XEXP (shift_op, 1))
-			  == (unsigned HOST_WIDE_INT) 1
+			  == HOST_WIDE_INT_1U
 			       << INTVAL (shift_count))))
 		{
 		  op0
@@ -12237,7 +12237,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && ((INTVAL (XEXP (op0, 1)) + ! equality_comparison_p)
 		  < HOST_BITS_PER_WIDE_INT)
 	      && (((unsigned HOST_WIDE_INT) const_op
-		   & (((unsigned HOST_WIDE_INT) 1 << INTVAL (XEXP (op0, 1)))
+		   & ((HOST_WIDE_INT_1U << INTVAL (XEXP (op0, 1)))
 		      - 1)) == 0)
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && (nonzero_bits (XEXP (op0, 0), mode)
@@ -12260,7 +12260,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && mode_width <= HOST_BITS_PER_WIDE_INT)
 	    {
 	      op0 = simplify_and_const_int (NULL_RTX, mode, XEXP (op0, 0),
-					    ((unsigned HOST_WIDE_INT) 1
+					    (HOST_WIDE_INT_1U
 					     << (mode_width - 1
 						 - INTVAL (XEXP (op0, 1)))));
 	      code = (code == LT ? NE : EQ);
@@ -12355,7 +12355,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    {
 	      unsigned HOST_WIDE_INT low_bits
 		= (nonzero_bits (XEXP (op0, 0), mode)
-		   & (((unsigned HOST_WIDE_INT) 1
+		   & ((HOST_WIDE_INT_1U
 		       << INTVAL (XEXP (op0, 1))) - 1));
 	      if (low_bits == 0 || !equality_comparison_p)
 		{
@@ -12369,7 +12369,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		      && (code == GT || code == GTU
 			  || code == LE || code == LEU))
 		    const_op
-		      |= (((HOST_WIDE_INT) 1 << INTVAL (XEXP (op0, 1))) - 1);
+		      |= ((HOST_WIDE_INT_1 << INTVAL (XEXP (op0, 1))) - 1);
 		  op1 = GEN_INT (const_op);
 		  op0 = XEXP (op0, 0);
 		  continue;
@@ -12475,7 +12475,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && HWI_COMPUTABLE_MODE_P (mode))
 	    {
 	      unsigned HOST_WIDE_INT sign
-		= (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1);
+		= HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1);
 	      op0 = simplify_gen_binary (AND, tmode,
 					 gen_lowpart (tmode, op0),
 					 gen_int_mode (sign, tmode));

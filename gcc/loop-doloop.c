@@ -688,7 +688,7 @@ doloop_optimize (struct loop *loop)
 
   word_mode_size = GET_MODE_PRECISION (word_mode);
   word_mode_max
-	  = ((unsigned HOST_WIDE_INT) 1 << (word_mode_size - 1) << 1) - 1;
+	  = (HOST_WIDE_INT_1U << (word_mode_size - 1) << 1) - 1;
   if (! doloop_seq
       && mode != word_mode
       /* Before trying mode different from the one in that # of iterations is

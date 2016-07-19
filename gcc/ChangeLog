@@ -1,3 +1,46 @@
+2016-07-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c: Use HOST_WIDE_INT_1 instead of (HOST_WIDE_INT) 1,
+	HOST_WIDE_INT_1U instead of (unsigned HOST_WIDE_INT) 1,
+	HOST_WIDE_INT_M1 instead of (HOST_WIDE_INT) -1 and
+	HOST_WIDE_INT_M1U instead of (unsigned HOST_WIDE_INT) -1.
+	* combine.c: Ditto.
+	* cse.c: Ditto.
+	* dojump.c: Ditto.
+	* double-int.c: Ditto.
+	* dse.c: Ditto.
+	* dwarf2out.c: Ditto.
+	* expmed.c: Ditto.
+	* expr.c: Ditto.
+	* fold-const.c: Ditto.
+	* function.c: Ditto.
+	* fwprop.c: Ditto.
+	* genmodes.c: Ditto.
+	* hwint.c: Ditto.
+	* hwint.h: Ditto.
+	* ifcvt.c: Ditto.
+	* loop-doloop.c: Ditto.
+	* loop-invariant.c: Ditto.
+	* loop-iv.c: Ditto.
+	* match.pd: Ditto.
+	* optabs.c: Ditto.
+	* real.c: Ditto.
+	* reload.c: Ditto.
+	* rtlanal.c: Ditto.
+	* simplify-rtx.c: Ditto.
+	* stor-layout.c: Ditto.
+	* toplev.c: Ditto.
+	* tree-ssa-loop-ivopts.c: Ditto.
+	* tree-vect-generic.c: Ditto.
+	* tree-vect-patterns.c: Ditto.
+	* tree.c: Ditto.
+	* tree.h: Ditto.
+	* ubsan.c: Ditto.
+	* varasm.c: Ditto.
+	* wide-int-print.cc: Ditto.
+	* wide-int.cc: Ditto.
+	* wide-int.h: Ditto.
+
 2016-07-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.c (selftest::assert_streq): Handle NULL values of
@@ -5,9 +48,9 @@
 
 2016-07-19  Martin Jambor  <mjambor@suse.cz>
 
-        PR fortran/71688
-        * trans-decl.c (gfc_generate_function_code): Use cgraph_get_create_node
-        rather than cgraph_create_node to get a call graph node.
+	PR fortran/71688
+	* trans-decl.c (gfc_generate_function_code): Use cgraph_get_create_node
+	rather than cgraph_create_node to get a call graph node.
 
 2016-07-19  Richard Biener  <rguenther@suse.de>
 
@@ -367,7 +410,8 @@
 
 2016-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
-	* cfgexpand.c (expand_used_vars): Make the type of a local variable auto_vec.
+	* cfgexpand.c (expand_used_vars): Make the type of a local
+	variable auto_vec.
 	* genmatch.c (lower_for): Likewise.
 	* haifa-sched.c (haifa_sched_init): Likewise.
 	(add_to_speculative_block): Likewise.
@@ -375,7 +419,8 @@
 	* predict.c (handle_missing_profiles): Likewise.
 	* tree-data-ref.c (loop_nest_has_data_refs): Likewise.
 	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Likewise.
-	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk): Likewise.
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk):
+	Likewise.
 	(maybe_lower_iteration_bound): Likewise.
 	* tree-ssa-sccvn.c (DFS): Likewise.
 	* tree-stdarg.c (reachable_at_most_once): Likewise.

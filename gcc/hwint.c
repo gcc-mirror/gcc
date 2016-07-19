@@ -41,20 +41,20 @@ floor_log2 (unsigned HOST_WIDE_INT x)
     return -1;
 
   if (HOST_BITS_PER_WIDE_INT > 64)
-    if (x >= (unsigned HOST_WIDE_INT) 1 << (t + 64))
+    if (x >= HOST_WIDE_INT_1U << (t + 64))
       t += 64;
   if (HOST_BITS_PER_WIDE_INT > 32)
-    if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 32))
+    if (x >= HOST_WIDE_INT_1U << (t + 32))
       t += 32;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 16))
+  if (x >= HOST_WIDE_INT_1U << (t + 16))
     t += 16;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 8))
+  if (x >= HOST_WIDE_INT_1U << (t + 8))
     t += 8;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 4))
+  if (x >= HOST_WIDE_INT_1U << (t + 4))
     t += 4;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 2))
+  if (x >= HOST_WIDE_INT_1U << (t + 2))
     t += 2;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 1))
+  if (x >= HOST_WIDE_INT_1U << (t + 1))
     t += 1;
 
   return t;

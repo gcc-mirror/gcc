@@ -1461,7 +1461,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        unsigned int prec;
 
        if (shift == LSHIFT_EXPR)
-	 zerobits = ((((unsigned HOST_WIDE_INT) 1) << shiftc) - 1);
+	 zerobits = ((HOST_WIDE_INT_1U << shiftc) - 1);
        else if (shift == RSHIFT_EXPR
 		&& (TYPE_PRECISION (shift_type)
 		    == GET_MODE_PRECISION (TYPE_MODE (shift_type))))
@@ -1518,7 +1518,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      mode's mask.  */
 	   for (prec = BITS_PER_UNIT;
 	        prec < HOST_BITS_PER_WIDE_INT; prec <<= 1)
-	     if (newmask == (((unsigned HOST_WIDE_INT) 1) << prec) - 1)
+	     if (newmask == (HOST_WIDE_INT_1U << prec) - 1)
 	       break;
 	 }
 	 (if (prec < HOST_BITS_PER_WIDE_INT

@@ -4381,7 +4381,7 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
       /* If X is negative in MODE, sign-extend the value.  */
       if (SHORT_IMMEDIATES_SIGN_EXTEND && INTVAL (x) > 0
 	  && mode_width < BITS_PER_WORD
-	  && (UINTVAL (x) & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
+	  && (UINTVAL (x) & (HOST_WIDE_INT_1U << (mode_width - 1)))
 	     != 0)
 	return UINTVAL (x) | (HOST_WIDE_INT_M1U << mode_width);
 
@@ -4513,9 +4513,9 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	int low0 = floor_log2 (nz0 & -nz0);
 	int low1 = floor_log2 (nz1 & -nz1);
 	unsigned HOST_WIDE_INT op0_maybe_minusp
-	  = nz0 & ((unsigned HOST_WIDE_INT) 1 << sign_index);
+	  = nz0 & (HOST_WIDE_INT_1U << sign_index);
 	unsigned HOST_WIDE_INT op1_maybe_minusp
-	  = nz1 & ((unsigned HOST_WIDE_INT) 1 << sign_index);
+	  = nz1 & (HOST_WIDE_INT_1U << sign_index);
 	unsigned int result_width = mode_width;
 	int result_low = 0;
 
@@ -4561,17 +4561,17 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	  }
 
 	if (result_width < mode_width)
-	  nonzero &= ((unsigned HOST_WIDE_INT) 1 << result_width) - 1;
+	  nonzero &= (HOST_WIDE_INT_1U << result_width) - 1;
 
 	if (result_low > 0)
-	  nonzero &= ~(((unsigned HOST_WIDE_INT) 1 << result_low) - 1);
+	  nonzero &= ~((HOST_WIDE_INT_1U << result_low) - 1);
       }
       break;
 
     case ZERO_EXTRACT:
       if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT)
-	nonzero &= ((unsigned HOST_WIDE_INT) 1 << INTVAL (XEXP (x, 1))) - 1;
+	nonzero &= (HOST_WIDE_INT_1U << INTVAL (XEXP (x, 1))) - 1;
       break;
 
     case SUBREG:
@@ -4652,8 +4652,8 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	      /* If the sign bit may have been nonzero before the shift, we
 		 need to mark all the places it could have been copied to
 		 by the shift as possibly nonzero.  */
-	      if (inner & ((unsigned HOST_WIDE_INT) 1 << (width - 1 - count)))
-		inner |= (((unsigned HOST_WIDE_INT) 1 << count) - 1)
+	      if (inner & (HOST_WIDE_INT_1U << (width - 1 - count)))
+		inner |= ((HOST_WIDE_INT_1U << count) - 1)
 			   << (width - count);
 	    }
 	  else if (code == ASHIFT)
@@ -4677,7 +4677,7 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 that value, plus the number of bits in the mode minus one.  */
       if (CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
 	nonzero
-	  |= ((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mode_width))) - 1;
+	  |= (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
       else
 	nonzero = -1;
       break;
@@ -4687,14 +4687,14 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 that value, plus the number of bits in the mode minus one.  */
       if (CTZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
 	nonzero
-	  |= ((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mode_width))) - 1;
+	  |= (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
       else
 	nonzero = -1;
       break;
 
     case CLRSB:
       /* This is at most the number of bits in the mode minus 1.  */
-      nonzero = ((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mode_width))) - 1;
+      nonzero = (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
       break;
 
     case PARITY:
@@ -4908,7 +4908,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 Then see how many zero bits we have.  */
       nonzero = UINTVAL (x) & GET_MODE_MASK (mode);
       if (bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+	  && (nonzero & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
 	nonzero = (~nonzero) & GET_MODE_MASK (mode);
 
       return (nonzero == 0 ? bitwidth : bitwidth - floor_log2 (nonzero) - 1);
@@ -5008,7 +5008,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	return bitwidth;
 
       if (num0 > 1
-	  && (((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1)) & nonzero))
+	  && ((HOST_WIDE_INT_1U << (bitwidth - 1)) & nonzero))
 	num0--;
 
       return num0;
@@ -5030,7 +5030,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && CONST_INT_P (XEXP (x, 1))
 	  && (UINTVAL (XEXP (x, 1))
-	      & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) == 0)
+	      & (HOST_WIDE_INT_1U << (bitwidth - 1))) == 0)
 	return num1;
 
       /* Similarly for IOR when setting high-order bits.  */
@@ -5039,7 +5039,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && CONST_INT_P (XEXP (x, 1))
 	  && (UINTVAL (XEXP (x, 1))
-	      & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+	      & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
 	return num1;
 
       return MIN (num0, num1);
@@ -5054,7 +5054,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	  && bitwidth <= HOST_BITS_PER_WIDE_INT)
 	{
 	  nonzero = nonzero_bits (XEXP (x, 0), mode);
-	  if ((((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1)) & nonzero) == 0)
+	  if (((HOST_WIDE_INT_1U << (bitwidth - 1)) & nonzero) == 0)
 	    return (nonzero == 1 || nonzero == 0 ? bitwidth
 		    : bitwidth - floor_log2 (nonzero) - 1);
 	}
@@ -5082,9 +5082,9 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       if (result > 0
 	  && (bitwidth > HOST_BITS_PER_WIDE_INT
 	      || (((nonzero_bits (XEXP (x, 0), mode)
-		    & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+		    & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
 		  && ((nonzero_bits (XEXP (x, 1), mode)
-		       & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1)))
+		       & (HOST_WIDE_INT_1U << (bitwidth - 1)))
 		      != 0))))
 	result--;
 
@@ -5097,7 +5097,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       if (bitwidth > HOST_BITS_PER_WIDE_INT)
 	return 1;
       else if ((nonzero_bits (XEXP (x, 0), mode)
-		& ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+		& (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
 	return 1;
       else
 	return cached_num_sign_bit_copies (XEXP (x, 0), mode,
@@ -5110,7 +5110,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       if (bitwidth > HOST_BITS_PER_WIDE_INT)
 	return 1;
       else if ((nonzero_bits (XEXP (x, 1), mode)
-		& ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+		& (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
 	return 1;
       else
 	return cached_num_sign_bit_copies (XEXP (x, 1), mode,
@@ -5125,7 +5125,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       if (result > 1
 	  && (bitwidth > HOST_BITS_PER_WIDE_INT
 	      || (nonzero_bits (XEXP (x, 1), mode)
-		  & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))
+		  & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0))
 	result--;
 
       return result;
@@ -5136,7 +5136,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       if (result > 1
 	  && (bitwidth > HOST_BITS_PER_WIDE_INT
 	      || (nonzero_bits (XEXP (x, 1), mode)
-		  & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))
+		  & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0))
 	result--;
 
       return result;
@@ -5180,7 +5180,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 Then see how many zero bits we have.  */
       nonzero = STORE_FLAG_VALUE;
       if (bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+	  && (nonzero & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
 	nonzero = (~nonzero) & GET_MODE_MASK (mode);
 
       return (nonzero == 0 ? bitwidth : bitwidth - floor_log2 (nonzero) - 1);
@@ -5199,7 +5199,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
     return 1;
 
   nonzero = nonzero_bits (x, mode);
-  return nonzero & ((unsigned HOST_WIDE_INT) 1 << (bitwidth - 1))
+  return nonzero & (HOST_WIDE_INT_1U << (bitwidth - 1))
 	 ? 1 : bitwidth - floor_log2 (nonzero) - 1;
 }
 
@@ -5511,7 +5511,7 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
 	   BITS_PER_WORD to HOST_BITS_PER_WIDE_INT */
 	case GE:
 	  if ((const_val & max_val)
-	      != ((unsigned HOST_WIDE_INT) 1
+	      != (HOST_WIDE_INT_1U
 		  << (GET_MODE_PRECISION (GET_MODE (op0)) - 1)))
 	    code = GT, op1 = gen_int_mode (const_val - 1, GET_MODE (op0));
 	  break;
@@ -6290,7 +6290,7 @@ get_index_scale (const struct address_info *info)
   if (GET_CODE (index) == ASHIFT
       && CONST_INT_P (XEXP (index, 1))
       && info->index_term == &XEXP (index, 0))
-    return (HOST_WIDE_INT) 1 << INTVAL (XEXP (index, 1));
+    return HOST_WIDE_INT_1 << INTVAL (XEXP (index, 1));
 
   if (info->index == info->index_term)
     return 1;

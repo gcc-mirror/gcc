@@ -2890,7 +2890,7 @@ noce_try_bitop (struct noce_if_info *if_info)
       if (! rtx_equal_p (x, XEXP (a, 0))
           || !CONST_INT_P (XEXP (a, 1))
 	  || (INTVAL (XEXP (a, 1)) & GET_MODE_MASK (mode))
-	     != (unsigned HOST_WIDE_INT) 1 << bitnum)
+	     != HOST_WIDE_INT_1U << bitnum)
         return FALSE;
 
       /* if ((x & C) == 0) x |= C; is transformed to x |= C.   */
@@ -2900,13 +2900,13 @@ noce_try_bitop (struct noce_if_info *if_info)
       else if (code == NE)
 	{
 	  /* if ((x & C) == 0) x ^= C; is transformed to x |= C.   */
-	  result = gen_int_mode ((HOST_WIDE_INT) 1 << bitnum, mode);
+	  result = gen_int_mode (HOST_WIDE_INT_1 << bitnum, mode);
 	  result = simplify_gen_binary (IOR, mode, x, result);
 	}
       else
 	{
 	  /* if ((x & C) != 0) x ^= C; is transformed to x &= ~C.  */
-	  result = gen_int_mode (~((HOST_WIDE_INT) 1 << bitnum), mode);
+	  result = gen_int_mode (~(HOST_WIDE_INT_1 << bitnum), mode);
 	  result = simplify_gen_binary (AND, mode, x, result);
 	}
     }
@@ -2916,7 +2916,7 @@ noce_try_bitop (struct noce_if_info *if_info)
       if (! rtx_equal_p (x, XEXP (a, 0))
 	  || !CONST_INT_P (XEXP (a, 1))
 	  || (INTVAL (XEXP (a, 1)) & GET_MODE_MASK (mode))
-	     != (~((HOST_WIDE_INT) 1 << bitnum) & GET_MODE_MASK (mode)))
+	     != (~(HOST_WIDE_INT_1 << bitnum) & GET_MODE_MASK (mode)))
         return FALSE;
 
       /* if ((x & C) == 0) x &= ~C; is transformed to nothing.  */
