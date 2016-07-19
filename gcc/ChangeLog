@@ -1,3 +1,10 @@
+2016-07-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (get_base_constructor): Add VIEW_CONVERT case,
+	handle all tcc_constant bases and valueize SSA names.
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Handle
+	tcc_constant bases.
+
 2016-07-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* function-tests.c (selftest::verify_three_block_rtl_cfg): Verify
