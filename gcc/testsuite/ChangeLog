@@ -1,3 +1,9 @@
+2016-07-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71493
+	* gcc.target/powerpc/pr71493-1.c: New test.
+	* gcc.target/powerpc/pr71493-2.c: Likewise.
+
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71835
