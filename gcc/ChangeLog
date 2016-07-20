@@ -1,3 +1,12 @@
+2016-07-20  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* configure.ac (thin_archive_support): New variable.  AC_SUBST it.
+	* configure: Regenerate.
+	* Makefile.in (THIN_ARCHIVE_SUPPORT): New variable.
+	(USE_THIN_ARCHIVES): New variable.
+	(libbackend.a): If USE_THIN_ARCHIVES then pass T to ar to build
+	this archive as a thin archive.
+
 2016-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (diagnostic_show_locus): If this is the

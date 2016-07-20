@@ -4899,6 +4899,19 @@ if test "x$gcc_cv_as_line_zero" = xyes; then
 [Define if the assembler won't complain about a line such as # 0 "" 2.])
 fi
 
+AC_MSG_CHECKING(support for thin archives)
+thin_archive_support=no
+echo 'int main (void) { return 0; }' > conftest.c
+if ($AR --version | sed 1q | grep "GNU ar" \
+    && $CC $CFLAGS -c conftest.c \
+    && $AR rcT conftest.a conftest.o \
+    && $CC $CFLAGS $LDFLAGS -o conftest conftest.a) >/dev/null 2>&1; then
+  thin_archive_support=yes
+fi
+rm -f conftest.c conftest.o conftest.a conftest
+AC_MSG_RESULT($thin_archive_support)
+AC_SUBST(thin_archive_support)
+
 AC_MSG_CHECKING(linker PT_GNU_EH_FRAME support)
 gcc_cv_ld_eh_frame_hdr=no
 if test $in_tree_ld = yes ; then

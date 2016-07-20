@@ -679,6 +679,7 @@ zlibinc
 zlibdir
 HOST_LIBS
 enable_default_ssp
+thin_archive_support
 libgcc_visibility
 gcc_cv_readelf
 gcc_cv_objdump
@@ -18475,7 +18476,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18478 "configure"
+#line 18479 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18581,7 +18582,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18584 "configure"
+#line 18585 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -27845,6 +27846,21 @@ if test "x$gcc_cv_as_line_zero" = xyes; then
 $as_echo "#define HAVE_AS_LINE_ZERO 1" >>confdefs.h
 
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking support for thin archives" >&5
+$as_echo_n "checking support for thin archives... " >&6; }
+thin_archive_support=no
+echo 'int main (void) { return 0; }' > conftest.c
+if ($AR --version | sed 1q | grep "GNU ar" \
+    && $CC $CFLAGS -c conftest.c \
+    && $AR rcT conftest.a conftest.o \
+    && $CC $CFLAGS $LDFLAGS -o conftest conftest.a) >/dev/null 2>&1; then
+  thin_archive_support=yes
+fi
+rm -f conftest.c conftest.o conftest.a conftest
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $thin_archive_support" >&5
+$as_echo "$thin_archive_support" >&6; }
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker PT_GNU_EH_FRAME support" >&5
 $as_echo_n "checking linker PT_GNU_EH_FRAME support... " >&6; }
