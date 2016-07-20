@@ -296,7 +296,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   builtin_define_std ("AVR");
 
   /* __AVR_DEVICE_NAME__ and  avr_mcu_types[].macro like __AVR_ATmega8__
-	 are defined by -D command option, see device-specs file.  */
+     are defined by -D command option, see device-specs file.  */
 
   if (avr_arch->macro)
     cpp_define_formatted (pfile, "__AVR_ARCH__=%s", avr_arch->macro);
@@ -337,7 +337,8 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
          it has been mapped to the data memory.  For AVR_TINY devices
          (ATtiny4/5/9/10/20 and 40) mapped program memory starts at 0x4000. */
 
-      cpp_define (pfile, "__AVR_TINY_PM_BASE_ADDRESS__=0x4000");
+      cpp_define_formatted (pfile, "__AVR_TINY_PM_BASE_ADDRESS__=0x%x",
+                            AVR_TINY_PM_OFFSET);
     }
 
   if (AVR_HAVE_EIJMP_EICALL)

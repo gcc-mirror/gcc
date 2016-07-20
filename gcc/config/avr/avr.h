@@ -74,6 +74,8 @@ enum
                         || avr_arch->have_rampd)
 #define AVR_HAVE_EIJMP_EICALL (avr_arch->have_eijmp_eicall)
 
+#define AVR_TINY_PM_OFFSET (0x4000)
+
 /* Handling of 8-bit SP versus 16-bit SP is as follows:
 
 FIXME: DRIVER_SELF_SPECS has changed.
