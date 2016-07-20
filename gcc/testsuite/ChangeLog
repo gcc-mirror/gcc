@@ -1,5 +1,9 @@
 2016-07-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* gcc.target/s390/pr67443.c: Fix test case.
+
+2016-07-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.target/s390/insv-1.c: Xfail some tests.
 	* gcc.target/s390/insv-2.c: Likewise.
 
