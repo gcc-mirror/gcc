@@ -1,3 +1,8 @@
+2016-07-20  Yan-Ting Lin  <currygt52@gmail.com>
+
+	* configure.ac (nds32*-*-*): Remove entry to enable gdb.
+	* configure: Regenerated.
+
 2016-07-19  Fritz Reese  <fritzoreese@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -32,7 +37,7 @@
 
 2016-06-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
-	* MAINTAINERS (Write After Approval): Add myself. 
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2016-05-28  Alan Modra  <amodra@gmail.com>
 
