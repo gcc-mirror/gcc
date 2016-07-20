@@ -1,3 +1,8 @@
+2016-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/nullptr35.C: Change expected result for catching as
+	pointer to member function and also test catching by reference.
+
 2016-07-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/pr67443.c: Fix test case.
