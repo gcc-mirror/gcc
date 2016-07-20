@@ -108,4 +108,11 @@ foo4c (unsigned long a, unsigned long b)
 #endif
 }
 
-/* { dg-final { scan-assembler-times "risbg" 6 } } */
+/* The functions foo3, foo4, foo3b, foo4b no longer use risbg but rosbg instead.
+
+   On s390x, four risbg go away and four new ones appear in other functions ...
+     { dg-final { scan-assembler-times "risbg" 6 { target { s390x-*-* } } } }
+
+   but not on s390.
+     { dg-final { scan-assembler-times "risbg" 2 { target { s390-*-* } } } }
+*/
