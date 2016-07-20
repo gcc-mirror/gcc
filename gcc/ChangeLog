@@ -1,3 +1,14 @@
+2016-07-20  Martin Liska  <mliska@suse.cz>
+
+	* selftest-run-tests.c (selftest::run_tests): New function.
+	* selftest.h (sreal_c_tests): Declare.
+	* sreal.c (sreal_verify_basics): New function.
+	(verify_aritmetics): Likewise.
+	(sreal_verify_arithmetics): Likewise.
+	(verify_shifting): Likewise.
+	(sreal_verify_shifting): Likewise.
+	(void sreal_c_tests): Likewise.
+
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/71916
