@@ -3513,7 +3513,7 @@ invert_mod2n (unsigned HOST_WIDE_INT x, int n)
   int nbit = 3;
 
   mask = (n == HOST_BITS_PER_WIDE_INT
-	  ? ~(unsigned HOST_WIDE_INT) 0
+	  ? HOST_WIDE_INT_M1U
 	  : (HOST_WIDE_INT_1U << n) - 1);
 
   while (nbit < n)
@@ -4423,7 +4423,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			    || size - 1 >= BITS_PER_WORD)
 			  goto fail1;
 
-			ml |= (~(unsigned HOST_WIDE_INT) 0) << (size - 1);
+			ml |= HOST_WIDE_INT_M1U << (size - 1);
 			mlr = gen_int_mode (ml, compute_mode);
 			extra_cost = (shift_cost (speed, compute_mode, post_shift)
 				      + shift_cost (speed, compute_mode, size - 1)

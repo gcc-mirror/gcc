@@ -365,7 +365,7 @@ double_int::operator ^ (double_int b) const
 
 void dump_double_int (FILE *, double_int, bool);
 
-#define ALL_ONES (~((unsigned HOST_WIDE_INT) 0))
+#define ALL_ONES HOST_WIDE_INT_M1U
 
 /* The operands of the following comparison functions must be processed
    with double_int_ext, if their precision is less than

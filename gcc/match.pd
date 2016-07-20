@@ -1487,7 +1487,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      is all ones.  */
 		 }
 	     }
-	   zerobits = ~(unsigned HOST_WIDE_INT) 0;
+	   zerobits = HOST_WIDE_INT_M1U;
 	   if (shiftc < prec)
 	     {
 	       zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
@@ -1522,7 +1522,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       break;
 	 }
 	 (if (prec < HOST_BITS_PER_WIDE_INT
-	      || newmask == ~(unsigned HOST_WIDE_INT) 0)
+	      || newmask == HOST_WIDE_INT_M1U)
 	  (with
 	   { tree newmaskt = build_int_cst_type (TREE_TYPE (@2), newmask); }
 	   (if (!tree_int_cst_equal (newmaskt, @2))

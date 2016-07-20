@@ -288,7 +288,7 @@ struct store_info
 static unsigned HOST_WIDE_INT
 lowpart_bitmask (int n)
 {
-  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT) 0;
+  unsigned HOST_WIDE_INT mask = HOST_WIDE_INT_M1U;
   return mask >> (HOST_BITS_PER_WIDE_INT - n);
 }
 

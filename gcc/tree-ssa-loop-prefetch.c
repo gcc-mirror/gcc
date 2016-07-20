@@ -233,7 +233,7 @@ struct mem_ref_group
 
 /* Assigned to PREFETCH_BEFORE when all iterations are to be prefetched.  */
 
-#define PREFETCH_ALL		(~(unsigned HOST_WIDE_INT) 0)
+#define PREFETCH_ALL		HOST_WIDE_INT_M1U
 
 /* Do not generate a prefetch if the unroll factor is significantly less
    than what is required by the prefetch.  This is to avoid redundant

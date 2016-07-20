@@ -1,3 +1,21 @@
+2016-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* cse.c: Use HOST_WIDE_INT_M1 instead of ~(HOST_WIDE_INT) 0.
+	* combine.c: Use HOST_WIDE_INT_M1U instead of
+	~(unsigned HOST_WIDE_INT) 0.
+	* double-int.h: Ditto.
+	* dse.c: Ditto.
+	* dwarf2asm.c:Ditto.
+	* expmed.c: Ditto.
+	* genmodes.c: Ditto.
+	* match.pd: Ditto.
+	* read-rtl.c: Ditto.
+	* tree-ssa-loop-ivopts.c: Ditto.
+	* tree-ssa-loop-prefetch.c: Ditto.
+	* tree-vect-generic.c: Ditto.
+	* tree-vect-patterns.c: Ditto.
+	* tree.c: Ditto.
+
 2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc/config/avr.c (avr_legitimize_address) [AVR_TINY]: Force

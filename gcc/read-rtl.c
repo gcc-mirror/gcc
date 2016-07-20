@@ -711,7 +711,7 @@ atoll (const char *p)
       if (new_wide < tmp_wide)
 	{
 	  /* Return INT_MAX equiv on overflow.  */
-	  tmp_wide = (~(unsigned HOST_WIDE_INT) 0) >> 1;
+	  tmp_wide = HOST_WIDE_INT_M1U >> 1;
 	  break;
 	}
       tmp_wide = new_wide;

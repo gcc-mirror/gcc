@@ -1660,7 +1660,7 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
     }
 
   /* Don't call nonzero_bits if it cannot change anything.  */
-  if (rsp->nonzero_bits != ~(unsigned HOST_WIDE_INT) 0)
+  if (rsp->nonzero_bits != HOST_WIDE_INT_M1U)
     {
       bits = nonzero_bits (src, nonzero_bits_mode);
       if (reg_equal && bits)
@@ -6541,7 +6541,7 @@ simplify_set (rtx x)
 
   if (GET_MODE_CLASS (mode) == MODE_INT && HWI_COMPUTABLE_MODE_P (mode))
     {
-      src = force_to_mode (src, mode, ~(unsigned HOST_WIDE_INT) 0, 0);
+      src = force_to_mode (src, mode, HOST_WIDE_INT_M1U, 0);
       SUBST (SET_SRC (x), src);
     }
 
@@ -7446,7 +7446,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       else
 	new_rtx = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
-			     ? ~(unsigned HOST_WIDE_INT) 0
+			     ? HOST_WIDE_INT_M1U
 			     : (HOST_WIDE_INT_1U << len) - 1,
 			     0);
 
@@ -7635,7 +7635,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       inner = force_to_mode (inner, wanted_inner_mode,
 			     pos_rtx
 			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT
-			     ? ~(unsigned HOST_WIDE_INT) 0
+			     ? HOST_WIDE_INT_M1U
 			     : (((HOST_WIDE_INT_1U << len) - 1)
 				<< orig_pos),
 			     0);
@@ -8110,7 +8110,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	    && subreg_lowpart_p (x))
 	  {
 	    rtx newer
-	      = force_to_mode (tem, mode, ~(unsigned HOST_WIDE_INT) 0, 0);
+	      = force_to_mode (tem, mode, HOST_WIDE_INT_M1U, 0);
 
 	    /* If we have something other than a SUBREG, we might have
 	       done an expansion, so rerun ourselves.  */
@@ -8390,7 +8390,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
      do not know, we need to assume that all bits up to the highest-order
      bit in MASK will be needed.  This is how we form such a mask.  */
   if (mask & (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1)))
-    fuller_mask = ~(unsigned HOST_WIDE_INT) 0;
+    fuller_mask = HOST_WIDE_INT_M1U;
   else
     fuller_mask = ((HOST_WIDE_INT_1U << (floor_log2 (mask) + 1))
 		   - 1);
@@ -8733,7 +8733,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 
 	  if (GET_MODE_PRECISION (GET_MODE (x)) > HOST_BITS_PER_WIDE_INT)
 	    {
-	      nonzero = ~(unsigned HOST_WIDE_INT) 0;
+	      nonzero = HOST_WIDE_INT_M1U;
 
 	      /* GET_MODE_PRECISION (GET_MODE (x)) - INTVAL (XEXP (x, 1))
 		 is the number of bits a full-width mask would have set.
@@ -9496,7 +9496,7 @@ make_field_assignment (rtx x)
 			       dest);
   src = force_to_mode (src, mode,
 		       GET_MODE_PRECISION (mode) >= HOST_BITS_PER_WIDE_INT
-		       ? ~(unsigned HOST_WIDE_INT) 0
+		       ? HOST_WIDE_INT_M1U
 		       : (HOST_WIDE_INT_1U << len) - 1,
 		       0);
 
