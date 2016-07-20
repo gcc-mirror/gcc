@@ -275,6 +275,17 @@ else
 LLINKER = $(LINKER)
 endif
 
+THIN_ARCHIVE_SUPPORT = @thin_archive_support@
+
+USE_THIN_ARCHIVES = no
+ifeq ($(THIN_ARCHIVE_SUPPORT),yes)
+ifeq ($(AR_FLAGS),rc)
+ifeq ($(RANLIB_FLAGS),)
+USE_THIN_ARCHIVES = yes
+endif
+endif
+endif
+
 # -------------------------------------------
 # Programs which operate on the build machine
 # -------------------------------------------
@@ -1883,8 +1894,14 @@ compilations: $(BACKEND)
 # This archive is strictly for the host.
 libbackend.a: $(OBJS)
 	-rm -rf libbackend.a
+	@# Build libbackend.a as a thin archive if possible, as doing so
+	@# significantly reduces build times.
+ifeq ($(USE_THIN_ARCHIVES),yes)
+	$(AR) $(AR_FLAGS)T libbackend.a $(OBJS)
+else
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
 	-$(RANLIB) $(RANLIB_FLAGS) libbackend.a
+endif
 
 libcommon-target.a: $(OBJS-libcommon-target)
 	-rm -rf libcommon-target.a
