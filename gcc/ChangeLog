@@ -1,3 +1,23 @@
+2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement attribute progmem on reduced Tiny cores by adding
+	flash offset 0x4000 to respective symbols.
+
+	PR target/71948
+	* doc/extend.texi (AVR Variable Attributes) [progmem]: Add
+	documentation how it works on reduced Tiny cores.
+	(AVR Named Address Spaces): No support for reduced Tiny.
+	* config/avr/avr.c (AVR_SYMBOL_FLAG_TINY_PM): New macro.
+	(avr_address_tiny_pm_p): New static function.
+	(avr_print_operand_address) [AVR_TINY]: Add AVR_TINY_PM_OFFSET
+	if the address is in progmem.
+	(avr_assemble_integer): Same.
+	(avr_encode_section_info) [AVR_TINY]: Set AVR_SYMBOL_FLAG_TINY_PM
+	for symbol_ref in progmem.
+	* config/avr/avr.h (AVR_TINY_PM_OFFSET): New macro.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Use it instead of
+	magic 0x4000 when built-in def'ing __AVR_TINY_PM_BASE_ADDRESS__.
+
 2016-07-20  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* configure.ac (thin_archive_support): New variable.  AC_SUBST it.

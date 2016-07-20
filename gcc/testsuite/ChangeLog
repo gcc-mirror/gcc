@@ -1,3 +1,8 @@
+2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/71948
+	* gcc.target/avr/torture/tiny-progmem.c: New test.
+
 2016-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71909

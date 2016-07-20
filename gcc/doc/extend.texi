@@ -1422,6 +1422,11 @@ const __memx void *pfoo = &foo;
 Such code requires at least binutils 2.23, see
 @w{@uref{http://sourceware.org/PR13503,PR13503}}.
 
+@item
+On the reduced Tiny devices like ATtiny40, no address spaces are supported.
+Data can be put into and read from flash memory by means of
+attribute @code{progmem}, see @ref{AVR Variable Attributes}.
+
 @end itemize
 
 @subsection M32C Named Address Spaces
@@ -5847,10 +5852,12 @@ attribute accomplishes this by putting respective variables into a
 section whose name starts with @code{.progmem}.
 
 This attribute works similar to the @code{section} attribute
-but adds additional checking. Notice that just like the
-@code{section} attribute, @code{progmem} affects the location
-of the data but not how this data is accessed.
+but adds additional checking.
 
+@table @asis
+@item @bullet{}@tie{} Ordinary AVR cores with 32 general purpose registers:
+@code{progmem} affects the location
+of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
 @smallexample
@@ -5872,6 +5879,28 @@ normally resides in the data memory (RAM).
 
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
+
+@item @bullet{}@tie{}Reduced AVR Tiny cores like ATtiny40:
+The compiler adds @code{0x4000}
+to the addresses of objects and declarations in @code{progmem} and locates
+the objects in flash memory, namely in section @code{.progmem.data}.
+The offset is needed because the flash memory is visible in the RAM
+address space starting at address @code{0x4000}.
+
+Data in @code{progmem} can be accessed by means of ordinary C@tie{}code,
+no special functions or macros are needed.
+
+@smallexample
+/* var is located in flash memory */
+extern const int var[2] __attribute__((progmem));
+
+int read_var (int i)
+@{
+    return var[i];
+@}
+@end smallexample
+
+@end table
 
 @item io
 @itemx io (@var{addr})

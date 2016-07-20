@@ -80,6 +80,10 @@
   ((SYMBOL_REF_FLAGS (sym) & AVR_SYMBOL_FLAG_PROGMEM)           \
    / SYMBOL_FLAG_MACH_DEP)
 
+/* (AVR_TINY only): Symbol has attribute progmem */
+#define AVR_SYMBOL_FLAG_TINY_PM \
+  (SYMBOL_FLAG_MACH_DEP << 4)
+
 #define TINY_ADIW(REG1, REG2, I)                                \
     "subi " #REG1 ",lo8(-(" #I "))" CR_TAB                      \
     "sbci " #REG2 ",hi8(-(" #I "))"
@@ -2161,12 +2165,35 @@ cond_string (enum rtx_code code)
 }
 
 
+/* Return true if rtx X is a CONST or SYMBOL_REF with progmem.
+   This must be used for AVR_TINY only because on other cores
+   the flash memory is not visible in the RAM address range and
+   cannot be read by, say,  LD instruction.  */
+
+static bool
+avr_address_tiny_pm_p (rtx x)
+{
+  if (CONST == GET_CODE (x))
+    x = XEXP (XEXP (x, 0), 0);
+
+  if (SYMBOL_REF_P (x))
+    return SYMBOL_REF_FLAGS (x) & AVR_SYMBOL_FLAG_TINY_PM;
+
+  return false;
+}
+
 /* Implement `TARGET_PRINT_OPERAND_ADDRESS'.  */
 /* Output ADDR to FILE as address.  */
 
 static void
 avr_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
+  if (AVR_TINY
+      && avr_address_tiny_pm_p (addr))
+    {
+      addr = plus_constant (Pmode, addr, AVR_TINY_PM_OFFSET);
+    }
+
   switch (GET_CODE (addr))
     {
     case REG:
@@ -8937,6 +8964,12 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
       return true;
     }
 
+  if (AVR_TINY
+      && avr_address_tiny_pm_p (x))
+    {
+      x = plus_constant (Pmode, x, AVR_TINY_PM_OFFSET);
+    }
+
   return default_assemble_integer (x, size, aligned_p);
 }
 
@@ -9603,7 +9636,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
   if (decl && DECL_P (decl)
       && TREE_CODE (decl) != FUNCTION_DECL
       && MEM_P (rtl)
-      && SYMBOL_REF == GET_CODE (XEXP (rtl, 0)))
+      && SYMBOL_REF_P (XEXP (rtl, 0)))
    {
       rtx sym = XEXP (rtl, 0);
       tree type = TREE_TYPE (decl);
@@ -9616,7 +9649,8 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       /* PSTR strings are in generic space but located in flash:
          patch address space.  */
 
-      if (-1 == avr_progmem_p (decl, attr))
+      if (!AVR_TINY
+          && -1 == avr_progmem_p (decl, attr))
         as = ADDR_SPACE_FLASH;
 
       AVR_SYMBOL_SET_ADDR_SPACE (sym, as);
@@ -9646,6 +9680,19 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 	 don't use the exact value for constant propagation.  */
       if (addr_attr && !DECL_EXTERNAL (decl))
 	SYMBOL_REF_FLAGS (sym) |= SYMBOL_FLAG_ADDRESS;
+    }
+
+  if (AVR_TINY
+      && decl
+      && VAR_DECL == TREE_CODE (decl)
+      && -1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl))
+      && MEM_P (rtl)
+      && SYMBOL_REF_P (XEXP (rtl, 0)))
+    {
+      /* Tag symbols for later addition of 0x4000 (AVR_TINY_PM_OFFSET).  */
+
+      rtx sym = XEXP (rtl, 0);
+      SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_PM;
     }
 }
 
