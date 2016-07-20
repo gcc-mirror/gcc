@@ -37,6 +37,7 @@ extern void avr_asm_output_aligned_decl_common (FILE*, tree, const char*, unsign
 extern void avr_asm_asm_output_aligned_bss (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int, void (*) (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int));
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
+extern bool avr_addr_space_supported_p (addr_space_t, location_t loc = UNKNOWN_LOCATION);
 
 #ifdef RTX_CODE /* inside TREE_CODE */
 extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);
