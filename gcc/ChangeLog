@@ -1,3 +1,15 @@
+2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* target.def (addr_space): Add new diagnose_usage to hook vector.
+	* targhooks.c (default_addr_space_diagnose_usage): Add default
+	implementation and...
+	* targhooks.h (default_addr_space_diagnose_usage): ... its prototype.
+	* c/c-parser.c (c_lex_one_token) [CPP_NAME]: If the token
+	is some address space, call targetm.addr_space.diagnose_usage.
+	* doc/tm.texi.in (Named Address Spaces): Add anchor for
+	TARGET_ADDR_SPACE_DIAGNOSE_USAGE documentation.
+	* doc/tm.texi: Regenerate.
+
 2016-07-20  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/71898

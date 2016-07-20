@@ -301,6 +301,9 @@ c_lex_one_token (c_parser *parser, c_token *token)
 	    else if (rid_code >= RID_FIRST_ADDR_SPACE
 		     && rid_code <= RID_LAST_ADDR_SPACE)
 	      {
+		addr_space_t as;
+		as = (addr_space_t) (rid_code - RID_FIRST_ADDR_SPACE);
+		targetm.addr_space.diagnose_usage (as, token->location);
 		token->id_kind = C_ID_ADDRSPACE;
 		token->keyword = rid_code;
 		break;

@@ -3241,6 +3241,20 @@ The result is the value to be used with @code{DW_AT_address_class}.",
  int, (addr_space_t as),
  default_addr_space_debug)
 
+/* Function to emit custom diagnostic if an address space is used.  */
+DEFHOOK
+(diagnose_usage,
+ "Define this hook if the availability of an address space depends on\n\
+command line options and some diagnostics should be printed when the\n\
+address space is used.  This hook is called during parsing and allows\n\
+to emit a better diagnostic compared to the case where the address space\n\
+was not registered with @code{c_register_addr_space}.  @var{as} is\n\
+the address space as registered with @code{c_register_addr_space}.\n\
+@var{loc} is the location of the address space qualifier token.\n\
+The default implementation does nothing.",
+ void, (addr_space_t as, location_t loc),
+ default_addr_space_diagnose_usage)
+
 HOOK_VECTOR_END (addr_space)
 
 #undef HOOK_PREFIX
