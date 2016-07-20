@@ -1,5 +1,10 @@
 2016-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/istream (operator>>(basic_istream&&, _Tp&)): Adjust
+	to use perfect forwarding (LWG 2328).
+	* testsuite/27_io/rvalue_streams.cc: Test perfect forwarding.
+	* doc/xml/manual/intro.xml: Document DR 2328 status.
+
 	* libsupc++/pbase_type_info.cc (__pbase_type_info::__do_catch): Use
 	static objects for catching nullptr as pointer to member types.
 
