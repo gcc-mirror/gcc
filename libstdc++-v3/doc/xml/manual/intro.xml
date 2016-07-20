@@ -948,6 +948,12 @@ requirements of the license of GCC.
     <listitem><para>Update definitions of the partial specializations for const and volatile types.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2328">2328</link>:
+       <emphasis>Rvalue stream extraction should use perfect forwarding</emphasis>
+    </term>
+    <listitem><para>Use perfect forwarding for right operand.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2329">2329</link>:
        <emphasis><code>regex_match()/regex_search()</code> with <code>match_results</code> should forbid temporary strings</emphasis>
     </term>

@@ -34,9 +34,33 @@ test01()
   VERIFY (i == i2);
 }
 
+struct X { bool as_rvalue; };
+
+void operator>>(std::istream&, X& x) { x.as_rvalue = false; }
+void operator>>(std::istream&, X&& x) { x.as_rvalue = true; }
+
+// LWG 2328 Rvalue stream extraction should use perfect forwarding
+void
+test02()
+{
+  X x;
+  std::istringstream is;
+  auto& ref1 = (std::move(is) >> x);
+  VERIFY( &ref1 == &is );
+  VERIFY( x.as_rvalue == false );
+  auto& ref2 = (std::move(is) >> std::move(x));
+  VERIFY( &ref2 == &is );
+  VERIFY( x.as_rvalue == true );
+
+  char arr[2];
+  std::istringstream("x") >> &arr[0];
+  std::istringstream("x") >> arr;
+}
+
 int
 main()
 {
   test01();
+  test02();
   return 0;
 }
