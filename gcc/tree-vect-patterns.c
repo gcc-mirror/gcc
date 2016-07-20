@@ -2861,7 +2861,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
       if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	{
 	  add = true;
-	  ml |= (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	  ml |= HOST_WIDE_INT_M1U << (prec - 1);
 	}
       if (post_shift >= prec)
 	return NULL;

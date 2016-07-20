@@ -4217,7 +4217,7 @@ get_address_cost (bool symbol_present, bool var_present,
     }
 
   bits = GET_MODE_BITSIZE (address_mode);
-  mask = ~(~(unsigned HOST_WIDE_INT) 0 << (bits - 1) << 1);
+  mask = ~(HOST_WIDE_INT_M1U << (bits - 1) << 1);
   offset &= mask;
   if ((offset >> (bits - 1) & 1))
     offset |= ~mask;

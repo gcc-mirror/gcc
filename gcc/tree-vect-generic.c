@@ -575,7 +575,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      this_mode = 4 + (d < 0);
-	      ml |= (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	      ml |= HOST_WIDE_INT_M1U << (prec - 1);
 	    }
 	  else
 	    this_mode = 2 + (d < 0);
