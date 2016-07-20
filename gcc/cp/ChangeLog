@@ -1,3 +1,9 @@
+2016-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67164
+	* pt.c (iterative_hash_template_arg, template_args_equal): Don't
+	handle ARGUMENT_PACK_SELECT.
+
 2016-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70869
