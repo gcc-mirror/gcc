@@ -1,3 +1,8 @@
+2016-07-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_encode_section_info): Remove mode size
+	check.
+
 2016-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* cse.c: Use HOST_WIDE_INT_M1 instead of ~(HOST_WIDE_INT) 0.
