@@ -1704,9 +1704,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     STRIP_NOPS (arg);
 
   if (TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
-    /* We can get one of these when re-hashing a previous entry in the middle
-       of substituting into a pack expansion.  Just look through it.  */
-    arg = ARGUMENT_PACK_SELECT_FROM_PACK (arg);
+    gcc_unreachable ();
 
   code = TREE_CODE (arg);
   tclass = TREE_CODE_CLASS (code);
@@ -7894,17 +7892,7 @@ template_args_equal (tree ot, tree nt)
       return 1;
     }
   else if (ot && TREE_CODE (ot) == ARGUMENT_PACK_SELECT)
-    {
-      /* We get here probably because we are in the middle of substituting
-         into the pattern of a pack expansion. In that case the
-	 ARGUMENT_PACK_SELECT temporarily replaces the pack argument we are
-	 interested in. So we want to use the initial pack argument for
-	 the comparison.  */
-      ot = ARGUMENT_PACK_SELECT_FROM_PACK (ot);
-      if (nt && TREE_CODE (nt) == ARGUMENT_PACK_SELECT)
-	nt = ARGUMENT_PACK_SELECT_FROM_PACK (nt);
-      return template_args_equal (ot, nt);
-    }
+    gcc_unreachable ();
   else if (TYPE_P (nt))
     {
       if (!TYPE_P (ot))
