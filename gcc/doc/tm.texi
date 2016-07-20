@@ -10431,6 +10431,17 @@ Define this to define how the address space is encoded in dwarf.
 The result is the value to be used with @code{DW_AT_address_class}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ADDR_SPACE_DIAGNOSE_USAGE (addr_space_t @var{as}, location_t @var{loc})
+Define this hook if the availability of an address space depends on
+command line options and some diagnostics should be printed when the
+address space is used.  This hook is called during parsing and allows
+to emit a better diagnostic compared to the case where the address space
+was not registered with @code{c_register_addr_space}.  @var{as} is
+the address space as registered with @code{c_register_addr_space}.
+@var{loc} is the location of the address space qualifier token.
+The default implementation does nothing.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

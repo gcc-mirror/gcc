@@ -1291,6 +1291,15 @@ default_addr_space_debug (addr_space_t as)
   return as;
 }
 
+/* The default hook implementation for TARGET_ADDR_SPACE_DIAGNOSE_USAGE.
+   Don't complain about any address space.  */
+
+void
+default_addr_space_diagnose_usage (addr_space_t, location_t)
+{
+}
+	 
+
 /* The default hook for TARGET_ADDR_SPACE_CONVERT. This hook should never be
    called for targets with only a generic address space.  */
 
