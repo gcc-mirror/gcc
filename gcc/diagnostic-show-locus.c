@@ -1280,9 +1280,18 @@ diagnostic_show_locus (diagnostic_context * context,
 {
   pp_newline (context->printer);
 
-  if (!context->show_caret
-      || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
-      || diagnostic_location (diagnostic, 0) == context->last_location)
+  /* Do nothing if source-printing has been disabled.  */
+  if (!context->show_caret)
+    return;
+
+  /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
+  if (diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION)
+    return;
+
+  /* Don't print the same source location twice in a row, unless we have
+     fix-it hints.  */
+  if (diagnostic_location (diagnostic, 0) == context->last_location
+      && diagnostic->richloc->get_num_fixit_hints () == 0)
     return;
 
   context->last_location = diagnostic_location (diagnostic, 0);
