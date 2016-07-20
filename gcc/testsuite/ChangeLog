@@ -1,3 +1,9 @@
+2016-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71909
+	* g++.dg/parse/pr71909.C: New test.
+	* g++.dg/tm/pr71909.C: New test.
+
 2016-07-20  Martin Jambor  <mjambor@suse.cz>
 
         PR fortran/71688
@@ -31,7 +37,6 @@
 	Backport from trunk:
 	PR fortran/71623
 	* gfortran.dg/deferred_character_18.f90: New test.
-
 
 2016-07-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
