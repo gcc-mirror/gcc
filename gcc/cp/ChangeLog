@@ -1,3 +1,12 @@
+2016-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/50060
+	* constexpr.c (cxx_eval_builtin_function_call): Pass false as lval
+	when evaluating call arguments.  Use fold_builtin_call_array instead
+	of fold_build_call_array_loc, return t if it returns NULL.  Otherwise
+	check the result with potential_constant_expression and call
+	cxx_eval_constant_expression on it.
+
 2016-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67164
