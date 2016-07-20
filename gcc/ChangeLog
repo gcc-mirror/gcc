@@ -1,5 +1,15 @@
 2016-07-20  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Include fibonacci_heap.c
+	* fibonacci_heap.c: New file.
+	* fibonacci_heap.h (fibonacci_heap::insert): Use insert_node.
+	(fibonacci_heap::union_with): Fix deletion of the second heap.
+	* selftest-run-tests.c (selftest::run_tests): Incorporate
+	fibonacci heap tests.
+	* selftest.h: Declare fibonacci_heap_c_tests.
+
+2016-07-20  Martin Liska  <mliska@suse.cz>
+
 	* selftest-run-tests.c (selftest::run_tests): New function.
 	* selftest.h (sreal_c_tests): Declare.
 	* sreal.c (sreal_verify_basics): New function.
