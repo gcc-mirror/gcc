@@ -1,5 +1,14 @@
 2016-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/atomic (atomic_int8_t, atomic_uint8_t, atomic_int16_t)
+	(atomic_uint16_t, atomic_int32_t, atomic_uint32_t, atomic_int64_t)
+	(atomic_uint64_t): Define (LWG 2441).
+	* testsuite/29_atomics/headers/atomic/std_c++0x_neg.cc: Remove empty
+	lines.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc: Test for
+	the new types.
+	* doc/xml/manual/intro.xml: Document DR 2441 status.
+
 	* include/std/istream (operator>>(basic_istream&&, _Tp&)): Adjust
 	to use perfect forwarding (LWG 2328).
 	* testsuite/27_io/rvalue_streams.cc: Test perfect forwarding.
