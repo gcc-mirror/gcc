@@ -1,3 +1,9 @@
+2016-07-20  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/71898
+	* graphite-isl-ast-to-gimple.c (later_of_the_two):
+	Properly handly PHI stmts.
+
 2016-07-20  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/71503

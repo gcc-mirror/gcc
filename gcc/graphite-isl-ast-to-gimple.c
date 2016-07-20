@@ -1305,6 +1305,18 @@ later_of_the_two (gimple_stmt_iterator gsi1, gimple_stmt_iterator gsi2)
   /* Find the iterator which is the latest.  */
   if (bb1 == bb2)
     {
+      gimple *stmt1 = gsi_stmt (gsi1);
+      gimple *stmt2 = gsi_stmt (gsi2);
+
+      if (stmt1 != NULL && stmt2 != NULL)
+	{
+	  bool is_phi1 = gimple_code (stmt1) == GIMPLE_PHI;
+	  bool is_phi2 = gimple_code (stmt2) == GIMPLE_PHI;
+
+	  if (is_phi1 != is_phi2)
+	    return is_phi1 ? gsi2 : gsi1;
+	}
+
       /* For empty basic blocks gsis point to the end of the sequence.  Since
 	 there is no operator== defined for gimple_stmt_iterator and for gsis
 	 not pointing to a valid statement gsi_next would assert.  */
