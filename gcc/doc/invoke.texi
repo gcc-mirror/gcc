@@ -7260,7 +7260,11 @@ any called function.  In that case it is not necessary to save and restore
 them around calls.  This is only possible if called functions are part of
 same compilation unit as current function and they are compiled before it.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}, however the option
+is disabled if generated code will be instrumented for profiling
+(@option{-p}, or @option{-pg}) or if callee's register usage cannot be known
+exactly (this happens on targets that do not expose prologues
+and epilogues in RTL).
 
 @item -fconserve-stack
 @opindex fconserve-stack
@@ -7280,7 +7284,7 @@ Perform code hoisting.  Code hoisting tries to move the
 evaluation of expressions executed on all paths to the function exit
 as early as possible.  This is especially useful as a code size
 optimization, but it often helps for code speed as well.
-This flag is enabled by defailt at @option{-O2} and higher.
+This flag is enabled by default at @option{-O2} and higher.
 
 @item -ftree-pre
 @opindex ftree-pre
