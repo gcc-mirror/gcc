@@ -1,3 +1,10 @@
+2016-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71909
+	* parser.c (cp_parser_save_member_function_body): Consume
+	__transaction_relaxed or __transaction_atomic with optional
+	attribute.  Only skip catch with block if try keyword is seen.
+
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
