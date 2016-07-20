@@ -1011,6 +1011,12 @@ requirements of the license of GCC.
     <listitem><para>Add <code>noexcept</code>.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2441">2441</link>:
+       <emphasis>Exact-width atomic typedefs should be provided</emphasis>
+    </term>
+    <listitem><para>Define the typedefs.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2454">2454</link>:
        <emphasis>Add <code>raw_storage_iterator::base()</code> member
        </emphasis>

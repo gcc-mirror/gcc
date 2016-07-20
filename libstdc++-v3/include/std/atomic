@@ -833,6 +833,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   typedef atomic<char32_t>		atomic_char32_t;
 
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2441. Exact-width atomic typedefs should be provided
+
+  /// atomic_int8_t
+  typedef atomic<int8_t>		atomic_int8_t;
+
+  /// atomic_uint8_t
+  typedef atomic<uint8_t>		atomic_uint8_t;
+
+  /// atomic_int16_t
+  typedef atomic<int16_t>		atomic_int16_t;
+
+  /// atomic_uint16_t
+  typedef atomic<uint16_t>		atomic_uint16_t;
+
+  /// atomic_int32_t
+  typedef atomic<int32_t>		atomic_int32_t;
+
+  /// atomic_uint32_t
+  typedef atomic<uint32_t>		atomic_uint32_t;
+
+  /// atomic_int64_t
+  typedef atomic<int64_t>		atomic_int64_t;
+
+  /// atomic_uint64_t
+  typedef atomic<uint64_t>		atomic_uint64_t;
+
+
   /// atomic_int_least8_t
   typedef atomic<int_least8_t>		atomic_int_least8_t;
 
