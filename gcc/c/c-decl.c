@@ -3088,7 +3088,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
   if (warn_implicit_function_declaration)
     {
       bool warned;
-      tree hint = NULL_TREE;
+      const char *hint = NULL;
       if (!olddecl)
 	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_FUNCTION_NAME);
 
@@ -3099,7 +3099,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	    richloc.add_fixit_misspelled_id (loc, hint);
 	    warned = pedwarn_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
-	       "implicit declaration of function %qE; did you mean %qE?",
+	       "implicit declaration of function %qE; did you mean %qs?",
 	       id, hint);
 	  }
 	else
@@ -3112,7 +3112,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	    richloc.add_fixit_misspelled_id (loc, hint);
 	    warned = warning_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
-	       G_("implicit declaration of function %qE;did you mean %qE?"),
+	       G_("implicit declaration of function %qE;did you mean %qs?"),
 	       id, hint);
 	  }
 	else
@@ -3433,14 +3433,14 @@ undeclared_variable (location_t loc, tree id)
 
   if (current_function_decl == 0)
     {
-      tree guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+      const char *guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
       if (guessed_id)
 	{
 	  gcc_rich_location richloc (loc);
 	  richloc.add_fixit_misspelled_id (loc, guessed_id);
 	  error_at_rich_loc (&richloc,
 			     "%qE undeclared here (not in a function);"
-			     " did you mean %qE?",
+			     " did you mean %qs?",
 			     id, guessed_id);
 	}
       else
@@ -3451,7 +3451,7 @@ undeclared_variable (location_t loc, tree id)
     {
       if (!objc_diagnose_private_ivar (id))
 	{
-	  tree guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+	  const char *guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
 	  if (guessed_id)
 	    {
 	      gcc_rich_location richloc (loc);
@@ -3459,7 +3459,7 @@ undeclared_variable (location_t loc, tree id)
 	      error_at_rich_loc
 		(&richloc,
 		 "%qE undeclared (first use in this function);"
-		 " did you mean %qE?",
+		 " did you mean %qs?",
 		 id, guessed_id);
 	    }
 	  else
@@ -4010,7 +4010,7 @@ find_closest_macro_cpp_cb (cpp_reader *, cpp_hashnode *hashnode,
    It also looks for start_typename keywords, to detect "singed" vs "signed"
    typos.  */
 
-tree
+const char *
 lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
@@ -4100,7 +4100,11 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 	}
     }
 
-  return bm.get_best_meaningful_candidate ();
+  tree best = bm.get_best_meaningful_candidate ();
+  if (best)
+    return IDENTIFIER_POINTER (best);
+  else
+    return NULL;
 }
 
 

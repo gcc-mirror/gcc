@@ -1698,12 +1698,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else
 	{
-	  tree hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME);
+	  const char *hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME);
 	  if (hint)
 	    {
 	      richloc.add_fixit_misspelled_id (here, hint);
 	      error_at_rich_loc (&richloc,
-				 "unknown type name %qE; did you mean %qE?",
+				 "unknown type name %qE; did you mean %qs?",
 				 name, hint);
 	    }
 	  else
@@ -3853,14 +3853,14 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
-	  tree hint = lookup_name_fuzzy (token->value, FUZZY_LOOKUP_TYPENAME);
+	  const char *hint = lookup_name_fuzzy (token->value,
+						FUZZY_LOOKUP_TYPENAME);
 	  if (hint)
 	    {
-	      gcc_assert (TREE_CODE (hint) == IDENTIFIER_NODE);
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_misspelled_id (token->location, hint);
 	      error_at_rich_loc (&richloc,
-				 "unknown type name %qE; did you mean %qE?",
+				 "unknown type name %qE; did you mean %qs?",
 				 token->value, hint);
 	    }
 	  else

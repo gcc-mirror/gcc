@@ -1,3 +1,14 @@
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (implicit_decl_warning): Update for conversion of
+	return type of lookup_name_fuzzy to const char *.
+	(undeclared_variable): Likewise.
+	(lookup_name_fuzzy): Convert return type from tree to
+	const char *.
+	* c-parser.c (c_parser_declaration_or_fndef): Update for
+	conversion of return type of lookup_name_fuzzy to const char *.
+	(c_parser_parameter_declaration): Likewise.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_declare): Don't scan for
