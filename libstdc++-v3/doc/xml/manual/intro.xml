@@ -1052,6 +1052,12 @@ requirements of the license of GCC.
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2684">2684</link>:
+       <emphasis><code>priority_queue</code> lacking comparator typedef
+       </emphasis>
+    </term>
+    <listitem><para>Define the <code>value_compare</code> typedef.
+    </para></listitem></varlistentry>
 
   </variablelist>
 

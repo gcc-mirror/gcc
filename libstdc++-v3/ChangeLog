@@ -1,5 +1,8 @@
 2016-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document DR 2684 status.
+	* doc/html/*: Regenerate.
+
 	* include/std/atomic (atomic_int8_t, atomic_uint8_t, atomic_int16_t)
 	(atomic_uint16_t, atomic_int32_t, atomic_uint32_t, atomic_int64_t)
 	(atomic_uint64_t): Define (LWG 2441).
