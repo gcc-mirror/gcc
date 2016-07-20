@@ -1,5 +1,9 @@
 2016-07-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71909
+	* g++.dg/parse/pr71909.C: New test.
+	* g++.dg/tm/pr71909.C: New test.
+
 	PR c++/50060
 	* g++.dg/cpp0x/constexpr-50060.C: New test.
 	* g++.dg/cpp1y/constexpr-50060.C: New test.
