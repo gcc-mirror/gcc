@@ -1,5 +1,10 @@
 2016-07-20  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi (-fipa-ra): Document when the option is
+	disabled. Fix a typo.
+
+2016-07-20  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: Include fibonacci_heap.c
 	* fibonacci_heap.c: New file.
 	* fibonacci_heap.h (fibonacci_heap::insert): Use insert_node.
