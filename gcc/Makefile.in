@@ -1259,6 +1259,7 @@ OBJS = \
 	explow.o \
 	expmed.o \
 	expr.o \
+	fibonacci_heap.o \
 	final.o \
 	fixed-value.o \
 	fold-const.o \

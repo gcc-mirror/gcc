@@ -76,6 +76,7 @@ extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void et_forest_c_tests ();
 extern void fold_const_c_tests ();
+extern void fibonacci_heap_c_tests ();
 extern void function_tests_c_tests ();
 extern void gimple_c_tests ();
 extern void ggc_tests_c_tests ();
