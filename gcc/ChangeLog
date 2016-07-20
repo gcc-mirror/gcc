@@ -1,5 +1,15 @@
 2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
 
+	* gcc/config/avr.c (avr_legitimize_address) [AVR_TINY]: Force
+	constant addresses outside [0,0xc0] into a register.
+	(avr_out_movhi_r_mr_reg_no_disp_tiny): Pass insn.  And handle
+	cases where the base address register is unused after.
+	(avr_out_movhi_r_mr_reg_disp_tiny): Same.
+	(avr_out_movhi_mr_r_reg_disp_tiny): Same.
+	(avr_out_store_psi_reg_disp_tiny): Same.
+
+2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
+
 	Implement attribute progmem on reduced Tiny cores by adding
 	flash offset 0x4000 to respective symbols.
 
