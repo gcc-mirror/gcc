@@ -1,3 +1,11 @@
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-rich-location.c
+	(gcc_rich_location::add_fixit_misspelled_id): New overload, taking
+	a const char *.
+	* gcc-rich-location.h
+	(gcc_rich_location::add_fixit_misspelled_id): Likewise.
+
 2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* target.def (addr_space): Add new diagnose_usage to hook vector.

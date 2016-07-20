@@ -1000,7 +1000,7 @@ enum lookup_name_fuzzy_kind {
   /* Any name.  */
   FUZZY_LOOKUP_NAME
 };
-extern tree lookup_name_fuzzy (tree, enum lookup_name_fuzzy_kind);
+extern const char *lookup_name_fuzzy (tree, enum lookup_name_fuzzy_kind);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);

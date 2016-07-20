@@ -74,3 +74,16 @@ gcc_rich_location::add_fixit_misspelled_id (location_t misspelled_token_loc,
     = get_range_from_loc (line_table, misspelled_token_loc);
   add_fixit_replace (misspelled_token_range, IDENTIFIER_POINTER (hint_id));
 }
+
+/* As above, but with a const char * for the suggested replacement.  */
+
+void
+gcc_rich_location::add_fixit_misspelled_id (location_t misspelled_token_loc,
+					    const char *hint)
+{
+  gcc_assert (hint);
+
+  source_range misspelled_token_range
+    = get_range_from_loc (line_table, misspelled_token_loc);
+  add_fixit_replace (misspelled_token_range, hint);
+}
