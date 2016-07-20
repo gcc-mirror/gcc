@@ -1,3 +1,17 @@
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (diagnostic_show_locus): If this is the
+	same location as last time, don't skip if we have fix-it hints.
+	Clarify the skipping logic by converting it from one "if" clause
+	to repeated "if" clauses.
+	* spellcheck-tree.c: Include "cpplib.h".
+	(find_closest_macro_cpp_cb): Move here from c/c-decl.c.
+	(best_macro_match::best_macro_match): New constructor.
+	* spellcheck-tree.h (struct edit_distance_traits<cpp_hashnode *>):
+	Move here from c/c-decl.c.
+	(class best_macro_match): Move here from c/c-decl.c, converting
+	from a typedef to a subclass, gaining a ctor.
+
 2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-protos.h (avr_addr_space_supported_p): New prototype.

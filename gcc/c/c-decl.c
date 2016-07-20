@@ -3955,45 +3955,6 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
   return NULL_TREE;
 }
 
-/* Specialization of edit_distance_traits for preprocessor macros.  */
-
-template <>
-struct edit_distance_traits<cpp_hashnode *>
-{
-  static size_t get_length (cpp_hashnode *hashnode)
-  {
-    return hashnode->ident.len;
-  }
-
-  static const char *get_string (cpp_hashnode *hashnode)
-  {
-    return (const char *)hashnode->ident.str;
-  }
-};
-
-/* Specialization of best_match<> for finding the closest preprocessor
-   macro to a given identifier.  */
-
-typedef best_match<tree, cpp_hashnode *> best_macro_match;
-
-/* A callback for cpp_forall_identifiers, for use by lookup_name_fuzzy.
-   Process HASHNODE and update the best_macro_match instance pointed to be
-   USER_DATA.  */
-
-static int
-find_closest_macro_cpp_cb (cpp_reader *, cpp_hashnode *hashnode,
-			   void *user_data)
-{
-  if (hashnode->type != NT_MACRO)
-    return 1;
-
-  best_macro_match *bmm = (best_macro_match *)user_data;
-  bmm->consider (hashnode);
-
-  /* Keep iterating.  */
-  return 1;
-}
-
 /* Look for the closest match for NAME within the currently valid
    scopes.
 
@@ -4068,8 +4029,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
      non-NULL result for best_macro_match if it's better than any of
      the identifiers already checked, which avoids needless creation
      of identifiers for macro hashnodes.  */
-  best_macro_match bmm (name, bm.get_best_distance ());
-  cpp_forall_identifiers (parse_in, find_closest_macro_cpp_cb, &bmm);
+  best_macro_match bmm (name, bm.get_best_distance (), parse_in);
   cpp_hashnode *best_macro = bmm.get_best_meaningful_candidate ();
   /* If a macro is the closest so far to NAME, use it, creating an
      identifier tree node for it.  */

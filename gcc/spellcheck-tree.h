@@ -48,4 +48,30 @@ struct edit_distance_traits<tree>
   }
 };
 
+/* Specialization of edit_distance_traits for preprocessor macros.  */
+
+template <>
+struct edit_distance_traits<cpp_hashnode *>
+{
+  static size_t get_length (cpp_hashnode *hashnode)
+  {
+    return hashnode->ident.len;
+  }
+
+  static const char *get_string (cpp_hashnode *hashnode)
+  {
+    return (const char *)hashnode->ident.str;
+  }
+};
+
+/* Specialization of best_match<> for finding the closest preprocessor
+   macro to a given identifier.  */
+
+class best_macro_match : public best_match<tree, cpp_hashnode *>
+{
+ public:
+  best_macro_match (tree goal, edit_distance_t best_distance_so_far,
+		    cpp_reader *reader);
+};
+
 #endif  /* GCC_SPELLCHECK_TREE_H  */

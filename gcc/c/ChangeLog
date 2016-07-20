@@ -1,5 +1,15 @@
 2016-07-20  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-decl.c (struct edit_distance_traits<cpp_hashnode *>): Move to
+	spellcheck-tree.h
+	(best_macro_match): Likewise, converting from a typedef to a
+	subclass.
+	(find_closest_macro_cpp_cb): Move to spellcheck-tree.c.
+	(lookup_name_fuzzy): Update for change of best_macro_match to a
+	subclass with a ctor that calls cpp_forall_identifiers.
+
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-decl.c (implicit_decl_warning): Update for conversion of
 	return type of lookup_name_fuzzy to const char *.
 	(undeclared_variable): Likewise.
