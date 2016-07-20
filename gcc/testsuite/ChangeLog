@@ -1,3 +1,9 @@
+2016-07-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/plugin/plugin.exp: Remove sreal test.
+	* gcc.dg/plugin/sreal-test-1.c: Remove.
+	* gcc.dg/plugin/sreal_plugin.c: Remove.
+
 2016-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71902

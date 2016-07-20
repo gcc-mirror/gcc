@@ -59,7 +59,6 @@ set plugin_test_list [list \
     { selfassign.c self-assign-test-1.c self-assign-test-2.c } \
     { ggcplug.c ggcplug-test-1.c } \
     { one_time_plugin.c one_time-test-1.c } \
-    { sreal_plugin.c sreal-test-1.c } \
     { start_unit_plugin.c start_unit-test-1.c } \
     { finish_unit_plugin.c finish_unit-test-1.c } \
     { wide-int_plugin.c wide-int-test-1.c } \

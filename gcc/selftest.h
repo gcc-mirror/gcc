@@ -86,6 +86,7 @@ extern void pretty_print_c_tests ();
 extern void rtl_tests_c_tests ();
 extern void spellcheck_c_tests ();
 extern void spellcheck_tree_c_tests ();
+extern void sreal_c_tests ();
 extern void tree_c_tests ();
 extern void tree_cfg_c_tests ();
 extern void vec_c_tests ();
