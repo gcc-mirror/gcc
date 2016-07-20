@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-indentation.h"
 #include "context.h"
 #include "cp-cilkplus.h"
+#include "gcc-rich-location.h"
 
 
 /* The lexer.  */
@@ -937,15 +938,12 @@ cp_lexer_next_token_is_not_keyword (cp_lexer* lexer, enum rid keyword)
   return cp_lexer_peek_token (lexer)->keyword != keyword;
 }
 
-/* Return true if the next token is a keyword for a decl-specifier.  */
+/* Return true if KEYWORD can start a decl-specifier.  */
 
-static bool
-cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
+bool
+cp_keyword_starts_decl_specifier_p (enum rid keyword)
 {
-  cp_token *token;
-
-  token = cp_lexer_peek_token (lexer);
-  switch (token->keyword) 
+  switch (keyword)
     {
       /* auto specifier: storage-class-specifier in C++,
          simple-type-specifier in C++0x.  */
@@ -985,12 +983,23 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
       return true;
 
     default:
-      if (token->keyword >= RID_FIRST_INT_N
-	  && token->keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
-	  && int_n_enabled_p[token->keyword - RID_FIRST_INT_N])
+      if (keyword >= RID_FIRST_INT_N
+	  && keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
+	  && int_n_enabled_p[keyword - RID_FIRST_INT_N])
 	return true;
       return false;
     }
+}
+
+/* Return true if the next token is a keyword for a decl-specifier.  */
+
+static bool
+cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
+{
+  cp_token *token;
+
+  token = cp_lexer_peek_token (lexer);
+  return cp_keyword_starts_decl_specifier_p (token->keyword);
 }
 
 /* Returns TRUE iff the token T begins a decltype type.  */
@@ -3154,7 +3163,19 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   else if (!parser->scope)
     {
       /* Issue an error message.  */
-      error_at (location, "%qE does not name a type", id);
+      const char *suggestion = NULL;
+      if (TREE_CODE (id) == IDENTIFIER_NODE)
+        suggestion = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME);
+      if (suggestion)
+	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_misspelled_id (location, suggestion);
+	  error_at_rich_loc (&richloc,
+			     "%qE does not name a type; did you mean %qs?",
+			     id, suggestion);
+	}
+      else
+	error_at (location, "%qE does not name a type", id);
       /* If we're in a template class, it's possible that the user was
 	 referring to a type from a base class.  For example:
 

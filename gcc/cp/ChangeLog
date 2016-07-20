@@ -1,3 +1,25 @@
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70339
+	PR c/71858
+	* name-lookup.c: Include gcc-rich-location.h, spellcheck-tree.h,
+	and parser.h.
+	(suggest_alternatives_for): If no candidates are found, try
+	lookup_name_fuzzy and report if if finds a suggestion.
+	(consider_binding_level): New function.
+	(lookup_name_fuzzy) New function.
+	* parser.c: Include gcc-rich-location.h.
+	(cp_lexer_next_token_is_decl_specifier_keyword): Move most of
+	logic into...
+	(cp_keyword_starts_decl_specifier_p): ...this new function.
+	(cp_parser_diagnose_invalid_type_name): When issuing
+	"does not name a type" errors, attempt to make a suggestion using
+	lookup_name_fuzzy.
+	* parser.h (cp_keyword_starts_decl_specifier_p): New prototype.
+	* search.c (lookup_field_fuzzy_info::fuzzy_lookup_field): Reject
+	types that are not CLASS_TYPE_P, rather than rejecting individual
+	tree codes.
+
 2016-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71909
