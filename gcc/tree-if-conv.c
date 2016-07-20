@@ -1687,7 +1687,10 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
       e = gimple_phi_arg_edge (phi, (*occur)[i]);
       c = bb_predicate (e->src);
       if (is_true_predicate (c))
-	continue;
+	{
+	  cond = c;
+	  break;
+	}
       c = force_gimple_operand_gsi_1 (gsi, unshare_expr (c),
 				      is_gimple_condexpr, NULL_TREE,
 				      true, GSI_SAME_STMT);
