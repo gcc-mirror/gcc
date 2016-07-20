@@ -26,7 +26,7 @@
 #include "c-family/c-common.h"
 #include "stor-layout.h"
 #include "langhooks.h"
-
+#include "tm_p.h"
 
 /* IDs for all the AVR builtins.  */
 
@@ -253,7 +253,10 @@ avr_register_target_pragmas (void)
   gcc_assert (ADDR_SPACE_GENERIC == ADDR_SPACE_RAM);
 
   /* Register address spaces.  The order must be the same as in the respective
-     enum from avr.h (or designated initializers must be used in avr.c).  */
+     enum from avr.h (or designated initializers must be used in avr.c).
+     We always register all address spaces even if some of them make no
+     sense for some targets.  Diagnose for non-supported spaces will be
+     emit by TARGET_ADDR_SPACE_DIAGNOSE_USAGE.  */
 
   for (i = 0; i < ADDR_SPACE_COUNT; i++)
     {
@@ -391,10 +394,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
             /* Only supply __FLASH<n> macro if the address space is reasonable
                for this target.  The address space qualifier itself is still
                supported, but using it will throw an error.  */
-            && avr_addrspace[i].segment < avr_n_flash
-	    /* Only support __MEMX macro if we have LPM.  */
-	    && (AVR_HAVE_LPM || avr_addrspace[i].pointer_size <= 2))
-
+            && avr_addr_space_supported_p ((addr_space_t) i))
           {
             const char *name = avr_addrspace[i].name;
             char *Name = (char*) alloca (1 + strlen (name));

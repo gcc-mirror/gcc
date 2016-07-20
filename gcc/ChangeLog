@@ -1,3 +1,18 @@
+2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_addr_space_supported_p): New prototype.
+	* config/avr/avr.c (TARGET_ADDR_SPACE_DIAGNOSE_USAGE): New hook
+	define...
+	(avr_addr_space_diagnose_usage): ...and implementation.
+	(avr_addr_space_supported_p): New function.
+	(avr_nonconst_pointer_addrspace, avr_pgm_check_var_decl): Only
+	report bad address space usage if that space is supported.
+	(avr_insert_attributes): Same.  No more complain about unsupported
+	address spaces.
+	* config/avr/avr-c.c (tm_p.h): Include it.
+	(avr_cpu_cpp_builtins):	Only define addr-space related built-in
+	macro if avr_addr_space_supported_p.
+
 2016-07-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/nvptx.c (nvptx_option_override): Do not set

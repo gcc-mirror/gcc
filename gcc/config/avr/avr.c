@@ -9148,6 +9148,42 @@ avr_attribute_table[] =
 };
 
 
+/* Return true if we support address space AS for the architecture in effect
+   and false, otherwise.  If LOC is not UNKNOWN_LOCATION then also issue
+   a respective error.  */
+   
+bool
+avr_addr_space_supported_p (addr_space_t as, location_t loc)
+{
+  if (AVR_TINY)
+    {
+      if (loc != UNKNOWN_LOCATION)
+        error_at (loc, "address spaces are not supported for reduced "
+                  "Tiny devices");
+      return false;
+    }
+  else if (avr_addrspace[as].segment >= avr_n_flash)
+    {
+      if (loc != UNKNOWN_LOCATION)
+        error_at (loc, "address space %qs not supported for devices with "
+                  "flash size up to %d KiB", avr_addrspace[as].name,
+                  64 * avr_n_flash);
+      return false;
+    }
+
+  return true;
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_DIAGNOSE_USAGE'.  */
+
+static void
+avr_addr_space_diagnose_usage (addr_space_t as, location_t loc)
+{
+  (void) avr_addr_space_supported_p (as, loc);
+}
+
+
 /* Look if DECL shall be placed in program memory space by
    means of attribute `progmem' or some address-space qualifier.
    Return non-zero if DECL is data that must end up in Flash and
@@ -9218,16 +9254,13 @@ avr_nonconst_pointer_addrspace (tree typ)
       while (TREE_CODE (target) == ARRAY_TYPE)
         target = TREE_TYPE (target);
 
-      /* Pointers to non-generic address space must be const.
-         Refuse address spaces outside the device's flash.  */
+      /* Pointers to non-generic address space must be const.  */
 
       as = TYPE_ADDR_SPACE (target);
 
       if (!ADDR_SPACE_GENERIC_P (as)
-          && (!TYPE_READONLY (target)
-              || avr_addrspace[as].segment >= avr_n_flash
-	      /* Also refuse __memx address space if we can't support it.  */
-	      || (!AVR_HAVE_LPM && avr_addrspace[as].pointer_size > 2)))
+          && !TYPE_READONLY (target)
+          && avr_addr_space_supported_p (as))
         {
           return as;
         }
@@ -9291,25 +9324,13 @@ avr_pgm_check_var_decl (tree node)
 
   if (reason)
     {
-      if (avr_addrspace[as].segment >= avr_n_flash)
-        {
-          if (TYPE_P (node))
-            error ("%qT uses address space %qs beyond flash of %d KiB",
-                   node, avr_addrspace[as].name, 64 * avr_n_flash);
-          else
-            error ("%s %q+D uses address space %qs beyond flash of %d KiB",
-                   reason, node, avr_addrspace[as].name, 64 * avr_n_flash);
-        }
+      if (TYPE_P (node))
+        error ("pointer targeting address space %qs must be const in %qT",
+               avr_addrspace[as].name, node);
       else
-        {
-          if (TYPE_P (node))
-            error ("pointer targeting address space %qs must be const in %qT",
-                   avr_addrspace[as].name, node);
-          else
-            error ("pointer targeting address space %qs must be const"
-                   " in %s %q+D",
-                   avr_addrspace[as].name, reason, node);
-        }
+        error ("pointer targeting address space %qs must be const"
+               " in %s %q+D",
+               avr_addrspace[as].name, reason, node);
     }
 
   return reason == NULL;
@@ -9341,18 +9362,6 @@ avr_insert_attributes (tree node, tree *attributes)
         return;
 
       as = TYPE_ADDR_SPACE (TREE_TYPE (node));
-
-      if (avr_addrspace[as].segment >= avr_n_flash)
-        {
-          error ("variable %q+D located in address space %qs beyond flash "
-                 "of %d KiB", node, avr_addrspace[as].name, 64 * avr_n_flash);
-        }
-      else if (!AVR_HAVE_LPM && avr_addrspace[as].pointer_size > 2)
-	{
-          error ("variable %q+D located in address space %qs"
-                 " which is not supported for architecture %qs",
-                 node, avr_addrspace[as].name, avr_arch->name);
-	}
 
       if (!TYPE_READONLY (node0)
           && !TREE_READONLY (node))
@@ -13727,6 +13736,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
 #define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS avr_addr_space_legitimize_address
+
+#undef  TARGET_ADDR_SPACE_DIAGNOSE_USAGE
+#define TARGET_ADDR_SPACE_DIAGNOSE_USAGE avr_addr_space_diagnose_usage
 
 #undef  TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P avr_mode_dependent_address_p
