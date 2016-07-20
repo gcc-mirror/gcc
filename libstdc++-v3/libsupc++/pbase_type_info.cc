@@ -50,14 +50,16 @@ __do_catch (const type_info *thr_type,
         {
           if (__pointee->__is_function_p ())
             {
-              // A pointer-to-member-function is two words <ptr,adj> but the
-              // nullptr_t exception object at *(nullptr_t*)*thr_obj is only
-              // one word, so we can't safely return it as a PMF. FIXME.
-              return false;
+              using pmf_type = void (__pbase_type_info::*)();
+              static const pmf_type pmf = nullptr;
+              *thr_obj = const_cast<pmf_type*>(&pmf);
+              return true;
             }
           else
             {
-              *(ptrdiff_t*)*thr_obj = -1; // null pointer to data member
+              using pm_type = int __pbase_type_info::*;
+              static const pm_type pm = nullptr;
+              *thr_obj = const_cast<pm_type*>(&pm);
               return true;
             }
         }

@@ -1,3 +1,8 @@
+2016-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/pbase_type_info.cc (__pbase_type_info::__do_catch): Use
+	static objects for catching nullptr as pointer to member types.
+
 2016-07-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Clean up optional's comments.

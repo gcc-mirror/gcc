@@ -39,7 +39,7 @@ int main()
           caught(4);
         throw;
       }
-    } catch (int (A::*pmf)()) {  // FIXME: currently unsupported
+    } catch (int (A::*pmf)()) {
       if (pmf == nullptr)
         caught(8);
       throw;
@@ -47,6 +47,35 @@ int main()
   } catch (nullptr_t) {
   }
 
-  if (result != 7) // should be 15
+  try {
+    try {
+      try {
+        try {
+          try {
+            throw nullptr;
+          } catch (void* const& p) {
+            if (p == nullptr)
+              caught(16);
+            throw;
+          }
+        } catch (void(* const& pf)()) {
+          if (pf == nullptr)
+            caught(32);
+          throw;
+        }
+      } catch (int A::* const& pm) {
+        if (pm == nullptr)
+          caught(64);
+        throw;
+      }
+    } catch (int (A::* const& pmf)()) {
+      if (pmf == nullptr)
+        caught(128);
+      throw;
+    }
+  } catch (nullptr_t) {
+  }
+
+  if (result != 255)
     abort ();
 }
