@@ -1,3 +1,8 @@
+2016-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/nvptx.c (nvptx_option_override): Do not set
+	flag_toplevel_reorder.
+
 2016-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-rich-location.c
