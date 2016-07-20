@@ -1,3 +1,10 @@
+2016-07-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/71503
+	PR tree-optimization/71683
+	* tree-if-conv.c (gen_phi_arg_condition): Record true predicate
+	and break.
+
 2016-07-20  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi (-fipa-ra): Document when the option is

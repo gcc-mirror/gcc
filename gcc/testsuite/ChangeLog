@@ -1,3 +1,10 @@
+2016-07-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/71503
+	PR tree-optimization/71683
+	* gcc.dg/tree-ssa/ifc-pr71503.c: New test.
+	* gcc.dg/tree-ssa/ifc-pr71683.c: New test.
+
 2016-07-20  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/plugin/plugin.exp: Remove sreal test.
