@@ -1,3 +1,12 @@
+2016-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* hwint.h (HOST_WIDE_INT_0): New define.
+	(HOST_WIDE_INT_0U): Ditto.
+	* double-int.c: Use HOST_WIDE_INT_0 instead of (HOST_WIDE_INT) 0.
+	* dse.c: Use HOST_WIDE_INT_0U instead of (unsigned HOST_WIDE_INT) 0.
+	* simplify-rtx.c: Ditto.
+	* tree-object-size.c: Ditto.
+
 2016-07-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_encode_section_info): Remove mode size

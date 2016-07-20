@@ -1217,7 +1217,7 @@ set_all_positions_unneeded (store_info *s_info)
       s_info->positions_needed.large.count = end;
     }
   else
-    s_info->positions_needed.small_bitmask = (unsigned HOST_WIDE_INT) 0;
+    s_info->positions_needed.small_bitmask = HOST_WIDE_INT_0U;
 }
 
 /* Return TRUE if any bytes from S_INFO store are needed.  */
@@ -1229,8 +1229,7 @@ any_positions_needed_p (store_info *s_info)
     return (s_info->positions_needed.large.count
 	    < s_info->end - s_info->begin);
   else
-    return (s_info->positions_needed.small_bitmask
-	    != (unsigned HOST_WIDE_INT) 0);
+    return (s_info->positions_needed.small_bitmask != HOST_WIDE_INT_0U);
 }
 
 /* Return TRUE if all bytes START through START+WIDTH-1 from S_INFO

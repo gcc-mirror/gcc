@@ -557,7 +557,7 @@ div_and_round_double (unsigned code, int uns,
     case CEIL_MOD_EXPR:		/* round toward positive infinity */
       if (!quo_neg && (*lrem != 0 || *hrem != 0))  /* ratio > 0 && rem != 0 */
 	{
-	  add_double (*lquo, *hquo, HOST_WIDE_INT_1, (HOST_WIDE_INT) 0,
+	  add_double (*lquo, *hquo, HOST_WIDE_INT_1, HOST_WIDE_INT_0,
 		      lquo, hquo);
 	}
       else
@@ -593,7 +593,7 @@ div_and_round_double (unsigned code, int uns,
 			  HOST_WIDE_INT_M1, HOST_WIDE_INT_M1, lquo, hquo);
 	    else
 	      /* quo = quo + 1; */
-	      add_double (*lquo, *hquo, HOST_WIDE_INT_1, (HOST_WIDE_INT) 0,
+	      add_double (*lquo, *hquo, HOST_WIDE_INT_1, HOST_WIDE_INT_0,
 			  lquo, hquo);
 	  }
 	else

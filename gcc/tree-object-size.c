@@ -738,7 +738,7 @@ merge_object_sizes (struct object_size_info *osi, tree dest, tree orig,
   orig_bytes = object_sizes[object_size_type][SSA_NAME_VERSION (orig)];
   if (orig_bytes != unknown[object_size_type])
     orig_bytes = (offset > orig_bytes)
-		 ? (unsigned HOST_WIDE_INT) 0 : orig_bytes - offset;
+		 ? HOST_WIDE_INT_0U : orig_bytes - offset;
 
   if ((object_size_type & 2) == 0)
     {
