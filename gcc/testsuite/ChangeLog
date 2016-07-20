@@ -1,3 +1,14 @@
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70339
+	PR c/71858
+	* g++.dg/spellcheck-identifiers.C: New test case, based on
+	gcc.dg/spellcheck-identifiers.c.
+	* g++.dg/spellcheck-identifiers-2.C: New test case, based on
+	gcc.dg/spellcheck-identifiers-2.c.
+	* g++.dg/spellcheck-typenames.C: New test case, based on
+	gcc.dg/spellcheck-typenames.c
+
 2016-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/cpp0x/nullptr35.C: Change expected result for catching as
