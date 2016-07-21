@@ -1,3 +1,9 @@
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71941
+	* cp-gimplify.c (cp_genericize): For nested cp_genericize calls
+	save/restore bc_label array.
+
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70781
