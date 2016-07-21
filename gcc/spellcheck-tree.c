@@ -91,7 +91,7 @@ find_closest_macro_cpp_cb (cpp_reader *, cpp_hashnode *hashnode,
 best_macro_match::best_macro_match (tree goal,
 				    edit_distance_t best_distance_so_far,
 				    cpp_reader *reader)
-  : best_match (goal, best_distance_so_far)
+: best_match <goal_t, candidate_t> (goal, best_distance_so_far)
 {
   cpp_forall_identifiers (reader, find_closest_macro_cpp_cb, this);
 }
