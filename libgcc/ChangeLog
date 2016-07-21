@@ -1,3 +1,8 @@
+2016-07-21  Aurelien Jarno <aurelien@aurel32.net>
+
+	PR target/59833
+	* config/arm/ieee754-df.S (extendsfdf2): Convert sNaN to qNaN.
+
 2016-07-19  Nick Clifton  <nickc@redhat.com>
 
 	* config.host (m32r): Add m32r/t-m32r to tmake_file.
