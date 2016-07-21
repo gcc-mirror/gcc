@@ -1,3 +1,7 @@
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-object-size.c (unknown): Use HOST_WIDE_INT_M1U instead of -1.
+
 2016-07-21  Andrew Sutton  <andrew.n.sutton@gmail.com>
 
 	Improving concepts performance and diagnostics.
