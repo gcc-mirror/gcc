@@ -1,3 +1,14 @@
+2016-07-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/71876
+	* calls.c (gimple_maybe_alloca_call_p): New function.  Return true
+	if STMT may be an alloca call.
+	(gimple_alloca_call_p, alloca_call_p): Return only true for the
+	builtin alloca call.
+	* calls.h (gimple_maybe_alloca_call_p): New function.
+	* tree-inline.c (inline_forbidden_p_stmt): Use
+	gimple_maybe_alloca_call_p here.
+
 2016-07-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* spellcheck-tree.c (best_macro_match::best_macro_match):

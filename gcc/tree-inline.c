@@ -3577,7 +3577,7 @@ inline_forbidden_p_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	 RAM instead of 256MB.  Don't do so for alloca calls emitted for
 	 VLA objects as those can't cause unbounded growth (they're always
 	 wrapped inside stack_save/stack_restore regions.  */
-      if (gimple_alloca_call_p (stmt)
+      if (gimple_maybe_alloca_call_p (stmt)
 	  && !gimple_call_alloca_for_var_p (as_a <gcall *> (stmt))
 	  && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	{
