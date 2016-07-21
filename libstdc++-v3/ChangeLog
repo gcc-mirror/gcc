@@ -1,5 +1,11 @@
 2016-07-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/vector/zero_sized_allocations.cc:
+	Define sized deallocation function.
+	* testsuite/util/testsuite_new_operators.h:
+	(operator delete(void*, const std::nothrow_t&)): Define nothrow
+	deallocation function.
+
 	* testsuite/21_strings/basic_string/modifiers/append/char/1.cc: Fix
 	reads past the end of strings.
 	* testsuite/21_strings/basic_string/operations/compare/char/1.cc:

@@ -22,7 +22,7 @@
 
 unsigned int zero_sized_news = 0;
 
-void *operator new(size_t size) throw (std::bad_alloc)
+void *operator new(std::size_t size) throw (std::bad_alloc)
 {
   /* malloc(0) is unpredictable; avoid it.  */
   if (size == 0)
@@ -45,6 +45,14 @@ void operator delete(void *ptr) throw()
     std::free(ptr);
 }
 
+#if __cpp_sized_deallocation
+void operator delete(void *ptr, std::size_t) throw()
+{
+  if (ptr != 0)
+    std::free(ptr);
+}
+#endif
+
 // http://gcc.gnu.org/ml/libstdc++/2007-09/msg00006.html
 void test01()
 {
@@ -57,7 +65,7 @@ void test01()
   VERIFY( zero_sized_news == 0 );
 
   v->resize(10);
-  delete(v);
+  delete v;
   VERIFY( zero_sized_news == 0 );
 }
 
