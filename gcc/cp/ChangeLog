@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71896
+	* constexpr.c (cxx_eval_binary_expression): Handle comparison
+	between lowered and unlowered PTRMEM_CST.
+
 	PR c++/71092
 	* constexpr.c (cxx_eval_call_expression): Fail quietly when cgraph
 	threw away DECL_SAVED_TREE.
