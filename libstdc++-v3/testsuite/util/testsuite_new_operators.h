@@ -64,6 +64,13 @@ void operator delete(void* p) throw()
     std::free(p);
 }
 
+void operator delete(void* p, const std::nothrow_t&) throw()
+{
+  if (p)
+    std::free(p);
+}
+
+
 #endif // _GLIBCXX_TESTSUITE_NEW_OPERATORS_H
 
 
