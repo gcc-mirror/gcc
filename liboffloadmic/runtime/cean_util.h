@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -66,6 +66,17 @@ struct CeanReadRanges {
     CeanReadDim Dim[1];
 };
 
+struct IntervalDesc {
+    int64_t lower;   // Lower  index
+    int64_t size;    // Size of each element at this interval
+};
+
+struct NonContigDesc {
+    int64_t base;            // Base address
+    int64_t interval_cnt;    // Number of intervals
+    struct IntervalDesc interval[1];
+};
+
 // array descriptor length
 #define __arr_desc_length(rank) \
     (sizeof(int64_t) + sizeof(Dim_Desc) * (rank))
@@ -108,6 +119,14 @@ DLL_LOCAL void    __arr_desc_dump(
     const Arr_Desc *adp,
     bool dereference,
     bool print_values);
+
+DLL_LOCAL void noncont_struct_dump(
+    const char *spaces,
+    const char *name,
+    struct NonContigDesc *desc_p);
+
+DLL_LOCAL int64_t get_noncont_struct_size(struct NonContigDesc *desc_p);
+
 #define ARRAY_DESC_DUMP(spaces, name, adp, dereference, print_values) \
     if (console_enabled >= 2) \
         __arr_desc_dump(spaces, name, adp, dereference, print_values);

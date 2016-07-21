@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,16 +35,19 @@
 #ifndef OFFLOAD_H_INCLUDED
 #define OFFLOAD_H_INCLUDED
 
+#ifdef __cplusplus
 #if defined(LINUX) || defined(FREEBSD)
 #include <bits/functexcept.h>
+#endif
 #endif
 
 #include <stddef.h>
 #include <omp.h>
 
 #ifdef TARGET_WINNT
-// <stdint.h> is not compatible with Windows
+// <stdint.h> is incompatible on Windows.
 typedef unsigned long long int  uint64_t;
+typedef   signed long long int   int64_t;
 #else
 #include <stdint.h>
 #endif  // TARGET_WINNT
@@ -93,7 +96,7 @@ typedef struct {
     size_t          data_received;  /* number of bytes received by host */
 } _Offload_status;
 
-typedef uint64_t _Offload_stream;
+typedef int64_t _Offload_stream;
 
 #define OFFLOAD_STATUS_INIT(x) \
     ((x).result = OFFLOAD_DISABLED)
@@ -119,8 +122,20 @@ extern int _Offload_stream_destroy(
     _Offload_stream stream  // stream handle
 );
 
+extern int _Offload_stream_delete(
+    _Offload_stream handle  // stream handle
+);
+
 extern int _Offload_stream_completed(
     int device,             // MIC device number
+    _Offload_stream handle  // stream handle
+);
+
+extern int _Offload_device_streams_completed(
+    int device             // MIC device number
+);
+
+extern int _Offload_stream_is_empty(
     _Offload_stream handle  // stream handle
 );
 
@@ -164,6 +179,129 @@ extern int _Offload_find_associated_mic_memory(
 extern void omp_set_default_device(int num) __GOMP_NOTHROW;
 extern int  omp_get_default_device(void) __GOMP_NOTHROW;
 extern int  omp_get_num_devices(void) __GOMP_NOTHROW;
+
+// OpenMP 4.5 APIs
+
+/*! \fn omp_get_initial_device
+    \brief Return the device id of the initial device.
+    \return Returns the device id of the initial device.
+*/
+extern int omp_get_initial_device(
+    void
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_alloc
+    \brief Allocate memory in the device data environment.
+    \param size        Number of bytes to allocate.
+    \param device_num  The device number on which to allocate.
+    \return            Returns a pointer to the allocated memory.  
+*/
+extern void* omp_target_alloc(
+    size_t size, 
+    int    device_num
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_free
+    \brief Free memory in the device data environment.
+    \param device_ptr  Address of allocated device memory.
+    \param device_num  The device number on which to free.
+*/
+extern void omp_target_free(
+    void *device_ptr, 
+    int   device_num
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_is_present
+    \brief Test whether a host pointer has corresponding storage on a device.
+    \param device_ptr  Address of allocated device memory.
+    \param device_num  The device number on which to test..
+    \return            true if storage is found, false otherwise.
+*/
+extern int omp_target_is_present(
+    void *ptr,
+    int device_num
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_memcpy
+    \brief Copy memory between host/device pointers.
+    \param dst         Address of destination memory.
+    \param src         Address of source memory.
+    \param length      Number of bytes to copy.
+    \param dst_offset  Destination offset in bytes.
+    \param src_offset  Source offset in bytes.
+    \param dst_device  Destination device number.
+    \param src_device  Source device number.
+    \return            0 on success, 1 otherwise.
+*/
+extern int omp_target_memcpy(
+    void   *dst, 
+    void   *src, 
+    size_t  length, 
+    size_t  dst_offset, 
+    size_t  src_offset, 
+    int     dst_device,
+    int     src_device
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_memcpy_rect
+    \brief Copy a rectangular subsection from 
+    \brief one multi-dimensional array to another.
+    \param dst           Address of destination array.
+    \param src           Address of source array.
+    \param element_size  Number of bytes in each array element.
+    \param num_dims      Number of dimensions.
+    \param volume        Array of element counts to copy in each dimension.
+    \param dst_offsets   Destination offsets array.
+    \param src_offsets   Source offsets array.
+    \param dst_dims      Destination array dimensions array.
+    \param src_dims      Source array dimensions array.
+    \param dst_device    Destination device number.
+    \param src_device    Source device number.
+    \return              0 on success, 1 otherwise.
+*/
+extern int omp_target_memcpy_rect(
+    void         *dst,
+    void         *src,
+    size_t        element_size,
+    int           num_dims,
+    const size_t *volume,
+    const size_t *dst_offsets,
+    const size_t *src_offsets,
+    const size_t *dst_dimensions,
+    const size_t *src_dimensions,
+    int           dst_device,
+    int           src_device
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_associate_ptr
+    \brief Map a device pointer to a host pointer.
+    \param host_ptr       The host pointer.
+    \param device_ptr     The device pointer.
+    \param size           Number of bytes to map.
+    \param device_offset  Offset on device of mapped memory.
+    \param device_num     Device number.
+    \return               0 on success, 1 otherwise.
+*/
+extern int omp_target_associate_ptr(
+    void   *host_ptr, 
+    void   *device_ptr,
+    size_t  size,
+    size_t  device_offset,
+    int     device_num
+) __GOMP_NOTHROW;
+
+/*! \fn omp_target_disassociate_ptr
+    \brief Remove a host pointer to device pointer association.
+    \param ptr         The host pointer to disassociate.
+    \param device_num  Device number.
+    \return            0 on success, 1 otherwise.
+*/
+extern int omp_target_disassociate_ptr(
+    void   *host_ptr,
+    int     device_num
+) __GOMP_NOTHROW;
+
+// End of OpenMP 4.5 APIs
 
 /* OpenMP API wrappers */
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -43,6 +43,7 @@ public:
     ~OffloadDescriptor() {
         if (m_vars != 0) {
             free(m_vars);
+            free(m_vars_extra);
         }
     }
 
@@ -96,6 +97,14 @@ private:
     VarDesc* m_vars;
     int      m_vars_total;
     int      m_offload_number;
+
+    // extra data associated with each variable descriptor
+    struct VarExtra {
+        uint16_t type_src;
+        uint16_t type_dst;
+    };
+
+    VarExtra* m_vars_extra;
 };
 
 // one time target initialization in main

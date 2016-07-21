@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,12 +30,16 @@
 
 #if HOST_LIBRARY
 #include "offload_table.h"
+#ifdef MYO_SUPPORT
 #include "offload_myo_host.h"
+#endif // MYO_SUPPORT
 #else
 #include "compiler_if_target.h"
 #include "offload_target.h"
+#ifdef MYO_SUPPORT
 #include "offload_myo_target.h"
-#endif
+#endif // MYO_SUPPORT
+#endif // HOST_LIBRARY
 
 // Initializes library and registers specified offload image.
 // Don't use this declarations from offload_host.h as offload_table.h
@@ -254,6 +258,9 @@ static void offload_init()
 {
     bool success;
 
+    // Set offload version
+    __offload_set_version(OFFLOAD_VERSION_17);
+
     // register offload tables
     __offload_register_tables(&__offload_entry_node,
                               &__offload_func_node,
@@ -295,8 +302,6 @@ static void offload_init()
 
 #ifndef TARGET_WINNT
 static void offload_fini_so() __attribute__((destructor(101)));
-#else // TARGET_WINNT
-static void offload_init_so();
 #endif // TARGET_WINNT
 
 static void offload_fini()

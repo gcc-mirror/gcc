@@ -1,3 +1,114 @@
+2016-07-21  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* Makefile.am (myo_inc_dir): Remove.
+	(toolexeclib_LTLIBRARIES): Remove libmyo-client.la and
+	libmyo-service.la.
+	(liboffloadmic_cppflags): Remove -DMYO_SUPPORT.
+	(liboffloadmic_host_la_SOURCES): Remove offload_myo_host.cpp.
+	(liboffloadmic_target_la_SOURCES): Remove offload_myo_target.cpp.
+	(liboffloadmic_target_la_LIBADD): Remove libmyo-service.la.
+	(libmyo_client_la_SOURCES, libmyo_service_la_SOURCES): Remove.
+	(libmyo_client_la_DEPENDENCIES, libmyo_service_la_DEPENDENCIES): Remove.
+	(libmyo_client_la_CPPFLAGS, libmyo_service_la_CPPFLAGS): Remove.
+	(libmyo_client_la_LDFLAGS, libmyo_service_la_LDFLAGS): Remove.
+	* Makefile.in: Regenerate.
+	* doc/doxygen/header.tex: Merge from upstream, version 20160715
+	<https://openmprtl.org/sites/default/files/liboffload_oss_20160715.tgz>.
+	* runtime/cean_util.cpp: Likewise.
+	* runtime/cean_util.h: Likewise.
+	* runtime/coi/coi_client.cpp: Likewise.
+	* runtime/coi/coi_client.h: Likewise.
+	* runtime/coi/coi_server.cpp: Likewise.
+	* runtime/coi/coi_server.h: Likewise.
+	* runtime/compiler_if_host.cpp: Likewise.
+	* runtime/compiler_if_host.h: Likewise.
+	* runtime/compiler_if_target.cpp: Likewise.
+	* runtime/compiler_if_target.h: Likewise.
+	* runtime/dv_util.cpp: Likewise.
+	* runtime/dv_util.h: Likewise.
+	* runtime/liboffload_error.c: Likewise.
+	* runtime/liboffload_error_codes.h: Likewise.
+	* runtime/liboffload_msg.c: Likewise.
+	* runtime/liboffload_msg.h: Likewise.
+	* runtime/mic_lib.f90: Likewise.
+	* runtime/offload.h: Likewise.
+	* runtime/offload_common.cpp: Likewise.
+	* runtime/offload_common.h: Likewise.
+	* runtime/offload_engine.cpp: Likewise.
+	* runtime/offload_engine.h: Likewise.
+	* runtime/offload_env.cpp: Likewise.
+	* runtime/offload_env.h: Likewise.
+	* runtime/offload_host.cpp: Likewise.
+	* runtime/offload_host.h: Likewise.
+	* runtime/offload_iterator.h: Likewise.
+	* runtime/offload_myo_host.cpp: Likewise.
+	* runtime/offload_myo_host.h: Likewise.
+	* runtime/offload_myo_target.cpp: Likewise.
+	* runtime/offload_myo_target.h: Likewise.
+	* runtime/offload_omp_host.cpp: Likewise.
+	* runtime/offload_omp_target.cpp: Likewise.
+	* runtime/offload_orsl.cpp: Likewise.
+	* runtime/offload_orsl.h: Likewise.
+	* runtime/offload_table.cpp: Likewise.
+	* runtime/offload_table.h: Likewise.
+	* runtime/offload_target.cpp: Likewise.
+	* runtime/offload_target.h: Likewise.
+	* runtime/offload_target_main.cpp: Likewise.
+	* runtime/offload_timer.h: Likewise.
+	* runtime/offload_timer_host.cpp: Likewise.
+	* runtime/offload_timer_target.cpp: Likewise.
+	* runtime/offload_trace.cpp: Likewise.
+	* runtime/offload_trace.h: Likewise.
+	* runtime/offload_util.cpp: Likewise.
+	* runtime/offload_util.h: Likewise.
+	* runtime/ofldbegin.cpp: Likewise.
+	* runtime/ofldend.cpp: Likewise.
+	* runtime/orsl-lite/include/orsl-lite.h: Likewise.
+	* runtime/orsl-lite/lib/orsl-lite.c: Likewise.
+	* runtime/use_mpss2.txt: Remove.
+	* include/coi/common/COIEngine_common.h: Merge from upstream, MPSS
+	version 3.7.1
+	<http://registrationcenter-download.intel.com/akdlm/irc_nas/9226/
+	mpss-3.7.1-linux.tar>.
+	* include/coi/common/COIEvent_common.h: Likewise.
+	* include/coi/common/COIMacros_common.h: Likewise.
+	* include/coi/common/COIPerf_common.h: Likewise.
+	* include/coi/common/COIResult_common.h: Likewise.
+	* include/coi/common/COISysInfo_common.h: Likewise.
+	* include/coi/common/COITypes_common.h: Likewise.
+	* include/coi/sink/COIBuffer_sink.h: Likewise.
+	* include/coi/sink/COIPipeline_sink.h: Likewise.
+	* include/coi/sink/COIProcess_sink.h: Likewise.
+	* include/coi/source/COIBuffer_source.h: Likewise.
+	* include/coi/source/COIEngine_source.h: Likewise.
+	* include/coi/source/COIEvent_source.h: Likewise.
+	* include/coi/source/COIPipeline_source.h: Likewise.
+	* include/coi/source/COIProcess_source.h: Likewise.
+	* include/myo/myo.h: Remove.
+	* include/myo/myoimpl.h: Remove.
+	* include/myo/myotypes.h: Remove.
+	* plugin/Makefile.am (AM_LDFLAGS): Remove -lmyo-service.
+	* plugin/Makefile.in: Regenerate.
+	* plugin/libgomp-plugin-intelmic.cpp (LD_LIBRARY_PATH_ENV): Remove.
+	(MIC_LD_LIBRARY_PATH_ENV): Remove.
+	(init): Do not set MIC_LD_LIBRARY_PATH.  Now liboffloadmic uses only
+	LD_LIBRARY_PATH.
+	* plugin/offload_target_main.cpp: Update copyright years.
+	* runtime/emulator/coi_common.h: Likewise.
+	* runtime/emulator/coi_device.cpp: Likewise.
+	* runtime/emulator/coi_device.h: Likewise.
+	* runtime/emulator/coi_host.cpp: Likewise.
+	(COIBufferCreate): Allow COI_BUFFER_OPENCL.
+	(COIEngineGetInfo): Return COI_DEVICE_KNL instead of COI_ISA_x86_64.
+	* runtime/emulator/coi_host.h: Update copyright years.
+	* runtime/emulator/coi_version_asm.h: Likewise.
+	* runtime/emulator/coi_version_linker_script.map: Likewise.
+	* runtime/emulator/myo_client.cpp: Remove.
+	* runtime/emulator/myo_service.cpp: Remove.
+	* runtime/emulator/myo_service.h: Remove.
+	* runtime/emulator/myo_version_asm.h: Remove.
+	* runtime/emulator/myo_version_linker_script.map: Remove.
+
 2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (offload): Change return type

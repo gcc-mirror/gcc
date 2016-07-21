@@ -149,22 +149,6 @@ libcoi_host_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(CXXFLAGS) $(libcoi_host_la_LDFLAGS) $(LDFLAGS) -o $@
 @LIBOFFLOADMIC_HOST_TRUE@am_libcoi_host_la_rpath = -rpath \
 @LIBOFFLOADMIC_HOST_TRUE@	$(toolexeclibdir)
-libmyo_client_la_LIBADD =
-am_libmyo_client_la_OBJECTS = libmyo_client_la-myo_client.lo
-libmyo_client_la_OBJECTS = $(am_libmyo_client_la_OBJECTS)
-libmyo_client_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(libmyo_client_la_LDFLAGS) $(LDFLAGS) -o $@
-@LIBOFFLOADMIC_HOST_TRUE@am_libmyo_client_la_rpath = -rpath \
-@LIBOFFLOADMIC_HOST_TRUE@	$(toolexeclibdir)
-libmyo_service_la_LIBADD =
-am_libmyo_service_la_OBJECTS = libmyo_service_la-myo_service.lo
-libmyo_service_la_OBJECTS = $(am_libmyo_service_la_OBJECTS)
-libmyo_service_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(libmyo_service_la_LDFLAGS) $(LDFLAGS) -o $@
-@LIBOFFLOADMIC_HOST_FALSE@am_libmyo_service_la_rpath = -rpath \
-@LIBOFFLOADMIC_HOST_FALSE@	$(toolexeclibdir)
 liboffloadmic_host_la_LIBADD =
 am__objects_1 = liboffloadmic_host_la-dv_util.lo \
 	liboffloadmic_host_la-liboffload_error.lo \
@@ -180,7 +164,6 @@ am_liboffloadmic_host_la_OBJECTS = $(am__objects_1) \
 	liboffloadmic_host_la-offload_engine.lo \
 	liboffloadmic_host_la-offload_env.lo \
 	liboffloadmic_host_la-offload_host.lo \
-	liboffloadmic_host_la-offload_myo_host.lo \
 	liboffloadmic_host_la-offload_omp_host.lo \
 	liboffloadmic_host_la-offload_orsl.lo \
 	liboffloadmic_host_la-offload_timer_host.lo \
@@ -201,7 +184,6 @@ am__objects_2 = liboffloadmic_target_la-dv_util.lo \
 am_liboffloadmic_target_la_OBJECTS = $(am__objects_2) \
 	liboffloadmic_target_la-coi_server.lo \
 	liboffloadmic_target_la-compiler_if_target.lo \
-	liboffloadmic_target_la-offload_myo_target.lo \
 	liboffloadmic_target_la-offload_omp_target.lo \
 	liboffloadmic_target_la-offload_target.lo \
 	liboffloadmic_target_la-offload_timer_target.lo
@@ -236,7 +218,6 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libcoi_device_la_SOURCES) $(libcoi_host_la_SOURCES) \
-	$(libmyo_client_la_SOURCES) $(libmyo_service_la_SOURCES) \
 	$(liboffloadmic_host_la_SOURCES) \
 	$(liboffloadmic_target_la_SOURCES)
 MULTISRCTOP = 
@@ -403,7 +384,6 @@ SUBDIRS = . plugin
 # Directories.
 build_dir = $(top_builddir)
 coi_inc_dir = $(top_srcdir)/include/coi
-myo_inc_dir = $(top_srcdir)/include/myo
 libgomp_dir = $(build_dir)/../libgomp
 source_dir = $(top_srcdir)/runtime
 
@@ -414,8 +394,8 @@ libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 # Target list.
 @LIBOFFLOADMIC_HOST_TRUE@nodist_toolexeclib_HEADERS = liboffloadmic_host.spec
-@LIBOFFLOADMIC_HOST_FALSE@toolexeclib_LTLIBRARIES = libcoi_device.la libmyo-service.la liboffloadmic_target.la
-@LIBOFFLOADMIC_HOST_TRUE@toolexeclib_LTLIBRARIES = libcoi_host.la libmyo-client.la liboffloadmic_host.la
+@LIBOFFLOADMIC_HOST_FALSE@toolexeclib_LTLIBRARIES = libcoi_device.la liboffloadmic_target.la
+@LIBOFFLOADMIC_HOST_TRUE@toolexeclib_LTLIBRARIES = libcoi_host.la liboffloadmic_host.la
 @LIBOFFLOADMIC_HOST_FALSE@nodist_libsubinclude_HEADERS = runtime/compiler_if_target.h
 @LIBOFFLOADMIC_HOST_TRUE@nodist_libsubinclude_HEADERS = runtime/compiler_if_host.h
 @LIBOFFLOADMIC_HOST_FALSE@ofld_obj = ofldbegin.o ofldend.o
@@ -430,7 +410,7 @@ liboffloadmic_sources = runtime/dv_util.cpp \
 			runtime/offload_trace.cpp \
 			runtime/offload_util.cpp
 
-liboffloadmic_cppflags = -DLINUX -DCOI_LIBRARY_VERSION=2 -DMYO_SUPPORT -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -I$(coi_inc_dir) -I$(myo_inc_dir) -I$(source_dir) -I$(libgomp_dir)
+liboffloadmic_cppflags = -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -I$(coi_inc_dir) -I$(source_dir) -I$(libgomp_dir)
 liboffloadmic_host_la_SOURCES = $(liboffloadmic_sources) \
 				runtime/cean_util.cpp \
 				runtime/coi/coi_client.cpp \
@@ -438,7 +418,6 @@ liboffloadmic_host_la_SOURCES = $(liboffloadmic_sources) \
 				runtime/offload_engine.cpp \
 				runtime/offload_env.cpp \
 				runtime/offload_host.cpp \
-				runtime/offload_myo_host.cpp \
 				runtime/offload_omp_host.cpp \
 				runtime/offload_orsl.cpp \
 				runtime/offload_timer_host.cpp \
@@ -449,33 +428,24 @@ liboffloadmic_host_la_LDFLAGS = @lt_cv_dlopen_libs@ -version-info 5:0:0
 liboffloadmic_target_la_SOURCES = $(liboffloadmic_sources) \
 				  runtime/coi/coi_server.cpp \
 				  runtime/compiler_if_target.cpp \
-				  runtime/offload_myo_target.cpp \
 				  runtime/offload_omp_target.cpp \
 				  runtime/offload_target.cpp \
 				  runtime/offload_timer_target.cpp
 
 liboffloadmic_target_la_CPPFLAGS = $(liboffloadmic_cppflags) -DHOST_LIBRARY=0
 liboffloadmic_target_la_LDFLAGS = @lt_cv_dlopen_libs@ -version-info 5:0:0
-liboffloadmic_target_la_LIBADD = libcoi_device.la libmyo-service.la
+liboffloadmic_target_la_LIBADD = libcoi_device.la
 liboffloadmic_target_la_DEPENDENCIES = $(liboffloadmic_target_la_LIBADD)
 
 # Emulator.
 libcoi_host_la_SOURCES = runtime/emulator/coi_host.cpp
 libcoi_device_la_SOURCES = runtime/emulator/coi_device.cpp
-libmyo_client_la_SOURCES = runtime/emulator/myo_client.cpp
-libmyo_service_la_SOURCES = runtime/emulator/myo_service.cpp
 libcoi_host_la_DEPENDENCIES = runtime/emulator/coi_version_linker_script.map
 libcoi_device_la_DEPENDENCIES = runtime/emulator/coi_version_linker_script.map
-libmyo_client_la_DEPENDENCIES = runtime/emulator/myo_version_linker_script.map
-libmyo_service_la_DEPENDENCIES = runtime/emulator/myo_version_linker_script.map
 libcoi_host_la_CPPFLAGS = -I$(coi_inc_dir)
 libcoi_device_la_CPPFLAGS = -I$(coi_inc_dir)
-libmyo_client_la_CPPFLAGS = -I$(myo_inc_dir)
-libmyo_service_la_CPPFLAGS = -I$(myo_inc_dir)
 libcoi_host_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/coi_version_linker_script.map
 libcoi_device_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/coi_version_linker_script.map
-libmyo_client_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/myo_version_linker_script.map
-libmyo_service_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/myo_version_linker_script.map
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -594,10 +564,6 @@ libcoi_device.la: $(libcoi_device_la_OBJECTS) $(libcoi_device_la_DEPENDENCIES) $
 	$(libcoi_device_la_LINK) $(am_libcoi_device_la_rpath) $(libcoi_device_la_OBJECTS) $(libcoi_device_la_LIBADD) $(LIBS)
 libcoi_host.la: $(libcoi_host_la_OBJECTS) $(libcoi_host_la_DEPENDENCIES) $(EXTRA_libcoi_host_la_DEPENDENCIES) 
 	$(libcoi_host_la_LINK) $(am_libcoi_host_la_rpath) $(libcoi_host_la_OBJECTS) $(libcoi_host_la_LIBADD) $(LIBS)
-libmyo-client.la: $(libmyo_client_la_OBJECTS) $(libmyo_client_la_DEPENDENCIES) $(EXTRA_libmyo_client_la_DEPENDENCIES) 
-	$(libmyo_client_la_LINK) $(am_libmyo_client_la_rpath) $(libmyo_client_la_OBJECTS) $(libmyo_client_la_LIBADD) $(LIBS)
-libmyo-service.la: $(libmyo_service_la_OBJECTS) $(libmyo_service_la_DEPENDENCIES) $(EXTRA_libmyo_service_la_DEPENDENCIES) 
-	$(libmyo_service_la_LINK) $(am_libmyo_service_la_rpath) $(libmyo_service_la_OBJECTS) $(libmyo_service_la_LIBADD) $(LIBS)
 liboffloadmic_host.la: $(liboffloadmic_host_la_OBJECTS) $(liboffloadmic_host_la_DEPENDENCIES) $(EXTRA_liboffloadmic_host_la_DEPENDENCIES) 
 	$(liboffloadmic_host_la_LINK) $(am_liboffloadmic_host_la_rpath) $(liboffloadmic_host_la_OBJECTS) $(liboffloadmic_host_la_LIBADD) $(LIBS)
 liboffloadmic_target.la: $(liboffloadmic_target_la_OBJECTS) $(liboffloadmic_target_la_DEPENDENCIES) $(EXTRA_liboffloadmic_target_la_DEPENDENCIES) 
@@ -611,8 +577,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcoi_device_la-coi_device.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcoi_host_la-coi_host.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmyo_client_la-myo_client.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmyo_service_la-myo_service.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-cean_util.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-coi_client.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-compiler_if_host.Plo@am__quote@
@@ -623,7 +587,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_engine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_env.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_host.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_myo_host.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_omp_host.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_orsl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_host_la-offload_table.Plo@am__quote@
@@ -637,7 +600,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-liboffload_error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-liboffload_msg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-offload_common.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-offload_myo_target.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-offload_omp_target.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-offload_table.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboffloadmic_target_la-offload_target.Plo@am__quote@
@@ -736,20 +698,6 @@ libcoi_host_la-coi_host.lo: runtime/emulator/coi_host.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcoi_host_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libcoi_host_la-coi_host.lo `test -f 'runtime/emulator/coi_host.cpp' || echo '$(srcdir)/'`runtime/emulator/coi_host.cpp
 
-libmyo_client_la-myo_client.lo: runtime/emulator/myo_client.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmyo_client_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libmyo_client_la-myo_client.lo -MD -MP -MF $(DEPDIR)/libmyo_client_la-myo_client.Tpo -c -o libmyo_client_la-myo_client.lo `test -f 'runtime/emulator/myo_client.cpp' || echo '$(srcdir)/'`runtime/emulator/myo_client.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libmyo_client_la-myo_client.Tpo $(DEPDIR)/libmyo_client_la-myo_client.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='runtime/emulator/myo_client.cpp' object='libmyo_client_la-myo_client.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmyo_client_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libmyo_client_la-myo_client.lo `test -f 'runtime/emulator/myo_client.cpp' || echo '$(srcdir)/'`runtime/emulator/myo_client.cpp
-
-libmyo_service_la-myo_service.lo: runtime/emulator/myo_service.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmyo_service_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libmyo_service_la-myo_service.lo -MD -MP -MF $(DEPDIR)/libmyo_service_la-myo_service.Tpo -c -o libmyo_service_la-myo_service.lo `test -f 'runtime/emulator/myo_service.cpp' || echo '$(srcdir)/'`runtime/emulator/myo_service.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libmyo_service_la-myo_service.Tpo $(DEPDIR)/libmyo_service_la-myo_service.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='runtime/emulator/myo_service.cpp' object='libmyo_service_la-myo_service.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmyo_service_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libmyo_service_la-myo_service.lo `test -f 'runtime/emulator/myo_service.cpp' || echo '$(srcdir)/'`runtime/emulator/myo_service.cpp
-
 liboffloadmic_host_la-dv_util.lo: runtime/dv_util.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_host_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT liboffloadmic_host_la-dv_util.lo -MD -MP -MF $(DEPDIR)/liboffloadmic_host_la-dv_util.Tpo -c -o liboffloadmic_host_la-dv_util.lo `test -f 'runtime/dv_util.cpp' || echo '$(srcdir)/'`runtime/dv_util.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/liboffloadmic_host_la-dv_util.Tpo $(DEPDIR)/liboffloadmic_host_la-dv_util.Plo
@@ -827,13 +775,6 @@ liboffloadmic_host_la-offload_host.lo: runtime/offload_host.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_host_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o liboffloadmic_host_la-offload_host.lo `test -f 'runtime/offload_host.cpp' || echo '$(srcdir)/'`runtime/offload_host.cpp
 
-liboffloadmic_host_la-offload_myo_host.lo: runtime/offload_myo_host.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_host_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT liboffloadmic_host_la-offload_myo_host.lo -MD -MP -MF $(DEPDIR)/liboffloadmic_host_la-offload_myo_host.Tpo -c -o liboffloadmic_host_la-offload_myo_host.lo `test -f 'runtime/offload_myo_host.cpp' || echo '$(srcdir)/'`runtime/offload_myo_host.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/liboffloadmic_host_la-offload_myo_host.Tpo $(DEPDIR)/liboffloadmic_host_la-offload_myo_host.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='runtime/offload_myo_host.cpp' object='liboffloadmic_host_la-offload_myo_host.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_host_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o liboffloadmic_host_la-offload_myo_host.lo `test -f 'runtime/offload_myo_host.cpp' || echo '$(srcdir)/'`runtime/offload_myo_host.cpp
-
 liboffloadmic_host_la-offload_omp_host.lo: runtime/offload_omp_host.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_host_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT liboffloadmic_host_la-offload_omp_host.lo -MD -MP -MF $(DEPDIR)/liboffloadmic_host_la-offload_omp_host.Tpo -c -o liboffloadmic_host_la-offload_omp_host.lo `test -f 'runtime/offload_omp_host.cpp' || echo '$(srcdir)/'`runtime/offload_omp_host.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/liboffloadmic_host_la-offload_omp_host.Tpo $(DEPDIR)/liboffloadmic_host_la-offload_omp_host.Plo
@@ -903,13 +844,6 @@ liboffloadmic_target_la-compiler_if_target.lo: runtime/compiler_if_target.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='runtime/compiler_if_target.cpp' object='liboffloadmic_target_la-compiler_if_target.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_target_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o liboffloadmic_target_la-compiler_if_target.lo `test -f 'runtime/compiler_if_target.cpp' || echo '$(srcdir)/'`runtime/compiler_if_target.cpp
-
-liboffloadmic_target_la-offload_myo_target.lo: runtime/offload_myo_target.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_target_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT liboffloadmic_target_la-offload_myo_target.lo -MD -MP -MF $(DEPDIR)/liboffloadmic_target_la-offload_myo_target.Tpo -c -o liboffloadmic_target_la-offload_myo_target.lo `test -f 'runtime/offload_myo_target.cpp' || echo '$(srcdir)/'`runtime/offload_myo_target.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/liboffloadmic_target_la-offload_myo_target.Tpo $(DEPDIR)/liboffloadmic_target_la-offload_myo_target.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='runtime/offload_myo_target.cpp' object='liboffloadmic_target_la-offload_myo_target.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_target_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o liboffloadmic_target_la-offload_myo_target.lo `test -f 'runtime/offload_myo_target.cpp' || echo '$(srcdir)/'`runtime/offload_myo_target.cpp
 
 liboffloadmic_target_la-offload_omp_target.lo: runtime/offload_omp_target.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liboffloadmic_target_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT liboffloadmic_target_la-offload_omp_target.lo -MD -MP -MF $(DEPDIR)/liboffloadmic_target_la-offload_omp_target.Tpo -c -o liboffloadmic_target_la-offload_omp_target.lo `test -f 'runtime/offload_omp_target.cpp' || echo '$(srcdir)/'`runtime/offload_omp_target.cpp

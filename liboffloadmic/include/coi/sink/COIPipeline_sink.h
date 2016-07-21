@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -52,9 +52,9 @@
 #include "../common/COIResult_common.h"
 
 #ifdef __FreeBSD__
-#define COINATIVELIBEXPORT_VISIBILITY "extern"
+    #define COINATIVELIBEXPORT_VISIBILITY "extern"
 #else
-#define COINATIVELIBEXPORT_VISIBILITY "default"
+    #define COINATIVELIBEXPORT_VISIBILITY "default"
 #endif
 
 #ifdef __cplusplus
@@ -106,13 +106,13 @@ extern "C" {
 ///
 typedef void
 (*RunFunctionPtr_t)(
-            uint32_t        in_BufferCount,
-            void**          in_ppBufferPointers,
-            uint64_t*       in_pBufferLengths,
-            void*           in_pMiscData,
-            uint16_t        in_MiscDataLength,
-            void*           in_pReturnValue,
-            uint16_t        in_ReturnValueLength);
+    uint32_t        in_BufferCount,
+    void          **in_ppBufferPointers,
+    uint64_t       *in_pBufferLengths,
+    void           *in_pMiscData,
+    uint16_t        in_MiscDataLength,
+    void           *in_pReturnValue,
+    uint16_t        in_ReturnValueLength);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///

@@ -1,6 +1,6 @@
 /* Plugin for offload execution on Intel MIC devices.
 
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
    Contributed by Ilya Verbin <ilya.verbin@intel.com>.
 
@@ -40,8 +40,6 @@
 #include "main_target_image.h"
 #include "gomp-constants.h"
 
-#define LD_LIBRARY_PATH_ENV	"LD_LIBRARY_PATH"
-#define MIC_LD_LIBRARY_PATH_ENV	"MIC_LD_LIBRARY_PATH"
 #define OFFLOAD_ACTIVE_WAIT_ENV	"OFFLOAD_ACTIVE_WAIT"
 
 #ifdef DEBUG
@@ -134,41 +132,12 @@ __attribute__((constructor))
 static void
 init (void)
 {
-  const char *ld_lib_path = getenv (LD_LIBRARY_PATH_ENV);
-  const char *mic_lib_path = getenv (MIC_LD_LIBRARY_PATH_ENV);
   const char *active_wait = getenv (OFFLOAD_ACTIVE_WAIT_ENV);
 
   /* Disable active wait by default to avoid useless CPU usage.  */
   if (!active_wait)
     setenv (OFFLOAD_ACTIVE_WAIT_ENV, "0", 0);
 
-  if (!ld_lib_path)
-    goto out;
-
-  /* Add path specified in LD_LIBRARY_PATH to MIC_LD_LIBRARY_PATH, which is
-     required by liboffloadmic.  */
-  if (!mic_lib_path)
-    setenv (MIC_LD_LIBRARY_PATH_ENV, ld_lib_path, 1);
-  else
-    {
-      size_t len = strlen (mic_lib_path) + strlen (ld_lib_path) + 2;
-      bool use_alloca = len <= 2048;
-      char *mic_lib_path_new = (char *) (use_alloca ? alloca (len)
-						    : malloc (len));
-      if (!mic_lib_path_new)
-	{
-	  fprintf (stderr, "%s: Can't allocate memory\n", __FILE__);
-	  exit (1);
-	}
-
-      sprintf (mic_lib_path_new, "%s:%s", mic_lib_path, ld_lib_path);
-      setenv (MIC_LD_LIBRARY_PATH_ENV, mic_lib_path_new, 1);
-
-      if (!use_alloca)
-	free (mic_lib_path_new);
-    }
-
-out:
   address_table = new ImgDevAddrMap;
   image_descriptors = new ImgDescMap;
   num_devices = _Offload_number_of_devices ();

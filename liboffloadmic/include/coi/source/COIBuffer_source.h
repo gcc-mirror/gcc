@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -48,8 +48,8 @@
 * @file source\COIBuffer_source.h
 */
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-#include "../common/COITypes_common.h"
-#include "../common/COIResult_common.h"
+    #include "../common/COITypes_common.h"
+    #include "../common/COIResult_common.h"
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 #ifdef __cplusplus
@@ -71,14 +71,7 @@ typedef enum COI_BUFFER_TYPE
     // Reserved values, not used by COI any more
     COI_BUFFER_RESERVED_1,
     COI_BUFFER_RESERVED_2,
-
-    /// A pinned buffer exists in a shared memory region and is always
-    /// available for read or write operations.
-    /// Note: Pinned Buffers larger than 4KB are not supported in
-    /// Windows 7 kernels.
-    /// The value of COI_BUFFER_PINNED is set to specific value
-    /// to maintain compatibility with older versions of COI
-    COI_BUFFER_PINNED,
+    COI_BUFFER_RESERVED_3,
 
     /// OpenCL buffers are similar to Normal buffers except they don't
     /// stall pipelines and don't follow any read write dependencies.
@@ -125,7 +118,7 @@ typedef enum COI_BUFFER_TYPE
 #define COI_OPTIMIZE_NO_DMA                0x00000040
 
 /// Hint to the runtime to try to use huge page sizes for backing store on the
-/// sink. Is currently not compatible with PINNED buffers or the SAME_ADDRESS
+/// sink. Is currently not compatible with the SAME_ADDRESS
 /// flags or the SINK_MEMORY flag. It is important to note that this is a hint
 /// and internally the runtime may not actually promote to huge pages.
 /// Specifically if the buffer is too small (less than 4KiB for example) then
@@ -151,7 +144,7 @@ typedef enum COI_BUFFER_TYPE
 #endif
 #define T 1
 #define MTM(_BUFFER, B1, B2, B3, B4, B5, B6, B7, B8, B9) \
-(B1 | B2<<1 | B3<<2 | B4<<3 | B5<<4 | B6<<5 | B7<<6 | B8<<7 | B9<<8)
+    (B1 | B2<<1 | B3<<2 | B4<<3 | B5<<4 | B6<<5 | B7<<6 | B8<<7 | B9<<8)
 #endif
 
 /// \enum COI_BUFFER_TYPE
@@ -159,18 +152,19 @@ typedef enum COI_BUFFER_TYPE
 /// that may be passed in to COIBufferCreate and COIBufferCreateFromMemory.
 /// \code
 static const uint64_t
-COI_VALID_BUFFER_TYPES_AND_FLAGS[COI_BUFFER_OPENCL+1] = {
-/*           |       | SAME |      |       |      |       |     |      |      |
-             | SAME  | ADDR | OPT  | OPT   | OPT  | OPT   | OPT | HUGE | COI  |
-             | ADDR  | SINK | SRC  | SRC   | SINK | SINK  | NO  | PAGE | SINK |
-             | SINKS | SRC  | READ | WRITE | READ | WRITE | DMA | SIZE | MEM  |
-             +-------+------+------+-------+------+-------+-----+------+-----*/
-MTM(INVALID   ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
-MTM(NORMAL    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  T  ),
-MTM(RESERVED1 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
-MTM(RESERVED2 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
-MTM(PINNED    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  F  ,   F  ,  F  ),
-MTM(OPENCL    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  F  ),
+COI_VALID_BUFFER_TYPES_AND_FLAGS[COI_BUFFER_OPENCL + 1] =
+{
+    /*           |       | SAME |      |       |      |       |     |      |      |
+                 | SAME  | ADDR | OPT  | OPT   | OPT  | OPT   | OPT | HUGE | COI  |
+                 | ADDR  | SINK | SRC  | SRC   | SINK | SINK  | NO  | PAGE | SINK |
+                 | SINKS | SRC  | READ | WRITE | READ | WRITE | DMA | SIZE | MEM  |
+                 +-------+------+------+-------+------+-------+-----+------+-----*/
+    MTM(INVALID   ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F),
+    MTM(NORMAL    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  T),
+    MTM(RESERVED1 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F),
+    MTM(RESERVED2 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F),
+    MTM(RESERVED3 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F),
+    MTM(OPENCL    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  F),
 };
 ///\endcode
 #undef MTM
@@ -206,7 +200,7 @@ typedef enum COI_MAP_TYPE
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Make the flag mask
 #define MMM(_BUFFER, B1, B2, B3) \
-  {  F  , B1, B2, B3}
+    {  F  , B1, B2, B3}
 #endif
 /// \enum COI_MAP_TYPE
 /// This matrix shows the valid combinations of buffer types and map
@@ -214,17 +208,18 @@ typedef enum COI_MAP_TYPE
 /// \code
 static const uint64_t
 COI_VALID_BUFFER_TYPES_AND_MAP
-[COI_BUFFER_OPENCL+1][COI_MAP_WRITE_ENTIRE_BUFFER+1] = {
-/*                      | MAP   | MAP   | MAP   |
-                        | READ  | READ  | WRITE |
-                        | WRITE | ONLY  | ENTIRE|
-                        +-------+-------+-------+*/
-MMM(INVALID             ,   F   ,   F   ,   F   ),
-MMM(NORMAL              ,   T   ,   T   ,   T   ),
-MMM(RESERVED1           ,   F   ,   F   ,   F   ),
-MMM(RESERVED2           ,   F   ,   F   ,   F   ),
-MMM(PINNED              ,   T   ,   T   ,   T   ),
-MMM(OPENCL              ,   T   ,   T   ,   T   ),
+[COI_BUFFER_OPENCL + 1][COI_MAP_WRITE_ENTIRE_BUFFER + 1] =
+{
+    /*                      | MAP   | MAP   | MAP   |
+                            | READ  | READ  | WRITE |
+                            | WRITE | ONLY  | ENTIRE|
+                            +-------+-------+-------+*/
+    MMM(INVALID             ,   F   ,   F   ,   F),
+    MMM(NORMAL              ,   T   ,   T   ,   T),
+    MMM(RESERVED1           ,   F   ,   F   ,   F),
+    MMM(RESERVED2           ,   F   ,   F   ,   F),
+    MMM(RESERVED3           ,   F   ,   F   ,   F),
+    MMM(OPENCL              ,   T   ,   T   ,   T),
 };
 ///\endcode
 #undef MMM
@@ -246,8 +241,6 @@ typedef enum COI_COPY_TYPE
     COI_COPY_USE_DMA,
 
     /// The runtime should use a CPU copy to copy the data.
-    /// CPU copy is a synchronous copy. So the resulting operations are always
-    /// blocking (even though a out_pCompletion event is specified).
     COI_COPY_USE_CPU,
 
     /// Same as above, but forces moving entire buffer to target process in Ex
@@ -268,9 +261,6 @@ typedef enum COI_COPY_TYPE
 //////////////////////////////////////////////////////////////////////////////
 /// The buffer states are used to indicate whether a buffer is available for
 /// access in a COIPROCESS. This is used with COIBufferSetState.
-///
-/// Buffer state holds only for NORMAL Buffers and OPENCL buffers. Pinned
-/// buffers are always valid everywhere they get created.
 ///
 /// Rules on State Transition of the buffer:
 /// -. When a Buffer is created by default it is valid only on the source,
@@ -332,12 +322,13 @@ typedef enum COI_COPY_TYPE
 /// The buffer states used with COIBufferSetState call to indicate the new
 /// state of the buffer on a given process
 ///
-typedef enum {
+typedef enum
+{
     COI_BUFFER_VALID = 0,      // Buffer is valid and up-to-date on the process
     COI_BUFFER_INVALID ,       // Buffer is not valid, need valid data
     COI_BUFFER_VALID_MAY_DROP, // Same as valid but will drop the content when
-                               // evicted to avoid overwriting the shadow
-                               // memory
+    // evicted to avoid overwriting the shadow
+    // memory
     COI_BUFFER_RESERVED        // Reserved for internal use
 } COI_BUFFER_STATE;
 ///
@@ -356,7 +347,8 @@ typedef enum {
 //////////////////////////////////////////////////////////////////////////////
 /// The buffer move flags are used to indicate when a buffer should be moved
 /// when it's state is changed. This is used with COIBufferSetState.
-typedef enum {
+typedef enum
+{
     COI_BUFFER_MOVE = 0,// Dirty data is moved if state change requires it
     COI_BUFFER_NO_MOVE  // Change state without moving data
 } COI_BUFFER_MOVE_FLAG;
@@ -366,21 +358,23 @@ typedef enum {
 #define COI_SINK_OWNERS ((COIPROCESS)-2)
 
 // Matrix descriptors used with MultiD Read/Write
-typedef struct dim_desc {
+typedef struct dim_desc
+{
     int64_t size;       // Size of data type
     int64_t lindex;     // Lower index, used in Fortran
     int64_t lower;      // Lower section bound
     int64_t upper;      // Upper section bound
     int64_t stride;     // Stride, or number of bytes between the start
-                        // of one element and start of next one divided
-                        // by size.
+    // of one element and start of next one divided
+    // by size.
 } dim_desc;
 
-typedef struct arr_desc {
+typedef struct arr_desc
+{
     int64_t base;       // Base address
     int64_t rank;       // Rank of array, i.e. number of dimensions
     dim_desc dim[3];    // This array has as many elements as “rank”
-                        // currently limited to 3.
+    // currently limited to 3.
 } arr_desc;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -451,21 +445,18 @@ typedef struct arr_desc {
 ///
 /// @return COI_OUT_OF_MEMORY if allocating the buffer fails.
 ///
-/// @return COI_RESOURCE_EXHAUSTED if the sink is out of buffer memory. This
-///         error can also be thrown from Windows 7 operating systems if
-///         COI_BUFFER_PINNED and a size larger than 4KB is requested.
-///         This is due to a limitation of the Windows 7 memory management unit.
+/// @return COI_RESOURCE_EXHAUSTED if the sink is out of buffer memory.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferCreate(
-            uint64_t            in_Size,
-            COI_BUFFER_TYPE     in_Type,
-            uint32_t            in_Flags,
-    const   void*               in_pInitData,
-            uint32_t            in_NumProcesses,
-    const   COIPROCESS*         in_pProcesses,
-            COIBUFFER*          out_pBuffer);
+    uint64_t            in_Size,
+    COI_BUFFER_TYPE     in_Type,
+    uint32_t            in_Flags,
+    const   void               *in_pInitData,
+    uint32_t            in_NumProcesses,
+    const   COIPROCESS         *in_pProcesses,
+    COIBUFFER          *out_pBuffer);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -496,8 +487,8 @@ COIBufferCreate(
 ///         is not page aligned, it will be rounded up.
 ///
 /// @param  in_Type
-///         [in] The type of the buffer to create. Only COI_BUFFER_NORMAL and
-///         COI_BUFFER_PINNED buffer types are supported.
+///         [in] The type of the buffer to create. Only COI_BUFFER_NORMAL
+///         buffer type is supported.
 ///
 /// @param  in_Flags
 ///         [in] A bitmask of attributes for the newly created buffer.
@@ -551,7 +542,7 @@ COIBufferCreate(
 /// @return COI_SUCCESS if the buffer was created
 ///
 /// @return COI_NOT_SUPPORTED if the in_Type value is not COI_BUFFER_NORMAL,
-///         COI_BUFFER_PINNED, or COI_BUFFER_OPENCL.
+///         or COI_BUFFER_OPENCL.
 ///
 /// @return COI_NOT_SUPPORTED if in_Memory is read-only memory
 ///
@@ -586,13 +577,13 @@ COIBufferCreate(
 COIACCESSAPI
 COIRESULT
 COIBufferCreateFromMemory(
-            uint64_t            in_Size,
-            COI_BUFFER_TYPE     in_Type,
-            uint32_t            in_Flags,
-            void*               in_Memory,
-            uint32_t            in_NumProcesses,
-    const   COIPROCESS*         in_pProcesses,
-            COIBUFFER*          out_pBuffer);
+    uint64_t            in_Size,
+    COI_BUFFER_TYPE     in_Type,
+    uint32_t            in_Flags,
+    void               *in_Memory,
+    uint32_t            in_NumProcesses,
+    const   COIPROCESS         *in_pProcesses,
+    COIBUFFER          *out_pBuffer);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -619,7 +610,7 @@ COIBufferCreateFromMemory(
 COIACCESSAPI
 COIRESULT
 COIBufferDestroy(
-            COIBUFFER           in_Buffer);
+    COIBUFFER           in_Buffer);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -647,9 +638,7 @@ COIBufferDestroy(
 ///
 /// Note that different types of buffers behave differently when mapped.
 /// For instance, mapping a COI_BUFFER_NORMAL for write must stall if the
-/// buffer is currently being written to by a run function. Mapping
-/// a COI_BUFFER_PINNED buffer will not affect other functions that use
-/// that buffer since a COI_BUFFER_PINNED buffer can be mapped at any time.
+/// buffer is currently being written to by a run function.
 /// The asynchronous operation of COIBufferMap will likely be most useful when
 /// paired with a COI_BUFFER_NORMAL.
 ///
@@ -732,15 +721,15 @@ COIBufferDestroy(
 COIACCESSAPI
 COIRESULT
 COIBufferMap(
-            COIBUFFER           in_Buffer,
-            uint64_t            in_Offset,
-            uint64_t            in_Length,
-            COI_MAP_TYPE        in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion,
-            COIMAPINSTANCE*     out_pMapInstance,
-            void**              out_ppData);
+    COIBUFFER           in_Buffer,
+    uint64_t            in_Offset,
+    uint64_t            in_Length,
+    COI_MAP_TYPE        in_Type,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion,
+    COIMAPINSTANCE     *out_pMapInstance,
+    void              **out_ppData);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -787,10 +776,10 @@ COIBufferMap(
 COIACCESSAPI
 COIRESULT
 COIBufferUnmap(
-            COIMAPINSTANCE      in_MapInstance,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    COIMAPINSTANCE      in_MapInstance,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -820,8 +809,8 @@ COIBufferUnmap(
 COIACCESSAPI
 COIRESULT
 COIBufferGetSinkAddress(
-            COIBUFFER           in_Buffer,
-            uint64_t*           out_pAddress);
+    COIBUFFER           in_Buffer,
+    uint64_t           *out_pAddress);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -859,9 +848,9 @@ COIBufferGetSinkAddress(
 COIACCESSAPI
 COIRESULT
 COIBufferGetSinkAddressEx(
-            COIPROCESS          in_Process,
-            COIBUFFER           in_Buffer,
-            uint64_t*           out_pAddress);
+    COIPROCESS          in_Process,
+    COIBUFFER           in_Buffer,
+    uint64_t           *out_pAddress);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -947,21 +936,21 @@ COIBufferGetSinkAddressEx(
 ///
 /// @return COI_OUT_OF_RANGE if in_Length is 0.
 ///
-/// @return COI_RETRY if in_DestBuffer is mapped and is not a COI_BUFFER_PINNED
-///         buffer or COI_BUFFER_OPENCL buffer.
+/// @return COI_RETRY if in_DestBuffer is mapped and is not COI_BUFFER_OPENCL
+///         buffer.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferWriteEx(
-            COIBUFFER           in_DestBuffer,
+    COIBUFFER           in_DestBuffer,
     const   COIPROCESS          in_DestProcess,
-            uint64_t            in_Offset,
-    const   void*               in_pSourceData,
-            uint64_t            in_Length,
-            COI_COPY_TYPE       in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    uint64_t            in_Offset,
+    const   void               *in_pSourceData,
+    uint64_t            in_Length,
+    COI_COPY_TYPE       in_Type,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1058,21 +1047,21 @@ COIBufferWriteEx(
 ///
 /// @return COI_OUT_OF_MEMORY if any allocation of memory fails
 ///
-/// @return COI_RETRY if in_DestBuffer is mapped and is not a COI_BUFFER_PINNED
-///         buffer or COI_BUFFER_OPENCL buffer.
+/// @return COI_RETRY if in_DestBuffer is mapped and is not
+///         a COI_BUFFER_OPENCL buffer.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferWriteMultiD(
-            COIBUFFER          in_DestBuffer,
+    COIBUFFER          in_DestBuffer,
     const   COIPROCESS         in_DestProcess,
-            uint64_t           in_Offset,
-            struct arr_desc*   in_DestArray,
-            struct arr_desc*   in_SrcArray,
-            COI_COPY_TYPE      in_Type,
-            uint32_t           in_NumDependencies,
-    const   COIEVENT*          in_pDependencies,
-            COIEVENT*          out_pCompletion);
+    uint64_t           in_Offset,
+    struct arr_desc   *in_DestArray,
+    struct arr_desc   *in_SrcArray,
+    COI_COPY_TYPE      in_Type,
+    uint32_t           in_NumDependencies,
+    const   COIEVENT          *in_pDependencies,
+    COIEVENT          *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1161,20 +1150,20 @@ COIBufferWriteMultiD(
 ///
 /// @return COI_OUT_OF_MEMORY if any allocation of memory fails
 ///
-/// @return COI_RETRY if in_SourceBuffer is mapped and is not a COI_BUFFER_PINNED
-///         buffer or COI_BUFFER_OPENCL buffer.
+/// @return COI_RETRY if in_SourceBuffer is mapped and is not
+///         a COI_BUFFER_OPENCL buffer.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferReadMultiD(
-            COIBUFFER          in_SourceBuffer,
-            uint64_t           in_Offset,
-            struct arr_desc*   in_DestArray,
-            struct arr_desc*   in_SrcArray,
-            COI_COPY_TYPE      in_Type,
-            uint32_t           in_NumDependencies,
-    const   COIEVENT*          in_pDependencies,
-            COIEVENT*          out_pCompletion);
+    COIBUFFER          in_SourceBuffer,
+    uint64_t           in_Offset,
+    struct arr_desc   *in_DestArray,
+    struct arr_desc   *in_SrcArray,
+    COI_COPY_TYPE      in_Type,
+    uint32_t           in_NumDependencies,
+    const   COIEVENT          *in_pDependencies,
+    COIEVENT          *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1252,20 +1241,20 @@ COIBufferReadMultiD(
 ///
 /// @return COI_OUT_OF_RANGE if in_Length is 0.
 ///
-/// @return COI_RETRY if in_DestBuffer is mapped and is not a COI_BUFFER_PINNED
-///         buffer or COI_BUFFER_OPENCL buffer.
+/// @return COI_RETRY if in_DestBuffer is mapped and is not
+///         a COI_BUFFER_OPENCL buffer.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferWrite(
-            COIBUFFER           in_DestBuffer,
-            uint64_t            in_Offset,
-    const   void*               in_pSourceData,
-            uint64_t            in_Length,
-            COI_COPY_TYPE       in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    COIBUFFER           in_DestBuffer,
+    uint64_t            in_Offset,
+    const   void               *in_pSourceData,
+    uint64_t            in_Length,
+    COI_COPY_TYPE       in_Type,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1343,20 +1332,20 @@ COIBufferWrite(
 ///
 /// @return COI_INVALID_POINTER if the in_pDestData pointer is NULL.
 ///
-/// @return COI_RETRY if in_SourceBuffer is mapped and is not a
-///         COI_BUFFER_PINNED buffer or COI_BUFFER_OPENCL buffer.
+/// @return COI_RETRY if in_SourceBuffer is mapped and is not
+///         a COI_BUFFER_OPENCL buffer.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferRead(
-            COIBUFFER           in_SourceBuffer,
-            uint64_t            in_Offset,
-            void*               in_pDestData,
-            uint64_t            in_Length,
-            COI_COPY_TYPE       in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    COIBUFFER           in_SourceBuffer,
+    uint64_t            in_Offset,
+    void               *in_pDestData,
+    uint64_t            in_Length,
+    COI_COPY_TYPE       in_Type,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1375,6 +1364,8 @@ COIBufferRead(
 /// happen in parallel if they can be assigned to different DMA hardware.
 /// So it is highly recommended to use explicit event dependencies to
 /// order operations where needed.
+/// When a destroyed buffer (destination or source) is provided to the
+/// function, then behavior is unspecified.
 ///
 /// @param  in_DestBuffer
 ///         [in] Buffer to copy into.
@@ -1457,21 +1448,21 @@ COIBufferRead(
 ///         in_NumDependencies is not 0.
 ///
 /// @return COI_RETRY if in_DestBuffer or in_SourceBuffer are mapped and not
-///         COI_BUFFER_PINNED buffers or COI_BUFFER_OPENCL buffers.
+///         COI_BUFFER_OPENCL buffers.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferCopyEx(
-            COIBUFFER           in_DestBuffer,
+    COIBUFFER           in_DestBuffer,
     const   COIPROCESS          in_DestProcess,
-            COIBUFFER           in_SourceBuffer,
-            uint64_t            in_DestOffset,
-            uint64_t            in_SourceOffset,
-            uint64_t            in_Length,
-            COI_COPY_TYPE       in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    COIBUFFER           in_SourceBuffer,
+    uint64_t            in_DestOffset,
+    uint64_t            in_SourceOffset,
+    uint64_t            in_Length,
+    COI_COPY_TYPE       in_Type,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1490,6 +1481,8 @@ COIBufferCopyEx(
 /// happen in parallel if they can be assigned to different DMA hardware.
 /// So it is highly recommended to use explicit event dependencies to
 /// order operations where needed.
+/// When a destroyed buffer (destination or source) is provided to the
+/// function, then behavior is unspecified.
 ///
 /// @param  in_DestBuffer
 ///         [in] Buffer to copy into.
@@ -1564,20 +1557,20 @@ COIBufferCopyEx(
 ///         in_NumDependencies is not 0.
 ///
 /// @return COI_RETRY if in_DestBuffer or in_SourceBuffer are mapped and not
-///         COI_BUFFER_PINNED buffers or COI_BUFFER_OPENCL buffers.
+///         COI_BUFFER_OPENCL buffers.
 ///
 COIACCESSAPI
 COIRESULT
 COIBufferCopy(
-            COIBUFFER           in_DestBuffer,
-            COIBUFFER           in_SourceBuffer,
-            uint64_t            in_DestOffset,
-            uint64_t            in_SourceOffset,
-            uint64_t            in_Length,
-            COI_COPY_TYPE       in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    COIBUFFER           in_DestBuffer,
+    COIBUFFER           in_SourceBuffer,
+    uint64_t            in_DestOffset,
+    uint64_t            in_SourceOffset,
+    uint64_t            in_Length,
+    COI_COPY_TYPE       in_Type,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1675,13 +1668,13 @@ COIBufferCopy(
 COIACCESSAPI
 COIRESULT
 COIBufferSetState(
-            COIBUFFER               in_Buffer,
-            COIPROCESS              in_Process,
-            COI_BUFFER_STATE        in_State,
-            COI_BUFFER_MOVE_FLAG    in_DataMove,
-            uint32_t                in_NumDependencies,
-    const   COIEVENT*               in_pDependencies,
-            COIEVENT*               out_pCompletion);
+    COIBUFFER               in_Buffer,
+    COIPROCESS              in_Process,
+    COI_BUFFER_STATE        in_State,
+    COI_BUFFER_MOVE_FLAG    in_DataMove,
+    uint32_t                in_NumDependencies,
+    const   COIEVENT               *in_pDependencies,
+    COIEVENT               *out_pCompletion);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1726,10 +1719,10 @@ COIBufferSetState(
 COIACCESSAPI
 COIRESULT
 COIBufferCreateSubBuffer(
-            COIBUFFER   in_Buffer,
-            uint64_t    in_Length,
-            uint64_t    in_Offset,
-            COIBUFFER*  out_pSubBuffer);
+    COIBUFFER   in_Buffer,
+    uint64_t    in_Length,
+    uint64_t    in_Offset,
+    COIBUFFER  *out_pSubBuffer);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1764,9 +1757,9 @@ COIBufferCreateSubBuffer(
 COIACCESSAPI
 COIRESULT
 COIBufferReleaseRefcnt(
-            COIPROCESS          in_Process,
-            COIBUFFER           in_Buffer,
-            uint64_t            in_ReleaseRefcnt);
+    COIPROCESS          in_Process,
+    COIBUFFER           in_Buffer,
+    uint64_t            in_ReleaseRefcnt);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -1800,9 +1793,9 @@ COIBufferReleaseRefcnt(
 COIACCESSAPI
 COIRESULT
 COIBufferAddRefcnt(
-            COIPROCESS          in_Process,
-            COIBUFFER           in_Buffer,
-            uint64_t            in_AddRefcnt);
+    COIPROCESS          in_Process,
+    COIBUFFER           in_Buffer,
+    uint64_t            in_AddRefcnt);
 
 #ifdef __cplusplus
 } /* extern "C" */
