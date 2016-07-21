@@ -2774,6 +2774,39 @@ write_expression (tree expr)
       write_type (TREE_TYPE (TREE_OPERAND (expr, 0)));
     }
   else if (TREE_CODE (expr) == SIZEOF_EXPR
+	   && ARGUMENT_PACK_P (TREE_OPERAND (expr, 0)))
+    {
+      tree args = ARGUMENT_PACK_ARGS (TREE_OPERAND (expr, 0));
+      int length = TREE_VEC_LENGTH (args);
+      if (abi_warn_or_compat_version_crosses (10))
+	G.need_abi_warning = true;
+      if (abi_version_at_least (10))
+	{
+	  /* sP <template-arg>* E # sizeof...(T), size of a captured
+	     template parameter pack from an alias template */
+	  write_string ("sP");
+	  for (int i = 0; i < length; ++i)
+	    write_template_arg (TREE_VEC_ELT (args, i));
+	  write_char ('E');
+	}
+      else
+	{
+	  /* In GCC 5 we represented this sizeof wrong, with the effect
+	     that we mangled it as the last element of the pack.  */
+	  tree arg = TREE_VEC_ELT (args, length-1);
+	  if (TYPE_P (arg))
+	    {
+	      write_string ("st");
+	      write_type (arg);
+	    }
+	  else
+	    {
+	      write_string ("sz");
+	      write_expression (arg);
+	    }
+	}
+    }
+  else if (TREE_CODE (expr) == SIZEOF_EXPR
 	   && TYPE_P (TREE_OPERAND (expr, 0)))
     {
       write_string ("st");
