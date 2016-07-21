@@ -1569,6 +1569,13 @@ cp_genericize (tree fndecl)
   if (DECL_CLONED_FUNCTION_P (fndecl))
     return;
 
+  /* Allow cp_genericize calls to be nested.  */
+  tree save_bc_label[2];
+  save_bc_label[bc_break] = bc_label[bc_break];
+  save_bc_label[bc_continue] = bc_label[bc_continue];
+  bc_label[bc_break] = NULL_TREE;
+  bc_label[bc_continue] = NULL_TREE;
+
   /* Expand all the array notations here.  */
   if (flag_cilkplus 
       && contains_array_notation_expr (DECL_SAVED_TREE (fndecl)))
@@ -1588,6 +1595,8 @@ cp_genericize (tree fndecl)
 
   gcc_assert (bc_label[bc_break] == NULL);
   gcc_assert (bc_label[bc_continue] == NULL);
+  bc_label[bc_break] = save_bc_label[bc_break];
+  bc_label[bc_continue] = save_bc_label[bc_continue];
 }
 
 /* Build code to apply FN to each member of ARG1 and ARG2.  FN may be
