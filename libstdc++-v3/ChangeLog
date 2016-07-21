@@ -1,5 +1,8 @@
 2016-07-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/24_iterators/container_access.cc: Fix missing returns.
+	* testsuite/24_iterators/range_access_cpp14.cc: Likewise.
+
 	* testsuite/18_support/new_delete_placement.cc: Don't allocate (and
 	leak) memory for arguments to placement delete.
 	* testsuite/20_util/addressof/1.cc: Don't leak memory.
