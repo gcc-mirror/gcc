@@ -13,4 +13,4 @@ template <class T>
 constexpr bool f() { return false; }
 
 static_assert(f<void>());
-static_assert(v<void>);		// { dg-error "constraints" }
+static_assert(v<void>);		// { dg-error "invalid" }
