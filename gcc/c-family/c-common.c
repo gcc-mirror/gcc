@@ -4551,6 +4551,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	tree fromtype = TREE_TYPE (TREE_OPERAND (expr, 0));
 
 	if (POINTER_TYPE_P (totype)
+	    && !c_inhibit_evaluation_warnings
 	    && TREE_CODE (fromtype) == REFERENCE_TYPE)
 	  {
 	    tree inner = expr;
