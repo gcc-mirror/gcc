@@ -48,7 +48,7 @@ test02()
   constexpr auto ce __attribute__((unused)) = std::cend(i);
 }
 
-int
+void
 test03()
 {
   std::initializer_list<int> il{1};
@@ -60,7 +60,7 @@ test03()
   VERIFY(std::crend(il) == std::reverse_iterator<const int*>(il.begin()));
 }
 
-int
+void
 test04()
 {
   std::vector<int> v{1};
