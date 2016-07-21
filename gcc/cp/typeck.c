@@ -5459,21 +5459,10 @@ tree
 cp_truthvalue_conversion (tree expr)
 {
   tree type = TREE_TYPE (expr);
-  if (TYPE_PTRDATAMEM_P (type)
+  if (TYPE_PTR_OR_PTRMEM_P (type)
       /* Avoid ICE on invalid use of non-static member function.  */
       || TREE_CODE (expr) == FUNCTION_DECL)
-    return build_binary_op (EXPR_LOCATION (expr),
-			    NE_EXPR, expr, nullptr_node, 1);
-  else if (TYPE_PTR_P (type) || TYPE_PTRMEMFUNC_P (type))
-    {
-      /* With -Wzero-as-null-pointer-constant do not warn for an
-	 'if (p)' or a 'while (!p)', where p is a pointer.  */
-      tree ret;
-      ++c_inhibit_evaluation_warnings;
-      ret = c_common_truthvalue_conversion (input_location, expr);
-      --c_inhibit_evaluation_warnings;
-      return ret;
-    }
+    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, 1);
   else
     return c_common_truthvalue_conversion (input_location, expr);
 }

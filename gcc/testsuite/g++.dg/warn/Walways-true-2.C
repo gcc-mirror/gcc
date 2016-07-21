@@ -23,11 +23,11 @@ bar (int a)
     foo (2);
   if (i)
     foo (3);
-  if (&a)	// { dg-warning "always evaluate as" "correct warning" }
+  if (&a)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
     foo (4);
   if (a)
     foo (5);
-  if (&&lab)	// { dg-warning "always evaluate as" "correct warning" }
+  if (&&lab)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
     foo (6);
   if (foo == 0)
     foo (7);

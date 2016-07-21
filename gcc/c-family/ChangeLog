@@ -1,3 +1,10 @@
+2016-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65168
+	* c-common.c (c_common_truthvalue_conversion): Check
+	c_inhibit_evaluation_warnings for warning about address of
+	reference.
+
 2016-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.h (lookup_name_fuzzy): Convert return type from tree to
