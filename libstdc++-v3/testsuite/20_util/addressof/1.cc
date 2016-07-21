@@ -41,6 +41,9 @@ void test01()
   VERIFY( std::addressof(o2) == ao2 );
 
   VERIFY( std::addressof(f1) == &f1 );
+
+  delete ao1;
+  delete ao2;
 }
 
 int main()
