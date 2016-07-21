@@ -1,3 +1,11 @@
+2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/ifcvt-2.c: Use parameter to guide if-conversion heuristics.
+	* gcc.dg/ifcvt-3.c: Use parameter to guide if-conversion heuristics.
+	* gcc.dg/pr68435.c: Use parameter to guide if-conversion heuristics.
+	* gcc.dg/ifcvt-4.c: Use parameter to guide if-conversion heuristics.
+	* gcc.dg/ifcvt-5.c: Use parameter to guide if-conversion heuristics.
+
 2016-07-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71947
