@@ -7,9 +7,9 @@
 
 void test()
 {
-    for (struct S { } *x : { (S*)0, (S*)0 } )
+    for (struct S { } *x : { (S*)0, (S*)0 } ) // { dg-error "types may not be defined" }
         ;
 
-    for (struct S { } x : { S(), S() } )
+    for (struct S { } x : { S(), S() } ) // { dg-error "types may not be defined" }
         ;
 }
