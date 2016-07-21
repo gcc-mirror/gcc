@@ -118,7 +118,7 @@ bool test01(void)
   VERIFY( str06 == "corpus, corpus" );
 
   str06 = str02;
-  str06.append("corpus, ", 12);
+  str06.append("corpus, ", 9); // n=9 includes null terminator
   VERIFY( str06 != "corpus, corpus, " );
 
 

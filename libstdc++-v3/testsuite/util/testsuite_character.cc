@@ -154,11 +154,9 @@ namespace std
 	  value_type v = __num_base::_S_atoms_out[i];
 	  _M_data->_M_atoms_out[i].value = v;
 	}
-      _M_data->_M_atoms_out[__num_base::_S_oend] = pod_ushort();
 
       for (size_t j = 0; j < __num_base::_S_iend; ++j)
 	_M_data->_M_atoms_in[j].value = value_type(__num_base::_S_atoms_in[j]);
-      _M_data->_M_atoms_in[__num_base::_S_iend] = pod_ushort();
 
       // "true"
       pod_ushort* __truename = new pod_ushort[4 + 1];

@@ -1,5 +1,15 @@
 2016-07-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/modifiers/append/char/1.cc: Fix
+	reads past the end of strings.
+	* testsuite/21_strings/basic_string/operations/compare/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/short/1.cc: Fix
+	invalid array accesses.
+	* testsuite/experimental/string_view/operations/compare/char/1.cc:
+	Fix read past the end of string.
+	* testsuite/util/testsuite_character.cc: Fix out-of-bounds write.
+
 	* testsuite/24_iterators/container_access.cc: Fix missing returns.
 	* testsuite/24_iterators/range_access_cpp14.cc: Likewise.
 
