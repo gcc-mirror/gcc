@@ -961,7 +961,12 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     {
       if (VAR_P (t)
 	  && DECL_DECLARED_CONSTEXPR_P (t))
-	pp_cxx_ws_string (pp, "constexpr");
+            {
+              if (DECL_DECLARED_CONCEPT_P (t))
+                pp_cxx_ws_string (pp, "concept");
+              else
+		pp_cxx_ws_string (pp, "constexpr");
+            }
       dump_type_prefix (pp, type, flags & ~TFF_UNQUALIFIED_NAME);
       pp_maybe_space (pp);
     }
@@ -1334,16 +1339,19 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (t)))
 	    pp_cxx_ws_string (pp, "...");
 	}
+
+      /* Only print the requirements if we're also printing
+         the template header.  */
+      if (flag_concepts)
+	if (tree ci = get_constraints (t))
+	  if (check_constraint_info (ci))
+	    if (tree reqs = CI_TEMPLATE_REQS (ci))
+	      {
+		pp_cxx_requires_clause (pp, reqs);
+		pp_cxx_whitespace (pp);
+	      }
     }
 
-  if (flag_concepts)
-    if (tree ci = get_constraints (t))
-      if (check_constraint_info (ci))
-        if (tree reqs = CI_TEMPLATE_REQS (ci))
-	  {
-	    pp_cxx_requires_clause (pp, reqs);
-	    pp_cxx_whitespace (pp);
-	  }
 
   if (DECL_CLASS_TEMPLATE_P (t))
     dump_type (pp, TREE_TYPE (t),
@@ -1534,7 +1542,12 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	pp_cxx_ws_string (pp, "virtual");
 
       if (constexpr_p)
-	pp_cxx_ws_string (pp, "constexpr");
+        {
+          if (DECL_DECLARED_CONCEPT_P (t))
+            pp_cxx_ws_string (pp, "concept");
+          else
+	    pp_cxx_ws_string (pp, "constexpr");
+	}
     }
 
   /* Print the return type?  */
@@ -2665,6 +2678,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case EXPR_PACK_EXPANSION:
+    case UNARY_LEFT_FOLD_EXPR:
+    case UNARY_RIGHT_FOLD_EXPR:
+    case BINARY_LEFT_FOLD_EXPR:
+    case BINARY_RIGHT_FOLD_EXPR:
     case TYPEID_EXPR:
     case MEMBER_REF:
     case DOTSTAR_EXPR:
@@ -2737,6 +2754,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case PRED_CONSTR:
+    case CHECK_CONSTR:
     case EXPR_CONSTR:
     case TYPE_CONSTR:
     case ICONV_CONSTR:

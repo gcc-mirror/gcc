@@ -1,3 +1,11 @@
+2016-07-21  Andrew Sutton  <andrew.n.sutton@gmail.com>
+
+	Improving concepts performance and diagnostics.
+	* timevar.def (TV_CONSTRAINT_SAT, TV_CONSTRAINT_SUB): New time vars
+	for constraint satisfaction and subsumption.
+	* timevar.h (auto_timevar): New constructor that matches the push/pop
+	pattern of usage in pt.c.
+
 2016-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* hwint.h (HOST_WIDE_INT_0): New define.
