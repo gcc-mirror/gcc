@@ -1,3 +1,8 @@
+2016-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Clean up
+	by removing computation of may_be_zero.
+
 2016-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-object-size.c (unknown): Use HOST_WIDE_INT_M1U instead of -1.
