@@ -7973,6 +7973,76 @@ avr_out_addto_sp (rtx *op, int *plen)
 }
 
 
+/* Output instructions to insert an inverted bit into OPERANDS[0]:
+   $0.$1 = ~$2.$3      if XBITNO = NULL
+   $0.$1 = ~$2.XBITNO  if XBITNO != NULL.
+   If PLEN = NULL then output the respective instruction sequence which
+   is a combination of BST / BLD and some instruction(s) to invert the bit.
+   If PLEN != NULL then store the length of the sequence (in words) in *PLEN.
+   Return "".  */
+
+const char*
+avr_out_insert_notbit (rtx_insn *insn, rtx operands[], rtx xbitno, int *plen)
+{
+  rtx op[4] = { operands[0], operands[1], operands[2],
+                xbitno == NULL_RTX ? operands [3] : xbitno };
+
+  if (INTVAL (op[1]) == 7
+      && test_hard_reg_class (LD_REGS, op[0]))
+    {
+      /* If the inserted bit number is 7 and we have a d-reg, then invert
+         the bit after the insertion by means of SUBI *,0x80.  */
+
+      if (INTVAL (op[3]) == 7
+          && REGNO (op[0]) == REGNO (op[2]))
+        {
+          avr_asm_len ("subi %0,0x80", op, plen, -1);
+        }
+      else
+        {
+          avr_asm_len ("bst %2,%3" CR_TAB
+                       "bld %0,%1" CR_TAB
+                       "subi %0,0x80", op, plen, -3);
+        }
+    }
+  else if (test_hard_reg_class (LD_REGS, op[0])
+           && (INTVAL (op[1]) != INTVAL (op[3])
+               || !reg_overlap_mentioned_p (op[0], op[2])))
+    {
+      /* If the destination bit is in a d-reg we can jump depending
+         on the source bit and use ANDI / ORI.  This just applies if we
+         have not an early-clobber situation with the bit.  */
+
+      avr_asm_len ("andi %0,~(1<<%1)" CR_TAB
+                   "sbrs %2,%3"       CR_TAB
+                   "ori %0,1<<%1", op, plen, -3);
+    }
+  else
+    {
+      /* Otherwise, invert the bit by means of COM before we store it with
+         BST and then undo the COM if needed.  */
+
+      avr_asm_len ("com %2" CR_TAB
+                   "bst %2,%3", op, plen, -2);
+
+      if (!reg_unused_after (insn, op[2])
+          // A simple 'reg_unused_after' is not enough because that function
+          // assumes that the destination register is overwritten completely
+          // and hence is in order for our purpose.  This is not the case
+          // with BLD which just changes one bit of the destination.
+          || reg_overlap_mentioned_p (op[0], op[2]))
+        {
+          /* Undo the COM from above.  */
+          avr_asm_len ("com %2", op, plen, 1);
+        }
+
+      avr_asm_len ("bld %0,%1", op, plen, 1);
+    }
+              
+  return "";
+}
+
+
 /* Outputs instructions needed for fixed point type conversion.
    This includes converting between any fixed point type, as well
    as converting to any integer type.  Conversion between integer
@@ -8809,6 +8879,16 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_CALL: len = AVR_HAVE_JMP_CALL ? 2 : 1; break;
 
     case ADJUST_LEN_INSERT_BITS: avr_out_insert_bits (op, &len); break;
+
+    case ADJUST_LEN_INSV_NOTBIT:
+      avr_out_insert_notbit (insn, op, NULL_RTX, &len);
+      break;
+    case ADJUST_LEN_INSV_NOTBIT_0:
+      avr_out_insert_notbit (insn, op, const0_rtx, &len);
+      break;
+    case ADJUST_LEN_INSV_NOTBIT_7:
+      avr_out_insert_notbit (insn, op, GEN_INT (7), &len);
+      break;
 
     default:
       gcc_unreachable();

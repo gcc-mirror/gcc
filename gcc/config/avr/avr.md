@@ -156,7 +156,7 @@
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
-   insert_bits,
+   insert_bits, insv_notbit, insv_notbit_0, insv_notbit_7,
    no"
   (const_string "no"))
 
@@ -264,6 +264,8 @@
 ;; Define two incarnations so that we can build the cross product.
 (define_code_iterator any_extend  [sign_extend zero_extend])
 (define_code_iterator any_extend2 [sign_extend zero_extend])
+(define_code_iterator any_extract [sign_extract zero_extract])
+(define_code_iterator any_shiftrt [lshiftrt ashiftrt])
 
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
@@ -6485,6 +6487,11 @@
         (match_operand:QI 3 "nonmemory_operand" ""))]
   "optimize")
 
+;; Some more patterns to support moving around one bit which can be accomplished
+;; by BST + BLD in most situations.  Unfortunately, there is no canonical
+;; representation, and we just implement some more cases that are not too
+;; complicated.
+
 ;; Insert bit $2.0 into $0.$1
 (define_insn "*insv.reg"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r,d,d,l,l")
@@ -6500,6 +6507,103 @@
 	set\;bld %0,%1"
   [(set_attr "length" "2,1,1,2,2")
    (set_attr "cc" "none,set_zn,set_zn,none,none")])
+
+;; Insert bit $2.$3 into $0.$1
+(define_insn "*insv.extract"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (any_extract:QI (match_operand:QI 2 "register_operand"      "r")
+                        (const_int 1)
+                        (match_operand:QI 3 "const_0_to_7_operand"  "n")))]
+  ""
+  "bst %2,%3\;bld %0,%1"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Insert bit $2.$3 into $0.$1
+(define_insn "*insv.shiftrt"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (any_shiftrt:QI (match_operand:QI 2 "register_operand"      "r")
+                        (match_operand:QI 3 "const_0_to_7_operand"  "n")))]
+  ""
+  "bst %2,%3\;bld %0,%1"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Same, but with a NOT inverting the source bit.
+;; Insert bit ~$2.$3 into $0.$1
+(define_insn "*insv.not-shiftrt"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"           "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"        "n"))
+        (not:QI (any_shiftrt:QI (match_operand:QI 2 "register_operand"     "r")
+                                (match_operand:QI 3 "const_0_to_7_operand" "n"))))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.0 into $0.$1
+(define_insn "*insv.xor1-bit.0"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (xor:QI (match_operand:QI 2 "register_operand"              "r")
+                (const_int 1)))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit_0")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.0 into $0.$1
+(define_insn "*insv.not-bit.0"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (not:QI (match_operand:QI 2 "register_operand"              "r")))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit_0")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.7 into $0.$1
+(define_insn "*insv.not-bit.7"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (ge:QI (match_operand:QI 2 "register_operand"               "r")
+               (const_int 0)))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, GEN_INT (7), NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit_7")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.$3 into $0.$1
+(define_insn "*insv.xor-extract"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"        "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"     "n"))
+        (any_extract:QI (xor:QI (match_operand:QI 2 "register_operand"  "r")
+                                (match_operand:QI 4 "const_int_operand" "n"))
+                        (const_int 1)
+                        (match_operand:QI 3 "const_0_to_7_operand"      "n")))]
+  "INTVAL (operands[4]) & (1 << INTVAL (operands[3]))"
+  {
+    return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit")
+   (set_attr "cc" "clobber")])
 
 
 ;; Some combine patterns that try to fix bad code when a value is composed
