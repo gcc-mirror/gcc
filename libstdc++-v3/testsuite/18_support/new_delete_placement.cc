@@ -25,11 +25,11 @@
 // libstdc++/7286
 void test01()
 {
-  void* pc = new char;
-  void* pa = new char[10];
+  char c = 'c';
+  void* p = &c;
   void* tmp = 0;
-  operator delete(pc, tmp);
-  operator delete[](pa, tmp);
+  operator delete(p, tmp);
+  operator delete[](p, tmp);
 }
 
 int main()

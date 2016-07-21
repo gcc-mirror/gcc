@@ -30,7 +30,7 @@ void test()
   // using MyMap = std::multimap<std::string, MyType *>; // works
   using MyMap = std::unordered_multimap<std::string, MyType*>; // fails to link
   MyMap m;
-  m.insert(std::make_pair(std::string("blah"), new MyType));
+  m.insert(std::make_pair(std::string("blah"), (MyType*)nullptr));
 }
 
 int main()
