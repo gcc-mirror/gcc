@@ -507,10 +507,14 @@ ARM_FUNC_ALIAS aeabi_f2d extendsfdf2
 	eorne	xh, xh, #0x38000000	@ fixup exponent otherwise.
 	RETc(ne)			@ and return it.
 
-	teq	r2, #0			@ if actually 0
-	do_it	ne, e
-	teqne	r3, #0xff000000		@ or INF or NAN
+	bics	r2, r2, #0xff000000	@ isolate mantissa
+	do_it	eq			@ if 0, that is ZERO or INF,
 	RETc(eq)			@ we are done already.
+
+	teq	r3, #0xff000000		@ check for NAN
+	do_it	eq, t
+	orreq	xh, xh, #0x00080000	@ change to quiet NAN
+	RETc(eq)			@ and return it.
 
 	@ value was denormalized.  We can normalize it now.
 	do_push	{r4, r5, lr}
