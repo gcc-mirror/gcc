@@ -1,3 +1,8 @@
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71941
+	* g++.dg/gomp/pr71941.C: New test.
+
 2016-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70339
