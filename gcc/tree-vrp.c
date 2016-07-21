@@ -4156,8 +4156,8 @@ adjust_range_with_scev (value_range *vr, struct loop *loop,
 	 or decreases,  ... */
       dir == EV_DIR_UNKNOWN
       /* ... or if it may wrap.  */
-      || scev_probably_wraps_p (init, step, stmt, get_chrec_loop (chrec),
-				true))
+      || scev_probably_wraps_p (NULL_TREE, init, step, stmt,
+				get_chrec_loop (chrec), true))
     return;
 
   /* We use TYPE_MIN_VALUE and TYPE_MAX_VALUE here instead of

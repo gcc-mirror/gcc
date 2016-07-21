@@ -3128,7 +3128,8 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   /* If access is not executed on every iteration, we must ensure that overlow
      may not make the access valid later.  */
   if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (data->stmt))
-      && scev_probably_wraps_p (initial_condition_in_loop_num (ev, loop->num),
+      && scev_probably_wraps_p (NULL_TREE,
+				initial_condition_in_loop_num (ev, loop->num),
 				step, data->stmt, loop, true))
     upper = false;
 
@@ -4191,6 +4192,104 @@ loop_exits_before_overflow (tree base, tree step,
   return false;
 }
 
+/* VAR is scev variable whose evolution part is constant STEP, this function
+   proves that VAR can't overflow by using value range info.  If VAR's value
+   range is [MIN, MAX], it can be proven by:
+     MAX + step doesn't overflow    ; if step > 0
+   or
+     MIN + step doesn't underflow   ; if step < 0.
+
+   We can only do this if var is computed in every loop iteration, i.e, var's
+   definition has to dominate loop latch.  Consider below example:
+
+     {
+       unsigned int i;
+
+       <bb 3>:
+
+       <bb 4>:
+       # RANGE [0, 4294967294] NONZERO 65535
+       # i_21 = PHI <0(3), i_18(9)>
+       if (i_21 != 0)
+	 goto <bb 6>;
+       else
+	 goto <bb 8>;
+
+       <bb 6>:
+       # RANGE [0, 65533] NONZERO 65535
+       _6 = i_21 + 4294967295;
+       # RANGE [0, 65533] NONZERO 65535
+       _7 = (long unsigned int) _6;
+       # RANGE [0, 524264] NONZERO 524280
+       _8 = _7 * 8;
+       # PT = nonlocal escaped
+       _9 = a_14 + _8;
+       *_9 = 0;
+
+       <bb 8>:
+       # RANGE [1, 65535] NONZERO 65535
+       i_18 = i_21 + 1;
+       if (i_18 >= 65535)
+	 goto <bb 10>;
+       else
+	 goto <bb 9>;
+
+       <bb 9>:
+       goto <bb 4>;
+
+       <bb 10>:
+       return;
+     }
+
+   VAR _6 doesn't overflow only with pre-condition (i_21 != 0), here we
+   can't use _6 to prove no-overlfow for _7.  In fact, var _7 takes value
+   sequence (4294967295, 0, 1, ..., 65533) in loop life time, rather than
+   (4294967295, 4294967296, ...).  */
+
+static bool
+scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
+{
+  tree type;
+  wide_int minv, maxv, diff, step_wi;
+  enum value_range_type rtype;
+
+  if (TREE_CODE (step) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (var)))
+    return false;
+
+  /* Check if VAR evaluates in every loop iteration.  It's not the case
+     if VAR is default definition or does not dominate loop's latch.  */
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
+  if (!def_bb || !dominated_by_p (CDI_DOMINATORS, loop->latch, def_bb))
+    return false;
+
+  rtype = get_range_info (var, &minv, &maxv);
+  if (rtype != VR_RANGE)
+    return false;
+
+  /* VAR is a scev whose evolution part is STEP and value range info
+     is [MIN, MAX], we can prove its no-overflowness by conditions:
+
+       type_MAX - MAX >= step   ; if step > 0
+       MIN - type_MIN >= |step| ; if step < 0.
+
+     Or VAR must take value outside of value range, which is not true.  */
+  step_wi = step;
+  type = TREE_TYPE (var);
+  if (tree_int_cst_sign_bit (step))
+    {
+      diff = lower_bound_in_type (type, type);
+      diff = minv - diff;
+      step_wi = - step_wi;
+    }
+  else
+    {
+      diff = upper_bound_in_type (type, type);
+      diff = diff - maxv;
+    }
+
+  return (wi::geu_p (diff, step_wi));
+}
+
 /* Return false only when the induction variable BASE + STEP * I is
    known to not overflow: i.e. when the number of iterations is small
    enough with respect to the step and initial condition in order to
@@ -4199,10 +4298,13 @@ loop_exits_before_overflow (tree base, tree step,
 
    USE_OVERFLOW_SEMANTICS is true if this function should assume that
    the rules for overflow of the given language apply (e.g., that signed
-   arithmetics in C does not overflow).  */
+   arithmetics in C does not overflow).
+
+   If VAR is a ssa variable, this function also returns false if VAR can
+   be proven not overflow with value range info.  */
 
 bool
-scev_probably_wraps_p (tree base, tree step,
+scev_probably_wraps_p (tree var, tree base, tree step,
 		       gimple *at_stmt, struct loop *loop,
 		       bool use_overflow_semantics)
 {
@@ -4238,6 +4340,11 @@ scev_probably_wraps_p (tree base, tree step,
      we must have an upper bound on the absolute value of the step.  */
   if (TREE_CODE (step) != INTEGER_CST)
     return true;
+
+  /* Check if var can be proven not overflow with value range info.  */
+  if (var && TREE_CODE (var) == SSA_NAME
+      && scev_var_range_cant_overflow (var, step, loop))
+    return false;
 
   if (loop_exits_before_overflow (base, step, at_stmt, loop))
     return false;

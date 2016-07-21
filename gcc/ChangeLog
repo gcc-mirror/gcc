@@ -1,5 +1,17 @@
 2016-07-21  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-chrec.c (convert_affine_scev): New parameter.  Pass new arg.
+	(chrec_convert_1, chrec_convert): Ditto.
+	* tree-chrec.h (chrec_convert, convert_affine_scev): New parameter.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Pass new arg.
+	* tree-vrp.c (adjust_range_with_scev): Ditto.
+	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): Ditto.
+	(scev_var_range_cant_overflow): New function.
+	(scev_probably_wraps_p): New parameter.  Call above function.
+	* tree-ssa-loop-niter.h (scev_probably_wraps_p): New parameter.
+
+2016-07-21  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Clean up
 	by removing computation of may_be_zero.
 

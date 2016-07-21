@@ -1933,7 +1933,7 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 	}
       else
 	chrec1 = analyze_scalar_evolution (loop, rhs1);
-      res = chrec_convert (type, chrec1, at_stmt);
+      res = chrec_convert (type, chrec1, at_stmt, true, rhs1);
       break;
 
     case BIT_AND_EXPR:
