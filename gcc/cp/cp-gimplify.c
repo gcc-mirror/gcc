@@ -1954,6 +1954,11 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 tree
 cp_fully_fold (tree x)
 {
+  if (processing_template_decl)
+    return x;
+  /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
+     have to call both.  */
+  x = maybe_constant_value (x);
   return cp_fold (x);
 }
 

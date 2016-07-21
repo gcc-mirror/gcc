@@ -1,3 +1,8 @@
+2016-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71121
+	* cp-gimplify.c (cp_fully_fold): First call maybe_constant_value.
+
 2016-07-21  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 
