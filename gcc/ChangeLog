@@ -1,5 +1,10 @@
 2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* optabs.c (emit_condiitonal_move): Short circuit for identical
+	sources.
+
+2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* ifcvt.c (noce_if_info): New fields: speed_p, original_cost,
 	max_seq_cost.  Removed fields: then_cost, else_cost, branch_cost.
 	(noce_conversion_profitable_p): New.
