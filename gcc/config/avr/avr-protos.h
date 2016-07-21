@@ -58,6 +58,7 @@ extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
+extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, rtx, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);

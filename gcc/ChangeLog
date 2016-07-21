@@ -1,3 +1,15 @@
+2016-07-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (any_extract, any_shiftrt): New code iterators.
+	(*insv.extract, *insv.shiftrt, *insv.not-bit.0, *insv.not-bit.7)
+	(*insv.xor-extract, *insv.xor1-bit.0): New insns.
+	(adjust_len) [insv_notbit, insv_notbit_0, insv_notbit_7]: New
+	values for insn attribute.
+	* config/avr/avr.c (avr_out_insert_notbit): New function.
+	(avr_adjust_insn_length): Handle ADJUST_LEN_INSV_NOTBIT,
+	ADJUST_LEN_INSV_NOTBIT_0/_7.
+	* config/avr/avr-protos.h (avr_out_insert_notbit): New proto.
+
 2016-07-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-chrec.c (convert_affine_scev): New parameter.  Pass new arg.
