@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71896
+	* constexpr.c (cxx_eval_binary_expression): Handle comparison
+	between lowered and unlowered PTRMEM_CST.
+
 	PR c++/65168
 	* typeck.c (cp_truthvalue_conversion): Compare pointers to nullptr.
 	Don't set c_inhibit_evaluation_warnings.
