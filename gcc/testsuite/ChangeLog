@@ -1,3 +1,7 @@
+2016-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/vect-mask-store-move-1.c: XFAIL.
+
 2016-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71941
