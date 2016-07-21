@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70824
+	* init.c (constant_value_1): Don't instantiated DECL_INITIAL of
+	artificial variables.
+
 	* lambda.c (maybe_add_lambda_conv_op): Fix null object argument.
 
 2016-07-20  Jakub Jelinek  <jakub@redhat.com>
