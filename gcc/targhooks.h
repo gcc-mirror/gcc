@@ -256,4 +256,6 @@ extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE
 extern bool default_optab_supported_p (int, machine_mode, machine_mode,
 				       optimization_type);
 
+extern unsigned int default_max_noce_ifcvt_seq_cost (edge);
+
 #endif /* GCC_TARGHOOKS_H */

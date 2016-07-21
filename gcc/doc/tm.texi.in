@@ -4762,6 +4762,8 @@ Define this macro if a non-short-circuit operation produced by
 
 @hook TARGET_ADDRESS_COST
 
+@hook TARGET_MAX_NOCE_IFCVT_SEQ_COST
+
 @hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 
 @node Scheduling
