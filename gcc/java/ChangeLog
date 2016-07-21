@@ -1,3 +1,8 @@
+2016-07-21  Richard Biener  <rguenther@suse.de>
+
+	* jcf-parse.c (java_emit_static_constructor): Set
+	BLOCK_SUPERCONTEXT of DECL_INITIAL.
+
 2016-05-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* builtins.c (java_builtins): Use popcount* and bswap* builtins to
