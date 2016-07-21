@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70781
+	* parser.c (cp_parser_lambda_expression): Unset OK if there was an
+	error parsing the lambda-declarator.
+
 	PR c++/71896
 	* constexpr.c (cxx_eval_binary_expression): Handle comparison
 	between lowered and unlowered PTRMEM_CST.
