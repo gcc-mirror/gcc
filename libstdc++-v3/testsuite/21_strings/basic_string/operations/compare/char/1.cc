@@ -80,10 +80,10 @@ test01()
   test_value(strcmp(str_1.data(), str_0.data()), lt);
   test_value(strcmp(str_0.data(), str_1.data()), gt);
   test_value(strncmp(str_1.data(), str_0.data(), 6), z);
-  test_value(strncmp(str_1.data(), str_0.data(), 14), lt);
+  test_value(strncmp(str_1.data(), str_0.data(), 10), lt);
   test_value(memcmp(str_1.data(), str_0.data(), 6), z);
-  test_value(memcmp(str_1.data(), str_0.data(), 14), lt);
-  test_value(memcmp("costa marbella", "costa rica", 14), lt);
+  test_value(memcmp(str_1.data(), str_0.data(), 10), lt);
+  test_value(memcmp("costa marbella", "costa rica", 10), lt);
 
   // int compare(const basic_string& str) const;
   test_value(str_0.compare(str_1), gt); //because r>m
