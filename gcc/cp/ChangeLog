@@ -1,5 +1,12 @@
 2016-07-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71728
+	* constexpr.c (potential_constant_expression_1) <case GOTO_EXPR>:
+	Replace assert with test, return false if the goto isn't break
+	or continue.  Formatting fix.
+
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/71941
 	* cp-gimplify.c (cp_genericize): For nested cp_genericize calls
 	save/restore bc_label array.
