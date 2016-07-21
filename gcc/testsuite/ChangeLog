@@ -1,3 +1,8 @@
+2016-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71947
+	* gcc.dg/tree-ssa/vrp102.c: New testcase.
+
 2016-07-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/scev-15.c: New.
