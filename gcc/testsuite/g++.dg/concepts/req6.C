@@ -7,7 +7,12 @@ template<typename T>
   concept bool C1() { return X(); }
 
 template<C1 T>
-  void h(T) { } // { dg-error "not|bool" }
+  void h(T) { } // OK until used.
+
+void f()
+{
+  h(0); // { dg-error "does not have|cannot call" }
+}
 
 template<typename T>
   concept bool C2() { return X() == X(); } // OK

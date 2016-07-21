@@ -947,6 +947,7 @@ accessible_p (tree type, tree decl, bool consider_local_p)
      in default arguments for template parameters), and access
      checking should be performed in the outermost parameter list.  */
   if (processing_template_decl
+      && !expanding_concept ()
       && (!processing_template_parmlist || processing_template_decl > 1))
     return 1;
 

@@ -893,10 +893,6 @@ struct GTY(()) tree_template_info {
 // - a constraint expression introduced by a function declarator
 // - the associated constraints, which are the conjunction of those,
 //   and used for declaration matching
-// - the cached normalized associated constraints which are used
-//   to support satisfaction and subsumption.
-// - assumptions which is the result of decomposing the normalized
-//   constraints.
 //
 // The template and declarator requirements are kept to support pretty
 // printing constrained declarations.
@@ -905,8 +901,6 @@ struct GTY(()) tree_constraint_info {
   tree template_reqs;
   tree declarator_reqs;
   tree associated_constr;
-  tree normalized_constr;
-  tree assumptions;
 };
 
 // Require that pointer P is non-null before returning.
@@ -945,14 +939,6 @@ check_constraint_info (tree t)
 #define CI_ASSOCIATED_CONSTRAINTS(NODE) \
   check_constraint_info (check_nonnull(NODE))->associated_constr
 
-// The normalized associated constraints.
-#define CI_NORMALIZED_CONSTRAINTS(NODE) \
-  check_constraint_info (check_nonnull(NODE))->normalized_constr
-
-// Get the set of assumptions associated with the constraint info node.
-#define CI_ASSUMPTIONS(NODE) \
-  check_constraint_info (check_nonnull(NODE))->assumptions
-
 // Access the logical constraints on the template parameters introduced
 // at a given template parameter list level indicated by NODE.
 #define TEMPLATE_PARMS_CONSTRAINTS(NODE) \
@@ -975,6 +961,14 @@ check_constraint_info (tree t)
 /* The expression evaluated by the predicate constraint. */
 #define PRED_CONSTR_EXPR(NODE) \
   TREE_OPERAND (TREE_CHECK (NODE, PRED_CONSTR), 0)
+
+/* The concept of a concept check. */
+#define CHECK_CONSTR_CONCEPT(NODE) \
+  TREE_OPERAND (TREE_CHECK (NODE, CHECK_CONSTR), 0)
+
+/* The template arguments of a concept check. */
+#define CHECK_CONSTR_ARGS(NODE) \
+  TREE_OPERAND (TREE_CHECK (NODE, CHECK_CONSTR), 1)
 
 /* The expression validated by the predicate constraint. */
 #define EXPR_CONSTR_EXPR(NODE) \
@@ -6118,6 +6112,7 @@ extern bool is_specialization_of_friend		(tree, tree);
 extern tree get_pattern_parm			(tree, tree);
 extern int comp_template_args			(tree, tree, tree * = NULL,
 						 tree * = NULL);
+extern int template_args_equal                  (tree, tree);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
@@ -6848,10 +6843,8 @@ extern tree strip_using_decl                    (tree);
 /* in constraint.cc */
 extern void init_constraint_processing          ();
 extern bool constraint_p                        (tree);
-extern tree make_predicate_constraint           (tree);
 extern tree conjoin_constraints                 (tree, tree);
 extern tree conjoin_constraints                 (tree);
-extern bool valid_constraints_p                 (tree);
 extern tree get_constraints                     (tree);
 extern void set_constraints                     (tree, tree);
 extern void remove_constraints                  (tree);
@@ -6882,13 +6875,23 @@ extern tree tsubst_requires_expr                (tree, tree, tsubst_flags_t, tre
 extern tree tsubst_constraint                   (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_constraint_info              (tree, tree, tsubst_flags_t, tree);
 extern bool function_concept_check_p            (tree);
-
+extern tree normalize_expression                (tree);
+extern tree expand_concept                      (tree, tree);
+extern bool expanding_concept                   ();
 extern tree evaluate_constraints                (tree, tree);
 extern tree evaluate_function_concept           (tree, tree);
 extern tree evaluate_variable_concept           (tree, tree);
 extern tree evaluate_constraint_expression      (tree, tree);
 extern bool constraints_satisfied_p             (tree);
 extern bool constraints_satisfied_p             (tree, tree);
+extern tree lookup_constraint_satisfaction      (tree, tree);
+extern tree memoize_constraint_satisfaction     (tree, tree, tree);
+extern tree lookup_concept_satisfaction         (tree, tree);
+extern tree memoize_concept_satisfaction        (tree, tree, tree);
+extern tree get_concept_expansion               (tree, tree);
+extern tree save_concept_expansion              (tree, tree, tree);
+extern bool* lookup_subsumption_result          (tree, tree);
+extern bool save_subsumption_result             (tree, tree, bool);
 
 extern bool equivalent_constraints              (tree, tree);
 extern bool equivalently_constrained            (tree, tree);
@@ -6899,7 +6902,6 @@ extern int more_constrained                     (tree, tree);
 extern void diagnose_constraints                (location_t, tree, tree);
 
 /* in logic.cc */
-extern tree decompose_assumptions               (tree);
 extern tree decompose_conclusions               (tree);
 extern bool subsumes                            (tree, tree);
 

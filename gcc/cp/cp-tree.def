@@ -536,6 +536,14 @@ DEFTREECODE (NESTED_REQ, "nested_req", tcc_expression, 1)
    PRED_CONSTR_EXPR has the expression to be evaluated. */
 DEFTREECODE (PRED_CONSTR, "pred_constr", tcc_expression, 1)
 
+/* A check constraint represents the checking of a concept
+   C. It has two operands: the template defining the concept
+   and a sequence of template arguments.
+
+   CHECK_CONSTR_CONCEPT has the concept definition
+   CHECK_CONSTR_ARGUMENTS are the template arguments */
+DEFTREECODE (CHECK_CONSTR, "check_constr", tcc_expression, 2)
+
 /* An expression constraint determines the validity of a expression E.
 
    EXPR_CONST_EXPR has the expression being validated. */
@@ -560,7 +568,7 @@ DEFTREECODE (ICONV_CONSTR, "iconv_constr", tcc_expression, 2)
    T must contain at least one place holder.
 
    DEDUCT_CONSTR_EXPR has the expression E
-   DEDUCT_CONSTR_PATTERN has the type patter T.
+   DEDUCT_CONSTR_PATTERN has the type pattern T.
    DEDUCT_CONSTR_PLACEHOLDERS has the list of placeholder nodes in T. */
 DEFTREECODE (DEDUCT_CONSTR, "deduct_constr", tcc_expression, 3)
 

@@ -14728,10 +14728,13 @@ cp_parser_type_parameter (cp_parser* parser, bool *is_parameter_pack)
 	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
 
         // If template requirements are present, parse them.
-	tree reqs = get_shorthand_constraints (current_template_parms);
-	if (tree r = cp_parser_requires_clause_opt (parser))
-	  reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
-	TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+	if (flag_concepts)
+          {
+	    tree reqs = get_shorthand_constraints (current_template_parms);
+	    if (tree r = cp_parser_requires_clause_opt (parser))
+              reqs = conjoin_constraints (reqs, normalize_expression (r));
+	    TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+          }
 
 	/* Look for the `class' or 'typename' keywords.  */
 	cp_parser_type_parameter_key (parser);
@@ -25754,10 +25757,13 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
   cp_parser_skip_to_end_of_template_parameter_list (parser);
 
   /* Manage template requirements */
-  tree reqs = get_shorthand_constraints (current_template_parms);
-  if (tree r = cp_parser_requires_clause_opt (parser))
-    reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
-  TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+  if (flag_concepts)
+  {
+    tree reqs = get_shorthand_constraints (current_template_parms);
+    if (tree r = cp_parser_requires_clause_opt (parser))
+      reqs = conjoin_constraints (reqs, normalize_expression (r));
+    TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+  }
 
   cp_parser_template_declaration_after_parameters (parser, parameter_list,
 						   member_p);
@@ -37916,7 +37922,13 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       implicit template scope, and we're trying to synthesize a
       constrained parameter, try to find a previous parameter with
       the same name.  This is the same-type rule for abbreviated
-      function templates.  */
+      function templates.
+
+      NOTE: We can generate implicit parameters when tentatively
+      parsing a nested name specifier, only to reject that parse
+      later. However, matching the same template-id as part of a
+      direct-declarator should generate an identical template
+      parameter, so this rule will merge them. */
   if (parser->implicit_template_scope && constr)
     {
       tree t = parser->implicit_template_parms;

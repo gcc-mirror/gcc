@@ -24,11 +24,19 @@ template <typename T, typename U, typename... Args>
     return decltype(check<T, U, Args...>())::value;
   }
 
+template <typename T, typename U, typename... Args>
+  concept bool Similar = true;
+
 template <typename... Args>
-requires Same<Args...>()	// { dg-error "concept" }
+requires Same<Args...>() // { dg-error "invalid reference" }
   void foo( Args... args ) {}
+
+template <typename... Args>
+requires Similar<Args...> // { dg-error "invalid reference" }
+  void bar( Args... args ) {}
 
 int main()
 {
-  foo(1, 2, 3);			// { dg-error "" }
+  foo(1, 2, 3); // { dg-error "cannot call" }
+  bar(1, 2, 3); // { dg-error "cannot call" }
 }

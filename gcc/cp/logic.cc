@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "timevar.h"
 #include "hash-set.h"
 #include "machmode.h"
 #include "vec.h"
@@ -50,18 +51,51 @@ namespace {
 
 // Helper algorithms
 
-// Increment iter distance(first, last) times.
-template<typename I1, typename I2, typename I3>
-  I1 next_by_distance (I1 iter, I2 first, I3 last)
-  {
-    for ( ; first != last; ++first, ++iter)
-      ;
-    return iter;
-  }
+template<typename I>
+inline I
+next (I iter)
+{
+  return ++iter;
+}
+
+template<typename I, typename P>
+inline bool
+any_p (I first, I last, P pred)
+{
+  while (first != last)
+    {
+      if (pred(*first))
+        return true;
+      ++first;
+    }
+  return false;
+}
+
+bool prove_implication (tree, tree);
 
 /*---------------------------------------------------------------------------
                            Proof state
 ---------------------------------------------------------------------------*/
+
+struct term_entry
+{
+  tree t;
+};
+
+/* Hashing function and equality for constraint entries.  */
+
+struct term_hasher : ggc_ptr_hash<term_entry>
+{
+  static hashval_t hash (term_entry *e)
+  {
+    return iterative_hash_template_arg (e->t, 0);
+  }
+
+  static bool equal (term_entry *e1, term_entry *e2)
+  {
+    return cp_tree_equal (e1->t, e2->t);
+  }
+};
 
 /* A term list is a list of atomic constraints. It is used
    to maintain the lists of assumptions and conclusions in a
@@ -70,109 +104,122 @@ template<typename I1, typename I2, typename I3>
    Each term list maintains an iterator that refers to the current
    term. This can be used by various tactics to support iteration
    and stateful manipulation of the list. */
-struct term_list : std::list<tree>
+struct term_list
 {
+  typedef std::list<tree>::iterator iterator;
+
   term_list ();
-  term_list (const term_list &x);
-  term_list& operator= (const term_list &x);
+  term_list (tree);
 
-  tree       current_term ()       { return *current; }
-  const_tree current_term () const { return *current; }
+  bool includes (tree);
+  iterator insert (iterator, tree);
+  iterator push_back (tree);
+  iterator erase (iterator);
+  iterator replace (iterator, tree);
+  iterator replace (iterator, tree, tree);
 
+  iterator begin() { return seq.begin(); }
+  iterator end() { return seq.end(); }
 
-  void insert (tree t);
-  tree erase ();
-
-  void start ();
-  void next ();
-  bool done() const;
-
-  iterator current;
+  std::list<tree>         seq;
+  hash_table<term_hasher> tab;
 };
 
 inline
 term_list::term_list ()
-  : std::list<tree> (), current (end ())
-{ }
+  : seq(), tab (11)
+{
+}
+
+/* Initialize a term list with an initial term. */
 
 inline
-term_list::term_list (const term_list &x)
-  : std::list<tree> (x)
-  , current (next_by_distance (begin (), x.begin (), x.current))
-{ }
-
-inline term_list&
-term_list::operator= (const term_list &x)
+term_list::term_list (tree t)
+  : seq (), tab (11)
 {
-  std::list<tree>::operator=(x);
-  current = next_by_distance (begin (), x.begin (), x.current);
-  return *this;
+  push_back (t);
 }
 
-/* Try saving the term T into the list of terms. If
-   T is already in the list of terms, then no action is
-   performed. Otherwise, insert T before the current
-   position, making this term current.
+/* Returns true if T is the in the tree. */
 
-   Note that not inserting terms is an optimization
-   that corresponds to the structural rule of
-   contraction.
-
-   NOTE: With the contraction rule, this data structure
-   would be more efficiently represented as an ordered set
-   or hash set.  */
-void
-term_list::insert (tree t)
-{
-  /* Search the current term list. If there is already
-     a matching term, do not add the new one.  */
-  for (iterator i = begin(); i != end(); ++i)
-    if (cp_tree_equal (*i, t))
-      return;
-
-  current = std::list<tree>::insert (current, t);
-}
-
-/* Remove the current term from the list, repositioning to
-   the term following the removed term. Note that the new
-   position could be past the end of the list.
-
-   The removed term is returned. */
-inline tree
-term_list::erase ()
-{
-  tree t = *current;
-  current = std::list<tree>::erase (current);
-  return t;
-}
-
-/* Initialize the current term to the first in the list. */
-inline void
-term_list::start ()
-{
-  current = begin ();
-}
-
-/* Advance to the next term in the list. */
-inline void
-term_list::next ()
-{
-  ++current;
-}
-
-/* Returns true when the current position is past the end. */
 inline bool
-term_list::done () const
+term_list::includes (tree t)
 {
-  return current == end ();
+  term_entry ent = {t};
+  return tab.find (&ent);
 }
 
+/* Append a term to the list. */
+inline term_list::iterator
+term_list::push_back (tree t)
+{
+  return insert (end(), t);
+}
+
+/* Insert a new (unseen) term T into the list before the proposition
+   indicated by ITER. Returns the iterator to the newly inserted
+   element.  */
+
+term_list::iterator
+term_list::insert (iterator iter, tree t)
+{
+  gcc_assert (!includes (t));
+  iter = seq.insert (iter, t);
+  term_entry ent = {t};
+  term_entry** slot = tab.find_slot (&ent, INSERT);
+  term_entry* ptr = ggc_alloc<term_entry> ();
+  *ptr = ent;
+  *slot = ptr;
+  return iter;
+}
+
+/* Remove an existing term from the list. Returns an iterator referring
+   to the element after the removed term.  This may be end().  */
+
+term_list::iterator
+term_list::erase (iterator iter)
+{
+  gcc_assert (includes (*iter));
+  term_entry ent = {*iter};
+  tab.remove_elt (&ent);
+  iter = seq.erase (iter);
+  return iter;
+}
+
+/* Replace the given term with that specified. If the term has
+   been previously seen, do not insert the term. Returns the
+   first iterator past the current term.  */
+
+term_list::iterator
+term_list::replace (iterator iter, tree t)
+{
+  iter = erase (iter);
+  if (!includes (t))
+    insert (iter, t);
+  return iter;
+}
+
+
+/* Replace the term at the given position by the supplied T1
+   followed by t2. This is used in certain logical operators to
+   load a list of assumptions or conclusions.  */
+
+term_list::iterator
+term_list::replace (iterator iter, tree t1, tree t2)
+{
+  iter = erase (iter);
+  if (!includes (t1))
+    insert (iter, t1);
+  if (!includes (t2))
+    insert (iter, t2);
+  return iter;
+}
 
 /* A goal (or subgoal) models a sequent of the form
    'A |- C' where A and C are lists of assumptions and
    conclusions written as propositions in the constraint
-   language (i.e., lists of trees).
-*/
+   language (i.e., lists of trees). */
+
 struct proof_goal
 {
   term_list assumptions;
@@ -182,27 +229,27 @@ struct proof_goal
 /* A proof state owns a list of goals and tracks the
    current sub-goal. The class also provides facilities
    for managing subgoals and constructing term lists. */
+
 struct proof_state : std::list<proof_goal>
 {
   proof_state ();
 
   iterator branch (iterator i);
+  iterator discharge (iterator i);
 };
 
-/* An alias for proof state iterators. */
-typedef proof_state::iterator goal_iterator;
+/* Initialize the state with a single empty goal, and set that goal
+   as the current subgoal.  */
 
-/* Initialize the state with a single empty goal,
-   and set that goal as the current subgoal. */
 inline
 proof_state::proof_state ()
   : std::list<proof_goal> (1)
 { }
 
 
-/* Branch the current goal by creating a new subgoal,
-   returning a reference to // the new object. This does
-   not update the current goal. */
+/* Branch the current goal by creating a new subgoal, returning a
+   reference to the new object. This does not update the current goal. */
+
 inline proof_state::iterator
 proof_state::branch (iterator i)
 {
@@ -211,278 +258,536 @@ proof_state::branch (iterator i)
   return insert (++i, g);
 }
 
-/*---------------------------------------------------------------------------
-                           Logical rules
----------------------------------------------------------------------------*/
+/* Discharge the current goal, setting it equal to the
+   next non-satisfied goal. */
 
-/*These functions modify the current state and goal by decomposing
-  logical expressions using the logical rules of sequent calculus for
-  first order logic.
-
-  Note that in each decomposition rule, the term T has been erased
-  from term list before the specific rule is applied. */
-
-/* The left logical rule for conjunction adds both operands
-   to the current set of constraints. */
-void
-left_conjunction (proof_state &, goal_iterator i, tree t)
+inline proof_state::iterator
+proof_state::discharge (iterator i)
 {
-  gcc_assert (TREE_CODE (t) == CONJ_CONSTR);
-
-  /* Insert the operands into the current branch. Note that the
-     final order of insertion is left-to-right. */
-  term_list &l = i->assumptions;
-  l.insert (TREE_OPERAND (t, 1));
-  l.insert (TREE_OPERAND (t, 0));
+  gcc_assert (i != end());
+  return erase (i);
 }
 
-/* The left logical rule for disjunction creates a new goal,
-   adding the first operand to the original set of
-   constraints and the second operand to the new set
-   of constraints. */
-void
-left_disjunction (proof_state &s, goal_iterator i, tree t)
-{
-  gcc_assert (TREE_CODE (t) == DISJ_CONSTR);
-
-  /* Branch the current subgoal. */
-  goal_iterator j = s.branch (i);
-  term_list &l1 = i->assumptions;
-  term_list &l2 = j->assumptions;
-
-  /* Insert operands into the different branches. */
-  l1.insert (TREE_OPERAND (t, 0));
-  l2.insert (TREE_OPERAND (t, 1));
-}
-
-/* The left logical rules for parameterized constraints
-   adds its operand to the current goal. The list of
-   parameters are effectively discarded. */
-void
-left_parameterized_constraint (proof_state &, goal_iterator i, tree t)
-{
-  gcc_assert (TREE_CODE (t) == PARM_CONSTR);
-  term_list &l = i->assumptions;
-  l.insert (PARM_CONSTR_OPERAND (t));
-}
 
 /*---------------------------------------------------------------------------
-                           Decomposition
+                        Debugging
 ---------------------------------------------------------------------------*/
 
-/* The following algorithms decompose expressions into sets of
-   atomic propositions. In terms of the sequent calculus, these
-   functions exercise the logical rules only.
+// void
+// debug (term_list& ts)
+// {
+//   for (term_list::iterator i = ts.begin(); i != ts.end(); ++i)
+//     verbatim ("  # %E", *i);
+// }
+//
+// void
+// debug (proof_goal& g)
+// {
+//   debug (g.assumptions);
+//   verbatim ("       |-");
+//   debug (g.conclusions);
+// }
 
-   This is equivalent, for the purpose of determining subsumption,
-   to rewriting a constraint in disjunctive normal form. It also
-   allows the resulting assumptions to be used as declarations
-   for the purpose of separate checking. */
+/*---------------------------------------------------------------------------
+                        Atomicity of constraints
+---------------------------------------------------------------------------*/
 
-/* Apply the left logical rules to the proof state. */
-void
-decompose_left_term (proof_state &s, goal_iterator i)
+/* Returns true if T is not an atomic constraint.  */
+
+bool
+non_atomic_constraint_p (tree t)
 {
-  term_list &l = i->assumptions;
-  tree t = l.current_term ();
   switch (TREE_CODE (t))
     {
-    case CONJ_CONSTR:
-      left_conjunction (s, i, l.erase ());
-      break;
-    case DISJ_CONSTR:
-      left_disjunction (s, i, l.erase ());
-      break;
+    case PRED_CONSTR:
+    case EXPR_CONSTR:
+    case TYPE_CONSTR:
+    case ICONV_CONSTR:
+    case DEDUCT_CONSTR:
+    case EXCEPT_CONSTR:
+      return false;
+    case CHECK_CONSTR:
     case PARM_CONSTR:
-      left_parameterized_constraint (s, i, l.erase ());
-      break;
+    case CONJ_CONSTR:
+    case DISJ_CONSTR:
+      return true;
     default:
-      l.next ();
-      break;
+      gcc_unreachable ();
     }
 }
 
-/* Apply the left logical rules of the sequent calculus
-   until the current goal is fully decomposed into atomic
-   constraints. */
-void
-decompose_left_goal (proof_state &s, goal_iterator i)
+/* Returns true if any constraints in T are not atomic.  */
+
+bool
+any_non_atomic_constraints_p (term_list& t)
 {
-  term_list& l = i->assumptions;
-  l.start ();
-  while (!l.done ())
-    decompose_left_term (s, i);
+  return any_p (t.begin(), t.end(), non_atomic_constraint_p);
 }
-
-/* Apply the left logical rules of the sequent calculus
-   until the antecedents are fully decomposed into atomic
-   constraints. */
-void
-decompose_left (proof_state& s)
-{
-  goal_iterator iter = s.begin ();
-  goal_iterator end = s.end ();
-  for ( ; iter != end; ++iter)
-    decompose_left_goal (s, iter);
-}
-
-/* Returns a vector of terms from the term list L. */
-tree
-extract_terms (term_list& l)
-{
-  tree result = make_tree_vec (l.size());
-  term_list::iterator iter = l.begin();
-  term_list::iterator end = l.end();
-  for (int n = 0; iter != end; ++iter, ++n)
-    TREE_VEC_ELT (result, n) = *iter;
-  return result;
-}
-
-/* Extract the assumptions from the proof state S
-   as a vector of vectors of atomic constraints. */
-inline tree
-extract_assumptions (proof_state& s)
-{
-  tree result = make_tree_vec (s.size ());
-  goal_iterator iter = s.begin ();
-  goal_iterator end = s.end ();
-  for (int n = 0; iter != end; ++iter, ++n)
-    TREE_VEC_ELT (result, n) = extract_terms (iter->assumptions);
-  return result;
-}
-
-} // namespace
-
-/* Decompose the required expression T into a constraint set: a
-   vector of vectors containing only atomic propositions. If T is
-   invalid, return an error. */
-tree
-decompose_assumptions (tree t)
-{
-  if (!t || t == error_mark_node)
-    return t;
-
-  /* Create a proof state, and insert T as the sole assumption. */
-  proof_state s;
-  term_list &l = s.begin ()->assumptions;
-  l.insert (t);
-
-  /* Decompose the expression into a constraint set, and then
-     extract the terms for the AST. */
-  decompose_left (s);
-  return extract_assumptions (s);
-}
-
 
 /*---------------------------------------------------------------------------
-                           Subsumption Rules
+                           Proof validations
 ---------------------------------------------------------------------------*/
 
-namespace {
-
-bool subsumes_constraint (tree, tree);
-bool subsumes_conjunction (tree, tree);
-bool subsumes_disjunction (tree, tree);
-bool subsumes_parameterized_constraint (tree, tree);
-bool subsumes_atomic_constraint (tree, tree);
-
-/* Returns true if the assumption A matches the conclusion C. This
-   is generally the case when A and C have the same syntax.
-
-   NOTE: There will be specialized matching rules to accommodate
-   type equivalence, conversion, inheritance, etc. But this is not
-   in the current concepts draft. */
-inline bool
-match_terms (tree a, tree c)
+enum proof_result
 {
-  return cp_tree_equal (a, c);
+  invalid,
+  valid,
+  undecided
+};
+
+proof_result check_term (term_list&, tree);
+
+
+proof_result
+analyze_atom (term_list& ts, tree t)
+{
+  /* FIXME: Hook into special cases, if any. */
+  /*
+  term_list::iterator iter = ts.begin();
+  term_list::iterator end = ts.end();
+  while (iter != end)
+    {
+      ++iter;
+    }
+  */
+
+  if (non_atomic_constraint_p (t))
+    return undecided;
+  if (any_non_atomic_constraints_p (ts))
+    return undecided;
+  return invalid;
 }
 
-/* Returns true if the list of assumptions AS subsumes the atomic
-   proposition C. This is the case when we can find a proposition
-  in AS that entails the conclusion C. */
-bool
-subsumes_atomic_constraint (tree as, tree c)
+/* Search for a pack expansion in the list of assumptions that would
+   make this expansion valid.  */
+
+proof_result
+analyze_pack (term_list& ts, tree t)
 {
-  for (int i = 0; i < TREE_VEC_LENGTH (as); ++i)
-    if (match_terms (TREE_VEC_ELT (as, i), c))
-      return true;
+  tree c1 = normalize_expression (PACK_EXPANSION_PATTERN (t));
+  term_list::iterator iter = ts.begin();
+  term_list::iterator end = ts.end();
+  while (iter != end)
+    {
+      if (TREE_CODE (*iter) == TREE_CODE (t))
+        {
+          tree c2 = normalize_expression (PACK_EXPANSION_PATTERN (*iter));
+          if (prove_implication (c2, c1))
+            return valid;
+          else
+            return invalid;
+        }
+      ++iter;
+    }
+  return invalid;
+}
+
+/* Search for concept checks in TS that we know subsume T. */
+
+proof_result
+search_known_subsumptions (term_list& ts, tree t)
+{
+  for (term_list::iterator i = ts.begin(); i != ts.end(); ++i)
+    if (TREE_CODE (*i) == CHECK_CONSTR)
+      {
+        if (bool* b = lookup_subsumption_result (*i, t))
+          return *b ? valid : invalid;
+      }
+  return undecided;
+}
+
+/* Determine if the terms in TS provide sufficient support for proving
+   the proposition T. If any term in TS is a concept check that is known
+   to subsume T, then the proof is valid. Otherwise, we have to expand T
+   and continue searching for support.  */
+
+proof_result
+analyze_check (term_list& ts, tree t)
+{
+  proof_result r = search_known_subsumptions (ts, t);
+  if (r != undecided)
+    return r;
+
+  tree tmpl = CHECK_CONSTR_CONCEPT (t);
+  tree args = CHECK_CONSTR_ARGS (t);
+  tree c = expand_concept (tmpl, args);
+  return check_term (ts, c);
+}
+
+/* Recursively check constraints of the parameterized constraint. */
+
+proof_result
+analyze_parameterized (term_list& ts, tree t)
+{
+  return check_term (ts, PARM_CONSTR_OPERAND (t));
+}
+
+proof_result
+analyze_conjunction (term_list& ts, tree t)
+{
+  proof_result r = check_term (ts, TREE_OPERAND (t, 0));
+  if (r == invalid || r == undecided)
+    return r;
+  return check_term (ts, TREE_OPERAND (t, 1));
+}
+
+proof_result
+analyze_disjunction (term_list& ts, tree t)
+{
+  proof_result r = check_term (ts, TREE_OPERAND (t, 0));
+  if (r == valid)
+    return r;
+  return check_term (ts, TREE_OPERAND (t, 1));
+}
+
+proof_result
+analyze_term (term_list& ts, tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case CHECK_CONSTR:
+      return analyze_check (ts, t);
+
+    case PARM_CONSTR:
+      return analyze_parameterized (ts, t);
+
+    case CONJ_CONSTR:
+      return analyze_conjunction (ts, t);
+    case DISJ_CONSTR:
+      return analyze_disjunction (ts, t);
+
+    case PRED_CONSTR:
+    case EXPR_CONSTR:
+    case TYPE_CONSTR:
+    case ICONV_CONSTR:
+    case DEDUCT_CONSTR:
+    case EXCEPT_CONSTR:
+      return analyze_atom (ts, t);
+
+    case EXPR_PACK_EXPANSION:
+      return analyze_pack (ts, t);
+
+    case ERROR_MARK:
+      /* Encountering an error anywhere in a constraint invalidates
+         the proof, since the constraint is ill-formed.  */
+      return invalid;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Check if a single term can be proven from a set of assumptions.
+   If the proof is not valid, then it is incomplete when either
+   the given term is non-atomic or any term in the list of assumptions
+   is not-atomic.  */
+
+proof_result
+check_term (term_list& ts, tree t)
+{
+  /* Try the easy way; search for an equivalent term.  */
+  if (ts.includes (t))
+    return valid;
+
+  /* The hard way; actually consider what the term means.  */
+  return analyze_term (ts, t);
+}
+
+/* Check to see if any term is proven by the assumptions in the
+   proof goal. The proof is valid if the proof of any term is valid.
+   If validity cannot be determined, but any particular
+   check was undecided, then this goal is undecided.  */
+
+proof_result
+check_goal (proof_goal& g)
+{
+  term_list::iterator iter = g.conclusions.begin ();
+  term_list::iterator end = g.conclusions.end ();
+  bool incomplete = false;
+  while (iter != end)
+    {
+      proof_result r = check_term (g.assumptions, *iter);
+      if (r == valid)
+        return r;
+      if (r == undecided)
+        incomplete = true;
+      ++iter;
+    }
+
+    /* Was the proof complete? */
+    if (incomplete)
+      return undecided;
+    else
+      return invalid;
+}
+
+/* Check if the the proof is valid. This is the case when all
+   goals can be discharged. If any goal is invalid, then the
+   entire proof is invalid. Otherwise, the proof is undecided.  */
+
+proof_result
+check_proof (proof_state& p)
+{
+  proof_state::iterator iter = p.begin();
+  proof_state::iterator end = p.end();
+  while (iter != end)
+    {
+      proof_result r = check_goal (*iter);
+      if (r == invalid)
+        return r;
+      if (r == valid)
+        iter = p.discharge (iter);
+      else
+        ++iter;
+    }
+
+  /* If all goals are discharged, then the proof is valid.  */
+  if (p.empty())
+    return valid;
+  else
+    return undecided;
+}
+
+/*---------------------------------------------------------------------------
+                           Left logical rules
+---------------------------------------------------------------------------*/
+
+term_list::iterator
+load_check_assumption (term_list& ts, term_list::iterator i)
+{
+  tree decl = CHECK_CONSTR_CONCEPT (*i);
+  tree tmpl = DECL_TI_TEMPLATE (decl);
+  tree args = CHECK_CONSTR_ARGS (*i);
+  return ts.replace(i, expand_concept (tmpl, args));
+}
+
+term_list::iterator
+load_parameterized_assumption (term_list& ts, term_list::iterator i)
+{
+  return ts.replace(i, PARM_CONSTR_OPERAND(*i));
+}
+
+term_list::iterator
+load_conjunction_assumption (term_list& ts, term_list::iterator i)
+{
+  tree t1 = TREE_OPERAND (*i, 0);
+  tree t2 = TREE_OPERAND (*i, 1);
+  return ts.replace(i, t1, t2);
+}
+
+/* Examine the terms in the list, and apply left-logical rules to move
+   terms into the set of assumptions. */
+
+void
+load_assumptions (proof_goal& g)
+{
+  term_list::iterator iter = g.assumptions.begin();
+  term_list::iterator end = g.assumptions.end();
+  while (iter != end)
+    {
+      switch (TREE_CODE (*iter))
+        {
+        case CHECK_CONSTR:
+          iter = load_check_assumption (g.assumptions, iter);
+          break;
+        case PARM_CONSTR:
+          iter = load_parameterized_assumption (g.assumptions, iter);
+          break;
+        case CONJ_CONSTR:
+          iter = load_conjunction_assumption (g.assumptions, iter);
+          break;
+        default:
+          ++iter;
+          break;
+        }
+    }
+}
+
+/* In each subgoal, load constraints into the assumption set.  */
+
+void
+load_assumptions(proof_state& p)
+{
+  proof_state::iterator iter = p.begin();
+  while (iter != p.end())
+    {
+      load_assumptions (*iter);
+      ++iter;
+    }
+}
+
+void
+explode_disjunction (proof_state& p, proof_state::iterator gi, term_list::iterator ti1)
+{
+  tree t1 = TREE_OPERAND (*ti1, 0);
+  tree t2 = TREE_OPERAND (*ti1, 1);
+
+  /* Erase the current term from the goal. */
+  proof_goal& g1 = *gi;
+  proof_goal& g2 = *p.branch (gi);
+
+  /* Get an iterator to the equivalent position in th enew goal. */
+  int n = std::distance (g1.assumptions.begin (), ti1);
+  term_list::iterator ti2 = g2.assumptions.begin ();
+  std::advance (ti2, n);
+
+  /* Replace the disjunction in both branches. */
+  g1.assumptions.replace (ti1, t1);
+  g2.assumptions.replace (ti2, t2);
+}
+
+
+/* Search the assumptions of the goal for the first disjunction. */
+
+bool
+explode_goal (proof_state& p, proof_state::iterator gi)
+{
+  term_list& ts = gi->assumptions;
+  term_list::iterator ti = ts.begin();
+  term_list::iterator end = ts.end();
+  while (ti != end)
+    {
+      if (TREE_CODE (*ti) == DISJ_CONSTR)
+        {
+          explode_disjunction (p, gi, ti);
+          return true;
+        }
+      else ++ti;
+    }
   return false;
 }
 
-/* Returns true when both operands of C are subsumed by the
-   assumptions AS. */
-inline bool
-subsumes_conjunction (tree as, tree c)
-{
-  tree l = TREE_OPERAND (c, 0);
-  tree r = TREE_OPERAND (c, 1);
-  return subsumes_constraint (as, l) && subsumes_constraint (as, r);
-}
+/* Search for the first goal with a disjunction, and then branch
+   creating a clone of that subgoal. */
 
-/* Returns true when either operand of C is subsumed by the
-   assumptions AS. */
-inline bool
-subsumes_disjunction (tree as, tree c)
+void
+explode_assumptions (proof_state& p)
 {
-  tree l = TREE_OPERAND (c, 0);
-  tree r = TREE_OPERAND (c, 1);
-  return subsumes_constraint (as, l) || subsumes_constraint (as, r);
-}
-
-/* Returns true when the operand of C is subsumed by the
-   assumptions in AS. The parameters are not considered in
-   the subsumption rules. */
-bool
-subsumes_parameterized_constraint (tree as, tree c)
-{
-  tree t = PARM_CONSTR_OPERAND (c);
-  return subsumes_constraint (as, t);
-}
-
-
-/* Returns true when the list of assumptions AS subsumes the
-   concluded proposition C. This is a simple recursive descent
-   on C, matching against propositions in the assumption list AS. */
-bool
-subsumes_constraint (tree as, tree c)
-{
-  switch (TREE_CODE (c))
+  proof_state::iterator iter = p.begin();
+  proof_state::iterator end = p.end();
+  while (iter != end)
     {
-    case CONJ_CONSTR:
-      return subsumes_conjunction (as, c);
-    case DISJ_CONSTR:
-      return subsumes_disjunction (as, c);
-    case PARM_CONSTR:
-      return subsumes_parameterized_constraint (as, c);
-    default:
-      return subsumes_atomic_constraint (as, c);
+      if (explode_goal (p, iter))
+        return;
+      ++iter;
     }
 }
 
-/* Returns true if the LEFT constraints subsume the RIGHT constraints.
-   This is done by checking that the RIGHT requirements follow from
-   each of the LEFT subgoals. */
+
+/*---------------------------------------------------------------------------
+                           Right logical rules
+---------------------------------------------------------------------------*/
+
+term_list::iterator
+load_disjunction_conclusion (term_list& g, term_list::iterator i)
+{
+  tree t1 = TREE_OPERAND (*i, 0);
+  tree t2 = TREE_OPERAND (*i, 1);
+  return g.replace(i, t1, t2);
+}
+
+/* Apply logical rules to the right hand side. This will load the
+   conclusion set with all tpp-level disjunctions.  */
+
+void
+load_conclusions (proof_goal& g)
+{
+  term_list::iterator iter = g.conclusions.begin();
+  term_list::iterator end = g.conclusions.end();
+  while (iter != end)
+    {
+      if (TREE_CODE (*iter) == DISJ_CONSTR)
+        iter = load_disjunction_conclusion (g.conclusions, iter);
+      else
+        ++iter;
+    }
+}
+
+void
+load_conclusions (proof_state& p)
+{
+  proof_state::iterator iter = p.begin();
+  while (iter != p.end())
+    {
+      load_conclusions (*iter);
+      ++iter;
+    }
+}
+
+
+/*---------------------------------------------------------------------------
+                          High-level proof tactics
+---------------------------------------------------------------------------*/
+
+/* Given two constraints A and C, try to derive a proof that
+   A implies C.  */
+
+bool
+prove_implication (tree a, tree c)
+{
+  /* Quick accept. */
+  if (cp_tree_equal (a, c))
+    return true;
+
+  /* Build the initial proof state. */
+  proof_state proof;
+  proof_goal& goal = proof.front();
+  goal.assumptions.push_back(a);
+  goal.conclusions.push_back(c);
+
+  /* Perform an initial right-expansion in the off-chance that the right
+     hand side contains disjunctions. */
+  load_conclusions (proof);
+
+  int step_max = 1 << 10;
+  int step_count = 0;              /* FIXME: We shouldn't have this. */
+  std::size_t branch_limit = 1024; /* FIXME: This needs to be configurable. */
+  while (step_count < step_max && proof.size() < branch_limit)
+    {
+      /* Determine if we can prove that the assumptions entail the
+         conclusions. If so, we're done. */
+      load_assumptions (proof);
+
+      /* Can we solve the proof based on this? */
+      proof_result r = check_proof (proof);
+      if (r != undecided)
+        return r == valid;
+
+      /* If not, then we need to dig into disjunctions.  */
+      explode_assumptions (proof);
+
+      ++step_count;
+    }
+
+  if (step_count == step_max)
+    error ("subsumption failed to resolve");
+
+  if (proof.size() == branch_limit)
+    error ("exceeded maximum number of branches");
+
+  return false;
+}
+
+/* Returns true if the LEFT constraint subsume the RIGHT constraints.
+   This is done by deriving a proof of the conclusions on the RIGHT
+   from the assumptions on the LEFT assumptions.  */
+
 bool
 subsumes_constraints_nonnull (tree left, tree right)
 {
   gcc_assert (check_constraint_info (left));
   gcc_assert (check_constraint_info (right));
 
-  /* Check that the required expression in RIGHT is subsumed by each
-     subgoal in the assumptions of LEFT. */
-  tree as = CI_ASSUMPTIONS (left);
-  tree c = CI_NORMALIZED_CONSTRAINTS (right);
-  for (int i = 0; i < TREE_VEC_LENGTH (as); ++i)
-    if (!subsumes_constraint (TREE_VEC_ELT (as, i), c))
-      return false;
-  return true;
+  auto_timevar time (TV_CONSTRAINT_SUB);
+  tree a = CI_ASSOCIATED_CONSTRAINTS (left);
+  tree c = CI_ASSOCIATED_CONSTRAINTS (right);
+  return prove_implication (a, c);
 }
 
 } /* namespace */
 
 /* Returns true if the LEFT constraints subsume the RIGHT
-   constraints. */
+   constraints.  */
+
 bool
 subsumes (tree left, tree right)
 {
