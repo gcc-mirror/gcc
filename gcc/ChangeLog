@@ -1,3 +1,9 @@
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/71953
+	* asan.c (asan_dynamic_init_call): Call asan_init_shadow_ptr_types
+	before builtin_decl_implicit.
+
 2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* optabs.c (emit_condiitonal_move): Short circuit for identical
