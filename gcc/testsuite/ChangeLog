@@ -1,3 +1,8 @@
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71728
+	* g++.dg/other/pr71728.C: New test.
+
 2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/ifcvt-2.c: Use parameter to guide if-conversion heuristics.

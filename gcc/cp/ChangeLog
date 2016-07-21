@@ -1,3 +1,10 @@
+2016-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71728
+	* constexpr.c (potential_constant_expression_1) <case GOTO_EXPR>:
+	Replace assert with test, return false if the goto isn't break
+	or continue.  Formatting fix.
+
 2016-07-21  Richard Biener  <rguenther@suse.de>
 
 	* vtable-class-hierarchy.c (vtv_generate_init_routine): Set
