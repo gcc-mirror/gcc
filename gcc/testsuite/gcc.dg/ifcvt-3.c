@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { aarch64*-*-* i?86-*-* x86_64-*-* } && lp64 } } } */
-/* { dg-options "-fdump-rtl-ce1 -O2" } */
+/* { dg-options "-fdump-rtl-ce1 -O2 --param max-rtl-if-conversion-unpredictable-cost=100" } */
 
 typedef long long s64;
 

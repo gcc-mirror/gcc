@@ -1,5 +1,5 @@
 /* { dg-do compile { target aarch64*-*-* x86_64-*-* } } */
-/* { dg-options "-fdump-rtl-ce1 -O2 -w" } */
+/* { dg-options "-fdump-rtl-ce1 -O2 -w --param max-rtl-if-conversion-unpredictable-cost=100" } */
 
 typedef struct cpp_reader cpp_reader;
 enum cpp_ttype

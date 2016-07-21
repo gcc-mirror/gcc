@@ -1,5 +1,5 @@
 /* { dg-do compile { target aarch64*-*-* x86_64-*-* } } */
-/* { dg-options "-fdump-rtl-ce1 -O2" } */
+/* { dg-options "-fdump-rtl-ce1 -O2 --param max-rtl-if-conversion-unpredictable-cost=100" } */
 
 
 typedef unsigned char uint8_t;

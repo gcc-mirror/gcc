@@ -1,5 +1,22 @@
 2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* ifcvt.c (noce_if_info): New fields: speed_p, original_cost,
+	max_seq_cost.  Removed fields: then_cost, else_cost, branch_cost.
+	(noce_conversion_profitable_p): New.
+	(noce_try_store_flag_constants): Use it.
+	(noce_try_addcc): Likewise.
+	(noce_try_store_flag_mask): Likewise.
+	(noce_try_cmove): Likewise.
+	(noce_try_cmove_arith): Likewise.
+	(bb_valid_for_noce_process_p): Add to the cost parameter rather than
+	overwriting it.
+	(noce_convert_multiple_sets): Move cost model to here, from...
+	(bb_ok_for_noce_convert_multiple_sets) ...here.
+	(noce_process_if_block): Update calls for above changes.
+	(noce_find_if_block): Record new noce_if_info parameters.
+
+2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* target.def (max_noce_ifcvt_seq_cost): New.
 	* doc/tm.texi.in (TARGET_MAX_NOCE_IFCVT_SEQ_COST): Document it.
 	* doc/tm.texi: Regenerate.
