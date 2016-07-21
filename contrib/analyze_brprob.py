@@ -149,12 +149,13 @@ class Profile:
              percentage(v.hits, v.count), percentage(v.fits, v.count),
              v.count, v.count_formatted(), percentage(v.count, self.count_max()) ))
 
-        print ('\nLoop count: %d' % len(self.niter_vector)),
-        print('  avg. # of iter: %.2f' % average(self.niter_vector))
-        print('  median # of iter: %.2f' % median(self.niter_vector))
-        for v in [1, 5, 10, 20, 30]:
-            cut = 0.01 * v
-            print('  avg. (%d%% cutoff) # of iter: %.2f' % (v, average_cutoff(self.niter_vector, cut)))
+        if len(self.niter_vector) > 0:
+            print ('\nLoop count: %d' % len(self.niter_vector)),
+            print('  avg. # of iter: %.2f' % average(self.niter_vector))
+            print('  median # of iter: %.2f' % median(self.niter_vector))
+            for v in [1, 5, 10, 20, 30]:
+                cut = 0.01 * v
+                print('  avg. (%d%% cutoff) # of iter: %.2f' % (v, average_cutoff(self.niter_vector, cut)))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dump_file', metavar = 'dump_file', help = 'IPA profile dump file')
