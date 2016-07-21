@@ -1,3 +1,8 @@
+2016-07-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-strlen.c (strlen_dom_walker::before_dom_children): Fix typo
+	in comment.
+
 2016-07-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (any_extract, any_shiftrt): New code iterators.

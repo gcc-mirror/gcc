@@ -2383,7 +2383,7 @@ public:
 };
 
 /* Callback for walk_dominator_tree.  Attempt to optimize various
-   string ops by remembering string lenths pointed by pointer SSA_NAMEs.  */
+   string ops by remembering string lengths pointed by pointer SSA_NAMEs.  */
 
 edge
 strlen_dom_walker::before_dom_children (basic_block bb)
