@@ -1,6 +1,15 @@
 2016-07-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/71876
+	* builtin-attrs.def (ATTR_RT_NOTHROW_LEAF_LIST): New return twice
+	attribute.
+	* builtins.def (BUILT_IN_SETJMP): Use ATTR_RT_NOTHROW_LEAF_LIST here.
+	* calls.c (special_function_p): Remove the special handling of the 
+	"__builtin_" prefix.
+
+2016-07-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/71876
 	* calls.c (gimple_maybe_alloca_call_p): New function.  Return true
 	if STMT may be an alloca call.
 	(gimple_alloca_call_p, alloca_call_p): Return only true for the
