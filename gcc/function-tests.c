@@ -249,6 +249,7 @@ build_trivial_generic_function ()
   tsi_link_after (&stmt_iter, return_stmt, TSI_CONTINUE_LINKING);
 
   DECL_INITIAL (fndecl) = block;
+  BLOCK_SUPERCONTEXT (block) = fndecl;
 
   /* how to add to function? the following appears to be how to
      set the body of a fndecl: */

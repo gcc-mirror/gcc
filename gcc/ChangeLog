@@ -1,3 +1,14 @@
+2016-07-21  Richard Biener  <rguenther@suse.de>
+
+	* function-tests.c (build_trivial_generic_function): Set
+	BLOCK_SUPERCONTEXT of DECL_INITIAL.
+	* omp-low.c (create_omp_child_function): Likewise.
+	(grid_expand_target_grid_body): Likewise.
+	* cgraphunit.c (init_lowered_empty_function): Likewise.
+	(cgraph_node::expand_thunk): Likewise.
+	* tree-parloops.c (create_loop_fn): Likewise.
+	* ipa.c (cgraph_build_static_cdtor_1): Likewise.
+
 2016-07-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree-ssa-strlen.c (strlen_dom_walker::before_dom_children): Fix typo

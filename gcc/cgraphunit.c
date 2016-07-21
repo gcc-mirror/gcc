@@ -1438,6 +1438,7 @@ init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
     }
 
   DECL_INITIAL (decl) = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
 
   DECL_SAVED_TREE (decl) = error_mark_node;
   cfun->curr_properties |= (PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_any
@@ -1627,6 +1628,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       fn_block = make_node (BLOCK);
       BLOCK_VARS (fn_block) = a;
       DECL_INITIAL (thunk_fndecl) = fn_block;
+      BLOCK_SUPERCONTEXT (fn_block) = thunk_fndecl;
       allocate_struct_function (thunk_fndecl, false);
       init_function_start (thunk_fndecl);
       cfun->is_thunk = 1;
