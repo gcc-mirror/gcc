@@ -74,6 +74,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "opts.h"
 #include "gimplify.h"
+#include "predict.h"
+#include "params.h"
 
 
 bool
@@ -1984,6 +1986,26 @@ bool
 default_optab_supported_p (int, machine_mode, machine_mode, optimization_type)
 {
   return true;
+}
+
+/* Default implementation of TARGET_MAX_NOCE_IFCVT_SEQ_COST.  */
+
+unsigned int
+default_max_noce_ifcvt_seq_cost (edge e)
+{
+  bool predictable_p = predictable_edge_p (e);
+
+  enum compiler_param param
+    = (predictable_p
+       ? PARAM_MAX_RTL_IF_CONVERSION_PREDICTABLE_COST
+       : PARAM_MAX_RTL_IF_CONVERSION_UNPREDICTABLE_COST);
+
+  /* If we have a parameter set, use that, otherwise take a guess using
+     BRANCH_COST.  */
+  if (global_options_set.x_param_values[param])
+    return PARAM_VALUE (param);
+  else
+    return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
 }
 
 #include "gt-targhooks.h"

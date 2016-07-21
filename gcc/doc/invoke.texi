@@ -8869,6 +8869,17 @@ considered for if-conversion.  The default is 10, though the compiler will
 also use other heuristics to decide whether if-conversion is likely to be
 profitable.
 
+@item max-rtl-if-conversion-predictable-cost
+@item max-rtl-if-conversion-unpredictable-cost
+RTL if-conversion will try to remove conditional branches around a block
+and replace them with conditionally executed instructions.  These parameters
+give the maximum permissible cost for the sequence that would be generated
+by if-conversion depending on whether the branch is statically determined
+to be predictable or not.  The units for this parameter are the same as
+those for the GCC internal seq_cost metric.  The compiler will try to
+provide a reasonable default for this parameter using the BRANCH_COST
+target macro.
+
 @item max-crossjump-edges
 The maximum number of incoming edges to consider for cross-jumping.
 The algorithm used by @option{-fcrossjumping} is @math{O(N^2)} in

@@ -1,3 +1,14 @@
+2016-07-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* target.def (max_noce_ifcvt_seq_cost): New.
+	* doc/tm.texi.in (TARGET_MAX_NOCE_IFCVT_SEQ_COST): Document it.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_max_noce_ifcvt_seq_cost): New.
+	* targhooks.c (default_max_noce_ifcvt_seq_cost): New.
+	* params.def (PARAM_MAX_RTL_IF_CONVERSION_PREDICTABLE_COST): New.
+	(PARAM_MAX_RTL_IF_CONVERSION_UNPREDICTABLE_COST): Likewise.
+	* doc/invoke.texi: Document new params.
+
 2016-07-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71947
