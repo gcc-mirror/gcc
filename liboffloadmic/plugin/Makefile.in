@@ -326,7 +326,7 @@ target_install_dir = $(accel_search_dir)/lib/gcc/$(accel_target)/$(gcc_version)$
 @PLUGIN_HOST_FALSE@plugin_include_HEADERS = main_target_image.h
 @PLUGIN_HOST_FALSE@AM_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=0 -I$(coi_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_dir)
 @PLUGIN_HOST_FALSE@AM_CXXFLAGS = $(CXXFLAGS)
-@PLUGIN_HOST_FALSE@AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lmyo-service -lgomp -rdynamic
+@PLUGIN_HOST_FALSE@AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lgomp -rdynamic
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

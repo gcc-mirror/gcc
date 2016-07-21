@@ -37,7 +37,6 @@ SUBDIRS = . plugin
 # Directories.
 build_dir = $(top_builddir)
 coi_inc_dir = $(top_srcdir)/include/coi
-myo_inc_dir = $(top_srcdir)/include/myo
 libgomp_dir = $(build_dir)/../libgomp
 source_dir = $(top_srcdir)/runtime
 
@@ -48,12 +47,12 @@ libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 # Target list.
 if LIBOFFLOADMIC_HOST
   nodist_toolexeclib_HEADERS = liboffloadmic_host.spec
-  toolexeclib_LTLIBRARIES = libcoi_host.la libmyo-client.la liboffloadmic_host.la
+  toolexeclib_LTLIBRARIES = libcoi_host.la liboffloadmic_host.la
   nodist_libsubinclude_HEADERS = runtime/compiler_if_host.h
   ofld_obj =
 else # LIBOFFLOADMIC_TARGET
   nodist_toolexeclib_HEADERS = liboffloadmic_target.spec
-  toolexeclib_LTLIBRARIES = libcoi_device.la libmyo-service.la liboffloadmic_target.la
+  toolexeclib_LTLIBRARIES = libcoi_device.la liboffloadmic_target.la
   nodist_libsubinclude_HEADERS = runtime/compiler_if_target.h
   ofld_obj = ofldbegin.o ofldend.o
 endif
@@ -67,7 +66,7 @@ liboffloadmic_sources = runtime/dv_util.cpp \
 			runtime/offload_trace.cpp \
 			runtime/offload_util.cpp
 
-liboffloadmic_cppflags = -DLINUX -DCOI_LIBRARY_VERSION=2 -DMYO_SUPPORT -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -I$(coi_inc_dir) -I$(myo_inc_dir) -I$(source_dir) -I$(libgomp_dir)
+liboffloadmic_cppflags = -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -I$(coi_inc_dir) -I$(source_dir) -I$(libgomp_dir)
 
 liboffloadmic_host_la_SOURCES = $(liboffloadmic_sources) \
 				runtime/cean_util.cpp \
@@ -76,7 +75,6 @@ liboffloadmic_host_la_SOURCES = $(liboffloadmic_sources) \
 				runtime/offload_engine.cpp \
 				runtime/offload_env.cpp \
 				runtime/offload_host.cpp \
-				runtime/offload_myo_host.cpp \
 				runtime/offload_omp_host.cpp \
 				runtime/offload_orsl.cpp \
 				runtime/offload_timer_host.cpp \
@@ -88,36 +86,27 @@ liboffloadmic_host_la_LDFLAGS = @lt_cv_dlopen_libs@ -version-info 5:0:0
 liboffloadmic_target_la_SOURCES = $(liboffloadmic_sources) \
 				  runtime/coi/coi_server.cpp \
 				  runtime/compiler_if_target.cpp \
-				  runtime/offload_myo_target.cpp \
 				  runtime/offload_omp_target.cpp \
 				  runtime/offload_target.cpp \
 				  runtime/offload_timer_target.cpp
 
 liboffloadmic_target_la_CPPFLAGS = $(liboffloadmic_cppflags) -DHOST_LIBRARY=0
 liboffloadmic_target_la_LDFLAGS = @lt_cv_dlopen_libs@ -version-info 5:0:0
-liboffloadmic_target_la_LIBADD = libcoi_device.la libmyo-service.la
+liboffloadmic_target_la_LIBADD = libcoi_device.la
 liboffloadmic_target_la_DEPENDENCIES = $(liboffloadmic_target_la_LIBADD)
 
 # Emulator.
 libcoi_host_la_SOURCES = runtime/emulator/coi_host.cpp
 libcoi_device_la_SOURCES = runtime/emulator/coi_device.cpp
-libmyo_client_la_SOURCES = runtime/emulator/myo_client.cpp
-libmyo_service_la_SOURCES = runtime/emulator/myo_service.cpp
 
 libcoi_host_la_DEPENDENCIES = runtime/emulator/coi_version_linker_script.map
 libcoi_device_la_DEPENDENCIES = runtime/emulator/coi_version_linker_script.map
-libmyo_client_la_DEPENDENCIES = runtime/emulator/myo_version_linker_script.map
-libmyo_service_la_DEPENDENCIES = runtime/emulator/myo_version_linker_script.map
 
 libcoi_host_la_CPPFLAGS = -I$(coi_inc_dir)
 libcoi_device_la_CPPFLAGS = -I$(coi_inc_dir)
-libmyo_client_la_CPPFLAGS = -I$(myo_inc_dir)
-libmyo_service_la_CPPFLAGS = -I$(myo_inc_dir)
 
 libcoi_host_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/coi_version_linker_script.map
 libcoi_device_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/coi_version_linker_script.map
-libmyo_client_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/myo_version_linker_script.map
-libmyo_service_la_LDFLAGS = -lrt -Wl,--version-script=$(source_dir)/emulator/myo_version_linker_script.map
 
 # ofldbegin, ofldend
 all-local: $(ofld_obj)

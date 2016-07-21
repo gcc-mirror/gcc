@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -422,7 +422,7 @@ SYMBOL_VERSION (COIBufferCreate, 1) (uint64_t in_Size,
   const int ullong_max_len = 20;
 
   /* Features of liboffloadmic.  */
-  assert (in_Type == COI_BUFFER_NORMAL);
+  assert (in_Type == COI_BUFFER_NORMAL || in_Type == COI_BUFFER_OPENCL);
   assert ((in_Flags & COI_SINK_MEMORY) == 0);
   assert ((in_Flags & COI_SAME_ADDRESS_SINKS) == 0);
   assert ((in_Flags & COI_SAME_ADDRESS_SINKS_AND_SOURCE) == 0);
@@ -1617,7 +1617,7 @@ SYMBOL_VERSION (COIEngineGetInfo, 1) (COIENGINE in_EngineHandle,  // Ignored
 
   assert (out_pEngineInfo != NULL);
 
-  out_pEngineInfo->ISA = COI_ISA_x86_64;
+  out_pEngineInfo->ISA = COI_DEVICE_KNL;
   out_pEngineInfo->NumCores = 1;
   out_pEngineInfo->NumThreads = 8;
   out_pEngineInfo->CoreMaxFrequency = SYMBOL_VERSION(COIPerfGetCycleFrequency,1)() / 1000000;

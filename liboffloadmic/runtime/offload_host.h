@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -88,6 +88,8 @@ public:
         m_inout_buf(0),
         m_func_desc(0),
         m_func_desc_size(0),
+        m_num_in_dependencies(0),
+        m_p_in_dependencies(0),
         m_in_deps(0),
         m_in_deps_total(0),
         m_in_deps_allocated(0),        
@@ -102,6 +104,8 @@ public:
         m_preallocated_alloc(false),
         m_traceback_called(false),
         m_stream(-1),
+        m_signal(0),
+        m_has_signal(0),
         m_omp_async_last_event_type(c_last_not)
     {
         m_wait_all_devices = index == -1;
@@ -146,6 +150,24 @@ public:
         return(m_stream);
     }
 
+    Engine& get_device() {
+        return m_device;
+    }
+
+    void* get_signal() {
+        return(m_signal);
+    }
+
+    void set_signal(const void* signal) {
+        m_has_signal = 1;
+        m_signal = const_cast<void*>(signal);
+    }
+
+    void cleanup();
+
+    uint32_t  m_event_count;
+    bool      m_has_signal;
+
 private:
     bool offload_wrap(const char *name, bool is_empty,
                  VarDesc *vars, VarDesc2 *vars2, int vars_total,
@@ -183,19 +205,34 @@ private:
     bool receive_pointer_data(bool is_async, bool first_run, void * info);
     bool scatter_copyout_data();
 
-    void cleanup();
-
     bool find_ptr_data(PtrData* &ptr_data, void *base, int64_t disp,
                        int64_t length, bool is_targptr,
                        bool error_does_not_exist = true);
+
+    void find_device_ptr( int64_t* &device_ptr,
+                       void *host_ptr);
+
     bool alloc_ptr_data(PtrData* &ptr_data, void *base, int64_t disp,
                         int64_t length, int64_t alloc_disp, int align,
                         bool is_targptr, bool is_prealloc, bool pin);
     bool create_preallocated_buffer(PtrData* ptr_data, void *base);
     bool init_static_ptr_data(PtrData *ptr_data);
     bool init_mic_address(PtrData *ptr_data);
-    bool offload_stack_memory_manager(const void * stack_begin, int routine_id,
-                                      int buf_size, int align, bool *is_new);
+    bool offload_stack_memory_manager(
+        const void * stack_begin,
+        int routine_id,
+        int buf_size,
+        int align,
+        bool thread_specific_function_locals,
+        bool *is_new);
+    char *get_this_threads_cpu_stack_addr(
+        const void * stack_begin,
+        int routine_id,
+        bool thread_specific_function_locals);
+    PtrData *get_this_threads_mic_stack_addr(
+        const void * stack_begin,
+        int routine_id,
+        bool thread_specific_function_locals);
     bool nullify_target_stack(COIBUFFER targ_buf, uint64_t size);
 
     bool gen_var_descs_for_pointer_array(int i);
@@ -205,10 +242,20 @@ private:
 
     void report_coi_error(error_types msg, COIRESULT res);
     _Offload_result translate_coi_error(COIRESULT res) const;
-    
+
     void setup_omp_async_info();
+
+    void setup_use_device_ptr(int i);
+
+    void register_event_call_back(void (*)(
+                                      COIEVENT,
+                                      const COIRESULT,
+                                      const void*),
+                                  const COIEVENT *event,
+                                  const void *info);
+
     void register_omp_event_call_back(const COIEVENT *event, const void *info);
-    
+
 private:
     typedef std::list<COIBUFFER> BufferList;
 
@@ -220,11 +267,17 @@ private:
         int64_t cpu_disp;
         int64_t cpu_offset;
         void *alloc;
-        CeanReadRanges *read_rng_src;
+        union {
+            CeanReadRanges *read_rng_src;
+            NonContigDesc  *noncont_desc;
+        };
         CeanReadRanges *read_rng_dst;
         int64_t ptr_arr_offset;
         bool is_arr_ptr_el;
         OmpAsyncLastEventType omp_last_event_type;
+        int64_t pointer_offset;
+        uint16_t type_src;
+        uint16_t type_dst;
     };
 
     template<typename T> class ReadArrElements {
@@ -320,16 +373,35 @@ private:
     // Buffer for transferring copyin/copyout data
     COIBUFFER m_inout_buf;
 
+
     // Dependencies
     COIEVENT *m_in_deps;
     uint32_t  m_in_deps_total;
     uint32_t  m_in_deps_allocated;    
     COIEVENT *m_out_deps;
     uint32_t  m_out_deps_total;
-    uint32_t  m_out_deps_allocated;     
+    uint32_t  m_out_deps_allocated;
+
+    // 2 variables defines input dependencies for current COI API.
+    // The calls to routines as BufferWrite/PipelineRunFunction/BufferRead
+    // is supposed to have input dependencies.
+    // 2 variables below defines the number and vector of dependencies
+    // in every current moment of offload.
+    // So any phase of offload can use its values as input dependencies 
+    // for the COI API that the phase calls.
+    // It means that all phases (of Write, RunFunction,Read) must keep
+    // the variables correct to be used by following phase.
+    // If some consequent offloads are connected (i.e. by the same stream)
+    // the final 2 variables of the offload is used as initial inputs
+    // for the next offload.
+    uint32_t  m_num_in_dependencies;
+    COIEVENT *m_p_in_dependencies;
 
     // Stream
     _Offload_stream m_stream;
+
+    // Signal
+    void* m_signal;
 
     // Timer data
     OffloadHostTimerData *m_timer_data;
@@ -396,8 +468,11 @@ DLL_LOCAL extern MicEnvVar mic_env_vars;
 // CPU frequency
 DLL_LOCAL extern uint64_t cpu_frequency;
 
-// LD_LIBRARY_PATH for MIC libraries
-DLL_LOCAL extern char* mic_library_path;
+// LD_LIBRARY_PATH for KNC libraries
+DLL_LOCAL extern char* knc_library_path;
+
+// LD_LIBRARY_PATH for KNL libraries
+DLL_LOCAL extern char* knl_library_path;
 
 // stack size for target
 DLL_LOCAL extern uint32_t mic_stack_size;
@@ -426,6 +501,11 @@ DLL_LOCAL extern int __omp_device_num;
 
 // target executable
 DLL_LOCAL extern TargetImage* __target_exe;
+
+// is true if last loaded image is dll
+DLL_LOCAL extern bool __current_image_is_dll;
+// is true if myo library is loaded when dll is loaded
+DLL_LOCAL extern bool __myo_init_in_so;
 
 // IDB support
 

@@ -59,7 +59,7 @@ else # PLUGIN_TARGET
   plugin_include_HEADERS = main_target_image.h
   AM_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=0 -I$(coi_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_dir)
   AM_CXXFLAGS = $(CXXFLAGS)
-  AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lmyo-service -lgomp -rdynamic
+  AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lgomp -rdynamic
 endif
 
 main_target_image.h: offload_target_main
