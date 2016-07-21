@@ -260,7 +260,6 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		      indent+4);
         print_node (file, "associated_constr",
                           cinfo->associated_constr, indent+4);
-        print_node_brief (file, "assumptions", cinfo->assumptions, indent+4);
         break;
       }
     case ARGUMENT_PACK_SELECT:
