@@ -1,3 +1,9 @@
+2016-07-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71795
+	* frontend-passes.c (combine_array_constructor):  Don't
+	do anything if the expression is inside an array iterator.
+
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* expr.c (gfc_find_stat_co): Fixed whitespaces.

@@ -1255,6 +1255,11 @@ combine_array_constructor (gfc_expr *e)
   if (forall_level > 0)
     return false;
 
+  /* Inside an iterator, things can get hairy; we are likely to create
+     an invalid temporary variable.  */
+  if (iterator_level > 0)
+    return false;
+
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
 
