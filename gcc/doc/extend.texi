@@ -17523,8 +17523,8 @@ int __builtin_bcdsub_gt (vector __int128_t, vector__int128_t);
 int __builtin_bcdsub_ov (vector __int128_t, vector__int128_t);
 @end smallexample
 
-If the ISA 3.0 additions to the vector/scalar (power9-vector)
-instruction set are available:
+If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
+are available:
 
 @smallexample
 vector long long vec_vctz (vector long long);
@@ -17560,9 +17560,8 @@ vector long long vec_vprtybd (vector long long);
 vector unsigned long long vec_vprtybd (vector unsigned long long);
 @end smallexample
 
-
-If the ISA 3.0 additions to the vector/scalar (power9-vector)
-instruction set are available for 64-bit targets:
+On 64-bit targets, if the ISA 3.0 additions (@option{-mcpu=power9})
+are available:
 
 @smallexample
 vector long vec_vprtyb (vector long);
@@ -17578,8 +17577,7 @@ vector __uint128_t vec_vprtybd (vector __uint128_t);
 @end smallexample
 
 The following built-in vector functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9})
-or with @option{-mpower9-vector}:
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
 @smallexample
 __vector unsigned char
 vec_slv (__vector unsigned char src, __vector unsigned char shift_distance);
@@ -17612,8 +17610,7 @@ result returned from the @code{vec_srv} function is a
 with this resulting value coerced to the @code{unsigned char} type.
 
 The following built-in functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9})
-or with @option{-mpower9-vector}:
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
 @smallexample
 __vector unsigned char
 vec_absd (__vector unsigned char arg1, __vector unsigned char arg2);
@@ -17696,9 +17693,9 @@ The second argument to the @var{__builtin_crypto_vshasigmad} and
 integer that is 0 or 1.  The third argument to these builtin functions
 must be a constant integer in the range of 0 to 15.
 
-If the ISA 3.0 additions to the vector/scalar (power9-vector)
-instruction set are available, the following additional functions are
-available for both 32-bit and 64-bit targets.
+If the ISA 3.0 instruction set additions 
+are enabled (@option{-mcpu=power9}), the following additional
+functions are available for both 32-bit and 64-bit targets.
 
 vector short vec_xl (int, vector short *);
 vector short vec_xl (int, short *);

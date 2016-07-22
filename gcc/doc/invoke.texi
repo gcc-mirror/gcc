@@ -1011,10 +1011,9 @@ See RS/6000 and PowerPC Options.
 -mcompat-align-parm -mno-compat-align-parm @gol
 -mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
 -mupper-regs-di -mno-upper-regs-di @gol
--mupper-regs -mno-upper-regs -mmodulo -mno-modulo @gol
+-mupper-regs -mno-upper-regs @gol
 -mfloat128 -mno-float128 -mfloat128-hardware -mno-float128-hardware @gol
--mpower9-fusion -mno-mpower9-fusion -mpower9-vector -mno-power9-vector @gol
--mpower9-dform -mno-power9-dform -mlra -mno-lra}
+-mlra -mno-lra}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -20116,8 +20115,7 @@ following options:
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mdirect-move -mhtm -mpower8-fusion -mpower8-vector @gol
--mquad-memory -mquad-memory-atomic -mmodulo -mfloat128 -mfloat128-hardware @gol
--mpower9-fusion -mpower9-vector -mpower9-dform}
+-mquad-memory -mquad-memory-atomic -mfloat128 -mfloat128-hardware}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -20361,7 +20359,7 @@ instructions that target all 64 registers in the vector/scalar
 floating point register set that were added in version 2.07 of the
 PowerPC ISA.  @option{-mupper-regs-sf} is turned on by default if you
 use either of the @option{-mcpu=power8}, @option{-mpower8-vector}, or
-@option{-mpower9} options.
+@option{-mcpu=power9} options.
 
 @item -mupper-regs
 @itemx -mno-upper-regs
@@ -20405,40 +20403,6 @@ If you use @option{-mfloat128-hardware}, it will enable the option
 If you select ISA 3.0 instructions with @option{-mcpu=power9}, but do
 not use either @option{-mfloat128} or @option{-mfloat128-hardware},
 the IEEE 128-bit floating point support will not be enabled.
-
-@item -mmodulo
-@itemx -mno-modulo
-@opindex mmodulo
-@opindex mno-module
-Generate code that uses (does not use) the ISA 3.0 integer modulo
-instructions.  The @option{-mmodulo} option is enabled by default
-with the @option{-mcpu=power9} option.
-
-@item -mpower9-fusion
-@itemx -mno-power9-fusion
-@opindex mpower9-fusion
-@opindex mno-power9-fusion
-Generate code that keeps (does not keeps) some operations adjacent so
-that the instructions can be fused together on power9 and later
-processors.
-
-@item -mpower9-vector
-@itemx -mno-power9-vector
-@opindex mpower9-vector
-@opindex mno-power9-vector
-Generate code that uses (does not use) the vector and scalar
-instructions that were added in version 3.0 of the PowerPC ISA.  Also
-enable the use of built-in functions that allow more direct access to
-the vector instructions.
-
-@item -mpower9-dform
-@itemx -mno-power9-dform
-@opindex mpower9-dform
-@opindex mno-power9-dform
-Enable (disable) scalar d-form (register + offset) memory instructions
-to load/store traditional Altivec registers. If the @var{LRA} register
-allocator is enabled, also enable (disable) vector d-form memory
-instructions.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs

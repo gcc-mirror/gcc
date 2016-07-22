@@ -3038,13 +3038,13 @@ asm ("xsaddqp %x0,%x1,%x2" : "=v" (v1) : "v" (v2), "v" (v3));
 is incorrect.
 
 @item wb
-Altivec register if @option{-mpower9-dform} is used or NO_REGS.
+Altivec register if @option{-mcpu=power9} is used or NO_REGS.
 
 @item wd
 VSX vector register to hold vector double data or NO_REGS.
 
 @item we
-VSX register if the @option{-mpower9-vector} and @option{-m64} options
+VSX register if the @option{-mcpu=power9} and @option{-m64} options
 were used or NO_REGS.
 
 @item wf
