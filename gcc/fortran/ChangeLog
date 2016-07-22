@@ -1,6 +1,13 @@
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
+	PR fortran/71807
+	* trans-expr.c (gfc_trans_subcomponent_assign): Special casing
+	when allocatable component is set to null() in initializer.
+
+2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backport from trunk:
 	PR fortran/70842
 	* simplify.c (gfc_simplify_len): Only for unlimited polymorphic
 	types replace the expression's _data ref with a _len ref.

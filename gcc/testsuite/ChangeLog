@@ -1,6 +1,12 @@
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
+	PR fortran/71807
+	* gfortran.dg/null_9.f90: New test.
+
+2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backport from trunk:
 	PR fortran/70842
 	* gfortran.dg/select_type_35.f03: New test.
 
