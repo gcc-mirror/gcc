@@ -1,3 +1,8 @@
+2016-07-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_file_start): Fix condition for
+	when to emit a ".machine" pseudo-op.
+
 2016-07-22  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/69028
