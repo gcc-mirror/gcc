@@ -47,14 +47,13 @@ type listener struct {
 }
 
 // Accept waits for and returns the next incoming TLS connection.
-// The returned connection c is a *tls.Conn.
-func (l *listener) Accept() (c net.Conn, err error) {
-	c, err = l.Listener.Accept()
+// The returned connection is of type *Conn.
+func (l *listener) Accept() (net.Conn, error) {
+	c, err := l.Listener.Accept()
 	if err != nil {
-		return
+		return nil, err
 	}
-	c = Server(c, l.config)
-	return
+	return Server(c, l.config), nil
 }
 
 // NewListener creates a Listener which accepts connections from an inner
@@ -136,9 +135,9 @@ func DialWithDialer(dialer *net.Dialer, network, addr string, config *Config) (*
 	// from the hostname we're connecting to.
 	if config.ServerName == "" {
 		// Make a copy to avoid polluting argument or default.
-		c := *config
+		c := config.clone()
 		c.ServerName = hostname
-		config = &c
+		config = c
 	}
 
 	conn := Client(rawConn, config)
@@ -171,10 +170,11 @@ func Dial(network, addr string, config *Config) (*Conn, error) {
 	return DialWithDialer(new(net.Dialer), network, addr, config)
 }
 
-// LoadX509KeyPair reads and parses a public/private key pair from a pair of
-// files. The files must contain PEM encoded data. On successful return,
-// Certificate.Leaf will be nil because the parsed form of the certificate is
-// not retained.
+// LoadX509KeyPair reads and parses a public/private key pair from a pair
+// of files. The files must contain PEM encoded data. The certificate file
+// may contain intermediate certificates following the leaf certificate to
+// form a certificate chain. On successful return, Certificate.Leaf will
+// be nil because the parsed form of the certificate is not retained.
 func LoadX509KeyPair(certFile, keyFile string) (Certificate, error) {
 	certPEMBlock, err := ioutil.ReadFile(certFile)
 	if err != nil {
@@ -210,12 +210,12 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
 
 	if len(cert.Certificate) == 0 {
 		if len(skippedBlockTypes) == 0 {
-			return fail(errors.New("crypto/tls: failed to find any PEM data in certificate input"))
-		} else if len(skippedBlockTypes) == 1 && strings.HasSuffix(skippedBlockTypes[0], "PRIVATE KEY") {
-			return fail(errors.New("crypto/tls: failed to find certificate PEM data in certificate input, but did find a private key; PEM inputs may have been switched"))
-		} else {
-			return fail(fmt.Errorf("crypto/tls: failed to find \"CERTIFICATE\" PEM block in certificate input after skipping PEM blocks of the following types: %v", skippedBlockTypes))
+			return fail(errors.New("tls: failed to find any PEM data in certificate input"))
 		}
+		if len(skippedBlockTypes) == 1 && strings.HasSuffix(skippedBlockTypes[0], "PRIVATE KEY") {
+			return fail(errors.New("tls: failed to find certificate PEM data in certificate input, but did find a private key; PEM inputs may have been switched"))
+		}
+		return fail(fmt.Errorf("tls: failed to find \"CERTIFICATE\" PEM block in certificate input after skipping PEM blocks of the following types: %v", skippedBlockTypes))
 	}
 
 	skippedBlockTypes = skippedBlockTypes[:0]
@@ -224,12 +224,12 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
 		keyDERBlock, keyPEMBlock = pem.Decode(keyPEMBlock)
 		if keyDERBlock == nil {
 			if len(skippedBlockTypes) == 0 {
-				return fail(errors.New("crypto/tls: failed to find any PEM data in key input"))
-			} else if len(skippedBlockTypes) == 1 && skippedBlockTypes[0] == "CERTIFICATE" {
-				return fail(errors.New("crypto/tls: found a certificate rather than a key in the PEM for the private key"))
-			} else {
-				return fail(fmt.Errorf("crypto/tls: failed to find PEM block with type ending in \"PRIVATE KEY\" in key input after skipping PEM blocks of the following types: %v", skippedBlockTypes))
+				return fail(errors.New("tls: failed to find any PEM data in key input"))
 			}
+			if len(skippedBlockTypes) == 1 && skippedBlockTypes[0] == "CERTIFICATE" {
+				return fail(errors.New("tls: found a certificate rather than a key in the PEM for the private key"))
+			}
+			return fail(fmt.Errorf("tls: failed to find PEM block with type ending in \"PRIVATE KEY\" in key input after skipping PEM blocks of the following types: %v", skippedBlockTypes))
 		}
 		if keyDERBlock.Type == "PRIVATE KEY" || strings.HasSuffix(keyDERBlock.Type, " PRIVATE KEY") {
 			break
@@ -254,22 +254,21 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
 	case *rsa.PublicKey:
 		priv, ok := cert.PrivateKey.(*rsa.PrivateKey)
 		if !ok {
-			return fail(errors.New("crypto/tls: private key type does not match public key type"))
+			return fail(errors.New("tls: private key type does not match public key type"))
 		}
 		if pub.N.Cmp(priv.N) != 0 {
-			return fail(errors.New("crypto/tls: private key does not match public key"))
+			return fail(errors.New("tls: private key does not match public key"))
 		}
 	case *ecdsa.PublicKey:
 		priv, ok := cert.PrivateKey.(*ecdsa.PrivateKey)
 		if !ok {
-			return fail(errors.New("crypto/tls: private key type does not match public key type"))
-
+			return fail(errors.New("tls: private key type does not match public key type"))
 		}
 		if pub.X.Cmp(priv.X) != 0 || pub.Y.Cmp(priv.Y) != 0 {
-			return fail(errors.New("crypto/tls: private key does not match public key"))
+			return fail(errors.New("tls: private key does not match public key"))
 		}
 	default:
-		return fail(errors.New("crypto/tls: unknown public key algorithm"))
+		return fail(errors.New("tls: unknown public key algorithm"))
 	}
 
 	return cert, nil
@@ -287,12 +286,12 @@ func parsePrivateKey(der []byte) (crypto.PrivateKey, error) {
 		case *rsa.PrivateKey, *ecdsa.PrivateKey:
 			return key, nil
 		default:
-			return nil, errors.New("crypto/tls: found unknown private key type in PKCS#8 wrapping")
+			return nil, errors.New("tls: found unknown private key type in PKCS#8 wrapping")
 		}
 	}
 	if key, err := x509.ParseECPrivateKey(der); err == nil {
 		return key, nil
 	}
 
-	return nil, errors.New("crypto/tls: failed to parse private key")
+	return nil, errors.New("tls: failed to parse private key")
 }

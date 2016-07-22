@@ -670,6 +670,8 @@ LIBGO_IS_386_FALSE
 LIBGO_IS_386_TRUE
 USE_DEJAGNU
 GOOS
+LIBGO_IS_BSD_FALSE
+LIBGO_IS_BSD_TRUE
 LIBGO_IS_SOLARIS_FALSE
 LIBGO_IS_SOLARIS_TRUE
 LIBGO_IS_RTEMS_FALSE
@@ -11126,7 +11128,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11129 "configure"
+#line 11131 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11232,7 +11234,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11235 "configure"
+#line 11237 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13611,6 +13613,14 @@ else
   LIBGO_IS_SOLARIS_FALSE=
 fi
 
+ if test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes; then
+  LIBGO_IS_BSD_TRUE=
+  LIBGO_IS_BSD_FALSE='#'
+else
+  LIBGO_IS_BSD_TRUE='#'
+  LIBGO_IS_BSD_FALSE=
+fi
+
 
 
 USE_DEJAGNU=no
@@ -15767,6 +15777,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_SOLARIS_TRUE}" && test -z "${LIBGO_IS_SOLARIS_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_SOLARIS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_BSD_TRUE}" && test -z "${LIBGO_IS_BSD_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_BSD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_386_TRUE}" && test -z "${LIBGO_IS_386_FALSE}"; then

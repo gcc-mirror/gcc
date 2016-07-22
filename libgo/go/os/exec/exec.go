@@ -13,6 +13,7 @@ package exec
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -102,13 +103,15 @@ type Cmd struct {
 	// available after a call to Wait or Run.
 	ProcessState *os.ProcessState
 
-	lookPathErr     error // LookPath error, if any.
-	finished        bool  // when Wait was called
+	ctx             context.Context // nil means none
+	lookPathErr     error           // LookPath error, if any.
+	finished        bool            // when Wait was called
 	childFiles      []*os.File
 	closeAfterStart []io.Closer
 	closeAfterWait  []io.Closer
 	goroutine       []func() error
 	errch           chan error // one send per goroutine
+	waitDone        chan struct{}
 }
 
 // Command returns the Cmd struct to execute the named program with
@@ -135,6 +138,20 @@ func Command(name string, arg ...string) *Cmd {
 			cmd.Path = lp
 		}
 	}
+	return cmd
+}
+
+// CommandContext is like Command but includes a context.
+//
+// The provided context is used to kill the process (by calling
+// os.Process.Kill) if the context becomes done before the command
+// completes on its own.
+func CommandContext(ctx context.Context, name string, arg ...string) *Cmd {
+	if ctx == nil {
+		panic("nil Context")
+	}
+	cmd := Command(name, arg...)
+	cmd.ctx = ctx
 	return cmd
 }
 
@@ -310,6 +327,15 @@ func (c *Cmd) Start() error {
 	if c.Process != nil {
 		return errors.New("exec: already started")
 	}
+	if c.ctx != nil {
+		select {
+		case <-c.ctx.Done():
+			c.closeDescriptors(c.closeAfterStart)
+			c.closeDescriptors(c.closeAfterWait)
+			return c.ctx.Err()
+		default:
+		}
+	}
 
 	type F func(*Cmd) (*os.File, error)
 	for _, setupFd := range []F{(*Cmd).stdin, (*Cmd).stdout, (*Cmd).stderr} {
@@ -343,6 +369,17 @@ func (c *Cmd) Start() error {
 		go func(fn func() error) {
 			c.errch <- fn()
 		}(fn)
+	}
+
+	if c.ctx != nil {
+		c.waitDone = make(chan struct{})
+		go func() {
+			select {
+			case <-c.ctx.Done():
+				c.Process.Kill()
+			case <-c.waitDone:
+			}
+		}()
 	}
 
 	return nil
@@ -393,7 +430,11 @@ func (c *Cmd) Wait() error {
 		return errors.New("exec: Wait was already called")
 	}
 	c.finished = true
+
 	state, err := c.Process.Wait()
+	if c.waitDone != nil {
+		close(c.waitDone)
+	}
 	c.ProcessState = state
 
 	var copyError error

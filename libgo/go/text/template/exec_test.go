@@ -1280,3 +1280,33 @@ func TestBlock(t *testing.T) {
 		t.Errorf("got %q, want %q", got, want2)
 	}
 }
+
+// Check that calling an invalid field on nil pointer prints
+// a field error instead of a distracting nil pointer error.
+// https://golang.org/issue/15125
+func TestMissingFieldOnNil(t *testing.T) {
+	tmpl := Must(New("tmpl").Parse("{{.MissingField}}"))
+	var d *T
+	err := tmpl.Execute(ioutil.Discard, d)
+	got := "<nil>"
+	if err != nil {
+		got = err.Error()
+	}
+	want := "can't evaluate field MissingField in type *template.T"
+	if !strings.HasSuffix(got, want) {
+		t.Errorf("got error %q, want %q", got, want)
+	}
+}
+
+func TestMaxExecDepth(t *testing.T) {
+	tmpl := Must(New("tmpl").Parse(`{{template "tmpl" .}}`))
+	err := tmpl.Execute(ioutil.Discard, nil)
+	got := "<nil>"
+	if err != nil {
+		got = err.Error()
+	}
+	const want = "exceeded maximum template depth"
+	if !strings.Contains(got, want) {
+		t.Errorf("got error %q; want %q", got, want)
+	}
+}

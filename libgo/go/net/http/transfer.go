@@ -17,6 +17,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"golang_org/x/net/lex/httplex"
 )
 
 // ErrLineTooLong is returned when reading request or response bodies
@@ -276,7 +278,7 @@ func (t *transferReader) protoAtLeast(m, n int) bool {
 }
 
 // bodyAllowedForStatus reports whether a given response status code
-// permits a body.  See RFC2616, section 4.4.
+// permits a body. See RFC 2616, section 4.4.
 func bodyAllowedForStatus(status int) bool {
 	switch {
 	case status >= 100 && status <= 199:
@@ -368,7 +370,7 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 
 	// If there is no Content-Length or chunked Transfer-Encoding on a *Response
 	// and the status is not 1xx, 204 or 304, then the body is unbounded.
-	// See RFC2616, section 4.4.
+	// See RFC 2616, section 4.4.
 	switch msg.(type) {
 	case *Response:
 		if realLength == -1 &&
@@ -379,7 +381,7 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 		}
 	}
 
-	// Prepare body reader.  ContentLength < 0 means chunked encoding
+	// Prepare body reader. ContentLength < 0 means chunked encoding
 	// or close connection when finished, since multipart is not supported yet
 	switch {
 	case chunked(t.TransferEncoding):
@@ -558,21 +560,19 @@ func fixLength(isResponse bool, status int, requestMethod string, header Header,
 func shouldClose(major, minor int, header Header, removeCloseHeader bool) bool {
 	if major < 1 {
 		return true
-	} else if major == 1 && minor == 0 {
-		vv := header["Connection"]
-		if headerValuesContainsToken(vv, "close") || !headerValuesContainsToken(vv, "keep-alive") {
-			return true
-		}
-		return false
-	} else {
-		if headerValuesContainsToken(header["Connection"], "close") {
-			if removeCloseHeader {
-				header.Del("Connection")
-			}
-			return true
-		}
 	}
-	return false
+
+	conv := header["Connection"]
+	hasClose := httplex.HeaderValuesContainsToken(conv, "close")
+	if major == 1 && minor == 0 {
+		return hasClose || !httplex.HeaderValuesContainsToken(conv, "keep-alive")
+	}
+
+	if hasClose && removeCloseHeader {
+		header.Del("Connection")
+	}
+
+	return hasClose
 }
 
 // Parse the trailer header
@@ -729,11 +729,11 @@ func (b *body) readTrailer() error {
 	}
 
 	// Make sure there's a header terminator coming up, to prevent
-	// a DoS with an unbounded size Trailer.  It's not easy to
+	// a DoS with an unbounded size Trailer. It's not easy to
 	// slip in a LimitReader here, as textproto.NewReader requires
-	// a concrete *bufio.Reader.  Also, we can't get all the way
+	// a concrete *bufio.Reader. Also, we can't get all the way
 	// back up to our conn's LimitedReader that *might* be backing
-	// this bufio.Reader.  Instead, a hack: we iteratively Peek up
+	// this bufio.Reader. Instead, a hack: we iteratively Peek up
 	// to the bufio.Reader's max size, looking for a double CRLF.
 	// This limits the trailer to the underlying buffer size, typically 4kB.
 	if !seeUpcomingDoubleCRLF(b.r) {

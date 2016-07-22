@@ -170,6 +170,7 @@ func (enc *Encoder) sendType(w io.Writer, state *encoderState, origt reflect.Typ
 
 // Encode transmits the data item represented by the empty interface value,
 // guaranteeing that all necessary type information has been transmitted first.
+// Passing a nil pointer to Encoder will panic, as they cannot be transmitted by gob.
 func (enc *Encoder) Encode(e interface{}) error {
 	return enc.EncodeValue(reflect.ValueOf(e))
 }
@@ -191,7 +192,7 @@ func (enc *Encoder) sendTypeDescriptor(w io.Writer, state *encoderState, ut *use
 			return
 		}
 		// If the type info has still not been transmitted, it means we have
-		// a singleton basic type (int, []byte etc.) at top level.  We don't
+		// a singleton basic type (int, []byte etc.) at top level. We don't
 		// need to send the type info but we do need to update enc.sent.
 		if !sent {
 			info, err := getTypeInfo(ut)
@@ -212,9 +213,8 @@ func (enc *Encoder) sendTypeId(state *encoderState, ut *userTypeInfo) {
 
 // EncodeValue transmits the data item represented by the reflection value,
 // guaranteeing that all necessary type information has been transmitted first.
+// Passing a nil pointer to EncodeValue will panic, as they cannot be transmitted by gob.
 func (enc *Encoder) EncodeValue(value reflect.Value) error {
-	// Gobs contain values. They cannot represent nil pointers, which
-	// have no value to encode.
 	if value.Kind() == reflect.Ptr && value.IsNil() {
 		panic("gob: cannot encode nil pointer of type " + value.Type().String())
 	}

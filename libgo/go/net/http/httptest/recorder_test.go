@@ -23,6 +23,14 @@ func TestRecorder(t *testing.T) {
 			return nil
 		}
 	}
+	hasResultStatus := func(wantCode int) checkFunc {
+		return func(rec *ResponseRecorder) error {
+			if rec.Result().StatusCode != wantCode {
+				return fmt.Errorf("Result().StatusCode = %d; want %d", rec.Result().StatusCode, wantCode)
+			}
+			return nil
+		}
+	}
 	hasContents := func(want string) checkFunc {
 		return func(rec *ResponseRecorder) error {
 			if rec.Body.String() != want {
@@ -39,10 +47,49 @@ func TestRecorder(t *testing.T) {
 			return nil
 		}
 	}
-	hasHeader := func(key, want string) checkFunc {
+	hasOldHeader := func(key, want string) checkFunc {
 		return func(rec *ResponseRecorder) error {
 			if got := rec.HeaderMap.Get(key); got != want {
-				return fmt.Errorf("header %s = %q; want %q", key, got, want)
+				return fmt.Errorf("HeaderMap header %s = %q; want %q", key, got, want)
+			}
+			return nil
+		}
+	}
+	hasHeader := func(key, want string) checkFunc {
+		return func(rec *ResponseRecorder) error {
+			if got := rec.Result().Header.Get(key); got != want {
+				return fmt.Errorf("final header %s = %q; want %q", key, got, want)
+			}
+			return nil
+		}
+	}
+	hasNotHeaders := func(keys ...string) checkFunc {
+		return func(rec *ResponseRecorder) error {
+			for _, k := range keys {
+				v, ok := rec.Result().Header[http.CanonicalHeaderKey(k)]
+				if ok {
+					return fmt.Errorf("unexpected header %s with value %q", k, v)
+				}
+			}
+			return nil
+		}
+	}
+	hasTrailer := func(key, want string) checkFunc {
+		return func(rec *ResponseRecorder) error {
+			if got := rec.Result().Trailer.Get(key); got != want {
+				return fmt.Errorf("trailer %s = %q; want %q", key, got, want)
+			}
+			return nil
+		}
+	}
+	hasNotTrailers := func(keys ...string) checkFunc {
+		return func(rec *ResponseRecorder) error {
+			trailers := rec.Result().Trailer
+			for _, k := range keys {
+				_, ok := trailers[http.CanonicalHeaderKey(k)]
+				if ok {
+					return fmt.Errorf("unexpected trailer %s", k)
+				}
 			}
 			return nil
 		}
@@ -129,6 +176,73 @@ func TestRecorder(t *testing.T) {
 				io.WriteString(w, "<html>")
 			},
 			check(hasHeader("Content-Type", "text/html; charset=utf-8")),
+		},
+		{
+			"Header is not changed after write",
+			func(w http.ResponseWriter, r *http.Request) {
+				hdr := w.Header()
+				hdr.Set("Key", "correct")
+				w.WriteHeader(200)
+				hdr.Set("Key", "incorrect")
+			},
+			check(hasHeader("Key", "correct")),
+		},
+		{
+			"Trailer headers are correctly recorded",
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Non-Trailer", "correct")
+				w.Header().Set("Trailer", "Trailer-A")
+				w.Header().Add("Trailer", "Trailer-B")
+				w.Header().Add("Trailer", "Trailer-C")
+				io.WriteString(w, "<html>")
+				w.Header().Set("Non-Trailer", "incorrect")
+				w.Header().Set("Trailer-A", "valuea")
+				w.Header().Set("Trailer-C", "valuec")
+				w.Header().Set("Trailer-NotDeclared", "should be omitted")
+			},
+			check(
+				hasStatus(200),
+				hasHeader("Content-Type", "text/html; charset=utf-8"),
+				hasHeader("Non-Trailer", "correct"),
+				hasNotHeaders("Trailer-A", "Trailer-B", "Trailer-C", "Trailer-NotDeclared"),
+				hasTrailer("Trailer-A", "valuea"),
+				hasTrailer("Trailer-C", "valuec"),
+				hasNotTrailers("Non-Trailer", "Trailer-B", "Trailer-NotDeclared"),
+			),
+		},
+		{
+			"Header set without any write", // Issue 15560
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("X-Foo", "1")
+
+				// Simulate somebody using
+				// new(ResponseRecorder) instead of
+				// using the constructor which sets
+				// this to 200
+				w.(*ResponseRecorder).Code = 0
+			},
+			check(
+				hasOldHeader("X-Foo", "1"),
+				hasStatus(0),
+				hasHeader("X-Foo", "1"),
+				hasResultStatus(200),
+			),
+		},
+		{
+			"HeaderMap vs FinalHeaders", // more for Issue 15560
+			func(w http.ResponseWriter, r *http.Request) {
+				h := w.Header()
+				h.Set("X-Foo", "1")
+				w.Write([]byte("hi"))
+				h.Set("X-Foo", "2")
+				h.Set("X-Bar", "2")
+			},
+			check(
+				hasOldHeader("X-Foo", "2"),
+				hasOldHeader("X-Bar", "2"),
+				hasHeader("X-Foo", "1"),
+				hasNotHeaders("X-Bar"),
+			),
 		},
 	}
 	r, _ := http.NewRequest("GET", "http://foo.com/", nil)

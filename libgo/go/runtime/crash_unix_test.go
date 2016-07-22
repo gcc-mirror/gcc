@@ -19,6 +19,10 @@ import (
 	"testing"
 )
 
+// sigquit is the signal to send to kill a hanging testdata program.
+// Send SIGQUIT to get a stack trace.
+var sigquit = syscall.SIGQUIT
+
 func TestCrashDumpsAllThreads(t *testing.T) {
 	switch runtime.GOOS {
 	case "darwin", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
@@ -149,10 +153,6 @@ func loop(i int, c chan bool) {
 
 func TestSignalExitStatus(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
-	switch runtime.GOOS {
-	case "netbsd", "solaris":
-		t.Skipf("skipping on %s; see https://golang.org/issue/14063", runtime.GOOS)
-	}
 	exe, err := buildTestProg(t, "testprog")
 	if err != nil {
 		t.Fatal(err)

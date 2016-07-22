@@ -17,6 +17,7 @@ struct	SudoG
 	SudoG*	link;
 	int64	releasetime;
 	byte*	elem;		// data element
+	uint32  ticket;
 };
 
 struct	WaitQ
