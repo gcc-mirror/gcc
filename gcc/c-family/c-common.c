@@ -11999,7 +11999,7 @@ warn_for_sign_compare (location_t location,
           if (bits < TYPE_PRECISION (result_type)
               && bits < HOST_BITS_PER_LONG && unsignedp)
             {
-              mask = (~ (unsigned HOST_WIDE_INT) 0) << bits;
+              mask = HOST_WIDE_INT_M1U << bits;
               if ((mask & constant) != mask)
 		{
 		  if (constant == 0)

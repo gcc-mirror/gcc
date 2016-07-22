@@ -1,3 +1,7 @@
+2016-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-typeck.c: Use HOST_WIDE_INT_1 instead of (HOST_WIDE_INT) 1,
+
 2016-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (struct edit_distance_traits<cpp_hashnode *>): Move to
