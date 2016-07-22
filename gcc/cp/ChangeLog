@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71274
+	* decl2.c (maybe_instantiate_decl): Split out from mark_used.
+	(decl_constant_var_p): Use it instead.
+
 	PR c++/71630
 	* pt.c (instantiate_decl): Fix pattern_defined for namespace scope
 	variable templates.
