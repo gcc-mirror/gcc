@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69223
+	* semantics.c (apply_deduced_return_type): Call
+	complete_type_or_else before building the new RESULT_DECL.
+
 	PR c++/71274
 	* decl2.c (maybe_instantiate_decl): Split out from mark_used.
 	(decl_constant_var_p): Use it instead.
