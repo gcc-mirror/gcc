@@ -3799,7 +3799,7 @@ compared to the base address of the coarray.
 number.
 @item @var{dest} @tab intent(in) Array descriptor for the remote image for the
 bounds and the size. The base_addr shall not be accessed.
-@item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
+@item @var{dst_vector} @tab intent(in)  If not NULL, it contains the vector
 subscript of the destination array; the values are relative to the dimension
 triplet of the dest argument.
 @item @var{src} @tab intent(in) Array descriptor of the local array to be
@@ -3839,7 +3839,7 @@ Called to get an array section or whole array from a a remote,
 image identified by the image_index.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_get_desc (caf_token_t token, size_t offset,
+@code{void _gfortran_caf_get (caf_token_t token, size_t offset,
 int image_index, gfc_descriptor_t *src, caf_vector_t *src_vector,
 gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp)}
 
@@ -3850,13 +3850,13 @@ gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp)}
 compared to the base address of the coarray.
 @item @var{image_index} @tab The ID of the remote image; must be a positive
 number.
-@item @var{dest} @tab intent(in) Array descriptor of the local array to be
-transferred to the remote image
+@item @var{dest} @tab intent(out) Array descriptor of the local array to store
+the data transferred from the remote image
 @item @var{src} @tab intent(in) Array descriptor for the remote image for the
 bounds and the size. The base_addr shall not be accessed.
-@item @var{src_vector} @tab intent(int)  If not NULL, it contains the vector
-subscript of the destination array; the values are relative to the dimension
-triplet of the dest argument.
+@item @var{src_vector} @tab intent(in)  If not NULL, it contains the vector
+subscript of the source array; the values are relative to the dimension
+triplet of the src argument.
 @item @var{dst_kind} @tab Kind of the destination argument
 @item @var{src_kind} @tab Kind of the source argument
 @item @var{may_require_tmp} @tab The variable is false it is known at compile

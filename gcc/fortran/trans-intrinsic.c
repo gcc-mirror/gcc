@@ -1122,12 +1122,12 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
   dst_var = lhs;
 
   vec = null_pointer_node;
-  tmp_stat = gfc_find_stat_co(expr);
+  tmp_stat = gfc_find_stat_co (expr);
 
   if (tmp_stat)
     {
       gfc_se stat_se;
-      gfc_init_se(&stat_se, NULL);
+      gfc_init_se (&stat_se, NULL);
       gfc_conv_expr_reference (&stat_se, tmp_stat);
       stat = stat_se.expr;
       gfc_add_block_to_block (&se->pre, &stat_se.pre);
@@ -1225,7 +1225,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
     may_require_tmp = boolean_false_node;
 
   /* It guarantees memory consistency within the same segment */
-  tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+  tmp = gfc_build_string_const (strlen ("memory") + 1, "memory"),
   tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
 		    gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
 		    tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
@@ -1390,7 +1390,7 @@ conv_caf_send (gfc_code *code) {
 
   rhs_kind = build_int_cst (integer_type_node, rhs_expr->ts.kind);
 
-  tmp_stat = gfc_find_stat_co(lhs_expr);
+  tmp_stat = gfc_find_stat_co (lhs_expr);
 
   if (tmp_stat)
     {
@@ -1414,8 +1414,8 @@ conv_caf_send (gfc_code *code) {
       tree rhs_token, rhs_offset, rhs_image_index;
 
       /* It guarantees memory consistency within the same segment */
-      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
-	tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+      tmp = gfc_build_string_const (strlen ("memory") + 1, "memory"),
+      tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
 			  gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
 			  tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
       ASM_VOLATILE_P (tmp) = 1;
@@ -1438,7 +1438,7 @@ conv_caf_send (gfc_code *code) {
   gfc_add_block_to_block (&block, &rhs_se.post);
 
   /* It guarantees memory consistency within the same segment */
-  tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+  tmp = gfc_build_string_const (strlen ("memory") + 1, "memory"),
   tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
 		    gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
 		    tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
