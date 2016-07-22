@@ -1,5 +1,14 @@
 2016-07-22  Bin Cheng  <bin.cheng@arm.com>
 
+	* common.opt (funsafe-loop-optimizations): Mark ignore.
+	* doc/invoke.texi (funsafe-loop-optimizations): Remove.
+	* loop-iv.c (get_simple_loop_desc): Remove unsafe-loop-optimizations
+	related code.
+	* tree-ssa-loop-niter.c (finite_loop_p): Ditto.
+	* config/bfin/bfin.c (bfin_can_use_doloop_p): Ditto.
+
+2016-07-22  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-niter.h (number_of_iterations_exit_assumptions): New
 	Parameter.
 	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions): New
