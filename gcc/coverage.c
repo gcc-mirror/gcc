@@ -553,7 +553,8 @@ coverage_compute_lineno_checksum (void)
     = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
   unsigned chksum = xloc.line;
 
-  chksum = coverage_checksum_string (chksum, xloc.file);
+  if (xloc.file)
+    chksum = coverage_checksum_string (chksum, xloc.file);
   chksum = coverage_checksum_string
     (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
 
@@ -580,7 +581,8 @@ coverage_compute_profile_id (struct cgraph_node *n)
       bool use_name_only = (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID) == 0);
 
       chksum = (use_name_only ? 0 : xloc.line);
-      chksum = coverage_checksum_string (chksum, xloc.file);
+      if (xloc.file)
+	chksum = coverage_checksum_string (chksum, xloc.file);
       chksum = coverage_checksum_string
 	(chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
       if (!use_name_only && first_global_object_name)

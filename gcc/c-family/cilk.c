@@ -312,8 +312,9 @@ create_cilk_helper_decl (struct wrapper_data *wd)
     gcc_unreachable (); 
   
   clean_symbol_name (name);
-  tree fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, 
-			    get_identifier (name), wd->fntype);
+
+  tree fndecl = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+			    FUNCTION_DECL, get_identifier (name), wd->fntype);
 
   TREE_PUBLIC (fndecl) = 0;
   TREE_STATIC (fndecl) = 1;
