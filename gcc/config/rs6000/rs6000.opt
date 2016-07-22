@@ -606,7 +606,7 @@ Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
 
 mpower9-fusion
-Target Report Mask(P9_FUSION) Var(rs6000_isa_flags)
+Target Undocumented Report Mask(P9_FUSION) Var(rs6000_isa_flags)
 Fuse certain operations together for better performance on power9.
 
 mpower9-misc
@@ -614,7 +614,7 @@ Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)
 Use/do not use certain scalar instructions added in ISA 3.0.
 
 mpower9-vector
-Target Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
+Target Undocumented Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
 Use/do not use vector instructions added in ISA 3.0.
 
 mpower9-dform-scalar
@@ -626,7 +626,7 @@ Target Undocumented Mask(P9_DFORM_VECTOR) Var(rs6000_isa_flags)
 Use/do not use vector register+offset memory instructions added in ISA 3.0.
 
 mpower9-dform
-Target Report Var(TARGET_P9_DFORM_BOTH) Init(-1) Save
+Target Undocumented Report Var(TARGET_P9_DFORM_BOTH) Init(-1) Save
 Use/do not use register+offset memory instructions added in ISA 3.0.
 
 mpower9-minmax
@@ -638,7 +638,7 @@ Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
 Fuse medium/large code model toc references with the memory instruction.
 
 mmodulo
-Target Report Mask(MODULO) Var(rs6000_isa_flags)
+Target Undocumented Report Mask(MODULO) Var(rs6000_isa_flags)
 Generate the integer modulo instructions.
 
 mfloat128
