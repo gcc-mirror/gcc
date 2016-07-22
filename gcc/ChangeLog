@@ -1,10 +1,19 @@
+2016-07-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (TARGET_SECONDARY_RELOAD): Remove hook define...
+	(avr_secondary_reload): ...and implementation.
+	(avr_adjust_insn_length) [ADJUST_LEN_LPM]: Remove handling.
+	* config/avr/avr.md (reload_in<mode>): Remove insns.
+	(adjust_len) [lpm]: Remove insn attribute value.
+	* config/avr/predicates.md (flash_operand): Remove insn predicate.
+
 2016-07-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/71876
 	* builtin-attrs.def (ATTR_RT_NOTHROW_LEAF_LIST): New return twice
 	attribute.
 	* builtins.def (BUILT_IN_SETJMP): Use ATTR_RT_NOTHROW_LEAF_LIST here.
-	* calls.c (special_function_p): Remove the special handling of the 
+	* calls.c (special_function_p): Remove the special handling of the
 	"__builtin_" prefix.
 
 2016-07-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>

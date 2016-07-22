@@ -76,13 +76,6 @@
        (not (match_test "avr_load_libgcc_p (op)"))
        (not (match_test "avr_mem_memx_p (op)"))))
 
-;; Return 1 if OP is a memory operand in one of the __flash* address spaces
-(define_predicate "flash_operand"
-  (and (match_operand 0 "memory_operand")
-       (match_test "Pmode == mode")
-       (ior (match_test "!MEM_P (op)")
-            (match_test "avr_mem_flash_p (op)"))))
-
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"
   (and (match_code "const_int,const_fixed,const_double")
