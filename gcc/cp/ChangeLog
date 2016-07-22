@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71913
+	* call.c (unsafe_copy_elision_p): It's OK to elide when
+	initializing an unknown object.
+
 	* call.c (build_over_call): Check unsafe_copy_elision_p even for
 	trivial constructors.
 	* method.c (do_build_copy_constructor): Don't copy tail padding
