@@ -1,3 +1,8 @@
+2016-07-22  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/pr19210-1.c: Refine test strings.
+	* gcc.dg/tree-ssa/pr19210-2.c: Delete.
+
 2016-07-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71795

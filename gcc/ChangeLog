@@ -1,3 +1,12 @@
+2016-07-22  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-niter.h (number_of_iterations_exit_assumptions): New
+	Parameter.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions): New
+	Parameter.
+	(number_of_iterations_exit): Warn missed loop optimization for
+	possible infinite loops.
+
 2016-07-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_file_start): Fix condition for
