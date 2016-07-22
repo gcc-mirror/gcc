@@ -1,3 +1,10 @@
+2016-07-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71935
+	* gfortran.dg/c_sizeof_1.f90: Move invalid code to ...
+	* gfortran.dg/c_sizeof_6.f90: here.  Test for error.
+	* gfortran.dg/pr71935.f90: New test.
+
 2016-07-22 Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71675

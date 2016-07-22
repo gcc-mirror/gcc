@@ -1,3 +1,8 @@
+2016-07-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71935
+	* check.c (is_c_interoperable): Simplify right expression. 
+
 2016-07-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71795
