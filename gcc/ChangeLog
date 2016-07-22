@@ -1,3 +1,9 @@
+2016-07-22 Martin Sebor  <msebor@redhat.com>
+
+	PR c/71560
+	* doc/extend.texi (Compound Literals): Correct and clarify.
+	(Cast to Union): Same.
+
 2016-07-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
