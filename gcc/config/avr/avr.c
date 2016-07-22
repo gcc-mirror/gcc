@@ -2048,50 +2048,6 @@ avr_legitimize_reload_address (rtx *px, machine_mode mode,
 }
 
 
-/* Implement `TARGET_SECONDARY_RELOAD' */
-
-static reg_class_t
-avr_secondary_reload (bool in_p, rtx x,
-                      reg_class_t reload_class ATTRIBUTE_UNUSED,
-                      machine_mode mode, secondary_reload_info *sri)
-{
-  if (in_p
-      && MEM_P (x)
-      && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
-      && ADDR_SPACE_MEMX != MEM_ADDR_SPACE (x))
-    {
-      /* For the non-generic 16-bit spaces we need a d-class scratch.  */
-
-      switch (mode)
-        {
-        default:
-          gcc_unreachable();
-
-        case QImode:  sri->icode = CODE_FOR_reload_inqi; break;
-        case QQmode:  sri->icode = CODE_FOR_reload_inqq; break;
-        case UQQmode: sri->icode = CODE_FOR_reload_inuqq; break;
-
-        case HImode:  sri->icode = CODE_FOR_reload_inhi; break;
-        case HQmode:  sri->icode = CODE_FOR_reload_inhq; break;
-        case HAmode:  sri->icode = CODE_FOR_reload_inha; break;
-        case UHQmode: sri->icode = CODE_FOR_reload_inuhq; break;
-        case UHAmode: sri->icode = CODE_FOR_reload_inuha; break;
-
-        case PSImode: sri->icode = CODE_FOR_reload_inpsi; break;
-
-        case SImode:  sri->icode = CODE_FOR_reload_insi; break;
-        case SFmode:  sri->icode = CODE_FOR_reload_insf; break;
-        case SQmode:  sri->icode = CODE_FOR_reload_insq; break;
-        case SAmode:  sri->icode = CODE_FOR_reload_insa; break;
-        case USQmode: sri->icode = CODE_FOR_reload_inusq; break;
-        case USAmode: sri->icode = CODE_FOR_reload_inusa; break;
-        }
-    }
-
-  return NO_REGS;
-}
-
-
 /* Helper function to print assembler resp. track instruction
    sequence lengths.  Always return "".
 
@@ -8847,7 +8803,6 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
     case ADJUST_LEN_MOVMEM: avr_out_movmem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
-    case ADJUST_LEN_LPM: avr_out_lpm (insn, op, &len); break;
     case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
 
     case ADJUST_LEN_SFRACT: avr_out_fract (insn, op, true, &len); break;
@@ -13887,9 +13842,6 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P avr_mode_dependent_address_p
-
-#undef  TARGET_SECONDARY_RELOAD
-#define TARGET_SECONDARY_RELOAD avr_secondary_reload
 
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND avr_print_operand

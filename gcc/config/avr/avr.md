@@ -151,7 +151,7 @@
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract, round,
-   xload, lpm, movmem,
+   xload, movmem,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
@@ -454,23 +454,6 @@
 
 ;;========================================================================
 ;; Move stuff around
-
-;; Secondary input reload from non-generic 16-bit address spaces
-(define_insn "reload_in<mode>"
-  [(set (match_operand:MOVMODE 0 "register_operand"   "=r")
-        (match_operand:MOVMODE 1 "flash_operand"       "m"))
-   (clobber (match_operand:QI 2 "d_register_operand"  "=d"))]
-  ;; Fixme: The insn condition must not test the address space.
-  ;;   Because the gen tools refuse to generate insns for address spaces
-  ;;   and will generate insn-codes.h to look like:
-  ;;   #define CODE_FOR_reload_inhi CODE_FOR_nothing
-  "reload_completed || reload_in_progress"
-  {
-    return avr_out_lpm (insn, operands, NULL);
-  }
-  [(set_attr "adjust_len" "lpm")
-   (set_attr "cc" "clobber")])
-
 
 ;; "loadqi_libgcc"
 ;; "loadhi_libgcc"
