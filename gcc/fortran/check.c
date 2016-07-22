@@ -4278,7 +4278,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
       }
 
     if (expr->ts.u.cl && expr->ts.u.cl->length
-	&& !gfc_simplify_expr (expr, 0))
+	&& !gfc_simplify_expr (expr->ts.u.cl->length, 0))
       gfc_internal_error ("is_c_interoperable(): gfc_simplify_expr failed");
 
     if (!c_loc && expr->ts.u.cl
