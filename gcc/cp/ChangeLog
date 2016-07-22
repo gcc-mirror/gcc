@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71630
+	* pt.c (instantiate_decl): Fix pattern_defined for namespace scope
+	variable templates.
+
 	PR c++/71913
 	* call.c (unsafe_copy_elision_p): It's OK to elide when
 	initializing an unknown object.
