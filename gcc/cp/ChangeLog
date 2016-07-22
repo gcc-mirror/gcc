@@ -1,5 +1,9 @@
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69223
+	* semantics.c (apply_deduced_return_type): Call
+	complete_type_or_else before building the new RESULT_DECL.
+
 	PR c++/71630
 	* pt.c (instantiate_decl): Fix pattern_defined for namespace scope
 	variable templates.
