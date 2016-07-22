@@ -1,11 +1,9 @@
-// Copyright 2010 The Go Authors.  All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // Package pprof serves via its HTTP server runtime profiling data
 // in the format expected by the pprof visualization tool.
-// For more information about pprof, see
-// http://code.google.com/p/google-perftools/.
 //
 // The package is typically only imported for the side effect of
 // registering its HTTP handlers.
@@ -15,7 +13,7 @@
 //	import _ "net/http/pprof"
 //
 // If your application is not already running an http server, you
-// need to start one.  Add "net/http" and "log" to your imports and
+// need to start one. Add "net/http" and "log" to your imports and
 // the following code to your main function:
 //
 // 	go func() {
@@ -30,7 +28,8 @@
 //
 //	go tool pprof http://localhost:6060/debug/pprof/profile
 //
-// Or to look at the goroutine blocking profile:
+// Or to look at the goroutine blocking profile, after calling
+// runtime.SetBlockProfileRate in your program:
 //
 //	go tool pprof http://localhost:6060/debug/pprof/block
 //
@@ -118,8 +117,8 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 // Tracing lasts for duration specified in seconds GET parameter, or for 1 second if not specified.
 // The package initialization registers it as /debug/pprof/trace.
 func Trace(w http.ResponseWriter, r *http.Request) {
-	sec, _ := strconv.ParseInt(r.FormValue("seconds"), 10, 64)
-	if sec == 0 {
+	sec, err := strconv.ParseFloat(r.FormValue("seconds"), 64)
+	if sec <= 0 || err != nil {
 		sec = 1
 	}
 
@@ -127,18 +126,16 @@ func Trace(w http.ResponseWriter, r *http.Request) {
 	// because if it does it starts writing.
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Write([]byte("tracing not yet supported with gccgo"))
-	/*
-		if err := trace.Start(w); err != nil {
-			// trace.Start failed, so no writes yet.
-			// Can change header back to text content and send error code.
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Could not enable tracing: %s\n", err)
-			return
-		}
-		sleep(w, time.Duration(sec)*time.Second)
-		trace.Stop()
-	*/
+	// if err := trace.Start(w); err != nil {
+	// 	// trace.Start failed, so no writes yet.
+	// 	// Can change header back to text content and send error code.
+	// 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	fmt.Fprintf(w, "Could not enable tracing: %s\n", err)
+	// 	return
+	// }
+	// sleep(w, time.Duration(sec*float64(time.Second)))
+	// trace.Stop()
 }
 
 // Symbol looks up the program counters listed in the request,
@@ -148,11 +145,11 @@ func Symbol(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 	// We have to read the whole POST body before
-	// writing any output.  Buffer the output here.
+	// writing any output. Buffer the output here.
 	var buf bytes.Buffer
 
 	// We don't know how many symbols we have, but we
-	// do have symbol information.  Pprof only cares whether
+	// do have symbol information. Pprof only cares whether
 	// this number is 0 (no symbols available) or > 0.
 	fmt.Fprintf(&buf, "num_symbols: 1\n")
 

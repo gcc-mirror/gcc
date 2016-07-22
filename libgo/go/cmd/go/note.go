@@ -1,4 +1,4 @@
-// Copyright 2015 The Go Authors.  All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -71,7 +71,7 @@ func readELFNote(filename, name string, typ int32) ([]byte, error) {
 var elfGoNote = []byte("Go\x00\x00")
 
 // The Go build ID is stored in a note described by an ELF PT_NOTE prog
-// header.  The caller has already opened filename, to get f, and read
+// header. The caller has already opened filename, to get f, and read
 // at least 4 kB out, in data.
 func readELFGoBuildID(filename string, f *os.File, data []byte) (buildid string, err error) {
 	// Assume the note content is in the data, already read.
@@ -110,7 +110,7 @@ func readELFGoBuildID(filename string, f *os.File, data []byte) (buildid string,
 			// or even the first few megabytes of the file
 			// due to differences in note segment placement;
 			// in that case, extract the note data manually.
-			_, err = f.Seek(int64(p.Off), 0)
+			_, err = f.Seek(int64(p.Off), io.SeekStart)
 			if err != nil {
 				return "", err
 			}

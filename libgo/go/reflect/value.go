@@ -11,14 +11,13 @@ import (
 )
 
 const ptrSize = 4 << (^uintptr(0) >> 63) // unsafe.Sizeof(uintptr(0)) but an ideal const
-const cannotSet = "cannot set value obtained from unexported struct field"
 
 // Value is the reflection interface to a Go value.
 //
-// Not all methods apply to all kinds of values.  Restrictions,
+// Not all methods apply to all kinds of values. Restrictions,
 // if any, are noted in the documentation for each method.
 // Use the Kind method to find out the kind of value before
-// calling kind-specific methods.  Calling a method
+// calling kind-specific methods. Calling a method
 // inappropriate to the kind of type causes a run time panic.
 //
 // The zero Value represents no value.
@@ -57,7 +56,7 @@ type Value struct {
 	flag
 
 	// A method value represents a curried method invocation
-	// like r.Read for some receiver r.  The typ+val+flag bits describe
+	// like r.Read for some receiver r. The typ+val+flag bits describe
 	// the receiver r, but the flag's Kind bits say Func (methods are
 	// functions), and the top bits of the flag give the method number
 	// in r's type's method table.
@@ -116,14 +115,14 @@ func packEface(v Value) interface{} {
 		}
 		e.word = ptr
 	case v.flag&flagIndir != 0:
-		// Value is indirect, but interface is direct.  We need
+		// Value is indirect, but interface is direct. We need
 		// to load the data at v.ptr into the interface data word.
 		e.word = *(*unsafe.Pointer)(v.ptr)
 	default:
 		// Value is direct, and so is the interface.
 		e.word = v.ptr
 	}
-	// Now, fill in the type portion.  We're very careful here not
+	// Now, fill in the type portion. We're very careful here not
 	// to have any operation between the e.word and e.typ assignments
 	// that would let the garbage collector observe the partially-built
 	// interface value.
@@ -147,7 +146,7 @@ func unpackEface(i interface{}) Value {
 }
 
 // A ValueError occurs when a Value method is invoked on
-// a Value that does not support it.  Such cases are documented
+// a Value that does not support it. Such cases are documented
 // in the description of each method.
 type ValueError struct {
 	Method string
@@ -269,7 +268,7 @@ func (v Value) runes() []rune {
 }
 
 // CanAddr reports whether the value's address can be obtained with Addr.
-// Such values are called addressable.  A value is addressable if it is
+// Such values are called addressable. A value is addressable if it is
 // an element of a slice, an element of an addressable array,
 // a field of an addressable struct, or the result of dereferencing a pointer.
 // If CanAddr returns false, calling Addr will panic.
@@ -500,7 +499,7 @@ func methodReceiver(op string, v Value, methodIndex int) (rcvrtype, t *rtype, fn
 	return
 }
 
-// v is a method receiver.  Store at p the word which is used to
+// v is a method receiver. Store at p the word which is used to
 // encode that receiver at the start of the argument list.
 // Reflect uses the "interface" calling convention for
 // methods, which always uses one word to record the receiver.
@@ -541,7 +540,7 @@ func (v Value) Cap() int {
 	case Array:
 		return v.typ.Len()
 	case Chan:
-		return int(chancap(v.pointer()))
+		return chancap(v.pointer())
 	case Slice:
 		// Slice is always bigger than a word; assume flagIndir.
 		return (*sliceHeader)(v.ptr).Cap
@@ -760,7 +759,7 @@ func (v Value) Int() int64 {
 	case Int32:
 		return int64(*(*int32)(p))
 	case Int64:
-		return int64(*(*int64)(p))
+		return *(*int64)(p)
 	}
 	panic(&ValueError{"reflect.Value.Int", v.kind()})
 }
@@ -909,9 +908,9 @@ func (v Value) MapIndex(key Value) Value {
 
 	// Do not require key to be exported, so that DeepEqual
 	// and other programs can use all the keys returned by
-	// MapKeys as arguments to MapIndex.  If either the map
+	// MapKeys as arguments to MapIndex. If either the map
 	// or the key is unexported, though, the result will be
-	// considered unexported.  This is consistent with the
+	// considered unexported. This is consistent with the
 	// behavior for structs, which allow read but not write
 	// of unexported fields.
 	key = key.assignTo("reflect.Value.MapIndex", tt.key, nil)
@@ -963,7 +962,7 @@ func (v Value) MapKeys() []Value {
 		key := mapiterkey(it)
 		if key == nil {
 			// Someone deleted an entry from the map since we
-			// called maplen above.  It's a data race, but nothing
+			// called maplen above. It's a data race, but nothing
 			// we can do about it.
 			break
 		}
@@ -1110,7 +1109,7 @@ func (v Value) OverflowUint(x uint64) bool {
 // result is zero if and only if v is a nil func Value.
 //
 // If v's Kind is Slice, the returned pointer is to the first
-// element of the slice.  If the slice is nil the returned value
+// element of the slice. If the slice is nil the returned value
 // is 0.  If the slice is empty but non-nil the return value is non-zero.
 func (v Value) Pointer() uintptr {
 	// TODO: deprecate
@@ -1311,7 +1310,7 @@ func (v Value) SetCap(n int) {
 	v.mustBeAssignable()
 	v.mustBe(Slice)
 	s := (*sliceHeader)(v.ptr)
-	if n < int(s.Len) || n > int(s.Cap) {
+	if n < s.Len || n > s.Cap {
 		panic("reflect: slice capacity out of range in SetCap")
 	}
 	s.Cap = n
@@ -1413,7 +1412,7 @@ func (v Value) Slice(i, j int) Value {
 	case Slice:
 		typ = (*sliceType)(unsafe.Pointer(v.typ))
 		s := (*sliceHeader)(v.ptr)
-		base = unsafe.Pointer(s.Data)
+		base = s.Data
 		cap = s.Cap
 
 	case String:
@@ -1585,7 +1584,7 @@ func (v Value) Uint() uint64 {
 	case Uint32:
 		return uint64(*(*uint32)(p))
 	case Uint64:
-		return uint64(*(*uint64)(p))
+		return *(*uint64)(p)
 	case Uintptr:
 		return uint64(*(*uintptr)(p))
 	}
@@ -1751,13 +1750,13 @@ func Copy(dst, src Value) int {
 // A runtimeSelect is a single case passed to rselect.
 // This must match ../runtime/select.go:/runtimeSelect
 type runtimeSelect struct {
-	dir uintptr        // 0, SendDir, or RecvDir
+	dir SelectDir      // SelectSend, SelectRecv or SelectDefault
 	typ *rtype         // channel type
 	ch  unsafe.Pointer // channel
 	val unsafe.Pointer // ptr to data (SendDir) or ptr to receive buffer (RecvDir)
 }
 
-// rselect runs a select.  It returns the index of the chosen case.
+// rselect runs a select. It returns the index of the chosen case.
 // If the case was a receive, val is filled in with the received value.
 // The conventional OK bool indicates whether the receive corresponds
 // to a sent value.
@@ -1814,7 +1813,7 @@ func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
 	haveDefault := false
 	for i, c := range cases {
 		rc := &runcases[i]
-		rc.dir = uintptr(c.Dir)
+		rc.dir = c.Dir
 		switch c.Dir {
 		default:
 			panic("reflect.Select: invalid Dir")
@@ -1877,7 +1876,7 @@ func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
 	}
 
 	chosen, recvOK = rselect(runcases)
-	if runcases[chosen].dir == uintptr(SelectRecv) {
+	if runcases[chosen].dir == SelectRecv {
 		tt := (*chanType)(unsafe.Pointer(runcases[chosen].typ))
 		t := tt.elem
 		p := runcases[chosen].val
@@ -1954,14 +1953,14 @@ func Indirect(v Value) Value {
 }
 
 // ValueOf returns a new Value initialized to the concrete value
-// stored in the interface i.  ValueOf(nil) returns the zero Value.
+// stored in the interface i. ValueOf(nil) returns the zero Value.
 func ValueOf(i interface{}) Value {
 	if i == nil {
 		return Value{}
 	}
 
 	// TODO: Maybe allow contents of a Value to live on the stack.
-	// For now we make the contents always escape to the heap.  It
+	// For now we make the contents always escape to the heap. It
 	// makes life easier in a few places (see chanrecv/mapassign
 	// comment below).
 	escapes(i)
@@ -1987,7 +1986,7 @@ func Zero(typ Type) Value {
 }
 
 // New returns a Value representing a pointer to a new zero value
-// for the specified type.  That is, the returned Value's Type is PtrTo(typ).
+// for the specified type. That is, the returned Value's Type is PtrTo(typ).
 func New(typ Type) Value {
 	if typ == nil {
 		panic("reflect: New(nil)")
@@ -2142,13 +2141,13 @@ func makeInt(f flag, bits uint64, t Type) Value {
 	ptr := unsafe_New(typ)
 	switch typ.size {
 	case 1:
-		*(*uint8)(unsafe.Pointer(ptr)) = uint8(bits)
+		*(*uint8)(ptr) = uint8(bits)
 	case 2:
-		*(*uint16)(unsafe.Pointer(ptr)) = uint16(bits)
+		*(*uint16)(ptr) = uint16(bits)
 	case 4:
-		*(*uint32)(unsafe.Pointer(ptr)) = uint32(bits)
+		*(*uint32)(ptr) = uint32(bits)
 	case 8:
-		*(*uint64)(unsafe.Pointer(ptr)) = bits
+		*(*uint64)(ptr) = bits
 	}
 	return Value{typ, ptr, f | flagIndir | flag(typ.Kind())}
 }
@@ -2160,9 +2159,9 @@ func makeFloat(f flag, v float64, t Type) Value {
 	ptr := unsafe_New(typ)
 	switch typ.size {
 	case 4:
-		*(*float32)(unsafe.Pointer(ptr)) = float32(v)
+		*(*float32)(ptr) = float32(v)
 	case 8:
-		*(*float64)(unsafe.Pointer(ptr)) = v
+		*(*float64)(ptr) = v
 	}
 	return Value{typ, ptr, f | flagIndir | flag(typ.Kind())}
 }
@@ -2174,9 +2173,9 @@ func makeComplex(f flag, v complex128, t Type) Value {
 	ptr := unsafe_New(typ)
 	switch typ.size {
 	case 8:
-		*(*complex64)(unsafe.Pointer(ptr)) = complex64(v)
+		*(*complex64)(ptr) = complex64(v)
 	case 16:
-		*(*complex128)(unsafe.Pointer(ptr)) = v
+		*(*complex128)(ptr) = v
 	}
 	return Value{typ, ptr, f | flagIndir | flag(typ.Kind())}
 }
@@ -2320,7 +2319,7 @@ func chanclose(ch unsafe.Pointer)
 func chanlen(ch unsafe.Pointer) int
 
 // Note: some of the noescape annotations below are technically a lie,
-// but safe in the context of this package.  Functions like chansend
+// but safe in the context of this package. Functions like chansend
 // and mapassign don't escape the referent, but may escape anything
 // the referent points to (they do shallow copies of the referent).
 // It is safe in this package because the referent may only point

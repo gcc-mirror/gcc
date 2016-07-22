@@ -835,7 +835,7 @@ extern uintptr runtime_stacks_sys;
 
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
-extern _Bool __go_file_line(uintptr, String*, String*, intgo *);
+extern _Bool __go_file_line(uintptr, int, String*, String*, intgo *);
 extern byte* runtime_progname();
 extern void runtime_main(void*);
 extern uint32 runtime_in_callers;

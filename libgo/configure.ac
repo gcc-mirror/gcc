@@ -172,6 +172,7 @@ AM_CONDITIONAL(LIBGO_IS_OPENBSD, test $is_openbsd = yes)
 AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonfly = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
+AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes)
 AC_SUBST(GOOS)
 
 dnl Test whether we need to use DejaGNU or whether we can use the

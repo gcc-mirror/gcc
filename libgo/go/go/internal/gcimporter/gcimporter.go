@@ -163,7 +163,7 @@ func Import(packages map[string]*types.Package, path, srcDir string) (pkg *types
 		var data []byte
 		data, err = ioutil.ReadAll(buf)
 		if err == nil {
-			_, pkg, err = BImportData(packages, data, path)
+			_, pkg, err = BImportData(packages, data, id)
 			return
 		}
 	default:
@@ -385,7 +385,7 @@ func (p *parser) getPkg(id, name string) *types.Package {
 		if pname := pkg.Name(); pname == "" {
 			pkg.SetName(name)
 		} else if pname != name {
-			p.errorf("%s package name mismatch: %s (given) vs %s (expected)", pname, name)
+			p.errorf("%s package name mismatch: %s (given) vs %s (expected)", id, pname, name)
 		}
 	}
 	return pkg
@@ -451,7 +451,7 @@ func (p *parser) parseMapType(parent *types.Package) types.Type {
 // For qualified names, the returned package is nil (and not created if
 // it doesn't exist yet) unless materializePkg is set (which creates an
 // unnamed package with valid package path). In the latter case, a
-// subequent import clause is expected to provide a name for the package.
+// subsequent import clause is expected to provide a name for the package.
 //
 func (p *parser) parseName(parent *types.Package, materializePkg bool) (pkg *types.Package, name string) {
 	pkg = parent

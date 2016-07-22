@@ -1,4 +1,4 @@
-// Copyright 2015 The Go Authors.  All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -63,11 +63,11 @@ func (r *readSeekerFromReader) Read(p []byte) (n int, err error) {
 func (r *readSeekerFromReader) Seek(offset int64, whence int) (int64, error) {
 	var newOffset int64
 	switch whence {
-	case 0:
+	case io.SeekStart:
 		newOffset = offset
-	case 1:
+	case io.SeekCurrent:
 		newOffset = r.offset + offset
-	case 2:
+	case io.SeekEnd:
 		newOffset = r.size + offset
 	default:
 		return 0, os.ErrInvalid

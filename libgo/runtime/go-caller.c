@@ -25,6 +25,7 @@ struct caller
   String fn;
   String file;
   intgo line;
+  intgo index;
 };
 
 /* Collect file/line information for a PC value.  If this is called
@@ -44,6 +45,12 @@ callback (void *data, uintptr_t pc __attribute__ ((unused)),
   c->fn = runtime_gostringnocopy ((const byte *) function);
   c->file = runtime_gostringnocopy ((const byte *) filename);
   c->line = lineno;
+
+  if (c->index == 0)
+    return 1;
+
+  if (c->index > 0)
+    --c->index;
 
   return 0;
 }
@@ -102,14 +109,17 @@ __go_get_backtrace_state ()
   return back_state;
 }
 
-/* Return function/file/line information for PC.  */
+/* Return function/file/line information for PC.  The index parameter
+   is the entry on the stack of inlined functions; -1 means the last
+   one.  */
 
 _Bool
-__go_file_line (uintptr pc, String *fn, String *file, intgo *line)
+__go_file_line (uintptr pc, int index, String *fn, String *file, intgo *line)
 {
   struct caller c;
 
   runtime_memclr (&c, sizeof c);
+  c.index = index;
   backtrace_pcinfo (__go_get_backtrace_state (), pc, callback,
 		    error_callback, &c);
   *fn = c.fn;
@@ -186,7 +196,7 @@ FuncForPC (uintptr_t pc)
   intgo line;
   uintptr_t val;
 
-  if (!__go_file_line (pc, &fn, &file, &line))
+  if (!__go_file_line (pc, -1, &fn, &file, &line))
     return NULL;
 
   ret = (Func *) runtime_malloc (sizeof (*ret));
@@ -219,7 +229,7 @@ runtime_funcline_go (Func *f __attribute__((unused)), uintptr targetpc)
   struct funcline_go_return ret;
   String fn;
 
-  if (!__go_file_line (targetpc, &fn, &ret.retfile,  &ret.retline))
+  if (!__go_file_line (targetpc, -1, &fn, &ret.retfile,  &ret.retline))
     runtime_memclr (&ret, sizeof ret);
   return ret;
 }
@@ -244,4 +254,46 @@ uintptr
 runtime_funcentry_go (Func *f)
 {
   return f->entry;
+}
+
+/* Look up file and line information for Frames.Next.  */
+
+struct funcframe_return
+{
+  Func* retfunc;
+  String retfile;
+  intgo retline;
+};
+
+struct funcframe_return
+runtime_funcframe (uintptr pc, int index)
+  __asm__ (GOSYM_PREFIX "runtime.funcframe");
+
+struct funcframe_return
+runtime_funcframe (uintptr pc, int index)
+{
+  struct funcframe_return ret;
+  String fn;
+  Func* func;
+  uintptr_t val;
+
+  // Subtract 1 from PC to undo the 1 we added in callback in go-callers.c.
+  --pc;
+
+  if (!__go_file_line (pc, index, &fn, &ret.retfile, &ret.retline))
+    runtime_memclr (&ret, sizeof ret);
+  else
+    {
+      func = (Func *) runtime_malloc (sizeof (*func));
+      func->name = fn;
+
+      if (__go_symbol_value (pc, &val))
+	func->entry = val;
+      else
+	func->entry = 0;
+
+      ret.retfunc = func;
+    }
+
+  return ret;
 }

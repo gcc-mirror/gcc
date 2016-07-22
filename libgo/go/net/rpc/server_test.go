@@ -183,7 +183,7 @@ func testRPC(t *testing.T, addr string) {
 	err = client.Call("Arith.Unknown", args, reply)
 	if err == nil {
 		t.Error("expected error calling unknown service")
-	} else if strings.Index(err.Error(), "method") < 0 {
+	} else if !strings.Contains(err.Error(), "method") {
 		t.Error("expected error about method; got", err)
 	}
 
@@ -226,7 +226,7 @@ func testRPC(t *testing.T, addr string) {
 	err = client.Call("Arith.Add", reply, reply) // args, reply would be the correct thing to use
 	if err == nil {
 		t.Error("expected error calling Arith.Add with wrong arg type")
-	} else if strings.Index(err.Error(), "type") < 0 {
+	} else if !strings.Contains(err.Error(), "type") {
 		t.Error("expected error about type; got", err)
 	}
 
@@ -657,6 +657,9 @@ func benchmarkEndToEnd(dial func() (*Client, error), b *testing.B) {
 }
 
 func benchmarkEndToEndAsync(dial func() (*Client, error), b *testing.B) {
+	if b.N == 0 {
+		return
+	}
 	const MaxConcurrentCalls = 100
 	once.Do(startServer)
 	client, err := dial()

@@ -11,11 +11,17 @@ import (
 )
 
 // An RWMutex is a reader/writer mutual exclusion lock.
-// The lock can be held by an arbitrary number of readers
-// or a single writer.
-// RWMutexes can be created as part of other
-// structures; the zero value for a RWMutex is
-// an unlocked mutex.
+// The lock can be held by an arbitrary number of readers or a single writer.
+// RWMutexes can be created as part of other structures;
+// the zero value for a RWMutex is an unlocked mutex.
+//
+// An RWMutex must not be copied after first use.
+//
+// If a goroutine holds a RWMutex for reading, it must not expect this or any
+// other goroutine to be able to also take the read lock until the first read
+// lock is released. In particular, this prohibits recursive read locking.
+// This is to ensure that the lock eventually becomes available;
+// a blocked Lock call excludes new readers from acquiring the lock.
 type RWMutex struct {
 	w           Mutex  // held if there are pending writers
 	writerSem   uint32 // semaphore for writers to wait for completing readers
@@ -71,9 +77,6 @@ func (rw *RWMutex) RUnlock() {
 // Lock locks rw for writing.
 // If the lock is already locked for reading or writing,
 // Lock blocks until the lock is available.
-// To ensure that the lock eventually becomes available,
-// a blocked Lock call excludes new readers from acquiring
-// the lock.
 func (rw *RWMutex) Lock() {
 	if race.Enabled {
 		_ = rw.w.state
@@ -94,11 +97,11 @@ func (rw *RWMutex) Lock() {
 	}
 }
 
-// Unlock unlocks rw for writing.  It is a run-time error if rw is
+// Unlock unlocks rw for writing. It is a run-time error if rw is
 // not locked for writing on entry to Unlock.
 //
 // As with Mutexes, a locked RWMutex is not associated with a particular
-// goroutine.  One goroutine may RLock (Lock) an RWMutex and then
+// goroutine. One goroutine may RLock (Lock) an RWMutex and then
 // arrange for another goroutine to RUnlock (Unlock) it.
 func (rw *RWMutex) Unlock() {
 	if race.Enabled {

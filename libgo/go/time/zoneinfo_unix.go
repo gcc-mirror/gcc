@@ -18,8 +18,12 @@ import (
 )
 
 func initTestingZone() {
-	syscall.Setenv("TZ", "America/Los_Angeles")
-	initLocal()
+	z, err := loadLocation("America/Los_Angeles")
+	if err != nil {
+		panic("cannot load America/Los_Angeles for testing: " + err.Error())
+	}
+	z.name = "Local"
+	localLoc = *z
 }
 
 // Many systems use /usr/share/zoneinfo, Solaris 2 has

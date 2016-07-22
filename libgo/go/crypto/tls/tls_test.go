@@ -6,13 +6,19 @@ package tls
 
 import (
 	"bytes"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"internal/testenv"
 	"io"
+	"math"
+	"math/rand"
 	"net"
+	"os"
+	"reflect"
 	"strings"
 	"testing"
+	"testing/quick"
 	"time"
 )
 
@@ -146,7 +152,7 @@ func TestX509MixedKeyPair(t *testing.T) {
 	}
 }
 
-func newLocalListener(t *testing.T) net.Listener {
+func newLocalListener(t testing.TB) net.Listener {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		ln, err = net.Listen("tcp6", "[::1]:0")
@@ -188,9 +194,16 @@ func TestDialTimeout(t *testing.T) {
 		t.Fatal("DialWithTimeout completed successfully")
 	}
 
-	if !strings.Contains(err.Error(), "timed out") {
-		t.Errorf("resulting error not a timeout: %s", err)
+	if !isTimeoutError(err) {
+		t.Errorf("resulting error not a timeout: %v\nType %T: %#v", err, err, err)
 	}
+}
+
+func isTimeoutError(err error) bool {
+	if ne, ok := err.(net.Error); ok {
+		return ne.Timeout()
+	}
+	return false
 }
 
 // tests that Conn.Read returns (non-zero, io.EOF) instead of
@@ -199,7 +212,7 @@ func TestDialTimeout(t *testing.T) {
 func TestConnReadNonzeroAndEOF(t *testing.T) {
 	// This test is racy: it assumes that after a write to a
 	// localhost TCP connection, the peer TCP connection can
-	// immediately read it.  Because it's racy, we skip this test
+	// immediately read it. Because it's racy, we skip this test
 	// in short mode, and then retry it several times with an
 	// increasing sleep in between our final write (via srv.Close
 	// below) and the following read.
@@ -228,8 +241,8 @@ func testConnReadNonzeroAndEOF(t *testing.T, delay time.Duration) error {
 			srvCh <- nil
 			return
 		}
-		serverConfig := *testConfig
-		srv := Server(sconn, &serverConfig)
+		serverConfig := testConfig.clone()
+		srv := Server(sconn, serverConfig)
 		if err := srv.Handshake(); err != nil {
 			serr = fmt.Errorf("handshake: %v", err)
 			srvCh <- nil
@@ -238,8 +251,8 @@ func testConnReadNonzeroAndEOF(t *testing.T, delay time.Duration) error {
 		srvCh <- srv
 	}()
 
-	clientConfig := *testConfig
-	conn, err := Dial("tcp", ln.Addr().String(), &clientConfig)
+	clientConfig := testConfig.clone()
+	conn, err := Dial("tcp", ln.Addr().String(), clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,8 +295,8 @@ func TestTLSUniqueMatches(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			serverConfig := *testConfig
-			srv := Server(sconn, &serverConfig)
+			serverConfig := testConfig.clone()
+			srv := Server(sconn, serverConfig)
 			if err := srv.Handshake(); err != nil {
 				t.Fatal(err)
 			}
@@ -291,9 +304,9 @@ func TestTLSUniqueMatches(t *testing.T) {
 		}
 	}()
 
-	clientConfig := *testConfig
+	clientConfig := testConfig.clone()
 	clientConfig.ClientSessionCache = NewLRUClientSessionCache(1)
-	conn, err := Dial("tcp", ln.Addr().String(), &clientConfig)
+	conn, err := Dial("tcp", ln.Addr().String(), clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -302,7 +315,7 @@ func TestTLSUniqueMatches(t *testing.T) {
 	}
 	conn.Close()
 
-	conn, err = Dial("tcp", ln.Addr().String(), &clientConfig)
+	conn, err = Dial("tcp", ln.Addr().String(), clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -381,8 +394,8 @@ func TestConnCloseBreakingWrite(t *testing.T) {
 			srvCh <- nil
 			return
 		}
-		serverConfig := *testConfig
-		srv := Server(sconn, &serverConfig)
+		serverConfig := testConfig.clone()
+		srv := Server(sconn, serverConfig)
 		if err := srv.Handshake(); err != nil {
 			serr = fmt.Errorf("handshake: %v", err)
 			srvCh <- nil
@@ -401,8 +414,8 @@ func TestConnCloseBreakingWrite(t *testing.T) {
 		Conn: cconn,
 	}
 
-	clientConfig := *testConfig
-	tconn := Client(conn, &clientConfig)
+	clientConfig := testConfig.clone()
+	tconn := Client(conn, clientConfig)
 	if err := tconn.Handshake(); err != nil {
 		t.Fatal(err)
 	}
@@ -445,6 +458,58 @@ func TestConnCloseBreakingWrite(t *testing.T) {
 	}
 }
 
+func TestClone(t *testing.T) {
+	var c1 Config
+	v := reflect.ValueOf(&c1).Elem()
+
+	rnd := rand.New(rand.NewSource(time.Now().Unix()))
+	typ := v.Type()
+	for i := 0; i < typ.NumField(); i++ {
+		f := v.Field(i)
+		if !f.CanSet() {
+			// unexported field; not cloned.
+			continue
+		}
+
+		// testing/quick can't handle functions or interfaces.
+		fn := typ.Field(i).Name
+		switch fn {
+		case "Rand":
+			f.Set(reflect.ValueOf(io.Reader(os.Stdin)))
+			continue
+		case "Time", "GetCertificate":
+			// DeepEqual can't compare functions.
+			continue
+		case "Certificates":
+			f.Set(reflect.ValueOf([]Certificate{
+				{Certificate: [][]byte{[]byte{'b'}}},
+			}))
+			continue
+		case "NameToCertificate":
+			f.Set(reflect.ValueOf(map[string]*Certificate{"a": nil}))
+			continue
+		case "RootCAs", "ClientCAs":
+			f.Set(reflect.ValueOf(x509.NewCertPool()))
+			continue
+		case "ClientSessionCache":
+			f.Set(reflect.ValueOf(NewLRUClientSessionCache(10)))
+			continue
+		}
+
+		q, ok := quick.Value(f.Type(), rnd)
+		if !ok {
+			t.Fatalf("quick.Value failed on field %s", fn)
+		}
+		f.Set(q)
+	}
+
+	c2 := c1.clone()
+
+	if !reflect.DeepEqual(&c1, c2) {
+		t.Errorf("clone failed to copy a field")
+	}
+}
+
 // changeImplConn is a net.Conn which can change its Write and Close
 // methods.
 type changeImplConn struct {
@@ -465,4 +530,162 @@ func (w *changeImplConn) Close() error {
 		return w.closeFunc()
 	}
 	return w.Conn.Close()
+}
+
+func throughput(b *testing.B, totalBytes int64, dynamicRecordSizingDisabled bool) {
+	ln := newLocalListener(b)
+	defer ln.Close()
+
+	N := b.N
+
+	// Less than 64KB because Windows appears to use a TCP rwin < 64KB.
+	// See Issue #15899.
+	const bufsize = 32 << 10
+
+	go func() {
+		buf := make([]byte, bufsize)
+		for i := 0; i < N; i++ {
+			sconn, err := ln.Accept()
+			if err != nil {
+				// panic rather than synchronize to avoid benchmark overhead
+				// (cannot call b.Fatal in goroutine)
+				panic(fmt.Errorf("accept: %v", err))
+			}
+			serverConfig := testConfig.clone()
+			serverConfig.DynamicRecordSizingDisabled = dynamicRecordSizingDisabled
+			srv := Server(sconn, serverConfig)
+			if err := srv.Handshake(); err != nil {
+				panic(fmt.Errorf("handshake: %v", err))
+			}
+			if _, err := io.CopyBuffer(srv, srv, buf); err != nil {
+				panic(fmt.Errorf("copy buffer: %v", err))
+			}
+		}
+	}()
+
+	b.SetBytes(totalBytes)
+	clientConfig := testConfig.clone()
+	clientConfig.DynamicRecordSizingDisabled = dynamicRecordSizingDisabled
+
+	buf := make([]byte, bufsize)
+	chunks := int(math.Ceil(float64(totalBytes) / float64(len(buf))))
+	for i := 0; i < N; i++ {
+		conn, err := Dial("tcp", ln.Addr().String(), clientConfig)
+		if err != nil {
+			b.Fatal(err)
+		}
+		for j := 0; j < chunks; j++ {
+			_, err := conn.Write(buf)
+			if err != nil {
+				b.Fatal(err)
+			}
+			_, err = io.ReadFull(conn, buf)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+		conn.Close()
+	}
+}
+
+func BenchmarkThroughput(b *testing.B) {
+	for _, mode := range []string{"Max", "Dynamic"} {
+		for size := 1; size <= 64; size <<= 1 {
+			name := fmt.Sprintf("%sPacket/%dMB", mode, size)
+			b.Run(name, func(b *testing.B) {
+				throughput(b, int64(size<<20), mode == "Max")
+			})
+		}
+	}
+}
+
+type slowConn struct {
+	net.Conn
+	bps int
+}
+
+func (c *slowConn) Write(p []byte) (int, error) {
+	if c.bps == 0 {
+		panic("too slow")
+	}
+	t0 := time.Now()
+	wrote := 0
+	for wrote < len(p) {
+		time.Sleep(100 * time.Microsecond)
+		allowed := int(time.Since(t0).Seconds()*float64(c.bps)) / 8
+		if allowed > len(p) {
+			allowed = len(p)
+		}
+		if wrote < allowed {
+			n, err := c.Conn.Write(p[wrote:allowed])
+			wrote += n
+			if err != nil {
+				return wrote, err
+			}
+		}
+	}
+	return len(p), nil
+}
+
+func latency(b *testing.B, bps int, dynamicRecordSizingDisabled bool) {
+	ln := newLocalListener(b)
+	defer ln.Close()
+
+	N := b.N
+
+	go func() {
+		for i := 0; i < N; i++ {
+			sconn, err := ln.Accept()
+			if err != nil {
+				// panic rather than synchronize to avoid benchmark overhead
+				// (cannot call b.Fatal in goroutine)
+				panic(fmt.Errorf("accept: %v", err))
+			}
+			serverConfig := testConfig.clone()
+			serverConfig.DynamicRecordSizingDisabled = dynamicRecordSizingDisabled
+			srv := Server(&slowConn{sconn, bps}, serverConfig)
+			if err := srv.Handshake(); err != nil {
+				panic(fmt.Errorf("handshake: %v", err))
+			}
+			io.Copy(srv, srv)
+		}
+	}()
+
+	clientConfig := testConfig.clone()
+	clientConfig.DynamicRecordSizingDisabled = dynamicRecordSizingDisabled
+
+	buf := make([]byte, 16384)
+	peek := make([]byte, 1)
+
+	for i := 0; i < N; i++ {
+		conn, err := Dial("tcp", ln.Addr().String(), clientConfig)
+		if err != nil {
+			b.Fatal(err)
+		}
+		// make sure we're connected and previous connection has stopped
+		if _, err := conn.Write(buf[:1]); err != nil {
+			b.Fatal(err)
+		}
+		if _, err := io.ReadFull(conn, peek); err != nil {
+			b.Fatal(err)
+		}
+		if _, err := conn.Write(buf); err != nil {
+			b.Fatal(err)
+		}
+		if _, err = io.ReadFull(conn, peek); err != nil {
+			b.Fatal(err)
+		}
+		conn.Close()
+	}
+}
+
+func BenchmarkLatency(b *testing.B) {
+	for _, mode := range []string{"Max", "Dynamic"} {
+		for _, kbps := range []int{200, 500, 1000, 2000, 5000} {
+			name := fmt.Sprintf("%sPacket/%dkbps", mode, kbps)
+			b.Run(name, func(b *testing.B) {
+				latency(b, kbps*1000, mode == "Max")
+			})
+		}
+	}
 }

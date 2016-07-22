@@ -15,14 +15,21 @@ import (
 	"text/template/parse"
 )
 
+// maxExecDepth specifies the maximum stack depth of templates within
+// templates. This limit is only practically reached by accidentally
+// recursive template invocations. This limit allows us to return
+// an error instead of triggering a stack overflow.
+const maxExecDepth = 100000
+
 // state represents the state of an execution. It's not part of the
 // template so that multiple executions of the same template
 // can execute in parallel.
 type state struct {
-	tmpl *Template
-	wr   io.Writer
-	node parse.Node // current node, for errors
-	vars []variable // push-down stack of variable values.
+	tmpl  *Template
+	wr    io.Writer
+	node  parse.Node // current node, for errors
+	vars  []variable // push-down stack of variable values.
+	depth int        // the height of the stack of executing templates.
 }
 
 // variable holds the dynamic value of a variable such as $, $x etc.
@@ -164,7 +171,11 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) 
 // execution stops, but partial results may already have been written to
 // the output writer.
 // A template may be executed safely in parallel.
-func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
+func (t *Template) Execute(wr io.Writer, data interface{}) error {
+	return t.execute(wr, data)
+}
+
+func (t *Template) execute(wr io.Writer, data interface{}) (err error) {
 	defer errRecover(&err)
 	value := reflect.ValueOf(data)
 	state := &state{
@@ -359,9 +370,13 @@ func (s *state) walkTemplate(dot reflect.Value, t *parse.TemplateNode) {
 	if tmpl == nil {
 		s.errorf("template %q not defined", t.Name)
 	}
+	if s.depth == maxExecDepth {
+		s.errorf("exceeded maximum template depth (%v)", maxExecDepth)
+	}
 	// Variables declared by the pipeline persist.
 	dot = s.evalPipeline(dot, t.Pipe)
 	newState := *s
+	newState.depth++
 	newState.tmpl = tmpl
 	// No dynamic scoping: template invocations inherit no variables.
 	newState.vars = []variable{{"$", dot}}
@@ -436,7 +451,7 @@ func (s *state) evalCommand(dot reflect.Value, cmd *parse.CommandNode, final ref
 
 // idealConstant is called to return the value of a number in a context where
 // we don't know the type. In that case, the syntax of the number tells us
-// its type, and we use Go rules to resolve.  Note there is no such thing as
+// its type, and we use Go rules to resolve. Note there is no such thing as
 // a uint ideal constant in this situation - the value must be of int type.
 func (s *state) idealConstant(constant *parse.NumberNode) reflect.Value {
 	// These are ideal constants but we don't know the type
@@ -446,7 +461,7 @@ func (s *state) idealConstant(constant *parse.NumberNode) reflect.Value {
 	switch {
 	case constant.IsComplex:
 		return reflect.ValueOf(constant.Complex128) // incontrovertible.
-	case constant.IsFloat && !isHexConstant(constant.Text) && strings.IndexAny(constant.Text, ".eE") >= 0:
+	case constant.IsFloat && !isHexConstant(constant.Text) && strings.ContainsAny(constant.Text, ".eE"):
 		return reflect.ValueOf(constant.Float64)
 	case constant.IsInt:
 		n := int(constant.Int64)
@@ -534,14 +549,14 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 		return s.evalCall(dot, method, node, fieldName, args, final)
 	}
 	hasArgs := len(args) > 1 || final.IsValid()
-	// It's not a method; must be a field of a struct or an element of a map. The receiver must not be nil.
-	if isNil {
-		s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
-	}
+	// It's not a method; must be a field of a struct or an element of a map.
 	switch receiver.Kind() {
 	case reflect.Struct:
 		tField, ok := receiver.Type().FieldByName(fieldName)
 		if ok {
+			if isNil {
+				s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
+			}
 			field := receiver.FieldByIndex(tField.Index)
 			if tField.PkgPath != "" { // field is unexported
 				s.errorf("%s is an unexported field of struct type %s", fieldName, typ)
@@ -552,8 +567,10 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 			}
 			return field
 		}
-		s.errorf("%s is not a field of struct type %s", fieldName, typ)
 	case reflect.Map:
+		if isNil {
+			s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
+		}
 		// If it's a map, attempt to use the field name as a key.
 		nameVal := reflect.ValueOf(fieldName)
 		if nameVal.Type().AssignableTo(receiver.Type().Key()) {
@@ -584,7 +601,7 @@ var (
 )
 
 // evalCall executes a function or method call. If it's a method, fun already has the receiver bound, so
-// it looks just like a function call.  The arg list, if non-nil, includes (in the manner of the shell), arg[0]
+// it looks just like a function call. The arg list, if non-nil, includes (in the manner of the shell), arg[0]
 // as the function itself.
 func (s *state) evalCall(dot, fun reflect.Value, node parse.Node, name string, args []parse.Node, final reflect.Value) reflect.Value {
 	if args != nil {

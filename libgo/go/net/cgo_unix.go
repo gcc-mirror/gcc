@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -18,6 +18,7 @@ package net
 */
 
 import (
+	"context"
 	"syscall"
 	"unsafe"
 )
@@ -51,18 +52,31 @@ func (eai addrinfoErrno) Error() string   { return bytePtrToString(libc_gai_stre
 func (eai addrinfoErrno) Temporary() bool { return eai == syscall.EAI_AGAIN }
 func (eai addrinfoErrno) Timeout() bool   { return false }
 
-func cgoLookupHost(name string) (hosts []string, err error, completed bool) {
-	addrs, err, completed := cgoLookupIP(name)
+type portLookupResult struct {
+	port int
+	err  error
+}
+
+type ipLookupResult struct {
+	addrs []IPAddr
+	cname string
+	err   error
+}
+
+type reverseLookupResult struct {
+	names []string
+	err   error
+}
+
+func cgoLookupHost(ctx context.Context, name string) (hosts []string, err error, completed bool) {
+	addrs, err, completed := cgoLookupIP(ctx, name)
 	for _, addr := range addrs {
 		hosts = append(hosts, addr.String())
 	}
 	return
 }
 
-func cgoLookupPort(network, service string) (port int, err error, completed bool) {
-	acquireThread()
-	defer releaseThread()
-
+func cgoLookupPort(ctx context.Context, network, service string) (port int, err error, completed bool) {
 	var hints syscall.Addrinfo
 	switch network {
 	case "": // no hints
@@ -83,11 +97,27 @@ func cgoLookupPort(network, service string) (port int, err error, completed bool
 			hints.Ai_family = syscall.AF_INET6
 		}
 	}
+	if ctx.Done() == nil {
+		port, err := cgoLookupServicePort(&hints, network, service)
+		return port, err, true
+	}
+	result := make(chan portLookupResult, 1)
+	go cgoPortLookup(result, &hints, network, service)
+	select {
+	case r := <-result:
+		return r.port, r.err, true
+	case <-ctx.Done():
+		// Since there isn't a portable way to cancel the lookup,
+		// we just let it finish and write to the buffered channel.
+		return 0, mapErr(ctx.Err()), false
+	}
+}
 
+func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (port int, err error) {
 	s := syscall.StringBytePtr(service)
 	var res *syscall.Addrinfo
 	syscall.Entersyscall()
-	gerrno := libc_getaddrinfo(nil, s, &hints, &res)
+	gerrno := libc_getaddrinfo(nil, s, hints, &res)
 	syscall.Exitsyscall()
 	if gerrno != 0 {
 		switch gerrno {
@@ -100,7 +130,7 @@ func cgoLookupPort(network, service string) (port int, err error, completed bool
 		default:
 			err = addrinfoErrno(gerrno)
 		}
-		return 0, &DNSError{Err: err.Error(), Name: network + "/" + service}, true
+		return 0, &DNSError{Err: err.Error(), Name: network + "/" + service}
 	}
 	defer libc_freeaddrinfo(res)
 
@@ -109,17 +139,22 @@ func cgoLookupPort(network, service string) (port int, err error, completed bool
 		case syscall.AF_INET:
 			sa := (*syscall.RawSockaddrInet4)(unsafe.Pointer(r.Ai_addr))
 			p := (*[2]byte)(unsafe.Pointer(&sa.Port))
-			return int(p[0])<<8 | int(p[1]), nil, true
+			return int(p[0])<<8 | int(p[1]), nil
 		case syscall.AF_INET6:
 			sa := (*syscall.RawSockaddrInet6)(unsafe.Pointer(r.Ai_addr))
 			p := (*[2]byte)(unsafe.Pointer(&sa.Port))
-			return int(p[0])<<8 | int(p[1]), nil, true
+			return int(p[0])<<8 | int(p[1]), nil
 		}
 	}
-	return 0, &DNSError{Err: "unknown port", Name: network + "/" + service}, true
+	return 0, &DNSError{Err: "unknown port", Name: network + "/" + service}
 }
 
-func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error, completed bool) {
+func cgoPortLookup(result chan<- portLookupResult, hints *syscall.Addrinfo, network, service string) {
+	port, err := cgoLookupServicePort(hints, network, service)
+	result <- portLookupResult{port, err}
+}
+
+func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
 	acquireThread()
 	defer releaseThread()
 
@@ -152,7 +187,7 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error, com
 		default:
 			err = addrinfoErrno(gerrno)
 		}
-		return nil, "", &DNSError{Err: err.Error(), Name: name}, true
+		return nil, "", &DNSError{Err: err.Error(), Name: name}
 	}
 	defer libc_freeaddrinfo(res)
 
@@ -181,17 +216,42 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error, com
 			addrs = append(addrs, addr)
 		}
 	}
-	return addrs, cname, nil, true
+	return addrs, cname, nil
 }
 
-func cgoLookupIP(name string) (addrs []IPAddr, err error, completed bool) {
-	addrs, _, err, completed = cgoLookupIPCNAME(name)
-	return
+func cgoIPLookup(result chan<- ipLookupResult, name string) {
+	addrs, cname, err := cgoLookupIPCNAME(name)
+	result <- ipLookupResult{addrs, cname, err}
 }
 
-func cgoLookupCNAME(name string) (cname string, err error, completed bool) {
-	_, cname, err, completed = cgoLookupIPCNAME(name)
-	return
+func cgoLookupIP(ctx context.Context, name string) (addrs []IPAddr, err error, completed bool) {
+	if ctx.Done() == nil {
+		addrs, _, err = cgoLookupIPCNAME(name)
+		return addrs, err, true
+	}
+	result := make(chan ipLookupResult, 1)
+	go cgoIPLookup(result, name)
+	select {
+	case r := <-result:
+		return r.addrs, r.err, true
+	case <-ctx.Done():
+		return nil, mapErr(ctx.Err()), false
+	}
+}
+
+func cgoLookupCNAME(ctx context.Context, name string) (cname string, err error, completed bool) {
+	if ctx.Done() == nil {
+		_, cname, err = cgoLookupIPCNAME(name)
+		return cname, err, true
+	}
+	result := make(chan ipLookupResult, 1)
+	go cgoIPLookup(result, name)
+	select {
+	case r := <-result:
+		return r.cname, r.err, true
+	case <-ctx.Done():
+		return "", mapErr(ctx.Err()), false
+	}
 }
 
 // These are roughly enough for the following:
@@ -207,10 +267,7 @@ const (
 	maxNameinfoLen = 4096
 )
 
-func cgoLookupPTR(addr string) ([]string, error, bool) {
-	acquireThread()
-	defer releaseThread()
-
+func cgoLookupPTR(ctx context.Context, addr string) (names []string, err error, completed bool) {
 	var zone string
 	ip := parseIPv4(addr)
 	if ip == nil {
@@ -223,9 +280,26 @@ func cgoLookupPTR(addr string) ([]string, error, bool) {
 	if sa == nil {
 		return nil, &DNSError{Err: "invalid address " + ip.String(), Name: addr}, true
 	}
-	var err error
-	var b []byte
+	if ctx.Done() == nil {
+		names, err := cgoLookupAddrPTR(addr, sa, salen)
+		return names, err, true
+	}
+	result := make(chan reverseLookupResult, 1)
+	go cgoReverseLookup(result, addr, sa, salen)
+	select {
+	case r := <-result:
+		return r.names, r.err, true
+	case <-ctx.Done():
+		return nil, mapErr(ctx.Err()), false
+	}
+}
+
+func cgoLookupAddrPTR(addr string, sa *syscall.RawSockaddr, salen syscall.Socklen_t) (names []string, err error) {
+	acquireThread()
+	defer releaseThread()
+
 	var gerrno int
+	var b []byte
 	for l := nameinfoLen; l <= maxNameinfoLen; l *= 2 {
 		b = make([]byte, l)
 		gerrno, err = cgoNameinfoPTR(b, sa, salen)
@@ -242,16 +316,20 @@ func cgoLookupPTR(addr string) ([]string, error, bool) {
 		default:
 			err = addrinfoErrno(gerrno)
 		}
-		return nil, &DNSError{Err: err.Error(), Name: addr}, true
+		return nil, &DNSError{Err: err.Error(), Name: addr}
 	}
-
 	for i := 0; i < len(b); i++ {
 		if b[i] == 0 {
 			b = b[:i]
 			break
 		}
 	}
-	return []string{absDomainName(b)}, nil, true
+	return []string{absDomainName(b)}, nil
+}
+
+func cgoReverseLookup(result chan<- reverseLookupResult, addr string, sa *syscall.RawSockaddr, salen syscall.Socklen_t) {
+	names, err := cgoLookupAddrPTR(addr, sa, salen)
+	result <- reverseLookupResult{names, err}
 }
 
 func cgoSockaddr(ip IP, zone string) (*syscall.RawSockaddr, syscall.Socklen_t) {

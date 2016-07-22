@@ -573,6 +573,47 @@ func TestInitOrderInfo(t *testing.T) {
 		`, []string{
 			"a = next()", "b = next()", "c = next()", "d = next()", "e = next()", "f = next()", "_ = makeOrder()",
 		}},
+		// test case for issue 10709
+		// TODO(gri) enable once the issue is fixed
+		// {`package p13
+
+		// var (
+		//     v = t.m()
+		//     t = makeT(0)
+		// )
+
+		// type T struct{}
+
+		// func (T) m() int { return 0 }
+
+		// func makeT(n int) T {
+		//     if n > 0 {
+		//         return makeT(n-1)
+		//     }
+		//     return T{}
+		// }`, []string{
+		// 	"t = makeT(0)", "v = t.m()",
+		// }},
+		// test case for issue 10709: same as test before, but variable decls swapped
+		{`package p14
+
+		var (
+		    t = makeT(0)
+		    v = t.m()
+		)
+
+		type T struct{}
+
+		func (T) m() int { return 0 }
+
+		func makeT(n int) T {
+		    if n > 0 {
+		        return makeT(n-1)
+		    }
+		    return T{}
+		}`, []string{
+			"t = makeT(0)", "v = t.m()",
+		}},
 	}
 
 	for _, test := range tests {
@@ -1043,4 +1084,46 @@ func f() {
 			continue
 		}
 	}
+}
+
+func TestIdentical_issue15173(t *testing.T) {
+	// Identical should allow nil arguments and be symmetric.
+	for _, test := range []struct {
+		x, y Type
+		want bool
+	}{
+		{Typ[Int], Typ[Int], true},
+		{Typ[Int], nil, false},
+		{nil, Typ[Int], false},
+		{nil, nil, true},
+	} {
+		if got := Identical(test.x, test.y); got != test.want {
+			t.Errorf("Identical(%v, %v) = %t", test.x, test.y, got)
+		}
+	}
+}
+
+func TestIssue15305(t *testing.T) {
+	const src = "package p; func f() int16; var _ = f(undef)"
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "issue15305.go", src, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	conf := Config{
+		Error: func(err error) {}, // allow errors
+	}
+	info := &Info{
+		Types: make(map[ast.Expr]TypeAndValue),
+	}
+	conf.Check("p", fset, []*ast.File{f}, info) // ignore result
+	for e, tv := range info.Types {
+		if _, ok := e.(*ast.CallExpr); ok {
+			if tv.Type != Typ[Int16] {
+				t.Errorf("CallExpr has type %v, want int16", tv.Type)
+			}
+			return
+		}
+	}
+	t.Errorf("CallExpr has no type")
 }

@@ -45,10 +45,10 @@ var sysdir = func() *sysDir {
 	switch runtime.GOOS {
 	case "android":
 		return &sysDir{
-			"/system/framework",
+			"/system/lib",
 			[]string{
-				"ext.jar",
-				"framework.jar",
+				"libmedia.so",
+				"libpowermanager.so",
 			},
 		}
 	case "darwin":
@@ -536,7 +536,7 @@ func TestReaddirStatFailures(t *testing.T) {
 		return s
 	}
 
-	if got, want := names(mustReadDir("inital readdir")),
+	if got, want := names(mustReadDir("initial readdir")),
 		[]string{"good1", "good2", "x"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("initial readdir got %q; want %q", got, want)
 	}
@@ -1180,14 +1180,14 @@ func TestSeek(t *testing.T) {
 		out    int64
 	}
 	var tests = []test{
-		{0, 1, int64(len(data))},
-		{0, 0, 0},
-		{5, 0, 5},
-		{0, 2, int64(len(data))},
-		{0, 0, 0},
-		{-1, 2, int64(len(data)) - 1},
-		{1 << 33, 0, 1 << 33},
-		{1 << 33, 2, 1<<33 + int64(len(data))},
+		{0, io.SeekCurrent, int64(len(data))},
+		{0, io.SeekStart, 0},
+		{5, io.SeekStart, 5},
+		{0, io.SeekEnd, int64(len(data))},
+		{0, io.SeekStart, 0},
+		{-1, io.SeekEnd, int64(len(data)) - 1},
+		{1 << 33, io.SeekStart, 1 << 33},
+		{1 << 33, io.SeekEnd, 1<<33 + int64(len(data))},
 	}
 	for i, tt := range tests {
 		off, err := f.Seek(tt.in, tt.whence)
@@ -1273,15 +1273,19 @@ func TestOpenNoName(t *testing.T) {
 	}
 }
 
-func run(t *testing.T, cmd []string) string {
+func runBinHostname(t *testing.T) string {
 	// Run /bin/hostname and collect output.
 	r, w, err := Pipe()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer r.Close()
-	p, err := StartProcess("/bin/hostname", []string{"hostname"}, &ProcAttr{Files: []*File{nil, w, Stderr}})
+	const path = "/bin/hostname"
+	p, err := StartProcess(path, []string{"hostname"}, &ProcAttr{Files: []*File{nil, w, Stderr}})
 	if err != nil {
+		if _, err := Stat(path); IsNotExist(err) {
+			t.Skipf("skipping test; test requires %s but it does not exist", path)
+		}
 		t.Fatal(err)
 	}
 	w.Close()
@@ -1301,7 +1305,7 @@ func run(t *testing.T, cmd []string) string {
 		output = output[0 : n-1]
 	}
 	if output == "" {
-		t.Fatalf("%v produced no output", cmd)
+		t.Fatalf("/bin/hostname produced no output")
 	}
 
 	return output
@@ -1343,7 +1347,7 @@ func TestHostname(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	want := run(t, []string{"/bin/hostname"})
+	want := runBinHostname(t)
 	if hostname != want {
 		i := strings.Index(hostname, ".")
 		if i < 0 || hostname[0:i] != want {
@@ -1367,6 +1371,38 @@ func TestReadAt(t *testing.T) {
 	}
 	if string(b) != "world" {
 		t.Fatalf("ReadAt 7: have %q want %q", string(b), "world")
+	}
+}
+
+// Verify that ReadAt doesn't affect seek offset.
+// In the Plan 9 kernel, there used to be a bug in the implementation of
+// the pread syscall, where the channel offset was erroneously updated after
+// calling pread on a file.
+func TestReadAtOffset(t *testing.T) {
+	f := newFile("TestReadAtOffset", t)
+	defer Remove(f.Name())
+	defer f.Close()
+
+	const data = "hello, world\n"
+	io.WriteString(f, data)
+
+	f.Seek(0, 0)
+	b := make([]byte, 5)
+
+	n, err := f.ReadAt(b, 7)
+	if err != nil || n != len(b) {
+		t.Fatalf("ReadAt 7: %d, %v", n, err)
+	}
+	if string(b) != "world" {
+		t.Fatalf("ReadAt 7: have %q want %q", string(b), "world")
+	}
+
+	n, err = f.Read(b)
+	if err != nil || n != len(b) {
+		t.Fatalf("Read: %d, %v", n, err)
+	}
+	if string(b) != "hello" {
+		t.Fatalf("Read: have %q want %q", string(b), "hello")
 	}
 }
 
@@ -1577,6 +1613,42 @@ func TestStatDirModeExec(t *testing.T) {
 	}
 }
 
+func TestStatStdin(t *testing.T) {
+	switch runtime.GOOS {
+	case "android", "plan9":
+		t.Skipf("%s doesn't have /bin/sh", runtime.GOOS)
+	}
+
+	testenv.MustHaveExec(t)
+
+	if Getenv("GO_WANT_HELPER_PROCESS") == "1" {
+		st, err := Stdin.Stat()
+		if err != nil {
+			t.Fatalf("Stat failed: %v", err)
+		}
+		fmt.Println(st.Mode() & ModeNamedPipe)
+		Exit(0)
+	}
+
+	var cmd *osexec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = osexec.Command("cmd", "/c", "echo output | "+Args[0]+" -test.run=TestStatStdin")
+	} else {
+		cmd = osexec.Command("/bin/sh", "-c", "echo output | "+Args[0]+" -test.run=TestStatStdin")
+	}
+	cmd.Env = append(Environ(), "GO_WANT_HELPER_PROCESS=1")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("Failed to spawn child process: %v %q", err, string(output))
+	}
+
+	// result will be like "prw-rw-rw"
+	if len(output) < 1 || output[0] != 'p' {
+		t.Fatalf("Child process reports stdin is not pipe '%v'", string(output))
+	}
+}
+
 func TestReadAtEOF(t *testing.T) {
 	f := newFile("TestReadAtEOF", t)
 	defer Remove(f.Name())
@@ -1684,7 +1756,7 @@ var nilFileMethodTests = []struct {
 	{"ReadAt", func(f *File) error { _, err := f.ReadAt(make([]byte, 0), 0); return err }},
 	{"Readdir", func(f *File) error { _, err := f.Readdir(1); return err }},
 	{"Readdirnames", func(f *File) error { _, err := f.Readdirnames(1); return err }},
-	{"Seek", func(f *File) error { _, err := f.Seek(0, 0); return err }},
+	{"Seek", func(f *File) error { _, err := f.Seek(0, io.SeekStart); return err }},
 	{"Stat", func(f *File) error { _, err := f.Stat(); return err }},
 	{"Sync", func(f *File) error { return f.Sync() }},
 	{"Truncate", func(f *File) error { return f.Truncate(0) }},

@@ -32,7 +32,7 @@ func (d *declInfo) hasInitializer() bool {
 	return d.init != nil || d.fdecl != nil && d.fdecl.Body != nil
 }
 
-// addDep adds obj as a dependency to d.
+// addDep adds obj to the set of objects d's init expression depends on.
 func (d *declInfo) addDep(obj Object) {
 	m := d.deps
 	if m == nil {
@@ -67,7 +67,7 @@ func (check *Checker) arityMatch(s, init *ast.ValueSpec) {
 			// TODO(gri) avoid declared but not used error here
 		} else {
 			// init exprs "inherited"
-			check.errorf(s.Pos(), "extra init expr at %s", init.Pos())
+			check.errorf(s.Pos(), "extra init expr at %s", check.fset.Position(init.Pos()))
 			// TODO(gri) avoid declared but not used error here
 		}
 	case l > r && (init != nil || r != 1):

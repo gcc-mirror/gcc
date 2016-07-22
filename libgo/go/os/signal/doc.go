@@ -11,7 +11,7 @@ package on Windows and Plan 9, see below.
 Types of signals
 
 The signals SIGKILL and SIGSTOP may not be caught by a program, and
-therefore can not be affected by this package.
+therefore cannot be affected by this package.
 
 Synchronous signals are signals triggered by errors in program
 execution: SIGBUS, SIGFPE, and SIGSEGV. These are only considered
@@ -205,8 +205,8 @@ before raising the signal.
 Windows
 
 On Windows a ^C (Control-C) or ^BREAK (Control-Break) normally cause
-the program to exit. If Notify is called for os.SIGINT, ^C or ^BREAK
-will cause os.SIGINT to be sent on the channel, and the program will
+the program to exit. If Notify is called for os.Interrupt, ^C or ^BREAK
+will cause os.Interrupt to be sent on the channel, and the program will
 not exit. If Reset is called, or Stop is called on all channels passed
 to Notify, then the default behavior will be restored.
 

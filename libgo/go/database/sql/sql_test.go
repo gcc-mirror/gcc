@@ -144,7 +144,7 @@ func closeDB(t testing.TB, db *DB) {
 	count := db.numOpen
 	db.mu.Unlock()
 	if count != 0 {
-		t.Fatalf("%d connections still open after closing DB", db.numOpen)
+		t.Fatalf("%d connections still open after closing DB", count)
 	}
 }
 
@@ -911,7 +911,7 @@ func nullTestRun(t *testing.T, spec nullTestSpec) {
 	if err == nil {
 		// TODO: this test fails, but it's just because
 		// fakeConn implements the optional Execer interface,
-		// so arguably this is the correct behavior.  But
+		// so arguably this is the correct behavior. But
 		// maybe I should flesh out the fakeConn.Exec
 		// implementation so this properly fails.
 		// t.Errorf("expected error inserting nil name with Exec")
@@ -1239,7 +1239,7 @@ func TestPendingConnsAfterErr(t *testing.T) {
 	time.Sleep(10 * time.Millisecond) // make extra sure all workers are blocked
 	close(unblock)                    // let all workers proceed
 
-	const timeout = 100 * time.Millisecond
+	const timeout = 5 * time.Second
 	to := time.NewTimer(timeout)
 	defer to.Stop()
 
@@ -1591,7 +1591,7 @@ func TestStmtCloseOrder(t *testing.T) {
 
 	_, err := db.Query("SELECT|non_existent|name|")
 	if err == nil {
-		t.Fatal("Quering non-existent table should fail")
+		t.Fatal("Querying non-existent table should fail")
 	}
 }
 
@@ -1615,6 +1615,8 @@ func TestManyErrBadConn(t *testing.T) {
 			}
 		}()
 
+		db.mu.Lock()
+		defer db.mu.Unlock()
 		if db.numOpen != nconn {
 			t.Fatalf("unexpected numOpen %d (was expecting %d)", db.numOpen, nconn)
 		} else if len(db.freeConn) != nconn {
