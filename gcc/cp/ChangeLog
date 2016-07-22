@@ -1,3 +1,10 @@
+2016-07-21  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_over_call): Check unsafe_copy_elision_p even for
+	trivial constructors.
+	* method.c (do_build_copy_constructor): Don't copy tail padding
+	even in a trivial constructor.
+
 2016-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71728

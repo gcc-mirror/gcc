@@ -542,14 +542,32 @@ do_build_copy_constructor (tree fndecl)
   if (!inh)
     parm = convert_from_reference (parm);
 
-  if (trivial
-      && is_empty_class (current_class_type))
-    /* Don't copy the padding byte; it might not have been allocated
-       if *this is a base subobject.  */;
-  else if (trivial)
+  if (trivial)
     {
-      tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
-      finish_expr_stmt (t);
+      if (is_empty_class (current_class_type))
+	/* Don't copy the padding byte; it might not have been allocated
+	   if *this is a base subobject.  */;
+      else if (tree_int_cst_equal (TYPE_SIZE (current_class_type),
+				   CLASSTYPE_SIZE (current_class_type)))
+	{
+	  tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
+	  finish_expr_stmt (t);
+	}
+      else
+	{
+	  /* We must only copy the non-tail padding parts.  */
+	  tree base_size = CLASSTYPE_SIZE_UNIT (current_class_type);
+	  base_size = size_binop (MINUS_EXPR, base_size, size_int (1));
+	  tree array_type = build_array_type (unsigned_char_type_node,
+					      build_index_type (base_size));
+	  tree alias_set = build_int_cst (TREE_TYPE (current_class_ptr), 0);
+	  tree lhs = build2 (MEM_REF, array_type,
+			     current_class_ptr, alias_set);
+	  tree rhs = build2 (MEM_REF, array_type,
+			     TREE_OPERAND (parm, 0), alias_set);
+	  tree t = build2 (INIT_EXPR, void_type_node, lhs, rhs);
+	  finish_expr_stmt (t);
+	}
     }
   else
     {

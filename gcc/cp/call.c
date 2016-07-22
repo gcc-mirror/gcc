@@ -7271,6 +7271,9 @@ is_base_field_ref (tree t)
 static bool
 unsafe_copy_elision_p (tree target, tree exp)
 {
+  /* Copy elision only happens with a TARGET_EXPR.  */
+  if (TREE_CODE (exp) != TARGET_EXPR)
+    return false;
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
   if (type == CLASSTYPE_AS_BASE (type))
     return false;
@@ -7726,9 +7729,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  else if (trivial)
 	    return force_target_expr (DECL_CONTEXT (fn), arg, complain);
 	}
-      else if (trivial
-	       || (TREE_CODE (arg) == TARGET_EXPR
-		   && !unsafe_copy_elision_p (fa, arg)))
+      else if ((trivial || TREE_CODE (arg) == TARGET_EXPR)
+	       && !unsafe_copy_elision_p (fa, arg))
 	{
 	  tree to = cp_stabilize_reference (cp_build_indirect_ref (fa,
 								   RO_NULL,
