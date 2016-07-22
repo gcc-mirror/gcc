@@ -11514,7 +11514,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  return result;
 	if (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
 	    && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N
-	    && orig_code != BUILT_IN_ATOMIC_STORE_N)
+	    && orig_code != BUILT_IN_ATOMIC_STORE_N
+	    && orig_code != BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N)
 	  result = sync_resolve_return (first_param, result, orig_format);
 
 	if (fetch_op)

@@ -1,3 +1,9 @@
+2016-07-22 Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71675
+	* g++.dg/ext/atomic-3.C: New test.
+	* gcc.dg/atomic/pr71675.c: New test.
+
 2016-07-22  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* gcc.target/i386/mvc8.c: New test.
