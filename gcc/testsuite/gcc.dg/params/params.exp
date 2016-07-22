@@ -28,10 +28,15 @@ proc param_run_test { param_name param_value } {
     global srcdir
     global subdir
 
-    dg-runtest $srcdir/$subdir/blocksort-part.c "" "-O3 --param $param_name=$param_value"
+    dg-runtest $srcdir/$subdir/blocksort-part.c "-O3 --param $param_name=$param_value" ""
 }
 
-set fd [open "$objdir/../../params.options" r]
+set options_file "$objdir/../../params.options"
+if { [file exists $options_file] == 0 } {
+  return
+}
+
+set fd [open $options_file r]
 set text [read $fd]
 close $fd
 
