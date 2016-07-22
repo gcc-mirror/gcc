@@ -533,6 +533,13 @@ determine_versionability (struct cgraph_node *node,
 	 coexist, but that may not be worth the effort.  */
       reason = "function has SIMD clones";
     }
+  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (node->decl)))
+    {
+      /* Ideally we should clone the target clones themselves and create
+	 copies of them, so IPA-cp and target clones can happily
+	 coexist, but that may not be worth the effort.  */
+      reason = "function target_clones attribute";
+    }
   /* Don't clone decls local to a comdat group; it breaks and for C++
      decloned constructors, inlining is always better anyway.  */
   else if (node->comdat_local_p ())

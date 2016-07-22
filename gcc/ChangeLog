@@ -1,3 +1,8 @@
+2016-07-22  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* ipa-cp.c (determine_versionability): Do not create constprop clones,
+	when target_clones attribute is set.
+
 2016-07-22  Bin Cheng  <bin.cheng@arm.com>
 
 	* common.opt (funsafe-loop-optimizations): Mark ignore.
