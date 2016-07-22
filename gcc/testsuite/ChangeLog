@@ -1,3 +1,7 @@
+2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_stat_2.f90: New test.
+
 2016-07-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-extract.h: New files to check the
