@@ -1,3 +1,11 @@
+2016-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/69028
+	PR gcov-profile/62047
+	* coverage.c (coverage_compute_lineno_checksum): Do not
+	calculate checksum for fns w/o xloc.file.
+	(coverage_compute_profile_id): Likewise.
+
 2016-07-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (TARGET_SECONDARY_RELOAD): Remove hook define...
