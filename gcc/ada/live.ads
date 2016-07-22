@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,14 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements a compiler phase that determines the set
---  of live entities. For now entities are considered live when they
---  have at least one execution time reference.
+--  This package implements a compiler phase that determines the set of live
+--  entities. For now entities are considered live when they have at least one
+--  execution time reference.
 
 package Live is
 
    procedure Collect_Garbage_Entities;
-   --  Eliminate unreachable entities using a mark-and-sweep from
-   --  the set of root entities, i.e. those having Is_Public set.
+   --  Eliminate unreachable entities using a mark-and-sweep from the set of
+   --  root entities, i.e. those having Is_Public set.
 
 end Live;

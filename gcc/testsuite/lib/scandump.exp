@@ -22,7 +22,7 @@
 # Extract the constant part of the dump file suffix from the regexp.
 # Argument 0 is the regular expression.
 proc dump-suffix { arg } {
-    set idx [expr [string last "." $arg] + 1]
+    set idx [expr [string first "." $arg] + 1]
     return [string range $arg $idx end]
 }
 

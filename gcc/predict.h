@@ -81,7 +81,7 @@ extern void remove_predictions_associated_with_edge (edge);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
 extern void invert_br_probabilities (rtx);
 extern void guess_outgoing_edge_probabilities (basic_block);
-extern void tree_estimate_probability (void);
+extern void tree_estimate_probability (bool);
 extern void handle_missing_profiles (void);
 extern int counts_to_freqs (void);
 extern bool expensive_function_p (int);
@@ -90,5 +90,7 @@ extern void compute_function_frequency (void);
 extern tree build_predict_expr (enum br_predictor, enum prediction);
 extern const char *predictor_name (enum br_predictor);
 extern void rebuild_frequencies (void);
+extern void report_predictor_hitrates (void);
+extern void force_edge_cold (edge, bool);
 
 #endif  /* GCC_PREDICT_H */

@@ -45,4 +45,4 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif

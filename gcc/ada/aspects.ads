@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -652,12 +652,10 @@ package Aspects is
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,
       Aspect_Elaborate_Body               => Always_Delay,
-      Aspect_Export                       => Always_Delay,
       Aspect_External_Name                => Always_Delay,
       Aspect_External_Tag                 => Always_Delay,
       Aspect_Favor_Top_Level              => Always_Delay,
       Aspect_Implicit_Dereference         => Always_Delay,
-      Aspect_Import                       => Always_Delay,
       Aspect_Independent                  => Always_Delay,
       Aspect_Independent_Components       => Always_Delay,
       Aspect_Inline                       => Always_Delay,
@@ -726,9 +724,11 @@ package Aspects is
       Aspect_Disable_Controlled           => Never_Delay,
       Aspect_Effective_Reads              => Never_Delay,
       Aspect_Effective_Writes             => Never_Delay,
+      Aspect_Export                       => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,
       Aspect_Ghost                        => Never_Delay,
       Aspect_Global                       => Never_Delay,
+      Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,

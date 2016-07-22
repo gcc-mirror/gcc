@@ -34,14 +34,12 @@
    initial value (in GCC tree form). This is optional for variables.
    For renamed entities, GNU_EXPR gives the object being renamed.
 
-   DEFINITION is nonzero if this call is intended for a definition.  This is
-   used for separate compilation where it necessary to know whether an
-   external declaration or a definition should be created if the GCC equivalent
-   was not created previously.  The value of 1 is normally used for a nonzero
-   DEFINITION, but a value of 2 is used in special circumstances, defined in
-   the code.  */
+   DEFINITION is true if this call is intended for a definition.  This is used
+   for separate compilation where it is necessary to know whether an external
+   declaration or a definition must be created if the GCC equivalent was not
+   created previously.  */
 extern tree gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr,
-                                int definition);
+                                bool definition);
 
 /* Similar, but if the returned value is a COMPONENT_REF, return the
    FIELD_DECL.  */
@@ -50,6 +48,10 @@ extern tree gnat_to_gnu_field_decl (Entity_Id gnat_entity);
 /* Similar, but GNAT_ENTITY is assumed to refer to a GNAT type.  Return
    the GCC type corresponding to that entity.  */
 extern tree gnat_to_gnu_type (Entity_Id gnat_entity);
+
+/* Update the GCC tree previously built for the profiles involving GNU_TYPE,
+   a dummy type which appears in profiles.  */
+extern void update_profiles_with (tree gnu_type);
 
 /* Start a new statement group chained to the previous group.  */
 extern void start_stmt_group (void);
@@ -111,11 +113,6 @@ extern void elaborate_entity (Entity_Id gnat_entity);
 /* Get the unpadded version of a GNAT type.  */
 extern tree get_unpadded_type (Entity_Id gnat_entity);
 
-/* Return the DECL associated with the public subprogram GNAT_ENTITY but whose
-   type has been changed to that of the parameterless procedure, except if an
-   alias is already present, in which case it is returned instead.  */
-extern tree get_minimal_subprog_decl (Entity_Id gnat_entity);
-
 /* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
    a C++ imported method or equivalent.  */
 extern bool is_cplusplus_method (Entity_Id gnat_entity);
@@ -132,9 +129,11 @@ extern tree make_aligning_type (tree type, unsigned int align, tree size,
    as the field type of a packed record if IN_RECORD is true, or as the
    component type of a packed array if IN_RECORD is false.  See if we can
    rewrite it either as a type that has a non-BLKmode, which we can pack
-   tighter in the packed record case, or as a smaller type.  If so, return
-   the new type.  If not, return the original type.  */
-extern tree make_packable_type (tree type, bool in_record);
+   tighter in the packed record case, or as a smaller type with at most
+   MAX_ALIGN alignment if the value is non-zero.  If so, return the new
+   type; if not, return the original type.  */
+extern tree make_packable_type (tree type, bool in_record,
+				unsigned int max_align = 0);
 
 /* Given a type TYPE, return a new type whose size is appropriate for SIZE.
    If TYPE is the best type, return it.  Otherwise, make a new type.  We
@@ -148,7 +147,8 @@ extern tree make_type_from_size (tree type, tree size_tree, bool for_biased);
    IS_COMPONENT_TYPE is true if this is being done for the component type of
    an array.  IS_USER_TYPE is true if the original type needs to be completed.
    DEFINITION is true if this type is being defined.  SET_RM_SIZE is true if
-   the RM size of the resulting type is to be set to SIZE too.  */
+   the RM size of the resulting type is to be set to SIZE too; in this case,
+   the padded type is canonicalized before being returned.  */
 extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    Entity_Id gnat_entity, bool is_component_type,
 			    bool is_user_type, bool definition,
@@ -394,12 +394,14 @@ enum standard_datatypes
   /* Value BITS_PER_UNIT in signed bitsizetype.  */
   ADT_sbitsize_unit_node,
 
-  /* Function declaration nodes for run-time functions for allocating memory.
-     Ada allocators cause calls to this function to be generated.  */
+  /* Function declaration node for run-time allocation function.  */
   ADT_malloc_decl,
 
-  /* Likewise for freeing memory.  */
+  /* Function declaration node for run-time freeing function.  */
   ADT_free_decl,
+
+  /* Function declaration node for run-time reallocation function.  */
+  ADT_realloc_decl,
 
   /* Function decl node for 64-bit multiplication with overflow checking.  */
   ADT_mulv64_decl,
@@ -471,6 +473,7 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define sbitsize_unit_node gnat_std_decls[(int) ADT_sbitsize_unit_node]
 #define malloc_decl gnat_std_decls[(int) ADT_malloc_decl]
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
+#define realloc_decl gnat_std_decls[(int) ADT_realloc_decl]
 #define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
 #define exception_data_name_id gnat_std_decls[(int) ADT_exception_data_name_id]
@@ -620,32 +623,17 @@ extern void finish_fat_pointer_type (tree record_type, tree field_list);
    laid out already; only set the sizes and alignment.  If REP_LEVEL is two,
    this record is derived from a parent record and thus inherits its layout;
    only make a pass on the fields to finalize them.  DEBUG_INFO_P is true if
-   we need to write debug information about this type.  */
+   additional debug info needs to be output for this type.  */
 extern void finish_record_type (tree record_type, tree field_list,
 				int rep_level, bool debug_info_p);
 
-/* Wrap up compilation of RECORD_TYPE, i.e. output all the debug information
-   associated with it.  It need not be invoked directly in most cases since
-   finish_record_type takes care of doing so, but this can be necessary if
-   a parallel type is to be attached to the record type.  */
+/* Wrap up compilation of RECORD_TYPE, i.e. output additional debug info
+   associated with it.  It need not be invoked directly in most cases as
+   finish_record_type takes care of doing so.  */
 extern void rest_of_record_type_compilation (tree record_type);
 
 /* Append PARALLEL_TYPE on the chain of parallel types for TYPE.  */
 extern void add_parallel_type (tree type, tree parallel_type);
-
-/* Return a FUNCTION_TYPE node.  RETURN_TYPE is the type returned by the
-   subprogram.  If it is VOID_TYPE, then we are dealing with a procedure,
-   otherwise we are dealing with a function.  PARAM_DECL_LIST is a list of
-   PARM_DECL nodes that are the subprogram parameters.  CICO_LIST is the
-   copy-in/copy-out list to be stored into the TYPE_CICO_LIST field.
-   RETURN_UNCONSTRAINED_P is true if the function returns an unconstrained
-   object.  RETURN_BY_DIRECT_REF_P is true if the function returns by direct
-   reference.  RETURN_BY_INVISI_REF_P is true if the function returns by
-   invisible reference.  */
-extern tree create_subprog_type (tree return_type, tree param_decl_list,
-				 tree cico_list, bool return_unconstrained_p,
-				 bool return_by_direct_ref_p,
-				 bool return_by_invisi_ref_p);
 
 /* Return a copy of TYPE, but safe to modify in any way.  */
 extern tree copy_type (tree type);
@@ -719,10 +707,8 @@ extern tree create_field_decl (tree name, tree type, tree record_type,
 			       tree size, tree pos, int packed,
 			       int addressable);
 
-/* Return a PARM_DECL node.  NAME is the name of the parameter and TYPE is
-   its type.  READONLY is true if the parameter is readonly (either an In
-   parameter or an address of a pass-by-ref parameter).  */
-extern tree create_param_decl (tree name, tree type, bool readonly);
+/* Return a PARM_DECL node with NAME and TYPE.  */
+extern tree create_param_decl (tree name, tree type);
 
 /* Return a LABEL_DECL with NAME.  GNAT_NODE is used for the position of
    the decl.  */
@@ -735,8 +721,10 @@ extern tree create_label_decl (tree name, Node_Id gnat_node);
 
    INLINE_STATUS describes the inline flags to be set on the FUNCTION_DECL.
 
-   CONST_FLAG, PUBLIC_FLAG, EXTERN_FLAG, VOLATILE_FLAG are used to set the
-   appropriate flags on the FUNCTION_DECL.
+   PUBLIC_FLAG is true if this is for a reference to a public entity or for a
+   definition to be made visible outside of the current compilation unit.
+
+   EXTERN_FLAG is true when processing an external subprogram declaration.
 
    ARTIFICIAL_P is true if the subprogram was generated by the compiler.
 
@@ -748,10 +736,13 @@ extern tree create_label_decl (tree name, Node_Id gnat_node);
 extern tree create_subprog_decl (tree name, tree asm_name, tree type,
 				 tree param_decl_list,
 				 enum inline_status_t inline_status,
-				 bool const_flag, bool public_flag,
-				 bool extern_flag, bool volatile_flag,
+				 bool public_flag, bool extern_flag,
 				 bool artificial_p, bool debug_info_p,
 				 struct attrib *attr_list, Node_Id gnat_node);
+
+/* Given a subprogram declaration DECL, its assembler name and its type,
+   finish constructing the subprogram declaration from ASM_NAME and TYPE.  */
+extern void finish_subprog_decl (tree decl, tree asm_name, tree type);
 
 /* Process the attributes in ATTR_LIST for NODE, which is either a DECL or
    a TYPE.  If IN_PLACE is true, the tree pointed to by NODE should not be

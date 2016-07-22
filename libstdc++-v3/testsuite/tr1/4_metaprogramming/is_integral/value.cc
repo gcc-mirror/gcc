@@ -28,9 +28,9 @@ void test01()
   bool test __attribute__((unused)) = true;
   using std::tr1::is_integral;
   using namespace __gnu_test;
-  
+
   VERIFY( (test_category<is_integral, void>(false)) );
-  
+
   VERIFY( (test_category<is_integral, char>(true)) );
   VERIFY( (test_category<is_integral, signed char>(true)) );
   VERIFY( (test_category<is_integral, unsigned char>(true)) );

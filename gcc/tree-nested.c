@@ -192,7 +192,7 @@ insert_field_into_struct (tree type, tree field)
 
   /* Set correct alignment for frame struct type.  */
   if (TYPE_ALIGN (type) < DECL_ALIGN (field))
-    TYPE_ALIGN (type) = DECL_ALIGN (field);
+    SET_TYPE_ALIGN (type, DECL_ALIGN (field));
 }
 
 /* Build or return the RECORD_TYPE that describes the frame state that is
@@ -275,14 +275,14 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
       if (use_pointer_in_frame (decl))
 	{
 	  TREE_TYPE (field) = build_pointer_type (TREE_TYPE (decl));
-	  DECL_ALIGN (field) = TYPE_ALIGN (TREE_TYPE (field));
+	  SET_DECL_ALIGN (field, TYPE_ALIGN (TREE_TYPE (field)));
 	  DECL_NONADDRESSABLE_P (field) = 1;
 	}
       else
 	{
           TREE_TYPE (field) = TREE_TYPE (decl);
           DECL_SOURCE_LOCATION (field) = DECL_SOURCE_LOCATION (decl);
-          DECL_ALIGN (field) = DECL_ALIGN (decl);
+          SET_DECL_ALIGN (field, DECL_ALIGN (decl));
           DECL_USER_ALIGN (field) = DECL_USER_ALIGN (decl);
           TREE_ADDRESSABLE (field) = TREE_ADDRESSABLE (decl);
           DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (decl);
@@ -361,7 +361,7 @@ get_chain_field (struct nesting_info *info)
       field = make_node (FIELD_DECL);
       DECL_NAME (field) = get_identifier ("__chain");
       TREE_TYPE (field) = type;
-      DECL_ALIGN (field) = TYPE_ALIGN (type);
+      SET_DECL_ALIGN (field, TYPE_ALIGN (type));
       DECL_NONADDRESSABLE_P (field) = 1;
 
       insert_field_into_struct (get_frame_type (info), field);
@@ -474,7 +474,7 @@ get_trampoline_type (struct nesting_info *info)
   t = build_array_type (char_type_node, t);
   t = build_decl (DECL_SOURCE_LOCATION (info->context),
 		  FIELD_DECL, get_identifier ("__data"), t);
-  DECL_ALIGN (t) = align;
+  SET_DECL_ALIGN (t, align);
   DECL_USER_ALIGN (t) = 1;
 
   trampoline_type = make_node (RECORD_TYPE);
@@ -548,7 +548,7 @@ get_nl_goto_field (struct nesting_info *info)
       field = make_node (FIELD_DECL);
       DECL_NAME (field) = get_identifier ("__nl_goto_buf");
       TREE_TYPE (field) = type;
-      DECL_ALIGN (field) = TYPE_ALIGN (type);
+      SET_DECL_ALIGN (field, TYPE_ALIGN (type));
       TREE_ADDRESSABLE (field) = 1;
 
       insert_field_into_struct (get_frame_type (info), field);
@@ -1114,6 +1114,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
 	  /* Several OpenACC clauses have optional arguments.  Check if they
 	     are present.  */
 	  if (OMP_CLAUSE_OPERAND (clause, 0))
@@ -1197,8 +1199,33 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_INDEPENDENT:
+	case OMP_CLAUSE_AUTO:
 	  break;
 
+	  /* OpenACC tile clauses are discarded during gimplification.  */
+	case OMP_CLAUSE_TILE:
+	  /* The following clause belongs to the OpenACC cache directive, which
+	     is discarded during gimplification.  */
+	case OMP_CLAUSE__CACHE_:
+	  /* The following clauses are only allowed in the OpenMP declare simd
+	     directive, so not seen here.  */
+	case OMP_CLAUSE_UNIFORM:
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	  /* The following clauses are only allowed on OpenMP cancel and
+	     cancellation point directives, which at this point have already
+	     been lowered into a function call.  */
+	case OMP_CLAUSE_FOR:
+	case OMP_CLAUSE_PARALLEL:
+	case OMP_CLAUSE_SECTIONS:
+	case OMP_CLAUSE_TASKGROUP:
+	  /* The following clauses are only added during OMP lowering; nested
+	     function decomposition happens before that.  */
+	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__SIMDUID_:
+	case OMP_CLAUSE__GRIDDIM_:
+	  /* Anything else.  */
 	default:
 	  gcc_unreachable ();
 	}
@@ -1332,7 +1359,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	{
 	  wi->val_only = true;
 	  wi->is_lhs = false;
-	  *handled_ops_p = true;
+	  *handled_ops_p = false;
 	  return NULL_TREE;
 	}
       break;
@@ -1790,6 +1817,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
+	case OMP_CLAUSE_ASYNC:
+	case OMP_CLAUSE_WAIT:
 	  /* Several OpenACC clauses have optional arguments.  Check if they
 	     are present.  */
 	  if (OMP_CLAUSE_OPERAND (clause, 0))
@@ -1878,8 +1907,33 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_INDEPENDENT:
+	case OMP_CLAUSE_AUTO:
 	  break;
 
+	  /* OpenACC tile clauses are discarded during gimplification.  */
+	case OMP_CLAUSE_TILE:
+	  /* The following clause belongs to the OpenACC cache directive, which
+	     is discarded during gimplification.  */
+	case OMP_CLAUSE__CACHE_:
+	  /* The following clauses are only allowed in the OpenMP declare simd
+	     directive, so not seen here.  */
+	case OMP_CLAUSE_UNIFORM:
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	  /* The following clauses are only allowed on OpenMP cancel and
+	     cancellation point directives, which at this point have already
+	     been lowered into a function call.  */
+	case OMP_CLAUSE_FOR:
+	case OMP_CLAUSE_PARALLEL:
+	case OMP_CLAUSE_SECTIONS:
+	case OMP_CLAUSE_TASKGROUP:
+	  /* The following clauses are only added during OMP lowering; nested
+	     function decomposition happens before that.  */
+	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__SIMDUID_:
+	case OMP_CLAUSE__GRIDDIM_:
+	  /* Anything else.  */
 	default:
 	  gcc_unreachable ();
 	}

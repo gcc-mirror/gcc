@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -583,12 +583,14 @@ package body Exp_Attr is
          end if;
       end Make_VS_If;
 
-      --  Local Declarations
+      --  Local variables
 
       Def    : constant Node_Id := Parent (R_Type);
       Comps  : constant Node_Id := Component_List (Type_Definition (Def));
       Stmts  : constant List_Id := New_List;
       Pspecs : constant List_Id := New_List;
+
+   --  Start of processing for Build_Record_VS_Func
 
    begin
       Append_To (Pspecs,
@@ -3005,11 +3007,47 @@ package body Exp_Attr is
       -- Enum_Rep --
       --------------
 
-      when Attribute_Enum_Rep => Enum_Rep :
-      begin
-         --  X'Enum_Rep (Y) expands to
+      when Attribute_Enum_Rep => Enum_Rep : declare
+         Expr : Node_Id;
 
-         --    target-type (Y)
+      begin
+         --  Get the expression, which is X for Enum_Type'Enum_Rep (X) or
+         --  X'Enum_Rep.
+
+         if Is_Non_Empty_List (Exprs) then
+            Expr := First (Exprs);
+         else
+            Expr := Pref;
+         end if;
+
+         --  If the expression is an enumeration literal, it is replaced by the
+         --  literal value.
+
+         if Nkind (Expr) in N_Has_Entity
+           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
+         then
+            Rewrite (N,
+              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Expr))));
+
+         --  If this is a renaming of a literal, recover the representation
+         --  of the original. If it renames an expression there is nothing to
+         --  fold.
+
+         elsif Nkind (Expr) in N_Has_Entity
+           and then Ekind (Entity (Expr)) = E_Constant
+           and then Present (Renamed_Object (Entity (Expr)))
+           and then Is_Entity_Name (Renamed_Object (Entity (Expr)))
+           and then Ekind (Entity (Renamed_Object (Entity (Expr)))) =
+                      E_Enumeration_Literal
+         then
+            Rewrite (N,
+              Make_Integer_Literal (Loc,
+                Enumeration_Rep (Entity (Renamed_Object (Entity (Expr))))));
+
+         --  If not constant-folded above, Enum_Type'Enum_Rep (X) or
+         --  X'Enum_Rep expands to
+
+         --    target-type (X)
 
          --  This is simply a direct conversion from the enumeration type to
          --  the target integer type, which is treated by the back end as a
@@ -3018,37 +3056,8 @@ package body Exp_Attr is
          --  make sure that the analyzer does not complain about what otherwise
          --  might be an illegal conversion.
 
-         if Is_Non_Empty_List (Exprs) then
-            Rewrite (N,
-              OK_Convert_To (Typ, Relocate_Node (First (Exprs))));
-
-         --  X'Enum_Rep where X is an enumeration literal is replaced by
-         --  the literal value.
-
-         elsif Ekind (Entity (Pref)) = E_Enumeration_Literal then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, Enumeration_Rep (Entity (Pref))));
-
-         --  If this is a renaming of a literal, recover the representation
-         --  of the original. If it renames an expression there is nothing
-         --  to fold.
-
-         elsif Ekind (Entity (Pref)) = E_Constant
-           and then Present (Renamed_Object (Entity (Pref)))
-           and then Is_Entity_Name (Renamed_Object (Entity (Pref)))
-           and then Ekind (Entity (Renamed_Object (Entity (Pref)))) =
-                      E_Enumeration_Literal
-         then
-            Rewrite (N,
-              Make_Integer_Literal (Loc,
-                Enumeration_Rep (Entity (Renamed_Object (Entity (Pref))))));
-
-         --  X'Enum_Rep where X is an object does a direct unchecked conversion
-         --  of the object value, as described for the type case above.
-
          else
-            Rewrite (N,
-              OK_Convert_To (Typ, Relocate_Node (Pref)));
+            Rewrite (N, OK_Convert_To (Typ, Relocate_Node (Expr)));
          end if;
 
          Set_Etype (N, Typ);
@@ -4355,10 +4364,24 @@ package body Exp_Attr is
          Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
+         Ins_Nod : Node_Id;
          Subp    : Node_Id;
          Temp    : Entity_Id;
 
       begin
+         --  Generating C code we don't need to expand this attribute when
+         --  we are analyzing the internally built nested postconditions
+         --  procedure since it will be expanded inline (and later it will
+         --  be removed by Expand_N_Subprogram_Body). It this expansion is
+         --  performed in such case then the compiler generates unreferenced
+         --  extra temporaries.
+
+         if Modify_Tree_For_C
+           and then Chars (Current_Scope) = Name_uPostconditions
+         then
+            return;
+         end if;
+
          --  Climb the parent chain looking for subprogram _Postconditions
 
          Subp := N;
@@ -4379,9 +4402,12 @@ package body Exp_Attr is
          end loop;
 
          --  'Old can only appear in a postcondition, the generated body of
-         --  _Postconditions must be in the tree.
+         --  _Postconditions must be in the tree (or inlined if we are
+         --  generating C code).
 
-         pragma Assert (Present (Subp));
+         pragma Assert
+           (Present (Subp)
+             or else (Modify_Tree_For_C and then In_Inlined_Body));
 
          Temp := Make_Temporary (Loc, 'T', Pref);
 
@@ -4395,7 +4421,35 @@ package body Exp_Attr is
          --  resides as this ensures that the object will be analyzed in the
          --  proper context.
 
-         Push_Scope (Scope (Defining_Entity (Subp)));
+         if Present (Subp) then
+            Push_Scope (Scope (Defining_Entity (Subp)));
+
+         --  No need to push the scope when generating C code since the
+         --  _Postcondition procedure has been inlined.
+
+         else pragma Assert (Modify_Tree_For_C);
+            pragma Assert (In_Inlined_Body);
+            null;
+         end if;
+
+         --  Locate the insertion place of the internal temporary that saves
+         --  the 'Old value.
+
+         if Present (Subp) then
+            Ins_Nod := Subp;
+
+         --  Generating C, the postcondition procedure has been inlined and the
+         --  temporary is added before the first declaration of the enclosing
+         --  subprogram.
+
+         else pragma Assert (Modify_Tree_For_C);
+            Ins_Nod := N;
+            while Nkind (Ins_Nod) /= N_Subprogram_Body loop
+               Ins_Nod := Parent (Ins_Nod);
+            end loop;
+
+            Ins_Nod := First (Declarations (Ins_Nod));
+         end if;
 
          --  Preserve the tag of the prefix by offering a specific view of the
          --  class-wide version of the prefix.
@@ -4408,7 +4462,7 @@ package body Exp_Attr is
             CW_Temp := Make_Temporary (Loc, 'T');
             CW_Typ  := Class_Wide_Type (Typ);
 
-            Insert_Before_And_Analyze (Subp,
+            Insert_Before_And_Analyze (Ins_Nod,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => CW_Temp,
                 Constant_Present    => True,
@@ -4419,7 +4473,7 @@ package body Exp_Attr is
             --  Generate:
             --    Temp : Typ renames Typ (CW_Temp);
 
-            Insert_Before_And_Analyze (Subp,
+            Insert_Before_And_Analyze (Ins_Nod,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
@@ -4432,7 +4486,7 @@ package body Exp_Attr is
             --  Generate:
             --    Temp : constant Typ := Pref;
 
-            Insert_Before_And_Analyze (Subp,
+            Insert_Before_And_Analyze (Ins_Nod,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Constant_Present    => True,
@@ -4440,7 +4494,9 @@ package body Exp_Attr is
                 Expression          => Relocate_Node (Pref)));
          end if;
 
-         Pop_Scope;
+         if Present (Subp) then
+            Pop_Scope;
+         end if;
 
          --  Ensure that the prefix of attribute 'Old is valid. The check must
          --  be inserted after the expansion of the attribute has taken place
@@ -6352,96 +6408,93 @@ package body Exp_Attr is
             --  Start of processing for Float_Valid
 
             begin
-               case Float_Rep (Btyp) is
+               --  The C and AAMP back-ends handle Valid for fpt types
 
-                  --  The AAMP back end handles Valid for floating-point types
+               if Generate_C_Code or else Float_Rep (Btyp) = AAMP then
+                  Analyze_And_Resolve (Pref, Ptyp);
+                  Set_Etype (N, Standard_Boolean);
+                  Set_Analyzed (N);
 
-                  when AAMP =>
-                     Analyze_And_Resolve (Pref, Ptyp);
-                     Set_Etype (N, Standard_Boolean);
-                     Set_Analyzed (N);
+               else
+                  Find_Fat_Info (Ptyp, Ftp, Pkg);
 
-                  when IEEE_Binary =>
-                     Find_Fat_Info (Ptyp, Ftp, Pkg);
+                  --  If the prefix is a reverse SSO component, or is possibly
+                  --  unaligned, first create a temporary copy that is in
+                  --  native SSO, and properly aligned. Make it Volatile to
+                  --  prevent folding in the back-end. Note that we use an
+                  --  intermediate constrained string type to initialize the
+                  --  temporary, as the value at hand might be invalid, and in
+                  --  that case it cannot be copied using a floating point
+                  --  register.
 
-                     --  If the prefix is a reverse SSO component, or is
-                     --  possibly unaligned, first create a temporary copy
-                     --  that is in native SSO, and properly aligned. Make it
-                     --  Volatile to prevent folding in the back-end. Note
-                     --  that we use an intermediate constrained string type
-                     --  to initialize the temporary, as the value at hand
-                     --  might be invalid, and in that case it cannot be copied
-                     --  using a floating point register.
+                  if In_Reverse_Storage_Order_Object (Pref)
+                    or else Is_Possibly_Unaligned_Object (Pref)
+                  then
+                     declare
+                        Temp : constant Entity_Id :=
+                                 Make_Temporary (Loc, 'F');
 
-                     if In_Reverse_Storage_Order_Object (Pref)
-                          or else
-                        Is_Possibly_Unaligned_Object (Pref)
-                     then
-                        declare
-                           Temp : constant Entity_Id :=
-                                    Make_Temporary (Loc, 'F');
+                        Fat_S : constant Entity_Id :=
+                                  Get_Fat_Entity (Name_S);
+                        --  Constrained string subtype of appropriate size
 
-                           Fat_S : constant Entity_Id :=
-                                     Get_Fat_Entity (Name_S);
-                           --  Constrained string subtype of appropriate size
+                        Fat_P : constant Entity_Id :=
+                                  Get_Fat_Entity (Name_P);
+                        --  Access to Fat_S
 
-                           Fat_P : constant Entity_Id :=
-                                     Get_Fat_Entity (Name_P);
-                           --  Access to Fat_S
+                        Decl : constant Node_Id :=
+                                 Make_Object_Declaration (Loc,
+                                   Defining_Identifier => Temp,
+                                   Aliased_Present     => True,
+                                   Object_Definition   =>
+                                     New_Occurrence_Of (Ptyp, Loc));
 
-                           Decl : constant Node_Id :=
-                                    Make_Object_Declaration (Loc,
-                                      Defining_Identifier => Temp,
-                                      Aliased_Present     => True,
-                                      Object_Definition   =>
-                                        New_Occurrence_Of (Ptyp, Loc));
+                     begin
+                        Set_Aspect_Specifications (Decl, New_List (
+                          Make_Aspect_Specification (Loc,
+                            Identifier =>
+                              Make_Identifier (Loc, Name_Volatile))));
 
-                        begin
-                           Set_Aspect_Specifications (Decl, New_List (
-                             Make_Aspect_Specification (Loc,
-                               Identifier =>
-                                 Make_Identifier (Loc, Name_Volatile))));
+                        Insert_Actions (N,
+                          New_List (
+                            Decl,
 
-                           Insert_Actions (N,
-                             New_List (
-                               Decl,
+                            Make_Assignment_Statement (Loc,
+                              Name =>
+                                Make_Explicit_Dereference (Loc,
+                                  Prefix =>
+                                    Unchecked_Convert_To (Fat_P,
+                                      Make_Attribute_Reference (Loc,
+                                        Prefix =>
+                                          New_Occurrence_Of (Temp, Loc),
+                                        Attribute_Name =>
+                                          Name_Unrestricted_Access))),
+                              Expression =>
+                                Unchecked_Convert_To (Fat_S,
+                                  Relocate_Node (Pref)))),
 
-                               Make_Assignment_Statement (Loc,
-                                 Name =>
-                                   Make_Explicit_Dereference (Loc,
-                                     Prefix =>
-                                       Unchecked_Convert_To (Fat_P,
-                                         Make_Attribute_Reference (Loc,
-                                           Prefix =>
-                                             New_Occurrence_Of (Temp, Loc),
-                                           Attribute_Name =>
-                                             Name_Unrestricted_Access))),
-                                 Expression =>
-                                   Unchecked_Convert_To (Fat_S,
-                                     Relocate_Node (Pref)))),
+                          Suppress => All_Checks);
 
-                             Suppress => All_Checks);
+                        Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
+                     end;
+                  end if;
 
-                           Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
-                        end;
-                     end if;
+                  --  We now have an object of the proper endianness and
+                  --  alignment, and can construct a Valid attribute.
 
-                     --  We now have an object of the proper endianness and
-                     --  alignment, and can construct a Valid attribute.
+                  --  We make sure the prefix of this valid attribute is
+                  --  marked as not coming from source, to avoid losing
+                  --  warnings from 'Valid looking like a possible update.
 
-                     --  We make sure the prefix of this valid attribute is
-                     --  marked as not coming from source, to avoid losing
-                     --  warnings from 'Valid looking like a possible update.
+                  Set_Comes_From_Source (Pref, False);
 
-                     Set_Comes_From_Source (Pref, False);
-
-                     Expand_Fpt_Attribute
-                       (N, Pkg, Name_Valid,
-                        New_List (
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Unchecked_Convert_To (Ftp, Pref),
-                            Attribute_Name => Name_Unrestricted_Access)));
-               end case;
+                  Expand_Fpt_Attribute
+                    (N, Pkg, Name_Valid,
+                     New_List (
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => Unchecked_Convert_To (Ftp, Pref),
+                         Attribute_Name => Name_Unrestricted_Access)));
+               end if;
 
                --  One more task, we still need a range check. Required
                --  only if we have a constraint, since the Valid routine
@@ -7505,9 +7558,6 @@ package body Exp_Attr is
       --  that appear in GNAT's library, but will generate calls via rtsfind
       --  to library routines for user code.
 
-      --  This is disabled for AAMP, to avoid creating dependences on files not
-      --  supported in the AAMP library (such as s-fileio.adb).
-
       --  Note: In the case of using a configurable run time, it is very likely
       --  that stream routines for string types are not present (they require
       --  file system support). In this case, the specific stream routines for
@@ -7515,10 +7565,7 @@ package body Exp_Attr is
       --  instead. That is why we include the test Is_Available when dealing
       --  with these cases.
 
-      if not AAMP_On_Target
-        and then
-          not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-      then
+      if not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit)) then
          --  Storage_Array as defined in package System.Storage_Elements
 
          if Is_RTE (Base_Typ, RE_Storage_Array) then
@@ -7991,16 +8038,18 @@ package body Exp_Attr is
 
       function Is_GCC_Target return Boolean is
       begin
-         return not CodePeer_Mode and then not AAMP_On_Target;
+         return not CodePeer_Mode
+           and then not AAMP_On_Target
+           and then not Generate_C_Code;
       end Is_GCC_Target;
 
-   --  Start of processing for Exp_Attr
+   --  Start of processing for Is_Inline_Floating_Point_Attribute
 
    begin
-      --  Machine and Model can be expanded by the GCC backend only
+      --  Machine and Model can be expanded by the GCC and AAMP back ends only
 
       if Id = Attribute_Machine or else Id = Attribute_Model then
-         return Is_GCC_Target;
+         return Is_GCC_Target or else AAMP_On_Target;
 
       --  Remaining cases handled by all back ends are Rounding and Truncation
       --  when appearing as the operand of a conversion to some integer type.

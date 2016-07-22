@@ -260,6 +260,16 @@ typedef unsigned int linenum_type;
    worked example in libcpp/location-example.txt.  */
 typedef unsigned int source_location;
 
+/* Do not pack ranges if locations get higher than this.
+   If you change this, update:
+     gcc.dg/plugin/location-overflow-test-*.c.  */
+const source_location LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES = 0x50000000;
+
+/* Do not track column numbers if locations get higher than this.
+   If you change this, update:
+     gcc.dg/plugin/location-overflow-test-*.c.  */
+const source_location LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
+
 /* A range of source locations.
 
    Ranges are closed:
@@ -1418,6 +1428,8 @@ public:
 
   virtual enum kind get_kind () const = 0;
   virtual bool affects_line_p (const char *file, int line) = 0;
+  virtual source_location get_start_loc () const = 0;
+  virtual bool maybe_get_end_loc (source_location *out) const = 0;
 };
 
 class fixit_insert : public fixit_hint
@@ -1428,6 +1440,8 @@ class fixit_insert : public fixit_hint
   ~fixit_insert ();
   enum kind get_kind () const { return INSERT; }
   bool affects_line_p (const char *file, int line);
+  source_location get_start_loc () const { return m_where; }
+  bool maybe_get_end_loc (source_location *) const { return false; }
 
   source_location get_location () const { return m_where; }
   const char *get_string () const { return m_bytes; }
@@ -1447,6 +1461,12 @@ class fixit_remove : public fixit_hint
 
   enum kind get_kind () const { return REMOVE; }
   bool affects_line_p (const char *file, int line);
+  source_location get_start_loc () const { return m_src_range.m_start; }
+  bool maybe_get_end_loc (source_location *out) const
+  {
+    *out = m_src_range.m_finish;
+    return true;
+  }
 
   source_range get_range () const { return m_src_range; }
 
@@ -1463,6 +1483,12 @@ class fixit_replace : public fixit_hint
 
   enum kind get_kind () const { return REPLACE; }
   bool affects_line_p (const char *file, int line);
+  source_location get_start_loc () const { return m_src_range.m_start; }
+  bool maybe_get_end_loc (source_location *out) const
+  {
+    *out = m_src_range.m_finish;
+    return true;
+  }
 
   source_range get_range () const { return m_src_range; }
   const char *get_string () const { return m_bytes; }

@@ -228,6 +228,7 @@ package System.OS_Interface is
    ---------
 
    function lwp_self return System.Address;
+   pragma Import (C, lwp_self, "__gnat_lwp_self");
    --  Return the mach thread bound to the current thread.  The value is not
    --  used by the run-time library but made available to debuggers.
 

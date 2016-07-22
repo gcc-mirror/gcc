@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-devirtualize --param=profile-func-internal-id=0 -fdump-ipa-profile -Wno-attributes -Wno-coverage-mismatch" } */
+/* { dg-options "-O2 -fno-devirtualize --param=profile-func-internal-id=0 -fdump-ipa-profile -fdump-ipa-afdo -Wno-attributes -Wno-coverage-mismatch" } */
 #include "reorder_class1.h"
 #include "reorder_class2.h"
 
@@ -28,7 +28,7 @@ static __attribute__((always_inline))
 void test2 (B *tc)
 {
   int i;
-  for (i = 0; i < 1000; i++)
+  for (i = 0; i < 1000000; i++)
      g += tc->foo();
 }
 
@@ -51,4 +51,5 @@ int main()
 
 }
 
-/* { dg-final-use { scan-ipa-dump-times "Indirect call -> direct call" 2 "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Indirect call -> direct call" 2 "profile" } } */
+/* { dg-final-use-autofdo { scan-ipa-dump-times "Indirect call -> direct call" 2 "afdo" } } */

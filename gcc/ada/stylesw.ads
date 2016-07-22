@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,12 +275,12 @@ package Stylesw is
    --  not allowed to enclose entire expressions in tests in parentheses
    --  (C style), e.g. if (x = y) then ... is not allowed.
 
-   Style_Max_Line_Length : Int := 0;
+   Style_Max_Line_Length : Nat := 0;
    --  Value used to check maximum line length. Gets reset as a result of
    --  use of -gnatym or -gnatyMnnn switches. This value is only read if
    --  Style_Check_Max_Line_Length is True.
 
-   Style_Max_Nesting_Level : Int := 0;
+   Style_Max_Nesting_Level : Nat := 0;
    --  Value used to check maximum nesting level. Gets reset as a result
    --  of use of the -gnatyLnnn switch. This value is only read if
    --  Style_Check_Max_Nesting_Level is True.

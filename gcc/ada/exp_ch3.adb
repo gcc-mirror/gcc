@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
-with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
@@ -44,7 +43,6 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
-with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -59,7 +57,6 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -91,22 +88,6 @@ package body Exp_Ch3 is
    --  Build initialization procedure for given array type. Nod is a node
    --  used for attachment of any actions required in its construction.
    --  It also supplies the source location used for the procedure.
-
-   function Build_Array_Invariant_Proc
-     (A_Type : Entity_Id;
-      Nod    : Node_Id) return Node_Id;
-   --  If the component of type of array type has invariants, build procedure
-   --  that checks invariant on all components of the array. Ada 2012 specifies
-   --  that an invariant on some type T must be applied to in-out parameters
-   --  and return values that include a part of type T. If the array type has
-   --  an otherwise specified invariant, the component check procedure is
-   --  called from within the user-specified invariant. Otherwise this becomes
-   --  the invariant procedure for the array type.
-
-   function Build_Record_Invariant_Proc
-     (R_Type : Entity_Id;
-      Nod    : Node_Id) return Node_Id;
-   --  Ditto for record types.
 
    function Build_Discriminant_Formals
      (Rec_Id : Entity_Id;
@@ -200,14 +181,6 @@ package body Exp_Ch3 is
    --  Treat user-defined stream operations as renaming_as_body if the
    --  subprogram they rename is not frozen when the type is frozen.
 
-   procedure Insert_Component_Invariant_Checks
-     (N    : Node_Id;
-      Typ  : Entity_Id;
-      Proc : Node_Id);
-   --  If a composite type has invariants and also has components with defined
-   --  invariants. the component invariant procedure is inserted into the user-
-   --  defined invariant procedure and added to the checks to be performed.
-
    procedure Initialization_Warning (E : Entity_Id);
    --  If static elaboration of the package is requested, indicate
    --  when a type does meet the conditions for static initialization. If
@@ -225,6 +198,9 @@ package body Exp_Ch3 is
    --    _Task_Name : String
    --
    --  The caller must append additional entries for discriminants if required.
+
+   function Inline_Init_Proc (Typ : Entity_Id) return Boolean;
+   --  Returns true if the initialization procedure of Typ should be inlined
 
    function In_Runtime (E : Entity_Id) return Boolean;
    --  Check if E is defined in the RTL (in a child of Ada or System). Used
@@ -756,14 +732,10 @@ package body Exp_Ch3 is
             Set_Debug_Info_Off (Proc_Id);
          end if;
 
-         --  Set inlined unless tasks are around, in which case we do not
-         --  want to inline, because nested stuff may cause difficulties in
-         --  inter-unit inlining, and furthermore there is in any case no
-         --  point in inlining such complex init procs.
+         --  Set Inlined on Init_Proc if it is set on the Init_Proc of the
+         --  component type itself (see also Build_Record_Init_Proc).
 
-         if not Has_Task (Proc_Id) then
-            Set_Is_Inlined (Proc_Id);
-         end if;
+         Set_Is_Inlined (Proc_Id, Inline_Init_Proc (Comp_Type));
 
          --  Associate Init_Proc with type, and determine if the procedure
          --  is null (happens because of the Initialize_Scalars pragma case,
@@ -794,138 +766,6 @@ package body Exp_Ch3 is
          end if;
       end if;
    end Build_Array_Init_Proc;
-
-   --------------------------------
-   -- Build_Array_Invariant_Proc --
-   --------------------------------
-
-   function Build_Array_Invariant_Proc
-     (A_Type : Entity_Id;
-      Nod    : Node_Id) return Node_Id
-   is
-      Loc : constant Source_Ptr := Sloc (Nod);
-
-      Object_Name : constant Name_Id := New_Internal_Name ('I');
-      --  Name for argument of invariant procedure
-
-      Object_Entity : constant Node_Id :=
-                        Make_Defining_Identifier (Loc, Object_Name);
-      --  The procedure declaration entity for the argument
-
-      Body_Stmts : List_Id;
-      Index_List : List_Id;
-      Proc_Id    : Entity_Id;
-      Proc_Body  : Node_Id;
-
-      function Build_Component_Invariant_Call return Node_Id;
-      --  Create one statement to verify invariant on one array component,
-      --  designated by a full set of indexes.
-
-      function Check_One_Dimension (N : Int) return List_Id;
-      --  Create loop to check on one dimension of the array. The single
-      --  statement in the loop body checks the inner dimensions if any, or
-      --  else a single component. This procedure is called recursively, with
-      --  N being the dimension to be initialized. A call with N greater than
-      --  the number of dimensions generates the component initialization
-      --  and terminates the recursion.
-
-      ------------------------------------
-      -- Build_Component_Invariant_Call --
-      ------------------------------------
-
-      function Build_Component_Invariant_Call return Node_Id is
-         Comp : Node_Id;
-      begin
-         Comp :=
-           Make_Indexed_Component (Loc,
-             Prefix      => New_Occurrence_Of (Object_Entity, Loc),
-             Expressions => Index_List);
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of
-                 (Invariant_Procedure (Component_Type (A_Type)), Loc),
-             Parameter_Associations => New_List (Comp));
-      end Build_Component_Invariant_Call;
-
-      -------------------------
-      -- Check_One_Dimension --
-      -------------------------
-
-      function Check_One_Dimension (N : Int) return List_Id is
-         Index : Entity_Id;
-
-      begin
-         --  If all dimensions dealt with, we simply check invariant of the
-         --  component.
-
-         if N > Number_Dimensions (A_Type) then
-            return New_List (Build_Component_Invariant_Call);
-
-         --  Else generate one loop and recurse
-
-         else
-            Index :=
-              Make_Defining_Identifier (Loc, New_External_Name ('J', N));
-
-            Append (New_Occurrence_Of (Index, Loc), Index_List);
-
-            return New_List (
-              Make_Implicit_Loop_Statement (Nod,
-                Identifier       => Empty,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier         => Index,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix          =>
-                              New_Occurrence_Of (Object_Entity, Loc),
-                            Attribute_Name  => Name_Range,
-                            Expressions     => New_List (
-                              Make_Integer_Literal (Loc, N))))),
-                Statements       =>  Check_One_Dimension (N + 1)));
-         end if;
-      end Check_One_Dimension;
-
-   --  Start of processing for Build_Array_Invariant_Proc
-
-   begin
-      Index_List := New_List;
-
-      Proc_Id :=
-        Make_Defining_Identifier (Loc,
-           Chars => New_External_Name (Chars (A_Type), "CInvariant"));
-
-      Body_Stmts := Check_One_Dimension (1);
-
-      Proc_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       => Proc_Id,
-              Parameter_Specifications => New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier => Object_Entity,
-                  Parameter_Type      => New_Occurrence_Of (A_Type, Loc)))),
-
-          Declarations               => Empty_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Body_Stmts));
-
-      Set_Ekind          (Proc_Id, E_Procedure);
-      Set_Is_Public      (Proc_Id, Is_Public (A_Type));
-      Set_Is_Internal    (Proc_Id);
-      Set_Has_Completion (Proc_Id);
-
-      if not Debug_Generated_Code then
-         Set_Debug_Info_Off (Proc_Id);
-      end if;
-
-      return Proc_Body;
-   end Build_Array_Invariant_Proc;
 
    --------------------------------
    -- Build_Discr_Checking_Funcs --
@@ -1721,7 +1561,7 @@ package body Exp_Ch3 is
       Decls     : constant List_Id  := New_List;
       Discr_Map : constant Elist_Id := New_Elmt_List;
       Loc       : constant Source_Ptr := Sloc (Rec_Ent);
-      Counter   : Int := 0;
+      Counter   : Nat := 0;
       Proc_Id   : Entity_Id;
       Rec_Type  : Entity_Id;
       Set_Tag   : Entity_Id := Empty;
@@ -3592,25 +3432,16 @@ package body Exp_Ch3 is
          Build_Offset_To_Top_Functions;
          Build_CPP_Init_Procedure;
          Build_Init_Procedure;
-         Set_Is_Public (Proc_Id, Is_Public (Rec_Ent));
 
-         --  The initialization of protected records is not worth inlining.
-         --  In addition, when compiled for another unit for inlining purposes,
-         --  it may make reference to entities that have not been elaborated
-         --  yet. Similar considerations apply to task types.
-
-         if not Is_Concurrent_Type (Rec_Type)
-           and then not Has_Task (Rec_Type)
-         then
-            Set_Is_Inlined  (Proc_Id);
-         end if;
-
+         Set_Is_Public      (Proc_Id, Is_Public (Rec_Ent));
          Set_Is_Internal    (Proc_Id);
          Set_Has_Completion (Proc_Id);
 
          if not Debug_Generated_Code then
             Set_Debug_Info_Off (Proc_Id);
          end if;
+
+         Set_Is_Inlined (Proc_Id, Inline_Init_Proc (Rec_Type));
 
          --  Do not build an aggregate if Modify_Tree_For_C, this isn't
          --  needed and may generate early references to non frozen types
@@ -3681,235 +3512,6 @@ package body Exp_Ch3 is
       end if;
    end Build_Record_Init_Proc;
 
-   --------------------------------
-   -- Build_Record_Invariant_Proc --
-   --------------------------------
-
-   function Build_Record_Invariant_Proc
-     (R_Type : Entity_Id;
-      Nod    : Node_Id) return Node_Id
-   is
-      Loc : constant Source_Ptr := Sloc (Nod);
-
-      Object_Name : constant Name_Id := New_Internal_Name ('I');
-      --  Name for argument of invariant procedure
-
-      Object_Entity : constant Node_Id :=
-        Make_Defining_Identifier (Loc, Object_Name);
-      --  The procedure declaration entity for the argument
-
-      Invariant_Found : Boolean;
-      --  Set if any component needs an invariant check.
-
-      Proc_Id   : Entity_Id;
-      Proc_Body : Node_Id;
-      Stmts     : List_Id;
-      Type_Def  : Node_Id;
-
-      function Build_Invariant_Checks (Comp_List : Node_Id) return List_Id;
-      --  Recursive procedure that generates a list of checks for components
-      --  that need it, and recurses through variant parts when present.
-
-      function Build_Component_Invariant_Call (Comp : Entity_Id)
-      return Node_Id;
-      --  Build call to invariant procedure for a record component.
-
-      ------------------------------------
-      -- Build_Component_Invariant_Call --
-      ------------------------------------
-
-      function Build_Component_Invariant_Call (Comp : Entity_Id)
-      return Node_Id
-      is
-         Sel_Comp : Node_Id;
-         Typ      : Entity_Id;
-         Call     : Node_Id;
-
-      begin
-         Invariant_Found := True;
-         Typ := Etype (Comp);
-
-         Sel_Comp :=
-           Make_Selected_Component (Loc,
-             Prefix      => New_Occurrence_Of (Object_Entity, Loc),
-             Selector_Name => New_Occurrence_Of (Comp, Loc));
-
-         if Is_Access_Type (Typ) then
-
-            --  If the access component designates a type with an invariant,
-            --  the check applies to the designated object. The access type
-            --  itself may have an invariant, in which case it applies to the
-            --  access value directly.
-
-            --  Note: we are assuming that invariants will not occur on both
-            --  the access type and the type that it designates. This is not
-            --  really justified but it is hard to imagine that this case will
-            --  ever cause trouble ???
-
-            if not (Has_Invariants (Typ)) then
-               Sel_Comp := Make_Explicit_Dereference (Loc, Sel_Comp);
-               Typ := Designated_Type (Typ);
-            end if;
-         end if;
-
-         --  The aspect is type-specific, so retrieve it from the base type
-
-         Call :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (Invariant_Procedure (Base_Type (Typ)), Loc),
-             Parameter_Associations => New_List (Sel_Comp));
-
-         if Is_Access_Type (Etype (Comp)) then
-            Call :=
-              Make_If_Statement (Loc,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd   => Make_Null (Loc),
-                    Right_Opnd  =>
-                       Make_Selected_Component (Loc,
-                         Prefix      => New_Occurrence_Of (Object_Entity, Loc),
-                         Selector_Name => New_Occurrence_Of (Comp, Loc))),
-                Then_Statements => New_List (Call));
-         end if;
-
-         return Call;
-      end Build_Component_Invariant_Call;
-
-      ----------------------------
-      -- Build_Invariant_Checks --
-      ----------------------------
-
-      function Build_Invariant_Checks (Comp_List : Node_Id) return List_Id is
-         Decl     : Node_Id;
-         Id       : Entity_Id;
-         Stmts    : List_Id;
-
-      begin
-         Stmts := New_List;
-         Decl := First_Non_Pragma (Component_Items (Comp_List));
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Component_Declaration then
-               Id := Defining_Identifier (Decl);
-
-               if Has_Invariants (Etype (Id))
-                 and then In_Open_Scopes (Scope (R_Type))
-               then
-                  if Has_Unchecked_Union (R_Type) then
-                     Error_Msg_NE
-                       ("invariants cannot be checked on components of "
-                         & "unchecked_union type&?", Decl, R_Type);
-                     return Empty_List;
-
-                  else
-                     Append_To (Stmts, Build_Component_Invariant_Call (Id));
-                  end if;
-
-               elsif Is_Access_Type (Etype (Id))
-                 and then not Is_Access_Constant (Etype (Id))
-                 and then Has_Invariants (Designated_Type (Etype (Id)))
-                 and then In_Open_Scopes (Scope (Designated_Type (Etype (Id))))
-               then
-                  Append_To (Stmts, Build_Component_Invariant_Call (Id));
-               end if;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         if Present (Variant_Part (Comp_List)) then
-            declare
-               Variant_Alts  : constant List_Id := New_List;
-               Var_Loc       : Source_Ptr;
-               Variant       : Node_Id;
-               Variant_Stmts : List_Id;
-
-            begin
-               Variant :=
-                 First_Non_Pragma (Variants (Variant_Part (Comp_List)));
-               while Present (Variant) loop
-                  Variant_Stmts :=
-                    Build_Invariant_Checks (Component_List (Variant));
-                  Var_Loc := Sloc (Variant);
-                  Append_To (Variant_Alts,
-                    Make_Case_Statement_Alternative (Var_Loc,
-                      Discrete_Choices =>
-                        New_Copy_List (Discrete_Choices (Variant)),
-                      Statements => Variant_Stmts));
-
-                  Next_Non_Pragma (Variant);
-               end loop;
-
-               --  The expression in the case statement is the reference to
-               --  the discriminant of the target object.
-
-               Append_To (Stmts,
-                 Make_Case_Statement (Var_Loc,
-                   Expression =>
-                     Make_Selected_Component (Var_Loc,
-                      Prefix => New_Occurrence_Of (Object_Entity, Var_Loc),
-                      Selector_Name => New_Occurrence_Of
-                        (Entity
-                          (Name (Variant_Part (Comp_List))), Var_Loc)),
-                      Alternatives => Variant_Alts));
-            end;
-         end if;
-
-         return Stmts;
-      end Build_Invariant_Checks;
-
-   --  Start of processing for Build_Record_Invariant_Proc
-
-   begin
-      Invariant_Found := False;
-      Type_Def := Type_Definition (Parent (R_Type));
-
-      if Nkind (Type_Def) = N_Record_Definition
-        and then not Null_Present (Type_Def)
-      then
-         Stmts := Build_Invariant_Checks (Component_List (Type_Def));
-      else
-         return Empty;
-      end if;
-
-      if not Invariant_Found then
-         return Empty;
-      end if;
-
-      --  The name of the invariant procedure reflects the fact that the
-      --  checks correspond to invariants on the component types. The
-      --  record type itself may have invariants that will create a separate
-      --  procedure whose name carries the Invariant suffix.
-
-      Proc_Id :=
-        Make_Defining_Identifier (Loc,
-           Chars => New_External_Name (Chars (R_Type), "CInvariant"));
-
-      Proc_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       => Proc_Id,
-              Parameter_Specifications => New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier => Object_Entity,
-                  Parameter_Type      => New_Occurrence_Of (R_Type, Loc)))),
-
-          Declarations               => Empty_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Stmts));
-
-      Set_Ekind          (Proc_Id, E_Procedure);
-      Set_Is_Public      (Proc_Id, Is_Public (R_Type));
-      Set_Is_Internal    (Proc_Id);
-      Set_Has_Completion (Proc_Id);
-
-      return Proc_Body;
-      --  Insert_After (Nod, Proc_Body);
-      --  Analyze (Proc_Body);
-   end Build_Record_Invariant_Proc;
-
    ----------------------------
    -- Build_Slice_Assignment --
    ----------------------------
@@ -3931,7 +3533,7 @@ package body Exp_Ch3 is
    --          return;
    --       end if;
 
-   --       if Rev  then
+   --       if Rev then
    --          Li1 := Left_Hi;
    --          Ri1 := Right_Hi;
    --       else
@@ -4610,8 +4212,6 @@ package body Exp_Ch3 is
 
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
-      Ins_Node : Node_Id;
-
    begin
       --  Ensure that all freezing activities are properly flagged as Ghost
 
@@ -4624,13 +4224,10 @@ package body Exp_Ch3 is
          --  been a private type at the point of definition. Same if component
          --  type is controlled or contains protected objects.
 
-         Set_Has_Task       (Base, Has_Task      (Comp_Typ));
-         Set_Has_Protected  (Base, Has_Protected (Comp_Typ));
+         Propagate_Concurrent_Flags (Base, Comp_Typ);
          Set_Has_Controlled_Component
-                            (Base, Has_Controlled_Component
-                                                 (Comp_Typ)
-                                     or else
-                                   Is_Controlled (Comp_Typ));
+           (Base, Has_Controlled_Component (Comp_Typ)
+                    or else Is_Controlled (Comp_Typ));
 
          if No (Init_Proc (Base)) then
 
@@ -4664,39 +4261,13 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         if Typ = Base then
-            if Has_Controlled_Component (Base) then
-               Build_Controlling_Procs (Base);
+         if Typ = Base and then Has_Controlled_Component (Base) then
+            Build_Controlling_Procs (Base);
 
-               if not Is_Limited_Type (Comp_Typ)
-                 and then Number_Dimensions (Typ) = 1
-               then
-                  Build_Slice_Assignment (Typ);
-               end if;
-            end if;
-
-            --  Create a finalization master to service the anonymous access
-            --  components of the array.
-
-            if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-              and then Needs_Finalization (Designated_Type (Comp_Typ))
+            if not Is_Limited_Type (Comp_Typ)
+              and then Number_Dimensions (Typ) = 1
             then
-               --  The finalization master is inserted before the declaration
-               --  of the array type. The only exception to this is when the
-               --  array type is an itype, in which case the master appears
-               --  before the related context.
-
-               if Is_Itype (Typ) then
-                  Ins_Node := Associated_Node_For_Itype (Typ);
-               else
-                  Ins_Node := Parent (Typ);
-               end if;
-
-               Build_Finalization_Master
-                 (Typ            => Comp_Typ,
-                  For_Anonymous  => True,
-                  Context_Scope  => Scope (Typ),
-                  Insertion_Node => Ins_Node);
+               Build_Slice_Assignment (Typ);
             end if;
          end if;
 
@@ -4712,21 +4283,6 @@ package body Exp_Ch3 is
         or else Is_Public (Typ)
       then
          Build_Array_Init_Proc (Base, N);
-      end if;
-
-      if Has_Invariants (Component_Type (Base))
-        and then Typ = Base
-        and then In_Open_Scopes (Scope (Component_Type (Base)))
-      then
-         --  Generate component invariant checking procedure. This is only
-         --  relevant if the array type is within the scope of the component
-         --  type. Otherwise an array object can only be built using the public
-         --  subprograms for the component type, and calls to those will have
-         --  invariant checks. The invariant procedure is only generated for
-         --  a base type, not a subtype.
-
-         Insert_Component_Invariant_Checks
-           (N, Base, Build_Array_Invariant_Proc (Base, N));
       end if;
 
       Ghost_Mode := Save_Ghost_Mode;
@@ -5044,19 +4600,22 @@ package body Exp_Ch3 is
          end loop;
       end if;
 
-      --  In normal mode, add the others clause with the test
+      --  In normal mode, add the others clause with the test.
+      --  If Predicates_Ignored is True, validity checks do not apply to
+      --  the subtype.
 
-      if not No_Exception_Handlers_Set then
+      if not No_Exception_Handlers_Set
+        and then not Predicates_Ignored (Typ)
+      then
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
-             Statements => New_List (
+             Statements       => New_List (
                Make_Raise_Constraint_Error (Loc,
                  Condition => Make_Identifier (Loc, Name_uF),
                  Reason    => CE_Invalid_Data),
                Make_Simple_Return_Statement (Loc,
-                 Expression =>
-                   Make_Integer_Literal (Loc, -1)))));
+                 Expression => Make_Integer_Literal (Loc, -1)))));
 
       --  If either of the restrictions No_Exceptions_Handlers/Propagation is
       --  active then return -1 (we cannot usefully raise Constraint_Error in
@@ -5066,10 +4625,9 @@ package body Exp_Ch3 is
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
-             Statements => New_List (
+             Statements       => New_List (
                Make_Simple_Return_Statement (Loc,
-                 Expression =>
-                   Make_Integer_Literal (Loc, -1)))));
+                 Expression => Make_Integer_Literal (Loc, -1)))));
       end if;
 
       --  Now we can build the function body
@@ -5143,8 +4701,10 @@ package body Exp_Ch3 is
 
       Comp        : Entity_Id;
       Comp_Typ    : Entity_Id;
-      Has_AACC    : Boolean;
       Predef_List : List_Id;
+
+      Wrapper_Decl_List : List_Id := No_List;
+      Wrapper_Body_List : List_Id := No_List;
 
       Renamed_Eq : Node_Id := Empty;
       --  Defining unit name for the predefined equality function in the case
@@ -5152,9 +4712,6 @@ package body Exp_Ch3 is
       --  predefined equality (but only if there is also an overriding
       --  user-defined equality function). Used to pass this entity from
       --  Make_Predefined_Primitive_Specs to Predefined_Primitive_Bodies.
-
-      Wrapper_Decl_List : List_Id := No_List;
-      Wrapper_Body_List : List_Id := No_List;
 
    --  Start of processing for Expand_Freeze_Record_Type
 
@@ -5218,19 +4775,11 @@ package body Exp_Ch3 is
       --  of the component types may have been private at the point of the
       --  record declaration. Detect anonymous access-to-controlled components.
 
-      Has_AACC := False;
-
       Comp := First_Component (Typ);
       while Present (Comp) loop
          Comp_Typ := Etype (Comp);
 
-         if Has_Task (Comp_Typ) then
-            Set_Has_Task (Typ);
-         end if;
-
-         if Has_Protected (Comp_Typ) then
-            Set_Has_Protected (Typ);
-         end if;
+         Propagate_Concurrent_Flags (Typ, Comp_Typ);
 
          --  Do not set Has_Controlled_Component on a class-wide equivalent
          --  type. See Make_CW_Equivalent_Type.
@@ -5242,15 +4791,6 @@ package body Exp_Ch3 is
                          and then (Is_Controlled_Active (Comp_Typ))))
          then
             Set_Has_Controlled_Component (Typ);
-         end if;
-
-         --  Non-self-referential anonymous access-to-controlled component
-
-         if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-           and then Needs_Finalization (Designated_Type (Comp_Typ))
-           and then Designated_Type (Comp_Typ) /= Typ
-         then
-            Has_AACC := True;
          end if;
 
          Next_Component (Comp);
@@ -5599,115 +5139,6 @@ package body Exp_Ch3 is
                Next_Elmt (Elmt);
             end loop;
          end;
-      end if;
-
-      --  Create a heterogeneous finalization master to service the anonymous
-      --  access-to-controlled components of the record type.
-
-      if Has_AACC then
-         declare
-            Encl_Scope : constant Entity_Id  := Scope (Typ);
-            Ins_Node   : constant Node_Id    := Parent (Typ);
-            Loc        : constant Source_Ptr := Sloc (Typ);
-            Fin_Mas_Id : Entity_Id;
-
-            Attributes_Set : Boolean := False;
-            Master_Built   : Boolean := False;
-            --  Two flags which control the creation and initialization of a
-            --  common heterogeneous master.
-
-         begin
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               Comp_Typ := Etype (Comp);
-
-               --  A non-self-referential anonymous access-to-controlled
-               --  component.
-
-               if Ekind (Comp_Typ) = E_Anonymous_Access_Type
-                 and then Needs_Finalization (Designated_Type (Comp_Typ))
-                 and then Designated_Type (Comp_Typ) /= Typ
-               then
-                  --  Build a homogeneous master for the first anonymous
-                  --  access-to-controlled component. This master may be
-                  --  converted into a heterogeneous collection if more
-                  --  components are to follow.
-
-                  if not Master_Built then
-                     Master_Built := True;
-
-                     --  All anonymous access-to-controlled types allocate
-                     --  on the global pool. Note that the finalization
-                     --  master and the associated storage pool must be set
-                     --  on the root type (both are "root type only").
-
-                     Set_Associated_Storage_Pool
-                       (Root_Type (Comp_Typ), RTE (RE_Global_Pool_Object));
-
-                     Build_Finalization_Master
-                       (Typ            => Root_Type (Comp_Typ),
-                        For_Anonymous  => True,
-                        Context_Scope  => Encl_Scope,
-                        Insertion_Node => Ins_Node);
-
-                     Fin_Mas_Id := Finalization_Master (Comp_Typ);
-
-                  --  Subsequent anonymous access-to-controlled components
-                  --  reuse the available master.
-
-                  else
-                     --  All anonymous access-to-controlled types allocate
-                     --  on the global pool. Note that both the finalization
-                     --  master and the associated storage pool must be set
-                     --  on the root type (both are "root type only").
-
-                     Set_Associated_Storage_Pool
-                       (Root_Type (Comp_Typ), RTE (RE_Global_Pool_Object));
-
-                     --  Shared the master among multiple components
-
-                     Set_Finalization_Master
-                       (Root_Type (Comp_Typ), Fin_Mas_Id);
-
-                     --  Convert the master into a heterogeneous collection.
-                     --  Generate:
-                     --    Set_Is_Heterogeneous (<Fin_Mas_Id>);
-
-                     if not Attributes_Set then
-                        Attributes_Set := True;
-
-                        Insert_Action (Ins_Node,
-                          Make_Procedure_Call_Statement (Loc,
-                            Name                   =>
-                              New_Occurrence_Of
-                                (RTE (RE_Set_Is_Heterogeneous), Loc),
-                            Parameter_Associations => New_List (
-                              New_Occurrence_Of (Fin_Mas_Id, Loc))));
-                     end if;
-                  end if;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-         end;
-      end if;
-
-      --  Check whether individual components have a defined invariant, and add
-      --  the corresponding component invariant checks.
-
-      --  Do not create an invariant procedure for some internally generated
-      --  subtypes, in particular those created for objects of a class-wide
-      --  type. Such types may have components to which invariant apply, but
-      --  the corresponding checks will be applied when an object of the parent
-      --  type is constructed.
-
-      --  Such objects will show up in a class-wide postcondition, and the
-      --  invariant will be checked, if necessary, upon return from the
-      --  enclosing subprogram.
-
-      if not Is_Class_Wide_Equivalent_Type (Typ) then
-         Insert_Component_Invariant_Checks
-           (N, Typ, Build_Record_Invariant_Proc (Typ, N));
       end if;
 
       Ghost_Mode := Save_Ghost_Mode;
@@ -6086,16 +5517,12 @@ package body Exp_Ch3 is
          Exceptions_OK : constant Boolean :=
                            not Restriction_Active (No_Exception_Propagation);
 
-         Abrt_Blk    : Node_Id;
-         Abrt_Blk_Id : Entity_Id;
-         Abrt_HSS    : Node_Id;
-         Aggr_Init   : Node_Id;
-         AUD         : Entity_Id;
-         Comp_Init   : List_Id := No_List;
-         Fin_Call    : Node_Id;
-         Init_Stmts  : List_Id := No_List;
-         Obj_Init    : Node_Id := Empty;
-         Obj_Ref     : Node_Id;
+         Aggr_Init  : Node_Id;
+         Comp_Init  : List_Id := No_List;
+         Fin_Call   : Node_Id;
+         Init_Stmts : List_Id := No_List;
+         Obj_Init   : Node_Id := Empty;
+         Obj_Ref    : Node_Id;
 
       --  Start of processing for Default_Initialize_Object
 
@@ -6293,26 +5720,10 @@ package body Exp_Ch3 is
             --    end;
 
             if Exceptions_OK then
-               AUD := RTE (RE_Abort_Undefer_Direct);
-
-               Abrt_HSS :=
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements  => Init_Stmts,
-                   At_End_Proc => New_Occurrence_Of (AUD, Loc));
-
-               Abrt_Blk :=
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence => Abrt_HSS);
-
-               Add_Block_Identifier  (Abrt_Blk, Abrt_Blk_Id);
-               Expand_At_End_Handler (Abrt_HSS, Abrt_Blk_Id);
-
-               --  Present the Abort_Undefer_Direct function to the backend so
-               --  that it can inline the call to the function.
-
-               Add_Inlined_Body (AUD, N);
-
-               Init_Stmts := New_List (Abrt_Blk);
+               Init_Stmts := New_List (
+                 Build_Abort_Undefer_Block (Loc,
+                   Stmts   => Init_Stmts,
+                   Context => N));
 
             --  Otherwise exceptions are not propagated. Generate:
 
@@ -6346,11 +5757,49 @@ package body Exp_Ch3 is
 
       function Rewrite_As_Renaming return Boolean is
       begin
-         return not Aliased_Present (N)
-           and then Is_Entity_Name (Expr_Q)
-           and then Ekind (Entity (Expr_Q)) = E_Variable
-           and then OK_To_Rename (Entity (Expr_Q))
-           and then Is_Entity_Name (Obj_Def);
+         --  If the object declaration appears in the form
+
+         --    Obj : Ctrl_Typ := Func (...);
+
+         --  where Ctrl_Typ is controlled but not immutably limited type, then
+         --  the expansion of the function call should use a dereference of the
+         --  result to reference the value on the secondary stack.
+
+         --    Obj : Ctrl_Typ renames Func (...).all;
+
+         --  As a result, the call avoids an extra copy. This an optimization,
+         --  but it is required for passing ACATS tests in some cases where it
+         --  would otherwise make two copies. The RM allows removing redunant
+         --  Adjust/Finalize calls, but does not allow insertion of extra ones.
+
+         --  This part is disabled for now, because it breaks GPS builds
+
+         return (False -- ???
+             and then Nkind (Expr_Q) = N_Explicit_Dereference
+             and then not Comes_From_Source (Expr_Q)
+             and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
+             and then Nkind (Object_Definition (N)) in N_Has_Entity
+             and then (Needs_Finalization (Entity (Object_Definition (N)))))
+
+           --  If the initializing expression is for a variable with attribute
+           --  OK_To_Rename set, then transform:
+
+           --     Obj : Typ := Expr;
+
+           --  into
+
+           --     Obj : Typ renames Expr;
+
+           --  provided that Obj is not aliased. The aliased case has to be
+           --  excluded in general because Expr will not be aliased in
+           --  general.
+
+           or else
+             (not Aliased_Present (N)
+               and then Is_Entity_Name (Expr_Q)
+               and then Ekind (Entity (Expr_Q)) = E_Variable
+               and then OK_To_Rename (Entity (Expr_Q))
+               and then Is_Entity_Name (Obj_Def));
       end Rewrite_As_Renaming;
 
       --  Local variables
@@ -6969,6 +6418,7 @@ package body Exp_Ch3 is
             --  from previous instantiation errors.
 
             if Validity_Checks_On
+              and then Comes_From_Source (N)
               and then Validity_Check_Copies
               and then not Is_Generic_Type (Etype (Def_Id))
             then
@@ -7003,58 +6453,9 @@ package body Exp_Ch3 is
                Insert_After_And_Analyze (Init_After, Stat);
             end;
          end if;
-
-         --  Final transformation, if the initializing expression is an entity
-         --  for a variable with OK_To_Rename set, then we transform:
-
-         --     X : typ := expr;
-
-         --  into
-
-         --     X : typ renames expr
-
-         --  provided that X is not aliased. The aliased case has to be
-         --  excluded in general because Expr will not be aliased in general.
-
-         if Rewrite_As_Renaming then
-            Rewrite (N,
-              Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => Defining_Identifier (N),
-                Subtype_Mark        => Obj_Def,
-                Name                => Expr_Q));
-
-            --  We do not analyze this renaming declaration, because all its
-            --  components have already been analyzed, and if we were to go
-            --  ahead and analyze it, we would in effect be trying to generate
-            --  another declaration of X, which won't do.
-
-            Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
-            Set_Analyzed (N);
-
-            --  We do need to deal with debug issues for this renaming
-
-            --  First, if entity comes from source, then mark it as needing
-            --  debug information, even though it is defined by a generated
-            --  renaming that does not come from source.
-
-            if Comes_From_Source (Defining_Identifier (N)) then
-               Set_Debug_Info_Needed (Defining_Identifier (N));
-            end if;
-
-            --  Now call the routine to generate debug info for the renaming
-
-            declare
-               Decl : constant Node_Id := Debug_Renaming_Declaration (N);
-            begin
-               if Present (Decl) then
-                  Insert_Action (N, Decl);
-               end if;
-            end;
-         end if;
       end if;
 
-      if Nkind (N) = N_Object_Declaration
-        and then Nkind (Obj_Def) = N_Access_Definition
+      if Nkind (Obj_Def) = N_Access_Definition
         and then not Is_Local_Anonymous_Access (Etype (Def_Id))
       then
          --  An Ada 2012 stand-alone object of an anonymous access type
@@ -7111,9 +6512,9 @@ package body Exp_Ch3 is
 
       if Comes_From_Source (Def_Id)
         and then (Has_Default_Init_Cond (Typ)
-                    or else
-                  Has_Inherited_Default_Init_Cond (Typ))
+                   or else Has_Inherited_Default_Init_Cond (Typ))
         and then not Has_Init_Expression (N)
+        and then Present (Default_Init_Cond_Procedure (Typ))
       then
          declare
             DIC_Call : constant Node_Id :=
@@ -7130,6 +6531,49 @@ package body Exp_Ch3 is
                Analyze (DIC_Call);
             end if;
          end;
+      end if;
+
+      --  Final transformation - turn the object declaration into a renaming
+      --  if appropriate. If this is the completion of a deferred constant
+      --  declaration, then this transformation generates what would be
+      --  illegal code if written by hand, but that's OK.
+
+      if Present (Expr) then
+         if Rewrite_As_Renaming then
+            Rewrite (N,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Defining_Identifier (N),
+                Subtype_Mark        => Obj_Def,
+                Name                => Expr_Q));
+
+            --  We do not analyze this renaming declaration, because all its
+            --  components have already been analyzed, and if we were to go
+            --  ahead and analyze it, we would in effect be trying to generate
+            --  another declaration of X, which won't do.
+
+            Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
+            Set_Analyzed (N);
+
+            --  We do need to deal with debug issues for this renaming
+
+            --  First, if entity comes from source, then mark it as needing
+            --  debug information, even though it is defined by a generated
+            --  renaming that does not come from source.
+
+            if Comes_From_Source (Defining_Identifier (N)) then
+               Set_Debug_Info_Needed (Defining_Identifier (N));
+            end if;
+
+            --  Now call the routine to generate debug info for the renaming
+
+            declare
+               Decl : constant Node_Id := Debug_Renaming_Declaration (N);
+            begin
+               if Present (Decl) then
+                  Insert_Action (N, Decl);
+               end if;
+            end;
+         end if;
       end if;
 
    --  Exception on library entity not available
@@ -7584,11 +7028,11 @@ package body Exp_Ch3 is
 
       elsif Ekind_In (Def_Id, E_Access_Type, E_General_Access_Type) then
          declare
-            Loc         : constant Source_Ptr := Sloc (N);
-            Desig_Type  : constant Entity_Id  := Designated_Type (Def_Id);
-            Pool_Object : Entity_Id;
+            Loc        : constant Source_Ptr := Sloc (N);
+            Desig_Type : constant Entity_Id  := Designated_Type (Def_Id);
 
             Freeze_Action_Typ : Entity_Id;
+            Pool_Object       : Entity_Id;
 
          begin
             --  Case 1
@@ -7608,8 +7052,8 @@ package body Exp_Ch3 is
 
             elsif Has_Storage_Size_Clause (Def_Id) then
                declare
-                  DT_Size  : Node_Id;
                   DT_Align : Node_Id;
+                  DT_Size  : Node_Id;
 
                begin
                   --  For unconstrained composite types we give a size of zero
@@ -7853,6 +7297,16 @@ package body Exp_Ch3 is
 
       Process_Pending_Access_Types (Def_Id);
       Freeze_Stream_Operations (N, Def_Id);
+
+      --  Generate the [spec and] body of the invariant procedure tasked with
+      --  the runtime verification of all invariants that pertain to the type.
+      --  This includes invariants on the partial and full view, inherited
+      --  class-wide invariants from parent types or interfaces, and invariants
+      --  on array elements or record components.
+
+      if Has_Invariants (Def_Id) then
+         Build_Invariant_Procedure_Body (Def_Id);
+      end if;
 
       Ghost_Mode := Save_Ghost_Mode;
       return Result;
@@ -8228,6 +7682,34 @@ package body Exp_Ch3 is
       end if;
    end Has_New_Non_Standard_Rep;
 
+   ----------------------
+   -- Inline_Init_Proc --
+   ----------------------
+
+   function Inline_Init_Proc (Typ : Entity_Id) return Boolean is
+   begin
+      --  The initialization proc of protected records is not worth inlining.
+      --  In addition, when compiled for another unit for inlining purposes,
+      --  it may make reference to entities that have not been elaborated yet.
+      --  The initialization proc of records that need finalization contains
+      --  a nested clean-up procedure that makes it impractical to inline as
+      --  well, except for simple controlled types themselves. And similar
+      --  considerations apply to task types.
+
+      if Is_Concurrent_Type (Typ) then
+         return False;
+
+      elsif Needs_Finalization (Typ) and then not Is_Controlled (Typ) then
+         return False;
+
+      elsif Has_Task (Typ) then
+         return False;
+
+      else
+         return True;
+      end if;
+   end Inline_Init_Proc;
+
    ----------------
    -- In_Runtime --
    ----------------
@@ -8243,77 +7725,6 @@ package body Exp_Ch3 is
 
       return Is_RTU (S1, System) or else Is_RTU (S1, Ada);
    end In_Runtime;
-
-   ---------------------------------------
-   -- Insert_Component_Invariant_Checks --
-   ---------------------------------------
-
-   procedure Insert_Component_Invariant_Checks
-     (N   : Node_Id;
-     Typ  : Entity_Id;
-     Proc : Node_Id)
-   is
-      Loc     : constant Source_Ptr := Sloc (Typ);
-      Proc_Id : Entity_Id;
-
-   begin
-      if Present (Proc) then
-         Proc_Id := Defining_Entity (Proc);
-
-         if not Has_Invariants (Typ) then
-            Set_Has_Invariants (Typ);
-            Set_Is_Invariant_Procedure (Proc_Id);
-            Set_Invariant_Procedure (Typ, Proc_Id);
-            Insert_After (N, Proc);
-            Analyze (Proc);
-
-         else
-
-            --  Find already created invariant subprogram, insert body of
-            --  component invariant proc in its body, and add call after
-            --  other checks.
-
-            declare
-               Bod    : Node_Id;
-               Inv_Id : constant Entity_Id := Invariant_Procedure (Typ);
-               Call   : constant Node_Id   :=
-                 Make_Procedure_Call_Statement (Sloc (N),
-                   Name                   => New_Occurrence_Of (Proc_Id, Loc),
-                   Parameter_Associations =>
-                     New_List
-                       (New_Occurrence_Of (First_Formal (Inv_Id), Loc)));
-
-            begin
-               --  The invariant  body has not been analyzed yet, so we do a
-               --  sequential search forward, and retrieve it by name.
-
-               Bod := Next (N);
-               while Present (Bod) loop
-                  exit when Nkind (Bod) = N_Subprogram_Body
-                    and then Chars (Defining_Entity (Bod)) = Chars (Inv_Id);
-                  Next (Bod);
-               end loop;
-
-               --  If the body is not found, it is the case of an invariant
-               --  appearing on a full declaration in a private part, in
-               --  which case the type has been frozen but the invariant
-               --  procedure for the composite type not created yet. Create
-               --  body now.
-
-               if No (Bod) then
-                  Build_Invariant_Procedure (Typ, Parent (Current_Scope));
-                  Bod := Unit_Declaration_Node
-                    (Corresponding_Body (Unit_Declaration_Node (Inv_Id)));
-               end if;
-
-               Append_To (Declarations (Bod), Proc);
-               Append_To (Statements (Handled_Statement_Sequence (Bod)), Call);
-               Analyze (Proc);
-               Analyze (Call);
-            end;
-         end if;
-      end if;
-   end Insert_Component_Invariant_Checks;
 
    ----------------------------
    -- Initialization_Warning --
@@ -9590,11 +9001,13 @@ package body Exp_Ch3 is
                   exit;
 
                --  If the parent is not an interface type and has an abstract
-               --  equality function, the inherited equality is abstract as
-               --  well, and no body can be created for it.
+               --  equality function explicitly defined in the sources, then
+               --  the inherited equality is abstract as well, and no body can
+               --  be created for it.
 
                elsif not Is_Interface (Etype (Tag_Typ))
                  and then Present (Alias (Node (Prim)))
+                 and then Comes_From_Source (Alias (Node (Prim)))
                  and then Is_Abstract_Subprogram (Alias (Node (Prim)))
                then
                   Eq_Needed := False;

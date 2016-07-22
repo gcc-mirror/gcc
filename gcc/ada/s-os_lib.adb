@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2015, AdaCore                     --
+--                     Copyright (C) 1995-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1495,6 +1495,21 @@ package body System.OS_Lib is
       return Is_Directory (F_Name'Address);
    end Is_Directory;
 
+   -----------------------------
+   -- Is_Read_Accessible_File --
+   -----------------------------
+
+   function Is_Read_Accessible_File (Name : String) return Boolean is
+      function Is_Read_Accessible_File (Name : Address) return Integer;
+      pragma Import
+        (C, Is_Read_Accessible_File, "__gnat_is_read_accessible_file");
+      F_Name : String (1 .. Name'Length + 1);
+   begin
+      F_Name (1 .. Name'Length) := Name;
+      F_Name (F_Name'Last)      := ASCII.NUL;
+      return Is_Read_Accessible_File (F_Name'Address) /= 0;
+   end Is_Read_Accessible_File;
+
    ----------------------
    -- Is_Readable_File --
    ----------------------
@@ -1570,6 +1585,21 @@ package body System.OS_Lib is
       F_Name (F_Name'Last)      := ASCII.NUL;
       return Is_Symbolic_Link (F_Name'Address);
    end Is_Symbolic_Link;
+
+   ------------------------------
+   -- Is_Write_Accessible_File --
+   ------------------------------
+
+   function Is_Write_Accessible_File (Name : String) return Boolean is
+      function Is_Write_Accessible_File (Name : Address) return Integer;
+      pragma Import
+        (C, Is_Write_Accessible_File, "__gnat_is_write_accessible_file");
+      F_Name : String (1 .. Name'Length + 1);
+   begin
+      F_Name (1 .. Name'Length) := Name;
+      F_Name (F_Name'Last)      := ASCII.NUL;
+      return Is_Write_Accessible_File (F_Name'Address) /= 0;
+   end Is_Write_Accessible_File;
 
    ----------------------
    -- Is_Writable_File --
@@ -1848,6 +1878,8 @@ package body System.OS_Lib is
       Saved_Error  : File_Descriptor;
       Saved_Output : File_Descriptor;
 
+      Dummy_Status : Boolean;
+
    begin
       --  Do not attempt to spawn if the output files could not be created
 
@@ -1862,6 +1894,17 @@ package body System.OS_Lib is
 
       Saved_Error  := Dup (Standerr);
       Dup2 (Stderr_FD, Standerr);
+
+      Set_Close_On_Exec (Saved_Output, True, Dummy_Status);
+      Set_Close_On_Exec (Saved_Error,  True, Dummy_Status);
+
+      --  Close the files just created for the output, as the file descriptors
+      --  cannot be used anywhere, being local values. It is safe to do that,
+      --  as the file descriptors have been duplicated to form standard output
+      --  and standard error of the spawned process.
+
+      Close (Stdout_FD);
+      Close (Stderr_FD);
 
       --  Spawn the program
 

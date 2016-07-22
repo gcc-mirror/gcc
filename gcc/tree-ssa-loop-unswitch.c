@@ -223,6 +223,8 @@ tree_unswitch_single_loop (struct loop *loop, int num)
       /* If the loop is not expected to iterate, there is no need
 	 for unswitching.  */
       iterations = estimated_loop_iterations_int (loop);
+      if (iterations < 0)
+        iterations = likely_max_loop_iterations_int (loop);
       if (iterations >= 0 && iterations <= 1)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -439,6 +441,8 @@ tree_unswitch_outer_loop (struct loop *loop)
   /* If the loop is not expected to iterate, there is no need
       for unswitching.  */
   iterations = estimated_loop_iterations_int (loop);
+  if (iterations < 0)
+    iterations = likely_max_loop_iterations_int (loop);
   if (iterations >= 0 && iterations <= 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -530,6 +534,12 @@ find_loop_guard (struct loop *loop)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Guard edge %d --> %d is not around the loop!\n",
 		 guard_edge->src->index, guard_edge->dest->index);
+      return NULL;
+    }
+  if (guard_edge->dest == loop->latch)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Guard edge destination is loop latch.\n");
       return NULL;
     }
 

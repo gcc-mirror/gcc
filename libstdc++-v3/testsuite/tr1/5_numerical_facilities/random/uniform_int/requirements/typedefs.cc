@@ -25,12 +25,12 @@
 #include <tr1/random>
 
 void
-test01() 
-{ 
+test01()
+{
   using namespace std::tr1;
 
   typedef uniform_int<int> test_type;
-  
+
   typedef test_type::input_type  input_type;
   typedef test_type::result_type result_type;
 }

@@ -106,8 +106,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
       struct _Alloc_hider : allocator_type // TODO check __is_final
       {
+#if __cplusplus < 201103L
 	_Alloc_hider(pointer __dat, const _Alloc& __a = _Alloc())
 	: allocator_type(__a), _M_p(__dat) { }
+#else
+	_Alloc_hider(pointer __dat, const _Alloc& __a)
+	: allocator_type(__a), _M_p(__dat) { }
+
+	_Alloc_hider(pointer __dat, _Alloc&& __a = _Alloc())
+	: allocator_type(std::move(__a)), _M_p(__dat) { }
+#endif
 
 	pointer _M_p; // The actual data.
       };
@@ -1912,7 +1920,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_string& replace(const_iterator __i1, const_iterator __i2,
 			    initializer_list<_CharT> __l)
-      { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
+      { return this->replace(__i1, __i2, __l.begin(), __l.size()); }
 #endif // C++11
 
     private:

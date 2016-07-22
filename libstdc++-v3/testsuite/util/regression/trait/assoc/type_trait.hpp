@@ -74,7 +74,7 @@ namespace __gnu_pbds
       private:
 	typedef typename cntnr::allocator_type::template rebind<basic_type>::other
 	basic_type_rebind;
-	
+
 	typedef typename basic_type_rebind::const_reference basic_type_const_reference;
 
 	typedef typename cntnr::allocator_type::template rebind<std::pair<const basic_type, basic_type> >::other pair_type_rebind;
@@ -92,7 +92,7 @@ namespace __gnu_pbds
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& gen, size_t max, 
+        generate_value(Gen& gen, size_t max,
 		       std::pair<const basic_type, basic_type>)
 	{ return std::make_pair(basic_type(gen, max), basic_type(gen, max)); }
 
@@ -108,4 +108,4 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif

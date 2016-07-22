@@ -5,7 +5,7 @@
 
 __float128 foo (__float128 a) { return -a; }
 
-/* { dg-final { scan-assembler "xxlorc" } } */
+/* { dg-final { scan-assembler "xxlorc\|vspltisw" } } */
 /* { dg-final { scan-assembler "xxlxor" } } */
 /* { dg-final { scan-assembler "vslb"   } } */
 /* { dg-final { scan-assembler "vsldoi" } } */

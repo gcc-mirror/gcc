@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
-/* { dg-final { scan-tree-dump "FSM" "vrp1" } } */
+/* { dg-options "-O2 -fdump-tree-thread1-details" } */
+/* { dg-final { scan-tree-dump "FSM" "thread1" } } */
 
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;

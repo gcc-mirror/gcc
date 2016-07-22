@@ -1,3 +1,209 @@
+2016-07-21  Aurelien Jarno <aurelien@aurel32.net>
+
+	PR target/59833
+	* config/arm/ieee754-df.S (extendsfdf2): Convert sNaN to qNaN.
+
+2016-07-19  Nick Clifton  <nickc@redhat.com>
+
+	* config.host (m32r): Add m32r/t-m32r to tmake_file.
+	Add crtinit.o and crtfini.o to extra_parts.
+
+2016-07-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/_divkc3.c: New.
+	* config/rs6000/_mulkc3.c: New.
+	* config/rs6000/quad-float128.h: Define TFtype; declare _mulkc3
+	and _divkc3.
+	* config/rs6000/t-float128: Add _mulkc3 and _divkc3 to
+	fp128_ppc_funcs.
+
+2016-07-11  Hale Wang  <hale.wang@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/lib1funcs.S: Add new wrapper.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Define to 8 for ARMv8-M.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/lib1funcs.S (HAVE_ARM_CLZ): Define for ARMv6* or later
+	and ARMv5t* rather than for a fixed list of architectures.
+
+2016-07-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/bpabi-v6m.S: Clarify what architectures is the
+	implementation suitable for.
+	* config/arm/lib1funcs.S (__prefer_thumb__): Define among other cases
+	for all Thumb-1 only targets.
+	(NOT_ISA_TARGET_32BIT): Define for Thumb-1 only targets.
+	(THUMB_LDIV0): Test for NOT_ISA_TARGET_32BIT rather than
+	__ARM_ARCH_6M__.
+	(EQUIV): Likewise.
+	(ARM_FUNC_ALIAS): Likewise.
+	(umodsi3): Add check to __ARM_ARCH_ISA_THUMB != 1 to guard the idiv
+	version.
+	(modsi3): Likewise.
+	(clzsi2): Test for NOT_ISA_TARGET_32BIT rather than __ARM_ARCH_6M__.
+	(clzdi2): Likewise.
+	(ctzsi2): Likewise.
+	(L_interwork_call_via_rX): Test for __ARM_ARCH_ISA_ARM rather than
+	__ARM_ARCH_6M__ in guard for checking whether it is defined.
+	(final includes): Test for NOT_ISA_TARGET_32BIT rather than
+	__ARM_ARCH_6M__ and add comment to indicate the connection between
+	this condition and the one in gcc/config/arm/elf.h.
+	* config/arm/libunwind.S: Test for __ARM_ARCH_ISA_THUMB and
+	__ARM_ARCH_ISA_ARM rather than __ARM_ARCH_6M__.
+	* config/arm/t-softfp: Likewise.
+
+2016-07-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* libgcc2.c (SYMBOL__MAIN): Remove checks for
+	CTOR_LISTS_DEFINED_EXTERNALLY.
+
+2016-06-28  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.h: Do not include arch/spr_def.h and
+	asm/unistd.h.
+	(SPR_CMPEXCH_VALUE): Define for tilegx.
+	(__NR_FAST_cmpxchg): Define for tilepro.
+	(__NR_FAST_atomic_update): Define for tilepro.
+	(__NR_FAST_cmpxchg64): Define for tilepro.
+
+2016-06-23  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+   * config.host: Add suport for arm*-*-phoenix* targets.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove support for mep-*.
+	* config/mep/lib1funcs.S: Remove.
+	* config/mep/lib2funcs.c: Remove.
+	* config/mep/t-mep: Remove.
+	* config/mep/tramp.c: Remove.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove support for avr-rtems.
+	* config/avr/t-rtems: Remove.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove m32r-rtems support.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove h8300-rtems support.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove support for knetbsd.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove support for openbsd 2 and 3.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config.host: Remove interix support.
+	* config/i386/t-interix: Remove.
+
+2016-06-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Don't set
+	least-significant bit in function pointer for fixup.
+
+2016-06-05  Aaron Conole  <aconole@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	PR libgcc/71400
+	* libgcov-driver-system.c (__gcov_error_file): Disable if IN_GCOV_TOOL.
+	(get_gcov_error_file): Check __gcov_error_file before trying to
+	initialize it.
+	(gcov_error): Always use get_gcov_error_file.
+
+2016-06-02  Aaron Conole  <aconole@redhat.com>
+
+	* libgcov-driver-system.c (__gcov_error_file): New.
+	(get_gcov_error_file): New.
+	(gcov_error): Use and set __gcov_error_file.
+	(gcov_error_exit): New.
+	* libgcov-driver.c (gcov_exit): Call gcov_error_exit.
+
+2016-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/free.asm: Delete.
+	* config/nvptx/malloc.asm: Delete.
+	* config/nvptx/realloc.c: Delete.
+	* t-nvptx: Update.
+
+2016-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/crt0.s: Delete.
+	* config/nvptx/crt0.c: New.
+	* t-nvptx: Update.
+
+2016-05-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config.host [x86_64-*-cygwin*]: Handle tmake_eh_file for mixed
+	dw2/seh configuration.
+	[x86_64-*-mingw*]: Likewise.
+
+2016-05-10  Joel Sherrill <joel@rtems.org>
+
+	PR libgcc/70720
+	* config.host (moxie-*-rtems*): Merge this stanza with other moxie
+	targets so the same extra_parts are built.  Also have tmake_file add
+	on to its value rather than override.
+
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config.host: Remove SH5 support.
+	* configure: Likewise.
+
+2016-04-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/crt1.S: Remove SH5 support.
+	* config/sh/crti.S: Likewise.
+	* config/sh/crtn.S: Likewise.
+	* config/sh/lib1funcs-4-300.S: Likewise.
+	* config/sh/lib1funcs-Os-4-200.S: Likewise.
+	* config/sh/lib1funcs.S: Likewise.
+	* config/sh/linux-unwind.h: Likewise.
+	* config/sh/t-sh64: Delete.
+
+2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/ieee-754/eqdf2.S: Handle FPX NaN.
+
+2016-04-28  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/crttls.S: New file.
+	* config/arc/t-arc: New rule.
+	* config.host (arc*-*-elf*, arc*-*-linux*): Add crttls.o.
+
+2016-04-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/cmpd.c (__mspabi_cmpf): Add prototype.
+	(__mspabi_cmpd): Likewise.
+	* config/msp430/floathidf.c (__floathidf): Likewise.
+	* config/msp430/floathisf.c (__floathisf): Likewise
+	* config/msp430/floatunhidf.c (__floatunssidf): Likewise.
+	* config/msp430/floatunhisf.c (__floatunshisf): Likewise.
+	* config/msp430/lib2shift.c (__ashlsi3): Take a signed char as the
+	second parameter.
+	(__ashrsi3): Likewise.
+
+2016-04-21  Waldemar Brodkorb  <wbx@openadk.org>
+
+	* config/m68k/linux-atomic.c: Do not include unistd.h
+
+2016-04-20  Martin Galvan  <martin.galvan@tallertechnologies.com>
+
+	* config/arm/ieee754-df.S: Fix typos in comments.
+
 2016-04-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/70381
@@ -14,7 +220,7 @@
 
 2016-03-28  James Bowman  <james.bowman@ftdichip.com>
 
-        * libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
+	* libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
 
 2016-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -429,7 +635,7 @@
 
 2015-10-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/cpuinfo.c (processor_features): Add
+	* config/i386/cpuinfo.c (processor_features): Add
 	FEATURE_AVX512VBMI and FEATURE_AVX512VBMI.
 
 2015-09-28  Joseph Myers  <joseph@codesourcery.com>
@@ -794,10 +1000,10 @@
 
 2015-05-15  Martin Galvan  <martin.galvan@tallertechnologies.com>
 
-        * config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
-        New macros.
-        * config/arm/ieee754-df.S: Add CFI directives.
-        * config/arm/ieee754-sf.S: Add CFI directives.
+	* config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
+	New macros.
+	* config/arm/ieee754-df.S: Add CFI directives.
+	* config/arm/ieee754-sf.S: Add CFI directives.
 
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 

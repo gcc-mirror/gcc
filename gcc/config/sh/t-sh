@@ -50,9 +50,7 @@ MULTILIB_MATCHES = $(shell \
              m2e,m3e,m4-single-only,m4-100-single-only,m4-200-single-only,m4-300-single-only,m4a-single-only \
              m2a-single,m2a-single-only \
              m4-single,m4-100-single,m4-200-single,m4-300-single,m4a-single \
-             m4,m4-100,m4-200,m4-300,m4a \
-             m5-32media,m5-compact,m5-32media \
-             m5-32media-nofpu,m5-compact-nofpu,m5-32media-nofpu; do \
+             m4,m4-100,m4-200,m4-300,m4a; do \
     subst= ; \
     for lib in `echo $$abi|tr , ' '` ; do \
       if test "`echo $$multilibs|sed s/$$lib//`" != "$$multilibs"; then \
@@ -89,13 +87,7 @@ MULTILIB_OSDIRNAMES = \
 	m4a-single-only=!m4a-single-only $(OTHER_ENDIAN)/m4a-single-only=!$(OTHER_ENDIAN)/m4a-single-only \
 	m4a-single=!m4a-single $(OTHER_ENDIAN)/m4a-single=!$(OTHER_ENDIAN)/m4a-single \
 	m4a=!m4a $(OTHER_ENDIAN)/m4a=!$(OTHER_ENDIAN)/m4a \
-	m4al=!m4al $(OTHER_ENDIAN)/m4al=!$(OTHER_ENDIAN)/m4al \
-	m5-32media=!m5-32media $(OTHER_ENDIAN)/m5-32media=!$(OTHER_ENDIAN)/m5-32media \
-	m5-32media-nofpu=!m5-32media-nofpu $(OTHER_ENDIAN)/m5-32media-nofpu=!$(OTHER_ENDIAN)/m5-32media-nofpu \
-	m5-compact=!m5-compact $(OTHER_ENDIAN)/m5-compact=!$(OTHER_ENDIAN)/m5-compact \
-	m5-compact-nofpu=!m5-compact-nofpu $(OTHER_ENDIAN)/m5-compact-nofpu=!$(OTHER_ENDIAN)/m5-compact-nofpu \
-	m5-64media=!m5-64media $(OTHER_ENDIAN)/m5-64media=!$(OTHER_ENDIAN)/m5-64media \
-	m5-64media-nofpu=!m5-64media-nofpu $(OTHER_ENDIAN)/m5-64media-nofpu=!$(OTHER_ENDIAN)/m5-64media-nofpu
+	m4al=!m4al $(OTHER_ENDIAN)/m4al=!$(OTHER_ENDIAN)/m4al
 
 $(out_object_file): gt-sh.h
 gt-sh.h : s-gtype ; @true

@@ -1355,7 +1355,7 @@ get_first_label_num (void)
    Fix this now so that array indices work later.  */
 
 void
-maybe_set_first_label_num (rtx x)
+maybe_set_first_label_num (rtx_code_label *x)
 {
   if (CODE_LABEL_NUMBER (x) < first_label_num)
     first_label_num = CODE_LABEL_NUMBER (x);
@@ -1813,9 +1813,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	 able to simply always use TYPE_ALIGN?  */
     }
 
-  /* We can set the alignment from the type if we are making an object,
-     this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
-  if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
+  /* We can set the alignment from the type if we are making an object or if
+     this is an INDIRECT_REF.  */
+  if (objectp || TREE_CODE (t) == INDIRECT_REF)
     attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
   /* If the size is known, we can set that.  */

@@ -1158,8 +1158,7 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 	 translation unit, creating ODR problems.
 
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
-      tree fn = (code == AGGR_INIT_EXPR
-		 ? AGGR_INIT_EXPR_FN (t) : CALL_EXPR_FN (t));
+      tree fn = cp_get_callee (t);
       tree type = TREE_TYPE (fn);
       gcc_assert (POINTER_TYPE_P (type));
       type = TREE_TYPE (type);

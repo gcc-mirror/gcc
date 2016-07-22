@@ -1,10 +1,10 @@
-! { dg-do compile }
 ! { dg-additional-options "-std=f2008" }
+! See also loop-3-2.f95.
 
 subroutine test1
   implicit none
   integer :: i, j
-  
+
   ! !$acc end loop not required by spec
   !$acc loop
   do i = 1,5
@@ -23,7 +23,7 @@ subroutine test1
   enddo
   !$acc end parallel
   !$acc end loop ! { dg-error "Unexpected" }
-  
+
   ! OpenACC supports Fortran 2008 do concurrent statement
   !$acc loop
   do concurrent (i = 1:5)
@@ -35,7 +35,7 @@ subroutine test1
       if (i .eq. j) cycle outer_loop
       if (i .ne. j) exit outer_loop ! { dg-error "EXIT statement" }
     end do inner_loop
-  end do outer_loop 
+  end do outer_loop
 
   outer_loop1: do i = 1, 5
     !$acc loop
@@ -50,6 +50,5 @@ subroutine test1
       if (i .eq. j) cycle outer_loop2 ! { dg-error "CYCLE statement" }
       if (i .ne. j) exit outer_loop2 ! { dg-error "EXIT statement" }
     end do inner_loop2
-  end do outer_loop2 
+  end do outer_loop2
 end subroutine test1
-

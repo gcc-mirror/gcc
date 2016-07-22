@@ -104,6 +104,10 @@
 ;;  m	MMX inter-unit moves to MMX register enabled
 ;;  n	MMX inter-unit moves from MMX register enabled
 ;;  a	Integer register when zero extensions with AND are disabled
+;;  b	Any register that can be used as the GOT base when calling
+;;	___tls_get_addr: that is, any general register except EAX
+;;	and ESP, for -fno-plt if linker supports it.  Otherwise,
+;;	EBX.
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  f	x87 register when 80387 floating point arithmetic is enabled
 ;;  r	SSE regs not requiring REX prefix when prefixes avoidance is enabled
@@ -137,13 +141,24 @@
   ? NO_REGS : GENERAL_REGS"
  "@internal Any integer register when zero extensions with AND are disabled.")
 
+(define_register_constraint "Yb"
+ "(!flag_plt && HAVE_AS_IX86_TLS_GET_ADDR_GOT) ? TLS_GOTBASE_REGS : BREG"
+ "@internal Any register that can be used as the GOT base when calling
+  ___tls_get_addr: that is, any general register except @code{a} and
+  @code{sp} registers, for -fno-plt if linker supports it.  Otherwise,
+  @code{b} register.")
+
 (define_register_constraint "Yf"
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
 
 (define_register_constraint "Yr"
- "TARGET_SSE ? (X86_TUNE_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
+ "TARGET_SSE ? (TARGET_AVOID_4BYTE_PREFIXES ? NO_REX_SSE_REGS : ALL_SSE_REGS) : NO_REGS"
  "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
+
+(define_register_constraint "Yv"
+ "TARGET_AVX512VL ? ALL_SSE_REGS : TARGET_SSE ? SSE_REGS : NO_REGS"
+ "@internal For AVX512VL, any EVEX encodable SSE register (@code{%xmm0-%xmm31}), otherwise any SSE register.")
 
 ;; We use the B prefix to denote any number of internal operands:
 ;;  f  FLAGS_REG
@@ -185,8 +200,10 @@
   (match_operand 0 "constant_call_address_operand"))
 
 (define_constraint "BC"
-  "@internal SSE constant operand."
-  (match_test "standard_sse_constant_p (op)"))
+  "@internal SSE constant -1 operand."
+  (and (match_test "TARGET_SSE")
+       (ior (match_test "op == constm1_rtx")
+	    (match_operand 0 "vector_all_ones_operand"))))
 
 ;; Integer constant constraints.
 (define_constraint "I"
@@ -239,7 +256,9 @@
 ;; This can theoretically be any mode's CONST0_RTX.
 (define_constraint "C"
   "SSE constant zero operand."
-  (match_test "standard_sse_constant_p (op) == 1"))
+  (and (match_test "TARGET_SSE")
+       (ior (match_test "op == const0_rtx")
+	    (match_operand 0 "const0_operand"))))
 
 ;; Constant-or-symbol-reference constraints.
 
@@ -265,6 +284,11 @@
    require non-VOIDmode immediate operands)."
   (and (match_operand 0 "x86_64_zext_immediate_operand")
        (match_test "GET_MODE (op) != VOIDmode")))
+
+(define_constraint "Wd"
+  "128-bit integer constant where both the high and low 64-bit word
+   of it satisfies the e constraint."
+  (match_operand 0 "x86_64_hilo_int_operand"))
 
 (define_constraint "Z"
   "32-bit unsigned integer constant, or a symbolic reference known

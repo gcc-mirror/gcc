@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,8 @@ package body Ada.Containers.Multiway_Trees is
    record
       Container : Tree_Access;
       Subtree   : Tree_Node_Access;
-   end record;
+   end record
+     with Disable_Controlled => not T_Check;
 
    overriding procedure Finalize (Object : in out Root_Iterator);
 
@@ -71,7 +72,8 @@ package body Ada.Containers.Multiway_Trees is
    ---------------------
 
    type Child_Iterator is new Root_Iterator and
-     Tree_Iterator_Interfaces.Reversible_Iterator with null record;
+     Tree_Iterator_Interfaces.Reversible_Iterator with null record
+       with Disable_Controlled => not T_Check;
 
    overriding function First (Object : Child_Iterator) return Cursor;
 

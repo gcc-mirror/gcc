@@ -2566,6 +2566,10 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  (*debug_hooks->source_line) (last_linenum, last_filename,
 				       last_discriminator, is_stmt);
 
+	if (GET_CODE (body) == PARALLEL
+	    && GET_CODE (XVECEXP (body, 0, 0)) == ASM_INPUT)
+	  body = XVECEXP (body, 0, 0);
+
 	if (GET_CODE (body) == ASM_INPUT)
 	  {
 	    const char *string = XSTR (body, 0);

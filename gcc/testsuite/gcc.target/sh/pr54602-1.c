@@ -3,7 +3,6 @@
    expected we won't see any nop insns.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-not "nop" } } */
 
 int test00 (int a, int b);

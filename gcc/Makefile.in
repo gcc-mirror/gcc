@@ -56,6 +56,7 @@ MAKEOVERRIDES =
 
 build=@build@
 host=@host@
+host_noncanonical=@host_noncanonical@
 target=@target@
 target_noncanonical:=@target_noncanonical@
 
@@ -272,6 +273,17 @@ ifeq (@DO_LINK_MUTEX@,true)
 LLINKER = $(SHELL) $(srcdir)/lock-and-run.sh linkfe.lck $(LINKER)
 else
 LLINKER = $(LINKER)
+endif
+
+THIN_ARCHIVE_SUPPORT = @thin_archive_support@
+
+USE_THIN_ARCHIVES = no
+ifeq ($(THIN_ARCHIVE_SUPPORT),yes)
+ifeq ($(AR_FLAGS),rc)
+ifeq ($(RANLIB_FLAGS),)
+USE_THIN_ARCHIVES = yes
+endif
+endif
 endif
 
 # -------------------------------------------
@@ -1159,7 +1171,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
 # Object files for gcc many-languages driver.
-GCC_OBJS = gcc.o gcc-main.o ggc-none.o spellcheck.o
+GCC_OBJS = gcc.o gcc-main.o ggc-none.o
 
 c-family-warn = $(STRICT_WARN)
 
@@ -1258,16 +1270,19 @@ OBJS = \
 	explow.o \
 	expmed.o \
 	expr.o \
+	fibonacci_heap.o \
 	final.o \
 	fixed-value.o \
 	fold-const.o \
 	fold-const-call.o \
 	function.o \
+	function-tests.o \
 	fwprop.o \
 	gcc-rich-location.o \
 	gcse.o \
 	gcse-common.o \
 	ggc-common.o \
+	ggc-tests.o \
 	gimple.o \
 	gimple-builder.o \
 	gimple-expr.o \
@@ -1298,6 +1313,8 @@ OBJS = \
 	graphite-sese-to-poly.o \
 	gtype-desc.o \
 	haifa-sched.o \
+	hash-map-tests.o \
+	hash-set-tests.o \
 	hsa.o \
 	hsa-gen.o \
 	hsa-regalloc.o \
@@ -1369,6 +1386,7 @@ OBJS = \
 	modulo-sched.o \
 	multiple_target.o \
 	omp-low.o \
+	omp-simd-clone.o \
 	optabs.o \
 	optabs-libfuncs.o \
 	optabs-query.o \
@@ -1397,6 +1415,7 @@ OBJS = \
 	resource.o \
 	rtl-chkp.o \
 	rtl-error.o \
+	rtl-tests.o \
 	rtl.o \
 	rtlhash.o \
 	rtlanal.o \
@@ -1409,6 +1428,7 @@ OBJS = \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
 	sel-sched.o \
+	selftest-run-tests.o \
 	sese.o \
 	shrink-wrap.o \
 	simplify-rtx.o \
@@ -1541,13 +1561,14 @@ OBJS = \
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 	pretty-print.o intl.o \
-	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o
+	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
+	selftest.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
-	hash-table.o file-find.o
+	hash-table.o file-find.o spellcheck.o selftest.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
@@ -1557,6 +1578,14 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
   $(GCOV_TOOL_OBJS) $(GENGTYPE_OBJS) gcc-ar.o gcc-nm.o gcc-ranlib.o \
   lto-wrapper.o collect-utils.o
+
+# for anything that is shared use the cc1plus profile data, as that
+# is likely the most exercised during the build
+ifeq ($(if $(wildcard ../stage_current),$(shell cat \
+  ../stage_current)),stageautofeedback)
+$(ALL_HOST_BACKEND_OBJS): ALL_COMPILERFLAGS += -fauto-profile=cc1plus.fda
+$(ALL_HOST_BACKEND_OBJS): cc1plus.fda
+endif
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -1587,7 +1616,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  gcov-tool$(exeect) \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
- libcommon-target.a libcommon.a libgcc.mk
+ libcommon-target.a libcommon.a libgcc.mk perf.data
 
 # This symlink makes the full installation name of the driver be available
 # from within the *build* directory, for use when running the JIT library
@@ -1814,10 +1843,10 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc
 quickstrap: all
 	cd $(toplevel_builddir) && $(MAKE) all-target-libgcc
 
-all.internal: start.encap rest.encap doc
+all.internal: start.encap rest.encap doc selftest
 # This is what to compile if making a cross-compiler.
 all.cross: native gcc-cross$(exeext) cpp$(exeext) specs \
-	libgcc-support lang.all.cross doc @GENINSRC@ srcextra
+	libgcc-support lang.all.cross doc selftest @GENINSRC@ srcextra
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 	libgcc-support lang.start.encap @GENINSRC@ srcextra
@@ -1837,6 +1866,27 @@ endif
 # This does the things that can't be done on the host machine.
 rest.cross: specs
 
+# Run the selftests during the build once we have a driver and a cc1,
+# so that self-test failures are caught as early as possible.
+# Use "s-selftest" to ensure that we only run the selftests if the
+# driver or cc1 change.
+.PHONY: selftest
+selftest: s-selftest
+s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
+	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test
+	$(STAMP) $@
+
+# Convenience method for running selftests under gdb:
+.PHONY: selftest-gdb
+selftest-gdb: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
+	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test -wrapper gdb,--args
+
+# Convenience method for running selftests under valgrind:
+.PHONY: selftest-valgrind
+selftest-valgrind: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
+	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test \
+	  -wrapper valgrind,--leak-check=full
+
 # Recompile all the language-independent object files.
 # This is used only if the user explicitly asks for it.
 compilations: $(BACKEND)
@@ -1844,8 +1894,14 @@ compilations: $(BACKEND)
 # This archive is strictly for the host.
 libbackend.a: $(OBJS)
 	-rm -rf libbackend.a
+	@# Build libbackend.a as a thin archive if possible, as doing so
+	@# significantly reduces build times.
+ifeq ($(USE_THIN_ARCHIVES),yes)
+	$(AR) $(AR_FLAGS)T libbackend.a $(OBJS)
+else
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
 	-$(RANLIB) $(RANLIB_FLAGS) libbackend.a
+endif
 
 libcommon-target.a: $(OBJS-libcommon-target)
 	-rm -rf libcommon-target.a
@@ -1984,7 +2040,7 @@ gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
 COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o \
-  collect-utils.o file-find.o hash-table.o
+  collect-utils.o file-find.o hash-table.o selftest.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -2353,7 +2409,8 @@ s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
-  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
+  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/cilk.h \
+  $(srcdir)/cilk-common.c $(srcdir)/coverage.c  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
@@ -2374,6 +2431,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/emit-rtl.c $(srcdir)/except.h $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/expr.h \
   $(srcdir)/function.c $(srcdir)/except.c \
+  $(srcdir)/ggc-tests.c \
   $(srcdir)/gcse.c $(srcdir)/godump.c \
   $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
@@ -2462,7 +2520,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       c-family/c-target-hooks-def.h params.list case-cfn-macros.h \
+       c-family/c-target-hooks-def.h params.list params.options case-cfn-macros.h \
        cfn-operators.pd
 
 #
@@ -3293,6 +3351,13 @@ s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
 	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
 	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
 	$(STAMP) s-params.list
+
+params.options: s-params.options; @true
+s-params.options: $(srcdir)/params-options.h $(srcdir)/params.def
+	$(CPP) $(srcdir)/params-options.h | sed 's/^#.*//;/^$$/d' > tmp-params.options
+	$(SHELL) $(srcdir)/../move-if-change tmp-params.options params.options
+	$(STAMP) s-params.options
+
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \

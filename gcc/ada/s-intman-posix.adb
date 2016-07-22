@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -202,7 +202,7 @@ package body System.Interrupt_Management is
       --  Add signals that map to Ada exceptions to the mask
 
       for J in Exception_Interrupts'Range loop
-         if State (Exception_Interrupts (J)) /= Default  then
+         if State (Exception_Interrupts (J)) /= Default then
             Result :=
             sigaddset (Signal_Mask'Access, Signal (Exception_Interrupts (J)));
             pragma Assert (Result = 0);

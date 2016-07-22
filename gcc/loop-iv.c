@@ -1613,7 +1613,7 @@ implies_p (rtx a, rtx b)
 	  && CONST_INT_P (XEXP (opb0, 1))
 	  /* Avoid overflows.  */
 	  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
-	      != ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
+	      != (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1)))
 	  && rtx_equal_p (XEXP (opb0, 0), op0))
 	return INTVAL (op1) == -INTVAL (XEXP (opb0, 1));
       if (GET_CODE (b) == GEU
@@ -1622,7 +1622,7 @@ implies_p (rtx a, rtx b)
 	  && CONST_INT_P (XEXP (opb0, 1))
 	  /* Avoid overflows.  */
 	  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
-	      != ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
+	      != (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1)))
 	  && rtx_equal_p (XEXP (opb0, 0), op0))
 	return INTVAL (op1) == -INTVAL (XEXP (opb0, 1));
     }
@@ -2998,6 +2998,8 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 
 	  fprintf (dump_file, "  upper bound: %li\n",
 		   (long)get_max_loop_iterations_int (loop));
+	  fprintf (dump_file, "  likely upper bound: %li\n",
+		   (long)get_likely_max_loop_iterations_int (loop));
 	  fprintf (dump_file, "  realistic bound: %li\n",
 		   (long)get_estimated_loop_iterations_int (loop));
 	}
@@ -3025,42 +3027,6 @@ get_simple_loop_desc (struct loop *loop)
   iv_analysis_loop_init (loop);
   find_simple_exit (loop, desc);
   loop->simple_loop_desc = desc;
-
-  if (desc->simple_p && (desc->assumptions || desc->infinite))
-    {
-      const char *wording;
-
-      /* Assume that no overflow happens and that the loop is finite.
-	 We already warned at the tree level if we ran optimizations there.  */
-      if (!flag_tree_loop_optimize && warn_unsafe_loop_optimizations)
-	{
-	  if (desc->infinite)
-	    {
-	      wording =
-		flag_unsafe_loop_optimizations
-		? N_("assuming that the loop is not infinite")
-		: N_("cannot optimize possibly infinite loops");
-	      warning (OPT_Wunsafe_loop_optimizations, "%s",
-		       gettext (wording));
-	    }
-	  if (desc->assumptions)
-	    {
-	      wording =
-		flag_unsafe_loop_optimizations
-		? N_("assuming that the loop counter does not overflow")
-		: N_("cannot optimize loop, the loop counter may overflow");
-	      warning (OPT_Wunsafe_loop_optimizations, "%s",
-		       gettext (wording));
-	    }
-	}
-
-      if (flag_unsafe_loop_optimizations && single_exit (loop))
-	{
-	  desc->assumptions = NULL_RTX;
-	  desc->infinite = NULL_RTX;
-	}
-    }
-
   return desc;
 }
 

@@ -2,7 +2,6 @@
    a negc or movrt insn that stores the inverted T bit in a reg.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "extu|exts" } } */
 
 int

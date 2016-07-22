@@ -1,3 +1,9 @@
+2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libitm/70456
+	* util.cc (xmalloc): Use posix_memalign to allocate memory on
+	on cache line if requested.
+
 2016-03-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/target.h (TARGET_BEGIN_TRANSACTION_ATTRIBUTE): Define

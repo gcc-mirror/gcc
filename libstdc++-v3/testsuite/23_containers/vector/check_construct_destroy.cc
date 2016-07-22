@@ -49,9 +49,9 @@ int main()
     c.reserve(100);
     tracker_allocator_counter::reset();
     c.insert(c.begin(), arr10[0]);
-    ok = check_construct_destroy("Insert element", 1, 0) && ok;
+    ok = check_construct_destroy("Insert element", 2, 1) && ok;
   }
-  ok = check_construct_destroy("Insert element", 1, 11) && ok;
+  ok = check_construct_destroy("Insert element", 2, 12) && ok;
 
   {
     Container c(arr10, arr10 + 10);

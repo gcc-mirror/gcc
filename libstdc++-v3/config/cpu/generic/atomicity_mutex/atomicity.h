@@ -25,7 +25,7 @@
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 
-namespace 
+namespace
 {
   __gnu_cxx::__mutex&
   get_atomic_mutex()

@@ -1,6 +1,7 @@
 /* PR c/70093 */
 /* { dg-do run } */
 /* { dg-options "" } */
+/* { dg-require-effective-target alloca } */
 
 void
 foo (int n)

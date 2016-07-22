@@ -2,7 +2,6 @@
    modes and do not result in redundant sign extensions. */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "@r\[0-9\]\+\\+," 3 } } */
 /* { dg-final { scan-assembler-not "exts" } } */
 

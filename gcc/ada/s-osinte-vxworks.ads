@@ -284,7 +284,7 @@ package System.OS_Interface is
    OK    : constant STATUS := 0;
    ERROR : constant STATUS := Interfaces.C.int (-1);
 
-   function taskIdVerify (tid : t_id)  return STATUS;
+   function taskIdVerify (tid : t_id) return STATUS;
    pragma Import (C, taskIdVerify, "taskIdVerify");
 
    function taskIdSelf return t_id;

@@ -1,7 +1,7 @@
 /* PR target/61599 */
-/* { dg-options "-mcmodel=medium -fdata-sections" { target lp64 } } */
-/* { dg-additional-sources pr61599-2.c } */
 /* { dg-do run { target lp64 } } */
+/* { dg-additional-sources pr61599-2.c } */
+/* { dg-options "-mcmodel=medium -fdata-sections" } */
 
 char a[1*1024*1024*1024];
 char b[1*1024*1024*1024];

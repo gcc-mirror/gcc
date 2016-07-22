@@ -686,7 +686,7 @@ runtime_printcreatedby(G *g)
 		String file;
 		intgo line;
 
-		if(__go_file_line(g->gopc - 1, &fn, &file, &line)) {
+		if(__go_file_line(g->gopc - 1, -1, &fn, &file, &line)) {
 			runtime_printf("created by %S\n", fn);
 			runtime_printf("\t%S:%D\n", file, (int64) line);
 		}

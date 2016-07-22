@@ -23,10 +23,7 @@
 # BUILTIN_<ITERATOR> macros, which expand to VAR<N> Macros covering the
 # same set of modes as the iterator in iterators.md
 #
-# Find the <ITERATOR> definitions (may span several lines), skip the ones
-# which does not have a simple format because it contains characters we
-# don't want to or can't handle (e.g P, PTR iterators change depending on
-# Pmode and ptr_mode).
+# Find the <ITERATOR> definitions (may span several lines).
 LC_ALL=C awk '
 BEGIN {
 	print "/* -*- buffer-read-only: t -*- */"
@@ -49,12 +46,24 @@ iterdef {
 	sub(/.*\(define_mode_iterator/, "", s)
 }
 
-iterdef && s ~ /\)/ {
+iterdef {
+	# Count the parentheses, the iterator definition ends
+	# if there are more closing ones than opening ones.
+	nopen = gsub(/\(/, "(", s)
+	nclose = gsub(/\)/, ")", s)
+	if (nopen >= nclose)
+		next
+
 	iterdef = 0
 
 	gsub(/[ \t]+/, " ", s)
-	sub(/ *\).*/, "", s)
+	sub(/ *\)[^)]*$/, "", s)
 	sub(/^ /, "", s)
+
+	# Drop the conditions.
+	gsub(/ *"[^"]*" *\)/, "", s)
+	gsub(/\( */, "", s)
+
 	if (s !~ /^[A-Za-z0-9_]+ \[[A-Z0-9 ]*\]$/)
 		next
 	sub(/\[ */, "", s)

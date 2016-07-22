@@ -3,7 +3,6 @@
    these cases.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-times "addc" 4 } }  */
 /* { dg-final { scan-assembler-times "subc" 5 } }  */
 /* { dg-final { scan-assembler-times "movt" 1 } }  */

@@ -1,5 +1,5 @@
 /* Test for MS bitfield layout */
-/* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* i?86-*-* x86_64-*-* } } */
+/* { dg-do run { target *-*-mingw* *-*-cygwin* i?86-*-* x86_64-*-* } } */
 
 extern void abort();
 

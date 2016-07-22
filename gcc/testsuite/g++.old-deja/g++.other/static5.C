@@ -9,7 +9,7 @@ struct S
 inline void f()
 {
   static S s;
-  atexit (0); // { dg-error "" } implicit declaration
+  atexit (0); // { dg-error "3:'atexit' was not declared" } implicit declaration
 }
 
 

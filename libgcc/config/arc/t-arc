@@ -68,6 +68,9 @@ crtg.o: $(srcdir)/config/arc/crtg.S
 crtgend.o: $(srcdir)/config/arc/crtgend.S
 	$(crt_compile) -c -x assembler-with-cpp $<
 
+crttls.o: $(srcdir)/config/arc/crttls.S
+	$(crt_compile) -c -x assembler-with-cpp $<
+
 mcount.o: $(srcdir)/config/arc/gmon/mcount.c
 	$(gcc_compile) -isystem $(srcdir)/config/arc/gmon -c $< \
 	-fcall-saved-r0 -fcall-saved-r1 -fcall-saved-r2 -fcall-saved-r3 \

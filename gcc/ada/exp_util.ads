@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,6 +238,19 @@ package Exp_Util is
    --  must be a free statement. If flag Is_Allocate is set, the generated
    --  routine is allocate, deallocate otherwise.
 
+   function Build_Abort_Undefer_Block
+     (Loc     : Source_Ptr;
+      Stmts   : List_Id;
+      Context : Node_Id) return Node_Id;
+   --  Wrap statements Stmts in a block where the AT END handler contains a
+   --  call to Abort_Undefer_Direct. Context is the node which prompted the
+   --  inlining of the abort undefer routine. Note that this routine does
+   --  not install a call to Abort_Defer.
+
+   procedure Build_Procedure_Form (N : Node_Id);
+   --  Create a procedure declaration which emulates the behavior of a function
+   --  that returns an array type, for C-compatible generation.
+
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.
    --  The call has no parameters. The first argument provides the location
@@ -275,6 +288,35 @@ package Exp_Util is
    --  procedure must be flagged as using the secondary stack. If In_Init_Proc
    --  is false, the call is for a stand-alone object, and the generated
    --  function itself must do its own cleanups.
+
+   procedure Build_Transient_Object_Statements
+     (Obj_Decl     : Node_Id;
+      Fin_Call     : out Node_Id;
+      Hook_Assign  : out Node_Id;
+      Hook_Clear   : out Node_Id;
+      Hook_Decl    : out Node_Id;
+      Ptr_Decl     : out Node_Id;
+      Finalize_Obj : Boolean := True);
+   --  Subsidiary to the processing of transient objects in transient scopes,
+   --  if expressions, case expressions, expression_with_action nodes, array
+   --  aggregates, and record aggregates. Obj_Decl denotes the declaration of
+   --  the transient object. Generate the following nodes:
+   --
+   --    * Fin_Call - the call to [Deep_]Finalize which cleans up the transient
+   --    object if flag Finalize_Obj is set to True, or finalizes the hook when
+   --    the flag is False.
+   --
+   --    * Hook_Assign - the assignment statement which captures a reference to
+   --    the transient object in the hook.
+   --
+   --    * Hook_Clear - the assignment statement which resets the hook to null
+   --
+   --    * Hook_Decl - the declaration of the hook object
+   --
+   --    * Ptr_Decl - the full type declaration of the hook type
+   --
+   --  These nodes are inserted in specific places depending on the context by
+   --  the various Process_Transient_xxx routines.
 
    procedure Check_Float_Op_Overflow (N : Node_Id);
    --  Called where we could have a floating-point binary operator where we
@@ -469,13 +511,6 @@ package Exp_Util is
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
    --  return the record component containing the tag of Iface.
 
-   function Find_Primitive_Operations
-     (T    : Entity_Id;
-      Name : Name_Id) return Node_Id;
-   --  Return a reference to a primitive operation with given name. If
-   --  operation is overloaded, the node carries the corresponding set
-   --  of overloaded interpretations.
-
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
@@ -529,19 +564,25 @@ package Exp_Util is
    --  Note: currently this function does not scan the private part, that seems
    --  like a potential bug ???
 
+   type Force_Evaluation_Mode is (Relaxed, Strict);
+
    procedure Force_Evaluation
      (Exp           : Node_Id;
       Name_Req      : Boolean   := False;
       Related_Id    : Entity_Id := Empty;
       Is_Low_Bound  : Boolean   := False;
-      Is_High_Bound : Boolean   := False);
+      Is_High_Bound : Boolean   := False;
+      Mode          : Force_Evaluation_Mode := Relaxed);
    --  Force the evaluation of the expression right away. Similar behavior
    --  to Remove_Side_Effects when Variable_Ref is set to TRUE. That is to
    --  say, it removes the side effects and captures the values of the
    --  variables. Remove_Side_Effects guarantees that multiple evaluations
    --  of the same expression won't generate multiple side effects, whereas
    --  Force_Evaluation further guarantees that all evaluations will yield
-   --  the same result.
+   --  the same result. If Mode is Relaxed then calls to this subprogram have
+   --  no effect if Exp is side-effect free; if Mode is Strict and Exp is not
+   --  a static expression then no side-effect check is performed on Exp and
+   --  temporaries are unconditionally generated.
    --
    --  Related_Id denotes the entity of the context where Expr appears. Flags
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
@@ -864,13 +905,14 @@ package Exp_Util is
    --  associated with Var, and if found, remove and return that call node.
 
    procedure Remove_Side_Effects
-     (Exp           : Node_Id;
-      Name_Req      : Boolean   := False;
-      Renaming_Req  : Boolean   := False;
-      Variable_Ref  : Boolean   := False;
-      Related_Id    : Entity_Id := Empty;
-      Is_Low_Bound  : Boolean   := False;
-      Is_High_Bound : Boolean   := False);
+     (Exp                : Node_Id;
+      Name_Req           : Boolean   := False;
+      Renaming_Req       : Boolean   := False;
+      Variable_Ref       : Boolean   := False;
+      Related_Id         : Entity_Id := Empty;
+      Is_Low_Bound       : Boolean   := False;
+      Is_High_Bound      : Boolean   := False;
+      Check_Side_Effects : Boolean   := True);
    --  Given the node for a subexpression, this function replaces the node if
    --  necessary by an equivalent subexpression that is guaranteed to be side
    --  effect free. This is done by extracting any actions that could cause
@@ -883,7 +925,8 @@ package Exp_Util is
    --  expression. If Variable_Ref is set to True, a variable is considered as
    --  side effect (used in implementing Force_Evaluation). Note: after call to
    --  Remove_Side_Effects, it is safe to call New_Copy_Tree to obtain a copy
-   --  of the resulting expression.
+   --  of the resulting expression. If Check_Side_Effects is set to True then
+   --  no action is performed if Exp is known to be side-effect free.
    --
    --  Related_Id denotes the entity of the context where Expr appears. Flags
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
@@ -980,7 +1023,7 @@ package Exp_Util is
      (L            : List_Id;
       Name_Req     : Boolean := False;
       Variable_Ref : Boolean := False) return Boolean;
-   --  Determines if all elements of the list L are side effect free. Name_Req
+   --  Determines if all elements of the list L are side-effect free. Name_Req
    --  and Variable_Ref are as described above.
 
    procedure Silly_Boolean_Array_Not_Test (N : Node_Id; T : Entity_Id);

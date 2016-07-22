@@ -30,7 +30,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace placeholders 
+  namespace placeholders
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
     extern const _Placeholder<1> _1{};

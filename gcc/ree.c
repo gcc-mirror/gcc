@@ -544,10 +544,10 @@ struct ext_state
   /* In order to avoid constant alloc/free, we keep these
      4 vectors live through the entire find_and_remove_re and just
      truncate them each time.  */
-  vec<rtx_insn *> defs_list;
-  vec<rtx_insn *> copies_list;
-  vec<rtx_insn *> modified_list;
-  vec<rtx_insn *> work_list;
+  auto_vec<rtx_insn *> defs_list;
+  auto_vec<rtx_insn *> copies_list;
+  auto_vec<rtx_insn *> modified_list;
+  auto_vec<rtx_insn *> work_list;
 
   /* For instructions that have been successfully modified, this is
      the original mode from which the insn is extending and
@@ -1147,7 +1147,6 @@ find_and_remove_re (void)
   vec<ext_cand> reinsn_list;
   auto_vec<rtx_insn *> reinsn_del_list;
   auto_vec<rtx_insn *> reinsn_copy_list;
-  ext_state state;
 
   /* Construct DU chain to get all reaching definitions of each
      extension instruction.  */
@@ -1159,10 +1158,8 @@ find_and_remove_re (void)
 
   max_insn_uid = get_max_uid ();
   reinsn_list = find_removable_extensions ();
-  state.defs_list.create (0);
-  state.copies_list.create (0);
-  state.modified_list.create (0);
-  state.work_list.create (0);
+
+  ext_state state;
   if (reinsn_list.is_empty ())
     state.modified = NULL;
   else
@@ -1238,10 +1235,6 @@ find_and_remove_re (void)
     delete_insn (curr_insn);
 
   reinsn_list.release ();
-  state.defs_list.release ();
-  state.copies_list.release ();
-  state.modified_list.release ();
-  state.work_list.release ();
   XDELETEVEC (state.modified);
 
   if (dump_file && num_re_opportunities > 0)

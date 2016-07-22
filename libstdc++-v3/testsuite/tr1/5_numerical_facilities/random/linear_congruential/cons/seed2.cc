@@ -27,7 +27,7 @@ void
 test01()
 {
   using namespace std::tr1;
-  
+
   double seed = 2.0;
   linear_congruential<unsigned long, 48271, 0, 2147483647> x(seed);
 }

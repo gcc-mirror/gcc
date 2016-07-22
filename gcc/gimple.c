@@ -38,6 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "gimplify.h"
 #include "target.h"
+#include "builtins.h"
+#include "selftest.h"
+#include "gimple-pretty-print.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -359,6 +362,7 @@ gimple_build_call_from_tree (tree t)
   /* Carry all the CALL_EXPR flags to the new GIMPLE_CALL.  */
   gimple_call_set_chain (call, CALL_EXPR_STATIC_CHAIN (t));
   gimple_call_set_tail (call, CALL_EXPR_TAILCALL (t));
+  gimple_call_set_must_tail (call, CALL_EXPR_MUST_TAIL_CALL (t));
   gimple_call_set_return_slot_opt (call, CALL_EXPR_RETURN_SLOT_OPT (t));
   if (fndecl
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
@@ -1355,7 +1359,8 @@ gimple_call_same_target_p (const gimple *c1, const gimple *c2)
   if (gimple_call_internal_p (c1))
     return (gimple_call_internal_p (c2)
 	    && gimple_call_internal_fn (c1) == gimple_call_internal_fn (c2)
-	    && !gimple_call_internal_unique_p (as_a <const gcall *> (c1)));
+	    && (!gimple_call_internal_unique_p (as_a <const gcall *> (c1))
+		|| c1 == c2));
   else
     return (gimple_call_fn (c1) == gimple_call_fn (c2)
 	    || (gimple_call_fndecl (c1)
@@ -2042,6 +2047,7 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == REALIGN_LOAD_EXPR					    \
       || (SYM) == VEC_COND_EXPR						    \
       || (SYM) == VEC_PERM_EXPR                                             \
+      || (SYM) == BIT_INSERT_EXPR					    \
       || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
    : ((SYM) == CONSTRUCTOR						    \
       || (SYM) == OBJ_TYPE_REF						    \
@@ -2394,21 +2400,6 @@ gimple_signed_type (tree type)
 alias_set_type
 gimple_get_alias_set (tree t)
 {
-  tree u;
-
-  /* Permit type-punning when accessing a union, provided the access
-     is directly through the union.  For example, this code does not
-     permit taking the address of a union member and then storing
-     through it.  Even the type-punning allowed here is a GCC
-     extension, albeit a common and useful one; the C standard says
-     that such accesses have implementation-defined behavior.  */
-  for (u = t;
-       TREE_CODE (u) == COMPONENT_REF || TREE_CODE (u) == ARRAY_REF;
-       u = TREE_OPERAND (u, 0))
-    if (TREE_CODE (u) == COMPONENT_REF
-	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
-      return 0;
-
   /* That's all the expressions we handle specially.  */
   if (!TYPE_P (t))
     return -1;
@@ -2486,7 +2477,16 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
       if (!targs)
 	return true;
       tree arg = gimple_call_arg (stmt, i);
-      if (!useless_type_conversion_p (TREE_VALUE (targs), TREE_TYPE (arg)))
+      tree type = TREE_VALUE (targs);
+      if (!useless_type_conversion_p (type, TREE_TYPE (arg))
+	  /* char/short integral arguments are promoted to int
+	     by several frontends if targetm.calls.promote_prototypes
+	     is true.  Allow such promotion too.  */
+	  && !(INTEGRAL_TYPE_P (type)
+	       && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl))
+	       && useless_type_conversion_p (integer_type_node,
+					     TREE_TYPE (arg))))
 	return false;
       targs = TREE_CHAIN (targs);
     }
@@ -2570,6 +2570,10 @@ gimple_asm_clobbers_memory_p (const gasm *stmt)
       if (strcmp (TREE_STRING_POINTER (TREE_VALUE (op)), "memory") == 0)
 	return true;
     }
+
+  /* Non-empty basic ASM implicitly clobbers memory.  */
+  if (gimple_asm_input_p (stmt) && strlen (gimple_asm_string (stmt)) != 0)
+    return true;
 
   return false;
 }
@@ -2992,7 +2996,7 @@ gimple_seq_discard (gimple_seq seq)
 
 /* See if STMT now calls function that takes no parameters and if so, drop
    call arguments.  This is used when devirtualization machinery redirects
-   to __builtiln_unreacahble or __cxa_pure_virutal.  */
+   to __builtin_unreachable or __cxa_pure_virtual.  */
 
 void
 maybe_remove_unused_call_args (struct function *fn, gimple *stmt)
@@ -3006,3 +3010,151 @@ maybe_remove_unused_call_args (struct function *fn, gimple *stmt)
       update_stmt_fn (fn, stmt);
     }
 }
+
+/* Return false if STMT will likely expand to real function call.  */
+
+bool
+gimple_inexpensive_call_p (gcall *stmt)
+{
+  if (gimple_call_internal_p (stmt))
+    return true;
+  tree decl = gimple_call_fndecl (stmt);
+  if (decl && is_inexpensive_builtin (decl))
+    return true;
+  return false;
+}
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for core gimple structures.  */
+
+/* Verify that STMT is pretty-printed as EXPECTED.
+   Helper function for selftests.  */
+
+static void
+verify_gimple_pp (const char *expected, gimple *stmt)
+{
+  pretty_printer pp;
+  pp_gimple_stmt_1 (&pp, stmt, 0 /* spc */, 0 /* flags */);
+  ASSERT_STREQ (expected, pp_formatted_text (&pp));
+}
+
+/* Build a GIMPLE_ASSIGN equivalent to
+     tmp = 5;
+   and verify various properties of it.  */
+
+static void
+test_assign_single ()
+{
+  tree type = integer_type_node;
+  tree lhs = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			 get_identifier ("tmp"),
+			 type);
+  tree rhs = build_int_cst (type, 5);
+  gassign *stmt = gimple_build_assign (lhs, rhs);
+  verify_gimple_pp ("tmp = 5;", stmt);
+
+  ASSERT_TRUE (is_gimple_assign (stmt));
+  ASSERT_EQ (lhs, gimple_assign_lhs (stmt));
+  ASSERT_EQ (lhs, gimple_get_lhs (stmt));
+  ASSERT_EQ (rhs, gimple_assign_rhs1 (stmt));
+  ASSERT_EQ (NULL, gimple_assign_rhs2 (stmt));
+  ASSERT_EQ (NULL, gimple_assign_rhs3 (stmt));
+  ASSERT_TRUE (gimple_assign_single_p (stmt));
+  ASSERT_EQ (INTEGER_CST, gimple_assign_rhs_code (stmt));
+}
+
+/* Build a GIMPLE_ASSIGN equivalent to
+     tmp = a * b;
+   and verify various properties of it.  */
+
+static void
+test_assign_binop ()
+{
+  tree type = integer_type_node;
+  tree lhs = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			 get_identifier ("tmp"),
+			 type);
+  tree a = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		       get_identifier ("a"),
+		       type);
+  tree b = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		       get_identifier ("b"),
+		       type);
+  gassign *stmt = gimple_build_assign (lhs, MULT_EXPR, a, b);
+  verify_gimple_pp ("tmp = a * b;", stmt);
+
+  ASSERT_TRUE (is_gimple_assign (stmt));
+  ASSERT_EQ (lhs, gimple_assign_lhs (stmt));
+  ASSERT_EQ (lhs, gimple_get_lhs (stmt));
+  ASSERT_EQ (a, gimple_assign_rhs1 (stmt));
+  ASSERT_EQ (b, gimple_assign_rhs2 (stmt));
+  ASSERT_EQ (NULL, gimple_assign_rhs3 (stmt));
+  ASSERT_FALSE (gimple_assign_single_p (stmt));
+  ASSERT_EQ (MULT_EXPR, gimple_assign_rhs_code (stmt));
+}
+
+/* Build a GIMPLE_NOP and verify various properties of it.  */
+
+static void
+test_nop_stmt ()
+{
+  gimple *stmt = gimple_build_nop ();
+  verify_gimple_pp ("GIMPLE_NOP", stmt);
+  ASSERT_EQ (GIMPLE_NOP, gimple_code (stmt));
+  ASSERT_EQ (NULL, gimple_get_lhs (stmt));
+  ASSERT_FALSE (gimple_assign_single_p (stmt));
+}
+
+/* Build a GIMPLE_RETURN equivalent to
+     return 7;
+   and verify various properties of it.  */
+
+static void
+test_return_stmt ()
+{
+  tree type = integer_type_node;
+  tree val = build_int_cst (type, 7);
+  greturn *stmt = gimple_build_return (val);
+  verify_gimple_pp ("return 7;", stmt);
+
+  ASSERT_EQ (GIMPLE_RETURN, gimple_code (stmt));
+  ASSERT_EQ (NULL, gimple_get_lhs (stmt));
+  ASSERT_EQ (val, gimple_return_retval (stmt));
+  ASSERT_FALSE (gimple_assign_single_p (stmt));
+}
+
+/* Build a GIMPLE_RETURN equivalent to
+     return;
+   and verify various properties of it.  */
+
+static void
+test_return_without_value ()
+{
+  greturn *stmt = gimple_build_return (NULL);
+  verify_gimple_pp ("return;", stmt);
+
+  ASSERT_EQ (GIMPLE_RETURN, gimple_code (stmt));
+  ASSERT_EQ (NULL, gimple_get_lhs (stmt));
+  ASSERT_EQ (NULL, gimple_return_retval (stmt));
+  ASSERT_FALSE (gimple_assign_single_p (stmt));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+gimple_c_tests ()
+{
+  test_assign_single ();
+  test_assign_binop ();
+  test_nop_stmt ();
+  test_return_stmt ();
+  test_return_without_value ();
+}
+
+} // namespace selftest
+
+
+#endif /* CHECKING_P */

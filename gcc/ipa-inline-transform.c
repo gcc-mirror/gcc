@@ -314,12 +314,24 @@ inline_call (struct cgraph_edge *e, bool update_original,
   /* Don't even think of inlining inline clone.  */
   gcc_assert (!callee->global.inlined_to);
 
-  e->inline_failed = CIF_OK;
-  DECL_POSSIBLY_INLINED (callee->decl) = true;
-
   to = e->caller;
   if (to->global.inlined_to)
     to = to->global.inlined_to;
+  if (to->thunk.thunk_p)
+    {
+      struct cgraph_node *target = to->callees->callee;
+      if (in_lto_p)
+	to->get_untransformed_body ();
+      to->expand_thunk (false, true);
+      /* When thunk is instrumented we may have multiple callees.  */
+      for (e = to->callees; e && e->callee != target; e = e->next_callee)
+	;
+      gcc_assert (e);
+    }
+
+
+  e->inline_failed = CIF_OK;
+  DECL_POSSIBLY_INLINED (callee->decl) = true;
 
   if (DECL_FUNCTION_PERSONALITY (callee->decl))
     DECL_FUNCTION_PERSONALITY (to->decl)
@@ -334,9 +346,69 @@ inline_call (struct cgraph_edge *e, bool update_original,
       if (dump_file)
 	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
 		 to->name (), to->order);
-      build_optimization_node (&opts);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
+    }
+
+  inline_summary *caller_info = inline_summaries->get (to);
+  inline_summary *callee_info = inline_summaries->get (callee);
+  if (!caller_info->fp_expressions && callee_info->fp_expressions)
+    {
+      caller_info->fp_expressions = true;
+      if (opt_for_fn (callee->decl, flag_rounding_math)
+	  != opt_for_fn (to->decl, flag_rounding_math)
+	  || opt_for_fn (callee->decl, flag_trapping_math)
+	     != opt_for_fn (to->decl, flag_trapping_math)
+	  || opt_for_fn (callee->decl, flag_unsafe_math_optimizations)
+	     != opt_for_fn (to->decl, flag_unsafe_math_optimizations)
+	  || opt_for_fn (callee->decl, flag_finite_math_only)
+	     != opt_for_fn (to->decl, flag_finite_math_only)
+	  || opt_for_fn (callee->decl, flag_signaling_nans)
+	     != opt_for_fn (to->decl, flag_signaling_nans)
+	  || opt_for_fn (callee->decl, flag_cx_limited_range)
+	     != opt_for_fn (to->decl, flag_cx_limited_range)
+	  || opt_for_fn (callee->decl, flag_signed_zeros)
+	     != opt_for_fn (to->decl, flag_signed_zeros)
+	  || opt_for_fn (callee->decl, flag_associative_math)
+	     != opt_for_fn (to->decl, flag_associative_math)
+	  || opt_for_fn (callee->decl, flag_reciprocal_math)
+	     != opt_for_fn (to->decl, flag_reciprocal_math)
+	  || opt_for_fn (callee->decl, flag_fp_int_builtin_inexact)
+	     != opt_for_fn (to->decl, flag_fp_int_builtin_inexact)
+	  || opt_for_fn (callee->decl, flag_errno_math)
+	     != opt_for_fn (to->decl, flag_errno_math))
+	{
+	  struct gcc_options opts = global_options;
+
+	  cl_optimization_restore (&opts, opts_for_fn (to->decl));
+	  opts.x_flag_rounding_math
+	    = opt_for_fn (callee->decl, flag_rounding_math);
+	  opts.x_flag_trapping_math
+	    = opt_for_fn (callee->decl, flag_trapping_math);
+	  opts.x_flag_unsafe_math_optimizations
+	    = opt_for_fn (callee->decl, flag_unsafe_math_optimizations);
+	  opts.x_flag_finite_math_only
+	    = opt_for_fn (callee->decl, flag_finite_math_only);
+	  opts.x_flag_signaling_nans
+	    = opt_for_fn (callee->decl, flag_signaling_nans);
+	  opts.x_flag_cx_limited_range
+	    = opt_for_fn (callee->decl, flag_cx_limited_range);
+	  opts.x_flag_signed_zeros
+	    = opt_for_fn (callee->decl, flag_signed_zeros);
+	  opts.x_flag_associative_math
+	    = opt_for_fn (callee->decl, flag_associative_math);
+	  opts.x_flag_reciprocal_math
+	    = opt_for_fn (callee->decl, flag_reciprocal_math);
+	  opts.x_flag_fp_int_builtin_inexact
+	    = opt_for_fn (callee->decl, flag_fp_int_builtin_inexact);
+	  opts.x_flag_errno_math
+	    = opt_for_fn (callee->decl, flag_errno_math);
+	  if (dump_file)
+	    fprintf (dump_file, "Copying FP flags from %s:%i to %s:%i\n",
+		     callee->name (), callee->order, to->name (), to->order);
+	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
+	     = build_optimization_node (&opts);
+	}
     }
 
   /* If aliases are involved, redirect edge to the actual destination and
@@ -441,6 +513,22 @@ save_inline_function_body (struct cgraph_node *node)
 
   /* first_clone will be turned into real function.  */
   first_clone = node->clones;
+
+  /* Arrange first clone to not be thunk as those do not have bodies.  */
+  if (first_clone->thunk.thunk_p)
+    {
+      while (first_clone->thunk.thunk_p)
+        first_clone = first_clone->next_sibling_clone;
+      first_clone->prev_sibling_clone->next_sibling_clone
+	= first_clone->next_sibling_clone;
+      if (first_clone->next_sibling_clone)
+	first_clone->next_sibling_clone->prev_sibling_clone
+	   = first_clone->prev_sibling_clone;
+      first_clone->next_sibling_clone = node->clones;
+      first_clone->prev_sibling_clone = NULL;
+      node->clones->prev_sibling_clone = first_clone;
+      node->clones = first_clone;
+    }
   first_clone->decl = copy_node (node->decl);
   first_clone->decl->decl_with_vis.symtab_node = first_clone;
   gcc_assert (first_clone == cgraph_node::get (first_clone->decl));
@@ -449,7 +537,8 @@ save_inline_function_body (struct cgraph_node *node)
      first_clone.  */
   if (first_clone->next_sibling_clone)
     {
-      for (n = first_clone->next_sibling_clone; n->next_sibling_clone; n = n->next_sibling_clone)
+      for (n = first_clone->next_sibling_clone; n->next_sibling_clone;
+	   n = n->next_sibling_clone)
         n->clone_of = first_clone;
       n->clone_of = first_clone;
       n->next_sibling_clone = first_clone->clones;
@@ -522,9 +611,10 @@ preserve_function_body_p (struct cgraph_node *node)
   gcc_assert (symtab->global_info_ready);
   gcc_assert (!node->alias && !node->thunk.thunk_p);
 
-  /* Look if there is any clone around.  */
-  if (node->clones)
-    return true;
+  /* Look if there is any non-thunk clone around.  */
+  for (node = node->clones; node; node = node->next_sibling_clone)
+    if (!node->thunk.thunk_p)
+      return true;
   return false;
 }
 

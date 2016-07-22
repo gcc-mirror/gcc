@@ -40,9 +40,9 @@
   // Constructor, copy constructor, assignment and destructor.
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-container_rand_regression_test(unsigned long seed, size_t n, size_t m, 
-			       double tp, double ip, double dp, double ep, 
-			       double cp, double mp, bool disp) 
+container_rand_regression_test(unsigned long seed, size_t n, size_t m,
+			       double tp, double ip, double dp, double ep,
+			       double cp, double mp, bool disp)
 : m_seed(seed == 0 ? twister_rand_gen::get_time_determined_seed(): seed),
   m_n(n), m_m(m), m_tp(tp), m_ip(ip), m_dp(dp), m_ep(ep), m_cp(cp),
   m_mp(mp), m_disp(disp), m_p_c(0)
@@ -202,27 +202,27 @@ cmp(const Cntnr& c, const native_type& native, const std::string& callfn)
   try
     {
       m_alloc.set_probability(1);
-      
+
       const size_t size = c.size();
       const size_t native_size = native.size();
       _GLIBCXX_THROW_IF(size != native_size, size << " " << native_size,
 			&c, &native);
-      
+
       const bool empty = c.empty();
       const bool native_empty = native.empty();
-      _GLIBCXX_THROW_IF(empty != native_empty, empty << " " << native_empty, 
+      _GLIBCXX_THROW_IF(empty != native_empty, empty << " " << native_empty,
 			&c, &native);
-      
+
       const size_t it_size = std::distance(c.begin(), c.end());
       _GLIBCXX_THROW_IF(it_size != size, it_size << " " << size, &c, &native);
-      
+
       if (!c.empty())
 	{
 	  const std::string native_top = native.top();
 	  const std::string top = test_traits::native_value(c.top());
 	  const bool top_smaller = std::less<std::string>()(top, native_top);
 	  const bool top_larger = std::less<std::string>()(native_top, top);
-	  
+
 	  if (top_smaller || top_larger)
 	    _GLIBCXX_THROW_IF(true, top << " " << native_top, &c, &native);
 	}
@@ -231,7 +231,7 @@ cmp(const Cntnr& c, const native_type& native, const std::string& callfn)
     {
       _GLIBCXX_THROW_IF(true, "call-fn: " + callfn, &c, &native);
     }
-  
+
   notify.cancel();
 }
 
@@ -349,10 +349,10 @@ operator()()
   allocator_type::set_label(0);
   delete m_p_c;
 
-  try 
-    { 
+  try
+    {
       for (size_t n = starting_label; n <= m_n; ++n)
-	m_alloc.check(n); 
+	m_alloc.check(n);
     }
   catch (std::logic_error& obj)
     {
@@ -542,19 +542,19 @@ erase_if()
       typedef
 	typename std::iterator_traits<typename cntnr::iterator>::reference
 	it_const_reference;
-      
+
       m_alloc.set_probability(1);
-      
+
       typedef
 	typename test_traits::template erase_if_fn<value_type>
 	erase_if_fn_t;
-      
+
       const size_t ersd = m_p_c->erase_if(erase_if_fn_t());
-      
+
       typedef
 	typename test_traits::template erase_if_fn<std::string>
 	native_erase_if_fn_t;
-      
+
       const size_t native_ersd = m_native_c.erase_if(native_erase_if_fn_t());
 
       _GLIBCXX_THROW_IF(ersd != native_ersd, ersd << " " << native_ersd,
@@ -562,7 +562,7 @@ erase_if()
     }
   catch(__gnu_cxx::forced_error&)
     {
-      done = false;      
+      done = false;
       _GLIBCXX_THROW_IF(true, "", m_p_c, &m_native_c);
     }
 
@@ -582,19 +582,19 @@ erase_it()
   bool done = true;
   try
     {
-      m_alloc.set_probability(1);      
-      typename cntnr::iterator it = m_p_c->begin();      
+      m_alloc.set_probability(1);
+      typename cntnr::iterator it = m_p_c->begin();
       std::advance(it, m_g.get_unsigned_long(0, m_p_c->size()));
-      
+
       if (it != m_p_c->end())
 	{
-	  m_native_c.erase(*it);	 
+	  m_native_c.erase(*it);
 	  m_p_c->erase(it);
 	}
     }
   catch(__gnu_cxx::forced_error&)
     {
-      done = false;      
+      done = false;
       _GLIBCXX_THROW_IF(true, "", m_p_c, &m_native_c);
     }
 
@@ -694,34 +694,34 @@ split_join()
       Cntnr rhs;
       native_type native_lhs(m_native_c);
       m_alloc.set_probability(m_tp);
-      
+
       typedef typename test_traits::template erase_if_fn<value_type> split_fn_t;
       lhs.split(split_fn_t(), rhs);
-      
+
       typedef typename test_traits::template erase_if_fn<std::string>
 	native_split_fn_t;
-      
-      native_type native_rhs;      
-      native_lhs.split(native_split_fn_t(), native_rhs);      
+
+      native_type native_rhs;
+      native_lhs.split(native_split_fn_t(), native_rhs);
       PB_DS_COND_COMPARE(lhs, native_lhs);
       PB_DS_COND_COMPARE(rhs, native_rhs);
-      
+
       m_alloc.set_probability(m_tp);
-      
+
       if (m_g.get_prob() < 0.5)
-	lhs.swap(rhs);      
+	lhs.swap(rhs);
       lhs.join(rhs);
-      
+
       _GLIBCXX_THROW_IF(rhs.size() != 0, rhs.size(), m_p_c, &m_native_c);
       _GLIBCXX_THROW_IF(!rhs.empty(), rhs.size(), m_p_c, &m_native_c);
     }
   catch(__gnu_cxx::forced_error&)
     {
-      done = false;      
+      done = false;
       const bool b = __gnu_pbds::container_traits<cntnr>::split_join_can_throw;
       _GLIBCXX_THROW_IF(!b, b, m_p_c, &m_native_c);
     }
-  
+
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
   notify.cancel();
   return done;

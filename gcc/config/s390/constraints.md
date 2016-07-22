@@ -77,8 +77,8 @@
 ;;    B -- Multiple letter constraint followed by Q, R, S, or T:
 ;;         Memory reference of the type specified by second letter that
 ;;         does *not* refer to a literal pool entry.
-;;    U -- Pointer with short displacement. (deprecated - use ZQZR)
-;;    W -- Pointer with long displacement. (deprecated - use ZSZT)
+;;    U -- Pointer with short displacement. (deprecated - use ZR)
+;;    W -- Pointer with long displacement. (deprecated - use ZT)
 ;;    Y -- Address style operand without index.
 ;;    ZQ -- Pointer without index register and with short displacement.
 ;;    ZR -- Pointer with index register and short displacement.
@@ -455,8 +455,7 @@
 ; the TARGET_MEM_CONSTRAINT macro.
 (define_memory_constraint "m"
   "Matches the most general memory address for pre-z10 machines."
-  (match_test "s390_mem_constraint (\"R\", op)
-               || s390_mem_constraint (\"T\", op)"))
+  (match_test "s390_mem_constraint (\"T\", op)"))
 
 (define_memory_constraint "AQ"
   "@internal
@@ -512,12 +511,12 @@
 
 
 (define_address_constraint "U"
-  "Pointer with short displacement. (deprecated - use ZQZR)"
-  (match_test "s390_mem_constraint (\"U\", op)"))
+  "Pointer with short displacement. (deprecated - use ZR)"
+  (match_test "s390_mem_constraint (\"ZR\", op)"))
 
 (define_address_constraint "W"
-  "Pointer with long displacement. (deprecated - use ZSZT)"
-  (match_test "s390_mem_constraint (\"W\", op)"))
+  "Pointer with long displacement. (deprecated - use ZT)"
+  (match_test "s390_mem_constraint (\"ZT\", op)"))
 
 
 (define_address_constraint "ZQ"

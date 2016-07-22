@@ -48,6 +48,7 @@ var setStringTests = []StringTest{
 	{"53/70893980658822810696", "53/70893980658822810696", true},
 	{"106/141787961317645621392", "53/70893980658822810696", true},
 	{"204211327800791583.81095", "4084226556015831676219/20000", true},
+	{"0e9999999999", "0", true}, // issue #16176
 	{in: "1/0"},
 }
 
@@ -137,7 +138,7 @@ func TestFloatString(t *testing.T) {
 	}
 }
 
-// Test inputs to Rat.SetString.  The prefix "long:" causes the test
+// Test inputs to Rat.SetString. The prefix "long:" causes the test
 // to be skipped in --test.short mode.  (The threshold is about 500us.)
 var float64inputs = []string{
 	// Constants plundered from strconv/testfp.txt.

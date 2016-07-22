@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -195,24 +195,6 @@ package body Switch.M is
                   if Switch_Chars = "--RTS=mtp" then
                      Add_Switch_Component ("-mrtp");
                   end if;
-
-               --  Switch for universal addressing on AAMP target
-
-               elsif Switch_Chars'Length >= 5
-                 and then
-                   Switch_Chars
-                     (Switch_Chars'First .. Switch_Chars'First + 4) = "-univ"
-               then
-                  Add_Switch_Component (Switch_Chars);
-
-               --  Switch for specifying AAMP target library
-
-               elsif Switch_Chars'Length > 13
-                 and then
-                   Switch_Chars (Switch_Chars'First .. Switch_Chars'First + 12)
-                     = "-aamp_target="
-               then
-                  Add_Switch_Component (Switch_Chars);
 
                --  Special case for -fstack-check (alias for
                --  -fstack-check=specific)

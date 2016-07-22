@@ -197,17 +197,17 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%r" ((USItype) (ah)),					\
-	     "rIJ" ((USItype) (bh)),					\
+	     "rICal" ((USItype) (bh)),					\
 	     "%r" ((USItype) (al)),					\
-	     "rIJ" ((USItype) (bl)))
+	     "rICal" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("sub.f	%1, %4, %5\n\tsbc	%0, %2, %3"		\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "r" ((USItype) (ah)),					\
-	     "rIJ" ((USItype) (bh)),					\
+	     "rICal" ((USItype) (bh)),					\
 	     "r" ((USItype) (al)),					\
-	     "rIJ" ((USItype) (bl)))
+	     "rICal" ((USItype) (bl)))
 
 #define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
 #ifdef __ARC_NORM__
@@ -221,8 +221,8 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
     }									\
   while (0)
 #define COUNT_LEADING_ZEROS_0 32
-#endif
-#endif
+#endif /* __ARC_NORM__ */
+#endif /* __arc__ */
 
 #if defined (__arm__) && (defined (__thumb2__) || !defined (__thumb__)) \
  && W_TYPE_SIZE == 32
@@ -1086,7 +1086,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif
 
-#if defined(__sh__) && (!defined (__SHMEDIA__) || !__SHMEDIA__) && W_TYPE_SIZE == 32
+#if defined(__sh__) && W_TYPE_SIZE == 32
 #ifndef __sh1__
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ (								\
@@ -1158,21 +1158,6 @@ extern UDItype __umulsidi3 (USItype, USItype);
 	   : "0" (ah), "1" (al), "r" (bh), "r" (bl) : "t")
 
 #endif /* __sh__ */
-
-#if defined (__SH5__) && defined (__SHMEDIA__) && __SHMEDIA__ && W_TYPE_SIZE == 32
-#define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
-#define count_leading_zeros(count, x) \
-  do									\
-    {									\
-      UDItype x_ = (USItype)(x);					\
-      SItype c_;							\
-									\
-      __asm__ ("nsb %1, %0" : "=r" (c_) : "r" (x_));			\
-      (count) = c_ - 31;						\
-    }									\
-  while (0)
-#define COUNT_LEADING_ZEROS_0 32
-#endif
 
 #if defined (__sparc__) && !defined (__arch64__) && !defined (__sparcv9) \
     && W_TYPE_SIZE == 32

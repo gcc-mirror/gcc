@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1339,7 +1339,13 @@ package body System.Tasking.Stages is
 
       if Self_ID.Common.Specific_Handler /= null then
          TH := Self_ID.Common.Specific_Handler;
-      else
+
+      --  Independent tasks should not call the Fall_Back_Handler (of the
+      --  environment task), because they are implementation artifacts that
+      --  should be invisible to Ada programs.
+
+      elsif Self_ID.Master_of_Task /= Independent_Task_Level then
+
          --  Look for a fall-back handler following the master relationship
          --  for the task. As specified in ARM C.7.3 par. 9/2, "the fall-back
          --  handler applies only to the dependent tasks of the task". Hence,

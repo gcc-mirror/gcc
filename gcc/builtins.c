@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
+#include "gimple-fold.h"
 
 
 struct target_builtins default_target_builtins;
@@ -258,7 +259,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
   /* Get the innermost object and the constant (bitpos) and possibly
      variable (offset) offset of the access.  */
   exp = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
-			     &unsignedp, &reversep, &volatilep, true);
+			     &unsignedp, &reversep, &volatilep);
 
   /* Extract alignment information from the innermost object and
      possibly adjust bitpos and offset.  */
@@ -287,10 +288,6 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
     {
       align = DECL_ALIGN (exp);
       known_alignment = true;
-    }
-  else if (TREE_CODE (exp) == VIEW_CONVERT_EXPR)
-    {
-      align = TYPE_ALIGN (TREE_TYPE (exp));
     }
   else if (TREE_CODE (exp) == INDIRECT_REF
 	   || TREE_CODE (exp) == MEM_REF
@@ -671,11 +668,11 @@ target_char_cast (tree cst, char *p)
   val = TREE_INT_CST_LOW (cst);
 
   if (CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT)
-    val &= (((unsigned HOST_WIDE_INT) 1) << CHAR_TYPE_SIZE) - 1;
+    val &= (HOST_WIDE_INT_1U << CHAR_TYPE_SIZE) - 1;
 
   hostval = val;
   if (HOST_BITS_PER_CHAR < HOST_BITS_PER_WIDE_INT)
-    hostval &= (((unsigned HOST_WIDE_INT) 1) << HOST_BITS_PER_CHAR) - 1;
+    hostval &= (HOST_WIDE_INT_1U << HOST_BITS_PER_CHAR) - 1;
 
   if (val != hostval)
     return 1;
@@ -3671,53 +3668,24 @@ expand_cmpstr (insn_code icode, rtx target, rtx arg1_rtx, rtx arg2_rtx,
   return NULL_RTX;
 }
 
-/* Try to expand cmpstrn or cmpmem operation ICODE with the given operands.
-   ARG3_TYPE is the type of ARG3_RTX.  Return the result rtx on success,
-   otherwise return null.  */
-
-static rtx
-expand_cmpstrn_or_cmpmem (insn_code icode, rtx target, rtx arg1_rtx,
-			  rtx arg2_rtx, tree arg3_type, rtx arg3_rtx,
-			  HOST_WIDE_INT align)
-{
-  machine_mode insn_mode = insn_data[icode].operand[0].mode;
-
-  if (target && (!REG_P (target) || HARD_REGISTER_P (target)))
-    target = NULL_RTX;
-
-  struct expand_operand ops[5];
-  create_output_operand (&ops[0], target, insn_mode);
-  create_fixed_operand (&ops[1], arg1_rtx);
-  create_fixed_operand (&ops[2], arg2_rtx);
-  create_convert_operand_from (&ops[3], arg3_rtx, TYPE_MODE (arg3_type),
-			       TYPE_UNSIGNED (arg3_type));
-  create_integer_operand (&ops[4], align);
-  if (maybe_expand_insn (icode, 5, ops))
-    return ops[0].value;
-  return NULL_RTX;
-}
-
 /* Expand expression EXP, which is a call to the memcmp built-in function.
    Return NULL_RTX if we failed and the caller should emit a normal call,
-   otherwise try to get the result in TARGET, if convenient.  */
+   otherwise try to get the result in TARGET, if convenient.
+   RESULT_EQ is true if we can relax the returned value to be either zero
+   or nonzero, without caring about the sign.  */
 
 static rtx
-expand_builtin_memcmp (tree exp, rtx target)
+expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 {
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  /* Note: The cmpstrnsi pattern, if it exists, is not suitable for
-     implementing memcmp because it will stop if it encounters two
-     zero bytes.  */
-  insn_code icode = direct_optab_handler (cmpmem_optab, SImode);
-  if (icode == CODE_FOR_nothing)
-    return NULL_RTX;
-
   tree arg1 = CALL_EXPR_ARG (exp, 0);
   tree arg2 = CALL_EXPR_ARG (exp, 1);
   tree len = CALL_EXPR_ARG (exp, 2);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  location_t loc = EXPR_LOCATION (exp);
 
   unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
   unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
@@ -3726,22 +3694,38 @@ expand_builtin_memcmp (tree exp, rtx target)
   if (arg1_align == 0 || arg2_align == 0)
     return NULL_RTX;
 
-  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  location_t loc = EXPR_LOCATION (exp);
   rtx arg1_rtx = get_memory_rtx (arg1, len);
   rtx arg2_rtx = get_memory_rtx (arg2, len);
-  rtx arg3_rtx = expand_normal (fold_convert_loc (loc, sizetype, len));
+  rtx len_rtx = expand_normal (fold_convert_loc (loc, sizetype, len));
 
   /* Set MEM_SIZE as appropriate.  */
-  if (CONST_INT_P (arg3_rtx))
+  if (CONST_INT_P (len_rtx))
     {
-      set_mem_size (arg1_rtx, INTVAL (arg3_rtx));
-      set_mem_size (arg2_rtx, INTVAL (arg3_rtx));
+      set_mem_size (arg1_rtx, INTVAL (len_rtx));
+      set_mem_size (arg2_rtx, INTVAL (len_rtx));
     }
 
-  rtx result = expand_cmpstrn_or_cmpmem (icode, target, arg1_rtx, arg2_rtx,
-					 TREE_TYPE (len), arg3_rtx,
-					 MIN (arg1_align, arg2_align));
+  by_pieces_constfn constfn = NULL;
+
+  const char *src_str = c_getstr (arg1);
+  if (src_str == NULL)
+    src_str = c_getstr (arg2);
+  else
+    std::swap (arg1_rtx, arg2_rtx);
+
+  /* If SRC is a string constant and block move would be done
+     by pieces, we can avoid loading the string from memory
+     and only stored the computed constants.  */
+  if (src_str
+      && CONST_INT_P (len_rtx)
+      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1)
+    constfn = builtin_memcpy_read_str;
+
+  rtx result = emit_block_cmp_hints (arg1_rtx, arg2_rtx, len_rtx,
+				     TREE_TYPE (len), target,
+				     result_eq, constfn,
+				     CONST_CAST (char *, src_str));
+
   if (result)
     {
       /* Return the value in the proper mode for this function.  */
@@ -3757,20 +3741,7 @@ expand_builtin_memcmp (tree exp, rtx target)
       return convert_to_mode (mode, result, 0);
     }
 
-  result = target;
-  if (! (result != 0
-	 && REG_P (result) && GET_MODE (result) == mode
-	 && REGNO (result) >= FIRST_PSEUDO_REGISTER))
-    result = gen_reg_rtx (mode);
-
-  emit_library_call_value (memcmp_libfunc, result, LCT_PURE,
-			   TYPE_MODE (integer_type_node), 3,
-			   XEXP (arg1_rtx, 0), Pmode,
-			   XEXP (arg2_rtx, 0), Pmode,
-			   convert_to_mode (TYPE_MODE (sizetype), arg3_rtx,
-					    TYPE_UNSIGNED (sizetype)),
-			   TYPE_MODE (sizetype));
-  return result;
+  return NULL_RTX;
 }
 
 /* Expand expression EXP, which is a call to the strcmp builtin.  Return NULL_RTX
@@ -4455,7 +4426,12 @@ expand_builtin_trap (void)
 	add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
     }
   else
-    emit_library_call (abort_libfunc, LCT_NORETURN, VOIDmode, 0);
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_ABORT);
+      tree call_expr = build_call_expr (fn, 0);
+      expand_call (call_expr, NULL_RTX, false);
+    }
+
   emit_barrier ();
 }
 
@@ -5178,6 +5154,123 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
   return target;
 }
 
+/* Helper function for expand_ifn_atomic_compare_exchange - expand
+   internal ATOMIC_COMPARE_EXCHANGE call into __atomic_compare_exchange_N
+   call.  The weak parameter must be dropped to match the expected parameter
+   list and the expected argument changed from value to pointer to memory
+   slot.  */
+
+static void
+expand_ifn_atomic_compare_exchange_into_call (gcall *call, machine_mode mode)
+{
+  unsigned int z;
+  vec<tree, va_gc> *vec;
+
+  vec_alloc (vec, 5);
+  vec->quick_push (gimple_call_arg (call, 0));
+  tree expected = gimple_call_arg (call, 1);
+  rtx x = assign_stack_temp_for_type (mode, GET_MODE_SIZE (mode),
+				      TREE_TYPE (expected));
+  rtx expd = expand_expr (expected, x, mode, EXPAND_NORMAL);
+  if (expd != x)
+    emit_move_insn (x, expd);
+  tree v = make_tree (TREE_TYPE (expected), x);
+  vec->quick_push (build1 (ADDR_EXPR,
+			   build_pointer_type (TREE_TYPE (expected)), v));
+  vec->quick_push (gimple_call_arg (call, 2));
+  /* Skip the boolean weak parameter.  */
+  for (z = 4; z < 6; z++)
+    vec->quick_push (gimple_call_arg (call, z));
+  built_in_function fncode
+    = (built_in_function) ((int) BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1
+			   + exact_log2 (GET_MODE_SIZE (mode)));
+  tree fndecl = builtin_decl_explicit (fncode);
+  tree fn = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fndecl)),
+		    fndecl);
+  tree exp = build_call_vec (boolean_type_node, fn, vec);
+  tree lhs = gimple_call_lhs (call);
+  rtx boolret = expand_call (exp, NULL_RTX, lhs == NULL_TREE);
+  if (lhs)
+    {
+      rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+      if (GET_MODE (boolret) != mode)
+	boolret = convert_modes (mode, GET_MODE (boolret), boolret, 1);
+      x = force_reg (mode, x);
+      write_complex_part (target, boolret, true);
+      write_complex_part (target, x, false);
+    }
+}
+
+/* Expand IFN_ATOMIC_COMPARE_EXCHANGE internal function.  */
+
+void
+expand_ifn_atomic_compare_exchange (gcall *call)
+{
+  int size = tree_to_shwi (gimple_call_arg (call, 3)) & 255;
+  gcc_assert (size == 1 || size == 2 || size == 4 || size == 8 || size == 16);
+  machine_mode mode = mode_for_size (BITS_PER_UNIT * size, MODE_INT, 0);
+  rtx expect, desired, mem, oldval, boolret;
+  enum memmodel success, failure;
+  tree lhs;
+  bool is_weak;
+  source_location loc
+    = expansion_point_location_if_in_system_header (gimple_location (call));
+
+  success = get_memmodel (gimple_call_arg (call, 4));
+  failure = get_memmodel (gimple_call_arg (call, 5));
+
+  if (failure > success)
+    {
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "failure memory model cannot be stronger than success "
+		  "memory model for %<__atomic_compare_exchange%>");
+      success = MEMMODEL_SEQ_CST;
+    }
+
+  if (is_mm_release (failure) || is_mm_acq_rel (failure))
+    {
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "invalid failure memory model for "
+		  "%<__atomic_compare_exchange%>");
+      failure = MEMMODEL_SEQ_CST;
+      success = MEMMODEL_SEQ_CST;
+    }
+
+  if (!flag_inline_atomics)
+    {
+      expand_ifn_atomic_compare_exchange_into_call (call, mode);
+      return;
+    }
+
+  /* Expand the operands.  */
+  mem = get_builtin_sync_mem (gimple_call_arg (call, 0), mode);
+
+  expect = expand_expr_force_mode (gimple_call_arg (call, 1), mode);
+  desired = expand_expr_force_mode (gimple_call_arg (call, 2), mode);
+
+  is_weak = (tree_to_shwi (gimple_call_arg (call, 3)) & 256) != 0;
+
+  boolret = NULL;
+  oldval = NULL;
+
+  if (!expand_atomic_compare_and_swap (&boolret, &oldval, mem, expect, desired,
+				       is_weak, success, failure))
+    {
+      expand_ifn_atomic_compare_exchange_into_call (call, mode);
+      return;
+    }
+
+  lhs = gimple_call_lhs (call);
+  if (lhs)
+    {
+      rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+      if (GET_MODE (boolret) != mode)
+	boolret = convert_modes (mode, GET_MODE (boolret), boolret, 1);
+      write_complex_part (target, boolret, true);
+      write_complex_part (target, oldval, false);
+    }
+}
+
 /* Expand the __atomic_load intrinsic:
    	TYPE __atomic_load (TYPE *object, enum memmodel)
    EXP is the CALL_EXPR.
@@ -5308,6 +5401,90 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
 				   OPTAB_LIB_WIDEN);
     }
   return ret;
+}
+
+/* Expand IFN_ATOMIC_BIT_TEST_AND_* internal function.  */
+
+void
+expand_ifn_atomic_bit_test_and (gcall *call)
+{
+  tree ptr = gimple_call_arg (call, 0);
+  tree bit = gimple_call_arg (call, 1);
+  tree flag = gimple_call_arg (call, 2);
+  tree lhs = gimple_call_lhs (call);
+  enum memmodel model = MEMMODEL_SYNC_SEQ_CST;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (flag));
+  enum rtx_code code;
+  optab optab;
+  struct expand_operand ops[5];
+
+  gcc_assert (flag_inline_atomics);
+
+  if (gimple_call_num_args (call) == 4)
+    model = get_memmodel (gimple_call_arg (call, 3));
+
+  rtx mem = get_builtin_sync_mem (ptr, mode);
+  rtx val = expand_expr_force_mode (bit, mode);
+
+  switch (gimple_call_internal_fn (call))
+    {
+    case IFN_ATOMIC_BIT_TEST_AND_SET:
+      code = IOR;
+      optab = atomic_bit_test_and_set_optab;
+      break;
+    case IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT:
+      code = XOR;
+      optab = atomic_bit_test_and_complement_optab;
+      break;
+    case IFN_ATOMIC_BIT_TEST_AND_RESET:
+      code = AND;
+      optab = atomic_bit_test_and_reset_optab;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (lhs == NULL_TREE)
+    {
+      val = expand_simple_binop (mode, ASHIFT, const1_rtx,
+				 val, NULL_RTX, true, OPTAB_DIRECT);
+      if (code == AND)
+	val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
+      expand_atomic_fetch_op (const0_rtx, mem, val, code, model, false);
+      return;
+    }
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  enum insn_code icode = direct_optab_handler (optab, mode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  create_output_operand (&ops[0], target, mode);
+  create_fixed_operand (&ops[1], mem);
+  create_convert_operand_to (&ops[2], val, mode, true);
+  create_integer_operand (&ops[3], model);
+  create_integer_operand (&ops[4], integer_onep (flag));
+  if (maybe_expand_insn (icode, 5, ops))
+    return;
+
+  rtx bitval = val;
+  val = expand_simple_binop (mode, ASHIFT, const1_rtx,
+			     val, NULL_RTX, true, OPTAB_DIRECT);
+  rtx maskval = val;
+  if (code == AND)
+    val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
+  rtx result = expand_atomic_fetch_op (gen_reg_rtx (mode), mem, val,
+				       code, model, false);
+  if (integer_onep (flag))
+    {
+      result = expand_simple_binop (mode, ASHIFTRT, result, bitval,
+				    NULL_RTX, true, OPTAB_DIRECT);
+      result = expand_simple_binop (mode, AND, result, const1_rtx, target,
+				    true, OPTAB_DIRECT);
+    }
+  else
+    result = expand_simple_binop (mode, AND, result, maskval, target, true,
+				  OPTAB_DIRECT);
+  if (result != target)
+    emit_move_insn (target, result);
 }
 
 /* Expand an atomic clear operation.
@@ -5997,9 +6174,15 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
-      target = expand_builtin_memcmp (exp, target);
+    case BUILT_IN_MEMCMP_EQ:
+      target = expand_builtin_memcmp (exp, target, fcode == BUILT_IN_MEMCMP_EQ);
       if (target)
 	return target;
+      if (fcode == BUILT_IN_MEMCMP_EQ)
+	{
+	  tree newdecl = builtin_decl_explicit (BUILT_IN_MEMCMP);
+	  TREE_OPERAND (exp, 1) = build_fold_addr_expr (newdecl);
+	}
       break;
 
     case BUILT_IN_SETJMP:
@@ -7874,18 +8057,28 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 /* Fold __builtin_{,s,u}{add,sub,mul}{,l,ll}_overflow, either into normal
    arithmetics if it can never overflow, or into internal functions that
    return both result of arithmetics and overflowed boolean flag in
-   a complex integer result, or some other check for overflow.  */
+   a complex integer result, or some other check for overflow.
+   Similarly fold __builtin_{add,sub,mul}_overflow_p to just the overflow
+   checking part of that.  */
 
 static tree
 fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
 			     tree arg0, tree arg1, tree arg2)
 {
   enum internal_fn ifn = IFN_LAST;
-  tree type = TREE_TYPE (TREE_TYPE (arg2));
-  tree mem_arg2 = build_fold_indirect_ref_loc (loc, arg2);
+  /* The code of the expression corresponding to the type-generic
+     built-in, or ERROR_MARK for the type-specific ones.  */
+  enum tree_code opcode = ERROR_MARK;
+  bool ovf_only = false;
+
   switch (fcode)
     {
+    case BUILT_IN_ADD_OVERFLOW_P:
+      ovf_only = true;
+      /* FALLTHRU */
     case BUILT_IN_ADD_OVERFLOW:
+      opcode = PLUS_EXPR;
+      /* FALLTHRU */
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:
@@ -7894,7 +8087,12 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
     case BUILT_IN_UADDLL_OVERFLOW:
       ifn = IFN_ADD_OVERFLOW;
       break;
+    case BUILT_IN_SUB_OVERFLOW_P:
+      ovf_only = true;
+      /* FALLTHRU */
     case BUILT_IN_SUB_OVERFLOW:
+      opcode = MINUS_EXPR;
+      /* FALLTHRU */
     case BUILT_IN_SSUB_OVERFLOW:
     case BUILT_IN_SSUBL_OVERFLOW:
     case BUILT_IN_SSUBLL_OVERFLOW:
@@ -7903,7 +8101,12 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
     case BUILT_IN_USUBLL_OVERFLOW:
       ifn = IFN_SUB_OVERFLOW;
       break;
+    case BUILT_IN_MUL_OVERFLOW_P:
+      ovf_only = true;
+      /* FALLTHRU */
     case BUILT_IN_MUL_OVERFLOW:
+      opcode = MULT_EXPR;
+      /* FALLTHRU */
     case BUILT_IN_SMUL_OVERFLOW:
     case BUILT_IN_SMULL_OVERFLOW:
     case BUILT_IN_SMULLL_OVERFLOW:
@@ -7915,6 +8118,25 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
     default:
       gcc_unreachable ();
     }
+
+  /* For the "generic" overloads, the first two arguments can have different
+     types and the last argument determines the target type to use to check
+     for overflow.  The arguments of the other overloads all have the same
+     type.  */
+  tree type = ovf_only ? TREE_TYPE (arg2) : TREE_TYPE (TREE_TYPE (arg2));
+
+  /* For the __builtin_{add,sub,mul}_overflow_p builtins, when the first two
+     arguments are constant, attempt to fold the built-in call into a constant
+     expression indicating whether or not it detected an overflow.  */
+  if (ovf_only
+      && TREE_CODE (arg0) == INTEGER_CST
+      && TREE_CODE (arg1) == INTEGER_CST)
+    /* Perform the computation in the target type and check for overflow.  */
+    return omit_one_operand_loc (loc, boolean_type_node,
+				 arith_overflowed_p (opcode, type, arg0, arg1)
+				 ? boolean_true_node : boolean_false_node,
+				 arg2);
+
   tree ctype = build_complex_type (type);
   tree call = build_call_expr_internal_loc (loc, ifn, ctype,
 					    2, arg0, arg1);
@@ -7922,9 +8144,47 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
   tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
   tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
   ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
+
+  if (ovf_only)
+    return omit_one_operand_loc (loc, boolean_type_node, ovfres, arg2);
+
+  tree mem_arg2 = build_fold_indirect_ref_loc (loc, arg2);
   tree store
     = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg2, intres);
   return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
+}
+
+/* Fold a call to __builtin_FILE to a constant string.  */
+
+static inline tree
+fold_builtin_FILE (location_t loc)
+{
+  if (const char *fname = LOCATION_FILE (loc))
+    return build_string_literal (strlen (fname) + 1, fname);
+
+  return build_string_literal (1, "");
+}
+
+/* Fold a call to __builtin_FUNCTION to a constant string.  */
+
+static inline tree
+fold_builtin_FUNCTION ()
+{
+  if (current_function_decl)
+    {
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+      return build_string_literal (strlen (name) + 1, name);
+    }
+
+  return build_string_literal (1, "");
+}
+
+/* Fold a call to __builtin_LINE to an integer constant.  */
+
+static inline tree
+fold_builtin_LINE (location_t loc, tree type)
+{
+  return build_int_cst (type, LOCATION_LINE (loc));
 }
 
 /* Fold a call to built-in function FNDECL with 0 arguments.
@@ -7937,6 +8197,15 @@ fold_builtin_0 (location_t loc, tree fndecl)
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   switch (fcode)
     {
+    case BUILT_IN_FILE:
+      return fold_builtin_FILE (loc);
+
+    case BUILT_IN_FUNCTION:
+      return fold_builtin_FUNCTION ();
+
+    case BUILT_IN_LINE:
+      return fold_builtin_LINE (loc, type);
+
     CASE_FLT_FN (BUILT_IN_INF):
     case BUILT_IN_INFD32:
     case BUILT_IN_INFD64:
@@ -8229,6 +8498,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_ADD_OVERFLOW:
     case BUILT_IN_SUB_OVERFLOW:
     case BUILT_IN_MUL_OVERFLOW:
+    case BUILT_IN_ADD_OVERFLOW_P:
+    case BUILT_IN_SUB_OVERFLOW_P:
+    case BUILT_IN_MUL_OVERFLOW_P:
     case BUILT_IN_SADD_OVERFLOW:
     case BUILT_IN_SADDL_OVERFLOW:
     case BUILT_IN_SADDLL_OVERFLOW:
@@ -9762,42 +10034,19 @@ fold_call_stmt (gcall *stmt, bool ignore)
 void
 set_builtin_user_assembler_name (tree decl, const char *asmspec)
 {
-  tree builtin;
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	      && asmspec != 0);
 
-  builtin = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
+  tree builtin = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
   set_user_assembler_name (builtin, asmspec);
-  switch (DECL_FUNCTION_CODE (decl))
+
+  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_FFS
+      && INT_TYPE_SIZE < BITS_PER_WORD)
     {
-    case BUILT_IN_MEMCPY:
-      init_block_move_fn (asmspec);
-      memcpy_libfunc = set_user_assembler_libfunc ("memcpy", asmspec);
-      break;
-    case BUILT_IN_MEMSET:
-      init_block_clear_fn (asmspec);
-      memset_libfunc = set_user_assembler_libfunc ("memset", asmspec);
-      break;
-    case BUILT_IN_MEMMOVE:
-      memmove_libfunc = set_user_assembler_libfunc ("memmove", asmspec);
-      break;
-    case BUILT_IN_MEMCMP:
-      memcmp_libfunc = set_user_assembler_libfunc ("memcmp", asmspec);
-      break;
-    case BUILT_IN_ABORT:
-      abort_libfunc = set_user_assembler_libfunc ("abort", asmspec);
-      break;
-    case BUILT_IN_FFS:
-      if (INT_TYPE_SIZE < BITS_PER_WORD)
-	{
-	  set_user_assembler_libfunc ("ffs", asmspec);
-	  set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE,
-						       MODE_INT, 0), "ffs");
-	}
-      break;
-    default:
-      break;
+      set_user_assembler_libfunc ("ffs", asmspec);
+      set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
+			 "ffs");
     }
 }
 

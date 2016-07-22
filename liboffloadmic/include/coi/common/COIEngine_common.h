@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -56,11 +56,11 @@ extern "C" {
 #endif
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-#define COI_MAX_ISA_x86_64_DEVICES 1
-#define COI_MAX_ISA_MIC_DEVICES 128
-#define COI_MAX_ISA_KNF_DEVICES COI_MAX_ISA_MIC_DEVICES
-#define COI_MAX_ISA_KNC_DEVICES COI_MAX_ISA_MIC_DEVICES
-
+#define COI_MAX_ISA_x86_64_DEVICES 128
+#define COI_MAX_ISA_MIC_DEVICES    128
+#define COI_MAX_ISA_KNF_DEVICES    0
+#define COI_MAX_ISA_KNC_DEVICES    COI_MAX_ISA_MIC_DEVICES
+#define COI_MAX_ISA_KNL_DEVICES    COI_MAX_ISA_MIC_DEVICES
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -68,22 +68,35 @@ extern "C" {
 ///
 typedef enum
 {
-    COI_ISA_INVALID = 0,        ///< Represents an invalid ISA.
-    COI_ISA_x86_64,             ///< The ISA for an x86_64 host engine.
-    COI_ISA_MIC,                ///< Special value used to represent any device
-                                ///< in the Intel(R) Many Integrated Core
-                                ///< architecture family.
-    COI_ISA_KNF,                ///< ISA for L1OM devices.
-    COI_ISA_KNC                 ///< ISA for K1OM devices.
-} COI_ISA_TYPE;
+    COI_DEVICE_INVALID = 0,        ///< Represents an invalid device type.
+    COI_DEVICE_SOURCE,             ///< The engine from which offload originates
+    COI_DEVICE_MIC,                ///< Special value used to represent any device
+    ///< in the Intel(R) Many Integrated Core family.
+    COI_DEVICE_DEPRECATED_0,       ///< Placeholder for L1OM devices (deprecated).
+    COI_DEVICE_KNC,                ///< K1OM devices (Knigts Corner).
+    COI_DEVICE_KNL,                ///< Knights Landing devices
+    COI_DEVICE_MAX,
+    COI_DEVICE_KNF = COI_DEVICE_DEPRECATED_0
+} COI_DEVICE_TYPE;
 
+///////////////////////////////////////////////////////////////////////////////
+///
+/// List of deprecated device types for backward compatibility
+///
+#define COI_ISA_INVALID COI_DEVICE_INVALID
+#define COI_ISA_x86_64  COI_DEVICE_SOURCE
+#define COI_ISA_MIC     COI_DEVICE_MIC
+#define COI_ISA_KNF     COI_DEVICE_KNF
+#define COI_ISA_KNC     COI_DEVICE_KNC
+
+typedef COI_DEVICE_TYPE COI_ISA_TYPE;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// Get the information about the COIEngine executing this function call.
 ///
 /// @param  out_pType
-///         [out] The COI_ISA_TYPE of the engine.
+///         [out] The COI_DEVICE_TYPE of the engine.
 ///
 /// @param  out_pIndex
 ///         [out] The zero-based index of this engine in the collection of
@@ -96,8 +109,8 @@ typedef enum
 COIACCESSAPI
 COIRESULT
 COIEngineGetIndex(
-            COI_ISA_TYPE*       out_pType,
-            uint32_t*           out_pIndex);
+    COI_DEVICE_TYPE    *out_pType,
+    uint32_t           *out_pIndex);
 
 #ifdef __cplusplus
 } /* extern "C" */

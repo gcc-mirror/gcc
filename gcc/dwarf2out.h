@@ -239,12 +239,6 @@ struct GTY((chain_next ("%h.dw_loc_next"))) dw_loc_descr_node {
      frame offset.  */
   unsigned int frame_offset_rel : 1;
   int dw_loc_addr;
-#if CHECKING_P
-  /* When translating a function into a DWARF procedure, contains the frame
-     offset *before* evaluating this operation.  It is -1 when not yet
-     initialized.  */
-  int dw_loc_frame_offset;
-#endif
   dw_val_node dw_loc_oprnd1;
   dw_val_node dw_loc_oprnd2;
 };

@@ -43,10 +43,10 @@ void test01(int dummy, ...)
   ret = std::tr1::snprintf(s, n, format, dummy);
   ret = std::tr1::vsnprintf(s, n, format, ap);
 
-  ret = std::tr1::vfscanf(stream, format, ap); 
+  ret = std::tr1::vfscanf(stream, format, ap);
   ret = std::tr1::vscanf(format, ap);
   ret = std::tr1::vsscanf(cs, format, ap);
   ret = ret; // Suppress unused warning.
-  
+
 #endif
 }

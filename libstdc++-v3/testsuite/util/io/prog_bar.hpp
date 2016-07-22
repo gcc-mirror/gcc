@@ -65,7 +65,7 @@ namespace __gnu_pbds
     private:
       prog_bar(const prog_bar& );
 
-      prog_bar& 
+      prog_bar&
       operator=(const prog_bar& );
 
     private:

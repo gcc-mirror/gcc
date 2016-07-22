@@ -309,8 +309,8 @@ gfc_build_io_library_fndecls (void)
      alignment that is at least as large as the needed alignment for those
      types.  See the st_parameter_dt structure in libgfortran/io/io.h for
      what really goes into this space.  */
-  TYPE_ALIGN (types[IOPARM_type_pad]) = MAX (TYPE_ALIGN (pchar_type_node),
-		     TYPE_ALIGN (gfc_get_int_type (gfc_intio_kind)));
+  SET_TYPE_ALIGN (types[IOPARM_type_pad], MAX (TYPE_ALIGN (pchar_type_node),
+		     TYPE_ALIGN (gfc_get_int_type (gfc_intio_kind))));
 
   for (ptype = IOPARM_ptype_common; ptype < IOPARM_ptype_num; ptype++)
     gfc_build_st_parameter ((enum ioparam_type) ptype, types);
@@ -1685,7 +1685,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
       gfc_add_expr_to_block (block, tmp);
     }
 
-  if (ts->type == BT_DERIVED && ts->u.derived->components)
+  if (gfc_bt_struct (ts->type) && ts->u.derived->components)
     {
       gfc_component *cmp;
 
@@ -2211,7 +2211,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 
       break;
 
-    case BT_DERIVED:
+    case_bt_struct:
       if (ts->u.derived->components == NULL)
 	return;
 
@@ -2330,7 +2330,7 @@ gfc_trans_transfer (gfc_code * code)
 	  gcc_assert (ref && ref->type == REF_ARRAY);
 	}
 
-      if (expr->ts.type != BT_DERIVED
+      if (!gfc_bt_struct (expr->ts.type)
 	    && ref && ref->next == NULL
 	    && !is_subref_array (expr))
 	{

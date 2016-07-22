@@ -8,6 +8,7 @@ package http_test
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -273,7 +274,7 @@ func TestClientRedirects(t *testing.T) {
 		t.Fatal("didn't see redirect")
 	}
 	if lastReq.Cancel != cancel {
-		t.Errorf("expected lastReq to have the cancel channel set on the inital req")
+		t.Errorf("expected lastReq to have the cancel channel set on the initial req")
 	}
 
 	checkErr = errors.New("no redirects allowed")
@@ -287,6 +288,33 @@ func TestClientRedirects(t *testing.T) {
 	res.Body.Close()
 	if res.Header.Get("Location") == "" {
 		t.Errorf("no Location header in Response")
+	}
+}
+
+func TestClientRedirectContext(t *testing.T) {
+	defer afterTest(t)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		Redirect(w, r, "/", StatusFound)
+	}))
+	defer ts.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	c := &Client{CheckRedirect: func(req *Request, via []*Request) error {
+		cancel()
+		if len(via) > 2 {
+			return errors.New("too many redirects")
+		}
+		return nil
+	}}
+	req, _ := NewRequest("GET", ts.URL, nil)
+	req = req.WithContext(ctx)
+	_, err := c.Do(req)
+	ue, ok := err.(*url.Error)
+	if !ok {
+		t.Fatalf("got error %T; want *url.Error", err)
+	}
+	if ue.Err != ExportErrRequestCanceled && ue.Err != ExportErrRequestCanceledConn {
+		t.Errorf("url.Error.Err = %v; want errRequestCanceled or errRequestCanceledConn", ue.Err)
 	}
 }
 
@@ -335,6 +363,44 @@ func TestPostRedirects(t *testing.T) {
 	want := "POST / POST /?code=301 POST /?code=302 GET / POST /?code=303 GET / POST /?code=404 "
 	if got != want {
 		t.Errorf("Log differs.\n Got: %q\nWant: %q", got, want)
+	}
+}
+
+func TestClientRedirectUseResponse(t *testing.T) {
+	defer afterTest(t)
+	const body = "Hello, world."
+	var ts *httptest.Server
+	ts = httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if strings.Contains(r.URL.Path, "/other") {
+			io.WriteString(w, "wrong body")
+		} else {
+			w.Header().Set("Location", ts.URL+"/other")
+			w.WriteHeader(StatusFound)
+			io.WriteString(w, body)
+		}
+	}))
+	defer ts.Close()
+
+	c := &Client{CheckRedirect: func(req *Request, via []*Request) error {
+		if req.Response == nil {
+			t.Error("expected non-nil Request.Response")
+		}
+		return ErrUseLastResponse
+	}}
+	res, err := c.Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != StatusFound {
+		t.Errorf("status = %d; want %d", res.StatusCode, StatusFound)
+	}
+	defer res.Body.Close()
+	slurp, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(slurp) != body {
+		t.Errorf("body = %q; want %q", slurp, body)
 	}
 }
 
@@ -1139,4 +1205,27 @@ func TestReferer(t *testing.T) {
 			t.Errorf("refererForURL(%q, %q) = %q; want %q", tt.lastReq, tt.newReq, r, tt.want)
 		}
 	}
+}
+
+// issue15577Tripper returns a Response with a redirect response
+// header and doesn't populate its Response.Request field.
+type issue15577Tripper struct{}
+
+func (issue15577Tripper) RoundTrip(*Request) (*Response, error) {
+	resp := &Response{
+		StatusCode: 303,
+		Header:     map[string][]string{"Location": {"http://www.example.com/"}},
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}
+	return resp, nil
+}
+
+// Issue 15577: don't assume the roundtripper's response populates its Request field.
+func TestClientRedirectResponseWithoutRequest(t *testing.T) {
+	c := &Client{
+		CheckRedirect: func(*Request, []*Request) error { return fmt.Errorf("no redirects!") },
+		Transport:     issue15577Tripper{},
+	}
+	// Check that this doesn't crash:
+	c.Get("http://dummy.tld")
 }

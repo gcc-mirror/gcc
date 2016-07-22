@@ -233,18 +233,18 @@ gimple_resimplify3 (gimple_seq *seq,
    a GENERIC tree for that expression into *OP0.  */
 
 void
-maybe_build_generic_op (enum tree_code code, tree type,
-			tree *op0, tree op1, tree op2)
+maybe_build_generic_op (enum tree_code code, tree type, tree *ops)
 {
   switch (code)
     {
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
-      *op0 = build1 (code, type, *op0);
+      ops[0] = build1 (code, type, ops[0]);
       break;
     case BIT_FIELD_REF:
-      *op0 = build3 (code, type, *op0, op1, op2);
+      ops[0] = build3 (code, type, ops[0], ops[1], ops[2]);
+      ops[1] = ops[2] = NULL_TREE;
       break;
     default:;
     }
@@ -316,7 +316,7 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	  else
 	    res = create_tmp_reg (type);
 	}
-      maybe_build_generic_op (rcode, type, &ops[0], ops[1], ops[2]);
+      maybe_build_generic_op (rcode, type, ops);
       gimple *new_stmt = gimple_build_assign (res, rcode,
 					     ops[0], ops[1], ops[2]);
       gimple_seq_add_stmt_without_update (seq, new_stmt);

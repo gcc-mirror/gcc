@@ -32,7 +32,7 @@ test01()
   int i = 0;
   void* ptr = &i;
   auto space = sizeof(i);
-  auto p2 = std::align(alignof(i), space, ptr, space);
+  auto p2 = std::align(alignof(int), space, ptr, space);
   VERIFY( ptr == &i );
   VERIFY( p2 == &i );
   VERIFY(space == sizeof(i));

@@ -38,6 +38,33 @@ __do_catch (const type_info *thr_type,
     return true;      // same type
 
 #if __cpp_rtti
+  if (*thr_type == typeid (nullptr))
+    {
+      // A catch handler for any pointer type matches nullptr_t.
+      if (typeid (*this) == typeid(__pointer_type_info))
+        {
+          *thr_obj = nullptr;
+          return true;
+        }
+      else if (typeid (*this) == typeid(__pointer_to_member_type_info))
+        {
+          if (__pointee->__is_function_p ())
+            {
+              using pmf_type = void (__pbase_type_info::*)();
+              static const pmf_type pmf = nullptr;
+              *thr_obj = const_cast<pmf_type*>(&pmf);
+              return true;
+            }
+          else
+            {
+              using pm_type = int __pbase_type_info::*;
+              static const pm_type pm = nullptr;
+              *thr_obj = const_cast<pm_type*>(&pm);
+              return true;
+            }
+        }
+    }
+
   if (typeid (*this) != typeid (*thr_type))
     return false;     // not both same kind of pointers
 #endif

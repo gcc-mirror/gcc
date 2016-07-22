@@ -514,14 +514,10 @@ special_function_p (const_tree fndecl, int flags)
 	  && ! strcmp (name, "alloca"))
 	flags |= ECF_MAY_BE_ALLOCA;
 
-      /* Disregard prefix _, __, __x or __builtin_.  */
+      /* Disregard prefix _, __ or __x.  */
       if (name[0] == '_')
 	{
-	  if (name[1] == '_'
-	      && name[2] == 'b'
-	      && !strncmp (name + 3, "uiltin_", 7))
-	    tname += 10;
-	  else if (name[1] == '_' && name[2] == 'x')
+	  if (name[1] == '_' && name[2] == 'x')
 	    tname += 3;
 	  else if (name[1] == '_')
 	    tname += 2;
@@ -617,10 +613,10 @@ setjmp_call_p (const_tree fndecl)
 }
 
 
-/* Return true if STMT is an alloca call.  */
+/* Return true if STMT may be an alloca call.  */
 
 bool
-gimple_alloca_call_p (const gimple *stmt)
+gimple_maybe_alloca_call_p (const gimple *stmt)
 {
   tree fndecl;
 
@@ -634,7 +630,31 @@ gimple_alloca_call_p (const gimple *stmt)
   return false;
 }
 
-/* Return true when exp contains alloca call.  */
+/* Return true if STMT is a builtin alloca call.  */
+
+bool
+gimple_alloca_call_p (const gimple *stmt)
+{
+  tree fndecl;
+
+  if (!is_gimple_call (stmt))
+    return false;
+
+  fndecl = gimple_call_fndecl (stmt);
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
+        return true;
+      default:
+	break;
+      }
+
+  return false;
+}
+
+/* Return true when exp contains a builtin alloca call.  */
 
 bool
 alloca_call_p (const_tree exp)
@@ -642,8 +662,16 @@ alloca_call_p (const_tree exp)
   tree fndecl;
   if (TREE_CODE (exp) == CALL_EXPR
       && (fndecl = get_callee_fndecl (exp))
-      && (special_function_p (fndecl, 0) & ECF_MAY_BE_ALLOCA))
-    return true;
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
+        return true;
+      default:
+	break;
+      }
+
   return false;
 }
 
@@ -1102,6 +1130,19 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
       }
 }
 
+/* Issue an error if CALL_EXPR was flagged as requiring
+   tall-call optimization.  */
+
+static void
+maybe_complain_about_tail_call (tree call_expr, const char *reason)
+{
+  gcc_assert (TREE_CODE (call_expr) == CALL_EXPR);
+  if (!CALL_EXPR_MUST_TAIL_CALL (call_expr))
+    return;
+
+  error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
+}
+
 /* Fill in ARGS_SIZE and ARGS array based on the parameters found in
    CALL_EXPR EXP.
 
@@ -1188,6 +1229,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	    j--;
 	  }
       }
+    argpos = 0;
     FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
       {
 	tree argtype = TREE_TYPE (arg);
@@ -1205,6 +1247,14 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		slots = BITMAP_ALLOC (NULL);
 		chkp_find_bound_slots (argtype, slots);
 	      }
+	  }
+	else if (CALL_WITH_BOUNDS_P (exp)
+		 && pass_by_reference (NULL, TYPE_MODE (argtype), argtype,
+				       argpos < n_named_args))
+	  {
+	    if (slots)
+	      BITMAP_FREE (slots);
+	    ptr_arg = j;
 	  }
 	else if (POINTER_BOUNDS_TYPE_P (argtype))
 	  {
@@ -1249,6 +1299,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	else
 	  args[j].tree_value = arg;
 	j--;
+	argpos++;
       }
 
     if (slots)
@@ -1333,7 +1384,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	      /* We can't use sibcalls if a callee-copied argument is
 		 stored in the current function's frame.  */
 	      if (!call_from_thunk_p && DECL_P (base) && !TREE_STATIC (base))
-		*may_tailcall = false;
+		{
+		  *may_tailcall = false;
+		  maybe_complain_about_tail_call (exp,
+						  "a callee-copied argument is"
+						  " stored in the current "
+						  " function's frame");
+		}
 
 	      args[i].tree_value = build_fold_addr_expr_loc (loc,
 							 args[i].tree_value);
@@ -1396,6 +1453,9 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		= build_fold_addr_expr_loc (loc, make_tree (type, copy));
 	      type = TREE_TYPE (args[i].tree_value);
 	      *may_tailcall = false;
+	      maybe_complain_about_tail_call (exp,
+					      "argument must be passed"
+					      " by copying");
 	    }
 	}
 
@@ -2334,6 +2394,126 @@ avoid_likely_spilled_reg (rtx x)
   return x;
 }
 
+/* Helper function for expand_call.
+   Return false is EXP is not implementable as a sibling call.  */
+
+static bool
+can_implement_as_sibling_call_p (tree exp,
+				 rtx structure_value_addr,
+				 tree funtype,
+				 int reg_parm_stack_space ATTRIBUTE_UNUSED,
+				 tree fndecl,
+				 int flags,
+				 tree addr,
+				 const args_size &args_size)
+{
+  if (!targetm.have_sibcall_epilogue ())
+    {
+      maybe_complain_about_tail_call
+	(exp,
+	 "machine description does not have"
+	 " a sibcall_epilogue instruction pattern");
+      return false;
+    }
+
+  /* Doing sibling call optimization needs some work, since
+     structure_value_addr can be allocated on the stack.
+     It does not seem worth the effort since few optimizable
+     sibling calls will return a structure.  */
+  if (structure_value_addr != NULL_RTX)
+    {
+      maybe_complain_about_tail_call (exp, "callee returns a structure");
+      return false;
+    }
+
+#ifdef REG_PARM_STACK_SPACE
+  /* If outgoing reg parm stack space changes, we can not do sibcall.  */
+  if (OUTGOING_REG_PARM_STACK_SPACE (funtype)
+      != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl))
+      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl)))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "inconsistent size of stack space"
+				      " allocated for arguments which are"
+				      " passed in registers");
+      return false;
+    }
+#endif
+
+  /* Check whether the target is able to optimize the call
+     into a sibcall.  */
+  if (!targetm.function_ok_for_sibcall (fndecl, exp))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "target is not able to optimize the"
+				      " call into a sibling call");
+      return false;
+    }
+
+  /* Functions that do not return exactly once may not be sibcall
+     optimized.  */
+  if (flags & ECF_RETURNS_TWICE)
+    {
+      maybe_complain_about_tail_call (exp, "callee returns twice");
+      return false;
+    }
+  if (flags & ECF_NORETURN)
+    {
+      maybe_complain_about_tail_call (exp, "callee does not return");
+      return false;
+    }
+
+  if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr))))
+    {
+      maybe_complain_about_tail_call (exp, "volatile function type");
+      return false;
+    }
+
+  /* If the called function is nested in the current one, it might access
+     some of the caller's arguments, but could clobber them beforehand if
+     the argument areas are shared.  */
+  if (fndecl && decl_function_context (fndecl) == current_function_decl)
+    {
+      maybe_complain_about_tail_call (exp, "nested function");
+      return false;
+    }
+
+  /* If this function requires more stack slots than the current
+     function, we cannot change it into a sibling call.
+     crtl->args.pretend_args_size is not part of the
+     stack allocated by our caller.  */
+  if (args_size.constant > (crtl->args.size - crtl->args.pretend_args_size))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "callee required more stack slots"
+				      " than the caller");
+      return false;
+    }
+
+  /* If the callee pops its own arguments, then it must pop exactly
+     the same number of arguments as the current function.  */
+  if (targetm.calls.return_pops_args (fndecl, funtype, args_size.constant)
+      != targetm.calls.return_pops_args (current_function_decl,
+					 TREE_TYPE (current_function_decl),
+					 crtl->args.size))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "inconsistent number of"
+				      " popped arguments");
+      return false;
+    }
+
+  if (!lang_hooks.decls.ok_for_sibcall (fndecl))
+    {
+      maybe_complain_about_tail_call (exp, "frontend does not support"
+					    " sibling call");
+      return false;
+    }
+
+  /* All checks passed.  */
+  return true;
+}
+
 /* Generate all the code for a CALL_EXPR exp
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -2362,6 +2542,7 @@ expand_call (tree exp, rtx target, int ignore)
   /* The type of the function being called.  */
   tree fntype;
   bool try_tail_call = CALL_EXPR_TAILCALL (exp);
+  bool must_tail_call = CALL_EXPR_MUST_TAIL_CALL (exp);
   int pass;
 
   /* Register in which non-BLKmode value will be returned,
@@ -2729,45 +2910,19 @@ expand_call (tree exp, rtx target, int ignore)
       || dbg_cnt (tail_call) == false)
     try_tail_call = 0;
 
+  /* If the user has marked the function as requiring tail-call
+     optimization, attempt it.  */
+  if (must_tail_call)
+    try_tail_call = 1;
+
   /*  Rest of purposes for tail call optimizations to fail.  */
-  if (!try_tail_call
-      || !targetm.have_sibcall_epilogue ()
-      /* Doing sibling call optimization needs some work, since
-	 structure_value_addr can be allocated on the stack.
-	 It does not seem worth the effort since few optimizable
-	 sibling calls will return a structure.  */
-      || structure_value_addr != NULL_RTX
-#ifdef REG_PARM_STACK_SPACE
-      /* If outgoing reg parm stack space changes, we can not do sibcall.  */
-      || (OUTGOING_REG_PARM_STACK_SPACE (funtype)
-	  != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl)))
-      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl))
-#endif
-      /* Check whether the target is able to optimize the call
-	 into a sibcall.  */
-      || !targetm.function_ok_for_sibcall (fndecl, exp)
-      /* Functions that do not return exactly once may not be sibcall
-	 optimized.  */
-      || (flags & (ECF_RETURNS_TWICE | ECF_NORETURN))
-      || TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr)))
-      /* If the called function is nested in the current one, it might access
-	 some of the caller's arguments, but could clobber them beforehand if
-	 the argument areas are shared.  */
-      || (fndecl && decl_function_context (fndecl) == current_function_decl)
-      /* If this function requires more stack slots than the current
-	 function, we cannot change it into a sibling call.
-	 crtl->args.pretend_args_size is not part of the
-	 stack allocated by our caller.  */
-      || args_size.constant > (crtl->args.size
-			       - crtl->args.pretend_args_size)
-      /* If the callee pops its own arguments, then it must pop exactly
-	 the same number of arguments as the current function.  */
-      || (targetm.calls.return_pops_args (fndecl, funtype, args_size.constant)
-	  != targetm.calls.return_pops_args (current_function_decl,
-					     TREE_TYPE (current_function_decl),
-					     crtl->args.size))
-      || !lang_hooks.decls.ok_for_sibcall (fndecl))
-    try_tail_call = 0;
+  if (try_tail_call)
+    try_tail_call = can_implement_as_sibling_call_p (exp,
+						     structure_value_addr,
+						     funtype,
+						     reg_parm_stack_space,
+						     fndecl,
+						     flags, addr, args_size);
 
   /* Check if caller and callee disagree in promotion of function
      return value.  */
@@ -2797,7 +2952,13 @@ expand_call (tree exp, rtx target, int ignore)
 		  && (caller_unsignedp != callee_unsignedp
 		      || GET_MODE_BITSIZE (caller_mode)
 			 < GET_MODE_BITSIZE (callee_mode)))))
-	try_tail_call = 0;
+	{
+	  try_tail_call = 0;
+	  maybe_complain_about_tail_call (exp,
+					  "caller and callee disagree in"
+					  " promotion of function"
+					  " return value");
+	}
     }
 
   /* Ensure current function's preferred stack boundary is at least
@@ -3695,7 +3856,13 @@ expand_call (tree exp, rtx target, int ignore)
       crtl->tail_call_emit = true;
     }
   else
-    emit_insn (normal_call_insns);
+    {
+      emit_insn (normal_call_insns);
+      if (try_tail_call)
+	/* Ideally we'd emit a message for all of the ways that it could
+	   have failed.  */
+	maybe_complain_about_tail_call (exp, "tail call production failed");
+    }
 
   currently_expanding_call--;
 

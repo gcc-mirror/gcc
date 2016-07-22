@@ -156,6 +156,8 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
 {
   match m;
   bool matched_bracket = false;
+  gfc_expr *tmp;
+  bool stat_just_seen = false;
 
   memset (ar, '\0', sizeof (*ar));
 
@@ -220,11 +222,26 @@ coarray:
 	return MATCH_ERROR;
     }
 
+  ar->stat = NULL;
+
   for (ar->codimen = 0; ar->codimen + ar->dimen < GFC_MAX_DIMENSIONS; ar->codimen++)
     {
       m = match_subscript (ar, init, true);
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
+
+      stat_just_seen = false;
+      if (gfc_match(" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
+	{
+	  ar->stat = tmp;
+	  stat_just_seen = true;
+	}
+
+      if (ar->stat && !stat_just_seen)
+	{
+	  gfc_error ("STAT= attribute in %C misplaced");
+	  return MATCH_ERROR;
+	}
 
       if (gfc_match_char (']') == MATCH_YES)
 	{

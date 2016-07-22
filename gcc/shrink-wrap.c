@@ -529,30 +529,49 @@ can_dup_for_shrink_wrapping (basic_block bb, basic_block pro, unsigned max_size)
   return true;
 }
 
-/* If the source of edge E has more than one successor, the verifier for
-   branch probabilities gets confused by the fake edges we make where
-   simple_return statements will be inserted later (because those are not
-   marked as fallthrough edges).  Fix this by creating an extra block just
-   for that fallthrough.  */
+/* Do whatever needs to be done for exits that run without prologue.
+   Sibcalls need nothing done.  Normal exits get a simple_return inserted.  */
 
-static edge
-fix_fake_fallthrough_edge (edge e)
+static void
+handle_simple_exit (edge e)
 {
-  if (EDGE_COUNT (e->src->succs) <= 1)
-    return e;
 
-  basic_block old_bb = e->src;
-  rtx_insn *end = BB_END (old_bb);
-  rtx_note *note = emit_note_after (NOTE_INSN_DELETED, end);
-  basic_block new_bb = create_basic_block (note, note, old_bb);
-  BB_COPY_PARTITION (new_bb, old_bb);
-  BB_END (old_bb) = end;
+  if (e->flags & EDGE_SIBCALL)
+    {
+      /* Tell function.c to take no further action on this edge.  */
+      e->flags |= EDGE_IGNORE;
 
-  redirect_edge_succ (e, new_bb);
-  e->flags |= EDGE_FALLTHRU;
-  e->flags &= ~EDGE_FAKE;
+      e->flags &= ~EDGE_FALLTHRU;
+      emit_barrier_after_bb (e->src);
+      return;
+    }
 
-  return make_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+  /* If the basic block the edge comes from has multiple successors,
+     split the edge.  */
+  if (EDGE_COUNT (e->src->succs) > 1)
+    {
+      basic_block old_bb = e->src;
+      rtx_insn *end = BB_END (old_bb);
+      rtx_note *note = emit_note_after (NOTE_INSN_DELETED, end);
+      basic_block new_bb = create_basic_block (note, note, old_bb);
+      BB_COPY_PARTITION (new_bb, old_bb);
+      BB_END (old_bb) = end;
+
+      redirect_edge_succ (e, new_bb);
+      e->flags |= EDGE_FALLTHRU;
+
+      e = make_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+    }
+
+  e->flags &= ~EDGE_FALLTHRU;
+  rtx_jump_insn *ret = emit_jump_insn_after (targetm.gen_simple_return (),
+					     BB_END (e->src));
+  JUMP_LABEL (ret) = simple_return_rtx;
+  emit_barrier_after_bb (e->src);
+
+  if (dump_file)
+    fprintf (dump_file, "Made simple_return with UID %d in bb %d\n",
+	     INSN_UID (ret), e->src->index);
 }
 
 /* Try to perform a kind of shrink-wrapping, making sure the
@@ -610,13 +629,10 @@ fix_fake_fallthrough_edge (edge e)
    (bb 4 is duplicated to 5; the prologue is inserted on the edge 5->3).
 
    ENTRY_EDGE is the edge where the prologue will be placed, possibly
-   changed by this function.  BB_WITH is a bitmap that, if we do shrink-
-   wrap, will on return contain the interesting blocks that run with
-   prologue.  PROLOGUE_SEQ is the prologue we will insert.  */
+   changed by this function.  PROLOGUE_SEQ is the prologue we will insert.  */
 
 void
-try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
-		     rtx_insn *prologue_seq)
+try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 {
   /* If we cannot shrink-wrap, are told not to shrink-wrap, or it makes
      no sense to shrink-wrap: then do not shrink-wrap!  */
@@ -739,6 +755,7 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
      reachable from PRO that we already found, and in VEC a stack of
      those we still need to consider (to find successors).  */
 
+  bitmap bb_with = BITMAP_ALLOC (NULL);
   bitmap_set_bit (bb_with, pro->index);
 
   vec<basic_block> vec;
@@ -851,6 +868,7 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 
   if (pro == entry)
     {
+      BITMAP_FREE (bb_with);
       free_dominance_info (CDI_DOMINATORS);
       return;
     }
@@ -946,22 +964,13 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 	redirect_edge_and_branch_force (e, (basic_block) e->dest->aux);
       }
 
-  /* Change all the exits that should get a simple_return to FAKE.
-     They will be converted later.  */
+  /* Make a simple_return for those exits that run without prologue.  */
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     if (!bitmap_bit_p (bb_with, bb->index))
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
-	  {
-	    e = fix_fake_fallthrough_edge (e);
-
-	    e->flags &= ~EDGE_FALLTHRU;
-	    if (!(e->flags & EDGE_SIBCALL))
-	      e->flags |= EDGE_FAKE;
-
-	    emit_barrier_after_bb (e->src);
-	  }
+	  handle_simple_exit (e);
 
   /* Finally, we want a single edge to put the prologue on.  Make a new
      block before the PRO block; the edge beteen them is the edge we want.
@@ -994,158 +1003,6 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
   *entry_edge = make_single_succ_edge (new_bb, pro, EDGE_FALLTHRU);
   force_nonfallthru (*entry_edge);
 
+  BITMAP_FREE (bb_with);
   free_dominance_info (CDI_DOMINATORS);
-}
-
-/* If we're allowed to generate a simple return instruction, then by
-   definition we don't need a full epilogue.  If the last basic
-   block before the exit block does not contain active instructions,
-   examine its predecessors and try to emit (conditional) return
-   instructions.  */
-
-edge
-get_unconverted_simple_return (edge exit_fallthru_edge, bitmap_head bb_flags,
-			       vec<edge> *unconverted_simple_returns,
-			       rtx_insn **returnjump)
-{
-  if (optimize)
-    {
-      unsigned i, last;
-
-      /* convert_jumps_to_returns may add to preds of the exit block
-         (but won't remove).  Stop at end of current preds.  */
-      last = EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
-      for (i = 0; i < last; i++)
-	{
-	  edge e = EDGE_I (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds, i);
-	  if (LABEL_P (BB_HEAD (e->src))
-	      && !bitmap_bit_p (&bb_flags, e->src->index)
-	      && !active_insn_between (BB_HEAD (e->src), BB_END (e->src)))
-	    *unconverted_simple_returns
-		  = convert_jumps_to_returns (e->src, true,
-					      *unconverted_simple_returns);
-	}
-    }
-
-  if (exit_fallthru_edge != NULL
-      && EDGE_COUNT (exit_fallthru_edge->src->preds) != 0
-      && !bitmap_bit_p (&bb_flags, exit_fallthru_edge->src->index))
-    {
-      basic_block last_bb;
-
-      last_bb = emit_return_for_exit (exit_fallthru_edge, true);
-      *returnjump = BB_END (last_bb);
-      exit_fallthru_edge = NULL;
-    }
-  return exit_fallthru_edge;
-}
-
-/* If there were branches to an empty LAST_BB which we tried to
-   convert to conditional simple_returns, but couldn't for some
-   reason, create a block to hold a simple_return insn and redirect
-   those remaining edges.  */
-
-void
-convert_to_simple_return (edge entry_edge, edge orig_entry_edge,
-			  bitmap_head bb_flags, rtx_insn *returnjump,
-			  vec<edge> unconverted_simple_returns)
-{
-  edge e;
-  edge_iterator ei;
-
-  if (!unconverted_simple_returns.is_empty ())
-    {
-      basic_block simple_return_block_hot = NULL;
-      basic_block simple_return_block_cold = NULL;
-      edge pending_edge_hot = NULL;
-      edge pending_edge_cold = NULL;
-      basic_block exit_pred;
-      int i;
-
-      gcc_assert (entry_edge != orig_entry_edge);
-
-      /* See if we can reuse the last insn that was emitted for the
-	 epilogue.  */
-      if (returnjump != NULL_RTX
-	  && JUMP_LABEL (returnjump) == simple_return_rtx)
-	{
-	  e = split_block (BLOCK_FOR_INSN (returnjump), PREV_INSN (returnjump));
-	  if (BB_PARTITION (e->src) == BB_HOT_PARTITION)
-	    simple_return_block_hot = e->dest;
-	  else
-	    simple_return_block_cold = e->dest;
-	}
-
-      /* Also check returns we might need to add to tail blocks.  */
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-	if (EDGE_COUNT (e->src->preds) != 0
-	    && (e->flags & EDGE_FAKE) != 0
-	    && !bitmap_bit_p (&bb_flags, e->src->index))
-	  {
-	    if (BB_PARTITION (e->src) == BB_HOT_PARTITION)
-	      pending_edge_hot = e;
-	    else
-	      pending_edge_cold = e;
-	  }
-
-      /* Save a pointer to the exit's predecessor BB for use in
-         inserting new BBs at the end of the function.  Do this
-         after the call to split_block above which may split
-         the original exit pred.  */
-      exit_pred = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
-
-      FOR_EACH_VEC_ELT (unconverted_simple_returns, i, e)
-	{
-	  basic_block *pdest_bb;
-	  edge pending;
-
-	  if (BB_PARTITION (e->src) == BB_HOT_PARTITION)
-	    {
-	      pdest_bb = &simple_return_block_hot;
-	      pending = pending_edge_hot;
-	    }
-	  else
-	    {
-	      pdest_bb = &simple_return_block_cold;
-	      pending = pending_edge_cold;
-	    }
-
-	  if (*pdest_bb == NULL && pending != NULL)
-	    {
-	      emit_return_into_block (true, pending->src);
-	      pending->flags &= ~(EDGE_FALLTHRU | EDGE_FAKE);
-	      *pdest_bb = pending->src;
-	    }
-	  else if (*pdest_bb == NULL)
-	    {
-	      basic_block bb;
-
-	      bb = create_basic_block (NULL, NULL, exit_pred);
-	      BB_COPY_PARTITION (bb, e->src);
-	      rtx_insn *ret = targetm.gen_simple_return ();
-	      rtx_jump_insn *start = emit_jump_insn_after (ret, BB_END (bb));
-	      JUMP_LABEL (start) = simple_return_rtx;
-	      emit_barrier_after (start);
-
-	      *pdest_bb = bb;
-	      make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-	    }
-	  redirect_edge_and_branch_force (e, *pdest_bb);
-	}
-      unconverted_simple_returns.release ();
-    }
-
-  if (entry_edge != orig_entry_edge)
-    {
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-	if (EDGE_COUNT (e->src->preds) != 0
-	    && (e->flags & EDGE_FAKE) != 0
-	    && !bitmap_bit_p (&bb_flags, e->src->index))
-	  {
-	    e = fix_fake_fallthrough_edge (e);
-
-	    emit_return_into_block (true, e->src);
-	    e->flags &= ~(EDGE_FALLTHRU | EDGE_FAKE);
-	  }
-    }
 }

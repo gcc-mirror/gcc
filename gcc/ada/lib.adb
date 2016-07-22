@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Csets;    use Csets;
 with Einfo;    use Einfo;
 with Fname;    use Fname;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Output;   use Output;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -68,9 +69,14 @@ package body Lib is
 
    function Get_Code_Or_Source_Unit
      (S                : Source_Ptr;
-      Unwind_Instances : Boolean) return Unit_Number_Type;
-   --  Common code for Get_Code_Unit (get unit of instantiation for location)
-   --  and Get_Source_Unit (get unit of template for location).
+      Unwind_Instances : Boolean;
+      Unwind_Subunits  : Boolean) return Unit_Number_Type;
+   --  Common processing for routines Get_Code_Unit, Get_Source_Unit, and
+   --  Get_Top_Level_Code_Unit. Unwind_Instances is True when the unit for the
+   --  top-level instantiation should be returned instead of the unit for the
+   --  template, in the case of an instantiation. Unwind_Subunits is True when
+   --  the corresponding top-level unit should be returned instead of a
+   --  subunit, in the case of a subunit.
 
    --------------------------------------------
    -- Access Functions for Unit Table Fields --
@@ -254,18 +260,22 @@ package body Lib is
    ------------------------------
 
    function Check_Same_Extended_Unit (S1, S2 : Source_Ptr) return SEU_Result is
-      Sloc1  : Source_Ptr;
-      Sloc2  : Source_Ptr;
-      Sind1  : Source_File_Index;
-      Sind2  : Source_File_Index;
-      Inst1  : Source_Ptr;
-      Inst2  : Source_Ptr;
-      Unum1  : Unit_Number_Type;
-      Unum2  : Unit_Number_Type;
-      Unit1  : Node_Id;
-      Unit2  : Node_Id;
-      Depth1 : Nat;
-      Depth2 : Nat;
+      Max_Iterations : constant Nat := Maximum_Instantiations * 2;
+      --  Limit to prevent a potential infinite loop
+
+      Counter : Nat := 0;
+      Depth1  : Nat;
+      Depth2  : Nat;
+      Inst1   : Source_Ptr;
+      Inst2   : Source_Ptr;
+      Sind1   : Source_File_Index;
+      Sind2   : Source_File_Index;
+      Sloc1   : Source_Ptr;
+      Sloc2   : Source_Ptr;
+      Unit1   : Node_Id;
+      Unit2   : Node_Id;
+      Unum1   : Unit_Number_Type;
+      Unum2   : Unit_Number_Type;
 
    begin
       if S1 = No_Location or else S2 = No_Location then
@@ -430,7 +440,20 @@ package body Lib is
          return No;
 
          <<Continue>>
-            null;
+         Counter := Counter + 1;
+
+         --  Prevent looping forever
+
+         if Counter > Max_Iterations then
+            --  ??? Not quite right, but return a value to be able to generate
+            --  SCIL files and hope for the best.
+
+            if CodePeer_Mode then
+               return No;
+            else
+               raise Program_Error;
+            end if;
+         end if;
       end loop;
    end Check_Same_Extended_Unit;
 
@@ -573,7 +596,8 @@ package body Lib is
 
    function Get_Code_Or_Source_Unit
      (S                : Source_Ptr;
-      Unwind_Instances : Boolean) return Unit_Number_Type
+      Unwind_Instances : Boolean;
+      Unwind_Subunits  : Boolean) return Unit_Number_Type
    is
    begin
       --  Search table unless we have No_Location, which can happen if the
@@ -584,6 +608,7 @@ package body Lib is
          declare
             Source_File : Source_File_Index;
             Source_Unit : Unit_Number_Type;
+            Unit_Node   : Node_Id;
 
          begin
             Source_File := Get_Source_File_Index (S);
@@ -595,6 +620,21 @@ package body Lib is
             end if;
 
             Source_Unit := Unit (Source_File);
+
+            if Unwind_Subunits then
+               Unit_Node := Unit (Cunit (Source_Unit));
+
+               while Nkind (Unit_Node) = N_Subunit
+                 and then Present (Corresponding_Stub (Unit_Node))
+               loop
+                  Source_Unit :=
+                    Get_Code_Or_Source_Unit
+                      (Sloc (Corresponding_Stub (Unit_Node)),
+                       Unwind_Instances => Unwind_Instances,
+                       Unwind_Subunits  => Unwind_Subunits);
+                  Unit_Node := Unit (Cunit (Source_Unit));
+               end loop;
+            end if;
 
             if Source_Unit /= No_Unit then
                return Source_Unit;
@@ -615,8 +655,11 @@ package body Lib is
 
    function Get_Code_Unit (S : Source_Ptr) return Unit_Number_Type is
    begin
-      return Get_Code_Or_Source_Unit (Top_Level_Location (S),
-        Unwind_Instances => False);
+      return
+        Get_Code_Or_Source_Unit
+          (Top_Level_Location (S),
+           Unwind_Instances => False,
+           Unwind_Subunits  => False);
    end Get_Code_Unit;
 
    function Get_Code_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
@@ -632,7 +675,6 @@ package body Lib is
    begin
       if N <= Compilation_Switches.Last then
          return Compilation_Switches.Table (N);
-
       else
          return null;
       end if;
@@ -691,13 +733,34 @@ package body Lib is
 
    function Get_Source_Unit (S : Source_Ptr) return Unit_Number_Type is
    begin
-      return Get_Code_Or_Source_Unit (S, Unwind_Instances => True);
+      return
+        Get_Code_Or_Source_Unit
+          (S, Unwind_Instances => True, Unwind_Subunits => False);
    end Get_Source_Unit;
 
    function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
    begin
       return Get_Source_Unit (Sloc (N));
    end Get_Source_Unit;
+
+   -----------------------------
+   -- Get_Top_Level_Code_Unit --
+   -----------------------------
+
+   function Get_Top_Level_Code_Unit (S : Source_Ptr) return Unit_Number_Type is
+   begin
+      return
+        Get_Code_Or_Source_Unit
+          (Top_Level_Location (S),
+           Unwind_Instances => False,
+           Unwind_Subunits  => True);
+   end Get_Top_Level_Code_Unit;
+
+   function Get_Top_Level_Code_Unit
+     (N : Node_Or_Entity_Id) return Unit_Number_Type is
+   begin
+      return Get_Top_Level_Code_Unit (Sloc (N));
+   end Get_Top_Level_Code_Unit;
 
    --------------------------------
    -- In_Extended_Main_Code_Unit --

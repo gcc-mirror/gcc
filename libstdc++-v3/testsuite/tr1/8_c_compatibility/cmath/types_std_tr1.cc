@@ -29,6 +29,6 @@ void test01()
 
   typedef std::tr1::double_t  my_double_t;
   typedef std::tr1::float_t   my_float_t;
-  
+
 #endif
 }

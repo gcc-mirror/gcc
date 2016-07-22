@@ -299,6 +299,10 @@ mmicromips
 Target Report Mask(MICROMIPS)
 Use microMIPS instructions.
 
+mmsa
+Target Report Var(TARGET_MSA)
+Use MIPS MSA Extension instructions.
+
 mmt
 Target Report Var(TARGET_MT)
 Allow the use of MT instructions.

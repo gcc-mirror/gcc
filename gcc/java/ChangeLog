@@ -1,3 +1,33 @@
+2016-07-21  Richard Biener  <rguenther@suse.de>
+
+	* jcf-parse.c (java_emit_static_constructor): Set
+	BLOCK_SUPERCONTEXT of DECL_INITIAL.
+
+2016-05-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* builtins.c (java_builtins): Use popcount* and bswap* builtins to
+	implement bitCount() and reverseBytes() methods in java.lang.Integer
+	and friends.
+	(initialize_builtins): Annotate math builtins with ECF_LEAF.  Call
+	define_builtin for the new popcount* and bswap* builtins.
+
+2016-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR java/70839
+	* decl.c (parse_version): Remove minor handling.
+
+2016-04-28  Matthias Klose  <doko@ubuntu.com>
+
+	* decl.c (parse_version): Don't encode the minor version in the abi
+	version.
+
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* class.c (add_method_1): Use SET_DECL_ALIGN.
+	(make_class_data): Ditto.
+	(emit_register_classes_in_jcr_section): Ditto.
+	* typeck.c (build_java_array_type): Ditto.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

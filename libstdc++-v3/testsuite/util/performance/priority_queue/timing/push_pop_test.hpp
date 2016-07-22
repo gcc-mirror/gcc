@@ -53,7 +53,7 @@ namespace __gnu_pbds
       class push_pop_push_pop_functor
       {
       public:
-        push_pop_push_pop_functor(It ins_it_b,  It ins_it_e) 
+        push_pop_push_pop_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -107,7 +107,7 @@ namespace __gnu_pbds
       const size_t m_ins_vm;
     };
 
- 
+
     template<typename It>
     template<typename Cntnr>
     void
@@ -115,9 +115,9 @@ namespace __gnu_pbds
     operator()(Cntnr)
     {
       typedef xml_result_set_performance_formatter formatter_type;
-      formatter_type res_set_fmt(string_form<Cntnr>::name(), 
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
 				 string_form<Cntnr>::desc());
- 
+
       for (size_t i = 0; m_ins_vn + i * m_ins_vs < m_ins_vm; ++i)
 	{
 	  const size_t v = m_ins_vn + i * m_ins_vs;
@@ -137,5 +137,5 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

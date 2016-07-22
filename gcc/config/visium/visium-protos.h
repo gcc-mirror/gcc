@@ -49,7 +49,8 @@ extern void visium_split_cbranch (enum rtx_code, rtx, rtx, rtx);
 extern const char *output_ubranch (rtx, rtx_insn *);
 extern const char *output_cbranch (rtx, enum rtx_code, enum machine_mode, int,
 				   rtx_insn *);
-extern void split_double_move (rtx *, enum machine_mode);
+extern void visium_split_double_move (rtx *, enum machine_mode);
+extern void visium_split_double_add (enum rtx_code, rtx, rtx, rtx);
 extern void visium_expand_copysign (rtx *, enum machine_mode);
 extern void visium_expand_int_cstore (rtx *, enum machine_mode);
 extern void visium_expand_fp_cstore (rtx *, enum machine_mode);

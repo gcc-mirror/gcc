@@ -1,3 +1,5 @@
+#include "tree-vect.h"
+
 extern void abort (void);
 
 int a[128];
@@ -18,6 +20,7 @@ void __attribute__((noinline)) foo()
 
 int main()
 {
+  check_vect ();
   foo ();
   if (b[0] != 33. || b[1] != 34.
       || b[2] != 35. || b[3] != 36.)

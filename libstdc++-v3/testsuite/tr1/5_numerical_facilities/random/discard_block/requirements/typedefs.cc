@@ -25,15 +25,15 @@
 #include <tr1/random>
 
 void
-test01() 
-{ 
+test01()
+{
   using namespace std::tr1;
-  
+
   typedef discard_block
     <
     subtract_with_carry<long, (1 << 24), 10, 24>,
     389, 24
     > test_type;
-  
+
   typedef test_type::result_type result_type;
 }

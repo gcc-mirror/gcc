@@ -357,13 +357,24 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	  time_t tt;
 	  struct tm *tb = NULL;
 
-	  /* (time_t) -1 is a legitimate value for "number of seconds
-	     since the Epoch", so we have to do a little dance to
-	     distinguish that from a genuine error.  */
-	  errno = 0;
-	  tt = time(NULL);
-	  if (tt != (time_t)-1 || errno == 0)
-	    tb = localtime (&tt);
+	  /* Set a reproducible timestamp for __DATE__ and __TIME__ macro
+	     if SOURCE_DATE_EPOCH is defined.  */
+	  if (pfile->source_date_epoch == (time_t) -2
+	      && pfile->cb.get_source_date_epoch != NULL)
+	    pfile->source_date_epoch = pfile->cb.get_source_date_epoch (pfile);
+
+	  if (pfile->source_date_epoch >= (time_t) 0)
+	    tb = gmtime (&pfile->source_date_epoch);
+	  else
+	    {
+	      /* (time_t) -1 is a legitimate value for "number of seconds
+		 since the Epoch", so we have to do a little dance to
+		 distinguish that from a genuine error.  */
+	      errno = 0;
+	      tt = time (NULL);
+	      if (tt != (time_t)-1 || errno == 0)
+		tb = localtime (&tt);
+	    }
 
 	  if (tb)
 	    {

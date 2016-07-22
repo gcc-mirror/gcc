@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -329,9 +329,11 @@ begin
       --  Ada version syntax.
 
       when Pragma_Ada_83 =>
-         Ada_Version := Ada_83;
-         Ada_Version_Explicit := Ada_83;
-         Ada_Version_Pragma := Pragma_Node;
+         if not Latest_Ada_Only then
+            Ada_Version := Ada_83;
+            Ada_Version_Explicit := Ada_83;
+            Ada_Version_Pragma := Pragma_Node;
+         end if;
 
       ------------
       -- Ada_95 --
@@ -342,9 +344,11 @@ begin
       --  Ada version syntax.
 
       when Pragma_Ada_95 =>
-         Ada_Version := Ada_95;
-         Ada_Version_Explicit := Ada_95;
-         Ada_Version_Pragma := Pragma_Node;
+         if not Latest_Ada_Only then
+            Ada_Version := Ada_95;
+            Ada_Version_Explicit := Ada_95;
+            Ada_Version_Pragma := Pragma_Node;
+         end if;
 
       ---------------------
       -- Ada_05/Ada_2005 --
@@ -356,7 +360,7 @@ begin
       --  must be processed at parse time.
 
       when Pragma_Ada_05 | Pragma_Ada_2005 =>
-         if Arg_Count = 0 then
+         if Arg_Count = 0 and not Latest_Ada_Only then
             Ada_Version := Ada_2005;
             Ada_Version_Explicit := Ada_2005;
             Ada_Version_Pragma := Pragma_Node;
@@ -974,13 +978,13 @@ begin
                declare
                   Slen    : constant Natural := Natural (String_Length (S));
                   Options : String (1 .. Slen);
-                  J       : Natural;
-                  Ptr     : Natural;
+                  J       : Positive;
+                  Ptr     : Positive;
 
                begin
                   J := 1;
                   loop
-                     C := Get_String_Char (S, Int (J));
+                     C := Get_String_Char (S, Pos (J));
 
                      if not In_Character_Range (C) then
                         OK := False;
@@ -1483,6 +1487,7 @@ begin
            Pragma_Unreferenced_Objects           |
            Pragma_Unreserve_All_Interrupts       |
            Pragma_Unsuppress                     |
+           Pragma_Unused                         |
            Pragma_Use_VADS_Size                  |
            Pragma_Volatile                       |
            Pragma_Volatile_Components            |

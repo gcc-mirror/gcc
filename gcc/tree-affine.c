@@ -318,7 +318,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 	}
       core = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize, &bitpos,
 				  &toffset, &mode, &unsignedp, &reversep,
-				  &volatilep, false);
+				  &volatilep);
       if (bitpos % BITS_PER_UNIT != 0)
 	break;
       aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
@@ -769,7 +769,7 @@ wide_int_constant_multiple_p (const widest_int &val, const widest_int &div,
 
   if (val == 0)
     {
-      if (*mult_set && mult != 0)
+      if (*mult_set && *mult != 0)
 	return false;
       *mult_set = true;
       *mult = 0;
@@ -888,7 +888,7 @@ get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
   int uns, rev, vol;
   aff_tree tmp;
   tree base = get_inner_reference (ref, &bitsize, &bitpos, &toff, &mode,
-				   &uns, &rev, &vol, false);
+				   &uns, &rev, &vol);
   tree base_addr = build_fold_addr_expr (base);
 
   /* ADDR = &BASE + TOFF + BITPOS / BITS_PER_UNIT.  */
@@ -929,7 +929,7 @@ aff_comb_cannot_overlap_p (aff_tree *diff, const widest_int &size1,
   else
     {
       /* We succeed if the second object starts after the first one ends.  */
-      return wi::les_p (size1, diff->offset);
+      return size1 <= diff->offset;
     }
 }
 

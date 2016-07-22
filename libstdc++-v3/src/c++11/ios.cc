@@ -74,21 +74,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   bool ios_base::Init::_S_synced_with_stdio = true;
 
   ios_base::ios_base() throw()
-  : _M_precision(), _M_width(), _M_flags(), _M_exception(), 
-  _M_streambuf_state(), _M_callbacks(0), _M_word_zero(), 
+  : _M_precision(), _M_width(), _M_flags(), _M_exception(),
+  _M_streambuf_state(), _M_callbacks(0), _M_word_zero(),
   _M_word_size(_S_local_word_size), _M_word(_M_local_word), _M_ios_locale()
   {
-    // Do nothing: basic_ios::init() does it.  
+    // Do nothing: basic_ios::init() does it.
     // NB: _M_callbacks and _M_word must be zero for non-initialized
     // ios_base to go through ~ios_base gracefully.
   }
-  
+
   // 27.4.2.7  ios_base constructors/destructors
   ios_base::~ios_base()
   {
     _M_call_callbacks(erase_event);
     _M_dispose_callbacks();
-    if (_M_word != _M_local_word) 
+    if (_M_word != _M_local_word)
       {
 	delete [] _M_word;
 	_M_word = 0;
@@ -96,16 +96,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // 27.4.2.5  ios_base storage functions
-  int 
+  int
   ios_base::xalloc() throw()
   {
     // Implementation note: Initialize top to zero to ensure that
     // initialization occurs before main() is started.
-    static _Atomic_word _S_top = 0; 
+    static _Atomic_word _S_top = 0;
     return __gnu_cxx::__exchange_and_add_dispatch(&_S_top, 1) + 4;
   }
 
-  void 
+  void
   ios_base::register_callback(event_callback __fn, int __index)
   { _M_callbacks = new _Callback_list(__fn, __index, _M_callbacks); }
 
@@ -140,9 +140,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  _M_word_zero._M_pword = 0;
 		return _M_word_zero;
 	      }
-	    for (int __i = 0; __i < _M_word_size; __i++) 
+	    for (int __i = 0; __i < _M_word_size; __i++)
 	      __words[__i] = _M_word[__i];
-	    if (_M_word && _M_word != _M_local_word) 
+	    if (_M_word && _M_word != _M_local_word)
 	      {
 		delete [] _M_word;
 		_M_word = 0;
@@ -165,21 +165,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return _M_word[__ix];
   }
 
-  void 
+  void
   ios_base::_M_call_callbacks(event __e) throw()
   {
     _Callback_list* __p = _M_callbacks;
     while (__p)
       {
-	__try 
-	  { (*__p->_M_fn) (__e, *this, __p->_M_index); } 
-	__catch(...) 
+	__try
+	  { (*__p->_M_fn) (__e, *this, __p->_M_index); }
+	__catch(...)
 	  { }
 	__p = __p->_M_next;
       }
   }
 
-  void 
+  void
   ios_base::_M_dispose_callbacks(void) throw()
   {
     _Callback_list* __p = _M_callbacks;

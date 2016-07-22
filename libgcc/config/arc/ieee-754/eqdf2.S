@@ -58,11 +58,16 @@ __eqdf2:
 	   well predictable (as seen from the branch predictor).  */
 __eqdf2:
 	brne.d DBL0H,DBL1H,.Lhighdiff
-	bmsk r12,DBL0H,20
-#ifdef DPFP_COMPAT
-	or.f 0,DBL0L,DBL1L
-	bset.ne r12,r12,21
-#endif /* DPFP_COMPAT */
+#ifndef __HS__
+	/* The next two instructions are required to recognize the FPX
+	NaN, which has a pattern like this: 0x7ff0_0000_8000_0000, as
+	oposite to 0x7ff8_0000_0000_0000.  */
+	or.f    0,DBL0L,DBL1L
+	mov_s	r12,0x00200000
+	bset.ne r12,r12,0
+#else
+	bmsk    r12,DBL0H,20
+#endif /* __HS__ */
 	add1.f	r12,r12,DBL0H /* set c iff NaN; also, clear z if NaN.  */
 	j_s.d	[blink]
 	cmp.cc	DBL0L,DBL1L

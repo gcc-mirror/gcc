@@ -24,8 +24,9 @@ main ()
     }
   return 0;
 }
-/* { dg-final-use { scan-ipa-dump "Mod power of 2 transformation on insn" "profile" } } */
+/* autofdo does not do value profiling so far */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Mod power of 2 transformation on insn" "profile" } } */
 /* This is part of code checking that n is power of 2, so we are sure that the transformation
    didn't get optimized out.  */
-/* { dg-final-use { scan-tree-dump "n_\[0-9\]* \\+ (4294967295|0x0*ffffffff)" "optimized"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump "n_\[0-9\]* \\+ (4294967295|0x0*ffffffff)" "optimized"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */

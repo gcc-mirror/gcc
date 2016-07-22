@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,5 +34,9 @@ with Types; use Types;
 package Exp_SPARK is
 
    procedure Expand_SPARK (N : Node_Id);
+
+   procedure Expand_SPARK_Potential_Renaming (N : Node_Id);
+   --  N must denote an N_Expanded_Name or N_Identifier. If N is a reference to
+   --  a renaming, replace N with the renamed object.
 
 end Exp_SPARK;

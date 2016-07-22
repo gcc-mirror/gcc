@@ -1,4 +1,6 @@
+/* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fdisable-tree-cunrolli" } */
 
 struct vector
 {

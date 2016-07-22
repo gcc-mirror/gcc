@@ -618,7 +618,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	op0 = TREE_OPERAND (op0, 0);
 	base
 	  = get_inner_reference (op0, &pbitsize, &pbitpos, &poffset, &pmode,
-				 &punsignedp, &preversep, &pvolatilep, false);
+				 &punsignedp, &preversep, &pvolatilep);
 
 	if (pbitpos % BITS_PER_UNIT != 0)
 	  return false;
@@ -771,7 +771,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     fprintf (dump_file, "analyze_innermost: ");
 
   base = get_inner_reference (ref, &pbitsize, &pbitpos, &poffset, &pmode,
-			      &punsignedp, &preversep, &pvolatilep, false);
+			      &punsignedp, &preversep, &pvolatilep);
   gcc_assert (base != NULL_TREE);
 
   if (pbitpos % BITS_PER_UNIT != 0)
@@ -1538,8 +1538,13 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the references do not access the same object, we do not know
-     whether they alias or not.  */
-  if (!operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), 0))
+     whether they alias or not.  We do not care about TBAA or alignment
+     info so we can use OEP_ADDRESS_OF to avoid false negatives.
+     But the accesses have to use compatible types as otherwise the
+     built indices would not match.  */
+  if (!operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), OEP_ADDRESS_OF)
+      || !types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (a)),
+			      TREE_TYPE (DR_BASE_OBJECT (b))))
     {
       DDR_ARE_DEPENDENT (res) = chrec_dont_know;
       return res;
@@ -3863,7 +3868,8 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
       if (DECL_P (op1)
 	  || (REFERENCE_CLASS_P (op1)
 	      && (base = get_base_address (op1))
-	      && TREE_CODE (base) != SSA_NAME))
+	      && TREE_CODE (base) != SSA_NAME
+	      && !is_gimple_min_invariant (base)))
 	{
 	  ref.ref = op1;
 	  ref.is_read = true;
@@ -3937,8 +3943,7 @@ bool
 loop_nest_has_data_refs (loop_p loop)
 {
   basic_block *bbs = get_loop_body (loop);
-  vec<data_ref_loc> references;
-  references.create (3);
+  auto_vec<data_ref_loc, 3> references;
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
     {
@@ -3952,13 +3957,11 @@ loop_nest_has_data_refs (loop_p loop)
 	  if (references.length ())
 	    {
 	      free (bbs);
-	      references.release ();
 	      return true;
 	    }
 	}
     }
   free (bbs);
-  references.release ();
 
   if (loop->inner)
     {
@@ -3997,7 +4000,7 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }
-  references.release ();
+
   return ret;
 }
 
@@ -4027,7 +4030,6 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
       datarefs->safe_push (dr);
     }
 
-  references.release ();
   return ret;
 }
 

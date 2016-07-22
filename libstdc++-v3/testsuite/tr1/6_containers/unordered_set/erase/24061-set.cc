@@ -1,4 +1,4 @@
-// 2005-10-08  Paolo Carlini  <pcarlini@suse.de> 
+// 2005-10-08  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -27,13 +27,13 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  
+
   typedef std::tr1::unordered_set<std::string> Set;
   typedef Set::iterator       iterator;
   typedef Set::const_iterator const_iterator;
 
   Set s1;
-  
+
   s1.insert("all the love in the world");
   s1.insert("you know what you are?");
   s1.insert("the collector");
@@ -96,7 +96,7 @@ void test01()
   VERIFY( it13 == s1.end() );
   VERIFY( it13 == s1.begin() );
 }
-  
+
 int main()
 {
   test01();

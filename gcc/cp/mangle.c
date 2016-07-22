@@ -2767,17 +2767,67 @@ write_expression (tree expr)
       write_mangled_name (expr, false);
       write_char ('E');
     }
-  else if (TREE_CODE (expr) == SIZEOF_EXPR
-	   && SIZEOF_EXPR_TYPE_P (expr))
+  else if (TREE_CODE (expr) == SIZEOF_EXPR)
     {
-      write_string ("st");
-      write_type (TREE_TYPE (TREE_OPERAND (expr, 0)));
-    }
-  else if (TREE_CODE (expr) == SIZEOF_EXPR
-	   && TYPE_P (TREE_OPERAND (expr, 0)))
-    {
-      write_string ("st");
-      write_type (TREE_OPERAND (expr, 0));
+      tree op = TREE_OPERAND (expr, 0);
+
+      if (PACK_EXPANSION_P (op))
+	{
+	  if (abi_warn_or_compat_version_crosses (11))
+	    G.need_abi_warning = true;
+	  if (abi_version_at_least (11))
+	    {
+	      /* sZ rather than szDp.  */
+	      write_string ("sZ");
+	      write_expression (PACK_EXPANSION_PATTERN (op));
+	      return;
+	    }
+	}
+
+      if (SIZEOF_EXPR_TYPE_P (expr))
+	{
+	  write_string ("st");
+	  write_type (TREE_TYPE (op));
+	}
+      else if (ARGUMENT_PACK_P (op))
+	{
+	  tree args = ARGUMENT_PACK_ARGS (op);
+	  int length = TREE_VEC_LENGTH (args);
+	  if (abi_warn_or_compat_version_crosses (10))
+	    G.need_abi_warning = true;
+	  if (abi_version_at_least (10))
+	    {
+	      /* sP <template-arg>* E # sizeof...(T), size of a captured
+		 template parameter pack from an alias template */
+	      write_string ("sP");
+	      for (int i = 0; i < length; ++i)
+		write_template_arg (TREE_VEC_ELT (args, i));
+	      write_char ('E');
+	    }
+	  else
+	    {
+	      /* In GCC 5 we represented this sizeof wrong, with the effect
+		 that we mangled it as the last element of the pack.  */
+	      tree arg = TREE_VEC_ELT (args, length-1);
+	      if (TYPE_P (op))
+		{
+		  write_string ("st");
+		  write_type (arg);
+		}
+	      else
+		{
+		  write_string ("sz");
+		  write_expression (arg);
+		}
+	    }
+	}
+      else if (TYPE_P (TREE_OPERAND (expr, 0)))
+	{
+	  write_string ("st");
+	  write_type (TREE_OPERAND (expr, 0));
+	}
+      else
+	goto normal_expr;
     }
   else if (TREE_CODE (expr) == ALIGNOF_EXPR
 	   && TYPE_P (TREE_OPERAND (expr, 0)))
@@ -2947,6 +2997,7 @@ write_expression (tree expr)
     }
   else
     {
+    normal_expr:
       int i, len;
       const char *name;
 
@@ -3093,6 +3144,29 @@ write_expression (tree expr)
 		  error ("omitted middle operand to %<?:%> operand "
 			 "cannot be mangled");
 		  continue;
+		}
+	      else if (FOLD_EXPR_P (expr))
+		{
+		  /* The first 'operand' of a fold-expression is the operator
+		     that it folds over.  */
+		  if (i == 0)
+		    {
+		      int fcode = TREE_INT_CST_LOW (operand);
+		      write_string (operator_name_info[fcode].mangled_name);
+		      continue;
+		    }
+		  else if (code == BINARY_LEFT_FOLD_EXPR)
+		    {
+		      /* The order of operands of the binary left and right
+			 folds is the same, but we want to mangle them in
+			 lexical order, i.e. non-pack first.  */
+		      if (i == 1)
+			operand = FOLD_EXPR_INIT (expr);
+		      else
+			operand = FOLD_EXPR_PACK (expr);
+		    }
+		  if (PACK_EXPANSION_P (operand))
+		    operand = PACK_EXPANSION_PATTERN (operand);
 		}
 	      write_expression (operand);
 	    }

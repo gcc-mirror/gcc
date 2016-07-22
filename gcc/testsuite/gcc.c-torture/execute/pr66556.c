@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 extern void abort (void);
 

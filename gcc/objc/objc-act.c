@@ -2115,7 +2115,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
 	= size_binop (FLOOR_DIV_EXPR, convert (sizetype, DECL_SIZE (base)),
 		      size_int (BITS_PER_UNIT));
       DECL_ARTIFICIAL (base) = 1;
-      DECL_ALIGN (base) = 1;
+      SET_DECL_ALIGN (base, 1);
       DECL_FIELD_CONTEXT (base) = s;
 #ifdef OBJCPLUS
       DECL_FIELD_IS_BASE (base) = 1;
@@ -2654,7 +2654,8 @@ objc_build_component_ref (tree datum, tree component)
   return finish_class_member_access_expr (datum, component, false,
                                           tf_warning_or_error);
 #else
-  return build_component_ref (input_location, datum, component);
+  return build_component_ref (input_location, datum, component,
+			      UNKNOWN_LOCATION);
 #endif
 }
 

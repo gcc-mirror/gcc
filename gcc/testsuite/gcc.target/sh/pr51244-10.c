@@ -12,7 +12,6 @@
 */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "shll|subc|and" } } */
 int
 test_00 (int* p)

@@ -5,7 +5,9 @@
 package net
 
 import (
+	"context"
 	"fmt"
+	"internal/testenv"
 	"io"
 	"io/ioutil"
 	"net/internal/socktest"
@@ -26,6 +28,8 @@ var dialTimeoutTests = []struct {
 	{-5 * time.Second, 0, -5 * time.Second, 100 * time.Millisecond},
 	{0, -5 * time.Second, -5 * time.Second, 100 * time.Millisecond},
 	{-5 * time.Second, 5 * time.Second, -5 * time.Second, 100 * time.Millisecond}, // timeout over deadline
+	{-1 << 63, 0, time.Second, 100 * time.Millisecond},
+	{0, -1 << 63, time.Second, 100 * time.Millisecond},
 
 	{50 * time.Millisecond, 0, 100 * time.Millisecond, time.Second},
 	{0, 50 * time.Millisecond, 100 * time.Millisecond, time.Second},
@@ -37,19 +41,6 @@ func TestDialTimeout(t *testing.T) {
 	origTestHookDialChannel := testHookDialChannel
 	defer func() { testHookDialChannel = origTestHookDialChannel }()
 	defer sw.Set(socktest.FilterConnect, nil)
-
-	// Avoid tracking open-close jitterbugs between netFD and
-	// socket that leads to confusion of information inside
-	// socktest.Switch.
-	// It may happen when the Dial call bumps against TCP
-	// simultaneous open. See selfConnect in tcpsock_posix.go.
-	defer func() {
-		sw.Set(socktest.FilterClose, nil)
-		forceCloseSockets()
-	}()
-	sw.Set(socktest.FilterClose, func(so *socktest.Status) (socktest.AfterFilter, error) {
-		return nil, errTimedout
-	})
 
 	for i, tt := range dialTimeoutTests {
 		switch runtime.GOOS {
@@ -99,6 +90,56 @@ func TestDialTimeout(t *testing.T) {
 	}
 }
 
+var dialTimeoutMaxDurationTests = []struct {
+	timeout time.Duration
+	delta   time.Duration // for deadline
+}{
+	// Large timeouts that will overflow an int64 unix nanos.
+	{1<<63 - 1, 0},
+	{0, 1<<63 - 1},
+}
+
+func TestDialTimeoutMaxDuration(t *testing.T) {
+	if runtime.GOOS == "openbsd" {
+		testenv.SkipFlaky(t, 15157)
+	}
+
+	ln, err := newLocalListener("tcp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+
+	for i, tt := range dialTimeoutMaxDurationTests {
+		ch := make(chan error)
+		max := time.NewTimer(250 * time.Millisecond)
+		defer max.Stop()
+		go func() {
+			d := Dialer{Timeout: tt.timeout}
+			if tt.delta != 0 {
+				d.Deadline = time.Now().Add(tt.delta)
+			}
+			c, err := d.Dial(ln.Addr().Network(), ln.Addr().String())
+			if err == nil {
+				c.Close()
+			}
+			ch <- err
+		}()
+
+		select {
+		case <-max.C:
+			t.Fatalf("#%d: Dial didn't return in an expected time", i)
+		case err := <-ch:
+			if perr := parseDialError(err); perr != nil {
+				t.Error(perr)
+			}
+			if err != nil {
+				t.Errorf("#%d: %v", i, err)
+			}
+		}
+	}
+}
+
 var acceptTimeoutTests = []struct {
 	timeout time.Duration
 	xerrs   [2]error // expected errors in transition
@@ -124,10 +165,13 @@ func TestAcceptTimeout(t *testing.T) {
 	}
 	defer ln.Close()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	for i, tt := range acceptTimeoutTests {
 		if tt.timeout < 0 {
 			go func() {
-				c, err := Dial(ln.Addr().Network(), ln.Addr().String())
+				var d Dialer
+				c, err := d.DialContext(ctx, ln.Addr().Network(), ln.Addr().String())
 				if err != nil {
 					t.Error(err)
 					return
@@ -261,8 +305,6 @@ var readTimeoutTests = []struct {
 }
 
 func TestReadTimeout(t *testing.T) {
-	t.Parallel()
-
 	switch runtime.GOOS {
 	case "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)

@@ -3,8 +3,8 @@
 
 typedef void FP (int);
 
-/* { dg-final { scan-assembler "br" } } */
-/* { dg-final { scan-assembler-not "blr" } } */
+/* { dg-final { scan-assembler-times "br\t" 2 } } */
+/* { dg-final { scan-assembler-not "blr\t" } } */
 void
 f1 (FP fp, int n)
 {

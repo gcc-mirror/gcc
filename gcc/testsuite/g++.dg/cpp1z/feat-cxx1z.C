@@ -58,10 +58,10 @@
 #  error "__cpp_attributes != 200809"
 #endif
 
-#ifndef __cpp_rvalue_reference
-#  error "__cpp_rvalue_reference"
-#elif __cpp_rvalue_reference != 200610
-#  error "__cpp_rvalue_reference != 200610"
+#ifndef __cpp_rvalue_references
+#  error "__cpp_rvalue_references"
+#elif __cpp_rvalue_references != 200610
+#  error "__cpp_rvalue_references != 200610"
 #endif
 
 #ifndef __cpp_variadic_templates
@@ -342,4 +342,22 @@
 #  error "__cpp_hex_float"
 #elif __cpp_hex_float != 201603
 #  error "__cpp_hex_float != 201603"
+#endif
+
+#ifdef __has_cpp_attribute
+
+#  if ! __has_cpp_attribute(maybe_unused)
+#    error "__has_cpp_attribute(maybe_unused)"
+#  elif __has_cpp_attribute(maybe_unused) != 201603
+#    error "__has_cpp_attribute(maybe_unused) != 201603"
+#  endif
+
+#  if ! __has_cpp_attribute(nodiscard)
+#    error "__has_cpp_attribute(nodiscard)"
+#  elif __has_cpp_attribute(nodiscard) != 201603
+#    error "__has_cpp_attribute(nodiscard) != 201603"
+#  endif
+
+#else
+#  error "__has_cpp_attribute"
 #endif

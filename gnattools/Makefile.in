@@ -25,7 +25,6 @@ libdir = @libdir@
 build = @build@
 target = @target@
 host = @host@
-host_alias = @host_alias@
 prefix = @prefix@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -34,6 +33,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 # Nonstandard autoconf-set variables.
 LN_S=@LN_S@
 target_noncanonical=@target_noncanonical@
+host_noncanonical=@host_noncanonical@
 
 # Variables for the user (or the top level) to override.
 exeext = @EXEEXT@
@@ -118,10 +118,10 @@ ifeq ($(build), $(host))
   GNATBIND_FOR_HOST=gnatbind
   GNATLS_FOR_HOST=gnatls
 else
-  GNATMAKE_FOR_HOST=$(host_alias)-gnatmake
-  GNATLINK_FOR_HOST=$(host_alias)-gnatlink
-  GNATBIND_FOR_HOST=$(host_alias)-gnatbind
-  GNATLS_FOR_HOST=$(host_alias)-gnatls
+  GNATMAKE_FOR_HOST=$(host_noncanonical)-gnatmake
+  GNATLINK_FOR_HOST=$(host_noncanonical)-gnatlink
+  GNATBIND_FOR_HOST=$(host_noncanonical)-gnatbind
+  GNATLS_FOR_HOST=$(host_noncanonical)-gnatls
 endif
 
 # Put the host RTS dir first in the PATH to hide the default runtime
@@ -219,50 +219,6 @@ gnattools-cross: $(GCC_DIR)/stamp-tools
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_CROSS) common-tools
-	# Rename cross tools to where the GCC makefile wants them when
-	# installing.  FIXME: installation should be done elsewhere.
-	if [ -f $(GCC_DIR)/gnatbind$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatbind$(exeext) $(GCC_DIR)/gnatbind-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatchop$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatchop$(exeext) $(GCC_DIR)/gnatchop-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnat$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnat$(exeext) $(GCC_DIR)/gnat-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatkr$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatkr$(exeext) $(GCC_DIR)/gnatkr-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatlink$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatlink$(exeext) $(GCC_DIR)/gnatlink-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatls$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatls$(exeext) $(GCC_DIR)/gnatls-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatmake$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatmake$(exeext) $(GCC_DIR)/gnatmake-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatmem$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatmem$(exeext) $(GCC_DIR)/gnatmem-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatname$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatname$(exeext) $(GCC_DIR)/gnatname-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatprep$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatprep$(exeext) $(GCC_DIR)/gnatprep-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatxref$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatxref$(exeext) $(GCC_DIR)/gnatxref-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatfind$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatfind$(exeext) $(GCC_DIR)/gnatfind-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatclean$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatclean$(exeext) $(GCC_DIR)/gnatclean-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatsym$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatsym$(exeext) $(GCC_DIR)/gnatsym-cross$(exeext); \
-	fi
 
 # Other
 # -----

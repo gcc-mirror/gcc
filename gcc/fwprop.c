@@ -354,7 +354,7 @@ canonicalize_address (rtx x)
 	  {
 	    HOST_WIDE_INT shift = INTVAL (XEXP (x, 1));
 	    PUT_CODE (x, MULT);
-	    XEXP (x, 1) = gen_int_mode ((HOST_WIDE_INT) 1 << shift,
+	    XEXP (x, 1) = gen_int_mode (HOST_WIDE_INT_1 << shift,
 					GET_MODE (x));
 	  }
 
@@ -618,6 +618,15 @@ propagate_rtx_1 (rtx *px, rtx old_rtx, rtx new_rtx, int flags)
     return true;
 
   *px = tem;
+
+  /* Allow replacements that simplify operations on a vector or complex
+     value to a component.  The most prominent case is
+     (subreg ([vec_]concat ...)).   */
+  if (REG_P (tem) && !HARD_REGISTER_P (tem)
+      && (VECTOR_MODE_P (GET_MODE (new_rtx))
+	  || COMPLEX_MODE_P (GET_MODE (new_rtx)))
+      && GET_MODE (tem) == GET_MODE_INNER (GET_MODE (new_rtx)))
+    return true;
 
   /* The replacement we made so far is valid, if all of the recursive
      replacements were valid, or we could simplify everything to
@@ -1461,7 +1470,6 @@ static unsigned int
 fwprop (void)
 {
   unsigned i;
-  bool need_cleanup = false;
 
   fwprop_init ();
 
@@ -1479,12 +1487,10 @@ fwprop (void)
 	    || DF_REF_BB (use)->loop_father == NULL
 	    /* The outer most loop is not really a loop.  */
 	    || loop_outer (DF_REF_BB (use)->loop_father) == NULL)
-	  need_cleanup |= forward_propagate_into (use);
+	  forward_propagate_into (use);
     }
 
   fwprop_done ();
-  if (need_cleanup)
-    cleanup_cfg (0);
   return 0;
 }
 
@@ -1528,7 +1534,6 @@ static unsigned int
 fwprop_addr (void)
 {
   unsigned i;
-  bool need_cleanup = false;
 
   fwprop_init ();
 
@@ -1542,13 +1547,10 @@ fwprop_addr (void)
 	    && DF_REF_BB (use)->loop_father != NULL
 	    /* The outer most loop is not really a loop.  */
 	    && loop_outer (DF_REF_BB (use)->loop_father) != NULL)
-	  need_cleanup |= forward_propagate_into (use);
+	  forward_propagate_into (use);
     }
 
   fwprop_done ();
-
-  if (need_cleanup)
-    cleanup_cfg (0);
   return 0;
 }
 

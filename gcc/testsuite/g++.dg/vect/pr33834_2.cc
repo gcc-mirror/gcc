@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -ftree-vectorize" } */
+/* { dg-additional-options "-O3" } */
 
 /* Testcase by Martin Michlmayr <tbm@cyrius.com> */
 

@@ -489,7 +489,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
 	  new_yes_expr = build_modify_expr
 	    (location, array_ind_value, TREE_TYPE (array_ind_value),
 	     NOP_EXPR,
-	     location, func_parm, TREE_OPERAND (array_op0, 1));
+	     location, func_parm, TREE_TYPE (TREE_OPERAND (array_op0, 1)));
 	}
       new_yes_list = alloc_stmt_list ();
       append_to_statement_list (new_yes_ind, &new_yes_list);
@@ -539,7 +539,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
 	  new_yes_expr = build_modify_expr
 	    (location, array_ind_value, TREE_TYPE (array_ind_value),
 	     NOP_EXPR,
-	     location, func_parm, TREE_OPERAND (array_op0, 1));
+	     location, func_parm, TREE_TYPE (TREE_OPERAND (array_op0, 1)));
 	}
       new_yes_list = alloc_stmt_list ();
       append_to_statement_list (new_yes_ind, &new_yes_list);

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile -fdump-ipa-afdo" } */
 
 static int a1 (void)
 {
@@ -28,7 +28,7 @@ main (void)
   int (*p) (void);
   int  i;
 
-  for (i = 0; i < 10; i ++)
+  for (i = 0; i < 10000000; i ++)
     {
 	setp (&p, i);
 	p ();
@@ -37,5 +37,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final-use { scan-ipa-dump "Indirect call -> direct call.* a1 transformation on insn" "profile"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Indirect call -> direct call.* a1 transformation on insn" "profile"} } */
+/* { dg-final-use-autofdo { scan-ipa-dump "Indirect call -> direct call.* a1 transformation on insn" "afdo"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */

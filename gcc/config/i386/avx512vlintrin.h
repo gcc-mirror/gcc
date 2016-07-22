@@ -626,7 +626,7 @@ extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_loadu_pd (__m256d __W, __mmask8 __U, void const *__P)
 {
-  return (__m256d) __builtin_ia32_loadupd256_mask ((__v4df *) __P,
+  return (__m256d) __builtin_ia32_loadupd256_mask ((const double *) __P,
 						   (__v4df) __W,
 						   (__mmask8) __U);
 }
@@ -635,7 +635,7 @@ extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_loadu_pd (__mmask8 __U, void const *__P)
 {
-  return (__m256d) __builtin_ia32_loadupd256_mask ((__v4df *) __P,
+  return (__m256d) __builtin_ia32_loadupd256_mask ((const double *) __P,
 						   (__v4df)
 						   _mm256_setzero_pd (),
 						   (__mmask8) __U);
@@ -645,7 +645,7 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_loadu_pd (__m128d __W, __mmask8 __U, void const *__P)
 {
-  return (__m128d) __builtin_ia32_loadupd128_mask ((__v2df *) __P,
+  return (__m128d) __builtin_ia32_loadupd128_mask ((const double *) __P,
 						   (__v2df) __W,
 						   (__mmask8) __U);
 }
@@ -654,7 +654,7 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_loadu_pd (__mmask8 __U, void const *__P)
 {
-  return (__m128d) __builtin_ia32_loadupd128_mask ((__v2df *) __P,
+  return (__m128d) __builtin_ia32_loadupd128_mask ((const double *) __P,
 						   (__v2df)
 						   _mm_setzero_pd (),
 						   (__mmask8) __U);
@@ -664,7 +664,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_storeu_pd (void *__P, __mmask8 __U, __m256d __A)
 {
-  __builtin_ia32_storeupd256_mask ((__v4df *) __P,
+  __builtin_ia32_storeupd256_mask ((double *) __P,
 				   (__v4df) __A,
 				   (__mmask8) __U);
 }
@@ -673,7 +673,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_storeu_pd (void *__P, __mmask8 __U, __m128d __A)
 {
-  __builtin_ia32_storeupd128_mask ((__v2df *) __P,
+  __builtin_ia32_storeupd128_mask ((double *) __P,
 				   (__v2df) __A,
 				   (__mmask8) __U);
 }
@@ -682,7 +682,7 @@ extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_loadu_ps (__m256 __W, __mmask8 __U, void const *__P)
 {
-  return (__m256) __builtin_ia32_loadups256_mask ((__v8sf *) __P,
+  return (__m256) __builtin_ia32_loadups256_mask ((const float *) __P,
 						  (__v8sf) __W,
 						  (__mmask8) __U);
 }
@@ -691,7 +691,7 @@ extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_loadu_ps (__mmask8 __U, void const *__P)
 {
-  return (__m256) __builtin_ia32_loadups256_mask ((__v8sf *) __P,
+  return (__m256) __builtin_ia32_loadups256_mask ((const float *) __P,
 						  (__v8sf)
 						  _mm256_setzero_ps (),
 						  (__mmask8) __U);
@@ -701,7 +701,7 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_loadu_ps (__m128 __W, __mmask8 __U, void const *__P)
 {
-  return (__m128) __builtin_ia32_loadups128_mask ((__v4sf *) __P,
+  return (__m128) __builtin_ia32_loadups128_mask ((const float *) __P,
 						  (__v4sf) __W,
 						  (__mmask8) __U);
 }
@@ -710,7 +710,7 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_loadu_ps (__mmask8 __U, void const *__P)
 {
-  return (__m128) __builtin_ia32_loadups128_mask ((__v4sf *) __P,
+  return (__m128) __builtin_ia32_loadups128_mask ((const float *) __P,
 						  (__v4sf)
 						  _mm_setzero_ps (),
 						  (__mmask8) __U);
@@ -720,7 +720,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_storeu_ps (void *__P, __mmask8 __U, __m256 __A)
 {
-  __builtin_ia32_storeups256_mask ((__v8sf *) __P,
+  __builtin_ia32_storeups256_mask ((float *) __P,
 				   (__v8sf) __A,
 				   (__mmask8) __U);
 }
@@ -729,7 +729,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_storeu_ps (void *__P, __mmask8 __U, __m128 __A)
 {
-  __builtin_ia32_storeups128_mask ((__v4sf *) __P,
+  __builtin_ia32_storeups128_mask ((float *) __P,
 				   (__v4sf) __A,
 				   (__mmask8) __U);
 }
@@ -738,7 +738,7 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_loadu_epi64 (__m256i __W, __mmask8 __U, void const *__P)
 {
-  return (__m256i) __builtin_ia32_loaddqudi256_mask ((__v4di *) __P,
+  return (__m256i) __builtin_ia32_loaddqudi256_mask ((const long long *) __P,
 						     (__v4di) __W,
 						     (__mmask8) __U);
 }
@@ -747,7 +747,7 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_loadu_epi64 (__mmask8 __U, void const *__P)
 {
-  return (__m256i) __builtin_ia32_loaddqudi256_mask ((__v4di *) __P,
+  return (__m256i) __builtin_ia32_loaddqudi256_mask ((const long long *) __P,
 						     (__v4di)
 						     _mm256_setzero_si256 (),
 						     (__mmask8) __U);
@@ -757,7 +757,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_loadu_epi64 (__m128i __W, __mmask8 __U, void const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqudi128_mask ((__v2di *) __P,
+  return (__m128i) __builtin_ia32_loaddqudi128_mask ((const long long *) __P,
 						     (__v2di) __W,
 						     (__mmask8) __U);
 }
@@ -766,7 +766,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_loadu_epi64 (__mmask8 __U, void const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqudi128_mask ((__v2di *) __P,
+  return (__m128i) __builtin_ia32_loaddqudi128_mask ((const long long *) __P,
 						     (__v2di)
 						     _mm_setzero_di (),
 						     (__mmask8) __U);
@@ -776,7 +776,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_storeu_epi64 (void *__P, __mmask8 __U, __m256i __A)
 {
-  __builtin_ia32_storedqudi256_mask ((__v4di *) __P,
+  __builtin_ia32_storedqudi256_mask ((long long *) __P,
 				     (__v4di) __A,
 				     (__mmask8) __U);
 }
@@ -785,7 +785,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_storeu_epi64 (void *__P, __mmask8 __U, __m128i __A)
 {
-  __builtin_ia32_storedqudi128_mask ((__v2di *) __P,
+  __builtin_ia32_storedqudi128_mask ((long long *) __P,
 				     (__v2di) __A,
 				     (__mmask8) __U);
 }
@@ -794,7 +794,7 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_loadu_epi32 (__m256i __W, __mmask8 __U, void const *__P)
 {
-  return (__m256i) __builtin_ia32_loaddqusi256_mask ((__v8si *) __P,
+  return (__m256i) __builtin_ia32_loaddqusi256_mask ((const int *) __P,
 						     (__v8si) __W,
 						     (__mmask8) __U);
 }
@@ -803,7 +803,7 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_loadu_epi32 (__mmask8 __U, void const *__P)
 {
-  return (__m256i) __builtin_ia32_loaddqusi256_mask ((__v8si *) __P,
+  return (__m256i) __builtin_ia32_loaddqusi256_mask ((const int *) __P,
 						     (__v8si)
 						     _mm256_setzero_si256 (),
 						     (__mmask8) __U);
@@ -813,7 +813,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_loadu_epi32 (__m128i __W, __mmask8 __U, void const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqusi128_mask ((__v4si *) __P,
+  return (__m128i) __builtin_ia32_loaddqusi128_mask ((const int *) __P,
 						     (__v4si) __W,
 						     (__mmask8) __U);
 }
@@ -822,7 +822,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_loadu_epi32 (__mmask8 __U, void const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqusi128_mask ((__v4si *) __P,
+  return (__m128i) __builtin_ia32_loaddqusi128_mask ((const int *) __P,
 						     (__v4si)
 						     _mm_setzero_si128 (),
 						     (__mmask8) __U);
@@ -832,7 +832,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_storeu_epi32 (void *__P, __mmask8 __U, __m256i __A)
 {
-  __builtin_ia32_storedqusi256_mask ((__v8si *) __P,
+  __builtin_ia32_storedqusi256_mask ((int *) __P,
 				     (__v8si) __A,
 				     (__mmask8) __U);
 }
@@ -841,7 +841,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_storeu_epi32 (void *__P, __mmask8 __U, __m128i __A)
 {
-  __builtin_ia32_storedqusi128_mask ((__v4si *) __P,
+  __builtin_ia32_storedqusi128_mask ((int *) __P,
 				     (__v4si) __A,
 				     (__mmask8) __U);
 }

@@ -25,13 +25,13 @@
 #include <tr1/random>
 
 void
-test01() 
-{ 
+test01()
+{
   typedef std::tr1::mersenne_twister<unsigned long,
     32, 624, 397, 31,
     0x9908b0df, 11, 7,
     0x9d2c5680, 15,
     0xefc60000, 18> test_type;
-  
+
   typedef test_type::result_type result_type;
 }

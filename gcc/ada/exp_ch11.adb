@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,7 +440,6 @@ package body Exp_Ch11 is
       --  expansion as described above.
 
       procedure Expand_Local_Exception_Handlers is
-
          procedure Add_Exception_Label (H : Node_Id);
          --  H is an exception handler. First check for an Exception_Label
          --  already allocated for H. If none, allocate one, set the field in
@@ -1565,13 +1564,15 @@ package body Exp_Ch11 is
          if Prefix_Exception_Messages
            and then Nkind (Expression (N)) = N_String_Literal
          then
-            Name_Len := 0;
-            Add_Source_Info (Loc, Name_Enclosing_Entity);
-            Add_Str_To_Name_Buffer (": ");
-            Add_String_To_Name_Buffer (Strval (Expression (N)));
-            Rewrite (Expression (N),
-              Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len)));
-            Analyze_And_Resolve (Expression (N), Standard_String);
+            declare
+               Buf : Bounded_String;
+            begin
+               Add_Source_Info (Buf, Loc, Name_Enclosing_Entity);
+               Append (Buf, ": ");
+               Append (Buf, Strval (Expression (N)));
+               Rewrite (Expression (N), Make_String_Literal (Loc, +Buf));
+               Analyze_And_Resolve (Expression (N), Standard_String);
+            end;
          end if;
 
          --  Avoid passing exception-name'identity in runtimes in which this
@@ -1658,10 +1659,10 @@ package body Exp_Ch11 is
       if Present (Name (N)) then
          declare
             Id : Entity_Id := Entity (Name (N));
+            Buf : Bounded_String;
 
          begin
-            Name_Len := 0;
-            Build_Location_String (Loc);
+            Build_Location_String (Buf, Loc);
 
             --  If the exception is a renaming, use the exception that it
             --  renames (which might be a predefined exception, e.g.).
@@ -1679,19 +1680,17 @@ package body Exp_Ch11 is
                --  Suppress_Exception_Locations is set for this unit.
 
                if Opt.Exception_Locations_Suppressed then
-                  Name_Len := 1;
-               else
-                  Name_Len := Name_Len + 1;
+                  Buf.Length := 0;
                end if;
 
-               Name_Buffer (Name_Len) := ASCII.NUL;
+               Append (Buf, ASCII.NUL);
             end if;
 
             if Opt.Exception_Locations_Suppressed then
-               Name_Len := 0;
+               Buf.Length := 0;
             end if;
 
-            Str := String_From_Name_Buffer;
+            Str := String_From_Name_Buffer (Buf);
 
             --  Convert raise to call to the Raise_Exception routine
 

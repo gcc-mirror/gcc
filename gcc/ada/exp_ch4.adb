@@ -44,7 +44,6 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
-with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -57,7 +56,6 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -91,12 +89,6 @@ package body Exp_Ch4 is
       Op2 : Node_Id);
    --  If a boolean array assignment can be done in place, build call to
    --  corresponding library procedure.
-
-   function Current_Anonymous_Master return Entity_Id;
-   --  Return the entity of the heterogeneous finalization master belonging to
-   --  the current unit (either function, package or procedure). This master
-   --  services all anonymous access-to-controlled types. If the current unit
-   --  does not have such master, create one.
 
    procedure Displace_Allocator_Pointer (N : Node_Id);
    --  Ada 2005 (AI-251): Subsidiary procedure to Expand_N_Allocator and
@@ -232,15 +224,23 @@ package body Exp_Ch4 is
    --  simple entity, and op is a comparison operator, optimizes it into a
    --  comparison of First and Last.
 
-   procedure Process_Transient_Object
-     (Decl     : Node_Id;
-      Rel_Node : Node_Id);
-   --  Subsidiary routine to the expansion of expression_with_actions and if
-   --  expressions. Generate all the necessary code to finalize a transient
-   --  controlled object when the enclosing context is elaborated or evaluated.
-   --  Decl denotes the declaration of the transient controlled object which is
-   --  usually the result of a controlled function call. Rel_Node denotes the
-   --  context, either an expression_with_actions or an if expression.
+   procedure Process_If_Case_Statements (N : Node_Id; Stmts : List_Id);
+   --  Inspect and process statement list Stmt of if or case expression N for
+   --  transient objects. If such objects are found, the routine generates code
+   --  to clean them up when the context of the expression is evaluated.
+
+   procedure Process_Transient_In_Expression
+     (Obj_Decl : Node_Id;
+      Expr     : Node_Id;
+      Stmts    : List_Id);
+   --  Subsidiary routine to the expansion of expression_with_actions, if and
+   --  case expressions. Generate all necessary code to finalize a transient
+   --  object when the enclosing context is elaborated or evaluated. Obj_Decl
+   --  denotes the declaration of the transient object, which is usually the
+   --  result of a controlled function call. Expr denotes the expression with
+   --  actions, if expression, or case expression node. Stmts denotes the
+   --  statement list which contains Decl, either at the top level or within a
+   --  nested construct.
 
    procedure Rewrite_Comparison (N : Node_Id);
    --  If N is the node for a comparison whose outcome can be determined at
@@ -409,202 +409,6 @@ package body Exp_Ch4 is
       when RE_Not_Available =>
          return;
    end Build_Boolean_Array_Proc_Call;
-
-   ------------------------------
-   -- Current_Anonymous_Master --
-   ------------------------------
-
-   function Current_Anonymous_Master return Entity_Id is
-      function Create_Anonymous_Master
-        (Unit_Id   : Entity_Id;
-         Unit_Decl : Node_Id) return Entity_Id;
-      --  Create a new anonymous master for a compilation unit denoted by its
-      --  entity Unit_Id and declaration Unit_Decl. The declaration of the new
-      --  master along with any specialized initialization is inserted at the
-      --  top of the unit's declarations (see body for special cases). Return
-      --  the entity of the anonymous master.
-
-      -----------------------------
-      -- Create_Anonymous_Master --
-      -----------------------------
-
-      function Create_Anonymous_Master
-        (Unit_Id   : Entity_Id;
-         Unit_Decl : Node_Id) return Entity_Id
-      is
-         Insert_Nod : Node_Id := Empty;
-         --  The point of insertion into the declarative list of the unit. All
-         --  nodes are inserted before Insert_Nod.
-
-         procedure Insert_And_Analyze (Decls : List_Id; N : Node_Id);
-         --  Insert arbitrary node N in declarative list Decls and analyze it
-
-         ------------------------
-         -- Insert_And_Analyze --
-         ------------------------
-
-         procedure Insert_And_Analyze (Decls : List_Id; N : Node_Id) is
-         begin
-            --  The declarative list is already populated, the nodes are
-            --  inserted at the top of the list, preserving their order.
-
-            if Present (Insert_Nod) then
-               Insert_Before (Insert_Nod, N);
-
-            --  Otherwise append to the declarations to preserve order
-
-            else
-               Append_To (Decls, N);
-            end if;
-
-            Analyze (N);
-         end Insert_And_Analyze;
-
-         --  Local variables
-
-         Loc       : constant Source_Ptr := Sloc (Unit_Id);
-         Spec_Id   : constant Entity_Id  := Unique_Defining_Entity (Unit_Decl);
-         Decls     : List_Id;
-         FM_Id     : Entity_Id;
-         Pref      : Character;
-         Unit_Spec : Node_Id;
-
-      --  Start of processing for Create_Anonymous_Master
-
-      begin
-         --  Find the declarative list of the unit
-
-         if Nkind (Unit_Decl) = N_Package_Declaration then
-            Unit_Spec := Specification (Unit_Decl);
-            Decls := Visible_Declarations (Unit_Spec);
-
-            if No (Decls) then
-               Decls := New_List (Make_Null_Statement (Loc));
-               Set_Visible_Declarations (Unit_Spec, Decls);
-            end if;
-
-         --  Package or subprogram body
-
-         --  ??? A subprogram declaration that acts as a compilation unit may
-         --  contain a formal parameter of an anonymous access-to-controlled
-         --  type initialized by an allocator.
-
-         --    procedure Comp_Unit_Proc (Param : access Ctrl := new Ctrl);
-
-         --  There is no suitable place to create the anonymous master as the
-         --  subprogram is not in a declarative list.
-
-         else
-            Decls := Declarations (Unit_Decl);
-
-            if No (Decls) then
-               Decls := New_List (Make_Null_Statement (Loc));
-               Set_Declarations (Unit_Decl, Decls);
-            end if;
-         end if;
-
-         --  The anonymous master and all initialization actions are inserted
-         --  before the first declaration (if any).
-
-         Insert_Nod := First (Decls);
-
-         --  Since the anonymous master and all its initialization actions are
-         --  inserted at top level, use the scope of the unit when analyzing.
-
-         Push_Scope (Spec_Id);
-
-         --  Step 1: Anonymous master creation
-
-         --  Use a unique prefix in case the same unit requires two anonymous
-         --  masters, one for the spec (S) and one for the body (B).
-
-         if Ekind_In (Unit_Id, E_Function, E_Package, E_Procedure) then
-            Pref := 'S';
-         else
-            Pref := 'B';
-         end if;
-
-         FM_Id :=
-           Make_Defining_Identifier (Loc,
-             New_External_Name
-               (Related_Id => Chars (Unit_Id),
-                Suffix     => "AM",
-                Prefix     => Pref));
-
-         Set_Anonymous_Master (Unit_Id, FM_Id);
-
-         --  Generate:
-         --    <FM_Id> : Finalization_Master;
-
-         Insert_And_Analyze (Decls,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => FM_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
-
-         --  Step 2: Initialization actions
-
-         --  Generate:
-         --    Set_Base_Pool
-         --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
-
-         Insert_And_Analyze (Decls,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (FM_Id, Loc),
-               Make_Attribute_Reference (Loc,
-                 Prefix         =>
-                   New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
-                 Attribute_Name => Name_Unrestricted_Access))));
-
-         --  Generate:
-         --    Set_Is_Heterogeneous (<FM_Id>);
-
-         Insert_And_Analyze (Decls,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (FM_Id, Loc))));
-
-         Pop_Scope;
-         return FM_Id;
-      end Create_Anonymous_Master;
-
-      --  Local declarations
-
-      Unit_Decl : Node_Id;
-      Unit_Id   : Entity_Id;
-
-   --  Start of processing for Current_Anonymous_Master
-
-   begin
-      Unit_Decl := Unit (Cunit (Current_Sem_Unit));
-      Unit_Id   := Defining_Entity (Unit_Decl);
-
-      --  The compilation unit is a package instantiation. In this case the
-      --  anonymous master is associated with the package spec as both the
-      --  spec and body appear at the same level.
-
-      if Nkind (Unit_Decl) = N_Package_Body
-        and then Nkind (Original_Node (Unit_Decl)) = N_Package_Instantiation
-      then
-         Unit_Id   := Corresponding_Spec (Unit_Decl);
-         Unit_Decl := Unit_Declaration_Node (Unit_Id);
-      end if;
-
-      if Present (Anonymous_Master (Unit_Id)) then
-         return Anonymous_Master (Unit_Id);
-
-      --  Create a new anonymous master when allocating an object of anonymous
-      --  access-to-controlled type for the first time.
-
-      else
-         return Create_Anonymous_Master (Unit_Id, Unit_Decl);
-      end if;
-   end Current_Anonymous_Master;
 
    --------------------------------
    -- Displace_Allocator_Pointer --
@@ -1182,8 +986,6 @@ package body Exp_Ch4 is
             end;
          end if;
 
-         Apply_Accessibility_Check (Temp);
-
          --  Generate the tag assignment
 
          --  Suppress the tag assignment for VM targets because VM tags are
@@ -1241,34 +1043,36 @@ package body Exp_Ch4 is
             Insert_Action (N, Tag_Assign);
          end if;
 
-         if Needs_Finalization (DesigT) and then Needs_Finalization (T) then
+         --  Generate an Adjust call if the object will be moved. In Ada 2005,
+         --  the object may be inherently limited, in which case there is no
+         --  Adjust procedure, and the object is built in place. In Ada 95, the
+         --  object can be limited but not inherently limited if this allocator
+         --  came from a return statement (we're allocating the result on the
+         --  secondary stack). In that case, the object will be moved, so we do
+         --  want to Adjust.
 
-            --  Generate an Adjust call if the object will be moved. In Ada
-            --  2005, the object may be inherently limited, in which case
-            --  there is no Adjust procedure, and the object is built in
-            --  place. In Ada 95, the object can be limited but not
-            --  inherently limited if this allocator came from a return
-            --  statement (we're allocating the result on the secondary
-            --  stack). In that case, the object will be moved, so we _do_
-            --  want to Adjust.
+         if Needs_Finalization (DesigT)
+           and then Needs_Finalization (T)
+           and then not Aggr_In_Place
+           and then not Is_Limited_View (T)
+         then
+            --  An unchecked conversion is needed in the classwide case because
+            --  the designated type can be an ancestor of the subtype mark of
+            --  the allocator.
 
-            if not Aggr_In_Place
-              and then not Is_Limited_View (T)
-            then
-               Insert_Action (N,
-
-                 --  An unchecked conversion is needed in the classwide case
-                 --  because the designated type can be an ancestor of the
-                 --  subtype mark of the allocator.
-
-                 Make_Adjust_Call
-                   (Obj_Ref =>
-                      Unchecked_Convert_To (T,
-                        Make_Explicit_Dereference (Loc,
-                          Prefix => New_Occurrence_Of (Temp, Loc))),
-                    Typ     => T));
-            end if;
+            Insert_Action (N,
+              Make_Adjust_Call
+                (Obj_Ref =>
+                   Unchecked_Convert_To (T,
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc))),
+                 Typ     => T));
          end if;
+
+         --  Note: the accessibility check must be inserted after the call to
+         --  [Deep_]Adjust to ensure proper completion of the assignment.
+
+         Apply_Accessibility_Check (Temp);
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
@@ -1281,7 +1085,12 @@ package body Exp_Ch4 is
             Displace_Allocator_Pointer (N);
          end if;
 
-      elsif Aggr_In_Place then
+      --  Always force the generation of a temporary for aggregates when
+      --  generating C code, to simplify the work in the code generator.
+
+      elsif Aggr_In_Place
+        or else (Generate_C_Code and then Nkind (Exp) = N_Aggregate)
+      then
          Temp := Make_Temporary (Loc, 'P', N);
          Temp_Decl :=
            Make_Object_Declaration (Loc,
@@ -4291,8 +4100,7 @@ package body Exp_Ch4 is
             Set_Finalization_Master
               (Root_Type (PtrT), Finalization_Master (Rel_Typ));
          else
-            Set_Finalization_Master
-              (Root_Type (PtrT), Current_Anonymous_Master);
+            Build_Anonymous_Master (Root_Type (PtrT));
          end if;
       end if;
 
@@ -4703,12 +4511,25 @@ package body Exp_Ch4 is
                      Dis := True;
                      Typ := T;
 
-                  elsif Is_Private_Type (T)
-                    and then Present (Full_View (T))
-                    and then Has_Discriminants (Full_View (T))
-                  then
-                     Dis := True;
-                     Typ := Full_View (T);
+                  --  Type may be a private type with no visible discriminants
+                  --  in which case check full view if in scope, or the
+                  --  underlying_full_view if dealing with a type whose full
+                  --  view may be derived from a private type whose own full
+                  --  view has discriminants.
+
+                  elsif Is_Private_Type (T) then
+                     if Present (Full_View (T))
+                       and then Has_Discriminants (Full_View (T))
+                     then
+                        Dis := True;
+                        Typ := Full_View (T);
+
+                     elsif Present (Underlying_Full_View (T))
+                       and then Has_Discriminants (Underlying_Full_View (T))
+                     then
+                        Dis := True;
+                        Typ := Underlying_Full_View (T);
+                     end if;
                   end if;
 
                   if Dis then
@@ -4845,16 +4666,23 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Typ     : constant Entity_Id  := Etype (N);
-      Cstmt   : Node_Id;
-      Decl    : Node_Id;
-      Tnn     : Entity_Id;
-      Pnn     : Entity_Id;
-      Actions : List_Id;
-      Ttyp    : Entity_Id;
-      Alt     : Node_Id;
-      Fexp    : Node_Id;
+      Loc        : constant Source_Ptr := Sloc (N);
+      Par        : constant Node_Id    := Parent (N);
+      Typ        : constant Entity_Id  := Etype (N);
+      Acts       : List_Id;
+      Alt        : Node_Id;
+      Case_Stmt  : Node_Id;
+      Decl       : Node_Id;
+      Expr       : Node_Id;
+      Target     : Entity_Id;
+      Target_Typ : Entity_Id;
+
+      In_Predicate : Boolean := False;
+      --  Flag set when the case expression appears within a predicate
+
+      Optimize_Return_Stmt : Boolean := False;
+      --  Flag set when the case expression can be optimized in the context of
+      --  a simple return statement.
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -4870,48 +4698,61 @@ package body Exp_Ch4 is
 
       if Ekind_In (Current_Scope, E_Function, E_Procedure)
         and then Is_Predicate_Function (Current_Scope)
-        and then
-          Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
       then
-         return;
+         In_Predicate := True;
+
+         if Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
+         then
+            return;
+         end if;
       end if;
 
-      --  We expand
+      --  When the type of the case expression is elementary, expand
 
-      --    case X is when A => AX, when B => BX ...
+      --    (case X is when A => AX, when B => BX ...)
 
-      --  to
-
-      --    do
-      --       Tnn : typ;
-      --       case X is
-      --          when A =>
-      --             Tnn := AX;
-      --          when B =>
-      --             Tnn := BX;
-      --          ...
-      --       end case;
-      --    in Tnn end;
-
-      --  However, this expansion is wrong for limited types, and also
-      --  wrong for unconstrained types (since the bounds may not be the
-      --  same in all branches). Furthermore it involves an extra copy
-      --  for large objects. So we take care of this by using the following
-      --  modified expansion for non-elementary types:
+      --  into
 
       --    do
-      --       type Pnn is access all typ;
-      --       Tnn : Pnn;
+      --       Target : Typ;
       --       case X is
       --          when A =>
-      --             T := AX'Unrestricted_Access;
+      --             Target := AX;
       --          when B =>
-      --             T := BX'Unrestricted_Access;
+      --             Target := BX;
       --          ...
       --       end case;
-      --    in Tnn.all end;
+      --    in Target end;
 
-      Cstmt :=
+      --  In all other cases expand into
+
+      --    do
+      --       type Ptr_Typ is access all Typ;
+      --       Target : Ptr_Typ;
+      --       case X is
+      --          when A =>
+      --             Target := AX'Unrestricted_Access;
+      --          when B =>
+      --             Target := BX'Unrestricted_Access;
+      --          ...
+      --       end case;
+      --    in Target.all end;
+
+      --  This approach avoids extra copies of potentially large objects. It
+      --  also allows handling of values of limited or unconstrained types.
+
+      --  Small optimization: when the case expression appears in the context
+      --  of a simple return statement, expand into
+
+      --    case X is
+      --       when A =>
+      --          return AX;
+      --       when B =>
+      --          return BX;
+      --       ...
+      --    end case;
+
+      Case_Stmt :=
         Make_Case_Statement (Loc,
           Expression   => Expression (N),
           Alternatives => New_List);
@@ -4921,101 +4762,160 @@ package body Exp_Ch4 is
       --  the premature finalization of controlled objects found within the
       --  case statement.
 
-      Set_From_Conditional_Expression (Cstmt);
-
-      Actions := New_List;
+      Set_From_Conditional_Expression (Case_Stmt);
+      Acts := New_List;
 
       --  Scalar case
 
       if Is_Elementary_Type (Typ) then
-         Ttyp := Typ;
+         Target_Typ := Typ;
+
+         --  ??? Do not perform the optimization when the return statement is
+         --  within a predicate function as this causes supurious errors. Could
+         --  this be a possible mismatch in handling this case somewhere else
+         --  in semantic analysis?
+
+         Optimize_Return_Stmt :=
+           Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
+
+      --  Otherwise create an access type to handle the general case using
+      --  'Unrestricted_Access.
+
+      --  Generate:
+      --    type Ptr_Typ is access all Typ;
 
       else
-         Pnn := Make_Temporary (Loc, 'P');
-         Append_To (Actions,
+         Target_Typ := Make_Temporary (Loc, 'P');
+
+         Append_To (Acts,
            Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Pnn,
+             Defining_Identifier => Target_Typ,
              Type_Definition     =>
                Make_Access_To_Object_Definition (Loc,
                  All_Present        => True,
                  Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
-         Ttyp := Pnn;
       end if;
 
-      Tnn := Make_Temporary (Loc, 'T');
+      --  Create the declaration of the target which captures the value of the
+      --  expression.
 
-      --  Create declaration for target of expression, and indicate that it
-      --  does not require initialization.
+      --  Generate:
+      --    Target : [Ptr_]Typ;
 
-      Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Tnn,
-          Object_Definition   => New_Occurrence_Of (Ttyp, Loc));
-      Set_No_Initialization (Decl);
-      Append_To (Actions, Decl);
+      if not Optimize_Return_Stmt then
+         Target := Make_Temporary (Loc, 'T');
 
-      --  Now process the alternatives
+         Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Target,
+             Object_Definition   => New_Occurrence_Of (Target_Typ, Loc));
+         Set_No_Initialization (Decl);
+
+         Append_To (Acts, Decl);
+      end if;
+
+      --  Process the alternatives
 
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          declare
-            Aexp  : Node_Id             := Expression (Alt);
-            Aloc  : constant Source_Ptr := Sloc (Aexp);
-            Stats : List_Id;
+            Alt_Expr : Node_Id             := Expression (Alt);
+            Alt_Loc  : constant Source_Ptr := Sloc (Alt_Expr);
+            Stmts    : List_Id;
 
          begin
-            --  As described above, take Unrestricted_Access for case of non-
-            --  scalar types, to avoid big copies, and special cases.
+            --  Take the unrestricted access of the expression value for non-
+            --  scalar types. This approach avoids big copies and covers the
+            --  limited and unconstrained cases.
+
+            --  Generate:
+            --    AX'Unrestricted_Access
 
             if not Is_Elementary_Type (Typ) then
-               Aexp :=
-                 Make_Attribute_Reference (Aloc,
-                   Prefix         => Relocate_Node (Aexp),
+               Alt_Expr :=
+                 Make_Attribute_Reference (Alt_Loc,
+                   Prefix         => Relocate_Node (Alt_Expr),
                    Attribute_Name => Name_Unrestricted_Access);
             end if;
 
-            Stats := New_List (
-              Make_Assignment_Statement (Aloc,
-                Name       => New_Occurrence_Of (Tnn, Loc),
-                Expression => Aexp));
+            --  Generate:
+            --    return AX['Unrestricted_Access];
+
+            if Optimize_Return_Stmt then
+               Stmts := New_List (
+                 Make_Simple_Return_Statement (Alt_Loc,
+                   Expression => Alt_Expr));
+
+            --  Generate:
+            --    Target := AX['Unrestricted_Access];
+
+            else
+               Stmts := New_List (
+                 Make_Assignment_Statement (Alt_Loc,
+                   Name       => New_Occurrence_Of (Target, Loc),
+                   Expression => Alt_Expr));
+            end if;
 
             --  Propagate declarations inserted in the node by Insert_Actions
             --  (for example, temporaries generated to remove side effects).
             --  These actions must remain attached to the alternative, given
             --  that they are generated by the corresponding expression.
 
-            if Present (Sinfo.Actions (Alt)) then
-               Prepend_List (Sinfo.Actions (Alt), Stats);
+            if Present (Actions (Alt)) then
+               Prepend_List (Actions (Alt), Stmts);
+            end if;
+
+            --  Finalize any transient objects on exit from the alternative.
+            --  This is done only in the return optimization case because
+            --  otherwise the case expression is converted into an expression
+            --  with actions which already contains this form of processing.
+
+            if Optimize_Return_Stmt then
+               Process_If_Case_Statements (N, Stmts);
             end if;
 
             Append_To
-              (Alternatives (Cstmt),
+              (Alternatives (Case_Stmt),
                Make_Case_Statement_Alternative (Sloc (Alt),
                  Discrete_Choices => Discrete_Choices (Alt),
-                 Statements       => Stats));
+                 Statements       => Stmts));
          end;
 
          Next (Alt);
       end loop;
 
-      Append_To (Actions, Cstmt);
+      --  Rewrite the parent return statement as a case statement
 
-      --  Construct and return final expression with actions
+      if Optimize_Return_Stmt then
+         Rewrite (Par, Case_Stmt);
+         Analyze (Par);
 
-      if Is_Elementary_Type (Typ) then
-         Fexp := New_Occurrence_Of (Tnn, Loc);
+      --  Otherwise convert the case expression into an expression with actions
+
       else
-         Fexp :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Occurrence_Of (Tnn, Loc));
+         Append_To (Acts, Case_Stmt);
+
+         if Is_Elementary_Type (Typ) then
+            Expr := New_Occurrence_Of (Target, Loc);
+
+         else
+            Expr :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Target, Loc));
+         end if;
+
+         --  Generate:
+         --    do
+         --       ...
+         --    in Target[.all] end;
+
+         Rewrite (N,
+           Make_Expression_With_Actions (Loc,
+             Expression => Expr,
+             Actions    => Acts));
+
+         Analyze_And_Resolve (N, Typ);
       end if;
-
-      Rewrite (N,
-        Make_Expression_With_Actions (Loc,
-          Expression => Fexp,
-          Actions    => Actions));
-
-      Analyze_And_Resolve (N, Typ);
    end Expand_N_Case_Expression;
 
    -----------------------------------
@@ -5050,9 +4950,9 @@ package body Exp_Ch4 is
 
       function Process_Action (Act : Node_Id) return Traverse_Result;
       --  Inspect and process a single action of an expression_with_actions for
-      --  transient controlled objects. If such objects are found, the routine
-      --  generates code to clean them up when the context of the expression is
-      --  evaluated or elaborated.
+      --  transient objects. If such objects are found, the routine generates
+      --  code to clean them up when the context of the expression is evaluated
+      --  or elaborated.
 
       ------------------------------
       -- Force_Boolean_Evaluation --
@@ -5095,7 +4995,7 @@ package body Exp_Ch4 is
          if Nkind (Act) = N_Object_Declaration
            and then Is_Finalizable_Transient (Act, N)
          then
-            Process_Transient_Object (Act, N);
+            Process_Transient_In_Expression (Act, N, Acts);
             return Abandon;
 
          --  Avoid processing temporary function results multiple times when
@@ -5136,11 +5036,11 @@ package body Exp_Ch4 is
          null;
 
       --  Force the evaluation of the expression by capturing its value in a
-      --  temporary. This ensures that aliases of transient controlled objects
-      --  do not leak to the expression of the expression_with_actions node:
+      --  temporary. This ensures that aliases of transient objects do not leak
+      --  to the expression of the expression_with_actions node:
 
       --    do
-      --       Trans_Id : Ctrl_Typ : ...;
+      --       Trans_Id : Ctrl_Typ := ...;
       --       Alias : ... := Trans_Id;
       --    in ... Alias ... end;
 
@@ -5150,19 +5050,19 @@ package body Exp_Ch4 is
       --  reference to the Alias within the actions list:
 
       --    do
-      --       Trans_Id : Ctrl_Typ : ...;
+      --       Trans_Id : Ctrl_Typ := ...;
       --       Alias : ... := Trans_Id;
       --       Val : constant Boolean := ... Alias ...;
       --       <finalize Trans_Id>
       --    in Val end;
 
       --  Once this transformation is performed, it is safe to finalize the
-      --  transient controlled object at the end of the actions list.
+      --  transient object at the end of the actions list.
 
       --  Note that Force_Evaluation does not remove side effects in operators
       --  because it assumes that all operands are evaluated and side effect
       --  free. This is not the case when an operand depends implicitly on the
-      --  transient controlled object through the use of access types.
+      --  transient object through the use of access types.
 
       elsif Is_Boolean_Type (Etype (Expression (N))) then
          Force_Boolean_Evaluation (Expression (N));
@@ -5175,8 +5075,8 @@ package body Exp_Ch4 is
          Force_Evaluation (Expression (N));
       end if;
 
-      --  Process all transient controlled objects found within the actions of
-      --  the EWA node.
+      --  Process all transient objects found within the actions of the EWA
+      --  node.
 
       Act := First (Acts);
       while Present (Act) loop
@@ -5205,39 +5105,11 @@ package body Exp_Ch4 is
    --  Deal with limited types and condition actions
 
    procedure Expand_N_If_Expression (N : Node_Id) is
-      procedure Process_Actions (Actions : List_Id);
-      --  Inspect and process a single action list of an if expression for
-      --  transient controlled objects. If such objects are found, the routine
-      --  generates code to clean them up when the context of the expression is
-      --  evaluated or elaborated.
-
-      ---------------------
-      -- Process_Actions --
-      ---------------------
-
-      procedure Process_Actions (Actions : List_Id) is
-         Act : Node_Id;
-
-      begin
-         Act := First (Actions);
-         while Present (Act) loop
-            if Nkind (Act) = N_Object_Declaration
-              and then Is_Finalizable_Transient (Act, N)
-            then
-               Process_Transient_Object (Act, N);
-            end if;
-
-            Next (Act);
-         end loop;
-      end Process_Actions;
-
-      --  Local variables
-
-      Loc    : constant Source_Ptr := Sloc (N);
-      Cond   : constant Node_Id    := First (Expressions (N));
-      Thenx  : constant Node_Id    := Next (Cond);
-      Elsex  : constant Node_Id    := Next (Thenx);
-      Typ    : constant Entity_Id  := Etype (N);
+      Cond  : constant Node_Id    := First (Expressions (N));
+      Loc   : constant Source_Ptr := Sloc (N);
+      Thenx : constant Node_Id    := Next (Cond);
+      Elsex : constant Node_Id    := Next (Thenx);
+      Typ   : constant Entity_Id  := Etype (N);
 
       Actions : List_Id;
       Cnn     : Entity_Id;
@@ -5246,8 +5118,6 @@ package body Exp_Ch4 is
       New_If  : Node_Id;
       New_N   : Node_Id;
       Ptr_Typ : Entity_Id;
-
-   --  Start of processing for Expand_N_If_Expression
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -5267,31 +5137,58 @@ package body Exp_Ch4 is
       --  expression, and Sem_Elab circuitry removing it repeatedly.
 
       if Compile_Time_Known_Value (Cond) then
-         if Is_True (Expr_Value (Cond)) then
-            Expr    := Thenx;
-            Actions := Then_Actions (N);
-         else
-            Expr    := Elsex;
-            Actions := Else_Actions (N);
-         end if;
+         declare
+            function Fold_Known_Value (Cond : Node_Id) return Boolean;
+            --  Fold at compile time. Assumes condition known. Return True if
+            --  folding occurred, meaning we're done.
 
-         Remove (Expr);
+            ----------------------
+            -- Fold_Known_Value --
+            ----------------------
 
-         if Present (Actions) then
-            Rewrite (N,
-              Make_Expression_With_Actions (Loc,
-                Expression => Relocate_Node (Expr),
-                Actions    => Actions));
-            Analyze_And_Resolve (N, Typ);
-         else
-            Rewrite (N, Relocate_Node (Expr));
-         end if;
+            function Fold_Known_Value (Cond : Node_Id) return Boolean is
+            begin
+               if Is_True (Expr_Value (Cond)) then
+                  Expr    := Thenx;
+                  Actions := Then_Actions (N);
+               else
+                  Expr    := Elsex;
+                  Actions := Else_Actions (N);
+               end if;
 
-         --  Note that the result is never static (legitimate cases of static
-         --  if expressions were folded in Sem_Eval).
+               Remove (Expr);
 
-         Set_Is_Static_Expression (N, False);
-         return;
+               if Present (Actions) then
+
+                  --  To minimize the use of Expression_With_Actions, just skip
+                  --  the optimization as it is not critical for correctness.
+
+                  if Minimize_Expression_With_Actions then
+                     return False;
+                  end if;
+
+                  Rewrite (N,
+                    Make_Expression_With_Actions (Loc,
+                      Expression => Relocate_Node (Expr),
+                      Actions    => Actions));
+                  Analyze_And_Resolve (N, Typ);
+
+               else
+                  Rewrite (N, Relocate_Node (Expr));
+               end if;
+
+               --  Note that the result is never static (legitimate cases of
+               --  static if expressions were folded in Sem_Eval).
+
+               Set_Is_Static_Expression (N, False);
+               return True;
+            end Fold_Known_Value;
+
+         begin
+            if Fold_Known_Value (Cond) then
+               return;
+            end if;
+         end;
       end if;
 
       --  If the type is limited, and the back end does not handle limited
@@ -5321,8 +5218,8 @@ package body Exp_Ch4 is
          --  of actions. These temporaries need to be finalized after the if
          --  expression is evaluated.
 
-         Process_Actions (Then_Actions (N));
-         Process_Actions (Else_Actions (N));
+         Process_If_Case_Statements (N, Then_Actions (N));
+         Process_If_Case_Statements (N, Else_Actions (N));
 
          --  Generate:
          --    type Ann is access all Typ;
@@ -5423,27 +5320,75 @@ package body Exp_Ch4 is
 
          --  We now wrap the actions into the appropriate expression
 
-         if Present (Then_Actions (N)) then
-            Rewrite (Thenx,
-              Make_Expression_With_Actions (Sloc (Thenx),
-                Actions    => Then_Actions (N),
-                Expression => Relocate_Node (Thenx)));
+         if Minimize_Expression_With_Actions
+           and then (Is_Elementary_Type (Underlying_Type (Typ))
+                      or else Is_Constrained (Underlying_Type (Typ)))
+         then
+            --  If we can't use N_Expression_With_Actions nodes, then we insert
+            --  the following sequence of actions (using Insert_Actions):
 
-            Set_Then_Actions (N, No_List);
-            Analyze_And_Resolve (Thenx, Typ);
+            --      Cnn : typ;
+            --      if cond then
+            --         <<then actions>>
+            --         Cnn := then-expr;
+            --      else
+            --         <<else actions>>
+            --         Cnn := else-expr
+            --      end if;
+
+            --  and replace the if expression by a reference to Cnn
+
+            Cnn := Make_Temporary (Loc, 'C', N);
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Thenx),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                    Expression => Relocate_Node (Thenx))),
+
+                Else_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Elsex),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                    Expression => Relocate_Node (Elsex))));
+
+            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
+            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
+
+            New_N := New_Occurrence_Of (Cnn, Loc);
+
+         --  Regular path using Expression_With_Actions
+
+         else
+            if Present (Then_Actions (N)) then
+               Rewrite (Thenx,
+                 Make_Expression_With_Actions (Sloc (Thenx),
+                   Actions    => Then_Actions (N),
+                   Expression => Relocate_Node (Thenx)));
+
+               Set_Then_Actions (N, No_List);
+               Analyze_And_Resolve (Thenx, Typ);
+            end if;
+
+            if Present (Else_Actions (N)) then
+               Rewrite (Elsex,
+                 Make_Expression_With_Actions (Sloc (Elsex),
+                   Actions    => Else_Actions (N),
+                   Expression => Relocate_Node (Elsex)));
+
+               Set_Else_Actions (N, No_List);
+               Analyze_And_Resolve (Elsex, Typ);
+            end if;
+
+            return;
          end if;
-
-         if Present (Else_Actions (N)) then
-            Rewrite (Elsex,
-              Make_Expression_With_Actions (Sloc (Elsex),
-                Actions    => Else_Actions (N),
-                Expression => Relocate_Node (Elsex)));
-
-            Set_Else_Actions (N, No_List);
-            Analyze_And_Resolve (Elsex, Typ);
-         end if;
-
-         return;
 
       --  If no actions then no expansion needed, gigi will handle it using the
       --  same approach as a C conditional expression.
@@ -6160,18 +6105,60 @@ package body Exp_Ch4 is
       --  (the check is only done when the right operand is a subtype; see
       --  RM12-4.5.2 (28.1/3-30/3)).
 
-      declare
+      Predicate_Check : declare
+         function In_Range_Check return Boolean;
+         --  Within an expanded range check that may raise Constraint_Error do
+         --  not generate a predicate check as well. It is redundant because
+         --  the context will add an explicit predicate check, and it will
+         --  raise the wrong exception if it fails.
+
+         --------------------
+         -- In_Range_Check --
+         --------------------
+
+         function In_Range_Check return Boolean is
+            P : Node_Id;
+         begin
+            P := Parent (N);
+            while Present (P) loop
+               if Nkind (P) = N_Raise_Constraint_Error then
+                  return True;
+
+               elsif Nkind (P) in N_Statement_Other_Than_Procedure_Call
+                 or else Nkind (P) = N_Procedure_Call_Statement
+                 or else Nkind (P) in N_Declaration
+               then
+                  return False;
+               end if;
+
+               P := Parent (P);
+            end loop;
+
+            return False;
+         end In_Range_Check;
+
+         --  Local variables
+
          PFunc : constant Entity_Id := Predicate_Function (Rtyp);
+         R_Op  : Node_Id;
+
+      --  Start of processing for Predicate_Check
 
       begin
          if Present (PFunc)
            and then Current_Scope /= PFunc
            and then Nkind (Rop) /= N_Range
          then
+            if not In_Range_Check then
+               R_Op := Make_Predicate_Call (Rtyp, Lop, Mem => True);
+            else
+               R_Op := New_Occurrence_Of (Standard_True, Loc);
+            end if;
+
             Rewrite (N,
               Make_And_Then (Loc,
                 Left_Opnd  => Relocate_Node (N),
-                Right_Opnd => Make_Predicate_Call (Rtyp, Lop, Mem => True)));
+                Right_Opnd => R_Op));
 
             --  Analyze new expression, mark left operand as analyzed to
             --  avoid infinite recursion adding predicate calls. Similarly,
@@ -6184,7 +6171,7 @@ package body Exp_Ch4 is
 
             return;
          end if;
-      end;
+      end Predicate_Check;
    end Expand_N_In;
 
    --------------------------------
@@ -6276,9 +6263,11 @@ package body Exp_Ch4 is
          Activate_Atomic_Synchronization (N);
       end if;
 
-      --  All done for the non-packed case
+      --  All done if the prefix is not a packed array implemented specially
 
-      if not Is_Packed (Etype (Prefix (N))) then
+      if not (Is_Packed (Etype (Prefix (N)))
+               and then Present (Packed_Array_Impl_Type (Etype (Prefix (N)))))
+      then
          return;
       end if;
 
@@ -8004,11 +7993,7 @@ package body Exp_Ch4 is
       then
          Etyp := Standard_Long_Long_Integer;
 
-         --  Overflow checking is the only choice on the AAMP target, where
-         --  arithmetic instructions check overflow automatically, so only
-         --  one version of the exponentiation unit is needed.
-
-         if Ovflo or AAMP_On_Target then
+         if Ovflo then
             Rent := RE_Exp_Long_Long_Integer;
          else
             Rent := RE_Exn_Long_Long_Integer;
@@ -8017,11 +8002,7 @@ package body Exp_Ch4 is
       elsif Is_Signed_Integer_Type (Rtyp) then
          Etyp := Standard_Integer;
 
-         --  Overflow checking is the only choice on the AAMP target, where
-         --  arithmetic instructions check overflow automatically, so only
-         --  one version of the exponentiation unit is needed.
-
-         if Ovflo or AAMP_On_Target then
+         if Ovflo then
             Rent := RE_Exp_Integer;
          else
             Rent := RE_Exn_Integer;
@@ -8379,8 +8360,8 @@ package body Exp_Ch4 is
 
       else
          --  Apply optimization x mod 1 = 0. We don't really need that with
-         --  gcc, but it is useful with other back ends (e.g. AAMP), and is
-         --  certainly harmless.
+         --  gcc, but it is useful with other back ends and is certainly
+         --  harmless.
 
          if Is_Integer_Type (Etype (N))
            and then Compile_Time_Known_Value (Right)
@@ -9131,8 +9112,7 @@ package body Exp_Ch4 is
       Right := Right_Opnd (N);
 
       --  Apply optimization x rem 1 = 0. We don't really need that with gcc,
-      --  but it is useful with other back ends (e.g. AAMP), and is certainly
-      --  harmless.
+      --  but it is useful with other back ends, and is certainly harmless.
 
       if Is_Integer_Type (Etype (N))
         and then Compile_Time_Known_Value (Right)
@@ -11243,8 +11223,8 @@ package body Exp_Ch4 is
 
                   Set_Do_Overflow_Check (N, False);
 
-                  if not Is_Descendent_Of_Address (Etype (Expr))
-                    and then not Is_Descendent_Of_Address (Target_Type)
+                  if not Is_Descendant_Of_Address (Etype (Expr))
+                    and then not Is_Descendant_Of_Address (Target_Type)
                   then
                      Generate_Range_Check
                        (Expr, Target_Type, CE_Range_Check_Failed);
@@ -11264,6 +11244,7 @@ package body Exp_Ch4 is
       --  internal conversions for the purpose of checking predicates.
 
       if Present (Predicate_Function (Target_Type))
+        and then not Predicates_Ignored (Target_Type)
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then
@@ -11364,7 +11345,7 @@ package body Exp_Ch4 is
                --  spurious type error on the literal when Address is a visible
                --  integer type.
 
-               if Is_Descendent_Of_Address (Target_Type) then
+               if Is_Descendant_Of_Address (Target_Type) then
                   Set_Etype (N, Target_Type);
                else
                   Analyze_And_Resolve (N, Target_Type);
@@ -11614,6 +11595,31 @@ package body Exp_Ch4 is
       Shortcut_Ent   : constant Entity_Id := Boolean_Literals (Shortcut_Value);
       --  If Left = Shortcut_Value then Right need not be evaluated
 
+      function Make_Test_Expr (Opnd : Node_Id) return Node_Id;
+      --  For Opnd a boolean expression, return a Boolean expression equivalent
+      --  to Opnd /= Shortcut_Value.
+
+      --------------------
+      -- Make_Test_Expr --
+      --------------------
+
+      function Make_Test_Expr (Opnd : Node_Id) return Node_Id is
+      begin
+         if Shortcut_Value then
+            return Make_Op_Not (Sloc (Opnd), Opnd);
+         else
+            return Opnd;
+         end if;
+      end Make_Test_Expr;
+
+      --  Local variables
+
+      Op_Var : Entity_Id;
+      --  Entity for a temporary variable holding the value of the operator,
+      --  used for expansion in the case where actions are present.
+
+   --  Start of processing for Expand_Short_Circuit_Operator
+
    begin
       --  Deal with non-standard booleans
 
@@ -11668,17 +11674,72 @@ package body Exp_Ch4 is
       if Present (Actions (N)) then
          Actlist := Actions (N);
 
-         --  We now use an Expression_With_Actions node for the right operand
-         --  of the short-circuit form. Note that this solves the traceability
+         --  The old approach is to expand:
+
+         --     left AND THEN right
+
+         --  into
+
+         --     C : Boolean := False;
+         --     IF left THEN
+         --        Actions;
+         --        IF right THEN
+         --           C := True;
+         --        END IF;
+         --     END IF;
+
+         --  and finally rewrite the operator into a reference to C. Similarly
+         --  for left OR ELSE right, with negated values. Note that this
+         --  rewrite causes some difficulties for coverage analysis because
+         --  of the introduction of the new variable C, which obscures the
+         --  structure of the test.
+
+         --  We use this "old approach" if Minimize_Expression_With_Actions
+         --  is True.
+
+         if Minimize_Expression_With_Actions then
+            Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
+
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Op_Var,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Boolean, Loc),
+                Expression          =>
+                  New_Occurrence_Of (Shortcut_Ent, Loc)));
+
+            Append_To (Actlist,
+              Make_Implicit_If_Statement (Right,
+                Condition       => Make_Test_Expr (Right),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (LocR,
+                    Name       => New_Occurrence_Of (Op_Var, LocR),
+                    Expression =>
+                      New_Occurrence_Of
+                        (Boolean_Literals (not Shortcut_Value), LocR)))));
+
+            Insert_Action (N,
+              Make_Implicit_If_Statement (Left,
+                Condition       => Make_Test_Expr (Left),
+                Then_Statements => Actlist));
+
+            Rewrite (N, New_Occurrence_Of (Op_Var, Loc));
+            Analyze_And_Resolve (N, Standard_Boolean);
+
+         --  The new approach (the default) is to use an
+         --  Expression_With_Actions node for the right operand of the
+         --  short-circuit form. Note that this solves the traceability
          --  problems for coverage analysis.
 
-         Rewrite (Right,
-           Make_Expression_With_Actions (LocR,
-             Expression => Relocate_Node (Right),
-             Actions    => Actlist));
+         else
+            Rewrite (Right,
+              Make_Expression_With_Actions (LocR,
+                Expression => Relocate_Node (Right),
+                Actions    => Actlist));
 
-         Set_Actions (N, No_List);
-         Analyze_And_Resolve (Right, Standard_Boolean);
+            Set_Actions (N, No_List);
+            Analyze_And_Resolve (Right, Standard_Boolean);
+         end if;
 
          Adjust_Result_Type (N, Typ);
          return;
@@ -11694,8 +11755,8 @@ package body Exp_Ch4 is
             Set_SCO_Condition (Right, Expr_Value_E (Right) = Standard_True);
          end if;
 
-         --  Change (Left and then True), (Left or else False) to Left.
-         --  Note that we know there are no actions associated with the right
+         --  Change (Left and then True), (Left or else False) to Left. Note
+         --  that we know there are no actions associated with the right
          --  operand, since we just checked for this case above.
 
          if Expr_Value_E (Right) /= Shortcut_Ent then
@@ -12653,7 +12714,7 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Nothing to do if special -gnatd.P debug flag set
+      --  Nothing to do if special -gnatd.P debug flag set.
 
       if Debug_Flag_Dot_PP then
          return;
@@ -12880,117 +12941,124 @@ package body Exp_Ch4 is
       return;
    end Optimize_Length_Comparison;
 
-   ------------------------------
-   -- Process_Transient_Object --
-   ------------------------------
+   --------------------------------
+   -- Process_If_Case_Statements --
+   --------------------------------
 
-   procedure Process_Transient_Object
-     (Decl     : Node_Id;
-      Rel_Node : Node_Id)
+   procedure Process_If_Case_Statements (N : Node_Id; Stmts : List_Id) is
+      Decl : Node_Id;
+
+   begin
+      Decl := First (Stmts);
+      while Present (Decl) loop
+         if Nkind (Decl) = N_Object_Declaration
+           and then Is_Finalizable_Transient (Decl, N)
+         then
+            Process_Transient_In_Expression (Decl, N, Stmts);
+         end if;
+
+         Next (Decl);
+      end loop;
+   end Process_If_Case_Statements;
+
+   -------------------------------------
+   -- Process_Transient_In_Expression --
+   -------------------------------------
+
+   procedure Process_Transient_In_Expression
+     (Obj_Decl : Node_Id;
+      Expr     : Node_Id;
+      Stmts    : List_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (Decl);
-      Obj_Id      : constant Entity_Id  := Defining_Identifier (Decl);
-      Obj_Typ     : constant Node_Id    := Etype (Obj_Id);
-      Desig_Typ   : Entity_Id;
-      Expr        : Node_Id;
-      Hook_Id     : Entity_Id;
-      Hook_Insert : Node_Id;
-      Ptr_Id      : Entity_Id;
+      Loc    : constant Source_Ptr := Sloc (Obj_Decl);
+      Obj_Id : constant Entity_Id  := Defining_Identifier (Obj_Decl);
 
-      Hook_Context : constant Node_Id := Find_Hook_Context (Rel_Node);
+      Hook_Context : constant Node_Id := Find_Hook_Context (Expr);
       --  The node on which to insert the hook as an action. This is usually
       --  the innermost enclosing non-transient construct.
 
+      Fin_Call    : Node_Id;
+      Hook_Assign : Node_Id;
+      Hook_Clear  : Node_Id;
+      Hook_Decl   : Node_Id;
+      Hook_Insert : Node_Id;
+      Ptr_Decl    : Node_Id;
+
       Fin_Context : Node_Id;
       --  The node after which to insert the finalization actions of the
-      --  transient controlled object.
+      --  transient object.
 
    begin
-      if Is_Boolean_Type (Etype (Rel_Node)) then
-         Fin_Context := Last (Actions (Rel_Node));
+      pragma Assert (Nkind_In (Expr, N_Case_Expression,
+                                     N_Expression_With_Actions,
+                                     N_If_Expression));
+
+      --  When the context is a Boolean evaluation, all three nodes capture the
+      --  result of their computation in a local temporary:
+
+      --    do
+      --       Trans_Id : Ctrl_Typ := ...;
+      --       Result : constant Boolean := ... Trans_Id ...;
+      --       <finalize Trans_Id>
+      --    in Result end;
+
+      --  As a result, the finalization of any transient objects can safely
+      --  take place after the result capture.
+
+      --  ??? could this be extended to elementary types?
+
+      if Is_Boolean_Type (Etype (Expr)) then
+         Fin_Context := Last (Stmts);
+
+      --  Otherwise the immediate context may not be safe enough to carry
+      --  out transient object finalization due to aliasing and nesting of
+      --  constructs. Insert calls to [Deep_]Finalize after the innermost
+      --  enclosing non-transient construct.
+
       else
          Fin_Context := Hook_Context;
       end if;
 
-      --  Step 1: Create the access type which provides a reference to the
-      --  transient controlled object.
+      --  Mark the transient object as successfully processed to avoid double
+      --  finalization.
 
-      if Is_Access_Type (Obj_Typ) then
-         Desig_Typ := Directly_Designated_Type (Obj_Typ);
-      else
-         Desig_Typ := Obj_Typ;
-      end if;
+      Set_Is_Finalized_Transient (Obj_Id);
 
-      Desig_Typ := Base_Type (Desig_Typ);
+      --  Construct all the pieces necessary to hook and finalize a transient
+      --  object.
 
+      Build_Transient_Object_Statements
+        (Obj_Decl     => Obj_Decl,
+         Fin_Call     => Fin_Call,
+         Hook_Assign  => Hook_Assign,
+         Hook_Clear   => Hook_Clear,
+         Hook_Decl    => Hook_Decl,
+         Ptr_Decl     => Ptr_Decl,
+         Finalize_Obj => False);
+
+      --  Add the access type which provides a reference to the transient
+      --  object. Generate:
+
+      --    type Ptr_Typ is access all Desig_Typ;
+
+      Insert_Action (Hook_Context, Ptr_Decl);
+
+      --  Add the temporary which acts as a hook to the transient object.
       --  Generate:
-      --    Ann : access [all] <Desig_Typ>;
-
-      Ptr_Id := Make_Temporary (Loc, 'A');
-
-      Insert_Action (Hook_Context,
-        Make_Full_Type_Declaration (Loc,
-          Defining_Identifier => Ptr_Id,
-          Type_Definition     =>
-            Make_Access_To_Object_Definition (Loc,
-              All_Present        => Ekind (Obj_Typ) = E_General_Access_Type,
-              Subtype_Indication => New_Occurrence_Of (Desig_Typ, Loc))));
-
-      --  Step 2: Create a temporary which acts as a hook to the transient
-      --  controlled object. Generate:
 
       --    Hook : Ptr_Id := null;
 
-      Hook_Id := Make_Temporary (Loc, 'T');
+      Insert_Action (Hook_Context, Hook_Decl);
 
-      Insert_Action (Hook_Context,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Hook_Id,
-          Object_Definition   => New_Occurrence_Of (Ptr_Id, Loc)));
+      --  When the transient object is initialized by an aggregate, the hook
+      --  must capture the object after the last aggregate assignment takes
+      --  place. Only then is the object considered initialized. Generate:
 
-      --  Mark the hook as created for the purposes of exporting the transient
-      --  controlled object out of the expression_with_action or if expression.
-      --  This signals the machinery in Build_Finalizer to treat this case in
-      --  a special manner.
-
-      Set_Status_Flag_Or_Transient_Decl (Hook_Id, Decl);
-
-      --  Step 3: Associate the transient object to the hook
-
-      --  This must be inserted right after the object declaration, so that
-      --  the assignment is executed if, and only if, the object is actually
-      --  created (whereas the declaration of the hook pointer, and the
-      --  finalization call, may be inserted at an outer level, and may
-      --  remain unused for some executions, if the actual creation of
-      --  the object is conditional).
-
-      --  The use of unchecked conversion / unrestricted access is needed to
-      --  avoid an accessibility violation. Note that the finalization code is
-      --  structured in such a way that the "hook" is processed only when it
-      --  points to an existing object.
-
-      if Is_Access_Type (Obj_Typ) then
-         Expr :=
-           Unchecked_Convert_To
-             (Typ  => Ptr_Id,
-              Expr => New_Occurrence_Of (Obj_Id, Loc));
-      else
-         Expr :=
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Occurrence_Of (Obj_Id, Loc),
-             Attribute_Name => Name_Unrestricted_Access);
-      end if;
-
-      --  Generate:
-      --    Hook := Ptr_Id (Obj_Id);
+      --    Hook := Ptr_Typ (Obj_Id);
       --      <or>
       --    Hook := Obj_Id'Unrestricted_Access;
 
-      --  When the transient object is initialized by an aggregate, the hook
-      --  must capture the object after the last component assignment takes
-      --  place. Only then is the object fully initialized.
-
-      if Ekind (Obj_Id) = E_Variable
+      if Ekind_In (Obj_Id, E_Constant, E_Variable)
         and then Present (Last_Aggregate_Assignment (Obj_Id))
       then
          Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
@@ -12998,54 +13066,42 @@ package body Exp_Ch4 is
       --  Otherwise the hook seizes the related object immediately
 
       else
-         Hook_Insert := Decl;
+         Hook_Insert := Obj_Decl;
       end if;
 
-      Insert_After_And_Analyze (Hook_Insert,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Hook_Id, Loc),
-          Expression => Expr));
+      Insert_After_And_Analyze (Hook_Insert, Hook_Assign);
 
-      --  Step 4: Finalize the hook after the context has been evaluated or
-      --  elaborated. Generate:
+      --  When the node is part of a return statement, there is no need to
+      --  insert a finalization call, as the general finalization mechanism
+      --  (see Build_Finalizer) would take care of the transient object on
+      --  subprogram exit. Note that it would also be impossible to insert the
+      --  finalization code after the return statement as this will render it
+      --  unreachable.
+
+      if Nkind (Fin_Context) = N_Simple_Return_Statement then
+         null;
+
+      --  Finalize the hook after the context has been evaluated. Generate:
 
       --    if Hook /= null then
       --       [Deep_]Finalize (Hook.all);
       --       Hook := null;
       --    end if;
 
-      --  When the node is part of a return statement, there is no need to
-      --  insert a finalization call, as the general finalization mechanism
-      --  (see Build_Finalizer) would take care of the transient controlled
-      --  object on subprogram exit. Note that it would also be impossible to
-      --  insert the finalization code after the return statement as this will
-      --  render it unreachable.
-
-      if Nkind (Fin_Context) = N_Simple_Return_Statement then
-         null;
-
-      --  Otherwise finalize the hook
-
       else
          Insert_Action_After (Fin_Context,
-           Make_Implicit_If_Statement (Decl,
+           Make_Implicit_If_Statement (Obj_Decl,
              Condition =>
                Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Hook_Id, Loc),
+                 Left_Opnd  =>
+                   New_Occurrence_Of (Defining_Entity (Hook_Decl), Loc),
                  Right_Opnd => Make_Null (Loc)),
 
              Then_Statements => New_List (
-               Make_Final_Call
-                 (Obj_Ref =>
-                    Make_Explicit_Dereference (Loc,
-                      Prefix => New_Occurrence_Of (Hook_Id, Loc)),
-                  Typ     => Desig_Typ),
-
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Hook_Id, Loc),
-                 Expression => Make_Null (Loc)))));
+               Fin_Call,
+               Hook_Clear)));
       end if;
-   end Process_Transient_Object;
+   end Process_Transient_In_Expression;
 
    ------------------------
    -- Rewrite_Comparison --

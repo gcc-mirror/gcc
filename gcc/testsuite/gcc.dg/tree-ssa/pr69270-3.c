@@ -3,7 +3,7 @@
 
 /* We're looking for a constant argument a PHI node.  There
    should only be one if we unpropagate correctly.  */
-/* { dg-final { scan-tree-dump-times ", 1" 1 "uncprop1"} } */
+/* { dg-final { scan-tree-dump-times ", 1" 4 "uncprop1"} } */
 
 typedef long unsigned int size_t;
 typedef union gimple_statement_d *gimple;

@@ -70,10 +70,10 @@
 #  error "__cpp_attributes != 200809"
 #endif
 
-#ifndef __cpp_rvalue_reference
-#  error "__cpp_rvalue_reference"
-#elif __cpp_rvalue_reference != 200610
-#  error "__cpp_rvalue_reference != 200610"
+#ifndef __cpp_rvalue_references
+#  error "__cpp_rvalue_references"
+#elif __cpp_rvalue_references != 200610
+#  error "__cpp_rvalue_references != 200610"
 #endif
 
 #ifndef __cpp_variadic_templates

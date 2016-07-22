@@ -424,8 +424,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
-		offset_int woffset = wi::lshift (wi::to_offset (this_offset),
-						 LOG2_BITS_PER_UNIT);
+		offset_int woffset = (wi::to_offset (this_offset)
+				      << LOG2_BITS_PER_UNIT);
 		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 		bit_offset += woffset;
 
@@ -453,7 +453,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			  {
 			    offset_int tem = (wi::to_offset (ssize)
 					      - wi::to_offset (fsize));
-			    tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+			    tem <<= LOG2_BITS_PER_UNIT;
 			    tem -= woffset;
 			    maxsize += tem;
 			  }
@@ -493,7 +493,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= wi::to_offset (unit_size);
-		woffset = wi::lshift (woffset, LOG2_BITS_PER_UNIT);
+		woffset <<= LOG2_BITS_PER_UNIT;
 		bit_offset += woffset;
 
 		/* An array ref with a constant index up in the structure
@@ -570,7 +570,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  offset_int off = mem_ref_offset (exp);
-		  off = wi::lshift (off, LOG2_BITS_PER_UNIT);
+		  off <<= LOG2_BITS_PER_UNIT;
 		  off += bit_offset;
 		  if (wi::fits_shwi_p (off))
 		    {
@@ -821,6 +821,29 @@ stmt_references_abnormal_ssa_name (gimple *stmt)
     }
 
   return false;
+}
+
+/* If STMT takes any abnormal PHI values as input, replace them with
+   local copies.  */
+
+void
+replace_abnormal_ssa_names (gimple *stmt)
+{
+  ssa_op_iter oi;
+  use_operand_p use_p;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, oi, SSA_OP_USE)
+    {
+      tree op = USE_FROM_PTR (use_p);
+      if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  tree new_name = make_ssa_name (TREE_TYPE (op));
+	  gassign *assign = gimple_build_assign (new_name, op);
+	  gsi_insert_before (&gsi, assign, GSI_SAME_STMT);
+	  SET_USE (use_p, new_name);
+	}
+    }
 }
 
 /* Pair of tree and a sorting index, for dump_enumerated_decls.  */

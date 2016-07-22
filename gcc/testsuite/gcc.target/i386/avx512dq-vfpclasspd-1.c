@@ -1,11 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512dq -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%zmm\[0-7\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%ymm\[0-7\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%xmm\[0-7\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%zmm\[0-7\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%ymm\[0-7\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%xmm\[0-7\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vfpclasspd\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n^k\]*%k\[1-7\]\{%k\[0-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

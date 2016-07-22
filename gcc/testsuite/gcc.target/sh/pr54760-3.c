@@ -4,7 +4,6 @@
    independent thread_pointer built-in functions available.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 
 int
 test00 (void* p, int x)

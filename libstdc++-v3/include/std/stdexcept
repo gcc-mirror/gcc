@@ -110,13 +110,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  program runs (e.g., violations of class invariants).
    *  @brief One of two subclasses of exception.
    */
-  class logic_error : public exception 
+  class logic_error : public exception
   {
     __cow_string _M_msg;
 
   public:
     /** Takes a character string describing the error.  */
-    explicit 
+    explicit
     logic_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 
 #if __cplusplus >= 201103L
@@ -133,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
-    virtual const char* 
+    virtual const char*
     what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
 
 # ifdef _GLIBCXX_TM_TS_INTERNAL
@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** Thrown by the library, or by you, to report domain errors (domain in
    *  the mathematical sense).  */
-  class domain_error : public logic_error 
+  class domain_error : public logic_error
   {
   public:
     explicit domain_error(const string& __arg) _GLIBCXX_TXN_SAFE;
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   /** Thrown to report invalid arguments to functions.  */
-  class invalid_argument : public logic_error 
+  class invalid_argument : public logic_error
   {
   public:
     explicit invalid_argument(const string& __arg) _GLIBCXX_TXN_SAFE;
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** Thrown when an object is constructed that would exceed its maximum
    *  permitted size (e.g., a basic_string instance).  */
-  class length_error : public logic_error 
+  class length_error : public logic_error
   {
   public:
     explicit length_error(const string& __arg) _GLIBCXX_TXN_SAFE;
@@ -179,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** This represents an argument whose value is not within the expected
    *  range (e.g., boundary checks in basic_string).  */
-  class out_of_range : public logic_error 
+  class out_of_range : public logic_error
   {
   public:
     explicit out_of_range(const string& __arg) _GLIBCXX_TXN_SAFE;
@@ -194,13 +194,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  the program executes.
    *  @brief One of two subclasses of exception.
    */
-  class runtime_error : public exception 
+  class runtime_error : public exception
   {
     __cow_string _M_msg;
 
   public:
     /** Takes a character string describing the error.  */
-    explicit 
+    explicit
     runtime_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 
 #if __cplusplus >= 201103L
@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
-    virtual const char* 
+    virtual const char*
     what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
 
 # ifdef _GLIBCXX_TM_TS_INTERNAL
@@ -227,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   /** Thrown to indicate range errors in internal computations.  */
-  class range_error : public runtime_error 
+  class range_error : public runtime_error
   {
   public:
     explicit range_error(const string& __arg) _GLIBCXX_TXN_SAFE;
@@ -238,7 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   /** Thrown to indicate arithmetic overflow.  */
-  class overflow_error : public runtime_error 
+  class overflow_error : public runtime_error
   {
   public:
     explicit overflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   /** Thrown to indicate arithmetic underflow.  */
-  class underflow_error : public runtime_error 
+  class underflow_error : public runtime_error
   {
   public:
     explicit underflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;

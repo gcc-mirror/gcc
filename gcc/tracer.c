@@ -65,7 +65,7 @@ static int branch_ratio_cutoff;
 
 /* A bit BB->index is set if BB has already been seen, i.e. it is
    connected to some trace already.  */
-sbitmap bb_seen;
+static sbitmap bb_seen;
 
 static inline void
 mark_bb_seen (basic_block bb)

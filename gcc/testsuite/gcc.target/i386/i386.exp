@@ -76,20 +76,6 @@ proc check_effective_target_ssse3 { } {
     } "-O2 -mssse3" ]
 }
 
-# Return 1 if sse4 instructions can be compiled.
-proc check_effective_target_sse4 { } {
-    return [check_no_compiler_messages sse4.1 object {
-	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
-	typedef int __v4si __attribute__ ((__vector_size__ (16)));
-
-	__m128i _mm_mullo_epi32 (__m128i __X, __m128i __Y)
-	{
-	    return (__m128i) __builtin_ia32_pmulld128 ((__v4si)__X,
-						       (__v4si)__Y);
-	}
-    } "-O2 -msse4.1" ]
-}
-
 # Return 1 if aes instructions can be compiled.
 proc check_effective_target_aes { } {
     return [check_no_compiler_messages aes object {

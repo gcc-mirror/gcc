@@ -484,6 +484,8 @@ forward_parm (tree parm)
   tree type = TREE_TYPE (parm);
   if (DECL_PACK_P (parm))
     type = PACK_EXPANSION_PATTERN (type);
+  if (TREE_CODE (type) != REFERENCE_TYPE)
+    type = cp_build_reference_type (type, /*rval=*/true);
   exp = build_static_cast (type, exp, tf_warning_or_error);
   if (DECL_PACK_P (parm))
     exp = make_pack_expansion (exp);
@@ -540,14 +542,32 @@ do_build_copy_constructor (tree fndecl)
   if (!inh)
     parm = convert_from_reference (parm);
 
-  if (trivial
-      && is_empty_class (current_class_type))
-    /* Don't copy the padding byte; it might not have been allocated
-       if *this is a base subobject.  */;
-  else if (trivial)
+  if (trivial)
     {
-      tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
-      finish_expr_stmt (t);
+      if (is_empty_class (current_class_type))
+	/* Don't copy the padding byte; it might not have been allocated
+	   if *this is a base subobject.  */;
+      else if (tree_int_cst_equal (TYPE_SIZE (current_class_type),
+				   CLASSTYPE_SIZE (current_class_type)))
+	{
+	  tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
+	  finish_expr_stmt (t);
+	}
+      else
+	{
+	  /* We must only copy the non-tail padding parts.  */
+	  tree base_size = CLASSTYPE_SIZE_UNIT (current_class_type);
+	  base_size = size_binop (MINUS_EXPR, base_size, size_int (1));
+	  tree array_type = build_array_type (unsigned_char_type_node,
+					      build_index_type (base_size));
+	  tree alias_set = build_int_cst (TREE_TYPE (current_class_ptr), 0);
+	  tree lhs = build2 (MEM_REF, array_type,
+			     current_class_ptr, alias_set);
+	  tree rhs = build2 (MEM_REF, array_type,
+			     TREE_OPERAND (parm, 0), alias_set);
+	  tree t = build2 (INIT_EXPR, void_type_node, lhs, rhs);
+	  finish_expr_stmt (t);
+	}
     }
   else
     {
@@ -741,7 +761,7 @@ do_build_copy_assign (tree fndecl)
 	    init = move (init);
 
 	  if (DECL_NAME (field))
-	    init = cp_build_modify_expr (comp, NOP_EXPR, init, 
+	    init = cp_build_modify_expr (input_location, comp, NOP_EXPR, init,
 					 tf_warning_or_error);
 	  else
 	    init = build2 (MODIFY_EXPR, TREE_TYPE (comp), comp, init);
@@ -1002,12 +1022,8 @@ get_inherited_ctor (tree ctor)
 static tree
 check_nontriv (tree *tp, int *, void *)
 {
-  tree fn;
-  if (TREE_CODE (*tp) == CALL_EXPR)
-    fn = CALL_EXPR_FN (*tp);
-  else if (TREE_CODE (*tp) == AGGR_INIT_EXPR)
-    fn = AGGR_INIT_EXPR_FN (*tp);
-  else
+  tree fn = cp_get_callee (*tp);
+  if (fn == NULL_TREE)
     return NULL_TREE;
 
   if (TREE_CODE (fn) == ADDR_EXPR)
@@ -1027,7 +1043,7 @@ assignable_expr (tree to, tree from)
   ++cp_unevaluated_operand;
   to = build_stub_object (to);
   from = build_stub_object (from);
-  tree r = cp_build_modify_expr (to, NOP_EXPR, from, tf_none);
+  tree r = cp_build_modify_expr (input_location, to, NOP_EXPR, from, tf_none);
   --cp_unevaluated_operand;
   return r;
 }
@@ -1865,7 +1881,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
     }
 
-  DECL_ALIGN (fn) = MINIMUM_METHOD_BOUNDARY;
+  SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
 
   /* Create the explicit arguments.  */
   if (rhs_parm_type)

@@ -25,7 +25,7 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Information as gleaned from /usr/include/ctype.h
 
 namespace std _GLIBCXX_VISIBILITY(default)

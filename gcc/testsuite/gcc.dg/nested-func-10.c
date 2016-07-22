@@ -1,6 +1,7 @@
 /* PR c/70093 */
 /* { dg-do compile } */
 /* { dg-options "" } */
+/* { dg-require-effective-target alloca } */
 
 void __attribute__((noinline, noclone))
 foo (int n)

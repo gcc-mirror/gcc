@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -261,7 +261,7 @@ package Lib is
    -----------------
 
    --  The units table has an entry for each unit (source file) read in by the
-   --  current compilation. The table is indexed by the unit number value,
+   --  current compilation. The table is indexed by the unit number value.
    --  The first entry in the table, subscript Main_Unit, is for the main file.
    --  Each entry in this units table contains the following data.
 
@@ -286,7 +286,7 @@ package Lib is
    --    Dynamic_Elab
    --      A flag indicating if this unit was compiled with dynamic elaboration
    --      checks specified (as the result of using the -gnatE compilation
-   --      option or a pragma Elaboration_Checks (Dynamic).
+   --      option or a pragma Elaboration_Checks (Dynamic)).
 
    --    Error_Location
    --      This is copied from the Sloc field of the Enode argument passed
@@ -418,25 +418,25 @@ package Lib is
       --  but tools can use this status (e.g. ASIS looking at the generated
       --  tree) to know that a fatal error was detected.
 
-   function Cunit             (U : Unit_Number_Type) return Node_Id;
-   function Cunit_Entity      (U : Unit_Number_Type) return Entity_Id;
-   function Dependency_Num    (U : Unit_Number_Type) return Nat;
-   function Dynamic_Elab      (U : Unit_Number_Type) return Boolean;
-   function Error_Location    (U : Unit_Number_Type) return Source_Ptr;
-   function Expected_Unit     (U : Unit_Number_Type) return Unit_Name_Type;
-   function Fatal_Error       (U : Unit_Number_Type) return Fatal_Type;
-   function Generate_Code     (U : Unit_Number_Type) return Boolean;
-   function Ident_String      (U : Unit_Number_Type) return Node_Id;
-   function Has_RACW          (U : Unit_Number_Type) return Boolean;
-   function Loading           (U : Unit_Number_Type) return Boolean;
-   function Main_CPU          (U : Unit_Number_Type) return Int;
-   function Main_Priority     (U : Unit_Number_Type) return Int;
-   function Munit_Index       (U : Unit_Number_Type) return Nat;
-   function No_Elab_Code_All  (U : Unit_Number_Type) return Boolean;
-   function OA_Setting        (U : Unit_Number_Type) return Character;
-   function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
-   function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
-   function Unit_Name         (U : Unit_Number_Type) return Unit_Name_Type;
+   function Cunit            (U : Unit_Number_Type) return Node_Id;
+   function Cunit_Entity     (U : Unit_Number_Type) return Entity_Id;
+   function Dependency_Num   (U : Unit_Number_Type) return Nat;
+   function Dynamic_Elab     (U : Unit_Number_Type) return Boolean;
+   function Error_Location   (U : Unit_Number_Type) return Source_Ptr;
+   function Expected_Unit    (U : Unit_Number_Type) return Unit_Name_Type;
+   function Fatal_Error      (U : Unit_Number_Type) return Fatal_Type;
+   function Generate_Code    (U : Unit_Number_Type) return Boolean;
+   function Ident_String     (U : Unit_Number_Type) return Node_Id;
+   function Has_RACW         (U : Unit_Number_Type) return Boolean;
+   function Loading          (U : Unit_Number_Type) return Boolean;
+   function Main_CPU         (U : Unit_Number_Type) return Int;
+   function Main_Priority    (U : Unit_Number_Type) return Int;
+   function Munit_Index      (U : Unit_Number_Type) return Nat;
+   function No_Elab_Code_All (U : Unit_Number_Type) return Boolean;
+   function OA_Setting       (U : Unit_Number_Type) return Character;
+   function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
+   function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
+   function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
 
    procedure Set_Cunit            (U : Unit_Number_Type; N : Node_Id);
@@ -485,7 +485,7 @@ package Lib is
 
    function Exact_Source_Name (Loc : Source_Ptr) return String;
    --  Return name of entity at location Loc exactly as written in the source.
-   --  this includes copying the wide character encodings exactly as they were
+   --  This includes copying the wide character encodings exactly as they were
    --  used in the source, so the caller must be aware of the possibility of
    --  such encodings.
 
@@ -541,6 +541,20 @@ package Lib is
    --  template, so it returns the unit number containing the code that
    --  corresponds to the node N, or the source location S.
 
+   function Get_Top_Level_Code_Unit
+     (N : Node_Or_Entity_Id) return Unit_Number_Type;
+   pragma Inline (Get_Code_Unit);
+   function Get_Top_Level_Code_Unit (S : Source_Ptr) return Unit_Number_Type;
+   --  This is like Get_Code_Unit, except that in the case of subunits, it
+   --  returns the top-level unit to which the subunit belongs instead of
+   --  the subunit.
+   --
+   --  Note: for nodes and slocs in declarations of library-level instances of
+   --  generics these routines wrongly return the unit number corresponding to
+   --  the body of the instance. In effect, locations of SPARK references in
+   --  ALI files are bogus. However, fixing this is not worth the effort, since
+   --  these references are only used for debugging.
+
    function In_Extended_Main_Code_Unit
      (N : Node_Or_Entity_Id) return Boolean;
    --  Return True if the node is in the generated code of the extended main
@@ -580,7 +594,7 @@ package Lib is
    function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
    --  Returns True if the given node or entity appears within the source text
    --  of a predefined unit (i.e. within Ada, Interfaces, System or within one
-   --  of the descendent packages of one of these three packages).
+   --  of the descendant packages of one of these three packages).
 
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
    --  Same function as above but argument is a source pointer

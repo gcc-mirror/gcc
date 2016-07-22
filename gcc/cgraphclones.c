@@ -337,7 +337,6 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 
   cgraph_edge *e = new_thunk->create_edge (node, NULL, 0,
 						  CGRAPH_FREQ_BASE);
-  e->call_stmt_cannot_inline_p = true;
   symtab->call_edge_duplication_hooks (thunk->callees, e);
   symtab->call_cgraph_duplication_hooks (thunk, new_thunk);
   return new_thunk;
@@ -435,6 +434,7 @@ cgraph_node::create_clone (tree new_decl, gcov_type gcov_count, int freq,
   new_node->tm_clone = tm_clone;
   new_node->icf_merged = icf_merged;
   new_node->merged_comdat = merged_comdat;
+  new_node->thunk = thunk;
 
   new_node->clone.tree_map = NULL;
   new_node->clone.args_to_skip = args_to_skip;
@@ -771,33 +771,35 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
   node = clones;
   if (node)
     while (node != this)
-      {
-	cgraph_edge *edge = node->get_edge (old_stmt);
+      /* Thunk clones do not get updated while copying inline function body.  */
+      if (!node->thunk.thunk_p)
+	{
+	  cgraph_edge *edge = node->get_edge (old_stmt);
 
-        /* It is possible that clones already contain the edge while
-	   master didn't.  Either we promoted indirect call into direct
-	   call in the clone or we are processing clones of unreachable
-	   master where edges has been removed.  */
-	if (edge)
-	  edge->set_call_stmt (stmt);
-	else if (! node->get_edge (stmt))
-	  {
-	    edge = node->create_edge (callee, stmt, count, freq);
-	    edge->inline_failed = reason;
-	  }
+	  /* It is possible that clones already contain the edge while
+	     master didn't.  Either we promoted indirect call into direct
+	     call in the clone or we are processing clones of unreachable
+	     master where edges has been removed.  */
+	  if (edge)
+	    edge->set_call_stmt (stmt);
+	  else if (! node->get_edge (stmt))
+	    {
+	      edge = node->create_edge (callee, stmt, count, freq);
+	      edge->inline_failed = reason;
+	    }
 
-	if (node->clones)
-	  node = node->clones;
-	else if (node->next_sibling_clone)
-	  node = node->next_sibling_clone;
-	else
-	  {
-	    while (node != this && !node->next_sibling_clone)
-	      node = node->clone_of;
-	    if (node != this)
-	      node = node->next_sibling_clone;
-	  }
-      }
+	  if (node->clones)
+	    node = node->clones;
+	  else if (node->next_sibling_clone)
+	    node = node->next_sibling_clone;
+	  else
+	    {
+	      while (node != this && !node->next_sibling_clone)
+		node = node->clone_of;
+	      if (node != this)
+		node = node->next_sibling_clone;
+	    }
+	}
 }
 
 /* Remove the node from cgraph and all inline clones inlined into it.

@@ -6,5 +6,5 @@ void f ()
   };
 }
 void h () {
-  g ();				// { dg-error "" } no g in scope
+  g ();				// { dg-error "3:'g' was not declared" } no g in scope
 }

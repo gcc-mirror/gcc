@@ -162,7 +162,7 @@ arithmetic_flags_clobber_p (rtx_insn *insn)
   if (!NONJUMP_INSN_P (insn))
     return false;
   pat = PATTERN (insn);
-  if (extract_asm_operands (pat))
+  if (asm_noperands (pat) >= 0)
     return false;
 
   if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) == 2)

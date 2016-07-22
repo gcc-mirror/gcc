@@ -12,9 +12,7 @@ int main1 ()
   int k = 0;
   int m = 3, i = 0;
   
-  /* Vectorization of induction that is used after the loop.  
-     Currently vectorizable because scev_ccp disconnects the
-     use-after-the-loop from the iv def inside the loop.  */
+  /* Vectorization of induction that is used after the loop.  */
 
    do { 
         k = k + 2;
@@ -46,4 +44,4 @@ int main (void)
   return 0;
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

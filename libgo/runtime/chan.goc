@@ -948,7 +948,7 @@ sclose:
 typedef struct runtimeSelect runtimeSelect;
 struct runtimeSelect
 {
-	uintptr dir;
+	intgo dir;
 	ChanType *typ;
 	Hchan *ch;
 	byte *val;

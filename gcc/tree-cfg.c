@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "gimplify.h"
 #include "attribs.h"
+#include "selftest.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -1125,7 +1126,7 @@ make_cond_expr_edges (basic_block bb)
 /* Called for each element in the hash table (P) as we delete the
    edge to cases hash table.
 
-   Clear all the TREE_CHAINs to prevent problems with copying of
+   Clear all the CASE_CHAINs to prevent problems with copying of
    SWITCH_EXPRs and structure sharing rules, then free the hash table
    element.  */
 
@@ -2135,13 +2136,8 @@ remove_bb (basic_block bb)
 	    }
 	  else
 	    {
-	      /* Release SSA definitions if we are in SSA.  Note that we
-		 may be called when not in SSA.  For example,
-		 final_cleanup calls this function via
-		 cleanup_tree_cfg.  */
-	      if (gimple_in_ssa_p (cfun))
-		release_defs (stmt);
-
+	      /* Release SSA definitions.  */
+	      release_defs (stmt);
 	      gsi_remove (&i, true);
 	    }
 
@@ -2834,6 +2830,22 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	}
       break;
 
+    case PARM_DECL:
+    case VAR_DECL:
+    case RESULT_DECL:
+      {
+	tree context = decl_function_context (t);
+	if (context != cfun->decl
+	    && !SCOPE_FILE_SCOPE_P (context)
+	    && !TREE_STATIC (t)
+	    && !DECL_EXTERNAL (t))
+	  {
+	    error ("Local declaration from a different function");
+	    return t;
+	  }
+      }
+      break;
+
     case INDIRECT_REF:
       error ("INDIRECT_REF in gimple IL");
       return t;
@@ -2852,9 +2864,14 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("invalid offset operand of MEM_REF");
 	  return TREE_OPERAND (t, 1);
 	}
-      if (TREE_CODE (x) == ADDR_EXPR
-	  && (x = verify_address (x, TREE_OPERAND (x, 0))))
-	return x;
+      if (TREE_CODE (x) == ADDR_EXPR)
+	{
+	  tree va = verify_address (x, TREE_OPERAND (x, 0));
+	  if (va)
+	    return va;
+	  x = TREE_OPERAND (x, 0);
+	}
+      walk_tree (&x, verify_expr, data, NULL);
       *walk_subtrees = 0;
       break;
 
@@ -3016,6 +3033,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("invalid reference prefix");
 	  return t;
 	}
+      walk_tree (&t, verify_expr, data, NULL);
       *walk_subtrees = 0;
       break;
     case PLUS_EXPR:
@@ -3368,11 +3386,9 @@ verify_gimple_call (gcall *stmt)
       return true;
     }
 
-  if (lhs
-      && gimple_call_ctrl_altering_p (stmt)
+  if (gimple_call_ctrl_altering_p (stmt)
       && gimple_call_noreturn_p (stmt)
-      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
-      && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))
+      && should_remove_lhs_p (lhs))
     {
       error ("LHS in noreturn call");
       return true;
@@ -3412,6 +3428,30 @@ verify_gimple_call (gcall *stmt)
     {
       error ("static chain with function that doesn%'t use one");
       return true;
+    }
+
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_UNREACHABLE:
+	case BUILT_IN_TRAP:
+	  if (gimple_call_num_args (stmt) > 0)
+	    {
+	      /* Built-in unreachable with parameters might not be caught by
+		 undefined behavior sanitizer.  Front-ends do check users do not
+		 call them that way but we also produce calls to
+		 __builtin_unreachable internally, for example when IPA figures
+		 out a call cannot happen in a legal program.  In such cases,
+		 we must make sure arguments are stripped off.  */
+	      error ("__builtin_unreachable or __builtin_trap call with "
+		     "arguments");
+	      return true;
+	    }
+	  break;
+	default:
+	  break;
+	}
     }
 
   /* ???  The C frontend passes unpromoted arguments in case it
@@ -4091,6 +4131,53 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  return true;
 	}
 
+      return false;
+
+    case BIT_INSERT_EXPR:
+      if (! useless_type_conversion_p (lhs_type, rhs1_type))
+	{
+	  error ("type mismatch in BIT_INSERT_EXPR");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      if (! ((INTEGRAL_TYPE_P (rhs1_type)
+	      && INTEGRAL_TYPE_P (rhs2_type))
+	     || (VECTOR_TYPE_P (rhs1_type)
+		 && types_compatible_p (TREE_TYPE (rhs1_type), rhs2_type))))
+	{
+	  error ("not allowed type combination in BIT_INSERT_EXPR");
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  return true;
+	}
+      if (! tree_fits_uhwi_p (rhs3)
+	  || ! tree_fits_uhwi_p (TYPE_SIZE (rhs2_type)))
+	{
+	  error ("invalid position or size in BIT_INSERT_EXPR");
+	  return true;
+	}
+      if (INTEGRAL_TYPE_P (rhs1_type))
+	{
+	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (rhs3);
+	  if (bitpos >= TYPE_PRECISION (rhs1_type)
+	      || (bitpos + TYPE_PRECISION (rhs2_type)
+		  > TYPE_PRECISION (rhs1_type)))
+	    {
+	      error ("insertion out of range in BIT_INSERT_EXPR");
+	      return true;
+	    }
+	}
+      else if (VECTOR_TYPE_P (rhs1_type))
+	{
+	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (rhs3);
+	  unsigned HOST_WIDE_INT bitsize = tree_to_uhwi (TYPE_SIZE (rhs2_type));
+	  if (bitpos % bitsize != 0)
+	    {
+	      error ("vector insertion not at element boundary");
+	      return true;
+	    }
+	}
       return false;
 
     case DOT_PROD_EXPR:
@@ -7694,6 +7781,11 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
       fprintf (file, ", upper_bound = ");
       print_decu (loop->nb_iterations_upper_bound, file);
     }
+  if (loop->any_likely_upper_bound)
+    {
+      fprintf (file, ", likely_upper_bound = ");
+      print_decu (loop->nb_iterations_likely_upper_bound, file);
+    }
 
   if (loop->any_estimate)
     {
@@ -7827,14 +7919,19 @@ gimple_block_ends_with_condjump_p (const_basic_block bb)
 }
 
 
-/* Return true if we need to add fake edge to exit at statement T.
-   Helper function for gimple_flow_call_edges_add.  */
+/* Return true if statement T may terminate execution of BB in ways not
+   explicitly represtented in the CFG.  */
 
-static bool
-need_fake_edge_p (gimple *t)
+bool
+stmt_can_terminate_bb_p (gimple *t)
 {
   tree fndecl = NULL_TREE;
   int call_flags = 0;
+
+  /* Eh exception not handled internally terminates execution of the whole
+     function.  */
+  if (stmt_can_throw_external (t))
+    return true;
 
   /* NORETURN and LONGJMP calls already have an edge to exit.
      CONST and PURE calls do not need one.
@@ -7868,6 +7965,13 @@ need_fake_edge_p (gimple *t)
       edge e;
       basic_block bb;
 
+      if (call_flags & (ECF_PURE | ECF_CONST)
+	  && !(call_flags & ECF_LOOPING_CONST_OR_PURE))
+	return false;
+
+      /* Function call may do longjmp, terminate program or do other things.
+	 Special case noreturn that have non-abnormal edges out as in this case
+	 the fact is sufficiently represented by lack of edges out of T.  */
       if (!(call_flags & ECF_NORETURN))
 	return true;
 
@@ -7932,7 +8036,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
       if (!gsi_end_p (gsi))
 	t = gsi_stmt (gsi);
 
-      if (t && need_fake_edge_p (t))
+      if (t && stmt_can_terminate_bb_p (t))
 	{
 	  edge e;
 
@@ -7967,7 +8071,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
 	  do
 	    {
 	      stmt = gsi_stmt (gsi);
-	      if (need_fake_edge_p (stmt))
+	      if (stmt_can_terminate_bb_p (stmt))
 		{
 		  edge e;
 
@@ -9104,3 +9208,286 @@ gt_pch_nx (edge_def *e, gt_pointer_operator op, void *cookie)
     op (&(e->insns.r), cookie);
   op (&(block), cookie);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Helper function for CFG selftests: create a dummy function decl
+   and push it as cfun.  */
+
+static tree
+push_fndecl (const char *name)
+{
+  tree fn_type = build_function_type_array (integer_type_node, 0, NULL);
+  /* FIXME: this uses input_location: */
+  tree fndecl = build_fn_decl (name, fn_type);
+  tree retval = build_decl (UNKNOWN_LOCATION, RESULT_DECL,
+			    NULL_TREE, integer_type_node);
+  DECL_RESULT (fndecl) = retval;
+  push_struct_function (fndecl);
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+  ASSERT_TRUE (fun != NULL);
+  init_empty_tree_cfg_for_function (fun);
+  ASSERT_EQ (2, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+  return fndecl;
+}
+
+/* These tests directly create CFGs.
+   Compare with the static fns within tree-cfg.c:
+     - build_gimple_cfg
+     - make_blocks: calls create_basic_block (seq, bb);
+     - make_edges.   */
+
+/* Verify a simple cfg of the form:
+     ENTRY -> A -> B -> C -> EXIT.  */
+
+static void
+test_linear_chain ()
+{
+  gimple_register_cfg_hooks ();
+
+  tree fndecl = push_fndecl ("cfg_test_linear_chain");
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+
+  /* Create some empty blocks.  */
+  basic_block bb_a = create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  basic_block bb_b = create_empty_bb (bb_a);
+  basic_block bb_c = create_empty_bb (bb_b);
+
+  ASSERT_EQ (5, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+
+  /* Create some edges: a simple linear chain of BBs.  */
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (fun), bb_a, EDGE_FALLTHRU);
+  make_edge (bb_a, bb_b, 0);
+  make_edge (bb_b, bb_c, 0);
+  make_edge (bb_c, EXIT_BLOCK_PTR_FOR_FN (fun), 0);
+
+  /* Verify the edges.  */
+  ASSERT_EQ (4, n_edges_for_fn (fun));
+  ASSERT_EQ (NULL, ENTRY_BLOCK_PTR_FOR_FN (fun)->preds);
+  ASSERT_EQ (1, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs->length ());
+  ASSERT_EQ (1, bb_a->preds->length ());
+  ASSERT_EQ (1, bb_a->succs->length ());
+  ASSERT_EQ (1, bb_b->preds->length ());
+  ASSERT_EQ (1, bb_b->succs->length ());
+  ASSERT_EQ (1, bb_c->preds->length ());
+  ASSERT_EQ (1, bb_c->succs->length ());
+  ASSERT_EQ (1, EXIT_BLOCK_PTR_FOR_FN (fun)->preds->length ());
+  ASSERT_EQ (NULL, EXIT_BLOCK_PTR_FOR_FN (fun)->succs);
+
+  /* Verify the dominance information
+     Each BB in our simple chain should be dominated by the one before
+     it.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_b));
+  ASSERT_EQ (bb_b, get_immediate_dominator (CDI_DOMINATORS, bb_c));
+  vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
+  ASSERT_EQ (1, dom_by_b.length ());
+  ASSERT_EQ (bb_c, dom_by_b[0]);
+  free_dominance_info (CDI_DOMINATORS);
+  dom_by_b.release ();
+
+  /* Similarly for post-dominance: each BB in our chain is post-dominated
+     by the one after it.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  ASSERT_EQ (bb_b, get_immediate_dominator (CDI_POST_DOMINATORS, bb_a));
+  ASSERT_EQ (bb_c, get_immediate_dominator (CDI_POST_DOMINATORS, bb_b));
+  vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
+  ASSERT_EQ (1, postdom_by_b.length ());
+  ASSERT_EQ (bb_a, postdom_by_b[0]);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  postdom_by_b.release ();
+
+  pop_cfun ();
+}
+
+/* Verify a simple CFG of the form:
+     ENTRY
+       |
+       A
+      / \
+     /t  \f
+    B     C
+     \   /
+      \ /
+       D
+       |
+      EXIT.  */
+
+static void
+test_diamond ()
+{
+  gimple_register_cfg_hooks ();
+
+  tree fndecl = push_fndecl ("cfg_test_diamond");
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+
+  /* Create some empty blocks.  */
+  basic_block bb_a = create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  basic_block bb_b = create_empty_bb (bb_a);
+  basic_block bb_c = create_empty_bb (bb_a);
+  basic_block bb_d = create_empty_bb (bb_b);
+
+  ASSERT_EQ (6, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+
+  /* Create the edges.  */
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (fun), bb_a, EDGE_FALLTHRU);
+  make_edge (bb_a, bb_b, EDGE_TRUE_VALUE);
+  make_edge (bb_a, bb_c, EDGE_FALSE_VALUE);
+  make_edge (bb_b, bb_d, 0);
+  make_edge (bb_c, bb_d, 0);
+  make_edge (bb_d, EXIT_BLOCK_PTR_FOR_FN (fun), 0);
+
+  /* Verify the edges.  */
+  ASSERT_EQ (6, n_edges_for_fn (fun));
+  ASSERT_EQ (1, bb_a->preds->length ());
+  ASSERT_EQ (2, bb_a->succs->length ());
+  ASSERT_EQ (1, bb_b->preds->length ());
+  ASSERT_EQ (1, bb_b->succs->length ());
+  ASSERT_EQ (1, bb_c->preds->length ());
+  ASSERT_EQ (1, bb_c->succs->length ());
+  ASSERT_EQ (2, bb_d->preds->length ());
+  ASSERT_EQ (1, bb_d->succs->length ());
+
+  /* Verify the dominance information.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_b));
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_c));
+  ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_d));
+  vec<basic_block> dom_by_a = get_dominated_by (CDI_DOMINATORS, bb_a);
+  ASSERT_EQ (3, dom_by_a.length ()); /* B, C, D, in some order.  */
+  dom_by_a.release ();
+  vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
+  ASSERT_EQ (0, dom_by_b.length ());
+  dom_by_b.release ();
+  free_dominance_info (CDI_DOMINATORS);
+
+  /* Similarly for post-dominance.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_a));
+  ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_b));
+  ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_c));
+  vec<basic_block> postdom_by_d = get_dominated_by (CDI_POST_DOMINATORS, bb_d);
+  ASSERT_EQ (3, postdom_by_d.length ()); /* A, B, C in some order.  */
+  postdom_by_d.release ();
+  vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
+  ASSERT_EQ (0, postdom_by_b.length ());
+  postdom_by_b.release ();
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  pop_cfun ();
+}
+
+/* Verify that we can handle a CFG containing a "complete" aka
+   fully-connected subgraph (where A B C D below all have edges
+   pointing to each other node, also to themselves).
+   e.g.:
+     ENTRY  EXIT
+       |    ^
+       |   /
+       |  /
+       | /
+       V/
+       A<--->B
+       ^^   ^^
+       | \ / |
+       |  X  |
+       | / \ |
+       VV   VV
+       C<--->D
+*/
+
+static void
+test_fully_connected ()
+{
+  gimple_register_cfg_hooks ();
+
+  tree fndecl = push_fndecl ("cfg_fully_connected");
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+
+  const int n = 4;
+
+  /* Create some empty blocks.  */
+  auto_vec <basic_block> subgraph_nodes;
+  for (int i = 0; i < n; i++)
+    subgraph_nodes.safe_push (create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (fun)));
+
+  ASSERT_EQ (n + 2, n_basic_blocks_for_fn (fun));
+  ASSERT_EQ (0, n_edges_for_fn (fun));
+
+  /* Create the edges.  */
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (fun), subgraph_nodes[0], EDGE_FALLTHRU);
+  make_edge (subgraph_nodes[0], EXIT_BLOCK_PTR_FOR_FN (fun), 0);
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < n; j++)
+      make_edge (subgraph_nodes[i], subgraph_nodes[j], 0);
+
+  /* Verify the edges.  */
+  ASSERT_EQ (2 + (n * n), n_edges_for_fn (fun));
+  /* The first one is linked to ENTRY/EXIT as well as itself and
+     everything else.  */
+  ASSERT_EQ (n + 1, subgraph_nodes[0]->preds->length ());
+  ASSERT_EQ (n + 1, subgraph_nodes[0]->succs->length ());
+  /* The other ones in the subgraph are linked to everything in
+     the subgraph (including themselves).  */
+  for (int i = 1; i < n; i++)
+    {
+      ASSERT_EQ (n, subgraph_nodes[i]->preds->length ());
+      ASSERT_EQ (n, subgraph_nodes[i]->succs->length ());
+    }
+
+  /* Verify the dominance information.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  /* The initial block in the subgraph should be dominated by ENTRY.  */
+  ASSERT_EQ (ENTRY_BLOCK_PTR_FOR_FN (fun),
+	     get_immediate_dominator (CDI_DOMINATORS,
+				      subgraph_nodes[0]));
+  /* Every other block in the subgraph should be dominated by the
+     initial block.  */
+  for (int i = 1; i < n; i++)
+    ASSERT_EQ (subgraph_nodes[0],
+	       get_immediate_dominator (CDI_DOMINATORS,
+					subgraph_nodes[i]));
+  free_dominance_info (CDI_DOMINATORS);
+
+  /* Similarly for post-dominance.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* The initial block in the subgraph should be postdominated by EXIT.  */
+  ASSERT_EQ (EXIT_BLOCK_PTR_FOR_FN (fun),
+	     get_immediate_dominator (CDI_POST_DOMINATORS,
+				      subgraph_nodes[0]));
+  /* Every other block in the subgraph should be postdominated by the
+     initial block, since that leads to EXIT.  */
+  for (int i = 1; i < n; i++)
+    ASSERT_EQ (subgraph_nodes[0],
+	       get_immediate_dominator (CDI_POST_DOMINATORS,
+					subgraph_nodes[i]));
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  pop_cfun ();
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+tree_cfg_c_tests ()
+{
+  test_linear_chain ();
+  test_diamond ();
+  test_fully_connected ();
+}
+
+} // namespace selftest
+
+/* TODO: test the dominator/postdominator logic with various graphs/nodes:
+   - loop
+   - nested loops
+   - switch statement (a block with many out-edges)
+   - something that jumps to itself
+   - etc  */
+
+#endif /* CHECKING_P */

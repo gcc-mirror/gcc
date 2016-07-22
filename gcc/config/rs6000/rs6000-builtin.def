@@ -24,6 +24,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Before including this file, some macros must be defined:
+   RS6000_BUILTIN_0 -- 0 arg builtins
    RS6000_BUILTIN_1 -- 1 arg builtins
    RS6000_BUILTIN_2 -- 2 arg builtins
    RS6000_BUILTIN_3 -- 3 arg builtins
@@ -41,7 +42,11 @@
 	NAME	String literal for the name
 	MASK	Mask of bits that indicate which options enables the builtin
 	ATTR	builtin attribute information.
-	ICODE	Insn code of the function that implents the builtin.  */
+	ICODE	Insn code of the function that implements the builtin.  */
+
+#ifndef RS6000_BUILTIN_0
+  #error "RS6000_BUILTIN_0 is not defined."
+#endif
 
 #ifndef RS6000_BUILTIN_1
   #error "RS6000_BUILTIN_1 is not defined."
@@ -647,8 +652,179 @@
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+/* IEEE 128-bit floating-point builtins.  */
+#define BU_FLOAT128_2(ENUM, NAME, ATTR, ICODE)                          \
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128,                /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_BINARY),                              \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
+#define BU_FLOAT128_1(ENUM, NAME, ATTR, ICODE)                          \
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128,                /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_UNARY),                               \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
+/* Miscellaneous builtins for instructions added in ISA 3.0.  These
+   instructions don't require either the DFP or VSX options, just the basic
+   ISA 3.0 enablement since they operate on general purpose registers.  */
+#define BU_P9_MISC_0(ENUM, NAME, ATTR, ICODE)                      \
+  RS6000_BUILTIN_0 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Miscellaneous builtins for instructions added in ISA 3.0.  These
+   instructions don't require either the DFP or VSX options, just the basic
+   ISA 3.0 enablement since they operate on general purpose registers,
+   and they require 64-bit addressing.  */
+#define BU_P9_64BIT_MISC_0(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_0 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_MISC					\
+                     | RS6000_BTM_64BIT,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Miscellaneous builtins for decimal floating point instructions
+   added in ISA 3.0.  These instructions don't require the VSX
+   options, just the basic ISA 3.0 enablement since they operate on
+   general purpose registers.  */
+#define BU_P9_DFP_MISC_0(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_0 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9_DFP_MISC_1(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9_DFP_MISC_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Decimal floating point overloaded functions added in ISA 3.0 */
+#define BU_P9_DFP_OVERLOAD_1(ENUM, NAME)				\
+  RS6000_BUILTIN_1 (P9_BUILTIN_DFP_ ## ENUM,		/* ENUM */	\
+		    "__builtin_dfp_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P9_DFP_OVERLOAD_2(ENUM, NAME)				\
+  RS6000_BUILTIN_2 (P9_BUILTIN_DFP_ ## ENUM,		/* ENUM */	\
+		    "__builtin_dfp_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P9_DFP_OVERLOAD_3(ENUM, NAME)				\
+  RS6000_BUILTIN_3 (P9_BUILTIN_DFP_ ## ENUM,		/* ENUM */	\
+		    "__builtin_dfp_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_MISC,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+/* ISA 3.0 (power9) vector convenience macros.  */
+/* For the instructions that are encoded as altivec instructions use
+   __builtin_altivec_ as the builtin name.  */
+#define BU_P9V_AV_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9V_AV_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9V_AV_3(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_3 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9V_AV_P(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_P (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_PREDICATE),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* For the instructions encoded as VSX instructions use __builtin_vsx as the
+   builtin name.  */
+#define BU_P9V_VSX_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9V_OVERLOAD_1(ENUM, NAME)					\
+  RS6000_BUILTIN_1 (P9V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P9V_OVERLOAD_2(ENUM, NAME)					\
+  RS6000_BUILTIN_2 (P9V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P9V_OVERLOAD_3(ENUM, NAME)					\
+  RS6000_BUILTIN_3 (P9V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
 #endif
 
+
 /* Insure 0 is not a legitimate index.  */
 BU_SPECIAL_X (RS6000_BUILTIN_NONE, NULL, 0, RS6000_BTC_MISC)
 
@@ -951,8 +1127,6 @@ BU_ALTIVEC_X (VEC_EXT_V4SF,	"vec_ext_v4sf",     CONST)
    before we get to the point about classifying the builtin type.  */
 
 /* 3 argument Altivec overloaded builtins.  */
-BU_ALTIVEC_OVERLOAD_3 (ADDE,	   "adde")
-BU_ALTIVEC_OVERLOAD_3 (ADDEC,	   "addec")
 BU_ALTIVEC_OVERLOAD_3 (MADD,       "madd")
 BU_ALTIVEC_OVERLOAD_3 (MADDS,      "madds")
 BU_ALTIVEC_OVERLOAD_3 (MLADD,      "mladd")
@@ -1137,6 +1311,9 @@ BU_ALTIVEC_OVERLOAD_P (VCMPGT_P,   "vcmpgt_p")
 BU_ALTIVEC_OVERLOAD_P (VCMPGE_P,   "vcmpge_p")
 
 /* Overloaded Altivec builtins that are handled as special cases.  */
+BU_ALTIVEC_OVERLOAD_X (ADDE,	   "adde")
+BU_ALTIVEC_OVERLOAD_X (ADDEC,	   "addec")
+BU_ALTIVEC_OVERLOAD_X (CMPNE,	   "cmpne")
 BU_ALTIVEC_OVERLOAD_X (CTF,	   "ctf")
 BU_ALTIVEC_OVERLOAD_X (CTS,	   "cts")
 BU_ALTIVEC_OVERLOAD_X (CTU,	   "ctu")
@@ -1154,6 +1331,7 @@ BU_ALTIVEC_OVERLOAD_X (LVRX,	   "lvrx")
 BU_ALTIVEC_OVERLOAD_X (LVRXL,	   "lvrxl")
 BU_ALTIVEC_OVERLOAD_X (LVSL,	   "lvsl")
 BU_ALTIVEC_OVERLOAD_X (LVSR,	   "lvsr")
+BU_ALTIVEC_OVERLOAD_X (MUL,	   "mul")
 BU_ALTIVEC_OVERLOAD_X (PROMOTE,	   "promote")
 BU_ALTIVEC_OVERLOAD_X (SLD,	   "sld")
 BU_ALTIVEC_OVERLOAD_X (SPLAT,	   "splat")
@@ -1391,13 +1569,25 @@ BU_VSX_X (LXVW4X_V4SI,        "lxvw4x_v4si",	MEM)
 BU_VSX_X (LXVW4X_V8HI,        "lxvw4x_v8hi",	MEM)
 BU_VSX_X (LXVW4X_V16QI,	      "lxvw4x_v16qi",	MEM)
 BU_VSX_X (STXSDX,	      "stxsdx",		MEM)
-BU_VSX_X (STXVD2X_V1TI,	      "stxsdx_v1ti",	MEM)
-BU_VSX_X (STXVD2X_V2DF,	      "stxsdx_v2df",	MEM)
-BU_VSX_X (STXVD2X_V2DI,	      "stxsdx_v2di",	MEM)
-BU_VSX_X (STXVW4X_V4SF,	      "stxsdx_v4sf",	MEM)
-BU_VSX_X (STXVW4X_V4SI,	      "stxsdx_v4si",	MEM)
-BU_VSX_X (STXVW4X_V8HI,	      "stxsdx_v8hi",	MEM)
-BU_VSX_X (STXVW4X_V16QI,      "stxsdx_v16qi",	MEM)
+BU_VSX_X (STXVD2X_V1TI,	      "stxvd2x_v1ti",	MEM)
+BU_VSX_X (STXVD2X_V2DF,	      "stxvd2x_v2df",	MEM)
+BU_VSX_X (STXVD2X_V2DI,	      "stxvd2x_v2di",	MEM)
+BU_VSX_X (STXVW4X_V4SF,	      "stxvw4x_v4sf",	MEM)
+BU_VSX_X (STXVW4X_V4SI,	      "stxvw4x_v4si",	MEM)
+BU_VSX_X (STXVW4X_V8HI,	      "stxvw4x_v8hi",	MEM)
+BU_VSX_X (STXVW4X_V16QI,      "stxvw4x_v16qi",	MEM)
+BU_VSX_X (LD_ELEMREV_V2DF,    "ld_elemrev_v2df",  MEM)
+BU_VSX_X (LD_ELEMREV_V2DI,    "ld_elemrev_v2di",  MEM)
+BU_VSX_X (LD_ELEMREV_V4SF,    "ld_elemrev_v4sf",  MEM)
+BU_VSX_X (LD_ELEMREV_V4SI,    "ld_elemrev_v4si",  MEM)
+BU_VSX_X (LD_ELEMREV_V8HI,    "ld_elemrev_v8hi",  MEM)
+BU_VSX_X (LD_ELEMREV_V16QI,   "ld_elemrev_v16qi", MEM)
+BU_VSX_X (ST_ELEMREV_V2DF,    "st_elemrev_v2df",  MEM)
+BU_VSX_X (ST_ELEMREV_V2DI,    "st_elemrev_v2di",  MEM)
+BU_VSX_X (ST_ELEMREV_V4SF,    "st_elemrev_v4sf",  MEM)
+BU_VSX_X (ST_ELEMREV_V4SI,    "st_elemrev_v4si",  MEM)
+BU_VSX_X (ST_ELEMREV_V8HI,    "st_elemrev_v8hi",  MEM)
+BU_VSX_X (ST_ELEMREV_V16QI,   "st_elemrev_v16qi", MEM)
 BU_VSX_X (XSABSDP,	      "xsabsdp",	CONST)
 BU_VSX_X (XSADDDP,	      "xsadddp",	FP)
 BU_VSX_X (XSCMPODP,	      "xscmpodp",	FP)
@@ -1442,7 +1632,6 @@ BU_VSX_OVERLOAD_3V (XXPERMDI, "xxpermdi")
 BU_VSX_OVERLOAD_3V (XXSLDWI,  "xxsldwi")
 
 /* 2 argument VSX overloaded builtin functions.  */
-BU_VSX_OVERLOAD_2 (MUL,	     "mul")
 BU_VSX_OVERLOAD_2 (DIV,	     "div")
 BU_VSX_OVERLOAD_2 (XXMRGHW,  "xxmrghw")
 BU_VSX_OVERLOAD_2 (XXMRGLW,  "xxmrglw")
@@ -1455,6 +1644,8 @@ BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
+BU_VSX_OVERLOAD_X (XL,	     "xl")
+BU_VSX_OVERLOAD_X (XST,	     "xst")
 
 /* 1 argument VSX instructions added in ISA 2.07.  */
 BU_P8V_VSX_1 (XSCVSPDPN,      "xscvspdpn",	CONST,	vsx_xscvspdpn)
@@ -1589,6 +1780,25 @@ BU_P8V_OVERLOAD_3 (VADDEUQM,	"vaddeuqm")
 BU_P8V_OVERLOAD_3 (VSUBECUQ,	"vsubecuq")
 BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
 
+/* ISA 3.0 vector overloaded 2-argument functions. */
+BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
+BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
+
+/* ISA 3.0 vector overloaded 2-argument functions. */
+BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
+BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
+
+/* 2 argument vector functions added in ISA 3.0 (power9). */
+BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)
+BU_P9V_AV_2 (VADUH,		"vaduh",		CONST,  vaduv8hi3)
+BU_P9V_AV_2 (VADUW,		"vaduw",		CONST,  vaduv4si3)
+
+/* ISA 3.0 vector overloaded 2 argument functions. */
+BU_P9V_OVERLOAD_2 (VADU,	"vadu")
+BU_P9V_OVERLOAD_2 (VADUB,	"vadub")
+BU_P9V_OVERLOAD_2 (VADUH,	"vaduh")
+BU_P9V_OVERLOAD_2 (VADUW,	"vaduw")
+
 
 /* 2 argument extended divide functions added in ISA 2.06.  */
 BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)
@@ -1639,12 +1849,72 @@ BU_P8V_MISC_3 (BCDSUB_OV,	"bcdsub_ov",	CONST,	bcdsub_unordered)
 BU_DFP_MISC_2 (PACK_TD,		"pack_dec128",		CONST,	packtd)
 BU_DFP_MISC_2 (UNPACK_TD,	"unpack_dec128",	CONST,	unpacktd)
 
+/* 0 argument general-purpose register functions added in ISA 3.0 (power9).  */
+BU_P9_MISC_0 (DARN_32,		"darn_32", 		MISC, darn_32)
+BU_P9_64BIT_MISC_0 (DARN_RAW,	"darn_raw", 		MISC, darn_raw)
+BU_P9_64BIT_MISC_0 (DARN,	"darn",			MISC, darn)
+
 BU_LDBL128_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
 BU_LDBL128_2 (UNPACK_TF,	"unpack_longdouble",	CONST,	unpacktf)
 
 BU_P7_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
 BU_P7_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)
 
+/* 2 argument DFP (Decimal Floating Point) functions added in ISA 3.0.  */
+BU_P9_DFP_MISC_2 (TSTSFI_LT_DD, "dtstsfi_lt_dd", CONST, dfptstsfi_lt_dd)
+BU_P9_DFP_MISC_2 (TSTSFI_LT_TD, "dtstsfi_lt_td", CONST, dfptstsfi_lt_td)
+
+BU_P9_DFP_MISC_2 (TSTSFI_EQ_DD, "dtstsfi_eq_dd", CONST, dfptstsfi_eq_dd)
+BU_P9_DFP_MISC_2 (TSTSFI_EQ_TD, "dtstsfi_eq_td", CONST, dfptstsfi_eq_td)
+
+BU_P9_DFP_MISC_2 (TSTSFI_GT_DD, "dtstsfi_gt_dd", CONST, dfptstsfi_gt_dd)
+BU_P9_DFP_MISC_2 (TSTSFI_GT_TD, "dtstsfi_gt_td", CONST, dfptstsfi_gt_td)
+
+BU_P9_DFP_MISC_2 (TSTSFI_OV_DD, "dtstsfi_ov_dd", CONST, dfptstsfi_unordered_dd)
+BU_P9_DFP_MISC_2 (TSTSFI_OV_TD, "dtstsfi_ov_td", CONST, dfptstsfi_unordered_td)
+
+/* 2 argument overloaded DFP functions added in ISA 3.0.  */
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_LT,	"dtstsfi_lt")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_LT_DD,	"dtstsfi_lt_dd")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_LT_TD,	"dtstsfi_lt_td")
+
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_EQ,	"dtstsfi_eq")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_EQ_DD,	"dtstsfi_eq_dd")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_EQ_TD,	"dtstsfi_eq_td")
+
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_GT,	"dtstsfi_gt")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_GT_DD,	"dtstsfi_gt_dd")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_GT_TD,	"dtstsfi_gt_td")
+
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_OV,	"dtstsfi_ov")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_OV_DD,	"dtstsfi_ov_dd")
+BU_P9_DFP_OVERLOAD_2 (TSTSFI_OV_TD,	"dtstsfi_ov_td")
+
+/* 1 argument vector functions added in ISA 3.0 (power9).  */
+BU_P9V_AV_1 (VCTZB,		"vctzb",		CONST,  ctzv16qi2)
+BU_P9V_AV_1 (VCTZH,		"vctzh",		CONST,  ctzv8hi2)
+BU_P9V_AV_1 (VCTZW,		"vctzw",		CONST,  ctzv4si2)
+BU_P9V_AV_1 (VCTZD,		"vctzd",		CONST,  ctzv2di2)
+BU_P9V_AV_1 (VPRTYBD,		"vprtybd",		CONST,  parityv2di2)
+BU_P9V_AV_1 (VPRTYBQ,		"vprtybq",		CONST,  parityv1ti2)
+BU_P9V_AV_1 (VPRTYBW,		"vprtybw",		CONST,  parityv4si2)
+
+/* ISA 3.0 vector overloaded 1 argument functions.  */
+BU_P9V_OVERLOAD_1 (VCTZ,	"vctz")
+BU_P9V_OVERLOAD_1 (VCTZB,	"vctzb")
+BU_P9V_OVERLOAD_1 (VCTZH,	"vctzh")
+BU_P9V_OVERLOAD_1 (VCTZW,	"vctzw")
+BU_P9V_OVERLOAD_1 (VCTZD,	"vctzd")
+BU_P9V_OVERLOAD_1 (VPRTYB,	"vprtyb")
+BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
+BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
+BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
+
+/* 1 argument IEEE 128-bit floating-point functions.  */
+BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)
+
+/* 2 argument IEEE 128-bit floating-point functions.  */
+BU_FLOAT128_2 (COPYSIGNQ,	"copysignq",   CONST, copysignkf3)
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
@@ -2021,6 +2291,18 @@ BU_SPECIAL_X (RS6000_BUILTIN_CPU_IS, "__builtin_cpu_is",
 
 BU_SPECIAL_X (RS6000_BUILTIN_CPU_SUPPORTS, "__builtin_cpu_supports",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+
+BU_SPECIAL_X (RS6000_BUILTIN_NANQ, "__builtin_nanq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
+
+BU_SPECIAL_X (RS6000_BUILTIN_NANSQ, "__builtin_nansq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
+
+BU_SPECIAL_X (RS6000_BUILTIN_INFQ, "__builtin_infq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
+
+BU_SPECIAL_X (RS6000_BUILTIN_HUGE_VALQ, "__builtin_huge_valq",
+	      RS6000_BTM_FLOAT128, RS6000_BTC_CONST)
 
 /* Darwin CfString builtin.  */
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,

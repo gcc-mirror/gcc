@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -95,6 +95,75 @@ COIProcessWaitForShutdown();
 ///
 COIRESULT
 COIProcessProxyFlush();
+
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Loads a shared library from host filesystem into the current sink
+/// process, akin to using dlopen() on a local process in Linux or
+/// LoadLibrary() in Windows.
+///
+/// @param  in_pFileName
+///         [in] The name of the shared library file on the source's file
+///         system that is being loaded. If the file name is not an absolute
+///         path, the file is searched for in the same manner as dependencies.
+///
+/// @param  in_pLibraryName
+///         [in] Name for the shared library. This optional parameter can
+///         be specified in case the dynamic library doesn't have an
+///         SO_NAME field. If specified, it will take precedence over
+///         the SO_NAME if it exists. If it is not specified then
+///         the library must have a valid SO_NAME field.
+///
+///@param   in_LibrarySearchPath
+///         [in] a path to locate dynamic libraries dependencies for the
+///         library being loaded. If not NULL, this path will override the
+///         environment variable SINK_LD_LIBRARY_PATH. If NULL it will use
+///         SINK_LD_LIBRARY_PATH to locate dependencies.
+///
+/// @param  in_Flags
+///         [in] Bitmask of the flags that will be passed in as the dlopen()
+///         "flag" parameter on the sink.
+///
+/// @param  out_pLibrary
+///         [out] If COI_SUCCESS or COI_ALREADY_EXISTS is returned, the handle
+///         that uniquely identifies the loaded library.
+///
+/// @return COI_SUCCESS if the library was successfully loaded.
+///
+/// @return COI_INVALID_POINTER if in_pFileName is NULL.
+///
+/// @return COI_DOES_NOT_EXIST if in_pFileName cannot be found.
+///
+/// @return COI_INVALID_FILE if the file is not a valid shared library.
+///
+/// @return COI_MISSING_DEPENDENCY if a dependent library is missing from
+///         either SINK_LD_LIBRARY_PATH or the in_LibrarySearchPath parameter.
+///
+/// @return COI_ARGUMENT_MISMATCH if the shared library is missing an SONAME
+///         and in_pLibraryName is NULL.
+///
+/// @return COI_UNDEFINED_SYMBOL if we are unable to load the library due to
+///         an undefined symbol.
+///
+/// @return COI_ALREADY_EXISTS if there is an existing COILIBRARY handle
+///         that identifies this library, and this COILIBRARY hasn't been
+///         unloaded yet.
+///
+/// @return COI_BINARY_AND_HARDWARE_MISMATCH if the target machine of the
+///         binary or any of its recursive dependencies does not match the
+///         engine associated with Process.
+///
+/// @return COI_NOT_INITIALIZED if setup of remote process on host is not
+///         completed yet.
+///
+COIRESULT
+COIProcessLoadSinkLibraryFromFile(
+    const   char               *in_pFileName,
+    const   char               *in_pLibraryName,
+    const   char               *in_LibrarySearchPath,
+    uint32_t            in_Flags,
+    COILIBRARY         *out_pLibrary);
 
 #ifdef __cplusplus
 } /* extern "C" */

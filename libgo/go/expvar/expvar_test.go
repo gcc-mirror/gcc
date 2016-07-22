@@ -26,6 +26,14 @@ func RemoveAll() {
 	varKeys = nil
 }
 
+func TestNil(t *testing.T) {
+	RemoveAll()
+	val := Get("missing")
+	if val != nil {
+		t.Errorf("got %v, want nil", val)
+	}
+}
+
 func TestInt(t *testing.T) {
 	RemoveAll()
 	reqs := NewInt("requests")
@@ -134,8 +142,14 @@ func TestString(t *testing.T) {
 		t.Errorf("name.s = %q, want \"Mike\"", name.s)
 	}
 
-	if s := name.String(); s != "\"Mike\"" {
-		t.Errorf("reqs.String() = %q, want \"\"Mike\"\"", s)
+	if s, want := name.String(), `"Mike"`; s != want {
+		t.Errorf("from %q, name.String() = %q, want %q", name.s, s, want)
+	}
+
+	// Make sure we produce safe JSON output.
+	name.Set(`<`)
+	if s, want := name.String(), "\"\\u003c\""; s != want {
+		t.Errorf("from %q, name.String() = %q, want %q", name.s, s, want)
 	}
 }
 

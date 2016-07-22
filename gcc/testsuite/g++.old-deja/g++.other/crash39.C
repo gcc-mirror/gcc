@@ -10,7 +10,7 @@ struct X
 {
   ~X ();
 };
-struct S { X a; };  // { dg-error "" } previous defn
+struct S { X a; };  // { dg-message "" } previous defn
 struct S { X a; };  // { dg-error "" } redefinition
 
 void c1(S s)

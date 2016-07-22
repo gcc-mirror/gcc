@@ -37,10 +37,10 @@ namespace tr1 {
   template<class T> struct is_placeholder;
 
 #if 0
-  template<class F, class T1, ..., class TN> 
+  template<class F, class T1, ..., class TN>
   unspecified bind(F f, T1 t1, ..., TN tN);
 
-  template<class R, class F, class T1, ..., class Tn > 
+  template<class R, class F, class T1, ..., class Tn >
   unspecified bind(F f, T1 t1, ..., TN tN);
 
   namespace placeholders {

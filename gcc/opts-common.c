@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "diagnostic.h"
+#include "spellcheck.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -373,8 +374,9 @@ static const struct option_map option_map[] =
    to specific options.  We want to do the reverse: to find all the ways
    that a user could validly spell an option.
 
-   Given valid OPT_TEXT (with a leading dash), add it and all of its valid
-   variant spellings to CANDIDATES, each without a leading dash.
+   Given valid OPT_TEXT (with a leading dash) for OPTION, add it and all
+   of its valid variant spellings to CANDIDATES, each without a leading
+   dash.
 
    For example, given "-Wabi-tag", the following are added to CANDIDATES:
      "Wabi-tag"
@@ -386,9 +388,11 @@ static const struct option_map option_map[] =
 
 void
 add_misspelling_candidates (auto_vec<char *> *candidates,
+			    const struct cl_option *option,
 			    const char *opt_text)
 {
   gcc_assert (candidates);
+  gcc_assert (option);
   gcc_assert (opt_text);
   candidates->safe_push (xstrdup (opt_text + 1));
   for (unsigned i = 0; i < ARRAY_SIZE (option_map); i++)
@@ -396,6 +400,9 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
       const char *opt0 = option_map[i].opt0;
       const char *new_prefix = option_map[i].new_prefix;
       size_t new_prefix_len = strlen (new_prefix);
+
+      if (option->cl_reject_negative && option_map[i].negated)
+	continue;
 
       if (strncmp (opt_text, new_prefix, new_prefix_len) == 0)
 	{
@@ -1113,6 +1120,7 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
       for (i = 0; e->values[i].arg != NULL; i++)
 	len += strlen (e->values[i].arg) + 1;
 
+      auto_vec <const char *> candidates;
       s = XALLOCAVEC (char, len);
       p = s;
       for (i = 0; e->values[i].arg != NULL; i++)
@@ -1123,9 +1131,16 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
 	  memcpy (p, e->values[i].arg, arglen);
 	  p[arglen] = ' ';
 	  p += arglen + 1;
+	  candidates.safe_push (e->values[i].arg);
 	}
       p[-1] = 0;
-      inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+      const char *hint = find_closest_string (arg, &candidates);
+      if (hint)
+	inform (loc, "valid arguments to %qs are: %s; did you mean %qs?",
+		option->opt_text, s, hint);
+      else
+	inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+
       return true;
     }
 

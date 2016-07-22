@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fdump-tree-pre-stats -fno-tree-loop-im" } */
 
 double pcheck;
 

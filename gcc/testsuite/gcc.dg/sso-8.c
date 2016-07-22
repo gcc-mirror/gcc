@@ -2,6 +2,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-fsso-struct=little-endian" } */
+/* { dg-require-effective-target int32plus } */
 
 struct S1
 {

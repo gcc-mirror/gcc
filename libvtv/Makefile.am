@@ -38,10 +38,11 @@ AM_CXXFLAGS = $(XCFLAGS)
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 AM_CXXFLAGS += -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end
 
-if VTV_CYGMIN
-  toolexeclib_LTLIBRARIES = libvtv.la libvtv_stubs.la
-else
+if ENABLE_VTABLE_VERIFY
   toolexeclib_LTLIBRARIES = libvtv.la
+if VTV_CYGMIN
+  toolexeclib_LTLIBRARIES += libvtv_stubs.la
+endif
 endif
 
 vtv_headers = \

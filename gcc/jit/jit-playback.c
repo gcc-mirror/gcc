@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "fold-const.h"
 #include "gcc.h"
+#include "diagnostic.h"
 
 #include <pthread.h>
 
@@ -853,7 +854,8 @@ playback::rvalue *
 playback::context::
 build_call (location *loc,
 	    tree fn_ptr,
-	    const auto_vec<rvalue *> *args)
+	    const auto_vec<rvalue *> *args,
+	    bool require_tail_call)
 {
   vec<tree, va_gc> *tree_args;
   vec_alloc (tree_args, args->length ());
@@ -867,9 +869,13 @@ build_call (location *loc,
   tree fn_type = TREE_TYPE (fn);
   tree return_type = TREE_TYPE (fn_type);
 
-  return new rvalue (this,
-		     build_call_vec (return_type,
-				     fn_ptr, tree_args));
+  tree call = build_call_vec (return_type,
+			      fn_ptr, tree_args);
+
+  if (require_tail_call)
+    CALL_EXPR_MUST_TAIL_CALL (call) = 1;
+
+  return new rvalue (this, call);
 
   /* see c-typeck.c: build_function_call
      which calls build_function_call_vec
@@ -889,7 +895,8 @@ playback::rvalue *
 playback::context::
 new_call (location *loc,
 	  function *func,
-	  const auto_vec<rvalue *> *args)
+	  const auto_vec<rvalue *> *args,
+	  bool require_tail_call)
 {
   tree fndecl;
 
@@ -901,7 +908,7 @@ new_call (location *loc,
 
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
-  return build_call (loc, fn, args);
+  return build_call (loc, fn, args, require_tail_call);
 }
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
@@ -911,12 +918,13 @@ playback::rvalue *
 playback::context::
 new_call_through_ptr (location *loc,
 		      rvalue *fn_ptr,
-		      const auto_vec<rvalue *> *args)
+		      const auto_vec<rvalue *> *args,
+		      bool require_tail_call)
 {
   gcc_assert (fn_ptr);
   tree t_fn_ptr = fn_ptr->as_tree ();
 
-  return build_call (loc, t_fn_ptr, args);
+  return build_call (loc, t_fn_ptr, args, require_tail_call);
 }
 
 /* Construct a tree for a cast.  */
@@ -2831,6 +2839,43 @@ add_error_va (location *loc, const char *fmt, va_list ap)
 {
   m_recording_ctxt->add_error_va (loc ? loc->get_recording_loc () : NULL,
 				  fmt, ap);
+}
+
+/* Report a diagnostic up to the jit context as an error,
+   so that the compilation is treated as a failure.
+   For now, any kind of diagnostic is treated as an error by the jit
+   API.  */
+
+void
+playback::context::
+add_diagnostic (struct diagnostic_context *diag_context,
+		struct diagnostic_info *diagnostic)
+{
+  /* At this point the text has been formatted into the pretty-printer's
+     output buffer.  */
+  pretty_printer *pp = diag_context->printer;
+  const char *text = pp_formatted_text (pp);
+
+  /* Get location information (if any) from the diagnostic.
+     The recording::context::add_error[_va] methods require a
+     recording::location.  We can't lookup the playback::location
+     from the file/line/column since any playback location instances
+     may have been garbage-collected away by now, so instead we create
+     another recording::location directly.  */
+  location_t gcc_loc = diagnostic_location (diagnostic);
+  recording::location *rec_loc = NULL;
+  if (gcc_loc)
+    {
+      expanded_location exploc = expand_location (gcc_loc);
+      if (exploc.file)
+	rec_loc = m_recording_ctxt->new_location (exploc.file,
+						  exploc.line,
+						  exploc.column,
+						  false);
+    }
+
+  m_recording_ctxt->add_error (rec_loc, "%s", text);
+  pp_clear_output_area (pp);
 }
 
 /* Dealing with the linemap API.  */

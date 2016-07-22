@@ -369,9 +369,6 @@ gnat_init (void)
   sbitsize_one_node = sbitsize_int (1);
   sbitsize_unit_node = sbitsize_int (BITS_PER_UNIT);
 
-  /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
-  internal_reference_types ();
-
   /* Register our internal error function.  */
   global_dc->internal_error = &internal_error_function;
 
@@ -721,7 +718,9 @@ gnat_get_alias_set (tree type)
       get_alias_set (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (type)))));
 
   /* If the type can alias any other types, return the alias set 0.  */
-  else if (TYPE_P (type) && TYPE_UNIVERSAL_ALIASING_P (type))
+  else if (TYPE_P (type)
+	   && !TYPE_IS_DUMMY_P (type)
+	   && TYPE_UNIVERSAL_ALIASING_P (type))
     return 0;
 
   return -1;
@@ -935,7 +934,7 @@ gnat_get_array_descr_info (const_tree const_type,
 	     and XUA types.  */
 	  if (TYPE_CONTEXT (first_dimen)
 	      && TREE_CODE (TYPE_CONTEXT (first_dimen)) != RECORD_TYPE
-	      && contains_placeholder_p (TYPE_MIN_VALUE (index_type))
+	      && CONTAINS_PLACEHOLDER_P (TYPE_MIN_VALUE (index_type))
 	      && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
 	    {
 	      info->dimen[i].lower_bound = NULL_TREE;
@@ -1371,6 +1370,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
 #undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
+#undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL hook_bool_const_tree_false
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 #undef  LANG_HOOKS_PRINT_DECL
@@ -1404,20 +1405,17 @@ get_lang_specific (tree node)
 #undef  LANG_HOOKS_GET_DEBUG_TYPE
 #define LANG_HOOKS_GET_DEBUG_TYPE	gnat_get_debug_type
 #undef  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO
-#define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO \
-					gnat_get_fixed_point_type_info
+#define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO gnat_get_fixed_point_type_info
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
+#undef  LANG_HOOKS_INIT_TS
+#define LANG_HOOKS_INIT_TS		gnat_init_ts
 #undef  LANG_HOOKS_EH_PERSONALITY
 #define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
 #undef  LANG_HOOKS_DEEP_UNSHARING
 #define LANG_HOOKS_DEEP_UNSHARING	true
-#undef  LANG_HOOKS_INIT_TS
-#define LANG_HOOKS_INIT_TS		gnat_init_ts
-#undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
-#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL hook_bool_const_tree_false
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

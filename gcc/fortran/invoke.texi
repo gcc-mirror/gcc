@@ -115,7 +115,8 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
--fd-lines-as-comments -fdefault-double-8 -fdefault-integer-8 @gol
+-fd-lines-as-comments @gol
+-fdec -fdec-structure -fdefault-double-8 -fdefault-integer-8 @gol
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
@@ -227,6 +228,24 @@ in fixed form sources.  If the @option{-fd-lines-as-code} option is
 given they are treated as if the first column contained a blank.  If the
 @option{-fd-lines-as-comments} option is given, they are treated as
 comment lines.
+
+@item -fdec
+@opindex @code{fdec}
+DEC compatibility mode. Enables extensions and other features that mimic
+the default behavior of older compilers (such as DEC).
+These features are non-standard and should be avoided at all costs.
+For details on GNU Fortran's implementation of these extensions see the 
+full documentation.
+
+Other flags enabled by this switch are:
+@option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
+
+@item -fdec-structure
+@opindex @code{fdec-structure}
+Enable DEC @code{STRUCTURE} and @code{RECORD} as well as @code{UNION},
+@code{MAP}, and dot ('.') as a member separator (in addition to '%'). This is
+provided for compatibility only; Fortran 90 derived types should be used
+instead where possible.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
@@ -745,7 +764,8 @@ This currently includes @option{-Waliasing}, @option{-Wampersand},
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wc-binding-type},
 @option{-Wintrinsics-std}, @option{-Wtabs}, @option{-Wintrinsic-shadow},
 @option{-Wline-truncation}, @option{-Wtarget-lifetime},
-@option{-Winteger-division}, @option{-Wreal-q-constant} and @option{-Wunused}.
+@option{-Winteger-division}, @option{-Wreal-q-constant}, @option{-Wunused}
+and @option{-Wundefined-do-loop}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -904,6 +924,13 @@ by a digit between 1 and 9 is supported.  @option{-Wtabs} will cause
 a warning to be issued if a tab is encountered. Note, @option{-Wtabs}
 is active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @option{-std=f2008}, @option{-std=f2008ts} and @option{-Wall}.
+
+@item -Wundefined-do-loop
+@opindex @code{Wundefined-do-loop}
+@cindex warnings, undefined do loop
+Warn if a DO loop with step either 1 or -1 yields an underflow or an overflow
+during iteration of an induction variable of the loop.
+This option is implied by @option{-Wall}.
 
 @item -Wunderflow
 @opindex @code{Wunderflow}

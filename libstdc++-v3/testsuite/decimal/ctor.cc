@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-effective-target dfp }
+// { dg-options "-Wno-pedantic" }
 
 // ISO/IEC TR 24733  3.2.2.1  Construct/copy/destroy (decimal32).
 // ISO/IEC TR 24733  3.2.3.1  Construct/copy/destroy (decimal64).

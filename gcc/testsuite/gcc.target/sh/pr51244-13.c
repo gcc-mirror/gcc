@@ -10,7 +10,6 @@
    insns.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-times "tst" 2 } } */
 
 void printk (const char*, const char*, int);

@@ -171,6 +171,10 @@ known_alignment (tree exp)
 
     case CALL_EXPR:
       {
+	tree fndecl = get_callee_fndecl (exp);
+	if (fndecl == malloc_decl || fndecl == realloc_decl)
+	  return get_target_system_allocator_alignment () * BITS_PER_UNIT;
+
 	tree t = maybe_inline_call_in_expr (exp);
 	if (t)
 	  return known_alignment (t);
@@ -184,7 +188,8 @@ known_alignment (tree exp)
 	 have a dummy type here (e.g. a Taft Amendment type), for which the
 	 alignment is meaningless and should be ignored.  */
       if (POINTER_TYPE_P (TREE_TYPE (exp))
-	  && !TYPE_IS_DUMMY_P (TREE_TYPE (TREE_TYPE (exp))))
+	  && !TYPE_IS_DUMMY_P (TREE_TYPE (TREE_TYPE (exp)))
+	  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (exp))))
 	this_alignment = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
       else
 	this_alignment = 0;
@@ -560,8 +565,8 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   if (TYPE_PRECISION (op_type) < precision
       || TYPE_UNSIGNED (op_type) != unsignedp)
     {
-      /* Copy the node so we ensure it can be modified to make it modular.  */
-      op_type = copy_node (gnat_type_for_size (precision, unsignedp));
+      /* Copy the type so we ensure it can be modified to make it modular.  */
+      op_type = copy_type (gnat_type_for_size (precision, unsignedp));
       modulus = convert (op_type, modulus);
       SET_TYPE_MODULUS (op_type, modulus);
       TYPE_MODULAR_P (op_type) = 1;
@@ -577,7 +582,8 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
      possible size.  */
   if (op_code == MULT_EXPR)
     {
-      tree div_type = copy_node (gnat_type_for_size (needed_precision, 1));
+      /* Copy the type so we ensure it can be modified to make it modular.  */
+      tree div_type = copy_type (gnat_type_for_size (needed_precision, 1));
       modulus = convert (div_type, modulus);
       SET_TYPE_MODULUS (div_type, modulus);
       TYPE_MODULAR_P (div_type) = 1;
@@ -1413,7 +1419,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
 	      inner = get_inner_reference (operand, &bitsize, &bitpos, &offset,
 					   &mode, &unsignedp, &reversep,
-					   &volatilep, false);
+					   &volatilep);
 
 	      /* If INNER is a padding type whose field has a self-referential
 		 size, convert to that inner type.  We know the offset is zero
@@ -1761,9 +1767,10 @@ build_goto_raise (tree label, int msg)
   /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
   if (Present (local_raise))
     {
-      tree gnu_local_raise = gnat_to_gnu_entity (local_raise, NULL_TREE, 0);
+      tree gnu_local_raise
+	= gnat_to_gnu_entity (local_raise, NULL_TREE, false);
       tree gnu_exception_entity
-	= gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
+	= gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, false);
       tree gnu_call
 	= build_call_n_expr (gnu_local_raise, 1,
 			     build_unary_op (ADDR_EXPR, NULL_TREE,
@@ -2266,8 +2273,6 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, tree gnu_type,
                           Entity_Id gnat_proc, Entity_Id gnat_pool,
                           Node_Id gnat_node)
 {
-  gnu_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_size, gnu_obj);
-
   /* Explicit proc to call ?  This one is assumed to deal with the type
      alignment constraints.  */
   if (Present (gnat_proc))
@@ -2508,7 +2513,7 @@ gnat_save_expr (tree exp)
   if (code == COMPONENT_REF
       && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     return build3 (code, type, gnat_save_expr (TREE_OPERAND (exp, 0)),
-		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
+		   TREE_OPERAND (exp, 1), NULL_TREE);
 
   return save_expr (exp);
 }
@@ -2560,7 +2565,7 @@ gnat_protect_expr (tree exp)
   if (code == COMPONENT_REF
       && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
-		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
+		   TREE_OPERAND (exp, 1), NULL_TREE);
 
   /* If this is a fat pointer or a scalar, just make a SAVE_EXPR.  Likewise
      for a CALL_EXPR as large objects are returned via invisible reference
@@ -2608,7 +2613,7 @@ gnat_stabilize_reference_1 (tree e, void *data)
 	result
 	  = build3 (code, type,
 		    gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), data),
-		    TREE_OPERAND (e, 1), TREE_OPERAND (e, 2));
+		    TREE_OPERAND (e, 1), NULL_TREE);
       /* If the expression has side-effects, then encase it in a SAVE_EXPR
 	 so that it will only be evaluated once.  */
       /* The tcc_reference and tcc_comparison classes could be handled as
@@ -2716,7 +2721,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
 		  gnat_rewrite_reference (TREE_OPERAND (ref, 0), func, data,
 					  init),
 		  func (TREE_OPERAND (ref, 1), data),
-		  TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
+		  TREE_OPERAND (ref, 2), NULL_TREE);
       break;
 
     case COMPOUND_EXPR:
@@ -2794,9 +2799,6 @@ get_inner_constant_reference (tree exp)
 	  break;
 
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (exp, 2))
-	    return NULL_TREE;
-
 	  if (!TREE_CONSTANT (DECL_FIELD_OFFSET (TREE_OPERAND (exp, 1))))
 	    return NULL_TREE;
 	  break;
@@ -2804,7 +2806,7 @@ get_inner_constant_reference (tree exp)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  {
-	    if (TREE_OPERAND (exp, 2) || TREE_OPERAND (exp, 3))
+	    if (TREE_OPERAND (exp, 2))
 	      return NULL_TREE;
 
 	    tree array_type = TREE_TYPE (TREE_OPERAND (exp, 0));
@@ -2932,16 +2934,12 @@ gnat_invariant_expr (tree expr)
       switch (TREE_CODE (t))
 	{
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (t, 2))
-	    return NULL_TREE;
 	  invariant_p |= DECL_INVARIANT_P (TREE_OPERAND (t, 1));
 	  break;
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
-	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1))
-	      || TREE_OPERAND (t, 2)
-	      || TREE_OPERAND (t, 3))
+	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1)) || TREE_OPERAND (t, 2))
 	    return NULL_TREE;
 	  break;
 

@@ -560,7 +560,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops);
+      return (flag_unroll_loops || flag_unroll_all_loops);
     }
 
   virtual unsigned int execute (function *);

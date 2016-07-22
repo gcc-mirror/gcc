@@ -328,7 +328,7 @@ assign_char1_from_char4 (size_t dst_size, size_t src_size, unsigned char *dst,
 
 static void
 convert_type (void *dst, int dst_type, int dst_kind, void *src, int src_type,
-	      int src_kind)
+	      int src_kind, int *stat)
 {
 #ifdef HAVE_GFC_INTEGER_16
   typedef __int128 int128t;
@@ -581,7 +581,10 @@ convert_type (void *dst, int dst_type, int dst_kind, void *src, int src_type,
 error:
   fprintf (stderr, "libcaf_single RUNTIME ERROR: Cannot convert type %d kind "
 	   "%d to type %d kind %d\n", src_type, src_kind, dst_type, dst_kind);
-  abort();
+  if (stat)
+    *stat = 1;
+  else
+    abort ();
 }
 
 
@@ -591,7 +594,7 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 		   gfc_descriptor_t *src,
 		   caf_vector_t *src_vector __attribute__ ((unused)),
 		   gfc_descriptor_t *dest, int src_kind, int dst_kind,
-		   bool may_require_tmp)
+		   bool may_require_tmp, int *stat)
 {
   /* FIXME: Handle vector subscripts.  */
   size_t i, k, size;
@@ -599,6 +602,9 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
   int rank = GFC_DESCRIPTOR_RANK (dest);
   size_t src_size = GFC_DESCRIPTOR_SIZE (src);
   size_t dst_size = GFC_DESCRIPTOR_SIZE (dest);
+
+  if (stat)
+    *stat = 0;
 
   if (rank == 0)
     {
@@ -626,7 +632,7 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 				 sr);
       else
 	convert_type (GFC_DESCRIPTOR_DATA (dest), GFC_DESCRIPTOR_TYPE (dest),
-		      dst_kind, sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+		      dst_kind, sr, GFC_DESCRIPTOR_TYPE (src), src_kind, stat);
       return;
     }
 
@@ -710,7 +716,7 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 	    assign_char4_from_char1 (dst_size, src_size, dst, sr);
 	  else
 	    convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
-			  sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+			  sr, GFC_DESCRIPTOR_TYPE (src), src_kind, stat);
           array_offset_sr += src_size;
 	}
 
@@ -770,7 +776,7 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 	assign_char4_from_char1 (dst_size, src_size, dst, sr);
       else
 	convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
-		      sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+		      sr, GFC_DESCRIPTOR_TYPE (src), src_kind, stat);
     }
 }
 
@@ -781,7 +787,7 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 		    gfc_descriptor_t *dest,
 		    caf_vector_t *dst_vector __attribute__ ((unused)),
 		    gfc_descriptor_t *src, int dst_kind, int src_kind,
-		    bool may_require_tmp)
+		    bool may_require_tmp, int *stat)
 {
   /* FIXME: Handle vector subscripts.  */
   size_t i, k, size;
@@ -789,6 +795,9 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
   int rank = GFC_DESCRIPTOR_RANK (dest);
   size_t src_size = GFC_DESCRIPTOR_SIZE (src);
   size_t dst_size = GFC_DESCRIPTOR_SIZE (dest);
+
+  if (stat)
+    *stat = 0;
 
   if (rank == 0)
     {
@@ -816,7 +825,7 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
       else
 	convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
 		      GFC_DESCRIPTOR_DATA (src), GFC_DESCRIPTOR_TYPE (src),
-		      src_kind);
+		      src_kind, stat);
       return;
     }
 
@@ -909,7 +918,7 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 	    assign_char4_from_char1 (dst_size, src_size, dst, sr);
 	  else
 	    convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
-			  sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+			  sr, GFC_DESCRIPTOR_TYPE (src), src_kind, stat);
           if (GFC_DESCRIPTOR_RANK (src))
 	    array_offset_sr += src_size;
 	}
@@ -976,7 +985,7 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 	assign_char4_from_char1 (dst_size, src_size, dst, sr);
       else
 	convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
-		      sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
+		      sr, GFC_DESCRIPTOR_TYPE (src), src_kind, stat);
     }
 }
 
@@ -997,7 +1006,7 @@ _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
   void *src_base = GFC_DESCRIPTOR_DATA (src);
   GFC_DESCRIPTOR_DATA (src) = (void *) ((char *) TOKEN (src_token) + src_offset);
   _gfortran_caf_send (dst_token, dst_offset, dst_image_index, dest, dst_vector,
-		      src, dst_kind, src_kind, may_require_tmp);
+		      src, dst_kind, src_kind, may_require_tmp, NULL);
   GFC_DESCRIPTOR_DATA (src) = src_base;
 }
 

@@ -25,9 +25,9 @@
 #include <tr1/random>
 
 void
-test01() 
-{ 
+test01()
+{
   typedef std::tr1::linear_congruential<unsigned long, 2, 0, 4> test_type;
-  
+
   typedef test_type::result_type result_type;
 }

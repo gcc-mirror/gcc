@@ -83,6 +83,9 @@ gfc_basic_typename (bt type)
     case BT_HOLLERITH:
       p = "HOLLERITH";
       break;
+    case BT_UNION:
+      p = "UNION";
+      break;
     case BT_DERIVED:
       p = "DERIVED";
       break;
@@ -143,6 +146,9 @@ gfc_typename (gfc_typespec *ts)
       break;
     case BT_HOLLERITH:
       sprintf (buffer, "HOLLERITH");
+      break;
+    case BT_UNION:
+      sprintf (buffer, "UNION(%s)", ts->u.derived->name);
       break;
     case BT_DERIVED:
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);

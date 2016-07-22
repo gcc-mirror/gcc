@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "selftest.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -198,6 +199,8 @@ class layout
   bool print_source_line (int row, line_bounds *lbounds_out);
   void print_annotation_line (int row, const line_bounds lbounds);
   void print_any_fixits (int row, const rich_location *richloc);
+
+  void show_ruler (int max_column) const;
 
  private:
   void calculate_line_spans ();
@@ -440,6 +443,123 @@ layout_range::contains_point (int row, int column) const
   return column <= m_finish.m_column;
 }
 
+#if CHECKING_P
+
+/* A helper function for testing layout_range::contains_point.  */
+
+static layout_range
+make_range (int start_line, int start_col, int end_line, int end_col)
+{
+  const expanded_location start_exploc
+    = {"test.c", start_line, start_col, NULL, false};
+  const expanded_location finish_exploc
+    = {"test.c", end_line, end_col, NULL, false};
+  return layout_range (&start_exploc, &finish_exploc, false,
+		       &start_exploc);
+}
+
+/* Selftests for layout_range::contains_point.  */
+
+/* Selftest for layout_range::contains_point where the layout_range
+   is a range with start==end i.e. a single point.  */
+
+static void
+test_range_contains_point_for_single_point ()
+{
+  layout_range point = make_range (7, 10, 7, 10);
+
+  /* Before the line. */
+  ASSERT_FALSE (point.contains_point (6, 1));
+
+  /* On the line, but before start.  */
+  ASSERT_FALSE (point.contains_point (7, 9));
+
+  /* At the point.  */
+  ASSERT_TRUE (point.contains_point (7, 10));
+
+  /* On the line, after the point.  */
+  ASSERT_FALSE (point.contains_point (7, 11));
+
+  /* After the line.  */
+  ASSERT_FALSE (point.contains_point (8, 1));
+}
+
+/* Selftest for layout_range::contains_point where the layout_range
+   is the single-line range shown as "Example A" above.  */
+
+static void
+test_range_contains_point_for_single_line ()
+{
+  layout_range example_a = make_range (2, 22, 2, 38);
+
+  /* Before the line. */
+  ASSERT_FALSE (example_a.contains_point (1, 1));
+
+  /* On the line, but before start.  */
+  ASSERT_FALSE (example_a.contains_point (2, 21));
+
+  /* On the line, at the start.  */
+  ASSERT_TRUE (example_a.contains_point (2, 22));
+
+  /* On the line, within the range.  */
+  ASSERT_TRUE (example_a.contains_point (2, 23));
+
+  /* On the line, at the end.  */
+  ASSERT_TRUE (example_a.contains_point (2, 38));
+
+  /* On the line, after the end.  */
+  ASSERT_FALSE (example_a.contains_point (2, 39));
+
+  /* After the line.  */
+  ASSERT_FALSE (example_a.contains_point (2, 39));
+}
+
+/* Selftest for layout_range::contains_point where the layout_range
+   is the multi-line range shown as "Example B" above.  */
+
+static void
+test_range_contains_point_for_multiple_lines ()
+{
+  layout_range example_b = make_range (3, 14, 5, 8);
+
+  /* Before first line. */
+  ASSERT_FALSE (example_b.contains_point (1, 1));
+
+  /* On the first line, but before start.  */
+  ASSERT_FALSE (example_b.contains_point (3, 13));
+
+  /* At the start.  */
+  ASSERT_TRUE (example_b.contains_point (3, 14));
+
+  /* On the first line, within the range.  */
+  ASSERT_TRUE (example_b.contains_point (3, 15));
+
+  /* On an interior line.
+     The column number should not matter; try various boundary
+     values.  */
+  ASSERT_TRUE (example_b.contains_point (4, 1));
+  ASSERT_TRUE (example_b.contains_point (4, 7));
+  ASSERT_TRUE (example_b.contains_point (4, 8));
+  ASSERT_TRUE (example_b.contains_point (4, 9));
+  ASSERT_TRUE (example_b.contains_point (4, 13));
+  ASSERT_TRUE (example_b.contains_point (4, 14));
+  ASSERT_TRUE (example_b.contains_point (4, 15));
+
+  /* On the final line, before the end.  */
+  ASSERT_TRUE (example_b.contains_point (5, 7));
+
+  /* On the final line, at the end.  */
+  ASSERT_TRUE (example_b.contains_point (5, 8));
+
+  /* On the final line, after the end.  */
+  ASSERT_FALSE (example_b.contains_point (5, 9));
+
+  /* After the line.  */
+  ASSERT_FALSE (example_b.contains_point (6, 1));
+}
+
+#endif /* #if CHECKING_P */
+
 /* Given a source line LINE of length LINE_WIDTH, determine the width
    without any trailing whitespace.  */
 
@@ -462,6 +582,34 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
 	       && line[result -1] != '\t'));
   return result;
 }
+
+#if CHECKING_P
+
+/* A helper function for testing get_line_width_without_trailing_whitespace.  */
+
+static void
+assert_eq (const char *line, int expected_width)
+{
+  int actual_value
+    = get_line_width_without_trailing_whitespace (line, strlen (line));
+  ASSERT_EQ (actual_value, expected_width);
+}
+
+/* Verify that get_line_width_without_trailing_whitespace is sane for
+   various inputs.  It is not required to handle newlines.  */
+
+static void
+test_get_line_width_without_trailing_whitespace ()
+{
+  assert_eq ("", 0);
+  assert_eq (" ", 0);
+  assert_eq ("\t", 0);
+  assert_eq ("hello world", 11);
+  assert_eq ("hello world     ", 11);
+  assert_eq ("hello world     \t\t  ", 11);
+}
+
+#endif /* #if CHECKING_P */
 
 /* Helper function for layout's ctor, for sanitizing locations relative
    to the primary location within a diagnostic.
@@ -653,6 +801,9 @@ layout::layout (diagnostic_context * context,
 	m_x_offset = column - right_margin;
       gcc_assert (m_x_offset >= 0);
     }
+
+  if (context->show_ruler_p)
+    show_ruler (m_x_offset + max_width);
 }
 
 /* Return true iff we should print a heading when starting the
@@ -1084,6 +1235,40 @@ layout::move_to_column (int *column, int dest_column)
     }
 }
 
+/* For debugging layout issues, render a ruler giving column numbers
+   (after the 1-column indent).  */
+
+void
+layout::show_ruler (int max_column) const
+{
+  /* Hundreds.  */
+  if (max_column > 99)
+    {
+      pp_space (m_pp);
+      for (int column = 1 + m_x_offset; column <= max_column; column++)
+	if (0 == column % 10)
+	  pp_character (m_pp, '0' + (column / 100) % 10);
+	else
+	  pp_space (m_pp);
+      pp_newline (m_pp);
+    }
+
+  /* Tens.  */
+  pp_space (m_pp);
+  for (int column = 1 + m_x_offset; column <= max_column; column++)
+    if (0 == column % 10)
+      pp_character (m_pp, '0' + (column / 10) % 10);
+    else
+      pp_space (m_pp);
+  pp_newline (m_pp);
+
+  /* Units.  */
+  pp_space (m_pp);
+  for (int column = 1 + m_x_offset; column <= max_column; column++)
+    pp_character (m_pp, '0' + (column % 10));
+  pp_newline (m_pp);
+}
+
 } /* End of anonymous namespace.  */
 
 /* Print the physical source code corresponding to the location of
@@ -1095,9 +1280,18 @@ diagnostic_show_locus (diagnostic_context * context,
 {
   pp_newline (context->printer);
 
-  if (!context->show_caret
-      || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
-      || diagnostic_location (diagnostic, 0) == context->last_location)
+  /* Do nothing if source-printing has been disabled.  */
+  if (!context->show_caret)
+    return;
+
+  /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
+  if (diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION)
+    return;
+
+  /* Don't print the same source location twice in a row, unless we have
+     fix-it hints.  */
+  if (diagnostic_location (diagnostic, 0) == context->last_location
+      && diagnostic->richloc->get_num_fixit_hints () == 0)
     return;
 
   context->last_location = diagnostic_location (diagnostic, 0);
@@ -1132,3 +1326,23 @@ diagnostic_show_locus (diagnostic_context * context,
 
   pp_set_prefix (context->printer, saved_prefix);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Run all of the selftests within this file.  */
+
+void
+diagnostic_show_locus_c_tests ()
+{
+  test_range_contains_point_for_single_point ();
+  test_range_contains_point_for_single_line ();
+  test_range_contains_point_for_multiple_lines ();
+
+  test_get_line_width_without_trailing_whitespace ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

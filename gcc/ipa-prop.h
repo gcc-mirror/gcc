@@ -636,11 +636,14 @@ tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
 void ipa_analyze_node (struct cgraph_node *);
 
 /* Aggregate jump function related functions.  */
-tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *, HOST_WIDE_INT,
-				 bool);
-bool ipa_load_from_parm_agg (struct ipa_func_body_info *,
-			     vec<ipa_param_descriptor>, gimple *, tree, int *,
-			     HOST_WIDE_INT *, HOST_WIDE_INT *, bool *);
+tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg, tree scalar,
+				 HOST_WIDE_INT offset, bool by_ref,
+				 bool *from_global_constant = NULL);
+bool ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
+			     vec<ipa_param_descriptor> descriptors,
+			     gimple *stmt, tree op, int *index_p,
+			     HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
+			     bool *by_ref, bool *guaranteed_unmodified = NULL);
 
 /* Debugging interface.  */
 void ipa_print_node_params (FILE *, struct cgraph_node *node);

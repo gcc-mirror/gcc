@@ -28,26 +28,26 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Definitions for static const data members of time_base.
-  template<> 
+  template<>
     const char*
     __timepunct_cache<char>::_S_timezones[14] =
-    { 
-      "GMT", "HST", "AKST", "PST", "MST", "CST", "EST", "AST", "NST", "CET", 
-      "IST", "EET", "CST", "JST"  
+    {
+      "GMT", "HST", "AKST", "PST", "MST", "CST", "EST", "AST", "NST", "CET",
+      "IST", "EET", "CST", "JST"
     };
- 
+
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
+  template<>
     const wchar_t*
     __timepunct_cache<wchar_t>::_S_timezones[14] =
-    { 
-      L"GMT", L"HST", L"AKST", L"PST", L"MST", L"CST", L"EST", L"AST", 
-      L"NST", L"CET", L"IST", L"EET", L"CST", L"JST"  
+    {
+      L"GMT", L"HST", L"AKST", L"PST", L"MST", L"CST", L"EST", L"AST",
+      L"NST", L"CET", L"IST", L"EET", L"CST", L"JST"
     };
 #endif
 
   // Definitions for static const data members of money_base.
-  const money_base::pattern 
+  const money_base::pattern
   money_base::_S_default_pattern =  { {symbol, sign, none, value} };
 
   const char* money_base::_S_atoms = "-0123456789";
@@ -59,7 +59,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // According to the resolution of DR 231, about 22.2.2.2.2, p11,
   // "str.precision() is specified in the conversion specification".
   void
-  __num_base::_S_format_float(const ios_base& __io, char* __fptr, 
+  __num_base::_S_format_float(const ios_base& __io, char* __fptr,
 			      char __mod) throw()
   {
     ios_base::fmtflags __flags = __io.flags();
@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     const size_t __min = std::min(__n, size_t(__grouping_size - 1));
     size_t __i = __n;
     bool __test = true;
-    
+
     // Parsed number groupings have to match the
     // numpunct::grouping string exactly, starting at the
     // right-most point of the parsed sequence of elements ...

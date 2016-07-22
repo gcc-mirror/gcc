@@ -2,7 +2,6 @@
    tst Rm,Rn instruction is used.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "tst\tr" 8 } }  */
 /* { dg-final { scan-assembler-times "mov.b" 4 } }  */
 /* { dg-final { scan-assembler-times "mov.w" 4 } }  */

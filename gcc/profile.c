@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "dumpfile.h"
+#include "cfgloop.h"
 
 #include "profile.h"
 
@@ -826,8 +827,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
   counts_to_freqs ();
-  profile_status_for_fn (cfun) = PROFILE_READ;
-  compute_function_frequency ();
 
   if (dump_file)
     {
@@ -1329,6 +1328,25 @@ branch_prob (void)
   values.release ();
   free_edge_list (el);
   coverage_end_function (lineno_checksum, cfg_checksum);
+  if (flag_branch_probabilities && profile_info)
+    {
+      struct loop *loop;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	report_predictor_hitrates ();
+      profile_status_for_fn (cfun) = PROFILE_READ;
+
+      /* At this moment we have precise loop iteration count estimates.
+	 Record them to loop structure before the profile gets out of date. */
+      FOR_EACH_LOOP (loop, 0)
+	if (loop->header->count)
+	  {
+	    gcov_type nit = expected_loop_iterations_unbounded (loop);
+	    widest_int bound = gcov_type_to_wide_int (nit);
+	    loop->any_estimate = false;
+	    record_niter_bound (loop, bound, true, false);
+	  }
+      compute_function_frequency ();
+    }
 }
 
 /* Union find algorithm implementation for the basic blocks using

@@ -25,8 +25,8 @@
 #include <testsuite_hooks.h>
 
 void
-test01() 
-{ 
+test01()
+{
   using namespace std::tr1;
 
   double seed = 2.0;

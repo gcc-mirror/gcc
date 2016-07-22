@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 
+//
 // NB: This file is for testing tr1/type_traits with NO OTHER INCLUDES.
 
 #include <tr1/type_traits>

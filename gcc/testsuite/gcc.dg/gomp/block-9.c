@@ -5,7 +5,7 @@ void foo(int i)
   int j;
   switch (i) // { dg-error "invalid entry to OpenMP structured block" }
   {
-  #pragma omp parallel
+  #pragma omp parallel // { dg-warning "statement will never be executed" }
     { case 0:; }
   #pragma omp for
     for (j = 0; j < 10; ++ j)

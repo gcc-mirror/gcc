@@ -872,7 +872,7 @@ File Name Krunching with `gnatkr`
 
 .. index:: ! gnatkr
 
-This chapter discusses the method used by the compiler to shorten
+This section discusses the method used by the compiler to shorten
 the default file names chosen for Ada units so that they do not
 exceed the maximum length permitted. It also describes the
 `gnatkr` utility that can be used to determine the result of
@@ -1052,7 +1052,7 @@ Renaming Files with `gnatchop`
 
 .. index:: ! gnatchop
 
-This chapter discusses how to handle files with multiple units by using
+This section discusses how to handle files with multiple units by using
 the `gnatchop` utility. This utility is also useful in renaming
 files to meet the standard GNAT default file naming conventions.
 
@@ -1550,8 +1550,10 @@ depend on a file that no longer exists. Such tools include
 *gprbuild*, *gnatmake*, and *gnatcheck*.
 
 If you are using project file, a separate mechanism is provided using
-project attributes, see :ref:`Specifying_Configuration_Pragmas` for more
-details.
+project attributes.
+
+.. --Comment:
+   See :ref:`Specifying_Configuration_Pragmas` for more details.
 
 
 .. _Generating_Object_Files:
@@ -1788,10 +1790,10 @@ GNAT and Libraries
 
 .. index:: Library building and using
 
-This chapter describes how to build and use libraries with GNAT, and also shows
+This section describes how to build and use libraries with GNAT, and also shows
 how to recompile the GNAT run-time library. You should be familiar with the
-Project Manager facility (:ref:`GNAT_Project_Manager`) before reading this
-chapter.
+Project Manager facility (see the *GNAT_Project_Manager* chapter of the
+*GPRbuild User's Guide*) before reading this chapter.
 
 .. _Introduction_to_Libraries_in_GNAT:
 
@@ -1849,7 +1851,8 @@ Building a library
 
 The easiest way to build a library is to use the Project Manager,
 which supports a special type of project called a *Library Project*
-(see :ref:`Library_Projects`).
+(see the *Library Projects* section in the *GNAT Project Manager*
+chapter of the *GPRbuild User's Guide*).
 
 A project is considered a library project, when two project-level attributes
 are defined in it: `Library_Name` and `Library_Dir`. In order to
@@ -1961,7 +1964,8 @@ Installing a library
 .. index:: GPR_PROJECT_PATH
 
 If you use project files, library installation is part of the library build
-process (:ref:`Installing_a_library_with_project_files`).
+process (see the *Installing a Library with Project Files* section of the
+*GNAT Project Manager* chapter of the *GPRbuild User's Guide*).
 
 When project files are not an option, it is also possible, but not recommended,
 to install the library so that the sources needed to use the library are on the
@@ -2137,11 +2141,13 @@ Building a Stand-alone Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 GNAT's Project facility provides a simple way of building and installing
-stand-alone libraries; see :ref:`Stand-alone_Library_Projects`.
+stand-alone libraries; see the *Stand-alone Library Projects* section
+in the *GNAT Project Manager* chapter of the *GPRbuild User's Guide*.
 To be a Stand-alone Library Project, in addition to the two attributes
 that make a project a Library Project (`Library_Name` and
-`Library_Dir`; see :ref:`Library_Projects`), the attribute
-`Library_Interface` must be defined.  For example:
+`Library_Dir`; see the *Library Projects* section in the
+*GNAT Project Manager* chapter of the *GPRbuild User's Guide*),
+the attribute `Library_Interface` must be defined.  For example:
 
 .. code-block:: gpr
  
@@ -2865,6 +2871,17 @@ where
 Switches for `gnatprep`
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: --version (gnatprep)
+
+:samp:`--version`
+  Display Copyright and version, then exit disregarding all other options.
+
+.. index:: --help (gnatprep)
+
+:samp:`--help`
+  If *--version* was not used, display usage, then exit disregarding
+  all other options.
+
 .. index:: -b (gnatprep)
 
 :samp:`-b`
@@ -2922,12 +2939,23 @@ Switches for `gnatprep`
   Causes a sorted list of symbol names and values to be
   listed on the standard output file.
 
+.. index:: -T (gnatprep)
+
+:samp:`-T`
+  Use LF as line terminators when writing files. By default the line terminator
+  of the host (LF under unix, CR/LF under Windows) is used.
+
 .. index:: -u (gnatprep)
 
 :samp:`-u`
   Causes undefined symbols to be treated as having the value FALSE in the context
   of a preprocessor test. In the absence of this option, an undefined symbol in
   a `#if` or `#elsif` test will be treated as an error.
+
+.. index:: -v (gnatprep)
+
+:samp:`-v`
+  Verbose mode: generates more output about work done.
 
 
 Note: if neither *-b* nor *-c* is present,
@@ -3126,10 +3154,18 @@ preprocessing is triggered and parameterized.
 :samp:`-gnatep={file}`
   This switch indicates to the compiler the file name (without directory
   information) of the preprocessor data file to use. The preprocessor data file
-  should be found in the source directories. Note that when the compiler is
-  called by a builder such as (*gnatmake* with a project
-  file, if the object directory is not also a source directory, the builder needs
-  to be called with *-x*.
+  should be found in the source directories. Alternatively when using project
+  files, you can reference to the project file's directory via the
+  ``project name'Project_Dir`` project attribute, e.g:
+
+  .. code-block:: gpr
+
+      project Prj is
+         package Compiler is
+            for Switches ("Ada") use
+              ("-gnatep=" & Prj'Project_Dir & "prep.def");
+         end Compiler;
+      end Prj;
 
   A preprocessing data file is a text file with significant lines indicating
   how should be preprocessed either a specific source or all sources not

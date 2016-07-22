@@ -61,6 +61,7 @@ gfc_omp_privatize_by_reference (const_tree decl)
       if (GFC_DECL_GET_SCALAR_POINTER (decl)
 	  || GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
 	  || GFC_DECL_CRAY_POINTEE (decl)
+	  || GFC_DECL_ASSOCIATE_VAR_P (decl)
 	  || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	return false;
 
@@ -1646,7 +1647,7 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
 
 static tree
 gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
-			      locus where)
+			      locus where, bool mark_addressable)
 {
   for (; namelist != NULL; namelist = namelist->next)
     if (namelist->sym->attr.referenced)
@@ -1657,6 +1658,8 @@ gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
 	    tree node = build_omp_clause (where.lb->location,
 					  OMP_CLAUSE_REDUCTION);
 	    OMP_CLAUSE_DECL (node) = t;
+	    if (mark_addressable)
+	      TREE_ADDRESSABLE (t) = 1;
 	    switch (namelist->u.reduction_op)
 	      {
 	      case OMP_REDUCTION_PLUS:
@@ -1747,7 +1750,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       switch (list)
 	{
 	case OMP_LIST_REDUCTION:
-	  omp_clauses = gfc_trans_omp_reduction_list (n, omp_clauses, where);
+	  /* An OpenACC async clause indicates the need to set reduction
+	     arguments addressable, to allow asynchronous copy-out.  */
+	  omp_clauses = gfc_trans_omp_reduction_list (n, omp_clauses, where,
+						      clauses->async);
 	  break;
 	case OMP_LIST_PRIVATE:
 	  clause_code = OMP_CLAUSE_PRIVATE;
@@ -1772,9 +1778,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  goto add_clause;
 	case OMP_LIST_USE_DEVICE:
 	  clause_code = OMP_CLAUSE_USE_DEVICE_PTR;
-	  goto add_clause;
-	case OMP_LIST_DEVICE_RESIDENT:
-	  clause_code = OMP_CLAUSE_DEVICE_RESIDENT;
 	  goto add_clause;
 
 	add_clause:
@@ -2180,6 +2183,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree decl = gfc_get_symbol_decl (n->sym);
 		  if (gfc_omp_privatize_by_reference (decl))
 		    decl = build_fold_indirect_ref (decl);
+		  else if (DECL_P (decl))
+		    TREE_ADDRESSABLE (decl) = 1;
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 		    {
 		      tree type = TREE_TYPE (decl);
@@ -3497,7 +3502,8 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
       construct_clauses.independent = false;
       construct_clauses.tile_list = NULL;
       construct_clauses.lists[OMP_LIST_PRIVATE] = NULL;
-      construct_clauses.lists[OMP_LIST_REDUCTION] = NULL;
+      if (construct_code == OACC_KERNELS)
+	construct_clauses.lists[OMP_LIST_REDUCTION] = NULL;
       oacc_clauses = gfc_trans_omp_clauses (&block, &construct_clauses,
 					    code->loc);
     }

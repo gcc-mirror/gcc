@@ -835,8 +835,6 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Asynchronous reference count.  */
-  uintptr_t async_refcount;
   /* Pointer to the original mapping of "omp declare target link" object.  */
   splay_tree_key link_key;
 };
@@ -872,7 +870,7 @@ typedef struct acc_dispatch_t
 		     unsigned *, void *);
 
   /* Async cleanup callback registration.  */
-  void (*register_async_cleanup_func) (void *);
+  void (*register_async_cleanup_func) (void *, int);
 
   /* Asynchronous routines.  */
   int (*async_test_func) (int);
@@ -930,16 +928,16 @@ struct gomp_device_descr
   unsigned int (*get_caps_func) (void);
   int (*get_type_func) (void);
   int (*get_num_devices_func) (void);
-  void (*init_device_func) (int);
-  void (*fini_device_func) (int);
+  bool (*init_device_func) (int);
+  bool (*fini_device_func) (int);
   unsigned (*version_func) (void);
   int (*load_image_func) (int, unsigned, const void *, struct addr_pair **);
-  void (*unload_image_func) (int, unsigned, const void *);
+  bool (*unload_image_func) (int, unsigned, const void *);
   void *(*alloc_func) (int, size_t);
-  void (*free_func) (int, void *);
-  void *(*dev2host_func) (int, void *, const void *, size_t);
-  void *(*host2dev_func) (int, void *, const void *, size_t);
-  void *(*dev2dev_func) (int, void *, const void *, size_t);
+  bool (*free_func) (int, void *);
+  bool (*dev2host_func) (int, void *, const void *, size_t);
+  bool (*host2dev_func) (int, void *, const void *, size_t);
+  bool (*dev2dev_func) (int, void *, const void *, size_t);
   bool (*can_run_func) (void *);
   void (*run_func) (int, void *, void *, void **);
   void (*async_run_func) (int, void *, void *, void **, void *);
@@ -977,7 +975,6 @@ extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
 					      size_t *, void *, bool,
 					      enum gomp_map_vars_kind);
-extern void gomp_copy_from_async (struct target_mem_desc *);
 extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);

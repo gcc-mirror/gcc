@@ -229,6 +229,14 @@ class auto_timevar
       m_timer->push (m_tv);
   }
 
+  explicit auto_timevar (timevar_id_t tv)
+    : m_timer (g_timer)
+    , m_tv (tv)
+  {
+    if (m_timer)
+      m_timer->push (m_tv);
+  }
+
   ~auto_timevar ()
   {
     if (m_timer)

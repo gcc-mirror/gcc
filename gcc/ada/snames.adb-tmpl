@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -455,7 +455,6 @@ package body Snames is
         or else N = Name_Interface
         or else N = Name_Interrupt_Priority
         or else N = Name_Lock_Free
-        or else N = Name_Relative_Deadline
         or else N = Name_Priority
         or else N = Name_Storage_Size
         or else N = Name_Storage_Unit;

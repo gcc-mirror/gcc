@@ -241,7 +241,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _StateIdT
-      _M_insert_alt(_StateIdT __next, _StateIdT __alt, bool __neg)
+      _M_insert_alt(_StateIdT __next, _StateIdT __alt,
+		    bool __neg __attribute__((__unused__)))
       {
 	_StateT __tmp(_S_opcode_alternative);
 	// It labels every quantifier to make greedy comparison easier in BFS

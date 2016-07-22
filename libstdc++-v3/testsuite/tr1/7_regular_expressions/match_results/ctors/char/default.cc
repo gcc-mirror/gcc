@@ -24,7 +24,7 @@
 #include <tr1/regex>
 #include <testsuite_hooks.h>
 
-// Tests default constructor of the match_result class.  
+// Tests default constructor of the match_result class.
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -32,7 +32,7 @@ void test01()
 
   // default constructor
   test_type m;
-  
+
   // Check for required typedefs
   typedef test_type::value_type      value_type;
   typedef test_type::const_reference const_reference;
@@ -51,7 +51,7 @@ void test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

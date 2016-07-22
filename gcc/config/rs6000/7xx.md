@@ -113,7 +113,7 @@
   "ppc750_du,fpu_7xx")
 
 (define_insn_reservation "ppc750-fp" 3
-  (and (eq_attr "type" "fp")
+  (and (eq_attr "type" "fp,fpsimple")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,fpu_7xx")
 
@@ -165,7 +165,7 @@
 
 ;; Altivec
 (define_insn_reservation "ppc7400-vecsimple" 1
-  (and (eq_attr "type" "vecsimple,veccmp")
+  (and (eq_attr "type" "vecsimple,veclogical,vecmove,veccmp,veccmpfx")
        (eq_attr "cpu" "ppc7400"))
   "ppc750_du,ppc7400_vec_du,veccmplx_7xx")
 

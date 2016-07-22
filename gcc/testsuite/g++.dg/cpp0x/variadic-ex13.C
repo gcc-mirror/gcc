@@ -33,7 +33,7 @@ template<typename... Args> void g(Args... args)
 {
    f(const_cast<const Args*>(&args)...); // okay: ``Args'' and ``args'' are expanded
    f(5 ...); // { dg-error "contains no argument packs" }
-   f(args); // { dg-error "parameter packs not expanded" }
+   f(args); // { dg-error "5:parameter packs not expanded" }
    // { dg-message "args" "note" { target *-*-* } 36 }
    f(h(args...) + args...); // okay: first ``args'' expanded within h, second ``args'' expanded within f.
 }

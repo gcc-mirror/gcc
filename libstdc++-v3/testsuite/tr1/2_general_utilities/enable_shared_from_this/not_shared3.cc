@@ -54,7 +54,7 @@ test01()
 }
 
 
-int 
+int
 main()
 {
   test01();

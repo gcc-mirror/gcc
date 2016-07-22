@@ -6,6 +6,6 @@ struct A
   A(int);
 };
 
-struct B : A {};                   // { dg-error "no matching" }
+struct B : A {};                   // { dg-message "" }
 
 constexpr int foo(B) { return 0; } // { dg-error "invalid type" }

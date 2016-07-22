@@ -87,7 +87,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_loadu_epi16 (__m512i __W, __mmask32 __U, void const *__P)
 {
-  return (__m512i) __builtin_ia32_loaddquhi512_mask ((__v32hi *) __P,
+  return (__m512i) __builtin_ia32_loaddquhi512_mask ((const short *) __P,
 						     (__v32hi) __W,
 						     (__mmask32) __U);
 }
@@ -96,7 +96,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_loadu_epi16 (__mmask32 __U, void const *__P)
 {
-  return (__m512i) __builtin_ia32_loaddquhi512_mask ((__v32hi *) __P,
+  return (__m512i) __builtin_ia32_loaddquhi512_mask ((const short *) __P,
 						     (__v32hi)
 						     _mm512_setzero_hi (),
 						     (__mmask32) __U);
@@ -106,7 +106,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_storeu_epi16 (void *__P, __mmask32 __U, __m512i __A)
 {
-  __builtin_ia32_storedquhi512_mask ((__v32hi *) __P,
+  __builtin_ia32_storedquhi512_mask ((short *) __P,
 				     (__v32hi) __A,
 				     (__mmask32) __U);
 }
@@ -150,7 +150,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_loadu_epi8 (__m512i __W, __mmask64 __U, void const *__P)
 {
-  return (__m512i) __builtin_ia32_loaddquqi512_mask ((__v64qi *) __P,
+  return (__m512i) __builtin_ia32_loaddquqi512_mask ((const char *) __P,
 						     (__v64qi) __W,
 						     (__mmask64) __U);
 }
@@ -159,7 +159,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_loadu_epi8 (__mmask64 __U, void const *__P)
 {
-  return (__m512i) __builtin_ia32_loaddquqi512_mask ((__v64qi *) __P,
+  return (__m512i) __builtin_ia32_loaddquqi512_mask ((const char *) __P,
 						     (__v64qi)
 						     _mm512_setzero_hi (),
 						     (__mmask64) __U);
@@ -169,7 +169,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_storeu_epi8 (void *__P, __mmask64 __U, __m512i __A)
 {
-  __builtin_ia32_storedquqi512_mask ((__v64qi *) __P,
+  __builtin_ia32_storedquqi512_mask ((char *) __P,
 				     (__v64qi) __A,
 				     (__mmask64) __U);
 }

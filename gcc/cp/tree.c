@@ -43,7 +43,6 @@ static tree verify_stmt_tree_r (tree *, int *, void *);
 static tree build_local_temp (tree);
 
 static tree handle_java_interface_attribute (tree *, tree, tree, int, bool *);
-static tree handle_com_interface_attribute (tree *, tree, tree, int, bool *);
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
 
@@ -224,13 +223,7 @@ lvalue_kind (const_tree ref)
       return lvalue_kind (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
 
     case NON_DEPENDENT_EXPR:
-      /* We just return clk_ordinary for NON_DEPENDENT_EXPR in C++98, but
-	 in C++11 lvalues don't bind to rvalue references, so we need to
-	 work harder to avoid bogus errors (c++/44870).  */
-      if (cxx_dialect < cxx11)
-	return clk_ordinary;
-      else
-	return lvalue_kind (TREE_OPERAND (ref, 0));
+      return lvalue_kind (TREE_OPERAND (ref, 0));
 
     default:
       if (!TREE_TYPE (ref))
@@ -259,9 +252,7 @@ lvalue_kind (const_tree ref)
   return op1_lvalue_kind;
 }
 
-/* Returns the kind of lvalue that REF is, in the sense of
-   [basic.lval].  This function should really be named lvalue_p; it
-   computes the C++ definition of lvalue.  */
+/* Returns the kind of lvalue that REF is, in the sense of [basic.lval].  */
 
 cp_lvalue_kind
 real_lvalue_p (const_tree ref)
@@ -273,20 +264,18 @@ real_lvalue_p (const_tree ref)
     return kind;
 }
 
-/* This differs from real_lvalue_p in that class rvalues are considered
-   lvalues.  */
+/* c-common wants us to return bool.  */
 
 bool
-lvalue_p (const_tree ref)
+lvalue_p (const_tree t)
 {
-  return (lvalue_kind (ref) != clk_none);
+  return real_lvalue_p (t);
 }
 
-/* This differs from real_lvalue_p in that rvalues formed by dereferencing
-   rvalue references are considered rvalues.  */
+/* This differs from lvalue_p in that xvalues are included.  */
 
 bool
-lvalue_or_rvalue_with_address_p (const_tree ref)
+glvalue_p (const_tree ref)
 {
   cp_lvalue_kind kind = lvalue_kind (ref);
   if (kind & clk_class)
@@ -295,12 +284,60 @@ lvalue_or_rvalue_with_address_p (const_tree ref)
     return (kind != clk_none);
 }
 
-/* Returns true if REF is an xvalue, false otherwise.  */
+/* This differs from glvalue_p in that class prvalues are included.  */
+
+bool
+obvalue_p (const_tree ref)
+{
+  return (lvalue_kind (ref) != clk_none);
+}
+
+/* Returns true if REF is an xvalue (the result of dereferencing an rvalue
+   reference), false otherwise.  */
 
 bool
 xvalue_p (const_tree ref)
 {
   return (lvalue_kind (ref) == clk_rvalueref);
+}
+
+/* C++-specific version of stabilize_reference.  */
+
+tree
+cp_stabilize_reference (tree ref)
+{
+  switch (TREE_CODE (ref))
+    {
+    /* We need to treat specially anything stabilize_reference doesn't
+       handle specifically.  */
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+    CASE_CONVERT:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+    case INDIRECT_REF:
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case ERROR_MARK:
+      break;
+    default:
+      cp_lvalue_kind kind = lvalue_kind (ref);
+      if ((kind & ~clk_class) != clk_none)
+	{
+	  tree type = unlowered_expr_type (ref);
+	  bool rval = !!(kind & clk_rvalueref);
+	  type = cp_build_reference_type (type, rval);
+	  /* This inhibits warnings in, eg, cxx_mark_addressable
+	     (c++/60955).  */
+	  warning_sentinel s (extra_warnings);
+	  ref = build_static_cast (type, ref, tf_error);
+	}
+    }
+
+  return stabilize_reference (ref);
 }
 
 /* Test whether DECL is a builtin that may appear in a
@@ -309,15 +346,28 @@ xvalue_p (const_tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
-  if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl)))
+  if (!(TREE_CODE (decl) == FUNCTION_DECL
+	&& DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL))
     /* Not a built-in.  */
     return false;
   switch (DECL_FUNCTION_CODE (decl))
     {
-    case BUILT_IN_CONSTANT_P:
-    case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
+      /* These always have constant results like the corresponding
+	 macros/symbol.  */
+    case BUILT_IN_FILE:
+    case BUILT_IN_FUNCTION:
+    case BUILT_IN_LINE:
+
+      /* The following built-ins are valid in constant expressions
+	 when their arguments are.  */
+    case BUILT_IN_ADD_OVERFLOW_P:
+    case BUILT_IN_SUB_OVERFLOW_P:
+    case BUILT_IN_MUL_OVERFLOW_P:
+
       /* These have constant results even if their operands are
 	 non-constant.  */
+    case BUILT_IN_CONSTANT_P:
+    case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return true;
     default:
       return false;
@@ -331,6 +381,8 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 {
   tree t;
   tree type = TREE_TYPE (decl);
+
+  value = mark_rvalue_use (value);
 
   gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (value))
 		       || TREE_TYPE (decl) == TREE_TYPE (value)
@@ -438,11 +490,8 @@ build_aggr_init_expr (tree type, tree init)
   if (processing_template_decl)
     return init;
 
-  if (TREE_CODE (init) == CALL_EXPR)
-    fn = CALL_EXPR_FN (init);
-  else if (TREE_CODE (init) == AGGR_INIT_EXPR)
-    fn = AGGR_INIT_EXPR_FN (init);
-  else
+  fn = cp_get_callee (init);
+  if (fn == NULL_TREE)
     return convert (type, init);
 
   is_ctor = (TREE_CODE (fn) == ADDR_EXPR
@@ -483,7 +532,9 @@ build_aggr_init_expr (tree type, tree init)
       TREE_SIDE_EFFECTS (rval) = 1;
       AGGR_INIT_VIA_CTOR_P (rval) = is_ctor;
       TREE_NOTHROW (rval) = TREE_NOTHROW (init);
-      CALL_EXPR_LIST_INIT_P (rval) = CALL_EXPR_LIST_INIT_P (init);
+      CALL_EXPR_OPERATOR_SYNTAX (rval) = CALL_EXPR_OPERATOR_SYNTAX (init);
+      CALL_EXPR_ORDERED_ARGS (rval) = CALL_EXPR_ORDERED_ARGS (init);
+      CALL_EXPR_REVERSE_ARGS (rval) = CALL_EXPR_REVERSE_ARGS (init);
     }
   else
     rval = init;
@@ -562,7 +613,7 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
     {
       tree init_type = strip_array_types (TREE_TYPE (init));
       tree dummy = build_dummy_object (init_type);
-      if (!real_lvalue_p (init))
+      if (!lvalue_p (init))
 	dummy = move (dummy);
       argvec->quick_push (dummy);
     }
@@ -685,7 +736,10 @@ get_target_expr_sfinae (tree init, tsubst_flags_t complain)
   else if (TREE_CODE (init) == VEC_INIT_EXPR)
     return build_target_expr (VEC_INIT_EXPR_SLOT (init), init, complain);
   else
-    return build_target_expr_with_type (init, TREE_TYPE (init), complain);
+    {
+      init = convert_bitfield_to_declared_type (init);
+      return build_target_expr_with_type (init, TREE_TYPE (init), complain);
+    }
 }
 
 tree
@@ -732,7 +786,7 @@ rvalue (tree expr)
 
   /* We need to do this for rvalue refs as well to get the right answer
      from decltype; see c++/36628.  */
-  if (!processing_template_decl && lvalue_or_rvalue_with_address_p (expr))
+  if (!processing_template_decl && glvalue_p (expr))
     expr = build1 (NON_LVALUE_EXPR, type, expr);
   else if (type != TREE_TYPE (expr))
     expr = build_nop (type, expr);
@@ -1081,7 +1135,7 @@ cp_build_qualified_type_real (tree type,
 	    {
 	      t = build_variant_type_copy (t);
 	      TYPE_NAME (t) = TYPE_NAME (type);
-	      TYPE_ALIGN (t) = TYPE_ALIGN (type);
+	      SET_TYPE_ALIGN (t, TYPE_ALIGN (type));
 	      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
 	    }
 	}
@@ -2092,23 +2146,6 @@ ovl_scope (tree ovl)
     ovl = OVL_CHAIN (ovl);
   return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
 }
-
-/* Return TRUE if FN is a non-static member function, FALSE otherwise.
-   This function looks into BASELINK and OVERLOAD nodes.  */
-
-bool
-non_static_member_function_p (tree fn)
-{
-  if (fn == NULL_TREE)
-    return false;
-
-  if (is_overloaded_fn (fn))
-    fn = get_first_fn (fn);
-
-  return (DECL_P (fn)
-	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn));
-}
-
 
 #define PRINT_RING_SIZE 4
 
@@ -2510,7 +2547,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
       /* builtin_LINE and builtin_FILE get the location where the default
 	 argument is expanded, not where the call was written.  */
       tree callee = get_callee_fndecl (*tp);
-      if (callee && DECL_BUILT_IN (callee))
+      if (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_FILE:
@@ -2830,8 +2867,7 @@ build_min_non_dep_op_overload (enum tree_code op,
   tree fn, call;
   vec<tree, va_gc> *args;
 
-  if (REFERENCE_REF_P (non_dep))
-    non_dep = TREE_OPERAND (non_dep, 0);
+  non_dep = extract_call_expr (non_dep);
 
   nargs = call_expr_nargs (non_dep);
 
@@ -2873,10 +2909,11 @@ build_min_non_dep_op_overload (enum tree_code op,
   call = build_min_non_dep_call_vec (non_dep, fn, args);
   release_tree_vector (args);
 
-  tree call_expr = call;
-  if (REFERENCE_REF_P (call_expr))
-    call_expr = TREE_OPERAND (call_expr, 0);
+  tree call_expr = extract_call_expr (call);
   KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
+  CALL_EXPR_OPERATOR_SYNTAX (call_expr) = true;
+  CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (non_dep);
+  CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (non_dep);
 
   return call;
 }
@@ -3145,6 +3182,11 @@ cp_tree_equal (tree t1, tree t2)
       return cp_tree_equal (CI_ASSOCIATED_CONSTRAINTS (t1),
                             CI_ASSOCIATED_CONSTRAINTS (t2));
 
+    case CHECK_CONSTR:
+      return (CHECK_CONSTR_CONCEPT (t1) == CHECK_CONSTR_CONCEPT (t2)
+              && comp_template_args (CHECK_CONSTR_ARGS (t1),
+				     CHECK_CONSTR_ARGS (t2)));
+
     case TREE_VEC:
       {
 	unsigned ix;
@@ -3292,7 +3334,7 @@ error_type (tree arg)
     ;
   else if (TREE_CODE (type) == ERROR_MARK)
     ;
-  else if (real_lvalue_p (arg))
+  else if (lvalue_p (arg))
     type = build_reference_type (lvalue_type (arg));
   else if (MAYBE_CLASS_TYPE_P (type))
     type = lvalue_type (arg);
@@ -3541,6 +3583,30 @@ zero_init_p (const_tree t)
   return 1;
 }
 
+/* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
+   warn_unused_result attribute.  */
+
+static tree
+handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
+			    int /*flags*/, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
+	warning (OPT_Wattributes, "%qE attribute applied to %qD with void "
+		 "return type", name, *node);
+    }
+  else if (OVERLOAD_TYPE_P (*node))
+    /* OK */;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or to class or enumeration types", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 /* Table of valid C++ attributes.  */
 const struct attribute_spec cxx_attribute_table[] =
 {
@@ -3548,12 +3614,22 @@ const struct attribute_spec cxx_attribute_table[] =
        affects_type_identity } */
   { "java_interface", 0, 0, false, false, false,
     handle_java_interface_attribute, false },
-  { "com_interface",  0, 0, false, false, false,
-    handle_com_interface_attribute, false },
   { "init_priority",  1, 1, true,  false, false,
     handle_init_priority_attribute, false },
   { "abi_tag", 1, -1, false, false, false,
     handle_abi_tag_attribute, true },
+  { NULL,	      0, 0, false, false, false, NULL, false }
+};
+
+/* Table of C++ standard attributes.  */
+const struct attribute_spec std_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "maybe_unused", 0, 0, false, false, false,
+    handle_unused_attribute, false },
+  { "nodiscard", 0, 0, false, false, false,
+    handle_nodiscard_attribute, false },
   { NULL,	      0, 0, false, false, false, NULL, false }
 };
 
@@ -3578,35 +3654,6 @@ handle_java_interface_attribute (tree* node,
   if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
     *node = build_variant_type_copy (*node);
   TYPE_JAVA_INTERFACE (*node) = 1;
-
-  return NULL_TREE;
-}
-
-/* Handle a "com_interface" attribute; arguments as in
-   struct attribute_spec.handler.  */
-static tree
-handle_com_interface_attribute (tree* node,
-				tree name,
-				tree /*args*/,
-				int /*flags*/,
-				bool* no_add_attrs)
-{
-  static int warned;
-
-  *no_add_attrs = true;
-
-  if (DECL_P (*node)
-      || !CLASS_TYPE_P (*node)
-      || *node != TYPE_MAIN_VARIANT (*node))
-    {
-      warning (OPT_Wattributes, "%qE attribute can only be applied "
-	       "to class definitions", name);
-      return NULL_TREE;
-    }
-
-  if (!warned++)
-    warning (0, "%qE is obsolete; g++ vtables are now COM-compatible by default",
-	     name);
 
   return NULL_TREE;
 }
@@ -4033,6 +4080,22 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       *walk_subtrees_p = 0;
       break;
 
+    case DECL_EXPR:
+      /* User variables should be mentioned in BIND_EXPR_VARS
+	 and their initializers and sizes walked when walking
+	 the containing BIND_EXPR.  Compiler temporaries are
+	 handled here.  */
+      if (VAR_P (TREE_OPERAND (*tp, 0))
+	  && DECL_ARTIFICIAL (TREE_OPERAND (*tp, 0))
+	  && !TREE_STATIC (TREE_OPERAND (*tp, 0)))
+	{
+	  tree decl = TREE_OPERAND (*tp, 0);
+	  WALK_SUBTREE (DECL_INITIAL (decl));
+	  WALK_SUBTREE (DECL_SIZE (decl));
+	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
+	}
+      break;
+
     default:
       return NULL_TREE;
     }
@@ -4064,6 +4127,7 @@ void
 init_tree (void)
 {
   list_hash_table = hash_table<list_hasher>::create_ggc (61);
+  register_scoped_attributes (std_attribute_table, NULL);
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)
@@ -4222,7 +4286,7 @@ stabilize_expr (tree exp, tree* initp)
      arguments with such a type; just treat it as a pointer.  */
   else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
 	   || SCALAR_TYPE_P (TREE_TYPE (exp))
-	   || !lvalue_or_rvalue_with_address_p (exp))
+	   || !glvalue_p (exp))
     {
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
@@ -4233,7 +4297,7 @@ stabilize_expr (tree exp, tree* initp)
     }
   else
     {
-      bool xval = !real_lvalue_p (exp);
+      bool xval = !lvalue_p (exp);
       exp = cp_build_addr_expr (exp, tf_warning_or_error);
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
@@ -4350,7 +4414,7 @@ stabilize_init (tree init, tree *initp)
       && TREE_CODE (t) != CONSTRUCTOR
       && TREE_CODE (t) != AGGR_INIT_EXPR
       && (SCALAR_TYPE_P (TREE_TYPE (t))
-	  || lvalue_or_rvalue_with_address_p (t)))
+	  || glvalue_p (t)))
     {
       TREE_OPERAND (init, 1) = stabilize_expr (t, initp);
       return true;

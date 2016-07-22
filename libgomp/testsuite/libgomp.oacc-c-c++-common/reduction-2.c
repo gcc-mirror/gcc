@@ -15,7 +15,7 @@ const int vl = 32;
 static void
 test_reductions (void)
 {
-  const int n = 100;
+  const int n = 10;
   int i;
   float array[n];
 

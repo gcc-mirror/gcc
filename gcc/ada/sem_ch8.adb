@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1022,22 +1022,30 @@ package body Sem_Ch8 is
 
          Resolve (Nam, T);
 
+         --  Do not perform the legality checks below when the resolution of
+         --  the renaming name failed because the associated type is Any_Type.
+
+         if Etype (Nam) = Any_Type then
+            null;
+
          --  Ada 2005 (AI-231): In the case where the type is defined by an
          --  access_definition, the renamed entity shall be of an access-to-
          --  constant type if and only if the access_definition defines an
          --  access-to-constant type. ARM 8.5.1(4)
 
-         if Constant_Present (Access_Definition (N))
+         elsif Constant_Present (Access_Definition (N))
            and then not Is_Access_Constant (Etype (Nam))
          then
-            Error_Msg_N ("(Ada 2005): the renamed object is not "
-                         & "access-to-constant (RM 8.5.1(6))", N);
+            Error_Msg_N
+              ("(Ada 2005): the renamed object is not access-to-constant "
+               & "(RM 8.5.1(6))", N);
 
          elsif not Constant_Present (Access_Definition (N))
            and then Is_Access_Constant (Etype (Nam))
          then
-            Error_Msg_N ("(Ada 2005): the renamed object is not "
-                         & "access-to-variable (RM 8.5.1(6))", N);
+            Error_Msg_N
+              ("(Ada 2005): the renamed object is not access-to-variable "
+               & "(RM 8.5.1(6))", N);
          end if;
 
          if Is_Access_Subprogram_Type (Etype (Nam)) then
@@ -1428,15 +1436,15 @@ package body Sem_Ch8 is
          Set_Etype (New_P, Standard_Void_Type);
 
          if Present (Renamed_Object (Old_P)) then
-            Set_Renamed_Object (New_P,  Renamed_Object (Old_P));
+            Set_Renamed_Object (New_P, Renamed_Object (Old_P));
          else
             Set_Renamed_Object (New_P, Old_P);
          end if;
 
          Set_Has_Completion (New_P);
 
-         Set_First_Entity (New_P,  First_Entity (Old_P));
-         Set_Last_Entity  (New_P,  Last_Entity  (Old_P));
+         Set_First_Entity (New_P, First_Entity (Old_P));
+         Set_Last_Entity  (New_P, Last_Entity  (Old_P));
          Set_First_Private_Entity (New_P, First_Private_Entity (Old_P));
          Check_Library_Unit_Renaming (N, Old_P);
          Generate_Reference (Old_P, Name (N));
@@ -4804,9 +4812,9 @@ package body Sem_Ch8 is
                 or else
               Name_Buffer (3 .. 5) = "aux";
 
-         --  If not an internal file, then entity is definitely known,
-         --  even if it is in a private part (the message generated will
-         --  note that it is in a private part)
+         --  If not an internal file, then entity is definitely known, even if
+         --  it is in a private part (the message generated will note that it
+         --  is in a private part).
 
          else
             return True;
@@ -6096,8 +6104,8 @@ package body Sem_Ch8 is
             null;
          else
             Error_Msg_N
-              ("limited withed package can only be used to access "
-               & "incomplete types", N);
+              ("limited withed package can only be used to access incomplete "
+               & "types", N);
          end if;
       end if;
 
@@ -6224,6 +6232,8 @@ package body Sem_Ch8 is
       if Is_Overloadable (Id) and then not Is_Overloaded (N) then
          Generate_Reference (Id, N);
       end if;
+
+      Check_Restriction_No_Use_Of_Entity (N);
    end Find_Expanded_Name;
 
    -------------------------
@@ -6729,17 +6739,27 @@ package body Sem_Ch8 is
 
          --  The designated type may be a limited view with no components.
          --  Check whether the non-limited view is available, because in some
-         --  cases this will not be set when installing the context.
+         --  cases this will not be set when installing the context. Rewrite
+         --  the node by introducing an explicit dereference at once, and
+         --  setting the type of the rewritten prefix to the non-limited view
+         --  of the original designated type.
 
          if Is_Access_Type (P_Type) then
             declare
-               D : constant Entity_Id := Directly_Designated_Type (P_Type);
+               Desig_Typ : constant Entity_Id :=
+                             Directly_Designated_Type (P_Type);
+
             begin
-               if Is_Incomplete_Type (D)
-                 and then From_Limited_With (D)
-                 and then Present (Non_Limited_View (D))
+               if Is_Incomplete_Type (Desig_Typ)
+                 and then From_Limited_With (Desig_Typ)
+                 and then Present (Non_Limited_View (Desig_Typ))
                then
-                  Set_Directly_Designated_Type (P_Type,  Non_Limited_View (D));
+                  Rewrite (P,
+                    Make_Explicit_Dereference (Sloc (P),
+                      Prefix => Relocate_Node (P)));
+
+                  Set_Etype (P, Get_Full_View (Non_Limited_View (Desig_Typ)));
+                  P_Type := Etype (P);
                end if;
             end;
          end if;
@@ -6930,14 +6950,24 @@ package body Sem_Ch8 is
          else
             --  Format node as expanded name, to avoid cascaded errors
 
+            --  If the limited_with transformation was applied earlier,
+            --  restore source for proper error reporting.
+
+            if not Comes_From_Source (P)
+              and then Nkind (P) = N_Explicit_Dereference
+            then
+               Rewrite (P, Prefix (P));
+               P_Type := Etype (P);
+            end if;
+
             Change_Selected_Component_To_Expanded_Name (N);
-            Set_Entity  (N, Any_Id);
-            Set_Etype   (N, Any_Type);
+            Set_Entity (N, Any_Id);
+            Set_Etype  (N, Any_Type);
 
             --  Issue error message, but avoid this if error issued already.
             --  Use identifier of prefix if one is available.
 
-            if P_Name = Any_Id  then
+            if P_Name = Any_Id then
                null;
 
             --  It is not an error if the prefix is the current instance of
@@ -6953,7 +6983,8 @@ package body Sem_Ch8 is
             elsif Nkind (P) /= N_Attribute_Reference then
 
                --  This may have been meant as a prefixed call to a primitive
-               --  of an untagged type.
+               --  of an untagged type. If it is a function call check type of
+               --  its first formal and add explanation.
 
                declare
                   F : constant Entity_Id :=
@@ -6962,12 +6993,11 @@ package body Sem_Ch8 is
                   if Present (F)
                     and then Is_Overloadable (F)
                     and then Present (First_Entity (F))
-                    and then Etype (First_Entity (F)) = Etype (P)
-                    and then not Is_Tagged_Type (Etype (P))
+                    and then not Is_Tagged_Type (Etype (First_Entity (F)))
                   then
                      Error_Msg_N
-                       ("prefixed call is only allowed for objects "
-                        & "of a tagged type", N);
+                       ("prefixed call is only allowed for objects of a "
+                        & "tagged type", N);
                   end if;
                end;
 
@@ -7526,7 +7556,7 @@ package body Sem_Ch8 is
          --  array of Boolean type.
 
          when Name_Op_And | Name_Op_Not | Name_Op_Or  | Name_Op_Xor =>
-            while Id  /= Priv_Id loop
+            while Id /= Priv_Id loop
                if Valid_Boolean_Arg (Id) and then Is_Base_Type (Id) then
                   Add_Implicit_Operator (Id);
                   return True;
@@ -7538,7 +7568,7 @@ package body Sem_Ch8 is
          --  Equality: look for any non-limited type (result is Boolean)
 
          when Name_Op_Eq | Name_Op_Ne =>
-            while Id  /= Priv_Id loop
+            while Id /= Priv_Id loop
                if Is_Type (Id)
                  and then not Is_Limited_Type (Id)
                  and then Is_Base_Type (Id)
@@ -7553,7 +7583,7 @@ package body Sem_Ch8 is
          --  Comparison operators: scalar type, or array of scalar
 
          when Name_Op_Lt | Name_Op_Le | Name_Op_Gt | Name_Op_Ge =>
-            while Id  /= Priv_Id loop
+            while Id /= Priv_Id loop
                if (Is_Scalar_Type (Id)
                     or else (Is_Array_Type (Id)
                               and then Is_Scalar_Type (Component_Type (Id))))
@@ -7576,7 +7606,7 @@ package body Sem_Ch8 is
               Name_Op_Multiply |
               Name_Op_Divide   |
               Name_Op_Expon    =>
-            while Id  /= Priv_Id loop
+            while Id /= Priv_Id loop
                if Is_Numeric_Type (Id) and then Is_Base_Type (Id) then
                   Add_Implicit_Operator (Id);
                   return True;
@@ -7588,7 +7618,7 @@ package body Sem_Ch8 is
          --  Concatenation: any one-dimensional array type
 
          when Name_Op_Concat =>
-            while Id  /= Priv_Id loop
+            while Id /= Priv_Id loop
                if Is_Array_Type (Id)
                  and then Number_Dimensions (Id) = 1
                  and then Is_Base_Type (Id)
@@ -8162,10 +8192,22 @@ package body Sem_Ch8 is
          SST.Save_Default_SSO              := Default_SSO;
          SST.Save_Uneval_Old               := Uneval_Old;
 
+         --  Each new scope pushed onto the scope stack inherits the component
+         --  alignment of the previous scope. This emulates the "visibility"
+         --  semantics of pragma Component_Alignment.
+
          if Scope_Stack.Last > Scope_Stack.First then
             SST.Component_Alignment_Default := Scope_Stack.Table
                                                  (Scope_Stack.Last - 1).
                                                    Component_Alignment_Default;
+
+         --  Otherwise, this is the first scope being pushed on the scope
+         --  stack. Inherit the component alignment from the configuration
+         --  form of pragma Component_Alignment (if any).
+
+         else
+            SST.Component_Alignment_Default :=
+              Configuration_Component_Alignment;
          end if;
 
          SST.Last_Subprogram_Name           := null;
@@ -8590,7 +8632,7 @@ package body Sem_Ch8 is
                   Next (Pack_Name);
                end loop;
 
-            elsif Nkind (Decl) = N_Use_Type_Clause  then
+            elsif Nkind (Decl) = N_Use_Type_Clause then
                Chain_Use_Clause (Decl);
 
                Id := First (Subtype_Marks (Decl));
@@ -9132,7 +9174,7 @@ package body Sem_Ch8 is
                      Ent1 := Entity_Of_Unit (Unit1);
                      Ent2 := Entity_Of_Unit (Unit2);
 
-                     if Scope (Ent2) = Standard_Standard  then
+                     if Scope (Ent2) = Standard_Standard then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Err_No := Clause1;
 

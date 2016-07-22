@@ -31,11 +31,10 @@ mn10300_opts='-mam33 -mam33-2'
 pa_opts='-march=2.0 -march=1.0 -march=1.1'
 ppc_opts='-m32 -m64'
 s390_opts='-m31 -m31/-mzarch -m64'
-sh64_opts='-m5-32media -m5-32media-nofpu -m5-64media -m5-64media-nofpu -m5-compact -m5-compact-nofpu'
 sh_opts='-m3 -m3e -m4 -m4a -m4al -m4/-mieee -m1 -m1/-mno-cbranchdi -m2a -m2a/-mieee -m2e -m2e/-mieee'
 sparc_opts='-mcpu=v8/-m32 -mcpu=v9/-m32 -m64'
 
-all_targets='alpha arm avr bfin cris fr30 frv h8300 ia64 iq2000 m32c m32r m68k mcore mips mmix mn10300 pa pdp11 ppc sh sh64 sparc spu v850 vax xstormy16 xtensa' # e500 
+all_targets='alpha arm avr bfin cris fr30 frv h8300 ia64 iq2000 m32c m32r m68k mcore mips mmix mn10300 pa pdp11 ppc sh sparc spu v850 vax xstormy16 xtensa' # e500 
 
 test_one_file ()
 {

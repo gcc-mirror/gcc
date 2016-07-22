@@ -1053,7 +1053,7 @@ align_variable (tree decl, bool dont_output_data)
 
   /* Reset the alignment in case we have made it tighter, so we can benefit
      from it in get_pointer_alignment.  */
-  DECL_ALIGN (decl) = align;
+  SET_DECL_ALIGN (decl, align);
 }
 
 /* Return DECL_ALIGN (decl), possibly increased for optimization purposes
@@ -1150,7 +1150,18 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 
   resolve_unique_section (decl, reloc, flag_data_sections);
   if (IN_NAMED_SECTION (decl))
-    return get_named_section (decl, NULL, reloc);
+    {
+      section *sect = get_named_section (decl, NULL, reloc);
+
+      if ((sect->common.flags & SECTION_BSS) && !bss_initializer_p (decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "only zero initializers are allowed in section %qs",
+		    sect->named.name);
+	  DECL_INITIAL (decl) = error_mark_node;
+	}
+      return sect;
+    }
 
   if (ADDR_SPACE_GENERIC_P (as)
       && !DECL_THREAD_LOCAL_P (decl)
@@ -2187,8 +2198,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       && asan_protect_global (decl))
     {
       asan_protected = true;
-      DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl), 
-                               ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+      SET_DECL_ALIGN (decl, MAX (DECL_ALIGN (decl),
+				 ASAN_RED_ZONE_SIZE * BITS_PER_UNIT));
     }
 
   set_mem_align (decl_rtl, DECL_ALIGN (decl));
@@ -3249,7 +3260,7 @@ build_constant_desc (tree exp)
      architectures so use DATA_ALIGNMENT as well, except for strings.  */
   if (TREE_CODE (exp) == STRING_CST)
     {
-      DECL_ALIGN (decl) = CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl));
+      SET_DECL_ALIGN (decl, CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl)));
     }
   else
     align_variable (decl, 0);
@@ -3404,8 +3415,8 @@ output_constant_def_contents (rtx symbol)
       && asan_protect_global (exp))
     {
       asan_protected = true;
-      DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl),
-			       ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+      SET_DECL_ALIGN (decl, MAX (DECL_ALIGN (decl),
+				 ASAN_RED_ZONE_SIZE * BITS_PER_UNIT));
     }
 
   /* If the constant is part of an object block, make sure that the
@@ -5371,6 +5382,11 @@ merge_weak (tree newdecl, tree olddecl)
       gcc_assert (!TREE_USED (olddecl)
 	          || !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)));
 
+      /* PR 49899: You cannot convert a static function into a weak, public function.  */
+      if (! TREE_PUBLIC (olddecl) && TREE_PUBLIC (newdecl))
+	error ("weak declaration of %q+D being applied to a already "
+	       "existing, static definition", newdecl);
+
       if (TARGET_SUPPORTS_WEAK)
 	{
 	  /* We put the NEWDECL on the weak_decls list at some point.
@@ -6238,7 +6254,7 @@ void
 default_elf_asm_named_section (const char *name, unsigned int flags,
 			       tree decl)
 {
-  char flagchars[10], *f = flagchars;
+  char flagchars[11], *f = flagchars;
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
@@ -6271,6 +6287,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
     *f++ = TLS_SECTION_ASM_FLAG;
   if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
     *f++ = 'G';
+#ifdef MACH_DEP_SECTION_ASM_FLAG
+  if (flags & SECTION_MACH_DEP)
+    *f++ = MACH_DEP_SECTION_ASM_FLAG;
+#endif
   *f = '\0';
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"", name, flagchars);
@@ -7192,7 +7212,11 @@ place_block_symbol (rtx symbol)
       if ((flag_sanitize & SANITIZE_ADDRESS)
 	  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
 	  && asan_protect_global (DECL_INITIAL (decl)))
-	size += asan_red_zone_size (size);
+	{
+	  size += asan_red_zone_size (size);
+	  alignment = MAX (alignment,
+			   ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+	}
     }
   else
     {
@@ -7473,7 +7497,7 @@ elf_record_gcc_switches (print_switch_type type, const char * name)
     {
     case SWITCH_TYPE_PASSED:
       ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name));
-      ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
+      ASM_OUTPUT_SKIP (asm_out_file, HOST_WIDE_INT_1U);
       break;
 
     case SWITCH_TYPE_DESCRIPTIVE:

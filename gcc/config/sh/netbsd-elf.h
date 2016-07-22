@@ -67,13 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
 do									\
   {									\
-    if (TARGET_SHMEDIA32 || TARGET_SHMEDIA64)				\
-      {									\
-	/* FIXME */							\
-	sorry ("unimplemented-shmedia profiling");			\
-      }									\
-    else								\
-      {									\
         fprintf((STREAM), "\tmov.l\t%sLP%d,r1\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
         fprintf((STREAM), "\tmova\t%sLP%dr,r0\n",			\
@@ -84,16 +77,8 @@ do									\
         fprintf((STREAM), "%sLP%d:\t.long\t__mcount\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
         fprintf((STREAM), "%sLP%dr:\n", LOCAL_LABEL_PREFIX, (LABELNO));	\
-      }									\
   }									\
 while (0)
-
-/* Since libgcc is compiled with -fpic for this target, we can't use
-   __sdivsi3_1 as the division strategy for -O0 and -Os.  */
-#undef SH_DIV_STRATEGY_DEFAULT
-#define SH_DIV_STRATEGY_DEFAULT SH_DIV_CALL2
-#undef SH_DIV_STR_FOR_SIZE
-#define SH_DIV_STR_FOR_SIZE "call2"
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS					\

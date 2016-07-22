@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Waggressive-loop-optimizations" } */
+/* { dg-require-effective-target int32plus } */
 
 int *a;
 

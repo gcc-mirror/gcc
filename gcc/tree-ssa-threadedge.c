@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
-#include "tree-ssa-threadbackward.h"
 #include "tree-ssa-dom.h"
 #include "gimple-fold.h"
 
@@ -376,6 +375,12 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
   return stmt;
 }
 
+static tree simplify_control_stmt_condition_1 (edge, gimple *,
+					       class avail_exprs_stack *,
+					       tree, enum tree_code, tree,
+					       gcond *, pfn_simplify, bool,
+					       unsigned);
+
 /* Simplify the control statement at the end of the block E->dest.
 
    To avoid allocating memory unnecessarily, a scratch GIMPLE_COND
@@ -436,52 +441,14 @@ simplify_control_stmt_condition (edge e,
 	    }
 	}
 
-      if (handle_dominating_asserts)
-	{
-	  /* Now see if the operand was consumed by an ASSERT_EXPR
-	     which dominates E->src.  If so, we want to replace the
-	     operand with the LHS of the ASSERT_EXPR.  */
-	  if (TREE_CODE (op0) == SSA_NAME)
-	    op0 = lhs_of_dominating_assert (op0, e->src, stmt);
+      const unsigned recursion_limit = 4;
 
-	  if (TREE_CODE (op1) == SSA_NAME)
-	    op1 = lhs_of_dominating_assert (op1, e->src, stmt);
-	}
-
-      /* We may need to canonicalize the comparison.  For
-	 example, op0 might be a constant while op1 is an
-	 SSA_NAME.  Failure to canonicalize will cause us to
-	 miss threading opportunities.  */
-      if (tree_swap_operands_p (op0, op1, false))
-	{
-	  cond_code = swap_tree_comparison (cond_code);
-	  std::swap (op0, op1);
-	}
-
-      /* Stuff the operator and operands into our dummy conditional
-	 expression.  */
-      gimple_cond_set_code (dummy_cond, cond_code);
-      gimple_cond_set_lhs (dummy_cond, op0);
-      gimple_cond_set_rhs (dummy_cond, op1);
-
-      /* We absolutely do not care about any type conversions
-         we only care about a zero/nonzero value.  */
-      fold_defer_overflow_warnings ();
-
-      cached_lhs = fold_binary (cond_code, boolean_type_node, op0, op1);
-      if (cached_lhs)
-	while (CONVERT_EXPR_P (cached_lhs))
-          cached_lhs = TREE_OPERAND (cached_lhs, 0);
-
-      fold_undefer_overflow_warnings ((cached_lhs
-                                       && is_gimple_min_invariant (cached_lhs)),
-				      stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
-
-      /* If we have not simplified the condition down to an invariant,
-	 then use the pass specific callback to simplify the condition.  */
-      if (!cached_lhs
-          || !is_gimple_min_invariant (cached_lhs))
-        cached_lhs = (*simplify) (dummy_cond, stmt, avail_exprs_stack);
+      cached_lhs
+	= simplify_control_stmt_condition_1 (e, stmt, avail_exprs_stack,
+					     op0, cond_code, op1,
+					     dummy_cond, simplify,
+					     handle_dominating_asserts,
+					     recursion_limit);
 
       /* If we were testing an integer/pointer against a constant, then
 	 we can use the FSM code to trace the value of the SSA_NAME.  If
@@ -558,6 +525,195 @@ simplify_control_stmt_condition (edge e,
     cached_lhs = NULL;
 
   return cached_lhs;
+}
+
+/* Recursive helper for simplify_control_stmt_condition.  */
+
+static tree
+simplify_control_stmt_condition_1 (edge e,
+				   gimple *stmt,
+				   class avail_exprs_stack *avail_exprs_stack,
+				   tree op0,
+				   enum tree_code cond_code,
+				   tree op1,
+				   gcond *dummy_cond,
+				   pfn_simplify simplify,
+				   bool handle_dominating_asserts,
+				   unsigned limit)
+{
+  if (limit == 0)
+    return NULL_TREE;
+
+  /* We may need to canonicalize the comparison.  For
+     example, op0 might be a constant while op1 is an
+     SSA_NAME.  Failure to canonicalize will cause us to
+     miss threading opportunities.  */
+  if (tree_swap_operands_p (op0, op1, false))
+    {
+      cond_code = swap_tree_comparison (cond_code);
+      std::swap (op0, op1);
+    }
+
+  /* If the condition has the form (A & B) CMP 0 or (A | B) CMP 0 then
+     recurse into the LHS to see if there is a dominating ASSERT_EXPR
+     of A or of B that makes this condition always true or always false
+     along the edge E.  */
+  if (handle_dominating_asserts
+      && (cond_code == EQ_EXPR || cond_code == NE_EXPR)
+      && TREE_CODE (op0) == SSA_NAME
+      && integer_zerop (op1))
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
+      if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
+        ;
+      else if (gimple_assign_rhs_code (def_stmt) == BIT_AND_EXPR
+	       || gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR)
+	{
+	  enum tree_code rhs_code = gimple_assign_rhs_code (def_stmt);
+	  const tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  const tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	  /* Is A != 0 ?  */
+	  const tree res1
+	    = simplify_control_stmt_condition_1 (e, def_stmt, avail_exprs_stack,
+						 rhs1, NE_EXPR, op1,
+						 dummy_cond, simplify,
+						 handle_dominating_asserts,
+						 limit - 1);
+	  if (res1 == NULL_TREE)
+	    ;
+	  else if (rhs_code == BIT_AND_EXPR && integer_zerop (res1))
+	    {
+	      /* If A == 0 then (A & B) != 0 is always false.  */
+	      if (cond_code == NE_EXPR)
+	        return boolean_false_node;
+	      /* If A == 0 then (A & B) == 0 is always true.  */
+	      if (cond_code == EQ_EXPR)
+		return boolean_true_node;
+	    }
+	  else if (rhs_code == BIT_IOR_EXPR && integer_nonzerop (res1))
+	    {
+	      /* If A != 0 then (A | B) != 0 is always true.  */
+	      if (cond_code == NE_EXPR)
+		return boolean_true_node;
+	      /* If A != 0 then (A | B) == 0 is always false.  */
+	      if (cond_code == EQ_EXPR)
+		return boolean_false_node;
+	    }
+
+	  /* Is B != 0 ?  */
+	  const tree res2
+	    = simplify_control_stmt_condition_1 (e, def_stmt, avail_exprs_stack,
+						 rhs2, NE_EXPR, op1,
+						 dummy_cond, simplify,
+						 handle_dominating_asserts,
+						 limit - 1);
+	  if (res2 == NULL_TREE)
+	    ;
+	  else if (rhs_code == BIT_AND_EXPR && integer_zerop (res2))
+	    {
+	      /* If B == 0 then (A & B) != 0 is always false.  */
+	      if (cond_code == NE_EXPR)
+	        return boolean_false_node;
+	      /* If B == 0 then (A & B) == 0 is always true.  */
+	      if (cond_code == EQ_EXPR)
+		return boolean_true_node;
+	    }
+	  else if (rhs_code == BIT_IOR_EXPR && integer_nonzerop (res2))
+	    {
+	      /* If B != 0 then (A | B) != 0 is always true.  */
+	      if (cond_code == NE_EXPR)
+		return boolean_true_node;
+	      /* If B != 0 then (A | B) == 0 is always false.  */
+	      if (cond_code == EQ_EXPR)
+		return boolean_false_node;
+	    }
+
+	  if (res1 != NULL_TREE && res2 != NULL_TREE)
+	    {
+	      if (rhs_code == BIT_AND_EXPR
+		  && TYPE_PRECISION (TREE_TYPE (op0)) == 1
+		  && integer_nonzerop (res1)
+		  && integer_nonzerop (res2))
+		{
+		  /* If A != 0 and B != 0 then (bool)(A & B) != 0 is true.  */
+		  if (cond_code == NE_EXPR)
+		    return boolean_true_node;
+		  /* If A != 0 and B != 0 then (bool)(A & B) == 0 is false.  */
+		  if (cond_code == EQ_EXPR)
+		    return boolean_false_node;
+		}
+
+	      if (rhs_code == BIT_IOR_EXPR
+		  && integer_zerop (res1)
+		  && integer_zerop (res2))
+		{
+		  /* If A == 0 and B == 0 then (A | B) != 0 is false.  */
+		  if (cond_code == NE_EXPR)
+		    return boolean_false_node;
+		  /* If A == 0 and B == 0 then (A | B) == 0 is true.  */
+		  if (cond_code == EQ_EXPR)
+		    return boolean_true_node;
+		}
+	    }
+	}
+      /* Handle (A CMP B) CMP 0.  */
+      else if (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
+	       == tcc_comparison)
+	{
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	  tree_code new_cond = gimple_assign_rhs_code (def_stmt);
+	  if (cond_code == EQ_EXPR)
+	    new_cond = invert_tree_comparison (new_cond, false);
+
+	  tree res
+	    = simplify_control_stmt_condition_1 (e, def_stmt, avail_exprs_stack,
+						 rhs1, new_cond, rhs2,
+						 dummy_cond, simplify,
+						 handle_dominating_asserts,
+						 limit - 1);
+	  if (res != NULL_TREE && is_gimple_min_invariant (res))
+	    return res;
+	}
+    }
+
+  if (handle_dominating_asserts)
+    {
+      /* Now see if the operand was consumed by an ASSERT_EXPR
+	 which dominates E->src.  If so, we want to replace the
+	 operand with the LHS of the ASSERT_EXPR.  */
+      if (TREE_CODE (op0) == SSA_NAME)
+	op0 = lhs_of_dominating_assert (op0, e->src, stmt);
+
+      if (TREE_CODE (op1) == SSA_NAME)
+	op1 = lhs_of_dominating_assert (op1, e->src, stmt);
+    }
+
+  gimple_cond_set_code (dummy_cond, cond_code);
+  gimple_cond_set_lhs (dummy_cond, op0);
+  gimple_cond_set_rhs (dummy_cond, op1);
+
+  /* We absolutely do not care about any type conversions
+     we only care about a zero/nonzero value.  */
+  fold_defer_overflow_warnings ();
+
+  tree res = fold_binary (cond_code, boolean_type_node, op0, op1);
+  if (res)
+    while (CONVERT_EXPR_P (res))
+      res = TREE_OPERAND (res, 0);
+
+  fold_undefer_overflow_warnings ((res && is_gimple_min_invariant (res)),
+				  stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
+
+  /* If we have not simplified the condition down to an invariant,
+     then use the pass specific callback to simplify the condition.  */
+  if (!res
+      || !is_gimple_min_invariant (res))
+    res = (*simplify) (dummy_cond, stmt, avail_exprs_stack);
+
+  return res;
 }
 
 /* Copy debug stmts from DEST's chain of single predecessors up to
@@ -1024,8 +1180,6 @@ thread_across_edge (gcond *dummy_cond,
       path->release ();
       delete path;
 
-      find_jump_threads_backwards (e);
-
       /* A negative status indicates the target block was deemed too big to
 	 duplicate.  Just quit now rather than trying to use the block as
 	 a joiner in a jump threading path.
@@ -1072,10 +1226,7 @@ thread_across_edge (gcond *dummy_cond,
       {
 	if ((e->flags & EDGE_DFS_BACK) != 0
 	    || (taken_edge->flags & EDGE_DFS_BACK) != 0)
-	  {
-	    find_jump_threads_backwards (taken_edge);
-	    continue;
-	  }
+	  continue;
 
 	/* Push a fresh marker so we can unwind the equivalences created
 	   for each of E->dest's successors.  */
@@ -1123,10 +1274,7 @@ thread_across_edge (gcond *dummy_cond,
 	    register_jump_thread (path);
 	  }
 	else
-	  {
-	    find_jump_threads_backwards (path->last ()->e);
-	    delete_jump_thread_path (path);
-	  }
+	  delete_jump_thread_path (path);
 
 	/* And unwind the equivalence table.  */
 	if (avail_exprs_stack)

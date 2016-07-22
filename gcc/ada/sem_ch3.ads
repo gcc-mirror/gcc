@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,7 @@ package Sem_Ch3 is
    --  expressions because the constructor (if any) is on the C++ side.
 
    procedure Derive_Subprogram
-     (New_Subp     : in out Entity_Id;
+     (New_Subp     : out Entity_Id;
       Parent_Subp  : Entity_Id;
       Derived_Type : Entity_Id;
       Parent_Type  : Entity_Id;

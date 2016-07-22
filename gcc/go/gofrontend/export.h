@@ -7,7 +7,6 @@
 #ifndef GO_EXPORT_H
 #define GO_EXPORT_H
 
-#include "escape.h"
 #include "string-dump.h"
 
 struct sha1_ctx;
@@ -162,9 +161,10 @@ class Export : public String_dump
   void
   write_type(const Type*);
 
-  // Write out escape information.
+  // Write the escape note to the export stream.  If NOTE is NULL, write
+  // nothing.
   void
-  write_escape(const Node::Escapement_lattice& e);
+  write_escape(std::string* note);
 
  private:
   Export(const Export&);

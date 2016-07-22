@@ -773,7 +773,7 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
   TYPE_METHODS (this_class) = fndecl;
 
   if (!(access_flags & ACC_STATIC))
-    DECL_ALIGN (fndecl) = MINIMUM_METHOD_BOUNDARY;
+    SET_DECL_ALIGN (fndecl, MINIMUM_METHOD_BOUNDARY);
 
   /* Notice that this is a finalizer and update the class type
      accordingly. This is used to optimize instance allocation. */
@@ -2207,11 +2207,11 @@ make_class_data (tree type)
   FINISH_RECORD_CONSTRUCTOR (cons, v2, class_type_node);
 
   DECL_INITIAL (decl) = cons;
-  
+
   /* Hash synchronization requires at least 64-bit alignment. */
   if (flag_hash_synchronization && POINTER_SIZE < 64)
-    DECL_ALIGN (decl) = 64; 
-  
+    SET_DECL_ALIGN (decl, 64);
+
   if (flag_indirect_classes)
     {
       TREE_READONLY (decl) = 1;
@@ -2790,7 +2790,7 @@ emit_register_classes_in_jcr_section (void)
   cdecl = build_decl (UNKNOWN_LOCATION,
 		      VAR_DECL, get_identifier ("_Jv_JCR_SECTION_data"),
 		      class_array_type);
-  DECL_ALIGN (cdecl) = POINTER_SIZE;
+  SET_DECL_ALIGN (cdecl, POINTER_SIZE);
   DECL_USER_ALIGN (cdecl) = 1;
   DECL_INITIAL (cdecl) = build_constructor (class_array_type, init);
   TREE_CONSTANT (DECL_INITIAL (cdecl)) = 1;

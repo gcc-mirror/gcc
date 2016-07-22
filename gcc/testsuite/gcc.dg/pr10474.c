@@ -12,4 +12,5 @@ void f(int *i)
 	}
 }
 
-/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue"  } } */
+/* XFAIL due to PR70681.  */ 
+/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue"  { xfail arm*-*-* powerpc*-*-* } } } */

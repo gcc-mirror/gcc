@@ -1,6 +1,5 @@
 /* Check that no interrupt-specific register saves are generated.  */
 /* { dg-do compile { target { { "sh*-*-*" } && nonpic } } }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } }  */
 /* { dg-options "-O" }  */
 /* { dg-final { scan-assembler-times "rte" 1 } }  */
 /* { dg-final { scan-assembler-not "mov.l\tr\[0-9\],@-r15" } }  */

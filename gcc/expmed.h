@@ -5,7 +5,7 @@ This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 3, or (at your option; any later
+Software Foundation; either version 3, or (at your option) any later
 version.
 
 GCC is distributed in the hope that it will be useful, but WITHOUT ANY
@@ -34,6 +34,15 @@ enum alg_code {
   alg_sub_t2_m,
   alg_impossible
 };
+
+/* Indicates the type of fixup needed after a constant multiplication.
+   BASIC_VARIANT means no fixup is needed, NEGATE_VARIANT means that
+   the result should be negated, and ADD_VARIANT means that the
+   multiplicand should be added to the result.  */
+enum mult_variant {basic_variant, negate_variant, add_variant};
+
+bool choose_mult_variant (machine_mode, HOST_WIDE_INT,
+			  struct algorithm *, enum mult_variant *, int);
 
 /* This structure holds the "cost" of a multiply sequence.  The
    "cost" field holds the total rtx_cost of every operator in the

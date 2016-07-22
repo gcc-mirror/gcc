@@ -31,4 +31,4 @@ Alpha(MyPair* start, MyPair* end)
 {
   MyPair my_pair(1, 2);
   std::uninitialized_fill(start, end, my_pair);
-};
+}

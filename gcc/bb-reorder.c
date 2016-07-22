@@ -2886,7 +2886,7 @@ pass_partition_blocks::gate (function *fun)
      arises.  */
   return (flag_reorder_blocks_and_partition
 	  && optimize
-	  /* See gate_handle_reorder_blocks.  We should not partition if
+	  /* See pass_reorder_blocks::gate.  We should not partition if
 	     we are going to omit the reordering.  */
 	  && optimize_function_for_speed_p (fun)
 	  && !DECL_COMDAT_GROUP (current_function_decl)

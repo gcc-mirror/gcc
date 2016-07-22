@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_VECTOR
 #define _GLIBCXX_DEBUG_VECTOR 1
 
+#pragma GCC system_header
+
 #include <vector>
 #include <utility>
 #include <debug/safe_sequence.h>

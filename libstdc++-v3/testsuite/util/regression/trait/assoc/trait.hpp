@@ -161,7 +161,7 @@ namespace detail
     native_value(const_reference r_val)
     { return native_type_traits_base::native_value(r_val); }
 
-    static const native_key_type& 
+    static const native_key_type&
     extract_native_key(const native_value_type& r_val)
     { return native_type_traits_base::extract_key(r_val); }
 

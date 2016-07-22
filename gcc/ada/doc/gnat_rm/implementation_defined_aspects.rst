@@ -64,14 +64,15 @@ Aspect Abstract_State
 
 .. index:: Abstract_State
 
-This aspect is equivalent to pragma `Abstract_State`.
+This aspect is equivalent to :ref:`pragma Abstract_State<Pragma-Abstract_State>`.
 
 Annotate
 ========
 .. index:: Annotate
 
 There are three forms of this aspect (where ID is an identifier,
-and ARG is a general expression).
+and ARG is a general expression),
+corresponding to :ref:`pragma Annotate<Pragma-Annotate>`.
 
 
 
@@ -90,25 +91,25 @@ Aspect Async_Readers
 ====================
 .. index:: Async_Readers
 
-This boolean aspect is equivalent to pragma `Async_Readers`.
+This boolean aspect is equivalent to :ref:`pragma Async_Readers<Pragma-Async_Readers>`.
 
 Aspect Async_Writers
 ====================
 .. index:: Async_Writers
 
-This boolean aspect is equivalent to pragma `Async_Writers`.
+This boolean aspect is equivalent to :ref:`pragma Async_Writers<Pragma-Async_Writers>`.
 
 Aspect Constant_After_Elaboration
 =================================
 .. index:: Constant_After_Elaboration
 
-This aspect is equivalent to pragma `Constant_After_Elaboration`.
+This aspect is equivalent to :ref:`pragma Constant_After_Elaboration<Pragma-Constant_After_Elaboration>`.
 
 Aspect Contract_Cases
 =====================
 .. index:: Contract_Cases
 
-This aspect is equivalent to pragma `Contract_Cases`, the sequence
+This aspect is equivalent to :ref:`pragma Contract_Cases<Pragma-Contract_Cases>`, the sequence
 of clauses being enclosed in parentheses so that syntactically it is an
 aggregate.
 
@@ -116,13 +117,13 @@ Aspect Depends
 ==============
 .. index:: Depends
 
-This aspect is equivalent to pragma `Depends`.
+This aspect is equivalent to :ref:`pragma Depends<Pragma-Depends>`.
 
 Aspect Default_Initial_Condition
 ================================
 .. index:: Default_Initial_Condition
 
-This aspect is equivalent to pragma `Default_Initial_Condition`.
+This aspect is equivalent to :ref:`pragma Default_Initial_Condition<Pragma-Default_Initial_Condition>`.
 
 Aspect Dimension
 ================
@@ -227,61 +228,61 @@ Aspect Effective_Reads
 ======================
 .. index:: Effective_Reads
 
-This aspect is equivalent to pragma `Effective_Reads`.
+This aspect is equivalent to :ref:`pragma Effective_Reads<Pragma-Effective_Reads>`.
 
 Aspect Effective_Writes
 =======================
 .. index:: Effective_Writes
 
-This aspect is equivalent to pragma `Effective_Writes`.
+This aspect is equivalent to :ref:`pragma Effective_Writes<Pragma-Effective_Writes>`.
 
 Aspect Extensions_Visible
 =========================
 .. index:: Extensions_Visible
 
-This aspect is equivalent to pragma `Extensions_Visible`.
+This aspect is equivalent to :ref:`pragma Extensions_Visible<Pragma-Extensions_Visible>`.
 
 Aspect Favor_Top_Level
 ======================
 .. index:: Favor_Top_Level
 
-This boolean aspect is equivalent to pragma `Favor_Top_Level`.
+This boolean aspect is equivalent to :ref:`pragma Favor_Top_Level<Pragma-Favor_Top_Level>`.
 
 Aspect Ghost
 =============
 .. index:: Ghost
 
-This aspect is equivalent to pragma `Ghost`.
+This aspect is equivalent to :ref:`pragma Ghost<Pragma-Ghost>`.
 
 Aspect Global
 =============
 .. index:: Global
 
-This aspect is equivalent to pragma `Global`.
+This aspect is equivalent to :ref:`pragma Global<Pragma-Global>`.
 
 Aspect Initial_Condition
 ========================
 .. index:: Initial_Condition
 
-This aspect is equivalent to pragma `Initial_Condition`.
+This aspect is equivalent to :ref:`pragma Initial_Condition<Pragma-Initial_Condition>`.
 
 Aspect Initializes
 ==================
 .. index:: Initializes
 
-This aspect is equivalent to pragma `Initializes`.
+This aspect is equivalent to :ref:`pragma Initializes<Pragma-Initializes>`.
 
 Aspect Inline_Always
 ====================
 .. index:: Inline_Always
 
-This boolean aspect is equivalent to pragma `Inline_Always`.
+This boolean aspect is equivalent to :ref:`pragma Inline_Always<Pragma-Inline_Always>`.
 
 Aspect Invariant
 ================
 .. index:: Invariant
 
-This aspect is equivalent to pragma `Invariant`. It is a
+This aspect is equivalent to :ref:`pragma Invariant<Pragma-Invariant>`. It is a
 synonym for the language defined aspect `Type_Invariant` except
 that it is separately controllable using pragma `Assertion_Policy`.
 
@@ -289,7 +290,7 @@ Aspect Invariant'Class
 ======================
 .. index:: Invariant'Class
 
-This aspect is equivalent to pragma `Type_Invariant_Class`. It is a
+This aspect is equivalent to :ref:`pragma Type_Invariant_Class<Pragma-Type_Invariant_Class>`. It is a
 synonym for the language defined aspect `Type_Invariant'Class` except
 that it is separately controllable using pragma `Assertion_Policy`.
 
@@ -350,26 +351,26 @@ Aspect Linker_Section
 =====================
 .. index:: Linker_Section
 
-This aspect is equivalent to an `Linker_Section` pragma.
+This aspect is equivalent to :ref:`pragma Linker_Section<Pragma-Linker_Section>`.
 
 Aspect Lock_Free
 ================
 .. index:: Lock_Free
 
-This boolean aspect is equivalent to pragma `Lock_Free`.
+This boolean aspect is equivalent to :ref:`pragma Lock_Free<Pragma-Lock_Free>`.
 
 Aspect No_Elaboration_Code_All
 ==============================
 .. index:: No_Elaboration_Code_All
 
-This aspect is equivalent to a `pragma No_Elaboration_Code_All`
-statement for a program unit.
+This aspect is equivalent to :ref:`pragma No_Elaboration_Code_All<Pragma-No_Elaboration_Code_All>`
+for a program unit.
 
 Aspect No_Tagged_Streams
 ========================
 .. index:: No_Tagged_Streams
 
-This aspect is equivalent to a `pragma No_Tagged_Streams` with an
+This aspect is equivalent to :ref:`pragma No_Tagged_Streams<Pragma-No_Tagged_Streams>` with an
 argument specifying a root tagged type (thus this aspect can only be
 applied to such a type).
 
@@ -377,14 +378,13 @@ Aspect Object_Size
 ==================
 .. index:: Object_Size
 
-This aspect is equivalent to an `Object_Size` attribute definition
-clause.
+This aspect is equivalent to :ref:`attribute Object_Size<Attribute-Object_Size>`.
 
 Aspect Obsolescent
 ==================
 .. index:: Obsolsecent
 
-This aspect is equivalent to an `Obsolescent` pragma. Note that the
+This aspect is equivalent to :ref:`pragma Obsolescent<Pragma_Obsolescent>`. Note that the
 evaluation of this aspect happens at the point of occurrence, it is not
 delayed until the freeze point.
 
@@ -392,19 +392,19 @@ Aspect Part_Of
 ==============
 .. index:: Part_Of
 
-This aspect is equivalent to pragma `Part_Of`.
+This aspect is equivalent to :ref:`pragma Part_Of<Pragma-Part_Of>`.
 
 Aspect Persistent_BSS
 =====================
 .. index:: Persistent_BSS
 
-This boolean aspect is equivalent to pragma `Persistent_BSS`.
+This boolean aspect is equivalent to :ref:`pragma Persistent_BSS<Pragma-Persistent_BSS>`.
 
 Aspect Predicate
 ================
 .. index:: Predicate
 
-This aspect is equivalent to pragma `Predicate`. It is thus
+This aspect is equivalent to :ref:`pragma Predicate<Pragma-Predicate>`. It is thus
 similar to the language defined aspects `Dynamic_Predicate`
 and `Static_Predicate` except that whether the resulting
 predicate is static or dynamic is controlled by the form of the
@@ -415,70 +415,68 @@ Aspect Pure_Function
 ====================
 .. index:: Pure_Function
 
-This boolean aspect is equivalent to pragma `Pure_Function`.
+This boolean aspect is equivalent to :ref:`pragma Pure_Function<Pragma-Pure_Function>`.
 
 Aspect Refined_Depends
 ======================
 .. index:: Refined_Depends
 
-This aspect is equivalent to pragma `Refined_Depends`.
+This aspect is equivalent to :ref:`pragma Refined_Depends<Pragma-Refined_Depends>`.
 
 Aspect Refined_Global
 =====================
 .. index:: Refined_Global
 
-This aspect is equivalent to pragma `Refined_Global`.
+This aspect is equivalent to :ref:`pragma Refined_Global<Pragma-Refined_Global>`.
 
 Aspect Refined_Post
 ===================
 .. index:: Refined_Post
 
-This aspect is equivalent to pragma `Refined_Post`.
+This aspect is equivalent to :ref:`pragma Refined_Post<Pragma-Refined_Post>`.
 
 Aspect Refined_State
 ====================
 .. index:: Refined_State
 
-This aspect is equivalent to pragma `Refined_State`.
+This aspect is equivalent to :ref:`pragma Refined_State<Pragma-Refined_State>`.
 
 Aspect Remote_Access_Type
 =========================
 .. index:: Remote_Access_Type
 
-This aspect is equivalent to pragma `Remote_Access_Type`.
+This aspect is equivalent to :ref:`pragma Remote_Access_Type<Pragma-Remote_Access_Type>`.
 
 Aspect Scalar_Storage_Order
 ===========================
 .. index:: Scalar_Storage_Order
 
-This aspect is equivalent to a `Scalar_Storage_Order`
-attribute definition clause.
+This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
 
 Aspect Shared
 =============
 .. index:: Shared
 
-This boolean aspect is equivalent to pragma `Shared`,
+This boolean aspect is equivalent to :ref:`pragma Shared<Pragma-Shared>`
 and is thus a synonym for aspect `Atomic`.
 
 Aspect Simple_Storage_Pool
 ==========================
 .. index:: Simple_Storage_Pool
 
-This aspect is equivalent to a `Simple_Storage_Pool`
-attribute definition clause.
+This aspect is equivalent to :ref:`attribute Simple_Storage_Pool<Attribute_Simple_Storage_Pool>`.
 
 Aspect Simple_Storage_Pool_Type
 ===============================
 .. index:: Simple_Storage_Pool_Type
 
-This boolean aspect is equivalent to pragma `Simple_Storage_Pool_Type`.
+This boolean aspect is equivalent to :ref:`pragma Simple_Storage_Pool_Type<Pragma-Simple_Storage_Pool_Type>`.
 
 Aspect SPARK_Mode
 =================
 .. index:: SPARK_Mode
 
-This aspect is equivalent to pragma `SPARK_Mode` and
+This aspect is equivalent to :ref:`pragma SPARK_Mode<Pragma-SPARK_Mode>` and
 may be specified for either or both of the specification and body
 of a subprogram or package.
 
@@ -486,49 +484,49 @@ Aspect Suppress_Debug_Info
 ==========================
 .. index:: Suppress_Debug_Info
 
-This boolean aspect is equivalent to pragma `Suppress_Debug_Info`.
+This boolean aspect is equivalent to :ref:`pragma Suppress_Debug_Info<Pragma-Suppress_Debug_Info>`.
 
 Aspect Suppress_Initialization
 ==============================
 .. index:: Suppress_Initialization
 
-This boolean aspect is equivalent to pragma `Suppress_Initialization`.
+This boolean aspect is equivalent to :ref:`pragma Suppress_Initialization<Pragma-Suppress_Initialization>`.
 
 Aspect Test_Case
 ================
 .. index:: Test_Case
 
-This aspect is equivalent to pragma `Test_Case`.
+This aspect is equivalent to :ref:`pragma Test_Case<Pragma-Test_Case>`.
 
 Aspect Thread_Local_Storage
 ===========================
 .. index:: Thread_Local_Storage
 
-This boolean aspect is equivalent to pragma `Thread_Local_Storage`.
+This boolean aspect is equivalent to :ref:`pragma Thread_Local_Storage<Pragma-Thread_Local_Storage>`.
 
 Aspect Universal_Aliasing
 =========================
 .. index:: Universal_Aliasing
 
-This boolean aspect is equivalent to pragma `Universal_Aliasing`.
+This boolean aspect is equivalent to :ref:`pragma Universal_Aliasing<Pragma-Universal_Aliasing>`.
 
 Aspect Universal_Data
 =====================
 .. index:: Universal_Data
 
-This aspect is equivalent to pragma `Universal_Data`.
+This aspect is equivalent to :ref:`pragma Universal_Data<Pragma-Universal_Data>`.
 
 Aspect Unmodified
 =================
 .. index:: Unmodified
 
-This boolean aspect is equivalent to pragma `Unmodified`.
+This boolean aspect is equivalent to :ref:`pragma Unmodified<Pragma-Unmodified>`.
 
 Aspect Unreferenced
 ===================
 .. index:: Unreferenced
 
-This boolean aspect is equivalent to pragma `Unreferenced`. Note that
+This boolean aspect is equivalent to :ref:`pragma Unreferenced<Pragma-Unreferenced>`. Note that
 in the case of formal parameters, it is not permitted to have aspects for
 a formal parameter, so in this case the pragma form must be used.
 
@@ -536,31 +534,30 @@ Aspect Unreferenced_Objects
 ===========================
 .. index:: Unreferenced_Objects
 
-This boolean aspect is equivalent to pragma `Unreferenced_Objects`.
+This boolean aspect is equivalent to :ref:`pragma Unreferenced_Objects<Pragma-Unreferenced_Objects>`.
 
 Aspect Value_Size
 =================
 .. index:: Value_Size
 
-This aspect is equivalent to a `Value_Size`
-attribute definition clause.
+This aspect is equivalent to :ref:`attribute Value_Size<Attribute-Value_Size>`.
 
 Aspect Volatile_Full_Access
 ===========================
 .. index:: Volatile_Full_Access
 
-This boolean aspect is equivalent to pragma `Volatile_Full_Access`.
+This boolean aspect is equivalent to :ref:`pragma Volatile_Full_Access<Pragma-Volatile_Full_Access>`.
 
 Aspect Volatile_Function
 ===========================
 .. index:: Volatile_Function
 
-This boolean aspect is equivalent to pragma `Volatile_Function`.
+This boolean aspect is equivalent to :ref:`pragma Volatile_Function<Pragma-Volatile_Function>`.
 
 Aspect Warnings
 ===============
 .. index:: Warnings
 
-This aspect is equivalent to the two argument form of pragma `Warnings`,
+This aspect is equivalent to the two argument form of :ref:`pragma Warnings<Pragma_Warnings>`,
 where the first argument is `ON` or `OFF` and the second argument
 is the entity.

@@ -40,7 +40,7 @@ add_filedep (const char *pathname)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   struct filedep *d;
 

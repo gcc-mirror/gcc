@@ -1,5 +1,4 @@
 /* PR target/70021 */
-/* { dg-do run } */
 
 #include "tree-vect.h"
 

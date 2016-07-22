@@ -29,7 +29,7 @@ void test01()
 {
   std::pair<A, B> p;
   std::tr1::get<1>(p);
-  
+
   const std::pair<B, A> q;
   std::tr1::get<1>(q);
 }

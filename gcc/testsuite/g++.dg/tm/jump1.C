@@ -15,7 +15,7 @@ void f()
   switch (i)
     {
       synchronized {
-	++i;
+	++i;			// { dg-warning "statement will never be executed" }
       case 42:			// { dg-error "" }
 	++i;
       }

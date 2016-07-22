@@ -94,8 +94,7 @@ regstat_free_n_sets_and_refs (void)
 /*----------------------------------------------------------------------------
    REGISTER INFORMATION
 
-   Process REG_N_DEATHS, REG_LIVE_LENGTH, REG_N_CALLS_CROSSED,
-   REG_N_THROWING_CALLS_CROSSED and REG_BASIC_BLOCK.
+   Process REG_N_DEATHS, REG_N_CALLS_CROSSED, and REG_BASIC_BLOCK.
 
    ----------------------------------------------------------------------------*/
 
@@ -106,24 +105,17 @@ struct reg_info_t *reg_info_p;
 size_t reg_info_p_size;
 
 /* Compute register info: lifetime, bb, and number of defs and uses
-   for basic block BB.  The three bitvectors are scratch regs used
-   here.  */
+   for basic block BB.  LIVE is a scratch bitvector used here.  */
 
 static void
-regstat_bb_compute_ri (unsigned int bb_index,
-		       bitmap live, bitmap artificial_uses,
-		       bitmap local_live, bitmap local_processed,
-		       int *local_live_last_luid)
+regstat_bb_compute_ri (basic_block bb, bitmap live)
 {
-  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   rtx_insn *insn;
   df_ref def, use;
-  int luid = 0;
   bitmap_iterator bi;
   unsigned int regno;
 
   bitmap_copy (live, df_get_live_out (bb));
-  bitmap_clear (artificial_uses);
 
   /* Process the regs live at the end of the block.  Mark them as
      not local to any one basic block.  */
@@ -132,29 +124,25 @@ regstat_bb_compute_ri (unsigned int bb_index,
 
   /* Process the artificial defs and uses at the bottom of the block
      to begin processing.  */
-  FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
+  FOR_EACH_ARTIFICIAL_DEF (def, bb->index)
     if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
       bitmap_clear_bit (live, DF_REF_REGNO (def));
 
-  FOR_EACH_ARTIFICIAL_USE (use, bb_index)
+  FOR_EACH_ARTIFICIAL_USE (use, bb->index)
     if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
       {
 	regno = DF_REF_REGNO (use);
 	bitmap_set_bit (live, regno);
-	bitmap_set_bit (artificial_uses, regno);
       }
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
       struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       bitmap_iterator bi;
-      df_mw_hardreg *mw;
       rtx link;
 
       if (!NONDEBUG_INSN_P (insn))
 	continue;
-
-      luid++;
 
       link = REG_NOTES (insn);
       while (link)
@@ -167,16 +155,10 @@ regstat_bb_compute_ri (unsigned int bb_index,
       /* Process the defs.  */
       if (CALL_P (insn))
 	{
-	  bool can_throw = can_throw_internal (insn);
 	  bool set_jump = (find_reg_note (insn, REG_SETJMP, NULL) != NULL);
 	  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
 	    {
 	      REG_N_CALLS_CROSSED (regno)++;
-	      REG_FREQ_CALLS_CROSSED (regno) += REG_FREQ_FROM_BB (bb);
-	      REG_FREQ_CALLS_CROSSED (regno) =
-		MIN (REG_FREQ_CALLS_CROSSED (regno), REG_FREQ_MAX);
-	      if (can_throw)
-		REG_N_THROWING_CALLS_CROSSED (regno)++;
 
 	      /* We have a problem with any pseudoreg that lives
 		 across the setjmp.  ANSI says that if a user variable
@@ -194,82 +176,24 @@ regstat_bb_compute_ri (unsigned int bb_index,
 	    }
 	}
 
-      /* We only care about real sets for calls.  Clobbers cannot
-	 be depended on.
-	 Only do this if the value is totally dead.  */
-      FOR_EACH_INSN_INFO_MW (mw, insn_info)
-	if (DF_MWS_REG_DEF_P (mw))
-	  {
-	    bool all_dead = true;
-	    unsigned int r;
-
-	    for (r = mw->start_regno; r <= mw->end_regno; r++)
-	      if (bitmap_bit_p (artificial_uses, r)
-		  || bitmap_bit_p (live, r))
-		{
-		  all_dead = false;
-		  break;
-		}
-
-	    if (all_dead)
-	      {
-		regno = mw->start_regno;
-		REG_LIVE_LENGTH (regno)++;
-	      }
-	  }
-
       /* All of the defs except the return value are some sort of
 	 clobber.  This code is for the return.  */
       FOR_EACH_INSN_INFO_DEF (def, insn_info)
 	{
 	  if ((!CALL_P (insn))
-	      || (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))))
+	      || (!(DF_REF_FLAGS (def)
+		    & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))))
 	    {
 	      unsigned int dregno = DF_REF_REGNO (def);
 
-	      if (bitmap_bit_p (live, dregno))
-		{
-		  /* If we have seen a use of DREGNO somewhere before (i.e.
-		     later in this basic block), and DEF is not a subreg
-		     store or conditional store, then kill the register
-		     here and add the proper length to its REG_LIVE_LENGTH.
-
-		     If we have not seen a use of DREGNO later in this basic
-		     block, then we need to add the length from here to the
-		     end of the block to the live length.  */
-		  if (bitmap_bit_p (local_live, dregno))
-		    {
-		      /* Note that LOCAL_LIVE implies LOCAL_PROCESSED, so
-			 we don't have to set LOCAL_PROCESSED in this clause.  */
-		      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-			{
-			  REG_LIVE_LENGTH (dregno) +=
-			    (luid - local_live_last_luid[dregno]);
-			  local_live_last_luid[dregno] = luid;
-			  bitmap_clear_bit (local_live, dregno);
-			}
-		    }
-		  else
-		    {
-		      bitmap_set_bit (local_processed, dregno);
-		      REG_LIVE_LENGTH (dregno) += luid;
-		      local_live_last_luid[dregno] = luid;
-		    }
-
-		  /* Kill this register if it is not a subreg store or
-		     conditional store.
-		     ??? This means that any partial store is live from
-		     the last use in a basic block to the start of this
-		     basic block.  This results in poor calculations of
-		     REG_LIVE_LENGTH in large basic blocks.  */
-		  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-		    bitmap_clear_bit (live, dregno);
-		}
-	      else if ((!(DF_REF_FLAGS (def) & DF_REF_MW_HARDREG))
-		       && (!bitmap_bit_p (artificial_uses, dregno)))
-		{
-		  REG_LIVE_LENGTH (dregno)++;
-		}
+	      /* Kill this register if it is not a subreg store or
+		 conditional store.
+		 ??? This means that any partial store is live from
+		 the last use in a basic block to the start of this
+		 basic block.  */
+	      if (!(DF_REF_FLAGS (def)
+		    & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+		bitmap_clear_bit (live, dregno);
 
 	      if (dregno >= FIRST_PSEUDO_REGISTER)
 		{
@@ -300,37 +224,8 @@ regstat_bb_compute_ri (unsigned int bb_index,
 	      else if (REG_BASIC_BLOCK (uregno) != bb->index)
 		REG_BASIC_BLOCK (uregno) = REG_BLOCK_GLOBAL;
 	    }
-
-	  if (bitmap_set_bit (live, uregno))
-	    {
-	      /* This register is now live.  Begin to process it locally.
-
-		 Note that we don't even get here if the variable was live
-		 at the end of the block since just a ref inside the block
-		 does not effect the calculations.  */
-	      REG_LIVE_LENGTH (uregno) ++;
-	      local_live_last_luid[uregno] = luid;
-	      bitmap_set_bit (local_live, uregno);
-	      bitmap_set_bit (local_processed, uregno);
-	    }
 	}
     }
-
-  /* Add the liveness length to all registers that were used somewhere
-     in this bock, but not between that use and the head of this block.  */
-  EXECUTE_IF_SET_IN_BITMAP (local_live, 0, regno, bi)
-    {
-      REG_LIVE_LENGTH (regno) += (luid - local_live_last_luid[regno]);
-    }
-
-  /* Add the length of the block to all of the registers that were not
-     referenced, but still live in this block.  */
-  bitmap_and_compl_into (live, local_processed);
-  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
-    REG_LIVE_LENGTH (regno) += luid;
-
-  bitmap_clear (local_processed);
-  bitmap_clear (local_live);
 }
 
 
@@ -340,12 +235,8 @@ regstat_compute_ri (void)
 {
   basic_block bb;
   bitmap live = BITMAP_ALLOC (&df_bitmap_obstack);
-  bitmap artificial_uses = BITMAP_ALLOC (&df_bitmap_obstack);
-  bitmap local_live = BITMAP_ALLOC (&df_bitmap_obstack);
-  bitmap local_processed = BITMAP_ALLOC (&df_bitmap_obstack);
   unsigned int regno;
   bitmap_iterator bi;
-  int *local_live_last_luid;
 
   /* Initialize everything.  */
 
@@ -356,26 +247,18 @@ regstat_compute_ri (void)
   max_regno = max_reg_num ();
   reg_info_p_size = max_regno;
   reg_info_p = XCNEWVEC (struct reg_info_t, max_regno);
-  local_live_last_luid = XNEWVEC (int, max_regno);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      regstat_bb_compute_ri (bb->index, live, artificial_uses,
-			     local_live, local_processed,
-			     local_live_last_luid);
+      regstat_bb_compute_ri (bb, live);
     }
 
   BITMAP_FREE (live);
-  BITMAP_FREE (artificial_uses);
-  BITMAP_FREE (local_live);
-  BITMAP_FREE (local_processed);
-  free (local_live_last_luid);
 
   /* See the setjmp comment in regstat_bb_compute_ri.  */
   EXECUTE_IF_SET_IN_BITMAP (setjmp_crosses, FIRST_PSEUDO_REGISTER, regno, bi)
     {
       REG_BASIC_BLOCK (regno) = REG_BLOCK_UNKNOWN;
-      REG_LIVE_LENGTH (regno) = -1;
     }
 
   timevar_pop (TV_REG_STATS);
@@ -454,9 +337,6 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 	  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
 	    {
 	      REG_N_CALLS_CROSSED (regno)++;
-	      REG_FREQ_CALLS_CROSSED (regno) += REG_FREQ_FROM_BB (bb);
-	      REG_FREQ_CALLS_CROSSED (regno) =
-		MIN (REG_FREQ_CALLS_CROSSED (regno), REG_FREQ_MAX);
 	    }
 	}
 
@@ -533,11 +413,11 @@ dump_reg_info (FILE *file)
       enum reg_class rclass, altclass;
 
       if (regstat_n_sets_and_refs)
-	fprintf (file, "\nRegister %d used %d times across %d insns",
-		 i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
+	fprintf (file, "\nRegister %d used %d times",
+		 i, REG_N_REFS (i));
       else if (df)
-	fprintf (file, "\nRegister %d used %d times across %d insns",
-		 i, DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i), REG_LIVE_LENGTH (i));
+	fprintf (file, "\nRegister %d used %d times",
+		 i, DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i));
 
       if (REG_BASIC_BLOCK (i) >= NUM_FIXED_BLOCKS)
 	fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
@@ -555,8 +435,6 @@ dump_reg_info (FILE *file)
 	fputs ("; crosses 1 call", file);
       else if (REG_N_CALLS_CROSSED (i))
 	fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
-      if (REG_FREQ_CALLS_CROSSED (i))
-	fprintf (file, "; crosses call with %d frequency", REG_FREQ_CALLS_CROSSED (i));
       if (regno_reg_rtx[i] != NULL
 	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));

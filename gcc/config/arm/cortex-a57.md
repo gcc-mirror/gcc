@@ -297,7 +297,7 @@
        (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
 			alu_sreg,alus_sreg,logic_reg,logics_reg,\
 			adc_imm,adcs_imm,adc_reg,adcs_reg,\
-			adr,bfm,clz,rbit,rev,alu_dsp_reg,\
+			adr,bfm,clz,csel,rbit,rev,alu_dsp_reg,\
 			rotate_imm,shift_imm,shift_reg,\
 			mov_imm,mov_reg,\
 			mvn_imm,mvn_reg,\
@@ -726,7 +726,7 @@
 
 (define_insn_reservation "cortex_a57_fp_cpys" 4
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "fmov"))
+       (eq_attr "type" "fmov,fcsel"))
   "(ca57_cx1|ca57_cx2)")
 
 (define_insn_reservation "cortex_a57_fp_divs" 12

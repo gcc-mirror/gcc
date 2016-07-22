@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-stats -fdump-tree-dom2-stats -fdump-tree-dom3-stats -fdump-tree-vrp2-stats" } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 19"  "vrp1" } } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 12" "dom2" } } */
+/* { dg-options "-O2 -fdump-tree-thread1-stats -fdump-tree-thread2-stats -fdump-tree-thread3-stats -fdump-tree-dom3-stats -fdump-tree-vrp2-stats" } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 16"  "thread1" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 11" "thread2" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 3" "thread3" } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom3" } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "vrp2" } } */
 

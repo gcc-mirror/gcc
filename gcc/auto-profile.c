@@ -19,6 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MAP
+#define INCLUDE_SET
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -31,11 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "gcov-io.h"
 #include "diagnostic-core.h"
-
-#include <string.h>
-#include <map>
-#include <set>
-
 #include "profile.h"
 #include "langhooks.h"
 #include "cfgloop.h"
@@ -50,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "tree-inline.h"
 #include "auto-profile.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 
 /* The following routines implements AutoFDO optimization.
 
@@ -750,8 +749,18 @@ bool
 autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
                                                    count_info *info)
 {
+  if (dump_file)
+    {
+      fprintf (dump_file, "Checking indirect call -> direct call ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+    }
+
   if (LOCATION_LOCUS (gimple_location (stmt)) == cfun->function_end_locus)
-    return false;
+    {
+      if (dump_file)
+	fprintf (dump_file, " good locus\n");
+      return false;
+    }
 
   count_info old_info;
   get_count_info (stmt, &old_info);
@@ -768,21 +777,41 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
      than half of the callsite count (stored in INFO), the original promoted
      target is considered not hot any more.  */
   if (total >= info->count / 2)
-    return false;
+    {
+      if (dump_file)
+	fprintf (dump_file, " not hot anymore %ld >= %ld",
+		 (long)total,
+		 (long)info->count /2);
+      return false;
+    }
 
   inline_stack stack;
   get_inline_stack (gimple_location (stmt), &stack);
   if (stack.length () == 0)
-    return false;
+    {
+      if (dump_file)
+	fprintf (dump_file, " no inline stack\n");
+      return false;
+    }
   function_instance *s = get_function_instance_by_inline_stack (stack);
   if (s == NULL)
-    return false;
+    {
+      if (dump_file)
+	fprintf (dump_file, " function not found in inline stack\n");
+      return false;
+    }
   icall_target_map map;
   if (s->find_icall_target_map (stmt, &map) == 0)
-    return false;
+    {
+      if (dump_file)
+	fprintf (dump_file, " no target map\n");
+      return false;
+    }
   for (icall_target_map::const_iterator iter = map.begin ();
        iter != map.end (); ++iter)
     info->targets[iter->first] = iter->second;
+  if (dump_file)
+    fprintf (dump_file, " looks good\n");
   return true;
 }
 
@@ -887,16 +916,25 @@ static void
 read_profile (void)
 {
   if (gcov_open (auto_profile_file, 1) == 0)
-    error ("Cannot open profile file %s.", auto_profile_file);
+    {
+      error ("Cannot open profile file %s.", auto_profile_file);
+      return;
+    }
 
   if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
-    error ("AutoFDO profile magic number does not mathch.");
+    {
+      error ("AutoFDO profile magic number does not match.");
+      return;
+    }
 
   /* Skip the version number.  */
   unsigned version = gcov_read_unsigned ();
   if (version != AUTO_PROFILE_VERSION)
-    error ("AutoFDO profile version %u does match %u.",
-           version, AUTO_PROFILE_VERSION);
+    {
+      error ("AutoFDO profile version %u does match %u.",
+	     version, AUTO_PROFILE_VERSION);
+      return;
+    }
 
   /* Skip the empty integer.  */
   gcov_read_unsigned ();
@@ -904,19 +942,28 @@ read_profile (void)
   /* string_table.  */
   afdo_string_table = new string_table ();
   if (!afdo_string_table->read())
-    error ("Cannot read string table from %s.", auto_profile_file);
+    {
+      error ("Cannot read string table from %s.", auto_profile_file);
+      return;
+    }
 
   /* autofdo_source_profile.  */
   afdo_source_profile = autofdo_source_profile::create ();
   if (afdo_source_profile == NULL)
-    error ("Cannot read function profile from %s.", auto_profile_file);
+    {
+      error ("Cannot read function profile from %s.", auto_profile_file);
+      return;
+    }
 
   /* autofdo_module_profile.  */
   fake_read_autofdo_module_profile ();
 
   /* Read in the working set.  */
   if (gcov_read_unsigned () != GCOV_TAG_AFDO_WORKING_SET)
-    error ("Cannot read working set from %s.", auto_profile_file);
+    {
+      error ("Cannot read working set from %s.", auto_profile_file);
+      return;
+    }
 
   /* Skip the length of the section.  */
   gcov_read_unsigned ();
@@ -982,10 +1029,34 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
       get_identifier ((const char *) hist->hvalue.counters[0]));
 
+  if (dump_file)
+    {
+      fprintf (dump_file, "Indirect call -> direct call ");
+      print_generic_expr (dump_file, callee, TDF_SLIM);
+      fprintf (dump_file, " => ");
+      print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
+    }
+
   if (direct_call == NULL || !check_ic_target (stmt, direct_call))
-    return;
+    {
+      if (dump_file)
+        fprintf (dump_file, " not transforming\n");
+      return;
+    }
   if (DECL_STRUCT_FUNCTION (direct_call->decl) == NULL)
-    return;
+    {
+      if (dump_file)
+        fprintf (dump_file, " no declaration\n");
+      return;
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, " transformation on insn ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
   struct cgraph_edge *new_edge
       = indirect_edge->make_speculative (direct_call, 0, 0);
   new_edge->redirect_call_stmt_to_callee ();

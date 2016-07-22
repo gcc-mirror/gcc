@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Exercise acc_update_self with a NULL data mapping on nvidia targets.  */
+
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <stdio.h>
 #include <string.h>

@@ -75,7 +75,7 @@ struct shared_and_weak_pools
 {
   sp_vector_t& shared_pool;
   wp_vector_t& weak_pool;
-  
+
   shared_and_weak_pools(sp_vector_t& _shared_pool, wp_vector_t& _weak_pool)
     : shared_pool(_shared_pool), weak_pool(_weak_pool)
     { }
@@ -90,10 +90,10 @@ void* thread_hammer_and_kill(void* opaque_pools)
     0x9908b0dful, 11, 7,
     0x9d2c5680ul, 15,
     0xefc60000ul, 18> rng;
-  
+
   sp_vector_t::iterator cur_shared = pools.shared_pool.begin();
   wp_vector_t::iterator cur_weak = pools.weak_pool.begin();
-  
+
   for (unsigned int i = 0; i < HAMMER_REPEAT; ++i)
     {
       try
@@ -106,7 +106,7 @@ void* thread_hammer_and_kill(void* opaque_pools)
         if (cur_weak == pools.weak_pool.end())
           break;
       }
-      
+
       if (rng() % KILL_ONE_IN == 0)
       {
         cur_shared->reset();
@@ -148,20 +148,20 @@ test01()
 {
   bool test __attribute__((unused)) = true;
   sp_vector_t obj_pool(POOL_SIZE);
-  
+
   for(sp_vector_t::iterator cur = obj_pool.begin(); cur != obj_pool.end(); ++cur)
   {
     cur->reset(new A);
   }
   // Obtain weak references.
   std::vector<wp_vector_t> weak_pool(HAMMER_MAX_THREADS, wp_vector_t(obj_pool.begin(), obj_pool.end()));
-  
+
   // Launch threads with pointer to weak reference.
   pthread_t threads[HAMMER_MAX_THREADS];
 #if defined(__sun) && defined(__svr4__) && _XOPEN_VERSION >= 500
   pthread_setconcurrency (HAMMER_MAX_THREADS);
 #endif
-  
+
   pthread_attr_t tattr;
   pthread_attr_init(&tattr);
 
@@ -181,13 +181,13 @@ test01()
 	std::abort();
     }
   obj_pool.clear();
-  
+
   VERIFY( A::counter == 0 );
-  
+
   return 0;
 }
 
-int 
+int
 main()
 {
   test01();

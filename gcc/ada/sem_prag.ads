@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,6 +244,38 @@ package Sem_Prag is
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
    --  Perform preanalysis of pragma Test_Case
 
+   procedure Build_Class_Wide_Expression
+     (Prag        : Node_Id;
+      Subp        : Entity_Id;
+      Par_Subp    : Entity_Id;
+      Adjust_Sloc : Boolean);
+   --  Build the expression for an inherited class-wide condition. Prag is
+   --  the pragma constructed from the corresponding aspect of the parent
+   --  subprogram, and Subp is the overriding operation and Par_Subp is
+   --  the overridden operation that has the condition. Adjust_Sloc is True
+   --  when the sloc of nodes traversed should be adjusted for the inherited
+   --  pragma. The routine is also called to check whether an inherited
+   --  operation that is not overridden but has inherited conditions need
+   --  a wrapper, because the inherited condition includes calls to other
+   --  primitives that have been overridden. In that case the first argument
+   --  is the expression of the original class-wide aspect. In SPARK_Mode, such
+   --  operation which are just inherited but have modified pre/postconditions
+   --  are illegal.
+
+   function Build_Pragma_Check_Equivalent
+     (Prag           : Node_Id;
+      Subp_Id        : Entity_Id := Empty;
+      Inher_Id       : Entity_Id := Empty;
+      Keep_Pragma_Id : Boolean := False) return Node_Id;
+   --  Transform a pre- or [refined] postcondition denoted by Prag into an
+   --  equivalent pragma Check. When the pre- or postcondition is inherited,
+   --  the routine replaces the references of all formals of Inher_Id
+   --  and primitive operations of its controlling type by references
+   --  to the corresponding entities of Subp_Id and the descendant type.
+   --  Keep_Pragma_Id is True when the newly created pragma should be
+   --  in fact of the same kind as the source pragma Prag. This is used
+   --  in GNATprove_Mode to generate the inherited pre- and postconditions.
+
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
    --  the name of the aspect or pragma is not one of those recognized as
@@ -300,6 +332,13 @@ package Sem_Prag is
    --  Determine whether the placement within the state space of an abstract
    --  state, variable or package instantiation denoted by Item_Id requires the
    --  use of indicator/option Part_Of. If this is the case, emit an error.
+
+   procedure Collect_Inherited_Class_Wide_Conditions (Subp : Entity_Id);
+   --  In GNATprove mode, when analyzing an overriding subprogram, check
+   --  whether the overridden operations have class-wide pre/postconditions,
+   --  and generate the corresponding pragmas. The pragmas are inserted after
+   --  the subprogram declaration, together with those generated for other
+   --  aspects of the subprogram.
 
    procedure Collect_Subprogram_Inputs_Outputs
      (Subp_Id      : Entity_Id;
@@ -380,8 +419,9 @@ package Sem_Prag is
    --  Context denotes the entity of the function, package or procedure where
    --  Prag resides.
 
-   function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
-   --  Given a pragma SPARK_Mode node, return corresponding mode id
+   function Get_SPARK_Mode_From_Annotation
+     (N : Node_Id) return SPARK_Mode_Type;
+   --  Given an aspect or pragma SPARK_Mode node, return corresponding mode id
 
    procedure Initialize;
    --  Initializes data structures used for pragma processing. Must be called
@@ -494,5 +534,14 @@ package Sem_Prag is
    --    the argument appears in positional form.
    --
    --    Empty if there is no such argument
+
+   procedure Update_Primitives_Mapping
+     (Inher_Id : Entity_Id;
+      Subp_Id  : Entity_Id);
+   --  Map primitive operations of the parent type to the corresponding
+   --  operations of the descendant. Note that the descendant type may not be
+   --  frozen yet, so we cannot use the dispatch table directly. This is called
+   --  when elaborating a contract for a subprogram, and when freezing a type
+   --  extension to verify legality rules on inherited conditions.
 
 end Sem_Prag;

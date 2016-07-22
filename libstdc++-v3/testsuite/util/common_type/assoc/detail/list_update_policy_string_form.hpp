@@ -63,7 +63,7 @@ namespace __gnu_pbds
 	static std::string
         desc()
 	{
-	  return make_xml_tag("Update_Policy", "value", 
+	  return make_xml_tag("Update_Policy", "value",
 			      "lu_move_to_front_policy");
 	}
       };
@@ -82,7 +82,7 @@ namespace __gnu_pbds
 	static std::string
         desc()
 	{
-	  return (make_xml_tag("Update_Policy", "value", "lu_counter_policy", 
+	  return (make_xml_tag("Update_Policy", "value", "lu_counter_policy",
 			       "Max_Count", Max_Count));
 	}
       };

@@ -53,7 +53,7 @@ namespace __gnu_pbds
       class push_push_functor
       {
       public:
-        push_push_functor(It ins_it_b,  It ins_it_e) 
+        push_push_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -140,5 +140,5 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

@@ -54,7 +54,7 @@ namespace __gnu_pbds
       class push_functor
       {
       public:
-        push_functor(It ins_it_b,  It ins_it_e) 
+        push_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -87,7 +87,7 @@ namespace __gnu_pbds
 	typedef typename Cntnr::value_type value_type;
 
       public:
-        push_modify_functor(It ins_it_b, It ins_it_e, value_type mod_val) 
+        push_modify_functor(It ins_it_b, It ins_it_e, value_type mod_val)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e), m_mod_val(mod_val)
 	{ }
 
@@ -119,7 +119,7 @@ namespace __gnu_pbds
       class push_functor<It, Cntnr, __gnu_pbds::binary_heap_tag>
       {
       public:
-        push_functor(It ins_it_b,  It ins_it_e) 
+        push_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -144,7 +144,7 @@ namespace __gnu_pbds
       class push_functor<It, Cntnr, __gnu_pbds::test::native_pq_tag>
       {
       public:
-        push_functor(It ins_it_b,  It ins_it_e) 
+        push_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
@@ -176,7 +176,7 @@ namespace __gnu_pbds
 	typedef typename Cntnr::value_type value_type;
 
       public:
-        push_modify_functor(It ins_it_b, It ins_it_e, value_type mod_val) 
+        push_modify_functor(It ins_it_b, It ins_it_e, value_type mod_val)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e), m_mod_val(mod_val)
 	{ }
 
@@ -217,7 +217,7 @@ namespace __gnu_pbds
 	typedef typename Cntnr::const_reference const_reference;
 
       public:
-        push_modify_functor(It ins_it_b,  It ins_it_e, value_type mod_val) 
+        push_modify_functor(It ins_it_b,  It ins_it_e, value_type mod_val)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e), m_mod_val(mod_val)
 	{ }
 
@@ -263,7 +263,7 @@ namespace __gnu_pbds
       modify(Cntnr, It ins_it_b, It ins_it_e)
       {
 	typedef typename Cntnr::const_reference const_reference;
-	Cntnr cntnr;	
+	Cntnr cntnr;
 	for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
 	  cntnr.modify(const_reference(*ins_it));
       }

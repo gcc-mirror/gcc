@@ -38,7 +38,7 @@
 // NB: asm directives can rename these non-exported, namespace
 // __gnu_cxx symbols into exported, namespace std symbols with the
 // appropriate symbol version name.
-// The rename syntax is 
+// The rename syntax is
 //   asm (".symver currentname,oldname@@GLIBCXX_3.2")
 // In macro form:
 // _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
@@ -51,7 +51,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // NB: Iff <iostream> is included, these definitions become wonky.
   typedef char fake_istream[sizeof(istream)]
   __attribute__ ((aligned(__alignof__(istream))));
-  typedef char fake_ostream[sizeof(ostream)] 
+  typedef char fake_ostream[sizeof(ostream)]
   __attribute__ ((aligned(__alignof__(ostream))));
   fake_istream cin;
   fake_ostream cout;
@@ -59,9 +59,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fake_ostream clog;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  typedef char fake_wistream[sizeof(wistream)] 
+  typedef char fake_wistream[sizeof(wistream)]
   __attribute__ ((aligned(__alignof__(wistream))));
-  typedef char fake_wostream[sizeof(wostream)] 
+  typedef char fake_wostream[sizeof(wostream)]
   __attribute__ ((aligned(__alignof__(wostream))));
   fake_wistream wcin;
   fake_wostream wcout;

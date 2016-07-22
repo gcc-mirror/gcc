@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,10 @@ with Einfo;     use Einfo;
 with Errout;    use Errout;
 with Exp_Ch9;   use Exp_Ch9;
 with Elists;    use Elists;
+with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Layout;    use Layout;
+with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
 with Namet;     use Namet;
 with Nlists;    use Nlists;
@@ -1873,7 +1875,9 @@ package body Sem_Ch9 is
       --  composite types with inner components, we traverse recursively
       --  the private components of the protected type, and indicate that
       --  all itypes within are frozen. This ensures that no freeze nodes
-      --  will be generated for them.
+      --  will be generated for them. In the case of itypes that are access
+      --  types we need to complete their representation by calling layout,
+      --  which would otherwise be invoked when freezing a type.
       --
       --  On the other hand, components of the corresponding record are
       --  frozen (or receive itype references) as for other records.
@@ -1900,6 +1904,10 @@ package body Sem_Ch9 is
             then
                Set_Has_Delayed_Freeze (Comp, False);
                Set_Is_Frozen (Comp);
+
+               if Is_Access_Type (Comp) then
+                  Layout_Type (Comp);
+               end if;
 
                if Is_Record_Type (Comp)
                  or else Is_Protected_Type (Comp)
@@ -1937,16 +1945,8 @@ package body Sem_Ch9 is
       while Present (E) loop
          if Ekind_In (E, E_Function, E_Procedure) then
             Set_Convention (E, Convention_Protected);
-
-         elsif Is_Task_Type (Etype (E))
-           or else Has_Task (Etype (E))
-         then
-            Set_Has_Task (Current_Scope);
-
-         elsif Is_Protected_Type (Etype (E))
-           or else Has_Protected (Etype (E))
-         then
-            Set_Has_Protected (Current_Scope);
+         else
+            Propagate_Concurrent_Flags (Current_Scope, Etype (E));
          end if;
 
          Next_Entity (E);
@@ -1992,12 +1992,28 @@ package body Sem_Ch9 is
       end if;
 
       Set_Ekind              (T, E_Protected_Type);
-      Set_Is_First_Subtype   (T, True);
-      Set_Has_Protected      (T, True);
+      Set_Is_First_Subtype   (T);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
-      Set_Has_Delayed_Freeze (T, True);
+      Set_Has_Delayed_Freeze (T);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Mark this type as a protected type for the sake of restrictions,
+      --  unless the protected type is declared in a private part of a package
+      --  of the runtime. With this exception, the Suspension_Object from
+      --  Ada.Synchronous_Task_Control can be implemented using a protected
+      --  object without triggering violations of No_Local_Protected_Objects
+      --  when the user locally declares such an object. This may look like a
+      --  trick, but the user doesn't have to know how Suspension_Object is
+      --  implemented.
+
+      if In_Private_Part (Current_Scope)
+        and then Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+      then
+         Set_Has_Protected (T, False);
+      else
+         Set_Has_Protected (T);
+      end if;
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
       --  with an explicit pragma).
@@ -2027,11 +2043,21 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
-      --  If aspects are present, analyze them now. They can make references
-      --  to the discriminants of the type, but not to any components.
+      --  If aspects are present, analyze them now. They can make references to
+      --  the discriminants of the type, but not to any components.
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
+
+         --  The protected type is the full view of a private type. Analyze the
+         --  aspects with the entity of the private type to ensure that after
+         --  both views are exchanged, the aspect are actually associated with
+         --  the full view.
+
+         if T /= Def_Id and then Is_Private_Type (Def_Id) then
+            Analyze_Aspect_Specifications (N, T);
+         else
+            Analyze_Aspect_Specifications (N, Def_Id);
+         end if;
       end if;
 
       Analyze (Protected_Definition (N));
@@ -2183,6 +2209,11 @@ package body Sem_Ch9 is
          if Known_To_Have_Preelab_Init (Def_Id) then
             Set_Must_Have_Preelab_Init (T);
          end if;
+
+         --  Propagate invariant-related attributes from the private type to
+         --  the protected type.
+
+         Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.
@@ -2685,7 +2716,6 @@ package body Sem_Ch9 is
       Enter_Name (Obj_Id);
       Set_Ekind                  (Obj_Id, E_Variable);
       Set_Etype                  (Obj_Id, Typ);
-      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
 
@@ -2772,7 +2802,6 @@ package body Sem_Ch9 is
       Enter_Name (Obj_Id);
       Set_Ekind                  (Obj_Id, E_Variable);
       Set_Etype                  (Obj_Id, Typ);
-      Set_Part_Of_Constituents   (Obj_Id, New_Elmt_List);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
 
@@ -3063,7 +3092,17 @@ package body Sem_Ch9 is
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
+
+         --  The task type is the full view of a private type. Analyze the
+         --  aspects with the entity of the private type to ensure that after
+         --  both views are exchanged, the aspect are actually associated with
+         --  the full view.
+
+         if T /= Def_Id and then Is_Private_Type (Def_Id) then
+            Analyze_Aspect_Specifications (N, T);
+         else
+            Analyze_Aspect_Specifications (N, Def_Id);
+         end if;
       end if;
 
       if Present (Task_Definition (N)) then
@@ -3077,6 +3116,7 @@ package body Sem_Ch9 is
       if Restriction_Check_Required (No_Task_Hierarchy)
         and then not Is_Library_Level_Entity (T)
         and then Comes_From_Source (T)
+        and then not CodePeer_Mode
       then
          Error_Msg_Sloc := Restrictions_Loc (No_Task_Hierarchy);
 
@@ -3093,9 +3133,8 @@ package body Sem_Ch9 is
 
       --  Case of a completion of a private declaration
 
-      if T /= Def_Id
-        and then Is_Private_Type (Def_Id)
-      then
+      if T /= Def_Id and then Is_Private_Type (Def_Id) then
+
          --  Deal with preelaborable initialization. Note that this processing
          --  is done by Process_Full_View, but as can be seen below, in this
          --  case the call to Process_Full_View is skipped if any serious
@@ -3104,6 +3143,11 @@ package body Sem_Ch9 is
          if Known_To_Have_Preelab_Init (Def_Id) then
             Set_Must_Have_Preelab_Init (T);
          end if;
+
+         --  Propagate invariant-related attributes from the private type to
+         --  task type.
+
+         Propagate_Invariant_Attributes (T, From_Typ => Def_Id);
 
          --  Create corresponding record now, because some private dependents
          --  may be subtypes of the partial view.

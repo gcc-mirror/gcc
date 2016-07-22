@@ -44,6 +44,7 @@ set PROFOPT_OPTIONS [list {}]
 # profile data.
 set profile_option "-fprofile-generate -D_PROFILE_GENERATE"
 set feedback_option "-fprofile-use -D_PROFILE_USE"
+set profile_wrapper ""
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -51,6 +52,13 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
         continue
     }
     profopt-execute $src
+}
+
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
+    if ![runtest_file_p $runtests $src] then {
+        continue
+    }
+    auto-profopt-execute $src
 }
 
 set PROFOPT_OPTIONS $treeprof_save_profopt_options

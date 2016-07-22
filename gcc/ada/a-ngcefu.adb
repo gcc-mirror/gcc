@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       elsif Re (Left) = 0.0 and then Im (Left) = 0.0 then
          return Left;
 
-      elsif Right = (0.0, 0.0)  then
+      elsif Right = (0.0, 0.0) then
          return Complex_One;
 
       elsif Re (Right) = 0.0 and then Im (Right) = 0.0 then
@@ -417,7 +417,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    begin
       return
         Compose_From_Cartesian
-          (Cos (Re (X))  * Cosh (Im (X)),
+          (Cos (Re (X)) * Cosh (Im (X)),
            -(Sin (Re (X)) * Sinh (Im (X))));
    end Cos;
 

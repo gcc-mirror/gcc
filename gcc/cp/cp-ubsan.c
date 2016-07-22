@@ -299,8 +299,8 @@ cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 
       /* Assign NULL to the vptr.  */
       tree vtbl = build_zero_cst (TREE_TYPE (vtbl_ptr));
-      tree stmt = cp_build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl,
-					tf_warning_or_error);
+      tree stmt = cp_build_modify_expr (input_location, vtbl_ptr, NOP_EXPR,
+					vtbl, tf_warning_or_error);
       if (vptr_via_virtual_p (binfo))
 	/* If this vptr comes from a virtual base of the complete object, only
 	   clear it if we're in charge of virtual bases.  */

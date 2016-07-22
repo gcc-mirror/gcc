@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -191,6 +191,12 @@ package GNAT.Secure_Hashes is
       --  Wide_Update) on a default initialized Context, followed by Digest
       --  on the resulting Context.
 
+      type Hash_Stream (C : access Context) is
+        new Root_Stream_Type with private;
+      --  Stream wrapper converting Write calls to Update calls on C.
+      --  Arbitrary data structures can thus be conveniently hashed using
+      --  their stream attributes.
+
    private
 
       Block_Length : constant Natural := Block_Words * Word_Length;
@@ -214,6 +220,20 @@ package GNAT.Secure_Hashes is
 
       Initial_Context : constant Context (KL => 0) := (others => <>);
       --  Initial values are provided by default initialization of Context
+
+      type Hash_Stream (C : access Context) is
+        new Root_Stream_Type with null record;
+
+      procedure Read
+        (Stream : in out Hash_Stream;
+         Item   : out Stream_Element_Array;
+         Last   : out Stream_Element_Offset);
+      --  Raise Program_Error: hash streams are write-only
+
+      procedure Write
+         (Stream : in out Hash_Stream;
+          Item   : Stream_Element_Array);
+      --  Call Update
 
    end H;
 

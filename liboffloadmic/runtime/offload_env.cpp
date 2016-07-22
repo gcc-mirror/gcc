@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -212,14 +212,14 @@ MicEnvVarKind MicEnvVar::get_env_var_kind(
             *env_var_name_length = 3;
             *env_var_name = *env_var_def = c;
             *env_var_def = strdup(*env_var_def);
-	    if (*env_var_def == NULL)
-	      LIBOFFLOAD_ERROR(c_malloc);
+            if (*env_var_def == NULL)
+                LIBOFFLOAD_ERROR(c_malloc);
             return  c_mic_var;
         }
         *env_var_def = c + strlen("ENV=");
         *env_var_def = strdup(*env_var_def);
-	if (*env_var_def == NULL)
-	  LIBOFFLOAD_ERROR(c_malloc);
+        if (*env_var_def == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
         return c_mic_card_env;
     }
     if (isalpha(*c)) {
@@ -234,7 +234,7 @@ MicEnvVarKind MicEnvVar::get_env_var_kind(
     }
     *env_var_def = strdup(*env_var_def);
     if (*env_var_def == NULL)
-      LIBOFFLOAD_ERROR(c_malloc);
+        LIBOFFLOAD_ERROR(c_malloc);
     return card_is_set? c_mic_card_var : c_mic_var;
 }
 

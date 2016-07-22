@@ -1,4 +1,4 @@
-// 2007-02-22  Paolo Carlini  <pcarlini@suse.de> 
+// 2007-02-22  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -27,7 +27,7 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  
+
   typedef std::tr1::unordered_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;
@@ -114,11 +114,11 @@ void test01()
   VERIFY( m1.size() == 2 );
   VERIFY( ++it10 == m1.end() );
 
-  VERIFY( m1.erase(m1.begin()) != m1.end() );  
+  VERIFY( m1.erase(m1.begin()) != m1.end() );
   VERIFY( m1.size() == 1 );
   VERIFY( m1.begin() == it11 );
 
-  VERIFY( m1.erase(m1.begin()->first) == 1 );  
+  VERIFY( m1.erase(m1.begin()->first) == 1 );
   VERIFY( m1.size() == 0 );
   VERIFY( m1.begin() == m1.end() );
 }

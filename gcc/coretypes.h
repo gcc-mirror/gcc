@@ -222,6 +222,30 @@ enum var_init_status
   VAR_INIT_STATUS_INITIALIZED
 };
 
+/* Names for the different levels of -Wstrict-overflow=N.  The numeric
+   values here correspond to N.  */
+enum warn_strict_overflow_code
+{
+  /* Overflow warning that should be issued with -Wall: a questionable
+     construct that is easy to avoid even when using macros.  Example:
+     folding (x + CONSTANT > x) to 1.  */
+  WARN_STRICT_OVERFLOW_ALL = 1,
+  /* Overflow warning about folding a comparison to a constant because
+     of undefined signed overflow, other than cases covered by
+     WARN_STRICT_OVERFLOW_ALL.  Example: folding (abs (x) >= 0) to 1
+     (this is false when x == INT_MIN).  */
+  WARN_STRICT_OVERFLOW_CONDITIONAL = 2,
+  /* Overflow warning about changes to comparisons other than folding
+     them to a constant.  Example: folding (x + 1 > 1) to (x > 0).  */
+  WARN_STRICT_OVERFLOW_COMPARISON = 3,
+  /* Overflow warnings not covered by the above cases.  Example:
+     folding ((x * 10) / 5) to (x * 2).  */
+  WARN_STRICT_OVERFLOW_MISC = 4,
+  /* Overflow warnings about reducing magnitude of constants in
+     comparison.  Example: folding (x + 2 > y) to (x + 1 >= y).  */
+  WARN_STRICT_OVERFLOW_MAGNITUDE = 5
+};
+
 /* The type of an alias set.  Code currently assumes that variables of
    this type can take the values 0 (the alias set which aliases
    everything) and -1 (sometimes indicating that the alias set is
@@ -335,6 +359,31 @@ typedef void (*gt_pointer_operator) (void *, void *);
 
 #if !defined (HAVE_UCHAR)
 typedef unsigned char uchar;
+#endif
+
+/* C++11 adds the ability to add "override" after an implementation of a
+   virtual function in a subclass, to:
+     (A) document that this is an override of a virtual function
+     (B) allow the compiler to issue a warning if it isn't (e.g. a mismatch
+         of the type signature).
+
+   Similarly, it allows us to add a "final" to indicate that no subclass
+   may subsequently override the vfunc.
+
+   Provide OVERRIDE and FINAL as macros, allowing us to get these benefits
+   when compiling with C++11 support, but without requiring C++11.
+
+   For gcc, use "-std=c++11" to enable C++11 support; gcc 6 onwards enables
+   this by default (actually GNU++14).  */
+
+#if __cplusplus >= 201103
+/* C++11 claims to be available: use it: */
+#define OVERRIDE override
+#define FINAL final
+#else
+/* No C++11 support; leave the macros empty: */
+#define OVERRIDE
+#define FINAL
 #endif
 
 /* Most host source files will require the following headers.  */

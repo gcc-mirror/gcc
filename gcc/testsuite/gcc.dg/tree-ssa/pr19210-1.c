@@ -6,10 +6,10 @@ void
 f (unsigned n)
 {
   unsigned k;
-  for(k = 0;k <= n;k++) /* { dg-warning "cannot optimize.*infinite loops" } */
+  for(k = 0;k <= n;k++) /* { dg-warning "missed loop optimization.*overflow" } */
     g();
 
-  for(k = 0;k <= n;k += 4) /* { dg-warning "cannot optimize.*overflow" } */
+  for(k = 0;k <= n;k += 4) /* { dg-warning "missed loop optimization.*overflow" } */
     g();
 
   /* We used to get warning for this loop.  However, since then # of iterations
@@ -21,9 +21,9 @@ f (unsigned n)
     g();
 
   /* So we need the following loop, instead.  */
-  for(k = 4;k <= n;k += 5) /* { dg-warning "cannot optimize.*overflow" } */
+  for(k = 4;k <= n;k += 5) /* { dg-warning "missed loop optimization.*overflow" } */
     g();
   
-  for(k = 15;k >= n;k--) /* { dg-warning "cannot optimize.*infinite" } */
+  for(k = 15;k >= n;k--) /* { dg-warning "missed loop optimization.*overflow" } */
     g();
 }

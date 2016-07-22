@@ -2106,6 +2106,8 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 
   std::set<std::string> uniq_idents;
   uniq_idents.insert(name);
+  std::string dup_name;
+  Location dup_loc;
 
   // We've seen one identifier.  If we see a comma now, this could be
   // "a, *p = 1, 2".
@@ -2145,8 +2147,10 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 	  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 	  ins = uniq_idents.insert(id);
 	  if (!ins.second && !Gogo::is_sink_name(id))
-	    error_at(id_location, "multiple assignments to %s",
-		     Gogo::message_name(id).c_str());
+	    {
+	      dup_name = Gogo::message_name(id);
+	      dup_loc = id_location;
+	    }
 	  til.push_back(Typed_identifier(id, NULL, location));
 	}
 
@@ -2181,6 +2185,9 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 
   go_assert(this->peek_token()->is_op(OPERATOR_COLONEQ));
   const Token* token = this->advance_token();
+
+  if (!dup_name.empty())
+    error_at(dup_loc, "multiple assignments to %s", dup_name.c_str());
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
@@ -2658,7 +2665,7 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
 						   ins.first->index(),
 						   location);
   e = Expression::make_unary(OPERATOR_MULT, e, location);
-  return e;
+  return Expression::make_enclosing_var_reference(e, var, location);
 }
 
 // CompositeLit  = LiteralType LiteralValue .
@@ -5791,24 +5798,10 @@ Parse::verify_not_sink(Expression* expr)
 
   // If this can not be a sink, and it is a variable, then we are
   // using the variable, not just assigning to it.
-  Var_expression* ve = expr->var_expression();
-  if (ve != NULL)
-    this->mark_var_used(ve->named_object());
-  else if (expr->deref()->field_reference_expression() != NULL
-	   && this->gogo_->current_function() != NULL)
-    {
-      // We could be looking at a variable referenced from a closure.
-      // If so, we need to get the enclosed variable and mark it as used.
-      Function* this_function = this->gogo_->current_function()->func_value();
-      Named_object* closure = this_function->closure_var();
-      if (closure != NULL)
-	{
-	  unsigned int var_index =
-	    expr->deref()->field_reference_expression()->field_index();
-	  this->mark_var_used(this_function->enclosing_var(var_index - 1));
-	}
-    }
-
+  if (expr->var_expression() != NULL)
+    this->mark_var_used(expr->var_expression()->named_object());
+  else if (expr->enclosed_var_expression() != NULL)
+    this->mark_var_used(expr->enclosed_var_expression()->variable());
   return expr;
 }
 

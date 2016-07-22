@@ -30,10 +30,10 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

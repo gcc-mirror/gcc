@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-stats -fdump-tree-dom2-stats" } */
+/* { dg-options "-O2 -fdump-tree-dom2-details" } */
 
 void foo();
 void bla();
@@ -22,5 +22,8 @@ void dont_thread_1 (void)
     } while (i++ < 100);
 }
 
-/* { dg-final { scan-tree-dump "Jumps threaded: 2" "vrp1"} } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 1" "dom2"} } */
+/* This one can only be threaded if both paths to the
+   conditional inside the loop are threaded at the same
+   time.  Else we potentially end up with irreducible
+   loops.  */
+/* { dg-final { scan-tree-dump-not "IRREDUCIBLE_LOOP" "dom2" } } */

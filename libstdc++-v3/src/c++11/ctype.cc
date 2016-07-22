@@ -45,17 +45,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Definitions for locale::id of standard facets that are specialized.
   locale::id ctype<char>::id;
 
-#ifdef _GLIBCXX_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T
   locale::id ctype<wchar_t>::id;
 #endif
 
   const size_t ctype<char>::table_size;
 
   ctype<char>::~ctype()
-  { 
+  {
     _S_destroy_c_locale(_M_c_locale_ctype);
-    if (_M_del) 
-      delete[] this->table(); 
+    if (_M_del)
+      delete[] this->table();
   }
 
   // Fill in the narrowing cache and flag whether all values are
@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     for (size_t __i = 0; __i < sizeof(_M_narrow); ++__i)
       __tmp[__i] = __i;
     do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
-    
+
     _M_narrow_ok = 1;
     if (__builtin_memcmp(__tmp, _M_narrow, sizeof(_M_narrow)))
       _M_narrow_ok = 2;
@@ -92,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     for (size_t __i = 0; __i < sizeof(_M_widen); ++__i)
       __tmp[__i] = __i;
     do_widen(__tmp, __tmp + sizeof(__tmp), _M_widen);
-    
+
     _M_widen_ok = 1;
     // Set _M_widen_ok to 2 if memcpy can't be used.
     if (__builtin_memcmp(__tmp, _M_widen, sizeof(_M_widen)))
@@ -100,22 +100,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  ctype<wchar_t>::ctype(size_t __refs) 
-  : __ctype_abstract_base<wchar_t>(__refs), 
+  ctype<wchar_t>::ctype(size_t __refs)
+  : __ctype_abstract_base<wchar_t>(__refs),
   _M_c_locale_ctype(_S_get_c_locale()), _M_narrow_ok(false)
   { _M_initialize_ctype(); }
 
-  ctype<wchar_t>::ctype(__c_locale __cloc, size_t __refs) 
+  ctype<wchar_t>::ctype(__c_locale __cloc, size_t __refs)
   : __ctype_abstract_base<wchar_t>(__refs),
   _M_c_locale_ctype(_S_clone_c_locale(__cloc)), _M_narrow_ok(false)
   { _M_initialize_ctype(); }
 
-  ctype<wchar_t>::~ctype() 
+  ctype<wchar_t>::~ctype()
   { _S_destroy_c_locale(_M_c_locale_ctype); }
 
   ctype_byname<wchar_t>::ctype_byname(const char* __s, size_t __refs)
-  : ctype<wchar_t>(__refs) 
-  { 		
+  : ctype<wchar_t>(__refs)
+  {
     if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
       {
 	this->_S_destroy_c_locale(this->_M_c_locale_ctype);
@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
-  ctype_byname<wchar_t>::~ctype_byname() 
+  ctype_byname<wchar_t>::~ctype_byname()
   { }
 
 #endif

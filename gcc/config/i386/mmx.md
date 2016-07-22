@@ -590,12 +590,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-{
-  if (REG_P (operands[1]))
-    operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
-  else
-    operands[1] = adjust_address (operands[1], SFmode, 0);
-})
+  "operands[1] = gen_lowpart (SFmode, operands[1]);")
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
@@ -615,8 +610,14 @@
    #"
   [(set_attr "isa" "*,sse3,noavx,*,*,*,*")
    (set_attr "type" "mmxcvt,sse,sseshuf1,mmxmov,ssemov,fmov,imov")
-   (set_attr "length_immediate" "*,*,1,*,*,*,*")
-   (set_attr "prefix_rep" "*,1,*,*,*,*,*")
+   (set (attr "length_immediate")
+     (if_then_else (eq_attr "alternative" "2")
+		   (const_string "1")
+		   (const_string "*")))
+   (set (attr "prefix_rep")
+     (if_then_else (eq_attr "alternative" "1")
+		   (const_string "1")
+		   (const_string "*")))
    (set_attr "prefix" "orig,maybe_vex,orig,orig,orig,orig,orig")
    (set_attr "mode" "DI,V4SF,V4SF,SF,SF,SF,SF")])
 
@@ -1283,12 +1284,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-{
-  if (REG_P (operands[1]))
-    operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));
-  else
-    operands[1] = adjust_address (operands[1], SImode, 0);
-})
+  "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
@@ -1307,7 +1303,10 @@
    #"
   [(set_attr "isa" "*,sse2,noavx,*,*,*")
    (set_attr "type" "mmxcvt,sseshuf1,sseshuf1,mmxmov,ssemov,imov")
-   (set_attr "length_immediate" "*,1,1,*,*,*")
+   (set (attr "length_immediate")
+     (if_then_else (eq_attr "alternative" "1,2")
+		   (const_string "1")
+		   (const_string "*")))
    (set_attr "prefix" "orig,maybe_vex,orig,orig,orig,orig")
    (set_attr "mode" "DI,TI,V4SF,SI,SI,SI")])
 

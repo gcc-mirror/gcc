@@ -1,5 +1,5 @@
 ! { dg-do compile { target powerpc*-*-* } }
-! { dg-options "-O3 -mcpu=power7 -ffast-math -mveclibabi=mass" }
+! { dg-additional-options "-O3 -mcpu=power7 -ffast-math -mveclibabi=mass" }
 
       integer index(18),i,j,k,l,ipiv(18),info,ichange,neq,lda,ldb,
      &  nrhs,iplas

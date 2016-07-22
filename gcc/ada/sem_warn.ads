@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,7 +238,7 @@ package Sem_Warn is
    --  should only be made if at least one of the flags Warn_On_Modified_Unread
    --  or Warn_On_All_Unread_Out_Parameters is True, and if Ent is in the
    --  extended main source unit. N is Empty for the end of block call
-   --  (warning message says value unreferenced), or the it is the node for
+   --  (warning message says value unreferenced), or it is the node for
    --  an overwriting assignment (warning message points to this assignment).
 
    procedure Warn_On_Useless_Assignments (E : Entity_Id);

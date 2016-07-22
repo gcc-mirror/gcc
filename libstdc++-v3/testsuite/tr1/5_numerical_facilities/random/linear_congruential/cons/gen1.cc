@@ -38,7 +38,7 @@ test01()
 {
   bool test __attribute__((unused)) = true;
   using namespace std::tr1;
-	
+
   linear_congruential<unsigned long, 48271, 0, 2147483647> x(gen);
   VERIFY( x.min() == 1 );
   VERIFY( x.max() == 2147483647-1 );

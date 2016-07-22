@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 --  circularities, especially for back ends using Adabkend.
 
 with Debug;    use Debug;
+with Errout;   use Errout;
 with Lib;      use Lib;
 with Osint;    use Osint;
 with Opt;      use Opt;
@@ -531,7 +532,31 @@ package body Switch.C is
 
                   when 'C' =>
                      Ptr := Ptr + 1;
-                     Generate_CodePeer_Messages := True;
+
+                     if not Generate_CodePeer_Messages then
+                        Generate_CodePeer_Messages := True;
+                        CodePeer_Mode              := True;
+                        Warning_Mode               := Normal;
+                        Warning_Doc_Switch         := True;  -- -gnatw.d
+
+                        --  Enable warnings potentially useful for non GNAT
+                        --  users.
+
+                        Constant_Condition_Warnings      := True; -- -gnatwc
+                        Warn_On_Assertion_Failure        := True; -- -gnatw.a
+                        Warn_On_Assumed_Low_Bound        := True; -- -gnatww
+                        Warn_On_Bad_Fixed_Value          := True; -- -gnatwb
+                        Warn_On_Biased_Representation    := True; -- -gnatw.b
+                        Warn_On_Export_Import            := True; -- -gnatwx
+                        Warn_On_Modified_Unread          := True; -- -gnatwm
+                        Warn_On_No_Value_Assigned        := True; -- -gnatwv
+                        Warn_On_Object_Renames_Function  := True; -- -gnatw.r
+                        Warn_On_Overlap                  := True; -- -gnatw.i
+                        Warn_On_Parameter_Order          := True; -- -gnatw.p
+                        Warn_On_Questionable_Missing_Parens := True; -- -gnatwq
+                        Warn_On_Redundant_Constructs     := True; -- -gnatwr
+                        Warn_On_Suspicious_Modulus_Value := True; -- -gnatw.m
+                     end if;
 
                   --  -gnated switch (disable atomic synchronization)
 
@@ -1400,7 +1425,7 @@ package body Switch.C is
 
                Ptr := Ptr + 1;
 
-               if Switch_Chars (Ptr) /= '3' then
+               if Switch_Chars (Ptr) /= '3' or else Latest_Ada_Only then
                   Bad_Switch ("-gnat8" & Switch_Chars (Ptr .. Max));
                else
                   Ptr := Ptr + 1;
@@ -1418,7 +1443,7 @@ package body Switch.C is
 
                Ptr := Ptr + 1;
 
-               if Switch_Chars (Ptr) /= '5' then
+               if Switch_Chars (Ptr) /= '5' or else Latest_Ada_Only then
                   Bad_Switch ("-gnat9" & Switch_Chars (Ptr .. Max));
                else
                   Ptr := Ptr + 1;
@@ -1436,7 +1461,7 @@ package body Switch.C is
 
                Ptr := Ptr + 1;
 
-               if Switch_Chars (Ptr) /= '5' then
+               if Switch_Chars (Ptr) /= '5' or else Latest_Ada_Only then
                   Bad_Switch ("-gnat0" & Switch_Chars (Ptr .. Max));
                else
                   Ptr := Ptr + 1;
@@ -1469,7 +1494,9 @@ package body Switch.C is
                if Ptr > Max - 3 then
                   Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Max));
 
-               elsif Switch_Chars (Ptr .. Ptr + 3) = "2005" then
+               elsif Switch_Chars (Ptr .. Ptr + 3) = "2005"
+                 and then not Latest_Ada_Only
+               then
                   Ada_Version := Ada_2005;
 
                elsif Switch_Chars (Ptr .. Ptr + 3) = "2012" then

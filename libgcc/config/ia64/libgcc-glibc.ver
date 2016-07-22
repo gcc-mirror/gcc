@@ -95,3 +95,7 @@ GCC_4.4.0 {
   __trunctfxf2
   __unordtf2
 }
+
+GCC_7.0.0 {
+  __signbittf2
+}

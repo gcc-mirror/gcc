@@ -1,0 +1,70 @@
+#!/bin/sh
+# profile workload for gcc profile feedback (autofdo) using Linux perf
+# auto generated. to regenerate for new CPUs run
+# contrib/gen_autofdo_event.py --shell --all in gcc source
+
+# usages:
+# gcc-auto-profile program             (profile program and children)
+# gcc-auto-profile -a sleep X          (profile all for X secs, may need root)
+# gcc-auto-profile -p PID sleep X      (profile PID)
+# gcc-auto-profile --kernel -a sleep X (profile kernel)
+# gcc-auto-profile --all -a sleep X    (profile kernel and user space)
+
+# identify branches taken event for CPU
+#
+
+FLAGS=u
+
+if [ "$1" = "--kernel" ] ; then
+  FLAGS=k
+  shift
+fi
+if [ "$1" = "--all" ] ; then
+  FLAGS=uk
+  shift
+fi
+
+if ! grep -q Intel /proc/cpuinfo ; then
+  echo >&2 "Only Intel CPUs supported"
+  exit 1
+fi
+
+if grep -q hypervisor /proc/cpuinfo ; then
+  echo >&2 "Warning: branch profiling may not be functional in VMs"
+fi
+
+case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
+  egrep "^model\s*:" /proc/cpuinfo | head -n1` in
+model*:\ 55|\
+model*:\ 77|\
+model*:\ 76) E="cpu/event=0xC4,umask=0xFE/p$FLAGS" ;;
+model*:\ 42|\
+model*:\ 45|\
+model*:\ 58|\
+model*:\ 62|\
+model*:\ 60|\
+model*:\ 69|\
+model*:\ 70|\
+model*:\ 63|\
+model*:\ 61|\
+model*:\ 71|\
+model*:\ 86|\
+model*:\ 78|\
+model*:\ 94) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
+model*:\ 46|\
+model*:\ 30|\
+model*:\ 31|\
+model*:\ 26|\
+model*:\ 47|\
+model*:\ 37|\
+model*:\ 44) E="cpu/event=0x88,umask=0x40/p$FLAGS" ;;
+model*:\ 28|\
+model*:\ 38|\
+model*:\ 39|\
+model*:\ 54|\
+model*:\ 53) E="cpu/event=0x88,umask=0x41/p$FLAGS" ;;
+*)
+echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
+	exit 1 ;;
+esac
+exec perf record -e $E -b "$@"

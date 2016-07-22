@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,10 @@ package body Sinput.L is
    -- Adjust_Instantiation_Sloc --
    -------------------------------
 
-   procedure Adjust_Instantiation_Sloc (N : Node_Id; A : Sloc_Adjustment) is
+   procedure Adjust_Instantiation_Sloc
+     (N      : Node_Id;
+      Factor : Sloc_Adjustment)
+   is
       Loc : constant Source_Ptr := Sloc (N);
 
    begin
@@ -100,8 +103,8 @@ package body Sinput.L is
       --  case, but in practice there seem to be some nodes that get copied
       --  twice, and this is a defence against that happening.
 
-      if A.Lo <= Loc and then Loc <= A.Hi then
-         Set_Sloc (N, Loc + A.Adjust);
+      if Factor.Lo <= Loc and then Loc <= Factor.Hi then
+         Set_Sloc (N, Loc + Factor.Adjust);
       end if;
    end Adjust_Instantiation_Sloc;
 
@@ -121,19 +124,20 @@ package body Sinput.L is
    ---------------------------------
 
    procedure Create_Instantiation_Source
-     (Inst_Node    : Entity_Id;
-      Template_Id  : Entity_Id;
-      Inlined_Body : Boolean;
-      A            : out Sloc_Adjustment)
+     (Inst_Node        : Entity_Id;
+      Template_Id      : Entity_Id;
+      Factor           : out Sloc_Adjustment;
+      Inlined_Body     : Boolean := False;
+      Inherited_Pragma : Boolean := False)
    is
       Dnod : constant Node_Id := Declaration_Node (Template_Id);
       Xold : Source_File_Index;
       Xnew : Source_File_Index;
 
    begin
-      Xold := Get_Source_File_Index (Sloc (Template_Id));
-      A.Lo := Source_File.Table (Xold).Source_First;
-      A.Hi := Source_File.Table (Xold).Source_Last;
+      Xold      := Get_Source_File_Index (Sloc (Template_Id));
+      Factor.Lo := Source_File.Table (Xold).Source_First;
+      Factor.Hi := Source_File.Table (Xold).Source_Last;
 
       Source_File.Append (Source_File.Table (Xold));
       Xnew := Source_File.Last;
@@ -145,14 +149,15 @@ package body Sinput.L is
          Inst_Spec : Node_Id;
 
       begin
-         Snew.Inlined_Body  := Inlined_Body;
-         Snew.Template      := Xold;
+         Snew.Inlined_Body     := Inlined_Body;
+         Snew.Inherited_Pragma := Inherited_Pragma;
+         Snew.Template         := Xold;
 
-         --  For a genuine generic instantiation, assign new instance id.
-         --  For inlined bodies, we retain that of the template, but we
-         --  save the call location.
+         --  For a genuine generic instantiation, assign new instance id. For
+         --  inlined bodies or inherited pragmas, we retain that of the
+         --  template, but we save the call location.
 
-         if Inlined_Body then
+         if Inlined_Body or Inherited_Pragma then
             Snew.Inlined_Call := Sloc (Inst_Node);
 
          else
@@ -207,22 +212,22 @@ package body Sinput.L is
             end if;
          end if;
 
-         --  Now we need to compute the new values of Source_First and
-         --  Source_Last and adjust the source file pointer to have the
-         --  correct virtual origin for the new range of values.
+         --  Now compute the new values of Source_First and Source_Last and
+         --  adjust the source file pointer to have the correct virtual origin
+         --  for the new range of values.
 
-         --  Source_First must be greater than the last Source_Last value
-         --  and also must be a multiple of Source_Align
+         --  Source_First must be greater than the last Source_Last value and
+         --  also must be a multiple of Source_Align.
 
          Snew.Source_First :=
            ((Source_File.Table (Xnew - 1).Source_Last + Source_Align) /
               Source_Align) * Source_Align;
-         A.Adjust := Snew.Source_First - A.Lo;
-         Snew.Source_Last := A.Hi + A.Adjust;
+         Factor.Adjust := Snew.Source_First - Factor.Lo;
+         Snew.Source_Last := Factor.Hi + Factor.Adjust;
 
          Set_Source_File_Index_Table (Xnew);
 
-         Snew.Sloc_Adjust := Sold.Sloc_Adjust - A.Adjust;
+         Snew.Sloc_Adjust := Sold.Sloc_Adjust - Factor.Adjust;
 
          if Debug_Flag_L then
             Write_Eol;
@@ -256,7 +261,6 @@ package body Sinput.L is
                Write_Str ("body of package ");
 
             else pragma Assert (Ekind (Template_Id) = E_Subprogram_Body);
-
                if Nkind (Dnod) = N_Procedure_Specification then
                   Write_Str ("body of procedure ");
                else
@@ -280,11 +284,11 @@ package body Sinput.L is
             Write_Eol;
 
             Write_Str ("  old lo = ");
-            Write_Int (Int (A.Lo));
+            Write_Int (Int (Factor.Lo));
             Write_Eol;
 
             Write_Str ("  old hi = ");
-            Write_Int (Int (A.Hi));
+            Write_Int (Int (Factor.Hi));
             Write_Eol;
 
             Write_Str ("  new lo = ");
@@ -296,7 +300,7 @@ package body Sinput.L is
             Write_Eol;
 
             Write_Str ("  adjustment factor = ");
-            Write_Int (Int (A.Adjust));
+            Write_Int (Int (Factor.Adjust));
             Write_Eol;
 
             Write_Str ("  instantiation location: ");
@@ -326,7 +330,7 @@ package body Sinput.L is
          begin
             Snew.Source_Text :=
               To_Source_Buffer_Ptr
-                (Sold.Source_Text (-A.Adjust)'Address);
+                (Sold.Source_Text (-Factor.Adjust)'Address);
          end;
       end;
    end Create_Instantiation_Source;
@@ -509,6 +513,7 @@ package body Sinput.L is
                   Identifier_Casing   => Unknown,
                   Inlined_Call        => No_Location,
                   Inlined_Body        => False,
+                  Inherited_Pragma    => False,
                   Keyword_Casing      => Unknown,
                   Last_Source_Line    => 1,
                   License             => Unknown,

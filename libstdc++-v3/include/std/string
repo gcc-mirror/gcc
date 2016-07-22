@@ -46,10 +46,10 @@
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
 #include <bits/stl_function.h> // For less
-#include <ext/numeric_traits.h> 
-#include <bits/stl_algobase.h> 
+#include <ext/numeric_traits.h>
+#include <bits/stl_algobase.h>
 #include <bits/range_access.h>
 #include <bits/basic_string.h>
-#include <bits/basic_string.tcc> 
+#include <bits/basic_string.tcc>
 
 #endif /* _GLIBCXX_STRING */

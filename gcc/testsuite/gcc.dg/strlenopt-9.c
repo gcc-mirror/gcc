@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-strlen -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-code-hoisting -fdump-tree-strlen -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
 

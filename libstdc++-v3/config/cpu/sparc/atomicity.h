@@ -46,14 +46,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 : "r" (__mem), "r" (__val_extended), "m" (*__mem));
     return __tmp2;
   }
-  
+
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     _Atomic_word __tmp1, __tmp2;
     _Atomic_word __val_extended = __val;
-    
+
     __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
 			 "	add	%0, %4, %1\n\t"
 			 "	casx	[%3], %0, %1\n\t"
@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
 			 : "r" (__mem), "r" (__val_extended), "m" (*__mem));
   }
-  
+
 #else /* __arch32__ */
 
   template<int __inst>
@@ -74,15 +74,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<int __inst>
   unsigned char _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
-  
+
   template unsigned char _Atomicity_lock<0>::_S_atomicity_lock;
-  
+
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     _Atomic_word __result, __tmp;
-    
+
     __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
 			 "	cmp	%0, 0\n\t"
 			 "	bne	1b\n\t"
@@ -98,13 +98,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 : "memory");
     return __result;
   }
-  
+
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     _Atomic_word __tmp;
-    
+
     __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
 			 "	cmp	%0, 0\n\t"
 			 "	bne	1b\n\t"
@@ -117,7 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 : /* no outputs */
 			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "memory");
-  }  
+  }
 #endif /* __arch32__ */
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -17,4 +17,4 @@ void foo(void)
 #define ONE(s) a##s[0] = 0;
   HUNDRED(a)
   HUNDRED(b)
-} /* { dg-warning "frame size too large for reliable stack checking" } */
+} /* { dg-warning "frame size too large for reliable stack checking" "" { target { ! alpha*-*-* } } } */

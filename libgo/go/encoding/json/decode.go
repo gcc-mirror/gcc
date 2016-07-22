@@ -29,9 +29,9 @@ import (
 // with the following additional rules:
 //
 // To unmarshal JSON into a pointer, Unmarshal first handles the case of
-// the JSON being the JSON literal null.  In that case, Unmarshal sets
-// the pointer to nil.  Otherwise, Unmarshal unmarshals the JSON into
-// the value pointed at by the pointer.  If the pointer is nil, Unmarshal
+// the JSON being the JSON literal null. In that case, Unmarshal sets
+// the pointer to nil. Otherwise, Unmarshal unmarshals the JSON into
+// the value pointed at by the pointer. If the pointer is nil, Unmarshal
 // allocates a new value for it to point to.
 //
 // To unmarshal JSON into a struct, Unmarshal matches incoming object
@@ -61,10 +61,11 @@ import (
 // If the JSON array is smaller than the Go array,
 // the additional Go array elements are set to zero values.
 //
-// To unmarshal a JSON object into a string-keyed map, Unmarshal first
-// establishes a map to use, If the map is nil, Unmarshal allocates a new map.
-// Otherwise Unmarshal reuses the existing map, keeping existing entries.
-// Unmarshal then stores key-value pairs from the JSON object into the map.
+// To unmarshal a JSON object into a map, Unmarshal first establishes a map to
+// use. If the map is nil, Unmarshal allocates a new map. Otherwise Unmarshal
+// reuses the existing map, keeping existing entries. Unmarshal then stores key-
+// value pairs from the JSON object into the map. The map's key type must
+// either be a string, an integer, or implement encoding.TextUnmarshaler.
 //
 // If a JSON value is not appropriate for a given target type,
 // or if a JSON number overflows the target type, Unmarshal
@@ -96,7 +97,7 @@ func Unmarshal(data []byte, v interface{}) error {
 	return d.unmarshal(v)
 }
 
-// Unmarshaler is the interface implemented by objects
+// Unmarshaler is the interface implemented by types
 // that can unmarshal a JSON description of themselves.
 // The input can be assumed to be a valid encoding of
 // a JSON value. UnmarshalJSON must copy the JSON data
@@ -534,7 +535,7 @@ func (d *decodeState) array(v reflect.Value) {
 
 	if i < v.Len() {
 		if v.Kind() == reflect.Array {
-			// Array.  Zero the rest.
+			// Array. Zero the rest.
 			z := reflect.Zero(v.Type().Elem())
 			for ; i < v.Len(); i++ {
 				v.Index(i).Set(z)
@@ -549,6 +550,7 @@ func (d *decodeState) array(v reflect.Value) {
 }
 
 var nullLiteral = []byte("null")
+var textUnmarshalerType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
 
 // object consumes an object from d.data[d.off-1:], decoding into the value v.
 // the first byte ('{') of the object has been read already.
@@ -577,16 +579,26 @@ func (d *decodeState) object(v reflect.Value) {
 		return
 	}
 
-	// Check type of target: struct or map[string]T
+	// Check type of target:
+	//   struct or
+	//   map[T1]T2 where T1 is string, an integer type,
+	//             or an encoding.TextUnmarshaler
 	switch v.Kind() {
 	case reflect.Map:
-		// map must have string kind
+		// Map key must either have string kind, have an integer kind,
+		// or be an encoding.TextUnmarshaler.
 		t := v.Type()
-		if t.Key().Kind() != reflect.String {
-			d.saveError(&UnmarshalTypeError{"object", v.Type(), int64(d.off)})
-			d.off--
-			d.next() // skip over { } in input
-			return
+		switch t.Key().Kind() {
+		case reflect.String,
+			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		default:
+			if !reflect.PtrTo(t.Key()).Implements(textUnmarshalerType) {
+				d.saveError(&UnmarshalTypeError{"object", v.Type(), int64(d.off)})
+				d.off--
+				d.next() // skip over { } in input
+				return
+			}
 		}
 		if v.IsNil() {
 			v.Set(reflect.MakeMap(t))
@@ -687,7 +699,37 @@ func (d *decodeState) object(v reflect.Value) {
 		// Write value back to map;
 		// if using struct, subv points into struct already.
 		if v.Kind() == reflect.Map {
-			kv := reflect.ValueOf(key).Convert(v.Type().Key())
+			kt := v.Type().Key()
+			var kv reflect.Value
+			switch {
+			case kt.Kind() == reflect.String:
+				kv = reflect.ValueOf(key).Convert(kt)
+			case reflect.PtrTo(kt).Implements(textUnmarshalerType):
+				kv = reflect.New(v.Type().Key())
+				d.literalStore(item, kv, true)
+				kv = kv.Elem()
+			default:
+				switch kt.Kind() {
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					s := string(key)
+					n, err := strconv.ParseInt(s, 10, 64)
+					if err != nil || reflect.Zero(kt).OverflowInt(n) {
+						d.saveError(&UnmarshalTypeError{"number " + s, kt, int64(start + 1)})
+						return
+					}
+					kv = reflect.ValueOf(n).Convert(kt)
+				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+					s := string(key)
+					n, err := strconv.ParseUint(s, 10, 64)
+					if err != nil || reflect.Zero(kt).OverflowUint(n) {
+						d.saveError(&UnmarshalTypeError{"number " + s, kt, int64(start + 1)})
+						return
+					}
+					kv = reflect.ValueOf(n).Convert(kt)
+				default:
+					panic("json: Unexpected key type") // should never occur
+				}
+			}
 			v.SetMapIndex(kv, subv)
 		}
 
@@ -902,7 +944,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 }
 
 // The xxxInterface routines build up a value to be stored
-// in an empty interface.  They are not strictly necessary,
+// in an empty interface. They are not strictly necessary,
 // but they avoid the weight of reflection in this common case.
 
 // valueInterface is like value but returns interface{}

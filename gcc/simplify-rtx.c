@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
    occasionally need to sign extend from low to high as if low were a
    signed wide int.  */
 #define HWI_SIGN_EXTEND(low) \
- ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
+  ((((HOST_WIDE_INT) low) < 0) ? HOST_WIDE_INT_M1 : HOST_WIDE_INT_0)
 
 static rtx neg_const_int (machine_mode, const_rtx);
 static bool plus_minus_operand_p (const_rtx);
@@ -111,8 +111,8 @@ mode_signbit_p (machine_mode mode, const_rtx x)
     return false;
 
   if (width < HOST_BITS_PER_WIDE_INT)
-    val &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
-  return val == ((unsigned HOST_WIDE_INT) 1 << (width - 1));
+    val &= (HOST_WIDE_INT_1U << width) - 1;
+  return val == (HOST_WIDE_INT_1U << (width - 1));
 }
 
 /* Test whether VAL is equal to the most significant bit of mode MODE
@@ -132,7 +132,7 @@ val_signbit_p (machine_mode mode, unsigned HOST_WIDE_INT val)
     return false;
 
   val &= GET_MODE_MASK (mode);
-  return val == ((unsigned HOST_WIDE_INT) 1 << (width - 1));
+  return val == (HOST_WIDE_INT_1U << (width - 1));
 }
 
 /* Test whether the most significant bit of mode MODE is set in VAL.
@@ -149,7 +149,7 @@ val_signbit_known_set_p (machine_mode mode, unsigned HOST_WIDE_INT val)
   if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
     return false;
 
-  val &= (unsigned HOST_WIDE_INT) 1 << (width - 1);
+  val &= HOST_WIDE_INT_1U << (width - 1);
   return val != 0;
 }
 
@@ -167,7 +167,7 @@ val_signbit_known_clear_p (machine_mode mode, unsigned HOST_WIDE_INT val)
   if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
     return false;
 
-  val &= (unsigned HOST_WIDE_INT) 1 << (width - 1);
+  val &= HOST_WIDE_INT_1U << (width - 1);
   return val == 0;
 }
 
@@ -305,7 +305,7 @@ delegitimize_mem_from_attrs (rtx x)
 
 	    decl
 	      = get_inner_reference (decl, &bitsize, &bitpos, &toffset, &mode,
-				     &unsignedp, &reversep, &volatilep, false);
+				     &unsignedp, &reversep, &volatilep);
 	    if (bitsize != GET_MODE_BITSIZE (mode)
 		|| (bitpos % BITS_PER_UNIT)
 		|| (toffset && !tree_fits_shwi_p (toffset)))
@@ -1482,7 +1482,14 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 		  && REG_POINTER (SUBREG_REG (op))
 		  && GET_MODE (SUBREG_REG (op)) == Pmode))
 	  && !targetm.have_ptr_extend ())
-	return convert_memory_address (Pmode, op);
+	{
+	  temp
+	    = convert_memory_address_addr_space_1 (Pmode, op,
+						   ADDR_SPACE_GENERIC, false,
+						   true);
+	  if (temp)
+	    return temp;
+	}
 #endif
       break;
 
@@ -1604,7 +1611,14 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 		  && REG_POINTER (SUBREG_REG (op))
 		  && GET_MODE (SUBREG_REG (op)) == Pmode))
 	  && !targetm.have_ptr_extend ())
-	return convert_memory_address (Pmode, op);
+	{
+	  temp
+	    = convert_memory_address_addr_space_1 (Pmode, op,
+						   ADDR_SPACE_GENERIC, false,
+						   true);
+	  if (temp)
+	    return temp;
+	}
 #endif
       break;
 
@@ -5174,7 +5188,7 @@ simplify_const_relational_operation (enum rtx_code code,
 	      int sign_bitnum = GET_MODE_PRECISION (mode) - 1;
 	      int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
 			      && (UINTVAL (inner_const)
-				  & ((unsigned HOST_WIDE_INT) 1
+				  & (HOST_WIDE_INT_1U
 				     << sign_bitnum)));
 
 	      switch (code)
@@ -5253,6 +5267,50 @@ simplify_const_relational_operation (enum rtx_code code,
 
   return 0;
 }
+
+/* Recognize expressions of the form (X CMP 0) ? VAL : OP (X)
+   where OP is CLZ or CTZ and VAL is the value from CLZ_DEFINED_VALUE_AT_ZERO
+   or CTZ_DEFINED_VALUE_AT_ZERO respectively and return OP (X) if the expression
+   can be simplified to that or NULL_RTX if not.
+   Assume X is compared against zero with CMP_CODE and the true
+   arm is TRUE_VAL and the false arm is FALSE_VAL.  */
+
+static rtx
+simplify_cond_clz_ctz (rtx x, rtx_code cmp_code, rtx true_val, rtx false_val)
+{
+  if (cmp_code != EQ && cmp_code != NE)
+    return NULL_RTX;
+
+  /* Result on X == 0 and X !=0 respectively.  */
+  rtx on_zero, on_nonzero;
+  if (cmp_code == EQ)
+    {
+      on_zero = true_val;
+      on_nonzero = false_val;
+    }
+  else
+    {
+      on_zero = false_val;
+      on_nonzero = true_val;
+    }
+
+  rtx_code op_code = GET_CODE (on_nonzero);
+  if ((op_code != CLZ && op_code != CTZ)
+      || !rtx_equal_p (XEXP (on_nonzero, 0), x)
+      || !CONST_INT_P (on_zero))
+    return NULL_RTX;
+
+  HOST_WIDE_INT op_val;
+  if (((op_code == CLZ
+	&& CLZ_DEFINED_VALUE_AT_ZERO (GET_MODE (on_nonzero), op_val))
+      || (op_code == CTZ
+	  && CTZ_DEFINED_VALUE_AT_ZERO (GET_MODE (on_nonzero), op_val)))
+      && op_val == INTVAL (on_zero))
+    return on_nonzero;
+
+  return NULL_RTX;
+}
+
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
    OP0, OP1, and OP2.  OP0_MODE was the mode of OP0 before it became
@@ -5318,12 +5376,12 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	  if (HOST_BITS_PER_WIDE_INT != op1val)
 	    {
 	      /* First zero-extend.  */
-	      val &= ((unsigned HOST_WIDE_INT) 1 << op1val) - 1;
+	      val &= (HOST_WIDE_INT_1U << op1val) - 1;
 	      /* If desired, propagate sign bit.  */
 	      if (code == SIGN_EXTRACT
-		  && (val & ((unsigned HOST_WIDE_INT) 1 << (op1val - 1)))
+		  && (val & (HOST_WIDE_INT_1U << (op1val - 1)))
 		     != 0)
-		val |= ~ (((unsigned HOST_WIDE_INT) 1 << op1val) - 1);
+		val |= ~ ((HOST_WIDE_INT_1U << op1val) - 1);
 	    }
 
 	  return gen_int_mode (val, mode);
@@ -5384,6 +5442,19 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	      rtx retval = gen_rtx_IF_THEN_ELSE (mode, new_op0, op2, op1);
 	      return retval;
 	    }
+	}
+
+      /* Convert x == 0 ? N : clz (x) into clz (x) when
+	 CLZ_DEFINED_VALUE_AT_ZERO is defined to N for the mode of x.
+	 Similarly for ctz (x).  */
+      if (COMPARISON_P (op0) && !side_effects_p (op0)
+	  && XEXP (op0, 1) == const0_rtx)
+	{
+	  rtx simplified
+	    = simplify_cond_clz_ctz (XEXP (op0, 0), GET_CODE (op0),
+				     op1, op2);
+	  if (simplified)
+	    return simplified;
 	}
 
       if (COMPARISON_P (op0) && ! side_effects_p (op0))
@@ -5447,7 +5518,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	  if (n_elts == HOST_BITS_PER_WIDE_INT)
 	    mask = -1;
 	  else
-	    mask = ((unsigned HOST_WIDE_INT) 1 << n_elts) - 1;
+	    mask = (HOST_WIDE_INT_1U << n_elts) - 1;
 
 	  if (!(sel & mask) && !side_effects_p (op0))
 	    return op1;
@@ -5463,7 +5534,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 	      unsigned int i;
 
 	      for (i = 0; i < n_elts; i++)
-		RTVEC_ELT (v, i) = ((sel & ((unsigned HOST_WIDE_INT) 1 << i))
+		RTVEC_ELT (v, i) = ((sel & (HOST_WIDE_INT_1U << i))
 				    ? CONST_VECTOR_ELT (trueop0, i)
 				    : CONST_VECTOR_ELT (trueop1, i));
 	      return gen_rtx_CONST_VECTOR (mode, v);
@@ -6037,9 +6108,10 @@ simplify_subreg (machine_mode outermode, rtx op,
       && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
     return adjust_address_nv (op, outermode, byte);
 
-  /* Handle complex values represented as CONCAT
-     of real and imaginary part.  */
-  if (GET_CODE (op) == CONCAT)
+  /* Handle complex or vector values represented as CONCAT or VEC_CONCAT
+     of two parts.  */
+  if (GET_CODE (op) == CONCAT
+      || GET_CODE (op) == VEC_CONCAT)
     {
       unsigned int part_size, final_offset;
       rtx part, res;
@@ -6059,10 +6131,13 @@ simplify_subreg (machine_mode outermode, rtx op,
       if (final_offset + GET_MODE_SIZE (outermode) > part_size)
 	return NULL_RTX;
 
-      res = simplify_subreg (outermode, part, GET_MODE (part), final_offset);
+      enum machine_mode part_mode = GET_MODE (part);
+      if (part_mode == VOIDmode)
+	part_mode = GET_MODE_INNER (GET_MODE (op));
+      res = simplify_subreg (outermode, part, part_mode, final_offset);
       if (res)
 	return res;
-      if (validate_subreg (outermode, GET_MODE (part), part, final_offset))
+      if (validate_subreg (outermode, part_mode, part, final_offset))
 	return gen_rtx_SUBREG (outermode, part, final_offset);
       return NULL_RTX;
     }

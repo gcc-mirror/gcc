@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,6 +89,12 @@ package body Exp_Pakd is
    --  referencing an array object of this type, build an expression of type
    --  Standard.Integer representing the zero-based linear subscript value.
    --  This expression includes any required range checks.
+
+   function Compute_Number_Components
+      (N   : Node_Id;
+       Typ : Entity_Id) return Node_Id;
+   --  Build an expression that multiplies the length of the dimensions of the
+   --  array, used to control array equality checks.
 
    procedure Convert_To_PAT_Type (Aexp : Node_Id);
    --  Given an expression of a packed array type, builds a corresponding
@@ -396,6 +402,38 @@ package body Exp_Pakd is
       end loop;
    end Compute_Linear_Subscript;
 
+   -------------------------------
+   -- Compute_Number_Components --
+   -------------------------------
+
+   function Compute_Number_Components
+      (N   : Node_Id;
+       Typ : Entity_Id) return Node_Id
+   is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Len_Expr : Node_Id;
+
+   begin
+      Len_Expr :=
+        Make_Attribute_Reference (Loc,
+          Attribute_Name => Name_Length,
+          Prefix         => New_Occurrence_Of (Typ, Loc),
+          Expressions    => New_List (Make_Integer_Literal (Loc, 1)));
+
+      for J in 2 .. Number_Dimensions (Typ) loop
+         Len_Expr :=
+           Make_Op_Multiply (Loc,
+             Left_Opnd  => Len_Expr,
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Length,
+                Prefix         => New_Occurrence_Of (Typ, Loc),
+                Expressions    => New_List (Make_Integer_Literal (Loc, J))));
+      end loop;
+
+      return Len_Expr;
+   end Compute_Number_Components;
+
    -------------------------
    -- Convert_To_PAT_Type --
    -------------------------
@@ -451,7 +489,6 @@ package body Exp_Pakd is
       PASize   : Uint;
       Decl     : Node_Id;
       PAT      : Entity_Id;
-      Len_Dim  : Node_Id;
       Len_Expr : Node_Id;
       Len_Bits : Uint;
       Bits_U1  : Node_Id;
@@ -506,6 +543,7 @@ package body Exp_Pakd is
          end if;
 
          Set_Is_Itype (PAT, True);
+         Set_Is_Packed_Array_Impl_Type (PAT, True);
          Set_Packed_Array_Impl_Type (Typ, PAT);
          Analyze (Decl, Suppress => All_Checks);
 
@@ -532,7 +570,6 @@ package body Exp_Pakd is
          Init_Alignment                (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
-         Set_Is_Packed_Array_Impl_Type (PAT, True);
          Set_Original_Array_Type       (PAT, Typ);
 
          --  Propagate representation aspects
@@ -664,8 +701,6 @@ package body Exp_Pakd is
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), 'P'));
 
-         Set_Packed_Array_Impl_Type (Typ, PAT);
-
          declare
             Indexes   : constant List_Id := New_List;
             Indx      : Node_Id;
@@ -761,9 +796,6 @@ package body Exp_Pakd is
                 Type_Definition     => Typedef);
          end;
 
-         --  Set type as packed array type and install it
-
-         Set_Is_Packed_Array_Impl_Type (PAT);
          Install_PAT;
          return;
 
@@ -782,13 +814,13 @@ package body Exp_Pakd is
            Make_Defining_Identifier (Loc,
              Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));
 
-         Set_Packed_Array_Impl_Type (Typ, PAT);
          Set_PB_Type;
 
          Decl :=
            Make_Subtype_Declaration (Loc,
              Defining_Identifier => PAT,
                Subtype_Indication => New_Occurrence_Of (PB_Type, Loc));
+
          Install_PAT;
          return;
 
@@ -806,39 +838,10 @@ package body Exp_Pakd is
            Make_Defining_Identifier (Loc,
              Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));
 
-         Set_Packed_Array_Impl_Type (Typ, PAT);
-
          --  Build an expression for the length of the array in bits.
          --  This is the product of the length of each of the dimensions
 
-         declare
-            J : Nat := 1;
-
-         begin
-            Len_Expr := Empty; -- suppress junk warning
-
-            loop
-               Len_Dim :=
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Length,
-                   Prefix         => New_Occurrence_Of (Typ, Loc),
-                   Expressions    => New_List (
-                     Make_Integer_Literal (Loc, J)));
-
-               if J = 1 then
-                  Len_Expr := Len_Dim;
-
-               else
-                  Len_Expr :=
-                    Make_Op_Multiply (Loc,
-                      Left_Opnd  => Len_Expr,
-                      Right_Opnd => Len_Dim);
-               end if;
-
-               J := J + 1;
-               exit when J > Number_Dimensions (Typ);
-            end loop;
-         end;
+         Len_Expr := Compute_Number_Components (Typ, Typ);
 
          --  Temporarily attach the length expression to the tree and analyze
          --  and resolve it, so that we can test its value. We assume that the
@@ -1135,19 +1138,6 @@ package body Exp_Pakd is
          Analyze_And_Resolve (Rhs, Ctyp, Suppress => All_Checks);
       else
          Analyze_And_Resolve (Rhs, Ctyp);
-      end if;
-
-      --  For the AAMP target, indexing of certain packed array is passed
-      --  through to the back end without expansion, because the expansion
-      --  results in very inefficient code on that target. This allows the
-      --  GNAAMP back end to generate specialized macros that support more
-      --  efficient indexing of packed arrays with components having sizes
-      --  that are small powers of two.
-
-      if AAMP_On_Target
-        and then (Csiz = 1 or else Csiz = 2 or else Csiz = 4)
-      then
-         return;
       end if;
 
       --  Case of component size 1,2,4 or any component size for the modular
@@ -1729,19 +1719,6 @@ package body Exp_Pakd is
       Ctyp := Component_Type (Atyp);
       Csiz := UI_To_Int (Component_Size (Atyp));
 
-      --  For the AAMP target, indexing of certain packed array is passed
-      --  through to the back end without expansion, because the expansion
-      --  results in very inefficient code on that target. This allows the
-      --  GNAAMP back end to generate specialized macros that support more
-      --  efficient indexing of packed arrays with components having sizes
-      --  that are small powers of two.
-
-      if AAMP_On_Target
-        and then (Csiz = 1 or else Csiz = 2 or else Csiz = 4)
-      then
-         return;
-      end if;
-
       --  Case of component size 1,2,4 or any component size for the modular
       --  case. These are the cases for which we can inline the code.
 
@@ -1872,21 +1849,13 @@ package body Exp_Pakd is
 
       LLexpr :=
         Make_Op_Multiply (Loc,
-          Left_Opnd =>
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Occurrence_Of (Ltyp, Loc),
-              Attribute_Name => Name_Length),
-          Right_Opnd =>
-            Make_Integer_Literal (Loc, Component_Size (Ltyp)));
+          Left_Opnd  => Compute_Number_Components (N, Ltyp),
+          Right_Opnd => Make_Integer_Literal (Loc, Component_Size (Ltyp)));
 
       RLexpr :=
         Make_Op_Multiply (Loc,
-          Left_Opnd =>
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Occurrence_Of (Rtyp, Loc),
-              Attribute_Name => Name_Length),
-          Right_Opnd =>
-            Make_Integer_Literal (Loc, Component_Size (Rtyp)));
+          Left_Opnd  => Compute_Number_Components (N, Rtyp),
+          Right_Opnd => Make_Integer_Literal (Loc, Component_Size (Rtyp)));
 
       --  For the modular case, we transform the comparison to:
 
@@ -2322,9 +2291,12 @@ package body Exp_Pakd is
       --  convert to a modular type of the source length, since otherwise, on
       --  a big-endian machine, we get left-justification. We do it for little-
       --  endian machines as well, because there might be junk bits that are
-      --  not cleared if the type is not numeric.
+      --  not cleared if the type is not numeric. This can be done only if the
+      --  source siz is different from 0 (i.e. known), otherwise we must trust
+      --  the type declarations (case of non-discrete components).
 
-      if Source_Siz /= Target_Siz
+      if Source_Siz /= 0
+        and then Source_Siz /= Target_Siz
         and then not Is_Discrete_Type (Source_Typ)
       then
          Src := Unchecked_Convert_To (RTE (Bits_Id (Source_Siz)), Src);

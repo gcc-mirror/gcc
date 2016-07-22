@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2385,7 +2385,9 @@ package body Sprint is
                      end if;
                   end;
 
-                  if Present (Expression (Node)) then
+                  if Present (Expression (Node))
+                    and then Expression (Node) /= Error
+                  then
                      Write_Str (" := ");
                      Sprint_Node (Expression (Node));
                   end if;

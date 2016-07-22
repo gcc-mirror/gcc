@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,6 +314,11 @@ package body Sem_Warn is
             elsif Is_Suspicious_Function_Name (Entity (Name (N))) then
                return;
 
+            --  Forget it if function is marked Volatile_Function
+
+            elsif Is_Volatile_Function (Entity (Name (N))) then
+               return;
+
             --  Forget it if warnings are suppressed on function entity
 
             elsif Has_Warnings_Off (Entity (Name (N))) then
@@ -382,7 +387,7 @@ package body Sem_Warn is
          Comp := First_Component (Rec);
          while Present (Comp) loop
             if Is_Access_Type (Etype (Comp))
-              or else Is_Descendent_Of_Address (Etype (Comp))
+              or else Is_Descendant_Of_Address (Etype (Comp))
             then
                return True;
             end if;
@@ -1137,13 +1142,16 @@ package body Sem_Warn is
                   --  A special case, if this variable is volatile and not
                   --  imported, it is not helpful to tell the programmer
                   --  to mark the variable as constant, since this would be
-                  --  illegal by virtue of RM C.6(13).
+                  --  illegal by virtue of RM C.6(13). Instead we suggest
+                  --  using pragma Export (can't be Import because of the
+                  --  initial value).
 
                   if (Is_Volatile (E1) or else Has_Volatile_Components (E1))
                     and then not Is_Imported (E1)
                   then
                      Error_Msg_N
-                       ("?k?& is not modified, volatile has no effect!", E1);
+                       ("?k?& is not modified, consider pragma Export for "
+                        & "volatile variable!", E1);
 
                   --  Another special case, Exception_Occurrence, this catches
                   --  the case of exception choice (and a bit more too, but not
@@ -3364,7 +3372,7 @@ package body Sem_Warn is
          P := Parent (C);
          loop
             --  If tree is not attached, do not issue warning (this is very
-            --  peculiar, and probably arises from some other error condition)
+            --  peculiar, and probably arises from some other error condition).
 
             if No (P) then
                return;
@@ -4294,8 +4302,10 @@ package body Sem_Warn is
 
             --  When we hit a package/subprogram body, issue warning and exit
 
-            elsif Nkind (P) = N_Subprogram_Body
-              or else Nkind (P) = N_Package_Body
+            elsif Nkind_In (P, N_Entry_Body,
+                               N_Package_Body,
+                               N_Subprogram_Body,
+                               N_Task_Body)
             then
                --  Case of assigned value never referenced
 
@@ -4373,8 +4383,10 @@ package body Sem_Warn is
                   --  not generate the warning, since the variable in question
                   --  may be accessed after an exception in the outer block.
 
-                  if Nkind (Parent (P)) /= N_Subprogram_Body
-                    and then Nkind (Parent (P)) /= N_Package_Body
+                  if not Nkind_In (Parent (P), N_Entry_Body,
+                                               N_Package_Body,
+                                               N_Subprogram_Body,
+                                               N_Task_Body)
                   then
                      Set_Last_Assignment (Ent, Empty);
                      return;

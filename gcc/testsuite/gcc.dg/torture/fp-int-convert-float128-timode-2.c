@@ -1,9 +1,12 @@
 /* Test floating-point conversions.  __float128 type with TImode: bug
    53317.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
-/* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
+/* { dg-do run } */
+/* { dg-require-effective-target __float128 } */
+/* { dg-require-effective-target base_quadfloat_support } */
 /* { dg-require-effective-target int128 } */
 /* { dg-options "" } */
+/* { dg-add-options __float128 } */
 
 extern void abort (void);
 extern void exit (int);

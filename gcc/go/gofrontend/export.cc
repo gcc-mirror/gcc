@@ -436,15 +436,19 @@ Export::write_type(const Type* type)
     this->type_refs_[type] = index;
 }
 
-// Export escape information.
+// Export escape note.
 
 void
-Export::write_escape(const Node::Escapement_lattice& e)
+Export::write_escape(std::string* note)
 {
-  char buf[30];
-  snprintf(buf, sizeof buf, "<escape %d>", e);
-  this->write_c_string(buf);
-  return;
+  if (note != NULL && *note != "esc:0x0")
+    {
+      this->write_c_string(" ");
+      char buf[50];
+      go_assert(note->find("esc:") != std::string::npos);
+      snprintf(buf, sizeof buf, "<%s>", note->c_str());
+      this->write_c_string(buf);
+    }
 }
 
 // Add the builtin types to the export table.

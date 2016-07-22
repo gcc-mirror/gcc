@@ -19,9 +19,13 @@ class Assignment_statement;
 class Temporary_statement;
 class Variable_declaration_statement;
 class Expression_statement;
+class Block_statement;
 class Return_statement;
 class Thunk_statement;
+class Goto_statement;
+class Goto_unnamed_statement;
 class Label_statement;
+class Unnamed_label_statement;
 class If_statement;
 class For_statement;
 class For_range_statement;
@@ -47,7 +51,6 @@ class Bexpression;
 class Bstatement;
 class Bvariable;
 class Ast_dump_context;
-class Dataflow;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -367,6 +370,12 @@ class Statement
     return this->convert<Expression_statement, STATEMENT_EXPRESSION>();
   }
 
+  // If this is an block statement, return it.  Otherwise return
+  // NULL.
+  Block_statement*
+  block_statement()
+  { return this->convert<Block_statement, STATEMENT_BLOCK>(); }
+
   // If this is a return statement, return it.  Otherwise return NULL.
   Return_statement*
   return_statement()
@@ -377,10 +386,25 @@ class Statement
   Thunk_statement*
   thunk_statement();
 
+  // If this is a goto statement, return it.  Otherwise return NULL.
+  Goto_statement*
+  goto_statement()
+  { return this->convert<Goto_statement, STATEMENT_GOTO>(); }
+
+  // If this is a goto_unnamed statement, return it.  Otherwise return NULL.
+  Goto_unnamed_statement*
+  goto_unnamed_statement()
+  { return this->convert<Goto_unnamed_statement, STATEMENT_GOTO_UNNAMED>(); }
+
   // If this is a label statement, return it.  Otherwise return NULL.
   Label_statement*
   label_statement()
   { return this->convert<Label_statement, STATEMENT_LABEL>(); }
+
+  // If this is an unnamed_label statement, return it.  Otherwise return NULL.
+  Unnamed_label_statement*
+  unnamed_label_statement()
+  { return this->convert<Unnamed_label_statement, STATEMENT_UNNAMED_LABEL>(); }
 
   // If this is an if statement, return it.  Otherwise return NULL.
   If_statement*
@@ -763,6 +787,50 @@ class Expression_statement : public Statement
   bool is_ignored_;
 };
 
+// A block statement--a list of statements which may include variable
+// definitions.
+
+class Block_statement : public Statement
+{
+ public:
+  Block_statement(Block* block, Location location)
+    : Statement(STATEMENT_BLOCK, location),
+      block_(block), is_lowered_for_statement_(false)
+  { }
+
+  void
+  set_is_lowered_for_statement()
+  { this->is_lowered_for_statement_ = true; }
+
+  bool
+  is_lowered_for_statement()
+  { return this->is_lowered_for_statement_; }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse)
+  { return this->block_->traverse(traverse); }
+
+  void
+  do_determine_types()
+  { this->block_->determine_types(); }
+
+  bool
+  do_may_fall_through() const
+  { return this->block_->may_fall_through(); }
+
+  Bstatement*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
+ private:
+  Block* block_;
+  // True if this block statement represents a lowered for statement.
+  bool is_lowered_for_statement_;
+};
+
 // A send statement.
 
 class Send_statement : public Statement
@@ -860,10 +928,6 @@ class Select_clauses
   void
   check_types();
 
-  // Analyze the dataflow across each case statement.
-  void
-  analyze_dataflow(Dataflow*);
-
   // Whether the select clauses may fall through to the statement
   // which follows the overall select statement.
   bool
@@ -919,10 +983,6 @@ class Select_clauses
     // Check types.
     void
     check_types();
-
-    // Analyze the dataflow across each case statement.
-    void
-    analyze_dataflow(Dataflow*);
 
     // Return true if this is the default clause.
     bool
@@ -1029,10 +1089,6 @@ class Select_statement : public Statement
   // Return the break label for this select statement.
   Unnamed_label*
   break_label();
-
-  void
-  analyze_dataflow(Dataflow* dataflow)
-  { this->clauses_->analyze_dataflow(dataflow); }
 
  protected:
   int
@@ -1175,6 +1231,74 @@ class Defer_statement : public Thunk_statement
   do_dump_statement(Ast_dump_context*) const;
 };
 
+// A goto statement.
+
+class Goto_statement : public Statement
+{
+ public:
+  Goto_statement(Label* label, Location location)
+    : Statement(STATEMENT_GOTO, location),
+      label_(label)
+  { }
+
+  // Return the label being jumped to.
+  Label*
+  label() const
+  { return this->label_; }
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  void
+  do_check_types(Gogo*);
+
+  bool
+  do_may_fall_through() const
+  { return false; }
+
+  Bstatement*
+  do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
+ private:
+  Label* label_;
+};
+
+// A goto statement to an unnamed label.
+
+class Goto_unnamed_statement : public Statement
+{
+ public:
+  Goto_unnamed_statement(Unnamed_label* label, Location location)
+    : Statement(STATEMENT_GOTO_UNNAMED, location),
+      label_(label)
+  { }
+
+  Unnamed_label*
+  unnamed_label() const
+  { return this->label_; }
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  bool
+  do_may_fall_through() const
+  { return false; }
+
+  Bstatement*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
+ private:
+  Unnamed_label* label_;
+};
+
 // A label statement.
 
 class Label_statement : public Statement
@@ -1186,7 +1310,7 @@ class Label_statement : public Statement
   { }
 
   // Return the label itself.
-  const Label*
+  Label*
   label() const
   { return this->label_; }
 
@@ -1203,6 +1327,28 @@ class Label_statement : public Statement
  private:
   // The label.
   Label* label_;
+};
+
+// An unnamed label statement.
+
+class Unnamed_label_statement : public Statement
+{
+ public:
+  Unnamed_label_statement(Unnamed_label* label);
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Bstatement*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
+ private:
+  // The label.
+  Unnamed_label* label_;
 };
 
 // An if statement.

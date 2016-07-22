@@ -191,7 +191,7 @@ col (){
 	# Combine prefix back with long lines.
 	# Filter out empty lines.
 	local found=false
-	paste -d '' "$tmp2" "$tmp3" \
+	paste -d '\0' "$tmp2" "$tmp3" \
 	    | grep -v '^[0-9][0-9]*:+$' \
 	    > "$tmp" && found=true
 
@@ -240,6 +240,7 @@ g 'There should be no space before closing parenthesis.' \
 g 'Braces should be on a separate line.' \
     '(\)|else)[[:blank:]]*{'
 
-# Does this apply to definition of aggregate objects?
-g 'Trailing operator.' \
+# Does this apply to definitions of aggregate objects?
+ag 'Trailing operator.' \
+  '^[1-9][0-9]*:\+[[:space:]]' \
   '(([^a-zA-Z_]\*)|([-%<=&|^?])|([^*]/)|([^:][+]))$'

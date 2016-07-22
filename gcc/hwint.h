@@ -63,6 +63,8 @@ extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
 #endif
 
 #define HOST_WIDE_INT_UC(X) HOST_WIDE_INT_C (X ## U)
+#define HOST_WIDE_INT_0 HOST_WIDE_INT_C (0)
+#define HOST_WIDE_INT_0U HOST_WIDE_INT_UC (0)
 #define HOST_WIDE_INT_1 HOST_WIDE_INT_C (1)
 #define HOST_WIDE_INT_1U HOST_WIDE_INT_UC (1)
 #define HOST_WIDE_INT_M1 HOST_WIDE_INT_C (-1)
@@ -226,7 +228,7 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 #endif /* GCC_VERSION >= 3004 */
 
 #define HOST_WIDE_INT_MIN (HOST_WIDE_INT) \
-  ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
+  (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1))
 #define HOST_WIDE_INT_MAX (~(HOST_WIDE_INT_MIN))
 
 extern HOST_WIDE_INT abs_hwi (HOST_WIDE_INT);
@@ -276,7 +278,7 @@ zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
   else
     {
       gcc_checking_assert (prec < HOST_BITS_PER_WIDE_INT);
-      return src & (((unsigned HOST_WIDE_INT) 1 << prec) - 1);
+      return src & ((HOST_WIDE_INT_1U << prec) - 1);
     }
 }
 

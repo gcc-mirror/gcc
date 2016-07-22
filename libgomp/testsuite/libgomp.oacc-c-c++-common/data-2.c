@@ -1,3 +1,5 @@
+/* Test 'acc enter/exit data' regions.  */
+
 /* { dg-do run } */
 
 #include <stdlib.h>
@@ -25,7 +27,7 @@ main (int argc, char **argv)
     }
 
 #pragma acc enter data copyin (a[0:N]) copyin (b[0:N]) copyin (N) async
-#pragma acc parallel async wait
+#pragma acc parallel present (a[0:N], b[0:N]) async wait
 #pragma acc loop
   for (i = 0; i < N; i++)
     b[i] = a[i];
@@ -49,7 +51,7 @@ main (int argc, char **argv)
     }
 
 #pragma acc enter data copyin (a[0:N]) copyin (b[0:N]) copyin (N) async (1)
-#pragma acc parallel async (1)
+#pragma acc parallel present (a[0:N], b[0:N])  async (1)
 #pragma acc loop
   for (i = 0; i < N; i++)
     b[i] = a[i];
@@ -76,17 +78,17 @@ main (int argc, char **argv)
 
 #pragma acc enter data copyin (a[0:N]) copyin (b[0:N]) copyin (c[0:N]) copyin (d[0:N]) copyin (N) async (1)
 
-#pragma acc parallel async (1) wait (1)
+#pragma acc parallel present (a[0:N], b[0:N]) async (1) wait (1)
 #pragma acc loop
   for (i = 0; i < N; i++)
     b[i] = (a[i] * a[i] * a[i]) / a[i];
 
-#pragma acc parallel async (2) wait (1)
+#pragma acc parallel present (a[0:N], c[0:N]) async (2) wait (1)
 #pragma acc loop
   for (i = 0; i < N; i++)
     c[i] = (a[i] + a[i] + a[i] + a[i]) / a[i];
 
-#pragma acc parallel async (3) wait (1)
+#pragma acc parallel present (a[0:N], d[0:N]) async (3) wait (1)
 #pragma acc loop
   for (i = 0; i < N; i++)
     d[i] = ((a[i] * a[i] + a[i]) / a[i]) - a[i];
@@ -120,25 +122,26 @@ main (int argc, char **argv)
 
 #pragma acc enter data copyin (a[0:N]) copyin (b[0:N]) copyin (c[0:N]) copyin (d[0:N]) copyin (e[0:N]) copyin (N) async (1)
 
-#pragma acc parallel async (1) wait (1)
+#pragma acc parallel present (a[0:N], b[0:N]) async (1) wait (1)
   for (int ii = 0; ii < N; ii++)
     b[ii] = (a[ii] * a[ii] * a[ii]) / a[ii];
 
-#pragma acc parallel async (2) wait (1)
+#pragma acc parallel present (a[0:N], c[0:N]) async (2) wait (1)
   for (int ii = 0; ii < N; ii++)
     c[ii] = (a[ii] + a[ii] + a[ii] + a[ii]) / a[ii];
 
-#pragma acc parallel async (3) wait (1)
+#pragma acc parallel present (a[0:N], d[0:N]) async (3) wait (1)
   for (int ii = 0; ii < N; ii++)
     d[ii] = ((a[ii] * a[ii] + a[ii]) / a[ii]) - a[ii];
 
-#pragma acc parallel wait (1) async (4)
+#pragma acc parallel present (a[0:N], b[0:N], c[0:N], d[0:N], e[0:N]) \
+  wait (1) async (4)
   for (int ii = 0; ii < N; ii++)
     e[ii] = a[ii] + b[ii] + c[ii] + d[ii];
 
-#pragma acc exit data copyout (a[0:N]) copyout (b[0:N]) copyout (c[0:N]) copyout (d[0:N]) copyout (e[0:N]) wait (1, 2, 3, 4) async (1)
+#pragma acc exit data copyout (a[0:N]) copyout (b[0:N]) copyout (c[0:N]) \
+  copyout (d[0:N]) copyout (e[0:N]) wait (1, 2, 3, 4) async (1)
 #pragma acc wait (1)
-
 
   for (i = 0; i < N; i++)
     {

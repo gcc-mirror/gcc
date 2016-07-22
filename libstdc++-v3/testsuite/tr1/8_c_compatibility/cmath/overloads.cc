@@ -33,7 +33,7 @@ void test01()
   double d0 = 0.0;
   float f0 = 0.0f;
   long double ld0 = 0.0l;
-  int i0 = 0;  
+  int i0 = 0;
   int* pquo = 0;
   long lex = 0l;
   int ex = 0;
@@ -71,7 +71,7 @@ void test01()
   check_ret_type<float>(std::tr1::copysign(f0, f0));
   check_ret_type<long double>(std::tr1::copysign(ld0, ld0));
   check_ret_type<long double>(std::tr1::copysign(ld0, d0));
-  check_ret_type<double>(std::tr1::copysign(i0, i0));  
+  check_ret_type<double>(std::tr1::copysign(i0, i0));
   check_ret_type<double>(std::tr1::copysign(d0, i0));
 
   check_ret_type<double>(std::tr1::erf(d0));
@@ -252,6 +252,6 @@ void test01()
   check_ret_type<float>(std::tr1::trunc(f0));
   check_ret_type<long double>(std::tr1::trunc(ld0));
   check_ret_type<double>(std::tr1::trunc(i0));
-  
+
 #endif
 }

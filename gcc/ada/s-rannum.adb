@@ -208,7 +208,7 @@ is
       G.I := I;
 
       Y := Y xor Shift_Right (Y, U);
-      Y := Y xor (Shift_Left (Y, S)  and B_Mask);
+      Y := Y xor (Shift_Left (Y, S) and B_Mask);
       Y := Y xor (Shift_Left (Y, T) and C_Mask);
       Y := Y xor Shift_Right (Y, L);
 

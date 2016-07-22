@@ -196,6 +196,7 @@
 #define vec_andc __builtin_vec_andc
 #define vec_avg __builtin_vec_avg
 #define vec_cmpeq __builtin_vec_cmpeq
+#define vec_cmpne __builtin_vec_cmpne
 #define vec_cmpgt __builtin_vec_cmpgt
 #define vec_ctf __builtin_vec_ctf
 #define vec_dst __builtin_vec_dst
@@ -228,6 +229,7 @@
 #define vec_mladd __builtin_vec_mladd
 #define vec_msum __builtin_vec_msum
 #define vec_msums __builtin_vec_msums
+#define vec_mul __builtin_vec_mul
 #define vec_mule __builtin_vec_mule
 #define vec_mulo __builtin_vec_mulo
 #define vec_nor __builtin_vec_nor
@@ -327,8 +329,8 @@
 #define vec_sqrt __builtin_vec_sqrt
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
-#define vec_xl __builtin_vec_vsx_ld
-#define vec_xst __builtin_vec_vsx_st
+#define vec_xl __builtin_vec_xl
+#define vec_xst __builtin_vec_xst
 
 /* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
    instead of __builtin_vec_<xxx>  */
@@ -382,6 +384,31 @@
 #define vec_vsubuqm __builtin_vec_vsubuqm
 #define vec_vupkhsw __builtin_vec_vupkhsw
 #define vec_vupklsw __builtin_vec_vupklsw
+#endif
+
+#ifdef _ARCH_PWR9
+/* Vector additions added in ISA 3.0.  */
+#define vec_vctz __builtin_vec_vctz
+#define vec_cntlz __builtin_vec_vctz
+#define vec_vctzb __builtin_vec_vctzb
+#define vec_vctzd __builtin_vec_vctzd
+#define vec_vctzh __builtin_vec_vctzh
+#define vec_vctzw __builtin_vec_vctzw
+#define vec_vprtyb __builtin_vec_vprtyb
+#define vec_vprtybd __builtin_vec_vprtybd
+#define vec_vprtybw __builtin_vec_vprtybw
+
+#ifdef _ARCH_PPC64
+#define vec_vprtybq __builtin_vec_vprtybq
+#endif
+
+#define vec_absd __builtin_vec_vadu
+#define vec_absdb __builtin_vec_vadub
+#define vec_absdh __builtin_vec_vaduh
+#define vec_absdw __builtin_vec_vaduw
+
+#define vec_slv __builtin_vec_vslv
+#define vec_srv __builtin_vec_vsrv
 #endif
 
 /* Predicates.

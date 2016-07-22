@@ -2,7 +2,6 @@
    addressing modes and do not result in redundant sign/zero extensions. */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "@\\(5," 4 } } */
 /* { dg-final { scan-assembler-times "@\\(10," 4 } } */
 /* { dg-final { scan-assembler-times "@\\(20," 4 } } */

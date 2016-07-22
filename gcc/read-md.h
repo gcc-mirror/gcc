@@ -141,6 +141,7 @@ extern void fatal_with_file_and_line (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
 extern int read_skip_spaces (void);
+extern void require_char_ws (char expected);
 extern void read_name (struct md_name *);
 extern char *read_quoted_string (void);
 extern char *read_string (int);
@@ -150,7 +151,7 @@ extern void upcase_string (char *);
 extern void traverse_md_constants (htab_trav, void *);
 extern void traverse_enum_types (htab_trav, void *);
 extern struct enum_type *lookup_enum_type (const char *);
-extern bool read_md_files (int, char **, bool (*) (const char *),
+extern bool read_md_files (int, const char **, bool (*) (const char *),
 			   directive_handler_t);
 
 #endif /* GCC_READ_MD_H */

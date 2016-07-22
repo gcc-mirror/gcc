@@ -18,9 +18,9 @@ close(99, status="delete")
 
 c = (3.123,4.456)
 write(complex,*,decimal="comma") c
-if (complex.ne." (  3,12299991    ;  4,45599985    )") call abort
+if (complex.ne."             (3,12299991;4,45599985)") call abort
 c = (0.0, 0.0)
 read(complex,*,decimal="comma") c
-if (complex.ne." (  3,12299991    ;  4,45599985    )") call abort
+if (complex.ne."             (3,12299991;4,45599985)") call abort
 
 end

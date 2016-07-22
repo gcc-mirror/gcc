@@ -38,12 +38,12 @@ test01()
     minstd_rand, 1,
     mt19937, 2
     > u, v;
- 
+
   u(); // advance
   str << u;
-  
+
   VERIFY( u != v );
-  
+
   str >> v;
   VERIFY( u == v );
 }

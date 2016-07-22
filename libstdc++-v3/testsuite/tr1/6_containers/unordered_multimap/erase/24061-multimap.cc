@@ -1,4 +1,4 @@
-// 2005-10-08  Paolo Carlini  <pcarlini@suse.de> 
+// 2005-10-08  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -27,12 +27,12 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  
+
   typedef std::tr1::unordered_multimap<std::string, int> Mmap;
   typedef Mmap::iterator       iterator;
   typedef Mmap::const_iterator const_iterator;
   typedef Mmap::value_type     value_type;
-  
+
   Mmap mm1;
 
   mm1.insert(value_type("all the love in the world", 1));
@@ -100,7 +100,7 @@ void test01()
   VERIFY( it13 == mm1.end() );
   VERIFY( it13 == mm1.begin() );
 }
-  
+
 int main()
 {
   test01();

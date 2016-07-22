@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -509,9 +509,9 @@ package Lib.Xref is
       E_Void                                       => ' ',
 
       --  The following entities are not ones to which we gather the cross-
-      --  references, since it does not make sense to do so (e.g. references to
-      --  a package are to the spec, not the body) Indeed the occurrence of the
-      --  body entity is considered to be a reference to the spec entity.
+      --  references, since it does not make sense to do so (e.g. references
+      --  to a package are to the spec, not the body). Indeed the occurrence of
+      --  the body entity is considered to be a reference to the spec entity.
 
       E_Package_Body                               => ' ',
       E_Protected_Body                             => ' ',
@@ -611,7 +611,12 @@ package Lib.Xref is
      Table_Name           => "Name_Deferred_References");
 
    procedure Process_Deferred_References;
-   --  This procedure is called from Frontend to process these table entries.
+   --  This procedure is called from Frontend to process these table entries
+
+   function Has_Deferred_Reference (Ent : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Ent has a pending reference in order
+   --  to suppress premature warnings about useless assignments. See comments
+   --  in Analyze_Assignment in sem_ch5.adb.
 
    -----------------------------
    -- SPARK Xrefs Information --
@@ -633,16 +638,6 @@ package Lib.Xref is
          Typ : Character := 'r');
       --  This procedure is called to record a dereference. N is the location
       --  of the dereference.
-
-      type Node_Processing is access procedure (N : Node_Id);
-
-      procedure Traverse_Compilation_Unit
-        (CU           : Node_Id;
-         Process      : Node_Processing;
-         Inside_Stubs : Boolean);
-      --  Call Process on all declarations in compilation unit CU. If
-      --  Inside_Stubs is True, then the body of stubs is also traversed.
-      --  Generic declarations are ignored.
 
       procedure Collect_SPARK_Xrefs
         (Sdep_Table : Unit_Ref_Table;

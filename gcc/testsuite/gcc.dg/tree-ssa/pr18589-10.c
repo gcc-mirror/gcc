@@ -7,4 +7,4 @@ double baz (double x, double y, double z)
 	  * __builtin_pow (z, 4.0));
 }
 
-/* { dg-final { scan-tree-dump-times " \\* " 5 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\* " 4 "optimized" } } */

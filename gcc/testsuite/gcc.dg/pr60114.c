@@ -1,6 +1,7 @@
 /* PR c/60114 */
 /* { dg-do compile } */
 /* { dg-options "-Wconversion" } */
+/* { dg-require-effective-target int32plus } */
 
 struct S { int n, u[2]; };
 const signed char z[] = {

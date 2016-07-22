@@ -120,7 +120,7 @@ package Osint is
    --  lower case form, so that two environment variable names compare equal if
    --  they refer to the same environment variable.
 
-   function Number_Of_Files return Int;
+   function Number_Of_Files return Nat;
    --  Gives the total number of filenames found on the command line
 
    No_Index : constant := -1;

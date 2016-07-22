@@ -2,7 +2,6 @@
    results of arithmetic with T bit inputs.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "extu|exts" } } */
 
 int

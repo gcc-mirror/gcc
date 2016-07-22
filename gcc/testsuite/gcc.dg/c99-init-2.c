@@ -9,7 +9,7 @@ typedef struct {
 } A;
 A a = { [2] = 1 };			/* { dg-error "(array index in non-array)|(near initialization)" } */
 int b[] = { .B = 1 };			/* { dg-error "(field name not in record)|(near initialization)" } */
-A c[] = { [0].D = 1 };			/* { dg-error "unknown field" } */
+A c[] = { [0].D = 1 };			/* { dg-error "15: has no member named .D." } */
 int d;
 int e = { d++ };			/* { dg-error "(is not constant)|(near initialization)" } */
 A f[2] = { [0].C[0] = 1, [2] = { 2, { 1, 2 } } };/* { dg-error "(array index in initializer exceeds array bounds)|(near initialization)" } */

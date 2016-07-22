@@ -682,6 +682,8 @@ void debug_constraints (void);
 void debug_constraint_graph (void);
 void debug_solution_for_var (unsigned int);
 void debug_sa_points_to_info (void);
+void debug_varinfo (varinfo_t);
+void debug_varmap (void);
 
 /* Print out constraint C to stderr.  */
 
@@ -2239,7 +2241,11 @@ dump_pred_graph (struct scc_info *si, FILE *file)
       if (graph->points_to[i]
 	  && !bitmap_empty_p (graph->points_to[i]))
 	{
-	  fprintf (file, "[label=\"%s = {", get_varinfo (i)->name);
+	  if (i < FIRST_REF_NODE)
+	    fprintf (file, "[label=\"%s = {", get_varinfo (i)->name);
+	  else
+	    fprintf (file, "[label=\"*%s = {",
+		     get_varinfo (i - FIRST_REF_NODE)->name);
 	  unsigned j;
 	  bitmap_iterator bi;
 	  EXECUTE_IF_SET_IN_BITMAP (graph->points_to[i], 0, j, bi)
@@ -3205,6 +3211,20 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
 
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize, &reverse);
 
+  /* We can end up here for component references on a
+     VIEW_CONVERT_EXPR <>(&foobar) or things like a
+     BIT_FIELD_REF <&MEM[(void *)&b + 4B], ...>.  So for
+     symbolic constants simply give up.  */
+  if (TREE_CODE (t) == ADDR_EXPR)
+    {
+      constraint_expr result;
+      result.type = SCALAR;
+      result.var = anything_id;
+      result.offset = 0;
+      results->safe_push (result);
+      return;
+    }
+
   /* Pretend to take the address of the base, we'll take care of
      adding the required subset of sub-fields below.  */
   get_constraint_for_1 (t, results, true, lhs_p);
@@ -3294,8 +3314,8 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
     }
   else if (result.type == ADDRESSOF)
     {
-      /* We can end up here for component references on a
-         VIEW_CONVERT_EXPR <>(&foobar).  */
+      /* We can end up here for component references on constants like
+	 VIEW_CONVERT_EXPR <>({ 0, 1, 2, 3 })[i].  */
       result.type = SCALAR;
       result.var = anything_id;
       result.offset = 0;
@@ -4486,7 +4506,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	  tree valist = gimple_call_arg (t, 0);
 	  struct constraint_expr rhs, *lhsp;
 	  unsigned i;
-	  get_constraint_for (valist, &lhsc);
+	  get_constraint_for_ptr_offset (valist, NULL_TREE, &lhsc);
 	  do_deref (&lhsc);
 	  /* The va_list gets access to pointers in variadic
 	     arguments.  Which we know in the case of IPA analysis
@@ -4639,12 +4659,11 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	  auto_vec<ce_s, 2> lhsc;
 	  struct constraint_expr rhs;
 	  struct constraint_expr *lhsp;
+	  bool aggr_p = aggregate_value_p (lhsop, gimple_call_fntype (t));
 
 	  get_constraint_for (lhsop, &lhsc);
 	  rhs = get_function_part_constraint (fi, fi_result);
-	  if (fndecl
-	      && DECL_RESULT (fndecl)
-	      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
+	  if (aggr_p)
 	    {
 	      auto_vec<ce_s, 2> tem;
 	      tem.quick_push (rhs);
@@ -4654,22 +4673,19 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	    }
 	  FOR_EACH_VEC_ELT (lhsc, j, lhsp)
 	    process_constraint (new_constraint (*lhsp, rhs));
-	}
 
-      /* If we pass the result decl by reference, honor that.  */
-      if (lhsop
-	  && fndecl
-	  && DECL_RESULT (fndecl)
-	  && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
-	{
-	  struct constraint_expr lhs;
-	  struct constraint_expr *rhsp;
+	  /* If we pass the result decl by reference, honor that.  */
+	  if (aggr_p)
+	    {
+	      struct constraint_expr lhs;
+	      struct constraint_expr *rhsp;
 
-	  get_constraint_for_address_of (lhsop, &rhsc);
-	  lhs = get_function_part_constraint (fi, fi_result);
-	  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
-	    process_constraint (new_constraint (lhs, *rhsp));
-	  rhsc.truncate (0);
+	      get_constraint_for_address_of (lhsop, &rhsc);
+	      lhs = get_function_part_constraint (fi, fi_result);
+	      FOR_EACH_VEC_ELT (rhsc, j, rhsp)
+		  process_constraint (new_constraint (lhs, *rhsp));
+	      rhsc.truncate (0);
+	    }
 	}
 
       /* If we use a static chain, pass it along.  */
@@ -6252,6 +6268,9 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 	  pt->vars_contains_escaped_heap = vi->is_heap_var;
 	}
 
+      if (vi->is_restrict_var)
+	pt->vars_contains_restrict = true;
+
       if (TREE_CODE (vi->decl) == VAR_DECL
 	  || TREE_CODE (vi->decl) == PARM_DECL
 	  || TREE_CODE (vi->decl) == RESULT_DECL)
@@ -7180,13 +7199,20 @@ delete_points_to_sets (void)
   obstack_free (&final_solutions_obstack, NULL);
 }
 
+struct vls_data
+{
+  unsigned short clique;
+  bitmap rvars;
+};
+
 /* Mark "other" loads and stores as belonging to CLIQUE and with
    base zero.  */
 
 static bool
-visit_loadstore (gimple *, tree base, tree ref, void *clique_)
+visit_loadstore (gimple *, tree base, tree ref, void *data)
 {
-  unsigned short clique = (uintptr_t)clique_;
+  unsigned short clique = ((vls_data *) data)->clique;
+  bitmap rvars = ((vls_data *) data)->rvars;
   if (TREE_CODE (base) == MEM_REF
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
@@ -7194,12 +7220,16 @@ visit_loadstore (gimple *, tree base, tree ref, void *clique_)
       if (TREE_CODE (ptr) == SSA_NAME
 	  && ! SSA_NAME_IS_DEFAULT_DEF (ptr))
 	{
-	  /* ???  We need to make sure 'ptr' doesn't include any of
+	  /* We need to make sure 'ptr' doesn't include any of
 	     the restrict tags we added bases for in its points-to set.  */
-	  return false;
-	}
+	  varinfo_t vi = lookup_vi_for_tree (ptr);
+	  if (! vi)
+	    return false;
 
-      /* For now let decls through.  */
+	  vi = get_varinfo (find (vi->id));
+	  if (bitmap_intersect_p (rvars, vi->solution))
+	    return false;
+	}
 
       /* Do not overwrite existing cliques (that includes clique, base
          pairs we just set).  */
@@ -7273,6 +7303,7 @@ compute_dependence_clique (void)
 {
   unsigned short clique = 0;
   unsigned short last_ruid = 0;
+  bitmap rvars = BITMAP_ALLOC (NULL);
   for (unsigned i = 0; i < num_ssa_names; ++i)
     {
       tree ptr = ssa_name (i);
@@ -7328,38 +7359,46 @@ compute_dependence_clique (void)
 	  /* Now look at possible dereferences of ptr.  */
 	  imm_use_iterator ui;
 	  gimple *use_stmt;
+	  bool used = false;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
 	    {
 	      /* ???  Calls and asms.  */
 	      if (!gimple_assign_single_p (use_stmt))
 		continue;
-	      maybe_set_dependence_info (gimple_assign_lhs (use_stmt), ptr,
-					 clique, restrict_var, last_ruid);
-	      maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt), ptr,
-					 clique, restrict_var, last_ruid);
+	      used |= maybe_set_dependence_info (gimple_assign_lhs (use_stmt),
+						 ptr, clique, restrict_var,
+						 last_ruid);
+	      used |= maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt),
+						 ptr, clique, restrict_var,
+						 last_ruid);
 	    }
+	  if (used)
+	    bitmap_set_bit (rvars, restrict_var->id);
 	}
     }
 
-  if (clique == 0)
-    return;
+  if (clique != 0)
+    {
+      /* Assign the BASE id zero to all accesses not based on a restrict
+	 pointer.  That way they get disambiguated against restrict
+	 accesses but not against each other.  */
+      /* ???  For restricts derived from globals (thus not incoming
+	 parameters) we can't restrict scoping properly thus the following
+	 is too aggressive there.  For now we have excluded those globals from
+	 getting into the MR_DEPENDENCE machinery.  */
+      vls_data data = { clique, rvars };
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    gimple *stmt = gsi_stmt (gsi);
+	    walk_stmt_load_store_ops (stmt, &data,
+				      visit_loadstore, visit_loadstore);
+	  }
+    }
 
-  /* Assign the BASE id zero to all accesses not based on a restrict
-     pointer.  That way they get disabiguated against restrict
-     accesses but not against each other.  */
-  /* ???  For restricts derived from globals (thus not incoming
-     parameters) we can't restrict scoping properly thus the following
-     is too aggressive there.  For now we have excluded those globals from
-     getting into the MR_DEPENDENCE machinery.  */
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
-	 !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-	gimple *stmt = gsi_stmt (gsi);
-	walk_stmt_load_store_ops (stmt, (void *)(uintptr_t)clique,
-				  visit_loadstore, visit_loadstore);
-      }
+  BITMAP_FREE (rvars);
 }
 
 /* Compute points-to information for every SSA_NAME pointer in the
@@ -7483,16 +7522,145 @@ make_pass_build_ealias (gcc::context *ctxt)
 
 /* IPA PTA solutions for ESCAPED.  */
 struct pt_solution ipa_escaped_pt
-  = { true, false, false, false, false, false, false, false, NULL };
+  = { true, false, false, false, false, false, false, false, false, NULL };
 
 /* Associate node with varinfo DATA. Worker for
-   cgraph_for_node_and_aliases.  */
+   cgraph_for_symbol_thunks_and_aliases.  */
 static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias || node->thunk.thunk_p)
       && node->analyzed)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
+  return false;
+}
+
+/* Dump varinfo VI to FILE.  */
+
+static void
+dump_varinfo (FILE *file, varinfo_t vi)
+{
+  if (vi == NULL)
+    return;
+
+  fprintf (file, "%u: %s\n", vi->id, vi->name);
+
+  const char *sep = " ";
+  if (vi->is_artificial_var)
+    fprintf (file, "%sartificial", sep);
+  if (vi->is_special_var)
+    fprintf (file, "%sspecial", sep);
+  if (vi->is_unknown_size_var)
+    fprintf (file, "%sunknown-size", sep);
+  if (vi->is_full_var)
+    fprintf (file, "%sfull", sep);
+  if (vi->is_heap_var)
+    fprintf (file, "%sheap", sep);
+  if (vi->may_have_pointers)
+    fprintf (file, "%smay-have-pointers", sep);
+  if (vi->only_restrict_pointers)
+    fprintf (file, "%sonly-restrict-pointers", sep);
+  if (vi->is_restrict_var)
+    fprintf (file, "%sis-restrict-var", sep);
+  if (vi->is_global_var)
+    fprintf (file, "%sglobal", sep);
+  if (vi->is_ipa_escape_point)
+    fprintf (file, "%sipa-escape-point", sep);
+  if (vi->is_fn_info)
+    fprintf (file, "%sfn-info", sep);
+  if (vi->ruid)
+    fprintf (file, "%srestrict-uid:%u", sep, vi->ruid);
+  if (vi->next)
+    fprintf (file, "%snext:%u", sep, vi->next);
+  if (vi->head != vi->id)
+    fprintf (file, "%shead:%u", sep, vi->head);
+  if (vi->offset)
+    fprintf (file, "%soffset:" HOST_WIDE_INT_PRINT_DEC, sep, vi->offset);
+  if (vi->size != ~(unsigned HOST_WIDE_INT)0)
+    fprintf (file, "%ssize:" HOST_WIDE_INT_PRINT_DEC, sep, vi->size);
+  if (vi->fullsize != ~(unsigned HOST_WIDE_INT)0
+      && vi->fullsize != vi->size)
+    fprintf (file, "%sfullsize:" HOST_WIDE_INT_PRINT_DEC, sep,
+	     vi->fullsize);
+  fprintf (file, "\n");
+
+  if (vi->solution && !bitmap_empty_p (vi->solution))
+    {
+      bitmap_iterator bi;
+      unsigned i;
+      fprintf (file, " solution: {");
+      EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
+	fprintf (file, " %u", i);
+      fprintf (file, " }\n");
+    }
+
+  if (vi->oldsolution && !bitmap_empty_p (vi->oldsolution)
+      && !bitmap_equal_p (vi->solution, vi->oldsolution))
+    {
+      bitmap_iterator bi;
+      unsigned i;
+      fprintf (file, " oldsolution: {");
+      EXECUTE_IF_SET_IN_BITMAP (vi->oldsolution, 0, i, bi)
+	fprintf (file, " %u", i);
+      fprintf (file, " }\n");
+    }
+}
+
+/* Dump varinfo VI to stderr.  */
+
+DEBUG_FUNCTION void
+debug_varinfo (varinfo_t vi)
+{
+  dump_varinfo (stderr, vi);
+}
+
+/* Dump varmap to FILE.  */
+
+static void
+dump_varmap (FILE *file)
+{
+  if (varmap.length () == 0)
+    return;
+
+  fprintf (file, "variables:\n");
+
+  for (unsigned int i = 0; i < varmap.length (); ++i)
+    {
+      varinfo_t vi = get_varinfo (i);
+      dump_varinfo (file, vi);
+    }
+
+  fprintf (file, "\n");
+}
+
+/* Dump varmap to stderr.  */
+
+DEBUG_FUNCTION void
+debug_varmap (void)
+{
+  dump_varmap (stderr);
+}
+
+/* Compute whether node is refered to non-locally.  Worker for
+   cgraph_for_symbol_thunks_and_aliases.  */
+static bool
+refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
+{
+  bool *nonlocal_p = (bool *)data;
+  *nonlocal_p |= (node->used_from_other_partition
+		  || node->externally_visible
+		  || node->force_output);
+  return false;
+}
+
+/* Same for varpool nodes.  */
+static bool
+refered_from_nonlocal_var (struct varpool_node *node, void *data)
+{
+  bool *nonlocal_p = (bool *)data;
+  *nonlocal_p |= (node->used_from_other_partition
+		  || node->externally_visible
+		  || node->force_output);
   return false;
 }
 
@@ -7535,30 +7703,15 @@ ipa_pta_execute (void)
 
       gcc_assert (!node->clone_of);
 
-      /* When parallelizing a code region, we split the region off into a
-	 separate function, to be run by several threads in parallel.  So for a
-	 function foo, we split off a region into a function
-	 foo._0 (void *foodata), and replace the region with some variant of a
-	 function call run_on_threads (&foo._0, data).  The '&foo._0' sets the
-	 address_taken bit for function foo._0, which would make it non-local.
-	 But for the purpose of ipa-pta, we can regard the run_on_threads call
-	 as a local call foo._0 (data),  so we ignore address_taken on nodes
-	 with parallelized_function set.
-	 Note: this is only safe, if foo and foo._0 are in the same lto
-	 partition.  */
-      bool node_address_taken = ((node->parallelized_function
-				  && !node->used_from_other_partition)
-				 ? false
-				 : node->address_taken);
-
       /* For externally visible or attribute used annotated functions use
 	 local constraints for their arguments.
 	 For local functions we see all callers and thus do not need initial
 	 constraints for parameters.  */
       bool nonlocal_p = (node->used_from_other_partition
 			 || node->externally_visible
-			 || node->force_output
-			 || node_address_taken);
+			 || node->force_output);
+      node->call_for_symbol_thunks_and_aliases (refered_from_nonlocal_fn,
+						&nonlocal_p, true);
 
       vi = create_function_info_for (node->decl,
 				     alias_get_name (node->decl), false,
@@ -7596,6 +7749,8 @@ ipa_pta_execute (void)
       bool nonlocal_p = (var->used_from_other_partition
 			 || var->externally_visible
 			 || var->force_output);
+      var->call_for_symbol_and_aliases (refered_from_nonlocal_var,
+					&nonlocal_p, true);
       if (nonlocal_p)
 	vi->is_ipa_escape_point = true;
     }

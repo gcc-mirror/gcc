@@ -2,20 +2,9 @@
 
 /* { dg-do run { target s390*-*-* } } */
 /* { dg-prune-output "call-clobbered register used for global register variable" } */
-/* { dg-options "-march=z900 -fPIC -fomit-frame-pointer -O3" } */
+/* { dg-options "-march=z900 -fPIC -fomit-frame-pointer -O3 -save-temps" } */
 
 #include <assert.h>
-
-/* Block all registers except the first three argument registers.  */
-register long r0 asm ("r0");
-register long r1 asm ("r1");
-register long r5 asm ("r5");
-register long r6 asm ("r6");
-register long r7 asm ("r7");
-register long r8 asm ("r8");
-register long r9 asm ("r9");
-register long r10 asm ("r10");
-register long r11 asm ("r11");
 
 struct s_t
 {
@@ -24,25 +13,40 @@ struct s_t
 };
 
 __attribute__ ((noinline))
-void foo (struct s_t *ps, int c, int i)
+int bar ()
 {
+  return 0;
+}
+
+__attribute__ ((noinline))
+void foo (struct s_t *ps, int c)
+{
+  int tmp;
+
   /* Uses r2 as address register.  */
   ps->f1 = c;
-  /* The calculation of the value is so expensive that it's cheaper to spill ps
-     to the stack and reload it later (into a different register).
-     ==> Uses r4 as address register.*/
-  ps->f2 = i + i % 3;
+  /* Clobber all registers that r2 could be stored into.  */
+  __asm__ __volatile__ ("" : : : "memory",
+			"r0","r1","r6","r7","r8","r9","r10","r11");
+  /* Force that the pointer is evicted from r2 and stored on the stack.  */
+  tmp = bar ();
+  /* User the pointer again.  It gets reloaded to a different register because
+     r2 is already occupied.  */
+  ps->f2 = tmp;
   /* If dead store elimination fails to detect that the address in r2 during
-     the first assignment is an alias of the address in r4 during the second
+     the first assignment is an alias of the address in rX during the second
      assignment, it eliminates the first assignment and the f1 field is not
      written (bug).  */
 }
+/* Make sure that r2 is used only once as an address register for storing.
+   If this check fails, the test case needs to be fixed.
+   { dg-final { scan-assembler-times "\tst.\?\t.*,0\\(%r2\\)" 1 } } */
 
 int main (void)
 {
   struct s_t s = { 0x01u, 0x020304u };
 
-  foo (&s, 0, 0);
+  foo (&s, 0);
   assert (s.f1 == 0&& s.f2 == 0);
 
   return 0;

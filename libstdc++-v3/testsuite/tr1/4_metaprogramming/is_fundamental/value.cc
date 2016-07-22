@@ -28,7 +28,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   using std::tr1::is_fundamental;
   using namespace __gnu_test;
-  
+
   VERIFY( (test_category<is_fundamental, void>(true)) );
   VERIFY( (test_category<is_fundamental, char>(true)) );
   VERIFY( (test_category<is_fundamental, signed char>(true)) );

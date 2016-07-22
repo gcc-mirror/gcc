@@ -177,6 +177,16 @@ template<bool cache>
 					cache>;
 
 template<bool cache>
+  using __uset2 =
+	      std::_Hashtable<int, int, std::allocator<int>,
+			      std::__detail::_Identity,
+			      std::equal_to<int>, std::hash<int>,
+			      std::__detail::_Mask_range_hashing,
+			      std::__detail::_Default_ranged_hash,
+			      std::__detail::_Power2_rehash_policy,
+			      std::__uset_traits<cache>>;
+
+template<bool cache>
   using __str_uset = 
 	      std::__uset_hashtable<std::string, std::hash<std::string>,
 				    std::equal_to<std::string>,
@@ -190,6 +200,16 @@ template<bool cache>
 					std::allocator<std::string>,
 					cache>;
 
+template<bool cache>
+  using __str_uset2 =
+	      std::_Hashtable<std::string, std::string, std::allocator<std::string>,
+			      std::__detail::_Identity,
+			      std::equal_to<std::string>, std::hash<std::string>,
+			      std::__detail::_Mask_range_hashing,
+			      std::__detail::_Default_ranged_hash,
+			      std::__detail::_Power2_rehash_policy,
+			      std::__uset_traits<cache>>;
+
 int main()
 {
   bench<__tr1_uset<false>>(
@@ -202,6 +222,10 @@ int main()
 	"std::unordered_set<int> with hash code cached");
   bench<std::unordered_set<int>>(
 	"std::unordered_set<int> default cache");
+  bench<__uset2<false>>(
+	"std::unordered_set2<int> without hash code cached");
+  bench<__uset2<true>>(
+	"std::unordered_set2<int> with hash code cached");
   bench_str<__tr1_str_uset<false>>(
 	"std::tr1::unordered_set<string> without hash code cached");
   bench_str<__tr1_str_uset<true>>(
@@ -210,7 +234,11 @@ int main()
 	"std::unordered_set<string> without hash code cached");
   bench_str<__str_uset<true>>(
 	"std::unordered_set<string> with hash code cached");
-    bench_str<std::unordered_set<std::string>>(
+  bench_str<std::unordered_set<std::string>>(
 	"std::unordered_set<string> default cache");
+  bench_str<__str_uset2<false>>(
+	"std::unordered_set2<string> without hash code cached");
+  bench_str<__str_uset2<true>>(
+	"std::unordered_set2<string> with hash code cached");
   return 0;
 }

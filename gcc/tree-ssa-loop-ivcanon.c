@@ -207,8 +207,8 @@ constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
    Stop estimating after UPPER_BOUND is met.  Return true in this case.  */
 
 static bool
-tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, struct loop_size *size,
-			 int upper_bound)
+tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel,
+			 struct loop_size *size, int upper_bound)
 {
   basic_block *body = get_loop_body (loop);
   gimple_stmt_iterator gsi;
@@ -236,7 +236,8 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
       else
 	after_exit = false;
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " BB: %i, after_exit: %i\n", body[i]->index, after_exit);
+	fprintf (dump_file, " BB: %i, after_exit: %i\n", body[i]->index,
+		 after_exit);
 
       for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -254,65 +255,73 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 
 	  /* Look for reasons why we might optimize this stmt away. */
 
-	  if (gimple_has_side_effects (stmt))
-	    ;
-	  /* Exit conditional.  */
-	  else if (exit && body[i] == exit->src
-		   && stmt == last_stmt (exit->src))
+	  if (!gimple_has_side_effects (stmt))
 	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Exit condition will be eliminated "
-			 "in peeled copies.\n");
-	      likely_eliminated_peeled = true;
-	    }
-	  else if (edge_to_cancel && body[i] == edge_to_cancel->src
-		   && stmt == last_stmt (edge_to_cancel->src))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Exit condition will be eliminated "
-			 "in last copy.\n");
-	      likely_eliminated_last = true;
-	    }
-	  /* Sets of IV variables  */
-	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
-	      && constant_after_peeling (gimple_assign_lhs (stmt), stmt, loop))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Induction variable computation will"
-			 " be folded away.\n");
-	      likely_eliminated = true;
-	    }
-	  /* Assignments of IV variables.  */
-	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
-		   && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-		   && constant_after_peeling (gimple_assign_rhs1 (stmt), stmt, loop)
-		   && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
-		       || constant_after_peeling (gimple_assign_rhs2 (stmt),
-		       				  stmt, loop)))
-	    {
-	      size->constant_iv = true;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Constant expression will be folded away.\n");
-	      likely_eliminated = true;
-	    }
-	  /* Conditionals.  */
-	  else if ((gimple_code (stmt) == GIMPLE_COND
-		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)
-		    /* We don't simplify all constant compares so make sure
-		       they are not both constant already.  See PR70288.  */
-		    && (! is_gimple_min_invariant (gimple_cond_lhs (stmt))
-			|| ! is_gimple_min_invariant (gimple_cond_rhs (stmt))))
-		   || (gimple_code (stmt) == GIMPLE_SWITCH
-		       && constant_after_peeling (gimple_switch_index (
-						    as_a <gswitch *> (stmt)),
+	      /* Exit conditional.  */
+	      if (exit && body[i] == exit->src
+		  && stmt == last_stmt (exit->src))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "   Exit condition will be eliminated "
+			     "in peeled copies.\n");
+		  likely_eliminated_peeled = true;
+		}
+	      if (edge_to_cancel && body[i] == edge_to_cancel->src
+		  && stmt == last_stmt (edge_to_cancel->src))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "   Exit condition will be eliminated "
+			     "in last copy.\n");
+		  likely_eliminated_last = true;
+		}
+	      /* Sets of IV variables  */
+	      if (gimple_code (stmt) == GIMPLE_ASSIGN
+		  && constant_after_peeling (gimple_assign_lhs (stmt), stmt, loop))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "   Induction variable computation will"
+			     " be folded away.\n");
+		  likely_eliminated = true;
+		}
+	      /* Assignments of IV variables.  */
+	      else if (gimple_code (stmt) == GIMPLE_ASSIGN
+		       && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
+		       && constant_after_peeling (gimple_assign_rhs1 (stmt),
 						  stmt, loop)
-		       && ! is_gimple_min_invariant (gimple_switch_index (
-						       as_a <gswitch *> (stmt)))))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Constant conditional.\n");
-	      likely_eliminated = true;
+		       && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
+			   || constant_after_peeling (gimple_assign_rhs2 (stmt),
+						      stmt, loop)))
+		{
+		  size->constant_iv = true;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "   Constant expression will be folded away.\n");
+		  likely_eliminated = true;
+		}
+	      /* Conditionals.  */
+	      else if ((gimple_code (stmt) == GIMPLE_COND
+			&& constant_after_peeling (gimple_cond_lhs (stmt), stmt,
+						   loop)
+			&& constant_after_peeling (gimple_cond_rhs (stmt), stmt,
+						   loop)
+			/* We don't simplify all constant compares so make sure
+			   they are not both constant already.  See PR70288.  */
+			&& (! is_gimple_min_invariant (gimple_cond_lhs (stmt))
+			    || ! is_gimple_min_invariant
+				 (gimple_cond_rhs (stmt))))
+		       || (gimple_code (stmt) == GIMPLE_SWITCH
+			   && constant_after_peeling (gimple_switch_index (
+							as_a <gswitch *>
+							  (stmt)),
+						      stmt, loop)
+			   && ! is_gimple_min_invariant
+				   (gimple_switch_index
+				      (as_a <gswitch *> (stmt)))))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "   Constant conditional.\n");
+		  likely_eliminated = true;
+		}
 	    }
 
 	  size->overall += num;
@@ -339,26 +348,24 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  if (gimple_code (stmt) == GIMPLE_CALL)
+	  if (gimple_code (stmt) == GIMPLE_CALL
+	      && !gimple_inexpensive_call_p (as_a <gcall *>  (stmt)))
 	    {
 	      int flags = gimple_call_flags (stmt);
-	      tree decl = gimple_call_fndecl (stmt);
-
-	      if (decl && DECL_IS_BUILTIN (decl)
-		  && is_inexpensive_builtin (decl))
-		;
-	      else if (flags & (ECF_PURE | ECF_CONST))
+	      if (flags & (ECF_PURE | ECF_CONST))
 		size->num_pure_calls_on_hot_path++;
 	      else
 		size->num_non_pure_calls_on_hot_path++;
 	      size->num_branches_on_hot_path ++;
 	    }
-	  else if (gimple_code (stmt) != GIMPLE_CALL
-		   && gimple_code (stmt) != GIMPLE_DEBUG)
+	  /* Count inexpensive calls as non-calls, because they will likely
+	     expand inline.  */
+	  else if (gimple_code (stmt) != GIMPLE_DEBUG)
 	    size->non_call_stmts_on_hot_path++;
 	  if (((gimple_code (stmt) == GIMPLE_COND
 	        && (!constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		    || constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)))
+		    || constant_after_peeling (gimple_cond_rhs (stmt), stmt,
+					       loop)))
 	       || (gimple_code (stmt) == GIMPLE_SWITCH
 		   && !constant_after_peeling (gimple_switch_index (
 						 as_a <gswitch *> (stmt)),
@@ -591,9 +598,13 @@ remove_redundant_iv_tests (struct loop *loop)
   return changed;
 }
 
-/* Stores loops that will be unlooped after we process whole loop tree. */
+/* Stores loops that will be unlooped and edges that will be removed
+   after we process whole loop tree. */
 static vec<loop_p> loops_to_unloop;
 static vec<int> loops_to_unloop_nunroll;
+static vec<edge> edges_to_remove;
+/* Stores loops that has been peeled.  */
+static bitmap peeled_loops;
 
 /* Cancel all fully unrolled loops by putting __builtin_unreachable
    on the latch edge.  
@@ -646,6 +657,16 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
     }
   loops_to_unloop.release ();
   loops_to_unloop_nunroll.release ();
+
+  /* Remove edges in peeled copies.  */
+  unsigned i;
+  edge e;
+  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
+    {
+      bool ok = remove_path (e);
+      gcc_assert (ok);
+    }
+  edges_to_remove.release ();
 }
 
 /* Tries to unroll LOOP completely, i.e. NITER times.
@@ -712,7 +733,7 @@ try_unroll_loop_completely (struct loop *loop,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Not unrolling loop %d "
-		 "(--param max-completely-peeled-times limit reached).\n",
+		 "(--param max-completely-peel-times limit reached).\n",
 		 loop->num);
       return false;
     }
@@ -723,15 +744,18 @@ try_unroll_loop_completely (struct loop *loop,
   if (n_unroll)
     {
       sbitmap wont_exit;
-      edge e;
-      unsigned i;
       bool large;
-      vec<edge> to_remove = vNULL;
       if (ul == UL_SINGLE_ITER)
 	return false;
 
+      /* EXIT can be removed only if we are sure it passes first N_UNROLL
+	 iterations.  */
+      bool remove_exit = (exit && niter
+			  && TREE_CODE (niter) == INTEGER_CST
+			  && wi::leu_p (n_unroll, wi::to_widest (niter)));
+
       large = tree_estimate_loop_size
-		 (loop, exit, edge_to_cancel, &size,
+		 (loop, remove_exit ? exit : NULL, edge_to_cancel, &size,
 		  PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
       ninsns = size.overall;
       if (large)
@@ -807,7 +831,7 @@ try_unroll_loop_completely (struct loop *loop,
 		     loop->num);
 	  return false;
 	}
-      /* Complette unrolling is major win when control flow is removed and
+      /* Complete unrolling is a major win when control flow is removed and
 	 one big basic block is created.  If the loop contains control flow
 	 the optimization may still be a win because of eliminating the loop
 	 overhead but it also may blow the branch predictor tables.
@@ -837,12 +861,24 @@ try_unroll_loop_completely (struct loop *loop,
 
       initialize_original_copy_tables ();
       wont_exit = sbitmap_alloc (n_unroll + 1);
-      bitmap_ones (wont_exit);
-      bitmap_clear_bit (wont_exit, 0);
+      if (exit && niter
+	  && TREE_CODE (niter) == INTEGER_CST
+	  && wi::leu_p (n_unroll, wi::to_widest (niter)))
+	{
+	  bitmap_ones (wont_exit);
+	  if (wi::eq_p (wi::to_widest (niter), n_unroll)
+	      || edge_to_cancel)
+	    bitmap_clear_bit (wont_exit, 0);
+	}
+      else
+	{
+	  exit = NULL;
+	  bitmap_clear (wont_exit);
+	}
 
       if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 						 n_unroll, wont_exit,
-						 exit, &to_remove,
+						 exit, &edges_to_remove,
 						 DLTHE_FLAG_UPDATE_FREQ
 						 | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
@@ -853,22 +889,15 @@ try_unroll_loop_completely (struct loop *loop,
 	  return false;
 	}
 
-      FOR_EACH_VEC_ELT (to_remove, i, e)
-	{
-	  bool ok = remove_path (e);
-	  gcc_assert (ok);
-	}
-
-      to_remove.release ();
       free (wont_exit);
       free_original_copy_tables ();
     }
-
 
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
     {
       gcond *cond = as_a <gcond *> (last_stmt (edge_to_cancel->src));
+      force_edge_cold (edge_to_cancel, true);
       if (edge_to_cancel->flags & EDGE_TRUE_VALUE)
 	gimple_cond_make_false (cond);
       else
@@ -939,19 +968,21 @@ try_peel_loop (struct loop *loop,
   struct loop_size size;
   int peeled_size;
   sbitmap wont_exit;
-  unsigned i;
-  vec<edge> to_remove = vNULL;
-  edge e;
 
-  /* If the iteration bound is known and large, then we can safely eliminate
-     the check in peeled copies.  */
-  if (TREE_CODE (niter) != INTEGER_CST)
-    exit = NULL;
-
-  if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0)
+  if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
+      || !peeled_loops)
     return false;
 
-  /* Peel only innermost loops.  */
+  if (bitmap_bit_p (peeled_loops, loop->num))
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: loop is already peeled\n");
+      return false;
+    }
+
+  /* Peel only innermost loops.
+     While the code is perfectly capable of peeling non-innermost loops,
+     the heuristics would probably need some improvements. */
   if (loop->inner)
     {
       if (dump_file)
@@ -968,6 +999,8 @@ try_peel_loop (struct loop *loop,
 
   /* Check if there is an estimate on the number of iterations.  */
   npeel = estimated_loop_iterations_int (loop);
+  if (npeel < 0)
+    npeel = likely_max_loop_iterations_int (loop);
   if (npeel < 0)
     {
       if (dump_file)
@@ -1010,22 +1043,26 @@ try_peel_loop (struct loop *loop,
   /* Duplicate possibly eliminating the exits.  */
   initialize_original_copy_tables ();
   wont_exit = sbitmap_alloc (npeel + 1);
-  bitmap_ones (wont_exit);
-  bitmap_clear_bit (wont_exit, 0);
+  if (exit && niter
+      && TREE_CODE (niter) == INTEGER_CST
+      && wi::leu_p (npeel, wi::to_widest (niter)))
+    {
+      bitmap_ones (wont_exit);
+      bitmap_clear_bit (wont_exit, 0);
+    }
+  else
+    {
+      exit = NULL;
+      bitmap_clear (wont_exit);
+    }
   if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					     npeel, wont_exit,
-					     exit, &to_remove,
-					     DLTHE_FLAG_UPDATE_FREQ
-					     | DLTHE_FLAG_COMPLETTE_PEEL))
+					     exit, &edges_to_remove,
+					     DLTHE_FLAG_UPDATE_FREQ))
     {
       free_original_copy_tables ();
       free (wont_exit);
       return false;
-    }
-  FOR_EACH_VEC_ELT (to_remove, i, e)
-    {
-      bool ok = remove_path (e);
-      gcc_assert (ok);
     }
   free (wont_exit);
   free_original_copy_tables ();
@@ -1034,12 +1071,50 @@ try_peel_loop (struct loop *loop,
       fprintf (dump_file, "Peeled loop %d, %i times.\n",
 	       loop->num, (int) npeel);
     }
+  if (loop->any_estimate)
+    {
+      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
+        loop->nb_iterations_estimate -= npeel;
+      else
+	loop->nb_iterations_estimate = 0;
+    }
   if (loop->any_upper_bound)
-    loop->nb_iterations_upper_bound -= npeel;
-  loop->nb_iterations_estimate = 0;
-  /* Make sure to mark loop cold so we do not try to peel it more.  */
-  scale_loop_profile (loop, 1, 0);
-  loop->header->count = 0;
+    {
+      if (wi::ltu_p (npeel, loop->nb_iterations_upper_bound))
+        loop->nb_iterations_upper_bound -= npeel;
+      else
+        loop->nb_iterations_upper_bound = 0;
+    }
+  if (loop->any_likely_upper_bound)
+    {
+      if (wi::ltu_p (npeel, loop->nb_iterations_likely_upper_bound))
+	loop->nb_iterations_likely_upper_bound -= npeel;
+      else
+	{
+	  loop->any_estimate = true;
+	  loop->nb_iterations_estimate = 0;
+	  loop->nb_iterations_likely_upper_bound = 0;
+	}
+    }
+  gcov_type entry_count = 0;
+  int entry_freq = 0;
+
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, loop->header->preds)
+    if (e->src != loop->latch)
+      {
+	entry_count += e->src->count;
+	entry_freq += e->src->frequency;
+	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
+      }
+  int scale = 1;
+  if (loop->header->count)
+    scale = RDIV (entry_count * REG_BR_PROB_BASE, loop->header->count);
+  else if (loop->header->frequency)
+    scale = RDIV (entry_freq * REG_BR_PROB_BASE, loop->header->frequency);
+  scale_loop_profile (loop, scale, 0);
+  bitmap_set_bit (peeled_loops, loop->num);
   return true;
 }
 /* Adds a canonical induction variable to LOOP if suitable.
@@ -1106,6 +1181,12 @@ canonicalize_loop_induction_variables (struct loop *loop,
     {
       fprintf (dump_file, "Loop %d iterates at most %i times.\n", loop->num,
 	       (int)maxiter);
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && likely_max_loop_iterations_int (loop) >= 0)
+    {
+      fprintf (dump_file, "Loop %d likely iterates at most %i times.\n",
+	       loop->num, (int)likely_max_loop_iterations_int (loop));
     }
 
   /* Remove exits that are known to be never taken based on loop bound.
@@ -1219,8 +1300,7 @@ propagate_constants_for_unrolling (basic_block bb)
 
 static bool
 tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
-				vec<loop_p, va_heap>& father_stack,
-				struct loop *loop)
+				bitmap father_bbs, struct loop *loop)
 {
   struct loop *loop_father;
   bool changed = false;
@@ -1230,7 +1310,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   /* Process inner loops first.  */
   for (inner = loop->inner; inner != NULL; inner = inner->next)
     changed |= tree_unroll_loops_completely_1 (may_increase_size,
-					       unroll_outer, father_stack,
+					       unroll_outer, father_bbs,
 					       inner);
  
   /* If we changed an inner loop we cannot process outer loops in this
@@ -1264,11 +1344,8 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 	 within the new basic blocks to fold away induction variable
 	 computations; otherwise, the size might blow up before the
 	 iteration is complete and the IR eventually cleaned up.  */
-      if (loop_outer (loop_father) && !loop_father->aux)
-	{
-	  father_stack.safe_push (loop_father);
-	  loop_father->aux = loop_father;
-	}
+      if (loop_outer (loop_father))
+	bitmap_set_bit (father_bbs, loop_father->header->index);
 
       return true;
     }
@@ -1283,7 +1360,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
-  auto_vec<loop_p, 16> father_stack;
+  bitmap father_bbs = BITMAP_ALLOC (NULL);
   bool changed;
   int iteration = 0;
   bool irred_invalidated = false;
@@ -1300,20 +1377,12 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
       estimate_numbers_of_iterations ();
 
       changed = tree_unroll_loops_completely_1 (may_increase_size,
-						unroll_outer, father_stack,
+						unroll_outer, father_bbs,
 						current_loops->tree_root);
       if (changed)
 	{
-	  struct loop **iter;
 	  unsigned i;
 
-	  /* Be sure to skip unlooped loops while procesing father_stack
-	     array.  */
-	  FOR_EACH_VEC_ELT (loops_to_unloop, i, iter)
-	    (*iter)->aux = NULL;
-	  FOR_EACH_VEC_ELT (father_stack, i, iter)
-	    if (!(*iter)->aux)
-	      *iter = NULL;
           unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
 
 	  /* We can not use TODO_update_ssa_no_phi because VOPS gets confused.  */
@@ -1324,18 +1393,30 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  else
 	    update_ssa (TODO_update_ssa);
 
+	  /* father_bbs is a bitmap of loop father header BB indices.
+	     Translate that to what non-root loops these BBs belong to now.  */
+	  bitmap_iterator bi;
+	  bitmap fathers = BITMAP_ALLOC (NULL);
+	  EXECUTE_IF_SET_IN_BITMAP (father_bbs, 0, i, bi)
+	    {
+	      basic_block unrolled_loop_bb = BASIC_BLOCK_FOR_FN (cfun, i);
+	      if (! unrolled_loop_bb)
+		continue;
+	      if (loop_outer (unrolled_loop_bb->loop_father))
+		bitmap_set_bit (fathers,
+				unrolled_loop_bb->loop_father->num);
+	    }
+	  bitmap_clear (father_bbs);
 	  /* Propagate the constants within the new basic blocks.  */
-	  FOR_EACH_VEC_ELT (father_stack, i, iter)
-	    if (*iter)
-	      {
-		unsigned j;
-		basic_block *body = get_loop_body_in_dom_order (*iter);
-		for (j = 0; j < (*iter)->num_nodes; j++)
-		  propagate_constants_for_unrolling (body[j]);
-		free (body);
-		(*iter)->aux = NULL;
-	      }
-	  father_stack.truncate (0);
+	  EXECUTE_IF_SET_IN_BITMAP (fathers, 0, i, bi)
+	    {
+	      loop_p father = get_loop (cfun, i);
+	      basic_block *body = get_loop_body_in_dom_order (father);
+	      for (unsigned j = 0; j < father->num_nodes; j++)
+		propagate_constants_for_unrolling (body[j]);
+	      free (body);
+	    }
+	  BITMAP_FREE (fathers);
 
 	  /* This will take care of removing completely unrolled loops
 	     from the loop structures so we can continue unrolling now
@@ -1355,7 +1436,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   while (changed
 	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
 
-  father_stack.release ();
+  BITMAP_FREE (father_bbs);
 
   if (irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
@@ -1446,9 +1527,20 @@ pass_complete_unroll::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  return tree_unroll_loops_completely (flag_unroll_loops
-				       || flag_peel_loops
-				       || optimize >= 3, true);
+  /* If we ever decide to run loop peeling more than once, we will need to
+     track loops already peeled in loop structures themselves to avoid
+     re-peeling the same loop multiple times.  */
+  if (flag_peel_loops)
+    peeled_loops = BITMAP_ALLOC (NULL);
+  int val = tree_unroll_loops_completely (flag_unroll_loops
+					  || flag_peel_loops
+					  || optimize >= 3, true);
+  if (peeled_loops)
+    {
+      BITMAP_FREE (peeled_loops);
+      peeled_loops = NULL;
+    }
+  return val;
 }
 
 } // anon namespace

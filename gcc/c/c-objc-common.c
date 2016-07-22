@@ -27,8 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-objc-common.h"
 
-#include <new>                          // For placement new.
-
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool);
 

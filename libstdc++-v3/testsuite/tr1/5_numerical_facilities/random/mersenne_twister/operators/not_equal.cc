@@ -40,7 +40,7 @@ test01()
     0x9908b0dful, 11, 7,
     0x9d2c5680ul, 15,
     0xefc60000ul, 18> v(2);
-  
+
   VERIFY( u != v );
 }
 

@@ -1416,7 +1416,8 @@ restart:
 	{
 	  if (in_string)
 	    {
-	      gfc_current_locus.nextc--;
+	      if (gfc_current_locus.nextc)
+	        gfc_current_locus.nextc--;
 	      if (warn_ampersand && in_string == INSTRING_WARN)
 		gfc_warning (OPT_Wampersand, 
 			     "Missing %<&%> in continued character "
@@ -1427,7 +1428,10 @@ restart:
 	  /* Both !$omp and !$ -fopenmp continuation lines have & on the
 	     continuation line only optionally.  */
 	  else if (openmp_flag || openacc_flag || openmp_cond_flag)
-	    gfc_current_locus.nextc--;
+	    {
+	      if (gfc_current_locus.nextc)
+		  gfc_current_locus.nextc--;
+	    }
 	  else
 	    {
 	      c = ' ';
@@ -1556,6 +1560,7 @@ restart:
 not_continuation:
   c = '\n';
   gfc_current_locus = old_loc;
+  end_flag = 0;
 
 done:
   if (c == '\n')

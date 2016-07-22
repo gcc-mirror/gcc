@@ -339,7 +339,7 @@ mark_control_dependent_edges_necessary (basic_block bb, bool ignore_self)
   EXECUTE_IF_SET_IN_BITMAP (cd->get_edges_dependent_on (bb->index),
 			    0, edge_number, bi)
     {
-      basic_block cd_bb = cd->get_edge (edge_number)->src;
+      basic_block cd_bb = cd->get_edge_src (edge_number);
 
       if (ignore_self && cd_bb == bb)
 	{
@@ -1577,7 +1577,7 @@ perform_tree_ssa_dce (bool aggressive)
     {
       /* Compute control dependence.  */
       calculate_dominance_info (CDI_POST_DOMINATORS);
-      cd = new control_dependences (create_edge_list ());
+      cd = new control_dependences ();
 
       visited_control_parents =
 	sbitmap_alloc (last_basic_block_for_fn (cfun));

@@ -399,3 +399,17 @@ func NsecToTimeval(nsec int64) (tv Timeval) {
 
 //sys	Tcsetattr(fd int, actions int, p *Termios) (err error)
 //tcsetattr(fd _C_int, actions _C_int, p *Termios) _C_int
+
+//sys	sysconf(name int) (ret int64, err error)
+//sysconf(name _C_int) _C_long
+
+func Sysconf(name int) (ret int64, err error) {
+	// If an option is not available, sysconf returns -1 without
+	// changing errno.  Detect this case and return err == nil.
+	SetErrno(0)
+	ret, err = sysconf(name)
+	if err == Errno(0) {
+		err = nil
+	}
+	return ret, err
+}

@@ -239,10 +239,11 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   if (line_table->seen_line_directive)
     return false;
 
-  /* We can't usefully warn about do-while statements since the bodies of these
-     statements are always explicitly delimited at both ends, so control flow is
-     quite obvious.  */
-  if (guard_tinfo.keyword == RID_DO)
+  /* We can't usefully warn about do-while and switch statements since the
+     bodies of these statements are always explicitly delimited at both ends,
+     so control flow is quite obvious.  */
+  if (guard_tinfo.keyword == RID_DO
+      || guard_tinfo.keyword == RID_SWITCH)
     return false;
 
   /* If the token following the body is a close brace or an "else"

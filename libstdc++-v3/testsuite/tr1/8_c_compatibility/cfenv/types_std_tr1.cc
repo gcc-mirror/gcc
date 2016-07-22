@@ -29,6 +29,6 @@ void test01()
 
   typedef std::tr1::fenv_t     my_fenv_t;
   typedef std::tr1::fexcept_t  my_fexcept_t;
-  
+
 #endif
 }

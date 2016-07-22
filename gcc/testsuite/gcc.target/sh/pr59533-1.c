@@ -1,7 +1,6 @@
 /* Check that the cmp/pz instruction is generated as expected.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 
 /* { dg-final { scan-assembler-times "shll" 1 } }  */
 /* { dg-final { scan-assembler-times "movt" 5 } }  */

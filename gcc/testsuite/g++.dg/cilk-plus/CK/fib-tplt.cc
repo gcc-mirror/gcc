@@ -1,6 +1,6 @@
+/* { dg-do run } */
+/* { dg-require-effective-target cilkplus_runtime } */
 /* { dg-options "-fcilkplus" } */
-/* { dg-do run { target i?86-*-* x86_64-*-* arm*-*-* } } */
-/* { dg-options "-fcilkplus -lcilkrts" { target { i?86-*-* x86_64-*-* arm*-*-*-* } } } */
 
 struct fib_struct
 {

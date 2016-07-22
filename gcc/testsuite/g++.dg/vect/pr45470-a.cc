@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -ftree-vectorize -fnon-call-exceptions" } */
+/* { dg-additional-options "-O1 -fnon-call-exceptions" } */
 
 struct A
 {

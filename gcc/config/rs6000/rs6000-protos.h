@@ -31,6 +31,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
 #endif /* TREE_CODE */
 
 extern bool easy_altivec_constant (rtx, machine_mode);
+extern bool xxspltib_constant_p (rtx, machine_mode, int *, int *);
 extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
 extern bool macho_lo_sum_memory_operand (rtx, machine_mode);
@@ -86,6 +87,7 @@ extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
 extern bool direct_move_p (rtx, rtx);
+extern bool quad_address_p (rtx, machine_mode, bool);
 extern bool quad_load_store_p (rtx, rtx);
 extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
@@ -133,6 +135,7 @@ extern bool rs6000_emit_set_const (rtx, rtx);
 extern int rs6000_emit_cmove (rtx, rtx, rtx, rtx);
 extern int rs6000_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);
+extern void rs6000_split_signbit (rtx, rtx);
 extern void rs6000_expand_atomic_compare_and_swap (rtx op[]);
 extern void rs6000_expand_atomic_exchange (rtx op[]);
 extern void rs6000_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);

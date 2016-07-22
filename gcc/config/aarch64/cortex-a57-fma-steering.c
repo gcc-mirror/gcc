@@ -19,6 +19,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_LIST
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -36,8 +37,6 @@
 #include "regrename.h"
 #include "cortex-a57-fma-steering.h"
 #include "aarch64-protos.h"
-
-#include <list>
 
 /* For better performance, the destination of FMADD/FMSUB instructions should
    have the same parity as their accumulator register if the accumulator

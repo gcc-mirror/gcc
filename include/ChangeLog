@@ -1,3 +1,25 @@
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Increment to 1, add comment to
+	describe the need for incrementing this macro whenever the plugin
+	interface is modified.
+
+2016-04-29  Tom Tromey  <tom@tromey.com>
+
+	* dwarf2.h (enum dwarf_source_language) <DW_LANG_Rust,
+	DW_LANG_Rust_old>: New constants.
+
+2016-04-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* longlong.h (umul_ppmm): Remove SHMEDIA checks.
+	(__umulsidi3, count_leading_zeros): Remove SHMEDIA implementations.
+
+2016-04-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* longlong.h (add_ssaaaa): Replace obsolete 'J' constraint with
+	'Cal' constraint.
+	(sub_ddmmss): Likewise.
+
 2016-03-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gomp-constants.h (enum gomp_map_kind): Rename
@@ -41,6 +63,13 @@
 
 	* libiberty.h (dupargv): Change arg to char * const *.
 	(writeargv, countargv): Likewise.
+
+2015-11-27  Pedro Alves  <palves@redhat.com>
+
+	PR other/61321
+	PR other/61233
+	* demangle.h (enum demangle_component_type)
+	<DEMANGLE_COMPONENT_CONVERSION>: New value.
 
 2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

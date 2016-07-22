@@ -25,5 +25,5 @@
 // 5.1.4.1 [4]
 
 #include <tr1/random>
- 
+
 std::tr1::linear_congruential<double, 48271, 0, 2147483647> x;

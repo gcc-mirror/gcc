@@ -33,7 +33,7 @@ test01()
   subtract_with_carry<unsigned long, (1UL << 24), 10, 24> v;
 
   VERIFY( u == v );
-  
+
   for (int i = 0; i < 100; ++i)
     {
       u();

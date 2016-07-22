@@ -105,10 +105,7 @@ struct reg_info_t
 {
   int freq;			/* # estimated frequency (REG n) is used or set */
   int deaths;			/* # of times (REG n) dies */
-  int live_length;		/* # of instructions (REG n) is live */
   int calls_crossed;		/* # of calls (REG n) is live across */
-  int freq_calls_crossed;	/* # estimated frequency (REG n) crosses call */
-  int throw_calls_crossed;	/* # of calls that may throw (REG n) is live across */
   int basic_block;		/* # of basic blocks (REG n) is used in */
 };
 
@@ -163,26 +160,6 @@ extern size_t reg_info_p_size;
 /* Indexed by N, gives number of CALL_INSNS across which (REG n) is live.  */
 
 #define REG_N_CALLS_CROSSED(N)  (reg_info_p[N].calls_crossed)
-#define REG_FREQ_CALLS_CROSSED(N)  (reg_info_p[N].freq_calls_crossed)
-
-/* Indexed by N, gives number of CALL_INSNS that may throw, across which
-   (REG n) is live.  */
-
-#define REG_N_THROWING_CALLS_CROSSED(N) (reg_info_p[N].throw_calls_crossed)
-
-/* Total number of instructions at which (REG n) is live.
-   
-   This is set in regstat.c whenever register info is requested and
-   remains valid for the rest of the compilation of the function; it is
-   used to control register allocation.  The larger this is, the less
-   priority (REG n) gets for allocation in a hard register (in IRA in
-   priority-coloring mode).
-
-   Negative values are special: -1 is used to mark a pseudo reg that
-   should not be allocated to a hard register, because it crosses a
-   setjmp call.  */
-
-#define REG_LIVE_LENGTH(N)  (reg_info_p[N].live_length)
 
 /* Indexed by n, gives number of basic block that  (REG n) is used in.
    If the value is REG_BLOCK_GLOBAL (-1),

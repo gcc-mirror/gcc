@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ package body Erroutc is
          Class_Flag := False;
          Set_Msg_Char (''');
          Get_Name_String (Name_Class);
-         Set_Casing (Identifier_Casing (Flag_Source), Mixed_Case);
+         Set_Casing (Identifier_Casing (Flag_Source));
          Set_Msg_Name_Buffer;
       end if;
    end Add_Class;
@@ -633,7 +633,7 @@ package body Erroutc is
 
          --  Deal with warning case
 
-         if Errors.Table (E).Warn then
+         if Errors.Table (E).Warn or else Errors.Table (E).Info then
 
             --  For info messages, prefix message with "info: "
 
@@ -855,7 +855,7 @@ package body Erroutc is
          end if;
       end loop;
 
-      if Is_Warning_Msg or Is_Style_Msg or Is_Check_Msg then
+      if Is_Info_Msg or Is_Warning_Msg or Is_Style_Msg or Is_Check_Msg then
          Is_Serious_Error := False;
       end if;
    end Prescan_Message;
@@ -1187,7 +1187,7 @@ package body Erroutc is
          --  Else output with surrounding quotes in proper casing mode
 
          else
-            Set_Casing (Identifier_Casing (Flag_Source), Mixed_Case);
+            Set_Casing (Identifier_Casing (Flag_Source));
             Set_Msg_Quote;
             Set_Msg_Name_Buffer;
             Set_Msg_Quote;

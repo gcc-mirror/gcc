@@ -49,7 +49,7 @@
  */
 
 /** @file include/utility
- *  This is a Standard C++ Library header. 
+ *  This is a Standard C++ Library header.
  */
 
 #ifndef _GLIBCXX_UTILITY
@@ -74,6 +74,10 @@
 #include <type_traits>
 #include <bits/move.h>
 #include <initializer_list>
+
+#if __cplusplus > 201402L
+#include <exception>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -150,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<class _Tp1, class _Tp2>
     struct tuple_element<0, std::pair<_Tp1, _Tp2>>
     { typedef _Tp1 type; };
- 
+
   /// Partial specialization for std::pair
   template<class _Tp1, class _Tp2>
     struct tuple_element<1, std::pair<_Tp1, _Tp2>>
@@ -328,6 +332,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template index_sequence_for
   template<typename... _Types>
     using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
+#endif
+
+#if __cplusplus > 201402L
+
+  struct in_place_tag {
+    in_place_tag() = delete;
+  };
+
+  struct __in_place;
+  template<typename _Tp> struct __in_place_type;
+  template<size_t _Idx> struct __in_place_index;
+
+  using in_place_t = in_place_tag(&)(__in_place*);
+  template <class _Tp>
+    using in_place_type_t = in_place_tag(&)(__in_place_type<_Tp>*);
+  template <int _Idx>
+    using in_place_index_t = in_place_tag(&)(__in_place_index<_Idx>*);
+
+  inline in_place_tag in_place(__in_place*) {terminate();}
+  template <class _Tp>
+    in_place_tag in_place(__in_place_type<_Tp>*) {terminate();}
+  template <size_t _Idx>
+    in_place_tag in_place(__in_place_index<_Idx>*) {terminate();}
+
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

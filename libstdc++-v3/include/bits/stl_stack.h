@@ -250,12 +250,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(stack& __s)
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+      noexcept(__is_nothrow_swappable<_Sequence>::value)
+#else
       noexcept(__is_nothrow_swappable<_Tp>::value)
+#endif
       {
 	using std::swap;
 	swap(c, __s.c);
       }
-#endif
+#endif // __cplusplus >= 201103L
     };
 
   /**
@@ -319,7 +323,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Seq>
-    inline void
+    inline
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+    // Constrained free swap overload, see p0185r1
+    typename enable_if<__is_swappable<_Seq>::value>::type
+#else
+    void
+#endif
     swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>& __y)
     noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
@@ -327,7 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Seq, typename _Alloc>
     struct uses_allocator<stack<_Tp, _Seq>, _Alloc>
     : public uses_allocator<_Seq, _Alloc>::type { };
-#endif
+#endif // __cplusplus >= 201103L
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

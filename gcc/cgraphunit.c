@@ -1428,16 +1428,17 @@ init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
   allocate_struct_function (decl, false);
   gimple_register_cfg_hooks ();
   init_empty_tree_cfg ();
+  init_tree_ssa (cfun);
 
   if (in_ssa)
     {
-      init_tree_ssa (cfun);
       init_ssa_operands (cfun);
       cfun->gimple_df->in_ssa_p = true;
       cfun->curr_properties |= PROP_ssa;
     }
 
   DECL_INITIAL (decl) = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
 
   DECL_SAVED_TREE (decl) = error_mark_node;
   cfun->curr_properties |= (PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_any
@@ -1471,7 +1472,7 @@ init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
    non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
    zero for a result adjusting thunk.  */
 
-static tree
+tree
 thunk_adjust (gimple_stmt_iterator * bsi,
 	      tree ptr, bool this_adjusting,
 	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
@@ -1627,6 +1628,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       fn_block = make_node (BLOCK);
       BLOCK_VARS (fn_block) = a;
       DECL_INITIAL (thunk_fndecl) = fn_block;
+      BLOCK_SUPERCONTEXT (fn_block) = thunk_fndecl;
       allocate_struct_function (thunk_fndecl, false);
       init_function_start (thunk_fndecl);
       cfun->is_thunk = 1;
@@ -1907,6 +1909,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
+	&& !e->caller->global.inlined_to
 	&& !e->caller->thunk.add_pointer_bounds_args)
       {
 	cgraph_node *thunk = e->caller;
@@ -2140,6 +2143,7 @@ enum cgraph_order_sort_kind
   ORDER_UNDEFINED = 0,
   ORDER_FUNCTION,
   ORDER_VAR,
+  ORDER_VAR_UNDEF,
   ORDER_ASM
 };
 
@@ -2186,16 +2190,20 @@ output_in_order (bool no_reorder)
 	}
     }
 
-  FOR_EACH_DEFINED_VARIABLE (pv)
-    if (!DECL_EXTERNAL (pv->decl))
-      {
-	if (no_reorder && !pv->no_reorder)
-	    continue;
-	i = pv->order;
-	gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-	nodes[i].kind = ORDER_VAR;
-	nodes[i].u.v = pv;
-      }
+  /* There is a similar loop in symbol_table::output_variables.
+     Please keep them in sync.  */
+  FOR_EACH_VARIABLE (pv)
+    {
+      if (no_reorder && !pv->no_reorder)
+	continue;
+      if (DECL_HARD_REGISTER (pv->decl)
+	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
+	continue;
+      i = pv->order;
+      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
+      nodes[i].kind = pv->definition ? ORDER_VAR : ORDER_VAR_UNDEF;
+      nodes[i].u.v = pv;
+    }
 
   for (pa = symtab->first_asm_symbol (); pa; pa = pa->next)
     {
@@ -2221,14 +2229,11 @@ output_in_order (bool no_reorder)
 	  break;
 
 	case ORDER_VAR:
-#ifdef ACCEL_COMPILER
-	  /* Do not assemble "omp declare target link" vars.  */
-	  if (DECL_HAS_VALUE_EXPR_P (nodes[i].u.v->decl)
-	      && lookup_attribute ("omp declare target link",
-				   DECL_ATTRIBUTES (nodes[i].u.v->decl)))
-	    break;
-#endif
 	  nodes[i].u.v->assemble_decl ();
+	  break;
+
+	case ORDER_VAR_UNDEF:
+	  assemble_undefined_decl (nodes[i].u.v->decl);
 	  break;
 
 	case ORDER_ASM:

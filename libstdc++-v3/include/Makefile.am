@@ -27,6 +27,7 @@ std_srcdir = ${glibcxx_srcdir}/include/std
 std_builddir = .
 std_headers = \
 	${std_srcdir}/algorithm \
+	${std_srcdir}/any \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
 	${std_srcdir}/bitset \
@@ -52,6 +53,7 @@ std_headers = \
 	${std_srcdir}/memory \
 	${std_srcdir}/mutex \
 	${std_srcdir}/numeric \
+	${std_srcdir}/optional \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
@@ -92,6 +94,7 @@ bits_headers = \
 	${bits_srcdir}/boost_concept_check.h \
 	${bits_srcdir}/c++0x_warning.h \
 	${bits_srcdir}/c++14_warning.h \
+	${bits_srcdir}/c++17_warning.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \

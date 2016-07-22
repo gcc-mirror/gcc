@@ -86,7 +86,7 @@ test01()
   VERIFY( B::dtor_count == 0 );
 }
 
-int 
+int
 main()
 {
   test01();

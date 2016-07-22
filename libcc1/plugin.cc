@@ -1,5 +1,5 @@
 /* Library interface to C front end
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -553,8 +553,8 @@ plugin_finish_record_or_union (cc1_plugin::connection *,
     {
       // FIXME there's no way to get this from DWARF,
       // or even, it seems, a particularly good way to deduce it.
-      TYPE_ALIGN (record_or_union_type)
-	= TYPE_PRECISION (pointer_sized_int_node);
+      SET_TYPE_ALIGN (record_or_union_type,
+		      TYPE_PRECISION (pointer_sized_int_node));
 
       TYPE_SIZE (record_or_union_type) = bitsize_int (size_in_bytes
 						      * BITS_PER_UNIT);

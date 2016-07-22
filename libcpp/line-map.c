@@ -31,18 +31,6 @@ along with this program; see the file COPYING3.  If not see
    disabled).  */
 const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
 
-/* Do not pack ranges if locations get higher than this.
-   If you change this, update:
-     gcc.dg/plugin/location_overflow_plugin.c
-     gcc.dg/plugin/location-overflow-test-*.c.  */
-const source_location LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES = 0x50000000;
-
-/* Do not track column numbers if locations get higher than this.
-   If you change this, update:
-     gcc.dg/plugin/location_overflow_plugin.c
-     gcc.dg/plugin/location-overflow-test-*.c.  */
-const source_location LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
-
 /* Highest possible source location encoded within an ordinary or
    macro map.  */
 const source_location LINE_MAP_MAX_SOURCE_LOCATION = 0x70000000;
@@ -102,7 +90,7 @@ location_adhoc_data_eq (const void *l1, const void *l2)
 static int
 location_adhoc_data_update (void **slot, void *data)
 {
-  *((char **) slot) += *((long long *) data);
+  *((char **) slot) += *((int64_t *) data);
   return 1;
 }
 
@@ -224,7 +212,7 @@ get_combined_adhoc_loc (struct line_maps *set,
 	  set->location_adhoc_data_map.allocated)
 	{
 	  char *orig_data = (char *) set->location_adhoc_data_map.data;
-	  long long offset;
+	  int64_t offset;
 	  /* Cast away extern "C" from the type of xrealloc.  */
 	  line_map_realloc reallocator = (set->reallocator
 					  ? set->reallocator

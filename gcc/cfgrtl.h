@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CFGRTL_H
 
 extern void delete_insn (rtx);
-extern void delete_insn_and_edges (rtx_insn *);
+extern bool delete_insn_and_edges (rtx_insn *);
 extern void delete_insn_chain (rtx, rtx, bool);
 extern basic_block create_basic_block_structure (rtx_insn *, rtx_insn *,
 						 rtx_note *, basic_block);

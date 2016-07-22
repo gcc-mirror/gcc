@@ -288,7 +288,7 @@ struct store_info
 static unsigned HOST_WIDE_INT
 lowpart_bitmask (int n)
 {
-  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT) 0;
+  unsigned HOST_WIDE_INT mask = HOST_WIDE_INT_M1U;
   return mask >> (HOST_BITS_PER_WIDE_INT - n);
 }
 
@@ -1201,7 +1201,7 @@ set_position_unneeded (store_info *s_info, int pos)
     }
   else
     s_info->positions_needed.small_bitmask
-      &= ~(((unsigned HOST_WIDE_INT) 1) << pos);
+      &= ~(HOST_WIDE_INT_1U << pos);
 }
 
 /* Mark the whole store S_INFO as unneeded.  */
@@ -1217,7 +1217,7 @@ set_all_positions_unneeded (store_info *s_info)
       s_info->positions_needed.large.count = end;
     }
   else
-    s_info->positions_needed.small_bitmask = (unsigned HOST_WIDE_INT) 0;
+    s_info->positions_needed.small_bitmask = HOST_WIDE_INT_0U;
 }
 
 /* Return TRUE if any bytes from S_INFO store are needed.  */
@@ -1229,8 +1229,7 @@ any_positions_needed_p (store_info *s_info)
     return (s_info->positions_needed.large.count
 	    < s_info->end - s_info->begin);
   else
-    return (s_info->positions_needed.small_bitmask
-	    != (unsigned HOST_WIDE_INT) 0);
+    return (s_info->positions_needed.small_bitmask != HOST_WIDE_INT_0U);
 }
 
 /* Return TRUE if all bytes START through START+WIDTH-1 from S_INFO
@@ -1744,7 +1743,7 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	{
 	  unsigned HOST_WIDE_INT c
 	    = INTVAL (store_info->rhs)
-	      & (((HOST_WIDE_INT) 1 << BITS_PER_UNIT) - 1);
+	      & ((HOST_WIDE_INT_1 << BITS_PER_UNIT) - 1);
 	  int shift = BITS_PER_UNIT;
 	  while (shift < HOST_BITS_PER_WIDE_INT)
 	    {
@@ -2269,6 +2268,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
   if (CALL_P (insn))
     {
       bool const_call;
+      rtx call, sym;
       tree memset_call = NULL_TREE;
 
       insn_info->cannot_delete = true;
@@ -2278,24 +2278,16 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 	 been pushed onto the stack.
 	 memset and bzero don't read memory either.  */
       const_call = RTL_CONST_CALL_P (insn);
-      if (!const_call)
-	{
-	  rtx call = get_call_rtx_from (insn);
-	  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
-	    {
-	      rtx symbol = XEXP (XEXP (call, 0), 0);
-	      if (SYMBOL_REF_DECL (symbol)
-		  && TREE_CODE (SYMBOL_REF_DECL (symbol)) == FUNCTION_DECL)
-		{
-		  if ((DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (symbol))
-		       == BUILT_IN_NORMAL
-		       && (DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol))
-			   == BUILT_IN_MEMSET))
-		      || SYMBOL_REF_DECL (symbol) == block_clear_fn)
-		    memset_call = SYMBOL_REF_DECL (symbol);
-		}
-	    }
-	}
+      if (!const_call
+	  && (call = get_call_rtx_from (insn))
+	  && (sym = XEXP (XEXP (call, 0), 0))
+	  && GET_CODE (sym) == SYMBOL_REF
+	  && SYMBOL_REF_DECL (sym)
+	  && TREE_CODE (SYMBOL_REF_DECL (sym)) == FUNCTION_DECL
+	  && DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (sym)) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (sym)) == BUILT_IN_MEMSET)
+	memset_call = SYMBOL_REF_DECL (sym);
+
       if (const_call || memset_call)
 	{
 	  insn_info_t i_ptr = active_local_stores;

@@ -66,7 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ///  Construct start of input stream iterator.
       istream_iterator(istream_type& __s)
-      : _M_stream(&__s)
+      : _M_stream(std::__addressof(__s))
       { _M_read(); }
 
       istream_iterator(const istream_iterator& __obj)
@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       const _Tp*
-      operator->() const { return &(operator*()); }
+      operator->() const { return std::__addressof((operator*())); }
 
       istream_iterator&
       operator++()
@@ -168,7 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       /// Construct from an ostream.
-      ostream_iterator(ostream_type& __s) : _M_stream(&__s), _M_string(0) {}
+      ostream_iterator(ostream_type& __s)
+      : _M_stream(std::__addressof(__s)), _M_string(0) {}
 
       /**
        *  Construct from an ostream.

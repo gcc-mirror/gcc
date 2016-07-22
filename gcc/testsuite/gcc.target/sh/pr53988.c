@@ -4,7 +4,6 @@
    movu insn.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "tst\tr" 8 } } */
 /* { dg-final { scan-assembler-not "tst\t#255" } } */
 /* { dg-final { scan-assembler-not "exts|extu|and|movu" } } */

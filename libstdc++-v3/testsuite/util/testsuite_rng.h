@@ -48,7 +48,7 @@ namespace __gnu_pbds
     class twister_rand_gen
     {
     public:
-      twister_rand_gen(unsigned int seed = 
+      twister_rand_gen(unsigned int seed =
 		       static_cast<unsigned int>(std::time(0)))
       : m_base_generator(seed)
       {
@@ -64,7 +64,7 @@ namespace __gnu_pbds
       { return(static_cast<unsigned int>(std::time(0))); }
 
       unsigned long
-      get_unsigned_long(unsigned long min = 0, 
+      get_unsigned_long(unsigned long min = 0,
 			unsigned long max = UINT_MAX - 1)
       {
 	_GLIBCXX_DEBUG_ASSERT(max >= min);

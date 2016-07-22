@@ -37,7 +37,7 @@ class DerivedHiddenCons
 };
 
 class MultiDerivedHiddenCons
-: private HiddenCons, private __gnu_test::ClassType 
+: private HiddenCons, private __gnu_test::ClassType
 {
   MultiDerivedHiddenCons();
   MultiDerivedHiddenCons(const MultiDerivedHiddenCons&);
@@ -58,7 +58,7 @@ void test01()
   VERIFY( (test_relationship<is_base_of, ClassType, DerivedType>(true)) );
   VERIFY( (test_relationship<is_base_of, ClassType, const DerivedType>(true)) );
   VERIFY( (test_relationship<is_base_of, volatile ClassType,
-	   volatile DerivedType>(true)) );  
+	   volatile DerivedType>(true)) );
   VERIFY( (test_relationship<is_base_of, PolymorphicClass,
 	   DerivedPolymorphic>(true)) );
   VERIFY( (test_relationship<is_base_of, HiddenCons,
@@ -74,7 +74,7 @@ void test01()
 	   UnionType>(false)) );
   VERIFY( (test_relationship<is_base_of, int&, ClassType>(false)) );
   VERIFY( (test_relationship<is_base_of, AbstractClass, ClassType>(false)) );
-  VERIFY( (test_relationship<is_base_of, ClassType, AbstractClass>(false)) );  
+  VERIFY( (test_relationship<is_base_of, ClassType, AbstractClass>(false)) );
   VERIFY( (test_relationship<is_base_of, DerivedType, ClassType>(false)) );
   VERIFY( (test_relationship<is_base_of, DerivedPolymorphic,
 	   PolymorphicClass>(false)) );

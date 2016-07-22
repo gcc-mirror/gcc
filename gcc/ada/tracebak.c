@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2015, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2016, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -99,6 +99,8 @@ extern void (*Unlock_Task) (void);
 
 #include <windows.h>
 
+#define IS_BAD_PTR(ptr) (IsBadCodePtr((FARPROC)ptr))
+
 int
 __gnat_backtrace (void **array,
                   int size,
@@ -137,6 +139,10 @@ __gnat_backtrace (void **array,
 	}
       else
 	{
+	  /* If the last unwinding step failed somehow, stop here.  */
+	  if (IS_BAD_PTR(context.Rip))
+	    break;
+
 	  /* Unwind.  */
 	  memset (&NvContext, 0, sizeof (KNONVOLATILE_CONTEXT_POINTERS));
 	  RtlVirtualUnwind (0, ImageBase, context.Rip, RuntimeFunction,
@@ -294,7 +300,20 @@ __gnat_backtrace (void **array,
 #define PC_ADJUST -2
 /* The minimum size of call instructions on this architecture is 2 bytes */
 
-/*---------------------- PPC AIX/PPC Lynx 178/Older Darwin ------------------*/
+/*---------------------- ARM VxWorks ------------------------------------*/
+#elif (defined (ARMEL) && defined (__vxworks))
+
+#include "vxWorks.h"
+#include "version.h"
+
+#define USE_GCC_UNWINDER
+#define PC_ADJUST -2
+
+#if (_WRS_VXWORKS_MAJOR >= 7)
+#define USING_ARM_UNWINDING 1
+#endif
+
+/*---------------------- PPC AIX/PPC Lynx 178/Older Darwin --------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \
        (defined (__powerpc__) && defined (__Lynx__) && !defined(__ELF__)) || \
        (defined (__ppc__) && defined (__APPLE__)))
@@ -348,9 +367,10 @@ extern void __runnit(); /* thread entry point.  */
 
 #define BASE_SKIP 1
 
-/*-------------------- PPC ELF (GNU/Linux & VxWorks) ---------------------*/
+/*----------- PPC ELF (GNU/Linux & VxWorks & Lynx178e) -------------------*/
 
 #elif (defined (_ARCH_PPC) && defined (__vxworks)) ||  \
+  (defined (__powerpc__) && defined (__Lynx__) && defined(__ELF__)) || \
   (defined (__linux__) && defined (__powerpc__))
 
 #define USE_GENERIC_UNWINDER
@@ -511,6 +531,12 @@ struct layout
    The condition is expressed the way above because we cannot reliably rely on
    any other macro from the base compiler when compiling stage1.  */
 
+#ifdef USING_ARM_UNWINDING
+/* This value is not part of the enumerated reason codes defined in unwind.h
+   for ARM style unwinding, but is used in the included "C" code, so we
+   define it to a reasonable value to avoid a compilation error.  */
+#define _URC_NORMAL_STOP 0
+#endif
 #include "tb-gcc.c"
 
 /*------------------------------------------------------------------*

@@ -1,3 +1,128 @@
+2016-07-20  Yan-Ting Lin  <currygt52@gmail.com>
+
+	* configure.ac (nds32*-*-*): Remove entry to enable gdb.
+	* configure: Regenerated.
+
+2016-07-19  Fritz Reese  <fritzoreese@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.def: Add autoprofiledbootstrap.
+	* Makefile.tpl: Dito.
+	* Makefile.in: Regenerate.
+
+2016-06-23  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+    * configure.ac: Disable libgcj and libgloss for Phoenix-RTOS targets.
+    * configure: Regenerate.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* configure: Regenerate.
+	* configure.ac: Remove support for avr-rtems.
+
+2016-06-18  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-06-16  Michael Collison  <michael.collison@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-06-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Update e-mail address.
+
+2016-06-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-05-28  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.tpl (configure): Depend on m4 files included.
+	* Makefile.in: Regenerate.
+
+2016-05-20  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Fix
+	code formatting in ALTIVEC_BUILTIN_VEC_ADDE section.
+
+2016-05-20  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (vec_addec): Change vec_addec to a
+	special case builtin.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	support for ALTIVEC_BUILTIN_VEC_ADDEC.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add definition
+	for __builtin_vec_addec.
+
+2016-05-16  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+	* config.guess: Import version 2016-04-02 (newest).
+	* config.sub: Import version 2016-05-10 (newest).
+
+2016-05-16  Anton Kolesov  <anton.kolesov@synopsys.com>
+
+	* configure.ac: Add ARC support to libgloss.
+	* configure: Regenerate
+
+2016-05-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* configure.ac (mpfr): Remove pre-3.1.0 mpfr compatibility code.
+	* configure: Regenerated.
+	* Makefile.def (gmp): Explicitly disable assembler.
+	(mpfr): Adjust lib_path.
+	(mpc): Likewise.
+	* Makefile.in: Regenerated.
+
+2016-05-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/70704
+	* configure.ac (--enable-stage1-checking): Add missing
+	--enable-checking=.
+	* configure: Regenerated.
+
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config.guess: Revert r235676.
+	* config.sub: Revert r235676.
+
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config.guess: Remove SH5 support.
+	* config.sub: Likewise.
+	* configure: Likewise.
+	* configure.ac: Likewise.
+
+2016-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/70704
+	* configure.ac (--enable-stage1-checking): For --disable-checking or
+	implicit --enable-checking, make sure extra flag matches in between
+	stage1 and later checking.
+	* configure: Regenerated.
+
+2016-04-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* .gitattributes: New file.
+
+2016-04-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS (rs6000/powerpc port): Add myself.
+
+2016-04-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/70173
+	* Makefile.tpl (local-distclean): Delete the libcc1, gnattools,
+	and gotools directories.  Delete the stage_final file.
+	* Makefile.in: Regenerate.
+
 2016-04-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

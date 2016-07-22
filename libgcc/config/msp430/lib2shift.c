@@ -28,10 +28,10 @@ typedef unsigned int  uint32_type   __attribute__ ((mode (SI)));
 typedef          int  sint16_type   __attribute__ ((mode (HI)));
 typedef unsigned int  uint16_type   __attribute__ ((mode (HI)));
 
-uint32_type __ashlsi3 (uint32_type in, char bit);
-sint32_type __ashrsi3 (sint32_type in, char bit);
-int __clrsbhi2 (sint16_type x);
-extern int __clrsbsi2 (sint32_type x);
+uint32_type __ashlsi3 (uint32_type, signed char);
+sint32_type __ashrsi3 (sint32_type, signed char);
+int         __clrsbhi2 (sint16_type);
+extern int  __clrsbsi2 (sint32_type);
 
 typedef struct
 {
@@ -43,7 +43,7 @@ typedef struct
 } dd;
 
 uint32_type
-__ashlsi3 (uint32_type in, char bit)
+__ashlsi3 (uint32_type in, signed char bit)
 {
   uint16_type h, l;
   dd d;
@@ -77,7 +77,7 @@ __ashlsi3 (uint32_type in, char bit)
 }
 
 sint32_type
-__ashrsi3 (sint32_type in, char bit)
+__ashrsi3 (sint32_type in, signed char bit)
 {
   sint16_type h;
   uint16_type l;

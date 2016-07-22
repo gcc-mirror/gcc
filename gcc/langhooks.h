@@ -100,8 +100,9 @@ struct lang_hooks_for_types
   /* This routine is called in tree.c to print an error message for
      invalid use of an incomplete type.  VALUE is the expression that
      was used (or 0 if that isn't known) and TYPE is the type that was
-     invalid.  */
-  void (*incomplete_type_error) (const_tree value, const_tree type);
+     invalid.  LOC is the location of the use.  */
+  void (*incomplete_type_error) (location_t loc, const_tree value,
+				 const_tree type);
 
   /* Called from assign_temp to return the maximum size, if there is one,
      for a type.  */

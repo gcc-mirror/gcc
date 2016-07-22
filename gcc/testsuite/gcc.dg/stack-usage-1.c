@@ -64,7 +64,11 @@
 #    define SIZE 240
 #  endif
 #elif defined (__AVR__)
-#  define SIZE 254
+#if defined (__AVR_3_BYTE_PC__ )
+#  define SIZE 251 /* 256 - 2 bytes for Y - 3 bytes for return address */
+#else
+#  define SIZE 252 /* 256 - 2 bytes for Y - 2 bytes for return address */
+#endif
 #elif defined (__s390x__)
 #  define SIZE 96  /* 256 - 160 bytes for register save area */
 #elif defined (__s390__)

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fPIE" } */
+/* { dg-require-effective-target pie } */
 
 #if __PIC__ != 2
 # error __PIC__ is not 2!

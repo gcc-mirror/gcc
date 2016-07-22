@@ -451,8 +451,8 @@ cxx_incomplete_type_inform (const_tree type)
    type of diagnostic (see diagnostic.def).  */
 
 void
-cxx_incomplete_type_diagnostic (const_tree value, const_tree type, 
-				diagnostic_t diag_kind)
+cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
+				const_tree type, diagnostic_t diag_kind)
 {
   bool is_decl = false, complained = false;
 
@@ -474,8 +474,6 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
     } 
  retry:
   /* We must print an error message.  Be clever about what it says.  */
-
-  location_t loc = EXPR_LOC_OR_LOC (value, input_location);
 
   switch (TREE_CODE (type))
     {
@@ -539,6 +537,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
       break;
 
     case TYPENAME_TYPE:
+    case DECLTYPE_TYPE:
       emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of dependent type %qT", type);
       break;
@@ -570,13 +569,14 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
     }
 }
 
-/* Backward-compatibility interface to incomplete_type_diagnostic;
-   required by ../tree.c.  */
-#undef cxx_incomplete_type_error
+/* Print an error message for invalid use of an incomplete type.
+   VALUE is the expression that was used (or 0 if that isn't known)
+   and TYPE is the type that was invalid.  */
+
 void
-cxx_incomplete_type_error (const_tree value, const_tree type)
+cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 {
-  cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
+  cxx_incomplete_type_diagnostic (loc, value, type, DK_ERROR);
 }
 
 
@@ -688,14 +688,9 @@ split_nonconstant_init_1 (tree dest, tree init)
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
-		  if (type_build_dtor_call (inner_type))
-		    {
-		      code = (build_special_member_call
-			      (sub, complete_dtor_identifier, NULL, inner_type,
-			       LOOKUP_NORMAL, tf_warning_or_error));
-		      if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (inner_type))
-			finish_eh_cleanup (code);
-		    }
+		  if (tree cleanup
+		      = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
+		    finish_eh_cleanup (cleanup);
 		}
 
 	      num_split_elts++;
@@ -956,10 +951,12 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 	{
 	  if (complain & tf_warning_or_error)
 	    {
-	      if (!almost_ok || pedantic)
-		pedwarn (loc, OPT_Wnarrowing, "narrowing conversion of %qE "
-			 "from %qT to %qT inside { }", init, ftype, type);
-	      if (pedantic && almost_ok)
+	      if ((!almost_ok || pedantic)
+		  && pedwarn (loc, OPT_Wnarrowing,
+			      "narrowing conversion of %qE "
+			      "from %qT to %qT inside { }",
+			      init, ftype, type)
+		  && almost_ok)
 		inform (loc, " the expression has a constant value but is not "
 			"a C++ constant-expression");
 	      ok = true;
@@ -1013,6 +1010,8 @@ digest_init_r (tree type, tree init, bool nested, int flags,
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
+  location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+
   /* Initialization of an array of chars from a string constant. The initializer
      can be optionally enclosed in braces, but reshape_init has already removed
      them if they were present.  */
@@ -1021,7 +1020,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
       if (nested && !TYPE_DOMAIN (type))
 	{
 	  /* C++ flexible array members have a null domain.  */
-	  pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wpedantic,
+	  pedwarn (loc, OPT_Wpedantic,
 		   "initialization of a flexible array member");
 	}
 
@@ -1037,7 +1036,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	      if (char_type != char_type_node)
 		{
 		  if (complain & tf_error)
-		    error ("char-array initialized from wide string");
+		    error_at (loc, "char-array initialized from wide string");
 		  return error_mark_node;
 		}
 	    }
@@ -1046,14 +1045,15 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	      if (char_type == char_type_node)
 		{
 		  if (complain & tf_error)
-		    error ("int-array initialized from non-wide string");
+		    error_at (loc,
+			      "int-array initialized from non-wide string");
 		  return error_mark_node;
 		}
 	      else if (char_type != typ1)
 		{
 		  if (complain & tf_error)
-		    error ("int-array initialized from incompatible "
-			   "wide string");
+		    error_at (loc, "int-array initialized from incompatible "
+			      "wide string");
 		  return error_mark_node;
 		}
 	    }
@@ -1073,7 +1073,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (init))
-		permerror (input_location, "initializer-string for array "
+		permerror (loc, "initializer-string for array "
 			   "of chars is too long");
 	    }
 	  return init;
@@ -1126,8 +1126,8 @@ digest_init_r (tree type, tree init, bool nested, int flags,
       if (COMPOUND_LITERAL_P (init) && TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  if (complain & tf_error)
-	    error ("cannot initialize aggregate of type %qT with "
-		   "a compound literal", type);
+	    error_at (loc, "cannot initialize aggregate of type %qT with "
+		      "a compound literal", type);
 
 	  return error_mark_node;
 	}
@@ -1144,8 +1144,8 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	    return init;
 
 	  if (complain & tf_error)
-	    error ("array must be initialized with a brace-enclosed"
-		   " initializer");
+	    error_at (loc, "array must be initialized with a brace-enclosed"
+		      " initializer");
 	  return error_mark_node;
 	}
 
@@ -1709,7 +1709,10 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
   if (processing_template_decl)
     {
-      if (type_dependent_expression_p (expr))
+      if (type && TREE_CODE (type) == POINTER_TYPE
+	  && !dependent_scope_p (TREE_TYPE (type)))
+	/* Pointer to current instantiation, don't treat as dependent.  */;
+      else if (type_dependent_expression_p (expr))
 	return build_min_nt_loc (loc, ARROW_EXPR, expr);
       expr = build_non_dependent_expr (expr);
     }
@@ -1893,7 +1896,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	 operand is a pointer to member function with ref-qualifier &&.  */
       if (FUNCTION_REF_QUALIFIED (type))
 	{
-	  bool lval = real_lvalue_p (datum);
+	  bool lval = lvalue_p (datum);
 	  if (lval && FUNCTION_RVALUE_QUALIFIED (type))
 	    {
 	      if (complain & tf_error)

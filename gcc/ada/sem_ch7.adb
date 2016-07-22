@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,9 +35,11 @@ with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Elists;    use Elists;
 with Errout;    use Errout;
+with Exp_Ch7;   use Exp_Ch7;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
+with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
@@ -47,6 +49,7 @@ with Nlists;    use Nlists;
 with Opt;       use Opt;
 with Output;    use Output;
 with Restrict;  use Restrict;
+with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
 with Sem_Cat;   use Sem_Cat;
@@ -140,11 +143,13 @@ package body Sem_Ch7 is
    --  tightened further???
 
    function Requires_Completion_In_Body
-     (Id      : Entity_Id;
-      Pack_Id : Entity_Id) return Boolean;
+     (Id                 : Entity_Id;
+      Pack_Id            : Entity_Id;
+      Do_Abstract_States : Boolean := False) return Boolean;
    --  Subsidiary to routines Unit_Requires_Body and Unit_Requires_Body_Info.
    --  Determine whether entity Id declared in package spec Pack_Id requires
-   --  completion in a package body.
+   --  completion in a package body. Flag Do_Abstract_Stats should be set when
+   --  abstract states are to be considered in the completion test.
 
    procedure Unit_Requires_Body_Info (Pack_Id : Entity_Id);
    --  Outputs info messages showing why package Pack_Id requires a body. The
@@ -542,35 +547,6 @@ package body Sem_Ch7 is
    --  Start of processing for Analyze_Package_Body_Helper
 
    begin
-      --  A [generic] package body "freezes" the contract of the nearest
-      --  enclosing package body and all other contracts encountered in the
-      --  same declarative part up to and excluding the package body:
-
-      --    package body Nearest_Enclosing_Package
-      --      with Refined_State => (State => Constit)
-      --    is
-      --       Constit : ...;
-
-      --       package body Freezes_Enclosing_Package_Body
-      --         with Refined_State => (State_2 => Constit_2)
-      --       is
-      --          Constit_2 : ...;
-
-      --          procedure Proc
-      --            with Refined_Depends => (Input => (Constit, Constit_2)) ...
-
-      --  This ensures that any annotations referenced by the contract of a
-      --  [generic] subprogram body declared within the current package body
-      --  are available. This form of "freezing" is decoupled from the usual
-      --  Freeze_xxx mechanism because it must also work in the context of
-      --  generics where normal freezing is disabled.
-
-      --  Only bodies coming from source should cause this type of "freezing"
-
-      if Comes_From_Source (N) then
-         Analyze_Previous_Contracts (N);
-      end if;
-
       --  Find corresponding package specification, and establish the current
       --  scope. The visible defining entity for the package is the defining
       --  occurrence in the spec. On exit from the package body, all body
@@ -624,6 +600,42 @@ package body Sem_Ch7 is
                Error_Msg_N ("spec of this package does not allow a body", N);
             end if;
          end if;
+      end if;
+
+      --  A [generic] package body "freezes" the contract of the nearest
+      --  enclosing package body and all other contracts encountered in the
+      --  same declarative part up to and excluding the package body:
+
+      --    package body Nearest_Enclosing_Package
+      --      with Refined_State => (State => Constit)
+      --    is
+      --       Constit : ...;
+
+      --       package body Freezes_Enclosing_Package_Body
+      --         with Refined_State => (State_2 => Constit_2)
+      --       is
+      --          Constit_2 : ...;
+
+      --          procedure Proc
+      --            with Refined_Depends => (Input => (Constit, Constit_2)) ...
+
+      --  This ensures that any annotations referenced by the contract of a
+      --  [generic] subprogram body declared within the current package body
+      --  are available. This form of "freezing" is decoupled from the usual
+      --  Freeze_xxx mechanism because it must also work in the context of
+      --  generics where normal freezing is disabled.
+
+      --  Only bodies coming from source should cause this type of "freezing".
+      --  Instantiated generic bodies are excluded because their processing is
+      --  performed in a separate compilation pass which lacks enough semantic
+      --  information with respect to contract analysis. It is safe to suppress
+      --  the "freezing" of contracts in this case because this action already
+      --  took place at the end of the enclosing declarative part.
+
+      if Comes_From_Source (N)
+        and then not Is_Generic_Instance (Spec_Id)
+      then
+         Analyze_Previous_Contracts (N);
       end if;
 
       --  A package body is Ghost when the corresponding spec is Ghost. Set
@@ -777,9 +789,10 @@ package body Sem_Ch7 is
 
       if Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Aux_Pragma (Spec_Id)) then
-            if Get_SPARK_Mode_From_Pragma (SPARK_Aux_Pragma (Spec_Id)) = Off
-                 and then
-               Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
+            if Get_SPARK_Mode_From_Annotation (SPARK_Aux_Pragma (Spec_Id)) =
+                 Off
+              and then
+                Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Body_Id)) = On
             then
                Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
                Error_Msg_N ("incorrect application of SPARK_Mode#", N);
@@ -936,16 +949,14 @@ package body Sem_Ch7 is
    ---------------------------------
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
-      Id : constant Node_Id := Defining_Entity (N);
+      Id  : constant Node_Id := Defining_Entity (N);
+      Par : constant Node_Id := Parent_Spec (N);
+
+      Is_Comp_Unit : constant Boolean :=
+                       Nkind (Parent (N)) = N_Compilation_Unit;
 
       Body_Required : Boolean;
       --  True when this package declaration requires a corresponding body
-
-      Comp_Unit : Boolean;
-      --  True when this package declaration is not a nested declaration
-
-      PF : Boolean;
-      --  True when in the context of a declared pure library unit
 
    begin
       if Debug_Flag_C then
@@ -971,10 +982,13 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma_Inherited (Id);
       end if;
 
-      --  A package declared within a Ghost refion is automatically Ghost
-      --  (SPARK RM 6.9(2)).
+      --  A package declared within a Ghost refion is automatically Ghost. A
+      --  child package is Ghost when its parent is Ghost (SPARK RM 6.9(2)).
 
-      if Ghost_Mode > None then
+      if Ghost_Mode > None
+        or else (Present (Par)
+                  and then Is_Ghost_Entity (Defining_Entity (Unit (Par))))
+      then
          Set_Is_Ghost_Entity (Id);
       end if;
 
@@ -985,9 +999,9 @@ package body Sem_Ch7 is
          Analyze_Aspect_Specifications (N, Id);
       end if;
 
-      --  Ada 2005 (AI-217): Check if the package has been illegally named
-      --  in a limited-with clause of its own context. In this case the error
-      --  has been previously notified by Analyze_Context.
+      --  Ada 2005 (AI-217): Check if the package has been illegally named in
+      --  a limited-with clause of its own context. In this case the error has
+      --  been previously notified by Analyze_Context.
 
       --     limited with Pkg; -- ERROR
       --     package Pkg is ...
@@ -998,30 +1012,45 @@ package body Sem_Ch7 is
 
       Push_Scope (Id);
 
-      PF := Is_Pure (Enclosing_Lib_Unit_Entity);
-      Set_Is_Pure (Id, PF);
-
+      Set_Is_Pure (Id, Is_Pure (Enclosing_Lib_Unit_Entity));
       Set_Categorization_From_Pragmas (N);
 
       Analyze (Specification (N));
       Validate_Categorization_Dependency (N, Id);
 
+      --  Determine whether the package requires a body. Abstract states are
+      --  intentionally ignored because they do require refinement which can
+      --  only come in a body, but at the same time they do not force the need
+      --  for a body on their own (SPARK RM 7.1.4(4) and 7.2.2(3)).
+
       Body_Required := Unit_Requires_Body (Id);
 
-      --  When this spec does not require an explicit body, we know that there
-      --  are no entities requiring completion in the language sense; we call
-      --  Check_Completion here only to ensure that any nested package
-      --  declaration that requires an implicit body gets one. (In the case
-      --  where a body is required, Check_Completion is called at the end of
-      --  the body's declarative part.)
-
       if not Body_Required then
+
+         --  If the package spec does not require an explicit body, then there
+         --  are not entities requiring completion in the language sense. Call
+         --  Check_Completion now to ensure that nested package declarations
+         --  that require an implicit body get one. (In the case where a body
+         --  is required, Check_Completion is called at the end of the body's
+         --  declarative part.)
+
          Check_Completion;
+
+         --  If the package spec does not require an explicit body, then all
+         --  abstract states declared in nested packages cannot possibly get
+         --  a proper refinement (SPARK RM 7.2.2(3)). This check is performed
+         --  only when the compilation unit is the main unit to allow for
+         --  modular SPARK analysis where packages do not necessarily have
+         --  bodies.
+
+         if Is_Comp_Unit then
+            Check_State_Refinements
+              (Context      => N,
+               Is_Main_Unit => Parent (N) = Cunit (Main_Unit));
+         end if;
       end if;
 
-      Comp_Unit := Nkind (Parent (N)) = N_Compilation_Unit;
-
-      if Comp_Unit then
+      if Is_Comp_Unit then
 
          --  Set Body_Required indication on the compilation unit node, and
          --  determine whether elaboration warnings may be meaningful on it.
@@ -1041,7 +1070,7 @@ package body Sem_Ch7 is
       --  visibility tests that rely on the fact that we have exited the scope
       --  of Id.
 
-      if Comp_Unit then
+      if Is_Comp_Unit then
          Validate_RT_RAT_Component (N);
       end if;
 
@@ -1364,7 +1393,7 @@ package body Sem_Ch7 is
                --  If one of the non-generic parents is itself on the scope
                --  stack, do not install its private declarations: they are
                --  installed in due time when the private part of that parent
-               --  is analyzed. This is delicate ???
+               --  is analyzed.
 
                else
                   while Present (Inst_Par)
@@ -1372,11 +1401,20 @@ package body Sem_Ch7 is
                     and then (not In_Open_Scopes (Inst_Par)
                                or else not In_Private_Part (Inst_Par))
                   loop
-                     Install_Private_Declarations (Inst_Par);
-                     Set_Use (Private_Declarations
-                                (Specification
-                                   (Unit_Declaration_Node (Inst_Par))));
-                     Inst_Par := Scope (Inst_Par);
+                     if Nkind (Inst_Node) = N_Formal_Package_Declaration
+                       or else
+                         not Is_Ancestor_Package
+                               (Inst_Par, Cunit_Entity (Current_Sem_Unit))
+                     then
+                        Install_Private_Declarations (Inst_Par);
+                        Set_Use
+                          (Private_Declarations
+                            (Specification
+                              (Unit_Declaration_Node (Inst_Par))));
+                        Inst_Par := Scope (Inst_Par);
+                     else
+                        exit;
+                     end if;
                   end loop;
 
                   exit;
@@ -1430,15 +1468,17 @@ package body Sem_Ch7 is
                Inherit_Default_Init_Cond_Procedure (E);
             end if;
 
-            --  If invariants are present, build the invariant procedure for a
-            --  private type, but not any of its subtypes or interface types.
+            --  Preanalyze and resolve the invariants of a private type at the
+            --  end of the visible declarations to catch potential errors. Note
+            --  that inherited class-wide invariants are not considered because
+            --  they have already been resolved.
 
-            if Has_Invariants (E) then
-               if Ekind (E) = E_Private_Subtype then
-                  null;
-               else
-                  Build_Invariant_Procedure (E, N);
-               end if;
+            if Ekind_In (E, E_Limited_Private_Type,
+                            E_Private_Type,
+                            E_Record_Type_With_Private)
+              and then Has_Own_Invariants (E)
+            then
+               Build_Invariant_Procedure_Body (E, Partial_Invariant => True);
             end if;
          end if;
 
@@ -1446,7 +1486,7 @@ package body Sem_Ch7 is
       end loop;
 
       if Is_Remote_Call_Interface (Id)
-         and then Nkind (Parent (Parent (N))) = N_Compilation_Unit
+        and then Nkind (Parent (Parent (N))) = N_Compilation_Unit
       then
          Validate_RCI_Declarations (Id);
       end if;
@@ -1463,7 +1503,20 @@ package body Sem_Ch7 is
          declare
             Orig_Spec : constant Node_Id := Specification (Orig_Decl);
             Save_Priv : constant List_Id := Private_Declarations (Orig_Spec);
+
          begin
+            --  Insert the freezing nodes after the visible declarations to
+            --  ensure that we analyze its aspects; needed to ensure that
+            --  global entities referenced in the aspects are properly handled.
+
+            if Ada_Version >= Ada_2012
+              and then Is_Non_Empty_List (Vis_Decls)
+              and then Is_Empty_List (Priv_Decls)
+            then
+               Insert_List_After_And_Analyze
+                 (Last (Vis_Decls), Freeze_Entity (Id, Last (Vis_Decls)));
+            end if;
+
             Set_Private_Declarations (Orig_Spec, Empty_List);
             Save_Global_References   (Orig_Decl);
             Set_Private_Declarations (Orig_Spec, Save_Priv);
@@ -1517,7 +1570,6 @@ package body Sem_Ch7 is
       if Is_Compilation_Unit (Id) then
          Install_Private_With_Clauses (Id);
       else
-
          --  The current compilation unit may include private with_clauses,
          --  which are visible in the private part of the current nested
          --  package, and have to be installed now. This is not done for
@@ -1609,48 +1661,18 @@ package body Sem_Ch7 is
               ("full view of & does not have preelaborable initialization", E);
          end if;
 
-         --  An invariant may appear on a full view of a type
+         --  Preanalyze and resolve the invariants of a private type's full
+         --  view at the end of the private declarations in case freezing did
+         --  not take place either due to errors or because the context is a
+         --  generic unit.
 
          if Is_Type (E)
+           and then not Is_Private_Type (E)
            and then Has_Private_Declaration (E)
-           and then Nkind (Parent (E)) = N_Full_Type_Declaration
+           and then Has_Invariants (E)
+           and then Serious_Errors_Detected > 0
          then
-            declare
-               IP_Built : Boolean := False;
-
-            begin
-               if Has_Aspects (Parent (E)) then
-                  declare
-                     ASN : Node_Id;
-
-                  begin
-                     ASN := First (Aspect_Specifications (Parent (E)));
-                     while Present (ASN) loop
-                        if Nam_In (Chars (Identifier (ASN)),
-                             Name_Invariant,
-                             Name_Type_Invariant)
-                        then
-                           Build_Invariant_Procedure (E, N);
-                           IP_Built := True;
-                           exit;
-                        end if;
-
-                        Next (ASN);
-                     end loop;
-                  end;
-               end if;
-
-               --  Invariants may have been inherited from progenitors
-
-               if not IP_Built
-                 and then Has_Interfaces (E)
-                 and then Has_Inheritable_Invariants (E)
-                 and then not Is_Interface (E)
-                 and then not Is_Class_Wide_Type (E)
-               then
-                  Build_Invariant_Procedure (E, N);
-               end if;
-            end;
+            Build_Invariant_Procedure_Body (E);
          end if;
 
          Next_Entity (E);
@@ -1682,6 +1704,17 @@ package body Sem_Ch7 is
                           Generic_Formal_Declarations (Orig_Decl);
 
          begin
+            --  Insert the freezing nodes after the private declarations to
+            --  ensure that we analyze its aspects; needed to ensure that
+            --  global entities referenced in the aspects are properly handled.
+
+            if Ada_Version >= Ada_2012
+              and then Is_Non_Empty_List (Priv_Decls)
+            then
+               Insert_List_After_And_Analyze
+                 (Last (Priv_Decls), Freeze_Entity (Id, Last (Priv_Decls)));
+            end if;
+
             Set_Visible_Declarations        (Orig_Spec, Empty_List);
             Set_Generic_Formal_Declarations (Orig_Decl, Empty_List);
             Save_Global_References          (Orig_Decl);
@@ -2420,6 +2453,12 @@ package body Sem_Ch7 is
          Set_Is_Limited_Record           (Id, Limited_Present (Def));
          Set_Has_Delayed_Freeze          (Id, True);
 
+         --  Recognize Ada.Real_Time.Timing_Events.Timing_Events here
+
+         if Is_RTE (Id, RE_Timing_Event) then
+            Set_Has_Timing_Event (Id);
+         end if;
+
          --  Create a class-wide type with the same attributes
 
          Make_Class_Wide_Type (Id);
@@ -2434,8 +2473,9 @@ package body Sem_Ch7 is
    ---------------------------------
 
    function Requires_Completion_In_Body
-     (Id      : Entity_Id;
-      Pack_Id : Entity_Id) return Boolean
+     (Id                 : Entity_Id;
+      Pack_Id            : Entity_Id;
+      Do_Abstract_States : Boolean := False) return Boolean
    is
    begin
       --  Always ignore child units. Child units get added to the entity list
@@ -2449,7 +2489,7 @@ package body Sem_Ch7 is
 
       elsif Ekind (Id) = E_Package
         and then Nkind (Original_Node (Unit_Declaration_Node (Id))) =
-                                                   N_Formal_Package_Declaration
+                   N_Formal_Package_Declaration
       then
          return False;
 
@@ -2459,8 +2499,7 @@ package body Sem_Ch7 is
       --  implicit completion at some point.
 
       elsif (Is_Overloadable (Id)
-              and then Ekind (Id) /= E_Enumeration_Literal
-              and then Ekind (Id) /= E_Operator
+              and then not Ekind_In (Id, E_Enumeration_Literal, E_Operator)
               and then not Is_Abstract_Subprogram (Id)
               and then not Has_Completion (Id)
               and then Comes_From_Source (Parent (Id)))
@@ -2469,7 +2508,7 @@ package body Sem_Ch7 is
           (Ekind (Id) = E_Package
             and then Id /= Pack_Id
             and then not Has_Completion (Id)
-            and then Unit_Requires_Body (Id))
+            and then Unit_Requires_Body (Id, Do_Abstract_States))
 
         or else
           (Ekind (Id) = E_Incomplete_Type
@@ -2484,12 +2523,11 @@ package body Sem_Ch7 is
           (Ekind (Id) = E_Generic_Package
             and then Id /= Pack_Id
             and then not Has_Completion (Id)
-            and then Unit_Requires_Body (Id))
+            and then Unit_Requires_Body (Id, Do_Abstract_States))
 
         or else
           (Is_Generic_Subprogram (Id)
             and then not Has_Completion (Id))
-
       then
          return True;
 
@@ -2511,7 +2549,7 @@ package body Sem_Ch7 is
       Priv_Elmt : Elmt_Id;
       Priv_Sub  : Entity_Id;
 
-      procedure Preserve_Full_Attributes (Priv, Full : Entity_Id);
+      procedure Preserve_Full_Attributes (Priv : Entity_Id; Full : Entity_Id);
       --  Copy to the private declaration the attributes of the full view that
       --  need to be available for the partial view also.
 
@@ -2522,12 +2560,16 @@ package body Sem_Ch7 is
       -- Preserve_Full_Attributes --
       ------------------------------
 
-      procedure Preserve_Full_Attributes (Priv, Full : Entity_Id) is
-         Priv_Is_Base_Type : constant Boolean := Is_Base_Type (Priv);
+      procedure Preserve_Full_Attributes
+        (Priv : Entity_Id;
+         Full : Entity_Id)
+      is
+         Full_Base         : constant Entity_Id := Base_Type (Full);
+         Priv_Is_Base_Type : constant Boolean   := Is_Base_Type (Priv);
 
       begin
-         Set_Size_Info (Priv, (Full));
-         Set_RM_Size                 (Priv, RM_Size (Full));
+         Set_Size_Info               (Priv,                             Full);
+         Set_RM_Size                 (Priv, RM_Size                    (Full));
          Set_Size_Known_At_Compile_Time
                                      (Priv, Size_Known_At_Compile_Time (Full));
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
@@ -2549,26 +2591,30 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled (Priv, Is_Controlled (Base_Type (Full)));
+            Set_Is_Controlled (Priv, Is_Controlled            (Full_Base));
             Set_Finalize_Storage_Only
-                              (Priv, Finalize_Storage_Only
-                                                   (Base_Type (Full)));
-            Set_Has_Task      (Priv, Has_Task      (Base_Type (Full)));
-            Set_Has_Protected (Priv, Has_Protected (Base_Type (Full)));
+                              (Priv, Finalize_Storage_Only    (Full_Base));
             Set_Has_Controlled_Component
-                              (Priv, Has_Controlled_Component
-                                                   (Base_Type (Full)));
+                              (Priv, Has_Controlled_Component (Full_Base));
+
+            Propagate_Concurrent_Flags (Priv, Base_Type (Full));
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
-         --  Propagate information of type invariants, which may be specified
-         --  for the full view.
+         --  Propagate invariant-related attributes from the base type of the
+         --  full view to the full view and vice versa. This may seem strange,
+         --  but is necessary depending on which type triggered the generation
+         --  of the invariant procedure body. As a result, both the full view
+         --  and its base type carry the same invariant-related information.
 
-         if Has_Invariants (Full) and not Has_Invariants (Priv) then
-            Set_Has_Invariants (Priv);
-            Set_Subprograms_For_Type (Priv, Subprograms_For_Type (Full));
-         end if;
+         Propagate_Invariant_Attributes (Full, From_Typ => Full_Base);
+         Propagate_Invariant_Attributes (Full_Base, From_Typ => Full);
+
+         --  Propagate invariant-related attributes from the full view to the
+         --  private view.
+
+         Propagate_Invariant_Attributes (Priv, From_Typ => Full);
 
          if Is_Tagged_Type (Priv)
            and then Is_Tagged_Type (Full)
@@ -2911,7 +2957,7 @@ package body Sem_Ch7 is
                   if Is_Overloadable (Subp) and then Is_Primitive (Subp) then
                      Error_Msg_NE
                        ("type& must be completed in the private part",
-                         Parent (Subp), Id);
+                        Parent (Subp), Id);
 
                   --  The result type of an access-to-function type cannot be a
                   --  Taft-amendment type, unless the version is Ada 2012 or
@@ -2952,10 +2998,14 @@ package body Sem_Ch7 is
    ------------------------
 
    function Unit_Requires_Body
-     (Pack_Id               : Entity_Id;
-      Ignore_Abstract_State : Boolean := False) return Boolean
+     (Pack_Id            : Entity_Id;
+      Do_Abstract_States : Boolean := False) return Boolean
    is
       E : Entity_Id;
+
+      Requires_Body : Boolean := False;
+      --  Flag set when the unit has at least one construct that requries
+      --  completion in a body.
 
    begin
       --  Imported entity never requires body. Right now, only subprograms can
@@ -2991,35 +3041,44 @@ package body Sem_Ch7 is
                return True;
             end if;
          end;
-
-      --  A [generic] package that introduces at least one non-null abstract
-      --  state requires completion. However, there is a separate rule that
-      --  requires that such a package have a reason other than this for a
-      --  body being required (if necessary a pragma Elaborate_Body must be
-      --  provided). If Ignore_Abstract_State is True, we don't do this check
-      --  (so we can use Unit_Requires_Body to check for some other reason).
-
-      elsif Ekind_In (Pack_Id, E_Generic_Package, E_Package)
-        and then not Ignore_Abstract_State
-        and then Present (Abstract_States (Pack_Id))
-        and then not Is_Null_State
-                       (Node (First_Elmt (Abstract_States (Pack_Id))))
-      then
-         return True;
       end if;
 
-      --  Otherwise search entity chain for entity requiring completion
+      --  Traverse the entity chain of the package and look for constructs that
+      --  require a completion in a body.
 
       E := First_Entity (Pack_Id);
       while Present (E) loop
-         if Requires_Completion_In_Body (E, Pack_Id) then
-            return True;
+
+         --  Skip abstract states because their completion depends on several
+         --  criteria (see below).
+
+         if Ekind (E) = E_Abstract_State then
+            null;
+
+         elsif Requires_Completion_In_Body
+                 (E, Pack_Id, Do_Abstract_States)
+         then
+            Requires_Body := True;
+            exit;
          end if;
 
          Next_Entity (E);
       end loop;
 
-      return False;
+      --  A [generic] package that defines at least one non-null abstract state
+      --  requires a completion only when at least one other construct requires
+      --  a completion in a body (SPARK RM 7.1.4(4) and (6)). This check is not
+      --  performed if the caller requests this behavior.
+
+      if Do_Abstract_States
+        and then Ekind_In (Pack_Id, E_Generic_Package, E_Package)
+        and then Has_Non_Null_Abstract_State (Pack_Id)
+        and then Requires_Body
+      then
+         return True;
+      end if;
+
+      return Requires_Body;
    end Unit_Requires_Body;
 
    -----------------------------

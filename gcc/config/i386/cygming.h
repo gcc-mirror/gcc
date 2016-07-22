@@ -339,16 +339,13 @@ do {						\
 #define ASM_COMMENT_START " #"
 
 #ifndef DWARF2_UNWIND_INFO
-/* If configured with --disable-sjlj-exceptions, use DWARF2, else
-   default to SJLJ.  */
+/* If configured with --disable-sjlj-exceptions, use DWARF2 for 32-bit
+   mode else default to SJLJ.  64-bit code uses SEH unless you request
+   SJLJ.  */
 #if  (defined (CONFIG_SJLJ_EXCEPTIONS) && !CONFIG_SJLJ_EXCEPTIONS)
 /* The logic of this #if must be kept synchronised with the logic
-   for selecting the tmake_eh_file fragment in config.gcc.  */
+   for selecting the tmake_eh_file fragment in libgcc/config.host.  */
 #define DWARF2_UNWIND_INFO 1
-/* If multilib is selected break build as sjlj is required.  */
-#if defined (TARGET_BI_ARCH)
-#error For 64-bit windows and 32-bit based multilib version of gcc just SJLJ exceptions are supported.
-#endif
 #else
 #define DWARF2_UNWIND_INFO 0
 #endif

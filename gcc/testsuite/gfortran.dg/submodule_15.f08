@@ -56,3 +56,4 @@ end submodule
   incr = 1
   if (a3(i) .ne. 11) call abort
 end
+! { dg-final { cleanup-submodules "a@a_son" } }

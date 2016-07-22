@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdump-tree-thread1-details" } */
 
 extern void abort (void);
 
@@ -39,5 +39,5 @@ c_finish_omp_clauses (tree clauses)
 
 /* There are 3 FSM jump threading opportunities, two of which will
   get filtered out.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM" 1 "vrp1"} } */
-/* { dg-final { scan-tree-dump-times "FSM Thread through multiway branch without threading a multiway branch" 2 "vrp1"} } */
+/* { dg-final { scan-tree-dump-times "Registering FSM" 1 "thread1"} } */
+/* { dg-final { scan-tree-dump-times "FSM Thread through multiway branch without threading a multiway branch" 2 "thread1"} } */

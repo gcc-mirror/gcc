@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package body Exp_Ch9 is
    --  families of 128K should be reasonable in all cases, and is a documented
    --  implementation restriction.
 
-   Entry_Family_Bound : constant Int := 2**16;
+   Entry_Family_Bound : constant Pos := 2**16;
 
    -----------------------
    -- Local Subprograms --
@@ -1526,12 +1526,6 @@ package body Exp_Ch9 is
       Set_Stored_Constraint             (Rec_Ent, No_Elist);
       Cdecls := New_List;
 
-      --  Propagate type invariants to the corresponding record type
-
-      Set_Has_Invariants                (Rec_Ent, Has_Invariants (Ctyp));
-      Set_Has_Inheritable_Invariants    (Rec_Ent,
-        Has_Inheritable_Invariants (Ctyp));
-
       --  Use discriminals to create list of discriminants for record, and
       --  create new discriminals for use in default expressions, etc. It is
       --  worth noting that a task discriminant gives rise to 5 entities;
@@ -2443,13 +2437,6 @@ package body Exp_Ch9 is
       Obj_Typ : Entity_Id;
       Formals : List_Id) return Node_Id
    is
-      Loc           : constant Source_Ptr := Sloc (Subp_Id);
-      First_Param   : Node_Id;
-      Iface         : Entity_Id;
-      Iface_Elmt    : Elmt_Id;
-      Iface_Op      : Entity_Id;
-      Iface_Op_Elmt : Elmt_Id;
-
       function Overriding_Possible
         (Iface_Op : Entity_Id;
          Wrapper  : Entity_Id) return Boolean;
@@ -2565,9 +2552,9 @@ package body Exp_Ch9 is
          end if;
 
          return
-           Type_Conformant_Parameters (
-             Parameter_Specifications (Iface_Op_Spec),
-             Parameter_Specifications (Wrapper_Spec));
+           Type_Conformant_Parameters
+             (Parameter_Specifications (Iface_Op_Spec),
+              Parameter_Specifications (Wrapper_Spec));
       end Overriding_Possible;
 
       -----------------------
@@ -2616,20 +2603,29 @@ package body Exp_Ch9 is
 
             Append_To (New_Formals,
               Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
+                Defining_Identifier    =>
                   Make_Defining_Identifier (Loc,
-                    Chars                  => Chars
-                                             (Defining_Identifier (Formal))),
-                    In_Present             => In_Present  (Formal),
-                    Out_Present            => Out_Present (Formal),
-                    Null_Exclusion_Present => Null_Exclusion_Present (Formal),
-                    Parameter_Type         => Param_Type));
+                    Chars => Chars (Defining_Identifier (Formal))),
+                In_Present             => In_Present  (Formal),
+                Out_Present            => Out_Present (Formal),
+                Null_Exclusion_Present => Null_Exclusion_Present (Formal),
+                Parameter_Type         => Param_Type));
 
             Next (Formal);
          end loop;
 
          return New_Formals;
       end Replicate_Formals;
+
+      --  Local variables
+
+      Loc             : constant Source_Ptr := Sloc (Subp_Id);
+      First_Param     : Node_Id := Empty;
+      Iface           : Entity_Id;
+      Iface_Elmt      : Elmt_Id;
+      Iface_Op        : Entity_Id;
+      Iface_Op_Elmt   : Elmt_Id;
+      Overridden_Subp : Entity_Id;
 
    --  Start of processing for Build_Wrapper_Spec
 
@@ -2638,17 +2634,24 @@ package body Exp_Ch9 is
 
       pragma Assert (Is_Tagged_Type (Obj_Typ));
 
+      --  Check if this subprogram has a profile that matches some interface
+      --  primitive.
+
+      Check_Synchronized_Overriding (Subp_Id, Overridden_Subp);
+
+      if Present (Overridden_Subp) then
+         First_Param :=
+           First (Parameter_Specifications (Parent (Overridden_Subp)));
+
       --  An entry or a protected procedure can override a routine where the
       --  controlling formal is either IN OUT, OUT or is of access-to-variable
       --  type. Since the wrapper must have the exact same signature as that of
       --  the overridden subprogram, we try to find the overriding candidate
       --  and use its controlling formal.
 
-      First_Param := Empty;
-
       --  Check every implemented interface
 
-      if Present (Interfaces (Obj_Typ)) then
+      elsif Present (Interfaces (Obj_Typ)) then
          Iface_Elmt := First_Elmt (Interfaces (Obj_Typ));
          Search : while Present (Iface_Elmt) loop
             Iface := Node (Iface_Elmt);
@@ -2684,40 +2687,14 @@ package body Exp_Ch9 is
          end loop Search;
       end if;
 
-      --  Ada 2012 (AI05-0090-1): If no interface primitive is covered by
-      --  this subprogram and this is not a primitive declared between two
-      --  views then force the generation of a wrapper. As an optimization,
-      --  previous versions of the frontend avoid generating the wrapper;
-      --  however, the wrapper facilitates locating and reporting an error
-      --  when a duplicate declaration is found later. See example in
-      --  AI05-0090-1.
+      --  Do not generate the wrapper if no interface primitive is covered by
+      --  the subprogram and it is not a primitive declared between two views
+      --  (see Process_Full_View).
 
       if No (First_Param)
         and then not Is_Private_Primitive_Subprogram (Subp_Id)
       then
-         if Is_Task_Type
-              (Corresponding_Concurrent_Type (Obj_Typ))
-         then
-            First_Param :=
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => Make_Defining_Identifier (Loc, Name_uO),
-                In_Present          => True,
-                Out_Present         => False,
-                Parameter_Type      => New_Occurrence_Of (Obj_Typ, Loc));
-
-         --  For entries and procedures of protected types the mode of
-         --  the controlling argument must be in-out.
-
-         else
-            First_Param :=
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Name_uO),
-                In_Present     => True,
-                Out_Present    => (Ekind (Subp_Id) /= E_Function),
-                Parameter_Type => New_Occurrence_Of (Obj_Typ, Loc));
-         end if;
+         return Empty;
       end if;
 
       declare
@@ -2792,13 +2769,16 @@ package body Exp_Ch9 is
 
          else
             pragma Assert (Is_Private_Primitive_Subprogram (Subp_Id));
+
             Obj_Param :=
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uO),
-                In_Present  => In_Present (Parent (First_Entity (Subp_Id))),
-                Out_Present => Ekind (Subp_Id) /= E_Function,
-                  Parameter_Type => New_Occurrence_Of (Obj_Typ, Loc));
+                In_Present          =>
+                  In_Present (Parent (First_Entity (Subp_Id))),
+                Out_Present         => Ekind (Subp_Id) /= E_Function,
+                Parameter_Type      => New_Occurrence_Of (Obj_Typ, Loc));
+
             Prepend_To (New_Formals, Obj_Param);
          end if;
 
@@ -4211,8 +4191,7 @@ package body Exp_Ch9 is
                       Unprotected_Mode => 'N');
 
    begin
-      if Ekind (Defining_Unit_Name (Specification (N))) =
-           E_Subprogram_Body
+      if Ekind (Defining_Unit_Name (Specification (N))) = E_Subprogram_Body
       then
          Decl := Unit_Declaration_Node (Corresponding_Spec (N));
       else
@@ -4228,6 +4207,15 @@ package body Exp_Ch9 is
       New_Id :=
         Make_Defining_Identifier (Loc,
           Chars => Build_Selected_Name (Prot_Typ, Def_Id, Append_Chr (Mode)));
+
+      --  Reference the original nondispatching subprogram since the analysis
+      --  of the object.operation notation may need its original name (see
+      --  Sem_Ch4.Names_Match).
+
+      if Mode = Dispatching_Mode then
+         Set_Ekind (New_Id, Ekind (Def_Id));
+         Set_Original_Protected_Subprogram (New_Id, Def_Id);
+      end if;
 
       --  The unprotected operation carries the user code, and debugging
       --  information must be generated for it, even though this spec does
@@ -4245,7 +4233,7 @@ package body Exp_Ch9 is
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          New_Spec :=
            Make_Procedure_Specification (Loc,
-             Defining_Unit_Name => New_Id,
+             Defining_Unit_Name       => New_Id,
              Parameter_Specifications => New_Plist);
 
       --  Create a new specification for the anonymous subprogram type
@@ -4253,9 +4241,9 @@ package body Exp_Ch9 is
       else
          New_Spec :=
            Make_Function_Specification (Loc,
-             Defining_Unit_Name => New_Id,
+             Defining_Unit_Name       => New_Id,
              Parameter_Specifications => New_Plist,
-             Result_Definition =>
+             Result_Definition        =>
                Copy_Result_Type (Result_Definition (Specification (Decl))));
 
          Set_Return_Present (Defining_Unit_Name (New_Spec));
@@ -6231,16 +6219,17 @@ package body Exp_Ch9 is
 
    procedure Expand_Access_Protected_Subprogram_Type (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
-      Comps  : List_Id;
       T      : constant Entity_Id  := Defining_Identifier (N);
       D_T    : constant Entity_Id  := Designated_Type (T);
       D_T2   : constant Entity_Id  := Make_Temporary (Loc, 'D');
       E_T    : constant Entity_Id  := Make_Temporary (Loc, 'E');
-      P_List : constant List_Id    := Build_Protected_Spec
-                                        (N, RTE (RE_Address), D_T, False);
-      Decl1  : Node_Id;
-      Decl2  : Node_Id;
-      Def1   : Node_Id;
+      P_List : constant List_Id    :=
+                 Build_Protected_Spec (N, RTE (RE_Address), D_T, False);
+
+      Comps : List_Id;
+      Decl1 : Node_Id;
+      Decl2 : Node_Id;
+      Def1  : Node_Id;
 
    begin
       --  Create access to subprogram with full signature
@@ -6263,7 +6252,10 @@ package body Exp_Ch9 is
           Defining_Identifier => D_T2,
           Type_Definition     => Def1);
 
-      Insert_After_And_Analyze (N, Decl1);
+      --  Declare the new types before the original one since the latter will
+      --  refer to them through the Equivalent_Type slot.
+
+      Insert_Before_And_Analyze (N, Decl1);
 
       --  Associate the access to subprogram with its original access to
       --  protected subprogram type. Needed by the backend to know that this
@@ -6298,7 +6290,7 @@ package body Exp_Ch9 is
               Component_List =>
                 Make_Component_List (Loc, Component_Items => Comps)));
 
-      Insert_After_And_Analyze (Decl1, Decl2);
+      Insert_Before_And_Analyze (N, Decl2);
       Set_Equivalent_Type (T, E_T);
    end Expand_Access_Protected_Subprogram_Type;
 
@@ -9322,6 +9314,9 @@ package body Exp_Ch9 is
 
       pragma Assert (Present (Pdef));
 
+      Insert_After (Current_Node, Rec_Decl);
+      Current_Node := Rec_Decl;
+
       --  Add private field components
 
       if Present (Private_Declarations (Pdef)) then
@@ -9492,7 +9487,7 @@ package body Exp_Ch9 is
             Entry_Count_Expr   : constant Node_Id :=
                                    Build_Entry_Count_Expression
                                      (Prot_Typ, Cdecls, Loc);
-            Num_Attach_Handler : Int := 0;
+            Num_Attach_Handler : Nat := 0;
             Protection_Subtype : Node_Id;
             Ritem              : Node_Id;
 
@@ -9582,9 +9577,6 @@ package body Exp_Ch9 is
          Append_To (Cdecls, Object_Comp);
       end if;
 
-      Insert_After (Current_Node, Rec_Decl);
-      Current_Node := Rec_Decl;
-
       --  Analyze the record declaration immediately after construction,
       --  because the initialization procedure is needed for single object
       --  declarations before the next entity is analyzed (the freeze call
@@ -9653,22 +9645,51 @@ package body Exp_Ch9 is
             Current_Node := Sub;
 
             --  Generate an overriding primitive operation specification for
-            --  this subprogram if the protected type implements an interface.
+            --  this subprogram if the protected type implements an interface
+            --  and Build_Wrapper_Spec did not generate its wrapper.
 
             if Ada_Version >= Ada_2005
               and then
                 Present (Interfaces (Corresponding_Record_Type (Prot_Typ)))
             then
-               Sub :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Protected_Sub_Specification
-                       (Comp, Prot_Typ, Dispatching_Mode));
+               declare
+                  Found     : Boolean := False;
+                  Prim_Elmt : Elmt_Id;
+                  Prim_Op   : Node_Id;
 
-               Insert_After (Current_Node, Sub);
-               Analyze (Sub);
+               begin
+                  Prim_Elmt :=
+                    First_Elmt
+                      (Primitive_Operations
+                        (Corresponding_Record_Type (Prot_Typ)));
 
-               Current_Node := Sub;
+                  while Present (Prim_Elmt) loop
+                     Prim_Op := Node (Prim_Elmt);
+
+                     if Is_Primitive_Wrapper (Prim_Op)
+                       and then Wrapped_Entity (Prim_Op) =
+                                  Defining_Entity (Specification (Comp))
+                     then
+                        Found := True;
+                        exit;
+                     end if;
+
+                     Next_Elmt (Prim_Elmt);
+                  end loop;
+
+                  if not Found then
+                     Sub :=
+                       Make_Subprogram_Declaration (Loc,
+                         Specification =>
+                           Build_Protected_Sub_Specification
+                             (Comp, Prot_Typ, Dispatching_Mode));
+
+                     Insert_After (Current_Node, Sub);
+                     Analyze (Sub);
+
+                     Current_Node := Sub;
+                  end if;
+               end;
             end if;
 
             --  If a pragma Interrupt_Handler applies, build and add a call to
@@ -9719,19 +9740,19 @@ package body Exp_Ch9 is
                Body_Arr :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Body_Id,
-                   Aliased_Present => True,
-                   Object_Definition =>
+                   Aliased_Present     => True,
+                   Object_Definition   =>
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
                          New_Occurrence_Of
                            (RTE (RE_Protected_Entry_Body_Array), Loc),
-                       Constraint =>
+                       Constraint   =>
                          Make_Index_Or_Discriminant_Constraint (Loc,
                            Constraints => New_List (
                               Make_Range (Loc,
                                 Make_Integer_Literal (Loc, 1),
                                 Make_Integer_Literal (Loc, E_Count))))),
-                   Expression => Entries_Aggr);
+                   Expression          => Entries_Aggr);
 
             when System_Tasking_Protected_Objects_Single_Entry =>
                Body_Arr :=
@@ -9740,7 +9761,8 @@ package body Exp_Ch9 is
                    Aliased_Present     => True,
                    Object_Definition   =>
                      New_Occurrence_Of (RTE (RE_Entry_Body), Loc),
-                   Expression => Remove_Head (Expressions (Entries_Aggr)));
+                   Expression          =>
+                     Remove_Head (Expressions (Entries_Aggr)));
 
             when others =>
                raise Program_Error;
@@ -9776,7 +9798,7 @@ package body Exp_Ch9 is
    -- Expand_N_Requeue_Statement --
    --------------------------------
 
-   --  A non-dispatching requeue statement is expanded into one of four GNARLI
+   --  A nondispatching requeue statement is expanded into one of four GNARLI
    --  operations, depending on the source and destination (task or protected
    --  object). A dispatching requeue statement is expanded into a call to the
    --  predefined primitive _Disp_Requeue. In addition, code is generated to
@@ -9980,7 +10002,7 @@ package body Exp_Ch9 is
       --  and perform the appropriate kind of dispatching select.
 
       function Build_Normal_Requeue return Node_Id;
-      --  N denotes a non-dispatching requeue statement to either a task or a
+      --  N denotes a nondispatching requeue statement to either a task or a
       --  protected entry. Build the appropriate runtime call to perform the
       --  action.
 
@@ -10532,7 +10554,7 @@ package body Exp_Ch9 is
             end if;
          end;
 
-      --  Processing for regular (non-dispatching) requeues
+      --  Processing for regular (nondispatching) requeues
 
       else
          Rewrite (N, Build_Normal_Requeue);
@@ -10578,7 +10600,7 @@ package body Exp_Ch9 is
       Delay_Val      : Entity_Id;
       Delay_Index    : Entity_Id;
       Delay_Min      : Entity_Id;
-      Delay_Num      : Int := 1;
+      Delay_Num      : Pos := 1;
       Delay_Alt_List : List_Id := New_List;
       Delay_List     : constant List_Id := New_List;
       D              : Entity_Id;
@@ -10588,9 +10610,9 @@ package body Exp_Ch9 is
       Guard_Open     : Entity_Id;
 
       End_Lab        : Node_Id;
-      Index          : Int := 1;
+      Index          : Pos := 1;
       Lab            : Node_Id;
-      Num_Alts       : Int;
+      Num_Alts       : Nat;
       Num_Accept     : Nat := 0;
       Proc           : Node_Id;
       Time_Type      : Entity_Id;
@@ -12802,7 +12824,7 @@ package body Exp_Ch9 is
              Else_Statements => D_Stats));
 
       else
-         --  Simple case of a non-dispatching trigger. Skip assignments to
+         --  Simple case of a nondispatching trigger. Skip assignments to
          --  temporaries created for in-out parameters.
 
          --  This makes unwarranted assumptions about the shape of the expanded
@@ -13196,16 +13218,29 @@ package body Exp_Ch9 is
       --  package or return statement.
 
       Context := Parent (N);
-      while not Nkind_In (Context, N_Block_Statement,
-                                   N_Entry_Body,
-                                   N_Extended_Return_Statement,
-                                   N_Package_Body,
-                                   N_Package_Declaration,
-                                   N_Subprogram_Body,
-                                   N_Task_Body)
-      loop
+      while Present (Context) loop
+         if Nkind_In (Context, N_Entry_Body,
+                               N_Extended_Return_Statement,
+                               N_Package_Body,
+                               N_Package_Declaration,
+                               N_Subprogram_Body,
+                               N_Task_Body)
+         then
+            exit;
+
+         --  Do not consider block created to protect a list of statements with
+         --  an Abort_Defer / Abort_Undefer_Direct pair.
+
+         elsif Nkind (Context) = N_Block_Statement
+           and then not Is_Abort_Block (Context)
+         then
+            exit;
+         end if;
+
          Context := Parent (Context);
       end loop;
+
+      pragma Assert (Present (Context));
 
       --  Extract the constituents of the context
 
@@ -13237,8 +13272,6 @@ package body Exp_Ch9 is
          end if;
 
       else
-         Context_Decls := Declarations (Context);
-
          if Nkind (Context) = N_Block_Statement then
             Context_Id := Entity (Identifier (Context));
 
@@ -13262,9 +13295,10 @@ package body Exp_Ch9 is
          else
             raise Program_Error;
          end if;
+
+         Context_Decls := Declarations (Context);
       end if;
 
-      pragma Assert (Present (Context));
       pragma Assert (Present (Context_Id));
       pragma Assert (Present (Context_Decls));
    end Find_Enclosing_Context;
@@ -14115,7 +14149,7 @@ package body Exp_Ch9 is
          --  or, in the case of Ravenscar:
 
          --  Install_Restricted_Handlers
-         --    (Prio, (Expr1, Proc1'access), ...., (ExprN, ProcN'access));
+         --    (Prio, ((Expr1, Proc1'access), ...., (ExprN, ProcN'access)));
 
          declare
             Args  : constant List_Id := New_List;

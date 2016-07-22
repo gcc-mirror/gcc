@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,7 +157,7 @@ package body Osint is
    EOL : constant Character := ASCII.LF;
    --  End of line character
 
-   Number_File_Names : Int := 0;
+   Number_File_Names : Nat := 0;
    --  Number of file names found on command line and placed in File_Names
 
    Look_In_Primary_Directory_For_Current_Main : Boolean := False;
@@ -2094,7 +2094,7 @@ package body Osint is
    -- Number_Of_Files --
    ---------------------
 
-   function Number_Of_Files return Int is
+   function Number_Of_Files return Nat is
    begin
       return Number_File_Names;
    end Number_Of_Files;
@@ -2203,31 +2203,6 @@ package body Osint is
       Start_Of_Suffix : Positive;
 
    begin
-      --  GNAAMP tool names require special treatment
-
-      if AAMP_On_Target then
-
-         --  The name "gcc" is mapped to "gnaamp" (the compiler driver)
-
-         if Nam = "gcc" then
-            return new String'("gnaamp");
-
-         --  Tool names starting with "gnat" are mapped by substituting the
-         --  string "gnaamp" for "gnat" (for example, "gnatpp" => "gnaamppp").
-
-         elsif Nam'Length >= 4
-           and then Nam (Nam'First .. Nam'First + 3) = "gnat"
-         then
-            return new String'("gnaamp" & Nam (Nam'First + 4 .. Nam'Last));
-
-         --  No other mapping rules, so we continue and handle any other forms
-         --  of tool names the same as on other targets.
-
-         else
-            null;
-         end if;
-      end if;
-
       --  Get the name of the current program being executed
 
       Find_Program_Name;
@@ -2752,7 +2727,7 @@ package body Osint is
          end if;
       end if;
 
-      if Path (Prefix'Range) = Prefix then
+      if Path'Last >= Prefix'Last and then Path (Prefix'Range) = Prefix then
          if Std_Prefix.all /= "" then
             S := new String
               (1 .. Std_Prefix'Length + Path'Last - Prefix'Last);

@@ -18,15 +18,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// NB: Don't include any other headers in this file.
+// LWG 2212 requires <array> to define tuple_element<cv T> specializations.
 #include <array>
-#include <type_traits>
-#include <testsuite_hooks.h>
 
 void
 test01() 
 { 
   bool test __attribute__((unused)) = true;
-  using namespace std;
+  using std::array;
+  using std::tuple_element;
+  // This relies on the fact that <utility> includes <type_traits>:
+  using std::is_same;
 
   const size_t len = 3;
   typedef array<int, len> array_type;
@@ -47,7 +50,7 @@ test01()
   static_assert(is_same<tuple_element<1, volatile array_type>::type,
                 volatile int>::value, "");
   static_assert( (is_same<tuple_element<2, volatile array_type>::type,
-           volatile int>::value == true) );
+           volatile int>::value == true), "" );
 
   static_assert(is_same<tuple_element<0, const volatile array_type>::type,
                 const volatile int>::value, "");

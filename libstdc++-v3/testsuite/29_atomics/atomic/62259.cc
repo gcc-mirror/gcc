@@ -44,7 +44,7 @@ struct power_of_two_obj {
 
 std::atomic<power_of_two_obj> obj1;
 
-static_assert( alignof(obj1) >= alignof(int64_t),
+static_assert( __alignof__(obj1) >= alignof(int64_t),
                "std::atomic not suitably aligned" );
 
 struct container_struct {
@@ -54,5 +54,5 @@ struct container_struct {
 
 container_struct obj2;
 
-static_assert( alignof(obj2.ao) >= alignof(int64_t),
+static_assert( __alignof__(obj2.ao) >= alignof(int64_t),
                "std::atomic not suitably aligned" );

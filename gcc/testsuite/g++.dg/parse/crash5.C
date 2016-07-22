@@ -1,6 +1,6 @@
 // { dg-options "-w" }
 
-class QString { // { dg-error "previous definition" }
+class QString { // { dg-message "previous definition" }
   QString (const QString & a); // { dg-message "QString::QString|candidate expects" }
 };
 

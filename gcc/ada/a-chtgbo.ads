@@ -81,7 +81,7 @@ package Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
    procedure Clear (HT : in out Hash_Table_Type'Class);
    --  Deallocates each node in hash table HT. (Note that it only deallocates
-   --  the nodes, not the buckets array.)  Program_Error is raised if the hash
+   --  the nodes, not the buckets array.) Program_Error is raised if the hash
    --  table is busy.
 
    procedure Delete_Node_At_Index

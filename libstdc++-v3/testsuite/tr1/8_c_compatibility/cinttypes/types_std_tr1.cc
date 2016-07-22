@@ -28,6 +28,6 @@ void test01()
 #if _GLIBCXX_USE_C99_INTTYPES_TR1
 
   typedef std::tr1::imaxdiv_t  my_imaxdiv_t;
-  
+
 #endif
 }

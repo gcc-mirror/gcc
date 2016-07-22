@@ -726,7 +726,8 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 				"atomic transaction", fn);
 		    else
 		      {
-			if (!DECL_P (fn) || DECL_NAME (fn))
+			if ((!DECL_P (fn) || DECL_NAME (fn))
+			    && TREE_CODE (fn) != SSA_NAME)
 			  error_at (gimple_location (stmt),
 				    "unsafe function call %qE within "
 				    "atomic transaction", fn);
@@ -744,7 +745,8 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 				"%<transaction_safe%> function", fn);
 		    else
 		      {
-			if (!DECL_P (fn) || DECL_NAME (fn))
+			if ((!DECL_P (fn) || DECL_NAME (fn))
+			    && TREE_CODE (fn) != SSA_NAME)
 			  error_at (gimple_location (stmt),
 				    "unsafe function call %qE within "
 				    "%<transaction_safe%> function", fn);

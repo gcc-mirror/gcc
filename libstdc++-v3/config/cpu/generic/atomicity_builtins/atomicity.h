@@ -30,7 +30,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  _Atomic_word 
+  _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   { return __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }

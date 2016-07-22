@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -245,6 +245,10 @@ package Sem_Aux is
    --  only checks for a rep item that has been directly specified for E (and
    --  not inherited from its parents, if any). If found then True is returned,
    --  otherwise False indicates that no matching entry was found.
+
+   function Has_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean;
+   --  Determine whether the Rep_Item chain of arbitrary entity E contains item
+   --  N. N must denote a valid rep item.
 
    function Has_Rep_Pragma
      (E             : Entity_Id;

@@ -41,49 +41,49 @@ HeaderInclude
 config/msp430/msp430-opts.h
 
 mhwmult=
-Target Joined RejectNegative Report ToLower Var(msp430_hwmult_type) Enum(msp430_hwmult_types) Init(AUTO)
+Target Joined RejectNegative Report ToLower Var(msp430_hwmult_type) Enum(msp430_hwmult_types) Init(MSP430_HWMULT_AUTO)
 Specify the type of hardware multiply to support.
 
 Enum
 Name(msp430_hwmult_types) Type(enum msp430_hwmult_types)
 
 EnumValue
-Enum(msp430_hwmult_types) String(none) Value(NONE)
+Enum(msp430_hwmult_types) String(none) Value(MSP430_HWMULT_NONE)
 
 EnumValue
-Enum(msp430_hwmult_types) String(auto) Value(AUTO)
+Enum(msp430_hwmult_types) String(auto) Value(MSP430_HWMULT_AUTO)
 
 EnumValue
-Enum(msp430_hwmult_types) String(16bit) Value(SMALL)
+Enum(msp430_hwmult_types) String(16bit) Value(MSP430_HWMULT_SMALL)
 
 EnumValue
-Enum(msp430_hwmult_types) String(32bit) Value(LARGE)
+Enum(msp430_hwmult_types) String(32bit) Value(MSP430_HWMULT_LARGE)
 
 EnumValue
-Enum(msp430_hwmult_types) String(f5series) Value(F5SERIES)
+Enum(msp430_hwmult_types) String(f5series) Value(MSP430_HWMULT_F5SERIES)
 
 mcode-region=
-Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(ANY)
+Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(MSP430_REGION_ANY)
 Specify whether functions should be placed into low or high memory.
 
 mdata-region=
-Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(ANY)
+Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(MSP430_REGION_ANY)
 Specify whether variables should be placed into low or high memory.
 
 Enum
 Name(msp430_regions) Type(enum msp430_regions)
 
 EnumValue
-Enum(msp430_regions) String(none) Value(ANY)
+Enum(msp430_regions) String(none) Value(MSP430_REGION_ANY)
 
 EnumValue
-Enum(msp430_regions) String(either) Value(EITHER)
+Enum(msp430_regions) String(either) Value(MSP430_REGION_EITHER)
 
 EnumValue
-Enum(msp430_regions) String(lower) Value(LOWER)
+Enum(msp430_regions) String(lower) Value(MSP430_REGION_LOWER)
 
 EnumValue
-Enum(msp430_regions) String(upper) Value(UPPER)
+Enum(msp430_regions) String(upper) Value(MSP430_REGION_UPPER)
 
 msilicon-errata=
 Target Joined RejectNegative Report ToLower

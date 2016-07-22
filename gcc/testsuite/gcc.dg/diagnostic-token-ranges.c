@@ -1,16 +1,19 @@
-/* { dg-options "-fdiagnostics-show-caret -Wc++-compat" } */
+/* { dg-options "-fdiagnostics-show-caret -Wc++-compat -std=c11" } */
 
 /* Verify that various diagnostics show source code ranges.  */
+
+long double nanl (const char *);
 
 /* These ones merely use token ranges; they don't use tree ranges.  */
 
 void undeclared_identifier (void)
 {
-  name; /* { dg-error "'name' undeclared" } */
+  name; /* { dg-error "'name' undeclared .first use in this function.; did you mean .nanl." } */
 /*
 { dg-begin-multiline-output "" }
    name;
    ^~~~
+   nanl
 { dg-end-multiline-output "" }
 */
 }
@@ -65,11 +68,11 @@ foo (unknown_type param); /* { dg-error "unknown type name 'unknown_type'" } */
 
 void wide_string_literal_in_asm (void)
 {
-  asm (L"nop"); /* { dg-error "wide string literal in 'asm'" } */
+  __asm (L"nop"); /* { dg-error "wide string literal in 'asm'" } */
 /*
 { dg-begin-multiline-output "" }
-   asm (L"nop");
-        ^~~~~~
+   __asm (L"nop");
+          ^~~~~~
 { dg-end-multiline-output "" }
 */
 }

@@ -835,6 +835,9 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
       loop->any_upper_bound = streamer_read_hwi (ib);
       if (loop->any_upper_bound)
 	loop->nb_iterations_upper_bound = streamer_read_wi (ib);
+      loop->any_likely_upper_bound = streamer_read_hwi (ib);
+      if (loop->any_likely_upper_bound)
+	loop->nb_iterations_likely_upper_bound = streamer_read_wi (ib);
       loop->any_estimate = streamer_read_hwi (ib);
       if (loop->any_estimate)
 	loop->nb_iterations_estimate = streamer_read_wi (ib);
@@ -881,10 +884,13 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
 
       is_default_def = (streamer_read_uchar (ib) != 0);
       name = stream_read_tree (ib, data_in);
-      ssa_name = make_ssa_name_fn (fn, name, gimple_build_nop ());
+      ssa_name = make_ssa_name_fn (fn, name, NULL);
 
       if (is_default_def)
-	set_ssa_default_def (cfun, SSA_NAME_VAR (ssa_name), ssa_name);
+	{
+	  set_ssa_default_def (cfun, SSA_NAME_VAR (ssa_name), ssa_name);
+	  SSA_NAME_DEF_STMT (ssa_name) = gimple_build_nop ();
+	}
 
       i = streamer_read_uhwi (ib);
     }
@@ -950,7 +956,8 @@ fixup_call_stmt_edges (struct cgraph_node *orig, gimple **stmts)
   if (orig->clones)
     for (node = orig->clones; node != orig;)
       {
-	fixup_call_stmt_edges_1 (node, stmts, fn);
+	if (!node->thunk.thunk_p)
+	  fixup_call_stmt_edges_1 (node, stmts, fn);
 	if (node->clones)
 	  node = node->clones;
 	else if (node->next_sibling_clone)

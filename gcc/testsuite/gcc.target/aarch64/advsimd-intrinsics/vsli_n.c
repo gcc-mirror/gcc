@@ -166,9 +166,11 @@ void vsli_extra(void)
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_max_shift, COMMENT);
 }

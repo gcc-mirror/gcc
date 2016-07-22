@@ -36,7 +36,7 @@ void test01()
   const long      l1 = 1;
   const double    f1 = 1.0f;
   const double    d1 = 1.0;
-    
+
   check_ret_type<double>(std::tr1::arg(i1));
   VERIFY( std::tr1::arg(i1) == std::tr1::arg(double(i1)) );
   VERIFY( std::tr1::arg(i1) == std::tr1::arg(cmplx_d_type(double(i1))) );

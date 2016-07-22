@@ -6,9 +6,11 @@
 program main
   implicit none
 
-  integer, parameter :: n = 100
-  integer :: array(n), i
-  
+  integer,parameter :: size = 100
+  integer :: array(size), i, n
+
+  n = size
+
   !$acc data copy(array)
   call kernels(array, n)
 

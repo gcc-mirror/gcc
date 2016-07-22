@@ -32,7 +32,7 @@ void test01()
       {
 	std::tr1::unordered_set<int> us1;
 	typedef std::tr1::unordered_set<int>::size_type size_type;
-	
+
 	us1.max_load_factor(10.0);
 
 	for (int i = 0; i < size; ++i)

@@ -37,10 +37,8 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0x60, 0xca, 0x34, 0x9e,
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc4c73333, 0xc4bac000,
 					   0xc4ae4ccd, 0xc4a1d999 };
 
-#ifndef INSN_NAME
 #define INSN_NAME vmul
 #define TEST_MSG "VMUL"
-#endif
 
 #define FNNAME1(NAME) exec_ ## NAME
 #define FNNAME(NAME) FNNAME1(NAME)

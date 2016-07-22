@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body System.Soft_Links is
 
    --  Needed for Vx6Cert (Vx653mc) GOS cert and ravenscar-cert runtimes,
    --  VxMILS cert, ravenscar-cert and full runtimes, Vx 5 default runtime
-   Stack_Limit : aliased System.Address;
+   Stack_Limit : aliased System.Address := System.Null_Address;
 
    pragma Export (C, Stack_Limit, "__gnat_stack_limit");
 

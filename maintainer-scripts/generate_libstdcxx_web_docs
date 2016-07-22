@@ -3,7 +3,7 @@
 # i.e. http://gcc.gnu.org/onlinedocs/gcc-x.y.z/libstdc++*
 
 SRCDIR=${1}
-DOCSDIR=${2}
+DOCSDIR=$(realpath ${2})
 
 if ! [ $# -eq 2 -a -x "${SRCDIR}/configure" -a -d "${DOCSDIR}" ]
 then
@@ -34,6 +34,9 @@ set -x
 ${SRCDIR}/configure --enable-languages=c,c++ --disable-gcc $disabled_libs --docdir=/docs
 eval `grep '^target=' config.log`
 make configure-target
+# If the following step fails with an error like
+# ! LaTeX Error: File `xtab.sty' not found.
+# then you need to install the relevant TeX package e.g. texlive-xtab
 make -C $target/libstdc++-v3 doc-install-html doc-install-xml doc-install-pdf DESTDIR=$DESTDIR
 cd $DESTDIR/docs
 mkdir libstdc++

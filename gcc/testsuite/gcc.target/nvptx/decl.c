@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 
 static const int __attribute__ ((used)) cst_local = 4;
 static int __attribute__ ((used)) glob_local = 5;

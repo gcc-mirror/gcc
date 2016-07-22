@@ -438,15 +438,18 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   /* Check if arg0 is an SSA_NAME and the stmt which defines arg0 is
      a conversion.  */
   arg0_def_stmt = SSA_NAME_DEF_STMT (arg0);
-  if (!is_gimple_assign (arg0_def_stmt)
-      || !gimple_assign_cast_p (arg0_def_stmt))
+  if (!gimple_assign_cast_p (arg0_def_stmt))
     return NULL;
 
   /* Use the RHS as new_arg0.  */
   convert_code = gimple_assign_rhs_code (arg0_def_stmt);
   new_arg0 = gimple_assign_rhs1 (arg0_def_stmt);
   if (convert_code == VIEW_CONVERT_EXPR)
-    new_arg0 = TREE_OPERAND (new_arg0, 0);
+    {
+      new_arg0 = TREE_OPERAND (new_arg0, 0);
+      if (!is_gimple_reg_type (TREE_TYPE (new_arg0)))
+	return NULL;
+    }
 
   if (TREE_CODE (arg1) == SSA_NAME)
     {
@@ -809,7 +812,7 @@ neutral_element_p (tree_code code, tree arg, bool right)
 /* Returns true if ARG is an absorbing element for operation CODE.  */
 
 static bool
-absorbing_element_p (tree_code code, tree arg)
+absorbing_element_p (tree_code code, tree arg, bool right, tree rval)
 {
   switch (code)
     {
@@ -819,6 +822,25 @@ absorbing_element_p (tree_code code, tree arg)
     case MULT_EXPR:
     case BIT_AND_EXPR:
       return integer_zerop (arg);
+
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+      return !right && integer_zerop (arg);
+
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+      return (!right
+	      && integer_zerop (arg)
+	      && tree_single_nonzero_warnv_p (rval, NULL));
 
     default:
       return false;
@@ -991,9 +1013,11 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	      && operand_equal_for_phi_arg_p (rhs1, cond_lhs)
 	      && neutral_element_p (code_def, cond_rhs, false))
 	  || (operand_equal_for_phi_arg_p (arg1, cond_rhs)
-	      && (operand_equal_for_phi_arg_p (rhs2, cond_lhs)
-		  || operand_equal_for_phi_arg_p (rhs1, cond_lhs))
-	      && absorbing_element_p (code_def, cond_rhs))))
+	      && ((operand_equal_for_phi_arg_p (rhs2, cond_lhs)
+		   && absorbing_element_p (code_def, cond_rhs, true, rhs2))
+		  || (operand_equal_for_phi_arg_p (rhs1, cond_lhs)
+		      && absorbing_element_p (code_def,
+					      cond_rhs, false, rhs2))))))
     {
       gsi = gsi_for_stmt (cond);
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))

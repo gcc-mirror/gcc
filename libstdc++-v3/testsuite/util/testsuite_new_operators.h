@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Utility subroutines for the C++ library testsuite. 
+// Utility subroutines for the C++ library testsuite.
 //
 // Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //
@@ -63,6 +63,13 @@ void operator delete(void* p) throw()
   if (p)
     std::free(p);
 }
+
+void operator delete(void* p, const std::nothrow_t&) throw()
+{
+  if (p)
+    std::free(p);
+}
+
 
 #endif // _GLIBCXX_TESTSUITE_NEW_OPERATORS_H
 

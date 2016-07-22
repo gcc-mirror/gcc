@@ -31,11 +31,14 @@
 #include "oacc-int.h"
 
 void
-GOMP_PLUGIN_async_unmap_vars (void *ptr)
+GOMP_PLUGIN_async_unmap_vars (void *ptr, int async)
 {
   struct target_mem_desc *tgt = ptr;
+  struct gomp_device_descr *devicep = tgt->device_descr;
 
-  gomp_unmap_vars (tgt, false);
+  devicep->openacc.async_set_async_func (async);
+  gomp_unmap_vars (tgt, true);
+  devicep->openacc.async_set_async_func (acc_async_sync);
 }
 
 /* Return the target-specific part of the TLS data for the current thread.  */

@@ -1505,7 +1505,8 @@ dump_part_var_map (FILE *f, partition part, var_map map)
 /* Given SSA_NAMEs NAME1 and NAME2, return true if they are candidates for
    coalescing together, false otherwise.
 
-   This must stay consistent with var_map_base_init in tree-ssa-live.c.  */
+   This must stay consistent with compute_samebase_partition_bases and 
+   compute_optimized_partition_bases.  */
 
 bool
 gimple_can_coalesce_p (tree name1, tree name2)
@@ -1568,17 +1569,24 @@ gimple_can_coalesce_p (tree name1, tree name2)
 			    var2 ? LOCAL_DECL_ALIGNMENT (var2) : TYPE_ALIGN (t2)))
     return false;
 
-  /* If the types are not the same, check for a canonical type match.  This
+  /* If the types are not the same, see whether they are compatible.  This
      (for example) allows coalescing when the types are fundamentally the
-     same, but just have different names. 
+     same, but just have different names.
 
-     Note pointer types with different address spaces may have the same
-     canonical type.  Those are rejected for coalescing by the
-     types_compatible_p check.  */
-  if (TYPE_CANONICAL (t1)
-      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
-      && types_compatible_p (t1, t2))
-    goto check_modes;
+     In the non-optimized case, we must first test TYPE_CANONICAL because
+     we use it to compute the partition_to_base_index of the map.  */
+  if (flag_tree_coalesce_vars)
+    {
+      if (types_compatible_p (t1, t2))
+	goto check_modes;
+    }
+  else
+    {
+      if (TYPE_CANONICAL (t1)
+	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
+	  && types_compatible_p (t1, t2))
+	goto check_modes;
+    }
 
   return false;
 }
@@ -1759,7 +1767,7 @@ compute_samebase_partition_bases (var_map map)
       else
 	/* This restricts what anonymous SSA names we can coalesce
 	   as it restricts the sets we compute conflicts for.
-	   Using TREE_TYPE to generate sets is the easies as
+	   Using TREE_TYPE to generate sets is the easiest as
 	   type equivalency also holds for SSA names with the same
 	   underlying decl.
 

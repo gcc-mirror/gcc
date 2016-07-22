@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Namet; use Namet;
 with Types; use Types;
 
 package Casing is
@@ -68,14 +69,20 @@ package Casing is
    -- Case Control Subprograms --
    ------------------------------
 
+   procedure Set_Casing
+     (Buf : in out Bounded_String;
+      C   : Casing_Type;
+      D   : Casing_Type := Mixed_Case);
+   --  Takes the name stored in Buf and modifies it to be consistent with the
+   --  casing given by C, or if C = Unknown, then with the casing given by
+   --  D. The name is basically treated as an identifier, except that special
+   --  separator characters other than underline are permitted and treated like
+   --  underlines (this handles cases like minus and period in unit names,
+   --  apostrophes in error messages, angle brackets in names like <any_type>,
+   --  etc).
+
    procedure Set_Casing (C : Casing_Type; D : Casing_Type := Mixed_Case);
-   --  Takes the name stored in the first Name_Len positions of Name_Buffer
-   --  and modifies it to be consistent with the casing given by C, or if
-   --  C = Unknown, then with the casing given by D. The name is basically
-   --  treated as an identifier, except that special separator characters
-   --  other than underline are permitted and treated like underlines (this
-   --  handles cases like minus and period in unit names, apostrophes in error
-   --  messages, angle brackets in names like <any_type>, etc).
+   --  Uses Buf => Global_Name_Buffer
 
    procedure Set_All_Upper_Case;
    pragma Inline (Set_All_Upper_Case);

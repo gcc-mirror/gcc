@@ -24,8 +24,8 @@
 #include <tr1/array>
 
 void
-test01() 
-{ 
+test01()
+{
   typedef std::tr1::array<int, 5> array_type;
 
   array_type a = { { 0, 1, 2, 3, 4 } };

@@ -1,6 +1,7 @@
 /* PR tree-optimization/70169 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-strict-aliasing -fno-tree-dce" } */
+/* { dg-skip-if "Program and data reside in different address spaces" { "avr-*-*" } } */
 
 int printf (const char *, ...); 
 

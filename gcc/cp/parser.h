@@ -420,5 +420,6 @@ extern void debug (vec<cp_token, va_gc> *ptr);
 extern void cp_debug_parser (FILE *, cp_parser *);
 extern void debug (cp_parser &ref);
 extern void debug (cp_parser *ptr);
+extern bool cp_keyword_starts_decl_specifier_p (enum rid keyword);
 
 #endif  /* GCC_CP_PARSER_H  */

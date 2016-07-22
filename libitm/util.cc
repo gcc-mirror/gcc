@@ -61,12 +61,22 @@ GTM_fatal (const char *fmt, ...)
 void *
 xmalloc (size_t size, bool separate_cl)
 {
-  // TODO Use posix_memalign if separate_cl is true, or some other allocation
-  // method that will avoid sharing cache lines with data used by other
-  // threads.
-  void *r = malloc (size);
-  if (r == 0)
-    GTM_fatal ("Out of memory allocating %lu bytes", (unsigned long) size);
+  void *r;
+#ifdef HAVE_POSIX_MEMALIGN
+  if (separate_cl)
+    {
+      if (posix_memalign (&r, HW_CACHELINE_SIZE, size))
+	GTM_fatal ("Out of memory allocating %lu bytes aligned on cache line",
+		   (unsigned long) size);
+    }
+  else
+#endif
+    {
+      r = malloc (size);
+      if (r == 0)
+	GTM_fatal ("Out of memory allocating %lu bytes",
+		   (unsigned long) size);
+    }
   return r;
 }
 

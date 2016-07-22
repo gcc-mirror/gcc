@@ -14,7 +14,6 @@
 #include "backend.h"
 #include "statements.h"
 #include "ast-dump.h"
-#include "dataflow.h"
 
 // Class Statement.
 
@@ -1794,40 +1793,6 @@ Statement::make_statement(Expression* expr, bool is_ignored)
   return new Expression_statement(expr, is_ignored);
 }
 
-// A block statement--a list of statements which may include variable
-// definitions.
-
-class Block_statement : public Statement
-{
- public:
-  Block_statement(Block* block, Location location)
-    : Statement(STATEMENT_BLOCK, location),
-      block_(block)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse* traverse)
-  { return this->block_->traverse(traverse); }
-
-  void
-  do_determine_types()
-  { this->block_->determine_types(); }
-
-  bool
-  do_may_fall_through() const
-  { return this->block_->may_fall_through(); }
-
-  Bstatement*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_statement(Ast_dump_context*) const;
-
- private:
-  Block* block_;
-};
-
 // Convert a block to the backend representation of a statement.
 
 Bstatement*
@@ -2532,7 +2497,9 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 
   gogo->flatten_block(function, b);
 
-  if (may_call_recover || recover_arg != NULL)
+  if (may_call_recover
+      || recover_arg != NULL
+      || this->classification() == STATEMENT_GO)
     {
       // Dig up the call expression, which may have been changed
       // during lowering.
@@ -2546,6 +2513,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 	{
 	  if (may_call_recover)
 	    ce->set_is_deferred();
+	  if (this->classification() == STATEMENT_GO)
+	    ce->set_is_concurrent();
 	  if (recover_arg != NULL)
 	    ce->set_recover_arg(recover_arg);
 	}
@@ -2941,37 +2910,13 @@ Statement::make_continue_statement(Unnamed_label* label,
   return new Bc_statement(false, label, location);
 }
 
-// A goto statement.
+// Class Goto_statement.
 
-class Goto_statement : public Statement
+int
+Goto_statement::do_traverse(Traverse*)
 {
- public:
-  Goto_statement(Label* label, Location location)
-    : Statement(STATEMENT_GOTO, location),
-      label_(label)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse*)
-  { return TRAVERSE_CONTINUE; }
-
-  void
-  do_check_types(Gogo*);
-
-  bool
-  do_may_fall_through() const
-  { return false; }
-
-  Bstatement*
-  do_get_backend(Translate_context*);
-
-  void
-  do_dump_statement(Ast_dump_context*) const;
-
- private:
-  Label* label_;
-};
+  return TRAVERSE_CONTINUE;
+}
 
 // Check types for a label.  There aren't any types per se, but we use
 // this to give an error if the label was never defined.
@@ -3013,35 +2958,21 @@ Statement::make_goto_statement(Label* label, Location location)
   return new Goto_statement(label, location);
 }
 
-// A goto statement to an unnamed label.
+// Class Goto_unnamed_statement.
 
-class Goto_unnamed_statement : public Statement
+int
+Goto_unnamed_statement::do_traverse(Traverse*)
 {
- public:
-  Goto_unnamed_statement(Unnamed_label* label, Location location)
-    : Statement(STATEMENT_GOTO_UNNAMED, location),
-      label_(label)
-  { }
+  return TRAVERSE_CONTINUE;
+}
 
- protected:
-  int
-  do_traverse(Traverse*)
-  { return TRAVERSE_CONTINUE; }
+// Convert the goto unnamed statement to the backend representation.
 
-  bool
-  do_may_fall_through() const
-  { return false; }
-
-  Bstatement*
-  do_get_backend(Translate_context* context)
-  { return this->label_->get_goto(context, this->location()); }
-
-  void
-  do_dump_statement(Ast_dump_context*) const;
-
- private:
-  Unnamed_label* label_;
-};
+Bstatement*
+Goto_unnamed_statement::do_get_backend(Translate_context* context)
+{
+  return this->label_->get_goto(context, this->location());
+}
 
 // Dump the AST representation for an unnamed goto statement
 
@@ -3106,32 +3037,27 @@ Statement::make_label_statement(Label* label, Location location)
   return new Label_statement(label, location);
 }
 
-// An unnamed label statement.
+// Class Unnamed_label_statement.
 
-class Unnamed_label_statement : public Statement
+Unnamed_label_statement::Unnamed_label_statement(Unnamed_label* label)
+  : Statement(STATEMENT_UNNAMED_LABEL, label->location()),
+    label_(label)
+{ }
+
+int
+Unnamed_label_statement::do_traverse(Traverse*)
 {
- public:
-  Unnamed_label_statement(Unnamed_label* label)
-    : Statement(STATEMENT_UNNAMED_LABEL, label->location()),
-      label_(label)
-  { }
+  return TRAVERSE_CONTINUE;
+}
 
- protected:
-  int
-  do_traverse(Traverse*)
-  { return TRAVERSE_CONTINUE; }
+// Get the backend definition for this unnamed label statement.
 
-  Bstatement*
-  do_get_backend(Translate_context* context)
-  { return this->label_->get_definition(context); }
+Bstatement*
+Unnamed_label_statement::do_get_backend(Translate_context* context)
+{
+  return this->label_->get_definition(context);
+}
 
-  void
-  do_dump_statement(Ast_dump_context*) const;
-
- private:
-  // The label.
-  Unnamed_label* label_;
-};
 
 // Dump the AST representation for an unnamed label definition statement.
 
@@ -4817,22 +4743,6 @@ Select_clauses::Select_clause::check_types()
     error_at(this->location(), "invalid receive on send-only channel");
 }
 
-// Analyze the dataflow across each case statement.
-
-void
-Select_clauses::Select_clause::analyze_dataflow(Dataflow* dataflow)
-{
-  if (this->is_default_)
-    return;
-
-  // For a CommClause, the dataflow analysis should record a definition of
-  // VAR and CLOSEDVAR
-  if (this->var_ != NULL && !this->var_->is_sink())
-    dataflow->add_def(this->var_, this->channel_, NULL, false);
-  if (this->closedvar_ != NULL && !this->closedvar_->is_sink())
-    dataflow->add_def(this->closedvar_, this->channel_, NULL, false);
-}
-
 // Whether this clause may fall through to the statement which follows
 // the overall select statement.
 
@@ -4949,17 +4859,6 @@ Select_clauses::check_types()
        p != this->clauses_.end();
        ++p)
     p->check_types();
-}
-
-// Analyze the dataflow across each case statement.
-
-void
-Select_clauses::analyze_dataflow(Dataflow* dataflow)
-{
-  for (Clauses::iterator p = this->clauses_.begin();
-       p != this->clauses_.end();
-       ++p)
-    p->analyze_dataflow(dataflow);
 }
 
 // Return whether these select clauses fall through to the statement
@@ -5233,7 +5132,9 @@ For_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 
   b->set_end_location(end_loc);
 
-  return Statement::make_block_statement(b, loc);
+  Statement* bs = Statement::make_block_statement(b, loc);
+  bs->block_statement()->set_is_lowered_for_statement();
+  return bs;
 }
 
 // Return the break label, creating it if necessary.

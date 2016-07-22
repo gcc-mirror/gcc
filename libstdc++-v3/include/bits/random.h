@@ -158,7 +158,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       struct _Adaptor
       {
 	static_assert(std::is_floating_point<_DInputType>::value,
-		      "template argument not a floating point type");
+		      "template argument must be a floating point type");
 
       public:
 	_Adaptor(_Engine& __g)
@@ -235,8 +235,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     class linear_congruential_engine
     {
-      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "substituting _UIntType not an unsigned integral type");
+      static_assert(std::is_unsigned<_UIntType>::value,
+		    "result_type must be an unsigned integral type");
       static_assert(__m == 0u || (__a < __m && __c < __m),
 		    "template argument substituting __m out of bounds");
 
@@ -443,8 +443,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   _UIntType __c, size_t __l, _UIntType __f>
     class mersenne_twister_engine
     {
-      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "substituting _UIntType not an unsigned integral type");
+      static_assert(std::is_unsigned<_UIntType>::value,
+		    "result_type must be an unsigned integral type");
       static_assert(1u <= __m && __m <= __n,
 		    "template argument substituting __m out of bounds");
       static_assert(__r <= __w, "template argument substituting "
@@ -658,10 +658,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     class subtract_with_carry_engine
     {
-      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "substituting _UIntType not an unsigned integral type");
+      static_assert(std::is_unsigned<_UIntType>::value,
+		    "result_type must be an unsigned integral type");
       static_assert(0u < __s && __s < __r,
-		    "template argument substituting __s out of bounds");
+		    "0 < s < r");
       static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
 		    "template argument substituting __w out of bounds");
 
@@ -1065,8 +1065,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _RandomNumberEngine, size_t __w, typename _UIntType>
     class independent_bits_engine
     {
-      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "substituting _UIntType not an unsigned integral type");
+      static_assert(std::is_unsigned<_UIntType>::value,
+		    "result_type must be an unsigned integral type");
       static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
 		    "template argument substituting __w out of bounds");
 
@@ -1278,7 +1278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @brief Produces random numbers by combining random numbers from some
    * base engine to produce random numbers with a specifies number of bits
-   * @p __w.
+   * @p __k.
    */
   template<typename _RandomNumberEngine, size_t __k>
     class shuffle_order_engine
@@ -1649,7 +1649,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  // std::uniform_int_distribution is defined in <bits/random_uid.h>
+  // std::uniform_int_distribution is defined in <bits/uniform_int_dist.h>
 
   /**
    * @brief Return true if two uniform integer distributions have
@@ -1702,7 +1702,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class uniform_real_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -1920,7 +1920,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class normal_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -2133,7 +2133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class lognormal_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -2337,7 +2337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class gamma_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -2554,7 +2554,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class chi_squared_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -2764,7 +2764,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class cauchy_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -2965,7 +2965,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class fisher_f_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3189,7 +3189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class student_t_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3612,7 +3612,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class binomial_distribution
     {
       static_assert(std::is_integral<_IntType>::value,
-		    "template argument not an integral type");
+		    "result_type must be an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3843,7 +3843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class geometric_distribution
     {
       static_assert(std::is_integral<_IntType>::value,
-		    "template argument not an integral type");
+		    "result_type must be an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -4043,7 +4043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class negative_binomial_distribution
     {
       static_assert(std::is_integral<_IntType>::value,
-		    "template argument not an integral type");
+		    "result_type must be an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -4265,7 +4265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class poisson_distribution
     {
       static_assert(std::is_integral<_IntType>::value,
-		    "template argument not an integral type");
+		    "result_type must be an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -4481,7 +4481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class exponential_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -4683,7 +4683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class weibull_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -4886,7 +4886,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class extreme_value_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -5086,7 +5086,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class discrete_distribution
     {
       static_assert(std::is_integral<_IntType>::value,
-		    "template argument not an integral type");
+		    "result_type must be an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -5316,7 +5316,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class piecewise_constant_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */
@@ -5583,7 +5583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class piecewise_linear_distribution
     {
       static_assert(std::is_floating_point<_RealType>::value,
-		    "template argument not a floating point type");
+		    "result_type must be a floating point type");
 
     public:
       /** The type of the range of the distribution. */

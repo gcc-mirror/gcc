@@ -409,6 +409,46 @@ Function calls
              printf_func,
              2, args));
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_call_through_ptr (gcc_jit_context *ctxt,\
+                                                    gcc_jit_location *loc,\
+                                                    gcc_jit_rvalue *fn_ptr,\
+                                                    int numargs, \
+                                                    gcc_jit_rvalue **args)
+
+   Given an rvalue of function pointer type, and the given table of
+   argument rvalues, construct a call to the function pointer, with the
+   result as an rvalue.
+
+   .. note::
+
+      The same caveat as for :c:func:`gcc_jit_context_new_call` applies.
+
+.. function:: void\
+              gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,\
+                                                         int require_tail_call)
+
+   Given an :c:type:`gcc_jit_rvalue *` for a call created through
+   :c:func:`gcc_jit_context_new_call` or
+   :c:func:`gcc_jit_context_new_call_through_ptr`, mark/clear the
+   call as needing tail-call optimization.  The optimizer will
+   attempt to optimize the call into a jump instruction; if it is
+   unable to do do, an error will be emitted.
+
+   This may be useful when implementing functions that use the
+   continuation-passing style (e.g. for functional programming
+   languages), in which every function "returns" by calling a
+   "continuation" function pointer.  This call must be
+   guaranteed to be implemented as a jump, otherwise the program
+   could consume an arbitrary amount of stack space as it executed.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_6`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_rvalue_set_bool_require_tail_call
+
 Type-coercion
 *************
 

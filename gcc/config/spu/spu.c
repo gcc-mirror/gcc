@@ -3915,11 +3915,11 @@ spu_build_builtin_va_list (void)
 		       FIELD_DECL, get_identifier ("__skip"), ptr_type_node);
 
   DECL_FIELD_CONTEXT (f_args) = record;
-  DECL_ALIGN (f_args) = 128;
+  SET_DECL_ALIGN (f_args, 128);
   DECL_USER_ALIGN (f_args) = 1;
 
   DECL_FIELD_CONTEXT (f_skip) = record;
-  DECL_ALIGN (f_skip) = 128;
+  SET_DECL_ALIGN (f_skip, 128);
   DECL_USER_ALIGN (f_skip) = 1;
 
   TYPE_STUB_DECL (record) = type_decl;

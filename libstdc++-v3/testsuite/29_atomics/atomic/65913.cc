@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target x86_64-*-linux* powerpc*-*-linux* } }
+// { dg-do run }
+// { dg-require-atomic-builtins "" }
 // { dg-options "-std=gnu++11 -O0" }
 
 #include <atomic>

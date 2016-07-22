@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 2002-2014, Free Software Foundation, Inc.      *
+ *             Copyright (C) 2002-2016, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -60,8 +60,18 @@
 int
 __gnat_mkdir (char *dir_name, int encoding ATTRIBUTE_UNUSED)
 {
-#if defined (__vxworks) && !(defined (__RTP__) && ((_WRS_VXWORKS_MAJOR == 7) || (_WRS_VXWORKS_MINOR != 0)))
-  return mkdir (dir_name);
+#if defined (__vxworks)
+
+  /* Pretend that the system mkdir is posix compliant even though it
+     sometimes is not, not expecting the second argument in some
+     configurations (e.g. vxworks 653 2.2, difference from 2.5). The
+     second actual argument will just be ignored in this case.  */
+
+  typedef int posix_mkdir (const char * name, mode_t mode);
+
+  posix_mkdir * vxmkdir = (posix_mkdir *)&mkdir;
+  return vxmkdir (dir_name, S_IRWXU | S_IRWXG | S_IRWXO);
+
 #elif defined (__MINGW32__)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 

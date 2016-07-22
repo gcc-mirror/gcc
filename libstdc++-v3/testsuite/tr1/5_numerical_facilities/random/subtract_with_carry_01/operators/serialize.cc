@@ -33,12 +33,12 @@ test01()
   std::stringstream str;
   subtract_with_carry_01<float, 24, 10, 24> u;
   subtract_with_carry_01<float, 24, 10, 24> v;
-  
+
   u(); // advance
   str << u;
-  
+
   VERIFY( u != v );
-  
+
   str >> v;
   VERIFY( u == v );
 }

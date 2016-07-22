@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-dom2-details -std=gnu89" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details -fdump-tree-dom2-details -std=gnu89" } */
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
@@ -76,8 +76,7 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
 	 skipping the known-true "b_elt && kill_elt" in the second
 	 condition.
 
-   However, 3 of those 4 opportunities are ultimately eliminated by
-   DOM optimizing away conditionals.  So there's only one jump threading
-   opportunity left.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 1 "dom2" { target logical_op_short_circuit } } } */
+   The !b_elt cases are picked up by VRP1 as jump threads.  The others
+   are optimized by DOM.  */
+/* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1" { target logical_op_short_circuit } } } */
 

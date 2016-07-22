@@ -225,34 +225,34 @@ namespace __gnu_test
 
   // DR 130 vs. C++98 vs. C++11.
   // Defined in testsuite_shared.cc.
-  void 
+  void
   erase_external(std::set<int>& s);
 
-  void 
+  void
   erase_external(std::multiset<int>& s);
 
-  void 
+  void
   erase_external(std::map<int, int>& s);
 
-  void 
+  void
   erase_external(std::multimap<int, int>& s);
 
-  void 
+  void
   erase_external_iterators(std::set<int>& s);
 
-  void 
+  void
   erase_external_iterators(std::multiset<int>& s);
 
-  void 
+  void
   erase_external_iterators(std::map<int, int>& s);
 
-  void 
+  void
   erase_external_iterators(std::multimap<int, int>& s);
 
 // NB: "must be compiled with C++11"
 #if __cplusplus >= 201103L
 template<typename _Tp>
-  void 
+  void
   linkage_check_cxx98_cxx11_erase(_Tp& container)
   {
     // Crashing when external reference and internal reference symbols are
@@ -263,7 +263,7 @@ template<typename _Tp>
   }
 
 template<typename _Tp>
-  void 
+  void
   linkage_check_cxx98_cxx11_erase_iterators(_Tp& container)
   {
     // Crashing when external reference and internal reference symbols are

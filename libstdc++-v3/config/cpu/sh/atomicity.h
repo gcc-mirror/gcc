@@ -30,6 +30,6 @@
 // set in the environment.  This makes it impossible to enable the proper
 // atomic model on SH without modifying GCC itself, because libstdc++ always
 // thinks the target doesn't do any atomics and uses the default mutex based
-// implementation from cpu/generic/atomicity/mutex.
+// implementation from cpu/generic/atomicity_mutex.
 
 #include <ext/atomicity.h>

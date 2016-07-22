@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_LIST
 #define _GLIBCXX_DEBUG_LIST 1
 
+#pragma GCC system_header
+
 #include <list>
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>

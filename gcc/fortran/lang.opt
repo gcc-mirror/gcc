@@ -309,6 +309,10 @@ Wtabs
 Fortran Warning Var(warn_tabs) LangEnabledBy(Fortran,Wall || Wpedantic)
 Permit nonconforming uses of the tab character.
 
+Wundefined-do-loop
+Fortran Warning Var(warn_undefined_do_loop) LangEnabledBy(Fortran,Wall)
+Warn about an invalid DO loop.
+
 Wunderflow
 Fortran Warning Var(warn_underflow) Init(1)
 Warn about underflow of numerical constant expressions.
@@ -415,6 +419,14 @@ Ignore 'D' in column one in fixed form.
 fd-lines-as-comments
 Fortran RejectNegative
 Treat lines with 'D' in column one as comments.
+
+fdec
+Fortran
+Enable all DEC language extensions.
+
+fdec-structure
+Fortran
+Enable support for DEC STRUCTURE/RECORD.
 
 fdefault-double-8
 Fortran Var(flag_default_double)

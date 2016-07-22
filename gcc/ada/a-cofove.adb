@@ -95,7 +95,7 @@ is
 
    procedure Append (Container : in out Vector; New_Item : Vector) is
    begin
-      for X in First_Index (New_Item) .. Last_Index (New_Item)  loop
+      for X in First_Index (New_Item) .. Last_Index (New_Item) loop
          Append (Container, Element (New_Item, X));
       end loop;
    end Append;
@@ -119,7 +119,7 @@ is
          raise Constraint_Error with "vector is already at its maximum length";
       end if;
 
-      --  TODO: should check whether length > max capacity (cnt_t'last)  ???
+      --  TODO: should check whether length > max capacity (cnt_t'last) ???
 
       Container.Last := Container.Last + 1;
       Elems (Container) (Length (Container)) := New_Item;

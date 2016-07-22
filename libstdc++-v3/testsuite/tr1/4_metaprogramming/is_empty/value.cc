@@ -65,7 +65,7 @@ void test01()
 
   VERIFY( (test_category<is_empty, AbstractClass>(false)) );
   VERIFY( (test_category<is_empty, NonEmptyClassOne>(false)) );
-  VERIFY( (test_category<is_empty, NonEmptyClassTwo>(false)) );  
+  VERIFY( (test_category<is_empty, NonEmptyClassTwo>(false)) );
 }
 
 int main()

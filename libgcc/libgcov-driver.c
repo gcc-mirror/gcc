@@ -43,8 +43,12 @@ void __gcov_init (struct gcov_info *p __attribute__ ((unused))) {}
 
 #ifdef L_gcov
 
-/* A utility function for outputing errors.  */
+/* A utility function for outputting errors.  */
 static int gcov_error (const char *, ...);
+
+#if !IN_GCOV_TOOL
+static void gcov_error_exit (void);
+#endif
 
 #include "gcov-io.c"
 
@@ -878,6 +882,8 @@ gcov_exit (void)
     __gcov_root.prev->next = __gcov_root.next;
   else
     __gcov_master.root = __gcov_root.next;
+
+  gcov_error_exit ();
 }
 
 /* Add a new object file onto the bb chain.  Invoked automatically

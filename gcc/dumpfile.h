@@ -120,6 +120,10 @@ struct dump_file_info
   bool owns_strings;            /* fields "suffix", "swtch", "glob" can be
 				   const strings, or can be dynamically
 				   allocated, needing free.  */
+  bool graph_dump_initialized;  /* When a given dump file is being initialized,
+				   this flag is set to true if the corresponding
+				   TDF_graph dump file has also been
+				   initialized.  */
 };
 
 /* In dumpfile.c */

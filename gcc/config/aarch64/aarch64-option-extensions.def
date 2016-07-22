@@ -39,8 +39,8 @@
    that are required.  Their order is not important.  */
 
 /* Enabling "fp" just enables "fp".
-   Disabling "fp" also disables "simd", "crypto".  */
-AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO, "fp")
+   Disabling "fp" also disables "simd", "crypto" and "fp16".  */
+AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO | AARCH64_FL_F16, "fp")
 
 /* Enabling "simd" also enables "fp".
    Disabling "simd" also disables "crypto".  */
@@ -55,3 +55,7 @@ AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, "crc32")
 
 /* Enabling or disabling "lse" only changes "lse".  */
 AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, "atomics")
+
+/* Enabling "fp16" also enables "fp".
+   Disabling "fp16" just disables "fp16".  */
+AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, 0, "fp16")

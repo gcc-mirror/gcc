@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned short 	mask;   
+    typedef unsigned short 	mask;
     static const mask upper	= 1 << 0;
     static const mask lower	= 1 << 1;
     static const mask alpha	= 1 << 2;

@@ -39,21 +39,21 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT>
-    __timepunct<_CharT>::__timepunct(size_t __refs) 
-    : facet(__refs), _M_data(0), _M_c_locale_timepunct(0), 
+    __timepunct<_CharT>::__timepunct(size_t __refs)
+    : facet(__refs), _M_data(0), _M_c_locale_timepunct(0),
       _M_name_timepunct(_S_get_c_name())
     { _M_initialize_timepunct(); }
 
   template<typename _CharT>
-    __timepunct<_CharT>::__timepunct(__cache_type* __cache, size_t __refs) 
-    : facet(__refs), _M_data(__cache), _M_c_locale_timepunct(0), 
+    __timepunct<_CharT>::__timepunct(__cache_type* __cache, size_t __refs)
+    : facet(__refs), _M_data(__cache), _M_c_locale_timepunct(0),
       _M_name_timepunct(_S_get_c_name())
     { _M_initialize_timepunct(); }
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(__c_locale __cloc, const char* __s,
-				     size_t __refs) 
-    : facet(__refs), _M_data(0), _M_c_locale_timepunct(0), 
+				     size_t __refs)
+    : facet(__refs), _M_data(0), _M_c_locale_timepunct(0),
       _M_name_timepunct(0)
     {
       if (__builtin_strcmp(__s, _S_get_c_name()) != 0)
@@ -78,11 +78,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT>
     __timepunct<_CharT>::~__timepunct()
-    { 
+    {
       if (_M_name_timepunct != _S_get_c_name())
 	delete [] _M_name_timepunct;
-      delete _M_data; 
-      _S_destroy_c_locale(_M_c_locale_timepunct); 
+      delete _M_data;
+      _S_destroy_c_locale(_M_c_locale_timepunct);
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

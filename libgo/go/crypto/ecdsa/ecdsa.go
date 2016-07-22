@@ -23,6 +23,7 @@ import (
 	"crypto/elliptic"
 	"crypto/sha512"
 	"encoding/asn1"
+	"errors"
 	"io"
 	"math/big"
 )
@@ -96,17 +97,17 @@ func randFieldElement(c elliptic.Curve, rand io.Reader) (k *big.Int, err error) 
 }
 
 // GenerateKey generates a public and private key pair.
-func GenerateKey(c elliptic.Curve, rand io.Reader) (priv *PrivateKey, err error) {
+func GenerateKey(c elliptic.Curve, rand io.Reader) (*PrivateKey, error) {
 	k, err := randFieldElement(c, rand)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	priv = new(PrivateKey)
+	priv := new(PrivateKey)
 	priv.PublicKey.Curve = c
 	priv.D = k
 	priv.PublicKey.X, priv.PublicKey.Y = c.ScalarBaseMult(k.Bytes())
-	return
+	return priv, nil
 }
 
 // hashToInt converts a hash value to an integer. There is some disagreement
@@ -140,10 +141,13 @@ func fermatInverse(k, N *big.Int) *big.Int {
 	return new(big.Int).Exp(k, nMinus2, N)
 }
 
-// Sign signs an arbitrary length hash (which should be the result of hashing a
-// larger message) using the private key, priv. It returns the signature as a
-// pair of integers. The security of the private key depends on the entropy of
-// rand.
+var errZeroParam = errors.New("zero parameter")
+
+// Sign signs a hash (which should be the result of hashing a larger message)
+// using the private key, priv. If the hash is longer than the bit-length of the
+// private key's curve order, the hash will be truncated to that length.  It
+// returns the signature as a pair of integers. The security of the private key
+// depends on the entropy of rand.
 func Sign(rand io.Reader, priv *PrivateKey, hash []byte) (r, s *big.Int, err error) {
 	// Get max(log2(q) / 2, 256) bits of entropy from rand.
 	entropylen := (priv.Curve.Params().BitSize + 7) / 16
@@ -180,7 +184,9 @@ func Sign(rand io.Reader, priv *PrivateKey, hash []byte) (r, s *big.Int, err err
 	// See [NSA] 3.4.1
 	c := priv.PublicKey.Curve
 	N := c.Params().N
-
+	if N.Sign() == 0 {
+		return nil, nil, errZeroParam
+	}
 	var k, kInv *big.Int
 	for {
 		for {
@@ -193,7 +199,7 @@ func Sign(rand io.Reader, priv *PrivateKey, hash []byte) (r, s *big.Int, err err
 			if in, ok := priv.Curve.(invertible); ok {
 				kInv = in.Inverse(k)
 			} else {
-				kInv = fermatInverse(k, N)
+				kInv = fermatInverse(k, N) // N != 0
 			}
 
 			r, _ = priv.Curve.ScalarBaseMult(k.Bytes())
@@ -207,7 +213,7 @@ func Sign(rand io.Reader, priv *PrivateKey, hash []byte) (r, s *big.Int, err err
 		s = new(big.Int).Mul(priv.D, r)
 		s.Add(s, e)
 		s.Mul(s, kInv)
-		s.Mod(s, N)
+		s.Mod(s, N) // N != 0
 		if s.Sign() != 0 {
 			break
 		}
@@ -223,7 +229,7 @@ func Verify(pub *PublicKey, hash []byte, r, s *big.Int) bool {
 	c := pub.Curve
 	N := c.Params().N
 
-	if r.Sign() == 0 || s.Sign() == 0 {
+	if r.Sign() <= 0 || s.Sign() <= 0 {
 		return false
 	}
 	if r.Cmp(N) >= 0 || s.Cmp(N) >= 0 {

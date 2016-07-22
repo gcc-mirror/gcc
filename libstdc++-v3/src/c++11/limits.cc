@@ -163,7 +163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // wchar_t
   // This used to be problematic...
-#ifdef _GLIBCXX_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T
   const bool numeric_limits<wchar_t>::is_specialized;
   const int  numeric_limits<wchar_t>::digits;
   const int  numeric_limits<wchar_t>::digits10;

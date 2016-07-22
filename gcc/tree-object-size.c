@@ -43,7 +43,12 @@ struct object_size_info
   unsigned int *stack, *tos;
 };
 
-static const unsigned HOST_WIDE_INT unknown[4] = { -1, -1, 0, 0 };
+static const unsigned HOST_WIDE_INT unknown[4] = {
+  HOST_WIDE_INT_M1U,
+  HOST_WIDE_INT_M1U,
+  0,
+  0
+};
 
 static tree compute_object_offset (const_tree, const_tree);
 static unsigned HOST_WIDE_INT addr_object_size (struct object_size_info *,
@@ -738,7 +743,7 @@ merge_object_sizes (struct object_size_info *osi, tree dest, tree orig,
   orig_bytes = object_sizes[object_size_type][SSA_NAME_VERSION (orig)];
   if (orig_bytes != unknown[object_size_type])
     orig_bytes = (offset > orig_bytes)
-		 ? (unsigned HOST_WIDE_INT) 0 : orig_bytes - offset;
+		 ? HOST_WIDE_INT_0U : orig_bytes - offset;
 
   if ((object_size_type & 2) == 0)
     {

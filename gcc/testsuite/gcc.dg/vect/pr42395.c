@@ -1,6 +1,6 @@
 /* PR debug/42395 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -ftree-vectorize -g" } */
+/* { dg-additional-options "-O3 -g" } */
 
 void foo(int j, int *A)
 {

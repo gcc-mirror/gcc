@@ -660,8 +660,8 @@ begin
 
    if Create_Project then
       Write_Line
-        ("warning: gnatname -P is obsolete and will not be available in the "
-         & "next release; use gprname instead");
+        ("warning: gnatname -P is obsolete and will not be available in the" &
+         " next release; use gprname instead");
    end if;
 
    --  If no Ada or foreign pattern was specified, print the usage and return

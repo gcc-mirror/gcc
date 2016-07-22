@@ -38,7 +38,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   ios_base::failure::~failure() throw()
   { }
-  
+
   const char*
   ios_base::failure::what() const throw()
   { return _M_msg.c_str(); }

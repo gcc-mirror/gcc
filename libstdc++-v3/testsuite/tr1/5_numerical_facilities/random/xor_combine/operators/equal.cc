@@ -36,7 +36,7 @@ test01()
     > u, v;
 
   VERIFY( u == v );
-  
+
   for (int i = 0; i < 100; ++i)
     {
       u();

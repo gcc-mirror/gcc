@@ -11,7 +11,7 @@ int main()
 struct S { friend void g(); friend void h(S); };
 struct T { friend void g(); friend void h(T); };
 void i() {
-  g();			// { dg-error "not declared" }
+  g();			// { dg-error "3:'g' was not declared" }
   S s;
   h(s);
   T t;

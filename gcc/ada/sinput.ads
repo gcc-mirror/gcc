@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,7 +157,7 @@ package Sinput is
    --  separate main units.
 
    --  The entries in the table are accessed using a Source_File_Index that
-   --  ranges from 1 to Last_Source_File. Each entry has the following fields
+   --  ranges from 1 to Last_Source_File. Each entry has the following fields.
 
    --  Note: fields marked read-only are set by Sinput or one of its child
    --  packages when a source file table entry is created, and cannot be
@@ -260,14 +260,18 @@ package Sinput is
 
    --  Inlined_Call : Source_Ptr;
    --    Source file location of the subprogram call if this source file entry
-   --    represents an inlined body. Set to No_Location otherwise.
-   --    This field is read-only for clients.
+   --    represents an inlined body or an inherited pragma. Set to No_Location
+   --    otherwise. This field is read-only for clients.
 
    --  Inlined_Body : Boolean;
    --    This can only be set True if Instantiation has a value other than
    --    No_Location. If true it indicates that the instantiation is actually
    --    an instance of an inlined body.
-   --    ??? Redundant, always equal to (Inlined_Call /= No_Location)
+
+   --  Inherited_Pragma : Boolean;
+   --    This can only be set True if Instantiation has a value other than
+   --    No_Location. If true it indicates that the instantiation is actually
+   --    an inherited class-wide pre- or postcondition.
 
    --  Template : Source_File_Index; (read-only)
    --    Source file index of the source file containing the template if this
@@ -298,6 +302,7 @@ package Sinput is
    function Full_Ref_Name     (S : SFI) return File_Name_Type;
    function Identifier_Casing (S : SFI) return Casing_Type;
    function Inlined_Body      (S : SFI) return Boolean;
+   function Inherited_Pragma  (S : SFI) return Boolean;
    function Inlined_Call      (S : SFI) return Source_Ptr;
    function Instance          (S : SFI) return Instance_Id;
    function Keyword_Casing    (S : SFI) return Casing_Type;
@@ -387,7 +392,7 @@ package Sinput is
 
    --  As described in Sem_Ch12, a generic instantiation involves making a
    --  copy of the tree of the generic template. The source locations in
-   --  this tree directly reference the source of the template. However it
+   --  this tree directly reference the source of the template. However, it
    --  is also possible to find the location of the instantiation.
 
    --  This is achieved as follows. When an instantiation occurs, a new entry
@@ -420,9 +425,11 @@ package Sinput is
 
    function Instantiation (S : SFI) return Source_Ptr;
    --  For a source file entry that represents an inlined body, source location
-   --  of the inlined call. Otherwise, for a source file entry that represents
-   --  a generic instantiation, source location of the instantiation. Returns
-   --  No_Location in all other cases.
+   --  of the inlined call. For a source file entry that represents an
+   --  inherited pragma, source location of the declaration to which the
+   --  overriding subprogram for the inherited pragma is attached. Otherwise,
+   --  for a source file entry that represents a generic instantiation, source
+   --  location of the instantiation. Returns No_Location in all other cases.
 
    -----------------
    -- Global Data --
@@ -536,18 +543,17 @@ package Sinput is
    --  The caller has checked that a Line_Terminator character precedes P so
    --  that there definitely is a previous line in the source buffer.
 
-   procedure Build_Location_String (Loc : Source_Ptr);
+   procedure Build_Location_String
+     (Buf : in out Bounded_String;
+      Loc : Source_Ptr);
    --  This function builds a string literal of the form "name:line", where
    --  name is the file name corresponding to Loc, and line is the line number.
-   --  In the event that instantiations are involved, additional suffixes of
-   --  the same form are appended after the separating string " instantiated at
-   --  ". The returned string is appended to the Name_Buffer, terminated by
-   --  ASCII.NUL, with Name_Length indicating the length not including the
-   --  terminating Nul.
+   --  If instantiations are involved, additional suffixes of the same form are
+   --  appended after the separating string " instantiated at ". The returned
+   --  string is appended to Buf.
 
    function Build_Location_String (Loc : Source_Ptr) return String;
-   --  Functional form returning a string, which does not include a terminating
-   --  null character. The contents of Name_Buffer is destroyed.
+   --  Functional form returning a String
 
    procedure Check_For_BOM;
    --  Check if the current source starts with a BOM. Scan_Ptr needs to be at
@@ -644,6 +650,13 @@ package Sinput is
    --  This allows distinguishing these source pointers from those that come
    --  from instantiation of generics, since Instantiation_Location returns a
    --  valid location in both cases.
+
+   function Comes_From_Inherited_Pragma (S : Source_Ptr) return Boolean;
+   pragma Inline (Comes_From_Inherited_Pragma);
+   --  Given a source pointer S, returns whether it comes from an inherited
+   --  pragma. This allows distinguishing these source pointers from those
+   --  that come from instantiation of generics, since Instantiation_Location
+   --  returns a valid location in both cases.
 
    function Top_Level_Location (S : Source_Ptr) return Source_Ptr;
    --  Given a source pointer S, returns the argument unchanged if it is
@@ -760,6 +773,7 @@ private
    pragma Inline (Identifier_Casing);
    pragma Inline (Inlined_Call);
    pragma Inline (Inlined_Body);
+   pragma Inline (Inherited_Pragma);
    pragma Inline (Template);
    pragma Inline (Unit);
 
@@ -825,6 +839,7 @@ private
       File_Type         : Type_Of_File;
       Inlined_Call      : Source_Ptr;
       Inlined_Body      : Boolean;
+      Inherited_Pragma  : Boolean;
       License           : License_Type;
       Keyword_Casing    : Casing_Type;
       Identifier_Casing : Casing_Type;
@@ -882,7 +897,8 @@ private
       Time_Stamp          at 60 range 0 .. 8 * Time_Stamp_Length - 1;
       File_Type           at 74 range 0 .. 7;
       Inlined_Call        at 88 range 0 .. 31;
-      Inlined_Body        at 75 range 0 .. 7;
+      Inlined_Body        at 75 range 0 .. 0;
+      Inherited_Pragma    at 75 range 1 .. 1;
       License             at 76 range 0 .. 7;
       Keyword_Casing      at 77 range 0 .. 7;
       Identifier_Casing   at 78 range 0 .. 15;

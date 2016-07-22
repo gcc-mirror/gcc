@@ -184,8 +184,9 @@ proc libstdc++_init { testfile } {
     set v3-sharedlib 0
     set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.$shlib_ext]
     if {$sharedlibdir != ""} {
-	if { ([string match "*-*-linux*" $target_triplet]
-	      || [string match "*-*-gnu*" $target_triplet])
+	if { ([string match "*-*-gnu*" $target_triplet]
+	      || [string match "*-*-linux*" $target_triplet]
+	      || [string match "*-*-solaris*" $target_triplet])
 	     && [isnative] } then {
 	    set v3-sharedlib 1
 	    verbose -log "shared library support detected"
@@ -935,13 +936,13 @@ proc check_v3_target_namedlocale { args } {
       puts $f "  try"
       puts $f "  {"
       puts $f "    locale((const char*)namedloc);"
-      puts $f "    delete namedloc;"
+      puts $f "    delete\[\] namedloc;"
       puts $f "    return 0;"
       puts $f "  }"
       puts $f "  catch(...)"
       puts $f "  {"
       puts $f "    printf(\"locale '%s' not supported\\n\", namedloc);"
-      puts $f "    delete namedloc;"
+      puts $f "    delete\[\] namedloc;"
       puts $f "    return 1;"
       puts $f "  }"
       puts $f "}"

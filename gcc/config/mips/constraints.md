@@ -308,6 +308,61 @@
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
 
+(define_constraint "YI"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [-512,511]."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_same_int_p (op, mode, -512, 511)")))
+
+(define_constraint "YC"
+  "@internal
+   A replicated vector const in which the replicated value has a single
+   bit set."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_bitimm_set_p (op, mode)")))
+
+(define_constraint "YZ"
+  "@internal
+   A replicated vector const in which the replicated value has a single
+   bit clear."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_bitimm_clr_p (op, mode)")))
+
+(define_constraint "Unv5"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [-31,0]."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_same_int_p (op, mode, -31, 0)")))
+
+(define_constraint "Uuv5"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [0,31]."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_same_int_p (op, mode, 0, 31)")))
+
+(define_constraint "Usv5"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [-16,15]."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_same_int_p (op, mode, -16, 15)")))
+
+(define_constraint "Uuv6"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [0,63]."
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_same_int_p (op, mode, 0, 63)")))
+
+(define_constraint "Urv8"
+  "@internal
+   A replicated vector const with replicated byte values as well as elements"
+  (and (match_code "const_vector")
+       (match_test "mips_const_vector_same_bytes_p (op, mode)")))
+
 (define_memory_constraint "ZC"
   "A memory operand whose address is formed by a base register and offset
    that is suitable for use in instructions with the same addressing mode

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,7 +119,7 @@ package Exp_Ch3 is
    --  initialization routine:
    --    Access types (which need initializing to null)
    --    All scalar types if Normalize_Scalars mode set
-   --    Descendents of standard string types if Normalize_Scalars mode set
+   --    Descendants of standard string types if Normalize_Scalars mode set
    --    Scalar types having a Default_Value attribute
    --  Regarding Initialize_Scalars mode, this is ignored if Consider_IS is
    --  set to False, but if Consider_IS is set to True, then the cases above

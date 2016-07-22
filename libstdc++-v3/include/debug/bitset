@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_BITSET
 #define _GLIBCXX_DEBUG_BITSET
 
+#pragma GCC system_header
+
 #include <bitset>
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
@@ -48,7 +50,7 @@ namespace __debug
       typedef _GLIBCXX_STD_C::bitset<_Nb> _Base;
 
     public:
-      // In C++0x we rely on normal reference type to preserve the property
+      // In C++11 we rely on normal reference type to preserve the property
       // of bitset to be use as a literal.
       // TODO: Find another solution.
 #if __cplusplus >= 201103L

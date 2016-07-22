@@ -38,7 +38,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   template
-    const unsigned long 
+    const unsigned long
     rope<char, std::allocator<char> >::_S_min_len[min_len];
 
   template
@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template
-    const unsigned long 
+    const unsigned long
     rope<wchar_t, std::allocator<wchar_t> >::_S_min_len[min_len];
 
   template

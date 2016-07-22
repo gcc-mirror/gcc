@@ -26,6 +26,13 @@
 ;; Vector int modes
 (define_mode_iterator VEC_I [V16QI V8HI V4SI V2DI])
 
+;; Vector int modes for parity
+(define_mode_iterator VEC_IP [V8HI
+			      V4SI
+			      V2DI
+			      V1TI
+			      (TI "TARGET_VSX_TIMODE")])
+
 ;; Vector float modes
 (define_mode_iterator VEC_F [V4SF V2DF])
 
@@ -167,7 +174,14 @@
   if (VECTOR_MEM_VSX_P (<MODE>mode))
     {
       operands[1] = rs6000_address_for_altivec (operands[1]);
-      emit_insn (gen_altivec_lvx_<mode> (operands[0], operands[1]));
+      rtx and_op = XEXP (operands[1], 0);
+      gcc_assert (GET_CODE (and_op) == AND);
+      rtx addr = XEXP (and_op, 0);
+      if (GET_CODE (addr) == PLUS)
+        emit_insn (gen_altivec_lvx_<mode>_2op (operands[0], XEXP (addr, 0),
+	                                       XEXP (addr, 1)));
+      else
+        emit_insn (gen_altivec_lvx_<mode>_1op (operands[0], operands[1]));
       DONE;
     }
 }")
@@ -183,7 +197,14 @@
   if (VECTOR_MEM_VSX_P (<MODE>mode))
     {
       operands[0] = rs6000_address_for_altivec (operands[0]);
-      emit_insn (gen_altivec_stvx_<mode> (operands[0], operands[1]));
+      rtx and_op = XEXP (operands[0], 0);
+      gcc_assert (GET_CODE (and_op) == AND);
+      rtx addr = XEXP (and_op, 0);
+      if (GET_CODE (addr) == PLUS)
+        emit_insn (gen_altivec_stvx_<mode>_2op (operands[1], XEXP (addr, 0),
+	                                        XEXP (addr, 1)));
+      else
+        emit_insn (gen_altivec_stvx_<mode>_1op (operands[1], operands[0]));
       DONE;
     }
 }")
@@ -738,11 +759,23 @@
 	(clz:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
   "TARGET_P8_VECTOR")
 
+;; Vector count trailing zeros
+(define_expand "ctz<mode>2"
+  [(set (match_operand:VEC_I 0 "register_operand" "")
+	(ctz:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
+  "TARGET_P9_VECTOR")
+
 ;; Vector population count
 (define_expand "popcount<mode>2"
   [(set (match_operand:VEC_I 0 "register_operand" "")
         (popcount:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
   "TARGET_P8_VECTOR")
+
+;; Vector parity
+(define_expand "parity<mode>2"
+  [(set (match_operand:VEC_IP 0 "register_operand" "")
+	(parity:VEC_IP (match_operand:VEC_IP 1 "register_operand" "")))]
+  "TARGET_P9_VECTOR")
 
 
 ;; Same size conversions

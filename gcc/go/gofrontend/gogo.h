@@ -7,7 +7,6 @@
 #ifndef GO_GOGO_H
 #define GO_GOGO_H
 
-#include "escape.h"
 #include "go-linemap.h"
 
 class Traverse;
@@ -51,6 +50,8 @@ class Bblock;
 class Bvariable;
 class Blabel;
 class Bfunction;
+class Escape_context;
+class Node;
 
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
@@ -125,21 +126,6 @@ class Gogo
   Linemap*
   linemap()
   { return this->linemap_; }
-
-  // Get the Call Graph.
-  const std::set<Node*>&
-  call_graph() const
-  { return this->call_graph_; }
-
-  // Get the roots of each connection graph.
-  const std::set<Node*>&
-  connection_roots() const
-  { return this->connection_roots_; }
-
-  // Get the nodes that escape globally.
-  const std::set<Node*>&
-  global_connections() const
-  { return this->global_connections_; }
 
   // Get the package name.
   const std::string&
@@ -361,21 +347,15 @@ class Gogo
   add_label_reference(const std::string&, Location,
 		      bool issue_goto_errors);
 
-  // Add a FUNCTION to the call graph.
-  Node*
-  add_call_node(Named_object* function);
+  // An analysis set is a list of functions paired with a boolean that indicates
+  // whether the list of functions are recursive.
+  typedef std::pair<std::vector<Named_object*>, bool> Analysis_set;
 
-  // Lookup the call node for FUNCTION.
-  Node*
-  lookup_call_node(Named_object* function) const;
-
-  // Add a connection node for OBJECT.
-  Node*
-  add_connection_node(Named_object* object);
-
-  // Lookup the connection node for OBJECT.
-  Node*
-  lookup_connection_node(Named_object* object) const;
+  // Add a GROUP of possibly RECURSIVE functions to the Analysis_set for this
+  // package.
+  void
+  add_analysis_set(const std::vector<Named_object*>& group, bool recursive)
+  { this->analysis_sets_.push_back(std::make_pair(group, recursive)); }
 
   // Return a snapshot of the current binding state.
   Bindings_snapshot*
@@ -576,25 +556,27 @@ class Gogo
   void
   check_return_statements();
 
-  // Build call graph.
+  // Analyze the program flow for escape information.
   void
-  build_call_graph();
+  analyze_escape();
 
-  // Build connection graphs.
+  // Discover the groups of possibly recursive functions in this package.
   void
-  build_connection_graphs();
+  discover_analysis_sets();
 
-  // Analyze reachability in the connection graphs.
+  // Build a connectivity graph between the objects in each analyzed function.
   void
-  analyze_reachability();
+  assign_connectivity(Escape_context*, Named_object*);
 
-  // Record escape information in function signatures for export data.
+  // Traverse the objects in the connecitivty graph from the sink, adjusting the
+  // escape levels of each object.
   void
-  mark_escaping_signatures();
+  propagate_escape(Escape_context*, Node*);
 
-  // Optimize variable allocation.
+  // Add notes about the escape level of a function's input and output
+  // parameters for exporting and importing top level functions. 
   void
-  optimize_allocations(const char** filenames);
+  tag_function(Escape_context*, Named_object*);
 
   // Do all exports.
   void
@@ -730,10 +712,6 @@ class Gogo
   // where they were defined.
   typedef Unordered_map(std::string, Location) File_block_names;
 
-  // Type used to map named objects that refer to objects to the
-  // node that represent them in the escape analysis graphs.
-  typedef Unordered_map(Named_object*, Node*)  Named_escape_nodes;
-
   // Type used to queue writing a type specific function.
   struct Specific_type_function
   {
@@ -766,20 +744,6 @@ class Gogo
   // The global binding contour.  This includes the builtin functions
   // and the package we are compiling.
   Bindings* globals_;
-  // The call graph for a program execution which represents the functions
-  // encountered and the caller-callee relationship between the functions.
-  std::set<Node*> call_graph_;
-  // The nodes that form the roots of the connection graphs for each called
-  // function and represent the connectivity relationship between all objects
-  // in the function.
-  std::set<Node*> connection_roots_;
-  // All connection nodes that have an escape state of ESCAPE_GLOBAL are a part
-  // of a special connection graph of only global variables.
-  std::set<Node*> global_connections_;
-  // Mapping from named objects to nodes in the call graph.
-  Named_escape_nodes named_call_nodes_;
-  // Mapping from named objects to nodes in a connection graph.
-  Named_escape_nodes named_connection_nodes_;
   // The list of names we have seen in the file block.
   File_block_names file_block_names_;
   // Mapping from import file names to packages.
@@ -832,6 +796,9 @@ class Gogo
   bool specific_type_functions_are_written_;
   // Whether named types have been converted.
   bool named_types_are_converted_;
+  // A list containing groups of possibly mutually recursive functions to be
+  // considered during escape analysis.
+  std::vector<Analysis_set> analysis_sets_;
 };
 
 // A block of statements.
@@ -1215,11 +1182,8 @@ class Function
   // Import a function.
   static void
   import_func(Import*, std::string* pname, Typed_identifier** receiver,
-	      Node::Escapement_lattice* rcvr_escape,
 	      Typed_identifier_list** pparameters,
-	      Node::Escape_states** pparam_escapes,
-	      Typed_identifier_list** presults, bool* is_varargs,
-	      bool* has_escape_info);
+	      Typed_identifier_list** presults, bool* is_varargs);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -2614,7 +2578,7 @@ class Label
  public:
   Label(const std::string& name)
     : name_(name), location_(Linemap::unknown_location()), snapshot_(NULL),
-      refs_(), is_used_(false), blabel_(NULL)
+      refs_(), is_used_(false), blabel_(NULL), depth_(DEPTH_UNKNOWN)
   { }
 
   // Return the label's name.
@@ -2636,6 +2600,26 @@ class Label
   void
   set_is_used()
   { this->is_used_ = true; }
+
+  // Return whether this label is looping.
+  bool
+  looping() const
+  { return this->depth_ == DEPTH_LOOPING; }
+
+  // Set this label as looping.
+  void
+  set_looping()
+  { this->depth_ = DEPTH_LOOPING; }
+
+  // Return whether this label is nonlooping.
+  bool
+  nonlooping() const
+  { return this->depth_ == DEPTH_NONLOOPING; }
+
+  // Set this label as nonlooping.
+  void
+  set_nonlooping()
+  { this->depth_ = DEPTH_NONLOOPING; }
 
   // Return the location of the definition.
   Location
@@ -2696,6 +2680,16 @@ class Label
   is_dummy_label() const
   { return this->name_ == "_"; }
 
+  // A classification of a label's looping depth.
+  enum Loop_depth
+  {
+    DEPTH_UNKNOWN,
+    // A label never jumped to.
+    DEPTH_NONLOOPING,
+    // A label jumped to.
+    DEPTH_LOOPING
+  };
+
  private:
   // The name of the label.
   std::string name_;
@@ -2711,6 +2705,8 @@ class Label
   bool is_used_;
   // The backend representation.
   Blabel* blabel_;
+  // The looping depth of this label, for escape analysis.
+  Loop_depth depth_;
 };
 
 // An unnamed label.  These are used when lowering loops.

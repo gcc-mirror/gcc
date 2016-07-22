@@ -39,6 +39,7 @@
 #else
 
 #include <bits/atomic_base.h>
+#include <bits/move.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -197,11 +198,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return load(); }
 
       _Tp
-      operator=(_Tp __i) noexcept 
+      operator=(_Tp __i) noexcept
       { store(__i); return __i; }
 
       _Tp
-      operator=(_Tp __i) volatile noexcept 
+      operator=(_Tp __i) volatile noexcept
       { store(__i); return __i; }
 
       bool
@@ -222,57 +223,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { __atomic_store(&_M_i, &__i, __m); }
+      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), __m); }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
-      { __atomic_store(&_M_i, &__i, __m); }
+      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), __m); }
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept
-      { 
+      {
         _Tp tmp;
-	__atomic_load(&_M_i, &tmp, __m);
+	__atomic_load(std::__addressof(_M_i), std::__addressof(tmp), __m);
 	return tmp;
       }
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
-      { 
+      {
         _Tp tmp;
-	__atomic_load(&_M_i, &tmp, __m);
+	__atomic_load(std::__addressof(_M_i), std::__addressof(tmp), __m);
 	return tmp;
       }
 
       _Tp
       exchange(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { 
+      {
         _Tp tmp;
-	__atomic_exchange(&_M_i, &__i, &tmp, __m);
+	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
+			  std::__addressof(tmp), __m);
 	return tmp;
       }
 
       _Tp
-      exchange(_Tp __i, 
+      exchange(_Tp __i,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
-      { 
+      {
         _Tp tmp;
-	__atomic_exchange(&_M_i, &__i, &tmp, __m);
+	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
+			  std::__addressof(tmp), __m);
 	return tmp;
       }
 
       bool
-      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f);
+	return __atomic_compare_exchange(std::__addressof(_M_i),
+					 std::__addressof(__e),
+					 std::__addressof(__i),
+					 true, __s, __f);
       }
 
       bool
-      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) volatile noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f);
+	return __atomic_compare_exchange(std::__addressof(_M_i),
+					 std::__addressof(__e),
+					 std::__addressof(__i),
+					 true, __s, __f);
       }
 
       bool
@@ -288,17 +297,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __cmpexch_failure_order(__m)); }
 
       bool
-      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f);
+	return __atomic_compare_exchange(std::__addressof(_M_i),
+					 std::__addressof(__e),
+					 std::__addressof(__i),
+					 false, __s, __f);
       }
 
       bool
-      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
+      compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) volatile noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f);
+	return __atomic_compare_exchange(std::__addressof(_M_i),
+					 std::__addressof(__e),
+					 std::__addressof(__i),
+					 false, __s, __f);
       }
 
       bool
@@ -816,6 +831,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// atomic_char32_t
   typedef atomic<char32_t>		atomic_char32_t;
+
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2441. Exact-width atomic typedefs should be provided
+
+  /// atomic_int8_t
+  typedef atomic<int8_t>		atomic_int8_t;
+
+  /// atomic_uint8_t
+  typedef atomic<uint8_t>		atomic_uint8_t;
+
+  /// atomic_int16_t
+  typedef atomic<int16_t>		atomic_int16_t;
+
+  /// atomic_uint16_t
+  typedef atomic<uint16_t>		atomic_uint16_t;
+
+  /// atomic_int32_t
+  typedef atomic<int32_t>		atomic_int32_t;
+
+  /// atomic_uint32_t
+  typedef atomic<uint32_t>		atomic_uint32_t;
+
+  /// atomic_int64_t
+  typedef atomic<int64_t>		atomic_int64_t;
+
+  /// atomic_uint64_t
+  typedef atomic<uint64_t>		atomic_uint64_t;
 
 
   /// atomic_int_least8_t

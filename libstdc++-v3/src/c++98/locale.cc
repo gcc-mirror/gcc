@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // These are no longer exported.
   locale::_Impl*                locale::_S_classic;
-  locale::_Impl* 		locale::_S_global; 
+  locale::_Impl* 		locale::_S_global;
 
 #ifdef __GTHREADS
   __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__ret.reserve(128);
 	__ret += _S_categories[0];
 	__ret += '=';
-	__ret += _M_impl->_M_names[0]; 
+	__ret += _M_impl->_M_names[0];
 	for (size_t __i = 1; __i < _S_categories_size; ++__i)
 	  {
 	    __ret += ';';
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   locale::category
-  locale::_S_normalize_category(category __cat) 
+  locale::_S_normalize_category(category __cat)
   {
     int __ret = 0;
     if (__cat == none || ((__cat & all) && !(__cat & ~all)))
@@ -155,27 +155,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// NB: May be a C-style "LC_ALL" category; convert.
 	switch (__cat)
 	  {
-	  case LC_COLLATE:  
-	    __ret = collate; 
+	  case LC_COLLATE:
+	    __ret = collate;
 	    break;
-	  case LC_CTYPE:    
+	  case LC_CTYPE:
 	    __ret = ctype;
 	    break;
-	  case LC_MONETARY: 
+	  case LC_MONETARY:
 	    __ret = monetary;
 	    break;
-	  case LC_NUMERIC:  
+	  case LC_NUMERIC:
 	    __ret = numeric;
 	    break;
-	  case LC_TIME:     
-	    __ret = time; 
+	  case LC_TIME:
+	    __ret = time;
 	    break;
 #ifdef _GLIBCXX_HAVE_LC_MESSAGES
-	  case LC_MESSAGES: 
+	  case LC_MESSAGES:
 	    __ret = messages;
 	    break;
-#endif	
-	  case LC_ALL:      
+#endif
+	  case LC_ALL:
 	    __ret = all;
 	    break;
 	  default:
@@ -237,12 +237,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (_M_caches)
       for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	if (_M_caches[__i])
-	  _M_caches[__i]->_M_remove_reference(); 
+	  _M_caches[__i]->_M_remove_reference();
     delete [] _M_caches;
 
     if (_M_names)
       for (size_t __i = 0; __i < _S_categories_size; ++__i)
-	delete [] _M_names[__i];  
+	delete [] _M_names[__i];
     delete [] _M_names;
   }
 
@@ -266,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    _M_caches[__j] = __imp._M_caches[__j];
 	    if (_M_caches[__j])
-	      _M_caches[__j]->_M_add_reference(); 	
+	      _M_caches[__j]->_M_add_reference();
 	  }
 	_M_names = new char*[_S_categories_size];
 	for (size_t __k = 0; __k < _S_categories_size; ++__k)
@@ -290,22 +290,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   void
   locale::_Impl::
-  _M_replace_category(const _Impl* __imp, 
+  _M_replace_category(const _Impl* __imp,
 		      const locale::id* const* __idpp)
   {
     for (; *__idpp; ++__idpp)
       _M_replace_facet(__imp, *__idpp);
   }
-  
+
   void
   locale::_Impl::
   _M_replace_facet(const _Impl* __imp, const locale::id* __idp)
   {
     size_t __index = __idp->_M_id();
-    if ((__index > (__imp->_M_facets_size - 1)) 
+    if ((__index > (__imp->_M_facets_size - 1))
 	|| !__imp->_M_facets[__index])
       __throw_runtime_error(__N("locale::_Impl::_M_replace_facet"));
-    _M_install_facet(__idp, __imp->_M_facets[__index]); 
+    _M_install_facet(__idp, __imp->_M_facets[__index]);
   }
 
   void
@@ -324,7 +324,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // New facet array.
 	    const facet** __oldf = _M_facets;
 	    const facet** __newf;
-	    __newf = new const facet*[__new_size]; 
+	    __newf = new const facet*[__new_size];
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	      __newf[__i] = _M_facets[__i];
 	    for (size_t __l = _M_facets_size; __l < __new_size; ++__l)

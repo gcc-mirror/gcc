@@ -147,7 +147,7 @@ package body System.Bignums is
                for J in reverse 1 .. X'Last loop
                   RD := RD + DD (X (J));
 
-                  if J >= 1 + (X'Last - Y'Last)  then
+                  if J >= 1 + (X'Last - Y'Last) then
                      RD := RD + DD (Y (J - (X'Last - Y'Last)));
                   end if;
 
@@ -189,7 +189,7 @@ package body System.Bignums is
                   for J in reverse 1 .. X'Last loop
                      RD := RD + DD (X (J));
 
-                     if J >= 1 + (X'Last - Y'Last)  then
+                     if J >= 1 + (X'Last - Y'Last) then
                         RD := RD - DD (Y (J - (X'Last - Y'Last)));
                      end if;
 
@@ -840,9 +840,9 @@ package body System.Bignums is
 
                Carry := 0;
                for J in reverse 1 .. n loop
-                  Tmp    := DD (v (J)) * d + Carry;
-                  v (J)  := LSD (Tmp);
-                  Carry  := Tmp / Base;
+                  Tmp   := DD (v (J)) * d + Carry;
+                  v (J) := LSD (Tmp);
+                  Carry := Tmp / Base;
                end loop;
 
                pragma Assert (Carry = 0);

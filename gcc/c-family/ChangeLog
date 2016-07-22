@@ -1,3 +1,306 @@
+2016-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-common.c: Use HOST_WIDE_INT_M1U instead of
+	~(unsigned HOST_WIDE_INT) 0.
+
+2016-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/69028
+	PR gcov-profile/62047
+	* cilk.c (create_cilk_helper_decl): Set location of a new decl
+	to the current_function_decl.
+
+2016-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65168
+	* c-common.c (c_common_truthvalue_conversion): Check
+	c_inhibit_evaluation_warnings for warning about address of
+	reference.
+
+2016-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h (lookup_name_fuzzy): Convert return type from tree to
+	const char *.
+
+2016-07-15  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Update -fabi-version default to 11.
+
+2016-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71858
+	* c-common.h (enum lookup_name_fuzzy_kind): Add
+	FUZZY_LOOKUP_FUNCTION_NAME.
+
+2016-07-08  Jason Merrill  <jason@redhat.com>
+
+	P0145: Refining Expression Order for C++.
+	* c.opts (-fargs-in-order): Rename to -fstrong-eval-order.
+	* c-opts.c: Adjust.
+
+2016-07-05  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/71214
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_rvalue_references.
+
+2016-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-pragma.h (enum pragma_kind): Rename
+	PRAGMA_OMP_DECLARE_REDUCTION to PRAGMA_OMP_DECLARE.  Adjust all
+	users.
+
+2016-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71002
+	* c-common.c (c_common_get_alias_set): Remove union type punning case.
+
+2016-06-24  Jason Merrill  <jason@redhat.com>
+
+	P0145R2: Refining Expression Order for C++.
+	* c-common.c (verify_tree) [COMPOUND_EXPR]: Fix handling on LHS of
+	MODIFY_EXPR.
+
+2016-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (check_builtin_function_arguments): Require last
+	argument of BUILT_IN_*_OVERFLOW_P to have INTEGER_TYPE type.
+	Adjust wording of diagnostics for BUILT_IN_*_OVERLFLOW
+	if the last argument is pointer to enumerated or boolean type.
+
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70339
+	* c-common.h (enum lookup_name_fuzzy_kind): New enum.
+	(lookup_name_fuzzy): New prototype.
+
+2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-common.c (get_source_date_epoch): Use int64_t instead of long long.
+
+2016-06-14  Jason Merrill  <jason@redhat.com>
+
+	P0145R2: Refining Expression Order for C++.
+	* c.opt (fargs-in-order): New.
+	* c-opts.c (c_common_post_options): Adjust flag_args_in_order.
+
+2016-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/71498
+	* c-gimplify.c (ubsan_walk_array_refs_r): Set *walk_subtrees = 0 on
+	all BIND_EXPRs, and on all BIND_EXPRs recurse also on BIND_EXPR_BODY.
+
+	PR preprocessor/71183
+	* c-ppoutput.c (init_pp_output): Set cb->get_source_date_epoch
+	to cb_get_source_date_epoch.
+
+2016-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68657
+	* c.opt (Wpsabi): Add Warning flag.
+
+2016-06-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/71392
+	* gcc/c-family/c-common.c (handle_nonnull_attribute): Accept
+	the nonnull attribute in type-generic builtins.
+
+2016-06-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/70883
+	* c-common.c (builtin_function_validate_nargs): Make text of error
+	message consistent with others like it.
+
+2016-06-08  Martin Sebor  <msebor@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70507
+	PR c/68120
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_{ADD,SUB,MUL}_OVERFLOW_P.
+
+2016-06-08  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (parse_optimize_options): Improve diagnostic messages.
+
+2016-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR c/61564
+	* c-common.c (parse_optimize_options): Only apply CL_OPTIMIZATION
+	options and warn about others.
+
+2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
+
+	* c-common.c (get_source_date_epoch): Rename to
+	cb_get_source_date_epoch.
+	* c-common.c (cb_get_source_date_epoch): Use a single generic erorr
+	message when the parsing fails.  Use error_at instead of fatal_error.
+	* c-common.h (get_source_date_epoch): Rename to
+	cb_get_source_date_epoch.
+	* c-common.h (cb_get_source_date_epoch): Prototype.
+	* c-common.h (MAX_SOURCE_DATE_EPOCH): Define.
+	* c-common.h (c_omp_region_type): Remove trailing comma.
+	* c-lex.c (init_c_lex): Set cb->get_source_date_epoch callback.
+	* c-lex.c (c_lex_with_flags): Remove initialization of
+	pfile->source_date_epoch.
+
+2016-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71349
+	* c-omp.c (c_omp_split_clauses): Put OMP_CLAUSE_DEPEND to
+	C_OMP_CLAUSE_SPLIT_TARGET.  Put OMP_CLAUSE_NOWAIT to
+	C_OMP_CLAUSE_SPLIT_TARGET if combined with target construct,
+	instead of C_OMP_CLAUSE_SPLIT_FOR.
+
+2016-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70434
+	PR c/69504
+	* c-common.h (convert_vector_to_pointer_for_subscript): Rename to ...
+	(convert_vector_to_array_for_subscript): ... this.
+	* c-common.c (convert_vector_to_pointer_for_subscript): Use a
+	VIEW_CONVERT_EXPR to an array type.  Rename to ...
+	(convert_vector_to_array_for_subscript): ... this.
+
+2016-05-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70756
+	* c-common.c (pointer_int_sum): Call size_in_bytes_loc instead of
+	size_in_bytes and pass LOC to it.
+
+2016-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c/43651
+	* c.opt (Wduplicate-decl-specifier): New option.
+
+2016-05-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71024
+	* c-common.c (diagnose_mismatched_attributes): New function.
+	* c-common.h (diagnose_mismatched_attributes): Declare.
+
+2016-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wdangling-else): New option.
+
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70859
+	* c-common.c (builtin_function_validate_nargs): Add location
+	parameter.  Use it.
+	(check_builtin_function_arguments): Add location and arguments
+	parameters.  Use them.
+	* c-common.h (check_builtin_function_arguments): Update declaration.
+
+2016-05-03  Richard Biener  <rguenther@suse.de>
+
+	* cilk.c (cilk_gimplify_call_params_in_spawned_fn): Do not
+	allow call args to gimplify to SSA names.
+
+2016-05-03  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.h (enum c_omp_region_type): Remove stray comma.
+
+2016-05-02  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-common.h (enum c_omp_region_type): Define.
+
+2016-05-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c (shorten_compare): Use wi::to_wide.
+
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* c-common.h (c_oacc_split_loop_clauses): Add boolean argument.
+	* c-omp.c (c_oacc_split_loop_clauses): Use it to duplicate
+	reduction clauses in acc parallel loops.
+
+2016-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70852
+	* c-common.c (warn_for_memset): Check domain before accessing it.
+
+2016-04-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR/69089
+	* c-common.c (handle_aligned_attribute): Allow 0 as an argument to the
+	"aligned" attribute.
+
+2016-04-28  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Handle nodiscard.
+
+2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
+	    Matthias Klose  <doko@debian.org>
+
+	* c-common.c (get_source_date_epoch): New function, gets the environment
+	variable SOURCE_DATE_EPOCH and parses it as long long with error 
+	handling.
+	* c-common.h (get_source_date_epoch): Prototype.
+	* c-lex.c (c_lex_with_flags): set parse_in->source_date_epoch.
+
+2015-04-27  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/69024
+	PR c++/68997
+	* cilk.c (cilk_ignorable_spawn_rhs_op): Change to external linkage.
+	(cilk_recognize_spawn): Renamed from recognize_spawn and change to
+	external linkage.
+	(cilk_detect_and_unwrap): Corresponding changes.
+	(extract_free_variables): Don't extract free variables from
+	AGGR_INIT_EXPR slot.
+	* c-common.h (cilk_ignorable_spawn_rhs_op): Prototype.
+	(cilk_recognize_spawn): Likewise.
+
+2016-04-27  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* c.opt (Wmemset-elt-size): New option.
+	* c-common.c (warn_for_memset): New function.
+	* c-common.h (warn_for_memset): Declare.
+
+2016-04-25  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (handle_unused_attribute): Accept CONST_DECL.
+	No longer static.
+	* c-common.h: Declare it.
+	* c-lex.c (c_common_has_attribute): Add maybe_unused.
+
+2016-04-22  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Fix __cpp_range_based_for.
+
+2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR c++/69363
+	* c-cilkplus.c (c_finish_cilk_clauses): Remove function.
+	* c-common.h (c_finish_cilk_clauses): Remove declaration.
+
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* c-common.c (handle_aligned_attribute): Use SET_TYPE_ALIGN
+	and SET_DECL_ALIGN.
+
+2016-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Return the typedef, if any.
+	(dump_generic_ada_node) <POINTER_TYPE>: Clean up handling of access
+	to incomplete types.
+	(dump_nested_type): Remove redundant tests and tidy up.
+	(print_ada_declaration): Also set TREE_VISITED on the declaration of
+	a type which is the typedef of an original type.
+
+2016-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70651
+	* c-common.c (build_va_arg): Change two asserts into errors and return
+	error_mark_node.
+
+2016-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70639
+	* c-indentation.c (should_warn_for_misleading_indentation): Bail out
+	for switch statements, too.
+
 2016-03-28  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_range_based_for.

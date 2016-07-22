@@ -962,8 +962,13 @@ complex @code{__float128} type.  When these problems are fixed, you
 would use the following syntax to declare @code{_Complex128} to be a
 complex @code{__float128} type:
 
+On the PowerPC Linux VSX targets, you can declare complex types using
+the corresponding internal complex type, @code{KCmode} for
+@code{__float128} type and @code{ICmode} for @code{__ibm128} type:
+
 @smallexample
-typedef _Complex float __attribute__((mode(KC))) _Complex128;
+typedef _Complex float __attribute__((mode(KC))) _Complex_float128;
+typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @end smallexample
 
 Not all targets support additional floating-point types.
@@ -1417,6 +1422,11 @@ const __memx void *pfoo = &foo;
 Such code requires at least binutils 2.23, see
 @w{@uref{http://sourceware.org/PR13503,PR13503}}.
 
+@item
+On the reduced Tiny devices like ATtiny40, no address spaces are supported.
+Data can be put into and read from flash memory by means of
+attribute @code{progmem}, see @ref{AVR Variable Attributes}.
+
 @end itemize
 
 @subsection M32C Named Address Spaces
@@ -1858,15 +1868,16 @@ foo (float f, float g)
 @cindex compound literals
 @c The GNU C name for what C99 calls compound literals was "constructor expressions".
 
-ISO C99 supports compound literals.  A compound literal looks like
-a cast containing an initializer.  Its value is an object of the
-type specified in the cast, containing the elements specified in
-the initializer; it is an lvalue.  As an extension, GCC supports
-compound literals in C90 mode and in C++, though the semantics are
-somewhat different in C++.
+A compound literal looks like a cast of a brace-enclosed aggregate
+initializer list.  Its value is an object of the type specified in
+the cast, containing the elements specified in the initializer.
+Unlike the result of a cast, a compound literal is an lvalue.  ISO
+C99 and later support compound literals.  As an extension, GCC
+supports compound literals also in C90 mode and in C++, although
+as explained below, the C++ semantics are somewhat different.
 
-Usually, the specified type is a structure.  Assume that
-@code{struct foo} and @code{structure} are declared as shown:
+Usually, the specified type of a compound literal is a structure.  Assume
+that @code{struct foo} and @code{structure} are declared as shown:
 
 @smallexample
 struct foo @{int a; char b[2];@} structure;
@@ -1891,7 +1902,7 @@ This is equivalent to writing the following:
 
 You can also construct an array, though this is dangerous in C++, as
 explained below.  If all the elements of the compound literal are
-(made up of) simple constant expressions, suitable for use in
+(made up of) simple constant expressions suitable for use in
 initializers of objects of static storage duration, then the compound
 literal can be coerced to a pointer to its first element and used in
 such an initializer, as shown here:
@@ -1900,18 +1911,23 @@ such an initializer, as shown here:
 char **foo = (char *[]) @{ "x", "y", "z" @};
 @end smallexample
 
-Compound literals for scalar types and union types are
-also allowed, but then the compound literal is equivalent
-to a cast.
+Compound literals for scalar types and union types are also allowed.  In
+the following example the variable @code{i} is initialized to the value
+@code{2}, the result of incrementing the unnamed object created by
+the compound literal.
+
+@smallexample
+int i = ++(int) @{ 1 @};
+@end smallexample
 
 As a GNU extension, GCC allows initialization of objects with static storage
-duration by compound literals (which is not possible in ISO C99, because
+duration by compound literals (which is not possible in ISO C99 because
 the initializer is not a constant).
-It is handled as if the object is initialized only with the bracket
-enclosed list if the types of the compound literal and the object match.
-The initializer list of the compound literal must be constant.
+It is handled as if the object were initialized only with the brace-enclosed
+list if the types of the compound literal and the object match.
+The elements of the compound literal must be constant.
 If the object being initialized has array type of unknown size, the size is
-determined by compound literal size.
+determined by the size of the compound literal.
 
 @smallexample
 static struct foo x = (struct foo) @{1, 'a', 'b'@};
@@ -1929,22 +1945,21 @@ static int z[] = @{1, 0, 0@};
 
 In C, a compound literal designates an unnamed object with static or
 automatic storage duration.  In C++, a compound literal designates a
-temporary object, which only lives until the end of its
-full-expression.  As a result, well-defined C code that takes the
-address of a subobject of a compound literal can be undefined in C++,
-so the C++ compiler rejects the conversion of a temporary array to a pointer.
-For instance, if the array compound literal example above appeared
-inside a function, any subsequent use of @samp{foo} in C++ has
-undefined behavior because the lifetime of the array ends after the
-declaration of @samp{foo}.  
+temporary object that only lives until the end of its full-expression.
+As a result, well-defined C code that takes the address of a subobject
+of a compound literal can be undefined in C++, so G++ rejects
+the conversion of a temporary array to a pointer.  For instance, if
+the array compound literal example above appeared inside a function,
+any subsequent use of @code{foo} in C++ would have undefined behavior
+because the lifetime of the array ends after the declaration of @code{foo}.
 
-As an optimization, the C++ compiler sometimes gives array compound
-literals longer lifetimes: when the array either appears outside a
-function or has const-qualified type.  If @samp{foo} and its
-initializer had elements of @samp{char *const} type rather than
-@samp{char *}, or if @samp{foo} were a global variable, the array
-would have static storage duration.  But it is probably safest just to
-avoid the use of array compound literals in code compiled as C++.
+As an optimization, G++ sometimes gives array compound literals longer
+lifetimes: when the array either appears outside a function or has
+a @code{const}-qualified type.  If @code{foo} and its initializer had
+elements of type @code{char *const} rather than @code{char *}, or if
+@code{foo} were a global variable, the array would have static storage
+duration.  But it is probably safest just to avoid the use of array
+compound literals in C++ code.
 
 @node Designated Inits
 @section Designated Initializers
@@ -2135,11 +2150,12 @@ case 1...5:
 @cindex cast to a union
 @cindex union, casting to a
 
-A cast to union type is similar to other casts, except that the type
-specified is a union type.  You can specify the type either with
-@code{union @var{tag}} or with a typedef name.  A cast to union is actually
-a constructor, not a cast, and hence does not yield an lvalue like
-normal casts.  (@xref{Compound Literals}.)
+A cast to union type looks similar to other casts, except that the type
+specified is a union type.  You can specify the type either with the
+@code{union} keyword or with a @code{typedef} name that refers to
+a union.  A cast to a union actually creates a compound literal and
+yields an lvalue, not an rvalue like true casts do.
+(@xref{Compound Literals}.)
 
 The types that may be cast to the union type are those of the members
 of the union.  Thus, given the following union and variables:
@@ -3026,10 +3042,8 @@ that affect more than one function.
 @xref{Function Specific Option Pragmas}, for details about the
 @samp{#pragma GCC optimize} pragma.
 
-This can be used for instance to have frequently-executed functions
-compiled with more aggressive optimization options that produce faster
-and larger code, while other functions can be compiled with less
-aggressive options.
+This attribute should be used for debugging purposes only.  It is not
+suitable in production code.
 
 @item pure
 @cindex @code{pure} function attribute
@@ -5263,6 +5277,79 @@ On x86-32 targets, the @code{stdcall} attribute causes the compiler to
 assume that the called function pops off the stack space used to
 pass arguments, unless it takes a variable number of arguments.
 
+@item no_caller_saved_registers
+@cindex @code{no_caller_saved_registers} function attribute, x86
+Use this attribute to indicate that the specified function has no
+caller-saved registers. That is, all registers are callee-saved. For
+example, this attribute can be used for a function called from an
+interrupt handler. The compiler generates proper function entry and
+exit sequences to save and restore any modified registers, except for
+the EFLAGS register.  Since GCC doesn't preserve MPX, SSE, MMX nor x87
+states, the GCC option @option{-mgeneral-regs-only} should be used to
+compile functions with @code{no_caller_saved_registers} attribute.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, x86
+Use this attribute to indicate that the specified function is an
+interrupt handler or an exception handler (depending on parameters passed
+to the function, explained further).  The compiler generates function
+entry and exit sequences suitable for use in an interrupt handler when
+this attribute is present.  The @code{IRET} instruction, instead of the
+@code{RET} instruction, is used to return from interrupt handlers.  All
+registers, except for the EFLAGS register which is restored by the
+@code{IRET} instruction, are preserved by the compiler.  Since GCC
+doesn't preserve MPX, SSE, MMX nor x87 states, the GCC option
+@option{-mgeneral-regs-only} should be used to compile interrupt and
+exception handlers.
+
+Any interruptible-without-stack-switch code must be compiled with
+@option{-mno-red-zone} since interrupt handlers can and will, because
+of the hardware design, touch the red zone.
+
+An interrupt handler must be declared with a mandatory pointer
+argument:
+
+@smallexample
+struct interrupt_frame;
+
+__attribute__ ((interrupt))
+void
+f (struct interrupt_frame *frame)
+@{
+@}
+@end smallexample
+
+@noindent
+and you must define @code{struct interrupt_frame} as described in the
+processor's manual.
+
+Exception handlers differ from interrupt handlers because the system
+pushes an error code on the stack.  An exception handler declaration is
+similar to that for an interrupt handler, but with a different mandatory
+function signature.  The compiler arranges to pop the error code off the
+stack before the @code{IRET} instruction.
+
+@smallexample
+#ifdef __x86_64__
+typedef unsigned long long int uword_t;
+#else
+typedef unsigned int uword_t;
+#endif
+
+struct interrupt_frame;
+
+__attribute__ ((interrupt))
+void
+f (struct interrupt_frame *frame, uword_t error_code)
+@{
+  ...
+@}
+@end smallexample
+
+Exception handlers should only be used for exceptions that push an error
+code; you should use an interrupt handler in other cases.  The system
+will crash if the wrong kind of handler is used.
+
 @item target (@var{options})
 @cindex @code{target} function attribute
 As discussed in @ref{Common Function Attributes}, this attribute 
@@ -5771,10 +5858,12 @@ attribute accomplishes this by putting respective variables into a
 section whose name starts with @code{.progmem}.
 
 This attribute works similar to the @code{section} attribute
-but adds additional checking. Notice that just like the
-@code{section} attribute, @code{progmem} affects the location
-of the data but not how this data is accessed.
+but adds additional checking.
 
+@table @asis
+@item @bullet{}@tie{} Ordinary AVR cores with 32 general purpose registers:
+@code{progmem} affects the location
+of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
 @smallexample
@@ -5796,6 +5885,28 @@ normally resides in the data memory (RAM).
 
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
+
+@item @bullet{}@tie{}Reduced AVR Tiny cores like ATtiny40:
+The compiler adds @code{0x4000}
+to the addresses of objects and declarations in @code{progmem} and locates
+the objects in flash memory, namely in section @code{.progmem.data}.
+The offset is needed because the flash memory is visible in the RAM
+address space starting at address @code{0x4000}.
+
+Data in @code{progmem} can be accessed by means of ordinary C@tie{}code,
+no special functions or macros are needed.
+
+@smallexample
+/* var is located in flash memory */
+extern const int var[2] __attribute__((progmem));
+
+int read_var (int i)
+@{
+    return var[i];
+@}
+@end smallexample
+
+@end table
 
 @item io
 @itemx io (@var{addr})
@@ -7505,7 +7616,7 @@ means there is no way to communicate to the compiler what is happening
 inside them.  GCC has no visibility of symbols in the @code{asm} and may
 discard them as unreferenced.  It also does not know about side effects of
 the assembler code, such as modifications to memory or registers.  Unlike
-some compilers, GCC assumes that no changes to either memory or registers
+some compilers, GCC assumes that no changes to general purpose registers
 occur.  This assumption may change in a future release.
 
 To avoid complications from future changes to the semantics and the
@@ -7528,6 +7639,10 @@ all basic @code{asm} blocks use the assembler dialect specified by the
 @option{-masm} command-line option (@pxref{x86 Options}).  
 Basic @code{asm} provides no
 mechanism to provide different assembler strings for different dialects.
+
+For basic @code{asm} with non-empty assembler string GCC assumes
+the assembler block does not change any general purpose registers,
+but it may read or write any globally accessible variable.
 
 Here is an example of basic @code{asm} for i386:
 
@@ -8926,9 +9041,11 @@ This extension is not supported by GNU C++.
 @cindex @code{__FUNCTION__} identifier
 @cindex @code{__PRETTY_FUNCTION__} identifier
 
-GCC provides three magic variables that hold the name of the current
-function, as a string.  The first of these is @code{__func__}, which
-is part of the C99 standard:
+GCC provides three magic constants that hold the name of the current
+function as a string.  In C++11 and later modes, all three are treated
+as constant expressions and can be used in @code{constexpr} constexts.
+The first of these constants is @code{__func__}, which is part of
+the C99 standard:
 
 The identifier @code{__func__} is implicitly declared by the translator
 as if, immediately following the opening brace of each function
@@ -8940,20 +9057,21 @@ static const char __func__[] = "function-name";
 
 @noindent
 appeared, where function-name is the name of the lexically-enclosing
-function.  This name is the unadorned name of the function.
+function.  This name is the unadorned name of the function.  As an
+extension, at file (or, in C++, namespace scope), @code{__func__}
+evaluates to the empty string.
 
 @code{__FUNCTION__} is another name for @code{__func__}, provided for
 backward compatibility with old versions of GCC.
 
 In C, @code{__PRETTY_FUNCTION__} is yet another name for
-@code{__func__}.  However, in C++, @code{__PRETTY_FUNCTION__} contains
-the type signature of the function as well as its bare name.  For
-example, this program:
+@code{__func__}, except that at file (or, in C++, namespace scope),
+it evaluates to the string @code{"top level"}.  In addition, in C++,
+@code{__PRETTY_FUNCTION__} contains the signature of the function as
+well as its bare name.  For example, this program:
 
 @smallexample
-extern "C" @{
-extern int printf (char *, ...);
-@}
+extern "C" int printf (const char *, ...);
 
 class a @{
  public:
@@ -8982,7 +9100,7 @@ __PRETTY_FUNCTION__ = void a::sub(int)
 @end smallexample
 
 These identifiers are variables, not preprocessor macros, and may not
-be used to initialize @code{char} arrays or be concatenated with other string
+be used to initialize @code{char} arrays or be concatenated with string
 literals.
 
 @node Return Address
@@ -9750,8 +9868,8 @@ performed in infinite signed precision, these built-in functions have fully defi
 behavior for all argument values.
 
 The first built-in function allows arbitrary integral types for operands and
-the result type must be pointer to some integer type, the rest of the built-in
-functions have explicit integer types.
+the result type must be pointer to some integral type other than enumerated or
+Boolean type, the rest of the built-in functions have explicit integer types.
 
 The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
@@ -9784,6 +9902,51 @@ from the first one, instead of addition.
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform multiplication, instead of addition.
 
+@end deftypefn
+
+The following built-in functions allow checking if simple arithmetic operation
+would overflow.
+
+@deftypefn {Built-in Function} bool __builtin_add_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+@deftypefnx {Built-in Function} bool __builtin_sub_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+@deftypefnx {Built-in Function} bool __builtin_mul_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+
+These built-in functions are similar to @code{__builtin_add_overflow},
+@code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
+they don't store the result of the arithmetic operation anywhere and the
+last argument is not a pointer, but some expression with integral type other
+than enumerated or Boolean type.
+
+The built-in functions promote the first two operands into infinite precision signed type
+and perform addition on those promoted operands. The result is then
+cast to the type of the third argument.  If the cast result is equal to the infinite
+precision result, the built-in functions return false, otherwise they return true.
+The value of the third argument is ignored, just the side-effects in the third argument
+are evaluated, and no integral argument promotions are performed on the last argument.
+If the third argument is a bit-field, the type used for the result cast has the
+precision and signedness of the given bit-field, rather than precision and signedness
+of the underlying type.
+
+For example, the following macro can be used to portably check, at
+compile-time, whether or not adding two constant integers will overflow,
+and perform the addition only when it is known to be safe and not to trigger
+a @option{-Woverflow} warning.
+
+@smallexample
+#define INT_ADD_OVERFLOW_P(a, b) \
+   __builtin_add_overflow_p (a, b, (__typeof__ ((a) + (b))) 0)
+
+enum @{
+    A = INT_MAX, B = 3,
+    C = INT_ADD_OVERFLOW_P (A, B) ? 0 : A + B,
+    D = __builtin_add_overflow_p (1, SCHAR_MAX, (signed char) 0)
+@};
+@end smallexample
+
+The compiler will attempt to use hardware instructions to implement
+these built-in functions where possible, like conditional jump on overflow
+after addition, conditional jump on carry etc.
+ 
 @end deftypefn
 
 @node x86 specific memory model extensions for transactional memory
@@ -11088,22 +11251,50 @@ means that the compiler can assume for @code{x}, set to @code{arg}, that
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_LINE ()
-This function is the equivalent to the preprocessor @code{__LINE__}
-macro and returns the line number of the invocation of the built-in.
-In a C++ default argument for a function @var{F}, it gets the line number of
-the call to @var{F}.
+This function is the equivalent of the preprocessor @code{__LINE__}
+macro and returns a constant integer expression that evaluates to
+the line number of the invocation of the built-in.  When used as a C++
+default argument for a function @var{F}, it returns the line number
+of the call to @var{F}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {const char *} __builtin_FUNCTION ()
-This function is the equivalent to the preprocessor @code{__FUNCTION__}
-macro and returns the function name the invocation of the built-in is in.
+This function is the equivalent of the @code{__FUNCTION__} symbol
+and returns an address constant pointing to the name of the function
+from which the built-in was invoked, or the empty string if
+the invocation is not at function scope.  When used as a C++ default
+argument for a function @var{F}, it returns the name of @var{F}'s
+caller or the empty string if the call was not made at function
+scope.
 @end deftypefn
 
 @deftypefn {Built-in Function} {const char *} __builtin_FILE ()
-This function is the equivalent to the preprocessor @code{__FILE__}
-macro and returns the file name the invocation of the built-in is in.
-In a C++ default argument for a function @var{F}, it gets the file name of
-the call to @var{F}.
+This function is the equivalent of the preprocessor @code{__FILE__}
+macro and returns an address constant pointing to the file name
+containing the invocation of the built-in, or the empty string if
+the invocation is not at function scope.  When used as a C++ default
+argument for a function @var{F}, it returns the file name of the call
+to @var{F} or the empty string if the call was not made at function
+scope.
+
+For example, in the following, each call to function @code{foo} will
+print a line similar to @code{"file.c:123: foo: message"} with the name
+of the file and the line number of the @code{printf} call, the name of
+the function @code{foo}, followed by the word @code{message}.
+
+@smallexample
+const char*
+function (const char *func = __builtin_FUNCTION ())
+@{
+  return func;
+@}
+
+void foo (void)
+@{
+  printf ("%s:%i: %s: message\n", file (), line (), function ());
+@}
+@end smallexample
+
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
@@ -11417,6 +11608,7 @@ instructions, but allow the compiler to schedule those calls.
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * MIPS Loongson Built-in Functions::
+* MIPS SIMD Architecture (MSA) Support::
 * Other MIPS Built-in Functions::
 * MSP430 Built-in Functions::
 * NDS32 Built-in Functions::
@@ -13527,6 +13719,794 @@ else
 @end smallexample
 @end table
 
+@node MIPS SIMD Architecture (MSA) Support
+@subsection MIPS SIMD Architecture (MSA) Support
+
+@menu
+* MIPS SIMD Architecture Built-in Functions::
+@end menu
+
+GCC provides intrinsics to access the SIMD instructions provided by the
+MSA MIPS SIMD Architecture.  The interface is made available by including
+@code{<msa.h>} and using @option{-mmsa -mhard-float -mfp64 -mnan=2008}.
+For each @code{__builtin_msa_*}, there is a shortened name of the intrinsic,
+@code{__msa_*}.
+
+MSA implements 128-bit wide vector registers, operating on 8-, 16-, 32- and
+64-bit integer, 16- and 32-bit fixed-point, or 32- and 64-bit floating point
+data elements.  The following vectors typedefs are included in @code{msa.h}:
+@itemize
+@item @code{v16i8}, a vector of sixteen signed 8-bit integers;
+@item @code{v16u8}, a vector of sixteen unsigned 8-bit integers;
+@item @code{v8i16}, a vector of eight signed 16-bit integers;
+@item @code{v8u16}, a vector of eight unsigned 16-bit integers;
+@item @code{v4i32}, a vector of four signed 32-bit integers;
+@item @code{v4u32}, a vector of four unsigned 32-bit integers;
+@item @code{v2i64}, a vector of two signed 64-bit integers;
+@item @code{v2u64}, a vector of two unsigned 64-bit integers;
+@item @code{v4f32}, a vector of four 32-bit floats;
+@item @code{v2f64}, a vector of two 64-bit doubles.
+@end itemize
+
+Intructions and corresponding built-ins may have additional restrictions and/or
+input/output values manipulated:
+@itemize
+@item @code{imm0_1}, an integer literal in range 0 to 1;
+@item @code{imm0_3}, an integer literal in range 0 to 3;
+@item @code{imm0_7}, an integer literal in range 0 to 7;
+@item @code{imm0_15}, an integer literal in range 0 to 15;
+@item @code{imm0_31}, an integer literal in range 0 to 31;
+@item @code{imm0_63}, an integer literal in range 0 to 63;
+@item @code{imm0_255}, an integer literal in range 0 to 255;
+@item @code{imm_n16_15}, an integer literal in range -16 to 15;
+@item @code{imm_n512_511}, an integer literal in range -512 to 511;
+@item @code{imm_n1024_1022}, an integer literal in range -512 to 511 left
+shifted by 1 bit, i.e., -1024, -1022, @dots{}, 1020, 1022;
+@item @code{imm_n2048_2044}, an integer literal in range -512 to 511 left
+shifted by 2 bits, i.e., -2048, -2044, @dots{}, 2040, 2044;
+@item @code{imm_n4096_4088}, an integer literal in range -512 to 511 left
+shifted by 3 bits, i.e., -4096, -4088, @dots{}, 4080, 4088;
+@item @code{imm1_4}, an integer literal in range 1 to 4;
+@item @code{i32, i64, u32, u64, f32, f64}, defined as follows:
+@end itemize
+
+@smallexample
+@{
+typedef int i32;
+#if __LONG_MAX__ == __LONG_LONG_MAX__
+typedef long i64;
+#else
+typedef long long i64;
+#endif
+
+typedef unsigned int u32;
+#if __LONG_MAX__ == __LONG_LONG_MAX__
+typedef unsigned long u64;
+#else
+typedef unsigned long long u64;
+#endif
+
+typedef double f64;
+typedef float f32;
+@}
+@end smallexample
+
+@node MIPS SIMD Architecture Built-in Functions
+@subsubsection MIPS SIMD Architecture Built-in Functions
+
+The intrinsics provided are listed below; each is named after the
+machine instruction.
+
+@smallexample
+v16i8 __builtin_msa_add_a_b (v16i8, v16i8);
+v8i16 __builtin_msa_add_a_h (v8i16, v8i16);
+v4i32 __builtin_msa_add_a_w (v4i32, v4i32);
+v2i64 __builtin_msa_add_a_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_adds_a_b (v16i8, v16i8);
+v8i16 __builtin_msa_adds_a_h (v8i16, v8i16);
+v4i32 __builtin_msa_adds_a_w (v4i32, v4i32);
+v2i64 __builtin_msa_adds_a_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_adds_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_adds_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_adds_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_adds_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_adds_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_adds_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_adds_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_adds_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_addv_b (v16i8, v16i8);
+v8i16 __builtin_msa_addv_h (v8i16, v8i16);
+v4i32 __builtin_msa_addv_w (v4i32, v4i32);
+v2i64 __builtin_msa_addv_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_addvi_b (v16i8, imm0_31);
+v8i16 __builtin_msa_addvi_h (v8i16, imm0_31);
+v4i32 __builtin_msa_addvi_w (v4i32, imm0_31);
+v2i64 __builtin_msa_addvi_d (v2i64, imm0_31);
+
+v16u8 __builtin_msa_and_v (v16u8, v16u8);
+
+v16u8 __builtin_msa_andi_b (v16u8, imm0_255);
+
+v16i8 __builtin_msa_asub_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_asub_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_asub_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_asub_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_asub_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_asub_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_asub_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_asub_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_ave_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_ave_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_ave_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_ave_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_ave_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_ave_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_ave_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_ave_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_aver_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_aver_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_aver_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_aver_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_aver_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_aver_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_aver_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_aver_u_d (v2u64, v2u64);
+
+v16u8 __builtin_msa_bclr_b (v16u8, v16u8);
+v8u16 __builtin_msa_bclr_h (v8u16, v8u16);
+v4u32 __builtin_msa_bclr_w (v4u32, v4u32);
+v2u64 __builtin_msa_bclr_d (v2u64, v2u64);
+
+v16u8 __builtin_msa_bclri_b (v16u8, imm0_7);
+v8u16 __builtin_msa_bclri_h (v8u16, imm0_15);
+v4u32 __builtin_msa_bclri_w (v4u32, imm0_31);
+v2u64 __builtin_msa_bclri_d (v2u64, imm0_63);
+
+v16u8 __builtin_msa_binsl_b (v16u8, v16u8, v16u8);
+v8u16 __builtin_msa_binsl_h (v8u16, v8u16, v8u16);
+v4u32 __builtin_msa_binsl_w (v4u32, v4u32, v4u32);
+v2u64 __builtin_msa_binsl_d (v2u64, v2u64, v2u64);
+
+v16u8 __builtin_msa_binsli_b (v16u8, v16u8, imm0_7);
+v8u16 __builtin_msa_binsli_h (v8u16, v8u16, imm0_15);
+v4u32 __builtin_msa_binsli_w (v4u32, v4u32, imm0_31);
+v2u64 __builtin_msa_binsli_d (v2u64, v2u64, imm0_63);
+
+v16u8 __builtin_msa_binsr_b (v16u8, v16u8, v16u8);
+v8u16 __builtin_msa_binsr_h (v8u16, v8u16, v8u16);
+v4u32 __builtin_msa_binsr_w (v4u32, v4u32, v4u32);
+v2u64 __builtin_msa_binsr_d (v2u64, v2u64, v2u64);
+
+v16u8 __builtin_msa_binsri_b (v16u8, v16u8, imm0_7);
+v8u16 __builtin_msa_binsri_h (v8u16, v8u16, imm0_15);
+v4u32 __builtin_msa_binsri_w (v4u32, v4u32, imm0_31);
+v2u64 __builtin_msa_binsri_d (v2u64, v2u64, imm0_63);
+
+v16u8 __builtin_msa_bmnz_v (v16u8, v16u8, v16u8);
+
+v16u8 __builtin_msa_bmnzi_b (v16u8, v16u8, imm0_255);
+
+v16u8 __builtin_msa_bmz_v (v16u8, v16u8, v16u8);
+
+v16u8 __builtin_msa_bmzi_b (v16u8, v16u8, imm0_255);
+
+v16u8 __builtin_msa_bneg_b (v16u8, v16u8);
+v8u16 __builtin_msa_bneg_h (v8u16, v8u16);
+v4u32 __builtin_msa_bneg_w (v4u32, v4u32);
+v2u64 __builtin_msa_bneg_d (v2u64, v2u64);
+
+v16u8 __builtin_msa_bnegi_b (v16u8, imm0_7);
+v8u16 __builtin_msa_bnegi_h (v8u16, imm0_15);
+v4u32 __builtin_msa_bnegi_w (v4u32, imm0_31);
+v2u64 __builtin_msa_bnegi_d (v2u64, imm0_63);
+
+i32 __builtin_msa_bnz_b (v16u8);
+i32 __builtin_msa_bnz_h (v8u16);
+i32 __builtin_msa_bnz_w (v4u32);
+i32 __builtin_msa_bnz_d (v2u64);
+
+i32 __builtin_msa_bnz_v (v16u8);
+
+v16u8 __builtin_msa_bsel_v (v16u8, v16u8, v16u8);
+
+v16u8 __builtin_msa_bseli_b (v16u8, v16u8, imm0_255);
+
+v16u8 __builtin_msa_bset_b (v16u8, v16u8);
+v8u16 __builtin_msa_bset_h (v8u16, v8u16);
+v4u32 __builtin_msa_bset_w (v4u32, v4u32);
+v2u64 __builtin_msa_bset_d (v2u64, v2u64);
+
+v16u8 __builtin_msa_bseti_b (v16u8, imm0_7);
+v8u16 __builtin_msa_bseti_h (v8u16, imm0_15);
+v4u32 __builtin_msa_bseti_w (v4u32, imm0_31);
+v2u64 __builtin_msa_bseti_d (v2u64, imm0_63);
+
+i32 __builtin_msa_bz_b (v16u8);
+i32 __builtin_msa_bz_h (v8u16);
+i32 __builtin_msa_bz_w (v4u32);
+i32 __builtin_msa_bz_d (v2u64);
+
+i32 __builtin_msa_bz_v (v16u8);
+
+v16i8 __builtin_msa_ceq_b (v16i8, v16i8);
+v8i16 __builtin_msa_ceq_h (v8i16, v8i16);
+v4i32 __builtin_msa_ceq_w (v4i32, v4i32);
+v2i64 __builtin_msa_ceq_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_ceqi_b (v16i8, imm_n16_15);
+v8i16 __builtin_msa_ceqi_h (v8i16, imm_n16_15);
+v4i32 __builtin_msa_ceqi_w (v4i32, imm_n16_15);
+v2i64 __builtin_msa_ceqi_d (v2i64, imm_n16_15);
+
+i32 __builtin_msa_cfcmsa (imm0_31);
+
+v16i8 __builtin_msa_cle_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_cle_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_cle_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_cle_s_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_cle_u_b (v16u8, v16u8);
+v8i16 __builtin_msa_cle_u_h (v8u16, v8u16);
+v4i32 __builtin_msa_cle_u_w (v4u32, v4u32);
+v2i64 __builtin_msa_cle_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_clei_s_b (v16i8, imm_n16_15);
+v8i16 __builtin_msa_clei_s_h (v8i16, imm_n16_15);
+v4i32 __builtin_msa_clei_s_w (v4i32, imm_n16_15);
+v2i64 __builtin_msa_clei_s_d (v2i64, imm_n16_15);
+
+v16i8 __builtin_msa_clei_u_b (v16u8, imm0_31);
+v8i16 __builtin_msa_clei_u_h (v8u16, imm0_31);
+v4i32 __builtin_msa_clei_u_w (v4u32, imm0_31);
+v2i64 __builtin_msa_clei_u_d (v2u64, imm0_31);
+
+v16i8 __builtin_msa_clt_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_clt_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_clt_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_clt_s_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_clt_u_b (v16u8, v16u8);
+v8i16 __builtin_msa_clt_u_h (v8u16, v8u16);
+v4i32 __builtin_msa_clt_u_w (v4u32, v4u32);
+v2i64 __builtin_msa_clt_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_clti_s_b (v16i8, imm_n16_15);
+v8i16 __builtin_msa_clti_s_h (v8i16, imm_n16_15);
+v4i32 __builtin_msa_clti_s_w (v4i32, imm_n16_15);
+v2i64 __builtin_msa_clti_s_d (v2i64, imm_n16_15);
+
+v16i8 __builtin_msa_clti_u_b (v16u8, imm0_31);
+v8i16 __builtin_msa_clti_u_h (v8u16, imm0_31);
+v4i32 __builtin_msa_clti_u_w (v4u32, imm0_31);
+v2i64 __builtin_msa_clti_u_d (v2u64, imm0_31);
+
+i32 __builtin_msa_copy_s_b (v16i8, imm0_15);
+i32 __builtin_msa_copy_s_h (v8i16, imm0_7);
+i32 __builtin_msa_copy_s_w (v4i32, imm0_3);
+i64 __builtin_msa_copy_s_d (v2i64, imm0_1);
+
+u32 __builtin_msa_copy_u_b (v16i8, imm0_15);
+u32 __builtin_msa_copy_u_h (v8i16, imm0_7);
+u32 __builtin_msa_copy_u_w (v4i32, imm0_3);
+u64 __builtin_msa_copy_u_d (v2i64, imm0_1);
+
+void __builtin_msa_ctcmsa (imm0_31, i32);
+
+v16i8 __builtin_msa_div_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_div_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_div_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_div_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_div_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_div_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_div_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_div_u_d (v2u64, v2u64);
+
+v8i16 __builtin_msa_dotp_s_h (v16i8, v16i8);
+v4i32 __builtin_msa_dotp_s_w (v8i16, v8i16);
+v2i64 __builtin_msa_dotp_s_d (v4i32, v4i32);
+
+v8u16 __builtin_msa_dotp_u_h (v16u8, v16u8);
+v4u32 __builtin_msa_dotp_u_w (v8u16, v8u16);
+v2u64 __builtin_msa_dotp_u_d (v4u32, v4u32);
+
+v8i16 __builtin_msa_dpadd_s_h (v8i16, v16i8, v16i8);
+v4i32 __builtin_msa_dpadd_s_w (v4i32, v8i16, v8i16);
+v2i64 __builtin_msa_dpadd_s_d (v2i64, v4i32, v4i32);
+
+v8u16 __builtin_msa_dpadd_u_h (v8u16, v16u8, v16u8);
+v4u32 __builtin_msa_dpadd_u_w (v4u32, v8u16, v8u16);
+v2u64 __builtin_msa_dpadd_u_d (v2u64, v4u32, v4u32);
+
+v8i16 __builtin_msa_dpsub_s_h (v8i16, v16i8, v16i8);
+v4i32 __builtin_msa_dpsub_s_w (v4i32, v8i16, v8i16);
+v2i64 __builtin_msa_dpsub_s_d (v2i64, v4i32, v4i32);
+
+v8i16 __builtin_msa_dpsub_u_h (v8i16, v16u8, v16u8);
+v4i32 __builtin_msa_dpsub_u_w (v4i32, v8u16, v8u16);
+v2i64 __builtin_msa_dpsub_u_d (v2i64, v4u32, v4u32);
+
+v4f32 __builtin_msa_fadd_w (v4f32, v4f32);
+v2f64 __builtin_msa_fadd_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcaf_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcaf_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fceq_w (v4f32, v4f32);
+v2i64 __builtin_msa_fceq_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fclass_w (v4f32);
+v2i64 __builtin_msa_fclass_d (v2f64);
+
+v4i32 __builtin_msa_fcle_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcle_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fclt_w (v4f32, v4f32);
+v2i64 __builtin_msa_fclt_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcne_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcne_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcor_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcor_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcueq_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcueq_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcule_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcule_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcult_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcult_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcun_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcun_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fcune_w (v4f32, v4f32);
+v2i64 __builtin_msa_fcune_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_fdiv_w (v4f32, v4f32);
+v2f64 __builtin_msa_fdiv_d (v2f64, v2f64);
+
+v8i16 __builtin_msa_fexdo_h (v4f32, v4f32);
+v4f32 __builtin_msa_fexdo_w (v2f64, v2f64);
+
+v4f32 __builtin_msa_fexp2_w (v4f32, v4i32);
+v2f64 __builtin_msa_fexp2_d (v2f64, v2i64);
+
+v4f32 __builtin_msa_fexupl_w (v8i16);
+v2f64 __builtin_msa_fexupl_d (v4f32);
+
+v4f32 __builtin_msa_fexupr_w (v8i16);
+v2f64 __builtin_msa_fexupr_d (v4f32);
+
+v4f32 __builtin_msa_ffint_s_w (v4i32);
+v2f64 __builtin_msa_ffint_s_d (v2i64);
+
+v4f32 __builtin_msa_ffint_u_w (v4u32);
+v2f64 __builtin_msa_ffint_u_d (v2u64);
+
+v4f32 __builtin_msa_ffql_w (v8i16);
+v2f64 __builtin_msa_ffql_d (v4i32);
+
+v4f32 __builtin_msa_ffqr_w (v8i16);
+v2f64 __builtin_msa_ffqr_d (v4i32);
+
+v16i8 __builtin_msa_fill_b (i32);
+v8i16 __builtin_msa_fill_h (i32);
+v4i32 __builtin_msa_fill_w (i32);
+v2i64 __builtin_msa_fill_d (i64);
+
+v4f32 __builtin_msa_flog2_w (v4f32);
+v2f64 __builtin_msa_flog2_d (v2f64);
+
+v4f32 __builtin_msa_fmadd_w (v4f32, v4f32, v4f32);
+v2f64 __builtin_msa_fmadd_d (v2f64, v2f64, v2f64);
+
+v4f32 __builtin_msa_fmax_w (v4f32, v4f32);
+v2f64 __builtin_msa_fmax_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_fmax_a_w (v4f32, v4f32);
+v2f64 __builtin_msa_fmax_a_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_fmin_w (v4f32, v4f32);
+v2f64 __builtin_msa_fmin_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_fmin_a_w (v4f32, v4f32);
+v2f64 __builtin_msa_fmin_a_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_fmsub_w (v4f32, v4f32, v4f32);
+v2f64 __builtin_msa_fmsub_d (v2f64, v2f64, v2f64);
+
+v4f32 __builtin_msa_fmul_w (v4f32, v4f32);
+v2f64 __builtin_msa_fmul_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_frint_w (v4f32);
+v2f64 __builtin_msa_frint_d (v2f64);
+
+v4f32 __builtin_msa_frcp_w (v4f32);
+v2f64 __builtin_msa_frcp_d (v2f64);
+
+v4f32 __builtin_msa_frsqrt_w (v4f32);
+v2f64 __builtin_msa_frsqrt_d (v2f64);
+
+v4i32 __builtin_msa_fsaf_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsaf_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fseq_w (v4f32, v4f32);
+v2i64 __builtin_msa_fseq_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsle_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsle_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fslt_w (v4f32, v4f32);
+v2i64 __builtin_msa_fslt_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsne_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsne_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsor_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsor_d (v2f64, v2f64);
+
+v4f32 __builtin_msa_fsqrt_w (v4f32);
+v2f64 __builtin_msa_fsqrt_d (v2f64);
+
+v4f32 __builtin_msa_fsub_w (v4f32, v4f32);
+v2f64 __builtin_msa_fsub_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsueq_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsueq_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsule_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsule_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsult_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsult_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsun_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsun_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_fsune_w (v4f32, v4f32);
+v2i64 __builtin_msa_fsune_d (v2f64, v2f64);
+
+v4i32 __builtin_msa_ftint_s_w (v4f32);
+v2i64 __builtin_msa_ftint_s_d (v2f64);
+
+v4u32 __builtin_msa_ftint_u_w (v4f32);
+v2u64 __builtin_msa_ftint_u_d (v2f64);
+
+v8i16 __builtin_msa_ftq_h (v4f32, v4f32);
+v4i32 __builtin_msa_ftq_w (v2f64, v2f64);
+
+v4i32 __builtin_msa_ftrunc_s_w (v4f32);
+v2i64 __builtin_msa_ftrunc_s_d (v2f64);
+
+v4u32 __builtin_msa_ftrunc_u_w (v4f32);
+v2u64 __builtin_msa_ftrunc_u_d (v2f64);
+
+v8i16 __builtin_msa_hadd_s_h (v16i8, v16i8);
+v4i32 __builtin_msa_hadd_s_w (v8i16, v8i16);
+v2i64 __builtin_msa_hadd_s_d (v4i32, v4i32);
+
+v8u16 __builtin_msa_hadd_u_h (v16u8, v16u8);
+v4u32 __builtin_msa_hadd_u_w (v8u16, v8u16);
+v2u64 __builtin_msa_hadd_u_d (v4u32, v4u32);
+
+v8i16 __builtin_msa_hsub_s_h (v16i8, v16i8);
+v4i32 __builtin_msa_hsub_s_w (v8i16, v8i16);
+v2i64 __builtin_msa_hsub_s_d (v4i32, v4i32);
+
+v8i16 __builtin_msa_hsub_u_h (v16u8, v16u8);
+v4i32 __builtin_msa_hsub_u_w (v8u16, v8u16);
+v2i64 __builtin_msa_hsub_u_d (v4u32, v4u32);
+
+v16i8 __builtin_msa_ilvev_b (v16i8, v16i8);
+v8i16 __builtin_msa_ilvev_h (v8i16, v8i16);
+v4i32 __builtin_msa_ilvev_w (v4i32, v4i32);
+v2i64 __builtin_msa_ilvev_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_ilvl_b (v16i8, v16i8);
+v8i16 __builtin_msa_ilvl_h (v8i16, v8i16);
+v4i32 __builtin_msa_ilvl_w (v4i32, v4i32);
+v2i64 __builtin_msa_ilvl_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_ilvod_b (v16i8, v16i8);
+v8i16 __builtin_msa_ilvod_h (v8i16, v8i16);
+v4i32 __builtin_msa_ilvod_w (v4i32, v4i32);
+v2i64 __builtin_msa_ilvod_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_ilvr_b (v16i8, v16i8);
+v8i16 __builtin_msa_ilvr_h (v8i16, v8i16);
+v4i32 __builtin_msa_ilvr_w (v4i32, v4i32);
+v2i64 __builtin_msa_ilvr_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_insert_b (v16i8, imm0_15, i32);
+v8i16 __builtin_msa_insert_h (v8i16, imm0_7, i32);
+v4i32 __builtin_msa_insert_w (v4i32, imm0_3, i32);
+v2i64 __builtin_msa_insert_d (v2i64, imm0_1, i64);
+
+v16i8 __builtin_msa_insve_b (v16i8, imm0_15, v16i8);
+v8i16 __builtin_msa_insve_h (v8i16, imm0_7, v8i16);
+v4i32 __builtin_msa_insve_w (v4i32, imm0_3, v4i32);
+v2i64 __builtin_msa_insve_d (v2i64, imm0_1, v2i64);
+
+v16i8 __builtin_msa_ld_b (void *, imm_n512_511);
+v8i16 __builtin_msa_ld_h (void *, imm_n1024_1022);
+v4i32 __builtin_msa_ld_w (void *, imm_n2048_2044);
+v2i64 __builtin_msa_ld_d (void *, imm_n4096_4088);
+
+v16i8 __builtin_msa_ldi_b (imm_n512_511);
+v8i16 __builtin_msa_ldi_h (imm_n512_511);
+v4i32 __builtin_msa_ldi_w (imm_n512_511);
+v2i64 __builtin_msa_ldi_d (imm_n512_511);
+
+v8i16 __builtin_msa_madd_q_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_madd_q_w (v4i32, v4i32, v4i32);
+
+v8i16 __builtin_msa_maddr_q_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_maddr_q_w (v4i32, v4i32, v4i32);
+
+v16i8 __builtin_msa_maddv_b (v16i8, v16i8, v16i8);
+v8i16 __builtin_msa_maddv_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_maddv_w (v4i32, v4i32, v4i32);
+v2i64 __builtin_msa_maddv_d (v2i64, v2i64, v2i64);
+
+v16i8 __builtin_msa_max_a_b (v16i8, v16i8);
+v8i16 __builtin_msa_max_a_h (v8i16, v8i16);
+v4i32 __builtin_msa_max_a_w (v4i32, v4i32);
+v2i64 __builtin_msa_max_a_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_max_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_max_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_max_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_max_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_max_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_max_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_max_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_max_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_maxi_s_b (v16i8, imm_n16_15);
+v8i16 __builtin_msa_maxi_s_h (v8i16, imm_n16_15);
+v4i32 __builtin_msa_maxi_s_w (v4i32, imm_n16_15);
+v2i64 __builtin_msa_maxi_s_d (v2i64, imm_n16_15);
+
+v16u8 __builtin_msa_maxi_u_b (v16u8, imm0_31);
+v8u16 __builtin_msa_maxi_u_h (v8u16, imm0_31);
+v4u32 __builtin_msa_maxi_u_w (v4u32, imm0_31);
+v2u64 __builtin_msa_maxi_u_d (v2u64, imm0_31);
+
+v16i8 __builtin_msa_min_a_b (v16i8, v16i8);
+v8i16 __builtin_msa_min_a_h (v8i16, v8i16);
+v4i32 __builtin_msa_min_a_w (v4i32, v4i32);
+v2i64 __builtin_msa_min_a_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_min_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_min_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_min_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_min_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_min_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_min_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_min_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_min_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_mini_s_b (v16i8, imm_n16_15);
+v8i16 __builtin_msa_mini_s_h (v8i16, imm_n16_15);
+v4i32 __builtin_msa_mini_s_w (v4i32, imm_n16_15);
+v2i64 __builtin_msa_mini_s_d (v2i64, imm_n16_15);
+
+v16u8 __builtin_msa_mini_u_b (v16u8, imm0_31);
+v8u16 __builtin_msa_mini_u_h (v8u16, imm0_31);
+v4u32 __builtin_msa_mini_u_w (v4u32, imm0_31);
+v2u64 __builtin_msa_mini_u_d (v2u64, imm0_31);
+
+v16i8 __builtin_msa_mod_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_mod_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_mod_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_mod_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_mod_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_mod_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_mod_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_mod_u_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_move_v (v16i8);
+
+v8i16 __builtin_msa_msub_q_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_msub_q_w (v4i32, v4i32, v4i32);
+
+v8i16 __builtin_msa_msubr_q_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_msubr_q_w (v4i32, v4i32, v4i32);
+
+v16i8 __builtin_msa_msubv_b (v16i8, v16i8, v16i8);
+v8i16 __builtin_msa_msubv_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_msubv_w (v4i32, v4i32, v4i32);
+v2i64 __builtin_msa_msubv_d (v2i64, v2i64, v2i64);
+
+v8i16 __builtin_msa_mul_q_h (v8i16, v8i16);
+v4i32 __builtin_msa_mul_q_w (v4i32, v4i32);
+
+v8i16 __builtin_msa_mulr_q_h (v8i16, v8i16);
+v4i32 __builtin_msa_mulr_q_w (v4i32, v4i32);
+
+v16i8 __builtin_msa_mulv_b (v16i8, v16i8);
+v8i16 __builtin_msa_mulv_h (v8i16, v8i16);
+v4i32 __builtin_msa_mulv_w (v4i32, v4i32);
+v2i64 __builtin_msa_mulv_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_nloc_b (v16i8);
+v8i16 __builtin_msa_nloc_h (v8i16);
+v4i32 __builtin_msa_nloc_w (v4i32);
+v2i64 __builtin_msa_nloc_d (v2i64);
+
+v16i8 __builtin_msa_nlzc_b (v16i8);
+v8i16 __builtin_msa_nlzc_h (v8i16);
+v4i32 __builtin_msa_nlzc_w (v4i32);
+v2i64 __builtin_msa_nlzc_d (v2i64);
+
+v16u8 __builtin_msa_nor_v (v16u8, v16u8);
+
+v16u8 __builtin_msa_nori_b (v16u8, imm0_255);
+
+v16u8 __builtin_msa_or_v (v16u8, v16u8);
+
+v16u8 __builtin_msa_ori_b (v16u8, imm0_255);
+
+v16i8 __builtin_msa_pckev_b (v16i8, v16i8);
+v8i16 __builtin_msa_pckev_h (v8i16, v8i16);
+v4i32 __builtin_msa_pckev_w (v4i32, v4i32);
+v2i64 __builtin_msa_pckev_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_pckod_b (v16i8, v16i8);
+v8i16 __builtin_msa_pckod_h (v8i16, v8i16);
+v4i32 __builtin_msa_pckod_w (v4i32, v4i32);
+v2i64 __builtin_msa_pckod_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_pcnt_b (v16i8);
+v8i16 __builtin_msa_pcnt_h (v8i16);
+v4i32 __builtin_msa_pcnt_w (v4i32);
+v2i64 __builtin_msa_pcnt_d (v2i64);
+
+v16i8 __builtin_msa_sat_s_b (v16i8, imm0_7);
+v8i16 __builtin_msa_sat_s_h (v8i16, imm0_15);
+v4i32 __builtin_msa_sat_s_w (v4i32, imm0_31);
+v2i64 __builtin_msa_sat_s_d (v2i64, imm0_63);
+
+v16u8 __builtin_msa_sat_u_b (v16u8, imm0_7);
+v8u16 __builtin_msa_sat_u_h (v8u16, imm0_15);
+v4u32 __builtin_msa_sat_u_w (v4u32, imm0_31);
+v2u64 __builtin_msa_sat_u_d (v2u64, imm0_63);
+
+v16i8 __builtin_msa_shf_b (v16i8, imm0_255);
+v8i16 __builtin_msa_shf_h (v8i16, imm0_255);
+v4i32 __builtin_msa_shf_w (v4i32, imm0_255);
+
+v16i8 __builtin_msa_sld_b (v16i8, v16i8, i32);
+v8i16 __builtin_msa_sld_h (v8i16, v8i16, i32);
+v4i32 __builtin_msa_sld_w (v4i32, v4i32, i32);
+v2i64 __builtin_msa_sld_d (v2i64, v2i64, i32);
+
+v16i8 __builtin_msa_sldi_b (v16i8, v16i8, imm0_15);
+v8i16 __builtin_msa_sldi_h (v8i16, v8i16, imm0_7);
+v4i32 __builtin_msa_sldi_w (v4i32, v4i32, imm0_3);
+v2i64 __builtin_msa_sldi_d (v2i64, v2i64, imm0_1);
+
+v16i8 __builtin_msa_sll_b (v16i8, v16i8);
+v8i16 __builtin_msa_sll_h (v8i16, v8i16);
+v4i32 __builtin_msa_sll_w (v4i32, v4i32);
+v2i64 __builtin_msa_sll_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_slli_b (v16i8, imm0_7);
+v8i16 __builtin_msa_slli_h (v8i16, imm0_15);
+v4i32 __builtin_msa_slli_w (v4i32, imm0_31);
+v2i64 __builtin_msa_slli_d (v2i64, imm0_63);
+
+v16i8 __builtin_msa_splat_b (v16i8, i32);
+v8i16 __builtin_msa_splat_h (v8i16, i32);
+v4i32 __builtin_msa_splat_w (v4i32, i32);
+v2i64 __builtin_msa_splat_d (v2i64, i32);
+
+v16i8 __builtin_msa_splati_b (v16i8, imm0_15);
+v8i16 __builtin_msa_splati_h (v8i16, imm0_7);
+v4i32 __builtin_msa_splati_w (v4i32, imm0_3);
+v2i64 __builtin_msa_splati_d (v2i64, imm0_1);
+
+v16i8 __builtin_msa_sra_b (v16i8, v16i8);
+v8i16 __builtin_msa_sra_h (v8i16, v8i16);
+v4i32 __builtin_msa_sra_w (v4i32, v4i32);
+v2i64 __builtin_msa_sra_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_srai_b (v16i8, imm0_7);
+v8i16 __builtin_msa_srai_h (v8i16, imm0_15);
+v4i32 __builtin_msa_srai_w (v4i32, imm0_31);
+v2i64 __builtin_msa_srai_d (v2i64, imm0_63);
+
+v16i8 __builtin_msa_srar_b (v16i8, v16i8);
+v8i16 __builtin_msa_srar_h (v8i16, v8i16);
+v4i32 __builtin_msa_srar_w (v4i32, v4i32);
+v2i64 __builtin_msa_srar_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_srari_b (v16i8, imm0_7);
+v8i16 __builtin_msa_srari_h (v8i16, imm0_15);
+v4i32 __builtin_msa_srari_w (v4i32, imm0_31);
+v2i64 __builtin_msa_srari_d (v2i64, imm0_63);
+
+v16i8 __builtin_msa_srl_b (v16i8, v16i8);
+v8i16 __builtin_msa_srl_h (v8i16, v8i16);
+v4i32 __builtin_msa_srl_w (v4i32, v4i32);
+v2i64 __builtin_msa_srl_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_srli_b (v16i8, imm0_7);
+v8i16 __builtin_msa_srli_h (v8i16, imm0_15);
+v4i32 __builtin_msa_srli_w (v4i32, imm0_31);
+v2i64 __builtin_msa_srli_d (v2i64, imm0_63);
+
+v16i8 __builtin_msa_srlr_b (v16i8, v16i8);
+v8i16 __builtin_msa_srlr_h (v8i16, v8i16);
+v4i32 __builtin_msa_srlr_w (v4i32, v4i32);
+v2i64 __builtin_msa_srlr_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_srlri_b (v16i8, imm0_7);
+v8i16 __builtin_msa_srlri_h (v8i16, imm0_15);
+v4i32 __builtin_msa_srlri_w (v4i32, imm0_31);
+v2i64 __builtin_msa_srlri_d (v2i64, imm0_63);
+
+void __builtin_msa_st_b (v16i8, void *, imm_n512_511);
+void __builtin_msa_st_h (v8i16, void *, imm_n1024_1022);
+void __builtin_msa_st_w (v4i32, void *, imm_n2048_2044);
+void __builtin_msa_st_d (v2i64, void *, imm_n4096_4088);
+
+v16i8 __builtin_msa_subs_s_b (v16i8, v16i8);
+v8i16 __builtin_msa_subs_s_h (v8i16, v8i16);
+v4i32 __builtin_msa_subs_s_w (v4i32, v4i32);
+v2i64 __builtin_msa_subs_s_d (v2i64, v2i64);
+
+v16u8 __builtin_msa_subs_u_b (v16u8, v16u8);
+v8u16 __builtin_msa_subs_u_h (v8u16, v8u16);
+v4u32 __builtin_msa_subs_u_w (v4u32, v4u32);
+v2u64 __builtin_msa_subs_u_d (v2u64, v2u64);
+
+v16u8 __builtin_msa_subsus_u_b (v16u8, v16i8);
+v8u16 __builtin_msa_subsus_u_h (v8u16, v8i16);
+v4u32 __builtin_msa_subsus_u_w (v4u32, v4i32);
+v2u64 __builtin_msa_subsus_u_d (v2u64, v2i64);
+
+v16i8 __builtin_msa_subsuu_s_b (v16u8, v16u8);
+v8i16 __builtin_msa_subsuu_s_h (v8u16, v8u16);
+v4i32 __builtin_msa_subsuu_s_w (v4u32, v4u32);
+v2i64 __builtin_msa_subsuu_s_d (v2u64, v2u64);
+
+v16i8 __builtin_msa_subv_b (v16i8, v16i8);
+v8i16 __builtin_msa_subv_h (v8i16, v8i16);
+v4i32 __builtin_msa_subv_w (v4i32, v4i32);
+v2i64 __builtin_msa_subv_d (v2i64, v2i64);
+
+v16i8 __builtin_msa_subvi_b (v16i8, imm0_31);
+v8i16 __builtin_msa_subvi_h (v8i16, imm0_31);
+v4i32 __builtin_msa_subvi_w (v4i32, imm0_31);
+v2i64 __builtin_msa_subvi_d (v2i64, imm0_31);
+
+v16i8 __builtin_msa_vshf_b (v16i8, v16i8, v16i8);
+v8i16 __builtin_msa_vshf_h (v8i16, v8i16, v8i16);
+v4i32 __builtin_msa_vshf_w (v4i32, v4i32, v4i32);
+v2i64 __builtin_msa_vshf_d (v2i64, v2i64, v2i64);
+
+v16u8 __builtin_msa_xor_v (v16u8, v16u8);
+
+v16u8 __builtin_msa_xori_b (v16u8, imm0_255);
+@end smallexample
+
 @node Other MIPS Built-in Functions
 @subsection Other MIPS Built-in Functions
 
@@ -13730,7 +14710,7 @@ CPU supports ISA 2.06 (eg, POWER7)
 @item arch_2_07
 CPU supports ISA 2.07 (eg, POWER8)
 @item arch_3_00
-CPU supports ISA 3.00 (eg, POWER9)
+CPU supports ISA 3.0 (eg, POWER9)
 @item archpmu
 CPU supports the set of compatible performance monitoring events.
 @item booke
@@ -13840,6 +14820,40 @@ The @code{__builtin_ppc_mftb} function always generates one instruction and
 returns the Time Base Register value as an unsigned long, throwing away
 the most significant word on 32-bit environments.
 
+Additional built-in functions are available for the 64-bit PowerPC
+family of processors, for efficient use of 128-bit floating point
+(@code{__float128}) values.
+
+The following floating-point built-in functions are available with
+@code{-mfloat128} and Altivec support.  All of them implement the
+function that is part of the name.
+
+@smallexample
+__float128 __builtin_fabsq (__float128)
+__float128 __builtin_copysignq (__float128, __float128)
+@end smallexample
+
+The following built-in functions are available with @code{-mfloat128}
+and Altivec support.
+
+@table @code
+@item __float128 __builtin_infq (void)
+Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
+@findex __builtin_infq
+
+@item __float128 __builtin_huge_valq (void)
+Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
+@findex __builtin_huge_valq
+
+@item __float128 __builtin_nanq (void)
+Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
+@findex __builtin_nanq
+
+@item __float128 __builtin_nansq (void)
+Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
+@findex __builtin_nansq
+@end table
+
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 2.06 or later (@option{-mcpu=power7}
 or @option{-mpopcntd}):
@@ -13861,6 +14875,74 @@ unsigned int addg6s (unsigned int, unsigned int);
 The @code{__builtin_divde}, @code{__builtin_divdeo},
 @code{__builtin_divdeu}, @code{__builtin_divdeou} functions require a
 64-bit environment support ISA 2.06 or later.
+
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
+@smallexample
+long long __builtin_darn (void);
+long long __builtin_darn_raw (void);
+int __builtin_darn_32 (void);
+
+int __builtin_dfp_dtstsfi_lt (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_lt (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_lt_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_lt_td (unsigned int comparison, _Decimal128 value);
+
+int __builtin_dfp_dtstsfi_gt (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_gt (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_gt_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_gt_td (unsigned int comparison, _Decimal128 value);
+
+int __builtin_dfp_dtstsfi_eq (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_eq (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_eq_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_eq_td (unsigned int comparison, _Decimal128 value);
+
+int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal128 value);
+int __builtin_dfp_dtstsfi_ov_dd (unsigned int comparison, _Decimal64 value);
+int __builtin_dfp_dtstsfi_ov_td (unsigned int comparison, _Decimal128 value);
+@end smallexample
+
+The @code{__builtin_darn} and @code{__builtin_darn_raw}
+functions require a
+64-bit environment supporting ISA 3.0 or later.
+The @code{__builtin_darn} function provides a 64-bit conditioned
+random number.  The @code{__builtin_darn_raw} function provides a
+64-bit raw random number.  The @code{__builtin_darn_32} function
+provides a 32-bit random number.
+
+The @code{__builtin_dfp_dtstsfi_lt} function returns a non-zero value
+if and only if the number of signficant digits of its @code{value} argument
+is less than its @code{comparison} argument.  The
+@code{__builtin_dfp_dtstsfi_lt_dd} and
+@code{__builtin_dfp_dtstsfi_lt_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_dfp_dtstsfi_gt} function returns a non-zero value
+if and only if the number of signficant digits of its @code{value} argument
+is greater than its @code{comparison} argument.  The
+@code{__builtin_dfp_dtstsfi_gt_dd} and
+@code{__builtin_dfp_dtstsfi_gt_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_dfp_dtstsfi_eq} function returns a non-zero value
+if and only if the number of signficant digits of its @code{value} argument
+equals its @code{comparison} argument.  The
+@code{__builtin_dfp_dtstsfi_eq_dd} and
+@code{__builtin_dfp_dtstsfi_eq_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_dfp_dtstsfi_ov} function returns a non-zero value
+if and only if its @code{value} argument has an undefined number of
+significant digits, such as when @code{value} is an encoding of @code{NaN}.
+The @code{__builtin_dfp_dtstsfi_ov_dd} and
+@code{__builtin_dfp_dtstsfi_ov_td} functions behave similarly, but
+require that the type of the @code{value} argument be
+@code{__Decimal64} and @code{__Decimal128} respectively.
 
 The following built-in functions are available for the PowerPC family
 of processors when hardware decimal floating point
@@ -15932,6 +17014,18 @@ void vec_st (vector double, int, vector double *);
 void vec_st (vector double, int, double *);
 vector double vec_sub (vector double, vector double);
 vector double vec_trunc (vector double);
+vector double vec_xl (int, vector double *);
+vector double vec_xl (int, double *);
+vector long long vec_xl (int, vector long long *);
+vector long long vec_xl (int, long long *);
+vector unsigned long long vec_xl (int, vector unsigned long long *);
+vector unsigned long long vec_xl (int, unsigned long long *);
+vector float vec_xl (int, vector float *);
+vector float vec_xl (int, float *);
+vector int vec_xl (int, vector int *);
+vector int vec_xl (int, int *);
+vector unsigned int vec_xl (int, vector unsigned int *);
+vector unsigned int vec_xl (int, unsigned int *);
 vector double vec_xor (vector double, vector double);
 vector double vec_xor (vector double, vector bool long);
 vector double vec_xor (vector bool long, vector double);
@@ -15941,6 +17035,18 @@ vector long vec_xor (vector bool long, vector long);
 vector unsigned long vec_xor (vector unsigned long, vector unsigned long);
 vector unsigned long vec_xor (vector unsigned long, vector bool long);
 vector unsigned long vec_xor (vector bool long, vector unsigned long);
+void vec_xst (vector double, int, vector double *);
+void vec_xst (vector double, int, double *);
+void vec_xst (vector long long, int, vector long long *);
+void vec_xst (vector long long, int, long long *);
+void vec_xst (vector unsigned long long, int, vector unsigned long long *);
+void vec_xst (vector unsigned long long, int, unsigned long long *);
+void vec_xst (vector float, int, vector float *);
+void vec_xst (vector float, int, float *);
+void vec_xst (vector int, int, vector int *);
+void vec_xst (vector int, int, int *);
+void vec_xst (vector unsigned int, int, vector unsigned int *);
+void vec_xst (vector unsigned int, int, unsigned int *);
 int vec_all_eq (vector double, vector double);
 int vec_all_ge (vector double, vector double);
 int vec_all_gt (vector double, vector double);
@@ -16055,7 +17161,7 @@ if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
 If the ISA 2.07 additions to the vector/scalar (power8-vector)
-instruction set is available, the following additional functions are
+instruction set are available, the following additional functions are
 available for both 32-bit and 64-bit targets.  For 64-bit targets, you
 can use @var{vector long} instead of @var{vector long long},
 @var{vector bool long} instead of @var{vector bool long long}, and
@@ -16368,7 +17474,7 @@ vector unsigned long long vec_vupklsw (vector int);
 @end smallexample
 
 If the ISA 2.07 additions to the vector/scalar (power8-vector)
-instruction set is available, the following additional functions are
+instruction set are available, the following additional functions are
 available for 64-bit targets.  New vector types
 (@var{vector __int128_t} and @var{vector __uint128_t}) are available
 to hold the @var{__int128_t} and @var{__uint128_t} types to use these
@@ -16387,17 +17493,17 @@ vector __uint128_t vec_vadduqm (vector __uint128_t, vector __uint128_t);
 
 vector __int128_t vec_vaddecuq (vector __int128_t, vector __int128_t,
                                 vector __int128_t);
-vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t, 
+vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t,
                                  vector __uint128_t);
 
 vector __int128_t vec_vaddeuqm (vector __int128_t, vector __int128_t,
                                 vector __int128_t);
-vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t, 
+vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t,
                                  vector __uint128_t);
 
 vector __int128_t vec_vsubecuq (vector __int128_t, vector __int128_t,
                                 vector __int128_t);
-vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t, 
+vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t,
                                  vector __uint128_t);
 
 vector __int128_t vec_vsubeuqm (vector __int128_t, vector __int128_t,
@@ -16422,6 +17528,116 @@ int __builtin_bcdsub_eq (vector __int128_t, vector__int128_t);
 int __builtin_bcdsub_gt (vector __int128_t, vector__int128_t);
 int __builtin_bcdsub_ov (vector __int128_t, vector__int128_t);
 @end smallexample
+
+If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
+are available:
+
+@smallexample
+vector long long vec_vctz (vector long long);
+vector unsigned long long vec_vctz (vector unsigned long long);
+vector int vec_vctz (vector int);
+vector unsigned int vec_vctz (vector int);
+vector short vec_vctz (vector short);
+vector unsigned short vec_vctz (vector unsigned short);
+vector signed char vec_vctz (vector signed char);
+vector unsigned char vec_vctz (vector unsigned char);
+
+vector signed char vec_vctzb (vector signed char);
+vector unsigned char vec_vctzb (vector unsigned char);
+
+vector long long vec_vctzd (vector long long);
+vector unsigned long long vec_vctzd (vector unsigned long long);
+
+vector short vec_vctzh (vector short);
+vector unsigned short vec_vctzh (vector unsigned short);
+
+vector int vec_vctzw (vector int);
+vector unsigned int vec_vctzw (vector int);
+
+vector int vec_vprtyb (vector int);
+vector unsigned int vec_vprtyb (vector unsigned int);
+vector long long vec_vprtyb (vector long long);
+vector unsigned long long vec_vprtyb (vector unsigned long long);
+
+vector int vec_vprtybw (vector int);
+vector unsigned int vec_vprtybw (vector unsigned int);
+
+vector long long vec_vprtybd (vector long long);
+vector unsigned long long vec_vprtybd (vector unsigned long long);
+@end smallexample
+
+On 64-bit targets, if the ISA 3.0 additions (@option{-mcpu=power9})
+are available:
+
+@smallexample
+vector long vec_vprtyb (vector long);
+vector unsigned long vec_vprtyb (vector unsigned long);
+vector __int128_t vec_vprtyb (vector __int128_t);
+vector __uint128_t vec_vprtyb (vector __uint128_t);
+
+vector long vec_vprtybd (vector long);
+vector unsigned long vec_vprtybd (vector unsigned long);
+
+vector __int128_t vec_vprtybq (vector __int128_t);
+vector __uint128_t vec_vprtybd (vector __uint128_t);
+@end smallexample
+
+The following built-in vector functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
+@smallexample
+__vector unsigned char
+vec_slv (__vector unsigned char src, __vector unsigned char shift_distance);
+__vector unsigned char
+vec_srv (__vector unsigned char src, __vector unsigned char shift_distance);
+@end smallexample
+
+The @code{vec_slv} and @code{vec_srv} functions operate on
+all of the bytes of their @code{src} and @code{shift_distance}
+arguments in parallel.  The behavior of the @code{vec_slv} is as if
+there existed a temporary array of 17 unsigned characters
+@code{slv_array} within which elements 0 through 15 are the same as
+the entries in the @code{src} array and element 16 equals 0.  The
+result returned from the @code{vec_slv} function is a
+@code{__vector} of 16 unsigned characters within which element
+@code{i} is computed using the C expression
+@code{0xff & (*((unsigned short *)(slv_array + i)) << (0x07 &
+shift_distance[i]))},
+with this resulting value coerced to the @code{unsigned char} type.
+The behavior of the @code{vec_srv} is as if
+there existed a temporary array of 17 unsigned characters
+@code{srv_array} within which element 0 equals zero and
+elements 1 through 16 equal the elements 0 through 15 of
+the @code{src} array.  The
+result returned from the @code{vec_srv} function is a
+@code{__vector} of 16 unsigned characters within which element
+@code{i} is computed using the C expression
+@code{0xff & (*((unsigned short *)(srv_array + i)) >>
+(0x07 & shift_distance[i]))},
+with this resulting value coerced to the @code{unsigned char} type.
+
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
+@smallexample
+__vector unsigned char
+vec_absd (__vector unsigned char arg1, __vector unsigned char arg2);
+__vector unsigned short
+vec_absd (__vector unsigned short arg1, __vector unsigned short arg2);
+__vector unsigned int
+vec_absd (__vector unsigned int arg1, __vector unsigned int arg2);
+
+__vector unsigned char
+vec_absdb (__vector unsigned char arg1, __vector unsigned char arg2);
+__vector unsigned short
+vec_absdh (__vector unsigned short arg1, __vector unsigned short arg2);
+__vector unsigned int
+vec_absdw (__vector unsigned int arg1, __vector unsigned int arg2);
+@end smallexample
+
+The @code{vec_absd}, @code{vec_absdb}, @code{vec_absdh}, and
+@code{vec_absdw} built-in functions each computes the absolute
+differences of the pairs of vector elements supplied in its two vector
+arguments, placing the absolute differences into the corresponding
+elements of the vector result.
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
@@ -16482,6 +17698,28 @@ The second argument to the @var{__builtin_crypto_vshasigmad} and
 @var{__builtin_crypto_vshasigmaw} builtin functions must be a constant
 integer that is 0 or 1.  The third argument to these builtin functions
 must be a constant integer in the range of 0 to 15.
+
+If the ISA 3.0 instruction set additions 
+are enabled (@option{-mcpu=power9}), the following additional
+functions are available for both 32-bit and 64-bit targets.
+
+vector short vec_xl (int, vector short *);
+vector short vec_xl (int, short *);
+vector unsigned short vec_xl (int, vector unsigned short *);
+vector unsigned short vec_xl (int, unsigned short *);
+vector char vec_xl (int, vector char *);
+vector char vec_xl (int, char *);
+vector unsigned char vec_xl (int, vector unsigned char *);
+vector unsigned char vec_xl (int, unsigned char *);
+
+void vec_xst (vector short, int, vector short *);
+void vec_xst (vector short, int, short *);
+void vec_xst (vector unsigned short, int, vector unsigned short *);
+void vec_xst (vector unsigned short, int, unsigned short *);
+void vec_xst (vector char, int, vector char *);
+void vec_xst (vector char, int, char *);
+void vec_xst (vector unsigned char, int, vector unsigned char *);
+void vec_xst (vector unsigned char, int, unsigned char *);
 
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
@@ -17116,6 +18354,45 @@ int64_t __builtin_vis_xmulx (int64_t, int64_t);
 int64_t __builtin_vis_xmulxhi (int64_t, int64_t);
 @end smallexample
 
+When you use the @option{-mvis4} switch, the VIS version 4.0 built-in
+functions also become available:
+
+@smallexample
+v8qi __builtin_vis_fpadd8 (v8qi, v8qi);
+v8qi __builtin_vis_fpadds8 (v8qi, v8qi);
+v8qi __builtin_vis_fpaddus8 (v8qi, v8qi);
+v4hi __builtin_vis_fpaddus16 (v4hi, v4hi);
+
+v8qi __builtin_vis_fpsub8 (v8qi, v8qi);
+v8qi __builtin_vis_fpsubs8 (v8qi, v8qi);
+v8qi __builtin_vis_fpsubus8 (v8qi, v8qi);
+v4hi __builtin_vis_fpsubus16 (v4hi, v4hi);
+
+long __builtin_vis_fpcmple8 (v8qi, v8qi);
+long __builtin_vis_fpcmpgt8 (v8qi, v8qi);
+long __builtin_vis_fpcmpule16 (v4hi, v4hi);
+long __builtin_vis_fpcmpugt16 (v4hi, v4hi);
+long __builtin_vis_fpcmpule32 (v2si, v2si);
+long __builtin_vis_fpcmpugt32 (v2si, v2si);
+
+v8qi __builtin_vis_fpmax8 (v8qi, v8qi);
+v4hi __builtin_vis_fpmax16 (v4hi, v4hi);
+v2si __builtin_vis_fpmax32 (v2si, v2si);
+
+v8qi __builtin_vis_fpmaxu8 (v8qi, v8qi);
+v4hi __builtin_vis_fpmaxu16 (v4hi, v4hi);
+v2si __builtin_vis_fpmaxu32 (v2si, v2si);
+
+
+v8qi __builtin_vis_fpmin8 (v8qi, v8qi);
+v4hi __builtin_vis_fpmin16 (v4hi, v4hi);
+v2si __builtin_vis_fpmin32 (v2si, v2si);
+
+v8qi __builtin_vis_fpminu8 (v8qi, v8qi);
+v4hi __builtin_vis_fpminu16 (v4hi, v4hi);
+v2si __builtin_vis_fpminu32 (v2si, v2si);
+@end smallexample
+
 @node SPU Built-in Functions
 @subsection SPU Built-in Functions
 
@@ -17314,28 +18591,19 @@ integers, these use @code{V4SI}.  Finally, some instructions operate on an
 entire vector register, interpreting it as a 128-bit integer, these use mode
 @code{TI}.
 
-In 64-bit mode, the x86-64 family of processors uses additional built-in
+The x86-32 and x86-64 family of processors use additional built-in
 functions for efficient use of @code{TF} (@code{__float128}) 128-bit
 floating point and @code{TC} 128-bit complex floating-point values.
 
-The following floating-point built-in functions are available in 64-bit
-mode.  All of them implement the function that is part of the name.
+The following floating-point built-in functions are always available.  All
+of them implement the function that is part of the name.
 
 @smallexample
 __float128 __builtin_fabsq (__float128)
 __float128 __builtin_copysignq (__float128, __float128)
 @end smallexample
 
-The following built-in function is always available.
-
-@table @code
-@item void __builtin_ia32_pause (void)
-Generates the @code{pause} machine instruction with a compiler memory
-barrier.
-@end table
-
-The following floating-point built-in functions are made available in the
-64-bit mode.
+The following built-in functions are always available.
 
 @table @code
 @item __float128 __builtin_infq (void)
@@ -17345,6 +18613,22 @@ Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
 @item __float128 __builtin_huge_valq (void)
 Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
 @findex __builtin_huge_valq
+
+@item __float128 __builtin_nanq (void)
+Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
+@findex __builtin_nanq
+
+@item __float128 __builtin_nansq (void)
+Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
+@findex __builtin_nansq
+@end table
+
+The following built-in function is always available.
+
+@table @code
+@item void __builtin_ia32_pause (void)
+Generates the @code{pause} machine instruction with a compiler memory
+barrier.
 @end table
 
 The following built-in functions are always available and can be used to

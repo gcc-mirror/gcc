@@ -5,7 +5,7 @@ struct A
 {
   typedef int T;
   T &foo ();
-  A () { foo.~T (); }	// { dg-error "10:does not have class type|expected" }
+  A () { foo.~T (); }	// { dg-error "10:invalid use of member function|expected" }
 };
 
 template <typename T> struct B

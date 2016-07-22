@@ -1,3 +1,16 @@
+2016-05-06  Chris Manghane  <cmang@google.com>
+
+	* Make-lang.in (GO_OBJS): Add go/escape.o (based on an entirely
+	new escape.cc).
+
+2016-04-29  Chris Manghane  <cmang@google.com>
+
+	* Make-lang.in (GO_OBJS): Remove go/dataflow.o, go/escape.o.
+
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* go-gcc.cc (Gcc_backend::implicit_variable): Use SET_DECL_ALIGN.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gofrontend/lex.cc: Spelling fixes - behaviour -> behavior and

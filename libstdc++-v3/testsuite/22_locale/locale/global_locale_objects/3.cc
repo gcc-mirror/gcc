@@ -73,13 +73,15 @@ void test03()
     VERIFY( loc04 == global_orig );
   }
 
-  // 2: Not destroyed when out of scope, deliberately leaked.
+  // 2: Not destroyed when out of scope, deliberately "leaked".
+  const facet_type* ptr = 0;
   {
     {
       {
 	VERIFY( counter == 0 );
 	{
-	  locale loc01(locale::classic(), new facet_type(1));
+          ptr = new facet_type(1);
+	  locale loc01(locale::classic(), ptr);
 	  VERIFY( counter == 1 );
 	  global_orig = locale::global(loc01);
 	  name = loc01.name();
@@ -100,6 +102,9 @@ void test03()
     VERIFY( loc04 == global_orig );
   }
   VERIFY( counter == 1 );
+
+  // Clean up.
+  delete ptr;
 
   // Restore global settings.
   locale::global(global_orig);

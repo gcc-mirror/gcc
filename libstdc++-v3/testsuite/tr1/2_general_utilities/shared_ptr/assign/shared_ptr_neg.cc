@@ -40,7 +40,7 @@ test01()
   return 0;
 }
 
-int 
+int
 main()
 {
   test01();

@@ -782,8 +782,6 @@ case "${target}" in
     ;;
   sh-*-* | sh[[34]]*-*-*)
     ;;
-  sh64-*-* | sh5*-*-*)
-    ;;
   sparc*-*-*)
     ;;
   x86_64-*-*)
@@ -805,6 +803,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   *-*-netware*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
+  *-*-phoenix*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   *-*-rtems*)
@@ -1063,6 +1064,9 @@ case "${target}" in
     ;;
   *-*-netware*)
     ;;
+  *-*-phoenix*)
+    noconfigdirs="$noconfigdirs target-libgloss"
+    ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss"
     # this is not caught below because this stanza matches earlier
@@ -1094,16 +1098,11 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
     ;;
-  arc-*-*|arceb-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss"
-    ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
-    ;;
-  avr-*-rtems*)
     ;;
   avr-*-*)
     if test x${with_avrlibc} != xno; then
@@ -1273,16 +1272,13 @@ case "${target}" in
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
-  nds32*-*-*)
-    noconfigdirs="$noconfigdirs gdb"
-    ;;
   nvptx*-*-*)
     noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
     ;;
   or1k*-*-*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
-  sh-*-* | sh64-*-*)
+  sh-*-*)
     case "${target}" in
       sh*-*-elf)
          ;;
@@ -1550,16 +1546,9 @@ if test "x$with_mpfr_lib" != x; then
   gmplibs="-L$with_mpfr_lib $gmplibs"
 fi
 if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
-  # MPFR v3.1.0 moved the sources into a src sub-directory.
-  if test -d ${srcdir}/mpfr/src; then
-    gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir $gmplibs"
-    gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr/src -I$$s/mpfr/src '"$gmpinc"
-    extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr/src --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir"
-  else
-    gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir $gmplibs"
-    gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
-    extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir"
-  fi
+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir $gmplibs"
+  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr/src -I$$s/mpfr/src '"$gmpinc"
+  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr/src --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir"
   # Do not test the mpfr version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -3530,16 +3519,17 @@ AC_ARG_ENABLE(stage1-checking,
   # For --disable-checking or implicit --enable-checking=release, avoid
   # setting --enable-checking=gc in the default stage1 checking for LTO
   # bootstraps.  See PR62077.
-  stage1_checking=--enable-checking=release,misc,gimple,rtlflag,tree,types
   case $BUILD_CONFIG in
     *lto*)
-      if test "x$enable_checking" = x && \
-	 test -d ${srcdir}/gcc && \
-	 test x"`cat ${srcdir}/gcc/DEV-PHASE`" = xexperimental; then
-	stage1_checking=--enable-checking=yes,types
-      fi;;
-    *) stage1_checking=--enable-checking=yes,types;;
+      stage1_checking=--enable-checking=release,misc,gimple,rtlflag,tree,types;;
+    *)
+      stage1_checking=--enable-checking=yes,types;;
   esac
+  if test "x$enable_checking" = x && \
+     test -d ${srcdir}/gcc && \
+     test x"`cat ${srcdir}/gcc/DEV-PHASE`" = xexperimental; then
+    stage1_checking=--enable-checking=yes,types,extra
+  fi
 else
   stage1_checking=--enable-checking=$enable_checking,types
 fi])

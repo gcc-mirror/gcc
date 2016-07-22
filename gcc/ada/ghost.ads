@@ -45,16 +45,25 @@ package Ghost is
    --  Determine whether node Ghost_Ref appears within a Ghost-friendly context
    --  where Ghost entity Ghost_Id can safely reside.
 
-   procedure Check_Ghost_Derivation (Typ : Entity_Id);
-   --  Verify that the parent type and all progenitors of derived type or type
-   --  extension Typ are Ghost. If this is not the case, issue an error.
-
    procedure Check_Ghost_Overriding
      (Subp            : Entity_Id;
       Overridden_Subp : Entity_Id);
-   --  Verify that the Ghost policy of parent subprogram Overridden_Subp is the
-   --  same as the Ghost policy of overriding subprogram Subp. Emit an error if
-   --  this is not the case.
+   --  Verify that the Ghost policy of parent subprogram Overridden_Subp is
+   --  compatible with the Ghost policy of overriding subprogram Subp. Emit
+   --  an error if this is not the case.
+
+   procedure Check_Ghost_Primitive (Prim : Entity_Id; Typ : Entity_Id);
+   --  Verify that the Ghost policy of primitive operation Prim is the same as
+   --  the Ghost policy of tagged type Typ. Emit an error if this is not the
+   --  case.
+
+   procedure Check_Ghost_Refinement
+     (State      : Node_Id;
+      State_Id   : Entity_Id;
+      Constit    : Node_Id;
+      Constit_Id : Entity_Id);
+   --  Verify that the Ghost policy of constituent Constit_Id is compatible
+   --  with the Ghost policy of abstract state State_I.
 
    function Implements_Ghost_Interface (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ implements at least one Ghost interface
@@ -85,7 +94,7 @@ package Ghost is
 
    procedure Remove_Ignored_Ghost_Code;
    --  Remove all code marked as ignored Ghost from the trees of all qualifying
-   --  units.
+   --  units (SPARK RM 6.9(4)).
    --
    --  WARNING: this is a separate front end pass, care should be taken to keep
    --  it optimized.

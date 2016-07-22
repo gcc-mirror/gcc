@@ -2026,7 +2026,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_partitioned_lower_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__lower_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_comp_val(__comp));
@@ -2080,7 +2079,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanOpConcept<
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__upper_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__val_less_iter());
@@ -2112,7 +2110,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__upper_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__val_comp_iter(__comp));
@@ -2186,7 +2183,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__equal_range(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_less_val(),
@@ -2225,7 +2221,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__equal_range(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_comp_val(__comp),
@@ -2255,7 +2250,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp, typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
-      __glibcxx_requires_irreflexive2(__first, __last);
 
       _ForwardIterator __i
 	= std::__lower_bound(__first, __last, __val,
@@ -2291,7 +2285,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
-      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       _ForwardIterator __i
 	= std::__lower_bound(__first, __last, __val,
@@ -3705,7 +3698,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__is_permutation(__first1, __last1, __first2, __last2,
 				   __gnu_cxx::__ops::__iter_comp_iter(__pred));
     }
-#endif
+
+#if __cplusplus > 201402L
+
+#define __cpp_lib_clamp 201603
+
+  /**
+   *  @brief  Returns the value clamped between lo and hi.
+   *  @ingroup sorting_algorithms
+   *  @param  __val  A value of arbitrary type.
+   *  @param  __lo   A lower limit of arbitrary type.
+   *  @param  __hi   An upper limit of arbitrary type.
+   *  @return max(__val, __lo) if __val < __hi or min(__val, __hi) otherwise.
+   */
+  template<typename _Tp>
+    constexpr const _Tp&
+    clamp(const _Tp& __val, const _Tp& __lo, const _Tp& __hi)
+    {
+      __glibcxx_assert(!(__hi < __lo));
+      return (__val < __lo) ? __lo : (__hi < __val) ? __hi : __val;
+    }
+
+  /**
+   *  @brief  Returns the value clamped between lo and hi.
+   *  @ingroup sorting_algorithms
+   *  @param  __val   A value of arbitrary type.
+   *  @param  __lo    A lower limit of arbitrary type.
+   *  @param  __hi    An upper limit of arbitrary type.
+   *  @param  __comp  A comparison functor.
+   *  @return max(__val, __lo, __comp) if __comp(__val, __hi)
+   *	      or min(__val, __hi, __comp) otherwise.
+   */
+  template<typename _Tp, typename _Compare>
+    constexpr const _Tp&
+    clamp(const _Tp& __val, const _Tp& __lo, const _Tp& __hi, _Compare __comp)
+    {
+      __glibcxx_assert(!__comp(__hi, __lo));
+      return __comp(__val, __lo) ? __lo : __comp(__hi, __val) ? __hi : __val;
+    }
+#endif // C++17
+#endif // C++14
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /**
@@ -3759,7 +3791,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __first  An input iterator.
    *  @param  __last   An input iterator.
    *  @param  __f      A unary function object.
-   *  @return   @p __f (std::move(@p __f) in C++0x).
+   *  @return   @p __f
    *
    *  Applies the function object @p __f to each element in the range
    *  @p [first,last).  @p __f must not modify the order of the sequence.
@@ -3774,7 +3806,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first, __last);
       for (; __first != __last; ++__first)
 	__f(*__first);
-      return _GLIBCXX_MOVE(__f);
+      return __f; // N.B. [alg.foreach] says std::move(f) but it's redundant.
     }
 
   /**

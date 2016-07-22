@@ -1719,6 +1719,7 @@ java_emit_static_constructor (void)
       DECL_UNINLINABLE (decl) = 1;
 
       DECL_INITIAL (decl) = make_node (BLOCK);
+      BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
       TREE_USED (DECL_INITIAL (decl)) = 1;
 
       DECL_STATIC_CONSTRUCTOR (decl) = 1;

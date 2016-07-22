@@ -36,7 +36,7 @@
 #include <parallel/features.h>
 #include <parallel/parallel.h>
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 #include <parallel/checkers.h>
 #endif
 

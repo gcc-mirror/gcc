@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "ubsan.h"
 #include "recog.h"
+#include "builtins.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -404,9 +405,23 @@ get_min_precision (tree arg, signop sign)
   return prec + (orig_sign != sign);
 }
 
+/* Helper for expand_*_overflow.  Set the __imag__ part to true
+   (1 except for signed:1 type, in which case store -1).  */
+
+static void
+expand_arith_set_overflow (tree lhs, rtx target)
+{
+  if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (lhs))) == 1
+      && !TYPE_UNSIGNED (TREE_TYPE (TREE_TYPE (lhs))))
+    write_complex_part (target, constm1_rtx, true);
+  else
+    write_complex_part (target, const1_rtx, true);
+}
+
 /* Helper for expand_*_overflow.  Store RES into the __real__ part
    of TARGET.  If RES has larger MODE than __real__ part of TARGET,
-   set the __imag__ part to 1 if RES doesn't fit into it.  */
+   set the __imag__ part to 1 if RES doesn't fit into it.  Similarly
+   if LHS has smaller precision than its mode.  */
 
 static void
 expand_arith_overflow_result_store (tree lhs, rtx target,
@@ -423,7 +438,35 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
       do_compare_rtx_and_jump (res, convert_modes (mode, tgtmode, lres, uns),
 			       EQ, true, mode, NULL_RTX, NULL, done_label,
 			       PROB_VERY_LIKELY);
-      write_complex_part (target, const1_rtx, true);
+      expand_arith_set_overflow (lhs, target);
+      emit_label (done_label);
+    }
+  int prec = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (lhs)));
+  int tgtprec = GET_MODE_PRECISION (tgtmode);
+  if (prec < tgtprec)
+    {
+      rtx_code_label *done_label = gen_label_rtx ();
+      int uns = TYPE_UNSIGNED (TREE_TYPE (TREE_TYPE (lhs)));
+      res = lres;
+      if (uns)
+	{
+	  rtx mask
+	    = immed_wide_int_const (wi::shifted_mask (0, prec, false, tgtprec),
+				    tgtmode);
+	  lres = expand_simple_binop (tgtmode, AND, res, mask, NULL_RTX,
+				      true, OPTAB_LIB_WIDEN);
+	}
+      else
+	{
+	  lres = expand_shift (LSHIFT_EXPR, tgtmode, res, tgtprec - prec,
+			       NULL_RTX, 1);
+	  lres = expand_shift (RSHIFT_EXPR, tgtmode, lres, tgtprec - prec,
+			       NULL_RTX, 0);
+	}
+      do_compare_rtx_and_jump (res, lres,
+			       EQ, true, tgtmode, NULL_RTX, NULL, done_label,
+			       PROB_VERY_LIKELY);
+      expand_arith_set_overflow (lhs, target);
       emit_label (done_label);
     }
   write_complex_part (target, lres, false);
@@ -860,7 +903,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
       do_pending_stack_adjust ();
     }
   else if (lhs)
-    write_complex_part (target, const1_rtx, true);
+    expand_arith_set_overflow (lhs, target);
 
   /* We're done.  */
   emit_label (done_label);
@@ -955,7 +998,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan)
       do_pending_stack_adjust ();
     }
   else if (lhs)
-    write_complex_part (target, const1_rtx, true);
+    expand_arith_set_overflow (lhs, target);
 
   /* We're done.  */
   emit_label (done_label);
@@ -1081,7 +1124,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 				   NULL, do_main_label, PROB_VERY_LIKELY);
 	  do_compare_rtx_and_jump (op1, const0_rtx, EQ, true, mode, NULL_RTX,
 				   NULL, do_main_label, PROB_VERY_LIKELY);
-	  write_complex_part (target, const1_rtx, true);
+	  expand_arith_set_overflow (lhs, target);
 	  emit_label (do_main_label);
 	  goto do_main;
 	default:
@@ -1212,7 +1255,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	     is, thus we can keep do_main code oring in overflow as is.  */
 	  do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode, NULL_RTX,
 				   NULL, do_main_label, PROB_VERY_LIKELY);
-	  write_complex_part (target, const1_rtx, true);
+	  expand_arith_set_overflow (lhs, target);
 	  emit_label (do_main_label);
 	  goto do_main;
 	default:
@@ -1616,7 +1659,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       do_pending_stack_adjust ();
     }
   else if (lhs)
-    write_complex_part (target, const1_rtx, true);
+    expand_arith_set_overflow (lhs, target);
 
   /* We're done.  */
   emit_label (done_label);
@@ -1627,7 +1670,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       rtx_code_label *all_done_label = gen_label_rtx ();
       do_compare_rtx_and_jump (res, const0_rtx, GE, false, mode, NULL_RTX,
 			       NULL, all_done_label, PROB_VERY_LIKELY);
-      write_complex_part (target, const1_rtx, true);
+      expand_arith_set_overflow (lhs, target);
       emit_label (all_done_label);
     }
 
@@ -1638,7 +1681,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       rtx_code_label *set_noovf = gen_label_rtx ();
       do_compare_rtx_and_jump (op1, const0_rtx, GE, false, mode, NULL_RTX,
 			       NULL, all_done_label, PROB_VERY_LIKELY);
-      write_complex_part (target, const1_rtx, true);
+      expand_arith_set_overflow (lhs, target);
       do_compare_rtx_and_jump (op0, const0_rtx, EQ, true, mode, NULL_RTX,
 			       NULL, set_noovf, PROB_VERY_LIKELY);
       do_compare_rtx_and_jump (op0, constm1_rtx, NE, true, mode, NULL_RTX,
@@ -1807,11 +1850,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       /* For sub-word operations, retry with a wider type first.  */
       if (orig_precres == precres && precop <= BITS_PER_WORD)
 	{
-#if WORD_REGISTER_OPERATIONS
-	  int p = BITS_PER_WORD;
-#else
-	  int p = precop;
-#endif
+	  int p = WORD_REGISTER_OPERATIONS ? BITS_PER_WORD : precop;
 	  enum machine_mode m = smallest_mode_for_size (p, MODE_INT);
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p
@@ -2120,6 +2159,38 @@ expand_SET_EDOM (internal_fn, gcall *)
 #else
   gcc_unreachable ();
 #endif
+}
+
+/* Expand atomic bit test and set.  */
+
+static void
+expand_ATOMIC_BIT_TEST_AND_SET (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_bit_test_and (call);
+}
+
+/* Expand atomic bit test and complement.  */
+
+static void
+expand_ATOMIC_BIT_TEST_AND_COMPLEMENT (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_bit_test_and (call);
+}
+
+/* Expand atomic bit test and reset.  */
+
+static void
+expand_ATOMIC_BIT_TEST_AND_RESET (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_bit_test_and (call);
+}
+
+/* Expand atomic bit test and set.  */
+
+static void
+expand_ATOMIC_COMPARE_EXCHANGE (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_compare_exchange (call);
 }
 
 /* Expand a call to FN using the operands in STMT.  FN has a single

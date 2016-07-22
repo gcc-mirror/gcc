@@ -24,7 +24,7 @@ foo (int x)
   switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
   #pragma omp target teams
-    { case 0:; }
+    { case 0:; } // { dg-warning "statement will never be executed" }
   }
 }
 
@@ -54,7 +54,7 @@ bar (int x)
 
   switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
-  #pragma omp target
+  #pragma omp target // { dg-warning "statement will never be executed" }
   #pragma omp teams
     { case 0:; }
   }

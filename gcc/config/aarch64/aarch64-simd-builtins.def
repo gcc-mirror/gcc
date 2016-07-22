@@ -244,12 +244,16 @@
   /* Implemented by <maxmin><mode>3.
      smax variants map to fmaxnm,
      smax_nan variants map to fmax.  */
-  BUILTIN_VDQIF (BINOP, smax, 3)
-  BUILTIN_VDQIF (BINOP, smin, 3)
+  BUILTIN_VDQ_BHSI (BINOP, smax, 3)
+  BUILTIN_VDQ_BHSI (BINOP, smin, 3)
   BUILTIN_VDQ_BHSI (BINOP, umax, 3)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3)
   BUILTIN_VDQF (BINOP, smax_nan, 3)
   BUILTIN_VDQF (BINOP, smin_nan, 3)
+
+  /* Implemented by <fmaxmin><mode>3.  */
+  BUILTIN_VDQF (BINOP, fmax, 3)
+  BUILTIN_VDQF (BINOP, fmin, 3)
 
   /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, smaxp, 0)
@@ -432,7 +436,7 @@
   VAR1 (TERNOP, qtbx4, 0, v8qi)
   VAR1 (TERNOP, qtbx4, 0, v16qi)
 
-  /* Builtins for ARMv8.1 Adv.SIMD instructions.  */
+  /* Builtins for ARMv8.1-A Adv.SIMD instructions.  */
 
   /* Implemented by aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode>.  */
   BUILTIN_VSDQ_HSI (TERNOP, sqrdmlah, 0)
@@ -445,3 +449,21 @@
   /* Implemented by aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>.  */
   BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlah_laneq, 0)
   BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlsh_laneq, 0)
+
+  /* Implemented by <FCVT_F2FIXED/FIXED2F:fcvt_fixed_insn><*><*>3.  */
+  BUILTIN_VSDQ_SDI (SHIFTIMM, scvtf, 3)
+  BUILTIN_VSDQ_SDI (FCVTIMM_SUS, ucvtf, 3)
+  BUILTIN_VALLF (SHIFTIMM, fcvtzs, 3)
+  BUILTIN_VALLF (SHIFTIMM_USS, fcvtzu, 3)
+
+  /* Implemented by aarch64_rsqrte<mode>.  */
+  BUILTIN_VALLF (UNOP, rsqrte, 0)
+
+  /* Implemented by aarch64_rsqrts<mode>.  */
+  BUILTIN_VALLF (BINOP, rsqrts, 0)
+
+  /* Implemented by fabd<mode>3.  */
+  BUILTIN_VALLF (BINOP, fabd, 3)
+
+  /* Implemented by aarch64_faddp<mode>.  */
+  BUILTIN_VDQF (BINOP, faddp, 0)

@@ -1,5 +1,6 @@
 /* PR c/68657 */
 /* { dg-options "-Werror=sign-conversion -Werror=float-conversion -Werror=frame-larger-than=65536" } */
+/* { dg-require-effective-target ptr32plus } */
 
 void
 f1 (void)

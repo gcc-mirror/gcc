@@ -2485,7 +2485,7 @@ dbxout_expand_expr (tree expr)
 	rtx x;
 
 	tem = get_inner_reference (expr, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &reversep, &volatilep, true);
+				   &unsignedp, &reversep, &volatilep);
 
 	x = dbxout_expand_expr (tem);
 	if (x == NULL || !MEM_P (x))

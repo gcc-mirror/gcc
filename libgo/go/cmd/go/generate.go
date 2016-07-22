@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,10 +14,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 var cmdGenerate = &Command{
@@ -277,8 +275,8 @@ func isGoGenerate(buf []byte) bool {
 // single go:generate command.
 func (g *Generator) setEnv() {
 	g.env = []string{
-		"GOARCH=" + runtime.GOARCH,
-		"GOOS=" + runtime.GOOS,
+		"GOARCH=" + buildContext.GOARCH,
+		"GOOS=" + buildContext.GOOS,
 		"GOFILE=" + g.file,
 		"GOLINE=" + strconv.Itoa(g.lineNum),
 		"GOPACKAGE=" + g.pkg,
@@ -369,17 +367,6 @@ func (g *Generator) expandVar(word string) string {
 		}
 	}
 	return os.Getenv(word)
-}
-
-// identLength returns the length of the identifier beginning the string.
-func (g *Generator) identLength(word string) int {
-	for i, r := range word {
-		if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
-			continue
-		}
-		return i
-	}
-	return len(word)
 }
 
 // setShorthand installs a new shorthand as defined by a -command directive.

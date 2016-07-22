@@ -710,7 +710,6 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOCATION_FILE (loop_loc),
 		     LOCATION_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
-      dump_printf (MSG_NOTE, "\n");
     }
   loop->nb_iterations = niters;
 }
@@ -1557,7 +1556,6 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	{
           dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-          dump_printf (MSG_NOTE, "\n");
 	}
 
       /* Skip virtual phi's. The data dependences that are associated with
@@ -1678,7 +1676,6 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_update_ivs_after_vectorizer: phi: ");
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-          dump_printf (MSG_NOTE, "\n");
         }
 
       /* Skip virtual phi's.  */
@@ -1737,6 +1734,10 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
    The peeled iterations form a new epilog loop.  Given that the loop now
    iterates NITERS times, the new epilog loop iterates
    NITERS % VECTORIZATION_FACTOR times.
+
+   If CHECK_PROFITABILITY is 1 then profitability check is generated
+   using TH as a cost model profitability threshold of iterations for
+   vectorization.
 
    The original loop will later be made to iterate
    NITERS / VECTORIZATION_FACTOR times (this value is placed into RATIO).
@@ -1996,7 +1997,11 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
    'niters' is set to the misalignment of one of the data references in the
    loop, thereby forcing it to refer to an aligned location at the beginning
    of the execution of this loop.  The data reference for which we are
-   peeling is recorded in LOOP_VINFO_UNALIGNED_DR.  */
+   peeling is recorded in LOOP_VINFO_UNALIGNED_DR.
+
+   If CHECK_PROFITABILITY is 1 then profitability check is generated
+   using TH as a cost model profitability threshold of iterations for
+   vectorization.  */
 
 void
 vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
@@ -2241,11 +2246,16 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
       const dr_with_seg_len& dr_b = comp_alias_ddrs[i].second;
       tree segment_length_a = dr_a.seg_len;
       tree segment_length_b = dr_b.seg_len;
+      tree addr_base_a = DR_BASE_ADDRESS (dr_a.dr);
+      tree addr_base_b = DR_BASE_ADDRESS (dr_b.dr);
+      tree offset_a = DR_OFFSET (dr_a.dr), offset_b = DR_OFFSET (dr_b.dr);
 
-      tree addr_base_a
-	= fold_build_pointer_plus (DR_BASE_ADDRESS (dr_a.dr), dr_a.offset);
-      tree addr_base_b
-	= fold_build_pointer_plus (DR_BASE_ADDRESS (dr_b.dr), dr_b.offset);
+      offset_a = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_a),
+			      offset_a, DR_INIT (dr_a.dr));
+      offset_b = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_b),
+			      offset_b, DR_INIT (dr_b.dr));
+      addr_base_a = fold_build_pointer_plus (addr_base_a, offset_a);
+      addr_base_b = fold_build_pointer_plus (addr_base_b, offset_b);
 
       if (dump_enabled_p ())
 	{
@@ -2311,7 +2321,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 
    The test generated to check which version of loop is executed
    is modified to also check for profitability as indicated by the
-   cost model initially.
+   cost model threshold TH.
 
    The versioning precondition(s) are placed in *COND_EXPR and
    *COND_EXPR_STMT_LIST.  */

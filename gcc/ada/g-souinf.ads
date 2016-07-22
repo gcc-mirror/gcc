@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,6 +78,10 @@ package GNAT.Source_Info is
    --  the string returned will be the name of the instance, not the generic
    --  package itself. This is useful in identifying and logging information
    --  from within generic templates.
+
+   function Compilation_ISO_Date return String with
+     Import, Convention => Intrinsic;
+   --  Returns date of compilation as a static string "yyyy-mm-dd".
 
    function Compilation_Date return String with
      Import, Convention => Intrinsic;

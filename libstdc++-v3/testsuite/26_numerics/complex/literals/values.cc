@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-options "-std=gnu++14 -Wno-pedantic" }
 // { dg-do run }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.

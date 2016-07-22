@@ -788,8 +788,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		  {
 		    offset_int off
 		      = (wi::to_offset (this_offset)
-			 + wi::lrshift (wi::to_offset (bit_offset),
-					LOG2_BITS_PER_UNIT));
+			 + (wi::to_offset (bit_offset) >> LOG2_BITS_PER_UNIT));
 		    if (wi::fits_shwi_p (off)
 			/* Probibit value-numbering zero offset components
 			   of addresses the same before the pass folding
@@ -806,21 +805,30 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  break;
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
-	  /* Record index as operand.  */
-	  temp.op0 = TREE_OPERAND (ref, 1);
-	  /* Always record lower bounds and element size.  */
-	  temp.op1 = array_ref_low_bound (ref);
-	  temp.op2 = array_ref_element_size (ref);
-	  if (TREE_CODE (temp.op0) == INTEGER_CST
-	      && TREE_CODE (temp.op1) == INTEGER_CST
-	      && TREE_CODE (temp.op2) == INTEGER_CST)
-	    {
-	      offset_int off = ((wi::to_offset (temp.op0)
-				 - wi::to_offset (temp.op1))
-				* wi::to_offset (temp.op2));
-	      if (wi::fits_shwi_p (off))
-		temp.off = off.to_shwi();
-	    }
+	  {
+	    tree eltype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (ref, 0)));
+	    /* Record index as operand.  */
+	    temp.op0 = TREE_OPERAND (ref, 1);
+	    /* Always record lower bounds and element size.  */
+	    temp.op1 = array_ref_low_bound (ref);
+	    /* But record element size in units of the type alignment.  */
+	    temp.op2 = TREE_OPERAND (ref, 3);
+	    temp.align = eltype->type_common.align;
+	    if (! temp.op2)
+	      temp.op2 = size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (eltype),
+				     size_int (TYPE_ALIGN_UNIT (eltype)));
+	    if (TREE_CODE (temp.op0) == INTEGER_CST
+		&& TREE_CODE (temp.op1) == INTEGER_CST
+		&& TREE_CODE (temp.op2) == INTEGER_CST)
+	      {
+		offset_int off = ((wi::to_offset (temp.op0)
+				   - wi::to_offset (temp.op1))
+				  * wi::to_offset (temp.op2)
+				  * vn_ref_op_align_unit (&temp));
+		if (wi::fits_shwi_p (off))
+		  temp.off = off.to_shwi();
+	      }
+	  }
 	  break;
 	case VAR_DECL:
 	  if (DECL_HARD_REGISTER (ref))
@@ -999,8 +1007,8 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      max_size = -1;
 	    else
 	      {
-		offset_int woffset = wi::lshift (wi::to_offset (this_offset),
-						 LOG2_BITS_PER_UNIT);
+		offset_int woffset = (wi::to_offset (this_offset)
+				      << LOG2_BITS_PER_UNIT);
 		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 		offset += woffset;
 	      }
@@ -1019,8 +1027,8 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      offset_int woffset
 		= wi::sext (wi::to_offset (op->op0) - wi::to_offset (op->op1),
 			    TYPE_PRECISION (TREE_TYPE (op->op0)));
-	      woffset *= wi::to_offset (op->op2);
-	      woffset = wi::lshift (woffset, LOG2_BITS_PER_UNIT);
+	      woffset *= wi::to_offset (op->op2) * vn_ref_op_align_unit (op);
+	      woffset <<= LOG2_BITS_PER_UNIT;
 	      offset += woffset;
 	    }
 	  break;
@@ -1329,6 +1337,11 @@ fully_constant_vn_reference_p (vn_reference_t ref)
       unsigned i;
       for (i = 0; i < operands.length (); ++i)
 	{
+	  if (TREE_CODE_CLASS (operands[i].opcode) == tcc_constant)
+	    {
+	      ++i;
+	      break;
+	    }
 	  if (operands[i].off == -1)
 	    return NULL_TREE;
 	  off += operands[i].off;
@@ -1469,7 +1482,8 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	{
 	  offset_int off = ((wi::to_offset (vro->op0)
 			     - wi::to_offset (vro->op1))
-			    * wi::to_offset (vro->op2));
+			    * wi::to_offset (vro->op2)
+			    * vn_ref_op_align_unit (vro));
 	  if (wi::fits_shwi_p (off))
 	    vro->off = off.to_shwi ();
 	}
@@ -1610,6 +1624,140 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
   return vn_reference_insert_pieces (vuse, set, type,
 				     operands.copy (), value, value_id);
 }
+
+static vn_nary_op_t vn_nary_op_insert_stmt (gimple *stmt, tree result);
+
+/* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
+
+static tree
+vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops)
+{
+  if (!rcode.is_tree_code ())
+    return NULL_TREE;
+  vn_nary_op_t vnresult = NULL;
+  return vn_nary_op_lookup_pieces (TREE_CODE_LENGTH ((tree_code) rcode),
+				   (tree_code) rcode, type, ops, &vnresult);
+}
+
+/* Return a value-number for RCODE OPS... either by looking up an existing
+   value-number for the simplified result or by inserting the operation if
+   INSERT is true.  */
+
+static tree
+vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
+			   bool insert)
+{
+  tree result = NULL_TREE;
+  /* We will be creating a value number for
+       RCODE (OPS...).
+     So first simplify and lookup this expression to see if it
+     is already available.  */
+  mprts_hook = vn_lookup_simplify_result;
+  bool res = false;
+  switch (TREE_CODE_LENGTH ((tree_code) rcode))
+    {
+    case 1:
+      res = gimple_resimplify1 (NULL, &rcode, type, ops, vn_valueize);
+      break;
+    case 2:
+      res = gimple_resimplify2 (NULL, &rcode, type, ops, vn_valueize);
+      break;
+    case 3:
+      res = gimple_resimplify3 (NULL, &rcode, type, ops, vn_valueize);
+      break;
+    }
+  mprts_hook = NULL;
+  gimple *new_stmt = NULL;
+  if (res
+      && gimple_simplified_result_is_gimple_val (rcode, ops))
+    /* The expression is already available.  */
+    result = ops[0];
+  else
+    {
+      tree val = vn_lookup_simplify_result (rcode, type, ops);
+      if (!val && insert)
+	{
+	  gimple_seq stmts = NULL;
+	  result = maybe_push_res_to_seq (rcode, type, ops, &stmts);
+	  if (result)
+	    {
+	      gcc_assert (gimple_seq_singleton_p (stmts));
+	      new_stmt = gimple_seq_first_stmt (stmts);
+	    }
+	}
+      else
+	/* The expression is already available.  */
+	result = val;
+    }
+  if (new_stmt)
+    {
+      /* The expression is not yet available, value-number lhs to
+	 the new SSA_NAME we created.  */
+      /* Initialize value-number information properly.  */
+      VN_INFO_GET (result)->valnum = result;
+      VN_INFO (result)->value_id = get_next_value_id ();
+      gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
+					  new_stmt);
+      VN_INFO (result)->needs_insertion = true;
+      /* ???  PRE phi-translation inserts NARYs without corresponding
+         SSA name result.  Re-use those but set their result according
+	 to the stmt we just built.  */
+      vn_nary_op_t nary = NULL;
+      vn_nary_op_lookup_stmt (new_stmt, &nary);
+      if (nary)
+	{
+	  gcc_assert (nary->result == NULL_TREE);
+	  nary->result = gimple_assign_lhs (new_stmt);
+	}
+      /* As all "inserted" statements are singleton SCCs, insert
+	 to the valid table.  This is strictly needed to
+	 avoid re-generating new value SSA_NAMEs for the same
+	 expression during SCC iteration over and over (the
+	 optimistic table gets cleared after each iteration).
+	 We do not need to insert into the optimistic table, as
+	 lookups there will fall back to the valid table.  */
+      else if (current_info == optimistic_info)
+	{
+	  current_info = valid_info;
+	  vn_nary_op_insert_stmt (new_stmt, result);
+	  current_info = optimistic_info;
+	}
+      else
+	vn_nary_op_insert_stmt (new_stmt, result);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Inserting name ");
+	  print_generic_expr (dump_file, result, 0);
+	  fprintf (dump_file, " for expression ");
+	  print_gimple_expr (dump_file, new_stmt, 0, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+    }
+  return result;
+}
+
+/* Return a value-number for RCODE OPS... either by looking up an existing
+   value-number for the simplified result or by inserting the operation.  */
+
+static tree
+vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
+{
+  return vn_nary_build_or_lookup_1 (rcode, type, ops, true);
+}
+
+/* Try to simplify the expression RCODE OPS... of type TYPE and return
+   its value if present.  */
+
+tree
+vn_nary_simplify (vn_nary_op_t nary)
+{
+  if (nary->length > 3)
+    return NULL_TREE;
+  tree ops[3];
+  memcpy (ops, nary->op, sizeof (tree) * nary->length);
+  return vn_nary_build_or_lookup_1 (nary->opcode, nary->type, ops, false);
+}
+
 
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
    from the statement defining VUSE and if not successful tries to
@@ -1773,15 +1921,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 
   /* 3) Assignment from a constant.  We can use folds native encode/interpret
      routines to extract the assigned bits.  */
-  else if (vn_walk_kind == VN_WALKREWRITE
-	   && CHAR_BIT == 8 && BITS_PER_UNIT == 8
-	   && ref->size == maxsize
-	   && maxsize % BITS_PER_UNIT == 0
-	   && offset % BITS_PER_UNIT == 0
+  else if (ref->size == maxsize
 	   && is_gimple_reg_type (vr->type)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
-	   && is_gimple_min_invariant (gimple_assign_rhs1 (def_stmt)))
+	   && CHAR_BIT == 8 && BITS_PER_UNIT == 8
+	   && maxsize % BITS_PER_UNIT == 0
+	   && offset % BITS_PER_UNIT == 0
+	   && (is_gimple_min_invariant (gimple_assign_rhs1 (def_stmt))
+	       || (TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
+		   && is_gimple_min_invariant (SSA_VAL (gimple_assign_rhs1 (def_stmt))))))
     {
       tree base2;
       HOST_WIDE_INT offset2, size2, maxsize2;
@@ -1801,18 +1950,41 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  unsigned char buffer[64];
 	  int len;
 
+	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs) == SSA_NAME)
+	    rhs = SSA_VAL (rhs);
 	  len = native_encode_expr (gimple_assign_rhs1 (def_stmt),
 				    buffer, sizeof (buffer));
 	  if (len > 0)
 	    {
-	      tree val = native_interpret_expr (vr->type,
+	      tree type = vr->type;
+	      /* Make sure to interpret in a type that has a range
+	         covering the whole access size.  */
+	      if (INTEGRAL_TYPE_P (vr->type)
+		  && ref->size != TYPE_PRECISION (vr->type))
+		type = build_nonstandard_integer_type (ref->size,
+						       TYPE_UNSIGNED (type));
+	      tree val = native_interpret_expr (type,
 						buffer
 						+ ((offset - offset2)
 						   / BITS_PER_UNIT),
 						ref->size / BITS_PER_UNIT);
+	      /* If we chop off bits because the types precision doesn't
+		 match the memory access size this is ok when optimizing
+		 reads but not when called from the DSE code during
+		 elimination.  */
+	      if (val
+		  && type != vr->type)
+		{
+		  if (! int_fits_type_p (val, vr->type))
+		    val = NULL_TREE;
+		  else
+		    val = fold_convert (vr->type, val);
+		}
+
 	      if (val)
 		return vn_reference_lookup_or_insert_for_pieces
-		         (vuse, vr->set, vr->type, vr->operands, val);
+			 (vuse, vr->set, vr->type, vr->operands, val);
 	    }
 	}
     }
@@ -1825,56 +1997,37 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	   && gimple_assign_single_p (def_stmt)
 	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
     {
-      tree rhs1 = gimple_assign_rhs1 (def_stmt);
-      gimple *def_stmt2 = SSA_NAME_DEF_STMT (rhs1);
-      if (is_gimple_assign (def_stmt2)
-	  && (gimple_assign_rhs_code (def_stmt2) == COMPLEX_EXPR
-	      || gimple_assign_rhs_code (def_stmt2) == CONSTRUCTOR)
-	  && types_compatible_p (vr->type, TREE_TYPE (TREE_TYPE (rhs1))))
+      tree base2;
+      HOST_WIDE_INT offset2, size2, maxsize2;
+      bool reverse;
+      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
+				       &offset2, &size2, &maxsize2,
+				       &reverse);
+      if (!reverse
+	  && maxsize2 != -1
+	  && maxsize2 == size2
+	  && operand_equal_p (base, base2, 0)
+	  && offset2 <= offset
+	  && offset2 + size2 >= offset + maxsize
+	  /* ???  We can't handle bitfield precision extracts without
+	     either using an alternate type for the BIT_FIELD_REF and
+	     then doing a conversion or possibly adjusting the offset
+	     according to endianess.  */
+	  && (! INTEGRAL_TYPE_P (vr->type)
+	      || ref->size == TYPE_PRECISION (vr->type))
+	  && ref->size % BITS_PER_UNIT == 0)
 	{
-	  tree base2;
-	  HOST_WIDE_INT offset2, size2, maxsize2, off;
-	  bool reverse;
-	  base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-					   &offset2, &size2, &maxsize2,
-					   &reverse);
-	  off = offset - offset2;
-	  if (!reverse
-	      && maxsize2 != -1
-	      && maxsize2 == size2
-	      && operand_equal_p (base, base2, 0)
-	      && offset2 <= offset
-	      && offset2 + size2 >= offset + maxsize)
+	  code_helper rcode = BIT_FIELD_REF;
+	  tree ops[3];
+	  ops[0] = SSA_VAL (gimple_assign_rhs1 (def_stmt));
+	  ops[1] = bitsize_int (ref->size);
+	  ops[2] = bitsize_int (offset - offset2);
+	  tree val = vn_nary_build_or_lookup (rcode, vr->type, ops);
+	  if (val)
 	    {
-	      tree val = NULL_TREE;
-	      HOST_WIDE_INT elsz
-		= TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (TREE_TYPE (rhs1))));
-	      if (gimple_assign_rhs_code (def_stmt2) == COMPLEX_EXPR)
-		{
-		  if (off == 0)
-		    val = gimple_assign_rhs1 (def_stmt2);
-		  else if (off == elsz)
-		    val = gimple_assign_rhs2 (def_stmt2);
-		}
-	      else if (gimple_assign_rhs_code (def_stmt2) == CONSTRUCTOR
-		       && off % elsz == 0)
-		{
-		  tree ctor = gimple_assign_rhs1 (def_stmt2);
-		  unsigned i = off / elsz;
-		  if (i < CONSTRUCTOR_NELTS (ctor))
-		    {
-		      constructor_elt *elt = CONSTRUCTOR_ELT (ctor, i);
-		      if (TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
-			{
-			  if (TREE_CODE (TREE_TYPE (elt->value))
-			      != VECTOR_TYPE)
-			    val = elt->value;
-			}
-		    }
-		}
-	      if (val)
-		return vn_reference_lookup_or_insert_for_pieces
-		         (vuse, vr->set, vr->type, vr->operands, val);
+	      vn_reference_t res = vn_reference_lookup_or_insert_for_pieces
+		  (vuse, vr->set, vr->type, vr->operands, val);
+	      return res;
 	    }
 	}
     }
@@ -1976,11 +2129,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       /* We need to pre-pend vr->operands[0..i] to rhs.  */
       vec<vn_reference_op_s> old = vr->operands;
       if (i + 1 + rhs.length () > vr->operands.length ())
-	{
-	  vr->operands.safe_grow (i + 1 + rhs.length ());
-	  if (old == shared_lookup_references)
-	    shared_lookup_references = vr->operands;
-	}
+	vr->operands.safe_grow (i + 1 + rhs.length ());
       else
 	vr->operands.truncate (i + 1 + rhs.length ());
       FOR_EACH_VEC_ELT (rhs, j, vro)
@@ -2131,8 +2280,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	{
 	  vec<vn_reference_op_s> old = vr->operands;
 	  vr->operands.safe_grow_cleared (2);
-	  if (old == shared_lookup_references
-	      && vr->operands != old)
+	  if (old == shared_lookup_references)
 	    shared_lookup_references = vr->operands;
 	}
       else
@@ -2152,6 +2300,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       vr->operands[1] = op;
       vr->hashcode = vn_reference_compute_hash (vr);
 
+      /* Try folding the new reference to a constant.  */
+      tree val = fully_constant_vn_reference_p (vr);
+      if (val)
+	return vn_reference_lookup_or_insert_for_pieces
+		 (vuse, vr->set, vr->type, vr->operands, val);
+
       /* Adjust *ref from the new operands.  */
       if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))
 	return (void *)-1;
@@ -2169,6 +2323,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 
   /* Bail out and stop walking.  */
   return (void *)-1;
+}
+
+/* Return a reference op vector from OP that can be used for
+   vn_reference_lookup_pieces.  The caller is responsible for releasing
+   the vector.  */
+
+vec<vn_reference_op_s>
+vn_reference_operands_for_lookup (tree op)
+{
+  bool valueized;
+  return valueize_shared_reference_ops_from_ref (op, &valueized).copy ();
 }
 
 /* Lookup a reference operation by it's parts, in the current hash table.
@@ -2604,18 +2769,6 @@ vn_nary_op_lookup_stmt (gimple *stmt, vn_nary_op_t *vnresult)
 		  sizeof_vn_nary_op (vn_nary_length_from_stmt (stmt)));
   init_vn_nary_op_from_stmt (vno1, stmt);
   return vn_nary_op_lookup_1 (vno1, vnresult);
-}
-
-/* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
-
-static tree
-vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops)
-{
-  if (!rcode.is_tree_code ())
-    return NULL_TREE;
-  vn_nary_op_t vnresult = NULL;
-  return vn_nary_op_lookup_pieces (TREE_CODE_LENGTH ((tree_code) rcode),
-				   (tree_code) rcode, type, ops, &vnresult);
 }
 
 /* Allocate a vn_nary_op_t with LENGTH operands on STACK.  */
@@ -3366,69 +3519,9 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	 of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
 	 So first simplify and lookup this expression to see if it
 	 is already available.  */
-      mprts_hook = vn_lookup_simplify_result;
       code_helper rcode = VIEW_CONVERT_EXPR;
       tree ops[3] = { result };
-      bool res = gimple_resimplify1 (NULL, &rcode, TREE_TYPE (op), ops,
-				     vn_valueize);
-      mprts_hook = NULL;
-      gimple *new_stmt = NULL;
-      if (res
-	  && gimple_simplified_result_is_gimple_val (rcode, ops))
-	/* The expression is already available.  */
-	result = ops[0];
-      else
-	{
-	  tree val = vn_lookup_simplify_result (rcode, TREE_TYPE (op), ops);
-	  if (!val)
-	    {
-	      gimple_seq stmts = NULL;
-	      result = maybe_push_res_to_seq (rcode, TREE_TYPE (op), ops,
-					      &stmts);
-	      if (result)
-		{
-		  gcc_assert (gimple_seq_singleton_p (stmts));
-		  new_stmt = gimple_seq_first_stmt (stmts);
-		}
-	    }
-	  else
-	    /* The expression is already available.  */
-	    result = val;
-	}
-      if (new_stmt)
-	{
-	  /* The expression is not yet available, value-number lhs to
-	     the new SSA_NAME we created.  */
-	  /* Initialize value-number information properly.  */
-	  VN_INFO_GET (result)->valnum = result;
-	  VN_INFO (result)->value_id = get_next_value_id ();
-	  gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
-					      new_stmt);
-	  VN_INFO (result)->needs_insertion = true;
-	  /* As all "inserted" statements are singleton SCCs, insert
-	     to the valid table.  This is strictly needed to
-	     avoid re-generating new value SSA_NAMEs for the same
-	     expression during SCC iteration over and over (the
-	     optimistic table gets cleared after each iteration).
-	     We do not need to insert into the optimistic table, as
-	     lookups there will fall back to the valid table.  */
-	  if (current_info == optimistic_info)
-	    {
-	      current_info = valid_info;
-	      vn_nary_op_insert_stmt (new_stmt, result);
-	      current_info = optimistic_info;
-	    }
-	  else
-	    vn_nary_op_insert_stmt (new_stmt, result);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Inserting name ");
-	      print_generic_expr (dump_file, result, 0);
-	      fprintf (dump_file, " for expression ");
-	      print_gimple_expr (dump_file, new_stmt, 0, TDF_SLIM);
-	      fprintf (dump_file, "\n");
-	    }
-	}
+      result = vn_nary_build_or_lookup (rcode, TREE_TYPE (op), ops);
     }
 
   if (result)
@@ -4067,8 +4160,8 @@ extract_and_process_scc_for_name (tree name)
 static bool
 DFS (tree name)
 {
-  vec<ssa_op_iter> itervec = vNULL;
-  vec<tree> namevec = vNULL;
+  auto_vec<ssa_op_iter> itervec;
+  auto_vec<tree> namevec;
   use_operand_p usep = NULL;
   gimple *defstmt;
   tree use;
@@ -4105,19 +4198,11 @@ start_over:
 	  /* See if we found an SCC.  */
 	  if (VN_INFO (name)->low == VN_INFO (name)->dfsnum)
 	    if (!extract_and_process_scc_for_name (name))
-	      {
-		namevec.release ();
-		itervec.release ();
-		return false;
-	      }
+	      return false;
 
 	  /* Check if we are done.  */
 	  if (namevec.is_empty ())
-	    {
-	      namevec.release ();
-	      itervec.release ();
-	      return true;
-	    }
+	    return true;
 
 	  /* Restore the last use walker and continue walking there.  */
 	  use = name;
@@ -4300,6 +4385,33 @@ init_scc_vn (void)
     }
 }
 
+/* Restore SSA info that has been reset on value leaders.  */
+
+void
+scc_vn_restore_ssa_info (void)
+{
+  for (unsigned i = 0; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      if (name
+	  && has_VN_INFO (name))
+	{
+	  if (VN_INFO (name)->needs_insertion)
+	    ;
+	  else if (POINTER_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.ptr_info)
+	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.range_info)
+	    {
+	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
+	      SSA_NAME_ANTI_RANGE_P (name)
+		= VN_INFO (name)->range_info_anti_range_p;
+	    }
+	}
+    }
+}
+
 void
 free_scc_vn (void)
 {
@@ -4316,21 +4428,9 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
-	  && has_VN_INFO (name))
-	{
-	  if (VN_INFO (name)->needs_insertion)
-	    release_ssa_name (name);
-	  else if (POINTER_TYPE_P (TREE_TYPE (name))
-		   && VN_INFO (name)->info.ptr_info)
-	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
-	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
-		   && VN_INFO (name)->info.range_info)
-	    {
-	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
-	      SSA_NAME_ANTI_RANGE_P (name)
-		= VN_INFO (name)->range_info_anti_range_p;
-	    }
-	}
+	  && has_VN_INFO (name)
+	  && VN_INFO (name)->needs_insertion)
+	release_ssa_name (name);
     }
   obstack_free (&vn_ssa_aux_obstack, NULL);
   vn_ssa_aux_table.release ();
@@ -4387,8 +4487,7 @@ class sccvn_dom_walker : public dom_walker
 {
 public:
   sccvn_dom_walker ()
-    : dom_walker (CDI_DOMINATORS, true), fail (false), cond_stack (vNULL) {}
-  ~sccvn_dom_walker ();
+    : dom_walker (CDI_DOMINATORS, true), fail (false), cond_stack (0) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -4399,14 +4498,9 @@ public:
 		     enum tree_code code, tree lhs, tree rhs, bool value);
 
   bool fail;
-  vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
+  auto_vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
     cond_stack;
 };
-
-sccvn_dom_walker::~sccvn_dom_walker ()
-{
-  cond_stack.release ();
-}
 
 /* Record a temporary condition for the BB and its dominated blocks.  */
 

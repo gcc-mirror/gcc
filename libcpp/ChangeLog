@@ -1,3 +1,116 @@
+2016-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES):
+	Move here from line-map.c.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Likewise.
+	* line-map.c (LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES): Move from
+	here to line-map.h.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Likewise.
+
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (do_include_common): Pass on "location" to
+	_cpp_stack_include.
+	* errors.c (cpp_diagnostic): Reimplement in terms of...
+	(cpp_diagnostic_at): New function.
+	(cpp_error_at): New function.
+	(cpp_errno_filename): Add "loc" param and use it by using
+	cpp_error_at rather than cpp_error.
+	* files.c (find_file_in_dir): Add "loc" param and pass it to
+	open_file_failed.
+	(_cpp_find_file): Add "loc" param.  Use it to convert calls to
+	cpp_error to cpp_error_at, and pass it to find_file_in_dir and
+	open_file_failed.
+	(read_file_guts): Add "loc" param.  Use it to convert calls to
+	cpp_error to cpp_error_at.  Pass it to cpp_errno_filename.
+	(read_file): Add "loc" param.  Pass it to open_file_failed and
+	read_file_guts.
+	(should_stack_file): Add "loc" param.  Pass it to read_file.
+	(_cpp_stack_file): Add "loc" param.  Pass it to should_stack_file.
+	(_cpp_stack_include): Add "loc" param.  Pass it to
+	_cpp_find_file and _cpp_stack_file.
+	(open_file_failed): Add "loc" param.  Pass it to
+	cpp_errno_filename.
+	(_cpp_fake_include): Add 0 as a source_location in call to
+	_cpp_find_file.
+	(_cpp_compare_file_date): Likewise.
+	(cpp_push_include): Likewise for call to _cpp_stack_include.
+	(cpp_push_default_include): Likewise.
+	(_cpp_save_file_entries): Likewise for call to open_file_failed.
+	(_cpp_has_header): Likewise for call to _cpp_find_file.
+	* include/cpplib.h (cpp_errno_filename): Add source_location
+	param.
+	(cpp_error_at): New declaration.
+	* init.c (cpp_read_main_file): Add 0 as a source_location in calls
+	to _cpp_find_file and _cpp_stack_file.
+	* internal.h (_cpp_find_file): Add source_location param.
+	(_cpp_stack_file): Likewise.
+	(_cpp_stack_include): Likewise.
+
+2016-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (fixit_hint::get_start_loc): New pure virtual
+	function.
+	(fixit_hint::maybe_get_end_loc): Likewise.
+	(fixit_insert::get_start_loc): New function, implementing
+	fixit_hint::get_start_loc.
+	(fixit_insert::maybe_get_end_loc): New function, implementing
+	fixit_hint::maybe_get_end_loc.
+	(fixit_remove::get_start_loc): New function, implementing
+	fixit_hint::get_start_loc.
+	(fixit_remove::maybe_get_end_loc): New function, implementing
+	fixit_hint::maybe_get_end_loc.
+	(fixit_replace::get_start_loc): New function, implementing
+	fixit_hint::get_start_loc.
+	(fixit_replace::maybe_get_end_loc): New function, implementing
+	fixit_hint::maybe_get_end_loc.
+
+2016-06-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* line-map.c (location_adhoc_data_update): Use int64_t instead of
+	long long.
+	(get_combined_adhoc_loc): Likewise.
+
+2016-06-01  Eduard Sanou  <dhole@openmailbox.org>
+
+	* include/cpplib.h (cpp_callbacks): Add get_source_date_epoch
+	callback.
+	* include/cpplib.h (cpp_init_source_date_epoch): Remove prototype.
+	* init.c (cpp_init_source_date_epoch): Remove function.
+	* init.c (cpp_create_reader): Initialize pfile->source_date_epoch.
+	* internal.h (cpp_reader): Extend comment about source_date_epoch.
+	* macro.c (_cpp_builtin_macro_text): Use get_source_date_epoch
+	callback only once, read pfile->source_date_epoch on future passes.
+	Check that get_source_date_epoch callback is not NULL.
+
+2016-05-20  Martin Liska  <mliska@suse.cz>
+
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* configure.ac: Handle --enable-valgrind-annotations.
+	* lex.c (new_buff): Use ENABLE_VALGRIND_ANNOTATIONS instead
+	of ENABLE_VALGRIND_CHECKING.
+	(_cpp_free_buff): Likewise.
+
+2016-04-28  Eduard Sanou  <dhole@openmailbox.org>
+	    Matthias Klose  <doko@debian.org>
+
+	* include/cpplib.h (cpp_init_source_date_epoch): Prototype.
+	* init.c (cpp_init_source_date_epoch): New function.
+	* internal.h: Added source_date_epoch variable to struct
+	cpp_reader to store a reproducible date.
+	* macro.c (_cpp_builtin_macro_text): Set pfile->date timestamp from 
+	pfile->source_date_epoch instead of localtime if source_date_epoch is 
+	set, to be used for __DATE__ and __TIME__ macros to help reproducible 
+	builds.
+
+2016-04-13  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Patch from Roger Orr <rogero@howzatt.demon.co.uk>
+	PR preprocessor/69650
+	* directives.c (do_linemarker): Reread map after calling
+	cpp_get_token.
+
 2016-04-06  Richard Henderson  <rth@redhat.com>
 
 	PR preprocessor/61817

@@ -42,8 +42,6 @@ included in the section entitled :ref:`gnu_fdl`.
    gnat_ugn/getting_started_with_gnat
    gnat_ugn/the_gnat_compilation_model
    gnat_ugn/building_executable_programs_with_gnat
-   gnat_ugn/gnat_project_manager
-   gnat_ugn/tools_supporting_project_files
    gnat_ugn/gnat_utility_programs
    gnat_ugn/gnat_and_program_execution
 

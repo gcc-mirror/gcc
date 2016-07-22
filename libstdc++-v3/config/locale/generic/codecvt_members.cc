@@ -41,7 +41,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_out(state_type& __state, const intern_type* __from, 
+  do_out(state_type& __state, const intern_type* __from,
 	 const intern_type* __from_end, const intern_type*& __from_next,
 	 extern_type* __to, extern_type* __to_end,
 	 extern_type*& __to_next) const
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__ret = partial;
 		break;
 	      }
-	    
+
 	    memcpy(__to, __buf, __conv);
 	    __state = __tmp_state;
 	    __to += __conv;
@@ -101,12 +101,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     __from_next = __from;
     __to_next = __to;
-    return __ret; 
+    return __ret;
   }
-  
+
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_in(state_type& __state, const extern_type* __from, 
+  do_in(state_type& __state, const extern_type* __from,
 	const extern_type* __from_end, const extern_type*& __from_next,
 	intern_type* __to, intern_type* __to_end,
 	intern_type*& __to_next) const
@@ -153,10 +153,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     __from_next = __from;
     __to_next = __to;
-    return __ret; 
+    return __ret;
   }
 
-  int 
+  int
   codecvt<wchar_t, char, mbstate_t>::
   do_encoding() const throw()
   {
@@ -166,9 +166,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (MB_CUR_MAX == 1)
       __ret = 1;
     return __ret;
-  }  
+  }
 
-  int 
+  int
   codecvt<wchar_t, char, mbstate_t>::
   do_max_length() const throw()
   {
@@ -176,8 +176,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     int __ret = MB_CUR_MAX;
     return __ret;
   }
-  
-  int 
+
+  int
   codecvt<wchar_t, char, mbstate_t>::
   do_length(state_type& __state, const extern_type* __from,
 	    const extern_type* __end, size_t __max) const
@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__max--;
       }
 
-    return __ret; 
+    return __ret;
   }
 #endif
 

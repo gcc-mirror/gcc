@@ -445,20 +445,6 @@ No_Implicit_Heap_Allocations
 
 [RM D.7] No constructs are allowed to cause implicit heap allocation.
 
-No_Implicit_Loops
------------------
-.. index:: No_Implicit_Loops
-
-[GNAT] This restriction ensures that the generated code does not contain any
-implicit `for` loops, either by modifying
-the generated code where possible,
-or by rejecting any construct that would otherwise generate an implicit
-`for` loop. If this restriction is active, it is possible to build
-large array aggregates with all static components without generating an
-intermediate temporary, and without generating a loop to initialize individual
-components. Otherwise, a loop is created for arrays larger than about 5000
-scalar components.
-
 No_Implicit_Protected_Object_Allocations
 ----------------------------------------
 .. index:: No_Implicit_Protected_Object_Allocations
@@ -524,19 +510,15 @@ No_Multiple_Elaboration
 -----------------------
 .. index:: No_Multiple_Elaboration
 
-[GNAT] Normally each package contains a 16-bit counter used to check for access
-before elaboration, and to control multiple elaboration attempts.
-This counter is eliminated for units compiled with the static model
-of elaboration if restriction `No_Elaboration_Code`
-is active but because of
-the need to check for multiple elaboration in the general case, these
-counters cannot be eliminated if elaboration code may be present. The
-restriction `No_Multiple_Elaboration`
-allows suppression of these counters
-in static elaboration units even if they do have elaboration code. If this
-restriction is used, then the situations in which multiple elaboration is
-possible, including non-Ada main programs, and Stand Alone libraries, are not
-permitted, and will be diagnosed by the binder.
+[GNAT] When this restriction is active, we are not requesting control-flow
+preservation with -fpreserve-control-flow, and the static elaboration model is
+used, the compiler is allowed to suppress the elaboration counter normally
+associated with the unit, even if the unit has elaboration code. This counter
+is typically used to check for access before elaboration and to control
+multiple elaboration attempts. If the restriction is used, then the
+situations in which multiple elaboration is possible, including non-Ada main
+programs and Stand Alone libraries, are not permitted and will be diagnosed
+by the binder.
 
 No_Nested_Finalization
 ----------------------
@@ -880,6 +862,12 @@ Note that this the implementation of this restriction requires full
 code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
 
+When this restriction is active, we are not requesting control-flow
+preservation with -fpreserve-control-flow, and the static elaboration model is
+used, the compiler is allowed to suppress the elaboration counter normally
+associated with the unit. This counter is typically used to check for access
+before elaboration and to control multiple elaboration attempts.
+
 No_Dynamic_Sized_Objects
 ------------------------
 .. index:: No_Dynamic_Sized_Objects
@@ -966,6 +954,20 @@ the 'Unrestricted_Access attribute for objects. Note: the reason that
 Unrestricted_Access is forbidden is that it would require the prefix
 to be aliased, and in such cases, it can always be replaced by
 the standard attribute Unchecked_Access which is preferable.
+
+No_Implicit_Loops
+-----------------
+.. index:: No_Implicit_Loops
+
+[GNAT] This restriction ensures that the generated code of the unit marked
+with this restriction does not contain any implicit `for` loops, either by
+modifying the generated code where possible, or by rejecting any construct
+that would otherwise generate an implicit `for` loop. If this restriction is
+active, it is possible to build large array aggregates with all static
+components without generating an intermediate temporary, and without generating
+a loop to initialize individual components. Otherwise, a loop is created for
+arrays larger than about 5000 scalar components. Note that if this restriction
+is set in the spec of a package, it will not apply to its body.
 
 No_Obsolescent_Features
 -----------------------

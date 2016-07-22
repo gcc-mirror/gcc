@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
@@ -42,7 +41,6 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
@@ -441,11 +439,7 @@ package body Sem_Ch5 is
                   --  objects have been previously expanded into calls to the
                   --  Get_Ceiling run-time subprogram.
 
-                 or else
-                  (Nkind (Ent) = N_Function_Call
-                    and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
-                               or else
-                              Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling)))
+                 or else Is_Expanded_Priority_Attribute (Ent)
                then
                   --  The enclosing subprogram cannot be a protected function
 
@@ -803,7 +797,7 @@ package body Sem_Ch5 is
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;
 
-      --  RM 7.3.2 (12/3)  An assignment to a view conversion (from a type
+      --  RM 7.3.2 (12/3): An assignment to a view conversion (from a type
       --  to one of its ancestors) requires an invariant check. Apply check
       --  only if expression comes from source, otherwise it will be applied
       --  when value is assigned to source entity.
@@ -836,10 +830,24 @@ package body Sem_Ch5 is
                --  warnings when an assignment is rewritten as another
                --  assignment, and gets tied up with itself.
 
+               --  There may have been a previous reference to a component of
+               --  the variable, which in general removes the Last_Assignment
+               --  field of the variable to indicate a relevant use of the
+               --  previous assignment. However, if the assignment is to a
+               --  subcomponent the reference may not have registered, because
+               --  it is not possible to determine whether the context is an
+               --  assignment. In those cases we generate a Deferred_Reference,
+               --  to be used at the end of compilation to generate the right
+               --  kind of reference, and we suppress a potential warning for
+               --  a useless assignment, which might be premature. This may
+               --  lose a warning in rare cases, but seems preferable to a
+               --  misleading warning.
+
                if Warn_On_Modified_Unread
                  and then Is_Assignable (Ent)
                  and then Comes_From_Source (N)
                  and then In_Extended_Main_Source_Unit (Ent)
+                 and then not Has_Deferred_Reference (Ent)
                then
                   Warn_On_Useless_Assignment (Ent, N);
                end if;
@@ -1068,7 +1076,6 @@ package body Sem_Ch5 is
          end if;
 
          Check_References (Ent);
-         Warn_On_Useless_Assignments (Ent);
          End_Scope;
 
          if Unblocked_Exit_Count = 0 then
@@ -1753,15 +1760,6 @@ package body Sem_Ch5 is
    ------------------------------------
 
    procedure Analyze_Iterator_Specification (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Def_Id    : constant Node_Id    := Defining_Identifier (N);
-      Subt      : constant Node_Id    := Subtype_Indication (N);
-      Iter_Name : constant Node_Id    := Name (N);
-
-      Ent : Entity_Id;
-      Typ : Entity_Id;
-      Bas : Entity_Id;
-
       procedure Check_Reverse_Iteration (Typ : Entity_Id);
       --  For an iteration over a container, if the loop carries the Reverse
       --  indicator, verify that the container type has an Iterate aspect that
@@ -1795,7 +1793,15 @@ package body Sem_Ch5 is
          Ent : Entity_Id;
 
       begin
-         Ent := First_Entity (Scope (Typ));
+         --  If iterator type is derived, the cursor is declared in the scope
+         --  of the parent type.
+
+         if Is_Derived_Type (Typ) then
+            Ent := First_Entity (Scope (Etype (Typ)));
+         else
+            Ent := First_Entity (Scope (Typ));
+         end if;
+
          while Present (Ent) loop
             exit when Chars (Ent) = Name_Cursor;
             Next_Entity (Ent);
@@ -1815,7 +1821,17 @@ package body Sem_Ch5 is
          return Etype (Ent);
       end Get_Cursor_Type;
 
-   --   Start of processing for Analyze_iterator_Specification
+      --  Local variables
+
+      Def_Id    : constant Node_Id    := Defining_Identifier (N);
+      Iter_Name : constant Node_Id    := Name (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subt      : constant Node_Id    := Subtype_Indication (N);
+
+      Bas : Entity_Id;
+      Typ : Entity_Id;
+
+   --   Start of processing for Analyze_Iterator_Specification
 
    begin
       Enter_Name (Def_Id);
@@ -1918,11 +1934,12 @@ package body Sem_Ch5 is
 
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
-        --  Ditto for ASIS, where the temporary may hide the transformation
-        --  of a selected component into a prefixed function call.
+        --  Ditto for ASIS and when expansion is disabled, where the temporary
+        --  may hide the transformation of a selected component into a prefixed
+        --  function call, and references need to see the original expression.
 
         and then not GNATprove_Mode
-        and then not ASIS_Mode
+        and then Expander_Active
       then
          declare
             Id    : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -1986,16 +2003,6 @@ package body Sem_Ch5 is
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                =>
                   New_Copy_Tree (Iter_Name, New_Sloc => Loc));
-
-            --  Create a transient scope to ensure that all the temporaries
-            --  generated by Remove_Side_Effects as part of processing this
-            --  renaming declaration (if any) are attached by Insert_Actions
-            --  to it. It has no effect on the generated code if no actions
-            --  are added to it (see Wrap_Transient_Declaration).
-
-            if Expander_Active then
-               Establish_Transient_Scope (Name (Decl), Sec_Stack => True);
-            end if;
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));
@@ -2145,11 +2152,15 @@ package body Sem_Ch5 is
 
             else
                declare
-                  Element     : constant Entity_Id :=
-                    Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
-                  Iterator    : constant Entity_Id :=
-                    Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
-                  Cursor_Type : Entity_Id;
+                  Element        : constant Entity_Id :=
+                                     Find_Value_Of_Aspect
+                                       (Typ, Aspect_Iterator_Element);
+                  Iterator       : constant Entity_Id :=
+                                     Find_Value_Of_Aspect
+                                       (Typ, Aspect_Default_Iterator);
+                  Orig_Iter_Name : constant Node_Id :=
+                                     Original_Node (Iter_Name);
+                  Cursor_Type    : Entity_Id;
 
                begin
                   if No (Element) then
@@ -2187,8 +2198,9 @@ package body Sem_Ch5 is
                      if not Is_Variable (Iter_Name)
                        and then not Has_Aspect (Typ, Aspect_Constant_Indexing)
                      then
-                        Error_Msg_N ("iteration over constant container "
-                          & "require constant_indexing aspect", N);
+                        Error_Msg_N
+                          ("iteration over constant container require "
+                           & "constant_indexing aspect", N);
 
                      --  The Iterate function may have an in_out parameter,
                      --  and a constant container is thus illegal.
@@ -2199,15 +2211,24 @@ package body Sem_Ch5 is
                                   E_In_Parameter
                        and then not Is_Variable (Iter_Name)
                      then
-                        Error_Msg_N
-                          ("variable container expected", N);
+                        Error_Msg_N ("variable container expected", N);
                      end if;
 
-                     if Nkind (Original_Node (Iter_Name))
-                        = N_Selected_Component
+                     --  Detect a case where the iterator denotes a component
+                     --  of a mutable object which depends on a discriminant.
+                     --  Note that the iterator may denote a function call in
+                     --  qualified form, in which case this check should not
+                     --  be performed.
+
+                     if Nkind (Orig_Iter_Name) = N_Selected_Component
                        and then
-                         Is_Dependent_Component_Of_Mutable_Object
-                           (Original_Node (Iter_Name))
+                         Present (Entity (Selector_Name (Orig_Iter_Name)))
+                       and then Ekind_In
+                                  (Entity (Selector_Name (Orig_Iter_Name)),
+                                   E_Component,
+                                   E_Discriminant)
+                       and then Is_Dependent_Component_Of_Mutable_Object
+                                  (Orig_Iter_Name)
                      then
                         Error_Msg_N
                           ("container cannot be a discriminant-dependent "
@@ -2259,9 +2280,11 @@ package body Sem_Ch5 is
             --  If that object is a selected component, verify that it is not
             --  a component of an unconstrained mutable object.
 
-            if Nkind (Iter_Name) = N_Identifier then
+            if Nkind (Iter_Name) = N_Identifier
+              or else (not Expander_Active and Comes_From_Source (Iter_Name))
+            then
                declare
-                  Orig_Node : constant Node_Id := Original_Node (Iter_Name);
+                  Orig_Node : constant Node_Id   := Original_Node (Iter_Name);
                   Iter_Kind : constant Node_Kind := Nkind (Orig_Node);
                   Obj       : Node_Id;
 
@@ -2298,27 +2321,13 @@ package body Sem_Ch5 is
                  Get_Cursor_Type
                    (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)),
                     Typ));
-               Ent := Etype (Def_Id);
 
             else
                Set_Etype (Def_Id, Get_Cursor_Type (Typ));
+               Check_Reverse_Iteration (Etype (Iter_Name));
             end if;
 
          end if;
-      end if;
-
-      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
-      --  This check is relevant only when SPARK_Mode is on as it is not a
-      --  standard Ada legality check.
-
-      --  Not clear whether this applies to element iterators, where the
-      --  cursor is not an explicit entity ???
-
-      if SPARK_Mode = On
-        and then not Of_Present (N)
-        and then Is_Effectively_Volatile (Ent)
-      then
-         Error_Msg_N ("loop parameter cannot be volatile", Ent);
       end if;
    end Analyze_Iterator_Specification;
 
@@ -2747,8 +2756,9 @@ package body Sem_Ch5 is
 
          --  a)  a function call,
          --  b)  an identifier that is not a type,
-         --  c)  an attribute reference 'Old (within a postcondition)
-         --  d)  an unchecked conversion
+         --  c)  an attribute reference 'Old (within a postcondition),
+         --  d)  an unchecked conversion or a qualified expression with
+         --      the proper iterator type.
 
          --  then it is an iteration over a container. It was classified as
          --  a loop specification by the parser, and must be rewritten now
@@ -2758,13 +2768,19 @@ package body Sem_Ch5 is
          --  conversion is always an object.
 
          if Nkind (DS_Copy) = N_Function_Call
+
            or else (Is_Entity_Name (DS_Copy)
                      and then not Is_Type (Entity (DS_Copy)))
+
            or else (Nkind (DS_Copy) = N_Attribute_Reference
                      and then Nam_In (Attribute_Name (DS_Copy),
-                                      Name_Old, Name_Loop_Entry))
-           or else Nkind (DS_Copy) = N_Unchecked_Type_Conversion
+                                      Name_Loop_Entry, Name_Old))
+
            or else Has_Aspect (Etype (DS_Copy), Aspect_Iterable)
+
+           or else Nkind (DS_Copy) = N_Unchecked_Type_Conversion
+           or else (Nkind (DS_Copy) = N_Qualified_Expression
+                     and then Is_Iterator (Etype (DS_Copy)))
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require
@@ -3138,11 +3154,13 @@ package body Sem_Ch5 is
                Set_Parent (DS_Copy, Parent (DS));
                Preanalyze_Range (DS_Copy);
 
-               --  Check for a call to Iterate ()
+               --  Check for a call to Iterate () or an expression with
+               --  an iterator type.
 
                return
-                 Nkind (DS_Copy) = N_Function_Call
-                   and then Needs_Finalization (Etype (DS_Copy));
+                 (Nkind (DS_Copy) = N_Function_Call
+                   and then Needs_Finalization (Etype (DS_Copy)))
+                 or else Is_Iterator (Etype (DS_Copy));
             end;
          end if;
       end Is_Container_Iterator;
@@ -3213,7 +3231,7 @@ package body Sem_Ch5 is
          --  Verify that the loop name is hot hidden by an unrelated
          --  declaration in an inner scope.
 
-         elsif Ekind (Ent) /= E_Label and then Ekind (Ent) /= E_Loop  then
+         elsif Ekind (Ent) /= E_Label and then Ekind (Ent) /= E_Loop then
             Error_Msg_Sloc := Sloc (Ent);
             Error_Msg_N ("implicit label declaration for & is hidden#", Id);
 

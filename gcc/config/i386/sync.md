@@ -98,7 +98,7 @@
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))
    (clobber (reg:CC FLAGS_REG))]
   "!(TARGET_64BIT || TARGET_SSE2)"
-  "lock{%;} or{l}\t{$0, (%%esp)|DWORD PTR [esp], 0}"
+  "lock{%;} or{l}\t{$0, -4(%%esp)|DWORD PTR [esp-4], 0}"
   [(set_attr "memory" "unknown")])
 
 (define_expand "mem_thread_fence"
@@ -210,6 +210,34 @@
   DONE;
 })
 
+(define_peephole2
+  [(set (match_operand:DF 0 "fp_register_operand")
+	(unspec:DF [(match_operand:DI 1 "memory_operand")]
+		   UNSPEC_FILD_ATOMIC))
+   (set (match_operand:DI 2 "memory_operand")
+	(unspec:DI [(match_dup 0)]
+		   UNSPEC_FIST_ATOMIC))
+   (set (match_operand:DF 3 "fp_register_operand")
+	(match_operand:DF 4 "memory_operand"))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (2, operands[0])
+   && rtx_equal_p (operands[4], adjust_address_nv (operands[2], DFmode, 0))"
+  [(set (match_dup 3) (match_dup 5))]
+  "operands[5] = gen_lowpart (DFmode, operands[1]);")
+
+(define_peephole2
+  [(set (match_operand:DI 0 "sse_reg_operand")
+	(match_operand:DI 1 "memory_operand"))
+   (set (match_operand:DI 2 "memory_operand")
+	(match_dup 0))
+   (set (match_operand:DF 3 "fp_register_operand")
+	(match_operand:DF 4 "memory_operand"))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (2, operands[0])
+   && rtx_equal_p (operands[4], adjust_address_nv (operands[2], DFmode, 0))"
+  [(set (match_dup 3) (match_dup 5))]
+  "operands[5] = gen_lowpart (DFmode, operands[1]);")
+
 (define_expand "atomic_store<mode>"
   [(set (match_operand:ATOMIC 0 "memory_operand")
 	(unspec:ATOMIC [(match_operand:ATOMIC 1 "nonimmediate_operand")
@@ -297,6 +325,34 @@
   emit_move_insn (dst, src);
   DONE;
 })
+
+(define_peephole2
+  [(set (match_operand:DF 0 "memory_operand")
+	(match_operand:DF 1 "fp_register_operand"))
+   (set (match_operand:DF 2 "fp_register_operand")
+	(unspec:DF [(match_operand:DI 3 "memory_operand")]
+		   UNSPEC_FILD_ATOMIC))
+   (set (match_operand:DI 4 "memory_operand")
+	(unspec:DI [(match_dup 2)]
+		   UNSPEC_FIST_ATOMIC))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (3, operands[2])
+   && rtx_equal_p (operands[0], adjust_address_nv (operands[3], DFmode, 0))"
+  [(set (match_dup 5) (match_dup 1))]
+  "operands[5] = gen_lowpart (DFmode, operands[4]);")
+
+(define_peephole2
+  [(set (match_operand:DF 0 "memory_operand")
+	(match_operand:DF 1 "fp_register_operand"))
+   (set (match_operand:DI 2 "sse_reg_operand")
+	(match_operand:DI 3 "memory_operand"))
+   (set (match_operand:DI 4 "memory_operand")
+	(match_dup 2))]
+  "!TARGET_64BIT
+   && peep2_reg_dead_p (3, operands[2])
+   && rtx_equal_p (operands[0], adjust_address_nv (operands[3], DFmode, 0))"
+  [(set (match_dup 5) (match_dup 1))]
+  "operands[5] = gen_lowpart (DFmode, operands[4]);")
 
 ;; ??? You'd think that we'd be able to perform this via FLOAT + FIX_TRUNC
 ;; operations.  But the fix_trunc patterns want way more setup than we want
@@ -467,6 +523,36 @@
 		   (plus:SWI (match_dup 1)
 			     (match_dup 2)))])])
 
+;; Likewise, but for the -Os special case of *mov<mode>_or.
+(define_peephole2
+  [(parallel [(set (match_operand:SWI 0 "register_operand")
+		   (match_operand:SWI 2 "constm1_operand"))
+	      (clobber (reg:CC FLAGS_REG))])
+   (parallel [(set (match_dup 0)
+		   (unspec_volatile:SWI
+		     [(match_operand:SWI 1 "memory_operand")
+		      (match_operand:SI 4 "const_int_operand")]
+		     UNSPECV_XCHG))
+	      (set (match_dup 1)
+		   (plus:SWI (match_dup 1)
+			     (match_dup 0)))
+	      (clobber (reg:CC FLAGS_REG))])
+   (set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (match_dup 0)
+		     (match_operand:SWI 3 "const_int_operand")))]
+  "peep2_reg_dead_p (3, operands[0])
+   && (unsigned HOST_WIDE_INT) INTVAL (operands[2])
+      == -(unsigned HOST_WIDE_INT) INTVAL (operands[3])
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+  [(parallel [(set (reg:CCZ FLAGS_REG)
+		   (compare:CCZ
+		     (unspec_volatile:SWI [(match_dup 1) (match_dup 4)]
+					  UNSPECV_XCHG)
+		     (match_dup 3)))
+	      (set (match_dup 1)
+		   (plus:SWI (match_dup 1)
+			     (match_dup 2)))])])
+
 (define_insn "*atomic_fetch_add_cmp<mode>"
   [(set (reg:CCZ FLAGS_REG)
 	(compare:CCZ
@@ -575,3 +661,114 @@
    (clobber (reg:CC FLAGS_REG))]
   ""
   "lock{%;} %K2<logic>{<imodesuffix>}\t{%1, %0|%0, %1}")
+
+(define_expand "atomic_bit_test_and_set<mode>"
+  [(match_operand:SWI248 0 "register_operand")
+   (match_operand:SWI248 1 "memory_operand")
+   (match_operand:SWI248 2 "nonmemory_operand")
+   (match_operand:SI 3 "const_int_operand") ;; model
+   (match_operand:SI 4 "const_int_operand")]
+  ""
+{
+  emit_insn (gen_atomic_bit_test_and_set<mode>_1 (operands[1], operands[2],
+						  operands[3]));
+  rtx tem = gen_reg_rtx (QImode);
+  ix86_expand_setcc (tem, EQ, gen_rtx_REG (CCCmode, FLAGS_REG), const0_rtx);
+  rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
+  if (operands[4] == const0_rtx)
+    result = expand_simple_binop (<MODE>mode, ASHIFT, result,
+				  operands[2], operands[0], 0, OPTAB_DIRECT);
+  if (result != operands[0])
+    emit_move_insn (operands[0], result);
+  DONE;
+})
+
+(define_insn "atomic_bit_test_and_set<mode>_1"
+  [(set (reg:CCC FLAGS_REG)
+	(compare:CCC
+	  (unspec_volatile:SWI248
+	    [(match_operand:SWI248 0 "memory_operand" "+m")
+	     (match_operand:SI 2 "const_int_operand")]		;; model
+	    UNSPECV_XCHG)
+	  (const_int 0)))
+   (set (zero_extract:SWI248 (match_dup 0)
+			     (const_int 1)
+			     (match_operand:SWI248 1 "nonmemory_operand" "rN"))
+	(const_int 1))]
+  ""
+  "lock{%;} %K2bts{<imodesuffix>}\t{%1, %0|%0, %1}")
+
+(define_expand "atomic_bit_test_and_complement<mode>"
+  [(match_operand:SWI248 0 "register_operand")
+   (match_operand:SWI248 1 "memory_operand")
+   (match_operand:SWI248 2 "nonmemory_operand")
+   (match_operand:SI 3 "const_int_operand") ;; model
+   (match_operand:SI 4 "const_int_operand")]
+  ""
+{
+  emit_insn (gen_atomic_bit_test_and_complement<mode>_1 (operands[1],
+							 operands[2],
+							 operands[3]));
+  rtx tem = gen_reg_rtx (QImode);
+  ix86_expand_setcc (tem, EQ, gen_rtx_REG (CCCmode, FLAGS_REG), const0_rtx);
+  rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
+  if (operands[4] == const0_rtx)
+    result = expand_simple_binop (<MODE>mode, ASHIFT, result,
+				  operands[2], operands[0], 0, OPTAB_DIRECT);
+  if (result != operands[0])
+    emit_move_insn (operands[0], result);
+  DONE;
+})
+
+(define_insn "atomic_bit_test_and_complement<mode>_1"
+  [(set (reg:CCC FLAGS_REG)
+	(compare:CCC
+	  (unspec_volatile:SWI248
+	    [(match_operand:SWI248 0 "memory_operand" "+m")
+	     (match_operand:SI 2 "const_int_operand")]		;; model
+	    UNSPECV_XCHG)
+	  (const_int 0)))
+   (set (zero_extract:SWI248 (match_dup 0)
+			     (const_int 1)
+			     (match_operand:SWI248 1 "nonmemory_operand" "rN"))
+	(not:SWI248 (zero_extract:SWI248 (match_dup 0)
+					 (const_int 1)
+					 (match_dup 1))))]
+  ""
+  "lock{%;} %K2btc{<imodesuffix>}\t{%1, %0|%0, %1}")
+
+(define_expand "atomic_bit_test_and_reset<mode>"
+  [(match_operand:SWI248 0 "register_operand")
+   (match_operand:SWI248 1 "memory_operand")
+   (match_operand:SWI248 2 "nonmemory_operand")
+   (match_operand:SI 3 "const_int_operand") ;; model
+   (match_operand:SI 4 "const_int_operand")]
+  ""
+{
+  emit_insn (gen_atomic_bit_test_and_reset<mode>_1 (operands[1], operands[2],
+						    operands[3]));
+  rtx tem = gen_reg_rtx (QImode);
+  ix86_expand_setcc (tem, EQ, gen_rtx_REG (CCCmode, FLAGS_REG), const0_rtx);
+  rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
+  if (operands[4] == const0_rtx)
+    result = expand_simple_binop (<MODE>mode, ASHIFT, result,
+				  operands[2], operands[0], 0, OPTAB_DIRECT);
+  if (result != operands[0])
+    emit_move_insn (operands[0], result);
+  DONE;
+})
+
+(define_insn "atomic_bit_test_and_reset<mode>_1"
+  [(set (reg:CCC FLAGS_REG)
+	(compare:CCC
+	  (unspec_volatile:SWI248
+	    [(match_operand:SWI248 0 "memory_operand" "+m")
+	     (match_operand:SI 2 "const_int_operand")]		;; model
+	    UNSPECV_XCHG)
+	  (const_int 0)))
+   (set (zero_extract:SWI248 (match_dup 0)
+			     (const_int 1)
+			     (match_operand:SWI248 1 "nonmemory_operand" "rN"))
+	(const_int 0))]
+  ""
+  "lock{%;} %K2btr{<imodesuffix>}\t{%1, %0|%0, %1}")

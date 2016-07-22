@@ -1,6 +1,6 @@
 /* { dg-options "-fcilkplus" } */
-/* { dg-do run { target i?86-*-* x86_64-*-* arm*-*-* } } */
-/* { dg-options "-fcilkplus -lcilkrts" { target { i?86-*-* x86_64-*-* arm*-*-* } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target cilkplus_runtime } */
 
 #include <assert.h>
 #include <unistd.h>

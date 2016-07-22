@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template
     basic_ostream<char, char_traits<char> >&
-    operator<<(basic_ostream<char, char_traits<char> >&, 
+    operator<<(basic_ostream<char, char_traits<char> >&,
 	       const complex<float>&);
 
   template
@@ -43,12 +43,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template
     basic_ostream<char, char_traits<char> >&
-    operator<<(basic_ostream<char, char_traits<char> >&, 
+    operator<<(basic_ostream<char, char_traits<char> >&,
 	       const complex<double>&);
 
   template
     basic_istream<char, char_traits<char> >&
-    operator>>(basic_istream<char, char_traits<char> >&, 
+    operator>>(basic_istream<char, char_traits<char> >&,
 	       complex<long double>&);
 
   template

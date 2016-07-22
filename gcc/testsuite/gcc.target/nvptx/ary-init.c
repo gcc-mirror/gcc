@@ -1,3 +1,5 @@
+/* { dg-do compile } */
+
 /* { dg-additional-options "-Wno-long-long" } */
 
 char ca1[2] = {'a', 'b'};

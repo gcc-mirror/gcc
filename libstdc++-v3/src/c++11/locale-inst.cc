@@ -76,13 +76,13 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
   template
     ostreambuf_iterator<C>
     money_put<C, ostreambuf_iterator<C> >::
-    _M_insert<true>(ostreambuf_iterator<C>, ios_base&, C, 
+    _M_insert<true>(ostreambuf_iterator<C>, ios_base&, C,
 		    const string_type&) const;
 
   template
     ostreambuf_iterator<C>
     money_put<C, ostreambuf_iterator<C> >::
-    _M_insert<false>(ostreambuf_iterator<C>, ios_base&, C, 
+    _M_insert<false>(ostreambuf_iterator<C>, ios_base&, C,
 		     const string_type&) const;
 _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 
@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     istreambuf_iterator<C>
     num_get<C, istreambuf_iterator<C> >::
     _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&, 
+		   ios_base&, ios_base::iostate&,
 		   unsigned short&) const;
 
   template
@@ -149,39 +149,39 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C, 
+    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
 		  long) const;
 
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C, 
+    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
 		  unsigned long) const;
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C, 
+    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
 		  long long) const;
 
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C, 
+    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
 		  unsigned long long) const;
 #endif
 
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char, 
+    _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char,
 		    double) const;
 
   template
     ostreambuf_iterator<C>
     num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char, 
+    _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char,
 		    long double) const;
 #endif
 _GLIBCXX_END_NAMESPACE_LDBL
@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class messages<C>;
   template class messages_byname<C>;
 _GLIBCXX_END_NAMESPACE_CXX11
-  
+
   // ctype
   ctype_byname<C>::ctype_byname(const string& __s, size_t __refs)
   : ctype_byname(__s.c_str(), __refs) { }
@@ -215,7 +215,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   inline template class __ctype_abstract_base<C>;
   template class ctype_byname<C>;
 #endif
-  
+
   // codecvt
 #if ! _GLIBCXX_USE_CXX11_ABI
   inline template class __codecvt_abstract_base<C, char, mbstate_t>;
@@ -230,126 +230,126 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class collate<C>;
   template class collate_byname<C>;
 _GLIBCXX_END_NAMESPACE_CXX11
-    
+
   // use_facet
 #if ! _GLIBCXX_USE_CXX11_ABI
   template
-    const ctype<C>& 
+    const ctype<C>&
     use_facet<ctype<C> >(const locale&);
 
   template
-    const codecvt<C, char, mbstate_t>& 
+    const codecvt<C, char, mbstate_t>&
     use_facet<codecvt<C, char, mbstate_t> >(const locale&);
 #endif
 
   template
-    const collate<C>& 
+    const collate<C>&
     use_facet<collate<C> >(const locale&);
 
   template
-    const numpunct<C>& 
+    const numpunct<C>&
     use_facet<numpunct<C> >(const locale&);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template 
-    const num_put<C>& 
+  template
+    const num_put<C>&
     use_facet<num_put<C> >(const locale&);
 
-  template 
-    const num_get<C>& 
+  template
+    const num_get<C>&
     use_facet<num_get<C> >(const locale&);
 #endif
 
   template
-    const moneypunct<C, true>& 
+    const moneypunct<C, true>&
     use_facet<moneypunct<C, true> >(const locale&);
 
   template
-    const moneypunct<C, false>& 
+    const moneypunct<C, false>&
     use_facet<moneypunct<C, false> >(const locale&);
 
-  template 
-    const money_put<C>& 
+  template
+    const money_put<C>&
     use_facet<money_put<C> >(const locale&);
 
-  template 
-    const money_get<C>& 
+  template
+    const money_get<C>&
     use_facet<money_get<C> >(const locale&);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
   template
-    const __timepunct<C>& 
+    const __timepunct<C>&
     use_facet<__timepunct<C> >(const locale&);
 
-  template 
-    const time_put<C>& 
+  template
+    const time_put<C>&
     use_facet<time_put<C> >(const locale&);
 #endif
 
-  template 
-    const time_get<C>& 
+  template
+    const time_get<C>&
     use_facet<time_get<C> >(const locale&);
 
-  template 
-    const messages<C>& 
+  template
+    const messages<C>&
     use_facet<messages<C> >(const locale&);
 
   // has_facet
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template 
+  template
     bool
     has_facet<ctype<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<codecvt<C, char, mbstate_t> >(const locale&);
 #endif
 
-  template 
+  template
     bool
     has_facet<collate<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<numpunct<C> >(const locale&);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template 
+  template
     bool
     has_facet<num_put<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<num_get<C> >(const locale&);
 #endif
 
-  template 
+  template
     bool
     has_facet<moneypunct<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<money_put<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<money_get<C> >(const locale&);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template 
+  template
     bool
     has_facet<__timepunct<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<time_put<C> >(const locale&);
 #endif
 
-  template 
+  template
     bool
     has_facet<time_get<C> >(const locale&);
 
-  template 
+  template
     bool
     has_facet<messages<C> >(const locale&);
 
@@ -358,7 +358,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   // locale functions.
   template
     C*
-    __add_grouping<C>(C*, C, char const*, size_t, 
+    __add_grouping<C>(C*, C, char const*, size_t,
 			 C const*, C const*);
 
   template class __pad<C, char_traits<C> >;
@@ -371,7 +371,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #ifdef _GLIBCXX_USE_LONG_LONG
   template
     int
-    __int_to_char(C*, unsigned long long, const C*, 
+    __int_to_char(C*, unsigned long long, const C*,
 		  ios_base::fmtflags, bool);
 #endif
 #endif

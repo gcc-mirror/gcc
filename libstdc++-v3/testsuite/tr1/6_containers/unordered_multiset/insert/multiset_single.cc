@@ -53,7 +53,7 @@ void test02()
   VERIFY(s.size() == 2);
   VERIFY(std::distance(s.begin(), s.end()) == 2);
   VERIFY(*i == "abcde");
-  
+
   Set::iterator i2 = s.begin();
   ++i2;
   VERIFY(i == s.begin() || i == i2);

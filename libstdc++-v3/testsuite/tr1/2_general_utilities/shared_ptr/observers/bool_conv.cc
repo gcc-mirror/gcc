@@ -69,7 +69,7 @@ test03()
 }
 
 
-int 
+int
 main()
 {
   test01();

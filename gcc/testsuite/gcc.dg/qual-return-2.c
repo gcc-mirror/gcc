@@ -1,7 +1,7 @@
 /* Test for warnings for qualified function return types.  -pedantic test.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic" } */
+/* { dg-options "-pedantic -std=gnu99" } */
 
 /* Qualifying a function return type makes no sense.  */
 

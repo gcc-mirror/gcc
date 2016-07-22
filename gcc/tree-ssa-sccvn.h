@@ -81,22 +81,29 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 typedef struct vn_reference_op_struct
 {
   ENUM_BITFIELD(tree_code) opcode : 16;
-  /* 1 for instrumented calls.  */
-  unsigned with_bounds : 1;
   /* Dependence info, used for [TARGET_]MEM_REF only.  */
   unsigned short clique;
   unsigned short base;
+  /* 1 for instrumented calls.  */
+  unsigned with_bounds : 1;
+  unsigned reverse : 1;
+  /* For storing TYPE_ALIGN for array ref element size computation.  */
+  unsigned align : 6;
   /* Constant offset this op adds or -1 if it is variable.  */
   HOST_WIDE_INT off;
   tree type;
   tree op0;
   tree op1;
   tree op2;
-  bool reverse;
 } vn_reference_op_s;
 typedef vn_reference_op_s *vn_reference_op_t;
 typedef const vn_reference_op_s *const_vn_reference_op_t;
 
+inline unsigned
+vn_ref_op_align_unit (vn_reference_op_t op)
+{
+  return op->align ? ((unsigned)1 << (op->align - 1)) / BITS_PER_UNIT : 0;
+}
 
 /* A reference operation in the hashtable is representation as
    the vuse, representing the memory state at the time of
@@ -204,6 +211,7 @@ extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);
 bool run_scc_vn (vn_lookup_kind);
 void free_scc_vn (void);
+void scc_vn_restore_ssa_info (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
@@ -213,6 +221,7 @@ vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,
 				    vec<vn_reference_op_s> );
+vec<vn_reference_op_s> vn_reference_operands_for_lookup (tree);
 tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
@@ -232,6 +241,7 @@ unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
 tree fully_constant_vn_reference_p (vn_reference_t);
+tree vn_nary_simplify (vn_nary_op_t);
 
 /* Valueize NAME if it is an SSA name, otherwise just return it.  */
 

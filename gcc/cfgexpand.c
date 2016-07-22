@@ -369,7 +369,7 @@ align_local_variable (tree decl)
   else
     {
       align = LOCAL_DECL_ALIGNMENT (decl);
-      DECL_ALIGN (decl) = align;
+      SET_DECL_ALIGN (decl, align);
     }
   return align / BITS_PER_UNIT;
 }
@@ -1018,7 +1018,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
 	 alignment here, but (at least) the i386 port does exactly this
 	 via the MINIMUM_ALIGNMENT hook.  */
 
-      DECL_ALIGN (decl) = align;
+      SET_DECL_ALIGN (decl, align);
       DECL_USER_ALIGN (decl) = 0;
     }
 
@@ -1030,10 +1030,10 @@ struct stack_vars_data
   /* Vector of offset pairs, always end of some padding followed
      by start of the padding that needs Address Sanitizer protection.
      The vector is in reversed, highest offset pairs come first.  */
-  vec<HOST_WIDE_INT> asan_vec;
+  auto_vec<HOST_WIDE_INT> asan_vec;
 
   /* Vector of partition representative decls in between the paddings.  */
-  vec<tree> asan_decl_vec;
+  auto_vec<tree> asan_decl_vec;
 
   /* Base pseudo register for Address Sanitizer protected automatic vars.  */
   rtx asan_base;
@@ -1053,6 +1053,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
   HOST_WIDE_INT large_size = 0, large_alloc = 0;
   rtx large_base = NULL;
   unsigned large_align = 0;
+  bool large_allocation_done = false;
   tree decl;
 
   /* Determine if there are any variables requiring "large" alignment.
@@ -1096,11 +1097,6 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	  large_size &= -(HOST_WIDE_INT)alignb;
 	  large_size += stack_vars[i].size;
 	}
-
-      /* If there were any, allocate space.  */
-      if (large_size > 0)
-	large_base = allocate_dynamic_stack_space (GEN_INT (large_size), 0,
-						   large_align, true);
     }
 
   for (si = 0; si < n; ++si)
@@ -1137,7 +1133,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      HOST_WIDE_INT prev_offset
 		= align_base (frame_offset,
 			      MAX (alignb, ASAN_RED_ZONE_SIZE),
-			      FRAME_GROWS_DOWNWARD);
+			      !FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
 	      offset
 		= alloc_stack_frame_space (stack_vars[i].size
@@ -1186,6 +1182,22 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	  /* Large alignment is only processed in the last pass.  */
 	  if (pred)
 	    continue;
+
+	  /* If there were any variables requiring "large" alignment, allocate
+	     space.  */
+	  if (large_size > 0 && ! large_allocation_done)
+	    {
+	      HOST_WIDE_INT loffset;
+	      rtx large_allocsize;
+
+	      large_allocsize = GEN_INT (large_size);
+	      get_dynamic_stack_size (&large_allocsize, 0, large_align, NULL);
+	      loffset = alloc_stack_frame_space
+		(INTVAL (large_allocsize),
+		 PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT);
+	      large_base = get_dynamic_stack_base (loffset, large_align);
+	      large_allocation_done = true;
+	    }
 	  gcc_assert (large_base != NULL);
 
 	  large_alloc += alignb - 1;
@@ -2012,7 +2024,7 @@ static rtx_insn *
 expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
-  vec<tree> maybe_local_decls = vNULL;
+  auto_vec<tree> maybe_local_decls;
   rtx_insn *var_end_seq = NULL;
   unsigned i;
   unsigned len;
@@ -2179,8 +2191,6 @@ expand_used_vars (void)
     {
       struct stack_vars_data data;
 
-      data.asan_vec = vNULL;
-      data.asan_decl_vec = vNULL;
       data.asan_base = NULL_RTX;
       data.asan_alignb = 0;
 
@@ -2239,9 +2249,6 @@ expand_used_vars (void)
 	}
 
       expand_stack_vars (NULL, &data);
-
-      data.asan_vec.release ();
-      data.asan_decl_vec.release ();
     }
 
   fini_vars_expansion ();
@@ -2258,7 +2265,6 @@ expand_used_vars (void)
       if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
 	add_local_decl (cfun, var);
     }
-  maybe_local_decls.release ();
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
   if (STACK_ALIGNMENT_NEEDED)
@@ -2626,6 +2632,7 @@ expand_call_stmt (gcall *stmt)
     TREE_NOTHROW (exp) = 1;
 
   CALL_EXPR_TAILCALL (exp) = gimple_call_tail_p (stmt);
+  CALL_EXPR_MUST_TAIL_CALL (exp) = gimple_call_must_tail_p (stmt);
   CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
   if (decl
       && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
@@ -2673,14 +2680,39 @@ expand_asm_loc (tree string, int vol, location_t locus)
 {
   rtx body;
 
-  if (TREE_CODE (string) == ADDR_EXPR)
-    string = TREE_OPERAND (string, 0);
-
   body = gen_rtx_ASM_INPUT_loc (VOIDmode,
 				ggc_strdup (TREE_STRING_POINTER (string)),
 				locus);
 
   MEM_VOLATILE_P (body) = vol;
+
+  /* Non-empty basic ASM implicitly clobbers memory.  */
+  if (TREE_STRING_LENGTH (string) != 0)
+    {
+      rtx asm_op, clob;
+      unsigned i, nclobbers;
+      auto_vec<rtx> input_rvec, output_rvec;
+      auto_vec<const char *> constraints;
+      auto_vec<rtx> clobber_rvec;
+      HARD_REG_SET clobbered_regs;
+      CLEAR_HARD_REG_SET (clobbered_regs);
+
+      clob = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+      clobber_rvec.safe_push (clob);
+
+      if (targetm.md_asm_adjust)
+	targetm.md_asm_adjust (output_rvec, input_rvec,
+			       constraints, clobber_rvec,
+			       clobbered_regs);
+
+      asm_op = body;
+      nclobbers = clobber_rvec.length ();
+      body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (1 + nclobbers));
+
+      XVECEXP (body, 0, 0) = asm_op;
+      for (i = 0; i < nclobbers; i++)
+	XVECEXP (body, 0, i + 1) = gen_rtx_CLOBBER (VOIDmode, clobber_rvec[i]);
+    }
 
   emit_insn (body);
 }
@@ -4418,7 +4450,7 @@ expand_debug_expr (tree exp)
 	int reversep, volatilep = 0;
 	tree tem
 	  = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode1,
-				 &unsignedp, &reversep, &volatilep, false);
+				 &unsignedp, &reversep, &volatilep);
 	rtx orig_op0;
 
 	if (bitsize == 0)
@@ -4473,7 +4505,7 @@ expand_debug_expr (tree exp)
 	      {
 		HOST_WIDE_INT units
 		  = (-bitpos + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-		op0 = adjust_address_nv (op0, mode1, units);
+		op0 = adjust_address_nv (op0, mode1, -units);
 		bitpos += units * BITS_PER_UNIT;
 	      }
 	    else if (bitpos == 0 && bitsize == GET_MODE_BITSIZE (mode))
@@ -5025,6 +5057,7 @@ expand_debug_expr (tree exp)
     case FIXED_CONVERT_EXPR:
     case OBJ_TYPE_REF:
     case WITH_SIZE_EXPR:
+    case BIT_INSERT_EXPR:
       return NULL;
 
     case DOT_PROD_EXPR:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -554,7 +554,7 @@ package Types is
    -- Types used for Library Management --
    ---------------------------------------
 
-   type Unit_Number_Type is new Int;
+   type Unit_Number_Type is new Int range -1 .. Int'Last;
    --  Unit number. The main source is unit 0, and subsidiary sources have
    --  non-zero numbers starting with 1. Unit numbers are used to index the
    --  Units table in package Lib.

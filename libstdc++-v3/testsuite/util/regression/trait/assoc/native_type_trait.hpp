@@ -104,7 +104,7 @@ namespace __gnu_pbds
 	typedef std::map< Native_Key_Type, std::string> type;
 
       public:
-	static const typename type::key_type& 
+	static const typename type::key_type&
         extract_key(typename type::const_reference r_val)
 	{
 	  return (r_val.first);
@@ -130,7 +130,7 @@ namespace __gnu_pbds
 	typedef std::set< Native_Key_Type> type;
 
       public:
-	static const typename type::key_type& 
+	static const typename type::key_type&
         extract_key(typename type::const_reference r_val)
 	{
 	  return (r_val);

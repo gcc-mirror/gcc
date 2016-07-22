@@ -3,6 +3,7 @@
 /* { dg-require-effective-target avx512f } */
 /* { dg-skip-if "no M_PI" { vxworks_kernel } } */
 
+#define __NO_MATH_INLINES
 #include <math.h>
 #include "avx512f-check.h"
 

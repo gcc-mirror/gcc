@@ -25,7 +25,7 @@
 #include <tr1/regex>
 #include <testsuite_hooks.h>
 
-// Tests C++ string assignment of the basic_regex class.  
+// Tests C++ string assignment of the basic_regex class.
 void test01()
 {
   typedef std::tr1::basic_regex<wchar_t> test_type;
@@ -37,7 +37,7 @@ void test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

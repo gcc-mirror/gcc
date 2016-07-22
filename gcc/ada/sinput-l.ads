@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,29 +79,34 @@ package Sinput.L is
    -------------------------------------------------
 
    type Sloc_Adjustment is private;
-   --  Type returned by Create_Instantiation_Source for use in subsequent
-   --  calls to Adjust_Instantiation_Sloc.
+   --  Type returned by Create_Instantiation_Source for use in subsequent calls
+   --  to Adjust_Instantiation_Sloc.
+
+   procedure Adjust_Instantiation_Sloc
+     (N      : Node_Id;
+      Factor : Sloc_Adjustment);
+   --  The instantiation tree is created by copying the tree of the generic
+   --  template (including the original Sloc values), and then applying
+   --  Adjust_Instantiation_Sloc to each copied node to adjust the Sloc to
+   --  reference the source entry for the instantiation.
 
    procedure Create_Instantiation_Source
-     (Inst_Node    : Entity_Id;
-      Template_Id  : Entity_Id;
-      Inlined_Body : Boolean;
-      A            : out Sloc_Adjustment);
+     (Inst_Node        : Entity_Id;
+      Template_Id      : Entity_Id;
+      Factor           : out Sloc_Adjustment;
+      Inlined_Body     : Boolean := False;
+      Inherited_Pragma : Boolean := False);
    --  This procedure creates the source table entry for an instantiation.
    --  Inst_Node is the instantiation node, and Template_Id is the defining
    --  identifier of the generic declaration or body unit as appropriate.
-   --  A is set to an adjustment factor to be used in subsequent calls to
-   --  Adjust_Instantiation_Sloc. The instantiation mechanism is also used
-   --  for inlined function and procedure calls. The parameter Inlined_Body
-   --  is set to True in such cases, and False for a generic instantiation.
-   --  This is used for generating error messages that distinguish these
-   --  two cases, otherwise the two cases are handled identically.
-
-   procedure Adjust_Instantiation_Sloc (N : Node_Id; A : Sloc_Adjustment);
-   --  The instantiation tree is created by copying the tree of the generic
-   --  template (including the original Sloc values), and then applying
-   --  Adjust_Instantiation_Sloc to each copied node to adjust the Sloc
-   --  to reference the source entry for the instantiation.
+   --  Factor is set to an adjustment factor to be used in subsequent calls to
+   --  Adjust_Instantiation_Sloc. The instantiation mechanism is also used for
+   --  inlined function and procedure calls. The parameter Inlined_Body is set
+   --  to True in such cases. This is used for generating error messages that
+   --  distinguish these two cases, otherwise the two cases are handled
+   --  identically. Similarly, the instantiation mechanism is also used for
+   --  inherited class-wide pre- and postconditions. Parameter Inherited_Pragma
+   --  is set to True in such cases.
 
 private
 
@@ -119,7 +124,7 @@ private
       --  be applied, used to ensure that no incorrect adjustments are
       --  made. Really it is a bug if anyone ever tries to adjust outside
       --  this range, but since we are only doing this anyway for getting
-      --  better error messages, it is not critical
+      --  better error messages, it is not critical.
 
    end record;
 

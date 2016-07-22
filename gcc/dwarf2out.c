@@ -1325,9 +1325,6 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   dw_loc_descr_ref descr = ggc_cleared_alloc<dw_loc_descr_node> ();
 
   descr->dw_loc_opc = op;
-#if CHECKING_P
-  descr->dw_loc_frame_offset = -1;
-#endif
   descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
   descr->dw_loc_oprnd1.val_entry = NULL;
   descr->dw_loc_oprnd1.v.val_unsigned = oprnd1;
@@ -3041,7 +3038,7 @@ static unsigned int line_info_label_num;
 /* The current table to which we should emit line number information
    for the current function.  This will be set up at the beginning of
    assembly for the function.  */
-static dw_line_info_table *cur_line_info_table;
+static GTY(()) dw_line_info_table *cur_line_info_table;
 
 /* The two default tables of line number info.  */
 static GTY(()) dw_line_info_table *text_section_line_info;
@@ -12608,7 +12605,7 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
     return NULL;
 
   if (dwarf_strict
-      && (GET_MODE_CLASS (op_mode) != MODE_INT
+      && (!SCALAR_INT_MODE_P (op_mode)
 	  || GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE))
     return NULL;
 
@@ -12620,7 +12617,7 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
   if (op0 == NULL || op1 == NULL)
     return NULL;
 
-  if (GET_MODE_CLASS (op_mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (op_mode)
       || GET_MODE_SIZE (op_mode) == DWARF2_ADDR_SIZE)
     return compare_loc_descriptor (op, op0, op1);
 
@@ -12715,7 +12712,7 @@ ucompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
     op_mode = GET_MODE (XEXP (rtl, 1));
   if (op_mode == VOIDmode)
     return NULL;
-  if (GET_MODE_CLASS (op_mode) != MODE_INT)
+  if (!SCALAR_INT_MODE_P (op_mode))
     return NULL;
 
   if (dwarf_strict && GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE)
@@ -12782,7 +12779,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref bra_node, drop_node;
 
   if (dwarf_strict
-      && (GET_MODE_CLASS (mode) != MODE_INT
+      && (!SCALAR_INT_MODE_P (mode)
 	  || GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE))
     return NULL;
 
@@ -12815,7 +12812,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
 	  add_loc_descr (&op1, new_loc_descr (DW_OP_plus_uconst, bias, 0));
 	}
     }
-  else if (GET_MODE_CLASS (mode) == MODE_INT
+  else if (!SCALAR_INT_MODE_P (mode)
 	   && GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE)
     {
       int shift = (DWARF2_ADDR_SIZE - GET_MODE_SIZE (mode)) * BITS_PER_UNIT;
@@ -12824,7 +12821,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
       add_loc_descr (&op1, int_loc_descriptor (shift));
       add_loc_descr (&op1, new_loc_descr (DW_OP_shl, 0, 0));
     }
-  else if (GET_MODE_CLASS (mode) == MODE_INT
+  else if (SCALAR_INT_MODE_P (mode)
 	   && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
     {
       dw_die_ref type_die = base_type_for_mode (mode, 0);
@@ -12858,7 +12855,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
   bra_node->dw_loc_oprnd1.val_class = dw_val_class_loc;
   bra_node->dw_loc_oprnd1.v.val_loc = drop_node;
   if ((GET_CODE (rtl) == SMIN || GET_CODE (rtl) == SMAX)
-      && GET_MODE_CLASS (mode) == MODE_INT
+      && SCALAR_INT_MODE_P (mode)
       && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
     ret = convert_descriptor_to_mode (mode, ret);
   return ret;
@@ -12937,7 +12934,7 @@ clz_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l4jump, l4label;
   rtx msb;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (mode)
       || GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
@@ -12979,7 +12976,7 @@ clz_loc_descriptor (rtx rtl, machine_mode mode,
   if (GET_CODE (rtl) != CLZ)
     msb = const1_rtx;
   else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-    msb = GEN_INT ((unsigned HOST_WIDE_INT) 1
+    msb = GEN_INT (HOST_WIDE_INT_1U
 		   << (GET_MODE_BITSIZE (mode) - 1));
   else
     msb = immed_wide_int_const
@@ -13045,7 +13042,7 @@ popcount_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l1jump, l1label;
   dw_loc_descr_ref l2jump, l2label;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (mode)
       || GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
@@ -13106,7 +13103,7 @@ bswap_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l1jump, l1label;
   dw_loc_descr_ref l2jump, l2label;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT
+  if (!SCALAR_INT_MODE_P (mode)
       || BITS_PER_UNIT != 8
       || (GET_MODE_BITSIZE (mode) != 32
 	  &&  GET_MODE_BITSIZE (mode) != 64))
@@ -13191,7 +13188,7 @@ rotate_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
   int i;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  if (!SCALAR_INT_MODE_P (mode))
     return NULL;
 
   if (GET_MODE (rtlop1) != VOIDmode
@@ -13340,8 +13337,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case TRUNCATE:
       if (inner == NULL_RTX)
         inner = XEXP (rtl, 0);
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_CLASS (GET_MODE (inner)) == MODE_INT
+      if (SCALAR_INT_MODE_P (mode)
+	  && SCALAR_INT_MODE_P (GET_MODE (inner))
 	  && (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      || (mode == Pmode && mem_mode != VOIDmode)
@@ -13359,8 +13356,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (inner)))
 	break;
       if (GET_MODE_SIZE (mode) != GET_MODE_SIZE (GET_MODE (inner))
-	  && (GET_MODE_CLASS (mode) != MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (inner)) != MODE_INT))
+	  && (!SCALAR_INT_MODE_P (mode)
+	      || !SCALAR_INT_MODE_P (GET_MODE (inner))))
 	break;
       else
 	{
@@ -13372,8 +13369,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 					       mem_mode, initialized);
 	  if (mem_loc_result == NULL)
 	    break;
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    {
 	      mem_loc_result = NULL;
@@ -13388,7 +13384,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
 	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  add_loc_descr (&mem_loc_result, cvt);
-	  if (GET_MODE_CLASS (mode) == MODE_INT
+	  if (SCALAR_INT_MODE_P (mode)
 	      && GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE)
 	    {
 	      /* Convert it to untyped afterwards.  */
@@ -13399,7 +13395,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       break;
 
     case REG:
-      if (GET_MODE_CLASS (mode) != MODE_INT
+      if (! SCALAR_INT_MODE_P (mode)
 	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
 	      && rtl != arg_pointer_rtx
 	      && rtl != frame_pointer_rtx
@@ -13415,15 +13411,14 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	    break;
 	  if (REGNO (rtl) > FIRST_PSEUDO_REGISTER)
 	    break;
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    break;
 
 	  dbx_regnum = dbx_reg_number (rtl);
 	  if (dbx_regnum == IGNORED_DWARF_REGNUM)
 	    break;
-	  mem_loc_result = new_loc_descr (DW_OP_GNU_regval_type,
+          mem_loc_result = new_loc_descr (DW_OP_GNU_regval_type,
 					  dbx_regnum, 0);
 	  mem_loc_result->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	  mem_loc_result->dw_loc_oprnd2.v.val_die_ref.die = type_die;
@@ -13459,7 +13454,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (!SCALAR_INT_MODE_P (mode))
 	break;
       op0 = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (XEXP (rtl, 0)),
 				mem_mode, VAR_INIT_STATUS_INITIALIZED);
@@ -13540,7 +13535,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (mem_loc_result != NULL)
 	{
 	  if (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
-	      || GET_MODE_CLASS (mode) != MODE_INT)
+	      || !SCALAR_INT_MODE_P(mode))
 	    {
 	      dw_die_ref type_die;
 	      dw_loc_descr_ref deref;
@@ -13548,7 +13543,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      if (dwarf_strict)
 		return NULL;
 	      type_die
-		= base_type_for_mode (mode, GET_MODE_CLASS (mode) == MODE_INT);
+		= base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	      if (type_die == NULL)
 		return NULL;
 	      deref = new_loc_descr (DW_OP_GNU_deref_type,
@@ -13576,8 +13571,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
-      if ((GET_MODE_CLASS (mode) != MODE_INT
-	   && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
+      if (!SCALAR_INT_MODE_P (mode)
 	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
 #ifdef POINTERS_EXTEND_UNSIGNED
 	      && (mode != Pmode || mem_mode == VOIDmode)
@@ -13627,7 +13621,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	return NULL;
       if (REG_P (ENTRY_VALUE_EXP (rtl)))
 	{
-	  if (GET_MODE_CLASS (mode) != MODE_INT
+	  if (!SCALAR_INT_MODE_P (mode)
 	      || GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
 	    op0 = mem_loc_descriptor (ENTRY_VALUE_EXP (rtl), mode,
 				      VOIDmode, VAR_INIT_STATUS_INITIALIZED);
@@ -13685,7 +13679,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  && (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
 	      || XEXP (rtl, 0) == arg_pointer_rtx
 	      || XEXP (rtl, 0) == frame_pointer_rtx)
-	  && GET_MODE_CLASS (mode) == MODE_INT)
+	  && SCALAR_INT_MODE_P (mode))
 	mem_loc_result = based_loc_descr (XEXP (rtl, 0),
 					  INTVAL (XEXP (rtl, 1)),
 					  VAR_INIT_STATUS_INITIALIZED);
@@ -13724,7 +13718,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case DIV:
       if (!dwarf_strict
-	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && SCALAR_INT_MODE_P (mode)
 	  && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
 	{
 	  mem_loc_result = typed_binop (DW_OP_div, rtl,
@@ -13752,7 +13746,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       goto do_shift;
 
     do_shift:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (!SCALAR_INT_MODE_P (mode))
 	break;
       op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
@@ -13827,7 +13821,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       break;
 
     case UDIV:
-      if (!dwarf_strict && GET_MODE_CLASS (mode) == MODE_INT)
+      if (!dwarf_strict && SCALAR_INT_MODE_P (mode))
 	{
 	  if (GET_MODE_CLASS (mode) > DWARF2_ADDR_SIZE)
 	    {
@@ -13935,8 +13929,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      || (GET_MODE (rtl) == VOIDmode
 		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
 	    break;
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    return NULL;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0, 0);
@@ -13971,8 +13964,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	{
 	  dw_die_ref type_die;
 
-	  type_die = base_type_for_mode (mode,
-					 GET_MODE_CLASS (mode) == MODE_INT);
+	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
 	    return NULL;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0, 0);
@@ -14028,7 +14020,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case UMIN:
     case UMAX:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (!SCALAR_INT_MODE_P (mode))
 	break;
       /* FALLTHRU */
     case SMIN:
@@ -14043,7 +14035,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  && ((unsigned) INTVAL (XEXP (rtl, 1))
 	      + (unsigned) INTVAL (XEXP (rtl, 2))
 	      <= GET_MODE_BITSIZE (mode))
-	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && SCALAR_INT_MODE_P (mode)
 	  && GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
 	  && GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) <= DWARF2_ADDR_SIZE)
 	{
@@ -14120,7 +14112,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 				    mem_mode, VAR_INIT_STATUS_INITIALIZED);
 	  if (op0 == NULL)
 	    break;
-	  if (GET_MODE_CLASS (GET_MODE (XEXP (rtl, 0))) == MODE_INT
+	  if (SCALAR_INT_MODE_P (GET_MODE (XEXP (rtl, 0)))
 	      && (GET_CODE (rtl) == FLOAT
 		  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0)))
 		     <= DWARF2_ADDR_SIZE))
@@ -14143,7 +14135,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
 	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  add_loc_descr (&op0, cvt);
-	  if (GET_MODE_CLASS (mode) == MODE_INT
+	  if (SCALAR_INT_MODE_P (mode)
 	      && (GET_CODE (rtl) == FIX
 		  || GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE))
 	    {
@@ -14573,7 +14565,8 @@ loc_descriptor (rtx rtl, machine_mode mode,
       /* FALLTHRU */
     do_default:
     default:
-      if ((GET_MODE_CLASS (mode) == MODE_INT && GET_MODE (rtl) == mode
+      if ((SCALAR_INT_MODE_P (mode)
+	   && GET_MODE (rtl) == mode
 	   && GET_MODE_SIZE (GET_MODE (rtl)) <= DWARF2_ADDR_SIZE
 	   && dwarf_version >= 4)
 	  || (!dwarf_strict && mode != VOIDmode && mode != BLKmode))
@@ -15143,7 +15136,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
 
   obj = get_inner_reference (TREE_OPERAND (loc, 0),
 			     &bitsize, &bitpos, &offset, &mode,
-			     &unsignedp, &reversep, &volatilep, false);
+			     &unsignedp, &reversep, &volatilep);
   STRIP_NOPS (obj);
   if (bitpos % BITS_PER_UNIT)
     {
@@ -15353,12 +15346,14 @@ is_handled_procedure_type (tree type)
 	  && int_size_in_bytes (type) <= DWARF2_ADDR_SIZE);
 }
 
-/* Helper for resolve_args_picking.  Stop when coming across VISITED nodes.  */
+/* Helper for resolve_args_picking: do the same but stop when coming across
+   visited nodes.  For each node we visit, register in FRAME_OFFSETS the frame
+   offset *before* evaluating the corresponding operation.  */
 
 static bool
 resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 			struct dwarf_procedure_info *dpi,
-			hash_set<dw_loc_descr_ref> &visited)
+			hash_map<dw_loc_descr_ref, unsigned> &frame_offsets)
 {
   /* The "frame_offset" identifier is already used to name a macro... */
   unsigned frame_offset_ = initial_frame_offset;
@@ -15366,19 +15361,18 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 
   for (l = loc; l != NULL;)
     {
+      bool existed;
+      unsigned &l_frame_offset = frame_offsets.get_or_insert (l, &existed);
+
       /* If we already met this node, there is nothing to compute anymore.  */
-      if (visited.add (l))
+      if (existed)
 	{
-#if CHECKING_P
 	  /* Make sure that the stack size is consistent wherever the execution
 	     flow comes from.  */
-	  gcc_assert ((unsigned) l->dw_loc_frame_offset == frame_offset_);
-#endif
+	  gcc_assert ((unsigned) l_frame_offset == frame_offset_);
 	  break;
 	}
-#if CHECKING_P
-      l->dw_loc_frame_offset = frame_offset_;
-#endif
+      l_frame_offset = frame_offset_;
 
       /* If needed, relocate the picking offset with respect to the frame
 	 offset. */
@@ -15409,6 +15403,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_swap:
 	case DW_OP_rot:
 	case DW_OP_abs:
+	case DW_OP_neg:
 	case DW_OP_not:
 	case DW_OP_plus_uconst:
 	case DW_OP_skip:
@@ -15545,7 +15540,6 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_minus:
 	case DW_OP_mod:
 	case DW_OP_mul:
-	case DW_OP_neg:
 	case DW_OP_or:
 	case DW_OP_plus:
 	case DW_OP_shl:
@@ -15573,7 +15567,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 
 	    if (stack_usage == NULL)
 	      return false;
-	    frame_offset += *stack_usage;
+	    frame_offset_ += *stack_usage;
 	    break;
 	  }
 
@@ -15601,7 +15595,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	{
 	case DW_OP_bra:
 	  if (!resolve_args_picking_1 (l->dw_loc_next, frame_offset_, dpi,
-				       visited))
+				       frame_offsets))
 	    return false;
 	  /* Fall through... */
 
@@ -15623,17 +15617,20 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 
 /* Make a DFS over operations reachable through LOC (i.e. follow branch
    operations) in order to resolve the operand of DW_OP_pick operations that
-   target DWARF procedure arguments (DPI).  Stop at already visited nodes.
-   INITIAL_FRAME_OFFSET is the frame offset *before* LOC is executed.  Return
-   if all relocations were successful.  */
+   target DWARF procedure arguments (DPI).  INITIAL_FRAME_OFFSET is the frame
+   offset *before* LOC is executed.  Return if all relocations were
+   successful.  */
 
 static bool
 resolve_args_picking (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 		      struct dwarf_procedure_info *dpi)
 {
-  hash_set<dw_loc_descr_ref> visited;
+  /* Associate to all visited operations the frame offset *before* evaluating
+     this operation.  */
+  hash_map<dw_loc_descr_ref, unsigned> frame_offsets;
 
-  return resolve_args_picking_1 (loc, initial_frame_offset, dpi, visited);
+  return resolve_args_picking_1 (loc, initial_frame_offset, dpi,
+				 frame_offsets);
 }
 
 /* Try to generate a DWARF procedure that computes the same result as FNDECL.
@@ -16076,7 +16073,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	int unsignedp, reversep, volatilep = 0;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &reversep, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep);
 
 	gcc_assert (obj != loc);
 
@@ -17551,7 +17548,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
     return NULL_TREE;
 
   cvar = get_inner_reference (val_expr, &bitsize, &bitpos, &offset, &mode,
-			      &unsignedp, &reversep, &volatilep, true);
+			      &unsignedp, &reversep, &volatilep);
 
   if (cvar == NULL_TREE
       || TREE_CODE (cvar) != VAR_DECL
@@ -17805,7 +17802,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	      fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
 	      pos = int_byte_position (field);
 	      gcc_assert (pos + fieldsize <= size);
-	      if (val
+	      if (val && fieldsize != 0
 		  && !native_encode_initializer (val, array + pos, fieldsize))
 		return false;
 	    }
@@ -18620,15 +18617,16 @@ add_prototyped_attribute (dw_die_ref die, tree func_type)
 }
 
 /* Add an 'abstract_origin' attribute below a given DIE.  The DIE is found
-   by looking in either the type declaration or object declaration
-   equate table.  */
+   by looking in the type declaration, the object declaration equate table or
+   the block mapping.  */
 
 static inline dw_die_ref
 add_abstract_origin_attribute (dw_die_ref die, tree origin)
 {
   dw_die_ref origin_die = NULL;
 
-  if (TREE_CODE (origin) != FUNCTION_DECL)
+  if (TREE_CODE (origin) != FUNCTION_DECL
+      && TREE_CODE (origin) != BLOCK)
     {
       /* We may have gotten separated from the block for the inlined
 	 function, if we're in an exception handler or some such; make
@@ -18650,6 +18648,8 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
     origin_die = lookup_decl_die (origin);
   else if (TYPE_P (origin))
     origin_die = lookup_type_die (origin);
+  else if (TREE_CODE (origin) == BLOCK)
+    origin_die = BLOCK_DIE (origin);
 
   /* XXX: Functions that are never lowered don't always have correct block
      trees (in the case of java, they simply have no block tree, in some other
@@ -19401,11 +19401,13 @@ gen_entry_point_die (tree decl, dw_die_ref context_die)
 static void
 retry_incomplete_types (void)
 {
+  set_early_dwarf s;
   int i;
 
   for (i = vec_safe_length (incomplete_types) - 1; i >= 0; i--)
     if (should_emit_struct_debug ((*incomplete_types)[i], DINFO_USAGE_DIR_USE))
       gen_type_die ((*incomplete_types)[i], comp_unit_die ());
+  vec_safe_truncate (incomplete_types, 0);
 }
 
 /* Determine what tag to use for a record type.  */
@@ -20724,14 +20726,17 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 void_type_node 2) an unprototyped function declaration (not a
 	 definition).  This just means that we have no info about the
 	 parameters at all.  */
-      if (prototype_p (TREE_TYPE (decl)))
+      if (early_dwarf)
 	{
-	  /* This is the prototyped case, check for....  */
-	  if (stdarg_p (TREE_TYPE (decl)))
+	  if (prototype_p (TREE_TYPE (decl)))
+	    {
+	      /* This is the prototyped case, check for....  */
+	      if (stdarg_p (TREE_TYPE (decl)))
+		gen_unspecified_parameters_die (decl, subr_die);
+	    }
+	  else if (DECL_INITIAL (decl) == NULL_TREE)
 	    gen_unspecified_parameters_die (decl, subr_die);
 	}
-      else if (DECL_INITIAL (decl) == NULL_TREE)
-	gen_unspecified_parameters_die (decl, subr_die);
     }
 
   if (subr_die != old_die)
@@ -21466,6 +21471,10 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
 	  BLOCK_DIE (stmt) = stmt_die;
 	  old_die = NULL;
 	}
+
+      tree origin = block_ultimate_origin (stmt);
+      if (origin != NULL_TREE && origin != stmt)
+	add_abstract_origin_attribute (stmt_die, origin);
     }
 
   if (old_die)
@@ -27382,10 +27391,6 @@ dwarf2out_finish (const char *filename)
   resolve_addr (comp_unit_die ());
   move_marked_base_types ();
 
-  /* Walk through the list of incomplete types again, trying once more to
-     emit full debugging info for them.  */
-  retry_incomplete_types ();
-
   if (flag_eliminate_unused_debug_types)
     prune_unused_types ();
 
@@ -27686,6 +27691,10 @@ dwarf2out_finish (const char *filename)
 static void
 dwarf2out_early_finish (void)
 {
+  /* Walk through the list of incomplete types again, trying once more to
+     emit full debugging info for them.  */
+  retry_incomplete_types ();
+
   /* The point here is to flush out the limbo list so that it is empty
      and we don't need to stream it for LTO.  */
   flush_limbo_die_list ();

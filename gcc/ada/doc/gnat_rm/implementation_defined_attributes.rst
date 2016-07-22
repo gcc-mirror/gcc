@@ -670,6 +670,8 @@ passed for a record or other composite object passed by reference.
 There is no way of indicating this without the `Null_Parameter`
 attribute.
 
+.. _Attribute-Object_Size:
+
 Attribute Object_Size
 =====================
 .. index:: Size, used for objects
@@ -901,6 +903,8 @@ The `Safe_Small` attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
+.. _Attribute-Scalar_Storage_Order:
+
 Attribute Scalar_Storage_Order
 ==============================
 .. index:: Endianness
@@ -962,10 +966,7 @@ types. This may be overridden for the derived type by giving an explicit scalar
 storage order for the derived type. For a record extension, the derived type
 must have the same scalar storage order as the parent type.
 
-If a component of `T` is of a record or array type, then that type must
-also have a `Scalar_Storage_Order` attribute definition clause.
-
-A component of a record or array type that is a packed array, or that
+A component of a record or array type that is a bit-packed array, or that
 does not start on a byte boundary, must have the same scalar storage order
 as the enclosing record or array type.
 
@@ -1000,6 +1001,11 @@ If no scalar storage order is specified for a type (either directly, or by
 inheritance in the case of a derived type), then the default is normally
 the native ordering of the target, but this default can be overridden using
 pragma `Default_Scalar_Storage_Order`.
+
+Note that if a component of `T` is itself of a record or array type,
+the specfied `Scalar_Storage_Order` does *not* apply to that nested type:
+an explicit attribute definition clause must be provided for the component
+type as well if desired.
 
 Note that the scalar storage order only affects the in-memory data
 representation. It has no effect on the representation used by stream
@@ -1555,6 +1561,8 @@ Object_Size (for example, `Natural'Size` is 32 rather than 31 on
 typical machines).  In addition `'VADS_Size` applied to an object
 gives the result that would be obtained by applying the attribute to
 the corresponding type.
+
+.. _Attribute-Value_Size:
 
 Attribute Value_Size
 ====================

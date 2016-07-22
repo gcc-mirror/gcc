@@ -97,7 +97,7 @@ dw2_asm_output_data (int size, unsigned HOST_WIDE_INT value,
   va_start (ap, comment);
 
   if (size * 8 < HOST_BITS_PER_WIDE_INT)
-    value &= ~(~(unsigned HOST_WIDE_INT) 0 << (size * 8));
+    value &= ~(HOST_WIDE_INT_M1U << (size * 8));
 
   if (op)
     {

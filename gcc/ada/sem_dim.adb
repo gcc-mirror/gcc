@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1120,9 +1120,17 @@ package body Sem_Dim is
    procedure Analyze_Dimension (N : Node_Id) is
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for nodes that don't come from source.
+      --  dimensions for nodes that don't come from source, except for subtype
+      --  declarations where the dimensions are inherited from the base type,
+      --  and for explicit dereferences generated when expanding iterators.
 
-      if Ada_Version < Ada_2012 or else not Comes_From_Source (N) then
+      if Ada_Version < Ada_2012 then
+         return;
+
+      elsif not Comes_From_Source (N)
+        and then Nkind (N) /= N_Subtype_Declaration
+        and then Nkind (N) /= N_Explicit_Dereference
+      then
          return;
       end if;
 
@@ -1143,7 +1151,6 @@ package body Sem_Dim is
               N_Expanded_Name             |
               N_Explicit_Dereference      |
               N_Function_Call             |
-              N_Identifier                |
               N_Indexed_Component         |
               N_Qualified_Expression      |
               N_Selected_Component        |
@@ -1151,6 +1158,14 @@ package body Sem_Dim is
               N_Type_Conversion           |
               N_Unchecked_Type_Conversion =>
             Analyze_Dimension_Has_Etype (N);
+
+         --  In the presence of a repaired syntax error, an identifier
+         --  may be introduced without a usable type.
+
+         when  N_Identifier                =>
+            if Present (Etype (N)) then
+               Analyze_Dimension_Has_Etype (N);
+            end if;
 
          when N_Number_Declaration =>
             Analyze_Dimension_Number_Declaration (N);
@@ -1235,10 +1250,12 @@ package body Sem_Dim is
          --  since it may not be decorated at this point. We also don't want to
          --  issue the same error message multiple times on the same expression
          --  (may happen when an aggregate is converted into a positional
-         --  aggregate).
+         --  aggregate). We also must verify that this is a scalar component,
+         --  and not a subaggregate of a multidimensional aggregate.
 
          if Comes_From_Source (Original_Node (Expr))
            and then Present (Etype (Expr))
+           and then Is_Numeric_Type (Etype (Expr))
            and then Dimensions_Of (Expr) /= Dims_Of_Comp_Typ
            and then Sloc (Comp) /= Sloc (Prev (Comp))
          then
@@ -2000,7 +2017,8 @@ package body Sem_Dim is
          end if;
       end if;
 
-      --  Removal of dimensions in expression
+      --  Remove dimensions from inner expressions, to prevent dimensions
+      --  table from growing uselessly.
 
       case Nkind (N) is
          when N_Attribute_Reference |
@@ -2223,10 +2241,10 @@ package body Sem_Dim is
 
          if Exists (Dims_Of_Etyp) then
 
-            --  If subtype already has a dimension (from Aspect_Dimension),
-            --  it cannot inherit a dimension from its subtype.
+            --  If subtype already has a dimension (from Aspect_Dimension), it
+            --  cannot inherit different dimensions from its subtype.
 
-            if Exists (Dims_Of_Id) then
+            if Exists (Dims_Of_Id) and then Dims_Of_Etyp /= Dims_Of_Id then
                Error_Msg_NE
                  ("subtype& already " & Dimensions_Msg_Of (Id, True), N, Id);
             else
@@ -2269,6 +2287,27 @@ package body Sem_Dim is
 
       end case;
    end Analyze_Dimension_Unary_Op;
+
+   ---------------------------------
+   -- Check_Expression_Dimensions --
+   ---------------------------------
+
+   procedure Check_Expression_Dimensions
+     (Expr : Node_Id;
+      Typ  : Entity_Id)
+   is
+   begin
+      if Is_Floating_Point_Type (Etype (Expr)) then
+         Analyze_Dimension (Expr);
+
+         if Dimensions_Of (Expr) /= Dimensions_Of (Typ) then
+            Error_Msg_N ("dimensions mismatch in array aggregate", Expr);
+            Error_Msg_N
+              ("\expected dimension " & Dimensions_Msg_Of (Typ)
+               & ", found " & Dimensions_Msg_Of (Expr), Expr);
+         end if;
+      end if;
+   end Check_Expression_Dimensions;
 
    ---------------------
    -- Copy_Dimensions --

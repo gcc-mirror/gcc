@@ -83,11 +83,13 @@ namespace __gnu_test
     p = tmp;
 #else
     char buf[64];
+    static int counter;
 #if _GLIBCXX_USE_C99_STDIO
-    std::snprintf(buf, 64, "filesystem-ts-test.%lu", (unsigned long)::getpid());
+    std::snprintf(buf, 64,
 #else
-    std::sprintf(buf, "filesystem-ts-test.%lu", (unsigned long)::getpid());
+    std::sprintf(buf,
 #endif
+      "filesystem-ts-test.%d.%lu", counter++, (unsigned long) ::getpid());
     p = buf;
 #endif
     return p;

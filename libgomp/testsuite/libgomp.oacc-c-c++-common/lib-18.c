@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Verify that acc_delete unregisters data mappings on the device.  */
+
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <stdio.h>
 #include <stdlib.h>

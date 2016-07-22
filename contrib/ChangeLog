@@ -1,3 +1,123 @@
+2016-07-21  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: If there's no loop, do not calculate
+	average number of loop iterations.
+
+2016-06-24  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Parse and display average number
+	of loop iterations.
+
+2016-06-23  Andi Kleen  <ak@linux.intel.com>
+
+	* gen_autofdo_event.py: New file to regenerate
+	gcc-auto-profile.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: Stop testing mep-elf.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: Stop testing avr-rtems.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: Stop testing m32r-rtems.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: Remove h8300-rtems support.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: stop testing knetbsd.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: Stop testing openbsd3.0.
+
+2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config-list.mk: Remove interix target.
+
+2016-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config-list.mk: Remove rs6000-ibm-aix4.3, rs6000-ibm-aix5.1,
+	rs6000-ibm-aix5.2.
+	Rename rs6000-ibm-aix6.0 as rs6000-ibm-aix6.1.
+	Add rs6000-ibm-aix7.1.
+
+2016-06-17  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix columns of script output.
+
+2016-06-13  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (ISL): Bump version to 0.16.1
+
+2016-06-10  Alan Hayward  <alan.hayward@arm.com>
+
+	* check_GNU_style.sh: Fix paste args for BSD
+
+2016-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* config-list.mk (LIST): Add OPT-enable-obsolete to avr-rtems,
+	h8300-rtems, m32r-rtems, mep-elf.
+
+2016-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* config-list.mk (GCC_SRC_DIR): New variable.
+	(make-log-dir): Use GCC_SRC_DIR.
+	($(LIST)): Likewise.
+
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob_spec.py: New file.
+
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new argument --sorting.
+
+2016-06-09  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Cover new dump output format.
+
+2016-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* update-copyright.py (LibMudflapFilter): Remove.
+	(GCCCmdLine.__init__): Add gotools, libcc1.
+	Remove libmudflap.
+	List unhandled intl, libcilkrts, libgo, liboffloadmic,
+	maintainer-scripts.
+
+2016-05-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* download_prerequisites: Adjust gmp/mpfr/mpc versions.
+
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* compare-all-tests: Remove SH5 support.
+	* config-list.mk: Likewise.
+
+2016-04-28  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob: Remove.
+	* analyze_brprob.py: New file.
+
+2016-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 6.
+
+2016-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* analyze_brprob: Update comment.
+
+2016-04-13  Martin Sebor  <msebor@redhat.com>
+
+	* check_GNU_style.sh: Avoid false posivies in trailing operator
+	checks.
+
 2016-03-07  Martin Sebor  <msebor@redhat.com>
 
 	* check_GNU_style.sh (color): New global variable.

@@ -115,7 +115,7 @@ namespace __gnu_pbds
     } // namespace detail
 
     template<bool Support_Order_Statistics>
-    class tree_order_statistics_test 
+    class tree_order_statistics_test
     : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
@@ -151,7 +151,7 @@ namespace __gnu_pbds
     operator()(Cntnr)
     {
       typedef xml_result_set_performance_formatter formatter_type;
-      formatter_type res_set_fmt(string_form<Cntnr>::name(), 
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
 				 string_form<Cntnr>::desc());
 
       for (size_t v = m_vn; v < m_vm; v += m_vs)
@@ -172,5 +172,5 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 

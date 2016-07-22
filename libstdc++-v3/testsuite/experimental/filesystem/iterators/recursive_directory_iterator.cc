@@ -97,8 +97,83 @@ test01()
   remove_all(p, ec);
 }
 
+void
+test02()
+{
+  bool test __attribute__((unused)) = false;
+
+  std::error_code ec;
+  const auto p = __gnu_test::nonexistent_path();
+  create_directories(p / "d1/d2", ec);
+  VERIFY( !ec );
+
+  // Test post-increment (libstdc++/71005)
+  auto iter = fs::recursive_directory_iterator(p, ec);
+  VERIFY( !ec );
+  VERIFY( iter != fs::recursive_directory_iterator() );
+  const auto entry1 = *iter;
+  const auto entry2 = *iter++;
+  VERIFY( entry1 == entry2 );
+  VERIFY( entry1.path() == p/"d1" );
+  const auto entry3 = *iter;
+  const auto entry4 = *iter++;
+  VERIFY( entry3 == entry4 );
+  VERIFY( entry3.path() == p/"d1/d2" );
+  VERIFY( iter == fs::recursive_directory_iterator() );
+
+  remove_all(p, ec);
+}
+
+void
+test03()
+{
+  bool test __attribute__((unused)) = false;
+
+  std::error_code ec;
+  const auto p = __gnu_test::nonexistent_path();
+  create_directories(p / "longer_than_small_string_buffer", ec);
+  VERIFY( !ec );
+
+  // Test for no reallocation on each dereference (this is a GNU extension)
+  auto iter = fs::recursive_directory_iterator(p, ec);
+  const auto* s1 = iter->path().c_str();
+  const auto* s2 = iter->path().c_str();
+  VERIFY( s1 == s2 );
+
+  remove_all(p, ec);
+}
+
+void
+test04()
+{
+  bool test __attribute__((unused)) = false;
+
+  // libstdc++/71004
+  const fs::recursive_directory_iterator it;
+  VERIFY( it == fs::recursive_directory_iterator() );
+}
+
+void
+test05()
+{
+  bool test __attribute__((unused)) = false;
+
+  auto p = __gnu_test::nonexistent_path();
+  create_directory(p);
+  create_directory_symlink(p, p / "l");
+  fs::recursive_directory_iterator it(p), endit;
+  VERIFY( begin(it) == it );
+  static_assert( noexcept(begin(it)), "begin is noexcept" );
+  VERIFY( end(it) == endit );
+  static_assert( noexcept(end(it)), "end is noexcept" );
+}
+
 int
 main()
 {
   test01();
+  test02();
+  test03();
+  test04();
+  test05();
 }

@@ -112,26 +112,24 @@ clone_body (tree clone, tree fn, void *arg_map)
 static void
 build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
 {
-  tree call_dtor, call_delete;
   tree parm = DECL_ARGUMENTS (delete_dtor);
   tree virtual_size = cxx_sizeof (current_class_type);
 
   /* Call the corresponding complete destructor.  */
   gcc_assert (complete_dtor);
-  call_dtor = build_cxx_call (complete_dtor, 1, &parm,
-			      tf_warning_or_error);
-  add_stmt (call_dtor);
-
-  add_stmt (build_stmt (0, LABEL_EXPR, cdtor_label));
+  tree call_dtor = build_cxx_call (complete_dtor, 1, &parm,
+				   tf_warning_or_error);
 
   /* Call the delete function.  */
-  call_delete = build_op_delete_call (DELETE_EXPR, current_class_ptr,
-                                      virtual_size,
-                                      /*global_p=*/false,
-                                      /*placement=*/NULL_TREE,
-                                      /*alloc_fn=*/NULL_TREE,
-				      tf_warning_or_error);
-  add_stmt (call_delete);
+  tree call_delete = build_op_delete_call (DELETE_EXPR, current_class_ptr,
+					   virtual_size,
+					   /*global_p=*/false,
+					   /*placement=*/NULL_TREE,
+					   /*alloc_fn=*/NULL_TREE,
+					   tf_warning_or_error);
+
+  /* Operator delete must be called, whether or not the dtor throws.  */
+  add_stmt (build2 (TRY_FINALLY_EXPR, void_type_node, call_dtor, call_delete));
 
   /* Return the address of the object.  */
   if (targetm.cxx.cdtor_returns_this ())

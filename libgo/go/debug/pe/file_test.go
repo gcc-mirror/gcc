@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors.  All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package pe
 
 import (
 	"debug/dwarf"
+	"internal/testenv"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -102,6 +103,41 @@ var fileTests = []fileTest{
 			{".debug_frame", 0x34, 0xe000, 0x200, 0x3800, 0x0, 0x0, 0x0, 0x0, 0x42300000},
 			{".debug_loc", 0x38, 0xf000, 0x200, 0x3a00, 0x0, 0x0, 0x0, 0x0, 0x42100000},
 		},
+	},
+	{
+		file: "testdata/gcc-386-mingw-no-symbols-exec",
+		hdr:  FileHeader{0x14c, 0x8, 0x69676572, 0x0, 0x0, 0xe0, 0x30f},
+		opthdr: &OptionalHeader32{0x10b, 0x2, 0x18, 0xe00, 0x1e00, 0x200, 0x1280, 0x1000, 0x2000, 0x400000, 0x1000, 0x200, 0x4, 0x0, 0x1, 0x0, 0x4, 0x0, 0x0, 0x9000, 0x400, 0x5306, 0x3, 0x0, 0x200000, 0x1000, 0x100000, 0x1000, 0x0, 0x10,
+			[16]DataDirectory{
+				{0x0, 0x0},
+				{0x6000, 0x378},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x8004, 0x18},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x60b8, 0x7c},
+				{0x0, 0x0},
+				{0x0, 0x0},
+				{0x0, 0x0},
+			},
+		},
+		sections: []*SectionHeader{
+			{".text", 0xc64, 0x1000, 0xe00, 0x400, 0x0, 0x0, 0x0, 0x0, 0x60500060},
+			{".data", 0x10, 0x2000, 0x200, 0x1200, 0x0, 0x0, 0x0, 0x0, 0xc0300040},
+			{".rdata", 0x134, 0x3000, 0x200, 0x1400, 0x0, 0x0, 0x0, 0x0, 0x40300040},
+			{".eh_fram", 0x3a0, 0x4000, 0x400, 0x1600, 0x0, 0x0, 0x0, 0x0, 0x40300040},
+			{".bss", 0x60, 0x5000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xc0300080},
+			{".idata", 0x378, 0x6000, 0x400, 0x1a00, 0x0, 0x0, 0x0, 0x0, 0xc0300040},
+			{".CRT", 0x18, 0x7000, 0x200, 0x1e00, 0x0, 0x0, 0x0, 0x0, 0xc0300040},
+			{".tls", 0x20, 0x8000, 0x200, 0x2000, 0x0, 0x0, 0x0, 0x0, 0xc0300040},
+		},
+		hasNoDwarfInfo: true,
 	},
 	{
 		file: "testdata/gcc-amd64-mingw-obj",
@@ -306,4 +342,76 @@ func main() {
 		}
 	}
 	t.Fatal("main.main not found")
+}
+
+func TestBSSHasZeros(t *testing.T) {
+	testenv.MustHaveExec(t)
+
+	if runtime.GOOS != "windows" {
+		t.Skip("skipping windows only test")
+	}
+	gccpath, err := exec.LookPath("gcc")
+	if err != nil {
+		t.Skip("skipping test: gcc is missing")
+	}
+
+	tmpdir, err := ioutil.TempDir("", "TestBSSHasZeros")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	srcpath := filepath.Join(tmpdir, "a.c")
+	src := `
+#include <stdio.h>
+
+int zero = 0;
+
+int
+main(void)
+{
+	printf("%d\n", zero);
+	return 0;
+}
+`
+	err = ioutil.WriteFile(srcpath, []byte(src), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	objpath := filepath.Join(tmpdir, "a.obj")
+	cmd := exec.Command(gccpath, "-c", srcpath, "-o", objpath)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("failed to build object file: %v - %v", err, string(out))
+	}
+
+	f, err := Open(objpath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	var bss *Section
+	for _, sect := range f.Sections {
+		if sect.Name == ".bss" {
+			bss = sect
+			break
+		}
+	}
+	if bss == nil {
+		t.Fatal("could not find .bss section")
+	}
+	data, err := bss.Data()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) == 0 {
+		t.Fatalf("%s file .bss section cannot be empty", objpath)
+	}
+	for _, b := range data {
+		if b != 0 {
+			t.Fatalf(".bss section has non zero bytes: %v", data)
+		}
+	}
 }

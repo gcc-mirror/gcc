@@ -292,6 +292,28 @@ package body Osint.C is
       end if;
    end Debug_File_Eol_Length;
 
+   -------------------
+   -- Delete_C_File --
+   -------------------
+
+   procedure Delete_C_File is
+      Dummy : Boolean;
+   begin
+      Set_File_Name ("c");
+      Delete_File (Name_Buffer (1 .. Name_Len), Dummy);
+   end Delete_C_File;
+
+   -------------------
+   -- Delete_H_File --
+   -------------------
+
+   procedure Delete_H_File is
+      Dummy : Boolean;
+   begin
+      Set_File_Name ("h");
+      Delete_File (Name_Buffer (1 .. Name_Len), Dummy);
+   end Delete_H_File;
+
    ---------------------------------
    -- Get_Output_Object_File_Name --
    ---------------------------------

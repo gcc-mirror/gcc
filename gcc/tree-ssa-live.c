@@ -393,14 +393,16 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
       in_ctor_dtor_block = true;
       unused = false;
     }
-  /* 2) inside such blocks, the outermost block with BLOCK_ABSTRACT_ORIGIN
+  /* 2) inside such blocks, the outermost block with block_ultimate_origin
      being a FUNCTION_DECL.  */
-  else if (in_ctor_dtor_block
-	   && BLOCK_ABSTRACT_ORIGIN (scope)
-	   && TREE_CODE (BLOCK_ABSTRACT_ORIGIN (scope)) == FUNCTION_DECL)
+  else if (in_ctor_dtor_block)
     {
-      in_ctor_dtor_block = false;
-      unused = false;
+      tree fn = block_ultimate_origin (scope);
+      if (fn && TREE_CODE (fn) == FUNCTION_DECL)
+	{
+	  in_ctor_dtor_block = false;
+	  unused = false;
+	}
     }
 
   for (t = &BLOCK_VARS (scope); *t; t = next)
@@ -855,7 +857,9 @@ remove_unused_locals (void)
       cfun->local_decls->truncate (dstidx);
     }
 
-  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl), false);
+  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl),
+			       polymorphic_ctor_dtor_p (current_function_decl,
+							true) != NULL_TREE);
   clear_unused_block_pointer ();
 
   BITMAP_FREE (usedvars);

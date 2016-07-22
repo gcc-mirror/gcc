@@ -44,7 +44,8 @@ template<typename Con>
   {
     bool test __attribute__((unused)) = true;
 
-    rvalstruct array[length];
+    /* Make sure the VLA upper bound is positive. */
+    rvalstruct array[length + 1];
     for(int i = 0; i < length; ++i)
       array[i] = i;
     Con con(array, array + length);

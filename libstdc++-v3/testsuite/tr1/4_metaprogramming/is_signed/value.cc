@@ -28,9 +28,9 @@ void test01()
   bool test __attribute__((unused)) = true;
   using std::tr1::is_signed;
   using namespace __gnu_test;
-  
+
   VERIFY( (test_category<is_signed, void>(false)) );
-  
+
   VERIFY( (test_category<is_signed, char>(false)) );
   VERIFY( (test_category<is_signed, signed char>(true)) );
   VERIFY( (test_category<is_signed, unsigned char>(false)) );

@@ -30,20 +30,20 @@ template<typename T>
   void test01_do()
   {
     T x = T();
-    
+
     bool ret;
     int iret;
 
     ret = std::tr1::signbit(x);
-    
+
     iret = std::tr1::fpclassify(x);
     iret = iret; // Suppress unused warning.
-    
+
     ret = std::tr1::isfinite(x);
     ret = std::tr1::isinf(x);
     ret = std::tr1::isnan(x);
     ret = std::tr1::isnormal(x);
-    
+
     ret = std::tr1::isgreater(x, x);
     ret = std::tr1::isgreaterequal(x, x);
     ret = std::tr1::isless(x, x);

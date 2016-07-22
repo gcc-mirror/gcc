@@ -220,6 +220,18 @@ extern int errno;
 #if defined (INCLUDE_ALGORITHM) || !defined (HAVE_SWAP_IN_UTILITY)
 # include <algorithm>
 #endif
+#ifdef INCLUDE_LIST
+# include <list>
+#endif
+#ifdef INCLUDE_MAP
+# include <map>
+#endif
+#ifdef INCLUDE_SET
+# include <set>
+#endif
+#ifdef INCLUDE_VECTOR
+# include <vector>
+#endif
 # include <cstring>
 # include <new>
 # include <utility>
@@ -975,7 +987,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	TARGET_HANDLE_PRAGMA_EXTERN_PREFIX \
 	TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN \
 	TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD \
-	TARGET_MD_ASM_CLOBBERS TARGET_RELAXED_ORDERING EXTENDED_SDB_BASIC_TYPES
+	TARGET_MD_ASM_CLOBBERS TARGET_RELAXED_ORDERING \
+	EXTENDED_SDB_BASIC_TYPES TARGET_INVALID_PARAMETER_TYPE \
+	TARGET_INVALID_RETURN_TYPE
 
 /* Arrays that were deleted in favor of a functional interface.  */
  #pragma GCC poison built_in_decls implicit_built_in_decls

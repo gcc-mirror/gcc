@@ -3,7 +3,6 @@
    call saved register.  */
 /* { dg-do compile }  */
 /* { dg-options "-O1 -fcall-saved-gbr" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-not "stc\tgbr" } } */
 
 typedef struct

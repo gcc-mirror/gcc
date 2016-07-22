@@ -126,6 +126,7 @@ namespace recording {
         class local;
 	class global;
         class param;
+      class base_call;
     class statement;
     class case_;
 

@@ -108,13 +108,14 @@ determine_precision (st_parameter_dt * dtp, const fnode * f, int len)
 }
 
 
-/* Output a real number according to its format which is FMT_G free.  */
+/* Build a real number according to its format which is FMT_G free.  */
 
-static bool
-output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
-	      int nprinted, int precision, int sign_bit, bool zero_flag)
+static void
+build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
+		    size_t size, int nprinted, int precision, int sign_bit,
+		    bool zero_flag, int npad, char *result, size_t *len)
 {
-  char *out;
+  char *put;
   char *digits;
   int e, w, d, p, i;
   char expchar, rchar;
@@ -180,7 +181,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  if (p > 0)
 	    {
-	      
 	      memmove (digits + nbefore, digits + nbefore + 1, p);
 	      digits[nbefore + p] = '.';
 	      nbefore += p;
@@ -252,13 +252,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Precision not "
 			  "greater than zero in format specifier 'E' or 'D'");
-	  return false;
+	  return;
 	}
       if (p <= -d || p >= d + 2)
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Scale factor "
 			  "out of range in format specifier 'E' or 'D'");
-	  return false;
+	  return;
 	}
 
       if (!zero_flag)
@@ -547,178 +547,71 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       nblanks = 0;
     }
 
-  /* Create the ouput buffer.  */
-  out = write_block (dtp, w);
-  if (out == NULL)
-    return false;
+  /* Create the final float string.  */
+  *len = w + npad;
+  put = result;
 
   /* Check the value fits in the specified field width.  */
   if (nblanks < 0 || edigits == -1 || w == 1 || (w == 2 && sign != S_NONE))
     {
-      if (unlikely (is_char4_unit (dtp)))
-	{
-	  gfc_char4_t *out4 = (gfc_char4_t *) out;
-	  memset4 (out4, '*', w);
-	  return false;
-	}
-      star_fill (out, w);
-      return false;
+      star_fill (put, *len);
+      return;
     }
-
-  /* For internal character(kind=4) units, we duplicate the code used for
-     regular output slightly modified.  This needs to be maintained
-     consistent with the regular code that follows this block.  */
-  if (unlikely (is_char4_unit (dtp)))
-    {
-      gfc_char4_t *out4 = (gfc_char4_t *) out;
-      /* Pad to full field width.  */
-
-      if ( ( nblanks > 0 ) && !dtp->u.p.no_leading_blank)
-	{
-	  memset4 (out4, ' ', nblanks);
-	  out4 += nblanks;
-	}
-
-      /* Output the initial sign (if any).  */
-      if (sign == S_PLUS)
-	*(out4++) = '+';
-      else if (sign == S_MINUS)
-	*(out4++) = '-';
-
-      /* Output an optional leading zero.  */
-      if (leadzero)
-	*(out4++) = '0';
-
-      /* Output the part before the decimal point, padding with zeros.  */
-      if (nbefore > 0)
-	{
-	  if (nbefore > ndigits)
-	    {
-	      i = ndigits;
-	      memcpy4 (out4, digits, i);
-	      ndigits = 0;
-	      while (i < nbefore)
-		out4[i++] = '0';
-	    }
-	  else
-	    {
-	      i = nbefore;
-	      memcpy4 (out4, digits, i);
-	      ndigits -= i;
-	    }
-
-	  digits += i;
-	  out4 += nbefore;
-	}
-
-      /* Output the decimal point.  */
-      *(out4++) = dtp->u.p.current_unit->decimal_status
-		    == DECIMAL_POINT ? '.' : ',';
-      if (ft == FMT_F 
-	  && (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED 
-	      || dtp->u.p.current_unit->round_status == ROUND_PROCDEFINED))
-	digits++;
-
-      /* Output leading zeros after the decimal point.  */
-      if (nzero > 0)
-	{
-	  for (i = 0; i < nzero; i++)
-	    *(out4++) = '0';
-	}
-
-      /* Output digits after the decimal point, padding with zeros.  */
-      if (nafter > 0)
-	{
-	  if (nafter > ndigits)
-	    i = ndigits;
-	  else
-	    i = nafter;
-
-	  memcpy4 (out4, digits, i);
-	  while (i < nafter)
-	    out4[i++] = '0';
-
-	  digits += i;
-	  ndigits -= i;
-	  out4 += nafter;
-	}
-
-      /* Output the exponent.  */
-      if (expchar && !(dtp->u.p.g0_no_blanks && e == 0))
-	{
-	  if (expchar != ' ')
-	    {
-	      *(out4++) = expchar;
-	      edigits--;
-	    }
-	  snprintf (buffer, size, "%+0*d", edigits, e);
-	  memcpy4 (out4, buffer, edigits);
-	}
-
-      if (dtp->u.p.no_leading_blank)
-	{
-	  out4 += edigits;
-	  memset4 (out4, ' ' , nblanks);
-	  dtp->u.p.no_leading_blank = 0;
-	}
-      return true;
-    } /* End of character(kind=4) internal unit code.  */
 
   /* Pad to full field width.  */
-
   if ( ( nblanks > 0 ) && !dtp->u.p.no_leading_blank)
     {
-      memset (out, ' ', nblanks);
-      out += nblanks;
+      memset (put, ' ', nblanks);
+      put += nblanks;
     }
 
-  /* Output the initial sign (if any).  */
+  /* Set the initial sign (if any).  */
   if (sign == S_PLUS)
-    *(out++) = '+';
+    *(put++) = '+';
   else if (sign == S_MINUS)
-    *(out++) = '-';
+    *(put++) = '-';
 
-  /* Output an optional leading zero.  */
+  /* Set an optional leading zero.  */
   if (leadzero)
-    *(out++) = '0';
+    *(put++) = '0';
 
-  /* Output the part before the decimal point, padding with zeros.  */
+  /* Set the part before the decimal point, padding with zeros.  */
   if (nbefore > 0)
     {
       if (nbefore > ndigits)
 	{
 	  i = ndigits;
-	  memcpy (out, digits, i);
+	  memcpy (put, digits, i);
 	  ndigits = 0;
 	  while (i < nbefore)
-	    out[i++] = '0';
+	    put[i++] = '0';
 	}
       else
 	{
 	  i = nbefore;
-	  memcpy (out, digits, i);
+	  memcpy (put, digits, i);
 	  ndigits -= i;
 	}
 
       digits += i;
-      out += nbefore;
+      put += nbefore;
     }
 
-  /* Output the decimal point.  */
-  *(out++) = dtp->u.p.current_unit->decimal_status == DECIMAL_POINT ? '.' : ',';
+  /* Set the decimal point.  */
+  *(put++) = dtp->u.p.current_unit->decimal_status == DECIMAL_POINT ? '.' : ',';
   if (ft == FMT_F
 	  && (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED 
 	      || dtp->u.p.current_unit->round_status == ROUND_PROCDEFINED))
     digits++;
 
-  /* Output leading zeros after the decimal point.  */
+  /* Set leading zeros after the decimal point.  */
   if (nzero > 0)
     {
       for (i = 0; i < nzero; i++)
-	*(out++) = '0';
+	*(put++) = '0';
     }
 
-  /* Output digits after the decimal point, padding with zeros.  */
+  /* Set digits after the decimal point, padding with zeros.  */
   if (nafter > 0)
     {
       if (nafter > ndigits)
@@ -726,44 +619,55 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       else
 	i = nafter;
 
-      memcpy (out, digits, i);
+      memcpy (put, digits, i);
       while (i < nafter)
-	out[i++] = '0';
+	put[i++] = '0';
 
       digits += i;
       ndigits -= i;
-      out += nafter;
+      put += nafter;
     }
 
-  /* Output the exponent.  */
+  /* Set the exponent.  */
   if (expchar && !(dtp->u.p.g0_no_blanks && e == 0))
     {
       if (expchar != ' ')
 	{
-	  *(out++) = expchar;
+	  *(put++) = expchar;
 	  edigits--;
 	}
       snprintf (buffer, size, "%+0*d", edigits, e);
-      memcpy (out, buffer, edigits);
+      memcpy (put, buffer, edigits);
+      put += edigits;
     }
 
   if (dtp->u.p.no_leading_blank)
     {
-      out += edigits;
-      memset( out , ' ' , nblanks );
+      memset (put , ' ' , nblanks);
       dtp->u.p.no_leading_blank = 0;
+      put += nblanks;
     }
 
-  return true;
+  if (npad > 0 && !dtp->u.p.g0_no_blanks)
+    {
+      memset (put , ' ' , npad);
+      put += npad;
+    }
+
+  /* NULL terminate the string.  */
+  *put = '\0';
+  
+  return;
 }
 
 
 /* Write "Infinite" or "Nan" as appropriate for the given format.  */
 
 static void
-write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit)
+build_infnan_string (st_parameter_dt *dtp, const fnode *f, int isnan_flag,
+		    int sign_bit, char *p, size_t *len)
 {
-  char * p, fin;
+  char fin;
   int nb = 0;
   sign_t sign;
   int mark;
@@ -774,6 +678,7 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
       mark = (sign == S_PLUS || sign == S_MINUS) ? 8 : 7;
 
       nb =  f->u.real.w;
+      *len = nb;
 
       /* If the field width is zero, the processor must select a width 
 	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
@@ -784,29 +689,17 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	    nb = 3;
 	  else
 	    nb = (sign == S_PLUS || sign == S_MINUS) ? 4 : 3;
+	  *len = nb;
 	}
-      p = write_block (dtp, nb);
-      if (p == NULL)
-	return;
+
+      p[*len] = '\0';
       if (nb < 3)
 	{
-	  if (unlikely (is_char4_unit (dtp)))
-	    {
-	      gfc_char4_t *p4 = (gfc_char4_t *) p;
-	      memset4 (p4, '*', nb);
-	    }
-	  else
-	    memset (p, '*', nb);
+	  memset (p, '*', nb);
 	  return;
 	}
 
-      if (unlikely (is_char4_unit (dtp)))
-	{
-	  gfc_char4_t *p4 = (gfc_char4_t *) p;
-	  memset4 (p4, ' ', nb);
-	}
-      else
-	memset(p, ' ', nb);
+      memset(p, ' ', nb);
 
       if (!isnan_flag)
 	{
@@ -816,13 +709,7 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 		 insufficient room to output '-Inf', so output asterisks */
 	      if (nb == 3)
 		{
-		  if (unlikely (is_char4_unit (dtp)))
-		    {
-		      gfc_char4_t *p4 = (gfc_char4_t *) p;
-		      memset4 (p4, '*', nb);
-		    }
-		  else
-		    memset (p, '*', nb);
+		  memset (p, '*', nb);
 		  return;
 		}
 	      /* The negative sign is mandatory */
@@ -833,30 +720,6 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	       consistency */
 	    fin = '+';
 	    
-	  if (unlikely (is_char4_unit (dtp)))
-	    {
-	      gfc_char4_t *p4 = (gfc_char4_t *) p;
-
-	      if (nb > mark)
-		/* We have room, so output 'Infinity' */
-		memcpy4 (p4 + nb - 8, "Infinity", 8);
-	      else
-		/* For the case of width equals mark, there is not enough room
-		   for the sign and 'Infinity' so we go with 'Inf' */
-		memcpy4 (p4 + nb - 3, "Inf", 3);
-
-	      if (sign == S_PLUS || sign == S_MINUS)
-		{
-		  if (nb < 9 && nb > 3)
-		    /* Put the sign in front of Inf */
-		    p4[nb - 4] = (gfc_char4_t) fin;
-		  else if (nb > 8)
-		    /* Put the sign in front of Infinity */
-		    p4[nb - 9] = (gfc_char4_t) fin;
-		}
-	      return;
-	    }
-
 	  if (nb > mark)
 	    /* We have room, so output 'Infinity' */
 	    memcpy(p + nb - 8, "Infinity", 8);
@@ -874,16 +737,7 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	    }
 	}
       else
-        {
-	  if (unlikely (is_char4_unit (dtp)))
-	    {
-	      gfc_char4_t *p4 = (gfc_char4_t *) p;
-	      memcpy4 (p4 + nb - 3, "NaN", 3);
-	    }
-	  else
-	    memcpy(p + nb - 3, "NaN", 3);
-	}
-      return;
+	memcpy(p + nb - 3, "NaN", 3);
     }
 }
 
@@ -916,7 +770,7 @@ CALCULATE_EXP(16)
 #undef CALCULATE_EXP
 
 
-/* Define a macro to build code for write_float.  */
+/* Define macros to build code for format_float.  */
 
   /* Note: Before output_float is called, snprintf is used to print to buffer the
      number in the format +D.DDDDe+ddd. 
@@ -941,194 +795,33 @@ CALCULATE_EXP(16)
 
 #define DTOA(suff,prec,val) TOKENPASTE(DTOA2,suff)(prec,val)
 
-#define DTOA2(prec,val)					\
+#define DTOA2(prec,val) \
 snprintf (buffer, size, "%+-#.*e", (prec), (val))
 
-#define DTOA2L(prec,val)				\
+#define DTOA2L(prec,val) \
 snprintf (buffer, size, "%+-#.*Le", (prec), (val))
 
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
-#define DTOA2Q(prec,val)							\
+#define DTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
 #endif
 
 #define FDTOA(suff,prec,val) TOKENPASTE(FDTOA2,suff)(prec,val)
 
 /* For F format, we print to the buffer with f format.  */
-#define FDTOA2(prec,val)							\
+#define FDTOA2(prec,val) \
 snprintf (buffer, size, "%+-#.*f", (prec), (val))
 
-#define FDTOA2L(prec,val)						\
+#define FDTOA2L(prec,val) \
 snprintf (buffer, size, "%+-#.*Lf", (prec), (val))
 
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
-#define FDTOA2Q(prec,val)			       \
+#define FDTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qf", \
 			     (prec), (val))
 #endif
-
-
-
-/* Generate corresponding I/O format for FMT_G and output.
-   The rules to translate FMT_G to FMT_E or FMT_F from DEC fortran
-   LRM (table 11-2, Chapter 11, "I/O Formatting", P11-25) is:
-
-   Data Magnitude                              Equivalent Conversion
-   0< m < 0.1-0.5*10**(-d-1)                   Ew.d[Ee]
-   m = 0                                       F(w-n).(d-1), n' '
-   0.1-0.5*10**(-d-1)<= m < 1-0.5*10**(-d)     F(w-n).d, n' '
-   1-0.5*10**(-d)<= m < 10-0.5*10**(-d+1)      F(w-n).(d-1), n' '
-   10-0.5*10**(-d+1)<= m < 100-0.5*10**(-d+2)  F(w-n).(d-2), n' '
-   ................                           ..........
-   10**(d-1)-0.5*10**(-1)<= m <10**d-0.5       F(w-n).0,n(' ')
-   m >= 10**d-0.5                              Ew.d[Ee]
-
-   notes: for Gw.d ,  n' ' means 4 blanks
-	  for Gw.dEe, n' ' means e+2 blanks
-	  for rounding modes adjustment, r, See Fortran F2008 10.7.5.2.2
-	  the asm volatile is required for 32-bit x86 platforms.  */
-
-#define OUTPUT_FLOAT_FMT_G(x,y)			\
-static void \
-output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
-		      GFC_REAL_ ## x m, char *buffer, size_t size, \
-			  int sign_bit, bool zero_flag, int comp_d) \
-{ \
-  int e = f->u.real.e;\
-  int d = f->u.real.d;\
-  int w = f->u.real.w;\
-  fnode newf;\
-  GFC_REAL_ ## x exp_d, r = 0.5, r_sc;\
-  int low, high, mid;\
-  int ubound, lbound;\
-  char *p, pad = ' ';\
-  int save_scale_factor, nb = 0;\
-  bool result;\
-  int nprinted, precision;\
-  volatile GFC_REAL_ ## x temp;\
-\
-  save_scale_factor = dtp->u.p.scale_factor;\
-\
-  switch (dtp->u.p.current_unit->round_status)\
-    {\
-      case ROUND_ZERO:\
-	r = sign_bit ? 1.0 : 0.0;\
-	break;\
-      case ROUND_UP:\
-	r = 1.0;\
-	break;\
-      case ROUND_DOWN:\
-	r = 0.0;\
-	break;\
-      default:\
-	break;\
-    }\
-\
-  exp_d = calculate_exp_ ## x (d);\
-  r_sc = (1 - r / exp_d);\
-  temp = 0.1 * r_sc;\
-  if ((m > 0.0 && ((m < temp) || (r >= (exp_d - m))))\
-      || ((m == 0.0) && !(compile_options.allow_std\
-			  & (GFC_STD_F2003 | GFC_STD_F2008)))\
-      ||  d == 0)\
-    { \
-      newf.format = FMT_E;\
-      newf.u.real.w = w;\
-      newf.u.real.d = d - comp_d;\
-      newf.u.real.e = e;\
-      nb = 0;\
-      precision = determine_precision (dtp, &newf, x);\
-      nprinted = DTOA(y,precision,m);			     \
-      goto finish;\
-    }\
-\
-  mid = 0;\
-  low = 0;\
-  high = d + 1;\
-  lbound = 0;\
-  ubound = d + 1;\
-\
-  while (low <= high)\
-    { \
-      mid = (low + high) / 2;\
-\
-      temp = (calculate_exp_ ## x (mid - 1) * r_sc);\
-\
-      if (m < temp)\
-        { \
-          ubound = mid;\
-          if (ubound == lbound + 1)\
-            break;\
-          high = mid - 1;\
-        }\
-      else if (m > temp)\
-        { \
-          lbound = mid;\
-          if (ubound == lbound + 1)\
-            { \
-              mid ++;\
-              break;\
-            }\
-          low = mid + 1;\
-        }\
-      else\
-	{\
-	  mid++;\
-	  break;\
-	}\
-    }\
-\
-  nb = e <= 0 ? 4 : e + 2;\
-  nb = nb >= w ? w - 1 : nb;\
-  newf.format = FMT_F;\
-  newf.u.real.w = w - nb;\
-  newf.u.real.d = m == 0.0 ? d - 1 : -(mid - d - 1) ;\
-  dtp->u.p.scale_factor = 0;\
-  precision = determine_precision (dtp, &newf, x);	\
-  nprinted = FDTOA(y,precision,m);					\
-\
- finish:\
-    result = output_float (dtp, &newf, buffer, size, nprinted, precision,\
-			   sign_bit, zero_flag);\
-  dtp->u.p.scale_factor = save_scale_factor;\
-\
-\
-  if (nb > 0 && !dtp->u.p.g0_no_blanks)\
-    {\
-      p = write_block (dtp, nb);\
-      if (p == NULL)\
-	return;\
-      if (!result)\
-        pad = '*';\
-      if (unlikely (is_char4_unit (dtp)))\
-	{\
-	  gfc_char4_t *p4 = (gfc_char4_t *) p;\
-	  memset4 (p4, pad, nb);\
-	}\
-      else \
-	memset (p, pad, nb);\
-    }\
-}\
-
-OUTPUT_FLOAT_FMT_G(4,)
-
-OUTPUT_FLOAT_FMT_G(8,)
-
-#ifdef HAVE_GFC_REAL_10
-OUTPUT_FLOAT_FMT_G(10,L)
-#endif
-
-#ifdef HAVE_GFC_REAL_16
-# ifdef GFC_REAL_16_IS_FLOAT128
-OUTPUT_FLOAT_FMT_G(16,Q)
-#else
-OUTPUT_FLOAT_FMT_G(16,L)
-#endif
-#endif
-
-#undef OUTPUT_FLOAT_FMT_G
 
 
 /* EN format is tricky since the number of significant digits depends
@@ -1144,7 +837,6 @@ OUTPUT_FLOAT_FMT_G(16,L)
    are correctly rounded respectively to 1.0...0*10.0*(3*(n+1)),
    100.0...0*10.0*(3*n), and 10.0...0*10.0*(3*n), where 0...0
    represents d zeroes, by the lines 279 to 297. */
-
 #define EN_PREC(x,y)\
 {\
     volatile GFC_REAL_ ## x tmp, one = 1.0;\
@@ -1156,7 +848,7 @@ OUTPUT_FLOAT_FMT_G(16,L)
 	if (buffer[1] == '1')\
 	  {\
 	    tmp = (calculate_exp_ ## x (-e)) * tmp;\
-	    tmp = one - (tmp < 0 ? -tmp : tmp);	\
+	    tmp = one - (tmp < 0 ? -tmp : tmp);\
 	    if (tmp > 0)\
 	      e = e - 1;\
 	  }\
@@ -1216,87 +908,175 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 }
   
 
-#define WRITE_FLOAT(x,y)\
+/* Generate corresponding I/O format. and output.
+   The rules to translate FMT_G to FMT_E or FMT_F from DEC fortran
+   LRM (table 11-2, Chapter 11, "I/O Formatting", P11-25) is:
+
+   Data Magnitude                              Equivalent Conversion
+   0< m < 0.1-0.5*10**(-d-1)                   Ew.d[Ee]
+   m = 0                                       F(w-n).(d-1), n' '
+   0.1-0.5*10**(-d-1)<= m < 1-0.5*10**(-d)     F(w-n).d, n' '
+   1-0.5*10**(-d)<= m < 10-0.5*10**(-d+1)      F(w-n).(d-1), n' '
+   10-0.5*10**(-d+1)<= m < 100-0.5*10**(-d+2)  F(w-n).(d-2), n' '
+   ................                           ..........
+   10**(d-1)-0.5*10**(-1)<= m <10**d-0.5       F(w-n).0,n(' ')
+   m >= 10**d-0.5                              Ew.d[Ee]
+
+   notes: for Gw.d ,  n' ' means 4 blanks
+	  for Gw.dEe, n' ' means e+2 blanks
+	  for rounding modes adjustment, r, See Fortran F2008 10.7.5.2.2
+	  the asm volatile is required for 32-bit x86 platforms.  */
+#define FORMAT_FLOAT(x,y)\
 {\
-	GFC_REAL_ ## x tmp;\
-	tmp = * (GFC_REAL_ ## x *)source;\
-	sign_bit = signbit (tmp);\
-	if (!isfinite (tmp))\
-	  { \
-	    write_infnan (dtp, f, isnan (tmp), sign_bit);\
-	    return;\
-	  }\
-	tmp = sign_bit ? -tmp : tmp;\
-	zero_flag = (tmp == 0.0);\
-	if (f->format == FMT_G)\
-	  output_float_FMT_G_ ## x (dtp, f, tmp, buffer, size, sign_bit, \
-				    zero_flag, comp_d);\
-	else\
-	  {\
-	    if (f->format == FMT_F)\
-	      nprinted = FDTOA(y,precision,tmp);		\
-	    else\
-	      nprinted = DTOA(y,precision,tmp);					\
-	    output_float (dtp, f, buffer, size, nprinted, precision,\
-			  sign_bit, zero_flag);\
-	  }\
+  int npad = 0;\
+  GFC_REAL_ ## x m;\
+  m = * (GFC_REAL_ ## x *)source;\
+  sign_bit = signbit (m);\
+  if (!isfinite (m))\
+    { \
+      build_infnan_string (dtp, f, isnan (m), sign_bit, result, res_len);\
+      return;\
+    }\
+  m = sign_bit ? -m : m;\
+  zero_flag = (m == 0.0);\
+  if (f->format == FMT_G)\
+    {\
+      int e = f->u.real.e;\
+      int d = f->u.real.d;\
+      int w = f->u.real.w;\
+      fnode newf;\
+      GFC_REAL_ ## x exp_d, r = 0.5, r_sc;\
+      int low, high, mid;\
+      int ubound, lbound;\
+      int save_scale_factor;\
+      volatile GFC_REAL_ ## x temp;\
+      save_scale_factor = dtp->u.p.scale_factor;\
+      switch (dtp->u.p.current_unit->round_status)\
+	{\
+	  case ROUND_ZERO:\
+	    r = sign_bit ? 1.0 : 0.0;\
+	    break;\
+	  case ROUND_UP:\
+	    r = 1.0;\
+	    break;\
+	  case ROUND_DOWN:\
+	    r = 0.0;\
+	    break;\
+	  default:\
+	    break;\
+	}\
+      exp_d = calculate_exp_ ## x (d);\
+      r_sc = (1 - r / exp_d);\
+      temp = 0.1 * r_sc;\
+      if ((m > 0.0 && ((m < temp) || (r >= (exp_d - m))))\
+	  || ((m == 0.0) && !(compile_options.allow_std\
+			      & (GFC_STD_F2003 | GFC_STD_F2008)))\
+	  ||  d == 0)\
+	{ \
+	  newf.format = FMT_E;\
+	  newf.u.real.w = w;\
+	  newf.u.real.d = d - comp_d;\
+	  newf.u.real.e = e;\
+	  npad = 0;\
+	  precision = determine_precision (dtp, &newf, x);\
+	  nprinted = DTOA(y,precision,m);\
+	}\
+      else \
+	{\
+	  mid = 0;\
+	  low = 0;\
+	  high = d + 1;\
+	  lbound = 0;\
+	  ubound = d + 1;\
+	  while (low <= high)\
+	    {\
+	      mid = (low + high) / 2;\
+	      temp = (calculate_exp_ ## x (mid - 1) * r_sc);\
+	      if (m < temp)\
+		{ \
+		  ubound = mid;\
+		  if (ubound == lbound + 1)\
+		    break;\
+		  high = mid - 1;\
+		}\
+	      else if (m > temp)\
+		{ \
+		  lbound = mid;\
+		  if (ubound == lbound + 1)\
+		    { \
+		      mid ++;\
+		      break;\
+		    }\
+		  low = mid + 1;\
+		}\
+	      else\
+		{\
+		  mid++;\
+		  break;\
+		}\
+	    }\
+	  npad = e <= 0 ? 4 : e + 2;\
+	  npad = npad >= w ? w - 1 : npad;\
+	  npad = dtp->u.p.g0_no_blanks ? 0 : npad;\
+	  newf.format = FMT_F;\
+	  newf.u.real.w = w - npad;\
+	  newf.u.real.d = m == 0.0 ? d - 1 : -(mid - d - 1) ;\
+	  dtp->u.p.scale_factor = 0;\
+	  precision = determine_precision (dtp, &newf, x);\
+	  nprinted = FDTOA(y,precision,m);\
+	}\
+      build_float_string (dtp, &newf, buffer, size, nprinted, precision,\
+				   sign_bit, zero_flag, npad, result, res_len);\
+      dtp->u.p.scale_factor = save_scale_factor;\
+    }\
+  else\
+    {\
+      if (f->format == FMT_F)\
+	nprinted = FDTOA(y,precision,m);\
+      else\
+	nprinted = DTOA(y,precision,m);\
+      build_float_string (dtp, f, buffer, size, nprinted, precision,\
+				   sign_bit, zero_flag, npad, result, res_len);\
+    }\
 }\
 
 /* Output a real number according to its format.  */
 
+
 static void
-write_float (st_parameter_dt *dtp, const fnode *f, const char *source, \
-            int len, int comp_d)
+get_float_string (st_parameter_dt *dtp, const fnode *f, const char *source,
+		  int kind, int comp_d, char *buffer, int precision,
+		  size_t size, char *result, size_t *res_len)
 {
   int sign_bit, nprinted;
-  int precision;  /* Precision for snprintf call.  */
   bool zero_flag;
 
-  if (f->format != FMT_EN)
-    precision = determine_precision (dtp, f, len);
-  else
-    precision = determine_en_precision (dtp, f, source, len);
-
-  /* 4932 is the maximum exponent of long double and quad precision, 3
-     extra characters for the sign, the decimal point, and the
-     trailing null, and finally some extra digits depending on the
-     requested precision.  */
-  const size_t size = 4932 + 3 + precision;
-#define BUF_STACK_SZ 5000
-  char buf_stack[BUF_STACK_SZ];
-  char *buffer;
-  if (size > BUF_STACK_SZ)
-     buffer = xmalloc (size);
-  else
-     buffer = buf_stack;
-
-  switch (len)
+  switch (kind)
     {
     case 4:
-      WRITE_FLOAT(4,)
+      FORMAT_FLOAT(4,)
       break;
 
     case 8:
-      WRITE_FLOAT(8,)
+      FORMAT_FLOAT(8,)
       break;
 
 #ifdef HAVE_GFC_REAL_10
     case 10:
-      WRITE_FLOAT(10,L)
+      FORMAT_FLOAT(10,L)
       break;
 #endif
 #ifdef HAVE_GFC_REAL_16
     case 16:
 # ifdef GFC_REAL_16_IS_FLOAT128
-      WRITE_FLOAT(16,Q)
+      FORMAT_FLOAT(16,Q)
 # else
-      WRITE_FLOAT(16,L)
+      FORMAT_FLOAT(16,L)
 # endif
       break;
 #endif
     default:
       internal_error (NULL, "bad real kind");
     }
-  if (size > BUF_STACK_SZ)
-     free (buffer);
+  return;
 }

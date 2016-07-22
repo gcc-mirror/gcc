@@ -39,7 +39,7 @@ namespace __gnu_test
     static int destructor_count;
 
     int val;
-    
+
     counter_type() : val(0)
     { ++default_count; }
 

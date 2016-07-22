@@ -29,6 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "c-family/c-pragma.h"
 #include "params.h"
+#include "gcc-rich-location.h"
+#include "spellcheck-tree.h"
+#include "parser.h"
 
 /* The bindings for a particular name in a particular scope.  */
 
@@ -3333,8 +3336,6 @@ do_class_using_decl (tree scope, tree name)
   /* True if any of the bases of CURRENT_CLASS_TYPE are dependent.  */
   bool bases_dependent_p;
   tree binfo;
-  tree base_binfo;
-  int i;
 
   if (name == error_mark_node)
     return NULL_TREE;
@@ -3371,16 +3372,7 @@ do_class_using_decl (tree scope, tree name)
 		      || (IDENTIFIER_TYPENAME_P (name)
 			  && dependent_type_p (TREE_TYPE (name))));
 
-  bases_dependent_p = false;
-  if (processing_template_decl)
-    for (binfo = TYPE_BINFO (current_class_type), i = 0;
-	 BINFO_BASE_ITERATE (binfo, i, base_binfo);
-	 i++)
-      if (dependent_type_p (TREE_TYPE (base_binfo)))
-	{
-	  bases_dependent_p = true;
-	  break;
-	}
+  bases_dependent_p = any_dependent_bases_p ();
 
   decl = NULL_TREE;
 
@@ -3694,9 +3686,10 @@ handle_namespace_attrs (tree ns, tree attributes)
 }
   
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
-   select a name that is unique to this compilation unit.  */
+   select a name that is unique to this compilation unit.  Returns FALSE if
+   pushdecl fails, TRUE otherwise.  */
 
-void
+bool
 push_namespace (tree name)
 {
   tree d = NULL_TREE;
@@ -3770,7 +3763,11 @@ push_namespace (tree name)
 	TREE_PUBLIC (d) = 0;
       else
 	TREE_PUBLIC (d) = 1;
-      pushdecl (d);
+      if (pushdecl (d) == error_mark_node)
+	{
+	  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+	  return false;
+	}
       if (anon)
 	{
 	  /* Clear DECL_NAME for the benefit of debugging back ends.  */
@@ -3788,6 +3785,7 @@ push_namespace (tree name)
   current_namespace = d;
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return true;
 }
 
 /* Pop from the scope of the current namespace.  */
@@ -4440,9 +4438,20 @@ suggest_alternatives_for (location_t location, tree name)
 
   namespaces_to_search.release ();
 
-  /* Nothing useful to report.  */
+  /* Nothing useful to report for NAME.  Report on likely misspellings,
+     or do nothing.  */
   if (candidates.is_empty ())
-    return;
+    {
+      const char *fuzzy_name = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME);
+      if (fuzzy_name)
+	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_misspelled_id (location, fuzzy_name);
+	  inform_at_rich_loc (&richloc, "suggested alternative: %qs",
+			      fuzzy_name);
+	}
+      return;
+    }
 
   inform_n (location, candidates.length (),
 	    "suggested alternative:",
@@ -4518,8 +4527,10 @@ unqualified_namespace_lookup (tree name, int flags)
 }
 
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
-   or a class TYPE).  If IS_TYPE_P is TRUE, then ignore non-type
-   bindings.
+   or a class TYPE).
+
+   If PREFER_TYPE is > 0, we only return TYPE_DECLs or namespaces.
+   If PREFER_TYPE is > 1, we only return TYPE_DECLs.
 
    Returns a DECL (or OVERLOAD, or BASELINK) representing the
    declaration found.  If no suitable declaration can be found,
@@ -4527,28 +4538,25 @@ unqualified_namespace_lookup (tree name, int flags)
    neither a class-type nor a namespace a diagnostic is issued.  */
 
 tree
-lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain,
+lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
 		       bool find_hidden)
 {
-  int flags = 0;
   tree t = NULL_TREE;
-
-  if (find_hidden)
-    flags |= LOOKUP_HIDDEN;
 
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       struct scope_binding binding = EMPTY_SCOPE_BINDING;
 
-      if (is_type_p)
-	flags |= LOOKUP_PREFER_TYPES;
+      int flags = lookup_flags (prefer_type, /*namespaces_only*/false);
+      if (find_hidden)
+	flags |= LOOKUP_HIDDEN;
       if (qualified_lookup_using_namespace (name, scope, &binding, flags))
 	t = binding.value;
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
   else if (is_class_type (scope, complain))
-    t = lookup_member (scope, name, 2, is_type_p, tf_warning_or_error);
+    t = lookup_member (scope, name, 2, prefer_type, tf_warning_or_error);
 
   if (!t)
     return error_mark_node;
@@ -4647,8 +4655,9 @@ qualified_lookup_using_namespace (tree name, tree scope,
 	    cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 	  if (binding)
 	    {
-	      found_here = true;
 	      ambiguous_decl (result, binding, flags);
+	      if (result->type || result->value)
+		found_here = true;
 	    }
 
 	  for (usings = DECL_NAMESPACE_USING (scope); usings;
@@ -4675,6 +4684,104 @@ qualified_lookup_using_namespace (tree name, tree scope,
   vec_free (seen_inline);
   timevar_stop (TV_NAME_LOOKUP);
   return result->value != error_mark_node;
+}
+
+/* Helper function for lookup_name_fuzzy.
+   Traverse binding level LVL, looking for good name matches for NAME
+   (and BM).  */
+static void
+consider_binding_level (tree name, best_match <tree, tree> &bm,
+			cp_binding_level *lvl, bool look_within_fields,
+			enum lookup_name_fuzzy_kind kind)
+{
+  if (look_within_fields)
+    if (lvl->this_entity && TREE_CODE (lvl->this_entity) == RECORD_TYPE)
+      {
+	tree type = lvl->this_entity;
+	bool want_type_p = (kind == FUZZY_LOOKUP_TYPENAME);
+	tree best_matching_field
+	  = lookup_member_fuzzy (type, name, want_type_p);
+	if (best_matching_field)
+	  bm.consider (best_matching_field);
+      }
+
+  for (tree t = lvl->names; t; t = TREE_CHAIN (t))
+    {
+      /* Don't use bindings from implicitly declared functions,
+	 as they were likely misspellings themselves.  */
+      if (TREE_TYPE (t) == error_mark_node)
+	continue;
+
+      /* Skip anticipated decls of builtin functions.  */
+      if (TREE_CODE (t) == FUNCTION_DECL
+	  && DECL_BUILT_IN (t)
+	  && DECL_ANTICIPATED (t))
+	continue;
+
+      if (DECL_NAME (t))
+	bm.consider (DECL_NAME (t));
+    }
+}
+
+/* Search for near-matches for NAME within the current bindings, and within
+   macro names, returning the best match as a const char *, or NULL if
+   no reasonable match is found.  */
+
+const char *
+lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
+{
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  best_match <tree, tree> bm (name);
+
+  cp_binding_level *lvl;
+  for (lvl = scope_chain->class_bindings; lvl; lvl = lvl->level_chain)
+    consider_binding_level (name, bm, lvl, true, kind);
+
+  for (lvl = current_binding_level; lvl; lvl = lvl->level_chain)
+    consider_binding_level (name, bm, lvl, false, kind);
+
+  /* Consider macros: if the user misspelled a macro name e.g. "SOME_MACRO"
+     as:
+       x = SOME_OTHER_MACRO (y);
+     then "SOME_OTHER_MACRO" will survive to the frontend and show up
+     as a misspelled identifier.
+
+     Use the best distance so far so that a candidate is only set if
+     a macro is better than anything so far.  This allows early rejection
+     (without calculating the edit distance) of macro names that must have
+     distance >= bm.get_best_distance (), and means that we only get a
+     non-NULL result for best_macro_match if it's better than any of
+     the identifiers already checked.  */
+  best_macro_match bmm (name, bm.get_best_distance (), parse_in);
+  cpp_hashnode *best_macro = bmm.get_best_meaningful_candidate ();
+  /* If a macro is the closest so far to NAME, suggest it.  */
+  if (best_macro)
+    return (const char *)best_macro->ident.str;
+
+  /* Try the "starts_decl_specifier_p" keywords to detect
+     "singed" vs "signed" typos.  */
+  for (unsigned i = 0; i < num_c_common_reswords; i++)
+    {
+      const c_common_resword *resword = &c_common_reswords[i];
+
+      if (!cp_keyword_starts_decl_specifier_p (resword->rid))
+	continue;
+
+      tree resword_identifier = ridpointers [resword->rid];
+      if (!resword_identifier)
+	continue;
+      gcc_assert (TREE_CODE (resword_identifier) == IDENTIFIER_NODE);
+      bm.consider (resword_identifier);
+    }
+
+  /* See if we have a good suggesion for the user.  */
+  tree best_id = bm.get_best_meaningful_candidate ();
+  if (best_id)
+    return IDENTIFIER_POINTER (best_id);
+
+  /* No meaningful suggestion available.  */
+  return NULL;
 }
 
 /* Subroutine of outer_binding.
@@ -6134,6 +6241,10 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
+/* A chain of saved_scope structures awaiting reuse.  */
+
+static GTY((deletable)) struct saved_scope *free_saved_scope;
+
 void
 push_to_top_level (void)
 {
@@ -6144,7 +6255,21 @@ push_to_top_level (void)
   bool need_pop;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  s = ggc_cleared_alloc<saved_scope> ();
+
+  /* Reuse or create a new structure for this saved scope.  */
+  if (free_saved_scope != NULL)
+    {
+      s = free_saved_scope;
+      free_saved_scope = s->prev;
+
+      vec<cxx_saved_binding, va_gc> *old_bindings = s->old_bindings;
+      memset (s, 0, sizeof (*s));
+      /* Also reuse the structure's old_bindings vector.  */
+      vec_safe_truncate (old_bindings, 0);
+      s->old_bindings = old_bindings;
+    }
+  else
+    s = ggc_cleared_alloc<saved_scope> ();
 
   b = scope_chain ? current_binding_level : 0;
 
@@ -6237,6 +6362,11 @@ pop_from_top_level_1 (void)
   current_function_decl = s->function_decl;
   cp_unevaluated_operand = s->unevaluated_operand;
   c_inhibit_evaluation_warnings = s->inhibit_evaluation_warnings;
+
+  /* Make this saved_scope structure available for reuse by
+     push_to_top_level.  */
+  s->prev = free_saved_scope;
+  free_saved_scope = s;
 }
 
 /* Wrapper for pop_from_top_level_1.  */

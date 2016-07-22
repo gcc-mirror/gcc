@@ -304,7 +304,8 @@
      drsubh%F0%F2 0,%H1,%L1
      drsubh%F0%F2 0,%3,%L1"
   [(set_attr "type" "dpfp_addsub")
-  (set_attr "length" "4,8,4,8")])
+   (set_attr "length" "4,8,4,8")
+   (set_attr "cpu_facility" "*,*,fpx,fpx")])
 
 ;; ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; Peephole for following conversion
@@ -613,5 +614,5 @@
   drsubh%F0%F2 %H6, %H1, %L1
   drsubh%F0%F2 %H6, %3, %L1"
  [(set_attr "type" "dpfp_addsub")
-  (set_attr "length" "4,8,4,8")]
-)
+  (set_attr "length" "4,8,4,8")
+  (set_attr "cpu_facility" "*,*,fpx,fpx")])

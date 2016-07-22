@@ -996,3 +996,7 @@ badfunc:
 throw:
 	runtime_throw("runtime.SetFinalizer");
 }
+
+func KeepAlive(x Eface) {
+	USED(x);
+}

@@ -25,9 +25,9 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Default information, may not be appropriate for specific host.
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -40,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned int        mask;   
+    typedef unsigned int        mask;
     static const mask upper     = _ISUPPER;
     static const mask lower     = _ISLOWER;
     static const mask alpha     = _ISALPHA;

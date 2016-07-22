@@ -1,3 +1,312 @@
+2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/zero_length_subarrays.c: New
+	test.
+
+2016-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/71734
+	* testsuite/libgomp.fortran/pr71734-1.f90: New test.
+	* testsuite/libgomp.fortran/pr71734-2.f90: Likewise.
+
+2016-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71717
+	* testsuite/libgomp.fortran/associate3.f90: New test.
+
+2016-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/target-21.C: New test.
+
+2016-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/target-20.C: New test.
+
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/71373
+	* libgomp.oacc-c/nested-function-1.c: New file.
+	* libgomp.oacc-c/nested-function-2.c: Likewise.
+	* libgomp.oacc-fortran/nested-function-1.f90: Likewise.
+	* libgomp.oacc-fortran/nested-function-2.f90: Likewise.
+	* libgomp.oacc-fortran/nested-function-3.f90: Likewise.
+
+2016-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/71381
+	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: #include
+	"../../../gcc/testsuite/c-c++-common/goacc/cache-1.c".
+	* testsuite/libgomp.oacc-fortran/cache-1.f95: New file.
+
+2016-06-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/reduction-8.f90: New testcase.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-8.c: New testcase.
+
+2016-06-01  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c/70688
+	* testsuite/libgomp.oacc-c-c++-common/pr70688.c: New file.
+
+2016-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/doacross-1.c (main): Use schedule(static)
+	instead of invalid schedule(static, 0).
+	* testsuite/libgomp.c/doacross-2.c (main): Likewise.
+
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* oacc-plugin.h (GOMP_PLUGIN_async_unmap_vars): Add int parameter.
+	* oacc-plugin.c (GOMP_PLUGIN_async_unmap_vars): Add 'int async'
+	parameter, use to set async stream around call to gomp_unmap_vars,
+	call gomp_unmap_vars() with 'do_copyfrom' set to true.
+	* plugin/plugin-nvptx.c (struct ptx_event): Add 'int val' field.
+	(event_gc): Adjust event handling loop, collect PTX_EVT_ASYNC_CLEANUP
+	events and call GOMP_PLUGIN_async_unmap_vars() for each of them.
+	(event_add): Add int parameter, initialize 'val' field when
+	adding new ptx_event struct.
+	(nvptx_evec): Adjust event_add() call arguments.
+	(nvptx_host2dev): Likewise.
+	(nvptx_dev2host): Likewise.
+	(nvptx_wait_async): Likewise.
+	(nvptx_wait_all_async): Likewise.
+	(GOMP_OFFLOAD_openacc_register_async_cleanup): Add async parameter,
+	pass to event_add() call.
+	* oacc-host.c (host_openacc_register_async_cleanup): Add 'int async'
+	parameter.
+	* oacc-mem.c (gomp_acc_remove_pointer): Adjust async case to
+	call openacc.register_async_cleanup_func() hook.
+	* oacc-parallel.c (GOACC_parallel_keyed): Likewise.
+	* target.c (gomp_copy_from_async): Delete function.
+	(gomp_map_vars): Remove async_refcount.
+	(gomp_unmap_vars): Likewise.
+	(gomp_load_image_to_device): Likewise.
+	(omp_target_associate_ptr): Likewise.
+	* libgomp.h (struct splay_tree_key_s): Remove async_refcount.
+	(acc_dispatch_t.register_async_cleanup_func): Add int parameter.
+	(gomp_copy_from_async): Remove.
+
+2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_device_copy): New function.
+	(gomp_copy_host2dev): Likewise.
+	(gomp_copy_dev2host): Likewise.
+	(gomp_free_device_memory): Likewise.
+	(gomp_map_vars_existing): Adjust to call gomp_copy_host2dev.
+	(gomp_map_pointer): Likewise.
+	(gomp_map_vars): Adjust to call gomp_copy_host2dev, handle
+	NULL value from alloc_func plugin hook.
+	(gomp_unmap_tgt): Adjust to call gomp_free_device_memory.
+	(gomp_copy_from_async): Adjust to call gomp_copy_dev2host.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Adjust to call gomp_copy_dev2host and
+	gomp_copy_host2dev functions.
+	(gomp_unload_image_from_device): Handle false value from
+	unload_image_func plugin hook.
+	(gomp_init_device): Handle false value from init_device_func
+	plugin hook.
+	(gomp_exit_data): Adjust to call gomp_copy_dev2host.
+	(omp_target_free): Adjust to call gomp_free_device_memory.
+	(omp_target_memcpy): Handle return values from host2dev_func,
+	dev2host_func, and dev2dev_func plugin hooks.
+	(omp_target_memcpy_rect_worker): Likewise.
+	(gomp_target_fini): Handle false value from fini_device_func
+	plugin hook.
+	* libgomp.h (struct gomp_device_descr): Adjust return type of
+	init_device_func, fini_device_func, unload_image_func, free_func,
+	dev2host_func,host2dev_func, and dev2dev_func plugin hooks to 'bool'.
+	* oacc-init.c (acc_shutdown_1): Handle false value from
+	fini_device_func plugin hook.
+	* oacc-host.c (host_init_device): Change return type to bool.
+	(host_fini_device): Likewise.
+	(host_unload_image): Likewise.
+	(host_free): Likewise.
+	(host_dev2host): Likewise.
+	(host_host2dev): Likewise.
+	* oacc-mem.c (acc_free): Handle plugin hook fatal error case.
+	(acc_memcpy_to_device): Likewise.
+	(acc_memcpy_from_device): Likewise.
+	(delete_copyout): Add libfnname parameter, handle free_func
+	hook fatal error case.
+	(acc_delete): Adjust delete_copyout call.
+	(acc_copyout): Likewise.
+	(update_dev_host): Move gomp_mutex_unlock to after
+	host2dev/dev2host hook calls.
+
+	* plugin/plugin-hsa.c (hsa_warn): Adjust 'hsa_error' local variable
+	to 'hsa_error_msg', for clarity.
+	(hsa_fatal): Likewise.
+	(hsa_error): New function.
+	(init_hsa_context): Change return type to bool, adjust to return
+	false on error.
+	(GOMP_OFFLOAD_get_num_devices): Adjust to handle init_hsa_context
+	return value.
+	(GOMP_OFFLOAD_init_device): Change return type to bool, adjust to
+	return false on error.
+	(get_agent_info): Adjust to return NULL on error.
+	(destroy_hsa_program): Change return type to bool, adjust to
+	return false on error.
+	(GOMP_OFFLOAD_load_image): Adjust to return -1 on error.
+	(destroy_module): Change return type to bool, adjust to
+	return false on error.
+	(GOMP_OFFLOAD_unload_image): Likewise.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(GOMP_OFFLOAD_alloc): Change to return NULL when called.
+	(GOMP_OFFLOAD_free): Change to return false when called.
+	(GOMP_OFFLOAD_dev2host): Likewise.
+	(GOMP_OFFLOAD_host2dev): Likewise.
+	(GOMP_OFFLOAD_dev2dev): Likewise.
+
+	* plugin/plugin-nvptx.c (CUDA_CALL_ERET): New convenience macro.
+	(CUDA_CALL): Likewise.
+	(CUDA_CALL_ASSERT): Likewise.
+	(map_init): Change return type to bool, use CUDA_CALL* macros.
+	(map_fini): Likewise.
+	(init_streams_for_device): Change return type to bool, adjust
+	call to map_init.
+	(fini_streams_for_device): Change return type to bool, adjust
+	call to map_fini.
+	(select_stream_for_async): Release stream_lock before calls to
+	GOMP_PLUGIN_fatal, adjust call to map_init.
+	(nvptx_init): Use CUDA_CALL* macros.
+	(nvptx_attach_host_thread_to_device): Change return type to bool,
+	use CUDA_CALL* macros.
+	(nvptx_open_device): Use CUDA_CALL* macros.
+	(nvptx_close_device): Change return type to bool, use CUDA_CALL*
+	macros.
+	(nvptx_get_num_devices): Use CUDA_CALL* macros.
+	(link_ptx): Change return type to bool, use CUDA_CALL* macros.
+	(nvptx_exec): Use CUDA_CALL* macros.
+	(nvptx_alloc): Use CUDA_CALL* macros.
+	(nvptx_free): Change return type to bool, use CUDA_CALL* macros.
+	(nvptx_host2dev): Likewise.
+	(nvptx_dev2host): Likewise.
+	(nvptx_wait): Use CUDA_CALL* macros.
+	(nvptx_wait_async): Likewise.
+	(nvptx_wait_all): Likewise.
+	(nvptx_wait_all_async): Likewise.
+	(nvptx_set_cuda_stream): Adjust order of stream_lock acquire,
+	use CUDA_CALL* macros, adjust call to map_fini.
+	(GOMP_OFFLOAD_init_device): Change return type to bool,
+	adjust code accordingly.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(GOMP_OFFLOAD_load_image): Adjust calls to
+	nvptx_attach_host_thread_to_device/link_ptx to handle errors,
+	use CUDA_CALL* macros.
+	(GOMP_OFFLOAD_unload_image): Change return type to bool, adjust
+	return code.
+	(GOMP_OFFLOAD_alloc): Adjust calls to code to handle error return.
+	(GOMP_OFFLOAD_free): Change return type to bool, adjust calls to
+	handle error return.
+	(GOMP_OFFLOAD_dev2host): Likewise.
+	(GOMP_OFFLOAD_host2dev): Likewise.
+	(GOMP_OFFLOAD_openacc_register_async_cleanup): Use CUDA_CALL* macros.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Likewise.
+
+2016-05-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* oacc-mem.c (acc_malloc): Update handling of shared-memory targets.
+	(acc_free): Likewise.
+	(acc_memcpy_to_device): Likewise.
+	(acc_memcpy_from_device): Likewise.
+	(acc_deviceptr): Likewise.
+	(acc_hostptr): Likewise.
+	(acc_is_present): Likewise.
+	(acc_map_data): Likewise.
+	(acc_unmap_data): Likewise.
+	(present_create_copy): Likewise.
+	(delete_copyout): Likewise.
+	(update_dev_host): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Remove xfail.
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/enter_exit-lib.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-13.c: Adjust test so that
+	it only runs on nvptx targets.
+	* testsuite/libgomp.oacc-c-c++-common/lib-14.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-15.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-24.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-25.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-34.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-44.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-47.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-48.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-52.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-53.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-54.c: Likewise.
+
+2016-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/libgomp.hsa.c/switch-sbr-2.c: New test.
+
+2016-05-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* oacc-init.c (acc_init): Remove !cached_base_dev condition on call
+	to gomp_init_targets_once.
+	(acc_set_device_type): Remove !cached_base_dev condition on call to
+	gomp_init_targets_once, move call to before acc_device_lock acquire,
+	to avoid deadlock.
+	(acc_get_device_num): Remove !cached_base_dev condition on call to
+	gomp_init_targets_once.
+	(acc_set_device_num): Likewise.
+
+2016-05-16  Martin Jambor  <mjambor@suse.cz>
+
+        * testsuite/libgomp.hsa.c/complex-align-2.c: New test.
+
+2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Adjust
+	expected partitioning.
+
+2016-04-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70626
+	* testsuite/libgomp.oacc-c++/template-reduction.C: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/combined-reduction.c: New test.
+	* testsuite/libgomp.oacc-fortran/combined-reduction.f90: New test.
+
+2016-04-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* plugin/plugin-nvptx.c (map_fini): Make cuMemFreeHost error
+	non-fatal.
+
+2016-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70680
+	* testsuite/libgomp.c/pr70680-1.c: New test.
+	* testsuite/libgomp.c/pr70680-2.c: New test.
+
+2016-04-14  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/non-scalar-data.f90: Don't
+	pass parameter variables to subroutines.
+
+2016-04-14  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70643
+	* testsuite/libgomp.oacc-fortran/pr70643.f90: New test.
+
+2016-04-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR testsuite/68242
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Likewise.
+
 2016-04-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp_g.h: Rename GOACC_parallel_keyd prototype to

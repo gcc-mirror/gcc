@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,7 +121,6 @@ package System.Rident is
       No_Implicit_Heap_Allocations,              -- (RM D.8(8), H.4(3))
       No_Implicit_Task_Allocations,              -- GNAT
       No_Implicit_Protected_Object_Allocations,  -- GNAT
-      No_Implicit_Loops,                         -- GNAT
       No_Initialize_Scalars,                     -- GNAT
       No_Local_Allocators,                       -- (RM H.4(8))
       No_Local_Timing_Events,                    -- (RM D.7(10.2/2))
@@ -179,6 +178,7 @@ package System.Rident is
       No_Implementation_Restrictions,            -- GNAT
       No_Implementation_Units,                   -- Ada 2012 AI-242
       No_Implicit_Aliasing,                      -- GNAT
+      No_Implicit_Loops,                         -- GNAT
       No_Elaboration_Code,                       -- GNAT
       No_Obsolescent_Features,                   -- Ada 2005 AI-368
       No_Wide_Characters,                        -- GNAT

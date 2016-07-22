@@ -55,8 +55,6 @@ package Ada.Containers.Helpers is
    package Generic_Implementation is
 
       --  Generic package used in the implementation of containers.
-      --  ???????????????????Currently used by Vectors; not yet by all other
-      --  containers.
 
       --  This needs to be generic so that the 'Enabled attribute will return
       --  the value that is relevant at the point where a container generic is

@@ -1,5 +1,5 @@
 // PR c++/66260
-// { dg-do compile { target c++14 } }
+// { dg-do assemble { target c++14 } }
 
 template <class>
 constexpr bool foo = false;

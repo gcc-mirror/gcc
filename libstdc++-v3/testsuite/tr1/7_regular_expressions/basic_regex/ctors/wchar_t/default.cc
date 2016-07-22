@@ -24,14 +24,14 @@
 #include <tr1/regex>
 #include <testsuite_hooks.h>
 
-// Tests default constructor of the basic_regex class.  
+// Tests default constructor of the basic_regex class.
 void test01()
 {
   typedef std::tr1::basic_regex<wchar_t> test_type;
 
   // default constructor
   test_type re;
-  
+
   // Check for required typedefs
   typedef test_type::value_type  value_type;
   typedef test_type::flag_type   flag_type;
@@ -40,7 +40,7 @@ void test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

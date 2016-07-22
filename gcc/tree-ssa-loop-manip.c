@@ -472,8 +472,11 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis,
 
   if (changed_bbs)
     EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
-      find_uses_to_rename_bb (BASIC_BLOCK_FOR_FN (cfun, index), use_blocks,
-			      need_phis, use_flags);
+      {
+	bb = BASIC_BLOCK_FOR_FN (cfun, index);
+	if (bb)
+	  find_uses_to_rename_bb (bb, use_blocks, need_phis, use_flags);
+      }
   else
     FOR_EACH_BB_FN (bb, cfun)
       find_uses_to_rename_bb (bb, use_blocks, need_phis, use_flags);

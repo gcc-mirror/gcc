@@ -32,11 +32,11 @@ using std::pair;
 
 template class unordered_multimap<string, float>;
 template class unordered_multimap<string, int,
-				  hash<string>, equal_to<string>, 
+				  hash<string>, equal_to<string>,
 				  allocator<pair<const string, int> > >;
 template class unordered_multimap<string, float,
 				  hash<string>, equal_to<string>,
 				  allocator<char> >;
 template class __unordered_multimap<string, int,
-				    hash<string>, equal_to<string>, 
+				    hash<string>, equal_to<string>,
 				    allocator<pair<const string, int> >, true>;

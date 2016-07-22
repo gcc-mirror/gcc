@@ -660,6 +660,12 @@ struct target_hard_regs {
      across calls even if we are willing to save and restore them.  */
   HARD_REG_SET x_call_fixed_reg_set;
 
+  /* Contains registers that are fixed use -- i.e. in fixed_reg_set -- but
+     only if they are not merely part of that set because they are global
+     regs.  Global regs that are not otherwise fixed can still take part
+     in register allocation.  */
+  HARD_REG_SET x_fixed_nonglobal_reg_set;
+
   /* Contains 1 for registers that are set or clobbered by calls.  */
   /* ??? Ideally, this would be just call_used_regs plus global_regs, but
      for someone's bright idea to have call_used_regs strictly include
@@ -722,6 +728,8 @@ extern struct target_hard_regs *this_target_hard_regs;
   (this_target_hard_regs->x_fixed_regs)
 #define fixed_reg_set \
   (this_target_hard_regs->x_fixed_reg_set)
+#define fixed_nonglobal_reg_set \
+  (this_target_hard_regs->x_fixed_nonglobal_reg_set)
 #define call_used_regs \
   (this_target_hard_regs->x_call_used_regs)
 #define call_really_used_regs \

@@ -1,4 +1,6 @@
-/* { dg-do run } */
+/* Exercise an invalid partial acc_delete on nvidia targets.  */
+
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <stdio.h>
 #include <stdlib.h>

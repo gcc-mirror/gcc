@@ -40,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class _Setfill<wchar_t>;
   template _Setfill<wchar_t> setfill(wchar_t);
-  template class basic_iostream<wchar_t>; 
+  template class basic_iostream<wchar_t>;
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@
 --  Second_Duration. Other functions are to access more advanced values like
 --  Day_Of_Week, Day_In_Year and Week_In_Year.
 
-with Ada.Calendar;
+with Ada.Calendar.Formatting;
 with Interfaces.C;
 
 package GNAT.Calendar is
@@ -175,9 +175,11 @@ private
    --  Robert G. Tantzen.
 
    No_Time : constant Ada.Calendar.Time :=
-               Ada.Calendar.Time_Of
+               Ada.Calendar.Formatting.Time_Of
                  (Ada.Calendar.Year_Number'First,
                   Ada.Calendar.Month_Number'First,
-                  Ada.Calendar.Day_Number'First);
+                  Ada.Calendar.Day_Number'First,
+                  Time_Zone => 0);
+   --  Use Time_Zone => 0 to be the same binary representation in any timezone
 
 end GNAT.Calendar;

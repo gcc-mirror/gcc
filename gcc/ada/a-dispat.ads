@@ -16,7 +16,8 @@
 package Ada.Dispatching is
    pragma Preelaborate (Dispatching);
 
-   procedure Yield;
+   procedure Yield with
+     Global => null;
 
    Dispatching_Policy_Error : exception;
 end Ada.Dispatching;

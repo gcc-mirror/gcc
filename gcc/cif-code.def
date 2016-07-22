@@ -91,6 +91,10 @@ DEFCIFCODE(NOT_DECLARED_INLINED, CIF_FINAL_NORMAL,
 DEFCIFCODE(MISMATCHED_ARGUMENTS, CIF_FINAL_ERROR,
 	   N_("mismatched arguments"))
 
+/* Caller and callee disagree on the arguments.  */
+DEFCIFCODE(LTO_MISMATCHED_DECLARATIONS, CIF_FINAL_ERROR,
+	   N_("mismatched declarations during linktime optimization"))
+
 /* Call was originally indirect.  */
 DEFCIFCODE(ORIGINALLY_INDIRECT_CALL, CIF_FINAL_NORMAL,
 	   N_("originally indirect function call not considered for inlining"))
@@ -131,3 +135,7 @@ DEFCIFCODE(CILK_SPAWN, CIF_FINAL_ERROR,
 /* We proved that the call is unreachable.  */
 DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,
 	   N_("unreachable"))
+
+/* We can't inline because of instrumentation thunk.  */
+DEFCIFCODE(CHKP, CIF_FINAL_ERROR,
+	   N_("caller is instrumetnation thunk"))

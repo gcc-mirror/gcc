@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-mcrc" } */
 /* { dg-do assemble } */
 

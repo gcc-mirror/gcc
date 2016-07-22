@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
      bool
      test_and_set(memory_order) noexcept;
-     
+
      void
      clear(memory_order) noexcept;
     };

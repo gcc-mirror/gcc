@@ -413,7 +413,7 @@ package body Exp_Ch2 is
         and then (Is_Atomic (E) or else Is_Atomic (Etype (E)))
       then
          declare
-            Set  : Boolean;
+            Set : Boolean;
 
          begin
             --  If variable is atomic, but type is not, setting depends on

@@ -34,6 +34,8 @@ struct GTY(()) condition
   /* If agg_contents is set, this is the offset from which the used data was
      loaded.  */
   HOST_WIDE_INT offset;
+  /* Size of the access reading the data (or the PARM_DECL SSA_NAME).  */
+  HOST_WIDE_INT size;
   tree val;
   int operand_num;
   ENUM_BITFIELD(tree_code) code : 16;
@@ -132,6 +134,8 @@ struct GTY(()) inline_summary
   /* True wen there is only one caller of the function before small function
      inlining.  */
   unsigned int single_caller : 1;
+  /* True if function contains any floating point expressions.  */
+  unsigned int fp_expressions : 1;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to

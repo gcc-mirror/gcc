@@ -21,7 +21,7 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
-  
+
 /** @file bits/ctype_inline.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{locale}
@@ -33,7 +33,7 @@
 
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   ctype<char>::
   scan_is(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high 
+    while (__low < __high
 	   && !(_M_table[static_cast<unsigned char>(*__low)] & __m))
       ++__low;
     return __low;
@@ -66,7 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   ctype<char>::
   scan_not(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high 
+    while (__low < __high
 	   && (_M_table[static_cast<unsigned char>(*__low)] & __m) != 0)
       ++__low;
     return __low;

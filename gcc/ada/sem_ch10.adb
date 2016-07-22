@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,6 +83,13 @@ package body Sem_Ch10 is
    --  then it also performs a basic decoration of the real entities. This is
    --  required in order to avoid passing non-decorated entities to the
    --  back-end. Implements Ada 2005 (AI-50217).
+
+   procedure Analyze_Proper_Body (N : Node_Id; Nam : Entity_Id);
+   --  Common processing for all stubs (subprograms, tasks, packages, and
+   --  protected cases). N is the stub to be analyzed. Once the subunit name
+   --  is established, load and analyze. Nam is the non-overloadable entity
+   --  for which the proper body provides a completion. Subprogram stubs are
+   --  handled differently because they can be declarations.
 
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id);
    --  Check whether the source for the body of a compilation unit must be
@@ -203,13 +210,6 @@ package body Sem_Ch10 is
    procedure Unchain (E : Entity_Id);
    --  Remove single entity from visibility list
 
-   procedure Analyze_Proper_Body (N : Node_Id; Nam : Entity_Id);
-   --  Common processing for all stubs (subprograms, tasks, packages, and
-   --  protected cases). N is the stub to be analyzed. Once the subunit name
-   --  is established, load and analyze. Nam is the non-overloadable entity
-   --  for which the proper body provides a completion. Subprogram stubs are
-   --  handled differently because they can be declarations.
-
    procedure sm;
    --  A dummy procedure, for debugging use, called just before analyzing the
    --  main unit (after dealing with any context clauses).
@@ -269,8 +269,8 @@ package body Sem_Ch10 is
          procedure Process_Body_Clauses
           (Context_List      : List_Id;
            Clause            : Node_Id;
-           Used              : in out Boolean;
-           Used_Type_Or_Elab : in out Boolean);
+           Used              : out Boolean;
+           Used_Type_Or_Elab : out Boolean);
          --  Examine the context clauses of a package body, trying to match the
          --  name entity of Clause with any list element. If the match occurs
          --  on a use package clause set Used to True, for a use type clause or
@@ -279,8 +279,8 @@ package body Sem_Ch10 is
          procedure Process_Spec_Clauses
           (Context_List : List_Id;
            Clause       : Node_Id;
-           Used         : in out Boolean;
-           Withed       : in out Boolean;
+           Used         : out Boolean;
+           Withed       : out Boolean;
            Exit_On_Self : Boolean := False);
          --  Examine the context clauses of a package spec, trying to match
          --  the name entity of Clause with any list element. If the match
@@ -298,8 +298,8 @@ package body Sem_Ch10 is
          procedure Process_Body_Clauses
           (Context_List      : List_Id;
            Clause            : Node_Id;
-           Used              : in out Boolean;
-           Used_Type_Or_Elab : in out Boolean)
+           Used              : out Boolean;
+           Used_Type_Or_Elab : out Boolean)
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
             Cont_Item : Node_Id;
@@ -419,8 +419,8 @@ package body Sem_Ch10 is
          procedure Process_Spec_Clauses
           (Context_List : List_Id;
            Clause       : Node_Id;
-           Used         : in out Boolean;
-           Withed       : in out Boolean;
+           Used         : out Boolean;
+           Withed       : out Boolean;
            Exit_On_Self : Boolean := False)
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
@@ -515,10 +515,10 @@ package body Sem_Ch10 is
 
                if Present (Spec_Context_Items) then
                   declare
-                     Used_In_Body      : Boolean := False;
-                     Used_In_Spec      : Boolean := False;
-                     Used_Type_Or_Elab : Boolean := False;
-                     Withed_In_Spec    : Boolean := False;
+                     Used_In_Body      : Boolean;
+                     Used_In_Spec      : Boolean;
+                     Used_Type_Or_Elab : Boolean;
+                     Withed_In_Spec    : Boolean;
 
                   begin
                      Process_Spec_Clauses
@@ -557,7 +557,7 @@ package body Sem_Ch10 is
                                   or else Used_In_Spec)
                      then
                         Error_Msg_N -- CODEFIX
-                          ("redundant with clause in body??", Clause);
+                          ("redundant with clause in body?r?", Clause);
                      end if;
 
                      Used_In_Body := False;
@@ -586,7 +586,7 @@ package body Sem_Ch10 is
 
                      if Withed then
                         Error_Msg_N -- CODEFIX
-                          ("redundant with clause??", Clause);
+                          ("redundant with clause?r?", Clause);
                      end if;
                   end;
                end if;
@@ -612,7 +612,7 @@ package body Sem_Ch10 is
 
       --  If the unit is a subunit whose parent has not been analyzed (which
       --  indicates that the main unit is a subunit, either the current one or
-      --  one of its descendents) then the subunit is compiled as part of the
+      --  one of its descendants) then the subunit is compiled as part of the
       --  analysis of the parent, which we proceed to do. Basically this gets
       --  handled from the top down and we don't want to do anything at this
       --  level (i.e. this subunit will be handled on the way down from the
@@ -693,7 +693,7 @@ package body Sem_Ch10 is
       if Nkind (Unit_Node) = N_Package_Body then
 
          --  If no Lib_Unit, then there was a serious previous error, so just
-         --  ignore the entire analysis effort
+         --  ignore the entire analysis effort.
 
          if No (Lib_Unit) then
             Check_Error_Detected;
@@ -783,15 +783,15 @@ package body Sem_Ch10 is
                   begin
                      Set_Comes_From_Source_Default (False);
 
-                     --  Checks for redundant USE TYPE clauses have a special
-                     --  exception for the synthetic spec we create here. This
-                     --  special case relies on the two compilation units
-                     --  sharing the same context clause.
-
-                     --  Note: We used to do a shallow copy (New_Copy_List),
-                     --  which defeated those checks and also created malformed
-                     --  trees (subtype mark shared by two distinct
-                     --  N_Use_Type_Clause nodes) which crashed the compiler.
+                     --  Note: We copy the Context_Items from the explicit body
+                     --  to the implicit spec, setting the former to Empty_List
+                     --  to preserve the treeish nature of the tree, during
+                     --  analysis of the spec. Then we put it back the way it
+                     --  was -- copy the Context_Items from the spec to the
+                     --  body, and set the spec Context_Items to Empty_List.
+                     --  It is necessary to preserve the treeish nature,
+                     --  because otherwise we will call End_Use_* twice on the
+                     --  same thing.
 
                      Lib_Unit :=
                        Make_Compilation_Unit (Loc,
@@ -804,6 +804,7 @@ package body Sem_Ch10 is
                          Aux_Decls_Node =>
                            Make_Compilation_Unit_Aux (Loc));
 
+                     Set_Context_Items (N, Empty_List);
                      Set_Library_Unit (N, Lib_Unit);
                      Set_Parent_Spec (Unit (Lib_Unit), Cunit (Unum));
                      Make_Child_Decl_Unit (N);
@@ -816,6 +817,11 @@ package body Sem_Ch10 is
                      Set_Is_Child_Unit (Defining_Entity (Unit_Node));
                      Set_Debug_Info_Needed (Defining_Entity (Unit (Lib_Unit)));
                      Set_Comes_From_Source_Default (SCS);
+
+                     --  Restore Context_Items to the body
+
+                     Set_Context_Items (N, Context_Items (Lib_Unit));
+                     Set_Context_Items (Lib_Unit, Empty_List);
                   end;
                end if;
             end if;
@@ -879,7 +885,7 @@ package body Sem_Ch10 is
       end if;
 
       --  All components of the context: with-clauses, library unit, ancestors
-      --  if any, (and their context)  are analyzed and installed.
+      --  if any, (and their context) are analyzed and installed.
 
       --  Call special debug routine sm if this is the main unit
 
@@ -1489,7 +1495,7 @@ package body Sem_Ch10 is
 
                            --  Check if the named package (or some ancestor)
                            --  leaves visible the full-view of the unit given
-                           --  in the limited-with clause
+                           --  in the limited-with clause.
 
                            loop
                               if Designate_Same_Unit (Lim_Unit_Name,
@@ -1828,9 +1834,8 @@ package body Sem_Ch10 is
             --  Give message if we did not get the unit Emit warning even if
             --  missing subunit is not within main unit, to simplify debugging.
 
-            if Original_Operating_Mode = Generate_Code
-              and then Unum = No_Unit
-            then
+            pragma Assert (Original_Operating_Mode = Generate_Code);
+            if Unum = No_Unit then
                Error_Msg_Unit_1 := Subunit_Name;
                Error_Msg_File_1 :=
                  Get_File_Name (Subunit_Name, Subunit => True);
@@ -2008,7 +2013,7 @@ package body Sem_Ch10 is
       Par_Unit : constant Entity_Id := Current_Scope;
 
       Lib_Spec        : Node_Id := Library_Unit (Lib_Unit);
-      Num_Scopes      : Int := 0;
+      Num_Scopes      : Nat := 0;
       Use_Clauses     : array (1 .. Scope_Stack.Last) of Node_Id;
       Enclosing_Child : Entity_Id := Empty;
       Svg             : constant Suppress_Record := Scope_Suppress;
@@ -5613,12 +5618,10 @@ package body Sem_Ch10 is
 
       procedure Decorate_State (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind                   (Ent, E_Abstract_State);
-         Set_Etype                   (Ent, Standard_Void_Type);
-         Set_Scope                   (Ent, Scop);
-         Set_Encapsulating_State     (Ent, Empty);
-         Set_Refinement_Constituents (Ent, New_Elmt_List);
-         Set_Part_Of_Constituents    (Ent, New_Elmt_List);
+         Set_Ekind               (Ent, E_Abstract_State);
+         Set_Etype               (Ent, Standard_Void_Type);
+         Set_Scope               (Ent, Scop);
+         Set_Encapsulating_State (Ent, Empty);
       end Decorate_State;
 
       -------------------
@@ -5635,15 +5638,19 @@ package body Sem_Ch10 is
 
       begin
          --  An unanalyzed type or a shadow entity of a type is treated as an
-         --  incomplete type.
+         --  incomplete type, and carries the corresponding attributes.
 
-         Set_Ekind             (Ent, E_Incomplete_Type);
-         Set_Etype             (Ent, Ent);
-         Set_Scope             (Ent, Scop);
-         Set_Is_First_Subtype  (Ent);
-         Set_Stored_Constraint (Ent, No_Elist);
-         Set_Full_View         (Ent, Empty);
-         Init_Size_Align       (Ent);
+         Set_Ekind              (Ent, E_Incomplete_Type);
+         Set_Etype              (Ent, Ent);
+         Set_Full_View          (Ent, Empty);
+         Set_Is_First_Subtype   (Ent);
+         Set_Scope              (Ent, Scop);
+         Set_Stored_Constraint  (Ent, No_Elist);
+         Init_Size_Align        (Ent);
+
+         if From_Limited_With (Ent) then
+            Set_Private_Dependents (Ent, New_Elmt_List);
+         end if;
 
          --  A tagged type and its corresponding shadow entity share one common
          --  class-wide type. The list of primitive operations for the shadow
@@ -5670,16 +5677,16 @@ package body Sem_Ch10 is
             Set_Parent (CW_Typ, Parent (Ent));
 
             Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
-            Set_Etype                     (CW_Typ, Ent);
-            Set_Scope                     (CW_Typ, Scop);
-            Set_Is_Tagged_Type            (CW_Typ);
-            Set_Is_First_Subtype          (CW_Typ);
-            Init_Size_Align               (CW_Typ);
-            Set_Has_Unknown_Discriminants (CW_Typ);
             Set_Class_Wide_Type           (CW_Typ, CW_Typ);
+            Set_Etype                     (CW_Typ, Ent);
             Set_Equivalent_Type           (CW_Typ, Empty);
             Set_From_Limited_With         (CW_Typ, From_Limited_With (Ent));
+            Set_Has_Unknown_Discriminants (CW_Typ);
+            Set_Is_First_Subtype          (CW_Typ);
+            Set_Is_Tagged_Type            (CW_Typ);
             Set_Materialize_Entity        (CW_Typ, Materialize);
+            Set_Scope                     (CW_Typ, Scop);
+            Init_Size_Align               (CW_Typ);
          end if;
       end Decorate_Type;
 

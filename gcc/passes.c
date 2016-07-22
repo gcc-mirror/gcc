@@ -66,8 +66,6 @@ using namespace gcc;
    The variable current_pass is also used for statistics and plugins.  */
 opt_pass *current_pass;
 
-static void register_pass_name (opt_pass *, const char *);
-
 /* Most passes are single-instance (within their context) and thus don't
    need to implement cloning, but passes that support multiple instances
    *must* provide their own implementation of the clone method.
@@ -364,10 +362,9 @@ finish_optimization_passes (void)
 
   /* Do whatever is necessary to finish printing the graphs.  */
   for (i = TDI_end; (dfi = dumps->get_dump_file_info (i)) != NULL; ++i)
-    if (dumps->dump_initialized_p (i)
-	&& (dfi->pflags & TDF_GRAPH) != 0
-	&& (name = dumps->get_dump_file_name (i)) != NULL)
+    if (dfi->graph_dump_initialized)
       {
+	name = dumps->get_dump_file_name (dfi);
 	finish_graph_dump_file (name);
 	free (name);
       }
@@ -845,21 +842,19 @@ pass_manager::register_dump_files (opt_pass *pass)
   while (pass);
 }
 
-static hash_map<nofree_string_hash, opt_pass *> *name_to_pass_map;
-
 /* Register PASS with NAME.  */
 
-static void
-register_pass_name (opt_pass *pass, const char *name)
+void
+pass_manager::register_pass_name (opt_pass *pass, const char *name)
 {
-  if (!name_to_pass_map)
-    name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
+  if (!m_name_to_pass_map)
+    m_name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
 
-  if (name_to_pass_map->get (name))
+  if (m_name_to_pass_map->get (name))
     return; /* Ignore plugin passes.  */
 
-      const char *unique_name = xstrdup (name);
-      name_to_pass_map->put (unique_name, pass);
+  const char *unique_name = xstrdup (name);
+  m_name_to_pass_map->put (unique_name, pass);
 }
 
 /* Map from pass id to canonicalized pass name.  */
@@ -883,14 +878,14 @@ passes_pass_traverse (const char *const &name, opt_pass *const &pass, void *)
 /* The function traverses NAME_TO_PASS_MAP and creates a pass info
    table for dumping purpose.  */
 
-static void
-create_pass_tab (void)
+void
+pass_manager::create_pass_tab (void) const
 {
   if (!flag_dump_passes)
     return;
 
-  pass_tab.safe_grow_cleared (g->get_passes ()->passes_by_id_size + 1);
-  name_to_pass_map->traverse <void *, passes_pass_traverse> (NULL);
+  pass_tab.safe_grow_cleared (passes_by_id_size + 1);
+  m_name_to_pass_map->traverse <void *, passes_pass_traverse> (NULL);
 }
 
 static bool override_gate_status (opt_pass *, tree, bool);
@@ -961,10 +956,10 @@ pass_manager::dump_passes () const
 
 /* Returns the pass with NAME.  */
 
-static opt_pass *
-get_pass_by_name (const char *name)
+opt_pass *
+pass_manager::get_pass_by_name (const char *name)
 {
-  opt_pass **p = name_to_pass_map->get (name);
+  opt_pass **p = m_name_to_pass_map->get (name);
   if (p)
     return *p;
 
@@ -1026,7 +1021,7 @@ enable_disable_pass (const char *arg, bool is_enable)
       free (argstr);
       return;
     }
-  pass = get_pass_by_name (phase_name);
+  pass = g->get_passes ()->get_pass_by_name (phase_name);
   if (!pass || pass->static_pass_number == -1)
     {
       if (is_enable)
@@ -1497,8 +1492,12 @@ pass_manager::register_pass (struct register_pass_info *pass_info)
         tdi = TDI_rtl_all;
       /* Check if dump-all flag is specified.  */
       if (dumps->get_dump_file_info (tdi)->pstate)
-        dumps->get_dump_file_info (added_pass_nodes->pass->static_pass_number)
+	{
+	  dumps->get_dump_file_info (added_pass_nodes->pass->static_pass_number)
             ->pstate = dumps->get_dump_file_info (tdi)->pstate;
+	  dumps->get_dump_file_info (added_pass_nodes->pass->static_pass_number)
+	    ->pflags = dumps->get_dump_file_info (tdi)->pflags;
+	}
       XDELETE (added_pass_nodes);
       added_pass_nodes = next_node;
     }
@@ -1555,8 +1554,15 @@ pass_manager::pass_manager (context *ctxt)
 
   /* Build the tree of passes.  */
 
-#define INSERT_PASSES_AFTER(PASS) \
-  p = &(PASS);
+#define INSERT_PASSES_AFTER(PASS)		\
+  {						\
+    opt_pass **p_start;				\
+    p_start = p = &(PASS);
+
+#define TERMINATE_PASS_LIST(PASS)		\
+    gcc_assert (p_start == &PASS);		\
+    *p = NULL;					\
+  }
 
 #define PUSH_INSERT_PASSES_WITHIN(PASS) \
   { \
@@ -1583,9 +1589,6 @@ pass_manager::pass_manager (context *ctxt)
       NEXT_PASS (PASS, NUM);				\
       PASS ## _ ## NUM->set_pass_param (0, ARG);	\
     } while (0)
-
-#define TERMINATE_PASS_LIST() \
-  *p = NULL;
 
 #include "pass-instances.def"
 
@@ -1756,10 +1759,13 @@ execute_function_dump (function *fn, void *data)
       if ((fn->curr_properties & PROP_cfg)
 	  && (dump_flags & TDF_GRAPH))
 	{
-	  if (!pass->graph_dump_initialized)
+	  gcc::dump_manager *dumps = g->get_dumps ();
+	  struct dump_file_info *dfi
+	    = dumps->get_dump_file_info (pass->static_pass_number);
+	  if (!dfi->graph_dump_initialized)
 	    {
 	      clean_graph_dump_file (dump_file_name);
-	      pass->graph_dump_initialized = true;
+	      dfi->graph_dump_initialized = true;
 	    }
 	  print_graph_cfg (dump_file_name, fn);
 	}
@@ -2103,7 +2109,9 @@ pass_init_dump_file (opt_pass *pass)
 	  && cfun && (cfun->curr_properties & PROP_cfg))
 	{
 	  clean_graph_dump_file (dump_file_name);
-	  pass->graph_dump_initialized = true;
+	  struct dump_file_info *dfi
+	    = dumps->get_dump_file_info (pass->static_pass_number);
+	  dfi->graph_dump_initialized = true;
 	}
       timevar_pop (TV_DUMP);
       return initializing_dump;

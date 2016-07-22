@@ -1,4 +1,4 @@
-/* Vector API for GNU compiler.
+/* Fibonacci heap for GNU compiler.
    Copyright (C) 1998-2016 Free Software Foundation, Inc.
    Contributed by Daniel Berlin (dan@cgsoftware.com).
    Re-implemented in C++ by Martin Liska <mliska@suse.cz>
@@ -61,8 +61,8 @@ public:
   }
 
   /* Constructor for a node with given KEY.  */
-  fibonacci_node (K key): m_parent (NULL), m_child (NULL), m_left (this),
-    m_right (this), m_key (key),
+  fibonacci_node (K key, V *data = NULL): m_parent (NULL), m_child (NULL),
+    m_left (this), m_right (this), m_key (key), m_data (data),
     m_degree (0), m_mark (0)
   {
   }
@@ -230,6 +230,9 @@ private:
   /* Insert new NODE given by KEY and DATA associated with the key.  */
   fibonacci_node_t *insert (fibonacci_node_t *node, K key, V *data);
 
+  /* Insert new NODE that has already filled key and value.  */
+  fibonacci_node_t *insert_node (fibonacci_node_t *node);
+
   /* Insert it into the root list.  */
   void insert_root (fibonacci_node_t *node);
 
@@ -330,12 +333,12 @@ fibonacci_node<K,V>*
 fibonacci_heap<K,V>::insert (K key, V *data)
 {
   /* Create the new node.  */
-  fibonacci_node<K,V> *node = new fibonacci_node_t ();
+  fibonacci_node<K,V> *node = new fibonacci_node_t (key, data);
 
-  return insert (node, key, data);
+  return insert_node (node);
 }
 
-/* Insert new NODE given by KEY and DATA associated with the key.  */
+/* Insert new NODE given by DATA associated with the key.  */
 
 template<class K, class V>
 fibonacci_node<K,V>*
@@ -345,6 +348,15 @@ fibonacci_heap<K,V>::insert (fibonacci_node_t *node, K key, V *data)
   node->m_data = data;
   node->m_key = key;
 
+  return insert_node (node);
+}
+
+/* Insert new NODE that has already filled key and value.  */
+
+template<class K, class V>
+fibonacci_node<K,V>*
+fibonacci_heap<K,V>::insert_node (fibonacci_node_t *node)
+{
   /* Insert it into the root list.  */
   insert_root (node);
 
@@ -359,6 +371,7 @@ fibonacci_heap<K,V>::insert (fibonacci_node_t *node, K key, V *data)
 }
 
 /* For given NODE, set new KEY and DATA value.  */
+
 template<class K, class V>
 V*
 fibonacci_heap<K,V>::replace_key_data (fibonacci_node<K,V> *node, K key,
@@ -406,7 +419,9 @@ fibonacci_heap<K,V>::replace_key_data (fibonacci_node<K,V> *node, K key,
   return odata;
 }
 
-/* Extract minimum node in the heap.  */
+/* Extract minimum node in the heap.  Delete fibonacci node if RELEASE
+   is true.  */
+
 template<class K, class V>
 V*
 fibonacci_heap<K,V>::extract_min (bool release)
@@ -449,7 +464,7 @@ fibonacci_heap<K,V>::delete_node (fibonacci_node<K,V> *node, bool release)
   return ret;
 }
 
-/* Union the heap with HEAPB.  */
+/* Union the heap with HEAPB.  One of the heaps is going to be deleted.  */
 
 template<class K, class V>
 fibonacci_heap<K,V>*
@@ -478,10 +493,13 @@ fibonacci_heap<K,V>::union_with (fibonacci_heap<K,V> *heapb)
   heapa->m_nodes += heapb->m_nodes;
 
   /* And set the new minimum, if it's changed.  */
-  if (heapb->min->compare (heapa->min) < 0)
+  if (heapb->m_min->compare (heapa->m_min) < 0)
     heapa->m_min = heapb->m_min;
 
+  /* Set m_min to NULL to not to delete live fibonacci nodes.  */
+  heapb->m_min = NULL;
   delete (heapb);
+
   return heapa;
 }
 
@@ -544,6 +562,7 @@ fibonacci_heap<K,V>::cascading_cut (fibonacci_node<K,V> *y)
 }
 
 /* Extract minimum node from the heap.  */
+
 template<class K, class V>
 fibonacci_node<K,V>*
 fibonacci_heap<K,V>::extract_minimum_node ()

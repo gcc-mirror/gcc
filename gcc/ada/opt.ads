@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,6 +112,11 @@ package Opt is
    --  case of some binder variables, Gnatbind.Scan_Bind_Arg may modify
    --  the default values.
 
+   Latest_Ada_Only : Boolean := False;
+   --  If True, the only value valid for Ada_Version is Ada_Version_Type'Last,
+   --  trying to specify other values will be ignored (in case of pragma
+   --  Ada_xxx) or generate an error (in case of -gnat83/95/xx switches).
+
    type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012);
    pragma Ordered (Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
@@ -202,6 +207,11 @@ package Opt is
    --  GNATBIND
    --  Set to non-null when Bind_Alternate_Main_Name is True. This value
    --  is modified as needed by Gnatbind.Scan_Bind_Arg.
+
+   ASIS_GNSA_Mode : Boolean := False;
+   --  GNAT
+   --  Enable GNSA back-end processing assuming ASIS_Mode is already set to
+   --  True. ASIS_GNSA mode suppresses the call to gigi.
 
    ASIS_Mode : Boolean := False;
    --  GNAT
@@ -766,8 +776,7 @@ package Opt is
    GNAT_Encodings : Int;
    pragma Import (C, GNAT_Encodings, "gnat_encodings");
    --  Constant controlling the balance between GNAT encodings and standard
-   --  DWARF to emit in the debug information. See aamissing.c for definitions
-   --  for the GNAAMP back end. It accepts the following values.
+   --  DWARF to emit in the debug information. It accepts the following values.
 
    DWARF_GNAT_Encodings_All     : constant Int := 0;
    DWARF_GNAT_Encodings_GDB     : constant Int := 1;
@@ -1061,6 +1070,12 @@ package Opt is
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
 
+   Minimize_Expression_With_Actions : Boolean := False;
+   --  GNAT
+   --  If True, minimize the use of N_Expression_With_Actions node.
+   --  This can be used in particular on some back-ends where this node is
+   --  difficult to support.
+
    Modify_Tree_For_C : Boolean := False;
    --  GNAT
    --  If this switch is set True (currently it is set only by -gnatd.V), then
@@ -1178,13 +1193,11 @@ package Opt is
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
    --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
-   --  See e.g. aamissing.c for definitions for the GNAAMP back end.
 
    Optimize_Size : Int;
    pragma Import (C, Optimize_Size, "optimize_size");
    --  Constant reflecting setting of -Os (optimize for size). Set to nonzero
-   --  in -Os mode and set to zero otherwise. See aamissing.c for definition
-   --  of "optimize_size" for the GNAAMP backend.
+   --  in -Os mode and set to zero otherwise.
 
    Output_File_Name_Present : Boolean := False;
    --  GNATBIND, GNAT, GNATMAKE
@@ -1559,13 +1572,6 @@ package Opt is
    Unnest_Subprogram_Mode : Boolean := False;
    --  If true, activates the circuitry for unnesting subprograms (see the spec
    --  of Exp_Unst for full details). Currently set only by use of -gnatd.1.
-
-   Universal_Addressing_On_AAMP : Boolean := False;
-   --  GNAAMP
-   --  Indicates if library-level objects should be accessed and updated using
-   --  universal addressing instructions on the AAMP architecture. This flag is
-   --  set to True when pragma Universal_Data is given as a configuration
-   --  pragma.
 
    Unreserve_All_Interrupts : Boolean := False;
    --  GNAT, GNATBIND

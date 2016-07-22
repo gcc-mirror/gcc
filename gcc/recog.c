@@ -1470,22 +1470,34 @@ extract_asm_operands (rtx body)
 
 /* If BODY is an insn body that uses ASM_OPERANDS,
    return the number of operands (both input and output) in the insn.
+   If BODY is an insn body that uses ASM_INPUT with CLOBBERS in PARALLEL,
+   return 0.
    Otherwise return -1.  */
 
 int
 asm_noperands (const_rtx body)
 {
   rtx asm_op = extract_asm_operands (CONST_CAST_RTX (body));
-  int n_sets = 0;
+  int i, n_sets = 0;
 
   if (asm_op == NULL)
-    return -1;
+    {
+      if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) >= 2
+	  && GET_CODE (XVECEXP (body, 0, 0)) == ASM_INPUT)
+	{
+	  /* body is [(asm_input ...) (clobber (reg ...))...].  */
+	  for (i = XVECLEN (body, 0) - 1; i > 0; i--)
+	    if (GET_CODE (XVECEXP (body, 0, i)) != CLOBBER)
+	      return -1;
+	  return 0;
+	}
+      return -1;
+    }
 
   if (GET_CODE (body) == SET)
     n_sets = 1;
   else if (GET_CODE (body) == PARALLEL)
     {
-      int i;
       if (GET_CODE (XVECEXP (body, 0, 0)) == SET)
 	{
 	  /* Multiple output operands, or 1 output plus some clobbers:
@@ -1540,9 +1552,12 @@ asm_noperands (const_rtx body)
    the locations of the operands within the insn into the vector OPERAND_LOCS,
    and the constraints for the operands into CONSTRAINTS.
    Write the modes of the operands into MODES.
+   Write the location info into LOC.
    Return the assembler-template.
+   If BODY is an insn body that uses ASM_INPUT with CLOBBERS in PARALLEL,
+   return the basic assembly string.
 
-   If MODES, OPERAND_LOCS, CONSTRAINTS or OPERANDS is 0,
+   If LOC, MODES, OPERAND_LOCS, CONSTRAINTS or OPERANDS is 0,
    we don't store that info.  */
 
 const char *
@@ -1602,6 +1617,12 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 		  modes[i] = GET_MODE (SET_DEST (XVECEXP (body, 0, i)));
 	      }
 	    nbase = i;
+	  }
+	else if (GET_CODE (asmop) == ASM_INPUT)
+	  {
+	    if (loc)
+	      *loc = ASM_INPUT_SOURCE_LOCATION (asmop);
+	    return XSTR (asmop, 0);
 	  }
 	break;
       }
@@ -2245,7 +2266,8 @@ extract_insn (rtx_insn *insn)
     case PARALLEL:
       if ((GET_CODE (XVECEXP (body, 0, 0)) == SET
 	   && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) == ASM_OPERANDS)
-	  || GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
+	  || GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS
+	  || GET_CODE (XVECEXP (body, 0, 0)) == ASM_INPUT)
 	goto asm_insn;
       else
 	goto normal_insn;

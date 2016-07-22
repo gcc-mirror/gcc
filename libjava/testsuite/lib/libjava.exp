@@ -416,7 +416,7 @@ proc libjava_arguments {{mode compile}} {
 
     # Search for libtool.  We need it to link.
     set found_compiler 0
-    set d [absolute $objdir]
+    set d [file normalize $objdir]
     foreach x {. .. ../.. ../../..} {
 	if {[file exists $d/$x/libtool]} then {
 	    # We have to run silently to avoid DejaGNU lossage.

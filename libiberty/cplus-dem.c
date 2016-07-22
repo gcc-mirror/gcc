@@ -244,6 +244,7 @@ typedef enum type_kind_t
   tk_none,
   tk_pointer,
   tk_reference,
+  tk_rvalue_reference,
   tk_integral,
   tk_bool,
   tk_char,
@@ -2042,7 +2043,8 @@ demangle_template_value_parm (struct work_stuff *work, const char **mangled,
     }
   else if (tk == tk_real)
     success = demangle_real_value (work, mangled, s);
-  else if (tk == tk_pointer || tk == tk_reference)
+  else if (tk == tk_pointer || tk == tk_reference
+	   || tk == tk_rvalue_reference)
     {
       if (**mangled == 'Q')
 	success = demangle_qualified (work, mangled, s,
@@ -2051,7 +2053,8 @@ demangle_template_value_parm (struct work_stuff *work, const char **mangled,
       else
 	{
 	  int symbol_len  = consume_count (mangled);
-	  if (symbol_len == -1)
+	  if (symbol_len == -1
+	      || symbol_len > (long) strlen (*mangled))
 	    return -1;
 	  if (symbol_len == 0)
 	    string_appendn (s, "0", 1);
@@ -3588,6 +3591,14 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 	    tk = tk_reference;
 	  break;
 
+	  /* An rvalue reference type */
+	case 'O':
+	  (*mangled)++;
+	  string_prepend (&decl, "&&");
+	  if (tk == tk_none)
+	    tk = tk_rvalue_reference;
+	  break;
+
 	  /* An array */
 	case 'A':
 	  {
@@ -3611,7 +3622,7 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 	/* A back reference to a previously seen type */
 	case 'T':
 	  (*mangled)++;
-	  if (!get_count (mangled, &n) || n >= work -> ntypes)
+	  if (!get_count (mangled, &n) || n < 0 || n >= work -> ntypes)
 	    {
 	      success = 0;
 	    }
@@ -3645,7 +3656,6 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 	  break;
 
 	case 'M':
-	case 'O':
 	  {
 	    type_quals = TYPE_UNQUALIFIED;
 
@@ -3789,7 +3799,7 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
     /* A back reference to a previously seen squangled type */
     case 'B':
       (*mangled)++;
-      if (!get_count (mangled, &n) || n >= work -> numb)
+      if (!get_count (mangled, &n) || n < 0 || n >= work -> numb)
 	success = 0;
       else
 	string_append (result, work->btypevec[n]);
@@ -4130,7 +4140,8 @@ do_hpacc_template_literal (struct work_stuff *work, const char **mangled,
 
   literal_len = consume_count (mangled);
 
-  if (literal_len <= 0)
+  if (literal_len <= 0
+      || literal_len > (long) strlen (*mangled))
     return 0;
 
   /* Literal parameters are names of arrays, functions, etc.  and the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,7 @@ with Par;
 with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
+with Stand;    use Stand;
 with Scn;      use Scn;
 with Sem_Eval; use Sem_Eval;
 with Sinfo;    use Sinfo;
@@ -155,8 +156,9 @@ package body Lib.Writ is
         OA_Setting        => 'O',
         SPARK_Mode_Pragma => Empty);
 
-      --  Parse system.ads so that the checksum is set right
-      --  Style checks are not applied.
+      --  Parse system.ads so that the checksum is set right. Style checks are
+      --  not applied. The Ekind is set to ensure that this reference is always
+      --  present in the ali file.
 
       declare
          Save_Mindex : constant Nat := Multiple_Unit_Index;
@@ -166,6 +168,8 @@ package body Lib.Writ is
          Style_Check := False;
          Initialize_Scanner (Units.Last, System_Source_File_Index);
          Discard_List (Par (Configuration_Pragmas => False));
+         Set_Ekind (Cunit_Entity (Units.Last), E_Package);
+         Set_Scope (Cunit_Entity (Units.Last), Standard_Standard);
          Style_Check := Save_Style;
          Multiple_Unit_Index := Save_Mindex;
       end;
@@ -747,16 +751,16 @@ package body Lib.Writ is
       ----------------------
 
       procedure Write_With_Lines is
-         With_Table : Unit_Ref_Table (1 .. Pos (Last_Unit - Units.First + 1));
-         Num_Withs  : Int := 0;
-         Unum       : Unit_Number_Type;
-         Cunit      : Node_Id;
-         Uname      : Unit_Name_Type;
-         Fname      : File_Name_Type;
          Pname      : constant Unit_Name_Type :=
                         Get_Parent_Spec_Name (Unit_Name (Main_Unit));
          Body_Fname : File_Name_Type;
          Body_Index : Nat;
+         Cunit      : Node_Id;
+         Fname      : File_Name_Type;
+         Num_Withs  : Int := 0;
+         Unum       : Unit_Number_Type;
+         Uname      : Unit_Name_Type;
+         With_Table : Unit_Ref_Table (1 .. Pos (Last_Unit - Units.First + 1));
 
          procedure Write_With_File_Names
            (Nam : in out File_Name_Type;
@@ -814,10 +818,18 @@ package body Lib.Writ is
          Sort (With_Table (1 .. Num_Withs));
 
          for J in 1 .. Num_Withs loop
-            Unum   := With_Table (J);
-            Cunit  := Units.Table (Unum).Cunit;
-            Uname  := Units.Table (Unum).Unit_Name;
-            Fname  := Units.Table (Unum).Unit_File_Name;
+            Unum := With_Table (J);
+
+            --  Do not generate a with line for an ignored Ghost unit because
+            --  the unit does not have an ALI file.
+
+            if Is_Ignored_Ghost_Entity (Cunit_Entity (Unum)) then
+               goto Next_With_Line;
+            end if;
+
+            Cunit := Units.Table (Unum).Cunit;
+            Uname := Units.Table (Unum).Unit_Name;
+            Fname := Units.Table (Unum).Unit_File_Name;
 
             if Implicit_With (Unum) = Yes then
                Write_Info_Initiate ('Z');
@@ -914,6 +926,9 @@ package body Lib.Writ is
             end if;
 
             Write_Info_EOL;
+
+         <<Next_With_Line>>
+            null;
          end loop;
 
          --  Finally generate the special lines for cases of Restriction_Set
@@ -932,7 +947,7 @@ package body Lib.Writ is
 
                for U in 0 .. Last_Unit loop
                   if Unit_Name (U) = Unam then
-                     goto Continue;
+                     goto Next_Restriction_Set;
                   end if;
                end loop;
 
@@ -943,7 +958,7 @@ package body Lib.Writ is
                Write_Info_Name (Unam);
                Write_Info_EOL;
 
-            <<Continue>>
+            <<Next_Restriction_Set>>
                null;
             end loop;
          end;
@@ -996,8 +1011,8 @@ package body Lib.Writ is
          end if;
       end if;
 
-      --  Otherwise acquire compilation arguments and prepare to write
-      --  out a new ali file.
+      --  Otherwise acquire compilation arguments and prepare to write out a
+      --  new ali file.
 
       Create_Output_Library_Info;
 
@@ -1418,6 +1433,20 @@ package body Lib.Writ is
             Units.Table (Unum).Dependency_Num := J;
             Sind := Units.Table (Unum).Source_Index;
 
+            --  The dependency table also contains units that appear in the
+            --  context of a unit loaded through a limited_with clause. These
+            --  units are never analyzed, and thus the main unit does not
+            --  really have a dependency on them. Subunits are always compiled
+            --  in the context of the parent, and their file table entries are
+            --  not properly decorated, they are recognized syntactically.
+
+            if Present (Cunit_Entity (Unum))
+              and then Ekind (Cunit_Entity (Unum)) = E_Void
+              and then Nkind (Unit (Cunit (Unum))) /= N_Subunit
+            then
+               goto Next_Unit;
+            end if;
+
             Write_Info_Initiate ('D');
             Write_Info_Char (' ');
 
@@ -1440,6 +1469,18 @@ package body Lib.Writ is
                Write_Info_Str (String (Time_Stamp (Sind)));
                Write_Info_Char (' ');
                Write_Info_Str (Get_Hex_String (Source_Checksum (Sind)));
+
+               --  If the dependency comes from a limited_with clause, record
+               --  limited_checksum. This is disabled until full checksum
+               --  changes are checked.
+
+               --  if Present (Cunit_Entity (Unum))
+               --    and then From_Limited_With (Cunit_Entity (Unum))
+               --  then
+               --     Write_Info_Char (' ');
+               --     Write_Info_Char ('Y');
+               --     Write_Info_Str (Get_Hex_String (Limited_Chk_Sum (Sind)));
+               --  end if;
 
                --  If subunit, add unit name, omitting the %b at the end
 
@@ -1481,6 +1522,9 @@ package body Lib.Writ is
             end if;
 
             Write_Info_EOL;
+
+         <<Next_Unit>>
+            null;
          end loop;
       end;
 

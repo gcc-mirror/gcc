@@ -82,6 +82,21 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	If the line ends with "(forced)", this GC was forced by a
 	runtime.GC() call and all phases are STW.
 
+	Setting gctrace to any value > 0 also causes the garbage collector
+	to emit a summary when memory is released back to the system.
+	This process of returning memory to the system is called scavenging.
+	The format of this summary is subject to change.
+	Currently it is:
+		scvg#: # MB released  printed only if non-zero
+		scvg#: inuse: # idle: # sys: # released: # consumed: # (MB)
+	where the fields are as follows:
+		scvg#        the scavenge cycle number, incremented at each scavenge
+		inuse: #     MB used or partially used spans
+		idle: #      MB spans pending scavenging
+		sys: #       MB mapped from the system
+		released: #  MB released to the system
+		consumed: #  MB allocated from the system
+
 	memprofilerate: setting memprofilerate=X will update the value of runtime.MemProfileRate.
 	When set to 0 memory profiling is disabled.  Refer to the description of
 	MemProfileRate for the default value.
@@ -156,65 +171,34 @@ func Gosched()
 func Goexit()
 
 // Caller reports file and line number information about function invocations on
-// the calling goroutine's stack.  The argument skip is the number of stack frames
+// the calling goroutine's stack. The argument skip is the number of stack frames
 // to ascend, with 0 identifying the caller of Caller.  (For historical reasons the
 // meaning of skip differs between Caller and Callers.) The return values report the
 // program counter, file name, and line number within the file of the corresponding
 // call.  The boolean ok is false if it was not possible to recover the information.
 func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 
-// Callers fills the slice pc with the program counters of function invocations
-// on the calling goroutine's stack.  The argument skip is the number of stack frames
+// Callers fills the slice pc with the return program counters of function invocations
+// on the calling goroutine's stack. The argument skip is the number of stack frames
 // to skip before recording in pc, with 0 identifying the frame for Callers itself and
 // 1 identifying the caller of Callers.
 // It returns the number of entries written to pc.
 func Callers(skip int, pc []uintptr) int
 
-type Func struct {
-	opaque struct{} // unexported field to disallow conversions
-}
-
-// FuncForPC returns a *Func describing the function that contains the
-// given program counter address, or else nil.
-func FuncForPC(pc uintptr) *Func
-
-// Name returns the name of the function.
-func (f *Func) Name() string {
-	return funcname_go(f)
-}
-
-// Entry returns the entry address of the function.
-func (f *Func) Entry() uintptr {
-	return funcentry_go(f)
-}
-
-// FileLine returns the file name and line number of the
-// source code corresponding to the program counter pc.
-// The result will not be accurate if pc is not a program
-// counter within f.
-func (f *Func) FileLine(pc uintptr) (file string, line int) {
-	return funcline_go(f, pc)
-}
-
-// implemented in symtab.c
-func funcline_go(*Func, uintptr) (string, int)
-func funcname_go(*Func) string
-func funcentry_go(*Func) uintptr
-
-// SetFinalizer sets the finalizer associated with x to f.
-// When the garbage collector finds an unreachable block
+// SetFinalizer sets the finalizer associated with obj to the provided
+// finalizer function. When the garbage collector finds an unreachable block
 // with an associated finalizer, it clears the association and runs
-// f(x) in a separate goroutine.  This makes x reachable again, but
-// now without an associated finalizer.  Assuming that SetFinalizer
+// finalizer(obj) in a separate goroutine. This makes obj reachable again,
+// but now without an associated finalizer. Assuming that SetFinalizer
 // is not called again, the next time the garbage collector sees
-// that x is unreachable, it will free x.
+// that obj is unreachable, it will free obj.
 //
-// SetFinalizer(x, nil) clears any finalizer associated with x.
+// SetFinalizer(obj, nil) clears any finalizer associated with obj.
 //
-// The argument x must be a pointer to an object allocated by
+// The argument obj must be a pointer to an object allocated by
 // calling new or by taking the address of a composite literal.
-// The argument f must be a function that takes a single argument
-// to which x's type can be assigned, and can have arbitrary ignored return
+// The argument finalizer must be a function that takes a single argument
+// to which obj's type can be assigned, and can have arbitrary ignored return
 // values. If either of these is not true, SetFinalizer aborts the
 // program.
 //
@@ -226,8 +210,8 @@ func funcentry_go(*Func) uintptr
 // is not guaranteed to run, because there is no ordering that
 // respects the dependencies.
 //
-// The finalizer for x is scheduled to run at some arbitrary time after
-// x becomes unreachable.
+// The finalizer for obj is scheduled to run at some arbitrary time after
+// obj becomes unreachable.
 // There is no guarantee that finalizers will run before a program exits,
 // so typically they are useful only for releasing non-memory resources
 // associated with an object during a long-running program.
@@ -237,13 +221,56 @@ func funcentry_go(*Func) uintptr
 // to depend on a finalizer to flush an in-memory I/O buffer such as a
 // bufio.Writer, because the buffer would not be flushed at program exit.
 //
-// It is not guaranteed that a finalizer will run if the size of *x is
+// It is not guaranteed that a finalizer will run if the size of *obj is
 // zero bytes.
+//
+// It is not guaranteed that a finalizer will run for objects allocated
+// in initializers for package-level variables. Such objects may be
+// linker-allocated, not heap-allocated.
+//
+// A finalizer may run as soon as an object becomes unreachable.
+// In order to use finalizers correctly, the program must ensure that
+// the object is reachable until it is no longer required.
+// Objects stored in global variables, or that can be found by tracing
+// pointers from a global variable, are reachable. For other objects,
+// pass the object to a call of the KeepAlive function to mark the
+// last point in the function where the object must be reachable.
+//
+// For example, if p points to a struct that contains a file descriptor d,
+// and p has a finalizer that closes that file descriptor, and if the last
+// use of p in a function is a call to syscall.Write(p.d, buf, size), then
+// p may be unreachable as soon as the program enters syscall.Write. The
+// finalizer may run at that moment, closing p.d, causing syscall.Write
+// to fail because it is writing to a closed file descriptor (or, worse,
+// to an entirely different file descriptor opened by a different goroutine).
+// To avoid this problem, call runtime.KeepAlive(p) after the call to
+// syscall.Write.
 //
 // A single goroutine runs all finalizers for a program, sequentially.
 // If a finalizer must run for a long time, it should do so by starting
 // a new goroutine.
-func SetFinalizer(x, f interface{})
+func SetFinalizer(obj interface{}, finalizer interface{})
+
+// KeepAlive marks its argument as currently reachable.
+// This ensures that the object is not freed, and its finalizer is not run,
+// before the point in the program where KeepAlive is called.
+//
+// A very simplified example showing where KeepAlive is required:
+// 	type File struct { d int }
+// 	d, err := syscall.Open("/file/path", syscall.O_RDONLY, 0)
+// 	// ... do something if err != nil ...
+// 	p := &File{d}
+// 	runtime.SetFinalizer(p, func(p *File) { syscall.Close(p.d) })
+// 	var buf [10]byte
+// 	n, err := syscall.Read(p.d, buf[:])
+// 	// Ensure p is not finalized until Read returns.
+// 	runtime.KeepAlive(p)
+// 	// No more uses of p after this point.
+//
+// Without the KeepAlive call, the finalizer could run at the start of
+// syscall.Read, closing the file descriptor before syscall.Read makes
+// the actual system call.
+func KeepAlive(interface{})
 
 func getgoroot() string
 
@@ -270,7 +297,7 @@ func Version() string {
 const GOOS string = theGoos
 
 // GOARCH is the running program's architecture target:
-// 386, amd64, arm, arm64, ppc64, ppc64le.
+// 386, amd64, arm, or s390x.
 const GOARCH string = theGoarch
 
 // GCCGOTOOLDIR is the Tool Dir for the gccgo build

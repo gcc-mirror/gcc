@@ -43,7 +43,7 @@ void test01()
   VERIFY( (test_category<has_nothrow_assign, int*[3]>(true)) );
   VERIFY( (test_category<has_nothrow_assign, int(*[][2])(int)>(true)) );
   VERIFY( (test_category<has_nothrow_assign, int (ClassType::*[2][3])>(true)) );
-  VERIFY( (test_category<has_nothrow_assign, 
+  VERIFY( (test_category<has_nothrow_assign,
 	   int (ClassType::*[][2][3]) (int)>(true)) );
 }
 

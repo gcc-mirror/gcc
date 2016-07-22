@@ -256,15 +256,6 @@ enum reg_class
    be allocated.  */
 #define STARTING_FRAME_OFFSET 0
 
-/* Define this if the above stack space is to be considered part of the
-   space allocated by the caller.  */
-#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
-/* #define STACK_PARMS_IN_REG_PARM_AREA */
-
-/* Define this if it is the responsibility of the caller to allocate
-   the area reserved for arguments passed in registers.  */
-#define REG_PARM_STACK_SPACE(FNDECL) (6 * UNITS_PER_WORD)
-
 /* Offset from the argument pointer register to the first argument's
    address.  On some machines it may depend on the data type of the
    function.  */
@@ -514,5 +505,15 @@ do { \
 } while (0);
 
 extern int ft32_is_mem_pm(rtx o);
+
+#define ASM_OUTPUT_SYMBOL_REF(stream, sym) \
+  do { \
+    assemble_name (stream, XSTR (sym, 0)); \
+    int section_debug = in_section && \
+      (SECTION_STYLE (in_section) == SECTION_NAMED) && \
+      (in_section->named.common.flags & SECTION_DEBUG); \
+    if (!section_debug && SYMBOL_REF_FLAGS (sym) & 0x1000) \
+      asm_fprintf (stream, "-0x800000"); \
+  } while (0)
 
 #endif /* GCC_FT32_H */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,6 +214,7 @@ package body Sem_Ch11 is
                   H_Scope :=
                     New_Internal_Entity
                      (E_Block, Current_Scope, Sloc (Choice), 'E');
+                  Set_Is_Exception_Handler (H_Scope);
                end if;
 
                Push_Scope (H_Scope);
@@ -318,11 +319,11 @@ package body Sem_Ch11 is
                                            N_Formal_Package_Declaration
                            then
                               Error_Msg_NE
-                                ("exception& is declared in "  &
-                                 "generic formal package", Id, Ent);
+                                ("exception& is declared in generic formal "
+                                 & "package", Id, Ent);
                               Error_Msg_N
-                                ("\and therefore cannot appear in " &
-                                 "handler (RM 11.2(8))", Id);
+                                ("\and therefore cannot appear in handler "
+                                 & "(RM 11.2(8))", Id);
                               exit;
 
                            --  If the exception is declared in an inner
@@ -362,8 +363,8 @@ package body Sem_Ch11 is
 
             Analyze_Statements (Statements (Handler));
 
-            --  If a choice was present, we created a special scope for it,
-            --  so this is where we pop that special scope to get rid of it.
+            --  If a choice was present, we created a special scope for it, so
+            --  this is where we pop that special scope to get rid of it.
 
             if Present (Choice) then
                End_Scope;
@@ -416,14 +417,15 @@ package body Sem_Ch11 is
 
       Analyze_Statements (Statements (N));
 
-      --  If the current scope is a subprogram, then this is the right place to
-      --  check for hanging useless assignments from the statement sequence of
-      --  the subprogram body. Skip this in the body of a postcondition,
-      --  since in that case there are no source references, and we need to
-      --  preserve deferred references from the enclosing scope.
+      --  If the current scope is a subprogram, entry or task body or declare
+      --  block then this is the right place to check for hanging useless
+      --  assignments from the statement sequence. Skip this in the body of a
+      --  postcondition, since in that case there are no source references, and
+      --  we need to preserve deferred references from the enclosing scope.
 
-      if Is_Subprogram (Current_Scope)
-         and then Chars (Current_Scope) /= Name_uPostconditions
+      if ((Is_Subprogram (Current_Scope) or else Is_Entry (Current_Scope))
+           and then Chars (Current_Scope) /= Name_uPostconditions)
+         or else Ekind_In (Current_Scope, E_Block, E_Task_Type)
       then
          Warn_On_Useless_Assignments (Current_Scope);
       end if;

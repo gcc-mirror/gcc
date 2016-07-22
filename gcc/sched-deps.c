@@ -2709,9 +2709,12 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	return;
       }
 
-    /* Force pending stores to memory in case a trap handler needs them.  */
+    /* Force pending stores to memory in case a trap handler needs them.
+       Also force pending loads from memory; loads and stores can segfault
+       and the signal handler won't be triggered if the trap insn was moved
+       above load or store insn.  */
     case TRAP_IF:
-      flush_pending_lists (deps, insn, true, false);
+      flush_pending_lists (deps, insn, true, true);
       break;
 
     case PREFETCH:
@@ -4182,22 +4185,29 @@ finish_deps_global (void)
 dw_t
 estimate_dep_weak (rtx mem1, rtx mem2)
 {
-  rtx r1, r2;
-
   if (mem1 == mem2)
     /* MEMs are the same - don't speculate.  */
     return MIN_DEP_WEAK;
 
-  r1 = XEXP (mem1, 0);
-  r2 = XEXP (mem2, 0);
+  rtx r1 = XEXP (mem1, 0);
+  rtx r2 = XEXP (mem2, 0);
+
+  if (sched_deps_info->use_cselib)
+    {
+      /* We cannot call rtx_equal_for_cselib_p because the VALUEs might be
+	 dangling at this point, since we never preserve them.  Instead we
+	 canonicalize manually to get stable VALUEs out of hashing.  */
+      if (GET_CODE (r1) == VALUE && CSELIB_VAL_PTR (r1))
+	r1 = canonical_cselib_val (CSELIB_VAL_PTR (r1))->val_rtx;
+      if (GET_CODE (r2) == VALUE && CSELIB_VAL_PTR (r2))
+	r2 = canonical_cselib_val (CSELIB_VAL_PTR (r2))->val_rtx;
+    }
 
   if (r1 == r2
-      || (REG_P (r1) && REG_P (r2)
-	  && REGNO (r1) == REGNO (r2)))
+      || (REG_P (r1) && REG_P (r2) && REGNO (r1) == REGNO (r2)))
     /* Again, MEMs are the same.  */
     return MIN_DEP_WEAK;
-  else if ((REG_P (r1) && !REG_P (r2))
-	   || (!REG_P (r1) && REG_P (r2)))
+  else if ((REG_P (r1) && !REG_P (r2)) || (!REG_P (r1) && REG_P (r2)))
     /* Different addressing modes - reason to be more speculative,
        than usual.  */
     return NO_DEP_WEAK - (NO_DEP_WEAK - UNCERTAIN_DEP_WEAK) / 2;

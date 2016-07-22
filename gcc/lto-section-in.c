@@ -168,7 +168,8 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
     }
 
   lto_check_version (((const lto_header *)data)->major_version,
-		     ((const lto_header *)data)->minor_version);
+		     ((const lto_header *)data)->minor_version,
+		     file_data->file_name);
   return data;
 }
 

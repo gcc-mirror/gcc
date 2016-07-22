@@ -49,8 +49,8 @@ namespace __gnu_pbds
     struct xml_test_rand_regression_formatter : public xml_test_formatter
     {
       // Associative.
-      xml_test_rand_regression_formatter(size_t sd, size_t n, size_t m, 
-					 double tp, double ip, double ep, 
+      xml_test_rand_regression_formatter(size_t sd, size_t n, size_t m,
+					 double tp, double ip, double ep,
 					 double cp, double mp)
       {
 	std::cout << make_xml_tag("sd", "value", sd);
@@ -64,8 +64,8 @@ namespace __gnu_pbds
       }
 
       // Priority Queue.
-      xml_test_rand_regression_formatter(size_t sd, size_t n, size_t m, 
-					 double tp, double ip, double dp, 
+      xml_test_rand_regression_formatter(size_t sd, size_t n, size_t m,
+					 double tp, double ip, double dp,
 					 double ep, double cp, double mp)
       {
 	std::cout << make_xml_tag("sd", "value", sd);
@@ -83,16 +83,16 @@ namespace __gnu_pbds
     // Result formatter.
     struct xml_result_set_regression_formatter : public xml_result_set_formatter
     {
-      xml_result_set_regression_formatter(const std::string& r_container_name, 
+      xml_result_set_regression_formatter(const std::string& r_container_name,
 					  const std::string& r_container_desc)
       : xml_result_set_formatter(r_container_name, r_container_desc)
-      {	
+      {
 	std::cout << detail::make_xml_name_start_tag("progress");
 	std::cout << detail::make_xml_name_start_tag_end_delimiter();
       }
 
       ~xml_result_set_regression_formatter()
-      { std::cout << detail::make_xml_name_end_tag("progress"); }      
+      { std::cout << detail::make_xml_name_end_tag("progress"); }
     };
   } // namespace test
 } // namespace __gnu_pbds

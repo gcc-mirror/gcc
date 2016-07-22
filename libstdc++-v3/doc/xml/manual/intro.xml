@@ -934,10 +934,24 @@ requirements of the license of GCC.
     <listitem><para>Use the referenceable type concept.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2212">2212</link>:
+	<emphasis><code>tuple_size</code> for <code>const pair</code> request <code>&lt;tuple&gt;</code> header</emphasis>
+    </term>
+    <listitem><para>The <code>tuple_size</code> and <code>tuple_element</code>
+    partial specializations are defined in <code>&lt;utility&gt;</code> which
+    is included by <code>&lt;array&gt;</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2313">2313</link>:
 	<emphasis><code>tuple_size</code> should always derive from <code>integral_constant&lt;size_t, N&gt;</code></emphasis>
     </term>
     <listitem><para>Update definitions of the partial specializations for const and volatile types.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2328">2328</link>:
+       <emphasis>Rvalue stream extraction should use perfect forwarding</emphasis>
+    </term>
+    <listitem><para>Use perfect forwarding for right operand.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2329">2329</link>:
@@ -997,6 +1011,12 @@ requirements of the license of GCC.
     <listitem><para>Add <code>noexcept</code>.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2441">2441</link>:
+       <emphasis>Exact-width atomic typedefs should be provided</emphasis>
+    </term>
+    <listitem><para>Define the typedefs.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2454">2454</link>:
        <emphasis>Add <code>raw_storage_iterator::base()</code> member
        </emphasis>
@@ -1009,6 +1029,13 @@ requirements of the license of GCC.
        </emphasis>
     </term>
     <listitem><para>Make <code>noexcept</code> specifications conditional.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2458">2458</link>:
+       <emphasis>N3778 and new library deallocation signatures
+       </emphasis>
+    </term>
+    <listitem><para>Remove unused overloads.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2459">2459</link>:
@@ -1025,6 +1052,12 @@ requirements of the license of GCC.
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2684">2684</link>:
+       <emphasis><code>priority_queue</code> lacking comparator typedef
+       </emphasis>
+    </term>
+    <listitem><para>Define the <code>value_compare</code> typedef.
+    </para></listitem></varlistentry>
 
   </variablelist>
 

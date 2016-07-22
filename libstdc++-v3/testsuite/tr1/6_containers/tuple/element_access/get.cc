@@ -32,10 +32,10 @@ main()
   int j=1;
   const int k=2;
   tuple<int,int &,const int&> a(0,j,k);
-  const tuple<int,int &,const int&> b(1,j,k); 
+  const tuple<int,int &,const int&> b(1,j,k);
   VERIFY(get<0>(a)==0 && get<1>(a)==1 && get<2>(a)==2);
   get<0>(a)=3;
-  get<1>(a)=4;  
+  get<1>(a)=4;
   VERIFY(get<0>(a)==3 && get<1>(a)==4);
   VERIFY(j==4);
   get<1>(b)=5;

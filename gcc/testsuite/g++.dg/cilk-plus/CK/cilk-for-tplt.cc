@@ -1,6 +1,6 @@
-/* { dg-do run { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target cilkplus_runtime } */
 /* { dg-options "-fcilkplus" } */
-/* { dg-options "-lcilkrts" { target { i?86-*-* x86_64-*-* } } } */
 
 #define SIZE 100
 #define CHECK_VALUE 5

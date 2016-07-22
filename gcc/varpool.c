@@ -482,7 +482,7 @@ varpool_node::add (tree decl)
 /* Return variable availability.  See cgraph.h for description of individual
    return values.  */
 enum availability
-varpool_node::get_availability (void)
+varpool_node::get_availability (symtab_node *ref)
 {
   if (!definition)
     return AVAIL_NOT_AVAILABLE;
@@ -495,9 +495,16 @@ varpool_node::get_availability (void)
     {
       enum availability avail;
 
-      ultimate_alias_target (&avail);
+      ultimate_alias_target (&avail, ref);
       return avail;
     }
+  /* If this is a reference from symbol itself and there are no aliases, we
+     may be sure that the symbol was not interposed by something else because
+     the symbol itself would be unreachable otherwise.  */
+  if ((this == ref && !has_aliases_p ())
+      || (ref && get_comdat_group ()
+          && get_comdat_group () == ref->get_comdat_group ()))
+    return AVAIL_AVAILABLE;
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
      care of at least one notable extension - the COMDAT variables
      used to share template instantiations in C++.  */
@@ -726,11 +733,6 @@ symbol_table::output_variables (void)
 
   timevar_push (TV_VAROUT);
 
-  FOR_EACH_VARIABLE (node)
-    if (!node->definition
-	&& !DECL_HAS_VALUE_EXPR_P (node->decl)
- 	&& !DECL_HARD_REGISTER (node->decl))
-      assemble_undefined_decl (node->decl);
   FOR_EACH_DEFINED_VARIABLE (node)
     {
       /* Handled in output_in_order.  */
@@ -740,20 +742,19 @@ symbol_table::output_variables (void)
       node->finalize_named_section_flags ();
     }
 
-  FOR_EACH_DEFINED_VARIABLE (node)
+  /* There is a similar loop in output_in_order.  Please keep them in sync.  */
+  FOR_EACH_VARIABLE (node)
     {
       /* Handled in output_in_order.  */
       if (node->no_reorder)
 	continue;
-#ifdef ACCEL_COMPILER
-      /* Do not assemble "omp declare target link" vars.  */
-      if (DECL_HAS_VALUE_EXPR_P (node->decl)
-	  && lookup_attribute ("omp declare target link",
-			       DECL_ATTRIBUTES (node->decl)))
+      if (DECL_HARD_REGISTER (node->decl)
+	  || DECL_HAS_VALUE_EXPR_P (node->decl))
 	continue;
-#endif
-      if (node->assemble_decl ())
-        changed = true;
+      if (node->definition)
+	changed |= node->assemble_decl ();
+      else
+	assemble_undefined_decl (node->decl);
     }
   timevar_pop (TV_VAROUT);
   return changed;

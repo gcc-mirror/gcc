@@ -1709,7 +1709,7 @@ open_base_files (void)
       "config.h", "system.h", "coretypes.h", "backend.h", "predict.h", "tree.h",
       "rtl.h", "gimple.h", "fold-const.h", "insn-codes.h", "splay-tree.h",
       "alias.h", "insn-config.h", "flags.h", "expmed.h", "dojump.h",
-      "explow.h", "calls.h", "emit-rtl.h", "varasm.h", "stmt.h",
+      "explow.h", "calls.h", "cilk.h", "emit-rtl.h", "varasm.h", "stmt.h",
       "expr.h", "alloc-pool.h", "cselib.h", "insn-addr.h", "optabs.h",
       "libfuncs.h", "debug.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",

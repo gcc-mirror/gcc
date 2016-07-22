@@ -5,6 +5,8 @@ typedef float SFtype __attribute__ ((mode (SF)));
 
 extern SFtype __floatunsisf (unsigned long);
 
+SFtype __floatunhisf (UHItype);
+
 SFtype
 __floatunhisf (UHItype u)
 {

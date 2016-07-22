@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -396,6 +396,7 @@ pragma Pure (Generic_Array_Operations);
 
    generic
       type Scalar is private;
+      Zero : Scalar;
       type Vector is array (Integer range <>) of Scalar;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
       with procedure Back_Substitute (M, N : in out Matrix) is <>;
@@ -411,6 +412,7 @@ pragma Pure (Generic_Array_Operations);
 
    generic
       type Scalar is private;
+      Zero : Scalar;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
       with procedure Back_Substitute (M, N : in out Matrix) is <>;
       with procedure Forward_Eliminate

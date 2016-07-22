@@ -59,7 +59,7 @@ namespace __gnu_test
       typedef _Tp1 first_type;
       typedef _Tp2 second_type;
       typedef std::pair<_Tp1, _Tp2> pair_type;
-      
+
       pair_type build()
       {
 	static first_type _S_1;
@@ -181,7 +181,7 @@ namespace __gnu_test
       val_type *last = first + 2;
 
       cont_type c(last, first); // Expected failure
-    } 
+    }
 
   // Check that invalid range of debug random iterators is detected
   template<typename _Tp>

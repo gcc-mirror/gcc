@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,11 @@ package Exp_Ch7 is
    -----------------------------
    -- Finalization Management --
    -----------------------------
+
+   procedure Build_Anonymous_Master (Ptr_Typ : Entity_Id);
+   --  Build a finalization master for an anonymous access-to-controlled type
+   --  denoted by Ptr_Typ. The master is inserted in the declarations of the
+   --  current unit.
 
    procedure Build_Controlling_Procs (Typ : Entity_Id);
    --  Typ is a record, and array type having controlled components.
@@ -99,26 +104,38 @@ package Exp_Ch7 is
 
    procedure Build_Finalization_Master
      (Typ            : Entity_Id;
-      For_Anonymous  : Boolean   := False;
       For_Lib_Level  : Boolean   := False;
       For_Private    : Boolean   := False;
       Context_Scope  : Entity_Id := Empty;
       Insertion_Node : Node_Id   := Empty);
    --  Build a finalization master for an access type. The designated type may
-   --  not necessarely be controlled or need finalization actions depending on
-   --  the context. Flag For_Anonymous must be set when creating a master for
-   --  an anonymous access type. Flag For_Lib_Level must be set when creating
-   --  a master for a build-in-place function call access result type. Flag
-   --  For_Private must be set when the designated type contains a private
-   --  component. Parameters Context_Scope and Insertion_Node must be used in
-   --  conjunction with flags For_Anonymous and For_Private. Context_Scope is
-   --  the scope of the context where the finalization master must be analyzed.
-   --  Insertion_Node is the insertion point before which the master is to be
-   --  inserted.
+   --  not necessarily be controlled or need finalization actions depending on
+   --  the context. Flag For_Lib_Level must be set when creating a master for a
+   --  build-in-place function call access result type. Flag For_Private must
+   --  be set when the designated type contains a private component. Parameters
+   --  Context_Scope and Insertion_Node must be used in conjunction with flag
+   --  For_Private. Context_Scope is the scope of the context where the
+   --  finalization master must be analyzed. Insertion_Node is the insertion
+   --  point before which the master is to be inserted.
+
+   procedure Build_Invariant_Procedure_Body
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False);
+   --  Create the body of the procedure which verifies the invariants of type
+   --  Typ at runtime. Flag Partial_Invariant should be set when Typ denotes a
+   --  private type, otherwise it is assumed that Typ denotes the full view of
+   --  a private type.
+
+   procedure Build_Invariant_Procedure_Declaration
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False);
+   --  Create the declaration of the procedure which verifies the invariants of
+   --  type Typ at runtime. Flag Partial_Invariant should be set when building
+   --  the invariant procedure for a private type.
 
    procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id);
-   --  Build one controlling procedure when a late body overrides one of
-   --  the controlling operations.
+   --  Build one controlling procedure when a late body overrides one of the
+   --  controlling operations.
 
    procedure Build_Object_Declarations
      (Data        : out Finalization_Exception_Data;

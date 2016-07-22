@@ -181,6 +181,7 @@ extern rtx default_addr_space_legitimize_address (rtx, rtx, machine_mode,
 extern bool default_addr_space_subset_p (addr_space_t, addr_space_t);
 extern bool default_addr_space_zero_address_valid (addr_space_t);
 extern int default_addr_space_debug (addr_space_t);
+extern void default_addr_space_diagnose_usage (addr_space_t, location_t);
 extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
@@ -199,6 +200,7 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    unsigned int,
 						    enum by_pieces_operation,
 						    bool);
+extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
 extern bool default_profile_before_prologue (void);
 extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
@@ -253,5 +255,7 @@ extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE
 						  int second_time ATTRIBUTE_UNUSED);
 extern bool default_optab_supported_p (int, machine_mode, machine_mode,
 				       optimization_type);
+
+extern unsigned int default_max_noce_ifcvt_seq_cost (edge);
 
 #endif /* GCC_TARGHOOKS_H */

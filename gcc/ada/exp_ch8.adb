@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,6 +116,8 @@ package body Exp_Ch8 is
       --  interested in these operations if they occur as part of the name
       --  itself, subscripts are just values that are computed as part of the
       --  evaluation, so their form is unimportant.
+      --  In addition, always return True for Modify_Tree_For_C since the
+      --  code generator doesn't know how to handle renamings.
 
       -------------------------
       -- Evaluation_Required --
@@ -123,7 +125,10 @@ package body Exp_Ch8 is
 
       function Evaluation_Required (Nam : Node_Id) return Boolean is
       begin
-         if Nkind_In (Nam, N_Indexed_Component, N_Slice) then
+         if Modify_Tree_For_C then
+            return True;
+
+         elsif Nkind_In (Nam, N_Indexed_Component, N_Slice) then
             if Is_Packed (Etype (Prefix (Nam))) then
                return True;
             else

@@ -1,6 +1,6 @@
 /* Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992-2015 Free Software Foundation, Inc.
+   Copyright (C) 1992-2016 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -308,6 +308,7 @@ enum dwarf_source_language
     DW_LANG_Go = 0x0016,
 
     DW_LANG_C_plus_plus_11 = 0x001a, /* dwarf5.20141029.pdf DRAFT */
+    DW_LANG_Rust = 0x001c,
     DW_LANG_C11 = 0x001d,
     DW_LANG_C_plus_plus_14 = 0x0021,
     DW_LANG_Fortran03 = 0x0022,
@@ -325,7 +326,10 @@ enum dwarf_source_language
     DW_LANG_HP_Basic91   = 0x8004,
     DW_LANG_HP_Pascal91  = 0x8005,
     DW_LANG_HP_IMacro    = 0x8006,
-    DW_LANG_HP_Assembler = 0x8007
+    DW_LANG_HP_Assembler = 0x8007,
+
+    /* Rust extension, but replaced in DWARF 5.  */
+    DW_LANG_Rust_old = 0x9000
   };
 
 /* Names and codes for macro information.  */

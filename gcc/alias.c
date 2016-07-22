@@ -619,6 +619,14 @@ component_uses_parent_alias_set_from (const_tree t)
 	case COMPONENT_REF:
 	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
 	    found = t;
+	  /* Permit type-punning when accessing a union, provided the access
+	     is directly through the union.  For example, this code does not
+	     permit taking the address of a union member and then storing
+	     through it.  Even the type-punning allowed here is a GCC
+	     extension, albeit a common and useful one; the C standard says
+	     that such accesses have implementation-defined behavior.  */
+	  else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+	    found = t;
 	  break;
 
 	case ARRAY_REF:
@@ -769,6 +777,10 @@ reference_alias_ptr_type_1 (tree *t)
 tree
 reference_alias_ptr_type (tree t)
 {
+  /* If the frontend assigns this alias-set zero, preserve that.  */
+  if (lang_hooks.get_alias_set (t) == 0)
+    return ptr_type_node;
+
   tree ptype = reference_alias_ptr_type_1 (&t);
   /* If there is a given pointer type for aliasing purposes, return it.  */
   if (ptype != NULL_TREE)
@@ -2651,8 +2663,8 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
 
       offset_int woffset
 	= (wi::to_offset (xoffset)
-	   + wi::lrshift (wi::to_offset (DECL_FIELD_BIT_OFFSET (field)),
-			  LOG2_BITS_PER_UNIT));
+	   + (wi::to_offset (DECL_FIELD_BIT_OFFSET (field))
+	      >> LOG2_BITS_PER_UNIT));
       if (!wi::fits_uhwi_p (woffset))
 	{
 	  *known_p = false;

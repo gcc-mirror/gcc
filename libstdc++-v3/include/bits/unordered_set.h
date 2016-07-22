@@ -268,7 +268,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %unordered_set and
        *  that the resulting %unordered_set's size is the same as the number
-       *  of elements assigned.  Old data may be lost.
+       *  of elements assigned.
        */
       unordered_set&
       operator=(initializer_list<value_type> __l)
@@ -277,8 +277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
-      ///  Returns the allocator object with which the %unordered_set was
-      ///  constructed.
+      ///  Returns the allocator object used by the %unordered_set.
       allocator_type
       get_allocator() const noexcept
       { return _M_h.get_allocator(); }
@@ -942,7 +941,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %unordered_multiset
        *  and that the resulting %unordered_multiset's size is the same as the
-       *  number of elements assigned. Old data may be lost.
+       *  number of elements assigned.
        */
       unordered_multiset&
       operator=(initializer_list<value_type> __l)
@@ -951,8 +950,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
-      ///  Returns the allocator object with which the %unordered_multiset was
-      ///  constructed.
+      ///  Returns the allocator object used by the %unordered_multiset.
       allocator_type
       get_allocator() const noexcept
       { return _M_h.get_allocator(); }

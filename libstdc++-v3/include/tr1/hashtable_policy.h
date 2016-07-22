@@ -420,8 +420,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Prime_rehash_policy::
   _M_next_bkt(std::size_t __n) const
   {
-    const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
-						+ _S_n_primes, __n);
+    // Don't include the last prime in the search, so that anything
+    // higher than the second-to-last prime returns a past-the-end
+    // iterator that can be dereferenced to get the last prime.
+    const unsigned long* __p
+      = std::lower_bound(__prime_list, __prime_list + _S_n_primes - 1, __n);
     _M_next_resize = 
       static_cast<std::size_t>(__builtin_ceil(*__p * _M_max_load_factor));
     return *__p;
@@ -434,11 +437,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _M_bkt_for_elements(std::size_t __n) const
   {
     const float __min_bkts = __n / _M_max_load_factor;
-    const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
-						+ _S_n_primes, __min_bkts);
-    _M_next_resize =
-      static_cast<std::size_t>(__builtin_ceil(*__p * _M_max_load_factor));
-    return *__p;
+    return _M_next_bkt(__builtin_ceil(__min_bkts));
   }
 
   // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
@@ -462,12 +461,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__min_bkts > __n_bkt)
 	  {
 	    __min_bkts = std::max(__min_bkts, _M_growth_factor * __n_bkt);
-	    const unsigned long* __p =
-	      std::lower_bound(__prime_list, __prime_list + _S_n_primes,
-			       __min_bkts);
-	    _M_next_resize = static_cast<std::size_t>
-	      (__builtin_ceil(*__p * _M_max_load_factor));
-	    return std::make_pair(true, *__p);
+	    return std::make_pair(true,
+				  _M_next_bkt(__builtin_ceil(__min_bkts)));
 	  }
 	else 
 	  {

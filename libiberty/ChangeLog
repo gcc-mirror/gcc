@@ -1,3 +1,72 @@
+2016-07-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_operators): Add f[lrLR].
+	(d_expression_1): Handle them.
+	(d_maybe_print_fold_expression): New.
+	(d_print_comp_inner): Use it.
+	(d_index_template_argument): Handle negative index.
+
+	* cp-demangle.c (cplus_demangle_operators): Add sP and sZ.
+	(d_print_comp_inner): Handle them.
+	(d_template_args_1): Split out from d_template_args.
+	(d_args_length): New.
+
+2016-07-13  Marcel BÃhme  <boehme.marcel@gmail.com>
+
+	PR c++/70926
+	* cplus-dem.c: Handle large values and overflow when demangling
+	length variables.
+	(demangle_template_value_parm): Read only until end of mangled string.
+	(do_hpacc_template_literal): Likewise.
+	(do_type): Handle overflow when demangling array indices.
+
+2016-06-12  Brooks Moses  <bmoses@google.com>
+
+	* cp-demangle.c (cplus_demangle_print_callback): Avoid zero-length
+	  VLAs.
+
+2016-05-31  Alan Modra  <amodra@gmail.com>
+
+	* xmemdup.c (xmemdup): Use xmalloc rather than xcalloc.
+
+2016-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70498
+	* cp-demangle.c (d_expression_1): Formatting fix.
+
+2016-05-18  Artemiy Volkov  <artemiyv@acm.org>
+
+	* cplus-dem.c (enum type_kind_t): Add tk_rvalue_reference
+	constant.
+	(demangle_template_value_parm): Handle tk_rvalue_reference
+	type kind.
+	(do_type): Support 'O' type id (rvalue references).
+
+	* testsuite/demangle-expected: Add tests.
+
+2016-05-02  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/70498
+	* cp-demangle.c: Parse numbers as integer instead of long to avoid
+	overflow after sanity checks. Include <limits.h> if available.
+	(INT_MAX): Define if necessary.
+	(d_make_template_param): Takes integer argument instead of long.
+	(d_make_function_param): Likewise.
+	(d_append_num): Likewise.
+	(d_identifier): Likewise.
+	(d_number): Parse as and return integer.
+	(d_compact_number): Handle overflow.
+	(d_source_name): Change variable type to integer for parsed number.
+	(d_java_resource): Likewise.
+	(d_special_name): Likewise.
+	(d_discriminator): Likewise.
+	(d_unnamed_type): Likewise.
+	* testsuite/demangle-expected: Add regression test cases.
+
+2016-04-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* configure: Remove SH5 support.
+
 2016-04-08  Marcel Böhme  <boehme.marcel@gmail.com>
 
 	PR c++/69687
@@ -12,7 +81,7 @@
 	-1.
 
 2016-03-31  Mikhail Maltsev  <maltsevm@gmail.com>
-	    Marcel Bohme  boehme.marcel@gmail.com
+	    Marcel Bohme  <boehme.marcel@gmail.com>
 
 	PR c++/67394
 	PR c++/70481
@@ -69,8 +138,6 @@
 
 	PR other/61321
 	PR other/61233
-	* demangle.h (enum demangle_component_type)
-	<DEMANGLE_COMPONENT_CONVERSION>: New value.
 	* cp-demangle.c (d_demangle_callback, d_make_comp): Handle
 	DEMANGLE_COMPONENT_CONVERSION.
 	(is_ctor_dtor_or_conversion): Handle DEMANGLE_COMPONENT_CONVERSION
@@ -657,11 +724,11 @@
 2013-05-31  Matt Burgess <matthew@linuxfromscratch.org>
 
 	PR other/56780
-	* libiberty/configure.ac: Move test for --enable-install-libiberty
+	* configure.ac: Move test for --enable-install-libiberty
 	outside of the 'with_target_subdir' test so that it actually gets
 	run.  Add output messages to show the test result.
-	* libiberty/configure: Regenerate.
-	* libiberty/Makefile.in (install_to_libdir): Place the
+	* configure: Regenerate.
+	* Makefile.in (install_to_libdir): Place the
 	installation of the libiberty library in the same guard as that
 	used for the headers to prevent it being installed unless
 	requested via --enable-install-libiberty.
@@ -1461,7 +1528,6 @@
 	Daniel Jacobowitz  <dan@codesourcery.com>
 	Pedro Alves  <pedro@codesourcery.com>
 
-	libiberty/
 	* argv.c (consume_whitespace): New function.
 	(only_whitespace): New function.
 	(buildargv): Always use ISSPACE by calling consume_whitespace.
@@ -1662,8 +1728,8 @@
 
 2009-04-07  Arnaud Patard <apatard@mandriva.com>
 
-	* libiberty/configure.ac: Fix Linux/MIPS matching rule.
-	* libiberty/configure: Regenerate.
+	* configure.ac: Fix Linux/MIPS matching rule.
+	* configure: Regenerate.
 
 2009-03-27  Ian Lance Taylor  <iant@google.com>
 
@@ -1826,8 +1892,8 @@
 
 2008-04-21  Aurelien Jarno  <aurelien@aurel32.net>
 
-	* libiberty/configure.ac: use -fPIC on Linux/MIPS hosts.
-	* libiberty/configure: Regenerate.
+	* configure.ac: use -fPIC on Linux/MIPS hosts.
+	* configure: Regenerate.
 
 2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
 
@@ -2033,7 +2099,7 @@
 	that are locale-independent.
 	* Makefile.in (filename_cmp.o): Add dependency on safe-ctype.h.
 
-2007-04-11  Thomas Neumann  tneumann@users.sourceforge.net
+2007-04-11  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* argv.c: Use ANSI C declarations.
 	* make-relative-prefix.c: Likewise.
@@ -3605,7 +3671,7 @@
 
 2003-12-15  Brendan Kehoe  <brendan@zen.org>
 
-	* libiberty/Makefile.in (floatformat.o): Add dependency on
+	* Makefile.in (floatformat.o): Add dependency on
 	config.h to accompany change of 2003-12-03.
 
 2003-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
@@ -4301,7 +4367,7 @@
 
 2002-10-06  Andreas Jaeger  <aj@suse.de>
 
-	* libiberty/cplus-dem.c (ada_demangle): Get rid of unneeded
+	* cplus-dem.c (ada_demangle): Get rid of unneeded
 	variable and of strict-aliasing warning.
 	(grow_vect): Use char as first parameter.
 
@@ -4569,7 +4635,7 @@
 
 2002-01-31  Adam Megacz  <adam@xwt.org>
 
-	* gcc/libiberty/configure.in: Treat mingw the same as cywin
+	* configure.in: Treat mingw the same as cywin
 	wrt HAVE_SYS_ERRLIST.
 
 2002-01-30  Phil Edwards  <pme@gcc.gnu.org>
@@ -5077,8 +5143,8 @@ Tue Aug 21 12:35:04 2001  Christopher Faylor <cgf@cygnus.com>
 2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
-	* libiberty/lbasename.c: New file.
-	* libiberty/Makefile.in: Update for lbasename.
+	* lbasename.c: New file.
+	* Makefile.in: Update for lbasename.
 
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
@@ -5451,13 +5517,13 @@ Tue Aug 21 12:35:04 2001  Christopher Faylor <cgf@cygnus.com>
 
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
-	* libiberty/random.c (end_ptr): Revert previous change.
+	* random.c (end_ptr): Revert previous change.
 
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
-	* libiberty/cplus-dem.c (cplus_demangle_opname, cplus_mangle_opname,
+	* cplus-dem.c (cplus_demangle_opname, cplus_mangle_opname,
 	demangle_expression, demangle_function_name): Use ARRAY_SIZE.
-	* libiberty/random.c (end_ptr): Likewise.
+	* random.c (end_ptr): Likewise.
 
 2000-08-23  Alex Samuel  <samuel@codesourcery.com>
 

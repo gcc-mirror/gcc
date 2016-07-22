@@ -179,6 +179,7 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
+    %{fcilkplus:%:include(libcilkrts.spec)%(link_cilkrts)}\
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
     %{!nostdlib:%{!nodefaultlibs:\

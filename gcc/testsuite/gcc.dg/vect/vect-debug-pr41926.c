@@ -1,7 +1,6 @@
 /* PR debug/41926 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -ffast-math -funroll-loops -ftree-vectorize -msse2" { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-require-effective-target sse2 { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-g -ffast-math -funroll-loops" } */
 
 void
 foo (double (*__restrict p)[4], double (*__restrict q)[4],

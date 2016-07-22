@@ -12,7 +12,6 @@
    patterns, we only check for the extu.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
 /* { dg-final { scan-assembler-not "extu" } } */
 
 typedef struct transaction_s transaction_t;

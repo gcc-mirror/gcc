@@ -25,7 +25,7 @@ void test01()
   typedef long value_type;
   typedef std::tr1::hash<value_type> test_type;
   typedef std::unary_function<value_type, std::size_t> base_type;
-  
+
   test_type b;
   const test_type& obj = b;
   const base_type* base __attribute__((unused)) = &obj;

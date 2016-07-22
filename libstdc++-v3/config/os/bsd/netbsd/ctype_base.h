@@ -25,12 +25,12 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Information as gleaned from /usr/include/ctype.h on NetBSD.
 // Full details can be found from the CVS files at:
 //   anoncvs@anoncvs.netbsd.org:/cvsroot/basesrc/include/ctype.h
 // See www.netbsd.org for details of access.
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

@@ -25,8 +25,8 @@
 #include <tr1/random>
 
 void
-test01() 
-{ 
+test01()
+{
   using namespace std::tr1;
 
   typedef normal_distribution<double> test_type;

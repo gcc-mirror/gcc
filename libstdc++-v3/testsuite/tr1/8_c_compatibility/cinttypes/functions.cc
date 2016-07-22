@@ -33,7 +33,7 @@ void test01()
 #if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
   const wchar_t* ws = 0;
   wchar_t** wendptr = 0;
-#endif  
+#endif
 
   std::tr1::intmax_t  ret;
   std::tr1::uintmax_t uret;

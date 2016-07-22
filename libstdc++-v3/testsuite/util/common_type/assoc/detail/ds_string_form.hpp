@@ -113,8 +113,8 @@ namespace __gnu_pbds
 
 	  const std::string store_hash_desc =
             store_hash_string_form<Cntnr::store_hash>::desc();
-	  
-	  return make_xml_tag("type", "value", "gp_hash_table", 
+
+	  return make_xml_tag("type", "value", "gp_hash_table",
 			      comb_probe_fn_desc + probe_fn_desc + resize_policy_desc + store_hash_desc);
 	}
       };
@@ -146,7 +146,7 @@ namespace __gnu_pbds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, __gnu_pbds::rb_tree_tag> 
+      struct ds_string_form<Cntnr, __gnu_pbds::rb_tree_tag>
       : private tree_ds_string_form<Cntnr>
       {
       private:
@@ -163,7 +163,7 @@ namespace __gnu_pbds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, __gnu_pbds::splay_tree_tag> 
+      struct ds_string_form<Cntnr, __gnu_pbds::splay_tree_tag>
       : private tree_ds_string_form<Cntnr>
       {
       private:
@@ -180,7 +180,7 @@ namespace __gnu_pbds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, __gnu_pbds::ov_tree_tag> 
+      struct ds_string_form<Cntnr, __gnu_pbds::ov_tree_tag>
       : private tree_ds_string_form<Cntnr>
       {
       private:

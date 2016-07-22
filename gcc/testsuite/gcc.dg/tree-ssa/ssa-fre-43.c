@@ -1,6 +1,6 @@
 /* PR tree-optimization/64193 */
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fdump-tree-fre1" } */
 
 double T,T2,E1[5];
 int J;
@@ -24,5 +24,4 @@ L10:
 /* We should remove 15 dead loads and some related stmts, fully propagating
    their replacements with exactly 4 loads and 4 stores from/to E remaining.  */
 
-/* { dg-final { scan-tree-dump-times "Removing dead stmt" 19 "fre1" } } */
-/* { dg-final { scan-tree-dump-not "Not changing value number" "fre1" } } */
+/* { dg-final { scan-tree-dump-times "MEM" 8 "fre1" } } */

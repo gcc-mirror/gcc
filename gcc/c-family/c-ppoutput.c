@@ -150,6 +150,7 @@ init_pp_output (FILE *out_stream)
     }
 
   cb->has_attribute = c_common_has_attribute;
+  cb->get_source_date_epoch = cb_get_source_date_epoch;
 
   /* Initialize the print structure.  */
   print.src_line = 1;

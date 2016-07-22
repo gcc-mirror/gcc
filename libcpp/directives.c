@@ -818,7 +818,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 			   pfile->directive->name, fname, angle_brackets,
 			   buf);
 
-      _cpp_stack_include (pfile, fname, angle_brackets, type);
+      _cpp_stack_include (pfile, fname, angle_brackets, type, location);
     }
 
   XDELETEVEC (fname);
@@ -1048,6 +1048,9 @@ do_linemarker (cpp_reader *pfile)
 
   if (reason == LC_LEAVE)
     {
+      /* Reread map since cpp_get_token can invalidate it with a
+	 reallocation.  */
+      map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
       const line_map_ordinary *from;      
       if (MAIN_FILE_P (map)
 	  || (new_file
@@ -1055,7 +1058,8 @@ do_linemarker (cpp_reader *pfile)
 	      && filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0))
 	{
 	  cpp_warning (pfile, CPP_W_NONE,
-		     "file \"%s\" linemarker ignored due to incorrect nesting", new_file);
+		       "file \"%s\" linemarker ignored due to "
+		       "incorrect nesting", new_file);
 	  return;
 	}
     }

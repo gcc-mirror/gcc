@@ -2772,18 +2772,18 @@ cris_asm_output_mi_thunk (FILE *stream,
 	{
 	  fprintf (stream, "\tba ");
 	  assemble_name (stream, name);
-	  fprintf (stream, "%s\n", CRIS_PLT_PCOFFSET_SUFFIX);
+	  fprintf (stream, "%s\n\tnop\n", CRIS_PLT_PCOFFSET_SUFFIX);
 	}
       else
 	{
-	  fprintf (stream, "add.d ");
+	  fprintf (stream, "\tadd.d ");
 	  assemble_name (stream, name);
 	  fprintf (stream, "%s,$pc\n", CRIS_PLT_PCOFFSET_SUFFIX);
 	}
     }
   else
     {
-      fprintf (stream, "jump ");
+      fprintf (stream, "\tjump ");
       assemble_name (stream, XSTR (XEXP (DECL_RTL (funcdecl), 0), 0));
       fprintf (stream, "\n");
 

@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    ++this->_M_impl._M_finish;
 	  }
 	else
-	  _M_emplace_back_aux(std::forward<_Args>(__args)...);
+	  _M_realloc_insert(end(), std::forward<_Args>(__args)...);
       }
 #endif
 
@@ -112,27 +112,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
     {
       const size_type __n = __position - begin();
-      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
-	  && __position == end())
-	{
-	  _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish, __x);
-	  ++this->_M_impl._M_finish;
-	}
-      else
-	{
+      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
+	if (__position == end())
+	  {
+	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
+				     __x);
+	    ++this->_M_impl._M_finish;
+	  }
+	else
+	  {
 #if __cplusplus >= 201103L
-	  const auto __pos = begin() + (__position - cbegin());
-	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
-	    {
-	      _Tp __x_copy = __x;
-	      _M_insert_aux(__pos, std::move(__x_copy));
-	    }
-	  else
-	    _M_insert_aux(__pos, __x);
+	    const auto __pos = begin() + (__position - cbegin());
+	    // __x could be an existing element of this vector, so make a
+	    // copy of it before _M_insert_aux moves elements around.
+	    _Temporary_value __x_copy(this, __x);
+	    _M_insert_aux(__pos, std::move(__x_copy._M_val()));
 #else
 	    _M_insert_aux(__position, __x);
 #endif
-	}
+	  }
+      else
+#if __cplusplus >= 201103L
+	_M_realloc_insert(begin() + (__position - cbegin()), __x);
+#else
+	_M_realloc_insert(__position, __x);
+#endif
+
       return iterator(this->_M_impl._M_start + __n);
     }
 
@@ -256,7 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (__first == __last)
 	  _M_erase_at_end(__cur);
 	else
-	  insert(end(), __first, __last);
+	  _M_range_insert(end(), __first, __last,
+			  std::__iterator_category(__first));
       }
 
   template<typename _Tp, typename _Alloc>
@@ -296,30 +302,60 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
-    template<typename... _Args>
-      typename vector<_Tp, _Alloc>::iterator
-      vector<_Tp, _Alloc>::
-      emplace(const_iterator __position, _Args&&... __args)
-      {
-	const size_type __n = __position - begin();
-	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
-	    && __position == end())
+    auto
+    vector<_Tp, _Alloc>::
+    _M_insert_rval(const_iterator __position, value_type&& __v) -> iterator
+    {
+      const auto __n = __position - cbegin();
+      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
+	if (__position == cend())
 	  {
 	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
-				     std::forward<_Args>(__args)...);
+				     std::move(__v));
 	    ++this->_M_impl._M_finish;
 	  }
 	else
-	  _M_insert_aux(begin() + (__position - cbegin()),
-			std::forward<_Args>(__args)...);
+	  _M_insert_aux(begin() + __n, std::move(__v));
+      else
+	_M_realloc_insert(begin() + __n, std::move(__v));
+
+      return iterator(this->_M_impl._M_start + __n);
+    }
+
+  template<typename _Tp, typename _Alloc>
+    template<typename... _Args>
+      auto
+      vector<_Tp, _Alloc>::
+      _M_emplace_aux(const_iterator __position, _Args&&... __args)
+      -> iterator
+      {
+	const auto __n = __position - cbegin();
+	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
+	  if (__position == cend())
+	    {
+	      _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
+				       std::forward<_Args>(__args)...);
+	      ++this->_M_impl._M_finish;
+	    }
+	  else
+	    {
+	      // We need to construct a temporary because something in __args...
+	      // could alias one of the elements of the container and so we
+	      // need to use it before _M_insert_aux moves elements around.
+	      _Temporary_value __tmp(this, std::forward<_Args>(__args)...);
+	      _M_insert_aux(begin() + __n, std::move(__tmp._M_val()));
+	    }
+	else
+	  _M_realloc_insert(begin() + __n, std::forward<_Args>(__args)...);
+
 	return iterator(this->_M_impl._M_start + __n);
       }
 
   template<typename _Tp, typename _Alloc>
-    template<typename... _Args>
+    template<typename _Arg>
       void
       vector<_Tp, _Alloc>::
-      _M_insert_aux(iterator __position, _Args&&... __args)
+      _M_insert_aux(iterator __position, _Arg&& __arg)
 #else
   template<typename _Tp, typename _Alloc>
     void
@@ -327,77 +363,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _M_insert_aux(iterator __position, const _Tp& __x)
 #endif
     {
-      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
-	{
-	  _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
-			           _GLIBCXX_MOVE(*(this->_M_impl._M_finish
-				                   - 1)));
-	  ++this->_M_impl._M_finish;
+      _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
+			       _GLIBCXX_MOVE(*(this->_M_impl._M_finish
+					       - 1)));
+      ++this->_M_impl._M_finish;
 #if __cplusplus < 201103L
-	  _Tp __x_copy = __x;
+      _Tp __x_copy = __x;
 #endif
-	  _GLIBCXX_MOVE_BACKWARD3(__position.base(),
-				  this->_M_impl._M_finish - 2,
-				  this->_M_impl._M_finish - 1);
+      _GLIBCXX_MOVE_BACKWARD3(__position.base(),
+			      this->_M_impl._M_finish - 2,
+			      this->_M_impl._M_finish - 1);
 #if __cplusplus < 201103L
-	  *__position = __x_copy;
+      *__position = __x_copy;
 #else
-	  *__position = _Tp(std::forward<_Args>(__args)...);
+      *__position = std::forward<_Arg>(__arg);
 #endif
-	}
-      else
-	{
-	  const size_type __len =
-	    _M_check_len(size_type(1), "vector::_M_insert_aux");
-	  const size_type __elems_before = __position - begin();
-	  pointer __new_start(this->_M_allocate(__len));
-	  pointer __new_finish(__new_start);
-	  __try
-	    {
-	      // The order of the three operations is dictated by the C++0x
-	      // case, where the moves could alter a new element belonging
-	      // to the existing vector.  This is an issue only for callers
-	      // taking the element by const lvalue ref (see 23.1/13).
-	      _Alloc_traits::construct(this->_M_impl,
-		                       __new_start + __elems_before,
-#if __cplusplus >= 201103L
-				       std::forward<_Args>(__args)...);
-#else
-	                               __x);
-#endif
-	      __new_finish = pointer();
-
-	      __new_finish
-		= std::__uninitialized_move_if_noexcept_a
-		(this->_M_impl._M_start, __position.base(),
-		 __new_start, _M_get_Tp_allocator());
-
-	      ++__new_finish;
-
-	      __new_finish
-		= std::__uninitialized_move_if_noexcept_a
-		(__position.base(), this->_M_impl._M_finish,
-		 __new_finish, _M_get_Tp_allocator());
-	    }
-          __catch(...)
-	    {
-	      if (!__new_finish)
-		_Alloc_traits::destroy(this->_M_impl,
-		                       __new_start + __elems_before);
-	      else
-		std::_Destroy(__new_start, __new_finish, _M_get_Tp_allocator());
-	      _M_deallocate(__new_start, __len);
-	      __throw_exception_again;
-	    }
-	  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-			_M_get_Tp_allocator());
-	  _M_deallocate(this->_M_impl._M_start,
-			this->_M_impl._M_end_of_storage
-			- this->_M_impl._M_start);
-	  this->_M_impl._M_start = __new_start;
-	  this->_M_impl._M_finish = __new_finish;
-	  this->_M_impl._M_end_of_storage = __new_start + __len;
-	}
     }
 
 #if __cplusplus >= 201103L
@@ -405,44 +385,66 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     template<typename... _Args>
       void
       vector<_Tp, _Alloc>::
-      _M_emplace_back_aux(_Args&&... __args)
-      {
-	const size_type __len =
-	  _M_check_len(size_type(1), "vector::_M_emplace_back_aux");
-	pointer __new_start(this->_M_allocate(__len));
-	pointer __new_finish(__new_start);
-	__try
-	  {
-	    _Alloc_traits::construct(this->_M_impl, __new_start + size(),
-				     std::forward<_Args>(__args)...);
-	    __new_finish = pointer();
-
-	    __new_finish
-	      = std::__uninitialized_move_if_noexcept_a
-	      (this->_M_impl._M_start, this->_M_impl._M_finish,
-	       __new_start, _M_get_Tp_allocator());
-
-	    ++__new_finish;
-	  }
-	__catch(...)
-	  {
-	    if (!__new_finish)
-	      _Alloc_traits::destroy(this->_M_impl, __new_start + size());
-	    else
-	      std::_Destroy(__new_start, __new_finish, _M_get_Tp_allocator());
-	    _M_deallocate(__new_start, __len);
-	    __throw_exception_again;
-	  }
-	std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-		      _M_get_Tp_allocator());
-	_M_deallocate(this->_M_impl._M_start,
-		      this->_M_impl._M_end_of_storage
-		      - this->_M_impl._M_start);
-	this->_M_impl._M_start = __new_start;
-	this->_M_impl._M_finish = __new_finish;
-	this->_M_impl._M_end_of_storage = __new_start + __len;
-      }
+      _M_realloc_insert(iterator __position, _Args&&... __args)
+#else
+  template<typename _Tp, typename _Alloc>
+    void
+    vector<_Tp, _Alloc>::
+    _M_realloc_insert(iterator __position, const _Tp& __x)
 #endif
+    {
+      const size_type __len =
+	_M_check_len(size_type(1), "vector::_M_realloc_insert");
+      const size_type __elems_before = __position - begin();
+      pointer __new_start(this->_M_allocate(__len));
+      pointer __new_finish(__new_start);
+      __try
+	{
+	  // The order of the three operations is dictated by the C++11
+	  // case, where the moves could alter a new element belonging
+	  // to the existing vector.  This is an issue only for callers
+	  // taking the element by lvalue ref (see last bullet of C++11
+	  // [res.on.arguments]).
+	  _Alloc_traits::construct(this->_M_impl,
+				   __new_start + __elems_before,
+#if __cplusplus >= 201103L
+				   std::forward<_Args>(__args)...);
+#else
+				   __x);
+#endif
+	  __new_finish = pointer();
+
+	  __new_finish
+	    = std::__uninitialized_move_if_noexcept_a
+	    (this->_M_impl._M_start, __position.base(),
+	     __new_start, _M_get_Tp_allocator());
+
+	  ++__new_finish;
+
+	  __new_finish
+	    = std::__uninitialized_move_if_noexcept_a
+	    (__position.base(), this->_M_impl._M_finish,
+	     __new_finish, _M_get_Tp_allocator());
+	}
+      __catch(...)
+	{
+	  if (!__new_finish)
+	    _Alloc_traits::destroy(this->_M_impl,
+				   __new_start + __elems_before);
+	  else
+	    std::_Destroy(__new_start, __new_finish, _M_get_Tp_allocator());
+	  _M_deallocate(__new_start, __len);
+	  __throw_exception_again;
+	}
+      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		    _M_get_Tp_allocator());
+      _M_deallocate(this->_M_impl._M_start,
+		    this->_M_impl._M_end_of_storage
+		    - this->_M_impl._M_start);
+      this->_M_impl._M_start = __new_start;
+      this->_M_impl._M_finish = __new_finish;
+      this->_M_impl._M_end_of_storage = __new_start + __len;
+    }
 
   template<typename _Tp, typename _Alloc>
     void
@@ -454,7 +456,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if (size_type(this->_M_impl._M_end_of_storage
 			- this->_M_impl._M_finish) >= __n)
 	    {
+#if __cplusplus < 201103L
 	      value_type __x_copy = __x;
+#else
+	      _Temporary_value __tmp(this, __x);
+	      value_type& __x_copy = __tmp._M_val();
+#endif
 	      const size_type __elems_after = end() - __position;
 	      pointer __old_finish(this->_M_impl._M_finish);
 	      if (__elems_after > __n)
@@ -492,7 +499,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      pointer __new_finish(__new_start);
 	      __try
 		{
-		  // See _M_insert_aux above.
+		  // See _M_realloc_insert above.
 		  std::__uninitialized_fill_n_a(__new_start + __elems_before,
 						__n, __x,
 						_M_get_Tp_allocator());

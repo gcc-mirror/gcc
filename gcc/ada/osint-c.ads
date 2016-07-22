@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,8 @@ package Osint.C is
    procedure Set_File_Name (Ext : String);
    --  Sets a default file name from the main compiler source name. Ext is the
    --  extension, e.g. "ali" for a library information file. The name is in
-   --  Name_Buffer (with length in Name_Len) on return.
+   --  Name_Buffer (with length in Name_Len) on return, with
+   --  Name_Buffer (Name_Len) always set to ASCII.NUL.
 
    --------------------------------
    -- Library Information Output --
@@ -159,7 +160,7 @@ package Osint.C is
    --------------------------
 
    --  These routines are used by the compiler when the C translation option
-   --  is activated to write *.c and *.h files to the current object directory.
+   --  is activated to write *.c or *.h files to the current object directory.
    --  Each routine exists in a C and an H form for the two kinds of files.
    --  Only one of these files can be written at a time. Note that the files
    --  are written via the Output package routines, using Output_FD.
@@ -174,6 +175,11 @@ package Osint.C is
    procedure Close_H_File;
    --  Closes the file created by Create_C_File or Create_H file, flushing any
    --  buffers etc. from writes by Write_C_File and Write_H_File;
+
+   procedure Delete_C_File;
+   procedure Delete_H_File;
+   --  Deletes the .c or .h file corresponding to the source file which is
+   --  currently being compiled.
 
    ----------------------
    -- List File Output --

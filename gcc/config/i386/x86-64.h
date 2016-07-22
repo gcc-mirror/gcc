@@ -55,9 +55,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   x86_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-  x86_elf_aligned_common (FILE, NAME, SIZE, ALIGN);
+#undef  ASM_OUTPUT_ALIGNED_DECL_COMMON
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)		\
+  x86_elf_aligned_decl_common (FILE, DECL, NAME, SIZE, ALIGN);
 
 /* This is used to align code labels according to Intel recommendations.  */
 

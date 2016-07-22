@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-mmac-24" } */
 /* { dg-do assemble } */
 

@@ -14,7 +14,7 @@
 void
 f (int a, int b)
 {
-  switch (a) {
+  switch (a) { /* { dg-warning "statement will never be executed" } */
     int v[b];
   case 2: /* { dg-error "switch jumps into scope of identifier with variably modified type" } */
   default: /* { dg-error "switch jumps into scope of identifier with variably modified type" } */

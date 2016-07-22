@@ -41,7 +41,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   bool
   ctype<char>::
   is(mask __m, char __c) const
-  { 
+  {
     if(_M_table)
       return _M_table[static_cast<unsigned char>(__c)] & __m;
     else

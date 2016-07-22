@@ -927,7 +927,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     class _Bind<_Functor(_Bound_args...)>
     : public _Weak_result_type<_Functor>
     {
-      typedef _Bind __self_type;
       typedef typename _Build_index_tuple<sizeof...(_Bound_args)>::__type
 	_Bound_indexes;
 
@@ -1052,7 +1051,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   template<typename _Result, typename _Functor, typename... _Bound_args>
     class _Bind_result<_Result, _Functor(_Bound_args...)>
     {
-      typedef _Bind_result __self_type;
       typedef typename _Build_index_tuple<sizeof...(_Bound_args)>::__type
 	_Bound_indexes;
 
@@ -1908,7 +1906,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
        *  type @c T1, @c T2, ..., @c TN and returns a value convertible
        *  to @c Res.
        *
-       *  The newly-created %function object will target a copy of 
+       *  The newly-created %function object will target a copy of
        *  @a __f. If @a __f is @c reference_wrapper<F>, then this function
        *  object will contain a reference to the function object @c
        *  __f.get(). If @a __f is a NULL function pointer or NULL

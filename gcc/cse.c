@@ -3558,7 +3558,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		 instead we test for the problematic value in a more direct
 		 manner and hope the Sun compilers get it correct.  */
 	      && INTVAL (const_arg1) !=
-	        ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
+	        (HOST_WIDE_INT_1 << (HOST_BITS_PER_WIDE_INT - 1))
 	      && REG_P (folded_arg1))
 	    {
 	      rtx new_const = GEN_INT (-INTVAL (const_arg1));
@@ -4298,6 +4298,22 @@ find_sets_in_insn (rtx_insn *insn, struct set **psets)
   return n_sets;
 }
 
+/* Subroutine of canonicalize_insn.  X is an ASM_OPERANDS in INSN.  */
+
+static void
+canon_asm_operands (rtx x, rtx_insn *insn)
+{
+  for (int i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+    {
+      rtx input = ASM_OPERANDS_INPUT (x, i);
+      if (!(REG_P (input) && HARD_REGISTER_P (input)))
+	{
+	  input = canon_reg (input, insn);
+	  validate_change (insn, &ASM_OPERANDS_INPUT (x, i), input, 1);
+	}
+    }
+}
+
 /* Where possible, substitute every register reference in the N_SETS
    number of SETS in INSN with the canonical register.
 
@@ -4361,17 +4377,7 @@ canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
     /* Canonicalize a USE of a pseudo register or memory location.  */
     canon_reg (x, insn);
   else if (GET_CODE (x) == ASM_OPERANDS)
-    {
-      for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
-	{
-	  rtx input = ASM_OPERANDS_INPUT (x, i);
-	  if (!(REG_P (input) && REGNO (input) < FIRST_PSEUDO_REGISTER))
-	    {
-	      input = canon_reg (input, insn);
-	      validate_change (insn, &ASM_OPERANDS_INPUT (x, i), input, 1);
-	    }
-	}
-    }
+    canon_asm_operands (x, insn);
   else if (GET_CODE (x) == CALL)
     {
       canon_reg (x, insn);
@@ -4400,6 +4406,8 @@ canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
 		   && ! (REG_P (XEXP (y, 0))
 			 && REGNO (XEXP (y, 0)) < FIRST_PSEUDO_REGISTER))
 	    canon_reg (y, insn);
+	  else if (GET_CODE (y) == ASM_OPERANDS)
+	    canon_asm_operands (y, insn);
 	  else if (GET_CODE (y) == CALL)
 	    {
 	      canon_reg (y, insn);
@@ -4557,9 +4565,9 @@ cse_insn (rtx_insn *insn)
 	  else
 	    shift = INTVAL (pos);
 	  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
-	    mask = ~(HOST_WIDE_INT) 0;
+	    mask = HOST_WIDE_INT_M1;
 	  else
-	    mask = ((HOST_WIDE_INT) 1 << INTVAL (width)) - 1;
+	    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 	  val = (val >> shift) & mask;
 	  src_eqv = GEN_INT (val);
 	}
@@ -4575,6 +4583,7 @@ cse_insn (rtx_insn *insn)
   for (i = 0; i < n_sets; i++)
     {
       bool repeat = false;
+      bool mem_noop_insn = false;
       rtx src, dest;
       rtx src_folded;
       struct table_elt *elt = 0, *p;
@@ -4656,7 +4665,7 @@ cse_insn (rtx_insn *insn)
 	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
 	      && (INTVAL (src) & ((HOST_WIDE_INT) (-1) << INTVAL (width))))
 	    src_folded
-	      = GEN_INT (INTVAL (src) & (((HOST_WIDE_INT) 1
+	      = GEN_INT (INTVAL (src) & ((HOST_WIDE_INT_1
 					  << INTVAL (width)) - 1));
 	}
 #endif
@@ -5166,7 +5175,7 @@ cse_insn (rtx_insn *insn)
 	    }
 
 	  /* Avoid creation of overlapping memory moves.  */
-	  if (MEM_P (trial) && MEM_P (SET_DEST (sets[i].rtl)))
+	  if (MEM_P (trial) && MEM_P (dest) && !rtx_equal_p (trial, dest))
 	    {
 	      rtx src, dest;
 
@@ -5224,9 +5233,9 @@ cse_insn (rtx_insn *insn)
 		  else
 		    shift = INTVAL (pos);
 		  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
-		    mask = ~(HOST_WIDE_INT) 0;
+		    mask = HOST_WIDE_INT_M1;
 		  else
-		    mask = ((HOST_WIDE_INT) 1 << INTVAL (width)) - 1;
+		    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 		  val &= ~(mask << shift);
 		  val |= (INTVAL (trial) & mask) << shift;
 		  val = trunc_int_for_mode (val, GET_MODE (dest_reg));
@@ -5274,6 +5283,21 @@ cse_insn (rtx_insn *insn)
 
 	      SET_SRC (sets[i].rtl) = trial;
 	      cse_jumps_altered = true;
+	      break;
+	    }
+
+	  /* Similarly, lots of targets don't allow no-op
+	     (set (mem x) (mem x)) moves.  */
+	  else if (n_sets == 1
+		   && MEM_P (trial)
+		   && MEM_P (dest)
+		   && rtx_equal_p (trial, dest)
+		   && !side_effects_p (dest)
+		   && (cfun->can_delete_dead_exceptions
+		       || insn_nothrow_p (insn)))
+	    {
+	      SET_SRC (sets[i].rtl) = trial;
+	      mem_noop_insn = true;
 	      break;
 	    }
 
@@ -5489,8 +5513,18 @@ cse_insn (rtx_insn *insn)
       else if (n_sets == 1 && dest == pc_rtx && src == pc_rtx)
 	{
 	  /* One less use of the label this insn used to jump to.  */
-	  delete_insn_and_edges (insn);
+	  cse_cfg_altered |= delete_insn_and_edges (insn);
 	  cse_jumps_altered = true;
+	  /* No more processing for this set.  */
+	  sets[i].rtl = 0;
+	}
+
+      /* Similarly for no-op MEM moves.  */
+      else if (mem_noop_insn)
+	{
+	  if (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
+	    cse_cfg_altered = true;
+	  cse_cfg_altered |= delete_insn_and_edges (insn);
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
 	}
@@ -5525,7 +5559,7 @@ cse_insn (rtx_insn *insn)
 		  REG_NOTES (new_rtx) = note;
 		}
 
-	      delete_insn_and_edges (insn);
+	      cse_cfg_altered |= delete_insn_and_edges (insn);
 	      insn = new_rtx;
 	    }
 	  else
@@ -5725,6 +5759,13 @@ cse_insn (rtx_insn *insn)
     {
       if (!(RTL_CONST_OR_PURE_CALL_P (insn)))
 	invalidate_memory ();
+      else
+	/* For const/pure calls, invalidate any argument slots, because
+	   those are owned by the callee.  */
+	for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+	  if (GET_CODE (XEXP (tem, 0)) == USE
+	      && MEM_P (XEXP (XEXP (tem, 0), 0)))
+	    invalidate (XEXP (XEXP (tem, 0), 0), VOIDmode);
       invalidate_for_call ();
     }
 
@@ -6643,6 +6684,10 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   int *rc_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int i, n_blocks;
 
+  /* CSE doesn't use dominane info but can invalidate it in different ways.
+     For simplicity free dominance info here.  */
+  free_dominance_info (CDI_DOMINATORS);
+
   df_set_flags (DF_LR_RUN_DCE);
   df_note_add_problem ();
   df_analyze ();
@@ -7105,7 +7150,7 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	      count_reg_usage (insn, counts, NULL_RTX, -1);
 	      ndead++;
 	    }
-	  delete_insn_and_edges (insn);
+	  cse_cfg_altered |= delete_insn_and_edges (insn);
 	}
     }
 
@@ -7401,7 +7446,7 @@ cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
 				    newreg);
 	}
 
-      delete_insn_and_edges (insns[i]);
+      cse_cfg_altered |= delete_insn_and_edges (insns[i]);
     }
 
   return mode;
@@ -7536,11 +7581,11 @@ rest_of_handle_cse (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_CFG_CHANGED);
+      cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
   else if (tem == 1 || optimize > 1)
-    cleanup_cfg (0);
+    cse_cfg_altered |= cleanup_cfg (0);
 
   return 0;
 }
@@ -7605,11 +7650,11 @@ rest_of_handle_cse2 (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_CFG_CHANGED);
+      cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
   else if (tem == 1)
-    cleanup_cfg (0);
+    cse_cfg_altered |= cleanup_cfg (0);
 
   cse_not_expected = 1;
   return 0;
@@ -7669,7 +7714,7 @@ rest_of_handle_cse_after_global_opts (void)
 
   rebuild_jump_labels (get_insns ());
   tem = cse_main (get_insns (), max_reg_num ());
-  purge_all_dead_edges ();
+  cse_cfg_altered |= purge_all_dead_edges ();
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
   cse_not_expected = !flag_rerun_cse_after_loop;
@@ -7679,11 +7724,11 @@ rest_of_handle_cse_after_global_opts (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_CFG_CHANGED);
+      cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
   else if (tem == 1)
-    cleanup_cfg (0);
+    cse_cfg_altered |= cleanup_cfg (0);
 
   flag_cse_follow_jumps = save_cfj;
   return 0;

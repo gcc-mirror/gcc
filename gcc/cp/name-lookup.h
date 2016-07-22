@@ -312,7 +312,7 @@ extern tree push_inner_scope (tree);
 extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (cp_binding_level *);
 
-extern void push_namespace (tree);
+extern bool push_namespace (tree);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
@@ -327,7 +327,7 @@ extern tree namespace_binding (tree, tree);
 extern void set_namespace_binding (tree, tree, tree);
 extern bool hidden_name_p (tree);
 extern tree remove_hidden_names (tree);
-extern tree lookup_qualified_name (tree, tree, bool, bool, /*hidden*/bool = false);
+extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
 extern tree lookup_name_innermost_nonclass_level (tree);
 extern bool is_local_extern (tree);

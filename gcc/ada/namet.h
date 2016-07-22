@@ -25,7 +25,7 @@
 
 /* This is the C file that corresponds to the Ada package specification
    Namet.  It was created manually from files namet.ads and namet.adb.
-   Some subprograms from Sinput are also made acessable here.  */
+   Some subprograms from Sinput are also made accessible here.  */
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,16 +52,26 @@ extern struct Name_Entry *Names_Ptr;
 #define Name_Chars_Ptr namet__name_chars__table
 extern char *Name_Chars_Ptr;
 
-#define Name_Buffer namet__name_buffer
-extern char Name_Buffer[];
+/* The global name buffer. */
+struct Bounded_String
+{
+  Nat Max_Length;
+  Nat Length;
+  char Chars[1];
+  /* The 1 here is wrong, but it doesn't matter, because all the code either
+     goes by Length, or NUL-terminates the string before processing it. */
+};
 
-extern Int namet__name_len;
-#define Name_Len namet__name_len
+#define Global_Name_Buffer namet__global_name_buffer
+extern struct Bounded_String Global_Name_Buffer;
 
-/* Get_Name_String returns a null terminated C string for the specified name.
+#define Name_Buffer Global_Name_Buffer.Chars
+#define Name_Len Global_Name_Buffer.Length
+
+/* Get_Name_String returns a NUL terminated C string for the specified name.
    We could use the official Ada routine for this purpose, but since the
    strings we want are sitting in the name strings table in exactly the form
-   we need them (null terminated), we just point to the name directly. */
+   we need them (NUL terminated), we just point to the name directly. */
 
 static char *Get_Name_String (Name_Id);
 

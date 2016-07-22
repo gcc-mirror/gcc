@@ -74,7 +74,6 @@ static bool global_bindings_p (void);
 static bool gfc_init (void);
 static void gfc_finish (void);
 static void gfc_be_parse_file (void);
-static alias_set_type gfc_get_alias_set (tree);
 static void gfc_init_ts (void);
 static tree gfc_builtin_function (tree);
 
@@ -110,7 +109,6 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #undef LANG_HOOKS_TYPE_FOR_SIZE
-#undef LANG_HOOKS_GET_ALIAS_SET
 #undef LANG_HOOKS_INIT_TS
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
@@ -142,7 +140,6 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_PARSE_FILE           gfc_be_parse_file
 #define LANG_HOOKS_TYPE_FOR_MODE	gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
-#define LANG_HOOKS_GET_ALIAS_SET	gfc_get_alias_set
 #define LANG_HOOKS_INIT_TS		gfc_init_ts
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
@@ -289,6 +286,9 @@ binding_level {
   tree blocks;
   /* The binding level containing this one (the enclosing binding level).  */
   struct binding_level *level_chain;
+  /* True if nreverse has been already called on names; if false, names
+     are ordered from newest declaration to oldest one.  */
+  bool reversed;
 };
 
 /* The binding level currently in effect.  */
@@ -299,7 +299,7 @@ static GTY(()) struct binding_level *current_binding_level = NULL;
 static GTY(()) struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
-static struct binding_level clear_binding_level = { NULL, NULL, NULL };
+static struct binding_level clear_binding_level = { NULL, NULL, NULL, false };
 
 
 /* Return true if we are in the global binding level.  */
@@ -313,6 +313,11 @@ global_bindings_p (void)
 tree
 getdecls (void)
 {
+  if (!current_binding_level->reversed)
+    {
+      current_binding_level->reversed = true;
+      current_binding_level->names = nreverse (current_binding_level->names);
+    }
   return current_binding_level->names;
 }
 
@@ -350,7 +355,7 @@ poplevel (int keep, int functionbody)
      binding level that we are about to exit and which is returned by this
      routine.  */
   tree block_node = NULL_TREE;
-  tree decl_chain = current_binding_level->names;
+  tree decl_chain = getdecls ();
   tree subblock_chain = current_binding_level->blocks;
   tree subblock_node;
 
@@ -502,24 +507,6 @@ gfc_init_decl_processing (void)
   gfc_init_c_interop_kinds ();
 }
 
-
-/* Return the typed-based alias set for T, which may be an expression
-   or a type.  Return -1 if we don't do anything special.  */
-
-static alias_set_type
-gfc_get_alias_set (tree t)
-{
-  tree u;
-
-  /* Permit type-punning when accessing an EQUIVALENCEd variable or
-     mixed type entry master's return value.  */
-  for (u = t; handled_component_p (u); u = TREE_OPERAND (u, 0))
-    if (TREE_CODE (u) == COMPONENT_REF
-	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
-      return 0;
-
-  return -1;
-}
 
 /* Builtin function initialization.  */
 

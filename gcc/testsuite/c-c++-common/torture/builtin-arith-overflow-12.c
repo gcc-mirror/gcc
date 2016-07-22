@@ -1,4 +1,4 @@
-/* Test __builtin_{add,sub,mul_overflow.  */
+/* Test __builtin_{add,sub,mul}_overflow.  */
 /* { dg-do run } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 

@@ -24,13 +24,13 @@
 #include <testsuite_hooks.h>
 
 void
-test01() 
+test01()
 {
   bool test __attribute__((unused)) = true;
 
   using namespace std::tr1;
   random_device x;
-  
+
   VERIFY( x.min() == std::numeric_limits<random_device::result_type>::min() );
   VERIFY( x.max() == std::numeric_limits<random_device::result_type>::max() );
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Exp_Util; use Exp_Util;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Tbuild;   use Tbuild;
 
 package body Exp_SPARK is
 
@@ -40,10 +41,6 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
-
-   procedure Expand_Potential_Renaming (N : Node_Id);
-   --  N denotes a N_Identifier or N_Expanded_Name. If N references a renaming,
-   --  replace N with the renamed object.
 
    ------------------
    -- Expand_SPARK --
@@ -61,15 +58,18 @@ package body Exp_SPARK is
          --  user interaction. The verification back-end already takes care
          --  of qualifying names when needed.
 
-         when N_Block_Statement     |
-              N_Package_Body        |
-              N_Package_Declaration |
-              N_Subprogram_Body     =>
+         when N_Block_Statement            |
+              N_Entry_Declaration          |
+              N_Package_Body               |
+              N_Package_Declaration        |
+              N_Protected_Type_Declaration |
+              N_Subprogram_Body            |
+              N_Task_Type_Declaration      =>
             Qualify_Entity_Names (N);
 
          when N_Expanded_Name |
               N_Identifier    =>
-            Expand_Potential_Renaming (N);
+            Expand_SPARK_Potential_Renaming (N);
 
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);
@@ -112,22 +112,41 @@ package body Exp_SPARK is
       Evaluate_Name (Name (N));
    end Expand_SPARK_N_Object_Renaming_Declaration;
 
-   -------------------------------
-   -- Expand_Potential_Renaming --
-   -------------------------------
+   -------------------------------------
+   -- Expand_SPARK_Potential_Renaming --
+   -------------------------------------
 
-   procedure Expand_Potential_Renaming (N : Node_Id) is
-      E : constant Entity_Id := Entity (N);
-      T : constant Entity_Id := Etype (N);
+   procedure Expand_SPARK_Potential_Renaming (N : Node_Id) is
+      Loc    : constant Source_Ptr := Sloc (N);
+      Ren_Id : constant Entity_Id  := Entity (N);
+      Typ    : constant Entity_Id  := Etype (N);
+      Obj_Id : Node_Id;
 
    begin
       --  Replace a reference to a renaming with the actual renamed object
 
-      if Ekind (E) in Object_Kind and then Present (Renamed_Object (E)) then
-         Rewrite (N, New_Copy_Tree (Renamed_Object (E)));
-         Reset_Analyzed_Flags (N);
-         Analyze_And_Resolve (N, T);
+      if Ekind (Ren_Id) in Object_Kind then
+         Obj_Id := Renamed_Object (Ren_Id);
+
+         if Present (Obj_Id) then
+
+            --  The renamed object is an entity when instantiating generics
+            --  or inlining bodies. In this case the renaming is part of the
+            --  mapping "prologue" which links actuals to formals.
+
+            if Nkind (Obj_Id) in N_Entity then
+               Rewrite (N, New_Occurrence_Of (Obj_Id, Loc));
+
+            --  Otherwise the renamed object denotes a name
+
+            else
+               Rewrite (N, New_Copy_Tree (Obj_Id));
+               Reset_Analyzed_Flags (N);
+            end if;
+
+            Analyze_And_Resolve (N, Typ);
+         end if;
       end if;
-   end Expand_Potential_Renaming;
+   end Expand_SPARK_Potential_Renaming;
 
 end Exp_SPARK;

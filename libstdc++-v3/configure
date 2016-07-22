@@ -53544,7 +53544,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu | *-cygwin*)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin*)
 
   # All these tests are for C++; save the language and the compiler flags.
   # The CXXFLAGS thing is suspicious, but based on similar bits previously
@@ -80358,7 +80358,7 @@ else
 int
 main ()
 {
-sendfile(1, 2, (off_t*)NULL, sizeof 1);
+sendfile(1, 2, (off_t*)0, sizeof 1);
   ;
   return 0;
 }
@@ -80379,7 +80379,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-sendfile(1, 2, (off_t*)NULL, sizeof 1);
+sendfile(1, 2, (off_t*)0, sizeof 1);
   ;
   return 0;
 }

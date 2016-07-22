@@ -897,7 +897,6 @@ reload (rtx_insn *first, int global)
   for (;;)
     {
       int something_changed;
-      int did_spill;
       HOST_WIDE_INT starting_frame_size;
 
       starting_frame_size = get_frame_size ();
@@ -981,7 +980,8 @@ reload (rtx_insn *first, int global)
       /* If we allocated another stack slot, redo elimination bookkeeping.  */
       if (something_was_spilled || starting_frame_size != get_frame_size ())
 	{
-	  update_eliminables_and_spill ();
+	  if (update_eliminables_and_spill ())
+	    finish_spills (0);
 	  continue;
 	}
 
@@ -1000,8 +1000,6 @@ reload (rtx_insn *first, int global)
 	   is used.  */
 	CLEAR_REG_SET (&spilled_pseudos);
 
-      did_spill = 0;
-
       something_changed = 0;
 
       /* If we allocated any new memory locations, make another pass
@@ -1018,16 +1016,17 @@ reload (rtx_insn *first, int global)
 
       if (update_eliminables_and_spill ())
 	{
-	  did_spill = 1;
+	  finish_spills (0);
 	  something_changed = 1;
 	}
-
-      select_reload_regs ();
-      if (failure)
-	goto failed;
-
-      if (insns_need_reload != 0 || did_spill)
-	something_changed |= finish_spills (global);
+      else
+	{
+	  select_reload_regs ();
+	  if (failure)
+	    goto failed;
+	  if (insns_need_reload)
+	    something_changed |= finish_spills (global);
+	}
 
       if (! something_changed)
 	break;
@@ -4278,10 +4277,13 @@ spill_hard_reg (unsigned int regno, int cant_eliminate)
       SET_REGNO_REG_SET (&spilled_pseudos, i);
 }
 
-/* After find_reload_regs has been run for all insn that need reloads,
-   and/or spill_hard_regs was called, this function is used to actually
-   spill pseudo registers and try to reallocate them.  It also sets up the
-   spill_regs array for use by choose_reload_regs.  */
+/* After spill_hard_reg was called and/or find_reload_regs was run for all
+   insns that need reloads, this function is used to actually spill pseudo
+   registers and try to reallocate them.  It also sets up the spill_regs
+   array for use by choose_reload_regs.
+
+   GLOBAL nonzero means we should attempt to reallocate any pseudo registers
+   that we displace from hard registers.  */
 
 static int
 finish_spills (int global)

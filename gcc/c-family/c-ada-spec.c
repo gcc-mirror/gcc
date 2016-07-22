@@ -892,25 +892,22 @@ static const char *c_duplicates[] = {
 static tree
 get_underlying_decl (tree type)
 {
-  tree decl = NULL_TREE;
-
-  if (type == NULL_TREE)
+  if (!type)
     return NULL_TREE;
 
   /* type is a declaration.  */
   if (DECL_P (type))
-    decl = type;
+    return type;
 
   /* type is a typedef.  */
   if (TYPE_P (type) && TYPE_NAME (type) && DECL_P (TYPE_NAME (type)))
-    decl = TYPE_NAME (type);
+    return TYPE_NAME (type);
 
   /* TYPE_STUB_DECL has been set for type.  */
-  if (TYPE_P (type) && TYPE_STUB_DECL (type) &&
-      DECL_P (TYPE_STUB_DECL (type)))
-    decl = TYPE_STUB_DECL (type);
+  if (TYPE_P (type) && TYPE_STUB_DECL (type))
+    return TYPE_STUB_DECL (type);
 
-  return decl;
+  return NULL_TREE;
 }
 
 /* Return whether TYPE has static fields.  */
@@ -2083,37 +2080,25 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		}
 	      else
 		{
-		  /* For now, handle all access-to-access or
-		     access-to-unknown-structs as opaque system.address.  */
-
 		  tree type_name = TYPE_NAME (TREE_TYPE (node));
-		  const_tree typ2 = !type ||
-		    DECL_P (type) ? type : TYPE_NAME (type);
-		  const_tree underlying_type =
-		    get_underlying_decl (TREE_TYPE (node));
+		  tree decl = get_underlying_decl (TREE_TYPE (node));
+		  tree enclosing_decl = get_underlying_decl (type);
 
+		  /* For now, handle access-to-access, access-to-empty-struct
+		     or access-to-incomplete as opaque system.address.  */
 		  if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE
-		      /* Pointer to pointer.  */
-
 		      || (RECORD_OR_UNION_TYPE_P (TREE_TYPE (node))
-			  && (!underlying_type
-			      || !TYPE_FIELDS (TREE_TYPE (underlying_type))))
-		      /* Pointer to opaque structure.  */
-
-		      || underlying_type == NULL_TREE
-		      || (!typ2
-			  && !TREE_VISITED (underlying_type)
-			  && !TREE_VISITED (type_name)
-			  && !is_tagged_type (TREE_TYPE (node))
-			  && DECL_SOURCE_FILE (underlying_type)
-			       == source_file_base)
-		      || (type_name && typ2
-			  && DECL_P (underlying_type)
-			  && DECL_P (typ2)
-			  && decl_sloc (underlying_type, true)
-			       > decl_sloc (typ2, true)
-			  && DECL_SOURCE_FILE (underlying_type)
-			       == DECL_SOURCE_FILE (typ2)))
+			  && !TYPE_FIELDS (TREE_TYPE (node)))
+		      || !decl
+		      || (!enclosing_decl
+			  && !TREE_VISITED (decl)
+			  && DECL_SOURCE_FILE (decl) == source_file_base)
+		      || (enclosing_decl
+			  && !TREE_VISITED (decl)
+			  && DECL_SOURCE_FILE (decl)
+			       == DECL_SOURCE_FILE (enclosing_decl)
+			  && decl_sloc (decl, true)
+			       > decl_sloc (enclosing_decl, true)))
 		    {
 		      if (package_prefix)
 			{
@@ -2160,13 +2145,11 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		    }
 
 		  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (node)) && type_name)
-		    dump_generic_ada_node
-		      (buffer, type_name,
-		       TREE_TYPE (node), spc, is_access, true);
+		    dump_generic_ada_node (buffer, type_name, TREE_TYPE (node),
+					   spc, is_access, true);
 		  else
-		    dump_generic_ada_node
-		      (buffer, TREE_TYPE (node), TREE_TYPE (node),
-		       spc, 0, true);
+		    dump_generic_ada_node (buffer, TREE_TYPE (node),
+					   TREE_TYPE (node), spc, 0, true);
 		}
 	    }
 	}
@@ -2507,13 +2490,12 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
 
       decl = get_underlying_decl (tmp);
       if (decl
-	  && DECL_P (decl)
-	  && decl_sloc (decl, true) > decl_sloc (t, true)
-	  && DECL_SOURCE_FILE (decl) == DECL_SOURCE_FILE (t)
-	  && !TREE_VISITED (decl)
 	  && !DECL_IS_BUILTIN (decl)
 	  && (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
-	      || TYPE_FIELDS (TREE_TYPE (decl))))
+	      || TYPE_FIELDS (TREE_TYPE (decl)))
+	  && !TREE_VISITED (decl)
+	  && DECL_SOURCE_FILE (decl) == DECL_SOURCE_FILE (t)
+	  && decl_sloc (decl, true) > decl_sloc (t, true))
 	{
 	  /* Generate forward declaration.  */
 	  pp_string (buffer, "type ");
@@ -2529,10 +2511,7 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
       while (TREE_CODE (tmp) == ARRAY_TYPE)
 	tmp = TREE_TYPE (tmp);
       decl = get_underlying_decl (tmp);
-      if (decl
-	  && DECL_P (decl)
-	  && !DECL_NAME (decl)
-	  && !TREE_VISITED (decl))
+      if (decl && !DECL_NAME (decl) && !TREE_VISITED (decl))
 	{
 	  /* Generate full declaration.  */
 	  dump_nested_type (buffer, decl, t, parent, spc);
@@ -2682,7 +2661,10 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		 casing), then ignore the second type.  */
 	      if (type_name (typ) == type_name (TREE_TYPE (t))
 		  || !strcasecmp (type_name (typ), type_name (TREE_TYPE (t))))
-		return 0;
+		{
+		  TREE_VISITED (t) = 1;
+		  return 0;
+		}
 
 	      INDENT (spc);
 
@@ -2703,6 +2685,8 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		  dump_generic_ada_node (buffer, typ, type, spc, false, true);
 		  pp_semicolon (buffer);
 		}
+
+	      TREE_VISITED (t) = 1;
 	      return 1;
 	    }
 	}

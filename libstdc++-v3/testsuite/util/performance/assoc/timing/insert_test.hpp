@@ -53,7 +53,7 @@ namespace __gnu_pbds
       class insert_insert_functor
       {
       public:
-        insert_insert_functor(It ins_it_b,  It ins_it_e) 
+        insert_insert_functor(It ins_it_b,  It ins_it_e)
 	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 

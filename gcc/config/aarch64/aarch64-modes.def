@@ -21,8 +21,6 @@
 CC_MODE (CCFP);
 CC_MODE (CCFPE);
 CC_MODE (CC_SWP);
-CC_MODE (CC_ZESWP); /* zero-extend LHS (but swap to make it RHS).  */
-CC_MODE (CC_SESWP); /* sign-extend LHS (but swap to make it RHS).  */
 CC_MODE (CC_NZ);    /* Only N and Z bits of condition flags are valid.  */
 CC_MODE (CC_Z);     /* Only Z bit of condition flags is valid.  */
 CC_MODE (CC_C);     /* Only C bit of condition flags is valid.  */

@@ -75,6 +75,8 @@ static const struct cpu_names {
   { "UltraSparc T4",	"niagara4" },
   { "LEON",		"leon3" },
 #endif
+  { "SPARC-M7",		"niagara7" },
+  { "SPARC-S7",		"niagara7" },
   { NULL,	NULL }
   };
 

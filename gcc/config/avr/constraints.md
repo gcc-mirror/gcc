@@ -133,6 +133,11 @@
   (and (match_code "const_int")
        (match_test "ival == 7")))
 
+(define_constraint "Ca1"
+  "Constant 1-byte integer that allows AND by means of CLT + BLD."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 1, 1<<7)")))
+
 (define_constraint "Ca2"
   "Constant 2-byte integer that allows AND without clobber register."
   (and (match_code "const_int")
@@ -147,6 +152,11 @@
   "Constant 4-byte integer that allows AND without clobber register."
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<7) | (1<<8))")))
+
+(define_constraint "Co1"
+  "Constant 1-byte integer that allows AND by means of SET + BLD."
+  (and (match_code "const_int")
+       (match_test "avr_popcount_each_byte (op, 1, 1<<1)")))
 
 (define_constraint "Co2"
   "Constant 2-byte integer that allows OR without clobber register."
@@ -193,6 +203,11 @@
   (and (match_code "const_int")
        (match_test "!avr_has_nibble_0xf (op)")))
 
+(define_constraint "Cn8"
+  "A negative constant integer in the range @minus{}255 @dots{} @minus{}1."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -255, -1)")))
+
 ;; CONST_FIXED is no element of 'n' so cook our own.
 ;; "i" or "s" would match but because the insn uses iterators that cover
 ;; INT_MODE, "i" or "s" is not always possible.
@@ -229,6 +244,12 @@
   (ior (and (match_code "const_fixed")
             (match_test "-2 == INTVAL (avr_to_int_mode (op))"))
        (match_test "satisfies_constraint_Cm2 (op)")))
+
+(define_constraint "Yx2"
+  "Fixed-point or integer constant not in the range @minus{}2 @dots{} 2"
+  (and (ior (match_code "const_int")
+            (match_code "const_fixed"))
+       (match_test "!IN_RANGE (INTVAL (avr_to_int_mode (op)), -2, 2)")))
 
 ;; Similar to "IJ" used with ADIW/SBIW, but for CONST_FIXED.
 

@@ -85,7 +85,7 @@ namespace __gnu_test
     time_counter() : elapsed_begin(), elapsed_end(), tms_begin(), tms_end()
     { }
 
-    void 
+    void
     clear() throw()
     {
       elapsed_begin = clock_t();
@@ -96,18 +96,18 @@ namespace __gnu_test
 
     void
     start()
-    { 
+    {
       this->clear();
-      elapsed_begin = times(&tms_begin); 
+      elapsed_begin = times(&tms_begin);
       const clock_t err = clock_t(-1);
       if (elapsed_begin == err)
 	std::__throw_runtime_error("time_counter::start");
     }
-    
+
     void
     stop()
-    { 
-      elapsed_end = times(&tms_end); 
+    {
+      elapsed_end = times(&tms_end);
       const clock_t err = clock_t(-1);
       if (elapsed_end == err)
 	std::__throw_runtime_error("time_counter::stop");
@@ -137,28 +137,28 @@ namespace __gnu_test
   public:
     resource_counter(int i = RUSAGE_SELF) : who(i)
     { this->clear(); }
-    
-    void 
+
+    void
     clear() throw()
-    { 
-      memset(&rusage_begin, 0, sizeof(rusage_begin)); 
-      memset(&rusage_end, 0, sizeof(rusage_end)); 
-      memset(&allocation_begin, 0, sizeof(allocation_begin)); 
-      memset(&allocation_end, 0, sizeof(allocation_end)); 
+    {
+      memset(&rusage_begin, 0, sizeof(rusage_begin));
+      memset(&rusage_end, 0, sizeof(rusage_end));
+      memset(&allocation_begin, 0, sizeof(allocation_begin));
+      memset(&allocation_end, 0, sizeof(allocation_end));
     }
 
     void
     start()
-    { 
+    {
       if (getrusage(who, &rusage_begin) != 0 )
 	memset(&rusage_begin, 0, sizeof(rusage_begin));
       malloc(0); // Needed for some implementations.
       allocation_begin = mallinfo();
     }
-    
+
     void
     stop()
-    { 
+    {
       if (getrusage(who, &rusage_end) != 0 )
 	memset(&rusage_end, 0, sizeof(rusage_end));
       allocation_end = mallinfo();
@@ -168,12 +168,12 @@ namespace __gnu_test
     allocated_memory() const
     { return ((allocation_end.uordblks - allocation_begin.uordblks)
 	      + (allocation_end.hblkhd - allocation_begin.hblkhd)); }
-    
-    long 
+
+    long
     hard_page_fault() const
     { return rusage_end.ru_majflt - rusage_begin.ru_majflt; }
 
-    long 
+    long
     swapped() const
     { return rusage_end.ru_nswap - rusage_begin.ru_nswap; }
   };
@@ -200,7 +200,7 @@ namespace __gnu_test
   }
 
   void
-  report_performance(const std::string file, const std::string comment, 
+  report_performance(const std::string file, const std::string comment,
 		     const time_counter& t, const resource_counter& r)
   {
     const char space = ' ';
@@ -226,7 +226,7 @@ namespace __gnu_test
     out << std::setw(4) << t.system_time() << "s" << space;
     out << std::setw(8) << r.allocated_memory() << "mem" << space;
     out << std::setw(4) << r.hard_page_fault() << "pf" << space;
-    
+
     out << std::endl;
     out.close();
   }
@@ -273,7 +273,7 @@ template<typename Container, int Iter, bool Thread>
     {
       const char ws(' ');
       std::ostringstream title;
-	
+
       std::string titlename(filename);
       std::string::size_type n = titlename.find('.');
       if (n != string::npos)
@@ -289,7 +289,7 @@ template<typename Container, int Iter, bool Thread>
       title << Thread;
       title << '>';
 #endif
-      
+
       titlename += ".title";
       std::ofstream titlefile(titlename.c_str());
       if (!titlefile.good())
@@ -301,7 +301,7 @@ template<typename Container, int Iter, bool Thread>
     Container obj;
     int status;
     std::string type(abi::__cxa_demangle(typeid(obj).name(), 0, 0, &status));
-    
+
     // Extract fully-qualified typename.
     // Assumes "set" or "map" are uniquely determinate.
     string::iterator beg = type.begin();
@@ -313,7 +313,7 @@ template<typename Container, int Iter, bool Thread>
     string::size_type nend = type.find('<', n);
     if (nend != string::npos)
       end = type.begin() + nend;
-    
+
     string compressed_type;
     compressed_type += '"';
     compressed_type += string(beg, end);
@@ -334,7 +334,7 @@ template<typename Container, int Iter, bool Thread>
     std::ofstream file(filename, std::ios_base::app);
     if (!file.good())
       throw std::runtime_error("write_viz_data cannot open filename");
-    
+
     file << compressed_type;
     first_container = false;
   }
@@ -343,10 +343,10 @@ template<typename Container, int Iter, bool Thread>
 void
 write_viz_data(__gnu_test::time_counter& time, const char* filename)
 {
-  std::ofstream file(filename, std::ios_base::app);  
+  std::ofstream file(filename, std::ios_base::app);
   if (!file.good())
     throw std::runtime_error("write_viz_data cannot open filename");
-  
+
   // Print out score in appropriate column.
   const char tab('\t');
   int score = time.real_time();
@@ -367,12 +367,12 @@ write_viz_endl(const char* filename)
 template<typename TestType>
   struct value_type : public std::pair<const TestType, TestType>
   {
-    inline value_type& operator++() 
-    { 
+    inline value_type& operator++()
+    {
       ++this->second;
-      return *this; 
+      return *this;
     }
-    
+
     inline operator TestType() const { return this->second; }
   };
 
@@ -410,7 +410,7 @@ template<typename Container, int Iter, bool Thread>
 	  pthread_create(&t2, 0, &do_thread<Container, Iter>, 0);
 	  pthread_create(&t3, 0, &do_thread<Container, Iter>, 0);
 	  pthread_create(&t4, 0, &do_thread<Container, Iter>, 0);
-	  
+
 	  pthread_join(t1, 0);
 	  pthread_join(t2, 0);
 	  pthread_join(t3, 0);
@@ -445,7 +445,7 @@ template<bool Thread>
       operator()(Container)
       {
 	const int i = 20000;
-	test_container<Container, i, Thread>(_M_filename); 
+	test_container<Container, i, Thread>(_M_filename);
       }
 
   private:
@@ -461,7 +461,7 @@ sequence_find_container(std::string& type)
   std::string::size_type n2 = type.find("list");
   std::string::size_type n3 = type.find("deque");
   std::string::size_type n4 = type.find("string");
-  
+
   if (n1 != npos || n2 != npos || n3 != npos || n4 != npos)
     return std::min(std::min(n1, n2), std::min(n3, n4));
   else

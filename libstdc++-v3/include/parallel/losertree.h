@@ -222,7 +222,7 @@ namespace __gnu_parallel
       __delete_min_insert(_Tp __key, bool __sup)
       {
         using std::swap;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -324,7 +324,7 @@ namespace __gnu_parallel
       __delete_min_insert(_Tp __key, bool __sup)
       {
         using std::swap;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -451,7 +451,7 @@ namespace __gnu_parallel
 
       void __delete_min_insert(const _Tp& __key, bool __sup)
       {
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -533,7 +533,7 @@ namespace __gnu_parallel
 
       void __delete_min_insert(const _Tp& __key, bool __sup)
       {
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -620,7 +620,7 @@ namespace __gnu_parallel
       int
       __get_min_source()
       {
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -687,7 +687,7 @@ namespace __gnu_parallel
       {
 	_M_losers[0] = _M_losers[__init_winner(1)];
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top at the beginning
 	// (0 sequences!)
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -700,7 +700,7 @@ namespace __gnu_parallel
       __delete_min_insert(_Tp __key, bool)
       {
         using std::swap;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -755,7 +755,7 @@ namespace __gnu_parallel
 	    unsigned int __left = __init_winner(2 * __root);
 	    unsigned int __right = __init_winner(2 * __root + 1);
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	    // If __left one is sentinel then __right one must be, too.
 	    if (_M_losers[__left]._M_source == -1)
 	      _GLIBCXX_PARALLEL_ASSERT(_M_losers[__right]._M_source == -1);
@@ -782,7 +782,7 @@ namespace __gnu_parallel
       {
 	_M_losers[0] = _M_losers[__init_winner(1)];
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top at the beginning
 	// (0 sequences!)
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -795,7 +795,7 @@ namespace __gnu_parallel
       __delete_min_insert(_Tp __key, bool)
       {
         using std::swap;
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -865,7 +865,7 @@ namespace __gnu_parallel
       int
       __get_min_source()
       {
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -932,7 +932,7 @@ namespace __gnu_parallel
       {
 	_M_losers[0] = _M_losers[__init_winner(1)];
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top at the beginning
 	// (0 sequences!)
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -942,7 +942,7 @@ namespace __gnu_parallel
       void
       __delete_min_insert(const _Tp& __key, bool __sup)
       {
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif
@@ -998,7 +998,7 @@ namespace __gnu_parallel
 	    unsigned int __left = __init_winner(2 * __root);
 	    unsigned int __right = __init_winner(2 * __root + 1);
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	    // If __left one is sentinel then __right one must be, too.
 	    if (_M_losers[__left]._M_source == -1)
 	      _GLIBCXX_PARALLEL_ASSERT(_M_losers[__right]._M_source == -1);
@@ -1025,7 +1025,7 @@ namespace __gnu_parallel
       {
 	_M_losers[0] = _M_losers[__init_winner(1)];
 
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top at the beginning
 	// (0 sequences!)
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -1035,7 +1035,7 @@ namespace __gnu_parallel
       void
       __delete_min_insert(const _Tp& __key, bool __sup)
       {
-#if _GLIBCXX_ASSERTIONS
+#if _GLIBCXX_PARALLEL_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
 #endif

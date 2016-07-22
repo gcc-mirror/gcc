@@ -47,7 +47,7 @@ fun2 (void)
   /* { dg-error "'u' undeclared" "u undeclared" { target *-*-* } 46 } */
   /* { dg-error "'fun2' is not a variable" "fun2 not a variable" { target *-*-* } 46 } */
   /* { dg-error "'i' is not a pointer variable" "i not a pointer variable" { target *-*-* } 46 } */
-  /* { dg-error "'fp' appears more than once in map clauses" "fp more than once" { target *-*-* } 46 } */
+  /* { dg-error "'fp' appears more than once in data clauses" "fp more than once" { target *-*-* } 46 } */
   ;
 }
 
@@ -55,11 +55,11 @@ void
 fun3 (void)
 {
   float *fp;
-#pragma acc data deviceptr(fp,fp) /* { dg-error "'fp' appears more than once in map clauses" } */
+#pragma acc data deviceptr(fp,fp) /* { dg-error "'fp' appears more than once in data clauses" } */
   ;
-#pragma acc parallel deviceptr(fp) deviceptr(fp) /* { dg-error "'fp' appears more than once in map clauses" } */
+#pragma acc parallel deviceptr(fp) deviceptr(fp) /* { dg-error "'fp' appears more than once in data clauses" } */
   ;
-#pragma acc kernels copy(fp) deviceptr(fp) /* { dg-error "'fp' appears more than once in map clauses" } */
+#pragma acc kernels copy(fp) deviceptr(fp) /* { dg-error "'fp' appears more than once in data clauses" } */
   ;
 }
 

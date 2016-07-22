@@ -443,27 +443,29 @@ handle_pragma_java_exceptions (cpp_reader* /*dfile*/)
    IDENTIFIER_NODE) failed.  Returns the ERROR_MARK_NODE.  */
 
 tree
-unqualified_name_lookup_error (tree name)
+unqualified_name_lookup_error (tree name, location_t loc)
 {
+  if (loc == UNKNOWN_LOCATION)
+    loc = EXPR_LOC_OR_LOC (name, input_location);
+
   if (IDENTIFIER_OPNAME_P (name))
     {
       if (name != ansi_opname (ERROR_MARK))
-	error ("%qD not defined", name);
+	error_at (loc, "%qD not defined", name);
     }
   else
     {
       if (!objc_diagnose_private_ivar (name))
 	{
-	  error ("%qD was not declared in this scope", name);
-	  suggest_alternatives_for (location_of (name), name);
+	  error_at (loc, "%qD was not declared in this scope", name);
+	  suggest_alternatives_for (loc, name);
 	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
       if (local_bindings_p ())
 	{
 	  tree decl;
-	  decl = build_decl (input_location,
-			     VAR_DECL, name, error_mark_node);
+	  decl = build_decl (loc, VAR_DECL, name, error_mark_node);
 	  DECL_CONTEXT (decl) = current_function_decl;
 	  push_local_binding (name, decl, 0);
 	  /* Mark the variable as used so that we do not get warnings
@@ -475,13 +477,18 @@ unqualified_name_lookup_error (tree name)
   return error_mark_node;
 }
 
-/* Like unqualified_name_lookup_error, but NAME is an unqualified-id
-   used as a function.  Returns an appropriate expression for
-   NAME.  */
+/* Like unqualified_name_lookup_error, but NAME_EXPR is an unqualified-id
+   NAME, encapsulated with its location in a CP_EXPR, used as a function.
+   Returns an appropriate expression for NAME.  */
 
 tree
-unqualified_fn_lookup_error (tree name)
+unqualified_fn_lookup_error (cp_expr name_expr)
 {
+  tree name = name_expr.get_value ();
+  location_t loc = name_expr.get_location ();
+  if (loc == UNKNOWN_LOCATION)
+    loc = input_location;
+
   if (processing_template_decl)
     {
       /* In a template, it is invalid to write "f()" or "f(3)" if no
@@ -494,7 +501,7 @@ unqualified_fn_lookup_error (tree name)
 	 Note that we have the exact wording of the following message in
 	 the manual (trouble.texi, node "Name lookup"), so they need to
 	 be kept in synch.  */
-      permerror (input_location, "there are no arguments to %qD that depend on a template "
+      permerror (loc, "there are no arguments to %qD that depend on a template "
 		 "parameter, so a declaration of %qD must be available",
 		 name, name);
 
@@ -503,7 +510,7 @@ unqualified_fn_lookup_error (tree name)
 	  static bool hint;
 	  if (!hint)
 	    {
-	      inform (input_location, "(if you use %<-fpermissive%>, G++ will accept your "
+	      inform (loc, "(if you use %<-fpermissive%>, G++ will accept your "
 		     "code, but allowing the use of an undeclared name is "
 		     "deprecated)");
 	      hint = true;
@@ -512,7 +519,7 @@ unqualified_fn_lookup_error (tree name)
       return name;
     }
 
-  return unqualified_name_lookup_error (name);
+  return unqualified_name_lookup_error (name, loc);
 }
 
 /* Wrapper around build_lang_decl_loc(). Should gradually move to

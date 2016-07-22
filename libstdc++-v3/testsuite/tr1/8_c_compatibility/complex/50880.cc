@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <tr1/complex>
-#include <testsuite_hooks.h> 
+#include <testsuite_hooks.h>
 
 template<typename T>
   void test01_do()

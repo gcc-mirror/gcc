@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,9 +117,6 @@ package Exp_Ch6 is
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
 
-   procedure Initialize;
-   --  Initialize internal tables
-
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E denotes a function, generic
    --  function, or access-to-function type whose result must be built in
@@ -211,10 +208,5 @@ package Exp_Ch6 is
    --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
-
-   procedure Unnest_Subprograms;
-   --  Called to unnest subprograms. If we are in unnest subprogram mode, and
-   --  subprograms have been gathered in the Unest_Bodies table, this is the
-   --  call that causes them to be processed for unnesting.
 
 end Exp_Ch6;

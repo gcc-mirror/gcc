@@ -535,67 +535,67 @@ namespace __gnu_test
   {
     struct E
     {};
-    
+
     struct NTD1
     {
       ~NTD1() = default;
     };
-    
+
     struct NTD2
     {
       ~NTD2();
     };
-    
+
     struct NTD3
     {
       ~NTD3() throw();
     };
-    
+
     struct TD1
     {
       ~TD1() noexcept(false);
     };
-    
+
     struct TD2
     {
       ~TD2() throw(int);
     };
-    
+
     struct Aggr
     {
       int i;
       bool b;
       E e;
     };
-    
+
     struct Aggr2
     {
       int i;
       bool b;
       TD1 r;
     };
-    
+
     struct Del
     {
       ~Del() = delete;
     };
-    
+
     struct Del2
     {
       ~Del2() noexcept = delete;
     };
-    
+
     struct Del3
     {
       ~Del3() noexcept(false) = delete;
     };
-    
+
     struct Der : Aggr
     {};
-    
+
     struct Der2 : Aggr2
     {};
-    
+
     union U1
     {
       int i;
@@ -603,7 +603,7 @@ namespace __gnu_test
       void* p;
       TD1* pt;
     };
-    
+
     union Ut
     {
       int i;
@@ -611,7 +611,7 @@ namespace __gnu_test
       void* p;
       TD1 pt;
     };
-    
+
     enum class En { a, b, c, d };
     enum En2 { En2a, En2b, En2c, En2d };
 
@@ -622,7 +622,7 @@ namespace __gnu_test
     {
       virtual ~Abstract1() = 0;
     };
-    
+
     struct AbstractDelDtor
     {
       ~AbstractDelDtor() = delete;
@@ -633,7 +633,7 @@ namespace __gnu_test
     {
       virtual ~Abstract2() noexcept(false) = 0;
     };
-    
+
     struct Abstract3
     {
       ~Abstract3() noexcept(false);
@@ -679,7 +679,7 @@ namespace __gnu_test
       DelCopy(const DelCopy&) = delete;
     };
   }
-  
+
   namespace assign
   {
     struct Empty {};

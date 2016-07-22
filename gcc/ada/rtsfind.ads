@@ -725,6 +725,7 @@ package Rtsfind is
      RE_Address,                         -- System
      RE_Any_Priority,                    -- System
      RE_Bit_Order,                       -- System
+     RE_Default_Priority,                -- System
      RE_High_Order_First,                -- System
      RE_Interrupt_Priority,              -- System
      RE_Lib_Stop,                        -- System
@@ -1957,6 +1958,7 @@ package Rtsfind is
      RE_Address                          => System,
      RE_Any_Priority                     => System,
      RE_Bit_Order                        => System,
+     RE_Default_Priority                 => System,
      RE_High_Order_First                 => System,
      RE_Interrupt_Priority               => System,
      RE_Lib_Stop                         => System,

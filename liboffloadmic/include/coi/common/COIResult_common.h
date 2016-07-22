@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -59,67 +59,69 @@ typedef enum COIRESULT
     COI_SUCCESS = 0,                  ///< The function succeeded without error.
     COI_ERROR,                        ///< Unspecified error.
     COI_NOT_INITIALIZED,              ///< The function was called before the
-                                      ///< system was initialized.
+    ///< system was initialized.
     COI_ALREADY_INITIALIZED,          ///< The function was called after the
-                                      ///< system was initialized.
+    ///< system was initialized.
     COI_ALREADY_EXISTS,               ///< Cannot complete the request due to
-                                      ///< the existence of a similar object.
+    ///< the existence of a similar object.
     COI_DOES_NOT_EXIST,               ///< The specified object was not found.
     COI_INVALID_POINTER,              ///< One of the provided addresses was not
-                                      ///< valid.
+    ///< valid.
     COI_OUT_OF_RANGE,                 ///< One of the arguments contains a value
-                                      ///< that is invalid.
+    ///< that is invalid.
     COI_NOT_SUPPORTED,                ///< This function is not currently
-                                      ///< supported as used.
+    ///< supported as used.
     COI_TIME_OUT_REACHED,             ///< The specified time out caused the
-                                      ///< function to abort.
+    ///< function to abort.
     COI_MEMORY_OVERLAP,               ///< The source and destination range
-                                      ///< specified overlaps for the same
-                                      ///< buffer.
+    ///< specified overlaps for the same
+    ///< buffer.
     COI_ARGUMENT_MISMATCH,            ///< The specified arguments are not
-                                      ///< compatible.
+    ///< compatible.
     COI_SIZE_MISMATCH,                ///< The specified size does not match the
-                                      ///< expected size.
+    ///< expected size.
     COI_OUT_OF_MEMORY,                ///< The function was unable to allocate
-                                      ///< the required memory.
+    ///< the required memory.
     COI_INVALID_HANDLE,               ///< One of the provided handles was not
-                                      ///< valid.
+    ///< valid.
     COI_RETRY,                        ///< This function currently can't
-                                      ///< complete, but might be able to later.
+    ///< complete, but might be able to later.
     COI_RESOURCE_EXHAUSTED,           ///< The resource was not large enough.
     COI_ALREADY_LOCKED,               ///< The object was expected to be
-                                      ///< unlocked, but was locked.
+    ///< unlocked, but was locked.
     COI_NOT_LOCKED,                   ///< The object was expected to be locked,
-                                      ///< but was unlocked.
+    ///< but was unlocked.
     COI_MISSING_DEPENDENCY,           ///< One or more dependent components
-                                      ///< could not be found.
+    ///< could not be found.
     COI_UNDEFINED_SYMBOL,             ///< One or more symbols the component
-                                      ///< required was not defined in any
-                                      ///< library.
+    ///< required was not defined in any
+    ///< library.
     COI_PENDING,                      ///< Operation is not finished
     COI_BINARY_AND_HARDWARE_MISMATCH, ///< A specified binary will not run on
-                                      ///< the specified hardware.
+    ///< the specified hardware.
     COI_PROCESS_DIED,
     COI_INVALID_FILE,                 ///< The file is invalid for its intended
-                                      ///< usage in the function.
+    ///< usage in the function.
     COI_EVENT_CANCELED,               ///< Event wait on a user event that
-                                      ///< was unregistered or is being
-                                      ///< unregistered returns
-                                      ///< COI_EVENT_CANCELED.
+    ///< was unregistered or is being
+    ///< unregistered returns
+    ///< COI_EVENT_CANCELED.
     COI_VERSION_MISMATCH,             ///< The version of Intel(R) Coprocessor
-                                      ///< Offload Infrastructure on the host
-                                      ///< is not compatible with the version
-                                      ///< on the device.
+    ///< Offload Infrastructure on the host
+    ///< is not compatible with the version
+    ///< on the device.
     COI_BAD_PORT,                     ///< The port that the host is set to
-                                      ///< connect to is invalid.
+    ///< connect to is invalid.
     COI_AUTHENTICATION_FAILURE,       ///< The daemon was unable to authenticate
-                                      ///< the user that requested an engine.
-                                      ///< Only reported if daemon is set up for
-                                      ///< authorization. Is also reported in
-                                      ///< Windows if host can not find user.
+    ///< the user that requested an engine.
+    ///< Only reported if daemon is set up for
+    ///< authorization. Is also reported in
+    ///< Windows if host can not find user.
+    COI_COMM_NOT_INITIALIZED,         ///< The function was called before the
+    ///< comm was initialized.
+    COI_INCORRECT_FORMAT,             ///< Format of data is incorrect
     COI_NUM_RESULTS                   ///< Reserved, do not use.
-}
-COIRESULT;
+} COIRESULT;
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -133,9 +135,9 @@ COIRESULT;
 /// @return String version of the passed in COIRESULT code.
 ///
 COIACCESSAPI
-const char*
+const char *
 COIResultGetName(
-            COIRESULT       in_ResultCode);
+    COIRESULT       in_ResultCode);
 
 #ifdef __cplusplus
 } /* extern "C" */

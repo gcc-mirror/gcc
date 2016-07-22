@@ -6,5 +6,5 @@ void foo()
   {
     friend void bar();		// { dg-error "without prior declaration" }
   };
-  bar();			// { dg-error "not declared" }
+  bar();			// { dg-error "3:'bar' was not declared" }
 }

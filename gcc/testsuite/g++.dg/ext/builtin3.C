@@ -9,6 +9,6 @@ extern "C" int printf(char*, ...); // { dg-message "std::printf" }
 }
 
 void foo() {
-  printf("abc"); 		// { dg-error "not declared" }
+  printf("abc"); 		// { dg-error "3:'printf' was not declared" }
   // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 12 }
 }

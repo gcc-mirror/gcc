@@ -28,7 +28,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   using std::tr1::is_compound;
   using namespace __gnu_test;
-  
+
   VERIFY( (test_category<is_compound, void>(false)) );
   VERIFY( (test_category<is_compound, char>(false)) );
   VERIFY( (test_category<is_compound, signed char>(false)) );

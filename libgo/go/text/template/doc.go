@@ -74,8 +74,9 @@ data, defined in detail in the corresponding sections that follow.
 /*
 
 	{{pipeline}}
-		The default textual representation of the value of the pipeline
-		is copied to the output.
+		The default textual representation (the same as would be
+		printed by fmt.Print) of the value of the pipeline is copied
+		to the output.
 
 	{{if pipeline}} T1 {{end}}
 		If the value of the pipeline is empty, no output is generated;
@@ -220,7 +221,7 @@ value (argument) or a function or method call, possibly with multiple arguments:
 		Functions and function names are described below.
 
 A pipeline may be "chained" by separating a sequence of commands with pipeline
-characters '|'. In a chained pipeline, the result of the each command is
+characters '|'. In a chained pipeline, the result of each command is
 passed as the last argument of the following command. The output of the final
 command in the pipeline is the value of the pipeline.
 

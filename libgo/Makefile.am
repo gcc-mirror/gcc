@@ -111,6 +111,7 @@ endif
 toolexeclibgo_DATA = \
 	bufio.gox \
 	bytes.gox \
+	context.gox \
 	crypto.gox \
 	encoding.gox \
 	errors.gox \
@@ -315,6 +316,7 @@ toolexeclibgonethttp_DATA = \
 	net/http/cookiejar.gox \
 	net/http/fcgi.gox \
 	net/http/httptest.gox \
+	net/http/httptrace.gox \
 	net/http/httputil.gox \
 	net/http/pprof.gox
 
@@ -593,6 +595,9 @@ go_bytes_files = \
 go_bytes_c_files = \
 	go/bytes/indexbyte.c
 
+go_context_files = \
+	go/context/context.go
+
 go_crypto_files = \
 	go/crypto/crypto.go
 
@@ -776,12 +781,16 @@ if LIBGO_IS_LINUX
 go_net_interface_file = go/net/interface_linux.go
 else
 if LIBGO_IS_NETBSD
-go_net_interface_file = go/net/interface_netbsd.go
+go_net_interface_file = go/net/interface_bsdvar.go
 else
 if LIBGO_IS_DRAGONFLY
-go_net_interface_file = go/net/interface_dragonfly.go
+go_net_interface_file = go/net/interface_bsdvar.go
+else
+if LIBGO_IS_OPENBSD
+go_net_interface_file = go/net/interface_bsdvar.go
 else
 go_net_interface_file = go/net/interface_stub.go
+endif
 endif
 endif
 endif
@@ -845,6 +854,7 @@ go_net_common_files = \
 	go/net/nss.go \
 	go/net/parse.go \
 	go/net/pipe.go \
+	go/net/port.go \
 	go/net/fd_poll_runtime.go \
 	go/net/port_unix.go \
 	$(go_net_sendfile_file) \
@@ -991,6 +1001,20 @@ endif
 endif
 endif
 
+if LIBGO_IS_LINUX
+go_os_wait_file = go/os/wait_waitid.go
+else
+if LIBGO_IS_DARWIN
+go_os_wait_file = go/os/wait_waitid.go
+else
+if LIBGO_IS_FREEBSD
+go_os_wait_file = go/os/wait_wait6.go
+else
+go_os_wait_file = go/os/wait_unimp.go
+endif
+endif
+endif
+
 go_os_files = \
 	$(go_os_dir_file) \
 	go/os/dir.go \
@@ -1016,7 +1040,8 @@ go_os_files = \
 	$(go_os_sys_file) \
 	$(go_os_cloexec_file) \
 	go/os/types.go \
-	go/os/types_unix.go
+	go/os/types_unix.go \
+	$(go_os_wait_file)
 
 go_path_files = \
 	go/path/match.go \
@@ -1048,6 +1073,7 @@ go_runtime_files = \
 	go/runtime/error.go \
 	go/runtime/extern.go \
 	go/runtime/mem.go \
+	go/runtime/symtab.go \
 	version.go
 
 version.go: s-version; @true
@@ -1134,6 +1160,7 @@ go_testing_files = \
 	go/testing/benchmark.go \
 	go/testing/cover.go \
 	go/testing/example.go \
+	go/testing/match.go \
 	go/testing/testing.go
 
 go_time_files = \
@@ -1174,6 +1201,7 @@ endif
 
 go_archive_tar_files = \
 	go/archive/tar/common.go \
+	go/archive/tar/format.go \
 	go/archive/tar/reader.go \
 	go/archive/tar/stat_unix.go \
 	go/archive/tar/writer.go \
@@ -1192,8 +1220,9 @@ go_compress_bzip2_files = \
 	go/compress/bzip2/move_to_front.go
 
 go_compress_flate_files = \
-	go/compress/flate/copy.go \
 	go/compress/flate/deflate.go \
+	go/compress/flate/deflatefast.go \
+	go/compress/flate/dict_decoder.go \
 	go/compress/flate/huffman_bit_writer.go \
 	go/compress/flate/huffman_code.go \
 	go/compress/flate/inflate.go \
@@ -1225,7 +1254,8 @@ go_crypto_aes_files = \
 	go/crypto/aes/block.go \
 	go/crypto/aes/cipher.go \
 	go/crypto/aes/cipher_generic.go \
-	go/crypto/aes/const.go
+	go/crypto/aes/const.go \
+	go/crypto/aes/modes.go
 go_crypto_cipher_files = \
 	go/crypto/cipher/cbc.go \
 	go/crypto/cipher/cfb.go \
@@ -1257,7 +1287,11 @@ go_crypto_md5_files = \
 if LIBGO_IS_LINUX
 crypto_rand_file = go/crypto/rand/rand_linux.go
 else
+if LIBGO_IS_OPENBSD
+crypto_rand_file = go/crypto/rand/rand_openbsd.go
+else
 crypto_rand_file =
+endif
 endif
 
 go_crypto_rand_files = \
@@ -1280,10 +1314,12 @@ go_crypto_sha1_files = \
 	go/crypto/sha1/sha1block_generic.go
 go_crypto_sha256_files = \
 	go/crypto/sha256/sha256.go \
-	go/crypto/sha256/sha256block.go
+	go/crypto/sha256/sha256block.go \
+	go/crypto/sha256/sha256block_generic.go
 go_crypto_sha512_files = \
 	go/crypto/sha512/sha512.go \
-	go/crypto/sha512/sha512block.go
+	go/crypto/sha512/sha512block.go \
+	go/crypto/sha512/sha512block_generic.go
 go_crypto_subtle_files = \
 	go/crypto/subtle/constant_time.go
 go_crypto_tls_files = \
@@ -1375,7 +1411,10 @@ go_debug_macho_files = \
 	go/debug/macho/macho.go
 go_debug_pe_files = \
 	go/debug/pe/file.go \
-	go/debug/pe/pe.go
+	go/debug/pe/pe.go \
+	go/debug/pe/section.go \
+	go/debug/pe/string.go \
+	go/debug/pe/symbol.go
 go_debug_plan9obj_files = \
 	go/debug/plan9obj/file.go \
 	go/debug/plan9obj/plan9obj.go
@@ -1517,6 +1556,87 @@ go_go_internal_gccgoimporter_files = \
 	go/go/internal/gccgoimporter/importer.go \
 	go/go/internal/gccgoimporter/parser.go
 
+go_golang_org_x_net_http2_hpack_files = \
+	go/golang_org/x/net/http2/hpack/encode.go \
+	go/golang_org/x/net/http2/hpack/hpack.go \
+	go/golang_org/x/net/http2/hpack/huffman.go \
+	go/golang_org/x/net/http2/hpack/tables.go
+
+go_golang_org_x_net_lex_httplex_files = \
+	go/golang_org/x/net/lex/httplex/httplex.go
+
+if LIBGO_IS_BSD
+
+if LIBGO_IS_DARWIN
+x_net_route_files =
+	go/golang_org/x/net/route/interface_classic.go \
+	go/golang_org/x/net/route/interface_multicast.go \
+	go/golang_org/x/net/route/route_classic.go \
+	go/golang_org/x/net/route/sys_darwin.go \
+	go/golang_org/x/net/route/zsys_darwin.go
+endif
+if LIBGO_IS_DRAGONFLY
+x_net_route_files =
+	go/golang_org/x/net/route/interface_announce.go \
+	go/golang_org/x/net/route/interface_classic.go \
+	go/golang_org/x/net/route/interface_multicast.go \
+	go/golang_org/x/net/route/route_classic.go \
+	go/golang_org/x/net/route/sys_dragonfly.go \
+	go/golang_org/x/net/route/zsys_dragonfly.go
+endif
+if LIBGO_IS_FREEBSD
+if LIBGO_IS_386
+x_net_route_freebsd_file =
+	go/golang_org/x/net/route/zsys_freebsd_386.go
+endif
+if LIBGO_IS_X86_64
+x_net_route_freebsd_file =
+	go/golang_org/x/net/route/zsys_freebsd_amd64.go
+endif
+if LIBGO_IS_ARM
+x_net_route_freebsd_file =
+	go/golang_org/x/net/route/zsys_freebsd_arm.go
+endif
+x_net_route_files =
+	go/golang_org/x/net/route/interface_announce.go \
+	go/golang_org/x/net/route/interface_freebsd.go \
+	go/golang_org/x/net/route/interface_multicast.go \
+	go/golang_org/x/net/route/route_classic.go \
+	go/golang_org/x/net/route/sys_freebsd.go \
+	$(x_net_route_freebsd_file)
+endif
+if LIBGO_IS_NETBSD
+x_net_route_files =
+	go/golang_org/x/net/route/interface_announce.go \
+	go/golang_org/x/net/route/interface_classic.go \
+	go/golang_org/x/net/route/route_classic.go \
+	go/golang_org/x/net/route/sys_netbsd.go \
+	go/golang_org/x/net/route/zsys_netbsd.go
+endif
+if LIBGO_IS_OPENBSD
+x_net_route_files =
+	go/golang_org/x/net/route/route_openbsd.go \
+	go/golang_org/x/net/route/sys_openbsd.go \
+	go/golang_org/x/net/route/zsys_openbsd.go
+endif
+
+go_golang_org_x_net_route_files = \
+	go/golang_org/x/net/route/address.go \
+	go/golang_org/x/net/route/binary.go \
+	go/golang_org/x/net/route/interface.go \
+	go/golang_org/x/net/route/message.go \
+	go/golang_org/x/net/route/route.go \
+	go/golang_org/x/net/route/syscall.go \
+	go/golang_org/x/net/route/sys.go \
+	$(x_net_route_files)
+
+golang_org_x_net_route_lo = \
+	golang_org/x/net/route/route.lo
+golang_org_x_net_route_check = \
+	golang_org/x/net/route/check
+
+endif
+
 go_hash_adler32_files = \
 	go/hash/adler32/adler32.go
 go_hash_crc32_files = \
@@ -1576,11 +1696,8 @@ go_index_suffixarray_files = \
 	go/index/suffixarray/qsufsort.go \
 	go/index/suffixarray/suffixarray.go
 
-go_internal_golang_org_x_net_http2_hpack_files = \
-	go/internal/golang.org/x/net/http2/hpack/encode.go \
-	go/internal/golang.org/x/net/http2/hpack/hpack.go \
-	go/internal/golang.org/x/net/http2/hpack/huffman.go \
-	go/internal/golang.org/x/net/http2/hpack/tables.go
+go_internal_nettrace_files = \
+	go/internal/nettrace/nettrace.go
 go_internal_race_files = \
 	go/internal/race/doc.go \
 	go/internal/race/norace.go
@@ -1603,14 +1720,22 @@ else
 if LIBGO_IS_MIPS64
 internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_mips64x.go
 else
+if LIBGO_IS_S390X
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_s390x.go
+else
 internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_generic.go
 endif
 endif
 endif
 endif
 endif
+endif
+else
+if LIBGO_IS_OPENBSD
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getentropy_openbsd.go
 else
 internal_syscall_unix_getrandom_files =
+endif
 endif
 
 go_internal_syscall_unix_files = \
@@ -1621,6 +1746,7 @@ go_internal_testenv_files = \
 	go/internal/testenv/testenv.go
 go_internal_trace_files = \
 	go/internal/trace/goroutines.go \
+	go/internal/trace/order.go \
 	go/internal/trace/parser.go
 
 go_io_ioutil_files = \
@@ -1684,8 +1810,8 @@ go_net_http_files = \
 	go/net/http/fs.go \
 	go/net/http/h2_bundle.go \
 	go/net/http/header.go \
+	go/net/http/http.go \
 	go/net/http/jar.go \
-	go/net/http/lex.go \
 	go/net/http/method.go \
 	go/net/http/request.go \
 	go/net/http/response.go \
@@ -1718,10 +1844,13 @@ go_net_http_fcgi_files = \
 	go/net/http/fcgi/child.go \
 	go/net/http/fcgi/fcgi.go
 go_net_http_httptest_files = \
+	go/net/http/httptest/httptest.go \
 	go/net/http/httptest/recorder.go \
 	go/net/http/httptest/server.go
 go_net_http_pprof_files = \
 	go/net/http/pprof/pprof.go
+go_net_http_httptrace_files = \
+	go/net/http/httptrace/trace.go
 go_net_http_httputil_files = \
 	go/net/http/httputil/dump.go \
 	go/net/http/httputil/httputil.go \
@@ -1768,15 +1897,18 @@ go_os_signal_files = \
 
 if LIBGO_IS_SOLARIS
 os_user_decls_file = go/os/user/decls_solaris.go
+os_user_listgroups_file = go/os/user/listgroups_solaris.go
 else
 os_user_decls_file = go/os/user/decls_unix.go
+os_user_listgroups_file = go/os/user/listgroups_unix.go
 endif
 
 go_os_user_files = \
 	go/os/user/lookup.go \
 	go/os/user/lookup_unix.go \
 	go/os/user/user.go \
-	$(os_user_decls_file)
+	$(os_user_decls_file) \
+	$(os_user_listgroups_file)
 
 go_path_filepath_files = \
 	go/path/filepath/match.go \
@@ -2147,6 +2279,7 @@ libgo_go_objs = \
 	bufio.lo \
 	bytes.lo \
 	bytes/index.lo \
+	context.lo \
 	crypto.lo \
 	encoding.lo \
 	errors.lo \
@@ -2242,6 +2375,9 @@ libgo_go_objs = \
 	go/scanner.lo \
 	go/token.lo \
 	go/types.lo \
+	golang_org/x/net/http2/hpack.lo \
+	golang_org/x/net/lex/httplex.lo \
+	$(golang_org_x_net_route_lo) \
 	hash/adler32.lo \
 	hash/crc32.lo \
 	hash/crc64.lo \
@@ -2250,6 +2386,7 @@ libgo_go_objs = \
 	net/http/cookiejar.lo \
 	net/http/fcgi.lo \
 	net/http/httptest.lo \
+	net/http/httptrace.lo \
 	net/http/httputil.lo \
 	net/http/internal.lo \
 	net/http/pprof.lo \
@@ -2261,7 +2398,7 @@ libgo_go_objs = \
 	image/jpeg.lo \
 	image/png.lo \
 	index/suffixarray.lo \
-	internal/golang.org/x/net/http2/hpack.lo \
+	internal/nettrace.lo \
 	internal/race.lo \
 	internal/singleflight.lo \
 	internal/syscall/unix.lo \
@@ -2459,6 +2596,15 @@ bytes/index.lo: $(go_bytes_c_files)
 bytes/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: bytes/check
+
+@go_include@ context.lo.dep
+context.lo.dep: $(go_context_files)
+	$(BUILDDEPS)
+context.lo: $(go_context_files)
+	$(BUILDPACKAGE)
+context/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: context/check
 
 @go_include@ crypto.lo.dep
 crypto.lo.dep: $(go_crypto_files)
@@ -3275,6 +3421,35 @@ go/internal/gccgoimporter/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: go/internal/gccgoimporter/check
 
+@go_include@ golang_org/x/net/http2/hpack.lo.dep
+golang_org/x/net/http2/hpack.lo.dep: $(go_golang_org_x_net_http2_hpack_files)
+	$(BUILDDEPS)
+golang_org/x/net/http2/hpack.lo: $(go_golang_org_x_net_http2_hpack_files)
+	$(BUILDPACKAGE)
+golang_org/x/net/http2/hpack/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: golang_org/x/net/http2/hpack/check
+
+@go_include@ golang_org/x/net/lex/httplex.lo.dep
+golang_org/x/net/lex/httplex.lo.dep: $(go_golang_org_x_net_lex_httplex_files)
+	$(BUILDDEPS)
+golang_org/x/net/lex/httplex.lo: $(go_golang_org_x_net_lex_httplex_files)
+	$(BUILDPACKAGE)
+golang_org/x/net/lex/httplex/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: golang_org/x/net/lex/httplex/check
+
+if LIBGO_IS_BSD
+@go_include@ golang_org/x/net/route.lo.dep
+golang_org/x/net/route.lo.dep: $(go_golang_org_x_net_route_files)
+	$(BUILDDEPS)
+golang_org/x/net/route.lo: $(go_golang_org_x_net_route_files)
+	$(BUILDPACKAGE)
+golang_org/x/net/route/check: $(CHECK_DEPS)
+	@$(CHECK)
+endif
+.PHONY: golang_org/x/net/route/check
+
 @go_include@ hash/adler32.lo.dep
 hash/adler32.lo.dep: $(go_hash_adler32_files)
 	$(BUILDDEPS)
@@ -3383,14 +3558,14 @@ index/suffixarray/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: index/suffixarray/check
 
-@go_include@ internal/golang.org/x/net/http2/hpack.lo.dep
-internal/golang.org/x/net/http2/hpack.lo.dep: $(go_internal_golang_org_x_net_http2_hpack_files)
+@go_include@ internal/nettrace.lo.dep
+internal/nettrace.lo.dep: $(go_internal_nettrace_files)
 	$(BUILDDEPS)
-internal/golang.org/x/net/http2/hpack.lo: $(go_internal_golang_org_x_net_http2_hpack_files)
+internal/nettrace.lo: $(go_internal_nettrace_files)
 	$(BUILDPACKAGE)
-internal/golang.org/x/net/http2/hpack/check: $(CHECK_DEPS)
+internal/nettrace/check: $(CHECK_DEPS)
 	@$(CHECK)
-.PHONY: internal/golang.org/x/net/http2/hpack/check
+.PHONY: internal/nettrace/check
 
 @go_include@ internal/race.lo.dep
 internal/race.lo.dep: $(go_internal_race_files)
@@ -3592,6 +3767,15 @@ net/http/httptest.lo: $(go_net_http_httptest_files)
 net/http/httptest/check: $(check_deps)
 	@$(CHECK)
 .PHONY: net/http/httptest/check
+
+@go_include@ net/http/httptrace.lo.dep
+net/http/httptrace.lo.dep: $(go_net_http_httptrace_files)
+	$(BUILDDEPS)
+net/http/httptrace.lo: $(go_net_http_httptrace_files)
+	$(BUILDPACKAGE)
+net/http/httptrace/check: $(check_deps)
+	@$(CHECK)
+.PHONY: net/http/httptrace/check
 
 @go_include@ net/http/httputil.lo.dep
 net/http/httputil.lo.dep: $(go_net_http_httputil_files)
@@ -3833,6 +4017,8 @@ bufio.gox: bufio.lo
 	$(BUILDGOX)
 bytes.gox: bytes.lo
 	$(BUILDGOX)
+context.gox: context.lo
+	$(BUILDGOX)
 crypto.gox: crypto.lo
 	$(BUILDGOX)
 encoding.gox: encoding.lo
@@ -4027,6 +4213,17 @@ go/internal/gcimporter.gox: go/internal/gcimporter.lo
 go/internal/gccgoimporter.gox: go/internal/gccgoimporter.lo
 	$(BUILDGOX)
 
+golang_org/x/net/http2/hpack.gox: golang_org/x/net/http2/hpack.lo
+	$(BUILDGOX)
+
+golang_org/x/net/lex/httplex.gox: golang_org/x/net/lex/httplex.lo
+	$(BUILDGOX)
+
+if LIBGO_IS_BSD
+golang_org/x/net/route.gox: golang_org/x/net/route.lo
+	$(BUILDGOX)
+endif
+
 hash/adler32.gox: hash/adler32.lo
 	$(BUILDGOX)
 hash/crc32.gox: hash/crc32.lo
@@ -4055,7 +4252,7 @@ image/color/palette.gox: image/color/palette.lo
 index/suffixarray.gox: index/suffixarray.lo
 	$(BUILDGOX)
 
-internal/golang.org/x/net/http2/hpack.gox: internal/golang.org/x/net/http2/hpack.lo
+internal/nettrace.gox: internal/nettrace.lo
 	$(BUILDGOX)
 internal/race.gox: internal/race.lo
 	$(BUILDGOX)
@@ -4106,6 +4303,8 @@ net/http/cookiejar.gox: net/http/cookiejar.lo
 net/http/fcgi.gox: net/http/fcgi.lo
 	$(BUILDGOX)
 net/http/httptest.gox: net/http/httptest.lo
+	$(BUILDGOX)
+net/http/httptrace.gox: net/http/httptrace.lo
 	$(BUILDGOX)
 net/http/httputil.gox: net/http/httputil.lo
 	$(BUILDGOX)
@@ -4169,6 +4368,7 @@ unicode/utf8.gox: unicode/utf8.lo
 TEST_PACKAGES = \
 	bufio/check \
 	bytes/check \
+	context/check \
 	errors/check \
 	expvar/check \
 	flag/check \
@@ -4252,6 +4452,9 @@ TEST_PACKAGES = \
 	go/scanner/check \
 	go/token/check \
 	go/types/check \
+	golang_org/x/net/http2/hpack/check \
+	golang_org/x/net/lex/httplex/check \
+	$(golang_org_x_net_route_check) \
 	hash/adler32/check \
 	hash/crc32/check \
 	hash/crc64/check \
@@ -4261,7 +4464,6 @@ TEST_PACKAGES = \
 	image/jpeg/check \
 	image/png/check \
 	index/suffixarray/check \
-	internal/golang.org/x/net/http2/hpack/check \
 	internal/singleflight/check \
 	internal/trace/check \
 	io/ioutil/check \
@@ -4276,6 +4478,7 @@ TEST_PACKAGES = \
 	net/http/cookiejar/check \
 	net/http/fcgi/check \
 	net/http/httptest/check \
+	net/http/httptrace/check \
 	net/http/httputil/check \
 	net/http/internal/check \
 	net/internal/socktest/check \

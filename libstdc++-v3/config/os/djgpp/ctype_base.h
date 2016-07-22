@@ -25,7 +25,7 @@
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct ctype_base
   {
     typedef unsigned short 	mask;
-    
+
     // Non-standard typedefs.
     typedef unsigned char *     __to_type;
 

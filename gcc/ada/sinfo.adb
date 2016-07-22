@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -691,7 +691,7 @@ package body Sinfo is
    end Corresponding_Integer_Value;
 
    function Corresponding_Spec
-      (N : Node_Id) return Node_Id is
+      (N : Node_Id) return Entity_Id is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Expression_Function
@@ -1752,6 +1752,14 @@ package body Sinfo is
       return Uint3 (N);
    end Intval;
 
+   function Is_Abort_Block
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      return Flag4 (N);
+   end Is_Abort_Block;
+
    function Is_Accessibility_Actual
      (N : Node_Id) return Boolean is
    begin
@@ -1981,6 +1989,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body);
       return Flag7 (N);
    end Is_Protected_Subprogram_Body;
+
+   function Is_Qualified_Universal_Literal
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Qualified_Expression);
+      return Flag4 (N);
+   end Is_Qualified_Universal_Literal;
 
    function Is_Static_Coextension
       (N : Node_Id) return Boolean is
@@ -2400,6 +2416,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Not_In);
       return Flag17 (N);
    end No_Minimize_Eliminate;
+
+   function No_Side_Effect_Removal
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call);
+      return Flag1 (N);
+   end No_Side_Effect_Removal;
 
    function No_Truncation
       (N : Node_Id) return Boolean is
@@ -3947,7 +3971,7 @@ package body Sinfo is
    end Set_Corresponding_Integer_Value;
 
    procedure Set_Corresponding_Spec
-      (N : Node_Id; Val : Node_Id) is
+      (N : Node_Id; Val : Entity_Id) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Expression_Function
@@ -4999,6 +5023,14 @@ package body Sinfo is
       Set_Uint3 (N, Val);
    end Set_Intval;
 
+   procedure Set_Is_Abort_Block
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      Set_Flag4 (N, Val);
+   end Set_Is_Abort_Block;
+
    procedure Set_Is_Accessibility_Actual
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5228,6 +5260,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body);
       Set_Flag7 (N, Val);
    end Set_Is_Protected_Subprogram_Body;
+
+   procedure Set_Is_Qualified_Universal_Literal
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Qualified_Expression);
+      Set_Flag4 (N, Val);
+   end Set_Is_Qualified_Universal_Literal;
 
    procedure Set_Is_Static_Coextension
       (N : Node_Id; Val : Boolean := True) is
@@ -5647,6 +5687,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Not_In);
       Set_Flag17 (N, Val);
    end Set_No_Minimize_Eliminate;
+
+   procedure Set_No_Side_Effect_Removal
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call);
+      Set_Flag1 (N, Val);
+   end Set_No_Side_Effect_Removal;
 
    procedure Set_No_Truncation
       (N : Node_Id; Val : Boolean := True) is

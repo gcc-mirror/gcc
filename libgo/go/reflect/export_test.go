@@ -1,4 +1,4 @@
-// Copyright 2012 The Go Authors.  All rights reserved.
+// Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -41,3 +41,45 @@ func MapBucketOf(x, y Type) Type {
 func CachedBucketOf(m Type) Type {
 	return nil
 }
+
+type EmbedWithUnexpMeth struct{}
+
+func (EmbedWithUnexpMeth) f() {}
+
+type pinUnexpMeth interface {
+	f()
+}
+
+var pinUnexpMethI = pinUnexpMeth(EmbedWithUnexpMeth{})
+
+/*
+func FirstMethodNameBytes(t Type) *byte {
+	_ = pinUnexpMethI
+
+	ut := t.uncommon()
+	if ut == nil {
+		panic("type has no methods")
+	}
+	m := ut.methods()[0]
+	mname := t.(*rtype).nameOff(m.name)
+	if *mname.data(0)&(1<<2) == 0 {
+		panic("method name does not have pkgPath *string")
+	}
+	return mname.bytes
+}
+*/
+
+type OtherPkgFields struct {
+	OtherExported   int
+	otherUnexported int
+}
+
+func IsExported(t Type) bool {
+	return t.PkgPath() == ""
+}
+
+/*
+func ResolveReflectName(s string) {
+	resolveReflectName(newName(s, "", "", false))
+}
+*/

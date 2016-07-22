@@ -159,7 +159,7 @@
 #define REGNO_R13 13
 #define REGNO_R14 14
 #define REGNO_R15 15
-#define REGNO_SET_PC 16 /* aka %rip */
+#define REGNO_RPC 16 /* aka %rip */
 #define REGNO_EFLAGS 49
 #define REGNO_FS 54
 
@@ -401,8 +401,6 @@ TCR("ret")
 
 #define COMMON_CFI(REG) \
   ".cfi_offset " S(REGNO_##REG) "," S(REG_##REG)
-#define PC_CFI(REG) \
-  ".cfi_offset " S(REGNO_##REG) "," S(REG_##REG)
 
 #define CFI_COMMON_REGS \
 CR("# CFI for common registers\n") \
@@ -422,10 +420,8 @@ TCR(COMMON_CFI(RBX)) \
 TCR(COMMON_CFI(RDX)) \
 TCR(COMMON_CFI(RCX)) \
 TCR(COMMON_CFI(RAX)) \
-TCR(COMMON_CFI(EFLAGS)) \
-TCR(COMMON_CFI(SET_PC)) \
-TCR(COMMON_CFI(FS)) \
-TCR(".cfi_return_column " S(REGNO_SET_PC))
+TCR(COMMON_CFI(RPC)) \
+TCR(".cfi_return_column " S(REGNO_RPC))
 
 /* Trampoline body block
    ---------------------  */
@@ -451,10 +447,17 @@ Not_implemented;
 /* Symbol definition block
    -----------------------  */
 
+#ifdef __x86_64__
+#define FUNC_ALIGN TCR(".p2align 4,,15")
+#else
+#define FUNC_ALIGN
+#endif
+
 #define SIGTRAMP_START(SYM) \
 CR("# " S(SYM) " cfi trampoline") \
 TCR(".type " S(SYM) ", "FUNCTION) \
 CR("") \
+FUNC_ALIGN \
 CR(S(SYM) ":") \
 TCR(".cfi_startproc") \
 TCR(".cfi_signal_frame")
@@ -474,4 +477,3 @@ TCR(".size " S(SYM) ", .-" S(SYM))
 
 asm (".text\n"
      TCR(".align 2"));
-

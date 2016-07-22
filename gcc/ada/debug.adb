@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,11 +105,11 @@ package body Debug is
    --  d.l  Use Ada 95 semantics for limited function returns
    --  d.m  For -gnatl, print full source only for main unit
    --  d.n  Print source file names
-   --  d.o
+   --  d.o  Conservative elaboration order for indirect calls
    --  d.p
    --  d.q
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
-   --  d.s  Disable expansion of slice move, use memmove
+   --  d.s
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
    --  d.v  Enable OK_To_Reorder_Components in variant records
@@ -125,7 +125,7 @@ package body Debug is
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
-   --  d.H
+   --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
    --  d.K
@@ -139,7 +139,7 @@ package body Debug is
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
    --  d.U  Ignore indirect calls for static elaboration
-   --  d.V
+   --  d.V  Do not verify validity of SCIL files (CodePeer mode)
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Old treatment of indexing aspects
    --  d.Y
@@ -158,7 +158,7 @@ package body Debug is
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
    --  d.3  Output debugging information from Exp_Unst
-   --  d.4
+   --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6
    --  d.7
@@ -556,13 +556,11 @@ package body Debug is
    --       compiler has a bug -- these are the files that need to be included
    --       in a bug report.
 
+   --  d.o  Conservative elaboration order for indirect calls. This causes
+   --       P'Access to be treated as a call in more cases.
+
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.
-
-   --  d.s  Normally the compiler expands slice moves into loops if overlap
-   --       might be possible. This debug flag inhibits that expansion, and
-   --       the back end is expected to use an appropriate routine to handle
-   --       overlap, based on Forward_OK and Backwards_OK flags.
 
    --  d.t  The compiler has been modified (a fairly extensive modification)
    --       to generate static dispatch tables for library level tagged types.
@@ -585,11 +583,10 @@ package body Debug is
    --       code generation step.
 
    --  d.z  Restore previous front-end support for Inline_Always. In default
-   --       mode, for targets that use the GCC back end (i.e. currently all
-   --       targets except AAMP and GNATprove), Inline_Always is handled by the
-   --       back end. Use of this switch restores the previous handling of
-   --       Inline_Always by the front end on such targets. For the targets
-   --       that do not use the GCC back end, this switch is ignored.
+   --       mode, for targets that use the GCC back end, Inline_Always is
+   --       handled by the back end. Use of this switch restores the previous
+   --       handling of Inline_Always by the front end on such targets. For the
+   --       targets that do not use the GCC back end, this switch is ignored.
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so
@@ -635,6 +632,9 @@ package body Debug is
    --       when doing the analysis for the static elaboration model. This is
    --       now fixed, but we provide this debug flag to revert to the previous
    --       situation of ignoring such calls to aid in transition.
+
+   --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
+   --       the call to gigi in ASIS_Mode.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
@@ -688,6 +688,12 @@ package body Debug is
    --       Proc. This can cause elaboration cycles at bind time. This flag
    --       reverts to the behavior of earlier compilers, which ignored
    --       indirect calls.
+
+   --  d.V  Do not verify the validity of SCIL files (CodePeer mode). When
+   --       generating SCIL files for CodePeer, by default we verify that the
+   --       SCIL is well formed before saving it on disk. This switch can be
+   --       used to disable this checking, either to improve speed or to shut
+   --       down a false positive detected during the verification.
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
@@ -761,6 +767,9 @@ package body Debug is
 
    --  d.3  Output debugging information from Exp_Unst, including the name of
    --       any unreachable subprograms that get deleted.
+
+   --  d.4  By default in case of an error during C generation, the .c or .h
+   --       file is deleted. This flag keeps the C file.
 
    --  d.5  By default a subprogram imported generates a subprogram profile.
    --       This debug flag disables this generation when generating C code,

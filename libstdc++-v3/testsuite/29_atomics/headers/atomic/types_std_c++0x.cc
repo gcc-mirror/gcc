@@ -72,4 +72,14 @@ void test01()
   using std::atomic_ptrdiff_t;
   using std::atomic_intmax_t;
   using std::atomic_uintmax_t;
+
+  // DR 2441
+  using std::atomic_int8_t;
+  using std::atomic_uint8_t;
+  using std::atomic_int16_t;
+  using std::atomic_uint16_t;
+  using std::atomic_int32_t;
+  using std::atomic_uint32_t;
+  using std::atomic_int64_t;
+  using std::atomic_uint64_t;
 }

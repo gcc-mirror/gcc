@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,18 @@ with Uintp;    use Uintp;
 
 package body Exp_Unst is
 
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id);
+   --  Subp is a library-level subprogram which has nested subprograms, and
+   --  Subp_Body is the corresponding N_Subprogram_Body node. This procedure
+   --  declares the AREC types and objects, adds assignments to the AREC record
+   --  as required, defines the xxxPTR types for uplevel referenced objects,
+   --  adds the ARECP parameter to all nested subprograms which need it, and
+   --  modifies all uplevel references appropriately.
+
    -----------
    -- Calls --
    -----------
@@ -79,6 +91,10 @@ package body Exp_Unst is
    --  Records each call within the outer subprogram and all nested subprograms
    --  that are to other subprograms nested within the outer subprogram. These
    --  are the calls that may need an additional parameter.
+
+   procedure Append_Unique_Call (Call : Call_Entry);
+   --  Append a call entry to the Calls table. A check is made to see if the
+   --  table already contains this entry and if so it has no effect.
 
    -----------
    -- Urefs --
@@ -119,6 +135,52 @@ package body Exp_Unst is
      Table_Increment      => 200,
      Table_Name           => "Unnest_Urefs");
 
+   ------------------------
+   -- Append_Unique_Call --
+   ------------------------
+
+   procedure Append_Unique_Call (Call : Call_Entry) is
+   begin
+      for J in Calls.First .. Calls.Last loop
+         if Calls.Table (J) = Call then
+            return;
+         end if;
+      end loop;
+
+      Calls.Append (Call);
+   end Append_Unique_Call;
+
+   ---------------
+   -- Get_Level --
+   ---------------
+
+   function Get_Level (Subp : Entity_Id; Sub : Entity_Id) return Nat is
+      Lev : Nat;
+      S   : Entity_Id;
+
+   begin
+      Lev := 1;
+      S   := Sub;
+      loop
+         if S = Subp then
+            return Lev;
+         else
+            Lev := Lev + 1;
+            S   := Enclosing_Subprogram (S);
+         end if;
+      end loop;
+   end Get_Level;
+
+   ----------------
+   -- Subp_Index --
+   ----------------
+
+   function Subp_Index (Sub : Entity_Id) return SI_Type is
+   begin
+      pragma Assert (Is_Subprogram (Sub));
+      return SI_Type (UI_To_Int (Subps_Index (Sub)));
+   end Subp_Index;
+
    -----------------------
    -- Unnest_Subprogram --
    -----------------------
@@ -132,16 +194,8 @@ package body Exp_Unst is
       --  This function returns the index of the enclosing subprogram which
       --  will have a Lev value one less than this.
 
-      function Get_Level (Sub : Entity_Id) return Nat;
-      --  Sub is either Subp itself, or a subprogram nested within Subp. This
-      --  function returns the level of nesting (Subp = 1, subprograms that
-      --  are immediately nested within Subp = 2, etc).
-
       function Img_Pos (N : Pos) return String;
       --  Return image of N without leading blank
-
-      function Subp_Index (Sub : Entity_Id) return SI_Type;
-      --  Given the entity for a subprogram, return corresponding Subps index
 
       function Upref_Name
         (Ent   : Entity_Id;
@@ -161,7 +215,7 @@ package body Exp_Unst is
 
       function AREC_Name (J : Pos; S : String) return Name_Id is
       begin
-         return Name_Find_Str ("AREC" & Img_Pos (J) & S);
+         return Name_Find ("AREC" & Img_Pos (J) & S);
       end AREC_Name;
 
       --------------------
@@ -176,26 +230,6 @@ package body Exp_Unst is
          pragma Assert (Subps.Table (Ret).Lev = STJ.Lev - 1);
          return Ret;
       end Enclosing_Subp;
-
-      ---------------
-      -- Get_Level --
-      ---------------
-
-      function Get_Level (Sub : Entity_Id) return Nat is
-         Lev : Nat;
-         S   : Entity_Id;
-      begin
-         Lev := 1;
-         S   := Sub;
-         loop
-            if S = Subp then
-               return Lev;
-            else
-               S := Enclosing_Subprogram (S);
-               Lev := Lev + 1;
-            end if;
-         end loop;
-      end Get_Level;
 
       -------------
       -- Img_Pos --
@@ -219,16 +253,6 @@ package body Exp_Unst is
       end Img_Pos;
 
       ----------------
-      -- Subp_Index --
-      ----------------
-
-      function Subp_Index (Sub : Entity_Id) return SI_Type is
-      begin
-         pragma Assert (Is_Subprogram (Sub));
-         return SI_Type (UI_To_Int (Subps_Index (Sub)));
-      end Subp_Index;
-
-      ----------------
       -- Upref_Name --
       ----------------
 
@@ -243,9 +267,10 @@ package body Exp_Unst is
          loop
             if No (C) then
                return Chars (Ent);
+
             elsif Chars (Defining_Identifier (C)) = Chars (Ent) then
-               return Name_Find_Str
-                        (Get_Name_String (Chars (Ent)) & Img_Pos (Index));
+               return
+                 Name_Find (Get_Name_String (Chars (Ent)) & Img_Pos (Index));
             else
                Next (C);
             end if;
@@ -435,6 +460,15 @@ package body Exp_Unst is
                      end loop;
                   end;
 
+               --  For private type, examine whether full view is static
+
+               elsif Is_Private_Type (T) and then Present (Full_View (T)) then
+                  Check_Static_Type (Full_View (T), DT);
+
+                  if Is_Static_Type (Full_View (T)) then
+                     Set_Is_Static_Type (T);
+                  end if;
+
                --  For now, ignore other types
 
                else
@@ -473,7 +507,7 @@ package body Exp_Unst is
 
                elsif Ekind (Callee) = E_Function
                  and then Rewritten_For_C (Callee)
-                 and then Next_Entity (Callee) = Caller
+                 and then Corresponding_Procedure (Callee) = Caller
                then
                   return;
                end if;
@@ -519,7 +553,7 @@ package body Exp_Unst is
                      --  Both caller and callee must be subprograms
 
                      if Is_Subprogram (Ent) then
-                        Calls.Append ((N, Current_Subprogram, Ent));
+                        Append_Unique_Call ((N, Current_Subprogram, Ent));
                      end if;
                   end if;
                end if;
@@ -541,7 +575,7 @@ package body Exp_Unst is
                --  Make new entry in subprogram table if not already made
 
                declare
-                  L : constant Nat := Get_Level (Ent);
+                  L : constant Nat := Get_Level (Subp, Ent);
                begin
                   Subps.Append
                     ((Ent           => Ent,
@@ -589,7 +623,7 @@ package body Exp_Unst is
                end;
 
                --  Now at this level, return skipping the subprogram body
-               --  descendents, since we already took care of them!
+               --  descendants, since we already took care of them!
 
                return Skip;
 
@@ -602,6 +636,10 @@ package body Exp_Unst is
 
                if not Is_Library_Level_Entity (Ent)
                  and then Scope_Within_Or_Same (Scope (Ent), Subp)
+
+                  --  Skip entities defined in inlined subprograms
+
+                 and then Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
                  and then
 
                    --  Constants and variables are interesting
@@ -1681,5 +1719,57 @@ package body Exp_Unst is
 
       return;
    end Unnest_Subprogram;
+
+   ------------------------
+   -- Unnest_Subprograms --
+   ------------------------
+
+   procedure Unnest_Subprograms (N : Node_Id) is
+      function Search_Subprograms (N : Node_Id) return Traverse_Result;
+      --  Tree visitor that search for outer level procedures with nested
+      --  subprograms and invokes Unnest_Subprogram()
+
+      ------------------------
+      -- Search_Subprograms --
+      ------------------------
+
+      function Search_Subprograms (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind_In (N, N_Subprogram_Body, N_Subprogram_Body_Stub) then
+            declare
+               Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
+
+            begin
+               --  We are only interested in subprograms (not generic
+               --  subprograms), that have nested subprograms.
+
+               if Is_Subprogram (Spec_Id)
+                 and then Has_Nested_Subprogram (Spec_Id)
+                 and then Is_Library_Level_Entity (Spec_Id)
+               then
+                  Unnest_Subprogram (Spec_Id, N);
+               end if;
+            end;
+         end if;
+
+         return OK;
+      end Search_Subprograms;
+
+      ---------------
+      -- Do_Search --
+      ---------------
+
+      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
+      --  Subtree visitor instantiation
+
+   --  Start of processing for Unnest_Subprograms
+
+   begin
+      if not Opt.Unnest_Subprogram_Mode then
+         return;
+      end if;
+
+      Do_Search (N);
+   end Unnest_Subprograms;
 
 end Exp_Unst;

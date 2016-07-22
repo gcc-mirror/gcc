@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2015, Free Software Foundation, Inc.           --
+--           Copyright (C) 2015-2016, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,10 +36,6 @@ package body Ada.Containers.Helpers is
       ------------
 
       procedure Adjust (Control : in out Reference_Control_Type) is
-         pragma Warnings (Off);
-         --  GNAT warns here if checks are turned off, but assertions on
-         pragma Assert (T_Check); -- not called if check suppressed
-         pragma Warnings (On);
       begin
          if Control.T_Counts /= null then
             Lock (Control.T_Counts.all);
@@ -62,9 +58,6 @@ package body Ada.Containers.Helpers is
       --------------
 
       procedure Finalize (Control : in out Reference_Control_Type) is
-         pragma Warnings (Off);
-         pragma Assert (T_Check); -- not called if check suppressed
-         pragma Warnings (On);
       begin
          if Control.T_Counts /= null then
             Unlock (Control.T_Counts.all);

@@ -233,11 +233,11 @@ report_inline_failed_reason (struct cgraph_edge *e)
       if ((e->inline_failed == CIF_TARGET_OPTION_MISMATCH
 	   || e->inline_failed == CIF_OPTIMIZATION_MISMATCH)
 	  && e->caller->lto_file_data
-	  && e->callee->function_symbol ()->lto_file_data)
+	  && e->callee->ultimate_alias_target ()->lto_file_data)
 	{
 	  fprintf (dump_file, "  LTO objects: %s, %s\n",
 		   e->caller->lto_file_data->file_name,
-		   e->callee->function_symbol ()->lto_file_data->file_name);
+		   e->callee->ultimate_alias_target ()->lto_file_data->file_name);
 	}
       if (e->inline_failed == CIF_TARGET_OPTION_MISMATCH)
 	cl_target_option_print_diff
@@ -313,9 +313,9 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 
   bool inlinable = true;
   enum availability avail;
-  cgraph_node *callee = e->callee->ultimate_alias_target (&avail);
   cgraph_node *caller = e->caller->global.inlined_to
 		        ? e->caller->global.inlined_to : e->caller;
+  cgraph_node *callee = e->callee->ultimate_alias_target (&avail, caller);
   tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
   tree callee_tree
     = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
@@ -335,12 +335,10 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_OVERWRITABLE;
       inlinable = false;
     }
+  /* All edges with call_stmt_cannot_inline_p should have inline_failed
+     initialized to one of FINAL_ERROR reasons.  */
   else if (e->call_stmt_cannot_inline_p)
-    {
-      if (e->inline_failed != CIF_FUNCTION_NOT_OPTIMIZED)
-        e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      inlinable = false;
-    }
+    gcc_unreachable ();
   /* Don't inline if the functions have different EH personalities.  */
   else if (DECL_FUNCTION_PERSONALITY (caller->decl)
 	   && DECL_FUNCTION_PERSONALITY (callee->decl)
@@ -396,6 +394,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 	     (DECL_DISREGARD_INLINE_LIMITS (callee->decl)
 	      && lookup_attribute ("always_inline",
 				   DECL_ATTRIBUTES (callee->decl)));
+      inline_summary *caller_info = inline_summaries->get (caller);
+      inline_summary *callee_info = inline_summaries->get (callee);
 
      /* Until GCC 4.9 we did not check the semantics alterning flags
 	bellow and inline across optimization boundry.
@@ -417,16 +417,22 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		   == !opt_for_fn (callee->decl, optimize) || !always_inline))
 	      || check_match (flag_wrapv)
 	      || check_match (flag_trapv)
-	      /* Strictly speaking only when the callee uses FP math.  */
-	      || check_maybe_up (flag_rounding_math)
-	      || check_maybe_up (flag_trapping_math)
-	      || check_maybe_down (flag_unsafe_math_optimizations)
-	      || check_maybe_down (flag_finite_math_only)
-	      || check_maybe_up (flag_signaling_nans)
-	      || check_maybe_down (flag_cx_limited_range)
-	      || check_maybe_up (flag_signed_zeros)
-	      || check_maybe_down (flag_associative_math)
-	      || check_maybe_down (flag_reciprocal_math)
+	      /* When caller or callee does FP math, be sure FP codegen flags
+		 compatible.  */
+	      || ((caller_info->fp_expressions && callee_info->fp_expressions)
+		  && (check_maybe_up (flag_rounding_math)
+		      || check_maybe_up (flag_trapping_math)
+		      || check_maybe_down (flag_unsafe_math_optimizations)
+		      || check_maybe_down (flag_finite_math_only)
+		      || check_maybe_up (flag_signaling_nans)
+		      || check_maybe_down (flag_cx_limited_range)
+		      || check_maybe_up (flag_signed_zeros)
+		      || check_maybe_down (flag_associative_math)
+		      || check_maybe_down (flag_reciprocal_math)
+		      || check_maybe_down (flag_fp_int_builtin_inexact)
+		      /* Strictly speaking only when the callee contains function
+			 calls that may end up setting errno.  */
+		      || check_maybe_up (flag_errno_math)))
 	      /* We do not want to make code compiled with exceptions to be
 		 brought into a non-EH function unless we know that the callee
 		 does not throw.
@@ -435,9 +441,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      || (check_maybe_up (flag_exceptions)
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
-	      /* Strictly speaking only when the callee contains function
-		 calls that may end up setting errno.  */
-	      || check_maybe_up (flag_errno_math)
 	      /* When devirtualization is diabled for callee, it is not safe
 		 to inline it as we possibly mangled the type info.
 		 Allow early inlining of always inlines.  */
@@ -525,6 +528,8 @@ can_early_inline_edge_p (struct cgraph_edge *e)
   /* Early inliner might get called at WPA stage when IPA pass adds new
      function.  In this case we can not really do any of early inlining
      because function bodies are missing.  */
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    return false;
   if (!gimple_has_body_p (callee->decl))
     {
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
@@ -1159,7 +1164,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  fprintf (dump_file,
 		   "      %f: guessed profile. frequency %f, count %" PRId64
 		   " caller count %" PRId64
-		   " time w/o inlining %f, time w inlining %f"
+		   " time w/o inlining %f, time w/ inlining %f"
 		   " overall growth %i (current) %i (original)"
 		   " %i (compensated)\n",
 		   badness.to_double (),
@@ -1382,7 +1387,7 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	   growth chould have just increased and consequentely badness metric
            don't need updating.  */
 	if (e->inline_failed
-	    && (callee = e->callee->ultimate_alias_target (&avail))
+	    && (callee = e->callee->ultimate_alias_target (&avail, e->caller))
 	    && inline_summaries->get (callee)->inlinable
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
@@ -1425,7 +1430,7 @@ lookup_recursive_calls (struct cgraph_node *node, struct cgraph_node *where,
 
   for (e = where->callees; e; e = e->next_callee)
     if (e->callee == node
-	|| (e->callee->ultimate_alias_target (&avail) == node
+	|| (e->callee->ultimate_alias_target (&avail, e->caller) == node
 	    && avail > AVAIL_INTERPOSABLE))
       {
 	/* When profile feedback is available, prioritize by expected number
@@ -1624,7 +1629,8 @@ bool
 speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
 {
   enum availability avail;
-  struct cgraph_node *target = e->callee->ultimate_alias_target (&avail);
+  struct cgraph_node *target = e->callee->ultimate_alias_target (&avail,
+								 e->caller);
   struct cgraph_edge *direct, *indirect;
   struct ipa_ref *ref;
 
@@ -2022,7 +2028,7 @@ inline_small_functions (void)
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
-	  reset_edge_caches (edge->callee->function_symbol ());
+	  reset_edge_caches (edge->callee);
 
 	  update_callee_keys (&edge_heap, where, updated_nodes);
 	}
@@ -2736,7 +2742,10 @@ early_inliner (function *fun)
 	      if (edge->callee->decl
 		  && !gimple_check_call_matching_types (
 		      edge->call_stmt, edge->callee->decl, false))
-		edge->call_stmt_cannot_inline_p = true;
+		{
+ 		  edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+		  edge->call_stmt_cannot_inline_p = true;
+		}
 	    }
 	  if (iterations < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS) - 1)
 	    inline_update_overall_summary (node);

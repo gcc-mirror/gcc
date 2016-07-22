@@ -55,7 +55,7 @@ _GLIBCXX_LOC_ID(_ZNSt8messagesIwE2idE);
 #endif
 
 
-namespace 
+namespace
 {
   const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
     + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
@@ -125,7 +125,7 @@ namespace
   typedef char fake_money_get_c[sizeof(money_get<char>)]
   __attribute__ ((aligned(__alignof__(money_get<char>))));
   fake_money_get_c money_get_c;
-  
+
   typedef char fake_money_put_c[sizeof(money_put<char>)]
   __attribute__ ((aligned(__alignof__(money_put<char>))));
   fake_money_put_c money_put_c;
@@ -179,7 +179,7 @@ namespace
   typedef char fake_money_get_w[sizeof(money_get<wchar_t>)]
   __attribute__ ((aligned(__alignof__(money_get<wchar_t>))));
   fake_money_get_w money_get_w;
-  
+
   typedef char fake_money_put_w[sizeof(money_put<wchar_t>)]
   __attribute__ ((aligned(__alignof__(money_put<wchar_t>))));
   fake_money_put_w money_put_w;
@@ -246,7 +246,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   locale::locale() throw() : _M_impl(0)
-  { 
+  {
     _S_initialize();
 
     // Checked locking to optimize the common case where _S_global
@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   const locale&
   locale::classic()
-  { 
+  {
     _S_initialize();
     return *(new (&c_locale) locale(_S_classic));
   }
@@ -305,10 +305,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // 2 references.
     // One reference for _S_classic, one for _S_global
     _S_classic = new (&c_locale_impl) _Impl(2);
-    _S_global = _S_classic; 	    
+    _S_global = _S_classic;
   }
 
-  void  
+  void
   locale::_S_initialize()
   {
 #ifdef __GTHREADS
@@ -323,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const locale::id* const
   locale::_Impl::_S_id_ctype[] =
   {
-    &std::ctype<char>::id, 
+    &std::ctype<char>::id,
     &codecvt<char, char, mbstate_t>::id,
 #ifdef _GLIBCXX_USE_WCHAR_T
     &std::ctype<wchar_t>::id,
@@ -339,9 +339,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const locale::id* const
   locale::_Impl::_S_id_numeric[] =
   {
-    &num_get<char>::id,  
-    &num_put<char>::id,  
-    &numpunct<char>::id, 
+    &num_get<char>::id,
+    &num_put<char>::id,
+    &numpunct<char>::id,
 #ifdef _GLIBCXX_USE_WCHAR_T
     &num_get<wchar_t>::id,
     &num_put<wchar_t>::id,
@@ -349,7 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     0
   };
-  
+
   const locale::id* const
   locale::_Impl::_S_id_collate[] =
   {
@@ -363,24 +363,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const locale::id* const
   locale::_Impl::_S_id_time[] =
   {
-    &__timepunct<char>::id, 
-    &time_get<char>::id, 
-    &time_put<char>::id, 
+    &__timepunct<char>::id,
+    &time_get<char>::id,
+    &time_put<char>::id,
 #ifdef _GLIBCXX_USE_WCHAR_T
-    &__timepunct<wchar_t>::id, 
+    &__timepunct<wchar_t>::id,
     &time_get<wchar_t>::id,
     &time_put<wchar_t>::id,
 #endif
     0
   };
-  
+
   const locale::id* const
   locale::_Impl::_S_id_monetary[] =
   {
-    &money_get<char>::id,        
-    &money_put<char>::id,        
-    &moneypunct<char, false>::id, 
-    &moneypunct<char, true >::id, 
+    &money_get<char>::id,
+    &money_put<char>::id,
+    &moneypunct<char, false>::id,
+    &moneypunct<char, true >::id,
 #ifdef _GLIBCXX_USE_WCHAR_T
     &money_get<wchar_t>::id,
     &money_put<wchar_t>::id,
@@ -393,7 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const locale::id* const
   locale::_Impl::_S_id_messages[] =
   {
-    &std::messages<char>::id, 
+    &std::messages<char>::id,
 #ifdef _GLIBCXX_USE_WCHAR_T
     &std::messages<wchar_t>::id,
 #endif
@@ -457,9 +457,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Construct "C" _Impl.
   locale::_Impl::
-  _Impl(size_t __refs) throw() 
+  _Impl(size_t __refs) throw()
   : _M_refcount(__refs), _M_facets(0), _M_facets_size(num_facets),
-  _M_caches(0), _M_names(0)    
+  _M_caches(0), _M_names(0)
   {
     _M_facets = new (&facet_vec) const facet*[_M_facets_size]();
     _M_caches = new (&cache_vec) const facet*[_M_facets_size]();
@@ -503,7 +503,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     _M_init_facet(new (&time_get_c) time_get<char>(1));
     _M_init_facet(new (&time_put_c) time_put<char>(1));
-    _M_init_facet(new (&messages_c) std::messages<char>(1));	
+    _M_init_facet(new (&messages_c) std::messages<char>(1));
 
 #ifdef  _GLIBCXX_USE_WCHAR_T
     _M_init_facet(new (&ctype_w) std::ctype<wchar_t>(1));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,6 @@ with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -749,25 +748,11 @@ package body Exp_Ch5 is
          --  then the outcome depends on the capabilities of the back end.
 
          if not Loop_Required then
+            --  Assume the back end can deal with all cases of overlap by
+            --  falling back to memmove if it cannot use a more efficient
+            --  approach.
 
-            --  The GCC back end can deal with all cases of overlap by falling
-            --  back to memmove if it cannot use a more efficient approach.
-
-            if not AAMP_On_Target then
-               return;
-
-            --  Assume other back ends can handle it if Forwards_OK is set
-
-            elsif Forwards_OK (N) then
-               return;
-
-            --  If Forwards_OK is not set, the back end will need something
-            --  like memmove to handle the move. For now, this processing is
-            --  activated using the .s debug flag (-gnatd.s).
-
-            elsif Debug_Flag_Dot_S then
-               return;
-            end if;
+            return;
          end if;
 
          --  At this stage we have to generate an explicit loop, and we have
@@ -1693,13 +1678,10 @@ package body Exp_Ch5 is
 
             --  The attribute Priority applied to protected objects has been
             --  previously expanded into a call to the Get_Ceiling run-time
-            --  subprogram.
+            --  subprogram. In restricted profiles this is not available.
 
-            if Nkind (Ent) = N_Function_Call
-              and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
-                          or else
-                        Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling))
-            then
+            if Is_Expanded_Priority_Attribute (Ent) then
+
                --  Look for the enclosing concurrent type
 
                Conctyp := Current_Scope;
@@ -1949,10 +1931,12 @@ package body Exp_Ch5 is
       --  have a full view with discriminants, but those are nameable only
       --  in the underlying type, so convert the Rhs to it before potential
       --  checking. Convert Lhs as well, otherwise the actual subtype might
-      --  not be constructible.
+      --  not be constructible. If the discriminants have defaults the type
+      --  is unconstrained and there is nothing to check.
 
       elsif Has_Unknown_Discriminants (Base_Type (Etype (Lhs)))
         and then Has_Discriminants (Typ)
+        and then not Has_Defaulted_Discriminants (Typ)
       then
          Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
          Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
@@ -2031,10 +2015,13 @@ package body Exp_Ch5 is
       end if;
 
       --  Ada 2012 (AI05-148): Update current accessibility level if Rhs is a
-      --  stand-alone obj of an anonymous access type.
+      --  stand-alone obj of an anonymous access type. Do not install the check
+      --  when the Lhs denotes a container cursor and the Next function employs
+      --  an access type, because this can never result in a dangling pointer.
 
       if Is_Access_Type (Typ)
         and then Is_Entity_Name (Lhs)
+        and then Ekind (Entity (Lhs)) /= E_Loop_Parameter
         and then Present (Effective_Extra_Accessibility (Entity (Lhs)))
       then
          declare
@@ -2238,21 +2225,51 @@ package body Exp_Ch5 is
                     and then Is_Tagged_Type (Typ)
                     and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
                   then
-                     Append_To (L,
-                       Make_Raise_Constraint_Error (Loc,
-                         Condition =>
-                           Make_Op_Ne (Loc,
-                             Left_Opnd =>
-                               Make_Selected_Component (Loc,
-                                 Prefix        => Duplicate_Subexpr (Lhs),
-                                 Selector_Name =>
-                                   Make_Identifier (Loc, Name_uTag)),
-                             Right_Opnd =>
-                               Make_Selected_Component (Loc,
-                                 Prefix        => Duplicate_Subexpr (Rhs),
-                                 Selector_Name =>
-                                   Make_Identifier (Loc, Name_uTag))),
-                         Reason => CE_Tag_Check_Failed));
+                     declare
+                        Lhs_Tag : Node_Id;
+                        Rhs_Tag : Node_Id;
+
+                     begin
+                        if not Is_Interface (Typ) then
+                           Lhs_Tag :=
+                             Make_Selected_Component (Loc,
+                               Prefix        => Duplicate_Subexpr (Lhs),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uTag));
+                           Rhs_Tag :=
+                             Make_Selected_Component (Loc,
+                               Prefix        => Duplicate_Subexpr (Rhs),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uTag));
+                        else
+                           --  Displace the pointer to the base of the objects
+                           --  applying 'Address, which is later expanded into
+                           --  a call to RE_Base_Address.
+
+                           Lhs_Tag :=
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix         => Duplicate_Subexpr (Lhs),
+                                     Attribute_Name => Name_Address)));
+                           Rhs_Tag :=
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix         => Duplicate_Subexpr (Rhs),
+                                     Attribute_Name => Name_Address)));
+                        end if;
+
+                        Append_To (L,
+                          Make_Raise_Constraint_Error (Loc,
+                            Condition =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  => Lhs_Tag,
+                                Right_Opnd => Rhs_Tag),
+                            Reason    => CE_Tag_Check_Failed));
+                     end;
                   end if;
 
                   declare
@@ -2354,6 +2371,8 @@ package body Exp_Ch5 is
                   AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
 
                begin
+                  Set_Is_Abort_Block (N);
+
                   Set_Scope (Blk, Current_Scope);
                   Set_Etype (Blk, Standard_Void_Type);
                   Set_Identifier (N, New_Occurrence_Of (Blk, Sloc (N)));
@@ -2556,10 +2575,11 @@ package body Exp_Ch5 is
       --  does not obey the predicate, the value is marked non-static, and
       --  there can be no corresponding static alternative. In that case we
       --  replace the case statement with an exception, regardless of whether
-      --  assertions are enabled or not.
+      --  assertions are enabled or not, unless predicates are ignored.
 
       if Compile_Time_Known_Value (Expr)
         and then Has_Predicates (Etype (Expr))
+        and then not Predicates_Ignored (Etype (Expr))
         and then not Is_OK_Static_Expression (Expr)
       then
          Rewrite (N,
@@ -2642,7 +2662,9 @@ package body Exp_Ch5 is
          --  comes from source -- no need to validity check internally
          --  generated case statements).
 
-         if Validity_Check_Default then
+         if Validity_Check_Default
+           and then not Predicates_Ignored (Etype (Expr))
+         then
             Ensure_Valid (Expr);
          end if;
 
@@ -2771,9 +2793,33 @@ package body Exp_Ch5 is
 
          if not Others_Present then
             Others_Node := Make_Others_Choice (Sloc (Last_Alt));
-            Set_Others_Discrete_Choices
-              (Others_Node, Discrete_Choices (Last_Alt));
-            Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
+
+            --  If Predicates_Ignored is true the value does not satisfy the
+            --  predicate, and there is no Others choice, Constraint_Error
+            --  must be raised (4.5.7 (21/3)).
+
+            if Predicates_Ignored (Etype (Expr)) then
+               declare
+                  Except  : constant Node_Id :=
+                              Make_Raise_Constraint_Error (Loc,
+                                Reason => CE_Invalid_Data);
+                  New_Alt : constant Node_Id :=
+                              Make_Case_Statement_Alternative (Loc,
+                                Discrete_Choices => New_List (
+                                  Make_Others_Choice (Loc)),
+                                Statements       => New_List (Except));
+
+               begin
+                  Append (New_Alt, Alternatives (N));
+                  Analyze_And_Resolve (Except);
+               end;
+
+            else
+               Set_Others_Discrete_Choices
+                 (Others_Node, Discrete_Choices (Last_Alt));
+               Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
+            end if;
+
          end if;
 
          --  Deal with possible declarations of controlled objects, and also
@@ -3606,24 +3652,30 @@ package body Exp_Ch5 is
       Container     : Node_Id;
       Container_Typ : Entity_Id)
    is
-      Id  : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Loc : constant Source_Ptr := Sloc (N);
+      Id       : constant Entity_Id   := Defining_Identifier (I_Spec);
+      Elem_Typ : constant Entity_Id   := Etype (Id);
+      Id_Kind  : constant Entity_Kind := Ekind (Id);
+      Loc      : constant Source_Ptr  := Sloc (N);
+      Stats    : constant List_Id     := Statements (N);
 
-      I_Kind   : constant Entity_Kind := Ekind (Id);
-      Cursor   : Entity_Id;
-      Iterator : Entity_Id;
-      New_Loop : Node_Id;
-      Stats    : constant List_Id := Statements (N);
+      Cursor    : Entity_Id;
+      Decl      : Node_Id;
+      Iter_Type : Entity_Id;
+      Iterator  : Entity_Id;
+      Name_Init : Name_Id;
+      Name_Step : Name_Id;
+      New_Loop  : Node_Id;
 
-      Element_Type : constant Entity_Id := Etype (Id);
-      Iter_Type    : Entity_Id;
-      Pack         : Entity_Id;
-      Decl         : Node_Id;
-      Name_Init    : Name_Id;
-      Name_Step    : Name_Id;
-
-      Fast_Element_Access_Op, Fast_Step_Op : Entity_Id := Empty;
+      Fast_Element_Access_Op : Entity_Id := Empty;
+      Fast_Step_Op           : Entity_Id := Empty;
       --  Only for optimized version of "for ... of"
+
+      Iter_Pack : Entity_Id;
+      --  The package in which the iterator interface is instantiated. This is
+      --  typically an instance within the container package.
+
+      Pack : Entity_Id;
+      --  The package in which the container type is declared
 
    begin
       --  Determine the advancement and initialization steps for the cursor.
@@ -3658,8 +3710,6 @@ package body Exp_Ch5 is
       else
          Pack := Scope (Container_Typ);
       end if;
-
-      Iter_Type := Etype (Name (I_Spec));
 
       if Of_Present (I_Spec) then
          Handle_Of : declare
@@ -3735,6 +3785,8 @@ package body Exp_Ch5 is
                end if;
             end Get_Default_Iterator;
 
+            --  Local variables
+
             Default_Iter : Entity_Id;
             Ent          : Entity_Id;
 
@@ -3760,6 +3812,12 @@ package body Exp_Ch5 is
             --  are Cursor and Has_Element.
 
             Iter_Type := Etype (Default_Iter);
+
+            --  The iterator type, which is a class-wide type, may itself be
+            --  derived locally, so the desired instantiation is the scope of
+            --  the root type of the iterator type.
+
+            Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
 
             --  Find declarations needed for "for ... of" optimization
 
@@ -3799,28 +3857,35 @@ package body Exp_Ch5 is
                          New_List (New_Copy_Tree (Container_Arg)))));
             end if;
 
-            --  The iterator type, which is a class-wide type, may itself be
-            --  derived locally, so the desired instantiation is the scope of
-            --  the root type of the iterator type. Currently, Pack is the
-            --  container instance; this overwrites it with the iterator
-            --  package.
-
-            Pack := Scope (Root_Type (Etype (Iter_Type)));
-
             --  Rewrite domain of iteration as a call to the default iterator
-            --  for the container type.
+            --  for the container type. The formal may be an access parameter
+            --  in which case we must build a reference to the container.
 
-            Rewrite (Name (I_Spec),
-              Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (Default_Iter, Loc),
-                Parameter_Associations => New_List (Container_Arg)));
+            declare
+               Arg : Node_Id;
+            begin
+               if Is_Access_Type (Etype (First_Entity (Default_Iter))) then
+                  Arg :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => Container_Arg,
+                      Attribute_Name => Name_Unrestricted_Access);
+               else
+                  Arg := Container_Arg;
+               end if;
+
+               Rewrite (Name (I_Spec),
+                 Make_Function_Call (Loc,
+                   Name                   =>
+                     New_Occurrence_Of (Default_Iter, Loc),
+                   Parameter_Associations => New_List (Arg)));
+            end;
+
             Analyze_And_Resolve (Name (I_Spec));
 
             --  Find cursor type in proper iterator package, which is an
             --  instantiation of Iterator_Interfaces.
 
-            Ent := First_Entity (Pack);
+            Ent := First_Entity (Iter_Pack);
             while Present (Ent) loop
                if Chars (Ent) = Name_Cursor then
                   Set_Etype (Cursor, Etype (Ent));
@@ -3835,7 +3900,7 @@ package body Exp_Ch5 is
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark        =>
-                     New_Occurrence_Of (Element_Type, Loc),
+                     New_Occurrence_Of (Elem_Typ, Loc),
                    Name                =>
                      Make_Explicit_Dereference (Loc,
                        Prefix =>
@@ -3850,7 +3915,7 @@ package body Exp_Ch5 is
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark        =>
-                     New_Occurrence_Of (Element_Type, Loc),
+                     New_Occurrence_Of (Elem_Typ, Loc),
                    Name                =>
                      Make_Indexed_Component (Loc,
                        Prefix      => Relocate_Node (Container_Arg),
@@ -3858,8 +3923,8 @@ package body Exp_Ch5 is
                          New_List (New_Occurrence_Of (Cursor, Loc))));
             end if;
 
-            --  The defining identifier in the iterator is user-visible
-            --  and must be visible in the debugger.
+            --  The defining identifier in the iterator is user-visible and
+            --  must be visible in the debugger.
 
             Set_Debug_Info_Needed (Id);
 
@@ -3879,18 +3944,25 @@ package body Exp_Ch5 is
             Prepend_To (Stats, Decl);
          end Handle_Of;
 
-      --  X in Iterate (S) : type of iterator is type of explicitly
-      --  given Iterate function, and the loop variable is the cursor.
-      --  It will be assigned in the loop and must be a variable.
+      --  X in Iterate (S) : type of iterator is type of explicitly given
+      --  Iterate function, and the loop variable is the cursor. It will be
+      --  assigned in the loop and must be a variable.
 
       else
+         Iter_Type := Etype (Name (I_Spec));
+
+         --  The iterator type, which is a class-wide type, may itself be
+         --  derived locally, so the desired instantiation is the scope of
+         --  the root type of the iterator type, as in the "of" case.
+
+         Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
          Cursor := Id;
       end if;
 
       Iterator := Make_Temporary (Loc, 'I');
 
-      --  For both iterator forms, add a call to the step operation to
-      --  advance the cursor. Generate:
+      --  For both iterator forms, add a call to the step operation to advance
+      --  the cursor. Generate:
 
       --     Cursor := Iterator.Next (Cursor);
 
@@ -3900,8 +3972,9 @@ package body Exp_Ch5 is
 
       if Present (Fast_Element_Access_Op) and then Present (Fast_Step_Op) then
          declare
-            Step_Call : Node_Id;
             Curs_Name : constant Node_Id := New_Occurrence_Of (Cursor, Loc);
+            Step_Call : Node_Id;
+
          begin
             Step_Call :=
               Make_Procedure_Call_Statement (Loc,
@@ -3949,16 +4022,16 @@ package body Exp_Ch5 is
               Condition =>
                 Make_Function_Call (Loc,
                   Name                   =>
-                    New_Occurrence_Of (
-                     Next_Entity (First_Entity (Pack)), Loc),
-                  Parameter_Associations =>
-                    New_List (New_Occurrence_Of (Cursor, Loc)))),
+                    New_Occurrence_Of
+                      (Next_Entity (First_Entity (Iter_Pack)), Loc),
+                  Parameter_Associations => New_List (
+                    New_Occurrence_Of (Cursor, Loc)))),
 
           Statements => Stats,
           End_Label  => Empty);
 
-      --  If present, preserve identifier of loop, which can be used in
-      --  an exit statement in the body.
+      --  If present, preserve identifier of loop, which can be used in an exit
+      --  statement in the body.
 
       if Present (Identifier (N)) then
          Set_Identifier (New_Loop, Relocate_Node (Identifier (N)));
@@ -3972,22 +4045,23 @@ package body Exp_Ch5 is
       Insert_Action (N,
         Make_Object_Renaming_Declaration (Loc,
           Defining_Identifier => Iterator,
-          Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
-          Name          => Relocate_Node (Name (I_Spec))));
+          Subtype_Mark        => New_Occurrence_Of (Iter_Type, Loc),
+          Name                => Relocate_Node (Name (I_Spec))));
 
       --  Create declaration for cursor
 
       declare
          Cursor_Decl : constant Node_Id :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Cursor,
-             Object_Definition   =>
-               New_Occurrence_Of (Etype (Cursor), Loc),
-             Expression          =>
-               Make_Selected_Component (Loc,
-                 Prefix        => New_Occurrence_Of (Iterator, Loc),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Init)));
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier => Cursor,
+                           Object_Definition   =>
+                             New_Occurrence_Of (Etype (Cursor), Loc),
+                           Expression          =>
+                             Make_Selected_Component (Loc,
+                               Prefix        =>
+                                 New_Occurrence_Of (Iterator, Loc),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_Init)));
 
       begin
          --  The cursor is only modified in expanded code, so it appears
@@ -4000,7 +4074,7 @@ package body Exp_Ch5 is
          Set_Assignment_OK (Cursor_Decl);
 
          Insert_Action (N, Cursor_Decl);
-         Set_Ekind (Cursor, I_Kind);
+         Set_Ekind (Cursor, Id_Kind);
       end;
 
       --  If the range of iteration is given by a function call that returns

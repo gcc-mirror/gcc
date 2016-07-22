@@ -550,27 +550,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       shared_lock() noexcept : _M_pm(nullptr), _M_owns(false) { }
 
       explicit
-      shared_lock(mutex_type& __m) : _M_pm(&__m), _M_owns(true)
+      shared_lock(mutex_type& __m)
+      : _M_pm(std::__addressof(__m)), _M_owns(true)
       { __m.lock_shared(); }
 
       shared_lock(mutex_type& __m, defer_lock_t) noexcept
-      : _M_pm(&__m), _M_owns(false) { }
+      : _M_pm(std::__addressof(__m)), _M_owns(false) { }
 
       shared_lock(mutex_type& __m, try_to_lock_t)
-      : _M_pm(&__m), _M_owns(__m.try_lock_shared()) { }
+      : _M_pm(std::__addressof(__m)), _M_owns(__m.try_lock_shared()) { }
 
       shared_lock(mutex_type& __m, adopt_lock_t)
-      : _M_pm(&__m), _M_owns(true) { }
+      : _M_pm(std::__addressof(__m)), _M_owns(true) { }
 
       template<typename _Clock, typename _Duration>
 	shared_lock(mutex_type& __m,
 		    const chrono::time_point<_Clock, _Duration>& __abs_time)
-      : _M_pm(&__m), _M_owns(__m.try_lock_shared_until(__abs_time)) { }
+      : _M_pm(std::__addressof(__m)),
+	_M_owns(__m.try_lock_shared_until(__abs_time)) { }
 
       template<typename _Rep, typename _Period>
 	shared_lock(mutex_type& __m,
 		    const chrono::duration<_Rep, _Period>& __rel_time)
-      : _M_pm(&__m), _M_owns(__m.try_lock_shared_for(__rel_time)) { }
+      : _M_pm(std::__addressof(__m)),
+	_M_owns(__m.try_lock_shared_for(__rel_time)) { }
 
       ~shared_lock()
       {

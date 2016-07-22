@@ -1325,7 +1325,7 @@ class Typed_identifier
  public:
   Typed_identifier(const std::string& name, Type* type,
 		   Location location)
-    : name_(name), type_(type), location_(location)
+    : name_(name), type_(type), location_(location), note_(NULL)
   { }
 
   // Get the name.
@@ -1352,6 +1352,16 @@ class Typed_identifier
     this->type_ = type;
   }
 
+  // Get the escape note.
+  std::string*
+  note() const
+  { return this->note_; }
+
+  // Set the escape note.
+  void
+  set_note(const std::string& note)
+  { this->note_ = new std::string(note); }
+
  private:
   // Identifier name.
   std::string name_;
@@ -1359,6 +1369,9 @@ class Typed_identifier
   Type* type_;
   // The location where the name was seen.
   Location location_;
+  // Escape note for this typed identifier.  Used when importing and exporting
+  // functions.
+  std::string* note_;
 };
 
 // A list of Typed_identifiers.
@@ -1422,6 +1435,10 @@ class Typed_identifier_list
   const Typed_identifier&
   back() const
   { return this->entries_.back(); }
+
+  Typed_identifier&
+  at(size_t i)
+  { return this->entries_.at(i); }
 
   const Typed_identifier&
   at(size_t i) const
@@ -1779,7 +1796,7 @@ class Function_type : public Type
     : Type(TYPE_FUNCTION),
       receiver_(receiver), parameters_(parameters), results_(results),
       location_(location), is_varargs_(false), is_builtin_(false),
-      has_escape_info_(false), fnbtype_(NULL), parameter_escape_states_(NULL)
+      fnbtype_(NULL), is_tagged_(false)
   { }
 
   // Get the receiver.
@@ -1787,15 +1804,10 @@ class Function_type : public Type
   receiver() const
   { return this->receiver_; }
 
-  // Get the escape state of the receiver.
-  const Node::Escapement_lattice&
-  receiver_escape_state() const
-  { return this->receiver_escape_state_; }
-
-  // Set the escape state of the receiver.
+  // Add an escape note for the receiver.
   void
-  set_receiver_escape_state(const Node::Escapement_lattice& e)
-  { this->receiver_escape_state_ = e; }
+  add_receiver_note(int encoding)
+  { this->receiver_->set_note(Escape_note::make_tag(encoding)); }
 
   // Get the return names and types.
   const Typed_identifier_list*
@@ -1807,15 +1819,20 @@ class Function_type : public Type
   parameters() const
   { return this->parameters_; }
 
-  // Get the escape states associated with each parameter.
-  const Node::Escape_states*
-  parameter_escape_states() const
-  { return this->parameter_escape_states_; }
-
-  // Set the escape states of the parameters.
+  // Add an escape note for the ith parameter.
   void
-  set_parameter_escape_states(Node::Escape_states* states)
-  { this->parameter_escape_states_ = states; }
+  add_parameter_note(int index, int encoding)
+  { this->parameters_->at(index).set_note(Escape_note::make_tag(encoding)); }
+
+  // Whether this function has been tagged during escape analysis.
+  bool
+  is_tagged() const
+  { return this->is_tagged_; }
+
+  // Mark this function as tagged after analyzing its escape.
+  void
+  set_is_tagged()
+  { this->is_tagged_ = true; }
 
   // Whether this is a varargs function.
   bool
@@ -1826,11 +1843,6 @@ class Function_type : public Type
   bool
   is_builtin() const
   { return this->is_builtin_; }
-
-  // Whether this contains escape information.
-  bool
-  has_escape_info() const
-  { return this->has_escape_info_; }
 
   // The location where this type was defined.
   Location
@@ -1861,11 +1873,6 @@ class Function_type : public Type
   void
   set_is_builtin()
   { this->is_builtin_ = true; }
-
-  // Record that this has escape information.
-  void
-  set_has_escape_info()
-  { this->has_escape_info_ = true; }
 
   // Import a function type.
   static Function_type*
@@ -1978,16 +1985,12 @@ class Function_type : public Type
   // Whether this is a special builtin function which can not simply
   // be called.  This is used for len, cap, etc.
   bool is_builtin_;
-  // Whether escape information for the receiver and parameters has been
-  // recorded.
-  bool has_escape_info_;
   // The backend representation of this type for backend function
   // declarations and definitions.
   Btype* fnbtype_;
-  // The escape state of the receiver.
-  Node::Escapement_lattice receiver_escape_state_;
-  // The escape states of each parameter.
-  Node::Escape_states* parameter_escape_states_;
+  // Whether this function has been analyzed by escape analysis.  If this is
+  // TRUE, this function type's parameters contain a summary of the analysis.
+  bool is_tagged_;
 };
 
 // The type of a function's backend representation.

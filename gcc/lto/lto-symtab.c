@@ -81,7 +81,10 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	 ???  We really need a way to match function signatures for ABI
 	 compatibility and perform related promotions at inlining time.  */
       if (!compatible_p)
-	e->call_stmt_cannot_inline_p = 1;
+	{
+	  e->inline_failed = CIF_LTO_MISMATCHED_DECLARATIONS;
+	  e->call_stmt_cannot_inline_p = 1;
+	}
     }
   /* Redirect incomming references.  */
   prevailing_node->clone_referring (node);

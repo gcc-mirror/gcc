@@ -77,7 +77,7 @@ cxx98_sources = \
 	compatibility.cc \
 	compatibility-debug_list.cc \
 	compatibility-debug_list-2.cc \
-	${ldbl_compat_sources} 
+	${ldbl_compat_sources}
 
 cxx11_sources = \
 	compatibility-c++0x.cc \
@@ -141,7 +141,7 @@ compatibility-condvar.o: compatibility-condvar.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 # A note on compatibility and static libraries.
-# 
+#
 # static lib == linked against only this version, should not need compat
 # shared lib == linked against potentially all compat versions
 #
@@ -150,7 +150,7 @@ compatibility-condvar.o: compatibility-condvar.cc
 #
 # In the sub-directories of libsupc++, src/c++98, src/c++11, only
 # -prefer-pic objects are generated for the convenience libraries.
-# 
+#
 # In the main src directory, make shared and static objects just for
 # the compat libraries. Shared objects are compiled with -prefer-pic
 # -D_GLIBCXX_SHARED and in the .libs sub-directory, static objects are
@@ -187,7 +187,7 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use.
-# 
+#
 # The second tag argument, `--tag disable-shared` means that libtool
 # only compiles each source once, for static objects. In actuality,
 # glibcxx_lt_pic_flag and glibcxx_compiler_shared_flag are added to

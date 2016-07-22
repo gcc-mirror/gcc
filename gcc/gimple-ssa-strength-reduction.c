@@ -951,7 +951,7 @@ restructure_reference (tree *pbase, tree *poffset, widest_int *pindex,
       c2 = 0;
     }
 
-  c4 = wi::lrshift (index, LOG2_BITS_PER_UNIT);
+  c4 = index >> LOG2_BITS_PER_UNIT;
   c5 = backtrace_base_for_ref (&t2);
 
   *pbase = t1;
@@ -987,7 +987,7 @@ slsr_process_ref (gimple *gs)
     return;
 
   base = get_inner_reference (ref_expr, &bitsize, &bitpos, &offset, &mode,
-			      &unsignedp, &reversep, &volatilep, false);
+			      &unsignedp, &reversep, &volatilep);
   if (reversep)
     return;
   widest_int index = bitpos;
@@ -2506,8 +2506,7 @@ record_increment (slsr_cand_t c, widest_int increment, bool is_phi_adjust)
       if (c->kind == CAND_ADD
 	  && !is_phi_adjust
 	  && c->index == increment
-	  && (wi::gts_p (increment, 1)
-	      || wi::lts_p (increment, -1))
+	  && (increment > 1 || increment < -1)
 	  && (gimple_assign_rhs_code (c->cand_stmt) == PLUS_EXPR
 	      || gimple_assign_rhs_code (c->cand_stmt) == POINTER_PLUS_EXPR))
 	{

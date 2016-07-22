@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ package SPARK_Xrefs is
 
    --  SPARK cross-reference information can exist in one of two forms. In
    --  the ALI file, it is represented using a text format that is described
-   --  in this specification. Internally it is stored using three tables
+   --  in this specification. Internally it is stored using three tables:
    --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are
    --  also defined in this unit.
 
@@ -56,21 +56,21 @@ package SPARK_Xrefs is
 
    --  SPARK cross-reference information is generated on a unit-by-unit basis
    --  in the ALI file, using lines that start with the identifying character F
-   --  ("Formal"). These lines are generated if Frame_Condition_Mode is True.
+   --  ("Formal"). These lines are generated if GNATprove_Mode is True.
 
    --  The SPARK cross-reference information comes after the shared
-   --  cross-reference information, so it needs not be read by tools like
-   --  gnatbind, gnatmake etc.
+   --  cross-reference information, so it can be ignored by tools like
+   --  gnatbind, gnatmake, etc.
 
    --  -------------------
    --  -- Scope Section --
    --  -------------------
 
    --  A first section defines the scopes in which entities are defined and
-   --  referenced. A scope is a package/subprogram declaration/body. Note that
-   --  a package declaration and body define two different scopes. Similarly, a
-   --  subprogram declaration and body, when both present, define two different
-   --  scopes.
+   --  referenced. A scope is a package/subprogram/protected_type/task_type
+   --  declaration/body. Note that a package declaration and body define two
+   --  different scopes. Similarly, a subprogram, protected type and task type
+   --  declaration and body, when both present, define two different scopes.
 
    --    FD dependency-number filename (-> unit-filename)?
 
@@ -133,10 +133,13 @@ package SPARK_Xrefs is
 
    --    FX dependency-number filename . entity-number entity
 
-   --      dependency-number and filename identity a file in FD lines
+   --      dependency-number and filename identify a file in FD lines
 
-   --      entity-number and identity identify a scope entity in FS lines for
-   --      the file previously identified.
+   --      entity-number and entity identify a scope in FS lines
+   --      for the file previously identified file.
+
+   --      (filename and entity are just a textual representations of
+   --       dependency-number and entity-number)
 
    --    F line typ col entity ref*
 
@@ -192,7 +195,7 @@ package SPARK_Xrefs is
    --  -- Generated Globals Section --
    --  -------------------------------
 
-   --  The Generated Globals section is located at the end of the ALI file.
+   --  The Generated Globals section is located at the end of the ALI file
 
    --  All lines introducing information related to the Generated Globals
    --  have the string "GG" appearing in the beginning. This string ("GG")
@@ -200,7 +203,7 @@ package SPARK_Xrefs is
    --  not relate to Generated Globals.
 
    --  The processing (reading and writing) of this section happens in
-   --  package Flow_Computed_Globals (from the SPARK 2014 sources), for
+   --  package Flow_Generated_Globals (from the SPARK 2014 sources), for
    --  further information please refer there.
 
    ----------------
@@ -209,9 +212,10 @@ package SPARK_Xrefs is
 
    --  The following table records SPARK cross-references
 
-   type Xref_Index is new Int;
+   type Xref_Index is new Nat;
    --  Used to index values in this table. Values start at 1 and are assigned
-   --  sequentially as entries are constructed.
+   --  sequentially as entries are constructed; value 0 is used temporarily
+   --  until a proper value is determined.
 
    type SPARK_Xref_Record is record
       Entity_Name : String_Ptr;
@@ -268,9 +272,11 @@ package SPARK_Xrefs is
    --  This table keeps track of the scopes and the corresponding starting and
    --  ending indexes (From, To) in the Xref table.
 
-   type Scope_Index is new Int;
+   type Scope_Index is new Nat;
    --  Used to index values in this table. Values start at 1 and are assigned
-   --  sequentially as entries are constructed.
+   --  sequentially as entries are constructed; value 0 indicates that no
+   --  entries have been constructed and is also used until a proper value is
+   --  determined.
 
    type SPARK_Scope_Record is record
       Scope_Name : String_Ptr;
@@ -279,7 +285,7 @@ package SPARK_Xrefs is
       File_Num : Nat;
       --  Set to the file dependency number for the scope
 
-      Scope_Num : Nat;
+      Scope_Num : Pos;
       --  Set to the scope number for the scope
 
       Spec_File_Num : Nat;
@@ -296,8 +302,10 @@ package SPARK_Xrefs is
       Stype : Character;
       --  Indicates type of scope, using code used in ALI file:
       --    K = package
-      --    V = function
+      --    T = task
       --    U = procedure
+      --    V = function
+      --    Y = entry
 
       Col : Nat;
       --  Column number for the scope
@@ -329,9 +337,10 @@ package SPARK_Xrefs is
    --  This table keeps track of the units and the corresponding starting and
    --  ending indexes (From, To) in the Scope table.
 
-   type File_Index is new Int;
+   type File_Index is new Nat;
    --  Used to index values in this table. Values start at 1 and are assigned
-   --  sequentially as entries are constructed.
+   --  sequentially as entries are constructed; value 0 indicates that no
+   --  entries have been constructed.
 
    type SPARK_File_Record is record
       File_Name : String_Ptr;

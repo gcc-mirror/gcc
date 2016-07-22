@@ -151,12 +151,12 @@
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract, round,
-   xload, lpm, movmem,
+   xload, movmem,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
-   insert_bits,
+   insert_bits, insv_notbit, insv_notbit_0, insv_notbit_7,
    no"
   (const_string "no"))
 
@@ -264,6 +264,8 @@
 ;; Define two incarnations so that we can build the cross product.
 (define_code_iterator any_extend  [sign_extend zero_extend])
 (define_code_iterator any_extend2 [sign_extend zero_extend])
+(define_code_iterator any_extract [sign_extract zero_extract])
+(define_code_iterator any_shiftrt [lshiftrt ashiftrt])
 
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
@@ -453,23 +455,6 @@
 ;;========================================================================
 ;; Move stuff around
 
-;; Secondary input reload from non-generic 16-bit address spaces
-(define_insn "reload_in<mode>"
-  [(set (match_operand:MOVMODE 0 "register_operand"   "=r")
-        (match_operand:MOVMODE 1 "flash_operand"       "m"))
-   (clobber (match_operand:QI 2 "d_register_operand"  "=d"))]
-  ;; Fixme: The insn condition must not test the address space.
-  ;;   Because the gen tools refuse to generate insns for address spaces
-  ;;   and will generate insn-codes.h to look like:
-  ;;   #define CODE_FOR_reload_inhi CODE_FOR_nothing
-  "reload_completed || reload_in_progress"
-  {
-    return avr_out_lpm (insn, operands, NULL);
-  }
-  [(set_attr "adjust_len" "lpm")
-   (set_attr "cc" "clobber")])
-
-
 ;; "loadqi_libgcc"
 ;; "loadhi_libgcc"
 ;; "loadpsi_libgcc"
@@ -640,6 +625,22 @@
 
     if (avr_mem_flash_p (dest))
       DONE;
+
+    if (QImode == <MODE>mode
+        && SUBREG_P (src)
+        && CONSTANT_ADDRESS_P (SUBREG_REG (src))
+        && can_create_pseudo_p())
+      {
+        // store_bitfield may want to store a SYMBOL_REF or CONST in a
+        // structure that's represented as PSImode.  As the upper 16 bits
+        // of PSImode cannot be expressed as an HImode subreg, the rhs is
+        // decomposed into QImode (word_mode) subregs of SYMBOL_REF,
+        // CONST or LABEL_REF; cf. PR71103.
+
+        rtx const_addr = SUBREG_REG (src);
+        operands[1] = src = copy_rtx (src);
+        SUBREG_REG (src) = copy_to_mode_reg (GET_MODE (const_addr), const_addr);
+      }
 
     /* One of the operands has to be in a register.  */
     if (!register_operand (dest, <MODE>mode)
@@ -1159,7 +1160,7 @@
 	inc %0\;inc %0
 	dec %0\;dec %0"
   [(set_attr "length" "1,1,1,1,2,2")
-   (set_attr "cc" "set_czn,set_czn,set_vzn,set_vzn,set_vzn,set_vzn")])
+   (set_attr "cc" "set_czn,set_czn,set_vzn,set_vzn,set_zn,set_zn")])
 
 ;; "addhi3"
 ;; "addhq3" "adduhq3"
@@ -1224,6 +1225,33 @@
   [(set_attr "length" "5")
    (set_attr "cc" "clobber")])
 
+(define_insn "*addhi3_zero_extend.const"
+  [(set (match_operand:HI 0 "register_operand"                         "=d")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "0"))
+                 (match_operand:HI 2 "const_m255_to_m1_operand"         "Cn8")))]
+  ""
+  "subi %A0,%n2\;sbc %B0,%B0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "set_czn")])
+
+(define_insn "*usum_widenqihi3"
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
+                 (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))]
+  ""
+  "add %A0,%2\;clr %B0\;rol %B0"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*udiff_widenqihi3"
+  [(set (match_operand:HI 0 "register_operand"                           "=r")
+        (minus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
+                  (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))]
+  ""
+  "sub %A0,%2\;sbc %B0,%B0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "set_czn")])
+    
 (define_insn "*addhi3_sp"
   [(set (match_operand:HI 1 "stack_register_operand"           "=q")
         (plus:HI (match_operand:HI 2 "stack_register_operand"   "q")
@@ -3086,15 +3114,16 @@
 ; and
 
 (define_insn "andqi3"
-  [(set (match_operand:QI 0 "register_operand"       "=??r,d")
-        (and:QI (match_operand:QI 1 "register_operand" "%0,0")
-                (match_operand:QI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
+        (and:QI (match_operand:QI 1 "register_operand" "%0,0,0")
+                (match_operand:QI 2 "nonmemory_operand" "r,i,Ca1")))]
   ""
   "@
 	and %0,%2
-	andi %0,lo8(%2)"
-  [(set_attr "length" "1,1")
-   (set_attr "cc" "set_zn,set_zn")])
+	andi %0,lo8(%2)
+	* return avr_out_bitop (insn, operands, NULL);"
+  [(set_attr "length" "1,1,2")
+   (set_attr "cc" "set_zn,set_zn,none")])
 
 (define_insn "andhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
@@ -3168,15 +3197,16 @@
 ;; ior
 
 (define_insn "iorqi3"
-  [(set (match_operand:QI 0 "register_operand"       "=??r,d")
-        (ior:QI (match_operand:QI 1 "register_operand" "%0,0")
-                (match_operand:QI 2 "nonmemory_operand" "r,i")))]
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
+        (ior:QI (match_operand:QI 1 "register_operand" "%0,0,0")
+                (match_operand:QI 2 "nonmemory_operand" "r,i,Co1")))]
   ""
   "@
 	or %0,%2
-	ori %0,lo8(%2)"
-  [(set_attr "length" "1,1")
-   (set_attr "cc" "set_zn,set_zn")])
+	ori %0,lo8(%2)
+        * return avr_out_bitop (insn, operands, NULL);"
+  [(set_attr "length" "1,1,2")
+   (set_attr "cc" "set_zn,set_zn,none")])
 
 (define_insn "iorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
@@ -4590,6 +4620,25 @@
   "cpi %0,lo8(%1)"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
+
+
+(define_insn "*cmphi.zero-extend.0"
+  [(set (cc0)
+        (compare (zero_extend:HI (match_operand:QI 0 "register_operand" "r"))
+                 (match_operand:HI 1 "register_operand" "r")))]
+  ""
+  "cp %0,%A1\;cpc __zero_reg__,%B1"
+  [(set_attr "cc" "compare")
+   (set_attr "length" "2")])
+
+(define_insn "*cmphi.zero-extend.1"
+  [(set (cc0)
+        (compare (match_operand:HI 0 "register_operand" "r")
+                 (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))))]
+  ""
+  "cp %A0,%1\;cpc %B0,__zero_reg__"
+  [(set_attr "cc" "compare")
+   (set_attr "length" "2")])
 
 ;; "*cmphi"
 ;; "*cmphq" "*cmpuhq"
@@ -6421,6 +6470,11 @@
         (match_operand:QI 3 "nonmemory_operand" ""))]
   "optimize")
 
+;; Some more patterns to support moving around one bit which can be accomplished
+;; by BST + BLD in most situations.  Unfortunately, there is no canonical
+;; representation, and we just implement some more cases that are not too
+;; complicated.
+
 ;; Insert bit $2.0 into $0.$1
 (define_insn "*insv.reg"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r,d,d,l,l")
@@ -6436,6 +6490,103 @@
 	set\;bld %0,%1"
   [(set_attr "length" "2,1,1,2,2")
    (set_attr "cc" "none,set_zn,set_zn,none,none")])
+
+;; Insert bit $2.$3 into $0.$1
+(define_insn "*insv.extract"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (any_extract:QI (match_operand:QI 2 "register_operand"      "r")
+                        (const_int 1)
+                        (match_operand:QI 3 "const_0_to_7_operand"  "n")))]
+  ""
+  "bst %2,%3\;bld %0,%1"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Insert bit $2.$3 into $0.$1
+(define_insn "*insv.shiftrt"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (any_shiftrt:QI (match_operand:QI 2 "register_operand"      "r")
+                        (match_operand:QI 3 "const_0_to_7_operand"  "n")))]
+  ""
+  "bst %2,%3\;bld %0,%1"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Same, but with a NOT inverting the source bit.
+;; Insert bit ~$2.$3 into $0.$1
+(define_insn "*insv.not-shiftrt"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"           "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"        "n"))
+        (not:QI (any_shiftrt:QI (match_operand:QI 2 "register_operand"     "r")
+                                (match_operand:QI 3 "const_0_to_7_operand" "n"))))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.0 into $0.$1
+(define_insn "*insv.xor1-bit.0"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (xor:QI (match_operand:QI 2 "register_operand"              "r")
+                (const_int 1)))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit_0")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.0 into $0.$1
+(define_insn "*insv.not-bit.0"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (not:QI (match_operand:QI 2 "register_operand"              "r")))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit_0")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.7 into $0.$1
+(define_insn "*insv.not-bit.7"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (ge:QI (match_operand:QI 2 "register_operand"               "r")
+               (const_int 0)))]
+  ""
+  {
+    return avr_out_insert_notbit (insn, operands, GEN_INT (7), NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit_7")
+   (set_attr "cc" "clobber")])
+
+;; Insert bit ~$2.$3 into $0.$1
+(define_insn "*insv.xor-extract"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"        "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"     "n"))
+        (any_extract:QI (xor:QI (match_operand:QI 2 "register_operand"  "r")
+                                (match_operand:QI 4 "const_int_operand" "n"))
+                        (const_int 1)
+                        (match_operand:QI 3 "const_0_to_7_operand"      "n")))]
+  "INTVAL (operands[4]) & (1 << INTVAL (operands[3]))"
+  {
+    return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit")
+   (set_attr "cc" "clobber")])
 
 
 ;; Some combine patterns that try to fix bad code when a value is composed

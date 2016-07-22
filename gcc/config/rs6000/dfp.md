@@ -58,7 +58,7 @@
 	(float_extend:DD (match_operand:SD 1 "gpc_reg_operand" "f")))]
   "TARGET_DFP"
   "dctdp %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_expand "extendsdtd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
@@ -76,7 +76,7 @@
 	(float_truncate:SD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "drsp %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_expand "negdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "")
@@ -89,7 +89,7 @@
 	(neg:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fneg %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpsimple")])
 
 (define_expand "absdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "")
@@ -102,14 +102,14 @@
 	(abs:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fabs %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpsimple")])
 
 (define_insn "*nabsdd2_fpr"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
 	(neg:DD (abs:DD (match_operand:DD 1 "gpc_reg_operand" "d"))))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fnabs %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpsimple")])
 
 (define_expand "negtd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "")
@@ -124,7 +124,7 @@
   "@
    fneg %0,%1
    fneg %0,%1\;fmr %L0,%L1"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
 (define_expand "abstd2"
@@ -140,7 +140,7 @@
   "@
    fabs %0,%1
    fabs %0,%1\;fmr %L0,%L1"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
 (define_insn "*nabstd2_fpr"
@@ -150,7 +150,7 @@
   "@
    fnabs %0,%1
    fnabs %0,%1\;fmr %L0,%L1"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fpsimple")
    (set_attr "length" "4,8")])
 
 ;; Hardware support for decimal floating point operations.
@@ -160,7 +160,7 @@
 	(float_extend:TD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dctqpq %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 ;; The result of drdpq is an even/odd register pair with the converted
 ;; value in the even register and zero in the odd register.
@@ -173,7 +173,8 @@
    (clobber (match_scratch:TD 2 "=d"))]
   "TARGET_DFP"
   "drdpq %2,%1\;fmr %0,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")
+   (set_attr "length" "8")])
 
 (define_insn "adddd3"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
@@ -181,7 +182,7 @@
 		 (match_operand:DD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dadd %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "addtd3"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
@@ -189,7 +190,7 @@
 		 (match_operand:TD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "daddq %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "subdd3"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
@@ -197,7 +198,7 @@
 		  (match_operand:DD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dsub %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "subtd3"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
@@ -205,7 +206,7 @@
 		  (match_operand:TD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dsubq %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "muldd3"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
@@ -213,7 +214,7 @@
 		 (match_operand:DD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dmul %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "multd3"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
@@ -221,7 +222,7 @@
 		 (match_operand:TD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dmulq %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "divdd3"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
@@ -229,7 +230,7 @@
 		(match_operand:DD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "ddiv %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "divtd3"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
@@ -237,7 +238,7 @@
 		(match_operand:TD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "ddivq %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "*cmpdd_internal1"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -245,7 +246,7 @@
 		      (match_operand:DD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dcmpu %0,%1,%2"
-  [(set_attr "type" "fpcompare")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "*cmptd_internal1"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -253,21 +254,21 @@
 		      (match_operand:TD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dcmpuq %0,%1,%2"
-  [(set_attr "type" "fpcompare")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "floatdidd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
 	(float:DD (match_operand:DI 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP && TARGET_POPCNTD"
   "dcffix %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "floatditd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
 	(float:TD (match_operand:DI 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dcffixq %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 ;; Convert a decimal64 to a decimal64 whose value is an integer.
 ;; This is the first stage of converting it to an integer type.
@@ -277,7 +278,7 @@
 	(fix:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "drintn. 0,%0,%1,1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 ;; Convert a decimal64 whose value is an integer to an actual integer.
 ;; This is the second stage of converting decimal float to integer type.
@@ -287,7 +288,7 @@
 	(fix:DI (match_operand:DD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dctfix %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 ;; Convert a decimal128 to a decimal128 whose value is an integer.
 ;; This is the first stage of converting it to an integer type.
@@ -297,7 +298,7 @@
 	(fix:TD (match_operand:TD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "drintnq. 0,%0,%1,1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 ;; Convert a decimal128 whose value is an integer to an actual integer.
 ;; This is the second stage of converting decimal float to integer type.
@@ -307,7 +308,7 @@
 	(fix:DI (match_operand:TD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
   "dctfixq %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 
 ;; Decimal builtin support
@@ -318,7 +319,10 @@
    UNSPEC_DXEX
    UNSPEC_DIEX
    UNSPEC_DSCLI
+   UNSPEC_DTSTSFI
    UNSPEC_DSCRI])
+
+(define_code_iterator DFP_TEST [eq lt gt unordered])
 
 (define_mode_iterator D64_D128 [DD TD])
 
@@ -332,7 +336,7 @@
 			 UNSPEC_DDEDPD))]
   "TARGET_DFP"
   "ddedpd<dfp_suffix> %1,%0,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "dfp_denbcd_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
@@ -341,7 +345,7 @@
 			 UNSPEC_DENBCD))]
   "TARGET_DFP"
   "denbcd<dfp_suffix> %1,%0,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "dfp_dxex_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
@@ -349,7 +353,7 @@
 			 UNSPEC_DXEX))]
   "TARGET_DFP"
   "dxex<dfp_suffix> %0,%1"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "dfp_diex_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
@@ -358,6 +362,42 @@
 			 UNSPEC_DXEX))]
   "TARGET_DFP"
   "diex<dfp_suffix> %0,%1,%2"
+  [(set_attr "type" "dfp")])
+
+(define_expand "dfptstsfi_<code>_<mode>"
+  [(set (match_dup 3)
+	(compare:CCFP
+         (unspec:D64_D128
+	  [(match_operand:SI 1 "const_int_operand" "n")
+	   (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+	  UNSPEC_DTSTSFI)
+	 (match_dup 4)))
+   (set (match_operand:SI 0 "register_operand" "")
+   	(DFP_TEST:SI (match_dup 3)
+		     (const_int 0)))
+  ]
+  "TARGET_P9_MISC"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+  operands[4] = const0_rtx;
+})
+
+(define_insn "*dfp_sgnfcnc_<mode>"
+  [(set (match_operand:CCFP 0 "" "=y")
+        (compare:CCFP
+	 (unspec:D64_D128 [(match_operand:SI 1 "const_int_operand" "n")
+	 	           (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+          UNSPEC_DTSTSFI)
+	 (match_operand:SI 3 "zero_constant" "j")))]
+  "TARGET_P9_MISC"
+{
+  /* If immediate operand is greater than 63, it will behave as if
+     the value had been 63.  The code generator does not support
+     immediate operand values greater than 63.  */
+  if (!(IN_RANGE (INTVAL (operands[1]), 0, 63)))
+    operands[1] = GEN_INT (63);
+  return "dtstsfi<dfp_suffix> %0,%1,%2";
+}
   [(set_attr "type" "fp")])
 
 (define_insn "dfp_dscli_<mode>"
@@ -367,7 +407,7 @@
 			 UNSPEC_DSCLI))]
   "TARGET_DFP"
   "dscli<dfp_suffix> %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])
 
 (define_insn "dfp_dscri_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
@@ -376,4 +416,4 @@
 			 UNSPEC_DSCRI))]
   "TARGET_DFP"
   "dscri<dfp_suffix> %0,%1,%2"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "dfp")])

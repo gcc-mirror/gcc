@@ -189,6 +189,12 @@ EnumValue
 Enum(processor_type) String(arc700) Value(PROCESSOR_ARC700)
 
 EnumValue
+Enum(processor_type) String(nps400) Value(PROCESSOR_NPS400)
+
+EnumValue
+Enum(processor_type) String(NPS400) Value(PROCESSOR_NPS400)
+
+EnumValue
 Enum(processor_type) String(ARCEM) Value(PROCESSOR_ARCEM)
 
 EnumValue
@@ -456,3 +462,22 @@ Enum(arc_fpu) String(fpus_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD)
 
 EnumValue
 Enum(arc_fpu) String(fpud_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD | FPU_DP | FPU_DC | FPU_DF | FPU_DD)
+
+mtp-regno=
+Target RejectNegative Joined UInteger Var(arc_tp_regno) Init(25)
+Specify thread pointer register number.
+
+mtp-regno=none
+Target RejectNegative Var(arc_tp_regno,-1)
+
+mbitops
+Target Report Var(TARGET_NPS_BITOPS) Init(TARGET_NPS_BITOPS_DEFAULT)
+Enable use of NPS400 bit operations.
+
+mcmem
+Target Report Var(TARGET_NPS_CMEM) Init(TARGET_NPS_CMEM_DEFAULT)
+Enable use of NPS400 xld/xst extension.
+
+munaligned-access
+Target Report Var(unaligned_access) Init(UNALIGNED_ACCESS_DEFAULT)
+Enable unaligned word and halfword accesses to packed data.

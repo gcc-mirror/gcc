@@ -28,7 +28,7 @@
 // we use the following crude approximations. We keep saying that we'll do
 // better later, but never do.
 
-extern "C" 
+extern "C"
 {
 #ifndef _GLIBCXX_HAVE_FABSF
   float

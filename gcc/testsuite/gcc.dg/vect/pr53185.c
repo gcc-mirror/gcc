@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -ftree-vectorize" } */
+/* { dg-additional-options "-O3" } */
+
 unsigned short a, e;
 int *b, *d;
 int c;

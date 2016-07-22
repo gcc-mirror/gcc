@@ -1,3 +1,7 @@
+2016-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Update copyrights.
+
 2016-02-03  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.am (go_cmd_gofmt_files): Update to Go 1.6rc1 by adding

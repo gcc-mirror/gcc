@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_SET
 #define _GLIBCXX_DEBUG_SET 1
 
+#pragma GCC system_header
+
 #include <set>
 #include <debug/set.h>
 #include <debug/multiset.h>

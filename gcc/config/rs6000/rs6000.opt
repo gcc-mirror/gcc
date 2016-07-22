@@ -470,8 +470,8 @@ Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save
 -mlong-double-<n>	Specify size of long double (64 or 128 bits).
 
 mlra
-Target Report Var(rs6000_lra_flag) Init(0) Save
-Use LRA instead of reload.
+Target Report Mask(LRA) Var(rs6000_isa_flags)
+Enable Local Register Allocation.
 
 msched-costly-dep=
 Target RejectNegative Joined Var(rs6000_sched_costly_dep_str)
@@ -597,21 +597,37 @@ mupper-regs
 Target Report Var(TARGET_UPPER_REGS) Init(-1) Save
 Allow float/double variables in upper registers if cpu allows it.
 
+mupper-regs-di
+Target Report Mask(UPPER_REGS_DI) Var(rs6000_isa_flags)
+Allow 64-bit integer variables in upper registers with -mcpu=power7 or -mvsx.
+
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
 
 mpower9-fusion
-Target Report Mask(P9_FUSION) Var(rs6000_isa_flags)
+Target Undocumented Report Mask(P9_FUSION) Var(rs6000_isa_flags)
 Fuse certain operations together for better performance on power9.
 
+mpower9-misc
+Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)
+Use/do not use certain scalar instructions added in ISA 3.0.
+
 mpower9-vector
-Target Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
-Use/do not use vector and scalar instructions added in ISA 3.0.
+Target Undocumented Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
+Use/do not use vector instructions added in ISA 3.0.
+
+mpower9-dform-scalar
+Target Undocumented Mask(P9_DFORM_SCALAR) Var(rs6000_isa_flags)
+Use/do not use scalar register+offset memory instructions added in ISA 3.0.
+
+mpower9-dform-vector
+Target Undocumented Mask(P9_DFORM_VECTOR) Var(rs6000_isa_flags)
+Use/do not use vector register+offset memory instructions added in ISA 3.0.
 
 mpower9-dform
-Target Undocumented Mask(P9_DFORM) Var(rs6000_isa_flags)
-Use/do not use vector and scalar instructions added in ISA 3.0.
+Target Undocumented Report Var(TARGET_P9_DFORM_BOTH) Init(-1) Save
+Use/do not use register+offset memory instructions added in ISA 3.0.
 
 mpower9-minmax
 Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)
@@ -622,7 +638,7 @@ Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
 Fuse medium/large code model toc references with the memory instruction.
 
 mmodulo
-Target Report Mask(MODULO) Var(rs6000_isa_flags)
+Target Undocumented Report Mask(MODULO) Var(rs6000_isa_flags)
 Generate the integer modulo instructions.
 
 mfloat128

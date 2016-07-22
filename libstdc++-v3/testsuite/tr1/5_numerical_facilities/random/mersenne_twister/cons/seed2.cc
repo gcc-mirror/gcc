@@ -28,7 +28,7 @@ void
 test01()
 {
   using namespace std::tr1;
-  
+
   double seed = 2.0;
   mersenne_twister<
     unsigned long, 32, 624, 397, 31,

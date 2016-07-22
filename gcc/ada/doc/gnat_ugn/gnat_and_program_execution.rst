@@ -2605,6 +2605,14 @@ appropriate options.
   subprograms and helps the compiler to create a smaller executable for your
   program.
 
+  *gnatelim* is a project-aware tool.
+  (See :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+  the project-related switches but note that *gnatelim* does not support
+  the :samp:`-U`, :samp:`-U {main_unit}`, :samp:`--subdirs={dir}`, or
+  :samp:`--no_objects_dir` switches.)
+  The project file package that can specify
+  *gnatelim* switches is named ``Eliminate``.
+
   .. _About_gnatelim:
 
   About `gnatelim`
@@ -2790,8 +2798,6 @@ appropriate options.
     indicate that the analysed set of sources is incomplete to make up a
     partition and that some subprogram bodies are missing are not generated.
 
-  Note: to invoke *gnatelim* with a project file, use the `gnat`
-  driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
 
 
   .. _Processing_Precompiled_Libraries:

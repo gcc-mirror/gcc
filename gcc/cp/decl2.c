@@ -81,6 +81,7 @@ static tree get_guard_bits (tree);
 static void determine_visibility_from_class (tree, tree);
 static bool determine_hidden_inline (tree);
 static bool decl_defined_p (tree);
+static void maybe_instantiate_decl (tree);
 
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
@@ -3161,7 +3162,7 @@ set_guard (tree guard)
   guard_init = integer_one_node;
   if (!same_type_p (TREE_TYPE (guard_init), TREE_TYPE (guard)))
     guard_init = fold_convert (TREE_TYPE (guard), guard_init);
-  return cp_build_modify_expr (guard, NOP_EXPR, guard_init, 
+  return cp_build_modify_expr (input_location, guard, NOP_EXPR, guard_init,
 			       tf_warning_or_error);
 }
 
@@ -4217,7 +4218,7 @@ decl_constant_var_p (tree decl)
      in the case of a constexpr variable, we can't treat it as a
      constant until its initializer is complete in case it's used in
      its own initializer.  */
-  mark_used (decl);
+  maybe_instantiate_decl (decl);
   return DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl);
 }
 
@@ -4346,7 +4347,8 @@ handle_tls_init (void)
   tree cond = cp_build_unary_op (TRUTH_NOT_EXPR, guard, false,
 				 tf_warning_or_error);
   finish_if_stmt_cond (cond, if_stmt);
-  finish_expr_stmt (cp_build_modify_expr (guard, NOP_EXPR, boolean_true_node,
+  finish_expr_stmt (cp_build_modify_expr (loc, guard, NOP_EXPR,
+					  boolean_true_node,
 					  tf_warning_or_error));
   for (; vars; vars = TREE_CHAIN (vars))
     {
@@ -4904,6 +4906,8 @@ c_parse_final_cleanups (void)
 
   finish_repo ();
 
+  fini_constexpr ();
+
   /* The entire file is now complete.  If requested, dump everything
      to a file.  */
   dump_tu ();
@@ -5054,6 +5058,38 @@ possibly_inlined_p (tree decl)
   return true;
 }
 
+/* Normally, we can wait until instantiation-time to synthesize DECL.
+   However, if DECL is a static data member initialized with a constant
+   or a constexpr function, we need it right now because a reference to
+   such a data member or a call to such function is not value-dependent.
+   For a function that uses auto in the return type, we need to instantiate
+   it to find out its type.  For OpenMP user defined reductions, we need
+   them instantiated for reduction clauses which inline them by hand
+   directly.  */
+
+static void
+maybe_instantiate_decl (tree decl)
+{
+  if (DECL_LANG_SPECIFIC (decl)
+      && DECL_TEMPLATE_INFO (decl)
+      && (decl_maybe_constant_var_p (decl)
+	  || (TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_OMP_DECLARE_REDUCTION_P (decl))
+	  || undeduced_auto_decl (decl))
+      && !DECL_DECLARED_CONCEPT_P (decl)
+      && !uses_template_parms (DECL_TI_ARGS (decl)))
+    {
+      /* Instantiating a function will result in garbage collection.  We
+	 must treat this situation as if we were within the body of a
+	 function so as to avoid collecting live data only referenced from
+	 the stack (such as overload resolution candidates).  */
+      ++function_depth;
+      instantiate_decl (decl, /*defer_ok=*/false,
+			/*expl_inst_class_mem_p=*/false);
+      --function_depth;
+    }
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes
@@ -5148,24 +5184,7 @@ mark_used (tree decl, tsubst_flags_t complain)
      it to find out its type.  For OpenMP user defined reductions, we need
      them instantiated for reduction clauses which inline them by hand
      directly.  */
-  if (DECL_LANG_SPECIFIC (decl)
-      && DECL_TEMPLATE_INFO (decl)
-      && (decl_maybe_constant_var_p (decl)
-	  || (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_OMP_DECLARE_REDUCTION_P (decl))
-	  || undeduced_auto_decl (decl))
-      && !DECL_DECLARED_CONCEPT_P (decl)
-      && !uses_template_parms (DECL_TI_ARGS (decl)))
-    {
-      /* Instantiating a function will result in garbage collection.  We
-	 must treat this situation as if we were within the body of a
-	 function so as to avoid collecting live data only referenced from
-	 the stack (such as overload resolution candidates).  */
-      ++function_depth;
-      instantiate_decl (decl, /*defer_ok=*/false,
-			/*expl_inst_class_mem_p=*/false);
-      --function_depth;
-    }
+  maybe_instantiate_decl (decl);
 
   if (processing_template_decl || in_template_function ())
     return true;

@@ -983,10 +983,10 @@ init_insn_for_nothing (void)
   idata_end = &idata->next;
 }
 
-extern int main (int, char **);
+extern int main (int, const char **);
 
 int
-main (int argc, char **argv)
+main (int argc, const char **argv)
 {
   progname = "genoutput";
 

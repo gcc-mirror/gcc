@@ -220,8 +220,9 @@ fs::canonical(const path& p, const path& base)
 {
   error_code ec;
   path can = canonical(p, base, ec);
-  if (ec.value())
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot canonicalize", p, ec));
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot canonicalize", p, base,
+					     ec));
   return can;
 }
 
@@ -249,7 +250,7 @@ namespace
   typedef struct ::stat stat_type;
 
   inline fs::file_type
-  make_file_type(const stat_type& st)
+  make_file_type(const stat_type& st) noexcept
   {
     using fs::file_type;
 #ifdef _GLIBCXX_HAVE_S_ISREG
@@ -273,7 +274,7 @@ namespace
   }
 
   inline fs::file_status
-  make_file_status(const stat_type& st)
+  make_file_status(const stat_type& st) noexcept
   {
     return fs::file_status{
 	make_file_type(st),
@@ -282,13 +283,13 @@ namespace
   }
 
   inline bool
-  is_not_found_errno(int err)
+  is_not_found_errno(int err) noexcept
   {
     return err == ENOENT || err == ENOTDIR;
   }
 
   inline fs::file_time_type
-  file_time(const stat_type& st)
+  file_time(const stat_type& st) noexcept
   {
     using namespace std::chrono;
     return fs::file_time_type{
@@ -298,6 +299,17 @@ namespace
 	seconds{st.st_mtime}
 #endif
     };
+  }
+
+  // Returns true if the file descriptor was successfully closed,
+  // otherwise returns false and the reason will be in errno.
+  inline bool
+  close_fd(int fd)
+  {
+    while (::close(fd))
+      if (errno != EINTR)
+	return false;
+    return true;
   }
 
   bool
@@ -376,7 +388,8 @@ namespace
       }
 
     struct CloseFD {
-      ~CloseFD() { if (fd != -1) ::close(fd); }
+      ~CloseFD() { if (fd != -1) close_fd(fd); }
+      bool close() { return close_fd(std::exchange(fd, -1)); }
       int fd;
     };
 
@@ -401,23 +414,6 @@ namespace
 	return false;
       }
 
-#ifdef _GLIBCXX_USE_SENDFILE
-    auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
-    if (n != from_st->st_size)
-      {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
-#else
-    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-    if ( !(std::ostream(&sbout) << &sbin) )
-      {
-	ec = std::make_error_code(std::errc::io_error);
-	return false;
-      }
-#endif
-
 #ifdef _GLIBCXX_USE_FCHMOD
     if (::fchmod(out.fd, from_st->st_mode))
 #elif _GLIBCXX_USE_FCHMODAT
@@ -429,6 +425,38 @@ namespace
 	ec.assign(errno, std::generic_category());
 	return false;
       }
+
+#ifdef _GLIBCXX_USE_SENDFILE
+    const auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
+    if (n != from_st->st_size)
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+    if (!out.close() || !in.close())
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+#else
+    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
+    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+    if (sbin.is_open())
+      in.fd = -1;
+    if (sbout.is_open())
+      out.fd = -1;
+    if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
+      {
+	ec = std::make_error_code(std::errc::io_error);
+	return false;
+      }
+    if (!sbout.close() || !sbin.close())
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+#endif
+
     ec.clear();
     return true;
   }
@@ -439,13 +467,15 @@ void
 fs::copy(const path& from, const path& to, copy_options options,
 	 error_code& ec) noexcept
 {
-  bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
-  bool create_symlinks = is_set(options, copy_options::create_symlinks);
-  bool use_lstat = create_symlinks || skip_symlinks;
+  const bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
+  const bool create_symlinks = is_set(options, copy_options::create_symlinks);
+  const bool copy_symlinks = is_set(options, copy_options::copy_symlinks);
+  const bool use_lstat = create_symlinks || skip_symlinks;
 
   file_status f, t;
   stat_type from_st, to_st;
-  if (use_lstat
+  // N4099 doesn't check copy_symlinks here, but I think that's a defect.
+  if (use_lstat || copy_symlinks
       ? ::lstat(from.c_str(), &from_st)
       : ::stat(from.c_str(), &from_st))
     {
@@ -488,7 +518,7 @@ fs::copy(const path& from, const path& to, copy_options options,
     {
       if (skip_symlinks)
 	ec.clear();
-      else if (!exists(t) && is_set(options, copy_options::copy_symlinks))
+      else if (!exists(t) && copy_symlinks)
 	copy_symlink(from, to, ec);
       else
 	// Not clear what should be done here.
@@ -630,22 +660,26 @@ namespace
   bool
   create_dir(const fs::path& p, fs::perms perm, std::error_code& ec)
   {
+    bool created = false;
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
     ::mode_t mode = static_cast<std::underlying_type_t<fs::perms>>(perm);
     if (::mkdir(p.c_str(), mode))
       {
-	ec.assign(errno, std::generic_category());
-	return false;
+	const int err = errno;
+	if (err != EEXIST || !is_directory(p))
+	  ec.assign(err, std::generic_category());
+	else
+	  ec.clear();
       }
     else
       {
 	ec.clear();
-	return true;
+	created = true;
       }
 #else
     ec = std::make_error_code(std::errc::not_supported);
-    return false;
 #endif
+    return created;
   }
 } // namespace
 
@@ -1050,6 +1084,28 @@ fs::permissions(const path& p, perms prms)
 
 void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 {
+  const bool add = is_set(prms, perms::add_perms);
+  const bool remove = is_set(prms, perms::remove_perms);
+  if (add && remove)
+    {
+      ec = std::make_error_code(std::errc::invalid_argument);
+      return;
+    }
+
+  prms &= perms::mask;
+
+  if (add || remove)
+    {
+      auto st = status(p, ec);
+      if (ec)
+	return;
+      auto curr = st.permissions();
+      if (add)
+	prms |= curr;
+      else
+	prms = curr & ~prms;
+    }
+
 #if _GLIBCXX_USE_FCHMODAT
   if (::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), 0))
 #else
@@ -1138,7 +1194,7 @@ fs::remove_all(const path& p, error_code& ec) noexcept
   uintmax_t count = 0;
   if (ec.value() == 0 && fs.type() == file_type::directory)
     for (directory_iterator d(p, ec), end; ec.value() == 0 && d != end; ++d)
-      count += fs::remove(d->path(), ec);
+      count += fs::remove_all(d->path(), ec);
   if (ec.value())
     return -1;
   return fs::remove(p, ec) ? ++count : -1;  // fs:remove() calls ec.clear()

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -862,31 +862,44 @@ package body Exp_Prag is
 
                --  Generate a temporary to capture the value of the prefix:
                --    Temp : <Pref type>;
-               --  Place that temporary at the beginning of declarations, to
-               --  prevent anomalies in the GNATprove flow-analysis pass in
-               --  the precondition procedure that follows.
 
                Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
                    Object_Definition   =>
                      New_Occurrence_Of (Etype (Pref), Loc));
-               Set_No_Initialization (Decl);
+
+               --  Place that temporary at the beginning of declarations, to
+               --  prevent anomalies in the GNATprove flow-analysis pass in
+               --  the precondition procedure that follows.
 
                Prepend_To (Decls, Decl);
-               Analyze (Decl);
 
-               --  Evaluate the prefix, generate:
-               --    Temp := <Pref>;
+               --  If the type is unconstrained, the prefix provides its
+               --  value and constraint, so add it to declaration.
 
-               if No (Eval_Stmts) then
-                  Eval_Stmts := New_List;
+               if not Is_Constrained (Etype (Pref))
+                 and then Is_Entity_Name (Pref)
+               then
+                  Set_Expression (Decl, Pref);
+                  Analyze (Decl);
+
+               --  Otherwise add an assignment statement to temporary using
+               --  prefix as RHS.
+
+               else
+                  Analyze (Decl);
+
+                  if No (Eval_Stmts) then
+                     Eval_Stmts := New_List;
+                  end if;
+
+                  Append_To (Eval_Stmts,
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Temp, Loc),
+                      Expression => Pref));
+
                end if;
-
-               Append_To (Eval_Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Occurrence_Of (Temp, Loc),
-                   Expression => Pref));
 
                --  Ensure that the prefix is valid
 

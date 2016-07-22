@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -70,7 +70,16 @@ static const char* vardesc_type_as_string[] = {
     "dv_ptr_data_slice",
     "cean_var",
     "cean_var_ptr",
-    "c_data_ptr_array"
+    "c_data_ptr_array",
+    "c_extended_type",
+    "c_func_ptr_array",
+    "c_void_ptr_array",
+    "c_string_ptr_array",
+    "c_data_ptr_ptr",
+    "c_func_ptr_ptr",
+    "c_void_ptr_ptr",
+    "c_string_ptr_ptr",
+    "c_cean_var_ptr_ptr",
 };
 
 int mic_index = -1;
@@ -115,7 +124,7 @@ static void BufReleaseRef(void * buf)
         --info->count;
         if (info->count == 0 && info->is_added) {
             OFFLOAD_TRACE(1, "Calling COIBufferReleaseRef AddRef count = %d\n",
-                                              ((RefInfo *) ref_data[buf])->count);
+                             ((RefInfo *) ref_data[buf])->count);
             BufferReleaseRef(buf);
             info->is_added = 0;
         }
@@ -210,6 +219,11 @@ void OffloadDescriptor::offload(
           LIBOFFLOAD_ERROR(c_malloc);
         memcpy(ofld.m_vars, in_data, var_data_len);
 
+        ofld.m_vars_extra =
+            (VarExtra*) malloc(ofld.m_vars_total * sizeof(VarExtra));
+        if (ofld.m_vars == NULL)
+          LIBOFFLOAD_ERROR(c_malloc);
+
         in_data += var_data_len;
         func->in_datalen -= var_data_len;
     }
@@ -289,15 +303,42 @@ void OffloadDescriptor::merge_var_descs(
     }
 
     for (int i = 0; i < m_vars_total; i++) {
+        // instead of m_vars[i].type.src we will use m_vars_extra[i].type_src
+
         if (i < vars_total) {
             // variable type must match
             if (m_vars[i].type.bits != vars[i].type.bits) {
+                OFFLOAD_TRACE(2,
+                    "m_vars[%d].type.bits=%08x, vars[%d].type.bits=%08x\n",
+                    i, m_vars[i].type.bits, i, vars[i].type.bits);
                 LIBOFFLOAD_ERROR(c_merge_var_descs2);
                 exit(1);
             }
 
-            m_vars[i].ptr = vars[i].ptr;
-            m_vars[i].into = vars[i].into;
+            if (m_vars[i].type.src == c_extended_type) {
+                VarDescExtendedType *etype =
+                    reinterpret_cast<VarDescExtendedType*>(vars[i].ptr);
+                m_vars_extra[i].type_src = etype->extended_type;
+                m_vars[i].ptr            = etype->ptr;
+            }
+            else {
+                m_vars_extra[i].type_src = m_vars[i].type.src;
+                if (!(m_vars[i].flags.use_device_ptr &&
+                      m_vars[i].type.src == c_dv)) {
+                    m_vars[i].ptr = vars[i].ptr;
+                }
+            }
+            // instead of m_vars[i].type.dst we will use m_vars_extra[i].type_dst
+            if (m_vars[i].type.dst == c_extended_type && i < vars_total) {
+                VarDescExtendedType *etype =
+                    reinterpret_cast<VarDescExtendedType*>(vars[i].into);
+                m_vars_extra[i].type_dst = etype->extended_type;
+                m_vars[i].into           = etype->ptr;
+            }
+            else {
+                m_vars_extra[i].type_dst = m_vars[i].type.dst;
+                m_vars[i].into = vars[i].into;
+            }
 
             const char *var_sname = "";
             if (vars2 != NULL) {
@@ -309,18 +350,23 @@ void OffloadDescriptor::merge_var_descs(
                 "   VarDesc %d, var=%s, %s, %s\n",
                 i, var_sname,
                 vardesc_direction_as_string[m_vars[i].direction.bits],
-                vardesc_type_as_string[m_vars[i].type.src]);
+                vardesc_type_as_string[m_vars_extra[i].type_src]);
             if (vars2 != NULL && vars2[i].dname != NULL) {
                 OFFLOAD_TRACE(2, "              into=%s, %s\n", vars2[i].dname,
-                    vardesc_type_as_string[m_vars[i].type.dst]);
+                    vardesc_type_as_string[m_vars_extra[i].type_dst]);
             }
         }
+        else {
+            m_vars_extra[i].type_src = m_vars[i].type.src;
+            m_vars_extra[i].type_dst = m_vars[i].type.dst;
+        }
+
         OFFLOAD_TRACE(2,
             "              type_src=%d, type_dstn=%d, direction=%d, "
             "alloc_if=%d, free_if=%d, align=%d, mic_offset=%d, flags=0x%x, "
             "offset=%lld, size=%lld, count/disp=%lld, ptr=%p into=%p\n",
-            m_vars[i].type.src,
-            m_vars[i].type.dst,
+            m_vars_extra[i].type_src,
+            m_vars_extra[i].type_dst,
             m_vars[i].direction.bits,
             m_vars[i].alloc_if,
             m_vars[i].free_if,
@@ -352,8 +398,8 @@ void OffloadDescriptor::scatter_copyin_data()
         void** ptr_addr = src_is_for_mic ?
                           static_cast<void**>(m_vars[i].ptr) :
                           static_cast<void**>(m_vars[i].into);
-        int type = src_is_for_mic ? m_vars[i].type.src :
-                                    m_vars[i].type.dst;
+        int type = src_is_for_mic ? m_vars_extra[i].type_src :
+                                    m_vars_extra[i].type_dst;
         bool is_static = src_is_for_mic ?
                          m_vars[i].flags.is_static :
                          m_vars[i].flags.is_static_dstn;
@@ -380,8 +426,13 @@ void OffloadDescriptor::scatter_copyin_data()
                         *(reinterpret_cast<char**>(m_vars[i].ptr)) :
                         reinterpret_cast<char*>(m_vars[i].into);
 
+                    // if is_pointer is 1 it means that pointer array itself
+                    // is defined either via pointer or as class member.
+                    // i.e. arr_ptr[0:5] or this->ARR[0:5]
                     if (m_vars[i].flags.is_pointer) {
-                        dst_arr_ptr = *((char**)dst_arr_ptr);
+                        int64_t offset = 0;
+                        m_in.receive_data(&offset, sizeof(offset));
+                        dst_arr_ptr = *((char**)dst_arr_ptr) + offset;
                     }
                     for (; j < max_el; j++) {
                         if (src_is_for_mic) {
@@ -397,14 +448,33 @@ void OffloadDescriptor::scatter_copyin_data()
                 break;
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var:
             case c_dv:
                 break;
 
             case c_string_ptr:
             case c_data_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
             case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
             case c_dv_ptr:
+                // Don't need ptr_addr value for variables from stack buffer.
+                // Stack buffer address is set at var_desc with #0.
+                if (i != 0 && m_vars[i].flags.is_stack_buf) {
+                    break;
+                }
+                if (TYPE_IS_PTR_TO_PTR(m_vars_extra[i].type_src) ||
+                    TYPE_IS_PTR_TO_PTR(m_vars_extra[i].type_dst)) {
+                    int64_t offset;
+
+                    m_in.receive_data(&offset, sizeof(offset));
+                    ptr_addr = reinterpret_cast<void**>(
+                                 reinterpret_cast<char*>(*ptr_addr) + offset);
+
+                }
+
                 if (m_vars[i].alloc_if && !m_vars[i].flags.preallocated) {
                     void *buf = NULL;
                     if (m_vars[i].flags.sink_addr) {
@@ -431,6 +501,7 @@ void OffloadDescriptor::scatter_copyin_data()
                                   m_vars[i].mic_offset +
                                   (m_vars[i].flags.is_stack_buf ?
                                    0 : m_vars[i].offset);
+
                     }
                     *ptr_addr = ptr;
                 }
@@ -446,6 +517,7 @@ void OffloadDescriptor::scatter_copyin_data()
                 break;
 
             case c_func_ptr:
+            case c_func_ptr_ptr:
                 break;
 
             case c_dv_data:
@@ -489,8 +561,10 @@ void OffloadDescriptor::scatter_copyin_data()
                 LIBOFFLOAD_ERROR(c_unknown_var_type, type);
                 abort();
         }
-        // Release obsolete buffers for stack of persistent objects
-        if (type = c_data_ptr &&
+        // Release obsolete buffers for stack of persistent objects.
+        // The vardesc with i==0 and flags.is_stack_buf==TRUE is always for
+        // stack buffer pointer.
+        if (i == 0 &&
             m_vars[i].flags.is_stack_buf &&
             !m_vars[i].direction.bits &&
             m_vars[i].alloc_if &&
@@ -498,16 +572,18 @@ void OffloadDescriptor::scatter_copyin_data()
                 for (int j=0; j < m_vars[i].size; j++) {
                     void *buf;
                     m_in.receive_data(&buf, sizeof(buf));
+                    OFFLOAD_TRACE(4, "Releasing stack buffer %p\n", buf);
                     BufferReleaseRef(buf);
                     ref_data.erase(buf);
                 }
         }
         // Do copyin
-        switch (m_vars[i].type.dst) {
+        switch (m_vars_extra[i].type_dst) {
             case c_data_ptr_array:
                 break;
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var:
                 if (m_vars[i].direction.in &&
                     !m_vars[i].flags.is_static_dstn) {
@@ -516,7 +592,7 @@ void OffloadDescriptor::scatter_copyin_data()
                     char* ptr = m_vars[i].into ?
                                  static_cast<char*>(m_vars[i].into) :
                                  static_cast<char*>(m_vars[i].ptr);
-                    if (m_vars[i].type.dst == c_cean_var) {
+                    if (m_vars_extra[i].type_dst == c_cean_var) {
                         m_in.receive_data((&size), sizeof(int64_t));
                         m_in.receive_data((&disp), sizeof(int64_t));
                     }
@@ -542,7 +618,10 @@ void OffloadDescriptor::scatter_copyin_data()
 
             case c_string_ptr:
             case c_data_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
             case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
             case c_dv_ptr:
             case c_dv_data:
             case c_dv_ptr_data:
@@ -551,13 +630,14 @@ void OffloadDescriptor::scatter_copyin_data()
                 break;
 
             case c_func_ptr:
+            case c_func_ptr_ptr:
                 if (m_vars[i].direction.in) {
                     m_in.receive_func_ptr((const void**) m_vars[i].ptr);
                 }
                 break;
 
             default:
-                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars[i].type.dst);
+                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars_extra[i].type_dst);
                 abort();
         }
     }
@@ -579,12 +659,15 @@ void OffloadDescriptor::gather_copyout_data()
     for (int i = 0; i < m_vars_total; i++) {
         bool src_is_for_mic = (m_vars[i].direction.out ||
                                m_vars[i].into == NULL);
-
-        switch (m_vars[i].type.src) {
+        if (m_vars[i].flags.is_stack_buf) {
+            continue;
+        }
+        switch (m_vars_extra[i].type_src) {
             case c_data_ptr_array:
                 break;
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var:
                 if (m_vars[i].direction.out &&
                     !m_vars[i].flags.is_static) {
@@ -599,7 +682,10 @@ void OffloadDescriptor::gather_copyout_data()
 
             case c_string_ptr:
             case c_data_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
             case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
             case c_dv_ptr:
                 if (m_vars[i].free_if &&
                     src_is_for_mic &&
@@ -623,6 +709,7 @@ void OffloadDescriptor::gather_copyout_data()
                 break;
 
             case c_func_ptr:
+            case c_func_ptr_ptr:
                 if (m_vars[i].direction.out) {
                     m_out.send_func_ptr(*((void**) m_vars[i].ptr));
                 }
@@ -635,10 +722,10 @@ void OffloadDescriptor::gather_copyout_data()
                 if (src_is_for_mic &&
                     m_vars[i].free_if &&
                     !m_vars[i].flags.is_static) {
-                    ArrDesc *dvp = (m_vars[i].type.src == c_dv_data ||
-                                    m_vars[i].type.src == c_dv_data_slice) ?
-                        static_cast<ArrDesc*>(m_vars[i].ptr) :
-                        *static_cast<ArrDesc**>(m_vars[i].ptr);
+                    ArrDesc *dvp = (m_vars_extra[i].type_src == c_dv_data ||
+                               m_vars_extra[i].type_src == c_dv_data_slice) ?
+                               static_cast<ArrDesc*>(m_vars[i].ptr) :
+                               *static_cast<ArrDesc**>(m_vars[i].ptr);
 
                     void *buf = reinterpret_cast<char*>(dvp->Base) -
                                 m_vars[i].mic_offset -
@@ -656,23 +743,27 @@ void OffloadDescriptor::gather_copyout_data()
                 break;
 
             default:
-                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars[i].type.dst);
+                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars_extra[i].type_dst);
                 abort();
         }
 
         if (m_vars[i].into) {
-            switch (m_vars[i].type.dst) {
+            switch (m_vars_extra[i].type_dst) {
                 case c_data_ptr_array:
                     break;
                 case c_data:
                 case c_void_ptr:
+                case c_void_ptr_ptr:
                 case c_cean_var:
                 case c_dv:
                     break;
 
                 case c_string_ptr:
                 case c_data_ptr:
+                case c_string_ptr_ptr:
+                case c_data_ptr_ptr:
                 case c_cean_var_ptr:
+                case c_cean_var_ptr_ptr:
                 case c_dv_ptr:
                     if (m_vars[i].direction.in &&
                         m_vars[i].free_if &&
@@ -695,6 +786,7 @@ void OffloadDescriptor::gather_copyout_data()
                     break;
 
                 case c_func_ptr:
+                case c_func_ptr_ptr:
                     break;
 
                 case c_dv_data:
@@ -705,8 +797,8 @@ void OffloadDescriptor::gather_copyout_data()
                         m_vars[i].direction.in &&
                         !m_vars[i].flags.is_static_dstn) {
                         ArrDesc *dvp =
-                            (m_vars[i].type.dst == c_dv_data_slice ||
-                             m_vars[i].type.dst == c_dv_data) ?
+                            (m_vars_extra[i].type_dst == c_dv_data_slice ||
+                             m_vars_extra[i].type_dst == c_dv_data) ?
                             static_cast<ArrDesc*>(m_vars[i].into) :
                             *static_cast<ArrDesc**>(m_vars[i].into);
                         void *buf = reinterpret_cast<char*>(dvp->Base) -
@@ -726,7 +818,7 @@ void OffloadDescriptor::gather_copyout_data()
                     break;
 
                 default:
-                    LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars[i].type.dst);
+                    LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars_extra[i].type_dst);
                     abort();
             }
         }

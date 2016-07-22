@@ -30,7 +30,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace tr1 
+  namespace tr1
   {
 #ifndef _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
   template<>

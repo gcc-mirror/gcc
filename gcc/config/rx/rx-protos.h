@@ -26,6 +26,28 @@ extern void		rx_expand_epilogue (bool);
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
 
+bool is_interrupt_func (const_tree decl);
+bool is_fast_interrupt_func (const_tree decl);
+
+/* rx_atomic_sequence is used to emit the header and footer
+   of an atomic sequence.  It's supposed to be used in a scope.
+   When constructed, it will emit the atomic sequence header insns.
+   When destructred (goes out of scope), it will emit the
+   corresponding atomic sequence footer insns.  */
+class rx_atomic_sequence
+{
+public:
+  rx_atomic_sequence (const_tree fun_decl);
+  ~rx_atomic_sequence (void);
+
+private:
+  rx_atomic_sequence (void);
+  rx_atomic_sequence (const rx_atomic_sequence&);
+  rx_atomic_sequence& operator = (const rx_atomic_sequence&);
+
+  rtx m_prev_psw_reg;
+};
+
 #ifdef RTX_CODE
 extern int		rx_adjust_insn_length (rtx_insn *, int);
 extern int 		rx_align_for_label (rtx, int);

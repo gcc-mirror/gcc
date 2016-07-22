@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_isl
 
+#define INCLUDE_MAP
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -54,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "value-prof.h"
 #include "graphite.h"
-#include <map>
 
 /* We always try to use signed 128 bit types, but fall back to smaller types
    in case a platform does not provide types of these sizes. In the future we
@@ -1075,9 +1075,7 @@ bb_contains_loop_close_phi_nodes (basic_block bb)
 static bool
 bb_contains_loop_phi_nodes (basic_block bb)
 {
-  gcc_assert (EDGE_COUNT (bb->preds) <= 2);
-
-  if (bb->preds->length () == 1)
+  if (EDGE_COUNT (bb->preds) != 2)
     return false;
 
   unsigned depth = loop_depth (bb->loop_father);
@@ -1307,6 +1305,18 @@ later_of_the_two (gimple_stmt_iterator gsi1, gimple_stmt_iterator gsi2)
   /* Find the iterator which is the latest.  */
   if (bb1 == bb2)
     {
+      gimple *stmt1 = gsi_stmt (gsi1);
+      gimple *stmt2 = gsi_stmt (gsi2);
+
+      if (stmt1 != NULL && stmt2 != NULL)
+	{
+	  bool is_phi1 = gimple_code (stmt1) == GIMPLE_PHI;
+	  bool is_phi2 = gimple_code (stmt2) == GIMPLE_PHI;
+
+	  if (is_phi1 != is_phi2)
+	    return is_phi1 ? gsi2 : gsi1;
+	}
+
       /* For empty basic blocks gsis point to the end of the sequence.  Since
 	 there is no operator== defined for gimple_stmt_iterator and for gsis
 	 not pointing to a valid statement gsi_next would assert.  */
@@ -1792,7 +1802,6 @@ get_def_bb_for_const (basic_block bb, basic_block old_bb) const
 	b1 = b2;
     }
 
-  gcc_assert (b1);
   return b1;
 }
 
@@ -2481,12 +2490,13 @@ copy_cond_phi_nodes (basic_block bb, basic_block new_bb, vec<tree> iv_map)
 
   gcc_assert (!bb_contains_loop_close_phi_nodes (bb));
 
+  /* TODO: Handle cond phi nodes with more than 2 predecessors.  */
+  if (EDGE_COUNT (bb->preds) != 2)
+    return false;
+
   if (dump_file)
     fprintf (dump_file, "[codegen] copying cond phi nodes in bb_%d.\n",
 	     new_bb->index);
-
-  /* Cond phi nodes should have exactly two arguments.  */
-  gcc_assert (2 == EDGE_COUNT (bb->preds));
 
   for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
        gsi_next (&psi))

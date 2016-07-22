@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "selftest.h"
+#include "wide-int-print.h"
 
 
 #define HOST_BITS_PER_HALF_WIDE_INT 32
@@ -58,7 +60,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 
 /* Quantities to deal with values that hold half of a wide int.  Used
    in multiply and divide.  */
-#define HALF_INT_MASK (((HOST_WIDE_INT) 1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
+#define HALF_INT_MASK ((HOST_WIDE_INT_1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
 
 #define BLOCK_OF(TARGET) ((TARGET) / HOST_BITS_PER_WIDE_INT)
 #define BLOCKS_NEEDED(PREC) \
@@ -71,7 +73,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 static unsigned HOST_WIDE_INT
 safe_uhwi (const HOST_WIDE_INT *val, unsigned int len, unsigned int i)
 {
-  return i < len ? val[i] : val[len - 1] < 0 ? (HOST_WIDE_INT) -1 : 0;
+  return i < len ? val[i] : val[len - 1] < 0 ? HOST_WIDE_INT_M1 : 0;
 }
 
 /* Convert the integer in VAL to canonical form, returning its new length.
@@ -696,7 +698,7 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
       unsigned int len = block + 1;
       for (unsigned int i = 0; i < len; i++)
 	val[i] = safe_uhwi (xval, xlen, i);
-      val[block] |= (unsigned HOST_WIDE_INT) 1 << subbit;
+      val[block] |= HOST_WIDE_INT_1U << subbit;
 
       /* If the bit we just set is at the msb of the block, make sure
 	 that any higher bits are zeros.  */
@@ -708,7 +710,7 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
     {
       for (unsigned int i = 0; i < xlen; i++)
 	val[i] = xval[i];
-      val[block] |= (unsigned HOST_WIDE_INT) 1 << subbit;
+      val[block] |= HOST_WIDE_INT_1U << subbit;
       return canonize (val, xlen, precision);
     }
 }
@@ -777,7 +779,7 @@ wi::mask (HOST_WIDE_INT *val, unsigned int width, bool negate,
   unsigned int shift = width & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift != 0)
     {
-      HOST_WIDE_INT last = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
+      HOST_WIDE_INT last = (HOST_WIDE_INT_1U << shift) - 1;
       val[i++] = negate ? ~last : last;
     }
   else
@@ -810,12 +812,12 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   unsigned int shift = start & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift)
     {
-      HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
+      HOST_WIDE_INT block = (HOST_WIDE_INT_1U << shift) - 1;
       shift += width;
       if (shift < HOST_BITS_PER_WIDE_INT)
 	{
 	  /* case 000111000 */
-	  block = ((unsigned HOST_WIDE_INT) 1 << shift) - block - 1;
+	  block = (HOST_WIDE_INT_1U << shift) - block - 1;
 	  val[i++] = negate ? ~block : block;
 	  return i;
 	}
@@ -832,7 +834,7 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   if (shift != 0)
     {
       /* 000011111 */
-      HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
+      HOST_WIDE_INT block = (HOST_WIDE_INT_1U << shift) - 1;
       val[i++] = negate ? ~block : block;
     }
   else if (end < prec)
@@ -2144,3 +2146,171 @@ template void generic_wide_int <wide_int_ref_storage <false> >::dump () const;
 template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
 template void offset_int::dump () const;
 template void widest_int::dump () const;
+
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for wide ints.  We run these multiple times, once per type.  */
+
+/* Helper function for building a test value.  */
+
+template <class VALUE_TYPE>
+static VALUE_TYPE
+from_int (int i);
+
+/* Specializations of the fixture for each wide-int type.  */
+
+/* Specialization for VALUE_TYPE == wide_int.  */
+
+template <>
+wide_int
+from_int (int i)
+{
+  return wi::shwi (i, 32);
+}
+
+/* Specialization for VALUE_TYPE == offset_int.  */
+
+template <>
+offset_int
+from_int (int i)
+{
+  return offset_int (i);
+}
+
+/* Specialization for VALUE_TYPE == widest_int.  */
+
+template <>
+widest_int
+from_int (int i)
+{
+  return widest_int (i);
+}
+
+/* Verify that print_dec (WI, ..., SGN) gives the expected string
+   representation (using base 10).  */
+
+static void
+assert_deceq (const char *expected, const wide_int_ref &wi, signop sgn)
+{
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  print_dec (wi, buf, sgn);
+  ASSERT_STREQ (expected, buf);
+}
+
+/* Likewise for base 16.  */
+
+static void
+assert_hexeq (const char *expected, const wide_int_ref &wi)
+{
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  print_hex (wi, buf);
+  ASSERT_STREQ (expected, buf);
+}
+
+/* Test cases.  */
+
+/* Verify that print_dec and print_hex work for VALUE_TYPE.  */
+
+template <class VALUE_TYPE>
+static void
+test_printing ()
+{
+  VALUE_TYPE a = from_int<VALUE_TYPE> (42);
+  assert_deceq ("42", a, SIGNED);
+  assert_hexeq ("0x2a", a);
+}
+
+/* Verify that various operations work correctly for VALUE_TYPE,
+   unary and binary, using both function syntax, and
+   overloaded-operators.  */
+
+template <class VALUE_TYPE>
+static void
+test_ops ()
+{
+  VALUE_TYPE a = from_int<VALUE_TYPE> (7);
+  VALUE_TYPE b = from_int<VALUE_TYPE> (3);
+
+  /* Using functions.  */
+  assert_deceq ("-7", wi::neg (a), SIGNED);
+  assert_deceq ("10", wi::add (a, b), SIGNED);
+  assert_deceq ("4", wi::sub (a, b), SIGNED);
+  assert_deceq ("-4", wi::sub (b, a), SIGNED);
+  assert_deceq ("21", wi::mul (a, b), SIGNED);
+
+  /* Using operators.  */
+  assert_deceq ("-7", -a, SIGNED);
+  assert_deceq ("10", a + b, SIGNED);
+  assert_deceq ("4", a - b, SIGNED);
+  assert_deceq ("-4", b - a, SIGNED);
+  assert_deceq ("21", a * b, SIGNED);
+}
+
+/* Verify that various comparisons work correctly for VALUE_TYPE.  */
+
+template <class VALUE_TYPE>
+static void
+test_comparisons ()
+{
+  VALUE_TYPE a = from_int<VALUE_TYPE> (7);
+  VALUE_TYPE b = from_int<VALUE_TYPE> (3);
+
+  /* == */
+  ASSERT_TRUE (wi::eq_p (a, a));
+  ASSERT_FALSE (wi::eq_p (a, b));
+
+  /* != */
+  ASSERT_TRUE (wi::ne_p (a, b));
+  ASSERT_FALSE (wi::ne_p (a, a));
+
+  /* < */
+  ASSERT_FALSE (wi::lts_p (a, a));
+  ASSERT_FALSE (wi::lts_p (a, b));
+  ASSERT_TRUE (wi::lts_p (b, a));
+
+  /* <= */
+  ASSERT_TRUE (wi::les_p (a, a));
+  ASSERT_FALSE (wi::les_p (a, b));
+  ASSERT_TRUE (wi::les_p (b, a));
+
+  /* > */
+  ASSERT_FALSE (wi::gts_p (a, a));
+  ASSERT_TRUE (wi::gts_p (a, b));
+  ASSERT_FALSE (wi::gts_p (b, a));
+
+  /* >= */
+  ASSERT_TRUE (wi::ges_p (a, a));
+  ASSERT_TRUE (wi::ges_p (a, b));
+  ASSERT_FALSE (wi::ges_p (b, a));
+
+  /* comparison */
+  ASSERT_EQ (-1, wi::cmps (b, a));
+  ASSERT_EQ (0, wi::cmps (a, a));
+  ASSERT_EQ (1, wi::cmps (a, b));
+}
+
+/* Run all of the selftests, using the given VALUE_TYPE.  */
+
+template <class VALUE_TYPE>
+static void run_all_wide_int_tests ()
+{
+  test_printing <VALUE_TYPE> ();
+  test_ops <VALUE_TYPE> ();
+  test_comparisons <VALUE_TYPE> ();
+}
+
+/* Run all of the selftests within this file, for all value types.  */
+
+void
+wide_int_cc_tests ()
+{
+ run_all_wide_int_tests <wide_int> ();
+ run_all_wide_int_tests <offset_int> ();
+ run_all_wide_int_tests <widest_int> ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P */

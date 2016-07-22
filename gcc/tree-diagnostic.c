@@ -102,7 +102,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                  source_location where)
 {
   const struct line_map *map;
-  vec<loc_map_pair> loc_vec = vNULL;
+  auto_vec<loc_map_pair> loc_vec;
   unsigned ix;
   loc_map_pair loc, *iter;
 
@@ -219,8 +219,6 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                 "in expansion of macro %qs",
                                 linemap_map_get_macro_name (iter->map));
       }
-
-  loc_vec.release ();
 }
 
 /*  This is a diagnostic finalizer implementation that is aware of

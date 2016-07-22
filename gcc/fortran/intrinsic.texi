@@ -12628,10 +12628,12 @@ Does not return anything.
 See @code{RAND} and @code{IRAND} for examples.
 
 @item @emph{Notes}:
-The Fortran 2003 standard specifies the intrinsic @code{RANDOM_SEED} to
-initialize the pseudo-random numbers generator and @code{RANDOM_NUMBER}
-to generate pseudo-random numbers. Please note that in
-GNU Fortran, these two sets of intrinsics (@code{RAND},
+The Fortran standard specifies the intrinsic subroutines
+@code{RANDOM_SEED} to initialize the pseudo-random number
+generator and @code{RANDOM_NUMBER} to generate pseudo-random numbers.
+These subroutines should be used in new codes.
+
+Please note that in GNU Fortran, these two sets of intrinsics (@code{RAND},
 @code{IRAND} and @code{SRAND} on the one hand, @code{RANDOM_NUMBER} and
 @code{RANDOM_SEED} on the other hand) access two independent
 pseudo-random number generators.

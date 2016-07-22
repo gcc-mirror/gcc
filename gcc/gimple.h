@@ -145,6 +145,7 @@ enum gf_mask {
     GF_CALL_INTERNAL		= 1 << 6,
     GF_CALL_CTRL_ALTERING       = 1 << 7,
     GF_CALL_WITH_BOUNDS 	= 1 << 8,
+    GF_CALL_MUST_TAIL_CALL	= 1 << 9,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
@@ -1524,6 +1525,8 @@ extern void preprocess_case_label_vec_for_gimple (vec<tree>, tree, tree *);
 extern void gimple_seq_set_location (gimple_seq, location_t);
 extern void gimple_seq_discard (gimple_seq);
 extern void maybe_remove_unused_call_args (struct function *, gimple *);
+extern bool gimple_inexpensive_call_p (gcall *);
+extern bool stmt_can_terminate_bb_p (gimple *);
 
 /* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */
@@ -3209,6 +3212,25 @@ gimple_call_tail_p (gcall *s)
   return (s->subcode & GF_CALL_TAILCALL) != 0;
 }
 
+/* Mark (or clear) call statement S as requiring tail call optimization.  */
+
+static inline void
+gimple_call_set_must_tail (gcall *s, bool must_tail_p)
+{
+  if (must_tail_p)
+    s->subcode |= GF_CALL_MUST_TAIL_CALL;
+  else
+    s->subcode &= ~GF_CALL_MUST_TAIL_CALL;
+}
+
+/* Return true if call statement has been marked as requiring
+   tail call optimization.  */
+
+static inline bool
+gimple_call_must_tail_p (const gcall *s)
+{
+  return (s->subcode & GF_CALL_MUST_TAIL_CALL) != 0;
+}
 
 /* If RETURN_SLOT_OPT_P is true mark GIMPLE_CALL S as valid for return
    slot optimization.  This transformation uses the target of the call

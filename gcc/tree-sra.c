@@ -1055,7 +1055,7 @@ completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 		idx = wi::sext (idx, TYPE_PRECISION (domain));
 		max = wi::sext (max, TYPE_PRECISION (domain));
 	      }
-	    for (int el_off = offset; wi::les_p (idx, max); ++idx)
+	    for (int el_off = offset; idx <= max; ++idx)
 	      {
 		tree nref = build4 (ARRAY_REF, elemtype,
 				    ref,
@@ -2074,7 +2074,8 @@ sort_and_splice_var_accesses (tree var)
       access->grp_scalar_write = grp_scalar_write;
       access->grp_assignment_read = grp_assignment_read;
       access->grp_assignment_write = grp_assignment_write;
-      access->grp_hint = multiple_scalar_reads || total_scalarization;
+      access->grp_hint = total_scalarization
+	|| (multiple_scalar_reads && !constant_decl_p (var));
       access->grp_total_scalarization = total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
@@ -2132,6 +2133,7 @@ create_access_replacement (struct access *access)
       bool fail = false;
 
       DECL_NAME (repl) = get_identifier (pretty_name);
+      DECL_NAMELESS (repl) = 1;
       obstack_free (&name_obstack, pretty_name);
 
       /* Get rid of any SSA_NAMEs embedded in debug_expr,
@@ -3558,32 +3560,31 @@ initialize_constant_pool_replacements (void)
   unsigned i;
 
   EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
-    if (bitmap_bit_p (should_scalarize_away_bitmap, i)
-	&& !bitmap_bit_p (cannot_scalarize_away_bitmap, i))
-      {
-	tree var = candidate (i);
-	if (!constant_decl_p (var))
-	  continue;
-	vec<access_p> *access_vec = get_base_access_vector (var);
-	if (!access_vec)
-	  continue;
-	for (unsigned i = 0; i < access_vec->length (); i++)
-	  {
-	    struct access *access = (*access_vec)[i];
-	    if (!access->replacement_decl)
-	      continue;
-	    gassign *stmt = gimple_build_assign (
-	      get_access_replacement (access), unshare_expr (access->expr));
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      {
-		fprintf (dump_file, "Generating constant initializer: ");
-		print_gimple_stmt (dump_file, stmt, 0, 1);
-		fprintf (dump_file, "\n");
-	      }
-	    gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-	    update_stmt (stmt);
-	  }
-      }
+    {
+      tree var = candidate (i);
+      if (!constant_decl_p (var))
+	continue;
+      vec<access_p> *access_vec = get_base_access_vector (var);
+      if (!access_vec)
+	continue;
+      for (unsigned i = 0; i < access_vec->length (); i++)
+	{
+	  struct access *access = (*access_vec)[i];
+	  if (!access->replacement_decl)
+	    continue;
+	  gassign *stmt
+	    = gimple_build_assign (get_access_replacement (access),
+				   unshare_expr (access->expr));
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Generating constant initializer: ");
+	      print_gimple_stmt (dump_file, stmt, 0, 1);
+	      fprintf (dump_file, "\n");
+	    }
+	  gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+	  update_stmt (stmt);
+	}
+    }
 
   seq = gsi_seq (gsi);
   if (seq)
@@ -4704,6 +4705,7 @@ get_replaced_param_substitute (struct ipa_parm_adjustment *adj)
 
       repl = create_tmp_reg (TREE_TYPE (adj->base), "ISR");
       DECL_NAME (repl) = get_identifier (pretty_name);
+      DECL_NAMELESS (repl) = 1;
       obstack_free (&name_obstack, pretty_name);
 
       adj->new_ssa_base = repl;
@@ -5228,7 +5230,7 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	  machine_mode mode;
 	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
-			       &unsignedp, &reversep, &volatilep, false);
+			       &unsignedp, &reversep, &volatilep);
 	  if (bitpos % BITS_PER_UNIT)
 	    {
 	      iscc->bad_arg_alignment = true;

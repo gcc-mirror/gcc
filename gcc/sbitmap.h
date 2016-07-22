@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 
 struct simple_bitmap_def
 {
-  unsigned char *popcount;      /* Population count.  */
   unsigned int n_bits;		/* Number of bits.  */
   unsigned int size;		/* Size in elements.  */
   SBITMAP_ELT_TYPE elms[1];	/* The elements.  */
@@ -110,7 +109,6 @@ bitmap_bit_p (const_sbitmap map, int bitno)
 static inline void
 bitmap_set_bit (sbitmap map, int bitno)
 {
-  gcc_checking_assert (! map->popcount);
   map->elms[bitno / SBITMAP_ELT_BITS]
     |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
 }
@@ -120,7 +118,6 @@ bitmap_set_bit (sbitmap map, int bitno)
 static inline void
 bitmap_clear_bit (sbitmap map, int bitno)
 {
-  gcc_checking_assert (! map->popcount);
   map->elms[bitno / SBITMAP_ELT_BITS]
     &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
 }
@@ -213,7 +210,6 @@ bmp_iter_next (sbitmap_iterator *i, unsigned *bit_no ATTRIBUTE_UNUSED)
 
 inline void sbitmap_free (sbitmap map)
 {
-  free (map->popcount);
   free (map);
 }
 
@@ -231,7 +227,6 @@ extern void debug (const simple_bitmap_def *ptr);
 extern void dump_bitmap_vector (FILE *, const char *, const char *, sbitmap *,
 				 int);
 extern sbitmap sbitmap_alloc (unsigned int);
-extern sbitmap sbitmap_alloc_with_popcount (unsigned int);
 extern sbitmap *sbitmap_vector_alloc (unsigned int, unsigned int);
 extern sbitmap sbitmap_resize (sbitmap, unsigned int, int);
 extern void bitmap_copy (sbitmap, const_sbitmap);
@@ -261,5 +256,4 @@ extern int bitmap_last_set_bit (const_sbitmap);
 
 extern void debug_bitmap (const_sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
-extern unsigned long sbitmap_popcount (const_sbitmap, unsigned long);
 #endif /* ! GCC_SBITMAP_H */

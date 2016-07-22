@@ -56,11 +56,11 @@ namespace detail
   struct rand_reg_test
   {
   public:
-    rand_reg_test(size_t seed, size_t n, size_t m, double tp, double ip, 
-		  double dp, double ep, double cp, double mp, bool d) 
-    : m_sd(seed), m_n(n), m_m(m), m_tp(tp), m_ip(ip), m_dp(dp), m_ep(ep), 
+    rand_reg_test(size_t seed, size_t n, size_t m, double tp, double ip,
+		  double dp, double ep, double cp, double mp, bool d)
+    : m_sd(seed), m_n(n), m_m(m), m_tp(tp), m_ip(ip), m_dp(dp), m_ep(ep),
       m_cp(cp), m_mp(mp), m_disp(d)
-    { 
+    {
       if (m_disp)
 	xml_test_rand_regression_formatter(seed, n, m, tp, ip, ep, cp, mp);
     }
@@ -70,7 +70,7 @@ namespace detail
     operator()(Cntnr)
     {
       unsigned long ul = static_cast<unsigned long>(m_sd);
-      container_rand_regression_test<Cntnr> t(ul, m_n, m_n, m_tp, m_ip, m_dp, 
+      container_rand_regression_test<Cntnr> t(ul, m_n, m_n, m_tp, m_ip, m_dp,
 					      m_ep, m_cp, m_mp, m_disp);
       t();
     }
@@ -92,7 +92,7 @@ namespace detail
   usage(const std::string& r_name);
 
   void
-  verify_params(size_t&, size_t&, size_t&, 
+  verify_params(size_t&, size_t&, size_t&,
 		double&, double&, double&, double&, double&, double&, bool&);
 } // namespace detail
 
@@ -107,7 +107,7 @@ namespace detail
     double tp = 0.2;
     double ip = 0.6;
     double dp = 0.1;
-    double ep = 0.2; 
+    double ep = 0.2;
     double cp = 0.001;
     double mp = 1;
     bool disp = true; // show progress
@@ -175,8 +175,8 @@ namespace detail
   }
 
   inline void
-  verify_params(size_t& r_seed, size_t& r_n, 
-		size_t& r_m, double& r_tp, double& r_ip, double& r_dp, 
+  verify_params(size_t& r_seed, size_t& r_n,
+		size_t& r_m, double& r_tp, double& r_ip, double& r_dp,
 		double& r_ep, double& r_cp, double& r_mp, bool& r_d)
   {
     verify_prob(r_tp);

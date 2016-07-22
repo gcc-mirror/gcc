@@ -1094,6 +1094,16 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   info->descriptor = desc;
   size = gfc_index_one_node;
 
+  /* Emit a DECL_EXPR for the variable sized array type in
+     GFC_TYPE_ARRAY_DATAPTR_TYPE so the gimplification of its type
+     sizes works correctly.  */
+  tree arraytype = TREE_TYPE (GFC_TYPE_ARRAY_DATAPTR_TYPE (type));
+  if (! TYPE_NAME (arraytype))
+    TYPE_NAME (arraytype) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+					NULL_TREE, arraytype);
+  gfc_add_expr_to_block (pre, build1 (DECL_EXPR,
+				      arraytype, TYPE_NAME (arraytype)));
+
   /* Fill in the array dtype.  */
   tmp = gfc_conv_descriptor_dtype (desc);
   gfc_add_modify (pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
@@ -5543,7 +5553,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			  build_int_cst (TREE_TYPE (status), 0));
       gfc_add_expr_to_block (&se->pre,
 		 fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				  gfc_likely (cond, PRED_FORTRAN_FAIL_ALLOC),
+				  cond,
 				  set_descriptor,
 				  build_empty_stmt (input_location)));
     }
@@ -6376,7 +6386,12 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       stmtCleanup = gfc_finish_block (&cleanup);
 
       /* Only do the cleanup if the array was repacked.  */
-      tmp = build_fold_indirect_ref_loc (input_location, dumdesc);
+      if (is_classarray)
+	/* For a class array the dummy array descriptor is in the _class
+	   component.  */
+	tmp = gfc_class_data_get (dumdesc);
+      else
+	tmp = build_fold_indirect_ref_loc (input_location, dumdesc);
       tmp = gfc_conv_descriptor_data_get (tmp);
       tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			     tmp, tmpdesc);

@@ -1,4 +1,4 @@
-/* GNU compiler hardware transactional execution intrinsics
+/* GNU compiler vector extension intrinsics
    Copyright (C) 2015-2016 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
