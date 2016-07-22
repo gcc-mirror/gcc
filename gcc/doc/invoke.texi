@@ -414,7 +414,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
 -ftree-vectorize -ftree-vrp -funconstrained-commons @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
--funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
+-funsafe-math-optimizations -funswitch-loops @gol
 -fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
 -fweb -fwhole-program -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
@@ -6817,15 +6817,6 @@ integer overflows or out-of-bound array accesses.  The bounds for the
 number of iterations of a loop are used to guide loop unrolling and peeling
 and loop exit test optimizations.
 This option is enabled by default.
-
-@item -funsafe-loop-optimizations
-@opindex funsafe-loop-optimizations
-This option tells the loop optimizer to assume that loop indices do not
-overflow, and that loops with nontrivial exit condition are not
-infinite.  This enables a wider range of loop optimizations even if
-the loop optimizer itself cannot prove that these assumptions are valid.
-If you use @option{-Wunsafe-loop-optimizations}, the compiler warns you
-if it finds this kind of loop.
 
 @item -funconstrained-commons
 @opindex funconstrained-commons

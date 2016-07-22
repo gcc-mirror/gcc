@@ -2507,8 +2507,8 @@ Perform loop unrolling for all loops.
 ; that control loops do not overflow and that the loops with nontrivial
 ; exit condition are not infinite
 funsafe-loop-optimizations
-Common Report Var(flag_unsafe_loop_optimizations) Optimization
-Allow loop optimizations to assume that the loops behave in normal way.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fassociative-math
 Common Report Var(flag_associative_math) SetByCombined Optimization

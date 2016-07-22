@@ -3375,10 +3375,7 @@ bfin_can_use_doloop_p (const widest_int &, const widest_int &iterations_max,
   /* Due to limitations in the hardware (an initial loop count of 0
      does not loop 2^32 times) we must avoid to generate a hardware
      loops when we cannot rule out this case.  */
-  if (!flag_unsafe_loop_optimizations
-      && wi::geu_p (iterations_max, 0xFFFFFFFF))
-    return false;
-  return true;
+  return (wi::ltu_p (iterations_max, 0xFFFFFFFF));
 }
 
 /* Increment the counter for the number of loop instructions in the
