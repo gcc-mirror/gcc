@@ -1,3 +1,13 @@
+2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* expr.c (gfc_find_stat_co): Fixed whitespaces.
+	* gfortran.texi: Fixed typos and reversed meaning of caf_get()'s
+	src and dst description.
+	* trans-decl.c (gfc_build_builtin_function_decls): Fixed style
+	and corrected fnspec for caf functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Fixed style.
+	(conv_caf_send): Dito.
+
 2016-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71902
