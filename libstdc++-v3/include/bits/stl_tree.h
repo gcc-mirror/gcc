@@ -851,7 +851,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _Rb_tree(_Rb_tree&& __x)
-      : _M_impl(__x._M_impl._M_key_compare, __x._M_get_Node_allocator())
+      : _M_impl(__x._M_impl._M_key_compare,
+		std::move(__x._M_get_Node_allocator()))
       {
 	if (__x._M_root() != 0)
 	  _M_move_data(__x, std::true_type());
