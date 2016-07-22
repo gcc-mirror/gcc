@@ -1,3 +1,10 @@
+2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backport from trunk:
+	PR fortran/70842
+	* simplify.c (gfc_simplify_len): Only for unlimited polymorphic
+	types replace the expression's _data ref with a _len ref.
+
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk:
