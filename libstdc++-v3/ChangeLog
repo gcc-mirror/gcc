@@ -1,5 +1,12 @@
 2016-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71964
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_Alloc_hider(pointer, _Alloc&&)): Add constructor.
+	* include/bits/stl_tree.h (_Rb_tree(_Rb_tree&&)): Move allocator.
+	* testsuite/21_strings/basic_string/allocator/71964.cc: New test.
+	* testsuite/23_containers/set/allocator/71964.cc: New test.
+
 	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale): Use
 	delete[] instead of delete.
 
