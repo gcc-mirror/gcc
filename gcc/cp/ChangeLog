@@ -1,3 +1,9 @@
+2016-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71913
+	* call.c (unsafe_copy_elision_p): It's OK to elide when
+	initializing an unknown object.
+
 2016-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71909

@@ -7029,10 +7029,11 @@ static bool
 unsafe_copy_elision_p (tree target, tree exp)
 {
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
-  if (type == CLASSTYPE_AS_BASE (type))
+  /* It's safe to elide the copy for a class with no tail padding.  */
+  if (tree_int_cst_equal (TYPE_SIZE (type), CLASSTYPE_SIZE (type)))
     return false;
-  if (!is_base_field_ref (target)
-      && resolves_to_fixed_type_p (target, NULL))
+  /* It's safe to elide the copy if we aren't initializing a base object.  */
+  if (!is_base_field_ref (target))
     return false;
   tree init = TARGET_EXPR_INITIAL (exp);
   /* build_compound_expr pushes COMPOUND_EXPR inside TARGET_EXPR.  */
