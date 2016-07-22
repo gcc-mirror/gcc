@@ -2106,6 +2106,8 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 
   std::set<std::string> uniq_idents;
   uniq_idents.insert(name);
+  std::string dup_name;
+  Location dup_loc;
 
   // We've seen one identifier.  If we see a comma now, this could be
   // "a, *p = 1, 2".
@@ -2145,8 +2147,10 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 	  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 	  ins = uniq_idents.insert(id);
 	  if (!ins.second && !Gogo::is_sink_name(id))
-	    error_at(id_location, "multiple assignments to %s",
-		     Gogo::message_name(id).c_str());
+	    {
+	      dup_name = Gogo::message_name(id);
+	      dup_loc = id_location;
+	    }
 	  til.push_back(Typed_identifier(id, NULL, location));
 	}
 
@@ -2181,6 +2185,9 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 
   go_assert(this->peek_token()->is_op(OPERATOR_COLONEQ));
   const Token* token = this->advance_token();
+
+  if (!dup_name.empty())
+    error_at(dup_loc, "multiple assignments to %s", dup_name.c_str());
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
