@@ -4731,11 +4731,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
  
   /* vec_lvsl and vec_lvsr are deprecated for use with LE element order.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_LVSL && !VECTOR_ELT_ORDER_BIG)
-    warning (OPT_Wdeprecated, "vec_lvsl is deprecated for little endian; use \
-assignment for unaligned loads and stores");
+    warning (OPT_Wdeprecated,
+	     "vec_lvsl is deprecated for little endian; use "
+	     "assignment for unaligned loads and stores");
   else if (fcode == ALTIVEC_BUILTIN_VEC_LVSR && !VECTOR_ELT_ORDER_BIG)
-    warning (OPT_Wdeprecated, "vec_lvsr is deprecated for little endian; use \
-assignment for unaligned loads and stores");
+    warning (OPT_Wdeprecated,
+	     "vec_lvsr is deprecated for little endian; use "
+	     "assignment for unaligned loads and stores");
 
   if (fcode == ALTIVEC_BUILTIN_VEC_MUL)
     {

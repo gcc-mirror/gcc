@@ -1,3 +1,8 @@
+2016-07-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Reformat two multi-line strings.
+
 2016-07-22 Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (Compound Literals): Add '@' missed in last commit.
