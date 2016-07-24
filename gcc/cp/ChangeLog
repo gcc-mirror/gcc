@@ -1,5 +1,9 @@
 2016-07-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66617
+	* call.c (add_list_candidates): Handle VTT parm.
+	(build_new_method_call_1): Likewise.
+
 	PR c++/55922
 	PR c++/63151
 	* init.c (expand_aggr_init_1): Handle list-initialization from {}.
