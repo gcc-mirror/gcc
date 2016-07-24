@@ -1,3 +1,11 @@
+2016-07-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/66726
+	* tree-ssa-reassoc.c (optimize_vec_cond_expr): Handle tcc_compare stmt
+	whose result is used in PHI.
+	(final_range_test_p): Likewise.
+	(maybe_optimize_range_tests): Likewise.
+
 2016-07-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
