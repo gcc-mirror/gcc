@@ -3027,18 +3027,33 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
    # _345 = PHI <_123(N), 1(...), 1(...)>
    where _234 has bool type, _123 has single use and
    bb N has a single successor M.  This is commonly used in
+   the last block of a range test.
+
+   Also Return true if STMT is tcc_compare like:
+   <bb N>:
+   ...
+   _234 = a_2(D) == 2;
+
+   <bb M>:
+   # _345 = PHI <_234(N), 1(...), 1(...)>
+   _346 = (int) _345;
+   where _234 has booltype, single use and
+   bb N has a single successor M.  This is commonly used in
    the last block of a range test.  */
 
 static bool
 final_range_test_p (gimple *stmt)
 {
-  basic_block bb, rhs_bb;
+  basic_block bb, rhs_bb, lhs_bb;
   edge e;
   tree lhs, rhs;
   use_operand_p use_p;
   gimple *use_stmt;
 
-  if (!gimple_assign_cast_p (stmt))
+  if (!gimple_assign_cast_p (stmt)
+      && (!is_gimple_assign (stmt)
+	  || (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+	      != tcc_comparison)))
     return false;
   bb = gimple_bb (stmt);
   if (!single_succ_p (bb))
@@ -3049,10 +3064,15 @@ final_range_test_p (gimple *stmt)
 
   lhs = gimple_assign_lhs (stmt);
   rhs = gimple_assign_rhs1 (stmt);
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-      || TREE_CODE (rhs) != SSA_NAME
-      || TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE)
+  if (gimple_assign_cast_p (stmt)
+      && (!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	  || TREE_CODE (rhs) != SSA_NAME
+	  || TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE))
     return false;
+
+  if (!gimple_assign_cast_p (stmt)
+      && (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE))
+      return false;
 
   /* Test whether lhs is consumed only by a PHI in the only successor bb.  */
   if (!single_imm_use (lhs, &use_p, &use_stmt))
@@ -3063,10 +3083,20 @@ final_range_test_p (gimple *stmt)
     return false;
 
   /* And that the rhs is defined in the same loop.  */
-  rhs_bb = gimple_bb (SSA_NAME_DEF_STMT (rhs));
-  if (rhs_bb == NULL
-      || !flow_bb_inside_loop_p (loop_containing_stmt (stmt), rhs_bb))
-    return false;
+  if (gimple_assign_cast_p (stmt))
+    {
+      if (TREE_CODE (rhs) != SSA_NAME
+	  || !(rhs_bb = gimple_bb (SSA_NAME_DEF_STMT (rhs)))
+	  || !flow_bb_inside_loop_p (loop_containing_stmt (stmt), rhs_bb))
+	return false;
+    }
+  else
+    {
+      if (TREE_CODE (lhs) != SSA_NAME
+	  || !(lhs_bb = gimple_bb (SSA_NAME_DEF_STMT (lhs)))
+	  || !flow_bb_inside_loop_p (loop_containing_stmt (stmt), lhs_bb))
+	return false;
+    }
 
   return true;
 }
@@ -3460,6 +3490,8 @@ maybe_optimize_range_tests (gimple *stmt)
 
 	  /* stmt is
 	     _123 = (int) _234;
+	     OR
+	     _234 = a_2(D) == 2;
 
 	     followed by:
 	     <bb M>:
@@ -3489,6 +3521,8 @@ maybe_optimize_range_tests (gimple *stmt)
 	     of the bitwise or resp. and, recursively.  */
 	  if (!get_ops (rhs, code, &ops,
 			loop_containing_stmt (stmt))
+	      && (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		  != tcc_comparison)
 	      && has_single_use (rhs))
 	    {
 	      /* Otherwise, push the _234 range test itself.  */
@@ -3501,10 +3535,29 @@ maybe_optimize_range_tests (gimple *stmt)
 	      oe->stmt_to_insert = NULL;
 	      ops.safe_push (oe);
 	      bb_ent.last_idx++;
+	      bb_ent.op = rhs;
+	    }
+	  else if (is_gimple_assign (stmt)
+		   && (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		       == tcc_comparison)
+		   &&!get_ops (lhs, code, &ops,
+			       loop_containing_stmt (stmt))
+		   && has_single_use (lhs))
+	    {
+	      operand_entry *oe = operand_entry_pool.allocate ();
+	      oe->op = lhs;
+	      oe->rank = code;
+	      oe->id = 0;
+	      oe->count = 1;
+	      ops.safe_push (oe);
+	      bb_ent.last_idx++;
+	      bb_ent.op = lhs;
 	    }
 	  else
-	    bb_ent.last_idx = ops.length ();
-	  bb_ent.op = rhs;
+	    {
+	      bb_ent.last_idx = ops.length ();
+	      bb_ent.op = rhs;
+	    }
 	  bbinfo.safe_push (bb_ent);
 	  continue;
 	}
@@ -3586,7 +3639,7 @@ maybe_optimize_range_tests (gimple *stmt)
 		{
 		  imm_use_iterator iter;
 		  use_operand_p use_p;
-		  gimple *use_stmt, *cast_stmt = NULL;
+		  gimple *use_stmt, *cast_or_tcc_cmp_stmt = NULL;
 
 		  FOR_EACH_IMM_USE_STMT (use_stmt, iter, bbinfo[idx].op)
 		    if (is_gimple_debug (use_stmt))
@@ -3595,17 +3648,25 @@ maybe_optimize_range_tests (gimple *stmt)
 			     || gimple_code (use_stmt) == GIMPLE_PHI)
 		      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 			SET_USE (use_p, new_op);
+		    else if ((is_gimple_assign (use_stmt)
+			      && (TREE_CODE_CLASS
+				  (gimple_assign_rhs_code (use_stmt))
+				  == tcc_comparison)))
+		      cast_or_tcc_cmp_stmt = use_stmt;
 		    else if (gimple_assign_cast_p (use_stmt))
-		      cast_stmt = use_stmt;
+		      cast_or_tcc_cmp_stmt = use_stmt;
 		    else
 		      gcc_unreachable ();
-		  if (cast_stmt)
+
+		  if (cast_or_tcc_cmp_stmt)
 		    {
 		      gcc_assert (bb == last_bb);
-		      tree lhs = gimple_assign_lhs (cast_stmt);
+		      tree lhs = gimple_assign_lhs (cast_or_tcc_cmp_stmt);
 		      tree new_lhs = make_ssa_name (TREE_TYPE (lhs));
 		      enum tree_code rhs_code
-			= gimple_assign_rhs_code (cast_stmt);
+			= gimple_assign_cast_p (cast_or_tcc_cmp_stmt)
+			? gimple_assign_rhs_code (cast_or_tcc_cmp_stmt)
+			: CONVERT_EXPR;
 		      gassign *g;
 		      if (is_gimple_min_invariant (new_op))
 			{
@@ -3614,8 +3675,9 @@ maybe_optimize_range_tests (gimple *stmt)
 			}
 		      else
 			g = gimple_build_assign (new_lhs, rhs_code, new_op);
-		      gimple_stmt_iterator gsi = gsi_for_stmt (cast_stmt);
-		      gimple_set_uid (g, gimple_uid (cast_stmt));
+		      gimple_stmt_iterator gsi
+			= gsi_for_stmt (cast_or_tcc_cmp_stmt);
+		      gimple_set_uid (g, gimple_uid (cast_or_tcc_cmp_stmt));
 		      gimple_set_visited (g, true);
 		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 		      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
