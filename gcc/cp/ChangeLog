@@ -1,3 +1,8 @@
+2016-07-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71350
+	* decl.c (reshape_init_r): Check complain for missing braces warning.
+
 2016-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71576
