@@ -6737,7 +6737,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	       for a non-reference copy-initialization (8.5).  */
 
 	    tree type = TREE_TYPE (ref_type);
-	    cp_lvalue_kind lvalue = real_lvalue_p (expr);
+	    cp_lvalue_kind lvalue = lvalue_kind (expr);
 
 	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
 			(type, next_conversion (convs)->type));

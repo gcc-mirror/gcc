@@ -1,5 +1,8 @@
 2016-07-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71576
+	* call.c (convert_like_real): Use lvalue_kind.
+
 	PR c++/71748
 	PR c++/52746
 	* pt.c (tsubst_baselink): Call
