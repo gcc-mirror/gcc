@@ -13760,10 +13760,17 @@ tsubst_baselink (tree baselink, tree object_type,
     if (!object_type)
       object_type = current_class_type;
 
-    if (qualified)
-      baselink = adjust_result_of_qualified_name_lookup (baselink,
-							 qualifying_scope,
-							 object_type);
+    if (qualified || name == complete_dtor_identifier)
+      {
+	baselink = adjust_result_of_qualified_name_lookup (baselink,
+							   qualifying_scope,
+							   object_type);
+	if (!qualified)
+	  /* We need to call adjust_result_of_qualified_name_lookup in case the
+	     destructor names a base class, but we unset BASELINK_QUALIFIED_P
+	     so that we still get virtual function binding.  */
+	  BASELINK_QUALIFIED_P (baselink) = false;
+      }
     return baselink;
 }
 
