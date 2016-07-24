@@ -1,3 +1,11 @@
+2016-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71748
+	PR c++/52746
+	* pt.c (tsubst_baselink): Call
+	adjust_result_of_qualified_name_lookup for unqualified
+	destructors.
+
 2016-07-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69223
