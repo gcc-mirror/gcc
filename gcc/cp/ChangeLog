@@ -1,5 +1,9 @@
 2016-07-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70778
+	* pt.c (tsubst): Also substitute into the template of a
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+
 	PR c++/71738
 	* pt.c (lookup_template_class_1): Handle getting template from tsubst.
 
