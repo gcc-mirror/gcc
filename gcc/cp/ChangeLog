@@ -1,5 +1,9 @@
 2016-07-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55922
+	PR c++/63151
+	* init.c (expand_aggr_init_1): Handle list-initialization from {}.
+
 	PR c++/70709
 	* class.c (walk_subobject_offsets): Handle 0-length array.
 
