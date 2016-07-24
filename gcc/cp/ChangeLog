@@ -1,3 +1,9 @@
+2016-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71515
+	* pt.c (resolve_typename_type): Try to avoid calling
+	currently_open_class.
+
 2016-07-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66617
