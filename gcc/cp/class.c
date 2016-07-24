@@ -4175,7 +4175,8 @@ walk_subobject_offsets (tree type,
       /* Avoid recursing into objects that are not interesting.  */
       if (!CLASS_TYPE_P (element_type)
 	  || !CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type)
-	  || !domain)
+	  || !domain
+	  || integer_minus_onep (TYPE_MAX_VALUE (domain)))
 	return 0;
 
       /* Step through each of the elements in the array.  */
