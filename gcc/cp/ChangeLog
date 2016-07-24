@@ -1,5 +1,8 @@
 2016-07-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71738
+	* pt.c (lookup_template_class_1): Handle getting template from tsubst.
+
 	PR c++/71350
 	* decl.c (reshape_init_r): Check complain for missing braces warning.
 
