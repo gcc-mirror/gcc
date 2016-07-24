@@ -3577,15 +3577,13 @@ merge_conversion_sequences (conversion *user_seq, conversion *std_seq)
 
 static void
 add_list_candidates (tree fns, tree first_arg,
-		     tree init_list, tree totype,
+		     const vec<tree, va_gc> *args, tree totype,
 		     tree explicit_targs, bool template_only,
 		     tree conversion_path, tree access_path,
 		     int flags,
 		     struct z_candidate **candidates,
 		     tsubst_flags_t complain)
 {
-  vec<tree, va_gc> *args;
-
   gcc_assert (*candidates == NULL);
 
   /* We're looking for a ctor for list-initialization.  */
@@ -3593,6 +3591,9 @@ add_list_candidates (tree fns, tree first_arg,
   /* And we don't allow narrowing conversions.  We also use this flag to
      avoid the copy constructor call for copy-list-initialization.  */
   flags |= LOOKUP_NO_NARROWING;
+
+  unsigned nart = num_artificial_parms_for (get_first_fn (fns)) - 1;
+  tree init_list = (*args)[nart];
 
   /* Always use the default constructor if the list is empty (DR 990).  */
   if (CONSTRUCTOR_NELTS (init_list) == 0
@@ -3603,7 +3604,6 @@ add_list_candidates (tree fns, tree first_arg,
   else if (TYPE_HAS_LIST_CTOR (totype))
     {
       flags |= LOOKUP_LIST_ONLY;
-      args = make_tree_vector_single (init_list);
       add_candidates (fns, first_arg, args, NULL_TREE,
 		      explicit_targs, template_only, conversion_path,
 		      access_path, flags, candidates, complain);
@@ -3611,14 +3611,20 @@ add_list_candidates (tree fns, tree first_arg,
 	return;
     }
 
-  args = ctor_to_vec (init_list);
+  /* Expand the CONSTRUCTOR into a new argument vec.  */
+  vec<tree, va_gc> *new_args;
+  vec_alloc (new_args, nart + CONSTRUCTOR_NELTS (init_list));
+  for (unsigned i = 0; i < nart; ++i)
+    new_args->quick_push ((*args)[i]);
+  for (unsigned i = 0; i < CONSTRUCTOR_NELTS (init_list); ++i)
+    new_args->quick_push (CONSTRUCTOR_ELT (init_list, i)->value);
 
   /* We aren't looking for list-ctors anymore.  */
   flags &= ~LOOKUP_LIST_ONLY;
   /* We allow more user-defined conversions within an init-list.  */
   flags &= ~LOOKUP_NO_CONVERSION;
 
-  add_candidates (fns, first_arg, args, NULL_TREE,
+  add_candidates (fns, first_arg, new_args, NULL_TREE,
 		  explicit_targs, template_only, conversion_path,
 		  access_path, flags, candidates, complain);
 }
@@ -3698,16 +3704,16 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
 		  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)));
 
+      args = make_tree_vector_single (expr);
       if (BRACE_ENCLOSED_INITIALIZER_P (expr))
 	{
 	  /* List-initialization.  */
-	  add_list_candidates (ctors, first_arg, expr, totype, NULL_TREE,
+	  add_list_candidates (ctors, first_arg, args, totype, NULL_TREE,
 			       false, TYPE_BINFO (totype), TYPE_BINFO (totype),
 			       ctorflags, &candidates, complain);
 	}
       else
 	{
-	  args = make_tree_vector_single (expr);
 	  add_candidates (ctors, first_arg, args, NULL_TREE, NULL_TREE, false,
 			  TYPE_BINFO (totype), TYPE_BINFO (totype),
 			  ctorflags, &candidates, complain);
@@ -8350,15 +8356,20 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
 
+  /* The number of arguments artificial parms in ARGS; we subtract one because
+     there's no 'this' in ARGS.  */
+  unsigned skip = num_artificial_parms_for (fn) - 1;
+
   /* If CONSTRUCTOR_IS_DIRECT_INIT is set, this was a T{ } form
      initializer, not T({ }).  */
-  if (DECL_CONSTRUCTOR_P (fn) && args != NULL && !vec_safe_is_empty (*args)
-      && DIRECT_LIST_INIT_P ((**args)[0]))
+  if (DECL_CONSTRUCTOR_P (fn)
+      && vec_safe_length (user_args) > skip
+      && DIRECT_LIST_INIT_P ((*user_args)[skip]))
     {
-      tree init_list = (**args)[0];
+      tree init_list = (*user_args)[skip];
       tree init = NULL_TREE;
 
-      gcc_assert ((*args)->length () == 1
+      gcc_assert (user_args->length () == skip + 1
 		  && !(flags & LOOKUP_ONLYCONVERTING));
 
       /* If the initializer list has no elements and T is a class type with
@@ -8391,7 +8402,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	}
 
       /* Otherwise go ahead with overload resolution.  */
-      add_list_candidates (fns, first_mem_arg, init_list,
+      add_list_candidates (fns, first_mem_arg, user_args,
 			   basetype, explicit_targs, template_only,
 			   conversion_path, access_binfo, flags,
 			   &candidates, complain);
