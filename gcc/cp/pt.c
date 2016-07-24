@@ -23678,29 +23678,26 @@ resolve_typename_type (tree type, bool only_current_p)
     }
   /* If we don't know what SCOPE refers to, then we cannot resolve the
      TYPENAME_TYPE.  */
-  if (TREE_CODE (scope) == TYPENAME_TYPE)
-    return type;
-  /* If the SCOPE is a template type parameter, we have no way of
-     resolving the name.  */
-  if (TREE_CODE (scope) == TEMPLATE_TYPE_PARM)
-    return type;
-  /* If the SCOPE is not the current instantiation, there's no reason
-     to look inside it.  */
-  if (only_current_p && !currently_open_class (scope))
+  if (!CLASS_TYPE_P (scope))
     return type;
   /* If this is a typedef, we don't want to look inside (c++/11987).  */
   if (typedef_variant_p (type))
     return type;
   /* If SCOPE isn't the template itself, it will not have a valid
      TYPE_FIELDS list.  */
-  if (CLASS_TYPE_P (scope)
-      && same_type_p (scope, CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope)))
+  if (same_type_p (scope, CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope)))
     /* scope is either the template itself or a compatible instantiation
        like X<T>, so look up the name in the original template.  */
     scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
-  else
-    /* scope is a partial instantiation, so we can't do the lookup or we
-       will lose the template arguments.  */
+  /* We shouldn't have built a TYPENAME_TYPE with a non-dependent scope.  */
+  gcc_checking_assert (uses_template_parms (scope));
+  /* If scope has no fields, it can't be a current instantiation.  Check this
+     before currently_open_class to avoid infinite recursion (71515).  */
+  if (!TYPE_FIELDS (scope))
+    return type;
+  /* If the SCOPE is not the current instantiation, there's no reason
+     to look inside it.  */
+  if (only_current_p && !currently_open_class (scope))
     return type;
   /* Enter the SCOPE so that name lookup will be resolved as if we
      were in the class definition.  In particular, SCOPE will no
