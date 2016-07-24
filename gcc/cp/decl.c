@@ -5894,8 +5894,10 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	    }
 	}
 
-      warning (OPT_Wmissing_braces, "missing braces around initializer for %qT",
-	       type);
+      if (complain & tf_warning)
+	warning (OPT_Wmissing_braces,
+		 "missing braces around initializer for %qT",
+		 type);
     }
 
   /* Dispatch to specialized routines.  */
