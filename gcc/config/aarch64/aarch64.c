@@ -3412,98 +3412,20 @@ aarch64_final_eh_return_addr (void)
 				       - 2 * UNITS_PER_WORD));
 }
 
-/* Possibly output code to build up a constant in a register.  For
-   the benefit of the costs infrastructure, returns the number of
-   instructions which would be emitted.  GENERATE inhibits or
-   enables code generation.  */
-
-static int
-aarch64_build_constant (int regnum, HOST_WIDE_INT val, bool generate)
-{
-  int insns = 0;
-
-  if (aarch64_bitmask_imm (val, DImode))
-    {
-      if (generate)
-	emit_move_insn (gen_rtx_REG (Pmode, regnum), GEN_INT (val));
-      insns = 1;
-    }
-  else
-    {
-      int i;
-      int ncount = 0;
-      int zcount = 0;
-      HOST_WIDE_INT valp = val >> 16;
-      HOST_WIDE_INT valm;
-      HOST_WIDE_INT tval;
-
-      for (i = 16; i < 64; i += 16)
-	{
-	  valm = (valp & 0xffff);
-
-	  if (valm != 0)
-	    ++ zcount;
-
-	  if (valm != 0xffff)
-	    ++ ncount;
-
-	  valp >>= 16;
-	}
-
-      /* zcount contains the number of additional MOVK instructions
-	 required if the constant is built up with an initial MOVZ instruction,
-	 while ncount is the number of MOVK instructions required if starting
-	 with a MOVN instruction.  Choose the sequence that yields the fewest
-	 number of instructions, preferring MOVZ instructions when they are both
-	 the same.  */
-      if (ncount < zcount)
-	{
-	  if (generate)
-	    emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			    GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
-	  tval = 0xffff;
-	  insns++;
-	}
-      else
-	{
-	  if (generate)
-	    emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			    GEN_INT (val & 0xffff));
-	  tval = 0;
-	  insns++;
-	}
-
-      val >>= 16;
-
-      for (i = 16; i < 64; i += 16)
-	{
-	  if ((val & 0xffff) != tval)
-	    {
-	      if (generate)
-		emit_insn (gen_insv_immdi (gen_rtx_REG (Pmode, regnum),
-					   GEN_INT (i),
-					   GEN_INT (val & 0xffff)));
-	      insns++;
-	    }
-	  val >>= 16;
-	}
-    }
-  return insns;
-}
-
 static void
-aarch64_add_constant (int regnum, int scratchreg, HOST_WIDE_INT delta)
+aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
+		      HOST_WIDE_INT delta)
 {
   HOST_WIDE_INT mdelta = delta;
-  rtx this_rtx = gen_rtx_REG (Pmode, regnum);
-  rtx scratch_rtx = gen_rtx_REG (Pmode, scratchreg);
+  rtx this_rtx = gen_rtx_REG (mode, regnum);
+  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
 
   if (mdelta < 0)
     mdelta = -mdelta;
 
   if (mdelta >= 4096 * 4096)
     {
-      (void) aarch64_build_constant (scratchreg, delta, true);
+      aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (delta), true, mode);
       emit_insn (gen_add3_insn (this_rtx, this_rtx, scratch_rtx));
     }
   else if (mdelta > 0)
@@ -3511,19 +3433,19 @@ aarch64_add_constant (int regnum, int scratchreg, HOST_WIDE_INT delta)
       if (mdelta >= 4096)
 	{
 	  emit_insn (gen_rtx_SET (scratch_rtx, GEN_INT (mdelta / 4096)));
-	  rtx shift = gen_rtx_ASHIFT (Pmode, scratch_rtx, GEN_INT (12));
+	  rtx shift = gen_rtx_ASHIFT (mode, scratch_rtx, GEN_INT (12));
 	  if (delta < 0)
 	    emit_insn (gen_rtx_SET (this_rtx,
-				    gen_rtx_MINUS (Pmode, this_rtx, shift)));
+				    gen_rtx_MINUS (mode, this_rtx, shift)));
 	  else
 	    emit_insn (gen_rtx_SET (this_rtx,
-				    gen_rtx_PLUS (Pmode, this_rtx, shift)));
+				    gen_rtx_PLUS (mode, this_rtx, shift)));
 	}
       if (mdelta % 4096 != 0)
 	{
 	  scratch_rtx = GEN_INT ((delta < 0 ? -1 : 1) * (mdelta % 4096));
 	  emit_insn (gen_rtx_SET (this_rtx,
-				  gen_rtx_PLUS (Pmode, this_rtx, scratch_rtx)));
+				  gen_rtx_PLUS (mode, this_rtx, scratch_rtx)));
 	}
     }
 }
@@ -3548,7 +3470,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   if (vcall_offset == 0)
-    aarch64_add_constant (this_regno, IP1_REGNUM, delta);
+    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta);
   else
     {
       gcc_assert ((vcall_offset & (POINTER_BYTES - 1)) == 0);
@@ -3564,7 +3486,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    addr = gen_rtx_PRE_MODIFY (Pmode, this_rtx,
 				       plus_constant (Pmode, this_rtx, delta));
 	  else
-	    aarch64_add_constant (this_regno, IP1_REGNUM, delta);
+	    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta);
 	}
 
       if (Pmode == ptr_mode)
@@ -3578,7 +3500,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  addr = plus_constant (Pmode, temp0, vcall_offset);
       else
 	{
-	  (void) aarch64_build_constant (IP1_REGNUM, vcall_offset, true);
+	  aarch64_internal_mov_immediate (temp1, GEN_INT (vcall_offset), true,
+					  Pmode);
 	  addr = gen_rtx_PLUS (Pmode, temp0, temp1);
 	}
 
