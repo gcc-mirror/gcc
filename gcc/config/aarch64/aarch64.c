@@ -12286,6 +12286,8 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 	case V4SImode: gen = gen_aarch64_trn2v4si; break;
 	case V2SImode: gen = gen_aarch64_trn2v2si; break;
 	case V2DImode: gen = gen_aarch64_trn2v2di; break;
+	case V4HFmode: gen = gen_aarch64_trn2v4hf; break;
+	case V8HFmode: gen = gen_aarch64_trn2v8hf; break;
 	case V4SFmode: gen = gen_aarch64_trn2v4sf; break;
 	case V2SFmode: gen = gen_aarch64_trn2v2sf; break;
 	case V2DFmode: gen = gen_aarch64_trn2v2df; break;
@@ -12304,6 +12306,8 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 	case V4SImode: gen = gen_aarch64_trn1v4si; break;
 	case V2SImode: gen = gen_aarch64_trn1v2si; break;
 	case V2DImode: gen = gen_aarch64_trn1v2di; break;
+	case V4HFmode: gen = gen_aarch64_trn1v4hf; break;
+	case V8HFmode: gen = gen_aarch64_trn1v8hf; break;
 	case V4SFmode: gen = gen_aarch64_trn1v4sf; break;
 	case V2SFmode: gen = gen_aarch64_trn1v2sf; break;
 	case V2DFmode: gen = gen_aarch64_trn1v2df; break;
@@ -12369,6 +12373,8 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 	case V4SImode: gen = gen_aarch64_uzp2v4si; break;
 	case V2SImode: gen = gen_aarch64_uzp2v2si; break;
 	case V2DImode: gen = gen_aarch64_uzp2v2di; break;
+	case V4HFmode: gen = gen_aarch64_uzp2v4hf; break;
+	case V8HFmode: gen = gen_aarch64_uzp2v8hf; break;
 	case V4SFmode: gen = gen_aarch64_uzp2v4sf; break;
 	case V2SFmode: gen = gen_aarch64_uzp2v2sf; break;
 	case V2DFmode: gen = gen_aarch64_uzp2v2df; break;
@@ -12387,6 +12393,8 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 	case V4SImode: gen = gen_aarch64_uzp1v4si; break;
 	case V2SImode: gen = gen_aarch64_uzp1v2si; break;
 	case V2DImode: gen = gen_aarch64_uzp1v2di; break;
+	case V4HFmode: gen = gen_aarch64_uzp1v4hf; break;
+	case V8HFmode: gen = gen_aarch64_uzp1v8hf; break;
 	case V4SFmode: gen = gen_aarch64_uzp1v4sf; break;
 	case V2SFmode: gen = gen_aarch64_uzp1v2sf; break;
 	case V2DFmode: gen = gen_aarch64_uzp1v2df; break;
@@ -12457,6 +12465,8 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 	case V4SImode: gen = gen_aarch64_zip2v4si; break;
 	case V2SImode: gen = gen_aarch64_zip2v2si; break;
 	case V2DImode: gen = gen_aarch64_zip2v2di; break;
+	case V4HFmode: gen = gen_aarch64_zip2v4hf; break;
+	case V8HFmode: gen = gen_aarch64_zip2v8hf; break;
 	case V4SFmode: gen = gen_aarch64_zip2v4sf; break;
 	case V2SFmode: gen = gen_aarch64_zip2v2sf; break;
 	case V2DFmode: gen = gen_aarch64_zip2v2df; break;
@@ -12475,6 +12485,8 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 	case V4SImode: gen = gen_aarch64_zip1v4si; break;
 	case V2SImode: gen = gen_aarch64_zip1v2si; break;
 	case V2DImode: gen = gen_aarch64_zip1v2di; break;
+	case V4HFmode: gen = gen_aarch64_zip1v4hf; break;
+	case V8HFmode: gen = gen_aarch64_zip1v8hf; break;
 	case V4SFmode: gen = gen_aarch64_zip1v4sf; break;
 	case V2SFmode: gen = gen_aarch64_zip1v2sf; break;
 	case V2DFmode: gen = gen_aarch64_zip1v2df; break;
@@ -12519,6 +12531,8 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
     case V8HImode: gen = gen_aarch64_extv8hi; break;
     case V2SImode: gen = gen_aarch64_extv2si; break;
     case V4SImode: gen = gen_aarch64_extv4si; break;
+    case V4HFmode: gen = gen_aarch64_extv4hf; break;
+    case V8HFmode: gen = gen_aarch64_extv8hf; break;
     case V2SFmode: gen = gen_aarch64_extv2sf; break;
     case V4SFmode: gen = gen_aarch64_extv4sf; break;
     case V2DImode: gen = gen_aarch64_extv2di; break;
@@ -12594,6 +12608,8 @@ aarch64_evpc_rev (struct expand_vec_perm_d *d)
 	case V2SImode: gen = gen_aarch64_rev64v2si;  break;
 	case V4SFmode: gen = gen_aarch64_rev64v4sf;  break;
 	case V2SFmode: gen = gen_aarch64_rev64v2sf;  break;
+	case V8HFmode: gen = gen_aarch64_rev64v8hf;  break;
+	case V4HFmode: gen = gen_aarch64_rev64v4hf;  break;
 	default:
 	  return false;
 	}
