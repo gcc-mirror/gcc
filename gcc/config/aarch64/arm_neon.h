@@ -26028,6 +26028,365 @@ __INTERLEAVE_LIST (zip)
 
 /* End of optimal implementations in approved order.  */
 
+#pragma GCC pop_options
+
+/* ARMv8.2-A FP16 intrinsics.  */
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+fp16")
+
+/* ARMv8.2-A FP16 one operand vector intrinsics.  */
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vabs_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_absv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vabsq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_absv8hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vceqz_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_cmeqv4hf_uss (__a, vdup_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vceqzq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_cmeqv8hf_uss (__a, vdupq_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcgez_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_cmgev4hf_uss (__a, vdup_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcgezq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_cmgev8hf_uss (__a, vdupq_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcgtz_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_cmgtv4hf_uss (__a, vdup_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcgtzq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_cmgtv8hf_uss (__a, vdupq_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vclez_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_cmlev4hf_uss (__a, vdup_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vclezq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_cmlev8hf_uss (__a, vdupq_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcltz_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_cmltv4hf_uss (__a, vdup_n_f16 (0.0f));
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcltzq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_cmltv8hf_uss (__a, vdupq_n_f16 (0.0f));
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_f16_s16 (int16x4_t __a)
+{
+  return __builtin_aarch64_floatv4hiv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvtq_f16_s16 (int16x8_t __a)
+{
+  return __builtin_aarch64_floatv8hiv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_f16_u16 (uint16x4_t __a)
+{
+  return __builtin_aarch64_floatunsv4hiv4hf ((int16x4_t) __a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvtq_f16_u16 (uint16x8_t __a)
+{
+  return __builtin_aarch64_floatunsv8hiv8hf ((int16x8_t) __a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvt_s16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lbtruncv4hfv4hi (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lbtruncv8hfv8hi (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvt_u16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lbtruncuv4hfv4hi_us (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtq_u16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lbtruncuv8hfv8hi_us (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvta_s16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lroundv4hfv4hi (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtaq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lroundv8hfv8hi (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvta_u16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lrounduv4hfv4hi_us (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtaq_u16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lrounduv8hfv8hi_us (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvtm_s16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lfloorv4hfv4hi (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtmq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lfloorv8hfv8hi (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvtm_u16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lflooruv4hfv4hi_us (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtmq_u16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lflooruv8hfv8hi_us (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvtn_s16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lfrintnv4hfv4hi (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtnq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lfrintnv8hfv8hi (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvtn_u16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lfrintnuv4hfv4hi_us (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtnq_u16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lfrintnuv8hfv8hi_us (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvtp_s16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lceilv4hfv4hi (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtpq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lceilv8hfv8hi (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvtp_u16_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_lceiluv4hfv4hi_us (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtpq_u16_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_lceiluv8hfv8hi_us (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vneg_f16 (float16x4_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vnegq_f16 (float16x8_t __a)
+{
+  return -__a;
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrecpe_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_frecpev4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrecpeq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_frecpev8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrnd_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_btruncv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_btruncv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrnda_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_roundv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndaq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_roundv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndi_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_nearbyintv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndiq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_nearbyintv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndm_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_floorv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndmq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_floorv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndn_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_frintnv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndnq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_frintnv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndp_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_ceilv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndpq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_ceilv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndx_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_rintv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndxq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_rintv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrsqrte_f16 (float16x4_t a)
+{
+  return __builtin_aarch64_rsqrtev4hf (a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrsqrteq_f16 (float16x8_t a)
+{
+  return __builtin_aarch64_rsqrtev8hf (a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vsqrt_f16 (float16x4_t a)
+{
+  return __builtin_aarch64_sqrtv4hf (a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vsqrtq_f16 (float16x8_t a)
+{
+  return __builtin_aarch64_sqrtv8hf (a);
+}
+
+#pragma GCC pop_options
+
 #undef __aarch64_vget_lane_any
 
 #undef __aarch64_vdup_lane_any
@@ -26083,7 +26442,5 @@ __INTERLEAVE_LIST (zip)
 #undef __aarch64_vdupq_laneq_u16
 #undef __aarch64_vdupq_laneq_u32
 #undef __aarch64_vdupq_laneq_u64
-
-#pragma GCC pop_options
 
 #endif

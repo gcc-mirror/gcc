@@ -1,5 +1,45 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (TYPES_BINOP_USS): New.
+	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_rsqrte<mode>): Extend to HF modes.
+	(neg<mode>2): Likewise.
+	(abs<mode>2): Likewise.
+	(<frint_pattern><mode>2): Likewise.
+	(l<fcvt_pattern><su_optab><VDQF:mode><fcvt_target>2): Likewise.
+	(<optab><VDQF:mode><fcvt_target>2): Likewise.
+	(<fix_trunc_optab><VDQF:mode><fcvt_target>2): Likewise.
+	(ftrunc<VDQF:mode>2): Likewise.
+	(<optab><fcvt_target><VDQF:mode>2): Likewise.
+	(sqrt<mode>2): Likewise.
+	(*sqrt<mode>2): Likewise.
+	(aarch64_frecpe<mode>): Likewise.
+	(aarch64_cm<optab><mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Return
+	false for V4HF and V8HF.
+	* config/aarch64/iterators.md (VHSDF, VHSDF_DF, VHSDF_SDF): New.
+	(VDQF_COND, fcvt_target, FCVT_TARGET, hcon): Extend mode attribute to HF modes.
+	(stype): New.
+	* config/aarch64/arm_neon.h (vdup_n_f16): New.
+	(vdupq_n_f16): Likewise.
+	(vld1_dup_f16): Use vdup_n_f16.
+	(vld1q_dup_f16): Use vdupq_n_f16.
+	(vabs_f16): New.
+	(vabsq_f16, vceqz_f16, vceqzq_f16, vcgez_f16, vcgezq_f16, vcgtz_f16,
+	vcgtzq_f16, vclez_f16, vclezq_f16, vcltz_f16, vcltzq_f16, vcvt_f16_s16,
+	vcvtq_f16_s16, vcvt_f16_u16, vcvtq_f16_u16, vcvt_s16_f16, vcvtq_s16_f16,
+	vcvt_u16_f16, vcvtq_u16_f16, vcvta_s16_f16, vcvtaq_s16_f16,
+	vcvta_u16_f16, vcvtaq_u16_f16, vcvtm_s16_f16, vcvtmq_s16_f16,
+	vcvtm_u16_f16, vcvtmq_u16_f16, vcvtn_s16_f16, vcvtnq_s16_f16,
+	vcvtn_u16_f16, vcvtnq_u16_f16, vcvtp_s16_f16, vcvtpq_s16_f16,
+	vcvtp_u16_f16, vcvtpq_u16_f16, vneg_f16, vnegq_f16, vrecpe_f16,
+	vrecpeq_f16, vrnd_f16, vrndq_f16, vrnda_f16, vrndaq_f16, vrndi_f16,
+	vrndiq_f16, vrndm_f16, vrndmq_f16, vrndn_f16, vrndnq_f16, vrndp_f16,
+	vrndpq_f16, vrndx_f16, vrndxq_f16, vrsqrte_f16, vrsqrteq_f16, vsqrt_f16,
+	vsqrtq_f16): Likewise.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): Use VALL_F16.
 	(aarch64_ext<mode>): Likewise.
