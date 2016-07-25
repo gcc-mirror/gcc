@@ -1,5 +1,11 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/arm_neon.h (vfmah_lane_f16, vfmah_laneq_f16,
+	vfmsh_lane_f16, vfmsh_laneq_f16, vmulh_lane_f16, vmulh_laneq_f16,
+	vmulxh_lane_f16, vmulxh_laneq_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
 	* config/aarch64/aarch64.md (fma, fnma): Support HF.
 	* config/aarch64/arm_fp16.h (vfmah_f16, vfmsh_f16): New.

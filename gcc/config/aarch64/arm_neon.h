@@ -26777,6 +26777,20 @@ vfmsq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
 
 /* ARMv8.2-A FP16 lane vector intrinsics.  */
 
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vfmah_lane_f16 (float16_t __a, float16_t __b,
+		float16x4_t __c, const int __lane)
+{
+  return vfmah_f16 (__a, __b, __aarch64_vget_lane_any (__c, __lane));
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vfmah_laneq_f16 (float16_t __a, float16_t __b,
+		 float16x8_t __c, const int __lane)
+{
+  return vfmah_f16 (__a, __b, __aarch64_vget_lane_any (__c, __lane));
+}
+
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
 vfma_lane_f16 (float16x4_t __a, float16x4_t __b,
 	       float16x4_t __c, const int __lane)
@@ -26815,6 +26829,20 @@ __extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
 vfmaq_n_f16 (float16x8_t __a, float16x8_t __b, float16_t __c)
 {
   return vfmaq_f16 (__a, __b, vdupq_n_f16 (__c));
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vfmsh_lane_f16 (float16_t __a, float16_t __b,
+		float16x4_t __c, const int __lane)
+{
+  return vfmsh_f16 (__a, __b, __aarch64_vget_lane_any (__c, __lane));
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vfmsh_laneq_f16 (float16_t __a, float16_t __b,
+		 float16x8_t __c, const int __lane)
+{
+  return vfmsh_f16 (__a, __b, __aarch64_vget_lane_any (__c, __lane));
 }
 
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
@@ -26857,6 +26885,12 @@ vfmsq_n_f16 (float16x8_t __a, float16x8_t __b, float16_t __c)
   return vfmsq_f16 (__a, __b, vdupq_n_f16 (__c));
 }
 
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmulh_lane_f16 (float16_t __a, float16x4_t __b, const int __lane)
+{
+  return __a * __aarch64_vget_lane_any (__b, __lane);
+}
+
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
 vmul_lane_f16 (float16x4_t __a, float16x4_t __b, const int __lane)
 {
@@ -26867,6 +26901,12 @@ __extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
 vmulq_lane_f16 (float16x8_t __a, float16x4_t __b, const int __lane)
 {
   return vmulq_f16 (__a, vdupq_n_f16 (__aarch64_vget_lane_any (__b, __lane)));
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmulh_laneq_f16 (float16_t __a, float16x8_t __b, const int __lane)
+{
+  return __a * __aarch64_vget_lane_any (__b, __lane);
 }
 
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
@@ -26893,6 +26933,12 @@ vmulq_n_f16 (float16x8_t __a, float16_t __b)
   return vmulq_laneq_f16 (__a, vdupq_n_f16 (__b), 0);
 }
 
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmulxh_lane_f16 (float16_t __a, float16x4_t __b, const int __lane)
+{
+  return vmulxh_f16 (__a, __aarch64_vget_lane_any (__b, __lane));
+}
+
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
 vmulx_lane_f16 (float16x4_t __a, float16x4_t __b, const int __lane)
 {
@@ -26903,6 +26949,12 @@ __extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
 vmulxq_lane_f16 (float16x8_t __a, float16x4_t __b, const int __lane)
 {
   return vmulxq_f16 (__a, __aarch64_vdupq_lane_f16 (__b, __lane));
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmulxh_laneq_f16 (float16_t __a, float16x8_t __b, const int __lane)
+{
+  return vmulxh_f16 (__a, __aarch64_vget_lane_any (__b, __lane));
 }
 
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
