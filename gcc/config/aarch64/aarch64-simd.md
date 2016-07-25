@@ -2130,8 +2130,8 @@
 ;; gimple_fold'd to the REDUC_(MAX|MIN)_EXPR tree code.  (This is FP smax/smin).
 (define_expand "reduc_<maxmin_uns>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
-   (unspec:VDQF [(match_operand:VDQF 1 "register_operand")]
-		FMAXMINV)]
+   (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")]
+		  FMAXMINV)]
   "TARGET_SIMD"
   {
     rtx elt = GEN_INT (ENDIAN_LANE_N (<MODE>mode, 0));
@@ -2178,12 +2178,12 @@
 )
 
 (define_insn "aarch64_reduc_<maxmin_uns>_internal<mode>"
- [(set (match_operand:VDQF 0 "register_operand" "=w")
-       (unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]
-		    FMAXMINV))]
+ [(set (match_operand:VHSDF 0 "register_operand" "=w")
+       (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
+		      FMAXMINV))]
  "TARGET_SIMD"
  "<maxmin_uns_op><vp>\\t%<Vetype>0, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_reduc_minmax_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_reduc_minmax_<stype><q>")]
 )
 
 ;; aarch64_simd_bsl may compile to any of bsl/bif/bit depending on register

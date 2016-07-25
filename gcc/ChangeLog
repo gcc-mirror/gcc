@@ -1,5 +1,18 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def (reduc_smax_scal_,
+	reduc_smin_scal_): Use VDQIF_F16.
+	(reduc_smax_nan_scal_, reduc_smin_nan_scal_): Use VHSDF.
+	* config/aarch64/aarch64-simd.md (reduc_<maxmin_uns>_scal_<mode>):
+	Use VHSDF.
+	(aarch64_reduc_<maxmin_uns>_internal<mode>): Likewise.
+	* config/aarch64/iterators.md (VDQIF_F16): New.
+	(vp): Support HF modes.
+	* config/aarch64/arm_neon.h (vmaxv_f16, vmaxvq_f16, vminv_f16,
+	vminvq_f16, vmaxnmv_f16, vmaxnmvq_f16, vminnmv_f16, vminnmvq_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd.md (*aarch64_mulx_elt_to_64v2df): Rename to
 	"*aarch64_mulx_elt_from_dup<mode>".
 	(*aarch64_mul3_elt<mode>): Update schedule type.
