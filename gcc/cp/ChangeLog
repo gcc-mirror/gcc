@@ -1,5 +1,10 @@
 2016-07-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71837
+	* lambda.c (add_capture): Leave a pack expansion in a TREE_LIST.
+	(build_lambda_object): Call build_x_compound_expr_from_list.
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Likewise.
+
 	PR c++/71833
 	PR c++/54440
 	* pt.c (coerce_template_parameter_pack): Fix logic for
