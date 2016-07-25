@@ -1,6 +1,14 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
+	* config/aarch64/aarch64-simd.md (fma<mode>4, fnma<mode>4): Extend to HF
+	modes.
+	* config/aarch64/arm_neon.h (vfma_f16, vfmaq_f16, vfms_f16,
+	vfmsq_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
 	* config/aarch64/aarch64-simd.md
 	(aarch64_rsqrts<mode>): Extend to HF modes.
 	(fabd<mode>3): Likewise.
@@ -22,20 +30,19 @@
 	* config/aarch64/aarch64.c (aarch64_emit_approx_div): Return false for
 	HF, V4HF and V8HF.
 	* config/aarch64/iterators.md (VDQ_HSDI, VSDQ_HSDI): New mode iterator.
-	* config/aarch64/arm_neon.h (vadd_f16): New.
-	(vaddq_f16, vabd_f16, vabdq_f16, vcage_f16, vcageq_f16, vcagt_f16,
-	vcagtq_f16, vcale_f16, vcaleq_f16, vcalt_f16, vcaltq_f16, vceq_f16,
-	vceqq_f16, vcge_f16, vcgeq_f16, vcgt_f16, vcgtq_f16, vcle_f16,
-	vcleq_f16, vclt_f16, vcltq_f16, vcvt_n_f16_s16, vcvtq_n_f16_s16,
-	vcvt_n_f16_u16, vcvtq_n_f16_u16, vcvt_n_s16_f16, vcvtq_n_s16_f16,
-	vcvt_n_u16_f16, vcvtq_n_u16_f16, vdiv_f16, vdivq_f16, vdup_lane_f16,
-	vdup_laneq_f16, vdupq_lane_f16, vdupq_laneq_f16, vdups_lane_f16,
-	vdups_laneq_f16, vmax_f16, vmaxq_f16, vmaxnm_f16, vmaxnmq_f16, vmin_f16,
-	vminq_f16, vminnm_f16, vminnmq_f16, vmul_f16, vmulq_f16, vmulx_f16,
-	vmulxq_f16, vpadd_f16, vpaddq_f16, vpmax_f16, vpmaxq_f16, vpmaxnm_f16,
-	vpmaxnmq_f16, vpmin_f16, vpminq_f16, vpminnm_f16, vpminnmq_f16,
-	vrecps_f16, vrecpsq_f16, vrsqrts_f16, vrsqrtsq_f16, vsub_f16,
-	vsubq_f16): Likewise.
+	* config/aarch64/arm_neon.h (vadd_f16, vaddq_f16, vabd_f16, vabdq_f16,
+	vcage_f16, vcageq_f16, vcagt_f16, vcagtq_f16, vcale_f16, vcaleq_f16,
+	vcalt_f16, vcaltq_f16, vceq_f16, vceqq_f16, vcge_f16, vcgeq_f16,
+	vcgt_f16, vcgtq_f16, vcle_f16, vcleq_f16, vclt_f16, vcltq_f16,
+	vcvt_n_f16_s16, vcvtq_n_f16_s16, vcvt_n_f16_u16, vcvtq_n_f16_u16,
+	vcvt_n_s16_f16, vcvtq_n_s16_f16, vcvt_n_u16_f16, vcvtq_n_u16_f16,
+	vdiv_f16, vdivq_f16, vdup_lane_f16, vdup_laneq_f16, vdupq_lane_f16,
+	vdupq_laneq_f16, vdups_lane_f16, vdups_laneq_f16, vmax_f16, vmaxq_f16,
+	vmaxnm_f16, vmaxnmq_f16, vmin_f16, vminq_f16, vminnm_f16, vminnmq_f16,
+	vmul_f16, vmulq_f16, vmulx_f16, vmulxq_f16, vpadd_f16, vpaddq_f16,
+	vpmax_f16, vpmaxq_f16, vpmaxnm_f16, vpmaxnmq_f16, vpmin_f16, vpminq_f16,
+	vpminnm_f16, vpminnmq_f16, vrecps_f16, vrecpsq_f16, vrsqrts_f16,
+	vrsqrtsq_f16, vsub_f16, vsubq_f16): New.
 
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
@@ -63,19 +70,18 @@
 	(vdupq_n_f16): Likewise.
 	(vld1_dup_f16): Use vdup_n_f16.
 	(vld1q_dup_f16): Use vdupq_n_f16.
-	(vabs_f16): New.
-	(vabsq_f16, vceqz_f16, vceqzq_f16, vcgez_f16, vcgezq_f16, vcgtz_f16,
-	vcgtzq_f16, vclez_f16, vclezq_f16, vcltz_f16, vcltzq_f16, vcvt_f16_s16,
-	vcvtq_f16_s16, vcvt_f16_u16, vcvtq_f16_u16, vcvt_s16_f16, vcvtq_s16_f16,
-	vcvt_u16_f16, vcvtq_u16_f16, vcvta_s16_f16, vcvtaq_s16_f16,
-	vcvta_u16_f16, vcvtaq_u16_f16, vcvtm_s16_f16, vcvtmq_s16_f16,
-	vcvtm_u16_f16, vcvtmq_u16_f16, vcvtn_s16_f16, vcvtnq_s16_f16,
-	vcvtn_u16_f16, vcvtnq_u16_f16, vcvtp_s16_f16, vcvtpq_s16_f16,
-	vcvtp_u16_f16, vcvtpq_u16_f16, vneg_f16, vnegq_f16, vrecpe_f16,
-	vrecpeq_f16, vrnd_f16, vrndq_f16, vrnda_f16, vrndaq_f16, vrndi_f16,
-	vrndiq_f16, vrndm_f16, vrndmq_f16, vrndn_f16, vrndnq_f16, vrndp_f16,
-	vrndpq_f16, vrndx_f16, vrndxq_f16, vrsqrte_f16, vrsqrteq_f16, vsqrt_f16,
-	vsqrtq_f16): Likewise.
+	(vabs_f16, vabsq_f16, vceqz_f16, vceqzq_f16, vcgez_f16, vcgezq_f16,
+	vcgtz_f16, vcgtzq_f16, vclez_f16, vclezq_f16, vcltz_f16, vcltzq_f16,
+	vcvt_f16_s16, vcvtq_f16_s16, vcvt_f16_u16, vcvtq_f16_u16, vcvt_s16_f16,
+	vcvtq_s16_f16, vcvt_u16_f16, vcvtq_u16_f16, vcvta_s16_f16,
+	vcvtaq_s16_f16, vcvta_u16_f16, vcvtaq_u16_f16, vcvtm_s16_f16,
+	vcvtmq_s16_f16, vcvtm_u16_f16, vcvtmq_u16_f16, vcvtn_s16_f16,
+	vcvtnq_s16_f16, vcvtn_u16_f16, vcvtnq_u16_f16, vcvtp_s16_f16,
+	vcvtpq_s16_f16, vcvtp_u16_f16, vcvtpq_u16_f16, vneg_f16, vnegq_f16,
+	vrecpe_f16, vrecpeq_f16, vrnd_f16, vrndq_f16, vrnda_f16, vrndaq_f16,
+	vrndi_f16, vrndiq_f16, vrndm_f16, vrndmq_f16, vrndn_f16, vrndnq_f16,
+	vrndp_f16, vrndpq_f16, vrndx_f16, vrndxq_f16, vrsqrte_f16, vrsqrteq_f16,
+	vsqrt_f16, vsqrtq_f16): New.
 
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
@@ -83,45 +89,19 @@
 	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): Use VALL_F16.
 	(aarch64_ext<mode>): Likewise.
 	(aarch64_rev<REVERSE:rev_op><mode>): Likewise.
-	* config/aarch64/aarch64.c (aarch64_evpc_trn): Support V4HFmode and
-	V8HFmode.
-	(aarch64_evpc_uzp): Likewise.
-	(aarch64_evpc_zip): Likewise.
-	(aarch64_evpc_ext): Likewise.
-	(aarch64_evpc_rev): Likewise.
-	* config/aarch64/arm_neon.h (__aarch64_vdup_lane_f16): New.
-	(__aarch64_vdup_laneq_f16): New..
-	(__aarch64_vdupq_lane_f16): New.
-	(__aarch64_vdupq_laneq_f16): New.
-	(vbsl_f16): New.
-	(vbslq_f16): New.
-	(vdup_n_f16): New.
-	(vdupq_n_f16): New.
-	(vdup_lane_f16): New.
-	(vdup_laneq_f16): New.
-	(vdupq_lane_f16): New.
-	(vdupq_laneq_f16): New.
-	(vduph_lane_f16): New.
-	(vduph_laneq_f16): New.
-	(vext_f16): New.
-	(vextq_f16): New.
-	(vmov_n_f16): New.
-	(vmovq_n_f16): New.
-	(vrev64_f16): New.
-	(vrev64q_f16): New.
-	(vtrn1_f16): New.
-	(vtrn1q_f16): New.
-	(vtrn2_f16): New.
-	(vtrn2q_f16): New.
-	(vtrn_f16): New.
-	(vtrnq_f16): New.
-	(__INTERLEAVE_LIST): Support float16x4_t, float16x8_t.
-	(vuzp1_f16): New.
-	(vuzp1q_f16): New.
-	(vuzp2_f16): New.
-	(vuzp2q_f16): New.
-	(vzip1_f16): New.
-	(vzip2q_f16): New.
+	* config/aarch64/aarch64.c (aarch64_evpc_trn, aarch64_evpc_uzp,
+	aarch64_evpc_zip, aarch64_evpc_ext, aarch64_evpc_rev): Support V4HFmode
+	and V8HFmode.
+	* config/aarch64/arm_neon.h (__INTERLEAVE_LIST): Support float16x4_t,
+	float16x8_t.
+        (__aarch64_vdup_lane_f16, __aarch64_vdup_laneq_f16,
+	__aarch64_vdupq_lane_f16, __aarch64_vdupq_laneq_f16, vbsl_f16,
+	vbslq_f16, vdup_n_f16, vdupq_n_f16, vdup_lane_f16, vdup_laneq_f16,
+	vdupq_lane_f16, vdupq_laneq_f16, vduph_lane_f16, vduph_laneq_f16,
+	vext_f16, vextq_f16, vmov_n_f16, vmovq_n_f16, vrev64_f16, vrev64q_f16,
+	vtrn1_f16, vtrn1q_f16, vtrn2_f16, vtrn2q_f16, vtrn_f16, vtrnq_f16,
+	vuzp1_f16, vuzp1q_f16, vuzp2_f16, vuzp2q_f16, vzip1_f16, vzip2q_f16):
+	New.
 	(vmov_n_f16): Reimplement using vdup_n_f16.
 	(vmovq_n_f16): Reimplement using vdupq_n_f16..
 
