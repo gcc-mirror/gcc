@@ -218,7 +218,10 @@
 (define_mode_iterator DX [DI DF])
 
 ;; Modes available for <f>mul lane operations.
-(define_mode_iterator VMUL [V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
+(define_mode_iterator VMUL [V4HI V8HI V2SI V4SI
+			    (V4HF "TARGET_SIMD_F16INST")
+			    (V8HF "TARGET_SIMD_F16INST")
+			    V2SF V4SF V2DF])
 
 ;; Modes available for <f>mul lane operations changing lane count.
 (define_mode_iterator VMUL_CHANGE_NLANES [V4HI V8HI V2SI V4SI V2SF V4SF])
@@ -730,6 +733,7 @@
 		     (V4HI "")  (V8HI  "")
 		     (V2SI "")  (V4SI  "")
 		     (DI   "")  (V2DI  "")
+		     (V4HF "f") (V8HF  "f")
 		     (V2SF "f") (V4SF  "f")
 		     (V2DF "f") (DF    "f")])
 
@@ -738,6 +742,7 @@
 		      (V4HI "")  (V8HI  "")
 		      (V2SI "")  (V4SI  "")
 		      (DI   "")  (V2DI  "")
+		      (V4HF "_fp") (V8HF  "_fp")
 		      (V2SF "_fp") (V4SF  "_fp")
 		      (V2DF "_fp") (DF    "_fp")
 		      (SF "_fp")])
