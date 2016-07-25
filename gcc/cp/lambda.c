@@ -79,6 +79,10 @@ build_lambda_object (tree lambda_expr)
 	  goto out;
 	}
 
+      if (TREE_CODE (val) == TREE_LIST)
+	val = build_x_compound_expr_from_list (val, ELK_INIT,
+					       tf_warning_or_error);
+
       if (DECL_P (val))
 	mark_used (val);
 
@@ -449,7 +453,9 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
       variadic = true;
     }
 
-  if (TREE_CODE (initializer) == TREE_LIST)
+  if (TREE_CODE (initializer) == TREE_LIST
+      /* A pack expansion might end up with multiple elements.  */
+      && !PACK_EXPANSION_P (TREE_VALUE (initializer)))
     initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
 						   tf_warning_or_error);
   type = TREE_TYPE (initializer);
