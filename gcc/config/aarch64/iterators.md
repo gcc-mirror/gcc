@@ -166,8 +166,18 @@
 ;; Vector modes for S and D
 (define_mode_iterator VDQ_SDI [V2SI V4SI V2DI])
 
+;; Vector modes for H, S and D
+(define_mode_iterator VDQ_HSDI [(V4HI "TARGET_SIMD_F16INST")
+				(V8HI "TARGET_SIMD_F16INST")
+				V2SI V4SI V2DI])
+
 ;; Scalar and Vector modes for S and D
 (define_mode_iterator VSDQ_SDI [V2SI V4SI V2DI SI DI])
+
+;; Scalar and Vector modes for S and D, Vector modes for H.
+(define_mode_iterator VSDQ_HSDI [(V4HI "TARGET_SIMD_F16INST")
+				 (V8HI "TARGET_SIMD_F16INST")
+				 V2SI V4SI V2DI SI DI])
 
 ;; Vector modes for Q and H types.
 (define_mode_iterator VDQQH [V8QI V16QI V4HI V8HI])

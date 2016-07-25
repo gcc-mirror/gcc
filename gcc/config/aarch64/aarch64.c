@@ -7604,6 +7604,10 @@ bool
 aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
 {
   machine_mode mode = GET_MODE (quo);
+
+  if (GET_MODE_INNER (mode) == HFmode)
+    return false;
+
   bool use_approx_division_p = (flag_mlow_precision_div
 			        || (aarch64_tune_params.approx_modes->division
 				    & AARCH64_APPROX_MODE (mode)));
