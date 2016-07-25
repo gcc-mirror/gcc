@@ -2119,7 +2119,10 @@ loop_only_exit_p (const struct loop *loop, const_edge exit)
     {
       for (bsi = gsi_start_bb (body[i]); !gsi_end_p (bsi); gsi_next (&bsi))
 	if (stmt_can_terminate_bb_p (gsi_stmt (bsi)))
-	  return true;
+	  {
+	    free (body);
+	    return true;
+	  }
     }
 
   free (body);

@@ -1,5 +1,9 @@
 2016-07-25  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-loop-niter.c (loop_only_exit_p): Release body array.
+
+2016-07-25  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/71987
 	* tree-ssa-reassoc.c (maybe_optimize_range_tests): Call get_ops
 	just for SSA_NAMEs. Fix GNU coding style.
