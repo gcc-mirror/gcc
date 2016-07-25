@@ -25,11 +25,11 @@
 #include <memory>
 #include <random>
 #include <vector>
-#include <testsuite_hooks.h>
 #include <iostream>
 #include <cstdlib>
-
-#include <pthread.h>
+#include <thread>
+#include <atomic>
+#include <testsuite_hooks.h>
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 #include <unistd.h>	// To test for _POSIX_THREAD_PRIORITY_SCHEDULING
@@ -50,19 +50,13 @@ const unsigned long HAMMER_REPEAT = 100000;
 const unsigned long KILL_ONE_IN = 1000;
 
 struct A
-  {
-    static _Atomic_word counter;
-    A()
-      {
-	__gnu_cxx::__atomic_add(&counter, 1);
-      }
-    ~A()
-      {
-	__gnu_cxx::__atomic_add(&counter, -1);
-      }
-  };
+{
+  static std::atomic<int> counter;
+  A() { counter.fetch_add(1, std::memory_order_relaxed); }
+ ~A() { counter.fetch_sub(1, std::memory_order_relaxed); }
+};
 
-_Atomic_word A::counter = 0;
+std::atomic<int> A::counter{ 0 };
 
 typedef std::shared_ptr<A> sp_A_t;
 typedef std::weak_ptr<A> wp_A_t;
@@ -80,16 +74,10 @@ struct shared_and_weak_pools
     { }
 };
 
-void* thread_hammer_and_kill(void* opaque_pools)
+void thread_hammer_and_kill(shared_and_weak_pools& pools)
 {
-  shared_and_weak_pools& pools = *static_cast<shared_and_weak_pools*>(opaque_pools);
-  // Using the same parameters as in the RNG test cases.
-  std::mersenne_twister_engine<
-    unsigned long, 32, 624, 397, 31,
-    0x9908b0dful, 11,
-    0xfffffffful, 7,
-    0x9d2c5680ul, 15,
-    0xefc60000ul, 18, 1812433253ul> rng;
+  std::mt19937 urbg;
+  std::uniform_int_distribution<> dist(0, KILL_ONE_IN - 1);
   
   sp_vector_t::iterator cur_shared = pools.shared_pool.begin();
   wp_vector_t::iterator cur_weak = pools.weak_pool.begin();
@@ -107,26 +95,16 @@ void* thread_hammer_and_kill(void* opaque_pools)
           break;
       }
       
-      if (rng() % KILL_ONE_IN == 0)
+      if (dist(urbg) == 0)
       {
         cur_shared->reset();
         ++cur_shared;
       }
     }
-  return 0;
 }
 
-void* thread_hammer(void* opaque_weak)
+void thread_hammer(wp_vector_t& weak_pool)
 {
-  wp_vector_t& weak_pool = *static_cast<wp_vector_t*>(opaque_weak);
-  // Using the same parameters as in the RNG test cases.
-  std::mersenne_twister_engine<
-    unsigned long, 32, 624, 397, 31,
-    0x9908b0dful, 11,
-    0xfffffffful, 7,
-    0x9d2c5680ul, 15,
-    0xefc60000ul, 18, 1812433253ul> rng;
-
   wp_vector_t::iterator cur_weak = weak_pool.begin();
 
   for (unsigned int i = 0; i < HAMMER_REPEAT; ++i)
@@ -142,51 +120,38 @@ void* thread_hammer(void* opaque_weak)
           break;
       }
     }
-  return 0;
 }
 
-int
+void
 test01()
 {
   bool test __attribute__((unused)) = true;
   sp_vector_t obj_pool(POOL_SIZE);
   
-  for(sp_vector_t::iterator cur = obj_pool.begin(); cur != obj_pool.end(); ++cur)
-  {
-    cur->reset(new A);
-  }
+  for(auto& obj : obj_pool)
+    obj.reset(new A);
+
   // Obtain weak references.
   std::vector<wp_vector_t> weak_pool(HAMMER_MAX_THREADS, wp_vector_t(obj_pool.begin(), obj_pool.end()));
   
   // Launch threads with pointer to weak reference.
-  pthread_t threads[HAMMER_MAX_THREADS];
+  std::thread threads[HAMMER_MAX_THREADS];
 #if defined(__sun) && defined(__svr4__) && _XOPEN_VERSION >= 500
   pthread_setconcurrency (HAMMER_MAX_THREADS);
 #endif
   
-  pthread_attr_t tattr;
-  pthread_attr_init(&tattr);
-
   shared_and_weak_pools pools(obj_pool, weak_pool[0]);
-  pthread_create(threads, &tattr, thread_hammer_and_kill, static_cast<void*>(&pools));
+  threads[0] = std::thread(thread_hammer_and_kill, std::ref(pools));
   for (unsigned int worker = 1; worker < HAMMER_MAX_THREADS; worker++)
-    {
-      if (pthread_create(&threads[worker], &tattr,
-			 thread_hammer, static_cast<void*>(&weak_pool[worker])))
-	std::abort();
-    }
+    threads[worker] = std::thread(thread_hammer, std::ref(weak_pool[worker]));
+
   // Wait for threads to complete, then check integrity of reference.
-  void* status;
-  for (unsigned int worker = 0; worker < HAMMER_MAX_THREADS; worker++)
-    {
-      if (pthread_join(threads[worker], &status))
-	std::abort();
-    }
+  for (auto& thread : threads)
+    thread.join();
+
   obj_pool.clear();
   
   VERIFY( A::counter == 0 );
-  
-  return 0;
 }
 
 int 

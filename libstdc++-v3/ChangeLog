@@ -1,3 +1,9 @@
+2016-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Use
+	std::mt19937, std::thread and std::atomic to simplify test.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+
 2016-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71964
