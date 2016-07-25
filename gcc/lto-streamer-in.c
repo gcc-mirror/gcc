@@ -1302,10 +1302,6 @@ lto_read_tree_1 (struct lto_input_block *ib, struct data_in *data_in, tree expr)
       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
     DECL_INITIAL (expr) = stream_read_tree (ib, data_in);
 
-  /* We should never try to instantiate an MD or NORMAL builtin here.  */
-  if (TREE_CODE (expr) == FUNCTION_DECL)
-    gcc_assert (!streamer_handle_as_builtin_p (expr));
-
 #ifdef LTO_STREAMER_DEBUG
   /* Remove the mapping to RESULT's original address set by
      streamer_alloc_tree.  */
@@ -1368,7 +1364,6 @@ lto_input_scc (struct lto_input_block *ib, struct data_in *data_in,
 	  if (tag == LTO_null
 	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
 	      || tag == LTO_tree_pickle_reference
-	      || tag == LTO_builtin_decl
 	      || tag == LTO_integer_cst
 	      || tag == LTO_tree_scc)
 	    gcc_unreachable ();
@@ -1419,12 +1414,6 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       /* If TAG is a reference to a previously read tree, look it up in
 	 the reader cache.  */
       result = streamer_get_pickled_tree (ib, data_in);
-    }
-  else if (tag == LTO_builtin_decl)
-    {
-      /* If we are going to read a built-in function, all we need is
-	 the code and class.  */
-      result = streamer_get_builtin_tree (ib, data_in);
     }
   else if (tag == LTO_integer_cst)
     {

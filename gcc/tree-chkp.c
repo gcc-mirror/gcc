@@ -431,9 +431,10 @@ chkp_gimple_call_builtin_p (gimple *call,
 			    enum built_in_function code)
 {
   tree fndecl;
-  if (is_gimple_call (call)
+  if (gimple_call_builtin_p (call, BUILT_IN_MD)
       && (fndecl = targetm.builtin_chkp_function (code))
-      && gimple_call_fndecl (call) == fndecl)
+      && (DECL_FUNCTION_CODE (gimple_call_fndecl (call))
+	  == DECL_FUNCTION_CODE (fndecl)))
     return true;
   return false;
 }

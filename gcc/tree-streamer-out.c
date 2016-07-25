@@ -278,10 +278,6 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  /* For normal/md builtins we only write the class and code, so they
-     should never be handled here.  */
-  gcc_assert (!streamer_handle_as_builtin_p (expr));
-
   bp_pack_enum (bp, built_in_class, BUILT_IN_LAST,
 		DECL_BUILT_IN_CLASS (expr));
   bp_pack_value (bp, DECL_STATIC_CONSTRUCTOR (expr), 1);
@@ -484,41 +480,6 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
     pack_ts_omp_clause_value_fields (ob, &bp, expr);
 
   streamer_write_bitpack (&bp);
-}
-
-
-/* Write the code and class of builtin EXPR to output block OB.  IX is
-   the index into the streamer cache where EXPR is stored.*/
-
-void
-streamer_write_builtin (struct output_block *ob, tree expr)
-{
-  gcc_assert (streamer_handle_as_builtin_p (expr));
-
-  if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD
-      && !targetm.builtin_decl)
-    sorry ("tree bytecode streams do not support machine specific builtin "
-	   "functions on this target");
-
-  streamer_write_record_start (ob, LTO_builtin_decl);
-  streamer_write_enum (ob->main_stream, built_in_class, BUILT_IN_LAST,
-		       DECL_BUILT_IN_CLASS (expr));
-  streamer_write_uhwi (ob, DECL_FUNCTION_CODE (expr));
-
-  if (DECL_ASSEMBLER_NAME_SET_P (expr))
-    {
-      /* When the assembler name of a builtin gets a user name,
-	 the new name is always prefixed with '*' by
-	 set_builtin_user_assembler_name.  So, to prevent the
-	 reader side from adding a second '*', we omit it here.  */
-      const char *str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (expr));
-      if (strlen (str) > 1 && str[0] == '*')
-	streamer_write_string (ob, ob->main_stream, &str[1], true);
-      else
-	streamer_write_string (ob, ob->main_stream, NULL, true);
-    }
-  else
-    streamer_write_string (ob, ob->main_stream, NULL, true);
 }
 
 

@@ -1061,12 +1061,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 			TREE_FIXED_CST_PTR (t1), TREE_FIXED_CST_PTR (t2)))
       return false;
 
-
-  /* We want to compare locations up to the point where it makes
-     a difference for streaming - thus whether the decl is builtin or not.  */
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
-    compare_values (streamer_handle_as_builtin_p);
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
       compare_values (DECL_MODE);
@@ -1602,8 +1596,7 @@ unify_scc (struct data_in *data_in, unsigned from,
 		   streamer.  The others should be singletons, too, and we
 		   should not merge them in any way.  */
 		gcc_assert (code != TRANSLATION_UNIT_DECL
-			    && code != IDENTIFIER_NODE
-			    && !streamer_handle_as_builtin_p (t));
+			    && code != IDENTIFIER_NODE);
 	      }
 
 	  /* Fixup the streamer cache with the prevailing nodes according
@@ -1710,8 +1703,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	  if (len == 1
 	      && (TREE_CODE (first) == IDENTIFIER_NODE
 		  || TREE_CODE (first) == INTEGER_CST
-		  || TREE_CODE (first) == TRANSLATION_UNIT_DECL
-		  || streamer_handle_as_builtin_p (first)))
+		  || TREE_CODE (first) == TRANSLATION_UNIT_DECL))
 	    continue;
 
 	  /* Try to unify the SCC with already existing ones.  */
