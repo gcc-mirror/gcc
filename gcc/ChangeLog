@@ -1,5 +1,11 @@
 2016-07-25  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/71868
+	* cfgloopanal.c (expected_loop_iterations_unbounded): When we
+	have a function with multiple latches, count them all.
+
+2016-07-25  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-loop-niter.c (loop_only_exit_p): Release body array.
 
 2016-07-25  Martin Liska  <mliska@suse.cz>
