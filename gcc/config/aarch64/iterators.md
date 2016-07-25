@@ -159,6 +159,8 @@
 
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
+(define_mode_iterator VDQIF_F16 [V8QI V16QI V4HI V8HI V2SI V4SI
+                                 V4HF V8HF V2SF V4SF V2DF])
 
 ;; Vector modes for S type.
 (define_mode_iterator VDQ_SI [V2SI V4SI])
@@ -760,8 +762,9 @@
 (define_mode_attr vp [(V8QI "v") (V16QI "v")
 		      (V4HI "v") (V8HI  "v")
 		      (V2SI "p") (V4SI  "v")
-		      (V2DI  "p") (V2DF  "p")
-		      (V2SF "p") (V4SF  "v")])
+		      (V2DI "p") (V2DF  "p")
+		      (V2SF "p") (V4SF  "v")
+		      (V4HF "v") (V8HF  "v")])
 
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])

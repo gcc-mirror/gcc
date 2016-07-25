@@ -26927,6 +26927,56 @@ vmulxq_n_f16 (float16x8_t __a, float16_t __b)
   return vmulxq_f16 (__a, vdupq_n_f16 (__b));
 }
 
+/* ARMv8.2-A FP16 reduction vector intrinsics.  */
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmaxv_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_reduc_smax_nan_scal_v4hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmaxvq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_reduc_smax_nan_scal_v8hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vminv_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_reduc_smin_nan_scal_v4hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vminvq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_reduc_smin_nan_scal_v8hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmaxnmv_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_reduc_smax_scal_v4hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmaxnmvq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_reduc_smax_scal_v8hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vminnmv_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_reduc_smin_scal_v4hf (__a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vminnmvq_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_reduc_smin_scal_v8hf (__a);
+}
+
 #pragma GCC pop_options
 
 #undef __aarch64_vget_lane_any

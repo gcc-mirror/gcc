@@ -234,12 +234,12 @@
   BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
 
   /* Implemented by reduc_<maxmin_uns>_scal_<mode> (producing scalar).  */
-  BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
-  BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
+  BUILTIN_VDQIF_F16 (UNOP, reduc_smax_scal_, 10)
+  BUILTIN_VDQIF_F16 (UNOP, reduc_smin_scal_, 10)
   BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
   BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
-  BUILTIN_VDQF (UNOP, reduc_smax_nan_scal_, 10)
-  BUILTIN_VDQF (UNOP, reduc_smin_nan_scal_, 10)
+  BUILTIN_VHSDF (UNOP, reduc_smax_nan_scal_, 10)
+  BUILTIN_VHSDF (UNOP, reduc_smin_nan_scal_, 10)
 
   /* Implemented by <maxmin><mode>3.
      smax variants map to fmaxnm,
