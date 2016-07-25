@@ -63,19 +63,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    Although the ident and version are formally 32 bit numbers, they
    are derived from 4 character ASCII strings.  The version number
-   consists of the single character major version number, a two
-   character minor version number (leading zero for versions less than
-   10), and a single character indicating the status of the release.
+   consists of a two character major version number
+   (first digit starts from 'A' letter to not to clash with the older
+   numbering scheme), the single character minor version number,
+   and a single character indicating the status of the release.
    That will be 'e' experimental, 'p' prerelease and 'r' for release.
    Because, by good fortune, these are in alphabetical order, string
    collating can be used to compare version strings.  Be aware that
    the 'e' designation will (naturally) be unstable and might be
-   incompatible with itself.  For gcc 3.4 experimental, it would be
-   '304e' (0x33303465).  When the major version reaches 10, the
-   letters A-Z will be used.  Assuming minor increments releases every
-   6 months, we have to make a major increment every 50 years.
-   Assuming major increments releases every 5 years, we're ok for the
-   next 155 years -- good enough for me.
+   incompatible with itself.  For gcc 17.0 experimental, it would be
+   'B70e' (0x42373065).  As we currently do not release more than 5 minor
+   releases, the single character should be always fine.  Major number
+   is currently changed roughly every year, which gives us space
+   for next 250 years (maximum allowed number would be 259.9).
 
    A record has a tag, length and variable amount of data.
 

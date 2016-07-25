@@ -1,3 +1,9 @@
+2016-07-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/64874
+	* gcov-io.h: Update command about file format.
+	* gcov-iov.c (main): Adapt the numbering scheme.
+
 2016-07-24  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/66726
