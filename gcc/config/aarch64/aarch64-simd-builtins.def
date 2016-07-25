@@ -41,7 +41,7 @@
 
   BUILTIN_VDC (COMBINE, combine, 0)
   BUILTIN_VB (BINOP, pmul, 0)
-  BUILTIN_VHSDF_SDF (BINOP, fmulx, 0)
+  BUILTIN_VHSDF_HSDF (BINOP, fmulx, 0)
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2)
   BUILTIN_VD_BHSI (BINOP, addp, 0)
   VAR1 (UNOP, addp, 0, di)
@@ -393,13 +393,12 @@
   /* Implemented by
      aarch64_frecp<FRECP:frecp_suffix><mode>.  */
   BUILTIN_GPF_F16 (UNOP, frecpe, 0)
-  BUILTIN_GPF (BINOP, frecps, 0)
   BUILTIN_GPF_F16 (UNOP, frecpx, 0)
 
   BUILTIN_VDQ_SI (UNOP, urecpe, 0)
 
   BUILTIN_VHSDF (UNOP, frecpe, 0)
-  BUILTIN_VHSDF (BINOP, frecps, 0)
+  BUILTIN_VHSDF_HSDF (BINOP, frecps, 0)
 
   /* Implemented by a mixture of abs2 patterns.  Note the DImode builtin is
      only ever used for the int64x1_t intrinsic, there is no scalar version.  */
@@ -496,17 +495,23 @@
   /* Implemented by <FCVT_F2FIXED/FIXED2F:fcvt_fixed_insn><*><*>3.  */
   BUILTIN_VSDQ_HSDI (SHIFTIMM, scvtf, 3)
   BUILTIN_VSDQ_HSDI (FCVTIMM_SUS, ucvtf, 3)
-  BUILTIN_VHSDF_SDF (SHIFTIMM, fcvtzs, 3)
-  BUILTIN_VHSDF_SDF (SHIFTIMM_USS, fcvtzu, 3)
+  BUILTIN_VHSDF_HSDF (SHIFTIMM, fcvtzs, 3)
+  BUILTIN_VHSDF_HSDF (SHIFTIMM_USS, fcvtzu, 3)
+  VAR1 (SHIFTIMM, scvtfsi, 3, hf)
+  VAR1 (SHIFTIMM, scvtfdi, 3, hf)
+  VAR1 (FCVTIMM_SUS, ucvtfsi, 3, hf)
+  VAR1 (FCVTIMM_SUS, ucvtfdi, 3, hf)
+  BUILTIN_GPI (SHIFTIMM, fcvtzshf, 3)
+  BUILTIN_GPI (SHIFTIMM_USS, fcvtzuhf, 3)
 
   /* Implemented by aarch64_rsqrte<mode>.  */
   BUILTIN_VHSDF_HSDF (UNOP, rsqrte, 0)
 
   /* Implemented by aarch64_rsqrts<mode>.  */
-  BUILTIN_VHSDF_SDF (BINOP, rsqrts, 0)
+  BUILTIN_VHSDF_HSDF (BINOP, rsqrts, 0)
 
   /* Implemented by fabd<mode>3.  */
-  BUILTIN_VHSDF_SDF (BINOP, fabd, 3)
+  BUILTIN_VHSDF_HSDF (BINOP, fabd, 3)
 
   /* Implemented by aarch64_faddp<mode>.  */
   BUILTIN_VHSDF (BINOP, faddp, 0)
@@ -522,10 +527,10 @@
   BUILTIN_VHSDF_HSDF (UNOP, neg, 2)
 
   /* Implemented by aarch64_fac<optab><mode>.  */
-  BUILTIN_VHSDF_SDF (BINOP_USS, faclt, 0)
-  BUILTIN_VHSDF_SDF (BINOP_USS, facle, 0)
-  BUILTIN_VHSDF_SDF (BINOP_USS, facgt, 0)
-  BUILTIN_VHSDF_SDF (BINOP_USS, facge, 0)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0)
 
   /* Implemented by sqrt<mode>2.  */
   VAR1 (UNOP, sqrt, 2, hf)
@@ -543,3 +548,7 @@
   BUILTIN_GPI_I16 (UNOPUS, fixuns_trunchf, 2)
   BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2)
   BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2)
+
+  /* Implemented by <fmaxmin><mode>3.  */
+  VAR1 (BINOP, fmax, 3, hf)
+  VAR1 (BINOP, fmin, 3, hf)

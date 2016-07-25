@@ -105,9 +105,6 @@
 (define_mode_iterator VHSDF_DF [(V4HF "TARGET_SIMD_F16INST")
 				(V8HF "TARGET_SIMD_F16INST")
 				V2SF V4SF V2DF DF])
-(define_mode_iterator VHSDF_SDF [(V4HF "TARGET_SIMD_F16INST")
-				 (V8HF "TARGET_SIMD_F16INST")
-				 V2SF V4SF V2DF SF DF])
 (define_mode_iterator VHSDF_HSDF [(V4HF "TARGET_SIMD_F16INST")
 				  (V8HF "TARGET_SIMD_F16INST")
 				  V2SF V4SF V2DF
@@ -190,7 +187,9 @@
 ;; Scalar and Vector modes for S and D, Vector modes for H.
 (define_mode_iterator VSDQ_HSDI [(V4HI "TARGET_SIMD_F16INST")
 				 (V8HI "TARGET_SIMD_F16INST")
-				 V2SI V4SI V2DI SI DI])
+				 V2SI V4SI V2DI
+				 (HI "TARGET_SIMD_F16INST")
+				 SI DI])
 
 ;; Vector modes for Q and H types.
 (define_mode_iterator VDQQH [V8QI V16QI V4HI V8HI])
@@ -705,12 +704,12 @@
 			       (V2DI "v2df") (V4SI "v4sf") (V2SI "v2sf")
 			       (SF "si") (DF "di") (SI "sf") (DI "df")
 			       (V4HF "v4hi") (V8HF "v8hi") (V4HI "v4hf")
-			       (V8HI "v8hf")])
+			       (V8HI "v8hf") (HF "hi") (HI "hf")])
 (define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")
 			       (V2DI "V2DF") (V4SI "V4SF") (V2SI "V2SF")
 			       (SF "SI") (DF "DI") (SI "SF") (DI "DF")
 			       (V4HF "V4HI") (V8HF "V8HI") (V4HI "V4HF")
-			       (V8HI "V8HF")])
+			       (V8HI "V8HF") (HF "HI") (HI "HF")])
 
 
 ;; for the inequal width integer to fp conversions
