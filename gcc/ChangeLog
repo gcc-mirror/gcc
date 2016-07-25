@@ -1,3 +1,10 @@
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_add_constant): New parameter "mode".
+	Use aarch64_internal_mov_immediate instead of aarch64_build_constant.
+	(aarch64_output_mi_thunk): Pass Pmode when calling aarch64_add_constant.
+	(aarch64_build_constant): Delete.
+
 2016-07-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	Revert
