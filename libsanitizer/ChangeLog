@@ -1,3 +1,19 @@
+2016-07-23  Alan Modra  <amodra@gmail.com>
+
+	Revert 2015-11-09  Alan Modra  <amodra@gmail.com>
+	* configure.ac: Don't substitute OBSTACK_DEFS.
+	* asan/Makefile.am: Remove OBSTACK_DEFS from DEFS.
+	* tsan/Makefile.am: Likewise.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
 2016-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/71160
