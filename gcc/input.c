@@ -1175,7 +1175,7 @@ temp_source_file::temp_source_file (const location &loc, const char *suffix,
   if (!out)
     ::selftest::fail_formatted (loc, "unable to open tempfile: %s",
 				m_filename);
-  fprintf (out, content);
+  fprintf (out, "%s", content);
   fclose (out);
 }
 

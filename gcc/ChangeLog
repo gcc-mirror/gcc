@@ -1,3 +1,8 @@
+2016-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (selftest::temp_source_file::temp_source_file): Fix
+	missing "%s" in fprintf.
+
 2016-07-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/71732
