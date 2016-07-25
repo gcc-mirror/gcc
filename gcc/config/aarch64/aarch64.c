@@ -1940,6 +1940,47 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
   aarch64_internal_mov_immediate (dest, imm, true, GET_MODE (dest));
 }
 
+/* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to held
+   intermediate value if necessary.  */
+
+static void
+aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
+		      HOST_WIDE_INT delta)
+{
+  HOST_WIDE_INT mdelta = abs_hwi (delta);
+  rtx this_rtx = gen_rtx_REG (mode, regnum);
+
+  /* Do nothing if mdelta is zero.  */
+  if (!mdelta)
+    return;
+
+  /* We only need single instruction if the offset fit into add/sub.  */
+  if (aarch64_uimm12_shift (mdelta))
+    {
+      emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
+      return;
+    }
+
+  /* We need two add/sub instructions, each one performing part of the
+     calculation.  Don't do this if the addend can be loaded into register with
+     a single instruction, in that case we prefer a move to a scratch register
+     following by an addition.  */
+  if (mdelta < 0x1000000 && !aarch64_move_imm (delta, mode))
+    {
+      HOST_WIDE_INT low_off = mdelta & 0xfff;
+
+      low_off = delta < 0 ? -low_off : low_off;
+      emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
+      emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
+      return;
+    }
+
+  /* Otherwise use generic function to handle all other situations.  */
+  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
+  aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (delta), true, mode);
+  emit_insn (gen_add2_insn (this_rtx, scratch_rtx));
+}
+
 static bool
 aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 				 tree exp ATTRIBUTE_UNUSED)
@@ -3410,44 +3451,6 @@ aarch64_final_eh_return_addr (void)
 				       fp_offset
 				       + cfun->machine->frame.saved_regs_size
 				       - 2 * UNITS_PER_WORD));
-}
-
-static void
-aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
-		      HOST_WIDE_INT delta)
-{
-  HOST_WIDE_INT mdelta = delta;
-  rtx this_rtx = gen_rtx_REG (mode, regnum);
-  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
-
-  if (mdelta < 0)
-    mdelta = -mdelta;
-
-  if (mdelta >= 4096 * 4096)
-    {
-      aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (delta), true, mode);
-      emit_insn (gen_add3_insn (this_rtx, this_rtx, scratch_rtx));
-    }
-  else if (mdelta > 0)
-    {
-      if (mdelta >= 4096)
-	{
-	  emit_insn (gen_rtx_SET (scratch_rtx, GEN_INT (mdelta / 4096)));
-	  rtx shift = gen_rtx_ASHIFT (mode, scratch_rtx, GEN_INT (12));
-	  if (delta < 0)
-	    emit_insn (gen_rtx_SET (this_rtx,
-				    gen_rtx_MINUS (mode, this_rtx, shift)));
-	  else
-	    emit_insn (gen_rtx_SET (this_rtx,
-				    gen_rtx_PLUS (mode, this_rtx, shift)));
-	}
-      if (mdelta % 4096 != 0)
-	{
-	  scratch_rtx = GEN_INT ((delta < 0 ? -1 : 1) * (mdelta % 4096));
-	  emit_insn (gen_rtx_SET (this_rtx,
-				  gen_rtx_PLUS (mode, this_rtx, scratch_rtx)));
-	}
-    }
 }
 
 /* Output code to add DELTA to the first argument, and then jump
