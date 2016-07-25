@@ -62,6 +62,7 @@
 #define si_UP    SImode
 #define sf_UP    SFmode
 #define hi_UP    HImode
+#define hf_UP    HFmode
 #define qi_UP    QImode
 #define UP(X) X##_UP
 

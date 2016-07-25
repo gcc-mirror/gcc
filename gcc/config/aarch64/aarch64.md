@@ -4450,22 +4450,23 @@
 ;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
 
 (define_insn "<frint_pattern><mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
+  [(set (match_operand:GPF_F16 0 "register_operand" "=w")
+	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")]
 	 FRINT))]
   "TARGET_FLOAT"
   "frint<frint_suffix>\\t%<s>0, %<s>1"
-  [(set_attr "type" "f_rint<s>")]
+  [(set_attr "type" "f_rint<stype>")]
 )
 
 ;; frcvt floating-point round to integer and convert standard patterns.
 ;; Expands to lbtrunc, lceil, lfloor, lround.
-(define_insn "l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2"
+(define_insn "l<fcvt_pattern><su_optab><GPF_F16:mode><GPI:mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-	(FIXUORS:GPI (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		      FCVT)))]
+	(FIXUORS:GPI
+	  (unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")]
+	   FCVT)))]
   "TARGET_FLOAT"
-  "fcvt<frint_suffix><su>\\t%<GPI:w>0, %<GPF:s>1"
+  "fcvt<frint_suffix><su>\\t%<GPI:w>0, %<GPF_F16:s>1"
   [(set_attr "type" "f_cvtf2i")]
 )
 
@@ -4593,19 +4594,11 @@
   [(set_attr "type" "f_cvt")]
 )
 
-(define_insn "fix_trunc<GPF:mode><GPI:mode>2"
+(define_insn "<optab>_trunc<GPF_F16:mode><GPI:mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (fix:GPI (match_operand:GPF 1 "register_operand" "w")))]
+	(FIXUORS:GPI (match_operand:GPF_F16 1 "register_operand" "w")))]
   "TARGET_FLOAT"
-  "fcvtzs\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "type" "f_cvtf2i")]
-)
-
-(define_insn "fixuns_trunc<GPF:mode><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-        (unsigned_fix:GPI (match_operand:GPF 1 "register_operand" "w")))]
-  "TARGET_FLOAT"
-  "fcvtzu\\t%<GPI:w>0, %<GPF:s>1"
+  "fcvtz<su>\t%<GPI:w>0, %<GPF_F16:s>1"
   [(set_attr "type" "f_cvtf2i")]
 )
 
@@ -4626,6 +4619,14 @@
         (FLOATUORS:GPF (match_operand:<FCVT_IESIZE> 1 "register_operand" "r")))]
   "TARGET_FLOAT"
   "<su_optab>cvtf\t%<GPF:s>0, %<w2>1"
+  [(set_attr "type" "f_cvti2f")]
+)
+
+(define_insn "<optab><mode>hf2"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+	(FLOATUORS:HF (match_operand:GPI 1 "register_operand" "r")))]
+  "TARGET_FP_F16INST"
+  "<su_optab>cvtf\t%h0, %<w>1"
   [(set_attr "type" "f_cvti2f")]
 )
 
@@ -4735,16 +4736,16 @@
 )
 
 (define_insn "neg<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (neg:GPF (match_operand:GPF 1 "register_operand" "w")))]
+  [(set (match_operand:GPF_F16 0 "register_operand" "=w")
+	(neg:GPF_F16 (match_operand:GPF_F16 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fneg\\t%<s>0, %<s>1"
-  [(set_attr "type" "ffarith<s>")]
+  [(set_attr "type" "ffarith<stype>")]
 )
 
 (define_expand "sqrt<mode>2"
-  [(set (match_operand:GPF 0 "register_operand")
-        (sqrt:GPF (match_operand:GPF 1 "register_operand")))]
+  [(set (match_operand:GPF_F16 0 "register_operand" "=w")
+	(sqrt:GPF_F16 (match_operand:GPF_F16 1 "register_operand" "w")))]
   "TARGET_FLOAT"
 {
   if (aarch64_emit_approx_sqrt (operands[0], operands[1], false))
@@ -4752,19 +4753,19 @@
 })
 
 (define_insn "*sqrt<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (sqrt:GPF (match_operand:GPF 1 "register_operand" "w")))]
+  [(set (match_operand:GPF_F16 0 "register_operand" "=w")
+	(sqrt:GPF_F16 (match_operand:GPF_F16 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fsqrt\\t%<s>0, %<s>1"
-  [(set_attr "type" "fsqrt<s>")]
+  [(set_attr "type" "fsqrt<stype>")]
 )
 
 (define_insn "abs<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (abs:GPF (match_operand:GPF 1 "register_operand" "w")))]
+  [(set (match_operand:GPF_F16 0 "register_operand" "=w")
+	(abs:GPF_F16 (match_operand:GPF_F16 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fabs\\t%<s>0, %<s>1"
-  [(set_attr "type" "ffarith<s>")]
+  [(set_attr "type" "ffarith<stype>")]
 )
 
 ;; Given that smax/smin do not specify the result when either input is NaN,
