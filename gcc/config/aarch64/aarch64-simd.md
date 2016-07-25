@@ -383,12 +383,12 @@
 )
 
 (define_insn "aarch64_rsqrte<mode>"
-  [(set (match_operand:VALLF 0 "register_operand" "=w")
-	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")]
+  [(set (match_operand:VHSDF_SDF 0 "register_operand" "=w")
+	(unspec:VHSDF_SDF [(match_operand:VHSDF_SDF 1 "register_operand" "w")]
 		     UNSPEC_RSQRTE))]
   "TARGET_SIMD"
   "frsqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
-  [(set_attr "type" "neon_fp_rsqrte_<Vetype><q>")])
+  [(set_attr "type" "neon_fp_rsqrte_<stype><q>")])
 
 (define_insn "aarch64_rsqrts<mode>"
   [(set (match_operand:VALLF 0 "register_operand" "=w")
@@ -1565,19 +1565,19 @@
 )
 
 (define_insn "neg<mode>2"
- [(set (match_operand:VDQF 0 "register_operand" "=w")
-       (neg:VDQF (match_operand:VDQF 1 "register_operand" "w")))]
+ [(set (match_operand:VHSDF 0 "register_operand" "=w")
+       (neg:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
  "TARGET_SIMD"
  "fneg\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_neg_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_neg_<stype><q>")]
 )
 
 (define_insn "abs<mode>2"
- [(set (match_operand:VDQF 0 "register_operand" "=w")
-       (abs:VDQF (match_operand:VDQF 1 "register_operand" "w")))]
+ [(set (match_operand:VHSDF 0 "register_operand" "=w")
+       (abs:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
  "TARGET_SIMD"
  "fabs\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_abs_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_abs_<stype><q>")]
 )
 
 (define_insn "fma<mode>4"
@@ -1735,24 +1735,24 @@
 ;; Vector versions of the floating-point frint patterns.
 ;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
 (define_insn "<frint_pattern><mode>2"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]
-		      FRINT))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
+		       FRINT))]
   "TARGET_SIMD"
   "frint<frint_suffix>\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_round_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_round_<stype><q>")]
 )
 
 ;; Vector versions of the fcvt standard patterns.
 ;; Expands to lbtrunc, lround, lceil, lfloor
-(define_insn "l<fcvt_pattern><su_optab><VDQF:mode><fcvt_target>2"
+(define_insn "l<fcvt_pattern><su_optab><VHSDF:mode><fcvt_target>2"
   [(set (match_operand:<FCVT_TARGET> 0 "register_operand" "=w")
 	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
-			       [(match_operand:VDQF 1 "register_operand" "w")]
+			       [(match_operand:VHSDF 1 "register_operand" "w")]
 			       FCVT)))]
   "TARGET_SIMD"
   "fcvt<frint_suffix><su>\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_to_int_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_to_int_<stype><q>")]
 )
 
 (define_insn "*aarch64_fcvt<su_optab><VDQF:mode><fcvt_target>2_mult"
@@ -1775,36 +1775,36 @@
   [(set_attr "type" "neon_fp_to_int_<Vetype><q>")]
 )
 
-(define_expand "<optab><VDQF:mode><fcvt_target>2"
+(define_expand "<optab><VHSDF:mode><fcvt_target>2"
   [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
 	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
-			       [(match_operand:VDQF 1 "register_operand")]
-			       UNSPEC_FRINTZ)))]
+			       [(match_operand:VHSDF 1 "register_operand")]
+				UNSPEC_FRINTZ)))]
   "TARGET_SIMD"
   {})
 
-(define_expand "<fix_trunc_optab><VDQF:mode><fcvt_target>2"
+(define_expand "<fix_trunc_optab><VHSDF:mode><fcvt_target>2"
   [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
 	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
-			       [(match_operand:VDQF 1 "register_operand")]
-			       UNSPEC_FRINTZ)))]
+			       [(match_operand:VHSDF 1 "register_operand")]
+				UNSPEC_FRINTZ)))]
   "TARGET_SIMD"
   {})
 
-(define_expand "ftrunc<VDQF:mode>2"
-  [(set (match_operand:VDQF 0 "register_operand")
-	(unspec:VDQF [(match_operand:VDQF 1 "register_operand")]
-		      UNSPEC_FRINTZ))]
+(define_expand "ftrunc<VHSDF:mode>2"
+  [(set (match_operand:VHSDF 0 "register_operand")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")]
+		       UNSPEC_FRINTZ))]
   "TARGET_SIMD"
   {})
 
-(define_insn "<optab><fcvt_target><VDQF:mode>2"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(FLOATUORS:VDQF
+(define_insn "<optab><fcvt_target><VHSDF:mode>2"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(FLOATUORS:VHSDF
 	  (match_operand:<FCVT_TARGET> 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "<su_optab>cvtf\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_int_to_fp_<Vetype><q>")]
+  [(set_attr "type" "neon_int_to_fp_<stype><q>")]
 )
 
 ;; Conversions between vectors of floats and doubles.
@@ -4296,14 +4296,14 @@
   [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w,w")
 	(neg:<V_cmp_result>
 	  (COMPARISONS:<V_cmp_result>
-	    (match_operand:VALLF 1 "register_operand" "w,w")
-	    (match_operand:VALLF 2 "aarch64_simd_reg_or_zero" "w,YDz")
+	    (match_operand:VHSDF_SDF 1 "register_operand" "w,w")
+	    (match_operand:VHSDF_SDF 2 "aarch64_simd_reg_or_zero" "w,YDz")
 	  )))]
   "TARGET_SIMD"
   "@
   fcm<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>
   fcm<optab>\t%<v>0<Vmtype>, %<v>1<Vmtype>, 0"
-  [(set_attr "type" "neon_fp_compare_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_compare_<stype><q>")]
 )
 
 ;; fac(ge|gt)
@@ -4348,8 +4348,8 @@
 ;; sqrt
 
 (define_expand "sqrt<mode>2"
-  [(set (match_operand:VDQF 0 "register_operand")
-	(sqrt:VDQF (match_operand:VDQF 1 "register_operand")))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(sqrt:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
   "TARGET_SIMD"
 {
   if (aarch64_emit_approx_sqrt (operands[0], operands[1], false))
@@ -4357,11 +4357,11 @@
 })
 
 (define_insn "*sqrt<mode>2"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-        (sqrt:VDQF (match_operand:VDQF 1 "register_operand" "w")))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(sqrt:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "fsqrt\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_sqrt_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_sqrt_<stype><q>")]
 )
 
 ;; Patterns for vector struct loads and stores.
@@ -5413,12 +5413,12 @@
 )
 
 (define_insn "aarch64_frecpe<mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]
-		    UNSPEC_FRECPE))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
+	 UNSPEC_FRECPE))]
   "TARGET_SIMD"
   "frecpe\\t%0.<Vtype>, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_recpe_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_recpe_<stype><q>")]
 )
 
 (define_insn "aarch64_frecp<FRECP:frecp_suffix><mode>"

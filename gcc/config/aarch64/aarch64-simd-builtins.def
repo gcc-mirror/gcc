@@ -42,7 +42,7 @@
   BUILTIN_VDC (COMBINE, combine, 0)
   BUILTIN_VB (BINOP, pmul, 0)
   BUILTIN_VALLF (BINOP, fmulx, 0)
-  BUILTIN_VDQF_DF (UNOP, sqrt, 2)
+  BUILTIN_VHSDF_DF (UNOP, sqrt, 2)
   BUILTIN_VD_BHSI (BINOP, addp, 0)
   VAR1 (UNOP, addp, 0, di)
   BUILTIN_VDQ_BHSI (UNOP, clrsb, 2)
@@ -266,23 +266,29 @@
   BUILTIN_VDQF (BINOP, smin_nanp, 0)
 
   /* Implemented by <frint_pattern><mode>2.  */
-  BUILTIN_VDQF (UNOP, btrunc, 2)
-  BUILTIN_VDQF (UNOP, ceil, 2)
-  BUILTIN_VDQF (UNOP, floor, 2)
-  BUILTIN_VDQF (UNOP, nearbyint, 2)
-  BUILTIN_VDQF (UNOP, rint, 2)
-  BUILTIN_VDQF (UNOP, round, 2)
-  BUILTIN_VDQF_DF (UNOP, frintn, 2)
+  BUILTIN_VHSDF (UNOP, btrunc, 2)
+  BUILTIN_VHSDF (UNOP, ceil, 2)
+  BUILTIN_VHSDF (UNOP, floor, 2)
+  BUILTIN_VHSDF (UNOP, nearbyint, 2)
+  BUILTIN_VHSDF (UNOP, rint, 2)
+  BUILTIN_VHSDF (UNOP, round, 2)
+  BUILTIN_VHSDF_DF (UNOP, frintn, 2)
 
   /* Implemented by l<fcvt_pattern><su_optab><VQDF:mode><vcvt_target>2.  */
+  VAR1 (UNOP, lbtruncv4hf, 2, v4hi)
+  VAR1 (UNOP, lbtruncv8hf, 2, v8hi)
   VAR1 (UNOP, lbtruncv2sf, 2, v2si)
   VAR1 (UNOP, lbtruncv4sf, 2, v4si)
   VAR1 (UNOP, lbtruncv2df, 2, v2di)
 
+  VAR1 (UNOPUS, lbtruncuv4hf, 2, v4hi)
+  VAR1 (UNOPUS, lbtruncuv8hf, 2, v8hi)
   VAR1 (UNOPUS, lbtruncuv2sf, 2, v2si)
   VAR1 (UNOPUS, lbtruncuv4sf, 2, v4si)
   VAR1 (UNOPUS, lbtruncuv2df, 2, v2di)
 
+  VAR1 (UNOP, lroundv4hf, 2, v4hi)
+  VAR1 (UNOP, lroundv8hf, 2, v8hi)
   VAR1 (UNOP, lroundv2sf, 2, v2si)
   VAR1 (UNOP, lroundv4sf, 2, v4si)
   VAR1 (UNOP, lroundv2df, 2, v2di)
@@ -290,38 +296,52 @@
   VAR1 (UNOP, lroundsf, 2, si)
   VAR1 (UNOP, lrounddf, 2, di)
 
+  VAR1 (UNOPUS, lrounduv4hf, 2, v4hi)
+  VAR1 (UNOPUS, lrounduv8hf, 2, v8hi)
   VAR1 (UNOPUS, lrounduv2sf, 2, v2si)
   VAR1 (UNOPUS, lrounduv4sf, 2, v4si)
   VAR1 (UNOPUS, lrounduv2df, 2, v2di)
   VAR1 (UNOPUS, lroundusf, 2, si)
   VAR1 (UNOPUS, lroundudf, 2, di)
 
+  VAR1 (UNOP, lceilv4hf, 2, v4hi)
+  VAR1 (UNOP, lceilv8hf, 2, v8hi)
   VAR1 (UNOP, lceilv2sf, 2, v2si)
   VAR1 (UNOP, lceilv4sf, 2, v4si)
   VAR1 (UNOP, lceilv2df, 2, v2di)
 
+  VAR1 (UNOPUS, lceiluv4hf, 2, v4hi)
+  VAR1 (UNOPUS, lceiluv8hf, 2, v8hi)
   VAR1 (UNOPUS, lceiluv2sf, 2, v2si)
   VAR1 (UNOPUS, lceiluv4sf, 2, v4si)
   VAR1 (UNOPUS, lceiluv2df, 2, v2di)
   VAR1 (UNOPUS, lceilusf, 2, si)
   VAR1 (UNOPUS, lceiludf, 2, di)
 
+  VAR1 (UNOP, lfloorv4hf, 2, v4hi)
+  VAR1 (UNOP, lfloorv8hf, 2, v8hi)
   VAR1 (UNOP, lfloorv2sf, 2, v2si)
   VAR1 (UNOP, lfloorv4sf, 2, v4si)
   VAR1 (UNOP, lfloorv2df, 2, v2di)
 
+  VAR1 (UNOPUS, lflooruv4hf, 2, v4hi)
+  VAR1 (UNOPUS, lflooruv8hf, 2, v8hi)
   VAR1 (UNOPUS, lflooruv2sf, 2, v2si)
   VAR1 (UNOPUS, lflooruv4sf, 2, v4si)
   VAR1 (UNOPUS, lflooruv2df, 2, v2di)
   VAR1 (UNOPUS, lfloorusf, 2, si)
   VAR1 (UNOPUS, lfloorudf, 2, di)
 
+  VAR1 (UNOP, lfrintnv4hf, 2, v4hi)
+  VAR1 (UNOP, lfrintnv8hf, 2, v8hi)
   VAR1 (UNOP, lfrintnv2sf, 2, v2si)
   VAR1 (UNOP, lfrintnv4sf, 2, v4si)
   VAR1 (UNOP, lfrintnv2df, 2, v2di)
   VAR1 (UNOP, lfrintnsf, 2, si)
   VAR1 (UNOP, lfrintndf, 2, di)
 
+  VAR1 (UNOPUS, lfrintnuv4hf, 2, v4hi)
+  VAR1 (UNOPUS, lfrintnuv8hf, 2, v8hi)
   VAR1 (UNOPUS, lfrintnuv2sf, 2, v2si)
   VAR1 (UNOPUS, lfrintnuv4sf, 2, v4si)
   VAR1 (UNOPUS, lfrintnuv2df, 2, v2di)
@@ -329,10 +349,14 @@
   VAR1 (UNOPUS, lfrintnudf, 2, di)
 
   /* Implemented by <optab><fcvt_target><VDQF:mode>2.  */
+  VAR1 (UNOP, floatv4hi, 2, v4hf)
+  VAR1 (UNOP, floatv8hi, 2, v8hf)
   VAR1 (UNOP, floatv2si, 2, v2sf)
   VAR1 (UNOP, floatv4si, 2, v4sf)
   VAR1 (UNOP, floatv2di, 2, v2df)
 
+  VAR1 (UNOP, floatunsv4hi, 2, v4hf)
+  VAR1 (UNOP, floatunsv8hi, 2, v8hf)
   VAR1 (UNOP, floatunsv2si, 2, v2sf)
   VAR1 (UNOP, floatunsv4si, 2, v4sf)
   VAR1 (UNOP, floatunsv2di, 2, v2df)
@@ -358,13 +382,13 @@
 
   BUILTIN_VDQ_SI (UNOP, urecpe, 0)
 
-  BUILTIN_VDQF (UNOP, frecpe, 0)
+  BUILTIN_VHSDF (UNOP, frecpe, 0)
   BUILTIN_VDQF (BINOP, frecps, 0)
 
   /* Implemented by a mixture of abs2 patterns.  Note the DImode builtin is
      only ever used for the int64x1_t intrinsic, there is no scalar version.  */
   BUILTIN_VSDQ_I_DI (UNOP, abs, 0)
-  BUILTIN_VDQF (UNOP, abs, 2)
+  BUILTIN_VHSDF (UNOP, abs, 2)
 
   BUILTIN_VQ_HSF (UNOP, vec_unpacks_hi_, 10)
   VAR1 (BINOP, float_truncate_hi_, 0, v4sf)
@@ -457,7 +481,7 @@
   BUILTIN_VALLF (SHIFTIMM_USS, fcvtzu, 3)
 
   /* Implemented by aarch64_rsqrte<mode>.  */
-  BUILTIN_VALLF (UNOP, rsqrte, 0)
+  BUILTIN_VHSDF_SDF (UNOP, rsqrte, 0)
 
   /* Implemented by aarch64_rsqrts<mode>.  */
   BUILTIN_VALLF (BINOP, rsqrts, 0)
@@ -467,3 +491,13 @@
 
   /* Implemented by aarch64_faddp<mode>.  */
   BUILTIN_VDQF (BINOP, faddp, 0)
+
+  /* Implemented by aarch64_cm<optab><mode>.  */
+  BUILTIN_VHSDF_SDF (BINOP_USS, cmeq, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, cmge, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, cmgt, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, cmle, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, cmlt, 0)
+
+  /* Implemented by neg<mode>2.  */
+  BUILTIN_VHSDF (UNOP, neg, 2)

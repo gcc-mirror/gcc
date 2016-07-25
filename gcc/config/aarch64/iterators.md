@@ -88,11 +88,20 @@
 ;; Vector Float modes suitable for moving, loading and storing.
 (define_mode_iterator VDQF_F16 [V4HF V8HF V2SF V4SF V2DF])
 
-;; Vector Float modes, barring HF modes.
+;; Vector Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
+(define_mode_iterator VHSDF [(V4HF "TARGET_SIMD_F16INST")
+			     (V8HF "TARGET_SIMD_F16INST")
+			     V2SF V4SF V2DF])
 
 ;; Vector Float modes, and DF.
 (define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
+(define_mode_iterator VHSDF_DF [(V4HF "TARGET_SIMD_F16INST")
+				(V8HF "TARGET_SIMD_F16INST")
+				V2SF V4SF V2DF DF])
+(define_mode_iterator VHSDF_SDF [(V4HF "TARGET_SIMD_F16INST")
+				 (V8HF "TARGET_SIMD_F16INST")
+				 V2SF V4SF V2DF SF DF])
 
 ;; Vector single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
@@ -366,7 +375,8 @@
 		    (V4HI "") (V8HI "")
 		    (V2SI "") (V4SI  "")
 		    (V2DI "") (V2SF "")
-		    (V4SF "") (V2DF "")])
+		    (V4SF "") (V4HF "")
+		    (V8HF "") (V2DF "")])
 
 ;; For scalar usage of vector/FP registers, narrowing
 (define_mode_attr vn2 [(QI "") (HI "b") (SI "h") (DI "s")
@@ -446,6 +456,16 @@
 			  (SF   "s") (DF  "d")
 			  (QI "b")   (HI "h")
 			  (SI "s")   (DI "d")])
+
+;; Vetype is used everywhere in scheduling type and assembly output,
+;; sometimes they are not the same, for example HF modes on some
+;; instructions.  stype is defined to represent scheduling type
+;; more accurately.
+(define_mode_attr stype [(V8QI "b") (V16QI "b") (V4HI "s") (V8HI "s")
+			 (V2SI "s") (V4SI "s") (V2DI "d") (V4HF "s")
+			 (V8HF "s") (V2SF "s") (V4SF "s") (V2DF "d")
+			 (HF "s") (SF "s") (DF "d") (QI "b") (HI "s")
+			 (SI "s") (DI "d")])
 
 ;; Mode-to-bitwise operation type mapping.
 (define_mode_attr Vbtype [(V8QI "8b")  (V16QI "16b")
@@ -656,10 +676,14 @@
 
 (define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")
 			       (V2DI "v2df") (V4SI "v4sf") (V2SI "v2sf")
-			       (SF "si") (DF "di") (SI "sf") (DI "df")])
+			       (SF "si") (DF "di") (SI "sf") (DI "df")
+			       (V4HF "v4hi") (V8HF "v8hi") (V4HI "v4hf")
+			       (V8HI "v8hf")])
 (define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")
 			       (V2DI "V2DF") (V4SI "V4SF") (V2SI "V2SF")
-			       (SF "SI") (DF "DI") (SI "SF") (DI "DF")])
+			       (SF "SI") (DF "DI") (SI "SF") (DI "DF")
+			       (V4HF "V4HI") (V8HF "V8HI") (V4HI "V4HF")
+			       (V8HI "V8HF")])
 
 
 ;; for the inequal width integer to fp conversions
@@ -687,6 +711,7 @@
 ;; the 'x' constraint.  All other modes may use the 'w' constraint.
 (define_mode_attr h_con [(V2SI "w") (V4SI "w")
 			 (V4HI "x") (V8HI "x")
+			 (V4HF "w") (V8HF "w")
 			 (V2SF "w") (V4SF "w")
 			 (V2DF "w") (DF "w")])
 
