@@ -1941,14 +1941,19 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 }
 
 /* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to held
-   intermediate value if necessary.  */
+   intermediate value if necessary.
+
+   This function is sometimes used to adjust the stack pointer, so we must
+   ensure that it can never cause transient stack deallocation by writing an
+   invalid value into REGNUM.  */
 
 static void
 aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
-		      HOST_WIDE_INT delta)
+		      HOST_WIDE_INT delta, bool frame_related_p)
 {
   HOST_WIDE_INT mdelta = abs_hwi (delta);
   rtx this_rtx = gen_rtx_REG (mode, regnum);
+  rtx_insn *insn;
 
   /* Do nothing if mdelta is zero.  */
   if (!mdelta)
@@ -1957,7 +1962,8 @@ aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
   /* We only need single instruction if the offset fit into add/sub.  */
   if (aarch64_uimm12_shift (mdelta))
     {
-      emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
       return;
     }
 
@@ -1970,15 +1976,23 @@ aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
       HOST_WIDE_INT low_off = mdelta & 0xfff;
 
       low_off = delta < 0 ? -low_off : low_off;
-      emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
-      emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
       return;
     }
 
   /* Otherwise use generic function to handle all other situations.  */
   rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
   aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (delta), true, mode);
-  emit_insn (gen_add2_insn (this_rtx, scratch_rtx));
+  insn = emit_insn (gen_add2_insn (this_rtx, scratch_rtx));
+  if (frame_related_p)
+    {
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      rtx adj = plus_constant (mode, this_rtx, delta);
+      add_reg_note (insn , REG_CFA_ADJUST_CFA, gen_rtx_SET (this_rtx, adj));
+    }
 }
 
 static bool
@@ -3113,36 +3127,7 @@ aarch64_expand_prologue (void)
       frame_size -= (offset + crtl->outgoing_args_size);
       fp_offset = 0;
 
-      if (frame_size >= 0x1000000)
-	{
-	  rtx op0 = gen_rtx_REG (Pmode, IP0_REGNUM);
-	  emit_move_insn (op0, GEN_INT (-frame_size));
-	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
-
-	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
-			gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (Pmode, stack_pointer_rtx,
-						    -frame_size)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
-      else if (frame_size > 0)
-	{
-	  int hi_ofs = frame_size & 0xfff000;
-	  int lo_ofs = frame_size & 0x000fff;
-
-	  if (hi_ofs)
-	    {
-	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx, GEN_INT (-hi_ofs)));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	  if (lo_ofs)
-	    {
-	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx, GEN_INT (-lo_ofs)));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	}
+      aarch64_add_constant (Pmode, SP_REGNUM, IP0_REGNUM, -frame_size, true);
     }
   else
     frame_size = -1;
@@ -3362,31 +3347,7 @@ aarch64_expand_epilogue (bool for_sibcall)
       if (need_barrier_p)
 	emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
 
-      if (frame_size >= 0x1000000)
-	{
-	  rtx op0 = gen_rtx_REG (Pmode, IP0_REGNUM);
-	  emit_move_insn (op0, GEN_INT (frame_size));
-	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
-	}
-      else
-	{
-          int hi_ofs = frame_size & 0xfff000;
-          int lo_ofs = frame_size & 0x000fff;
-
-	  if (hi_ofs && lo_ofs)
-	    {
-	      insn = emit_insn (gen_add2_insn
-				(stack_pointer_rtx, GEN_INT (hi_ofs)));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      frame_size = lo_ofs;
-	    }
-	  insn = emit_insn (gen_add2_insn
-			    (stack_pointer_rtx, GEN_INT (frame_size)));
-	}
-
-      /* Reset the CFA to be SP + 0.  */
-      add_reg_note (insn, REG_CFA_DEF_CFA, stack_pointer_rtx);
-      RTX_FRAME_RELATED_P (insn) = 1;
+      aarch64_add_constant (Pmode, SP_REGNUM, IP0_REGNUM, frame_size, true);
     }
 
   /* Stack adjustment for exception handler.  */
@@ -3473,7 +3434,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   if (vcall_offset == 0)
-    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta);
+    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta, false);
   else
     {
       gcc_assert ((vcall_offset & (POINTER_BYTES - 1)) == 0);
@@ -3489,7 +3450,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    addr = gen_rtx_PRE_MODIFY (Pmode, this_rtx,
 				       plus_constant (Pmode, this_rtx, delta));
 	  else
-	    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta);
+	    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta, false);
 	}
 
       if (Pmode == ptr_mode)
