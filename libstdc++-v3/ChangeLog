@@ -1,3 +1,9 @@
+2016-07-25  Georeth Chow  <georeth2010@gmail.com>
+
+	* include/ext/ropeimpl.h (rope<>::_S_dump(_RopeRep*, int)): Qualify
+	_S_concat enumerator.
+	* testsuite/ext/rope/6.cc: New test.
+
 2016-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Use
