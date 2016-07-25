@@ -360,6 +360,206 @@ vsqrth_f16 (float16_t __a)
   return __builtin_aarch64_sqrthf (__a);
 }
 
+/* ARMv8.2-A FP16 two operands scalar intrinsics.  */
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vaddh_f16 (float16_t __a, float16_t __b)
+{
+  return __a + __b;
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vabdh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_fabdhf (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcageh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_facgehf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcagth_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_facgthf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcaleh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_faclehf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcalth_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_faclthf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vceqh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_cmeqhf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcgeh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_cmgehf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcgth_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_cmgthf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcleh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_cmlehf_uss (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vclth_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_cmlthf_uss (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vcvth_n_f16_s16 (int16_t __a, const int __b)
+{
+  return __builtin_aarch64_scvtfhi (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vcvth_n_f16_s32 (int32_t __a, const int __b)
+{
+  return __builtin_aarch64_scvtfsihf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vcvth_n_f16_s64 (int64_t __a, const int __b)
+{
+  return __builtin_aarch64_scvtfdihf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vcvth_n_f16_u16 (uint16_t __a, const int __b)
+{
+  return __builtin_aarch64_ucvtfhi_sus (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vcvth_n_f16_u32 (uint32_t __a, const int __b)
+{
+  return __builtin_aarch64_ucvtfsihf_sus (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vcvth_n_f16_u64 (uint64_t __a, const int __b)
+{
+  return __builtin_aarch64_ucvtfdihf_sus (__a, __b);
+}
+
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vcvth_n_s16_f16 (float16_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzshf (__a, __b);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vcvth_n_s32_f16 (float16_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzshfsi (__a, __b);
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vcvth_n_s64_f16 (float16_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzshfdi (__a, __b);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vcvth_n_u16_f16 (float16_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzuhf_uss (__a, __b);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vcvth_n_u32_f16 (float16_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzuhfsi_uss (__a, __b);
+}
+
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+vcvth_n_u64_f16 (float16_t __a, const int __b)
+{
+  return __builtin_aarch64_fcvtzuhfdi_uss (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vdivh_f16 (float16_t __a, float16_t __b)
+{
+  return __a / __b;
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmaxh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_fmaxhf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmaxnmh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_fmaxhf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vminh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_fminhf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vminnmh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_fminhf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmulh_f16 (float16_t __a, float16_t __b)
+{
+  return __a * __b;
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vmulxh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_fmulxhf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vrecpsh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_frecpshf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vrsqrtsh_f16 (float16_t __a, float16_t __b)
+{
+  return __builtin_aarch64_rsqrtshf (__a, __b);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vsubh_f16 (float16_t __a, float16_t __b)
+{
+  return __a - __b;
+}
+
 #pragma GCC pop_options
 
 #endif

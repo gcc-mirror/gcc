@@ -391,9 +391,9 @@
   [(set_attr "type" "neon_fp_rsqrte_<stype><q>")])
 
 (define_insn "aarch64_rsqrts<mode>"
-  [(set (match_operand:VHSDF_SDF 0 "register_operand" "=w")
-	(unspec:VHSDF_SDF [(match_operand:VHSDF_SDF 1 "register_operand" "w")
-			   (match_operand:VHSDF_SDF 2 "register_operand" "w")]
+  [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
+	(unspec:VHSDF_HSDF [(match_operand:VHSDF_HSDF 1 "register_operand" "w")
+			    (match_operand:VHSDF_HSDF 2 "register_operand" "w")]
 	 UNSPEC_RSQRTS))]
   "TARGET_SIMD"
   "frsqrts\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
@@ -475,11 +475,11 @@
 )
 
 (define_insn "fabd<mode>3"
-  [(set (match_operand:VHSDF_SDF 0 "register_operand" "=w")
-	(abs:VHSDF_SDF
-	  (minus:VHSDF_SDF
-	    (match_operand:VHSDF_SDF 1 "register_operand" "w")
-	    (match_operand:VHSDF_SDF 2 "register_operand" "w"))))]
+  [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
+	(abs:VHSDF_HSDF
+	  (minus:VHSDF_HSDF
+	    (match_operand:VHSDF_HSDF 1 "register_operand" "w")
+	    (match_operand:VHSDF_HSDF 2 "register_operand" "w"))))]
   "TARGET_SIMD"
   "fabd\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "type" "neon_fp_abd_<stype><q>")]
@@ -3078,10 +3078,10 @@
 ;; fmulx.
 
 (define_insn "aarch64_fmulx<mode>"
-  [(set (match_operand:VHSDF_SDF 0 "register_operand" "=w")
-	(unspec:VHSDF_SDF
-	  [(match_operand:VHSDF_SDF 1 "register_operand" "w")
-	   (match_operand:VHSDF_SDF 2 "register_operand" "w")]
+  [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
+	(unspec:VHSDF_HSDF
+	  [(match_operand:VHSDF_HSDF 1 "register_operand" "w")
+	   (match_operand:VHSDF_HSDF 2 "register_operand" "w")]
 	   UNSPEC_FMULX))]
  "TARGET_SIMD"
  "fmulx\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
@@ -4341,10 +4341,10 @@
   [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w")
 	(neg:<V_cmp_result>
 	  (FAC_COMPARISONS:<V_cmp_result>
-	    (abs:VHSDF_SDF
-	      (match_operand:VHSDF_SDF 1 "register_operand" "w"))
-	    (abs:VHSDF_SDF
-	      (match_operand:VHSDF_SDF 2 "register_operand" "w"))
+	    (abs:VHSDF_HSDF
+	      (match_operand:VHSDF_HSDF 1 "register_operand" "w"))
+	    (abs:VHSDF_HSDF
+	      (match_operand:VHSDF_HSDF 2 "register_operand" "w"))
   )))]
   "TARGET_SIMD"
   "fac<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>"
@@ -5460,10 +5460,10 @@
 )
 
 (define_insn "aarch64_frecps<mode>"
-  [(set (match_operand:VHSDF_SDF 0 "register_operand" "=w")
-	(unspec:VHSDF_SDF
-	  [(match_operand:VHSDF_SDF 1 "register_operand" "w")
-	  (match_operand:VHSDF_SDF 2 "register_operand" "w")]
+  [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
+	(unspec:VHSDF_HSDF
+	  [(match_operand:VHSDF_HSDF 1 "register_operand" "w")
+	  (match_operand:VHSDF_HSDF 2 "register_operand" "w")]
 	  UNSPEC_FRECPS))]
   "TARGET_SIMD"
   "frecps\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"

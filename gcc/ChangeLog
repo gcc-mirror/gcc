@@ -1,5 +1,38 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
+	* config/aarch64/aarch64.md (<FCVT_F2FIXED:fcvt_fixed_insn>hf<mode>3):
+	New.
+	(<FCVT_FIXED2F:fcvt_fixed_insn><mode>hf3): Likewise.
+	(add<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(mul<mode>3): Likewise.
+	(div<mode>3): Likewise.
+	(*div<mode>3): Likewise.
+	(<fmaxmin><mode>3): Extend to HF.
+	* config/aarch64/aarch64-simd.md (aarch64_rsqrts<mode>): Likewise.
+	(fabd<mode>3): Likewise.
+	(<FCVT_F2FIXED:fcvt_fixed_insn><VHSDF_HSDF:mode>3): Likewise.
+	(<FCVT_FIXED2F:fcvt_fixed_insn><VHSDI_HSDI:mode>3): Likewise.
+	(aarch64_fmulx<mode>): Likewise.
+	(aarch64_fac<optab><mode>): Likewise.
+	(aarch64_frecps<mode>): Likewise.
+	(<FCVT_F2FIXED:fcvt_fixed_insn>hfhi3): New.
+	(<FCVT_FIXED2F:fcvt_fixed_insn>hihf3): Likewise.
+	* config/aarch64/iterators.md (VHSDF_SDF): Delete.
+	(VSDQ_HSDI): Support HI.
+	(fcvt_target, FCVT_TARGET): Likewise.
+	* config/aarch64/arm_fp16.h (vaddh_f16, vsubh_f16, vabdh_f16,
+	vcageh_f16, vcagth_f16, vcaleh_f16, vcalth_f16, vceqh_f16, vcgeh_f16,
+	vcgth_f16, vcleh_f16, vclth_f16, vcvth_n_f16_s16, vcvth_n_f16_s32,
+	vcvth_n_f16_s64, vcvth_n_f16_u16, vcvth_n_f16_u32, vcvth_n_f16_u64,
+	vcvth_n_s16_f16, vcvth_n_s32_f16, vcvth_n_s64_f16, vcvth_n_u16_f16,
+	vcvth_n_u32_f16, vcvth_n_u64_f16, vdivh_f16, vmaxh_f16, vmaxnmh_f16,
+	vminh_f16, vminnmh_f16, vmulh_f16, vmulxh_f16, vrecpsh_f16,
+	vrsqrtsh_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config.gcc (aarch64*-*-*): Install arm_fp16.h.
 	* config/aarch64/aarch64-builtins.c (hi_UP): New.
 	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
@@ -11,6 +44,7 @@
 	(l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2): Likewise.
 	(fix_trunc<GPF:mode><GPI:mode>2): Likewise.
 	(sqrt<mode>2): Likewise.
+	(*sqrt<mode>2): Likewise.
 	(abs<mode>2): Likewise.
 	(<optab><mode>hf2): New pattern for HF mode.
 	(<optab>hihf2): Likewise.
@@ -58,7 +92,7 @@
 	(f, fp): Support HF modes.
 	* config/aarch64/arm_neon.h (vfma_lane_f16, vfmaq_lane_f16,
 	vfma_laneq_f16, vfmaq_laneq_f16, vfma_n_f16, vfmaq_n_f16, vfms_lane_f16,
-        vfmsq_lane_f16, vfms_laneq_f16, vfmsq_laneq_f16, vfms_n_f16,
+	vfmsq_lane_f16, vfms_laneq_f16, vfmsq_laneq_f16, vfms_n_f16,
 	vfmsq_n_f16, vmul_lane_f16, vmulq_lane_f16, vmul_laneq_f16,
 	vmulq_laneq_f16, vmul_n_f16, vmulq_n_f16, vmulx_lane_f16,
 	vmulxq_lane_f16, vmulx_laneq_f16, vmulxq_laneq_f16): New.
@@ -159,7 +193,7 @@
 	and V8HFmode.
 	* config/aarch64/arm_neon.h (__INTERLEAVE_LIST): Support float16x4_t,
 	float16x8_t.
-        (__aarch64_vdup_lane_f16, __aarch64_vdup_laneq_f16,
+	(__aarch64_vdup_lane_f16, __aarch64_vdup_laneq_f16,
 	__aarch64_vdupq_lane_f16, __aarch64_vdupq_laneq_f16, vbsl_f16,
 	vbslq_f16, vdup_n_f16, vdupq_n_f16, vdup_lane_f16, vdup_laneq_f16,
 	vdupq_lane_f16, vdupq_laneq_f16, vduph_lane_f16, vduph_laneq_f16,
