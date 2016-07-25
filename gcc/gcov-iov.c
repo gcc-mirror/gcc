@@ -58,9 +58,9 @@ main (int argc, char **argv)
       || strcmp (argv[2], "prerelease") == 0)
     phase = '*';
 
-  v[0] = (major < 10 ? '0' : 'A' - 10) + major;
-  v[1] = (minor / 10) + '0';
-  v[2] = (minor % 10) + '0';
+  v[0] = (major / 10) + 'A';
+  v[1] = (major % 10) + '0';
+  v[2] = minor + '0';
   v[3] = phase;
 
   for (ix = 0; ix != 4; ix++)
