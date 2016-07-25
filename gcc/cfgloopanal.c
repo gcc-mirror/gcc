@@ -244,7 +244,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
   /* If we have no profile at all, use AVG_LOOP_NITER.  */
   if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
     expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
-  else if (loop->latch->count || loop->header->count)
+  else if (loop->latch && (loop->latch->count || loop->header->count))
     {
       gcov_type count_in, count_latch;
 
@@ -274,8 +274,8 @@ expected_loop_iterations_unbounded (const struct loop *loop,
       freq_latch = 0;
 
       FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (e->src == loop->latch)
-	  freq_latch = EDGE_FREQUENCY (e);
+	if (flow_bb_inside_loop_p (loop, e->src))
+	  freq_latch += EDGE_FREQUENCY (e);
 	else
 	  freq_in += EDGE_FREQUENCY (e);
 
