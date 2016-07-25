@@ -1,5 +1,10 @@
 2016-07-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65970
+	* constexpr.c (cxx_eval_loop_expr): Count iterations.
+	* cp-gimplify.c (genericize_cp_loop): Use start_locus even for
+	infinite loops.
+
 	PR c++/71972
 	* constexpr.c (cxx_eval_array_reference): Handle looking for the
 	value of an element we're currently modifying.

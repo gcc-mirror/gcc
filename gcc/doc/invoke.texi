@@ -191,7 +191,8 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -fargs-in-order=@var{n} -fcheck-new @gol
--fconstexpr-depth=@var{n}  -ffriend-injection @gol
+-fconstexpr-depth=@var{n} -fconstexpr-loop-limit=@var{n} @gol
+-ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
@@ -2264,6 +2265,12 @@ Set the maximum nested evaluation depth for C++11 constexpr functions
 to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
 is 512.
+
+@item -fconstexpr-loop-limit=@var{n}
+@opindex fconstexpr-loop-limit
+Set the maximum number of iterations for a loop in C++14 constexpr functions
+to @var{n}.  A limit is needed to detect infinite loops during
+constant expression evaluation.  The default is 262144 (1<<18).
 
 @item -fdeduce-init-list
 @opindex fdeduce-init-list

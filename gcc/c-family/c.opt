@@ -1174,6 +1174,10 @@ fconstexpr-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
 -fconstexpr-depth=<number>	Specify maximum constexpr recursion depth.
 
+fconstexpr-loop-limit=
+C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
+-fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
+
 fdebug-cpp
 C ObjC C++ ObjC++
 Emit debug annotations during preprocessing.
