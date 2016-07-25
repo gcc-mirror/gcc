@@ -1,5 +1,8 @@
 2016-07-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65970
+	* cp-gimplify.c (genericize_cp_loop): Revert location change.
+
 	PR c++/71837
 	* lambda.c (add_capture): Leave a pack expansion in a TREE_LIST.
 	(build_lambda_object): Call build_x_compound_expr_from_list.
