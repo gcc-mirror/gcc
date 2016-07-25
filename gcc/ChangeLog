@@ -1,6 +1,12 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
+	* config/aarch64/aarch64.md (fma, fnma): Support HF.
+	* config/aarch64/arm_fp16.h (vfmah_f16, vfmsh_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
 	* config/aarch64/aarch64.md (<FCVT_F2FIXED:fcvt_fixed_insn>hf<mode>3):
 	New.
 	(<FCVT_FIXED2F:fcvt_fixed_insn><mode>hf3): Likewise.

@@ -422,8 +422,10 @@
 
   /* Implemented by fma<mode>4.  */
   BUILTIN_VHSDF (TERNOP, fma, 4)
+  VAR1 (TERNOP, fma, 4, hf)
   /* Implemented by fnma<mode>4.  */
   BUILTIN_VHSDF (TERNOP, fnma, 4)
+  VAR1 (TERNOP, fnma, 4, hf)
 
   /* Implemented by aarch64_simd_bsl<mode>.  */
   BUILTIN_VDQQH (BSL_P, simd_bsl, 0)

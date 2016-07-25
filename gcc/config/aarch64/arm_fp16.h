@@ -560,6 +560,20 @@ vsubh_f16 (float16_t __a, float16_t __b)
   return __a - __b;
 }
 
+/* ARMv8.2-A FP16 three operands scalar intrinsics.  */
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vfmah_f16 (float16_t __a, float16_t __b, float16_t __c)
+{
+  return __builtin_aarch64_fmahf (__b, __c, __a);
+}
+
+__extension__ static __inline float16_t __attribute__ ((__always_inline__))
+vfmsh_f16 (float16_t __a, float16_t __b, float16_t __c)
+{
+  return __builtin_aarch64_fnmahf (__b, __c, __a);
+}
+
 #pragma GCC pop_options
 
 #endif
