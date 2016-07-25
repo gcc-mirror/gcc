@@ -1,5 +1,10 @@
 2016-07-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71833
+	PR c++/54440
+	* pt.c (coerce_template_parameter_pack): Fix logic for
+	pack index.
+
 	PR c++/65970
 	* constexpr.c (cxx_eval_loop_expr): Count iterations.
 	* cp-gimplify.c (genericize_cp_loop): Use start_locus even for
