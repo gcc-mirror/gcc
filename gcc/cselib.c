@@ -2659,6 +2659,13 @@ cselib_process_insn (rtx_insn *insn)
       if (RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
 	  || !(RTL_CONST_OR_PURE_CALL_P (insn)))
 	cselib_invalidate_mem (callmem);
+      else
+	/* For const/pure calls, invalidate any argument slots because
+	   they are owned by the callee.  */
+	for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+	  if (GET_CODE (XEXP (x, 0)) == USE
+	      && MEM_P (XEXP (XEXP (x, 0), 0)))
+	    cselib_invalidate_mem (XEXP (XEXP (x, 0), 0));
     }
 
   cselib_record_sets (insn);
