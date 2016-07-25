@@ -2129,42 +2129,49 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   else
     found = (i < len);
 
-  if (!found)
+  if (found)
     {
-      if (TREE_CODE (ary) == CONSTRUCTOR
-	  && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
+      tree r;
+      if (TREE_CODE (ary) == CONSTRUCTOR)
+	r = (*CONSTRUCTOR_ELTS (ary))[i].value;
+      else if (TREE_CODE (ary) == VECTOR_CST)
+	r = VECTOR_CST_ELT (ary, i);
+      else if (elem_nchars == 1)
+	r = build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
+			   TREE_STRING_POINTER (ary)[i]);
+      else
 	{
-	  /* 'ary' is part of the aggregate initializer we're currently
-	     building; if there's no initializer for this element yet,
-	     that's an error.  */
-	  if (!ctx->quiet)
-	    error ("accessing uninitialized array element");
-	  *non_constant_p = true;
-	  return t;
+	  tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (ary)));
+	  r = native_interpret_expr (type, (const unsigned char *)
+				     TREE_STRING_POINTER (ary)
+				     + i * elem_nchars, elem_nchars);
 	}
+      if (r)
+	/* Don't VERIFY_CONSTANT here.  */
+	return r;
 
-      /* If it's within the array bounds but doesn't have an explicit
-	 initializer, it's value-initialized.  */
-      tree val = build_value_init (elem_type, tf_warning_or_error);
-      return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
-					   overflow_p);
+      /* Otherwise the element doesn't have a value yet.  */
     }
 
-  if (TREE_CODE (ary) == CONSTRUCTOR)
-    return (*CONSTRUCTOR_ELTS (ary))[i].value;
-  else if (TREE_CODE (ary) == VECTOR_CST)
-    return VECTOR_CST_ELT (ary, i);
-  else if (elem_nchars == 1)
-    return build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
-			  TREE_STRING_POINTER (ary)[i]);
-  else
+  /* Not found.  */
+
+  if (TREE_CODE (ary) == CONSTRUCTOR
+      && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
     {
-      tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (ary)));
-      return native_interpret_expr (type, (const unsigned char *)
-					  TREE_STRING_POINTER (ary)
-					  + i * elem_nchars, elem_nchars);
+      /* 'ary' is part of the aggregate initializer we're currently
+	 building; if there's no initializer for this element yet,
+	 that's an error.  */
+      if (!ctx->quiet)
+	error ("accessing uninitialized array element");
+      *non_constant_p = true;
+      return t;
     }
-  /* Don't VERIFY_CONSTANT here.  */
+
+  /* If it's within the array bounds but doesn't have an explicit
+     initializer, it's value-initialized.  */
+  tree val = build_value_init (elem_type, tf_warning_or_error);
+  return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
+				       overflow_p);
 }
 
 /* Subroutine of cxx_eval_constant_expression.

@@ -1,3 +1,9 @@
+2016-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71972
+	* constexpr.c (cxx_eval_array_reference): Handle looking for the
+	value of an element we're currently modifying.
+
 2016-07-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71515
