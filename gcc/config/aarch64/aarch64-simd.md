@@ -351,7 +351,7 @@
     operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
     return "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
 (define_insn "*aarch64_mul3_elt_<vswap_width_name><mode>"
@@ -379,7 +379,7 @@
       (match_operand:VMUL 2 "register_operand" "w")))]
   "TARGET_SIMD"
   "<f>mul\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]";
-  [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
 (define_insn "aarch64_rsqrte<mode>"
@@ -1634,7 +1634,7 @@
       (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
   "fmla\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
-  [(set_attr "type" "neon<fp>_mla_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon<fp>_mla_<stype>_scalar<q>")]
 )
 
 (define_insn "*aarch64_fma4_elt_to_64v2df"
@@ -1712,7 +1712,7 @@
       (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
   "fmls\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
-  [(set_attr "type" "neon<fp>_mla_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon<fp>_mla_<stype>_scalar<q>")]
 )
 
 (define_insn "*aarch64_fnma4_elt_to_64v2df"
@@ -3101,20 +3101,18 @@
   [(set_attr "type" "neon_fp_mul_<Vetype><q>")]
 )
 
-;; vmulxq_lane_f64
+;; vmulxq_lane
 
-(define_insn "*aarch64_mulx_elt_to_64v2df"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-	(unspec:V2DF
-	 [(match_operand:V2DF 1 "register_operand" "w")
-	  (vec_duplicate:V2DF
-	    (match_operand:DF 2 "register_operand" "w"))]
+(define_insn "*aarch64_mulx_elt_from_dup<mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF
+	 [(match_operand:VHSDF 1 "register_operand" "w")
+	  (vec_duplicate:VHSDF
+	    (match_operand:<VEL> 2 "register_operand" "w"))]
 	 UNSPEC_FMULX))]
   "TARGET_SIMD"
-  {
-    return "fmulx\t%0.2d, %1.2d, %2.d[0]";
-  }
-  [(set_attr "type" "neon_fp_mul_d_scalar_q")]
+  "fmulx\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[0]";
+  [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
 ;; vmulxs_lane_f32, vmulxs_laneq_f32

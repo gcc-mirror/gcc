@@ -1,5 +1,22 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd.md (*aarch64_mulx_elt_to_64v2df): Rename to
+	"*aarch64_mulx_elt_from_dup<mode>".
+	(*aarch64_mul3_elt<mode>): Update schedule type.
+	(*aarch64_mul3_elt_from_dup<mode>): Likewise.
+	(*aarch64_fma4_elt_from_dup<mode>): Likewise.
+	(*aarch64_fnma4_elt_from_dup<mode>): Likewise.
+	* config/aarch64/iterators.md (VMUL): Supprt half precision float modes.
+	(f, fp): Support HF modes.
+	* config/aarch64/arm_neon.h (vfma_lane_f16, vfmaq_lane_f16,
+	vfma_laneq_f16, vfmaq_laneq_f16, vfma_n_f16, vfmaq_n_f16, vfms_lane_f16,
+        vfmsq_lane_f16, vfms_laneq_f16, vfmsq_laneq_f16, vfms_n_f16,
+	vfmsq_n_f16, vmul_lane_f16, vmulq_lane_f16, vmul_laneq_f16,
+	vmulq_laneq_f16, vmul_n_f16, vmulq_n_f16, vmulx_lane_f16,
+	vmulxq_lane_f16, vmulx_laneq_f16, vmulxq_laneq_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
 	* config/aarch64/aarch64-simd.md (fma<mode>4, fnma<mode>4): Extend to HF
 	modes.
