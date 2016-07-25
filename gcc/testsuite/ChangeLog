@@ -1,3 +1,9 @@
+2016-07-25  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/torture/pr69352.c (foo): Cast to intptr_t instead of long.
+	* gcc.dg/torture/pr69771.c: Require int32plus.
+	* gcc.dg/torture/pr71866.c (inb): Add cast to intptr_t.
+
 2016-07-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/torture/pr71987.c: New test.

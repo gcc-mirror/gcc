@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 
+#include <stdint.h>
+
 int a[10][14], b, c, d, e, f, g, h, i;
 void bar (void);
 int
@@ -13,7 +15,7 @@ foo (int x)
   else
     m = 13;
   if (a[x][m])
-    l = (long) foo;
+    l = (intptr_t) foo;
   a[x][i] = l;
   while (c)
     {
