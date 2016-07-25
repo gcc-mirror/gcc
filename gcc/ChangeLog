@@ -1,5 +1,10 @@
 2016-07-25  Martin Liska  <mliska@suse.cz>
 
+	* lto-cgraph.c (input_symtab): Don't call get_working_sets
+	if flag_auto_profile is set to true.
+
+2016-07-25  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/71868
 	* cfgloopanal.c (expected_loop_iterations_unbounded): When we
 	have a function with multiple latches, count them all.
