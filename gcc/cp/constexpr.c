@@ -3468,6 +3468,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
   constexpr_ctx new_ctx = *ctx;
 
   tree body = TREE_OPERAND (t, 0);
+  int count = 0;
   do
     {
       hash_set<tree> save_exprs;
@@ -3480,6 +3481,16 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
       for (hash_set<tree>::iterator iter = save_exprs.begin();
 	   iter != save_exprs.end(); ++iter)
 	new_ctx.values->remove (*iter);
+      if (++count >= constexpr_loop_limit)
+	{
+	  if (!ctx->quiet)
+	    error_at (EXPR_LOC_OR_LOC (t, input_location),
+		      "constexpr loop iteration count exceeds limit of %d "
+		      "(use -fconstexpr-loop-limit= to increase the limit)",
+		      constexpr_loop_limit);
+	  *non_constant_p = true;
+	  break;
+	}
     }
   while (!returns (jump_target) && !breaks (jump_target) && !*non_constant_p);
 
