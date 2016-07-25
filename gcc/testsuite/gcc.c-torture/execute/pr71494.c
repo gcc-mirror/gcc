@@ -1,4 +1,5 @@
 /* PR middle-end/71494 */
+/* { dg-require-effective-target label_values } */
 
 int
 main ()
