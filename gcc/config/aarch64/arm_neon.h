@@ -26032,6 +26032,8 @@ __INTERLEAVE_LIST (zip)
 
 /* ARMv8.2-A FP16 intrinsics.  */
 
+#include "arm_fp16.h"
+
 #pragma GCC push_options
 #pragma GCC target ("arch=armv8.2-a+fp16")
 

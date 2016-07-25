@@ -1,5 +1,40 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config.gcc (aarch64*-*-*): Install arm_fp16.h.
+	* config/aarch64/aarch64-builtins.c (hi_UP): New.
+	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_frsqrte<mode>): Extend to HF
+	mode.
+	(aarch64_frecp<FRECP:frecp_suffix><mode>): Likewise.
+	(aarch64_cm<optab><mode>): Likewise.
+	* config/aarch64/aarch64.md (<frint_pattern><mode>2): Likewise.
+	(l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2): Likewise.
+	(fix_trunc<GPF:mode><GPI:mode>2): Likewise.
+	(sqrt<mode>2): Likewise.
+	(abs<mode>2): Likewise.
+	(<optab><mode>hf2): New pattern for HF mode.
+	(<optab>hihf2): Likewise.
+	* config/aarch64/arm_neon.h: Include arm_fp16.h.
+	* config/aarch64/iterators.md (GPF_F16, GPI_F16, VHSDF_HSDF): New.
+	(w1, w2, v, s, q, Vmtype, V_cmp_result, fcvt_iesize, FCVT_IESIZE):
+	Support HF mode.
+	* config/aarch64/arm_fp16.h: New file.
+	(vabsh_f16, vceqzh_f16, vcgezh_f16, vcgtzh_f16, vclezh_f16, vcltzh_f16,
+	vcvth_f16_s16, vcvth_f16_s32, vcvth_f16_s64, vcvth_f16_u16,
+	vcvth_f16_u32, vcvth_f16_u64, vcvth_s16_f16, vcvth_s32_f16,
+	vcvth_s64_f16, vcvth_u16_f16, vcvth_u32_f16, vcvth_u64_f16,
+	vcvtah_s16_f16, vcvtah_s32_f16, vcvtah_s64_f16, vcvtah_u16_f16,
+	vcvtah_u32_f16, vcvtah_u64_f16, vcvtmh_s16_f16, vcvtmh_s32_f16,
+	vcvtmh_s64_f16, vcvtmh_u16_f16, vcvtmh_u32_f16, vcvtmh_u64_f16,
+	vcvtnh_s16_f16, vcvtnh_s32_f16, vcvtnh_s64_f16, vcvtnh_u16_f16,
+	vcvtnh_u32_f16, vcvtnh_u64_f16, vcvtph_s16_f16, vcvtph_s32_f16,
+	vcvtph_s64_f16, vcvtph_u16_f16, vcvtph_u32_f16, vcvtph_u64_f16,
+	vnegh_f16, vrecpeh_f16, vrecpxh_f16, vrndh_f16, vrndah_f16, vrndih_f16,
+	vrndmh_f16, vrndnh_f16, vrndph_f16, vrndxh_f16, vrsqrteh_f16,
+	vsqrth_f16): New.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-simd-builtins.def (reduc_smax_scal_,
 	reduc_smin_scal_): Use VDQIF_F16.
 	(reduc_smax_nan_scal_, reduc_smin_nan_scal_): Use VHSDF.

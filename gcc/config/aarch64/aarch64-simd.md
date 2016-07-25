@@ -383,8 +383,8 @@
 )
 
 (define_insn "aarch64_rsqrte<mode>"
-  [(set (match_operand:VHSDF_SDF 0 "register_operand" "=w")
-	(unspec:VHSDF_SDF [(match_operand:VHSDF_SDF 1 "register_operand" "w")]
+  [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
+	(unspec:VHSDF_HSDF [(match_operand:VHSDF_HSDF 1 "register_operand" "w")]
 		     UNSPEC_RSQRTE))]
   "TARGET_SIMD"
   "frsqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
@@ -1753,6 +1753,32 @@
   "TARGET_SIMD"
   "fcvt<frint_suffix><su>\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "type" "neon_fp_to_int_<stype><q>")]
+)
+
+;; HF Scalar variants of related SIMD instructions.
+(define_insn "l<fcvt_pattern><su_optab>hfhi2"
+  [(set (match_operand:HI 0 "register_operand" "=w")
+	(FIXUORS:HI (unspec:HF [(match_operand:HF 1 "register_operand" "w")]
+		      FCVT)))]
+  "TARGET_SIMD_F16INST"
+  "fcvt<frint_suffix><su>\t%h0, %h1"
+  [(set_attr "type" "neon_fp_to_int_s")]
+)
+
+(define_insn "<optab>_trunchfhi2"
+  [(set (match_operand:HI 0 "register_operand" "=w")
+	(FIXUORS:HI (match_operand:HF 1 "register_operand" "w")))]
+  "TARGET_SIMD_F16INST"
+  "fcvtz<su>\t%h0, %h1"
+  [(set_attr "type" "neon_fp_to_int_s")]
+)
+
+(define_insn "<optab>hihf2"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+	(FLOATUORS:HF (match_operand:HI 1 "register_operand" "w")))]
+  "TARGET_SIMD_F16INST"
+  "<su_optab>cvtf\t%h0, %h1"
+  [(set_attr "type" "neon_int_to_fp_s")]
 )
 
 (define_insn "*aarch64_fcvt<su_optab><VDQF:mode><fcvt_target>2_mult"
@@ -4297,8 +4323,8 @@
   [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w,w")
 	(neg:<V_cmp_result>
 	  (COMPARISONS:<V_cmp_result>
-	    (match_operand:VHSDF_SDF 1 "register_operand" "w,w")
-	    (match_operand:VHSDF_SDF 2 "aarch64_simd_reg_or_zero" "w,YDz")
+	    (match_operand:VHSDF_HSDF 1 "register_operand" "w,w")
+	    (match_operand:VHSDF_HSDF 2 "aarch64_simd_reg_or_zero" "w,YDz")
 	  )))]
   "TARGET_SIMD"
   "@
@@ -5425,12 +5451,12 @@
 )
 
 (define_insn "aarch64_frecp<FRECP:frecp_suffix><mode>"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		    FRECP))]
+  [(set (match_operand:GPF_F16 0 "register_operand" "=w")
+	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")]
+	 FRECP))]
   "TARGET_SIMD"
   "frecp<FRECP:frecp_suffix>\\t%<s>0, %<s>1"
-  [(set_attr "type" "neon_fp_recp<FRECP:frecp_suffix>_<GPF:Vetype><GPF:q>")]
+  [(set_attr "type" "neon_fp_recp<FRECP:frecp_suffix>_<GPF_F16:stype>")]
 )
 
 (define_insn "aarch64_frecps<mode>"

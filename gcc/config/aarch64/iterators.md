@@ -26,6 +26,9 @@
 ;; Iterator for General Purpose Integer registers (32- and 64-bit modes)
 (define_mode_iterator GPI [SI DI])
 
+;; Iterator for HI, SI, DI, some instructions can only work on these modes.
+(define_mode_iterator GPI_I16 [(HI "AARCH64_ISA_F16") SI DI])
+
 ;; Iterator for QI and HI modes
 (define_mode_iterator SHORT [QI HI])
 
@@ -37,6 +40,9 @@
 
 ;; Iterator for General Purpose Floating-point registers (32- and 64-bit modes)
 (define_mode_iterator GPF [SF DF])
+
+;; Iterator for all scalar floating point modes (HF, SF, DF)
+(define_mode_iterator GPF_F16 [(HF "AARCH64_ISA_F16") SF DF])
 
 ;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
 (define_mode_iterator GPF_TF_F16 [HF SF DF TF])
@@ -102,6 +108,11 @@
 (define_mode_iterator VHSDF_SDF [(V4HF "TARGET_SIMD_F16INST")
 				 (V8HF "TARGET_SIMD_F16INST")
 				 V2SF V4SF V2DF SF DF])
+(define_mode_iterator VHSDF_HSDF [(V4HF "TARGET_SIMD_F16INST")
+				  (V8HF "TARGET_SIMD_F16INST")
+				  V2SF V4SF V2DF
+				  (HF "TARGET_SIMD_F16INST")
+				  SF DF])
 
 ;; Vector single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
@@ -372,8 +383,8 @@
 (define_mode_attr w [(QI "w") (HI "w") (SI "w") (DI "x") (SF "s") (DF "d")])
 
 ;; For inequal width int to float conversion
-(define_mode_attr w1 [(SF "w") (DF "x")])
-(define_mode_attr w2 [(SF "x") (DF "w")])
+(define_mode_attr w1 [(HF "w") (SF "w") (DF "x")])
+(define_mode_attr w2 [(HF "x") (SF "x") (DF "w")])
 
 (define_mode_attr short_mask [(HI "65535") (QI "255")])
 
@@ -385,7 +396,7 @@
 
 ;; For scalar usage of vector/FP registers
 (define_mode_attr v [(QI "b") (HI "h") (SI "s") (DI "d")
-		    (SF "s") (DF "d")
+		    (HF  "h") (SF "s") (DF "d")
 		    (V8QI "") (V16QI "")
 		    (V4HI "") (V8HI "")
 		    (V2SI "") (V4SI  "")
@@ -416,7 +427,7 @@
 (define_mode_attr vas [(DI "") (SI ".2s")])
 
 ;; Map a floating point mode to the appropriate register name prefix
-(define_mode_attr s [(SF "s") (DF "d")])
+(define_mode_attr s [(HF "h") (SF "s") (DF "d")])
 
 ;; Give the length suffix letter for a sign- or zero-extension.
 (define_mode_attr size [(QI "b") (HI "h") (SI "w")])
@@ -452,8 +463,8 @@
 			 (V4SF ".4s") (V2DF ".2d")
 			 (DI   "")    (SI   "")
 			 (HI   "")    (QI   "")
-			 (TI   "")    (SF   "")
-			 (DF   "")])
+			 (TI   "")    (HF   "")
+			 (SF   "")    (DF   "")])
 
 ;; Register suffix narrowed modes for VQN.
 (define_mode_attr Vmntype [(V8HI ".8b") (V4SI ".4h")
@@ -468,6 +479,7 @@
 			  (V2DI "d") (V4HF "h")
 			  (V8HF "h") (V2SF  "s")
 			  (V4SF "s") (V2DF  "d")
+			  (HF   "h")
 			  (SF   "s") (DF  "d")
 			  (QI "b")   (HI "h")
 			  (SI "s")   (DI "d")])
@@ -639,7 +651,7 @@
 				(V4HF "V4HI") (V8HF  "V8HI")
 				(V2SF "V2SI") (V4SF  "V4SI")
 				(V2DF "V2DI") (DF    "DI")
-				(SF   "SI")])
+				(SF   "SI")   (HF    "HI")])
 
 ;; Lower case mode of results of comparison operations.
 (define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
@@ -702,8 +714,8 @@
 
 
 ;; for the inequal width integer to fp conversions
-(define_mode_attr fcvt_iesize [(SF "di") (DF "si")])
-(define_mode_attr FCVT_IESIZE [(SF "DI") (DF "SI")])
+(define_mode_attr fcvt_iesize [(HF "di") (SF "di") (DF "si")])
+(define_mode_attr FCVT_IESIZE [(HF "DI") (SF "DI") (DF "SI")])
 
 (define_mode_attr VSWAP_WIDTH [(V8QI "V16QI") (V16QI "V8QI")
 				(V4HI "V8HI") (V8HI  "V4HI")
@@ -757,7 +769,7 @@
 		     (V4HF "") (V8HF "_q")
 		     (V2SF "") (V4SF  "_q")
 			       (V2DF  "_q")
-		     (QI "") (HI "") (SI "") (DI "") (SF "") (DF "")])
+		     (QI "") (HI "") (SI "") (DI "") (HF "") (SF "") (DF "")])
 
 (define_mode_attr vp [(V8QI "v") (V16QI "v")
 		      (V4HI "v") (V8HI  "v")
