@@ -1,5 +1,53 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): Use VALL_F16.
+	(aarch64_ext<mode>): Likewise.
+	(aarch64_rev<REVERSE:rev_op><mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_evpc_trn): Support V4HFmode and
+	V8HFmode.
+	(aarch64_evpc_uzp): Likewise.
+	(aarch64_evpc_zip): Likewise.
+	(aarch64_evpc_ext): Likewise.
+	(aarch64_evpc_rev): Likewise.
+	* config/aarch64/arm_neon.h (__aarch64_vdup_lane_f16): New.
+	(__aarch64_vdup_laneq_f16): New..
+	(__aarch64_vdupq_lane_f16): New.
+	(__aarch64_vdupq_laneq_f16): New.
+	(vbsl_f16): New.
+	(vbslq_f16): New.
+	(vdup_n_f16): New.
+	(vdupq_n_f16): New.
+	(vdup_lane_f16): New.
+	(vdup_laneq_f16): New.
+	(vdupq_lane_f16): New.
+	(vdupq_laneq_f16): New.
+	(vduph_lane_f16): New.
+	(vduph_laneq_f16): New.
+	(vext_f16): New.
+	(vextq_f16): New.
+	(vmov_n_f16): New.
+	(vmovq_n_f16): New.
+	(vrev64_f16): New.
+	(vrev64q_f16): New.
+	(vtrn1_f16): New.
+	(vtrn1q_f16): New.
+	(vtrn2_f16): New.
+	(vtrn2q_f16): New.
+	(vtrn_f16): New.
+	(vtrnq_f16): New.
+	(__INTERLEAVE_LIST): Support float16x4_t, float16x8_t.
+	(vuzp1_f16): New.
+	(vuzp1q_f16): New.
+	(vuzp2_f16): New.
+	(vuzp2q_f16): New.
+	(vzip1_f16): New.
+	(vzip2q_f16): New.
+	(vmov_n_f16): Reimplement using vdup_n_f16.
+	(vmovq_n_f16): Reimplement using vdupq_n_f16..
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_add_constant): New parameter
 	"frame_related_p".  Generate CFA annotation when it's necessary.
 	(aarch64_expand_prologue): Use aarch64_add_constant.
