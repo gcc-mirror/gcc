@@ -26747,6 +26747,32 @@ vsubq_f16 (float16x8_t __a, float16x8_t __b)
   return __a - __b;
 }
 
+/* ARMv8.2-A FP16 three operands vector intrinsics.  */
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vfma_f16 (float16x4_t __a, float16x4_t __b, float16x4_t __c)
+{
+  return __builtin_aarch64_fmav4hf (__b, __c, __a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vfmaq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
+{
+  return __builtin_aarch64_fmav8hf (__b, __c, __a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vfms_f16 (float16x4_t __a, float16x4_t __b, float16x4_t __c)
+{
+  return __builtin_aarch64_fnmav4hf (__b, __c, __a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vfmsq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
+{
+  return __builtin_aarch64_fnmav8hf (__b, __c, __a);
+}
+
 #pragma GCC pop_options
 
 #undef __aarch64_vget_lane_any

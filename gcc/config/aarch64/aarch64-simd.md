@@ -1581,13 +1581,13 @@
 )
 
 (define_insn "fma<mode>4"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-       (fma:VDQF (match_operand:VDQF 1 "register_operand" "w")
-                (match_operand:VDQF 2 "register_operand" "w")
-                (match_operand:VDQF 3 "register_operand" "0")))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+       (fma:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
+		  (match_operand:VHSDF 2 "register_operand" "w")
+		  (match_operand:VHSDF 3 "register_operand" "0")))]
   "TARGET_SIMD"
  "fmla\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_fp_mla_<Vetype><q>")]
+  [(set_attr "type" "neon_fp_mla_<stype><q>")]
 )
 
 (define_insn "*aarch64_fma4_elt<mode>"
@@ -1654,15 +1654,15 @@
 )
 
 (define_insn "fnma<mode>4"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(fma:VDQF
-	  (match_operand:VDQF 1 "register_operand" "w")
-          (neg:VDQF
-	    (match_operand:VDQF 2 "register_operand" "w"))
-	  (match_operand:VDQF 3 "register_operand" "0")))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(fma:VHSDF
+	  (match_operand:VHSDF 1 "register_operand" "w")
+          (neg:VHSDF
+	    (match_operand:VHSDF 2 "register_operand" "w"))
+	  (match_operand:VHSDF 3 "register_operand" "0")))]
   "TARGET_SIMD"
- "fmls\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_fp_mla_<Vetype><q>")]
+  "fmls\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_fp_mla_<stype><q>")]
 )
 
 (define_insn "*aarch64_fnma4_elt<mode>"

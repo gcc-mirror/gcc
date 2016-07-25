@@ -405,7 +405,9 @@
   BUILTIN_VALL_F16 (STORE1, st1, 0)
 
   /* Implemented by fma<mode>4.  */
-  BUILTIN_VDQF (TERNOP, fma, 4)
+  BUILTIN_VHSDF (TERNOP, fma, 4)
+  /* Implemented by fnma<mode>4.  */
+  BUILTIN_VHSDF (TERNOP, fnma, 4)
 
   /* Implemented by aarch64_simd_bsl<mode>.  */
   BUILTIN_VDQQH (BSL_P, simd_bsl, 0)
