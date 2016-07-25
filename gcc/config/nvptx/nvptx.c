@@ -156,6 +156,12 @@ nvptx_option_override (void)
 {
   init_machine_status = nvptx_init_machine_status;
 
+  /* Set toplevel_reorder, unless explicitly disabled.  We need
+     reordering so that we emit necessary assembler decls of
+     undeclared variables. */
+  if (!global_options_set.x_flag_toplevel_reorder)
+    flag_toplevel_reorder = 1;
+
   /* Set flag_no_common, unless explicitly disabled.  We fake common
      using .weak, and that's not entirely accurate, so avoid it
      unless forced.  */
