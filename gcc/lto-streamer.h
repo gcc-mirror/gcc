@@ -162,9 +162,6 @@ enum LTO_tags
   /* EH region holding the previous statement.  */
   LTO_eh_region,
 
-  /* An MD or NORMAL builtin.  Only the code and class are streamed out.  */
-  LTO_builtin_decl,
-
   /* Shared INTEGER_CST node.  */
   LTO_integer_cst,
 

@@ -1,3 +1,9 @@
+2016-07-25  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (compare_tree_sccs_1): Remove streamer_handle_as_builtin_p uses.
+	(unify_scc): Likewise.
+	(lto_read_decls): Likewise.
+
 2016-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in: Don't cat ../stage_current if it does not exist.

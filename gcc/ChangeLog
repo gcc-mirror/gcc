@@ -1,3 +1,23 @@
+2016-07-25  Richard Biener  <rguenther@suse.de>
+
+	* cgraph.c (cgraph_node::verify_node): Compare against builtin
+	by using DECL_BUILT_IN_CLASS and DECL_FUNCTION_CODE.
+	* tree-chkp.c (chkp_gimple_call_builtin_p): Likewise.
+	* tree-streamer.h (streamer_handle_as_builtin_p): Remove.
+	(streamer_get_builtin_tree): Likewise.
+	(streamer_write_builtin): Likewise.
+	* lto-streamer.h (LTO_builtin_decl): Remove.
+	* lto-streamer-in.c (lto_read_tree_1): Remove assert.
+	(lto_input_scc): Remove LTO_builtin_decl handling.
+	(lto_input_tree_1): Liekwise.
+	* lto-streamer-out.c (lto_output_tree_1): Remove special
+	handling of builtins.
+	(DFS::DFS): Likewise.
+	* tree-streamer-in.c (streamer_get_builtin_tree): Remove.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields): Remove
+	assert.
+	(streamer_write_builtin): Remove.
+
 2016-07-25  Martin Liska  <mliska@suse.cz>
 
 	* lto-cgraph.c (input_symtab): Don't call get_working_sets

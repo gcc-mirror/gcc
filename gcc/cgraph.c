@@ -3136,8 +3136,9 @@ cgraph_node::verify_node (void)
 	  && !e->speculative
 	  /* Optimized out calls are redirected to __builtin_unreachable.  */
 	  && (e->frequency
-	      || e->callee->decl
-		 != builtin_decl_implicit (BUILT_IN_UNREACHABLE))
+	      || ! e->callee->decl
+	      || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
+	      || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
 	  && (e->frequency
 	      != compute_call_stmt_bb_frequency (e->caller->decl,
 						 gimple_bb (e->call_stmt))))
