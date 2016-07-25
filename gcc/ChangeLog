@@ -1,5 +1,11 @@
 2016-07-25  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/71987
+	* tree-ssa-reassoc.c (maybe_optimize_range_tests): Call get_ops
+	just for SSA_NAMEs. Fix GNU coding style.
+
+2016-07-25  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/64874
 	* gcov-io.h: Update command about file format.
 	* gcov-iov.c (main): Adapt the numbering scheme.
