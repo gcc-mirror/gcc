@@ -41,7 +41,7 @@
 
   BUILTIN_VDC (COMBINE, combine, 0)
   BUILTIN_VB (BINOP, pmul, 0)
-  BUILTIN_VALLF (BINOP, fmulx, 0)
+  BUILTIN_VHSDF_SDF (BINOP, fmulx, 0)
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2)
   BUILTIN_VD_BHSI (BINOP, addp, 0)
   VAR1 (UNOP, addp, 0, di)
@@ -248,22 +248,22 @@
   BUILTIN_VDQ_BHSI (BINOP, smin, 3)
   BUILTIN_VDQ_BHSI (BINOP, umax, 3)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3)
-  BUILTIN_VDQF (BINOP, smax_nan, 3)
-  BUILTIN_VDQF (BINOP, smin_nan, 3)
+  BUILTIN_VHSDF (BINOP, smax_nan, 3)
+  BUILTIN_VHSDF (BINOP, smin_nan, 3)
 
   /* Implemented by <fmaxmin><mode>3.  */
-  BUILTIN_VDQF (BINOP, fmax, 3)
-  BUILTIN_VDQF (BINOP, fmin, 3)
+  BUILTIN_VHSDF (BINOP, fmax, 3)
+  BUILTIN_VHSDF (BINOP, fmin, 3)
 
   /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, smaxp, 0)
   BUILTIN_VDQ_BHSI (BINOP, sminp, 0)
   BUILTIN_VDQ_BHSI (BINOP, umaxp, 0)
   BUILTIN_VDQ_BHSI (BINOP, uminp, 0)
-  BUILTIN_VDQF (BINOP, smaxp, 0)
-  BUILTIN_VDQF (BINOP, sminp, 0)
-  BUILTIN_VDQF (BINOP, smax_nanp, 0)
-  BUILTIN_VDQF (BINOP, smin_nanp, 0)
+  BUILTIN_VHSDF (BINOP, smaxp, 0)
+  BUILTIN_VHSDF (BINOP, sminp, 0)
+  BUILTIN_VHSDF (BINOP, smax_nanp, 0)
+  BUILTIN_VHSDF (BINOP, smin_nanp, 0)
 
   /* Implemented by <frint_pattern><mode>2.  */
   BUILTIN_VHSDF (UNOP, btrunc, 2)
@@ -383,7 +383,7 @@
   BUILTIN_VDQ_SI (UNOP, urecpe, 0)
 
   BUILTIN_VHSDF (UNOP, frecpe, 0)
-  BUILTIN_VDQF (BINOP, frecps, 0)
+  BUILTIN_VHSDF (BINOP, frecps, 0)
 
   /* Implemented by a mixture of abs2 patterns.  Note the DImode builtin is
      only ever used for the int64x1_t intrinsic, there is no scalar version.  */
@@ -475,22 +475,22 @@
   BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlsh_laneq, 0)
 
   /* Implemented by <FCVT_F2FIXED/FIXED2F:fcvt_fixed_insn><*><*>3.  */
-  BUILTIN_VSDQ_SDI (SHIFTIMM, scvtf, 3)
-  BUILTIN_VSDQ_SDI (FCVTIMM_SUS, ucvtf, 3)
-  BUILTIN_VALLF (SHIFTIMM, fcvtzs, 3)
-  BUILTIN_VALLF (SHIFTIMM_USS, fcvtzu, 3)
+  BUILTIN_VSDQ_HSDI (SHIFTIMM, scvtf, 3)
+  BUILTIN_VSDQ_HSDI (FCVTIMM_SUS, ucvtf, 3)
+  BUILTIN_VHSDF_SDF (SHIFTIMM, fcvtzs, 3)
+  BUILTIN_VHSDF_SDF (SHIFTIMM_USS, fcvtzu, 3)
 
   /* Implemented by aarch64_rsqrte<mode>.  */
   BUILTIN_VHSDF_SDF (UNOP, rsqrte, 0)
 
   /* Implemented by aarch64_rsqrts<mode>.  */
-  BUILTIN_VALLF (BINOP, rsqrts, 0)
+  BUILTIN_VHSDF_SDF (BINOP, rsqrts, 0)
 
   /* Implemented by fabd<mode>3.  */
-  BUILTIN_VALLF (BINOP, fabd, 3)
+  BUILTIN_VHSDF_SDF (BINOP, fabd, 3)
 
   /* Implemented by aarch64_faddp<mode>.  */
-  BUILTIN_VDQF (BINOP, faddp, 0)
+  BUILTIN_VHSDF (BINOP, faddp, 0)
 
   /* Implemented by aarch64_cm<optab><mode>.  */
   BUILTIN_VHSDF_SDF (BINOP_USS, cmeq, 0)
@@ -501,3 +501,9 @@
 
   /* Implemented by neg<mode>2.  */
   BUILTIN_VHSDF (UNOP, neg, 2)
+
+  /* Implemented by aarch64_fac<optab><mode>.  */
+  BUILTIN_VHSDF_SDF (BINOP_USS, faclt, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, facle, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, facgt, 0)
+  BUILTIN_VHSDF_SDF (BINOP_USS, facge, 0)

@@ -1,5 +1,44 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_rsqrts<mode>): Extend to HF modes.
+	(fabd<mode>3): Likewise.
+	(<FCVT_F2FIXED:fcvt_fixed_insn><VHSDF_SDF:mode>3): Likewise.
+	(<FCVT_FIXED2F:fcvt_fixed_insn><VHSDI_SDI:mode>3): Likewise.
+	(aarch64_<maxmin_uns>p<mode>): Likewise.
+	(<su><maxmin><mode>3): Likewise.
+	(<maxmin_uns><mode>3): Likewise.
+	(<fmaxmin><mode>3): Likewise.
+	(aarch64_faddp<mode>): Likewise.
+	(aarch64_fmulx<mode>): Likewise.
+	(aarch64_frecps<mode>): Likewise.
+	(*aarch64_fac<optab><mode>): Rename to aarch64_fac<optab><mode>.
+	(add<mode>3): Extend to HF modes.
+	(sub<mode>3): Likewise.
+	(mul<mode>3): Likewise.
+	(div<mode>3): Likewise.
+	(*div<mode>3): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_div): Return false for
+	HF, V4HF and V8HF.
+	* config/aarch64/iterators.md (VDQ_HSDI, VSDQ_HSDI): New mode iterator.
+	* config/aarch64/arm_neon.h (vadd_f16): New.
+	(vaddq_f16, vabd_f16, vabdq_f16, vcage_f16, vcageq_f16, vcagt_f16,
+	vcagtq_f16, vcale_f16, vcaleq_f16, vcalt_f16, vcaltq_f16, vceq_f16,
+	vceqq_f16, vcge_f16, vcgeq_f16, vcgt_f16, vcgtq_f16, vcle_f16,
+	vcleq_f16, vclt_f16, vcltq_f16, vcvt_n_f16_s16, vcvtq_n_f16_s16,
+	vcvt_n_f16_u16, vcvtq_n_f16_u16, vcvt_n_s16_f16, vcvtq_n_s16_f16,
+	vcvt_n_u16_f16, vcvtq_n_u16_f16, vdiv_f16, vdivq_f16, vdup_lane_f16,
+	vdup_laneq_f16, vdupq_lane_f16, vdupq_laneq_f16, vdups_lane_f16,
+	vdups_laneq_f16, vmax_f16, vmaxq_f16, vmaxnm_f16, vmaxnmq_f16, vmin_f16,
+	vminq_f16, vminnm_f16, vminnmq_f16, vmul_f16, vmulq_f16, vmulx_f16,
+	vmulxq_f16, vpadd_f16, vpaddq_f16, vpmax_f16, vpmaxq_f16, vpmaxnm_f16,
+	vpmaxnmq_f16, vpmin_f16, vpminq_f16, vpminnm_f16, vpminnmq_f16,
+	vrecps_f16, vrecpsq_f16, vrsqrts_f16, vrsqrtsq_f16, vsub_f16,
+	vsubq_f16): Likewise.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (TYPES_BINOP_USS): New.
 	* config/aarch64/aarch64-simd-builtins.def: Register new builtins.
 	* config/aarch64/aarch64-simd.md (aarch64_rsqrte<mode>): Extend to HF modes.
@@ -15,8 +54,8 @@
 	(*sqrt<mode>2): Likewise.
 	(aarch64_frecpe<mode>): Likewise.
 	(aarch64_cm<optab><mode>): Likewise.
-	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Return
-	false for V4HF and V8HF.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Return false for
+	HF, V4HF and V8HF.
 	* config/aarch64/iterators.md (VHSDF, VHSDF_DF, VHSDF_SDF): New.
 	(VDQF_COND, fcvt_target, FCVT_TARGET, hcon): Extend mode attribute to HF modes.
 	(stype): New.
