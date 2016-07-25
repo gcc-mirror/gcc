@@ -1,5 +1,14 @@
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_add_constant): New parameter
+	"frame_related_p".  Generate CFA annotation when it's necessary.
+	(aarch64_expand_prologue): Use aarch64_add_constant.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_output_mi_thunk): Pass "false" when calling
+	aarch64_add_constant.
+
+2016-07-25  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_add_constant): Optimize instruction
 	sequences.
 
