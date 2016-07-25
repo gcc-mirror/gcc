@@ -1,3 +1,9 @@
+2016-07-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/71732
+	* cselib.c (cselib_process_insn): Invalidate argument slots for
+	const/pure calls.
+
 2016-07-25  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/arm_neon.h (vfmah_lane_f16, vfmah_laneq_f16,
