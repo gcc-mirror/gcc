@@ -1355,6 +1355,13 @@
 	(vperm_v8hiv4si): Likewise.
 	(vperm_v16qiv8hi): Likewise.
 
+2016-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	* config/arm/arm.c (arm_option_override): Set MASK_SINGLE_PIC_BASE
+	when -mno-pic-data-is-text-relative is in effect, by default.
+	* doc/invoke.texi (mpic-data-is-text-relative): Document new
+	behavior and clarify.
+
 2016-07-12  Martin Liska  <mliska@suse.cz>
 
 	* params.def: Add avg-loop niter.
