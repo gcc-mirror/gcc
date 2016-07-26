@@ -1,6 +1,8 @@
-/* PR c++/71675 - __atomic_compare_exchange_n returns wrong type for typed enum
- */
-/* { dg-do compile { target c11 } } */
+/* PR c++/71675 - __atomic_compare_exchange_n returns wrong type for typed
+   enum  */
+/* { dg-do compile } */
+/* { dg-options "-std=c11" } */
+
 
 #define Test(T)								\
   do {									\
