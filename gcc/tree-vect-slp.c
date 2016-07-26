@@ -1274,7 +1274,6 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
 {
   unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_instn);
   unsigned int i, j;
-  sbitmap load_index;
   unsigned int lidx;
   slp_tree node, load;
 
@@ -1294,29 +1293,20 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
 
   /* Check that the loads in the first sequence are different and there
      are no gaps between them.  */
-  load_index = sbitmap_alloc (group_size);
+  auto_sbitmap load_index (group_size);
   bitmap_clear (load_index);
   FOR_EACH_VEC_ELT (node->load_permutation, i, lidx)
     {
       if (lidx >= group_size)
-	{
-	  sbitmap_free (load_index);
-	  return false;
-	}
+	return false;
       if (bitmap_bit_p (load_index, lidx))
-	{
-	  sbitmap_free (load_index);
-	  return false;
-	}
+	return false;
+
       bitmap_set_bit (load_index, lidx);
     }
   for (i = 0; i < group_size; i++)
     if (!bitmap_bit_p (load_index, i))
-      {
-	sbitmap_free (load_index);
-	return false;
-      }
-  sbitmap_free (load_index);
+      return false;
 
   /* This permutation is valid for reduction.  Since the order of the
      statements in the nodes is not important unless they are memory

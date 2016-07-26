@@ -56,7 +56,6 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
   auto_vec<edge, 10> stack;
   edge e;
   edge_iterator ei;
-  sbitmap visited;
   bool ret;
 
   if (va_arg_bb == va_start_bb)
@@ -65,7 +64,7 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
   if (! dominated_by_p (CDI_DOMINATORS, va_arg_bb, va_start_bb))
     return false;
 
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
   ret = true;
 
@@ -105,7 +104,6 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 	}
     }
 
-  sbitmap_free (visited);
   return ret;
 }
 

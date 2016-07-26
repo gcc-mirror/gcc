@@ -461,7 +461,6 @@ unroll_loop_constant_iterations (struct loop *loop)
 {
   unsigned HOST_WIDE_INT niter;
   unsigned exit_mod;
-  sbitmap wont_exit;
   unsigned i;
   edge e;
   unsigned max_unroll = loop->lpt_decision.times;
@@ -477,7 +476,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 
   exit_mod = niter % (max_unroll + 1);
 
-  wont_exit = sbitmap_alloc (max_unroll + 1);
+  auto_sbitmap wont_exit (max_unroll + 1);
   bitmap_ones (wont_exit);
 
   auto_vec<edge> remove_edges;
@@ -603,8 +602,6 @@ unroll_loop_constant_iterations (struct loop *loop)
       apply_opt_in_copies (opt_info, max_unroll, true, true);
       free_opt_info (opt_info);
     }
-
-  free (wont_exit);
 
   if (exit_at_end)
     {
@@ -861,7 +858,6 @@ unroll_loop_runtime_iterations (struct loop *loop)
   rtx_insn *init_code, *branch_code;
   unsigned i, j, p;
   basic_block preheader, *body, swtch, ezc_swtch;
-  sbitmap wont_exit;
   int may_exit_copy;
   unsigned n_peel;
   edge e;
@@ -936,7 +932,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
   auto_vec<edge> remove_edges;
 
-  wont_exit = sbitmap_alloc (max_unroll + 2);
+  auto_sbitmap wont_exit (max_unroll + 2);
 
   /* Peel the first copy of loop body (almost always we must leave exit test
      here; the only exception is when we have extra zero check and the number
@@ -1034,8 +1030,6 @@ unroll_loop_runtime_iterations (struct loop *loop)
       apply_opt_in_copies (opt_info, max_unroll, true, true);
       free_opt_info (opt_info);
     }
-
-  free (wont_exit);
 
   if (exit_at_end)
     {
@@ -1201,7 +1195,6 @@ decide_unroll_stupid (struct loop *loop, int flags)
 static void
 unroll_loop_stupid (struct loop *loop)
 {
-  sbitmap wont_exit;
   unsigned nunroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   struct opt_info *opt_info = NULL;
@@ -1211,8 +1204,7 @@ unroll_loop_stupid (struct loop *loop)
       || flag_variable_expansion_in_unroller)
     opt_info = analyze_insns_in_loop (loop);
 
-
-  wont_exit = sbitmap_alloc (nunroll + 1);
+  auto_sbitmap wont_exit (nunroll + 1);
   bitmap_clear (wont_exit);
   opt_info_start_duplication (opt_info);
 
@@ -1230,8 +1222,6 @@ unroll_loop_stupid (struct loop *loop)
       apply_opt_in_copies (opt_info, nunroll, true, true);
       free_opt_info (opt_info);
     }
-
-  free (wont_exit);
 
   if (desc->simple_p)
     {

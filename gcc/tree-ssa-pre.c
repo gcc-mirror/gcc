@@ -2359,7 +2359,7 @@ compute_antic (void)
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   int postorder_num = inverted_post_order_compute (postorder);
 
-  sbitmap worklist = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
+  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
   bitmap_ones (worklist);
   while (changed)
     {
@@ -2409,7 +2409,6 @@ compute_antic (void)
     }
 
   sbitmap_free (has_abnormal_preds);
-  sbitmap_free (worklist);
   free (postorder);
 }
 

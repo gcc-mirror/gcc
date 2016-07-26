@@ -1312,7 +1312,6 @@ DEBUG_FUNCTION void
 verify_loop_structure (void)
 {
   unsigned *sizes, i, j;
-  sbitmap irreds;
   basic_block bb, *bbs;
   struct loop *loop;
   int err = 0;
@@ -1320,7 +1319,6 @@ verify_loop_structure (void)
   unsigned num = number_of_loops (cfun);
   struct loop_exit *exit, *mexit;
   bool dom_available = dom_info_available_p (CDI_DOMINATORS);
-  sbitmap visited;
 
   if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
     {
@@ -1366,7 +1364,7 @@ verify_loop_structure (void)
       }
 
   /* Check the recorded loop father and sizes of loops.  */
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
@@ -1413,7 +1411,6 @@ verify_loop_structure (void)
 	}
     }
   free (bbs);
-  sbitmap_free (visited);
 
   /* Check headers and latches.  */
   FOR_EACH_LOOP (loop, 0)
@@ -1480,7 +1477,7 @@ verify_loop_structure (void)
   if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     {
       /* Record old info.  */
-      irreds = sbitmap_alloc (last_basic_block_for_fn (cfun));
+      auto_sbitmap irreds (last_basic_block_for_fn (cfun));
       FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
@@ -1532,7 +1529,6 @@ verify_loop_structure (void)
 	      e->flags &= ~(EDGE_ALL_FLAGS + 1);
 	    }
 	}
-      free (irreds);
     }
 
   /* Check the recorded loop exits.  */

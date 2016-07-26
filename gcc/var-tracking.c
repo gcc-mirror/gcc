@@ -6996,7 +6996,7 @@ vt_find_locations (void)
 {
   bb_heap_t *worklist = new bb_heap_t (LONG_MIN);
   bb_heap_t *pending = new bb_heap_t (LONG_MIN);
-  sbitmap visited, in_worklist, in_pending;
+  sbitmap in_worklist, in_pending;
   basic_block bb;
   edge e;
   int *bb_order;
@@ -7016,7 +7016,7 @@ vt_find_locations (void)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
@@ -7185,7 +7185,6 @@ vt_find_locations (void)
   free (bb_order);
   delete worklist;
   delete pending;
-  sbitmap_free (visited);
   sbitmap_free (in_worklist);
   sbitmap_free (in_pending);
 

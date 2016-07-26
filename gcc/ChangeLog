@@ -1,5 +1,68 @@
 2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bt-load.c (compute_out): Use auto_sbitmap class.
+	(link_btr_uses): Likewise.
+	* cfganal.c (mark_dfs_back_edges): Likewise.
+	(post_order_compute): Likewise.
+	(inverted_post_order_compute): Likewise.
+	(pre_and_rev_post_order_compute_fn): Likewise.
+	(single_pred_before_succ_order): Likewise.
+	* cfgexpand.c (pass_expand::execute): Likewise.
+	* cfgloop.c (verify_loop_structure): Likewise.
+	* cfgloopmanip.c (fix_bb_placements): Likewise.
+	(remove_path): Likewise.
+	(update_dominators_in_loop): Likewise.
+	* cfgrtl.c (break_superblocks): Likewise.
+	* ddg.c (check_sccs): Likewise.
+	(create_ddg_all_sccs): Likewise.
+	* df-core.c (df_worklist_dataflow): Likewise.
+	* dse.c (dse_step3): Likewise.
+	* except.c (eh_region_outermost): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* gcse.c (prune_expressions): Likewise.
+	(prune_insertions_deletions): Likewise.
+	* gimple-ssa-backprop.c (backprop::~backprop): Likewise.
+	* graph.c (draw_cfg_nodes_no_loops): Likewise.
+	* ira-lives.c (remove_some_program_points_and_update_live_ranges): Likewise.
+	* lcm.c (compute_earliest): Likewise.
+	(compute_farthest): Likewise.
+	* loop-unroll.c (unroll_loop_constant_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise.
+	(unroll_loop_stupid): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs): Likewise.
+	* lra-lives.c: Likewise.
+	* lra.c (lra): Likewise.
+	* modulo-sched.c (schedule_reg_moves): Likewise.
+	(optimize_sc): Likewise.
+	(get_sched_window): Likewise.
+	(sms_schedule_by_order): Likewise.
+	(check_nodes_order): Likewise.
+	(order_nodes_of_sccs): Likewise.
+	(order_nodes_in_scc): Likewise.
+	* recog.c (split_all_insns): Likewise.
+	* regcprop.c (pass_cprop_hardreg::execute): Likewise.
+	* reload1.c (reload): Likewise.
+	* sched-rgn.c (haifa_find_rgns): Likewise.
+	(split_edges): Likewise.
+	(compute_trg_info): Likewise.
+	* sel-sched.c (init_seqno): Likewise.
+	* store-motion.c (remove_reachable_equiv_notes): Likewise.
+	* tree-into-ssa.c (update_ssa): Likewise.
+	* tree-ssa-live.c (live_worklist): Likewise.
+	* tree-ssa-loop-im.c (fill_always_executed_in): Likewise.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
+	* Likewise.
+	(try_peel_loop): Likewise.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop):
+	* Likewise.
+	* tree-ssa-pre.c (compute_antic): Likewise.
+	* tree-ssa-reassoc.c (undistribute_ops_list): Likewise.
+	* tree-stdarg.c (reachable_at_most_once): Likewise.
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Likewise.
+	* var-tracking.c (vt_find_locations): Likewise.
+
+2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* sbitmap.h (auto_sbitmap): New class.
 
 2016-07-26  Alan Modra  <amodra@gmail.com>

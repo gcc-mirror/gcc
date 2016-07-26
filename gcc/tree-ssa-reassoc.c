@@ -1458,7 +1458,6 @@ undistribute_ops_list (enum tree_code opcode,
   unsigned int length = ops->length ();
   operand_entry *oe1;
   unsigned i, j;
-  sbitmap candidates, candidates2;
   unsigned nr_candidates, nr_candidates2;
   sbitmap_iterator sbi0;
   vec<operand_entry *> *subops;
@@ -1470,7 +1469,7 @@ undistribute_ops_list (enum tree_code opcode,
     return false;
 
   /* Build a list of candidates to process.  */
-  candidates = sbitmap_alloc (length);
+  auto_sbitmap candidates (length);
   bitmap_clear (candidates);
   nr_candidates = 0;
   FOR_EACH_VEC_ELT (*ops, i, oe1)
@@ -1494,10 +1493,7 @@ undistribute_ops_list (enum tree_code opcode,
     }
 
   if (nr_candidates < 2)
-    {
-      sbitmap_free (candidates);
-      return false;
-    }
+    return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1569,7 +1565,7 @@ undistribute_ops_list (enum tree_code opcode,
     }
 
   /* Process the (operand, code) pairs in order of most occurrence.  */
-  candidates2 = sbitmap_alloc (length);
+  auto_sbitmap candidates2 (length);
   while (!cvec.is_empty ())
     {
       oecount *c = &cvec.last ();
@@ -1665,8 +1661,6 @@ undistribute_ops_list (enum tree_code opcode,
     subops[i].release ();
   free (subops);
   cvec.release ();
-  sbitmap_free (candidates);
-  sbitmap_free (candidates2);
 
   return changed;
 }

@@ -623,18 +623,6 @@ haifa_find_rgns (void)
   int too_large_failure;
   basic_block bb;
 
-  /* Note if a block is a natural loop header.  */
-  sbitmap header;
-
-  /* Note if a block is a natural inner loop header.  */
-  sbitmap inner;
-
-  /* Note if a block is in the block queue.  */
-  sbitmap in_queue;
-
-  /* Note if a block is in the block queue.  */
-  sbitmap in_stack;
-
   /* Perform a DFS traversal of the cfg.  Identify loop headers, inner loops
      and a mapping from block to its loop header (if the block is contained
      in a loop, else -1).
@@ -649,16 +637,20 @@ haifa_find_rgns (void)
   dfs_nr = XCNEWVEC (int, last_basic_block_for_fn (cfun));
   stack = XNEWVEC (edge_iterator, n_edges_for_fn (cfun));
 
-  inner = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  /* Note if a block is a natural inner loop header.  */
+  auto_sbitmap inner (last_basic_block_for_fn (cfun));
   bitmap_ones (inner);
 
-  header = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  /* Note if a block is a natural loop header.  */
+  auto_sbitmap header (last_basic_block_for_fn (cfun));
   bitmap_clear (header);
 
-  in_queue = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  /* Note if a block is in the block queue.  */
+  auto_sbitmap in_queue (last_basic_block_for_fn (cfun));
   bitmap_clear (in_queue);
 
-  in_stack = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  /* Note if a block is in the block queue.  */
+  auto_sbitmap in_stack (last_basic_block_for_fn (cfun));
   bitmap_clear (in_stack);
 
   for (i = 0; i < last_basic_block_for_fn (cfun); i++)
@@ -1070,10 +1062,6 @@ haifa_find_rgns (void)
   free (max_hdr);
   free (degree);
   free (stack);
-  sbitmap_free (header);
-  sbitmap_free (inner);
-  sbitmap_free (in_queue);
-  sbitmap_free (in_stack);
 }
 
 
@@ -1477,12 +1465,11 @@ compute_dom_prob_ps (int bb)
 static void
 split_edges (int bb_src, int bb_trg, edgelst *bl)
 {
-  sbitmap src = sbitmap_alloc (SBITMAP_SIZE (pot_split[bb_src]));
+  auto_sbitmap src (SBITMAP_SIZE (pot_split[bb_src]));
   bitmap_copy (src, pot_split[bb_src]);
 
   bitmap_and_compl (src, src, pot_split[bb_trg]);
   extract_edgelst (src, bl);
-  sbitmap_free (src);
 }
 
 /* Find the valid candidate-source-blocks for the target block TRG, compute
@@ -1496,7 +1483,6 @@ compute_trg_info (int trg)
   edgelst el = { NULL, 0 };
   int i, j, k, update_idx;
   basic_block block;
-  sbitmap visited;
   edge_iterator ei;
   edge e;
 
@@ -1519,7 +1505,7 @@ compute_trg_info (int trg)
   sp->is_speculative = 0;
   sp->src_prob = REG_BR_PROB_BASE;
 
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
 
   for (i = trg + 1; i < current_nr_blocks; i++)
     {
@@ -1595,8 +1581,6 @@ compute_trg_info (int trg)
 	  sp->src_prob = 0;
 	}
     }
-
-  sbitmap_free (visited);
 }
 
 /* Free the computed target info.  */

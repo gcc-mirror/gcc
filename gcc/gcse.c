@@ -1691,12 +1691,11 @@ free_pre_mem (void)
 static void
 prune_expressions (bool pre_p)
 {
-  sbitmap prune_exprs;
   struct gcse_expr *expr;
   unsigned int ui;
   basic_block bb;
 
-  prune_exprs = sbitmap_alloc (expr_hash_table.n_elems);
+  auto_sbitmap prune_exprs (expr_hash_table.n_elems);
   bitmap_clear (prune_exprs);
   for (ui = 0; ui < expr_hash_table.size; ui++)
     {
@@ -1767,8 +1766,6 @@ prune_expressions (bool pre_p)
 	    break;
 	  }
     }
-
-  sbitmap_free (prune_exprs);
 }
 
 /* It may be necessary to insert a large number of insns on edges to
@@ -1783,7 +1780,6 @@ static void
 prune_insertions_deletions (int n_elems)
 {
   sbitmap_iterator sbi;
-  sbitmap prune_exprs;
 
   /* We always use I to iterate over blocks/edges and J to iterate over
      expressions.  */
@@ -1797,7 +1793,7 @@ prune_insertions_deletions (int n_elems)
   /* Set of expressions which require too many insertions relative to
      the number of deletions achieved.  We will prune these out of the
      insertion/deletion sets.  */
-  prune_exprs = sbitmap_alloc (n_elems);
+  auto_sbitmap prune_exprs (n_elems);
   bitmap_clear (prune_exprs);
 
   /* Iterate over the edges counting the number of times each expression
@@ -1835,7 +1831,6 @@ prune_insertions_deletions (int n_elems)
 	bitmap_clear_bit (pre_delete_map[i], j);
     }
 
-  sbitmap_free (prune_exprs);
   free (insertions);
   free (deletions);
 }

@@ -825,7 +825,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
   edge_iterator *stack, ei;
   int sp;
   edge act;
-  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   rtx note;
   rtx_insn *insn;
   rtx mem = smexpr->pattern;
@@ -844,7 +844,6 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
 	  if (!sp)
 	    {
 	      free (stack);
-	      sbitmap_free (visited);
 	      return;
 	    }
 	  act = ei_edge (stack[--sp]);

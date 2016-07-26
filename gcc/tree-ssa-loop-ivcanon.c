@@ -743,7 +743,6 @@ try_unroll_loop_completely (struct loop *loop,
 
   if (n_unroll)
     {
-      sbitmap wont_exit;
       bool large;
       if (ul == UL_SINGLE_ITER)
 	return false;
@@ -860,7 +859,7 @@ try_unroll_loop_completely (struct loop *loop,
                        "loop turned into non-loop; it never loops.\n");
 
       initialize_original_copy_tables ();
-      wont_exit = sbitmap_alloc (n_unroll + 1);
+      auto_sbitmap wont_exit (n_unroll + 1);
       if (exit && niter
 	  && TREE_CODE (niter) == INTEGER_CST
 	  && wi::leu_p (n_unroll, wi::to_widest (niter)))
@@ -883,13 +882,11 @@ try_unroll_loop_completely (struct loop *loop,
 						 | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
           free_original_copy_tables ();
-	  free (wont_exit);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Failed to duplicate the loop\n");
 	  return false;
 	}
 
-      free (wont_exit);
       free_original_copy_tables ();
     }
 
@@ -967,7 +964,6 @@ try_peel_loop (struct loop *loop,
   HOST_WIDE_INT npeel;
   struct loop_size size;
   int peeled_size;
-  sbitmap wont_exit;
 
   if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
       || !peeled_loops)
@@ -1042,7 +1038,7 @@ try_peel_loop (struct loop *loop,
 
   /* Duplicate possibly eliminating the exits.  */
   initialize_original_copy_tables ();
-  wont_exit = sbitmap_alloc (npeel + 1);
+  auto_sbitmap wont_exit (npeel + 1);
   if (exit && niter
       && TREE_CODE (niter) == INTEGER_CST
       && wi::leu_p (npeel, wi::to_widest (niter)))
@@ -1061,10 +1057,8 @@ try_peel_loop (struct loop *loop,
 					     DLTHE_FLAG_UPDATE_FREQ))
     {
       free_original_copy_tables ();
-      free (wont_exit);
       return false;
     }
-  free (wont_exit);
   free_original_copy_tables ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
