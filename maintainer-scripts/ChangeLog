@@ -1,5 +1,9 @@
 2016-07-26  Richard Biener  <rguenther@suse.de>
 
+	* update_version_svn: Ignore the GCC 4.9 branch.
+
+2016-07-26  Richard Biener  <rguenther@suse.de>
+
 	* crontab: Remove entry for the GCC 4.9 branch.
 
 2016-06-13  Jonathan Wakely  <jwakely@redhat.com>
