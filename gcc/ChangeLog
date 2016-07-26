@@ -1,5 +1,12 @@
 2016-07-26  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	* tree-vrp.c (dump_asserts_for): Print loc->expr instead of
+	name.
+	(extract_code_and_val_from_cond_with_ops): Verify that name is
+	either cond_op0 or cond_op1.
+
+2016-07-26  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR tree-optimization/18046
 	* genmodes.c (emit_mode_size_inline): Emit an assert that
 	verifies that mode is a valid array index.
