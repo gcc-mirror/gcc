@@ -1,3 +1,8 @@
+2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr63354.c: Require lp64 since
+	-mprofile-kernel is not legal with -m32.
+
 2016-07-26  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/71984
