@@ -626,7 +626,7 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
      Iterate until the bb_out sets stop growing.  */
   int i;
   int changed;
-  sbitmap bb_in = sbitmap_alloc (max_uid);
+  auto_sbitmap bb_in (max_uid);
 
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
     bitmap_copy (bb_out[i], bb_gen[i]);
@@ -642,7 +642,6 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
 					       bb_in, bb_kill[i]);
 	}
     }
-  sbitmap_free (bb_in);
 }
 
 static void
@@ -650,7 +649,7 @@ link_btr_uses (btr_def **def_array, btr_user **use_array, sbitmap *bb_out,
 	       sbitmap *btr_defset, int max_uid)
 {
   int i;
-  sbitmap reaching_defs = sbitmap_alloc (max_uid);
+  auto_sbitmap reaching_defs (max_uid);
 
   /* Link uses to the uses lists of all of their reaching defs.
      Count up the number of reaching defs of each use.  */
@@ -683,7 +682,7 @@ link_btr_uses (btr_def **def_array, btr_user **use_array, sbitmap *bb_out,
 	      if (user != NULL)
 		{
 		  /* Find all the reaching defs for this use.  */
-		  sbitmap reaching_defs_of_reg = sbitmap_alloc (max_uid);
+		  auto_sbitmap reaching_defs_of_reg (max_uid);
 		  unsigned int uid = 0;
 		  sbitmap_iterator sbi;
 
@@ -738,7 +737,6 @@ link_btr_uses (btr_def **def_array, btr_user **use_array, sbitmap *bb_out,
 		      user->next = def->uses;
 		      def->uses = user;
 		    }
-		  sbitmap_free (reaching_defs_of_reg);
 		}
 
 	      if (CALL_P (insn))
@@ -754,7 +752,6 @@ link_btr_uses (btr_def **def_array, btr_user **use_array, sbitmap *bb_out,
 	    }
 	}
     }
-  sbitmap_free (reaching_defs);
 }
 
 static void

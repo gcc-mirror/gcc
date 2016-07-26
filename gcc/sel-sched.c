@@ -6764,11 +6764,10 @@ init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
 static int
 init_seqno (bitmap blocks_to_reschedule, basic_block from)
 {
-  sbitmap visited_bbs;
   bitmap_iterator bi;
   unsigned bbi;
 
-  visited_bbs = sbitmap_alloc (current_nr_blocks);
+  auto_sbitmap visited_bbs (current_nr_blocks);
 
   if (blocks_to_reschedule)
     {
@@ -6793,7 +6792,6 @@ init_seqno (bitmap blocks_to_reschedule, basic_block from)
      removed by the call to purge_empty_blocks in sel_sched_region_1).  */
   gcc_assert (cur_seqno >= 0);
 
-  sbitmap_free (visited_bbs);
   return sched_max_luid - 1;
 }
 

@@ -2999,11 +2999,11 @@ static void
 dse_step3 ()
 {
   basic_block bb;
-  sbitmap unreachable_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   sbitmap_iterator sbi;
   bitmap all_ones = NULL;
   unsigned int i;
 
+  auto_sbitmap unreachable_blocks (last_basic_block_for_fn (cfun));
   bitmap_ones (unreachable_blocks);
 
   FOR_ALL_BB_FN (bb, cfun)
@@ -3058,7 +3058,6 @@ dse_step3 ()
 
   if (all_ones)
     BITMAP_FREE (all_ones);
-  sbitmap_free (unreachable_blocks);
 }
 
 

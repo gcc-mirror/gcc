@@ -258,7 +258,7 @@ private:
 
   /* A bitmap of blocks that we have finished processing in the initial
      post-order walk.  */
-  sbitmap m_visited_blocks;
+  auto_sbitmap m_visited_blocks;
 
   /* A worklist of SSA names whose definitions need to be reconsidered.  */
   auto_vec <tree, 64> m_worklist;
@@ -272,7 +272,7 @@ private:
 backprop::backprop (function *fn)
   : m_fn (fn),
     m_info_pool ("usage_info"),
-    m_visited_blocks (sbitmap_alloc (last_basic_block_for_fn (m_fn))),
+    m_visited_blocks (last_basic_block_for_fn (m_fn)),
     m_worklist_names (BITMAP_ALLOC (NULL))
 {
   bitmap_clear (m_visited_blocks);
@@ -281,7 +281,6 @@ backprop::backprop (function *fn)
 backprop::~backprop ()
 {
   BITMAP_FREE (m_worklist_names);
-  sbitmap_free (m_visited_blocks);
   m_info_pool.release ();
 }
 

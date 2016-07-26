@@ -975,7 +975,7 @@ live_worklist (tree_live_info_p live)
 {
   unsigned b;
   basic_block bb;
-  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
+  auto_sbitmap visited (last_basic_block_for_fn (cfun) + 1);
 
   bitmap_clear (visited);
 
@@ -990,8 +990,6 @@ live_worklist (tree_live_info_p live)
       b = *--(live->stack_top);
       loe_visit_block (live, BASIC_BLOCK_FOR_FN (cfun, b), visited);
     }
-
-  sbitmap_free (visited);
 }
 
 

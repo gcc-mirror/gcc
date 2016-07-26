@@ -3322,12 +3322,11 @@ update_ssa (unsigned update_flags)
 	     will grow while we are traversing it (but it will not
 	     gain any new members).  Copy OLD_SSA_NAMES to a temporary
 	     for traversal.  */
-	  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (old_ssa_names));
+	  auto_sbitmap tmp (SBITMAP_SIZE (old_ssa_names));
 	  bitmap_copy (tmp, old_ssa_names);
 	  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,
 	                                  update_flags);
-	  sbitmap_free (tmp);
 	}
 
       symbols_to_rename.qsort (insert_updated_phi_nodes_compare_uids);

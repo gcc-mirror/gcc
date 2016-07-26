@@ -170,15 +170,12 @@ compute_earliest (struct edge_list *edge_list, int n_exprs, sbitmap *antin,
 		  sbitmap *antout, sbitmap *avout, sbitmap *kill,
 		  sbitmap *earliest)
 {
-  sbitmap difference, temp_bitmap;
   int x, num_edges;
   basic_block pred, succ;
 
   num_edges = NUM_EDGES (edge_list);
 
-  difference = sbitmap_alloc (n_exprs);
-  temp_bitmap = sbitmap_alloc (n_exprs);
-
+  auto_sbitmap difference (n_exprs), temp_bitmap (n_exprs);
   for (x = 0; x < num_edges; x++)
     {
       pred = INDEX_EDGE_PRED_BB (edge_list, x);
@@ -199,9 +196,6 @@ compute_earliest (struct edge_list *edge_list, int n_exprs, sbitmap *antin,
 	    }
 	}
     }
-
-  sbitmap_free (temp_bitmap);
-  sbitmap_free (difference);
 }
 
 /* later(p,s) is dependent on the calculation of laterin(p).
@@ -594,15 +588,12 @@ compute_farthest (struct edge_list *edge_list, int n_exprs,
 		  sbitmap *st_avout, sbitmap *st_avin, sbitmap *st_antin,
 		  sbitmap *kill, sbitmap *farthest)
 {
-  sbitmap difference, temp_bitmap;
   int x, num_edges;
   basic_block pred, succ;
 
   num_edges = NUM_EDGES (edge_list);
 
-  difference = sbitmap_alloc (n_exprs);
-  temp_bitmap = sbitmap_alloc (n_exprs);
-
+  auto_sbitmap difference (n_exprs), temp_bitmap (n_exprs);
   for (x = 0; x < num_edges; x++)
     {
       pred = INDEX_EDGE_PRED_BB (edge_list, x);
@@ -623,9 +614,6 @@ compute_farthest (struct edge_list *edge_list, int n_exprs,
 	    }
 	}
     }
-
-  sbitmap_free (temp_bitmap);
-  sbitmap_free (difference);
 }
 
 /* Compute nearer and nearerout vectors for edge based lcm.

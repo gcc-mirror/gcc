@@ -1015,12 +1015,11 @@ remove_some_program_points_and_update_live_ranges (void)
   int n, max_regno;
   int *map;
   lra_live_range_t r, prev_r, next_r;
-  sbitmap born_or_dead, born, dead;
   sbitmap_iterator sbi;
   bool born_p, dead_p, prev_born_p, prev_dead_p;
 
-  born = sbitmap_alloc (lra_live_max_point);
-  dead = sbitmap_alloc (lra_live_max_point);
+  auto_sbitmap born (lra_live_max_point);
+  auto_sbitmap dead (lra_live_max_point);
   bitmap_clear (born);
   bitmap_clear (dead);
   max_regno = max_reg_num ();
@@ -1033,7 +1032,7 @@ remove_some_program_points_and_update_live_ranges (void)
 	  bitmap_set_bit (dead, r->finish);
 	}
     }
-  born_or_dead = sbitmap_alloc (lra_live_max_point);
+  auto_sbitmap born_or_dead (lra_live_max_point);
   bitmap_ior (born_or_dead, born, dead);
   map = XCNEWVEC (int, lra_live_max_point);
   n = -1;
@@ -1056,9 +1055,6 @@ remove_some_program_points_and_update_live_ranges (void)
       prev_born_p = born_p;
       prev_dead_p = dead_p;
     }
-  sbitmap_free (born_or_dead);
-  sbitmap_free (born);
-  sbitmap_free (dead);
   n++;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file, "Compressing live ranges: from %d to %d - %d%%\n",

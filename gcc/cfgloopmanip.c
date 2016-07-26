@@ -181,7 +181,6 @@ fix_bb_placements (basic_block from,
 		   bool *irred_invalidated,
 		   bitmap loop_closed_ssa_invalidated)
 {
-  sbitmap in_queue;
   basic_block *queue, *qtop, *qbeg, *qend;
   struct loop *base_loop, *target_loop;
   edge e;
@@ -201,7 +200,7 @@ fix_bb_placements (basic_block from,
       || from == base_loop->header)
     return;
 
-  in_queue = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap in_queue (last_basic_block_for_fn (cfun));
   bitmap_clear (in_queue);
   bitmap_set_bit (in_queue, from->index);
   /* Prevent us from going out of the base_loop.  */
@@ -292,7 +291,6 @@ fix_bb_placements (basic_block from,
 	  bitmap_set_bit (in_queue, pred->index);
 	}
     }
-  free (in_queue);
   free (queue);
 }
 
@@ -306,7 +304,6 @@ remove_path (edge e)
   basic_block *rem_bbs, *bord_bbs, from, bb;
   vec<basic_block> dom_bbs;
   int i, nrem, n_bord_bbs;
-  sbitmap seen;
   bool irred_invalidated = false;
   edge_iterator ei;
   struct loop *l, *f;
@@ -345,7 +342,7 @@ remove_path (edge e)
 
   n_bord_bbs = 0;
   bord_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
-  seen = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap seen (last_basic_block_for_fn (cfun));
   bitmap_clear (seen);
 
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
@@ -406,8 +403,6 @@ remove_path (edge e)
 	if (!dominated_by_p (CDI_DOMINATORS, from, ldom))
 	  dom_bbs.safe_push (ldom);
     }
-
-  free (seen);
 
   /* Recount dominators.  */
   iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, true);
@@ -616,11 +611,10 @@ static void
 update_dominators_in_loop (struct loop *loop)
 {
   vec<basic_block> dom_bbs = vNULL;
-  sbitmap seen;
   basic_block *body;
   unsigned i;
 
-  seen = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap seen (last_basic_block_for_fn (cfun));
   bitmap_clear (seen);
   body = get_loop_body (loop);
 
@@ -643,7 +637,6 @@ update_dominators_in_loop (struct loop *loop)
 
   iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, false);
   free (body);
-  free (seen);
   dom_bbs.release ();
 }
 

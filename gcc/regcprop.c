@@ -1238,12 +1238,11 @@ pass_cprop_hardreg::execute (function *fun)
 {
   struct value_data *all_vd;
   basic_block bb;
-  sbitmap visited;
   bool analyze_called = false;
 
   all_vd = XNEWVEC (struct value_data, last_basic_block_for_fn (fun));
 
-  visited = sbitmap_alloc (last_basic_block_for_fn (fun));
+  auto_sbitmap visited (last_basic_block_for_fn (fun));
   bitmap_clear (visited);
 
   FOR_EACH_BB_FN (bb, fun)
@@ -1308,7 +1307,6 @@ pass_cprop_hardreg::execute (function *fun)
       queued_debug_insn_change_pool.release ();
     }
 
-  sbitmap_free (visited);
   free (all_vd);
   return 0;
 }

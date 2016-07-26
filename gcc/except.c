@@ -634,12 +634,10 @@ eh_region
 eh_region_outermost (struct function *ifun, eh_region region_a,
 		     eh_region region_b)
 {
-  sbitmap b_outer;
-
   gcc_assert (ifun->eh->region_array);
   gcc_assert (ifun->eh->region_tree);
 
-  b_outer = sbitmap_alloc (ifun->eh->region_array->length ());
+  auto_sbitmap b_outer (ifun->eh->region_array->length ());
   bitmap_clear (b_outer);
 
   do
@@ -657,7 +655,6 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
     }
   while (region_a);
 
-  sbitmap_free (b_outer);
   return region_a;
 }
 

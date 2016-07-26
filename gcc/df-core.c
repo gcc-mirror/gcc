@@ -1083,7 +1083,6 @@ df_worklist_dataflow (struct dataflow *dataflow,
                       int n_blocks)
 {
   bitmap pending = BITMAP_ALLOC (&df_bitmap_obstack);
-  sbitmap considered = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_iterator bi;
   unsigned int *bbindex_to_postorder;
   int i;
@@ -1101,6 +1100,7 @@ df_worklist_dataflow (struct dataflow *dataflow,
     bbindex_to_postorder[i] = last_basic_block_for_fn (cfun);
 
   /* Initialize the considered map.  */
+  auto_sbitmap considered (last_basic_block_for_fn (cfun));
   bitmap_clear (considered);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_consider, 0, index, bi)
     {
@@ -1124,7 +1124,6 @@ df_worklist_dataflow (struct dataflow *dataflow,
 				    blocks_in_postorder,
 				    bbindex_to_postorder,
 				    n_blocks);
-  sbitmap_free (considered);
   free (bbindex_to_postorder);
 }
 

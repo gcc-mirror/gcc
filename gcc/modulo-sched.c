@@ -682,7 +682,6 @@ schedule_reg_moves (partial_schedule_ptr ps)
       rtx prev_reg, old_reg;
       int first_move;
       int distances[2];
-      sbitmap must_follow;
       sbitmap distance1_uses;
       rtx set = single_set (u->insn);
       
@@ -792,12 +791,11 @@ schedule_reg_moves (partial_schedule_ptr ps)
 	      }
 	  }
 
-      must_follow = sbitmap_alloc (first_move + nreg_moves);
+      auto_sbitmap must_follow (first_move + nreg_moves);
       for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
 	if (!schedule_reg_move (ps, first_move + i_reg_move,
 				distance1_uses, must_follow))
 	  break;
-      sbitmap_free (must_follow);
       if (distance1_uses)
 	sbitmap_free (distance1_uses);
       if (i_reg_move < nreg_moves)
@@ -927,7 +925,6 @@ static bool
 optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 {
   int amount = PS_MIN_CYCLE (ps);
-  sbitmap sched_nodes = sbitmap_alloc (g->num_nodes);
   int start, end, step;
   int ii = ps->ii;
   bool ok = false;
@@ -944,8 +941,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
       if (dump_file)
 	fprintf (dump_file, "SMS SC already optimized.\n");
 
-      ok = false;
-      goto clear;
+      return false;
     }
 
   if (dump_file)
@@ -967,11 +963,9 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
     }
 
   if (SMODULO (SCHED_TIME (g->closing_branch->cuid), ii) == ii - 1)
-    {
-      ok = true;
-      goto clear;
-    }
+    return true;
 
+  auto_sbitmap sched_nodes (g->num_nodes);
   bitmap_ones (sched_nodes);
 
   /* Calculate the new placement of the branch.  It should be in row
@@ -984,7 +978,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
       int branch_cycle = SCHED_TIME (g->closing_branch->cuid);
       int row = SMODULO (branch_cycle, ps->ii);
       int num_splits = 0;
-      sbitmap must_precede, must_follow, tmp_precede, tmp_follow;
+      sbitmap tmp_precede, tmp_follow;
       int min_cycle, c;
 
       if (dump_file)
@@ -1000,11 +994,10 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 	  gcc_assert (c >= start);
 	  if (c >= end)
 	    {
-	      ok = false;
 	      if (dump_file)
 		fprintf (dump_file,
 			 "SMS failed to schedule branch at cycle: %d\n", c);
-	      goto clear;
+	      return false;
 	    }
 	}
       else
@@ -1017,13 +1010,12 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 	      if (dump_file)
 		fprintf (dump_file,
 			 "SMS failed to schedule branch at cycle: %d\n", c);
-	      ok = false;
-	      goto clear;
+	      return false;
 	    }
 	}
 
-      must_precede = sbitmap_alloc (g->num_nodes);
-      must_follow = sbitmap_alloc (g->num_nodes);
+      auto_sbitmap must_precede (g->num_nodes);
+      auto_sbitmap must_follow (g->num_nodes);
 
       /* Try to schedule the branch is it's new cycle.  */
       calculate_must_precede_follow (g->closing_branch, start, end,
@@ -1083,13 +1075,8 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
       /* This might have been added to a new first stage.  */
       if (PS_MIN_CYCLE (ps) < min_cycle)
 	reset_sched_times (ps, 0);
-
-      free (must_precede);
-      free (must_follow);
     }
 
-clear:
-  free (sched_nodes);
   return ok;
 }
 
@@ -1866,8 +1853,8 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   int start, step, end;
   int early_start, late_start;
   ddg_edge_ptr e;
-  sbitmap psp = sbitmap_alloc (ps->g->num_nodes);
-  sbitmap pss = sbitmap_alloc (ps->g->num_nodes);
+  auto_sbitmap psp (ps->g->num_nodes);
+  auto_sbitmap pss (ps->g->num_nodes);
   sbitmap u_node_preds = NODE_PREDECESSORS (u_node);
   sbitmap u_node_succs = NODE_SUCCESSORS (u_node);
   int psp_not_empty;
@@ -1996,8 +1983,6 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   *start_p = start;
   *step_p = step;
   *end_p = end;
-  sbitmap_free (psp);
-  sbitmap_free (pss);
 
   if ((start >= end && step == 1) || (start <= end && step == -1))
     {
@@ -2146,10 +2131,10 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
   int flush_and_start_over = true;
   int num_nodes = g->num_nodes;
   int start, end, step; /* Place together into one struct?  */
-  sbitmap sched_nodes = sbitmap_alloc (num_nodes);
-  sbitmap must_precede = sbitmap_alloc (num_nodes);
-  sbitmap must_follow = sbitmap_alloc (num_nodes);
-  sbitmap tobe_scheduled = sbitmap_alloc (num_nodes);
+  auto_sbitmap sched_nodes (num_nodes);
+  auto_sbitmap must_precede (num_nodes);
+  auto_sbitmap must_follow (num_nodes);
+  auto_sbitmap tobe_scheduled (num_nodes);
 
   partial_schedule_ptr ps = create_partial_schedule (ii, g, DFA_HISTORY);
 
@@ -2259,11 +2244,6 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
     }
   else
     gcc_assert (bitmap_equal_p (tobe_scheduled, sched_nodes));
-
-  sbitmap_free (sched_nodes);
-  sbitmap_free (must_precede);
-  sbitmap_free (must_follow);
-  sbitmap_free (tobe_scheduled);
 
   return ps;
 }
@@ -2474,7 +2454,7 @@ static void
 check_nodes_order (int *node_order, int num_nodes)
 {
   int i;
-  sbitmap tmp = sbitmap_alloc (num_nodes);
+  auto_sbitmap tmp (num_nodes);
 
   bitmap_clear (tmp);
 
@@ -2494,8 +2474,6 @@ check_nodes_order (int *node_order, int num_nodes)
 
   if (dump_file)
     fprintf (dump_file, "\n");
-
-  sbitmap_free (tmp);
 }
 
 /* Order the nodes of G for scheduling and pass the result in
@@ -2539,10 +2517,10 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
   int i, pos = 0;
   ddg_ptr g = all_sccs->ddg;
   int num_nodes = g->num_nodes;
-  sbitmap prev_sccs = sbitmap_alloc (num_nodes);
-  sbitmap on_path = sbitmap_alloc (num_nodes);
-  sbitmap tmp = sbitmap_alloc (num_nodes);
-  sbitmap ones = sbitmap_alloc (num_nodes);
+  auto_sbitmap prev_sccs (num_nodes);
+  auto_sbitmap on_path (num_nodes);
+  auto_sbitmap tmp (num_nodes);
+  auto_sbitmap ones (num_nodes);
 
   bitmap_clear (prev_sccs);
   bitmap_ones (ones);
@@ -2575,10 +2553,6 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
       bitmap_and_compl (tmp, ones, prev_sccs);
       pos = order_nodes_in_scc (g, prev_sccs, tmp, node_order, pos);
     }
-  sbitmap_free (prev_sccs);
-  sbitmap_free (on_path);
-  sbitmap_free (tmp);
-  sbitmap_free (ones);
 }
 
 /* MII is needed if we consider backarcs (that do not close recursive cycles).  */
@@ -2739,11 +2713,11 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 {
   enum sms_direction dir;
   int num_nodes = g->num_nodes;
-  sbitmap workset = sbitmap_alloc (num_nodes);
-  sbitmap tmp = sbitmap_alloc (num_nodes);
+  auto_sbitmap workset (num_nodes);
+  auto_sbitmap tmp (num_nodes);
   sbitmap zero_bitmap = sbitmap_alloc (num_nodes);
-  sbitmap predecessors = sbitmap_alloc (num_nodes);
-  sbitmap successors = sbitmap_alloc (num_nodes);
+  auto_sbitmap predecessors (num_nodes);
+  auto_sbitmap successors (num_nodes);
 
   bitmap_clear (predecessors);
   find_predecessors (predecessors, g, nodes_ordered);
@@ -2823,11 +2797,7 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 	  bitmap_and (workset, successors, scc);
 	}
     }
-  sbitmap_free (tmp);
-  sbitmap_free (workset);
   sbitmap_free (zero_bitmap);
-  sbitmap_free (predecessors);
-  sbitmap_free (successors);
   return pos;
 }
 

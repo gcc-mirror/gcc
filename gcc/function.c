@@ -6018,12 +6018,11 @@ thread_prologue_and_epilogue_insns (void)
       commit_edge_insertions ();
 
       /* Look for basic blocks within the prologue insns.  */
-      sbitmap blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
+      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
       bitmap_clear (blocks);
       bitmap_set_bit (blocks, entry_edge->dest->index);
       bitmap_set_bit (blocks, orig_entry_edge->dest->index);
       find_many_sub_basic_blocks (blocks);
-      sbitmap_free (blocks);
     }
 
   default_rtl_profile ();

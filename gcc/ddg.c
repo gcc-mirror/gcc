@@ -997,7 +997,7 @@ static void
 check_sccs (ddg_all_sccs_ptr sccs, int num_nodes)
 {
   int i = 0;
-  sbitmap tmp = sbitmap_alloc (num_nodes);
+  auto_sbitmap tmp (num_nodes);
 
   bitmap_clear (tmp);
   for (i = 0; i < sccs->num_sccs; i++)
@@ -1008,7 +1008,6 @@ check_sccs (ddg_all_sccs_ptr sccs, int num_nodes)
       gcc_assert (!bitmap_intersect_p (tmp, sccs->sccs[i]->nodes));
       bitmap_ior (tmp, tmp, sccs->sccs[i]->nodes);
     }
-  sbitmap_free (tmp);
 }
 
 /* Perform the Strongly Connected Components decomposing algorithm on the
@@ -1018,9 +1017,9 @@ create_ddg_all_sccs (ddg_ptr g)
 {
   int i;
   int num_nodes = g->num_nodes;
-  sbitmap from = sbitmap_alloc (num_nodes);
-  sbitmap to = sbitmap_alloc (num_nodes);
-  sbitmap scc_nodes = sbitmap_alloc (num_nodes);
+  auto_sbitmap from (num_nodes);
+  auto_sbitmap to (num_nodes);
+  auto_sbitmap scc_nodes (num_nodes);
   ddg_all_sccs_ptr sccs = (ddg_all_sccs_ptr)
 			  xmalloc (sizeof (struct ddg_all_sccs));
 
@@ -1052,9 +1051,6 @@ create_ddg_all_sccs (ddg_ptr g)
 	}
     }
   order_sccs (sccs);
-  sbitmap_free (from);
-  sbitmap_free (to);
-  sbitmap_free (scc_nodes);
 
   if (flag_checking)
     check_sccs (sccs, num_nodes);
