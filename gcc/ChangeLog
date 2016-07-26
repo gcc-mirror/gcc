@@ -1,5 +1,24 @@
 2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-outof-ssa.c (struct elim_graph): Remove typedef.
+	(new_elim_graph): Adjust.
+	(clear_elim_graph): Likewise.
+	(delete_elim_graph): Likewise.
+	(elim_graph_size): Likewise.
+	(elim_graph_add_node): Likewise.
+	(elim_graph_add_edge): Likewise.
+	(elim_graph_remove_succ_edge): Likewise.
+	(eliminate_name): Likewise.
+	(eliminate_build): Likewise.
+	(elim_forward): Likewise.
+	(elim_unvisited_predecessor): Likewise.
+	(elim_backward): Likewise.
+	(elim_create): Likewise.
+	(eliminate_phi): Likewise.
+	(expand_phi_nodes): Likewise.
+
+2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bt-load.c (compute_out): Use auto_sbitmap class.
 	(link_btr_uses): Likewise.
 	* cfganal.c (mark_dfs_back_edges): Likewise.
