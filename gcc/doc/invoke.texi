@@ -9781,6 +9781,10 @@ enable it.
 The maximum number of may-defs we analyze when looking for a must-def
 specifying the dynamic type of an object that invokes a virtual call
 we may be able to devirtualize speculatively.
+
+@item max-vrp-switch-assertions
+The maximum number of assertions to add along the default edge of a switch
+statement during VRP.  The default is 10.
 @end table
 @end table
 

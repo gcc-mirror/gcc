@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-low.h"
 #include "target.h"
 #include "case-cfn-macros.h"
+#include "params.h"
 
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
@@ -5917,6 +5918,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
       ci[idx].expr = gimple_switch_label (last, idx);
       ci[idx].bb = label_to_block (CASE_LABEL (ci[idx].expr));
     }
+  edge default_edge = find_edge (bb, ci[0].bb);
   qsort (ci, n, sizeof (struct case_info), compare_case_labels);
 
   for (idx = 0; idx < n; ++idx)
@@ -5945,8 +5947,8 @@ find_switch_asserts (basic_block bb, gswitch *last)
 	    max = CASE_LOW (ci[idx].expr);
 	}
 
-      /* Nothing to do if the range includes the default label until we
-	 can register anti-ranges.  */
+      /* Can't extract a useful assertion out of a range that includes the
+	 default label.  */
       if (min == NULL_TREE)
 	continue;
 
@@ -5964,6 +5966,62 @@ find_switch_asserts (basic_block bb, gswitch *last)
     }
 
   XDELETEVEC (ci);
+
+  if (!live_on_edge (default_edge, op))
+    return;
+
+  /* Now register along the default label assertions that correspond to the
+     anti-range of each label.  */
+  int insertion_limit = PARAM_VALUE (PARAM_MAX_VRP_SWITCH_ASSERTIONS);
+  for (idx = 1; idx < n; idx++)
+    {
+      tree min, max;
+      tree cl = gimple_switch_label (last, idx);
+
+      min = CASE_LOW (cl);
+      max = CASE_HIGH (cl);
+
+      /* Combine contiguous case ranges to reduce the number of assertions
+	 to insert.  */
+      for (idx = idx + 1; idx < n; idx++)
+	{
+	  tree next_min, next_max;
+	  tree next_cl = gimple_switch_label (last, idx);
+
+	  next_min = CASE_LOW (next_cl);
+	  next_max = CASE_HIGH (next_cl);
+
+	  wide_int difference = wi::sub (next_min, max ? max : min);
+	  if (wi::eq_p (difference, 1))
+	    max = next_max ? next_max : next_min;
+	  else
+	    break;
+	}
+      idx--;
+
+      if (max == NULL_TREE)
+	{
+	  /* Register the assertion OP != MIN.  */
+	  min = fold_convert (TREE_TYPE (op), min);
+	  register_edge_assert_for (op, default_edge, bsi, NE_EXPR, op, min);
+	}
+      else
+	{
+	  /* Register the assertion (unsigned)OP - MIN > (MAX - MIN),
+	     which will give OP the anti-range ~[MIN,MAX].  */
+	  tree uop = fold_convert (unsigned_type_for (TREE_TYPE (op)), op);
+	  min = fold_convert (TREE_TYPE (uop), min);
+	  max = fold_convert (TREE_TYPE (uop), max);
+
+	  tree lhs = fold_build2 (MINUS_EXPR, TREE_TYPE (uop), uop, min);
+	  tree rhs = int_const_binop (MINUS_EXPR, max, min);
+	  register_new_assert_for (op, lhs, GT_EXPR, rhs,
+				   NULL, default_edge, bsi);
+	}
+
+      if (--insertion_limit == 0)
+	break;
+    }
 }
 
 
