@@ -1,3 +1,11 @@
+2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr63354.c: Require lp64 since
+	-mprofile-kernel is not legal with -m32.
+
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from trunk:
