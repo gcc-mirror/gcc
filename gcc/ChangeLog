@@ -1,3 +1,18 @@
+2016-07-26  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/18046
+	* genmodes.c (emit_mode_size_inline): Emit an assert that
+	verifies that mode is a valid array index.
+	(emit_mode_nuinits_inline): Likewise.
+	(emit_mode_inner_inline): Likewise.
+	(emit_mode_unit_size_inline): Likewise.
+	(emit_mode_unit_precision_inline): Likewise.
+	* tree-vrp.c: Include params.h.
+	(find_switch_asserts): Register edge assertions for the default
+	label which correspond to the anti-ranges of each case label.
+	* params.def (PARAM_MAX_VRP_SWITCH_ASSERTIONS): New.
+	* doc/invoke.texi: Document it.
+
 2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (slsr_process_phi): Remove dead

@@ -1,3 +1,10 @@
+2016-07-26  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/18046
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Bump FSM count to 5.
+	* gcc.dg/tree-ssa/vrp103.c: New test.
+	* gcc.dg/tree-ssa/vrp104.c: New test.
+
 2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr63354.c: Require lp64 since

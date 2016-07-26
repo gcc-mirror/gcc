@@ -1246,6 +1246,12 @@ DEFPARAM (PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS,
 	  "Maximum number of may-defs visited when devirtualizing "
 	  "speculatively", 50, 0, 0)
 
+DEFPARAM (PARAM_MAX_VRP_SWITCH_ASSERTIONS,
+	  "max-vrp-switch-assertions",
+	  "Maximum number of assertions to add along the default "
+	  "edge of a switch statement during VRP",
+	  10, 0, 0)
+
 /*
 
 Local variables:
