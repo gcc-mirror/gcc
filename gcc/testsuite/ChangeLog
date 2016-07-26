@@ -1,3 +1,14 @@
+2016-07-26  Richard Biener  <rguenther@suse.de>
+	    Prathamesh Kulkarni <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/70920
+	* gcc.dg/pr70920-1.c: New test-case.
+	* gcc.dg/pr70902-2.c: Likewise.
+	* gcc.dg/pr70920-3.c: Likewise.
+	* gcc.dg/pr70920-4.c: Likewise
+	* gcc.dg/tree-ssa/ssa-dom-branch-1.c: Change scan-tree-dump-times to
+	2 instead of 3.
+
 2016-07-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.c-torture/execute/pr71494.c: Require label_values.

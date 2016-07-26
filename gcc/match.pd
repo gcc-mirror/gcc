@@ -2513,6 +2513,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && ptrs_compare_unequal (@0, @1))
    { neeq == EQ_EXPR ? boolean_false_node : boolean_true_node; })))
 
+/* PR70920: Transform (intptr_t)x eq/ne CST to x eq/ne (typeof x) CST.
+   and (typeof ptr_cst) x eq/ne ptr_cst to x eq/ne (typeof x) CST */
+(for cmp (ne eq)
+ (simplify
+  (cmp (convert @0) INTEGER_CST@1)
+  (if ((POINTER_TYPE_P (TREE_TYPE (@0)) && INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+        || (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && POINTER_TYPE_P (TREE_TYPE (@1))))
+   (cmp @0 (convert @1)))))
+
 /* Non-equality compare simplifications from fold_binary  */
 (for cmp (lt gt le ge)
  /* Comparisons with the highest or lowest possible integer of
