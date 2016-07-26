@@ -24,6 +24,11 @@ load_lib target-supports.exp
 global DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS ""
 
+# Set up a list of effective targets to run vector tests for all supported
+# targets.
+global EFFECTIVE_TARGETS
+set EFFECTIVE_TARGETS ""
+
 # These flags are used for all targets.
 lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model=unlimited" \
   "-fdump-tree-vect-details"
@@ -47,8 +52,10 @@ if ![check_vect_support_and_set_flags] {
 dg-init
 
 # Main loop.
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[fF\]{,90,95,03,08} ]] "" $DEFAULT_VECTCFLAGS
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[fF\]{,90,95,03,08} ]] "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/vect-*.\[fF\]{,90,95,03,08} ]] "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/pr*.\[fF\]{,90,95,03,08} ]] "" $DEFAULT_VECTCFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS
@@ -57,44 +64,51 @@ set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
 # -ffast-math tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-ffast-math"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/fast-math-*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # -ffast-math tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-ffast-math" "-fdefault-real-8"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-real8*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/fast-math-real8*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # -fvect-cost-model tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-fvect-cost-model=dynamic"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/cost-model-*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/cost-model-*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # --param vect-max-version-for-alias-checks=0 tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "--param" "vect-max-version-for-alias-checks=0"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-vfa-*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/no-vfa-*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # With -O3
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-O3"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/O3-*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # With -Ofast
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-Ofast"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Ofast-*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/Ofast-*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # With -fno-tree-copy-prop -fno-tree-fre -O3
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-fno-tree-copy-prop" "-fno-tree-fre" "-O3"
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-fre-no-copy-prop-O3-*.\[fF\]{,90,95,03,08} ]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest gfortran-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/no-fre-no-copy-prop-O3-*.\[fF\]{,90,95,03,08} ]] \
+	"" $DEFAULT_VECTCFLAGS
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}

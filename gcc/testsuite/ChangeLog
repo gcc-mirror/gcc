@@ -1,3 +1,95 @@
+2016-07-26  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* g++.dg/vect/vect.exp: Add and set new global EFFECTIVE_TARGETS. Call
+	g++-dg-runtest via et-dg-runtest.
+	* gcc.dg/graphite/graphite.exp: Likewise, but for dg-runtest.
+	* gcc.dg/vect/vect.exp: Likewise.
+	* gfortran.dg/graphite/graphite.exp: Likewise, but for
+	gfortran-dg-runtest.
+	* gfortran.dg/vect/vect.exp: Likewise.
+	* lib/target-supports.exp (check_mpaired_single_hw_available): New.
+	(check_mips_loongson_hw_available): Likewise.
+	(check_effective_target_mpaired_single_runtime): Likewise.
+	(check_effective_target_mips_loongson_runtime): Likewise.
+	(add_options_for_mpaired_single): Likewise.
+	(check_effective_target_vect_int): Add global et_index.
+	Check and save the supported feature for a target selected by
+	the et_index target.  Break long lines where appropriate.  Call
+	et-is-effective-target for MIPS with an argument instead of
+	check_effective_target_* where appropriate.
+	(check_effective_target_vect_intfloat_cvt): Likewise.
+	(check_effective_target_vect_uintfloat_cvt): Likewise.
+	(check_effective_target_vect_floatint_cvt): Likewise.
+	(check_effective_target_vect_floatuint_cvt): Likewise.
+	(check_effective_target_vect_simd_clones): Likewise.
+	(check_effective_target_vect_shift): ewise.
+	(check_effective_target_whole_vector_shift): Likewise.
+	(check_effective_target_vect_bswap): Likewise.
+	(check_effective_target_vect_shift_char): Likewise.
+	(check_effective_target_vect_long): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_double): Likewise.
+	(check_effective_target_vect_long_long): Likewise.
+	(check_effective_target_vect_no_int_max): Likewise.
+	(check_effective_target_vect_no_int_add): Likewise.
+	(check_effective_target_vect_no_bitwise): Likewise.
+	(check_effective_target_vect_widen_shift): Likewise.
+	(check_effective_target_vect_no_align): Likewise.
+	(check_effective_target_vect_hw_misalign): Likewise.
+	(check_effective_target_vect_element_align): Likewise.
+	(check_effective_target_vect_condition): Likewise.
+	(check_effective_target_vect_cond_mixed): Likewise.
+	(check_effective_target_vect_char_mult): Likewise.
+	(check_effective_target_vect_short_mult): Likewise.
+	(check_effective_target_vect_int_mult): Likewise.
+	(check_effective_target_vect_extract_even_odd): Likewise.
+	(check_effective_target_vect_interleave): Likewise.
+	(check_effective_target_vect_stridedN): Likewise.
+	(check_effective_target_vect_multiple_sizes): Likewise.
+	(check_effective_target_vect64): Likewise.
+	(check_effective_target_vect_call_copysignf): Likewise.
+	(check_effective_target_vect_call_sqrtf): Likewise.
+	(check_effective_target_vect_call_btrunc): Likewise.
+	(check_effective_target_vect_call_btruncf): Likewise.
+	(check_effective_target_vect_call_ceil): Likewise.
+	(check_effective_target_vect_call_ceilf): Likewise.
+	(check_effective_target_vect_call_floor): Likewise.
+	(check_effective_target_vect_call_floorf): Likewise.
+	(check_effective_target_vect_call_lceil): Likewise.
+	(check_effective_target_vect_call_lfloor): Likewise.
+	(check_effective_target_vect_call_nearbyint): Likewise.
+	(check_effective_target_vect_call_nearbyintf): Likewise.
+	(check_effective_target_vect_call_round): Likewise.
+	(check_effective_target_vect_call_roundf): Likewise.
+	(check_effective_target_vect_perm): Likewise, but also append *_saved
+	to the existing global name to properly cache the result.
+	(check_effective_target_vect_perm_byte): Likewise.
+	(check_effective_target_vect_perm_short): Likewise.
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_widen_sum_hi_to_si): Likewise.
+	(check_effective_target_vect_widen_sum_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_sum_qi_to_si): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi_pattern): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_widen_mult_si_to_di_pattern): Likewise.
+	(check_effective_target_vect_sdot_qi): Likewise.
+	(check_effective_target_vect_udot_qi): Likewise.
+	(check_effective_target_vect_sdot_hi): Likewise.
+	(check_effective_target_vect_udot_hi): Likewise.
+	(check_effective_target_vect_usad_char): Likewise.
+	(check_effective_target_vect_pack_trunc): Likewise.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_aligned_arrays): Likewise.
+	(check_effective_target_vect_natural_alignment): Likewise.
+	(check_effective_target_vector_alignment_reachable): Likewise.
+	(check_effective_target_vector_alignment_reachable_for_64bit): Likewise.
+	(is-effective-target): Initialize et_index if undefined.
+	(et-dg-runtest): New.
+	(et-is-effective-target): Likewise.
+	(check_vect_support_and_set_flags): Add supported MIPS targets to
+	EFFECTIVE_TARGETS list.  Return the number of supported targets.
+
 2016-07-26  Richard Biener  <rguenther@suse.de>
 	    Prathamesh Kulkarni <prathamesh.kulkarni@linaro.org>
 
