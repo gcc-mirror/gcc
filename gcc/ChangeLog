@@ -1,3 +1,7 @@
+2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* sbitmap.h (auto_sbitmap): New class.
+
 2016-07-26  Alan Modra  <amodra@gmail.com>
 
 	PR target/72103
