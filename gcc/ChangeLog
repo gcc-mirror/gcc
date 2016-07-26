@@ -1,3 +1,8 @@
+2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Remove dead
+	and unnecessary call to gimple_bb.
+
 2016-07-26  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/71984
