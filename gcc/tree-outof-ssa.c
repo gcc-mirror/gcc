@@ -126,7 +126,8 @@ ssa_is_replaceable_p (gimple *stmt)
    rarely more than 6, and in the bootstrap of gcc, the maximum number
    of nodes encountered was 12.  */
 
-typedef struct _elim_graph {
+struct elim_graph
+{
   /* Size of the elimination vectors.  */
   int size;
 
@@ -157,7 +158,7 @@ typedef struct _elim_graph {
 
   /* Source locations for any constant copies.  */
   vec<source_location> copy_locus;
-} *elim_graph;
+};
 
 
 /* For an edge E find out a good source location to associate with
@@ -394,10 +395,10 @@ insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
 /* Create an elimination graph with SIZE nodes and associated data
    structures.  */
 
-static elim_graph
+static elim_graph *
 new_elim_graph (int size)
 {
-  elim_graph g = (elim_graph) xmalloc (sizeof (struct _elim_graph));
+  elim_graph *g = (elim_graph *) xmalloc (sizeof (struct elim_graph));
 
   g->nodes.create (30);
   g->const_dests.create (20);
@@ -416,7 +417,7 @@ new_elim_graph (int size)
 /* Empty elimination graph G.  */
 
 static inline void
-clear_elim_graph (elim_graph g)
+clear_elim_graph (elim_graph *g)
 {
   g->nodes.truncate (0);
   g->edge_list.truncate (0);
@@ -427,7 +428,7 @@ clear_elim_graph (elim_graph g)
 /* Delete elimination graph G.  */
 
 static inline void
-delete_elim_graph (elim_graph g)
+delete_elim_graph (elim_graph *g)
 {
   sbitmap_free (g->visited);
   g->stack.release ();
@@ -445,7 +446,7 @@ delete_elim_graph (elim_graph g)
 /* Return the number of nodes in graph G.  */
 
 static inline int
-elim_graph_size (elim_graph g)
+elim_graph_size (elim_graph *g)
 {
   return g->nodes.length ();
 }
@@ -454,7 +455,7 @@ elim_graph_size (elim_graph g)
 /* Add NODE to graph G, if it doesn't exist already.  */
 
 static inline void
-elim_graph_add_node (elim_graph g, int node)
+elim_graph_add_node (elim_graph *g, int node)
 {
   int x;
   int t;
@@ -469,7 +470,7 @@ elim_graph_add_node (elim_graph g, int node)
 /* Add the edge PRED->SUCC to graph G.  */
 
 static inline void
-elim_graph_add_edge (elim_graph g, int pred, int succ, source_location locus)
+elim_graph_add_edge (elim_graph *g, int pred, int succ, source_location locus)
 {
   g->edge_list.safe_push (pred);
   g->edge_list.safe_push (succ);
@@ -481,7 +482,7 @@ elim_graph_add_edge (elim_graph g, int pred, int succ, source_location locus)
    return the successor node.  -1 is returned if there is no such edge.  */
 
 static inline int
-elim_graph_remove_succ_edge (elim_graph g, int node, source_location *locus)
+elim_graph_remove_succ_edge (elim_graph *g, int node, source_location *locus)
 {
   int y;
   unsigned x;
@@ -543,7 +544,7 @@ do {									\
 /* Add T to elimination graph G.  */
 
 static inline void
-eliminate_name (elim_graph g, int T)
+eliminate_name (elim_graph *g, int T)
 {
   elim_graph_add_node (g, T);
 }
@@ -570,7 +571,7 @@ queue_phi_copy_p (var_map map, tree t)
    G->e.  */
 
 static void
-eliminate_build (elim_graph g)
+eliminate_build (elim_graph *g)
 {
   tree Ti;
   int p0, pi;
@@ -619,7 +620,7 @@ eliminate_build (elim_graph g)
 /* Push successors of T onto the elimination stack for G.  */
 
 static void
-elim_forward (elim_graph g, int T)
+elim_forward (elim_graph *g, int T)
 {
   int S;
   source_location locus;
@@ -637,7 +638,7 @@ elim_forward (elim_graph g, int T)
 /* Return 1 if there unvisited predecessors of T in graph G.  */
 
 static int
-elim_unvisited_predecessor (elim_graph g, int T)
+elim_unvisited_predecessor (elim_graph *g, int T)
 {
   int P;
   source_location locus;
@@ -653,7 +654,7 @@ elim_unvisited_predecessor (elim_graph g, int T)
 /* Process predecessors first, and insert a copy.  */
 
 static void
-elim_backward (elim_graph g, int T)
+elim_backward (elim_graph *g, int T)
 {
   int P;
   source_location locus;
@@ -688,7 +689,7 @@ get_temp_reg (tree name)
    region, and create a temporary to break the cycle if one is found.  */
 
 static void
-elim_create (elim_graph g, int T)
+elim_create (elim_graph *g, int T)
 {
   int P, S;
   source_location locus;
@@ -724,7 +725,7 @@ elim_create (elim_graph g, int T)
 /* Eliminate all the phi nodes on edge E in graph G.  */
 
 static void
-eliminate_phi (edge e, elim_graph g)
+eliminate_phi (edge e, elim_graph *g)
 {
   int x;
 
@@ -924,7 +925,7 @@ void
 expand_phi_nodes (struct ssaexpand *sa)
 {
   basic_block bb;
-  elim_graph g = new_elim_graph (sa->map->num_partitions);
+  elim_graph *g = new_elim_graph (sa->map->num_partitions);
   g->map = sa->map;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
