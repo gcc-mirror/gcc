@@ -1,3 +1,9 @@
+2016-07-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/72103
+	* config/rs6000/rs6000.c (rs6000_secondary_reload): Initialize
+	sri->t_icode.
+
 2016-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (selftest::temp_source_file::temp_source_file): Fix
