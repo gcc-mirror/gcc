@@ -128,23 +128,25 @@ ssa_is_replaceable_p (gimple *stmt)
 
 struct elim_graph
 {
+  elim_graph (var_map map);
+
   /* Size of the elimination vectors.  */
   int size;
 
   /* List of nodes in the elimination graph.  */
-  vec<int> nodes;
+  auto_vec<int> nodes;
 
   /*  The predecessor and successor edge list.  */
-  vec<int> edge_list;
+  auto_vec<int> edge_list;
 
   /* Source locus on each edge */
-  vec<source_location> edge_locus;
+  auto_vec<source_location> edge_locus;
 
   /* Visited vector.  */
-  sbitmap visited;
+  auto_sbitmap visited;
 
   /* Stack for visited nodes.  */
-  vec<int> stack;
+  auto_vec<int> stack;
 
   /* The variable partition map.  */
   var_map map;
@@ -153,11 +155,11 @@ struct elim_graph
   edge e;
 
   /* List of constant copies to emit.  These are pushed on in pairs.  */
-  vec<int> const_dests;
-  vec<tree> const_copies;
+  auto_vec<int> const_dests;
+  auto_vec<tree> const_copies;
 
   /* Source locations for any constant copies.  */
-  vec<source_location> copy_locus;
+  auto_vec<source_location> copy_locus;
 };
 
 
@@ -392,25 +394,12 @@ insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
 }
 
 
-/* Create an elimination graph with SIZE nodes and associated data
-   structures.  */
+/* Create an elimination graph for map.  */
 
-static elim_graph *
-new_elim_graph (int size)
+elim_graph::elim_graph (var_map map) :
+  nodes (30), edge_list (20), edge_locus (10), visited (map->num_partitions),
+  stack (30), map (map), const_dests (20), const_copies (20), copy_locus (10)
 {
-  elim_graph *g = (elim_graph *) xmalloc (sizeof (struct elim_graph));
-
-  g->nodes.create (30);
-  g->const_dests.create (20);
-  g->const_copies.create (20);
-  g->copy_locus.create (10);
-  g->edge_list.create (20);
-  g->edge_locus.create (10);
-  g->stack.create (30);
-
-  g->visited = sbitmap_alloc (size);
-
-  return g;
 }
 
 
@@ -422,24 +411,6 @@ clear_elim_graph (elim_graph *g)
   g->nodes.truncate (0);
   g->edge_list.truncate (0);
   g->edge_locus.truncate (0);
-}
-
-
-/* Delete elimination graph G.  */
-
-static inline void
-delete_elim_graph (elim_graph *g)
-{
-  sbitmap_free (g->visited);
-  g->stack.release ();
-  g->edge_list.release ();
-  g->const_copies.release ();
-  g->const_dests.release ();
-  g->nodes.release ();
-  g->copy_locus.release ();
-  g->edge_locus.release ();
-
-  free (g);
 }
 
 
@@ -925,8 +896,7 @@ void
 expand_phi_nodes (struct ssaexpand *sa)
 {
   basic_block bb;
-  elim_graph *g = new_elim_graph (sa->map->num_partitions);
-  g->map = sa->map;
+  elim_graph g (sa->map);
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -935,7 +905,7 @@ expand_phi_nodes (struct ssaexpand *sa)
 	edge e;
 	edge_iterator ei;
 	FOR_EACH_EDGE (e, ei, bb->preds)
-	  eliminate_phi (e, g);
+	  eliminate_phi (e, &g);
 	set_phi_nodes (bb, NULL);
 	/* We can't redirect EH edges in RTL land, so we need to do this
 	   here.  Redirection happens only when splitting is necessary,
@@ -961,8 +931,6 @@ expand_phi_nodes (struct ssaexpand *sa)
 	      ei_next (&ei);
 	  }
       }
-
-  delete_elim_graph (g);
 }
 
 
