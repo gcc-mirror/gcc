@@ -4828,7 +4828,7 @@ dump_asserts_for (FILE *file, tree name)
 	  dump_edge_info (file, loc->e, dump_flags, 0);
 	}
       fprintf (file, "\n\tPREDICATE: ");
-      print_generic_expr (file, name, 0);
+      print_generic_expr (file, loc->expr, 0);
       fprintf (file, " %s ", get_tree_code_name (loc->comp_code));
       print_generic_expr (file, loc->val, 0);
       fprintf (file, "\n\n");
@@ -5010,13 +5010,15 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
       comp_code = swap_tree_comparison (cond_code);
       val = cond_op0;
     }
-  else
+  else if (name == cond_op0)
     {
       /* The comparison is of the form NAME COMP VAL, so the
 	 comparison code remains unchanged.  */
       comp_code = cond_code;
       val = cond_op1;
     }
+  else
+    gcc_unreachable ();
 
   /* Invert the comparison code as necessary.  */
   if (invert)
