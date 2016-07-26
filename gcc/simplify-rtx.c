@@ -6116,7 +6116,10 @@ simplify_subreg (machine_mode outermode, rtx op,
       unsigned int part_size, final_offset;
       rtx part, res;
 
-      part_size = GET_MODE_UNIT_SIZE (GET_MODE (XEXP (op, 0)));
+      enum machine_mode part_mode = GET_MODE (XEXP (op, 0));
+      if (part_mode == VOIDmode)
+	part_mode = GET_MODE_INNER (GET_MODE (op));
+      part_size = GET_MODE_SIZE (part_mode);
       if (byte < part_size)
 	{
 	  part = XEXP (op, 0);
@@ -6131,7 +6134,7 @@ simplify_subreg (machine_mode outermode, rtx op,
       if (final_offset + GET_MODE_SIZE (outermode) > part_size)
 	return NULL_RTX;
 
-      enum machine_mode part_mode = GET_MODE (part);
+      part_mode = GET_MODE (part);
       if (part_mode == VOIDmode)
 	part_mode = GET_MODE_INNER (GET_MODE (op));
       res = simplify_subreg (outermode, part, part_mode, final_offset);

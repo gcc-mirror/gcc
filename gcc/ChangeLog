@@ -1,5 +1,11 @@
 2016-07-26  Richard Biener  <rguenther@suse.de>
 
+	PR rtl-optimization/71984
+	* simplify-rtx.c (simplify_subreg): Use GET_MODE_SIZE and prepare
+	for VOIDmode.
+
+2016-07-26  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/72517
 	* expmed.c (extract_bit_field_1): Constrain the vector mode
 	with element size matching the extraction mode size when
