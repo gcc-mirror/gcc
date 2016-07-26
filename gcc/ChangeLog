@@ -1,5 +1,17 @@
 2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-ssa-structalias.c (struct scc_info): Change types of
+	members to auto_sbitmap and auto_vec.
+	(scc_info::scc_info): New constructor.
+	(scc_info::~scc_info): New destructor.
+	(init_scc_info): Remove.
+	(free_scc_info): Remove.
+	(find_indirect_cycles): Adjust.
+	(perform_var_substitution): Likewise.
+	(free_var_substitution_info): Likewise.
+
+2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree-outof-ssa.c (struct elim_graph): Change type of members
 	to auto_vec and auto_sbitmap.
 	(elim_graph::elim_graph): New constructor.

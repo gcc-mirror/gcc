@@ -1379,12 +1379,15 @@ static bitmap changed;
 
 struct scc_info
 {
-  sbitmap visited;
-  sbitmap deleted;
+  scc_info (size_t size);
+  ~scc_info ();
+
+  auto_sbitmap visited;
+  auto_sbitmap deleted;
   unsigned int *dfs;
   unsigned int *node_mapping;
   int current_index;
-  vec<unsigned> scc_stack;
+  auto_vec<unsigned> scc_stack;
 };
 
 
@@ -1824,38 +1827,24 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta,
 
 /* Initialize and return a new SCC info structure.  */
 
-static struct scc_info *
-init_scc_info (size_t size)
+scc_info::scc_info (size_t size) :
+  visited (size), deleted (size), current_index (0), scc_stack (1)
 {
-  struct scc_info *si = XNEW (struct scc_info);
-  size_t i;
+  bitmap_clear (visited);
+  bitmap_clear (deleted);
+  node_mapping = XNEWVEC (unsigned int, size);
+  dfs = XCNEWVEC (unsigned int, size);
 
-  si->current_index = 0;
-  si->visited = sbitmap_alloc (size);
-  bitmap_clear (si->visited);
-  si->deleted = sbitmap_alloc (size);
-  bitmap_clear (si->deleted);
-  si->node_mapping = XNEWVEC (unsigned int, size);
-  si->dfs = XCNEWVEC (unsigned int, size);
-
-  for (i = 0; i < size; i++)
-    si->node_mapping[i] = i;
-
-  si->scc_stack.create (1);
-  return si;
+  for (size_t i = 0; i < size; i++)
+    node_mapping[i] = i;
 }
 
 /* Free an SCC info structure pointed to by SI */
 
-static void
-free_scc_info (struct scc_info *si)
+scc_info::~scc_info ()
 {
-  sbitmap_free (si->visited);
-  sbitmap_free (si->deleted);
-  free (si->node_mapping);
-  free (si->dfs);
-  si->scc_stack.release ();
-  free (si);
+  free (node_mapping);
+  free (dfs);
 }
 
 
@@ -1871,13 +1860,11 @@ find_indirect_cycles (constraint_graph_t graph)
 {
   unsigned int i;
   unsigned int size = graph->size;
-  struct scc_info *si = init_scc_info (size);
+  scc_info si (size);
 
   for (i = 0; i < MIN (LAST_REF_NODE, size); i ++ )
-    if (!bitmap_bit_p (si->visited, i) && find (i) == i)
-      scc_visit (graph, si, i);
-
-  free_scc_info (si);
+    if (!bitmap_bit_p (si.visited, i) && find (i) == i)
+      scc_visit (graph, &si, i);
 }
 
 /* Compute a topological ordering for GRAPH, and store the result in the
@@ -2291,7 +2278,7 @@ perform_var_substitution (constraint_graph_t graph)
 {
   unsigned int i;
   unsigned int size = graph->size;
-  struct scc_info *si = init_scc_info (size);
+  scc_info *si = new scc_info (size);
 
   bitmap_obstack_initialize (&iteration_obstack);
   pointer_equiv_class_table = new hash_table<equiv_class_hasher> (511);
@@ -2422,7 +2409,7 @@ perform_var_substitution (constraint_graph_t graph)
 static void
 free_var_substitution_info (struct scc_info *si)
 {
-  free_scc_info (si);
+  delete si;
   free (graph->pointer_label);
   free (graph->loc_label);
   free (graph->pointed_by);
