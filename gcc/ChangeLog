@@ -1,5 +1,13 @@
 2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-outof-ssa.c (struct elim_graph): Change type of members
+	to auto_vec and auto_sbitmap.
+	(elim_graph::elim_graph): New constructor.
+	(delete_elim_graph): Remove.
+	(expand_phi_nodes): Adjust.
+
+2016-07-26  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree-outof-ssa.c (struct elim_graph): Remove typedef.
 	(new_elim_graph): Adjust.
 	(clear_elim_graph): Likewise.
