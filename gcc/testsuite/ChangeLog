@@ -1,3 +1,8 @@
+2016-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/71984
+	* gcc.dg/torture/pr71984.c: New testcase.
+
 2016-07-26  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* g++.dg/vect/vect.exp: Add and set new global EFFECTIVE_TARGETS. Call
