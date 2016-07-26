@@ -1,3 +1,8 @@
+2016-07-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71862
+	* class.c: Remove assert.  Iterate over component only if non-null.
+
 2016-07-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71935
