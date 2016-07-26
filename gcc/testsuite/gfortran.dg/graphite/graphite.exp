@@ -51,9 +51,15 @@ gfortran-dg-runtest $scop_files        "" "-O2 -fgraphite -fdump-tree-graphite-a
 gfortran-dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
 gfortran-dg-runtest $opt_files         "" "-O2 -floop-nest-optimize -ffast-math -fdump-tree-graphite-all"
 
+# Set up a list of effective targets to run vector tests for all supported
+# targets.
+global EFFECTIVE_TARGETS
+set EFFECTIVE_TARGETS ""
+
 # Vectorizer tests, to be run or compiled, depending on target capabilities.
 if [check_vect_support_and_set_flags] {
-    gfortran-dg-runtest $vect_files "" "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
+   et-dg-runtest gfortran-dg-runtest $vect_files "" \
+      "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
 }
 
 # Tests to be run.

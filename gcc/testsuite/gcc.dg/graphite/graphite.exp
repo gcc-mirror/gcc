@@ -37,6 +37,11 @@ set save-dg-do-what-default ${dg-do-what-default}
 # Initialize `dg'.
 dg-init
 
+# Set up a list of effective targets to run vector tests for all supported
+# targets.
+global EFFECTIVE_TARGETS
+set EFFECTIVE_TARGETS ""
+
 set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.c ] ]
 set scop_files        [lsort [glob -nocomplain $srcdir/$subdir/scop-*.c ] ]
 set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.c ] ]
@@ -69,7 +74,7 @@ global DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
 
 if [check_vect_support_and_set_flags] {
-    dg-runtest $vect_files        "" $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest $vect_files        "" $DEFAULT_VECTCFLAGS
 }
 
 # The default action for the rest of the files is 'compile'.
