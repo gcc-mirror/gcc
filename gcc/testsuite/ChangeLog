@@ -1,3 +1,7 @@
+2016-07-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr68961.c: Remove.
+
 2016-07-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-13.c: New test.
