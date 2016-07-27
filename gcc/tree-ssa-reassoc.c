@@ -3514,10 +3514,10 @@ maybe_optimize_range_tests (gimple *stmt)
 	     push into ops the individual range test arguments
 	     of the bitwise or resp. and, recursively.  */
 	  if (TREE_CODE (rhs) == SSA_NAME
-	      && !get_ops (rhs, code, &ops,
-			loop_containing_stmt (stmt))
 	      && (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
 		  != tcc_comparison)
+	      && !get_ops (rhs, code, &ops,
+			loop_containing_stmt (stmt))
 	      && has_single_use (rhs))
 	    {
 	      /* Otherwise, push the _234 range test itself.  */
