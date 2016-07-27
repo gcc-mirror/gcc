@@ -1,5 +1,11 @@
 2016-07-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/72517
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences):
+	Revert change to not compute read-read dependences.
+
+2016-07-27  Richard Biener  <rguenther@suse.de>
+
 	* predict.c (set_even_probabilities): Make nedges unsigned.
 
 2016-07-27  Martin Liska  <mliska@suse.cz>
