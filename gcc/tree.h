@@ -5425,16 +5425,6 @@ type_with_alias_set_p (const_tree t)
   return false;
 }
 
-extern location_t get_pure_location (location_t loc);
-
-/* Get the endpoint of any range encoded within location LOC.  */
-
-static inline location_t
-get_finish (location_t loc)
-{
-  return get_range_from_loc (line_table, loc).m_finish;
-}
-
 extern location_t set_block (location_t loc, tree block);
 
 extern void gt_ggc_mx (tree &);
@@ -5456,9 +5446,6 @@ get_decl_source_range (tree decl)
   location_t loc = DECL_SOURCE_LOCATION (decl);
   return get_range_from_loc (line_table, loc);
 }
-
-extern location_t
-make_location (location_t caret, location_t start, location_t finish);
 
 /* Return true if it makes sense to promote/demote from_type to to_type. */
 inline bool
