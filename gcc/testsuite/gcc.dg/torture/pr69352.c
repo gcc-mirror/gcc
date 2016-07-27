@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-#include <stdint.h>
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
 
 int a[10][14], b, c, d, e, f, g, h, i;
 void bar (void);

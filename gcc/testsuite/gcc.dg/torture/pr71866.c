@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-ftree-pre -fcode-hoisting" } */
 
-#include <stdint.h>
+__extension__ typedef __UINTPTR_TYPE__ uintptr_t;
+
 typedef unsigned char u8;
 extern unsigned long pci_io_base;
 u8 in_8 (const volatile void *);
@@ -26,7 +27,7 @@ u8 readb (const volatile void * addr)
 static inline
 u8 inb (unsigned long port)
 {
-  return readb((volatile void *)(intptr_t)pci_io_base + port);
+  return readb((volatile void *)(uintptr_t)pci_io_base + port);
 }
 static inline
 void outb (u8 val, unsigned long port)
