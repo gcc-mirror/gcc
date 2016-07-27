@@ -195,6 +195,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && ! HONOR_INFINITIES (type))
   { build_minus_one_cst (type); }))
 
+/* PR71078: x / abs(x) -> copysign (1.0, x) */
+(simplify
+ (rdiv:C (convert? @0) (convert? (abs @0)))
+  (if (SCALAR_FLOAT_TYPE_P (type)
+       && ! HONOR_NANS (type)
+       && ! HONOR_INFINITIES (type))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF { build_one_cst (type); } (convert @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN { build_one_cst (type); } (convert @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL { build_one_cst (type); } (convert @0))))))
+
 /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
 (simplify
  (rdiv @0 real_onep)
