@@ -785,9 +785,13 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
 }
 
 /* We can not predict the probabilities of outgoing edges of bb.  Set them
-   evenly and hope for the best.  */
+   evenly and hope for the best.  If UNLIKELY_EDGES is not null, distribute
+   even probability for all edges not mentioned in the set.  These edges
+   are given PROB_VERY_UNLIKELY probability.  */
+
 static void
-set_even_probabilities (basic_block bb)
+set_even_probabilities (basic_block bb,
+			hash_set<edge> *unlikely_edges = NULL)
 {
   int nedges = 0;
   edge e;
@@ -796,9 +800,25 @@ set_even_probabilities (basic_block bb)
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
       nedges ++;
+
+  /* Make the distribution even if all edges are unlikely.  */
+  unsigned unlikely_count = unlikely_edges ? unlikely_edges->elements () : 0;
+  if (unlikely_count == nedges)
+    {
+      unlikely_edges = NULL;
+      unlikely_count = 0;
+    }
+
+  unsigned c = nedges - unlikely_count;
+
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
-      e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
+      {
+	if (unlikely_edges != NULL && unlikely_edges->contains (e))
+	  e->probability = PROB_VERY_UNLIKELY;
+	else
+	  e->probability = (REG_BR_PROB_BASE + c / 2) / c;
+      }
     else
       e->probability = 0;
 }
@@ -1068,18 +1088,51 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 
   /* When there is no successor or only one choice, prediction is easy.
 
-     We are lazy for now and predict only basic blocks with two outgoing
-     edges.  It is possible to predict generic case too, but we have to
-     ignore first match heuristics and do more involved combining.  Implement
-     this later.  */
+     When we have a basic block with more than 2 successors, the situation
+     is more complicated as DS theory cannot be used literally.
+     More precisely, let's assume we predicted edge e1 with probability p1,
+     thus: m1({b1}) = p1.  As we're going to combine more than 2 edges, we
+     need to find probability of e.g. m1({b2}), which we don't know.
+     The only approximation is to equally distribute 1-p1 to all edges
+     different from b1.
+
+     According to numbers we've got from SPEC2006 benchark, there's only
+     one interesting reliable predictor (noreturn call), which can be
+     handled with a bit easier approach.  */
   if (nedges != 2)
     {
+      hash_set<edge> unlikely_edges (4);
+
+      /* Identify all edges that have a probability close to very unlikely.
+	 Doing the approach for very unlikely doesn't worth for doing as
+	 there's no such probability in SPEC2006 benchmark.  */
+      edge_prediction **preds = bb_predictions->get (bb);
+      if (preds)
+	for (pred = *preds; pred; pred = pred->ep_next)
+	  if (pred->ep_probability <= PROB_VERY_UNLIKELY)
+	    unlikely_edges.add (pred->ep_edge);
+
       if (!bb->count && !dry_run)
-	set_even_probabilities (bb);
+	set_even_probabilities (bb, &unlikely_edges);
       clear_bb_predictions (bb);
       if (dump_file)
-	fprintf (dump_file, "%i edges in bb %i predicted to even probabilities\n",
-		 nedges, bb->index);
+	{
+	  fprintf (dump_file, "Predictions for bb %i\n", bb->index);
+	  if (unlikely_edges.elements () == 0)
+	    fprintf (dump_file,
+		     "%i edges in bb %i predicted to even probabilities\n",
+		     nedges, bb->index);
+	  else
+	    {
+	      fprintf (dump_file,
+		       "%i edges in bb %i predicted with some unlikely edges\n",
+		       nedges, bb->index);
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+		  dump_prediction (dump_file, PRED_COMBINED, e->probability,
+		   bb, REASON_NONE, e);
+	    }
+	}
       return;
     }
 
