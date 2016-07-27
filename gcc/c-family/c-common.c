@@ -7679,7 +7679,7 @@ check_user_alignment (const_tree align, bool allow_zero)
       error ("requested alignment is not a positive power of 2");
       return -1;
     }
-  else if (i >= HOST_BITS_PER_INT - BITS_PER_UNIT_LOG)
+  else if (i >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
     {
       error ("requested alignment is too large");
       return -1;

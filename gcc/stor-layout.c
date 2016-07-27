@@ -2572,7 +2572,7 @@ initialize_sizetypes (void)
     }
 
   bprecision
-    = MIN (precision + BITS_PER_UNIT_LOG + 1, MAX_FIXED_MODE_SIZE);
+    = MIN (precision + LOG2_BITS_PER_UNIT + 1, MAX_FIXED_MODE_SIZE);
   bprecision
     = GET_MODE_PRECISION (smallest_mode_for_size (bprecision, MODE_INT));
   if (bprecision > HOST_BITS_PER_DOUBLE_INT)

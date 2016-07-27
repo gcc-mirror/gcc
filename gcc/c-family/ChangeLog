@@ -1,3 +1,8 @@
+2016-07-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (check_user_alignment): Use LOG2_BITS_PER_UNIT instead of
+	BITS_PER_UNIT_LOG.
+
 2016-07-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65970
