@@ -1,3 +1,12 @@
+2016-07-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71869
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Rework
+	__float128 support when we don't have hardware support, so that
+	the IEEE built-in functions like isgreater, first call __unordkf3
+	to make sure neither operand is a NaN, and if both operands are
+	ordered, do the normal comparison.
+
 2016-07-26  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-vrp.c (dump_asserts_for): Print loc->expr instead of
