@@ -1,3 +1,10 @@
+2016-07-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71869
+	* gcc.target/powerpc/float128-cmp.c: New test to make sure that
+	IEEE built-in functions handle quiet and signalling NaNs
+	correctly.
+
 2016-07-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71862

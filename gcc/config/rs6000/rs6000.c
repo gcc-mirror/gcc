@@ -21756,8 +21756,8 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   else if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
     {
       rtx libfunc = NULL_RTX;
-      bool uneq_or_ltgt = false;
-      rtx dest = gen_reg_rtx (SImode);
+      bool check_nan = false;
+      rtx dest;
 
       switch (code)
 	{
@@ -21784,21 +21784,23 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 
 	case UNGE:
 	case UNGT:
-	  libfunc = optab_libfunc (le_optab, mode);
+	  check_nan = true;
+	  libfunc = optab_libfunc (ge_optab, mode);
 	  code = (code == UNGE) ? GE : GT;
 	  break;
 
 	case UNLE:
 	case UNLT:
-	  libfunc = optab_libfunc (ge_optab, mode);
+	  check_nan = true;
+	  libfunc = optab_libfunc (le_optab, mode);
 	  code = (code == UNLE) ? LE : LT;
 	  break;
 
 	case UNEQ:
 	case LTGT:
-	  libfunc = optab_libfunc (le_optab, mode);
-	  uneq_or_ltgt = true;
-	  code = (code = UNEQ) ? NE : EQ;
+	  check_nan = true;
+	  libfunc = optab_libfunc (eq_optab, mode);
+	  code = (code = UNEQ) ? EQ : NE;
 	  break;
 
 	default:
@@ -21806,21 +21808,56 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	}
 
       gcc_assert (libfunc);
-      dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-				      SImode, 2, op0, mode, op1, mode);
 
-      /* If this is UNEQ or LTGT, we call __lekf2, which returns -1 for less
-	 than, 0 for equal, +1 for greater, and +2 for nan.  We add 1, to give
-	 a value of 0..3, and then do and AND immediate of 1 to isolate whether
-	 it is 0/Nan (i.e. bottom bit is 0), or less than/greater than
-	 (i.e. bottom bit is 1).  */
-      if (uneq_or_ltgt)
+      if (!check_nan)
+	dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
+					SImode, 2, op0, mode, op1, mode);
+
+      /* The library signals an exception for signalling NaNs, so we need to
+	 handle isgreater, etc. by first checking isordered.  */
+      else
 	{
-	  rtx add_result = gen_reg_rtx (SImode);
-	  rtx and_result = gen_reg_rtx (SImode);
-	  emit_insn (gen_addsi3 (add_result, dest, GEN_INT (1)));
-	  emit_insn (gen_andsi3 (and_result, add_result, GEN_INT (1)));
-	  dest = and_result;
+	  rtx ne_rtx, normal_dest, unord_dest;
+	  rtx unord_func = optab_libfunc (unord_optab, mode);
+	  rtx join_label = gen_label_rtx ();
+	  rtx join_ref = gen_rtx_LABEL_REF (VOIDmode, join_label);
+	  rtx unord_cmp = gen_reg_rtx (comp_mode);
+
+
+	  /* Test for either value being a NaN.  */
+	  gcc_assert (unord_func);
+	  unord_dest = emit_library_call_value (unord_func, NULL_RTX, LCT_CONST,
+						SImode, 2, op0, mode, op1,
+						mode);
+
+	  /* Set value (0) if either value is a NaN, and jump to the join
+	     label.  */
+	  dest = gen_reg_rtx (SImode);
+	  emit_move_insn (dest, const1_rtx);
+	  emit_insn (gen_rtx_SET (unord_cmp,
+				  gen_rtx_COMPARE (comp_mode, unord_dest,
+						   const0_rtx)));
+
+	  ne_rtx = gen_rtx_NE (comp_mode, unord_cmp, const0_rtx);
+	  emit_jump_insn (gen_rtx_SET (pc_rtx,
+				       gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
+							     join_ref,
+							     pc_rtx)));
+
+	  /* Do the normal comparison, knowing that the values are not
+	     NaNs.  */
+	  normal_dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
+						 SImode, 2, op0, mode, op1,
+						 mode);
+
+	  emit_insn (gen_cstoresi4 (dest,
+				    gen_rtx_fmt_ee (code, SImode, normal_dest,
+						    const0_rtx),
+				    normal_dest, const0_rtx));
+
+	  /* Join NaN and non-Nan paths.  Compare dest against 0.  */
+	  emit_label (join_label);
+	  code = NE;
 	}
 
       emit_insn (gen_rtx_SET (compare_result,
