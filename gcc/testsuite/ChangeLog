@@ -1,3 +1,8 @@
+2016-07-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/predict-13.c: New test.
+	* gcc.dg/predict-14.c: New test.
+
 2016-07-27  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/torture/pr69352.c: Use  __INTPTR_TYPE__ instead of 
