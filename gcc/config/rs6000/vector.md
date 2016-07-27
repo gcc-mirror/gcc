@@ -858,8 +858,7 @@
    (match_operand 2 "const_int_operand" "")]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
-  rs6000_expand_vector_extract (operands[0], operands[1],
-				INTVAL (operands[2]));
+  rs6000_expand_vector_extract (operands[0], operands[1], operands[2]);
   DONE;
 })
 

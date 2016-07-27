@@ -2781,7 +2781,7 @@
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4s<VI_char>s (vtmp1, operands[1], vzero));
   emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
-  rs6000_expand_vector_extract (operands[0], vtmp2, elt);
+  rs6000_expand_vector_extract (operands[0], vtmp2, GEN_INT (elt));
   DONE;
 })
 

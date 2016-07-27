@@ -1,3 +1,16 @@
+2016-07-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_extract<mode>): Change the calling
+	signature of rs6000_expand_vector_extract so that the element
+	number is a RTX instead of a constant integer.
+	* config/rs6000/rs6000-protos.h (rs6000_expand_vector_extract):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Likewise.
+	(altivec_expand_vec_ext_builtin): Likewise.
+	* config/rs6000/altivec.md (reduc_plus_scal_<mode>): Likewise.
+	* config/rs6000/vsx.md (vsx_extract_<mode>): Fix spelling of the
+	MFVSRLD instruction.
+
 2016-07-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (get_pure_location): Move here from tree.c.
