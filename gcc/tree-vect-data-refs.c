@@ -473,9 +473,10 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo, int *max_vf)
     .create (LOOP_VINFO_DATAREFS (loop_vinfo).length ()
 	     * LOOP_VINFO_DATAREFS (loop_vinfo).length ());
   LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = true;
+  /* We need read-read dependences to compute STMT_VINFO_SAME_ALIGN_REFS.  */
   if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
 				&LOOP_VINFO_DDRS (loop_vinfo),
-				LOOP_VINFO_LOOP_NEST (loop_vinfo), false))
+				LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
     return false;
 
   FOR_EACH_VEC_ELT (LOOP_VINFO_DDRS (loop_vinfo), i, ddr)
