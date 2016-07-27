@@ -61,7 +61,7 @@ extern void convert_int_to_float128 (rtx *, enum rtx_code);
 extern void rs6000_expand_vector_init (rtx, rtx);
 extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
-extern void rs6000_expand_vector_extract (rtx, rtx, int);
+extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern bool rs6000_expand_vec_perm_const (rtx op[4]);

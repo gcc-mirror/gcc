@@ -6911,35 +6911,35 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
 /* Extract field ELT from VEC into TARGET.  */
 
 void
-rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
+rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 {
   machine_mode mode = GET_MODE (vec);
   machine_mode inner_mode = GET_MODE_INNER (mode);
   rtx mem;
 
-  if (VECTOR_MEM_VSX_P (mode))
+  if (VECTOR_MEM_VSX_P (mode) && CONST_INT_P (elt))
     {
       switch (mode)
 	{
 	default:
 	  break;
 	case V1TImode:
-	  gcc_assert (elt == 0 && inner_mode == TImode);
+	  gcc_assert (INTVAL (elt) == 0 && inner_mode == TImode);
 	  emit_move_insn (target, gen_lowpart (TImode, vec));
 	  break;
 	case V2DFmode:
-	  emit_insn (gen_vsx_extract_v2df (target, vec, GEN_INT (elt)));
+	  emit_insn (gen_vsx_extract_v2df (target, vec, elt));
 	  return;
 	case V2DImode:
-	  emit_insn (gen_vsx_extract_v2di (target, vec, GEN_INT (elt)));
+	  emit_insn (gen_vsx_extract_v2di (target, vec, elt));
 	  return;
 	case V4SFmode:
-	  emit_insn (gen_vsx_extract_v4sf (target, vec, GEN_INT (elt)));
+	  emit_insn (gen_vsx_extract_v4sf (target, vec, elt));
 	  return;
 	case V16QImode:
 	  if (TARGET_VEXTRACTUB)
 	    {
-	      emit_insn (gen_vsx_extract_v16qi (target, vec, GEN_INT (elt)));
+	      emit_insn (gen_vsx_extract_v16qi (target, vec, elt));
 	      return;
 	    }
 	  else
@@ -6947,7 +6947,7 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
 	case V8HImode:
 	  if (TARGET_VEXTRACTUB)
 	    {
-	      emit_insn (gen_vsx_extract_v8hi (target, vec, GEN_INT (elt)));
+	      emit_insn (gen_vsx_extract_v8hi (target, vec, elt));
 	      return;
 	    }
 	  else
@@ -6955,7 +6955,7 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
 	case V4SImode:
 	  if (TARGET_VEXTRACTUB)
 	    {
-	      emit_insn (gen_vsx_extract_v4si (target, vec, GEN_INT (elt)));
+	      emit_insn (gen_vsx_extract_v4si (target, vec, elt));
 	      return;
 	    }
 	  else
@@ -6963,13 +6963,16 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
 	}
     }
 
+  gcc_assert (CONST_INT_P (elt));
+
   /* Allocate mode-sized buffer.  */
   mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
 
   emit_move_insn (mem, vec);
 
   /* Add offset to field within buffer matching vector element.  */
-  mem = adjust_address_nv (mem, inner_mode, elt * GET_MODE_SIZE (inner_mode));
+  mem = adjust_address_nv (mem, inner_mode,
+			   INTVAL (elt) * GET_MODE_SIZE (inner_mode));
 
   emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
 }
@@ -14658,14 +14661,18 @@ altivec_expand_vec_ext_builtin (tree exp, rtx target)
 {
   machine_mode tmode, mode0;
   tree arg0, arg1;
-  int elt;
   rtx op0;
+  rtx op1;
 
   arg0 = CALL_EXPR_ARG (exp, 0);
   arg1 = CALL_EXPR_ARG (exp, 1);
 
   op0 = expand_normal (arg0);
-  elt = get_element_number (TREE_TYPE (arg0), arg1);
+  op1 = expand_normal (arg1);
+
+  /* Call get_element_number to validate arg1 if it is a constant.  */
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    (void) get_element_number (TREE_TYPE (arg0), arg1);
 
   tmode = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
   mode0 = TYPE_MODE (TREE_TYPE (arg0));
@@ -14676,7 +14683,7 @@ altivec_expand_vec_ext_builtin (tree exp, rtx target)
   if (optimize || !target || !register_operand (target, tmode))
     target = gen_reg_rtx (tmode);
 
-  rs6000_expand_vector_extract (target, op0, elt);
+  rs6000_expand_vector_extract (target, op0, op1);
 
   return target;
 }

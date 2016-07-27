@@ -2159,7 +2159,7 @@
 
   else if (element == VECTOR_ELEMENT_MFVSRLD_64BIT && INT_REGNO_P (op0_regno)
 	   && TARGET_P9_VECTOR && TARGET_POWERPC64 && TARGET_DIRECT_MOVE)
-    return "mfvsrdl %0,%x1";
+    return "mfvsrld %0,%x1";
 
   else if (VSX_REGNO_P (op0_regno))
     {
