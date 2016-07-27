@@ -1,3 +1,7 @@
+2016-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/forward/1_neg.cc: Move dg-error to right line.
+
 2016-07-25  Georeth Chow  <georeth2010@gmail.com>
 
 	* include/ext/ropeimpl.h (rope<>::_S_dump(_RopeRep*, int)): Qualify
