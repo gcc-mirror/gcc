@@ -76,6 +76,19 @@ extern location_t input_location;
 #define from_macro_expansion_at(LOC) \
   ((linemap_location_from_macro_expansion_p (line_table, LOC)))
 
+extern location_t get_pure_location (location_t loc);
+
+/* Get the endpoint of any range encoded within location LOC.  */
+
+static inline location_t
+get_finish (location_t loc)
+{
+  return get_range_from_loc (line_table, loc).m_finish;
+}
+
+extern location_t make_location (location_t caret,
+				 location_t start, location_t finish);
+
 void dump_line_table_statistics (void);
 
 void dump_location_info (FILE *stream);

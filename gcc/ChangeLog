@@ -1,3 +1,19 @@
+2016-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (get_pure_location): Move here from tree.c.
+	(make_location): Likewise.  Add header comment.
+	(selftest::test_accessing_ordinary_linemaps): Verify
+	pure_location_p, make_location, get_location_from_adhoc_loc and
+	get_range_from_loc.
+	* input.h (get_pure_location): Move declaration here from tree.h.
+	(get_finish): Likewise for inline function.
+	(make_location): Likewise for declaration.
+	* tree.c (get_pure_location): Move to input.c.
+	(make_location): Likewise.
+	* tree.h (get_pure_location): Move declaration to tree.h.
+	(get_finish): Likewise for inline function.
+	(make_location): Likewise for declaration.
+
 2016-07-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/71078

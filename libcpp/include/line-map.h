@@ -227,10 +227,10 @@ typedef unsigned int linenum_type;
 
                  11111111112
         12345678901234567890
-     521
+     522
      523   return foo + bar;
                   ~~~~^~~~~
-     523
+     524
 
    The location's caret is at the "+", line 523 column 15, but starts
    earlier, at the "f" of "foo" at column 11.  The finish is at the "r"
