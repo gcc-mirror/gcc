@@ -1,3 +1,10 @@
+2016-07-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/71078
+	* gcc.dg/tree-ssa/pr71078-1.c: New test-case.
+	* gcc.dg/tree-ssa/pr71078-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-3.c: Likewise.
+
 2016-07-27  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/costmodel/x86_64/costmodel-pr68961.c: Remove.
