@@ -1,3 +1,11 @@
+2016-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71747
+	* pt.c (get_partial_spec_bindings): Replace tparms and spec_args
+	parameters with spec_tmpl.  Call push_tinst_level.
+	(most_specialized_partial_spec): Adjust.
+	(more_specialized_partial_spec): Adjust.
+
 2016-07-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65970
