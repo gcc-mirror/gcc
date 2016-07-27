@@ -1,3 +1,8 @@
+2016-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* system.h (STATIC_ASSERT): Use static_assert if building
+	with C++11 onwards.
+
 2016-07-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/72517
