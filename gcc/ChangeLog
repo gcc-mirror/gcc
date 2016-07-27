@@ -1,3 +1,7 @@
+2016-07-27  Richard Biener  <rguenther@suse.de>
+
+	* predict.c (set_even_probabilities): Make nedges unsigned.
+
 2016-07-27  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (set_even_probabilities): Handle unlikely edges.
