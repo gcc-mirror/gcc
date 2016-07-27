@@ -491,14 +491,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    your target, you should override these values by defining the
    appropriate symbols in your tm.h file.  */
 
-#if BITS_PER_UNIT == 8
-#define LOG2_BITS_PER_UNIT 3
-#elif BITS_PER_UNIT == 16
-#define LOG2_BITS_PER_UNIT 4
-#else
-#error Unknown BITS_PER_UNIT
-#endif
-
 #ifndef BITS_PER_WORD
 #define BITS_PER_WORD (BITS_PER_UNIT * UNITS_PER_WORD)
 #endif

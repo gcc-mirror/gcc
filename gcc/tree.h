@@ -4235,6 +4235,8 @@ extern tree bit_position (const_tree);
 extern tree byte_position (const_tree);
 extern HOST_WIDE_INT int_byte_position (const_tree);
 
+/* Type for sizes of data-type.  */
+
 #define sizetype sizetype_tab[(int) stk_sizetype]
 #define bitsizetype sizetype_tab[(int) stk_bitsizetype]
 #define ssizetype sizetype_tab[(int) stk_ssizetype]
@@ -4244,12 +4246,15 @@ extern HOST_WIDE_INT int_byte_position (const_tree);
 #define bitsize_int(L) size_int_kind (L, stk_bitsizetype)
 #define sbitsize_int(L) size_int_kind (L, stk_sbitsizetype)
 
-/* Type for sizes of data-type.  */
+/* Log2 of BITS_PER_UNIT.  */
 
-#define BITS_PER_UNIT_LOG \
-  ((BITS_PER_UNIT > 1) + (BITS_PER_UNIT > 2) + (BITS_PER_UNIT > 4) \
-   + (BITS_PER_UNIT > 8) + (BITS_PER_UNIT > 16) + (BITS_PER_UNIT > 32) \
-   + (BITS_PER_UNIT > 64) + (BITS_PER_UNIT > 128) + (BITS_PER_UNIT > 256))
+#if BITS_PER_UNIT == 8
+#define LOG2_BITS_PER_UNIT 3
+#elif BITS_PER_UNIT == 16
+#define LOG2_BITS_PER_UNIT 4
+#else
+#error Unknown BITS_PER_UNIT
+#endif
 
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y
    by making the last node in X point to Y.
@@ -5400,8 +5405,8 @@ extern GTY(()) struct int_n_trees_t int_n_trees[NUM_INT_N_ENTS];
 
 inline HOST_WIDE_INT
 int_bit_position (const_tree field)
-{ 
-  return ((wi::to_offset (DECL_FIELD_OFFSET (field)) << BITS_PER_UNIT_LOG)
+{
+  return ((wi::to_offset (DECL_FIELD_OFFSET (field)) << LOG2_BITS_PER_UNIT)
 	  + wi::to_offset (DECL_FIELD_BIT_OFFSET (field))).to_shwi ();
 }
 

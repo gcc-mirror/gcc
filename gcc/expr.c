@@ -4990,8 +4990,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       if (bitpos < 0)
 	{
 	  gcc_assert (offset == NULL_TREE);
-	  offset = size_int (bitpos >> (BITS_PER_UNIT == 8
-					? 3 : exact_log2 (BITS_PER_UNIT)));
+	  offset = size_int (bitpos >> LOG2_BITS_PER_UNIT);
 	  bitpos &= BITS_PER_UNIT - 1;
 	}
 
