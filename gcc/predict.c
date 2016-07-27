@@ -793,7 +793,7 @@ static void
 set_even_probabilities (basic_block bb,
 			hash_set<edge> *unlikely_edges = NULL)
 {
-  int nedges = 0;
+  unsigned nedges = 0;
   edge e;
   edge_iterator ei;
 
