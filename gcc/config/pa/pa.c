@@ -117,7 +117,7 @@ static bool pa_function_value_regno_p (const unsigned int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static int pa_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int pa_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int pa_adjust_priority (rtx_insn *, int);
 static int pa_issue_rate (void);
 static int pa_reloc_rw_mask (void);
@@ -4759,13 +4759,14 @@ pa_emit_bcond_fp (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-pa_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+pa_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		unsigned int)
 {
   enum attr_type attr_type;
 
   /* Don't adjust costs for a pa8000 chip, also do not adjust any
      true dependencies as they are described with bypasses now.  */
-  if (pa_cpu >= PROCESSOR_8000 || REG_NOTE_KIND (link) == 0)
+  if (pa_cpu >= PROCESSOR_8000 || dep_type == 0)
     return cost;
 
   if (! recog_memoized (insn))
@@ -4773,7 +4774,7 @@ pa_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   attr_type = get_attr_type (insn);
 
-  switch (REG_NOTE_KIND (link))
+  switch (dep_type)
     {
     case REG_DEP_ANTI:
       /* Anti dependency; DEP_INSN reads a register that INSN writes some

@@ -4758,14 +4758,15 @@ alpha_split_atomic_exchange_12 (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-alpha_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+alpha_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		   unsigned int)
 {
   enum attr_type dep_insn_type;
 
   /* If the dependence is an anti-dependence, there is no cost.  For an
      output dependence, there is sometimes a cost, but it doesn't seem
      worth handling those few cases.  */
-  if (REG_NOTE_KIND (link) != 0)
+  if (dep_type != 0)
     return cost;
 
   /* If we can't recognize the insns, we can't really do anything.  */

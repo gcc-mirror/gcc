@@ -1,5 +1,41 @@
 2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/alpha/alpha.c (alpha_adjust_cost): Adjust.
+	* config/arm/arm-protos.h (struct tune_params): Likewise.
+	* config/arm/arm.c (xscale_sched_adjust_cost): Likewise.
+	(cortex_a9_sched_adjust_cost): Likewise.
+	(fa726te_sched_adjust_cost): Likewise.
+	(arm_adjust_cost): Likewise.
+	* config/bfin/bfin.c (bfin_adjust_cost): Likewise.
+	* config/c6x/c6x.c (c6x_adjust_cost): Likewise.
+	* config/epiphany/epiphany.c (epiphany_adjust_cost): Likewise.
+	* config/i386/i386.c (ix86_adjust_cost): Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/mep/mep.c (mep_adjust_cost): Likewise.
+	* config/microblaze/microblaze.c (microblaze_adjust_cost):
+	* Likewise.
+	* config/mips/mips.c (mips_adjust_cost): Likewise.
+	* config/mn10300/mn10300.c (mn10300_adjust_sched_cost):
+	* Likewise.
+	* config/pa/pa.c (pa_adjust_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Likewise.
+	(rs6000_debug_adjust_cost): Likewise.
+	* config/sh/sh.c (sh_adjust_cost): Likewise.
+	* config/sparc/sparc.c (supersparc_adjust_cost): Likewise.
+	(hypersparc_adjust_cost): Likewise.
+	(sparc_adjust_cost): Likewise.
+	* config/spu/spu.c (spu_sched_adjust_cost): Likewise.
+	* config/tilegx/tilegx.c (tilegx_sched_adjust_cost): Likewise.
+	* config/tilepro/tilepro.c (tilepro_sched_adjust_cost):
+	* Likewise.
+	* config/visium/visium.c (visium_adjust_cost): Likewise.
+	* doc/tm.texi: Regenerate.
+	* haifa-sched.c (dep_cost_1): Adjust.
+	* target.def: Merge adjust_cost and adjust_cost_2.
+
+2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* haifa-sched.c (add_to_speculative_block): Make twins a vector.
 
 2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

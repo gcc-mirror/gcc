@@ -260,7 +260,7 @@ struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   const struct cpu_cost_table *insn_extra_cost;
-  bool (*sched_adjust_cost) (rtx_insn *, rtx, rtx_insn *, int *);
+  bool (*sched_adjust_cost) (rtx_insn *, int, rtx_insn *, int *);
   int (*branch_cost) (bool, bool);
   /* Vectorizer costs.  */
   const struct cpu_vec_costs* vec_costs;

@@ -2758,7 +2758,8 @@ set_is_store_p (rtx set)
    COST is the current cycle cost for DEP.  */
 
 static int
-mn10300_adjust_sched_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
+mn10300_adjust_sched_cost (rtx_insn *insn, int dep_type, rtx_insn *dep,
+			   int cost, unsigned int)
 {
   rtx insn_set;
   rtx dep_set;
@@ -2807,7 +2808,7 @@ mn10300_adjust_sched_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
     return cost;
 
   /* If a data dependence already exists then the cost is correct.  */
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     return cost;
 
   /* Check that the instruction about to scheduled is an FPU instruction.  */

@@ -545,8 +545,8 @@ static void sparc_init_modes (void);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, machine_mode,
 				const_tree, bool, bool, int *, int *);
 
-static int supersparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
-static int hypersparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int supersparc_adjust_cost (rtx_insn *, int, rtx_insn *, int);
+static int hypersparc_adjust_cost (rtx_insn *, int, rtx_insn *, int);
 
 static void sparc_emit_set_const32 (rtx, rtx);
 static void sparc_emit_set_const64 (rtx, rtx);
@@ -565,7 +565,7 @@ static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sparc_solaris_elf_asm_named_section (const char *, unsigned int,
 						 tree) ATTRIBUTE_UNUSED;
 #endif
-static int sparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int sparc_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int sparc_issue_rate (void);
 static void sparc_sched_init (FILE *, int, int);
 static int sparc_use_sched_lookahead (void);
@@ -9353,7 +9353,8 @@ sparc_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+supersparc_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+			int cost)
 {
   enum attr_type insn_type;
 
@@ -9362,7 +9363,7 @@ supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   insn_type = get_attr_type (insn);
 
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     {
       /* Data dependency; DEP_INSN writes a register that INSN reads some
 	 cycles later.  */
@@ -9414,7 +9415,8 @@ supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 }
 
 static int
-hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+hypersparc_adjust_cost (rtx_insn *insn, int dtype, rtx_insn *dep_insn,
+			int cost)
 {
   enum attr_type insn_type, dep_type;
   rtx pat = PATTERN(insn);
@@ -9426,7 +9428,7 @@ hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
   insn_type = get_attr_type (insn);
   dep_type = get_attr_type (dep_insn);
 
-  switch (REG_NOTE_KIND (link))
+  switch (dtype)
     {
     case 0:
       /* Data dependency; DEP_INSN writes a register that INSN reads some
@@ -9491,16 +9493,17 @@ hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 }
 
 static int
-sparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
+sparc_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep, int cost,
+		   unsigned int)
 {
   switch (sparc_cpu)
     {
     case PROCESSOR_SUPERSPARC:
-      cost = supersparc_adjust_cost (insn, link, dep, cost);
+      cost = supersparc_adjust_cost (insn, dep_type, dep, cost);
       break;
     case PROCESSOR_HYPERSPARC:
     case PROCESSOR_SPARCLITE86X:
-      cost = hypersparc_adjust_cost (insn, link, dep, cost);
+      cost = hypersparc_adjust_cost (insn, dep_type, dep, cost);
       break;
     default:
       break;

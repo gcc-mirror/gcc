@@ -3944,15 +3944,15 @@ get_jump_target (rtx branch)
 
 /* Implement TARGET_SCHED_ADJUST_COST.  */
 static int
-tilepro_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
-			   int cost)
+tilepro_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+			   int cost, unsigned int)
 {
   /* If we have a true dependence, INSN is a call, and DEP_INSN
      defines a register that is needed by the call (argument or stack
      pointer), set its latency to 0 so that it can be bundled with
      the call.  Explicitly check for and exclude the case when
      DEP_INSN defines the target of the jump.  */
-  if (CALL_P (insn) && REG_NOTE_KIND (link) == REG_DEP_TRUE)
+  if (CALL_P (insn) && dep_type == REG_DEP_TRUE)
     {
       rtx target = get_jump_target (insn);
       if (!REG_P (target) || !set_of (target, dep_insn))

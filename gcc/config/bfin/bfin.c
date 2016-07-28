@@ -3301,13 +3301,14 @@ bfin_issue_rate (void)
 }
 
 static int
-bfin_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+bfin_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		  unsigned int)
 {
   enum attr_type dep_insn_type;
   int dep_insn_code_number;
 
   /* Anti and output dependencies have zero cost.  */
-  if (REG_NOTE_KIND (link) != 0)
+  if (dep_type != 0)
     return 0;
 
   dep_insn_code_number = recog_memoized (dep_insn);

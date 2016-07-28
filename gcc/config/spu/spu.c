@@ -2983,7 +2983,8 @@ spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 
 /* INSN is dependent on DEP_INSN. */
 static int
-spu_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+spu_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+		       int cost, unsigned int)
 {
   rtx set;
 
@@ -3044,7 +3045,7 @@ spu_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
      scheduler makes every insn in a block anti-dependent on the final
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
-  if (JUMP_P (insn) && REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (JUMP_P (insn) && dep_type == REG_DEP_ANTI)
     return insn_cost (dep_insn) - 3;
 
   return cost;

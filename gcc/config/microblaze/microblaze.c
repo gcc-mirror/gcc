@@ -3561,14 +3561,12 @@ microblaze_function_value (const_tree valtype,
 
 /* Implement TARGET_SCHED_ADJUST_COST.  */
 static int
-microblaze_adjust_cost (rtx_insn *insn ATTRIBUTE_UNUSED, rtx link,
-			rtx_insn *dep ATTRIBUTE_UNUSED, int cost)
+microblaze_adjust_cost (rtx_insn *, int dep_type, rtx_insn *, int cost,
+			unsigned int)
 {
-  if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+  if (dep_type == REG_DEP_OUTPUT || dep_type == 0)
     return cost;
-  if (REG_NOTE_KIND (link) != 0)
-    return 0;
-  return cost;
+  return 0;
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.

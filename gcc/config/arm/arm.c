@@ -138,7 +138,7 @@ static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
-static int arm_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int arm_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int arm_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static int optimal_immediate_sequence (enum rtx_code code,
 				       unsigned HOST_WIDE_INT val,
@@ -257,9 +257,9 @@ static void arm_asm_trampoline_template (FILE *);
 static void arm_trampoline_init (rtx, tree, rtx);
 static rtx arm_trampoline_adjust_address (rtx);
 static rtx arm_pic_static_addr (rtx orig, rtx reg);
-static bool cortex_a9_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
-static bool xscale_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
-static bool fa726te_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int *);
+static bool cortex_a9_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
+static bool xscale_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
+static bool fa726te_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
 static bool arm_array_mode_supported_p (machine_mode,
 					unsigned HOST_WIDE_INT);
 static machine_mode arm_preferred_simd_mode (machine_mode);
@@ -11669,11 +11669,12 @@ arm_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Adjust cost hook for XScale.  */
 static bool
-xscale_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
+xscale_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep,
+			  int * cost)
 {
   /* Some true dependencies can have a higher cost depending
      on precisely how certain input operands are used.  */
-  if (REG_NOTE_KIND(link) == 0
+  if (dep_type == 0
       && recog_memoized (insn) >= 0
       && recog_memoized (dep) >= 0)
     {
@@ -11730,9 +11731,10 @@ xscale_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
 
 /* Adjust cost hook for Cortex A9.  */
 static bool
-cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
+cortex_a9_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep,
+			     int * cost)
 {
-  switch (REG_NOTE_KIND (link))
+  switch (dep_type)
     {
     case REG_DEP_ANTI:
       *cost = 0;
@@ -11772,7 +11774,7 @@ cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost
 			    && (attr_type_dep == TYPE_FMACS
 				|| attr_type_dep == TYPE_FMACD))
 			  {
-			    if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+			    if (dep_type == REG_DEP_OUTPUT)
 			      *cost = insn_default_latency (dep) - 3;
 			    else
 			      *cost = insn_default_latency (dep);
@@ -11780,7 +11782,7 @@ cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost
 			  }
 			else
 			  {
-			    if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+			    if (dep_type == REG_DEP_OUTPUT)
 			      *cost = insn_default_latency (dep) + 1;
 			    else
 			      *cost = insn_default_latency (dep);
@@ -11801,11 +11803,12 @@ cortex_a9_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost
 
 /* Adjust cost hook for FA726TE.  */
 static bool
-fa726te_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int * cost)
+fa726te_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep,
+			   int * cost)
 {
   /* For FA726TE, true dependency on CPSR (i.e. set cond followed by predicated)
      have penalty of 3.  */
-  if (REG_NOTE_KIND (link) == REG_DEP_TRUE
+  if (dep_type == REG_DEP_TRUE
       && recog_memoized (insn) >= 0
       && recog_memoized (dep) >= 0
       && get_attr_conds (dep) == CONDS_SET)
@@ -12149,7 +12152,8 @@ arm_sched_reorder (FILE *file, int verbose, rtx_insn **ready, int *n_readyp,
    adjust_cost function. Only put bits of code into arm_adjust_cost that
    are common across all cores.  */
 static int
-arm_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
+arm_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep, int cost,
+		 unsigned int)
 {
   rtx i_pat, d_pat;
 
@@ -12157,7 +12161,7 @@ arm_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
     close to a conditional branch which depends on them, so that we can
     omit the comparison. */
   if (TARGET_THUMB1
-      && REG_NOTE_KIND (link) == 0
+      && dep_type == 0
       && recog_memoized (insn) == CODE_FOR_cbranchsi4_insn
       && recog_memoized (dep) >= 0
       && get_attr_conds (dep) == CONDS_SET)
@@ -12165,17 +12169,17 @@ arm_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 
   if (current_tune->sched_adjust_cost != NULL)
     {
-      if (!current_tune->sched_adjust_cost (insn, link, dep, &cost))
+      if (!current_tune->sched_adjust_cost (insn, dep_type, dep, &cost))
 	return cost;
     }
 
   /* XXX Is this strictly true?  */
-  if (REG_NOTE_KIND (link) == REG_DEP_ANTI
-      || REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+  if (dep_type == REG_DEP_ANTI
+      || dep_type == REG_DEP_OUTPUT)
     return 0;
 
   /* Call insns don't incur a stall, even if they follow a load.  */
-  if (REG_NOTE_KIND (link) == 0
+  if (dep_type == 0
       && CALL_P (insn))
     return 1;
 

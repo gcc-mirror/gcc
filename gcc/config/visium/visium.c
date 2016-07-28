@@ -211,7 +211,7 @@ static int visium_issue_rate (void);
 
 static int visium_adjust_priority (rtx_insn *, int);
 
-static int visium_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int visium_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 
 static int visium_register_move_cost (enum machine_mode, reg_class_t,
 				      reg_class_t);
@@ -528,14 +528,15 @@ visium_adjust_priority (rtx_insn *insn, int priority)
    a dependency LINK of INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+visium_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		    unsigned int)
 {
   enum attr_type attr_type;
 
   /* Don't adjust costs for true dependencies as they are described with
      bypasses.  But we make an exception for the first scheduling pass to
      help the subsequent postreload compare elimination pass.  */
-  if (REG_NOTE_KIND (link) == REG_DEP_TRUE)
+  if (dep_type == REG_DEP_TRUE)
     {
       if (!reload_completed
 	  && recog_memoized (insn) >= 0
@@ -576,7 +577,7 @@ visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   /* Anti dependency: DEP_INSN reads a register that INSN writes some
      cycles later.  */
-  if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (dep_type == REG_DEP_ANTI)
     {
       /* On the GR5, the latency of FP instructions needs to be taken into
 	 account for every dependency involving a write.  */
@@ -637,7 +638,7 @@ visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   /* Output dependency: DEP_INSN writes a register that INSN writes some
      cycles later.  */
-  else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+  else if (dep_type == REG_DEP_OUTPUT)
     {
       /* On the GR5, the latency of FP instructions needs to be taken into
 	 account for every dependency involving a write.  */
