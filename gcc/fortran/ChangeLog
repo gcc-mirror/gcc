@@ -1,5 +1,11 @@
 2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/71799
+	* resolve.c(gfc_resolve_iterator): Failure of type conversion need
+	not ICE.
+
+2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/71859
 	* check.c(numeric_check): Prevent ICE.  Issue error for invalid
 	subroutine as an actual argument when numeric argument is expected.
