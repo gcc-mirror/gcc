@@ -1,3 +1,11 @@
+2016-07-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_pushwb_pair_reg): Rename.
+	(aarch64_push_reg): New function to push 1 or 2 registers.
+	(aarch64_pop_reg): New function to pop 1 or 2 registers.
+	(aarch64_expand_prologue): Use aarch64_push_regs.
+	(aarch64_expand_epilogue): Use aarch64_pop_regs.
+
 2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71734
