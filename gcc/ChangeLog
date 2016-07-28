@@ -1,3 +1,7 @@
+2016-07-28  Kristina Martsenko  <kristina.martsenko@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Fix cost of zero extend.
+
 2016-07-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_pushwb_pair_reg): Rename.
