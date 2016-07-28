@@ -1,3 +1,14 @@
+2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* store-motion.c (struct st_expr): Make pattern_regs a vector.
+	(extract_mentioned_regs): Append to a vector instead of
+	returning a rtx_expr_list.
+	(st_expr_entry): Adjust.
+	(free_st_expr_entry): Likewise.
+	(store_ops_ok): Likewise.
+	(store_killed_in_insn): Likewise.
+	(find_moveable_store): Likewise.
+
 2016-07-28  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/68025
