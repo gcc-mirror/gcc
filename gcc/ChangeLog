@@ -1,4 +1,17 @@
 2016-07-28  Kristina Martsenko  <kristina.martsenko@arm.com>
+2016-07-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	 * config/aarch64/aarch64.md
+	(zero_extend<SHORT:mode><GPI:mode>2_aarch64): Change output
+	statement and type.
+	(<optab>qihi2_aarch64): Likewise, and split into two.
+	(extendqihi2_aarch64): New.
+	(zero_extendqihi2_aarch64): New.
+	* config/aarch64/iterators.md (ldrxt): Remove.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Change cost of
+	uxtb/uxth.
+
+2016-07-28  Kristina Martsenko  <kristina.martsenko@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Fix cost of zero extend.
 

@@ -6838,8 +6838,8 @@ cost_plus:
 	    }
 	  else
 	    {
-	      /* UXTB/UXTH.  */
-	      *cost += extra_cost->alu.extend;
+	      /* We generate an AND instead of UXTB/UXTH.  */
+	      *cost += extra_cost->alu.logical;
 	    }
 	}
       return false;
