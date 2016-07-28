@@ -1,3 +1,12 @@
+2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71883
+	* frontend-passes.c (gfc_run_passes): Bail out if there are any
+	errors.
+	* error.c (gfc_internal_error): If there are any errors in the
+	buffer, exit with EXIT_FAILURE.
+
 2016-07-28  Renlin Li  <renlin.li@arm.com>
 
 	Revert
@@ -19,7 +28,7 @@
 2016-07-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71935
-	* check.c (is_c_interoperable): Simplify right expression. 
+	* check.c (is_c_interoperable): Simplify right expression.
 
 2016-07-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
@@ -75,7 +84,7 @@
 
 	PR fortran/29819
 	* parse.c (parse_contained): Use proper locus.
- 
+
 2016-07-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70842
