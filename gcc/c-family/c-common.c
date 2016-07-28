@@ -353,6 +353,8 @@ static tree handle_tls_model_attribute (tree *, tree, tree, int,
 					bool *);
 static tree handle_no_instrument_function_attribute (tree *, tree,
 						     tree, int, bool *);
+static tree handle_no_profile_instrument_function_attribute (tree *, tree,
+							     tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_limit_stack_attribute (tree *, tree, tree, int,
@@ -716,6 +718,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_weakref_attribute, false },
   { "no_instrument_function", 0, 0, true,  false, false,
 			      handle_no_instrument_function_attribute,
+			      false },
+  { "no_profile_instrument_function",  0, 0, true, false, false,
+			      handle_no_profile_instrument_function_attribute,
 			      false },
   { "malloc",                 0, 0, true,  false, false,
 			      handle_malloc_attribute, false },
@@ -8289,6 +8294,22 @@ handle_no_instrument_function_attribute (tree *node, tree name,
     }
   else
     DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_profile_instrument_function" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_profile_instrument_function_attribute (tree *node, tree name, tree,
+						 int, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
 
   return NULL_TREE;
 }
