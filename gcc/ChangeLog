@@ -1,3 +1,9 @@
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/70944
+	* combine.c (make_compound_operation):
+	Do not allow make_compound_operation for vector mode
+
 2016-07-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/71994
