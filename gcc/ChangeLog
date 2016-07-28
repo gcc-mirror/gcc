@@ -1,3 +1,33 @@
+2016-07-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_split_vec_extract_var):
+	New declaration.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Add support for vec_extract of vector double or vector long having
+	a variable element number on 64-bit ISA 2.07 systems or newer.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract):
+	Likewise.
+	(rs6000_split_vec_extract_var): New function to split a
+	vec_extract built-in function with variable element number.
+	(rtx_is_swappable_p): Variable vec_extracts and shifts are not
+	swappable.
+	* config/rs6000/vsx.md (UNSPEC_VSX_VSLO): New unspec.
+	(UNSPEC_VSX_EXTRACT): Likewise.
+	(vsx_extract_<mode>, VSX_D iterator): Fix constraints to allow
+	direct move instructions to be generated on 64-bit ISA 2.07
+	systems and newer, and to take advantage of the ISA 3.0 MFVSRLD
+	instruction.
+	(vsx_vslo_<mode>): New insn to do VSLO on V2DFmode and V2DImode
+	arguments for vec_extract variable element.
+	(vsx_extract_<mode>_var, VSX_D iterator): New insn to support
+	vec_extract with variable element on V2DFmode and V2DImode
+	vectors.
+	* config/rs6000/rs6000.h (TARGET_VEXTRACTUB): Remove
+	-mupper-regs-df requirement, since it isn't needed.
+	(TARGET_DIRECT_MOVE_64BIT): New macro to say whether we can
+	do direct moves on 64-bit systems, which allows optimization of
+	vec_extract on 64-bit ISA 2.07 systems and newer.
+
 2016-07-28  Kristina Martsenko  <kristina.martsenko@arm.com>
 2016-07-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
