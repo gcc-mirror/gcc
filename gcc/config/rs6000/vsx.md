@@ -309,6 +309,8 @@
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
    UNSPEC_P9_MEMORY
+   UNSPEC_VSX_VSLO
+   UNSPEC_VSX_EXTRACT
   ])
 
 ;; VSX moves
@@ -2118,16 +2120,13 @@
 ;; register was picked.  Limit the scalar value to FPRs for now.
 
 (define_insn "vsx_extract_<mode>"
-  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand"
-            "=d,     wm,      wo,    d")
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=d,    d,     wr, wr")
 
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"
-            "<VSa>, <VSa>,  <VSa>,  <VSa>")
+	 (match_operand:VSX_D 1 "gpc_reg_operand"      "<VSa>, <VSa>, wm, wo")
 
 	 (parallel
-	  [(match_operand:QI 2 "const_0_to_1_operand"
-            "wD,    wD,     wL,     n")])))]
+	  [(match_operand:QI 2 "const_0_to_1_operand"  "wD,    n,     wD, n")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   int element = INTVAL (operands[2]);
@@ -2204,6 +2203,34 @@
    stxsd%U0x %x1,%y0"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
+
+;; Variable V2DI/V2DF extract shift
+(define_insn "vsx_vslo_<mode>"
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=v")
+	(unspec:<VS_scalar> [(match_operand:VSX_D 1 "gpc_reg_operand" "v")
+			     (match_operand:V2DI 2 "gpc_reg_operand" "v")]
+			    UNSPEC_VSX_VSLO))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
+  "vslo %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+;; Variable V2DI/V2DF extract
+(define_insn_and_split "vsx_extract_<mode>_var"
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=v")
+	(unspec:<VS_scalar> [(match_operand:VSX_D 1 "input_operand" "v")
+			     (match_operand:DI 2 "gpc_reg_operand" "r")]
+			    UNSPEC_VSX_EXTRACT))
+   (clobber (match_scratch:DI 3 "=r"))
+   (clobber (match_scratch:V2DI 4 "=&v"))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rs6000_split_vec_extract_var (operands[0], operands[1], operands[2],
+				operands[3], operands[4]);
+  DONE;
+})
 
 ;; Extract a SF element from V4SF
 (define_insn_and_split "vsx_extract_v4sf"
