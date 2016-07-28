@@ -926,6 +926,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	  if (verbosity > 0)
 	    fprintf (out, "Fieldref: %ld=", (long) JPOOL_USHORT2 (jcf, index));
 	  print_constant (out, jcf, JPOOL_USHORT2 (jcf, index), 0);
+	  break;
 	case 5:
 	case 6:
 	case 7:
