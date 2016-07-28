@@ -6803,11 +6803,12 @@ cost_plus:
 	{
 	  int op_cost = rtx_cost (op0, VOIDmode, ZERO_EXTEND, 0, speed);
 
-	  if (!op_cost && speed)
-	    /* MOV.  */
-	    *cost += extra_cost->alu.extend;
-	  else
-	    /* Free, the cost is that of the SI mode operation.  */
+	/* If OP_COST is non-zero, then the cost of the zero extend
+	   is effectively the cost of the inner operation.  Otherwise
+	   we have a MOV instruction and we take the cost from the MOV
+	   itself.  This is true independently of whether we are
+	   optimizing for space or time.  */
+	  if (op_cost)
 	    *cost = op_cost;
 
 	  return true;
