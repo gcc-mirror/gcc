@@ -942,9 +942,6 @@
 ;; Similar, but when not(op)
 (define_code_attr nlogical [(and "bic") (ior "orn") (xor "eon")])
 
-;; Sign- or zero-extending load
-(define_code_attr ldrxt [(sign_extend "ldrs") (zero_extend "ldr")])
-
 ;; Sign- or zero-extending data-op
 (define_code_attr su [(sign_extend "s") (zero_extend "u")
 		      (sign_extract "s") (zero_extract "u")

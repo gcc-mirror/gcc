@@ -1577,10 +1577,10 @@
         (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,m")))]
   ""
   "@
-   uxt<SHORT:size>\t%<GPI:w>0, %w1
+   and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
    ldr<SHORT:size>\t%w0, %1
    ldr\t%<SHORT:size>0, %1"
-  [(set_attr "type" "extend,load1,load1")]
+  [(set_attr "type" "logic_imm,load1,load1")]
 )
 
 (define_expand "<optab>qihi2"
@@ -1589,14 +1589,24 @@
   ""
 )
 
-(define_insn "*<optab>qihi2_aarch64"
+(define_insn "*extendqihi2_aarch64"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
-        (ANY_EXTEND:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+	(sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
-   <su>xtb\t%w0, %w1
-   <ldrxt>b\t%w0, %1"
+   sxtb\t%w0, %w1
+   ldrsb\t%w0, %1"
   [(set_attr "type" "extend,load1")]
+)
+
+(define_insn "*zero_extendqihi2_aarch64"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  ""
+  "@
+   and\t%w0, %w1, 255
+   ldrb\t%w0, %1"
+  [(set_attr "type" "logic_imm,load1")]
 )
 
 ;; -------------------------------------------------------------------
