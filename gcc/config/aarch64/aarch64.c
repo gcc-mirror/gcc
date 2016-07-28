@@ -2861,10 +2861,14 @@ aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 }
 
 static void
-aarch64_pushwb_pair_reg (machine_mode mode, unsigned regno1,
-			 unsigned regno2, HOST_WIDE_INT adjustment)
+aarch64_push_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment)
 {
   rtx_insn *insn;
+  machine_mode mode = (regno1 <= R30_REGNUM) ? DImode : DFmode;
+
+  if (regno2 == FIRST_PSEUDO_REGISTER)
+    return aarch64_pushwb_single_reg (mode, regno1, adjustment);
+
   rtx reg1 = gen_rtx_REG (mode, regno1);
   rtx reg2 = gen_rtx_REG (mode, regno2);
 
@@ -2889,6 +2893,30 @@ aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 				   GEN_INT (UNITS_PER_WORD));
     default:
       gcc_unreachable ();
+    }
+}
+
+static void
+aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
+		  rtx *cfi_ops)
+{
+  machine_mode mode = (regno1 <= R30_REGNUM) ? DImode : DFmode;
+  rtx reg1 = gen_rtx_REG (mode, regno1);
+
+  *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg1, *cfi_ops);
+
+  if (regno2 == FIRST_PSEUDO_REGISTER)
+    {
+      rtx mem = plus_constant (Pmode, stack_pointer_rtx, adjustment);
+      mem = gen_rtx_POST_MODIFY (Pmode, stack_pointer_rtx, mem);
+      emit_move_insn (reg1, gen_rtx_MEM (mode, mem));
+    }
+  else
+    {
+      rtx reg2 = gen_rtx_REG (mode, regno2);
+      *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg2, *cfi_ops);
+      emit_insn (aarch64_gen_loadwb_pair (mode, stack_pointer_rtx, reg1,
+					  reg2, adjustment));
     }
 }
 
@@ -3150,7 +3178,7 @@ aarch64_expand_prologue (void)
 					 R30_REGNUM, false);
 	    }
 	  else
-	    aarch64_pushwb_pair_reg (DImode, R29_REGNUM, R30_REGNUM, offset);
+	    aarch64_push_regs (R29_REGNUM, R30_REGNUM, offset);
 
 	  /* Set up frame pointer to point to the location of the
 	     previous frame pointer on the stack.  */
@@ -3176,14 +3204,8 @@ aarch64_expand_prologue (void)
 	    }
 	  else
 	    {
-	      machine_mode mode1 = (reg1 <= R30_REGNUM) ? DImode : DFmode;
-
+	      aarch64_push_regs (reg1, reg2, offset);
 	      skip_wb = true;
-
-	      if (reg2 == FIRST_PSEUDO_REGISTER)
-		aarch64_pushwb_single_reg (mode1, reg1, offset);
-	      else
-		aarch64_pushwb_pair_reg (mode1, reg1, reg2, offset);
 	    }
 	}
 
@@ -3305,39 +3327,16 @@ aarch64_expand_epilogue (bool for_sibcall)
 	emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
 
       if (skip_wb)
-	{
-	  machine_mode mode1 = (reg1 <= R30_REGNUM) ? DImode : DFmode;
-	  rtx rreg1 = gen_rtx_REG (mode1, reg1);
-
-	  cfi_ops = alloc_reg_note (REG_CFA_RESTORE, rreg1, cfi_ops);
-	  if (reg2 == FIRST_PSEUDO_REGISTER)
-	    {
-	      rtx mem = plus_constant (Pmode, stack_pointer_rtx, offset);
-	      mem = gen_rtx_POST_MODIFY (Pmode, stack_pointer_rtx, mem);
-	      mem = gen_rtx_MEM (mode1, mem);
-	      insn = emit_move_insn (rreg1, mem);
-	    }
-	  else
-	    {
-	      rtx rreg2 = gen_rtx_REG (mode1, reg2);
-
-	      cfi_ops = alloc_reg_note (REG_CFA_RESTORE, rreg2, cfi_ops);
-	      insn = emit_insn (aarch64_gen_loadwb_pair
-				(mode1, stack_pointer_rtx, rreg1,
-				 rreg2, offset));
-	    }
-	}
+	aarch64_pop_regs (reg1, reg2, offset, &cfi_ops);
       else
-	{
-	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-					   GEN_INT (offset)));
-	}
+	emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (offset)));
 
       /* Reset the CFA to be SP + FRAME_SIZE.  */
       rtx new_cfa = stack_pointer_rtx;
       if (frame_size > 0)
 	new_cfa = plus_constant (Pmode, new_cfa, frame_size);
       cfi_ops = alloc_reg_note (REG_CFA_DEF_CFA, new_cfa, cfi_ops);
+      insn = get_last_insn ();
       REG_NOTES (insn) = cfi_ops;
       RTX_FRAME_RELATED_P (insn) = 1;
     }
