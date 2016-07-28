@@ -357,6 +357,7 @@ std_headers = \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \
+	${std_srcdir}/string_view \
 	${std_srcdir}/system_error \
 	${std_srcdir}/thread \
 	${std_srcdir}/tuple \
@@ -473,6 +474,7 @@ bits_headers = \
 	${bits_srcdir}/stl_vector.h \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
+	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
