@@ -2327,8 +2327,7 @@ chkp_retbnd_call_by_val (tree val)
   imm_use_iterator use_iter;
   use_operand_p use_p;
   FOR_EACH_IMM_USE_FAST (use_p, use_iter, val)
-    if (gimple_code (USE_STMT (use_p)) == GIMPLE_CALL
-	&& gimple_call_fndecl (USE_STMT (use_p)) == chkp_ret_bnd_fndecl)
+    if (chkp_gimple_call_builtin_p (USE_STMT (use_p), BUILT_IN_CHKP_BNDRET))
       return as_a <gcall *> (USE_STMT (use_p));
 
   return NULL;
@@ -4096,9 +4095,9 @@ chkp_copy_bounds_for_assign (gimple *assign, struct cgraph_edge *edge)
 	  struct cgraph_node *callee = cgraph_node::get_create (fndecl);
 	  struct cgraph_edge *new_edge;
 
-	  gcc_assert (fndecl == chkp_bndstx_fndecl
-		      || fndecl == chkp_bndldx_fndecl
-		      || fndecl == chkp_ret_bnd_fndecl);
+	  gcc_assert (chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDSTX)
+		      || chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDLDX)
+		      || chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET));
 
 	  new_edge = edge->caller->create_edge (callee,
 						as_a <gcall *> (stmt),
