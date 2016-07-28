@@ -1,5 +1,8 @@
 2016-07-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/vector/check_construct_destroy.cc: Account
+	for different construct/destroy counts in C++98 mode.
+
 	* testsuite/17_intro/headers/c++2011/stdc++.cc: Change target-specific
 	dg-options to dg-additional-options so that default options are used.
 	* testsuite/17_intro/headers/c++2011/stdc++_multiple_inclusion.cc:
