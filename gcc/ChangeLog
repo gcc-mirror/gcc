@@ -1,3 +1,12 @@
+2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71734
+	* tree-ssa-loop-im.c (ref_indep_loop_p_1): Pass value of safelen
+	attribute instead of REF_LOOP and use it.
+	(ref_indep_loop_p_2): Use SAFELEN argument instead of REF_LOOP and
+	set it for Loops having non-zero safelen attribute.
+	(ref_indep_loop_p): Pass zero as initial value for safelen.
+
 2016-07-28  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/72657

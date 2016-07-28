@@ -2113,7 +2113,7 @@ record_dep_loop (struct loop *loop, im_mem_ref *ref, bool stored_p)
    references in LOOP.  */
 
 static bool
-ref_indep_loop_p_1 (struct loop *ref_loop, struct loop *loop,
+ref_indep_loop_p_1 (int safelen, struct loop *loop,
 		    im_mem_ref *ref, bool stored_p)
 {
   bitmap refs_to_check;
@@ -2129,12 +2129,12 @@ ref_indep_loop_p_1 (struct loop *ref_loop, struct loop *loop,
   if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
     return false;
 
-  if (ref_loop->safelen > 1)
+  if (safelen > 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file,"REF is independent in ref_loop#%d\n",
-		   ref_loop->num);
+	  fprintf (dump_file,"REF is independent due to safelen %d\n",
+		   safelen);
 	  print_generic_expr (dump_file, ref->mem.ref, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 	}
@@ -2156,7 +2156,7 @@ ref_indep_loop_p_1 (struct loop *ref_loop, struct loop *loop,
    results.  */
 
 static bool
-ref_indep_loop_p_2 (struct loop *ref_loop, struct loop *loop,
+ref_indep_loop_p_2 (int safelen, struct loop *loop,
 		    im_mem_ref *ref, bool stored_p)
 {
   stored_p |= (ref->stored && bitmap_bit_p (ref->stored, loop->num));
@@ -2166,15 +2166,18 @@ ref_indep_loop_p_2 (struct loop *ref_loop, struct loop *loop,
   if (bitmap_bit_p (&ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
     return false;
 
+  if (loop->safelen > safelen)
+    safelen = loop->safelen;
+
   struct loop *inner = loop->inner;
   while (inner)
     {
-      if (!ref_indep_loop_p_2 (ref_loop, inner, ref, stored_p))
+      if (!ref_indep_loop_p_2 (safelen, inner, ref, stored_p))
 	return false;
       inner = inner->next;
     }
 
-  bool indep_p = ref_indep_loop_p_1 (ref_loop, loop, ref, stored_p);
+  bool indep_p = ref_indep_loop_p_1 (safelen, loop, ref, stored_p);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Querying dependencies of ref %u in loop %d: %s\n",
@@ -2213,7 +2216,7 @@ ref_indep_loop_p (struct loop *loop, im_mem_ref *ref)
 {
   gcc_checking_assert (MEM_ANALYZABLE (ref));
 
-  return ref_indep_loop_p_2 (loop, loop, ref, false);
+  return ref_indep_loop_p_2 (0, loop, ref, false);
 }
 
 /* Returns true if we can perform store motion of REF from LOOP.  */

@@ -1,3 +1,8 @@
+2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71734
+        * g++.dg/vect/pr70729-nest.cc: New test.
+
 2016-07-28  Renlin Li  <renlin.li@arm.com>
 
 	Revert
