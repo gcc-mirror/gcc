@@ -125,6 +125,7 @@ gfc_run_passes (gfc_namespace *ns)
   doloop_level = 0;
   doloop_warn (ns);
   doloop_list.release ();
+  int w, e;
 
   if (flag_frontend_optimize)
     {
@@ -135,6 +136,10 @@ gfc_run_passes (gfc_namespace *ns)
 
       expr_array.release ();
     }
+
+  gfc_get_errors (&w, &e);
+  if (e > 0)
+   return;
 
   if (flag_realloc_lhs)
     realloc_strings (ns);

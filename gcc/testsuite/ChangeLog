@@ -1,3 +1,9 @@
+2016-07-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/71883
+	* gfortran.dg/pr71883.f90 : New test.
+
 2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
@@ -356,7 +362,7 @@
 	Backport from mainline
 	2016-07-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	PR target/50739	
+	PR target/50739
 	* gcc.target/avr/pr50739.c: New test.
 
 2016-07-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
