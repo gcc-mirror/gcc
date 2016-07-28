@@ -63,7 +63,7 @@ struct st_expr
   /* Pattern of this mem.  */
   rtx pattern;
   /* List of registers mentioned by the mem.  */
-  rtx pattern_regs;
+  vec<rtx> pattern_regs;
   /* INSN list of stores that are locally anticipatable.  */
   vec<rtx_insn *> antic_stores;
   /* INSN list of stores that are locally available.  */
@@ -146,7 +146,7 @@ st_expr_entry (rtx x)
 
   ptr->next         = store_motion_mems;
   ptr->pattern      = x;
-  ptr->pattern_regs = NULL_RTX;
+  ptr->pattern_regs.create (0);
   ptr->antic_stores.create (0);
   ptr->avail_stores.create (0);
   ptr->reaching_reg = NULL_RTX;
@@ -165,6 +165,7 @@ free_st_expr_entry (struct st_expr * ptr)
 {
   ptr->antic_stores.release ();
   ptr->avail_stores.release ();
+  ptr->pattern_regs.release ();
 
   free (ptr);
 }
@@ -248,16 +249,13 @@ print_store_motion_mems (FILE * file)
    due to set of registers in bitmap REGS_SET.  */
 
 static bool
-store_ops_ok (const_rtx x, int *regs_set)
+store_ops_ok (const vec<rtx> &x, int *regs_set)
 {
-  const_rtx reg;
-
-  for (; x; x = XEXP (x, 1))
-    {
-      reg = XEXP (x, 0);
-      if (regs_set[REGNO (reg)])
-	return false;
-    }
+  unsigned int i;
+  rtx temp;
+  FOR_EACH_VEC_ELT (x, i, temp)
+    if (regs_set[REGNO (temp)])
+      return false;
 
   return true;
 }
@@ -265,18 +263,16 @@ store_ops_ok (const_rtx x, int *regs_set)
 /* Returns a list of registers mentioned in X.
    FIXME: A regset would be prettier and less expensive.  */
 
-static rtx_expr_list *
-extract_mentioned_regs (rtx x)
+static void
+extract_mentioned_regs (rtx x, vec<rtx> *mentioned_regs)
 {
-  rtx_expr_list *mentioned_regs = NULL;
   subrtx_var_iterator::array_type array;
   FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
     {
       rtx x = *iter;
       if (REG_P (x))
-	mentioned_regs = alloc_EXPR_LIST (0, x, mentioned_regs);
+	mentioned_regs->safe_push (x);
     }
-  return mentioned_regs;
 }
 
 /* Check to see if the load X is aliased with STORE_PATTERN.
@@ -373,9 +369,10 @@ store_killed_in_pat (const_rtx x, const_rtx pat, int after)
    after the insn.  Return true if it does.  */
 
 static bool
-store_killed_in_insn (const_rtx x, const_rtx x_regs, const rtx_insn *insn, int after)
+store_killed_in_insn (const_rtx x, const vec<rtx> &x_regs,
+		      const rtx_insn *insn, int after)
 {
-  const_rtx reg, note, pat;
+  const_rtx note, pat;
 
   if (! NONDEBUG_INSN_P (insn))
     return false;
@@ -389,8 +386,10 @@ store_killed_in_insn (const_rtx x, const_rtx x_regs, const rtx_insn *insn, int a
 
       /* But even a const call reads its parameters.  Check whether the
 	 base of some of registers used in mem is stack pointer.  */
-      for (reg = x_regs; reg; reg = XEXP (reg, 1))
-	if (may_be_sp_based_p (XEXP (reg, 0)))
+      rtx temp;
+      unsigned int i;
+      FOR_EACH_VEC_ELT (x_regs, i, temp)
+	if (may_be_sp_based_p (temp))
 	  return true;
 
       return false;
@@ -435,8 +434,8 @@ store_killed_in_insn (const_rtx x, const_rtx x_regs, const rtx_insn *insn, int a
    is killed, return the last insn in that it occurs in FAIL_INSN.  */
 
 static bool
-store_killed_after (const_rtx x, const_rtx x_regs, const rtx_insn *insn,
-		    const_basic_block bb,
+store_killed_after (const_rtx x, const vec<rtx> &x_regs,
+		    const rtx_insn *insn, const_basic_block bb,
 		    int *regs_set_after, rtx *fail_insn)
 {
   rtx_insn *last = BB_END (bb), *act;
@@ -465,8 +464,9 @@ store_killed_after (const_rtx x, const_rtx x_regs, const rtx_insn *insn,
    within basic block BB. X_REGS is list of registers mentioned in X.
    REGS_SET_BEFORE is bitmap of registers set before or in this insn.  */
 static bool
-store_killed_before (const_rtx x, const_rtx x_regs, const rtx_insn *insn,
-		     const_basic_block bb, int *regs_set_before)
+store_killed_before (const_rtx x, const vec<rtx> &x_regs,
+		     const rtx_insn *insn, const_basic_block bb,
+		     int *regs_set_before)
 {
   rtx_insn *first = BB_HEAD (bb);
 
@@ -555,8 +555,8 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
     return;
 
   ptr = st_expr_entry (dest);
-  if (!ptr->pattern_regs)
-    ptr->pattern_regs = extract_mentioned_regs (dest);
+  if (ptr->pattern_regs.is_empty ())
+    extract_mentioned_regs (dest, &ptr->pattern_regs);
 
   /* Do not check for anticipatability if we either found one anticipatable
      store already, or tested for one and found out that it was killed.  */
