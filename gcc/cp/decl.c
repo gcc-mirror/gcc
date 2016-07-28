@@ -13587,14 +13587,23 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 
 	  if (value != NULL_TREE)
 	    {
-	      value = cxx_constant_value (value);
-
-	      if (TREE_CODE (value) != INTEGER_CST
-		  || ! INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value)))
+	      if (! INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P
+		  (TREE_TYPE (value)))
 		{
-		  error ("enumerator value for %qD is not an integer constant",
-			 name);
+		  error ("enumerator for %qD must have integral or "
+			 "unscoped enumeration type", name);
 		  value = NULL_TREE;
+		}
+	      else
+		{
+		  value = cxx_constant_value (value);
+
+		  if (TREE_CODE (value) != INTEGER_CST)
+		    {
+		      error ("enumerator value for %qD is not an integer "
+			     "constant", name);
+		      value = NULL_TREE;
+		    }
 		}
 	    }
 	}
