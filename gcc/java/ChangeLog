@@ -1,3 +1,8 @@
+2016-07-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* jcf-dump.c (print_constant): Add break.
+
 2016-07-21  Richard Biener  <rguenther@suse.de>
 
 	* jcf-parse.c (java_emit_static_constructor): Set
