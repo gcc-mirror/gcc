@@ -185,7 +185,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   current_code = c;
   inserted_block = NULL;
   changed_statement = NULL;
-  n = create_var (expr2, "realloc_string");
+  n = create_var (expr2, "trim");
   co->expr2 = n;
   return 0;
 }
