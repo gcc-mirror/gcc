@@ -7770,6 +7770,10 @@ make_compound_operation (rtx x, enum rtx_code in_code)
   rtx tem;
   const char *fmt;
 
+  /* PR rtl-optimization/70944.  */
+  if (VECTOR_MODE_P (mode))
+    return x;
+
   /* Select the code to be used in recursive calls.  Once we are inside an
      address, we stay there.  If we have a comparison, set to COMPARE,
      but once inside, go back to our default of SET.  */
