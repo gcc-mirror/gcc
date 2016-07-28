@@ -1,3 +1,8 @@
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/68025
+	* c-common.c (handle_no_profile_instrument_function_attribute):
+
 2016-07-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (check_user_alignment): Use LOG2_BITS_PER_UNIT instead of

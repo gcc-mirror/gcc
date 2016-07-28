@@ -1,5 +1,13 @@
 2016-07-28  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/68025
+	* tree-profile.c (tree_profiling): Respect
+	no_profile_instrument_function attribute.
+	* doc/extend.texi: Document no_profile_instrument_function
+	attribute.
+
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
 	PR rtl-optimization/70944
 	* combine.c (make_compound_operation):
 	Do not allow make_compound_operation for vector mode

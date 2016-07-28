@@ -2853,6 +2853,12 @@ If @option{-finstrument-functions} is given, profiling function calls are
 generated at entry and exit of most user-compiled functions.
 Functions with this attribute are not so instrumented.
 
+@item no_profile_instrument_function
+@cindex @code{no_profile_instrument_function} function attribute
+The @code{no_profile_instrument_function} attribute on functions is used
+to inform the compiler that it should not process any profile feedback based
+optimization code instrumentation.
+
 @item no_reorder
 @cindex @code{no_reorder} function attribute
 Do not reorder functions or variables marked @code{no_reorder}

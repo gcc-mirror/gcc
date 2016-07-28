@@ -1,5 +1,10 @@
 2016-07-28  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/68025
+	* gcc.dg/no_profile_instrument_function-attr-1.c: New test.
+
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/vect/pr70944.cc: New test.
 
 2016-07-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
