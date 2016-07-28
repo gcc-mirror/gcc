@@ -1,3 +1,10 @@
+2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71859
+	* gfortran.dg/pr71859.f90: New test.
+	* gfortran.dg/intrinsic_numeric_arg.f: Update error message.
+	* gfortran.dg/coarray_collectives_1.f90: Ditto.
+
 2016-07-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71883

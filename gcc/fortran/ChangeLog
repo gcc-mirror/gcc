@@ -1,4 +1,10 @@
 2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71859
+	* check.c(numeric_check): Prevent ICE.  Issue error for invalid
+	subroutine as an actual argument when numeric argument is expected.
+
+2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71883
