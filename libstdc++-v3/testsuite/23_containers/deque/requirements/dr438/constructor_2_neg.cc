@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-prune-output 1812 }
+// { dg-prune-output "no matching function .*_M_fill_initialize" }
 
 #include <deque>
 #include <utility>
