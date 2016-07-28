@@ -1,3 +1,9 @@
+2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71067
+	* gfortran.dg/pr71067_1.f90: New test.
+	* gfortran.dg/pr71067_2.f90: Ditto.
+
 2016-07-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-extract-1.c: New test.
