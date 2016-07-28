@@ -307,7 +307,7 @@ show_locus (locus *loc, int c1, int c2)
 
   error_string (f->filename);
   error_char (':');
-    
+
   error_integer (LOCATION_LINE (lb->location));
 
   if ((c1 > 0) || (c2 > 0))
@@ -357,7 +357,7 @@ show_locus (locus *loc, int c1, int c2)
     offset = cmax - terminal_width + 5;
 
   /* Show the line itself, taking care not to print more than what can
-     show up on the terminal.  Tabs are converted to spaces, and 
+     show up on the terminal.  Tabs are converted to spaces, and
      nonprintable characters are converted to a "\xNN" sequence.  */
 
   p = &(lb->line[offset]);
@@ -375,7 +375,7 @@ show_locus (locus *loc, int c1, int c2)
   error_char ('\n');
 
   /* Show the '1' and/or '2' corresponding to the column of the error
-     locus.  Note that a value of -1 for c1 or c2 will simply cause 
+     locus.  Note that a value of -1 for c1 or c2 will simply cause
      the relevant number not to be printed.  */
 
   c1 -= offset;
@@ -440,7 +440,7 @@ show_loci (locus *l1, locus *l2)
   else
     m = c1 - c2;
 
-  /* Note that the margin value of 10 here needs to be less than the 
+  /* Note that the margin value of 10 here needs to be less than the
      margin of 5 used in the calculation of offset in show_locus.  */
 
   if (l1->lb != l2->lb || m > terminal_width - 10)
@@ -467,11 +467,11 @@ show_loci (locus *l1, locus *l2)
    If a locus pointer is given, the actual source line is printed out
    and the column is indicated.  Since we want the error message at
    the bottom of any source file information, we must scan the
-   argument list twice -- once to determine whether the loci are 
+   argument list twice -- once to determine whether the loci are
    present and record this for printing, and once to print the error
    message after and loci have been printed.  A maximum of two locus
    arguments are permitted.
-   
+
    This function is also called (recursively) by show_locus in the
    case of included files; however, as show_locus does not resupply
    any loci, the recursion is at most one level deep.  */
@@ -687,11 +687,11 @@ error_print (const char *type, const char *format0, va_list argp)
 	  /* This is a position specifier.  See comment above.  */
 	  while (ISDIGIT (*format))
 	    format++;
-	    
+
 	  /* Skip over the dollar sign.  */
 	  format++;
 	}
-	
+
       switch (*format)
 	{
 	case '%':
@@ -804,10 +804,10 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 	++werrorcount;
       else if (diagnostic.kind == DK_ERROR)
 	++werrorcount_buffered;
-      else 
+      else
 	++werrorcount, --warningcount, ++warningcount_buffered;
     }
-  
+
   va_end (argp);
   return ret;
 }
@@ -1030,17 +1030,17 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
    With -fdiagnostic-show-caret (the default) it prints:
 
        [locus of primary range]:
-       
+
           some code
                  1
        Error: Some error at (1)
-        
+
   With -fno-diagnostic-show-caret or if the primary range is not
   valid, it prints:
 
        [locus of primary range]: Error: Some error at (1) and (2)
 */
-static void 
+static void
 gfc_diagnostic_starter (diagnostic_context *context,
 			diagnostic_info *diagnostic)
 {
@@ -1051,7 +1051,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
   bool one_locus = diagnostic->richloc->get_num_locations () < 2;
   bool same_locus = false;
 
-  if (!one_locus) 
+  if (!one_locus)
     {
       s2 = diagnostic_expand_location (diagnostic, 1);
       same_locus = diagnostic_same_line (context, s1, s2);
@@ -1223,8 +1223,8 @@ gfc_warning_check (void)
       werrorcount += werrorcount_buffered;
       gcc_assert (warningcount_buffered + werrorcount_buffered == 1);
       pp->buffer = tmp_buffer;
-      diagnostic_action_after_output (global_dc, 
-				      warningcount_buffered 
+      diagnostic_action_after_output (global_dc,
+				      warningcount_buffered
 				      ? DK_WARNING : DK_ERROR);
     }
 }
@@ -1303,9 +1303,14 @@ gfc_error (const char *gmsgid, ...)
 void
 gfc_internal_error (const char *gmsgid, ...)
 {
+  int e, w;
   va_list argp;
   diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+
+  gfc_get_errors (&w, &e);
+  if (e > 0)
+    exit(EXIT_FAILURE);
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);
@@ -1332,7 +1337,7 @@ gfc_clear_error (void)
 bool
 gfc_error_flag_test (void)
 {
-  return error_buffer.flag 
+  return error_buffer.flag
     || !gfc_output_buffer_empty_p (pp_error_buffer);
 }
 

@@ -1,3 +1,8 @@
+2016-07-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71883
+	* gfortran.dg/pr71883.f90 : New test.
+
 2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71734
@@ -43,7 +48,7 @@
 
 2016-07-27  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	* gcc.dg/torture/pr69352.c: Use  __INTPTR_TYPE__ instead of 
+	* gcc.dg/torture/pr69352.c: Use  __INTPTR_TYPE__ instead of
 	including stdint.h.
 	* gcc.dg/torture/pr71866.c: Use __UINTPTR_TYPE__ isntead of
 	including stdint.h.
@@ -378,7 +383,7 @@
 
 2016-07-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	* gcc.dg/params/blocksort-part.c: Conditionally define Int32 
+	* gcc.dg/params/blocksort-part.c: Conditionally define Int32
 	and UInt32 based on __SIZEOF_INT__.
 
 2016-07-19  Richard Biener  <rguenther@suse.de>
