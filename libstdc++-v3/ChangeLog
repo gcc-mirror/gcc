@@ -1,3 +1,181 @@
+2016-07-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement std::string_view and P0254r2,
+	Integrating std::string_view and std::string.
+	* include/Makefile.am: Add string_view and string_view.tcc
+	to the exported headers.
+	* include/Makefile.in: Likewise.
+	* include/bits/basic_string.h: Include <string_view> in C++17 mode.
+	(__sv_type): New.
+	(basic_string(__sv_type, const _Alloc&)): Likewise.
+	(operator=(__sv_type)): Likewise.
+	(operator __sv_type()): Likewise.
+	(operator+=(__sv_type)): Likewise.
+	(append(__sv_type __sv)): Likewise.
+	(append(__sv_type, size_type, size_type)): Likewise.
+	(assign(__sv_type)): Likewise.
+	(assign(__sv_type, size_type, size_type)): Likewise.
+	(insert(size_type, __sv_type)): Likewise.
+	(insert(size_type, __sv_type, size_type, size_type)): Likewise.
+	(replace(size_type, size_type, __sv_type)): Likewise.
+	(replace(size_type, size_type, __sv_type, size_type, size_type)):
+	Likewise.
+	(replace(const_iterator, const_iterator, __sv_type)): Likewise.
+	(find(__sv_type, size_type)): Likewise.
+	(rfind(__sv_type, size_type)): Likewise.
+	(find_first_of(__sv_type, size_type)): Likewise.
+	(find_last_of(__sv_type, size_type)): Likewise.
+	(find_first_not_of(__sv_type, size_type)): Likewise.
+	(find_last_not_of(__sv_type, size_type)): Likewise.
+	(compare(__sv_type)): Likewise.
+	(compare(size_type, size_type, __sv_type)): Likewise.
+	(compare(size_type, size_type, __sv_type, size_type, size_type)):
+	Likewise.
+	* include/bits/string_view.tcc: New.
+	* include/std/string_view: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/7.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/7.cc: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/append/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/char/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/wchar_t/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/find/char/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operators/char/5.cc: Likewise.
+	* testsuite/21_strings/basic_string/operators/wchar_t/5.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/capacity/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/2.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/3.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/empty.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_back.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/empty.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_back.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/include.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/pod/10081-out.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/13650.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/13650.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/data/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/data/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/string_conversion/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/substr/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operators/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char16_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char32_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/types/1.cc: Likewise.
+
 2016-07-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/forward/1_neg.cc: Move dg-error to right line.
