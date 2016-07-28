@@ -1,5 +1,9 @@
 2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* haifa-sched.c (add_to_speculative_block): Make twins a vector.
+
+2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* store-motion.c (struct st_expr): Make pattern_regs a vector.
 	(extract_mentioned_regs): Append to a vector instead of
 	returning a rtx_expr_list.
