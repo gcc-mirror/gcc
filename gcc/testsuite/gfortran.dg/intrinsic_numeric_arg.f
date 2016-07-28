@@ -4,6 +4,6 @@
        LOGICAL Z
        CHARACTER A
        REAL R
-       R = ABS(Z) !  { dg-error " must be a numeric type" }
-       R = ABS(A) !  { dg-error " must be a numeric type" }
+       R = ABS(Z) !  { dg-error " must have a numeric type" }
+       R = ABS(A) !  { dg-error " must have a numeric type" }
        END

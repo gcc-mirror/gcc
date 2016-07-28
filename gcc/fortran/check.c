@@ -72,6 +72,11 @@ type_check (gfc_expr *e, int n, bt type)
 static bool
 numeric_check (gfc_expr *e, int n)
 {
+  /* Users sometime use a subroutine designator as an actual argument to
+     an intrinsic subprogram that expects an argument with a numeric type.  */
+  if (e->symtree && e->symtree->n.sym->attr.subroutine)
+    goto error;
+
   if (gfc_numeric_ts (&e->ts))
     return true;
 
@@ -86,7 +91,9 @@ numeric_check (gfc_expr *e, int n)
       return true;
     }
 
-  gfc_error ("%qs argument of %qs intrinsic at %L must be a numeric type",
+error:
+
+  gfc_error ("%qs argument of %qs intrinsic at %L must have a numeric type",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
 	     &e->where);
 
