@@ -1,3 +1,11 @@
+2016-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/conversions/string/1.cc: Remove unintended
+	dg-do compile directive.
+	* testsuite/26_numerics/headers/cmath/fabs_inline.cc: Fix syntax of
+	dg-do directive.
+	* testsuite/26_numerics/valarray/const_bracket.cc: Likewise.
+
 2016-07-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement std::string_view and P0254r2,
