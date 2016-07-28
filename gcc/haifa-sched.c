@@ -1483,28 +1483,9 @@ dep_cost_1 (dep_t link, dw_t dw)
 	}
 
 
-      if (targetm.sched.adjust_cost_2)
-	cost = targetm.sched.adjust_cost_2 (used, (int) dep_type, insn, cost,
-					    dw);
-      else if (targetm.sched.adjust_cost != NULL)
-	{
-	  /* This variable is used for backward compatibility with the
-	     targets.  */
-	  rtx_insn_list *dep_cost_rtx_link =
-	    alloc_INSN_LIST (NULL_RTX, NULL);
-
-	  /* Make it self-cycled, so that if some tries to walk over this
-	     incomplete list he/she will be caught in an endless loop.  */
-	  XEXP (dep_cost_rtx_link, 1) = dep_cost_rtx_link;
-
-	  /* Targets use only REG_NOTE_KIND of the link.  */
-	  PUT_REG_NOTE_KIND (dep_cost_rtx_link, DEP_TYPE (link));
-
-	  cost = targetm.sched.adjust_cost (used, dep_cost_rtx_link,
-					    insn, cost);
-
-	  free_INSN_LIST_node (dep_cost_rtx_link);
-	}
+      if (targetm.sched.adjust_cost)
+	cost = targetm.sched.adjust_cost (used, (int) dep_type, insn, cost,
+					  dw);
 
       if (cost < 0)
 	cost = 0;

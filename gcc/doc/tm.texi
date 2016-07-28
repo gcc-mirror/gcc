@@ -6590,14 +6590,14 @@ debug output to.  @var{verbose} is the verbose level provided by
 was scheduled.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx_insn *@var{insn}, rtx @var{link}, rtx_insn *@var{dep_insn}, int @var{cost})
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx_insn *@var{insn}, int @var{dep_type1}, rtx_insn *@var{dep_insn}, int @var{cost}, unsigned int @var{dw})
 This function corrects the value of @var{cost} based on the
-relationship between @var{insn} and @var{dep_insn} through the
-dependence @var{link}.  It should return the new value.  The default
-is to make no adjustment to @var{cost}.  This can be used for example
-to specify to the scheduler using the traditional pipeline description
-that an output- or anti-dependence does not incur the same cost as a
-data-dependence.  If the scheduler using the automaton based pipeline
+relationship between @var{insn} and @var{dep_insn} through a
+dependence of type dep_type, and strength @var{dw}.  It should return the new
+value.  The default is to make no adjustment to @var{cost}.  This can be
+used for example to specify to the scheduler using the traditional pipeline
+description that an output- or anti-dependence does not incur the same cost
+as a data-dependence.  If the scheduler using the automaton based pipeline
 description, the cost of anti-dependence is zero and the cost of
 output-dependence is maximum of one and the difference of latency
 times of the first and the second insns.  If these values are not

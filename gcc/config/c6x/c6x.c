@@ -4471,7 +4471,8 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
    anti- and output dependencies.  */
 
 static int
-c6x_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+c6x_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		 unsigned int)
 {
   enum attr_type insn_type = TYPE_UNKNOWN, dep_insn_type = TYPE_UNKNOWN;
   int dep_insn_code_number, insn_code_number;
@@ -4486,7 +4487,7 @@ c6x_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
   if (insn_code_number >= 0)
     insn_type = get_attr_type (insn);
 
-  kind = REG_NOTE_KIND (link);
+  kind = (reg_note) dep_type;
   if (kind == 0)
     {
       /* If we have a dependency on a load, and it's not for the result of

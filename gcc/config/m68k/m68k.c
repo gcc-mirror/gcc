@@ -138,7 +138,8 @@ struct m68k_address {
   int scale;
 };
 
-static int m68k_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int m68k_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int,
+				   unsigned int);
 static int m68k_sched_issue_rate (void);
 static int m68k_sched_variable_issue (FILE *, int, rtx_insn *, int);
 static void m68k_sched_md_init_global (FILE *, int, int);
@@ -5917,8 +5918,8 @@ static state_t sched_adjust_cost_state;
 /* Implement adjust_cost scheduler hook.
    Return adjusted COST of dependency LINK between DEF_INSN and INSN.  */
 static int
-m68k_sched_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
-			rtx_insn *def_insn, int cost)
+m68k_sched_adjust_cost (rtx_insn *insn, int, rtx_insn *def_insn, int cost,
+			unsigned int)
 {
   int delay;
 

@@ -213,7 +213,7 @@ static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
 static int sh_register_move_cost (machine_mode, reg_class_t, reg_class_t);
-static int sh_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int sh_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx_insn *, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, machine_mode);
@@ -9455,12 +9455,12 @@ sh_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
    the same cost as a data-dependence.  The return value should be
    the new value for COST.  */
 static int
-sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
-		rtx_insn *dep_insn, int cost)
+sh_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		unsigned int)
 {
   rtx reg, use_pat;
 
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     {
       if (recog_memoized (insn) < 0
 	  || recog_memoized (dep_insn) < 0)
@@ -9577,7 +9577,7 @@ sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
   /* An anti-dependence penalty of two applies if the first insn is a double
      precision fadd / fsub / fmul.  */
   else if (!TARGET_SH4_300
-	   && REG_NOTE_KIND (link) == REG_DEP_ANTI
+	   && dep_type == REG_DEP_ANTI
 	   && recog_memoized (dep_insn) >= 0
 	   && (get_attr_type (dep_insn) == TYPE_DFP_ARITH
 	       || get_attr_type (dep_insn) == TYPE_DFP_MUL)

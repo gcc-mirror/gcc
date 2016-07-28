@@ -1983,9 +1983,10 @@ epiphany_issue_rate (void)
    the same cost as a data-dependence.  The return value should be
    the new value for COST.  */
 static int
-epiphany_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+epiphany_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+		      int cost, unsigned int)
 {
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     {
       rtx dep_set;
 

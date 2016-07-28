@@ -932,18 +932,20 @@ HOOK_VECTOR (TARGET_SCHED, sched)
 DEFHOOK
 (adjust_cost,
  "This function corrects the value of @var{cost} based on the\n\
-relationship between @var{insn} and @var{dep_insn} through the\n\
-dependence @var{link}.  It should return the new value.  The default\n\
-is to make no adjustment to @var{cost}.  This can be used for example\n\
-to specify to the scheduler using the traditional pipeline description\n\
-that an output- or anti-dependence does not incur the same cost as a\n\
-data-dependence.  If the scheduler using the automaton based pipeline\n\
+relationship between @var{insn} and @var{dep_insn} through a\n\
+dependence of type dep_type, and strength @var{dw}.  It should return the new\n\
+value.  The default is to make no adjustment to @var{cost}.  This can be\n\
+used for example to specify to the scheduler using the traditional pipeline\n\
+description that an output- or anti-dependence does not incur the same cost\n\
+as a data-dependence.  If the scheduler using the automaton based pipeline\n\
 description, the cost of anti-dependence is zero and the cost of\n\
 output-dependence is maximum of one and the difference of latency\n\
 times of the first and the second insns.  If these values are not\n\
 acceptable, you could use the hook to modify them too.  See also\n\
 @pxref{Processor pipeline description}.",
- int, (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost), NULL)
+ int, (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn, int cost,
+       unsigned int dw),
+ NULL)
 
 /* Adjust the priority of an insn as you see fit.  Returns the new priority.  */
 DEFHOOK
@@ -1345,15 +1347,6 @@ important.  In such targets one may want to allow issuing dependent insns\n\
 closer to one another---i.e., closer than the dependence distance;  however,\n\
 not in cases of ``costly dependences'', which this hooks allows to define.",
  bool, (struct _dep *_dep, int cost, int distance), NULL)
-
-DEFHOOK_UNDOC
-(adjust_cost_2,
- "Given the current cost, @var{cost}, of an insn, @var{insn}, calculate and\
- return a new cost based on its relationship to @var{dep_insn} through the\
- dependence of weakness @var{dw}.  The default is to make no adjustment.",
- int, (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn, int cost,
-       unsigned int dw),
- NULL)
 
 /* The following member value is a pointer to a function called
    by the insn scheduler. This hook is called to notify the backend

@@ -1230,7 +1230,8 @@ static int rs6000_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool rs6000_debug_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, machine_mode, addr_space_t,
 				      bool);
-static int rs6000_debug_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int rs6000_debug_adjust_cost (rtx_insn *, int, rtx_insn *, int,
+				     unsigned int);
 static bool is_microcoded_insn (rtx_insn *);
 static bool is_nonpipeline_insn (rtx_insn *);
 static bool is_cracked_insn (rtx_insn *);
@@ -30077,14 +30078,15 @@ rs6000_variable_issue (FILE *stream, int verbose, rtx_insn *insn, int more)
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		    unsigned int)
 {
   enum attr_type attr_type;
 
   if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
     return cost;
 
-  switch (REG_NOTE_KIND (link))
+  switch (dep_type)
     {
     case REG_DEP_TRUE:
       {
@@ -30349,16 +30351,16 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 /* Debug version of rs6000_adjust_cost.  */
 
 static int
-rs6000_debug_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
-			  int cost)
+rs6000_debug_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+			  int cost, unsigned int dw)
 {
-  int ret = rs6000_adjust_cost (insn, link, dep_insn, cost);
+  int ret = rs6000_adjust_cost (insn, dep_type, dep_insn, cost, dw);
 
   if (ret != cost)
     {
       const char *dep;
 
-      switch (REG_NOTE_KIND (link))
+      switch (dep_type)
 	{
 	default:	     dep = "unknown depencency"; break;
 	case REG_DEP_TRUE:   dep = "data dependency";	 break;
