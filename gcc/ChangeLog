@@ -1,3 +1,11 @@
+2016-07-28  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/72657
+	PR target/72683
+	* tree-chkp.c (chkp_retbnd_call_by_val): Check for instrumentation
+	call using chkp_gimple_call_builtin_p.
+	(chkp_copy_bounds_for_assign): Likewise.
+
 2016-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config/alpha/alpha.c (alpha_adjust_cost): Adjust.
