@@ -1,3 +1,7 @@
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: New file.
+
 2016-07-21  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: If there's no loop, do not calculate
