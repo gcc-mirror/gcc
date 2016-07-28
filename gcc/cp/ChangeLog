@@ -1,3 +1,9 @@
+2016-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71665
+	* decl.c (build_enumerator): Check the type of the enumerator before
+	calling cxx_constant_value.
+
 2016-07-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71747

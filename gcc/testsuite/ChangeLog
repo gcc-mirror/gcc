@@ -1,3 +1,12 @@
+2016-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71665
+	* g++.dg/cpp0x/pr71665-1.C: New.
+	* g++.dg/cpp0x/pr71665-2.C: Likewise.
+	* g++.dg/cpp0x/enum29.C: Adjust dg-error string.
+	* g++.dg/ext/label10.C: Likewise.
+	* g++.dg/parse/constant5.C: Likewise.
+
 2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71859

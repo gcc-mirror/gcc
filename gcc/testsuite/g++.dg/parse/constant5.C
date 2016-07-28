@@ -1,7 +1,7 @@
 // { dg-options "-std=c++98 -pedantic-errors" }
 
 enum E { 
-  a = 24.2, // { dg-error "constant" }
+  a = 24.2, // { dg-error "integral|constant" }
   b = (int)3.7, 
   c = int(4.2),
   d = (int)(4.2 + 3.7), // { dg-error "constant" }
