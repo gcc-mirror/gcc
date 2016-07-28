@@ -1,5 +1,10 @@
 2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/71067
+	* decl.c (match_data_constant): On error, set 'result' to NULL.
+
+2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/71799
 	* resolve.c(gfc_resolve_iterator): Failure of type conversion need
 	not ICE.

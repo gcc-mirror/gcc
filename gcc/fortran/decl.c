@@ -395,6 +395,7 @@ match_data_constant (gfc_expr **result)
     {
       gfc_error ("Symbol %qs must be a PARAMETER in DATA statement at %C",
 		 name);
+      *result = NULL;
       return MATCH_ERROR;
     }
   else if (dt_sym && gfc_fl_struct (dt_sym->attr.flavor))
