@@ -1,3 +1,8 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71742
+	* c-decl.c (finish_struct): Rephrase an error message.
+
 2016-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71969

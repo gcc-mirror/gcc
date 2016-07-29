@@ -1,3 +1,10 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71742
+	* gcc.dg/940510-1.c: Adjust dg-error.
+	* gcc.dg/c99-flex-array-1.c: Likewise.
+	* gcc.dg/c99-flex-array-typedef-1.c: Likewise.
+
 2016-07-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr59833.c: Use dg-add-options ieee.
