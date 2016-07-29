@@ -1,3 +1,8 @@
+2016-07-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_out_compare): Use const0_rtx instead of 0
+	when testing for compares against constants of the form 0xabab.
+
 2016-07-29  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/57558
