@@ -5357,7 +5357,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
      the constant is of the form 0xabab.  */
 
   if (n_bytes == 2
-      && xval != 0
+      && xval != const0_rtx
       && test_hard_reg_class (LD_REGS, xreg)
       && compare_eq_p (insn)
       && !reg_unused_after (insn, xreg))
