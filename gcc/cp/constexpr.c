@@ -391,7 +391,12 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 	gcc_assert (TREE_TYPE (member) == vtbl_ptr_type_node);
     }
 
-  CONSTRUCTOR_APPEND_ELT (*vec, member, init);
+  /* Value-initialization can produce multiple initializers for the
+     same field; use the last one.  */
+  if (!vec_safe_is_empty (*vec) && (*vec)->last().index == member)
+    (*vec)->last().value = init;
+  else
+    CONSTRUCTOR_APPEND_ELT (*vec, member, init);
   return true;
 }
 
