@@ -1,3 +1,8 @@
+2016-07-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/_divkc3.c: Add copyright/license boilerplate.
+	* config/rs6000/_mulkc3.c: Likewise.
+
 2016-07-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S (__muldi3) [have MUL]: No need to clear
