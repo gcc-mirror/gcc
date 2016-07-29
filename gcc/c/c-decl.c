@@ -3327,7 +3327,7 @@ implicitly_declare (location_t loc, tree functionid)
 
   if (decl)
     {
-      if (decl == error_mark_node)
+      if (TREE_CODE (decl) != FUNCTION_DECL)
 	return decl;
 
       /* FIXME: Objective-C has weird not-really-builtin functions
