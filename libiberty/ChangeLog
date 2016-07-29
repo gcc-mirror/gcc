@@ -1,3 +1,8 @@
+2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix_1): Fall back to
+	malloc if alloca argument is greater than MAX_ALLOCA_SIZE.
+
 2016-07-15  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (cplus_demangle_operators): Add f[lrLR].
