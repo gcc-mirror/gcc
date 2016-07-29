@@ -1,3 +1,9 @@
+2016-07-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk:
+	PR fortran/71883
+	* gfortran.dg/pr71883.f90 : New test.
+
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
@@ -140,7 +146,7 @@
 	* c-c++-common/ubsan/bounds-13.c: New test.
 
 	2016-04-13  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR c++/70641
 	* g++.dg/opt/pr70641.C: New test.
 

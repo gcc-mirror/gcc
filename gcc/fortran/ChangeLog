@@ -1,3 +1,13 @@
+2016-07-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk:
+	PR fortran/71883
+	* frontend-passes.c (gfc_run_passes): Bail out if there are any
+	errors.
+	* error.c (gfc_internal_error): If there are any errors in the
+	buffer, exit with EXIT_FAILURE.
+
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
