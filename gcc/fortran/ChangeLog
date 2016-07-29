@@ -1,3 +1,8 @@
+2016-07-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* trans-array.c (gfc_conv_array_ref): Fix allocation of diagnostic
+	message (was too small).
+
 2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71067
