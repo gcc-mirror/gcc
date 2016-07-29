@@ -1,5 +1,9 @@
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
+	PR c/71926
+	* c-common.c (c_common_truthvalue_conversion): Use LOCATION for the
+	parentheses warning.
+
 	PR c/71574
 	* c-common.c (handle_alloc_align_attribute): Also check FUNCTION_DECL.
 

@@ -1,3 +1,9 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71926
+	* semantics.c (maybe_convert_cond): Use the location of COND for the
+	parentheses warning.
+
 2016-07-29  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (build_enumerator): Tweak diagnostic.
