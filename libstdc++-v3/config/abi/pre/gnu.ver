@@ -1678,7 +1678,12 @@ GLIBCXX_3.4.21 {
     _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
 
     # ABI-tagged std::basic_string
-    _ZNSt7__cxx1112basic_string*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[01]**;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]RKS3_;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[3-9]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[2-9]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[CDaip]*;
     _ZNKSt7__cxx1112basic_string*;
 
     # operator+ for ABI-tagged std::basic_string
@@ -1908,6 +1913,13 @@ GLIBCXX_3.4.22 {
     _ZGTtNSt15underflow_errorD[012]Ev;
 
 } GLIBCXX_3.4.21;
+
+GLIBCXX_3.4.23 {
+
+    # basic_string<C, T, A>::_Alloc_hider::_Alloc_hider(C*, A&&)
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]OS3_;
+
+} GLIBCXX_3.4.22;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
