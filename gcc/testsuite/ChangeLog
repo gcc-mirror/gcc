@@ -1,3 +1,7 @@
+2016-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr59833.c: Use dg-add-options ieee.
+
 2016-07-29  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/57558
@@ -6,7 +10,7 @@
 
 2016-07-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
-	gcc.dg/pr70920-4.c: Restrict to lp64 targets and make scan-tree-dump
+	* gcc.dg/pr70920-4.c: Restrict to lp64 targets and make scan-tree-dump
 	to scan forwprop1 dump pass.
 
 2016-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -75,7 +79,7 @@
 2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71734
-        * g++.dg/vect/pr70729-nest.cc: New test.
+	* g++.dg/vect/pr70729-nest.cc: New test.
 
 2016-07-28  Renlin Li  <renlin.li@arm.com>
 
@@ -442,8 +446,8 @@
 
 2016-07-19  Martin Jambor  <mjambor@suse.cz>
 
-        PR fortran/71688
-        * gfortran.dg/pr71688.f90: New test.
+	PR fortran/71688
+	* gfortran.dg/pr71688.f90: New test.
 
 2016-07-19  Richard Biener  <rguenther@suse.de>
 
