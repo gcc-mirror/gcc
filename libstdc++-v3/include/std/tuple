@@ -1265,6 +1265,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_size<tuple<_Elements...>>
     : public integral_constant<std::size_t, sizeof...(_Elements)> { };
 
+#if __cplusplus > 201402L
+  template <typename _Tp>
+    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+#endif
+
   template<std::size_t __i, typename _Head, typename... _Tail>
     constexpr _Head&
     __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
