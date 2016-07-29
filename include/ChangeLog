@@ -1,3 +1,7 @@
+2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* libiberty.h (MAX_ALLOCA_SIZE): New macro.
+
 2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gomp-constants.h (GOMP_VERSION): Increment to 1, add comment to

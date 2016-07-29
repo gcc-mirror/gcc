@@ -233,6 +233,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
   int i, n, common;
   int needed_len;
   char *ret = NULL, *ptr, *full_progname;
+  char *alloc_ptr = NULL;
 
   if (progname == NULL || bin_prefix == NULL || prefix == NULL)
     return NULL;
@@ -256,7 +257,10 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 #ifdef HAVE_HOST_EXECUTABLE_SUFFIX
 	  len += strlen (HOST_EXECUTABLE_SUFFIX);
 #endif
-	  nstore = (char *) alloca (len);
+	  if (len < MAX_ALLOCA_SIZE)
+	    nstore = (char *) alloca (len);
+	  else
+	    alloc_ptr = nstore = (char *) malloc (len);
 
 	  startp = endp = temp;
 	  while (1)
@@ -312,12 +316,12 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
   else
     full_progname = strdup (progname);
   if (full_progname == NULL)
-    return NULL;
+    goto bailout;
 
   prog_dirs = split_directories (full_progname, &prog_num);
   free (full_progname);
   if (prog_dirs == NULL)
-    return NULL;
+    goto bailout;
 
   bin_dirs = split_directories (bin_prefix, &bin_num);
   if (bin_dirs == NULL)
@@ -395,6 +399,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
   free_split_directories (prog_dirs);
   free_split_directories (bin_dirs);
   free_split_directories (prefix_dirs);
+  free (alloc_ptr);
 
   return ret;
 }
