@@ -13210,6 +13210,12 @@ get_last_value (const_rtx x)
       && DF_INSN_LUID (rsp->last_set) >= subst_low_luid)
     return 0;
 
+  /* If fewer bits were set than what we are asked for now, we cannot use
+     the value.  */
+  if (GET_MODE_PRECISION (rsp->last_set_mode)
+      < GET_MODE_PRECISION (GET_MODE (x)))
+    return 0;
+
   /* If the value has all its registers valid, return it.  */
   if (get_last_value_validate (&value, rsp->last_set, rsp->last_set_label, 0))
     return value;
