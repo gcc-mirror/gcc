@@ -7880,7 +7880,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  else if (!saw_named_field)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (x),
-			"flexible array member in otherwise empty struct");
+			"flexible array member in a struct with no named "
+			"members");
 	      TREE_TYPE (x) = error_mark_node;
 	    }
 	}
