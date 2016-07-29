@@ -1,3 +1,8 @@
+2016-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document 6.0.22 library version.
+	* doc/html/manual/abi.html: Regenerate.
+
 2016-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
