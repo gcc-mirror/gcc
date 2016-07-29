@@ -1,3 +1,12 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* config/rs6000/rs6000.c (altivec_expand_ld_builtin): Likewise.
+	(altivec_expand_st_builtin): Likewise.
+
 2016-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/71216
