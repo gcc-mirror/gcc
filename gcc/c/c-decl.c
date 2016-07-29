@@ -9262,7 +9262,9 @@ finish_function (void)
 
   /* For GNU C extern inline functions disregard inline limits.  */
   if (DECL_EXTERNAL (fndecl)
-      && DECL_DECLARED_INLINE_P (fndecl))
+      && DECL_DECLARED_INLINE_P (fndecl)
+      && (flag_gnu89_inline
+	  || lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (fndecl))))
     DECL_DISREGARD_INLINE_LIMITS (fndecl) = 1;
 
   /* Genericize before inlining.  Delay genericizing nested functions

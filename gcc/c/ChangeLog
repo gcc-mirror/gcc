@@ -1,3 +1,9 @@
+2016-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71969
+	* c-decl.c (finish_function): Only set DECL_DISREGARD_INLINE_LIMITS
+	on GNU extern inline functions.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71583
