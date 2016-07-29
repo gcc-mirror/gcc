@@ -1,3 +1,45 @@
+2016-07-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement C++17 variable templates for type traits.
+	* include/std/chrono (treat_as_floating_point_v): New.
+	* include/std/ratio (ratio_equal_v, ratio_not_equal_v)
+	(ratio_less_v, ratio_less_equal_v, ratio_greater_v)
+	(ratio_greater_equal_v): Likewise.
+	* include/std/system_error (is_error_code_enum_v)
+	(is_error_condition_enum_v): Likewise.
+	* include/std/tuple (tuple_size_v): Likewise.
+	* type_traits (conjunction_v, disjunction_v, negation_v)
+	(is_void_v, is_null_pointer_v, is_integral_v, is_floating_point_v)
+	(is_array_v, is_pointer_v, is_lvalue_reference_v)
+	(is_rvalue_reference_v, is_member_object_pointer_v)
+	(is_member_function_pointer_v, is_enum_v, is_union_v)
+	(is_class_v, is_function_v, is_reference_v, is_arithmetic_v)
+	(is_fundamental_v, is_object_v, is_scalar_v, is_compound_v)
+	(is_member_pointer_v, is_const_v, is_volatile_v, is_trivial_v)
+	(is_trivially_copyable_v, is_standard_layout_v)
+	(is_pod_v, is_literal_type_v, is_empty_v, is_polymorphic_v)
+	(is_abstract_v, is_final_v, is_signed_v, is_unsigned_v)
+	(is_constructible_v, is_default_constructible_v)
+	(is_copy_constructible_v, is_move_constructible_v)
+	(is_assignable_v, is_copy_assignable_v, is_move_assignable_v)
+	(is_destructible_v, is_trivially_constructible_v)
+	(is_trivially_default_constructible_v)
+ 	(is_trivially_copy_constructible_v, is_trivially_move_constructible_v)
+	(is_trivially_assignable_v, is_trivially_copy_assignable_v)
+	(is_trivially_move_assignable_v, is_trivially_destructible_v)
+	(is_nothrow_constructible_v, is_nothrow_default_constructible_v)
+	(is_nothrow_copy_constructible_v, is_nothrow_move_constructible_v)
+	(is_nothrow_assignable_v, is_nothrow_copy_assignable_v)
+	(is_nothrow_move_assignable_v, is_nothrow_destructible_v)
+	(has_virtual_destructor_v, alignment_of_v, rank_v, extent_v)
+	(is_same_v, is_base_of_v, is_convertible_v): Likewise.
+	* testsuite/19_diagnostics/error_code/is_error_code_v.cc: Likewise.
+	* testsuite/20_util/duration/requirements/treat_as_floating_point_v.cc:
+	Likewise.
+	* testsuite/20_util/ratio/requirements/ratio_equal_v.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_size_v.cc: Likewise.
+	* testsuite/20_util/variable_templates_for_traits.cc: Likewise.
+
 2016-07-29  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.

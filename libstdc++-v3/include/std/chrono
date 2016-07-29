@@ -208,7 +208,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
       struct treat_as_floating_point
       : is_floating_point<_Rep>
       { };
-
+#if __cplusplus > 201402L
+    template <typename _Rep>
+      constexpr bool treat_as_floating_point_v =
+        treat_as_floating_point<_Rep>::value;
+#endif // C++17
     /// duration_values
     template<typename _Rep>
       struct duration_values
