@@ -1,3 +1,8 @@
+2016-07-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* g++.dg/pr70098.C: Remove XFAIL for powerpc64_no_dm.
+	* gcc.target/powerpc/pr71763.c: Likewise.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71742
@@ -538,6 +543,7 @@
 
 	* g++.dg/cpp0x/nullptr35.C (caught): Fix typo.
 
+>>>>>>> .r238890
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Marco Restelli <mrestelli@gmail.com>
 
