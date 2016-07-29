@@ -1,3 +1,9 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* config/rs6000/rs6000.c (altivec_expand_ld_builtin): Likewise.
+	(altivec_expand_st_builtin): Likewise.
+
 2016-07-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (addqi3) [cc]: Revert glitch in insn attribute
