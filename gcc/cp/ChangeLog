@@ -1,5 +1,7 @@
 2016-07-29  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (build_enumerator): Tweak diagnostic.
+
 	PR c++/72457
 	* init.c (expand_aggr_init_1): Only handle value-init of bases.
 	* constexpr.c (build_data_member_initialization): Handle multiple

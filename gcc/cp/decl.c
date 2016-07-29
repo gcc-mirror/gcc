@@ -13590,7 +13590,7 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 	      if (! INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P
 		  (TREE_TYPE (value)))
 		{
-		  error ("enumerator for %qD must have integral or "
+		  error ("enumerator value for %qD must have integral or "
 			 "unscoped enumeration type", name);
 		  value = NULL_TREE;
 		}
