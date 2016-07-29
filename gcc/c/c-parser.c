@@ -5661,6 +5661,7 @@ c_parser_switch_statement (c_parser *parser, bool *if_p)
     {
       switch_cond_loc = UNKNOWN_LOCATION;
       expr = error_mark_node;
+      ce.original_type = error_mark_node;
     }
   c_start_case (switch_loc, switch_cond_loc, expr, explicit_cast_p);
   save_break = c_break_label;

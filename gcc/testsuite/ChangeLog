@@ -5,6 +5,9 @@
 	* gcc.dg/c99-flex-array-1.c: Likewise.
 	* gcc.dg/c99-flex-array-typedef-1.c: Likewise.
 
+	PR c/71853
+	* gcc.dg/noncompile/pr71853.c: New test.
+
 2016-07-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr59833.c: Use dg-add-options ieee.
