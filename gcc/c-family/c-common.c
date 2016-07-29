@@ -8370,7 +8370,8 @@ handle_alloc_align_attribute (tree *node, tree, tree args, int,
 {
   unsigned arg_count = type_num_arguments (*node);
   tree position = TREE_VALUE (args);
-  if (position && TREE_CODE (position) != IDENTIFIER_NODE)
+  if (position && TREE_CODE (position) != IDENTIFIER_NODE
+      && TREE_CODE (position) != FUNCTION_DECL)
     position = default_conversion (position);
 
   if (!tree_fits_uhwi_p (position)

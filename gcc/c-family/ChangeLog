@@ -1,3 +1,8 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71574
+	* c-common.c (handle_alloc_align_attribute): Also check FUNCTION_DECL.
+
 2016-07-28  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/68025

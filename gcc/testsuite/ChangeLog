@@ -1,3 +1,8 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71574
+	* c-c++-common/pr71574.c: New test.
+
 2016-07-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/68217
