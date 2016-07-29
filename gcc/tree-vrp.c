@@ -3067,6 +3067,24 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  if (int_cst_range1 && tree_int_cst_sgn (vr1.min) >= 0)
 	    wmax = wi::min (wmax, vr1.max, TYPE_SIGN (expr_type));
 	  max = wide_int_to_tree (expr_type, wmax);
+	  cmp = compare_values (min, max);
+	  /* PR68217: In case of signed & sign-bit-CST should
+	     result in [-INF, 0] instead of [-INF, INF].  */
+	  if (cmp == -2 || cmp == 1)
+	    {
+	      wide_int sign_bit
+		= wi::set_bit_in_zero (TYPE_PRECISION (expr_type) - 1,
+				       TYPE_PRECISION (expr_type));
+	      if (!TYPE_UNSIGNED (expr_type)
+		  && ((value_range_constant_singleton (&vr0)
+		       && !wi::cmps (vr0.min, sign_bit))
+		      || (value_range_constant_singleton (&vr1)
+			  && !wi::cmps (vr1.min, sign_bit))))
+		{
+		  min = TYPE_MIN_VALUE (expr_type);
+		  max = build_int_cst (expr_type, 0);
+		}
+	    }
 	}
       else if (code == BIT_IOR_EXPR)
 	{

@@ -1,3 +1,9 @@
+2016-07-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/68217
+	* tree-vrp.c (extract_range_from_binary_expr_1): In case of signed
+	& sign-bit-CST, generate [-INF, 0] instead of [-INF, INF].
+
 2016-07-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_split_vec_extract_var):
