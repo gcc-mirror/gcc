@@ -1,5 +1,11 @@
 2016-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (libtool_VERSION): Bump to 6:23:0.
+	* config/abi/pre/gnu.ver: Add 3.4.23 version for new basic_string
+	symbols.
+	* configure: Regenerate.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
 	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
 	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
