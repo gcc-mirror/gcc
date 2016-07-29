@@ -4591,8 +4591,9 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       if (!TREE_NO_WARNING (expr)
 	  && warn_parentheses)
 	{
-	  warning (OPT_Wparentheses,
-		   "suggest parentheses around assignment used as truth value");
+	  warning_at (location, OPT_Wparentheses,
+		      "suggest parentheses around assignment used as "
+		      "truth value");
 	  TREE_NO_WARNING (expr) = 1;
 	}
       break;
