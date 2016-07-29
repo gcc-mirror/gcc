@@ -14245,6 +14245,7 @@ altivec_expand_ld_builtin (tree exp, rtx target, bool *expandedp)
       break;
     case ALTIVEC_BUILTIN_LD_INTERNAL_2di:
       icode = CODE_FOR_vector_altivec_load_v2di;
+      break;
     case ALTIVEC_BUILTIN_LD_INTERNAL_1ti:
       icode = CODE_FOR_vector_altivec_load_v1ti;
       break;
@@ -14306,6 +14307,7 @@ altivec_expand_st_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       break;
     case ALTIVEC_BUILTIN_ST_INTERNAL_2di:
       icode = CODE_FOR_vector_altivec_store_v2di;
+      break;
     case ALTIVEC_BUILTIN_ST_INTERNAL_1ti:
       icode = CODE_FOR_vector_altivec_store_v1ti;
       break;
