@@ -231,6 +231,8 @@ typedef struct _loop_vec_info : public vec_info {
   tree num_iters;
   /* Number of iterations of the original loop.  */
   tree num_iters_unchanged;
+  /* Condition under which this loop is analyzed and versioned.  */
+  tree num_iters_assumptions;
 
   /* Threshold of number of iterations below which vectorzation will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
@@ -343,6 +345,7 @@ typedef struct _loop_vec_info : public vec_info {
    prologue peeling retain total unchanged scalar loop iterations for
    cost model.  */
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
+#define LOOP_VINFO_NITERS_ASSUMPTIONS(L)   (L)->num_iters_assumptions
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
@@ -371,10 +374,16 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
 
-#define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
+#define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L)	\
   ((L)->may_misalign_stmts.length () > 0)
-#define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)     \
+#define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)		\
   ((L)->may_alias_ddrs.length () > 0)
+#define LOOP_REQUIRES_VERSIONING_FOR_NITERS(L)		\
+  (LOOP_VINFO_NITERS_ASSUMPTIONS (L))
+#define LOOP_REQUIRES_VERSIONING(L)			\
+  (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (L)		\
+   || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (L)		\
+   || LOOP_REQUIRES_VERSIONING_FOR_NITERS (L))
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
   (tree_fits_shwi_p ((L)->num_iters) && tree_to_shwi ((L)->num_iters) > 0)
@@ -1177,5 +1186,6 @@ void vect_pattern_recog (vec_info *);
 unsigned vectorize_loops (void);
 void vect_destroy_datarefs (vec_info *);
 bool vect_stmt_in_region_p (vec_info *, gimple *);
+void vect_free_loop_info_assumptions (struct loop *);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

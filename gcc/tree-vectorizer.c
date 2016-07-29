@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-niter.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
@@ -368,6 +369,20 @@ vect_destroy_datarefs (vec_info *vinfo)
   free_data_refs (vinfo->datarefs);
 }
 
+/* A helper function to free scev and LOOP niter information, as well as
+   clear loop constraint LOOP_C_FINITE.  */
+
+void
+vect_free_loop_info_assumptions (struct loop *loop)
+{
+  scev_reset_htab ();
+  /* We need to explicitly reset upper bound information since they are
+     used even after free_numbers_of_iterations_estimates_loop.  */
+  loop->any_upper_bound = false;
+  loop->any_likely_upper_bound = false;
+  free_numbers_of_iterations_estimates_loop (loop);
+  loop_constraint_clear (loop, LOOP_C_FINITE);
+}
 
 /* Return whether STMT is inside the region we try to vectorize.  */
 
@@ -537,7 +552,14 @@ vectorize_loops (void)
 	loop->aux = loop_vinfo;
 
 	if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
-	  continue;
+	  {
+	    /* Free existing information if loop is analyzed with some
+	       assumptions.  */
+	    if (loop_constraint_set_p (loop, LOOP_C_FINITE))
+	      vect_free_loop_info_assumptions (loop);
+
+	    continue;
+	  }
 
         if (!dbg_cnt (vect_loop))
 	  {
@@ -545,6 +567,11 @@ vectorize_loops (void)
 	       debug counter.  Set any_ifcvt_loops to visit
 	       them at finalization.  */
 	    any_ifcvt_loops = true;
+	    /* Free existing information if loop is analyzed with some
+	       assumptions.  */
+	    if (loop_constraint_set_p (loop, LOOP_C_FINITE))
+	      vect_free_loop_info_assumptions (loop);
+
 	    break;
 	  }
 
