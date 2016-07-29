@@ -1,5 +1,8 @@
 2016-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/abi.xml: Document 6.0.22 library version.
+	* doc/html/manual/abi.html: Regenerate.
+
 	* acinclude.m4 (libtool_VERSION): Bump to 6:23:0.
 	* config/abi/pre/gnu.ver: Add 3.4.23 version for new basic_string
 	symbols.
