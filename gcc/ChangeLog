@@ -1,3 +1,10 @@
+2016-07-29  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/71976
+	* combine.c (get_last_value): Return 0 if the argument for which
+	the function is called has a wider mode than the recorded value.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
