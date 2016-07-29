@@ -188,6 +188,29 @@ struct GTY ((chain_next ("%h.next"))) loop {
      of the loop can be safely evaluated concurrently.  */
   int safelen;
 
+  /* Constraints are generally set by consumers and affect certain
+     semantics of niter analyzer APIs.  Currently the APIs affected are
+     number_of_iterations_exit* functions and their callers.  One typical
+     use case of constraints is to vectorize possibly infinite loop:
+
+       1) Compute niter->assumptions by calling niter analyzer API and
+	  record it as possible condition for loop versioning.
+       2) Clear buffered result of niter/scev analyzer.
+       3) Set constraint LOOP_C_FINITE assuming the loop is finite.
+       4) Analyze data references.  Since data reference analysis depends
+	  on niter/scev analyzer, the point is that niter/scev analysis
+	  is done under circumstance of LOOP_C_FINITE constraint.
+       5) Version the loop with niter->assumptions computed in step 1).
+       6) Vectorize the versioned loop in which niter->assumptions is
+	  checked to be true.
+       7) Update constraints in versioned loops so that niter analyzer
+	  in following passes can use it.
+
+     Note consumers are usually the loop optimizers and it is consumers'
+     responsibility to set/clear constraints correctly.  Failing to do
+     that might result in hard to track down bugs in niter/scev consumers.  */
+  unsigned constraints;
+
   /* True if this loop should never be vectorized.  */
   bool dont_vectorize;
 
@@ -220,6 +243,32 @@ struct GTY ((chain_next ("%h.next"))) loop {
      reused.  */
   basic_block former_header;
 };
+
+/* Set if the loop is known to be infinite.  */
+#define LOOP_C_INFINITE		(1 << 0)
+/* Set if the loop is known to be finite without any assumptions.  */
+#define LOOP_C_FINITE		(1 << 1)
+
+/* Set C to the LOOP constraint.  */
+static inline void
+loop_constraint_set (struct loop *loop, unsigned c)
+{
+  loop->constraints |= c;
+}
+
+/* Clear C from the LOOP constraint.  */
+static inline void
+loop_constraint_clear (struct loop *loop, unsigned c)
+{
+  loop->constraints &= ~c;
+}
+
+/* Check if C is set in the LOOP constraint.  */
+static inline bool
+loop_constraint_set_p (struct loop *loop, unsigned c)
+{
+  return (loop->constraints & c) == c;
+}
 
 /* Flags for state of loop structure.  */
 enum
