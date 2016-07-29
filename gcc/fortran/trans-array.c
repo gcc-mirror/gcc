@@ -3332,7 +3332,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	  if (ref->type == REF_ARRAY && &ref->u.ar == ar)
 	    break;
 	  if (ref->type == REF_COMPONENT)
-	    len += 1 + strlen (ref->u.c.component->name);
+	    len += 2 + strlen (ref->u.c.component->name);
 	}
 
       var_name = XALLOCAVEC (char, len);
