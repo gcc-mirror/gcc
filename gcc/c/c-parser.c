@@ -8232,7 +8232,9 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   set_c_expr_source_range (&expr, init.src_range);
   expr.original_code = ERROR_MARK;
   expr.original_type = NULL;
-  if (type != error_mark_node && type_expr)
+  if (type != error_mark_node
+      && expr.value != error_mark_node
+      && type_expr)
     {
       if (TREE_CODE (expr.value) == C_MAYBE_CONST_EXPR)
 	{
