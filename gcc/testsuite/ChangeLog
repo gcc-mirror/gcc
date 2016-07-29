@@ -1,3 +1,8 @@
+2016-07-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	gcc.dg/pr70920-4.c: Restrict to lp64 targets and make scan-tree-dump
+	to scan forwprop1 dump pass.
+
 2016-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51488

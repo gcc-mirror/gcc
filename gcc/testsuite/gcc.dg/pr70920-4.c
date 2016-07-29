@@ -1,5 +1,6 @@
+/* { dg-require-effective-target lp64 } */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ccp-details -Wno-int-to-pointer-cast" } */
+/* { dg-options "-O2 -fdump-tree-forwprop-details -Wno-int-to-pointer-cast" } */
 
 #include <stdint.h>
 
@@ -18,4 +19,4 @@ foo (int a)
     }
 }
 
-/* { dg-final { scan-tree-dump "gimple_simplified to if \\(_\[0-9\]* == 0\\)" "ccp1" } } */
+/* { dg-final { scan-tree-dump "if \\(_\[0-9\]* == 0\\)" "forwprop1" } } */
