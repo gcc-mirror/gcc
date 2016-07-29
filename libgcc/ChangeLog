@@ -1,3 +1,8 @@
+2016-07-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__muldi3) [have MUL]: No need to clear
+	zero_reg as previous call to __umulhisi3 already cleared it.
+
 2016-07-21  Aurelien Jarno <aurelien@aurel32.net>
 
 	PR target/59833
