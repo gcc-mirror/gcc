@@ -1,3 +1,9 @@
+2016-07-29  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/57558
+	* gcc.dg/vect/pr57558-1.c: New test.
+	* gcc.dg/vect/pr57558-2.c: New test.
+
 2016-07-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	gcc.dg/pr70920-4.c: Restrict to lp64 targets and make scan-tree-dump

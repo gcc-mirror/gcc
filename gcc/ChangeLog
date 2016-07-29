@@ -1,5 +1,29 @@
 2016-07-29  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/57558
+	* tree-vect-loop-manip.c (vect_create_cond_for_niters_checks): New
+	function.
+	(vect_loop_versioning): Support versioning with niter assumptions.
+	* tree-vect-loop.c (tree-ssa-loop.h): Include header file.
+	(vect_get_loop_niters): New parameter.  Reimplement to support
+	assumptions in loop niter info.
+	(vect_analyze_loop_form_1, vect_analyze_loop_form): Ditto.
+	(new_loop_vec_info): Init LOOP_VINFO_NITERS_ASSUMPTIONS.
+	(vect_estimate_min_profitable_iters): Use LOOP_REQUIRES_VERSIONING.
+	Support loop versioning for niters.
+	* tree-vectorizer.c (tree-ssa-loop-niter.h): Include header file.
+	(vect_free_loop_info_assumptions): New function.
+	(vectorize_loops): Free loop niter info for loops with flag
+	LOOP_F_ASSUMPTIONS set if vectorization failed.
+	* tree-vectorizer.h (struct _loop_vec_info): New field
+	num_iters_assumptions.
+	(LOOP_VINFO_NITERS_ASSUMPTIONS): New macro.
+	(LOOP_REQUIRES_VERSIONING_FOR_NITERS): New macro.
+	(LOOP_REQUIRES_VERSIONING): New macro.
+	(vect_free_loop_info_assumptions): New decl.
+
+2016-07-29  Bin Cheng  <bin.cheng@arm.com>
+
 	* cfgloop.h (struct loop): New field constraints.
 	(LOOP_C_INFINITE, LOOP_C_FINITE): New macros.
 	(loop_constraint_set, loop_constraint_clr, loop_constraint_set_p): New

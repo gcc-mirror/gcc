@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
+#include "tree-ssa-loop.h"
 #include "cfgloop.h"
 #include "params.h"
 #include "tree-scalar-evolution.h"
@@ -1002,36 +1003,87 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
 
    Determine how many iterations the loop is executed and place it
    in NUMBER_OF_ITERATIONS.  Place the number of latch iterations
-   in NUMBER_OF_ITERATIONSM1.
+   in NUMBER_OF_ITERATIONSM1.  Place the condition under which the
+   niter information holds in ASSUMPTIONS.
 
    Return the loop exit condition.  */
 
 
 static gcond *
-vect_get_loop_niters (struct loop *loop, tree *number_of_iterations,
-		      tree *number_of_iterationsm1)
+vect_get_loop_niters (struct loop *loop, tree *assumptions,
+		      tree *number_of_iterations, tree *number_of_iterationsm1)
 {
-  tree niters;
+  edge exit = single_exit (loop);
+  struct tree_niter_desc niter_desc;
+  tree niter_assumptions, niter, may_be_zero;
+  gcond *cond = get_loop_exit_condition (loop);
 
+  *assumptions = boolean_true_node;
+  *number_of_iterationsm1 = chrec_dont_know;
+  *number_of_iterations = chrec_dont_know;
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "=== get_loop_niters ===\n");
 
-  niters = number_of_latch_executions (loop);
-  *number_of_iterationsm1 = niters;
+  if (!exit)
+    return cond;
+
+  niter = chrec_dont_know;
+  may_be_zero = NULL_TREE;
+  niter_assumptions = boolean_true_node;
+  if (!number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
+      || chrec_contains_undetermined (niter_desc.niter))
+    return cond;
+
+  niter_assumptions = niter_desc.assumptions;
+  may_be_zero = niter_desc.may_be_zero;
+  niter = niter_desc.niter;
+
+  if (may_be_zero && integer_zerop (may_be_zero))
+    may_be_zero = NULL_TREE;
+
+  if (may_be_zero)
+    {
+      if (COMPARISON_CLASS_P (may_be_zero))
+	{
+	  /* Try to combine may_be_zero with assumptions, this can simplify
+	     computation of niter expression.  */
+	  if (niter_assumptions && !integer_nonzerop (niter_assumptions))
+	    niter_assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+					     niter_assumptions,
+					     fold_build1 (TRUTH_NOT_EXPR,
+							  boolean_type_node,
+							  may_be_zero));
+	  else
+	    niter = fold_build3 (COND_EXPR, TREE_TYPE (niter), may_be_zero,
+				 build_int_cst (TREE_TYPE (niter), 0), niter);
+
+	  may_be_zero = NULL_TREE;
+	}
+      else if (integer_nonzerop (may_be_zero))
+	{
+	  *number_of_iterationsm1 = build_int_cst (TREE_TYPE (niter), 0);
+	  *number_of_iterations = build_int_cst (TREE_TYPE (niter), 1);
+	  return cond;
+	}
+      else
+	return cond;
+    }
+
+  *assumptions = niter_assumptions;
+  *number_of_iterationsm1 = niter;
 
   /* We want the number of loop header executions which is the number
      of latch executions plus one.
      ???  For UINT_MAX latch executions this number overflows to zero
      for loops like do { n++; } while (n != 0);  */
-  if (niters && !chrec_contains_undetermined (niters))
-    niters = fold_build2 (PLUS_EXPR, TREE_TYPE (niters), unshare_expr (niters),
-			  build_int_cst (TREE_TYPE (niters), 1));
-  *number_of_iterations = niters;
+  if (niter && !chrec_contains_undetermined (niter))
+    niter = fold_build2 (PLUS_EXPR, TREE_TYPE (niter), unshare_expr (niter),
+			  build_int_cst (TREE_TYPE (niter), 1));
+  *number_of_iterations = niter;
 
-  return get_loop_exit_condition (loop);
+  return cond;
 }
-
 
 /* Function bb_in_loop_p
 
@@ -1101,6 +1153,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_NITERSM1 (res) = NULL;
   LOOP_VINFO_NITERS (res) = NULL;
   LOOP_VINFO_NITERS_UNCHANGED (res) = NULL;
+  LOOP_VINFO_NITERS_ASSUMPTIONS (res) = NULL;
   LOOP_VINFO_COST_MODEL_THRESHOLD (res) = 0;
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
   LOOP_VINFO_PEELING_FOR_ALIGNMENT (res) = 0;
@@ -1280,12 +1333,13 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
    Verify that certain CFG restrictions hold, including:
    - the loop has a pre-header
    - the loop has a single entry and exit
-   - the loop exit condition is simple enough, and the number of iterations
-     can be analyzed (a countable loop).  */
+   - the loop exit condition is simple enough
+   - the number of iterations can be analyzed, i.e, a countable loop.  The
+     niter could be analyzed under some assumptions.  */
 
 bool
 vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
-			  tree *number_of_iterationsm1,
+			  tree *assumptions, tree *number_of_iterationsm1,
 			  tree *number_of_iterations, gcond **inner_loop_cond)
 {
   if (dump_enabled_p ())
@@ -1376,9 +1430,13 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 	}
 
       /* Analyze the inner-loop.  */
-      tree inner_niterm1, inner_niter;
+      tree inner_niterm1, inner_niter, inner_assumptions;
       if (! vect_analyze_loop_form_1 (loop->inner, inner_loop_cond,
-				      &inner_niterm1, &inner_niter, NULL))
+				      &inner_assumptions, &inner_niterm1,
+				      &inner_niter, NULL)
+	  /* Don't support analyzing niter under assumptions for inner
+	     loop.  */
+	  || !integer_onep (inner_assumptions))
 	{
 	  if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1447,7 +1505,7 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 	}
     }
 
-  *loop_cond = vect_get_loop_niters (loop, number_of_iterations,
+  *loop_cond = vect_get_loop_niters (loop, assumptions, number_of_iterations,
 				     number_of_iterationsm1);
   if (!*loop_cond)
     {
@@ -1457,7 +1515,8 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
       return false;
     }
 
-  if (!*number_of_iterations
+  if (integer_zerop (*assumptions)
+      || !*number_of_iterations
       || chrec_contains_undetermined (*number_of_iterations))
     {
       if (dump_enabled_p ())
@@ -1483,10 +1542,11 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 loop_vec_info
 vect_analyze_loop_form (struct loop *loop)
 {
-  tree number_of_iterations, number_of_iterationsm1;
+  tree assumptions, number_of_iterations, number_of_iterationsm1;
   gcond *loop_cond, *inner_loop_cond = NULL;
 
-  if (! vect_analyze_loop_form_1 (loop, &loop_cond, &number_of_iterationsm1,
+  if (! vect_analyze_loop_form_1 (loop, &loop_cond,
+				  &assumptions, &number_of_iterationsm1,
 				  &number_of_iterations, &inner_loop_cond))
     return NULL;
 
@@ -1494,6 +1554,19 @@ vect_analyze_loop_form (struct loop *loop)
   LOOP_VINFO_NITERSM1 (loop_vinfo) = number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
+  if (!integer_onep (assumptions))
+    {
+      /* We consider to vectorize this loop by versioning it under
+	 some assumptions.  In order to do this, we need to clear
+	 existing information computed by scev and niter analyzer.  */
+      scev_reset_htab ();
+      free_numbers_of_iterations_estimates_loop (loop);
+      /* Also set flag for this loop so that following scev and niter
+	 analysis are done under the assumptions.  */
+      loop_constraint_set (loop, LOOP_C_FINITE);
+      /* Also record the assumptions for versioning.  */
+      LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = assumptions;
+    }
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     {
@@ -2082,8 +2155,7 @@ start_over:
                /* In case of versioning, check if the maximum number of
                   iterations is greater than th.  If they are identical,
                   the epilogue is unnecessary.  */
-	       && ((!LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo)
-	            && !LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
+	       && (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
                    || (unsigned HOST_WIDE_INT) max_niter > th)))
     LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = true;
 
@@ -3127,8 +3199,18 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
                    "versioning aliasing.\n");
     }
 
-  if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
-      || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+  /* Requires loop versioning with niter checks.  */
+  if (LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo))
+    {
+      /*  FIXME: Make cost depend on complexity of individual check.  */
+      (void) add_stmt_cost (target_cost_data, 1, vector_stmt, NULL, 0,
+			    vect_prologue);
+      dump_printf (MSG_NOTE,
+		   "cost model: Adding cost of checks for loop "
+		   "versioning niters.\n");
+    }
+
+  if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken, NULL, 0,
 			  vect_prologue);
 
@@ -3285,12 +3367,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      decide whether to vectorize at compile time.  Hence the scalar version
      do not carry cost model guard costs.  */
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      || LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
-      || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+      || LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
       /* Cost model check occurs at versioning.  */
-      if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
-          || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+      if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
 	scalar_outside_cost += vect_get_stmt_cost (cond_branch_not_taken);
       else
 	{
@@ -6629,8 +6709,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   /* Version the loop first, if required, so the profitability check
      comes first.  */
 
-  if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
-      || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+  if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
       vect_loop_versioning (loop_vinfo, th, check_profitability);
       check_profitability = false;
