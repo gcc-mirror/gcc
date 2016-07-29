@@ -3,6 +3,10 @@
 	PR c/71742
 	* c-decl.c (finish_struct): Rephrase an error message.
 
+	PR c/71853
+	* c-parser.c (c_parser_switch_statement): Initialize ce.original_type
+	to error node for invalid code.
+
 2016-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71969
