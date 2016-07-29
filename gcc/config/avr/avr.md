@@ -3944,7 +3944,7 @@
 ;; logical shift right
 
 ;; "lshrqi3"
-;; "lshrqq3 "lshruqq3"
+;; "lshrqq3" "lshruqq3"
 (define_expand "lshr<mode>3"
   [(set (match_operand:ALL1 0 "register_operand" "")
         (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand" "")
