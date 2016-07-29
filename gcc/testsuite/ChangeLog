@@ -1,3 +1,12 @@
+2016-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71969
+	* gcc.dg/alias-11.c (add_cfi, new_cfi): Change __inline__ to
+	static __inline__.
+	* gcc.dg/pr71969-1.c: New test.
+	* gcc.dg/pr71969-2.c: New test.
+	* gcc.dg/pr71969-3.c: New test.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71574
