@@ -476,6 +476,32 @@ The function @code{number_of_cond_exit_executions} can be used to
 determine number of executions of the exit condition of a single-exit
 loop (i.e., the @code{number_of_latch_executions} increased by one).
 
+On GIMPLE, below constraint flags affect semantics of some APIs of number
+of iterations analyzer:
+
+@itemize
+@item @code{LOOP_C_INFINITE}: If this constraint flag is set, the loop
+is known to be infinite.  APIs like @code{number_of_iterations_exit} can
+return false directly without doing any analysis.
+@item @code{LOOP_C_FINITE}: If this constraint flag is set, the loop is
+known to be finite, in other words, loop's number of iterations can be
+computed with @code{assumptions} be true.
+@end itemize
+
+Generally, the constraint flags are set/cleared by consumers which are
+loop optimizers.  It's also the consumers' responsibility to set/clear
+constraints correctly.  Failing to do that might result in hard to track
+down bugs in scev/niter consumers.  One typical use case is vectorizer:
+it drives number of iterations analyzer by setting @code{LOOP_C_FINITE}
+and vectorizes possibly infinite loop by versioning loop with analysis
+result.  In return, constraints set by consumers can also help number of
+iterations analyzer in following optimizers.  For example, @code{niter}
+of a loop versioned under @code{assumptions} is valid unconditionally.
+
+Other constraints may be added in the future, for example, a constraint
+indicating that loops' latch must roll thus @code{may_be_zero} would be
+false unconditionally.
+
 @node Dependency analysis
 @section Data Dependency Analysis
 @cindex Data Dependency Analysis

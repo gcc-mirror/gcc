@@ -1,3 +1,16 @@
+2016-07-29  Bin Cheng  <bin.cheng@arm.com>
+
+	* cfgloop.h (struct loop): New field constraints.
+	(LOOP_C_INFINITE, LOOP_C_FINITE): New macros.
+	(loop_constraint_set, loop_constraint_clr, loop_constraint_set_p): New
+	functions.
+	* cfgloop.c (alloc_loop): Initialize new field.
+	* cfgloopmanip.c (copy_loop_info): Copy constraints.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions):
+	Adjust niter analysis wrto loop constraints.
+	* doc/loop.texi (@node Number of iterations): Add description for loop
+	constraints.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
