@@ -1,3 +1,9 @@
+2016-07-29  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+
 2016-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Document 6.0.22 library version.
