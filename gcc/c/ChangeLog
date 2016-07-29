@@ -1,3 +1,9 @@
+2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71583
+	* c-parser.c (c_parser_postfix_expression_after_paren_type): Also
+	check expr.value.
+
 2016-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-typeck.c: Use HOST_WIDE_INT_1 instead of (HOST_WIDE_INT) 1,
