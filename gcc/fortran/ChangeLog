@@ -1,5 +1,11 @@
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/70006
+	* io.c (gfc_resolve_dt): Use correct locus.
+	* resolve.c (resolve_branch): Ditto.
+
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/71730
 	* decl.c (char_len_param_value): Check return value of
 	gfc_reduce_init_expr().
