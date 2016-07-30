@@ -3052,7 +3052,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
       && dt->format_label->defined == ST_LABEL_UNKNOWN)
     {
       gfc_error ("FORMAT label %d at %L not defined", dt->format_label->value,
-		 &dt->format_label->where);
+		 loc);
       return false;
     }
 
