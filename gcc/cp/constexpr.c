@@ -1848,6 +1848,13 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
       else if (TREE_CODE (rhs) == PTRMEM_CST)
 	rhs = cplus_expand_constant (rhs);
     }
+  if (code == POINTER_PLUS_EXPR && !*non_constant_p
+      && integer_zerop (lhs) && !integer_zerop (rhs))
+    {
+      if (!ctx->quiet)
+	error ("arithmetic involving a null pointer in %qE", lhs);
+      return t;
+    }
 
   if (r == NULL_TREE)
     r = fold_binary_loc (loc, code, type, lhs, rhs);
@@ -2195,6 +2202,11 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
   tree whole = cxx_eval_constant_expression (ctx, orig_whole,
 					     lval,
 					     non_constant_p, overflow_p);
+  if (TREE_CODE (whole) == INDIRECT_REF
+      && integer_zerop (TREE_OPERAND (whole, 0))
+      && !ctx->quiet)
+    error ("dereferencing a null pointer in %qE", orig_whole);
+
   if (TREE_CODE (whole) == PTRMEM_CST)
     whole = cplus_expand_constant (whole);
   if (whole == orig_whole)
@@ -2955,6 +2967,14 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
       if (*non_constant_p)
 	return t;
 
+      if (!lval && integer_zerop (op0))
+	{
+	  if (!ctx->quiet)
+	    error ("dereferencing a null pointer");
+	  *non_constant_p = true;
+	  return t;
+	}
+
       r = cxx_fold_indirect_ref (EXPR_LOCATION (t), TREE_TYPE (t), op0,
 				 &empty_base);
       if (r == NULL_TREE)
@@ -3614,10 +3634,22 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  if (!flag_permissive || ctx->quiet)
 	    *overflow_p = true;
 	}
+
+      if (TREE_CODE (t) == INTEGER_CST
+	  && TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
+	  && !integer_zerop (t))
+	{
+	  if (!ctx->quiet)
+	    error ("value %qE of type %qT is not a constant expression",
+		   t, TREE_TYPE (t));
+	  *non_constant_p = true;
+	}
+
       return t;
     }
 
-  switch (TREE_CODE (t))
+  tree_code tcode = TREE_CODE (t);
+  switch (tcode)
     {
     case RESULT_DECL:
       if (lval)
@@ -4041,7 +4073,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case NOP_EXPR:
     case UNARY_PLUS_EXPR:
       {
-	enum tree_code tcode = TREE_CODE (t);
 	tree oldop = TREE_OPERAND (t, 0);
 
 	tree op = cxx_eval_constant_expression (ctx, oldop,
@@ -4067,15 +4098,48 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		return t;
 	      }
 	  }
-	if (POINTER_TYPE_P (type)
-	    && TREE_CODE (op) == INTEGER_CST
-	    && !integer_zerop (op))
+
+	if (POINTER_TYPE_P (type) && TREE_CODE (op) == INTEGER_CST)
 	  {
-	    if (!ctx->quiet)
-	      error_at (EXPR_LOC_OR_LOC (t, input_location),
-			"reinterpret_cast from integer to pointer");
-	    *non_constant_p = true;
-	    return t;
+	    if (integer_zerop (op))
+	      {
+		if (TREE_CODE (type) == REFERENCE_TYPE)
+		  {
+		    if (!ctx->quiet)
+		      error_at (EXPR_LOC_OR_LOC (t, input_location),
+				"dereferencing a null pointer");
+		    *non_constant_p = true;
+		    return t;
+		  }
+		else if (TREE_CODE (TREE_TYPE (op)) == POINTER_TYPE)
+		  {
+		    tree from = TREE_TYPE (op);
+
+		    if (!can_convert (type, from, tf_none))
+		      {
+			if (!ctx->quiet)
+			  error_at (EXPR_LOC_OR_LOC (t, input_location),
+				    "conversion of %qT null pointer to %qT "
+				    "is not a constant expression",
+				    from, type);
+			*non_constant_p = true;
+			return t;
+		      }
+		  }
+	      }
+	    else
+	      {
+		/* This detects for example:
+		     reinterpret_cast<void*>(sizeof 0)
+		*/
+		if (!ctx->quiet)
+		  error_at (EXPR_LOC_OR_LOC (t, input_location),
+			    "%<reinterpret_cast<%T>(%E)%> is not "
+			    "a constant-expression",
+			    type, op);
+		*non_constant_p = true;
+		return t;
+	      }
 	  }
 	if (op == oldop && tcode != UNARY_PLUS_EXPR)
 	  /* We didn't fold at the top so we could check for ptr-int
