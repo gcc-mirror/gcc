@@ -1,5 +1,10 @@
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/69867
+	* decl.c (build_struct): Ensure that pointers point to something.
+
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/69962
 	* decl.c (gfc_set_constant_character_len):  if expr is not
 	constant issue an error instead of an ICE.
