@@ -1,5 +1,11 @@
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/69962
+	* decl.c (gfc_set_constant_character_len):  if expr is not
+	constant issue an error instead of an ICE.
+
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/70006
 	* io.c (gfc_resolve_dt): Use correct locus.
 	* resolve.c (resolve_branch): Ditto.
