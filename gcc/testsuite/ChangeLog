@@ -1,3 +1,11 @@
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71730
+	* gfortran.dg/pr71730.f90: New test.
+	* gfortran.dg/bounds_check_strlen_2.f90: Fix invalid code.
+	* gfortran.dg/array_constructor_27.f03: Update dg-error message.
+	* gfortran.dg/array_constructor_26.f03: Ditto.
+
 2016-07-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* g++.dg/pr70098.C: Remove XFAIL for powerpc64_no_dm.

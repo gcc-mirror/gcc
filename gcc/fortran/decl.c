@@ -906,6 +906,7 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
     goto syntax;
   else if ((*expr)->expr_type == EXPR_VARIABLE)
     {
+      bool t;
       gfc_expr *e;
 
       e = gfc_copy_expr (*expr);
@@ -917,7 +918,15 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 	  && e->ref->u.ar.dimen_type[0] == DIMEN_RANGE)
 	goto syntax;
 
-      gfc_reduce_init_expr (e);
+      t = gfc_reduce_init_expr (e);
+
+      if (!t && (e->ts.type == BT_UNKNOWN
+		 && e->symtree->n.sym->attr.untyped == 1
+		 && e->symtree->n.sym->ns->seen_implicit_none == 1))
+	{
+	  gfc_free_expr (e);
+	  goto syntax;
+	}
 
       if ((e->ref && e->ref->type == REF_ARRAY
 	   && e->ref->u.ar.type != AR_ELEMENT)
