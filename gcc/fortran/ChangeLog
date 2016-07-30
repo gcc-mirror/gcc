@@ -1,5 +1,10 @@
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/68566
+	* check.c (gfc_check_reshape): Check for constant expression.
+
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/69867
 	* decl.c (build_struct): Ensure that pointers point to something.
 
