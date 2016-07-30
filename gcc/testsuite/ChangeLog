@@ -1,3 +1,8 @@
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68566
+	* gfortran.dg/pr68566.f90: new test.
+
 2016-07-30 Martin Sebor  <msebor@redhat.com>
 
 	PR c++/60760
