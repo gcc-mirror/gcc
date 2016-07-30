@@ -1,3 +1,26 @@
+2016-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_adjust_vec_address): New
+	function that takes a vector memory address, a hard register, an
+	element number and a temporary base register, and recreates an
+	address that points to the appropriate element within the vector.
+	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Likewise.
+	(rs6000_split_vec_extract_var): Add support for the target of a
+	vec_extract with variable element number being a scalar memory
+	location.
+	(rtx_is_swappable_p): VLSO insns (UNSPEC_VSX_VSLOW) are not
+	swappable.
+	* config/rs6000/vsx.md (vsx_extract_<mode>_load): Replace
+	vsx_extract_<mode>_load insn with a new insn that optimizes
+	storing either element to a memory location, using scratch
+	registers to pick apart the vector and reconstruct the address.
+	(vsx_extract_<P:mode>_<VSX_D:mode>_load): Likewise.
+	(vsx_extract_<mode>_store): Rework alternatives to more correctly
+	support Altivec registers.  Add support for ISA 3.0 Altivec d-form
+	store instruction.
+	(vsx_extract_<mode>_var): Add support for extracting a variable
+	element number from memory.
+
 2016-07-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_out_compare): Use const0_rtx instead of 0
