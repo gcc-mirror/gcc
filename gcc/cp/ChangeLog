@@ -1,3 +1,14 @@
+2016-07-30 Martin Sebor  <msebor@redhat.com>
+
+	PR c++/60760
+	PR c++/71091
+	* constexpr.c (cxx_eval_binary_expression): Reject invalid expressions
+	involving null pointers.
+	(cxx_eval_component_reference): Reject null pointer dereferences.
+	(cxx_eval_indirect_ref): Reject indirecting through null pointers.
+	(cxx_eval_constant_expression): Reject invalid expressions involving
+	null pointers.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71926

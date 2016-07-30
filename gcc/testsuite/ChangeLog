@@ -1,3 +1,12 @@
+2016-07-30 Martin Sebor  <msebor@redhat.com>
+
+	PR c++/60760
+	PR c++/71091
+	* g++.dg/cpp0x/constexpr-cast.C: New test.
+	* g++.dg/cpp0x/constexpr-nullptr-2.C: New test.
+	* g++.dg/cpp1y/constexpr-sfinae.C: Correct.
+	* g++.dg/ubsan/pr63956.C: Correct.
+
 2016-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-extract-2.c: New tests for vec_extract of
