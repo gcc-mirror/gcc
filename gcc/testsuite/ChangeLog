@@ -1,3 +1,10 @@
+2016-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-extract-2.c: New tests for vec_extract of
+	vector double or vector long where the vector is in memory.
+	* gcc.target/powerpc/vec-extract-3.c: Likewise.
+	* gcc.target/powerpc/vec-extract-4.c: Likewise.
+
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69867
