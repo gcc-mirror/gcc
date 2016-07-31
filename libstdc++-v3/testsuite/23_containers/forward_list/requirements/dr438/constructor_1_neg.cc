@@ -1,6 +1,5 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++11" }
-// { dg-error "no matching" "" { target *-*-* } 27 }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
@@ -24,5 +23,5 @@
 void f()
 {
   typedef std::forward_list<std::forward_list<int> > test_type;
-  test_type l(10, 1);
+  test_type l(10, 1); // { dg-error "no matching" }
 }
