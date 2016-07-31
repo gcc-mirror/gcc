@@ -22,52 +22,28 @@
 
 namespace gnu
 {
-  // C++0x changes from TR1.
-  using std::assoc_laguerre;
-  using std::assoc_legendre;
-  using std::beta; 
-  using std::comp_ellint_1;
-  using std::comp_ellint_2;
-  using std::comp_ellint_3;
-  using std::conf_hyperg;
-  using std::cyl_bessel_i;
-  using std::cyl_bessel_j;
-  using std::cyl_bessel_k;
-  using std::cyl_neumann;
-  using std::ellint_1;
-  using std::ellint_2;
-  using std::ellint_3;
-  using std::expint;  
-  using std::hermite;
-  using std::hyperg;
-  using std::laguerre;
-  using std::legendre;
-  using std::riemann_zeta;
-  using std::sph_bessel;
-  using std::sph_legendre;
-  using std::sph_neumann;
+  // C++11 changes from TR1.
+  using std::assoc_laguerre;	// { dg-error "has not been declared" }
+  using std::assoc_legendre;	// { dg-error "has not been declared" }
+  using std::beta;		// { dg-error "has not been declared" }
+  using std::comp_ellint_1;	// { dg-error "has not been declared" }
+  using std::comp_ellint_2;	// { dg-error "has not been declared" }
+  using std::comp_ellint_3;	// { dg-error "has not been declared" }
+  using std::conf_hyperg;	// { dg-error "has not been declared" }
+  using std::cyl_bessel_i;	// { dg-error "has not been declared" }
+  using std::cyl_bessel_j;	// { dg-error "has not been declared" }
+  using std::cyl_bessel_k;	// { dg-error "has not been declared" }
+  using std::cyl_neumann;	// { dg-error "has not been declared" }
+  using std::ellint_1;		// { dg-error "has not been declared" }
+  using std::ellint_2;		// { dg-error "has not been declared" }
+  using std::ellint_3;		// { dg-error "has not been declared" }
+  using std::expint;		// { dg-error "has not been declared" }
+  using std::hermite;		// { dg-error "has not been declared" }
+  using std::hyperg;		// { dg-error "has not been declared" }
+  using std::laguerre;		// { dg-error "has not been declared" }
+  using std::legendre;		// { dg-error "has not been declared" }
+  using std::riemann_zeta;	// { dg-error "has not been declared" }
+  using std::sph_bessel;	// { dg-error "has not been declared" }
+  using std::sph_legendre;	// { dg-error "has not been declared" }
+  using std::sph_neumann;	// { dg-error "has not been declared" }
 }
-
-// { dg-error "has not been declared" "" { target *-*-* } 26 } 
-// { dg-error "has not been declared" "" { target *-*-* } 27 } 
-// { dg-error "has not been declared" "" { target *-*-* } 28 } 
-// { dg-error "has not been declared" "" { target *-*-* } 29 } 
-// { dg-error "has not been declared" "" { target *-*-* } 30 } 
-// { dg-error "has not been declared" "" { target *-*-* } 31 } 
-// { dg-error "has not been declared" "" { target *-*-* } 32 } 
-// { dg-error "has not been declared" "" { target *-*-* } 33 } 
-// { dg-error "has not been declared" "" { target *-*-* } 34 } 
-// { dg-error "has not been declared" "" { target *-*-* } 35 } 
-// { dg-error "has not been declared" "" { target *-*-* } 36 } 
-// { dg-error "has not been declared" "" { target *-*-* } 37 } 
-// { dg-error "has not been declared" "" { target *-*-* } 38 } 
-// { dg-error "has not been declared" "" { target *-*-* } 39 } 
-// { dg-error "has not been declared" "" { target *-*-* } 40 } 
-// { dg-error "has not been declared" "" { target *-*-* } 41 } 
-// { dg-error "has not been declared" "" { target *-*-* } 42 } 
-// { dg-error "has not been declared" "" { target *-*-* } 43 } 
-// { dg-error "has not been declared" "" { target *-*-* } 44 } 
-// { dg-error "has not been declared" "" { target *-*-* } 45 } 
-// { dg-error "has not been declared" "" { target *-*-* } 46 } 
-// { dg-error "has not been declared" "" { target *-*-* } 47 } 
-// { dg-error "has not been declared" "" { target *-*-* } 48 } 

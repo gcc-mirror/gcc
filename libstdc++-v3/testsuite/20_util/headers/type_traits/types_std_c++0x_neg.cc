@@ -22,15 +22,9 @@
 
 namespace gnu
 {
-  // C++0x changes from TR1.
-  using std::has_trivial_constructor;
-  using std::has_nothrow_constructor;
-  using std::has_trivial_copy;
-  using std::has_nothrow_copy;
+  // C++11 changes from TR1.
+  using std::has_trivial_constructor; // { dg-error "has not been declared" }
+  using std::has_nothrow_constructor; // { dg-error "has not been declared" }
+  using std::has_trivial_copy;	      // { dg-error "has not been declared" }
+  using std::has_nothrow_copy;	      // { dg-error "has not been declared" }
 }
-
-// { dg-error "has not been declared" "" { target *-*-* } 26 } 
-// { dg-error "has not been declared" "" { target *-*-* } 27 } 
-// { dg-error "has not been declared" "" { target *-*-* } 28 } 
-// { dg-error "has not been declared" "" { target *-*-* } 29 } 
-

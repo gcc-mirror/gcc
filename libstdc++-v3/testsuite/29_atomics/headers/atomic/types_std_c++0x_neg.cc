@@ -23,101 +23,56 @@
 void test01()
 {
   // Not global scoped, only namespace std.
-  using memory_order;
-  using memory_order_relaxed;
-  using memory_order_consume;
-  using memory_order_acquire;
-  using memory_order_release;
-  using memory_order_acq_rel;
-  using memory_order_seq_cst;
+  using memory_order;		// { dg-error "expected nested-name-specifier" }
+  using memory_order_relaxed;	// { dg-error "expected nested-name-specifier" }
+  using memory_order_consume;	// { dg-error "expected nested-name-specifier" }
+  using memory_order_acquire;	// { dg-error "expected nested-name-specifier" }
+  using memory_order_release;	// { dg-error "expected nested-name-specifier" }
+  using memory_order_acq_rel;	// { dg-error "expected nested-name-specifier" }
+  using memory_order_seq_cst;	// { dg-error "expected nested-name-specifier" }
 
-  using atomic_flag;
+  using atomic_flag;		// { dg-error "expected nested-name-specifier" }
 
-  using atomic_bool;
-  using atomic_char;
-  using atomic_schar;
-  using atomic_uchar;
-  using atomic_short;
-  using atomic_ushort;
-  using atomic_int;
-  using atomic_uint;
-  using atomic_long;
-  using atomic_ulong;
-  using atomic_llong;
-  using atomic_ullong;
-  using atomic_wchar_t;
-  using atomic_char16_t;
-  using atomic_char32_t;
+  using atomic_bool;		// { dg-error "expected nested-name-specifier" }
+  using atomic_char;		// { dg-error "expected nested-name-specifier" }
+  using atomic_schar;		// { dg-error "expected nested-name-specifier" }
+  using atomic_uchar;		// { dg-error "expected nested-name-specifier" }
+  using atomic_short;		// { dg-error "expected nested-name-specifier" }
+  using atomic_ushort;		// { dg-error "expected nested-name-specifier" }
+  using atomic_int;		// { dg-error "expected nested-name-specifier" }
+  using atomic_uint;		// { dg-error "expected nested-name-specifier" }
+  using atomic_long;		// { dg-error "expected nested-name-specifier" }
+  using atomic_ulong;		// { dg-error "expected nested-name-specifier" }
+  using atomic_llong;		// { dg-error "expected nested-name-specifier" }
+  using atomic_ullong;		// { dg-error "expected nested-name-specifier" }
+  using atomic_wchar_t;		// { dg-error "expected nested-name-specifier" }
+  using atomic_char16_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_char32_t;	// { dg-error "expected nested-name-specifier" }
 
-  using atomic_int_least8_t;
-  using atomic_uint_least8_t;
-  using atomic_int_least16_t;
-  using atomic_uint_least16_t;
-  using atomic_int_least32_t;
-  using atomic_uint_least32_t;
-  using atomic_int_least64_t;
-  using atomic_uint_least64_t;
-  using atomic_int_fast8_t;
-  using atomic_uint_fast8_t;
-  using atomic_int_fast16_t;
-  using atomic_uint_fast16_t;
-  using atomic_int_fast32_t;
-  using atomic_uint_fast32_t;
-  using atomic_int_fast64_t;
-  using atomic_uint_fast64_t;
-  using atomic_intptr_t;
-  using atomic_uintptr_t;
-  using atomic_size_t;
-  using atomic_ptrdiff_t;
-  using atomic_intmax_t;
-  using atomic_uintmax_t;
+  using atomic_int_least8_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_least8_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_least16_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_least16_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_least32_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_least32_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_least64_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_least64_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_fast8_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_fast8_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_fast16_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_fast16_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_fast32_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_fast32_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_int_fast64_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uint_fast64_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_intptr_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uintptr_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_size_t;		// { dg-error "expected nested-name-specifier" }
+  using atomic_ptrdiff_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_intmax_t;	// { dg-error "expected nested-name-specifier" }
+  using atomic_uintmax_t;	// { dg-error "expected nested-name-specifier" }
 
-  using atomic_address;
+  using atomic_address;		// { dg-error "expected nested-name-specifier" }
+  // Present in C++0x drafts but not final C++11 standard:
+  using std::atomic_address;	// { dg-error "has not been declared" }
 }
-
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 26 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 27 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 28 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 29 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 30 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 31 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 32 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 34 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 36 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 37 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 38 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 39 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 40 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 41 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 42 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 43 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 44 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 45 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 46 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 47 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 48 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 49 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 50 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 52 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 53 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 54 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 55 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 56 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 57 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 58 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 59 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 60 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 61 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 62 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 63 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 64 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 65 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 66 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 67 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 68 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 69 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 70 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 71 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 72 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 73 }
-// { dg-error "expected nested-name-specifier" "" { target *-*-* } 75 }
