@@ -1,3 +1,4 @@
+// { dg-do run { target c++11 } }
 
 // 2012-08-20  Benjamin Kosnik <bkoz@redhat.com>
 //

@@ -1,5 +1,8 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/28_regex/basic_regex/ctors/basic/raw_string.cc: Only
+	run for C++11 or later.
+
 	* testsuite/28_regex/basic_regex/ctors/basic/raw_string.cc: Fix
 	test to not rely on GNU extension (escaped normal characters in POSIX
 	BRE). Enable tests for other strings which are now supported.
