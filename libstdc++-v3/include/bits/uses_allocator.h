@@ -108,6 +108,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ret._M_a = std::__addressof(__a);
       return __ret;
     }
+#if __cplusplus > 201402L
+  template <typename _Tp, typename _Alloc>
+    constexpr bool uses_allocator_v = uses_allocator<_Tp, _Alloc>::value;
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

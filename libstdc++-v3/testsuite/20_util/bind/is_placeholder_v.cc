@@ -1,9 +1,7 @@
+// { dg-options "-std=gnu++17" }
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
-// { dg-require-cstdint "" }
-// 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,22 +14,24 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License along
+// You should have received a moved_to of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <functional>
 
-#include <ratio>
-#include <chrono>
-
-void test01()
+struct X
 {
-  // Check if period is positive
-  typedef int rep_type;
-  typedef std::ratio<-1> period_type;
-  typedef std::chrono::duration<rep_type, period_type> test_type;
-  test_type d;
-}
+  int operator()() const { return 0; }
+  int operator()() volatile { return 1; }
+  int operator()() const volatile { return 2; }
+  void operator()() { };
+};
 
-// { dg-error "period must be positive" "" { target *-*-* } 253 }
-// { dg-error "required from here" "" { target *-*-* } 33 }
+static_assert( std::is_placeholder<decltype(std::placeholders::_1)>::value
+	       == std::is_placeholder_v<decltype(std::placeholders::_1)>);
+
+const auto b0 = std::bind(X());
+static_assert( std::is_bind_expression<decltype(b0)>::value
+	       == std::is_bind_expression_v<decltype(b0)>);
+

@@ -682,6 +682,13 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     : public integral_constant<int, 0>
     { };
 
+#if __cplusplus > 201402L
+  template <typename _Tp> constexpr bool is_bind_expression_v
+    = is_bind_expression<_Tp>::value;
+  template <typename _Tp> constexpr int is_placeholder_v
+    = is_placeholder<_Tp>::value;
+#endif // C++17
+
   /** @brief The type of placeholder objects defined by libstdc++.
    *  @ingroup binders
    */
