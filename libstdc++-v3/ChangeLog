@@ -1,5 +1,8 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Adjust dg-prune-output pattern for error in C++98 mode.
+
 	* testsuite/28_regex/basic_regex/ctors/basic/raw_string.cc: Only
 	run for C++11 or later.
 
