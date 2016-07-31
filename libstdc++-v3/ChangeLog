@@ -1,3 +1,22 @@
+2016-07-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Add missing variable traits, fix testsuite failures.
+	* include/bits/uses_allocator.h (uses_allocator_v): New.
+	* include/std/functional (is_bind_expression_v, is_placeholder_v):
+	Likewise.
+	* testsuite/20_util/bind/is_placeholder_v.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/duration/literals/range.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/requirements/uses_allocator_v.cc:
+	New.
+
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/numeric_limits/40856.cc [__STRICT_ANSI__]: Do

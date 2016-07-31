@@ -1,9 +1,7 @@
+// { dg-options "-std=gnu++17" }
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
-// { dg-require-cstdint "" }
-// 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,22 +14,16 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License along
+// You should have received a moved_to of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <memory>
+#include <string>
 
-#include <ratio>
-#include <chrono>
+using namespace std;
 
-void test01()
-{
-  // Check if period is positive
-  typedef int rep_type;
-  typedef std::ratio<-1> period_type;
-  typedef std::chrono::duration<rep_type, period_type> test_type;
-  test_type d;
-}
-
-// { dg-error "period must be positive" "" { target *-*-* } 253 }
-// { dg-error "required from here" "" { target *-*-* } 33 }
+static_assert(uses_allocator<int, allocator<int>>::value
+	      == uses_allocator_v<int, allocator<int>>);
+static_assert(uses_allocator<string, allocator<string>>::value
+	      == uses_allocator_v<string, allocator<string>>);
