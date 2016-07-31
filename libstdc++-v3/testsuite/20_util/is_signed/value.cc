@@ -50,6 +50,7 @@ void test01()
   static_assert(test_category<is_signed, double>(true), "");
   static_assert(test_category<is_signed, long double>(true), "");
 
+#ifndef __STRICT_ANSI__
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
   static_assert(test_category<is_signed, __int128>(true), "");
@@ -58,6 +59,7 @@ void test01()
 
 #ifdef _GLIBCXX_USE_FLOAT128
   static_assert(test_category<is_signed, __float128>(true), "");
+#endif
 #endif
 
   // Sanity check.

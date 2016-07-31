@@ -1,5 +1,18 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/numeric_limits/40856.cc [__STRICT_ANSI__]: Do
+	not test 128-bit types.
+	* testsuite/20_util/is_floating_point/value.cc: Likewise.
+	* testsuite/20_util/is_integral/value.cc: Likewise.
+	* testsuite/20_util/is_signed/value.cc: Likewise.
+	* testsuite/20_util/is_unsigned/value.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+
 	* testsuite/26_numerics/headers/cstdlib/54686.c: Rename to 54686.cc.
 
 2016-07-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
