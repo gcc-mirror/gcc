@@ -1,5 +1,8 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/pair/astuple/get_neg.cc: Use effective-target
+	c++11 instead of setting -std=gnu++14.
+
 	PR libstdc++/72745
 	* include/std/array (get): Use positive message for static assertions.
 	* include/std/functional (_Safe_tuple_element_t): Fix indentation.
