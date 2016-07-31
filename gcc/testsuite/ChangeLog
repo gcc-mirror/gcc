@@ -1,3 +1,8 @@
+2016-07-31  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/divkc3-1.c: Require POWER8 hardware.
+	* gcc.target/powerpc/mulkc3-1.c: Likewise.
+
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_c): Fix indentation.
