@@ -67,6 +67,7 @@ void test01()
   static_assert( sizeof(test24_type) == sizeof(test_enum),
                  "make_signed<test_enum> makes type of same size" );
 
+#ifndef __STRICT_ANSI__
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
   typedef make_signed<unsigned __int128>::type  test25_type;
@@ -76,5 +77,6 @@ void test01()
   typedef make_signed<__int128>::type  	        test26_type;
   static_assert( is_same<test26_type, __int128>::value,
                  "make_signed<__int128>" );
+#endif
 #endif
 }

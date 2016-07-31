@@ -61,6 +61,7 @@ void test01()
   static_assert(is_unsigned<test24_type>::value, "");
   static_assert(sizeof(test24_type) == sizeof(test_enum), "");
 
+#ifndef __STRICT_ANSI__
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
   typedef make_unsigned<unsigned __int128>::type test25_type;
@@ -68,5 +69,6 @@ void test01()
 
   typedef make_unsigned<__int128>::type  	 test26_type;
   static_assert(is_same<test26_type, unsigned __int128>::value, "");
+#endif
 #endif
 }
