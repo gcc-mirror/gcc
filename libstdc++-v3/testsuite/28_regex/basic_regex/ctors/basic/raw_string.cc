@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // 2012-08-20  Benjamin Kosnik <bkoz@redhat.com>
 //
@@ -31,17 +30,27 @@ test01()
 
   // raw string literals
 
-  //string_type sre0(R"(\d{3}-\d{3}-\d{4})"); // expected fail
+  string_type sre0(R"(\d{3}-\d{3}-\d{4})");
 
-  string_type sre1(R"( this\n  and new : forms\n  )");
+  string_type sre1(R"( this
+  and new : forms
+  )");
 
   string_type sre2(R"([:num:]{3}-[:num:]{3}-[:num:]{4})");
 
   // 1
-  regex_type re(R"( this\n  and new : forms\n  )", std::regex::basic);
+  regex_type re0(R"(\d{3}-\d{3}-\d{4})", std::regex::ECMAScript);
+
+  regex_type re1(R"( this
+  and new : forms
+  )", std::regex::basic);
+
+  regex_type re2(R"([:num:]{3}-[:num:]{3}-[:num:]{4})", std::regex::basic);
 
   // 2
+  regex_sanity_check(sre0, std::regex::ECMAScript);
   regex_sanity_check(sre1);
+  regex_sanity_check(sre2);
 }
 
 int main()
