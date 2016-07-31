@@ -1,5 +1,9 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/28_regex/basic_regex/ctors/basic/raw_string.cc: Fix
+	test to not rely on GNU extension (escaped normal characters in POSIX
+	BRE). Enable tests for other strings which are now supported.
+
 	* testsuite/20_util/pair/astuple/get_neg.cc: Use effective-target
 	c++11 instead of setting -std=gnu++14.
 
