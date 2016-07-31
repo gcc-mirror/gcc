@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
