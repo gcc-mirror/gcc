@@ -1,5 +1,12 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/72745
+	* include/std/array (get): Use positive message for static assertions.
+	* include/std/functional (_Safe_tuple_element_t): Fix indentation.
+	* include/std/tuple (tuple_element<I, tuple<>>): Add partial
+	specialization for invalid indices, with static assertion.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: New test.
+
 	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Move
 	dg-error to relevant line.
 	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc:
