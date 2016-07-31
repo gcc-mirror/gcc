@@ -1,5 +1,8 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/conditional/requirements/typedefs.cc: Change to
+	compile-only test.
+
 	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
 	Ensure test is compiled with optimization.
 

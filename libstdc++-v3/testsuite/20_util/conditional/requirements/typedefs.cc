@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -20,22 +20,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 
-void test01()
-{
-  bool test __attribute__((unused)) = true;
-  using std::conditional;
+using std::conditional;
+using std::is_same;
 
-  typedef conditional<true, char, int>::type     test1_type;
-  VERIFY( (std::is_same<test1_type, char>::value) );
+typedef conditional<true, char, int>::type     test1_type;
+static_assert( is_same<test1_type, char>::value, "conditional<true, ...>" );
   
-  typedef conditional<false, char, int>::type     test2_type;
-  VERIFY( (std::is_same<test2_type, int>::value) );
-}
-
-int main()
-{
-  test01();
-  return 0;
-}
+typedef conditional<false, char, int>::type     test2_type;
+static_assert( is_same<test2_type, int>::value, "conditional<false, ...>" );
