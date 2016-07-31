@@ -1243,6 +1243,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 
+  /// class tuple_size
+  template<typename... _Elements>
+    struct tuple_size<tuple<_Elements...>>
+    : public integral_constant<std::size_t, sizeof...(_Elements)> { };
+
+#if __cplusplus > 201402L
+  template <typename _Tp>
+    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+#endif
+
   /**
    * Recursive case for tuple_element: strip off the first element in
    * the tuple and retrieve the (i-1)th element of the remaining tuple.
@@ -1260,15 +1270,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Head type;
     };
 
-  /// class tuple_size
-  template<typename... _Elements>
-    struct tuple_size<tuple<_Elements...>>
-    : public integral_constant<std::size_t, sizeof...(_Elements)> { };
-
-#if __cplusplus > 201402L
-  template <typename _Tp>
-    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
-#endif
+  /**
+   * Error case for tuple_element: invalid index.
+   */
+  template<size_t __i>
+    struct tuple_element<__i, tuple<>>
+    {
+      static_assert(__i < tuple_size<tuple<>>::value,
+	  "tuple index is in range");
+    };
 
   template<std::size_t __i, typename _Head, typename... _Tail>
     constexpr _Head&

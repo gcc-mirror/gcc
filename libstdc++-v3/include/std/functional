@@ -758,10 +758,10 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
 
   // Like tuple_element_t but SFINAE-friendly.
- template<std::size_t __i, typename _Tuple>
-   using _Safe_tuple_element_t
-     = typename enable_if<(__i < tuple_size<_Tuple>::value),
-			  tuple_element<__i, _Tuple>>::type::type;
+  template<std::size_t __i, typename _Tuple>
+    using _Safe_tuple_element_t
+      = typename enable_if<(__i < tuple_size<_Tuple>::value),
+			   tuple_element<__i, _Tuple>>::type::type;
 
   /**
    *  Maps an argument to bind() into an actual argument to the bound
