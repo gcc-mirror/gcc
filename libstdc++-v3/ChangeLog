@@ -1,5 +1,8 @@
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
+	Ensure test is compiled with optimization.
+
 	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
 	Adjust dg-prune-output pattern for error in C++98 mode.
 
