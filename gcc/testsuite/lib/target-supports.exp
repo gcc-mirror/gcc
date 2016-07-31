@@ -7001,9 +7001,9 @@ proc check_effective_target_masm_intel  {} {
 # Return 1 if the language for the compiler under test is C.
 
 proc check_effective_target_c { } {
- global tool
+    global tool
     if [string match $tool "gcc"] {
-   return 1
+	return 1
     }
  return 0
 }
@@ -7011,9 +7011,9 @@ proc check_effective_target_c { } {
 # Return 1 if the language for the compiler under test is C++.
 
 proc check_effective_target_c++ { } {
- global tool
-    if [string match $tool "g++"] {
-   return 1
+    global tool
+    if { [string match $tool "g++"] || [string match $tool "libstdc++"] } {
+	return 1
     }
  return 0
 }
