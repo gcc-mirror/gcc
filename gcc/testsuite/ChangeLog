@@ -1,3 +1,10 @@
+2016-07-30  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/41922
+	* gfortran.dg/equiv_constraint_5.f90: Adjust the error message.
+	* gfortran.dg/equiv_constraint_7.f90: Ditto.
+	* gfortran.dg/pr41922.f90: New test.
+
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68566

@@ -1,3 +1,12 @@
+2016-07-30  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/41922
+	* target-memory.c (expr_to_char): Pass in locus and use it in error
+	messages.
+	(gfc_merge_initializers): Ditto.
+	* target-memory.h: Update prototype for gfc_merge_initializers ().
+	* trans-common.c (get_init_field): Use the correct locus.
+
 2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68566
