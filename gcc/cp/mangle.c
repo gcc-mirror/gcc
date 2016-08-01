@@ -3700,50 +3700,52 @@ mangle_decl (const tree decl)
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
   if (id != DECL_NAME (decl)
-      && !DECL_REALLY_EXTERN (decl)
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */
       && TREE_CODE (decl) != TYPE_DECL
       && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
       && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     {
-      bool set = false;
+      int save_ver = flag_abi_version;
+      tree id2 = NULL_TREE;
 
-      /* Check IDENTIFIER_GLOBAL_VALUE before setting to avoid redundant
-	 errors from multiple definitions.  */
-      tree d = IDENTIFIER_GLOBAL_VALUE (id);
-      if (!d || decl_implicit_alias_p (d))
+      if (!DECL_REALLY_EXTERN (decl))
 	{
-	  set = true;
-	  SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+	  bool set = false;
+
+	  /* Check IDENTIFIER_GLOBAL_VALUE before setting to avoid redundant
+	     errors from multiple definitions.  */
+	  tree d = IDENTIFIER_GLOBAL_VALUE (id);
+	  if (!d || decl_implicit_alias_p (d))
+	    {
+	      set = true;
+	      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+	    }
+
+	  if (!G.need_abi_warning)
+	    return;
+
+	  /* If the mangling will change in the future, emit an alias with the
+	     future mangled name for forward-compatibility.  */
+	  if (!set)
+	    {
+	      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+	      inform (DECL_SOURCE_LOCATION (decl), "a later -fabi-version= (or "
+		      "=0) avoids this error with a change in mangling");
+	    }
+
+	  flag_abi_version = flag_abi_compat_version;
+	  id2 = mangle_decl_string (decl);
+	  id2 = targetm.mangle_decl_assembler_name (decl, id2);
+	  flag_abi_version = save_ver;
+
+	  if (id2 != id)
+	    note_mangling_alias (decl, id2);
 	}
-
-      if (!G.need_abi_warning)
-	return;
-
-      /* If the mangling will change in the future, emit an alias with the
-	 future mangled name for forward-compatibility.  */
-      int save_ver;
-      tree id2;
-
-      if (!set)
-	{
-	  SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
-	  inform (DECL_SOURCE_LOCATION (decl), "a later -fabi-version= (or "
-		  "=0) avoids this error with a change in mangling");
-	}
-
-      save_ver = flag_abi_version;
-
-      flag_abi_version = flag_abi_compat_version;
-      id2 = mangle_decl_string (decl);
-      id2 = targetm.mangle_decl_assembler_name (decl, id2);
-
-      if (id2 != id)
-	note_mangling_alias (decl, id2);
 
       if (warn_abi)
 	{
-	  if (flag_abi_compat_version != warn_abi_version)
+	  if (flag_abi_compat_version != warn_abi_version
+	      || id2 == NULL_TREE)
 	    {
 	      flag_abi_version = warn_abi_version;
 	      id2 = mangle_decl_string (decl);
