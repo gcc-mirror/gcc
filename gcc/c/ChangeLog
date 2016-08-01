@@ -1,3 +1,9 @@
+2016-08-01  Jan Beulich  <jbeulich@suse.com>
+
+	* c-fold.c (c_fully_fold_internal): Also emit shift count
+	warnings for vector types.
+	* c-typeck.c (build_binary_op): Likewise.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71742
