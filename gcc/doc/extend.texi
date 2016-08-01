@@ -12552,6 +12552,14 @@ __builtin_avr_insert_bits (0xffff3210, bits, val)
 __builtin_avr_insert_bits (0x01234567, bits, 0)
 @end smallexample
 
+@smallexample
+void __builtin_avr_nops (unsigned count)
+@end smallexample
+
+@noindent
+Insert @code{count} @code{NOP} instructions.
+The number of instructions must be a compile-time integer constant.
+
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions
 
