@@ -1,5 +1,7 @@
 2016-08-01  Jason Merrill  <jason@redhat.com>
 
+	* mangle.c (mangle_decl): Fix mangled name change warning.
+
 	PR c++/72766
 	* constexpr.c (cxx_eval_pointer_plus_expression): Check constancy
 	of nelts.
