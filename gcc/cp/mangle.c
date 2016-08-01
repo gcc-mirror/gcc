@@ -1,4 +1,4 @@
-/* Name mangling for the 3.0 C++ ABI.
+/* Name mangling for the 3.0 -*- C++ -*- ABI.
    Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
@@ -3732,6 +3732,7 @@ mangle_decl (const tree decl)
 	      id2 = mangle_decl_string (decl);
 	      id2 = targetm.mangle_decl_assembler_name (decl, id2);
 	    }
+	  flag_abi_version = save_ver;
 
 	  if (id2 == id)
 	    /* OK.  */;
@@ -3740,8 +3741,8 @@ mangle_decl (const tree decl)
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changed between "
 			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, save_ver, id2,
-			warn_abi_version, id);
+			G.entity, warn_abi_version, id2,
+			save_ver, id);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changes between "
