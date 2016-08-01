@@ -1,3 +1,8 @@
+2015-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72748
+	* gcc.target/i386/pr72748.c: New test.
+
 2015-08-01  Alan Hayward <alan.hayward@arm.com>
 
 	PR tree-optimization/71818
