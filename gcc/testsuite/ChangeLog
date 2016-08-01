@@ -1,3 +1,8 @@
+2015-08-01  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/71818
+	* gcc.dg/vect/pr71818.c: New
+
 2016-08-01  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/71857
