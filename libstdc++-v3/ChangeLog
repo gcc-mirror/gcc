@@ -1,3 +1,7 @@
+2016-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
 2016-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/conditional/requirements/typedefs.cc: Change to
