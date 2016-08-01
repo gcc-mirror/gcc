@@ -1,3 +1,9 @@
+2016-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/71948
+	* config/avr/avr.c (AVR_SYMBOL_FLAG_TINY_PM): Use a value that
+	does not overlap with other symbol flags.
+
 2016-08-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.h (aarch64_frame):
