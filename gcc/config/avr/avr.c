@@ -82,7 +82,7 @@
 
 /* (AVR_TINY only): Symbol has attribute progmem */
 #define AVR_SYMBOL_FLAG_TINY_PM \
-  (SYMBOL_FLAG_MACH_DEP << 4)
+  (SYMBOL_FLAG_MACH_DEP << 7)
 
 #define TINY_ADIW(REG1, REG2, I)                                \
     "subi " #REG1 ",lo8(-(" #I "))" CR_TAB                      \
