@@ -22,13 +22,10 @@
 // C++0X [28.8.3] class template basic_regex assign()
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests assign operation from a C-style null-terminated-string.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<char> re;
 
   const char* cs = "aab";
