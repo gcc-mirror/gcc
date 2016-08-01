@@ -1,3 +1,10 @@
+2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/ios_base/types/fmtflags/case_label.cc: Make test
+	supported for C++11 and later.
+	* testsuite/27_io/ios_base/types/iostate/case_label.cc: Likewise.
+	* testsuite/27_io/ios_base/types/openmode/case_label.cc: Likewise.
+
 2016-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
