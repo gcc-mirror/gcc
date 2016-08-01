@@ -1,5 +1,13 @@
 2016-08-01  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2016-08-01 trunk r238948.
+
+	PR target/72767
+	* config/avr/avr.md (length) [branch]: Correct insn length
+	attribute for forward branches.
+
+2016-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2016-06-16 trunk r237536.
 	2016-06-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
