@@ -1569,7 +1569,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
-#if _GLIBCXX_EXTERN_TEMPLATE > 0
+#if _GLIBCXX_EXTERN_TEMPLATE > 0 && __cplusplus <= 201402L
   extern template class basic_string<char>;
   extern template
     basic_istream<char>&
