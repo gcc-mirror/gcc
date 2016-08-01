@@ -1,3 +1,9 @@
+2016-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_address): Use DImode when
+	performing aarch64_offset_7bit_signed_scaled_p check for TImode LDP/STP
+	addresses.
+
 2016-08-01  Virendra Pathak  <virendra.pathak@broadcom.com>
 
 	* config/aarch64/aarch64.c (vulcan_tunings): Update

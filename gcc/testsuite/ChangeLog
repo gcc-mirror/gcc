@@ -1,3 +1,7 @@
+2016-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_unaligned_1.c: New test.
+
 2016-08-01  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.dg/vshift-6.c, gcc.dg/vshift-7.c: New.
