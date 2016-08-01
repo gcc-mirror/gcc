@@ -1,3 +1,15 @@
+2016-08-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/test_frame_10.c: Fix test to check for a
+	single stack adjustment, no writeback.	
+	* gcc.target/aarch64/test_frame_12.c: Likewise.
+	* gcc.target/aarch64/test_frame_13.c: Likewise.
+	* gcc.target/aarch64/test_frame_15.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+	* gcc.target/aarch64/test_frame_16.c: New test.
+
 2015-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72748

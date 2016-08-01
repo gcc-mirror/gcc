@@ -1,3 +1,20 @@
+2016-08-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame):
+	Remove padding0 and hardfp_offset.  Add locals_offset,
+	initial_adjust, callee_adjust, callee_offset and final_adjust.
+	* config/aarch64/aarch64.c (aarch64_layout_frame):
+	Remove unused padding0 and hardfp_offset initializations.
+	Choose frame layout and set frame variables accordingly.
+	Use INVALID_REGNUM instead of FIRST_PSEUDO_REGISTER.
+	(aarch64_push_regs): Use INVALID_REGNUM, not FIRST_PSEUDO_REGISTER.
+	(aarch64_pop_regs): Likewise.
+	(aarch64_expand_prologue): Remove all decision code, just emit
+	prolog according to frame variables.
+	(aarch64_expand_epilogue): Remove all decision code, just emit
+	epilog according to frame variables.
+	(aarch64_initial_elimination_offset): Use offset to local/arg area.
+
 2015-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72748
