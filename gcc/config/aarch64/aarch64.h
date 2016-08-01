@@ -550,11 +550,14 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   HOST_WIDE_INT saved_varargs_size;
 
+  /* The size of the saved callee-save int/FP registers.  */
+
   HOST_WIDE_INT saved_regs_size;
-  /* Padding if needed after the all the callee save registers have
-     been saved.  */
-  HOST_WIDE_INT padding0;
-  HOST_WIDE_INT hardfp_offset;	/* HARD_FRAME_POINTER_REGNUM */
+
+  /* Offset from the base of the frame (incomming SP) to the
+     top of the locals area.  This value is always a multiple of
+     STACK_BOUNDARY.  */
+  HOST_WIDE_INT locals_offset;
 
   /* Offset from the base of the frame (incomming SP) to the
      hard_frame_pointer.  This value is always a multiple of
@@ -564,11 +567,24 @@ struct GTY (()) aarch64_frame
   /* The size of the frame.  This value is the offset from base of the
    * frame (incomming SP) to the stack_pointer.  This value is always
    * a multiple of STACK_BOUNDARY.  */
+  HOST_WIDE_INT frame_size;
+
+  /* The size of the initial stack adjustment before saving callee-saves.  */
+  HOST_WIDE_INT initial_adjust;
+
+  /* The writeback value when pushing callee-save registers.
+     It is zero when no push is used.  */
+  HOST_WIDE_INT callee_adjust;
+
+  /* The offset from SP to the callee-save registers after initial_adjust.
+     It may be non-zero if no push is used (ie. callee_adjust == 0).  */
+  HOST_WIDE_INT callee_offset;
+
+  /* The size of the stack adjustment after saving callee-saves.  */
+  HOST_WIDE_INT final_adjust;
 
   unsigned wb_candidate1;
   unsigned wb_candidate2;
-
-  HOST_WIDE_INT frame_size;
 
   bool laid_out;
 };

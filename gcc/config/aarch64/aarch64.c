@@ -2728,8 +2728,8 @@ aarch64_layout_frame (void)
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
-  cfun->machine->frame.wb_candidate1 = FIRST_PSEUDO_REGISTER;
-  cfun->machine->frame.wb_candidate2 = FIRST_PSEUDO_REGISTER;
+  cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
+  cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -2763,7 +2763,6 @@ aarch64_layout_frame (void)
       cfun->machine->frame.wb_candidate1 = R29_REGNUM;
       cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
       cfun->machine->frame.wb_candidate2 = R30_REGNUM;
-      cfun->machine->frame.hardfp_offset = 2 * UNITS_PER_WORD;
       offset += 2 * UNITS_PER_WORD;
     }
 
@@ -2772,9 +2771,9 @@ aarch64_layout_frame (void)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
-	if (cfun->machine->frame.wb_candidate1 == FIRST_PSEUDO_REGISTER)
+	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
 	  cfun->machine->frame.wb_candidate1 = regno;
-	else if (cfun->machine->frame.wb_candidate2 == FIRST_PSEUDO_REGISTER)
+	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM)
 	  cfun->machine->frame.wb_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
@@ -2783,30 +2782,100 @@ aarch64_layout_frame (void)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
-	if (cfun->machine->frame.wb_candidate1 == FIRST_PSEUDO_REGISTER)
+	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
 	  cfun->machine->frame.wb_candidate1 = regno;
-	else if (cfun->machine->frame.wb_candidate2 == FIRST_PSEUDO_REGISTER
+	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM
 		 && cfun->machine->frame.wb_candidate1 >= V0_REGNUM)
 	  cfun->machine->frame.wb_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
-  cfun->machine->frame.padding0 =
-    (ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT) - offset);
   offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.saved_regs_size = offset;
 
+  HOST_WIDE_INT varargs_and_saved_regs_size
+    = offset + cfun->machine->frame.saved_varargs_size;
+
   cfun->machine->frame.hard_fp_offset
-    = ROUND_UP (cfun->machine->frame.saved_varargs_size
-		+ get_frame_size ()
-		+ cfun->machine->frame.saved_regs_size,
+    = ROUND_UP (varargs_and_saved_regs_size + get_frame_size (),
 		STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.frame_size
     = ROUND_UP (cfun->machine->frame.hard_fp_offset
 		+ crtl->outgoing_args_size,
 		STACK_BOUNDARY / BITS_PER_UNIT);
+
+  cfun->machine->frame.locals_offset = cfun->machine->frame.saved_varargs_size;
+
+  cfun->machine->frame.initial_adjust = 0;
+  cfun->machine->frame.final_adjust = 0;
+  cfun->machine->frame.callee_adjust = 0;
+  cfun->machine->frame.callee_offset = 0;
+
+  HOST_WIDE_INT max_push_offset = 0;
+  if (cfun->machine->frame.wb_candidate2 != INVALID_REGNUM)
+    max_push_offset = 512;
+  else if (cfun->machine->frame.wb_candidate1 != INVALID_REGNUM)
+    max_push_offset = 256;
+
+  if (cfun->machine->frame.frame_size < max_push_offset
+      && crtl->outgoing_args_size == 0)
+    {
+      /* Simple, small frame with no outgoing arguments:
+	 stp reg1, reg2, [sp, -frame_size]!
+	 stp reg3, reg4, [sp, 16]  */
+      cfun->machine->frame.callee_adjust = cfun->machine->frame.frame_size;
+    }
+  else if ((crtl->outgoing_args_size
+	    + cfun->machine->frame.saved_regs_size < 512)
+	   && !(cfun->calls_alloca
+		&& cfun->machine->frame.hard_fp_offset < max_push_offset))
+    {
+      /* Frame with small outgoing arguments:
+	 sub sp, sp, frame_size
+	 stp reg1, reg2, [sp, outgoing_args_size]
+	 stp reg3, reg4, [sp, outgoing_args_size + 16]  */
+      cfun->machine->frame.initial_adjust = cfun->machine->frame.frame_size;
+      cfun->machine->frame.callee_offset
+	= cfun->machine->frame.frame_size - cfun->machine->frame.hard_fp_offset;
+    }
+  else if (cfun->machine->frame.hard_fp_offset < max_push_offset)
+    {
+      /* Frame with large outgoing arguments but a small local area:
+	 stp reg1, reg2, [sp, -hard_fp_offset]!
+	 stp reg3, reg4, [sp, 16]
+	 sub sp, sp, outgoing_args_size  */
+      cfun->machine->frame.callee_adjust = cfun->machine->frame.hard_fp_offset;
+      cfun->machine->frame.final_adjust
+	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
+    }
+  else if (!frame_pointer_needed
+	   && varargs_and_saved_regs_size < max_push_offset)
+    {
+      /* Frame with large local area and outgoing arguments (this pushes the
+	 callee-saves first, followed by the locals and outgoing area):
+	 stp reg1, reg2, [sp, -varargs_and_saved_regs_size]!
+	 stp reg3, reg4, [sp, 16]
+	 sub sp, sp, frame_size - varargs_and_saved_regs_size  */
+      cfun->machine->frame.callee_adjust = varargs_and_saved_regs_size;
+      cfun->machine->frame.final_adjust
+	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
+      cfun->machine->frame.hard_fp_offset = cfun->machine->frame.callee_adjust;
+      cfun->machine->frame.locals_offset = cfun->machine->frame.hard_fp_offset;
+    }
+  else
+    {
+      /* Frame with large local area and outgoing arguments using frame pointer:
+	 sub sp, sp, hard_fp_offset
+	 stp x29, x30, [sp, 0]
+	 add x29, sp, 0
+	 stp reg3, reg4, [sp, 16]
+	 sub sp, sp, outgoing_args_size  */
+      cfun->machine->frame.initial_adjust = cfun->machine->frame.hard_fp_offset;
+      cfun->machine->frame.final_adjust
+	= cfun->machine->frame.frame_size - cfun->machine->frame.initial_adjust;
+    }
 
   cfun->machine->frame.laid_out = true;
 }
@@ -2866,7 +2935,7 @@ aarch64_push_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment)
   rtx_insn *insn;
   machine_mode mode = (regno1 <= R30_REGNUM) ? DImode : DFmode;
 
-  if (regno2 == FIRST_PSEUDO_REGISTER)
+  if (regno2 == INVALID_REGNUM)
     return aarch64_pushwb_single_reg (mode, regno1, adjustment);
 
   rtx reg1 = gen_rtx_REG (mode, regno1);
@@ -2905,7 +2974,7 @@ aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
 
   *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg1, *cfi_ops);
 
-  if (regno2 == FIRST_PSEUDO_REGISTER)
+  if (regno2 == INVALID_REGNUM)
     {
       rtx mem = plus_constant (Pmode, stack_pointer_rtx, adjustment);
       mem = gen_rtx_POST_MODIFY (Pmode, stack_pointer_rtx, mem);
@@ -3106,23 +3175,16 @@ aarch64_restore_callee_saves (machine_mode mode,
 void
 aarch64_expand_prologue (void)
 {
-  /* sub sp, sp, #<frame_size>
-     stp {fp, lr}, [sp, #<frame_size> - 16]
-     add fp, sp, #<frame_size> - hardfp_offset
-     stp {cs_reg}, [fp, #-16] etc.
-
-     sub sp, sp, <final_adjustment_if_any>
-  */
-  HOST_WIDE_INT frame_size, offset;
-  HOST_WIDE_INT fp_offset;		/* Offset from hard FP to SP.  */
-  HOST_WIDE_INT hard_fp_offset;
-  rtx_insn *insn;
-
   aarch64_layout_frame ();
 
-  offset = frame_size = cfun->machine->frame.frame_size;
-  hard_fp_offset = cfun->machine->frame.hard_fp_offset;
-  fp_offset = frame_size - hard_fp_offset;
+  HOST_WIDE_INT frame_size = cfun->machine->frame.frame_size;
+  HOST_WIDE_INT initial_adjust = cfun->machine->frame.initial_adjust;
+  HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
+  HOST_WIDE_INT final_adjust = cfun->machine->frame.final_adjust;
+  HOST_WIDE_INT callee_offset = cfun->machine->frame.callee_offset;
+  unsigned reg1 = cfun->machine->frame.wb_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  rtx_insn *insn;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
@@ -3139,94 +3201,29 @@ aarch64_expand_prologue (void)
 	aarch64_emit_probe_stack_range (STACK_CHECK_PROTECT, frame_size);
     }
 
-  /* Store pairs and load pairs have a range only -512 to 504.  */
-  if (offset >= 512)
+  aarch64_add_constant (Pmode, SP_REGNUM, IP0_REGNUM, -initial_adjust, true);
+
+  if (callee_adjust != 0)
+    aarch64_push_regs (reg1, reg2, callee_adjust);
+
+  if (frame_pointer_needed)
     {
-      /* When the frame has a large size, an initial decrease is done on
-	 the stack pointer to jump over the callee-allocated save area for
-	 register varargs, the local variable area and/or the callee-saved
-	 register area.  This will allow the pre-index write-back
-	 store pair instructions to be used for setting up the stack frame
-	 efficiently.  */
-      offset = hard_fp_offset;
-      if (offset >= 512)
-	offset = cfun->machine->frame.saved_regs_size;
-
-      frame_size -= (offset + crtl->outgoing_args_size);
-      fp_offset = 0;
-
-      aarch64_add_constant (Pmode, SP_REGNUM, IP0_REGNUM, -frame_size, true);
-    }
-  else
-    frame_size = -1;
-
-  if (offset > 0)
-    {
-      bool skip_wb = false;
-
-      if (frame_pointer_needed)
-	{
-	  skip_wb = true;
-
-	  if (fp_offset)
-	    {
-	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-					       GEN_INT (-offset)));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-
-	      aarch64_save_callee_saves (DImode, fp_offset, R29_REGNUM,
-					 R30_REGNUM, false);
-	    }
-	  else
-	    aarch64_push_regs (R29_REGNUM, R30_REGNUM, offset);
-
-	  /* Set up frame pointer to point to the location of the
-	     previous frame pointer on the stack.  */
-	  insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
-					   stack_pointer_rtx,
-					   GEN_INT (fp_offset)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
-	}
-      else
-	{
-	  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-	  unsigned reg2 = cfun->machine->frame.wb_candidate2;
-
-	  if (fp_offset
-	      || reg1 == FIRST_PSEUDO_REGISTER
-	      || (reg2 == FIRST_PSEUDO_REGISTER
-		  && offset >= 256))
-	    {
-	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-					       GEN_INT (-offset)));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	  else
-	    {
-	      aarch64_push_regs (reg1, reg2, offset);
-	      skip_wb = true;
-	    }
-	}
-
-      aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM, R30_REGNUM,
-				 skip_wb);
-      aarch64_save_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM,
-				 skip_wb);
+      if (callee_adjust == 0)
+	aarch64_save_callee_saves (DImode, callee_offset, R29_REGNUM,
+				   R30_REGNUM, false);
+      insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
+				       stack_pointer_rtx,
+				       GEN_INT (callee_offset)));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
 
-  /* when offset >= 512,
-     sub sp, sp, #<outgoing_args_size> */
-  if (frame_size > -1)
-    {
-      if (crtl->outgoing_args_size > 0)
-	{
-	  insn = emit_insn (gen_add2_insn
-			    (stack_pointer_rtx,
-			     GEN_INT (- crtl->outgoing_args_size)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
-    }
+  aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
+			     callee_adjust != 0 || frame_pointer_needed);
+  aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
+			     callee_adjust != 0 || frame_pointer_needed);
+  aarch64_add_constant (Pmode, SP_REGNUM, IP1_REGNUM, -final_adjust,
+			!frame_pointer_needed);
 }
 
 /* Return TRUE if we can use a simple_return insn.
@@ -3249,104 +3246,80 @@ aarch64_use_return_insn_p (void)
   return cfun->machine->frame.frame_size == 0;
 }
 
-/* Generate the epilogue instructions for returning from a function.  */
+/* Generate the epilogue instructions for returning from a function.
+   This is almost exactly the reverse of the prolog sequence, except
+   that we need to insert barriers to avoid scheduling loads that read
+   from a deallocated stack, and we optimize the unwind records by
+   emitting them all together if possible.  */
 void
 aarch64_expand_epilogue (bool for_sibcall)
 {
-  HOST_WIDE_INT frame_size, offset;
-  HOST_WIDE_INT fp_offset;
-  HOST_WIDE_INT hard_fp_offset;
-  rtx_insn *insn;
-  /* We need to add memory barrier to prevent read from deallocated stack.  */
-  bool need_barrier_p = (get_frame_size () != 0
-			 || cfun->machine->frame.saved_varargs_size);
-
   aarch64_layout_frame ();
 
-  offset = frame_size = cfun->machine->frame.frame_size;
-  hard_fp_offset = cfun->machine->frame.hard_fp_offset;
-  fp_offset = frame_size - hard_fp_offset;
+  HOST_WIDE_INT initial_adjust = cfun->machine->frame.initial_adjust;
+  HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
+  HOST_WIDE_INT final_adjust = cfun->machine->frame.final_adjust;
+  HOST_WIDE_INT callee_offset = cfun->machine->frame.callee_offset;
+  unsigned reg1 = cfun->machine->frame.wb_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  rtx cfi_ops = NULL;
+  rtx_insn *insn;
 
-  /* Store pairs and load pairs have a range only -512 to 504.  */
-  if (offset >= 512)
+  /* We need to add memory barrier to prevent read from deallocated stack.  */
+  bool need_barrier_p = (get_frame_size ()
+			 + cfun->machine->frame.saved_varargs_size) != 0;
+
+  /* Emit a barrier to prevent loads from a deallocated stack.  */
+  if (final_adjust > crtl->outgoing_args_size || cfun->calls_alloca)
     {
-      offset = hard_fp_offset;
-      if (offset >= 512)
-	offset = cfun->machine->frame.saved_regs_size;
-
-      frame_size -= (offset + crtl->outgoing_args_size);
-      fp_offset = 0;
-      if (!frame_pointer_needed && crtl->outgoing_args_size > 0)
-	{
-	  insn = emit_insn (gen_add2_insn
-			    (stack_pointer_rtx,
-			     GEN_INT (crtl->outgoing_args_size)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
+      emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
+      need_barrier_p = false;
     }
-  else
-    frame_size = -1;
 
-  /* If there were outgoing arguments or we've done dynamic stack
-     allocation, then restore the stack pointer from the frame
-     pointer.  This is at most one insn and more efficient than using
-     GCC's internal mechanism.  */
-  if (frame_pointer_needed
-      && (crtl->outgoing_args_size || cfun->calls_alloca))
+  /* Restore the stack pointer from the frame pointer if it may not
+     be the same as the stack pointer.  */
+  if (frame_pointer_needed && (final_adjust || cfun->calls_alloca))
     {
-      if (cfun->calls_alloca)
-	emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
-
       insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
 				       hard_frame_pointer_rtx,
-				       GEN_INT (0)));
-      offset = offset - fp_offset;
+				       GEN_INT (-callee_offset)));
+      /* If writeback is used when restoring callee-saves, the CFA
+	 is restored on the instruction doing the writeback.  */
+      RTX_FRAME_RELATED_P (insn) = callee_adjust == 0;
+    }
+  else
+    aarch64_add_constant (Pmode, SP_REGNUM, IP1_REGNUM, final_adjust, true);
+
+  aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
+				callee_adjust != 0, &cfi_ops);
+  aarch64_restore_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
+				callee_adjust != 0, &cfi_ops);
+
+  if (need_barrier_p)
+    emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
+
+  if (callee_adjust != 0)
+    aarch64_pop_regs (reg1, reg2, callee_adjust, &cfi_ops);
+
+  if (callee_adjust != 0 || initial_adjust > 65536)
+    {
+      /* Emit delayed restores and set the CFA to be SP + initial_adjust.  */
+      insn = get_last_insn ();
+      rtx new_cfa = plus_constant (Pmode, stack_pointer_rtx, initial_adjust);
+      REG_NOTES (insn) = alloc_reg_note (REG_CFA_DEF_CFA, new_cfa, cfi_ops);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      cfi_ops = NULL;
     }
 
-  if (offset > 0)
+  aarch64_add_constant (Pmode, SP_REGNUM, IP0_REGNUM, initial_adjust, true);
+
+  if (cfi_ops)
     {
-      unsigned reg1 = cfun->machine->frame.wb_candidate1;
-      unsigned reg2 = cfun->machine->frame.wb_candidate2;
-      bool skip_wb = true;
-      rtx cfi_ops = NULL;
-
-      if (frame_pointer_needed)
-	fp_offset = 0;
-      else if (fp_offset
-	       || reg1 == FIRST_PSEUDO_REGISTER
-	       || (reg2 == FIRST_PSEUDO_REGISTER
-		   && offset >= 256))
-	skip_wb = false;
-
-      aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM, R30_REGNUM,
-				    skip_wb, &cfi_ops);
-      aarch64_restore_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM,
-				    skip_wb, &cfi_ops);
-
-      if (need_barrier_p)
-	emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
-
-      if (skip_wb)
-	aarch64_pop_regs (reg1, reg2, offset, &cfi_ops);
-      else
-	emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (offset)));
-
-      /* Reset the CFA to be SP + FRAME_SIZE.  */
-      rtx new_cfa = stack_pointer_rtx;
-      if (frame_size > 0)
-	new_cfa = plus_constant (Pmode, new_cfa, frame_size);
-      cfi_ops = alloc_reg_note (REG_CFA_DEF_CFA, new_cfa, cfi_ops);
+      /* Emit delayed restores and reset the CFA to be SP.  */
       insn = get_last_insn ();
+      cfi_ops = alloc_reg_note (REG_CFA_DEF_CFA, stack_pointer_rtx, cfi_ops);
       REG_NOTES (insn) = cfi_ops;
       RTX_FRAME_RELATED_P (insn) = 1;
-    }
-
-  if (frame_size > 0)
-    {
-      if (need_barrier_p)
-	emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
-
-      aarch64_add_constant (Pmode, SP_REGNUM, IP0_REGNUM, frame_size, true);
     }
 
   /* Stack adjustment for exception handler.  */
@@ -5211,18 +5184,18 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
   if (to == HARD_FRAME_POINTER_REGNUM)
     {
       if (from == ARG_POINTER_REGNUM)
-	return cfun->machine->frame.frame_size - crtl->outgoing_args_size;
+	return cfun->machine->frame.hard_fp_offset;
 
       if (from == FRAME_POINTER_REGNUM)
-	return (cfun->machine->frame.hard_fp_offset
-		- cfun->machine->frame.saved_varargs_size);
+	return cfun->machine->frame.hard_fp_offset
+	       - cfun->machine->frame.locals_offset;
     }
 
   if (to == STACK_POINTER_REGNUM)
     {
       if (from == FRAME_POINTER_REGNUM)
-	  return (cfun->machine->frame.frame_size
-		  - cfun->machine->frame.saved_varargs_size);
+	  return cfun->machine->frame.frame_size
+		 - cfun->machine->frame.locals_offset;
     }
 
   return cfun->machine->frame.frame_size;
