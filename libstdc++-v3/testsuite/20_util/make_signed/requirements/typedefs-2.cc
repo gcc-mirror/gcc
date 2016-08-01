@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++11 -funsigned-char -fshort-enums" }
-// { dg-options "-std=gnu++11 -funsigned-char -fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux-* } }
 // { dg-do compile }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
