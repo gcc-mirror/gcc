@@ -1,3 +1,8 @@
+2016-08-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/71857
+	* gcc.dg/tree-ssa/ivopt_mult_4.c: Change expectation.
+
 2016-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/ldp_stp_unaligned_1.c: New test.
