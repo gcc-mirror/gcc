@@ -1,5 +1,9 @@
 2016-08-01  Jason Merrill  <jason@redhat.com>
 
+	* mangle.c (get_abi_tags): New.
+	(find_substitution, write_unqualified_name, write_abi_tags)
+	(maybe_check_abi_tags): Use it.
+
 	* mangle.c (mangle_decl): Fix mangled name change warning.
 
 	PR c++/72766
