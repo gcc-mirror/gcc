@@ -3994,9 +3994,11 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     X,X: 7-bit signed scaled offset
 	     Q:   9-bit signed offset
 	     We conservatively require an offset representable in either mode.
-	   */
+	     When performing the check for pairs of X registers i.e.  LDP/STP
+	     pass down DImode since that is the natural size of the LDP/STP
+	     instruction memory accesses.  */
 	  if (mode == TImode || mode == TFmode)
-	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
+	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
 		    && offset_9bit_signed_unscaled_p (mode, offset));
 
 	  /* A 7bit offset check because OImode will emit a ldp/stp
