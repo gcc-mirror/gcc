@@ -1,3 +1,8 @@
+2016-08-01  Virendra Pathak  <virendra.pathak@broadcom.com>
+
+	* config/aarch64/aarch64.c (vulcan_tunings): Update
+	vulcan L1 cache_line_size.
+
 2016-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_adjust_vec_address): New
