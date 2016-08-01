@@ -12,7 +12,6 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// { dg-options "-std=gnu++14" }
 
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
