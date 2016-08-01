@@ -1,5 +1,8 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.tcc: Disable explicit instantiation
+	declarations for C++17.
+
 	* testsuite/23_containers/unordered_map/requirements/53339.cc: Remove
 	ignored "xfail" from { dg-do compile { xfail selector } } directive.
 	* testsuite/23_containers/unordered_multimap/requirements/53339.cc:
