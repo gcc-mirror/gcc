@@ -391,7 +391,7 @@ typedef struct avr_args
 
 #define SUPPORTS_INIT_PRIORITY 0
 
-#define JUMP_TABLES_IN_TEXT_SECTION 0
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 #define ASM_COMMENT_START " ; "
 
