@@ -2159,12 +2159,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        *  @brief  Return const pointer to contents.
        *
-       *  This is a handle to internal data.  Do not modify or dire things may
-       *  happen.
+       *  This is a pointer to internal data.  It is undefined to modify
+       *  the contents through the returned pointer. To get a pointer that
+       *  allows modifying the contents use @c &str[0] instead,
+       *  (or in C++17 the non-const @c str.data() overload).
       */
       const _CharT*
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
+
+#if __cplusplus > 201402L
+      /**
+       *  @brief  Return non-const pointer to contents.
+       *
+       *  This is a pointer to the character sequence held by the string.
+       *  Modifying the characters in the sequence is allowed.
+      */
+      _CharT*
+      data() noexcept
+      { return _M_data(); }
+#endif
 
       /**
        *  @brief  Return copy of allocator used to construct this string.
@@ -4658,12 +4672,26 @@ _GLIBCXX_END_NAMESPACE_CXX11
       /**
        *  @brief  Return const pointer to contents.
        *
-       *  This is a handle to internal data.  Do not modify or dire things may
-       *  happen.
+       *  This is a pointer to internal data.  It is undefined to modify
+       *  the contents through the returned pointer. To get a pointer that
+       *  allows modifying the contents use @c &str[0] instead,
+       *  (or in C++17 the non-const @c str.data() overload).
       */
       const _CharT*
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
+
+#if __cplusplus > 201402L
+      /**
+       *  @brief  Return non-const pointer to contents.
+       *
+       *  This is a pointer to the character sequence held by the string.
+       *  Modifying the characters in the sequence is allowed.
+      */
+      _CharT*
+      data() noexcept
+      { return _M_data(); }
+#endif
 
       /**
        *  @brief  Return copy of allocator used to construct this string.

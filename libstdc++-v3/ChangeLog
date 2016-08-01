@@ -1,5 +1,10 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h (data() const): Update comment.
+	(data()): Add non-const overload for C++17.
+	* testsuite/21_strings/basic_string/operations/data/char/2.cc: New.
+	* testsuite/21_strings/basic_string/operations/data/wchar_t/2.cc: New.
+
 	* include/bits/basic_string.tcc: Disable explicit instantiation
 	declarations for C++17.
 
