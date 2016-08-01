@@ -1,3 +1,14 @@
+2016-08-01  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2016-07-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* config/rs6000/rs6000.c (altivec_expand_ld_builtin): Add break.
+	(altivec_expand_st_builtin): Likewise.
+	* config/i386/i386.c (ix86_expand_args_builtin): Likewise.
+	(ix86_expand_round_builtin): Likewise.
+
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/71874
