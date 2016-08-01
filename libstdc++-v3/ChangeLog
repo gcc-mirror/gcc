@@ -1,5 +1,8 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/25_algorithms/lower_bound/debug/irreflexive.cc: Use
+	C++98-compatible initialization for array.
+
 	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc: Remove
 	unused header and variable from compile-only test.
 	* testsuite/20_util/shared_ptr/assign/unique_ptr_rvalue.cc: Likewise.
