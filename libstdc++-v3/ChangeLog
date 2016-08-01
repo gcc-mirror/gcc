@@ -1,5 +1,8 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/backward/hash_set/check_construct_destroy.cc: Account
+	for different construct/destroy counts in C++98 mode.
+
 	* testsuite/17_intro/freestanding.cc: Remove "-x c" from dg-options.
 
 	* testsuite/20_util/tuple/cons/66338.cc: Limit test to C++11 and
