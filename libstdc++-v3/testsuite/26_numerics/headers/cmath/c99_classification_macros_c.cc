@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { xfail uclibc } }
+// { dg-do compile }
 // { dg-excess-errors "" { target uclibc } }
 // { dg-add-options no_pch }
 
