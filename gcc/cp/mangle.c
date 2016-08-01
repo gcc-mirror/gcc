@@ -447,6 +447,30 @@ is_std_substitution (const tree node,
 	      == subst_identifiers[index]));
 }
 
+/* Return the ABI tags (the TREE_VALUE of the "abi_tag" attribute entry) for T,
+   which can be a decl or type.  */
+
+static tree
+get_abi_tags (tree t)
+{
+  if (!t || TREE_CODE (t) == NAMESPACE_DECL)
+    return NULL_TREE;
+
+  if (DECL_P (t) && DECL_DECLARES_TYPE_P (t))
+    t = TREE_TYPE (t);
+
+  tree attrs;
+  if (TYPE_P (t))
+    attrs = TYPE_ATTRIBUTES (t);
+  else
+    attrs = DECL_ATTRIBUTES (t);
+
+  tree tags = lookup_attribute ("abi_tag", attrs);
+  if (tags)
+    tags = TREE_VALUE (tags);
+  return tags;
+}
+
 /* Helper function for find_substitution.  Returns nonzero if NODE,
    which may be a decl or a CLASS_TYPE, is the template-id
    ::std::identifier<char>, where identifier is
@@ -601,7 +625,7 @@ find_substitution (tree node)
 
   tree tags = NULL_TREE;
   if (OVERLOAD_TYPE_P (node) || DECL_CLASS_TEMPLATE_P (node))
-    tags = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (type));
+    tags = get_abi_tags (type);
   /* Now check the list of available substitutions for this mangling
      operation.  */
   if (!abbr || tags) for (i = 0; i < size; ++i)
@@ -667,7 +691,7 @@ unmangled_name_p (const tree decl)
 	return false;
 
       /* Declarations with ABI tags are mangled.  */
-      if (lookup_attribute ("abi_tag", DECL_ATTRIBUTES (decl)))
+      if (get_abi_tags (decl))
 	return false;
 
       /* The names of non-static global variables aren't mangled.  */
@@ -1314,12 +1338,7 @@ write_unqualified_name (tree decl)
     decl = DECL_TEMPLATE_RESULT (tmpl);
   /* Don't crash on an unbound class template.  */
   if (decl && TREE_CODE (decl) != NAMESPACE_DECL)
-    {
-      tree attrs = (TREE_CODE (decl) == TYPE_DECL
-		    ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
-		    : DECL_ATTRIBUTES (decl));
-      write_abi_tags (lookup_attribute ("abi_tag", attrs));
-    }
+    write_abi_tags (get_abi_tags (decl));
 }
 
 /* Write the unqualified-name for a conversion operator to TYPE.  */
@@ -1370,8 +1389,6 @@ write_abi_tags (tree tags)
 {
   if (tags == NULL_TREE)
     return;
-
-  tags = TREE_VALUE (tags);
 
   vec<tree, va_gc> * vec = make_tree_vector();
 
@@ -4027,16 +4044,12 @@ maybe_check_abi_tags (tree t, tree for_decl)
   if (DECL_ASSEMBLER_NAME_SET_P (t))
     return;
 
-  tree attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
-  tree oldtags = NULL_TREE;
-  if (attr)
-    oldtags = TREE_VALUE (attr);
+  tree oldtags = get_abi_tags (t);
 
   mangle_decl (t);
 
-  if (!attr)
-    attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
-  if (attr && TREE_VALUE (attr) != oldtags
+  tree newtags = get_abi_tags (t);
+  if (newtags && newtags != oldtags
       && abi_version_crosses (10))
     {
       if (for_decl)
