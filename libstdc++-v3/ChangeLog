@@ -1,5 +1,7 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/17_intro/freestanding.cc: Remove "-x c" from dg-options.
+
 	* testsuite/20_util/tuple/cons/66338.cc: Limit test to C++11 and
 	later.
 	* testsuite/20_util/tuple/cons/element_accepts_anything_byval.cc:
