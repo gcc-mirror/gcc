@@ -3581,6 +3581,10 @@ cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
       tree type = TREE_TYPE (op00);
       t = fold_convert_loc (loc, ssizetype, TREE_OPERAND (op00, 1));
       tree nelts = array_type_nelts_top (TREE_TYPE (TREE_OPERAND (op00, 0)));
+      nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
+					    overflow_p);
+      if (*non_constant_p)
+	return NULL_TREE;
       /* Don't fold an out-of-bound access.  */
       if (!tree_int_cst_le (t, nelts))
 	return NULL_TREE;

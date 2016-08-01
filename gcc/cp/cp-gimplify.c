@@ -1967,7 +1967,8 @@ cp_fully_fold (tree x)
     return x;
   /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
      have to call both.  */
-  x = maybe_constant_value (x);
+  if (cxx_dialect >= cxx11)
+    x = maybe_constant_value (x);
   return cp_fold (x);
 }
 
