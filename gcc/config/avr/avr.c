@@ -12714,6 +12714,18 @@ avr_expand_delay_cycles (rtx operands0)
 }
 
 
+static void
+avr_expand_nops (rtx operands0)
+{
+  unsigned HOST_WIDE_INT n_nops = UINTVAL (operands0) & GET_MODE_MASK (HImode);
+
+  while (n_nops--)
+    {
+      emit_insn (gen_nopv (const1_rtx));
+    }
+}
+
+
 /* Compute the image of x under f, i.e. perform   x --> f(x)    */
 
 static int
@@ -13384,6 +13396,19 @@ avr_expand_builtin (tree exp, rtx target,
           error ("%s expects a compile time integer constant", bname);
         else
           avr_expand_delay_cycles (op0);
+
+        return NULL_RTX;
+      }
+
+    case AVR_BUILTIN_NOPS:
+      {
+        arg0 = CALL_EXPR_ARG (exp, 0);
+        op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+
+        if (!CONST_INT_P (op0))
+          error ("%s expects a compile time integer constant", bname);
+        else
+          avr_expand_nops (op0);
 
         return NULL_RTX;
       }

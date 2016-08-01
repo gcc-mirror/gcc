@@ -51,6 +51,7 @@ DEF_BUILTIN (FMULSU, 2, int_ftype_char_uchar,   fmulsu, NULL)
 /* More complex stuff that cannot be mapped 1:1 to an instruction.  */
 
 DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_ulong, nothing, NULL)
+DEF_BUILTIN (NOPS,         -1, void_ftype_ulong, nothing, NULL)
 DEF_BUILTIN (INSERT_BITS, 3, uchar_ftype_ulong_uchar_uchar, insert_bits, NULL)
 DEF_BUILTIN (FLASH_SEGMENT, 1, char_ftype_const_memx_ptr, flash_segment, NULL)
 

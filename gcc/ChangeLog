@@ -1,3 +1,11 @@
+2016-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions): Document
+	__builtin_avr_nops.
+	* config/avr/builtins.def (NOPS): New.
+	* config/avr/avr.c (avr_expand_nops): New static function.
+	(avr_expand_builtin): Use it to handle AVR_BUILTIN_NOPS.
+
 2016-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_address): Use DImode when
