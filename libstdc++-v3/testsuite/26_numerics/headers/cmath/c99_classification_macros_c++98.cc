@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++98" }
-// { dg-do compile { xfail uclibc } }
+// { dg-do compile }
 // { dg-excess-errors "" { target uclibc } }
 
 #include <cmath>

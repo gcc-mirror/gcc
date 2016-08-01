@@ -1,5 +1,16 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/unordered_map/requirements/53339.cc: Remove
+	ignored "xfail" from { dg-do compile { xfail selector } } directive.
+	* testsuite/23_containers/unordered_multimap/requirements/53339.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++11.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++98.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c.cc: Likewise.
+
 	* testsuite/backward/hash_set/check_construct_destroy.cc: Account
 	for different construct/destroy counts in C++98 mode.
 
