@@ -1,5 +1,8 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	808590.cc: Use -std=gnu++98 instead of -std=gnu++03.
+
 	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Remove
 	linker options from compile-only tests.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
