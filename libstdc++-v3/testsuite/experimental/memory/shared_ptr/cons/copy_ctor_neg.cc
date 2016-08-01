@@ -21,7 +21,6 @@
 // 8.2.1 Class template shared_ptr [memory.smartptr.shared]
 
 #include <experimental/memory>
-#include <testsuite_hooks.h>
 
 struct A { virtual ~A() { } };
 struct B : A { };
@@ -34,8 +33,6 @@ struct B : A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[3]> a;
   a = std::experimental::shared_ptr<B[3]> (new B[3]); // { dg-error "no match " }
 }
@@ -43,8 +40,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[]> a(new A[3]);
   std::experimental::shared_ptr<A[2]> spa(a); // { dg-error "no matching" }
 }

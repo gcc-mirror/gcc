@@ -1,5 +1,13 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc: Remove
+	unused header and variable from compile-only test.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_rvalue.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/cstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/string_wchar_t.cc: Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/copy_ctor_neg.cc:
+	Likewise.
+
 	* testsuite/experimental/string_view/operations/rfind/char/2.cc:
 	Remove duplicate dg-options directive.
 
