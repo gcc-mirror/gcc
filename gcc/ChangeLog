@@ -1,3 +1,9 @@
+2015-08-01  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/71818
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Don't advance IVs
+	with non invariant evolutions
+
 2016-08-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/72767

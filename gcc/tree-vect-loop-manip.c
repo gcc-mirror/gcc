@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
+#include "tree-ssa-loop-ivopts.h"
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -1592,10 +1593,26 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
         }
 
       /* FORNOW: We do not transform initial conditions of IVs
+	 which evolution functions are not invariants in the loop.  */
+
+      if (!expr_invariant_in_loop_p (loop, evolution_part))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "evolution not invariant in loop.\n");
+	  return false;
+	}
+
+      /* FORNOW: We do not transform initial conditions of IVs
 	 which evolution functions are a polynomial of degree >= 2.  */
 
       if (tree_is_chrec (evolution_part))
-	return false;
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "evolution is chrec.\n");
+	  return false;
+	}
     }
 
   return true;
