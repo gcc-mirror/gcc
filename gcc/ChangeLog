@@ -1,3 +1,37 @@
+2016-08-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Add support for vec_extract on vector float, vector int, vector
+	short, and vector char vector types.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Add
+	vector float, vector int, vector short, and vector char
+	optimizations on 64-bit ISA 2.07 systems for both constant and
+	variable element numbers.
+	(rs6000_split_vec_extract_var): Likewise.
+	* config/rs6000/vsx.md (vsx_xscvspdp_scalar2): Allow SFmode to be
+	Altivec registers on ISA 2.07 and above.
+	(vsx_extract_v4sf): Delete alternative that hard coded element 0,
+	which never was matched due to the split occuring before register
+	allocation (and the code would not have worked on little endian
+	systems if it did match).  Allow extracts to go to the Altivec
+	registers if ISA 2.07 (power8).  Change from using "" around the
+	C++ code to using {}'s.
+	(vsx_extract_v4sf_<mode>_load): New insn to optimize vector float
+	vec_extracts when the vector is in memory.
+	(vsx_extract_v4sf_var): New insn to optimize vector float
+	vec_extracts when the element number is variable on 64-bit ISA
+	2.07 systems.
+	(vsx_extract_<mode>, VSX_EXTRACT_I iterator): Add optimizations
+	for 64-bit ISA 2.07 as well as ISA 3.0.
+	(vsx_extract_<mode>_p9, VSX_EXTRACT_I iterator): Likewise.
+	(vsx_extract_<mode>_p8, VSX_EXTRACT_I iterator): Likewise.
+	(vsx_extract_<mode>_load, VSX_EXTRACT_I iterator): New insn to
+	optimize vector int, vector short, and vector char vec_extracts
+	when the vector is in memory.
+	(vsx_extract_<mode>_var, VSX_EXTRACT_I iterator): New insn to
+	optimize vector int, vector short, and vector char vec_extracts
+	when the element number is variable.
+
 2016-08-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/71948

@@ -1,7 +1,17 @@
+2016-08-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-extract-5.c: New tests to test
+	vec_extract for vector float, vector int, vector short, and vector
+	char.
+	* gcc.target/powerpc/vec-extract-6.c: Likewise.
+	* gcc.target/powerpc/vec-extract-7.c: Likewise.
+	* gcc.target/powerpc/vec-extract-8.c: Likewise.
+	* gcc.target/powerpc/vec-extract-9.c: Likewise.
+
 2016-08-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/test_frame_10.c: Fix test to check for a
-	single stack adjustment, no writeback.	
+	single stack adjustment, no writeback.
 	* gcc.target/aarch64/test_frame_12.c: Likewise.
 	* gcc.target/aarch64/test_frame_13.c: Likewise.
 	* gcc.target/aarch64/test_frame_15.c: Likewise.
