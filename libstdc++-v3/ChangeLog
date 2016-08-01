@@ -1,5 +1,8 @@
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/string_view/operations/rfind/char/2.cc:
+	Remove duplicate dg-options directive.
+
 	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
 	808590.cc: Use -std=gnu++98 instead of -std=gnu++03.
 
