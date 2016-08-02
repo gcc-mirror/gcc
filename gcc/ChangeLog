@@ -1,3 +1,8 @@
+2016-02-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h (vminnm_f64): Add back missing 'f' from
+	__builtin_aarch64_fmindf.
+
 2016-08-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/34114
