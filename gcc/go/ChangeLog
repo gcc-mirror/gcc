@@ -1,3 +1,10 @@
+2016-08-02  Chris Manghane  <cmang@google.com>
+
+	* lang.opt: Add -fgo-debug-escape option.
+	* go-c.h (go_create_gogo): Add debug_escape_level parameter.
+	* go-lang.c (go_langhook_init): Pass go_debug_escape_level to
+	go_create_gogo.
+
 2016-05-06  Chris Manghane  <cmang@google.com>
 
 	* Make-lang.in (GO_OBJS): Add go/escape.o (based on an entirely
