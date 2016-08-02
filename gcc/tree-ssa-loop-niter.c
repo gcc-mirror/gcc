@@ -964,7 +964,6 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
   tree niter_type = unsigned_type_for (type);
   tree s, c, d, bits, assumption, tmp, bound;
   mpz_t max;
-  tree e;
 
   niter->control = *iv;
   niter->bound = final;
@@ -999,27 +998,87 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
 				 TYPE_SIGN (niter_type));
   mpz_clear (max);
 
-  /* Compute no-overflow information for the control iv.  Note we are
-     handling NE_EXPR, if iv base equals to final value, the loop exits
-     immediately, and the iv does not overflow.  */
-  if (tree_int_cst_sign_bit (iv->step))
-    e = fold_build2 (GE_EXPR, boolean_type_node, iv->base, final);
-  else
-    e = fold_build2 (LE_EXPR, boolean_type_node, iv->base, final);
-  e = simplify_using_initial_conditions (loop, e);
-  if (integer_onep (e)
-      && (integer_onep (s)
-	  || (TREE_CODE (c) == INTEGER_CST
-	      && TREE_CODE (s) == INTEGER_CST
-	      && wi::mod_trunc (c, s, TYPE_SIGN (type)) == 0)))
+  /* Compute no-overflow information for the control iv.  This can be
+     proven when below two conditions hold.
+
+       1) |FINAL - base| is an exact multiple of step.
+       2) IV evaluates toward FINAL at beginning, i.e:
+
+	    base <= FINAL ; step > 0
+	    base >= FINAL ; step < 0
+
+	  Note the first condition holds, the second can be then relaxed
+	  to below condition.
+
+	    base - step < FINAL ; step > 0
+				  && base - step doesn't underflow
+	    base - step > FINAL ; step < 0
+				  && base - step doesn't overflow
+
+	  The relaxation is important because after pass loop-ch, loop
+	  with exit condition (IV != FINAL) will usually be guarded by
+	  pre-condition (IV.base - IV.step != FINAL).  Please refer to
+	  PR34114 as an example.
+
+     Also note, for NE_EXPR, base equals to FINAL is a special case, in
+     which the loop exits immediately, and the iv does not overflow.  */
+  if (!niter->control.no_overflow
+      && (integer_onep (s) || multiple_of_p (type, c, s)))
     {
-      niter->control.no_overflow = true;
+      tree t, cond, relaxed_cond = boolean_false_node;
+
+      if (tree_int_cst_sign_bit (iv->step))
+	{
+	  cond = fold_build2 (GE_EXPR, boolean_type_node, iv->base, final);
+	  if (TREE_CODE (type) == INTEGER_TYPE)
+	    {
+	      /* Only when base - step doesn't overflow.  */
+	      t = TYPE_MAX_VALUE (type);
+	      t = fold_build2 (PLUS_EXPR, type, t, iv->step);
+	      t = fold_build2 (GE_EXPR, boolean_type_node, t, iv->base);
+	      if (integer_nonzerop (t))
+		{
+		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
+		  relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node,
+					      t, final);
+		}
+	    }
+	}
+      else
+	{
+	  cond = fold_build2 (LE_EXPR, boolean_type_node, iv->base, final);
+	  if (TREE_CODE (type) == INTEGER_TYPE)
+	    {
+	      /* Only when base - step doesn't underflow.  */
+	      t = TYPE_MIN_VALUE (type);
+	      t = fold_build2 (PLUS_EXPR, type, t, iv->step);
+	      t = fold_build2 (LE_EXPR, boolean_type_node, t, iv->base);
+	      if (integer_nonzerop (t))
+		{
+		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
+		  relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node,
+					      t, final);
+		}
+	    }
+	}
+
+      t = simplify_using_initial_conditions (loop, cond);
+      if (!t || !integer_onep (t))
+	t = simplify_using_initial_conditions (loop, relaxed_cond);
+
+      if (t && integer_onep (t))
+	niter->control.no_overflow = true;
     }
 
   /* First the trivial cases -- when the step is 1.  */
   if (integer_onep (s))
     {
       niter->niter = c;
+      return true;
+    }
+  if (niter->control.no_overflow && multiple_of_p (type, c, s))
+    {
+      niter->niter = fold_build2 (FLOOR_DIV_EXPR, niter_type, c, s);
       return true;
     }
 

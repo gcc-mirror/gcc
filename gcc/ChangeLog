@@ -1,6 +1,12 @@
 2016-08-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/34114
+	* tree-ssa-loop-niter.c (number_of_iterations_ne): Prove no-overflow
+	information for more control IVs.
+
+2016-08-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/34114
 	* fold-const.c (multiple_of_p): Improve MULT_EXPR, PLUS_EXPR,
 	PLUS_EXPR case.  Handle SSA_NAME case.
 

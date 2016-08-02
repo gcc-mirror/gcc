@@ -1,3 +1,8 @@
+2016-08-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/34114
+	* gcc.dg/tree-ssa/loop-42.c: New test.
+
 2016-08-02  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/vminmaxnm.c: New.
