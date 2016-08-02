@@ -1,5 +1,8 @@
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc: Skip
+	test if -flto used.
+
 	* testsuite/lib/libstdc++.exp (v3-build_support): Add -fno-lto to
 	additional flags for compiling libtestc++.a objects.
 
