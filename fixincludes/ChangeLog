@@ -1,3 +1,7 @@
+2016-08-01  Muhammad Bilal  <mbilal@codesourcery.com>
+
+	* fixinc.in: Use --parents option to make LIB directory.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* mkfixinc.sh: Remove interix support.
