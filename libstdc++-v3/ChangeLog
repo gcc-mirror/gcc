@@ -1,5 +1,7 @@
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* scripts/testsuite_flags.in: Add -fno-show-column to cxxflags.
+
 	* testsuite/18_support/bad_exception/23591_thread-1.c: Skip test if
 	options are present that aren't valid for C.
 	* testsuite/abi/header_cxxabi.c: Likewise.
