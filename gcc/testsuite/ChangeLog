@@ -1,3 +1,9 @@
+2016-08-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/vminmaxnm.c: New.
+	* gcc.target/aarch64/simd/vminmaxnm_1.c (main): Add float64x1_t
+	tests.
+
 2016-08-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-extract-5.c: New tests to test

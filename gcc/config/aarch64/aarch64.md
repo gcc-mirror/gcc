@@ -4841,14 +4841,16 @@
   [(set_attr "type" "f_minmax<s>")]
 )
 
-;; Scalar forms for the IEEE-754 fmax()/fmin() functions
-(define_insn "<fmaxmin><mode>3"
+;; Scalar forms for fmax, fmin, fmaxnm, fminnm.
+;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
+;; which implement the IEEE fmax ()/fmin () functions.
+(define_insn "<maxmin_uns><mode>3"
   [(set (match_operand:GPF_F16 0 "register_operand" "=w")
 	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")
 		     (match_operand:GPF_F16 2 "register_operand" "w")]
-		     FMAXMIN))]
+		     FMAXMIN_UNS))]
   "TARGET_FLOAT"
-  "<fmaxmin_op>\\t%<s>0, %<s>1, %<s>2"
+  "<maxmin_uns_op>\\t%<s>0, %<s>1, %<s>2"
   [(set_attr "type" "f_minmax<stype>")]
 )
 

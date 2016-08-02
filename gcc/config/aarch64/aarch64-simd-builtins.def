@@ -241,19 +241,19 @@
   BUILTIN_VHSDF (UNOP, reduc_smax_nan_scal_, 10)
   BUILTIN_VHSDF (UNOP, reduc_smin_nan_scal_, 10)
 
-  /* Implemented by <maxmin><mode>3.
+  /* Implemented by <maxmin_uns><mode>3.
      smax variants map to fmaxnm,
      smax_nan variants map to fmax.  */
   BUILTIN_VDQ_BHSI (BINOP, smax, 3)
   BUILTIN_VDQ_BHSI (BINOP, smin, 3)
   BUILTIN_VDQ_BHSI (BINOP, umax, 3)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3)
-  BUILTIN_VHSDF (BINOP, smax_nan, 3)
-  BUILTIN_VHSDF (BINOP, smin_nan, 3)
+  BUILTIN_VHSDF_DF (BINOP, smax_nan, 3)
+  BUILTIN_VHSDF_DF (BINOP, smin_nan, 3)
 
-  /* Implemented by <fmaxmin><mode>3.  */
-  BUILTIN_VHSDF (BINOP, fmax, 3)
-  BUILTIN_VHSDF (BINOP, fmin, 3)
+  /* Implemented by <maxmin_uns><mode>3.  */
+  BUILTIN_VHSDF_HSDF (BINOP, fmax, 3)
+  BUILTIN_VHSDF_HSDF (BINOP, fmin, 3)
 
   /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, smaxp, 0)
@@ -550,7 +550,3 @@
   BUILTIN_GPI_I16 (UNOPUS, fixuns_trunchf, 2)
   BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2)
   BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2)
-
-  /* Implemented by <fmaxmin><mode>3.  */
-  VAR1 (BINOP, fmax, 3, hf)
-  VAR1 (BINOP, fmin, 3, hf)

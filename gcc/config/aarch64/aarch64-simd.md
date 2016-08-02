@@ -2038,6 +2038,9 @@
   [(set_attr "type" "neon_fp_minmax_<stype><q>")]
 )
 
+;; Vector forms for fmax, fmin, fmaxnm, fminnm.
+;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
+;; which implement the IEEE fmax ()/fmin () functions.
 (define_insn "<maxmin_uns><mode>3"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
@@ -2045,17 +2048,6 @@
 		      FMAXMIN_UNS))]
   "TARGET_SIMD"
   "<maxmin_uns_op>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_fp_minmax_<stype><q>")]
-)
-
-;; Auto-vectorized forms for the IEEE-754 fmax()/fmin() functions
-(define_insn "<fmaxmin><mode>3"
-  [(set (match_operand:VHSDF 0 "register_operand" "=w")
-	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
-		       (match_operand:VHSDF 2 "register_operand" "w")]
-		       FMAXMIN))]
-  "TARGET_SIMD"
-  "<fmaxmin_op>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_fp_minmax_<stype><q>")]
 )
 

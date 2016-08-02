@@ -17201,6 +17201,14 @@ vmax_f32 (float32x2_t __a, float32x2_t __b)
   return __builtin_aarch64_smax_nanv2sf (__a, __b);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmax_f64 (float64x1_t __a, float64x1_t __b)
+{
+    return (float64x1_t)
+      { __builtin_aarch64_smax_nandf (vget_lane_f64 (__a, 0),
+				      vget_lane_f64 (__b, 0)) };
+}
+
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vmax_s8 (int8x8_t __a, int8x8_t __b)
 {
@@ -17692,6 +17700,14 @@ vmaxnm_f32 (float32x2_t __a, float32x2_t __b)
   return __builtin_aarch64_fmaxv2sf (__a, __b);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmaxnm_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return (float64x1_t)
+    { __builtin_aarch64_fmaxdf (vget_lane_f64 (__a, 0),
+				vget_lane_f64 (__b, 0)) };
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vmaxnmq_f32 (float32x4_t __a, float32x4_t __b)
 {
@@ -17824,6 +17840,14 @@ vmin_f32 (float32x2_t __a, float32x2_t __b)
   return __builtin_aarch64_smin_nanv2sf (__a, __b);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmin_f64 (float64x1_t __a, float64x1_t __b)
+{
+    return (float64x1_t)
+	  { __builtin_aarch64_smin_nandf (vget_lane_f64 (__a, 0),
+					  vget_lane_f64 (__b, 0)) };
+}
+
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vmin_s8 (int8x8_t __a, int8x8_t __b)
 {
@@ -17920,6 +17944,14 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vminnm_f32 (float32x2_t __a, float32x2_t __b)
 {
   return __builtin_aarch64_fminv2sf (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vminnm_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return (float64x1_t)
+    { __builtin_aarch64_fmind (vget_lane_f64 (__a, 0),
+				vget_lane_f64 (__b, 0)) };
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
