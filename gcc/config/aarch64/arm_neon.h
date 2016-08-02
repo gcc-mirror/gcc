@@ -17950,7 +17950,7 @@ __extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
 vminnm_f64 (float64x1_t __a, float64x1_t __b)
 {
   return (float64x1_t)
-    { __builtin_aarch64_fmind (vget_lane_f64 (__a, 0),
+    { __builtin_aarch64_fmindf (vget_lane_f64 (__a, 0),
 				vget_lane_f64 (__b, 0)) };
 }
 
