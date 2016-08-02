@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-skip-if "invalid options for C" { *-*-* } { "-std=c++??" "-std=gnu++??" } }
 // { dg-options "-x c" }
 // Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
