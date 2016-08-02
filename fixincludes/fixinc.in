@@ -41,7 +41,7 @@ shift
 
 # Make sure it exists.
 if [ ! -d $LIB ]; then
-  mkdir $LIB || {
+  mkdir -p $LIB || {
     echo fixincludes:  output dir '`'$LIB"' cannot be created"
     exit 1
   }
