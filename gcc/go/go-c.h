@@ -34,7 +34,8 @@ extern void go_add_search_path (const char*);
 extern void go_create_gogo (int int_type_size, int pointer_size,
 			    const char* pkgpath, const char *prefix,
 			    const char *relative_import_path,
-			    bool check_divide_zero, bool check_divide_overflow);
+			    bool check_divide_zero, bool check_divide_overflow,
+			    int debug_escape_level);
 
 extern void go_parse_input_files (const char**, unsigned int,
 				  bool only_check_syntax,

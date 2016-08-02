@@ -22,7 +22,8 @@ GO_EXTERN_C
 void
 go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
 	       const char *prefix, const char *relative_import_path,
-	       bool check_divide_by_zero, bool check_divide_overflow)
+	       bool check_divide_by_zero, bool check_divide_overflow,
+	       int debug_escape_level)
 {
   go_assert(::gogo == NULL);
   Linemap* linemap = go_get_linemap();
@@ -39,6 +40,7 @@ go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
     ::gogo->set_check_divide_by_zero(check_divide_by_zero);
   if (check_divide_overflow)
     ::gogo->set_check_divide_overflow(check_divide_overflow);
+  ::gogo->set_debug_escape_level(debug_escape_level);
 }
 
 // Parse the input files.

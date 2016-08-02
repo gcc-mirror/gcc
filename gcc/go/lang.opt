@@ -69,6 +69,10 @@ frequire-return-statement
 Go Var(go_require_return_statement) Init(1) Warning
 Functions which return values must end with return statements.
 
+fgo-debug-escape
+Go Joined UInteger Var(go_debug_escape_level) Init(0)
+Emit debugging information related to the escape analysis pass when run with -fgo-optimize-allocs.
+
 o
 Go Joined Separate
 ; Documented in common.opt

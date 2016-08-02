@@ -3058,7 +3058,6 @@ Unnamed_label_statement::do_get_backend(Translate_context* context)
   return this->label_->get_definition(context);
 }
 
-
 // Dump the AST representation for an unnamed label definition statement.
 
 void
@@ -5091,6 +5090,7 @@ For_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
     }
 
   Unnamed_label* top = new Unnamed_label(this->location());
+  top->set_derived_from(this);
   b->add_statement(Statement::make_unnamed_label_statement(top));
 
   s = Statement::make_block_statement(this->statements_,

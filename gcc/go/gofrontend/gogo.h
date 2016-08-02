@@ -239,6 +239,16 @@ class Gogo
   set_check_divide_overflow(bool b)
   { this->check_divide_overflow_ = b; }
 
+  // Return the level of escape analysis debug information to emit.
+  int
+  debug_escape_level() const
+  { return this->debug_escape_level_; }
+
+  // Set the level of escape analysis debugging from a command line option.
+  void
+  set_debug_escape_level(int level)
+  { this->debug_escape_level_ = level; }
+
   // Return the priority to use for the package we are compiling.
   // This is two more than the largest priority of any package we
   // import.
@@ -786,6 +796,9 @@ class Gogo
   // Whether or not to check for division overflow, from the
   // -fgo-check-divide-overflow option.
   bool check_divide_overflow_;
+  // The level of escape analysis debug information to emit, from the
+  // -fgo-debug-escape option.
+  int debug_escape_level_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
@@ -2715,7 +2728,7 @@ class Unnamed_label
 {
  public:
   Unnamed_label(Location location)
-    : location_(location), blabel_(NULL)
+    : location_(location), derived_from_(NULL), blabel_(NULL)
   { }
 
   // Get the location where the label is defined.
@@ -2727,6 +2740,16 @@ class Unnamed_label
   void
   set_location(Location location)
   { this->location_ = location; }
+
+  // Get the top level statement this unnamed label is derived from.
+  Statement*
+  derived_from() const
+  { return this->derived_from_; }
+
+  // Set the top level statement this unnamed label is derived from.
+  void
+  set_derived_from(Statement* s)
+  { this->derived_from_ = s; }
 
   // Return a statement which defines this label.
   Bstatement*
@@ -2743,6 +2766,9 @@ class Unnamed_label
 
   // The location where the label is defined.
   Location location_;
+  // The top-level statement this unnamed label was derived/lowered from.
+  // This is NULL is this label is not the top-level of a lowered statement.
+  Statement* derived_from_;
   // The backend representation of this label.
   Blabel* blabel_;
 };
