@@ -693,7 +693,7 @@ lra_final_code_change (void)
 {
   int i, hard_regno;
   basic_block bb;
-  rtx_insn *insn, *curr;
+  rtx_insn *insn, *curr, *next_insn;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -727,7 +727,12 @@ lra_final_code_change (void)
 	  if (NONJUMP_INSN_P (insn) && GET_CODE (pat) == SET
 	      && REG_P (SET_SRC (pat)) && REG_P (SET_DEST (pat))
 	      && REGNO (SET_SRC (pat)) == REGNO (SET_DEST (pat))
-	      && ! return_regno_p (REGNO (SET_SRC (pat))))
+	      && (! return_regno_p (REGNO (SET_SRC (pat)))
+		  || (next_insn = next_nondebug_insn (insn)) == NULL_RTX
+		  || ! INSN_P (next_insn)
+		  || GET_CODE (PATTERN (next_insn)) != USE
+		  || ! REG_P (XEXP (PATTERN (next_insn), 0))
+		  || REGNO (SET_SRC (pat)) != REGNO (XEXP (PATTERN (next_insn), 0))))
 	    {
 	      lra_invalidate_insn_data (insn);
 	      delete_insn (insn);

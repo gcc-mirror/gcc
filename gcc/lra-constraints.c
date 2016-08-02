@@ -4105,14 +4105,16 @@ curr_insn_transform (bool check_only_p)
 
       if (optional_p)
 	{
-	  lra_assert (REG_P (op));
-	  regno = REGNO (op);
+	  rtx reg = op;
+
+	  lra_assert (REG_P (reg));
+	  regno = REGNO (reg);
 	  op = *curr_id->operand_loc[i]; /* Substitution.  */
 	  if (GET_CODE (op) == SUBREG)
 	    op = SUBREG_REG (op);
 	  gcc_assert (REG_P (op) && (int) REGNO (op) >= new_regno_start);
 	  bitmap_set_bit (&lra_optional_reload_pseudos, REGNO (op));
-	  lra_reg_info[REGNO (op)].restore_regno = regno;
+	  lra_reg_info[REGNO (op)].restore_rtx = reg;
 	  if (lra_dump_file != NULL)
 	    fprintf (lra_dump_file,
 		     "      Making reload reg %d for reg %d optional\n",
@@ -4646,11 +4648,15 @@ lra_constraints (bool first_p)
   return changed_p;
 }
 
+static void initiate_invariants (void);
+static void finish_invariants (void);
+
 /* Initiate the LRA constraint pass.  It is done once per
    function.  */
 void
 lra_constraints_init (void)
 {
+  initiate_invariants ();
 }
 
 /* Finalize the LRA constraint pass.  It is done once per
@@ -4658,6 +4664,100 @@ lra_constraints_init (void)
 void
 lra_constraints_finish (void)
 {
+  finish_invariants ();
+}
+
+
+
+/* Structure describes invariants for ineheritance.  */
+struct invariant
+{
+  /* The order number of the invariant.  */
+  int num;
+  /* The invariant RTX.  */
+  rtx invariant_rtx;
+  /* The origin insn of the invariant.  */
+  rtx_insn *insn;
+};
+
+typedef struct invariant invariant_t;
+typedef invariant_t *invariant_ptr_t;
+typedef const invariant_t *const_invariant_ptr_t;
+
+/* Pointer to the inheritance invariants.  */
+static vec<invariant_ptr_t> invariants;
+
+/* Allocation pool for the invariants.  */
+static object_allocator<struct invariant> *invariants_pool;
+
+/* Hash table for the invariants.  */
+static htab_t invariant_table;
+
+/* Hash function for INVARIANT.  */
+static hashval_t
+invariant_hash (const void *invariant)
+{
+  rtx inv = ((const_invariant_ptr_t) invariant)->invariant_rtx;
+  return lra_rtx_hash (inv);
+}
+
+/* Equal function for invariants INVARIANT1 and INVARIANT2.  */
+static int
+invariant_eq_p (const void *invariant1, const void *invariant2)
+{
+  rtx inv1 = ((const_invariant_ptr_t) invariant1)->invariant_rtx;
+  rtx inv2 = ((const_invariant_ptr_t) invariant2)->invariant_rtx;
+
+  return rtx_equal_p (inv1, inv2);
+}
+
+/* Insert INVARIANT_RTX into the table if it is not there yet.  Return
+   invariant which is in the table.  */
+static invariant_ptr_t
+insert_invariant (rtx invariant_rtx)
+{
+  void **entry_ptr;
+  invariant_t invariant;
+  invariant_ptr_t invariant_ptr;
+
+  invariant.invariant_rtx = invariant_rtx;
+  entry_ptr = htab_find_slot (invariant_table, &invariant, INSERT);
+  if (*entry_ptr == NULL)
+    {
+      invariant_ptr = invariants_pool->allocate ();
+      invariant_ptr->invariant_rtx = invariant_rtx;
+      invariant_ptr->insn = NULL;
+      invariants.safe_push (invariant_ptr);
+      *entry_ptr = (void *) invariant_ptr;
+    }
+  return (invariant_ptr_t) *entry_ptr;
+}
+
+/* Initiate the invariant table.  */
+static void
+initiate_invariants (void)
+{
+  invariants.create (100);
+  invariants_pool = new object_allocator<struct invariant> ("Inheritance invariants");
+  invariant_table = htab_create (100, invariant_hash, invariant_eq_p, NULL);
+}
+
+/* Finish the invariant table.  */
+static void
+finish_invariants (void)
+{
+  htab_delete (invariant_table);
+  delete invariants_pool;
+  invariants.release ();
+}
+
+/* Make the invariant table empty.  */
+static void
+clear_invariants (void)
+{
+  htab_empty (invariant_table);
+  invariants_pool->release ();
+  invariants.truncate (0);
 }
 
 
@@ -4789,6 +4889,10 @@ check_secondary_memory_needed_p (enum reg_class inher_cl ATTRIBUTE_UNUSED,
    (inheritance/split pseudos and original registers).	*/
 static bitmap_head check_only_regs;
 
+/* Reload pseudos can not be involded in invariant inheritance in the
+   current EBB.  */
+static bitmap_head invalid_invariant_regs;
+
 /* Do inheritance transformations for insn INSN, which defines (if
    DEF_P) or uses ORIGINAL_REGNO.  NEXT_USAGE_INSNS specifies which
    instruction in the EBB next uses ORIGINAL_REGNO; it has the same
@@ -4910,7 +5014,7 @@ inherit_reload_reg (bool def_p, int original_regno,
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file, "    Original reg change %d->%d (bb%d):\n",
 	     original_regno, REGNO (new_reg), BLOCK_FOR_INSN (insn)->index);
-  lra_reg_info[REGNO (new_reg)].restore_regno = original_regno;
+  lra_reg_info[REGNO (new_reg)].restore_rtx = regno_reg_rtx[original_regno];
   bitmap_set_bit (&check_only_regs, REGNO (new_reg));
   bitmap_set_bit (&check_only_regs, original_regno);
   bitmap_set_bit (&lra_inheritance_pseudos, REGNO (new_reg));
@@ -5194,7 +5298,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       return false;
     }
   after_p = usage_insns[original_regno].after_p;
-  lra_reg_info[REGNO (new_reg)].restore_regno = original_regno;
+  lra_reg_info[REGNO (new_reg)].restore_rtx = regno_reg_rtx[original_regno];
   bitmap_set_bit (&check_only_regs, REGNO (new_reg));
   bitmap_set_bit (&check_only_regs, original_regno);
   bitmap_set_bit (&lra_split_regs, REGNO (new_reg));
@@ -5271,6 +5375,134 @@ split_if_necessary (int regno, machine_mode mode,
 	&& split_reg (before_p, regno + i, insn, next_usage_insns))
     res = true;
   return res;
+}
+
+/* Return TRUE if rtx X is considered as an invariant for
+   inheritance.  */
+static bool
+invariant_p (const_rtx x)
+{
+  machine_mode mode;
+  const char *fmt;
+  enum rtx_code code;
+  int i, j;
+
+  code = GET_CODE (x);
+  mode = GET_MODE (x);
+  if (code == SUBREG)
+    {
+      x = SUBREG_REG (x);
+      code = GET_CODE (x);
+      if (GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
+	mode = GET_MODE (x);
+    }
+
+  if (MEM_P (x))
+    return false;
+
+  if (REG_P (x))
+    {
+      int i, nregs, regno = REGNO (x);
+
+      if (regno >= FIRST_PSEUDO_REGISTER || regno == STACK_POINTER_REGNUM
+	  || TEST_HARD_REG_BIT (eliminable_regset, regno)
+	  || GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
+	return false;
+      nregs = hard_regno_nregs[regno][mode];
+      for (i = 0; i < nregs; i++)
+	if (! fixed_regs[regno + i]
+	    /* A hard register may be clobbered in the current insn
+	       but we can ignore this case because if the hard
+	       register is used it should be set somewhere after the
+	       clobber.  */
+	    || bitmap_bit_p (&invalid_invariant_regs, regno + i))
+	  return false;
+    }
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (! invariant_p (XEXP (x, i)))
+	    return false;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (! invariant_p (XVECEXP (x, i, j)))
+	      return false;
+	}
+    }
+  return true;
+}
+
+/* We have 'dest_reg <- invariant'.  Let us try to make an invariant
+   inheritance transformation (using dest_reg instead invariant in a
+   subsequent insn).  */
+static bool
+process_invariant_for_inheritance (rtx dst_reg, rtx invariant_rtx)
+{
+  invariant_ptr_t invariant_ptr;
+  rtx_insn *insn, *new_insns;
+  rtx insn_set, insn_reg, new_reg;
+  int insn_regno;
+  bool succ_p = false;
+  int dst_regno = REGNO (dst_reg);
+  enum machine_mode dst_mode = GET_MODE (dst_reg);
+  enum reg_class cl = lra_get_allocno_class (dst_regno), insn_reg_cl;
+
+  invariant_ptr = insert_invariant (invariant_rtx);
+  if ((insn = invariant_ptr->insn) != NULL_RTX)
+    {
+      /* We have a subsequent insn using the invariant.  */
+      insn_set = single_set (insn);
+      lra_assert (insn_set != NULL);
+      insn_reg = SET_DEST (insn_set);
+      lra_assert (REG_P (insn_reg));
+      insn_regno = REGNO (insn_reg);
+      insn_reg_cl = lra_get_allocno_class (insn_regno);
+
+      if (dst_mode == GET_MODE (insn_reg)
+	  /* We should consider only result move reg insns which are
+	     cheap.  */
+	  && targetm.register_move_cost (dst_mode, cl, insn_reg_cl) == 2
+	  && targetm.register_move_cost (dst_mode, cl, cl) == 2)
+	{
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file,
+		     "    [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[\n");
+	  new_reg = lra_create_new_reg (dst_mode, dst_reg,
+					cl, "invariant inheritance");
+	  bitmap_set_bit (&lra_inheritance_pseudos, REGNO (new_reg));
+	  bitmap_set_bit (&check_only_regs, REGNO (new_reg));
+	  lra_reg_info[REGNO (new_reg)].restore_rtx = invariant_rtx;
+	  start_sequence ();
+	  lra_emit_move (new_reg, dst_reg);
+	  new_insns = get_insns ();
+	  end_sequence ();
+	  lra_process_new_insns (curr_insn, NULL, new_insns,
+				 "Add invariant inheritance<-original");
+	  start_sequence ();
+	  lra_emit_move (SET_DEST (insn_set), new_reg);
+	  new_insns = get_insns ();
+	  end_sequence ();
+	  lra_process_new_insns (insn, NULL, new_insns,
+				 "Changing reload<-inheritance");
+	  lra_set_insn_deleted (insn);
+	  succ_p = true;
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file,
+		       "    Invariant inheritance reuse change %d (bb%d):\n",
+		       REGNO (new_reg), BLOCK_FOR_INSN (insn)->index);
+	      dump_insn_slim (lra_dump_file, insn);
+	      fprintf (lra_dump_file,
+		       "	  ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]\n");
+	    }
+	}
+    }
+  invariant_ptr->insn = curr_insn;
+  return succ_p;
 }
 
 /* Check only registers living at the current program point in the
@@ -5495,7 +5727,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   int i, src_regno, dst_regno, nregs;
   bool change_p, succ_p, update_reloads_num_p;
   rtx_insn *prev_insn, *last_insn;
-  rtx next_usage_insns, set;
+  rtx next_usage_insns, curr_set;
   enum reg_class cl;
   struct lra_insn_reg *reg;
   basic_block last_processed_bb, curr_bb = NULL;
@@ -5507,8 +5739,10 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 
   change_p = false;
   curr_usage_insns_check++;
+  clear_invariants ();
   reloads_num = calls_num = 0;
   bitmap_clear (&check_only_regs);
+  bitmap_clear (&invalid_invariant_regs);
   last_processed_bb = NULL;
   CLEAR_HARD_REG_SET (potential_reload_hard_regs);
   COPY_HARD_REG_SET (live_hard_regs, eliminable_regset);
@@ -5556,13 +5790,11 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	    }
 	}
       src_regno = dst_regno = -1;
-      if (NONDEBUG_INSN_P (curr_insn)
-	  && (set = single_set (curr_insn)) != NULL_RTX
-	  && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set)))
-	{
-	  src_regno = REGNO (SET_SRC (set));
-	  dst_regno = REGNO (SET_DEST (set));
-	}
+      curr_set = single_set (curr_insn);
+      if (curr_set != NULL_RTX && REG_P (SET_DEST (curr_set)))
+	dst_regno = REGNO (SET_DEST (curr_set));
+      if (curr_set != NULL_RTX && REG_P (SET_SRC (curr_set)))
+	src_regno = REGNO (SET_SRC (curr_set));
       update_reloads_num_p = true;
       if (src_regno < lra_constraint_new_regno_start
 	  && src_regno >= FIRST_PSEUDO_REGISTER
@@ -5583,6 +5815,22 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	    change_p = true;
 	  else
 	    setup_next_usage_insn (src_regno, curr_insn, reloads_num, false);
+	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
+	    IOR_HARD_REG_SET (potential_reload_hard_regs,
+			      reg_class_contents[cl]);
+	}
+      else if (src_regno < 0
+	       && dst_regno >= lra_constraint_new_regno_start
+	       && invariant_p (SET_SRC (curr_set))
+	       && (cl = lra_get_allocno_class (dst_regno)) != NO_REGS
+	       && ! bitmap_bit_p (&invalid_invariant_regs, dst_regno))
+	{
+	  /* 'reload_pseudo <- invariant'.  */
+	  if (ira_class_hard_regs_num[cl] <= max_small_class_regs_num)
+	    reloads_num++;
+	  update_reloads_num_p = false;
+	  if (process_invariant_for_inheritance (SET_DEST (curr_set), SET_SRC (curr_set)))
+	    change_p = true;
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
 	    IOR_HARD_REG_SET (potential_reload_hard_regs,
 			      reg_class_contents[cl]);
@@ -5819,16 +6067,15 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	    }
 	}
       if (update_reloads_num_p
-	  && NONDEBUG_INSN_P (curr_insn)
-          && (set = single_set (curr_insn)) != NULL_RTX)
+	  && NONDEBUG_INSN_P (curr_insn) && curr_set != NULL_RTX)
 	{
 	  int regno = -1;
-	  if ((REG_P (SET_DEST (set))
-	       && (regno = REGNO (SET_DEST (set))) >= lra_constraint_new_regno_start
+	  if ((REG_P (SET_DEST (curr_set))
+	       && (regno = REGNO (SET_DEST (curr_set))) >= lra_constraint_new_regno_start
 	       && reg_renumber[regno] < 0
 	       && (cl = lra_get_allocno_class (regno)) != NO_REGS)
-	      || (REG_P (SET_SRC (set))
-	          && (regno = REGNO (SET_SRC (set))) >= lra_constraint_new_regno_start
+	      || (REG_P (SET_SRC (curr_set))
+	          && (regno = REGNO (SET_SRC (curr_set))) >= lra_constraint_new_regno_start
 	          && reg_renumber[regno] < 0
 	          && (cl = lra_get_allocno_class (regno)) != NO_REGS))
 	    {
@@ -5838,6 +6085,25 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		IOR_HARD_REG_SET (potential_reload_hard_regs,
 	                          reg_class_contents[cl]);
 	    }
+	}
+      if (NONDEBUG_INSN_P (curr_insn))
+	{
+	  int regno;
+
+	  /* Invalidate invariants with changed regs.  */
+	  curr_id = lra_get_insn_recog_data (curr_insn);
+	  for (reg = curr_id->regs; reg != NULL; reg = reg->next)
+	    if (reg->type != OP_IN)
+	      bitmap_set_bit (&invalid_invariant_regs, reg->regno);
+	  curr_static_id = curr_id->insn_static_data;
+	  for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
+	    if (reg->type != OP_IN)
+	      bitmap_set_bit (&invalid_invariant_regs, reg->regno);
+	  if (curr_id->arg_hard_regs != NULL)
+	    for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+		bitmap_set_bit (&invalid_invariant_regs,
+				regno >= FIRST_PSEUDO_REGISTER
+				? regno : regno - FIRST_PSEUDO_REGISTER);
 	}
       /* We reached the start of the current basic block.  */
       if (prev_insn == NULL_RTX || prev_insn == PREV_INSN (head)
@@ -5911,6 +6177,7 @@ lra_inheritance (void)
   for (i = 0; i < lra_constraint_new_regno_start; i++)
     usage_insns[i].check = 0;
   bitmap_initialize (&check_only_regs, &reg_obstack);
+  bitmap_initialize (&invalid_invariant_regs, &reg_obstack);
   bitmap_initialize (&live_regs, &reg_obstack);
   bitmap_initialize (&temp_bitmap, &reg_obstack);
   bitmap_initialize (&ebb_global_regs, &reg_obstack);
@@ -5947,6 +6214,7 @@ lra_inheritance (void)
   bitmap_clear (&ebb_global_regs);
   bitmap_clear (&temp_bitmap);
   bitmap_clear (&live_regs);
+  bitmap_clear (&invalid_invariant_regs);
   bitmap_clear (&check_only_regs);
   free (usage_insns);
 
@@ -5970,8 +6238,9 @@ fix_bb_live_info (bitmap live, bitmap removed_pseudos)
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (removed_pseudos, 0, regno, bi)
-    if (bitmap_clear_bit (live, regno))
-      bitmap_set_bit (live, lra_reg_info[regno].restore_regno);
+    if (bitmap_clear_bit (live, regno)
+	&& REG_P (lra_reg_info[regno].restore_rtx))
+      bitmap_set_bit (live, REGNO (lra_reg_info[regno].restore_rtx));
 }
 
 /* Return regno of the (subreg of) REG. Otherwise, return a negative
@@ -6024,7 +6293,8 @@ static bool
 remove_inheritance_pseudos (bitmap remove_pseudos)
 {
   basic_block bb;
-  int regno, sregno, prev_sregno, dregno, restore_regno;
+  int regno, sregno, prev_sregno, dregno;
+  rtx restore_rtx;
   rtx set, prev_set;
   rtx_insn *prev_insn;
   bool change_p, done_p;
@@ -6053,13 +6323,42 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 
 	  if (sregno >= 0 && dregno >= 0)
 	    {
-	      if ((bitmap_bit_p (remove_pseudos, sregno)
-		   && (lra_reg_info[sregno].restore_regno == dregno
+	      if (bitmap_bit_p (remove_pseudos, dregno)
+		  && ! REG_P (lra_reg_info[dregno].restore_rtx))
+		{
+		  /* invariant inheritance pseudo <- original pseudo */
+		  if (lra_dump_file != NULL)
+		    {
+		      fprintf (lra_dump_file, "	   Removing invariant inheritance:\n");
+		      dump_insn_slim (lra_dump_file, curr_insn);
+		      fprintf (lra_dump_file, "\n");
+		    }
+		  delete_move_and_clobber (curr_insn, dregno);
+		  done_p = true;
+		}
+	      else if (bitmap_bit_p (remove_pseudos, sregno)
+		       && ! REG_P (lra_reg_info[sregno].restore_rtx))
+		{
+		  /* reload pseudo <- invariant inheritance pseudo */
+		  start_sequence ();
+		  /* We can not just change the source.  It might be
+		     an insn different from the move.  */
+		  lra_emit_move (SET_DEST (set), lra_reg_info[sregno].restore_rtx);
+		  rtx_insn *new_insns = get_insns ();
+		  end_sequence ();
+		  lra_process_new_insns (curr_insn, NULL, new_insns,
+					 "Changing reload<-invariant inheritance");
+		  delete_move_and_clobber (curr_insn, dregno);
+		  done_p = true;
+		}
+	      else if ((bitmap_bit_p (remove_pseudos, sregno)
+			&& (get_regno (lra_reg_info[sregno].restore_rtx) == dregno
+			    || (bitmap_bit_p (remove_pseudos, dregno)
+				&& get_regno (lra_reg_info[sregno].restore_rtx) >= 0
+				&& (get_regno (lra_reg_info[sregno].restore_rtx)
+				    == get_regno (lra_reg_info[dregno].restore_rtx)))))
 		       || (bitmap_bit_p (remove_pseudos, dregno)
-			   && (lra_reg_info[sregno].restore_regno
-			       == lra_reg_info[dregno].restore_regno))))
-		  || (bitmap_bit_p (remove_pseudos, dregno)
-		      && lra_reg_info[dregno].restore_regno == sregno))
+			   && get_regno (lra_reg_info[dregno].restore_rtx) == sregno))
 		/* One of the following cases:
 		     original <- removed inheritance pseudo
 		     removed inherit pseudo <- another removed inherit pseudo
@@ -6104,13 +6403,16 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 		      && (int) REGNO (SET_DEST (prev_set)) == sregno
 		      && ((prev_sregno = REGNO (SET_SRC (prev_set)))
 			  >= FIRST_PSEUDO_REGISTER)
-		      /* As we consider chain of inheritance or
-			 splitting described in above comment we should
-			 check that sregno and prev_sregno were
-			 inheritance/split pseudos created from the
-			 same original regno.  */
-		      && (lra_reg_info[sregno].restore_regno
-			  == lra_reg_info[prev_sregno].restore_regno)
+		      && (lra_reg_info[prev_sregno].restore_rtx == NULL_RTX
+			  ||
+			  /* As we consider chain of inheritance or
+			     splitting described in above comment we should
+			     check that sregno and prev_sregno were
+			     inheritance/split pseudos created from the
+			     same original regno.  */
+			  (get_regno (lra_reg_info[sregno].restore_rtx) >= 0
+			   && (get_regno (lra_reg_info[sregno].restore_rtx)
+			       == get_regno (lra_reg_info[prev_sregno].restore_rtx))))
 		      && ! bitmap_bit_p (remove_pseudos, prev_sregno))
 		    {
 		      lra_assert (GET_MODE (SET_SRC (prev_set))
@@ -6124,14 +6426,13 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 			 inheritance pseudo for another pseudo.  */
 		      if (bitmap_bit_p (remove_pseudos, dregno)
 			  && bitmap_bit_p (&lra_inheritance_pseudos, dregno)
-			  && (restore_regno
-			      = lra_reg_info[dregno].restore_regno) >= 0)
+			  && (restore_rtx
+			      = lra_reg_info[dregno].restore_rtx) != NULL_RTX)
 			{
 			  if (GET_CODE (SET_DEST (set)) == SUBREG)
-			    SUBREG_REG (SET_DEST (set))
-			      = regno_reg_rtx[restore_regno];
+			    SUBREG_REG (SET_DEST (set)) = restore_rtx;
 			  else
-			    SET_DEST (set) = regno_reg_rtx[restore_regno];
+			    SET_DEST (set) = restore_rtx;
 			}
 		      lra_push_insn_and_update_insn_regno_info (curr_insn);
 		      lra_set_used_insn_alternative_by_uid
@@ -6155,14 +6456,13 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 	      for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 		{
 		  regno = reg->regno;
-		  restore_regno = lra_reg_info[regno].restore_regno;
-		  if (restore_regno >= 0)
+		  restore_rtx = lra_reg_info[regno].restore_rtx;
+		  if (restore_rtx != NULL_RTX)
 		    {
 		      if (change_p && bitmap_bit_p (remove_pseudos, regno))
 			{
 			  lra_substitute_pseudo_within_insn
-			    (curr_insn, regno, regno_reg_rtx[restore_regno],
-			     false);
+			    (curr_insn, regno, restore_rtx, false);
 			  restored_regs_p = true;
 			}
 		      else
@@ -6213,11 +6513,11 @@ undo_optional_reloads (void)
     {
       keep_p = false;
       /* Keep optional reloads from previous subpasses.  */
-      if (lra_reg_info[regno].restore_regno < 0
+      if (lra_reg_info[regno].restore_rtx == NULL_RTX
 	  /* If the original pseudo changed its allocation, just
 	     removing the optional pseudo is dangerous as the original
 	     pseudo will have longer live range.  */
-	  || reg_renumber[lra_reg_info[regno].restore_regno] >= 0)
+	  || reg_renumber[REGNO (lra_reg_info[regno].restore_rtx)] >= 0)
 	keep_p = true;
       else if (reg_renumber[regno] >= 0)
 	EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi2)
@@ -6231,7 +6531,7 @@ undo_optional_reloads (void)
 	      continue;
 	    if (REGNO (dest) == regno
 		/* Ignore insn for optional reloads itself.  */
-		&& lra_reg_info[regno].restore_regno != (int) REGNO (src)
+		&& REGNO (lra_reg_info[regno].restore_rtx) != REGNO (src)
 		/* Check only inheritance on last inheritance pass.  */
 		&& (int) REGNO (src) >= new_regno_start
 		/* Check that the optional reload was inherited.  */
@@ -6264,11 +6564,11 @@ undo_optional_reloads (void)
 	      dest = SET_DEST (set);
 	      if (REG_P (src) && REG_P (dest)
 		  && ((REGNO (src) == regno
-		       && (lra_reg_info[regno].restore_regno
-			   == (int) REGNO (dest)))
+		       && (REGNO (lra_reg_info[regno].restore_rtx)
+			   == REGNO (dest)))
 		      || (REGNO (dest) == regno
-			  && (lra_reg_info[regno].restore_regno
-			      == (int) REGNO (src)))))
+			  && (REGNO (lra_reg_info[regno].restore_rtx)
+			      == REGNO (src)))))
 		{
 		  if (lra_dump_file != NULL)
 		    {
@@ -6286,8 +6586,7 @@ undo_optional_reloads (void)
 		 reload.  */
 	    }
 	  lra_substitute_pseudo_within_insn
-	    (insn, regno, regno_reg_rtx[lra_reg_info[regno].restore_regno],
-	     false);
+	    (insn, regno, lra_reg_info[regno].restore_rtx, false);
 	  lra_update_insn_regno_info (insn);
 	  if (lra_dump_file != NULL)
 	    {
@@ -6299,7 +6598,7 @@ undo_optional_reloads (void)
     }
   /* Clear restore_regnos.  */
   EXECUTE_IF_SET_IN_BITMAP (&lra_optional_reload_pseudos, 0, regno, bi)
-    lra_reg_info[regno].restore_regno = -1;
+    lra_reg_info[regno].restore_rtx = NULL_RTX;
   bitmap_clear (&insn_bitmap);
   bitmap_clear (&removed_optional_reload_pseudos);
   return change_p;
@@ -6311,8 +6610,9 @@ bool
 lra_undo_inheritance (void)
 {
   unsigned int regno;
-  int restore_regno, hard_regno;
+  int hard_regno;
   int n_all_inherit, n_inherit, n_all_split, n_split;
+  rtx restore_rtx;
   bitmap_head remove_pseudos;
   bitmap_iterator bi;
   bool change_p;
@@ -6327,14 +6627,15 @@ lra_undo_inheritance (void)
   bitmap_initialize (&remove_pseudos, &reg_obstack);
   n_inherit = n_all_inherit = 0;
   EXECUTE_IF_SET_IN_BITMAP (&lra_inheritance_pseudos, 0, regno, bi)
-    if (lra_reg_info[regno].restore_regno >= 0)
+    if (lra_reg_info[regno].restore_rtx != NULL_RTX)
       {
 	n_all_inherit++;
 	if (reg_renumber[regno] < 0
 	    /* If the original pseudo changed its allocation, just
 	       removing inheritance is dangerous as for changing
 	       allocation we used shorter live-ranges.  */
-	    && reg_renumber[lra_reg_info[regno].restore_regno] < 0)
+	    && (! REG_P (lra_reg_info[regno].restore_rtx)
+		|| reg_renumber[REGNO (lra_reg_info[regno].restore_rtx)] < 0))
 	  bitmap_set_bit (&remove_pseudos, regno);
 	else
 	  n_inherit++;
@@ -6345,8 +6646,10 @@ lra_undo_inheritance (void)
 	     (double) n_inherit / n_all_inherit * 100);
   n_split = n_all_split = 0;
   EXECUTE_IF_SET_IN_BITMAP (&lra_split_regs, 0, regno, bi)
-    if ((restore_regno = lra_reg_info[regno].restore_regno) >= 0)
+    if ((restore_rtx = lra_reg_info[regno].restore_rtx) != NULL_RTX)
       {
+	int restore_regno = REGNO (restore_rtx);
+
 	n_all_split++;
 	hard_regno = (restore_regno >= FIRST_PSEUDO_REGISTER
 		      ? reg_renumber[restore_regno] : restore_regno);
@@ -6368,9 +6671,9 @@ lra_undo_inheritance (void)
   bitmap_clear (&remove_pseudos);
   /* Clear restore_regnos.  */
   EXECUTE_IF_SET_IN_BITMAP (&lra_inheritance_pseudos, 0, regno, bi)
-    lra_reg_info[regno].restore_regno = -1;
+    lra_reg_info[regno].restore_rtx = NULL_RTX;
   EXECUTE_IF_SET_IN_BITMAP (&lra_split_regs, 0, regno, bi)
-    lra_reg_info[regno].restore_regno = -1;
+    lra_reg_info[regno].restore_rtx = NULL_RTX;
   change_p = undo_optional_reloads () || change_p;
   return change_p;
 }
