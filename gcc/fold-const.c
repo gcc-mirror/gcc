@@ -12538,6 +12538,9 @@ fold_build_call_array_initializer_loc (location_t loc, tree type, tree fn,
 int
 multiple_of_p (tree type, const_tree top, const_tree bottom)
 {
+  gimple *stmt;
+  tree t1, op1, op2;
+
   if (operand_equal_p (top, bottom, 0))
     return 1;
 
@@ -12554,19 +12557,31 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
       /* FALLTHRU */
 
     case MULT_EXPR:
-      return (multiple_of_p (type, TREE_OPERAND (top, 0), bottom)
-	      || multiple_of_p (type, TREE_OPERAND (top, 1), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
+	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
+
+    case MINUS_EXPR:
+      /* It is impossible to prove if op0 - op1 is multiple of bottom
+	 precisely, so be conservative here checking if both op0 and op1
+	 are multiple of bottom.  Note we check the second operand first
+	 since it's usually simpler.  */
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
+	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
 
     case PLUS_EXPR:
-    case MINUS_EXPR:
-      return (multiple_of_p (type, TREE_OPERAND (top, 0), bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 1), bottom));
+      /* The same as MINUS_EXPR, but handle cases like op0 + 0xfffffffd
+	 as op0 - 3 if the expression has unsigned type.  For example,
+	 (X / 3) + 0xfffffffd is multiple of 3, but 0xfffffffd is not.  */
+      op1 = TREE_OPERAND (top, 1);
+      if (TYPE_UNSIGNED (type)
+	  && TREE_CODE (op1) == INTEGER_CST && tree_int_cst_sign_bit (op1))
+	op1 = fold_build1 (NEGATE_EXPR, type, op1);
+      return (multiple_of_p (type, op1, bottom)
+	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
 
     case LSHIFT_EXPR:
       if (TREE_CODE (TREE_OPERAND (top, 1)) == INTEGER_CST)
 	{
-	  tree op1, t1;
-
 	  op1 = TREE_OPERAND (top, 1);
 	  /* const_binop may not detect overflow correctly,
 	     so check for it explicitly here.  */
@@ -12605,6 +12620,44 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	return 0;
       return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
 				SIGNED);
+
+    case SSA_NAME:
+      if (TREE_CODE (bottom) == INTEGER_CST
+	  && (stmt = SSA_NAME_DEF_STMT (top)) != NULL
+	  && gimple_code (stmt) == GIMPLE_ASSIGN)
+	{
+	  enum tree_code code = gimple_assign_rhs_code (stmt);
+
+	  /* Check for special cases to see if top is defined as multiple
+	     of bottom:
+
+	       top = (X & ~(bottom - 1) ; bottom is power of 2
+
+	     or
+
+	       Y = X % bottom
+	       top = X - Y.  */
+	  if (code == BIT_AND_EXPR
+	      && (op2 = gimple_assign_rhs2 (stmt)) != NULL_TREE
+	      && TREE_CODE (op2) == INTEGER_CST
+	      && integer_pow2p (bottom)
+	      && wi::multiple_of_p (wi::to_widest (op2),
+				    wi::to_widest (bottom), UNSIGNED))
+	    return 1;
+
+	  op1 = gimple_assign_rhs1 (stmt);
+	  if (code == MINUS_EXPR
+	      && (op2 = gimple_assign_rhs2 (stmt)) != NULL_TREE
+	      && TREE_CODE (op2) == SSA_NAME
+	      && (stmt = SSA_NAME_DEF_STMT (op2)) != NULL
+	      && gimple_code (stmt) == GIMPLE_ASSIGN
+	      && (code = gimple_assign_rhs_code (stmt)) == TRUNC_MOD_EXPR
+	      && operand_equal_p (op1, gimple_assign_rhs1 (stmt), 0)
+	      && operand_equal_p (bottom, gimple_assign_rhs2 (stmt), 0))
+	    return 1;
+	}
+
+      /* .. fall through ...  */
 
     default:
       return 0;

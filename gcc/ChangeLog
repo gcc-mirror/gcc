@@ -1,3 +1,9 @@
+2016-08-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/34114
+	* fold-const.c (multiple_of_p): Improve MULT_EXPR, PLUS_EXPR,
+	PLUS_EXPR case.  Handle SSA_NAME case.
+
 2016-08-02  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def
