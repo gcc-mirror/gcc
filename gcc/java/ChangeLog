@@ -1,3 +1,25 @@
+2016-08-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expr.c (push_value): Only call flush_quick_stack for non-constant
+	arguments.
+	(build_java_throw_out_of_bounds_exception): No longer wrap calls
+	to _Jv_ThowBadArrayIndex in a COMPOUND_EXPR as no longer needed.
+	(java_check_reference): Annotate COND_EXPR with __builtin_expect
+	to indicate that calling _Jv_ThrowNullPointerException is unlikely.
+	(build_java_arrayaccess): Construct an unlikely COND_EXPR instead
+	of a TRUTH_ANDIF_EXPR in a COMPOUND_EXPR.  Only generate array
+	index MULT_EXPR when size_exp is not unity.
+	(build_array_length_annotation): When optimizing, generate a write
+	to the allocated array's length field to expose constant lengths
+	to GCC's optimizers.
+	(build_newarray): Call new build_array_length_annotation.
+	(build_anewarray): Likewise.
+
+	(expand_java_multianewarray): Fix whitespace.
+	(expand_java_return): Likewise.
+	(expand_invoke): Likewise.
+	(load_type_state): Likewise.
+
 2016-07-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

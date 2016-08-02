@@ -37,6 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "parse.h"
 #include "tree-iterator.h"
+#include "tree-eh.h"
 
 static void flush_quick_stack (void);
 static void push_value (tree);
@@ -273,10 +274,12 @@ push_value (tree value)
   /* If the value has a side effect, then we need to evaluate it
      whether or not the result is used.  If the value ends up on the
      quick stack and is then popped, this won't happen -- so we flush
-     the quick stack.  It is safest to simply always flush, though,
-     since TREE_SIDE_EFFECTS doesn't capture COMPONENT_REF, and for
-     the latter we may need to strip conversions.  */
-  flush_quick_stack ();
+     the quick stack.  It is safest to always flush non-constant
+     operands.  */
+  if (! TREE_CONSTANT (value)
+      || TREE_SIDE_EFFECTS (value)
+      || tree_could_trap_p (value))
+    flush_quick_stack ();
 }
 
 /* Pop a type from the type stack.
@@ -778,19 +781,13 @@ build_java_throw_out_of_bounds_exception (tree index)
 {
   tree node;
 
-  /* We need to build a COMPOUND_EXPR because _Jv_ThrowBadArrayIndex()
-     has void return type.  We cannot just set the type of the CALL_EXPR below
-     to int_type_node because we would lose it during gimplification.  */
+  /* _Jv_ThrowBadArrayIndex() has void return type.  */
   gcc_assert (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (soft_badarrayindex_node))));
   node = build_call_nary (void_type_node,
-			       build_address_of (soft_badarrayindex_node),
-			       1, index);
+			  build_address_of (soft_badarrayindex_node),
+			  1, index);
   TREE_SIDE_EFFECTS (node) = 1;
-
-  node = build2 (COMPOUND_EXPR, int_type_node, node, integer_zero_node);
-  TREE_SIDE_EFFECTS (node) = 1;	/* Allows expansion within ANDIF */
-
-  return (node);
+  return node;
 }
 
 /* Return the length of an array. Doesn't perform any checking on the nature
@@ -833,10 +830,12 @@ java_check_reference (tree expr, int check)
 {
   if (!flag_syntax_only && check)
     {
+      tree test;
       expr = save_expr (expr);
-      expr = build3 (COND_EXPR, TREE_TYPE (expr),
-		     build2 (EQ_EXPR, boolean_type_node,
-			     expr, null_pointer_node),
+      test = build2 (EQ_EXPR, boolean_type_node, expr, null_pointer_node);
+      test = build_call_expr (builtin_decl_implicit (BUILT_IN_EXPECT), 2,
+			      test, boolean_false_node);
+      expr = build3 (COND_EXPR, TREE_TYPE (expr), test,
 		     build_call_nary (void_type_node, 
 				      build_address_of (soft_nullpointer_node),
 				      0),
@@ -865,7 +864,7 @@ build_java_indirect_ref (tree type, tree expr, int check)
 tree
 build_java_arrayaccess (tree array, tree type, tree index)
 {
-  tree node, throw_expr = NULL_TREE;
+  tree node;
   tree data_field;
   tree ref;
   tree array_type = TREE_TYPE (TREE_TYPE (array));
@@ -882,9 +881,9 @@ build_java_arrayaccess (tree array, tree type, tree index)
     {
       /* Generate:
        * (unsigned jint) INDEX >= (unsigned jint) LEN
-       *    && throw ArrayIndexOutOfBoundsException.
+       *    ? throw ArrayIndexOutOfBoundsException : INDEX.
        * Note this is equivalent to and more efficient than:
-       * INDEX < 0 || INDEX >= LEN && throw ... */
+       * INDEX < 0 || INDEX >= LEN ? throw ... : INDEX. */
       tree test;
       tree len = convert (unsigned_int_type_node,
 			  build_java_array_length_access (array));
@@ -893,18 +892,13 @@ build_java_arrayaccess (tree array, tree type, tree index)
 			  len);
       if (! integer_zerop (test))
 	{
-	  throw_expr
-	    = build2 (TRUTH_ANDIF_EXPR, int_type_node, test,
-		      build_java_throw_out_of_bounds_exception (index));
-	  /* allows expansion within COMPOUND */
-	  TREE_SIDE_EFFECTS( throw_expr ) = 1;
+	  test = build_call_expr (builtin_decl_implicit (BUILT_IN_EXPECT), 2,
+				  test, boolean_false_node);
+          index = build3 (COND_EXPR, int_type_node, test,
+			  build_java_throw_out_of_bounds_exception (index),
+			  index);
 	}
     }
-
-  /* If checking bounds, wrap the index expr with a COMPOUND_EXPR in order
-     to have the bounds check evaluated first. */
-  if (throw_expr != NULL_TREE)
-    index = build2 (COMPOUND_EXPR, int_type_node, throw_expr, index);
 
   data_field = lookup_field (&array_type, get_identifier ("data"));
 
@@ -919,9 +913,11 @@ build_java_arrayaccess (tree array, tree type, tree index)
 
   /* Multiply the index by the size of an element to obtain a byte
      offset.  Convert the result to a pointer to the element type.  */
-  index = build2 (MULT_EXPR, sizetype, 
-		  fold_convert (sizetype, index), 
-		  size_exp);
+  index = fold_convert (sizetype, index);
+  if (! integer_onep (size_exp))
+    {
+      index = build2 (MULT_EXPR, sizetype, index, size_exp);
+    }
 
   /* Sum the byte offset and the address of the data field.  */
   node = fold_build_pointer_plus (node, index);
@@ -1026,6 +1022,34 @@ build_java_check_indexed_type (tree array_node ATTRIBUTE_UNUSED,
   return indexed_type;
 }
 
+/* When optimizing, wrap calls to array allocation functions taking
+   constant length arguments, in a COMPOUND_EXPR, containing an
+   explict assignment of the .length field, for GCC's optimizers.  */
+
+static tree
+build_array_length_annotation (tree call, tree length)
+{
+  if (optimize
+      && TREE_CONSTANT (length)
+      && is_array_type_p (TREE_TYPE (call)))
+    {
+      tree type, note;
+      type = TREE_TYPE (call);
+      call = save_expr (call);
+      note = build3 (COMPONENT_REF, int_type_node,
+		     build1 (INDIRECT_REF, TREE_TYPE (type), call),
+		     lookup_field (&TREE_TYPE (type),
+				   get_identifier ("length")),
+		     NULL_TREE);
+      note = build2 (MODIFY_EXPR, int_type_node, note, length);
+      TREE_SIDE_EFFECTS (note) = 1;
+      call = build2 (COMPOUND_EXPR, TREE_TYPE (call), note, call);
+      TREE_SIDE_EFFECTS (call) = 1;
+    }
+  return call;
+}
+
+
 /* newarray triggers a call to _Jv_NewPrimArray. This function should be 
    called with an integer code (the type of array to create), and the length
    of the array to create.  */
@@ -1033,7 +1057,7 @@ build_java_check_indexed_type (tree array_node ATTRIBUTE_UNUSED,
 tree
 build_newarray (int atype_value, tree length)
 {
-  tree type_arg;
+  tree type_arg, call;
 
   tree prim_type = decode_newarray_type (atype_value);
   tree type
@@ -1045,9 +1069,10 @@ build_newarray (int atype_value, tree length)
      some work.  */
   type_arg = build_class_ref (prim_type);
 
-  return build_call_nary (promote_type (type),
+  call = build_call_nary (promote_type (type),
 			  build_address_of (soft_newarray_node),
 			  2, type_arg, length);
+  return build_array_length_annotation (call, length);
 }
 
 /* Generates anewarray from a given CLASS_TYPE. Gets from the stack the size
@@ -1061,12 +1086,14 @@ build_anewarray (tree class_type, tree length)
 			     tree_fits_shwi_p (length)
 			     ? tree_to_shwi (length) : -1);
 
-  return build_call_nary (promote_type (type),
-			  build_address_of (soft_anewarray_node),
-			  3,
-			  length,
-			  build_class_ref (class_type),
-			  null_pointer_node);
+  tree call = build_call_nary (promote_type (type),
+			       build_address_of (soft_anewarray_node),
+			       3,
+			       length,
+			       build_class_ref (class_type),
+			       null_pointer_node);
+
+  return build_array_length_annotation (call, length);
 }
 
 /* Return a node the evaluates 'new TYPE[LENGTH]'. */
@@ -1095,7 +1122,7 @@ expand_java_multianewarray (tree class_type, int ndim)
   (*args)[0] = build_class_ref (class_type);
   (*args)[1] = build_int_cst (NULL_TREE, ndim);
 
-  for(i = ndim - 1; i >= 0; i-- )
+  for (i = ndim - 1; i >= 0; i-- )
     (*args)[(unsigned)(2 + i)] = pop_value (int_type_node);
 
   (*args)[2 + ndim] = null_pointer_node;
@@ -1274,7 +1301,7 @@ expand_java_return (tree type)
       if (INT_TYPE_SIZE < 32
 	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (res)))
 	      < GET_MODE_SIZE (TYPE_MODE (type))))
-	retval = build1(NOP_EXPR, TREE_TYPE(res), retval);
+	retval = build1 (NOP_EXPR, TREE_TYPE (res), retval);
       
       TREE_SIDE_EFFECTS (retval) = 1;
       java_add_stmt (build1 (RETURN_EXPR, void_type_node, retval));
@@ -2405,12 +2432,12 @@ static void
 expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
 {
   tree method_signature
-    = COMPONENT_REF_SIGNATURE(&current_jcf->cpool, method_ref_index);
+    = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, method_ref_index);
   tree method_name = COMPONENT_REF_NAME (&current_jcf->cpool,
 					 method_ref_index);
   tree self_type
     = get_class_constant (current_jcf,
-                          COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool,
+                          COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool,
                           method_ref_index));
   const char *const self_name
     = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
@@ -2956,7 +2983,7 @@ load_type_state (int pc)
   int i;
   tree vec = (*type_states)[pc];
   int cur_length = TREE_VEC_LENGTH (vec);
-  stack_pointer = cur_length - DECL_MAX_LOCALS(current_function_decl);
+  stack_pointer = cur_length - DECL_MAX_LOCALS (current_function_decl);
   for (i = 0; i < cur_length; i++)
     type_map [i] = TREE_VEC_ELT (vec, i);
 }
