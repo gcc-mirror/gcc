@@ -1,5 +1,11 @@
 2016-08-02  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR middle-end/72778
+	* lra-spills.c (regno_in_use_p): New.
+	(lra_final_code_change): Use it.
+
+2016-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/69847
 	* lra-int.h (struct lra-reg): Use restore_rtx instead of
 	restore_regno.
