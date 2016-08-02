@@ -1,5 +1,9 @@
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/tr1/5_numerical_facilities/special_functions/16_hermite/
+	check_value.cc: Do not add special functions to namespace std in TR1
+	test.
+
 	* testsuite/ext/special_functions/conf_hyperg/check_nan.cc: Only
 	run for C++11 and later.
 	* testsuite/ext/special_functions/conf_hyperg/check_value.cc:
