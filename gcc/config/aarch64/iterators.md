@@ -1016,9 +1016,8 @@
 (define_int_iterator ADDSUBHN2 [UNSPEC_ADDHN2 UNSPEC_RADDHN2
 			        UNSPEC_SUBHN2 UNSPEC_RSUBHN2])
 
-(define_int_iterator FMAXMIN_UNS [UNSPEC_FMAX UNSPEC_FMIN])
-
-(define_int_iterator FMAXMIN [UNSPEC_FMAXNM UNSPEC_FMINNM])
+(define_int_iterator FMAXMIN_UNS [UNSPEC_FMAX UNSPEC_FMIN
+				  UNSPEC_FMAXNM UNSPEC_FMINNM])
 
 (define_int_iterator VQDMULH [UNSPEC_SQDMULH UNSPEC_SQRDMULH])
 
@@ -1102,7 +1101,9 @@
 			      (UNSPEC_FMAXV "smax_nan")
 			      (UNSPEC_FMIN "smin_nan")
 			      (UNSPEC_FMINNMV "smin")
-			      (UNSPEC_FMINV "smin_nan")])
+			      (UNSPEC_FMINV "smin_nan")
+			      (UNSPEC_FMAXNM "fmax")
+			      (UNSPEC_FMINNM "fmin")])
 
 (define_int_attr  maxmin_uns_op [(UNSPEC_UMAXV "umax")
 				 (UNSPEC_UMINV "umin")
@@ -1113,13 +1114,9 @@
 				 (UNSPEC_FMAXV "fmax")
 				 (UNSPEC_FMIN "fmin")
 				 (UNSPEC_FMINNMV "fminnm")
-				 (UNSPEC_FMINV "fmin")])
-
-(define_int_attr fmaxmin [(UNSPEC_FMAXNM "fmax")
-			  (UNSPEC_FMINNM "fmin")])
-
-(define_int_attr fmaxmin_op [(UNSPEC_FMAXNM "fmaxnm")
-			     (UNSPEC_FMINNM "fminnm")])
+				 (UNSPEC_FMINV "fmin")
+				 (UNSPEC_FMAXNM "fmaxnm")
+				 (UNSPEC_FMINNM "fminnm")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")

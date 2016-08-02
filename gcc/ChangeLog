@@ -1,3 +1,23 @@
+2016-08-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(__builtin_aarch64_fmindf): Change BUILTIN_VDQF to BUILTIN_VDQF_DF.
+	(__builtin_aarch64_fmaxdf): Likewise.
+	(__builtin_aarch64_smin_nandf): Likewise.
+	(__builtin_aarch64_smax_nandf): Likewise.
+	* config/aarch64/aarch64-simd.md (<fmaxmin><mode>3): Remove.
+	* config/aarch64/aarch64.md (<fmaxmin><mode>3): Rename to...
+	(<fmaxmin><mode>3): ...this.
+	* config/aarch64/arm_neon.h (vmaxnm_f64): New.
+	(vminnm_f64): Likewise.
+	(vmin_f64): Likewise.
+	(vmax_f64): Likewise.
+	* config/aarch64/iterators.md (FMAXMIN): Merge with...
+	(FMAXMIN_UNS): ...this.
+	(fmaxmin): Merged with
+	(fmaxmin_op): ...this...
+	(maxmin_uns_op): ...in to this.
+
 2016-08-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
