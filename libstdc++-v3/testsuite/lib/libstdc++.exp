@@ -636,8 +636,9 @@ proc v3-build_support { } {
 	set object_file [file tail $obj]
 	# Compile with "-w" so that warnings issued by the compiler
 	# do not prevent compilation.
+        # Disable LTO so that ar/ranlib don't need the LTO plugin.
 	if { [v3_target_compile $srcdir/util/$f $object_file "object" \
-		  [list "incdir=$srcdir" "additional_flags=-w"]]
+		  [list "incdir=$srcdir" "additional_flags=-w -fno-lto"]]
 	     != "" } {
 	    error "could not compile $f"
 	}

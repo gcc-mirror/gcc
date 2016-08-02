@@ -1,3 +1,8 @@
+2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Add -fno-lto to
+	additional flags for compiling libtestc++.a objects.
+
 2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (data() const): Update comment.
