@@ -1925,6 +1925,8 @@ proc check_v3_target_little_endian { } {
     return $et_little_endian
 }
 
+# Return 1 if the Filesystem TS is suported, 0 otherwise.
+# Cache the result.
 proc check_v3_target_filesystem_ts { } {
     global cxxflags
     global DEFAULT_CXXFLAGS
@@ -1952,7 +1954,7 @@ proc check_v3_target_filesystem_ts { } {
 	set et_filesystem_ts 0
 
 	# Set up and preprocess a C++ test program that depends
-	# on debug mode activated.
+	# on the Filesystem TS feature-test macro being defined.
 	set src filesystem_ts[pid].cc
 
 	set f [open $src "w"]
