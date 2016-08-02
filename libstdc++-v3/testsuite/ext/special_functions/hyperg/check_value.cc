@@ -1,5 +1,6 @@
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__ -ffp-contract=off" }
 // { dg-additional-options "-ffloat-store" { target { m68*-*-* || ia32 } } }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
