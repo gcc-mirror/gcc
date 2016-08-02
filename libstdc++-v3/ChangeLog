@@ -1,5 +1,8 @@
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Improve
+	comments.
+
 	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Move
 	dg-error to relevant line.
 	* testsuite/19_diagnostics/error_condition/operators/bool_neg.cc:
