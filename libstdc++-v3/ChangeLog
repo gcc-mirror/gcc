@@ -1,5 +1,11 @@
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Move
+	dg-error to relevant line.
+	* testsuite/19_diagnostics/error_condition/operators/bool_neg.cc:
+	Likewise.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
+
 	* scripts/testsuite_flags.in: Add -fno-show-column to cxxflags.
 
 	* testsuite/18_support/bad_exception/23591_thread-1.c: Skip test if

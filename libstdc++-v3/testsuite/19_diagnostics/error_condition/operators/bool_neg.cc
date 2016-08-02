@@ -24,9 +24,7 @@
 int test01()
 {
   std::error_condition e;
-  int i = e;
+  int i = e; // { dg-error "cannot convert" }
 
   return i;
 }
-
-// { dg-error "cannot convert" "" { target *-*-* } 27 }
