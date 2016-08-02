@@ -31,24 +31,21 @@ test01()
 void
 test02()
 {
-  std::ratio<INTMAX_MIN, 1> r1 __attribute__((unused));
+  std::ratio<INTMAX_MIN, 1> r1 __attribute__((unused)); // { dg-error "required from here" }
 }
 
 void
 test03()
 {
-  std::ratio<1, INTMAX_MIN> r1 __attribute__((unused));
+  std::ratio<1, INTMAX_MIN> r1 __attribute__((unused)); // { dg-error "required from here"
 }
 
 void
 test04()
 {
-  std::ratio<1,0> r1 __attribute__((unused));
+  std::ratio<1,0> r1 __attribute__((unused)); // { dg-error "required from here"
 }
 
-// { dg-error "required from here" "" { target *-*-* } 34 }
-// { dg-error "required from here" "" { target *-*-* } 40 }
-// { dg-error "required from here" "" { target *-*-* } 46 }
 // { dg-error "denominator cannot be zero" "" { target *-*-* } 265 }
 // { dg-error "out of range" "" { target *-*-* } 266 }
 // { dg-error "overflow in constant expression" "" { target *-*-* } 61 }
