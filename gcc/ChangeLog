@@ -1,3 +1,38 @@
+2016-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/69847
+	* lra-int.h (struct lra-reg): Use restore_rtx instead of
+	restore_regno.
+	(lra_rtx_hash): New.
+	* lra.c (initialize_lra_reg_info_element): Use restore_rtx instead
+	of restore_regno.
+	(lra_rtx_hash): Rename and move lra-remat.c::rtx_hash.
+	* lra-remat.c (rtx_hash): Rename and Move to lra.c.
+	* lra-spills.c (lra_final_code_change): Don't delete insn when the
+	next insn is USE with the same reg as the current insn source.
+	* lra-constraints.c (curr_insn_transform): Use restore_rtx instead
+	of restore_regno.
+	(lra_constraints_init): Call initiate_invariants.
+	(lra_constraints_finish): Call finish_invariants.
+	(struct invariant, invariant_t, invariant_ptr_t): New.
+	(const_invariant_ptr_t, invariants, invariants_pool): New.
+	(invariant_table, invariant_hash, invariant_eq_p): New.
+	(insert_invariant, initiate_invariants, finish_invariants): New.
+	(clear_invariants, invalid_invariant_regs): New.
+	(inherit_reload_reg, split_reg, fix_bb_live_info): Use restore_rtx
+	instead of restore_regno.
+	(invariant_p, process_invariant_for_inheritance): New.
+	(inherit_in_ebb): Implement invariant inheritance.
+	(lra_inheritance): Initialize and finalize invalid_invariant_regs.
+	(remove_inheritance_pseudos): Implement undoing invariant
+	inheritance.
+	(undo_optional_reloads, lra_undo_inheritance): Use restore_rtx
+	instead of restore_regno.
+	* lra-assigns.c (regno_live_length): New.
+	(reload_pseudo_compare_func): Use regno_live_length.
+	(assign_by_spills): Use restore_rtx instead of restore_regno.
+	(lra_assign): Ditto.  Initiate regno_live_length.
+
 2016-02-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vminnm_f64): Add back missing 'f' from

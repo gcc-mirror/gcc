@@ -1286,7 +1286,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].live_ranges = NULL;
   lra_reg_info[i].nrefs = lra_reg_info[i].freq = 0;
   lra_reg_info[i].last_reload = 0;
-  lra_reg_info[i].restore_regno = -1;
+  lra_reg_info[i].restore_rtx = NULL_RTX;
   lra_reg_info[i].val = get_new_reg_value ();
   lra_reg_info[i].offset = 0;
   lra_reg_info[i].copies = NULL;
@@ -1617,6 +1617,92 @@ lra_get_insn_regs (int uid)
 
   data = get_insn_recog_data_by_uid (uid);
   return data->regs;
+}
+
+
+
+/* Recursive hash function for RTL X.  */
+hashval_t
+lra_rtx_hash (rtx x)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+  hashval_t val = 0;
+
+  if (x == 0)
+    return val;
+
+  code = GET_CODE (x);
+  val += (int) code + 4095;
+
+  /* Some RTL can be compared nonrecursively.  */
+  switch (code)
+    {
+    case REG:
+      return val + REGNO (x);
+
+    case LABEL_REF:
+      return iterative_hash_object (XEXP (x, 0), val);
+
+    case SYMBOL_REF:
+      return iterative_hash_object (XSTR (x, 0), val);
+
+    case SCRATCH:
+    case CONST_DOUBLE:
+    case CONST_INT:
+    case CONST_VECTOR:
+      return val;
+
+    default:
+      break;
+    }
+
+  /* Hash the elements.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      switch (fmt[i])
+	{
+	case 'w':
+	  val += XWINT (x, i);
+	  break;
+
+	case 'n':
+	case 'i':
+	  val += XINT (x, i);
+	  break;
+
+	case 'V':
+	case 'E':
+	  val += XVECLEN (x, i);
+
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    val += lra_rtx_hash (XVECEXP (x, i, j));
+	  break;
+
+	case 'e':
+	  val += lra_rtx_hash (XEXP (x, i));
+	  break;
+
+	case 'S':
+	case 's':
+	  val += htab_hash_string (XSTR (x, i));
+	  break;
+
+	case 'u':
+	case '0':
+	case 't':
+	  break;
+
+	  /* It is believed that rtx's at this level will never
+	     contain anything but integers and other rtx's, except for
+	     within LABEL_REFs and SYMBOL_REFs.  */
+	default:
+	  abort ();
+	}
+    }
+  return val;
 }
 
 
