@@ -1,4 +1,5 @@
 // { dg-require-sharedlib "" }
+// { dg-skip-if "invalid options for C" { *-*-* } { "-std=c++??" "-std=gnu++??" } }
 // { dg-options "-g -O2 -pthread -ldl -x c -fvtable-verify=none -Wno-pedantic" { target *-*-linux* *-*-gnu* *-*-solaris2.1[2-9]* } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
