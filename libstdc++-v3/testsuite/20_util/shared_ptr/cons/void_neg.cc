@@ -25,5 +25,5 @@
 void test01()
 {
   std::shared_ptr<void> p((void*)nullptr);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 888 }
+  // { dg-error "incomplete" "" { target *-*-* } 892 }
 }
