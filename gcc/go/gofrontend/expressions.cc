@@ -252,7 +252,9 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
   else
     {
       // We are assigning a non-pointer value to the interface; the
-      // interface gets a copy of the value in the heap.
+      // interface gets a copy of the value in the heap if it escapes.
+      // TODO(cmang): Associate escape state state of RHS with newly
+      // created OBJ.
       obj = Expression::make_heap_expression(rhs, location);
     }
 
@@ -729,6 +731,13 @@ Var_expression::do_address_taken(bool escapes)
       else
 	go_unreachable();
     }
+
+  if (this->variable_->is_variable()
+      && this->variable_->var_value()->is_in_heap())
+    {
+      Node::make_node(this)->set_encoding(Node::ESCAPE_HEAP);
+      Node::make_node(this->variable_)->set_encoding(Node::ESCAPE_HEAP);
+    }
 }
 
 // Get the backend representation for a reference to a variable.
@@ -831,6 +840,10 @@ Enclosed_var_expression::do_address_taken(bool escapes)
       else
 	go_unreachable();
     }
+
+  if (this->variable_->is_variable()
+      && this->variable_->var_value()->is_in_heap())
+    Node::make_node(this->variable_)->set_encoding(Node::ESCAPE_HEAP);
 }
 
 // Ast dump for enclosed variable expression.
@@ -3769,9 +3782,18 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
       // value does not escape.  If this->escapes_ is true, we may be
       // able to set it to false if taking the address of a variable
       // that does not escape.
-      if (this->escapes_ && this->expr_->var_expression() != NULL)
+      Node* n = Node::make_node(this);
+      if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+	this->escapes_ = false;
+
+      Named_object* var = NULL;
+      if (this->expr_->var_expression() != NULL)
+	var = this->expr_->var_expression()->named_object();
+      else if (this->expr_->enclosed_var_expression() != NULL)
+	var = this->expr_->enclosed_var_expression()->variable();
+
+      if (this->escapes_ && var != NULL)
 	{
-	  Named_object* var = this->expr_->var_expression()->named_object();
 	  if (var->is_variable())
 	    this->escapes_ = var->var_value()->escapes();
 	  if (var->is_result_variable())
@@ -11658,7 +11680,9 @@ Allocation_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   Location loc = this->location();
 
-  if (this->allocate_on_stack_)
+  Node* n = Node::make_node(this);
+  if (this->allocate_on_stack_
+      || (n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
     {
       int64_t size;
       bool ok = this->type_->backend_type_size(gogo, &size);
@@ -12344,7 +12368,15 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
       space->unary_expression()->set_is_slice_init();
     }
   else
-    space = Expression::make_heap_expression(array_val, loc);
+    {
+      space = Expression::make_heap_expression(array_val, loc);
+      Node* n = Node::make_node(this);
+      if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+	{
+	  n = Node::make_node(space);
+	  n->set_encoding(Node::ESCAPE_NONE);
+	}
+    }
 
   // Build a constructor for the slice.
 
@@ -13417,8 +13449,12 @@ Heap_expression::do_get_backend(Translate_context* context)
   Location loc = this->location();
   Gogo* gogo = context->gogo();
   Btype* btype = this->type()->get_backend(gogo);
-  Bexpression* space = Expression::make_allocation(this->expr_->type(),
-						   loc)->get_backend(context);
+
+  Expression* alloc = Expression::make_allocation(this->expr_->type(), loc);
+  Node* n = Node::make_node(this);
+  if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+    alloc->allocation_expression()->set_allocate_on_stack();
+  Bexpression* space = alloc->get_backend(context);
 
   Bstatement* decl;
   Named_object* fn = context->function();
