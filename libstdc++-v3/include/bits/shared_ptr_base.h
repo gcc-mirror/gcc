@@ -876,6 +876,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef _Tp   element_type;
 
+#if __cplusplus > 201402L
+      using weak_type = __weak_ptr<_Tp, _Lp>;
+#endif
+
       constexpr __shared_ptr() noexcept
       : _M_ptr(0), _M_refcount()
       { }

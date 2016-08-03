@@ -1,5 +1,11 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr.h (shared_ptr::weak_type): Define.
+	* include/bits/shared_ptr_base.h (__shared_ptr::weak_type): Define.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
+	* testsuite/20_util/shared_ptr/requirements/weak_type.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+
 	* include/std/utility (as_const): Define.
 	* testsuite/20_util/as_const/1.cc: New test.
 	* testsuite/20_util/as_const/rvalue_neg.cc: New test.

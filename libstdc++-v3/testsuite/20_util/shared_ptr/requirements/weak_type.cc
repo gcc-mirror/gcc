@@ -1,7 +1,4 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
-// { dg-do compile }
-
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,22 +15,17 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.11.2 Template class shared_ptr [util.smartptr.shared]
+// { dg-options "-std=gnu++17" }
+// { dg-do compile }
 
 #include <memory>
 
-// incomplete type
-struct X;
+using std::shared_ptr;
+using std::weak_ptr;
+using std::is_same_v;
 
-// get an auto_ptr rvalue
-std::auto_ptr<X>&& ap();
+static_assert( is_same_v<shared_ptr<int>::weak_type, weak_ptr<int>> );
+static_assert( is_same_v<shared_ptr<void>::weak_type, weak_ptr<void>> );
 
-void test01()
-{
-  X* px = 0;
-  std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 893 }
-
-  std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 307 }
-}
+struct X { };
+static_assert( is_same_v<shared_ptr<X>::weak_type, weak_ptr<X>> );

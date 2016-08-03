@@ -97,6 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
 
     public:
+
+#if __cplusplus > 201402L
+# define __cpp_lib_shared_ptr_weak_type 201606
+      using weak_type = weak_ptr<_Tp>;
+#endif
       /**
        *  @brief  Construct an empty %shared_ptr.
        *  @post   use_count()==0 && get()==0
