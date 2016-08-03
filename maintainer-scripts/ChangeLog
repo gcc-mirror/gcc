@@ -1,3 +1,7 @@
+2016-08-03  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: New file.
+
 2016-07-26  Richard Biener  <rguenther@suse.de>
 
 	* update_version_svn: Ignore the GCC 4.9 branch.
