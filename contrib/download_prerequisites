@@ -36,14 +36,17 @@ MPC=mpc-1.0.3
 
 wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPFR.tar.bz2 || exit 1
 tar xjf $MPFR.tar.bz2 || exit 1
+if test -L mpfr; then rm -f mpfr; fi
 ln -sf $MPFR mpfr || exit 1
 
 wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$GMP.tar.bz2 || exit 1
 tar xjf $GMP.tar.bz2  || exit 1
+if test -L gmp; then rm -f gmp; fi
 ln -sf $GMP gmp || exit 1
 
 wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPC.tar.gz || exit 1
 tar xzf $MPC.tar.gz || exit 1
+if test -L mpc; then rm -f mpc; fi
 ln -sf $MPC mpc || exit 1
 
 # Necessary to build GCC with the Graphite loop optimizations.
@@ -52,5 +55,6 @@ if [ "$GRAPHITE_LOOP_OPT" = "yes" ] ; then
 
   wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL.tar.bz2 || exit 1
   tar xjf $ISL.tar.bz2  || exit 1
+  if test -L isl; then rm -f isl; fi
   ln -sf $ISL isl || exit 1
 fi
