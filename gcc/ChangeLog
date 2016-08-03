@@ -1,3 +1,8 @@
+2016-08-03  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_direct_move):
+	Delete duplicated code.
+
 2016-08-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/72778
