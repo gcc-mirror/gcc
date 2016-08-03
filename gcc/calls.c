@@ -468,15 +468,13 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
     anti_adjust_stack (GEN_INT (n_popped));
 }
 
-/* Determine if the function identified by NAME and FNDECL is one with
-   special properties we wish to know about.
+/* Determine if the function identified by FNDECL is one with
+   special properties we wish to know about.  Modify FLAGS accordingly.
 
    For example, if the function might return more than one time (setjmp), then
-   set RETURNS_TWICE to a nonzero value.
+   set ECF_RETURNS_TWICE.
 
-   Similarly set NORETURN if the function is in the longjmp family.
-
-   Set MAY_BE_ALLOCA for any memory allocation function that might allocate
+   Set ECF_MAY_BE_ALLOCA for any memory allocation function that might allocate
    space from the stack such as alloca.  */
 
 static int
@@ -491,7 +489,7 @@ special_function_p (const_tree fndecl, int flags)
     name_decl = DECL_NAME (cgraph_node::get (fndecl)->orig_decl);
 
   if (fndecl && name_decl
-      && IDENTIFIER_LENGTH (name_decl) <= 17
+      && IDENTIFIER_LENGTH (name_decl) <= 11
       /* Exclude functions not at the file scope, or not `extern',
 	 since they are not the magic functions we would otherwise
 	 think they are.
@@ -514,43 +512,22 @@ special_function_p (const_tree fndecl, int flags)
 	  && ! strcmp (name, "alloca"))
 	flags |= ECF_MAY_BE_ALLOCA;
 
-      /* Disregard prefix _, __ or __x.  */
+      /* Disregard prefix _ or __.  */
       if (name[0] == '_')
 	{
-	  if (name[1] == '_' && name[2] == 'x')
-	    tname += 3;
-	  else if (name[1] == '_')
+	  if (name[1] == '_')
 	    tname += 2;
 	  else
 	    tname += 1;
 	}
 
-      if (tname[0] == 's')
-	{
-	  if ((tname[1] == 'e'
-	       && (! strcmp (tname, "setjmp")
-		   || ! strcmp (tname, "setjmp_syscall")))
-	      || (tname[1] == 'i'
-		  && ! strcmp (tname, "sigsetjmp"))
-	      || (tname[1] == 'a'
-		  && ! strcmp (tname, "savectx")))
-	    flags |= ECF_RETURNS_TWICE | ECF_LEAF;
-
-	  if (tname[1] == 'i'
-	      && ! strcmp (tname, "siglongjmp"))
-	    flags |= ECF_NORETURN;
-	}
-      else if ((tname[0] == 'q' && tname[1] == 's'
-		&& ! strcmp (tname, "qsetjmp"))
-	       || (tname[0] == 'v' && tname[1] == 'f'
-		   && ! strcmp (tname, "vfork"))
-	       || (tname[0] == 'g' && tname[1] == 'e'
-		   && !strcmp (tname, "getcontext")))
-	flags |= ECF_RETURNS_TWICE | ECF_LEAF;
-
-      else if (tname[0] == 'l' && tname[1] == 'o'
-	       && ! strcmp (tname, "longjmp"))
-	flags |= ECF_NORETURN;
+      /* ECF_RETURNS_TWICE is safe even for -ffreestanding.  */
+      if (! strcmp (tname, "setjmp")
+	  || ! strcmp (tname, "sigsetjmp")
+	  || ! strcmp (name, "savectx")
+	  || ! strcmp (name, "vfork")
+	  || ! strcmp (name, "getcontext"))
+	flags |= ECF_RETURNS_TWICE;
     }
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
