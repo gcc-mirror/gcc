@@ -4323,6 +4323,10 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_P9_DFORM_SCALAR;
     }
 
+  /* Enable LRA by default.  */
+  if ((rs6000_isa_flags_explicit & OPTION_MASK_LRA) == 0)
+    rs6000_isa_flags |= OPTION_MASK_LRA;
+
   /* There have been bugs with -mvsx-timode that don't show up with -mlra,
      but do show up with -mno-lra.  Given -mlra will become the default once
      PR 69847 is fixed, turn off the options with problems by default if

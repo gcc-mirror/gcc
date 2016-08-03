@@ -1,3 +1,8 @@
+2016-08-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Make LRA
+	the default for the rs6000 port.
+
 2016-08-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/71876
