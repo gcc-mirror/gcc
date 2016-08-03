@@ -1,3 +1,11 @@
+2016-08-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/71876
+	* calls.c (special_function_p): Remove special handling of
+	"setjmp_syscall", "qsetjmp", "longjmp", "siglongjmp" and the
+	prefix "__x".  Recognize "savectx", "vfork" and "getcontext" only
+	without prefix.  Remove potentially unsafe ECF_LEAF and ECF_NORETURN.
+
 2016-08-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/72778
