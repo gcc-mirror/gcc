@@ -1,5 +1,12 @@
 2016-08-03  Richard Biener  <rguenther@suse.de>
 
+	* c-c++-common/ubsan/pr71403-1.c: Use dg-additional-options
+	and remove -O3.
+	* c-c++-common/ubsan/pr71403-2.c: Likewise.
+	* c-c++-common/ubsan/pr71403-3.c: Likewise.
+
+2016-08-03  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/loadpre2.c: Disable LIM.
 	* gcc.dg/tree-ssa/loadpre21.c: Likewise.
 	* gcc.dg/tree-ssa/loadpre22.c: Likewise.
