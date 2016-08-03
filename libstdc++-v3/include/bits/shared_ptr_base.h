@@ -1506,6 +1506,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __lhs.owner_before(__rhs); }
     };
 
+  template<>
+    struct _Sp_owner_less<void, void>
+    {
+      template<typename _Tp, typename _Up>
+	auto
+	operator()(const _Tp& __lhs, const _Up& __rhs) const
+	-> decltype(__lhs.owner_before(__rhs))
+	{ return __lhs.owner_before(__rhs); }
+
+      using is_transparent = void;
+    };
+
   template<typename _Tp, _Lock_policy _Lp>
     struct owner_less<__shared_ptr<_Tp, _Lp>>
     : public _Sp_owner_less<__shared_ptr<_Tp, _Lp>, __weak_ptr<_Tp, _Lp>>

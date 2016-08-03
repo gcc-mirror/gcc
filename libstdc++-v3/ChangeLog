@@ -1,5 +1,15 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr.h (owner_less): Add default template
+	argument.
+	* include/bits/shared_ptr_base.h (_Sp_owner_less<void, void>): Define
+	specialization.
+	(owner_less<void>): Define specialization.
+	* include/bits/stl_function.h (__cpp_lib_transparent_operators):
+	Update value.
+	* testsuite/20_util/owner_less/void.cc: New test.
+	* testsuite/experimental/feat-cxx14.cc: Update macro value tested.
+
 	* include/bits/allocator.h (__cpp_lib_incomplete_container_elements):
 	Define feature-test macro.
 	* include/bits/range_access.h (__cpp_lib_array_constexpr): Likewise.
