@@ -1,5 +1,12 @@
 2016-08-03  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Make scalar
+	float access depend on TARGET_EFFICIENT_UNALIGNED_VSX.
+	* config/rs6000/rs6000.opt (-mefficient-unaligned-vsx): Renamed
+	from -mefficient-unaligned-vector.  Note that this affects fp too.
+
+2016-08-03  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Make unaligned mem
 	cost more.
 
