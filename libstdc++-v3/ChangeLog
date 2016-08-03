@@ -1,5 +1,10 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_function.h: Remove commented-out macro.
+	* include/bits/stl_tree.h (__cpp_lib_generic_associative_lookup):
+	Define feature-test macro.
+	* testsuite/experimental/feat-cxx14.cc: Add tests for more macros.
+
 	* include/bits/c++config (_GLIBCXX_USE_STD_SPEC_FUNCS): Define for
 	C++17, or for C++11/C++14 when __STDCPP_WANT_MATH_SPEC_FUNCS__ is
 	true.
