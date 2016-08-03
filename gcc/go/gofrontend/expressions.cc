@@ -14114,16 +14114,27 @@ Interface_info_expression::do_type()
     {
     case INTERFACE_INFO_METHODS:
       {
+        typedef Unordered_map(Interface_type*, Type*) Hashtable;
+        static Hashtable result_types;
+
+        Interface_type* itype = this->iface_->type()->interface_type();
+
+        Hashtable::const_iterator p = result_types.find(itype);
+        if (p != result_types.end())
+          return p->second;
+
         Type* pdt = Type::make_type_descriptor_ptr_type();
-        if (this->iface_->type()->interface_type()->is_empty())
-          return pdt;
+        if (itype->is_empty())
+          {
+            result_types[itype] = pdt;
+            return pdt;
+          }
 
         Location loc = this->location();
         Struct_field_list* sfl = new Struct_field_list();
         sfl->push_back(
             Struct_field(Typed_identifier("__type_descriptor", pdt, loc)));
 
-        Interface_type* itype = this->iface_->type()->interface_type();
         for (Typed_identifier_list::const_iterator p = itype->methods()->begin();
              p != itype->methods()->end();
              ++p)
@@ -14156,7 +14167,9 @@ Interface_info_expression::do_type()
             sfl->push_back(Struct_field(Typed_identifier(fname, mft, loc)));
           }
 
-        return Type::make_pointer_type(Type::make_struct_type(sfl, loc));
+        Pointer_type *pt = Type::make_pointer_type(Type::make_struct_type(sfl, loc));
+        result_types[itype] = pt;
+        return pt;
       }
     case INTERFACE_INFO_OBJECT:
       return Type::make_pointer_type(Type::make_void_type());
