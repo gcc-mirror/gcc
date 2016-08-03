@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fno-tree-loop-im -fdump-tree-pre-stats" } */
 
 struct { int x; int y; } global;
 void foo(int n)
