@@ -356,6 +356,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <size_t _Idx>
     in_place_tag in_place(__in_place_index<_Idx>*) {terminate();}
 
+#define  __cpp_lib_as_const 201510
+  template<typename _Tp>
+    constexpr add_const_t<_Tp>& as_const(_Tp& __t) noexcept { return __t; }
+
+  template<typename _Tp>
+    void as_const(const _Tp&&) = delete;
+
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
