@@ -535,8 +535,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   /// Primary template owner_less
-  template<typename _Tp>
+  template<typename _Tp = void>
     struct owner_less;
+
+  /// Void specialization of owner_less
+  template<>
+    struct owner_less<void> : _Sp_owner_less<void, void>
+    { };
 
   /// Partial specialization of owner_less for shared_ptr.
   template<typename _Tp>
