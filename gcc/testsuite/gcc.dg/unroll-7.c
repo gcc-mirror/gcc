@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-rtl-loop2_unroll -funroll-loops" } */
+/* { dg-require-effective-target int32plus } */
+
 int t(int *a)
 {
   int i;

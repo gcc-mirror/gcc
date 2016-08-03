@@ -1,6 +1,7 @@
 /* PR c/59963 */
 /* { dg-do compile } */
 /* { dg-options "-Woverflow -Wconversion" } */
+/* { dg-require-effective-target int32plus } */
 
 extern void bar (unsigned char);
 extern void bar8 (unsigned char, unsigned char, unsigned char, unsigned char,
