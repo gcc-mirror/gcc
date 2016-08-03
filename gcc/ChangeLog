@@ -1,3 +1,9 @@
+2016-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_declare_function_name): Round frame
+	size to DImode boundary.
+	(nvptx_propagate): Likewise.
+
 2016-08-03  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Make scalar
