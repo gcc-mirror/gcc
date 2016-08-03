@@ -116,7 +116,8 @@ by type.  Explanations are in the following sections.
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
--fdec -fdec-structure -fdefault-double-8 -fdefault-integer-8 @gol
+-fdec -fdec-structure -fdec-intrinsic-ints @gol
+-fdefault-double-8 -fdefault-integer-8 @gol
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
@@ -239,6 +240,7 @@ full documentation.
 
 Other flags enabled by this switch are:
 @option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
+@option{-fdec-intrinsic-ints}
 
 @item -fdec-structure
 @opindex @code{fdec-structure}
@@ -246,6 +248,11 @@ Enable DEC @code{STRUCTURE} and @code{RECORD} as well as @code{UNION},
 @code{MAP}, and dot ('.') as a member separator (in addition to '%'). This is
 provided for compatibility only; Fortran 90 derived types should be used
 instead where possible.
+
+@item -fdec-intrinsic-ints
+@opindex @code{fdec-intrinsic-ints}
+Enable B/I/J/K kind variants of existing integer functions (e.g. BIAND, IIAND,
+JIAND, etc...). For a complete list of intrinsics see the full documentation.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}

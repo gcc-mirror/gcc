@@ -424,6 +424,10 @@ fdec
 Fortran
 Enable all DEC language extensions.
 
+fdec-intrinsic-ints
+Fortran Var(flag_dec_intrinsic_ints)
+Enable kind-specific variants of integer intrinsic functions.
+
 fdec-structure
 Fortran
 Enable support for DEC STRUCTURE/RECORD.

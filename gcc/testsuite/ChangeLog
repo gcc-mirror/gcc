@@ -1,3 +1,7 @@
+2016-08-03  Fritz Reese  <fritzoreese@gmail.com>
+
+	* gfortran.dg/dec_intrinsic_ints.f90: New testcase.
+
 2016-08-03  Richard Biener  <rguenther@suse.de>
 
 	* c-c++-common/ubsan/pr71403-1.c: Use dg-additional-options
