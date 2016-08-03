@@ -1,5 +1,27 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/c++config (_GLIBCXX_USE_STD_SPEC_FUNCS): Define for
+	C++17, or for C++11/C++14 when __STDCPP_WANT_MATH_SPEC_FUNCS__ is
+	true.
+	* include/bits/specfun.h [!__STDCPP_WANT_MATH_SPEC_FUNCS__]: Don't
+	do #error for C++17.
+	* include/c_global/cmath: Check _GLIBCXX_USE_STD_SPEC_FUNCS instead
+	of __STDCPP_WANT_MATH_SPEC_FUNCS__.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/beta_function.tcc: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/ell_integral.tcc: Likewise.
+	* include/tr1/exp_integral.tcc: Likewise.
+	* include/tr1/gamma.tcc: Likewise.
+	* include/tr1/hypergeometric.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1/modified_bessel_func.tcc: Likewise.
+	* include/tr1/poly_hermite.tcc: Likewise.
+	* include/tr1/poly_laguerre.tcc: Likewise.
+	* include/tr1/riemann_zeta.tcc: Likewise.
+	* include/tr1/special_function_util.h: Likewise.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++17.cc: New.
+
 	* include/std/type_traits (has_trivial_default_constructor): Remove.
 	(has_trivial_copy_constructor, has_trivial_copy_assign): Likewise.
 	* testsuite/20_util/has_trivial_copy_assign/requirements/
