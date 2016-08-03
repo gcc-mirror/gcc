@@ -1,5 +1,6 @@
 /* { dg-do link } */
 /* { dg-options "-O1 -fdelete-null-pointer-checks -fdump-tree-ccp1" } */
+/* { dg-skip-if "" keeps_null_pointer_checks } */
 
 void foo();
 void link_error (void);

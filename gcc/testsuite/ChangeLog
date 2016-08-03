@@ -1,3 +1,11 @@
+2016-08-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/init-excess-2.c: Require int32plus.
+	* gcc.dg/pr44024.c: Skip if target keeps null pointer checks.
+	* gcc.dg/pr59963-2.c: Require int32plus.
+	* gcc.dg/pr71084.c: Cast pointer to intprt_t.
+	* gcc.dg/unroll-7.c: Require int32plus.
+
 2016-08-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/34114

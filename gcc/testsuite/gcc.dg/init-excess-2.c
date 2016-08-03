@@ -3,6 +3,7 @@
    c/71115 - Missing warning: excess elements in struct initializer.  */
 /* { dg-do compile } */
 /* { dg-options "" } */
+/* { dg-require-effective-target int32plus } */
 
 #include <stddef.h>
 
