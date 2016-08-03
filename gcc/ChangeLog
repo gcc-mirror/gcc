@@ -1,5 +1,10 @@
 2016-08-03  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Make unaligned mem
+	cost more.
+
+2016-08-03  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.md (fix_trunc<mode>si2): Force source operand
 	to a reg.  Localize vars.
 
