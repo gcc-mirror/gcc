@@ -1,3 +1,36 @@
+2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (has_trivial_default_constructor): Remove.
+	(has_trivial_copy_constructor, has_trivial_copy_assign): Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/requirements/
+	explicit_instantiation.cc: Remove test.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/has_trivial_copy_assign/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/value.cc:
+	Likewise.
+	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc:
+	Check has_trivial_default_constructor, has_trivial_copy_constructor,
+	and has_trivial_copy_assign are not defined.
+	* testsuite/20_util/pair/requirements/dr801.cc: Remove commented out
+	tests.
+	* testsuite/20_util/tuple/requirements/dr801.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/allocator/wchar_t/copy.cc:

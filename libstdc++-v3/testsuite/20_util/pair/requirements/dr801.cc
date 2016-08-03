@@ -36,10 +36,6 @@ void test_trivial()
 
   // Negative
   /*
-  static_assert(std::has_trivial_default_constructor<pair_type>::value,
-		"! triv default");
-  static_assert(std::has_trivial_copy_assign<pair_type>::value,
-		"! triv assign");
   static_assert(std::is_trivial<pair_type>::value, "! triv");
   static_assert(std::is_pod<pair_type>::value, "! pod");
   */

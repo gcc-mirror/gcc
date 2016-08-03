@@ -36,10 +36,6 @@ void test_trivial()
 
   // Negative
   /*
-  static_assert(std::has_trivial_default_constructor<tuple_type>::value,
-		"! triv default");
-  static_assert(std::has_trivial_copy_assign<tuple_type>::value,
-		"! triv assign");
   static_assert(std::is_trivial<tuple_type>::value, "! triv");
   static_assert(std::is_pod<tuple_type>::value, "! pod");
   */

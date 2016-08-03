@@ -1447,23 +1447,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      __has_trivial_destructor(_Tp)>>
     { };
 
-  /// has_trivial_default_constructor (temporary legacy)
-  template<typename _Tp>
-    struct has_trivial_default_constructor
-    : public integral_constant<bool, __has_trivial_constructor(_Tp)>
-    { } _GLIBCXX_DEPRECATED;
-
-  /// has_trivial_copy_constructor (temporary legacy)
-  template<typename _Tp>
-    struct has_trivial_copy_constructor
-    : public integral_constant<bool, __has_trivial_copy(_Tp)>
-    { } _GLIBCXX_DEPRECATED;
-
-  /// has_trivial_copy_assign (temporary legacy)
-  template<typename _Tp>
-    struct has_trivial_copy_assign
-    : public integral_constant<bool, __has_trivial_assign(_Tp)>
-    { } _GLIBCXX_DEPRECATED;
 
   /// has_virtual_destructor
   template<typename _Tp>
