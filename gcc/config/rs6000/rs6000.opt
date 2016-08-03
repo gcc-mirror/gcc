@@ -209,27 +209,27 @@ Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
 
 mallow-movmisalign
 Target Undocumented Var(TARGET_ALLOW_MOVMISALIGN) Init(-1) Save
-; Allow/disallow the movmisalign in DF/DI vectors
+; Allow the movmisalign in DF/DI vectors
 
 mefficient-unaligned-vector
 Target Undocumented Report Mask(EFFICIENT_UNALIGNED_VSX) Var(rs6000_isa_flags)
-; Consider unaligned VSX accesses to be efficient/inefficient
+; Consider unaligned VSX accesses to be efficient
 
 mallow-df-permute
 Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE) Save
-; Allow/disallow permutation of DF/DI vectors
+; Allow permutation of DF/DI vectors
 
 msched-groups
 Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1) Save
-; Explicitly set/unset whether rs6000_sched_groups is set
+; Explicitly set rs6000_sched_groups
 
 malways-hint
 Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1) Save
-; Explicitly set/unset whether rs6000_always_hint is set
+; Explicitly set rs6000_always_hint
 
 malign-branch-targets
 Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1) Save
-; Explicitly set/unset whether rs6000_align_branch_targets is set
+; Explicitly set rs6000_align_branch_targets
 
 mvectorize-builtins
 Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1) Save
@@ -539,11 +539,11 @@ Specify Xilinx FPU.
 
 mpointers-to-nested-functions
 Target Report Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save
-Use/do not use r11 to hold the static link in calls to functions via pointers.
+Use r11 to hold the static link in calls to functions via pointers.
 
 msave-toc-indirect
 Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
-Control whether we save the TOC in the prologue for indirect calls or generate the save inline.
+Save the TOC in the prologue for indirect calls rather than inline.
 
 mvsx-timode
 Target Undocumented Mask(VSX_TIMODE) Var(rs6000_isa_flags)
@@ -559,7 +559,7 @@ Allow sign extension in fusion operations.
 
 mpower8-vector
 Target Report Mask(P8_VECTOR) Var(rs6000_isa_flags)
-Use/do not use vector and scalar instructions added in ISA 2.07.
+Use vector and scalar instructions added in ISA 2.07.
 
 mcrypto
 Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
@@ -611,27 +611,27 @@ Fuse certain operations together for better performance on power9.
 
 mpower9-misc
 Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)
-Use/do not use certain scalar instructions added in ISA 3.0.
+Use certain scalar instructions added in ISA 3.0.
 
 mpower9-vector
 Target Undocumented Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
-Use/do not use vector instructions added in ISA 3.0.
+Use vector instructions added in ISA 3.0.
 
 mpower9-dform-scalar
 Target Undocumented Mask(P9_DFORM_SCALAR) Var(rs6000_isa_flags)
-Use/do not use scalar register+offset memory instructions added in ISA 3.0.
+Use scalar register+offset memory instructions added in ISA 3.0.
 
 mpower9-dform-vector
 Target Undocumented Mask(P9_DFORM_VECTOR) Var(rs6000_isa_flags)
-Use/do not use vector register+offset memory instructions added in ISA 3.0.
+Use vector register+offset memory instructions added in ISA 3.0.
 
 mpower9-dform
 Target Undocumented Report Var(TARGET_P9_DFORM_BOTH) Init(-1) Save
-Use/do not use register+offset memory instructions added in ISA 3.0.
+Use register+offset memory instructions added in ISA 3.0.
 
 mpower9-minmax
 Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)
-Use/do not use the new min/max instructions defined in ISA 3.0.
+Use the new min/max instructions defined in ISA 3.0.
 
 mtoc-fusion
 Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
@@ -643,12 +643,12 @@ Generate the integer modulo instructions.
 
 mfloat128
 Target Report Mask(FLOAT128) Var(rs6000_isa_flags)
-Enable/disable IEEE 128-bit floating point via the __float128 keyword.
+Enable IEEE 128-bit floating point via the __float128 keyword.
 
 mfloat128-hardware
 Target Report Mask(FLOAT128_HW) Var(rs6000_isa_flags)
-Enable/disable using IEEE 128-bit floating point instructions.
+Enable using IEEE 128-bit floating point instructions.
 
 mfloat128-convert
 Target Undocumented Mask(FLOAT128_CVT) Var(rs6000_isa_flags)
-Enable/disable default conversions between __float128 & long double.
+Enable default conversions between __float128 & long double.
