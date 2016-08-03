@@ -1,3 +1,7 @@
+2016-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/crash-1.c: New.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/zero_length_subarrays.c: New
