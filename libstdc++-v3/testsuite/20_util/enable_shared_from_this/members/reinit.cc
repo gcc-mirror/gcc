@@ -20,6 +20,10 @@
 #include <memory>
 #include <testsuite_hooks.h>
 
+#if __cpp_lib_enable_shared_from_this < 201603
+# error "__cpp_lib_enable_shared_from_this < 201603"
+#endif
+
 struct X : public std::enable_shared_from_this<X> { };
 
 bool

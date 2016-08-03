@@ -1472,6 +1472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_assign(_Tp* __ptr, const __shared_count<_Lp>& __refcount) noexcept
       {
+#define __cpp_lib_enable_shared_from_this 201603
 	if (use_count() == 0)
 	  {
 	    _M_ptr = __ptr;
