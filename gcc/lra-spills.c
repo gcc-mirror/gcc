@@ -686,16 +686,40 @@ return_regno_p (unsigned int regno)
   return false;
 }
 
-/* Return true if REGNO is one of subsequent USE after INSN.  */
+/* Return true if REGNO is in one of subsequent USE after INSN in the
+   same BB.  */
 static bool
 regno_in_use_p (rtx_insn *insn, unsigned int regno)
 {
+  static lra_insn_recog_data_t id;
+  static struct lra_static_insn_data *static_id;
+  struct lra_insn_reg *reg;
+  int i, arg_regno;
+  basic_block bb = BLOCK_FOR_INSN (insn);
+
   while ((insn = next_nondebug_insn (insn)) != NULL_RTX
-	 && INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE)
+	 && bb == BLOCK_FOR_INSN (insn))
     {
-      if (REG_P (XEXP (PATTERN (insn), 0))
+      if (! INSN_P (insn))
+	continue;
+      if (GET_CODE (PATTERN (insn)) == USE
+	  && REG_P (XEXP (PATTERN (insn), 0))
 	  && regno == REGNO (XEXP (PATTERN (insn), 0)))
-	return TRUE;
+	return true;
+      /* Check that the regno is not modified.  */
+      id = lra_get_insn_recog_data (insn);
+      for (reg = id->regs; reg != NULL; reg = reg->next)
+	if (reg->type != OP_IN && reg->regno == (int) regno)
+	  return false;
+      static_id = id->insn_static_data;
+      for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
+	if (reg->type != OP_IN && reg->regno == (int) regno)
+	  return false;
+      if (id->arg_hard_regs != NULL)
+	for (i = 0; (arg_regno = id->arg_hard_regs[i]) >= 0; i++)
+	  if ((int) regno == (arg_regno >= FIRST_PSEUDO_REGISTER
+			      ? arg_regno : arg_regno - FIRST_PSEUDO_REGISTER))
+	    return false;
     }
   return false;
 }

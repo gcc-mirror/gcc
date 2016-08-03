@@ -1,3 +1,9 @@
+2016-08-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/72778
+	* lra-spills.c (regno_in_use_p): Check bb and regno modification.
+	Don't stop on regular insns.
+
 2016-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.c (nvptx_declare_function_name): Round frame
