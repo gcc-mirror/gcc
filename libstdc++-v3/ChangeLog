@@ -1,5 +1,10 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr_base.h (__cpp_lib_enable_shared_from_this):
+	Define feature-test macro.
+	* testsuite/20_util/enable_shared_from_this/members/reinit.cc: Test
+	for the macro.
+
 	* include/bits/shared_ptr.h (shared_ptr::weak_type): Define.
 	* include/bits/shared_ptr_base.h (__shared_ptr::weak_type): Define.
 	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
