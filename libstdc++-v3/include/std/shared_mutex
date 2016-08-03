@@ -52,7 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAS_GTHREADS
 
 #if __cplusplus > 201402L
-// TODO: #define __cpp_lib_shared_mutex 201505
+#define __cpp_lib_shared_mutex 201505
   class shared_mutex;
 #endif
 

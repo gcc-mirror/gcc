@@ -1,5 +1,12 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocator.h (__cpp_lib_incomplete_container_elements):
+	Define feature-test macro.
+	* include/bits/range_access.h (__cpp_lib_array_constexpr): Likewise.
+	* include/std/shared_mutex (__cpp_lib_shared_mutex): Uncomment.
+	* include/std/type_traits (__cpp_lib_logical_traits): Fix value.
+	(__cpp_lib_type_trait_variable_templates): Define.
+
 	* include/bits/stl_function.h: Remove commented-out macro.
 	* include/bits/stl_tree.h (__cpp_lib_generic_associative_lookup):
 	Define feature-test macro.
