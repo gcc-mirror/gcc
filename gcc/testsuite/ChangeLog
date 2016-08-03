@@ -1,3 +1,7 @@
+2016-08-03  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20160802-1.c: New testcase.
+
 2016-08-03  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_intrinsic_ints.f90: New testcase.
