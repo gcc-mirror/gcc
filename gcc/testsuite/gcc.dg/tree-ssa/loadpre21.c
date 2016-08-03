@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fno-tree-loop-im -fdump-tree-pre-stats" } */
 typedef int type[2];
 int main(type *a, int argc)
 {
