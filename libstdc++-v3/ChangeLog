@@ -1,5 +1,9 @@
 2016-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/utility (as_const): Define.
+	* testsuite/20_util/as_const/1.cc: New test.
+	* testsuite/20_util/as_const/rvalue_neg.cc: New test.
+
 	* include/bits/shared_ptr.h (owner_less): Add default template
 	argument.
 	* include/bits/shared_ptr_base.h (_Sp_owner_less<void, void>): Define
