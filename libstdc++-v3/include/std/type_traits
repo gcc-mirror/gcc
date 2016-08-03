@@ -156,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
 
-#define __cpp_lib_logical_traits 201511
+#define __cpp_lib_logical_traits 201510
 
   template<typename... _Bn>
     struct conjunction
@@ -2763,6 +2763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cplusplus >= 201402L
 
 #if __cplusplus > 201402L
+# define __cpp_lib_type_trait_variable_templates 201510L
 template <typename _Tp>
   constexpr bool is_void_v = is_void<_Tp>::value;
 template <typename _Tp>
