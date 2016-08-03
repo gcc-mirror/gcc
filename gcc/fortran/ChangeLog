@@ -1,3 +1,11 @@
+2016-08-03  Fritz Reese  <fritzoreese@gmail.com>
+
+	* lang.opt: New option -fdec-intrinsic-ints.
+	* options.c (set_dec_flags): Enable with -fdec.
+	* gfortran.texi, invoke.texi, intrinsics.texi: Update documentation.
+	* intrinsic.c (add_function, add_subroutine): New B/I/J/K intrinsic
+	variants.
+
 2016-07-30  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/41922

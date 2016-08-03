@@ -53,6 +53,7 @@ static void
 set_dec_flags (int value)
 {
     gfc_option.flag_dec_structure  = value;
+    flag_dec_intrinsic_ints = value;
 }
 
 

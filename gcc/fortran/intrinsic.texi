@@ -401,6 +401,10 @@ end program test_abort
 @fnindex IABS
 @fnindex ZABS
 @fnindex CDABS
+@fnindex BABS
+@fnindex IIABS
+@fnindex JIABS
+@fnindex KIABS
 @cindex absolute value
 
 @table @asis
@@ -446,6 +450,10 @@ end program test_abs
 @item @code{CABS(A)}  @tab @code{COMPLEX(4) A} @tab @code{REAL(4)}    @tab Fortran 77 and later
 @item @code{DABS(A)}  @tab @code{REAL(8) A}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @item @code{IABS(A)}  @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab Fortran 77 and later
+@item @code{BABS(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIABS(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIABS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIABS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
 @item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
@@ -2666,6 +2674,10 @@ The return value is of type @code{LOGICAL} and of the default kind.
 @node BTEST
 @section @code{BTEST} --- Bit test function
 @fnindex BTEST
+@fnindex BBTEST
+@fnindex BITEST
+@fnindex BJTEST
+@fnindex BKTEST
 @cindex bits, testing
 
 @table @asis
@@ -2674,7 +2686,7 @@ The return value is of type @code{LOGICAL} and of the default kind.
 in @var{I} is set.  The counting of the bits starts at 0.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -2703,8 +2715,17 @@ program test_btest
     end do
 end program test_btest
 @end smallexample
-@end table
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name           @tab Argument         @tab Return type             @tab Standard
+@item @code{BTEST(I,POS)} @tab @code{INTEGER I,POS} @tab @code{LOGICAL} @tab F95 and later
+@item @code{BBTEST(I,POS)} @tab @code{INTEGER(1) I,POS} @tab @code{LOGICAL(1)} @tab GNU extension
+@item @code{BITEST(I,POS)} @tab @code{INTEGER(2) I,POS} @tab @code{LOGICAL(2)} @tab GNU extension
+@item @code{BJTEST(I,POS)} @tab @code{INTEGER(4) I,POS} @tab @code{LOGICAL(4)} @tab GNU extension
+@item @code{BKTEST(I,POS)} @tab @code{INTEGER(8) I,POS} @tab @code{LOGICAL(8)} @tab GNU extension
+@end multitable
+@end table
 
 @node C_ASSOCIATED
 @section @code{C_ASSOCIATED} --- Status of a C pointer
@@ -6972,6 +6993,10 @@ END PROGRAM
 @node IAND
 @section @code{IAND} --- Bitwise logical and
 @fnindex IAND
+@fnindex BIAND
+@fnindex IIAND
+@fnindex JIAND
+@fnindex KIAND
 @cindex bitwise logical and
 @cindex logical and, bitwise
 
@@ -6980,7 +7005,7 @@ END PROGRAM
 Bitwise logical @code{AND}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7009,6 +7034,16 @@ PROGRAM test_iand
   WRITE (*,*) IAND(a, b)
 END PROGRAM
 @end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{IAND(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BIAND(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIAND(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIAND(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIAND(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 @ref{IOR}, @ref{IEOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
@@ -7124,6 +7159,10 @@ Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
 @node IBCLR
 @section @code{IBCLR} --- Clear bit
 @fnindex IBCLR
+@fnindex BBCLR
+@fnindex IIBCLR
+@fnindex JIBCLR
+@fnindex KIBCLR
 @cindex bits, unset
 @cindex bits, clear
 
@@ -7133,7 +7172,7 @@ Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
 @var{POS} set to zero.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7151,6 +7190,16 @@ Elemental function
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{IBCLR(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BBCLR(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIBCLR(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIBCLR(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIBCLR(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
+
 @item @emph{See also}:
 @ref{IBITS}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}, @ref{MVBITS}
 
@@ -7161,6 +7210,10 @@ The return value is of type @code{INTEGER} and of the same kind as
 @node IBITS
 @section @code{IBITS} --- Bit extraction
 @fnindex IBITS
+@fnindex BBITS
+@fnindex IIBITS
+@fnindex JIBITS
+@fnindex KIBITS
 @cindex bits, get
 @cindex bits, extract
 
@@ -7173,7 +7226,7 @@ zeroed.  The value of @code{POS+LEN} must be less than or equal to the
 value @code{BIT_SIZE(I)}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7192,6 +7245,16 @@ Elemental function
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{IBITS(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BBITS(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIBITS(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIBITS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIBITS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
+
 @item @emph{See also}:
 @ref{BIT_SIZE}, @ref{IBCLR}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
 @end table
@@ -7201,6 +7264,10 @@ The return value is of type @code{INTEGER} and of the same kind as
 @node IBSET
 @section @code{IBSET} --- Set bit
 @fnindex IBSET
+@fnindex BBSET
+@fnindex IIBSET
+@fnindex JIBSET
+@fnindex KIBSET
 @cindex bits, set
 
 @table @asis
@@ -7209,7 +7276,7 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{POS} set to one.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7226,6 +7293,16 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{IBSET(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BBSET(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIBSET(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIBSET(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIBSET(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 @ref{IBCLR}, @ref{IBITS}, @ref{IAND}, @ref{IOR}, @ref{IEOR}, @ref{MVBITS}
@@ -7358,6 +7435,10 @@ end program test_idate
 @node IEOR
 @section @code{IEOR} --- Bitwise logical exclusive or
 @fnindex IEOR
+@fnindex BIEOR
+@fnindex IIEOR
+@fnindex JIEOR
+@fnindex KIEOR
 @cindex bitwise logical exclusive or
 @cindex logical exclusive or, bitwise
 
@@ -7367,7 +7448,7 @@ end program test_idate
 @var{J}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7387,6 +7468,16 @@ permitted.)
 The return type is @code{INTEGER}, of the same kind as the
 arguments.  (If the argument kinds differ, it is of the same kind as
 the larger argument.)
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{IEOR(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BIEOR(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIEOR(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIEOR(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIEOR(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 @ref{IOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
@@ -7662,6 +7753,10 @@ The return value is a @code{INTEGER(8)} variable.
 @node IOR
 @section @code{IOR} --- Bitwise logical or
 @fnindex IOR
+@fnindex BIOR
+@fnindex IIOR
+@fnindex JIOR
+@fnindex KIOR
 @cindex bitwise logical or
 @cindex logical or, bitwise
 
@@ -7671,7 +7766,7 @@ The return value is a @code{INTEGER(8)} variable.
 @var{J}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7691,6 +7786,16 @@ permitted.)
 The return type is @code{INTEGER}, of the same kind as the
 arguments.  (If the argument kinds differ, it is of the same kind as
 the larger argument.)
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{IOR(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BIOR(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IIOR(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JIOR(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KIOR(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 @ref{IEOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
@@ -7945,6 +8050,10 @@ END PROGRAM
 @node ISHFT
 @section @code{ISHFT} --- Shift bits
 @fnindex ISHFT
+@fnindex BSHFT
+@fnindex IISHFT
+@fnindex JISHFT
+@fnindex KISHFT
 @cindex bits, shift
 
 @table @asis
@@ -7958,7 +8067,7 @@ value is undefined.  Bits shifted out from the left end or right end are
 lost; zeros are shifted in from the opposite end.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -7976,6 +8085,16 @@ Elemental function
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{ISHFT(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BSHFT(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IISHFT(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JISHFT(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KISHFT(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
+
 @item @emph{See also}:
 @ref{ISHFTC}
 @end table
@@ -7985,6 +8104,10 @@ The return value is of type @code{INTEGER} and of the same kind as
 @node ISHFTC
 @section @code{ISHFTC} --- Shift bits circularly
 @fnindex ISHFTC
+@fnindex BSHFTC
+@fnindex IISHFTC
+@fnindex JISHFTC
+@fnindex KISHFTC
 @cindex bits, shift circular
 
 @table @asis
@@ -7999,7 +8122,7 @@ a right shift.  The absolute value of @var{SHIFT} must be less than
 equivalent to @code{BIT_SIZE(I)}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -8019,6 +8142,16 @@ the value must be greater than zero and less than or equal to
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{ISHFTC(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BSHFTC(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IISHFTC(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JISHFTC(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KISHFTC(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 @ref{ISHFT}
@@ -9843,6 +9976,10 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 @fnindex MOD
 @fnindex AMOD
 @fnindex DMOD
+@fnindex BMOD
+@fnindex IMOD
+@fnindex JMOD
+@fnindex KMOD
 @cindex remainder
 @cindex division, remainder
 
@@ -9851,7 +9988,7 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 @code{MOD(A,P)} computes the remainder of the division of A by P@. 
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -9898,6 +10035,10 @@ end program test_mod
 @item @code{MOD(A,P)}  @tab @code{INTEGER A,P} @tab @code{INTEGER} @tab Fortran 95 and later
 @item @code{AMOD(A,P)} @tab @code{REAL(4) A,P} @tab @code{REAL(4)} @tab Fortran 95 and later
 @item @code{DMOD(A,P)} @tab @code{REAL(8) A,P} @tab @code{REAL(8)} @tab Fortran 95 and later
+@item @code{BMOD(A,P)}  @tab @code{INTEGER(1) A,P} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IMOD(A,P)}  @tab @code{INTEGER(2) A,P} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JMOD(A,P)}  @tab @code{INTEGER(4) A,P} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KMOD(A,P)}  @tab @code{INTEGER(8) A,P} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
 @item @emph{See also}:
@@ -10017,6 +10158,10 @@ end program test_move_alloc
 @node MVBITS
 @section @code{MVBITS} --- Move bits from one integer to another
 @fnindex MVBITS
+@fnindex BMVBITS
+@fnindex IMVBITS
+@fnindex JMVBITS
+@fnindex KMVBITS
 @cindex bits, move
 
 @table @asis
@@ -10029,7 +10174,7 @@ affected by the movement of bits is unchanged. The values of
 @code{BIT_SIZE(FROM)}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental subroutine
@@ -10045,6 +10190,16 @@ Elemental subroutine
 @item @var{TO}      @tab The type shall be @code{INTEGER}, of the
 same kind as @var{FROM}.
 @item @var{TOPOS}   @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{MVBITS(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BMVBITS(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{IMVBITS(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JMVBITS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KMVBITS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
 @item @emph{See also}:
@@ -10250,6 +10405,10 @@ END PROGRAM
 @node NOT
 @section @code{NOT} --- Logical negation
 @fnindex NOT
+@fnindex BNOT
+@fnindex INOT
+@fnindex JNOT
+@fnindex KNOT
 @cindex bits, negate
 @cindex bitwise logical not
 @cindex logical not, bitwise
@@ -10259,7 +10418,7 @@ END PROGRAM
 @code{NOT} returns the bitwise Boolean inverse of @var{I}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -10275,6 +10434,16 @@ Elemental function
 @item @emph{Return value}:
 The return type is @code{INTEGER}, of the same kind as the
 argument.
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{NOT(A)}   @tab @code{INTEGER A}    @tab @code{INTEGER}    @tab Fortran 95 and later
+@item @code{BNOT(A)} @tab @code{INTEGER(1) A} @tab @code{INTEGER(1)} @tab GNU extension
+@item @code{INOT(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
+@item @code{JNOT(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
+@item @code{KNOT(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 @ref{IAND}, @ref{IEOR}, @ref{IOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}
@@ -11192,6 +11361,9 @@ end program test_rank
 @fnindex REALPART
 @fnindex FLOAT
 @fnindex DFLOAT
+@fnindex FLOATI
+@fnindex FLOATJ
+@fnindex FLOATK
 @fnindex SNGL
 @cindex conversion, to real
 @cindex complex numbers, real part
@@ -11252,6 +11424,9 @@ end program test_real
 @item Name             @tab Argument           @tab Return type     @tab Standard
 @item @code{FLOAT(A)}  @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
 @item @code{DFLOAT(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(8)}  @tab GNU extension
+@item @code{FLOATI(A)} @tab @code{INTEGER(2)}  @tab @code{REAL(4)}  @tab GNU extension
+@item @code{FLOATJ(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab GNU extension
+@item @code{FLOATK(A)} @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab GNU extension
 @item @code{SNGL(A)}   @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
 @end multitable
 

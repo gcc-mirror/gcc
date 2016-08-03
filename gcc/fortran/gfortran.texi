@@ -1461,6 +1461,7 @@ without warning.
 * Read/Write after EOF marker::
 * STRUCTURE and RECORD::
 * UNION and MAP::
+* Type variants for integer intrinsics::
 @end menu
 
 @node Old-style kind specifications
@@ -2366,6 +2367,58 @@ a.x  ===             '.C.D'
 a.h  ===             '.C'
 a.l  ===               '.D'
 @end example
+
+@node Type variants for integer intrinsics
+@subsection Type variants for integer intrinsics
+@cindex intrinsics, integer
+
+Similar to the D/C prefixes to real functions to specify the input/output
+types, GNU Fortran offers B/I/J/K prefixes to integer functions for
+compatibility with DEC programs. The types implied by each are:
+
+@example
+@code{B} - @code{INTEGER(kind=1)}
+@code{I} - @code{INTEGER(kind=2)}
+@code{J} - @code{INTEGER(kind=4)}
+@code{K} - @code{INTEGER(kind=8)}
+@end example
+
+GNU Fortran supports these with the flag @option{-fdec-intrinsic-ints}.
+Intrinsics for which prefixed versions are available and in what form are noted
+in @ref{Intrinsic Procedures}. The complete list of supported intrinsics is
+here:
+
+@multitable @columnfractions .2 .2 .2 .2 .2
+
+@headitem Intrinsic @tab B @tab I @tab J @tab K
+
+@item @code{@ref{ABS}}
+  @tab @code{BABS} @tab @code{IIABS} @tab @code{JIABS} @tab @code{KIABS}
+@item @code{@ref{BTEST}}
+  @tab @code{BBTEST} @tab @code{BITEST} @tab @code{BJTEST} @tab @code{BKTEST}
+@item @code{@ref{IAND}}
+  @tab @code{BIAND} @tab @code{IIAND} @tab @code{JIAND} @tab @code{KIAND}
+@item @code{@ref{IBCLR}}
+  @tab @code{BBCLR} @tab @code{IIBCLR} @tab @code{JIBCLR} @tab @code{KIBCLR}
+@item @code{@ref{IBITS}}
+  @tab @code{BBITS} @tab @code{IIBITS} @tab @code{JIBITS} @tab @code{KIBITS}
+@item @code{@ref{IBSET}}
+  @tab @code{BBSET} @tab @code{IIBSET} @tab @code{JIBSET} @tab @code{KIBSET}
+@item @code{@ref{IEOR}}
+  @tab @code{BIEOR} @tab @code{IIEOR} @tab @code{JIEOR} @tab @code{KIEOR}
+@item @code{@ref{IOR}}
+  @tab @code{BIOR} @tab @code{IIOR} @tab @code{JIOR} @tab @code{KIOR}
+@item @code{@ref{ISHFT}}
+  @tab @code{BSHFT} @tab @code{IISHFT} @tab @code{JISHFT} @tab @code{KISHFT}
+@item @code{@ref{ISHFTC}}
+  @tab @code{BSHFTC} @tab @code{IISHFTC} @tab @code{JISHFTC} @tab @code{KISHFTC}
+@item @code{@ref{MOD}}
+  @tab @code{BMOD} @tab @code{IMOD} @tab @code{JMOD} @tab @code{KMOD}
+@item @code{@ref{NOT}}
+  @tab @code{BNOT} @tab @code{INOT} @tab @code{JNOT} @tab @code{KNOT}
+@item @code{@ref{REAL}}
+  @tab @code{--} @tab @code{FLOATI} @tab @code{FLOATJ} @tab @code{FLOATK}
+@end multitable
 
 
 @node Extensions not implemented in GNU Fortran
