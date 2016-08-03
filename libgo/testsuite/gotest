@@ -313,55 +313,59 @@ x)
 	    esac
 
 	    if test x$tag1 != xnonmatchingtag -a x$tag2 != xnonmatchingtag; then
-		taglines=`sed '/^package /q' < $f | fgrep '// +build '`
-		if test "$taglines" = ""; then
-		    omatch=true
-		else
-		    omatch=false
-		fi
-		for tags in $taglines; do
-		    match=false
-		    for tag in $tags; do
-			reverse=false
-			case $tag in
-			"!"*)
-			    reverse=true
-			    tag=`echo $tag | sed -e 's/^!//'`
-			    ;;
-			esac
+		tags=`sed '/^package /q' < $f | fgrep '// +build '`
+		omatch=true
+		first=true
+		match=false
+		for tag in $tags; do
+		    reverse=false
+		    case $tag in
+		    "!"*)
+			reverse=true
+			tag=`echo $tag | sed -e 's/^!//'`
+			;;
+		    esac
 
-			case $tag in
-			"//" | "+build")
-			    ;;
-			$goos | $goarch | cgo)
-			    match=true
-			    ;;
-			*,*)
-			    match=true
-			    for ctag in `echo $tag | sed -e 's/,/ /g'`; do
-				case $ctag in
-				$goos | $goarch | cgo)
-				    ;;
-				*)
-				    match=false
-				    ;;
-				esac
-			    done
-			    ;;
-			esac
-
-			if test "$reverse" = true; then
-			    if test "$match" = true; then
-				match=false
-			    else
-				match=true
-			    fi
+		    case $tag in
+		    "//")
+			;;
+		    "+build")
+			if test "$first" = "true"; then
+			    first=false
+			elif test "$match" = "false"; then
+			    omatch=false
 			fi
-		    done
-		    if test "$match" = "true"; then
-			omatch=true
+			match=false
+			;;
+		    $goos | $goarch | cgo)
+			match=true
+			;;
+		    *,*)
+			match=true
+			for ctag in `echo $tag | sed -e 's/,/ /g'`; do
+			    case $ctag in
+			    $goos | $goarch | cgo)
+				;;
+			    *)
+				match=false
+				;;
+			    esac
+			done
+			;;
+		    esac
+
+		    if test "$reverse" = true; then
+			if test "$match" = true; then
+			    match=false
+			else
+			    match=true
+			fi
 		    fi
 		done
+
+		if test "$match" = "false" -a "$first" = "false"; then
+		    omatch=false
+		fi
 
 		if test "$omatch" = "true"; then
 		    gofiles="$gofiles $f"
