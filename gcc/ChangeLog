@@ -1,3 +1,11 @@
+2016-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.h (ASSERT_TRUE): Reimplement in terms of...
+	(ASSERT_TRUE_AT): New macro.
+	(ASSERT_FALSE): Reimplement in terms of...
+	(ASSERT_FALSE_AT): New macro.
+	(ASSERT_STREQ_AT): Fix typo in comment.
+
 2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* gimple.c (preprocess_case_label_vec_for_gimple): When the case

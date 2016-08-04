@@ -104,13 +104,19 @@ extern int num_passes;
    ::selftest::fail if it false.  */
 
 #define ASSERT_TRUE(EXPR)				\
+  ASSERT_TRUE_AT (SELFTEST_LOCATION, (EXPR))
+
+/* Like ASSERT_TRUE, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_TRUE_AT(LOC, EXPR)			\
   SELFTEST_BEGIN_STMT					\
   const char *desc = "ASSERT_TRUE (" #EXPR ")";		\
   bool actual = (EXPR);					\
   if (actual)						\
-    ::selftest::pass (SELFTEST_LOCATION, desc);	\
+    ::selftest::pass ((LOC), desc);			\
   else							\
-    ::selftest::fail (SELFTEST_LOCATION, desc);		\
+    ::selftest::fail ((LOC), desc);			\
   SELFTEST_END_STMT
 
 /* Evaluate EXPR and coerce to bool, calling
@@ -118,13 +124,19 @@ extern int num_passes;
    ::selftest::fail if it true.  */
 
 #define ASSERT_FALSE(EXPR)					\
+  ASSERT_FALSE_AT (SELFTEST_LOCATION, (EXPR))
+
+/* Like ASSERT_FALSE, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_FALSE_AT(LOC, EXPR)				\
   SELFTEST_BEGIN_STMT						\
-  const char *desc = "ASSERT_FALSE (" #EXPR ")";		\
-  bool actual = (EXPR);					\
-  if (actual)							\
-    ::selftest::fail (SELFTEST_LOCATION, desc);				\
-  else								\
-    ::selftest::pass (SELFTEST_LOCATION, desc);				\
+  const char *desc = "ASSERT_FALSE (" #EXPR ")";			\
+  bool actual = (EXPR);							\
+  if (actual)								\
+    ::selftest::fail ((LOC), desc);			\
+  else									\
+    ::selftest::pass ((LOC), desc);					\
   SELFTEST_END_STMT
 
 /* Evaluate EXPECTED and ACTUAL and compare them with ==, calling
@@ -169,7 +181,7 @@ extern int num_passes;
 			    (EXPECTED), (ACTUAL));		    \
   SELFTEST_END_STMT
 
-/* Like ASSERT_STREQ_AT, but treat LOC as the effective location of the
+/* Like ASSERT_STREQ, but treat LOC as the effective location of the
    selftest.  */
 
 #define ASSERT_STREQ_AT(LOC, EXPECTED, ACTUAL)			    \
