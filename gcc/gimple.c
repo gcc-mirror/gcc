@@ -2946,18 +2946,30 @@ preprocess_case_label_vec_for_gimple (vec<tree> labels,
 	    high = CASE_LOW (labels[len - 1]);
 	  if (tree_int_cst_equal (high, TYPE_MAX_VALUE (index_type)))
 	    {
+	      tree widest_label = labels[0];
 	      for (i = 1; i < len; i++)
 		{
 		  high = CASE_LOW (labels[i]);
 		  low = CASE_HIGH (labels[i - 1]);
 		  if (!low)
 		    low = CASE_LOW (labels[i - 1]);
+
+		  if (CASE_HIGH (labels[i]) != NULL_TREE
+		      && (CASE_HIGH (widest_label) == NULL_TREE
+			  || wi::gtu_p (wi::sub (CASE_HIGH (labels[i]),
+						 CASE_LOW (labels[i])),
+					wi::sub (CASE_HIGH (widest_label),
+						 CASE_LOW (widest_label)))))
+		    widest_label = labels[i];
+
 		  if (wi::add (low, 1) != high)
 		    break;
 		}
 	      if (i == len)
 		{
-		  tree label = CASE_LABEL (labels[0]);
+		  /* Designate the label with the widest range to be the
+		     default label.  */
+		  tree label = CASE_LABEL (widest_label);
 		  default_case = build_case_label (NULL_TREE, NULL_TREE,
 						   label);
 		}

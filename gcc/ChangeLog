@@ -1,3 +1,9 @@
+2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* gimple.c (preprocess_case_label_vec_for_gimple): When the case
+	labels are exhaustive, designate the label with the widest
+	range to be the default label.
+
 2016-08-04  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (thunderx_vector_cost): New variable.
