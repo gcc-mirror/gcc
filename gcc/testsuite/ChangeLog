@@ -1,3 +1,8 @@
+2016-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70229
+	* g++.dg/cpp0x/constexpr-ctor19.C: New test.
+
 2016-08-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71984
