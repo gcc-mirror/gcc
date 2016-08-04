@@ -2089,7 +2089,7 @@ constructor_name_p (tree name, tree type)
 static GTY(()) int anon_cnt;
 
 /* Return an IDENTIFIER which can be used as a name for
-   anonymous structs and unions.  */
+   unnamed structs and unions.  */
 
 tree
 make_anon_name (void)
@@ -2103,7 +2103,7 @@ make_anon_name (void)
 /* This code is practically identical to that for creating
    anonymous names, but is just used for lambdas instead.  This isn't really
    necessary, but it's convenient to avoid treating lambdas like other
-   anonymous types.  */
+   unnamed types.  */
 
 static GTY(()) int lambda_cnt = 0;
 

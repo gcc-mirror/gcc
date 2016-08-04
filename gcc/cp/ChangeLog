@@ -1,5 +1,10 @@
 2016-08-04  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (TYPE_UNNAMED_P): Rename from TYPE_ANONYMOUS_P.
+	(TYPE_WAS_UNNAMED): Rename from TYPE_WAS_ANONYMOUS.
+	* class.c, decl.c, decl2.c, error.c, lambda.c, mangle.c,
+	name-lookup.c, parser.c, pt.c, semantics.c, tree.c: Adjust.
+
 	PR c++/72796
 	* typeck.c (finish_class_member_access_expr): Avoid stripping
 	SCOPE_REF to dependent base.

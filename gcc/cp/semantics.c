@@ -2916,7 +2916,7 @@ begin_class_definition (tree t)
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
      before.  */
-  if (! TYPE_ANONYMOUS_P (t))
+  if (! TYPE_UNNAMED_P (t))
     {
       struct c_fileinfo *finfo = \
 	get_fileinfo (LOCATION_FILE (input_location));

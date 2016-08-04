@@ -761,7 +761,7 @@ struct GTY (()) tree_trait_expr {
   enum cp_trait_kind kind;
 };
 
-/* Based off of TYPE_ANONYMOUS_P.  */
+/* Based off of TYPE_UNNAMED_P.  */
 #define LAMBDA_TYPE_P(NODE) \
   (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
@@ -1553,7 +1553,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define TYPE_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (TYPE_IDENTIFIER (NODE)))
 
 /* Nonzero if NODE has no name for linkage purposes.  */
-#define TYPE_ANONYMOUS_P(NODE) \
+#define TYPE_UNNAMED_P(NODE) \
   (OVERLOAD_TYPE_P (NODE) && anon_aggrname_p (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
 /* The _DECL for this _TYPE.  */
@@ -4116,7 +4116,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Define fields and accessors for nodes representing declared names.  */
 
-#define TYPE_WAS_ANONYMOUS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->was_anonymous)
+/* Nonzero if TYPE is an unnamed class with a typedef for linkage purposes.  */
+#define TYPE_WAS_UNNAMED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->was_anonymous)
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
 
@@ -4270,8 +4271,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    equivalent to `struct S {}; typedef struct S S;' in C.
    DECL_IMPLICIT_TYPEDEF_P will hold for the typedef indicated in this
    example.  In C++, there is a second implicit typedef for each
-   class, in the scope of `S' itself, so that you can say `S::S'.
-   DECL_SELF_REFERENCE_P will hold for that second typedef.  */
+   class, called the injected-class-name, in the scope of `S' itself, so that
+   you can say `S::S'.  DECL_SELF_REFERENCE_P will hold for that typedef.  */
 #define DECL_IMPLICIT_TYPEDEF_P(NODE) \
   (TREE_CODE (NODE) == TYPE_DECL && DECL_LANG_FLAG_2 (NODE))
 #define SET_DECL_IMPLICIT_TYPEDEF_P(NODE) \

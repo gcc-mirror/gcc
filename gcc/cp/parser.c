@@ -17043,7 +17043,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   bool nested_being_defined = false;
   bool new_value_list = false;
   bool is_new_type = false;
-  bool is_anonymous = false;
+  bool is_unnamed = false;
   tree underlying_type = NULL_TREE;
   cp_token *type_start_token = NULL;
   bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
@@ -17137,10 +17137,10 @@ cp_parser_enum_specifier (cp_parser* parser)
       else
 	{
 	  identifier = make_anon_name ();
-	  is_anonymous = true;
+	  is_unnamed = true;
 	  if (scoped_enum_p)
 	    error_at (type_start_token->location,
-		      "anonymous scoped enum is not allowed");
+		      "unnamed scoped enum is not allowed");
 	}
     }
   pop_deferring_access_checks ();
@@ -17321,9 +17321,9 @@ cp_parser_enum_specifier (cp_parser* parser)
       /* If the next token is not '}', then there are some enumerators.  */
       else if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
 	{
-	  if (is_anonymous && !scoped_enum_p)
+	  if (is_unnamed && !scoped_enum_p)
 	    pedwarn (type_start_token->location, OPT_Wpedantic,
-		     "ISO C++ forbids empty anonymous enum");
+		     "ISO C++ forbids empty unnamed enum");
 	}
       else
 	cp_parser_enumerator_list (parser, type);
@@ -17341,7 +17341,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 	and additional restrictions apply.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	{
-	  if (is_anonymous)
+	  if (is_unnamed)
 	    error_at (type_start_token->location,
 		      "opaque-enum-specifier without name");
 	  else if (nested_name_specifier)
@@ -19347,9 +19347,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    else if (IDENTIFIER_TYPENAME_P (unqualified_name))
 		      sfk = sfk_conversion;
 		    else if (/* There's no way to declare a constructor
-				for an anonymous type, even if the type
+				for an unnamed type, even if the type
 				got a name for linkage purposes.  */
-			     !TYPE_WAS_ANONYMOUS (class_type)
+			     !TYPE_WAS_UNNAMED (class_type)
 			     /* Handle correctly (c++/19200):
 
 				struct S {

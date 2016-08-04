@@ -838,7 +838,7 @@ finish_static_data_member_decl (tree decl,
   else
     for (tree t = current_class_type; TYPE_P (t);
 	 t = CP_TYPE_CONTEXT (t))
-      if (TYPE_ANONYMOUS_P (t))
+      if (TYPE_UNNAMED_P (t))
 	{
 	  if (permerror (DECL_SOURCE_LOCATION (decl),
 			 "static data member %qD in unnamed class", decl))
@@ -1306,7 +1306,7 @@ save_template_attributes (tree *attr_p, tree *decl_p)
 }
 
 /* Return true iff ATTRS are acceptable attributes to be applied in-place
-   to a typedef which gives a previously anonymous class or enum a name for
+   to a typedef which gives a previously unnamed class or enum a name for
    linkage purposes.  */
 
 bool
@@ -4257,12 +4257,12 @@ no_linkage_error (tree decl)
   else if (CLASS_TYPE_P (t) && TYPE_BEING_DEFINED (t))
     /* The type might end up having a typedef name for linkage purposes.  */
     vec_safe_push (no_linkage_decls, decl);
-  else if (TYPE_ANONYMOUS_P (t))
+  else if (TYPE_UNNAMED_P (t))
     {
       bool d = false;
       if (cxx_dialect >= cxx11)
 	d = permerror (DECL_SOURCE_LOCATION (decl), "%q#D, declared using "
-		       "anonymous type, is used but never defined", decl);
+		       "unnamed type, is used but never defined", decl);
       else if (DECL_EXTERN_C_P (decl))
 	/* Allow this; it's pretty common in C.  */;
       else if (VAR_P (decl))
@@ -4270,11 +4270,11 @@ no_linkage_error (tree decl)
 	   no linkage can only be used to declare extern "C"
 	   entities.  Since it's not always an error in the
 	   ISO C++ 90 Standard, we only issue a warning.  */
-	d = warning_at (DECL_SOURCE_LOCATION (decl), 0, "anonymous type "
+	d = warning_at (DECL_SOURCE_LOCATION (decl), 0, "unnamed type "
 			"with no linkage used to declare variable %q#D with "
 			"linkage", decl);
       else
-	d = permerror (DECL_SOURCE_LOCATION (decl), "anonymous type with no "
+	d = permerror (DECL_SOURCE_LOCATION (decl), "unnamed type with no "
 		       "linkage used to declare function %q#D with linkage",
 		       decl);
       if (d && is_typedef_decl (TYPE_NAME (t)))
