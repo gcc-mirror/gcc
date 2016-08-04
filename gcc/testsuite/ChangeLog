@@ -1,5 +1,10 @@
 2016-08-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
+	* gcc.dg/pr70920-4.c: Move dg-require-effective-target before
+	dg-options.
+
+2016-08-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
 	* gcc.dg/tree-ssa/pr71078-1.c: Remove double and long double
 	test-cases.
 	* gcc.dg/tree-ssa/pr71078-1-double.c: New test-case.
