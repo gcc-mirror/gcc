@@ -176,11 +176,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _Bn>
     constexpr bool conjunction_v
     = conjunction<_Bn...>::value;
-  
+
   template<typename... _Bn>
     constexpr bool disjunction_v
     = disjunction<_Bn...>::value;
-  
+
   template<typename _Pp>
     constexpr bool negation_v
     = negation<_Pp>::value;
@@ -2762,6 +2762,121 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       is_nothrow_swappable_with<_Tp, _Up>::value;
 #endif // __cplusplus >= 201402L
 
+#endif// c++1z or gnu++11
+
+  // __is_callable (std::is_callable for C++11)
+
+  template<typename _Result, typename _Ret, typename = __void_t<>>
+    struct __is_callable_impl : false_type { };
+
+  template<typename _Result, typename _Ret>
+    struct __is_callable_impl<_Result, _Ret, __void_t<typename _Result::type>>
+    : __or_<is_void<_Ret>, is_convertible<typename _Result::type, _Ret>>::type
+    { };
+
+  template<typename, typename _Ret = void>
+    struct __is_callable; // not defined
+
+  template<typename _Fn, typename... _ArgTypes, typename _Ret>
+    struct __is_callable<_Fn(_ArgTypes...), _Ret>
+    : __is_callable_impl<result_of<_Fn(_ArgTypes...)>, _Ret>::type
+    { };
+
+  // Used by __invoke and __is_nothrow_callable to unwrap a reference_wrapper.
+  template<typename _Tp, typename _Up = typename decay<_Tp>::type>
+    struct __inv_unwrap
+    {
+      using type = _Tp;
+    };
+
+  template<typename _Tp, typename _Up>
+    struct __inv_unwrap<_Tp, reference_wrapper<_Up>>
+    {
+      using type = _Up&;
+    };
+
+  template<typename _Fn, typename _Tp, typename... _Args>
+    constexpr bool __call_is_nt(__invoke_memfun_ref)
+    {
+      using _Up = typename __inv_unwrap<_Tp>::type;
+      return noexcept((std::declval<_Up>().*std::declval<_Fn>())(
+	    std::declval<_Args>()...));
+    }
+
+  template<typename _Fn, typename _Tp, typename... _Args>
+    constexpr bool __call_is_nt(__invoke_memfun_deref)
+    {
+      return noexcept(((*std::declval<_Tp>()).*std::declval<_Fn>())(
+	    std::declval<_Args>()...));
+    }
+
+  template<typename _Fn, typename _Tp>
+    constexpr bool __call_is_nt(__invoke_memobj_ref)
+    {
+      using _Up = typename __inv_unwrap<_Tp>::type;
+      return noexcept(std::declval<_Up>().*std::declval<_Fn>());
+    }
+
+  template<typename _Fn, typename _Tp>
+    constexpr bool __call_is_nt(__invoke_memobj_deref)
+    {
+      return noexcept((*std::declval<_Tp>()).*std::declval<_Fn>());
+    }
+
+  template<typename _Fn, typename... _Args>
+    constexpr bool __call_is_nt(__invoke_other)
+    {
+      return noexcept(std::declval<_Fn>()(std::declval<_Args>()...));
+    }
+
+  template<typename _ResultOf, typename _Fn, typename... _Args>
+    struct __call_is_nothrow
+    : __bool_constant<
+      std::__call_is_nt<_Fn, _Args...>(typename _ResultOf::__invoke_type{})>
+    { };
+
+  // __is_nothrow_callable (std::is_nothrow_callable for C++11)
+
+  template<typename, typename _Ret = void>
+    struct __is_nothrow_callable; // not defined
+
+  template<typename _Fn, typename... _Args, typename _Ret>
+    struct __is_nothrow_callable<_Fn(_Args...), _Ret>
+    : __and_<__is_callable<_Fn(_Args...), _Ret>,
+             __call_is_nothrow<result_of<_Fn(_Args...)>, _Fn, _Args...>>::type
+    { };
+
+#if __cplusplus > 201402L
+# define __cpp_lib_is_callable 201603
+
+  /// std::is_callable
+  template<typename, typename _Ret = void>
+    struct is_callable; // not defined
+
+  template<typename _Fn, typename... _ArgTypes, typename _Ret>
+    struct is_callable<_Fn(_ArgTypes...), _Ret>
+    : __is_callable<_Fn(_ArgTypes...), _Ret>::type
+    { };
+
+  /// std::is_nothrow_callable
+  template<typename, typename _Ret = void>
+    struct is_nothrow_callable; // not defined
+
+  template<typename _Fn, typename... _ArgTypes, typename _Ret>
+    struct is_nothrow_callable<_Fn(_ArgTypes...), _Ret>
+    : __is_nothrow_callable<_Fn(_ArgTypes...), _Ret>::type
+    { };
+
+  /// std::is_callable_v
+  template<typename T, typename _Ret = void>
+    constexpr bool is_callable_v = is_callable<T, _Ret>::value;
+
+  /// std::is_nothrow_callable_v
+  template<typename T, typename _Ret = void>
+    constexpr bool is_nothrow_callable_v = is_nothrow_callable<T, _Ret>::value;
+#endif // C++17
+
+
 #if __cplusplus > 201402L
 # define __cpp_lib_type_trait_variable_templates 201510L
 template <typename _Tp>
@@ -2915,7 +3030,6 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 #endif // C++17
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
