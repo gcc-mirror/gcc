@@ -435,7 +435,7 @@ main (int argc, char **argv)
   names = XNEWVEC (name_map_t, a_names);
   a_sources = 10;
   sources = XNEWVEC (source_t, a_sources);
-  
+
   argno = process_args (argc, argv);
   if (optind == argc)
     print_usage (true);
@@ -444,12 +444,12 @@ main (int argc, char **argv)
     multiple_files = 1;
 
   first_arg = argno;
-  
+
   for (; argno != argc; argno++)
     {
       if (flag_display_progress)
-        printf ("Processing file %d out of %d\n",
-		argno - first_arg + 1, argc - first_arg);
+	printf ("Processing file %d out of %d\n", argno - first_arg + 1,
+		argc - first_arg);
       process_file (argv[argno]);
     }
 
@@ -671,8 +671,8 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
     {
       /* function:<name>,<line_number>,<execution_count> */
       fprintf (gcov_file, "function:%d,%s,%s\n", fn->line,
-               format_gcov (fn->blocks[0].count, 0, -1),
-               flag_demangled_names ? fn->demangled_name : fn->name);
+	       format_gcov (fn->blocks[0].count, 0, -1),
+	       flag_demangled_names ? fn->demangled_name : fn->name);
     }
 
   for (line_num = 1, line = &src->lines[line_num];
@@ -681,8 +681,8 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
     {
       arc_t *arc;
       if (line->exists)
-        fprintf (gcov_file, "lcount:%u,%s\n", line_num,
-                 format_gcov (line->count, 0, -1));
+	fprintf (gcov_file, "lcount:%u,%s\n", line_num,
+		 format_gcov (line->count, 0, -1));
       if (flag_branches)
         for (arc = line->u.branches; arc; arc = arc->line_next)
           {
@@ -705,7 +705,6 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
     }
 }
 
-
 /* Process a single input file.  */
 
 static void
@@ -717,7 +716,7 @@ process_file (const char *file_name)
   fns = read_graph_file ();
   if (!fns)
     return;
-  
+
   read_count_file (fns);
   while (fns)
     {
@@ -767,7 +766,7 @@ process_file (const char *file_name)
 	    }
 	  if (line >= sources[src].num_lines)
 	    sources[src].num_lines = line + 1;
-	  
+
 	  solve_flow_graph (fn);
 	  if (fn->has_catch)
 	    find_exception_blocks (fn);
@@ -848,15 +847,14 @@ generate_results (const char *file_name)
   if (flag_gcov_file && flag_intermediate_format)
     {
       /* Open the intermediate file.  */
-      gcov_intermediate_filename =
-        get_gcov_intermediate_filename (file_name);
+      gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
       gcov_intermediate_file = fopen (gcov_intermediate_filename, "w");
       if (!gcov_intermediate_file)
-        {
-          fnotice (stderr, "Cannot open intermediate output file %s\n",
-                   gcov_intermediate_filename);
-          return;
-        }
+	{
+	  fnotice (stderr, "Cannot open intermediate output file %s\n",
+		   gcov_intermediate_filename);
+	  return;
+	}
     }
 
   for (ix = n_sources, src = sources; ix--; src++)
@@ -866,7 +864,7 @@ generate_results (const char *file_name)
 	  /* Ignore this source, if it is an absolute path (after
 	     source prefix removal).  */
 	  char first = src->coverage.name[0];
-      
+
 #if HAVE_DOS_BASED_FILE_SYSTEM
 	  if (first && src->coverage.name[1] == ':')
 	    first = src->coverage.name[2];
@@ -874,7 +872,7 @@ generate_results (const char *file_name)
 	  if (IS_DIR_SEPARATOR (first))
 	    continue;
 	}
-      
+
       accumulate_line_counts (src);
       function_summary (&src->coverage, "File");
       total_lines += src->coverage.lines;
@@ -938,7 +936,7 @@ release_structures (void)
   for (ix = n_sources; ix--;)
     free (sources[ix].lines);
   free (sources);
-  
+
   for (ix = n_names; ix--;)
     free (names[ix].name);
   free (names);
@@ -982,7 +980,7 @@ create_file_names (const char *file_name)
 
       base = !stat (object_directory, &status) && S_ISDIR (status.st_mode);
       strcat (name, object_directory);
-      if (base && (! IS_DIR_SEPARATOR (name[strlen (name) - 1])))
+      if (base && (!IS_DIR_SEPARATOR (name[strlen (name) - 1])))
 	strcat (name, "/");
     }
   else
@@ -1075,16 +1073,16 @@ find_source (const char *file_name)
       free (names);
       names = name_map;
     }
-  
+
   /* Not found, try the canonical name. */
   canon = canonicalize_name (file_name);
-  name_map = (name_map_t *)bsearch
-    (canon, names, n_names, sizeof (*names), name_search);
+  name_map = (name_map_t *) bsearch (canon, names, n_names, sizeof (*names),
+				     name_search);
   if (!name_map)
     {
       /* Not found with canonical name, create a new source.  */
       source_t *src;
-      
+
       if (n_sources == a_sources)
 	{
 	  a_sources *= 2;
@@ -1210,12 +1208,12 @@ read_graph_file (void)
 
 	  fn = XCNEW (function_t);
 	  fn->name = function_name;
-          if (flag_demangled_names)
-            {
-              fn->demangled_name = cplus_demangle (fn->name, DMGL_PARAMS);
-              if (!fn->demangled_name)
-                fn->demangled_name = fn->name;
-            }
+	  if (flag_demangled_names)
+	    {
+	      fn->demangled_name = cplus_demangle (fn->name, DMGL_PARAMS);
+	      if (!fn->demangled_name)
+		fn->demangled_name = fn->name;
+	    }
 	  fn->ident = ident;
 	  fn->lineno_checksum = lineno_checksum;
 	  fn->cfg_checksum = cfg_checksum;
@@ -1293,7 +1291,7 @@ read_graph_file (void)
 		  else
 		    {
 		      /* Non-local return from a callee of this
-		         function. The destination block is a setjmp.  */
+			 function.  The destination block is a setjmp.  */
 		      arc->is_nonlocal_return = 1;
 		      fn->blocks[dest].is_nonlocal_return = 1;
 		    }
@@ -1302,7 +1300,7 @@ read_graph_file (void)
 	      if (!arc->on_tree)
 		fn->num_counts++;
 	    }
-	  
+
 	  if (mark_catches)
 	    {
 	      /* We have a fake exit from this block.  The other
@@ -1774,7 +1772,7 @@ find_exception_blocks (function_t *fn)
     {
       block_t *block = queue[--ix];
       const arc_t *arc;
-      
+
       for (arc = block->succ; arc; arc = arc->succ_next)
 	if (!arc->fake && !arc->is_throw && arc->dst->exceptional)
 	  {
@@ -1862,7 +1860,7 @@ executed_summary (unsigned lines, unsigned executed)
   else
     fnotice (stdout, "No executable lines\n");
 }
-  
+
 /* Output summary info for a function or file.  */
 
 static void
@@ -1921,7 +1919,7 @@ canonicalize_name (const char *name)
   for (dd_base = ptr; *base; base = probe)
     {
       size_t len;
-      
+
       for (probe = base; *probe; probe++)
 	if (IS_DIR_SEPARATOR (*probe))
 	  break;
@@ -1942,7 +1940,7 @@ canonicalize_name (const char *name)
 	      /* S_ISLNK is not POSIX.1-1996.  */
 	      || stat (result, &buf) || S_ISLNK (buf.st_mode)
 #endif
-	      )
+		)
 	    {
 	      /* Cannot elide, or unreadable or a symlink.  */
 	      dd_base = ptr + 2 + slash;
@@ -1993,7 +1991,7 @@ make_gcov_file_name (const char *input_name, const char *src_name)
     {
       /* Generate the input filename part.  */
       result = XNEWVEC (char, strlen (input_name) + strlen (src_name) + 10);
-  
+
       ptr = result;
       ptr = mangle_name (input_name, ptr);
       ptr[0] = ptr[1] = '#';
@@ -2007,7 +2005,7 @@ make_gcov_file_name (const char *input_name, const char *src_name)
 
   ptr = mangle_name (src_name, ptr);
   strcpy (ptr, ".gcov");
-  
+
   return result;
 }
 
@@ -2015,7 +2013,7 @@ static char *
 mangle_name (char const *base, char *ptr)
 {
   size_t len;
-  
+
   /* Generate the source filename part.  */
   if (!flag_preserve_paths)
     {
@@ -2061,7 +2059,7 @@ mangle_name (char const *base, char *ptr)
 	    }
 	}
     }
-  
+
   return ptr;
 }
 
@@ -2152,8 +2150,7 @@ accumulate_line_counts (source_t *src)
   unsigned ix;
 
   /* Reverse the function order.  */
-  for (fn = src->functions, fn_p = NULL; fn;
-       fn_p = fn, fn = fn_n)
+  for (fn = src->functions, fn_p = NULL; fn; fn_p = fn, fn = fn_n)
     {
       fn_n = fn->line_next;
       fn->line_next = fn_p;
@@ -2361,7 +2358,6 @@ output_branch_count (FILE *gcov_file, int ix, const arc_t *arc)
   else
     return 0;
   return 1;
-
 }
 
 static const char *
@@ -2391,7 +2387,7 @@ read_line (FILE *file)
       string = XRESIZEVEC (char, string, string_len * 2);
       string_len *= 2;
     }
-      
+
   return pos ? string : NULL;
 }
 

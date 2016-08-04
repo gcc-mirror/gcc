@@ -1,3 +1,21 @@
+2016-08-04  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (main): Fix GNU coding style.
+	(output_intermediate_file): Likewise.
+	(process_file): Likewise.
+	(generate_results): Likewise.
+	(release_structures): Likewise.
+	(create_file_names): Likewise.
+	(find_source): Likewise.
+	(read_graph_file): Likewise.
+	(find_exception_blocks): Likewise.
+	(canonicalize_name): Likewise.
+	(make_gcov_file_name): Likewise.
+	(mangle_name): Likewise.
+	(accumulate_line_counts): Likewise.
+	(output_branch_count): Likewise.
+	(read_line): Likewise.
+
 2016-08-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR rtl-optimization/71779
