@@ -586,6 +586,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       shared_from_this() const
       { return shared_ptr<const _Tp>(this->_M_weak_this); }
 
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#define __cpp_lib_enable_shared_from_this 201603
+      weak_ptr<_Tp>
+      weak_from_this()
+      { return this->_M_weak_this; }
+
+      weak_ptr<const _Tp>
+      weak_from_this() const
+      { return this->_M_weak_this; }
+#endif
+
     private:
       template<typename _Tp1>
 	void
