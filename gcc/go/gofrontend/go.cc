@@ -112,6 +112,8 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  ::gogo->analyze_escape();
+
   // Export global identifiers as appropriate.
   ::gogo->do_exports();
 
