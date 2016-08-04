@@ -1,5 +1,14 @@
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c++/routine-1-auto.C: New file.
+	* testsuite/libgomp.oacc-c++/routine-1-template-auto.C: Likewise.
+	* testsuite/libgomp.oacc-c++/routine-1-template-trailing-return-type.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/routine-1-template.C: Likewise.
+	* testsuite/libgomp.oacc-c++/routine-1-trailing-return-type.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-1.c: Adjust.
+
 	* testsuite/libgomp.oacc-c-c++-common/crash-1.c: Make it a "link"
 	test, and don't hardcode -O0.
 
