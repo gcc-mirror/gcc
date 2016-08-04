@@ -14,6 +14,7 @@
 #include "statements.h"
 #include "escape.h"
 #include "ast-dump.h"
+#include "go-optimize.h"
 
 // class Node.
 
@@ -678,11 +679,19 @@ Escape_note::parse_tag(std::string* tag)
   return encoding;
 }
 
+
+// The -fgo-optimize-alloc flag activates this escape analysis.
+
+Go_optimize optimize_allocation_flag("allocs");
+
 // Analyze the program flow for escape information.
 
 void
 Gogo::analyze_escape()
 {
+  if (!optimize_allocation_flag.is_enabled() || saw_errors())
+    return;
+
   // Discover strongly connected groups of functions to analyze for escape
   // information in this package.
   this->discover_analysis_sets();
