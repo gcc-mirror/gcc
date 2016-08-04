@@ -1,3 +1,8 @@
+2016-08-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR rtl-optimization/70903
+	* cse.c (cse_insn): If DEST is a paradoxical SUBREG, don't record DEST.
+
 2016-08-04  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-inline.c (remap_ssa_name): Check for POINTER_TYPE_P before
