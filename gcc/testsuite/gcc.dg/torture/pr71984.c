@@ -15,7 +15,9 @@ int
 main ()
 {
   u8 x = foo((v64u64){0x0706050403020100UL});
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   if (x != 5)
     __builtin_abort ();
+#endif
   return 0;
 }

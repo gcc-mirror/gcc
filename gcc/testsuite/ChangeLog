@@ -1,3 +1,9 @@
+2016-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71984
+	* gcc.dg/torture/pr71984.c: Guard correctness check for
+	little-endian.
+
 2016-08-03  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/compile/20160802-1.c: New testcase.
