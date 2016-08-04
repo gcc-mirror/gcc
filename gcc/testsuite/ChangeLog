@@ -1,3 +1,16 @@
+2016-08-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/tree-ssa/pr71078-1.c: Remove double and long double
+	test-cases.
+	* gcc.dg/tree-ssa/pr71078-1-double.c: New test-case.
+	* gcc.dg/tree-ssa/pr71078-1-long-double.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-2.c: Remove double and long double
+	test-cases.
+	* gcc.dg/tree-ssa/pr71078-2-double.c: New test-case.
+	* gcc.dg/tree-ssa/pr71078-2-long-double.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-3.c: Add require-effective-check for
+	large_double.
+
 2016-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/72800

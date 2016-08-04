@@ -3,10 +3,11 @@
 /* { dg-options "-O2 -ffast-math -fdump-tree-forwprop-details" } */
 
 #include <math.h>
-double f(float f)
+
+double f2(double x)
 {
-  double t1 = fabs(f); 
-  double t2 = f / t1;
+  double t1 = fabs (x);
+  double t2 = x / t1;
   return t2;
 }
 
