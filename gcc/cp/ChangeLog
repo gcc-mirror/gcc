@@ -1,3 +1,9 @@
+2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/72759
+	* pt.c (tsubst_qualified_id): Return error_mark_node if
+	template_args is error_mark_node.
+
 2016-08-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/72415

@@ -1,5 +1,10 @@
 2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/72759
+	* g++.dg/cpp1y/pr72759.C: New test.
+
+2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	* gcc.dg/switch-10.c: New test.
 
 2016-08-04  James Greenhalgh  <james.greenhalgh@arm.com>
