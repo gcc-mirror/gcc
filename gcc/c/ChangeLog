@@ -1,3 +1,11 @@
+2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (struct oacc_routine_data): New.
+	(c_parser_declaration_or_fndef, c_parser_oacc_routine): Use it.
+	Simplify code.
+	(c_finish_oacc_routine): Likewise.  Don't attach clauses to "omp
+	declare target" attribute.
+
 2016-08-01  Jan Beulich  <jbeulich@suse.com>
 
 	* c-fold.c (c_fully_fold_internal): Also emit shift count

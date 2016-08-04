@@ -1391,10 +1391,8 @@ cp_ensure_no_oacc_routine (cp_parser *parser)
 {
   if (parser->oacc_routine && !parser->oacc_routine->error_seen)
     {
-      tree clauses = parser->oacc_routine->clauses;
-      location_t loc = OMP_CLAUSE_LOCATION (TREE_PURPOSE (clauses));
-
-      error_at (loc, "%<#pragma acc routine%> not followed by a function "
+      error_at (parser->oacc_routine->loc,
+		"%<#pragma acc routine%> not followed by a function "
 		"declaration or definition");
       parser->oacc_routine = NULL;
     }
@@ -3775,14 +3773,16 @@ cp_parser_new (void)
   /* No template parameters apply.  */
   parser->num_template_parameter_lists = 0;
 
+  /* Special parsing data structures.  */
+  parser->omp_declare_simd = NULL;
+  parser->cilk_simd_fn_info = NULL;
+  parser->oacc_routine = NULL;
+
   /* Not declaring an implicit function template.  */
   parser->auto_is_implicit_function_template_parm_p = false;
   parser->fully_implicit_function_template_p = false;
   parser->implicit_template_parms = 0;
   parser->implicit_template_scope = 0;
-
-  /* Active OpenACC routine clauses.  */
-  parser->oacc_routine = NULL;
 
   /* Allow constrained-type-specifiers. */
   parser->prevent_constrained_type_specifiers = 0;
@@ -19820,8 +19820,9 @@ parsing_nsdmi (void)
 
    Returns the type indicated by the type-id.
 
-   In addition to this, parse any queued up omp declare simd
-   clauses and Cilk Plus SIMD-enabled function's vector attributes.
+   In addition to this, parse any queued up #pragma omp declare simd
+   clauses, Cilk Plus SIMD-enabled functions' vector attributes, and
+   #pragma acc routine clauses.
 
    QUALS is either a bitmask of cv_qualifiers or -1 for a non-member
    function.  */
@@ -23727,6 +23728,7 @@ cp_parser_cilk_simd_fn_vector_attrs (cp_parser *parser, cp_token *v_token)
       parser->cilk_simd_fn_info->error_seen = false;
       parser->cilk_simd_fn_info->fndecl_seen = false;
       parser->cilk_simd_fn_info->tokens = vNULL;
+      parser->cilk_simd_fn_info->clauses = NULL_TREE;
     }
   int paren_scope = 0;
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
@@ -35729,6 +35731,9 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
       data.error_seen = false;
       data.fndecl_seen = false;
       data.tokens = vNULL;
+      data.clauses = NULL_TREE;
+      /* It is safe to take the address of a local variable; it will only be
+	 used while this scope is live.  */
       parser->omp_declare_simd = &data;
     }
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
@@ -35846,7 +35851,6 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
       error ("%<#pragma omp declare simd%> not immediately followed by "
 	     "a single function declaration or definition");
       data->error_seen = true;
-      return attrs;
     }
   if (data->error_seen)
     return attrs;
@@ -36560,20 +36564,18 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 			enum pragma_context context)
 {
   bool first_p = parser->oacc_routine == NULL;
-  location_t loc = pragma_tok->location;
-  cp_omp_declare_simd_data data;
+  cp_oacc_routine_data data;
   if (first_p)
     {
       data.error_seen = false;
       data.fndecl_seen = false;
       data.tokens = vNULL;
       data.clauses = NULL_TREE;
+      data.loc = pragma_tok->location;
+      /* It is safe to take the address of a local variable; it will only be
+	 used while this scope is live.  */
       parser->oacc_routine = &data;
     }
-
-  tree decl = NULL_TREE;
-  /* Create a dummy claue, to record location.  */
-  tree c_head = build_omp_clause (pragma_tok->location, OMP_CLAUSE_SEQ);
 
   if (context != pragma_external)
     {
@@ -36595,7 +36597,7 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	    parser->oacc_routine->error_seen = true;
 	  cp_parser_require_pragma_eol (parser, pragma_tok);
 
-	  error_at (OMP_CLAUSE_LOCATION (parser->oacc_routine->clauses),
+	  error_at (parser->oacc_routine->loc,
 		    "%<#pragma acc routine%> not followed by a "
 		    "function declaration or definition");
 
@@ -36615,7 +36617,7 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 					 /*template_p=*/NULL,
 					 /*declarator_p=*/false,
 					 /*optional_p=*/false);
-      decl = cp_parser_lookup_name_simple (parser, id, token->location);
+      tree decl = cp_parser_lookup_name_simple (parser, id, token->location);
       if (id != error_mark_node && decl == error_mark_node)
 	cp_parser_name_lookup_error (parser, id, decl, NLE_NULL,
 				     token->location);
@@ -36630,20 +36632,17 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 
       /* Build a chain of clauses.  */
       parser->lexer->in_pragma = true;
-      tree clauses = NULL_TREE;
-      clauses = cp_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
-					    "#pragma acc routine",
-					    cp_lexer_peek_token
-					    (parser->lexer));
-
-      /* Force clauses to be non-null, by attaching context to it.  */
-      clauses = tree_cons (c_head, clauses, NULL_TREE);
+      data.clauses
+	= cp_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
+				      "#pragma acc routine",
+				      cp_lexer_peek_token (parser->lexer));
 
       if (decl && is_overloaded_fn (decl)
 	  && (TREE_CODE (decl) != FUNCTION_DECL
 	      || DECL_FUNCTION_TEMPLATE_P  (decl)))
 	{
-	  error_at (loc, "%<#pragma acc routine%> names a set of overloads");
+	  error_at (data.loc,
+		    "%<#pragma acc routine%> names a set of overloads");
 	  parser->oacc_routine = NULL;
 	  return;
 	}
@@ -36652,7 +36651,8 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	 namespaces?  */
       if (!DECL_NAMESPACE_SCOPE_P (decl))
 	{
-	  error_at (loc, "%<#pragma acc routine%> does not refer to a "
+	  error_at (data.loc,
+		    "%<#pragma acc routine%> does not refer to a "
 		    "namespace scope function");
 	  parser->oacc_routine = NULL;
 	  return;
@@ -36660,13 +36660,11 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 
       if (!decl || TREE_CODE (decl) != FUNCTION_DECL)
 	{
-	  error_at (loc,
+	  error_at (data.loc,
 		    "%<#pragma acc routine%> does not refer to a function");
 	  parser->oacc_routine = NULL;
 	  return;
 	}
-
-      data.clauses = clauses;
 
       cp_finalize_oacc_routine (parser, decl, false);
       data.tokens.release ();
@@ -36685,23 +36683,18 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	= cp_token_cache_new (pragma_tok, cp_lexer_peek_token (parser->lexer));
       parser->oacc_routine->tokens.safe_push (cp);
 
-      if (first_p)
-	parser->oacc_routine->clauses = c_head;
-
       while (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
 	cp_parser_pragma (parser, context, NULL);
 
       if (first_p)
 	{
-	  /* Create an empty list of clauses.  */
-	  parser->oacc_routine->clauses = tree_cons (c_head, NULL_TREE,
-						     NULL_TREE);
 	  cp_parser_declaration (parser);
 
 	  if (parser->oacc_routine
 	      && !parser->oacc_routine->error_seen
 	      && !parser->oacc_routine->fndecl_seen)
-	    error_at (loc, "%<#pragma acc routine%> not followed by a "
+	    error_at (data.loc,
+		      "%<#pragma acc routine%> not followed by a "
 		      "function declaration or definition");
 
 	  data.tokens.release ();
@@ -36717,19 +36710,15 @@ static tree
 cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
 {
   struct cp_token_cache *ce;
-  cp_omp_declare_simd_data *data = parser->oacc_routine;
-  tree cl, clauses = parser->oacc_routine->clauses;
-  location_t loc;
+  cp_oacc_routine_data *data = parser->oacc_routine;
 
-  loc = OMP_CLAUSE_LOCATION (TREE_PURPOSE(clauses));
-  
   if ((!data->error_seen && data->fndecl_seen)
       || data->tokens.length () != 1)
     {
-      error_at (loc, "%<#pragma acc routine%> not followed by a "
+      error_at (data->loc,
+		"%<#pragma acc routine%> not followed by a "
 		"function declaration or definition");
       data->error_seen = true;
-      return attrs;
     }
   if (data->error_seen)
     return attrs;
@@ -36741,14 +36730,10 @@ cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
   gcc_assert (cp_lexer_peek_token (parser->lexer)->type == CPP_PRAGMA);
 
   cp_token *pragma_tok = cp_lexer_consume_token (parser->lexer);
-  cl = cp_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
+  parser->oacc_routine->clauses
+    = cp_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				  "#pragma acc routine", pragma_tok);
   cp_parser_pop_lexer (parser);
-
-  tree c_head = build_omp_clause (loc, OMP_CLAUSE_SEQ);
-
-  /* Force clauses to be non-null, by attaching context to it.  */
-  parser->oacc_routine->clauses = tree_cons (c_head, cl, NULL_TREE);
 
   data->fndecl_seen = true;
   return attrs;
@@ -36762,9 +36747,6 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
 {
   if (__builtin_expect (parser->oacc_routine != NULL, 0))
     {
-      tree clauses = parser->oacc_routine->clauses;
-      location_t loc = OMP_CLAUSE_LOCATION (TREE_PURPOSE(clauses));
-
       if (parser->oacc_routine->error_seen)
 	return;
       
@@ -36782,31 +36764,35 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
 
       if (!fndecl || TREE_CODE (fndecl) != FUNCTION_DECL)
 	{
-	  error_at (loc,
+	  error_at (parser->oacc_routine->loc,
 		    "%<#pragma acc routine%> not followed by a function "
 		    "declaration or definition");
 	  parser->oacc_routine = NULL;
+	  return;
 	}
 	  
       if (get_oacc_fn_attrib (fndecl))
 	{
-	  error_at (loc, "%<#pragma acc routine%> already applied to %D",
-		    fndecl);
+	  error_at (parser->oacc_routine->loc,
+		    "%<#pragma acc routine%> already applied to %D", fndecl);
 	  parser->oacc_routine = NULL;
+	  return;
 	}
 
       if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
 	{
-	  error_at (loc, "%<#pragma acc routine%> must be applied before %s",
+	  error_at (parser->oacc_routine->loc,
+		    "%<#pragma acc routine%> must be applied before %s",
 		    TREE_USED (fndecl) ? "use" : "definition");
 	  parser->oacc_routine = NULL;
+	  return;
 	}
 
-      /* Process for function attrib  */
-      tree dims = build_oacc_routine_dims (TREE_VALUE (clauses));
+      /* Process the routine's dimension clauses.  */
+      tree dims = build_oacc_routine_dims (parser->oacc_routine->clauses);
       replace_oacc_fn_attrib (fndecl, dims);
       
-      /* Add an "omp target" attribute.  */
+      /* Add an "omp declare target" attribute.  */
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("omp declare target"),
 		     NULL_TREE, DECL_ATTRIBUTES (fndecl));
