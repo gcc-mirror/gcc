@@ -32,7 +32,7 @@ proc param_run_test { param_name param_value } {
 }
 
 set options_file "$objdir/../../params.options"
-if { [file exists $options_file] == 0 } {
+if { [info exists TESTING_IN_BUILD_TREE] == 0 } {
   return
 }
 
