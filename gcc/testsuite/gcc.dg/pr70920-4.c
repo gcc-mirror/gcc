@@ -1,5 +1,5 @@
-/* { dg-require-effective-target lp64 } */
 /* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -fdump-tree-forwprop-details -Wno-int-to-pointer-cast" } */
 
 #include <stdint.h>
