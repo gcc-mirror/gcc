@@ -1,3 +1,8 @@
+2016-08-04  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-inline.c (remap_ssa_name): Check for POINTER_TYPE_P before
+	accessing SSA_NAME_PTR_INFO.
+
 2016-08-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR 70677
