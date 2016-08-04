@@ -1,3 +1,7 @@
+2016-08-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.c-torture/execute/pr70903.c: Remove duplicate test body.
+
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/routine-5.c: Update.
