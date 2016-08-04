@@ -1,3 +1,9 @@
+2016-08-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/72415
+	* pt.c (tsubst_pack_expansion): Pull a single pack expansion out
+	of the TREE_VEC.
+
 2016-07-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/72457
