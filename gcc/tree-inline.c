@@ -244,6 +244,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* At least IPA points-to info can be directly transferred.  */
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
+	  && POINTER_TYPE_P (TREE_TYPE (name))
 	  && (pi = SSA_NAME_PTR_INFO (name))
 	  && !pi->pt.anything)
 	{
@@ -276,6 +277,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* At least IPA points-to info can be directly transferred.  */
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
+	  && POINTER_TYPE_P (TREE_TYPE (name))
 	  && (pi = SSA_NAME_PTR_INFO (name))
 	  && !pi->pt.anything)
 	{
