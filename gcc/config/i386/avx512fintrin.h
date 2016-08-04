@@ -9130,9 +9130,9 @@ _mm_mask_cmp_round_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y,
 					   (__mmask8)-1))
 
 #define _mm512_cmp_epi32_mask(X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmpd512_mask ((__v16si)(__m512i)(X),	\
-					   (__v16si)(__m512i)(Y), (int)(P),\
-					   (__mmask16)-1))
+  ((__mmask16) __builtin_ia32_cmpd512_mask ((__v16si)(__m512i)(X),	\
+					    (__v16si)(__m512i)(Y), (int)(P), \
+					    (__mmask16)-1))
 
 #define _mm512_cmp_epu64_mask(X, Y, P)					\
   ((__mmask8) __builtin_ia32_ucmpq512_mask ((__v8di)(__m512i)(X),	\
@@ -9140,66 +9140,66 @@ _mm_mask_cmp_round_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y,
 					    (__mmask8)-1))
 
 #define _mm512_cmp_epu32_mask(X, Y, P)					\
-  ((__mmask8) __builtin_ia32_ucmpd512_mask ((__v16si)(__m512i)(X),	\
-					    (__v16si)(__m512i)(Y), (int)(P),\
-					    (__mmask16)-1))
+  ((__mmask16) __builtin_ia32_ucmpd512_mask ((__v16si)(__m512i)(X),	\
+					     (__v16si)(__m512i)(Y), (int)(P), \
+					     (__mmask16)-1))
 
-#define _mm512_cmp_round_pd_mask(X, Y, P, R)					\
+#define _mm512_cmp_round_pd_mask(X, Y, P, R)				\
   ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
 					    (__v8df)(__m512d)(Y), (int)(P),\
 					    (__mmask8)-1, R))
 
-#define _mm512_cmp_round_ps_mask(X, Y, P, R)					\
+#define _mm512_cmp_round_ps_mask(X, Y, P, R)				\
   ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
 					     (__v16sf)(__m512)(Y), (int)(P),\
 					     (__mmask16)-1, R))
 
-#define _mm512_mask_cmp_epi64_mask(M, X, Y, P)					\
+#define _mm512_mask_cmp_epi64_mask(M, X, Y, P)				\
   ((__mmask8) __builtin_ia32_cmpq512_mask ((__v8di)(__m512i)(X),	\
 					   (__v8di)(__m512i)(Y), (int)(P),\
 					   (__mmask8)M))
 
-#define _mm512_mask_cmp_epi32_mask(M, X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmpd512_mask ((__v16si)(__m512i)(X),	\
-					   (__v16si)(__m512i)(Y), (int)(P),\
-					   (__mmask16)M))
+#define _mm512_mask_cmp_epi32_mask(M, X, Y, P)				\
+  ((__mmask16) __builtin_ia32_cmpd512_mask ((__v16si)(__m512i)(X),	\
+					    (__v16si)(__m512i)(Y), (int)(P), \
+					    (__mmask16)M))
 
-#define _mm512_mask_cmp_epu64_mask(M, X, Y, P)					\
+#define _mm512_mask_cmp_epu64_mask(M, X, Y, P)				\
   ((__mmask8) __builtin_ia32_ucmpq512_mask ((__v8di)(__m512i)(X),	\
 					    (__v8di)(__m512i)(Y), (int)(P),\
 					    (__mmask8)M))
 
-#define _mm512_mask_cmp_epu32_mask(M, X, Y, P)					\
-  ((__mmask8) __builtin_ia32_ucmpd512_mask ((__v16si)(__m512i)(X),	\
-					    (__v16si)(__m512i)(Y), (int)(P),\
-					    (__mmask16)M))
+#define _mm512_mask_cmp_epu32_mask(M, X, Y, P)				\
+  ((__mmask16) __builtin_ia32_ucmpd512_mask ((__v16si)(__m512i)(X),	\
+					     (__v16si)(__m512i)(Y), (int)(P), \
+					     (__mmask16)M))
 
-#define _mm512_mask_cmp_round_pd_mask(M, X, Y, P, R)					\
+#define _mm512_mask_cmp_round_pd_mask(M, X, Y, P, R)			\
   ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
 					    (__v8df)(__m512d)(Y), (int)(P),\
 					    (__mmask8)M, R))
 
-#define _mm512_mask_cmp_round_ps_mask(M, X, Y, P, R)					\
+#define _mm512_mask_cmp_round_ps_mask(M, X, Y, P, R)			\
   ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
 					     (__v16sf)(__m512)(Y), (int)(P),\
 					     (__mmask16)M, R))
 
-#define _mm_cmp_round_sd_mask(X, Y, P, R)					\
+#define _mm_cmp_round_sd_mask(X, Y, P, R)				\
   ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
 					 (__v2df)(__m128d)(Y), (int)(P),\
 					 (__mmask8)-1, R))
 
-#define _mm_mask_cmp_round_sd_mask(M, X, Y, P, R)					\
+#define _mm_mask_cmp_round_sd_mask(M, X, Y, P, R)			\
   ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
 					 (__v2df)(__m128d)(Y), (int)(P),\
 					 (M), R))
 
-#define _mm_cmp_round_ss_mask(X, Y, P, R)					\
+#define _mm_cmp_round_ss_mask(X, Y, P, R)				\
   ((__mmask8) __builtin_ia32_cmpss_mask ((__v4sf)(__m128)(X),		\
 					 (__v4sf)(__m128)(Y), (int)(P), \
 					 (__mmask8)-1, R))
 
-#define _mm_mask_cmp_round_ss_mask(M, X, Y, P, R)					\
+#define _mm_mask_cmp_round_ss_mask(M, X, Y, P, R)			\
   ((__mmask8) __builtin_ia32_cmpss_mask ((__v4sf)(__m128)(X),		\
 					 (__v4sf)(__m128)(Y), (int)(P), \
 					 (M), R))
