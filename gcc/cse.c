@@ -5898,15 +5898,7 @@ cse_insn (rtx_insn *insn)
 	    || GET_MODE (dest) == BLKmode
 	    /* If we didn't put a REG_EQUAL value or a source into the hash
 	       table, there is no point is recording DEST.  */
-	    || sets[i].src_elt == 0
-	    /* If DEST is a paradoxical SUBREG and SRC is a ZERO_EXTEND
-	       or SIGN_EXTEND, don't record DEST since it can cause
-	       some tracking to be wrong.
-
-	       ??? Think about this more later.  */
-	    || (paradoxical_subreg_p (dest)
-		&& (GET_CODE (sets[i].src) == SIGN_EXTEND
-		    || GET_CODE (sets[i].src) == ZERO_EXTEND)))
+	    || sets[i].src_elt == 0)
 	  continue;
 
 	/* STRICT_LOW_PART isn't part of the value BEING set,
@@ -5924,6 +5916,11 @@ cse_insn (rtx_insn *insn)
 	      rehash_using_reg (dest);
 	      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 	    }
+
+	/* If DEST is a paradoxical SUBREG, don't record DEST since the bits
+	   outside the mode of GET_MODE (SUBREG_REG (dest)) are undefined.  */
+	if (paradoxical_subreg_p (dest))
+	  continue;
 
 	elt = insert (dest, sets[i].src_elt,
 		      sets[i].dest_hash, GET_MODE (dest));
