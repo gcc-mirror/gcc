@@ -1,3 +1,9 @@
+2016-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70229
+	* constexpr.c (check_constexpr_ctor_body_1): Allow typedef
+	declarations.
+
 2016-08-01  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (mangle_decl): Warn about mangled name change even if

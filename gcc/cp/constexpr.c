@@ -425,7 +425,8 @@ check_constexpr_ctor_body_1 (tree last, tree list)
   switch (TREE_CODE (list))
     {
     case DECL_EXPR:
-      if (TREE_CODE (DECL_EXPR_DECL (list)) == USING_DECL)
+      if (TREE_CODE (DECL_EXPR_DECL (list)) == USING_DECL
+	  || TREE_CODE (DECL_EXPR_DECL (list)) == TYPE_DECL)
 	return true;
       return false;
 
