@@ -1,5 +1,11 @@
 2016-08-04  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR 70677
+	* common/config/avr/avr-common.c (avr_option_optimization_table)
+	[OPT_LEVELS_ALL]: Turn off -fcaller-saves.
+
+2016-08-04  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR 55181
 	* config/avr/avr.md: New pattern to work around do_store_flag
 	generating shift instructions for bit extractions.
