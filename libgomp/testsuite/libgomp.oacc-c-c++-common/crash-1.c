@@ -1,7 +1,6 @@
-/* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-do link } */
 
-/* ICEd in nvptx backend due to unexpected frame size.  */
+/* For -O0, ICEd in nvptx backend due to unexpected frame size.  */
 #pragma acc routine worker
 void
 worker_matmul (int *c, int i)
