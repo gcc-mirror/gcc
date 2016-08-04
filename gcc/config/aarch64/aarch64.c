@@ -376,6 +376,24 @@ static const struct cpu_vector_cost generic_vector_cost =
   1 /* cond_not_taken_branch_cost  */
 };
 
+/* ThunderX costs for vector insn classes.  */
+static const struct cpu_vector_cost thunderx_vector_cost =
+{
+  1, /* scalar_stmt_cost  */
+  3, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  4, /* vec_stmt_cost  */
+  4, /* vec_permute_cost  */
+  2, /* vec_to_scalar_cost  */
+  2, /* scalar_to_vec_cost  */
+  3, /* vec_align_load_cost  */
+  10, /* vec_unalign_load_cost  */
+  10, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
+  3, /* cond_taken_branch_cost  */
+  3 /* cond_not_taken_branch_cost  */
+};
+
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost cortexa57_vector_cost =
 {
@@ -677,7 +695,7 @@ static const struct tune_params thunderx_tunings =
   &thunderx_extra_costs,
   &generic_addrcost_table,
   &thunderx_regmove_cost,
-  &generic_vector_cost,
+  &thunderx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   6, /* memmov_cost  */

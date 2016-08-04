@@ -1,3 +1,9 @@
+2016-08-04  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (thunderx_vector_cost): New variable.
+	(thunderx_tunings): Use thunderx_vector_cost instead of
+	generic_vector_cost.
+
 2016-08-04  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (main): Fix GNU coding style.
