@@ -1,3 +1,8 @@
+2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/crash-1.c: Make it a "link"
+	test, and don't hardcode -O0.
+
 2016-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/crash-1.c: New.
