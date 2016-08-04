@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "case-cfn-macros.h"
 #include "params.h"
+#include "alloc-pool.h"
 
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
@@ -87,6 +88,10 @@ struct value_range
 };
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
+
+/* Allocation pools for tree-vrp allocations.  */
+static object_allocator<value_range> vrp_value_range_pool ("Tree VRP value ranges");
+static bitmap_obstack vrp_equiv_obstack;
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -407,7 +412,7 @@ set_value_range (value_range *vr, enum value_range_type t, tree min,
      bitmaps, only do it if absolutely necessary.  */
   if (vr->equiv == NULL
       && equiv != NULL)
-    vr->equiv = BITMAP_ALLOC (NULL);
+    vr->equiv = BITMAP_ALLOC (&vrp_equiv_obstack);
 
   if (equiv != vr->equiv)
     {
@@ -689,7 +694,8 @@ get_value_range (const_tree var)
     return CONST_CAST (value_range *, &vr_const_varying);
 
   /* Create a default value range.  */
-  vr_value[ver] = vr = XCNEW (value_range);
+  vr_value[ver] = vr = vrp_value_range_pool.allocate ();
+  memset (vr, 0, sizeof (*vr));
 
   /* Defer allocating the equivalence set.  */
   vr->equiv = NULL;
@@ -818,7 +824,7 @@ add_equivalence (bitmap *equiv, const_tree var)
   value_range *vr = vr_value[ver];
 
   if (*equiv == NULL)
-    *equiv = BITMAP_ALLOC (NULL);
+    *equiv = BITMAP_ALLOC (&vrp_equiv_obstack);
   bitmap_set_bit (*equiv, ver);
   if (vr && vr->equiv)
     bitmap_ior_into (*equiv, vr->equiv);
@@ -6967,6 +6973,7 @@ vrp_initialize (void)
   num_vr_values = num_ssa_names;
   vr_value = XCNEWVEC (value_range *, num_vr_values);
   vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
+  bitmap_obstack_initialize (&vrp_equiv_obstack);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -10291,15 +10298,10 @@ vrp_finalize (bool warn_array_bounds_p)
   identify_jump_threads ();
 
   /* Free allocated memory.  */
-  for (i = 0; i < num_vr_values; i++)
-    if (vr_value[i])
-      {
-	BITMAP_FREE (vr_value[i]->equiv);
-	free (vr_value[i]);
-      }
-
   free (vr_value);
   free (vr_phi_edge_counts);
+  bitmap_obstack_release (&vrp_equiv_obstack);
+  vrp_value_range_pool.release ();
 
   /* So that we can distinguish between VRP data being available
      and not available.  */

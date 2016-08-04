@@ -1,3 +1,12 @@
+2016-08-04  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-vrp.c (set_value_range): Use vrp_equiv_obstack with
+	BITMAP_ALLOC.
+	(add_equivalence): Likewise.
+	(get_value_range): Allocate value range with vrp_value_range_pool.
+	(vrp_initialize): Initialize vrp_equiv_obstack for equiv allocation.
+	(vrp_finalize): Relase vrp_equiv_obstack and vrp_value_range_pool.
+
 2016-08-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Make LRA
