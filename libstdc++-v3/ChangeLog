@@ -1,5 +1,35 @@
 2016-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* include/std/functional (__inv_unwrap): Move to <type_traits>.
+	(__invoke_impl): Remove exception specifications.
+	(__invoke, invoke): Add exception specifications using
+	__is_nothrow_callable.
+	* include/std/type_traits (__inv_unwrap): Move from <functional>.
+	(__is_callable_impl, __call_is_nt, __call_is_nothrow): New helpers.
+	(__is_callable, __is_nothrow_callable): New traits.
+	(is_callable, is_callable_v): New C++17 traits.
+	(is_nothrow_callable, is_nothrow_callable_v): Likewise.
+	* testsuite/20_util/is_callable/requirements/
+	explicit_instantiation.cc: New test.
+	* testsuite/20_util/is_callable/requirements/
+	explicit_instantiation_ext.cc: New test.
+	* testsuite/20_util/is_callable/requirements/typedefs.cc: New test.
+	* testsuite/20_util/is_callable/requirements/typedefs_ext.cc: New
+	test.
+	* testsuite/20_util/is_callable/value.cc: New test.
+	* testsuite/20_util/is_callable/value_ext.cc: New test.
+	* testsuite/20_util/is_nothrow_callable/requirements/
+	explicit_instantiation.cc: New test.
+	* testsuite/20_util/is_nothrow_callable/requirements/
+	explicit_instantiation_ext.cc: New test.
+	* testsuite/20_util/is_nothrow_callable/requirements/typedefs.cc:
+	New test.
+	* testsuite/20_util/is_nothrow_callable/requirements/typedefs_ext.cc:
+	New test.
+	* testsuite/20_util/is_nothrow_callable/value.cc: New test.
+	* testsuite/20_util/is_nothrow_callable/value_ext.cc: New test.
+
 	* doc/xml/manual/status_cxx2017.xml: Update C++17 status table.
 	* doc/html/manual/status.html: Regenerate.
 
