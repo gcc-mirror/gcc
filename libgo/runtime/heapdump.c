@@ -763,14 +763,16 @@ dumpefacetypes(void *obj __attribute__ ((unused)), uintptr size, const Type *typ
 		//playgcprog(0, (uintptr*)type->gc + 1, dumpeface_callback, obj);
 		break;
 	case TypeInfo_Array:
-		for(i = 0; i <= size - type->__size; i += type->__size)
+		for(i = 0; i <= size - type->__size; i += type->__size) {
 			//playgcprog(i, (uintptr*)type->gc + 1, dumpeface_callback, obj);
+		}
 		break;
 	case TypeInfo_Chan:
 		if(type->__size == 0) // channels may have zero-sized objects in them
 			break;
-		for(i = runtime_Hchansize; i <= size - type->__size; i += type->__size)
+		for(i = runtime_Hchansize; i <= size - type->__size; i += type->__size) {
 			//playgcprog(i, (uintptr*)type->gc + 1, dumpeface_callback, obj);
+		}
 		break;
 	}
 }
