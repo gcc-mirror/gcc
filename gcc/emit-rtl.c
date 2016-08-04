@@ -1156,7 +1156,11 @@ set_reg_attrs_from_value (rtx reg, rtx x)
     {
 #if defined(POINTERS_EXTEND_UNSIGNED)
       if (((GET_CODE (x) == SIGN_EXTEND && POINTERS_EXTEND_UNSIGNED)
-	   || (GET_CODE (x) != SIGN_EXTEND && ! POINTERS_EXTEND_UNSIGNED))
+	   || (GET_CODE (x) == ZERO_EXTEND && ! POINTERS_EXTEND_UNSIGNED)
+	   || (paradoxical_subreg_p (x)
+	       && ! (SUBREG_PROMOTED_VAR_P (x)
+		     && SUBREG_CHECK_PROMOTED_SIGN (x,
+						    POINTERS_EXTEND_UNSIGNED))))
 	  && !targetm.have_ptr_extend ())
 	can_be_reg_pointer = false;
 #endif
