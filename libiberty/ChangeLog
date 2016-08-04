@@ -1,3 +1,20 @@
+2016-08-04  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/71696
+	* cplus-dem.c: Prevent infinite recursion when there is a cycle
+	in the referencing of remembered mangled types.
+	(work_stuff): New stack to keep track of the remembered mangled
+	types that are currently being processed.
+	(push_processed_type): New method to push currently processed
+	remembered type onto the stack.
+	(pop_processed_type): New method to pop currently processed
+	remembered type from the stack.
+	(work_stuff_copy_to_from): Copy values of new variables.
+	(delete_non_B_K_work_stuff): Free stack memory.
+	(demangle_args): Push/Pop currently processed remembered type.
+	(do_type): Do not demangle a cyclic reference and push/pop
+	referenced remembered type.
+
 2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	* make-relative-prefix.c (make_relative_prefix_1): Fall back to
@@ -16,7 +33,7 @@
 	(d_template_args_1): Split out from d_template_args.
 	(d_args_length): New.
 
-2016-07-13  Marcel BÃhme  <boehme.marcel@gmail.com>
+2016-07-13  Marcel Böhme  <boehme.marcel@gmail.com>
 
 	PR c++/70926
 	* cplus-dem.c: Handle large values and overflow when demangling
