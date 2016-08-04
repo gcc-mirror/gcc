@@ -1,3 +1,12 @@
+2016-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/72805
+	* config/i386/avx512fintrin.h (_mm512_cmp_epi32_mask) [!__OPTIMIZE__]:
+	Cast builtin function result to __mmask16 instead of __mmask8.
+	(_mm512_cmp_epu32_mask) [!__OPTIMIZE__]: Ditto.
+	(_mm512_mask_cmp_epi32_mask) [!__OPTIMIZE__]: Ditto.
+	(_mm512_mask_cmp_epu32_mask) [!__OPTIMIZE__]: Ditto.
+
 2016-08-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.h (ASSERT_TRUE): Reimplement in terms of...
