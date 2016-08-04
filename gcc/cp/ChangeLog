@@ -1,5 +1,9 @@
 2016-08-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/72415
+	* pt.c (tsubst_pack_expansion): Pull a single pack expansion out
+	of the TREE_VEC.
+
 	* cp-tree.h (TYPE_UNNAMED_P): Rename from TYPE_ANONYMOUS_P.
 	(TYPE_WAS_UNNAMED): Rename from TYPE_WAS_ANONYMOUS.
 	* class.c, decl.c, decl2.c, error.c, lambda.c, mangle.c,
