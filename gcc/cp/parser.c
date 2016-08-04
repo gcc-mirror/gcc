@@ -1392,8 +1392,8 @@ cp_ensure_no_oacc_routine (cp_parser *parser)
   if (parser->oacc_routine && !parser->oacc_routine->error_seen)
     {
       error_at (parser->oacc_routine->loc,
-		"%<#pragma acc routine%> not followed by a function "
-		"declaration or definition");
+		"%<#pragma acc routine%> not immediately followed by "
+		"function declaration or definition");
       parser->oacc_routine = NULL;
     }
 }
@@ -35736,6 +35736,8 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
 	 used while this scope is live.  */
       parser->omp_declare_simd = &data;
     }
+
+  /* Store away all pragma tokens.  */
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
 	 && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
     cp_lexer_consume_token (parser->lexer);
@@ -35745,6 +35747,7 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
   struct cp_token_cache *cp
     = cp_token_cache_new (pragma_tok, cp_lexer_peek_token (parser->lexer));
   parser->omp_declare_simd->tokens.safe_push (cp);
+
   if (first_p)
     {
       while (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
@@ -35789,9 +35792,9 @@ cp_parser_late_parsing_cilk_simd_fn_info (cp_parser *parser, tree attrs)
   if (parser->omp_declare_simd != NULL
       || lookup_attribute ("simd", attrs))
     {
-      error ("%<#pragma omp declare simd%> of %<simd%> attribute cannot be "
+      error ("%<#pragma omp declare simd%> or %<simd%> attribute cannot be "
 	     "used in the same function marked as a Cilk Plus SIMD-enabled "
-	     " function");
+	     "function");
       parser->cilk_simd_fn_info->tokens.release ();
       XDELETE (parser->cilk_simd_fn_info);
       parser->cilk_simd_fn_info = NULL;
@@ -36563,64 +36566,39 @@ static void
 cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 			enum pragma_context context)
 {
-  bool first_p = parser->oacc_routine == NULL;
-  cp_oacc_routine_data data;
-  if (first_p)
-    {
-      data.error_seen = false;
-      data.fndecl_seen = false;
-      data.tokens = vNULL;
-      data.clauses = NULL_TREE;
-      data.loc = pragma_tok->location;
-      /* It is safe to take the address of a local variable; it will only be
-	 used while this scope is live.  */
-      parser->oacc_routine = &data;
-    }
+  gcc_checking_assert (context == pragma_external);
+  /* The checking for "another pragma following this one" in the "no optional
+     '( name )'" case makes sure that we dont re-enter.  */
+  gcc_checking_assert (parser->oacc_routine == NULL);
 
-  if (context != pragma_external)
-    {
-      cp_parser_error (parser, "%<#pragma acc routine%> not at file scope");
-      parser->oacc_routine->error_seen = true;
-      parser->oacc_routine = NULL;
-      return;
-    }
+  cp_oacc_routine_data data;
+  data.error_seen = false;
+  data.fndecl_seen = false;
+  data.tokens = vNULL;
+  data.clauses = NULL_TREE;
+  data.loc = pragma_tok->location;
+  /* It is safe to take the address of a local variable; it will only be
+     used while this scope is live.  */
+  parser->oacc_routine = &data;
 
   /* Look for optional '( name )'.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      if (!first_p)
-	{
-	  while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
-		 && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
-	    cp_lexer_consume_token (parser->lexer);
-	  if (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
-	    parser->oacc_routine->error_seen = true;
-	  cp_parser_require_pragma_eol (parser, pragma_tok);
-
-	  error_at (parser->oacc_routine->loc,
-		    "%<#pragma acc routine%> not followed by a "
-		    "function declaration or definition");
-
-	  parser->oacc_routine->error_seen = true;
-	  return;
-	}
-
-      cp_lexer_consume_token (parser->lexer);
-      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer); /* '(' */
 
       /* We parse the name as an id-expression.  If it resolves to
 	 anything other than a non-overloaded function at namespace
 	 scope, it's an error.  */
-      tree id = cp_parser_id_expression (parser,
-					 /*template_keyword_p=*/false,
-					 /*check_dependency_p=*/false,
-					 /*template_p=*/NULL,
-					 /*declarator_p=*/false,
-					 /*optional_p=*/false);
-      tree decl = cp_parser_lookup_name_simple (parser, id, token->location);
-      if (id != error_mark_node && decl == error_mark_node)
-	cp_parser_name_lookup_error (parser, id, decl, NLE_NULL,
-				     token->location);
+      location_t name_loc = cp_lexer_peek_token (parser->lexer)->location;
+      tree name = cp_parser_id_expression (parser,
+					   /*template_keyword_p=*/false,
+					   /*check_dependency_p=*/false,
+					   /*template_p=*/NULL,
+					   /*declarator_p=*/false,
+					   /*optional_p=*/false);
+      tree decl = cp_parser_lookup_name_simple (parser, name, name_loc);
+      if (name != error_mark_node && decl == error_mark_node)
+	cp_parser_name_lookup_error (parser, name, decl, NLE_NULL, name_loc);
 
       if (decl == error_mark_node
 	  || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
@@ -36630,8 +36608,6 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	  return;
 	}
 
-      /* Build a chain of clauses.  */
-      parser->lexer->in_pragma = true;
       data.clauses
 	= cp_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				      "#pragma acc routine",
@@ -36641,7 +36617,7 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	  && (TREE_CODE (decl) != FUNCTION_DECL
 	      || DECL_FUNCTION_TEMPLATE_P  (decl)))
 	{
-	  error_at (data.loc,
+	  error_at (name_loc,
 		    "%<#pragma acc routine%> names a set of overloads");
 	  parser->oacc_routine = NULL;
 	  return;
@@ -36651,60 +36627,58 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	 namespaces?  */
       if (!DECL_NAMESPACE_SCOPE_P (decl))
 	{
-	  error_at (data.loc,
-		    "%<#pragma acc routine%> does not refer to a "
-		    "namespace scope function");
+	  error_at (name_loc,
+		    "%qD does not refer to a namespace scope function", decl);
 	  parser->oacc_routine = NULL;
 	  return;
 	}
 
-      if (!decl || TREE_CODE (decl) != FUNCTION_DECL)
+      if (TREE_CODE (decl) != FUNCTION_DECL)
 	{
-	  error_at (data.loc,
-		    "%<#pragma acc routine%> does not refer to a function");
+	  error_at (name_loc, "%qD does not refer to a function", decl);
 	  parser->oacc_routine = NULL;
 	  return;
 	}
 
       cp_finalize_oacc_routine (parser, decl, false);
-      data.tokens.release ();
       parser->oacc_routine = NULL;
     }
-  else
+  else /* No optional '( name )'.  */
     {
+      /* Store away all pragma tokens.  */
       while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
 	     && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
 	cp_lexer_consume_token (parser->lexer);
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
 	parser->oacc_routine->error_seen = true;
       cp_parser_require_pragma_eol (parser, pragma_tok);
-
       struct cp_token_cache *cp
 	= cp_token_cache_new (pragma_tok, cp_lexer_peek_token (parser->lexer));
       parser->oacc_routine->tokens.safe_push (cp);
 
-      while (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
-	cp_parser_pragma (parser, context, NULL);
-
-      if (first_p)
+      /* Emit a helpful diagnostic if there's another pragma following this
+	 one.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
 	{
-	  cp_parser_declaration (parser);
-
-	  if (parser->oacc_routine
-	      && !parser->oacc_routine->error_seen
-	      && !parser->oacc_routine->fndecl_seen)
-	    error_at (data.loc,
-		      "%<#pragma acc routine%> not followed by a "
-		      "function declaration or definition");
-
+	  cp_ensure_no_oacc_routine (parser);
 	  data.tokens.release ();
-	  parser->oacc_routine = NULL;
+	  /* ..., and then just keep going.  */
+	  return;
 	}
+
+      /* We only have to consider the pragma_external case here.  */
+      cp_parser_declaration (parser);
+      if (parser->oacc_routine
+	  && !parser->oacc_routine->fndecl_seen)
+	cp_ensure_no_oacc_routine (parser);
+      else
+	parser->oacc_routine = NULL;
+      data.tokens.release ();
     }
 }
 
 /* Finalize #pragma acc routine clauses after direct declarator has
-   been parsed, and put that into "oacc function" attribute.  */
+   been parsed.  */
 
 static tree
 cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
@@ -36712,17 +36686,17 @@ cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
   struct cp_token_cache *ce;
   cp_oacc_routine_data *data = parser->oacc_routine;
 
-  if ((!data->error_seen && data->fndecl_seen)
-      || data->tokens.length () != 1)
+  if (!data->error_seen && data->fndecl_seen)
     {
       error_at (data->loc,
-		"%<#pragma acc routine%> not followed by a "
-		"function declaration or definition");
+		"%<#pragma acc routine%> not immediately followed by "
+		"a single function declaration or definition");
       data->error_seen = true;
     }
   if (data->error_seen)
     return attrs;
 
+  gcc_checking_assert (data->tokens.length () == 1);
   ce = data->tokens[0];
 
   cp_parser_push_lexer_for_tokens (parser, ce);
@@ -36730,12 +36704,14 @@ cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
   gcc_assert (cp_lexer_peek_token (parser->lexer)->type == CPP_PRAGMA);
 
   cp_token *pragma_tok = cp_lexer_consume_token (parser->lexer);
+  gcc_checking_assert (parser->oacc_routine->clauses == NULL_TREE);
   parser->oacc_routine->clauses
     = cp_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				  "#pragma acc routine", pragma_tok);
   cp_parser_pop_lexer (parser);
+  /* Later, cp_finalize_oacc_routine will process the clauses, and then set
+     fndecl_seen.  */
 
-  data->fndecl_seen = true;
   return attrs;
 }
 
@@ -36747,34 +36723,29 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
 {
   if (__builtin_expect (parser->oacc_routine != NULL, 0))
     {
-      if (parser->oacc_routine->error_seen)
+      /* Keep going if we're in error reporting mode.  */
+      if (parser->oacc_routine->error_seen
+	  || fndecl == error_mark_node)
 	return;
-      
-      if (fndecl == error_mark_node)
+
+      if (parser->oacc_routine->fndecl_seen)
 	{
+	  error_at (parser->oacc_routine->loc,
+		    "%<#pragma acc routine%> not immediately followed by"
+		    " a single function declaration or definition");
 	  parser->oacc_routine = NULL;
 	  return;
 	}
-
       if (TREE_CODE (fndecl) != FUNCTION_DECL)
 	{
 	  cp_ensure_no_oacc_routine (parser);
 	  return;
 	}
 
-      if (!fndecl || TREE_CODE (fndecl) != FUNCTION_DECL)
-	{
-	  error_at (parser->oacc_routine->loc,
-		    "%<#pragma acc routine%> not followed by a function "
-		    "declaration or definition");
-	  parser->oacc_routine = NULL;
-	  return;
-	}
-	  
       if (get_oacc_fn_attrib (fndecl))
 	{
 	  error_at (parser->oacc_routine->loc,
-		    "%<#pragma acc routine%> already applied to %D", fndecl);
+		    "%<#pragma acc routine%> already applied to %qD", fndecl);
 	  parser->oacc_routine = NULL;
 	  return;
 	}
@@ -36796,6 +36767,11 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("omp declare target"),
 		     NULL_TREE, DECL_ATTRIBUTES (fndecl));
+
+      /* Don't unset parser->oacc_routine here: we may still need it to
+	 diagnose wrong usage.  But, remember that we've used this "#pragma acc
+	 routine".  */
+      parser->oacc_routine->fndecl_seen = true;
     }
 }
 
@@ -37395,6 +37371,12 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       return false;
 
     case PRAGMA_OACC_ROUTINE:
+      if (context != pragma_external)
+	{
+	  error_at (pragma_tok->location,
+		    "%<#pragma acc routine%> must be at file scope");
+	  break;
+	}
       cp_parser_oacc_routine (parser, pragma_tok, context);
       return false;
 

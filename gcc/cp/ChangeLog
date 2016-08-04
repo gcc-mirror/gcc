@@ -1,5 +1,13 @@
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* parser.c (cp_ensure_no_oacc_routine): Improve diagnostics.
+	(cp_parser_late_parsing_cilk_simd_fn_info): Fix diagnostics.
+	(cp_parser_late_parsing_oacc_routine, cp_finalize_oacc_routine):
+	Simplify code, and improve diagnostics.
+	(cp_parser_oacc_routine): Likewise.  Move pragma context
+	checking...
+	(cp_parser_pragma): ... here.
+
 	* parser.h (struct cp_omp_declare_simd_data): New.
 	(struct cp_parser): Use it for oacc_routine member.
 	* parser.c (cp_ensure_no_oacc_routine, cp_parser_oacc_routine)
