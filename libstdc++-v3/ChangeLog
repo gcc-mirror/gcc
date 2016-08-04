@@ -1,5 +1,8 @@
 2016-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status table.
+	* doc/html/manual/status.html: Regenerate.
+
 	* testsuite/20_util/enable_shared_from_this/members/reinit.cc: Use
 	effective target not dg-options. Move check for feature-test macro to:
 	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:

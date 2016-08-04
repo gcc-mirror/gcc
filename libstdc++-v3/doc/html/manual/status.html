@@ -470,82 +470,255 @@ options. The pre-defined symbol
 <code class="constant">__cplusplus</code> is used to check for the
 presence of the required flag.
 </p><p>
-This page describes the C++1z and library TS support in mainline GCC SVN,
+This section describes the C++1z and library TS support in mainline GCC SVN,
 not in any particular release.
-</p><div class="table"><a id="table.cxx1z_status"></a><p class="title"><strong>Table 1.5. C++ 201z Implementation Status</strong></p><div class="table-contents"><table summary="C++ 201z Implementation Status" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Paper</th><th align="left">Title</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
+</p><p>
+The following table lists new library features that have been accepted into
+the C++1z working draft. The "Proposal" column provides a link to the
+ISO C++ committee proposal that describes the feature, while the "Status"
+column indicates the first version of GCC that contains an implementation of
+this feature (if it has been implemented).
+The "SD-6 Feature Test" column shows the corresponding macro or header from
+<a class="link" href="https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations" target="_top">SD-6:
+Feature-testing recommendations for C++</a>.
+</p><div class="table"><a id="table.cxx1z_status"></a><p class="title"><strong>Table 1.5. C++ 201z Implementation Status</strong></p><div class="table-contents"><table summary="C++ 201z Implementation Status" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Library Feature</th><th align="left">Proposal</th><th align="left">Status</th><th align="left">SD-6 Feature Test</th></tr></thead><tbody><tr bgcolor="#C8B0B0"><td align="left">
+	<code class="code">constexpr std::hardware_{constructive,destructive}_interference_size</code>
+      </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0154r1.html" target="_top">
+	P0154R1
+	</a>
+      </td><td align="center"> No </td><td align="left"> <code class="code">__cpp_lib_hardware_interference_size &gt;= 201603</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Core Issue 1776: Replacement of class objects containing reference members</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0137r1.html" target="_top">
+	P0137R1
+	</a>
+      </td><td align="center"> No </td><td align="left"> <code class="code">__cpp_lib_launder &gt;= 201606</code> </td></tr><tr><td align="left">Wording for <code class="code">std::uncaught_exceptions</code></td><td align="left">
 	<a class="link" href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2014/n4259.pdf" target="_top">
 	  N4259
 	</a>
-      </td><td align="left">Wording for <code class="code">std::uncaught_exceptions</code></td><td align="left">Y</td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+      </td><td align="center">6.1</td><td align="left"><code class="code">__cpp_lib_uncaught_exceptions &gt;= 201411</code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Variant: a type-safe union for C++17 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0088r3.html" target="_top">
+	P0088R3
+	</a>
+      </td><td align="center"> No </td><td align="left"> <code class="code">__has_include(&lt;variant&gt;)</code> </td></tr><tr><td align="left"> Library Fundamentals V1 TS Components: <code class="code">optional</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html" target="_top">
+	P0220R1
+	</a>
+      </td><td align="center"> 7 </td><td align="left"> <code class="code">__has_include(&lt;optional&gt;)</code> </td></tr><tr><td align="left"> Library Fundamentals V1 TS Components: <code class="code">any</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html" target="_top">
+	P0220R1
+	</a>
+      </td><td align="center"> 7 </td><td align="left"> <code class="code">__has_include(&lt;any&gt;)</code> </td></tr><tr><td align="left"> Library Fundamentals V1 TS Components: <code class="code">string_view</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html" target="_top">
+	P0220R1
+	</a>
+      </td><td align="center"> 7 </td><td align="left"> <code class="code">__has_include(&lt;string_view&gt;)</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Library Fundamentals V1 TS Components: <code class="code">memory_resource</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html" target="_top">
+	P0220R1
+	</a>
+      </td><td align="center"> No </td><td align="left"> <code class="code">__has_include(&lt;memory_resource&gt;)</code> </td></tr><tr><td align="left"> Constant View: A proposal for a <code class="code">std::as_const</code> helper function template	</td><td align="left">
+	<a class="link" href="" target="_top">
+	P0007R1
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> __cpp_lib_as_const &gt;= 201510 </code></td></tr><tr><td align="left"> Improving pair and tuple </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4387" target="_top">
+	N4387
+	</a>
+      </td><td align="center"> 6.1 </td><td align="left"> N/A </td></tr><tr bgcolor="#C8B0B0"><td align="left"> make_from_tuple: apply for construction </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0209r2.pdf" target="_top">
+	P0209R2
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_make_from_tuple &gt;= 201606 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        Removing <code class="code">auto_ptr</code>, <code class="code">random_shuffle()</code>,
+        And Old <code class="code">&lt;functional&gt;</code> Stuff
+      </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4190.htm" target="_top">
 	  N4190
 	</a>
-      </td><td align="left">
-        Removing <code class="code">auto_ptr</code>, <code class="code">random_shuffle()</code>,
-        And Old <code class="code">&lt;functional&gt;</code> Stuff
-      </td><td align="left">N</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4284.htm" target="_top">
-	  N4284
+      </td><td align="center">No (kept for backwards compatibility)</td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Deprecating Vestigial Library Parts in C++17 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0174r2.html" target="_top">
+	P0174R2
 	</a>
-      </td><td align="left">Contiguous Iterators </td><td align="left">Y</td><td align="left">No code changes required</td></tr><tr><td align="left">
+      </td><td align="center"> No </td><td align="left"> </td></tr><tr><td align="left"> Making <code class="code">std::owner_less</code> more flexible </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0074r0.html" target="_top">
+	P0074R0
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> __cpp_lib_transparent_operators &gt;= 201510 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">std::addressof</code> should be constexpr </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0304r0.html#2296" target="_top">
+	LWG2296
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_addressof_constexpr &gt;= 201603 </code></td></tr><tr><td align="left"> Safe conversions in <code class="code">unique_ptr&lt;T[]&gt;</code> </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4089.pdf" target="_top">
-	  N4089
+	N4089
 	</a>
-      </td><td align="left">Safe conversions in <code class="code">unique_ptr&lt;T[]&gt;</code> </td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4277.html" target="_top">
-	  N4277
-	</a>
-      </td><td align="left">TriviallyCopyable <code class="code">reference_wrapper</code> </td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4258.pdf" target="_top">
-	  N4258
-	</a>
-      </td><td align="left">Cleaning-up noexcept in the Library</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4279.html" target="_top">
-	  N4279
-	</a>
-      </td><td align="left">Improved insertion interface for unique-key maps</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2014/n3911.pdf" target="_top">
-	  N3911
-	</a>
-      </td><td align="left">Transformation Trait Alias <code class="code">void_t</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4169.html" target="_top">
-	  N4169
-	</a>
-      </td><td align="left">A proposal to add invoke function template</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4280.pdf" target="_top">
-	  N4280
-	</a>
-      </td><td align="left">Non-member size() and more</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
+      </td><td align="center"> 5 ? </td><td align="left"> </td></tr><tr><td align="left"> LWG 2228: Missing SFINAE rule in unique_ptr templated assignment </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4366.html" target="_top">
 	  N4366
 	</a>
-      </td><td align="left">
-        LWG 2228: Missing SFINAE rule in unique_ptr templated assignment
-      </td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4387.html" target="_top">
-	  N4387
+      </td><td align="center"> 5 ? </td><td align="left"> </td></tr><tr><td align="left"> Re-enabling <code class="code">shared_from_this</code></td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0033r1.html" target="_top">
+	P0033R1
 	</a>
-      </td><td align="left"> Improving pair and tuple, revision 3 </td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
+      </td><td align="center"> 6.1 </td><td align="left"><code class="code">__cpp_lib_enable_shared_from_this &gt;= 201603</code></td></tr><tr><td align="left"> A proposal to add <code class="code">invoke</code> function template </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4169.html" target="_top">
+	N4169
+	</a>
+      </td><td align="center"> 6.1 </td><td align="left"><code class="code"> __cpp_lib_invoke &gt;= 201411 </code></td></tr><tr><td align="left">TriviallyCopyable <code class="code">reference_wrapper</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4277.html" target="_top">
+	  N4277
+	</a>
+      </td><td align="center"> 5.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Adopt <code class="code">not_fn</code> from Library Fundamentals 2 for C++17 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0005r4.html" target="_top">
+	P0005R4
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code">__cpp_lib_not_fn &gt;= 201603</code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Fixes for <code class="code">not_fn</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0358r1.html" target="_top">
+	P0358R1
+	</a>
+      </td><td align="center"> No </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Fixing a design mistake in the searchers interface in Library Fundamentals </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0253r1.pdf" target="_top">
+	P0253R1
+	</a>
+      </td><td align="center"> No </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Extending memory management tools </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0040r3.html" target="_top">
+	P0040R3
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> </code></td></tr><tr><td align="left"> <code class="code">shared_ptr::weak_type</code></td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0163r0.html" target="_top">
+	P0163R0
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> __cpp_lib_shared_ptr_weak_type &gt;= 201606</code></td></tr><tr><td align="left">Transformation Trait Alias <code class="code">void_t</code></td><td align="left">
+	<a class="link" href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2014/n3911.pdf" target="_top">
+	  N3911
+	</a>
+      </td><td align="center">6.1</td><td align="left"><code class="code"> __cpp_lib_void_t &gt;= 201411</code></td></tr><tr><td align="left"> Wording for <code class="code">bool_constant</code>, revision 1 </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4389.html" target="_top">
 	  N4389
 	</a>
-      </td><td align="left"> Wording for bool_constant, revision 1 </td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
+      </td><td align="center">6.1</td><td align="left"><code class="code"> __cpp_lib_bool_constant &gt;= 201505</code></td></tr><tr><td align="left"> Adopt Type Traits Variable Templates from Library Fundamentals TS for C++17</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0006r0.html" target="_top">
+	P0006R0
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> __cpp_lib_type_trait_variable_templates &gt;= 201510 </code></td></tr><tr><td align="left"> Logical Operator Type Traits</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0013r1.html" target="_top">
+	P0013R1
+	</a>
+      </td><td align="center"> 6.1 </td><td align="left"><code class="code"> __cpp_lib_logical_traits &gt;= 201510 </code></td></tr><tr><td align="left"> Adding [nothrow-]swappable traits </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0185r1.html" target="_top">
+	P0185R1
+	</a>
+      </td><td align="center"> 7 (<code class="code">__is_swappable</code> available since 6.1)</td><td align="left"><code class="code"> __cpp_lib_is_swappable &gt;= 201603 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">is_callable</code>, the missing INVOKE related trait</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0077r2.html" target="_top">
+	P0077R2
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_is_callable &gt;= 201603 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> has_unique_object_representations </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0258r2.html" target="_top">
+	P0258R2
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_has_unique_object_representations &gt;= 201606 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Ordered by default </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0181r1.html" target="_top">
+	P0181R1
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_default_order &gt;= 201606</code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Polishing <code class="code">&lt;chrono&gt;</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0092r1.html" target="_top">
+	P0092R1
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_chrono &gt;= 201510 </code></td></tr><tr><td align="left"> Integrating <code class="code">std::string_view</code> and <code class="code">std::string</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0254r2.pdf" target="_top">
+	P0254R2
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> </code></td></tr><tr><td align="left"> Give 'std::string' a non-const '.data()' member function </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0272r1.html" target="_top">
+	P0272R1
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> </code></td></tr><tr><td align="left">Cleaning-up noexcept in the Library</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4258.pdf" target="_top">
+	  N4258
+	</a>
+      </td><td align="center">6.1</td><td align="left"><code class="code"> __cpp_lib_allocator_traits_is_always_equal &gt;= 201411 </code></td></tr><tr><td align="left">Contiguous Iterators </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4284.htm" target="_top">
+	  N4284
+	</a>
+      </td><td align="center">N/A</td><td align="left"> </td></tr><tr><td align="left"> Minimal incomplete type support for standard containers </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4510.html" target="_top">
+	N4510
+	</a>
+      </td><td align="center"> 7 (3.0)</td><td align="left"><code class="code"> __cpp_lib_incomplete_container_elements &gt;= 201505 </code>
+	     (the feature was always supported, but the macro was not defined until GCC 7)
+      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Emplace return type </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0084r2.pdf" target="_top">
+	P0084R2
+	</a>
+      </td><td align="center"> No </td><td align="left"> </td></tr><tr><td align="left">Improved insertion interface for unique-key maps</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4279.html" target="_top">
+	  N4279
+	</a>
+      </td><td align="center"> 6.1 </td><td align="left"><code class="code"> __cpp_lib_map_try_emplace &gt;= 201411</code>,
+	     <code class="code"> __cpp_lib_unordered_map_try_emplace &gt;= 201411</code>
+      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Splicing Maps and Sets </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf" target="_top">
+	P0083R3
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_node_extract &gt;= 201606 </code></td></tr><tr><td align="left">Non-member <code class="code">size()</code> and more</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4280.pdf" target="_top">
+	  N4280
+	</a>
+      </td><td align="center"> 6.1 </td><td align="left"><code class="code"> __cpp_lib_nonmember_container_access &gt;= 201411 </code></td></tr><tr><td align="left"> A Proposal to Add Constexpr Modifiers to <code class="code">reverse_iterator</code>, <code class="code">move_iterator</code>, <code class="code">array</code> and Range Access </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0031r0.html" target="_top">
+	P0031R0
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> __cpp_lib_array_constexpr &gt;= 201603 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> The Parallelism TS Should be Standardized	 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0024r2.html" target="_top">
+	P0024R2
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __has_include(&lt;execution&gt;) </code>,
+	     <code class="code"> __cpp_lib_parallel_algorithm &gt;= 201603 </code></td></tr><tr><td align="left"> An algorithm to "clamp" a value between a pair of boundary values </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0025r0.html" target="_top">
+	P0025R0
+	</a>
+      </td><td align="center"> 7 </td><td align="left"><code class="code"> __cpp_lib_clamp &gt;= 201603 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Adopt Selected Library Fundamentals V2 Components for C++17 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0295r0.pdf" target="_top">
+	P0295R0
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_gcd &gt;= 201606 </code>,
+	     <code class="code"> __cpp_lib_lcm &gt;= 201606 </code>
+      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Proposal to Introduce a 3-Argument Overload to <code class="code">std::hypot</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0030r1.pdf" target="_top">
+	P0030R1
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_hypot &gt;= 201603 </code></td></tr><tr><td align="left"> Mathematical Special Functions for C++17 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0226r1.pdf" target="_top">
+	P0226R1
+	</a>
+      </td><td align="center"> 7 (6.1) </td><td align="left"><code class="code"> __cpp_lib_math_special_functions &gt;= 201603 </code>
+	     (for GCC 6 or pre-C++17 define
+	     <code class="code">__STDCPP_WANT_MATH_SPEC_FUNCS__</code> to a non-zero value
+	     and test for <code class="code">__STDCPP_MATH_SPEC_FUNCS__ &gt;= 201003L</code>)
+      </td></tr><tr bgcolor="#C8B0B0"><td align="left">Adopt the File System TS for C++17	 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r1.html" target="_top">
+	P0218R1
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __has_include(&lt;filesystem&gt;) </code>,
+	     <code class="code"> __cpp_lib_filesystem &gt;= 201603 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Relative Paths for Filesystem</td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0219r1.html" target="_top">
+	P0219R1
+	</a>
+      </td><td align="center"> No </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Adapting string_view by filesystem paths </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0392r0.pdf" target="_top">
+	P0392R0
+	</a>
+      </td><td align="center"> No </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> constexpr <code class="code">atomic&lt;T&gt;::is_always_lock_free</code>	 </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0152r1.html" target="_top">
+	P0152R1
+	</a>
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_atomic_is_always_lock_free &gt;= 201603 </code></td></tr><tr><td align="left">A proposal to add <code class="code">shared_mutex</code> (untimed) (Revision 4)</td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4508.html" target="_top">
 	  N4508
 	</a>
-      </td><td align="left">A proposal to add shared_mutex (untimed) (Revision 4)</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4510.html" target="_top">
-	  N4510
+      </td><td align="center"> 6.1 </td><td align="left"><code class="code"> __cpp_lib_shared_mutex &gt;= 201505 </code></td></tr><tr bgcolor="#C8B0B0"><td align="left"> Variadic <code class="code">lock_guard</code> </td><td align="left">
+	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0156r0.html" target="_top">
+	P0156R0
 	</a>
-      </td><td align="left">
-        Minimal incomplete type support for standard containers, revision 4
-      </td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
-	<a class="link" href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/p0013r1.html" target="_top">
-	  P0013R1
-	</a>
-      </td><td align="left">
-        Logical Operator Type Traits (revision 1)
-      </td><td align="left">Y</td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /><div class="table"><a id="table.cxx1z_ts_status"></a><p class="title"><strong>Table 1.6. C++ Technical Specifications Implementation Status</strong></p><div class="table-contents"><table summary="C++ Technical Specifications Implementation Status" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Paper</th><th align="left">Title</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
+      </td><td align="center"> No </td><td align="left"><code class="code"> __cpp_lib_lock_guard_variadic &gt;= 201510 </code></td></tr></tbody></table></div></div><br class="table-break" /><div class="table"><a id="table.cxx1z_ts_status"></a><p class="title"><strong>Table 1.6. C++ Technical Specifications Implementation Status</strong></p><div class="table-contents"><table summary="C++ Technical Specifications Implementation Status" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Paper</th><th align="left">Title</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
 	<a class="link" href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n4076.html" target="_top">
 	  N4076
 	</a>
