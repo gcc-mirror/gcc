@@ -1,3 +1,9 @@
+2016-08-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/72796
+	* typeck.c (finish_class_member_access_expr): Avoid stripping
+	SCOPE_REF to dependent base.
+
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parser.c (cp_ensure_no_oacc_routine): Improve diagnostics.

@@ -2683,7 +2683,7 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	{
 	dependent:
 	  return build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF,
-				   orig_object, name, NULL_TREE);
+				   orig_object, orig_name, NULL_TREE);
 	}
       object = build_non_dependent_expr (object);
     }
