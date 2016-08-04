@@ -199,7 +199,8 @@ struct GTY (()) cp_parser_context {
 };
 
 
-/* Control structure for #pragma omp declare simd parsing.  */
+/* Helper data structure for parsing #pragma omp declare simd, and Cilk Plus
+   SIMD-enabled functions' vector attribute.  */
 struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
@@ -207,6 +208,10 @@ struct cp_omp_declare_simd_data {
   tree clauses;
 };
 
+/* Helper data structure for parsing #pragma acc routine.  */
+struct cp_oacc_routine_data : cp_omp_declare_simd_data {
+  location_t loc;
+};
 
 /* The cp_parser structure represents the C++ parser.  */
 
@@ -363,18 +368,16 @@ struct GTY(()) cp_parser {
   unsigned num_template_parameter_lists;
 
   /* When parsing #pragma omp declare simd, this is a pointer to a
-     data structure with everything needed for parsing the clauses.  */
+     helper data structure.  */
   cp_omp_declare_simd_data * GTY((skip)) omp_declare_simd;
 
-  /* When parsing the vector attribute in Cilk Plus SIMD-enabled function,
-     this is a pointer to data structure with everything needed for parsing
-     the clauses.  The cp_omp_declare_simd_data struct will hold all the
-     necessary information, so creating another struct for this is not
-     necessary.  */
+  /* When parsing Cilk Plus SIMD-enabled functions' vector attributes,
+     this is a pointer to a helper data structure.  */
   cp_omp_declare_simd_data * GTY((skip)) cilk_simd_fn_info;
 
-  /* Parsing information for #pragma acc routine.  */
-  cp_omp_declare_simd_data * GTY((skip)) oacc_routine;
+  /* When parsing #pragma acc routine, this is a pointer to a helper data
+     structure.  */
+  cp_oacc_routine_data * GTY((skip)) oacc_routine;
   
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */

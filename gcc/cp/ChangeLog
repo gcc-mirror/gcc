@@ -1,3 +1,18 @@
+2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.h (struct cp_omp_declare_simd_data): New.
+	(struct cp_parser): Use it for oacc_routine member.
+	* parser.c (cp_ensure_no_oacc_routine, cp_parser_oacc_routine)
+	(cp_parser_late_parsing_oacc_routine, cp_finalize_oacc_routine):
+	Use it.  Simplify code.
+	(cp_parser_new): Initialize all members pointing to special
+	parsing data structures.
+	(cp_parser_cilk_simd_fn_vector_attrs): Initialize
+	parser->cilk_simd_fn_info->clauses.
+	(cp_parser_omp_declare_simd): Initialize
+	parser->omp_declare_simd->clauses.
+	(cp_parser_late_parsing_omp_declare_simd): Simplify code.
+
 2016-08-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70229
