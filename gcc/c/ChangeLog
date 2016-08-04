@@ -1,5 +1,14 @@
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-parser.c (struct oacc_routine_data): Add error_seen and
+	fndecl_seen members.
+	(c_finish_oacc_routine): Use these.
+	(c_parser_declaration_or_fndef): Adjust.
+	(c_parser_oacc_routine): Likewise.  Support more C language
+	constructs, and improve diagnostics.  Move pragma context
+	checking...
+	(c_parser_pragma): ... here.
+
 	* c-parser.c (struct oacc_routine_data): New.
 	(c_parser_declaration_or_fndef, c_parser_oacc_routine): Use it.
 	Simplify code.
