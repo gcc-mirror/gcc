@@ -1,3 +1,9 @@
+2016-08-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 55181
+	* config/avr/avr.md: New pattern to work around do_store_flag
+	generating shift instructions for bit extractions.
+
 2016-08-04  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (set_value_range): Use vrp_equiv_obstack with

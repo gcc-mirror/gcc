@@ -6691,6 +6691,29 @@
     operands[4] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
   })
 
+;; ??? do_store_flag emits a hard-coded right shift to extract a bit without
+;; even considering rtx_costs, extzv, or a bit-test.  See PR 55181 for an example.
+(define_insn_and_split "*extract.subreg.bit"
+  [(set (match_operand:QI 0 "register_operand"                                       "=r")
+        (and:QI (subreg:QI (any_shiftrt:HISI (match_operand:HISI 1 "register_operand" "r")
+                                             (match_operand:QI 2 "const_int_operand"  "n"))
+                           0)
+                (const_int 1)))]
+  "INTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+  { gcc_unreachable(); }
+  "&& reload_completed"
+  [;; "*extzv"
+   (set (match_dup 0)
+        (zero_extract:QI (match_dup 3)
+                         (const_int 1)
+                         (match_dup 4)))]
+  {
+    int bitno = INTVAL (operands[2]);
+    operands[3] = simplify_gen_subreg (QImode, operands[1], <MODE>mode, bitno / 8);
+    operands[4] = GEN_INT (bitno % 8);
+  })
+
+                                        
 
 ;; Fixed-point instructions
 (include "avr-fixed.md")
