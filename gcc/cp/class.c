@@ -3077,11 +3077,11 @@ finish_struct_anon_r (tree field, bool complain)
 	 the TYPE_DECL that we create implicitly.  You're
 	 allowed to put one anonymous union inside another,
 	 though, so we explicitly tolerate that.  We use
-	 TYPE_ANONYMOUS_P rather than ANON_AGGR_TYPE_P so that
+	 TYPE_UNNAMED_P rather than ANON_AGGR_TYPE_P so that
 	 we also allow unnamed types used for defining fields.  */
       if (DECL_ARTIFICIAL (elt)
 	  && (!DECL_IMPLICIT_TYPEDEF_P (elt)
-	      || TYPE_ANONYMOUS_P (TREE_TYPE (elt))))
+	      || TYPE_UNNAMED_P (TREE_TYPE (elt))))
 	continue;
 
       if (TREE_CODE (elt) != FIELD_DECL)
@@ -6718,7 +6718,7 @@ find_flexarrays (tree t, flexmems_t *fmem)
       tree fldtype = TREE_TYPE (fld);
       if (TREE_CODE (fld) != TYPE_DECL
 	  && RECORD_OR_UNION_TYPE_P (fldtype)
-	  && TYPE_ANONYMOUS_P (fldtype))
+	  && TYPE_UNNAMED_P (fldtype))
 	{
 	  /* Members of anonymous structs and unions are treated as if
 	     they were members of the containing class.  Descend into
@@ -6798,7 +6798,7 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
 {
   /* Members of anonymous structs and unions are considered to be members
      of the containing struct or union.  */
-  if (TYPE_ANONYMOUS_P (t) || !fmem->array)
+  if (TYPE_UNNAMED_P (t) || !fmem->array)
     return;
 
   const char *msg = 0;

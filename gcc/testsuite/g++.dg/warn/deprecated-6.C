@@ -68,7 +68,7 @@ int func2(S1 *p)
   
   p->u1.field5 = g1 + p->field7;
   p->u2.field9;				/* { dg-warning "'S1::u2' is deprecated: Please avoid u2" "" } */
-  return p->u1.field6 + p->field8;	/* { dg-warning "'S1::<anonymous union>::field6' is deprecated: Please avoid field6" "" } */
+  return p->u1.field6 + p->field8;	/* { dg-warning "'S1::<unnamed union>::field6' is deprecated: Please avoid field6" "" } */
 					/* { dg-warning "'S1::field8' is deprecated: Please avoid field8" "field8" { target *-*-* } 71 } */
 }
 

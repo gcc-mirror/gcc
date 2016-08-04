@@ -1320,7 +1320,7 @@ write_unqualified_name (tree decl)
       tree type = TREE_TYPE (decl);
 
       if (TREE_CODE (decl) == TYPE_DECL
-          && TYPE_ANONYMOUS_P (type))
+          && TYPE_UNNAMED_P (type))
         write_unnamed_type_name (type);
       else if (TREE_CODE (decl) == TYPE_DECL
                && LAMBDA_TYPE_P (type))
@@ -1449,7 +1449,7 @@ nested_anon_class_index (tree type)
 	tree memtype = TREE_TYPE (member);
 	if (memtype == type)
 	  return index;
-	else if (TYPE_ANONYMOUS_P (memtype))
+	else if (TYPE_UNNAMED_P (memtype))
 	  ++index;
       }
 
@@ -1734,7 +1734,7 @@ static int
 local_class_index (tree entity)
 {
   int ix, discriminator = 0;
-  tree name = (TYPE_ANONYMOUS_P (entity) ? NULL_TREE
+  tree name = (TYPE_UNNAMED_P (entity) ? NULL_TREE
 	       : TYPE_IDENTIFIER (entity));
   tree ctx = TYPE_CONTEXT (entity);
   for (ix = 0; ; ix++)
@@ -1744,7 +1744,7 @@ local_class_index (tree entity)
 	return discriminator;
       if (TYPE_CONTEXT (type) == ctx
 	  && (name ? TYPE_IDENTIFIER (type) == name
-	      : TYPE_ANONYMOUS_P (type)))
+	      : TYPE_UNNAMED_P (type)))
 	++discriminator;
     }
   gcc_unreachable ();
@@ -1772,7 +1772,7 @@ discriminator_for_local_entity (tree entity)
       entity = TREE_TYPE (entity);
 
       /* Lambdas and unnamed types have their own discriminators.  */
-      if (LAMBDA_TYPE_P (entity) || TYPE_ANONYMOUS_P (entity))
+      if (LAMBDA_TYPE_P (entity) || TYPE_UNNAMED_P (entity))
 	return 0;
 
       return local_class_index (entity);

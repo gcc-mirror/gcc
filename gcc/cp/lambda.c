@@ -134,7 +134,7 @@ begin_lambda_type (tree lambda)
 
   {
     /* Unique name.  This is just like an unnamed class, but we cannot use
-       make_anon_name because of certain checks against TYPE_ANONYMOUS_P.  */
+       make_anon_name because of certain checks against TYPE_UNNAMED_P.  */
     tree name;
     name = make_lambda_name ();
 

@@ -679,9 +679,9 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
   if (name == 0 || anon_aggrname_p (name))
     {
       if (flags & TFF_CLASS_KEY_OR_ENUM)
-	pp_string (pp, M_("<anonymous>"));
+	pp_string (pp, M_("<unnamed>"));
       else
-	pp_printf (pp, M_("<anonymous %s>"), variety);
+	pp_printf (pp, M_("<unnamed %s>"), variety);
     }
   else if (LAMBDA_TYPE_P (t))
     {
@@ -1745,7 +1745,7 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
     {
       if (LAMBDA_TYPE_P (DECL_CONTEXT (t)))
 	name = get_identifier ("<lambda>");
-      else if (TYPE_ANONYMOUS_P (DECL_CONTEXT (t)))
+      else if (TYPE_UNNAMED_P (DECL_CONTEXT (t)))
 	name = get_identifier ("<constructor>");
       else
 	name = constructor_name (DECL_CONTEXT (t));
