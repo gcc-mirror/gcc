@@ -1,5 +1,10 @@
 2016-08-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	PR rtl-optimization/71779
+	* emit-rtl.c (set_reg_attrs_from_value): Only propagate REG_POINTER,
+	if the value was sign-extended according to POINTERS_EXTEND_UNSIGNED
+	or if it was truncated.
+
 	PR rtl-optimization/70903
 	* cse.c (cse_insn): If DEST is a paradoxical SUBREG, don't record DEST.
 
