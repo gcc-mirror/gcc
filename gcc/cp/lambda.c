@@ -492,6 +492,8 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   else
     {
       type = lambda_capture_field_type (initializer, explicit_init_p);
+      if (type == error_mark_node)
+	return error_mark_node;
       if (by_reference_p)
 	{
 	  type = build_reference_type (type);

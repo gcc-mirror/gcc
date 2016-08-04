@@ -1,3 +1,8 @@
+2016-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/72800
+	* g++.dg/cpp1y/lambda-ice1.C: New.
+
 2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/72759
