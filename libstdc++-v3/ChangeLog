@@ -1,5 +1,16 @@
 2016-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/chrono (floor, ceil, round, abs): New for C++17.
+	* testsuite/20_util/duration_cast/rounding.cc: New test.
+	* testsuite/20_util/time_point_cast/rounding.cc: New test.
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* doc/html/manual/status.html: Regenerate.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust
+	dg-error lineno.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/duration/literals/range.cc: Likewise.
+
 	* include/std/functional (__callable_functor): Remove.
 	(_Function_handler::_M_invoke): Use __invoke instead of
 	__callable_functor or mem_fn.
