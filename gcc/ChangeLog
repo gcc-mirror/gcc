@@ -1,5 +1,17 @@
 2016-08-05  Martin Liska  <mliska@suse.cz>
 
+	    Joshua Cranmer  <Pidgeot18@gmail.com>
+
+	* gcov.c (line_t::has_block): New function.
+	(enum loop_type): New enum.
+	(handle_cycle): New function.
+	(unblock): Likewise.
+	(circuit): Likewise.
+	(get_cycles_count): Likewise.
+	(accumulate_line_counts): Use new loop detection algorithm.
+
+2016-08-05  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (output_intermediate_file): Rename
 	function_info::line_next to next_file_fn.
 	(process_file): Likewise.
