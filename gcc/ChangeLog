@@ -1,3 +1,19 @@
+2016-08-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/18046
+	* tree-ssa-threadedge.c: Include cfganal.h.
+	(simplify_control_statement_condition): If simplifying a
+	GIMPLE_SWITCH, replace the index operand of the GIMPLE_SWITCH
+	with the dominating ASSERT_EXPR before handing it off to VRP.
+	Mention that a CASE_LABEL_EXPR may be returned.
+	(thread_around_empty_blocks): Adjust to handle
+	simplify_control_statement_condition() returning a
+	CASE_LABEL_EXPR.
+	(thread_through_normal_block): Likewise.
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Simplify
+	a switch statement by trying to determine which case label
+	will be taken.
+
 2016-08-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/69847

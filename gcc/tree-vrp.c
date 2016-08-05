@@ -10183,6 +10183,67 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 				     gimple_cond_rhs (cond_stmt),
 				     within_stmt);
 
+  /* We simplify a switch statement by trying to determine which case label
+     will be taken.  If we are successful then we return the corresponding
+     CASE_LABEL_EXPR.  */
+  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
+    {
+      tree op = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (op) != SSA_NAME)
+	return NULL_TREE;
+
+      value_range *vr = get_value_range (op);
+      if ((vr->type != VR_RANGE && vr->type != VR_ANTI_RANGE)
+	  || symbolic_range_p (vr))
+	return NULL_TREE;
+
+      if (vr->type == VR_RANGE)
+	{
+	  size_t i, j;
+	  /* Get the range of labels that contain a part of the operand's
+	     value range.  */
+	  find_case_label_range (switch_stmt, vr->min, vr->max, &i, &j);
+
+	  /* Is there only one such label?  */
+	  if (i == j)
+	    {
+	      tree label = gimple_switch_label (switch_stmt, i);
+
+	      /* The i'th label will be taken only if the value range of the
+		 operand is entirely within the bounds of this label.  */
+	      if (CASE_HIGH (label) != NULL_TREE
+		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min) <= 0
+		     && tree_int_cst_compare (CASE_HIGH (label), vr->max) >= 0)
+		  : (tree_int_cst_equal (CASE_LOW (label), vr->min)
+		     && tree_int_cst_equal (vr->min, vr->max)))
+		return label;
+	    }
+
+	  /* If there are no such labels then the default label will be
+	     taken.  */
+	  if (i > j)
+	    return gimple_switch_label (switch_stmt, 0);
+	}
+
+      if (vr->type == VR_ANTI_RANGE)
+	{
+	  unsigned n = gimple_switch_num_labels (switch_stmt);
+	  tree min_label = gimple_switch_label (switch_stmt, 1);
+	  tree max_label = gimple_switch_label (switch_stmt, n - 1);
+
+	  /* The default label will be taken only if the anti-range of the
+	     operand is entirely outside the bounds of all the (non-default)
+	     case labels.  */
+	  if (tree_int_cst_compare (vr->min, CASE_LOW (min_label)) <= 0
+	      && (CASE_HIGH (max_label) != NULL_TREE
+		  ? tree_int_cst_compare (vr->max, CASE_HIGH (max_label)) >= 0
+		  : tree_int_cst_compare (vr->max, CASE_LOW (max_label)) >= 0))
+	  return gimple_switch_label (switch_stmt, 0);
+	}
+
+      return NULL_TREE;
+    }
+
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
     {
       value_range new_vr = VR_INITIALIZER;
