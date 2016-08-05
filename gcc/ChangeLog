@@ -1,3 +1,12 @@
+2016-08-05  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (output_intermediate_file): Rename
+	function_info::line_next to next_file_fn.
+	(process_file): Likewise.
+	(read_graph_file): Likewise.
+	(accumulate_line_counts): Likewise.
+	(output_lines): Likewise.
+
 2016-08-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-threadupdate.c (thread_block_1): Remove unnecessary
