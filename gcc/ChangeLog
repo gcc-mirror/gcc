@@ -1,3 +1,10 @@
+2016-08-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/69847
+	* lra-constraints.c (process_invariant_for_inheritance): Save
+	pattern instead of src.
+	(remove_inheritance_pseudos): Use the pattern.  Add assert.
+
 2016-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (string_concat::string_concat): New constructor.
