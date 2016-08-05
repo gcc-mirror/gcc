@@ -3785,7 +3785,8 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	  arg = gimple_call_arg (stmt, 0);
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && SSA_NAME_IS_DEFAULT_DEF (arg)
-	      && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL)
+	      && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL
+	      && cfun->after_inlining)
 	    {
 	      set_value_range_to_null (vr, type);
 	      return;
