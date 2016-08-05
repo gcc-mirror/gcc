@@ -1,3 +1,61 @@
+2016-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (string_concat::string_concat): New constructor.
+	(string_concat_db::string_concat_db): New constructor.
+	(string_concat_db::record_string_concatenation): New method.
+	(string_concat_db::get_string_concatenation): New method.
+	(string_concat_db::get_key_loc): New method.
+	(class auto_cpp_string_vec): New class.
+	(get_substring_ranges_for_loc): New function.
+	(get_source_range_for_substring): New function.
+	(get_num_source_ranges_for_substring): New function.
+	(class selftest::lexer_test_options): New class.
+	(struct selftest::lexer_test): New struct.
+	(class selftest::ebcdic_execution_charset): New class.
+	(selftest::ebcdic_execution_charset::s_singleton): New variable.
+	(selftest::lexer_test::lexer_test): New constructor.
+	(selftest::lexer_test::~lexer_test): New destructor.
+	(selftest::lexer_test::get_token): New method.
+	(selftest::assert_char_at_range): New function.
+	(ASSERT_CHAR_AT_RANGE): New macro.
+	(selftest::assert_num_substring_ranges): New function.
+	(ASSERT_NUM_SUBSTRING_RANGES): New macro.
+	(selftest::assert_has_no_substring_ranges): New function.
+	(ASSERT_HAS_NO_SUBSTRING_RANGES): New macro.
+	(selftest::test_lexer_string_locations_simple): New function.
+	(selftest::test_lexer_string_locations_ebcdic): New function.
+	(selftest::test_lexer_string_locations_hex): New function.
+	(selftest::test_lexer_string_locations_oct): New function.
+	(selftest::test_lexer_string_locations_letter_escape_1): New function.
+	(selftest::test_lexer_string_locations_letter_escape_2): New function.
+	(selftest::test_lexer_string_locations_ucn4): New function.
+	(selftest::test_lexer_string_locations_ucn8): New function.
+	(selftest::uint32_from_big_endian): New function.
+	(selftest::test_lexer_string_locations_wide_string): New function.
+	(selftest::uint16_from_big_endian): New function.
+	(selftest::test_lexer_string_locations_string16): New function.
+	(selftest::test_lexer_string_locations_string32): New function.
+	(selftest::test_lexer_string_locations_u8): New function.
+	(selftest::test_lexer_string_locations_utf8_source): New function.
+	(selftest::test_lexer_string_locations_concatenation_1): New
+	function.
+	(selftest::test_lexer_string_locations_concatenation_2): New
+	function.
+	(selftest::test_lexer_string_locations_concatenation_3): New
+	function.
+	(selftest::test_lexer_string_locations_macro): New function.
+	(selftest::test_lexer_string_locations_stringified_macro_argument):
+	New function.
+	(selftest::test_lexer_string_locations_non_string): New function.
+	(selftest::test_lexer_string_locations_long_line): New function.
+	(selftest::test_lexer_char_constants): New function.
+	(selftest::input_c_tests): Call the new test functions once per
+	case within the line_table test matrix.
+	* input.h (struct string_concat): New struct.
+	(struct location_hash): New struct.
+	(class string_concat_db): New class.
+	* substring-locations.h: New header.
+
 2016-08-05  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/72810

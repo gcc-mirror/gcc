@@ -1,3 +1,17 @@
+2016-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c: Include "substring-locations.h".
+	(get_cpp_ttype_from_string_type): New function.
+	(g_string_concat_db): New global.
+	(substring_loc::get_range): New method.
+	* c-common.h (g_string_concat_db): New declaration.
+	(class substring_loc): New class.
+	* c-lex.c (lex_string): When concatenating strings, capture the
+	locations of all tokens using a new obstack, and record the
+	concatenation locations within g_string_concat_db.
+	* c-opts.c (c_common_init_options): Construct g_string_concat_db
+	on the ggc-heap.
+
 2016-07-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71926
