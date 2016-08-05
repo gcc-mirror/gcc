@@ -5475,7 +5475,7 @@ process_invariant_for_inheritance (rtx dst_reg, rtx invariant_rtx)
 					cl, "invariant inheritance");
 	  bitmap_set_bit (&lra_inheritance_pseudos, REGNO (new_reg));
 	  bitmap_set_bit (&check_only_regs, REGNO (new_reg));
-	  lra_reg_info[REGNO (new_reg)].restore_rtx = invariant_rtx;
+	  lra_reg_info[REGNO (new_reg)].restore_rtx = PATTERN (insn);
 	  start_sequence ();
 	  lra_emit_move (new_reg, dst_reg);
 	  new_insns = get_insns ();
@@ -6343,9 +6343,11 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 		  start_sequence ();
 		  /* We can not just change the source.  It might be
 		     an insn different from the move.  */
-		  lra_emit_move (SET_DEST (set), lra_reg_info[sregno].restore_rtx);
+		  emit_insn (lra_reg_info[sregno].restore_rtx);
 		  rtx_insn *new_insns = get_insns ();
 		  end_sequence ();
+		  lra_assert (single_set (new_insns) != NULL
+			      && SET_DEST (set) == SET_DEST (single_set (new_insns)));
 		  lra_process_new_insns (curr_insn, NULL, new_insns,
 					 "Changing reload<-invariant inheritance");
 		  delete_move_and_clobber (curr_insn, dregno);
