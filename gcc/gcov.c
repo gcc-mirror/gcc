@@ -194,7 +194,7 @@ typedef struct function_info
   unsigned src;
 
   /* Next function in same source file.  */
-  struct function_info *line_next;
+  struct function_info *next_file_fn;
 
   /* Next function.  */
   struct function_info *next;
@@ -667,7 +667,7 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
 
   fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
 
-  for (fn = src->functions; fn; fn = fn->line_next)
+  for (fn = src->functions; fn; fn = fn->next_file_fn)
     {
       /* function:<name>,<line_number>,<execution_count> */
       fprintf (gcov_file, "function:%d,%s,%s\n", fn->line,
@@ -736,10 +736,10 @@ process_file (const char *file_name)
 	     ascending order, so a simple scan is quick.  Note we're
 	     building this list in reverse order.  */
 	  for (prev = &sources[src].functions;
-	       (probe = *prev); prev = &probe->line_next)
+	       (probe = *prev); prev = &probe->next_file_fn)
 	    if (probe->line <= line)
 	      break;
-	  fn->line_next = probe;
+	  fn->next_file_fn = probe;
 	  *prev = fn;
 
 	  /* Mark last line in files touched by function.  */
@@ -1220,7 +1220,7 @@ read_graph_file (void)
 	  fn->src = src_idx;
 	  fn->line = lineno;
 
-	  fn->line_next = NULL;
+	  fn->next_file_fn = NULL;
 	  fn->next = NULL;
 	  *fns_end = fn;
 	  fns_end = &fn->next;
@@ -2152,8 +2152,8 @@ accumulate_line_counts (source_t *src)
   /* Reverse the function order.  */
   for (fn = src->functions, fn_p = NULL; fn; fn_p = fn, fn = fn_n)
     {
-      fn_n = fn->line_next;
-      fn->line_next = fn_p;
+      fn_n = fn->next_file_fn;
+      fn->next_file_fn = fn_p;
     }
   src->functions = fn_p;
 
@@ -2429,7 +2429,7 @@ output_lines (FILE *gcov_file, const source_t *src)
   for (line_num = 1, line = &src->lines[line_num];
        line_num < src->num_lines; line_num++, line++)
     {
-      for (; fn && fn->line == line_num; fn = fn->line_next)
+      for (; fn && fn->line == line_num; fn = fn->next_file_fn)
 	{
 	  arc_t *arc = fn->blocks[EXIT_BLOCK].pred;
 	  gcov_type return_count = fn->blocks[EXIT_BLOCK].count;
