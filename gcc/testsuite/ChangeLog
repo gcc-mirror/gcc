@@ -1,3 +1,9 @@
+2016-08-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/18046
+	* gcc.dg/tree-ssa/vrp105.c: New test.
+	* gcc.dg/tree-ssa/vrp106.c: New test.
+
 2016-08-05 Martin Sebor  <msebor@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-cast.C: Avoid assuming (void*)1 is spelled

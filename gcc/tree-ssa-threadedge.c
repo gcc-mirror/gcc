@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-dom.h"
 #include "gimple-fold.h"
+#include "cfganal.h"
 
 /* To avoid code explosion due to jump threading, we limit the
    number of statements we are going to copy.  This variable
@@ -390,7 +391,8 @@ static tree simplify_control_stmt_condition_1 (edge, gimple *,
    a condition using pass specific information.
 
    Return the simplified condition or NULL if simplification could
-   not be performed.
+   not be performed.  When simplifying a GIMPLE_SWITCH, we may return
+   the CASE_LABEL_EXPR that will be taken.
 
    The available expression table is referenced via AVAIL_EXPRS_STACK.  */
 
@@ -513,7 +515,21 @@ simplify_control_stmt_condition (edge e,
       /* If we haven't simplified to an invariant yet, then use the
 	 pass specific callback to try and simplify it further.  */
       if (cached_lhs && ! is_gimple_min_invariant (cached_lhs))
-        cached_lhs = (*simplify) (stmt, stmt, avail_exprs_stack);
+	{
+	  if (handle_dominating_asserts && code == GIMPLE_SWITCH)
+	    {
+	      /* Replace the index operand of the GIMPLE_SWITCH with the
+		 dominating ASSERT_EXPR before handing it off to VRP.  If
+		 simplification is possible, the simplified value will be a
+		 CASE_LABEL_EXPR of the label that is proven to be taken.  */
+	      gswitch *dummy_switch = as_a<gswitch *> (gimple_copy (stmt));
+	      gimple_switch_set_index (dummy_switch, cached_lhs);
+	      cached_lhs = (*simplify) (dummy_switch, stmt, avail_exprs_stack);
+	      ggc_free (dummy_switch);
+	    }
+	  else
+	    cached_lhs = (*simplify) (stmt, stmt, avail_exprs_stack);
+	}
 
       /* We couldn't find an invariant.  But, callers of this
 	 function may be able to do something useful with the
@@ -938,9 +954,14 @@ thread_around_empty_blocks (edge taken_edge,
   /* If the condition can be statically computed and we have not already
      visited the destination edge, then add the taken edge to our thread
      path.  */
-  if (cond && is_gimple_min_invariant (cond))
+  if (cond != NULL_TREE
+      && (is_gimple_min_invariant (cond)
+	  || TREE_CODE (cond) == CASE_LABEL_EXPR))
     {
-      taken_edge = find_taken_edge (bb, cond);
+      if (TREE_CODE (cond) == CASE_LABEL_EXPR)
+	taken_edge = find_edge (bb, label_to_block (CASE_LABEL (cond)));
+      else
+	taken_edge = find_taken_edge (bb, cond);
 
       if ((taken_edge->flags & EDGE_DFS_BACK) != 0)
 	return false;
@@ -1069,9 +1090,16 @@ thread_through_normal_block (edge e,
       if (!cond)
 	return 0;
 
-      if (is_gimple_min_invariant (cond))
+      if (is_gimple_min_invariant (cond)
+	  || TREE_CODE (cond) == CASE_LABEL_EXPR)
 	{
-	  edge taken_edge = find_taken_edge (e->dest, cond);
+	  edge taken_edge;
+	  if (TREE_CODE (cond) == CASE_LABEL_EXPR)
+	    taken_edge = find_edge (e->dest,
+				    label_to_block (CASE_LABEL (cond)));
+	  else
+	    taken_edge = find_taken_edge (e->dest, cond);
+
 	  basic_block dest = (taken_edge ? taken_edge->dest : NULL);
 
 	  /* DEST could be NULL for a computed jump to an absolute
