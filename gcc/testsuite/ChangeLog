@@ -1,3 +1,15 @@
+2016-08-05 Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-cast.C: Avoid assuming (void*)1 is spelled
+	1ul in diagnostics.  Remove hyphen from "constant-expression."
+	* g++.dg/cpp0x/constexpr-50060.C: Adjust.
+	* g++.dg/cpp0x/static_assert3.C: Same.
+	* g++.dg/cpp1y/constexpr-throw.C: Same.
+	* g++.dg/template/nontype3.C: Same.
+	* g++.dg/warn/overflow-warn-1.C: Same.
+	* g++.dg/warn/overflow-warn-3.C: Same.
+	* g++.dg/warn/overflow-warn-4.C: Same.
+
 2016-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: New file.
