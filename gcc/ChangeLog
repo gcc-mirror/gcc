@@ -1,3 +1,9 @@
+2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* tree-vrp.c (simplify_switch_using_ranges): Try to truncate
+	the case label ranges that partially overlap with OP's value
+	range.
+
 2016-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/72805

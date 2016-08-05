@@ -1,3 +1,9 @@
+2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/vrp107.c: New test.
+	* gcc.dg/tree-ssa/vrp108.c: New test.
+	* gcc.dg/tree-ssa/vrp109.c: New test.
+
 2016-08-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/pr70920-4.c: Move dg-require-effective-target before
