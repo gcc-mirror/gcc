@@ -9881,15 +9881,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = long_double_type_node;
 	  field_ptr_t = long_double_ptr_type_node;
 	  break;
-/* The half precision and quad precision are not fully supported yet.  Enable
-   the following code after the support is complete.  Need to find the correct
-   type node for __fp16 *.  */
-#if 0
 	case HFmode:
-	  field_t = float_type_node;
-	  field_ptr_t = float_ptr_type_node;
+	  field_t = aarch64_fp16_type_node;
+	  field_ptr_t = aarch64_fp16_ptr_type_node;
 	  break;
-#endif
 	case V2SImode:
 	case V4SImode:
 	    {
@@ -10051,7 +10046,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
     {
     case REAL_TYPE:
       mode = TYPE_MODE (type);
-      if (mode != DFmode && mode != SFmode && mode != TFmode)
+      if (mode != DFmode && mode != SFmode
+	  && mode != TFmode && mode != HFmode)
 	return -1;
 
       if (*modep == VOIDmode)
@@ -10064,7 +10060,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 
     case COMPLEX_TYPE:
       mode = TYPE_MODE (TREE_TYPE (type));
-      if (mode != DFmode && mode != SFmode && mode != TFmode)
+      if (mode != DFmode && mode != SFmode
+	  && mode != TFmode && mode != HFmode)
 	return -1;
 
       if (*modep == VOIDmode)

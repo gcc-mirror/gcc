@@ -944,4 +944,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define ASM_OUTPUT_POOL_EPILOGUE  aarch64_asm_output_pool_epilogue
 
+/* This type is the user-visible __fp16, and a pointer to that type.  We
+   need it in many places in the backend.  Defined in aarch64-builtins.c.  */
+extern tree aarch64_fp16_type_node;
+extern tree aarch64_fp16_ptr_type_node;
+
 #endif /* GCC_AARCH64_H */
