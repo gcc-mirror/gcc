@@ -1,3 +1,7 @@
+2016-08-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ivopt_5.c: Make robust against edge swapping.
+
 2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/vrp107.c: New test.
