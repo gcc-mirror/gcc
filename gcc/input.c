@@ -1189,6 +1189,279 @@ dump_location_info (FILE *stream)
 				MAX_SOURCE_LOCATION + 1, UINT_MAX);
 }
 
+/* string_concat's constructor.  */
+
+string_concat::string_concat (int num, location_t *locs)
+  : m_num (num)
+{
+  m_locs = ggc_vec_alloc <location_t> (num);
+  for (int i = 0; i < num; i++)
+    m_locs[i] = locs[i];
+}
+
+/* string_concat_db's constructor.  */
+
+string_concat_db::string_concat_db ()
+{
+  m_table = hash_map <location_hash, string_concat *>::create_ggc (64);
+}
+
+/* Record that a string concatenation occurred, covering NUM
+   string literal tokens.  LOCS is an array of size NUM, containing the
+   locations of the tokens.  A copy of LOCS is taken.  */
+
+void
+string_concat_db::record_string_concatenation (int num, location_t *locs)
+{
+  gcc_assert (num > 1);
+  gcc_assert (locs);
+
+  location_t key_loc = get_key_loc (locs[0]);
+
+  string_concat *concat
+    = new (ggc_alloc <string_concat> ()) string_concat (num, locs);
+  m_table->put (key_loc, concat);
+}
+
+/* Determine if LOC was the location of the the initial token of a
+   concatenation of string literal tokens.
+   If so, *OUT_NUM is written to with the number of tokens, and
+   *OUT_LOCS with the location of an array of locations of the
+   tokens, and return true.  *OUT_LOCS is a borrowed pointer to
+   storage owned by the string_concat_db.
+   Otherwise, return false.  */
+
+bool
+string_concat_db::get_string_concatenation (location_t loc,
+					    int *out_num,
+					    location_t **out_locs)
+{
+  gcc_assert (out_num);
+  gcc_assert (out_locs);
+
+  location_t key_loc = get_key_loc (loc);
+
+  string_concat **concat = m_table->get (key_loc);
+  if (!concat)
+    return false;
+
+  *out_num = (*concat)->m_num;
+  *out_locs =(*concat)->m_locs;
+  return true;
+}
+
+/* Internal function.  Canonicalize LOC into a form suitable for
+   use as a key within the database, stripping away macro expansion,
+   ad-hoc information, and range information, using the location of
+   the start of LOC within an ordinary linemap.  */
+
+location_t
+string_concat_db::get_key_loc (location_t loc)
+{
+  loc = linemap_resolve_location (line_table, loc, LRK_SPELLING_LOCATION,
+				  NULL);
+
+  loc = get_range_from_loc (line_table, loc).m_start;
+
+  return loc;
+}
+
+/* Helper class for use within get_substring_ranges_for_loc.
+   An vec of cpp_string with responsibility for releasing all of the
+   str->text for each str in the vector.  */
+
+class auto_cpp_string_vec :  public auto_vec <cpp_string>
+{
+ public:
+  auto_cpp_string_vec (int alloc)
+    : auto_vec <cpp_string> (alloc) {}
+
+  ~auto_cpp_string_vec ()
+  {
+    /* Clean up the copies within this vec.  */
+    int i;
+    cpp_string *str;
+    FOR_EACH_VEC_ELT (*this, i, str)
+      free (const_cast <unsigned char *> (str->text));
+  }
+};
+
+/* Attempt to populate RANGES with source location information on the
+   individual characters within the string literal found at STRLOC.
+   If CONCATS is non-NULL, then any string literals that the token at
+   STRLOC  was concatenated with are also added to RANGES.
+
+   Return NULL if successful, or an error message if any errors occurred (in
+   which case RANGES may be only partially populated and should not
+   be used).
+
+   This is implemented by re-parsing the relevant source line(s).  */
+
+static const char *
+get_substring_ranges_for_loc (cpp_reader *pfile,
+			      string_concat_db *concats,
+			      location_t strloc,
+			      enum cpp_ttype type,
+			      cpp_substring_ranges &ranges)
+{
+  gcc_assert (pfile);
+
+  if (strloc == UNKNOWN_LOCATION)
+    return "unknown location";
+
+  /* If string concatenation has occurred at STRLOC, get the locations
+     of all of the literal tokens making up the compound string.
+     Otherwise, just use STRLOC.  */
+  int num_locs = 1;
+  location_t *strlocs = &strloc;
+  if (concats)
+    concats->get_string_concatenation (strloc, &num_locs, &strlocs);
+
+  auto_cpp_string_vec strs (num_locs);
+  auto_vec <cpp_string_location_reader> loc_readers (num_locs);
+  for (int i = 0; i < num_locs; i++)
+    {
+      /* Get range of strloc.  We will use it to locate the start and finish
+	 of the literal token within the line.  */
+      source_range src_range = get_range_from_loc (line_table, strlocs[i]);
+
+      if (src_range.m_start >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
+	/* If the string is within a macro expansion, we can't get at the
+	   end location.  */
+	return "macro expansion";
+
+      if (src_range.m_start >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	/* If so, we can't reliably determine where the token started within
+	   its line.  */
+	return "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS";
+
+      if (src_range.m_finish >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	/* If so, we can't reliably determine where the token finished within
+	   its line.  */
+	return "range ends after LINE_MAP_MAX_LOCATION_WITH_COLS";
+
+      expanded_location start
+	= expand_location_to_spelling_point (src_range.m_start);
+      expanded_location finish
+	= expand_location_to_spelling_point (src_range.m_finish);
+      if (start.file != finish.file)
+	return "range endpoints are in different files";
+      if (start.line != finish.line)
+	return "range endpoints are on different lines";
+      if (start.column > finish.column)
+	return "range endpoints are reversed";
+
+      int line_width;
+      const char *line = location_get_source_line (start.file, start.line,
+						   &line_width);
+      if (line == NULL)
+	return "unable to read source line";
+
+      /* Determine the location of the literal (including quotes
+	 and leading prefix chars, such as the 'u' in a u""
+	 token).  */
+      const char *literal = line + start.column - 1;
+      int literal_length = finish.column - start.column + 1;
+
+      gcc_assert (line_width >= (start.column - 1 + literal_length));
+      cpp_string from;
+      from.len = literal_length;
+      /* Make a copy of the literal, to avoid having to rely on
+	 the lifetime of the copy of the line within the cache.
+	 This will be released by the auto_cpp_string_vec dtor.  */
+      from.text = XDUPVEC (unsigned char, literal, literal_length);
+      strs.safe_push (from);
+
+      /* For very long lines, a new linemap could have started
+	 halfway through the token.
+	 Ensure that the loc_reader uses the linemap of the
+	 *end* of the token for its start location.  */
+      const line_map_ordinary *final_ord_map;
+      linemap_resolve_location (line_table, src_range.m_finish,
+				LRK_MACRO_EXPANSION_POINT, &final_ord_map);
+      location_t start_loc
+	= linemap_position_for_line_and_column (line_table, final_ord_map,
+						start.line, start.column);
+
+      cpp_string_location_reader loc_reader (start_loc, line_table);
+      loc_readers.safe_push (loc_reader);
+    }
+
+  /* Rerun cpp_interpret_string, or rather, a modified version of it.  */
+  const char *err = cpp_interpret_string_ranges (pfile, strs.address (),
+						 loc_readers.address (),
+						 num_locs, &ranges, type);
+  if (err)
+    return err;
+
+  /* Success: "ranges" should now contain information on the string.  */
+  return NULL;
+}
+
+/* Attempt to populate *OUT_RANGE with source location information on the
+   range of given characters within the string literal found at STRLOC.
+   START_IDX and END_IDX refer to offsets within the execution character
+   set.
+   If CONCATS is non-NULL, then any string literals that the token at
+   STRLOC was concatenated with are also considered.
+
+   This is implemented by re-parsing the relevant source line(s).
+
+   Return NULL if successful, or an error message if any errors occurred.
+   Error messages are intended for GCC developers (to help debugging) rather
+   than for end-users.  */
+
+const char *
+get_source_range_for_substring (cpp_reader *pfile,
+				string_concat_db *concats,
+				location_t strloc,
+				enum cpp_ttype type,
+				int start_idx, int end_idx,
+				source_range *out_range)
+{
+  gcc_checking_assert (start_idx >= 0);
+  gcc_checking_assert (end_idx >= 0);
+  gcc_assert (out_range);
+
+  cpp_substring_ranges ranges;
+  const char *err
+    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+  if (err)
+    return err;
+
+  if (start_idx >= ranges.get_num_ranges ())
+    return "start_idx out of range";
+  if (end_idx >= ranges.get_num_ranges ())
+    return "end_idx out of range";
+
+  out_range->m_start = ranges.get_range (start_idx).m_start;
+  out_range->m_finish = ranges.get_range (end_idx).m_finish;
+  return NULL;
+}
+
+/* As get_source_range_for_substring, but write to *OUT the number
+   of ranges that are available.  */
+
+const char *
+get_num_source_ranges_for_substring (cpp_reader *pfile,
+				     string_concat_db *concats,
+				     location_t strloc,
+				     enum cpp_ttype type,
+				     int *out)
+{
+  gcc_assert (out);
+
+  cpp_substring_ranges ranges;
+  const char *err
+    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+
+  if (err)
+    return err;
+
+  *out = ranges.get_num_ranges ();
+  return NULL;
+}
+
 #if CHECKING_P
 
 namespace selftest {
@@ -1541,6 +1814,1259 @@ test_lexer (const line_table_case &case_)
   cpp_destroy (parser);
 }
 
+/* Forward decls.  */
+
+struct lexer_test;
+class lexer_test_options;
+
+/* A class for specifying options of a lexer_test.
+   The "apply" vfunc is called during the lexer_test constructor.  */
+
+class lexer_test_options
+{
+ public:
+  virtual void apply (lexer_test &) = 0;
+};
+
+/* A struct for writing lexer tests.  */
+
+struct lexer_test
+{
+  lexer_test (const line_table_case &case_, const char *content,
+	      lexer_test_options *options);
+  ~lexer_test ();
+
+  const cpp_token *get_token ();
+
+  temp_source_file m_tempfile;
+  temp_line_table m_tmp_lt;
+  cpp_reader *m_parser;
+  string_concat_db m_concats;
+};
+
+/* Use an EBCDIC encoding for the execution charset, specifically
+   IBM1047-encoded (aka "EBCDIC 1047", or "Code page 1047").
+
+   This exercises iconv integration within libcpp.
+   Not every build of iconv supports the given charset,
+   so we need to flag this error and handle it gracefully.  */
+
+class ebcdic_execution_charset : public lexer_test_options
+{
+ public:
+  ebcdic_execution_charset () : m_num_iconv_errors (0)
+    {
+      gcc_assert (s_singleton == NULL);
+      s_singleton = this;
+    }
+  ~ebcdic_execution_charset ()
+    {
+      gcc_assert (s_singleton == this);
+      s_singleton = NULL;
+    }
+
+  void apply (lexer_test &test) FINAL OVERRIDE
+  {
+    cpp_options *cpp_opts = cpp_get_options (test.m_parser);
+    cpp_opts->narrow_charset = "IBM1047";
+
+    cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
+    callbacks->error = on_error;
+  }
+
+  static bool on_error (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			int level ATTRIBUTE_UNUSED,
+			int reason ATTRIBUTE_UNUSED,
+			rich_location *richloc ATTRIBUTE_UNUSED,
+			const char *msgid, va_list *ap ATTRIBUTE_UNUSED)
+    ATTRIBUTE_FPTR_PRINTF(5,0)
+  {
+    gcc_assert (s_singleton);
+    /* Detect and record errors emitted by libcpp/charset.c:init_iconv_desc
+       when the local iconv build doesn't support the conversion.  */
+    if (strstr (msgid, "not supported by iconv"))
+      {
+	s_singleton->m_num_iconv_errors++;
+	return true;
+      }
+
+    /* Otherwise, we have an unexpected error.  */
+    abort ();
+  }
+
+  bool iconv_errors_occurred_p () const { return m_num_iconv_errors > 0; }
+
+ private:
+  static ebcdic_execution_charset *s_singleton;
+  int m_num_iconv_errors;
+};
+
+ebcdic_execution_charset *ebcdic_execution_charset::s_singleton;
+
+/* Constructor.  Override line_table with a new instance based on CASE_,
+   and write CONTENT to a tempfile.  Create a cpp_reader, and use it to
+   start parsing the tempfile.  */
+
+lexer_test::lexer_test (const line_table_case &case_, const char *content,
+			lexer_test_options *options) :
+  /* Create a tempfile and write the text to it.  */
+  m_tempfile (SELFTEST_LOCATION, ".c", content),
+  m_tmp_lt (case_),
+  m_parser (cpp_create_reader (CLK_GNUC99, NULL, line_table)),
+  m_concats ()
+{
+  if (options)
+    options->apply (*this);
+
+  cpp_init_iconv (m_parser);
+
+  /* Parse the file.  */
+  const char *fname = cpp_read_main_file (m_parser,
+					  m_tempfile.get_filename ());
+  ASSERT_NE (fname, NULL);
+}
+
+/* Destructor.  Verify that the next token in m_parser is EOF.  */
+
+lexer_test::~lexer_test ()
+{
+  location_t loc;
+  const cpp_token *tok;
+
+  tok = cpp_get_token_with_location (m_parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_EOF);
+
+  cpp_finish (m_parser, NULL);
+  cpp_destroy (m_parser);
+}
+
+/* Get the next token from m_parser.  */
+
+const cpp_token *
+lexer_test::get_token ()
+{
+  location_t loc;
+  const cpp_token *tok;
+
+  tok = cpp_get_token_with_location (m_parser, &loc);
+  ASSERT_NE (tok, NULL);
+  return tok;
+}
+
+/* Verify that locations within string literals are correctly handled.  */
+
+/* Verify get_source_range_for_substring for token(s) at STRLOC,
+   using the string concatenation database for TEST.
+
+   Assert that the character at index IDX is on EXPECTED_LINE,
+   and that it begins at column EXPECTED_START_COL and ends at
+   EXPECTED_FINISH_COL (unless the locations are beyond
+   LINE_MAP_MAX_LOCATION_WITH_COLS, in which case don't check their
+   columns).  */
+
+static void
+assert_char_at_range (const location &loc,
+		      lexer_test& test,
+		      location_t strloc, enum cpp_ttype type, int idx,
+		      int expected_line, int expected_start_col,
+		      int expected_finish_col)
+{
+  cpp_reader *pfile = test.m_parser;
+  string_concat_db *concats = &test.m_concats;
+
+  source_range actual_range;
+  const char *err
+    = get_source_range_for_substring (pfile, concats, strloc, type,
+				      idx, idx, &actual_range);
+  if (should_have_column_data_p (strloc))
+    ASSERT_EQ_AT (loc, NULL, err);
+  else
+    {
+      ASSERT_STREQ_AT (loc,
+		       "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS",
+		       err);
+      return;
+    }
+
+  int actual_start_line = LOCATION_LINE (actual_range.m_start);
+  ASSERT_EQ_AT (loc, expected_line, actual_start_line);
+  int actual_finish_line = LOCATION_LINE (actual_range.m_finish);
+  ASSERT_EQ_AT (loc, expected_line, actual_finish_line);
+
+  if (should_have_column_data_p (actual_range.m_start))
+    {
+      int actual_start_col = LOCATION_COLUMN (actual_range.m_start);
+      ASSERT_EQ_AT (loc, expected_start_col, actual_start_col);
+    }
+  if (should_have_column_data_p (actual_range.m_finish))
+    {
+      int actual_finish_col = LOCATION_COLUMN (actual_range.m_finish);
+      ASSERT_EQ_AT (loc, expected_finish_col, actual_finish_col);
+    }
+}
+
+/* Macro for calling assert_char_at_range, supplying SELFTEST_LOCATION for
+   the effective location of any errors.  */
+
+#define ASSERT_CHAR_AT_RANGE(LEXER_TEST, STRLOC, TYPE, IDX, EXPECTED_LINE, \
+			     EXPECTED_START_COL, EXPECTED_FINISH_COL)	\
+  assert_char_at_range (SELFTEST_LOCATION, (LEXER_TEST), (STRLOC), (TYPE), \
+			(IDX), (EXPECTED_LINE), (EXPECTED_START_COL), \
+			(EXPECTED_FINISH_COL))
+
+/* Verify get_num_source_ranges_for_substring for token(s) at STRLOC,
+   using the string concatenation database for TEST.
+
+   Assert that the token(s) at STRLOC contain EXPECTED_NUM_RANGES.  */
+
+static void
+assert_num_substring_ranges (const location &loc,
+			     lexer_test& test,
+			     location_t strloc,
+			     enum cpp_ttype type,
+			     int expected_num_ranges)
+{
+  cpp_reader *pfile = test.m_parser;
+  string_concat_db *concats = &test.m_concats;
+
+  int actual_num_ranges;
+  const char *err
+    = get_num_source_ranges_for_substring (pfile, concats, strloc, type,
+					   &actual_num_ranges);
+  if (should_have_column_data_p (strloc))
+    ASSERT_EQ_AT (loc, NULL, err);
+  else
+    {
+      ASSERT_STREQ_AT (loc,
+		       "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS",
+		       err);
+      return;
+    }
+  ASSERT_EQ_AT (loc, expected_num_ranges, actual_num_ranges);
+}
+
+/* Macro for calling assert_num_substring_ranges, supplying
+   SELFTEST_LOCATION for the effective location of any errors.  */
+
+#define ASSERT_NUM_SUBSTRING_RANGES(LEXER_TEST, STRLOC, TYPE, \
+				    EXPECTED_NUM_RANGES)		\
+  assert_num_substring_ranges (SELFTEST_LOCATION, (LEXER_TEST), (STRLOC), \
+			       (TYPE), (EXPECTED_NUM_RANGES))
+
+
+/* Verify that get_num_source_ranges_for_substring for token(s) at STRLOC
+   returns an error (using the string concatenation database for TEST).  */
+
+static void
+assert_has_no_substring_ranges (const location &loc,
+				lexer_test& test,
+				location_t strloc,
+				enum cpp_ttype type,
+				const char *expected_err)
+{
+  cpp_reader *pfile = test.m_parser;
+  string_concat_db *concats = &test.m_concats;
+  cpp_substring_ranges ranges;
+  const char *actual_err
+    = get_substring_ranges_for_loc (pfile, concats, strloc,
+				    type, ranges);
+  if (should_have_column_data_p (strloc))
+    ASSERT_STREQ_AT (loc, expected_err, actual_err);
+  else
+    ASSERT_STREQ_AT (loc,
+		     "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS",
+		     actual_err);
+}
+
+#define ASSERT_HAS_NO_SUBSTRING_RANGES(LEXER_TEST, STRLOC, TYPE, ERR)    \
+    assert_has_no_substring_ranges (SELFTEST_LOCATION, (LEXER_TEST), \
+				    (STRLOC), (TYPE), (ERR))
+
+/* Lex a simple string literal.  Verify the substring location data, before
+   and after running cpp_interpret_string on it.  */
+
+static void
+test_lexer_string_locations_simple (const line_table_case &case_)
+{
+  /* Digits 0-9 (with 0 at column 10), the simple way.
+     ....................000000000.11111111112.2222222223333333333
+     ....................123456789.01234567890.1234567890123456789
+     We add a trailing comment to ensure that we correctly locate
+     the end of the string literal token.  */
+  const char *content = "        \"0123456789\" /* not a string */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"0123456789\"");
+  ASSERT_TOKEN_LOC_EQ (tok, test.m_tempfile.get_filename (), 1, 9, 20);
+
+  /* At this point in lexing, the quote characters are treated as part of
+     the string (they are stripped off by cpp_interpret_string).  */
+
+  ASSERT_EQ (tok->val.str.len, 12);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.  */
+  for (int i = 0; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1,
+			  10 + i, 10 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 10);
+}
+
+/* As test_lexer_string_locations_simple, but use an EBCDIC execution
+   encoding.  */
+
+static void
+test_lexer_string_locations_ebcdic (const line_table_case &case_)
+{
+  /* EBCDIC support requires iconv.  */
+  if (!HAVE_ICONV)
+    return;
+
+  /* Digits 0-9 (with 0 at column 10), the simple way.
+     ....................000000000.11111111112.2222222223333333333
+     ....................123456789.01234567890.1234567890123456789
+     We add a trailing comment to ensure that we correctly locate
+     the end of the string literal token.  */
+  const char *content = "        \"0123456789\" /* not a string */\n";
+  ebcdic_execution_charset use_ebcdic;
+  lexer_test test (case_, content, &use_ebcdic);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"0123456789\"");
+  ASSERT_TOKEN_LOC_EQ (tok, test.m_tempfile.get_filename (), 1, 9, 20);
+
+  /* At this point in lexing, the quote characters are treated as part of
+     the string (they are stripped off by cpp_interpret_string).  */
+
+  ASSERT_EQ (tok->val.str.len, 12);
+
+  /* The remainder of the test requires an iconv implementation that
+     can convert from UTF-8 to the EBCDIC encoding requested above.  */
+  if (use_ebcdic.iconv_errors_occurred_p ())
+    return;
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  /* We should now have EBCDIC-encoded text, specifically
+     IBM1047-encoded (aka "EBCDIC 1047", or "Code page 1047").
+     The digits 0-9 are encoded as 240-249 i.e. 0xf0-0xf9.  */
+  ASSERT_STREQ ("\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9",
+		(const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify that we don't attempt to record substring location information
+     for such cases.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Lex a string literal containing a hex-escaped character.
+   Verify the substring location data, before and after running
+   cpp_interpret_string on it.  */
+
+static void
+test_lexer_string_locations_hex (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digit 5 in ASCII as "\x35"
+     and with a space in place of digit 6, to terminate the escaped
+     hex code.
+     ....................000000000.111111.11112222.
+     ....................123456789.012345.67890123.  */
+  const char *content = "        \"01234\\x35 789\"\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"01234\\x35 789\"");
+  ASSERT_TOKEN_LOC_EQ (tok, test.m_tempfile.get_filename (), 1, 9, 23);
+
+  /* At this point in lexing, the quote characters are treated as part of
+     the string (they are stripped off by cpp_interpret_string).  */
+  ASSERT_EQ (tok->val.str.len, 15);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("012345 789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 5, 1, 15, 18);
+  for (int i = 6; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 13 + i, 13 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 10);
+}
+
+/* Lex a string literal containing an octal-escaped character.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_oct (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digit 5 in ASCII as "\065"
+     and with a space in place of digit 6, to terminate the escaped
+     octal code.
+     ....................000000000.111111.11112222.2222223333333333444
+     ....................123456789.012345.67890123.4567890123456789012  */
+  const char *content = "        \"01234\\065 789\" /* not a string */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"01234\\065 789\"");
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("012345 789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.  */
+  for (int i = 0; i < 5; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 5, 1, 15, 18);
+  for (int i = 6; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 13 + i, 13 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 10);
+}
+
+/* Test of string literal containing letter escapes.  */
+
+static void
+test_lexer_string_locations_letter_escape_1 (const line_table_case &case_)
+{
+  /* The string "\tfoo\\\nbar" i.e. tab, "foo", backslash, newline, bar.
+     .....................000000000.1.11111.1.1.11222.22222223333333
+     .....................123456789.0.12345.6.7.89012.34567890123456.  */
+  const char *content = ("        \"\\tfoo\\\\\\nbar\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"\\tfoo\\\\\\nbar\"");
+
+  /* Verify ranges of individual characters. */
+  /* "\t".  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			0, 1, 10, 11);
+  /* "foo". */
+  for (int i = 1; i <= 3; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 11 + i, 11 + i);
+  /* "\\" and "\n".  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			4, 1, 15, 16);
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			5, 1, 17, 18);
+
+  /* "bar".  */
+  for (int i = 6; i <= 8; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 13 + i, 13 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 9);
+}
+
+/* Another test of a string literal containing a letter escape.
+   Based on string seen in
+     printf ("%-%\n");
+   in gcc.dg/format/c90-printf-1.c.  */
+
+static void
+test_lexer_string_locations_letter_escape_2 (const line_table_case &case_)
+{
+  /* .....................000000000.1111.11.1111.22222222223.
+     .....................123456789.0123.45.6789.01234567890.  */
+  const char *content = ("        \"%-%\\n\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"%-%\\n\"");
+
+  /* Verify ranges of individual characters. */
+  /* "%-%".  */
+  for (int i = 0; i < 3; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 10 + i, 10 + i);
+  /* "\n".  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			3, 1, 13, 14);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 4);
+}
+
+/* Lex a string literal containing UCN 4 characters.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_ucn4 (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digits 5 and 6 as Roman numerals expressed
+     as UCN 4.
+     ....................000000000.111111.111122.222222223.33333333344444
+     ....................123456789.012345.678901.234567890.12345678901234  */
+  const char *content = "        \"01234\\u2174\\u2175789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"01234\\u2174\\u2175789\"");
+
+  /* Verify that cpp_interpret_string works.
+     The string should be encoded in the execution character
+     set.  Assuming that that is UTF-8, we should have the following:
+     -----------  ----  -----  -------  ----------------
+     Byte offset  Byte  Octal  Unicode  Source Column(s)
+     -----------  ----  -----  -------  ----------------
+     0            0x30         '0'      10
+     1            0x31         '1'      11
+     2            0x32         '2'      12
+     3            0x33         '3'      13
+     4            0x34         '4'      14
+     5            0xE2  \342   U+2174   15-20
+     6            0x85  \205    (cont)  15-20
+     7            0xB4  \264    (cont)  15-20
+     8            0xE2  \342   U+2175   21-26
+     9            0x85  \205    (cont)  21-26
+     10           0xB5  \265    (cont)  21-26
+     11           0x37         '7'      27
+     12           0x38         '8'      28
+     13           0x39         '9'      29
+     -----------  ----  -----  -------  ---------------.  */
+
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("01234\342\205\264\342\205\265789",
+		(const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.
+     '01234'.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  /* U+2174.  */
+  for (int i = 5; i <= 7; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 15, 20);
+  /* U+2175.  */
+  for (int i = 8; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 21, 26);
+  /* '789'.  */
+  for (int i = 11; i <= 13; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 16 + i, 16 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 14);
+}
+
+/* Lex a string literal containing UCN 8 characters.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_ucn8 (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digits 5 and 6 as Roman numerals as UCN 8.
+     ....................000000000.111111.1111222222.2222333333333.344444
+     ....................123456789.012345.6789012345.6789012345678.901234  */
+  const char *content = "        \"01234\\U00002174\\U00002175789\" /* */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok,
+			   "\"01234\\U00002174\\U00002175789\"");
+
+  /* Verify that cpp_interpret_string works.
+     The UTF-8 encoding of the string is identical to that from
+     the ucn4 testcase above; the only difference is the column
+     locations.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("01234\342\205\264\342\205\265789",
+		(const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.
+     '01234'.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  /* U+2174.  */
+  for (int i = 5; i <= 7; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 15, 24);
+  /* U+2175.  */
+  for (int i = 8; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 25, 34);
+  /* '789' at columns 35-37  */
+  for (int i = 11; i <= 13; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 24 + i, 24 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 14);
+}
+
+/* Fetch a big-endian 32-bit value and convert to host endianness.  */
+
+static uint32_t
+uint32_from_big_endian (const uint32_t *ptr_be_value)
+{
+  const unsigned char *buf = (const unsigned char *)ptr_be_value;
+  return (((uint32_t) buf[0] << 24)
+	  | ((uint32_t) buf[1] << 16)
+	  | ((uint32_t) buf[2] << 8)
+	  | (uint32_t) buf[3]);
+}
+
+/* Lex a wide string literal and verify that attempts to read substring
+   location data from it fail gracefully.  */
+
+static void
+test_lexer_string_locations_wide_string (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "       L\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_WSTRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "L\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works, using CPP_WSTRING.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_WSTRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  /* The cpp_reader defaults to big-endian with
+     CHAR_BIT * sizeof (int) for the wchar_precision, so dst_string should
+     now be encoded as UTF-32BE.  */
+  const uint32_t *be32_chars = (const uint32_t *)dst_string.text;
+  ASSERT_EQ ('0', uint32_from_big_endian (&be32_chars[0]));
+  ASSERT_EQ ('5', uint32_from_big_endian (&be32_chars[5]));
+  ASSERT_EQ ('9', uint32_from_big_endian (&be32_chars[9]));
+  ASSERT_EQ (0, uint32_from_big_endian (&be32_chars[10]));
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* We don't yet support generating substring location information
+     for L"" strings.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Fetch a big-endian 16-bit value and convert to host endianness.  */
+
+static uint16_t
+uint16_from_big_endian (const uint16_t *ptr_be_value)
+{
+  const unsigned char *buf = (const unsigned char *)ptr_be_value;
+  return ((uint16_t) buf[0] << 8) | (uint16_t) buf[1];
+}
+
+/* Lex a u"" string literal and verify that attempts to read substring
+   location data from it fail gracefully.  */
+
+static void
+test_lexer_string_locations_string16 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "       u\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING16);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "u\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works, using CPP_STRING16.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING16;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+
+  /* The cpp_reader defaults to big-endian, so dst_string should
+     now be encoded as UTF-16BE.  */
+  const uint16_t *be16_chars = (const uint16_t *)dst_string.text;
+  ASSERT_EQ ('0', uint16_from_big_endian (&be16_chars[0]));
+  ASSERT_EQ ('5', uint16_from_big_endian (&be16_chars[5]));
+  ASSERT_EQ ('9', uint16_from_big_endian (&be16_chars[9]));
+  ASSERT_EQ (0, uint16_from_big_endian (&be16_chars[10]));
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* We don't yet support generating substring location information
+     for L"" strings.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Lex a U"" string literal and verify that attempts to read substring
+   location data from it fail gracefully.  */
+
+static void
+test_lexer_string_locations_string32 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "       U\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING32);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "U\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works, using CPP_STRING32.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING32;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+
+  /* The cpp_reader defaults to big-endian, so dst_string should
+     now be encoded as UTF-32BE.  */
+  const uint32_t *be32_chars = (const uint32_t *)dst_string.text;
+  ASSERT_EQ ('0', uint32_from_big_endian (&be32_chars[0]));
+  ASSERT_EQ ('5', uint32_from_big_endian (&be32_chars[5]));
+  ASSERT_EQ ('9', uint32_from_big_endian (&be32_chars[9]));
+  ASSERT_EQ (0, uint32_from_big_endian (&be32_chars[10]));
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* We don't yet support generating substring location information
+     for L"" strings.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Lex a u8-string literal.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_u8 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "      u8\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_UTF8STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "u8\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.  */
+  for (int i = 0; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+}
+
+/* Lex a string literal containing UTF-8 source characters.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_utf8_source (const line_table_case &case_)
+{
+ /* This string literal is written out to the source file as UTF-8,
+    and is of the form "before mojibake after", where "mojibake"
+    is written as the following four unicode code points:
+       U+6587 CJK UNIFIED IDEOGRAPH-6587
+       U+5B57 CJK UNIFIED IDEOGRAPH-5B57
+       U+5316 CJK UNIFIED IDEOGRAPH-5316
+       U+3051 HIRAGANA LETTER KE.
+     Each of these is 3 bytes wide when encoded in UTF-8, whereas the
+     "before" and "after" are 1 byte per unicode character.
+
+     The numbering shown are "columns", which are *byte* numbers within
+     the line, rather than unicode character numbers.
+
+     .................... 000000000.1111111.
+     .................... 123456789.0123456.  */
+  const char *content = ("        \"before "
+			 /* U+6587 CJK UNIFIED IDEOGRAPH-6587
+			      UTF-8: 0xE6 0x96 0x87
+			      C octal escaped UTF-8: \346\226\207
+			    "column" numbers: 17-19.  */
+			 "\346\226\207"
+
+			 /* U+5B57 CJK UNIFIED IDEOGRAPH-5B57
+			      UTF-8: 0xE5 0xAD 0x97
+			      C octal escaped UTF-8: \345\255\227
+			    "column" numbers: 20-22.  */
+			 "\345\255\227"
+
+			 /* U+5316 CJK UNIFIED IDEOGRAPH-5316
+			      UTF-8: 0xE5 0x8C 0x96
+			      C octal escaped UTF-8: \345\214\226
+			    "column" numbers: 23-25.  */
+			 "\345\214\226"
+
+			 /* U+3051 HIRAGANA LETTER KE
+			      UTF-8: 0xE3 0x81 0x91
+			      C octal escaped UTF-8: \343\201\221
+			    "column" numbers: 26-28.  */
+			 "\343\201\221"
+
+			 /* column numbers 29 onwards
+			  2333333.33334444444444
+			  9012345.67890123456789. */
+			 " after\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ
+    (test.m_parser, tok,
+     "\"before \346\226\207\345\255\227\345\214\226\343\201\221 after\"");
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ
+    ("before \346\226\207\345\255\227\345\214\226\343\201\221 after",
+     (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     quotes.
+     Assuming that both source and execution encodings are UTF-8, we have
+     a run of 25 octets in each.  */
+  for (int i = 0; i < 25; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 25);
+}
+
+/* Test of string literal concatenation.  */
+
+static void
+test_lexer_string_locations_concatenation_1 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     .....................000000000.111111.11112222222222
+     .....................123456789.012345.67890123456789.  */
+  const char *content = ("        \"01234\" /* non-str */\n"
+			 "        \"56789\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  location_t input_locs[2];
+
+  /* Verify that we get the expected tokens back.  */
+  auto_vec <cpp_string> input_strings;
+  const cpp_token *tok_a = test.get_token ();
+  ASSERT_EQ (tok_a->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok_a, "\"01234\"");
+  input_strings.safe_push (tok_a->val.str);
+  input_locs[0] = tok_a->src_loc;
+
+  const cpp_token *tok_b = test.get_token ();
+  ASSERT_EQ (tok_b->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok_b, "\"56789\"");
+  input_strings.safe_push (tok_b->val.str);
+  input_locs[1] = tok_b->src_loc;
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser,
+				      input_strings.address (), 2,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Simulate c-lex.c's lex_string in order to record concatenation.  */
+  test.m_concats.record_string_concatenation (2, input_locs);
+
+  location_t initial_loc = input_locs[0];
+
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 10 + i, 10 + i);
+  for (int i = 5; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 2, 5 + i, 5 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 10);
+}
+
+/* Another test of string literal concatenation.  */
+
+static void
+test_lexer_string_locations_concatenation_2 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     .....................000000000.111.11111112222222
+     .....................123456789.012.34567890123456.  */
+  const char *content = ("        \"01\" /* non-str */\n"
+			 "        \"23\" /* non-str */\n"
+			 "        \"45\" /* non-str */\n"
+			 "        \"67\" /* non-str */\n"
+			 "        \"89\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  auto_vec <cpp_string> input_strings;
+  location_t input_locs[5];
+
+  /* Verify that we get the expected tokens back.  */
+  for (int i = 0; i < 5; i++)
+    {
+      const cpp_token *tok = test.get_token ();
+      ASSERT_EQ (tok->type, CPP_STRING);
+      input_strings.safe_push (tok->val.str);
+      input_locs[i] = tok->src_loc;
+    }
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser,
+				      input_strings.address (), 5,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Simulate c-lex.c's lex_string in order to record concatenation.  */
+  test.m_concats.record_string_concatenation (5, input_locs);
+
+  location_t initial_loc = input_locs[0];
+
+  /* Within ASSERT_CHAR_AT_RANGE (actually assert_char_at_range), we can
+     detect if the initial loc is after LINE_MAP_MAX_LOCATION_WITH_COLS
+     and expect get_source_range_for_substring to fail.
+     However, for a string concatenation test, we can have a case
+     where the initial string is fully before LINE_MAP_MAX_LOCATION_WITH_COLS,
+     but subsequent strings can be after it.
+     Attempting to detect this within assert_char_at_range
+     would overcomplicate the logic for the common test cases, so
+     we detect it here.  */
+  if (should_have_column_data_p (input_locs[0])
+      && !should_have_column_data_p (input_locs[4]))
+    {
+      /* Verify that get_source_range_for_substring gracefully rejects
+	 this case.  */
+      source_range actual_range;
+      const char *err
+	= get_source_range_for_substring (test.m_parser, &test.m_concats,
+					  initial_loc, type, 0, 0,
+					  &actual_range);
+      ASSERT_STREQ ("range starts after LINE_MAP_MAX_LOCATION_WITH_COLS", err);
+      return;
+    }
+
+  for (int i = 0; i < 5; i++)
+    for (int j = 0; j < 2; j++)
+      ASSERT_CHAR_AT_RANGE (test, initial_loc, type, (i * 2) + j,
+			    i + 1, 10 + j, 10 + j);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 10);
+}
+
+/* Another test of string literal concatenation, this time combined with
+   various kinds of escaped characters.  */
+
+static void
+test_lexer_string_locations_concatenation_3 (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digit 5 in ASCII as hex "\x35"
+     digit 6 in ASCII as octal "\066", concatenating multiple strings.  */
+  const char *content
+    /* .000000000.111111.111.1.2222.222.2.2233.333.3333.34444444444555
+       .123456789.012345.678.9.0123.456.7.8901.234.5678.90123456789012. */
+    = ("        \"01234\"  \"\\x35\"  \"\\066\"  \"789\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  auto_vec <cpp_string> input_strings;
+  location_t input_locs[4];
+
+  /* Verify that we get the expected tokens back.  */
+  for (int i = 0; i < 4; i++)
+    {
+      const cpp_token *tok = test.get_token ();
+      ASSERT_EQ (tok->type, CPP_STRING);
+      input_strings.safe_push (tok->val.str);
+      input_locs[i] = tok->src_loc;
+    }
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser,
+				      input_strings.address (), 4,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Simulate c-lex.c's lex_string in order to record concatenation.  */
+  test.m_concats.record_string_concatenation (4, input_locs);
+
+  location_t initial_loc = input_locs[0];
+
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 10 + i, 10 + i);
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 5, 1, 19, 22);
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 6, 1, 27, 30);
+  for (int i = 7; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 28 + i, 28 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 10);
+}
+
+/* Test of string literal in a macro.  */
+
+static void
+test_lexer_string_locations_macro (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     .....................0000000001111111111.22222222223.
+     .....................1234567890123456789.01234567890.  */
+  const char *content = ("#define MACRO     \"0123456789\" /* non-str */\n"
+			 "  MACRO");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"0123456789\"");
+
+  /* Verify ranges of individual characters.  We ought to
+     see columns within the macro definition.  */
+  for (int i = 0; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 20 + i, 20 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 10);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+}
+
+/* Test of stringification of a macro argument.  */
+
+static void
+test_lexer_string_locations_stringified_macro_argument
+  (const line_table_case &case_)
+{
+  /* .....................000000000111111111122222222223.
+     .....................123456789012345678901234567890.  */
+  const char *content = ("#define MACRO(X) #X /* non-str */\n"
+			 "MACRO(foo)\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"foo\"");
+
+  /* We don't support getting the location of a stringified macro
+     argument.  Verify that it fails gracefully.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING,
+				  "cpp_interpret_string_1 failed");
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+}
+
+/* Ensure that we are fail gracefully if something attempts to pass
+   in a location that isn't a string literal token.  Seen on this code:
+
+     const char a[] = " %d ";
+     __builtin_printf (a, 0.5);
+                       ^
+
+   when c-format.c erroneously used the indicated one-character
+   location as the format string location, leading to a read past the
+   end of a string buffer in cpp_interpret_string_1.  */
+
+static void
+test_lexer_string_locations_non_string (const line_table_case &case_)
+{
+  /* .....................000000000111111111122222222223.
+     .....................123456789012345678901234567890.  */
+  const char *content = ("         a\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_NAME);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "a");
+
+  /* At this point, libcpp is attempting to interpret the name as a
+     string literal, despite it not starting with a quote.  We don't detect
+     that, but we should at least fail gracefully.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING,
+				  "cpp_interpret_string_1 failed");
+}
+
+/* Ensure that we can read substring information for a token which
+   starts in one linemap and ends in another .  Adapted from
+   gcc.dg/cpp/pr69985.c.  */
+
+static void
+test_lexer_string_locations_long_line (const line_table_case &case_)
+{
+  /* .....................000000.000111111111
+     .....................123456.789012346789.  */
+  const char *content = ("/* A very long line, so that we start a new line map.  */\n"
+			 "     \"0123456789012345678901234567890123456789"
+			 "0123456789012345678901234567890123456789"
+			 "0123456789012345678901234567890123456789"
+			 "0123456789\"\n");
+
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+
+  if (!should_have_column_data_p (line_table->highest_location))
+    return;
+
+  /* Verify ranges of individual characters.  */
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 130);
+  for (int i = 0; i < 130; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 2, 7 + i, 7 + i);
+}
+
+/* Test of lexing char constants.  */
+
+static void
+test_lexer_char_constants (const line_table_case &case_)
+{
+  /* Various char constants.
+     .....................0000000001111111111.22222222223.
+     .....................1234567890123456789.01234567890.  */
+  const char *content = ("         'a'\n"
+			 "        u'a'\n"
+			 "        U'a'\n"
+			 "        L'a'\n"
+			 "         'abc'\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  /* 'a'.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "'a'");
+
+  unsigned int chars_seen;
+  int unsignedp;
+  cppchar_t cc = cpp_interpret_charconst (test.m_parser, tok,
+					  &chars_seen, &unsignedp);
+  ASSERT_EQ (cc, 'a');
+  ASSERT_EQ (chars_seen, 1);
+
+  /* u'a'.  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR16);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "u'a'");
+
+  /* U'a'.  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR32);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "U'a'");
+
+  /* L'a'.  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_WCHAR);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "L'a'");
+
+  /* 'abc' (c-char-sequence).  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "'abc'");
+}
 /* A table of interesting location_t values, giving one axis of our test
    matrix.  */
 
@@ -1599,6 +3125,27 @@ input_c_tests ()
 	  /* Run all tests for the given case within the test matrix.  */
 	  test_accessing_ordinary_linemaps (c);
 	  test_lexer (c);
+	  test_lexer_string_locations_simple (c);
+	  test_lexer_string_locations_ebcdic (c);
+	  test_lexer_string_locations_hex (c);
+	  test_lexer_string_locations_oct (c);
+	  test_lexer_string_locations_letter_escape_1 (c);
+	  test_lexer_string_locations_letter_escape_2 (c);
+	  test_lexer_string_locations_ucn4 (c);
+	  test_lexer_string_locations_ucn8 (c);
+	  test_lexer_string_locations_wide_string (c);
+	  test_lexer_string_locations_string16 (c);
+	  test_lexer_string_locations_string32 (c);
+	  test_lexer_string_locations_u8 (c);
+	  test_lexer_string_locations_utf8_source (c);
+	  test_lexer_string_locations_concatenation_1 (c);
+	  test_lexer_string_locations_concatenation_2 (c);
+	  test_lexer_string_locations_concatenation_3 (c);
+	  test_lexer_string_locations_macro (c);
+	  test_lexer_string_locations_stringified_macro_argument (c);
+	  test_lexer_string_locations_non_string (c);
+	  test_lexer_string_locations_long_line (c);
+	  test_lexer_char_constants (c);
 
 	  num_cases_tested++;
 	}

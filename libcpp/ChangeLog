@@ -1,3 +1,49 @@
+2016-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (cpp_substring_ranges::cpp_substring_ranges): New
+	constructor.
+	(cpp_substring_ranges::~cpp_substring_ranges): New destructor.
+	(cpp_substring_ranges::add_range): New method.
+	(cpp_substring_ranges::add_n_ranges): New method.
+	(_cpp_valid_ucn): Add "char_range" and "loc_reader" params; if
+	they are non-NULL, read position information from *loc_reader
+	and update char_range->m_finish accordingly.
+	(convert_ucn): Add "char_range", "loc_reader", and "ranges"
+	params.  If loc_reader is non-NULL, read location information from
+	it, and update *ranges accordingly, using char_range.
+	Conditionalize the conversion into tbuf on tbuf being non-NULL.
+	(convert_hex): Likewise, conditionalizing the call to
+	emit_numeric_escape on tbuf.
+	(convert_oct): Likewise.
+	(convert_escape): Add params "loc_reader" and "ranges".  If
+	loc_reader is non-NULL, read location information from it, and
+	update *ranges accordingly.  Conditionalize the conversion into
+	tbuf on tbuf being non-NULL.
+	(cpp_interpret_string): Rename to...
+	(cpp_interpret_string_1): ...this, adding params "loc_readers" and
+	"out".  Use "to" to conditionalize the initialization and usage of
+	"tbuf", such as running the converter.  If "loc_readers" is
+	non-NULL, use the instances within it, reading location
+	information from them, and passing them to convert_escape; likewise
+	write to "out" if loc_readers is non-NULL.  Check for leading
+	quote and issue an error if it is not present.  Update boundary
+	check from "== limit" to ">= limit" to protect against erroneous
+	location values to calls that are not parsing string literals.
+	(cpp_interpret_string): Reimplement in terms to
+	cpp_interpret_string_1.
+	(noop_error_cb): New function.
+	(cpp_interpret_string_ranges): New function.
+	(cpp_string_location_reader::cpp_string_location_reader): New
+	constructor.
+	(cpp_string_location_reader::get_next): New method.
+	* include/cpplib.h (class cpp_string_location_reader): New class.
+	(class cpp_substring_ranges): New class.
+	(cpp_interpret_string_ranges): New prototype.
+	* internal.h (_cpp_valid_ucn): Add params "char_range" and
+	"loc_reader".
+	* lex.c (forms_identifier_p): Pass NULL for new params to
+	_cpp_valid_ucn.
+
 2016-08-01  Andreas Schwab  <schwab@suse.de>
 
 	* include/cpplib.h: Fix comment typo.

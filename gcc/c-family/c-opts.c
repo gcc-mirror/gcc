@@ -216,6 +216,9 @@ c_common_init_options (unsigned int decoded_options_count,
   unsigned int i;
   struct cpp_callbacks *cb;
 
+  g_string_concat_db
+    = new (ggc_alloc <string_concat_db> ()) string_concat_db ();
+
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash, line_table);
   cb = cpp_get_callbacks (parse_in);

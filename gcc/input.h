@@ -95,4 +95,39 @@ void dump_location_info (FILE *stream);
 
 void diagnostics_file_cache_fini (void);
 
+struct GTY(()) string_concat
+{
+  string_concat (int num, location_t *locs);
+
+  int m_num;
+  location_t * GTY ((atomic)) m_locs;
+};
+
+struct location_hash : int_hash <location_t, UNKNOWN_LOCATION> { };
+
+class GTY(()) string_concat_db
+{
+ public:
+  string_concat_db ();
+  void record_string_concatenation (int num, location_t *locs);
+
+  bool get_string_concatenation (location_t loc,
+				 int *out_num,
+				 location_t **out_locs);
+
+ private:
+  static location_t get_key_loc (location_t loc);
+
+  /* For the fields to be private, we must grant access to the
+     generated code in gtype-desc.c.  */
+
+  friend void ::gt_ggc_mx_string_concat_db (void *x_p);
+  friend void ::gt_pch_nx_string_concat_db (void *x_p);
+  friend void ::gt_pch_p_16string_concat_db (void *this_obj, void *x_p,
+					     gt_pointer_operator op,
+					     void *cookie);
+
+  hash_map <location_hash, string_concat *> *m_table;
+};
+
 #endif

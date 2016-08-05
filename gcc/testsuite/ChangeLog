@@ -1,3 +1,10 @@
+2016-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: New file.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c: New file.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c: New file.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the above new files.
+
 2016-08-05  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/72810

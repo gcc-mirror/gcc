@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "opts.h"
 #include "gimplify.h"
+#include "substring-locations.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -1098,6 +1099,67 @@ fix_string_type (tree value)
   TREE_STATIC (value) = 1;
   return value;
 }
+
+/* Given a string of type STRING_TYPE, determine what kind of string
+   token would give an equivalent execution encoding: CPP_STRING,
+   CPP_STRING16, or CPP_STRING32.  Return CPP_OTHER in case of error.
+   This may not be exactly the string token type that initially created
+   the string, since CPP_WSTRING is indistinguishable from the 16/32 bit
+   string type at this point.
+
+   This effectively reverses part of the logic in lex_string and
+   fix_string_type.  */
+
+static enum cpp_ttype
+get_cpp_ttype_from_string_type (tree string_type)
+{
+  gcc_assert (string_type);
+  if (TREE_CODE (string_type) != ARRAY_TYPE)
+    return CPP_OTHER;
+
+  tree element_type = TREE_TYPE (string_type);
+  if (TREE_CODE (element_type) != INTEGER_TYPE)
+    return CPP_OTHER;
+
+  int bits_per_character = TYPE_PRECISION (element_type);
+  switch (bits_per_character)
+    {
+    case 8:
+      return CPP_STRING;  /* It could have also been CPP_UTF8STRING.  */
+    case 16:
+      return CPP_STRING16;
+    case 32:
+      return CPP_STRING32;
+    }
+
+  return CPP_OTHER;
+}
+
+/* The global record of string concatentations, for use in
+   extracting locations within string literals.  */
+
+GTY(()) string_concat_db *g_string_concat_db;
+
+/* Attempt to determine the source range of the substring.
+   If successful, return NULL and write the source range to *OUT_RANGE.
+   Otherwise return an error message.  Error messages are intended
+   for GCC developers (to help debugging) rather than for end-users.  */
+
+const char *
+substring_loc::get_range (source_range *out_range) const
+{
+  gcc_assert (out_range);
+
+  enum cpp_ttype tok_type = get_cpp_ttype_from_string_type (m_string_type);
+  if (tok_type == CPP_OTHER)
+    return "unrecognized string type";
+
+  return get_source_range_for_substring (parse_in, g_string_concat_db,
+					 m_fmt_string_loc, tok_type,
+					 m_start_idx, m_end_idx,
+					 out_range);
+}
+
 
 /* Fold X for consideration by one of the warning functions when checking
    whether an expression has a constant value.  */

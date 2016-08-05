@@ -1247,7 +1247,7 @@ forms_identifier_p (cpp_reader *pfile, int first,
       cppchar_t s;
       buffer->cur += 2;
       if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
-			  state, &s))
+			  state, &s, NULL, NULL))
 	return true;
       buffer->cur -= 2;
     }
