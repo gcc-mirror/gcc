@@ -1,5 +1,8 @@
 2016-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Correct shared_from_this status.
+	* doc/html/manual/status.html: Regenerate.
+
 	* include/std/chrono (floor, ceil, round, abs): New for C++17.
 	* testsuite/20_util/duration_cast/rounding.cc: New test.
 	* testsuite/20_util/time_point_cast/rounding.cc: New test.

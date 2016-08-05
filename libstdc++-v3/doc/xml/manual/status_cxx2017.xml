@@ -261,7 +261,7 @@ Feature-testing recommendations for C++</link>.
 	P0033R1
 	</link>
       </entry>
-      <entry align="center"> 6.1 </entry>
+      <entry align="center"> 7 </entry>
       <entry><code>__cpp_lib_enable_shared_from_this >= 201603</code></entry>
     </row>
 
