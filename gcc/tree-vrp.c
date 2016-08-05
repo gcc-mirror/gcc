@@ -9644,61 +9644,66 @@ simplify_switch_using_ranges (gswitch *stmt)
       tree min_label = gimple_switch_label (stmt, min_idx);
       tree max_label = gimple_switch_label (stmt, max_idx);
 
+      /* Avoid changing the type of the case labels when truncating.  */
+      tree case_label_type = TREE_TYPE (CASE_LOW (min_label));
+      tree vr_min = fold_convert (case_label_type, vr->min);
+      tree vr_max = fold_convert (case_label_type, vr->max);
+
       if (vr->type == VR_RANGE)
 	{
 	  /* If OP's value range is [2,8] and the low label range is
 	     0 ... 3, truncate the label's range to 2 .. 3.  */
-	  if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) < 0
+	  if (tree_int_cst_compare (CASE_LOW (min_label), vr_min) < 0
 	      && CASE_HIGH (min_label) != NULL_TREE
-	      && tree_int_cst_compare (CASE_HIGH (min_label), vr->min) >= 0)
-	    CASE_LOW (min_label) = vr->min;
+	      && tree_int_cst_compare (CASE_HIGH (min_label), vr_min) >= 0)
+	    CASE_LOW (min_label) = vr_min;
 
 	  /* If OP's value range is [2,8] and the high label range is
 	     7 ... 10, truncate the label's range to 7 .. 8.  */
-	  if (tree_int_cst_compare (CASE_LOW (max_label), vr->max) <= 0
+	  if (tree_int_cst_compare (CASE_LOW (max_label), vr_max) <= 0
 	      && CASE_HIGH (max_label) != NULL_TREE
-	      && tree_int_cst_compare (CASE_HIGH (max_label), vr->max) > 0)
-	    CASE_HIGH (max_label) = vr->max;
+	      && tree_int_cst_compare (CASE_HIGH (max_label), vr_max) > 0)
+	    CASE_HIGH (max_label) = vr_max;
 	}
       else if (vr->type == VR_ANTI_RANGE)
 	{
-	  tree one_cst = build_one_cst (TREE_TYPE (op));
+	  tree one_cst = build_one_cst (case_label_type);
 
 	  if (min_label == max_label)
 	    {
 	      /* If OP's value range is ~[7,8] and the label's range is
 		 7 ... 10, truncate the label's range to 9 ... 10.  */
-	      if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) == 0
+	      if (tree_int_cst_compare (CASE_LOW (min_label), vr_min) == 0
 		  && CASE_HIGH (min_label) != NULL_TREE
-		  && tree_int_cst_compare (CASE_HIGH (min_label), vr->max) > 0)
+		  && tree_int_cst_compare (CASE_HIGH (min_label), vr_max) > 0)
 		CASE_LOW (min_label)
-		  = int_const_binop (PLUS_EXPR, vr->max, one_cst);
+		  = int_const_binop (PLUS_EXPR, vr_max, one_cst);
 
 	      /* If OP's value range is ~[7,8] and the label's range is
 		 5 ... 8, truncate the label's range to 5 ... 6.  */
-	      if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) < 0
+	      if (tree_int_cst_compare (CASE_LOW (min_label), vr_min) < 0
 		  && CASE_HIGH (min_label) != NULL_TREE
-		  && tree_int_cst_compare (CASE_HIGH (min_label), vr->max) == 0)
+		  && tree_int_cst_compare (CASE_HIGH (min_label), vr_max) == 0)
 		CASE_HIGH (min_label)
-		  = int_const_binop (MINUS_EXPR, vr->min, one_cst);
+		  = int_const_binop (MINUS_EXPR, vr_min, one_cst);
 	    }
 	  else
 	    {
 	      /* If OP's value range is ~[2,8] and the low label range is
 		 0 ... 3, truncate the label's range to 0 ... 1.  */
-	      if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) < 0
+	      if (tree_int_cst_compare (CASE_LOW (min_label), vr_min) < 0
 		  && CASE_HIGH (min_label) != NULL_TREE
-		  && tree_int_cst_compare (CASE_HIGH (min_label), vr->min) >= 0)
+		  && tree_int_cst_compare (CASE_HIGH (min_label), vr_min) >= 0)
 		CASE_HIGH (min_label)
-		  = int_const_binop (MINUS_EXPR, vr->min, one_cst);
+		  = int_const_binop (MINUS_EXPR, vr_min, one_cst);
 
 	      /* If OP's value range is ~[2,8] and the high label range is
 		 7 ... 10, truncate the label's range to 9 ... 10.  */
-	      if (tree_int_cst_compare (CASE_LOW (max_label), vr->max) <= 0
+	      if (tree_int_cst_compare (CASE_LOW (max_label), vr_max) <= 0
 		  && CASE_HIGH (max_label) != NULL_TREE
-		  && tree_int_cst_compare (CASE_HIGH (max_label), vr->max) > 0)
+		  && tree_int_cst_compare (CASE_HIGH (max_label), vr_max) > 0)
 		CASE_LOW (max_label)
-		  = int_const_binop (PLUS_EXPR, vr->max, one_cst);
+		  = int_const_binop (PLUS_EXPR, vr_max, one_cst);
 	    }
 	}
 

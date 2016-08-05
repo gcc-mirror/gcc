@@ -1,3 +1,9 @@
+2016-08-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/72810
+	* tree-vrp.c (simplify_switch_using_ranges): Avoid changing
+	the type of the case labels when truncating.
+
 2016-08-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR Target/72819
