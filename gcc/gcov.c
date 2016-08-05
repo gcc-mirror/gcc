@@ -41,6 +41,11 @@ along with Gcov; see the file COPYING3.  If not see
 
 #include <getopt.h>
 
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
 #define IN_GCOV 1
 #include "gcov-io.h"
 #include "gcov-io.c"
@@ -222,6 +227,9 @@ typedef struct coverage_info
 
 typedef struct line_info
 {
+  /* Return true when NEEDLE is one of basic blocks the line belongs to.  */
+  bool has_block (block_t *needle);
+
   gcov_type count;	   /* execution count */
   union
   {
@@ -234,6 +242,16 @@ typedef struct line_info
   unsigned exists : 1;
   unsigned unexceptional : 1;
 } line_t;
+
+bool
+line_t::has_block (block_t *needle)
+{
+  for (block_t *n = u.blocks; n; n = n->chain)
+    if (n == needle)
+      return true;
+
+  return false;
+}
 
 /* Describes a file mentioned in the block graph.  Contains an array
    of line info.  */
@@ -406,6 +424,166 @@ static char *mangle_name (const char *, char *);
 static void release_structures (void);
 static void release_function (function_t *);
 extern int main (int, char **);
+
+/* Cycle detection!
+   There are a bajillion algorithms that do this.  Boost's function is named
+   hawick_cycles, so I used the algorithm by K. A. Hawick and H. A. James in
+   "Enumerating Circuits and Loops in Graphs with Self-Arcs and Multiple-Arcs"
+   (url at <http://complexity.massey.ac.nz/cstn/013/cstn-013.pdf>).
+
+   The basic algorithm is simple: effectively, we're finding all simple paths
+   in a subgraph (that shrinks every iteration).  Duplicates are filtered by
+   "blocking" a path when a node is added to the path (this also prevents non-
+   simple paths)--the node is unblocked only when it participates in a cycle.
+   */
+
+typedef vector<arc_t *> arc_vector_t;
+typedef vector<const block_t *> block_vector_t;
+
+/* Enum with types of loop in CFG.  */
+
+enum loop_type
+{
+  NO_LOOP = 0,
+  LOOP = 1,
+  NEGATIVE_LOOP = 3
+};
+
+/* Loop_type operator that merges two values: A and B.  */
+
+inline loop_type& operator |= (loop_type& a, loop_type b)
+{
+    return a = static_cast<loop_type> (a | b);
+}
+
+/* Handle cycle identified by EDGES, where the function finds minimum cs_count
+   and subtract the value from all counts.  The subtracted value is added
+   to COUNT.  Returns type of loop.  */
+
+static loop_type
+handle_cycle (const arc_vector_t &edges, int64_t &count)
+{
+  /* Find the minimum edge of the cycle, and reduce all nodes in the cycle by
+     that amount.  */
+  int64_t cycle_count = INT64_MAX;
+  for (unsigned i = 0; i < edges.size (); i++)
+    {
+      int64_t ecount = edges[i]->cs_count;
+      if (cycle_count > ecount)
+	cycle_count = ecount;
+    }
+  count += cycle_count;
+  for (unsigned i = 0; i < edges.size (); i++)
+    edges[i]->cs_count -= cycle_count;
+
+  return cycle_count < 0 ? NEGATIVE_LOOP : LOOP;
+}
+
+/* Unblock a block U from BLOCKED.  Apart from that, iterate all blocks
+   blocked by U in BLOCK_LISTS.  */
+
+static void
+unblock (const block_t *u, block_vector_t &blocked,
+	 vector<block_vector_t > &block_lists)
+{
+  block_vector_t::iterator it = find (blocked.begin (), blocked.end (), u);
+  if (it == blocked.end ())
+    return;
+
+  unsigned index = it - blocked.begin ();
+  blocked.erase (it);
+
+  for (block_vector_t::iterator it2 = block_lists[index].begin ();
+       it2 != block_lists[index].end (); it2++)
+    unblock (*it2, blocked, block_lists);
+  for (unsigned j = 0; j < block_lists[index].size (); j++)
+    unblock (u, blocked, block_lists);
+
+  block_lists.erase (block_lists.begin () + index);
+}
+
+/* Find circuit going to block V, PATH is provisional seen cycle.
+   BLOCKED is vector of blocked vertices, BLOCK_LISTS contains vertices
+   blocked by a block.  COUNT is accumulated count of the current LINE.
+   Returns what type of loop it contains.  */
+
+static loop_type
+circuit (block_t *v, arc_vector_t &path, block_t *start,
+	 block_vector_t &blocked, vector<block_vector_t> &block_lists,
+	 line_t &linfo, int64_t &count)
+{
+  loop_type result = NO_LOOP;
+
+  /* Add v to the block list.  */
+  gcc_assert (find (blocked.begin (), blocked.end (), v) == blocked.end ());
+  blocked.push_back (v);
+  block_lists.push_back (block_vector_t ());
+
+  for (arc_t *arc = v->succ; arc; arc = arc->succ_next)
+    {
+      block_t *w = arc->dst;
+      if (w < start || !linfo.has_block (w))
+	continue;
+
+      path.push_back (arc);
+      if (w == start)
+	/* Cycle has been found.  */
+	result |= handle_cycle (path, count);
+      else if (find (blocked.begin (), blocked.end (), w) == blocked.end ())
+	result |= circuit (w, path, start, blocked, block_lists, linfo, count);
+
+      path.pop_back ();
+    }
+
+  if (result != NO_LOOP)
+    unblock (v, blocked, block_lists);
+  else
+    for (arc_t *arc = v->succ; arc; arc = arc->succ_next)
+      {
+	block_t *w = arc->dst;
+	if (w < start || !linfo.has_block (w))
+	  continue;
+
+	size_t index
+	  = find (blocked.begin (), blocked.end (), w) - blocked.begin ();
+	gcc_assert (index < blocked.size ());
+	block_vector_t &list = block_lists[index];
+	if (find (list.begin (), list.end (), v) == list.end ())
+	  list.push_back (v);
+      }
+
+  return result;
+}
+
+/* Find cycles for a LINFO.  If HANDLE_NEGATIVE_CYCLES is set and the line
+   contains a negative loop, then perform the same function once again.  */
+
+static gcov_type
+get_cycles_count (line_t &linfo, bool handle_negative_cycles = true)
+{
+  /* Note that this algorithm works even if blocks aren't in sorted order.
+     Each iteration of the circuit detection is completely independent
+     (except for reducing counts, but that shouldn't matter anyways).
+     Therefore, operating on a permuted order (i.e., non-sorted) only
+     has the effect of permuting the output cycles.  */
+
+  loop_type result = NO_LOOP;
+  gcov_type count = 0;
+  for (block_t *block = linfo.u.blocks; block; block = block->chain)
+    {
+      arc_vector_t path;
+      block_vector_t blocked;
+      vector<block_vector_t > block_lists;
+      result |= circuit (block, path, block, blocked, block_lists, linfo,
+			 count);
+    }
+
+  /* If we have a negative cycle, repeat the find_cycles routine.  */
+  if (result == NEGATIVE_LOOP && handle_negative_cycles)
+    count += get_cycles_count (linfo, false);
+
+  return count;
+}
 
 int
 main (int argc, char **argv)
@@ -2201,113 +2379,22 @@ accumulate_line_counts (source_t *src)
 	      arc_t *arc;
 
 	      for (arc = block->pred; arc; arc = arc->pred_next)
-		{
-		  if (arc->src->u.cycle.ident != ix)
-		    count += arc->count;
-		  if (flag_branches)
-		    add_branch_counts (&src->coverage, arc);
-		}
+		if (flag_branches)
+		  add_branch_counts (&src->coverage, arc);
+	    }
 
-	      /* Initialize the cs_count.  */
-	      for (arc = block->succ; arc; arc = arc->succ_next)
+	  /* Cycle detection.  */
+	  for (block = line->u.blocks; block; block = block->chain)
+	    {
+	      for (arc_t *arc = block->pred; arc; arc = arc->pred_next)
+		if (!line->has_block (arc->src))
+		  count += arc->count;
+	      for (arc_t *arc = block->succ; arc; arc = arc->succ_next)
 		arc->cs_count = arc->count;
 	    }
 
-	  /* Find the loops. This uses the algorithm described in
-	     Tiernan 'An Efficient Search Algorithm to Find the
-	     Elementary Circuits of a Graph', CACM Dec 1970. We hold
-	     the P array by having each block point to the arc that
-	     connects to the previous block. The H array is implicitly
-	     held because of the arc ordering, and the block's
-	     previous arc pointer.
-
-	     Although the algorithm is O(N^3) for highly connected
-	     graphs, at worst we'll have O(N^2), as most blocks have
-	     only one or two exits. Most graphs will be small.
-
-	     For each loop we find, locate the arc with the smallest
-	     transition count, and add that to the cumulative
-	     count.  Decrease flow over the cycle and remove the arc
-	     from consideration.  */
-	  for (block = line->u.blocks; block; block = block->chain)
-	    {
-	      block_t *head = block;
-	      arc_t *arc;
-
-	    next_vertex:;
-	      arc = head->succ;
-	    current_vertex:;
-	      while (arc)
-		{
-		  block_t *dst = arc->dst;
-		  if (/* Already used that arc.  */
-		      arc->cycle
-		      /* Not to same graph, or before first vertex.  */
-		      || dst->u.cycle.ident != ix
-		      /* Already in path.  */
-		      || dst->u.cycle.arc)
-		    {
-		      arc = arc->succ_next;
-		      continue;
-		    }
-
-		  if (dst == block)
-		    {
-		      /* Found a closing arc.  */
-		      gcov_type cycle_count = arc->cs_count;
-		      arc_t *cycle_arc = arc;
-		      arc_t *probe_arc;
-
-		      /* Locate the smallest arc count of the loop.  */
-		      for (dst = head; (probe_arc = dst->u.cycle.arc);
-			   dst = probe_arc->src)
-			if (cycle_count > probe_arc->cs_count)
-			  {
-			    cycle_count = probe_arc->cs_count;
-			    cycle_arc = probe_arc;
-			  }
-
-		      count += cycle_count;
-		      cycle_arc->cycle = 1;
-
-		      /* Remove the flow from the cycle.  */
-		      arc->cs_count -= cycle_count;
-		      for (dst = head; (probe_arc = dst->u.cycle.arc);
-			   dst = probe_arc->src)
-			probe_arc->cs_count -= cycle_count;
-
-		      /* Unwind to the cyclic arc.  */
-		      while (head != cycle_arc->src)
-			{
-			  arc = head->u.cycle.arc;
-			  head->u.cycle.arc = NULL;
-			  head = arc->src;
-			}
-		      /* Move on.  */
-		      arc = arc->succ_next;
-		      continue;
-		    }
-
-		  /* Add new block to chain.  */
-		  dst->u.cycle.arc = arc;
-		  head = dst;
-		  goto next_vertex;
-		}
-	      /* We could not add another vertex to the path. Remove
-		 the last vertex from the list.  */
-	      arc = head->u.cycle.arc;
-	      if (arc)
-		{
-		  /* It was not the first vertex. Move onto next arc.  */
-		  head->u.cycle.arc = NULL;
-		  head = arc->src;
-		  arc = arc->succ_next;
-		  goto current_vertex;
-		}
-	      /* Mark this block as unusable.  */
-	      block->u.cycle.ident = ~0U;
-	    }
-
+	  /* Now, add the count of loops entirely on this line.  */
+	  count += get_cycles_count (*line);
 	  line->count = count;
 	}
 
