@@ -1,3 +1,17 @@
+2016-08-05  Ian Lance Taylor  <iant@google.com>
+
+	PR go/72812
+	* go-gcc.cc (char_needs_encoding): New static function.
+	(needs_encoding, fetch_utf8_char): New static functions.
+	(encode_id): New static function.
+	(Gcc_backend::global_variable): Set asm name if the name is not
+	simple ASCII.
+	(Gcc_backend::implicit_variable): Likewise.
+	(Gcc_backend::implicit_variable_reference): Likewise.
+	(Gcc_backend::immutable_struct): Likewise.
+	(Gcc_backend::immutable_struct_reference): Likewise.
+	(Gcc_backend::function): Likewise.
+
 2016-08-02  Chris Manghane  <cmang@google.com>
 
 	* lang.opt: Add -fgo-debug-escape option.
