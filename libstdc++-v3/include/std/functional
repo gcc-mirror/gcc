@@ -1483,33 +1483,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     : __is_location_invariant<_Tp>
     { };
 
-  // Converts a reference to a function object into a callable
-  // function object.
-  template<typename _Functor>
-    inline _Functor&
-    __callable_functor(_Functor& __f)
-    { return __f; }
-
-  template<typename _Member, typename _Class>
-    inline _Mem_fn<_Member _Class::*>
-    __callable_functor(_Member _Class::* &__p)
-    { return std::mem_fn(__p); }
-
-  template<typename _Member, typename _Class>
-    inline _Mem_fn<_Member _Class::*>
-    __callable_functor(_Member _Class::* const &__p)
-    { return std::mem_fn(__p); }
-
-  template<typename _Member, typename _Class>
-    inline _Mem_fn<_Member _Class::*>
-    __callable_functor(_Member _Class::* volatile &__p)
-    { return std::mem_fn(__p); }
-
-  template<typename _Member, typename _Class>
-    inline _Mem_fn<_Member _Class::*>
-    __callable_functor(_Member _Class::* const volatile &__p)
-    { return std::mem_fn(__p); }
-
   template<typename _Signature>
     class function;
 
@@ -1731,8 +1704,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static _Res
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	return std::__callable_functor(**_Base::_M_get_pointer(__functor))(
-	      std::forward<_ArgTypes>(__args)...);
+	return std::__invoke(**_Base::_M_get_pointer(__functor),
+			     std::forward<_ArgTypes>(__args)...);
       }
     };
 
@@ -1746,8 +1719,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static void
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	std::__callable_functor(**_Base::_M_get_pointer(__functor))(
-	    std::forward<_ArgTypes>(__args)...);
+	std::__invoke(**_Base::_M_get_pointer(__functor),
+		      std::forward<_ArgTypes>(__args)...);
       }
     };
 
@@ -1763,8 +1736,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static _Res
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	return std::mem_fn(_Base::_M_get_pointer(__functor)->__value)(
-	    std::forward<_ArgTypes>(__args)...);
+	return std::__invoke(_Base::_M_get_pointer(__functor)->__value,
+			     std::forward<_ArgTypes>(__args)...);
       }
     };
 
@@ -1803,8 +1776,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static void
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	std::mem_fn(_Base::_M_get_pointer(__functor)->__value)(
-	    std::forward<_ArgTypes>(__args)...);
+	std::__invoke(_Base::_M_get_pointer(__functor)->__value,
+		      std::forward<_ArgTypes>(__args)...);
       }
     };
 
@@ -1826,7 +1799,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       typedef _Res _Signature_type(_ArgTypes...);
 
       template<typename _Func,
-	       typename _Res2 = typename result_of<_Func(_ArgTypes...)>::type>
+	       typename _Res2 = typename result_of<_Func&(_ArgTypes...)>::type>
 	struct _Callable : __check_func_return_type<_Res2, _Res> { };
 
       // Used so the return type convertibility checks aren't done when
@@ -1877,8 +1850,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       {
 	__x.swap(*this);
       }
-
-      // TODO: needs allocator_arg_t
 
       /**
        *  @brief Builds a %function that targets a copy of the incoming
@@ -2005,17 +1976,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	std::swap(_M_manager, __x._M_manager);
 	std::swap(_M_invoker, __x._M_invoker);
       }
-
-      // TODO: needs allocator_arg_t
-      /*
-      template<typename _Functor, typename _Alloc>
-	void
-	assign(_Functor&& __f, const _Alloc& __a)
-	{
-	  function(allocator_arg, __a,
-		   std::forward<_Functor>(__f)).swap(*this);
-	}
-      */
 
       // [3.7.2.3] function capacity
 
