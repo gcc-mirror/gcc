@@ -1,3 +1,8 @@
+2016-08-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/68724
+	* g++.dg/cpp0x/pr68724.C: New.
+
 2016-08-05  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ivopt_5.c: Make robust against edge swapping.

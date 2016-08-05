@@ -1,3 +1,8 @@
+2016-08-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/68724
+	* pt.c (unify): TRAIT_EXPR is an expr.
+
 2016-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/72800
