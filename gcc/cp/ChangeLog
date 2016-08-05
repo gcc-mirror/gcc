@@ -1,3 +1,12 @@
+2016-08-05 Martin Sebor  <msebor@redhat.com>
+
+	* constexpr.c (cxx_eval_store_expression): Remove hyphen from
+	the spelling of "constant-expression" in diagnostic messages
+	for consistency.
+	(cxx_eval_constant_expression): Same.
+	(cxx_eval_outermost_constant_expr): Same.
+	(potential_constant_expression_1): Same.
+
 2016-08-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/68724

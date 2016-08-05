@@ -12,7 +12,7 @@ struct S
 
 struct T
 {
-  constexpr T (double a) : y {}, x ((y = 1, 0.8125)) {}	// { dg-error "is not a constant-expression" "T" { target { ! c++14 } } }
+  constexpr T (double a) : y {}, x ((y = 1, 0.8125)) {}	// { dg-error "is not a constant expression" "T" { target { ! c++14 } } }
   double x;
   int y;
 };

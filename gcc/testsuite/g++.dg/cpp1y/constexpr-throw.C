@@ -8,25 +8,25 @@ constexpr void f1() {
 constexpr void f2() {
   if (true)
     throw;
-} // { dg-error "not a constant-expression" }
+} // { dg-error "not a constant expression" }
 
 constexpr void f3() {
   if (false)
     ;
   else
     throw;
-}// { dg-error "not a constant-expression" }
+}// { dg-error "not a constant expression" }
 
 constexpr void f4() {
   throw;
-}// { dg-error "not a constant-expression" }
+}// { dg-error "not a constant expression" }
 
 constexpr int fun(int n) {
   switch (n) {
   case 0:
     return 1;
   default:
-    throw; // { dg-error "not a constant-expression" }
+    throw; // { dg-error "not a constant expression" }
   }
 }
 

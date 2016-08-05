@@ -65,7 +65,7 @@ g (int i)
   switch (i)
     {
     case 0 * (1/0): /* { dg-warning "division by zero" } */
-      ;  /* { dg-error "is not a constant expression" "const" { target *-*-* } 67 }  */
+      ;  /* { dg-error "division by zero is not a constant expression" "division" { target c++11 } 67 }  */
     case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
       /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 69 } */
       ;
@@ -131,6 +131,6 @@ h2i (int x)
 /* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 19 } */
 /* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 32 } */
 /* { dg-warning "invalid conversion from" "convert" { target c++11 } 60 } */
-/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 67 } */
+/* { dg-error "not a constant expression" "constant" { target *-*-*-* } 67 } */
 /* { dg-error "width not an integer constant" "bit.field" { target c++ } 32 } */
 /* { dg-error "is not a constant expression" "division" { target c++ } 32 } */
