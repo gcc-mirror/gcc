@@ -9593,7 +9593,7 @@ static bool
 simplify_switch_using_ranges (gswitch *stmt)
 {
   tree op = gimple_switch_index (stmt);
-  value_range *vr;
+  value_range *vr = NULL;
   bool take_default;
   edge e;
   edge_iterator ei;
@@ -9632,6 +9632,84 @@ simplify_switch_using_ranges (gswitch *stmt)
     return false;
 
   n = gimple_switch_num_labels (stmt);
+
+  /* We can truncate the case label ranges that partially overlap with OP's
+     value range.  */
+  size_t min_idx = 1, max_idx = 0;
+  if (vr != NULL)
+    find_case_label_range (stmt, vr->min, vr->max, &min_idx, &max_idx);
+  if (min_idx <= max_idx)
+    {
+      tree min_label = gimple_switch_label (stmt, min_idx);
+      tree max_label = gimple_switch_label (stmt, max_idx);
+
+      if (vr->type == VR_RANGE)
+	{
+	  /* If OP's value range is [2,8] and the low label range is
+	     0 ... 3, truncate the label's range to 2 .. 3.  */
+	  if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) < 0
+	      && CASE_HIGH (min_label) != NULL_TREE
+	      && tree_int_cst_compare (CASE_HIGH (min_label), vr->min) >= 0)
+	    CASE_LOW (min_label) = vr->min;
+
+	  /* If OP's value range is [2,8] and the high label range is
+	     7 ... 10, truncate the label's range to 7 .. 8.  */
+	  if (tree_int_cst_compare (CASE_LOW (max_label), vr->max) <= 0
+	      && CASE_HIGH (max_label) != NULL_TREE
+	      && tree_int_cst_compare (CASE_HIGH (max_label), vr->max) > 0)
+	    CASE_HIGH (max_label) = vr->max;
+	}
+      else if (vr->type == VR_ANTI_RANGE)
+	{
+	  tree one_cst = build_one_cst (TREE_TYPE (op));
+
+	  if (min_label == max_label)
+	    {
+	      /* If OP's value range is ~[7,8] and the label's range is
+		 7 ... 10, truncate the label's range to 9 ... 10.  */
+	      if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) == 0
+		  && CASE_HIGH (min_label) != NULL_TREE
+		  && tree_int_cst_compare (CASE_HIGH (min_label), vr->max) > 0)
+		CASE_LOW (min_label)
+		  = int_const_binop (PLUS_EXPR, vr->max, one_cst);
+
+	      /* If OP's value range is ~[7,8] and the label's range is
+		 5 ... 8, truncate the label's range to 5 ... 6.  */
+	      if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) < 0
+		  && CASE_HIGH (min_label) != NULL_TREE
+		  && tree_int_cst_compare (CASE_HIGH (min_label), vr->max) == 0)
+		CASE_HIGH (min_label)
+		  = int_const_binop (MINUS_EXPR, vr->min, one_cst);
+	    }
+	  else
+	    {
+	      /* If OP's value range is ~[2,8] and the low label range is
+		 0 ... 3, truncate the label's range to 0 ... 1.  */
+	      if (tree_int_cst_compare (CASE_LOW (min_label), vr->min) < 0
+		  && CASE_HIGH (min_label) != NULL_TREE
+		  && tree_int_cst_compare (CASE_HIGH (min_label), vr->min) >= 0)
+		CASE_HIGH (min_label)
+		  = int_const_binop (MINUS_EXPR, vr->min, one_cst);
+
+	      /* If OP's value range is ~[2,8] and the high label range is
+		 7 ... 10, truncate the label's range to 9 ... 10.  */
+	      if (tree_int_cst_compare (CASE_LOW (max_label), vr->max) <= 0
+		  && CASE_HIGH (max_label) != NULL_TREE
+		  && tree_int_cst_compare (CASE_HIGH (max_label), vr->max) > 0)
+		CASE_LOW (max_label)
+		  = int_const_binop (PLUS_EXPR, vr->max, one_cst);
+	    }
+	}
+
+      /* Canonicalize singleton case ranges.  */
+      if (tree_int_cst_equal (CASE_LOW (min_label), CASE_HIGH (min_label)))
+	CASE_HIGH (min_label) = NULL_TREE;
+      if (tree_int_cst_equal (CASE_LOW (max_label), CASE_HIGH (max_label)))
+	CASE_HIGH (max_label) = NULL_TREE;
+    }
+
+  /* We can also eliminate case labels that lie completely outside OP's value
+     range.  */
 
   /* Bail out if this is just all edges taken.  */
   if (i == 1
