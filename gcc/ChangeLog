@@ -1,3 +1,9 @@
+2016-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Use bb_loop_header_p.
+	* cfghooks.c (force_nonfallthru): If we ended up splitting a latch
+	adjust loop info accordingly.
+
 2016-08-05  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (extract_range_basic): Check cfun->after_inlining
