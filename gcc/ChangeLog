@@ -1,3 +1,9 @@
+2016-08-05  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_preferred_reload_class): Delete
+	code accidentally committed 2016-05-02 providing class when given
+	NO_REGS.
+
 2016-08-04  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-vrp.c (simplify_switch_using_ranges): Try to truncate
@@ -15603,7 +15609,7 @@
 2016-02-14  Alan Modra  <amodra@gmail.com>
 
 	PR target/68973
-	* reloads.c (find_reloads_address_1): For pre/post-inc/dec
+	* reload.c (find_reloads_address_1): For pre/post-inc/dec
 	with an invalid hard reg, reload just the reg not the entire
 	pre/post-inc/dec address expression.
 

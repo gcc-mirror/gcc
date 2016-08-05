@@ -20407,25 +20407,6 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
       return NO_REGS;
     }
 
-  /* If we haven't picked a register class, and the type is a vector or
-     floating point type, prefer to use the VSX, FPR, or Altivec register
-     classes.  */
-  if (rclass == NO_REGS)
-    {
-      if (TARGET_VSX && VECTOR_MEM_VSX_OR_P8_VECTOR_P (mode))
-	return VSX_REGS;
-
-      if (TARGET_ALTIVEC && VECTOR_MEM_ALTIVEC_P (mode))
-	return ALTIVEC_REGS;
-
-      if (DECIMAL_FLOAT_MODE_P (mode))
-	return TARGET_DFP ? FLOAT_REGS : NO_REGS;
-
-      if (TARGET_FPRS && TARGET_HARD_FLOAT && FLOAT_MODE_P (mode)
-	  && (reg_addr[mode].addr_mask[RELOAD_REG_FPR] & RELOAD_REG_VALID) == 0)
-	return FLOAT_REGS;
-    }
-
   if (GET_MODE_CLASS (mode) == MODE_INT && rclass == NON_SPECIAL_REGS)
     return GENERAL_REGS;
 
