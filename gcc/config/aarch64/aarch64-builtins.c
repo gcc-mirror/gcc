@@ -443,12 +443,14 @@ static struct aarch64_simd_type_info aarch64_simd_types [] = {
 };
 #undef ENTRY
 
-/* This type is not SIMD-specific; it is the user-visible __fp16.  */
-static tree aarch64_fp16_type_node = NULL_TREE;
-
 static tree aarch64_simd_intOI_type_node = NULL_TREE;
 static tree aarch64_simd_intCI_type_node = NULL_TREE;
 static tree aarch64_simd_intXI_type_node = NULL_TREE;
+
+/* The user-visible __fp16 type, and a pointer to that type.  Used
+   across the back-end.  */
+tree aarch64_fp16_type_node = NULL_TREE;
+tree aarch64_fp16_ptr_type_node = NULL_TREE;
 
 static const char *
 aarch64_mangle_builtin_scalar_type (const_tree type)
@@ -883,6 +885,21 @@ aarch64_init_builtin_rsqrt (void)
   }
 }
 
+/* Initialize the backend types that support the user-visible __fp16
+   type, also initialize a pointer to that type, to be used when
+   forming HFAs.  */
+
+static void
+aarch64_init_fp16_types (void)
+{
+  aarch64_fp16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (aarch64_fp16_type_node) = 16;
+  layout_type (aarch64_fp16_type_node);
+
+  (*lang_hooks.types.register_builtin_type) (aarch64_fp16_type_node, "__fp16");
+  aarch64_fp16_ptr_type_node = build_pointer_type (aarch64_fp16_type_node);
+}
+
 void
 aarch64_init_builtins (void)
 {
@@ -904,11 +921,7 @@ aarch64_init_builtins (void)
     = add_builtin_function ("__builtin_aarch64_set_fpsr", ftype_set_fpr,
 			    AARCH64_BUILTIN_SET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
 
-  aarch64_fp16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (aarch64_fp16_type_node) = 16;
-  layout_type (aarch64_fp16_type_node);
-
-  (*lang_hooks.types.register_builtin_type) (aarch64_fp16_type_node, "__fp16");
+  aarch64_init_fp16_types ();
 
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();

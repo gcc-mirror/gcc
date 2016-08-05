@@ -1,3 +1,29 @@
+2016-08-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR Target/72819
+	* gcc.target/aarch64/aapcs64/abitest-common.h: Define half-precision
+	registers.
+	* gcc.target/aarch64/aapcs64/abitest.S (dumpregs): Add assembly for
+	saving the half-precision registers.
+	* gcc.target/aarch64/aapcs64/func-ret-1.c: Test that an __fp16
+	value is returned in h0.
+	* gcc.target/aarch64/aapcs64/test_2.c: Check that __FP16 arguments
+	are passed in FP/SIMD registers.
+	* gcc.target/aarch64/aapcs64/test_27.c: New, test that __fp16 HFA
+	passing works corrcetly.
+	* gcc.target/aarch64/aapcs64/type-def.h (hfa_f16x1_t): New.
+	(hfa_f16x2_t): Likewise.
+	(hfa_f16x3_t): Likewise.
+	* gcc.target/aarch64/aapcs64/va_arg-1.c: Check that __fp16 values
+	are promoted to double and passed in a double register.
+	* gcc.target/aarch64/aapcs64/va_arg-2.c: Check that __fp16 values
+	are promoted to double and stacked.
+	* gcc.target/aarch64/aapcs64/va_arg-4.c: Check stacking of HFA of
+	__fp16 data types.
+	* gcc.target/aarch64/aapcs64/va_arg-5.c: Likewise.
+	* gcc.target/aarch64/aapcs64/va_arg-16.c: New, check HFAs of
+	__fp16 first get passed in FP/SIMD registers, then stacked.
+
 2016-08-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/68724

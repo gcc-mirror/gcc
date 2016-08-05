@@ -13,7 +13,12 @@ dumpregs:
 myfunc:
       mov	x16, sp
       mov	x17, sp
-      sub	sp,  sp, 352 // 336 for registers and 16 for old sp and lr
+      sub	sp,  sp, 368 // 352 for registers and 16 for old sp and lr
+
+      sub	x17, x17, 8
+      st4	{ v4.h, v5.h, v6.h, v7.h }[0], [x17] //344
+      sub	x17, x17, 8
+      st4	{ v0.h, v1.h, v2.h, v3.h }[0], [x17] //336
 
       stp	x8, x9, [x17, #-16]! //320
 
