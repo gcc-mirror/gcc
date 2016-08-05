@@ -1,3 +1,8 @@
+2016-08-05  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-vrp.c (extract_range_basic): Check cfun->after_inlining
+	before folding call to __builtin_constant_p with parameters to false.
+
 2016-08-05  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_preferred_reload_class): Delete
