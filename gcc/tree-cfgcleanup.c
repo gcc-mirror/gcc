@@ -344,7 +344,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
     {
       basic_block dest;
       /* Protect loop headers.  */
-      if (bb->loop_father->header == bb)
+      if (bb_loop_header_p (bb))
 	return false;
 
       dest = EDGE_SUCC (bb, 0)->dest;
