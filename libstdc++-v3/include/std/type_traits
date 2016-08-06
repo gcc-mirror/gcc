@@ -156,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
 
-#define __cpp_lib_logical_traits 201511
+#define __cpp_lib_logical_traits 201510
 
   template<typename... _Bn>
     struct conjunction
