@@ -465,7 +465,7 @@ handle_cycle (const arc_vector_t &edges, int64_t &count)
 {
   /* Find the minimum edge of the cycle, and reduce all nodes in the cycle by
      that amount.  */
-  int64_t cycle_count = INT64_MAX;
+  int64_t cycle_count = INTTYPE_MAXIMUM (int64_t);
   for (unsigned i = 0; i < edges.size (); i++)
     {
       int64_t ecount = edges[i]->cs_count;
