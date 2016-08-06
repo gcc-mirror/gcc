@@ -1,5 +1,11 @@
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Change "mainline GCC SVN" to
+	refer to the release series.
+	* doc/xml/manual/status_cxx2014.xml: Likewise. Update TS status.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
 	* include/experimental/propagate_const (propagate_const::__t): Rename
 	to _M_t and remove comment. Qualify std::move and std::forward.
 	* testsuite/experimental/propagate_const/cons/default.cc: Fix test.
