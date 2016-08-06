@@ -73,6 +73,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus > 201103L
+# define __cpp_lib_generic_associative_lookup 201304
+#endif
+
   // Red-black tree class, designed for use in implementing STL
   // associative containers (set, multiset, map, and multimap). The
   // insertion and deletion algorithms are based on those in Cormen,
