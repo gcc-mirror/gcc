@@ -56,6 +56,7 @@
 #include <type_traits>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
+#include <bits/invoke.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -184,55 +185,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
     { };
 
-  // Used by __invoke_impl instead of std::forward<_Tp> so that a
-  // reference_wrapper is converted to an lvalue-reference.
-  template<typename _Tp, typename _Up = typename __inv_unwrap<_Tp>::type>
-    inline _Up&&
-    __invfwd(typename remove_reference<_Tp>::type& __t) noexcept
-    { return static_cast<_Up&&>(__t); }
-
-  template<typename _Res, typename _Fn, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_other, _Fn&& __f, _Args&&... __args)
-    { return std::forward<_Fn>(__f)(std::forward<_Args>(__args)...); }
-
-  template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_memfun_ref, _MemFun&& __f, _Tp&& __t,
-		  _Args&&... __args)
-    { return (__invfwd<_Tp>(__t).*__f)(std::forward<_Args>(__args)...); }
-
-  template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_memfun_deref, _MemFun&& __f, _Tp&& __t,
-		  _Args&&... __args)
-    {
-      return ((*std::forward<_Tp>(__t)).*__f)(std::forward<_Args>(__args)...);
-    }
-
-  template<typename _Res, typename _MemPtr, typename _Tp>
-    inline _Res
-    __invoke_impl(__invoke_memobj_ref, _MemPtr&& __f, _Tp&& __t)
-    { return __invfwd<_Tp>(__t).*__f; }
-
-  template<typename _Res, typename _MemPtr, typename _Tp>
-    inline _Res
-    __invoke_impl(__invoke_memobj_deref, _MemPtr&& __f, _Tp&& __t)
-    { return (*std::forward<_Tp>(__t)).*__f; }
-
-  /// Invoke a callable object.
-  template<typename _Callable, typename... _Args>
-    inline typename result_of<_Callable&&(_Args&&...)>::type
-    __invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(__is_nothrow_callable<_Callable(_Args...)>::value)
-    {
-      using __result_of = result_of<_Callable&&(_Args&&...)>;
-      using __type = typename __result_of::type;
-      using __tag = typename __result_of::__invoke_type;
-      return std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
-					std::forward<_Args>(__args)...);
-    }
-
 #if __cplusplus > 201402L
 # define __cpp_lib_invoke 201411
 
@@ -240,7 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Callable, typename... _Args>
     inline result_of_t<_Callable&&(_Args&&...)>
     invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(is_nothrow_callable_v<_Callable(_Args...)>)
+    noexcept(is_nothrow_callable_v<_Callable(_Args&&...)>)
     {
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);

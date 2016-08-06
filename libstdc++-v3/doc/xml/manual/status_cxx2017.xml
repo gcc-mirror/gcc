@@ -149,6 +149,41 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
+      <entry> Library Fundamentals V1 TS Components: <code>apply</code> </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html">
+	P0220R1
+	</link>
+      </entry>
+      <entry align="center"> 7 </entry>
+      <entry> <code>__cpp_lib_apply >= 201603</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Library Fundamentals V1 TS Components: <code>shared_ptr&lt;T[]&gt;</code> </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html">
+	P0220R1
+	</link>
+      </entry>
+      <entry align="center"> No </entry>
+      <entry> <code>__cpp_lib_shared_ptr_arrays >= 201603</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Library Fundamentals V1 TS Components: Searchers </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html">
+	P0220R1
+	</link>
+      </entry>
+      <entry align="center"> No </entry>
+      <entry> <code>__cpp_lib_boyer_moore_searcher >= 201603</code> </entry>
+    </row>
+
+    <row>
       <entry> Constant View: A proposal for a <code>std::as_const</code> helper function template	</entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="">

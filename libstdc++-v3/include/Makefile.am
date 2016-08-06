@@ -112,6 +112,7 @@ bits_headers = \
 	${bits_srcdir}/hashtable.h \
 	${bits_srcdir}/hashtable_policy.h \
 	${bits_srcdir}/indirect_array.h \
+	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
 	${bits_srcdir}/list.tcc \
