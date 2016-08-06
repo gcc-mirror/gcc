@@ -1,5 +1,10 @@
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/72820
+	* include/std/functional (_Function_base::_Base_manager::_M_clone):
+	Qualify new operator.
+	* testsuite/20_util/function/cons/72820.cc: New test.
+
 	* doc/xml/manual/status_cxx2017.xml: Add missing LFTSv2 features.
 	* doc/html/manual/status.html: Regenerate.
 	* include/Makefile.am: Add new header.
