@@ -231,13 +231,12 @@ debug_lattice_value (ccp_prop_value_t val)
   fprintf (stderr, "\n");
 }
 
-/* Extend NONZERO_BITS to a full mask, with the upper bits being set.  */
+/* Extend NONZERO_BITS to a full mask, based on sgn.  */ 
 
 static widest_int
-extend_mask (const wide_int &nonzero_bits)
+extend_mask (const wide_int &nonzero_bits, signop sgn)
 {
-  return (wi::mask <widest_int> (wi::get_precision (nonzero_bits), true)
-	  | widest_int::from (nonzero_bits, UNSIGNED));
+  return widest_int::from (nonzero_bits, sgn); 
 }
 
 /* Compute a default value for variable VAR and store it in the
@@ -287,7 +286,7 @@ get_default_value (tree var)
 		{
 		  val.lattice_val = CONSTANT;
 		  val.value = build_zero_cst (TREE_TYPE (var));
-		  val.mask = extend_mask (nonzero_bits);
+		  val.mask = extend_mask (nonzero_bits, TYPE_SIGN (TREE_TYPE (var)));
 		}
 	    }
 	}
@@ -1937,7 +1936,7 @@ evaluate_stmt (gimple *stmt)
 	    {
 	      val.lattice_val = CONSTANT;
 	      val.value = build_zero_cst (TREE_TYPE (lhs));
-	      val.mask = extend_mask (nonzero_bits);
+	      val.mask = extend_mask (nonzero_bits, TYPE_SIGN (TREE_TYPE (lhs)));
 	      is_constant = true;
 	    }
 	  else
@@ -1948,7 +1947,8 @@ evaluate_stmt (gimple *stmt)
 	      if (nonzero_bits == 0)
 		val.mask = 0;
 	      else
-		val.mask = val.mask & extend_mask (nonzero_bits);
+		val.mask = val.mask & extend_mask (nonzero_bits,
+						   TYPE_SIGN (TREE_TYPE (lhs)));
 	    }
 	}
     }

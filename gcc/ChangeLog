@@ -1,3 +1,10 @@
+2016-08-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-ccp.c (extend_mask): New param sgn.
+	Remove ORing with wi::mask.
+	(get_default_value): Adjust call to extend_mask to pass sign.
+	(evaluate_stmt): Likewise.
+
 2016-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcov.c (handle_cycle): Use INTTYPE_MAXIMUM (int64_t) instead of
