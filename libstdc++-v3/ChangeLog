@@ -1,6 +1,13 @@
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (function::_Callable): Use lvalue in
+	result_of expression.
+	* testsuite/20_util/function/cons/refqual.cc: New test.
+
+	Backport from mainline
 	2016-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71964
