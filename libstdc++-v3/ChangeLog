@@ -1,5 +1,7 @@
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/lib/libstdc++.exp: Fix typo in comment.
+
 	PR libstdc++/72820
 	* include/std/functional (_Function_base::_Base_manager::_M_clone):
 	Qualify new operator.

@@ -1925,7 +1925,7 @@ proc check_v3_target_little_endian { } {
     return $et_little_endian
 }
 
-# Return 1 if the Filesystem TS is suported, 0 otherwise.
+# Return 1 if the Filesystem TS is supported, 0 otherwise.
 # Cache the result.
 proc check_v3_target_filesystem_ts { } {
     global cxxflags
