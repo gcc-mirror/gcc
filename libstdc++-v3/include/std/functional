@@ -1847,7 +1847,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       typedef _Res _Signature_type(_ArgTypes...);
 
       template<typename _Func,
-	       typename _Res2 = typename result_of<_Func(_ArgTypes...)>::type>
+	       typename _Res2 = typename result_of<_Func&(_ArgTypes...)>::type>
 	struct _Callable : __check_func_return_type<_Res2, _Res> { };
 
       // Used so the return type convertibility checks aren't done when
