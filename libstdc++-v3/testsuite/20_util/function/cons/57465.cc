@@ -15,17 +15,33 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// libstdc++/57465
-
 // { dg-options "-std=gnu++11" }
 
 #include <functional>
 #include <testsuite_hooks.h>
 
-int main()
+void test01()
 {
   using F = void();
   F* f = nullptr;
   std::function<F> x(f);
-  VERIFY( !x );
+  VERIFY( !x ); // libstdc++/57465
+}
+
+void test02()
+{
+  struct X { };
+  int (X::*mf)() = nullptr;
+  std::function<int(X&)> f = mf;
+  VERIFY( !f ); // libstdc++/69243
+
+  int X::*mp = nullptr;
+  f = mp;
+  VERIFY( !f );
+}
+
+int main()
+{
+  test01();
+  test02();
 }
