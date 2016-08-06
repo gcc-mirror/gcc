@@ -21,9 +21,9 @@
 #include <string>
 #include <testsuite_allocator.h>
  
-#if _GLIBCXX_USE_CXX11_ABI && defined(_GLIBCXX_USE_WCHAR_T)
-using C = char;
-const C c = 'a';
+#if _GLIBCXX_USE_CXX11_ABI
+using C = wchar_t;
+const C c = L'a';
 using traits = std::char_traits<C>;
 
 using __gnu_test::propagating_allocator;

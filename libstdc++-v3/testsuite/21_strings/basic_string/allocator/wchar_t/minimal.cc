@@ -22,7 +22,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
  
-#if _GLIBCXX_USE_CXX11_ABI && defined(_GLIBCXX_USE_WCHAR_T)
+#if _GLIBCXX_USE_CXX11_ABI
 using C = wchar_t;
 const C c = L'a';
 using traits = std::char_traits<C>;
