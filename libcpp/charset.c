@@ -1027,7 +1027,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
    IDENTIFIER_POS is 0 when not in an identifier, 1 for the start of
    an identifier, or 2 otherwise.
 
-   If CHAR_RANGE and LOC_READER are non-NULL, then position information is
+   If LOC_READER is non-NULL, then position information is
    read from *LOC_READER and CHAR_RANGE->m_finish is updated accordingly.  */
 
 bool
@@ -1041,10 +1041,6 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   unsigned int length;
   const uchar *str = *pstr;
   const uchar *base = str - 2;
-
-  /* char_range and loc_reader must either be both NULL, or both be
-     non-NULL.  */
-  gcc_assert ((char_range != NULL) == (loc_reader != NULL));
 
   if (!CPP_OPTION (pfile, cplusplus) && !CPP_OPTION (pfile, c99))
     cpp_error (pfile, CPP_DL_WARNING,
@@ -1076,7 +1072,10 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	break;
       str++;
       if (loc_reader)
-	char_range->m_finish = loc_reader->get_next ().m_finish;
+	{
+	  gcc_assert (char_range);
+	  char_range->m_finish = loc_reader->get_next ().m_finish;
+	}
       result = (result << 4) + hex_value (c);
     }
   while (--length && str < limit);

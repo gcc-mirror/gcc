@@ -1,3 +1,9 @@
+2016-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/72823
+	* charset.c (_cpp_valid_ucn): Replace overzealous assert with one
+	that allows for char_range to be non-NULL when loc_reader is NULL.
+
 2016-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* charset.c (cpp_substring_ranges::cpp_substring_ranges): New
