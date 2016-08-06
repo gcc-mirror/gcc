@@ -1472,7 +1472,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	static void
 	_M_clone(_Any_data& __dest, const _Any_data& __source, true_type)
 	{
-	  new (__dest._M_access()) _Functor(__source._M_access<_Functor>());
+	  ::new (__dest._M_access()) _Functor(__source._M_access<_Functor>());
 	}
 
 	// Clone a function object that is not location-invariant or
@@ -1553,7 +1553,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       private:
 	static void
 	_M_init_functor(_Any_data& __functor, _Functor&& __f, true_type)
-	{ new (__functor._M_access()) _Functor(std::move(__f)); }
+	{ ::new (__functor._M_access()) _Functor(std::move(__f)); }
 
 	static void
 	_M_init_functor(_Any_data& __functor, _Functor&& __f, false_type)
