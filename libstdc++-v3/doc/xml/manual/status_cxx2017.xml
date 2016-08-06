@@ -533,9 +533,9 @@ Feature-testing recommendations for C++</link>.
 	N4510
 	</link>
       </entry>
-      <entry align="center"> 7 (3.0)</entry>
+      <entry align="center"> 6.2 (3.0)</entry>
       <entry><code> __cpp_lib_incomplete_container_elements >= 201505 </code>
-	     (the feature was always supported, but the macro was not defined until GCC 7)
+	     (the feature was always supported, but the macro was not defined until GCC 6.2)
       </entry>
     </row>
 
