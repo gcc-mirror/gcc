@@ -1,3 +1,21 @@
+2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Add missing LFTSv2 features.
+	* doc/html/manual/status.html: Regenerate.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/invoke.h: New header.
+	(__invoke): Make constexpr. Add && to types in exception specification.
+	* include/experimental/tuple (apply, __apply_impl): Fix non-reserved
+	names. Include <bits/invoke.h> and use std::__invoke.
+	* include/std/functional (__invfwd, __invoke_impl, __invoke): Move to
+	new header.
+	(invoke): Add && to types in exception specification.
+	* include/std/tuple (apply, __apply_impl): Define for C++17.
+	* testsuite/20_util/tuple/apply/1.cc: New test.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust dg-error
+	lineno.
+
 2016-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Correct shared_from_this status.
