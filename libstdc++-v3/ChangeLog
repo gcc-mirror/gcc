@@ -1,6 +1,13 @@
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71964
+	* include/bits/stl_tree.h (_Rb_tree(_Rb_tree&&)): Move allocator.
+	* testsuite/23_containers/set/allocator/71964.cc: New test.
+
+	Backport from mainline
 	2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/allocator/wchar_t/copy.cc:
