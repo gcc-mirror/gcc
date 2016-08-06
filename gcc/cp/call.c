@@ -6710,15 +6710,15 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    tree extype = TREE_TYPE (expr);
 	    if (TYPE_REF_IS_RVALUE (ref_type)
 		&& lvalue_p (expr))
-	      error_at (loc, "cannot bind %qT lvalue to %qT",
-			extype, totype);
+	      error_at (loc, "cannot bind rvalue reference of type %qT to "
+                        "lvalue of type %qT", totype, extype);
 	    else if (!TYPE_REF_IS_RVALUE (ref_type) && !lvalue_p (expr)
 		     && !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (ref_type)))
-	      error_at (loc, "invalid initialization of non-const reference of "
-			"type %qT from an rvalue of type %qT", totype, extype);
+	      error_at (loc, "cannot bind non-const lvalue reference of "
+			"type %qT to an rvalue of type %qT", totype, extype);
 	    else if (!reference_compatible_p (TREE_TYPE (totype), extype))
-	      error_at (loc, "binding %qT to reference of type %qT "
-			"discards qualifiers", extype, totype);
+	      error_at (loc, "binding reference of type %qT to %qT "
+			"discards qualifiers", totype, extype);
 	    else
 	      gcc_unreachable ();
 	    maybe_print_user_conv_context (convs);

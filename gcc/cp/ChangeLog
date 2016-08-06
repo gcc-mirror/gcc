@@ -1,3 +1,8 @@
+2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* call.c (convert_like_real): Harmonize diagnostics for invalid
+	reference binding.
+
 2016-08-05 Martin Sebor  <msebor@redhat.com>
 
 	* constexpr.c (cxx_eval_store_expression): Remove hyphen from
