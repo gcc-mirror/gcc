@@ -49,6 +49,8 @@
 #include <type_traits>
 #endif
 
+#define __cpp_lib_incomplete_container_elements 201505
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
