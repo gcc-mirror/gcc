@@ -10,6 +10,7 @@
 // http://link.springer.com/article/10.1007%2Fs13389-014-0090-x
 // https://eprint.iacr.org/2013/816.pdf
 
+// +build ignore
 // +build amd64
 
 package elliptic
