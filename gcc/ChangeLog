@@ -1,3 +1,8 @@
+2016-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcov.c (handle_cycle): Use INTTYPE_MAXIMUM (int64_t) instead of
+	INT64_MAX.
+
 2016-08-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* match.pd ((intptr_t) x eq/ne CST to x eq/ne (typeof x) cst): Disable
