@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build solaris irix
+
 // gccgo specific implementation of syslog for Solaris.  Solaris uses
 // STREAMS to communicate with syslogd.  That is enough of a pain that
 // we just call the libc function.

@@ -28,7 +28,7 @@ import (
 var supportsSymlinks = true
 
 var dot = []string{
-	"dir_unix.go",
+	"dir.go",
 	"env.go",
 	"error.go",
 	"file.go",

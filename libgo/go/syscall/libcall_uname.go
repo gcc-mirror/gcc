@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Build on all systems other than solaris/386.
+// 32-bit Solaris 2/x86 needs _nuname, handled in libcall_solaris_386.go.
+// +build !386 !solaris
+
 package syscall
 
 //sysnb	Uname(buf *Utsname) (err error)

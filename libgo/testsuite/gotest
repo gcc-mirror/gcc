@@ -313,19 +313,11 @@ x)
 	    esac
 
 	    if test x$tag1 != xnonmatchingtag -a x$tag2 != xnonmatchingtag; then
-		tags=`sed '/^package /q' < $f | fgrep '// +build '`
+		tags=`sed '/^package /q' < $f | grep '^// +build '`
 		omatch=true
 		first=true
 		match=false
 		for tag in $tags; do
-		    reverse=false
-		    case $tag in
-		    "!"*)
-			reverse=true
-			tag=`echo $tag | sed -e 's/^!//'`
-			;;
-		    esac
-
 		    case $tag in
 		    "//")
 			;;
@@ -340,27 +332,32 @@ x)
 		    $goos | $goarch | cgo)
 			match=true
 			;;
+		    "!"$goos | "!"$goarch | "!cgo")
+			;;
 		    *,*)
-			match=true
+			cmatch=true
 			for ctag in `echo $tag | sed -e 's/,/ /g'`; do
 			    case $ctag in
 			    $goos | $goarch | cgo)
 				;;
+			    "!"$goos | "!"$goarch | "!cgo")
+				cmatch=false
+				;;
+			    "!"*)
+			        ;;
 			    *)
-				match=false
+				cmatch=false
 				;;
 			    esac
 			done
-			;;
-		    esac
-
-		    if test "$reverse" = true; then
-			if test "$match" = true; then
-			    match=false
-			else
+			if test "$cmatch" = "true"; then
 			    match=true
 			fi
-		    fi
+			;;
+		    "!"*)
+			match=true
+			;;
+		    esac
 		done
 
 		if test "$match" = "false" -a "$first" = "false"; then

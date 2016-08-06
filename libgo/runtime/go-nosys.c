@@ -14,11 +14,16 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <pthread.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -447,4 +452,55 @@ log1pl (long double a)
 {
   return (long double) log1p ((double) a);
 }
+#endif
+
+#ifndef HAVE_STRERROR_R
+
+/* Some old systems do not have strerror_r.  This is a replacement.
+   It assumes that nothing else in the program calls strerror.  */
+
+static pthread_mutex_t strerror_lock = PTHREAD_MUTEX_INITIALIZER;
+
+int
+strerror_r (int errnum, char *buf, size_t buflen)
+{
+  int i;
+  char *errmsg;
+  size_t len;
+  int ret;
+
+  i = pthread_mutex_lock (&strerror_lock);
+  if (i != 0)
+    abort ();
+
+  errmsg = strerror (errnum);
+  len = strlen (errmsg);
+  if (len >= buflen)
+    ret = ERANGE;
+  else
+    {
+      memcpy (buf, errmsg, len + 1);
+      ret = 0;
+    }
+
+  i = pthread_mutex_unlock (&strerror_lock);
+  if (i != 0)
+    abort ();
+
+  return ret;
+}
+
+#endif /* ! HAVE_STRERROR_R */
+
+#ifndef HAVE_WAIT4
+
+/* Some old systems do not have wait4.  This is a replacement that
+   uses waitpid.  */
+
+pid_t
+wait4 (pid_t pid, int *status, int options, struct rusage *rusage __attribute__ ((unused)))
+{
+  return waitpid (pid, status, options);
+}
+
 #endif
