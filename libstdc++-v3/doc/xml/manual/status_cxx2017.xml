@@ -20,8 +20,7 @@ presence of the required flag.
 </para>
 
 <para>
-This page describes the C++1z and library TS support in mainline GCC SVN,
-not in any particular release.
+This page describes the C++1z and library TS support in the GCC 6 series.
 </para>
 
 <table frame="all" xml:id="table.cxx1z_status">
