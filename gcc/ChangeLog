@@ -1,3 +1,17 @@
+2016-08-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* data-streamer-in.c (streamer_read_wide_int): New.
+	(streamer_read_widest_int): Renamed function.
+	* data-streamer-out.c (streamer_write_wide_int): New
+	(streamer_write_widest_int): Renamed function.
+	* lto-streamer-in.c (streamer_read_wi): Renamed and moved to
+	data-stream-in.c.
+	(input_cfg): Call renamed function.
+	* lto-streamer-out.c (streamer_write_wi): Renamed and moved to
+	data-stream-out.c.
+	(output_cfg): Call renamed function.
+	* data-streamer.h: Add declarations.
+
 2016-08-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree-ssa-ccp.c (extend_mask): New param sgn.
