@@ -1,5 +1,8 @@
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Improve
+	comments.
+
 	* doc/xml/manual/status_cxx2011.xml: Change "mainline GCC SVN" to
 	refer to the release series.
 	* doc/xml/manual/status_cxx2014.xml: Likewise. Update TS status.
