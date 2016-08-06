@@ -116,14 +116,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 is_convertible<_Up&&, _Tp>>::value, bool
 			  >::type=true>
       constexpr propagate_const(propagate_const<_Up>&& __pu)
-	: __t(move(get_underlying(__pu)))
+	: _M_t(std::move(get_underlying(__pu)))
       {}
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
 				 __not_<is_convertible<_Up&&, _Tp>>>::value,
 			  bool>::type=false>
       constexpr explicit propagate_const(propagate_const<_Up>&& __pu)
-	: __t(move(get_underlying(__pu)))
+	: _M_t(std::move(get_underlying(__pu)))
       {}
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  typename decay<_Up>::type>>
 				 >::value, bool>::type=true>
       constexpr propagate_const(_Up&& __u)
-	: __t(forward<_Up>(__u))
+	: _M_t(std::forward<_Up>(__u))
       {}
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
@@ -141,7 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  typename decay<_Up>::type>>
 				 >::value, bool>::type=false>
       constexpr explicit propagate_const(_Up&& __u)
-	: __t(forward<_Up>(__u))
+	: _M_t(std::forward<_Up>(__u))
       {}
 
       // [propagate_const.assignment], assignment
@@ -152,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		typename enable_if<is_convertible<_Up&&, _Tp>::value>::type>
       constexpr propagate_const& operator=(propagate_const<_Up>&& __pu)
       {
-	__t = move(get_underlying(__pu));
+	_M_t = std::move(get_underlying(__pu));
       }
 
       template <typename _Up, typename =
@@ -162,13 +162,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  >::value>::type>
       constexpr propagate_const& operator=(_Up&& __u)
       {
-	__t = forward<_Up>(__u);
+	_M_t = std::forward<_Up>(__u);
       }
 
       // [propagate_const.const_observers], const observers
       explicit constexpr operator bool() const
       {
-	return bool(__t);
+	return bool(_M_t);
       }
 
       constexpr const element_type* operator->() const
@@ -193,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr const element_type* get() const
       {
-	return __to_raw_pointer(__t);
+	return __to_raw_pointer(_M_t);
       }
 
       // [propagate_const.non_const_observers], non-const observers
@@ -219,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr element_type* get()
       {
-	return __to_raw_pointer(__t);
+	return __to_raw_pointer(_M_t);
       }
 
       // [propagate_const.modifiers], modifiers
@@ -227,11 +227,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(propagate_const& __pt) noexcept(__is_nothrow_swappable<_Tp>::value)
       {
 	using std::swap;
-	swap(__t, get_underlying(__pt));
+	swap(_M_t, get_underlying(__pt));
       }
 
     private:
-      _Tp __t; //exposition only
+      _Tp _M_t;
     };
 
   // [propagate_const.relational], relational operators
@@ -408,14 +408,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&
     get_underlying(const propagate_const<_Tp>& __pt) noexcept
     {
-      return __pt.__t;
+      return __pt._M_t;
     }
 
   template <typename _Tp>
     constexpr _Tp&
     get_underlying(propagate_const<_Tp>& __pt) noexcept
     {
-      return __pt.__t;
+      return __pt._M_t;
     }
 
   // @} group propagate_const

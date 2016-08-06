@@ -1,3 +1,9 @@
+2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/propagate_const (propagate_const::__t): Rename
+	to _M_t and remove comment. Qualify std::move and std::forward.
+	* testsuite/experimental/propagate_const/cons/default.cc: Fix test.
+
 2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (v3-build_support): Add
