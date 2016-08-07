@@ -1,3 +1,11 @@
+2016-08-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-threadbackward.c: Include tree-inline.h
+	(profitable_jump_thread_path): Use estimate_num_insns to estimate
+	size of copied block; for cold paths reduce duplication.
+	(find_jump_threads_backwards): Remove redundant tests.
+	(pass_thread_jumps::gate): Enable for -Os.
+
 2016-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/72816

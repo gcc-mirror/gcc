@@ -1,3 +1,7 @@
+2016-08-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update testcase.
+
 2016-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/72816
