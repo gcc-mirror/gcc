@@ -1,3 +1,10 @@
+2016-08-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71795
+	Backport from trunk
+	* frontend-passes.c (combine_array_constructor):  Don't
+	do anything if the expression is inside an array iterator.
+
 2016-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
