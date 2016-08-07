@@ -596,7 +596,7 @@ layout_decl (tree decl, unsigned int known_align)
     return;
 
   gcc_assert (code == VAR_DECL || code == PARM_DECL || code == RESULT_DECL
-	      || code == TYPE_DECL ||code == FIELD_DECL);
+	      || code == TYPE_DECL || code == FIELD_DECL);
 
   rtl = DECL_RTL_IF_SET (decl);
 
@@ -768,8 +768,8 @@ layout_decl (tree decl, unsigned int known_align)
     }
 }
 
-/* Given a VAR_DECL, PARM_DECL or RESULT_DECL, clears the results of
-   a previous call to layout_decl and calls it again.  */
+/* Given a VAR_DECL, PARM_DECL, RESULT_DECL, or FIELD_DECL, clears the
+   results of a previous call to layout_decl and calls it again.  */
 
 void
 relayout_decl (tree decl)
@@ -778,7 +778,8 @@ relayout_decl (tree decl)
   DECL_MODE (decl) = VOIDmode;
   if (!DECL_USER_ALIGN (decl))
     SET_DECL_ALIGN (decl, 0);
-  SET_DECL_RTL (decl, 0);
+  if (DECL_RTL_SET_P (decl))
+    SET_DECL_RTL (decl, 0);
 
   layout_decl (decl, 0);
 }
