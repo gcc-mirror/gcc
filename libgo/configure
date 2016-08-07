@@ -660,6 +660,8 @@ LIBGO_IS_MIPS_FALSE
 LIBGO_IS_MIPS_TRUE
 LIBGO_IS_M68K_FALSE
 LIBGO_IS_M68K_TRUE
+LIBGO_IS_IA64_FALSE
+LIBGO_IS_IA64_TRUE
 LIBGO_IS_ARM64_FALSE
 LIBGO_IS_ARM64_TRUE
 LIBGO_IS_ARM_FALSE
@@ -11128,7 +11130,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11131 "configure"
+#line 11133 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11234,7 +11236,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11237 "configure"
+#line 11239 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13635,6 +13637,7 @@ is_386=no
 is_alpha=no
 is_arm=no
 is_arm64=no
+is_ia64=no
 is_m68k=no
 mips_abi=unknown
 is_ppc=no
@@ -13678,6 +13681,10 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     else
       GOARCH=amd64
     fi
+    ;;
+  ia64-*-*)
+    is_ia64=yes
+    GOARCH=ia64
     ;;
   m68k*-*-*)
     is_m68k=yes
@@ -13846,6 +13853,14 @@ fi
 else
   LIBGO_IS_ARM64_TRUE='#'
   LIBGO_IS_ARM64_FALSE=
+fi
+
+ if test $is_ia64 = yes; then
+  LIBGO_IS_IA64_TRUE=
+  LIBGO_IS_IA64_FALSE='#'
+else
+  LIBGO_IS_IA64_TRUE='#'
+  LIBGO_IS_IA64_FALSE=
 fi
 
  if test $is_m68k = yes; then
@@ -15797,6 +15812,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_ARM64_TRUE}" && test -z "${LIBGO_IS_ARM64_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_ARM64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_IA64_TRUE}" && test -z "${LIBGO_IS_IA64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_IA64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_M68K_TRUE}" && test -z "${LIBGO_IS_M68K_FALSE}"; then

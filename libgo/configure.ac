@@ -191,6 +191,7 @@ is_386=no
 is_alpha=no
 is_arm=no
 is_arm64=no
+is_ia64=no
 is_m68k=no
 mips_abi=unknown
 is_ppc=no
@@ -228,6 +229,10 @@ changequote([,])dnl
     else
       GOARCH=amd64
     fi
+    ;;
+  ia64-*-*)
+    is_ia64=yes
+    GOARCH=ia64
     ;;
   m68k*-*-*)
     is_m68k=yes
@@ -311,6 +316,7 @@ AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
 AM_CONDITIONAL(LIBGO_IS_ALPHA, test $is_alpha = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM64, test $is_arm64 = yes)
+AM_CONDITIONAL(LIBGO_IS_IA64, test $is_ia64 = yes)
 AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
 AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != unknown)
 AM_CONDITIONAL(LIBGO_IS_MIPSO32, test $mips_abi = o32)
