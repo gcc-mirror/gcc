@@ -1,3 +1,8 @@
+2016-08-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71961
+	* gfortran.dg/matmul_10.f90:  New testcase.
+
 2016-08-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update testcase.
