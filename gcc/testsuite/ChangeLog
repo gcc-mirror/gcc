@@ -1,6 +1,11 @@
 2016-08-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71961
+	* gfortran.dg/pr70040.f90:  New testcase.
+
+2016-08-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/71961
 	* gfortran.dg/matmul_10.f90:  New testcase.
 
 2016-08-07  Jan Hubicka  <hubicka@ucw.cz>
