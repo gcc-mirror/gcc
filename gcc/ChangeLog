@@ -1,3 +1,9 @@
+2016-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* stor-layout.c (layout_decl): Fix up formatting.
+	(relayout_decl): Allow DECL to be FIELD_DECL.
+
 2016-08-07  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.md (fix_trunc<mode>si2): Fix mode of reg.

@@ -1,3 +1,8 @@
+2016-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* gcc.dg/pr72816.c: New test.
+
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/conversion/pr16333.C: Adjust dg-error regexp.
