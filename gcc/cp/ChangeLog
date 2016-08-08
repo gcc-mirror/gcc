@@ -1,9 +1,18 @@
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58706
+	* parser.c: Include tree-iterator.h.
+	(cp_parser_omp_for_loop_init): Move lambda DECL_EXPRs from init
+	to FOR_BLOCK.
+	(cp_parser_omp_for_loop): Handle non-STATEMENT_LIST FOR_BLOCK
+	entries.
+
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* call.c (convert_like_real): Harmonize diagnostics for invalid
 	reference binding.
 
-2016-08-05 Martin Sebor  <msebor@redhat.com>
+2016-08-05  Martin Sebor  <msebor@redhat.com>
 
 	* constexpr.c (cxx_eval_store_expression): Remove hyphen from
 	the spelling of "constant-expression" in diagnostic messages
