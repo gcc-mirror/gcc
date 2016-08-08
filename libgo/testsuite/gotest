@@ -217,18 +217,27 @@ x)
 		;;
 	*)
 		for f in $pkgfiles; do
-		    if test -f $basedir/$f; then
-			b=`basename $f`
-			rm -f $b
-			cp $basedir/$f $b
-		    elif test -f ../../$f; then
-			b=`basename $f`
-			rm -f $b
-			cp ../../$f $b
-		    else
-			echo "file $f not found" 1>&2
-			exit 1
-		    fi
+                    case $f in
+                    /*)
+                        b=`basename $f`
+                        rm -f $b
+                        cp $f $b
+                        ;;
+                    *)
+		        if test -f $basedir/$f; then
+			  b=`basename $f`
+			  rm -f $b
+			  cp $basedir/$f $b
+		        elif test -f ../../$f; then
+			  b=`basename $f`
+			  rm -f $b
+			  cp ../../$f $b
+		        else
+			  echo "file $f not found" 1>&2
+			  exit 1
+		        fi
+                        ;;
+                    esac
 		done
 		for f in `cd $srcdir; ls *_test.go`; do
 		    rm -f $f
@@ -252,18 +261,27 @@ x)
 		;;
 	*)
 		for f in $pkgfiles; do
-		    if test -f $basedir/$f; then
-			b=`basename $f`
-			rm -f $b
-			cp $basedir/$f $b
-		    elif test -f ../../$f; then
-			b=`basename $f`
-			rm -f $b
-			cp ../../$f $b
-		    else
-			echo "file $f not found" 1>&2
-			exit 1
-		    fi
+                    case $f in
+                    /*)
+                        b=`basename $f`
+                        rm -f $b
+                        cp $f $b
+                        ;;
+                    *)
+		        if test -f $basedir/$f; then
+			  b=`basename $f`
+			  rm -f $b
+			  cp $basedir/$f $b
+		        elif test -f ../../$f; then
+			  b=`basename $f`
+			  rm -f $b
+			  cp ../../$f $b
+		        else
+			  echo "file $f not found" 1>&2
+			  exit 1
+		        fi
+                        ;;
+                    esac
 		done
 		;;
 	esac
