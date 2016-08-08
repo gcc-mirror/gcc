@@ -1,3 +1,10 @@
+2016-07-29  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+
+	* config/avr/driver-avr.c (specfiles_doc_url): Remove.
+	(avr_diagnose_devicespecs_error): Remove.
+	(avr_devicespecs_file): Remove composing absolute path for specfile
+	and its verbose info. Remove conditions to check specs-file,
+
 2016-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/72821
