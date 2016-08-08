@@ -505,6 +505,9 @@ struct lang_hooks
      gimplification.  */
   bool deep_unsharing;
 
+  /* Run all lang-specific selftests.  */
+  void (*run_lang_selftests) (void);
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

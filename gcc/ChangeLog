@@ -1,5 +1,15 @@
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/64955
+	* langhooks-def.h (LANG_HOOKS_RUN_LANG_SELFTESTS): New default
+	do-nothing langhook.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_RUN_LANG_SELFTESTS.
+	* langhooks.h (struct lang_hooks): Add run_lang_selftests.
+	* selftest-run-tests.c: Include "tree.h" and "langhooks.h".
+	(selftest::run_tests): Call lang_hooks.run_lang_selftests.
+
+2016-08-08  David Malcolm  <dmalcolm@redhat.com>
+
 	PR bootstrap/72844
 	* input.c: Ensure that HAVE_ICONV is defined.
 

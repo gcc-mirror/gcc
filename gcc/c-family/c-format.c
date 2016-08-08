@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-format.h"
 #include "diagnostic.h"
+#include "selftest.h"
 
 /* Handle attributes associated with format checking.  */
 
@@ -126,11 +127,21 @@ static int format_flags (int format_num);
      printf(fmt, msg);
             ^~~  ~~~
 
+   If CORRECTED_SUBSTRING is non-NULL, use it for cases 1 and 2 to provide
+   a fix-it hint, suggesting that it should replace the text within the
+   substring range.  For example:
+
+     test.c:90:10: warning: problem with '%i' here [-Wformat=]
+     printf ("hello %i", msg);
+                    ~^
+                    %s
+
    Return true if a warning was emitted, false otherwise.  */
 
-ATTRIBUTE_GCC_DIAG (4,0)
+ATTRIBUTE_GCC_DIAG (5,0)
 static bool
 format_warning_va (const substring_loc &fmt_loc, source_range *param_range,
+		   const char *corrected_substring,
 		   int opt, const char *gmsgid, va_list *ap)
 {
   bool substring_within_range = false;
@@ -174,6 +185,9 @@ format_warning_va (const substring_loc &fmt_loc, source_range *param_range,
       richloc.add_range (param_loc, false);
     }
 
+  if (!err && corrected_substring && substring_within_range)
+    richloc.add_fixit_replace (fmt_substring_range, corrected_substring);
+
   diagnostic_info diagnostic;
   diagnostic_set_info (&diagnostic, gmsgid, ap, &richloc, DK_WARNING);
   diagnostic.option_index = opt;
@@ -182,22 +196,31 @@ format_warning_va (const substring_loc &fmt_loc, source_range *param_range,
   if (!err && substring_loc && !substring_within_range)
     /* Case 2.  */
     if (warned)
-      inform (substring_loc, "format string is defined here");
+      {
+	rich_location substring_richloc (line_table, substring_loc);
+	if (corrected_substring)
+	  substring_richloc.add_fixit_replace (fmt_substring_range,
+					       corrected_substring);
+	inform_at_rich_loc (&substring_richloc,
+			    "format string is defined here");
+      }
 
   return warned;
 }
 
 /* Variadic call to format_warning_va.  */
 
-ATTRIBUTE_GCC_DIAG (4,0)
+ATTRIBUTE_GCC_DIAG (5,0)
 static bool
 format_warning_at_substring (const substring_loc &fmt_loc,
 			     source_range *param_range,
+			     const char *corrected_substring,
 			     int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = format_warning_va (fmt_loc, param_range, opt, gmsgid, &ap);
+  bool warned = format_warning_va (fmt_loc, param_range, corrected_substring,
+				   opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -225,7 +248,7 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
   char_idx -= 1;
 
   substring_loc fmt_loc (fmt_string_loc, string_type, char_idx, char_idx);
-  bool warned = format_warning_va (fmt_loc, NULL, opt, gmsgid, &ap);
+  bool warned = format_warning_va (fmt_loc, NULL, NULL, opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -1126,11 +1149,13 @@ static const format_flag_spec *get_flag_spec (const format_flag_spec *,
 					      int, const char *);
 
 static void check_format_types (const substring_loc &fmt_loc,
-				format_wanted_type *);
+				format_wanted_type *,
+				const format_kind_info *fki);
 static void format_type_warning (const substring_loc &fmt_loc,
 				 source_range *param_range,
 				 format_wanted_type *, tree,
-				 tree);
+				 tree,
+				 const format_kind_info *fki);
 
 /* Decode a format type from a string, returning the type, or
    format_type_error if not valid, in which case the caller should print an
@@ -2786,7 +2811,7 @@ check_argument_type (const format_char_info *fci,
       ptrdiff_t offset_to_format_end = (format_chars - 1) - orig_format_chars;
       substring_loc fmt_loc (fmt_param_loc, TREE_TYPE (format_string_cst),
 			     offset_to_format_start, offset_to_format_end);
-      check_format_types (fmt_loc, first_wanted_type);
+      check_format_types (fmt_loc, first_wanted_type, fki);
     }
 
   return true;
@@ -2946,7 +2971,7 @@ check_format_info_main (format_check_results *res,
    location of the format conversion.  */
 static void
 check_format_types (const substring_loc &fmt_loc,
-		    format_wanted_type *types)
+		    format_wanted_type *types, const format_kind_info *fki)
 {
   for (; types != 0; types = types->next)
     {
@@ -2973,7 +2998,7 @@ check_format_types (const substring_loc &fmt_loc,
       cur_param = types->param;
       if (!cur_param)
         {
-          format_type_warning (fmt_loc, NULL, types, wanted_type, NULL);
+	  format_type_warning (fmt_loc, NULL, types, wanted_type, NULL, fki);
           continue;
         }
 
@@ -3058,7 +3083,7 @@ check_format_types (const substring_loc &fmt_loc,
 	  else
 	    {
 	      format_type_warning (fmt_loc, param_range_ptr,
-				   types, wanted_type, orig_cur_type);
+				   types, wanted_type, orig_cur_type, fki);
 	      break;
 	    }
 	}
@@ -3127,10 +3152,115 @@ check_format_types (const substring_loc &fmt_loc,
 	continue;
       /* Now we have a type mismatch.  */
       format_type_warning (fmt_loc, param_range_ptr, types,
-			   wanted_type, orig_cur_type);
+			   wanted_type, orig_cur_type, fki);
     }
 }
 
+/* Given type TYPE, attempt to dereference the type N times
+   (e.g. from ("int ***", 2) to "int *")
+
+   Return the derefenced type, with any qualifiers
+   such as "const" stripped from the result, or
+   NULL if unsuccessful (e.g. TYPE is not a pointer type).  */
+
+static tree
+deref_n_times (tree type, int n)
+{
+  gcc_assert (type);
+
+  for (int i = n; i > 0; i--)
+    {
+      if (TREE_CODE (type) != POINTER_TYPE)
+	return NULL_TREE;
+      type = TREE_TYPE (type);
+    }
+  /* Strip off any "const" etc.  */
+  return build_qualified_type (type, 0);
+}
+
+/* Lookup the format code for FORMAT_LEN within FLI,
+   returning the string code for expressing it, or NULL
+   if it is not found.  */
+
+static const char *
+get_modifier_for_format_len (const format_length_info *fli,
+			     enum format_lengths format_len)
+{
+  for (; fli->name; fli++)
+    {
+      if (fli->index == format_len)
+	return fli->name;
+      if (fli->double_index == format_len)
+	return fli->double_name;
+    }
+  return NULL;
+}
+
+#if CHECKING_P
+
+namespace selftest {
+
+static void
+test_get_modifier_for_format_len ()
+{
+  ASSERT_STREQ ("h",
+		get_modifier_for_format_len (printf_length_specs, FMT_LEN_h));
+  ASSERT_STREQ ("hh",
+		get_modifier_for_format_len (printf_length_specs, FMT_LEN_hh));
+  ASSERT_STREQ ("L",
+		get_modifier_for_format_len (printf_length_specs, FMT_LEN_L));
+  ASSERT_EQ (NULL,
+	     get_modifier_for_format_len (printf_length_specs, FMT_LEN_none));
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
+
+/* Generate a string containing the format string that should be
+   used to format arguments of type ARG_TYPE within FKI (effectively
+   the inverse of the checking code).
+
+   If successful, returns a non-NULL string which should be freed
+   by the called.
+   Otherwise, returns NULL.  */
+
+static char *
+get_format_for_type (const format_kind_info *fki, tree arg_type)
+{
+  gcc_assert (arg_type);
+
+  const format_char_info *spec;
+  for (spec = &fki->conversion_specs[0];
+       spec->format_chars;
+       spec++)
+    {
+      tree effective_arg_type = deref_n_times (arg_type,
+					       spec->pointer_count);
+      if (!effective_arg_type)
+	continue;
+      for (int i = 0; i < FMT_LEN_MAX; i++)
+	{
+	  const format_type_detail *ftd = &spec->types[i];
+	  if (!ftd->type)
+	    continue;
+	  if (TYPE_CANONICAL (*ftd->type)
+	      == TYPE_CANONICAL (effective_arg_type))
+	    {
+	      const char *len_modifier
+		= get_modifier_for_format_len (fki->length_char_specs,
+					       (enum format_lengths)i);
+	      if (!len_modifier)
+		len_modifier = "";
+
+	      return xasprintf ("%%%s%c",
+				len_modifier,
+				spec->format_chars[0]);
+	    }
+	}
+   }
+  return NULL;
+}
 
 /* Give a warning at FMT_LOC about a format argument of different type
    from that expected.  If non-NULL, PARAM_RANGE is the source range of the
@@ -3144,9 +3274,10 @@ static void
 format_type_warning (const substring_loc &fmt_loc,
 		     source_range *param_range,
 		     format_wanted_type *type,
-		     tree wanted_type, tree arg_type)
+		     tree wanted_type, tree arg_type,
+		     const format_kind_info *fki)
 {
-  int kind = type->kind;
+  enum format_specifier_kind kind = type->kind;
   const char *wanted_type_name = type->wanted_type_name;
   const char *format_start = type->format_start;
   int format_length = type->format_length;
@@ -3185,12 +3316,18 @@ format_type_warning (const substring_loc &fmt_loc,
       p[pointer_count + 1] = 0;
     }
 
+  /* Attempt to provide hints for argument types, but not for field widths
+     and precisions.  */
+  char *format_for_type = NULL;
+  if (arg_type && kind == CF_KIND_FORMAT)
+    format_for_type = get_format_for_type (fki, arg_type);
+
   if (wanted_type_name)
     {
       if (arg_type)
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   OPT_Wformat_,
+	   format_for_type, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
 	   "but argument %d has type %qT",
 	   gettext (kind_descriptions[kind]),
@@ -3200,7 +3337,7 @@ format_type_warning (const substring_loc &fmt_loc,
       else
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   OPT_Wformat_,
+	   format_for_type, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
 	   gettext (kind_descriptions[kind]),
 	   (kind == CF_KIND_FORMAT ? "%" : ""),
@@ -3211,7 +3348,7 @@ format_type_warning (const substring_loc &fmt_loc,
       if (arg_type)
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   OPT_Wformat_,
+	   format_for_type, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
 	   "but argument %d has type %qT",
 	   gettext (kind_descriptions[kind]),
@@ -3221,12 +3358,14 @@ format_type_warning (const substring_loc &fmt_loc,
       else
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   OPT_Wformat_,
+	   format_for_type, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
 	   gettext (kind_descriptions[kind]),
 	   (kind == CF_KIND_FORMAT ? "%" : ""),
 	   format_length, format_start, wanted_type, p);
     }
+
+  free (format_for_type);
 }
 
 
@@ -3747,3 +3886,96 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 
   return NULL_TREE;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests of location handling.  */
+
+/* Get the format_kind_info with the given name.  */
+
+static const format_kind_info *
+get_info (const char *name)
+{
+  int idx = decode_format_type (name);
+  const format_kind_info *fki = &format_types[idx];
+  ASSERT_STREQ (fki->name, name);
+  return fki;
+}
+
+/* Verify that get_format_for_type (FKI, TYPE) is EXPECTED_FORMAT.  */
+
+static void
+assert_format_for_type_streq (const location &loc, const format_kind_info *fki,
+			      const char *expected_format, tree type)
+{
+  gcc_assert (fki);
+  gcc_assert (expected_format);
+  gcc_assert (type);
+
+  char *actual_format = get_format_for_type (fki, type);
+  ASSERT_STREQ_AT (loc, expected_format, actual_format);
+  free (actual_format);
+}
+
+/* Selftests for get_format_for_type.  */
+
+#define ASSERT_FORMAT_FOR_TYPE_STREQ(EXPECTED_FORMAT, TYPE) \
+  assert_format_for_type_streq (SELFTEST_LOCATION, (fki), (EXPECTED_FORMAT), (TYPE))
+
+/* Selftest for get_format_for_type for "printf"-style functions.  */
+
+static void
+test_get_format_for_type_printf ()
+{
+  const format_kind_info *fki = get_info ("gnu_printf");
+  ASSERT_NE (fki, NULL);
+
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%f", double_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%Lf", long_double_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%d", integer_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%o", unsigned_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%ld", long_integer_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%lo", long_unsigned_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%lld", long_long_integer_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%llo", long_long_unsigned_type_node);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%s", build_pointer_type (char_type_node));
+}
+
+/* Selftest for get_format_for_type for "scanf"-style functions.  */
+
+static void
+test_get_format_for_type_scanf ()
+{
+  const format_kind_info *fki = get_info ("gnu_scanf");
+  ASSERT_NE (fki, NULL);
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%d", build_pointer_type (integer_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%u", build_pointer_type (unsigned_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%ld",
+				build_pointer_type (long_integer_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%lu",
+				build_pointer_type (long_unsigned_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ
+    ("%lld", build_pointer_type (long_long_integer_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ
+    ("%llu", build_pointer_type (long_long_unsigned_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%e", build_pointer_type (float_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("%le", build_pointer_type (double_type_node));
+}
+
+#undef ASSERT_FORMAT_FOR_TYPE_STREQ
+
+/* Run all of the selftests within this file.  */
+
+void
+c_format_c_tests ()
+{
+  test_get_modifier_for_format_len ();
+  test_get_format_for_type_printf ();
+  test_get_format_for_type_scanf ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

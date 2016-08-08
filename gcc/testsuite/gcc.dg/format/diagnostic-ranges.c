@@ -12,6 +12,25 @@ void test_mismatching_types (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("hello %i", msg);
                  ~^
+                 %s
+   { dg-end-multiline-output "" } */
+
+
+  printf("hello %s", 42);  /* { dg-warning "format '%s' expects argument of type 'char \\*', but argument 2 has type 'int'" } */
+/* TODO: ideally would also underline "42".  */
+/* { dg-begin-multiline-output "" }
+   printf("hello %s", 42);
+                 ~^
+                 %d
+   { dg-end-multiline-output "" } */
+
+
+  printf("hello %i", (long)0);  /* { dg-warning "format '%i' expects argument of type 'int', but argument 2 has type 'long int' " } */
+/* TODO: ideally would also underline the argument.  */
+/* { dg-begin-multiline-output "" }
+   printf("hello %i", (long)0);
+                 ~^
+                 %ld
    { dg-end-multiline-output "" } */
 }
 
@@ -23,6 +42,7 @@ void test_multiple_arguments (void)
 /* { dg-begin-multiline-output "" }
    printf ("arg0: %i  arg1: %s arg 2: %i",
                             ~^
+                            %d
    { dg-end-multiline-output "" } */
 }
 
@@ -33,6 +53,7 @@ void test_multiple_arguments_2 (int i, int j)
 /* { dg-begin-multiline-output "" }
    printf ("arg0: %i  arg1: %s arg 2: %i",
                             ~^
+                            %d
            100, i + j, 102);
                 ~~~~~         
    { dg-end-multiline-output "" } */
@@ -67,6 +88,7 @@ void test_hex (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("hello \x25\x69", msg);
                  ~~~~~~~^
+                 %s
    { dg-end-multiline-output "" } */
 }
 
@@ -80,6 +102,7 @@ void test_oct (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("hello \045\151", msg);
                  ~~~~~~~^
+                 %s
    { dg-end-multiline-output "" } */
 }
 
@@ -98,6 +121,7 @@ void test_multiple (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("prefix"  "\x25"  "\151"  "suffix",
                      ~~~~~~~~~~~^
+                     %s
   { dg-end-multiline-output "" } */
 }
 
@@ -108,6 +132,7 @@ void test_u8 (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf(u8"hello %i", msg);
                    ~^
+                   %s
    { dg-end-multiline-output "" } */
 }
 
@@ -117,6 +142,7 @@ void test_param (long long_i, long long_j)
 /* { dg-begin-multiline-output "" }
    printf ("foo %s bar", long_i + long_j);
                 ~^       ~~~~~~~~~~~~~~~
+                %ld
    { dg-end-multiline-output "" } */
 }
 
@@ -192,13 +218,14 @@ void test_macro (const char *msg)
 /* { dg-begin-multiline-output "" }
  #define INT_FMT "%i"
                   ~^
+                  %s
    { dg-end-multiline-output "" } */
 }
 
 void test_non_contiguous_strings (void)
 {
   __builtin_printf(" %" "d ", 0.5); /* { dg-warning "20: format .%d. expects argument of type .int., but argument 2 has type .double." } */
-                                    /* { dg-message "26: format string is defined here" "" { target *-*-* } 200 } */
+                                    /* { dg-message "26: format string is defined here" "" { target *-*-* } 227 } */
   /* { dg-begin-multiline-output "" }
    __builtin_printf(" %" "d ", 0.5);
                     ^~~~
@@ -206,6 +233,7 @@ void test_non_contiguous_strings (void)
   /* { dg-begin-multiline-output "" }
    __builtin_printf(" %" "d ", 0.5);
                       ~~~~^
+                      %f
    { dg-end-multiline-output "" } */
 }
 

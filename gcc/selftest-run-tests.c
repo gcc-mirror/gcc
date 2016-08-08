@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "selftest.h"
+#include "tree.h"
+#include "langhooks.h"
 
 /* This function needed to be split out from selftest.c as it references
    tests from the whole source tree, and so is within
@@ -69,6 +71,9 @@ selftest::run_tests ()
 
   /* This one relies on most of the above.  */
   function_tests_c_tests ();
+
+  /* Run any lang-specific selftests.  */
+  lang_hooks.run_lang_selftests ();
 
   /* Finished running tests.  */
   long finish_time = get_run_time ();
