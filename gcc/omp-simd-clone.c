@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "tree-eh.h"
+#include "varasm.h"
 
 
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
@@ -435,9 +436,18 @@ simd_clone_create (struct cgraph_node *old_node)
     return new_node;
 
   TREE_PUBLIC (new_node->decl) = TREE_PUBLIC (old_node->decl);
+  DECL_COMDAT (new_node->decl) = DECL_COMDAT (old_node->decl);
+  DECL_WEAK (new_node->decl) = DECL_WEAK (old_node->decl);
+  DECL_EXTERNAL (new_node->decl) = DECL_EXTERNAL (old_node->decl);
+  DECL_VISIBILITY_SPECIFIED (new_node->decl)
+    = DECL_VISIBILITY_SPECIFIED (old_node->decl);
+  DECL_VISIBILITY (new_node->decl) = DECL_VISIBILITY (old_node->decl);
+  DECL_DLLIMPORT_P (new_node->decl) = DECL_DLLIMPORT_P (old_node->decl);
+  if (DECL_ONE_ONLY (old_node->decl))
+    make_decl_one_only (new_node->decl, DECL_ASSEMBLER_NAME (new_node->decl));
 
-  /* The function cgraph_function_versioning () will force the new
-     symbol local.  Undo this, and inherit external visability from
+  /* The method cgraph_version_clone_with_body () will force the new
+     symbol local.  Undo this, and inherit external visibility from
      the old node.  */
   new_node->local.local = old_node->local.local;
   new_node->externally_visible = old_node->externally_visible;
