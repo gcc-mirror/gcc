@@ -1,3 +1,12 @@
+2016-08-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/60526
+	* decl.c (build_sym):  If the name has already been defined as a
+	type, it has a symtree with an upper case letter at the beginning.
+	If such a symtree exists, issue an error and exit.  Don't do
+	this if there is no corresponding upper case letter.
+
 2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
