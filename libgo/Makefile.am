@@ -895,6 +895,9 @@ BUILDDEPS = \
 	dir=`echo $@ | sed -e 's/.lo.dep$$//' -e 's/-go//'`; \
 	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$$dir --extrafiles="$(extra_go_files_$(subst /,_,$(subst -go,,$(subst .lo.dep,,$@))))" $(matchargs_$(subst /,_,$(subst -go,,$(subst .lo.dep,,$@))))`; \
 	$(SHELL) $(srcdir)/godeps.sh `echo $@ | sed -e 's/.dep$$//'` $$files > $@.tmp; \
+	if ! cmp $@.tmp $@ >/dev/null 2>/dev/null; then \
+	  rm -f `echo $@ | sed -e 's/\.dep$$//'`; \
+	fi; \
 	mv -f $@.tmp $@
 
 # Build the .go files for a package, generating a .lo file.
@@ -992,7 +995,7 @@ endif
 @go_include@ bufio.lo.dep
 bufio.lo.dep: $(srcdir)/go/bufio/*.go
 	$(BUILDDEPS)
-bufio.lo: bufio.lo.dep
+bufio.lo:
 	$(BUILDPACKAGE)
 bufio/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1001,7 +1004,7 @@ bufio/check: $(CHECK_DEPS)
 @go_include@ bytes.lo.dep
 bytes.lo.dep: $(srcdir)/go/bytes/*.go
 	$(BUILDDEPS)
-bytes.lo: bytes.lo.dep
+bytes.lo:
 	$(BUILDPACKAGE)
 bytes/index.lo: go/bytes/indexbyte.c
 	@$(MKDIR_P) bytes
@@ -1013,7 +1016,7 @@ bytes/check: $(CHECK_DEPS)
 @go_include@ context.lo.dep
 context.lo.dep: $(srcdir)/go/context/*.go
 	$(BUILDDEPS)
-context.lo: context.lo.dep
+context.lo:
 	$(BUILDPACKAGE)
 context/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1022,7 +1025,7 @@ context/check: $(CHECK_DEPS)
 @go_include@ crypto.lo.dep
 crypto.lo.dep: $(srcdir)/go/crypto/*.go
 	$(BUILDDEPS)
-crypto.lo: crypto.lo.dep
+crypto.lo:
 	$(BUILDPACKAGE)
 crypto/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1031,7 +1034,7 @@ crypto/check: $(CHECK_DEPS)
 @go_include@ encoding.lo.dep
 encoding.lo.dep: $(srcdir)/go/encoding/*.go
 	$(BUILDDEPS)
-encoding.lo: encoding.lo.dep
+encoding.lo:
 	$(BUILDPACKAGE)
 encoding/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1040,7 +1043,7 @@ encoding/check: $(CHECK_DEPS)
 @go_include@ errors.lo.dep
 errors.lo.dep: $(srcdir)/go/errors/*.go
 	$(BUILDDEPS)
-errors.lo: errors.lo.dep
+errors.lo:
 	$(BUILDPACKAGE)
 errors/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1049,7 +1052,7 @@ errors/check: $(CHECK_DEPS)
 @go_include@ expvar.lo.dep
 expvar.lo.dep: $(srcdir)/go/expvar/*.go
 	$(BUILDDEPS)
-expvar.lo: expvar.lo.dep
+expvar.lo:
 	$(BUILDPACKAGE)
 expvar/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1058,7 +1061,7 @@ expvar/check: $(CHECK_DEPS)
 @go_include@ flag.lo.dep
 flag.lo.dep: $(srcdir)/go/flag/*.go
 	$(BUILDDEPS)
-flag.lo: flag.lo.dep
+flag.lo:
 	$(BUILDPACKAGE)
 flag/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1067,7 +1070,7 @@ flag/check: $(CHECK_DEPS)
 @go_include@ fmt.lo.dep
 fmt.lo.dep: $(srcdir)/go/fmt/*.go
 	$(BUILDDEPS)
-fmt.lo: fmt.lo.dep
+fmt.lo:
 	$(BUILDPACKAGE)
 fmt/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1076,7 +1079,7 @@ fmt/check: $(CHECK_DEPS)
 @go_include@ hash.lo.dep
 hash.lo.dep: $(srcdir)/go/hash/*.go
 	$(BUILDDEPS)
-hash.lo: hash.lo.dep
+hash.lo:
 	$(BUILDPACKAGE)
 hash/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1085,7 +1088,7 @@ hash/check: $(CHECK_DEPS)
 @go_include@ html.lo.dep
 html.lo.dep: $(srcdir)/go/html/*.go
 	$(BUILDDEPS)
-html.lo: html.lo.dep
+html.lo:
 	$(BUILDPACKAGE)
 html/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1094,7 +1097,7 @@ html/check: $(CHECK_DEPS)
 @go_include@ image.lo.dep
 image.lo.dep: $(srcdir)/go/image/*.go
 	$(BUILDDEPS)
-image.lo: image.lo.dep
+image.lo:
 	$(BUILDPACKAGE)
 image/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1103,7 +1106,7 @@ image/check: $(CHECK_DEPS)
 @go_include@ io.lo.dep
 io.lo.dep: $(srcdir)/go/io/*.go
 	$(BUILDDEPS)
-io.lo: io.lo.dep
+io.lo:
 	$(BUILDPACKAGE)
 io/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1112,7 +1115,7 @@ io/check: $(CHECK_DEPS)
 @go_include@ log.lo.dep
 log.lo.dep: $(srcdir)/go/log/*.go
 	$(BUILDDEPS)
-log.lo: log.lo.dep
+log.lo:
 	$(BUILDPACKAGE)
 log/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1121,7 +1124,7 @@ log/check: $(CHECK_DEPS)
 @go_include@ math.lo.dep
 math.lo.dep: $(srcdir)/go/math/*.go
 	$(BUILDDEPS)
-math.lo: math.lo.dep
+math.lo:
 	$(MKDIR_P) $(@D)
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
 	$(LTGOCOMPILE) $(MATH_FLAG) -I . -c -fgo-pkgpath=math -o $@ $$files
@@ -1132,7 +1135,7 @@ math/check: $(CHECK_DEPS)
 @go_include@ mime.lo.dep
 mime.lo.dep: $(srcdir)/go/mime/*.go
 	$(BUILDDEPS)
-mime.lo: mime.lo.dep
+mime.lo:
 	$(BUILDPACKAGE)
 mime/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1141,7 +1144,7 @@ mime/check: $(CHECK_DEPS)
 @go_include@ net.lo.dep
 net.lo.dep: $(srcdir)/go/net/*.go
 	$(BUILDDEPS)
-net.lo: net.lo.dep
+net.lo:
 	$(BUILDPACKAGE)
 net/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1166,7 +1169,7 @@ endif
 @go_include@ os.lo.dep
 os.lo.dep: $(srcdir)/go/os/*.go
 	$(BUILDDEPS)
-os.lo: os.lo.dep
+os.lo:
 	$(BUILDPACKAGE)
 os/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1175,7 +1178,7 @@ os/check: $(CHECK_DEPS)
 @go_include@ path.lo.dep
 path.lo.dep: $(srcdir)/go/path/*.go
 	$(BUILDDEPS)
-path.lo: path.lo.dep
+path.lo:
 	$(BUILDPACKAGE)
 path/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1184,7 +1187,7 @@ path/check: $(CHECK_DEPS)
 @go_include@ reflect-go.lo.dep
 reflect-go.lo.dep: $(srcdir)/go/reflect/*.go
 	$(BUILDDEPS)
-reflect-go.lo: reflect-go.lo.dep
+reflect-go.lo:
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1196,7 +1199,7 @@ reflect/makefunc_ffi_c.lo: go/reflect/makefunc_ffi_c.c
 @go_include@ regexp.lo.dep
 regexp.lo.dep: $(srcdir)/go/regexp/*.go
 	$(BUILDDEPS)
-regexp.lo: regexp.lo.dep
+regexp.lo:
 	$(BUILDPACKAGE)
 regexp/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1207,7 +1210,7 @@ extra_go_files_runtime = version.go
 @go_include@ runtime-go.lo.dep
 runtime-go.lo.dep: $(srcdir)/go/runtime/*.go
 	$(BUILDDEPS)
-runtime-go.lo: runtime-go.lo.dep
+runtime-go.lo:
 	$(BUILDPACKAGE)
 runtime/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1216,7 +1219,7 @@ runtime/check: $(CHECK_DEPS)
 @go_include@ sort.lo.dep
 sort.lo.dep: $(srcdir)/go/sort/*.go
 	$(BUILDDEPS)
-sort.lo: sort.lo.dep
+sort.lo:
 	$(BUILDPACKAGE)
 sort/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1225,7 +1228,7 @@ sort/check: $(CHECK_DEPS)
 @go_include@ strconv.lo.dep
 strconv.lo.dep: $(srcdir)/go/strconv/*.go
 	$(BUILDDEPS)
-strconv.lo: strconv.lo.dep
+strconv.lo:
 	$(BUILDPACKAGE)
 strconv/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1234,7 +1237,7 @@ strconv/check: $(CHECK_DEPS)
 @go_include@ strings.lo.dep
 strings.lo.dep: $(srcdir)/go/strings/*.go
 	$(BUILDDEPS)
-strings.lo: strings.lo.dep
+strings.lo:
 	$(BUILDPACKAGE)
 strings/index.lo: go/strings/indexbyte.c
 	@$(MKDIR_P) strings
@@ -1246,7 +1249,7 @@ strings/check: $(CHECK_DEPS)
 @go_include@ sync.lo.dep
 sync.lo.dep: $(srcdir)/go/sync/*.go
 	$(BUILDDEPS)
-sync.lo: sync.lo.dep
+sync.lo:
 	$(BUILDPACKAGE)
 sync/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1255,7 +1258,7 @@ sync/check: $(CHECK_DEPS)
 @go_include@ testing.lo.dep
 testing.lo.dep: $(srcdir)/go/testing/*.go
 	$(BUILDDEPS)
-testing.lo: testing.lo.dep
+testing.lo:
 	$(BUILDPACKAGE)
 testing/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1264,7 +1267,7 @@ testing/check: $(CHECK_DEPS)
 @go_include@ time-go.lo.dep
 time-go.lo.dep: $(srcdir)/go/time/*.go
 	$(BUILDDEPS)
-time-go.lo: time-go.lo.dep
+time-go.lo:
 	$(BUILDPACKAGE)
 time/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1273,7 +1276,7 @@ time/check: $(CHECK_DEPS)
 @go_include@ unicode.lo.dep
 unicode.lo.dep: $(srcdir)/go/unicode/*.go
 	$(BUILDDEPS)
-unicode.lo: unicode.lo.dep
+unicode.lo:
 	$(BUILDPACKAGE)
 unicode/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1282,7 +1285,7 @@ unicode/check: $(CHECK_DEPS)
 @go_include@ archive/tar.lo.dep
 archive/tar.lo.dep: $(srcdir)/go/archive/tar/*.go
 	$(BUILDDEPS)
-archive/tar.lo: archive/tar.lo.dep
+archive/tar.lo:
 	$(BUILDPACKAGE)
 archive/tar/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1291,7 +1294,7 @@ archive/tar/check: $(CHECK_DEPS)
 @go_include@ archive/zip.lo.dep
 archive/zip.lo.dep: $(srcdir)/go/archive/zip/*.go
 	$(BUILDDEPS)
-archive/zip.lo: archive/zip.lo.dep
+archive/zip.lo:
 	$(BUILDPACKAGE)
 archive/zip/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1300,7 +1303,7 @@ archive/zip/check: $(CHECK_DEPS)
 @go_include@ compress/bzip2.lo.dep
 compress/bzip2.lo.dep: $(srcdir)/go/compress/bzip2/*.go
 	$(BUILDDEPS)
-compress/bzip2.lo: compress/bzip2.lo.dep
+compress/bzip2.lo:
 	$(BUILDPACKAGE)
 compress/bzip2/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1309,7 +1312,7 @@ compress/bzip2/check: $(CHECK_DEPS)
 @go_include@ compress/flate.lo.dep
 compress/flate.lo.dep: $(srcdir)/go/compress/flate/*.go
 	$(BUILDDEPS)
-compress/flate.lo: compress/flate.lo.dep
+compress/flate.lo:
 	$(BUILDPACKAGE)
 compress/flate/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1318,7 +1321,7 @@ compress/flate/check: $(CHECK_DEPS)
 @go_include@ compress/gzip.lo.dep
 compress/gzip.lo.dep: $(srcdir)/go/compress/gzip/*.go
 	$(BUILDDEPS)
-compress/gzip.lo: compress/gzip.lo.dep
+compress/gzip.lo:
 	$(BUILDPACKAGE)
 compress/gzip/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1327,7 +1330,7 @@ compress/gzip/check: $(CHECK_DEPS)
 @go_include@ compress/lzw.lo.dep
 compress/lzw.lo.dep: $(srcdir)/go/compress/lzw/*.go
 	$(BUILDDEPS)
-compress/lzw.lo: compress/lzw.lo.dep
+compress/lzw.lo:
 	$(BUILDPACKAGE)
 compress/lzw/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1336,7 +1339,7 @@ compress/lzw/check: $(CHECK_DEPS)
 @go_include@ compress/zlib.lo.dep
 compress/zlib.lo.dep: $(srcdir)/go/compress/zlib/*.go
 	$(BUILDDEPS)
-compress/zlib.lo: compress/zlib.lo.dep
+compress/zlib.lo:
 	$(BUILDPACKAGE)
 compress/zlib/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1345,7 +1348,7 @@ compress/zlib/check: $(CHECK_DEPS)
 @go_include@ container/heap.lo.dep
 container/heap.lo.dep: $(srcdir)/go/container/heap/*.go
 	$(BUILDDEPS)
-container/heap.lo: container/heap.lo.dep
+container/heap.lo:
 	$(BUILDPACKAGE)
 container/heap/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1354,7 +1357,7 @@ container/heap/check: $(CHECK_DEPS)
 @go_include@ container/list.lo.dep
 container/list.lo.dep: $(srcdir)/go/container/list/*.go
 	$(BUILDDEPS)
-container/list.lo: container/list.lo.dep
+container/list.lo:
 	$(BUILDPACKAGE)
 container/list/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1363,7 +1366,7 @@ container/list/check: $(CHECK_DEPS)
 @go_include@ container/ring.lo.dep
 container/ring.lo.dep: $(srcdir)/go/container/ring/*.go
 	$(BUILDDEPS)
-container/ring.lo: container/ring.lo.dep
+container/ring.lo:
 	$(BUILDPACKAGE)
 container/ring/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1372,7 +1375,7 @@ container/ring/check: $(CHECK_DEPS)
 @go_include@ crypto/aes.lo.dep
 crypto/aes.lo.dep: $(srcdir)/go/crypto/aes/*.go
 	$(BUILDDEPS)
-crypto/aes.lo: crypto/aes.lo.dep
+crypto/aes.lo:
 	$(BUILDPACKAGE)
 crypto/aes/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1381,7 +1384,7 @@ crypto/aes/check: $(CHECK_DEPS)
 @go_include@ crypto/cipher.lo.dep
 crypto/cipher.lo.dep: $(srcdir)/go/crypto/cipher/*.go
 	$(BUILDDEPS)
-crypto/cipher.lo: crypto/cipher.lo.dep
+crypto/cipher.lo:
 	$(BUILDPACKAGE)
 crypto/cipher/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1390,7 +1393,7 @@ crypto/cipher/check: $(CHECK_DEPS)
 @go_include@ crypto/des.lo.dep
 crypto/des.lo.dep: $(srcdir)/go/crypto/des/*.go
 	$(BUILDDEPS)
-crypto/des.lo: crypto/des.lo.dep
+crypto/des.lo:
 	$(BUILDPACKAGE)
 crypto/des/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1399,7 +1402,7 @@ crypto/des/check: $(CHECK_DEPS)
 @go_include@ crypto/dsa.lo.dep
 crypto/dsa.lo.dep: $(srcdir)/go/crypto/dsa/*.go
 	$(BUILDDEPS)
-crypto/dsa.lo: crypto/dsa.lo.dep
+crypto/dsa.lo:
 	$(BUILDPACKAGE)
 crypto/dsa/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1408,7 +1411,7 @@ crypto/dsa/check: $(CHECK_DEPS)
 @go_include@ crypto/ecdsa.lo.dep
 crypto/ecdsa.lo.dep: $(srcdir)/go/crypto/ecdsa/*.go
 	$(BUILDDEPS)
-crypto/ecdsa.lo: crypto/ecdsa.lo.dep
+crypto/ecdsa.lo:
 	$(BUILDPACKAGE)
 crypto/ecdsa/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1417,7 +1420,7 @@ crypto/ecdsa/check: $(CHECK_DEPS)
 @go_include@ crypto/elliptic.lo.dep
 crypto/elliptic.lo.dep: $(srcdir)/go/crypto/elliptic/*.go
 	$(BUILDDEPS)
-crypto/elliptic.lo: crypto/elliptic.lo.dep
+crypto/elliptic.lo:
 	$(BUILDPACKAGE)
 crypto/elliptic/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1426,7 +1429,7 @@ crypto/elliptic/check: $(CHECK_DEPS)
 @go_include@ crypto/hmac.lo.dep
 crypto/hmac.lo.dep: $(srcdir)/go/crypto/hmac/*.go
 	$(BUILDDEPS)
-crypto/hmac.lo: crypto/hmac.lo.dep
+crypto/hmac.lo:
 	$(BUILDPACKAGE)
 crypto/hmac/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1435,7 +1438,7 @@ crypto/hmac/check: $(CHECK_DEPS)
 @go_include@ crypto/md5.lo.dep
 crypto/md5.lo.dep: $(srcdir)/go/crypto/md5/*.go
 	$(BUILDDEPS)
-crypto/md5.lo: crypto/md5.lo.dep
+crypto/md5.lo:
 	$(BUILDPACKAGE)
 crypto/md5/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1444,7 +1447,7 @@ crypto/md5/check: $(CHECK_DEPS)
 @go_include@ crypto/rand.lo.dep
 crypto/rand.lo.dep: $(srcdir)/go/crypto/rand/*.go
 	$(BUILDDEPS)
-crypto/rand.lo: crypto/rand.lo.dep
+crypto/rand.lo:
 	$(BUILDPACKAGE)
 crypto/rand/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1453,7 +1456,7 @@ crypto/rand/check: $(CHECK_DEPS)
 @go_include@ crypto/rc4.lo.dep
 crypto/rc4.lo.dep: $(srcdir)/go/crypto/rc4/*.go
 	$(BUILDDEPS)
-crypto/rc4.lo: crypto/rc4.lo.dep
+crypto/rc4.lo:
 	$(BUILDPACKAGE)
 crypto/rc4/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1462,7 +1465,7 @@ crypto/rc4/check: $(CHECK_DEPS)
 @go_include@ crypto/rsa.lo.dep
 crypto/rsa.lo.dep: $(srcdir)/go/crypto/rsa/*.go
 	$(BUILDDEPS)
-crypto/rsa.lo: crypto/rsa.lo.dep
+crypto/rsa.lo:
 	$(BUILDPACKAGE)
 crypto/rsa/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1471,7 +1474,7 @@ crypto/rsa/check: $(CHECK_DEPS)
 @go_include@ crypto/sha1.lo.dep
 crypto/sha1.lo.dep: $(srcdir)/go/crypto/sha1/*.go
 	$(BUILDDEPS)
-crypto/sha1.lo: crypto/sha1.lo.dep
+crypto/sha1.lo:
 	$(BUILDPACKAGE)
 crypto/sha1/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1480,7 +1483,7 @@ crypto/sha1/check: $(CHECK_DEPS)
 @go_include@ crypto/sha256.lo.dep
 crypto/sha256.lo.dep: $(srcdir)/go/crypto/sha256/*.go
 	$(BUILDDEPS)
-crypto/sha256.lo: crypto/sha256.lo.dep
+crypto/sha256.lo:
 	$(BUILDPACKAGE)
 crypto/sha256/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1489,7 +1492,7 @@ crypto/sha256/check: $(CHECK_DEPS)
 @go_include@ crypto/sha512.lo.dep
 crypto/sha512.lo.dep: $(srcdir)/go/crypto/sha512/*.go
 	$(BUILDDEPS)
-crypto/sha512.lo: crypto/sha512.lo.dep
+crypto/sha512.lo:
 	$(BUILDPACKAGE)
 crypto/sha512/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1498,7 +1501,7 @@ crypto/sha512/check: $(CHECK_DEPS)
 @go_include@ crypto/subtle.lo.dep
 crypto/subtle.lo.dep: $(srcdir)/go/crypto/subtle/*.go
 	$(BUILDDEPS)
-crypto/subtle.lo: crypto/subtle.lo.dep
+crypto/subtle.lo:
 	$(BUILDPACKAGE)
 crypto/subtle/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1507,7 +1510,7 @@ crypto/subtle/check: $(CHECK_DEPS)
 @go_include@ crypto/tls.lo.dep
 crypto/tls.lo.dep: $(srcdir)/go/crypto/tls/*.go
 	$(BUILDDEPS)
-crypto/tls.lo: crypto/tls.lo.dep
+crypto/tls.lo:
 	$(BUILDPACKAGE)
 crypto/tls/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1516,7 +1519,7 @@ crypto/tls/check: $(CHECK_DEPS)
 @go_include@ crypto/x509.lo.dep
 crypto/x509.lo.dep: $(srcdir)/go/crypto/x509/*.go
 	$(BUILDDEPS)
-crypto/x509.lo: crypto/x509.lo.dep
+crypto/x509.lo:
 	$(BUILDPACKAGE)
 crypto/x509/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1525,7 +1528,7 @@ crypto/x509/check: $(CHECK_DEPS)
 @go_include@ crypto/x509/pkix.lo.dep
 crypto/x509/pkix.lo.dep: $(srcdir)/go/crypto/x509/pkix/*.go
 	$(BUILDDEPS)
-crypto/x509/pkix.lo: crypto/x509/pkix.lo.dep
+crypto/x509/pkix.lo:
 	$(BUILDPACKAGE)
 crypto/x509/pkix/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1534,7 +1537,7 @@ crypto/x509/pkix/check: $(CHECK_DEPS)
 @go_include@ database/sql.lo.dep
 database/sql.lo.dep: $(srcdir)/go/database/sql/*.go
 	$(BUILDDEPS)
-database/sql.lo: database/sql.lo.dep
+database/sql.lo:
 	$(BUILDPACKAGE)
 database/sql/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1543,7 +1546,7 @@ database/sql/check: $(CHECK_DEPS)
 @go_include@ database/sql/driver.lo.dep
 database/sql/driver.lo.dep: $(srcdir)/go/database/sql/driver/*.go
 	$(BUILDDEPS)
-database/sql/driver.lo: database/sql/driver.lo.dep
+database/sql/driver.lo:
 	$(BUILDPACKAGE)
 database/sql/driver/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1552,7 +1555,7 @@ database/sql/driver/check: $(CHECK_DEPS)
 @go_include@ debug/dwarf.lo.dep
 debug/dwarf.lo.dep: $(srcdir)/go/debug/dwarf/*.go
 	$(BUILDDEPS)
-debug/dwarf.lo: debug/dwarf.lo.dep
+debug/dwarf.lo:
 	$(BUILDPACKAGE)
 debug/dwarf/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1561,7 +1564,7 @@ debug/dwarf/check: $(CHECK_DEPS)
 @go_include@ debug/elf.lo.dep
 debug/elf.lo.dep: $(srcdir)/go/debug/elf/*.go
 	$(BUILDDEPS)
-debug/elf.lo: debug/elf.lo.dep
+debug/elf.lo:
 	$(BUILDPACKAGE)
 debug/elf/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1570,7 +1573,7 @@ debug/elf/check: $(CHECK_DEPS)
 @go_include@ debug/gosym.lo.dep
 debug/gosym.lo.dep: $(srcdir)/go/debug/gosym/*.go
 	$(BUILDDEPS)
-debug/gosym.lo: debug/gosym.lo.dep
+debug/gosym.lo:
 	$(BUILDPACKAGE)
 debug/gosym/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1579,7 +1582,7 @@ debug/gosym/check: $(CHECK_DEPS)
 @go_include@ debug/macho.lo.dep
 debug/macho.lo.dep: $(srcdir)/go/debug/macho/*.go
 	$(BUILDDEPS)
-debug/macho.lo: debug/macho.lo.dep
+debug/macho.lo:
 	$(BUILDPACKAGE)
 debug/macho/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1588,7 +1591,7 @@ debug/macho/check: $(CHECK_DEPS)
 @go_include@ debug/pe.lo.dep
 debug/pe.lo.dep: $(srcdir)/go/debug/pe/*.go
 	$(BUILDDEPS)
-debug/pe.lo: debug/pe.lo.dep
+debug/pe.lo:
 	$(BUILDPACKAGE)
 debug/pe/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1597,7 +1600,7 @@ debug/pe/check: $(CHECK_DEPS)
 @go_include@ debug/plan9obj.lo.dep
 debug/plan9obj.lo.dep: $(srcdir)/go/debug/plan9obj/*.go
 	$(BUILDDEPS)
-debug/plan9obj.lo: debug/plan9obj.lo.dep
+debug/plan9obj.lo:
 	$(BUILDPACKAGE)
 debug/plan9obj/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1606,7 +1609,7 @@ debug/plan9obj/check: $(CHECK_DEPS)
 @go_include@ encoding/asn1.lo.dep
 encoding/asn1.lo.dep: $(srcdir)/go/encoding/asn1/*.go
 	$(BUILDDEPS)
-encoding/asn1.lo: encoding/asn1.lo.dep
+encoding/asn1.lo:
 	$(BUILDPACKAGE)
 encoding/asn1/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1615,7 +1618,7 @@ encoding/asn1/check: $(CHECK_DEPS)
 @go_include@ encoding/ascii85.lo.dep
 encoding/ascii85.lo.dep: $(srcdir)/go/encoding/ascii85/*.go
 	$(BUILDDEPS)
-encoding/ascii85.lo: encoding/ascii85.lo.dep
+encoding/ascii85.lo:
 	$(BUILDPACKAGE)
 encoding/ascii85/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1624,7 +1627,7 @@ encoding/ascii85/check: $(CHECK_DEPS)
 @go_include@ encoding/base32.lo.dep
 encoding/base32.lo.dep: $(srcdir)/go/encoding/base32/*.go
 	$(BUILDDEPS)
-encoding/base32.lo: encoding/base32.lo.dep
+encoding/base32.lo:
 	$(BUILDPACKAGE)
 encoding/base32/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1633,7 +1636,7 @@ encoding/base32/check: $(CHECK_DEPS)
 @go_include@ encoding/base64.lo.dep
 encoding/base64.lo.dep: $(srcdir)/go/encoding/base64/*.go
 	$(BUILDDEPS)
-encoding/base64.lo: encoding/base64.lo.dep
+encoding/base64.lo:
 	$(BUILDPACKAGE)
 encoding/base64/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1642,7 +1645,7 @@ encoding/base64/check: $(CHECK_DEPS)
 @go_include@ encoding/binary.lo.dep
 encoding/binary.lo.dep: $(srcdir)/go/encoding/binary/*.go
 	$(BUILDDEPS)
-encoding/binary.lo: encoding/binary.lo.dep
+encoding/binary.lo:
 	$(BUILDPACKAGE)
 encoding/binary/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1651,7 +1654,7 @@ encoding/binary/check: $(CHECK_DEPS)
 @go_include@ encoding/csv.lo.dep
 encoding/csv.lo.dep: $(srcdir)/go/encoding/csv/*.go
 	$(BUILDDEPS)
-encoding/csv.lo: encoding/csv.lo.dep
+encoding/csv.lo:
 	$(BUILDPACKAGE)
 encoding/csv/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1660,7 +1663,7 @@ encoding/csv/check: $(CHECK_DEPS)
 @go_include@ encoding/gob.lo.dep
 encoding/gob.lo.dep: $(srcdir)/go/encoding/gob/*.go
 	$(BUILDDEPS)
-encoding/gob.lo: encoding/gob.lo.dep
+encoding/gob.lo:
 	$(BUILDPACKAGE)
 encoding/gob/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1669,7 +1672,7 @@ encoding/gob/check: $(CHECK_DEPS)
 @go_include@ encoding/hex.lo.dep
 encoding/hex.lo.dep: $(srcdir)/go/encoding/hex/*.go
 	$(BUILDDEPS)
-encoding/hex.lo: encoding/hex.lo.dep
+encoding/hex.lo:
 	$(BUILDPACKAGE)
 encoding/hex/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1678,7 +1681,7 @@ encoding/hex/check: $(CHECK_DEPS)
 @go_include@ encoding/json.lo.dep
 encoding/json.lo.dep: $(srcdir)/go/encoding/json/*.go
 	$(BUILDDEPS)
-encoding/json.lo: encoding/json.lo.dep
+encoding/json.lo:
 	$(BUILDPACKAGE)
 encoding/json/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1687,7 +1690,7 @@ encoding/json/check: $(CHECK_DEPS)
 @go_include@ encoding/pem.lo.dep
 encoding/pem.lo.dep: $(srcdir)/go/encoding/pem/*.go
 	$(BUILDDEPS)
-encoding/pem.lo: encoding/pem.lo.dep
+encoding/pem.lo:
 	$(BUILDPACKAGE)
 encoding/pem/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1696,7 +1699,7 @@ encoding/pem/check: $(CHECK_DEPS)
 @go_include@ encoding/xml.lo.dep
 encoding/xml.lo.dep: $(srcdir)/go/encoding/xml/*.go
 	$(BUILDDEPS)
-encoding/xml.lo: encoding/xml.lo.dep
+encoding/xml.lo:
 	$(BUILDPACKAGE)
 encoding/xml/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1705,7 +1708,7 @@ encoding/xml/check: $(CHECK_DEPS)
 @go_include@ exp/proxy.lo.dep
 exp/proxy.lo.dep: $(srcdir)/go/exp/proxy/*.go
 	$(BUILDDEPS)
-exp/proxy.lo: exp/proxy.lo.dep
+exp/proxy.lo:
 	$(BUILDPACKAGE)
 exp/proxy/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1714,7 +1717,7 @@ exp/proxy/check: $(CHECK_DEPS)
 @go_include@ exp/terminal.lo.dep
 exp/terminal.lo.dep: $(srcdir)/go/exp/terminal/*.go
 	$(BUILDDEPS)
-exp/terminal.lo: exp/terminal.lo.dep
+exp/terminal.lo:
 	$(BUILDPACKAGE)
 exp/terminal/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1723,7 +1726,7 @@ exp/terminal/check: $(CHECK_DEPS)
 @go_include@ html/template.lo.dep
 html/template.lo.dep: $(srcdir)/go/html/template/*.go
 	$(BUILDDEPS)
-html/template.lo: html/template.lo.dep
+html/template.lo:
 	$(BUILDPACKAGE)
 html/template/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1732,7 +1735,7 @@ html/template/check: $(CHECK_DEPS)
 @go_include@ go/ast.lo.dep
 go/ast.lo.dep: $(srcdir)/go/go/ast/*.go
 	$(BUILDDEPS)
-go/ast.lo: go/ast.lo.dep
+go/ast.lo:
 	$(BUILDPACKAGE)
 go/ast/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1741,7 +1744,7 @@ go/ast/check: $(CHECK_DEPS)
 @go_include@ go/build.lo.dep
 go/build.lo.dep: $(srcdir)/go/go/build/*.go
 	$(BUILDDEPS)
-go/build.lo: go/build.lo.dep
+go/build.lo:
 	$(BUILDPACKAGE)
 go/build/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1750,7 +1753,7 @@ go/build/check: $(CHECK_DEPS)
 @go_include@ go/constant.lo.dep
 go/constant.lo.dep: $(srcdir)/go/go/constant/*.go
 	$(BUILDDEPS)
-go/constant.lo: go/constant.lo.dep
+go/constant.lo:
 	$(BUILDPACKAGE)
 go/constant/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1759,7 +1762,7 @@ go/constant/check: $(CHECK_DEPS)
 @go_include@ go/doc.lo.dep
 go/doc.lo.dep: $(srcdir)/go/go/doc/*.go
 	$(BUILDDEPS)
-go/doc.lo: go/doc.lo.dep
+go/doc.lo:
 	$(BUILDPACKAGE)
 go/doc/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1768,7 +1771,7 @@ go/doc/check: $(CHECK_DEPS)
 @go_include@ go/format.lo.dep
 go/format.lo.dep: $(srcdir)/go/go/format/*.go
 	$(BUILDDEPS)
-go/format.lo: go/format.lo.dep
+go/format.lo:
 	$(BUILDPACKAGE)
 go/format/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1777,7 +1780,7 @@ go/format/check: $(CHECK_DEPS)
 @go_include@ go/importer.lo.dep
 go/importer.lo.dep: $(srcdir)/go/go/importer/*.go
 	$(BUILDDEPS)
-go/importer.lo: go/importer.lo.dep
+go/importer.lo:
 	$(BUILDPACKAGE)
 go/importer/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1786,7 +1789,7 @@ go/importer/check: $(CHECK_DEPS)
 @go_include@ go/parser.lo.dep
 go/parser.lo.dep: $(srcdir)/go/go/parser/*.go
 	$(BUILDDEPS)
-go/parser.lo: go/parser.lo.dep
+go/parser.lo:
 	$(BUILDPACKAGE)
 go/parser/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1795,7 +1798,7 @@ go/parser/check: $(CHECK_DEPS)
 @go_include@ go/printer.lo.dep
 go/printer.lo.dep: $(srcdir)/go/go/printer/*.go
 	$(BUILDDEPS)
-go/printer.lo: go/printer.lo.dep
+go/printer.lo:
 	$(BUILDPACKAGE)
 go/printer/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1804,7 +1807,7 @@ go/printer/check: $(CHECK_DEPS)
 @go_include@ go/scanner.lo.dep
 go/scanner.lo.dep: $(srcdir)/go/go/scanner/*.go
 	$(BUILDDEPS)
-go/scanner.lo: go/scanner.lo.dep
+go/scanner.lo:
 	$(BUILDPACKAGE)
 go/scanner/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1813,7 +1816,7 @@ go/scanner/check: $(CHECK_DEPS)
 @go_include@ go/token.lo.dep
 go/token.lo.dep: $(srcdir)/go/go/token/*.go
 	$(BUILDDEPS)
-go/token.lo: go/token.lo.dep
+go/token.lo:
 	$(BUILDPACKAGE)
 go/token/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1822,7 +1825,7 @@ go/token/check: $(CHECK_DEPS)
 @go_include@ go/types.lo.dep
 go/types.lo.dep: $(srcdir)/go/go/types/*.go
 	$(BUILDDEPS)
-go/types.lo: go/types.lo.dep
+go/types.lo:
 	$(BUILDPACKAGE)
 go/types/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1831,7 +1834,7 @@ go/types/check: $(CHECK_DEPS)
 @go_include@ go/internal/gcimporter.lo.dep
 go/internal/gcimporter.lo.dep: $(srcdir)/go/go/internal/gcimporter/*.go
 	$(BUILDDEPS)
-go/internal/gcimporter.lo: go/internal/gcimporter.lo.dep
+go/internal/gcimporter.lo:
 	$(BUILDPACKAGE)
 go/internal/gcimporter/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1840,7 +1843,7 @@ go/internal/gcimporter/check: $(CHECK_DEPS)
 @go_include@ go/internal/gccgoimporter.lo.dep
 go/internal/gccgoimporter.lo.dep: $(srcdir)/go/go/internal/gccgoimporter/*.go
 	$(BUILDDEPS)
-go/internal/gccgoimporter.lo: go/internal/gccgoimporter.lo.dep
+go/internal/gccgoimporter.lo:
 	$(BUILDPACKAGE)
 go/internal/gccgoimporter/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1849,7 +1852,7 @@ go/internal/gccgoimporter/check: $(CHECK_DEPS)
 @go_include@ golang_org/x/net/http2/hpack.lo.dep
 golang_org/x/net/http2/hpack.lo.dep: $(srcdir)/go/golang_org/x/net/http2/hpack/*.go
 	$(BUILDDEPS)
-golang_org/x/net/http2/hpack.lo: golang_org/x/net/http2/hpack.lo.dep
+golang_org/x/net/http2/hpack.lo:
 	$(BUILDPACKAGE)
 golang_org/x/net/http2/hpack/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1858,7 +1861,7 @@ golang_org/x/net/http2/hpack/check: $(CHECK_DEPS)
 @go_include@ golang_org/x/net/lex/httplex.lo.dep
 golang_org/x/net/lex/httplex.lo.dep: $(srcdir)/go/golang_org/x/net/lex/httplex/*.go
 	$(BUILDDEPS)
-golang_org/x/net/lex/httplex.lo: golang_org/x/net/lex/httplex.lo.dep
+golang_org/x/net/lex/httplex.lo:
 	$(BUILDPACKAGE)
 golang_org/x/net/lex/httplex/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1874,7 +1877,7 @@ golang_org_x_net_route_check = \
 @go_include@ golang_org/x/net/route.lo.dep
 golang_org/x/net/route.lo.dep: $(srcdir)/go/golang_org/x/net/route/*.go
 	$(BUILDDEPS)
-golang_org/x/net/route.lo: golang_org/x/net/route.lo.dep
+golang_org/x/net/route.lo:
 	$(BUILDPACKAGE)
 golang_org/x/net/route/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1886,7 +1889,7 @@ endif
 @go_include@ hash/adler32.lo.dep
 hash/adler32.lo.dep: $(srcdir)/go/hash/adler32/*.go
 	$(BUILDDEPS)
-hash/adler32.lo: hash/adler32.lo.dep
+hash/adler32.lo:
 	$(BUILDPACKAGE)
 hash/adler32/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1895,7 +1898,7 @@ hash/adler32/check: $(CHECK_DEPS)
 @go_include@ hash/crc32.lo.dep
 hash/crc32.lo.dep: $(srcdir)/go/hash/crc32/*.go
 	$(BUILDDEPS)
-hash/crc32.lo: hash/crc32.lo.dep
+hash/crc32.lo:
 	$(BUILDPACKAGE)
 hash/crc32/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1904,7 +1907,7 @@ hash/crc32/check: $(CHECK_DEPS)
 @go_include@ hash/crc64.lo.dep
 hash/crc64.lo.dep: $(srcdir)/go/hash/crc64/*.go
 	$(BUILDDEPS)
-hash/crc64.lo: hash/crc64.lo.dep
+hash/crc64.lo:
 	$(BUILDPACKAGE)
 hash/crc64/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1913,7 +1916,7 @@ hash/crc64/check: $(CHECK_DEPS)
 @go_include@ hash/fnv.lo.dep
 hash/fnv.lo.dep: $(srcdir)/go/hash/fnv/*.go
 	$(BUILDDEPS)
-hash/fnv.lo: hash/fnv.lo.dep
+hash/fnv.lo:
 	$(BUILDPACKAGE)
 hash/fnv/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1922,7 +1925,7 @@ hash/fnv/check: $(CHECK_DEPS)
 @go_include@ image/color.lo.dep
 image/color.lo.dep: $(srcdir)/go/image/color/*.go
 	$(BUILDDEPS)
-image/color.lo: image/color.lo.dep
+image/color.lo:
 	$(BUILDPACKAGE)
 image/color/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1931,7 +1934,7 @@ image/color/check: $(CHECK_DEPS)
 @go_include@ image/color/palette.lo.dep
 image/color/palette.lo.dep: $(srcdir)/go/image/color/palette/*.go
 	$(BUILDDEPS)
-image/color/palette.lo: image/color/palette.lo.dep
+image/color/palette.lo:
 	$(BUILDPACKAGE)
 image/color/palette/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1940,7 +1943,7 @@ image/color/palette/check: $(CHECK_DEPS)
 @go_include@ image/draw.lo.dep
 image/draw.lo.dep: $(srcdir)/go/image/draw/*.go
 	$(BUILDDEPS)
-image/draw.lo: image/draw.lo.dep
+image/draw.lo:
 	$(BUILDPACKAGE)
 image/draw/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1949,7 +1952,7 @@ image/draw/check: $(CHECK_DEPS)
 @go_include@ image/gif.lo.dep
 image/gif.lo.dep: $(srcdir)/go/image/gif/*.go
 	$(BUILDDEPS)
-image/gif.lo: image/gif.lo.dep
+image/gif.lo:
 	$(BUILDPACKAGE)
 image/gif/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1958,7 +1961,7 @@ image/gif/check: $(CHECK_DEPS)
 @go_include@ image/internal/imageutil.lo.dep
 image/internal/imageutil.lo.dep: $(srcdir)/go/image/internal/imageutil/*.go
 	$(BUILDDEPS)
-image/internal/imageutil.lo: image/internal/imageutil.lo.dep
+image/internal/imageutil.lo:
 	$(BUILDPACKAGE)
 image/internal/imageutil/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1967,7 +1970,7 @@ image/internal/imageutil/check: $(CHECK_DEPS)
 @go_include@ image/jpeg.lo.dep
 image/jpeg.lo.dep: $(srcdir)/go/image/jpeg/*.go
 	$(BUILDDEPS)
-image/jpeg.lo: image/jpeg.lo.dep
+image/jpeg.lo:
 	$(BUILDPACKAGE)
 image/jpeg/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1976,7 +1979,7 @@ image/jpeg/check: $(CHECK_DEPS)
 @go_include@ image/png.lo.dep
 image/png.lo.dep: $(srcdir)/go/image/png/*.go
 	$(BUILDDEPS)
-image/png.lo: image/png.lo.dep
+image/png.lo:
 	$(BUILDPACKAGE)
 image/png/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1985,7 +1988,7 @@ image/png/check: $(CHECK_DEPS)
 @go_include@ index/suffixarray.lo.dep
 index/suffixarray.lo.dep: $(srcdir)/go/index/suffixarray/*.go
 	$(BUILDDEPS)
-index/suffixarray.lo: index/suffixarray.lo.dep
+index/suffixarray.lo:
 	$(BUILDPACKAGE)
 index/suffixarray/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -1994,7 +1997,7 @@ index/suffixarray/check: $(CHECK_DEPS)
 @go_include@ internal/nettrace.lo.dep
 internal/nettrace.lo.dep: $(srcdir)/go/internal/nettrace/*.go
 	$(BUILDDEPS)
-internal/nettrace.lo: internal/nettrace.lo.dep
+internal/nettrace.lo:
 	$(BUILDPACKAGE)
 internal/nettrace/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2003,7 +2006,7 @@ internal/nettrace/check: $(CHECK_DEPS)
 @go_include@ internal/race.lo.dep
 internal/race.lo.dep: $(srcdir)/go/internal/race/*.go
 	$(BUILDDEPS)
-internal/race.lo: internal/race.lo.dep
+internal/race.lo:
 	$(BUILDPACKAGE)
 internal/race/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2012,7 +2015,7 @@ internal/race/check: $(CHECK_DEPS)
 @go_include@ internal/singleflight.lo.dep
 internal/singleflight.lo.dep: $(srcdir)/go/internal/singleflight/*.go
 	$(BUILDDEPS)
-internal/singleflight.lo: internal/singleflight.lo.dep
+internal/singleflight.lo:
 	$(BUILDPACKAGE)
 internal/singleflight/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2021,7 +2024,7 @@ internal/singleflight/check: $(CHECK_DEPS)
 @go_include@ internal/syscall/unix.lo.dep
 internal/syscall/unix.lo.dep: $(srcdir)/go/internal/syscall/unix/*.go
 	$(BUILDDEPS)
-internal/syscall/unix.lo: internal/syscall/unix.lo.dep
+internal/syscall/unix.lo:
 	$(BUILDPACKAGE)
 internal/syscall/unix/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2030,7 +2033,7 @@ internal/syscall/unix/check: $(CHECK_DEPS)
 @go_include@ internal/testenv.lo.dep
 internal/testenv.lo.dep: $(srcdir)/go/internal/testenv/*.go
 	$(BUILDDEPS)
-internal/testenv.lo: internal/testenv.lo.dep
+internal/testenv.lo:
 	$(BUILDPACKAGE)
 internal/testenv/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2039,7 +2042,7 @@ internal/testenv/check: $(CHECK_DEPS)
 @go_include@ internal/trace.lo.dep
 internal/trace.lo.dep: $(srcdir)/go/internal/trace/*.go
 	$(BUILDDEPS)
-internal/trace.lo: internal/trace.lo.dep
+internal/trace.lo:
 	$(BUILDPACKAGE)
 internal/trace/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2048,7 +2051,7 @@ internal/trace/check: $(CHECK_DEPS)
 @go_include@ io/ioutil.lo.dep
 io/ioutil.lo.dep: $(srcdir)/go/io/ioutil/*.go
 	$(BUILDDEPS)
-io/ioutil.lo: io/ioutil.lo.dep
+io/ioutil.lo:
 	$(BUILDPACKAGE)
 io/ioutil/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2057,7 +2060,7 @@ io/ioutil/check: $(CHECK_DEPS)
 @go_include@ log/syslog.lo.dep
 log/syslog.lo.dep: $(srcdir)/go/log/syslog/*.go
 	$(BUILDDEPS)
-log/syslog.lo: log/syslog.lo.dep
+log/syslog.lo:
 	$(BUILDPACKAGE)
 log/syslog/syslog_c.lo: go/log/syslog/syslog_c.c log/syslog.lo
 	@$(MKDIR_P) log/syslog
@@ -2069,7 +2072,7 @@ log/syslog/check: $(CHECK_DEPS)
 @go_include@ math/big.lo.dep
 math/big.lo.dep: $(srcdir)/go/math/big/*.go
 	$(BUILDDEPS)
-math/big.lo: math/big.lo.dep
+math/big.lo:
 	$(BUILDPACKAGE)
 math/big/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2078,7 +2081,7 @@ math/big/check: $(CHECK_DEPS)
 @go_include@ math/cmplx.lo.dep
 math/cmplx.lo.dep: $(srcdir)/go/math/cmplx/*.go
 	$(BUILDDEPS)
-math/cmplx.lo: math/cmplx.lo.dep
+math/cmplx.lo:
 	$(BUILDPACKAGE)
 math/cmplx/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2087,7 +2090,7 @@ math/cmplx/check: $(CHECK_DEPS)
 @go_include@ math/rand.lo.dep
 math/rand.lo.dep: $(srcdir)/go/math/rand/*.go
 	$(BUILDDEPS)
-math/rand.lo: math/rand.lo.dep
+math/rand.lo:
 	$(BUILDPACKAGE)
 math/rand/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2096,7 +2099,7 @@ math/rand/check: $(CHECK_DEPS)
 @go_include@ mime/multipart.lo.dep
 mime/multipart.lo.dep: $(srcdir)/go/mime/multipart/*.go
 	$(BUILDDEPS)
-mime/multipart.lo: mime/multipart.lo.dep
+mime/multipart.lo:
 	$(BUILDPACKAGE)
 mime/multipart/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2105,7 +2108,7 @@ mime/multipart/check: $(CHECK_DEPS)
 @go_include@ mime/quotedprintable.lo.dep
 mime/quotedprintable.lo.dep: $(srcdir)/go/mime/quotedprintable/*.go
 	$(BUILDDEPS)
-mime/quotedprintable.lo: mime/quotedprintable.lo.dep
+mime/quotedprintable.lo:
 	$(BUILDPACKAGE)
 mime/quotedprintable/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2114,7 +2117,7 @@ mime/quotedprintable/check: $(CHECK_DEPS)
 @go_include@ net/http.lo.dep
 net/http.lo.dep: $(srcdir)/go/net/http/*.go
 	$(BUILDDEPS)
-net/http.lo: net/http.lo.dep
+net/http.lo:
 	$(BUILDPACKAGE)
 net/http/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2123,7 +2126,7 @@ net/http/check: $(CHECK_DEPS)
 @go_include@ net/mail.lo.dep
 net/mail.lo.dep: $(srcdir)/go/net/mail/*.go
 	$(BUILDDEPS)
-net/mail.lo: net/mail.lo.dep
+net/mail.lo:
 	$(BUILDPACKAGE)
 net/mail/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2132,7 +2135,7 @@ net/mail/check: $(CHECK_DEPS)
 @go_include@ net/rpc.lo.dep
 net/rpc.lo.dep: $(srcdir)/go/net/rpc/*.go
 	$(BUILDDEPS)
-net/rpc.lo: net/rpc.lo.dep
+net/rpc.lo:
 	$(BUILDPACKAGE)
 net/rpc/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2141,7 +2144,7 @@ net/rpc/check: $(CHECK_DEPS)
 @go_include@ net/smtp.lo.dep
 net/smtp.lo.dep: $(srcdir)/go/net/smtp/*.go
 	$(BUILDDEPS)
-net/smtp.lo: net/smtp.lo.dep
+net/smtp.lo:
 	$(BUILDPACKAGE)
 net/smtp/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2150,7 +2153,7 @@ net/smtp/check: $(CHECK_DEPS)
 @go_include@ net/url.lo.dep
 net/url.lo.dep: $(srcdir)/go/net/url/*.go
 	$(BUILDDEPS)
-net/url.lo: net/url.lo.dep
+net/url.lo:
 	$(BUILDPACKAGE)
 net/url/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2159,7 +2162,7 @@ net/url/check: $(CHECK_DEPS)
 @go_include@ net/textproto.lo.dep
 net/textproto.lo.dep: $(srcdir)/go/net/textproto/*.go
 	$(BUILDDEPS)
-net/textproto.lo: net/textproto.lo.dep
+net/textproto.lo:
 	$(BUILDPACKAGE)
 net/textproto/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2168,7 +2171,7 @@ net/textproto/check: $(CHECK_DEPS)
 @go_include@ net/http/cgi.lo.dep
 net/http/cgi.lo.dep: $(srcdir)/go/net/http/cgi/*.go
 	$(BUILDDEPS)
-net/http/cgi.lo: net/http/cgi.lo.dep
+net/http/cgi.lo:
 	$(BUILDPACKAGE)
 net/http/cgi/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2177,7 +2180,7 @@ net/http/cgi/check: $(CHECK_DEPS)
 @go_include@ net/http/cookiejar.lo.dep
 net/http/cookiejar.lo.dep: $(srcdir)/go/net/http/cookiejar/*.go
 	$(BUILDDEPS)
-net/http/cookiejar.lo: net/http/cookiejar.lo.dep
+net/http/cookiejar.lo:
 	$(BUILDPACKAGE)
 net/http/cookiejar/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2186,7 +2189,7 @@ net/http/cookiejar/check: $(CHECK_DEPS)
 @go_include@ net/http/fcgi.lo.dep
 net/http/fcgi.lo.dep: $(srcdir)/go/net/http/fcgi/*.go
 	$(BUILDDEPS)
-net/http/fcgi.lo: net/http/fcgi.lo.dep
+net/http/fcgi.lo:
 	$(BUILDPACKAGE)
 net/http/fcgi/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2195,7 +2198,7 @@ net/http/fcgi/check: $(CHECK_DEPS)
 @go_include@ net/http/httptest.lo.dep
 net/http/httptest.lo.dep: $(srcdir)/go/net/http/httptest/*.go
 	$(BUILDDEPS)
-net/http/httptest.lo: net/http/httptest.lo.dep
+net/http/httptest.lo:
 	$(BUILDPACKAGE)
 net/http/httptest/check: $(check_deps)
 	@$(CHECK)
@@ -2204,7 +2207,7 @@ net/http/httptest/check: $(check_deps)
 @go_include@ net/http/httptrace.lo.dep
 net/http/httptrace.lo.dep: $(srcdir)/go/net/http/httptrace/*.go
 	$(BUILDDEPS)
-net/http/httptrace.lo: net/http/httptrace.lo.dep
+net/http/httptrace.lo:
 	$(BUILDPACKAGE)
 net/http/httptrace/check: $(check_deps)
 	@$(CHECK)
@@ -2213,7 +2216,7 @@ net/http/httptrace/check: $(check_deps)
 @go_include@ net/http/httputil.lo.dep
 net/http/httputil.lo.dep: $(srcdir)/go/net/http/httputil/*.go
 	$(BUILDDEPS)
-net/http/httputil.lo: net/http/httputil.lo.dep
+net/http/httputil.lo:
 	$(BUILDPACKAGE)
 net/http/httputil/check: $(check_deps)
 	@$(CHECK)
@@ -2222,7 +2225,7 @@ net/http/httputil/check: $(check_deps)
 @go_include@ net/http/internal.lo.dep
 net/http/internal.lo.dep: $(srcdir)/go/net/http/internal/*.go
 	$(BUILDDEPS)
-net/http/internal.lo: net/http/internal.lo.dep
+net/http/internal.lo:
 	$(BUILDPACKAGE)
 net/http/internal/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2231,7 +2234,7 @@ net/http/internal/check: $(CHECK_DEPS)
 @go_include@ net/http/pprof.lo.dep
 net/http/pprof.lo.dep: $(srcdir)/go/net/http/pprof/*.go
 	$(BUILDDEPS)
-net/http/pprof.lo: net/http/pprof.lo.dep
+net/http/pprof.lo:
 	$(BUILDPACKAGE)
 net/http/pprof/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2240,7 +2243,7 @@ net/http/pprof/check: $(CHECK_DEPS)
 @go_include@ net/internal/socktest.lo.dep
 net/internal/socktest.lo.dep: $(srcdir)/go/net/internal/socktest/*.go
 	$(BUILDDEPS)
-net/internal/socktest.lo: net/internal/socktest.lo.dep
+net/internal/socktest.lo:
 	$(BUILDPACKAGE)
 net/internal/socktest/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2249,7 +2252,7 @@ net/internal/socktest/check: $(CHECK_DEPS)
 @go_include@ net/rpc/jsonrpc.lo.dep
 net/rpc/jsonrpc.lo.dep: $(srcdir)/go/net/rpc/jsonrpc/*.go
 	$(BUILDDEPS)
-net/rpc/jsonrpc.lo: net/rpc/jsonrpc.lo.dep
+net/rpc/jsonrpc.lo:
 	$(BUILDPACKAGE)
 net/rpc/jsonrpc/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2258,7 +2261,7 @@ net/rpc/jsonrpc/check: $(CHECK_DEPS)
 @go_include@ old/regexp.lo.dep
 old/regexp.lo.dep: $(srcdir)/go/old/regexp/*.go
 	$(BUILDDEPS)
-old/regexp.lo: old/regexp.lo.dep
+old/regexp.lo:
 	$(BUILDPACKAGE)
 old/regexp/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2267,7 +2270,7 @@ old/regexp/check: $(CHECK_DEPS)
 @go_include@ old/template.lo.dep
 old/template.lo.dep: $(srcdir)/go/old/template/*.go
 	$(BUILDDEPS)
-old/template.lo: old/template.lo.dep
+old/template.lo:
 	$(BUILDPACKAGE)
 old/template/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2276,7 +2279,7 @@ old/template/check: $(CHECK_DEPS)
 @go_include@ os/exec.lo.dep
 os/exec.lo.dep: $(srcdir)/go/os/exec/*.go
 	$(BUILDDEPS)
-os/exec.lo: os/exec.lo.dep
+os/exec.lo:
 	$(BUILDPACKAGE)
 os/exec/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2285,7 +2288,7 @@ os/exec/check: $(CHECK_DEPS)
 @go_include@ os/signal.lo.dep
 os/signal.lo.dep: $(srcdir)/go/os/signal/*.go
 	$(BUILDDEPS)
-os/signal.lo: os/signal.lo.dep
+os/signal.lo:
 	$(BUILDPACKAGE)
 os/signal/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2294,7 +2297,7 @@ os/signal/check: $(CHECK_DEPS)
 @go_include@ os/user.lo.dep
 os/user.lo.dep: $(srcdir)/go/os/user/*.go
 	$(BUILDDEPS)
-os/user.lo: os/user.lo.dep
+os/user.lo:
 	$(BUILDPACKAGE)
 os/user/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2303,7 +2306,7 @@ os/user/check: $(CHECK_DEPS)
 @go_include@ path/filepath.lo.dep
 path/filepath.lo.dep: $(srcdir)/go/path/filepath/*.go
 	$(BUILDDEPS)
-path/filepath.lo: path/filepath.lo.dep
+path/filepath.lo:
 	$(BUILDPACKAGE)
 path/filepath/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2312,7 +2315,7 @@ path/filepath/check: $(CHECK_DEPS)
 @go_include@ regexp/syntax.lo.dep
 regexp/syntax.lo.dep: $(srcdir)/go/regexp/syntax/*.go
 	$(BUILDDEPS)
-regexp/syntax.lo: regexp/syntax.lo.dep
+regexp/syntax.lo:
 	$(BUILDPACKAGE)
 regexp/syntax/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2321,7 +2324,7 @@ regexp/syntax/check: $(CHECK_DEPS)
 @go_include@ runtime/debug.lo.dep
 runtime/debug.lo.dep: $(srcdir)/go/runtime/debug/*.go
 	$(BUILDDEPS)
-runtime/debug.lo: runtime/debug.lo.dep
+runtime/debug.lo:
 	$(BUILDPACKAGE)
 runtime/debug/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2330,7 +2333,7 @@ runtime/debug/check: $(CHECK_DEPS)
 @go_include@ runtime/pprof.lo.dep
 runtime/pprof.lo.dep: $(srcdir)/go/runtime/pprof/*.go
 	$(BUILDDEPS)
-runtime/pprof.lo: runtime/pprof.lo.dep
+runtime/pprof.lo:
 	$(BUILDPACKAGE)
 runtime/pprof/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2343,7 +2346,7 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 @go_include@ sync/atomic.lo.dep
 sync/atomic.lo.dep: $(srcdir)/go/sync/atomic/*.go
 	$(BUILDDEPS)
-sync/atomic.lo: sync/atomic.lo.dep
+sync/atomic.lo:
 	$(BUILDPACKAGE)
 sync/atomic_c.lo: go/sync/atomic/atomic.c sync/atomic.lo
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/sync/atomic/atomic.c
@@ -2354,7 +2357,7 @@ sync/atomic/check: $(CHECK_DEPS)
 @go_include@ text/scanner.lo.dep
 text/scanner.lo.dep: $(srcdir)/go/text/scanner/*.go
 	$(BUILDDEPS)
-text/scanner.lo: text/scanner.lo.dep
+text/scanner.lo:
 	$(BUILDPACKAGE)
 text/scanner/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2363,7 +2366,7 @@ text/scanner/check: $(CHECK_DEPS)
 @go_include@ text/tabwriter.lo.dep
 text/tabwriter.lo.dep: $(srcdir)/go/text/tabwriter/*.go
 	$(BUILDDEPS)
-text/tabwriter.lo: text/tabwriter.lo.dep
+text/tabwriter.lo:
 	$(BUILDPACKAGE)
 text/tabwriter/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2372,7 +2375,7 @@ text/tabwriter/check: $(CHECK_DEPS)
 @go_include@ text/template.lo.dep
 text/template.lo.dep: $(srcdir)/go/text/template/*.go
 	$(BUILDDEPS)
-text/template.lo: text/template.lo.dep
+text/template.lo:
 	$(BUILDPACKAGE)
 text/template/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2381,7 +2384,7 @@ text/template/check: $(CHECK_DEPS)
 @go_include@ text/template/parse.lo.dep
 text/template/parse.lo.dep: $(srcdir)/go/text/template/parse/*.go
 	$(BUILDDEPS)
-text/template/parse.lo: text/template/parse.lo.dep
+text/template/parse.lo:
 	$(BUILDPACKAGE)
 text/template/parse/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2390,7 +2393,7 @@ text/template/parse/check: $(CHECK_DEPS)
 @go_include@ testing/iotest.lo.dep
 testing/iotest.lo.dep: $(srcdir)/go/testing/iotest/*.go
 	$(BUILDDEPS)
-testing/iotest.lo: testing/iotest.lo.dep
+testing/iotest.lo:
 	$(BUILDPACKAGE)
 testing/iotest/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2399,7 +2402,7 @@ testing/iotest/check: $(CHECK_DEPS)
 @go_include@ testing/quick.lo.dep
 testing/quick.lo.dep: $(srcdir)/go/testing/quick/*.go
 	$(BUILDDEPS)
-testing/quick.lo: testing/quick.lo.dep
+testing/quick.lo:
 	$(BUILDPACKAGE)
 testing/quick/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2408,7 +2411,7 @@ testing/quick/check: $(CHECK_DEPS)
 @go_include@ unicode/utf16.lo.dep
 unicode/utf16.lo.dep: $(srcdir)/go/unicode/utf16/*.go
 	$(BUILDDEPS)
-unicode/utf16.lo: unicode/utf16.lo.dep
+unicode/utf16.lo:
 	$(BUILDPACKAGE)
 unicode/utf16/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2417,7 +2420,7 @@ unicode/utf16/check: $(CHECK_DEPS)
 @go_include@ unicode/utf8.lo.dep
 unicode/utf8.lo.dep: $(srcdir)/go/unicode/utf8/*.go
 	$(BUILDDEPS)
-unicode/utf8.lo: unicode/utf8.lo.dep
+unicode/utf8.lo:
 	$(BUILDPACKAGE)
 unicode/utf8/check: $(CHECK_DEPS)
 	@$(CHECK)
@@ -2426,7 +2429,7 @@ unicode/utf8/check: $(CHECK_DEPS)
 @go_include@ syscall.lo.dep
 syscall.lo.dep: $(srcdir)/go/syscall/*.go
 	$(BUILDDEPS)
-syscall.lo: syscall.lo.dep
+syscall.lo:
 	$(BUILDPACKAGE)
 syscall/errno.lo: go/syscall/errno.c
 	@$(MKDIR_P) syscall
