@@ -1,5 +1,11 @@
 2016-08-08  Alan Modra  <amodra@gmail.com>
 
+	PR target/72771
+	* config/rs6000/rs6000.c (toc_relative_expr_p): Allow (lo_sum (high))
+	toc refs created during reload.  Update function comment.
+
+2016-08-08  Alan Modra  <amodra@gmail.com>
+
 	PR target/72802
 	* config/rs6000/rs6000.md (mov<mode>_hardfloat): Sort
 	alternatives.  Put loads first, then stores, and reg/reg moves
