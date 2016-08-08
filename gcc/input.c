@@ -25,6 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "cpplib.h"
 
+#ifndef HAVE_ICONV
+#define HAVE_ICONV 0
+#endif
+
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
 struct fcache
