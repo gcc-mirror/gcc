@@ -1,3 +1,14 @@
+2016-08-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/tree-ssa/pr71078-1.c: Add require-effective-target
+	c99_runtime.
+	* gcc.dg/tree-ssa/pr71078-1-double.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-1-long-double.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-2-double.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-2-long-double.c: Likewise.
+	* gcc.dg/tree-ssa/pr71078-3.c: Likewise.
+
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/52952
