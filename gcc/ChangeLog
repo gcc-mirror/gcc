@@ -1,4 +1,13 @@
-2016-07-29  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68762
+	* omp-simd-clone.c: Include varasm.h.
+	(simd_clone_create): Copy over DECL_COMDAT, DECL_WEAK, DECL_EXTERNAL,
+	DECL_VISIBILITY, DECL_VISIBILITY_SPECIFIED, DECL_DLLIMPORT_P and for
+	DECL_ONE_ONLY call make_decl_one_only.  Fix up spelling in comment and
+	update function name.
+
+2016-07-29  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	* config/avr/driver-avr.c (specfiles_doc_url): Remove.
 	(avr_diagnose_devicespecs_error): Remove.

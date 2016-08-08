@@ -1,3 +1,10 @@
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68762
+	* g++.dg/vect/pr68762-1.cc: New test.
+	* g++.dg/vect/pr68762-2.cc: New test.
+	* g++.dg/vect/pr68762.h: New file.
+
 2016-08-08  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/72838
