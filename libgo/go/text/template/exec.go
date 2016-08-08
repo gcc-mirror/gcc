@@ -19,9 +19,9 @@ import (
 // templates. This limit is only practically reached by accidentally
 // recursive template invocations. This limit allows us to return
 // an error instead of triggering a stack overflow.
-// For gccgo we make this 10000 rather than 100000 to avoid stack overflow
+// For gccgo we make this 1000 rather than 100000 to avoid stack overflow
 // on non-split-stack systems.
-const maxExecDepth = 10000
+const maxExecDepth = 1000
 
 // state represents the state of an execution. It's not part of the
 // template so that multiple executions of the same template
