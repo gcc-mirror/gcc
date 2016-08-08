@@ -1,5 +1,11 @@
 2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/72698
+	* trans-stmt.c (gfc_trans_allocate): Prevent generating code for
+	copy of zero sized string and with it an ICE.
+
+2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/70524
 	* trans-array.c (gfc_trans_dummy_array_bias): Ensure that the
 	location information is correctly set.
