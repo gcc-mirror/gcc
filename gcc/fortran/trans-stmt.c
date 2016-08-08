@@ -5448,9 +5448,19 @@ gfc_trans_allocate (gfc_code * code)
 	}
       gfc_add_block_to_block (&block, &se.pre);
       gfc_add_block_to_block (&post, &se.post);
+
+      /* Special case when string in expr3 is zero.  */
+      if (code->expr3->ts.type == BT_CHARACTER
+	  && integer_zerop (se.string_length))
+	{
+	  gfc_init_se (&se, NULL);
+	  temp_var_needed = false;
+	  expr3_len = integer_zero_node;
+	  e3_is = E3_MOLD;
+	}
       /* Prevent aliasing, i.e., se.expr may be already a
 	     variable declaration.  */
-      if (se.expr != NULL_TREE && temp_var_needed)
+      else if (se.expr != NULL_TREE && temp_var_needed)
 	{
 	  tree var, desc;
 	  tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)) || is_coarray ?
@@ -5679,11 +5689,8 @@ gfc_trans_allocate (gfc_code * code)
       gcc_assert (expr3_esize);
       expr3_esize = fold_convert (sizetype, expr3_esize);
       if (e3_is == E3_MOLD)
-	{
-	  /* The expr3 is no longer valid after this point.  */
-	  expr3 = NULL_TREE;
-	  e3_is = E3_UNSET;
-	}
+	/* The expr3 is no longer valid after this point.  */
+	expr3 = NULL_TREE;
     }
   else if (code->ext.alloc.ts.type != BT_UNKNOWN)
     {
@@ -6012,7 +6019,7 @@ gfc_trans_allocate (gfc_code * code)
 			    fold_convert (TREE_TYPE (al_len),
 					  integer_zero_node));
 	}
-      if (code->expr3 && !code->expr3->mold)
+      if (code->expr3 && !code->expr3->mold && e3_is != E3_MOLD)
 	{
 	  /* Initialization via SOURCE block (or static default initializer).
 	     Classes need some special handling, so catch them first.  */

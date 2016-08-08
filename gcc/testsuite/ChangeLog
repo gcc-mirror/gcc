@@ -1,3 +1,8 @@
+2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/72698
+	* gfortran.dg/allocate_with_source_20.f03: New test.
+
 2016-08-08  Alan Modra  <amodra@gmail.com>
 
 	* gcc.c-torture/compile/pr72802.c: New.
