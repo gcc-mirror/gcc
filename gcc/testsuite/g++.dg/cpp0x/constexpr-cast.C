@@ -5,7 +5,7 @@
 int i;
 
 // The following is accepted due to bug 49171.
-constexpr void *q = reinterpret_cast<void*>(&i);    // { dg-error "" "bug c++/49171" { xfail *-*-*-* } }
+constexpr void *q = reinterpret_cast<void*>(&i);    // { dg-error "" "bug c++/49171" { xfail *-*-* } }
 
 constexpr void *r0 = reinterpret_cast<void*>(1);    // { dg-error "not a constant expression" }
 constexpr void *r1 = reinterpret_cast<void*>(sizeof 'x');  // { dg-error ".reinterpret_cast<void\\*>\\(1\[ul\]\*\\). is not a constant expression" }
