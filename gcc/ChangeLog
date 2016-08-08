@@ -1,6 +1,13 @@
 2016-08-08  Alan Modra  <amodra@gmail.com>
 
 	PR target/72802
+	* config/rs6000/rs6000.md (mov<mode>_hardfloat): Sort
+	alternatives.  Put loads first, then stores, and reg/reg moves
+	within same class later.  Delete attr length.
+
+2016-08-08  Alan Modra  <amodra@gmail.com>
+
+	PR target/72802
 	* config/rs6000/rs6000.c (mem_operand_gpr): Remove vsx dform test.
 	(mem_operand_ds_form): New predicate.
 	* config/rs6000/rs6000-protos.h (mem_operand_ds_form): Declare.
