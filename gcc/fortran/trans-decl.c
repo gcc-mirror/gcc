@@ -4087,6 +4087,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       else if (proc_sym->as)
 	{
 	  tree result = TREE_VALUE (current_fake_result_decl);
+	  gfc_save_backend_locus (&loc);
+	  gfc_set_backend_locus (&proc_sym->declared_at);
 	  gfc_trans_dummy_array_bias (proc_sym, result, block);
 
 	  /* An automatic character length, pointer array result.  */
@@ -4096,8 +4098,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      tmp = NULL;
 	      if (proc_sym->ts.deferred)
 		{
-		  gfc_save_backend_locus (&loc);
-		  gfc_set_backend_locus (&proc_sym->declared_at);
 		  gfc_start_block (&init);
 		  tmp = gfc_null_and_pass_deferred_len (proc_sym, &init, &loc);
 		  gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
