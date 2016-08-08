@@ -39,6 +39,7 @@ extern int num_insns_constant (rtx, machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
+extern bool mem_operand_ds_form (rtx, machine_mode);
 extern bool toc_relative_expr_p (const_rtx, bool);
 extern bool invalid_e500_subreg (rtx, machine_mode);
 extern void validate_condition_mode (enum rtx_code, machine_mode);

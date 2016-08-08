@@ -1,3 +1,14 @@
+2016-08-08  Alan Modra  <amodra@gmail.com>
+
+	PR target/72802
+	* config/rs6000/rs6000.c (mem_operand_gpr): Remove vsx dform test.
+	(mem_operand_ds_form): New predicate.
+	* config/rs6000/rs6000-protos.h (mem_operand_ds_form): Declare.
+	* config/rs6000/constraints.md (wY): Use mem_operand_df_form.
+	* config/rs6000/predicates.md (offsettable_mem_14bit_operand): Delete.
+	* config/rs6000/rs6000.md (f32_lm2, f32_sm2): Use wY for SF.
+	(extendsfdf2_fpr): Replace o constraint with wY.
+
 2016-08-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-threadbackward.c: Include tree-inline.h
