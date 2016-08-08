@@ -1,5 +1,9 @@
 2016-08-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/72781
+	* omp-low.c (lower_lastprivate_clauses): Set TREE_NO_WARNING on the
+	private vars for lastprivate and for linear iterator.
+
 	PR middle-end/68762
 	* omp-simd-clone.c: Include varasm.h.
 	(simd_clone_create): Copy over DECL_COMDAT, DECL_WEAK, DECL_EXTERNAL,
