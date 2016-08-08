@@ -1,3 +1,8 @@
+2016-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/72800
+	* g++.dg/cpp1y/lambda-ice1.C: New.
+
 2016-07-25  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
