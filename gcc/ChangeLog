@@ -1,3 +1,9 @@
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/72821
+	* lra-spills.c (regno_in_use_p): Don't use BLOCK_FOR_INSN on barriers,
+	just return false for them.
+
 2016-08-08  Alan Modra  <amodra@gmail.com>
 
 	PR target/72771

@@ -697,9 +697,10 @@ regno_in_use_p (rtx_insn *insn, unsigned int regno)
   int i, arg_regno;
   basic_block bb = BLOCK_FOR_INSN (insn);
 
-  while ((insn = next_nondebug_insn (insn)) != NULL_RTX
-	 && bb == BLOCK_FOR_INSN (insn))
+  while ((insn = next_nondebug_insn (insn)) != NULL_RTX)
     {
+      if (BARRIER_P (insn) || bb != BLOCK_FOR_INSN (insn))
+	return false;
       if (! INSN_P (insn))
 	continue;
       if (GET_CODE (PATTERN (insn)) == USE
