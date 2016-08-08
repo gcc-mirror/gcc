@@ -5431,12 +5431,19 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   if (ref->u.ar.type == AR_FULL && expr3 != NULL)
     {
+      gfc_ref *old_ref = ref;
       /* F08:C633: Array shape from expr3.  */
       ref = expr3->ref;
 
       /* Find the last reference in the chain.  */
       if (!retrieve_last_ref (&ref, &prev_ref))
-	return false;
+	{
+	  if (expr3->expr_type == EXPR_FUNCTION
+	      && gfc_expr_attr (expr3).dimension)
+	    ref = old_ref;
+	  else
+	    return false;
+	}
       alloc_w_e3_arr_spec = true;
     }
 
