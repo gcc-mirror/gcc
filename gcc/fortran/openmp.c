@@ -2000,6 +2000,12 @@ gfc_match_omp_declare_simd (void)
 			     false) != MATCH_YES)
     return MATCH_ERROR;
 
+  if (gfc_current_ns->is_block_data)
+    {
+      gfc_free_omp_clauses (c);
+      return MATCH_YES;
+    }
+
   ods = gfc_get_omp_declare_simd ();
   ods->where = where;
   ods->proc_name = proc_name;

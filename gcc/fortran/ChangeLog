@@ -1,3 +1,9 @@
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/72716
+	* openmp.c (gfc_match_omp_declare_simd): Don't stick anything into
+	BLOCK DATA ns, it will be rejected later.
+
 2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/71936
