@@ -1,3 +1,10 @@
+2016-08-08  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/72838
+	* gcc/testsuite/g++.dg/cpp0x/constexpr-cast.C: Correct target selector.
+	* gcc/testsuite/g++.dg/warn/overflow-warn-3.C: Same.
+	* gcc/testsuite/g++.dg/warn/overflow-warn-4.C: Same.
+
 2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/71936

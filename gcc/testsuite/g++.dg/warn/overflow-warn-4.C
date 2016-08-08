@@ -134,6 +134,6 @@ h2i (int x)
 /* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 19 } */
 /* { dg-error "invalid conversion from" "convert" { target c++11 } 63 } */
 /* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 34 } */
-/* { dg-error "is not a constant expression" "const" { target *-*-*-* } 70 } */
+/* { dg-error "is not a constant expression" "const" { target *-*-* } 70 } */
 /* { dg-error "width not an integer constant" "bit.field" { target c++ } 34 } */
 /* { dg-error "is not a constant expression" "division" { target c++ } 34 } */
