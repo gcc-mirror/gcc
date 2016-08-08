@@ -1,5 +1,11 @@
 2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/71936
+	* trans-array.c (gfc_array_allocate): When SOURCE= is a function
+	stick with the ref of the object to allocate.
+
+2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/72698
 	* trans-stmt.c (gfc_trans_allocate): Prevent generating code for
 	copy of zero sized string and with it an ICE.
