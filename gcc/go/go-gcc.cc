@@ -953,6 +953,14 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
   if (result == error_mark_node)
     return this->error_type();
 
+  // The libffi library can not represent a zero-sized object.  To
+  // avoid causing confusion on 32-bit SPARC, we treat a function that
+  // returns a zero-sized value as returning void.  That should do no
+  // harm since there is no actual value to be returned.  See
+  // https://gcc.gnu.org/PR72814 for details.
+  if (result != void_type_node && int_size_in_bytes(result) == 0)
+    result = void_type_node;
+
   tree fntype = build_function_type(result, args);
   if (fntype == error_mark_node)
     return this->error_type();
@@ -2126,6 +2134,27 @@ Gcc_backend::return_statement(Bfunction* bfunction,
   tree result = DECL_RESULT(fntree);
   if (result == error_mark_node)
     return this->error_statement();
+
+  // If the result size is zero bytes, we have set the function type
+  // to have a result type of void, so don't return anything.
+  // See the function_type method.
+  if (int_size_in_bytes(TREE_TYPE(result)) == 0)
+    {
+      tree stmt_list = NULL_TREE;
+      for (std::vector<Bexpression*>::const_iterator p = vals.begin();
+	   p != vals.end();
+	   p++)
+	{
+	  tree val = (*p)->get_tree();
+	  if (val == error_mark_node)
+	    return this->error_statement();
+	  append_to_statement_list(val, &stmt_list);
+	}
+      tree ret = fold_build1_loc(location.gcc_location(), RETURN_EXPR,
+				 void_type_node, NULL_TREE);
+      append_to_statement_list(ret, &stmt_list);
+      return this->make_statement(stmt_list);
+    }
 
   tree ret;
   if (vals.empty())

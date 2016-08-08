@@ -288,6 +288,17 @@ go_func_return_ffi (const struct __go_func_type *func)
 
   types = (const struct __go_type_descriptor **) func->__out.__values;
 
+  // We compile a function that returns a zero-sized value as though
+  // it returns void.  This works around a problem in libffi: it can't
+  // represent a zero-sized value.
+  for (i = 0; i < count; ++i)
+    {
+      if (types[i]->__size > 0)
+	break;
+    }
+  if (i == count)
+    return &ffi_type_void;
+
   if (count == 1)
     return go_type_to_ffi (types[0]);
 

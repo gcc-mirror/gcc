@@ -1,3 +1,11 @@
+2016-08-08  Ian Lance Taylor  <iant@google.com>
+
+	PR go/72814
+	* go-gcc.cc (Gcc_backend::function_type): If the return type is
+	zero bytes, treat the function as returning void.
+	(return_statement): If the return type is zero bytes, don't
+	actually return any values.
+
 2016-08-05  Ian Lance Taylor  <iant@google.com>
 
 	PR go/72812
