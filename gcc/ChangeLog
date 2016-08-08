@@ -1,3 +1,11 @@
+2016-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2016-07-29 trunk r238863.
+
+	PR rtl-optimization/71976
+	* combine.c (get_last_value): Return 0 if the argument for which
+	the function is called has a wider mode than the recorded value.
+
 2016-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/72805
