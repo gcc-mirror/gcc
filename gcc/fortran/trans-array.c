@@ -6103,7 +6103,12 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       return;
     }
 
+  loc.nextc = NULL;
   gfc_save_backend_locus (&loc);
+  /* loc.nextc is not set by save_backend_locus but the location routines
+     depend on it.  */
+  if (loc.nextc == NULL)
+    loc.nextc = loc.lb->line;
   gfc_set_backend_locus (&sym->declared_at);
 
   /* Descriptor type.  */
