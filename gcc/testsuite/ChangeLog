@@ -1,3 +1,9 @@
+2016-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/64955
+	* gcc.dg/format/diagnostic-ranges.c: Add fix-it hints to expected
+	output.
+
 2016-08-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/tree-ssa/pr71078-1.c: Add require-effective-target

@@ -1533,4 +1533,11 @@ extern bool valid_array_size_p (location_t, tree, tree);
 extern bool cilk_ignorable_spawn_rhs_op (tree);
 extern bool cilk_recognize_spawn (tree, tree *);
 
+#if CHECKING_P
+namespace selftest {
+  extern void c_format_c_tests (void);
+  extern void run_c_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
+
 #endif /* ! GCC_C_COMMON_H */

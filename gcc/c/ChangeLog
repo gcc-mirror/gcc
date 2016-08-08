@@ -1,3 +1,10 @@
+2016-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/64955
+	* c-lang.c (LANG_HOOKS_RUN_LANG_SELFTESTS): If CHECKING_P, wire
+	this up to selftest::run_c_tests.
+	(selftest::run_c_tests): New function.
+
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (struct oacc_routine_data): Add error_seen and

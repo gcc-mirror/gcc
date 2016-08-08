@@ -1,5 +1,34 @@
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/64955
+	* c-common.h (selftest::c_format_c_tests): New declaration.
+	(selftest::run_c_tests): New declaration.
+	* c-format.c: Include "selftest.h.
+	(format_warning_va): Add param "corrected_substring" and use
+	it to add a replacement fix-it hint.
+	(format_warning_at_substring): Likewise.
+	(format_warning_at_char): Update for new param of
+	format_warning_va.
+	(argument_parser::check_argument_type): Pass "fki" to
+	check_format_types.
+	(check_format_types): Add param "fki" and pass it to
+	format_type_warning.
+	(deref_n_times): New function.
+	(get_modifier_for_format_len): New function.
+	(selftest::test_get_modifier_for_format_len): New function.
+	(get_format_for_type): New function.
+	(format_type_warning): Add param "fki" and use it to attempt
+	to provide hints for argument types when calling
+	format_warning_at_substring.
+	(selftest::get_info): New function.
+	(selftest::assert_format_for_type_streq): New function.
+	(ASSERT_FORMAT_FOR_TYPE_STREQ): New macro.
+	(selftest::test_get_format_for_type_printf): New function.
+	(selftest::test_get_format_for_type_scanf): New function.
+	(selftest::c_format_c_tests): New function.
+
+2016-08-08  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c/52952
 	* c-format.c: Include "diagnostic.h".
 	(location_column_from_byte_offset): Delete.

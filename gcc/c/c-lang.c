@@ -38,7 +38,29 @@ enum c_language_kind c_language = clk_c;
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS c_common_init_ts
 
+#if CHECKING_P
+#undef LANG_HOOKS_RUN_LANG_SELFTESTS
+#define LANG_HOOKS_RUN_LANG_SELFTESTS selftest::run_c_tests
+#endif /* #if CHECKING_P */
+
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Implementation of LANG_HOOKS_RUN_LANG_SELFTESTS for the C frontend.  */
+
+void
+run_c_tests (void)
+{
+  c_format_c_tests ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
+
 
 #include "gtype-c.h"
