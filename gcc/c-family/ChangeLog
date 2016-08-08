@@ -1,3 +1,33 @@
+2016-08-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (class flag_chars_t): New class.
+	(struct length_modifier): New struct.
+	(class argument_parser): New class.
+	(flag_chars_t::flag_chars_t): New ctor.
+	(flag_chars_t::has_char_p): New method.
+	(flag_chars_t::add_char): New method.
+	(flag_chars_t::validate): New method.
+	(flag_chars_t::get_alloc_flag): New method.
+	(flag_chars_t::assignment_suppression_p): New method.
+	(argument_parser::argument_parser): New ctor.
+	(argument_parser::read_any_dollar): New method.
+	(argument_parser::read_format_flags): New method.
+	(argument_parser::read_any_format_width): New method.
+	(argument_parser::read_any_format_left_precision): New method.
+	(argument_parser::read_any_format_precision): New method.
+	(argument_parser::handle_alloc_chars): New method.
+	(argument_parser::read_any_length_modifier): New method.
+	(argument_parser::read_any_other_modifier): New method.
+	(argument_parser::find_format_char_info): New method.
+	(argument_parser::validate_flag_pairs): New method.
+	(argument_parser::give_y2k_warnings): New method.
+	(argument_parser::parse_any_scan_set): New method.
+	(argument_parser::handle_conversions): New method.
+	(argument_parser::check_argument_type): New method.
+	(check_format_info_main): Introduce classes argument_parser
+	and flag_chars_t, moving the code within the loop into methods
+	of these classes.  Make various locals "const".
+
 2016-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c: Include "substring-locations.h".
