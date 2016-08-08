@@ -185,10 +185,14 @@
   "Vector constant that can be loaded with XXSPLTIB & sign extension."
   (match_test "xxspltib_constant_split (op, mode)"))
 
-;; ISA 3.0 D-form instruction that has the bottom 2 bits 0 (LXSD or STXSD).
+;; ISA 3.0 DS-form instruction that has the bottom 2 bits 0 and no update form.
+;; Used by LXSD/STXSD/LXSSP/STXSSP.  In contrast to "Y", the multiple-of-four
+;; offset is enforced for 32-bit too.
 (define_memory_constraint "wY"
   "Offsettable memory operand, with bottom 2 bits 0"
-  (match_operand 0 "offsettable_mem_14bit_operand"))
+  (and (match_code "mem")
+       (not (match_test "update_address_mem (op, mode)"))
+       (match_test "mem_operand_ds_form (op, mode)")))
 
 ;; Altivec style load/store that ignores the bottom bits of the address
 (define_memory_constraint "wZ"
