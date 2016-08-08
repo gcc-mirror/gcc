@@ -1,3 +1,8 @@
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58706
+	* testsuite/libgomp.c++/pr58706.C: New test.
+
 2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/routine-1-auto.C: New file.
