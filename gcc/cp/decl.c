@@ -6305,7 +6305,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
      DECL_EXPR is expanded.  But with constexpr its function might never
      be expanded, so go ahead and tell cgraph about the variable now.  */
   defer_p = ((DECL_FUNCTION_SCOPE_P (decl)
-	      && !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (decl)))
+	      && !var_in_maybe_constexpr_fn (decl))
 	     || DECL_VIRTUAL_P (decl));
 
   /* Defer template instantiations.  */
@@ -14747,6 +14747,14 @@ finish_function (int flags)
   // If this is a concept, check that the definition is reasonable.
   if (DECL_DECLARED_CONCEPT_P (fndecl))
     check_function_concept (fndecl);
+
+  /* Lambda closure members are implicitly constexpr if possible.  */
+  if (cxx_dialect >= cxx1z
+      && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fndecl))
+      && (processing_template_decl
+	  || is_valid_constexpr_fn (fndecl, /*complain*/false))
+      && potential_constant_expression (DECL_SAVED_TREE (fndecl)))
+    DECL_DECLARED_CONSTEXPR_P (fndecl) = true;
 
   /* Save constexpr function body before it gets munged by
      the NRV transformation.   */

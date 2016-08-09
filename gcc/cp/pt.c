@@ -10334,6 +10334,9 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
+	  if (cxx_dialect >= cxx1z)
+	    CLASSTYPE_LITERAL_P (type) = true;
+
 	  if (!DECL_TEMPLATE_INFO (decl)
 	      || DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) != decl)
 	    {
@@ -16760,12 +16763,19 @@ tsubst_copy_and_build (tree t,
 	    bool op = CALL_EXPR_OPERATOR_SYNTAX (t);
 	    bool ord = CALL_EXPR_ORDERED_ARGS (t);
 	    bool rev = CALL_EXPR_REVERSE_ARGS (t);
-	    if (op || ord || rev)
+	    bool thk = CALL_FROM_THUNK_P (t);
+	    if (op || ord || rev || thk)
 	      {
 		function = extract_call_expr (ret);
 		CALL_EXPR_OPERATOR_SYNTAX (function) = op;
 		CALL_EXPR_ORDERED_ARGS (function) = ord;
 		CALL_EXPR_REVERSE_ARGS (function) = rev;
+		if (thk)
+		  {
+		    CALL_FROM_THUNK_P (function) = true;
+		    /* The thunk location is not interesting.  */
+		    SET_EXPR_LOCATION (function, UNKNOWN_LOCATION);
+		  }
 	      }
 	  }
 

@@ -128,8 +128,8 @@
 
 #ifndef __cpp_constexpr
 #  error "__cpp_constexpr"
-#elif __cpp_constexpr != 201304
-#  error "__cpp_constexpr != 201304"
+#elif __cpp_constexpr != 201603
+#  error "__cpp_constexpr != 201603"
 #endif
 
 #ifndef __cpp_decltype_auto

@@ -5659,7 +5659,7 @@ finalize_literal_type_property (tree t)
 	  && !DECL_CONSTRUCTOR_P (fn))
 	{
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
-	  if (!DECL_GENERATED_P (fn))
+	  if (!DECL_GENERATED_P (fn) && !LAMBDA_TYPE_P (t))
 	    {
 	      error ("enclosing class of constexpr non-static member "
 		     "function %q+#D is not a literal type", fn);
