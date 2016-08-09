@@ -231,33 +231,6 @@ __gcov_indirect_call_topn_profiler (gcov_type value, void* cur_func)
 }
 #endif
 
-#ifdef L_gcov_indirect_call_profiler
-/* This function exist only for workaround of binutils bug 14342.
-   Once this compatibility hack is obsolette, it can be removed.  */
-
-/* By default, the C++ compiler will use function addresses in the
-   vtable entries.  Setting TARGET_VTABLE_USES_DESCRIPTORS to nonzero
-   tells the compiler to use function descriptors instead.  The value
-   of this macro says how many words wide the descriptor is (normally 2).
-
-   It is assumed that the address of a function descriptor may be treated
-   as a pointer to a function.  */
-
-/* Tries to determine the most common value among its inputs. */
-void
-__gcov_indirect_call_profiler (gcov_type* counter, gcov_type value,
-                               void* cur_func, void* callee_func)
-{
-  /* If the C++ virtual tables contain function descriptors then one
-     function may have multiple descriptors and we need to dereference
-     the descriptors to see if they point to the same function.  */
-  if (cur_func == callee_func
-      || (__LIBGCC_VTABLE_USES_DESCRIPTORS__ && callee_func
-          && *(void **) cur_func == *(void **) callee_func))
-    __gcov_one_value_profiler_body (counter, value);
-}
-#endif
-
 #ifdef L_gcov_indirect_call_profiler_v2
 
 /* These two variables are used to actually track caller and callee.  Keep
