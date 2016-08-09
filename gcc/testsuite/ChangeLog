@@ -1,3 +1,8 @@
+2016-08-09  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	PR rtl-optimization/66669
+	* gcc.dg/loop-8.c: Skip for MIPS due to extra invariants.
+
 2016-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/72824
