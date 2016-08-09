@@ -52,6 +52,7 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 {
   go_assert(filename_count > 0);
 
+  Lex::Linknames all_linknames;
   for (unsigned int i = 0; i < filename_count; ++i)
     {
       if (i > 0)
@@ -76,6 +77,21 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
       if (strcmp(filename, "-") != 0)
 	fclose(file);
+
+      Lex::Linknames* linknames = lexer.get_and_clear_linknames();
+      if (linknames != NULL)
+	{
+	  if (!::gogo->current_file_imported_unsafe())
+	    {
+	      for (Lex::Linknames::const_iterator p = linknames->begin();
+		   p != linknames->end();
+		   ++p)
+		error_at(p->second.loc,
+			 ("//go:linkname only allowed in Go files that "
+			  "import \"unsafe\""));
+	    }
+	  all_linknames.insert(linknames->begin(), linknames->end());
+	}
     }
 
   ::gogo->linemap()->stop();
@@ -85,6 +101,13 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // If the global predeclared names are referenced but not defined,
   // define them now.
   ::gogo->define_global_names();
+
+  // Apply any go:linkname directives.
+  for (Lex::Linknames::const_iterator p = all_linknames.begin();
+       p != all_linknames.end();
+       ++p)
+    ::gogo->add_linkname(p->first, p->second.is_exported, p->second.ext_name,
+			 p->second.loc);
 
   // Finalize method lists and build stub methods for named types.
   ::gogo->finalize_methods();

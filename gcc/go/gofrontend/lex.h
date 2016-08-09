@@ -375,6 +375,33 @@ class Lex
     return ret;
   }
 
+  struct Linkname
+  {
+    std::string ext_name;	// External name.
+    bool is_exported;		// Whether the internal name is exported.
+    Location loc;		// Location of go:linkname directive.
+
+    Linkname()
+      : ext_name(), is_exported(false), loc()
+    { }
+
+    Linkname(const std::string& ext_name_a, bool is_exported_a, Location loc_a)
+      : ext_name(ext_name_a), is_exported(is_exported_a), loc(loc_a)
+    { }
+  };
+
+  typedef std::map<std::string, Linkname> Linknames;
+
+  // Return the linknames seen so far, or NULL if none, and clear the
+  // set.  These are from go:linkname compiler directives.
+  Linknames*
+  get_and_clear_linknames()
+  {
+    Linknames* ret = this->linknames_;
+    this->linknames_ = NULL;
+    return ret;
+  }
+
   // Return whether the identifier NAME should be exported.  NAME is a
   // mangled name which includes only ASCII characters.
   static bool
@@ -514,8 +541,8 @@ class Lex
   // The external name to use for a function declaration, from a magic
   // //extern comment.
   std::string extern_;
-  // The list of //go:linkname comments.
-  std::map<std::string, std::string> linknames_;
+  // The list of //go:linkname comments, if any.
+  Linknames* linknames_;
 };
 
 #endif // !defined(GO_LEX_H)

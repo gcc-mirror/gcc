@@ -443,7 +443,7 @@ Lex::Lex(const char* input_file_name, FILE* input_file, Linemap* linemap)
   : input_file_name_(input_file_name), input_file_(input_file),
     linemap_(linemap), linebuf_(NULL), linebufsize_(120), linesize_(0),
     lineoff_(0), lineno_(0), add_semi_at_eol_(false), pragmas_(0),
-    extern_()
+    extern_(), linknames_(NULL)
 {
   this->linebuf_ = new char[this->linebufsize_];
   this->linemap_->start_file(input_file_name, 0);
@@ -1676,6 +1676,7 @@ Lex::skip_cpp_comment()
   // //extern comment.
   this->extern_.clear();
 
+  Location loc = this->location();
   size_t lineoff = this->lineoff_;
 
   const char* p = this->linebuf_ + lineoff;
@@ -1777,7 +1778,8 @@ Lex::skip_cpp_comment()
     {
       // As in the gc compiler, set the external link name for a Go symbol.
       std::string go_name;
-      std::string c_name;
+      std::string ext_name;
+      bool is_exported = false;
       if (ps < pend)
 	{
 	  while (ps < pend && (*ps == ' ' || *ps == '\t'))
@@ -1785,6 +1787,12 @@ Lex::skip_cpp_comment()
 	  if (ps < pend)
 	    {
 	      const char* pg = ps;
+
+	      unsigned int c;
+	      bool issued_error;
+	      ps = this->advance_one_utf8_char(ps, &c, &issued_error);
+	      is_exported = Lex::is_unicode_uppercase(c);
+
 	      while (ps < pend && *ps != ' ' && *ps != '\t')
 		++ps;
 	      if (ps < pend)
@@ -1798,18 +1806,22 @@ Lex::skip_cpp_comment()
 	      while (ps < pend && *ps != ' ' && *ps != '\t')
 		++ps;
 	      if (ps <= pend)
-		c_name = std::string(pc, ps - pc);
+		ext_name = std::string(pc, ps - pc);
 	    }
 	  if (ps != pend)
 	    {
 	      go_name.clear();
-	      c_name.clear();
+	      ext_name.clear();
 	    }
 	}
-      if (go_name.empty() || c_name.empty())
-	error_at(this->location(), "usage: //go:linkname localname linkname");
+      if (go_name.empty() || ext_name.empty())
+	error_at(loc, "usage: //go:linkname localname linkname");
       else
-	this->linknames_[go_name] = c_name;
+	{
+	  if (this->linknames_ == NULL)
+	    this->linknames_ = new Linknames();
+	  (*this->linknames_)[go_name] = Linkname(ext_name, is_exported, loc);
+	}
     }
   else if (verb == "go:nointerface")
     {
