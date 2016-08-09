@@ -1,3 +1,9 @@
+2016-08-08  Andi Kleen  <ak@linux.intel.com>
+
+	* lib/profopt.exp: (auto-profopt-execute): Don't include full
+	test command line in failure log.
+	(profopt-execute): dito. Make autofdo file names unique.
+
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/64955
