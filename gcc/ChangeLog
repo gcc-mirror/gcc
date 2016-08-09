@@ -1,3 +1,9 @@
+2016-08-09  Martin Jambor  <mjambor@suse.cz>
+
+        PR ipa/71981
+        * ipa-polymorphic-call.c (get_dynamic_type): Bail out gracefully
+        if instance is a MEM_REF.
+
 2016-08-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/72843
