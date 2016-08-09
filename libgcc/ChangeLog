@@ -1,5 +1,12 @@
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Remove __gcov_indirect_call_profiler.
+	* libgcov-profiler.c (__gcov_indirect_call_profiler): Remove
+	function.
+	* libgcov.h: And the declaration of the function.
+
+2016-08-09  Martin Liska  <mliska@suse.cz>
+
 	* libgcov-profiler.c (__gcov_pow2_profiler): Consider 0 as not
 	power of two.
 
