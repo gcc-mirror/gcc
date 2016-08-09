@@ -1544,6 +1544,11 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   if (!maybe_in_construction && !maybe_derived_type)
     return false;
 
+  /* If we are in fact not looking at any object object or the instance is
+     some placement new into a random load, give up straight away.  */
+  if (TREE_CODE (instance) == MEM_REF)
+    return false;
+
   /* We need to obtain refernce to virtual table pointer.  It is better
      to look it up in the code rather than build our own.  This require bit
      of pattern matching, but we end up verifying that what we found is
@@ -1664,7 +1669,6 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   tci.offset = instance_offset;
   tci.instance = instance;
   tci.vtbl_ptr_ref = instance_ref;
-  gcc_assert (TREE_CODE (instance) != MEM_REF);
   tci.known_current_type = NULL_TREE;
   tci.known_current_offset = 0;
   tci.otr_type = otr_type;
