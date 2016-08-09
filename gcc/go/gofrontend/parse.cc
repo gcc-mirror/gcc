@@ -1305,10 +1305,10 @@ Parse::declaration()
 {
   const Token* token = this->peek_token();
 
-  bool saw_nointerface = this->lex_->get_and_clear_nointerface();
-  if (saw_nointerface && !token->is_keyword(KEYWORD_FUNC))
+  unsigned int pragmas = this->lex_->get_and_clear_pragmas();
+  if (pragmas != 0 && !token->is_keyword(KEYWORD_FUNC))
     warning_at(token->location(), 0,
-	       "ignoring magic //go:nointerface comment before non-method");
+	       "ignoring magic comment before non-function");
 
   if (token->is_keyword(KEYWORD_CONST))
     this->const_decl();
@@ -1317,7 +1317,7 @@ Parse::declaration()
   else if (token->is_keyword(KEYWORD_VAR))
     this->var_decl();
   else if (token->is_keyword(KEYWORD_FUNC))
-    this->function_decl(saw_nointerface);
+    this->function_decl(pragmas);
   else
     {
       error_at(this->location(), "expected declaration");
@@ -2236,13 +2236,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 //                    __asm__ "(" string_lit ")" .
 // This extension means a function whose real name is the identifier
 // inside the asm.  This extension will be removed at some future
-// date.  It has been replaced with //extern comments.
-
-// SAW_NOINTERFACE is true if we saw a magic //go:nointerface comment,
-// which means that we omit the method from the type descriptor.
+// date.  It has been replaced with //extern or //go:linkname comments.
+//
+// PRAGMAS is a bitset of magic comments.
 
 void
-Parse::function_decl(bool saw_nointerface)
+Parse::function_decl(unsigned int pragmas)
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_FUNC));
   Location location = this->location();
@@ -2256,12 +2255,6 @@ Parse::function_decl(bool saw_nointerface)
       expected_receiver = true;
       rec = this->receiver();
       token = this->peek_token();
-    }
-  else if (saw_nointerface)
-    {
-      warning_at(location, 0,
-		 "ignoring magic //go:nointerface comment before non-method");
-      saw_nointerface = false;
     }
 
   if (!token->is_identifier())
@@ -2320,7 +2313,69 @@ Parse::function_decl(bool saw_nointerface)
 						     semi_loc));
     }
 
-  if (!this->peek_token()->is_op(OPERATOR_LCURLY))
+  static struct {
+    unsigned int bit;
+    const char* name;
+    bool decl_ok;
+    bool func_ok;
+    bool method_ok;
+  } pragma_check[] =
+      {
+	{ GOPRAGMA_NOINTERFACE, "nointerface", false, false, true },
+	{ GOPRAGMA_NOESCAPE, "noescape", true, false, false },
+	{ GOPRAGMA_NORACE, "norace", false, true, true },
+	{ GOPRAGMA_NOSPLIT, "nosplit", false, true, true },
+	{ GOPRAGMA_NOINLINE, "noinline", false, true, true },
+	{ GOPRAGMA_SYSTEMSTACK, "systemstack", false, true, true },
+	{ GOPRAGMA_NOWRITEBARRIER, "nowritebarrier", false, true, true },
+	{ GOPRAGMA_NOWRITEBARRIERREC, "nowritebarrierrec", false, true, true },
+	{ GOPRAGMA_CGOUNSAFEARGS, "cgo_unsafe_args", false, true, true },
+	{ GOPRAGMA_UINTPTRESCAPES, "uintptrescapes", true, true, true },
+      };
+
+  bool is_decl = !this->peek_token()->is_op(OPERATOR_LCURLY);
+  if (pragmas != 0)
+    {
+      for (size_t i = 0;
+	   i < sizeof(pragma_check) / sizeof(pragma_check[0]);
+	   ++i)
+	{
+	  if ((pragmas & pragma_check[i].bit) == 0)
+	    continue;
+
+	  if (is_decl)
+	    {
+	      if (pragma_check[i].decl_ok)
+		continue;
+	      warning_at(location, 0,
+			 ("ignoring magic //go:%s comment "
+			  "before declaration"),
+			 pragma_check[i].name);
+	    }
+	  else if (rec == NULL)
+	    {
+	      if (pragma_check[i].func_ok)
+		continue;
+	      warning_at(location, 0,
+			 ("ignoring magic //go:%s comment "
+			  "before function definition"),
+			 pragma_check[i].name);
+	    }
+	  else
+	    {
+	      if (pragma_check[i].method_ok)
+		continue;
+	      warning_at(location, 0,
+			 ("ignoring magic //go:%s comment "
+			  "before method definition"),
+			 pragma_check[i].name);
+	    }
+
+	  pragmas &= ~ pragma_check[i].bit;
+	}
+    }
+
+  if (is_decl)
     {
       if (named_object == NULL)
 	{
@@ -2353,10 +2408,8 @@ Parse::function_decl(bool saw_nointerface)
 	    }
 	}
 
-      if (saw_nointerface)
-	warning_at(location, 0,
-		   ("ignoring magic //go:nointerface comment "
-		    "before declaration"));
+      if (pragmas != 0 && named_object->is_function_declaration())
+	named_object->func_declaration_value()->set_pragmas(pragmas);
     }
   else
     {
@@ -2372,10 +2425,11 @@ Parse::function_decl(bool saw_nointerface)
       named_object = this->gogo_->start_function(name, fntype, true, location);
       Location end_loc = this->block();
       this->gogo_->finish_function(end_loc);
-      if (saw_nointerface
+
+      if (pragmas != 0
 	  && !this->is_erroneous_function_
 	  && named_object->is_function())
-	named_object->func_value()->set_nointerface();
+	named_object->func_value()->set_pragmas(pragmas);
       this->is_erroneous_function_ = hold_is_erroneous_function;
     }
 }
