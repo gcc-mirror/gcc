@@ -53,7 +53,7 @@ __gcov_interval_profiler (gcov_type *counters, gcov_type value,
 void
 __gcov_pow2_profiler (gcov_type *counters, gcov_type value)
 {
-  if (value & (value - 1))
+  if (value == 0 || (value & (value - 1)))
     counters[0]++;
   else
     counters[1]++;
