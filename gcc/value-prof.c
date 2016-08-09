@@ -264,8 +264,8 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	{
 	   fprintf (dump_file, "pow2:%" PRId64
 		    " nonpow2:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0],
-		    (int64_t) hist->hvalue.counters[1]);
+		    (int64_t) hist->hvalue.counters[1],
+		    (int64_t) hist->hvalue.counters[0]);
 	}
       fprintf (dump_file, ".\n");
       break;

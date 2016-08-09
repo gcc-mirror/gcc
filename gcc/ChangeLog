@@ -1,3 +1,8 @@
+2016-08-09  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (dump_histogram_value): Swap pow2 and non-pow2
+	values.
+
 2016-08-09  Renlin Li  <renlin.li@arm.com>
 
 	PR middle-end/64971
