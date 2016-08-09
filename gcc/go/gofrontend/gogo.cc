@@ -32,6 +32,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     file_block_names_(),
     imports_(),
     imported_unsafe_(false),
+    current_file_imported_unsafe_(false),
     packages_(),
     init_functions_(),
     var_deps_(),
@@ -449,6 +450,7 @@ Gogo::import_package(const std::string& filename,
   if (filename == "unsafe")
     {
       this->import_unsafe(local_name, is_local_name_exported, location);
+      this->current_file_imported_unsafe_ = true;
       return;
     }
 
@@ -2000,6 +2002,29 @@ Gogo::add_dot_import_object(Named_object* no)
   this->current_bindings()->add_named_object(no);
 }
 
+// Add a linkname.  This implements the go:linkname compiler directive.
+// We only support this for functions and function declarations.
+
+void
+Gogo::add_linkname(const std::string& go_name, bool is_exported,
+		   const std::string& ext_name, Location loc)
+{
+  Named_object* no =
+    this->package_->bindings()->lookup(this->pack_hidden_name(go_name,
+							      is_exported));
+  if (no == NULL)
+    error_at(loc, "%s is not defined", go_name.c_str());
+  else if (no->is_function())
+    no->func_value()->set_asm_name(ext_name);
+  else if (no->is_function_declaration())
+    no->func_declaration_value()->set_asm_name(ext_name);
+  else
+    error_at(loc,
+	     ("%s is not a function; "
+	      "//go:linkname is only supported for functions"),
+	     go_name.c_str());
+}
+
 // Mark all local variables used.  This is used when some types of
 // parse error occur.
 
@@ -2183,6 +2208,8 @@ Gogo::clear_file_scope()
         }
       package->clear_used();
     }
+
+  this->current_file_imported_unsafe_ = false;
 }
 
 // Queue up a type specific function for later writing.  These are
@@ -5033,6 +5060,12 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
               asm_name.append(rtype->mangled_name(gogo));
             }
         }
+
+      if (!this->asm_name_.empty())
+	{
+	  asm_name = this->asm_name_;
+	  is_visible = true;
+	}
 
       // If a function calls the predeclared recover function, we
       // can't inline it, because recover behaves differently in a

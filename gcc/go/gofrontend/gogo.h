@@ -428,6 +428,12 @@ class Gogo
   add_file_block_name(const std::string& name, Location location)
   { this->file_block_names_[name] = location; }
 
+  // Add a linkname, from the go:linkname compiler directive.  This
+  // changes the externally visible name of go_name to be ext_name.
+  void
+  add_linkname(const std::string& go_name, bool is_exported,
+	       const std::string& ext_name, Location location);
+
   // Mark all local variables in current bindings as used.  This is
   // used when there is a parse error to avoid useless errors.
   void
@@ -462,6 +468,11 @@ class Gogo
   void
   set_need_init_fn()
   { this->need_init_fn_ = true; }
+
+  // Return whether the current file imported the unsafe package.
+  bool
+  current_file_imported_unsafe() const
+  { return this->current_file_imported_unsafe_; }
 
   // Clear out all names in file scope.  This is called when we start
   // parsing a new file.
@@ -760,6 +771,8 @@ class Gogo
   Imports imports_;
   // Whether the magic unsafe package was imported.
   bool imported_unsafe_;
+  // Whether the magic unsafe package was imported by the current file.
+  bool current_file_imported_unsafe_;
   // Mapping from package names we have seen to packages.  This does
   // not include the package we are compiling.
   Packages packages_;
@@ -974,6 +987,11 @@ class Function
   bool
   results_are_named() const
   { return this->results_are_named_; }
+
+  // Set the assembler name.
+  void
+  set_asm_name(const std::string& asm_name)
+  { this->asm_name_ = asm_name; }
 
   // Set the pragmas for this function.
   void
@@ -1229,6 +1247,9 @@ class Function
   Labels labels_;
   // The number of local types defined in this function.
   unsigned int local_type_count_;
+  // The assembler name: this is the name that will be put in the object file.
+  // Set by the go:linkname compiler directive.  This is normally empty.
+  std::string asm_name_;
   // The function descriptor, if any.
   Expression* descriptor_;
   // The function decl.
