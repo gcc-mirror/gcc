@@ -1,3 +1,13 @@
+2016-08-09  Alan Modra  <amodra@gmail.com>
+
+	PR target/72802
+	* config/rs6000/rs6000.c (mem_operand_gpr): Remove vsx dform test.
+	(mem_operand_ds_form): New predicate.
+	* config/rs6000/rs6000-protos.h (mem_operand_ds_form): Declare.
+	* config/rs6000/constraints.md (wY): New constraint.
+	* config/rs6000/rs6000.md (f32_lm2, f32_sm2): Use wY for SF.
+	(extendsfdf2_fpr): Replace o constraint with wY.
+
 2016-08-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2016-07-29 trunk r238863.
