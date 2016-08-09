@@ -1395,6 +1395,21 @@ fix = {
 };
 
 /*
+ *  Before Mac OS X 10.8 <i386/setjmp.h> doesn't mark longjump noreturn.
+ */
+fix = {
+    hackname  = darwin_longjmp_noreturn;
+    mach      = "*-*-darwin*";
+    files     = "i386/setjmp.h";
+    bypass    = "__dead2";
+    select    = "(.*longjmp\\(.*jmp_buf.*[^)]+\\));";
+    c_fix     = format;
+    c_fix_arg = "%1 __attribute__ ((__noreturn__));";
+
+    test_text = "void siglongjmp(sigjmp_buf, int);";
+};
+
+/*
  *  __private_extern__ doesn't exist in FSF GCC.  Even if it did,
  *  why would you ever put it in a system header file?
  */
