@@ -3699,7 +3699,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
-      if (is_really_empty_class (TREE_TYPE (t)))
+      if (COMPLETE_TYPE_P (TREE_TYPE (t))
+	  && is_really_empty_class (TREE_TYPE (t)))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
 	  r = build_constructor (TREE_TYPE (t), NULL);
