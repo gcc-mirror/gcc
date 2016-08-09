@@ -1,5 +1,9 @@
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/tree-prof/val-prof-9.c: New test.
+
+2016-08-09  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/tree-prof/val-prof-8.c: New test.
 
 2016-08-09  Martin Jambor  <mjambor@suse.cz>

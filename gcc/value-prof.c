@@ -1950,7 +1950,8 @@ gimple_divmod_values_to_profile (gimple *stmt, histogram_values *values)
       /* For mod, check whether it is not often a noop (or replaceable by
 	 a few subtractions).  */
       if (gimple_assign_rhs_code (stmt) == TRUNC_MOD_EXPR
-	  && TYPE_UNSIGNED (type))
+	  && TYPE_UNSIGNED (type)
+	  && TREE_CODE (divisor) == SSA_NAME)
 	{
           tree val;
           /* Check for a special case where the divisor is power of 2.  */
