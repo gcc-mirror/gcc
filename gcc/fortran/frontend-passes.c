@@ -711,7 +711,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 
   /* Don't do this optimization within OMP workshare.  */
 
-  if (in_omp_workshare)
+  if (in_omp_workshare || in_assoc_list)
     {
       *walk_subtrees = 0;
       return 0;

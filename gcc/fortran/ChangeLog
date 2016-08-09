@@ -1,3 +1,10 @@
+2016-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/69742
+	* frontend-passes.c (cfe-expr_0):  Don't register functions
+	from within an ASSOCIATE statement.
+
 2016-08-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
