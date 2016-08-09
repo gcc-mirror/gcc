@@ -1383,6 +1383,15 @@ write_unqualified_name (tree decl)
     }
 
   tree tags = get_abi_tags (decl);
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_CONV_FN_P (decl)
+      && any_abi_below (11))
+    if (tree mtags = missing_abi_tags (decl))
+      {
+	if (abi_warn_or_compat_version_crosses (11))
+	  G.need_abi_warning = true;
+	if (!abi_version_at_least (11))
+	  tags = chainon (mtags, tags);
+      }
   write_abi_tags (tags);
 }
 
