@@ -582,10 +582,10 @@ now be calculable at compile time in some instances.  Because the
 coverage of all the uses of the inline function will be shown for the
 same source lines, the line counts themselves might seem inconsistent.
 
-Long-running applications can use the @code{_gcov_reset} and @code{_gcov_dump}
+Long-running applications can use the @code{__gcov_reset} and @code{__gcov_dump}
 facilities to restrict profile collection to the program region of
-interest. Calling @code{_gcov_reset(void)} will clear all profile counters
-to zero, and calling @code{_gcov_dump(void)} will cause the profile information
+interest. Calling @code{__gcov_reset(void)} will clear all profile counters
+to zero, and calling @code{__gcov_dump(void)} will cause the profile information
 collected at that point to be dumped to @file{.gcda} output files.
 
 @c man end

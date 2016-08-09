@@ -1,5 +1,11 @@
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Change _gcov_dump to __gcov_dump and
+	_gcov_reset to __gcov_reset.
+	* doc/gcov-tool.texi: Fix typo.
+
+2016-08-09  Martin Liska  <mliska@suse.cz>
+
 	* value-prof.c (gimple_divmod_values_to_profile): Do not
 	instrument MOD histogram if a value is not a SSA name.
 

@@ -193,7 +193,7 @@ in the new profile.
 @end table
 
 @item overlap
-Computer the overlap score between the two specified profile directories.
+Compute the overlap score between the two specified profile directories.
 The overlap score is computed based on the arc profiles. It is defined as
 the sum of min (p1_counter[i] / p1_sum_all, p2_counter[i] / p2_sum_all),
 for all arc counter i, where p1_counter[i] and p2_counter[i] are two
