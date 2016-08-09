@@ -1,3 +1,8 @@
+2016-08-09  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (c_common_attribute_table): vector_size affects type
+	identity.
+
 2016-08-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
