@@ -4214,7 +4214,7 @@ loop_exits_before_overflow (tree base, tree step,
       for (civ = loop->control_ivs; civ; civ = civ->next)
 	{
 	  enum tree_code code;
-	  tree stepped, extreme, civ_type = TREE_TYPE (civ->step);
+	  tree civ_type = TREE_TYPE (civ->step);
 
 	  /* Have to consider type difference because operand_equal_p ignores
 	     that for constants.  */
@@ -4227,11 +4227,13 @@ loop_exits_before_overflow (tree base, tree step,
 	    continue;
 
 	  /* Done proving if this is a no-overflow control IV.  */
-	  if (operand_equal_p (base, civ->base, 0)
-	      /* Control IV is recorded after expanding simple operations,
-		 Here we compare it against expanded base too.  */
-	      || operand_equal_p (expand_simple_operations (base),
-				  civ->base, 0))
+	  if (operand_equal_p (base, civ->base, 0))
+	    return true;
+
+	  /* Control IV is recorded after expanding simple operations,
+	     Here we expand base and compare it too.  */
+	  tree expanded_base = expand_simple_operations (base);
+	  if (operand_equal_p (expanded_base, civ->base, 0))
 	    return true;
 
 	  /* If this is a before stepping control IV, in other words, we have
@@ -4253,9 +4255,14 @@ loop_exits_before_overflow (tree base, tree step,
 	  else
 	    code = PLUS_EXPR;
 
-	  stepped = fold_build2 (code, TREE_TYPE (base), base, step);
-	  if (operand_equal_p (stepped, civ->base, 0))
+	  tree stepped = fold_build2 (code, TREE_TYPE (base), base, step);
+	  tree expanded_stepped = fold_build2 (code, TREE_TYPE (base),
+					       expanded_base, step);
+	  if (operand_equal_p (stepped, civ->base, 0)
+	      || operand_equal_p (expanded_stepped, civ->base, 0))
 	    {
+	      tree extreme;
+
 	      if (tree_int_cst_sign_bit (step))
 		{
 		  code = LT_EXPR;
