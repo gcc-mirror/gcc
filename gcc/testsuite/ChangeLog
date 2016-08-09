@@ -1,5 +1,11 @@
 2016-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	Backport from trunk
+	PR fortran/71795
+	* gfortran.dg/array_constructor_50.f90:  New test.
+
+2016-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/69742
 	* gfortran.dg/associate_21.f90:  New test.
 
