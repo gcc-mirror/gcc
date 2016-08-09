@@ -8419,7 +8419,7 @@ is_really_empty_class (tree type)
 
       /* CLASSTYPE_EMPTY_P isn't set properly until the class is actually laid
 	 out, but we'd like to be able to check this before then.  */
-      if (COMPLETE_TYPE_P (complete_type (type)) && is_empty_class (type))
+      if (COMPLETE_TYPE_P (type) && is_empty_class (type))
 	return true;
 
       for (binfo = TYPE_BINFO (type), i = 0;
