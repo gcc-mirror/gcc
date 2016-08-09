@@ -1,3 +1,11 @@
+2016-08-09  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR bootstrap/72833
+	* fixincl.tpl (version-compare): Fix generation with autogen 5.18.
+	* inclhack.def (darwin_longjmp_noreturn): New fix.
+	* fixincl.x: Regenerated.
+	* tests/base/i386/setjmp.h [DARWIN_LONGJMP_NORETURN_CHECK]: new test.
+
 2016-08-01  Muhammad Bilal  <mbilal@codesourcery.com>
 
 	* fixinc.in: Use --parents option to make LIB directory.
