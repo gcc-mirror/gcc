@@ -1,3 +1,11 @@
+2016-08-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71881
+	* gcc.dg/torture/pr71881.c: New testcase.
+
 2016-08-09  Alan Modra  <amodra@gmail.com>
 
 	* gcc.c-torture/compile/pr72802.c: New.
