@@ -1862,6 +1862,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
     case TREE_BINFO:
       dump_generic_ada_node
 	(buffer, BINFO_TYPE (node), type, spc, limited_access, name_only);
+      return 0;
 
     case TREE_VEC:
       pp_string (buffer, "--- unexpected node: TREE_VEC");

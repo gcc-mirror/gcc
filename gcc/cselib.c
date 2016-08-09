@@ -1618,6 +1618,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	      else
 		return orig;
 	    }
+	return orig;
       }
 
     CASE_CONST_ANY:
