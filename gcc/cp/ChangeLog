@@ -1,3 +1,9 @@
+2016-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72809
+	* rtti.c (get_pseudo_ti_index): Return TK_CLASS_TYPE for
+	builtin aggregate types without TYPE_BINFO.
+
 2016-08-08  Jason Merrill  <jason@redhat.com>
 
 	Implement C++17 constexpr lambda.

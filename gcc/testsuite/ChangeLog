@@ -1,3 +1,8 @@
+2016-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72809
+	* g++.dg/eh/stdarg1.C: New test.
+
 2016-08-08  Andi Kleen  <ak@linux.intel.com>
 
 	* lib/profopt.exp: (auto-profopt-execute): Don't include full

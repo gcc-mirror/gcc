@@ -1293,7 +1293,8 @@ get_pseudo_ti_index (tree type)
 	  ix = TK_CLASS_TYPE;
 	  break;
 	}
-      else if (!BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
+      else if (!TYPE_BINFO (type)
+	       || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
 	{
 	  ix = TK_CLASS_TYPE;
 	  break;
