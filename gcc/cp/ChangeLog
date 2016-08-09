@@ -1,3 +1,8 @@
+2016-08-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56701
+	* typeck.c (cp_build_addr_expr_1): Remove special *this handling.
+
 2016-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72809

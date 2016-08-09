@@ -5626,11 +5626,6 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   /* Let &* cancel out to simplify resulting code.  */
   if (INDIRECT_REF_P (arg))
     {
-      /* We don't need to have `current_class_ptr' wrapped in a
-	 NON_LVALUE_EXPR node.  */
-      if (arg == current_class_ref)
-	return current_class_ptr;
-
       arg = TREE_OPERAND (arg, 0);
       if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE)
 	{
