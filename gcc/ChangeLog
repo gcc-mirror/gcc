@@ -1,3 +1,7 @@
+2016-08-08  Andi Kleen  <ak@linux.intel.com>
+
+	* tree-vrp.c (get_single_symbol): Always initialize inv and neg.
+
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/64955

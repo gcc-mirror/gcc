@@ -893,6 +893,9 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   bool neg_;
   tree inv_;
 
+  *inv = NULL_TREE;
+  *neg = false;
+
   if (TREE_CODE (t) == PLUS_EXPR
       || TREE_CODE (t) == POINTER_PLUS_EXPR
       || TREE_CODE (t) == MINUS_EXPR)
