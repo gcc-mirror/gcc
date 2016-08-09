@@ -207,8 +207,9 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
 		  /* Note that if both NAME and DST are anonymous
 		     SSA_NAMEs, then we do not have enough information
 		     to consider them associated.  */
-		  if ((SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
-		       || !SSA_NAME_VAR (dst))
+		  if (dst != name
+		      && (SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
+			  || !SSA_NAME_VAR (dst))
 		      && !virtual_operand_p (dst))
 		    ++n_insns;
 		}
