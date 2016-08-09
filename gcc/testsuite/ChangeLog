@@ -1,5 +1,10 @@
 2016-08-09  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/33707
+	* gcc.dg/vect/pr33707.c: New test.
+
+2016-08-09  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/pr72772
 	* gcc.dg/tree-ssa/pr72772.c: New test.
 
