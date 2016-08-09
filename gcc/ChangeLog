@@ -1,3 +1,11 @@
+2016-08-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* cselib.c (cselib_expand_value_rtx_1): Add return.
+	* gengtype.c (dbgprint_count_type_at): Likewise.
+	* hsa-gen.c (gen_hsa_insn_for_internal_fn_call): Likewise.
+	* reg-stack.c (get_true_reg): Restructure to avoid fallthrough warning.
+
 2016-08-09  Martin Jambor  <mjambor@suse.cz>
 
         PR ipa/71981

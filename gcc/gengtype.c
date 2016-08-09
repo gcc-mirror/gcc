@@ -175,6 +175,7 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 	{
 	case TYPE_UNDEFINED:
 	  nb_undefined++;
+	  break;
 	case TYPE_SCALAR:
 	  nb_scalar++;
 	  break;

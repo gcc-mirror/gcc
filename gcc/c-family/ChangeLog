@@ -1,3 +1,8 @@
+2016-08-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-ada-spec.c (dump_generic_ada_node): Add return.
+
 2016-08-09  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_constexpr for
