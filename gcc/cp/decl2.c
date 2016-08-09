@@ -1305,6 +1305,22 @@ save_template_attributes (tree *attr_p, tree *decl_p)
     }
 }
 
+/* True if ATTRS contains any dependent attributes that affect type
+   identity.  */
+
+bool
+any_dependent_type_attributes_p (tree attrs)
+{
+  for (tree a = attrs; a; a = TREE_CHAIN (a))
+    if (ATTR_IS_DEPENDENT (a))
+      {
+	const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (a));
+	if (as && as->affects_type_identity)
+	  return true;
+      }
+  return false;
+}
+
 /* Return true iff ATTRS are acceptable attributes to be applied in-place
    to a typedef which gives a previously unnamed class or enum a name for
    linkage purposes.  */

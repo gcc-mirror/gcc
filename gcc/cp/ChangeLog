@@ -1,5 +1,11 @@
 2016-08-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68703
+	* decl2.c (any_dependent_type_attributes_p): New.
+	* pt.c (dependent_type_p_r, type_dependent_expression_p): Check it.
+	* semantics.c (finish_id_expression): Check it.
+	* typeck.c (finish_class_member_access_expr): Check it.
+
 	PR c++/71712
 	* class.c (check_abi_tags): Don't duplicate tags for conversion ops.
 
