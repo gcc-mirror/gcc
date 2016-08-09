@@ -1,3 +1,11 @@
+2016-08-09  Renlin Li  <renlin.li@arm.com>
+
+	PR middle-end/64971
+	* calls.c (prepare_call_address): Convert funexp to Pmode when
+	necessary.
+	* config/aarch64/aarch64.md (sibcall): Remove fix for PR 64971.
+	(sibcall_value): Likewise.
+
 2016-08-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
