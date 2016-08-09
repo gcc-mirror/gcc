@@ -1939,10 +1939,10 @@ expand_simple_operations (tree expr, tree stop)
    expression (or EXPR unchanged, if no simplification was possible).  */
 
 static tree
-tree_simplify_using_condition_1 (tree cond, tree expr, tree stop)
+tree_simplify_using_condition_1 (tree cond, tree expr)
 {
   bool changed;
-  tree e, te, e0, e1, e2, notcond;
+  tree e, e0, e1, e2, notcond;
   enum tree_code code = TREE_CODE (expr);
 
   if (code == INTEGER_CST)
@@ -1954,17 +1954,17 @@ tree_simplify_using_condition_1 (tree cond, tree expr, tree stop)
     {
       changed = false;
 
-      e0 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 0), stop);
+      e0 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 0));
       if (TREE_OPERAND (expr, 0) != e0)
 	changed = true;
 
-      e1 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 1), stop);
+      e1 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 1));
       if (TREE_OPERAND (expr, 1) != e1)
 	changed = true;
 
       if (code == COND_EXPR)
 	{
-	  e2 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 2), stop);
+	  e2 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 2));
 	  if (TREE_OPERAND (expr, 2) != e2)
 	    changed = true;
 	}
@@ -2027,16 +2027,14 @@ tree_simplify_using_condition_1 (tree cond, tree expr, tree stop)
 	return boolean_true_node;
     }
 
-  te = expand_simple_operations (expr, stop);
-
   /* Check whether COND ==> EXPR.  */
   notcond = invert_truthvalue (cond);
-  e = fold_binary (TRUTH_OR_EXPR, boolean_type_node, notcond, te);
+  e = fold_binary (TRUTH_OR_EXPR, boolean_type_node, notcond, expr);
   if (e && integer_nonzerop (e))
     return e;
 
   /* Check whether COND ==> not EXPR.  */
-  e = fold_binary (TRUTH_AND_EXPR, boolean_type_node, cond, te);
+  e = fold_binary (TRUTH_AND_EXPR, boolean_type_node, cond, expr);
   if (e && integer_zerop (e))
     return e;
 
@@ -2051,11 +2049,11 @@ tree_simplify_using_condition_1 (tree cond, tree expr, tree stop)
    the loop do not cause us to fail.  */
 
 static tree
-tree_simplify_using_condition (tree cond, tree expr, tree stop)
+tree_simplify_using_condition (tree cond, tree expr)
 {
-  cond = expand_simple_operations (cond, stop);
+  cond = expand_simple_operations (cond);
 
-  return tree_simplify_using_condition_1 (cond, expr, stop);
+  return tree_simplify_using_condition_1 (cond, expr);
 }
 
 /* Tries to simplify EXPR using the conditions on entry to LOOP.
@@ -2063,16 +2061,18 @@ tree_simplify_using_condition (tree cond, tree expr, tree stop)
    simplification was possible).  */
 
 tree
-simplify_using_initial_conditions (struct loop *loop, tree expr, tree stop)
+simplify_using_initial_conditions (struct loop *loop, tree expr)
 {
   edge e;
   basic_block bb;
   gimple *stmt;
-  tree cond;
+  tree cond, expanded, backup;
   int cnt = 0;
 
   if (TREE_CODE (expr) == INTEGER_CST)
     return expr;
+
+  backup = expanded = expand_simple_operations (expr);
 
   /* Limit walking the dominators to avoid quadraticness in
      the number of BBs times the number of loops in degenerate
@@ -2095,15 +2095,17 @@ simplify_using_initial_conditions (struct loop *loop, tree expr, tree stop)
 			  gimple_cond_rhs (stmt));
       if (e->flags & EDGE_FALSE_VALUE)
 	cond = invert_truthvalue (cond);
-      expr = tree_simplify_using_condition (cond, expr, stop);
+      expanded = tree_simplify_using_condition (cond, expanded);
       /* Break if EXPR is simplified to const values.  */
-      if (expr && (integer_zerop (expr) || integer_nonzerop (expr)))
-	break;
+      if (expanded
+	  && (integer_zerop (expanded) || integer_nonzerop (expanded)))
+	return expanded;
 
       ++cnt;
     }
 
-  return expr;
+  /* Return the original expression if no simplification is done.  */
+  return operand_equal_p (backup, expanded, 0) ? expr : expanded;
 }
 
 /* Tries to simplify EXPR using the evolutions of the loop invariants
@@ -4209,8 +4211,6 @@ loop_exits_before_overflow (tree base, tree step,
      constant step because otherwise we don't have the information.  */
   if (TREE_CODE (step) == INTEGER_CST)
     {
-      tree stop = (TREE_CODE (base) == SSA_NAME) ? base : NULL;
-
       for (civ = loop->control_ivs; civ; civ = civ->next)
 	{
 	  enum tree_code code;
@@ -4268,7 +4268,7 @@ loop_exits_before_overflow (tree base, tree step,
 		}
 	      extreme = fold_build2 (MINUS_EXPR, type, extreme, step);
 	      e = fold_build2 (code, boolean_type_node, base, extreme);
-	      e = simplify_using_initial_conditions (loop, e, stop);
+	      e = simplify_using_initial_conditions (loop, e);
 	      if (integer_zerop (e))
 		return true;
 	    }
