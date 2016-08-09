@@ -3670,7 +3670,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
-      if (ctx->strict)
+      if (is_really_empty_class (TREE_TYPE (t)))
+	{
+	  /* If the class is empty, we aren't actually loading anything.  */
+	  r = build_constructor (TREE_TYPE (t), NULL);
+	  TREE_CONSTANT (r) = true;
+	}
+      else if (ctx->strict)
 	r = decl_really_constant_value (t);
       else
 	r = decl_constant_value (t);
@@ -3705,7 +3711,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* Defer in case this is only used for its type.  */;
       else if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
 	/* Defer, there's no lvalue->rvalue conversion.  */;
-      else if (is_empty_class (TREE_TYPE (t)))
+      else if (is_really_empty_class (TREE_TYPE (t)))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
 	  r = build_constructor (TREE_TYPE (t), NULL);
@@ -4736,6 +4742,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     }
   if (CONSTANT_CLASS_P (t))
     return true;
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
+      && TREE_TYPE (t) == error_mark_node)
+    return false;
 
   switch (TREE_CODE (t))
     {
@@ -4891,12 +4900,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 
     case VAR_DECL:
       if (want_rval
+	  && !var_in_constexpr_fn (t)
+	  && !type_dependent_expression_p (t)
 	  && !decl_constant_var_p (t)
 	  && (strict
 	      || !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (t))
 	      || !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t))
-	  && !var_in_constexpr_fn (t)
-	  && !type_dependent_expression_p (t))
+	  && COMPLETE_TYPE_P (TREE_TYPE (t))
+	  && !is_really_empty_class (TREE_TYPE (t)))
         {
           if (flags & tf_error)
             non_const_var_error (t);

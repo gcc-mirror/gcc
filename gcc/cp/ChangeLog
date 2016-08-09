@@ -1,3 +1,11 @@
+2016-08-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67131
+	* class.c (is_really_empty_class): Call complete_type.
+	* constexpr.c (cxx_eval_constant_expression): Check
+	is_really_empty_class.
+	(potential_constant_expression_1): Likewise.  Check for error type.
+
 2016-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58706
