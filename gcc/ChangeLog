@@ -1,3 +1,9 @@
+2016-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/72824
+	* tree-loop-distribution.c (const_with_all_bytes_same): Verify
+	real_zerop is not negative.
+
 2016-08-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71802
