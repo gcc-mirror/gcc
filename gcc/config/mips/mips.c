@@ -21991,9 +21991,9 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
   if (!TARGET_HARD_FLOAT_ABI)
     return;
-  tree exceptions_var = create_tmp_var (MIPS_ATYPE_USI);
-  tree fcsr_orig_var = create_tmp_var (MIPS_ATYPE_USI);
-  tree fcsr_mod_var = create_tmp_var (MIPS_ATYPE_USI);
+  tree exceptions_var = create_tmp_var_raw (MIPS_ATYPE_USI);
+  tree fcsr_orig_var = create_tmp_var_raw (MIPS_ATYPE_USI);
+  tree fcsr_mod_var = create_tmp_var_raw (MIPS_ATYPE_USI);
   tree get_fcsr = mips_builtin_decls[MIPS_GET_FCSR];
   tree set_fcsr = mips_builtin_decls[MIPS_SET_FCSR];
   tree get_fcsr_hold_call = build_call_expr (get_fcsr, 0);

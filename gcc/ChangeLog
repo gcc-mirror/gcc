@@ -1,3 +1,9 @@
+2016-08-09  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	PR c/65345
+	* config/mips/mips.c (mips_atomic_assign_expand_fenv):
+	Use create_tmp_var_raw instead of create_tmp_var.
+
 2016-08-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-threadbackward.c (profitable_jump_thread_path):
