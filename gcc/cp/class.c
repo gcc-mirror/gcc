@@ -1618,6 +1618,7 @@ check_abi_tags (tree decl)
   if (VAR_P (decl))
     check_abi_tags (decl, TREE_TYPE (decl));
   else if (TREE_CODE (decl) == FUNCTION_DECL
+	   && !DECL_CONV_FN_P (decl)
 	   && !mangle_return_type_p (decl))
     check_abi_tags (decl, TREE_TYPE (TREE_TYPE (decl)));
 }
@@ -1632,6 +1633,9 @@ missing_abi_tags (tree decl)
   if (VAR_P (decl))
     return check_abi_tags (decl, TREE_TYPE (decl), true);
   else if (TREE_CODE (decl) == FUNCTION_DECL
+	   /* Don't check DECL_CONV_FN_P here like we do in check_abi_tags, so
+	      that we can use this function for setting need_abi_warning
+	      regardless of the current flag_abi_version.  */
 	   && !mangle_return_type_p (decl))
     return check_abi_tags (decl, TREE_TYPE (TREE_TYPE (decl)), true);
   else

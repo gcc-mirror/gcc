@@ -1,5 +1,8 @@
 2016-08-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71712
+	* class.c (check_abi_tags): Don't duplicate tags for conversion ops.
+
 	Adjust mangling of ABI tags on class template member functions.
 	* class.c (missing_abi_tags): New.
 	(check_abi_tags): Don't check template. Add just_checking mode.
