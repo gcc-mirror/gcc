@@ -1,6 +1,12 @@
 2016-08-09  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/72772
+	* tree-ssa-loop-niter.c (loop_exits_before_overflow): Check equality
+	for expanded base.
+
+2016-08-09  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/72772
 	* tree-ssa-loop-niter.h (simplify_using_initial_conditions): Delete
 	parameter STOP.
 	* tree-ssa-loop-niter.c (tree_simplify_using_condition_1): Delete
