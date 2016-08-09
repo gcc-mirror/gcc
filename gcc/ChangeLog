@@ -1,3 +1,13 @@
+2016-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/72843
+	* config/i386/i386.md (*movtf_internal): Use
+	lra_in_progress || reload_completed instead of !can_create_pseudo_p
+	in the insn constraint.
+	(*movxf_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+
 2016-08-09  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/72772
