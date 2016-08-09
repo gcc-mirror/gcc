@@ -3910,7 +3910,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 	      if (is_gimple_reg_type (ptype))
 		{
 		  unsigned malign = GET_MODE_ALIGNMENT (TYPE_MODE (ptype));
-		  if (TYPE_ALIGN (ptype) < malign)
+		  if (TYPE_ALIGN (ptype) != malign)
 		    ptype = build_aligned_type (ptype, malign);
 		}
 	    }

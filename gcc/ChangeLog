@@ -1,3 +1,10 @@
+2016-08-09  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/68273
+	* ipa-prop.c (ipa_modify_formal_parameters): Build
+	parameter types with natural alignment also for the
+	over-aligned case.
+
 2016-08-08  Andi Kleen  <ak@linux.intel.com>
 
 	* tree-vrp.c (get_single_symbol): Always initialize inv and neg.
