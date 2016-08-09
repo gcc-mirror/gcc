@@ -1,5 +1,10 @@
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
+	* g++.dg/gcov/gcov-dump-1.C: New test.
+	* g++.dg/gcov/gcov-dump-2.C: New test.
+
+2016-08-09  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/tree-prof/val-prof-9.c: New test.
 
 2016-08-09  Martin Liska  <mliska@suse.cz>
