@@ -1,3 +1,8 @@
+2016-08-09  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* config/i3836/avx512fintrin.h (_mm512_cvtsepi64_epi32): Remove
+	unused variable __O.
+
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Change _gcov_dump to __gcov_dump and

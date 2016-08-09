@@ -4903,7 +4903,6 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_cvtsepi64_epi32 (__m512i __A)
 {
-  __v8si __O;
   return (__m256i) __builtin_ia32_pmovsqd512_mask ((__v8di) __A,
 						   (__v8si)
 						   _mm256_undefined_si256 (),
