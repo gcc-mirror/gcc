@@ -442,7 +442,7 @@ Token::print(FILE* file) const
 Lex::Lex(const char* input_file_name, FILE* input_file, Linemap* linemap)
   : input_file_name_(input_file_name), input_file_(input_file),
     linemap_(linemap), linebuf_(NULL), linebufsize_(120), linesize_(0),
-    lineoff_(0), lineno_(0), add_semi_at_eol_(false), saw_nointerface_(false),
+    lineoff_(0), lineno_(0), add_semi_at_eol_(false), pragmas_(0),
     extern_()
 {
   this->linebuf_ = new char[this->linebufsize_];
@@ -1676,29 +1676,47 @@ Lex::skip_cpp_comment()
   // //extern comment.
   this->extern_.clear();
 
-  const char* p = this->linebuf_ + this->lineoff_;
+  size_t lineoff = this->lineoff_;
+
+  const char* p = this->linebuf_ + lineoff;
   const char* pend = this->linebuf_ + this->linesize_;
 
-  // By convention, a C++ comment at the start of the line of the form
+  const char* pcheck = p;
+  bool saw_error = false;
+  while (pcheck < pend)
+    {
+      this->lineoff_ = pcheck - this->linebuf_;
+      unsigned int c;
+      bool issued_error;
+      pcheck = this->advance_one_utf8_char(pcheck, &c, &issued_error);
+      if (issued_error)
+	saw_error = true;
+    }
+
+  if (saw_error)
+    return;
+
+  // Recognize various magic comments at the start of a line.
+
+  if (lineoff != 2)
+    {
+      // Not at the start of the line.  (lineoff == 2 because of the
+      // two characters in "//").
+      return;
+    }
+
+  while (pend > p
+	 && (pend[-1] == ' ' || pend[-1] == '\t'
+	     || pend[-1] == '\r' || pend[-1] == '\n'))
+    --pend;
+
+  // A C++ comment at the start of the line of the form
   //   //line FILE:LINENO
   // is interpreted as setting the file name and line number of the
   // next source line.
-
-  if (this->lineoff_ == 2
-      && pend - p > 5
-      && memcmp(p, "line ", 5) == 0)
+  if (pend - p > 5 && memcmp(p, "line ", 5) == 0)
     {
       p += 5;
-
-      // Before finding FILE:LINENO, make sure line has valid characters.
-      const char* pcheck = p;
-      while (pcheck < pend)
-        {
-          unsigned int c;
-          bool issued_error;
-          pcheck = this->advance_one_utf8_char(pcheck, &c, &issued_error);
-        }
-
       while (p < pend && *p == ' ')
 	++p;
       const char* pcolon = static_cast<const char*>(memchr(p, ':', pend - p));
@@ -1726,6 +1744,7 @@ Lex::skip_cpp_comment()
 	      p = plend;
 	    }
 	}
+      return;
     }
 
   // As a special gccgo extension, a C++ comment at the start of the
@@ -1734,37 +1753,129 @@ Lex::skip_cpp_comment()
   // which immediately precedes a function declaration means that the
   // external name of the function declaration is NAME.  This is
   // normally used to permit Go code to call a C function.
-  if (this->lineoff_ == 2
-      && pend - p > 7
-      && memcmp(p, "extern ", 7) == 0)
+  if (pend - p > 7 && memcmp(p, "extern ", 7) == 0)
     {
       p += 7;
       while (p < pend && (*p == ' ' || *p == '\t'))
 	++p;
-      const char* plend = pend;
-      while (plend > p
-	     && (plend[-1] == ' ' || plend[-1] == '\t' || plend[-1] == '\n'))
-	--plend;
-      if (plend > p)
-	this->extern_ = std::string(p, plend - p);
+      if (pend > p)
+	this->extern_ = std::string(p, pend - p);
+      return;
     }
 
-  // For field tracking analysis: a //go:nointerface comment means
-  // that the next interface method should not be stored in the type
-  // descriptor.  This permits it to be discarded if it is not needed.
-  if (this->lineoff_ == 2
-      && pend - p > 14
-      && memcmp(p, "go:nointerface", 14) == 0)
-    this->saw_nointerface_ = true;
+  // All other special comments start with "go:".
 
-  while (p < pend)
+  if (pend - p < 4 || memcmp(p, "go:", 3) != 0)
+    return;
+
+  const char *ps = p + 3;
+  while (ps < pend && *ps != ' ' && *ps != '\t')
+    ++ps;
+  std::string verb = std::string(p, ps - p);
+
+  if (verb == "go:linkname")
     {
-      this->lineoff_ = p - this->linebuf_;
-      unsigned int c;
-      bool issued_error;
-      p = this->advance_one_utf8_char(p, &c, &issued_error);
-      if (issued_error)
-	this->extern_.clear();
+      // As in the gc compiler, set the external link name for a Go symbol.
+      std::string go_name;
+      std::string c_name;
+      if (ps < pend)
+	{
+	  while (ps < pend && (*ps == ' ' || *ps == '\t'))
+	    ++ps;
+	  if (ps < pend)
+	    {
+	      const char* pg = ps;
+	      while (ps < pend && *ps != ' ' && *ps != '\t')
+		++ps;
+	      if (ps < pend)
+		go_name = std::string(pg, ps - pg);
+	      while (ps < pend && (*ps == ' ' || *ps == '\t'))
+		++ps;
+	    }
+	  if (ps < pend)
+	    {
+	      const char* pc = ps;
+	      while (ps < pend && *ps != ' ' && *ps != '\t')
+		++ps;
+	      if (ps <= pend)
+		c_name = std::string(pc, ps - pc);
+	    }
+	  if (ps != pend)
+	    {
+	      go_name.clear();
+	      c_name.clear();
+	    }
+	}
+      if (go_name.empty() || c_name.empty())
+	error_at(this->location(), "usage: //go:linkname localname linkname");
+      else
+	this->linknames_[go_name] = c_name;
+    }
+  else if (verb == "go:nointerface")
+    {
+      // For field tracking analysis: a //go:nointerface comment means
+      // that the next interface method should not be stored in the
+      // type descriptor.  This permits it to be discarded if it is
+      // not needed.
+      this->pragmas_ |= GOPRAGMA_NOINTERFACE;
+    }
+  else if (verb == "go:noescape")
+    {
+      // Applies to the next function declaration.  Any arguments do
+      // not escape.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_NOESCAPE;
+    }
+  else if (verb == "go:nosplit")
+    {
+      // Applies to the next function.  Do not split the stack when
+      // entering the function.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_NOSPLIT;
+    }
+  else if (verb == "go:noinline")
+    {
+      // Applies to the next function.  Do not inline the function.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_NOINLINE;
+    }
+  else if (verb == "go:systemstack")
+    {
+      // Applies to the next function.  It must run on the system stack.
+      // FIXME: Should only work when compiling the runtime package.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_SYSTEMSTACK;
+    }
+  else if (verb == "go:nowritebarrier")
+    {
+      // Applies to the next function.  If the function needs to use
+      // any write barriers, it should emit an error instead.
+      // FIXME: Should only work when compiling the runtime package.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_NOWRITEBARRIER;
+    }
+  else if (verb == "go:nowritebarrierrec")
+    {
+      // Applies to the next function.  If the function, or any
+      // function that it calls, needs to use any write barriers, it
+      // should emit an error instead.
+      // FIXME: Should only work when compiling the runtime package.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_NOWRITEBARRIERREC;
+    }
+  else if (verb == "go:cgo_unsafe_args")
+    {
+      // Applies to the next function.  Taking the address of any
+      // argument implies taking the address of all arguments.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_CGOUNSAFEARGS;
+    }
+  else if (verb == "go:uintptrescapes")
+    {
+      // Applies to the next function.  If an argument is a pointer
+      // converted to uintptr, then the pointer escapes.
+      // FIXME: Not implemented.
+      this->pragmas_ |= GOPRAGMA_UINTPTRESCAPES;
     }
 }
 
