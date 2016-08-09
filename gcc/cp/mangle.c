@@ -91,6 +91,14 @@ along with GCC; see the file COPYING3.  If not see
 #define abi_warn_or_compat_version_crosses(N) \
   (abi_version_crosses (N) || abi_compat_version_crosses (N))
 
+/* And sometimes we can simplify the code path if we don't need to worry about
+   previous ABIs.  */
+#define abi_flag_at_least(flag,N) (flag == 0 || flag >= N)
+#define any_abi_below(N) \
+  (!abi_version_at_least (N) \
+   || !abi_flag_at_least (warn_abi_version, (N)) \
+   || !abi_flag_at_least (flag_abi_compat_version, (N)))
+
 /* Things we only need one of.  This module is not reentrant.  */
 struct GTY(()) globals {
   /* An array of the current substitution candidates, in the order
@@ -224,6 +232,7 @@ static void dump_substitution_candidates (void);
 static tree mangle_decl_string (const tree);
 static int local_class_index (tree);
 static void maybe_check_abi_tags (tree, tree = NULL_TREE);
+static bool equal_abi_tags (tree, tree);
 
 /* Control functions.  */
 
@@ -1329,16 +1338,52 @@ write_unqualified_name (tree decl)
         write_source_name (DECL_NAME (decl));
     }
 
-  /* We use the ABI tags from the primary template, ignoring tags on any
+  /* We use the ABI tags from the primary class template, ignoring tags on any
      specializations.  This is necessary because C++ doesn't require a
-     specialization to be declared before it is used unless the use
-     requires a complete type, but we need to get the tags right on
-     incomplete types as well.  */
+     specialization to be declared before it is used unless the use requires a
+     complete type, but we need to get the tags right on incomplete types as
+     well.  */
   if (tree tmpl = most_general_template (decl))
-    decl = DECL_TEMPLATE_RESULT (tmpl);
-  /* Don't crash on an unbound class template.  */
-  if (decl && TREE_CODE (decl) != NAMESPACE_DECL)
-    write_abi_tags (get_abi_tags (decl));
+    {
+      tree res = DECL_TEMPLATE_RESULT (tmpl);
+      if (res == NULL_TREE)
+	/* UNBOUND_CLASS_TEMPLATE.  */;
+      else if (DECL_DECLARES_TYPE_P (decl))
+	decl = res;
+      else if (any_abi_below (11))
+	{
+	  /* ABI v10 implicit tags on the template.  */
+	  tree mtags = missing_abi_tags (res);
+	  /* Explicit tags on the template.  */
+	  tree ttags = get_abi_tags (res);
+	  /* Tags on the instantiation.  */
+	  tree dtags = get_abi_tags (decl);
+
+	  if (mtags && abi_warn_or_compat_version_crosses (10))
+	    G.need_abi_warning = 1;
+
+	  /* Add the v10 tags to the explicit tags now.  */
+	  mtags = chainon (mtags, ttags);
+
+	  if (!G.need_abi_warning
+	      && abi_warn_or_compat_version_crosses (11)
+	      && !equal_abi_tags (dtags, mtags))
+	    G.need_abi_warning = 1;
+
+	  if (!abi_version_at_least (10))
+	    /* In abi <10, we only got the explicit tags.  */
+	    decl = res;
+	  else if (flag_abi_version == 10)
+	    {
+	      /* In ABI 10, we want explict and implicit tags.  */
+	      write_abi_tags (mtags);
+	      return;
+	    }
+	}
+    }
+
+  tree tags = get_abi_tags (decl);
+  write_abi_tags (tags);
 }
 
 /* Write the unqualified-name for a conversion operator to TYPE.  */
@@ -1381,15 +1426,11 @@ tree_string_cmp (const void *p1, const void *p2)
 		 TREE_STRING_POINTER (s2));
 }
 
-/* ID is the name of a function or type with abi_tags attribute TAGS.
-   Write out the name, suitably decorated.  */
+/* Return the TREE_LIST of TAGS as a sorted VEC.  */
 
-static void
-write_abi_tags (tree tags)
+static vec<tree, va_gc> *
+sorted_abi_tags (tree tags)
 {
-  if (tags == NULL_TREE)
-    return;
-
   vec<tree, va_gc> * vec = make_tree_vector();
 
   for (tree t = tags; t; t = TREE_CHAIN (t))
@@ -1402,6 +1443,20 @@ write_abi_tags (tree tags)
 
   vec->qsort (tree_string_cmp);
 
+  return vec;
+}
+
+/* ID is the name of a function or type with abi_tags attribute TAGS.
+   Write out the name, suitably decorated.  */
+
+static void
+write_abi_tags (tree tags)
+{
+  if (tags == NULL_TREE)
+    return;
+
+  vec<tree, va_gc> * vec = sorted_abi_tags (tags);
+
   unsigned i; tree str;
   FOR_EACH_VEC_ELT (*vec, i, str)
     {
@@ -1411,6 +1466,43 @@ write_abi_tags (tree tags)
     }
 
   release_tree_vector (vec);
+}
+
+/* Simplified unique_ptr clone to release a tree vec on exit.  */
+
+struct releasing_vec
+{
+  typedef vec<tree, va_gc> vec_t;
+
+  releasing_vec (vec_t *v): v(v) { }
+  releasing_vec (): v(make_tree_vector ()) { }
+
+  vec_t &operator* () const { return *v; }
+  vec_t *operator-> () const { return v; }
+  vec_t *get () const { return v; }
+  operator vec_t *() const { return v; }
+  tree& operator[] (unsigned i) const { return (*v)[i]; }
+
+  ~releasing_vec() { release_tree_vector (v); }
+private:
+  vec_t *v;
+};
+
+/* True iff the TREE_LISTS T1 and T2 of ABI tags are equivalent.  */
+
+static bool
+equal_abi_tags (tree t1, tree t2)
+{
+  releasing_vec v1 = sorted_abi_tags (t1);
+  releasing_vec v2 = sorted_abi_tags (t2);
+
+  unsigned len1 = v1->length();
+  if (len1 != v2->length())
+    return false;
+  for (unsigned i = 0; i < len1; ++i)
+    if (tree_string_cmp (v1[i], v2[i]) != 0)
+      return false;
+  return true;
 }
 
 /* Write a user-defined literal operator.
