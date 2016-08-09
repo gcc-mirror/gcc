@@ -166,7 +166,7 @@ retrieve_constexpr_fundef (tree fun)
 /* Check whether the parameter and return types of FUN are valid for a
    constexpr function, and complain if COMPLAIN.  */
 
-static bool
+bool
 is_valid_constexpr_fn (tree fun, bool complain)
 {
   bool ret = true;
@@ -832,8 +832,9 @@ explain_invalid_constexpr_fn (tree fun)
   static hash_set<tree> *diagnosed;
   tree body;
   location_t save_loc;
-  /* Only diagnose defaulted functions or instantiations.  */
+  /* Only diagnose defaulted functions, lambdas, or instantiations.  */
   if (!DECL_DEFAULTED_FN (fun)
+      && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun))
       && !is_instantiation_of_constexpr (fun))
     return;
   if (diagnosed == NULL)
@@ -843,14 +844,20 @@ explain_invalid_constexpr_fn (tree fun)
     return;
 
   save_loc = input_location;
-  input_location = DECL_SOURCE_LOCATION (fun);
-  inform (input_location,
-	  "%qD is not usable as a constexpr function because:", fun);
+  if (!lambda_static_thunk_p (fun))
+    {
+      /* Diagnostics should completely ignore the static thunk, so leave
+	 input_location set to our caller's location.  */
+      input_location = DECL_SOURCE_LOCATION (fun);
+      inform (input_location,
+	      "%qD is not usable as a constexpr function because:", fun);
+    }
   /* First check the declaration.  */
   if (is_valid_constexpr_fn (fun, true))
     {
       /* Then if it's OK, the body.  */
-      if (!DECL_DECLARED_CONSTEXPR_P (fun))
+      if (!DECL_DECLARED_CONSTEXPR_P (fun)
+	  && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun)))
 	explain_implicit_non_constexpr (fun);
       else
 	{
@@ -1464,8 +1471,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			  "definition is complete", fun);
 	      else if (DECL_INITIAL (fun))
 		{
-		  /* The definition of fun was somehow unsuitable.  */
-		  error_at (loc, "%qD called in a constant expression", fun);
+		  /* The definition of fun was somehow unsuitable.  But pretend
+		     that lambda static thunks don't exist.  */
+		  if (!lambda_static_thunk_p (fun))
+		    error_at (loc, "%qD called in a constant expression", fun);
 		  explain_invalid_constexpr_fn (fun);
 		}
 	      else
@@ -3096,12 +3105,28 @@ cxx_eval_trinary_expression (const constexpr_ctx *ctx, tree t,
   return val;
 }
 
+/* True if T was declared in a function declared to be constexpr, and
+   therefore potentially constant in C++14.  */
+
 bool
 var_in_constexpr_fn (tree t)
 {
   tree ctx = DECL_CONTEXT (t);
-  return (cxx_dialect >= cxx14 && ctx && TREE_CODE (ctx) == FUNCTION_DECL
+  return (ctx && TREE_CODE (ctx) == FUNCTION_DECL
 	  && DECL_DECLARED_CONSTEXPR_P (ctx));
+}
+
+/* True if T was declared in a function that might be constexpr: either a
+   function that was declared constexpr, or a C++17 lambda op().  */
+
+bool
+var_in_maybe_constexpr_fn (tree t)
+{
+  if (cxx_dialect >= cxx1z
+      && DECL_FUNCTION_SCOPE_P (t)
+      && LAMBDA_FUNCTION_P (DECL_CONTEXT (t)))
+    return true;
+  return var_in_constexpr_fn (t);
 }
 
 /* Evaluate an INIT_EXPR or MODIFY_EXPR.  */
@@ -3665,6 +3690,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return (*ctx->values->get (t));
 
     case VAR_DECL:
+      if (is_capture_proxy (t))
+	return cxx_eval_constant_expression (ctx, DECL_VALUE_EXPR (t),
+					     lval, non_constant_p, overflow_p);
+      /* else fall through.  */
     case CONST_DECL:
       /* We used to not check lval for CONST_DECL, but darwin.c uses
 	 CONST_DECL for aggregate constants.  */
@@ -4775,6 +4804,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case BREAK_STMT:
     case CONTINUE_STMT:
     case REQUIRES_EXPR:
+    case STATIC_ASSERT:
       return true;
 
     case AGGR_INIT_EXPR:
@@ -4900,7 +4930,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 
     case VAR_DECL:
       if (want_rval
-	  && !var_in_constexpr_fn (t)
+	  && !var_in_maybe_constexpr_fn (t)
 	  && !type_dependent_expression_p (t)
 	  && !decl_constant_var_p (t)
 	  && (strict
@@ -5042,6 +5072,13 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return false;
       return true;
 
+    case RANGE_FOR_STMT:
+      if (!RECUR (RANGE_FOR_EXPR (t), any))
+	return false;
+      if (!RECUR (RANGE_FOR_BODY (t), any))
+	return false;
+      return true;
+
     case WHILE_STMT:
       if (!RECUR (WHILE_COND (t), rval))
 	return false;
@@ -5172,13 +5209,40 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case EH_SPEC_BLOCK:
     case EXPR_STMT:
     case PAREN_EXPR:
-    case DECL_EXPR:
     case NON_DEPENDENT_EXPR:
       /* For convenience.  */
     case RETURN_EXPR:
     case LOOP_EXPR:
     case EXIT_EXPR:
       return RECUR (TREE_OPERAND (t, 0), want_rval);
+
+    case DECL_EXPR:
+      tmp = DECL_EXPR_DECL (t);
+      if (VAR_P (tmp) && !DECL_ARTIFICIAL (tmp))
+	{
+	  if (TREE_STATIC (tmp))
+	    {
+	      if (flags & tf_error)
+		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
+			  "%<static%> in %<constexpr%> function", tmp);
+	      return false;
+	    }
+	  else if (CP_DECL_THREAD_LOCAL_P (tmp))
+	    {
+	      if (flags & tf_error)
+		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
+			  "%<thread_local%> in %<constexpr%> function", tmp);
+	      return false;
+	    }
+	  else if (!DECL_NONTRIVIALLY_INITIALIZED_P (tmp))
+	    {
+	      if (flags & tf_error)
+		error_at (DECL_SOURCE_LOCATION (tmp), "uninitialized "
+			  "variable %qD in %<constexpr%> function", tmp);
+	      return false;
+	    }
+	}
+      return RECUR (tmp, want_rval);
 
     case TRY_FINALLY_EXPR:
       return (RECUR (TREE_OPERAND (t, 0), want_rval)

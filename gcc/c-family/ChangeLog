@@ -1,3 +1,8 @@
+2016-08-09  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_constexpr for
+	C++17 constexpr lambdas.
+
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/64955

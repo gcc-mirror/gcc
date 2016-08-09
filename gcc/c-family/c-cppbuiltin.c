@@ -863,7 +863,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_return_type_deduction=201304");
 	  cpp_define (pfile, "__cpp_init_captures=201304");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201304");
-	  cpp_define (pfile, "__cpp_constexpr=201304");
+	  if (cxx_dialect <= cxx14)
+	    cpp_define (pfile, "__cpp_constexpr=201304");
 	  cpp_define (pfile, "__cpp_decltype_auto=201304");
 	  cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
@@ -880,6 +881,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_fold_expressions=201603");
 	  cpp_define (pfile, "__cpp_nontype_template_args=201411");
 	  cpp_define (pfile, "__cpp_range_based_for=201603");
+	  cpp_define (pfile, "__cpp_constexpr=201603");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in

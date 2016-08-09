@@ -1,5 +1,32 @@
 2016-08-08  Jason Merrill  <jason@redhat.com>
 
+	Implement C++17 constexpr lambda.
+	* class.c (finalize_literal_type_property): Handle lambdas.
+	* constexpr.c (is_valid_constexpr_fn): Likewise.  No longer static.
+	(explain_invalid_constexpr_fn, cxx_eval_call_expression): Handle
+	lambdas.
+	(cxx_eval_constant_expression): Handle capture proxy.
+	(var_in_constexpr_fn): Don't check for C++14.
+	(var_in_maybe_constexpr_fn): New.
+	(potential_constant_expression_1): Use it.  Check DECL_EXPR for
+	declarations not allowed in constexpr function.  Handle
+	STATIC_ASSERT, RANGE_FOR_STMT.
+	* decl.c (make_rtl_for_nonlocal_decl): Use var_in_maybe_constexpr_fn.
+	(finish_function): Set DECL_DECLARED_CONSTEXPR_P on lambda members.
+	* lambda.c (begin_lambda_type): Set CLASSTYPE_LITERAL_P.
+	(maybe_add_lambda_conv_op): Clear thunk CALL_EXPR location.
+	(lambda_static_thunk_p): New.
+	* parser.c (cp_keyword_starts_decl_specifier_p): Add RID_CONSTEXPR.
+	(CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR): New enumerator.
+	(cp_parser_decl_specifier_seq): Handle it.
+	(cp_parser_lambda_declarator_opt): Use cp_parser_decl_specifier_seq.
+	* pt.c (instantiate_class_template_1): Set CLASSTYPE_LITERAL_P.
+	(tsubst_copy_and_build) [CALL_EXPR]: Propagate CALL_FROM_THUNK_P.
+	* error.c (dump_function_decl): Check TFF_NO_TEMPLATE_BINDINGS.
+	(dump_expr) [FUNCTION_DECL]: Pass it.
+
+2016-08-08  Jason Merrill  <jason@redhat.com>
+
 	PR c++/67131
 	* class.c (is_really_empty_class): Call complete_type.
 	* constexpr.c (cxx_eval_constant_expression): Check
