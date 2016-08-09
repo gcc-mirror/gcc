@@ -1475,6 +1475,9 @@ grep '^const _CLONE_' gen-sysinfo.go | \
 if ! grep '^const CLONE_NEWUSER ' ${OUT} > /dev/null 2>&1; then
   echo "const CLONE_NEWUSER = 0x10000000" >> ${OUT}
 fi
+if ! grep '^const CLONE_NEWNET ' ${OUT} > /dev/null 2>&1; then
+  echo "const CLONE_NEWNET = 0x40000000" >> ${OUT}
+fi
 
 # Struct sizes.
 set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
