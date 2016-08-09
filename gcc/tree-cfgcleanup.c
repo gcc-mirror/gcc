@@ -641,24 +641,25 @@ cleanup_tree_cfg_bb (basic_block bb)
       && remove_forwarder_block (bb))
     return true;
 
+  /* If there is a merge opportunity with the predecessor
+     do nothing now but wait until we process the predecessor.
+     This happens when we visit BBs in a non-optimal order and
+     avoids quadratic behavior with adjusting stmts BB pointer.  */
+  if (single_pred_p (bb)
+      && can_merge_blocks_p (single_pred (bb), bb))
+    /* But make sure we _do_ visit it.  When we remove unreachable paths
+       ending in a backedge we fail to mark the destinations predecessors
+       as changed.  */
+    bitmap_set_bit (cfgcleanup_altered_bbs, single_pred (bb)->index);
+
   /* Merging the blocks may create new opportunities for folding
      conditional branches (due to the elimination of single-valued PHI
      nodes).  */
-  if (single_succ_p (bb)
-      && can_merge_blocks_p (bb, single_succ (bb)))
+  else if (single_succ_p (bb)
+	   && can_merge_blocks_p (bb, single_succ (bb)))
     {
-      /* If there is a merge opportunity with the predecessor
-         do nothing now but wait until we process the predecessor.
-	 This happens when we visit BBs in a non-optimal order and
-	 avoids quadratic behavior with adjusting stmts BB pointer.  */
-      if (single_pred_p (bb)
-	  && can_merge_blocks_p (single_pred (bb), bb))
-	;
-      else
-	{
-	  merge_blocks (bb, single_succ (bb));
-	  return true;
-	}
+      merge_blocks (bb, single_succ (bb));
+      return true;
     }
 
   return false;
