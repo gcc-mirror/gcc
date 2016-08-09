@@ -1,3 +1,17 @@
+2016-08-09  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/72772
+	* tree-ssa-loop-niter.h (simplify_using_initial_conditions): Delete
+	parameter STOP.
+	* tree-ssa-loop-niter.c (tree_simplify_using_condition_1): Delete
+	parameter STOP and update calls.  Move expand_simple_operations
+	function call from here...
+	(simplify_using_initial_conditions): ...to here.  Delete parameter
+	STOP.
+	(tree_simplify_using_condition): Delete parameter STOP.
+	* tree-scalar-evolution.c (simple_iv_with_niters): Update call to
+	simplify_using_initial_conditions.
+
 2016-08-09  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	PR c/65345
