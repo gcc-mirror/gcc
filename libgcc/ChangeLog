@@ -1,5 +1,9 @@
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
+	* libgcov-util.c: Fix typo and GNU coding style.
+
+2016-08-09  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: Remove __gcov_indirect_call_profiler.
 	* libgcov-profiler.c (__gcov_indirect_call_profiler): Remove
 	function.

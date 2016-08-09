@@ -1391,7 +1391,8 @@ calculate_overlap (struct gcov_info *gcov_list1,
   return prg_val;
 }
 
-/* Computer the overlap score of two lists of gcov_info objects PROFILE1 and PROFILE2.
+/* Compute the overlap score of two lists of gcov_info objects PROFILE1 and
+   PROFILE2.
    Return 0 on success: without mismatch. Reutrn 1 on error.  */
 
 int
