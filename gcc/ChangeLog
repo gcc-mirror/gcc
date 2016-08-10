@@ -1,3 +1,18 @@
+2016-08-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/71734
+	* tree-ssa-loop-im.c (ref_indep_loop_p): Add new argument
+	REF_LOOP, invoke ref_indep_loop_p_1.
+	(outermost_indep_loop): Pass LOOP argumnet where REF was defined
+	to ref_indep_loop_p.
+	(ref_indep_loop_p_1): Fix commentary, add argument REF_LOOP,
+	combine it with ref_indep_lopp_p_2, update SAFELEN if only REF
+	is inside LOOP, do not cache dpendence value for loops with
+	non-zero SAFELEN.
+	(ref_indep_loop_p_2): Delete function.
+	(can_sm_ref_p): Pass LOOP as additional argument to
+	ref_indep_loop_p.
+
 2016-08-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/72853
