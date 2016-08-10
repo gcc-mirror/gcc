@@ -174,6 +174,12 @@ enum offload_abi {
   OFFLOAD_ABI_ILP32
 };
 
+/* Types of profile update methods.  */
+enum profile_update {
+  PROFILE_UPDATE_SINGLE,
+  PROFILE_UPDATE_ATOMIC
+};
+
 /* Types of unwind/exception handling info that can be generated.  */
 
 enum unwind_info_type

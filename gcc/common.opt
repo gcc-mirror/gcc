@@ -1916,6 +1916,19 @@ fprofile-correction
 Common Report Var(flag_profile_correction)
 Enable correction of flow inconsistent profile data input.
 
+fprofile-update=
+Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(PROFILE_UPDATE_SINGLE)
+-fprofile-update=[single|atomic]	Set the profile update method.
+
+Enum
+Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
+
+EnumValue
+Enum(profile_update) String(single) Value(PROFILE_UPDATE_SINGLE)
+
+EnumValue
+Enum(profile_update) String(atomic) Value(PROFILE_UPDATE_ATOMIC)
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.
