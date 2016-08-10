@@ -1,3 +1,8 @@
+2016-08-10  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/71873
+	* gcc.target/avr/pr71873.c: New test.
+
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/gcov-dump-1.C: New test.
