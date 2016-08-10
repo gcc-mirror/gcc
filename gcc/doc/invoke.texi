@@ -9933,6 +9933,18 @@ the profile feedback data files. See @option{-fprofile-dir}.
 To optimize the program based on the collected profile information, use
 @option{-fprofile-use}.  @xref{Optimize Options}, for more information.
 
+@item -fprofile-update=@var{method}
+@opindex fprofile-update
+
+Alter the update method for an application instrumented for profile
+feedback based optimization.  The @var{method} argument should be one of
+@samp{single} or @samp{atomic}.  The first one is useful for single-threaded
+applications, while the second one prevents profile corruption by emitting
+thread-safe code.
+
+@strong{Warning:} When an application does not properly join all threads
+(or creates an detached thread), a profile file can be still corrupted.
+
 @item -fsanitize=address
 @opindex fsanitize=address
 Enable AddressSanitizer, a fast memory error detector.

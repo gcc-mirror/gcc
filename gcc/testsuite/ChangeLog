@@ -1,3 +1,7 @@
+2016-08-10  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov-threads-1.C: New test.
+
 2016-08-10  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/71873
