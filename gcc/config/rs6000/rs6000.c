@@ -7739,6 +7739,9 @@ mem_operand_ds_form (rtx op, machine_mode mode)
   int extra;
   rtx addr = XEXP (op, 0);
 
+  if (!offsettable_address_p (false, mode, addr))
+    return false;
+
   op = address_offset (addr);
   if (op == NULL_RTX)
     return true;
