@@ -1,3 +1,7 @@
+2016-08-10  bin cheng  <bin.cheng@arm.com>
+
+	* doc/sourcebuild.texi (@item vect_cond_mixed): New item.
+
 2016-08-10  Alan Lawrence  <alan.lawrence@arm.com>
 	    Renlin Li  <renlin.li@arm.com>
 	    Bin Cheng  <bin.cheng@arm.com>
