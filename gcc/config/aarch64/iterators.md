@@ -662,6 +662,16 @@
 				(V2DF "v2di") (DF    "di")
 				(SF   "si")])
 
+;; Mode for vector conditional operations where the comparison has
+;; different type from the lhs.
+(define_mode_attr V_cmp_mixed [(V2SI "V2SF") (V4SI "V4SF")
+			       (V2DI "V2DF") (V2SF "V2SI")
+			       (V4SF "V4SI") (V2DF "V2DI")])
+
+(define_mode_attr v_cmp_mixed [(V2SI "v2sf") (V4SI "v4sf")
+			       (V2DI "v2df") (V2SF "v2si")
+			       (V4SF "v4si") (V2DF "v2di")])
+
 ;; Lower case element modes (as used in shift immediate patterns).
 (define_mode_attr ve_mode [(V8QI "qi") (V16QI "qi")
 			   (V4HI "hi") (V8HI  "hi")

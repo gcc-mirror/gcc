@@ -2,6 +2,23 @@
 	    Renlin Li  <renlin.li@arm.com>
 	    Bin Cheng  <bin.cheng@arm.com>
 
+	* config/aarch64/iterators.md (V_cmp_mixed, v_cmp_mixed): New.
+	* config/aarch64/aarch64-simd.md (<su><maxmin>v2di3): Call
+	gen_vcondv2div2di instead of gen_aarch64_vcond_internalv2div2di.
+	(aarch64_vcond_internal<mode><mode>): Delete pattern.
+	(aarch64_vcond_internal<VDQF_COND:mode><VDQF:mode>): Ditto.
+	(vcond<v_cmp_result><mode>): Ditto.
+	(vcond<mode><mode>): Re-implement using vec_cmp and vcond_mask.
+	(vcondu<mode><mode>): Ditto.
+	(vcond<v_cmp_mixed><mode>): New pattern.
+	(vcondu<mode><v_cmp_mixed>): New pattern.
+	(aarch64_cmtst<mode>): Revise comment using aarch64_vcond instead
+	of aarch64_vcond_internal.
+
+2016-08-10  Alan Lawrence  <alan.lawrence@arm.com>
+	    Renlin Li  <renlin.li@arm.com>
+	    Bin Cheng  <bin.cheng@arm.com>
+
 	* config/aarch64/aarch64-simd.md (vec_cmp<mode><mode>): New pattern.
 	(vec_cmp<mode><v_cmp_result>): New pattern.
 	(vec_cmpu<mode><mode>): New pattern.
