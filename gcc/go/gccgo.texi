@@ -88,6 +88,7 @@ package documentation, see @uref{http://golang.org/}.
                                 How you can share and copy this manual.
 * Invoking gccgo::              How to run gccgo.
 * Import and Export::           Importing and exporting package data.
+* Compiler Directives::         Comments to control compilation.
 * C Interoperability::          Calling C from Go and vice-versa.
 * Index::                       Index.
 @end menu
@@ -228,6 +229,16 @@ may be used.  Or the checks may be removed via
 by default, but in the future may be off by default on systems that do
 not require it.
 
+@item -fgo-optimize-allocs
+@cindex @option{-fgo-optimize-allocs}
+Use escape analysis to allocate objects on the stack rather than the
+heap when possible.  In the future this may be the default.
+
+@item -fgo-debug-escape@var{n}
+@cindex @option{-fgo-debug-escape}
+Output escape analysis debugging information.  Larger values of
+@var{n} generate more information.
+
 @item -g
 @cindex @option{-g for gccgo}
 This is the standard @command{gcc} option (@pxref{Debugging Options, ,
@@ -285,6 +296,50 @@ package object files together into a single shared library or archive.
 At link time you must explicitly tell @command{gccgo} which files to
 link together into the executable, as is usual with @command{gcc}.
 This is different from the behavior of other Go compilers.
+
+@node Compiler Directives
+@chapter Compiler Directives
+
+The Go compiler supports a few compiler directives.  A compiler
+directive uses a @code{//} comment at the start of a line.  There must
+be no space between the @code{//} and the name of the directive.
+
+@table @code
+@item //line @var{file}:@var{line}
+The @code{//line} directive specifies that the source line that
+follows should be recorded as having come from the given file path and
+line number.  Successive lines are recorded using increasing line
+numbers, until the next directive.  This directive typically appears
+in machine-generated code, so that compilers and debuggers will show
+lines in the original input to the generator.
+
+@item //extern @var{extern_name}
+The @code{extern} directive sets the externally visible name of the
+next function declaration.  See @ref{Function Names}.
+
+@item //go:compile @var{go_name} @var{extern_name}
+The @code{go:compile} directives sets the externally visible name of a
+function definition or declaration.  See @ref{Function Names}.
+
+@item //go:noescape
+The @code{//go:noescape} directive specifies that the next declaration
+in the file, which must be a func without a body (meaning that it has
+an implementation not written in Go) does not allow any of the
+pointers passed as arguments to escape into the heap or into the
+values returned from the function. This information can be used during
+the compiler's escape analysis of Go code calling the function.
+
+@item //go:nosplit
+The @code{//go:nosplit} directive specifies that the next function
+declared in the file must not include a stack overflow check. This is
+most commonly used by low-level runtime sources invoked at times when
+it is unsafe for the calling goroutine to be preempted.
+
+@item //go:noinline
+The @code{//go:noinline} directive specifies that the next function
+defined in the file may not be inlined.
+
+@end table
 
 @node C Interoperability
 @chapter C Interoperability
@@ -376,17 +431,28 @@ function is still using it.
 
 @cindex @code{extern}
 @cindex external names
-Go code can call C functions directly using a Go extension implemented
-in @command{gccgo}: a function declaration may be preceded by a
-comment giving the external name.  The comment must be at the
-beginning of the line and must start with @code{//extern}.  This must
-be followed by a space and then the external name of the function.
-The function declaration must be on the line immediately after the
-comment.  For example, here is how the C function @code{open} can be
-declared in Go:
+Go code can call C functions directly using the @code{//extern} or
+@code{//go:linkname} compiler directives.  An @code{//extern}
+directive must be at the beginning of the line and must start with
+@code{//extern}.  This must be followed by a space and then the
+external name of the function.  The function declaration must be on
+the line immediately after the comment.  For example, here is how the
+C function @code{open} can be declared in Go:
 
 @smallexample
 //extern open
+func c_open(name *byte, mode int, perm int) int
+@end smallexample
+
+You can do the same thing using the @code{//go:linkname} compiler
+directive.  The @code{//go:linkname} directive must be at the start of
+the line.  It is followed by whitespace, the name of the Go function,
+more whitespace, and the external name of the function.  Unlike
+@code{//extern}, @code{//go:linkname} does not need to appear
+immediately adjacent to the function definition or declaration.
+
+@smallexample
+//go:linkname c_open open
 func c_open(name *byte, mode int, perm int) int
 @end smallexample
 
@@ -405,14 +471,14 @@ use Go's @code{os.Open} function instead.
 
 The name of Go functions accessed from C is subject to change.  At
 present the name of a Go function that does not have a receiver is
-@code{prefix.package.Functionname}.  The prefix is set by the
-@option{-fgo-prefix} option used when the package is compiled; if the
-option is not used, the default is simply @code{go}.  To call the
-function from C you must set the name using the @command{gcc}
+@code{pkgpath.Functionname}.  The @var{pkgpath} is set by the
+@option{-fgo-pkgpath} option used when the package is compiled; if the
+option is not used, the default is @code{go.@var{packagename}}.  To
+call the function from C you must set the name using the @command{gcc}
 @code{__asm__} extension.
 
 @smallexample
-extern int go_function(int) __asm__ ("myprefix.mypackage.Function");
+extern int go_function(int) __asm__ ("mypkgpath.Function");
 @end smallexample
 
 @node Index
