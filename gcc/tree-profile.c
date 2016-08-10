@@ -128,9 +128,13 @@ gimple_init_edge_profiler (void)
   tree average_profiler_fn_type;
   tree time_profiler_fn_type;
   const char *profiler_fn_name;
+  const char *fn_name;
 
   if (!gcov_type_node)
     {
+      const char *fn_suffix
+	= flag_profile_update == PROFILE_UPDATE_ATOMIC ? "_atomic" : "";
+
       gcov_type_node = get_gcov_type ();
       gcov_type_ptr = build_pointer_type (gcov_type_node);
 
@@ -140,9 +144,10 @@ gimple_init_edge_profiler (void)
 					  gcov_type_ptr, gcov_type_node,
 					  integer_type_node,
 					  unsigned_type_node, NULL_TREE);
-      tree_interval_profiler_fn
-	      = build_fn_decl ("__gcov_interval_profiler",
-				     interval_profiler_fn_type);
+      fn_name = concat ("__gcov_interval_profiler", fn_suffix, NULL);
+      tree_interval_profiler_fn = build_fn_decl (fn_name,
+						 interval_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
       TREE_NOTHROW (tree_interval_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_interval_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
@@ -153,8 +158,9 @@ gimple_init_edge_profiler (void)
 	      = build_function_type_list (void_type_node,
 					  gcov_type_ptr, gcov_type_node,
 					  NULL_TREE);
-      tree_pow2_profiler_fn = build_fn_decl ("__gcov_pow2_profiler",
-						   pow2_profiler_fn_type);
+      fn_name = concat ("__gcov_pow2_profiler", fn_suffix, NULL);
+      tree_pow2_profiler_fn = build_fn_decl (fn_name, pow2_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
       TREE_NOTHROW (tree_pow2_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_pow2_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
@@ -165,9 +171,10 @@ gimple_init_edge_profiler (void)
 	      = build_function_type_list (void_type_node,
 					  gcov_type_ptr, gcov_type_node,
 					  NULL_TREE);
-      tree_one_value_profiler_fn
-	      = build_fn_decl ("__gcov_one_value_profiler",
-				     one_value_profiler_fn_type);
+      fn_name = concat ("__gcov_one_value_profiler", fn_suffix, NULL);
+      tree_one_value_profiler_fn = build_fn_decl (fn_name,
+						  one_value_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
       TREE_NOTHROW (tree_one_value_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_one_value_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
@@ -197,9 +204,9 @@ gimple_init_edge_profiler (void)
       time_profiler_fn_type
 	       = build_function_type_list (void_type_node,
 					  gcov_type_ptr, NULL_TREE);
-      tree_time_profiler_fn
-	      = build_fn_decl ("__gcov_time_profiler",
-				     time_profiler_fn_type);
+      fn_name = concat ("__gcov_time_profiler", fn_suffix, NULL);
+      tree_time_profiler_fn = build_fn_decl (fn_name, time_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
       TREE_NOTHROW (tree_time_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_time_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
@@ -209,16 +216,17 @@ gimple_init_edge_profiler (void)
       average_profiler_fn_type
 	      = build_function_type_list (void_type_node,
 					  gcov_type_ptr, gcov_type_node, NULL_TREE);
-      tree_average_profiler_fn
-	      = build_fn_decl ("__gcov_average_profiler",
-				     average_profiler_fn_type);
+      fn_name = concat ("__gcov_average_profiler", fn_suffix, NULL);
+      tree_average_profiler_fn = build_fn_decl (fn_name,
+						average_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
       TREE_NOTHROW (tree_average_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_average_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
 		     DECL_ATTRIBUTES (tree_average_profiler_fn));
-      tree_ior_profiler_fn
-	      = build_fn_decl ("__gcov_ior_profiler",
-				     average_profiler_fn_type);
+      fn_name = concat ("__gcov_ior_profiler", fn_suffix, NULL);
+      tree_ior_profiler_fn = build_fn_decl (fn_name, average_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
       TREE_NOTHROW (tree_ior_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_ior_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,

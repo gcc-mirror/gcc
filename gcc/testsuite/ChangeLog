@@ -1,5 +1,10 @@
 2016-08-10  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/58306
+	* gcc.dg/tree-prof/val-profiler-threads-1.c: New test.
+
+2016-08-10  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/gcov/gcov-threads-1.C: New test.
 
 2016-08-10  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>

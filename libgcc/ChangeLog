@@ -1,3 +1,19 @@
+2016-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/58306
+	* Makefile.in: New functions (modules) are added.
+	* libgcov-profiler.c (__gcov_interval_profiler_atomic): New
+	function.
+	(__gcov_pow2_profiler_atomic): New function.
+	(__gcov_one_value_profiler_body): New argument is instroduced.
+	(__gcov_one_value_profiler): Call with the new argument.
+	(__gcov_one_value_profiler_atomic): Likewise.
+	(__gcov_indirect_call_profiler_v2): Likewise.
+	(__gcov_time_profiler_atomic): New function.
+	(__gcov_average_profiler_atomic): Likewise.
+	(__gcov_ior_profiler_atomic): Likewise.
+	* libgcov.h: Declare the aforementioned functions.
+
 2016-08-09  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-util.c: Fix typo and GNU coding style.
