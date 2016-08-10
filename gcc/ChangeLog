@@ -1,5 +1,11 @@
 2016-08-10  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/58306
+	* tree-profile.c (gimple_init_edge_profiler): Create conditionally
+	atomic variants of profile update functions.
+
+2016-08-10  Martin Liska  <mliska@suse.cz>
+
 	Cherry picked (and modified) from google-4_7 branch
 	2012-12-26  Rong Xu  <xur@google.com>
 	* common.opt (fprofile-update): Add new flag.
