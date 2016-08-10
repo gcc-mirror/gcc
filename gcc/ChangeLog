@@ -1,3 +1,9 @@
+2016-08-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/71680
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Return
+	SImode for TARGET_E500_DOUBLE when given SImode.
+
 2016-08-09  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* config/i3836/avx512fintrin.h (_mm512_cvtsepi64_epi32): Remove
