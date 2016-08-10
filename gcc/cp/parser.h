@@ -336,6 +336,10 @@ struct GTY(()) cp_parser {
      a local class.  */
   bool in_function_body;
 
+  /* TRUE if we are parsing a C++17 discarded statement (the non-taken branch
+     of an if constexpr).  */
+  bool in_discarded_stmt;
+
   /* Nonzero if we're processing a __transaction_atomic or
      __transaction_relaxed statement.  */
   unsigned char in_transaction;
