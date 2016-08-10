@@ -1,3 +1,21 @@
+2016-08-10  Jason Merrill  <jason@redhat.com>
+
+	Implement C++17 constexpr if.
+	* cp-tree.h (IF_STMT_CONSTEXPR_P): New.
+	* name-lookup.c (push_to_top_level, pop_from_top_level_1): Handle it.
+	* parser.h (struct cp_parser): Add in_discarded_stmt field.
+	* parser.c (cp_parser_selection_statement): Handle 'if constexpr'.
+	(cp_parser_jump_statement): Avoid deducing from a discarded return.
+	* pt.c (tsubst_expr): Only instantiate taken branch of constexpr if.
+	* semantics.c (begin_if_stmt): Set the binding level this_entity.
+	(finish_if_stmt_cond): Require the condition of a
+	constexpr if to be constant.
+	* decl.c (level_for_constexpr_if): New.
+	(named_label_entry): Add in_constexpr_if field.
+	(poplevel_named_label_1): Set it.
+	(check_goto): Check it.
+	(check_previous_goto_1): Check level_for_constexpr_if.
+
 2016-08-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68703

@@ -15387,12 +15387,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case IF_STMT:
       stmt = begin_if_stmt ();
+      IF_STMT_CONSTEXPR_P (stmt) = IF_STMT_CONSTEXPR_P (t);
       tmp = RECUR (IF_COND (t));
-      finish_if_stmt_cond (tmp, stmt);
-      RECUR (THEN_CLAUSE (t));
+      tmp = finish_if_stmt_cond (tmp, stmt);
+      if (IF_STMT_CONSTEXPR_P (t) && integer_zerop (tmp))
+	/* Don't instantiate the THEN_CLAUSE. */;
+      else
+	RECUR (THEN_CLAUSE (t));
       finish_then_clause (stmt);
 
-      if (ELSE_CLAUSE (t))
+      if (IF_STMT_CONSTEXPR_P (t) && integer_nonzerop (tmp))
+	/* Don't instantiate the ELSE_CLAUSE. */;
+      else if (ELSE_CLAUSE (t))
 	{
 	  begin_else_clause (stmt);
 	  RECUR (ELSE_CLAUSE (t));
